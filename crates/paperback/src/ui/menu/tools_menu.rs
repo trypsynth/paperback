@@ -67,6 +67,12 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	let play_pause_label = format_menu_label(&t("&Play/Pause Audio"), ActionId::PlayPauseAudio, config);
 	let play_pause_help = t("Play or pause this document's audio narration");
 	menu.append(menu_ids::PLAY_PAUSE_AUDIO, &play_pause_label, &play_pause_help, ItemKind::Normal);
+	let seek_forward_label = format_menu_label(&t("Seek Audio &Forward"), ActionId::SeekAudioForward, config);
+	let seek_forward_help = t("Skip the audio narration forward");
+	menu.append(menu_ids::SEEK_AUDIO_FORWARD, &seek_forward_label, &seek_forward_help, ItemKind::Normal);
+	let seek_backward_label = format_menu_label(&t("Seek Audio &Backward"), ActionId::SeekAudioBackward, config);
+	let seek_backward_help = t("Skip the audio narration backward");
+	menu.append(menu_ids::SEEK_AUDIO_BACKWARD, &seek_backward_label, &seek_backward_help, ItemKind::Normal);
 	let full_screen_label = format_menu_label(&t("&Full Screen"), ActionId::ToggleFullScreen, config);
 	let full_screen_help = t("Toggle full screen");
 	menu.append(menu_ids::TOGGLE_FULL_SCREEN, &full_screen_label, &full_screen_help, ItemKind::Check);

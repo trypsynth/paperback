@@ -106,7 +106,7 @@ seq_ids!(BASE + 430 => OPTIONS, SLEEP_TIMER, CUSTOMIZE_SHORTCUTS);
 seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP, TOGGLE_FULL_SCREEN);
 
 // Tools menu: Audio playback (BASE + 450..459)
-seq_ids!(BASE + 450 => PLAY_PAUSE_AUDIO);
+seq_ids!(BASE + 450 => PLAY_PAUSE_AUDIO, SEEK_AUDIO_FORWARD, SEEK_AUDIO_BACKWARD);
 
 // Help menu (BASE + 500..599)
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
@@ -187,6 +187,8 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::BookmarkWithNote => BOOKMARK_WITH_NOTE,
 		ActionId::ToggleWordWrap => TOGGLE_WORD_WRAP,
 		ActionId::PlayPauseAudio => PLAY_PAUSE_AUDIO,
+		ActionId::SeekAudioForward => SEEK_AUDIO_FORWARD,
+		ActionId::SeekAudioBackward => SEEK_AUDIO_BACKWARD,
 		ActionId::ToggleFullScreen => TOGGLE_FULL_SCREEN,
 		ActionId::Options => OPTIONS,
 		ActionId::SleepTimer => SLEEP_TIMER,

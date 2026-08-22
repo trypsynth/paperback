@@ -582,8 +582,18 @@ impl DocumentManager {
 
 	/// When "sync caret to audio" is on, moves the caret to follow playback. Called from a
 	/// recurring timer; a no-op for documents with no audio.
+	///
+	/// Uses `try_lock` on `config` rather than `lock`: this runs on the main thread on every
+	/// timer tick, and a modal dialog (e.g. Options) pumps the OS message loop while it holds
+	/// that same lock across `show_modal`. A blocking `lock` here would deadlock the UI thread
+	/// against itself the moment a tick landed mid-dialog; skipping the tick is harmless since
+	/// it just retries in 250ms.
 	pub fn pump_audio(&mut self) {
-		let sync_enabled = self.config.lock().unwrap().get_app_bool("sync_caret_to_audio", true);
+		let Ok(config) = self.config.try_lock() else {
+			return;
+		};
+		let sync_enabled = config.get_app_bool("sync_caret_to_audio", true);
+		drop(config);
 		let Some(tab) = self.active_tab_mut() else {
 			return;
 		};

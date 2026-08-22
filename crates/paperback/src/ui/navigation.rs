@@ -586,6 +586,50 @@ pub fn handle_toggle_play_pause_audio(doc_manager: &Rc<Mutex<DocumentManager>>, 
 	}
 }
 
+/// Skips the active document's audio narration backward or forward by the configured seek
+/// amount (`audio_seek_amount_seconds`, default 10). When "sync caret to audio" is on, the
+/// caret follows the new audio position, mirroring what `pump_audio` does during playback —
+/// this is the one-shot equivalent for an explicit seek rather than passive following.
+pub fn handle_seek_audio(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+	forward: bool,
+) {
+	let (sync_enabled, amount_seconds) = {
+		let cfg = config.lock().unwrap();
+		(cfg.get_app_bool("sync_caret_to_audio", true), cfg.get_app_int("audio_seek_amount_seconds", 10))
+	};
+	let amount_ms = u64::try_from(amount_seconds.max(1)).unwrap_or(10) * 1000;
+
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else { return };
+	let Some(player) = tab.audio_player.as_mut() else {
+		drop(dm);
+		// TRANSLATORS: Announced when trying to seek audio on a document that has none
+		live_region::announce(live_region_label, &t("This document has no audio."));
+		return;
+	};
+	let Some(current_ms) = player.resume_point_ms() else {
+		drop(dm);
+		// TRANSLATORS: Announced when trying to seek audio before playback has established a position
+		live_region::announce(live_region_label, &t("Audio hasn't started playing yet."));
+		return;
+	};
+	let total_ms = player.timeline().total_duration_ms();
+	let target_ms =
+		if forward { current_ms.saturating_add(amount_ms).min(total_ms) } else { current_ms.saturating_sub(amount_ms) };
+	player.seek_to_ms(target_ms);
+	if sync_enabled
+		&& let Some(cursor) = player.timeline().cursor_at_elapsed(target_ms)
+		&& let Some(clip) = player.timeline().clip(cursor.clip)
+	{
+		let position = i64::try_from(clip.start).unwrap_or(0);
+		tab.text_ctrl.set_insertion_point(position);
+		tab.text_ctrl.show_position(position);
+	}
+}
+
 pub fn handle_bookmark_with_note(
 	frame: &Frame,
 	doc_manager: &Rc<Mutex<DocumentManager>>,

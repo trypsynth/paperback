@@ -1105,6 +1105,12 @@ impl MainWindow {
 				menu_ids::PLAY_PAUSE_AUDIO => {
 					navigation::handle_toggle_play_pause_audio(&dm, live_region_label);
 				}
+				menu_ids::SEEK_AUDIO_FORWARD => {
+					navigation::handle_seek_audio(&dm, &config, live_region_label, true);
+				}
+				menu_ids::SEEK_AUDIO_BACKWARD => {
+					navigation::handle_seek_audio(&dm, &config, live_region_label, false);
+				}
 				menu_ids::TOGGLE_FULL_SCREEN => {
 					let new_state = !frame_copy.is_full_screen();
 					frame_copy.show_full_screen(new_state);
@@ -1563,6 +1569,7 @@ impl MainWindow {
 					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
 					cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
 					cfg.set_app_bool("sync_caret_to_audio", options.sync_caret_to_audio);
+					cfg.set_app_int("audio_seek_amount_seconds", options.audio_seek_amount_seconds);
 					cfg.set_app_bool("auto_reload_documents", options.auto_reload_documents);
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);

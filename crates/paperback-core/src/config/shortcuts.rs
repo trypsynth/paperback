@@ -125,6 +125,8 @@ pub enum ActionId {
 	BookmarkWithNote,
 	ToggleWordWrap,
 	PlayPauseAudio,
+	SeekAudioForward,
+	SeekAudioBackward,
 	ToggleFullScreen,
 	Options,
 	SleepTimer,
@@ -214,6 +216,8 @@ impl ActionId {
 			Self::BookmarkWithNote,
 			Self::ToggleWordWrap,
 			Self::PlayPauseAudio,
+			Self::SeekAudioForward,
+			Self::SeekAudioBackward,
 			Self::ToggleFullScreen,
 			Self::Options,
 			Self::SleepTimer,
@@ -303,6 +307,8 @@ impl ActionId {
 			| Self::BookmarkWithNote
 			| Self::ToggleWordWrap
 			| Self::PlayPauseAudio
+			| Self::SeekAudioForward
+			| Self::SeekAudioBackward
 			| Self::ToggleFullScreen
 			| Self::Options
 			| Self::SleepTimer
@@ -390,6 +396,8 @@ impl ActionId {
 			Self::BookmarkWithNote => "Bookmark with Note",
 			Self::ToggleWordWrap => "Toggle Word Wrap",
 			Self::PlayPauseAudio => "Play/Pause Audio",
+			Self::SeekAudioForward => "Seek Audio Forward",
+			Self::SeekAudioBackward => "Seek Audio Backward",
 			Self::ToggleFullScreen => "Full Screen",
 			Self::Options => "Options...",
 			Self::SleepTimer => "Sleep Timer...",
@@ -480,6 +488,8 @@ impl ActionId {
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
 			Self::ToggleWordWrap => Some(KeyChord::new(true, true, false, "W")),
 			Self::PlayPauseAudio => Some(KeyChord::new(true, false, false, "Space")),
+			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),
+			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			// The conventional shortcut is Control+Command+F; RawCtrl forces the
 			// physical Control key while plain Ctrl auto-translates to Command on mac.
 			Self::ToggleFullScreen => {
@@ -572,6 +582,8 @@ impl ActionId {
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
 			Self::ToggleWordWrap => Some(KeyChord::new(true, true, false, "W")),
 			Self::PlayPauseAudio => Some(KeyChord::new(true, false, false, "Space")),
+			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),
+			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			Self::ToggleFullScreen => Some(KeyChord::new(false, false, false, "F11")),
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
