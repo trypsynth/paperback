@@ -45,14 +45,16 @@ impl DocumentSession {
 		let Some(source) = timeline.source(index) else { return false };
 		match &source.location {
 			AudioLocation::File(path) => fs::copy(path, &output_path).is_ok(),
-			AudioLocation::ZipEntry { archive, entry } => Self::extract_zip_audio_entry(archive, entry, &output_path),
+			AudioLocation::ZipEntry { archive, entry, password } => {
+				Self::extract_zip_audio_entry(archive, entry, password.as_deref(), &output_path)
+			}
 		}
 	}
 
-	fn extract_zip_audio_entry(archive: &str, entry: &str, output_path: &str) -> bool {
+	fn extract_zip_audio_entry(archive: &str, entry: &str, password: Option<&str>, output_path: &str) -> bool {
 		let Ok(file) = File::open(archive) else { return false };
 		let Ok(mut zip) = ZipArchive::new(BufReader::new(file)) else { return false };
-		zip_utils::extract_zip_entry_to_file(&mut zip, entry, Path::new(output_path)).is_ok()
+		zip_utils::extract_zip_entry_to_file_with_password(&mut zip, entry, Path::new(output_path), password).is_ok()
 	}
 
 	#[must_use]

@@ -11,7 +11,7 @@ use std::{
 use anyhow::{Context, Result};
 use paperback_core::{
 	audio::{AudioLocation, AudioTimeline, TimelinePoint},
-	util::zip::extract_zip_entry_to_file,
+	util::zip::extract_zip_entry_to_file_with_password,
 };
 #[cfg(target_os = "windows")]
 use wxdragon::accessible::AccRole;
@@ -338,13 +338,13 @@ fn start_load(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: 
 fn resolve_source_path(location: &AudioLocation, cache_dir: &Path) -> Result<PathBuf> {
 	match location {
 		AudioLocation::File(path) => Ok(PathBuf::from(path)),
-		AudioLocation::ZipEntry { archive, entry } => {
+		AudioLocation::ZipEntry { archive, entry, password } => {
 			let output_path = cache_dir.join(cache_file_name(archive, entry));
 			if !output_path.exists() {
 				let file = fs::File::open(archive).with_context(|| format!("failed to open archive '{archive}'"))?;
 				let mut zip = ZipArchive::new(BufReader::new(file))
 					.with_context(|| format!("failed to read archive '{archive}'"))?;
-				extract_zip_entry_to_file(&mut zip, entry, &output_path)
+				extract_zip_entry_to_file_with_password(&mut zip, entry, &output_path, password.as_deref())
 					.with_context(|| format!("failed to extract '{entry}' from '{archive}'"))?;
 			}
 			Ok(output_path)
@@ -404,6 +404,7 @@ mod tests {
 		let location = AudioLocation::ZipEntry {
 			archive: zip_path.to_string_lossy().to_string(),
 			entry: "chapter1.mp3".to_string(),
+			password: None,
 		};
 		let resolved = resolve_source_path(&location, &cache_dir).unwrap();
 		assert_eq!(fs::read(&resolved).unwrap(), b"chapter-one-bytes");
@@ -422,6 +423,7 @@ mod tests {
 		let location = AudioLocation::ZipEntry {
 			archive: zip_path.to_string_lossy().to_string(),
 			entry: "missing.mp3".to_string(),
+			password: None,
 		};
 		assert!(resolve_source_path(&location, &cache_dir).is_err());
 	}

@@ -1219,6 +1219,7 @@ mod tests {
 			AudioLocation::ZipEntry {
 				archive: zip_path.to_string_lossy().to_string(),
 				entry: "chapter1.mp3".to_string(),
+				password: None,
 			},
 			None,
 		);
@@ -1229,5 +1230,39 @@ mod tests {
 		assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
 		assert_eq!(fs::read(&output_path).unwrap(), b"zipped-chapter-bytes");
 		assert_eq!(session.audio_source_direct_path_ffi(0), "");
+	}
+
+	#[test]
+	fn audio_extract_source_ffi_extracts_a_password_protected_zip_entry_source() {
+		use std::io::Write;
+
+		use zip::{ZipWriter, write::FileOptions};
+
+		let dir = std::env::temp_dir().join("paperback-session-audio-extract-encrypted-zip-test");
+		fs::create_dir_all(&dir).unwrap();
+		let zip_path = dir.join("book.zip");
+		{
+			let file = File::create(&zip_path).unwrap();
+			let mut writer = ZipWriter::new(file);
+			let options = FileOptions::<()>::default().with_aes_encryption(zip::AesMode::Aes256, "hunter2");
+			writer.start_file("chapter1.mp3", options).unwrap();
+			writer.write_all(b"zipped-chapter-bytes").unwrap();
+			writer.finish().unwrap();
+		}
+		let mut builder = crate::audio::AudioTimelineBuilder::new();
+		let source = builder.add_source(
+			AudioLocation::ZipEntry {
+				archive: zip_path.to_string_lossy().to_string(),
+				entry: "chapter1.mp3".to_string(),
+				password: Some("hunter2".to_string()),
+			},
+			None,
+		);
+		builder.add_clip(source, 0, 1000, 0, 10);
+		let session = session_with_audio(builder.build());
+
+		let output_path = dir.join("out.mp3");
+		assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
+		assert_eq!(fs::read(&output_path).unwrap(), b"zipped-chapter-bytes");
 	}
 }

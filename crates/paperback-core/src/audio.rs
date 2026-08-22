@@ -21,7 +21,7 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AudioLocation {
 	File(String),
-	ZipEntry { archive: String, entry: String },
+	ZipEntry { archive: String, entry: String, password: Option<String> },
 }
 
 /// One audio file, referenced by index from the clips that play parts of it.

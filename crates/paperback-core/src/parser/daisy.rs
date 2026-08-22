@@ -90,8 +90,11 @@ impl Parser for DaisyParser {
 					let mut read_text = |href: &str| -> Result<String> {
 						read_zip_entry_by_name_with_password(&mut archive, href, password.as_deref())
 					};
-					let resolve_audio =
-						|href: &str| AudioLocation::ZipEntry { archive: archive_path.clone(), entry: href.to_string() };
+					let resolve_audio = |href: &str| AudioLocation::ZipEntry {
+						archive: archive_path.clone(),
+						entry: href.to_string(),
+						password: password.clone(),
+					};
 					if let Some(document) = build_daisy_document(
 						&package,
 						title.clone(),
@@ -220,7 +223,9 @@ impl Parser for DaisyParser {
 			// Not a recognizable DAISY book, but plenty of "audiobook" zips out there (e.g. from
 			// AudioVault) are just a folder of narration files with no markup at all. Rather than
 			// refuse those, present each audio file as its own playable, textless section.
-			if let Some(document) = build_plain_audio_zip_document(&archive, &context.file_path, title, author) {
+			if let Some(document) =
+				build_plain_audio_zip_document(&archive, &context.file_path, title, author, context.password.as_deref())
+			{
 				tracing::debug!(path = %path.display(), "parsed zip archive as a plain audio-only bundle");
 				return Ok(document);
 			}
@@ -495,6 +500,7 @@ fn build_plain_audio_zip_document<R: Read + std::io::Seek>(
 	archive_path: &str,
 	title: String,
 	author: String,
+	password: Option<&str>,
 ) -> Option<Document> {
 	const PLACEHOLDER_CLIP_DURATION_MS: u64 = 24 * 60 * 60 * 1000;
 
@@ -514,8 +520,14 @@ fn build_plain_audio_zip_document<R: Read + std::io::Seek>(
 		let position = buffer.current_position();
 		buffer.append(" ");
 		buffer.add_marker(Marker::new(MarkerType::SectionBreak, position));
-		let source = audio_builder
-			.add_source(AudioLocation::ZipEntry { archive: archive_path.to_string(), entry: entry.clone() }, None);
+		let source = audio_builder.add_source(
+			AudioLocation::ZipEntry {
+				archive: archive_path.to_string(),
+				entry: entry.clone(),
+				password: password.map(str::to_string),
+			},
+			None,
+		);
 		audio_builder.add_clip(source, 0, PLACEHOLDER_CLIP_DURATION_MS, position, position + 1);
 		toc_items.push(TocItem::new(name, entry.clone(), position));
 	}
