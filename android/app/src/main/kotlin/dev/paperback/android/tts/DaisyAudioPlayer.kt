@@ -170,8 +170,12 @@ class DaisyAudioPlayer(
 	}
 
 	/** Stops playback and releases the native player, ahead of switching documents or the
-	 * app going away. */
+	 * app going away. Only notifies `onPlaybackStateChanged` when there was actually something
+	 * to stop: `attach`/`detach` call this on every tab switch, including switches involving
+	 * documents that never had DAISY audio attached, and firing unconditionally there would
+	 * force TtsManager's paused state on even when it was never speaking. */
 	fun stop() {
+		val wasActive = playing || session != null
 		playing = false
 		loadGeneration++
 		stopPolling()
@@ -190,7 +194,7 @@ class DaisyAudioPlayer(
 		pendingTargetMs = null
 		lastSeekTarget = null
 		abandonAudioFocus()
-		onPlaybackStateChanged?.invoke(false)
+		if (wasActive) onPlaybackStateChanged?.invoke(false)
 	}
 
 	/** Seeks playback to the point covering `position` in the text, if the timeline narrates
@@ -275,6 +279,18 @@ class DaisyAudioPlayer(
 		}
 	}
 
+	/** Clears load/seek state after a source fails to prepare or errors during playback.
+	 * Leaving `currentSource`/`lastSeekTarget` pointing at the failed clip would make a retry
+	 * to that same position a no-op under the `alreadyThere` check in `seekToMs`, so playback
+	 * could never recover without seeking somewhere else first. */
+	private fun resetAfterLoadFailure() {
+		currentSource = null
+		lastSeekTarget = null
+		playing = false
+		stopPolling()
+		onPlaybackStateChanged?.invoke(false)
+	}
+
 	private fun startPlayer(
 		path: String,
 		sourceIndex: Int,
@@ -318,9 +334,7 @@ class DaisyAudioPlayer(
 			player.setOnErrorListener { mp, _, _ ->
 				if (myGeneration == loadGeneration) {
 					if (mediaPlayer === mp) mediaPlayer = null
-					playing = false
-					stopPolling()
-					onPlaybackStateChanged?.invoke(false)
+					resetAfterLoadFailure()
 				}
 				try {
 					mp.release()
@@ -330,6 +344,7 @@ class DaisyAudioPlayer(
 			}
 			player.prepareAsync()
 		} catch (_: Exception) {
+			if (myGeneration == loadGeneration) resetAfterLoadFailure()
 			try {
 				player.release()
 			} catch (_: Exception) {
