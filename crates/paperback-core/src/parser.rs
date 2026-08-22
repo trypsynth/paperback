@@ -27,7 +27,6 @@ pub mod odt;
 pub mod pdf;
 pub mod powerpoint;
 pub mod rtf;
-pub mod smil;
 pub mod text;
 pub mod util;
 pub mod word;

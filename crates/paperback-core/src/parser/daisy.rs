@@ -18,7 +18,6 @@ use crate::{
 			html_to_text::{HtmlSourceMode, HtmlToText},
 			xml_to_text::XmlToText,
 		},
-		smil::parse_smil_pars,
 		util::{
 			path::{extract_title_from_path, resolve_relative_path},
 			toc::{build_toc_from_buffer, build_toc_from_headings},
@@ -27,6 +26,9 @@ use crate::{
 	t,
 	util::{encoding::convert_to_utf8, zip::read_zip_entry_by_name_with_password},
 };
+
+mod smil;
+use smil::parse_smil_pars;
 
 pub struct DaisyParser;
 
