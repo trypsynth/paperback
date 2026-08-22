@@ -206,7 +206,8 @@ fn parse_doc_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<Str
 			let (decoded, _, _) = WINDOWS_1252.decode(slice);
 			text.push_str(decoded.as_ref());
 		} else {
-			let utf16: Vec<u16> = slice.chunks_exact(2).map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]])).collect();
+			let utf16: Vec<u16> =
+				slice.as_chunks::<2>().0.iter().map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]])).collect();
 			text.push_str(&String::from_utf16_lossy(&utf16));
 		}
 	}

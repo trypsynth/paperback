@@ -119,7 +119,7 @@ fun DocumentTextView(
 											)
 										)
 									) {
-										val result = docState.session.activateLinkFfi(marker.position)
+										val result = docState.session.activateLink(marker.position)
 										if (result.found) {
 											when (result.action) {
 												LinkAction.EXTERNAL -> {

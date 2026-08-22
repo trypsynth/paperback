@@ -151,9 +151,4 @@ impl DocumentSession {
 			}
 		}
 	}
-
-	#[must_use]
-	pub fn activate_link_ffi(&self, position: i64) -> LinkActivationResult {
-		self.activate_link(position)
-	}
 }

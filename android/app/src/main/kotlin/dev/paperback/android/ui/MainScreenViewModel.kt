@@ -928,7 +928,7 @@ class MainScreenViewModel(
 	fun seekToPercent(percent: Int) {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
-		val pos = tab.session.positionFromPercentFfi(percent)
+		val pos = tab.session.positionFromPercent(percent)
 		updateTtsPosition(pos)
 	}
 

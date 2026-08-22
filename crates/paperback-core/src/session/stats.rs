@@ -102,28 +102,8 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn get_status_info_ffi(&self, position: i64) -> StatusInfo {
-		self.get_status_info(position)
-	}
-
-	#[must_use]
-	pub fn position_from_percent_ffi(&self, percent: i32) -> i64 {
-		self.position_from_percent(percent)
-	}
-
-	#[must_use]
-	pub fn current_page_ffi(&self, position: i64) -> i32 {
-		self.current_page(position)
-	}
-
-	#[must_use]
 	pub fn page_count_ffi(&self) -> i32 {
 		i32::try_from(self.page_count()).unwrap_or(0)
-	}
-
-	#[must_use]
-	pub fn page_offset_ffi(&self, page: i32) -> i64 {
-		self.page_offset(page)
 	}
 
 	#[must_use]
