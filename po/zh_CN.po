@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 00:17+0000\n"
+"POT-Creation-Date: 2026-08-22 00:25+0000\n"
 "PO-Revision-Date: 2026-03-22 21:37+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
@@ -1963,61 +1963,6 @@ msgstr "无法将 HTML 转换为文本：{}"
 msgid "Failed to convert Markdown to text: {}"
 msgstr "无法将 Markdown 转换为文本：{}"
 
-#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
-#, fuzzy
-msgid "File too short"
-msgstr "文件太短"
-
-#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-#, fuzzy
-msgid "Invalid record offsets"
-msgstr "无效的记录偏移量"
-
-#. TRANSLATORS: Error shown when a MOBI file has no records
-#, fuzzy
-msgid "No records found"
-msgstr "未找到相关记录"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-#, fuzzy
-msgid "Invalid Record 0 offsets"
-msgstr "无效记录 0 个偏移量"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-#, fuzzy
-msgid "Invalid Record 0"
-msgstr "无效记录 0"
-
-#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-#, fuzzy
-msgid "No MOBI header"
-msgstr "没有 MOBI 头部"
-
-#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-#, fuzzy
-msgid "Invalid MOBI identifier"
-msgstr "MOBI标识符无效"
-
-#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-#, fuzzy
-msgid "Invalid content record range"
-msgstr "内容记录范围无效"
-
-#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-#, fuzzy
-msgid "Invalid HUFF/CDIC records"
-msgstr "无效的 HUFF/CDIC 记录"
-
-#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-#, fuzzy
-msgid "Missing HUFF parameters in header"
-msgstr "头文件中缺少 HUFF 参数"
-
-#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-#, fuzzy
-msgid "Unsupported compression mode ({})"
-msgstr "不支持的压缩模式（{}）"
-
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
 #, fuzzy
 msgid "Invalid HUFF record"
@@ -2077,6 +2022,61 @@ msgstr "code_len 无效 {}"
 #, fuzzy
 msgid "Decode stack overflow"
 msgstr "解析栈溢出"
+
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+#, fuzzy
+msgid "File too short"
+msgstr "文件太短"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+#, fuzzy
+msgid "Invalid record offsets"
+msgstr "无效的记录偏移量"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+#, fuzzy
+msgid "No records found"
+msgstr "未找到相关记录"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+#, fuzzy
+msgid "Invalid Record 0 offsets"
+msgstr "无效记录 0 个偏移量"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+#, fuzzy
+msgid "Invalid Record 0"
+msgstr "无效记录 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+#, fuzzy
+msgid "No MOBI header"
+msgstr "没有 MOBI 头部"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+#, fuzzy
+msgid "Invalid MOBI identifier"
+msgstr "MOBI标识符无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+#, fuzzy
+msgid "Invalid content record range"
+msgstr "内容记录范围无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+#, fuzzy
+msgid "Invalid HUFF/CDIC records"
+msgstr "无效的 HUFF/CDIC 记录"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+#, fuzzy
+msgid "Missing HUFF parameters in header"
+msgstr "头文件中缺少 HUFF 参数"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+#, fuzzy
+msgid "Unsupported compression mode ({})"
+msgstr "不支持的压缩模式（{}）"
 
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 #, fuzzy

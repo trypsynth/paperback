@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 00:17+0000\n"
+"POT-Creation-Date: 2026-08-22 00:25+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -1982,61 +1982,6 @@ msgstr "No se ha podido convertir el HTML a texto: {}"
 msgid "Failed to convert Markdown to text: {}"
 msgstr "No se ha podido convertir el Markdown a texto: {}"
 
-#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
-#, fuzzy
-msgid "File too short"
-msgstr "El archivo es demasiado corto"
-
-#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-#, fuzzy
-msgid "Invalid record offsets"
-msgstr "Desplazamientos de registro no válidos"
-
-#. TRANSLATORS: Error shown when a MOBI file has no records
-#, fuzzy
-msgid "No records found"
-msgstr "No se han encontrado registros"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-#, fuzzy
-msgid "Invalid Record 0 offsets"
-msgstr "Registro no válido: 0 desplazamientos"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-#, fuzzy
-msgid "Invalid Record 0"
-msgstr "Registro no válido 0"
-
-#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-#, fuzzy
-msgid "No MOBI header"
-msgstr "Sin encabezado MOBI"
-
-#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-#, fuzzy
-msgid "Invalid MOBI identifier"
-msgstr "Identificador MOBI no válido"
-
-#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-#, fuzzy
-msgid "Invalid content record range"
-msgstr "Rango de registros de contenido no válido"
-
-#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-#, fuzzy
-msgid "Invalid HUFF/CDIC records"
-msgstr "Registros HUFF/CDIC no válidos"
-
-#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-#, fuzzy
-msgid "Missing HUFF parameters in header"
-msgstr "Faltan parámetros HUFF en el encabezado"
-
-#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-#, fuzzy
-msgid "Unsupported compression mode ({})"
-msgstr "Modo de compresión no compatible ({})"
-
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
 #, fuzzy
 msgid "Invalid HUFF record"
@@ -2096,6 +2041,61 @@ msgstr "Código_len no válido{}"
 #, fuzzy
 msgid "Decode stack overflow"
 msgstr "Descifrar el desbordamiento de la pila"
+
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+#, fuzzy
+msgid "File too short"
+msgstr "El archivo es demasiado corto"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+#, fuzzy
+msgid "Invalid record offsets"
+msgstr "Desplazamientos de registro no válidos"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+#, fuzzy
+msgid "No records found"
+msgstr "No se han encontrado registros"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+#, fuzzy
+msgid "Invalid Record 0 offsets"
+msgstr "Registro no válido: 0 desplazamientos"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+#, fuzzy
+msgid "Invalid Record 0"
+msgstr "Registro no válido 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+#, fuzzy
+msgid "No MOBI header"
+msgstr "Sin encabezado MOBI"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+#, fuzzy
+msgid "Invalid MOBI identifier"
+msgstr "Identificador MOBI no válido"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+#, fuzzy
+msgid "Invalid content record range"
+msgstr "Rango de registros de contenido no válido"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+#, fuzzy
+msgid "Invalid HUFF/CDIC records"
+msgstr "Registros HUFF/CDIC no válidos"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+#, fuzzy
+msgid "Missing HUFF parameters in header"
+msgstr "Faltan parámetros HUFF en el encabezado"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+#, fuzzy
+msgid "Unsupported compression mode ({})"
+msgstr "Modo de compresión no compatible ({})"
 
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 #, fuzzy

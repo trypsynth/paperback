@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 00:17+0000\n"
+"POT-Creation-Date: 2026-08-22 00:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1750,50 +1750,6 @@ msgstr ""
 msgid "Failed to convert Markdown to text: {}"
 msgstr ""
 
-#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
-msgid "File too short"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-msgid "Invalid record offsets"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file has no records
-msgid "No records found"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-msgid "Invalid Record 0 offsets"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-msgid "Invalid Record 0"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-msgid "No MOBI header"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-msgid "Invalid MOBI identifier"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-msgid "Invalid content record range"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-msgid "Invalid HUFF/CDIC records"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-msgid "Missing HUFF parameters in header"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-msgid "Unsupported compression mode ({})"
-msgstr ""
-
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
 msgid "Invalid HUFF record"
 msgstr ""
@@ -1840,6 +1796,50 @@ msgstr ""
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
 msgid "Decode stack overflow"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+msgid "File too short"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+msgid "Invalid record offsets"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+msgid "No records found"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+msgid "Invalid Record 0 offsets"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+msgid "Invalid Record 0"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+msgid "No MOBI header"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+msgid "Invalid MOBI identifier"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+msgid "Invalid content record range"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+msgid "Invalid HUFF/CDIC records"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+msgid "Missing HUFF parameters in header"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+msgid "Unsupported compression mode ({})"
 msgstr ""
 
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
