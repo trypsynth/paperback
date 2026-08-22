@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-21 23:33+0000\n"
+"POT-Creation-Date: 2026-08-22 00:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1881,14 +1881,6 @@ msgstr ""
 msgid "Failed to parse RTF document: {}"
 msgstr ""
 
-#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
-msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-msgid "No readable content found in the ZIP archive"
-msgstr ""
-
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
 msgstr ""
@@ -1913,12 +1905,20 @@ msgstr ""
 msgid "No readable text content found"
 msgstr ""
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+msgid "No readable content found in the ZIP archive"
+msgstr ""
+
 #. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
 msgid "File is encrypted and requires a password"
 msgstr ""
 
 #. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
 msgid "Decryption failed (wrong password?): {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
 msgstr ""
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path

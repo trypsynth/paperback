@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-21 23:33+0000\n"
+"POT-Creation-Date: 2026-08-22 00:17+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2264,16 +2264,6 @@ msgstr "Không tìm thấy luồng tài liệu PowerPoint"
 msgid "Failed to parse RTF document: {}"
 msgstr "Không thể phân tích cú pháp tài liệu RTF: {}"
 
-#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
-#, fuzzy
-msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "Lỗi phân tích cú pháp DOC cũ: {}. Lỗi chuyển sang định dạng OOXML dự phòng: {}"
-
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-#, fuzzy
-msgid "No readable content found in the ZIP archive"
-msgstr "Không tìm thấy nội dung có thể đọc được trong tệp nén ZIP"
-
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
 msgid "DOC file is missing required FIB fields"
@@ -2304,6 +2294,11 @@ msgstr "Nội dung tệp không giống như văn bản thuần túy"
 msgid "No readable text content found"
 msgstr "Không tìm thấy nội dung văn bản có thể đọc được"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#, fuzzy
+msgid "No readable content found in the ZIP archive"
+msgstr "Không tìm thấy nội dung có thể đọc được trong tệp nén ZIP"
+
 #. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
 #, fuzzy
 msgid "File is encrypted and requires a password"
@@ -2313,6 +2308,11 @@ msgstr "Tệp đã được mã hóa và cần mật khẩu để mở"
 #, fuzzy
 msgid "Decryption failed (wrong password?): {}"
 msgstr "Không thể giải mã (mật khẩu sai?): {}"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+#, fuzzy
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr "Lỗi phân tích cú pháp DOC cũ: {}. Lỗi chuyển sang định dạng OOXML dự phòng: {}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 #, fuzzy

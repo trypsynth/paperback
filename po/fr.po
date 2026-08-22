@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-21 23:33+0000\n"
+"POT-Creation-Date: 2026-08-22 00:17+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2148,16 +2148,6 @@ msgstr "Flux de documents PowerPoint introuvable"
 msgid "Failed to parse RTF document: {}"
 msgstr "Échec de l'analyse du document RTF : {}"
 
-#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
-#, fuzzy
-msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "Échec de l'analyse du format DOC hérité : {}. Échec du repli vers OOXML : {}"
-
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-#, fuzzy
-msgid "No readable content found in the ZIP archive"
-msgstr "Aucun contenu lisible n'a été trouvé dans l'archive ZIP"
-
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
 msgid "DOC file is missing required FIB fields"
@@ -2188,6 +2178,11 @@ msgstr "Le contenu du fichier ne semble pas être du texte brut."
 msgid "No readable text content found"
 msgstr "Aucun contenu textuel lisible n'a été trouvé"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#, fuzzy
+msgid "No readable content found in the ZIP archive"
+msgstr "Aucun contenu lisible n'a été trouvé dans l'archive ZIP"
+
 #. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
 #, fuzzy
 msgid "File is encrypted and requires a password"
@@ -2197,6 +2192,11 @@ msgstr "Le fichier est crypté et nécessite un mot de passe"
 #, fuzzy
 msgid "Decryption failed (wrong password?): {}"
 msgstr "Échec du déchiffrement (mot de passe incorrect ?) : {}"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+#, fuzzy
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr "Échec de l'analyse du format DOC hérité : {}. Échec du repli vers OOXML : {}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 #, fuzzy

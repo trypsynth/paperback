@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-21 23:33+0000\n"
+"POT-Creation-Date: 2026-08-22 00:17+0000\n"
 "PO-Revision-Date: 2026-06-25 21:58+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
@@ -2080,16 +2080,6 @@ msgstr "PowerPoint ドキュメント ストリームが見つかりません"
 msgid "Failed to parse RTF document: {}"
 msgstr "RTF ドキュメントの解析に失敗しました：{}"
 
-#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
-#, fuzzy
-msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "レガシー DOC の解析に失敗しました：{}。OOXML のフォールバックに失敗しました：{}"
-
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-#, fuzzy
-msgid "No readable content found in the ZIP archive"
-msgstr "ZIPアーカイブ内に読み取り可能なコンテンツが見つかりませんでした"
-
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
 msgid "DOC file is missing required FIB fields"
@@ -2120,6 +2110,11 @@ msgstr "ファイルの内容はプレーンテキストのようには見えま
 msgid "No readable text content found"
 msgstr "読み取れるテキストコンテンツが見つかりませんでした"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#, fuzzy
+msgid "No readable content found in the ZIP archive"
+msgstr "ZIPアーカイブ内に読み取り可能なコンテンツが見つかりませんでした"
+
 #. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
 #, fuzzy
 msgid "File is encrypted and requires a password"
@@ -2129,6 +2124,11 @@ msgstr "ファイルは暗号化されており、パスワードが必要です
 #, fuzzy
 msgid "Decryption failed (wrong password?): {}"
 msgstr "復号に失敗しました（パスワードが間違っているのでしょうか？）：{}"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+#, fuzzy
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr "レガシー DOC の解析に失敗しました：{}。OOXML のフォールバックに失敗しました：{}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 #, fuzzy

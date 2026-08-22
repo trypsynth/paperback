@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-21 23:33+0000\n"
+"POT-Creation-Date: 2026-08-22 00:17+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -2145,16 +2145,6 @@ msgstr "No se ha encontrado el flujo de documentos de PowerPoint"
 msgid "Failed to parse RTF document: {}"
 msgstr "No se ha podido analizar el documento RTF: {}"
 
-#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
-#, fuzzy
-msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "Error al analizar el documento DOC heredado: {}. Error al utilizar el formato OOXML como alternativa: {}"
-
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-#, fuzzy
-msgid "No readable content found in the ZIP archive"
-msgstr "No se ha encontrado ningún contenido legible en el archivo ZIP"
-
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
 msgid "DOC file is missing required FIB fields"
@@ -2185,6 +2175,11 @@ msgstr "El contenido del archivo no parece texto sin formato"
 msgid "No readable text content found"
 msgstr "No se ha encontrado ningún contenido de texto legible"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#, fuzzy
+msgid "No readable content found in the ZIP archive"
+msgstr "No se ha encontrado ningún contenido legible en el archivo ZIP"
+
 #. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
 #, fuzzy
 msgid "File is encrypted and requires a password"
@@ -2194,6 +2189,11 @@ msgstr "El archivo está cifrado y requiere una contraseña"
 #, fuzzy
 msgid "Decryption failed (wrong password?): {}"
 msgstr "Error al descifrar (¿contraseña incorrecta?): {}"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+#, fuzzy
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr "Error al analizar el documento DOC heredado: {}. Error al utilizar el formato OOXML como alternativa: {}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 #, fuzzy
