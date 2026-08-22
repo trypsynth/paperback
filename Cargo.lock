@@ -1086,9 +1086,9 @@ dependencies = [
 
 [[package]]
 name = "icu_collections"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2984d1cd16c883d7935b9e07e44071dca8d917fd52ecc02c04d5fa0b5a3f191c"
+checksum = "fa68d21081c4a05d5a901a1c62add574c77048b6a1c67be3b50ce0b60d4ca513"
 dependencies = [
  "displaydoc",
  "potential_utf",
@@ -1100,9 +1100,9 @@ dependencies = [
 
 [[package]]
 name = "icu_locale_core"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92219b62b3e2b4d88ac5119f8904c10f8f61bf7e95b640d25ba3075e6cac2c29"
+checksum = "d56e28588da92eee5c3201a6eff33fabdd49b62269c8938d4ff050ce4d900deb"
 dependencies = [
  "displaydoc",
  "litemap",
@@ -1113,9 +1113,9 @@ dependencies = [
 
 [[package]]
 name = "icu_normalizer"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c56e5ee99d6e3d33bd91c5d85458b6005a22140021cc324cea84dd0e72cff3b4"
+checksum = "12f9cf5f235641ed274641dd81c3f28d870e276763d0797aeeab72317b1c646f"
 dependencies = [
  "icu_collections",
  "icu_normalizer_data",
@@ -1127,16 +1127,17 @@ dependencies = [
 
 [[package]]
 name = "icu_normalizer_data"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da3be0ae77ea334f4da67c12f149704f19f81d1adf7c51cf482943e84a2bad38"
+checksum = "1563da1ed3e0b3bf3d74c9b85917ac9c56464d2f57242270c09c9e752f8021a0"
 
 [[package]]
 name = "icu_properties"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bee3b67d0ea5c2cca5003417989af8996f8604e34fb9ddf96208a033901e70de"
+checksum = "7e7ca276ad3145661a65914e6daf131ca5120cd3dcee8f8f3214b8875184a148"
 dependencies = [
+ "displaydoc",
  "icu_collections",
  "icu_locale_core",
  "icu_properties_data",
@@ -1148,15 +1149,15 @@ dependencies = [
 
 [[package]]
 name = "icu_properties_data"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e2bbb201e0c04f7b4b3e14382af113e17ba4f63e2c9d2ee626b720cbce54a14"
+checksum = "e590f038c1464a96894fd6d10127e90a8be4509f56ff7ecef851b15cee0b7caa"
 
 [[package]]
 name = "icu_provider"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "139c4cf31c8b5f33d7e199446eff9c1e02decfc2f0eec2c8d71f65befa45b421"
+checksum = "92a7ed671a6aad807a8651a2e1782a6598fda9ce5185dd8158549e95a91c6428"
 dependencies = [
  "displaydoc",
  "icu_locale_core",
@@ -1602,7 +1603,7 @@ dependencies = [
 
 [[package]]
 name = "paperback"
-version = "0.8.5"
+version = "0.9.0"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -1614,7 +1615,7 @@ dependencies = [
  "objc",
  "paperback-core",
  "paperback-formats",
- "patois 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "patois",
  "patois-build",
  "rstest",
  "ship-shape",
@@ -1633,7 +1634,7 @@ dependencies = [
 
 [[package]]
 name = "paperback-core"
-version = "0.8.5"
+version = "0.9.0"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -1646,7 +1647,7 @@ dependencies = [
  "libchm",
  "office-crypto",
  "paperback-formats",
- "patois 0.2.0 (git+https://github.com/trypsynth/patois.git)",
+ "patois",
  "pdfium",
  "percent-encoding",
  "pulldown-cmark",
@@ -1661,6 +1662,7 @@ dependencies = [
  "sha1 0.11.0",
  "thiserror",
  "toml 1.1.4+spec-1.1.0",
+ "tracing",
  "unicode-bidi",
  "uniffi",
  "zip",
@@ -1668,7 +1670,7 @@ dependencies = [
 
 [[package]]
 name = "paperback-formats"
-version = "0.8.5"
+version = "0.9.0"
 dependencies = [
  "bitflags",
 ]
@@ -1704,55 +1706,23 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "patois"
-version = "0.1.2"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "beb58c9b3a6913bb412d2f36592f9945e5fdb984319a3527cb680284bfcdfeea"
+checksum = "1d737b1aaacfdc4aac90e572d964429ea85bbf31ad865652b4f7a646d4e08d3a"
 dependencies = [
  "inventory",
- "patois-macros 0.1.2",
- "sys-locale",
-]
-
-[[package]]
-name = "patois"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "088ec49fdbe6186287d3b4d6601f70dd6fb9a8709664d52e2e76ea908ba03802"
-dependencies = [
- "inventory",
- "patois-macros 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "patois-macros",
  "sys-locale",
  "wxdragon",
 ]
 
 [[package]]
-name = "patois"
-version = "0.2.0"
-source = "git+https://github.com/trypsynth/patois.git#0d77f011249fd93e2a8b1c2ad51acace2585774d"
-dependencies = [
- "inventory",
- "patois-macros 0.2.0 (git+https://github.com/trypsynth/patois.git)",
- "sys-locale",
-]
-
-[[package]]
 name = "patois-build"
-version = "0.1.4"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b25a0ba527c43de5fadcda66285585abff78edbb2838908a8f3cc84db701f8f"
+checksum = "cdcd6c63b0eeedda69154678019c1f426b9d873f6c011cc9a9ae7ce4a7bc26b5"
 dependencies = [
  "serde_json",
-]
-
-[[package]]
-name = "patois-macros"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7932de848a50873ef1ef937a0e390d7bf251d9ecd8f22dd21d46c9c9bb100d90"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.119",
 ]
 
 [[package]]
@@ -1767,23 +1737,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "patois-macros"
-version = "0.2.0"
-source = "git+https://github.com/trypsynth/patois.git#0d77f011249fd93e2a8b1c2ad51acace2585774d"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 3.0.3",
-]
-
-[[package]]
 name = "pb"
-version = "0.8.5"
+version = "0.9.0"
 dependencies = [
  "anyhow",
  "clap",
  "paperback-core",
  "rpassword",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -2502,12 +2463,12 @@ dependencies = [
 
 [[package]]
 name = "ship-shape"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36ab804bb2af6c4a4902757c87d09a7465ea9453a733a7f26cc456a83c5ba943"
+checksum = "83997e4880f438dfbf7d8a8bf9367f700e1a39f4217772e3b74a4e8bfc736402"
 dependencies = [
  "minisign-verify",
- "patois 0.1.2",
+ "patois",
  "pulldown-cmark",
  "serde",
  "ureq",
@@ -2791,9 +2752,9 @@ dependencies = [
 
 [[package]]
 name = "tinystr"
-version = "0.8.3"
+version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8323304221c2a851516f22236c5722a72eaa19749016521d6dff0824447d96d"
+checksum = "b1e27c91459209c2986af3dcf603a5a74a4368754ce37414f59acc971167f643"
 dependencies = [
  "displaydoc",
  "zerovec",
@@ -3658,24 +3619,25 @@ dependencies = [
 
 [[package]]
 name = "writeable"
-version = "0.6.3"
+version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
+checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "wx-utils"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "39833ff4b92ae97ed7fc93e24ebd53f876c5e72ba9ae265a8f3dd1193603c352"
+checksum = "eca8f45a9d19892be9147c5944b6e6862951a5f40f23bdc614d9fecf069224e9"
 dependencies = [
+ "patois",
  "wxdragon",
 ]
 
 [[package]]
 name = "wxdragon"
-version = "0.9.18"
+version = "0.9.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fc2e3f2e8f4e6497a5044b55d807b1280f33ecd0f09c2d87fa73bd6b1ec4f71"
+checksum = "dd8615eada9f40db13be330cdbd65b34593bea8ec0016e77fe95d7a80d48d347"
 dependencies = [
  "bitflags",
  "log",
@@ -3686,9 +3648,9 @@ dependencies = [
 
 [[package]]
 name = "wxdragon-macros"
-version = "0.9.18"
+version = "0.9.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cf324cd8faecbc3ae6f946892b93181915c765c319c8de21d588449ec418eb8"
+checksum = "385b4b0ca70c143597501aa1220532ed47f86f2d4d94b958f2236a4c5647223d"
 dependencies = [
  "proc-macro2",
  "quick-xml",
@@ -3698,9 +3660,9 @@ dependencies = [
 
 [[package]]
 name = "wxdragon-sys"
-version = "0.9.18"
+version = "0.9.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ff89f42cc0ebff885fcd1bd1d1b6633c5be127ed6a6ac4c5c473c987fce76eb"
+checksum = "802abf7d9fd64ab88f7bc9645e5ff6927d724961b939feef56d8b6e4d41e5f0b"
 dependencies = [
  "bindgen",
  "cmake",
@@ -3797,9 +3759,9 @@ checksum = "e13c156562582aa81c60cb29407084cdb54c4164760106ab78e6c5b0858cf64e"
 
 [[package]]
 name = "zerotrie"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f9152d31db0792fa83f70fb2f83148effb5c1f5b8c7686c3459e361d9bc20bf"
+checksum = "4ea269c3bd32f0a32c321907a2ae912ba6f4649bb0fc764a15627e99a7095a3f"
 dependencies = [
  "displaydoc",
  "yoke",
@@ -3808,9 +3770,9 @@ dependencies = [
 
 [[package]]
 name = "zerovec"
-version = "0.11.6"
+version = "0.11.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90f911cbc359ab6af17377d242225f4d75119aec87ea711a880987b18cd7b239"
+checksum = "94b5c6b5976d66c1d703c4fd17d3f5e43c8cedaacf604961b171adc7130896d8"
 dependencies = [
  "yoke",
  "zerofrom",
@@ -3819,13 +3781,13 @@ dependencies = [
 
 [[package]]
 name = "zerovec-derive"
-version = "0.11.3"
+version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "625dc425cab0dca6dc3c3319506e6593dcb08a9f387ea3b284dbd52a92c40555"
+checksum = "47402523226a02bfe5230160dc3ccc089aa6f6f19e7fcbb4e6f824bbb1b4aa62"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.119",
+ "syn 3.0.3",
 ]
 
 [[package]]

@@ -93,11 +93,11 @@ struct GoToSheet: View {
 
 		guard let session else { return }
 		let pos = viewModel.ttsPosition
-		let status = session.getStatusInfoFfi(position: pos)
+		let status = session.getStatusInfo(position: pos)
 		lineValue = "\(status.lineNumber)"
 		percentValue = Double(status.percentage)
 		if hasPages {
-			pageValue = "\(session.currentPageFfi(position: pos))"
+			pageValue = "\(session.currentPage(position: pos))"
 		}
 
 		if !voiceOverEnabled { fieldFocused = mode != .percent }

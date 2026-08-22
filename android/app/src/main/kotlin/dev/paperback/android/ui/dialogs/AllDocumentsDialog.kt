@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.core.net.toUri
 import dev.paperback.android.t
 import dev.paperback.android.ui.RecentDocumentItem
 import androidx.compose.foundation.lazy.itemsIndexed as lazyItemsIndexed
@@ -41,7 +42,7 @@ fun AllDocumentsDialog(
 						item = recentDoc,
 						onOpen = {
 							onDismiss()
-							onOpenDocument(Uri.parse(recentDoc.uri))
+							onOpenDocument(recentDoc.uri.toUri())
 						},
 						onRemove = { onRemoveDocument(recentDoc.uri) },
 						onLocate = { onLocateDocument(recentDoc.uri) }

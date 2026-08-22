@@ -14,13 +14,13 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		Parser,
-		table_text::{
+		convert::table_text::{
 			build_html_table_from_grid, display_lines_and_length, html_table_to_display, table_caption_from_html,
 		},
 		util::{
 			ooxml::read_ooxml_relationships, path::extract_title_from_path, xml::collect_text_from_tagged_elements,
 		},
-		word::try_decrypt_office_file,
+		word::ooxml::try_decrypt_office_file,
 	},
 	t,
 	types::LinkInfo,
@@ -57,13 +57,16 @@ impl Parser for PowerpointParser {
 			|ext| ext.to_ascii_lowercase(),
 		);
 		if extension == "ppt" {
+			tracing::debug!(path = %context.file_path, "parsing powerpoint file as legacy ppt");
 			return parse_legacy_ppt(context);
 		}
+		tracing::debug!(path = %context.file_path, "parsing powerpoint file as pptx");
 		parse_pptx(context)
 	}
 }
 
 fn parse_pptx(context: &ParserContext) -> Result<Document> {
+	tracing::debug!(path = %context.file_path, "parsing pptx file");
 	let bytes = match try_decrypt_office_file(&context.file_path, context.password.as_deref())? {
 		Some(decrypted) => decrypted,
 		None => std::fs::read(&context.file_path)
@@ -80,6 +83,7 @@ fn parse_pptx(context: &ParserContext) -> Result<Document> {
 		})
 		.collect::<Vec<_>>();
 	if slides.is_empty() {
+		tracing::warn!(path = %context.file_path, "pptx file has no slides");
 		// TRANSLATORS: Error shown when a PPTX presentation file has no slides
 		anyhow::bail!(t("PPTX file contains no slides"));
 	}
@@ -131,6 +135,8 @@ fn parse_pptx(context: &ParserContext) -> Result<Document> {
 			}
 			let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title.clone() };
 			toc_items.push(TocItem::new(toc_name, String::new(), slide_start));
+		} else {
+			tracing::debug!(slide = index + 1, "skipped pptx slide with no text");
 		}
 	}
 	let title = extract_title_from_path(&context.file_path);
@@ -138,10 +144,12 @@ fn parse_pptx(context: &ParserContext) -> Result<Document> {
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;
+	tracing::debug!(path = %context.file_path, "parsed pptx file successfully");
 	Ok(document)
 }
 
 fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
+	tracing::debug!(path = %context.file_path, "parsing legacy ppt file");
 	let file =
 		File::open(&context.file_path).with_context(|| format!("Failed to open PPT file '{}'", context.file_path))?;
 	let mut compound =
@@ -149,6 +157,7 @@ fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 
 	// Encrypted PPT files have an EncryptionInfo stream. We can detect but not decrypt them.
 	if compound.entry("/EncryptionInfo").is_ok() {
+		tracing::warn!(path = %context.file_path, "legacy ppt file is encrypted, not supported");
 		// TRANSLATORS: Error shown when a legacy PPT file is password-protected, which this parser cannot handle
 		anyhow::bail!(t(
 			"Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
@@ -156,9 +165,13 @@ fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 	}
 
 	let ppt_document_stream = read_ppt_document_stream(&mut compound)
+		.inspect_err(
+			|e| tracing::warn!(path = %context.file_path, error = %e, "failed to read powerpoint document stream"),
+		)
 		.with_context(|| format!("Failed to read PowerPoint Document stream from '{}'", context.file_path))?;
 	let slide_texts = collect_legacy_slide_texts(&ppt_document_stream);
 	if slide_texts.is_empty() {
+		tracing::warn!(path = %context.file_path, "legacy ppt file has no slides");
 		// TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 		anyhow::bail!(t("PPT file contains no slides"));
 	}
@@ -199,10 +212,12 @@ fn read_ppt_document_stream(compound: &mut CompoundFile<File>) -> Result<Vec<u8>
 			let mut bytes = Vec::new();
 			stream.read_to_end(&mut bytes)?;
 			if !bytes.is_empty() {
+				tracing::debug!(stream_path, "found powerpoint document stream");
 				return Ok(bytes);
 			}
 		}
 	}
+	tracing::warn!("no powerpoint document stream found under any known path");
 	// TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
 	anyhow::bail!(t("PowerPoint Document stream not found"))
 }
@@ -217,6 +232,7 @@ fn collect_legacy_slide_texts(stream_data: &[u8]) -> Vec<String> {
 	if slide_texts.is_empty() {
 		let fallback = extract_legacy_text(stream_data);
 		if !fallback.is_empty() {
+			tracing::warn!("no slide records found, falling back to flattened text extraction");
 			slide_texts.push(fallback);
 		}
 	}
@@ -281,7 +297,7 @@ fn parse_text_chars_atom(data: &[u8]) -> Option<String> {
 		return None;
 	}
 	let mut chars = Vec::with_capacity(data.len() / 2);
-	for chunk in data.chunks_exact(2) {
+	for chunk in data.as_chunks::<2>().0 {
 		let code_unit = u16::from_le_bytes([chunk[0], chunk[1]]);
 		if code_unit == 0 {
 			break;

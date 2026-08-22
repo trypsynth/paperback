@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: fd39958ee63d8b14); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 88d5313cd5871ed4); please review and edit as needed -->
 
 # Livre de poche - version 0.8.5 {#paperback---version-0.8.5}
 
@@ -7,8 +7,8 @@
 Paperback est un lecteur de livres électroniques et de documents léger,
 rapide et accessible destiné à tous, des lecteurs occasionnels aux
 utilisateurs intensifs. Il est conçu pour être compatible avec les
-lecteurs d\'écran, offrir des vitesses élevées et une expérience sans
-fioritures.
+lecteurs d\'écran, offrir des vitesses élevées et une expérience
+d\'utilisation épurée.
 
 ## Configuration requise {#system-requirements}
 
@@ -265,8 +265,14 @@ motif suffisant pour une inclusion automatique dans cette liste.
 -   Ajout d'un bouton « Localiser » dans la boîte de dialogue « Tous les
     documents » pour localiser les livres manquants dont le chemin
     d'accès vient de changer.
--   Ajout d'un onglet « Lisibilité » à la boîte de dialogue des options,
-    proposant les options suivantes :
+-   Ajout d'un filtre d'état et d'une barre d'état à la boîte de
+    dialogue « Tous les documents », afin que vous puissiez filtrer par
+    état des documents et voir combien de documents sont affichés et
+    sélectionnés.
+-   Ajout d'un `Ctrl+Shift+A` raccourci permettant de désélectionner
+    tous les documents dans la boîte de dialogue « Tous les documents ».
+-   Ajout d'un onglet « Lisibilité » dans la boîte de dialogue « Options
+    », proposant les options suivantes :
     -   Retour à la ligne automatique (déplacé depuis l'onglet « Général
         ») ;
     -   Affichage des tableaux en ligne (nouveauté de cette version,
@@ -301,13 +307,12 @@ motif suffisant pour une inclusion automatique dans cette liste.
     contenant un.
 -   Les documents encodés dans des encodages CJK hérités, tels que GBK,
     Big5 et Shift_JIS, s\'affichent désormais correctement au lieu
-    d\'apparaître sous forme d\'un ensemble de caractères
-    inintelligibles.
+    d\'apparaître sous forme d\'un ensemble de caractères illisibles.
 -   Extension de l'option du menu d'exportation pour permettre
     l'exportation au format HTML et Markdown en plus du texte brut.
 -   Correction d\'un problème où l\'application du retour à la ligne
     automatique vous renvoyait au début de votre document.
--   Correction de l'affichage d'informations incorrectes dans la barre
+-   Correction de l'affichage d'informations erronées dans la barre
     d'état des livres Daisy.
 -   Correction des éléments dl, dt et dd qui ne généraient pas de sauts
     de ligne dans les documents XHTML .
@@ -328,15 +333,15 @@ motif suffisant pour une inclusion automatique dans cette liste.
     texte de ligne incorrect dans certaines situations.
 -   Correction de l\'analyse des documents RTF contenant des caractères
     non latins.
--   Correction du problème où la fonction « Rouvrir le dernier document
-    fermé » tentait de rouvrir le fichier readme fourni avec le
-    logiciel.
+-   Correction du problème lié à la fonction « Rouvrir le dernier
+    document fermé » qui tentait de rouvrir le fichier readme fourni
+    avec le logiciel.
 -   Correction de la barre de titre qui ne se mettait pas à jour après
     la fermeture d'un document depuis la boîte de dialogue « Tous les
     documents ».
 -   Correction d\'un problème empêchant le redimensionnement de la boîte
-    de dialogue WebView et provoquant son affichage avec une taille
-    initiale très réduite.
+    de dialogue WebView, qui s\'affichait initialement à une taille très
+    réduite.
 -   Correction d\'un problème d\'affichage des titres dans les documents
     Word contenant des noms de styles spécifiques à une locale.
 -   Correction d'un problème où l'onglet sélectionné n'était pas
@@ -353,7 +358,7 @@ motif suffisant pour une inclusion automatique dans cette liste.
     ne contiennent plus de caractères étranges.
 -   Analyse syntaxique AZW3 considérablement améliorée.
 -   Nous sommes passés de chmlib à notre propre lecteur de fichiers CHM
-    écrit entièrement en Rust.
+    entièrement écrit en Rust.
 -   Sur ordinateur, les fichiers .paperback ne seront plus chargés de
     force lors de la restauration d'un document. À la place, une
     confirmation vous sera demandée lorsque le fichier sera détecté.
@@ -364,8 +369,8 @@ motif suffisant pour une inclusion automatique dans cette liste.
 -   L\'ouverture du fichier « readme » respectera désormais la langue
     que vous avez sélectionnée.
 -   Les documents PowerPoint prennent désormais en charge les tableaux.
--   Mise à jour correcte du menu et mise en surbrillance du champ de
-    texte lors de l' ouverture de l'aide dans Paperback.
+-   Mise à jour correcte du menu et placement du focus sur le champ de
+    texte lors de l'ouverture de l'aide dans Paperback.
 -   Le fichier « Readme.html » ne sera plus ajouté à votre liste « Tous
     les documents » lorsqu'il est ouvert via Maj+F1.
 -   La suppression de documents de la boîte de dialogue « Récents »
@@ -409,9 +414,8 @@ motif suffisant pour une inclusion automatique dans cette liste.
     spécifique.
 -   Correction du dysfonctionnement de la touche Échap pour fermer la
     boîte de dialogue « Ouvrir en tant que ».
--   Correction d\'un problème empêchant le menu contextuel du lecteur de
-    s\'afficher lors d\'un clic droit ou en appuyant sur la touche
-    Applications.
+-   Correction : le menu contextuel du lecteur ne s\'affichait pas lors
+    d\'un clic droit ou en appuyant sur la touche Applications.
 -   Correction d'un problème où le mauvais document était parfois
     sélectionné lors de l'ouverture de documents depuis la ligne de
     commande.
@@ -435,7 +439,7 @@ motif suffisant pour une inclusion automatique dans cette liste.
 -   Ajout de la prise en charge des pages dans les documents RTF !
 -   Correction d'un bug qui provoquait l'activation automatique des
     liens externes lors de l'ouverture de la vue Web dans des fichiers
-    ePub contenant de tels liens.
+    ePub.
 -   Correction d\'un bug qui, dans de rares cas, empêchait l\'analyseur
     RTF d\'insérer un espace entre les mots .
 -   Correction d'un problème où les paragraphes étaient divisés en
@@ -605,8 +609,8 @@ motif suffisant pour une inclusion automatique dans cette liste.
 -   Ajout de la prise en charge de l\'analyse des fichiers OpenDocument
     Text !
 -   Les signets peuvent désormais être créés pour marquer une ligne
-    entière ou pour ne marquer qu\'une partie de texte spécifiée. Si
-    aucune sélection n\'est active lorsque vous placez un signet, le
+    entière ou pour ne marquer que du texte spécifié. Si aucune
+    sélection n'est active lorsque vous placez un signet, le
     comportement est identique à celui des versions antérieures à la
     0.6, et la ligne entière sera marquée. En revanche, si vous
     sélectionnez du texte, seul ce texte sera inclus dans le signet.
@@ -614,7 +618,7 @@ motif suffisant pour une inclusion automatique dans cette liste.
     facultatives ! Naviguez entre les signets contenant des notes à
     l'aide des touches N et Maj+N, ou affichez la boîte de dialogue des
     signets avec tous les signets, uniquement les notes ou uniquement
-    les signets sans note sélectionnés à l'aide de raccourcis clavier
+    les signets sans note, sélectionnés à l'aide de raccourcis clavier
     spécifiques.
 -   Les signets de la boîte de dialogue des signets n'auront plus le
     préfixe gênant « signet x ».
@@ -644,7 +648,7 @@ motif suffisant pour une inclusion automatique dans cette liste.
 -   Il est désormais possible d'importer et d'exporter vos signets ainsi
     que votre position de lecture pour un document donné. Le fichier
     généré porte le même nom que le document, avec l'extension
-    .paperback. Si un tel fichier se trouve dans le même répertoire
+    .paperback. Si un tel fichier est détecté dans le même répertoire
     qu'un document lors de son chargement, il sera automatiquement
     chargé. Sinon, vous pouvez les importer manuellement à l'aide d'une
     option du menu Outils.
@@ -682,8 +686,9 @@ motif suffisant pour une inclusion automatique dans cette liste.
 -   La liste des documents récents a été considérablement élargie ! Au
     lieu de se contenter d'afficher les 10 derniers documents que vous
     avez ouverts, elle vous en présente désormais un nombre
-    personnalisable, les autres documents que vous avez déjà ouverts
-    étant accessibles via une petite boîte de dialogue.
+    personnalisable, les autres documents que vous avez ouverts à un
+    moment ou à un autre étant accessibles via une petite boîte de
+    dialogue.
 -   Diverses petites améliorations ont été apportées aux analyseurs
     syntaxiques, notamment l'insertion d'une ligne vide entre les
     diapositives dans les présentations PPTX, la correction de la
@@ -743,10 +748,10 @@ motif suffisant pour une inclusion automatique dans cette liste.
 -   La table des matières devrait désormais être plus claire dans
     certains cas ; par exemple, si vous avez un élément enfant et un
     élément parent avec le même texte à la même position, vous ne verrez
-    désormais que l\'élément parent.
+    désormais que l'élément parent.
 -   Correction de la table des matières dans certains documents CHM.
 -   Correction de la table des matières dans les livres Epub 3 contenant
-    des chemins d'accès absolus. Les
+    des chemins d'accès absolus .
 -   Les documents CHM devraient désormais afficher leur titre tel qu'il
     est défini dans le fichier de métadonnées .
 
@@ -770,7 +775,7 @@ motif suffisant pour une inclusion automatique dans cette liste.
     vous indiquera désormais la ligne, le caractère et le pourcentage de
     lecture en cours.
 -   Les commentaires HTML, ainsi que le contenu des balises de script et
-    de style, n'apparaîtront plus dans la sortie texte.
+    de style, n'apparaîtront plus dans le texte affiché.
 -   Si vous passez un chemin relatif à Paperback en ligne de commande,
     celui-ci le résoudra désormais correctement.
 -   Le déplacement en pourcentage est désormais géré par sa propre boîte
@@ -786,12 +791,14 @@ motif suffisant pour une inclusion automatique dans cette liste.
     Aller à la page » devraient désormais être valider de manière plus
     stricte.
 -   Correction de la navigation dans la table des matières des livres
-    ePub 3 comportant des chemins relatifs dans leur manifeste.
+    ePub 3 dont les manifestes contiennent des chemins relatifs.
 
 ### Version 0.3.0
 
 -   Correction de la table des matières dans les livres ePub dont les
-    manifestes sont encodés en URL.
+    manifestes sont encodés en URL. Correction de la navigation dans les
+    titres des documents HTML contenant des caractères Unicode
+    multi-octets.
 -   Correction de la navigation entre les titres dans les documents HTML
     contenant des caractères Unicode multi-octets.
 -   Correction d'une utilisation élevée du processeur dans les documents
@@ -833,7 +840,7 @@ motif suffisant pour une inclusion automatique dans cette liste.
     ouvraient parfois des documents récents si vous en aviez
     suffisamment.
 -   Paperback supprime désormais les traits d\'union logiciels inutiles
-    de la sortie de texte.
+    du texte affiché.
 -   Correction d'un problème où la navigation par en-têtes vous plaçait
     parfois sur le mauvais caractère.
 

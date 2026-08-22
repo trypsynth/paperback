@@ -11,7 +11,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
-		table_text::{display_lines_and_length, html_table_to_display},
+		convert::table_text::{display_lines_and_length, html_table_to_display},
 		util::{bidi, path::extract_title_from_path},
 	},
 	t,
@@ -29,9 +29,14 @@ pub struct PdfParser;
 
 impl Parser for PdfParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing pdf document");
 		let render_tables_inline = context.render_tables_inline;
 		let document =
-			PdfiumDocument::new_from_path(&context.file_path, context.password.as_deref()).map_err(map_load_error)?;
+			PdfiumDocument::new_from_path(&context.file_path, context.password.as_deref()).map_err(|err| {
+				let mapped = map_load_error(err);
+				tracing::warn!(path = %context.file_path, error = %mapped, "failed to load pdf document");
+				mapped
+			})?;
 		let mut buffer = DocumentBuffer::new();
 		let mut page_offsets = Vec::new();
 		let mut id_positions = HashMap::new();
@@ -50,10 +55,12 @@ impl Parser for PdfParser {
 				Marker::new(MarkerType::PageBreak, marker_position).with_text(format!("Page {}", page_index + 1)),
 			);
 			let Ok(page) = document.page(page_index) else {
+				tracing::warn!(page_index, "failed to load pdf page, skipping its text");
 				page_lines_info.push(Vec::new());
 				continue;
 			};
 			let Ok(text_page) = page.text() else {
+				tracing::warn!(page_index, "failed to load text for pdf page, skipping its text");
 				page_lines_info.push(Vec::new());
 				continue;
 			};
@@ -111,7 +118,21 @@ impl Parser for PdfParser {
 					}
 					let coverage =
 						if real_char_count > 0 { mcid_char_count as f64 / real_char_count as f64 } else { 1.0 };
-					if coverage >= MIN_MCID_COVERAGE {
+					let tagged_trusted = coverage >= MIN_MCID_COVERAGE;
+					tracing::debug!(
+						page_index,
+						coverage,
+						tagged_trusted,
+						"computed mcid coverage for page structure tree"
+					);
+					if !tagged_trusted {
+						tracing::warn!(
+							page_index,
+							coverage,
+							"page advertises a structure tree but mcid coverage is too low, falling back to plain extraction"
+						);
+					}
+					if tagged_trusted {
 						let mut current_block = String::new();
 						for i in 0..child_count {
 							if let Ok(child) = struct_tree.child(i) {
@@ -136,7 +157,7 @@ impl Parser for PdfParser {
 			if tags_processed {
 				has_any_text = true;
 			} else {
-				let line_infos = extract_text_lines(&text_page);
+				let line_infos = extract_text_lines(&text_page, page_index);
 				let body_size = median_line_font_size(&line_infos);
 				let paragraphs = join_paragraphs(&line_infos, body_size);
 				if !paragraphs.is_empty() {
@@ -287,6 +308,7 @@ impl Parser for PdfParser {
 			page_lines_info.push(current_lines_info);
 		}
 		if !has_any_text && has_any_images {
+			tracing::warn!(path = %context.file_path, "pdf has images but no extractable text, likely needs ocr");
 			let marker_position = buffer.current_position();
 			buffer.add_marker(Marker::new(MarkerType::PageBreak, marker_position).with_text(String::new()));
 			// TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
@@ -296,6 +318,15 @@ impl Parser for PdfParser {
 		let title = metadata_value(&document, "Title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let author = metadata_value(&document, "Author").unwrap_or_default();
 		let mut toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
+		let toc_source = if !toc_items.is_empty() {
+			"bookmarks"
+		} else if any_tags_processed {
+			if flat_toc_items.is_empty() { "none" } else { "structure tree" }
+		} else if !detected_heading_positions.is_empty() {
+			"font-size detected headings"
+		} else {
+			"none"
+		};
 		if any_tags_processed {
 			if toc_items.is_empty() {
 				toc_items = build_toc_tree(flat_toc_items);
@@ -313,12 +344,21 @@ impl Parser for PdfParser {
 		} else {
 			add_heading_markers(&mut buffer, &toc_items, 1);
 		}
+		tracing::debug!(toc_source, toc_item_count = toc_items.len(), "resolved pdf toc source");
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		doc.title = title;
 		doc.author = author;
 		doc.toc_items = toc_items;
 		doc.id_positions = id_positions;
+		tracing::debug!(
+			path = %context.file_path,
+			page_count,
+			tagged_extraction_used = any_tags_processed,
+			images_only = (!has_any_text && has_any_images),
+			toc_source,
+			"finished parsing pdf document"
+		);
 		Ok(doc)
 	}
 }
@@ -370,8 +410,12 @@ fn reorder_run(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> String {
 	bidi::reorder_line(&with_origin)
 }
 
-fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
+fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) -> Vec<(String, f64)> {
 	let Ok(char_count) = text_page.char_count() else {
+		tracing::warn!(
+			page_index,
+			"page text char count unavailable, falling back to whole-page text blob, heading detection by font size will be degraded for this page"
+		);
 		let raw = sanitize_pdf_text(&text_page.full()).replace('\r', "");
 		return raw.lines().map(|l| (l.to_string(), 0.0)).collect();
 	};
@@ -539,7 +583,11 @@ fn map_load_error(err: PdfiumError) -> anyhow::Error {
 }
 
 fn metadata_value(document: &PdfiumDocument, key: &str) -> Option<String> {
-	document.metadata_value(key).ok().map(|value| trim_string(&value)).filter(|value| !value.is_empty())
+	document
+		.metadata_value(key)
+		.ok()
+		.map(|value| trim_string(&sanitize_pdf_text(&value)))
+		.filter(|value| !value.is_empty())
 }
 
 fn extract_toc(
@@ -555,27 +603,36 @@ fn extract_toc(
 	}
 	let mut items = Vec::<(u32, TocItem)>::new();
 	let mut used_offsets = HashSet::new();
+	let bookmark_count = bookmarks.len();
+	let mut skipped_count = 0usize;
 	for bookmark in &bookmarks {
 		let Some(level) = bookmark.level() else {
+			skipped_count += 1;
 			continue;
 		};
 		let Ok(raw_title) = bookmark.title() else {
+			skipped_count += 1;
 			continue;
 		};
-		let title = trim_string(&collapse_whitespace(&raw_title));
+		let title = trim_string(&collapse_whitespace(&sanitize_pdf_text(&raw_title)));
 		if title.is_empty() {
+			skipped_count += 1;
 			continue;
 		}
 		let Ok(dest) = bookmark.dest(document) else {
+			skipped_count += 1;
 			continue;
 		};
 		let Some(page_index) = dest.index(document) else {
+			skipped_count += 1;
 			continue;
 		};
 		let Ok(page_index) = usize::try_from(page_index) else {
+			skipped_count += 1;
 			continue;
 		};
 		let Some(&page_start_offset) = page_offsets.get(page_index) else {
+			skipped_count += 1;
 			continue;
 		};
 		let mut actual_offset = page_start_offset;
@@ -606,6 +663,9 @@ fn extract_toc(
 		}
 		used_offsets.insert(actual_offset);
 		items.push((level, TocItem::new(actual_title, String::new(), actual_offset)));
+	}
+	if skipped_count > 0 {
+		tracing::warn!(skipped_count, bookmark_count, "skipped some bookmarks while building pdf toc");
 	}
 	build_toc_tree(items)
 }
@@ -838,7 +898,7 @@ fn html_escape(s: &str) -> String {
 }
 
 /// Append a PDF table's on-screen text to the buffer and add the Table marker. The text is produced
-/// by [`crate::parser::table_text::html_table_to_display`]: the full tab-separated rendering when
+/// by [`crate::parser::convert::table_text::html_table_to_display`]: the full tab-separated rendering when
 /// `render_tables_inline` is set, otherwise a `"[Table]: <first row>"` placeholder. The helper
 /// output may span multiple lines (one per table row); each line is recorded as its own
 /// `current_lines_info` / `page_display_text` line, mirroring the rest of the PDF line tracking.

@@ -15,11 +15,14 @@ import android.os.IBinder
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import dev.paperback.android.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -248,9 +251,7 @@ class TtsManager(
 		} else {
 			TextToSpeech(context, this)
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			tts?.setAudioAttributes(speechAudioAttributes())
-		}
+		tts?.setAudioAttributes(speechAudioAttributes())
 	}
 
 	override fun onInit(status: Int) {
@@ -638,6 +639,7 @@ class TtsManager(
 
 	fun getCurrentVoice(): Voice? = _currentVoice.value
 
+	@OptIn(UnstableApi::class)
 	fun shutdown() {
 		stop()
 		tts?.shutdown()
@@ -652,5 +654,10 @@ class TtsManager(
 		// handling decides when it's actually safe for the service to go away.
 		serviceConnection?.let { context.unbindService(it) }
 		serviceConnection = null
+
+		// Last, so nothing torn down above can leave work queued: a late onDone callback
+		// would otherwise launch on this scope after shutdown and build a MediaPlayer for a
+		// temp file that no longer exists, with nothing left to release it.
+		ttsScope.cancel()
 	}
 }

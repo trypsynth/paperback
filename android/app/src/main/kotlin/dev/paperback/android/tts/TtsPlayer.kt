@@ -1,10 +1,12 @@
 package dev.paperback.android.tts
 
 import android.os.Looper
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.SimpleBasePlayer
+import androidx.media3.common.util.UnstableApi
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 
@@ -15,6 +17,7 @@ import com.google.common.util.concurrent.ListenableFuture
  * TextToSpeech-to-MediaPlayer playback pipeline lives entirely in TtsManager; this class
  * only reports its state and forwards transport commands back to it.
  */
+@OptIn(UnstableApi::class)
 class TtsPlayer(
 	private val onPlayCommand: () -> Unit,
 	private val onPauseCommand: () -> Unit,
@@ -58,6 +61,9 @@ class TtsPlayer(
 		when (seekCommand) {
 			Player.COMMAND_SEEK_TO_NEXT -> onNextCommand()
 			Player.COMMAND_SEEK_TO_PREVIOUS -> onPrevCommand()
+			// Only next/previous are advertised in availableCommands; anything else Media3 routes
+			// here is a transport we don't support, so there's nothing to do.
+			else -> {}
 		}
 		return Futures.immediateVoidFuture()
 	}

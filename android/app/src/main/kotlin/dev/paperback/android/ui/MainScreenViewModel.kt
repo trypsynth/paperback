@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.paperback.android.t
@@ -32,8 +33,8 @@ import uniffi.paperback.SegmentTypeFfi
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.security.MessageDigest
 import java.util.Locale
-import java.util.UUID
 
 class MainScreenViewModel(
 	application: Application
@@ -204,6 +205,7 @@ class MainScreenViewModel(
 		}
 		viewModelScope.launch(Dispatchers.IO) {
 			config.initialize(context.filesDir.absolutePath + "/config.toml")
+			purgeLegacyDocumentCache()
 			withContext(Dispatchers.Main) {
 				ttsManager.loadConfigAndInit()
 			}
@@ -214,7 +216,7 @@ class MainScreenViewModel(
 			if (openedUris.isNotEmpty()) {
 				val restoredTabs = mutableListOf<DocumentTabState>()
 				for (uriString in openedUris) {
-					val tab = prepareDocumentTabIO(Uri.parse(uriString), isRestore = true)
+					val tab = prepareDocumentTabIO(uriString.toUri(), isRestore = true)
 					if (tab != null) {
 						restoredTabs.add(tab)
 					}
@@ -296,7 +298,7 @@ class MainScreenViewModel(
 			val recents = config.getRecentDocuments()
 			val opened = config.getOpenedDocuments().toSet()
 			recents.map { uriString ->
-				val uri = Uri.parse(uriString)
+				val uri = uriString.toUri()
 				var displayName = uri.lastPathSegment ?: uriString
 				var isMissing = false
 
@@ -381,6 +383,7 @@ class MainScreenViewModel(
 				config.removeOpenedDocument(closedTab.documentUri)
 				config.setDocumentOpened(closedTab.documentUri, false)
 				config.flush()
+				documentCacheDir(closedTab.documentUri).deleteRecursively()
 				updateRecentDocuments()
 				withContext(Dispatchers.Main) {
 					currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
@@ -445,6 +448,29 @@ class MainScreenViewModel(
 		}.start()
 	}
 
+	/**
+	 * Extraction directory for [uriString], stable across opens. Naming it with a fresh UUID
+	 * meant every pick -- and every tab restore at launch -- left behind another full copy of
+	 * the document, with nothing that ever deleted it.
+	 */
+	private fun documentCacheDir(uriString: String): File {
+		val digest = MessageDigest.getInstance("SHA-256").digest(uriString.toByteArray())
+		val name = digest.take(16).joinToString("") { "%02x".format(it) }
+		return File(context.cacheDir, "$DOCUMENT_CACHE_DIR/$name")
+	}
+
+	/** Clears extraction directories left by builds that named them with a raw UUID. */
+	private fun purgeLegacyDocumentCache() {
+		try {
+			context.cacheDir.listFiles()?.forEach {
+				if (it.isDirectory && UUID_DIR_REGEX.matches(it.name)) {
+					it.deleteRecursively()
+				}
+			}
+		} catch (_: Exception) {
+		}
+	}
+
 	private suspend fun prepareDocumentTabIO(
 		uri: Uri,
 		providedPassword: String? = null,
@@ -468,7 +494,8 @@ class MainScreenViewModel(
 					}
 					displayName = name
 					val ext = displayName.substringAfterLast('.', "epub").lowercase()
-					val tempDir = File(context.cacheDir, UUID.randomUUID().toString())
+					val tempDir = documentCacheDir(uriString)
+					tempDir.deleteRecursively()
 					tempDir.mkdirs()
 					val tempFile = File(tempDir, displayName.ifBlank { "document.$ext" })
 					FileOutputStream(tempFile).use { inputStream.copyTo(it) }
@@ -845,7 +872,7 @@ class MainScreenViewModel(
 		val tab = state.activeTab ?: return false
 		val docUri = tab.documentUri
 		if (docUri.startsWith("content://")) return false
-		val absolutePath = Uri.parse(docUri).path ?: docUri
+		val absolutePath = docUri.toUri().path ?: docUri
 		val file = File(absolutePath)
 		val nameWithoutExtension = file.nameWithoutExtension
 		val paperbackPath = File(file.parentFile, "$nameWithoutExtension.paperback").absolutePath
@@ -867,7 +894,7 @@ class MainScreenViewModel(
 		val absolutePath = if (docUri.startsWith("content://")) {
 			docUri
 		} else {
-			Uri.parse(docUri).path ?: docUri
+			docUri.toUri().path ?: docUri
 		}
 
 		val tempFile = File(context.cacheDir, "temp_export.paperback")
@@ -915,7 +942,7 @@ class MainScreenViewModel(
 		val absolutePath = if (docUri.startsWith("content://")) {
 			docUri
 		} else {
-			Uri.parse(docUri).path ?: docUri
+			docUri.toUri().path ?: docUri
 		}
 
 		val tempFile = File(context.cacheDir, "temp_import.paperback")
@@ -1004,7 +1031,7 @@ class MainScreenViewModel(
 	fun seekToPercent(percent: Int) {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
-		val pos = tab.session.positionFromPercentFfi(percent)
+		val pos = tab.session.positionFromPercent(percent)
 		updateTtsPosition(pos)
 	}
 
@@ -1167,5 +1194,7 @@ class MainScreenViewModel(
 
 	companion object {
 		private val WHITESPACE_REGEX = "\\s+".toRegex()
+		private const val DOCUMENT_CACHE_DIR = "documents"
+		private val UUID_DIR_REGEX = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 	}
 }

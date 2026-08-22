@@ -77,9 +77,11 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 
 fn decode_utf32_le(input: &[u8]) -> String {
 	input
-		.chunks_exact(4)
+		.as_chunks::<4>()
+		.0
+		.iter()
 		.filter_map(|chunk| {
-			let code_point = u32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
+			let code_point = u32::from_le_bytes(*chunk);
 			char::from_u32(code_point)
 		})
 		.collect()
@@ -87,9 +89,11 @@ fn decode_utf32_le(input: &[u8]) -> String {
 
 fn decode_utf32_be(input: &[u8]) -> String {
 	input
-		.chunks_exact(4)
+		.as_chunks::<4>()
+		.0
+		.iter()
 		.filter_map(|chunk| {
-			let code_point = u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
+			let code_point = u32::from_be_bytes(*chunk);
 			char::from_u32(code_point)
 		})
 		.collect()
@@ -136,7 +140,7 @@ mod tests {
 		assert_eq!(convert_to_utf8(input), expected);
 	}
 
-	/// https://github.com/trypsynth/paperback/issues/632 — GBK-encoded Chinese text
+	/// <https://github.com/trypsynth/paperback/issues/632> — GBK-encoded Chinese text
 	/// (no BOM, not valid UTF-8) was falling through to the Windows-1252 fallback and
 	/// coming out as mojibake instead of being detected.
 	#[test]

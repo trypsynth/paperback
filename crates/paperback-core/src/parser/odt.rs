@@ -8,7 +8,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
 	parser::{
 		Parser,
-		table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
+		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},
@@ -22,6 +22,7 @@ pub struct OdtParser;
 
 impl Parser for OdtParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing odt file");
 		let file = File::open(&context.file_path)
 			.with_context(|| format!("Failed to open ODT file '{}'", context.file_path))?;
 		let mut archive = ZipArchive::new(BufReader::new(file))
@@ -39,6 +40,7 @@ impl Parser for OdtParser {
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		document.toc_items = toc_items;
+		tracing::debug!(path = %context.file_path, "parsed odt file successfully");
 		Ok(document)
 	}
 }
@@ -47,6 +49,7 @@ pub struct FodtParser;
 
 impl Parser for FodtParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing fodt file");
 		let content_str = fs::read_to_string(&context.file_path)
 			.with_context(|| format!("Failed to open FODT file '{}'", context.file_path))?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid FODT document")?;
@@ -60,6 +63,7 @@ impl Parser for FodtParser {
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		document.toc_items = toc_items;
+		tracing::debug!(path = %context.file_path, "parsed fodt file successfully");
 		Ok(document)
 	}
 }
@@ -220,6 +224,7 @@ fn process_table(
 		}
 	}
 	if !has_content {
+		tracing::debug!("dropped table with no non-blank cell content");
 		return;
 	}
 	let html_content = build_html_table_from_grid(&rows);

@@ -1,6 +1,7 @@
 package dev.paperback.android
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,6 +16,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -37,101 +39,14 @@ class MainActivity : ComponentActivity() {
 		setContent {
 			val view = LocalView.current
 			LaunchedEffect(view) {
-				val originalDelegate = view.accessibilityDelegate
-				view.accessibilityDelegate = object : View.AccessibilityDelegate() {
-					override fun getAccessibilityNodeProvider(host: View): AccessibilityNodeProvider? {
-						val provider = originalDelegate?.getAccessibilityNodeProvider(host) ?: super.getAccessibilityNodeProvider(host)
-						if (provider == null) return null
-						return object : AccessibilityNodeProvider() {
-							override fun createAccessibilityNodeInfo(virtualViewId: Int): AccessibilityNodeInfo? {
-								val info = provider.createAccessibilityNodeInfo(virtualViewId)
-								if (info != null &&
-									info.className == "android.widget.SeekBar" &&
-									info.stateDescription?.toString() == "\u200B"
-								) {
-									info.extras.putCharSequence("AccessibilityNodeInfo.roleDescription", "button")
-								}
-								return info
-							}
-
-							override fun performAction(
-								virtualViewId: Int,
-								action: Int,
-								arguments: Bundle?
-							): Boolean =
-								provider
-									.performAction(virtualViewId, action, arguments)
-
-							override fun findAccessibilityNodeInfosByText(
-								text: String,
-								virtualViewId: Int
-							): MutableList<AccessibilityNodeInfo>? =
-								provider
-									.findAccessibilityNodeInfosByText(text, virtualViewId)
-
-							override fun findFocus(focus: Int): AccessibilityNodeInfo? = provider.findFocus(focus)
-						}
-					}
-
-					override fun sendAccessibilityEvent(
-						host: View,
-						eventType: Int
-					) {
-						originalDelegate?.sendAccessibilityEvent(host, eventType) ?: super.sendAccessibilityEvent(host, eventType)
-					}
-
-					override fun sendAccessibilityEventUnchecked(
-						host: View,
-						event: AccessibilityEvent
-					) {
-						originalDelegate?.sendAccessibilityEventUnchecked(host, event)
-							?: super.sendAccessibilityEventUnchecked(host, event)
-					}
-
-					override fun dispatchPopulateAccessibilityEvent(
-						host: View,
-						event: AccessibilityEvent
-					): Boolean =
-						originalDelegate?.dispatchPopulateAccessibilityEvent(host, event)
-							?: super.dispatchPopulateAccessibilityEvent(host, event)
-
-					override fun onPopulateAccessibilityEvent(
-						host: View,
-						event: AccessibilityEvent
-					) {
-						originalDelegate?.onPopulateAccessibilityEvent(host, event) ?: super.onPopulateAccessibilityEvent(host, event)
-					}
-
-					override fun onInitializeAccessibilityEvent(
-						host: View,
-						event: AccessibilityEvent
-					) {
-						originalDelegate?.onInitializeAccessibilityEvent(host, event) ?: super.onInitializeAccessibilityEvent(host, event)
-					}
-
-					override fun onInitializeAccessibilityNodeInfo(
-						host: View,
-						info: AccessibilityNodeInfo
-					) {
-						originalDelegate?.onInitializeAccessibilityNodeInfo(host, info)
-							?: super.onInitializeAccessibilityNodeInfo(host, info)
-					}
-
-					override fun onRequestSendAccessibilityEvent(
-						host: ViewGroup,
-						child: View,
-						event: AccessibilityEvent
-					): Boolean =
-						originalDelegate?.onRequestSendAccessibilityEvent(host, child, event)
-							?: super.onRequestSendAccessibilityEvent(host, child, event)
-
-					override fun performAccessibilityAction(
-						host: View,
-						action: Int,
-						args: Bundle?
-					): Boolean =
-						originalDelegate?.performAccessibilityAction(host, action, args)
-							?: super.performAccessibilityAction(host, action, args)
+				// The delegate below exists only to relabel Compose Slider nodes -- which report
+				// themselves to TalkBack as SeekBar -- as buttons, and that check reads
+				// AccessibilityNodeInfo#getStateDescription, which is API 30. Below API 30 the
+				// wrapper would be a pure pass-through, so don't install it at all rather than
+				// call View#getAccessibilityDelegate (API 29) to build it: unguarded, that getter
+				// threw NoSuchMethodError at launch on API 24-28.
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+					installSeekBarRoleDelegate(view)
 				}
 			}
 			MyApplicationTheme {
@@ -139,6 +54,111 @@ class MainActivity : ComponentActivity() {
 					MainNavigation()
 				}
 			}
+		}
+	}
+
+	/**
+	 * Wraps the root view's accessibility delegate so Compose Sliders, which TalkBack would
+	 * otherwise announce as seek bars, are described as buttons. Every other method here is a
+	 * straight pass-through to the delegate Compose installed.
+	 */
+	@RequiresApi(Build.VERSION_CODES.R)
+	private fun installSeekBarRoleDelegate(view: View) {
+		val originalDelegate = view.accessibilityDelegate
+		view.accessibilityDelegate = object : View.AccessibilityDelegate() {
+			override fun getAccessibilityNodeProvider(host: View): AccessibilityNodeProvider? {
+				val provider = originalDelegate?.getAccessibilityNodeProvider(host) ?: super.getAccessibilityNodeProvider(host)
+				if (provider == null) return null
+				return object : AccessibilityNodeProvider() {
+					override fun createAccessibilityNodeInfo(virtualViewId: Int): AccessibilityNodeInfo? {
+						val info = provider.createAccessibilityNodeInfo(virtualViewId)
+						if (info != null &&
+							info.className == "android.widget.SeekBar" &&
+							info.stateDescription?.toString() == "​"
+						) {
+							info.extras.putCharSequence("AccessibilityNodeInfo.roleDescription", "button")
+						}
+						return info
+					}
+
+					override fun performAction(
+						virtualViewId: Int,
+						action: Int,
+						arguments: Bundle?
+					): Boolean =
+						provider
+							.performAction(virtualViewId, action, arguments)
+
+					override fun findAccessibilityNodeInfosByText(
+						text: String,
+						virtualViewId: Int
+					): MutableList<AccessibilityNodeInfo>? =
+						provider
+							.findAccessibilityNodeInfosByText(text, virtualViewId)
+
+					override fun findFocus(focus: Int): AccessibilityNodeInfo? = provider.findFocus(focus)
+				}
+			}
+
+			override fun sendAccessibilityEvent(
+				host: View,
+				eventType: Int
+			) {
+				originalDelegate?.sendAccessibilityEvent(host, eventType) ?: super.sendAccessibilityEvent(host, eventType)
+			}
+
+			override fun sendAccessibilityEventUnchecked(
+				host: View,
+				event: AccessibilityEvent
+			) {
+				originalDelegate?.sendAccessibilityEventUnchecked(host, event)
+					?: super.sendAccessibilityEventUnchecked(host, event)
+			}
+
+			override fun dispatchPopulateAccessibilityEvent(
+				host: View,
+				event: AccessibilityEvent
+			): Boolean =
+				originalDelegate?.dispatchPopulateAccessibilityEvent(host, event)
+					?: super.dispatchPopulateAccessibilityEvent(host, event)
+
+			override fun onPopulateAccessibilityEvent(
+				host: View,
+				event: AccessibilityEvent
+			) {
+				originalDelegate?.onPopulateAccessibilityEvent(host, event) ?: super.onPopulateAccessibilityEvent(host, event)
+			}
+
+			override fun onInitializeAccessibilityEvent(
+				host: View,
+				event: AccessibilityEvent
+			) {
+				originalDelegate?.onInitializeAccessibilityEvent(host, event) ?: super.onInitializeAccessibilityEvent(host, event)
+			}
+
+			override fun onInitializeAccessibilityNodeInfo(
+				host: View,
+				info: AccessibilityNodeInfo
+			) {
+				originalDelegate?.onInitializeAccessibilityNodeInfo(host, info)
+					?: super.onInitializeAccessibilityNodeInfo(host, info)
+			}
+
+			override fun onRequestSendAccessibilityEvent(
+				host: ViewGroup,
+				child: View,
+				event: AccessibilityEvent
+			): Boolean =
+				originalDelegate?.onRequestSendAccessibilityEvent(host, child, event)
+					?: super.onRequestSendAccessibilityEvent(host, child, event)
+
+			override fun performAccessibilityAction(
+				host: View,
+				action: Int,
+				args: Bundle?
+			): Boolean =
+				originalDelegate?.performAccessibilityAction(host, action, args)
+					?: super.performAccessibilityAction(host, action, args)
 		}
 	}
 
@@ -163,6 +183,10 @@ class MainActivity : ComponentActivity() {
 		headsethookClickCount = 0
 	}
 
+	// ComponentActivity.dispatchKeyEvent is marked @RestrictTo(LIBRARY_GROUP_PREFIX) by AndroidX,
+	// which makes lint flag every super call here even though overriding it and delegating is the
+	// documented way to intercept key events on an Activity.
+	@Suppress("RestrictedApi")
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
 		// Don't intercept when a text field has focus (e.g. Find or Go-To dialogs).

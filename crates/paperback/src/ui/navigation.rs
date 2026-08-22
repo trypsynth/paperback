@@ -228,10 +228,14 @@ fn format_nav_found_message(
 			format!("{wrap_prefix}{message}")
 		}
 		NavFoundFormat::PageFormat => {
-			// TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-			let template = t("Page %d: %s");
 			let page_text = (context_index + 1).to_string();
-			let message = template.replacen("%d", &page_text, 1).replacen("%s", context_text, 1);
+			let message = if context_text.is_empty() {
+				// TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+				t("Page %d").replacen("%d", &page_text, 1)
+			} else {
+				// TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
+				t("Page %d: %s").replacen("%d", &page_text, 1).replacen("%s", context_text, 1)
+			};
 			format!("{wrap_prefix}{message}")
 		}
 		NavFoundFormat::LinkFormat => {
@@ -267,8 +271,14 @@ fn apply_navigation_result(
 		live_region::announce(live_region_label, message);
 		return false;
 	}
-	let mut context_text = result.marker_text.clone();
-	if context_text.is_empty() {
+	let mut context_text = match target {
+		// PDFs fabricate a "Page N" label on page markers; announcing it alongside the page
+		// number the formatter adds would read the number twice, so use the page's first line
+		// of real content instead.
+		MarkerNavTarget::Page => tab.session.first_content_line_after(result.offset),
+		_ => result.marker_text.clone(),
+	};
+	if context_text.is_empty() && !matches!(target, MarkerNavTarget::Page) {
 		context_text = tab.session.get_line_text(result.offset);
 	}
 	let context_index = match target {

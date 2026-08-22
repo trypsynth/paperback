@@ -268,12 +268,16 @@ final class TtsManager: NSObject, ObservableObject {
 
 	// MARK: - Playback
 
-	func speak(_ text: String) {
+	// `isAutoAdvance` must be true only when this call is the natural continuation onto the
+	// buffer already queued next (i.e. from the utterance-finished callback) — never for a
+	// user-initiated seek that merely happens to target the same text as the armed buffer,
+	// since that would silently no-op instead of cutting off the currently-playing audio.
+	func speak(_ text: String, isAutoAdvance: Bool = false) {
 		let text = preprocessText(text)
 		// Already handed to the player node while the previous utterance was still playing
 		// (see armNextBuffer) — it's already audibly playing (or about to be). Just assign it
 		// the generation it's now logically current under; no re-scheduling needed.
-		if text == armedText, let box = armedBox {
+		if isAutoAdvance, text == armedText, let box = armedBox {
 			armedBox = nil
 			armedText = nil
 			speechGeneration += 1

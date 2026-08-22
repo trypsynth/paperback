@@ -1,7 +1,6 @@
 package dev.paperback.android.ui
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import dev.paperback.android.t
 import kotlinx.coroutines.launch
 import uniffi.paperback.LinkAction
@@ -119,11 +119,11 @@ fun DocumentTextView(
 											)
 										)
 									) {
-										val result = docState.session.activateLinkFfi(marker.position)
+										val result = docState.session.activateLink(marker.position)
 										if (result.found) {
 											when (result.action) {
 												LinkAction.EXTERNAL -> {
-													val intent = Intent(Intent.ACTION_VIEW, Uri.parse(result.url))
+													val intent = Intent(Intent.ACTION_VIEW, result.url.toUri())
 													context.startActivity(intent)
 												}
 												LinkAction.INTERNAL -> {

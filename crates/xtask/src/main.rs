@@ -71,7 +71,7 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 		sanitize_dir_into(src_dir, &dest)?;
 		sanitized_dirs.push(dest);
 	}
-	let version = crate_version(&root.join("crates/paperback/Cargo.toml"));
+	let version = crate_version(&root, "paperback")?;
 	let gen_result = patois_build::gen_pot_from_dirs(&sanitized_dirs, &po_dir, "paperback", &version);
 	let _ = fs::remove_dir_all(&sanitized_root);
 	gen_result?;
@@ -116,26 +116,26 @@ fn translatable_crate_src_dirs(root: &Path) -> Vec<PathBuf> {
 	dirs
 }
 
-/// Read the `version` field from a crate manifest's `[package]` section.
-fn crate_version(manifest_path: &Path) -> String {
-	let Ok(content) = fs::read_to_string(manifest_path) else {
-		return "0.0.0".to_string();
-	};
-	let mut in_package = false;
-	for line in content.lines() {
-		let trimmed = line.trim();
-		if trimmed.starts_with('[') {
-			in_package = trimmed == "[package]";
-			continue;
-		}
-		if in_package
-			&& let Some(rest) = trimmed.strip_prefix("version")
-			&& let Some(value) = rest.trim_start().strip_prefix('=')
-		{
-			return value.trim().trim_matches('"').to_string();
-		}
+/// Resolve `package_name`'s version via `cargo metadata`, which correctly follows
+/// `version.workspace = true` inheritance from the workspace root. Hand-parsing the crate's
+/// own `Cargo.toml` instead would just find no literal `version = "..."` line and silently
+/// produce a wrong default.
+fn crate_version(root: &Path, package_name: &str) -> Result<String, Box<dyn Error>> {
+	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
+	let output = std::process::Command::new(&cargo)
+		.args(["metadata", "--format-version", "1", "--no-deps"])
+		.current_dir(root)
+		.output()?;
+	if !output.status.success() {
+		return Err("cargo metadata failed".into());
 	}
-	"0.0.0".to_string()
+	let meta: serde_json::Value = serde_json::from_slice(&output.stdout)?;
+	meta["packages"]
+		.as_array()
+		.and_then(|packages| packages.iter().find(|p| p["name"] == package_name))
+		.and_then(|p| p["version"].as_str())
+		.map(str::to_string)
+		.ok_or_else(|| format!("cargo metadata: package {package_name} not found").into())
 }
 
 /// Copy every `.rs` file under `src` into the same relative layout under `dest`, sanitizing

@@ -15,11 +15,11 @@ use crate::{
 };
 
 pub mod chm;
+pub mod convert;
 pub mod daisy;
 pub mod epub;
 pub mod fb2;
 pub mod html;
-pub mod html_to_text;
 pub mod markdown;
 pub mod mobi;
 pub mod odp;
@@ -28,11 +28,9 @@ pub mod pdf;
 pub mod powerpoint;
 pub mod rtf;
 pub mod smil;
-pub mod table_text;
 pub mod text;
 pub mod util;
 pub mod word;
-pub mod xml_to_text;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
@@ -182,21 +180,25 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 		// TRANSLATORS: Error shown when no parser supports a file's extension; {} is the extension (without the leading dot)
 		return Err(anyhow::anyhow!(t("No parser found for extension: .{}").replace("{}", extension)));
 	}
+	tracing::debug!(path = %context.file_path, extension, candidates = parsers.len(), "parsing document");
 	let mut last_error = None;
 	for parser in parsers {
 		match parser.parse(context) {
 			Ok(mut doc) => {
 				doc.compute_stats();
+				tracing::debug!(path = %context.file_path, parser = parser.name(), "parsed document");
 				return Ok(doc);
 			}
 			Err(e) => {
 				if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
 					return Err(e);
 				}
+				tracing::warn!(path = %context.file_path, parser = parser.name(), error = %e, "parser failed, trying next");
 				last_error = Some(e);
 			}
 		}
 	}
+	tracing::warn!(path = %context.file_path, extension, "all parsers failed");
 	Err(last_error.unwrap_or_else(|| {
 		// TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
 		anyhow::anyhow!(t("All parsers failed for extension: .{}").replace("{}", extension))

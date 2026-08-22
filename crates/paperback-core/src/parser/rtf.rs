@@ -17,6 +17,7 @@ pub struct RtfParser;
 
 impl Parser for RtfParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing rtf document");
 		let bytes =
 			fs::read(&context.file_path).with_context(|| format!("Failed to open RTF file '{}'", context.file_path))?;
 		let content_str = String::from_utf8_lossy(&bytes);
@@ -24,17 +25,21 @@ impl Parser for RtfParser {
 		let content_str = content_str.trim_end_matches(|c: char| c == '\0' || c.is_whitespace());
 		let content_str = normalize_wrapped_space_lines(content_str);
 		let encoding = extract_codepage(&content_str);
+		tracing::debug!(path = %context.file_path, encoding = %encoding.name(), "resolved rtf document encoding");
 		let font_table = extract_font_table(&content_str, encoding);
 		let content_str = normalize_escapes(&content_str, encoding, &font_table);
 		// Strip \r so that \r\n line endings don't leave stray carriage returns in text tokens
 		let content_str = content_str.replace('\r', "");
-		let tokens = Lexer::scan(&content_str)
+		let tokens = Lexer::scan(&content_str).map_err(|e| {
+			tracing::warn!(path = %context.file_path, error = %e, "failed to scan rtf document tokens");
 			// TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
-			.map_err(|e| anyhow::anyhow!(t("Failed to parse RTF document: {}").replace("{}", &e.to_string())))?;
+			anyhow::anyhow!(t("Failed to parse RTF document: {}").replace("{}", &e.to_string()))
+		})?;
 		let buffer = extract_content_from_tokens(&tokens);
 		let title = extract_title_from_path(&context.file_path);
 		let mut doc = Document::new().with_title(title);
 		doc.set_buffer(buffer);
+		tracing::debug!(path = %context.file_path, "parsed rtf document successfully");
 		Ok(doc)
 	}
 }
@@ -124,6 +129,7 @@ fn extract_codepage(rtf: &str) -> &'static Encoding {
 			return encoding_for_codepage(cpg);
 		}
 	}
+	tracing::debug!("no ansicpg control word found in rtf document, defaulting to windows-1252");
 	encoding_rs::WINDOWS_1252
 }
 
@@ -140,7 +146,14 @@ fn encoding_for_fcharset(charset: i32, default: &'static Encoding) -> &'static E
 		238 => encoding_rs::WINDOWS_1250, // Central/Eastern European
 		222 => encoding_rs::WINDOWS_874,  // Thai
 		// 0 / 2 (ANSI / Symbol) and any other unrecognized value fall back to the document default
-		_ => default,
+		0 | 2 => default,
+		_ => {
+			tracing::warn!(
+				fcharset = charset,
+				"unrecognized fcharset value, falling back to document default encoding"
+			);
+			default
+		}
 	}
 }
 
@@ -148,7 +161,10 @@ fn encoding_for_fcharset(charset: i32, default: &'static Encoding) -> &'static E
 /// so that `normalize_escapes` can use the right charset per `\fN` switch.
 fn extract_font_table(rtf: &str, default_encoding: &'static Encoding) -> HashMap<u32, &'static Encoding> {
 	let mut map = HashMap::new();
-	let Some(start) = rtf.find("{\\fonttbl") else { return map };
+	let Some(start) = rtf.find("{\\fonttbl") else {
+		tracing::debug!("no font table found in rtf document, per-font encoding is unavailable");
+		return map;
+	};
 
 	// Find the matching closing brace for the {\fonttbl} group.
 	let bytes = rtf.as_bytes();
@@ -635,9 +651,20 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	// well-formed document the outermost group close already reverted all three to
 	// `false` (step 3), so this is a no-op in the common case.
 	let final_pos = buffer.current_position();
+	let bold_was_open = bold_on;
+	let italic_was_open = italic_on;
+	let underline_was_open = underline_on;
 	apply_format_toggle(&mut bold_on, &mut bold_start, false, final_pos, MarkerType::Bold, &mut buffer);
 	apply_format_toggle(&mut italic_on, &mut italic_start, false, final_pos, MarkerType::Italic, &mut buffer);
 	apply_format_toggle(&mut underline_on, &mut underline_start, false, final_pos, MarkerType::Underline, &mut buffer);
+	if bold_was_open || italic_was_open || underline_was_open {
+		tracing::warn!(
+			bold = bold_was_open,
+			italic = italic_was_open,
+			underline = underline_was_open,
+			"rtf document had an unclosed formatting span at end of document, likely unbalanced braces"
+		);
+	}
 	let trimmed = buffer.content.trim().to_string();
 	let mut result = DocumentBuffer::with_content(trimmed);
 	let leading_trim = buffer.content.len() - buffer.content.trim_start().len();

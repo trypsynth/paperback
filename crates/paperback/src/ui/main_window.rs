@@ -32,12 +32,11 @@ use super::{
 	navigation::{self, MarkerNavTarget},
 	status,
 };
+#[cfg(not(target_os = "macos"))]
+use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IpcCommand;
-use crate::{
-	config_ext::{UpdateChannel, get_update_channel, set_update_channel},
-	translation_manager::TranslationManager,
-};
+use crate::{config_ext::set_update_channel, translation_manager::TranslationManager};
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
@@ -213,13 +212,13 @@ impl MainWindow {
 				dm.stop_all_audio();
 				frame.set_focus();
 				#[cfg(target_os = "macos")]
-				if let WindowEventData::General(ref ev) = event {
-					if ev.can_veto() {
-						drop(dm);
-						ev.veto();
-						frame.show(false);
-						return;
-					}
+				if let WindowEventData::General(ref ev) = event
+					&& ev.can_veto()
+				{
+					drop(dm);
+					ev.veto();
+					frame.show(false);
+					return;
 				}
 				#[cfg(target_os = "windows")]
 				if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
@@ -279,6 +278,7 @@ impl MainWindow {
 		self.doc_manager.lock().unwrap().restore_focus();
 	}
 
+	#[cfg(not(target_os = "macos"))]
 	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
 		help::run_update_check(silent, channel);
 	}
@@ -763,6 +763,21 @@ impl MainWindow {
 				menu_ids::FIND_PREVIOUS => {
 					find::handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, false);
 				}
+				menu_ids::ANNOUNCE_PERCENT => {
+					if let Ok(dm_ref) = dm.try_lock() {
+						dm_ref.announce_current_percent();
+					}
+				}
+				menu_ids::SET_TEMPORARY_BOOKMARK => {
+					if let Ok(dm_ref) = dm.try_lock() {
+						dm_ref.set_temporary_bookmark();
+					}
+				}
+				menu_ids::JUMP_TO_TEMPORARY_BOOKMARK => {
+					if let Ok(mut dm_ref) = dm.try_lock() {
+						dm_ref.jump_to_temporary_bookmark();
+					}
+				}
 				menu_ids::GO_TO_LINE => {
 					let (current_line, max_lines) = {
 						let mut dm_guard = dm.lock().unwrap();
@@ -1089,6 +1104,16 @@ impl MainWindow {
 				}
 				menu_ids::PLAY_PAUSE_AUDIO => {
 					navigation::handle_toggle_play_pause_audio(&dm, live_region_label);
+				}
+				menu_ids::TOGGLE_FULL_SCREEN => {
+					let new_state = !frame_copy.is_full_screen();
+					frame_copy.show_full_screen(new_state);
+					if let Some(menu_bar) = frame_copy.get_menu_bar() {
+						menu_bar.check_item(menu_ids::TOGGLE_FULL_SCREEN, new_state);
+					}
+					// TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+					let msg = if new_state { t("Full screen on.") } else { t("Full screen off.") };
+					live_region::announce(live_region_label, &msg);
 				}
 				menu_ids::VIEW_NOTE_TEXT => {
 					navigation::handle_view_note_text(&frame_copy, &dm, &config);
@@ -1544,6 +1569,7 @@ impl MainWindow {
 					cfg.set_app_string("language", &options.language);
 					set_update_channel(&cfg, options.update_channel);
 					cfg.set_hotkey(&options.hotkey);
+					cfg.set_shortcuts(&options.shortcuts);
 					cfg.set_readability_font(&options.readability_font);
 					cfg.set_line_spacing(options.line_spacing);
 					cfg.set_bg_color(options.bg_color);
@@ -1620,6 +1646,24 @@ impl MainWindow {
 					menu::update_menu_item_states(&frame_copy, has_docs);
 					menu::update_reopen_state(&frame_copy, has_reopen);
 				}
+				menu_ids::CUSTOMIZE_SHORTCUTS => {
+					let initial_shortcuts = config.lock().unwrap().get_shortcuts();
+					if let Some(updated) = dialogs::prompt_for_shortcuts(&frame_copy, &initial_shortcuts) {
+						{
+							let cfg = config.lock().unwrap();
+							cfg.set_shortcuts(&updated);
+							cfg.flush();
+						}
+						let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+						frame_copy.set_menu_bar(menu_bar);
+						let dm_ref = dm.lock().unwrap();
+						let has_docs = dm_ref.tab_count() > 0;
+						let has_reopen = dm_ref.has_recently_closed();
+						drop(dm_ref);
+						menu::update_menu_item_states(&frame_copy, has_docs);
+						menu::update_reopen_state(&frame_copy, has_reopen);
+					}
+				}
 				menu_ids::SLEEP_TIMER => {
 					if sleep_timer_running_for_menu.get() {
 						sleep_timer_for_menu.stop();
@@ -1685,6 +1729,7 @@ impl MainWindow {
 						menu::update_reopen_state(&frame_copy, has_reopen);
 					}
 				}
+				#[cfg(not(target_os = "macos"))]
 				menu_ids::CHECK_FOR_UPDATES => {
 					let channel = get_update_channel(&config.lock().unwrap());
 					help::run_update_check(false, channel);

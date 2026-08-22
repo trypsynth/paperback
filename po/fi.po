@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 20:06+0000\n"
-"PO-Revision-Date: 2026-08-13 01:45+0300\n"
+"POT-Creation-Date: 2026-08-18 16:53+0000\n"
+"PO-Revision-Date: 2026-08-19 18:38+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -59,6 +59,28 @@ msgstr "Tila"
 msgid "Path"
 msgstr "Polku"
 
+#. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
+#| msgid "Status"
+msgid "&Status:"
+msgstr "T&ila:"
+
+#. TRANSLATORS: Option in the All Documents status filter to show documents of every status
+#. TRANSLATORS: Option in the filter dropdown to show all entries
+msgid "All"
+msgstr "Kaikki"
+
+#. TRANSLATORS: Status of a document that is currently open in a tab
+msgid "Open"
+msgstr "Avoinna"
+
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
+msgid "Closed"
+msgstr "Suljettu"
+
+#. TRANSLATORS: Status of a document whose file could not be found on disk
+msgid "Missing"
+msgstr "Ei löydy"
+
 #. TRANSLATORS: Button label to open the selected document
 msgid "&Open"
 msgstr "&Avaa"
@@ -105,17 +127,35 @@ msgstr ""
 "Haluatko varmasti poistaa luettelosta kaikki asiakirjat? Myös lukukohdat ja "
 "kirjanmerkit poistetaan."
 
-#. TRANSLATORS: Status of a document that is currently open in a tab
-msgid "Open"
-msgstr "Avoinna"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
+#| msgid "No Documents"
+msgid "No documents."
+msgstr "Asiakirjoja ei ole."
 
-#. TRANSLATORS: Status of a document that was previously opened but is currently closed
-msgid "Closed"
-msgstr "Suljettu"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
+#| msgid "document"
+msgid "1 document."
+msgstr "1 asiakirja."
 
-#. TRANSLATORS: Status of a document whose file could not be found on disk
-msgid "Missing"
-msgstr "Ei löydy"
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
+#| msgid "document"
+msgid "%d documents."
+msgstr "%d asiakirjaa."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
+#| msgid "Document reloaded."
+msgid "1 of 1 document selected."
+msgstr "1 / 1 asiakirjaa valittu."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
+#| msgid "All Documents"
+msgid "All %d documents selected."
+msgstr "Kaikki %d asiakirjaa valittu."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
+#| msgid "End of document"
+msgid "%d of %d documents selected."
+msgstr "%d / %d asiakirjaa valittu."
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 msgid "Locate Book"
@@ -128,10 +168,6 @@ msgstr "Siirry kirjanmerkkiin"
 #. TRANSLATORS: Label for the bookmark filter dropdown
 msgid "&Filter:"
 msgstr "Su&odata:"
-
-#. TRANSLATORS: Option in the filter dropdown to show all entries
-msgid "All"
-msgstr "Kaikki"
 
 #. TRANSLATORS: Option in the filter dropdown to show bookmarks only
 msgid "Bookmarks"
@@ -149,7 +185,6 @@ msgstr "&Kirjanmerkit:"
 msgid "&Edit Note"
 msgstr "&Muokkaa muistiinpanoa"
 
-#. TRANSLATORS: Standard "Delete" edit menu item label
 msgid "&Delete"
 msgstr "&Poista"
 
@@ -254,7 +289,6 @@ msgid "Go to page"
 msgstr "Siirry sivulle"
 
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
-#, c-format
 msgid "Go to page (%d/%d):"
 msgstr "Siirry sivulle (%d/%d):"
 
@@ -331,7 +365,6 @@ msgid "&Wrap navigation"
 msgstr "Siirry a&lkuun asiakirjan lopussa"
 
 #. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
-#| msgid "Go to &line"
 msgid "Move to &start of line"
 msgstr "Siirry rivin &alkuun"
 
@@ -350,6 +383,10 @@ msgstr "&Päivitä muuttuneeet asiakirjat automaattisesti"
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
 msgstr "&Ikkunan pikanäppäin..."
+
+#| msgid "Customize &Window Hotkey..."
+msgid "Customize &Keyboard Shortcuts..."
+msgstr "Muokkaa &pikanäppäimiä..."
 
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
@@ -539,6 +576,44 @@ msgstr "Peruuta"
 msgid "Space"
 msgstr "Väli"
 
+msgid "Customize Keyboard Shortcuts"
+msgstr "Muokkaa pikanäppäimiä"
+
+msgid "&Shortcuts:"
+msgstr "&Pikanäppäimet:"
+
+msgid "&Set Shortcut..."
+msgstr "&Määritä pikanäppäin..."
+
+msgid "&Clear Shortcut"
+msgstr "&Poista pikanäppäin"
+
+#| msgid "&Reset to Default Font"
+msgid "&Reset to Default"
+msgstr "&Palauta oletukset"
+
+#| msgid "&Reset to Default Font"
+msgid "Reset &All to Defaults"
+msgstr "Palauta &kaikki oletuspikanäppäimet"
+
+msgid "Shortcut Conflict"
+msgstr "Pikanäppäimen ristiriita"
+
+msgid "Reset all shortcuts to their default values?"
+msgstr "Palautetaanko oletuspikanäppäimet?"
+
+msgid "Reset Shortcuts"
+msgstr "Oletuspikanäppäinten palautus"
+
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr ""
+"Vihje: Napsauta näppäimen  muokkauskenttää ja paina haluamaasi "
+"näppäinyhdistelmää."
+
+#| msgid "Clear"
+msgid "&Clear"
+msgstr "&Poista"
+
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Uniajastin"
@@ -628,7 +703,18 @@ msgstr "Siirrytty sisäiseen linkkiin."
 msgid "Ready"
 msgstr "Valmis"
 
-#. TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
+#. TRANSLATORS: Announced after setting a temporary bookmark at the current position
+msgid "Temporary bookmark set."
+msgstr "Tilapäinen kirjanmerkki lisätty."
+
+#. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
+msgid "No temporary bookmark."
+msgstr "Ei tilapäistä kirjanmerkkiä."
+
+#. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
+msgid "Temporary bookmark."
+msgstr "Tilapäinen kirjanmerkki."
+
 msgid "Table View"
 msgstr "Taulukkonäkymä"
 
@@ -768,7 +854,6 @@ msgid "Paperback"
 msgstr "Paperback"
 
 #. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
-#| msgid "Document Info"
 msgid "Document reloaded."
 msgstr "Asiakirja päivitetty."
 
@@ -806,6 +891,13 @@ msgstr "Rivitys käytössä."
 
 msgid "Word wrap off."
 msgstr "Rivitys pois."
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+msgid "Full screen on."
+msgstr "Koko näyttö käytössä."
+
+msgid "Full screen off."
+msgstr "Koko näyttö pois."
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -892,7 +984,6 @@ msgid "Sleep timer set for 1 minute."
 msgstr "Uniajastin: 1 minuutti."
 
 #. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-#, c-format
 msgid "Sleep timer set for %d minutes."
 msgstr "Uniajastin: %d minuuttia."
 
@@ -900,677 +991,558 @@ msgstr "Uniajastin: %d minuuttia."
 msgid "No recent documents."
 msgstr "Ei viimeisimpiä asiakirjoja."
 
-#. TRANSLATORS: Menu item label to go to the previous section
-msgid "Previous Section\t["
-msgstr "Edellinen luku\t["
-
-#. TRANSLATORS: Status bar help text for the "Previous Section" menu item
-msgid "Go to previous section"
-msgstr "Siirry edelliseen lukuun"
-
-#. TRANSLATORS: Menu item label to go to the next section
-msgid "Next Section\t]"
-msgstr "Seuraava luku\t]"
-
-#. TRANSLATORS: Status bar help text for the "Next Section" menu item
-msgid "Go to next section"
-msgstr "Siirry seuraavaan lukuun"
-
-#. TRANSLATORS: Menu item label to open the "go to page" dialog
-msgid "Go to &Page\tCtrl+P"
-msgstr "S&iirry sivulle\tCtrl+P"
-
-#. TRANSLATORS: Menu item label to go to the previous page
-msgid "Previous Pa&ge\tShift+P"
-msgstr "Ede&llinen sivu\tShift+P"
-
-#. TRANSLATORS: Menu item label to go to the next page
-msgid "Next Pag&e\tP"
-msgstr "&Seuraava sivu\tP"
-
-#. TRANSLATORS: Menu item label to go to the previous link
-msgid "Previous Lin&k\tShift+K"
-msgstr "Edellinen lin&kki\tShift+K"
-
-#. TRANSLATORS: Menu item label to go to the next link
-msgid "Next Lin&k\tK"
-msgstr "Seuraava li&nkki\tK"
-
-#. TRANSLATORS: Menu item label to go to the previous image
-msgid "Previous Ima&ge\tShift+G"
-msgstr "Edellinen &kuva\tShift+G"
-
-#. TRANSLATORS: Menu item label to go to the next image
-msgid "Next Ima&ge\tG"
-msgstr "Seuraava k&uva\tG"
-
-#. TRANSLATORS: Menu item label to go to the previous figure
-msgid "Previous Figu&re\tShift+F"
-msgstr "Edellinen ku&vitus\tShift+F"
-
-#. TRANSLATORS: Menu item label to go to the next figure
-msgid "Next Figu&re\tF"
-msgstr "Seuraava kuv&itus\tF"
-
-#. TRANSLATORS: Menu item label to go to the previous table
-msgid "Previous &Table\tShift+T"
-msgstr "Edellinen t&aulukko\tShift+T"
-
-#. TRANSLATORS: Menu item label to go to the next table
-msgid "Next &Table\tT"
-msgstr "Seuraava ta&ulukko\tT"
-
-#. TRANSLATORS: Menu item label to go to the previous separator element
-msgid "Previous Se&parator\tShift+S"
-msgstr "Edellinen e&rotin\tShift+S"
-
-#. TRANSLATORS: Menu item label to go to the next separator element
-msgid "Next Se&parator\tS"
-msgstr "Seuraava er&otin\tS"
-
-#. TRANSLATORS: Menu item label to go to the previous list
-msgid "Previous L&ist\tShift+L"
-msgstr "Edellinen l&uettelo\tShift+L"
-
-#. TRANSLATORS: Menu item label to go to the next list
-msgid "Next L&ist\tL"
-msgstr "Seuraava lue&ttelo\tL"
-
-#. TRANSLATORS: Menu item label to go to the previous list item
-msgid "Previous List &Item\tShift+I"
-msgstr "Edellinen luettelok&ohde\tShift+I"
-
-#. TRANSLATORS: Menu item label to go to the next list item
-msgid "Next List I&tem\tI"
-msgstr "Seuraava luetteloko&hde\tI"
-
-#. TRANSLATORS: Menu item label to go to the start of the enclosing list/table
-msgid "Container &Start\tShift+,"
-msgstr "Säilön &alku\tShift+,"
-
-#. TRANSLATORS: Status bar help text for the "Container Start" menu item
-msgid "Go to the start of the current list or table"
-msgstr "Siirry nykyisen luettelon tai taulukon alkuun"
-
-#. TRANSLATORS: Menu item label to go past the end of the enclosing list/table
-msgid "Past Container &End\t,"
-msgstr "Säilön &jälkeinen kohta\t,"
-
-#. TRANSLATORS: Status bar help text for the "Past Container End" menu item
-msgid "Go past the end of the current list or table"
-msgstr "Siirry luettelon tai taulukon lopun jälkeiseen kohtaan"
-
-#. TRANSLATORS: Menu item label to go to the next level-1 heading
-msgid "Next Heading Level 1\t1"
-msgstr "Seuraava otsikkotaso 1\t1"
-
-#. TRANSLATORS: Menu item label to go to the previous level-2 heading
-msgid "Previous Heading Level &2\tShift+2"
-msgstr "Edellinen otsikkotaso &2\tShift+2"
-
-#. TRANSLATORS: Menu item label to go to the next level-2 heading
-msgid "Next Heading Level 2\t2"
-msgstr "Seuraava otsikkotaso 2\t2"
-
-#. TRANSLATORS: Menu item label to go to the previous level-3 heading
-msgid "Previous Heading Level &3\tShift+3"
-msgstr "Edellinen otsikkotaso &3\tShift+3"
-
-#. TRANSLATORS: Menu item label to go to the next level-3 heading
-msgid "Next Heading Level 3\t3"
-msgstr "Seuraava otsikkotaso 3\t3"
-
-#. TRANSLATORS: Menu item label to go to the previous level-4 heading
-msgid "Previous Heading Level &4\tShift+4"
-msgstr "Edellinen otsikkotaso &4\tShift+4"
-
-#. TRANSLATORS: Menu item label to go to the next level-4 heading
-msgid "Next Heading Level 4\t4"
-msgstr "Seuraava otsikkotaso 4\t4"
-
-#. TRANSLATORS: Menu item label to go to the previous level-5 heading
-msgid "Previous Heading Level &5\tShift+5"
-msgstr "Edellinen otsikkotaso &5\tShift+5"
-
-#. TRANSLATORS: Menu item label to go to the next level-5 heading
-msgid "Next Heading Level 5\t5"
-msgstr "Seuraava otsikkotaso 5\t5"
-
-#. TRANSLATORS: Menu item label to go to the previous level-6 heading
-msgid "Previous Heading Level &6\tShift+6"
-msgstr "Edellinen otsikkotaso &6\tShift+6"
-
-#. TRANSLATORS: Menu item label to go to the next level-6 heading
-msgid "Next Heading Level 6\t6"
-msgstr "Seuraava otsikkotaso 6\t6"
-
-#. TRANSLATORS: Menu item label to go to the previous heading of any level
-msgid "&Previous Heading\tShift+H"
-msgstr "Edellinen &otsikko\tShift+H"
-
-#. TRANSLATORS: Status bar help text for the "Previous Heading" menu item
-msgid "Go to previous heading"
-msgstr "Siirry edelliseen otsikkoon"
-
-#. TRANSLATORS: Menu item label to go to the next heading of any level
-msgid "&Next Heading\tH"
-msgstr "Seuraava o&tsikko\tH"
-
-#. TRANSLATORS: Status bar help text for the "Next Heading" menu item
-msgid "Go to next heading"
-msgstr "Siirry seuraavaan otsikkoon"
-
-#. TRANSLATORS: Menu item label to go to the previous level-1 heading
-msgid "Previous Heading Level &1\tShift+1"
-msgstr "Edellinen otsikkotaso &1\tShift+1"
-
-#. TRANSLATORS: Menu item label to go to the previous bookmark
-msgid "&Previous Bookmark\tShift+B"
-msgstr "Edellinen &kirjanmerkki\tShift+B"
-
-#. TRANSLATORS: Status bar help text for the "Previous Bookmark" menu item
-msgid "Go to previous bookmark"
-msgstr "Siirry edelliseen kirjanmerkkiin"
-
-#. TRANSLATORS: Menu item label to go to the next bookmark
-msgid "&Next Bookmark\tB"
-msgstr "Seuraava ki&rjanmerkki\tB"
-
-#. TRANSLATORS: Status bar help text for the "Next Bookmark" menu item
-msgid "Go to next bookmark"
-msgstr "Siirry seuraavaan kirjanmerkkiin"
-
-#. TRANSLATORS: Menu item label to go to the previous note
-msgid "Previous &Note\tShift+N"
-msgstr "Edellinen &muistiinpano\tShift+N"
-
-#. TRANSLATORS: Status bar help text for the "Previous Note" menu item
-msgid "Go to previous note"
-msgstr "Siirry edelliseen muistiinpanoon"
-
-#. TRANSLATORS: Menu item label to go to the next note
-msgid "Next N&ote\tN"
-msgstr "Seuraava m&uistiinpano\tN"
-
-#. TRANSLATORS: Status bar help text for the "Next Note" menu item
-msgid "Go to next note"
-msgstr "Siirry seuraavaan muistiinpanoon"
-
-#. TRANSLATORS: Menu item label to open the bookmark/note picker showing all entries
-msgid "Jump to &All...\tCtrl+B"
-msgstr "Siirry k&aikkiin...\tCtrl+B"
-
-#. TRANSLATORS: Status bar help text for the "Jump to All" menu item
-msgid "Show all bookmarks and notes"
-msgstr "Näytä kaikki kirjanmerkit ja muistiinpanot"
-
-#. TRANSLATORS: Menu item label to open the bookmark/note picker filtered to bookmarks only
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr "Siirry vain &kirjanmerkkeihin...\tCtrl+Alt+B"
-
-#. TRANSLATORS: Status bar help text for the "Jump to Bookmarks Only" menu item
-msgid "Show bookmarks only"
-msgstr "Näytä vain kirjanmerkit"
-
-#. TRANSLATORS: Menu item label to open the bookmark/note picker filtered to notes only
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "Siirry vain mu&istiinpanoihin...\tCtrl+Alt+M"
-
-#. TRANSLATORS: Status bar help text for the "Jump to Notes Only" menu item
-msgid "Show notes only"
-msgstr "Näytä vain muistiinpanot"
-
-#. TRANSLATORS: Menu item label to view the note at the cursor position (macOS variant)
-msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "&Näytä muistiinpanon teksti\tRawCtrl+Shift+W"
-
-#. TRANSLATORS: Menu item label to view the note at the cursor position
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "&Näytä muistiinpanon teksti\tCtrl+Shift+W"
-
-#. TRANSLATORS: Status bar help text for the "View Note Text" menu item
-msgid "View the note at current position"
-msgstr "Näytä nykyisen sijainnin muistiinpano"
-
-#. TRANSLATORS: Top-level "File" menu bar label
-msgid "&File"
-msgstr "&Tiedosto"
-
-#. TRANSLATORS: Top-level "Go" menu bar label
-msgid "&Go"
-msgstr "S&iirry"
-
-#. TRANSLATORS: Top-level "Tools" menu bar label
-msgid "&Tools"
-msgstr "T&yökalut"
-
-#. TRANSLATORS: Top-level "Help" menu bar label
-msgid "&Help"
-msgstr "&Ohje"
-
-#. TRANSLATORS: Top-level "Edit" menu bar label (macOS only)
-msgid "&Edit"
-msgstr "&Muokkaa"
-
-#. TRANSLATORS: Menu item label to open a document
-msgid "&Open...\tCtrl+O"
-msgstr "&Avaa...\tCtrl+O"
-
-#. TRANSLATORS: Status bar help text for the "Open" menu item
-msgid "Open a document"
-msgstr "Avaa asiakirja"
-
-#. TRANSLATORS: Menu item label to close the current document
-msgid "&Close\tCtrl+W"
-msgstr "&Sulje\tCtrl+W"
-
-msgid "&Close\tCtrl+F4"
-msgstr "&Sulje\tCtrl+F4"
-
-#. TRANSLATORS: Status bar help text for the "Close" menu item
-msgid "Close the current document"
-msgstr "Sulje nykyinen asiakirja"
-
-#. TRANSLATORS: Menu item label to close all open documents
-msgid "Close &All\tCtrl+Shift+W"
-msgstr "Sulje k&aikki\tCtrl+Shift+W"
-
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "Sulje k&aikki\tCtrl+Shift+F4"
-
-#. TRANSLATORS: Status bar help text for the "Close All" menu item
-msgid "Close all documents"
-msgstr "Sulje kaikki asiakirjat"
-
-#. TRANSLATORS: Menu item label to reopen the most recently closed document
-msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "Avaa &viimeksi suljettu\tCtrl+Shift+T"
-
-#. TRANSLATORS: Status bar help text for the "Reopen Last Closed" menu item
-msgid "Reopen the last closed document"
-msgstr "Avaa viimeksi suljettu asiakirja"
-
-#. TRANSLATORS: Submenu label listing recently opened documents
-msgid "&Recent Documents"
-msgstr "&Viimeisimmät asiakirjat"
-
-#. TRANSLATORS: Status bar help text for the "Recent Documents" submenu
-msgid "Open a recent document"
-msgstr "Avaa viimeksi avattu asiakirja"
-
-#. TRANSLATORS: Menu item label to exit the application
-msgid "E&xit\tCtrl+Q"
-msgstr "&Lopeta\tCtrl+Q"
-
-#. TRANSLATORS: Status bar help text for the "Exit" menu item
-msgid "Exit the application"
-msgstr "Lopeta sovellus"
-
-#. TRANSLATORS: Standard "Undo" edit menu item label
 msgid "&Undo\tCtrl+Z"
 msgstr "K&umoa\tCtrl+Z"
 
-#. TRANSLATORS: Standard "Redo" edit menu item label
 msgid "&Redo\tCtrl+Shift+Z"
 msgstr "Tee uu&delleen\tCtrl+Shift+Z"
 
-#. TRANSLATORS: Standard "Cut" edit menu item label
 msgid "Cu&t\tCtrl+X"
 msgstr "&Leikkaa\tCtrl+X"
 
-#. TRANSLATORS: Standard "Copy" edit menu item label
 msgid "&Copy\tCtrl+C"
 msgstr "&Kopioi\tCtrl+C"
 
-#. TRANSLATORS: Standard "Paste" edit menu item label
 msgid "&Paste\tCtrl+V"
 msgstr "L&iitä\tCtrl+V"
 
-#. TRANSLATORS: Standard "Select All" edit menu item label
 msgid "Select &All\tCtrl+A"
 msgstr "Valitse k&aikki\tCtrl+A"
 
-#. TRANSLATORS: Menu item label to open the find dialog
-msgid "&Find...\tCtrl+F"
-msgstr "&Etsi...\tCtrl+F"
+#| msgid "&Open"
+msgid "&Open..."
+msgstr "&Avaa..."
 
-#. TRANSLATORS: Status bar help text for the "Find" menu item
-msgid "Find text in the document"
-msgstr "Etsi tekstiä asiakirjasta"
+msgid "Open a document"
+msgstr "Avaa asiakirja"
 
-#. TRANSLATORS: Menu item label to find the next match
-msgid "Find &Next\tCtrl+G"
-msgstr "Etsi se&uraava\tCtrl+G"
+#| msgid "Close"
+msgid "&Close"
+msgstr "&Sulje"
 
-msgid "Find &Next\tF3"
-msgstr "Etsi &seuraava\tF3"
+msgid "Close the current document"
+msgstr "Sulje nykyinen asiakirja"
 
-#. TRANSLATORS: Status bar help text for the "Find Next" menu item
-msgid "Find next occurrence"
-msgstr "Etsi seuraava esiintymä"
+#| msgid "Close"
+msgid "Close &All"
+msgstr "Sulje k&aikki"
 
-#. TRANSLATORS: Menu item label to find the previous match
-msgid "Find &Previous\tCtrl+Shift+G"
-msgstr "Etsi e&dellinen\tCtrl+Shift+G"
+msgid "Close all documents"
+msgstr "Sulje kaikki asiakirjat"
 
-msgid "Find &Previous\tShift+F3"
-msgstr "Etsi e&dellinen\tShift+F3"
+msgid "Reopen &Last Closed"
+msgstr "Avaa &viimeksi suljettu"
 
-#. TRANSLATORS: Status bar help text for the "Find Previous" menu item
-msgid "Find previous occurrence"
-msgstr "Etsi edellinen esiintymä"
+msgid "Reopen the last closed document"
+msgstr "Avaa viimeksi suljettu asiakirja"
 
-#. TRANSLATORS: Menu item label to open the "go to line" dialog
-msgid "Go to &line...\tCtrl+L"
-msgstr "Siirry &riville...\tCtrl+L"
+msgid "&Recent Documents"
+msgstr "&Viimeisimmät asiakirjat"
 
-msgid "Go to &line...\tCtrl+G"
-msgstr "Siirry &riville...\tCtrl+G"
+msgid "Open a recent document"
+msgstr "Avaa viimeksi avattu asiakirja"
 
-#. TRANSLATORS: Status bar help text for the "Go to line" menu item
-msgid "Go to a specific line"
-msgstr "Siirry tietylle riville"
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "&Lopeta"
 
-#. TRANSLATORS: Menu item label to open the "go to percent" dialog (macOS variant)
-msgid "Go to &percent...\tCtrl+Shift+L"
-msgstr "Siirry &prosenttiin...\tCtrl+Shift+L"
+msgid "Exit the application"
+msgstr "Lopeta sovellus"
 
-#. TRANSLATORS: Menu item label to open the "go to percent" dialog
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Siirry &prosenttiin...\tCtrl+Shift+G"
-
-#. TRANSLATORS: Status bar help text for the "Go to percent" menu item
-msgid "Go to a percentage of the document"
-msgstr "Siirry prosenttiin"
-
-#. TRANSLATORS: Menu item label to go back in navigation history
-msgid "Go &Back\tCtrl+["
-msgstr "Siirry &taaksepäin\tCtrl+["
-
-msgid "Go &Back\tAlt+Left"
-msgstr "Siirry t&aaksepäin\tAlt+Vasen"
-
-#. TRANSLATORS: Status bar help text for the "Go Back" menu item
-msgid "Go back in history"
-msgstr "Siirry historiassa taaksepäin"
-
-#. TRANSLATORS: Menu item label to go forward in navigation history
-msgid "Go &Forward\tCtrl+]"
-msgstr "Siirry &eteenpäin\tCtrl+]"
-
-msgid "Go &Forward\tAlt+Right"
-msgstr "Siirry &eteenpäin\tAlt+Oikea"
-
-#. TRANSLATORS: Status bar help text for the "Go Forward" menu item
-msgid "Go forward in history"
-msgstr "Siirry historiassa eteenpäin"
-
-#. TRANSLATORS: Submenu label containing section navigation commands
-msgid "&Sections"
-msgstr "&Luvut"
-
-#. TRANSLATORS: Status bar help text for the "Sections" submenu
-msgid "Navigate by sections"
-msgstr "Siirry luvuittain"
-
-#. TRANSLATORS: Submenu label containing heading navigation commands
-msgid "&Headings"
-msgstr "&Otsikot"
-
-#. TRANSLATORS: Status bar help text for the "Headings" submenu
-msgid "Navigate by headings"
-msgstr "Siirry otsikoittain"
-
-#. TRANSLATORS: Submenu label containing page navigation commands
-msgid "&Pages"
-msgstr "&Sivut"
-
-#. TRANSLATORS: Status bar help text for the "Pages" submenu
-msgid "Navigate by pages"
-msgstr "Siirry sivuittain"
-
-#. TRANSLATORS: Submenu label containing bookmark/note navigation commands
-msgid "&Bookmarks"
-msgstr "&Kirjanmerkit"
-
-#. TRANSLATORS: Status bar help text for the "Bookmarks" submenu
-msgid "Navigate by bookmarks"
-msgstr "Siirry kirjanmerkeittäin"
-
-#. TRANSLATORS: Submenu label containing link navigation commands
-msgid "&Links"
-msgstr "&Linkit"
-
-#. TRANSLATORS: Status bar help text for the "Links" submenu
-msgid "Navigate by links"
-msgstr "Siirry linkeittäin"
-
-#. TRANSLATORS: Submenu label containing image navigation commands
-msgid "&Images"
-msgstr "&Kuvat"
-
-#. TRANSLATORS: Status bar help text for the "Images" submenu
-msgid "Navigate by images"
-msgstr "Siirry kuvittain"
-
-#. TRANSLATORS: Submenu label containing figure navigation commands
-msgid "&Figures"
-msgstr "K&uvitukset"
-
-#. TRANSLATORS: Status bar help text for the "Figures" submenu
-msgid "Navigate by figures"
-msgstr "Siirry kuvituksittain"
-
-#. TRANSLATORS: Submenu label containing table navigation commands
-msgid "&Tables"
-msgstr "T&aulukot"
-
-#. TRANSLATORS: Status bar help text for the "Tables" submenu
-msgid "Navigate by tables"
-msgstr "Siirry taulukoittain"
-
-#. TRANSLATORS: Submenu label containing separator-element navigation commands
-msgid "&Separators"
-msgstr "&Erottimet"
-
-#. TRANSLATORS: Status bar help text for the "Separators" submenu
-msgid "Navigate by separators"
-msgstr "Siirry erottimittain"
-
-#. TRANSLATORS: Submenu label containing list navigation commands
-msgid "&Lists"
-msgstr "&Luettelot"
-
-#. TRANSLATORS: Status bar help text for the "Lists" submenu
-msgid "Navigate by lists"
-msgstr "Siirry luetteloittain"
-
-#. TRANSLATORS: Submenu label containing container (list/table) navigation commands
-msgid "&Containers"
-msgstr "&Säilöt"
-
-#. TRANSLATORS: Status bar help text for the "Containers" submenu
-msgid "Navigate by containers"
-msgstr "Siirry säilöittäin"
-
-#. TRANSLATORS: Menu item label to import bookmark/position data for the document
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr "Tu&o asiakirjan tiedot...\tCtrl+Shift+I"
-
-#. TRANSLATORS: Status bar help text for the "Import Document Data" menu item
-msgid "Import bookmarks and position"
-msgstr "Tuo kirjanmerkit ja sijainti"
-
-#. TRANSLATORS: Menu item label to export bookmark/position data for the document
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr "V&ie asiakirjan tiedot...\tCtrl+Shift+E"
-
-#. TRANSLATORS: Status bar help text for the "Export Document Data" menu item
-msgid "Export bookmarks and position"
-msgstr "Vie kirjanmerkit ja sijainti"
-
-#. TRANSLATORS: Menu item label to export the document as plain text
-msgid "Export to &Plain Text...\tCtrl+E"
-msgstr "Vie te&kstimuotoon...\tCtrl+E"
-
-#. TRANSLATORS: Status bar help text for the "Export to Plain Text" menu item
-msgid "Export document as plain text"
-msgstr "Vie asiakirja tekstimuotoon"
-
-#. TRANSLATORS: Menu item label to export the document as HTML
-msgid "Export to &HTML..."
-msgstr "Vie &HTML-muotoon..."
-
-#. TRANSLATORS: Status bar help text for the "Export to HTML" menu item
-msgid "Export document as HTML"
-msgstr "Vie asiakirja HTML-muodossa"
-
-#. TRANSLATORS: Menu item label to export the document as Markdown
-msgid "Export to &Markdown..."
-msgstr "Vie &Markdown-muotoon..."
-
-#. TRANSLATORS: Status bar help text for the "Export to Markdown" menu item
-msgid "Export document as Markdown"
-msgstr "Vie asiakirja Markdown-muodossa"
-
-#. TRANSLATORS: Menu item label to show the word count dialog
-msgid "&Word Count\tRawCtrl+W"
-msgstr "Sana&määrä\tRawCtrl+W"
-
-msgid "&Word Count\tCtrl+W"
-msgstr "Sana&määrä\tCtrl+W"
-
-#. TRANSLATORS: Status bar help text for the "Word Count" menu item
-msgid "Show word count"
-msgstr "Näytä sanamäärä"
-
-#. TRANSLATORS: Menu item label to show the document info dialog
-msgid "Document &Info\tCtrl+I"
-msgstr "Asiakirjan t&iedot\tCtrl+I"
-
-#. TRANSLATORS: Status bar help text for the "Document Info" menu item
-msgid "Show document information"
-msgstr "Näytä asiakirjan tiedot"
-
-#. TRANSLATORS: Menu item label to show the table of contents dialog
-msgid "&Table of Contents\tCtrl+T"
-msgstr "&Sisällysluettelo\tCtrl+T"
-
-#. TRANSLATORS: Status bar help text for the "Table of Contents" menu item
-msgid "Show table of contents"
-msgstr "Näytä sisällysluettelo"
-
-#. TRANSLATORS: Menu item label to show the elements list dialog
-msgid "&Elements List...\tF7"
-msgstr "&Elementtilista...\tF7"
-
-#. TRANSLATORS: Status bar help text for the "Elements List" menu item
-msgid "Show elements list"
-msgstr "Näytä elementtilista"
-
-#. TRANSLATORS: Menu item label to reveal the document file in the system file manager
-msgid "Reveal &File in Folder\tCtrl+Shift+C"
-msgstr "Avaa as&iakirjan kansio\tCtrl+Shift+C"
-
-#. TRANSLATORS: Status bar help text for the "Reveal File in Folder" menu item
-msgid "Reveal document in the file manager"
-msgstr "Avaa asiakirjan kansio tiedostonhallinnassa"
-
-#. TRANSLATORS: Menu item label to open the document in the web view
-msgid "Open in &Web View\tCtrl+Shift+V"
-msgstr "Avaa sel&ainnäkymässä\tCtrl+Shift+V"
-
-#. TRANSLATORS: Status bar help text for the "Open in Web View" menu item
-msgid "Open document in web view"
-msgstr "Avaa asiakirja selainnäkymässä"
-
-#. TRANSLATORS: Menu item label to open the document's raw source in a new tab
-msgid "View &Source\tCtrl+U"
-msgstr "Näytä läh&dekoodi\tCtrl+U"
-
-#. TRANSLATORS: Status bar help text for the "View Source" menu item
-msgid "Open the document source in a new tab"
-msgstr "Avaa asiakirjan lähdekoodi uudessa välilehdessä"
-
-#. TRANSLATORS: Submenu label containing import/export commands
-msgid "I&mport/Export"
-msgstr "T&uo ja vie"
-
-#. TRANSLATORS: Status bar help text for the "Import/Export" submenu
-msgid "Import and export options"
-msgstr "Tuonnin ja viennin asetukset"
-
-#. TRANSLATORS: Menu item label to toggle a bookmark at the current position
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
-msgstr "Lisää tai poista &kirjanmerkki\tCtrl+Shift+B"
-
-#. TRANSLATORS: Menu item label to add a bookmark with an attached note
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "Lisää kirjanmerkki &muistiinpanolla\tCtrl+Shift+N"
-
-#. TRANSLATORS: Checkable menu item label to toggle word wrap
-msgid "Word w&rap\tCtrl+Alt+W"
-msgstr "R&ivitys\tCtrl+Alt+W"
-
-#. TRANSLATORS: Status bar help text for the "Word wrap" menu item
-msgid "Toggle word wrap"
-msgstr "Ota rivitys käyttöön tai poista se käytöstä"
-
-#. TRANSLATORS: Menu item label to open the application options/preferences dialog
-msgid "&Options\tCtrl+,"
-msgstr "&Asetukset\tCtrl+,"
-
-#. TRANSLATORS: Menu item label to open the sleep timer dialog
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "&Uniajastin...\tCtrl+Shift+S"
-
-#. TRANSLATORS: Menu item label to open the About dialog
-msgid "&About Paperback\tCtrl+F1"
-msgstr "&Tietoa Paperbackista\tCtrl+F1"
-
-#. TRANSLATORS: Status bar help text for the "About" menu item
-msgid "About this application"
-msgstr "Tietoa sovelluksesta"
-
-#. TRANSLATORS: Menu item label to open the help documentation in a web browser
-msgid "View Help in &Browser\tF1"
-msgstr "Näytä &ohje selaimessa\tF1"
-
-#. TRANSLATORS: Status bar help text for the "View Help in Browser" menu item
-msgid "View help in default browser"
-msgstr "Näytä ohje oletusselaimessa"
-
-#. TRANSLATORS: Menu item label to open the help documentation inside Paperback itself
-msgid "View Help in &Paperback\tShift+F1"
-msgstr "Näytä ohje &Paperbackissa\tShift+F1"
-
-#. TRANSLATORS: Status bar help text for the "View Help in Paperback" menu item
-msgid "View help in Paperback"
-msgstr "Näytä ohje Paperbackissa"
-
-#. TRANSLATORS: Menu item label to check for application updates
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "Tarkista &päivitykset\tCtrl+Shift+U"
-
-#. TRANSLATORS: Status bar help text for the "Check for Updates" menu item
-msgid "Check for updates"
-msgstr "Tarkista päivitykset"
-
-#. TRANSLATORS: Menu item label to open the donation page
-msgid "&Donate\tCtrl+D"
-msgstr "&Lahjoita\tCtrl+D"
-
-#. TRANSLATORS: Status bar help text for the "Donate" menu item
-msgid "Support Paperback development"
-msgstr "Tue Paperbackin kehitystä"
-
-#. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are none
 msgid "(No recent documents)"
 msgstr "(Ei viimeisimpiä asiakirjoja)"
 
-#. TRANSLATORS: Menu item label to open the full recent-documents list dialog
-msgid "Show All...\tCtrl+R"
-msgstr "Näytä kaikki...\tCtrl+R"
+#| msgid "Show All"
+msgid "Show All..."
+msgstr "Näytä kaikki..."
+
+#| msgid "Previous Section\t["
+msgid "Previous Section"
+msgstr "Edellinen luku"
+
+msgid "Go to previous section"
+msgstr "Siirry edelliseen lukuun"
+
+#| msgid "Next Section\t]"
+msgid "Next Section"
+msgstr "Seuraava luku"
+
+msgid "Go to next section"
+msgstr "Siirry seuraavaan lukuun"
+
+#| msgid "Go to &page"
+msgid "Go to &Page"
+msgstr "Siirry s&ivulle"
+
+#| msgid "Previous Pa&ge\tShift+P"
+msgid "Previous Pa&ge"
+msgstr "Ede&llinen sivu"
+
+#| msgid "Next Pag&e\tP"
+msgid "Next Pag&e"
+msgstr "&Seuraava sivu"
+
+#| msgid "Previous Lin&k\tShift+K"
+msgid "Previous Lin&k"
+msgstr "Edellinen lin&kki"
+
+#| msgid "Next Lin&k\tK"
+msgid "Next Lin&k"
+msgstr "Seuraava li&nkki"
+
+#| msgid "Previous Ima&ge\tShift+G"
+msgid "Previous Ima&ge"
+msgstr "Edellinen &kuva"
+
+#| msgid "Next Ima&ge\tG"
+msgid "Next Ima&ge"
+msgstr "Seuraava k&uva"
+
+#| msgid "Previous Figu&re\tShift+F"
+msgid "Previous Figu&re"
+msgstr "Edellinen ku&vitus"
+
+#| msgid "Next Figu&re\tF"
+msgid "Next Figu&re"
+msgstr "Seuraava kuv&itus"
+
+#| msgid "Previous &Table\tShift+T"
+msgid "Previous &Table"
+msgstr "Edellinen t&aulukko"
+
+#| msgid "Next &Table\tT"
+msgid "Next &Table"
+msgstr "Seuraava ta&ulukko"
+
+#| msgid "Previous Se&parator\tShift+S"
+msgid "Previous Se&parator"
+msgstr "Edellinen e&rotin"
+
+#| msgid "Next Se&parator\tS"
+msgid "Next Se&parator"
+msgstr "Seuraava er&otin"
+
+#| msgid "Previous L&ist\tShift+L"
+msgid "Previous L&ist"
+msgstr "Edellinen l&uettelo"
+
+#| msgid "Next L&ist\tL"
+msgid "Next L&ist"
+msgstr "Seuraava lue&ttelo"
+
+#| msgid "Previous List &Item\tShift+I"
+msgid "Previous List &Item"
+msgstr "Edellinen luettelok&ohde"
+
+#| msgid "Next List I&tem\tI"
+msgid "Next List I&tem"
+msgstr "Seuraava luetteloko&hde"
+
+#| msgid "Container &Start\tShift+,"
+msgid "Container &Start"
+msgstr "Säilön &alku"
+
+msgid "Go to the start of the current list or table"
+msgstr "Siirry nykyisen luettelon tai taulukon alkuun"
+
+#| msgid "Past Container &End\t,"
+msgid "Past Container &End"
+msgstr "Säilön &jälkeinen kohta"
+
+msgid "Go past the end of the current list or table"
+msgstr "Siirry luettelon tai taulukon lopun jälkeiseen kohtaan"
+
+#| msgid "&Previous Heading\tShift+H"
+msgid "&Previous Heading"
+msgstr "Edellinen &otsikko"
+
+msgid "Go to previous heading"
+msgstr "Siirry edelliseen otsikkoon"
+
+#| msgid "&Next Heading\tH"
+msgid "&Next Heading"
+msgstr "Seuraava o&tsikko"
+
+msgid "Go to next heading"
+msgstr "Siirry seuraavaan otsikkoon"
+
+#| msgid "Previous Heading Level &1\tShift+1"
+msgid "Previous Heading Level &1"
+msgstr "Edellinen otsikkotaso &1"
+
+#| msgid "Next Heading Level 1\t1"
+msgid "Next Heading Level 1"
+msgstr "Seuraava otsikkotaso 1"
+
+#| msgid "Previous Heading Level &2\tShift+2"
+msgid "Previous Heading Level &2"
+msgstr "Edellinen otsikkotaso &2"
+
+#| msgid "Next Heading Level 2\t2"
+msgid "Next Heading Level 2"
+msgstr "Seuraava otsikkotaso 2"
+
+#| msgid "Previous Heading Level &3\tShift+3"
+msgid "Previous Heading Level &3"
+msgstr "Edellinen otsikkotaso &3"
+
+#| msgid "Next Heading Level 3\t3"
+msgid "Next Heading Level 3"
+msgstr "Seuraava otsikkotaso 3"
+
+#| msgid "Previous Heading Level &4\tShift+4"
+msgid "Previous Heading Level &4"
+msgstr "Edellinen otsikkotaso &4"
+
+#| msgid "Next Heading Level 4\t4"
+msgid "Next Heading Level 4"
+msgstr "Seuraava otsikkotaso 4"
+
+#| msgid "Previous Heading Level &5\tShift+5"
+msgid "Previous Heading Level &5"
+msgstr "Edellinen otsikkotaso &5"
+
+#| msgid "Next Heading Level 5\t5"
+msgid "Next Heading Level 5"
+msgstr "Seuraava otsikkotaso 5"
+
+#| msgid "Previous Heading Level &6\tShift+6"
+msgid "Previous Heading Level &6"
+msgstr "Edellinen otsikkotaso &6"
+
+#| msgid "Next Heading Level 6\t6"
+msgid "Next Heading Level 6"
+msgstr "Seuraava otsikkotaso 6"
+
+#| msgid "&Previous Bookmark\tShift+B"
+msgid "&Previous Bookmark"
+msgstr "Edellinen &kirjanmerkki"
+
+msgid "Go to previous bookmark"
+msgstr "Siirry edelliseen kirjanmerkkiin"
+
+#| msgid "&Next Bookmark\tB"
+msgid "&Next Bookmark"
+msgstr "Seuraava ki&rjanmerkki"
+
+msgid "Go to next bookmark"
+msgstr "Siirry seuraavaan kirjanmerkkiin"
+
+#| msgid "Previous &Note\tShift+N"
+msgid "Previous &Note"
+msgstr "Edellinen &muistiinpano"
+
+msgid "Go to previous note"
+msgstr "Siirry edelliseen muistiinpanoon"
+
+#| msgid "Next N&ote\tN"
+msgid "Next N&ote"
+msgstr "Seuraava m&uistiinpano"
+
+msgid "Go to next note"
+msgstr "Siirry seuraavaan muistiinpanoon"
+
+#| msgid "Jump to &All...\tCtrl+B"
+msgid "Jump to &All..."
+msgstr "Siirry k&aikkiin..."
+
+msgid "Show all bookmarks and notes"
+msgstr "Näytä kaikki kirjanmerkit ja muistiinpanot"
+
+#| msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgid "Jump to &Bookmarks Only..."
+msgstr "Siirry vain &kirjanmerkkeihin..."
+
+msgid "Show bookmarks only"
+msgstr "Näytä vain kirjanmerkit"
+
+#| msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgid "Jump to Notes &Only..."
+msgstr "Siirry vain mu&istiinpanoihin..."
+
+msgid "Show notes only"
+msgstr "Näytä vain muistiinpanot"
+
+#| msgid "View Note"
+msgid "&View Note Text"
+msgstr "&Näytä muistiinpano"
+
+msgid "View the note at current position"
+msgstr "Näytä nykyisen sijainnin muistiinpano"
+
+#| msgid "&Find"
+msgid "&Find..."
+msgstr "&Etsi..."
+
+msgid "Find text in the document"
+msgstr "Etsi tekstiä asiakirjasta"
+
+msgid "Find next occurrence"
+msgstr "Etsi seuraava esiintymä"
+
+msgid "Find previous occurrence"
+msgstr "Etsi edellinen esiintymä"
+
+#| msgid "Go to &line"
+msgid "Go to &line..."
+msgstr "Siirry rivi&lle..."
+
+msgid "Go to a specific line"
+msgstr "Siirry tietylle riville"
+
+#| msgid "Go to &percent"
+msgid "Go to &percent..."
+msgstr "Siirry &prosenttiin..."
+
+msgid "Go to a percentage of the document"
+msgstr "Siirry prosenttiin"
+
+#| msgid "Go &Back\tCtrl+["
+msgid "Go &Back"
+msgstr "Siirry &taaksepäin"
+
+msgid "Go back in history"
+msgstr "Siirry historiassa taaksepäin"
+
+#| msgid "Go &Forward\tCtrl+]"
+msgid "Go &Forward"
+msgstr "Siirry &eteenpäin"
+
+msgid "Go forward in history"
+msgstr "Siirry historiassa eteenpäin"
+
+msgid "&Sections"
+msgstr "&Luvut"
+
+msgid "Navigate by sections"
+msgstr "Siirry luvuittain"
+
+msgid "&Headings"
+msgstr "&Otsikot"
+
+msgid "Navigate by headings"
+msgstr "Siirry otsikoittain"
+
+msgid "&Pages"
+msgstr "&Sivut"
+
+msgid "Navigate by pages"
+msgstr "Siirry sivuittain"
+
+msgid "&Bookmarks"
+msgstr "&Kirjanmerkit"
+
+msgid "Navigate by bookmarks"
+msgstr "Siirry kirjanmerkeittäin"
+
+msgid "&Links"
+msgstr "&Linkit"
+
+msgid "Navigate by links"
+msgstr "Siirry linkeittäin"
+
+msgid "&Images"
+msgstr "&Kuvat"
+
+msgid "Navigate by images"
+msgstr "Siirry kuvittain"
+
+msgid "&Figures"
+msgstr "K&uvitukset"
+
+msgid "Navigate by figures"
+msgstr "Siirry kuvituksittain"
+
+msgid "&Tables"
+msgstr "T&aulukot"
+
+msgid "Navigate by tables"
+msgstr "Siirry taulukoittain"
+
+msgid "&Separators"
+msgstr "&Erottimet"
+
+msgid "Navigate by separators"
+msgstr "Siirry erottimittain"
+
+msgid "&Lists"
+msgstr "&Luettelot"
+
+msgid "Navigate by lists"
+msgstr "Siirry luetteloittain"
+
+msgid "&Containers"
+msgstr "&Säilöt"
+
+msgid "Navigate by containers"
+msgstr "Siirry säilöittäin"
+
+#| msgid "&About Paperback\tCtrl+F1"
+msgid "&About Paperback"
+msgstr "&Tietoa Paperbackista"
+
+msgid "About this application"
+msgstr "Tietoa sovelluksesta"
+
+#| msgid "View Help in &Browser\tF1"
+msgid "View Help in &Browser"
+msgstr "Näytä &ohje selaimessa"
+
+msgid "View help in default browser"
+msgstr "Näytä ohje oletusselaimessa"
+
+#| msgid "View help in Paperback"
+msgid "View Help in &Paperback"
+msgstr "Näytä ohje &Paperbackissa"
+
+msgid "View help in Paperback"
+msgstr "Näytä ohje Paperbackissa"
+
+#| msgid "Check for updates"
+msgid "Check for &Updates"
+msgstr "Tarkista pä&ivitykset"
+
+msgid "Check for updates"
+msgstr "Tarkista päivitykset"
+
+#| msgid "&Donate\tCtrl+D"
+msgid "&Donate"
+msgstr "&Lahjoita"
+
+msgid "Support Paperback development"
+msgstr "Tue Paperbackin kehitystä"
+
+#| msgid "Import Document Data"
+msgid "&Import Document Data..."
+msgstr "&Tuo asiakirjan tiedot..."
+
+msgid "Import bookmarks and position"
+msgstr "Tuo kirjanmerkit ja sijainti"
+
+#| msgid "Export Document Data"
+msgid "&Export Document Data..."
+msgstr "&Vie asiakirjan tiedot..."
+
+msgid "Export bookmarks and position"
+msgstr "Vie kirjanmerkit ja sijainti"
+
+#| msgid "Export to &Plain Text...\tCtrl+E"
+msgid "Export to &Plain Text..."
+msgstr "Vie te&kstimuotoon..."
+
+msgid "Export document as plain text"
+msgstr "Vie asiakirja tekstimuotoon"
+
+msgid "Export to &HTML..."
+msgstr "Vie &HTML-muotoon..."
+
+msgid "Export document as HTML"
+msgstr "Vie asiakirja HTML-muodossa"
+
+msgid "Export to &Markdown..."
+msgstr "Vie &Markdown-muotoon..."
+
+msgid "Export document as Markdown"
+msgstr "Vie asiakirja Markdown-muodossa"
+
+#| msgid "Word Count"
+msgid "&Word Count"
+msgstr "&Sanamäärä"
+
+msgid "Show word count"
+msgstr "Näytä sanamäärä"
+
+#| msgid "Document Info"
+msgid "Document &Info"
+msgstr "Asiakir&jan tiedot"
+
+msgid "Show document information"
+msgstr "Näytä asiakirjan tiedot"
+
+#| msgid "Table of Contents"
+msgid "&Table of Contents"
+msgstr "&Sisällysluettelo"
+
+msgid "Show table of contents"
+msgstr "Näytä sisällysluettelo"
+
+#| msgid "&Elements List...\tF7"
+msgid "&Elements List..."
+msgstr "&Elementtilista..."
+
+msgid "Show elements list"
+msgstr "Näytä elementtilista"
+
+#| msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgid "Reveal &File in Folder"
+msgstr "Avaa as&iakirjan kansio"
+
+msgid "Reveal document in the file manager"
+msgstr "Avaa asiakirjan kansio tiedostonhallinnassa"
+
+#| msgid "Open in &Web View\tCtrl+Shift+V"
+msgid "Open in &Web View"
+msgstr "Avaa sel&ainnäkymässä"
+
+msgid "Open document in web view"
+msgstr "Avaa asiakirja selainnäkymässä"
+
+#| msgid "View &Source\tCtrl+U"
+msgid "View &Source"
+msgstr "Näytä läh&dekoodi"
+
+msgid "Open the document source in a new tab"
+msgstr "Avaa asiakirjan lähdekoodi uudessa välilehdessä"
+
+msgid "I&mport/Export"
+msgstr "T&uo ja vie"
+
+msgid "Import and export options"
+msgstr "Tuonnin ja viennin asetukset"
+
+#| msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgid "Toggle &Bookmark"
+msgstr "Lisää tai poista &kirjanmerkki"
+
+#| msgid "Bookmark with &note"
+msgid "Bookmark with &Note"
+msgstr "Kirjanmerkki muistiinpan&olla"
+
+#| msgid "&Word wrap"
+msgid "Word w&rap"
+msgstr "Rivit&ys"
+
+msgid "Toggle word wrap"
+msgstr "Ota rivitys käyttöön tai poista se käytöstä"
+
+msgid "&Full Screen"
+msgstr "&Koko näyttö"
+
+msgid "Toggle full screen"
+msgstr "Ota koko näytön tila käyttöön tai poista se käytöstä"
+
+#| msgid "Options"
+msgid "&Options"
+msgstr "&Asetukset"
+
+#| msgid "Sleep Timer"
+msgid "&Sleep Timer..."
+msgstr "&Uniajastin..."
+
+msgid "&File"
+msgstr "&Tiedosto"
+
+msgid "&Go"
+msgstr "S&iirry"
+
+msgid "&Tools"
+msgstr "T&yökalut"
+
+msgid "&Help"
+msgstr "&Ohje"
+
+msgid "&Edit"
+msgstr "&Muokkaa"
 
 #. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
@@ -1585,17 +1557,14 @@ msgid "No previous section"
 msgstr "Ei edellistä lukua"
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
-#, c-format
 msgid "No headings at level %d."
 msgstr "Ei otsikoita tasolla %d."
 
 #. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
-#, c-format
 msgid "No next heading at level %d."
 msgstr "Ei seuraavaa otsikkoa tasolla %d."
 
 #. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
-#, c-format
 msgid "No previous heading at level %d."
 msgstr "Ei edellistä otsikkoa tasolla %d."
 
@@ -1711,12 +1680,14 @@ msgid "Wrapping to end. "
 msgstr "Siirrytään loppuun. "
 
 #. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
-#, c-format
 msgid "%s Heading level %d"
 msgstr "%s - otsikkotaso %d"
 
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+msgid "Page %d"
+msgstr "Sivu %d"
+
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-#, c-format
 msgid "Page %d: %s"
 msgstr "Sivu %d: %s"
 
@@ -1754,7 +1725,6 @@ msgid "Start of container."
 msgstr "Säilön alku."
 
 #. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
-#, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - kirjanmerkki %d"
 
@@ -1821,10 +1791,6 @@ msgstr "&Palauta"
 #. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
 msgid "Restore Paperback"
 msgstr "Palauta Paperback"
-
-#. TRANSLATORS: System tray menu item to quit the application
-msgid "E&xit"
-msgstr "&Lopeta"
 
 #. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 msgid "Exit Paperback"
@@ -2147,6 +2113,276 @@ msgstr "Päivitysskriptin käynnistys epäonnistui"
 
 msgid "Unknown update file format."
 msgstr "Tuntematon päivitystiedoston muoto."
+
+msgid "&Play/Pause Audio"
+msgstr "&Toista tai pysäytä änite"
+
+msgid "Play or pause this document's audio narration"
+msgstr "Toista tai pysäytä asiakirjan äänite"
+
+msgid "Previous Section\t["
+msgstr "Edellinen luku\t["
+
+msgid "Next Section\t]"
+msgstr "Seuraava luku\t]"
+
+msgid "Go to &Page\tCtrl+P"
+msgstr "S&iirry sivulle\tCtrl+P"
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr "Ede&llinen sivu\tShift+P"
+
+msgid "Next Pag&e\tP"
+msgstr "&Seuraava sivu\tP"
+
+msgid "Previous Lin&k\tShift+K"
+msgstr "Edellinen lin&kki\tShift+K"
+
+msgid "Next Lin&k\tK"
+msgstr "Seuraava li&nkki\tK"
+
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Edellinen &kuva\tShift+G"
+
+msgid "Next Ima&ge\tG"
+msgstr "Seuraava k&uva\tG"
+
+msgid "Previous Figu&re\tShift+F"
+msgstr "Edellinen ku&vitus\tShift+F"
+
+msgid "Next Figu&re\tF"
+msgstr "Seuraava kuv&itus\tF"
+
+msgid "Previous &Table\tShift+T"
+msgstr "Edellinen t&aulukko\tShift+T"
+
+msgid "Next &Table\tT"
+msgstr "Seuraava ta&ulukko\tT"
+
+msgid "Previous Se&parator\tShift+S"
+msgstr "Edellinen e&rotin\tShift+S"
+
+msgid "Next Se&parator\tS"
+msgstr "Seuraava er&otin\tS"
+
+msgid "Previous L&ist\tShift+L"
+msgstr "Edellinen l&uettelo\tShift+L"
+
+msgid "Next L&ist\tL"
+msgstr "Seuraava lue&ttelo\tL"
+
+msgid "Previous List &Item\tShift+I"
+msgstr "Edellinen luettelok&ohde\tShift+I"
+
+msgid "Next List I&tem\tI"
+msgstr "Seuraava luetteloko&hde\tI"
+
+msgid "Container &Start\tShift+,"
+msgstr "Säilön &alku\tShift+,"
+
+msgid "Past Container &End\t,"
+msgstr "Säilön &jälkeinen kohta\t,"
+
+msgid "Next Heading Level 1\t1"
+msgstr "Seuraava otsikkotaso 1\t1"
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "Edellinen otsikkotaso &2\tShift+2"
+
+msgid "Next Heading Level 2\t2"
+msgstr "Seuraava otsikkotaso 2\t2"
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "Edellinen otsikkotaso &3\tShift+3"
+
+msgid "Next Heading Level 3\t3"
+msgstr "Seuraava otsikkotaso 3\t3"
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "Edellinen otsikkotaso &4\tShift+4"
+
+msgid "Next Heading Level 4\t4"
+msgstr "Seuraava otsikkotaso 4\t4"
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "Edellinen otsikkotaso &5\tShift+5"
+
+msgid "Next Heading Level 5\t5"
+msgstr "Seuraava otsikkotaso 5\t5"
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "Edellinen otsikkotaso &6\tShift+6"
+
+msgid "Next Heading Level 6\t6"
+msgstr "Seuraava otsikkotaso 6\t6"
+
+msgid "&Previous Heading\tShift+H"
+msgstr "Edellinen &otsikko\tShift+H"
+
+msgid "&Next Heading\tH"
+msgstr "Seuraava o&tsikko\tH"
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "Edellinen otsikkotaso &1\tShift+1"
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr "Edellinen &kirjanmerkki\tShift+B"
+
+msgid "&Next Bookmark\tB"
+msgstr "Seuraava ki&rjanmerkki\tB"
+
+msgid "Previous &Note\tShift+N"
+msgstr "Edellinen &muistiinpano\tShift+N"
+
+msgid "Next N&ote\tN"
+msgstr "Seuraava m&uistiinpano\tN"
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr "Siirry k&aikkiin...\tCtrl+B"
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "Siirry vain &kirjanmerkkeihin...\tCtrl+Alt+B"
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "Siirry vain mu&istiinpanoihin...\tCtrl+Alt+M"
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "&Näytä muistiinpanon teksti\tRawCtrl+Shift+W"
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "&Näytä muistiinpanon teksti\tCtrl+Shift+W"
+
+msgid "&Open...\tCtrl+O"
+msgstr "&Avaa...\tCtrl+O"
+
+msgid "&Close\tCtrl+W"
+msgstr "&Sulje\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "&Sulje\tCtrl+F4"
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "Sulje k&aikki\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Sulje k&aikki\tCtrl+Shift+F4"
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "Avaa &viimeksi suljettu\tCtrl+Shift+T"
+
+msgid "E&xit\tCtrl+Q"
+msgstr "&Lopeta\tCtrl+Q"
+
+msgid "&Find...\tCtrl+F"
+msgstr "&Etsi...\tCtrl+F"
+
+msgid "Find &Next\tCtrl+G"
+msgstr "Etsi se&uraava\tCtrl+G"
+
+msgid "Find &Next\tF3"
+msgstr "Etsi &seuraava\tF3"
+
+msgid "Find &Previous\tCtrl+Shift+G"
+msgstr "Etsi e&dellinen\tCtrl+Shift+G"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "Etsi e&dellinen\tShift+F3"
+
+msgid "Go to &line...\tCtrl+L"
+msgstr "Siirry &riville...\tCtrl+L"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "Siirry &riville...\tCtrl+G"
+
+msgid "Go to &percent...\tCtrl+Shift+L"
+msgstr "Siirry &prosenttiin...\tCtrl+Shift+L"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Siirry &prosenttiin...\tCtrl+Shift+G"
+
+msgid "Go &Back\tCtrl+["
+msgstr "Siirry &taaksepäin\tCtrl+["
+
+msgid "Go &Back\tAlt+Left"
+msgstr "Siirry t&aaksepäin\tAlt+Vasen"
+
+msgid "Go &Forward\tCtrl+]"
+msgstr "Siirry &eteenpäin\tCtrl+]"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "Siirry &eteenpäin\tAlt+Oikea"
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "Tu&o asiakirjan tiedot...\tCtrl+Shift+I"
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "V&ie asiakirjan tiedot...\tCtrl+Shift+E"
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "Vie te&kstimuotoon...\tCtrl+E"
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr "Sana&määrä\tRawCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "Sana&määrä\tCtrl+W"
+
+msgid "Document &Info\tCtrl+I"
+msgstr "Asiakirjan t&iedot\tCtrl+I"
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr "&Sisällysluettelo\tCtrl+T"
+
+msgid "&Elements List...\tF7"
+msgstr "&Elementtilista...\tF7"
+
+msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgstr "Avaa as&iakirjan kansio\tCtrl+Shift+C"
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "Avaa sel&ainnäkymässä\tCtrl+Shift+V"
+
+msgid "View &Source\tCtrl+U"
+msgstr "Näytä läh&dekoodi\tCtrl+U"
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "Lisää tai poista &kirjanmerkki\tCtrl+Shift+B"
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "Lisää kirjanmerkki &muistiinpanolla\tCtrl+Shift+N"
+
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr "R&ivitys\tCtrl+Alt+W"
+
+msgid "&Full Screen\tRawCtrl+Ctrl+F"
+msgstr "&Koko näyttö\tRawCtrl+Ctrl+F"
+
+msgid "&Full Screen\tF11"
+msgstr "&Koko näyttö\tF11"
+
+msgid "&Options\tCtrl+,"
+msgstr "&Asetukset\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "&Uniajastin...\tCtrl+Shift+S"
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr "&Tietoa Paperbackista\tCtrl+F1"
+
+msgid "View Help in &Browser\tF1"
+msgstr "Näytä &ohje selaimessa\tF1"
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "Näytä ohje &Paperbackissa\tShift+F1"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Tarkista &päivitykset\tCtrl+Shift+U"
+
+msgid "&Donate\tCtrl+D"
+msgstr "&Lahjoita\tCtrl+D"
+
+msgid "Show All...\tCtrl+R"
+msgstr "Näytä kaikki...\tCtrl+R"
 
 msgid "Go To…"
 msgstr "Siirry…"
@@ -2632,11 +2868,9 @@ msgstr "Asiakirjan tiedot"
 msgid "Sleep timer running, {} remaining"
 msgstr "Uniajastin käynnissä, jäljellä {}"
 
-#| msgid "Custom Timer"
 msgid "Custom"
 msgstr "Oma"
 
-#| msgid "Custom Timer"
 msgid "Custom: {} minutes"
 msgstr "Oma: {} minuuttia"
 

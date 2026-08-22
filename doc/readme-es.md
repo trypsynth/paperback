@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: fd39958ee63d8b14); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 88d5313cd5871ed4); please review and edit as needed -->
 
 # Edición en rústica - versión 0.8.5 {#paperback---version-0.8.5}
 
@@ -22,7 +22,7 @@ Actualmente, Paperback funciona en Windows, macOS, iOS y Android.
 -   Interfaz sencilla con pestañas, que te permite abrir tantos
     documentos como quieras en paralelo.
 -   Guarda tu posición exacta de lectura en todos los documentos que
-    abrís.
+    abrás.
 -   Opcionalmente, recuerda qué documentos tenías abiertos cuando
     cerraste el programa y los restaura la próxima vez que lo inicies.
 -   Incluye una funcionalidad de navegación similar a la que se
@@ -82,11 +82,11 @@ Paperback es compatible con los siguientes formatos y extensiones:
 Paperback está diseñado para utilizarse principalmente con el teclado. A
 continuación se indican los atajos actuales.
 
-Los atajos que aparecen a continuación son para Windows. Cuando hay
+Los atajos que aparecen a continuación son para Windows. Cuando haya
 diferencias con macOS, el equivalente se indica entre paréntesis,
 principalmente porque Ctrl+G, Ctrl+W y Alt+Izquierda/Derecha ya están
-ocupados por otras convenciones del sistema o de las aplicaciones en esa
-plataforma.
+ocupados por otras convenciones del sistema o de otras aplicaciones en
+esa plataforma.
 
 ### Menú «Archivo» {#file-menu}
 
@@ -258,11 +258,17 @@ inclusión automática en esta lista.
 -   Se ha añadido un atajo de teclado configurable para restaurar
     Paperback desde la bandeja del sistema.
 -   Se ha añadido un botón «Buscar» al cuadro de diálogo «Todos los
-    documentos» para localizar los libros que faltan y cuya ruta acaba
-    de cambiar.
+    documentos» para localizar libros que faltan y cuya ruta acaba de
+    cambiar.
+-   Se ha añadido un filtro de estado y una barra de estado al cuadro de
+    diálogo «Todos los documentos», de modo que puedes filtrar por
+    estado del documento y ver cuántos documentos se muestran y están
+    seleccionados.
+-   Se ha añadido el `Ctrl+Shift+A` acceso directo para deseleccionar
+    todos los documentos en el cuadro de diálogo «Todos los documentos».
 -   Se ha añadido una pestaña de «Legibilidad» al cuadro de diálogo de
     opciones, con las siguientes opciones:
-    -   Ajustar a la línea (trasladado desde «General»);
+    -   Ajustar al ancho de línea (trasladado desde «General»);
     -   Representar tablas en línea (novedad de esta versión, ver más
         abajo);
     -   Fuente;
@@ -321,8 +327,9 @@ inclusión automática en esta lista.
     anunciaba texto de línea incorrecto en algunas situaciones.
 -   Se ha corregido el análisis de documentos RTF que contienen
     caracteres no latinos.
--   Se ha corregido el error por el que la opción «Reabrir el último
-    cerrado» intentaba reabrir el archivo «readme» incluido.
+-   Se ha corregido el error por el que la opción «Volver a abrir el
+    último documento cerrado» intentaba reabrir el archivo «readme»
+    incluido.
 -   Se ha corregido el error por el que la barra de título no se
     actualizaba tras cerrar un documento desde el cuadro de diálogo
     «Todos los documentos».
@@ -532,14 +539,14 @@ inclusión automática en esta lista.
     no se ocultaba correctamente al utilizar los botones «Siguiente» y
     «Anterior».
 -   Se ha corregido el problema por el que, en ocasiones, las tablas de
-    contenidos de los libros EPUB llevaban al elemento incorrecto.
+    contenido de los archivos ePub llevaban al elemento incorrecto.
 -   Se han corregido varios problemas relacionados con el manejo de los
     espacios en blanco en las etiquetas XML, HTML y pre .
 -   Se ha corregido un error de «off-by-one» en la navegación por
     enlaces.
 -   Se ha corregido el problema por el que algunos libros presentaban
     espacios en blanco al final de las líneas.
--   Se han corregido varios problemas del analizador sintáctico.
+-   Se han corregido diversos problemas del analizador sintáctico.
 -   Los elementos del menú relacionados con los marcadores, así como la
     lista de elementos, ahora se desactivan correctamente cuando no hay
     ningún documento abierto.
@@ -568,7 +575,7 @@ inclusión automática en esta lista.
     documentos EPUB no funcionaban correctamente.
 -   Se ha corregido el análisis de las tablas de contenido de los
     archivos EPUB que contienen rutas relativas.
--   Se ha corregido el error por el que algunos documentos EPUB no
+-   Se ha corregido el problema por el que algunos documentos EPUB no
     mostraban el título ni el autor.
 -   Se ha corregido un error por el que los títulos de algunos capítulos
     de EPUB no se mostraban correctamente en el cuadro de diálogo de la
@@ -602,7 +609,7 @@ inclusión automática en esta lista.
     OpenDocument!
 -   Ahora se pueden crear marcadores para marcar una línea completa o
     para marcar solo un texto específico. Si no tienes ninguna selección
-    activa al colocar un marcador, el comportamiento es igual que en las
+    activa al colocar un marcador, el comportamiento es como en las
     versiones anteriores a la 0.6, y se marcará la línea completa. Sin
     embargo, si seleccionas algo de texto, solo ese texto se incluirá en
     el marcador.
@@ -641,8 +648,10 @@ inclusión automática en esta lista.
     lectura de un documento concreto. El archivo generado recibe el
     nombre del archivo con la extensión .paperback. Si se encuentra un
     archivo de este tipo en el mismo directorio que el archivo que se
-    está cargando, se cargará automáticamente . De lo contrario, puedes
-    importarlos manualmente mediante una opción del menú «Herramientas».
+    está cargando, se cargará automáticamente. De lo contrario, puedes
+    importarlos manualmente mediante una opción del De lo contrario,
+    puedes importarlos manualmente mediante una opción del menú
+    «Herramientas».
 -   ¡Ahora se admiten plenamente los enlaces dentro de los documentos!
     Utiliza k y shift+k para avanzar y retroceder por ellos, y pulsa
     Intro para abrir o activar uno.
@@ -751,9 +760,9 @@ inclusión automática en esta lista.
     programa» y configurará automáticamente las asociaciones de archivos
     por ti.
 -   Los archivos de texto con BOM ahora deberían descodificarse
-    correctamente, y el BOM ya no aparecerá al principio del texto.
+    correctamente, y el BOM ya no se mostrará al principio del texto.
 -   Se ha añadido mucha más información a la barra de estado. Ahora te
-    mostrará la línea actual, el carácter y el porcentaje leído.
+    mostrará la línea actual, el carácter y el porcentaje de lectura.
 -   Los comentarios HTML, así como el contenido de las etiquetas de
     script y style, ya no se mostrarán en la salida de texto.
 -   Si se pasa una ruta relativa a Paperback en la línea de comandos,
@@ -769,7 +778,7 @@ inclusión automática en esta lista.
 -   El documento en el que tenías el foco al cerrar Paperback ahora se
     recuerda tras reiniciar la aplicación.
 -   La entrada en los cuadros de diálogo «Ir a la línea» e «Ir a la
-    página» ahora se filtra de forma más estricta.
+    página» ahora se depura de forma más estricta.
 -   Se ha corregido la navegación por la tabla de contenidos en libros
     EPUB 3 con rutas relativas en sus manifiestos.
 
@@ -802,7 +811,7 @@ inclusión automática en esta lista.
     en todos los aspectos.
 -   Ahora solo puede haber una instancia de Paperback en ejecución a la
     vez. Si ejecutas paperback.exe con un nombre de archivo mientras ya
-    está en ejecución, se abrirá ese documento en la instancia que ya
+    está en ejecución, ese documento se abrirá en la instancia que ya
     está en ejecución.
 -   Ahora puedes pulsar la tecla «Suprimir» sobre un documento en el
     control de pestañas para cerrarlo. Versión 0.2.1
@@ -818,8 +827,8 @@ inclusión automática en esta lista.
     suficientes.
 -   Paperback eliminará ahora los guiones no obligatorios del texto
     resultante.
--   Se ha corregido un error por el que la navegación por los
-    encabezados a veces te llevaba al carácter equivocado.
+-   Se ha corregido un error por el que la navegación por encabezados a
+    veces te llevaba al carácter equivocado.
 
 ### Versión 0.2.0 {#version-0.2.0}
 
@@ -832,8 +841,8 @@ inclusión automática en esta lista.
     similar a un lector de pantalla.
 -   Se ha corregido la carga de libros EPUB con nombres de archivo
     codificados como URL en sus manifiestos.
--   Se ha corregido la carga de libros en formato ePub 3 con XHTML
-    incrustado en su interior.
+-   Se ha corregido la carga de libros EPUB 3 con XHTML incrustado en su
+    interior.
 -   Ahora se reproduce un mensaje si el documento no admite una tabla de
     contenidos o secciones, en lugar de desactivar las opciones del
     menú.

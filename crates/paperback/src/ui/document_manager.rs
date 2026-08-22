@@ -1,7 +1,5 @@
-#[cfg(target_os = "linux")]
-use std::collections::HashMap;
 #[cfg(target_os = "windows")]
-use std::ptr::{addr_of_mut, copy_nonoverlapping};
+use std::ptr::addr_of_mut;
 use std::{
 	cell::Cell,
 	fs,
@@ -12,7 +10,7 @@ use std::{
 };
 
 use paperback_core::{
-	config::{ConfigManager, ReadabilityFont},
+	config::{ActionId, ConfigManager, ReadabilityFont},
 	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
 	session::DocumentSession,
 };
@@ -24,7 +22,10 @@ use wxdragon::{
 };
 
 #[cfg(target_os = "windows")]
-use super::rtf_write::{self, RtfFontInfo};
+use super::rtf::{
+	stream::stream_rtf_into_ctrl,
+	write::{self, RtfFontInfo},
+};
 use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
 	menu_ids,
@@ -77,9 +78,6 @@ const WXK_WINDOWS_MENU: i32 = 395;
 const WXK_UP: i32 = 315;
 #[cfg(target_os = "windows")]
 const WXK_DOWN: i32 = 317;
-const KEY_EQUALS: i32 = 61;
-const KEY_SLASH: i32 = 47;
-const KEY_BACKSLASH: i32 = 92;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -92,8 +90,6 @@ pub struct DocumentManager {
 	last_audio_seek_position: Cell<Option<i64>>,
 	preferred_column: Cell<Option<i64>>,
 	recently_closed: Vec<PathBuf>,
-	#[cfg(target_os = "linux")]
-	navigation_key_map: Rc<HashMap<(i32, bool), i32>>,
 }
 
 impl DocumentManager {
@@ -114,8 +110,6 @@ impl DocumentManager {
 			last_audio_seek_position: Cell::new(None),
 			preferred_column: Cell::new(None),
 			recently_closed: Vec::new(),
-			#[cfg(target_os = "linux")]
-			navigation_key_map: Rc::new(build_navigation_key_map()),
 		}
 	}
 
@@ -234,10 +228,7 @@ impl DocumentManager {
 		let config = self.config.lock().unwrap();
 		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
-		#[cfg(target_os = "linux")]
-		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc, self.frame, Rc::clone(&self.navigation_key_map));
-		#[cfg(not(target_os = "linux"))]
-		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc);
+		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc, self.frame);
 		let rf = config.get_readability_font();
 		if let Some(font) = build_font_from_readability(&rf) {
 			text_ctrl.set_font(&font);
@@ -623,7 +614,7 @@ impl DocumentManager {
 	}
 
 	/// Announces the current caret position as a percentage of the document via the live region.
-	fn announce_current_percent(&self) {
+	pub fn announce_current_percent(&self) {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
@@ -637,7 +628,7 @@ impl DocumentManager {
 	}
 
 	/// Sets the temporary bookmark at the current caret position and announces it.
-	fn set_temporary_bookmark(&self) {
+	pub fn set_temporary_bookmark(&self) {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
@@ -653,7 +644,7 @@ impl DocumentManager {
 
 	/// Jumps to the temporary bookmark, announcing the line text there, or "No temporary bookmark."
 	/// if none has been set.
-	fn jump_to_temporary_bookmark(&mut self) {
+	pub fn jump_to_temporary_bookmark(&mut self) {
 		let path_str = {
 			let Some(tab) = self.active_tab() else {
 				return;
@@ -751,11 +742,7 @@ impl DocumentManager {
 			let old_ctrl = tab.text_ctrl;
 			let current_pos = old_ctrl.get_insertion_point();
 			let content = old_ctrl.get_value();
-			#[cfg(target_os = "linux")]
-			let text_ctrl =
-				Self::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame, Rc::clone(&self.navigation_key_map));
-			#[cfg(not(target_os = "linux"))]
-			let text_ctrl = Self::build_text_ctrl(tab.panel, word_wrap, self_rc);
+			let text_ctrl = Self::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame);
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
@@ -904,13 +891,7 @@ impl DocumentManager {
 		}
 	}
 
-	fn build_text_ctrl(
-		panel: Panel,
-		word_wrap: bool,
-		self_rc: &Rc<Mutex<Self>>,
-		#[cfg(target_os = "linux")] frame: Frame,
-		#[cfg(target_os = "linux")] navigation_key_map: Rc<HashMap<(i32, bool), i32>>,
-	) -> TextCtrl {
+	fn build_text_ctrl(panel: Panel, word_wrap: bool, self_rc: &Rc<Mutex<Self>>, frame: Frame) -> TextCtrl {
 		let style = TextCtrlStyle::MultiLine
 			| TextCtrlStyle::ReadOnly
 			| TextCtrlStyle::Rich2
@@ -920,14 +901,12 @@ impl DocumentManager {
 		text_ctrl.on_char(move |event| {
 			if let WindowEventData::Keyboard(kbd) = event {
 				if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
-					// 13 is KEY_RETURN, 32 is space
 					let table_html = {
 						let dm = dm_for_enter.lock().unwrap();
 						dm.activate_current_table()
 					};
 					if let Some(html) = table_html {
 						let frame = dm_for_enter.lock().unwrap().frame;
-						// TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
 						super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
 					} else {
 						let mut dm = dm_for_enter.lock().unwrap();
@@ -958,12 +937,7 @@ impl DocumentManager {
 			}
 		});
 		let text_ctrl_for_menu = text_ctrl;
-		let dm_for_announce = Rc::clone(self_rc);
-		#[cfg(target_os = "windows")]
-		let dm_for_nav = Rc::clone(self_rc);
-		#[cfg(target_os = "linux")]
-		let key_map = navigation_key_map;
-		#[cfg(target_os = "linux")]
+		let dm_for_keys = Rc::clone(self_rc);
 		let frame_for_keys = frame;
 		text_ctrl.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(kbd) = &event
@@ -974,39 +948,10 @@ impl DocumentManager {
 					show_reader_context_menu(text_ctrl_for_menu);
 					return;
 				}
-				if key == KEY_EQUALS && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
-					kbd.event.skip(false);
-					if let Ok(dm) = dm_for_announce.try_lock() {
-						dm.announce_current_percent();
-					}
-					return;
-				}
-				if key == KEY_SLASH && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
-					kbd.event.skip(false);
-					if let Ok(dm) = dm_for_announce.try_lock() {
-						dm.set_temporary_bookmark();
-					}
-					return;
-				}
-				if key == KEY_BACKSLASH && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
-					kbd.event.skip(false);
-					if let Ok(mut dm) = dm_for_announce.try_lock() {
-						dm.jump_to_temporary_bookmark();
-					}
-					return;
-				}
-				#[cfg(target_os = "linux")]
-				if !kbd.control_down() && !kbd.alt_down() {
-					if let Some(&menu_id) = key_map.get(&(key, kbd.shift_down())) {
-						kbd.event.skip(false);
-						frame_for_keys.process_menu_command(menu_id);
-						return;
-					}
-				}
 				#[cfg(target_os = "windows")]
-				if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() {
+				if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
 					let going_down = key == WXK_DOWN;
-					let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
+					let nav_result = dm_for_keys.try_lock().ok().and_then(|dm| {
 						let start_of_line = dm.config.lock().unwrap().get_app_bool("line_start_navigation", false);
 						navigate_line_by_column(
 							text_ctrl_for_menu,
@@ -1019,7 +964,7 @@ impl DocumentManager {
 						kbd.event.skip(false);
 						text_ctrl_for_menu.set_insertion_point(new_pos);
 						text_ctrl_for_menu.show_position(new_pos);
-						if let Ok(dm) = dm_for_nav.try_lock() {
+						if let Ok(dm) = dm_for_keys.try_lock() {
 							dm.preferred_column.set(Some(new_col));
 							dm.update_status_bar();
 						}
@@ -1029,8 +974,51 @@ impl DocumentManager {
 					return;
 				}
 				#[cfg(target_os = "windows")]
-				if let Ok(dm) = dm_for_nav.try_lock() {
+				if let Ok(dm) = dm_for_keys.try_lock() {
 					dm.preferred_column.set(None);
+				}
+
+				let action = {
+					if let Ok(dm) = dm_for_keys.try_lock() {
+						let config = dm.config.lock().unwrap();
+						config.get_shortcuts().find_action(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down())
+					} else {
+						None
+					}
+				};
+
+				if let Some(act) = action {
+					match act {
+						ActionId::AnnouncePercent => {
+							kbd.event.skip(false);
+							if let Ok(dm) = dm_for_keys.try_lock() {
+								dm.announce_current_percent();
+							}
+							return;
+						}
+						ActionId::SetTemporaryBookmark => {
+							kbd.event.skip(false);
+							if let Ok(dm) = dm_for_keys.try_lock() {
+								dm.set_temporary_bookmark();
+							}
+							return;
+						}
+						ActionId::JumpToTemporaryBookmark => {
+							kbd.event.skip(false);
+							if let Ok(mut dm) = dm_for_keys.try_lock() {
+								dm.jump_to_temporary_bookmark();
+							}
+							return;
+						}
+						_ => {
+							if !kbd.control_down() && !kbd.alt_down() || cfg!(target_os = "linux") {
+								let menu_id = menu_ids::action_to_menu_id(act);
+								kbd.event.skip(false);
+								frame_for_keys.process_menu_command(menu_id);
+								return;
+							}
+						}
+					}
 				}
 			}
 			event.skip(true);
@@ -1213,13 +1201,13 @@ fn reparse_tab_in_place(
 /// Sets `content` on `text_ctrl` and applies its bold/italic/underline markers.
 ///
 /// On Windows this streams a single RTF blob into the native `RichEdit` control
-/// via `EM_STREAMIN` (see `stream_rtf_into_ctrl`) instead of issuing one
-/// `SetStyle` call per formatting span, which is far cheaper on documents with
-/// thousands of spans. `wxTextCtrl::SetValue` can't be used for this — it does
-/// not forward to the native `WM_SETTEXT` handler that auto-detects a `{\rtf`
-/// prefix, so it would just store the markup as literal text. If streaming
-/// doesn't round-trip back to the original content, this falls back to the
-/// plain-text + per-segment path used on every other platform.
+/// via `EM_STREAMIN` (see `rtf::stream::stream_rtf_into_ctrl`) instead of issuing
+/// one `SetStyle` call per formatting span, which is far cheaper on documents
+/// with thousands of spans. `wxTextCtrl::SetValue` can't be used for this — it
+/// does not forward to the native `WM_SETTEXT` handler that auto-detects a
+/// `{\rtf` prefix, so it would just store the markup as literal text. If
+/// streaming doesn't round-trip back to the original content, this falls back
+/// to the plain-text + per-segment path used on every other platform.
 fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession, content: &str) {
 	let markers = session.get_formatting_markers();
 	let segments = merge_formatting_markers(&markers);
@@ -1228,7 +1216,7 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession
 	if !segments.is_empty()
 		&& let Some(font) = text_ctrl.get_font()
 	{
-		let rtf = rtf_write::build_rtf(
+		let rtf = write::build_rtf(
 			content,
 			&segments,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
@@ -1256,70 +1244,6 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession
 
 	fill_text_ctrl(text_ctrl, content);
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments);
-}
-
-#[cfg(target_os = "windows")]
-struct RtfStreamCursor<'a> {
-	data: &'a [u8],
-	pos: usize,
-}
-
-/// `EDITSTREAMCALLBACK` for `EM_STREAMIN`: `RichEdit` calls this repeatedly,
-/// asking for up to `cb` bytes each time, until we report 0 bytes written
-/// (end of stream) or return a nonzero error code. Called synchronously
-/// within `SendMessageW` on the same thread, so the `RtfStreamCursor` borrow
-/// in `stream_rtf_into_ctrl` stays valid for every call.
-#[cfg(target_os = "windows")]
-unsafe extern "system" fn rtf_stream_read_callback(dwcookie: usize, pbbuff: *mut u8, cb: i32, pcb: *mut i32) -> u32 {
-	if pbbuff.is_null() || pcb.is_null() || dwcookie == 0 {
-		return 1;
-	}
-	let cursor = unsafe { &mut *(dwcookie as *mut RtfStreamCursor<'_>) };
-	let remaining = cursor.data.len() - cursor.pos;
-	let to_copy = remaining.min(usize::try_from(cb.max(0)).unwrap_or(0));
-	if to_copy > 0 {
-		unsafe { copy_nonoverlapping(cursor.data[cursor.pos..].as_ptr(), pbbuff, to_copy) };
-		cursor.pos += to_copy;
-	}
-	unsafe { *pcb = i32::try_from(to_copy).unwrap_or(i32::MAX) };
-	0
-}
-
-/// Feeds `rtf` into the native `RichEdit` control behind `text_ctrl` via the
-/// Win32 `EM_STREAMIN` message. `wxTextCtrl::SetValue` cannot be used for this:
-/// it does not forward to the native `WM_SETTEXT` handler that auto-detects a
-/// `{\rtf` prefix, so it just stores the markup as literal text (confirmed by
-/// a round-trip mismatch where `GetValue()` returned the raw RTF source
-/// unchanged). `EM_STREAMIN` is the documented, explicit way to load RTF into
-/// a `RichEdit` control, and is why this needs a raw `SendMessageW` call rather
-/// than a wx-level API — the same pattern already used for letter-spacing
-/// (`EM_SETCHARFORMAT`) in `apply_readability_format_to_ctrl`.
-///
-/// Returns `false` if the control has no native handle yet or the stream
-/// didn't fully complete, in which case callers should fall back to the
-/// plain-text + segment-loop path rather than trust partial content.
-#[cfg(target_os = "windows")]
-fn stream_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
-	use windows::Win32::{
-		Foundation::{HWND, LPARAM, WPARAM},
-		UI::{
-			Controls::RichEdit::{EDITSTREAM, EM_STREAMIN, SF_RTF},
-			WindowsAndMessaging::SendMessageW,
-		},
-	};
-
-	let hwnd_ptr = text_ctrl.get_handle();
-	if hwnd_ptr.is_null() {
-		return false;
-	}
-	let hwnd = HWND(hwnd_ptr);
-	let mut cursor = RtfStreamCursor { data: rtf.as_bytes(), pos: 0 };
-	let mut stream =
-		EDITSTREAM { dwCookie: addr_of_mut!(cursor) as usize, dwError: 0, pfnCallback: Some(rtf_stream_read_callback) };
-	unsafe {
-		SendMessageW(hwnd, EM_STREAMIN, Some(WPARAM(SF_RTF as usize)), Some(LPARAM(addr_of_mut!(stream) as isize)));
-	}
-	stream.dwError == 0 && cursor.pos == cursor.data.len()
 }
 
 pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
@@ -1689,56 +1613,6 @@ fn show_reader_context_menu(text_ctrl: TextCtrl) {
 		.append_item(menu_ids::GO_TO_PERCENT, &t("Go to &percent"), &t("Go to percent"))
 		.build();
 	text_ctrl.popup_menu(&mut menu, None);
-}
-
-/// Build a map from (key_code, shift) to menu ID for single-key navigation shortcuts.
-/// Parses shortcut strings from menu entry labels to stay in sync with menu definitions.
-#[cfg(target_os = "linux")]
-fn build_navigation_key_map() -> HashMap<(i32, bool), i32> {
-	use super::menu::{self, MenuEntry};
-
-	let mut map = HashMap::new();
-	let all_entries = [
-		menu::headings_entries(),
-		menu::sections_entries(),
-		menu::pages_entries(),
-		menu::links_entries(),
-		menu::tables_entries(),
-		menu::separators_entries(),
-		menu::lists_entries(),
-		menu::containers_entries(),
-		menu::bookmarks_entries(),
-	];
-	for entries in &all_entries {
-		for entry in entries {
-			if let MenuEntry::Item(spec) = entry {
-				if let Some((key, shift)) = parse_single_key_shortcut(&spec.label) {
-					map.insert((key, shift), spec.id);
-				}
-			}
-		}
-	}
-	map
-}
-
-/// Parse a single-key or Shift+key shortcut from a menu label like `"&Next Heading\tH"`.
-/// Returns None for shortcuts involving Ctrl, Alt, or function keys.
-#[cfg(target_os = "linux")]
-fn parse_single_key_shortcut(label: &str) -> Option<(i32, bool)> {
-	let shortcut = label.split('\t').nth(1)?;
-	if shortcut.contains("Ctrl") || shortcut.contains("Alt") {
-		return None;
-	}
-	let shift = shortcut.contains("Shift+");
-	let key_name = shortcut.rsplit('+').next()?;
-	if key_name.starts_with('F') && key_name.len() > 1 && key_name[1..].chars().all(|c| c.is_ascii_digit()) {
-		return None;
-	}
-	if key_name.len() == 1 {
-		let key = key_name.as_bytes()[0].to_ascii_uppercase() as i32;
-		return Some((key, shift));
-	}
-	None
 }
 
 #[cfg(test)]
