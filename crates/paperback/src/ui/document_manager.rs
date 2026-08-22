@@ -623,6 +623,21 @@ impl DocumentManager {
 		}
 	}
 
+	/// Pauses audio on every tab except the active one, so switching tabs can't leave two
+	/// documents narrating at once (the active tab may have audio of its own still playing,
+	/// which this leaves untouched).
+	pub fn pause_inactive_audio(&mut self) {
+		let active = self.active_tab_index();
+		for (index, tab) in self.tabs.iter_mut().enumerate() {
+			if Some(index) != active
+				&& let Some(player) = tab.audio_player.as_mut()
+				&& player.is_playing()
+			{
+				player.pause();
+			}
+		}
+	}
+
 	/// Announces the current caret position as a percentage of the document via the live region.
 	pub fn announce_current_percent(&self) {
 		let Some(tab) = self.active_tab() else {

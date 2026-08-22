@@ -252,7 +252,7 @@ impl AudioPlayer {
 	/// as "the start", since it would wipe a perfectly good stored position.
 	#[must_use]
 	pub fn resume_point_ms(&self) -> Option<u64> {
-		self.elapsed_ms().or_else(|| self.state.borrow().pending_target_ms)
+		self.state.borrow().pending_target_ms.or_else(|| self.elapsed_ms())
 	}
 }
 

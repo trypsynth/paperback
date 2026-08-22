@@ -140,6 +140,7 @@ impl MainWindow {
 			}
 			update_title_from_manager(&frame_copy, &dm_ref);
 			dm_ref.reset_sound_line();
+			dm_ref.pause_inactive_audio();
 		});
 		let dm_for_activate = Rc::clone(&doc_manager);
 		let activate_reload_guard = Rc::clone(&reload_guard);
