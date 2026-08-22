@@ -573,7 +573,7 @@ final class AppViewModel: ObservableObject {
 
 	func goToPage(_ page: Int32) {
 		guard let session = activeSession else { return }
-		let pos = session.pageOffsetFfi(page: page)
+		let pos = session.pageOffset(page: page)
 		ttsPosition = pos
 		updateTabPosition(pos)
 		refreshCurrentSegment()
@@ -581,7 +581,7 @@ final class AppViewModel: ObservableObject {
 
 	func goToPercent(_ percent: Int32) {
 		guard let session = activeSession else { return }
-		let pos = session.positionFromPercentFfi(percent: percent)
+		let pos = session.positionFromPercent(percent: percent)
 		ttsPosition = pos
 		updateTabPosition(pos)
 		refreshCurrentSegment()
