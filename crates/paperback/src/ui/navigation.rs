@@ -630,6 +630,68 @@ pub fn handle_seek_audio(
 	}
 }
 
+/// A human-readable label for one of `dialogs::AUDIO_SEEK_AMOUNTS_SECONDS`, matching the text
+/// shown for it in the Options dialog's seek-amount dropdown, for the live-region announcement
+/// made when the amount changes via keyboard shortcut.
+fn seek_amount_label(seconds: i32) -> String {
+	match seconds {
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		5 => t("5 seconds"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		10 => t("10 seconds"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		30 => t("30 seconds"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		60 => t("1 minute"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		120 => t("2 minutes"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		300 => t("5 minutes"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		600 => t("10 minutes"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		1800 => t("30 minutes"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		3600 => t("1 hour"),
+		other => format!("{other}s"),
+	}
+}
+
+/// Nudges the configured audio seek amount (used by `handle_seek_audio`) one step up or down
+/// through the same preset list shown in the Options dialog's dropdown, and announces the new
+/// value. A global setting rather than a per-document action, so unlike `handle_seek_audio` this
+/// doesn't need an active document or audio player.
+pub fn handle_change_seek_amount(config: &Rc<Mutex<ConfigManager>>, live_region_label: StaticText, increase: bool) {
+	let presets = dialogs::AUDIO_SEEK_AMOUNTS_SECONDS;
+	let cfg = config.lock().unwrap();
+	let current = cfg.get_app_int("audio_seek_amount_seconds", 10);
+	let index = presets.iter().position(|&secs| secs == current).unwrap_or_else(|| {
+		presets
+			.iter()
+			.enumerate()
+			.min_by_key(|&(_, &secs)| (secs - current).abs())
+			.map_or(0, |(nearest_index, _)| nearest_index)
+	});
+	let new_index = if increase { (index + 1).min(presets.len() - 1) } else { index.saturating_sub(1) };
+	let new_value = presets[new_index];
+	let at_limit = new_index == index;
+	cfg.set_app_int("audio_seek_amount_seconds", new_value);
+	cfg.flush();
+	drop(cfg);
+	let label = seek_amount_label(new_value);
+	let message = if at_limit && increase {
+		// TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+		t("Audio seek amount: {} (maximum).").replace("{}", &label)
+	} else if at_limit {
+		// TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+		t("Audio seek amount: {} (minimum).").replace("{}", &label)
+	} else {
+		// TRANSLATORS: Announced after changing the audio seek amount via keyboard shortcut; {} is the new amount, e.g. "30 seconds"
+		t("Audio seek amount: {}.").replace("{}", &label)
+	};
+	live_region::announce(live_region_label, &message);
+}
+
 pub fn handle_bookmark_with_note(
 	frame: &Frame,
 	doc_manager: &Rc<Mutex<DocumentManager>>,

@@ -18,8 +18,9 @@ use crate::{
 };
 
 /// Selectable audio seek amounts, in seconds, shown in the Options dialog and indexed by
-/// `audio_seek_amount_ctrl`'s selection.
-const AUDIO_SEEK_AMOUNTS_SECONDS: [i32; 9] = [5, 10, 30, 60, 120, 300, 600, 1800, 3600];
+/// `audio_seek_amount_ctrl`'s selection. Also the step sequence `navigation::handle_change_seek_amount`
+/// walks when nudging the seek amount via keyboard shortcut, so the two stay in lockstep.
+pub(crate) const AUDIO_SEEK_AMOUNTS_SECONDS: [i32; 9] = [5, 10, 30, 60, 120, 300, 600, 1800, 3600];
 
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {

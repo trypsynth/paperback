@@ -73,6 +73,24 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	let seek_backward_label = format_menu_label(&t("Seek Audio &Backward"), ActionId::SeekAudioBackward, config);
 	let seek_backward_help = t("Skip the audio narration backward");
 	menu.append(menu_ids::SEEK_AUDIO_BACKWARD, &seek_backward_label, &seek_backward_help, ItemKind::Normal);
+	let increase_seek_amount_label =
+		format_menu_label(&t("&Increase Audio Seek Amount"), ActionId::IncreaseAudioSeekAmount, config);
+	let increase_seek_amount_help = t("Increase how far seeking the audio narration moves");
+	menu.append(
+		menu_ids::INCREASE_AUDIO_SEEK_AMOUNT,
+		&increase_seek_amount_label,
+		&increase_seek_amount_help,
+		ItemKind::Normal,
+	);
+	let decrease_seek_amount_label =
+		format_menu_label(&t("&Decrease Audio Seek Amount"), ActionId::DecreaseAudioSeekAmount, config);
+	let decrease_seek_amount_help = t("Decrease how far seeking the audio narration moves");
+	menu.append(
+		menu_ids::DECREASE_AUDIO_SEEK_AMOUNT,
+		&decrease_seek_amount_label,
+		&decrease_seek_amount_help,
+		ItemKind::Normal,
+	);
 	let full_screen_label = format_menu_label(&t("&Full Screen"), ActionId::ToggleFullScreen, config);
 	let full_screen_help = t("Toggle full screen");
 	menu.append(menu_ids::TOGGLE_FULL_SCREEN, &full_screen_label, &full_screen_help, ItemKind::Check);

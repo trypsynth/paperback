@@ -1111,6 +1111,12 @@ impl MainWindow {
 				menu_ids::SEEK_AUDIO_BACKWARD => {
 					navigation::handle_seek_audio(&dm, &config, live_region_label, false);
 				}
+				menu_ids::INCREASE_AUDIO_SEEK_AMOUNT => {
+					navigation::handle_change_seek_amount(&config, live_region_label, true);
+				}
+				menu_ids::DECREASE_AUDIO_SEEK_AMOUNT => {
+					navigation::handle_change_seek_amount(&config, live_region_label, false);
+				}
 				menu_ids::TOGGLE_FULL_SCREEN => {
 					let new_state = !frame_copy.is_full_screen();
 					frame_copy.show_full_screen(new_state);

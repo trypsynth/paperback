@@ -127,6 +127,8 @@ pub enum ActionId {
 	PlayPauseAudio,
 	SeekAudioForward,
 	SeekAudioBackward,
+	IncreaseAudioSeekAmount,
+	DecreaseAudioSeekAmount,
 	ToggleFullScreen,
 	Options,
 	SleepTimer,
@@ -218,6 +220,8 @@ impl ActionId {
 			Self::PlayPauseAudio,
 			Self::SeekAudioForward,
 			Self::SeekAudioBackward,
+			Self::IncreaseAudioSeekAmount,
+			Self::DecreaseAudioSeekAmount,
 			Self::ToggleFullScreen,
 			Self::Options,
 			Self::SleepTimer,
@@ -309,6 +313,8 @@ impl ActionId {
 			| Self::PlayPauseAudio
 			| Self::SeekAudioForward
 			| Self::SeekAudioBackward
+			| Self::IncreaseAudioSeekAmount
+			| Self::DecreaseAudioSeekAmount
 			| Self::ToggleFullScreen
 			| Self::Options
 			| Self::SleepTimer
@@ -398,6 +404,8 @@ impl ActionId {
 			Self::PlayPauseAudio => "Play/Pause Audio",
 			Self::SeekAudioForward => "Seek Audio Forward",
 			Self::SeekAudioBackward => "Seek Audio Backward",
+			Self::IncreaseAudioSeekAmount => "Increase Audio Seek Amount",
+			Self::DecreaseAudioSeekAmount => "Decrease Audio Seek Amount",
 			Self::ToggleFullScreen => "Full Screen",
 			Self::Options => "Options...",
 			Self::SleepTimer => "Sleep Timer...",
@@ -490,6 +498,8 @@ impl ActionId {
 			Self::PlayPauseAudio => Some(KeyChord::new(true, false, false, "Space")),
 			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
+			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),
+			Self::DecreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, ";")),
 			// The conventional shortcut is Control+Command+F; RawCtrl forces the
 			// physical Control key while plain Ctrl auto-translates to Command on mac.
 			Self::ToggleFullScreen => {
@@ -584,6 +594,8 @@ impl ActionId {
 			Self::PlayPauseAudio => Some(KeyChord::new(true, false, false, "Space")),
 			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
+			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),
+			Self::DecreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, ";")),
 			Self::ToggleFullScreen => Some(KeyChord::new(false, false, false, "F11")),
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
