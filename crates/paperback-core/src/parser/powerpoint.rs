@@ -20,7 +20,7 @@ use crate::{
 		util::{
 			ooxml::read_ooxml_relationships, path::extract_title_from_path, xml::collect_text_from_tagged_elements,
 		},
-		word::try_decrypt_office_file,
+		word::ooxml::try_decrypt_office_file,
 	},
 	t,
 	types::LinkInfo,
