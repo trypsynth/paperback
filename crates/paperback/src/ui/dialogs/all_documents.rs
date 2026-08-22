@@ -13,6 +13,14 @@ const RECENT_DOCS_STATUS_WIDTH: i32 = 100;
 const RECENT_DOCS_PATH_WIDTH: i32 = 450;
 const STATUS_BAR_DEBOUNCE_MS: i32 = 10;
 
+// wxListCtrl is not exposed to VoiceOver as an accessible table on macOS.
+// wxDataViewListCtrl uses the native data-view implementation there, while the
+// existing ListCtrl remains appropriate on Windows and Linux.
+#[cfg(target_os = "macos")]
+type DocumentList = DataViewListCtrl;
+#[cfg(not(target_os = "macos"))]
+type DocumentList = ListCtrl;
+
 pub struct AllDocumentsResult {
 	pub open: Option<String>,
 	pub paths_to_close: Vec<String>,
@@ -20,7 +28,7 @@ pub struct AllDocumentsResult {
 
 #[derive(Copy, Clone)]
 struct AllDocumentsWidgets {
-	list: ListCtrl,
+	list: DocumentList,
 	open_button: Button,
 	locate_button: Button,
 	remove_button: Button,
@@ -163,7 +171,8 @@ fn show_yes_no_dialog(parent: &dyn WxWidget, message: &str, title: &str) -> bool
 	dialog.show_modal() == ID_OK
 }
 
-fn build_all_documents_list(dialog: Dialog) -> ListCtrl {
+#[cfg(not(target_os = "macos"))]
+fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 	let doc_list = ListCtrl::builder(&dialog)
 		.with_style(ListCtrlStyle::Report)
 		.with_size(Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT))
@@ -174,6 +183,22 @@ fn build_all_documents_list(dialog: Dialog) -> ListCtrl {
 	doc_list.insert_column(1, &t("Status"), ListColumnFormat::Left, RECENT_DOCS_STATUS_WIDTH);
 	// TRANSLATORS: Column header for the file path in the All Documents list
 	doc_list.insert_column(2, &t("Path"), ListColumnFormat::Left, RECENT_DOCS_PATH_WIDTH);
+	doc_list
+}
+
+#[cfg(target_os = "macos")]
+fn build_all_documents_list(dialog: Dialog) -> DocumentList {
+	let doc_list = DataViewListCtrl::builder(&dialog)
+		.with_style(DataViewStyle::Multiple | DataViewStyle::RowLines)
+		.with_size(Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT))
+		.build();
+	let column_flags = DataViewColumnFlags::Resizable;
+	// TRANSLATORS: Column header for the document filename in the All Documents list
+	doc_list.append_text_column(&t("File Name"), 0, DataViewAlign::Left, RECENT_DOCS_FILENAME_WIDTH, column_flags);
+	// TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
+	doc_list.append_text_column(&t("Status"), 1, DataViewAlign::Left, RECENT_DOCS_STATUS_WIDTH, column_flags);
+	// TRANSLATORS: Column header for the file path in the All Documents list
+	doc_list.append_text_column(&t("Path"), 2, DataViewAlign::Left, RECENT_DOCS_PATH_WIDTH, column_flags);
 	doc_list
 }
 
@@ -216,6 +241,7 @@ fn build_all_documents_buttons(dialog: Dialog) -> (Button, Button, Button, Butto
 	(open_button, locate_button, remove_button, clear_all_button, ok_button)
 }
 
+#[cfg(not(target_os = "macos"))]
 fn bind_all_documents_selection(widgets: AllDocumentsWidgets, status_debounce: StatusBarDebounce) {
 	let AllDocumentsWidgets { list, open_button, locate_button, .. } = widgets;
 	let list_for_select = list;
@@ -244,9 +270,23 @@ fn bind_all_documents_selection(widgets: AllDocumentsWidgets, status_debounce: S
 	});
 }
 
+#[cfg(target_os = "macos")]
+fn bind_all_documents_selection(widgets: AllDocumentsWidgets, status_debounce: StatusBarDebounce) {
+	let AllDocumentsWidgets { list, open_button, locate_button, .. } = widgets;
+	list.on_selection_changed(move |event| {
+		if let Some(index) = event.get_item().and_then(|item| list.item_to_row(&item)) {
+			update_open_button_for_index(list, open_button, i32::try_from(index).unwrap_or(i32::MAX));
+		} else {
+			open_button.enable(false);
+		}
+		update_locate_button(list, locate_button);
+		status_debounce.request_update();
+	});
+}
+
 fn make_all_documents_open_action(
 	dialog: Dialog,
-	list: ListCtrl,
+	list: DocumentList,
 	selected_path: Rc<Mutex<Option<String>>>,
 ) -> Rc<dyn Fn()> {
 	Rc::new(move || {
@@ -259,14 +299,21 @@ fn make_all_documents_open_action(
 	})
 }
 
-fn bind_all_documents_open(list: ListCtrl, open_button: Button, open_action: &Rc<dyn Fn()>) {
+fn bind_all_documents_open(list: DocumentList, open_button: Button, open_action: &Rc<dyn Fn()>) {
 	let open_action_for_button = Rc::clone(open_action);
 	open_button.on_click(move |_| {
 		open_action_for_button();
 	});
 	let open_action_for_activate = Rc::clone(open_action);
+	#[cfg(not(target_os = "macos"))]
 	list.on_item_activated(move |event| {
 		if event.get_item_index() >= 0 {
+			open_action_for_activate();
+		}
+	});
+	#[cfg(target_os = "macos")]
+	list.on_item_activated(move |event| {
+		if event.get_item().is_some() {
 			open_action_for_activate();
 		}
 	});
@@ -343,7 +390,7 @@ fn bind_all_documents_clear(
 	status_debounce: StatusBarDebounce,
 ) {
 	widgets.clear_all_button.on_click(move |_| {
-		if widgets.list.get_item_count() == 0 {
+		if document_list_item_count(widgets.list) == 0 {
 			return;
 		}
 		if !show_yes_no_dialog(
@@ -448,11 +495,7 @@ fn bind_all_documents_keys(
 				return;
 			}
 			if key == i32::from(b'A') && event.control_down() {
-				if event.shift_down() {
-					list_for_keys.set_item_state(-1, ListItemState::default(), ListItemState::Selected);
-				} else {
-					list_for_keys.set_item_state(-1, ListItemState::Selected, ListItemState::Selected);
-				}
+				set_all_document_list_items_selected(list_for_keys, !event.shift_down());
 				status_debounce.request_update();
 				event.skip(false);
 				return;
@@ -546,18 +589,12 @@ fn populate_document_list(params: &DocumentListParams<'_>) {
 	let AllDocumentsWidgets { list, open_button, locate_button, remove_button, clear_all_button, status_bar, .. } =
 		widgets;
 	status_debounce.suppress.set(true);
-	list.cleanup_all_custom_data();
-	list.delete_all_items();
+	clear_document_list(list);
 	let items = {
 		let cfg = config.lock().unwrap();
 		paperback_core::config::get_sorted_document_list(&cfg, open_paths, filter, status_filter)
 	};
 	for item in items {
-		let index = i64::from(list.get_item_count());
-		list.insert_item(index, &item.filename, None);
-		if let Ok(index_u64) = u64::try_from(index) {
-			list.set_custom_data(index_u64, item.path.clone());
-		}
 		let status = match item.status {
 			// TRANSLATORS: Status of a document that is currently open in a tab
 			DocumentListStatus::Open => t("Open"),
@@ -566,20 +603,15 @@ fn populate_document_list(params: &DocumentListParams<'_>) {
 			// TRANSLATORS: Status of a document whose file could not be found on disk
 			DocumentListStatus::Missing => t("Missing"),
 		};
-		list.set_item_text_by_column(index, 1, &status);
-		list.set_item_text_by_column(index, 2, &item.path);
+		append_document_list_item(list, &item.filename, &status, &item.path);
 	}
-	if list.get_item_count() > 0 {
+	let item_count = document_list_item_count(list);
+	if item_count > 0 {
 		let mut select_index = selection.unwrap_or(0);
-		if select_index >= list.get_item_count() {
-			select_index = list.get_item_count() - 1;
+		if select_index >= item_count {
+			select_index = item_count - 1;
 		}
-		list.set_item_state(
-			i64::from(select_index),
-			ListItemState::Selected | ListItemState::Focused,
-			ListItemState::Selected | ListItemState::Focused,
-		);
-		list.ensure_visible(i64::from(select_index));
+		select_document_list_item(list, select_index);
 		update_open_button_for_index(list, open_button, select_index);
 		update_locate_button(list, locate_button);
 		remove_button.enable(true);
@@ -603,8 +635,8 @@ fn status_filter_from_choice(status_choice: Choice) -> Option<DocumentListStatus
 	}
 }
 
-fn update_document_status_bar(list: ListCtrl, status_bar: StatusBar) {
-	let total = list.get_item_count();
+fn update_document_status_bar(list: DocumentList, status_bar: StatusBar) {
+	let total = document_list_item_count(list);
 	let selected = get_selected_indices(list).len();
 	let formatted = format_document_status_text(total, selected);
 	status_bar.set_status_text(&formatted, 0);
@@ -634,18 +666,18 @@ fn format_document_status_text(total: i32, selected: usize) -> String {
 	}
 }
 
-fn update_open_button_for_index(list: ListCtrl, open_button: Button, index: i32) {
+fn update_open_button_for_index(list: DocumentList, open_button: Button, index: i32) {
 	if index < 0 {
 		open_button.enable(false);
 		return;
 	}
-	let status = list.get_item_text(i64::from(index), 1);
+	let status = get_document_list_text(list, index, 1);
 	open_button.enable(status != t("Missing"));
 }
 
-fn update_locate_button(list: ListCtrl, locate_button: Button) {
+fn update_locate_button(list: DocumentList, locate_button: Button) {
 	let indices = get_selected_indices(list);
-	let enabled = if indices.len() == 1 { list.get_item_text(i64::from(indices[0]), 1) == t("Missing") } else { false };
+	let enabled = if indices.len() == 1 { get_document_list_text(list, indices[0], 1) == t("Missing") } else { false };
 	locate_button.enable(enabled);
 }
 
@@ -691,7 +723,8 @@ fn bind_all_documents_locate(
 	});
 }
 
-fn get_selected_index(list: ListCtrl) -> i32 {
+#[cfg(not(target_os = "macos"))]
+fn get_selected_index(list: DocumentList) -> i32 {
 	let selected = list.get_first_selected_item();
 	if selected >= 0 {
 		return selected;
@@ -699,7 +732,13 @@ fn get_selected_index(list: ListCtrl) -> i32 {
 	list.get_next_item(-1, ListNextItemFlag::All, ListItemState::Focused)
 }
 
-fn get_selected_indices(list: ListCtrl) -> Vec<i32> {
+#[cfg(target_os = "macos")]
+fn get_selected_index(list: DocumentList) -> i32 {
+	list.get_selected_row().and_then(|index| i32::try_from(index).ok()).unwrap_or(-1)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn get_selected_indices(list: DocumentList) -> Vec<i32> {
 	let mut indices = Vec::new();
 	let mut next = list.get_first_selected_item();
 	while next >= 0 {
@@ -709,21 +748,112 @@ fn get_selected_indices(list: ListCtrl) -> Vec<i32> {
 	indices
 }
 
-fn get_path_for_index(list: ListCtrl, index: i32) -> Option<String> {
+#[cfg(target_os = "macos")]
+fn get_selected_indices(list: DocumentList) -> Vec<i32> {
+	(0..list.get_item_count())
+		.filter(|&index| list.is_row_selected(index))
+		.filter_map(|index| i32::try_from(index).ok())
+		.collect()
+}
+
+fn get_path_for_index(list: DocumentList, index: i32) -> Option<String> {
 	if index < 0 {
 		return None;
 	}
+	#[cfg(not(target_os = "macos"))]
 	if let Ok(index_u64) = u64::try_from(index)
 		&& let Some(data) = list.get_custom_data(index_u64)
 		&& let Some(path) = data.as_ref().downcast_ref::<String>()
 	{
 		return Some(path.clone());
 	}
-	let path = list.get_item_text(i64::from(index), 2);
+	let path = get_document_list_text(list, index, 2);
 	if path.is_empty() { None } else { Some(path) }
 }
 
-fn get_selected_path(list: ListCtrl) -> Option<String> {
+fn get_selected_path(list: DocumentList) -> Option<String> {
 	let index = get_selected_index(list);
 	get_path_for_index(list, index)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn document_list_item_count(list: DocumentList) -> i32 {
+	list.get_item_count()
+}
+
+#[cfg(target_os = "macos")]
+fn document_list_item_count(list: DocumentList) -> i32 {
+	i32::try_from(list.get_item_count()).unwrap_or(i32::MAX)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn clear_document_list(list: DocumentList) {
+	list.cleanup_all_custom_data();
+	list.delete_all_items();
+}
+
+#[cfg(target_os = "macos")]
+fn clear_document_list(list: DocumentList) {
+	list.delete_all_items();
+}
+
+#[cfg(not(target_os = "macos"))]
+fn append_document_list_item(list: DocumentList, filename: &str, status: &str, path: &str) {
+	let index = i64::from(list.get_item_count());
+	list.insert_item(index, filename, None);
+	if let Ok(index_u64) = u64::try_from(index) {
+		list.set_custom_data(index_u64, path.to_owned());
+	}
+	list.set_item_text_by_column(index, 1, status);
+	list.set_item_text_by_column(index, 2, path);
+}
+
+#[cfg(target_os = "macos")]
+fn append_document_list_item(list: DocumentList, filename: &str, status: &str, path: &str) {
+	list.append_item(&[Variant::from(filename), Variant::from(status), Variant::from(path)]);
+}
+
+#[cfg(not(target_os = "macos"))]
+fn select_document_list_item(list: DocumentList, index: i32) {
+	list.set_item_state(
+		i64::from(index),
+		ListItemState::Selected | ListItemState::Focused,
+		ListItemState::Selected | ListItemState::Focused,
+	);
+	list.ensure_visible(i64::from(index));
+}
+
+#[cfg(target_os = "macos")]
+fn select_document_list_item(list: DocumentList, index: i32) {
+	let Ok(index) = usize::try_from(index) else { return };
+	list.select_row(index);
+	if let Some(item) = list.row_to_item(index) {
+		list.set_current_item(&item);
+		list.ensure_visible(&item);
+	}
+}
+
+#[cfg(not(target_os = "macos"))]
+fn set_all_document_list_items_selected(list: DocumentList, selected: bool) {
+	let state = if selected { ListItemState::Selected } else { ListItemState::default() };
+	list.set_item_state(-1, state, ListItemState::Selected);
+}
+
+#[cfg(target_os = "macos")]
+fn set_all_document_list_items_selected(list: DocumentList, selected: bool) {
+	if selected {
+		list.select_all();
+	} else {
+		list.unselect_all();
+	}
+}
+
+#[cfg(not(target_os = "macos"))]
+fn get_document_list_text(list: DocumentList, index: i32, column: usize) -> String {
+	list.get_item_text(i64::from(index), column as i32)
+}
+
+#[cfg(target_os = "macos")]
+fn get_document_list_text(list: DocumentList, index: i32, column: usize) -> String {
+	usize::try_from(index).map_or_else(|_| String::new(), |index| list.get_text_value(index, column))
 }
