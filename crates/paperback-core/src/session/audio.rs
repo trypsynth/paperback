@@ -24,7 +24,7 @@ impl DocumentSession {
 		self.audio().map_or(0, |timeline| i32::try_from(timeline.sources().len()).unwrap_or(0))
 	}
 
-	/// Empty for a zip-embedded source, an out-of-range index, or a document with no audio —
+	/// Empty for a zip-embedded source, an out-of-range index, or a document with no audio;
 	/// otherwise callers can play the path directly without `audio_extract_source_ffi`.
 	#[must_use]
 	pub fn audio_source_direct_path_ffi(&self, index: i32) -> String {
@@ -37,7 +37,7 @@ impl DocumentSession {
 	}
 
 	/// Writes source `index`'s audio bytes to `output_path`: extracted from its archive when
-	/// zip-embedded, copied otherwise — for platforms whose player needs a real local path.
+	/// zip-embedded, copied otherwise, for platforms whose player needs a real local path.
 	#[must_use]
 	pub fn audio_extract_source_ffi(&self, index: i32, output_path: String) -> bool {
 		let Some(timeline) = self.audio() else { return false };

@@ -174,7 +174,7 @@ impl AudioTimeline {
 	}
 
 	/// The document-wide elapsed time corresponding to `raw_ms` within `source`'s own audio
-	/// file — the reverse of `resolve`, used to translate a decoder's reported position back
+	/// file (the reverse of `resolve`), used to translate a decoder's reported position back
 	/// into document coordinates. Falls back to the nearest preceding clip's end when
 	/// `raw_ms` lands in an unrecorded gap.
 	#[must_use]

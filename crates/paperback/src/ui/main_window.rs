@@ -631,7 +631,7 @@ impl MainWindow {
 		let config_for_timer = Rc::clone(&config);
 		sleep_timer.on_tick(move |_| {
 			// `Timer::on_tick` binds `EventType::TIMER` on the *owner*, not on the timer, and
-			// wxdragon gives its timers no distinguishing id — so every timer parented to this
+			// wxdragon gives its timers no distinguishing id, so every timer parented to this
 			// frame delivers its ticks to every handler bound here. This one shuts the app down,
 			// so it has to confirm the deadline really passed rather than trust that being
 			// called means its own timer fired.

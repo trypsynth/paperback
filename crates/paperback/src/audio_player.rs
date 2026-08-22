@@ -29,7 +29,7 @@ struct PlayerState {
 	/// seek has to wait for `MediaCtrlEvent::Loaded`.
 	pending_seek_ms: Option<u64>,
 	/// Whether a `Load()` is in flight, waiting on its `Loaded` event. Overlapping `Load()`
-	/// calls race the backend — the `Loaded` event can't be tied back to either call — so a
+	/// calls race the backend, and the `Loaded` event can't be tied back to either call, so a
 	/// new source request queues in `pending_load_target` instead.
 	load_in_flight: bool,
 	/// The most recent source request that arrived mid-load, acted on once the in-flight
@@ -236,7 +236,7 @@ impl AudioPlayer {
 		let source = state.current_source?;
 		// Mid-load, `current_source` is already the new source but the control isn't, so
 		// `tell()` still reports the previous source's stale position. Report where playback
-		// is headed instead — this matters at chapter boundaries, which are source switches.
+		// is headed instead; this matters at chapter boundaries, which are source switches.
 		let raw_ms = if state.load_in_flight {
 			state.pending_seek_ms.unwrap_or(0)
 		} else {
@@ -249,7 +249,7 @@ impl AudioPlayer {
 	/// Falls back to a seek that was deferred because it arrived while paused (see
 	/// `pending_target_ms`), so browsing a paused book still records where it would pick up.
 	/// `None` means nothing has established a position yet, and callers must not treat that
-	/// as "the start" — it would wipe a perfectly good stored position.
+	/// as "the start", since it would wipe a perfectly good stored position.
 	#[must_use]
 	pub fn resume_point_ms(&self) -> Option<u64> {
 		self.elapsed_ms().or_else(|| self.state.borrow().pending_target_ms)
@@ -268,13 +268,13 @@ fn apply_seek(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: 
 	};
 }
 
-/// `wxWMP10MediaBackend::SetPosition` — the only Windows backend that reliably plays
-/// audio-only DAISY sources, see `AudioPlayer::new` — subtracts a full video frame's
+/// `wxWMP10MediaBackend::SetPosition` (the only Windows backend that reliably plays
+/// audio-only DAISY sources, see `AudioPlayer::new`) subtracts a full video frame's
 /// worth of time (`1000 / playback_rate` ms) from every seek target before applying it.
 /// It's a workaround upstream added so video controls redraw the correct frame after a
 /// seek (`src/msw/mediactrl_wmp10.cpp`, `SetPosition`), fired unconditionally even for
 /// audio-only media. Left uncompensated, every jump lands about a second before the
-/// intended clip — audible as the tail of the *previous* line instead of the one just
+/// intended clip, audible as the tail of the *previous* line instead of the one just
 /// navigated to (e.g. hearing "...District Twelve" instead of "End of Book Two"). Adding
 /// the same amount back before handing the target to the backend cancels it out. Other
 /// platforms' backends don't carry this bug, so the compensation is Windows-only.
@@ -294,7 +294,7 @@ fn native_seek_target_ms(_media: &MediaCtrl, seek_ms: u64) -> u64 {
 
 /// Entry point for switching to `source_index`: starts loading it immediately, unless a
 /// load is already in flight, in which case this becomes the target picked up once that
-/// one's `Loaded` event fires — see `PlayerState::pending_load_target`.
+/// one's `Loaded` event fires; see `PlayerState::pending_load_target`.
 fn request_source(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: usize, seek_ms: u64) -> bool {
 	if state.borrow().load_in_flight {
 		tracing::debug!(source_index, seek_ms, "audio: request_source queued behind in-flight load");

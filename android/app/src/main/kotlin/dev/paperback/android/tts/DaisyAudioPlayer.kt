@@ -203,7 +203,7 @@ class DaisyAudioPlayer(
 	}
 
 	/** Seeks playback to `elapsedMs` into the overall document timeline. While paused this
-	 * only records the target, applying it lazily on resume — mirrors desktop, so browsing a
+	 * only records the target, applying it lazily on resume (mirrors desktop), so browsing a
 	 * paused book with real navigation doesn't drive a full load per keystroke. */
 	fun seekToMs(elapsedMs: Long): Boolean {
 		val session = session ?: return false
@@ -338,7 +338,7 @@ class DaisyAudioPlayer(
 	}
 
 	/** Auto-advances to whichever source continues the narration, or stops at the end of the
-	 * book — the Android analog of desktop's `on_finished` handler. */
+	 * book. Android's analog of desktop's `on_finished` handler. */
 	private fun onSourceCompleted(sourceIndex: Int) {
 		val session = session ?: return
 		val next = session.audioNextSourceAfterFfi(sourceIndex)
@@ -384,8 +384,8 @@ class DaisyAudioPlayer(
 		pollJob = null
 	}
 
-	/** Keeps the reported "currently narrating" clip in step with natural playback advance —
-	 * the always-on equivalent of desktop's `pump_audio`. */
+	/** Keeps the reported "currently narrating" clip in step with natural playback advance.
+	 * The always-on equivalent of desktop's `pump_audio`. */
 	private fun pollTick() {
 		val session = session ?: return
 		val source = currentSource ?: return
@@ -413,7 +413,7 @@ class DaisyAudioPlayer(
 	}
 
 	/** Where playback would resume right now. `null` means no position has been established
-	 * yet — callers must not treat that as "the start", it would overwrite a stored position. */
+	 * yet; callers must not treat that as "the start", since it would overwrite a stored position. */
 	fun resumePointMs(): Long? {
 		val session = session
 		val source = currentSource

@@ -166,7 +166,7 @@ mod tests {
 	}
 
 	/// `clipEnd` is `#IMPLIED` in the DAISY 3 SMIL DTD and means "to the end of the media" in
-	/// SMIL 2.0, so the par must survive for the caller to bound — not be dropped outright.
+	/// SMIL 2.0, so the par must survive for the caller to bound, not be dropped outright.
 	#[test]
 	fn absent_clip_end_is_none_rather_than_dropping_the_par() {
 		let smil = r#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="s">

@@ -1057,7 +1057,7 @@ mod tests {
 	}
 
 	/// A player that hasn't established a position yet reports `None`, and that must not wipe
-	/// the stored time — otherwise merely opening a book would discard where it was up to.
+	/// the stored time, since otherwise merely opening a book would discard where it was up to.
 	#[test]
 	fn audio_time_none_does_not_clear_a_stored_value() {
 		let mut config = ConfigManager::new();

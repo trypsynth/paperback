@@ -588,7 +588,7 @@ pub fn handle_toggle_play_pause_audio(doc_manager: &Rc<Mutex<DocumentManager>>, 
 
 /// Skips the active document's audio narration backward or forward by the configured seek
 /// amount (`audio_seek_amount_seconds`, default 10). When "sync caret to audio" is on, the
-/// caret follows the new audio position, mirroring what `pump_audio` does during playback —
+/// caret follows the new audio position, mirroring what `pump_audio` does during playback;
 /// this is the one-shot equivalent for an explicit seek rather than passive following.
 pub fn handle_seek_audio(
 	doc_manager: &Rc<Mutex<DocumentManager>>,

@@ -581,7 +581,7 @@ struct ResolvedClip {
 
 /// Gives every clip a concrete end time and sorts the result by text position. A par with no
 /// `clipEnd` runs "to the end of the media" per SMIL 2.0, which in a DAISY book means up to
-/// whatever plays next from the same audio file — so it is bounded by the next clip against
+/// whatever plays next from the same audio file, so it is bounded by the next clip against
 /// that source, searched across the whole book rather than just its own SMIL. A trailing
 /// open-ended clip has nothing after it to measure against and would need the file's real
 /// duration, which the parser doesn't decode, so it is dropped.

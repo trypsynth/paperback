@@ -54,7 +54,7 @@ impl ConfigManagerFfi {
 	}
 
 	/// Persists the elapsed-audio-time resume point for a DAISY audiobook. `time_ms < 0`
-	/// leaves any stored value alone (see `ConfigManager::set_document_audio_time`) — a
+	/// leaves any stored value alone (see `ConfigManager::set_document_audio_time`), so a
 	/// document that hasn't started playing can't wipe a previously saved position.
 	pub fn set_document_audio_time_ffi(&self, path: String, time_ms: i64) {
 		let time_ms = u64::try_from(time_ms).ok();

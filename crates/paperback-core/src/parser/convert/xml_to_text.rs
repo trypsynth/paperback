@@ -249,7 +249,7 @@ impl XmlToText {
 
 	/// Records every id *inside* `node` at `position`. `<a>` and `<table>` emit their text
 	/// through a helper and skip recursing into their children, so without this the ids on
-	/// those children are never seen at all — and a DAISY SMIL `<par>` anchored to one (a
+	/// those children are never seen at all, and a DAISY SMIL `<par>` anchored to one (a
 	/// narrated `<em>` inside a link, say) loses its audio clip entirely. `position` is the
 	/// containing element's own start, since the skipped subtree's text is emitted as one
 	/// run with no per-descendant offsets to attribute; for the common case of an element
@@ -777,7 +777,7 @@ mod tests {
 	}
 
 	// `<a>` emits its text in one go and skips its children, so ids on elements inside a link
-	// were never recorded — losing the audio clip of any DAISY SMIL par anchored to one.
+	// were never recorded, losing the audio clip of any DAISY SMIL par anchored to one.
 	#[test]
 	fn ids_inside_a_link_are_recorded_at_the_links_start() {
 		let xml = r##"<root><body><p>Before. <a href="#x"><em id="em1">Title Page</em></a></p></body></root>"##;

@@ -285,7 +285,7 @@ impl DocumentManager {
 		self.tabs[tab_index].session.set_stable_position(initial_pos);
 		// Resume the narration from the time that was actually reached, not from the caret.
 		// Deriving it from the caret only lands on the start of whichever clip contains that
-		// position, so it loses however much of that clip had already played — and loses
+		// position, so it loses however much of that clip had already played, and loses
 		// everything since the last explicit jump if the caret wasn't following the audio.
 		let saved_audio_time = config.get_document_audio_time(&path_str);
 		if let Some(player) = self.tabs[tab_index].audio_player.as_mut() {
