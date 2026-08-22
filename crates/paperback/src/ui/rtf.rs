@@ -3,5 +3,6 @@
 //! builds a minimal RTF blob from plain text and formatting segments, and [`stream`] feeds
 //! it into the native control via `EM_STREAMIN`.
 
+#[cfg(target_os = "windows")]
 pub mod stream;
 pub mod write;
