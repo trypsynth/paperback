@@ -511,6 +511,7 @@ fn build_plain_audio_zip_document<R: Read + std::io::Seek>(
 			Path::new(entry).file_stem().map_or_else(|| entry.clone(), |stem| stem.to_string_lossy().to_string());
 		let position = buffer.current_position();
 		buffer.append(" ");
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, position));
 		let source = audio_builder
 			.add_source(AudioLocation::ZipEntry { archive: archive_path.to_string(), entry: entry.clone() }, None);
 		audio_builder.add_clip(source, 0, PLACEHOLDER_CLIP_DURATION_MS, position, position + 1);
@@ -1324,6 +1325,17 @@ mod tests {
 			!document.buffer.content.chars().any(|c| c != ' '),
 			"the text field must show no real content for a plain audio bundle"
 		);
+
+		// Each section must carry a SectionBreak marker, or Previous/Next Section navigation
+		// (bound to [ and ]) finds nothing to jump to.
+		let section_marker_positions: Vec<usize> = document
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| m.mtype == MarkerType::SectionBreak)
+			.map(|m| m.position)
+			.collect();
+		assert_eq!(section_marker_positions, document.toc_items.iter().map(|item| item.offset).collect::<Vec<_>>());
 
 		let audio = document.audio.expect("audio timeline should be populated");
 		assert_eq!(audio.sources().len(), 3);
