@@ -9,6 +9,7 @@ mod android;
 mod ios;
 mod release;
 mod sanitize_rust;
+mod translate;
 
 fn main() -> Result<(), Box<dyn Error>> {
 	let task = env::args().nth(1);
@@ -18,6 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 		Some("ios") => ios::ios()?,
 		Some("ios-release") => ios::ios_release()?,
 		Some("gen-pot") => gen_pot()?,
+		Some("translate") => translate::translate()?,
 		_ => print_help(),
 	}
 	Ok(())
@@ -32,10 +34,14 @@ pub(crate) fn print_help() {
 	println!("	  --debug            Build APK using gradlew assembleDebug");
 	println!("	  --install-release  Install release APK using gradlew installRelease");
 	println!("	  --install-debug    Install debug APK using gradlew installDebug");
+	println!("	  --build-aab        Build a release App Bundle (.aab) for Play Store upload");
 	println!("	ios           Generate Swift bindings and build XCFramework for iOS");
 	println!("	  --release          Build in release mode (default is debug)");
 	println!("	ios-release   Archive and export a release IPA for App Store Connect");
 	println!("	  --upload           Upload directly to App Store Connect via altool");
+	println!("	translate     Regenerate the pot, sync po/*.po via msgmerge, and fill blank/fuzzy");
+	println!("	              entries via the DeepL API (needs DEEPL_API_KEY)");
+	println!("	  --dry-run          Report what would change; no API calls, no writes");
 }
 
 pub(crate) fn project_root() -> PathBuf {
@@ -65,7 +71,7 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 		sanitize_dir_into(src_dir, &dest)?;
 		sanitized_dirs.push(dest);
 	}
-	let version = crate_version(&root.join("crates/paperback/Cargo.toml"));
+	let version = crate_version(&root, "paperback")?;
 	let gen_result = patois_build::gen_pot_from_dirs(&sanitized_dirs, &po_dir, "paperback", &version);
 	let _ = fs::remove_dir_all(&sanitized_root);
 	gen_result?;
@@ -110,26 +116,26 @@ fn translatable_crate_src_dirs(root: &Path) -> Vec<PathBuf> {
 	dirs
 }
 
-/// Read the `version` field from a crate manifest's `[package]` section.
-fn crate_version(manifest_path: &Path) -> String {
-	let Ok(content) = fs::read_to_string(manifest_path) else {
-		return "0.0.0".to_string();
-	};
-	let mut in_package = false;
-	for line in content.lines() {
-		let trimmed = line.trim();
-		if trimmed.starts_with('[') {
-			in_package = trimmed == "[package]";
-			continue;
-		}
-		if in_package
-			&& let Some(rest) = trimmed.strip_prefix("version")
-			&& let Some(value) = rest.trim_start().strip_prefix('=')
-		{
-			return value.trim().trim_matches('"').to_string();
-		}
+/// Resolve `package_name`'s version via `cargo metadata`, which correctly follows
+/// `version.workspace = true` inheritance from the workspace root. Hand-parsing the crate's
+/// own `Cargo.toml` instead would just find no literal `version = "..."` line and silently
+/// produce a wrong default.
+fn crate_version(root: &Path, package_name: &str) -> Result<String, Box<dyn Error>> {
+	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
+	let output = std::process::Command::new(&cargo)
+		.args(["metadata", "--format-version", "1", "--no-deps"])
+		.current_dir(root)
+		.output()?;
+	if !output.status.success() {
+		return Err("cargo metadata failed".into());
 	}
-	"0.0.0".to_string()
+	let meta: serde_json::Value = serde_json::from_slice(&output.stdout)?;
+	meta["packages"]
+		.as_array()
+		.and_then(|packages| packages.iter().find(|p| p["name"] == package_name))
+		.and_then(|p| p["version"].as_str())
+		.map(str::to_string)
+		.ok_or_else(|| format!("cargo metadata: package {package_name} not found").into())
 }
 
 /// Copy every `.rs` file under `src` into the same relative layout under `dest`, sanitizing

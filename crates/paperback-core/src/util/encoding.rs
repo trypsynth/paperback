@@ -1,5 +1,6 @@
 use std::str;
 
+use chardetng::{EncodingDetector, Iso2022JpDetection, Utf8Detection};
 use encoding_rs::{UTF_16BE, UTF_16LE, WINDOWS_1252};
 
 #[must_use]
@@ -47,6 +48,24 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 			return decoded.to_string();
 		}
 	}
+	// Legacy multi-byte encodings (GBK, Big5, Shift_JIS, EUC-KR, etc.) have no BOM and
+	// aren't valid UTF-8, so they can only be guessed heuristically. chardetng is the
+	// statistical detector Mozilla built specifically to pair with encoding_rs for this.
+	// Only trust its guess when it picks a multi-byte encoding: those have real
+	// structural constraints, so a clean decode is a meaningful signal. Single-byte
+	// encodings decode almost any input "successfully", so a confident-looking guess on
+	// a short/ambiguous sample is more likely wrong than not — that case is left to the
+	// Windows-1252-or-give-up fallback below, unchanged.
+	let mut detector = EncodingDetector::new(Iso2022JpDetection::Allow);
+	detector.feed(input, true);
+	let detected = detector.guess(None, Utf8Detection::Allow);
+	if !detected.is_single_byte() {
+		let (decoded, _, had_errors) = detected.decode(input);
+		if !had_errors {
+			return decoded.to_string();
+		}
+	}
+
 	// Windows-1252
 	let (decoded, _, _) = WINDOWS_1252.decode(input);
 	if decoded.chars().any(|c| !c.is_control() || c.is_whitespace()) {
@@ -58,9 +77,11 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 
 fn decode_utf32_le(input: &[u8]) -> String {
 	input
-		.chunks_exact(4)
+		.as_chunks::<4>()
+		.0
+		.iter()
 		.filter_map(|chunk| {
-			let code_point = u32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
+			let code_point = u32::from_le_bytes(*chunk);
 			char::from_u32(code_point)
 		})
 		.collect()
@@ -68,9 +89,11 @@ fn decode_utf32_le(input: &[u8]) -> String {
 
 fn decode_utf32_be(input: &[u8]) -> String {
 	input
-		.chunks_exact(4)
+		.as_chunks::<4>()
+		.0
+		.iter()
 		.filter_map(|chunk| {
-			let code_point = u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
+			let code_point = u32::from_be_bytes(*chunk);
 			char::from_u32(code_point)
 		})
 		.collect()
@@ -115,6 +138,33 @@ mod tests {
 	#[case(b"", "")]
 	fn test_convert_to_utf8_known_inputs(#[case] input: &[u8], #[case] expected: &str) {
 		assert_eq!(convert_to_utf8(input), expected);
+	}
+
+	/// <https://github.com/trypsynth/paperback/issues/632> — GBK-encoded Chinese text
+	/// (no BOM, not valid UTF-8) was falling through to the Windows-1252 fallback and
+	/// coming out as mojibake instead of being detected.
+	#[test]
+	fn detects_gbk_encoded_chinese_text() {
+		let original = "你好，世界。这是一个测试。";
+		let (encoded, _, had_errors) = encoding_rs::GBK.encode(original);
+		assert!(!had_errors, "test setup: GBK must be able to encode this sample");
+		assert_eq!(convert_to_utf8(&encoded), original);
+	}
+
+	#[test]
+	fn detects_big5_encoded_chinese_text() {
+		let original = "你好，世界。這是一個測試。";
+		let (encoded, _, had_errors) = encoding_rs::BIG5.encode(original);
+		assert!(!had_errors, "test setup: Big5 must be able to encode this sample");
+		assert_eq!(convert_to_utf8(&encoded), original);
+	}
+
+	#[test]
+	fn detects_shift_jis_encoded_japanese_text() {
+		let original = "こんにちは世界。これはテストです。";
+		let (encoded, _, had_errors) = encoding_rs::SHIFT_JIS.encode(original);
+		assert!(!had_errors, "test setup: Shift_JIS must be able to encode this sample");
+		assert_eq!(convert_to_utf8(&encoded), original);
 	}
 
 	#[test]

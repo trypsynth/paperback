@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
-"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-26 13:50+0100\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-22 00:25+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -27,327 +27,290 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-2: web\n"
 "X-Poedit-SearchPathExcluded-3: po\n"
 
-#: src/parser/pdf.rs:71
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"Ce PDF ne contient que des images, sans texte extractible. Vous devrez peut-"
-"être le traiter avec un logiciel OCR pour en lire le contenu."
-
-#: src/ui/app.rs:135
+#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "Impossible de créer le serveur IPC"
 
-#: src/ui/app.rs:135
+#. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
 msgstr "Avertissement"
 
-#: src/ui/dialogs.rs:117 src/ui/find.rs:183
-msgid "Options"
-msgstr "Options"
+#. TRANSLATORS: Description/tagline of the application shown in the About dialog
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "Un lecteur d'ebooks et de documents accessible, léger et rapide"
 
-#: src/ui/dialogs.rs:124
-msgid "&Restore previously opened documents on startup"
-msgstr "&Restaurer les documents précédemment ouverts au démarrage"
-
-#: src/ui/dialogs.rs:125
-msgid "&Word wrap"
-msgstr "&Retour à la ligne automatique"
-
-#: src/ui/dialogs.rs:126
-msgid "&Minimize to system tray"
-msgstr "&Réduire dans la barre des tâches"
-
-#: src/ui/dialogs.rs:127
-msgid "&Start maximized"
-msgstr "&Démarrer en plein écran"
-
-#: src/ui/dialogs.rs:128
-msgid "Show compact &go menu"
-msgstr "Afficher le menu &aller compact"
-
-#: src/ui/dialogs.rs:129
-msgid "&Wrap navigation"
-msgstr "Navigation en &boucle"
-
-#: src/ui/dialogs.rs:131
-msgid "Play &sounds on bookmarks and notes"
-msgstr "Jouer des &sons sur les signets et les notes"
-
-#: src/ui/dialogs.rs:133
-msgid "Check for &updates on startup"
-msgstr "Vérifier les &mises à jour au démarrage"
-
-#: src/ui/dialogs.rs:143
-msgid "Number of &recent documents to show:"
-msgstr "Nombre de documents &récents à afficher :"
-
-#: src/ui/dialogs.rs:149
-msgid "&Language:"
-msgstr "&Langue :"
-
-#: src/ui/dialogs.rs:162
-msgid "Update Channel:"
-msgstr "Canal de mise à jour :"
-
-#: src/ui/dialogs.rs:164
-msgid "Stable"
-msgstr "Stable"
-
-#: src/ui/dialogs.rs:165
-msgid "Dev"
-msgstr "Développement"
-
-#: src/ui/dialogs.rs:173
-msgid "General"
-msgstr "Général"
-
-#: src/ui/dialogs.rs:174 src/ui/status.rs:11
-msgid "Reading"
-msgstr "Lecture"
-
-#: src/ui/dialogs.rs:200 src/ui/dialogs.rs:783 src/ui/dialogs.rs:990
-#: src/ui/dialogs.rs:1111 src/ui/dialogs.rs:1149 src/ui/dialogs.rs:1201
-#: src/ui/dialogs.rs:1283 src/ui/dialogs.rs:1442 src/ui/dialogs.rs:1706
-#: src/ui/dialogs.rs:1888 src/ui/dialogs.rs:2159
-msgid "OK"
-msgstr "OK"
-
-#: src/ui/dialogs.rs:201 src/ui/dialogs.rs:784 src/ui/dialogs.rs:991
-#: src/ui/dialogs.rs:1150 src/ui/dialogs.rs:1202 src/ui/dialogs.rs:1285
-#: src/ui/dialogs.rs:1708 src/ui/dialogs.rs:1889 src/ui/dialogs.rs:2160
-#: src/ui/find.rs:192
-msgid "Cancel"
-msgstr "Annuler"
-
-#: src/ui/dialogs.rs:282
-msgid "Jump to Bookmark"
-msgstr "Aller au signet"
-
-#: src/ui/dialogs.rs:396
-msgid "&Filter:"
-msgstr "&Filtre :"
-
-#: src/ui/dialogs.rs:398
-msgid "All"
-msgstr "Tous"
-
-#: src/ui/dialogs.rs:399
-msgid "Bookmarks"
-msgstr "Signets"
-
-#: src/ui/dialogs.rs:400
-msgid "Notes"
-msgstr "Notes"
-
-#: src/ui/dialogs.rs:411
-msgid "&Edit Note"
-msgstr "&Modifier la note"
-
-#: src/ui/dialogs.rs:412
-msgid "&Delete"
-msgstr "&Supprimer"
-
-#: src/ui/dialogs.rs:413
-msgid "&Jump"
-msgstr "&Aller"
-
-#: src/ui/dialogs.rs:414
-msgid "&Cancel"
-msgstr "&Annuler"
-
-#: src/ui/dialogs.rs:497
-msgid "blank"
-msgstr "vide"
-
-#: src/ui/dialogs.rs:563
-msgid "Please select a bookmark to jump to."
-msgstr "Veuillez sélectionner un signet pour y accéder."
-
-#: src/ui/dialogs.rs:563 src/ui/document_manager.rs:63
-#: src/ui/document_manager.rs:89 src/ui/document_manager.rs:95
-#: src/ui/document_manager.rs:99 src/ui/help.rs:75 src/ui/help.rs:80
-#: src/ui/help.rs:89 src/ui/help.rs:97 src/ui/help.rs:103 src/ui/help.rs:116
-#: src/ui/help.rs:124 src/ui/help.rs:137 src/ui/help.rs:252 src/ui/help.rs:257
-#: src/ui/help.rs:284 src/ui/help.rs:299 src/ui/help.rs:329 src/ui/help.rs:338
-#: src/ui/help.rs:345 src/ui/help.rs:395 src/ui/main_window.rs:815
-#: src/ui/main_window.rs:1007 src/ui/main_window.rs:1234
-msgid "Error"
-msgstr "Erreur"
-
-#: src/ui/dialogs.rs:692 src/ui/navigation.rs:436
-msgid "Bookmark Note"
-msgstr "Note de signet"
-
-#: src/ui/dialogs.rs:692
-msgid "Edit bookmark note:"
-msgstr "Modifier la note du signet :"
-
-#: src/ui/dialogs.rs:830 src/ui/navigation.rs:474
-msgid "View Note"
-msgstr "Afficher la note"
-
-#: src/ui/dialogs.rs:836 src/ui/dialogs.rs:1964
-msgid "Close"
-msgstr "Fermer"
-
-#: src/ui/dialogs.rs:855
-msgid "Table of Contents"
-msgstr "Table des matières"
-
-#: src/ui/dialogs.rs:881 src/ui/dialogs.rs:2053
-msgid "Root"
-msgstr "Racine"
-
-#: src/ui/dialogs.rs:1004
-msgid "Please select a section from the table of contents."
-msgstr "Veuillez sélectionner une section dans la table des matières."
-
-#: src/ui/dialogs.rs:1005
-msgid "No Selection"
-msgstr "Aucune sélection"
-
-#: src/ui/dialogs.rs:1028 src/ui/dialogs.rs:2068 src/ui/document_manager.rs:119
-#: src/ui/main_window.rs:200 src/ui/main_window.rs:1263
-msgid "Untitled"
-msgstr "Sans titre"
-
-#: src/ui/dialogs.rs:1083
-msgid "Document Info"
-msgstr "Informations sur le document"
-
-#: src/ui/dialogs.rs:1089
-msgid "Path:"
-msgstr "Chemin :"
-
-#: src/ui/dialogs.rs:1090
-msgid "Title:"
-msgstr "Titre :"
-
-#: src/ui/dialogs.rs:1091
-msgid "Author:"
-msgstr "Auteur :"
-
-#: src/ui/dialogs.rs:1092
-msgid "Words:"
-msgstr "Mots :"
-
-#: src/ui/dialogs.rs:1093
-msgid "Lines:"
-msgstr "Lignes :"
-
-#: src/ui/dialogs.rs:1094
-msgid "Characters:"
-msgstr "Caractères :"
-
-#: src/ui/dialogs.rs:1095
-msgid "Characters (excluding spaces):"
-msgstr "Caractères (hors espaces) :"
-
-#: src/ui/dialogs.rs:1130
-msgid "Go to Line"
-msgstr "Aller à la ligne"
-
-#: src/ui/dialogs.rs:1132
-msgid "&Line number:"
-msgstr "&Numéro de ligne :"
-
-#: src/ui/dialogs.rs:1168 src/ui/document_manager.rs:492
-msgid "Go to page"
-msgstr "Aller à la page"
-
-#: src/ui/dialogs.rs:1170
-msgid "Go to page (%d/%d):"
-msgstr "Aller à la page (%d/%d) :"
-
-#: src/ui/dialogs.rs:1219
-msgid "Go to Percent"
-msgstr "Aller au pourcentage"
-
-#: src/ui/dialogs.rs:1222
-msgid "&Percent"
-msgstr "&Pourcentage"
-
-#: src/ui/dialogs.rs:1225
-msgid "P&ercent:"
-msgstr "P&ourcentage :"
-
-#: src/ui/dialogs.rs:1302
-#, rust-format
-msgid "Update to %s"
-msgstr "Mettre à jour vers %s"
-
-#: src/ui/dialogs.rs:1306
-msgid "A new version of Paperback is available. Here's what's new:"
-msgstr "Une nouvelle version de Paperback est disponible. Voici les nouveautés :"
-
-#: src/ui/dialogs.rs:1313
-msgid "&Yes"
-msgstr "&Oui"
-
-#: src/ui/dialogs.rs:1314
-msgid "&No"
-msgstr "&Non"
-
-#: src/ui/dialogs.rs:1346
+#. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
 msgstr "Tous les documents"
 
-#: src/ui/dialogs.rs:1349
+#. TRANSLATORS: Label for the search input field in the All Documents dialog
 msgid "&search"
 msgstr "&Rechercher"
 
-#: src/ui/dialogs.rs:1432
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
+msgid "&Yes"
+msgstr "&Oui"
+
+#. TRANSLATORS: Label for the confirmation dialog "No" button
+msgid "&No"
+msgstr "&Non"
+
+#. TRANSLATORS: Column header for the document filename in the All Documents list
 msgid "File Name"
 msgstr "Nom du fichier"
 
-#: src/ui/dialogs.rs:1433
+#. TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
 msgid "Status"
 msgstr "Statut"
 
-#: src/ui/dialogs.rs:1434
+#. TRANSLATORS: Column header for the file path in the All Documents list
 msgid "Path"
 msgstr "Chemin"
 
-#: src/ui/dialogs.rs:1439
+#. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
+#, fuzzy
+msgid "&Status:"
+msgstr "Statut"
+
+#. TRANSLATORS: Option in the All Documents status filter to show documents of every status
+#. TRANSLATORS: Option in the filter dropdown to show all entries
+msgid "All"
+msgstr "Tous"
+
+#. TRANSLATORS: Status of a document that is currently open in a tab
+msgid "Open"
+msgstr "Ouvert"
+
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
+msgid "Closed"
+msgstr "Fermé"
+
+#. TRANSLATORS: Status of a document whose file could not be found on disk
+msgid "Missing"
+msgstr "Manquant"
+
+#. TRANSLATORS: Button label to open the selected document
 msgid "&Open"
 msgstr "&Ouvrir"
 
-#: src/ui/dialogs.rs:1440
+#. TRANSLATORS: Button label to locate a missing file on disk
+#, fuzzy
+msgid "&Locate…"
+msgstr "&Rechercher…"
+
+#. TRANSLATORS: Button label to remove selected documents from the list
 msgid "&Remove"
 msgstr "&Retirer"
 
-#: src/ui/dialogs.rs:1441
+#. TRANSLATORS: Button label to clear all documents from the list
 msgid "&Clear All"
 msgstr "Tout &effacer"
 
-#: src/ui/dialogs.rs:1513
-msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
-msgstr ""
-"Voulez-vous vraiment retirer ce document de la liste ? Cela supprimera "
-"également sa position de lecture."
+#. TRANSLATORS: Label for a button that closes a dialog
+msgid "Close"
+msgstr "Fermer"
 
-#: src/ui/dialogs.rs:1515 src/ui/dialogs.rs:1561
+#, fuzzy
+msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
+msgstr "Êtes-vous sûr de vouloir supprimer le document sélectionné ? Cette opération supprimera également sa position de lecture et ses signets."
+
+#, fuzzy
+msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
+msgstr "Êtes-vous sûr de vouloir supprimer les documents sélectionnés {} ? Cette opération supprimera également vos positions de lecture et vos signets."
+
+#. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
 msgstr "Confirmer"
 
-#: src/ui/dialogs.rs:1559
-msgid ""
-"Are you sure you want to remove all documents from the list? This will also "
-"remove all reading positions and bookmarks."
-msgstr ""
-"Voulez-vous vraiment retirer tous les documents de la liste ? Cela "
-"supprimera également toutes les positions de lecture et tous les signets."
+#. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
+msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
+msgstr "Voulez-vous vraiment retirer tous les documents de la liste ? Cela supprimera également toutes les positions de lecture et tous les signets."
 
-#: src/ui/dialogs.rs:1694
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
+#, fuzzy
+msgid "No documents."
+msgstr "Aucun document"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
+#, fuzzy
+msgid "1 document."
+msgstr "document"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d documents."
+msgstr "document"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
+#, fuzzy
+msgid "1 of 1 document selected."
+msgstr "Le document a été rechargé."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
+#, fuzzy
+msgid "All %d documents selected."
+msgstr "Tous les documents"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
+#, fuzzy
+msgid "%d of %d documents selected."
+msgstr "Fin du document"
+
+#. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
+#, fuzzy
+msgid "Locate Book"
+msgstr "Rechercher un livre"
+
+#. TRANSLATORS: Title of the Jump to Bookmark dialog
+msgid "Jump to Bookmark"
+msgstr "Aller au signet"
+
+#. TRANSLATORS: Label for the bookmark filter dropdown
+msgid "&Filter:"
+msgstr "&Filtre :"
+
+#. TRANSLATORS: Option in the filter dropdown to show bookmarks only
+msgid "Bookmarks"
+msgstr "Signets"
+
+#. TRANSLATORS: Option in the filter dropdown to show notes only
+msgid "Notes"
+msgstr "Notes"
+
+#. TRANSLATORS: Label for the bookmark/note list (used only as an accessibility label on macOS)
+#, fuzzy
+msgid "&Bookmarks:"
+msgstr "&Signets :"
+
+#. TRANSLATORS: Label for the button to edit a note
+msgid "&Edit Note"
+msgstr "&Modifier la note"
+
+msgid "&Delete"
+msgstr "&Supprimer"
+
+#. TRANSLATORS: Label for the button to jump to the selected bookmark
+msgid "&Jump"
+msgstr "&Aller"
+
+#. TRANSLATORS: Label for the button to cancel the action
+msgid "&Cancel"
+msgstr "&Annuler"
+
+#. TRANSLATORS: Placeholder text shown in the bookmarks list when the bookmark text range is empty or blank
+msgid "blank"
+msgstr "vide"
+
+#. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
+msgid "Please select a bookmark to jump to."
+msgstr "Veuillez sélectionner un signet pour y accéder."
+
+#. TRANSLATORS: Generic error dialog title
+msgid "Error"
+msgstr "Erreur"
+
+#. TRANSLATORS: Title of the Bookmark Note editor dialog
+msgid "Bookmark Note"
+msgstr "Note de signet"
+
+#. TRANSLATORS: Label/prompt in the Note editor dialog
+msgid "Edit bookmark note:"
+msgstr "Modifier la note du signet :"
+
+#. TRANSLATORS: Title of the Document Info dialog
+msgid "Document Info"
+msgstr "Informations sur le document"
+
+#. TRANSLATORS: Label for the document's file path
+msgid "Path:"
+msgstr "Chemin :"
+
+#. TRANSLATORS: Label for the document's title
+msgid "Title:"
+msgstr "Titre :"
+
+#. TRANSLATORS: Label for the document's author
+msgid "Author:"
+msgstr "Auteur :"
+
+#. TRANSLATORS: Label for the number of words in the document
+msgid "Words:"
+msgstr "Mots :"
+
+#. TRANSLATORS: Label for the number of lines in the document
+msgid "Lines:"
+msgstr "Lignes :"
+
+#. TRANSLATORS: Label for the number of characters in the document
+msgid "Characters:"
+msgstr "Caractères :"
+
+#. TRANSLATORS: Label for the number of characters in the document excluding space characters
+msgid "Characters (excluding spaces):"
+msgstr "Caractères (hors espaces) :"
+
+#. TRANSLATORS: Title of the Elements dialog
+msgid "Elements"
+msgstr "Éléments"
+
+#. TRANSLATORS: Label for the view selection dropdown in the Elements dialog
+msgid "&View:"
+msgstr "&Afficher :"
+
+#. TRANSLATORS: Choice option in the view dropdown to show headings list
+msgid "Headings"
+msgstr "Titres"
+
+#. TRANSLATORS: Choice option in the view dropdown to show links list
+msgid "Links"
+msgstr "Liens"
+
+#. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
+msgid "Untitled"
+msgstr "Sans titre"
+
+#. TRANSLATORS: Label for the confirmation button
+msgid "OK"
+msgstr "OK"
+
+#. TRANSLATORS: Title of the Go to Line dialog
+msgid "Go to Line"
+msgstr "Aller à la ligne"
+
+#. TRANSLATORS: Label for the input field where users enter the target line number.
+msgid "&Line number:"
+msgstr "&Numéro de ligne :"
+
+#. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
+#, fuzzy
+msgid "Go"
+msgstr "Aller"
+
+#. TRANSLATORS: Title of the Go to page dialog
+msgid "Go to page"
+msgstr "Aller à la page"
+
+#. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
+msgid "Go to page (%d/%d):"
+msgstr "Aller à la page (%d/%d) :"
+
+#. TRANSLATORS: Title of the Go to Percent dialog
+msgid "Go to Percent"
+msgstr "Aller au pourcentage"
+
+#. TRANSLATORS: Label for the percentage selection slider
+msgid "&Percent"
+msgstr "&Pourcentage"
+
+#. TRANSLATORS: Label for the numeric percentage entry field
+msgid "P&ercent:"
+msgstr "P&ourcentage :"
+
+#. TRANSLATORS: Title of the Open As dialog
 msgid "Open As"
 msgstr "Ouvrir en tant que"
 
-#: src/ui/dialogs.rs:1696
-#, rust-format
+#. TRANSLATORS: Prompt template informing the user that no parser was found for their file. The {} placeholder is replaced with the file path.
 msgid ""
 "No suitable parser was found for {}.\n"
 "How would you like to open this file?"
@@ -355,1117 +318,2920 @@ msgstr ""
 "Aucun analyseur approprié n'a été trouvé pour {}.\n"
 "Comment souhaitez-vous ouvrir ce fichier ?"
 
-#: src/ui/dialogs.rs:1699
+#. TRANSLATORS: Label for the format selection dropdown
 msgid "Open &as:"
 msgstr "Ouvrir en t&ant que :"
 
-#: src/ui/dialogs.rs:1702
+#. TRANSLATORS: Choice option to open a file as plain text
 msgid "Plain Text"
 msgstr "Texte brut"
 
-#: src/ui/dialogs.rs:1703
+#. TRANSLATORS: Choice option to open a file as HTML
 msgid "HTML"
 msgstr "HTML"
 
-#: src/ui/dialogs.rs:1704
+#. TRANSLATORS: Choice option to open a file as Markdown
 msgid "Markdown"
 msgstr "Markdown"
 
-#: src/ui/dialogs.rs:1781
-msgid "Open"
-msgstr "Ouvert"
+#. TRANSLATORS: Title of the Options dialog
+msgid "Options"
+msgstr "Options"
 
-#: src/ui/dialogs.rs:1782
-msgid "Closed"
-msgstr "Fermé"
+#. TRANSLATORS: Option to restore documents that were open when the app was last closed
+msgid "&Restore previously opened documents on startup"
+msgstr "&Restaurer les documents précédemment ouverts au démarrage"
 
-#: src/ui/dialogs.rs:1783 src/ui/dialogs.rs:1816
-msgid "Missing"
-msgstr "Manquant"
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr "&Retour à la ligne automatique"
 
-#: src/ui/dialogs.rs:1873
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+#, fuzzy
+msgid "Render tables &inline"
+msgstr "Afficher les tableaux et le contenu en ligne"
+
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+msgid "&Minimize to system tray"
+msgstr "&Réduire dans la barre des tâches"
+
+#. TRANSLATORS: Option to start the app maximized
+msgid "&Start maximized"
+msgstr "&Démarrer en plein écran"
+
+#. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
+msgid "Show compact &go menu"
+msgstr "Afficher le menu &aller compact"
+
+#. TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
+msgid "&Wrap navigation"
+msgstr "Navigation en &boucle"
+
+#. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+#, fuzzy
+msgid "Move to &start of line"
+msgstr "Aller à &début de ligne"
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Jouer des &sons sur les signets et les notes"
+
+#. TRANSLATORS: Option to check for app updates automatically on startup
+msgid "Check for &updates on startup"
+msgstr "Vérifier les &mises à jour au démarrage"
+
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+#, fuzzy
+msgid "&Automatically reload changed documents"
+msgstr "&Recharger automatiquement les documents modifiés"
+
+#. TRANSLATORS: Button label to open the hotkey customization dialog
+#, fuzzy
+msgid "Customize &Window Hotkey..."
+msgstr "Personnaliser le raccourci clavier de la fenêtre..."
+
+#, fuzzy
+msgid "Customize &Keyboard Shortcuts..."
+msgstr "Personnaliser le raccourci clavier de la fenêtre..."
+
+#. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
+#, fuzzy
+msgid "&Reading speed (words per minute):"
+msgstr "&Vitesse de lecture (mots par minute) :"
+
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
+msgstr "Nombre de documents &récents à afficher :"
+
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
+msgstr "&Langue :"
+
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "Canal de mise à jour :"
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "Stable"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "Développement"
+
+#. TRANSLATORS: Label/header for the Font options section
+#, fuzzy
+msgid "Font"
+msgstr "Police"
+
+#. TRANSLATORS: Button label to pick a font
+#, fuzzy
+msgid "Choose &Font..."
+msgstr "Sélectionnez « &Font... »"
+
+#. TRANSLATORS: Button label to restore font settings to default values
+#, fuzzy
+msgid "&Reset to Default Font"
+msgstr "&Rétablir la police par défaut"
+
+#. TRANSLATORS: Label/header for the Background Color options section
+#, fuzzy
+msgid "Background Color"
+msgstr "Couleur d'arrière-plan"
+
+#. TRANSLATORS: Button label to pick a background color
+#, fuzzy
+msgid "Choose &Background Color..."
+msgstr "Choisir la couleur d'arrière-plan..."
+
+#. TRANSLATORS: Button label to restore background color to default values
+#, fuzzy
+msgid "Reset to &Default Background"
+msgstr "Rétablir l'arrière-plan par défaut"
+
+#. TRANSLATORS: Label for the line spacing dropdown
+#, fuzzy
+msgid "&Line spacing:"
+msgstr "&Interligne :"
+
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
+#, fuzzy
+msgid "Normal"
+msgstr "Normal"
+
+#. TRANSLATORS: 1.5x line spacing option
+#, fuzzy
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+#. TRANSLATORS: Double line spacing option
+#, fuzzy
+msgid "Double"
+msgstr "Double"
+
+#. TRANSLATORS: Label for the paragraph spacing dropdown
+#, fuzzy
+msgid "&Paragraph spacing:"
+msgstr "&Espacement entre les paragraphes :"
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+#, fuzzy
+msgid "Relaxed"
+msgstr "Détendu"
+
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
+#, fuzzy
+msgid "Wide"
+msgstr "Large"
+
+#. TRANSLATORS: Label for the letter spacing dropdown
+#, fuzzy
+msgid "L&etter spacing:"
+msgstr "Espacement des lettres :"
+
+#. TRANSLATORS: Very Wide letter spacing option
+#, fuzzy
+msgid "Very Wide"
+msgstr "Très large"
+
+#. TRANSLATORS: Label for the text alignment dropdown
+#, fuzzy
+msgid "Text &alignment:"
+msgstr "Texte et alignement :"
+
+#. TRANSLATORS: Left text alignment option
+#, fuzzy
+msgid "Left"
+msgstr "À gauche"
+
+#. TRANSLATORS: Center text alignment option
+#, fuzzy
+msgid "Center"
+msgstr "Centre"
+
+#. TRANSLATORS: Right text alignment option
+#, fuzzy
+msgid "Right"
+msgstr "D'accord"
+
+#. TRANSLATORS: Justified text alignment option
+#, fuzzy
+msgid "Justify"
+msgstr "Justifier"
+
+#. TRANSLATORS: Tab label for the General options panel
+msgid "General"
+msgstr "Général"
+
+#. TRANSLATORS: Tab label for the Reading options panel
+msgid "Reading"
+msgstr "Lecture"
+
+#. TRANSLATORS: Tab label for the Readability options panel
+#, fuzzy
+msgid "Readability"
+msgstr "Lisibilité"
+
+#. TRANSLATORS: Description text shown when the background color is set to default
+#, fuzzy
+msgid "Background: Default"
+msgstr "Contexte : Défaut de paiement"
+
+#. TRANSLATORS: Description text shown when the font is set to default
+#, fuzzy
+msgid "Font: Default"
+msgstr "Police : Par défaut"
+
+#. TRANSLATORS: Fallback font name
+#, fuzzy
+msgid "Default"
+msgstr "Par défaut"
+
+#. TRANSLATORS: Font description prefix; {} is the font face name
+#, fuzzy
+msgid "Font: {}"
+msgstr "Source : {}"
+
+#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+#, fuzzy
+msgid "{}pt"
+msgstr "{} pt"
+
+#. TRANSLATORS: Font weight attribute name
+#, fuzzy
+msgid "Bold"
+msgstr "En gras"
+
+#. TRANSLATORS: Font style attribute name
+#, fuzzy
+msgid "Italic"
+msgstr "Italique"
+
+#. TRANSLATORS: Font underline attribute name
+#, fuzzy
+msgid "Underlined"
+msgstr "Souligné"
+
+#. TRANSLATORS: Font strikethrough attribute name
+#, fuzzy
+msgid "Strikethrough"
+msgstr "Barré"
+
+#. TRANSLATORS: Title of the hotkey customization dialog
+#, fuzzy
+msgid "Window Hotkey"
+msgstr "Raccourci clavier pour les fenêtres"
+
+#. TRANSLATORS: Checkbox label for Control modifier key
+#, fuzzy
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox label for Alt modifier key
+#, fuzzy
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox label for Shift modifier key
+#, fuzzy
+msgid "&Shift"
+msgstr "&Maj+"
+
+#. TRANSLATORS: Checkbox label for Windows modifier key
+#, fuzzy
+msgid "&Win"
+msgstr "&Gagner"
+
+#. TRANSLATORS: Label for the hotkey key selection input field
+#, fuzzy
+msgid "&Key:"
+msgstr "&Clé :"
+
+#. TRANSLATORS: Button label to clear the current hotkey selection
+#, fuzzy
+msgid "Clear"
+msgstr "Effacer"
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Annuler"
+
+#. TRANSLATORS: Representation of the Spacebar key
+#, fuzzy
+msgid "Space"
+msgstr "Espace"
+
+#, fuzzy
+msgid "Customize Keyboard Shortcuts"
+msgstr "Personnaliser les raccourcis clavier"
+
+#, fuzzy
+msgid "&Shortcuts:"
+msgstr "&Raccourcis :"
+
+#, fuzzy
+msgid "&Set Shortcut..."
+msgstr "&Définir un raccourci..."
+
+#, fuzzy
+msgid "&Clear Shortcut"
+msgstr "&Effacer le raccourci"
+
+#, fuzzy
+msgid "&Reset to Default"
+msgstr "&Rétablir la police par défaut"
+
+#, fuzzy
+msgid "Reset &All to Defaults"
+msgstr "&Rétablir la police par défaut"
+
+#, fuzzy
+msgid "Shortcut Conflict"
+msgstr "Conflit de raccourcis"
+
+#, fuzzy
+msgid "Reset all shortcuts to their default values?"
+msgstr "Réinitialiser tous les raccourcis à leurs valeurs par défaut ?"
+
+#, fuzzy
+msgid "Reset Shortcuts"
+msgstr "Réinitialiser les raccourcis"
+
+#, fuzzy
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr "Astuce : cliquez dans le champ « Touche » et appuyez sur la combinaison de touches souhaitée."
+
+#, fuzzy
+msgid "&Clear"
+msgstr "Effacer"
+
+#. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Minuterie de veille"
 
-#: src/ui/dialogs.rs:1874
+#. TRANSLATORS: Label for the input field where users enter the number of minutes for the sleep timer.
 msgid "&Minutes:"
 msgstr "&Minutes :"
 
-#: src/ui/dialogs.rs:1982
-msgid "Elements"
-msgstr "Éléments"
+#. TRANSLATORS: Title of the Table of Contents dialog
+msgid "Table of Contents"
+msgstr "Table des matières"
 
-#: src/ui/dialogs.rs:2013
-msgid "&View:"
-msgstr "&Afficher :"
+#. TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
+msgid "Please select a section from the table of contents."
+msgstr "Veuillez sélectionner une section dans la table des matières."
 
-#: src/ui/dialogs.rs:2015
-msgid "Headings"
-msgstr "Titres"
+#. TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
+msgid "No Selection"
+msgstr "Aucune sélection"
 
-#: src/ui/dialogs.rs:2016
-msgid "Links"
-msgstr "Liens"
+#. TRANSLATORS: Title of the View Note dialog
+msgid "View Note"
+msgstr "Afficher la note"
 
-#: src/ui/dialogs.rs:2213
-msgid "An accessible, lightweight, fast ebook and document reader"
-msgstr "Un lecteur d'ebooks et de documents accessible, léger et rapide"
+#. TRANSLATORS: Singular label for 1 hour duration
+#, fuzzy
+msgid "1 hour"
+msgstr "1 heure"
 
-#: src/ui/document_manager.rs:61
-#, rust-format
+#. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
+#, fuzzy
+msgid "hours"
+msgstr "heures"
+
+#. TRANSLATORS: Singular label for 1 minute duration
+#, fuzzy
+msgid "1 minute"
+msgstr "1 minute"
+
+#. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
+#, fuzzy
+msgid "minutes"
+msgstr "minutes"
+
+#. TRANSLATORS: Singular label for 1 second duration
+#, fuzzy
+msgid "1 second"
+msgstr "1 seconde"
+
+#. TRANSLATORS: Plural label for seconds duration (e.g. "2 seconds")
+#, fuzzy
+msgid "seconds"
+msgstr "secondes"
+
+#. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+#, fuzzy
+msgid "Estimated reading time: {}"
+msgstr "Temps de lecture estimé : {}"
+
+#. TRANSLATORS: Message template for selection word count. The {} placeholder is replaced with the number of words.
+#, fuzzy
+msgid "The selection contains {} words."
+msgstr "Cette sélection contient {} mots."
+
+#. TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
+#, fuzzy
+msgid "This document contains {} words."
+msgstr "Ce document contient{}s de mots."
+
+#. TRANSLATORS: Title of the Word Count dialog
+#, fuzzy
+msgid "Word Count"
+msgstr "Nombre de mots"
+
+#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "Fichier introuvable : {}"
 
-#: src/ui/document_manager.rs:89
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
+#, fuzzy
+msgid "A .paperback file was found for this document. Would you like to import it?"
+msgstr "Un fichier au format « .paperback » a été détecté pour ce document. Souhaitez-vous l'importer ?"
+
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
+#, fuzzy
+msgid "Import document data"
+msgstr "Importer les données d'un document"
+
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
 msgid "Password is required."
 msgstr "Un mot de passe est requis."
 
-#: src/ui/document_manager.rs:95 src/ui/document_manager.rs:99
-msgid "Failed to load document."
-msgstr "Impossible de charger le document."
-
-#: src/ui/document_manager.rs:275
+#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "Navigation vers le lien interne."
 
-#: src/ui/document_manager.rs:295
-msgid "Table View"
-msgstr "Vue tableau"
-
-#: src/ui/document_manager.rs:303 src/ui/main_window.rs:61
-#: src/ui/main_window.rs:194 src/ui/main_window.rs:1250 src/ui/status.rs:47
-#: src/ui/status.rs:52
+#. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
 msgstr "Prêt"
 
-#: src/ui/document_manager.rs:452
+#. TRANSLATORS: Announced after setting a temporary bookmark at the current position
+#, fuzzy
+msgid "Temporary bookmark set."
+msgstr "Aucun signet."
+
+#. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
+#, fuzzy
+msgid "No temporary bookmark."
+msgstr "Aucun signet suivant."
+
+#. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
+#, fuzzy
+msgid "Temporary bookmark."
+msgstr "Aucun signet."
+
+msgid "Table View"
+msgstr "Vue tableau"
+
+#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr "&Mot de passe :"
 
-#: src/ui/document_manager.rs:452
 msgid "Document Password"
 msgstr "Mot de passe du document"
 
-#: src/ui/document_manager.rs:485
+#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+msgid "Failed to load document."
+msgstr "Impossible de charger le document."
+
+#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+#, fuzzy
+msgid "File: {}"
+msgstr "Fichier : {}"
+
+#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+#, fuzzy
+msgid "Details: {}"
+msgstr "Plus d'informations : {}"
+
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "Créer un &signet"
 
-#: src/ui/document_manager.rs:485
 msgid "Create bookmark"
 msgstr "Créer un signet"
 
-#: src/ui/document_manager.rs:486
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
 msgid "Bookmark with &note"
 msgstr "Signet avec &note"
 
-#: src/ui/document_manager.rs:486
 msgid "Create bookmark with note"
 msgstr "Créer un signet avec une note"
 
-#: src/ui/document_manager.rs:488
+#. TRANSLATORS: Right-click context menu item and status text to open the find dialog
 msgid "&Find"
 msgstr "&Rechercher"
 
-#: src/ui/document_manager.rs:488
 msgid "Find text"
 msgstr "Rechercher du texte"
 
-#: src/ui/document_manager.rs:489
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
 msgid "Find &next"
 msgstr "Rechercher le &suivant"
 
-#: src/ui/document_manager.rs:489
 msgid "Find next match"
 msgstr "Rechercher l'occurrence suivante"
 
-#: src/ui/document_manager.rs:490
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
 msgid "Find &previous"
 msgstr "Rechercher le &précédent"
 
-#: src/ui/document_manager.rs:490
 msgid "Find previous match"
 msgstr "Rechercher l'occurrence précédente"
 
-#: src/ui/document_manager.rs:492
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
 msgid "Go to &page"
 msgstr "Aller à la &page"
 
-#: src/ui/document_manager.rs:493
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
 msgid "Go to &line"
 msgstr "Aller à la &ligne"
 
-#: src/ui/document_manager.rs:493
 msgid "Go to line"
 msgstr "Aller à la ligne"
 
-#: src/ui/document_manager.rs:494
+#. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
 msgid "Go to &percent"
 msgstr "Aller au &pourcentage"
 
-#: src/ui/document_manager.rs:494
 msgid "Go to percent"
 msgstr "Aller au pourcentage"
 
-#: src/ui/find.rs:69
+#. TRANSLATORS: Title of the Find dialog
 msgid "Find"
 msgstr "Rechercher"
 
-#: src/ui/find.rs:178
+#. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
 msgstr "Rechercher &quoi :"
 
-#: src/ui/find.rs:184
+#. TRANSLATORS: Checkbox to make the search case-sensitive
 msgid "&Match case"
 msgstr "&Respecter la casse"
 
-#: src/ui/find.rs:185
+#. TRANSLATORS: Checkbox to only match whole words, not substrings
 msgid "Match &whole word"
 msgstr "Mot &entier"
 
-#: src/ui/find.rs:186
+#. TRANSLATORS: Checkbox to treat the search text as a regular expression
 msgid "Use &regular expressions"
 msgstr "Utiliser les expressions &régulières"
 
-#: src/ui/find.rs:190
+#. TRANSLATORS: Button to search backward for the previous match
 msgid "Find &Previous"
 msgstr "Rechercher le &précédent"
 
-#: src/ui/find.rs:191
+#. TRANSLATORS: Button to search forward for the next match
 msgid "Find &Next"
 msgstr "Rechercher le &suivant"
 
-#: src/ui/find.rs:441
+#. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Introuvable."
 
-#: src/ui/find.rs:448
+#. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
 msgstr "Plus de résultats. Reprise depuis le début."
 
-#: src/ui/help.rs:75 src/ui/help.rs:80
-msgid "Failed to open containing folder."
-msgstr "Impossible d'ouvrir le dossier contenant le fichier."
+#. TRANSLATORS: Error shown when the active document has no known file path to reveal
+#, fuzzy
+msgid "Failed to reveal file in folder."
+msgstr "Impossible d'afficher le fichier dans le dossier."
 
-#: src/ui/help.rs:88 src/ui/help.rs:96 src/ui/help.rs:115 src/ui/help.rs:123
-msgid ""
-"readme.html not found. Please ensure the application was built properly."
-msgstr ""
-"readme.html introuvable. Veuillez vous assurer que l'application a été "
-"compilée correctement."
+#. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
+msgid "readme.html not found. Please ensure the application was built properly."
+msgstr "readme.html introuvable. Veuillez vous assurer que l'application a été compilée correctement."
 
-#: src/ui/help.rs:103
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
 msgstr "Impossible de lancer le navigateur par défaut."
 
-#: src/ui/help.rs:137
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to open the donation page
 msgid "Failed to open donation page in browser."
 msgstr "Impossible d'ouvrir la page de don dans le navigateur."
 
-#: src/ui/help.rs:165
-msgid "No release notes were provided."
-msgstr "Aucune note de version n'a été fournie."
-
-#: src/ui/help.rs:173
-msgid "Paperback Update"
-msgstr "Mise à jour de Paperback"
-
-#: src/ui/help.rs:173
-msgid "Downloading update..."
-msgstr "Téléchargement de la mise à jour..."
-
-#: src/ui/help.rs:230
-msgid "No updates available."
-msgstr "Aucune mise à jour disponible."
-
-#: src/ui/help.rs:232
-#, rust-format
-msgid "No updates available. Latest version: {}"
-msgstr "Aucune mise à jour disponible. Dernière version : {}"
-
-#: src/ui/help.rs:235
-msgid "Info"
-msgstr "Information"
-
-#: src/ui/help.rs:251
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr "Impossible de vérifier les mises à jour. Statut HTTP : %d"
-
-#: src/ui/help.rs:256
-msgid "Error checking for updates."
-msgstr "Erreur lors de la vérification des mises à jour."
-
-#: src/ui/help.rs:283
-msgid "Failed to launch installer"
-msgstr "Impossible de lancer le programme d'installation"
-
-#: src/ui/help.rs:298
-msgid "Failed to get current exe path"
-msgstr "Impossible d'obtenir le chemin de l'exécutable actuel"
-
-#: src/ui/help.rs:328
-msgid "Failed to launch update script"
-msgstr "Impossible de lancer le script de mise à jour"
-
-#: src/ui/help.rs:338
-msgid "Unknown update file format."
-msgstr "Format de fichier de mise à jour inconnu."
-
-#: src/ui/help.rs:345
-msgid "Update failed"
-msgstr "Échec de la mise à jour"
-
-#: src/ui/help.rs:394 src/ui/main_window.rs:1233
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
 msgstr "Format non pris en charge sélectionné."
 
-#: src/ui/main_window.rs:57 src/ui/main_window.rs:193
-#: src/ui/main_window.rs:1249
+#. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
 msgstr "Paperback"
 
-#: src/ui/main_window.rs:204 src/ui/main_window.rs:1267
-#, rust-format
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+#, fuzzy
+msgid "Document reloaded."
+msgstr "Le document a été rechargé."
+
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+#, fuzzy
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback ne peut effectuer aucune action tant que Web View est ouvert."
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
 msgid "Paperback - {}"
 msgstr "Paperback - {}"
 
-#: src/ui/main_window.rs:206
-#, rust-format
+#. TRANSLATORS: Status bar character count; {} is the number of characters
 msgid "{} chars"
 msgstr "{} caractères"
 
-#: src/ui/main_window.rs:273
-msgid "Open Document"
-msgstr "Ouvrir un document"
-
-#: src/ui/main_window.rs:457 src/ui/navigation.rs:63
-msgid "No pages."
-msgstr "Aucune page."
-
-#: src/ui/main_window.rs:802 src/ui/main_window.rs:834
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 msgid "document"
 msgstr "document"
 
-#: src/ui/main_window.rs:804
-msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
-msgstr "Fichiers texte (*.txt)|*.txt|Tous les fichiers (*.*)|*.*"
-
-#: src/ui/main_window.rs:806
-msgid "Export document to plain text"
-msgstr "Exporter le document en texte brut"
-
-#: src/ui/main_window.rs:815
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Impossible d'exporter le document."
 
-#: src/ui/main_window.rs:836 src/ui/main_window.rs:869
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+msgid "Open Document"
+msgstr "Ouvrir un document"
+
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+msgid "No pages."
+msgstr "Aucune page."
+
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+#, fuzzy
+msgid "Word wrap on."
+msgstr "Retour à la ligne automatique activé."
+
+#, fuzzy
+msgid "Word wrap off."
+msgstr "Retour à la ligne désactivé."
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "Mode plein écran activé."
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "Mode plein écran désactivé."
+
+#. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Fichiers texte (*.txt)|*.txt|Tous les fichiers (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
+msgid "Export document to plain text"
+msgstr "Exporter le document en texte brut"
+
+#. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
+#, fuzzy
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr "Fichiers HTML (*.html)|*.html|Tous les fichiers (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to HTML
+#, fuzzy
+msgid "Export document to HTML"
+msgstr "Exporter le document au format HTML"
+
+#. TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
+#, fuzzy
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr "Fichiers Markdown (*.md)|*.md|Tous les fichiers (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
+#, fuzzy
+msgid "Export document to Markdown"
+msgstr "Exporter le document au format Markdown"
+
+#. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Fichiers Paperback (*.paperback)|*.paperback"
 
-#: src/ui/main_window.rs:838
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
 msgid "Export notes and bookmarks"
 msgstr "Exporter les notes et les signets"
 
-#: src/ui/main_window.rs:849
+#. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "Notes et signets exportés avec succès."
 
-#: src/ui/main_window.rs:850
+#. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Exportation réussie"
 
-#: src/ui/main_window.rs:871
+#. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
 msgstr "Importer les notes et les signets"
 
-#: src/ui/main_window.rs:890
+#. TRANSLATORS: Success message shown after importing a document's notes and bookmarks
 msgid "Notes and bookmarks imported successfully."
 msgstr "Notes et signets importés avec succès."
 
-#: src/ui/main_window.rs:891
+#. TRANSLATORS: Title of the import-succeeded dialog
 msgid "Import Successful"
 msgstr "Importation réussie"
 
-#: src/ui/main_window.rs:909
-#, rust-format
-msgid "The document contains {} words."
-msgstr "Le document contient {} mots."
-
-#: src/ui/main_window.rs:911
-msgid "Word count"
-msgstr "Nombre de mots"
-
-#: src/ui/main_window.rs:934
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
 msgid "No table of contents."
 msgstr "Aucune table des matières."
 
-#: src/ui/main_window.rs:985
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
 msgid "Web View"
 msgstr "Vue web"
 
-#: src/ui/main_window.rs:1006
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
 msgid "Could not determine content to display in Web View."
 msgstr "Impossible de déterminer le contenu à afficher dans la vue web."
 
-#: src/ui/main_window.rs:1080
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+#, fuzzy
+msgid "Source:"
+msgstr "Source :"
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+#, fuzzy
+msgid "Source view is not available for this document format."
+msgstr "L'affichage « Source » n'est pas disponible pour ce format de document."
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+#, fuzzy
+msgid "Could not load the document source."
+msgstr "Impossible de charger la source du document."
+
+#. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "Minuterie de veille annulée."
 
-#: src/ui/main_window.rs:1103
+#. TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
 msgid "Sleep timer set for 1 minute."
 msgstr "Minuterie de veille réglée sur 1 minute."
 
-#: src/ui/main_window.rs:1105
+#. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
 msgid "Sleep timer set for %d minutes."
 msgstr "Minuterie de veille réglée sur %d minutes."
 
-#: src/ui/main_window.rs:1157
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
 msgstr "Aucun document récent."
 
-#: src/ui/menu.rs:133
-msgid "Previous Section\t["
-msgstr "Section précédente\t["
+#, fuzzy
+msgid "&Undo\tCtrl+Z"
+msgstr "&Annuler    Ctrl+Z"
 
-#: src/ui/menu.rs:134
-msgid "Go to previous section"
-msgstr "Aller à la section précédente"
+#, fuzzy
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr "&Rétablir    Ctrl+Maj+Z"
 
-#: src/ui/menu.rs:135
-msgid "Next Section\t]"
-msgstr "Section suivante\t]"
+#, fuzzy
+msgid "Cu&t\tCtrl+X"
+msgstr "Ctrl+X"
 
-#: src/ui/menu.rs:136
-msgid "Go to next section"
-msgstr "Aller à la section suivante"
+#, fuzzy
+msgid "&Copy\tCtrl+C"
+msgstr "&Copier    Ctrl+C"
 
-#: src/ui/menu.rs:144
-msgid "Go to &Page\tCtrl+P"
-msgstr "Aller à la &page\tCtrl+P"
+#, fuzzy
+msgid "&Paste\tCtrl+V"
+msgstr "&Coller    Ctrl+V"
 
-#: src/ui/menu.rs:145
-msgid "Previous Pa&ge\tShift+P"
-msgstr "&Page précédente\tShift+P"
+#, fuzzy
+msgid "Select &All\tCtrl+A"
+msgstr "Sélectionner « Tout »    Ctrl+A"
 
-#: src/ui/menu.rs:146
-msgid "Next Pag&e\tP"
-msgstr "Page &suivante\tP"
+#, fuzzy
+msgid "&Open..."
+msgstr "&Ouvrir"
 
-#: src/ui/menu.rs:155
-msgid "Previous Lin&k\tShift+K"
-msgstr "Lien précéden&t\tShift+K"
-
-#: src/ui/menu.rs:156
-msgid "Next Lin&k\tK"
-msgstr "Lien suivan&t\tK"
-
-#: src/ui/menu.rs:161
-msgid "Previous &Table\tShift+T"
-msgstr "&Tableau précédent\tShift+T"
-
-#: src/ui/menu.rs:162
-msgid "Next &Table\tT"
-msgstr "&Tableau suivant\tT"
-
-#: src/ui/menu.rs:167
-msgid "Previous Se&parator\tShift+S"
-msgstr "Sé&parateur précédent\tShift+S"
-
-#: src/ui/menu.rs:168
-msgid "Next Se&parator\tS"
-msgstr "Sé&parateur suivant\tS"
-
-#: src/ui/menu.rs:173
-msgid "Previous L&ist\tShift+L"
-msgstr "L&iste précédente\tShift+L"
-
-#: src/ui/menu.rs:174
-msgid "Next L&ist\tL"
-msgstr "L&iste suivante\tL"
-
-#: src/ui/menu.rs:175
-msgid "Previous List &Item\tShift+I"
-msgstr "Élément de l&iste précédent\tShift+I"
-
-#: src/ui/menu.rs:176
-msgid "Next List I&tem\tI"
-msgstr "Élément de liste &suivant\tI"
-
-#: src/ui/menu.rs:186
-msgid "Next Heading Level 1\t1"
-msgstr "Titre de niveau 1 suivant\t1"
-
-#: src/ui/menu.rs:187
-msgid "Previous Heading Level &2\tShift+2"
-msgstr "Titre de niveau &2 précédent\tShift+2"
-
-#: src/ui/menu.rs:188
-msgid "Next Heading Level 2\t2"
-msgstr "Titre de niveau 2 suivant\t2"
-
-#: src/ui/menu.rs:189
-msgid "Previous Heading Level &3\tShift+3"
-msgstr "Titre de niveau &3 précédent\tShift+3"
-
-#: src/ui/menu.rs:190
-msgid "Next Heading Level 3\t3"
-msgstr "Titre de niveau 3 suivant\t3"
-
-#: src/ui/menu.rs:191
-msgid "Previous Heading Level &4\tShift+4"
-msgstr "Titre de niveau &4 précédent\tShift+4"
-
-#: src/ui/menu.rs:192
-msgid "Next Heading Level 4\t4"
-msgstr "Titre de niveau 4 suivant\t4"
-
-#: src/ui/menu.rs:193
-msgid "Previous Heading Level &5\tShift+5"
-msgstr "Titre de niveau &5 précédent\tShift+5"
-
-#: src/ui/menu.rs:194
-msgid "Next Heading Level 5\t5"
-msgstr "Titre de niveau 5 suivant\t5"
-
-#: src/ui/menu.rs:195
-msgid "Previous Heading Level &6\tShift+6"
-msgstr "Titre de niveau &6 précédent\tShift+6"
-
-#: src/ui/menu.rs:196
-msgid "Next Heading Level 6\t6"
-msgstr "Titre de niveau 6 suivant\t6"
-
-#: src/ui/menu.rs:198
-msgid "&Previous Heading\tShift+H"
-msgstr "Titre &précédent\tShift+H"
-
-#: src/ui/menu.rs:198
-msgid "Go to previous heading"
-msgstr "Aller au titre précédent"
-
-#: src/ui/menu.rs:199
-msgid "&Next Heading\tH"
-msgstr "Titre &suivant\tH"
-
-#: src/ui/menu.rs:199
-msgid "Go to next heading"
-msgstr "Aller au titre suivant"
-
-#: src/ui/menu.rs:201
-msgid "Previous Heading Level &1\tShift+1"
-msgstr "Titre de niveau &1 précédent\tShift+1"
-
-#: src/ui/menu.rs:217
-msgid "&Previous Bookmark\tShift+B"
-msgstr "&Signet précédent\tShift+B"
-
-#: src/ui/menu.rs:218
-msgid "Go to previous bookmark"
-msgstr "Aller au signet précédent"
-
-#: src/ui/menu.rs:219
-msgid "&Next Bookmark\tB"
-msgstr "&Signet suivant\tB"
-
-#: src/ui/menu.rs:220
-msgid "Go to next bookmark"
-msgstr "Aller au signet suivant"
-
-#: src/ui/menu.rs:221
-msgid "Previous &Note\tShift+N"
-msgstr "&Note précédente\tShift+N"
-
-#: src/ui/menu.rs:222
-msgid "Go to previous note"
-msgstr "Aller à la note précédente"
-
-#: src/ui/menu.rs:223
-msgid "Next N&ote\tN"
-msgstr "Note &suivante\tN"
-
-#: src/ui/menu.rs:224
-msgid "Go to next note"
-msgstr "Aller à la note suivante"
-
-#: src/ui/menu.rs:225
-msgid "Jump to &All...\tCtrl+B"
-msgstr "Accéder à &tous...\tCtrl+B"
-
-#: src/ui/menu.rs:226
-msgid "Show all bookmarks and notes"
-msgstr "Afficher tous les signets et les notes"
-
-#: src/ui/menu.rs:227
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr "Accéder aux &signets seulement...\tCtrl+Alt+B"
-
-#: src/ui/menu.rs:228
-msgid "Show bookmarks only"
-msgstr "Afficher les signets seulement"
-
-#: src/ui/menu.rs:229
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "Accéder aux notes &seulement...\tCtrl+Alt+M"
-
-#: src/ui/menu.rs:230
-msgid "Show notes only"
-msgstr "Afficher les notes seulement"
-
-#: src/ui/menu.rs:232
-msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "&Afficher le texte de la note\tRawCtrl+Shift+W"
-
-#: src/ui/menu.rs:234
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "&Afficher le texte de la note\tCtrl+Shift+W"
-
-#: src/ui/menu.rs:236
-msgid "View the note at current position"
-msgstr "Afficher la note à la position actuelle"
-
-#: src/ui/menu.rs:336
-msgid "&File"
-msgstr "&Fichier"
-
-#: src/ui/menu.rs:337
-msgid "&Go"
-msgstr "&Aller"
-
-#: src/ui/menu.rs:338
-msgid "&Tools"
-msgstr "&Outils"
-
-#: src/ui/menu.rs:339
-msgid "&Help"
-msgstr "&Aide"
-
-#: src/ui/menu.rs:349
-msgid "&Open...\tCtrl+O"
-msgstr "&Ouvrir...\tCtrl+O"
-
-#: src/ui/menu.rs:350
 msgid "Open a document"
 msgstr "Ouvrir un document"
 
-#: src/ui/menu.rs:353
-msgid "&Close\tCtrl+W"
-msgstr "&Fermer\tCtrl+W"
+#, fuzzy
+msgid "&Close"
+msgstr "Fermer"
 
-#: src/ui/menu.rs:353
-msgid "&Close\tCtrl+F4"
-msgstr "&Fermer\tCtrl+F4"
-
-#: src/ui/menu.rs:354
 msgid "Close the current document"
 msgstr "Fermer le document actuel"
 
-#: src/ui/menu.rs:356
-msgid "Close &All\tCtrl+Shift+W"
-msgstr "Fermer &tout\tCtrl+Shift+W"
+#, fuzzy
+msgid "Close &All"
+msgstr "Fermer"
 
-#: src/ui/menu.rs:356
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "Fermer &tout\tCtrl+Shift+F4"
-
-#: src/ui/menu.rs:357
 msgid "Close all documents"
 msgstr "Fermer tous les documents"
 
-#: src/ui/menu.rs:365
+#, fuzzy
+msgid "Reopen &Last Closed"
+msgstr "Rouvrir & Dernière fermeture    Ctrl+Maj+T"
+
+#, fuzzy
+msgid "Reopen the last closed document"
+msgstr "Rouvrir le dernier document fermé"
+
 msgid "&Recent Documents"
 msgstr "Documents &récents"
 
-#: src/ui/menu.rs:366
 msgid "Open a recent document"
 msgstr "Ouvrir un document récent"
 
-#: src/ui/menu.rs:372 src/ui/tray.rs:63
+#. TRANSLATORS: System tray menu item to quit the application
 msgid "E&xit"
 msgstr "&Quitter"
 
-#: src/ui/menu.rs:373
 msgid "Exit the application"
 msgstr "Quitter l'application"
 
-#: src/ui/menu.rs:382
-msgid "&Find...\tCtrl+F"
-msgstr "&Rechercher...\tCtrl+F"
-
-#: src/ui/menu.rs:383
-msgid "Find text in the document"
-msgstr "Rechercher du texte dans le document"
-
-#: src/ui/menu.rs:384
-msgid "Find &Next\tF3"
-msgstr "Rechercher le &suivant\tF3"
-
-#: src/ui/menu.rs:385
-msgid "Find next occurrence"
-msgstr "Rechercher l'occurrence suivante"
-
-#: src/ui/menu.rs:386
-msgid "Find &Previous\tShift+F3"
-msgstr "Rechercher le &précédent\tShift+F3"
-
-#: src/ui/menu.rs:387
-msgid "Find previous occurrence"
-msgstr "Rechercher l'occurrence précédente"
-
-#: src/ui/menu.rs:388
-msgid "Go to &line...\tCtrl+G"
-msgstr "Aller à la &ligne...\tCtrl+G"
-
-#: src/ui/menu.rs:389
-msgid "Go to a specific line"
-msgstr "Aller à une ligne spécifique"
-
-#: src/ui/menu.rs:390
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Aller au &pourcentage...\tCtrl+Shift+G"
-
-#: src/ui/menu.rs:391
-msgid "Go to a percentage of the document"
-msgstr "Aller à un pourcentage du document"
-
-#: src/ui/menu.rs:392
-msgid "Go &Back\tAlt+Left"
-msgstr "Aller en &arrière\tAlt+Left"
-
-#: src/ui/menu.rs:393
-msgid "Go back in history"
-msgstr "Reculer dans l'historique"
-
-#: src/ui/menu.rs:394
-msgid "Go &Forward\tAlt+Right"
-msgstr "Aller en &avant\tAlt+Right"
-
-#: src/ui/menu.rs:395
-msgid "Go forward in history"
-msgstr "Avancer dans l'historique"
-
-#: src/ui/menu.rs:409
-msgid "&Sections"
-msgstr "&Sections"
-
-#: src/ui/menu.rs:410
-msgid "Navigate by sections"
-msgstr "Naviguer par sections"
-
-#: src/ui/menu.rs:412
-msgid "&Headings"
-msgstr "&Titres"
-
-#: src/ui/menu.rs:413
-msgid "Navigate by headings"
-msgstr "Naviguer par titres"
-
-#: src/ui/menu.rs:415
-msgid "&Pages"
-msgstr "&Pages"
-
-#: src/ui/menu.rs:416
-msgid "Navigate by pages"
-msgstr "Naviguer par pages"
-
-#: src/ui/menu.rs:418
-msgid "&Bookmarks"
-msgstr "&Signets"
-
-#: src/ui/menu.rs:419
-msgid "Navigate by bookmarks"
-msgstr "Naviguer par signets"
-
-#: src/ui/menu.rs:421
-msgid "&Links"
-msgstr "&Liens"
-
-#: src/ui/menu.rs:422
-msgid "Navigate by links"
-msgstr "Naviguer par liens"
-
-#: src/ui/menu.rs:424
-msgid "&Tables"
-msgstr "&Tableaux"
-
-#: src/ui/menu.rs:425
-msgid "Navigate by tables"
-msgstr "Naviguer par tableaux"
-
-#: src/ui/menu.rs:427
-msgid "&Separators"
-msgstr "&Séparateurs"
-
-#: src/ui/menu.rs:428
-msgid "Navigate by separators"
-msgstr "Naviguer par séparateurs"
-
-#: src/ui/menu.rs:430
-msgid "&Lists"
-msgstr "&Listes"
-
-#: src/ui/menu.rs:431
-msgid "Navigate by lists"
-msgstr "Naviguer par listes"
-
-#: src/ui/menu.rs:454
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr "&Importer les données du document...\tCtrl+Shift+I"
-
-#: src/ui/menu.rs:455
-msgid "Import bookmarks and position"
-msgstr "Importer les signets et la position"
-
-#: src/ui/menu.rs:456
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr "&Exporter les données du document...\tCtrl+Shift+E"
-
-#: src/ui/menu.rs:457
-msgid "Export bookmarks and position"
-msgstr "Exporter les signets et la position"
-
-#: src/ui/menu.rs:458
-msgid "Export to &Plain Text...\tCtrl+E"
-msgstr "Exporter en texte &brut...\tCtrl+E"
-
-#: src/ui/menu.rs:459
-msgid "Export document as plain text"
-msgstr "Exporter le document en texte brut"
-
-#: src/ui/menu.rs:467
-msgid "&Word Count\tRawCtrl+W"
-msgstr "&Nombre de mots\tRawCtrl+W"
-
-#: src/ui/menu.rs:467
-msgid "&Word Count\tCtrl+W"
-msgstr "&Nombre de mots\tCtrl+W"
-
-#: src/ui/menu.rs:468
-msgid "Show word count"
-msgstr "Afficher le nombre de mots"
-
-#: src/ui/menu.rs:469
-msgid "Document &Info\tCtrl+I"
-msgstr "&Informations sur le document\tCtrl+I"
-
-#: src/ui/menu.rs:470
-msgid "Show document information"
-msgstr "Afficher les informations sur le document"
-
-#: src/ui/menu.rs:471
-msgid "&Table of Contents\tCtrl+T"
-msgstr "&Table des matières\tCtrl+T"
-
-#: src/ui/menu.rs:472
-msgid "Show table of contents"
-msgstr "Afficher la table des matières"
-
-#: src/ui/menu.rs:473
-msgid "&Elements List...\tF7"
-msgstr "Liste des &éléments...\tF7"
-
-#: src/ui/menu.rs:474
-msgid "Show elements list"
-msgstr "Afficher la liste des éléments"
-
-#: src/ui/menu.rs:475
-msgid "Open &Containing Folder\tCtrl+Shift+C"
-msgstr "Ouvrir le &dossier contenant\tCtrl+Shift+C"
-
-#: src/ui/menu.rs:476
-msgid "Open folder containing the document"
-msgstr "Ouvrir le dossier contenant le document"
-
-#: src/ui/menu.rs:477
-msgid "Open in &Web View\tCtrl+Shift+V"
-msgstr "Ouvrir dans la &vue web\tCtrl+Shift+V"
-
-#: src/ui/menu.rs:478
-msgid "Open document in web view"
-msgstr "Ouvrir le document dans la vue web"
-
-#: src/ui/menu.rs:490
-msgid "I&mport/Export"
-msgstr "I&mporter/Exporter"
-
-#: src/ui/menu.rs:491
-msgid "Import and export options"
-msgstr "Options d'importation et d'exportation"
-
-#: src/ui/menu.rs:494
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
-msgstr "Basculer le &signet\tCtrl+Shift+B"
-
-#: src/ui/menu.rs:495
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "Signet avec &note\tCtrl+Shift+N"
-
-#: src/ui/menu.rs:499
-msgid "&Options\tCtrl+,"
-msgstr "&Options\tCtrl+,"
-
-#: src/ui/menu.rs:500
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "&Minuterie de veille...\tCtrl+Shift+S"
-
-#: src/ui/menu.rs:509
-msgid "&About Paperback\tCtrl+F1"
-msgstr "À &propos de Paperback\tCtrl+F1"
-
-#: src/ui/menu.rs:510
-msgid "About this application"
-msgstr "À propos de cette application"
-
-#: src/ui/menu.rs:511
-msgid "View Help in &Browser\tF1"
-msgstr "Afficher l'aide dans le &navigateur\tF1"
-
-#: src/ui/menu.rs:512
-msgid "View help in default browser"
-msgstr "Afficher l'aide dans le navigateur par défaut"
-
-#: src/ui/menu.rs:513
-msgid "View Help in &Paperback\tShift+F1"
-msgstr "Afficher l'aide dans &Paperback\tShift+F1"
-
-#: src/ui/menu.rs:514
-msgid "View help in Paperback"
-msgstr "Afficher l'aide dans Paperback"
-
-#: src/ui/menu.rs:515
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "Rechercher des &mises à jour\tCtrl+Shift+U"
-
-#: src/ui/menu.rs:516
-msgid "Check for updates"
-msgstr "Rechercher des mises à jour"
-
-#: src/ui/menu.rs:517
-msgid "&Donate\tCtrl+D"
-msgstr "Faire un &don\tCtrl+D"
-
-#: src/ui/menu.rs:518
-msgid "Support Paperback development"
-msgstr "Soutenir le développement de Paperback"
-
-#: src/ui/menu.rs:533
 msgid "(No recent documents)"
 msgstr "(Aucun document récent)"
 
-#: src/ui/menu.rs:550
-msgid "Show All...\tCtrl+R"
-msgstr "Tout afficher...\tCtrl+R"
+#, fuzzy
+msgid "Show All..."
+msgstr "Tout afficher"
 
-#: src/ui/navigation.rs:37
+#, fuzzy
+msgid "Previous Section"
+msgstr "Section précédente\t["
+
+msgid "Go to previous section"
+msgstr "Aller à la section précédente"
+
+#, fuzzy
+msgid "Next Section"
+msgstr "Section suivante\t]"
+
+msgid "Go to next section"
+msgstr "Aller à la section suivante"
+
+#, fuzzy
+msgid "Go to &Page"
+msgstr "Aller à la &page"
+
+#, fuzzy
+msgid "Previous Pa&ge"
+msgstr "&Page précédente\tShift+P"
+
+#, fuzzy
+msgid "Next Pag&e"
+msgstr "Page &suivante\tP"
+
+#, fuzzy
+msgid "Previous Lin&k"
+msgstr "Lien précéden&t\tShift+K"
+
+#, fuzzy
+msgid "Next Lin&k"
+msgstr "Lien suivan&t\tK"
+
+#, fuzzy
+msgid "Previous Ima&ge"
+msgstr "Image précédente    Maj+G"
+
+#, fuzzy
+msgid "Next Ima&ge"
+msgstr "Image suivante    G"
+
+#, fuzzy
+msgid "Previous Figu&re"
+msgstr "Figure précédente    Maj+F"
+
+#, fuzzy
+msgid "Next Figu&re"
+msgstr "Figure suivante    F"
+
+#, fuzzy
+msgid "Previous &Table"
+msgstr "&Tableau précédent\tShift+T"
+
+#, fuzzy
+msgid "Next &Table"
+msgstr "&Tableau suivant\tT"
+
+#, fuzzy
+msgid "Previous Se&parator"
+msgstr "Sé&parateur précédent\tShift+S"
+
+#, fuzzy
+msgid "Next Se&parator"
+msgstr "Sé&parateur suivant\tS"
+
+#, fuzzy
+msgid "Previous L&ist"
+msgstr "L&iste précédente\tShift+L"
+
+#, fuzzy
+msgid "Next L&ist"
+msgstr "L&iste suivante\tL"
+
+#, fuzzy
+msgid "Previous List &Item"
+msgstr "Élément de l&iste précédent\tShift+I"
+
+#, fuzzy
+msgid "Next List I&tem"
+msgstr "Élément de liste &suivant\tI"
+
+#, fuzzy
+msgid "Container &Start"
+msgstr "Conteneur & Démarrer    Maj+,"
+
+#, fuzzy
+msgid "Go to the start of the current list or table"
+msgstr "Aller au début de la liste ou du tableau actuel"
+
+#, fuzzy
+msgid "Past Container &End"
+msgstr "Conteneur précédent et fin    ,"
+
+#, fuzzy
+msgid "Go past the end of the current list or table"
+msgstr "Aller au-delà de la fin de la liste ou du tableau actuel"
+
+#, fuzzy
+msgid "&Previous Heading"
+msgstr "Titre &précédent\tShift+H"
+
+msgid "Go to previous heading"
+msgstr "Aller au titre précédent"
+
+#, fuzzy
+msgid "&Next Heading"
+msgstr "Titre &suivant\tH"
+
+msgid "Go to next heading"
+msgstr "Aller au titre suivant"
+
+#, fuzzy
+msgid "Previous Heading Level &1"
+msgstr "Titre de niveau &1 précédent\tShift+1"
+
+#, fuzzy
+msgid "Next Heading Level 1"
+msgstr "Titre de niveau 1 suivant\t1"
+
+#, fuzzy
+msgid "Previous Heading Level &2"
+msgstr "Titre de niveau &2 précédent\tShift+2"
+
+#, fuzzy
+msgid "Next Heading Level 2"
+msgstr "Titre de niveau 2 suivant\t2"
+
+#, fuzzy
+msgid "Previous Heading Level &3"
+msgstr "Titre de niveau &3 précédent\tShift+3"
+
+#, fuzzy
+msgid "Next Heading Level 3"
+msgstr "Titre de niveau 3 suivant\t3"
+
+#, fuzzy
+msgid "Previous Heading Level &4"
+msgstr "Titre de niveau &4 précédent\tShift+4"
+
+#, fuzzy
+msgid "Next Heading Level 4"
+msgstr "Titre de niveau 4 suivant\t4"
+
+#, fuzzy
+msgid "Previous Heading Level &5"
+msgstr "Titre de niveau &5 précédent\tShift+5"
+
+#, fuzzy
+msgid "Next Heading Level 5"
+msgstr "Titre de niveau 5 suivant\t5"
+
+#, fuzzy
+msgid "Previous Heading Level &6"
+msgstr "Titre de niveau &6 précédent\tShift+6"
+
+#, fuzzy
+msgid "Next Heading Level 6"
+msgstr "Titre de niveau 6 suivant\t6"
+
+#, fuzzy
+msgid "&Previous Bookmark"
+msgstr "&Signet précédent\tShift+B"
+
+msgid "Go to previous bookmark"
+msgstr "Aller au signet précédent"
+
+#, fuzzy
+msgid "&Next Bookmark"
+msgstr "&Signet suivant\tB"
+
+msgid "Go to next bookmark"
+msgstr "Aller au signet suivant"
+
+#, fuzzy
+msgid "Previous &Note"
+msgstr "&Note précédente\tShift+N"
+
+msgid "Go to previous note"
+msgstr "Aller à la note précédente"
+
+#, fuzzy
+msgid "Next N&ote"
+msgstr "Note &suivante\tN"
+
+msgid "Go to next note"
+msgstr "Aller à la note suivante"
+
+#, fuzzy
+msgid "Jump to &All..."
+msgstr "Accéder à &tous...\tCtrl+B"
+
+msgid "Show all bookmarks and notes"
+msgstr "Afficher tous les signets et les notes"
+
+#, fuzzy
+msgid "Jump to &Bookmarks Only..."
+msgstr "Accéder aux &signets seulement...\tCtrl+Alt+B"
+
+msgid "Show bookmarks only"
+msgstr "Afficher les signets seulement"
+
+#, fuzzy
+msgid "Jump to Notes &Only..."
+msgstr "Accéder aux notes &seulement...\tCtrl+Alt+M"
+
+msgid "Show notes only"
+msgstr "Afficher les notes seulement"
+
+#, fuzzy
+msgid "&View Note Text"
+msgstr "Afficher la note"
+
+msgid "View the note at current position"
+msgstr "Afficher la note à la position actuelle"
+
+#, fuzzy
+msgid "&Find..."
+msgstr "&Rechercher"
+
+msgid "Find text in the document"
+msgstr "Rechercher du texte dans le document"
+
+msgid "Find next occurrence"
+msgstr "Rechercher l'occurrence suivante"
+
+msgid "Find previous occurrence"
+msgstr "Rechercher l'occurrence précédente"
+
+#, fuzzy
+msgid "Go to &line..."
+msgstr "Aller à la &ligne"
+
+msgid "Go to a specific line"
+msgstr "Aller à une ligne spécifique"
+
+#, fuzzy
+msgid "Go to &percent..."
+msgstr "Aller au &pourcentage"
+
+msgid "Go to a percentage of the document"
+msgstr "Aller à un pourcentage du document"
+
+#, fuzzy
+msgid "Go &Back"
+msgstr "Aller & Retour    Ctrl+["
+
+msgid "Go back in history"
+msgstr "Reculer dans l'historique"
+
+#, fuzzy
+msgid "Go &Forward"
+msgstr "Aller à &Suivant    Ctrl+]"
+
+msgid "Go forward in history"
+msgstr "Avancer dans l'historique"
+
+msgid "&Sections"
+msgstr "&Sections"
+
+msgid "Navigate by sections"
+msgstr "Naviguer par sections"
+
+msgid "&Headings"
+msgstr "&Titres"
+
+msgid "Navigate by headings"
+msgstr "Naviguer par titres"
+
+msgid "&Pages"
+msgstr "&Pages"
+
+msgid "Navigate by pages"
+msgstr "Naviguer par pages"
+
+msgid "&Bookmarks"
+msgstr "&Signets"
+
+msgid "Navigate by bookmarks"
+msgstr "Naviguer par signets"
+
+msgid "&Links"
+msgstr "&Liens"
+
+msgid "Navigate by links"
+msgstr "Naviguer par liens"
+
+#, fuzzy
+msgid "&Images"
+msgstr "&Images"
+
+#, fuzzy
+msgid "Navigate by images"
+msgstr "Navigation par images"
+
+#, fuzzy
+msgid "&Figures"
+msgstr "&Figures"
+
+#, fuzzy
+msgid "Navigate by figures"
+msgstr "Navigation par chiffres"
+
+msgid "&Tables"
+msgstr "&Tableaux"
+
+msgid "Navigate by tables"
+msgstr "Naviguer par tableaux"
+
+msgid "&Separators"
+msgstr "&Séparateurs"
+
+msgid "Navigate by separators"
+msgstr "Naviguer par séparateurs"
+
+msgid "&Lists"
+msgstr "&Listes"
+
+msgid "Navigate by lists"
+msgstr "Naviguer par listes"
+
+#, fuzzy
+msgid "&Containers"
+msgstr "&Conteneurs"
+
+#, fuzzy
+msgid "Navigate by containers"
+msgstr "Navigation par conteneurs"
+
+#, fuzzy
+msgid "&About Paperback"
+msgstr "À &propos de Paperback\tCtrl+F1"
+
+msgid "About this application"
+msgstr "À propos de cette application"
+
+#, fuzzy
+msgid "View Help in &Browser"
+msgstr "Afficher l'aide dans le &navigateur\tF1"
+
+msgid "View help in default browser"
+msgstr "Afficher l'aide dans le navigateur par défaut"
+
+#, fuzzy
+msgid "View Help in &Paperback"
+msgstr "Afficher l'aide dans Paperback"
+
+msgid "View help in Paperback"
+msgstr "Afficher l'aide dans Paperback"
+
+#, fuzzy
+msgid "Check for &Updates"
+msgstr "Rechercher des mises à jour"
+
+msgid "Check for updates"
+msgstr "Rechercher des mises à jour"
+
+#, fuzzy
+msgid "&Donate"
+msgstr "Faire un &don\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "Soutenir le développement de Paperback"
+
+#, fuzzy
+msgid "&Import Document Data..."
+msgstr "Importer les données d'un document"
+
+msgid "Import bookmarks and position"
+msgstr "Importer les signets et la position"
+
+#, fuzzy
+msgid "&Export Document Data..."
+msgstr "Exporter les données du document"
+
+msgid "Export bookmarks and position"
+msgstr "Exporter les signets et la position"
+
+#, fuzzy
+msgid "Export to &Plain Text..."
+msgstr "Exporter en texte &brut...\tCtrl+E"
+
+msgid "Export document as plain text"
+msgstr "Exporter le document en texte brut"
+
+#, fuzzy
+msgid "Export to &HTML..."
+msgstr "Exporter au format HTML..."
+
+#, fuzzy
+msgid "Export document as HTML"
+msgstr "Exporter le document au format HTML"
+
+#, fuzzy
+msgid "Export to &Markdown..."
+msgstr "Exporter vers &Markdown..."
+
+#, fuzzy
+msgid "Export document as Markdown"
+msgstr "Exporter le document au format Markdown"
+
+#, fuzzy
+msgid "&Word Count"
+msgstr "Nombre de mots"
+
+msgid "Show word count"
+msgstr "Afficher le nombre de mots"
+
+#, fuzzy
+msgid "Document &Info"
+msgstr "Informations sur le document"
+
+msgid "Show document information"
+msgstr "Afficher les informations sur le document"
+
+#, fuzzy
+msgid "&Table of Contents"
+msgstr "Table des matières"
+
+msgid "Show table of contents"
+msgstr "Afficher la table des matières"
+
+#, fuzzy
+msgid "&Elements List..."
+msgstr "Liste des &éléments...\tF7"
+
+msgid "Show elements list"
+msgstr "Afficher la liste des éléments"
+
+#, fuzzy
+msgid "Reveal &File in Folder"
+msgstr "Afficher et enregistrer dans le dossier    Ctrl+Maj+C"
+
+#, fuzzy
+msgid "Reveal document in the file manager"
+msgstr "Afficher le document dans le gestionnaire de fichiers"
+
+#, fuzzy
+msgid "Open in &Web View"
+msgstr "Ouvrir dans la &vue web\tCtrl+Shift+V"
+
+msgid "Open document in web view"
+msgstr "Ouvrir le document dans la vue web"
+
+#, fuzzy
+msgid "View &Source"
+msgstr "Afficher la source    Ctrl+U"
+
+#, fuzzy
+msgid "Open the document source in a new tab"
+msgstr "Ouvrir le document source dans un nouvel onglet"
+
+msgid "I&mport/Export"
+msgstr "I&mporter/Exporter"
+
+msgid "Import and export options"
+msgstr "Options d'importation et d'exportation"
+
+#, fuzzy
+msgid "Toggle &Bookmark"
+msgstr "Basculer le &signet\tCtrl+Shift+B"
+
+#, fuzzy
+msgid "Bookmark with &Note"
+msgstr "Signet avec &note"
+
+#, fuzzy
+msgid "Word w&rap"
+msgstr "&Retour à la ligne automatique"
+
+#, fuzzy
+msgid "Toggle word wrap"
+msgstr "Activer/désactiver le retour à la ligne automatique"
+
+#, fuzzy
+msgid "&Full Screen"
+msgstr "&Plein écran    F11"
+
+#, fuzzy
+msgid "Toggle full screen"
+msgstr "Passer en mode plein écran"
+
+#, fuzzy
+msgid "&Options"
+msgstr "Options"
+
+#, fuzzy
+msgid "&Sleep Timer..."
+msgstr "Minuterie de veille"
+
+msgid "&File"
+msgstr "&Fichier"
+
+msgid "&Go"
+msgstr "&Aller"
+
+msgid "&Tools"
+msgstr "&Outils"
+
+msgid "&Help"
+msgstr "&Aide"
+
+#, fuzzy
+msgid "&Edit"
+msgstr "&Modifier"
+
+#. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
 msgstr "Aucune section."
 
-#: src/ui/navigation.rs:38
+#. TRANSLATORS: Announced when there is no next section from the current position
 msgid "No next section"
 msgstr "Aucune section suivante"
 
-#: src/ui/navigation.rs:39
+#. TRANSLATORS: Announced when there is no previous section from the current position
 msgid "No previous section"
 msgstr "Aucune section précédente"
 
-#: src/ui/navigation.rs:44
+#. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
 msgid "No headings at level %d."
 msgstr "Aucun titre au niveau %d."
 
-#: src/ui/navigation.rs:45
+#. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
 msgid "No next heading at level %d."
 msgstr "Aucun titre suivant au niveau %d."
 
-#: src/ui/navigation.rs:46
+#. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
 msgid "No previous heading at level %d."
 msgstr "Aucun titre précédent au niveau %d."
 
-#: src/ui/navigation.rs:55
+#. TRANSLATORS: Announced when the document has no headings at all (no level filter applied)
 msgid "No headings."
 msgstr "Aucun titre."
 
-#: src/ui/navigation.rs:56
+#. TRANSLATORS: Announced when there is no next heading (no level filter applied)
 msgid "No next heading."
 msgstr "Aucun titre suivant."
 
-#: src/ui/navigation.rs:57
+#. TRANSLATORS: Announced when there is no previous heading (no level filter applied)
 msgid "No previous heading."
 msgstr "Aucun titre précédent."
 
-#: src/ui/navigation.rs:64
+#. TRANSLATORS: Announced when there is no next page from the current position
 msgid "No next page."
 msgstr "Aucune page suivante."
 
-#: src/ui/navigation.rs:65
+#. TRANSLATORS: Announced when there is no previous page from the current position
 msgid "No previous page."
 msgstr "Aucune page précédente."
 
-#: src/ui/navigation.rs:69
+#. TRANSLATORS: Announced when the document has no links to navigate
 msgid "No links."
 msgstr "Aucun lien."
 
-#: src/ui/navigation.rs:70
+#. TRANSLATORS: Announced when there is no next link from the current position
 msgid "No next link."
 msgstr "Aucun lien suivant."
 
-#: src/ui/navigation.rs:71
+#. TRANSLATORS: Announced when there is no previous link from the current position
 msgid "No previous link."
 msgstr "Aucun lien précédent."
 
-#: src/ui/navigation.rs:75
+#. TRANSLATORS: Announced when the document has no lists to navigate
 msgid "No lists."
 msgstr "Aucune liste."
 
-#: src/ui/navigation.rs:76
+#. TRANSLATORS: Announced when there is no next list from the current position
 msgid "No next list."
 msgstr "Aucune liste suivante."
 
-#: src/ui/navigation.rs:77
+#. TRANSLATORS: Announced when there is no previous list from the current position
 msgid "No previous list."
 msgstr "Aucune liste précédente."
 
-#: src/ui/navigation.rs:81
+#. TRANSLATORS: Announced when the document has no list items to navigate
 msgid "No list items."
 msgstr "Aucun élément de liste."
 
-#: src/ui/navigation.rs:82
+#. TRANSLATORS: Announced when there is no next list item from the current position
 msgid "No next list item."
 msgstr "Aucun élément de liste suivant."
 
-#: src/ui/navigation.rs:83
+#. TRANSLATORS: Announced when there is no previous list item from the current position
 msgid "No previous list item."
 msgstr "Aucun élément de liste précédent."
 
-#: src/ui/navigation.rs:87
+#. TRANSLATORS: Announced when the document has no tables to navigate
 msgid "No tables."
 msgstr "Aucun tableau."
 
-#: src/ui/navigation.rs:88
+#. TRANSLATORS: Announced when there is no next table from the current position
 msgid "No next table."
 msgstr "Aucun tableau suivant."
 
-#: src/ui/navigation.rs:89
+#. TRANSLATORS: Announced when there is no previous table from the current position
 msgid "No previous table."
 msgstr "Aucun tableau précédent."
 
-#: src/ui/navigation.rs:93
+#. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr "Aucun séparateur."
 
-#: src/ui/navigation.rs:94
+#. TRANSLATORS: Announced when there is no next separator from the current position
 msgid "No next separator."
 msgstr "Aucun séparateur suivant."
 
-#: src/ui/navigation.rs:95
+#. TRANSLATORS: Announced when there is no previous separator from the current position
 msgid "No previous separator."
 msgstr "Aucun séparateur précédent."
 
-#: src/ui/navigation.rs:109 src/ui/navigation.rs:303
+#. TRANSLATORS: Announced when the document has no images to navigate
+#, fuzzy
+msgid "No images."
+msgstr "Pas d'images."
+
+#. TRANSLATORS: Announced when there is no next image from the current position
+#, fuzzy
+msgid "No next image."
+msgstr "Il n'y a pas d'image suivante."
+
+#. TRANSLATORS: Announced when there is no previous image from the current position
+#, fuzzy
+msgid "No previous image."
+msgstr "Aucune image précédente."
+
+#. TRANSLATORS: Announced when the document has no figures to navigate
+#, fuzzy
+msgid "No figures."
+msgstr "Pas de chiffres."
+
+#. TRANSLATORS: Announced when there is no next figure from the current position
+#, fuzzy
+msgid "No next figure."
+msgstr "Il n'y a pas de figure suivante."
+
+#. TRANSLATORS: Announced when there is no previous figure from the current position
+#, fuzzy
+msgid "No previous figure."
+msgstr "Aucun chiffre précédent."
+
+#. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
 msgstr "Retour au début. "
 
-#: src/ui/navigation.rs:109 src/ui/navigation.rs:303
 msgid "Wrapping to end. "
 msgstr "Retour à la fin. "
 
-#: src/ui/navigation.rs:113
+#. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
 msgid "%s Heading level %d"
 msgstr "%s Titre niveau %d"
 
-#: src/ui/navigation.rs:118
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+#, fuzzy
+msgid "Page %d"
+msgstr "Page %d : %s"
+
+#. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 msgid "Page %d: %s"
 msgstr "Page %d : %s"
 
-#: src/ui/navigation.rs:124
+#. TRANSLATORS: Suffix appended after a link's text when announcing navigation to a link; the leading space is significant
 msgid " link"
 msgstr " lien"
 
-#: src/ui/navigation.rs:187
+#. TRANSLATORS: Announced when moving forward/backward through the caret position history
 msgid "Navigated to next position."
 msgstr "Navigation vers la position suivante."
 
-#: src/ui/navigation.rs:187
 msgid "Navigated to previous position."
 msgstr "Navigation vers la position précédente."
 
-#: src/ui/navigation.rs:197
+#. TRANSLATORS: Announced when there is no next/previous position in the caret position history
 msgid "No next position."
 msgstr "Aucune position suivante."
 
-#: src/ui/navigation.rs:197
 msgid "No previous position."
 msgstr "Aucune position précédente."
 
-#: src/ui/navigation.rs:307
+#. TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
+#, fuzzy
+msgid "No containers."
+msgstr "Pas de conteneurs."
+
+#. TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
+#, fuzzy
+msgid "Not in a container."
+msgstr "Pas dans un conteneur."
+
+#. TRANSLATORS: Announced when jumping to the start/end of the container (list/table) the caret is inside, and the target line is blank
+#, fuzzy
+msgid "Past end of container."
+msgstr "Au-delà de l'extrémité du conteneur."
+
+#, fuzzy
+msgid "Start of container."
+msgstr "Début du conteneur."
+
+#. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
 msgid "%s - Bookmark %d"
 msgstr "%s - Signet %d"
 
-#: src/ui/navigation.rs:318
+#. TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
 msgid "No notes."
 msgstr "Aucune note."
 
-#: src/ui/navigation.rs:318
 msgid "No bookmarks."
 msgstr "Aucun signet."
 
-#: src/ui/navigation.rs:320
+#. TRANSLATORS: Announced when there is no next bookmark/note from the current position
 msgid "No next note."
 msgstr "Aucune note suivante."
 
-#: src/ui/navigation.rs:320
 msgid "No next bookmark."
 msgstr "Aucun signet suivant."
 
-#: src/ui/navigation.rs:322
+#. TRANSLATORS: Announced when there is no previous note from the current position
 msgid "No previous note."
 msgstr "Aucune note précédente."
 
-#: src/ui/navigation.rs:324
+#. TRANSLATORS: Announced when there is no previous bookmark from the current position
 msgid "No previous bookmark."
 msgstr "Aucun signet précédent."
 
-#: src/ui/navigation.rs:367 src/ui/navigation.rs:369
+#. TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
 msgid "Bookmark."
 msgstr "Signet."
 
-#: src/ui/navigation.rs:407
+#. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 msgid "Bookmark removed."
 msgstr "Signet supprimé."
 
-#: src/ui/navigation.rs:407
 msgid "Bookmark added."
 msgstr "Signet ajouté."
 
-#: src/ui/navigation.rs:436
 msgid "Enter bookmark note:"
 msgstr "Saisir la note du signet :"
 
-#: src/ui/navigation.rs:448
+#. TRANSLATORS: Announced after saving a bookmark's note text
 msgid "Bookmark saved."
 msgstr "Signet enregistré."
 
-#: src/ui/navigation.rs:474
+#. TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
 msgid "No note at the current position."
 msgstr "Aucune note à la position actuelle."
 
-#: src/ui/status.rs:9
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Line"
 msgstr "Ligne"
 
-#: src/ui/status.rs:10
+#. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Caractère"
 
-#: src/ui/status.rs:33
+#. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
 msgstr "Minuterie de veille"
 
-#: src/ui/tray.rs:61
+#. TRANSLATORS: System tray menu item to restore the main window from the tray
 msgid "&Restore"
 msgstr "&Restaurer"
 
-#: src/ui/tray.rs:62
+#. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
 msgid "Restore Paperback"
 msgstr "Restaurer Paperback"
 
-#: src/ui/tray.rs:64
+#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 msgid "Exit Paperback"
 msgstr "Quitter Paperback"
+
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+#, fuzzy
+msgid "Figure"
+msgstr "Figure"
+
+#, fuzzy
+msgid "Image"
+msgstr "Image"
+
+#. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
+#, fuzzy
+msgid "Failed to convert DTBook XML to text"
+msgstr "Échec de la conversion du fichier XML DTBook en texte"
+
+#. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
+#, fuzzy
+msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
+msgstr "L'archive ZIP ne semble pas correspondre à un livre DAISY 3 ou DAISY 2.02 valide."
+
+#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+#, fuzzy
+msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
+msgstr "Fichier .opf DAISY non valide ou impossibilité de trouver le fichier XML DTBook dans le manifeste"
+
+#. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
+#, fuzzy
+msgid "OPF package element missing"
+msgstr "Élément de package OPF manquant"
+
+#. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
+#, fuzzy
+msgid "no readable spine items"
+msgstr "aucun élément lisible sur le dos du livre"
+
+#. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
+#, fuzzy
+msgid "failed to convert spine items: {}"
+msgstr "Échec de la conversion des éléments de la colonne vertébrale : {}"
+
+#. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
+#, fuzzy
+msgid "EPUB has no readable content ({})"
+msgstr "Le fichier EPUB ne contient aucun contenu lisible ({})"
+
+#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+#, fuzzy
+msgid "rootfile not found in container.xml"
+msgstr "Fichier racine introuvable dans container.xml"
+
+#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+#, fuzzy
+msgid "unsupported content"
+msgstr "contenu non pris en charge"
+
+#. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
+#, fuzzy
+msgid "Failed to convert FB2 XML to text"
+msgstr "Échec de la conversion du fichier XML FB2 en texte"
+
+#. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
+#, fuzzy
+msgid "HTML file is empty: {}"
+msgstr "Le fichier HTML est vide : {}"
+
+#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
+#, fuzzy
+msgid "Failed to convert HTML to text: {}"
+msgstr "Échec de la conversion du code HTML en texte : {}"
+
+#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
+#, fuzzy
+msgid "Failed to convert Markdown to text: {}"
+msgstr "Échec de la conversion du Markdown en texte : {}"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
+#, fuzzy
+msgid "Invalid HUFF record"
+msgstr "Enregistrement HUFF non valide"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record has the wrong signature
+#, fuzzy
+msgid "Invalid HUFF header"
+msgstr "En-tête HUFF non valide"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman cache table offset is out of bounds
+#, fuzzy
+msgid "Invalid HUFF cache offset"
+msgstr "Décalage de cache HUFF non valide"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is invalid
+#, fuzzy
+msgid "Code len out of bounds"
+msgstr "Longueur du code hors limites"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman table has an invalid terminal-code entry
+#, fuzzy
+msgid "Bad term"
+msgstr "Mauvais terme"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman base table offset is out of bounds
+#, fuzzy
+msgid "Invalid HUFF base offset"
+msgstr "Décalage de base HUFF non valide"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary record has the wrong signature
+#, fuzzy
+msgid "Invalid CDIC header"
+msgstr "En-tête CDIC non valide"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary offset table is out of bounds
+#, fuzzy
+msgid "Invalid CDIC offsets"
+msgstr "Décalages CDIC non valides"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase offset is out of bounds
+#, fuzzy
+msgid "Invalid CDIC phrase offset"
+msgstr "Décalage de phrase CDIC non valide"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase length is out of bounds
+#, fuzzy
+msgid "Invalid CDIC phrase length"
+msgstr "Longueur de phrase CDIC non valide"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is out of range; {} is the invalid length value
+#, fuzzy
+msgid "Invalid code_len {}"
+msgstr "code_len non valide {}"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
+#, fuzzy
+msgid "Decode stack overflow"
+msgstr "Décoder un débordement de pile"
+
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+#, fuzzy
+msgid "File too short"
+msgstr "Fichier trop court"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+#, fuzzy
+msgid "Invalid record offsets"
+msgstr "Décalages d'enregistrement non valides"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+#, fuzzy
+msgid "No records found"
+msgstr "Aucun résultat trouvé"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+#, fuzzy
+msgid "Invalid Record 0 offsets"
+msgstr "Enregistrement non valide : 0 décalage"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+#, fuzzy
+msgid "Invalid Record 0"
+msgstr "Enregistrement non valide n° 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+#, fuzzy
+msgid "No MOBI header"
+msgstr "Pas d'en-tête MOBI"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+#, fuzzy
+msgid "Invalid MOBI identifier"
+msgstr "Identifiant MOBI non valide"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+#, fuzzy
+msgid "Invalid content record range"
+msgstr "Plage d'enregistrements de contenu non valide"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+#, fuzzy
+msgid "Invalid HUFF/CDIC records"
+msgstr "Enregistrements HUFF/CDIC non valides"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+#, fuzzy
+msgid "Missing HUFF parameters in header"
+msgstr "Paramètres HUFF manquants dans l'en-tête"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+#, fuzzy
+msgid "Unsupported compression mode ({})"
+msgstr "Mode de compression non pris en charge ({})"
+
+#. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
+#, fuzzy
+msgid "ODP file does not contain any pages"
+msgstr "Le fichier ODP ne contient aucune page"
+
+#. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
+#, fuzzy
+msgid "FODP file does not contain any pages"
+msgstr "Le fichier FODP ne contient aucune page"
+
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
+msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+msgstr "Ce PDF ne contient que des images, sans texte extractible. Vous devrez peut-être le traiter avec un logiciel OCR pour en lire le contenu."
+
+#. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required or incorrect"
+msgstr "Mot de passe requis ou incorrect"
+
+#. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
+#, fuzzy
+msgid "Failed to open PDF document: {}"
+msgstr "Impossible d'ouvrir le document PDF : {}"
+
+#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
+#, fuzzy
+msgid "PPTX file contains no slides"
+msgstr "Le fichier PPTX ne contient aucune diapositive"
+
+#, fuzzy
+msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+msgstr "Les fichiers PPT protégés par mot de passe ne sont actuellement pas pris en charge. Essayez d'enregistrer le fichier au format PPTX et d'ouvrir ce dernier à la place."
+
+#. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
+#, fuzzy
+msgid "PPT file contains no slides"
+msgstr "Le fichier PPT ne contient aucune diapositive"
+
+#. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
+#, fuzzy
+msgid "PowerPoint Document stream not found"
+msgstr "Flux de documents PowerPoint introuvable"
+
+#. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
+#, fuzzy
+msgid "Failed to parse RTF document: {}"
+msgstr "Échec de l'analyse du document RTF : {}"
+
+#. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
+#, fuzzy
+msgid "DOC file is missing required FIB fields"
+msgstr "Le fichier DOC ne contient pas les champs FIB obligatoires"
+
+#. TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
+#, fuzzy
+msgid "Not a valid DOC file (invalid FIB magic)"
+msgstr "Fichier DOC non valide (code FIB non valide)"
+
+#. TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "DOC file is encrypted and requires a password"
+msgstr "Le fichier DOC est crypté et nécessite un mot de passe"
+
+#. TRANSLATORS: Error detail shown when decrypting a legacy DOC file fails (the internal sentinel prefix before it is not translated); {} is the underlying error
+#, fuzzy
+msgid "DOC decryption failed (wrong password?): {}"
+msgstr "Échec du déchiffrement du fichier DOC (mot de passe incorrect ?) : {}"
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+#, fuzzy
+msgid "File content does not look like plain text"
+msgstr "Le contenu du fichier ne semble pas être du texte brut."
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+#, fuzzy
+msgid "No readable text content found"
+msgstr "Aucun contenu textuel lisible n'a été trouvé"
+
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#, fuzzy
+msgid "No readable content found in the ZIP archive"
+msgstr "Aucun contenu lisible n'a été trouvé dans l'archive ZIP"
+
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "File is encrypted and requires a password"
+msgstr "Le fichier est crypté et nécessite un mot de passe"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+#, fuzzy
+msgid "Decryption failed (wrong password?): {}"
+msgstr "Échec du déchiffrement (mot de passe incorrect ?) : {}"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+#, fuzzy
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr "Échec de l'analyse du format DOC hérité : {}. Échec du repli vers OOXML : {}"
+
+#. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
+#, fuzzy
+msgid "No file extension found for: {}"
+msgstr "Aucune extension de fichier n'a été trouvée pour : {}"
+
+#. TRANSLATORS: Error shown when no parser supports a file's extension; {} is the extension (without the leading dot)
+#, fuzzy
+msgid "No parser found for extension: .{}"
+msgstr "Aucun analyseur syntaxique n'a été trouvé pour l'extension : .{}"
+
+#. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
+#, fuzzy
+msgid "All parsers failed for extension: .{}"
+msgstr "Tous les analyseurs ont échoué pour l'extension : . {}"
+
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required"
+msgstr "Mot de passe requis"
+
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password incorrect"
+msgstr "Mot de passe incorrect"
+
+msgid "Update to %s"
+msgstr "Mettre à jour vers %s"
+
+#, fuzzy
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "Une nouvelle version d'%s est disponible. Voici les nouveautés :"
+
+#, fuzzy
+msgid "No release notes provided."
+msgstr "Aucune note de mise à jour n'est fournie."
+
+#, fuzzy
+msgid "%s Update"
+msgstr "%s Mise à jour"
+
+msgid "Downloading update..."
+msgstr "Téléchargement de la mise à jour..."
+
+msgid "No updates available."
+msgstr "Aucune mise à jour disponible."
+
+#, fuzzy
+msgid "No updates available. Latest version: %s"
+msgstr "Aucune mise à jour disponible. Dernière version : %s"
+
+msgid "Info"
+msgstr "Information"
+
+#, fuzzy
+msgid "Security verification failed. The update might have been tampered with: %s"
+msgstr "Échec de la vérification de sécurité. La mise à jour a peut-être été altérée : %s"
+
+#, fuzzy
+msgid "Security Error"
+msgstr "Erreur de sécurité"
+
+msgid "Update failed"
+msgstr "Échec de la mise à jour"
+
+#, fuzzy
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"La mise à jour a été téléchargée à l'adresse suivante :%s\n"
+". Veuillez l'installer manuellement."
+
+#, fuzzy
+msgid "Update Ready"
+msgstr "Prêt pour la mise à jour"
+
+msgid "Failed to get current exe path"
+msgstr "Impossible d'obtenir le chemin de l'exécutable actuel"
+
+#, fuzzy
+msgid "Failed to launch installer script"
+msgstr "Échec du lancement du script d'installation"
+
+msgid "Failed to launch update script"
+msgstr "Impossible de lancer le script de mise à jour"
+
+msgid "Unknown update file format."
+msgstr "Format de fichier de mise à jour inconnu."
+
+#, fuzzy
+msgid "&Play/Pause Audio"
+msgstr "&Lecture/Pause audio"
+
+#, fuzzy
+msgid "Play or pause this document's audio narration"
+msgstr "Lancer ou mettre en pause la lecture audio de ce document"
+
+msgid "Previous Section\t["
+msgstr "Section précédente\t["
+
+msgid "Next Section\t]"
+msgstr "Section suivante\t]"
+
+msgid "Go to &Page\tCtrl+P"
+msgstr "Aller à la &page\tCtrl+P"
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr "&Page précédente\tShift+P"
+
+msgid "Next Pag&e\tP"
+msgstr "Page &suivante\tP"
+
+msgid "Previous Lin&k\tShift+K"
+msgstr "Lien précéden&t\tShift+K"
+
+msgid "Next Lin&k\tK"
+msgstr "Lien suivan&t\tK"
+
+#, fuzzy
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Image précédente    Maj+G"
+
+#, fuzzy
+msgid "Next Ima&ge\tG"
+msgstr "Image suivante    G"
+
+#, fuzzy
+msgid "Previous Figu&re\tShift+F"
+msgstr "Figure précédente    Maj+F"
+
+#, fuzzy
+msgid "Next Figu&re\tF"
+msgstr "Figure suivante    F"
+
+msgid "Previous &Table\tShift+T"
+msgstr "&Tableau précédent\tShift+T"
+
+msgid "Next &Table\tT"
+msgstr "&Tableau suivant\tT"
+
+msgid "Previous Se&parator\tShift+S"
+msgstr "Sé&parateur précédent\tShift+S"
+
+msgid "Next Se&parator\tS"
+msgstr "Sé&parateur suivant\tS"
+
+msgid "Previous L&ist\tShift+L"
+msgstr "L&iste précédente\tShift+L"
+
+msgid "Next L&ist\tL"
+msgstr "L&iste suivante\tL"
+
+msgid "Previous List &Item\tShift+I"
+msgstr "Élément de l&iste précédent\tShift+I"
+
+msgid "Next List I&tem\tI"
+msgstr "Élément de liste &suivant\tI"
+
+#, fuzzy
+msgid "Container &Start\tShift+,"
+msgstr "Conteneur & Démarrer    Maj+,"
+
+#, fuzzy
+msgid "Past Container &End\t,"
+msgstr "Conteneur précédent et fin    ,"
+
+msgid "Next Heading Level 1\t1"
+msgstr "Titre de niveau 1 suivant\t1"
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "Titre de niveau &2 précédent\tShift+2"
+
+msgid "Next Heading Level 2\t2"
+msgstr "Titre de niveau 2 suivant\t2"
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "Titre de niveau &3 précédent\tShift+3"
+
+msgid "Next Heading Level 3\t3"
+msgstr "Titre de niveau 3 suivant\t3"
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "Titre de niveau &4 précédent\tShift+4"
+
+msgid "Next Heading Level 4\t4"
+msgstr "Titre de niveau 4 suivant\t4"
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "Titre de niveau &5 précédent\tShift+5"
+
+msgid "Next Heading Level 5\t5"
+msgstr "Titre de niveau 5 suivant\t5"
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "Titre de niveau &6 précédent\tShift+6"
+
+msgid "Next Heading Level 6\t6"
+msgstr "Titre de niveau 6 suivant\t6"
+
+msgid "&Previous Heading\tShift+H"
+msgstr "Titre &précédent\tShift+H"
+
+msgid "&Next Heading\tH"
+msgstr "Titre &suivant\tH"
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "Titre de niveau &1 précédent\tShift+1"
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr "&Signet précédent\tShift+B"
+
+msgid "&Next Bookmark\tB"
+msgstr "&Signet suivant\tB"
+
+msgid "Previous &Note\tShift+N"
+msgstr "&Note précédente\tShift+N"
+
+msgid "Next N&ote\tN"
+msgstr "Note &suivante\tN"
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr "Accéder à &tous...\tCtrl+B"
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "Accéder aux &signets seulement...\tCtrl+Alt+B"
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "Accéder aux notes &seulement...\tCtrl+Alt+M"
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "&Afficher le texte de la note\tRawCtrl+Shift+W"
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "&Afficher le texte de la note\tCtrl+Shift+W"
+
+msgid "&Open...\tCtrl+O"
+msgstr "&Ouvrir...\tCtrl+O"
+
+msgid "&Close\tCtrl+W"
+msgstr "&Fermer\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "&Fermer\tCtrl+F4"
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "Fermer &tout\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Fermer &tout\tCtrl+Shift+F4"
+
+#, fuzzy
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "Rouvrir & Dernière fermeture    Ctrl+Maj+T"
+
+#, fuzzy
+msgid "E&xit\tCtrl+Q"
+msgstr "E&xit    Ctrl+Q"
+
+msgid "&Find...\tCtrl+F"
+msgstr "&Rechercher...\tCtrl+F"
+
+#, fuzzy
+msgid "Find &Next\tCtrl+G"
+msgstr "Rechercher & Suivant    Ctrl+G"
+
+msgid "Find &Next\tF3"
+msgstr "Rechercher le &suivant\tF3"
+
+#, fuzzy
+msgid "Find &Previous\tCtrl+Shift+G"
+msgstr "Rechercher & Précédent    Ctrl+Maj+G"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "Rechercher le &précédent\tShift+F3"
+
+#, fuzzy
+msgid "Go to &line...\tCtrl+L"
+msgstr "Aller à la ligne...    Ctrl+L"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "Aller à la &ligne...\tCtrl+G"
+
+#, fuzzy
+msgid "Go to &percent...\tCtrl+Shift+L"
+msgstr "Aller à &percent...    Ctrl+Maj+L"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Aller au &pourcentage...\tCtrl+Shift+G"
+
+#, fuzzy
+msgid "Go &Back\tCtrl+["
+msgstr "Aller & Retour    Ctrl+["
+
+msgid "Go &Back\tAlt+Left"
+msgstr "Aller en &arrière\tAlt+Left"
+
+#, fuzzy
+msgid "Go &Forward\tCtrl+]"
+msgstr "Aller à &Suivant    Ctrl+]"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "Aller en &avant\tAlt+Right"
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "&Importer les données du document...\tCtrl+Shift+I"
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "&Exporter les données du document...\tCtrl+Shift+E"
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "Exporter en texte &brut...\tCtrl+E"
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr "&Nombre de mots\tRawCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "&Nombre de mots\tCtrl+W"
+
+msgid "Document &Info\tCtrl+I"
+msgstr "&Informations sur le document\tCtrl+I"
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr "&Table des matières\tCtrl+T"
+
+msgid "&Elements List...\tF7"
+msgstr "Liste des &éléments...\tF7"
+
+#, fuzzy
+msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgstr "Afficher et enregistrer dans le dossier    Ctrl+Maj+C"
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "Ouvrir dans la &vue web\tCtrl+Shift+V"
+
+#, fuzzy
+msgid "View &Source\tCtrl+U"
+msgstr "Afficher la source    Ctrl+U"
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "Basculer le &signet\tCtrl+Shift+B"
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "Signet avec &note\tCtrl+Shift+N"
+
+#, fuzzy
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr "Retour à la ligne automatique    Ctrl+Alt+W"
+
+#, fuzzy
+msgid "&Full Screen\tRawCtrl+Ctrl+F"
+msgstr "&Plein écran    RawCtrl+Ctrl+F"
+
+#, fuzzy
+msgid "&Full Screen\tF11"
+msgstr "&Plein écran    F11"
+
+msgid "&Options\tCtrl+,"
+msgstr "&Options\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "&Minuterie de veille...\tCtrl+Shift+S"
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr "À &propos de Paperback\tCtrl+F1"
+
+msgid "View Help in &Browser\tF1"
+msgstr "Afficher l'aide dans le &navigateur\tF1"
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "Afficher l'aide dans &Paperback\tShift+F1"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Rechercher des &mises à jour\tCtrl+Shift+U"
+
+msgid "&Donate\tCtrl+D"
+msgstr "Faire un &don\tCtrl+D"
+
+msgid "Show All...\tCtrl+R"
+msgstr "Tout afficher...\tCtrl+R"
+
+#, fuzzy
+msgid "Go To…"
+msgstr "Aller à…"
+
+#, fuzzy
+msgid "Recent Documents"
+msgstr "Documents récents"
+
+#, fuzzy
+msgid "Switch to TTS Mode"
+msgstr "Passer en mode TTS"
+
+#, fuzzy
+msgid "Switch to Text Mode"
+msgstr "Passer en mode texte"
+
+#, fuzzy
+msgid "Sleep Timer (active)"
+msgstr "Minuterie de mise en veille (activée)"
+
+#, fuzzy
+msgid "Settings"
+msgstr "Paramètres"
+
+#, fuzzy
+msgid "More options"
+msgstr "Plus d'options"
+
+#, fuzzy
+msgid "No document open"
+msgstr "Aucun document n'est ouvert"
+
+#, fuzzy
+msgid "Recent"
+msgstr "Récents"
+
+#, fuzzy
+msgid "Screen dimmed by sleep timer. Tap to wake."
+msgstr "L'écran s'est éteint en raison de la minuterie de mise en veille. Appuyez pour le réactiver."
+
+#, fuzzy
+msgid "Open Error"
+msgstr "Erreur d'ouverture"
+
+#, fuzzy
+msgid "Open document"
+msgstr "Ouvrir le document"
+
+#, fuzzy
+msgid "Title"
+msgstr "Titre"
+
+#, fuzzy
+msgid "Author"
+msgstr "Auteur"
+
+#, fuzzy
+msgid "File"
+msgstr "Fichier"
+
+#, fuzzy
+msgid "Words"
+msgstr "Mots"
+
+#, fuzzy
+msgid "Lines"
+msgstr "Lignes"
+
+#, fuzzy
+msgid "Characters"
+msgstr "Personnages"
+
+#, fuzzy
+msgid "Characters (excluding spaces)"
+msgstr "Caractères (espaces non compris)"
+
+#, fuzzy
+msgid "Type"
+msgstr "Type"
+
+#, fuzzy
+msgid "Done"
+msgstr "Terminé"
+
+#, fuzzy
+msgid "No Elements"
+msgstr "Aucun élément"
+
+#, fuzzy
+msgid "Headings, images, and other elements will appear here."
+msgstr "Les titres, les images et les autres éléments s'afficheront ici."
+
+#, fuzzy
+msgid "Search…"
+msgstr "Rechercher…"
+
+#, fuzzy
+msgid "Match Case"
+msgstr "Cas de correspondance"
+
+#, fuzzy
+msgid "Whole Word"
+msgstr "Mot entier"
+
+#, fuzzy
+msgid "Regular Expression"
+msgstr "Expression régulière"
+
+#, fuzzy
+msgid "Previous result"
+msgstr "Résultat précédent"
+
+#, fuzzy
+msgid "Next result"
+msgstr "Résultat suivant"
+
+#, fuzzy
+msgid "Search"
+msgstr "Rechercher"
+
+#, fuzzy
+msgid "Mode"
+msgstr "Mode"
+
+#, fuzzy
+msgid "Page"
+msgstr "Page"
+
+#, fuzzy
+msgid "Percent"
+msgstr "Pourcentage"
+
+#, fuzzy
+msgid "Line number"
+msgstr "Numéro de ligne"
+
+#, fuzzy
+msgid "Page number"
+msgstr "Numéro de page"
+
+#, fuzzy
+msgid "Percentage"
+msgstr "Pourcentage"
+
+#, fuzzy
+msgid "Go To"
+msgstr "Aller à"
+
+#, fuzzy
+msgid "Password"
+msgstr "Mot de passe"
+
+#, fuzzy
+msgid "Enter password for {}"
+msgstr "Saisissez le mot de passe pour {}"
+
+#, fuzzy
+msgid "Password Required"
+msgstr "Mot de passe requis"
+
+#, fuzzy
+msgid "No Recent Documents"
+msgstr "Aucun document récent"
+
+#, fuzzy
+msgid "Documents you open will appear here."
+msgstr "Les documents que vous ouvrez s'afficheront ici."
+
+#, fuzzy
+msgid "Remove"
+msgstr "Supprimer"
+
+#, fuzzy
+msgid "Rule"
+msgstr "Règle"
+
+#, fuzzy
+msgid "Scope"
+msgstr "Champ d'application"
+
+#, fuzzy
+msgid "Word"
+msgstr "Mot"
+
+#, fuzzy
+msgid "Paragraph"
+msgstr "Paragraphe"
+
+#, fuzzy
+msgid "Pattern & Replacement"
+msgstr "Modèles et pièces de rechange"
+
+#, fuzzy
+msgid "Pattern"
+msgstr "Motif"
+
+#, fuzzy
+msgid "Replacement"
+msgstr "Remplacement"
+
+#, fuzzy
+msgid "Whole word only"
+msgstr "Mot entier uniquement"
+
+#, fuzzy
+msgid "Regular expression (\\1 = first capture group)"
+msgstr "Expression régulière (\\1 = premier groupe de capture)"
+
+#, fuzzy
+msgid "Enabled"
+msgstr "Activé"
+
+#, fuzzy
+msgid "Apply to"
+msgstr "Postuler à"
+
+#, fuzzy
+msgid "Voices"
+msgstr "Voix"
+
+#, fuzzy
+msgid "New Rule"
+msgstr "Nouvelle règle"
+
+#, fuzzy
+msgid "Edit Rule"
+msgstr "Modifier la règle"
+
+#, fuzzy
+msgid "Save"
+msgstr "Enregistrer"
+
+#, fuzzy
+msgid "All voices"
+msgstr "Toutes les voix"
+
+#, fuzzy
+msgid "Apply To"
+msgstr "Postuler à"
+
+#, fuzzy
+msgid "Text to Speech"
+msgstr "Synthèse vocale"
+
+#, fuzzy
+msgid "Voice"
+msgstr "Voix"
+
+#, fuzzy
+msgid "Rate"
+msgstr "Taux"
+
+#, fuzzy
+msgid "Speech Rate"
+msgstr "Vitesse d'élocution"
+
+#, fuzzy
+msgid "Pitch"
+msgstr "Pitch"
+
+#, fuzzy
+msgid "Speech Dictionary"
+msgstr "Dictionnaire de la parole"
+
+#, fuzzy
+msgid "Play Sample"
+msgstr "Écouter un extrait"
+
+#, fuzzy
+msgid "Behavior"
+msgstr "Comportement"
+
+#, fuzzy
+msgid "Restore last open documents"
+msgstr "Restaurer les derniers documents ouverts"
+
+#, fuzzy
+msgid "Swipe up moves forward"
+msgstr "Glisser vers le haut permet d'avancer"
+
+#, fuzzy
+msgid "Active"
+msgstr "Actif"
+
+#, fuzzy
+msgid "Time remaining"
+msgstr "Temps restant"
+
+#, fuzzy
+msgid "Cancel Timer"
+msgstr "Annuler le minuteur"
+
+#, fuzzy
+msgid "Set timer"
+msgstr "Régler le minuteur"
+
+#, fuzzy
+msgid "Edit"
+msgstr "Modifier"
+
+#, fuzzy
+msgid "Add Rule"
+msgstr "Ajouter une règle"
+
+#, fuzzy
+msgid "No Rules"
+msgstr "Pas de règles"
+
+#, fuzzy
+msgid "Contents"
+msgstr "Sommaire"
+
+#, fuzzy
+msgid "No Table of Contents"
+msgstr "Pas de table des matières"
+
+#, fuzzy
+msgid "This document has no table of contents."
+msgstr "Ce document ne comporte pas de table des matières."
+
+#, fuzzy
+msgid "Tabs"
+msgstr "Onglets"
+
+#, fuzzy
+msgid "Navigation unit"
+msgstr "Unité de navigation"
+
+#, fuzzy
+msgid "Previous {}"
+msgstr "Précédent {}"
+
+#, fuzzy
+msgid "Pause"
+msgstr "Pause"
+
+#, fuzzy
+msgid "Play"
+msgstr "Jouer"
+
+#, fuzzy
+msgid "End of document"
+msgstr "Fin du document"
+
+#, fuzzy
+msgid "Beginning of document"
+msgstr "Début du document"
+
+#, fuzzy
+msgid "Next {}"
+msgstr "Suivant {}"
+
+#, fuzzy
+msgid "Press play to start listening."
+msgstr "Cliquez sur « Lecture » pour commencer à écouter."
+
+#, fuzzy
+msgid "Locate"
+msgstr "Localiser"
+
+#, fuzzy
+msgid "File Missing"
+msgstr "Fichier manquant"
+
+#, fuzzy
+msgid "Currently Open"
+msgstr "Postes à pourvoir actuellement"
+
+#, fuzzy
+msgid "Document Information"
+msgstr "Informations sur le document"
+
+#, fuzzy
+msgid "Expanded"
+msgstr "Développé"
+
+#, fuzzy
+msgid "Collapsed"
+msgstr "Réduit"
+
+#, fuzzy
+msgid "Collapse"
+msgstr "Réduire"
+
+#, fuzzy
+msgid "Expand"
+msgstr "Développer"
+
+#, fuzzy
+msgid "Untitled Link"
+msgstr "Lien sans titre"
+
+#, fuzzy
+msgid "No supported books or folders found here."
+msgstr "Aucun livre ni dossier pris en charge n'a été trouvé ici."
+
+#, fuzzy
+msgid "Folder"
+msgstr "Dossier"
+
+#, fuzzy
+msgid "Internal Storage"
+msgstr "Mémoire interne"
+
+#, fuzzy
+msgid "Search Term"
+msgstr "Terme de recherche"
+
+#, fuzzy
+msgid "Search History"
+msgstr "Historique des recherches"
+
+#, fuzzy
+msgid "Find Next"
+msgstr "Rechercher suivant"
+
+#, fuzzy
+msgid "Password:"
+msgstr "Mot de passe :"
+
+#, fuzzy
+msgid "All Files Access Required"
+msgstr "Accès à tous les fichiers requis"
+
+#, fuzzy
+msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgstr "Paperback nécessite l'autorisation « Accès à tous les fichiers » pour activer le navigateur de fichiers personnalisé intégré à l'application."
+
+#, fuzzy
+msgid "Why we need this:"
+msgstr "Pourquoi en avons-nous besoin ? :"
+
+#, fuzzy
+msgid "• To provide a fast, fully screen-reader accessible file manager inside the app."
+msgstr "• Proposer, au sein de l'application, un gestionnaire de fichiers rapide et entièrement compatible avec les lecteurs d'écran."
+
+#, fuzzy
+msgid "• To load large files instantly without needing to copy them into the app's cache."
+msgstr "• Pour charger instantanément des fichiers volumineux sans avoir à les copier dans le cache de l'application."
+
+#, fuzzy
+msgid "• To display the exact local file paths of your documents."
+msgstr "• Pour afficher les chemins d'accès locaux exacts de vos documents."
+
+#, fuzzy
+msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
+msgstr "Si vous refusez cette autorisation, vous pourrez tout de même utiliser le sélecteur de fichiers du système Android pour ouvrir vos livres en désactivant le paramètre « Navigateur de fichiers personnalisé »."
+
+#, fuzzy
+msgid "Grant"
+msgstr "Subvention"
+
+#, fuzzy
+msgid "Not Now"
+msgstr "Pas maintenant"
+
+#, fuzzy
+msgid "Restore last open book"
+msgstr "Récupérer le dernier livre ouvert"
+
+#, fuzzy
+msgid "Use in-app file browser (requires All Files permission)"
+msgstr "Utiliser l'explorateur de fichiers intégré à l'application (nécessite l'autorisation « Tous les fichiers »)"
+
+#, fuzzy
+msgid "Text-to-Speech"
+msgstr "Synthèse vocale"
+
+#, fuzzy
+msgid "System Default"
+msgstr "Paramètres par défaut du système"
+
+#, fuzzy
+msgid "Custom Timer"
+msgstr "Minuterie personnalisée"
+
+#, fuzzy
+msgid "Minutes"
+msgstr "Procès-verbal"
+
+#, fuzzy
+msgid "Back"
+msgstr "Retour"
+
+#, fuzzy
+msgid "Start"
+msgstr "Démarrer"
+
+#, fuzzy
+msgid "Change to:"
+msgstr "Remplacer par :"
+
+#, fuzzy
+msgid "Custom time..."
+msgstr "L'heure personnalisée..."
+
+#, fuzzy
+msgid "Find Previous"
+msgstr "Rechercher le précédent"
+
+#, fuzzy
+msgid "Close Search"
+msgstr "Fermer la recherche"
+
+#, fuzzy
+msgid "Settings imported"
+msgstr "Paramètres importés"
+
+#, fuzzy
+msgid "Failed to import settings"
+msgstr "Échec de l'importation des paramètres"
+
+#, fuzzy
+msgid "Settings exported"
+msgstr "Paramètres exportés"
+
+#, fuzzy
+msgid "Failed to export settings"
+msgstr "Échec de l'exportation des paramètres"
+
+#, fuzzy
+msgid "No document open. Please open a book."
+msgstr "Aucun document n'est ouvert. Veuillez ouvrir un livre."
+
+#, fuzzy
+msgid "No Documents"
+msgstr "Aucun document"
+
+#, fuzzy
+msgid "Show All"
+msgstr "Tout afficher"
+
+#, fuzzy
+msgid "Sleep timer: {}"
+msgstr "Minuterie de mise en veille : {}"
+
+#, fuzzy
+msgid "Cancel sleep timer"
+msgstr "Annuler la minuterie de mise en veille"
+
+#, fuzzy
+msgid "Import"
+msgstr "Importer"
+
+#, fuzzy
+msgid "Import Document Data"
+msgstr "Importer les données d'un document"
+
+#, fuzzy
+msgid "Export Document Data"
+msgstr "Exporter les données du document"
+
+#, fuzzy
+msgid "Open Book"
+msgstr "Livre ouvert"
+
+#, fuzzy
+msgid "Elements List"
+msgstr "Liste des éléments"
+
+#, fuzzy
+msgid "Show Document"
+msgstr "Afficher le document"
+
+#, fuzzy
+msgid "Show Text"
+msgstr "Afficher le texte"
+
+#, fuzzy
+msgid "Pause Read Aloud"
+msgstr "Mettre en pause la lecture à voix haute"
+
+#, fuzzy
+msgid "Read Aloud"
+msgstr "Lecture à voix haute"
+
+#, fuzzy
+msgid "Help"
+msgstr "Aide"
+
+#, fuzzy
+msgid "More Options"
+msgstr "Plus d'options"
+
+#, fuzzy
+msgid "Heading"
+msgstr "Titre"
+
+#, fuzzy
+msgid "Link"
+msgstr "Lien"
+
+#, fuzzy
+msgid "Section"
+msgstr "Section"
+
+#, fuzzy
+msgid "List"
+msgstr "Liste"
+
+#, fuzzy
+msgid "List Item"
+msgstr "Élément de liste"
+
+#, fuzzy
+msgid "Table"
+msgstr "Tableau"
+
+#, fuzzy
+msgid "Separator"
+msgstr "Séparateur"
+
+#, fuzzy
+msgid "Document Data"
+msgstr "Données du document"
+
+#, fuzzy
+msgid "Sleep timer running, {} remaining"
+msgstr "Minuterie de mise en veille activée, il reste {}"
+
+#, fuzzy
+msgid "Custom"
+msgstr "Personnalisé"
+
+#, fuzzy
+msgid "Custom: {} minutes"
+msgstr "Personnalisé : « {} minutes »"
+
+#, fuzzy
+msgid "Duration"
+msgstr "Durée"
+
+#, fuzzy
+msgid "Stop Timer"
+msgstr "Arrêter le chronomètre"
+
+#, fuzzy
+msgid "Start Timer"
+msgstr "Lancer le chronomètre"
+
+#~ msgid "Root"
+#~ msgstr "Racine"
+
+#~ msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
+#~ msgstr "Voulez-vous vraiment retirer ce document de la liste ? Cela supprimera également sa position de lecture."
+
+#~ msgid "Paperback Update"
+#~ msgstr "Mise à jour de Paperback"
+
+#~ msgid "Failed to check for updates. HTTP status: %d"
+#~ msgstr "Impossible de vérifier les mises à jour. Statut HTTP : %d"
+
+#~ msgid "Error checking for updates."
+#~ msgstr "Erreur lors de la vérification des mises à jour."
+
+#~ msgid "Open folder containing the document"
+#~ msgstr "Ouvrir le dossier contenant le document"

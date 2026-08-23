@@ -3,6 +3,7 @@
 patois::embed_domain!();
 patois::embed_wx_translations!();
 
+mod audio_player;
 mod config_ext;
 mod ipc;
 mod legacy_config;

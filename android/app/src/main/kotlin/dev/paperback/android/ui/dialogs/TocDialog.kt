@@ -1,7 +1,6 @@
 package dev.paperback.android.ui.dialogs
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -14,13 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 import kotlinx.coroutines.launch
@@ -40,27 +35,14 @@ fun TocDialog(
 	val scope = rememberCoroutineScope()
 	val listState = rememberLazyListState()
 	val focusRequester = remember { FocusRequester() }
-	val visibleToc = remember(toc, expandedTocIndices) {
-		val result = mutableListOf<Pair<Int, TocEntry>>()
-		var skipLevelGreaterThan = Int.MAX_VALUE
-		for ((index, entry) in toc.withIndex()) {
-			if (entry.level > skipLevelGreaterThan) {
-				continue
-			} else {
-				skipLevelGreaterThan = Int.MAX_VALUE
-			}
-			result.add(index to entry)
-			val hasChildren = index + 1 < toc.size && toc[index + 1].level > entry.level
-			if (hasChildren && !expandedTocIndices.contains(index)) {
-				skipLevelGreaterThan = entry.level
-			}
-		}
-		result
+	val levelAt = remember(toc) { { index: Int -> toc[index].level } }
+	val visibleTocIndices = remember(toc, expandedTocIndices) {
+		flattenVisibleTreeIndices(toc.size, levelAt, expandedTocIndices)
 	}
 
 	LaunchedEffect(activeTocIndex) {
 		if (activeTocIndex != null) {
-			val visibleIndex = visibleToc.indexOfFirst { it.first == activeTocIndex }
+			val visibleIndex = visibleTocIndices.indexOf(activeTocIndex)
 			if (visibleIndex != -1) {
 				listState.scrollToItem(visibleIndex + 1)
 				try {
@@ -87,9 +69,10 @@ fun TocDialog(
 					modifier = Modifier.padding(16.dp)
 				)
 			}
-			items(visibleToc.size) { i ->
-				val (originalIndex, item) = visibleToc[i]
-				val hasChildren = originalIndex + 1 < toc.size && toc[originalIndex + 1].level > item.level
+			items(visibleTocIndices.size) { i ->
+				val originalIndex = visibleTocIndices[i]
+				val item = toc[originalIndex]
+				val hasChildren = hasTreeChildren(toc.size, levelAt, originalIndex)
 				val isExpanded = expandedTocIndices.contains(originalIndex)
 				val isActive = originalIndex == activeTocIndex
 				val paddingLeft = (16 + (item.level * 16)).dp
@@ -103,41 +86,14 @@ fun TocDialog(
 								onItemClick(item)
 							}
 						}.semantics(mergeDescendants = true) {
-							if (hasChildren) {
-								// TRANSLATORS: TalkBack state description for a TOC entry announcing whether its children are shown
-								stateDescription = if (isExpanded) t("Expanded") else t("Collapsed")
-								customActions = listOf(
-									CustomAccessibilityAction(
-										// TRANSLATORS: TalkBack custom action toggling whether a TOC entry's children are shown
-										label = if (isExpanded) t("Collapse") else t("Expand"),
-										action = {
-											onToggleExpand(originalIndex)
-											true
-										}
-									)
-								)
+							if (isActive) {
+								selected = true
 							}
+							applyTreeExpandSemantics(hasChildren, isExpanded) { onToggleExpand(originalIndex) }
 						}.padding(start = paddingLeft, end = 16.dp, top = 8.dp, bottom = 8.dp),
 					verticalAlignment = Alignment.CenterVertically
 				) {
-					if (hasChildren) {
-						Box(
-							modifier = Modifier
-								.size(36.dp)
-								.pointerInput(Unit) {
-									detectTapGestures(onTap = { onToggleExpand(originalIndex) })
-								},
-							contentAlignment = Alignment.Center
-						) {
-							Text(
-								text = if (isExpanded) "▼" else "▶",
-								style = MaterialTheme.typography.bodyMedium,
-								modifier = Modifier.clearAndSetSemantics { }
-							)
-						}
-					} else {
-						Spacer(modifier = Modifier.width(36.dp))
-					}
+					TreeExpandChevron(hasChildren, isExpanded) { onToggleExpand(originalIndex) }
 					Text(
 						text = "${item.title}, Level ${item.level + 1}",
 						style = if (isActive) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyLarge,

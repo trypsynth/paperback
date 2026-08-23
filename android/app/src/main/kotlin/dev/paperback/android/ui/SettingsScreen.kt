@@ -1,62 +1,77 @@
-package dev.paperback.android.ui.dialogs
+package dev.paperback.android.ui
 
-import android.speech.tts.TextToSpeech
-import android.speech.tts.Voice
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.paperback.android.t
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsDialog(
-	initialRestorePreviousDocuments: Boolean,
-	initialUseInAppFileBrowser: Boolean,
-	initialSwipeUpMovesForward: Boolean,
-	engines: List<TextToSpeech.EngineInfo>,
-	currentEngine: String?,
-	voices: List<Voice>,
-	currentVoice: Voice?,
-	currentRate: Int,
-	currentPitch: Int,
-	onEngineSelected: (String) -> Unit,
-	onVoiceSelected: (Voice) -> Unit,
-	onRateChanged: (Int) -> Unit,
-	onPitchChanged: (Int) -> Unit,
-	onPlaySample: () -> Unit,
-	onSaveOptions: (Boolean, Boolean, Boolean) -> Unit,
+fun SettingsScreen(
+	viewModel: MainScreenViewModel = viewModel(),
 	onDismiss: () -> Unit
 ) {
-	var restorePreviousDocuments by remember { mutableStateOf(initialRestorePreviousDocuments) }
-	var useInAppFileBrowser by remember { mutableStateOf(initialUseInAppFileBrowser) }
-	var swipeUpMovesForward by remember { mutableStateOf(initialSwipeUpMovesForward) }
+	val restorePreviousDocuments by viewModel.restorePreviousDocuments.collectAsStateWithLifecycle()
+	val useInAppFileBrowser by viewModel.useInAppFileBrowser.collectAsStateWithLifecycle()
+	val swipeUpMovesForward by viewModel.swipeUpMovesForward.collectAsStateWithLifecycle()
+	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
+	val currentPitch by viewModel.ttsManager.currentPitch.collectAsStateWithLifecycle()
+	val availableVoices by viewModel.ttsManager.availableVoices.collectAsStateWithLifecycle()
+	val currentVoice by viewModel.ttsManager.currentVoice.collectAsStateWithLifecycle()
+	val currentEngineName by viewModel.ttsManager.currentEngineName.collectAsStateWithLifecycle()
+	val engines = viewModel.ttsManager.getAvailableEngines()
+	val currentEngine = currentEngineName ?: viewModel.ttsManager.getDefaultEngine()
 
 	var engineExpanded by remember { mutableStateOf(false) }
 	var voiceExpanded by remember { mutableStateOf(false) }
 
-	AlertDialog(
-		modifier = Modifier.semantics { paneTitle = "Settings" },
-		onDismissRequest = onDismiss,
-		// TRANSLATORS: Title of the app settings dialog
-		title = { Text(t("Settings")) },
-		text = {
-			Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+	Surface(
+		modifier = Modifier.fillMaxSize().semantics { paneTitle = "Settings" },
+		color = MaterialTheme.colorScheme.surface
+	) {
+		Column(modifier = Modifier.fillMaxSize()) {
+			TopAppBar(
+				title = {
+					// TRANSLATORS: Title of the app settings screen
+					Text(t("Settings"))
+				},
+				navigationIcon = {
+					IconButton(onClick = onDismiss) {
+						// TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+						Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("Back"))
+					}
+				}
+			)
+			Column(
+				modifier = Modifier
+					.fillMaxSize()
+					.verticalScroll(rememberScrollState())
+					.padding(16.dp)
+			) {
 				// TRANSLATORS: Section heading for general (non-speech) settings
-				Text(t("General"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
+				Text(
+					t("General"),
+					style = MaterialTheme.typography.titleMedium,
+					modifier = Modifier.padding(bottom = 8.dp).semantics { heading() }
+				)
 
 				Row(
 					modifier = Modifier
 						.fillMaxWidth()
 						.toggleable(
 							value = restorePreviousDocuments,
-							onValueChange = { restorePreviousDocuments = it },
+							onValueChange = { viewModel.setRestorePreviousDocuments(it) },
 							role = Role.Switch
 						).padding(vertical = 8.dp),
 					verticalAlignment = Alignment.CenterVertically,
@@ -74,7 +89,7 @@ fun SettingsDialog(
 						.fillMaxWidth()
 						.toggleable(
 							value = useInAppFileBrowser,
-							onValueChange = { useInAppFileBrowser = it },
+							onValueChange = { viewModel.setUseInAppFileBrowser(it) },
 							role = Role.Switch
 						).padding(vertical = 8.dp),
 					verticalAlignment = Alignment.CenterVertically,
@@ -92,7 +107,7 @@ fun SettingsDialog(
 						.fillMaxWidth()
 						.toggleable(
 							value = swipeUpMovesForward,
-							onValueChange = { swipeUpMovesForward = it },
+							onValueChange = { viewModel.setSwipeUpMovesForward(it) },
 							role = Role.Switch
 						).padding(vertical = 8.dp),
 					verticalAlignment = Alignment.CenterVertically,
@@ -108,7 +123,11 @@ fun SettingsDialog(
 
 				Spacer(modifier = Modifier.height(24.dp))
 				// TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
-				Text(t("Text-to-Speech"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
+				Text(
+					t("Text-to-Speech"),
+					style = MaterialTheme.typography.titleMedium,
+					modifier = Modifier.padding(bottom = 8.dp).semantics { heading() }
+				)
 
 				ExposedDropdownMenuBox(
 					expanded = engineExpanded,
@@ -130,7 +149,7 @@ fun SettingsDialog(
 							DropdownMenuItem(
 								text = { Text(engine.label) },
 								onClick = {
-									onEngineSelected(engine.name)
+									viewModel.ttsManager.setEngine(engine.name)
 									engineExpanded = false
 								}
 							)
@@ -156,11 +175,11 @@ fun SettingsDialog(
 						expanded = voiceExpanded,
 						onDismissRequest = { voiceExpanded = false }
 					) {
-						voices.forEach { voice ->
+						availableVoices.forEach { voice ->
 							DropdownMenuItem(
 								text = { Text(voice.name) },
 								onClick = {
-									onVoiceSelected(voice)
+									viewModel.ttsManager.setVoice(voice)
 									voiceExpanded = false
 								}
 							)
@@ -177,24 +196,24 @@ fun SettingsDialog(
 							stateDescription = t("System Default")
 							disabled()
 						} else {
-							stateDescription = "$currentRate percent"
+							stateDescription = "$currentSpeechRate percent"
 							progressBarRangeInfo = ProgressBarRangeInfo(
-								current = currentRate.toFloat(),
+								current = currentSpeechRate.toFloat(),
 								range = 0f..100f,
 								steps = 99
 							)
 							setProgress { targetValue ->
-								onRateChanged(kotlin.math.round(targetValue).toInt())
+								viewModel.ttsManager.setSpeechRate(kotlin.math.round(targetValue).toInt())
 								true
 							}
 						}
 					}
 				) {
-					val rateText = if (isSystemDefault) "Speech Rate: System Default" else "Speech Rate: $currentRate%"
+					val rateText = if (isSystemDefault) "Speech Rate: System Default" else "Speech Rate: $currentSpeechRate%"
 					Text(rateText, style = MaterialTheme.typography.labelLarge)
 					Slider(
-						value = if (isSystemDefault) 50f else currentRate.toFloat(),
-						onValueChange = { onRateChanged(kotlin.math.round(it).toInt()) },
+						value = if (isSystemDefault) 50f else currentSpeechRate.toFloat(),
+						onValueChange = { viewModel.ttsManager.setSpeechRate(kotlin.math.round(it).toInt()) },
 						valueRange = 0f..100f,
 						steps = 99,
 						enabled = !isSystemDefault
@@ -216,7 +235,7 @@ fun SettingsDialog(
 								steps = 99
 							)
 							setProgress { targetValue ->
-								onPitchChanged(kotlin.math.round(targetValue).toInt())
+								viewModel.ttsManager.setPitch(kotlin.math.round(targetValue).toInt())
 								true
 							}
 						}
@@ -226,28 +245,23 @@ fun SettingsDialog(
 					Text(pitchText, style = MaterialTheme.typography.labelLarge)
 					Slider(
 						value = if (isSystemDefault) 50f else currentPitch.toFloat(),
-						onValueChange = { onPitchChanged(kotlin.math.round(it).toInt()) },
+						onValueChange = { viewModel.ttsManager.setPitch(kotlin.math.round(it).toInt()) },
 						valueRange = 0f..100f,
 						steps = 99,
 						enabled = !isSystemDefault
 					)
 				}
 				Spacer(modifier = Modifier.height(16.dp))
-				Button(onClick = onPlaySample, modifier = Modifier.fillMaxWidth()) {
+				Button(
+					onClick = {
+						viewModel.ttsManager.speak("This is a sample of the selected speech engine.", isSample = true)
+					},
+					modifier = Modifier.fillMaxWidth()
+				) {
 					// TRANSLATORS: Button to speak a sample sentence using the currently selected TTS voice/rate/pitch
 					Text(t("Play Sample"))
 				}
 			}
-		},
-		dismissButton = {
-			TextButton(onClick = onDismiss) {
-				Text("Cancel")
-			}
-		},
-		confirmButton = {
-			TextButton(onClick = { onSaveOptions(restorePreviousDocuments, useInAppFileBrowser, swipeUpMovesForward) }) {
-				Text("Save")
-			}
 		}
-	)
+	}
 }

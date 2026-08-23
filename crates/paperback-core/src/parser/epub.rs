@@ -2,7 +2,7 @@ use std::{
 	collections::HashMap,
 	fs::File,
 	io::{BufReader, Read, Seek},
-	path::{Component, Path, PathBuf},
+	path::Path,
 };
 
 use anyhow::{Context, Result};
@@ -14,10 +14,15 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		ConverterOutput, Parser, add_converter_markers_excluding_links,
-		html_to_text::{HtmlSourceMode, HtmlToText},
+		convert::{
+			html_to_text::{HtmlSourceMode, HtmlToText},
+			xml_to_text::XmlToText,
+		},
 		is_external_url,
-		util::path::extract_title_from_path,
-		xml_to_text::XmlToText,
+		util::{
+			path::{extract_title_from_path, resolve_relative_path},
+			xml::collect_element_text,
+		},
 	},
 	t,
 	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
@@ -103,13 +108,14 @@ pub struct EpubParser;
 
 impl Parser for EpubParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing epub");
 		let file = File::open(&context.file_path)
 			.with_context(|| format!("Failed to open EPUB file '{}'", context.file_path))?;
 		let mut archive = ZipArchive::new(BufReader::new(file))
 			.with_context(|| format!("Failed to read EPUB as zip '{}'", context.file_path))?;
 		let container_path = find_container_path(&mut archive)?;
 		let opf_content = read_zip_entry_by_name(&mut archive, &container_path)?;
-		let opf_dir = Path::new(&container_path).parent().unwrap_or_else(|| Path::new("")).to_path_buf();
+		let opf_dir = container_path.rfind('/').map_or(String::new(), |i| container_path[..i].to_string());
 		let opf_doc = XmlDocument::parse_with_options(
 			&opf_content,
 			ParsingOptions { allow_dtd: true, ..ParsingOptions::default() },
@@ -121,7 +127,7 @@ impl Parser for EpubParser {
 			// TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 			.ok_or_else(|| anyhow::anyhow!(t("OPF package element missing")))?;
 		let (manifest, spine, nav_path, ncx_path, metadata) = parse_package(package_node, &opf_dir);
-		let mut conversion = convert_spine_items(&mut archive, &manifest, &spine, context.render_tables_inline);
+		let mut conversion = convert_spine_items(&context.file_path, &manifest, &spine, context.render_tables_inline);
 		if conversion.sections.is_empty() {
 			let reason = if conversion.conversion_errors.is_empty() {
 				// TRANSLATORS: Reason given when an EPUB has no spine items that could be read
@@ -130,13 +136,18 @@ impl Parser for EpubParser {
 				// TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
 				t("failed to convert spine items: {}").replace("{}", &conversion.conversion_errors.join(", "))
 			};
+			tracing::warn!(path = %context.file_path, reason = %reason, "epub has no readable content");
 			// TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
 			anyhow::bail!(t("EPUB has no readable content ({})").replace("{}", &reason));
 		}
 		let title = metadata
 			.title
 			.filter(|t| !t.trim().is_empty())
-			.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+			.unwrap_or_else(|| {
+				let fallback = extract_title_from_path(&context.file_path);
+				tracing::debug!(path = %context.file_path, title = %fallback, "epub metadata title missing, using filename derived title");
+				fallback
+			});
 		let author = metadata.author.unwrap_or_default();
 		let toc_items = build_epub_toc(
 			&mut archive,
@@ -152,6 +163,9 @@ impl Parser for EpubParser {
 			&conversion.sections,
 			&conversion.id_positions,
 		);
+		let section_count = conversion.sections.len();
+		let toc_count = toc_items.len();
+		let page_count = page_items.len();
 		for page in page_items {
 			conversion.buffer.add_marker(Marker::new(MarkerType::PageBreak, page.offset).with_text(page.name));
 		}
@@ -163,46 +177,73 @@ impl Parser for EpubParser {
 		document.spine_items = spine;
 		document.manifest_items = manifest_items;
 		document.toc_items = toc_items;
+		tracing::debug!(
+			path = %context.file_path,
+			sections = section_count,
+			toc_items = toc_count,
+			page_items = page_count,
+			"epub parsed successfully"
+		);
 		Ok(document)
 	}
 }
 
-fn convert_spine_items<R: Read + Seek>(
-	archive: &mut ZipArchive<R>,
+/// Reads and converts every spine item to text. Each rayon worker opens its own independent
+/// `ZipArchive` (via `map_init`, so this happens once per task rather than once per item) so the
+/// zip-read I/O and the HTML-to-text conversion both run across cores instead of the read being
+/// serialized through one shared archive handle before conversion can start.
+fn convert_spine_items(
+	file_path: &str,
 	manifest: &HashMap<String, ManifestItem>,
 	spine: &[String],
 	render_tables_inline: bool,
 ) -> SpineConversionResult {
-	let entries: Vec<Result<(&ManifestItem, String), String>> = spine
-		.iter()
-		.map(|idref| {
-			let item = manifest.get(idref).ok_or_else(|| format!("missing manifest item for {idref}"))?;
-			let data = read_zip_entry_by_name(archive, &item.path).map_err(|err| format!("{} ({err})", item.path))?;
-			Ok((item, data))
-		})
+	let converted: Vec<Result<(&ManifestItem, SectionContent), String>> = spine
+		.par_iter()
+		.map_init(
+			|| {
+				File::open(file_path)
+					.map_err(|err| err.to_string())
+					.and_then(|file| ZipArchive::new(BufReader::new(file)).map_err(|err| err.to_string()))
+			},
+			|archive_result, idref| {
+				let item = manifest.get(idref).ok_or_else(|| format!("missing manifest item for {idref}"))?;
+				let archive = archive_result.as_mut().map_err(|err| format!("{} ({err})", item.path))?;
+				let data =
+					read_zip_entry_by_name(archive, &item.path).map_err(|err| format!("{} ({err})", item.path))?;
+				let section =
+					convert_section(&data, render_tables_inline).map_err(|err| format!("{} ({err})", item.path))?;
+				Ok((item, section))
+			},
+		)
 		.collect();
-	let converted: Vec<Result<(&ManifestItem, SectionContent), String>> = entries
-		.into_par_iter()
-		.map(|entry| {
-			let (item, data) = entry?;
-			let section =
-				convert_section(&data, render_tables_inline).map_err(|err| format!("{} ({err})", item.path))?;
-			Ok((item, section))
-		})
-		.collect();
-	let mut buffer = DocumentBuffer::new();
-	let mut id_positions = HashMap::new();
-	let mut sections = Vec::new();
+
+	// Keep each spine item's original index (for the "Section N" label, which reflects spine
+	// position even across skipped items) alongside its manifest item and converted section.
+	let mut ok_entries: Vec<(usize, &ManifestItem, SectionContent)> = Vec::with_capacity(converted.len());
 	let mut conversion_errors = Vec::new();
 	for (idx, slot) in converted.into_iter().enumerate() {
-		let (item, section) = match slot {
-			Ok(pair) => pair,
+		match slot {
+			Ok((item, section)) => ok_entries.push((idx, item, section)),
 			Err(err) => {
+				tracing::warn!(error = %err, "skipping epub spine item that could not be read or converted");
 				conversion_errors.push(err);
-				continue;
 			}
-		};
-		let section_start = buffer.current_position();
+		}
+	}
+
+	// `DocumentBuffer::from_parts` builds the buffer's content and per-char indices for every
+	// section in parallel, in one pass, instead of appending them one at a time; it hands back
+	// each section's `[start, end)` span so markers and id positions (below) can still be placed
+	// relative to where each section landed.
+	let texts: Vec<String> = ok_entries.iter_mut().map(|(_, _, section)| std::mem::take(&mut section.text)).collect();
+	let (mut buffer, spans) = DocumentBuffer::from_parts(texts);
+
+	let mut id_positions = HashMap::new();
+	let mut sections = Vec::new();
+	for (entry, span) in ok_entries.iter().zip(&spans) {
+		let (idx, item, section) = entry;
+		let section_start = span.start;
 		let section_label = format!("Section {}", idx + 1);
 		buffer.add_marker(
 			Marker::new(MarkerType::SectionBreak, section_start)
@@ -215,7 +256,7 @@ fn convert_spine_items<R: Read + Seek>(
 			id_positions.entry(id.clone()).or_insert(absolute);
 			id_positions.insert(format!("{}#{id}", item.path), absolute);
 		}
-		add_converter_markers_excluding_links(&mut buffer, &section, section_start);
+		add_converter_markers_excluding_links(&mut buffer, section, section_start);
 		for link in &section.links {
 			let resolved = resolve_href(&item.path, &link.reference);
 			buffer.add_marker(
@@ -224,14 +265,7 @@ fn convert_spine_items<R: Read + Seek>(
 					.with_reference(resolved),
 			);
 		}
-		if !section.text.is_empty() {
-			buffer.append(&section.text);
-			if !buffer.content.ends_with('\n') {
-				buffer.append("\n");
-			}
-		}
-		let section_end = buffer.current_position();
-		sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: section_end });
+		sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: span.end });
 	}
 	SpineConversionResult { buffer, id_positions, sections, conversion_errors }
 }
@@ -243,15 +277,24 @@ fn build_epub_toc<R: Read + Seek>(
 	sections: &[SectionMeta],
 	id_positions: &HashMap<String, usize>,
 ) -> Vec<TocItem> {
-	if let Some(nav_path) = nav_path {
-		build_toc_from_nav_document(archive, nav_path, sections, id_positions)
-			.or_else(|| ncx_path.and_then(|p| build_toc_from_ncx(archive, p, sections, id_positions)))
-			.unwrap_or_else(Vec::new)
+	let (items, source) = if let Some(nav_path) = nav_path {
+		if let Some(items) = build_toc_from_nav_document(archive, nav_path, sections, id_positions) {
+			(items, "nav")
+		} else if let Some(items) = ncx_path.and_then(|p| build_toc_from_ncx(archive, p, sections, id_positions)) {
+			(items, "ncx")
+		} else {
+			(Vec::new(), "none")
+		}
 	} else if let Some(ncx) = ncx_path {
-		build_toc_from_ncx(archive, ncx, sections, id_positions).unwrap_or_default()
+		match build_toc_from_ncx(archive, ncx, sections, id_positions) {
+			Some(items) => (items, "ncx"),
+			None => (Vec::new(), "none"),
+		}
 	} else {
-		Vec::new()
-	}
+		(Vec::new(), "none")
+	};
+	tracing::debug!(source, items = items.len(), "epub toc built");
+	items
 }
 
 fn find_container_path<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<String> {
@@ -281,7 +324,7 @@ struct PackageMetadata {
 
 type PackageParts = (HashMap<String, ManifestItem>, Vec<String>, Option<String>, Option<String>, PackageMetadata);
 
-fn parse_package(package: Node<'_, '_>, opf_dir: &Path) -> PackageParts {
+fn parse_package(package: Node<'_, '_>, opf_dir: &str) -> PackageParts {
 	let mut manifest = HashMap::new();
 	let mut spine = Vec::new();
 	let mut nav_path = None;
@@ -307,13 +350,19 @@ fn parse_package(package: Node<'_, '_>, opf_dir: &Path) -> PackageParts {
 				for item in
 					child.children().filter(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "item")
 				{
-					let Some(id) = item.attribute("id") else { continue };
-					let Some(href) = item.attribute("href") else { continue };
+					let Some(id) = item.attribute("id") else {
+						tracing::warn!("skipping epub manifest item with no id attribute");
+						continue;
+					};
+					let Some(href) = item.attribute("href") else {
+						tracing::warn!(id = %id, "skipping epub manifest item with no href attribute");
+						continue;
+					};
 					let media_type = item.attribute("media-type").unwrap_or("").to_string();
 					let properties = item
 						.attribute("properties")
 						.map_or_else(Vec::new, |v| v.split_whitespace().map(ToString::to_string).collect());
-					let resolved = normalize_path(&opf_dir.join(url_decode(href)));
+					let resolved = resolve_relative_path(opf_dir, &url_decode(href));
 					let manifest_item =
 						ManifestItem { id: id.to_string(), path: resolved.clone(), media_type, properties };
 					if manifest_item.properties.iter().any(|p| p == "nav") {
@@ -364,6 +413,7 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			id_positions: xml_converter.get_id_positions().clone(),
 		});
 	}
+	tracing::warn!("epub section xml conversion failed, falling back to html converter");
 	let mut html_converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	if html_converter.convert(content, HtmlSourceMode::NativeHtml) {
 		return Ok(SectionContent {
@@ -382,6 +432,8 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			id_positions: html_converter.get_id_positions().clone(),
 		});
 	}
+	// currently unreachable, HtmlToText::convert always returns true today
+	tracing::warn!("epub section content unsupported by both xml and html converters");
 	// TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
 	anyhow::bail!(t("unsupported content"))
 }
@@ -397,14 +449,8 @@ fn resolve_href(current_path: &str, target: &str) -> String {
 	let resolved = if path_part.is_empty() {
 		current_path.to_string()
 	} else {
-		let mut base = PathBuf::from(current_path);
-		base.pop();
-		let joined = if path_part.starts_with('/') {
-			PathBuf::from(path_part.trim_start_matches('/'))
-		} else {
-			base.join(path_part)
-		};
-		normalize_path(&joined)
+		let current_dir = current_path.rfind('/').map_or("", |i| &current_path[..i]);
+		resolve_relative_path(current_dir, &path_part)
 	};
 	if let Some(frag) = fragment {
 		if frag.is_empty() { resolved } else { format!("{resolved}#{frag}") }
@@ -421,20 +467,6 @@ fn split_href(input: &str) -> (String, Option<String>) {
 	} else {
 		(trimmed.to_string(), None)
 	}
-}
-
-fn normalize_path(path: &Path) -> String {
-	let mut components = Vec::new();
-	for component in path.components() {
-		match component {
-			Component::ParentDir => {
-				components.pop();
-			}
-			Component::Normal(part) => components.push(part.to_string_lossy().to_string()),
-			_ => {}
-		}
-	}
-	components.join("/")
 }
 
 fn build_toc_from_nav_document<R: Read + Seek>(
@@ -535,25 +567,8 @@ fn parse_nav_item(
 }
 
 fn extract_link_text(link: Node<'_, '_>) -> String {
-	let mut text = String::new();
-	collect_text(link, &mut text);
+	let text = collect_element_text(link);
 	trim_string(&collapse_whitespace(&text))
-}
-
-fn collect_text(node: Node<'_, '_>, buffer: &mut String) {
-	match node.node_type() {
-		NodeType::Text => {
-			if let Some(value) = node.text() {
-				buffer.push_str(value);
-			}
-		}
-		NodeType::Element => {
-			for child in node.children() {
-				collect_text(child, buffer);
-			}
-		}
-		_ => {}
-	}
 }
 
 fn compute_nav_offset(reference: &str, sections: &[SectionMeta], id_positions: &HashMap<String, usize>) -> usize {
@@ -655,15 +670,24 @@ fn build_epub_pages<R: Read + Seek>(
 	sections: &[SectionMeta],
 	id_positions: &HashMap<String, usize>,
 ) -> Vec<TocItem> {
-	if let Some(nav_path) = nav_path {
-		build_pages_from_nav_document(archive, nav_path, sections, id_positions)
-			.or_else(|| ncx_path.and_then(|p| build_pages_from_ncx(archive, p, sections, id_positions)))
-			.unwrap_or_else(Vec::new)
+	let (items, source) = if let Some(nav_path) = nav_path {
+		if let Some(items) = build_pages_from_nav_document(archive, nav_path, sections, id_positions) {
+			(items, "nav")
+		} else if let Some(items) = ncx_path.and_then(|p| build_pages_from_ncx(archive, p, sections, id_positions)) {
+			(items, "ncx")
+		} else {
+			(Vec::new(), "none")
+		}
 	} else if let Some(ncx) = ncx_path {
-		build_pages_from_ncx(archive, ncx, sections, id_positions).unwrap_or_default()
+		match build_pages_from_ncx(archive, ncx, sections, id_positions) {
+			Some(items) => (items, "ncx"),
+			None => (Vec::new(), "none"),
+		}
 	} else {
-		Vec::new()
-	}
+		(Vec::new(), "none")
+	};
+	tracing::debug!(source, items = items.len(), "epub page list built");
+	items
 }
 
 fn build_pages_from_nav_document<R: Read + Seek>(

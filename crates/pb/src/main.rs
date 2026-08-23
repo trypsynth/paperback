@@ -13,6 +13,7 @@ mod cli;
 use cli::{Cli, Format};
 
 fn main() -> Result<()> {
+	init_logging();
 	let cli = Cli::parse();
 	let ext = cli.input.extension().and_then(|e| e.to_str()).unwrap_or("");
 	if !parser::parser_supports_extension(ext) {
@@ -76,6 +77,13 @@ fn main() -> Result<()> {
 		print!("{result}");
 		Ok(())
 	}
+}
+
+/// Prints paperback-core's tracing output to stderr so parser logging is visible when testing
+/// with this tool. Defaults to debug level for paperback-core; override with `RUST_LOG`.
+fn init_logging() {
+	let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "paperback_core=debug".to_string());
+	tracing_subscriber::fmt().with_env_filter(filter).with_writer(std::io::stderr).with_target(false).init();
 }
 
 fn metadata(doc: &Document) -> String {

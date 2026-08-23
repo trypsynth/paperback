@@ -1,31 +1,11 @@
-use std::{
-	env,
-	path::{Path, PathBuf},
-};
-
 use wxdragon::sound::{Sound, SoundFlags};
 
-fn sounds_directory() -> PathBuf {
-	env::current_exe()
-		.ok()
-		.and_then(|p| p.parent().map(Path::to_path_buf))
-		.unwrap_or_else(|| PathBuf::from("."))
-		.join("sounds")
-}
-
-pub fn play_sound(filename: &str) {
-	let path = sounds_directory().join(filename);
-	if path.exists() {
-		Sound::play_file(&path.to_string_lossy(), SoundFlags::Async);
-	} else {
-		tracing::debug!(path = %path.display(), "sound file not found, skipping");
-	}
-}
+static BOOKMARK_WAV: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../sounds/bookmark.wav"));
+static NOTE_WAV: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../sounds/note.wav"));
 
 pub fn play_bookmark_sound(has_note: bool) {
-	if has_note {
-		play_sound("note.wav");
-	} else {
-		play_sound("bookmark.wav");
+	let bytes = if has_note { NOTE_WAV } else { BOOKMARK_WAV };
+	if !Sound::from_data(bytes).play(SoundFlags::Async) {
+		tracing::debug!(has_note, "failed to play embedded sound");
 	}
 }

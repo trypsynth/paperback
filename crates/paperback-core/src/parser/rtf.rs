@@ -17,6 +17,7 @@ pub struct RtfParser;
 
 impl Parser for RtfParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing rtf document");
 		let bytes =
 			fs::read(&context.file_path).with_context(|| format!("Failed to open RTF file '{}'", context.file_path))?;
 		let content_str = String::from_utf8_lossy(&bytes);
@@ -24,17 +25,21 @@ impl Parser for RtfParser {
 		let content_str = content_str.trim_end_matches(|c: char| c == '\0' || c.is_whitespace());
 		let content_str = normalize_wrapped_space_lines(content_str);
 		let encoding = extract_codepage(&content_str);
+		tracing::debug!(path = %context.file_path, encoding = %encoding.name(), "resolved rtf document encoding");
 		let font_table = extract_font_table(&content_str, encoding);
-		let content_str = resolve_hex_escapes(&content_str, encoding, &font_table);
+		let content_str = normalize_escapes(&content_str, encoding, &font_table);
 		// Strip \r so that \r\n line endings don't leave stray carriage returns in text tokens
 		let content_str = content_str.replace('\r', "");
-		let tokens = Lexer::scan(&content_str)
+		let tokens = Lexer::scan(&content_str).map_err(|e| {
+			tracing::warn!(path = %context.file_path, error = %e, "failed to scan rtf document tokens");
 			// TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
-			.map_err(|e| anyhow::anyhow!(t("Failed to parse RTF document: {}").replace("{}", &e.to_string())))?;
+			anyhow::anyhow!(t("Failed to parse RTF document: {}").replace("{}", &e.to_string()))
+		})?;
 		let buffer = extract_content_from_tokens(&tokens);
 		let title = extract_title_from_path(&context.file_path);
 		let mut doc = Document::new().with_title(title);
 		doc.set_buffer(buffer);
+		tracing::debug!(path = %context.file_path, "parsed rtf document successfully");
 		Ok(doc)
 	}
 }
@@ -124,6 +129,7 @@ fn extract_codepage(rtf: &str) -> &'static Encoding {
 			return encoding_for_codepage(cpg);
 		}
 	}
+	tracing::debug!("no ansicpg control word found in rtf document, defaulting to windows-1252");
 	encoding_rs::WINDOWS_1252
 }
 
@@ -140,15 +146,25 @@ fn encoding_for_fcharset(charset: i32, default: &'static Encoding) -> &'static E
 		238 => encoding_rs::WINDOWS_1250, // Central/Eastern European
 		222 => encoding_rs::WINDOWS_874,  // Thai
 		// 0 / 2 (ANSI / Symbol) and any other unrecognized value fall back to the document default
-		_ => default,
+		0 | 2 => default,
+		_ => {
+			tracing::warn!(
+				fcharset = charset,
+				"unrecognized fcharset value, falling back to document default encoding"
+			);
+			default
+		}
 	}
 }
 
 /// Parses the `{\fonttbl}` group and returns a map from font number to encoding,
-/// so that `resolve_hex_escapes` can use the right charset per `\fN` switch.
+/// so that `normalize_escapes` can use the right charset per `\fN` switch.
 fn extract_font_table(rtf: &str, default_encoding: &'static Encoding) -> HashMap<u32, &'static Encoding> {
 	let mut map = HashMap::new();
-	let Some(start) = rtf.find("{\\fonttbl") else { return map };
+	let Some(start) = rtf.find("{\\fonttbl") else {
+		tracing::debug!("no font table found in rtf document, per-font encoding is unavailable");
+		return map;
+	};
 
 	// Find the matching closing brace for the {\fonttbl} group.
 	let bytes = rtf.as_bytes();
@@ -236,25 +252,115 @@ fn extract_font_table(rtf: &str, default_encoding: &'static Encoding) -> HashMap
 	map
 }
 
-/// Pre-processes RTF text by replacing `\'xx` hex escapes with their correctly
-/// decoded UTF-8 characters. This resolves the ambiguity between
-/// `\'xx` (codepage byte) and `\uN` (Unicode) escapes before the lexer sees them,
-/// since the `rtf_parser` crate conflates both into `ControlWord::Unicode`.
+/// Reads an RTF numeric parameter at `start`, allowing the leading `-` that `\uN`
+/// uses for codepoints above 0x7FFF. Returns the index just past the last digit.
+fn read_param_end(bytes: &[u8], start: usize) -> Option<usize> {
+	let mut j = start;
+	if bytes.get(j) == Some(&b'-') {
+		j += 1;
+	}
+	let digits_start = j;
+	while bytes.get(j).is_some_and(u8::is_ascii_digit) {
+		j += 1;
+	}
+	(j > digits_start).then_some(j)
+}
+
+/// Skips the ANSI fallback characters that follow a `\uN` escape, starting at the
+/// index just past its parameter digits.
+///
+/// Each `\uN` is trailed by `uc` characters spelling the same character in the
+/// document codepage, which a reader that understands `\uN` must discard. Only the
+/// two forms that actually appear in the wild are recognised: a `\'xx` hex escape
+/// (`LibreOffice`) and a literal `?` (Word and most ebook converters). Anything else
+/// is left where it is — writers that disagree with their own `\ucN` are commoner
+/// than exotic fallbacks, and swallowing real text is far worse than leaving a
+/// stray character behind.
+fn skip_unicode_fallback(bytes: &[u8], mut i: usize, uc: usize) -> usize {
+	for _ in 0..uc {
+		// A hex escape is unambiguously fallback, even across the space that
+		// delimits the control word.
+		let mut j = i;
+		while bytes.get(j) == Some(&b' ') {
+			j += 1;
+		}
+		if bytes.get(j) == Some(&b'\\')
+			&& bytes.get(j + 1) == Some(&b'\'')
+			&& let (Some(&h1), Some(&h2)) = (bytes.get(j + 2), bytes.get(j + 3))
+			&& parse_hex_pair(h1, h2).is_some()
+		{
+			i = j + 4;
+			continue;
+		}
+		// A bare `?` counts only when it sits directly against the previous
+		// character, where it cannot be document text: something has to terminate
+		// the parameter digits, and the `?` is doing that job.
+		if bytes.get(i) == Some(&b'?') {
+			i += 1;
+			continue;
+		}
+		break;
+	}
+	i
+}
+
+/// Pre-processes RTF text so the lexer sees escapes it can tokenize correctly.
+///
+/// `\'xx` hex escapes are replaced with their correctly decoded UTF-8 characters.
+/// This resolves the ambiguity between `\'xx` (codepage byte) and `\uN` (Unicode)
+/// escapes before the lexer sees them, since the `rtf_parser` crate conflates both
+/// into `ControlWord::Unicode`.
 ///
 /// Structural ASCII escapes (`\'7b`, `\'7d`, `\'5c`) are left intact so the lexer
 /// still handles escaped `{`, `}`, and `\` correctly.
 ///
+/// `\uN` escapes are rewritten as space-delimited control words with their ANSI
+/// fallback dropped. `rtf_parser` ends a control word at the first whitespace, so
+/// Word's `Majesty\uNNNN?s First` would otherwise lex as one unknown control word
+/// running from the backslash to the space, losing both the apostrophe and the `s`.
+///
+/// Literal tab characters become `\tab` control words, since the lexer trims
+/// whitespace off its slices and would otherwise drop them.
+///
 /// Tracks `\fN` control words to use the charset declared for each font in the
 /// font table, so that Central-European or other non-Latin characters encoded as
 /// `\'xx` bytes decode correctly even when the document-level `\ansicpg` differs.
-fn resolve_hex_escapes(rtf: &str, encoding: &'static Encoding, font_table: &HashMap<u32, &'static Encoding>) -> String {
+fn normalize_escapes(rtf: &str, encoding: &'static Encoding, font_table: &HashMap<u32, &'static Encoding>) -> String {
 	let mut result = String::with_capacity(rtf.len());
 	let bytes = rtf.as_bytes();
 	let len = bytes.len();
 	let mut i = 0;
 	let mut current_encoding = encoding;
+	// RTF scopes \ucN to its group; tracking it flat is an approximation that can
+	// only leave a stray fallback character, never eat real text.
+	let mut uc_count = 1usize;
 
 	while i < len {
+		// A literal tab in the text stream carries the same meaning as \tab to every
+		// other reader, so promote it rather than let the lexer trim it away.
+		if bytes[i] == b'\t' {
+			result.push_str("\\tab ");
+			i += 1;
+			continue;
+		}
+
+		if bytes[i] == b'\\' && bytes.get(i + 1) == Some(&b'u') {
+			// \ucN declares how many fallback characters trail each \uN. Fall through
+			// afterwards so the control word still reaches the lexer.
+			if bytes.get(i + 2) == Some(&b'c') {
+				if let Some(end) = read_param_end(bytes, i + 3)
+					&& let Ok(count) = rtf[i + 3..end].parse::<usize>()
+				{
+					uc_count = count;
+				}
+			} else if let Some(digits_end) = read_param_end(bytes, i + 2) {
+				result.push_str(&rtf[i..digits_end]);
+				result.push(' ');
+				i = skip_unicode_fallback(bytes, digits_end, uc_count);
+				continue;
+			}
+		}
+
 		// Track \fN font switches to use the right charset for subsequent \'xx escapes.
 		// \fcharset, \fbidi, \froman, etc. start with \f + non-digit so won't match.
 		if bytes[i] == b'\\' && i + 2 < len && bytes[i + 1] == b'f' && bytes[i + 2].is_ascii_digit() {
@@ -292,55 +398,20 @@ fn resolve_hex_escapes(rtf: &str, encoding: &'static Encoding, font_table: &Hash
 		if bytes[i] == b'\\' && i + 3 < len && bytes[i + 1] == b'\'' {
 			let h1 = bytes[i + 2];
 			let h2 = bytes[i + 3];
-			if let Some(byte) = parse_hex_pair(h1, h2) {
-				// Normalize fallback bytes after \uN (e.g. \u237\'ed) so token
-				// boundaries remain valid and characters are not duplicated.
-				if is_unicode_fallback_escape(bytes, i) {
-					// Drop fallback bytes and inject a delimiter so `\uN` remains a
-					// valid standalone control word for the lexer.
-					if !result.ends_with(' ') {
-						result.push(' ');
-					}
-					i += 4;
-					continue;
-				}
-				if !matches!(byte, 0x7B | 0x7D | 0x5C) {
-					let buf = [byte];
-					let (decoded, _, _) = current_encoding.decode(&buf);
-					result.push_str(&decoded);
-					i += 4;
-					continue;
-				}
+			if let Some(byte) = parse_hex_pair(h1, h2)
+				&& !matches!(byte, 0x7B | 0x7D | 0x5C)
+			{
+				let buf = [byte];
+				let (decoded, _, _) = current_encoding.decode(&buf);
+				result.push_str(&decoded);
+				i += 4;
+				continue;
 			}
 		}
 		result.push(bytes[i] as char);
 		i += 1;
 	}
 	result
-}
-
-fn is_unicode_fallback_escape(bytes: &[u8], index: usize) -> bool {
-	if index == 0 {
-		return false;
-	}
-
-	let mut j = index;
-	while j > 0 && bytes[j - 1] == b' ' {
-		j -= 1;
-	}
-
-	let digit_end = j;
-	while j > 0 && bytes[j - 1].is_ascii_digit() {
-		j -= 1;
-	}
-	if j == digit_end {
-		return false;
-	}
-	if j > 0 && bytes[j - 1] == b'-' {
-		j -= 1;
-	}
-
-	j >= 2 && bytes[j - 1] == b'u' && bytes[j - 2] == b'\\'
 }
 
 /// Parses two ASCII hex digit bytes into a `u8`.
@@ -580,9 +651,20 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	// well-formed document the outermost group close already reverted all three to
 	// `false` (step 3), so this is a no-op in the common case.
 	let final_pos = buffer.current_position();
+	let bold_was_open = bold_on;
+	let italic_was_open = italic_on;
+	let underline_was_open = underline_on;
 	apply_format_toggle(&mut bold_on, &mut bold_start, false, final_pos, MarkerType::Bold, &mut buffer);
 	apply_format_toggle(&mut italic_on, &mut italic_start, false, final_pos, MarkerType::Italic, &mut buffer);
 	apply_format_toggle(&mut underline_on, &mut underline_start, false, final_pos, MarkerType::Underline, &mut buffer);
+	if bold_was_open || italic_was_open || underline_was_open {
+		tracing::warn!(
+			bold = bold_was_open,
+			italic = italic_was_open,
+			underline = underline_was_open,
+			"rtf document had an unclosed formatting span at end of document, likely unbalanced braces"
+		);
+	}
 	let trimmed = buffer.content.trim().to_string();
 	let mut result = DocumentBuffer::with_content(trimmed);
 	let leading_trim = buffer.content.len() - buffer.content.trim_start().len();
@@ -617,7 +699,7 @@ mod tests {
 
 	use super::{
 		encoding_for_codepage, extract_codepage, extract_content_from_tokens, extract_font_table, hex_digit,
-		is_unicode_fallback_escape, normalize_wrapped_space_lines, parse_hex_pair, resolve_hex_escapes,
+		normalize_escapes, normalize_wrapped_space_lines, parse_hex_pair,
 	};
 	use crate::document::MarkerType;
 
@@ -668,49 +750,73 @@ mod tests {
 	}
 
 	#[test]
-	fn resolve_hex_escapes_decodes_non_structural_escapes() {
+	fn normalize_escapes_decodes_non_structural_escapes() {
 		let input = "Don\\'27t say Caf\\'e9";
-		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
+		let output = normalize_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
 		assert_eq!(output, "Don't say Café");
 	}
 
 	#[test]
-	fn resolve_hex_escapes_keeps_ascii_escape_sequences() {
+	fn normalize_escapes_keeps_ascii_escape_sequences() {
 		let input = "Escaped brace: \\'7b and slash: \\'5c";
-		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
+		let output = normalize_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
 		assert_eq!(output, input);
 	}
 
 	#[test]
-	fn resolve_hex_escapes_ignores_invalid_hex_sequences() {
+	fn normalize_escapes_ignores_invalid_hex_sequences() {
 		let input = "Broken: \\'zz and mixed: \\'G1";
-		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
+		let output = normalize_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
 		assert_eq!(output, input);
 	}
 	#[test]
-	fn resolve_hex_escapes_keeps_u_fallback_hex_sequences() {
+	fn normalize_escapes_keeps_u_fallback_hex_sequences() {
 		let input = "Ju\\u237\\'edzo";
-		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
+		let output = normalize_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
 		assert_eq!(output, "Ju\\u237 zo");
 	}
 
 	#[test]
-	fn resolve_hex_escapes_maps_nonbreaking_space_and_hyphen_symbols() {
+	fn normalize_escapes_maps_nonbreaking_space_and_hyphen_symbols() {
 		let input = "A\\~B C\\_D E\\-F";
-		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
+		let output = normalize_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
 		assert_eq!(output, "A B C-D E-F");
 	}
 
 	#[test]
-	fn is_unicode_fallback_escape_detects_after_u_control_word() {
-		let bytes = br"Ju\\u237\\'edzo";
-		assert!(is_unicode_fallback_escape(bytes, 7));
+	fn normalize_escapes_drops_question_mark_unicode_fallback() {
+		// Word writes the fallback with no delimiter, so the `?` terminates the digits.
+		let input = "Majesty\\u8217?s First";
+		let output = normalize_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
+		assert_eq!(output, "Majesty\\u8217 s First");
 	}
 
 	#[test]
-	fn is_unicode_fallback_escape_rejects_plain_hex_escape() {
-		let bytes = br"Don\\'27t";
-		assert!(!is_unicode_fallback_escape(bytes, 3));
+	fn normalize_escapes_keeps_question_mark_that_follows_a_delimiter() {
+		// Here the space already delimits the control word, so the `?` is real text.
+		let input = "vraiment\\u8230 ? Non";
+		let output = normalize_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
+		assert_eq!(output, "vraiment\\u8230  ? Non");
+	}
+
+	#[test]
+	fn normalize_escapes_honours_uc_zero_and_multi_character_fallback() {
+		let no_fallback = normalize_escapes("\\uc0 a\\u8217?b", encoding_rs::WINDOWS_1252, &HashMap::new());
+		assert_eq!(no_fallback, "\\uc0 a\\u8217 ?b");
+		let two_chars = normalize_escapes("\\uc2 a\\u8217??b", encoding_rs::WINDOWS_1252, &HashMap::new());
+		assert_eq!(two_chars, "\\uc2 a\\u8217 b");
+	}
+
+	#[test]
+	fn normalize_escapes_preserves_negative_unicode_parameters() {
+		let output = normalize_escapes("a\\u-3891?b", encoding_rs::WINDOWS_1252, &HashMap::new());
+		assert_eq!(output, "a\\u-3891 b");
+	}
+
+	#[test]
+	fn normalize_escapes_promotes_literal_tabs_to_control_words() {
+		let output = normalize_escapes("{\t\nFor Mum", encoding_rs::WINDOWS_1252, &HashMap::new());
+		assert_eq!(output, "{\\tab \nFor Mum");
 	}
 
 	#[test]
@@ -740,16 +846,43 @@ mod tests {
 	#[test]
 	fn extract_content_preserves_line_and_tab_unknown_controls() {
 		let rtf = r"{\rtf1\ansi\pard delay.\line \tab next}";
-		let normalized = resolve_hex_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
 		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
 		let buffer = extract_content_from_tokens(&tokens);
 		assert_eq!(buffer.content, "delay.\n\tnext");
 	}
 
 	#[test]
+	fn extract_content_keeps_text_around_word_style_unicode_escapes() {
+		// Word writes curly quotes as \uN followed by a bare `?` fallback. Because the
+		// lexer ends a control word at the first space, every character between the
+		// digits and that space used to be swallowed along with the escape.
+		let rtf = "{\\rtf1\\ansi\\pard\t\n\\u8216?Yes!\\u8217? shrieked Salem Rews, quartermaster of his August \
+		           Majesty\\u8217?s First Regiment. \\u8216?Give \\u8217?em hell!\\u8217?\\par}";
+		let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(
+			buffer.content,
+			"\u{2018}Yes!\u{2019} shrieked Salem Rews, quartermaster of his August Majesty\u{2019}s First Regiment. \
+			 \u{2018}Give \u{2019}em hell!\u{2019}"
+		);
+	}
+
+	#[test]
+	fn extract_content_keeps_literal_tab_indentation() {
+		// This writer opens each paragraph with a literal tab rather than \tab.
+		let rtf = "{\\rtf1\\ansi\\pard first\\par}{\t\nFor Mum and Dad, Couldn\\u8217?t have done it.\\par}";
+		let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "first\n\tFor Mum and Dad, Couldn\u{2019}t have done it.");
+	}
+
+	#[test]
 	fn extract_content_maps_page_control_to_marker_and_separator() {
 		let rtf = r"{\rtf1\ansi\pard chapter one\page chapter two}";
-		let normalized = resolve_hex_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
 		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
 		let buffer = extract_content_from_tokens(&tokens);
 		assert_eq!(buffer.content, "chapter one chapter two");
@@ -771,12 +904,12 @@ mod tests {
 	}
 
 	#[test]
-	fn resolve_hex_escapes_uses_font_charset_for_encoding() {
+	fn normalize_escapes_uses_font_charset_for_encoding() {
 		// \f2 switches to charset 238 (Windows-1250); \'c6 = Ć in that encoding, Æ in 1252.
 		let rtf = r"{\rtf1\ansi\ansicpg1252{\fonttbl{\f1\fcharset0 Arial;}{\f2\fcharset238 CE;}}\pard\f2 \'c6ao}";
 		let default_enc = encoding_rs::WINDOWS_1252;
 		let font_table = extract_font_table(rtf, default_enc);
-		let out = resolve_hex_escapes(rtf, default_enc, &font_table);
+		let out = normalize_escapes(rtf, default_enc, &font_table);
 		assert!(out.contains('Ć'), "expected Ć (Windows-1250 0xC6), got: {out}");
 		assert!(!out.contains('Æ'), "should not contain Æ (Windows-1252 0xC6)");
 	}
@@ -800,7 +933,7 @@ mod tests {
 	#[test]
 	fn extract_content_handles_libreoffice_unicode_fallback_and_nbsp_symbols() {
 		let rtf = r"{\rtf1\ansi\pard AGRAVANTE:\~ Pedro da Silva\par O Ju\u237\'edzo da Vara, pela decis\u227\'e3o e execu\u231\'e7\u227\'e3o contra a 2\u170\'aa executada\par}";
-		let normalized = resolve_hex_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
 		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
 		let buffer = extract_content_from_tokens(&tokens);
 		assert!(buffer.content.contains("AGRAVANTE:"));
@@ -919,7 +1052,7 @@ mod tests {
 	fn extract_content_renders_bold_from_real_rtf_string() {
 		// Round-trip through the real lexer to confirm \b / \b0 map to Bold markers.
 		let rtf = r"{\rtf1\ansi\pard normal \b bold\b0  normal}";
-		let normalized = resolve_hex_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
 		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
 		let buffer = extract_content_from_tokens(&tokens);
 		assert_eq!(buffer.content, "normal bold normal");

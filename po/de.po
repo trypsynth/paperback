@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-24 10:48-0600\n"
+"POT-Creation-Date: 2026-08-11 20:06+0000\n"
 "PO-Revision-Date: 2026-07-31 16:56+0200\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -37,8 +37,7 @@ msgstr "Warnung"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
-msgstr ""
-"Ein barrierefreier, schlanker und schneller E-Book- und Dokumentenleser"
+msgstr "Ein barrierefreier, schlanker und schneller E-Book- und Dokumentenleser"
 
 #. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
@@ -88,31 +87,19 @@ msgstr "Alle &löschen"
 msgid "Close"
 msgstr "Schließen"
 
-msgid ""
-"Are you sure you want to remove the selected document? This will also remove "
-"its reading position and bookmarks."
-msgstr ""
-"Soll das gewählte Dokument wirklich aus der Liste entfernt werden? Dabei "
-"werden auch alle Lesezeichen und Lesepositionen gelöscht."
+msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
+msgstr "Soll das gewählte Dokument wirklich aus der Liste entfernt werden? Dabei werden auch alle Lesezeichen und Lesepositionen gelöscht."
 
-msgid ""
-"Are you sure you want to remove the {} selected documents? This will also "
-"remove their reading positions and bookmarks."
-msgstr ""
-"Sollen die gewählten Dokumente wirklich aus der Liste entfernt werden? Dabei "
-"werden auch alle Lesezeichen und Lesepositionen gelöscht."
+msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
+msgstr "Sollen die gewählten Dokumente wirklich aus der Liste entfernt werden? Dabei werden auch alle Lesezeichen und Lesepositionen gelöscht."
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
 msgstr "Bestätigen"
 
 #. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
-msgid ""
-"Are you sure you want to remove all documents from the list? This will also "
-"remove all reading positions and bookmarks."
-msgstr ""
-"Sollen wirklich alle Dokumente aus der Liste gelöscht werden? Dabei werden "
-"auch alle Lesezeichen und Lesepositionen gelöscht."
+msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
+msgstr "Sollen wirklich alle Dokumente aus der Liste gelöscht werden? Dabei werden auch alle Lesezeichen und Lesepositionen gelöscht."
 
 #. TRANSLATORS: Status of a document that is currently open in a tab
 msgid "Open"
@@ -246,10 +233,6 @@ msgstr "Unbenannt"
 msgid "OK"
 msgstr "OK"
 
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Abbrechen"
-
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr "Gehe zu Zeile"
@@ -343,6 +326,11 @@ msgstr "&Gehe-zu-Menü kompakt anzeigen"
 msgid "&Wrap navigation"
 msgstr "&Kreisförmige Navigation"
 
+#. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+#, fuzzy
+msgid "Move to &start of line"
+msgstr "Zur Zeilenanfang springen"
+
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr "&Sounds an Lesezeichen und Notizen abspielen"
@@ -350,6 +338,11 @@ msgstr "&Sounds an Lesezeichen und Notizen abspielen"
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr "Beim Start auf &Updates prüfen"
+
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+#, fuzzy
+msgid "&Automatically reload changed documents"
+msgstr "&Geänderte Dokumente automatisch neu laden"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
@@ -535,6 +528,10 @@ msgstr "&Taste:"
 msgid "Clear"
 msgstr "Löschen"
 
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Abbrechen"
+
 #. TRANSLATORS: Representation of the Spacebar key
 msgid "Space"
 msgstr "Leer"
@@ -608,11 +605,8 @@ msgid "File not found: {}"
 msgstr "Datei nicht gefunden: {}"
 
 #. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
-msgid ""
-"A .paperback file was found for this document. Would you like to import it?"
-msgstr ""
-"Für dieses Dokument wurde eine .paperback-Datei gefunden. Soll sie "
-"importiert werden?"
+msgid "A .paperback file was found for this document. Would you like to import it?"
+msgstr "Für dieses Dokument wurde eine .paperback-Datei gefunden. Soll sie importiert werden?"
 
 #. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
 msgid "Import document data"
@@ -747,11 +741,8 @@ msgid "Failed to reveal file in folder."
 msgstr "Anzeigen der Datei im Ordner fehlgeschlagen."
 
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
-msgid ""
-"readme.html not found. Please ensure the application was built properly."
-msgstr ""
-"readme.html nicht gefunden. Bitte stelle sicher, dass die Anwendung korrekt "
-"erstellt wurde."
+msgid "readme.html not found. Please ensure the application was built properly."
+msgstr "readme.html nicht gefunden. Bitte stelle sicher, dass die Anwendung korrekt erstellt wurde."
 
 #. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
@@ -769,10 +760,14 @@ msgstr "Ungültiges Format gewählt."
 msgid "Paperback"
 msgstr "Paperback"
 
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+#, fuzzy
+msgid "Document reloaded."
+msgstr "Das Dokument wurde neu geladen."
+
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
-msgstr ""
-"Paperback kann keine Aktionen ausführen, während Web-View geöffnet ist."
+msgstr "Paperback kann keine Aktionen ausführen, während Web-View geöffnet ist."
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
 msgid "Paperback - {}"
@@ -781,6 +776,14 @@ msgstr "Paperback - {}"
 #. TRANSLATORS: Status bar character count; {} is the number of characters
 msgid "{} chars"
 msgstr "{} Zeichen"
+
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "Dokument"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Das Dokument konnte nicht exportiert werden."
 
 #. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
@@ -797,10 +800,6 @@ msgstr "Wortumbruch eingeschaltet."
 msgid "Word wrap off."
 msgstr "Wortumbruch ausgeschaltet."
 
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "Dokument"
-
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Textdateien (*.txt)|*.txt|Alle Dateien (*.*)|*.*"
@@ -808,10 +807,6 @@ msgstr "Textdateien (*.txt)|*.txt|Alle Dateien (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
 msgstr "Dokument als Text exportieren"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Das Dokument konnte nicht exportiert werden."
 
 #. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
@@ -1834,14 +1829,11 @@ msgstr "Fehler beim Konvertieren von DTBook-XML in Text"
 
 #. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
 msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
-msgstr ""
-"Das Zip-Archiv scheint kein gültiges Buch im Format DAISY 3 oder DAISY "
-"2.02zu sein"
+msgstr "Das Zip-Archiv scheint kein gültiges Buch im Format DAISY 3 oder DAISY 2.02zu sein"
 
 #. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr ""
-"Ungültige DAISY .opf-Datei oder DTBook-XML nicht im Manifest auffindbar"
+msgstr "Ungültige DAISY .opf-Datei oder DTBook-XML nicht im Manifest auffindbar"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
@@ -1991,12 +1983,8 @@ msgid "FODP file does not contain any pages"
 msgstr "FODP-Datei enthält keine Seiten"
 
 #. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"Dieses PDF enthält nur Bilder ohne extrahierbaren Text. Möglicherweise kann "
-"der Text mittels OCR-Software gelesen werden."
+msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+msgstr "Dieses PDF enthält nur Bilder ohne extrahierbaren Text. Möglicherweise kann der Text mittels OCR-Software gelesen werden."
 
 #. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 msgid "Password required or incorrect"
@@ -2010,12 +1998,8 @@ msgstr "Das PDF-Dokument konnte nicht geöffnet werden."
 msgid "PPTX file contains no slides"
 msgstr "PPTX-Datei enthält keine Folien"
 
-msgid ""
-"Password-protected PPT files are not currently supported. Try saving the "
-"file as PPTX and opening that instead."
-msgstr ""
-"Passwortgeschützte PPT-Dateien werden derzeit nicht unterstützt. Versuche, "
-"die Datei als PPTX zu speichern und diese stattdessen zu öffnen."
+msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+msgstr "Passwortgeschützte PPT-Dateien werden derzeit nicht unterstützt. Versuche, die Datei als PPTX zu speichern und diese stattdessen zu öffnen."
 
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 msgid "PPT file contains no slides"
@@ -2031,9 +2015,7 @@ msgstr "Das RTf-Dokument konnte nicht geparst werden: {}"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr ""
-"Traditioneller DOC-Parser fehlgeschlagen: {}. OOXML-Fallback fehlgeschlagen: "
-"{}"
+msgstr "Traditioneller DOC-Parser fehlgeschlagen: {}. OOXML-Fallback fehlgeschlagen: {}"
 
 #. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
 msgid "No readable content found in the ZIP archive"
@@ -2091,18 +2073,15 @@ msgstr "Passwort wird benötigt"
 msgid "Password incorrect"
 msgstr "Passwort inkorrekt"
 
-#, c-format
 msgid "Update to %s"
 msgstr "Update auf %s"
 
-#, c-format
 msgid "A new version of %s is available. Here's what's new:"
 msgstr "Es gibt eine neue Version von %s. Hier sind die Neuerungen:"
 
 msgid "No release notes provided."
 msgstr "Es wurden keine Veröffentlichungshinweise angegeben."
 
-#, c-format
 msgid "%s Update"
 msgstr "%s Update"
 
@@ -2112,19 +2091,14 @@ msgstr "Update wird heruntergeladen..."
 msgid "No updates available."
 msgstr "Keine Updates verfügbar."
 
-#, c-format
 msgid "No updates available. Latest version: %s"
 msgstr "Keine Updates verfügbar. Aktuellste Version: %s"
 
 msgid "Info"
 msgstr "Info"
 
-#, c-format
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr ""
-"Die Sicherheitsüberprüfung ist fehlgeschlagen. Das Update wurde "
-"möglicherweise manipuliert: %s"
+msgid "Security verification failed. The update might have been tampered with: %s"
+msgstr "Die Sicherheitsüberprüfung ist fehlgeschlagen. Das Update wurde möglicherweise manipuliert: %s"
 
 msgid "Security Error"
 msgstr "Sicherheitsfehler"
@@ -2132,7 +2106,6 @@ msgstr "Sicherheitsfehler"
 msgid "Update failed"
 msgstr "Update fehlgeschlagen"
 
-#, c-format
 msgid ""
 "Update downloaded to: %s\n"
 "Please install it manually."
@@ -2473,40 +2446,23 @@ msgstr "Passwort:"
 msgid "All Files Access Required"
 msgstr "Zugriff auf alle Dateien benötigt"
 
-msgid ""
-"Paperback requires the 'All Files Access' permission to enable the custom in-"
-"app file browser."
-msgstr ""
-"Paperback benötigt die Berechtigung Zugriff auf alle dateien, um den "
-"integrierten Dateibrowser zu aktivieren."
+msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgstr "Paperback benötigt die Berechtigung Zugriff auf alle dateien, um den integrierten Dateibrowser zu aktivieren."
 
 msgid "Why we need this:"
 msgstr "Warum dies benötigt wird:"
 
-msgid ""
-"• To provide a fast, fully screen-reader accessible file manager inside the "
-"app."
-msgstr ""
-"• Bereitstellung eines schnellen, für Screenreader vollständig zugänglichen "
-"Dateimanagers innerhalb der App."
+msgid "• To provide a fast, fully screen-reader accessible file manager inside the app."
+msgstr "• Bereitstellung eines schnellen, für Screenreader vollständig zugänglichen Dateimanagers innerhalb der App."
 
-msgid ""
-"• To load large files instantly without needing to copy them into the app's "
-"cache."
-msgstr ""
-"• Um große Dateien sofort zu laden, ohne sie in den Cache der App kopieren "
-"zu müssen."
+msgid "• To load large files instantly without needing to copy them into the app's cache."
+msgstr "• Um große Dateien sofort zu laden, ohne sie in den Cache der App kopieren zu müssen."
 
 msgid "• To display the exact local file paths of your documents."
 msgstr "• Um die genauen lokalen Dateipfade der Dokumente anzuzeigen."
 
-msgid ""
-"If you deny this permission, you can still use the Android System File "
-"Picker to open your books by turning off the custom file browser setting."
-msgstr ""
-"Wenn diese Berechtigung verweigert wird, können Bücher dennoch über den "
-"Android-Dateiauswähler geöffnet werden, indem die Einstellung für den "
-"benutzerdefinierten Dateibrowser deaktiviert wird."
+msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
+msgstr "Wenn diese Berechtigung verweigert wird, können Bücher dennoch über den Android-Dateiauswähler geöffnet werden, indem die Einstellung für den benutzerdefinierten Dateibrowser deaktiviert wird."
 
 msgid "Grant"
 msgstr "Erlauben"
@@ -2518,9 +2474,7 @@ msgid "Restore last open book"
 msgstr "Zuletzt geöffnetes Buch wiederherstellen"
 
 msgid "Use in-app file browser (requires All Files permission)"
-msgstr ""
-"Integrierten Dateibrowser verwenden (benötigt Berechtigung Zugriff auf alle "
-"Dateien)"
+msgstr "Integrierten Dateibrowser verwenden (benötigt Berechtigung Zugriff auf alle Dateien)"
 
 msgid "Text-to-Speech"
 msgstr "Sprachausgabe"
@@ -2636,23 +2590,38 @@ msgstr "Trennlinie"
 msgid "Document Data"
 msgstr "Dokumentdaten"
 
+#, fuzzy
+msgid "Sleep timer running, {} remaining"
+msgstr "Der Sleep-Timer läuft, es sind noch {} übrig"
+
+#, fuzzy
+msgid "Custom"
+msgstr "Benutzerdefiniert"
+
+#, fuzzy
+msgid "Custom: {} minutes"
+msgstr "Benutzerdefiniert: {} Minuten"
+
+#, fuzzy
+msgid "Duration"
+msgstr "Dauer"
+
+#, fuzzy
+msgid "Stop Timer"
+msgstr "Timer anhalten"
+
+#, fuzzy
+msgid "Start Timer"
+msgstr "Timer starten"
+
 #~ msgid "Root"
 #~ msgstr "Wurzel"
 
-#~ msgid ""
-#~ "Are you sure you want to remove this document from the list? This will "
-#~ "also remove its reading position."
-#~ msgstr ""
-#~ "Soll dieses Dokument wirklich aus der Liste entfernt werden? Dadurch wird "
-#~ "auch die Leseposition gelöscht."
+#~ msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
+#~ msgstr "Soll dieses Dokument wirklich aus der Liste entfernt werden? Dadurch wird auch die Leseposition gelöscht."
 
-#, rust-format
-#~ msgid ""
-#~ "Are you sure you want to remove these {} documents from the list? This "
-#~ "will also remove their reading positions."
-#~ msgstr ""
-#~ "Sollen diese {} Dokumente wirklich aus der Liste entfernt werden? Dadurch "
-#~ "werden auch deren Lesepositionen gelöscht."
+#~ msgid "Are you sure you want to remove these {} documents from the list? This will also remove their reading positions."
+#~ msgstr "Sollen diese {} Dokumente wirklich aus der Liste entfernt werden? Dadurch werden auch deren Lesepositionen gelöscht."
 
 #~ msgid "Paperback Update"
 #~ msgstr "Paperback-Update"

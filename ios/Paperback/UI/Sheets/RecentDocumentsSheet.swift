@@ -29,6 +29,7 @@ struct RecentDocumentsSheet: View {
 						ForEach(viewModel.recentDocuments) { doc in
 							RecentDocumentRow(
 								doc: doc,
+								showRemoveButton: false,
 								onOpen: {
 									viewModel.openDocument(url: doc.url)
 									dismiss()
@@ -36,6 +37,14 @@ struct RecentDocumentsSheet: View {
 								onRemove: { viewModel.removeRecentDocument(url: doc.url) },
 								onLocate: { locateTarget = doc }
 							)
+							.swipeActions {
+								Button(role: .destructive) {
+									viewModel.removeRecentDocument(url: doc.url)
+								} label: {
+									// TRANSLATORS: Swipe action to remove a document from the recent documents list
+									Label(t("Remove"), systemImage: "trash")
+								}
+							}
 						}
 					}
 				}

@@ -33,7 +33,6 @@ const PDFIUM_MAC_ARM64_URL: &str =
 fn main() {
 	track_packaging_inputs();
 	build_translations();
-	copy_sounds();
 	copy_pdfium_dll();
 	build_docs();
 	configure_installer();
@@ -118,64 +117,14 @@ fn track_packaging_inputs() {
 	println!("cargo:rerun-if-changed=paperback.iss.in");
 }
 
+// Only compiles the already-committed po/*.po files into .mo files for runtime loading.
+// Regenerating paperback.pot itself is deliberately NOT done here: it used to run on every
+// `cargo build`, fighting with `cargo xtask translate`/the auto-translate CI job (which
+// regenerate it carefully, suppressing pure timestamp/wrapping churn) and touching the
+// tracked .pot file mid-build. Run `cargo xtask translate` (or `--dry-run` to preview)
+// to regenerate it instead.
 fn build_translations() {
-	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
-	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
-	let po_dir = workspace_dir.join("po");
-	let pot_file = po_dir.join("paperback.pot");
-	println!("cargo:rerun-if-changed={}", workspace_dir.join("ios/Paperback").display());
-	println!(
-		"cargo:rerun-if-changed={}",
-		workspace_dir.join("android/app/src/main/kotlin/dev/paperback/mobile").display()
-	);
-	if let Err(e) = patois_build::gen_pot(workspace_dir, &po_dir, "paperback") {
-		println!("cargo:warning=Failed to regenerate paperback.pot from Rust sources: {e}");
-	}
-	let ios_src = workspace_dir.join("ios/Paperback");
-	if let Err(e) = patois_build::extend_pot_from_source_dirs(&[&ios_src], "swift", &pot_file) {
-		println!("cargo:warning=Failed to extend paperback.pot from Swift sources: {e}");
-	}
-	let kt_src = workspace_dir.join("android/app/src/main/kotlin/dev/paperback/mobile");
-	if let Err(e) = patois_build::extend_pot_from_source_dirs(&[&kt_src], "kt", &pot_file) {
-		println!("cargo:warning=Failed to extend paperback.pot from Kotlin sources: {e}");
-	}
 	patois_build::compile_translations("../../po", "locale");
-}
-
-fn copy_sounds() {
-	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
-	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
-	let sounds_src = workspace_dir.join("sounds");
-	println!("cargo:rerun-if-changed={}", sounds_src.display());
-	if !sounds_src.exists() {
-		return;
-	}
-	let Some(target_dir) = target_profile_dir() else {
-		println!("cargo:warning=Could not determine target output directory for sounds.");
-		return;
-	};
-	let sounds_dst = target_dir.join("sounds");
-	if let Err(err) = fs::create_dir_all(&sounds_dst) {
-		println!("cargo:warning=Failed to create sounds directory: {err}");
-		return;
-	}
-	let entries = match fs::read_dir(&sounds_src) {
-		Ok(entries) => entries,
-		Err(err) => {
-			println!("cargo:warning=Failed to read sounds directory: {err}");
-			return;
-		}
-	};
-	for entry in entries {
-		let Ok(entry) = entry else { continue };
-		let path = entry.path();
-		if path.is_file() {
-			let dest = sounds_dst.join(entry.file_name());
-			if let Err(err) = fs::copy(&path, &dest) {
-				println!("cargo:warning=Failed to copy sound file: {err}");
-			}
-		}
-	}
 }
 
 fn copy_pdfium_dylib() {
@@ -240,10 +189,17 @@ fn pdfium_dylib_download_url_for_target() -> Option<&'static str> {
 }
 
 fn download_pdfium_dylib(url: &str, dest_dylib: &Path) -> io::Result<()> {
-	if let Some(parent) = dest_dylib.parent() {
+	download_and_extract_from_tgz(url, dest_dylib, "libpdfium.dylib")
+}
+
+/// Downloads a `.tgz` archive from `url` and unpacks the single entry named
+/// `wanted_filename` to `dest`, replacing anything already there. Used to fetch the
+/// prebuilt pdfium binary for whichever platform/architecture is currently building.
+fn download_and_extract_from_tgz(url: &str, dest: &Path, wanted_filename: &str) -> io::Result<()> {
+	if let Some(parent) = dest.parent() {
 		fs::create_dir_all(parent)?;
 	}
-	println!("cargo:warning=Downloading libpdfium.dylib from {url}");
+	println!("cargo:warning=Downloading {wanted_filename} from {url}");
 	let response = ureq::get(url).call().map_err(|err| io::Error::other(format!("request failed: {err}")))?;
 	let mut body = response.into_body();
 	let mut archive_bytes = Vec::new();
@@ -255,17 +211,21 @@ fn download_pdfium_dylib(url: &str, dest_dylib: &Path) -> io::Result<()> {
 	for entry in archive.entries()? {
 		let mut entry = entry?;
 		let path = entry.path()?;
-		if path.file_name().and_then(|name| name.to_str()) == Some("libpdfium.dylib") {
-			let temp_path = dest_dylib.with_extension("dylib.tmp");
+		if path.file_name().and_then(|name| name.to_str()) == Some(wanted_filename) {
+			let temp_ext = match dest.extension() {
+				Some(ext) => format!("{}.tmp", ext.to_string_lossy()),
+				None => "tmp".to_string(),
+			};
+			let temp_path = dest.with_extension(temp_ext);
 			entry.unpack(&temp_path)?;
-			if dest_dylib.exists() {
-				fs::remove_file(dest_dylib)?;
+			if dest.exists() {
+				fs::remove_file(dest)?;
 			}
-			fs::rename(temp_path, dest_dylib)?;
+			fs::rename(temp_path, dest)?;
 			return Ok(());
 		}
 	}
-	Err(io::Error::other("libpdfium.dylib not found inside downloaded archive"))
+	Err(io::Error::other(format!("{wanted_filename} not found inside downloaded archive")))
 }
 
 fn copy_pdfium_dll() {
@@ -344,32 +304,7 @@ fn pdfium_download_url_for_target() -> Option<&'static str> {
 }
 
 fn download_pdfium_dll(url: &str, dest_dll: &Path) -> io::Result<()> {
-	if let Some(parent) = dest_dll.parent() {
-		fs::create_dir_all(parent)?;
-	}
-	println!("cargo:warning=Downloading pdfium.dll from {url}");
-	let response = ureq::get(url).call().map_err(|err| io::Error::other(format!("request failed: {err}")))?;
-	let mut body = response.into_body();
-	let mut archive_bytes = Vec::new();
-	body.as_reader()
-		.read_to_end(&mut archive_bytes)
-		.map_err(|err| io::Error::other(format!("failed to read response body: {err}")))?;
-	let decoder = GzDecoder::new(Cursor::new(archive_bytes));
-	let mut archive = Archive::new(decoder);
-	for entry in archive.entries()? {
-		let mut entry = entry?;
-		let path = entry.path()?;
-		if path.file_name().and_then(|name| name.to_str()) == Some("pdfium.dll") {
-			let temp_path = dest_dll.with_extension("dll.tmp");
-			entry.unpack(&temp_path)?;
-			if dest_dll.exists() {
-				fs::remove_file(dest_dll)?;
-			}
-			fs::rename(temp_path, dest_dll)?;
-			return Ok(());
-		}
-	}
-	Err(io::Error::other("pdfium.dll not found inside downloaded archive"))
+	download_and_extract_from_tgz(url, dest_dll, "pdfium.dll")
 }
 
 fn push_dll_candidates_from_path(candidates: &mut Vec<PathBuf>, path: PathBuf) {

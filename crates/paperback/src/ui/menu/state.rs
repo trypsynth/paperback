@@ -1,0 +1,86 @@
+use wxdragon::prelude::*;
+
+use crate::ui::menu_ids;
+
+const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
+	menu_ids::CLOSE,
+	menu_ids::CLOSE_ALL,
+	menu_ids::FIND,
+	menu_ids::FIND_NEXT,
+	menu_ids::FIND_PREVIOUS,
+	menu_ids::GO_TO_LINE,
+	menu_ids::GO_TO_PERCENT,
+	menu_ids::GO_TO_PAGE,
+	menu_ids::GO_BACK,
+	menu_ids::GO_FORWARD,
+	menu_ids::PREVIOUS_SECTION,
+	menu_ids::NEXT_SECTION,
+	menu_ids::PREVIOUS_HEADING,
+	menu_ids::NEXT_HEADING,
+	menu_ids::PREVIOUS_HEADING_1,
+	menu_ids::NEXT_HEADING_1,
+	menu_ids::PREVIOUS_HEADING_2,
+	menu_ids::NEXT_HEADING_2,
+	menu_ids::PREVIOUS_HEADING_3,
+	menu_ids::NEXT_HEADING_3,
+	menu_ids::PREVIOUS_HEADING_4,
+	menu_ids::NEXT_HEADING_4,
+	menu_ids::PREVIOUS_HEADING_5,
+	menu_ids::NEXT_HEADING_5,
+	menu_ids::PREVIOUS_HEADING_6,
+	menu_ids::NEXT_HEADING_6,
+	menu_ids::PREVIOUS_PAGE,
+	menu_ids::NEXT_PAGE,
+	menu_ids::PREVIOUS_BOOKMARK,
+	menu_ids::NEXT_BOOKMARK,
+	menu_ids::PREVIOUS_NOTE,
+	menu_ids::NEXT_NOTE,
+	menu_ids::JUMP_TO_ALL_BOOKMARKS,
+	menu_ids::JUMP_TO_BOOKMARKS_ONLY,
+	menu_ids::JUMP_TO_NOTES_ONLY,
+	menu_ids::VIEW_NOTE_TEXT,
+	menu_ids::PREVIOUS_LINK,
+	menu_ids::NEXT_LINK,
+	menu_ids::PREVIOUS_IMAGE,
+	menu_ids::NEXT_IMAGE,
+	menu_ids::PREVIOUS_FIGURE,
+	menu_ids::NEXT_FIGURE,
+	menu_ids::PREVIOUS_TABLE,
+	menu_ids::NEXT_TABLE,
+	menu_ids::PREVIOUS_SEPARATOR,
+	menu_ids::NEXT_SEPARATOR,
+	menu_ids::PREVIOUS_LIST,
+	menu_ids::NEXT_LIST,
+	menu_ids::PREVIOUS_LIST_ITEM,
+	menu_ids::NEXT_LIST_ITEM,
+	menu_ids::CONTAINER_START,
+	menu_ids::CONTAINER_END,
+	menu_ids::WORD_COUNT,
+	menu_ids::DOCUMENT_INFO,
+	menu_ids::TABLE_OF_CONTENTS,
+	menu_ids::ELEMENTS_LIST,
+	menu_ids::REVEAL_FILE_IN_FOLDER,
+	menu_ids::OPEN_IN_WEB_VIEW,
+	menu_ids::VIEW_SOURCE,
+	menu_ids::IMPORT_DOCUMENT_DATA,
+	menu_ids::EXPORT_DOCUMENT_DATA,
+	menu_ids::EXPORT_TO_PLAIN_TEXT,
+	menu_ids::TOGGLE_BOOKMARK,
+	menu_ids::BOOKMARK_WITH_NOTE,
+];
+
+pub fn update_menu_item_states(frame: &Frame, has_document: bool) {
+	let Some(menu_bar) = frame.get_menu_bar() else {
+		return;
+	};
+	for &id in DOCUMENT_DEPENDENT_IDS {
+		menu_bar.enable_item(id, has_document);
+	}
+}
+
+pub fn update_reopen_state(frame: &Frame, has_recently_closed: bool) {
+	let Some(menu_bar) = frame.get_menu_bar() else {
+		return;
+	};
+	menu_bar.enable_item(menu_ids::REOPEN_LAST_CLOSED, has_recently_closed);
+}

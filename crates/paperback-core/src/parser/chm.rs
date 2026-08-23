@@ -8,9 +8,9 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		Parser, add_converter_markers_excluding_links,
-		html_to_text::{HtmlSourceMode, HtmlToText},
+		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		is_external_url,
-		util::path::extract_title_from_path,
+		util::path::{extract_title_from_path, resolve_relative_path},
 	},
 	util::encoding::convert_to_utf8,
 };
@@ -19,6 +19,7 @@ pub struct ChmParser;
 
 impl Parser for ChmParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing chm file");
 		let mut chm = ChmFile::open(&context.file_path)
 			.with_context(|| format!("Failed to open CHM file: {}", context.file_path))?;
 		let mut html_files = Vec::new();
@@ -34,7 +35,14 @@ impl Parser for ChmParser {
 			}
 		}
 		html_files.sort();
-		let title = parse_system_file(&mut chm).unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		tracing::debug!(html_file_count = html_files.len(), hhc_found = !hhc_file.is_empty(), "chm structure detected");
+		let title = parse_system_file(&mut chm).unwrap_or_else(|| {
+			tracing::debug!(path = %context.file_path, "no title found in #SYSTEM record, falling back to filename");
+			extract_title_from_path(&context.file_path)
+		});
+		if hhc_file.is_empty() {
+			tracing::debug!(path = %context.file_path, "chm has no hhc file, table of contents will be empty");
+		}
 		let mut toc_items = if hhc_file.is_empty() { Vec::new() } else { parse_hhc_file(&mut chm, &hhc_file)? };
 		let ordered_files = build_ordered_file_list(&html_files, &toc_items);
 		let mut buffer = DocumentBuffer::new();
@@ -42,13 +50,19 @@ impl Parser for ChmParser {
 		let mut file_positions = HashMap::new();
 		for (idx, file_path) in ordered_files.iter().enumerate() {
 			let section_start = buffer.current_position();
-			let Ok(content_bytes) = chm.find(file_path).and_then(|e| chm.read(&e)) else { continue };
+			let Ok(content_bytes) = chm.find(file_path).and_then(|e| chm.read(&e)) else {
+				tracing::warn!(file_path = %file_path, "could not find or read chm html entry, skipping section");
+				continue;
+			};
 			if content_bytes.is_empty() {
+				tracing::warn!(file_path = %file_path, "chm html entry is empty, skipping section");
 				continue;
 			}
 			let utf8_content = convert_to_utf8(&content_bytes);
 			let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 			if !converter.convert(&utf8_content, HtmlSourceMode::NativeHtml) {
+				// currently unreachable, HtmlToText::convert always returns true today
+				tracing::warn!(file_path = %file_path, "failed to convert chm html entry to text, skipping section");
 				continue;
 			}
 			let text = converter.get_text();
@@ -85,6 +99,7 @@ impl Parser for ChmParser {
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		document.toc_items = toc_items;
+		tracing::debug!(path = %context.file_path, "parsed chm file successfully");
 		Ok(document)
 	}
 }
@@ -123,12 +138,14 @@ fn parse_hhc_file(chm: &mut ChmFile, hhc_path: &str) -> Result<Vec<TocItem>> {
 		.and_then(|e| chm.read(&e))
 		.with_context(|| format!("Failed to read .hhc file: {hhc_path}"))?;
 	if content_bytes.is_empty() {
+		tracing::debug!(path = %hhc_path, "hhc file is empty, table of contents will be empty");
 		return Ok(Vec::new());
 	}
 	let content = convert_to_utf8(&content_bytes);
 	let document = Html::parse_document(&content);
 	let body_selector = Selector::parse("body").unwrap();
 	let Some(body) = document.select(&body_selector).next() else {
+		tracing::debug!(path = %hhc_path, "hhc file has no body element, table of contents will be empty");
 		return Ok(Vec::new());
 	};
 	let mut toc_items = Vec::new();
@@ -275,21 +292,7 @@ fn resolve_chm_href(current_file: &str, href: &str) -> String {
 		let current_normalized = normalize_path(current_file);
 		let current_dir = current_normalized.rfind('/').map_or("", |i| &current_normalized[..i]);
 		let path_normalized = path_part.replace('\\', "/");
-		let mut parts: Vec<&str> = if path_part.starts_with('/') {
-			Vec::new()
-		} else {
-			current_dir.split('/').filter(|s| !s.is_empty()).collect()
-		};
-		for part in path_normalized.split('/') {
-			match part {
-				".." => {
-					parts.pop();
-				}
-				"." | "" => {}
-				p => parts.push(p),
-			}
-		}
-		format!("/{}", parts.join("/")).to_lowercase()
+		format!("/{}", resolve_relative_path(current_dir, &path_normalized)).to_lowercase()
 	};
 	match fragment {
 		Some(frag) if !frag.is_empty() => format!("{resolved_path}#{frag}"),

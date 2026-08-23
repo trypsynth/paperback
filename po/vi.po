@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
-"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2025-11-23 13:29-0700\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-22 00:25+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -18,1032 +18,3482 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 3.6\n"
 
-#: app/app.cpp
-msgid "No release notes were provided."
-msgstr "Không có ghi chú phát hành nào."
-
-#: app/app.cpp
-#, c-format
-msgid ""
-"There is an update available.\n"
-"Your version: %s\n"
-"Latest version: %s\n"
-"Description:\n"
-"%s\n"
-"Do you want to open the direct download link?"
-msgstr ""
-"Đã có bản cập nhật mới.\n"
-"Phiên bản hiện tại: %s\n"
-"Phiên bản mới nhất: %s\n"
-"Mô tả:\n"
-"%s\n"
-"Bạn có muốn mở liên kết tải về trực tiếp không?"
-
-#: app/app.cpp
-msgid "Update available"
-msgstr "Có bản cập nhật mới"
-
-#: app/app.cpp
-msgid "No updates available."
-msgstr "Không có bản cập nhật nào."
-
-#: app/app.cpp
-msgid "Info"
-msgstr "Thông tin"
-
-#: app/app.cpp
-msgid "Error checking for updates."
-msgstr "Lỗi khi kiểm tra cập nhật."
-
-#: app/app.cpp
-#, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr "Kiểm tra cập nhật thất bại. Mã lỗi HTTP: %d"
-
-#: app/app.cpp app/dialogs.cpp app/document_manager.cpp app/main_window.cpp
-#: app/parser.cpp
-msgid "Error"
-msgstr "Lỗi"
-
-#: app/app.cpp
-msgid "Failed to initialize configuration"
-msgstr "Không thể khởi tạo cấu hình"
-
-#: app/app.cpp
+#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "Không thể tạo máy chủ IPC"
 
-#: app/app.cpp app/document_manager.cpp
+#. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
 msgstr "Cảnh báo"
 
-#: app/app.cpp app/document_manager.cpp
-#, c-format
-msgid "File not found: %s"
-msgstr "Không tìm thấy tệp: %s"
+#. TRANSLATORS: Description/tagline of the application shown in the About dialog
+#, fuzzy
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "Một trình đọc sách điện tử và tài liệu dễ sử dụng, nhẹ và nhanh"
 
-#: app/app.cpp
-msgid "Failed to load document."
-msgstr "Tải tài liệu thất bại."
-
-#: app/dialogs.cpp
+#. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
 msgstr "Tất cả tài liệu"
 
-#: app/dialogs.cpp
+#. TRANSLATORS: Label for the search input field in the All Documents dialog
 msgid "&search"
 msgstr "&Tìm kiếm"
 
-#: app/dialogs.cpp
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
+#, fuzzy
+msgid "&Yes"
+msgstr "&Có"
+
+#. TRANSLATORS: Label for the confirmation dialog "No" button
+#, fuzzy
+msgid "&No"
+msgstr "&Không"
+
+#. TRANSLATORS: Column header for the document filename in the All Documents list
 msgid "File Name"
 msgstr "Tên tệp"
 
-#: app/dialogs.cpp
+#. TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
 msgid "Status"
 msgstr "Trạng thái"
 
-#: app/dialogs.cpp
+#. TRANSLATORS: Column header for the file path in the All Documents list
 msgid "Path"
 msgstr "Đường dẫn"
 
-#: app/dialogs.cpp
-msgid "&Open"
-msgstr "&Mở"
+#. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
+#, fuzzy
+msgid "&Status:"
+msgstr "Trạng thái"
 
-#: app/dialogs.cpp
-msgid "&Remove"
-msgstr "&Gỡ bỏ"
-
-#: app/dialogs.cpp
-msgid "Missing"
-msgstr "Thất lạc"
-
-#: app/dialogs.cpp
-msgid ""
-"Are you sure you want to remove this document from the list? This will also remove "
-"its reading position."
-msgstr ""
-"Bạn có chắc muốn xóa tài liệu này khỏi danh sách? Thao tác này cũng sẽ xóa vị trí "
-"đọc hiện tại của bạn."
-
-#: app/dialogs.cpp
-msgid "Confirm"
-msgstr "Xác nhận"
-
-#: app/dialogs.cpp
-msgid "Open"
-msgstr "Mở"
-
-#: app/dialogs.cpp
-msgid "Closed"
-msgstr "Đã đóng"
-
-#: app/dialogs.cpp
-msgid "Jump to Bookmark"
-msgstr "Nhảy đến dấu trang"
-
-#: app/dialogs.cpp
-msgid "&Filter:"
-msgstr "&Bộ lọc:"
-
-#: app/dialogs.cpp
+#. TRANSLATORS: Option in the All Documents status filter to show documents of every status
+#. TRANSLATORS: Option in the filter dropdown to show all entries
 msgid "All"
 msgstr "Tất cả"
 
-#: app/dialogs.cpp
-msgid "Bookmarks"
-msgstr "Dấu trang"
-
-#: app/dialogs.cpp
-msgid "Notes"
-msgstr "Ghi chú"
-
-#: app/dialogs.cpp
-msgid "&Edit Note"
-msgstr "&Sửa ghi chú"
-
-#: app/dialogs.cpp
-msgid "&Delete"
-msgstr "&Xóa"
-
-#: app/dialogs.cpp
-msgid "&Jump"
-msgstr "&Nhảy đến"
-
-#: app/dialogs.cpp
-msgid "&Cancel"
-msgstr "&Hủy"
-
-#: app/dialogs.cpp
-msgid "Please select a bookmark to jump to."
-msgstr "Vui lòng chọn một dấu trang để nhảy đến."
-
-#: app/dialogs.cpp app/document_manager.cpp
-msgid "Bookmark Note"
-msgstr "Ghi chú dấu trang"
-
-#: app/dialogs.cpp app/document_manager.cpp
-msgid "Edit bookmark note:"
-msgstr "Sửa ghi chú dấu trang:"
-
-#: app/dialogs.cpp
-msgid "blank"
-msgstr "trống"
-
-#: app/dialogs.cpp
-msgid "Document Info"
-msgstr "Thông tin tài liệu"
-
-#: app/dialogs.cpp
-msgid "Title: "
-msgstr "Tiêu đề: "
-
-#: app/dialogs.cpp
-msgid "Author: "
-msgstr "Tác giả: "
-
-#: app/dialogs.cpp
-msgid "Path: "
-msgstr "Đường dẫn: "
-
-#: app/dialogs.cpp
-msgid "Total number of words: "
-msgstr "Tổng số từ: "
-
-#: app/dialogs.cpp
-msgid "Total number of lines: "
-msgstr "Tổng số dòng: "
-
-#: app/dialogs.cpp
-msgid "Total number of characters: "
-msgstr "Tổng số ký tự: "
-
-#: app/dialogs.cpp
-msgid "Total number of characters (excluding whitespace): "
-msgstr "Tổng số ký tự (không tính khoảng trắng): "
-
-#: app/dialogs.cpp
-msgid "Elements"
-msgstr "Thành phần"
-
-#: app/dialogs.cpp
-msgid "&View:"
-msgstr "&Xem:"
-
-#: app/dialogs.cpp
-msgid "Headings"
-msgstr "Tiêu đề mục"
-
-#: app/dialogs.cpp
-msgid "Links"
-msgstr "Liên kết"
-
-#: app/dialogs.cpp
-msgid "Root"
-msgstr "Gốc"
-
-#: app/dialogs.cpp
-msgid "Untitled"
-msgstr "Chưa đặt tên"
-
-#: app/dialogs.cpp
-msgid "Find"
-msgstr "Tìm"
-
-#: app/dialogs.cpp
-msgid "Find &what:"
-msgstr "Tìm &gì:"
-
-#: app/dialogs.cpp
-msgid "Options"
-msgstr "Tùy chọn"
-
-#: app/dialogs.cpp
-msgid "&Match case"
-msgstr "&Khớp chữ hoa thường"
-
-#: app/dialogs.cpp
-msgid "Match &whole word"
-msgstr "Khớp &toàn bộ từ"
-
-#: app/dialogs.cpp
-msgid "Use &regular expressions"
-msgstr "Sử dụng biểu thức &chính quy"
-
-#: app/dialogs.cpp
-msgid "Find &Previous"
-msgstr "Tìm từ &trước"
-
-#: app/dialogs.cpp
-msgid "Find &Next"
-msgstr "Tìm từ &tiếp theo"
-
-#: app/dialogs.cpp
-msgid "Cancel"
-msgstr "Hủy"
-
-#: app/dialogs.cpp
-msgid "Go to Line"
-msgstr "Đi đến dòng"
-
-#: app/dialogs.cpp
-msgid "&Line number:"
-msgstr "Số &dòng:"
-
-#: app/dialogs.cpp
-msgid "Go to page"
-msgstr "Đi đến trang"
-
-#: app/dialogs.cpp
-#, c-format
-msgid "Go to page (1/%d):"
-msgstr "Đi đến trang (1/%d):"
-
-#: app/dialogs.cpp
-msgid "Go to Percent"
-msgstr "Đi đến phần trăm"
-
-#: app/dialogs.cpp
-msgid "P&ercent:"
-msgstr "&Phần trăm:"
-
-#: app/dialogs.cpp
-msgid "&Percent"
-msgstr "&Phần trăm"
-
-#: app/dialogs.cpp
-msgid "Open As"
-msgstr "Mở dưới dạng"
-
-#: app/dialogs.cpp
-#, c-format
-msgid ""
-"No suitable parser was found for %s.\n"
-"How would you like to open this file?"
-msgstr ""
-"Không tìm thấy trình phân tích phù hợp cho %s.\n"
-"Bạn muốn mở tệp này dưới định dạng nào?"
-
-#: app/dialogs.cpp
-msgid "Open &as:"
-msgstr "Mở &dưới dạng:"
-
-#: app/dialogs.cpp
-msgid "Plain Text"
-msgstr "Văn bản thuần"
-
-#: app/dialogs.cpp
-msgid "HTML"
-msgstr "HTML"
-
-#: app/dialogs.cpp
-msgid "Markdown"
-msgstr "Markdown"
-
-#: app/dialogs.cpp
-msgid "General"
-msgstr "Chung"
-
-#: app/dialogs.cpp
-msgid "&Restore previously opened documents on startup"
-msgstr "&Khôi phục các tài liệu đã mở khi khởi động"
-
-#: app/dialogs.cpp
-msgid "&Word wrap"
-msgstr "&Tự động ngắt dòng"
-
-#: app/dialogs.cpp
-msgid "&Minimize to system tray"
-msgstr "&Thu nhỏ xuống khay hệ thống"
-
-#: app/dialogs.cpp
-msgid "&Start maximized"
-msgstr "&Khởi động ở chế độ toàn màn hình"
-
-#: app/dialogs.cpp
-msgid "Show compact &go menu"
-msgstr "Hiển thị menu &điều hướng thu gọn"
-
-#: app/dialogs.cpp
-msgid "&Wrap navigation"
-msgstr "Điều hướng &xoay vòng"
-
-#: app/dialogs.cpp
-msgid "Check for &updates on startup"
-msgstr "&Kiểm tra cập nhật khi khởi động"
-
-#: app/dialogs.cpp
-msgid "Number of &recent documents to show:"
-msgstr "Số lượng tài liệu &gần đây hiển thị:"
-
-#: app/dialogs.cpp
-msgid "&Language:"
-msgstr "&Ngôn ngữ:"
-
-#: app/dialogs.cpp
-msgid "Document Password"
-msgstr "Mật khẩu tài liệu"
-
-#: app/dialogs.cpp
-msgid "&Password"
-msgstr "&Mật khẩu"
-
-#: app/dialogs.cpp
-msgid "Sleep Timer"
-msgstr "Hẹn giờ ngủ"
-
-#: app/dialogs.cpp
-msgid "&Minutes:"
-msgstr "&Phút:"
-
-#: app/dialogs.cpp
-msgid "Table of Contents"
-msgstr "Mục lục"
-
-#: app/dialogs.cpp
-msgid "Please select a section from the table of contents."
-msgstr "Vui lòng chọn một phần trong mục lục."
-
-#: app/dialogs.cpp
-msgid "No Selection"
-msgstr "Chưa chọn"
-
-#: app/dialogs.cpp app/main_window.cpp
-msgid "View Note"
-msgstr "Xem ghi chú"
-
-#: app/dialogs.cpp
+#. TRANSLATORS: Status of a document that is currently open in a tab
+msgid "Open"
+msgstr "Mở"
+
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
+msgid "Closed"
+msgstr "Đã đóng"
+
+#. TRANSLATORS: Status of a document whose file could not be found on disk
+msgid "Missing"
+msgstr "Thất lạc"
+
+#. TRANSLATORS: Button label to open the selected document
+msgid "&Open"
+msgstr "&Mở"
+
+#. TRANSLATORS: Button label to locate a missing file on disk
+#, fuzzy
+msgid "&Locate…"
+msgstr "&Tìm…"
+
+#. TRANSLATORS: Button label to remove selected documents from the list
+msgid "&Remove"
+msgstr "&Gỡ bỏ"
+
+#. TRANSLATORS: Button label to clear all documents from the list
+#, fuzzy
+msgid "&Clear All"
+msgstr "&Xóa tất cả"
+
+#. TRANSLATORS: Label for a button that closes a dialog
 msgid "Close"
 msgstr "Đóng"
 
-#: app/document_manager.cpp
+#, fuzzy
+msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
+msgstr "Bạn có chắc chắn muốn xóa tài liệu đã chọn không? Thao tác này cũng sẽ xóa vị trí đang đọc và các dấu trang của tài liệu đó."
+
+#, fuzzy
+msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
+msgstr "Bạn có chắc chắn muốn xóa các tài liệu đã chọn trong phần “{}” không? Thao tác này cũng sẽ xóa vị trí đọc và các dấu trang của các tài liệu đó."
+
+#. TRANSLATORS: Title of the confirmation dialog
+msgid "Confirm"
+msgstr "Xác nhận"
+
+#. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
+#, fuzzy
+msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
+msgstr "Bạn có chắc chắn muốn xóa tất cả các tài liệu khỏi danh sách không? Thao tác này cũng sẽ xóa tất cả các vị trí đang đọc và dấu trang."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
+#, fuzzy
+msgid "No documents."
+msgstr "Không có tài liệu"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
+#, fuzzy
+msgid "1 document."
+msgstr "tài liệu"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d documents."
+msgstr "tài liệu"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
+#, fuzzy
+msgid "1 of 1 document selected."
+msgstr "Tài liệu đã được tải lại."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
+#, fuzzy
+msgid "All %d documents selected."
+msgstr "Tất cả tài liệu"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
+#, fuzzy
+msgid "%d of %d documents selected."
+msgstr "Hết tài liệu"
+
+#. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
+#, fuzzy
+msgid "Locate Book"
+msgstr "Tìm sách"
+
+#. TRANSLATORS: Title of the Jump to Bookmark dialog
+msgid "Jump to Bookmark"
+msgstr "Nhảy đến dấu trang"
+
+#. TRANSLATORS: Label for the bookmark filter dropdown
+msgid "&Filter:"
+msgstr "&Bộ lọc:"
+
+#. TRANSLATORS: Option in the filter dropdown to show bookmarks only
+msgid "Bookmarks"
+msgstr "Dấu trang"
+
+#. TRANSLATORS: Option in the filter dropdown to show notes only
+msgid "Notes"
+msgstr "Ghi chú"
+
+#. TRANSLATORS: Label for the bookmark/note list (used only as an accessibility label on macOS)
+#, fuzzy
+msgid "&Bookmarks:"
+msgstr "&Dấu trang:"
+
+#. TRANSLATORS: Label for the button to edit a note
+msgid "&Edit Note"
+msgstr "&Sửa ghi chú"
+
+msgid "&Delete"
+msgstr "&Xóa"
+
+#. TRANSLATORS: Label for the button to jump to the selected bookmark
+msgid "&Jump"
+msgstr "&Nhảy đến"
+
+#. TRANSLATORS: Label for the button to cancel the action
+msgid "&Cancel"
+msgstr "&Hủy"
+
+#. TRANSLATORS: Placeholder text shown in the bookmarks list when the bookmark text range is empty or blank
+msgid "blank"
+msgstr "trống"
+
+#. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
+msgid "Please select a bookmark to jump to."
+msgstr "Vui lòng chọn một dấu trang để nhảy đến."
+
+#. TRANSLATORS: Generic error dialog title
+msgid "Error"
+msgstr "Lỗi"
+
+#. TRANSLATORS: Title of the Bookmark Note editor dialog
+msgid "Bookmark Note"
+msgstr "Ghi chú dấu trang"
+
+#. TRANSLATORS: Label/prompt in the Note editor dialog
+msgid "Edit bookmark note:"
+msgstr "Sửa ghi chú dấu trang:"
+
+#. TRANSLATORS: Title of the Document Info dialog
+msgid "Document Info"
+msgstr "Thông tin tài liệu"
+
+#. TRANSLATORS: Label for the document's file path
+#, fuzzy
+msgid "Path:"
+msgstr "Đường dẫn:"
+
+#. TRANSLATORS: Label for the document's title
+#, fuzzy
+msgid "Title:"
+msgstr "Tiêu đề:"
+
+#. TRANSLATORS: Label for the document's author
+#, fuzzy
+msgid "Author:"
+msgstr "Tác giả:"
+
+#. TRANSLATORS: Label for the number of words in the document
+#, fuzzy
+msgid "Words:"
+msgstr "Từ:"
+
+#. TRANSLATORS: Label for the number of lines in the document
+#, fuzzy
+msgid "Lines:"
+msgstr "Các dòng:"
+
+#. TRANSLATORS: Label for the number of characters in the document
+#, fuzzy
+msgid "Characters:"
+msgstr "Nhân vật:"
+
+#. TRANSLATORS: Label for the number of characters in the document excluding space characters
+#, fuzzy
+msgid "Characters (excluding spaces):"
+msgstr "Số ký tự (không tính khoảng trắng):"
+
+#. TRANSLATORS: Title of the Elements dialog
+msgid "Elements"
+msgstr "Thành phần"
+
+#. TRANSLATORS: Label for the view selection dropdown in the Elements dialog
+msgid "&View:"
+msgstr "&Xem:"
+
+#. TRANSLATORS: Choice option in the view dropdown to show headings list
+msgid "Headings"
+msgstr "Tiêu đề mục"
+
+#. TRANSLATORS: Choice option in the view dropdown to show links list
+msgid "Links"
+msgstr "Liên kết"
+
+#. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
+msgid "Untitled"
+msgstr "Chưa đặt tên"
+
+#. TRANSLATORS: Label for the confirmation button
+#, fuzzy
+msgid "OK"
+msgstr "Được rồi"
+
+#. TRANSLATORS: Title of the Go to Line dialog
+msgid "Go to Line"
+msgstr "Đi đến dòng"
+
+#. TRANSLATORS: Label for the input field where users enter the target line number.
+msgid "&Line number:"
+msgstr "Số &dòng:"
+
+#. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
+#, fuzzy
+msgid "Go"
+msgstr "Bắt đầu"
+
+#. TRANSLATORS: Title of the Go to page dialog
+msgid "Go to page"
+msgstr "Đi đến trang"
+
+#. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
+#, fuzzy
+msgid "Go to page (%d/%d):"
+msgstr "Truy cập trang (%d / %d):"
+
+#. TRANSLATORS: Title of the Go to Percent dialog
+msgid "Go to Percent"
+msgstr "Đi đến phần trăm"
+
+#. TRANSLATORS: Label for the percentage selection slider
+msgid "&Percent"
+msgstr "&Phần trăm"
+
+#. TRANSLATORS: Label for the numeric percentage entry field
+msgid "P&ercent:"
+msgstr "&Phần trăm:"
+
+#. TRANSLATORS: Title of the Open As dialog
+msgid "Open As"
+msgstr "Mở dưới dạng"
+
+#. TRANSLATORS: Prompt template informing the user that no parser was found for their file. The {} placeholder is replaced with the file path.
+#, fuzzy
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr ""
+"Không tìm thấy trình phân tích cú pháp phù hợp cho tệp {}.\n"
+"Bạn muốn mở tệp này bằng cách nào?"
+
+#. TRANSLATORS: Label for the format selection dropdown
+msgid "Open &as:"
+msgstr "Mở &dưới dạng:"
+
+#. TRANSLATORS: Choice option to open a file as plain text
+msgid "Plain Text"
+msgstr "Văn bản thuần"
+
+#. TRANSLATORS: Choice option to open a file as HTML
+msgid "HTML"
+msgstr "HTML"
+
+#. TRANSLATORS: Choice option to open a file as Markdown
+msgid "Markdown"
+msgstr "Markdown"
+
+#. TRANSLATORS: Title of the Options dialog
+msgid "Options"
+msgstr "Tùy chọn"
+
+#. TRANSLATORS: Option to restore documents that were open when the app was last closed
+msgid "&Restore previously opened documents on startup"
+msgstr "&Khôi phục các tài liệu đã mở khi khởi động"
+
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr "&Tự động ngắt dòng"
+
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+#, fuzzy
+msgid "Render tables &inline"
+msgstr "Hiển thị bảng &inline"
+
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+msgid "&Minimize to system tray"
+msgstr "&Thu nhỏ xuống khay hệ thống"
+
+#. TRANSLATORS: Option to start the app maximized
+msgid "&Start maximized"
+msgstr "&Khởi động ở chế độ toàn màn hình"
+
+#. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
+msgid "Show compact &go menu"
+msgstr "Hiển thị menu &điều hướng thu gọn"
+
+#. TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
+msgid "&Wrap navigation"
+msgstr "Điều hướng &xoay vòng"
+
+#. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+#, fuzzy
+msgid "Move to &start of line"
+msgstr "Di chuyển đến &đầu dòng"
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+#, fuzzy
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Phát âm thanh trên các dấu trang và ghi chú"
+
+#. TRANSLATORS: Option to check for app updates automatically on startup
+msgid "Check for &updates on startup"
+msgstr "&Kiểm tra cập nhật khi khởi động"
+
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+#, fuzzy
+msgid "&Automatically reload changed documents"
+msgstr "&Tự động tải lại các tài liệu đã được chỉnh sửa"
+
+#. TRANSLATORS: Button label to open the hotkey customization dialog
+#, fuzzy
+msgid "Customize &Window Hotkey..."
+msgstr "Tùy chỉnh phím tắt cửa sổ..."
+
+#, fuzzy
+msgid "Customize &Keyboard Shortcuts..."
+msgstr "Tùy chỉnh phím tắt cửa sổ..."
+
+#. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
+#, fuzzy
+msgid "&Reading speed (words per minute):"
+msgstr "&Tốc độ đọc (số từ mỗi phút):"
+
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
+msgstr "Số lượng tài liệu &gần đây hiển thị:"
+
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
+msgstr "&Ngôn ngữ:"
+
+#. TRANSLATORS: Label for the update channel selection dropdown
+#, fuzzy
+msgid "Update Channel:"
+msgstr "Kênh cập nhật:"
+
+#. TRANSLATORS: Stable update channel option
+#, fuzzy
+msgid "Stable"
+msgstr "Ổn định"
+
+#. TRANSLATORS: Developer/development update channel option
+#, fuzzy
+msgid "Dev"
+msgstr "Dev"
+
+#. TRANSLATORS: Label/header for the Font options section
+#, fuzzy
+msgid "Font"
+msgstr "Phông chữ"
+
+#. TRANSLATORS: Button label to pick a font
+#, fuzzy
+msgid "Choose &Font..."
+msgstr "Chọn &Font..."
+
+#. TRANSLATORS: Button label to restore font settings to default values
+#, fuzzy
+msgid "&Reset to Default Font"
+msgstr "&Đặt lại về phông chữ mặc định"
+
+#. TRANSLATORS: Label/header for the Background Color options section
+#, fuzzy
+msgid "Background Color"
+msgstr "Màu nền"
+
+#. TRANSLATORS: Button label to pick a background color
+#, fuzzy
+msgid "Choose &Background Color..."
+msgstr "Chọn màu nền..."
+
+#. TRANSLATORS: Button label to restore background color to default values
+#, fuzzy
+msgid "Reset to &Default Background"
+msgstr "Đặt lại về hình nền mặc định"
+
+#. TRANSLATORS: Label for the line spacing dropdown
+#, fuzzy
+msgid "&Line spacing:"
+msgstr "&Khoảng cách dòng:"
+
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
+#, fuzzy
+msgid "Normal"
+msgstr "Bình thường"
+
+#. TRANSLATORS: 1.5x line spacing option
+#, fuzzy
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+#. TRANSLATORS: Double line spacing option
+#, fuzzy
+msgid "Double"
+msgstr "Gấp đôi"
+
+#. TRANSLATORS: Label for the paragraph spacing dropdown
+#, fuzzy
+msgid "&Paragraph spacing:"
+msgstr "&Khoảng cách giữa các đoạn:"
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+#, fuzzy
+msgid "Relaxed"
+msgstr "Thư giãn"
+
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
+#, fuzzy
+msgid "Wide"
+msgstr "Rộng"
+
+#. TRANSLATORS: Label for the letter spacing dropdown
+#, fuzzy
+msgid "L&etter spacing:"
+msgstr "Khoảng cách giữa các chữ cái:"
+
+#. TRANSLATORS: Very Wide letter spacing option
+#, fuzzy
+msgid "Very Wide"
+msgstr "Rất rộng"
+
+#. TRANSLATORS: Label for the text alignment dropdown
+#, fuzzy
+msgid "Text &alignment:"
+msgstr "Văn bản và căn chỉnh:"
+
+#. TRANSLATORS: Left text alignment option
+#, fuzzy
+msgid "Left"
+msgstr "Bên trái"
+
+#. TRANSLATORS: Center text alignment option
+#, fuzzy
+msgid "Center"
+msgstr "Trung tâm"
+
+#. TRANSLATORS: Right text alignment option
+#, fuzzy
+msgid "Right"
+msgstr "Phải"
+
+#. TRANSLATORS: Justified text alignment option
+#, fuzzy
+msgid "Justify"
+msgstr "Căn đều"
+
+#. TRANSLATORS: Tab label for the General options panel
+msgid "General"
+msgstr "Chung"
+
+#. TRANSLATORS: Tab label for the Reading options panel
+#, fuzzy
+msgid "Reading"
+msgstr "Đọc"
+
+#. TRANSLATORS: Tab label for the Readability options panel
+#, fuzzy
+msgid "Readability"
+msgstr "Khả năng đọc"
+
+#. TRANSLATORS: Description text shown when the background color is set to default
+#, fuzzy
+msgid "Background: Default"
+msgstr "Bối cảnh: Mặc định"
+
+#. TRANSLATORS: Description text shown when the font is set to default
+#, fuzzy
+msgid "Font: Default"
+msgstr "Phông chữ: Mặc định"
+
+#. TRANSLATORS: Fallback font name
+#, fuzzy
+msgid "Default"
+msgstr "Mặc định"
+
+#. TRANSLATORS: Font description prefix; {} is the font face name
+#, fuzzy
+msgid "Font: {}"
+msgstr "Phông chữ: {}"
+
+#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+#, fuzzy
+msgid "{}pt"
+msgstr "{} pt"
+
+#. TRANSLATORS: Font weight attribute name
+#, fuzzy
+msgid "Bold"
+msgstr "In đậm"
+
+#. TRANSLATORS: Font style attribute name
+#, fuzzy
+msgid "Italic"
+msgstr "Chữ nghiêng"
+
+#. TRANSLATORS: Font underline attribute name
+#, fuzzy
+msgid "Underlined"
+msgstr "Được gạch chân"
+
+#. TRANSLATORS: Font strikethrough attribute name
+#, fuzzy
+msgid "Strikethrough"
+msgstr "Gạch ngang"
+
+#. TRANSLATORS: Title of the hotkey customization dialog
+#, fuzzy
+msgid "Window Hotkey"
+msgstr "Phím tắt cho cửa sổ"
+
+#. TRANSLATORS: Checkbox label for Control modifier key
+#, fuzzy
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox label for Alt modifier key
+#, fuzzy
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox label for Shift modifier key
+#, fuzzy
+msgid "&Shift"
+msgstr "&Shift"
+
+#. TRANSLATORS: Checkbox label for Windows modifier key
+#, fuzzy
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label for the hotkey key selection input field
+#, fuzzy
+msgid "&Key:"
+msgstr "&Khóa:"
+
+#. TRANSLATORS: Button label to clear the current hotkey selection
+#, fuzzy
+msgid "Clear"
+msgstr "Xóa"
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Hủy"
+
+#. TRANSLATORS: Representation of the Spacebar key
+#, fuzzy
+msgid "Space"
+msgstr "Không gian"
+
+#, fuzzy
+msgid "Customize Keyboard Shortcuts"
+msgstr "Tùy chỉnh các phím tắt"
+
+#, fuzzy
+msgid "&Shortcuts:"
+msgstr "&Các phím tắt:"
+
+#, fuzzy
+msgid "&Set Shortcut..."
+msgstr "&Đặt phím tắt..."
+
+#, fuzzy
+msgid "&Clear Shortcut"
+msgstr "&Xóa lối tắt"
+
+#, fuzzy
+msgid "&Reset to Default"
+msgstr "&Đặt lại về phông chữ mặc định"
+
+#, fuzzy
+msgid "Reset &All to Defaults"
+msgstr "&Đặt lại về phông chữ mặc định"
+
+#, fuzzy
+msgid "Shortcut Conflict"
+msgstr "Xung đột phím tắt"
+
+#, fuzzy
+msgid "Reset all shortcuts to their default values?"
+msgstr "Đặt lại tất cả các phím tắt về giá trị mặc định?"
+
+#, fuzzy
+msgid "Reset Shortcuts"
+msgstr "Đặt lại các phím tắt"
+
+#, fuzzy
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr "Mẹo: Nhấp vào ô phím và nhấn tổ hợp phím mà bạn muốn."
+
+#, fuzzy
+msgid "&Clear"
+msgstr "Xóa"
+
+#. TRANSLATORS: Title of the Sleep Timer dialog
+msgid "Sleep Timer"
+msgstr "Hẹn giờ ngủ"
+
+#. TRANSLATORS: Label for the input field where users enter the number of minutes for the sleep timer.
+msgid "&Minutes:"
+msgstr "&Phút:"
+
+#. TRANSLATORS: Title of the Table of Contents dialog
+msgid "Table of Contents"
+msgstr "Mục lục"
+
+#. TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
+msgid "Please select a section from the table of contents."
+msgstr "Vui lòng chọn một phần trong mục lục."
+
+#. TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
+msgid "No Selection"
+msgstr "Chưa chọn"
+
+#. TRANSLATORS: Title of the View Note dialog
+msgid "View Note"
+msgstr "Xem ghi chú"
+
+#. TRANSLATORS: Singular label for 1 hour duration
+#, fuzzy
+msgid "1 hour"
+msgstr "1 giờ"
+
+#. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
+#, fuzzy
+msgid "hours"
+msgstr "giờ"
+
+#. TRANSLATORS: Singular label for 1 minute duration
+#, fuzzy
+msgid "1 minute"
+msgstr "1 phút"
+
+#. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
+#, fuzzy
+msgid "minutes"
+msgstr "phút"
+
+#. TRANSLATORS: Singular label for 1 second duration
+#, fuzzy
+msgid "1 second"
+msgstr "1 giây"
+
+#. TRANSLATORS: Plural label for seconds duration (e.g. "2 seconds")
+#, fuzzy
+msgid "seconds"
+msgstr "giây"
+
+#. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+#, fuzzy
+msgid "Estimated reading time: {}"
+msgstr "Thời gian đọc ước tính: {}"
+
+#. TRANSLATORS: Message template for selection word count. The {} placeholder is replaced with the number of words.
+#, fuzzy
+msgid "The selection contains {} words."
+msgstr "Bộ sưu tập này bao gồm {} từ."
+
+#. TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
+#, fuzzy
+msgid "This document contains {} words."
+msgstr "Tài liệu này có{} từ."
+
+#. TRANSLATORS: Title of the Word Count dialog
+#, fuzzy
+msgid "Word Count"
+msgstr "Số từ"
+
+#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
+#, fuzzy
+msgid "File not found: {}"
+msgstr "Không tìm thấy tệp: {}"
+
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
+#, fuzzy
+msgid "A .paperback file was found for this document. Would you like to import it?"
+msgstr "Đã tìm thấy một tệp định dạng .paperback cho tài liệu này. Bạn có muốn nhập tệp này không?"
+
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
+#, fuzzy
+msgid "Import document data"
+msgstr "Nhập dữ liệu tài liệu"
+
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
 msgid "Password is required."
 msgstr "Yêu cầu mật khẩu."
 
-#: app/document_manager.cpp
-#, c-format
-msgid "Failed to parse document: %s"
-msgstr "Không thể phân tích tài liệu: %s"
-
-#: app/document_manager.cpp
-msgid "No sections."
-msgstr "Không có phần nào."
-
-#: app/document_manager.cpp
-msgid "No next section"
-msgstr "Không có phần tiếp theo"
-
-#: app/document_manager.cpp
-msgid "No previous section"
-msgstr "Không có phần phía trước"
-
-#: app/document_manager.cpp
-msgid "Wrapping to start. "
-msgstr "Quay lại từ đầu. "
-
-#: app/document_manager.cpp
-msgid "Wrapping to end. "
-msgstr "Quay lại cuối trang. "
-
-#: app/document_manager.cpp app/main_window.cpp
-msgid "No pages."
-msgstr "Không có trang nào."
-
-#: app/document_manager.cpp
-msgid "No next page."
-msgstr "Không có trang tiếp theo."
-
-#: app/document_manager.cpp
-msgid "No previous page."
-msgstr "Không có trang phía trước."
-
-#: app/document_manager.cpp
-#, c-format
-msgid "Page %d: %s"
-msgstr "Trang %d: %s"
-
-#: app/document_manager.cpp
-msgid "No bookmarks."
-msgstr "Không có dấu trang nào."
-
-#: app/document_manager.cpp
-msgid "No next bookmark"
-msgstr "Không có dấu trang tiếp theo"
-
-#: app/document_manager.cpp
-msgid "No previous bookmark"
-msgstr "Không có dấu trang phía trước"
-
-#: app/document_manager.cpp
-#, c-format
-msgid "%s - Bookmark %d"
-msgstr "%s - Dấu trang %d"
-
-#: app/document_manager.cpp
-msgid "No notes."
-msgstr "Không có ghi chú nào."
-
-#: app/document_manager.cpp
-msgid "No next note"
-msgstr "Không có ghi chú tiếp theo"
-
-#: app/document_manager.cpp
-msgid "No previous note"
-msgstr "Không có ghi chú trước"
-
-#: app/document_manager.cpp
-#, c-format
-msgid "%s - %s - Note %d"
-msgstr "%s - %s - Ghi chú %d"
-
-#: app/document_manager.cpp
-#, c-format
-msgid "%s - Note %d"
-msgstr "%s - Ghi chú %d"
-
-#: app/document_manager.cpp
-msgid "No links."
-msgstr "Không có liên kết nào."
-
-#: app/document_manager.cpp
-msgid "No next link."
-msgstr "Không có liên kết tiếp theo."
-
-#: app/document_manager.cpp
-msgid "No previous link."
-msgstr "Không có liên kết trước."
-
-#: app/document_manager.cpp
-msgid " link"
-msgstr " liên kết"
-
-#: app/document_manager.cpp
-msgid "No previous position."
-msgstr "Không có vị trí trước đó."
-
-#: app/document_manager.cpp
-msgid "Navigated to previous position."
-msgstr "Đã quay về vị trí trước."
-
-#: app/document_manager.cpp
-msgid "No next position."
-msgstr "Không có vị trí tiếp theo."
-
-#: app/document_manager.cpp
-msgid "Navigated to next position."
-msgstr "Đã tới vị trí tiếp theo."
-
-#: app/document_manager.cpp
-msgid "Opening link in default browser."
-msgstr "Đang mở liên kết bằng trình duyệt mặc định."
-
-#: app/document_manager.cpp
-msgid "Failed to open link."
-msgstr "Không thể mở liên kết."
-
-#: app/document_manager.cpp
+#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "Đã chuyển tới liên kết nội bộ."
 
-#: app/document_manager.cpp
-msgid "Internal link target not found."
-msgstr "Không tìm thấy đích đến của liên kết nội bộ."
-
-#: app/document_manager.cpp
-msgid "No lists."
-msgstr "Không có danh sách nào."
-
-#: app/document_manager.cpp
-msgid "No next list."
-msgstr "Không có danh sách tiếp theo."
-
-#: app/document_manager.cpp
-msgid "No previous list."
-msgstr "Không có danh sách trước."
-
-#: app/document_manager.cpp
-#, c-format
-msgid "List with %d items"
-msgstr "Danh sách có %d mục"
-
-#: app/document_manager.cpp
-msgid "No list items."
-msgstr "Không có mục danh sách nào."
-
-#: app/document_manager.cpp
-msgid "No next list item."
-msgstr "Không có mục danh sách tiếp theo."
-
-#: app/document_manager.cpp
-msgid "No previous list item."
-msgstr "Không có mục danh sách trước."
-
-#: app/document_manager.cpp
-#, c-format
-msgid "List with %d items "
-msgstr "Danh sách có %d mục "
-
-#: app/document_manager.cpp
-msgid "Bookmark removed"
-msgstr "Đã xóa dấu trang"
-
-#: app/document_manager.cpp
-msgid "Bookmarked"
-msgstr "Đã đánh dấu trang"
-
-#: app/document_manager.cpp
-msgid "Enter bookmark note:"
-msgstr "Nhập ghi chú dấu trang:"
-
-#: app/document_manager.cpp
-msgid "Bookmark note updated"
-msgstr "Đã cập nhật ghi chú dấu trang"
-
-#: app/document_manager.cpp
-msgid "Bookmarked with note"
-msgstr "Đã đánh dấu kèm ghi chú"
-
-#: app/document_manager.cpp
-msgid "No bookmarks"
-msgstr "Không có dấu trang"
-
-#: app/document_manager.cpp
-#, c-format
-msgid "Bookmark: %s - %s"
-msgstr "Dấu trang: %s - %s"
-
-#: app/document_manager.cpp
-#, c-format
-msgid "Bookmark: %s"
-msgstr "Dấu trang: %s"
-
-#: app/document_manager.cpp
-msgid "No table of contents."
-msgstr "Không có mục lục."
-
-#: app/document_manager.cpp
-msgid "Table of contents is empty."
-msgstr "Mục lục trống."
-
-#: app/document_manager.cpp app/main_window.cpp
+#. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
 msgstr "Sẵn sàng"
 
-#: app/document_manager.cpp
-#, c-format
-msgid "line %ld, character %ld, reading %d%%"
-msgstr "dòng %ld, ký tự %ld, đang đọc %d%%"
-
-#: app/document_manager.cpp
-msgid "Previous heading\tShift+H"
-msgstr "Tiêu đề mục trước\tShift+H"
-
-#: app/document_manager.cpp
-msgid "Next heading\tH"
-msgstr "Tiêu đề mục tiếp theo\tH"
-
-#: app/document_manager.cpp
-#, c-format
-msgid "Previous heading level %d\tShift+%d"
-msgstr "Tiêu đề mục cấp %d trước\tShift+%d"
-
-#: app/document_manager.cpp
-#, c-format
-msgid "Next heading level %d\t%d"
-msgstr "Tiêu đề mục cấp %d tiếp theo\t%d"
-
-#: app/document_manager.cpp
-msgid "No headings."
-msgstr "Không có tiêu đề mục."
-
-#: app/document_manager.cpp
-#, c-format
-msgid "No %s heading"
-msgstr "Không có tiêu đề mục %s"
-
-#: app/document_manager.cpp
-msgid "next"
-msgstr "tiếp theo"
-
-#: app/document_manager.cpp
-msgid "previous"
-msgstr "phía trước"
-
-#: app/document_manager.cpp
-#, c-format
-msgid "No %s heading at level %d"
-msgstr "Không có tiêu đề mục cấp %2$d %1$s"
-
-#: app/document_manager.cpp
-#, c-format
-msgid "Wrapping to %s. %s Heading level %d"
-msgstr "Quay lại %s. %s tiêu đề mục cấp %d"
-
-#: app/document_manager.cpp
-msgid "start"
-msgstr "đầu trang"
-
-#: app/document_manager.cpp
-msgid "end"
-msgstr "cuối trang"
-
-#: app/document_manager.cpp
-#, c-format
-msgid "%s Heading level %d"
-msgstr "%s tiêu đề mục cấp %d"
-
-#: app/main_window.cpp
-msgid "Previous section\t["
-msgstr "Phần trước\t["
-
-#: app/main_window.cpp
-msgid "Next section\t]"
-msgstr "Phần tiếp theo\t]"
-
-#: app/main_window.cpp
-msgid "Go to &page...\tCtrl+P"
-msgstr "Đi đến &trang...\tCtrl+P"
-
-#: app/main_window.cpp
-msgid "Previous &page\tShift+P"
-msgstr "Trang &trước\tShift+P"
-
-#: app/main_window.cpp
-msgid "&Next page\tP"
-msgstr "Trang &tiếp theo\tP"
-
-#: app/main_window.cpp
-msgid "Previous &bookmark\tShift+B"
-msgstr "Dấu trang &trước\tShift+B"
-
-#: app/main_window.cpp
-msgid "Next b&ookmark\tB"
-msgstr "Dấu trang &tiếp theo\tB"
-
-#: app/main_window.cpp
-msgid "Previous &note\tShift+N"
-msgstr "Ghi chú &trước\tShift+N"
-
-#: app/main_window.cpp
-msgid "Next &note\tN"
-msgstr "Ghi chú &tiếp theo\tN"
-
-#: app/main_window.cpp
-msgid "Jump to &all...\tCtrl+B"
-msgstr "Nhảy đến &tất cả...\tCtrl+B"
-
-#: app/main_window.cpp
-msgid "Jump to &bookmarks...\tCtrl+Alt+B"
-msgstr "Nhảy đến &dấu trang...\tCtrl+Alt+B"
-
-#: app/main_window.cpp
-msgid "Jump to &notes...\tCtrl+Alt+M"
-msgstr "Nhảy đến &ghi chú...\tCtrl+Alt+M"
-
-#: app/main_window.cpp
-msgid "&View note text\tCtrl+Shift+W"
-msgstr "&Xem nội dung ghi chú\tCtrl+Shift+W"
-
-#: app/main_window.cpp
-msgid "Previous lin&k\tShift+K"
-msgstr "Liên &kết trước\tShift+K"
-
-#: app/main_window.cpp
-msgid "Next lin&k\tK"
-msgstr "Liên &kết tiếp theo\tK"
-
-#: app/main_window.cpp
-msgid "Previous lis&t\tShift+L"
-msgstr "Danh &sách trước\tShift+L"
-
-#: app/main_window.cpp
-msgid "Next lis&t\tL"
-msgstr "Danh &sách tiếp theo\tL"
-
-#: app/main_window.cpp
-msgid "Previous list &item\tShift+I"
-msgstr "&Mục danh sách trước\tShift+I"
-
-#: app/main_window.cpp
-msgid "Next list &item\tI"
-msgstr "&Mục danh sách tiếp theo\tI"
-
-#: app/main_window.cpp
-msgid "&File"
-msgstr "&Tệp"
-
-#: app/main_window.cpp
-msgid "&Open...\tCtrl+O"
-msgstr "&Mở...\tCtrl+O"
-
-#: app/main_window.cpp
-msgid "Close\tCtrl+F4"
-msgstr "Đóng\tCtrl+F4"
-
-#: app/main_window.cpp
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "Đóng &Tất cả\tCtrl+Shift+F4"
-
-#: app/main_window.cpp
-msgid "&Recent Documents"
-msgstr "Tài liệu &gần đây"
-
-#: app/main_window.cpp app/task_bar_icon.cpp
-msgid "E&xit"
-msgstr "&Thoát"
-
-#: app/main_window.cpp
-msgid "&Find...\tCtrl+F"
-msgstr "&Tìm kiếm...\tCtrl+F"
-
-#: app/main_window.cpp
-msgid "Find Ne&xt\tF3"
-msgstr "Tìm &tiếp theo\tF3"
-
-#: app/main_window.cpp
-msgid "Find P&revious\tShift+F3"
-msgstr "Tìm &trước đó\tShift+F3"
-
-#: app/main_window.cpp
-msgid "Go to &line...\tCtrl+G"
-msgstr "Đi đến &dòng...\tCtrl+G"
-
-#: app/main_window.cpp
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Đi đến &phần trăm...\tCtrl+Shift+G"
-
-#: app/main_window.cpp
-msgid "Go &Back\tAlt+Left"
-msgstr "Quay &lại\tAlt+Trái"
-
-#: app/main_window.cpp
-msgid "Go &Forward\tAlt+Right"
-msgstr "Tiến &về trước\tAlt+Phải"
-
-#: app/main_window.cpp
-msgid "&Sections"
-msgstr "&Phần"
-
-#: app/main_window.cpp
-msgid "&Headings"
-msgstr "&Tiêu đề mục"
-
-#: app/main_window.cpp
-msgid "&Pages"
-msgstr "&Trang"
-
-#: app/main_window.cpp
-msgid "&Bookmarks"
-msgstr "&Dấu trang"
-
-#: app/main_window.cpp
-msgid "&Links"
-msgstr "&Liên kết"
-
-#: app/main_window.cpp
-msgid "&Lists"
-msgstr "&Danh sách"
-
-#: app/main_window.cpp
-msgid "&Go"
-msgstr "&Điều hướng"
-
-#: app/main_window.cpp
-msgid "&Tools"
-msgstr "&Công cụ"
-
-#: app/main_window.cpp
-msgid "&Word count\tCtrl+W"
-msgstr "Đếm &số từ\tCtrl+W"
-
-#: app/main_window.cpp
-msgid "Document &info\tCtrl+I"
-msgstr "&Thông tin tài liệu\tCtrl+I"
-
-#: app/main_window.cpp
-msgid "Table of contents\tCtrl+T"
-msgstr "Mục &lục\tCtrl+T"
-
-#: app/main_window.cpp
-msgid "&Elements List...\tF7"
-msgstr "Danh sách &thành phần...\tF7"
-
-#: app/main_window.cpp
-msgid "Open &containing folder\tCtrl+Shift+C"
-msgstr "Mở &thư mục chứa tệp\tCtrl+Shift+C"
-
-#: app/main_window.cpp
-msgid "Import/&Export"
-msgstr "Nhập/&Xuất"
-
-#: app/main_window.cpp
-msgid "&Import document data...\tCtrl+Shift+I"
-msgstr "&Nhập dữ liệu tài liệu...\tCtrl+Shift+I"
-
-#: app/main_window.cpp
-msgid "&Export document data...\tCtrl+Shift+E"
-msgstr "&Xuất dữ liệu tài liệu...\tCtrl+Shift+E"
-
-#: app/main_window.cpp
-msgid "Export document to &plain text...\tCtrl+E"
-msgstr "Xuất tài liệu sang văn bản &thuần túy...\tCtrl+E"
-
-#: app/main_window.cpp
-msgid "Toggle bookmark\tCtrl+Shift+B"
-msgstr "Bật/Tắt dấu trang\tCtrl+Shift+B"
-
-#: app/main_window.cpp
-msgid "Bookmark with &note\tCtrl+Shift+N"
-msgstr "Đánh dấu kèm &ghi chú\tCtrl+Shift+N"
-
-#: app/main_window.cpp
-msgid "&Options\tCtrl+,"
-msgstr "&Tùy chọn\tCtrl+,"
-
-#: app/main_window.cpp
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "&Hẹn giờ ngủ...\tCtrl+Shift+S"
-
-#: app/main_window.cpp
-msgid "&Help"
-msgstr "&Trợ giúp"
-
-#: app/main_window.cpp
-#, c-format
-msgid "About %s\tCtrl+F1"
-msgstr "Thông tin về %s\tCtrl+F1"
-
-#: app/main_window.cpp
-msgid "View &help in default browser\tF1"
-msgstr "Xem &trợ giúp trên trình duyệt mặc định\tF1"
-
-#: app/main_window.cpp
-#, c-format
-msgid "View Help in %s\tShift+F1"
-msgstr "Xem trợ giúp trong %s\tShift+F1"
-
-#: app/main_window.cpp
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "Kiểm tra &cập nhật\tCtrl+Shift+U"
-
-#: app/main_window.cpp
-msgid "&Donate\tCtrl+D"
-msgstr "&Ủng hộ\tCtrl+D"
-
-#: app/main_window.cpp
-#, c-format
-msgid " | Sleep timer: %02d:%02d"
-msgstr " | Hẹn giờ ngủ: %02d:%02d"
-
-#: app/main_window.cpp
-msgid "Select a document to read"
-msgstr "Chọn một tài liệu để đọc"
-
-#: app/main_window.cpp
-msgid "Export Document"
-msgstr "Xuất tài liệu"
-
-#: app/main_window.cpp
-msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
-msgstr "Tệp văn bản (*.txt)|*.txt|Tất cả các tệp (*.*)|*.*"
-
-#: app/main_window.cpp
-msgid "Failed to export document."
-msgstr "Xuất tài liệu thất bại."
-
-#: app/main_window.cpp
-msgid "Export notes and bookmarks"
-msgstr "Xuất ghi chú và dấu trang"
-
-#: app/main_window.cpp
-msgid "Paperback files (*.paperback)|*.paperback"
-msgstr "Tệp Paperback (*.paperback)|*.paperback"
-
-#: app/main_window.cpp
-msgid "Notes and bookmarks exported successfully."
-msgstr "Đã xuất ghi chú và dấu trang thành công."
-
-#: app/main_window.cpp
-msgid "Export Successful"
-msgstr "Xuất thành công"
-
-#: app/main_window.cpp
-msgid "Import notes and bookmarks"
-msgstr "Nhập ghi chú và dấu trang"
-
-#: app/main_window.cpp
-msgid "Notes and bookmarks imported successfully."
-msgstr "Đã nhập ghi chú và dấu trang thành công."
-
-#: app/main_window.cpp
-msgid "Import Successful"
-msgstr "Nhập thành công"
-
-#: app/main_window.cpp
-msgid "No note at the current position."
-msgstr "Không có ghi chú nào tại vị trí hiện tại."
-
-#: app/main_window.cpp
-#, c-format
-msgid "The document contains %d word"
-msgid_plural "The document contains %d words"
-msgstr[0] "Tài liệu này chứa %d từ"
-
-#: app/main_window.cpp
-msgid "Word count"
-msgstr "Số từ"
-
-#: app/main_window.cpp
-msgid "Failed to open containing folder."
-msgstr "Không thể mở thư mục chứa tệp."
-
-#: app/main_window.cpp
-msgid "Failed to launch default browser."
-msgstr "Không thể khởi chạy trình duyệt mặc định."
-
-#: app/main_window.cpp
-msgid "readme.html not found. Please ensure the application was built properly."
-msgstr ""
-"không tìm thấy tệp readme.html. Vui lòng đảm bảo ứng dụng đã được cài đặt đúng cách."
-
-#: app/main_window.cpp
-msgid "Failed to open donation page in browser."
-msgstr "Không thể mở trang ủng hộ trên trình duyệt."
-
-#: app/main_window.cpp
-msgid "Sleep timer canceled."
-msgstr "Đã hủy hẹn giờ ngủ."
-
-#: app/main_window.cpp
-#, c-format
-msgid "Sleep timer set for %d minute."
-msgid_plural "Sleep timer set for %d minutes."
-msgstr[0] "Đã hẹn giờ ngủ sau %d phút."
-
-#: app/main_window.cpp
-msgid "No recent documents."
-msgstr "Không có tài liệu gần đây."
-
-#: app/main_window.cpp
-msgid "(No recent documents)"
-msgstr "(Không có tài liệu gần đây)"
-
-#: app/main_window.cpp
-msgid "Show All...\tCtrl+R"
-msgstr "Hiển thị tất cả...\tCtrl+R"
-
-#: app/main_window.cpp
+#. TRANSLATORS: Announced after setting a temporary bookmark at the current position
+#, fuzzy
+msgid "Temporary bookmark set."
+msgstr "Không có dấu trang nào."
+
+#. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
+#, fuzzy
+msgid "No temporary bookmark."
+msgstr "Không có dấu trang tiếp theo."
+
+#. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
+#, fuzzy
+msgid "Temporary bookmark."
+msgstr "Không có dấu trang nào."
+
+#, fuzzy
+msgid "Table View"
+msgstr "Chế độ xem bảng"
+
+#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
+#, fuzzy
+msgid "&Password:"
+msgstr "&Mật khẩu:"
+
+msgid "Document Password"
+msgstr "Mật khẩu tài liệu"
+
+#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+msgid "Failed to load document."
+msgstr "Tải tài liệu thất bại."
+
+#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+#, fuzzy
+msgid "File: {}"
+msgstr "Tệp: {}"
+
+#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+#, fuzzy
+msgid "Details: {}"
+msgstr "Chi tiết: {}"
+
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
+#, fuzzy
+msgid "Create &bookmark"
+msgstr "Tạo & đánh dấu trang"
+
+#, fuzzy
+msgid "Create bookmark"
+msgstr "Tạo dấu trang"
+
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
+#, fuzzy
+msgid "Bookmark with &note"
+msgstr "Đánh dấu trang kèm ghi chú"
+
+#, fuzzy
+msgid "Create bookmark with note"
+msgstr "Tạo dấu trang kèm ghi chú"
+
+#. TRANSLATORS: Right-click context menu item and status text to open the find dialog
+#, fuzzy
+msgid "&Find"
+msgstr "&Tìm"
+
+#, fuzzy
+msgid "Find text"
+msgstr "Tìm văn bản"
+
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
+#, fuzzy
+msgid "Find &next"
+msgstr "Tìm &next"
+
+#, fuzzy
+msgid "Find next match"
+msgstr "Tìm trận đấu tiếp theo"
+
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
+#, fuzzy
+msgid "Find &previous"
+msgstr "Tìm &trước đó"
+
+#, fuzzy
+msgid "Find previous match"
+msgstr "Tìm trận đấu trước đó"
+
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
+#, fuzzy
+msgid "Go to &page"
+msgstr "Truy cập &page"
+
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
+#, fuzzy
+msgid "Go to &line"
+msgstr "Truy cập &line"
+
+#, fuzzy
+msgid "Go to line"
+msgstr "Chuyển đến dòng"
+
+#. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
+#, fuzzy
+msgid "Go to &percent"
+msgstr "Truy cập &percent"
+
+#, fuzzy
+msgid "Go to percent"
+msgstr "Chuyển sang phần trăm"
+
+#. TRANSLATORS: Title of the Find dialog
+msgid "Find"
+msgstr "Tìm"
+
+#. TRANSLATORS: Label for the text field where the user types what to search for
+msgid "Find &what:"
+msgstr "Tìm &gì:"
+
+#. TRANSLATORS: Checkbox to make the search case-sensitive
+msgid "&Match case"
+msgstr "&Khớp chữ hoa thường"
+
+#. TRANSLATORS: Checkbox to only match whole words, not substrings
+msgid "Match &whole word"
+msgstr "Khớp &toàn bộ từ"
+
+#. TRANSLATORS: Checkbox to treat the search text as a regular expression
+msgid "Use &regular expressions"
+msgstr "Sử dụng biểu thức &chính quy"
+
+#. TRANSLATORS: Button to search backward for the previous match
+msgid "Find &Previous"
+msgstr "Tìm từ &trước"
+
+#. TRANSLATORS: Button to search forward for the next match
+msgid "Find &Next"
+msgstr "Tìm từ &tiếp theo"
+
+#. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Không tìm thấy."
 
-#: app/main_window.cpp
+#. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
 msgstr "Không còn kết quả nào khác. Đang tìm lại từ đầu."
 
-#: app/parser.cpp
-msgid "Password required or incorrect."
-msgstr "Yêu cầu mật khẩu hoặc mật khẩu không chính xác."
+#. TRANSLATORS: Error shown when the active document has no known file path to reveal
+#, fuzzy
+msgid "Failed to reveal file in folder."
+msgstr "Không thể hiển thị tệp trong thư mục."
 
-#: app/task_bar_icon.cpp
+#. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
+msgid "readme.html not found. Please ensure the application was built properly."
+msgstr "không tìm thấy tệp readme.html. Vui lòng đảm bảo ứng dụng đã được cài đặt đúng cách."
+
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
+msgid "Failed to launch default browser."
+msgstr "Không thể khởi chạy trình duyệt mặc định."
+
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to open the donation page
+msgid "Failed to open donation page in browser."
+msgstr "Không thể mở trang ủng hộ trên trình duyệt."
+
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
+#, fuzzy
+msgid "Unsupported format selected."
+msgstr "Đã chọn định dạng không được hỗ trợ."
+
+#. TRANSLATORS: Main window title when no document is open
+#, fuzzy
+msgid "Paperback"
+msgstr "Bìa mềm"
+
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+#, fuzzy
+msgid "Document reloaded."
+msgstr "Tài liệu đã được tải lại."
+
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+#, fuzzy
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback không thể thực hiện bất kỳ thao tác nào khi Web View đang mở."
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+#, fuzzy
+msgid "Paperback - {}"
+msgstr "Bản bìa mềm - {}"
+
+#. TRANSLATORS: Status bar character count; {} is the number of characters
+#, fuzzy
+msgid "{} chars"
+msgstr "{} ký tự"
+
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+#, fuzzy
+msgid "document"
+msgstr "tài liệu"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Xuất tài liệu thất bại."
+
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+#, fuzzy
+msgid "Open Document"
+msgstr "Mở tài liệu"
+
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+msgid "No pages."
+msgstr "Không có trang nào."
+
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+#, fuzzy
+msgid "Word wrap on."
+msgstr "Bật tính năng tự động xuống dòng."
+
+#, fuzzy
+msgid "Word wrap off."
+msgstr "Tắt tính năng tự động xuống dòng."
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "Bật chế độ toàn màn hình."
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "Tắt chế độ toàn màn hình."
+
+#. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
+#, fuzzy
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Tệp văn bản thuần túy (*.txt)|*.txt|Tất cả các tệp (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
+#, fuzzy
+msgid "Export document to plain text"
+msgstr "Xuất tài liệu sang định dạng văn bản thuần túy"
+
+#. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
+#, fuzzy
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr "Tệp HTML (*.html)|*.html|Tất cả các tệp (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to HTML
+#, fuzzy
+msgid "Export document to HTML"
+msgstr "Xuất tài liệu sang định dạng HTML"
+
+#. TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
+#, fuzzy
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr "Tệp Markdown (*.md)|*.md|Tất cả các tệp (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
+#, fuzzy
+msgid "Export document to Markdown"
+msgstr "Xuất tài liệu sang định dạng Markdown"
+
+#. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Tệp Paperback (*.paperback)|*.paperback"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+msgid "Export notes and bookmarks"
+msgstr "Xuất ghi chú và dấu trang"
+
+#. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
+msgid "Notes and bookmarks exported successfully."
+msgstr "Đã xuất ghi chú và dấu trang thành công."
+
+#. TRANSLATORS: Title of the export-succeeded dialog
+msgid "Export Successful"
+msgstr "Xuất thành công"
+
+#. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
+msgid "Import notes and bookmarks"
+msgstr "Nhập ghi chú và dấu trang"
+
+#. TRANSLATORS: Success message shown after importing a document's notes and bookmarks
+msgid "Notes and bookmarks imported successfully."
+msgstr "Đã nhập ghi chú và dấu trang thành công."
+
+#. TRANSLATORS: Title of the import-succeeded dialog
+msgid "Import Successful"
+msgstr "Nhập thành công"
+
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
+msgstr "Không có mục lục."
+
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+#, fuzzy
+msgid "Web View"
+msgstr "Chế độ xem web"
+
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+#, fuzzy
+msgid "Could not determine content to display in Web View."
+msgstr "Không thể xác định nội dung cần hiển thị trong Web View."
+
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+#, fuzzy
+msgid "Source:"
+msgstr "Nguồn:"
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+#, fuzzy
+msgid "Source view is not available for this document format."
+msgstr "Chế độ xem nguồn không khả dụng đối với định dạng tài liệu này."
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+#, fuzzy
+msgid "Could not load the document source."
+msgstr "Không thể tải nguồn tài liệu."
+
+#. TRANSLATORS: Announced when the user cancels a running sleep timer
+#, fuzzy
+msgid "Sleep timer cancelled."
+msgstr "Chức năng hẹn giờ tắt đã bị hủy."
+
+#. TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
+#, fuzzy
+msgid "Sleep timer set for 1 minute."
+msgstr "Đã cài đặt hẹn giờ tắt sau 1 phút."
+
+#. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
+#, fuzzy
+msgid "Sleep timer set for %d minutes."
+msgstr "Đã cài đặt hẹn giờ tắt tự động sau%dphút."
+
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "Không có tài liệu gần đây."
+
+#, fuzzy
+msgid "&Undo\tCtrl+Z"
+msgstr "&Hoàn tác    Ctrl+Z"
+
+#, fuzzy
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr "&Làm lại    Ctrl+Shift+Z"
+
+#, fuzzy
+msgid "Cu&t\tCtrl+X"
+msgstr "Cắt    Ctrl+X"
+
+#, fuzzy
+msgid "&Copy\tCtrl+C"
+msgstr "&Sao chép    Ctrl+C"
+
+#, fuzzy
+msgid "&Paste\tCtrl+V"
+msgstr "&Dán    Ctrl+V"
+
+#, fuzzy
+msgid "Select &All\tCtrl+A"
+msgstr "Chọn Tất cả    Ctrl+A"
+
+#, fuzzy
+msgid "&Open..."
+msgstr "&Mở"
+
+#, fuzzy
+msgid "Open a document"
+msgstr "Mở một tài liệu"
+
+#, fuzzy
+msgid "&Close"
+msgstr "Đóng"
+
+#, fuzzy
+msgid "Close the current document"
+msgstr "Đóng tài liệu hiện tại"
+
+#, fuzzy
+msgid "Close &All"
+msgstr "Đóng"
+
+#, fuzzy
+msgid "Close all documents"
+msgstr "Đóng tất cả các tài liệu"
+
+#, fuzzy
+msgid "Reopen &Last Closed"
+msgstr "Mở lại & Lần đóng gần nhất    Ctrl+Shift+T"
+
+#, fuzzy
+msgid "Reopen the last closed document"
+msgstr "Mở lại tài liệu vừa đóng"
+
+msgid "&Recent Documents"
+msgstr "Tài liệu &gần đây"
+
+#, fuzzy
+msgid "Open a recent document"
+msgstr "Mở một tài liệu gần đây"
+
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "&Thoát"
+
+#, fuzzy
+msgid "Exit the application"
+msgstr "Thoát khỏi ứng dụng"
+
+msgid "(No recent documents)"
+msgstr "(Không có tài liệu gần đây)"
+
+#, fuzzy
+msgid "Show All..."
+msgstr "Hiển thị tất cả"
+
+#, fuzzy
+msgid "Previous Section"
+msgstr "Phần trước    ["
+
+#, fuzzy
+msgid "Go to previous section"
+msgstr "Chuyển đến phần trước"
+
+#, fuzzy
+msgid "Next Section"
+msgstr "Phần tiếp theo    ]"
+
+#, fuzzy
+msgid "Go to next section"
+msgstr "Chuyển sang phần tiếp theo"
+
+#, fuzzy
+msgid "Go to &Page"
+msgstr "Truy cập &page"
+
+#, fuzzy
+msgid "Previous Pa&ge"
+msgstr "Trang trước    Shift+P"
+
+#, fuzzy
+msgid "Next Pag&e"
+msgstr "Trang tiếp theo    P"
+
+#, fuzzy
+msgid "Previous Lin&k"
+msgstr "Lin&k trước đó    Shift+K"
+
+#, fuzzy
+msgid "Next Lin&k"
+msgstr "Tiếp theo Lin&k    K"
+
+#, fuzzy
+msgid "Previous Ima&ge"
+msgstr "Hình ảnh trước    Shift+G"
+
+#, fuzzy
+msgid "Next Ima&ge"
+msgstr "Hình tiếp theo    G"
+
+#, fuzzy
+msgid "Previous Figu&re"
+msgstr "Hình trước    Shift+F"
+
+#, fuzzy
+msgid "Next Figu&re"
+msgstr "Hình tiếp theo    F"
+
+#, fuzzy
+msgid "Previous &Table"
+msgstr "Trước đó & Bảng    Shift+T"
+
+#, fuzzy
+msgid "Next &Table"
+msgstr "Tiếp theo &Bảng    T"
+
+#, fuzzy
+msgid "Previous Se&parator"
+msgstr "Dấu phân cách trước    Shift+S"
+
+#, fuzzy
+msgid "Next Se&parator"
+msgstr "Ký hiệu phân cách tiếp theo    S"
+
+#, fuzzy
+msgid "Previous L&ist"
+msgstr "Danh sách trước    Shift+L"
+
+#, fuzzy
+msgid "Next L&ist"
+msgstr "Danh sách tiếp theo    L"
+
+#, fuzzy
+msgid "Previous List &Item"
+msgstr "Danh sách và mục trước    Shift+I"
+
+#, fuzzy
+msgid "Next List I&tem"
+msgstr "Danh sách tiếp theo    Mục I"
+
+#, fuzzy
+msgid "Container &Start"
+msgstr "Hộp chứa & Bắt đầu    Shift+,"
+
+#, fuzzy
+msgid "Go to the start of the current list or table"
+msgstr "Chuyển đến đầu danh sách hoặc bảng hiện tại"
+
+#, fuzzy
+msgid "Past Container &End"
+msgstr "Sau Container &End    ,"
+
+#, fuzzy
+msgid "Go past the end of the current list or table"
+msgstr "Di chuyển qua phần cuối của danh sách hoặc bảng hiện tại"
+
+#, fuzzy
+msgid "&Previous Heading"
+msgstr "&Tiêu đề trước    Shift+H"
+
+#, fuzzy
+msgid "Go to previous heading"
+msgstr "Chuyển đến tiêu đề trước đó"
+
+#, fuzzy
+msgid "&Next Heading"
+msgstr "&Tiêu đề tiếp theo    H"
+
+#, fuzzy
+msgid "Go to next heading"
+msgstr "Chuyển đến tiêu đề tiếp theo"
+
+#, fuzzy
+msgid "Previous Heading Level &1"
+msgstr "Cấp độ tiêu đề trước đó &1    Shift+1"
+
+#, fuzzy
+msgid "Next Heading Level 1"
+msgstr "Tiêu đề tiếp theo Cấp 1    1"
+
+#, fuzzy
+msgid "Previous Heading Level &2"
+msgstr "Cấp độ tiêu đề trước đó &2    Shift+2"
+
+#, fuzzy
+msgid "Next Heading Level 2"
+msgstr "Tiêu đề tiếp theo Cấp 2    2"
+
+#, fuzzy
+msgid "Previous Heading Level &3"
+msgstr "Cấp độ tiêu đề trước đó &3    Shift+3"
+
+#, fuzzy
+msgid "Next Heading Level 3"
+msgstr "Tiêu đề tiếp theo Cấp 3    3"
+
+#, fuzzy
+msgid "Previous Heading Level &4"
+msgstr "Cấp độ tiêu đề trước đó &4    Shift+4"
+
+#, fuzzy
+msgid "Next Heading Level 4"
+msgstr "Tiêu đề tiếp theo Cấp 4    4"
+
+#, fuzzy
+msgid "Previous Heading Level &5"
+msgstr "Cấp độ tiêu đề trước đó &5    Shift+5"
+
+#, fuzzy
+msgid "Next Heading Level 5"
+msgstr "Tiêu đề tiếp theo Cấp độ 5    5"
+
+#, fuzzy
+msgid "Previous Heading Level &6"
+msgstr "Cấp độ tiêu đề trước đó &6    Shift+6"
+
+#, fuzzy
+msgid "Next Heading Level 6"
+msgstr "Tiêu đề tiếp theo Cấp 6    6"
+
+#, fuzzy
+msgid "&Previous Bookmark"
+msgstr "&Dấu trang trước    Shift+B"
+
+#, fuzzy
+msgid "Go to previous bookmark"
+msgstr "Chuyển đến dấu trang trước đó"
+
+#, fuzzy
+msgid "&Next Bookmark"
+msgstr "&Tiếp theo Đánh dấu trang    B"
+
+#, fuzzy
+msgid "Go to next bookmark"
+msgstr "Chuyển đến dấu trang tiếp theo"
+
+#, fuzzy
+msgid "Previous &Note"
+msgstr "Trước đó &Ghi chú    Shift+N"
+
+#, fuzzy
+msgid "Go to previous note"
+msgstr "Quay lại ghi chú trước đó"
+
+#, fuzzy
+msgid "Next N&ote"
+msgstr "Tiếp theo N&ote    N"
+
+#, fuzzy
+msgid "Go to next note"
+msgstr "Chuyển sang ghi chú tiếp theo"
+
+#, fuzzy
+msgid "Jump to &All..."
+msgstr "Chuyển đến &Tất cả...    Ctrl+B"
+
+#, fuzzy
+msgid "Show all bookmarks and notes"
+msgstr "Hiển thị tất cả các dấu trang và ghi chú"
+
+#, fuzzy
+msgid "Jump to &Bookmarks Only..."
+msgstr "Chuyển đến & Chỉ các dấu trang...    Ctrl+Alt+B"
+
+#, fuzzy
+msgid "Show bookmarks only"
+msgstr "Chỉ hiển thị các dấu trang"
+
+#, fuzzy
+msgid "Jump to Notes &Only..."
+msgstr "Chuyển đến phần “Ghi chú & Chỉ...”    Ctrl+Alt+M"
+
+#, fuzzy
+msgid "Show notes only"
+msgstr "Chỉ hiển thị ghi chú"
+
+#, fuzzy
+msgid "&View Note Text"
+msgstr "Xem ghi chú"
+
+#, fuzzy
+msgid "View the note at current position"
+msgstr "Xem ghi chú tại vị trí hiện tại"
+
+#, fuzzy
+msgid "&Find..."
+msgstr "&Tìm"
+
+#, fuzzy
+msgid "Find text in the document"
+msgstr "Tìm văn bản trong tài liệu"
+
+#, fuzzy
+msgid "Find next occurrence"
+msgstr "Tìm lần xuất hiện tiếp theo"
+
+#, fuzzy
+msgid "Find previous occurrence"
+msgstr "Tìm lần xuất hiện trước đó"
+
+#, fuzzy
+msgid "Go to &line..."
+msgstr "Truy cập &line"
+
+#, fuzzy
+msgid "Go to a specific line"
+msgstr "Chuyển đến một dòng cụ thể"
+
+#, fuzzy
+msgid "Go to &percent..."
+msgstr "Truy cập &percent"
+
+#, fuzzy
+msgid "Go to a percentage of the document"
+msgstr "Chuyển đến một phần trăm của tài liệu"
+
+#, fuzzy
+msgid "Go &Back"
+msgstr "Go &Back    Ctrl+["
+
+#, fuzzy
+msgid "Go back in history"
+msgstr "Hãy quay trở lại quá khứ"
+
+#, fuzzy
+msgid "Go &Forward"
+msgstr "Go &Forward    Ctrl+]"
+
+#, fuzzy
+msgid "Go forward in history"
+msgstr "Tiến về phía trước trong dòng lịch sử"
+
+msgid "&Sections"
+msgstr "&Phần"
+
+#, fuzzy
+msgid "Navigate by sections"
+msgstr "Duyệt theo từng phần"
+
+msgid "&Headings"
+msgstr "&Tiêu đề mục"
+
+#, fuzzy
+msgid "Navigate by headings"
+msgstr "Điều hướng theo tiêu đề"
+
+msgid "&Pages"
+msgstr "&Trang"
+
+#, fuzzy
+msgid "Navigate by pages"
+msgstr "Điều hướng theo trang"
+
+msgid "&Bookmarks"
+msgstr "&Dấu trang"
+
+#, fuzzy
+msgid "Navigate by bookmarks"
+msgstr "Điều hướng bằng dấu trang"
+
+msgid "&Links"
+msgstr "&Liên kết"
+
+#, fuzzy
+msgid "Navigate by links"
+msgstr "Điều hướng bằng các liên kết"
+
+#, fuzzy
+msgid "&Images"
+msgstr "&Hình ảnh"
+
+#, fuzzy
+msgid "Navigate by images"
+msgstr "Điều hướng bằng hình ảnh"
+
+#, fuzzy
+msgid "&Figures"
+msgstr "&Số liệu"
+
+#, fuzzy
+msgid "Navigate by figures"
+msgstr "Duyệt theo số liệu"
+
+#, fuzzy
+msgid "&Tables"
+msgstr "&Bảng"
+
+#, fuzzy
+msgid "Navigate by tables"
+msgstr "Điều hướng theo bảng"
+
+#, fuzzy
+msgid "&Separators"
+msgstr "&Dấu phân cách"
+
+#, fuzzy
+msgid "Navigate by separators"
+msgstr "Điều hướng bằng các dấu phân cách"
+
+msgid "&Lists"
+msgstr "&Danh sách"
+
+#, fuzzy
+msgid "Navigate by lists"
+msgstr "Duyệt theo danh sách"
+
+#, fuzzy
+msgid "&Containers"
+msgstr "&Thùng chứa"
+
+#, fuzzy
+msgid "Navigate by containers"
+msgstr "Điều hướng theo container"
+
+#, fuzzy
+msgid "&About Paperback"
+msgstr "&Giới thiệu về bản bìa mềm    Ctrl+F1"
+
+#, fuzzy
+msgid "About this application"
+msgstr "Giới thiệu về ứng dụng này"
+
+#, fuzzy
+msgid "View Help in &Browser"
+msgstr "Xem Trợ giúp trong &Browser    F1"
+
+#, fuzzy
+msgid "View help in default browser"
+msgstr "Xem hướng dẫn trong trình duyệt mặc định"
+
+#, fuzzy
+msgid "View Help in &Paperback"
+msgstr "Xem phần trợ giúp trong phiên bản bìa mềm"
+
+#, fuzzy
+msgid "View help in Paperback"
+msgstr "Xem phần trợ giúp trong phiên bản bìa mềm"
+
+#, fuzzy
+msgid "Check for &Updates"
+msgstr "Kiểm tra các bản cập nhật"
+
+#, fuzzy
+msgid "Check for updates"
+msgstr "Kiểm tra các bản cập nhật"
+
+#, fuzzy
+msgid "&Donate"
+msgstr "&Ủng hộ\tCtrl+D"
+
+#, fuzzy
+msgid "Support Paperback development"
+msgstr "Hỗ trợ phát triển phiên bản bìa mềm"
+
+#, fuzzy
+msgid "&Import Document Data..."
+msgstr "Nhập dữ liệu tài liệu"
+
+#, fuzzy
+msgid "Import bookmarks and position"
+msgstr "Nhập dấu trang và vị trí"
+
+#, fuzzy
+msgid "&Export Document Data..."
+msgstr "Xuất dữ liệu tài liệu"
+
+#, fuzzy
+msgid "Export bookmarks and position"
+msgstr "Xuất dấu trang và vị trí"
+
+#, fuzzy
+msgid "Export to &Plain Text..."
+msgstr "Xuất sang văn bản thuần túy...    Ctrl+E"
+
+#, fuzzy
+msgid "Export document as plain text"
+msgstr "Xuất tài liệu dưới dạng văn bản thuần túy"
+
+#, fuzzy
+msgid "Export to &HTML..."
+msgstr "Xuất sang HTML..."
+
+#, fuzzy
+msgid "Export document as HTML"
+msgstr "Xuất tài liệu dưới dạng HTML"
+
+#, fuzzy
+msgid "Export to &Markdown..."
+msgstr "Xuất sang &Markdown..."
+
+#, fuzzy
+msgid "Export document as Markdown"
+msgstr "Xuất tài liệu dưới dạng Markdown"
+
+#, fuzzy
+msgid "&Word Count"
+msgstr "Số từ"
+
+#, fuzzy
+msgid "Show word count"
+msgstr "Hiển thị số từ"
+
+#, fuzzy
+msgid "Document &Info"
+msgstr "Thông tin tài liệu"
+
+#, fuzzy
+msgid "Show document information"
+msgstr "Hiển thị thông tin tài liệu"
+
+#, fuzzy
+msgid "&Table of Contents"
+msgstr "Mục lục"
+
+#, fuzzy
+msgid "Show table of contents"
+msgstr "Hiển thị mục lục"
+
+#, fuzzy
+msgid "&Elements List..."
+msgstr "Danh sách &thành phần...\tF7"
+
+#, fuzzy
+msgid "Show elements list"
+msgstr "Hiển thị danh sách các phần tử"
+
+#, fuzzy
+msgid "Reveal &File in Folder"
+msgstr "Hiển thị và lưu vào thư mục    Ctrl+Shift+C"
+
+#, fuzzy
+msgid "Reveal document in the file manager"
+msgstr "Hiển thị tài liệu trong trình quản lý tệp"
+
+#, fuzzy
+msgid "Open in &Web View"
+msgstr "Mở trong &Web View    Ctrl+Shift+V"
+
+#, fuzzy
+msgid "Open document in web view"
+msgstr "Mở tài liệu trong chế độ xem web"
+
+#, fuzzy
+msgid "View &Source"
+msgstr "Xem & Nguồn    Ctrl+U"
+
+#, fuzzy
+msgid "Open the document source in a new tab"
+msgstr "Mở nguồn tài liệu trong một tab mới"
+
+#, fuzzy
+msgid "I&mport/Export"
+msgstr "Nhập khẩu/Xuất khẩu"
+
+#, fuzzy
+msgid "Import and export options"
+msgstr "Các tùy chọn nhập và xuất"
+
+#, fuzzy
+msgid "Toggle &Bookmark"
+msgstr "Chuyển đổi & Đánh dấu trang    Ctrl+Shift+B"
+
+#, fuzzy
+msgid "Bookmark with &Note"
+msgstr "Đánh dấu trang kèm ghi chú"
+
+#, fuzzy
+msgid "Word w&rap"
+msgstr "&Tự động ngắt dòng"
+
+#, fuzzy
+msgid "Toggle word wrap"
+msgstr "Bật/tắt tính năng tự động xuống dòng"
+
+#, fuzzy
+msgid "&Full Screen"
+msgstr "&Toàn màn hình    F11"
+
+#, fuzzy
+msgid "Toggle full screen"
+msgstr "Chuyển sang chế độ toàn màn hình"
+
+#, fuzzy
+msgid "&Options"
+msgstr "Tùy chọn"
+
+#, fuzzy
+msgid "&Sleep Timer..."
+msgstr "Hẹn giờ ngủ"
+
+msgid "&File"
+msgstr "&Tệp"
+
+msgid "&Go"
+msgstr "&Điều hướng"
+
+msgid "&Tools"
+msgstr "&Công cụ"
+
+msgid "&Help"
+msgstr "&Trợ giúp"
+
+#, fuzzy
+msgid "&Edit"
+msgstr "&Chỉnh sửa"
+
+#. TRANSLATORS: Announced when the document has no sections to navigate
+msgid "No sections."
+msgstr "Không có phần nào."
+
+#. TRANSLATORS: Announced when there is no next section from the current position
+msgid "No next section"
+msgstr "Không có phần tiếp theo"
+
+#. TRANSLATORS: Announced when there is no previous section from the current position
+msgid "No previous section"
+msgstr "Không có phần phía trước"
+
+#. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
+#, fuzzy
+msgid "No headings at level %d."
+msgstr "Không có tiêu đề ở cấp độ %d."
+
+#. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
+#, fuzzy
+msgid "No next heading at level %d."
+msgstr "Không có tiêu đề tiếp theo ở cấp độ %d."
+
+#. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
+#, fuzzy
+msgid "No previous heading at level %d."
+msgstr "Không có tiêu đề nào trước đó ở cấp độ %d."
+
+#. TRANSLATORS: Announced when the document has no headings at all (no level filter applied)
+msgid "No headings."
+msgstr "Không có tiêu đề mục."
+
+#. TRANSLATORS: Announced when there is no next heading (no level filter applied)
+#, fuzzy
+msgid "No next heading."
+msgstr "Không có tiêu đề tiếp theo."
+
+#. TRANSLATORS: Announced when there is no previous heading (no level filter applied)
+#, fuzzy
+msgid "No previous heading."
+msgstr "Không có tiêu đề trước đó."
+
+#. TRANSLATORS: Announced when there is no next page from the current position
+msgid "No next page."
+msgstr "Không có trang tiếp theo."
+
+#. TRANSLATORS: Announced when there is no previous page from the current position
+msgid "No previous page."
+msgstr "Không có trang phía trước."
+
+#. TRANSLATORS: Announced when the document has no links to navigate
+msgid "No links."
+msgstr "Không có liên kết nào."
+
+#. TRANSLATORS: Announced when there is no next link from the current position
+msgid "No next link."
+msgstr "Không có liên kết tiếp theo."
+
+#. TRANSLATORS: Announced when there is no previous link from the current position
+msgid "No previous link."
+msgstr "Không có liên kết trước."
+
+#. TRANSLATORS: Announced when the document has no lists to navigate
+msgid "No lists."
+msgstr "Không có danh sách nào."
+
+#. TRANSLATORS: Announced when there is no next list from the current position
+msgid "No next list."
+msgstr "Không có danh sách tiếp theo."
+
+#. TRANSLATORS: Announced when there is no previous list from the current position
+msgid "No previous list."
+msgstr "Không có danh sách trước."
+
+#. TRANSLATORS: Announced when the document has no list items to navigate
+msgid "No list items."
+msgstr "Không có mục danh sách nào."
+
+#. TRANSLATORS: Announced when there is no next list item from the current position
+msgid "No next list item."
+msgstr "Không có mục danh sách tiếp theo."
+
+#. TRANSLATORS: Announced when there is no previous list item from the current position
+msgid "No previous list item."
+msgstr "Không có mục danh sách trước."
+
+#. TRANSLATORS: Announced when the document has no tables to navigate
+#, fuzzy
+msgid "No tables."
+msgstr "Không có bảng."
+
+#. TRANSLATORS: Announced when there is no next table from the current position
+#, fuzzy
+msgid "No next table."
+msgstr "Không có bảng tiếp theo."
+
+#. TRANSLATORS: Announced when there is no previous table from the current position
+#, fuzzy
+msgid "No previous table."
+msgstr "Không có bảng trước đó."
+
+#. TRANSLATORS: Announced when the document has no separators to navigate
+#, fuzzy
+msgid "No separators."
+msgstr "Không có dấu phân cách."
+
+#. TRANSLATORS: Announced when there is no next separator from the current position
+#, fuzzy
+msgid "No next separator."
+msgstr "Không có dấu phân cách tiếp theo."
+
+#. TRANSLATORS: Announced when there is no previous separator from the current position
+#, fuzzy
+msgid "No previous separator."
+msgstr "Không có dấu phân cách trước đó."
+
+#. TRANSLATORS: Announced when the document has no images to navigate
+#, fuzzy
+msgid "No images."
+msgstr "Không có hình ảnh."
+
+#. TRANSLATORS: Announced when there is no next image from the current position
+#, fuzzy
+msgid "No next image."
+msgstr "Không có hình ảnh tiếp theo."
+
+#. TRANSLATORS: Announced when there is no previous image from the current position
+#, fuzzy
+msgid "No previous image."
+msgstr "Không có hình ảnh trước đó."
+
+#. TRANSLATORS: Announced when the document has no figures to navigate
+#, fuzzy
+msgid "No figures."
+msgstr "Không có số liệu."
+
+#. TRANSLATORS: Announced when there is no next figure from the current position
+#, fuzzy
+msgid "No next figure."
+msgstr "Không có hình tiếp theo."
+
+#. TRANSLATORS: Announced when there is no previous figure from the current position
+#, fuzzy
+msgid "No previous figure."
+msgstr "Không có số liệu trước đó."
+
+#. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
+msgid "Wrapping to start. "
+msgstr "Quay lại từ đầu. "
+
+msgid "Wrapping to end. "
+msgstr "Quay lại cuối trang. "
+
+#. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
+msgid "%s Heading level %d"
+msgstr "%s tiêu đề mục cấp %d"
+
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+#, fuzzy
+msgid "Page %d"
+msgstr "Trang %d: %s"
+
+#. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
+msgid "Page %d: %s"
+msgstr "Trang %d: %s"
+
+#. TRANSLATORS: Suffix appended after a link's text when announcing navigation to a link; the leading space is significant
+msgid " link"
+msgstr " liên kết"
+
+#. TRANSLATORS: Announced when moving forward/backward through the caret position history
+msgid "Navigated to next position."
+msgstr "Đã tới vị trí tiếp theo."
+
+msgid "Navigated to previous position."
+msgstr "Đã quay về vị trí trước."
+
+#. TRANSLATORS: Announced when there is no next/previous position in the caret position history
+msgid "No next position."
+msgstr "Không có vị trí tiếp theo."
+
+msgid "No previous position."
+msgstr "Không có vị trí trước đó."
+
+#. TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
+#, fuzzy
+msgid "No containers."
+msgstr "Không có thùng chứa."
+
+#. TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
+#, fuzzy
+msgid "Not in a container."
+msgstr "Không nằm trong thùng chứa."
+
+#. TRANSLATORS: Announced when jumping to the start/end of the container (list/table) the caret is inside, and the target line is blank
+#, fuzzy
+msgid "Past end of container."
+msgstr "Vượt quá mép cuối của thùng chứa."
+
+#, fuzzy
+msgid "Start of container."
+msgstr "Đầu container."
+
+#. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
+msgid "%s - Bookmark %d"
+msgstr "%s - Dấu trang %d"
+
+#. TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
+msgid "No notes."
+msgstr "Không có ghi chú nào."
+
+msgid "No bookmarks."
+msgstr "Không có dấu trang nào."
+
+#. TRANSLATORS: Announced when there is no next bookmark/note from the current position
+#, fuzzy
+msgid "No next note."
+msgstr "Không có ghi chú tiếp theo."
+
+#, fuzzy
+msgid "No next bookmark."
+msgstr "Không có dấu trang tiếp theo."
+
+#. TRANSLATORS: Announced when there is no previous note from the current position
+#, fuzzy
+msgid "No previous note."
+msgstr "Không có ghi chú nào trước đó."
+
+#. TRANSLATORS: Announced when there is no previous bookmark from the current position
+#, fuzzy
+msgid "No previous bookmark."
+msgstr "Chưa có dấu trang nào trước đó."
+
+#. TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
+#, fuzzy
+msgid "Bookmark."
+msgstr "Đánh dấu trang."
+
+#. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
+#, fuzzy
+msgid "Bookmark removed."
+msgstr "Đã xóa dấu trang."
+
+#, fuzzy
+msgid "Bookmark added."
+msgstr "Đã thêm vào danh sách dấu trang."
+
+msgid "Enter bookmark note:"
+msgstr "Nhập ghi chú dấu trang:"
+
+#. TRANSLATORS: Announced after saving a bookmark's note text
+#, fuzzy
+msgid "Bookmark saved."
+msgstr "Đã lưu vào danh sách dấu trang."
+
+#. TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
+msgid "No note at the current position."
+msgstr "Không có ghi chú nào tại vị trí hiện tại."
+
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#, fuzzy
+msgid "Line"
+msgstr "Dòng"
+
+#. TRANSLATORS: Status bar label for the current character offset within the line
+#, fuzzy
+msgid "Character"
+msgstr "Nhân vật"
+
+#. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
+#, fuzzy
+msgid "Sleep timer"
+msgstr "Hẹn giờ tắt máy"
+
+#. TRANSLATORS: System tray menu item to restore the main window from the tray
 msgid "&Restore"
 msgstr "&Khôi phục"
+
+#. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
+#, fuzzy
+msgid "Restore Paperback"
+msgstr "Phiên bản bìa mềm tái bản"
+
+#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
+#, fuzzy
+msgid "Exit Paperback"
+msgstr "Bản bìa mềm \"Exit\""
+
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+#, fuzzy
+msgid "Figure"
+msgstr "Hình"
+
+#, fuzzy
+msgid "Image"
+msgstr "Hình ảnh"
+
+#. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
+#, fuzzy
+msgid "Failed to convert DTBook XML to text"
+msgstr "Không thể chuyển đổi tệp XML của DTBook sang định dạng văn bản"
+
+#. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
+#, fuzzy
+msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
+msgstr "Tệp nén ZIP dường như không phải là cuốn sách DAISY 3 hoặc DAISY 2.02 hợp lệ"
+
+#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+#, fuzzy
+msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
+msgstr "Tệp .opf DAISY không hợp lệ hoặc không tìm thấy tệp XML DTBook trong tệp manifest"
+
+#. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
+#, fuzzy
+msgid "OPF package element missing"
+msgstr "Thiếu thành phần gói OPF"
+
+#. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
+#, fuzzy
+msgid "no readable spine items"
+msgstr "không có mục nào trên lưng sách có thể đọc được"
+
+#. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
+#, fuzzy
+msgid "failed to convert spine items: {}"
+msgstr "Không thể chuyển đổi các mục trong spine: {}"
+
+#. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
+#, fuzzy
+msgid "EPUB has no readable content ({})"
+msgstr "EPUB không có nội dung có thể đọc được ({})"
+
+#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+#, fuzzy
+msgid "rootfile not found in container.xml"
+msgstr "Không tìm thấy tệp rootfile trong tệp container.xml"
+
+#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+#, fuzzy
+msgid "unsupported content"
+msgstr "nội dung không được hỗ trợ"
+
+#. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
+#, fuzzy
+msgid "Failed to convert FB2 XML to text"
+msgstr "Không thể chuyển đổi tệp XML định dạng FB2 sang văn bản"
+
+#. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
+#, fuzzy
+msgid "HTML file is empty: {}"
+msgstr "Tệp HTML trống: {}"
+
+#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
+#, fuzzy
+msgid "Failed to convert HTML to text: {}"
+msgstr "Không thể chuyển đổi HTML sang văn bản: {}"
+
+#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
+#, fuzzy
+msgid "Failed to convert Markdown to text: {}"
+msgstr "Không thể chuyển đổi Markdown sang văn bản: {}"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
+#, fuzzy
+msgid "Invalid HUFF record"
+msgstr "Bản ghi HUFF không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record has the wrong signature
+#, fuzzy
+msgid "Invalid HUFF header"
+msgstr "Tiêu đề HUFF không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman cache table offset is out of bounds
+#, fuzzy
+msgid "Invalid HUFF cache offset"
+msgstr "Địa chỉ bộ đệm HUFF không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is invalid
+#, fuzzy
+msgid "Code len out of bounds"
+msgstr "Độ dài mã vượt quá giới hạn"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman table has an invalid terminal-code entry
+#, fuzzy
+msgid "Bad term"
+msgstr "Thuật ngữ không phù hợp"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman base table offset is out of bounds
+#, fuzzy
+msgid "Invalid HUFF base offset"
+msgstr "Giá trị bù gốc HUFF không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary record has the wrong signature
+#, fuzzy
+msgid "Invalid CDIC header"
+msgstr "Tiêu đề CDIC không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary offset table is out of bounds
+#, fuzzy
+msgid "Invalid CDIC offsets"
+msgstr "Các giá trị bù CDIC không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase offset is out of bounds
+#, fuzzy
+msgid "Invalid CDIC phrase offset"
+msgstr "Độ lệch cụm từ CDIC không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase length is out of bounds
+#, fuzzy
+msgid "Invalid CDIC phrase length"
+msgstr "Độ dài cụm từ CDIC không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is out of range; {} is the invalid length value
+#, fuzzy
+msgid "Invalid code_len {}"
+msgstr "Giá trị code_len không hợp lệ{}"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
+#, fuzzy
+msgid "Decode stack overflow"
+msgstr "Giải mã lỗi tràn ngăn xếp"
+
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+#, fuzzy
+msgid "File too short"
+msgstr "Tệp quá ngắn"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+#, fuzzy
+msgid "Invalid record offsets"
+msgstr "Độ lệch bản ghi không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+#, fuzzy
+msgid "No records found"
+msgstr "Không tìm thấy kết quả nào"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+#, fuzzy
+msgid "Invalid Record 0 offsets"
+msgstr "Bản ghi không hợp lệ: 0 vị trí dịch chuyển"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+#, fuzzy
+msgid "Invalid Record 0"
+msgstr "Bản ghi không hợp lệ số 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+#, fuzzy
+msgid "No MOBI header"
+msgstr "Không có tiêu đề MOBI"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+#, fuzzy
+msgid "Invalid MOBI identifier"
+msgstr "Mã định danh MOBI không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+#, fuzzy
+msgid "Invalid content record range"
+msgstr "Phạm vi bản ghi nội dung không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+#, fuzzy
+msgid "Invalid HUFF/CDIC records"
+msgstr "Các bản ghi HUFF/CDIC không hợp lệ"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+#, fuzzy
+msgid "Missing HUFF parameters in header"
+msgstr "Thiếu các tham số HUFF trong tiêu đề"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+#, fuzzy
+msgid "Unsupported compression mode ({})"
+msgstr "Chế độ nén không được hỗ trợ ({})"
+
+#. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
+#, fuzzy
+msgid "ODP file does not contain any pages"
+msgstr "Tệp ODP không chứa bất kỳ trang nào"
+
+#. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
+#, fuzzy
+msgid "FODP file does not contain any pages"
+msgstr "Tệp FODP không chứa bất kỳ trang nào"
+
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
+#, fuzzy
+msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+msgstr "Tệp PDF này chỉ chứa hình ảnh, không có văn bản có thể trích xuất. Bạn có thể cần chạy tệp này qua phần mềm OCR để đọc nội dung của nó."
+
+#. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required or incorrect"
+msgstr "Yêu cầu nhập mật khẩu hoặc mật khẩu không chính xác"
+
+#. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
+#, fuzzy
+msgid "Failed to open PDF document: {}"
+msgstr "Không thể mở tài liệu PDF: {}"
+
+#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
+#, fuzzy
+msgid "PPTX file contains no slides"
+msgstr "Tệp PPTX không chứa bất kỳ trang chiếu nào"
+
+#, fuzzy
+msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+msgstr "Hiện tại, hệ thống chưa hỗ trợ các tệp PPT được bảo vệ bằng mật khẩu. Hãy thử lưu tệp dưới định dạng PPTX và mở tệp đó thay thế."
+
+#. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
+#, fuzzy
+msgid "PPT file contains no slides"
+msgstr "Tệp PPT không chứa bất kỳ trang chiếu nào"
+
+#. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
+#, fuzzy
+msgid "PowerPoint Document stream not found"
+msgstr "Không tìm thấy luồng tài liệu PowerPoint"
+
+#. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
+#, fuzzy
+msgid "Failed to parse RTF document: {}"
+msgstr "Không thể phân tích cú pháp tài liệu RTF: {}"
+
+#. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
+#, fuzzy
+msgid "DOC file is missing required FIB fields"
+msgstr "Tệp DOC thiếu các trường FIB bắt buộc"
+
+#. TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
+#, fuzzy
+msgid "Not a valid DOC file (invalid FIB magic)"
+msgstr "Không phải là tệp DOC hợp lệ (mã FIB không hợp lệ)"
+
+#. TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "DOC file is encrypted and requires a password"
+msgstr "Tệp DOC đã được mã hóa và yêu cầu mật khẩu"
+
+#. TRANSLATORS: Error detail shown when decrypting a legacy DOC file fails (the internal sentinel prefix before it is not translated); {} is the underlying error
+#, fuzzy
+msgid "DOC decryption failed (wrong password?): {}"
+msgstr "Không thể giải mã tệp DOC (mật khẩu sai?): {}"
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+#, fuzzy
+msgid "File content does not look like plain text"
+msgstr "Nội dung tệp không giống như văn bản thuần túy"
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+#, fuzzy
+msgid "No readable text content found"
+msgstr "Không tìm thấy nội dung văn bản có thể đọc được"
+
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#, fuzzy
+msgid "No readable content found in the ZIP archive"
+msgstr "Không tìm thấy nội dung có thể đọc được trong tệp nén ZIP"
+
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "File is encrypted and requires a password"
+msgstr "Tệp đã được mã hóa và cần mật khẩu để mở"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+#, fuzzy
+msgid "Decryption failed (wrong password?): {}"
+msgstr "Không thể giải mã (mật khẩu sai?): {}"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+#, fuzzy
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr "Lỗi phân tích cú pháp DOC cũ: {}. Lỗi chuyển sang định dạng OOXML dự phòng: {}"
+
+#. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
+#, fuzzy
+msgid "No file extension found for: {}"
+msgstr "Không tìm thấy phần mở rộng tệp cho: {}"
+
+#. TRANSLATORS: Error shown when no parser supports a file's extension; {} is the extension (without the leading dot)
+#, fuzzy
+msgid "No parser found for extension: .{}"
+msgstr "Không tìm thấy trình phân tích cú pháp cho phần mở rộng: .{}"
+
+#. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
+#, fuzzy
+msgid "All parsers failed for extension: .{}"
+msgstr "Tất cả các trình phân tích cú pháp đều không thành công đối với phần mở rộng: . {}"
+
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required"
+msgstr "Yêu cầu nhập mật khẩu"
+
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password incorrect"
+msgstr "Mật khẩu không chính xác"
+
+#, fuzzy
+msgid "Update to %s"
+msgstr "Cập nhật lên phiên bản %s"
+
+#, fuzzy
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "Phiên bản mới của %s đã được phát hành. Dưới đây là những điểm mới:"
+
+#, fuzzy
+msgid "No release notes provided."
+msgstr "Không có ghi chú phát hành."
+
+#, fuzzy
+msgid "%s Update"
+msgstr "%s Cập nhật"
+
+#, fuzzy
+msgid "Downloading update..."
+msgstr "Đang tải bản cập nhật..."
+
+msgid "No updates available."
+msgstr "Không có bản cập nhật nào."
+
+#, fuzzy
+msgid "No updates available. Latest version: %s"
+msgstr "Không có bản cập nhật nào. Phiên bản mới nhất: %s"
+
+msgid "Info"
+msgstr "Thông tin"
+
+#, fuzzy
+msgid "Security verification failed. The update might have been tampered with: %s"
+msgstr "Không xác minh được tính bảo mật. Bản cập nhật có thể đã bị can thiệp: %s"
+
+#, fuzzy
+msgid "Security Error"
+msgstr "Lỗi bảo mật"
+
+#, fuzzy
+msgid "Update failed"
+msgstr "Cập nhật không thành công"
+
+#, fuzzy
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Bản cập nhật đã được tải xuống tại:%s\n"
+". Vui lòng cài đặt thủ công."
+
+#, fuzzy
+msgid "Update Ready"
+msgstr "Sẵn sàng cập nhật"
+
+#, fuzzy
+msgid "Failed to get current exe path"
+msgstr "Không thể lấy được đường dẫn hiện tại của tệp exe"
+
+#, fuzzy
+msgid "Failed to launch installer script"
+msgstr "Không thể khởi chạy tập lệnh cài đặt"
+
+#, fuzzy
+msgid "Failed to launch update script"
+msgstr "Không thể khởi chạy tập lệnh cập nhật"
+
+#, fuzzy
+msgid "Unknown update file format."
+msgstr "Định dạng tệp cập nhật không xác định."
+
+#, fuzzy
+msgid "&Play/Pause Audio"
+msgstr "&Phát/Tạm dừng âm thanh"
+
+#, fuzzy
+msgid "Play or pause this document's audio narration"
+msgstr "Phát hoặc tạm dừng phần đọc lời bình bằng âm thanh của tài liệu này"
+
+#, fuzzy
+msgid "Previous Section\t["
+msgstr "Phần trước    ["
+
+#, fuzzy
+msgid "Next Section\t]"
+msgstr "Phần tiếp theo    ]"
+
+#, fuzzy
+msgid "Go to &Page\tCtrl+P"
+msgstr "Chuyển đến &Trang    Ctrl+P"
+
+#, fuzzy
+msgid "Previous Pa&ge\tShift+P"
+msgstr "Trang trước    Shift+P"
+
+#, fuzzy
+msgid "Next Pag&e\tP"
+msgstr "Trang tiếp theo    P"
+
+#, fuzzy
+msgid "Previous Lin&k\tShift+K"
+msgstr "Lin&k trước đó    Shift+K"
+
+#, fuzzy
+msgid "Next Lin&k\tK"
+msgstr "Tiếp theo Lin&k    K"
+
+#, fuzzy
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Hình ảnh trước    Shift+G"
+
+#, fuzzy
+msgid "Next Ima&ge\tG"
+msgstr "Hình tiếp theo    G"
+
+#, fuzzy
+msgid "Previous Figu&re\tShift+F"
+msgstr "Hình trước    Shift+F"
+
+#, fuzzy
+msgid "Next Figu&re\tF"
+msgstr "Hình tiếp theo    F"
+
+#, fuzzy
+msgid "Previous &Table\tShift+T"
+msgstr "Trước đó & Bảng    Shift+T"
+
+#, fuzzy
+msgid "Next &Table\tT"
+msgstr "Tiếp theo &Bảng    T"
+
+#, fuzzy
+msgid "Previous Se&parator\tShift+S"
+msgstr "Dấu phân cách trước    Shift+S"
+
+#, fuzzy
+msgid "Next Se&parator\tS"
+msgstr "Ký hiệu phân cách tiếp theo    S"
+
+#, fuzzy
+msgid "Previous L&ist\tShift+L"
+msgstr "Danh sách trước    Shift+L"
+
+#, fuzzy
+msgid "Next L&ist\tL"
+msgstr "Danh sách tiếp theo    L"
+
+#, fuzzy
+msgid "Previous List &Item\tShift+I"
+msgstr "Danh sách và mục trước    Shift+I"
+
+#, fuzzy
+msgid "Next List I&tem\tI"
+msgstr "Danh sách tiếp theo    Mục I"
+
+#, fuzzy
+msgid "Container &Start\tShift+,"
+msgstr "Hộp chứa & Bắt đầu    Shift+,"
+
+#, fuzzy
+msgid "Past Container &End\t,"
+msgstr "Sau Container &End    ,"
+
+#, fuzzy
+msgid "Next Heading Level 1\t1"
+msgstr "Tiêu đề tiếp theo Cấp 1    1"
+
+#, fuzzy
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "Cấp độ tiêu đề trước đó &2    Shift+2"
+
+#, fuzzy
+msgid "Next Heading Level 2\t2"
+msgstr "Tiêu đề tiếp theo Cấp 2    2"
+
+#, fuzzy
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "Cấp độ tiêu đề trước đó &3    Shift+3"
+
+#, fuzzy
+msgid "Next Heading Level 3\t3"
+msgstr "Tiêu đề tiếp theo Cấp 3    3"
+
+#, fuzzy
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "Cấp độ tiêu đề trước đó &4    Shift+4"
+
+#, fuzzy
+msgid "Next Heading Level 4\t4"
+msgstr "Tiêu đề tiếp theo Cấp 4    4"
+
+#, fuzzy
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "Cấp độ tiêu đề trước đó &5    Shift+5"
+
+#, fuzzy
+msgid "Next Heading Level 5\t5"
+msgstr "Tiêu đề tiếp theo Cấp độ 5    5"
+
+#, fuzzy
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "Cấp độ tiêu đề trước đó &6    Shift+6"
+
+#, fuzzy
+msgid "Next Heading Level 6\t6"
+msgstr "Tiêu đề tiếp theo Cấp 6    6"
+
+#, fuzzy
+msgid "&Previous Heading\tShift+H"
+msgstr "&Tiêu đề trước    Shift+H"
+
+#, fuzzy
+msgid "&Next Heading\tH"
+msgstr "&Tiêu đề tiếp theo    H"
+
+#, fuzzy
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "Cấp độ tiêu đề trước đó &1    Shift+1"
+
+#, fuzzy
+msgid "&Previous Bookmark\tShift+B"
+msgstr "&Dấu trang trước    Shift+B"
+
+#, fuzzy
+msgid "&Next Bookmark\tB"
+msgstr "&Tiếp theo Đánh dấu trang    B"
+
+#, fuzzy
+msgid "Previous &Note\tShift+N"
+msgstr "Trước đó &Ghi chú    Shift+N"
+
+#, fuzzy
+msgid "Next N&ote\tN"
+msgstr "Tiếp theo N&ote    N"
+
+#, fuzzy
+msgid "Jump to &All...\tCtrl+B"
+msgstr "Chuyển đến &Tất cả...    Ctrl+B"
+
+#, fuzzy
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "Chuyển đến & Chỉ các dấu trang...    Ctrl+Alt+B"
+
+#, fuzzy
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "Chuyển đến phần “Ghi chú & Chỉ...”    Ctrl+Alt+M"
+
+#, fuzzy
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "&Xem nội dung ghi chú    RawCtrl+Shift+W"
+
+#, fuzzy
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "&Xem nội dung ghi chú    Ctrl+Shift+W"
+
+msgid "&Open...\tCtrl+O"
+msgstr "&Mở...\tCtrl+O"
+
+#, fuzzy
+msgid "&Close\tCtrl+W"
+msgstr "&Đóng    Ctrl+W"
+
+#, fuzzy
+msgid "&Close\tCtrl+F4"
+msgstr "&Đóng    Ctrl+F4"
+
+#, fuzzy
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "Đóng & Tất cả    Ctrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Đóng &Tất cả\tCtrl+Shift+F4"
+
+#, fuzzy
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "Mở lại & Lần đóng gần nhất    Ctrl+Shift+T"
+
+#, fuzzy
+msgid "E&xit\tCtrl+Q"
+msgstr "E&xit    Ctrl+Q"
+
+msgid "&Find...\tCtrl+F"
+msgstr "&Tìm kiếm...\tCtrl+F"
+
+#, fuzzy
+msgid "Find &Next\tCtrl+G"
+msgstr "Tìm & Tiếp theo    Ctrl+G"
+
+#, fuzzy
+msgid "Find &Next\tF3"
+msgstr "Tìm & Tiếp theo    F3"
+
+#, fuzzy
+msgid "Find &Previous\tCtrl+Shift+G"
+msgstr "Tìm & Trước đó    Ctrl+Shift+G"
+
+#, fuzzy
+msgid "Find &Previous\tShift+F3"
+msgstr "Tìm & Trước đó    Shift+F3"
+
+#, fuzzy
+msgid "Go to &line...\tCtrl+L"
+msgstr "Chuyển đến dòng...    Ctrl+L"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "Đi đến &dòng...\tCtrl+G"
+
+#, fuzzy
+msgid "Go to &percent...\tCtrl+Shift+L"
+msgstr "Chuyển đến &percent...    Ctrl+Shift+L"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Đi đến &phần trăm...\tCtrl+Shift+G"
+
+#, fuzzy
+msgid "Go &Back\tCtrl+["
+msgstr "Go &Back    Ctrl+["
+
+msgid "Go &Back\tAlt+Left"
+msgstr "Quay &lại\tAlt+Trái"
+
+#, fuzzy
+msgid "Go &Forward\tCtrl+]"
+msgstr "Go &Forward    Ctrl+]"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "Tiến &về trước\tAlt+Phải"
+
+#, fuzzy
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "&Nhập dữ liệu tài liệu...    Ctrl+Shift+I"
+
+#, fuzzy
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "&Xuất dữ liệu tài liệu...    Ctrl+Shift+E"
+
+#, fuzzy
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "Xuất sang văn bản thuần túy...    Ctrl+E"
+
+#, fuzzy
+msgid "&Word Count\tRawCtrl+W"
+msgstr "&Số từ    Bản gốc Ctrl+W"
+
+#, fuzzy
+msgid "&Word Count\tCtrl+W"
+msgstr "&Số từ    Ctrl+W"
+
+#, fuzzy
+msgid "Document &Info\tCtrl+I"
+msgstr "Tài liệu & Thông tin    Ctrl+I"
+
+#, fuzzy
+msgid "&Table of Contents\tCtrl+T"
+msgstr "&Mục lục    Ctrl+T"
+
+msgid "&Elements List...\tF7"
+msgstr "Danh sách &thành phần...\tF7"
+
+#, fuzzy
+msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgstr "Hiển thị và lưu vào thư mục    Ctrl+Shift+C"
+
+#, fuzzy
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "Mở trong &Web View    Ctrl+Shift+V"
+
+#, fuzzy
+msgid "View &Source\tCtrl+U"
+msgstr "Xem & Nguồn    Ctrl+U"
+
+#, fuzzy
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "Chuyển đổi & Đánh dấu trang    Ctrl+Shift+B"
+
+#, fuzzy
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "Đánh dấu trang bằng &Note    Ctrl+Shift+N"
+
+#, fuzzy
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr "Tự động xuống dòng    Ctrl+Alt+W"
+
+#, fuzzy
+msgid "&Full Screen\tRawCtrl+Ctrl+F"
+msgstr "&Toàn màn hình    RawCtrl+Ctrl+F"
+
+#, fuzzy
+msgid "&Full Screen\tF11"
+msgstr "&Toàn màn hình    F11"
+
+msgid "&Options\tCtrl+,"
+msgstr "&Tùy chọn\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "&Hẹn giờ ngủ...\tCtrl+Shift+S"
+
+#, fuzzy
+msgid "&About Paperback\tCtrl+F1"
+msgstr "&Giới thiệu về bản bìa mềm    Ctrl+F1"
+
+#, fuzzy
+msgid "View Help in &Browser\tF1"
+msgstr "Xem Trợ giúp trong &Browser    F1"
+
+#, fuzzy
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "Xem Trợ giúp trong &Paperback    Shift+F1"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Kiểm tra &cập nhật\tCtrl+Shift+U"
+
+msgid "&Donate\tCtrl+D"
+msgstr "&Ủng hộ\tCtrl+D"
+
+msgid "Show All...\tCtrl+R"
+msgstr "Hiển thị tất cả...\tCtrl+R"
+
+#, fuzzy
+msgid "Go To…"
+msgstr "Chuyển đến…"
+
+#, fuzzy
+msgid "Recent Documents"
+msgstr "Các tài liệu gần đây"
+
+#, fuzzy
+msgid "Switch to TTS Mode"
+msgstr "Chuyển sang chế độ TTS"
+
+#, fuzzy
+msgid "Switch to Text Mode"
+msgstr "Chuyển sang chế độ văn bản"
+
+#, fuzzy
+msgid "Sleep Timer (active)"
+msgstr "Bộ hẹn giờ tắt máy (đang hoạt động)"
+
+#, fuzzy
+msgid "Settings"
+msgstr "Cài đặt"
+
+#, fuzzy
+msgid "More options"
+msgstr "Các tùy chọn khác"
+
+#, fuzzy
+msgid "No document open"
+msgstr "Không có tài liệu nào đang mở"
+
+#, fuzzy
+msgid "Recent"
+msgstr "Gần đây"
+
+#, fuzzy
+msgid "Screen dimmed by sleep timer. Tap to wake."
+msgstr "Màn hình đã bị làm mờ do bộ hẹn giờ ngủ. Hãy chạm vào để đánh thức màn hình."
+
+#, fuzzy
+msgid "Open Error"
+msgstr "Lỗi mở"
+
+#, fuzzy
+msgid "Open document"
+msgstr "Mở tài liệu"
+
+#, fuzzy
+msgid "Title"
+msgstr "Tiêu đề"
+
+#, fuzzy
+msgid "Author"
+msgstr "Tác giả"
+
+#, fuzzy
+msgid "File"
+msgstr "Tệp"
+
+#, fuzzy
+msgid "Words"
+msgstr "Từ"
+
+#, fuzzy
+msgid "Lines"
+msgstr "Các dòng"
+
+#, fuzzy
+msgid "Characters"
+msgstr "Nhân vật"
+
+#, fuzzy
+msgid "Characters (excluding spaces)"
+msgstr "Số ký tự (không tính khoảng trắng)"
+
+#, fuzzy
+msgid "Type"
+msgstr "Loại"
+
+#, fuzzy
+msgid "Done"
+msgstr "Xong"
+
+#, fuzzy
+msgid "No Elements"
+msgstr "Không có phần tử nào"
+
+#, fuzzy
+msgid "Headings, images, and other elements will appear here."
+msgstr "Các tiêu đề, hình ảnh và các thành phần khác sẽ xuất hiện tại đây."
+
+#, fuzzy
+msgid "Search…"
+msgstr "Tìm kiếm…"
+
+#, fuzzy
+msgid "Match Case"
+msgstr "So sánh chữ hoa và chữ thường"
+
+#, fuzzy
+msgid "Whole Word"
+msgstr "Toàn bộ từ"
+
+#, fuzzy
+msgid "Regular Expression"
+msgstr "Biểu thức chính quy"
+
+#, fuzzy
+msgid "Previous result"
+msgstr "Kết quả trước đó"
+
+#, fuzzy
+msgid "Next result"
+msgstr "Kết quả tiếp theo"
+
+#, fuzzy
+msgid "Search"
+msgstr "Tìm kiếm"
+
+#, fuzzy
+msgid "Mode"
+msgstr "Chế độ"
+
+#, fuzzy
+msgid "Page"
+msgstr "Trang"
+
+#, fuzzy
+msgid "Percent"
+msgstr "Phần trăm"
+
+#, fuzzy
+msgid "Line number"
+msgstr "Số dòng"
+
+#, fuzzy
+msgid "Page number"
+msgstr "Số trang"
+
+#, fuzzy
+msgid "Percentage"
+msgstr "Tỷ lệ phần trăm"
+
+#, fuzzy
+msgid "Go To"
+msgstr "Chuyển đến"
+
+#, fuzzy
+msgid "Password"
+msgstr "Mật khẩu"
+
+#, fuzzy
+msgid "Enter password for {}"
+msgstr "Nhập mật khẩu cho {}"
+
+#, fuzzy
+msgid "Password Required"
+msgstr "Yêu cầu nhập mật khẩu"
+
+#, fuzzy
+msgid "No Recent Documents"
+msgstr "Không có tài liệu gần đây"
+
+#, fuzzy
+msgid "Documents you open will appear here."
+msgstr "Các tài liệu bạn mở sẽ hiển thị tại đây."
+
+#, fuzzy
+msgid "Remove"
+msgstr "Xóa"
+
+#, fuzzy
+msgid "Rule"
+msgstr "Quy tắc"
+
+#, fuzzy
+msgid "Scope"
+msgstr "Phạm vi"
+
+#, fuzzy
+msgid "Word"
+msgstr "Word"
+
+#, fuzzy
+msgid "Paragraph"
+msgstr "Đoạn văn"
+
+#, fuzzy
+msgid "Pattern & Replacement"
+msgstr "Mẫu & Thay thế"
+
+#, fuzzy
+msgid "Pattern"
+msgstr "Mẫu"
+
+#, fuzzy
+msgid "Replacement"
+msgstr "Thay thế"
+
+#, fuzzy
+msgid "Whole word only"
+msgstr "Chỉ tìm kiếm toàn bộ từ"
+
+#, fuzzy
+msgid "Regular expression (\\1 = first capture group)"
+msgstr "Biểu thức chính quy (\\1 = nhóm bắt giữ đầu tiên)"
+
+#, fuzzy
+msgid "Enabled"
+msgstr "Đã bật"
+
+#, fuzzy
+msgid "Apply to"
+msgstr "Đăng ký vào"
+
+#, fuzzy
+msgid "Voices"
+msgstr "Những tiếng nói"
+
+#, fuzzy
+msgid "New Rule"
+msgstr "Quy định mới"
+
+#, fuzzy
+msgid "Edit Rule"
+msgstr "Chỉnh sửa quy tắc"
+
+#, fuzzy
+msgid "Save"
+msgstr "Lưu"
+
+#, fuzzy
+msgid "All voices"
+msgstr "Tất cả các giọng nói"
+
+#, fuzzy
+msgid "Apply To"
+msgstr "Đăng ký"
+
+#, fuzzy
+msgid "Text to Speech"
+msgstr "Chuyển văn bản thành giọng nói"
+
+#, fuzzy
+msgid "Voice"
+msgstr "Giọng nói"
+
+#, fuzzy
+msgid "Rate"
+msgstr "Tỷ lệ"
+
+#, fuzzy
+msgid "Speech Rate"
+msgstr "Tốc độ nói"
+
+#, fuzzy
+msgid "Pitch"
+msgstr "Góc nghiêng"
+
+#, fuzzy
+msgid "Speech Dictionary"
+msgstr "Từ điển phát âm"
+
+#, fuzzy
+msgid "Play Sample"
+msgstr "Nghe bản mẫu"
+
+#, fuzzy
+msgid "Behavior"
+msgstr "Hành vi"
+
+#, fuzzy
+msgid "Restore last open documents"
+msgstr "Khôi phục các tài liệu đã mở gần đây nhất"
+
+#, fuzzy
+msgid "Swipe up moves forward"
+msgstr "Vuốt lên để chuyển sang trang tiếp theo"
+
+#, fuzzy
+msgid "Active"
+msgstr "Hoạt động"
+
+#, fuzzy
+msgid "Time remaining"
+msgstr "Thời gian còn lại"
+
+#, fuzzy
+msgid "Cancel Timer"
+msgstr "Hủy hẹn giờ"
+
+#, fuzzy
+msgid "Set timer"
+msgstr "Đặt hẹn giờ"
+
+#, fuzzy
+msgid "Edit"
+msgstr "Chỉnh sửa"
+
+#, fuzzy
+msgid "Add Rule"
+msgstr "Thêm quy tắc"
+
+#, fuzzy
+msgid "No Rules"
+msgstr "Không có quy tắc"
+
+#, fuzzy
+msgid "Contents"
+msgstr "Mục lục"
+
+#, fuzzy
+msgid "No Table of Contents"
+msgstr "Không có Mục lục"
+
+#, fuzzy
+msgid "This document has no table of contents."
+msgstr "Tài liệu này không có mục lục."
+
+#, fuzzy
+msgid "Tabs"
+msgstr "Thẻ"
+
+#, fuzzy
+msgid "Navigation unit"
+msgstr "Bộ điều hướng"
+
+#, fuzzy
+msgid "Previous {}"
+msgstr "Bài trước: {}"
+
+#, fuzzy
+msgid "Pause"
+msgstr "Tạm dừng"
+
+#, fuzzy
+msgid "Play"
+msgstr "Chơi"
+
+#, fuzzy
+msgid "End of document"
+msgstr "Hết tài liệu"
+
+#, fuzzy
+msgid "Beginning of document"
+msgstr "Đầu tài liệu"
+
+#, fuzzy
+msgid "Next {}"
+msgstr "Tiếp theo{}"
+
+#, fuzzy
+msgid "Press play to start listening."
+msgstr "Nhấn nút phát để bắt đầu nghe."
+
+#, fuzzy
+msgid "Locate"
+msgstr "Tìm"
+
+#, fuzzy
+msgid "File Missing"
+msgstr "Tệp bị thiếu"
+
+#, fuzzy
+msgid "Currently Open"
+msgstr "Hiện đang mở"
+
+#, fuzzy
+msgid "Document Information"
+msgstr "Thông tin tài liệu"
+
+#, fuzzy
+msgid "Expanded"
+msgstr "Mở rộng"
+
+#, fuzzy
+msgid "Collapsed"
+msgstr "Đã thu gọn"
+
+#, fuzzy
+msgid "Collapse"
+msgstr "Thu gọn"
+
+#, fuzzy
+msgid "Expand"
+msgstr "Mở rộng"
+
+#, fuzzy
+msgid "Untitled Link"
+msgstr "Liên kết không có tiêu đề"
+
+#, fuzzy
+msgid "No supported books or folders found here."
+msgstr "Không tìm thấy sách hoặc thư mục nào được hỗ trợ tại đây."
+
+#, fuzzy
+msgid "Folder"
+msgstr "Thư mục"
+
+#, fuzzy
+msgid "Internal Storage"
+msgstr "Bộ nhớ trong"
+
+#, fuzzy
+msgid "Search Term"
+msgstr "Từ khóa tìm kiếm"
+
+#, fuzzy
+msgid "Search History"
+msgstr "Lịch sử tìm kiếm"
+
+#, fuzzy
+msgid "Find Next"
+msgstr "Tìm tiếp theo"
+
+#, fuzzy
+msgid "Password:"
+msgstr "Mật khẩu:"
+
+#, fuzzy
+msgid "All Files Access Required"
+msgstr "Yêu cầu quyền truy cập vào tất cả các tệp"
+
+#, fuzzy
+msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgstr "Paperback cần quyền “Truy cập tất cả tệp” để kích hoạt trình duyệt tệp tùy chỉnh trong ứng dụng."
+
+#, fuzzy
+msgid "Why we need this:"
+msgstr "Tại sao chúng ta cần điều này:"
+
+#, fuzzy
+msgid "• To provide a fast, fully screen-reader accessible file manager inside the app."
+msgstr "• Cung cấp một trình quản lý tệp nhanh chóng và hoàn toàn tương thích với trình đọc màn hình ngay trong ứng dụng."
+
+#, fuzzy
+msgid "• To load large files instantly without needing to copy them into the app's cache."
+msgstr "• Để tải các tệp tin dung lượng lớn ngay lập tức mà không cần sao chép chúng vào bộ nhớ đệm của ứng dụng."
+
+#, fuzzy
+msgid "• To display the exact local file paths of your documents."
+msgstr "• Để hiển thị đường dẫn tệp cục bộ chính xác của các tài liệu của bạn."
+
+#, fuzzy
+msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
+msgstr "Nếu bạn từ chối quyền này, bạn vẫn có thể sử dụng Trình chọn tệp hệ thống Android để mở sách của mình bằng cách tắt cài đặt trình duyệt tệp tùy chỉnh."
+
+#, fuzzy
+msgid "Grant"
+msgstr "Grant"
+
+#, fuzzy
+msgid "Not Now"
+msgstr "Không phải bây giờ"
+
+#, fuzzy
+msgid "Restore last open book"
+msgstr "Khôi phục cuốn sách đã mở gần đây nhất"
+
+#, fuzzy
+msgid "Use in-app file browser (requires All Files permission)"
+msgstr "Sử dụng trình duyệt tệp trong ứng dụng (yêu cầu quyền “Tất cả tệp”)"
+
+#, fuzzy
+msgid "Text-to-Speech"
+msgstr "Chuyển văn bản thành giọng nói"
+
+#, fuzzy
+msgid "System Default"
+msgstr "Cài đặt mặc định của hệ thống"
+
+#, fuzzy
+msgid "Custom Timer"
+msgstr "Bộ hẹn giờ tùy chỉnh"
+
+#, fuzzy
+msgid "Minutes"
+msgstr "Biên bản"
+
+#, fuzzy
+msgid "Back"
+msgstr "Quay lại"
+
+#, fuzzy
+msgid "Start"
+msgstr "Bắt đầu"
+
+#, fuzzy
+msgid "Change to:"
+msgstr "Thay đổi thành:"
+
+#, fuzzy
+msgid "Custom time..."
+msgstr "Thời gian tùy chỉnh..."
+
+#, fuzzy
+msgid "Find Previous"
+msgstr "Tìm bài trước"
+
+#, fuzzy
+msgid "Close Search"
+msgstr "Đóng tìm kiếm"
+
+#, fuzzy
+msgid "Settings imported"
+msgstr "Đã nhập cài đặt"
+
+#, fuzzy
+msgid "Failed to import settings"
+msgstr "Không thể nhập cài đặt"
+
+#, fuzzy
+msgid "Settings exported"
+msgstr "Các cài đặt đã được xuất"
+
+#, fuzzy
+msgid "Failed to export settings"
+msgstr "Không thể xuất cài đặt"
+
+#, fuzzy
+msgid "No document open. Please open a book."
+msgstr "Chưa có tài liệu nào được mở. Vui lòng mở một cuốn sách."
+
+#, fuzzy
+msgid "No Documents"
+msgstr "Không có tài liệu"
+
+#, fuzzy
+msgid "Show All"
+msgstr "Hiển thị tất cả"
+
+#, fuzzy
+msgid "Sleep timer: {}"
+msgstr "Hẹn giờ tắt: {}"
+
+#, fuzzy
+msgid "Cancel sleep timer"
+msgstr "Hủy hẹn giờ tắt máy"
+
+#, fuzzy
+msgid "Import"
+msgstr "Nhập khẩu"
+
+#, fuzzy
+msgid "Import Document Data"
+msgstr "Nhập dữ liệu tài liệu"
+
+#, fuzzy
+msgid "Export Document Data"
+msgstr "Xuất dữ liệu tài liệu"
+
+#, fuzzy
+msgid "Open Book"
+msgstr "Sách mở"
+
+#, fuzzy
+msgid "Elements List"
+msgstr "Danh sách các phần tử"
+
+#, fuzzy
+msgid "Show Document"
+msgstr "Hiển thị tài liệu"
+
+#, fuzzy
+msgid "Show Text"
+msgstr "Hiển thị văn bản"
+
+#, fuzzy
+msgid "Pause Read Aloud"
+msgstr "Tạm dừng Đọc to"
+
+#, fuzzy
+msgid "Read Aloud"
+msgstr "Đọc to"
+
+#, fuzzy
+msgid "Help"
+msgstr "Trợ giúp"
+
+#, fuzzy
+msgid "More Options"
+msgstr "Các tùy chọn khác"
+
+#, fuzzy
+msgid "Heading"
+msgstr "Tiêu đề"
+
+#, fuzzy
+msgid "Link"
+msgstr "Liên kết"
+
+#, fuzzy
+msgid "Section"
+msgstr "Phần"
+
+#, fuzzy
+msgid "List"
+msgstr "Danh sách"
+
+#, fuzzy
+msgid "List Item"
+msgstr "Mục trong danh sách"
+
+#, fuzzy
+msgid "Table"
+msgstr "Bảng"
+
+#, fuzzy
+msgid "Separator"
+msgstr "Dấu phân cách"
+
+#, fuzzy
+msgid "Document Data"
+msgstr "Dữ liệu tài liệu"
+
+#, fuzzy
+msgid "Sleep timer running, {} remaining"
+msgstr "Chế độ hẹn giờ tắt đang hoạt động, còn lại {}"
+
+#, fuzzy
+msgid "Custom"
+msgstr "Tùy chỉnh"
+
+#, fuzzy
+msgid "Custom: {} minutes"
+msgstr "Tùy chỉnh: {} phút"
+
+#, fuzzy
+msgid "Duration"
+msgstr "Thời lượng"
+
+#, fuzzy
+msgid "Stop Timer"
+msgstr "Dừng đồng hồ bấm giờ"
+
+#, fuzzy
+msgid "Start Timer"
+msgstr "Bắt đầu hẹn giờ"
+
+#, c-format
+#~ msgid ""
+#~ "There is an update available.\n"
+#~ "Your version: %s\n"
+#~ "Latest version: %s\n"
+#~ "Description:\n"
+#~ "%s\n"
+#~ "Do you want to open the direct download link?"
+#~ msgstr ""
+#~ "Đã có bản cập nhật mới.\n"
+#~ "Phiên bản hiện tại: %s\n"
+#~ "Phiên bản mới nhất: %s\n"
+#~ "Mô tả:\n"
+#~ "%s\n"
+#~ "Bạn có muốn mở liên kết tải về trực tiếp không?"
+
+#~ msgid "Error checking for updates."
+#~ msgstr "Lỗi khi kiểm tra cập nhật."
+
+#, c-format
+#~ msgid "Failed to check for updates. HTTP status: %d"
+#~ msgstr "Kiểm tra cập nhật thất bại. Mã lỗi HTTP: %d"
+
+#~ msgid "Failed to initialize configuration"
+#~ msgstr "Không thể khởi tạo cấu hình"
+
+#~ msgid "Total number of words: "
+#~ msgstr "Tổng số từ: "
+
+#~ msgid "Total number of lines: "
+#~ msgstr "Tổng số dòng: "
+
+#~ msgid "Total number of characters: "
+#~ msgstr "Tổng số ký tự: "
+
+#~ msgid "Root"
+#~ msgstr "Gốc"
+
+#, c-format
+#~ msgid "%s - %s - Note %d"
+#~ msgstr "%s - %s - Ghi chú %d"
+
+#, c-format
+#~ msgid "%s - Note %d"
+#~ msgstr "%s - Ghi chú %d"
+
+#~ msgid "Opening link in default browser."
+#~ msgstr "Đang mở liên kết bằng trình duyệt mặc định."
+
+#~ msgid "Failed to open link."
+#~ msgstr "Không thể mở liên kết."
+
+#~ msgid "Internal link target not found."
+#~ msgstr "Không tìm thấy đích đến của liên kết nội bộ."
+
+#, c-format
+#~ msgid "List with %d items"
+#~ msgstr "Danh sách có %d mục"
+
+#, c-format
+#~ msgid "List with %d items "
+#~ msgstr "Danh sách có %d mục "
+
+#~ msgid "Bookmark note updated"
+#~ msgstr "Đã cập nhật ghi chú dấu trang"
+
+#, c-format
+#~ msgid "Bookmark: %s - %s"
+#~ msgstr "Dấu trang: %s - %s"
+
+#, c-format
+#~ msgid "Bookmark: %s"
+#~ msgstr "Dấu trang: %s"
+
+#~ msgid "Table of contents is empty."
+#~ msgstr "Mục lục trống."
+
+#, c-format
+#~ msgid "line %ld, character %ld, reading %d%%"
+#~ msgstr "dòng %ld, ký tự %ld, đang đọc %d%%"
+
+#, c-format
+#~ msgid "No %s heading"
+#~ msgstr "Không có tiêu đề mục %s"
+
+#~ msgid "next"
+#~ msgstr "tiếp theo"
+
+#, c-format
+#~ msgid "Wrapping to %s. %s Heading level %d"
+#~ msgstr "Quay lại %s. %s tiêu đề mục cấp %d"
+
+#~ msgid "end"
+#~ msgstr "cuối trang"
+
+#, c-format
+#~ msgid " | Sleep timer: %02d:%02d"
+#~ msgstr " | Hẹn giờ ngủ: %02d:%02d"
+
+#~ msgid "Select a document to read"
+#~ msgstr "Chọn một tài liệu để đọc"

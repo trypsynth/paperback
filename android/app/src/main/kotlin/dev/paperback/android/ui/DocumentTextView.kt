@@ -1,7 +1,6 @@
 package dev.paperback.android.ui
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,10 +28,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import dev.paperback.android.t
 import kotlinx.coroutines.launch
 import uniffi.paperback.LinkAction
-import uniffi.paperback.MarkerTypeFfi
+import uniffi.paperback.MarkerType
 import uniffi.paperback.SearchOptionsFfi
 
 @Composable
@@ -76,31 +76,31 @@ fun DocumentTextView(
 					val sortedMarkers = markers.sortedBy { it.position }
 					sortedMarkers.forEach { marker ->
 						when (marker.mtype) {
-							MarkerTypeFfi.HEADING1 -> {
+							MarkerType.HEADING1 -> {
 								isHeading = true
 								headingLevel = 1
 							}
-							MarkerTypeFfi.HEADING2 -> {
+							MarkerType.HEADING2 -> {
 								isHeading = true
 								headingLevel = 2
 							}
-							MarkerTypeFfi.HEADING3 -> {
+							MarkerType.HEADING3 -> {
 								isHeading = true
 								headingLevel = 3
 							}
-							MarkerTypeFfi.HEADING4 -> {
+							MarkerType.HEADING4 -> {
 								isHeading = true
 								headingLevel = 4
 							}
-							MarkerTypeFfi.HEADING5 -> {
+							MarkerType.HEADING5 -> {
 								isHeading = true
 								headingLevel = 5
 							}
-							MarkerTypeFfi.HEADING6 -> {
+							MarkerType.HEADING6 -> {
 								isHeading = true
 								headingLevel = 6
 							}
-							MarkerTypeFfi.LINK -> {
+							MarkerType.LINK -> {
 								val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
 								val markerTextLength = marker.text.length
 								if (markerStartInLine > currentIdx) {
@@ -119,11 +119,11 @@ fun DocumentTextView(
 											)
 										)
 									) {
-										val result = docState.session.activateLinkFfi(marker.position)
+										val result = docState.session.activateLink(marker.position)
 										if (result.found) {
 											when (result.action) {
 												LinkAction.EXTERNAL -> {
-													val intent = Intent(Intent.ACTION_VIEW, Uri.parse(result.url))
+													val intent = Intent(Intent.ACTION_VIEW, result.url.toUri())
 													context.startActivity(intent)
 												}
 												LinkAction.INTERNAL -> {

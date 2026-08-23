@@ -7,9 +7,11 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.paperback.android.t
+import dev.paperback.android.tts.DaisyAudioPlayer
 import dev.paperback.android.tts.TtsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,10 +30,12 @@ import uniffi.paperback.HeadingTreeFfi
 import uniffi.paperback.LinkListFfi
 import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
+import uniffi.paperback.TextSegmentFfi
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
+import java.security.MessageDigest
 import java.util.Locale
-import java.util.UUID
 
 class MainScreenViewModel(
 	application: Application
@@ -42,6 +46,20 @@ class MainScreenViewModel(
 	val configManager: ConfigManagerFfi get() = config
 
 	val ttsManager = TtsManager(application, config)
+
+	// Narrates DAISY audiobooks' recorded audio in place of synthesized TTS (see
+	// DocumentTabState.hasAudio). A single instance re-attached to whichever tab is active.
+	private val daisyAudioPlayer = DaisyAudioPlayer(application)
+
+	// The document URI daisyAudioPlayer is currently attached to.
+	private var daisyAttachedDocumentUri: String? = null
+
+	// Whether playback controls should route to daisyAudioPlayer instead of ttsManager.
+	// Centralized so every dispatch site checks the exact same condition rather than each
+	// re-deriving "the active tab, if any, has audio" on its own.
+	private val activeTabHasAudio: Boolean
+		get() = (uiState.value as? MainScreenUiState.Success)?.activeTab?.hasAudio == true
+
 	private val _currentSegmentType = MutableStateFlow(SegmentTypeFfi.PARAGRAPH)
 	val currentSegmentType: StateFlow<SegmentTypeFfi> = _currentSegmentType.asStateFlow()
 
@@ -77,29 +95,33 @@ class MainScreenViewModel(
 	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
 	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes.asStateFlow()
 
-	private val _showElementsDialog = MutableStateFlow(false)
-	val showElementsDialog: StateFlow<Boolean> = _showElementsDialog.asStateFlow()
+	private val elementsDialogState = DialogState()
+	val showElementsDialog: StateFlow<Boolean> = elementsDialogState.isOpen
 
-	private val _showFindDialog = MutableStateFlow(false)
-	val showFindDialog: StateFlow<Boolean> = _showFindDialog.asStateFlow()
+	val findDialog = DialogState()
 
-	private val _showSettingsDialog = MutableStateFlow(false)
-	val showSettingsDialog: StateFlow<Boolean> = _showSettingsDialog.asStateFlow()
+	val settingsDialog = DialogState()
 
-	private val _showTocDialog = MutableStateFlow(false)
-	val showTocDialog: StateFlow<Boolean> = _showTocDialog.asStateFlow()
+	private val _restorePreviousDocuments = MutableStateFlow(config.getAppBool("restore_previous_documents", true))
+	val restorePreviousDocuments: StateFlow<Boolean> = _restorePreviousDocuments.asStateFlow()
 
-	private val _showGoToDialog = MutableStateFlow(false)
-	val showGoToDialog: StateFlow<Boolean> = _showGoToDialog.asStateFlow()
+	private val _useInAppFileBrowser = MutableStateFlow(config.getAppBool("use_in_app_file_browser", false))
+	val useInAppFileBrowser: StateFlow<Boolean> = _useInAppFileBrowser.asStateFlow()
+
+	private val _swipeUpMovesForward = MutableStateFlow(config.getAppBool("swipe_up_moves_forward", true))
+	val swipeUpMovesForward: StateFlow<Boolean> = _swipeUpMovesForward.asStateFlow()
+
+	val tocDialog = DialogState()
+
+	private val goToDialogState = DialogState()
+	val showGoToDialog: StateFlow<Boolean> = goToDialogState.isOpen
 
 	private val _goToInitialMode = MutableStateFlow("Line")
 	val goToInitialMode: StateFlow<String> = _goToInitialMode.asStateFlow()
 
-	private val _showWordCountDialog = MutableStateFlow(false)
-	val showWordCountDialog: StateFlow<Boolean> = _showWordCountDialog.asStateFlow()
+	val wordCountDialog = DialogState()
 
-	private val _showDocumentInfoDialog = MutableStateFlow(false)
-	val showDocumentInfoDialog: StateFlow<Boolean> = _showDocumentInfoDialog.asStateFlow()
+	val documentInfoDialog = DialogState()
 
 	private val _activeSearchQuery = MutableStateFlow<String?>(null)
 	val activeSearchQuery: StateFlow<String?> = _activeSearchQuery.asStateFlow()
@@ -131,8 +153,7 @@ class MainScreenViewModel(
 		_performSearchEvent.tryEmit(false)
 	}
 
-	private val _showSleepTimerDialog = MutableStateFlow(false)
-	val showSleepTimerDialog: StateFlow<Boolean> = _showSleepTimerDialog.asStateFlow()
+	val sleepTimerDialog = DialogState()
 
 	private val _currentHeadings = MutableStateFlow<HeadingTreeFfi?>(null)
 	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings.asStateFlow()
@@ -143,8 +164,7 @@ class MainScreenViewModel(
 	private val _passwordPromptUri = MutableStateFlow<Uri?>(null)
 	val passwordPromptUri = _passwordPromptUri.asStateFlow()
 
-	private val _showPermissionRationale = MutableStateFlow(false)
-	val showPermissionRationale = _showPermissionRationale.asStateFlow()
+	val permissionRationaleDialog = DialogState()
 
 	private val _importPromptPath = MutableStateFlow<String?>(null)
 	val importPromptPath: StateFlow<String?> = _importPromptPath.asStateFlow()
@@ -178,8 +198,21 @@ class MainScreenViewModel(
 		ttsManager.onPauseCommand = { pauseTts() }
 		ttsManager.onNextCommand = { playNextSegment() }
 		ttsManager.onPrevCommand = { playPrevSegment() }
+		daisyAudioPlayer.onPlaybackStateChanged = { isPlaying ->
+			ttsManager.setExternalPlaybackState(isPlaying)
+			if (!isPlaying) persistDaisyAudioPosition()
+		}
+		daisyAudioPlayer.onClipChanged = { position ->
+			_ttsPosition.value = position
+			refreshSegmentPreview()
+			saveTtsPositionToConfig(position)
+			// Unlike desktop's on-close save, Android can kill this process with no lifecycle
+			// callback at all, so persist on every clip change rather than only on pause/stop.
+			persistDaisyAudioPosition()
+		}
 		viewModelScope.launch(Dispatchers.IO) {
 			config.initialize(context.filesDir.absolutePath + "/config.toml")
+			purgeLegacyDocumentCache()
 			withContext(Dispatchers.Main) {
 				ttsManager.loadConfigAndInit()
 			}
@@ -190,7 +223,7 @@ class MainScreenViewModel(
 			if (openedUris.isNotEmpty()) {
 				val restoredTabs = mutableListOf<DocumentTabState>()
 				for (uriString in openedUris) {
-					val tab = prepareDocumentTabIO(Uri.parse(uriString), isRestore = true)
+					val tab = prepareDocumentTabIO(uriString.toUri(), isRestore = true)
 					if (tab != null) {
 						restoredTabs.add(tab)
 					}
@@ -272,7 +305,7 @@ class MainScreenViewModel(
 			val recents = config.getRecentDocuments()
 			val opened = config.getOpenedDocuments().toSet()
 			recents.map { uriString ->
-				val uri = Uri.parse(uriString)
+				val uri = uriString.toUri()
 				var displayName = uri.lastPathSegment ?: uriString
 				var isMissing = false
 
@@ -357,6 +390,7 @@ class MainScreenViewModel(
 				config.removeOpenedDocument(closedTab.documentUri)
 				config.setDocumentOpened(closedTab.documentUri, false)
 				config.flush()
+				documentCacheDir(closedTab.documentUri).deleteRecursively()
 				updateRecentDocuments()
 				withContext(Dispatchers.Main) {
 					currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
@@ -403,13 +437,15 @@ class MainScreenViewModel(
 			config.setDocumentPosition(documentUri, position)
 			config.flush()
 		}
-		if (ttsManager.isPaused.value) {
+		if (daisyAttachedDocumentUri != documentUri && ttsManager.isPaused.value) {
 			ttsManager.stop()
 		}
 	}
 
 	override fun onCleared() {
 		super.onCleared()
+		detachDaisyAudio()
+		daisyAudioPlayer.shutdown()
 		ttsManager.shutdown()
 		Thread {
 			try {
@@ -417,6 +453,29 @@ class MainScreenViewModel(
 			} catch (_: Exception) {
 			}
 		}.start()
+	}
+
+	/**
+	 * Extraction directory for [uriString], stable across opens. Naming it with a fresh UUID
+	 * meant every pick -- and every tab restore at launch -- left behind another full copy of
+	 * the document, with nothing that ever deleted it.
+	 */
+	private fun documentCacheDir(uriString: String): File {
+		val digest = MessageDigest.getInstance("SHA-256").digest(uriString.toByteArray())
+		val name = digest.take(16).joinToString("") { "%02x".format(it) }
+		return File(context.cacheDir, "$DOCUMENT_CACHE_DIR/$name")
+	}
+
+	/** Clears extraction directories left by builds that named them with a raw UUID. */
+	private fun purgeLegacyDocumentCache() {
+		try {
+			context.cacheDir.listFiles()?.forEach {
+				if (it.isDirectory && UUID_DIR_REGEX.matches(it.name)) {
+					it.deleteRecursively()
+				}
+			}
+		} catch (_: Exception) {
+		}
 	}
 
 	private suspend fun prepareDocumentTabIO(
@@ -442,7 +501,8 @@ class MainScreenViewModel(
 					}
 					displayName = name
 					val ext = displayName.substringAfterLast('.', "epub").lowercase()
-					val tempDir = File(context.cacheDir, UUID.randomUUID().toString())
+					val tempDir = documentCacheDir(uriString)
+					tempDir.deleteRecursively()
 					tempDir.mkdirs()
 					val tempFile = File(tempDir, displayName.ifBlank { "document.$ext" })
 					FileOutputStream(tempFile).use { inputStream.copyTo(it) }
@@ -487,7 +547,8 @@ class MainScreenViewModel(
 					documentUri = uriString,
 					docKey = docKey,
 					initialScrollIndex = initialScrollIndex,
-					savedPosition = savedPosition
+					savedPosition = savedPosition,
+					hasAudio = session.hasAudioFfi()
 				)
 			} catch (e: Exception) {
 				val msg = e.message ?: ""
@@ -512,7 +573,7 @@ class MainScreenViewModel(
 		if (tabState == null) {
 			withContext(Dispatchers.Main) {
 				if (uri.scheme == "file" && needsAllFilesAccessPermission()) {
-					setShowPermissionRationale(true)
+					permissionRationaleDialog.open()
 				} else {
 					_uiState.value = MainScreenUiState.Error("Failed to open file")
 				}
@@ -569,6 +630,10 @@ class MainScreenViewModel(
 	}
 
 	fun togglePlayPause() {
+		if (activeTabHasAudio) {
+			daisyAudioPlayer.toggle()
+			return
+		}
 		if (ttsManager.isSpeaking.value) {
 			pauseTts()
 		} else if (ttsManager.isPaused.value) {
@@ -616,6 +681,21 @@ class MainScreenViewModel(
 		}
 	}
 
+	/** Seeks daisyAudioPlayer to `segment`'s start, then either resumes playback there or just
+	 * announces it, for a next/prev/type-directed navigation landing on an audio-backed tab. */
+	private fun navigateDaisyAudioToSegment(
+		segment: TextSegmentFfi,
+		speak: Boolean,
+		announce: Boolean
+	) {
+		daisyAudioPlayer.seekToPosition(segment.startPos)
+		if (speak) {
+			daisyAudioPlayer.play()
+		} else if (announce) {
+			announceNavigationCue(segment.text)
+		}
+	}
+
 	fun playNextSegment(
 		speak: Boolean = true,
 		announce: Boolean = false
@@ -628,6 +708,10 @@ class MainScreenViewModel(
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
 				saveTtsPositionToConfig(segment.startPos)
+				if (tab.hasAudio) {
+					navigateDaisyAudioToSegment(segment, speak, announce)
+					return
+				}
 				if (speak) {
 					ttsManager.speak(segment.text)
 					precacheNextContinuousSegment()
@@ -709,6 +793,10 @@ class MainScreenViewModel(
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
 				saveTtsPositionToConfig(segment.startPos)
+				if (tab.hasAudio) {
+					navigateDaisyAudioToSegment(segment, speak, announce)
+					return
+				}
 				if (speak) {
 					ttsManager.speak(segment.text)
 					precacheNextContinuousSegment()
@@ -725,6 +813,10 @@ class MainScreenViewModel(
 	}
 
 	fun pauseTts() {
+		if (activeTabHasAudio) {
+			daisyAudioPlayer.pause()
+			return
+		}
 		ttsManager.pause()
 	}
 
@@ -761,6 +853,10 @@ class MainScreenViewModel(
 			_ttsPosition.value = segment.startPos
 			_currentSegmentText.value = segment.text
 			saveTtsPositionToConfig(segment.startPos)
+			if (tab.hasAudio) {
+				navigateDaisyAudioToSegment(segment, speak = true, announce = false)
+				return
+			}
 			ttsManager.stop()
 			ttsManager.speak(segment.text)
 			precacheNextContinuousSegment()
@@ -768,6 +864,10 @@ class MainScreenViewModel(
 	}
 
 	fun resumeTts() {
+		if (activeTabHasAudio) {
+			daisyAudioPlayer.play()
+			return
+		}
 		if (ttsManager.isPaused.value) {
 			ttsManager.resume()
 		} else {
@@ -780,7 +880,7 @@ class MainScreenViewModel(
 		val tab = state.activeTab ?: return false
 		val docUri = tab.documentUri
 		if (docUri.startsWith("content://")) return false
-		val absolutePath = Uri.parse(docUri).path ?: docUri
+		val absolutePath = docUri.toUri().path ?: docUri
 		val file = File(absolutePath)
 		val nameWithoutExtension = file.nameWithoutExtension
 		val paperbackPath = File(file.parentFile, "$nameWithoutExtension.paperback").absolutePath
@@ -802,7 +902,7 @@ class MainScreenViewModel(
 		val absolutePath = if (docUri.startsWith("content://")) {
 			docUri
 		} else {
-			Uri.parse(docUri).path ?: docUri
+			docUri.toUri().path ?: docUri
 		}
 
 		val tempFile = File(context.cacheDir, "temp_export.paperback")
@@ -824,7 +924,7 @@ class MainScreenViewModel(
 	fun exportDocumentToUri(
 		context: Context,
 		destUri: Uri,
-		format: uniffi.paperback.ExportFormatFfi
+		format: uniffi.paperback.ExportFormat
 	): Boolean {
 		val state = uiState.value as? MainScreenUiState.Success ?: return false
 		val tab = state.activeTab ?: return false
@@ -850,7 +950,7 @@ class MainScreenViewModel(
 		val absolutePath = if (docUri.startsWith("content://")) {
 			docUri
 		} else {
-			Uri.parse(docUri).path ?: docUri
+			docUri.toUri().path ?: docUri
 		}
 
 		val tempFile = File(context.cacheDir, "temp_import.paperback")
@@ -879,9 +979,44 @@ class MainScreenViewModel(
 			val tab = currentTabs[currentActiveIndex]
 			ttsManager.currentDocumentTitle = tab.title.ifBlank { tab.fileName }
 			ttsManager.currentDocumentAuthor = tab.author.ifBlank { "Unknown Author" }
+			attachDaisyAudioForActiveTab(tab)
 		} else {
 			ttsManager.currentDocumentTitle = "Paperback"
 			ttsManager.currentDocumentAuthor = "Unknown"
+			detachDaisyAudio()
+		}
+	}
+
+	/** Switches daisyAudioPlayer to narrate `tab`, resuming from its saved audio position (or
+	 * saved text position, absent that). No-op if `tab` has no audio or is already attached. */
+	private fun attachDaisyAudioForActiveTab(tab: DocumentTabState) {
+		if (daisyAttachedDocumentUri == tab.documentUri) return
+		detachDaisyAudio()
+		if (!tab.hasAudio) return
+		daisyAudioPlayer.attach(tab.session, tab.docKey)
+		daisyAttachedDocumentUri = tab.documentUri
+		val savedAudioMs = config.getDocumentAudioTimeFfi(tab.documentUri)
+		if (savedAudioMs >= 0) {
+			daisyAudioPlayer.seekToMs(savedAudioMs)
+		} else {
+			daisyAudioPlayer.seekToPosition(tab.savedPosition)
+		}
+	}
+
+	/** Persists wherever daisyAudioPlayer currently is (if it's attached to anything) and
+	 * detaches it, ahead of switching to a different document or the app going away. */
+	private fun detachDaisyAudio() {
+		persistDaisyAudioPosition()
+		daisyAudioPlayer.detach()
+		daisyAttachedDocumentUri = null
+	}
+
+	private fun persistDaisyAudioPosition() {
+		val uri = daisyAttachedDocumentUri ?: return
+		val ms = daisyAudioPlayer.resumePointMs() ?: return
+		viewModelScope.launch(Dispatchers.IO) {
+			config.setDocumentAudioTimeFfi(uri, ms)
+			config.flush()
 		}
 	}
 
@@ -889,6 +1024,10 @@ class MainScreenViewModel(
 		_ttsPosition.value = pos
 		refreshSegmentPreview()
 		saveTtsPositionToConfig(pos)
+		if (activeTabHasAudio) {
+			daisyAudioPlayer.seekToPosition(pos)
+			return
+		}
 		if (ttsManager.isSpeaking.value) {
 			speakCurrentSegment()
 		} else if (ttsManager.isPaused.value) {
@@ -899,7 +1038,7 @@ class MainScreenViewModel(
 	fun seekToPercent(percent: Int) {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
-		val pos = tab.session.positionFromPercentFfi(percent)
+		val pos = tab.session.positionFromPercent(percent)
 		updateTtsPosition(pos)
 	}
 
@@ -913,39 +1052,33 @@ class MainScreenViewModel(
 			withContext(Dispatchers.Main) {
 				_currentHeadings.value = headings
 				_currentLinks.value = links
-				_showElementsDialog.value = true
+				elementsDialogState.open()
 			}
 		}
 	}
 
 	fun closeElementsDialog() {
-		_showElementsDialog.value = false
+		elementsDialogState.close()
 		_currentHeadings.value = null
 		_currentLinks.value = null
 	}
 
-	fun openFindDialog() {
-		_showFindDialog.value = true
+	fun setRestorePreviousDocuments(value: Boolean) {
+		_restorePreviousDocuments.value = value
+		config.setAppBool("restore_previous_documents", value)
+		config.flush()
 	}
 
-	fun closeFindDialog() {
-		_showFindDialog.value = false
+	fun setUseInAppFileBrowser(value: Boolean) {
+		_useInAppFileBrowser.value = value
+		config.setAppBool("use_in_app_file_browser", value)
+		config.flush()
 	}
 
-	fun openSettingsDialog() {
-		_showSettingsDialog.value = true
-	}
-
-	fun closeSettingsDialog() {
-		_showSettingsDialog.value = false
-	}
-
-	fun openTocDialog() {
-		_showTocDialog.value = true
-	}
-
-	fun closeTocDialog() {
-		_showTocDialog.value = false
+	fun setSwipeUpMovesForward(value: Boolean) {
+		_swipeUpMovesForward.value = value
+		config.setAppBool("swipe_up_moves_forward", value)
+		config.flush()
 	}
 
 	private val _accessibilityAnnouncement = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -965,35 +1098,11 @@ class MainScreenViewModel(
 			}
 		}
 		_goToInitialMode.value = initialMode
-		_showGoToDialog.value = true
+		goToDialogState.open()
 	}
 
 	fun closeGoToDialog() {
-		_showGoToDialog.value = false
-	}
-
-	fun openWordCountDialog() {
-		_showWordCountDialog.value = true
-	}
-
-	fun closeWordCountDialog() {
-		_showWordCountDialog.value = false
-	}
-
-	fun openDocumentInfoDialog() {
-		_showDocumentInfoDialog.value = true
-	}
-
-	fun closeDocumentInfoDialog() {
-		_showDocumentInfoDialog.value = false
-	}
-
-	fun openSleepTimerDialog() {
-		_showSleepTimerDialog.value = true
-	}
-
-	fun closeSleepTimerDialog() {
-		_showSleepTimerDialog.value = false
+		goToDialogState.close()
 	}
 
 	fun submitPassword(password: String) {
@@ -1059,20 +1168,21 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun setShowPermissionRationale(show: Boolean) {
-		_showPermissionRationale.value = show
-	}
-
 	fun openHelpDocument() {
 		val lang = Locale.getDefault().language
-		val assetName = when (lang) {
-			"bs", "cs", "fi", "nl", "pl", "sr" -> "readmes/readme-$lang.html"
-			else -> "readmes/readme.html"
-		}
 		viewModelScope.launch(Dispatchers.IO) {
 			try {
+				// Try the localized doc first, falling back to English rather than checking
+				// a hardcoded language list against a hand-maintained set of asset names --
+				// that list drifts out of sync with which readme-$lang.html files actually
+				// exist in assets/readmes/.
+				val assetStream = try {
+					context.assets.open("readmes/readme-$lang.html")
+				} catch (_: IOException) {
+					context.assets.open("readmes/readme.html")
+				}
 				val tempFile = File(context.cacheDir, "readme-$lang.html")
-				context.assets.open(assetName).use { input ->
+				assetStream.use { input ->
 					FileOutputStream(tempFile).use { output ->
 						input.copyTo(output)
 					}
@@ -1091,5 +1201,7 @@ class MainScreenViewModel(
 
 	companion object {
 		private val WHITESPACE_REGEX = "\\s+".toRegex()
+		private const val DOCUMENT_CACHE_DIR = "documents"
+		private val UUID_DIR_REGEX = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 	}
 }

@@ -1,33 +1,44 @@
 use std::{
 	collections::HashMap,
+	fs::File,
 	io::{Read, Seek},
 };
 
+use anyhow::{Context, Result};
+use cfb::CompoundFile;
+use office_crypto::decrypt_from_file;
 use roxmltree::{Node, NodeType};
 use zip::ZipArchive;
 
-use crate::util::zip::read_zip_entry_by_name;
+use crate::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, t, util::zip::read_zip_entry_by_name};
 
 pub fn read_ooxml_relationships<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	rels_path: &str,
 ) -> HashMap<String, String> {
 	let mut rels = HashMap::new();
-	if let Ok(rels_content) = read_zip_entry_by_name(archive, rels_path)
-		&& let Ok(rels_doc) = roxmltree::Document::parse(&rels_content)
-	{
-		for node in rels_doc.descendants() {
-			if node.node_type() == NodeType::Element && node.tag_name().name() == "Relationship" {
-				let id = node.attribute("Id").unwrap_or("").to_string();
-				let target = node.attribute("Target").unwrap_or("").to_string();
-				let rel_type = node.attribute("Type").unwrap_or("");
-				if rel_type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
-					&& !id.is_empty()
-					&& !target.is_empty()
-				{
-					rels.insert(id, target);
+	match read_zip_entry_by_name(archive, rels_path) {
+		Ok(rels_content) => match roxmltree::Document::parse(&rels_content) {
+			Ok(rels_doc) => {
+				for node in rels_doc.descendants() {
+					if node.node_type() == NodeType::Element && node.tag_name().name() == "Relationship" {
+						let id = node.attribute("Id").unwrap_or("").to_string();
+						let target = node.attribute("Target").unwrap_or("").to_string();
+						let rel_type = node.attribute("Type").unwrap_or("");
+						if rel_type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
+							&& !id.is_empty() && !target.is_empty()
+						{
+							rels.insert(id, target);
+						}
+					}
 				}
 			}
+			Err(error) => {
+				tracing::warn!(rels_path = %rels_path, error = %error, "ooxml relationships part present but failed to parse, hyperlinks in this part will be lost");
+			}
+		},
+		Err(_) => {
+			tracing::debug!(rels_path = %rels_path, "ooxml relationships part absent, no hyperlinks for this part");
 		}
 	}
 	rels
@@ -52,6 +63,32 @@ pub fn collect_ooxml_run_text(run_element: Node) -> String {
 		}
 	}
 	text
+}
+
+/// If `path` looks like an encrypted OLE compound file (has an `EncryptionInfo` stream),
+/// attempts to decrypt it with `password` and returns the decrypted bytes. Shared by `word`'s
+/// `.docx` parsing and `powerpoint`'s `.pptx` parsing, since both formats wrap the same
+/// OLE-container encryption when password-protected.
+///
+/// Returns `None` if the file is not a compound file or is not encrypted.
+/// Returns an error if it is encrypted but decryption fails (wrong password, etc.).
+pub fn try_decrypt_office_file(path: &str, password: Option<&str>) -> Result<Option<Vec<u8>>> {
+	// Try opening as a CFB compound file. Plain ZIPs will fail here.
+	let file = File::open(path).with_context(|| format!("Failed to open '{path}'"))?;
+	// Not a compound file at all
+	let Ok(compound) = CompoundFile::open(file) else { return Ok(None) };
+	// Encrypted OOXML files always contain an EncryptionInfo stream.
+	if compound.entry("/EncryptionInfo").is_err() {
+		return Ok(None); // Compound file but not encrypted Office format
+	}
+	let Some(password) = password else {
+		// TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+		anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} {}", t("File is encrypted and requires a password"));
+	};
+	let decrypted = decrypt_from_file(path, password)
+		// TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+		.map_err(|e| anyhow::anyhow!(t("Decryption failed (wrong password?): {}").replace("{}", &e.to_string())))?;
+	Ok(Some(decrypted))
 }
 
 #[cfg(test)]

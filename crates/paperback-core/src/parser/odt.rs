@@ -8,7 +8,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
 	parser::{
 		Parser,
-		table_text::html_table_to_display,
+		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},
@@ -22,6 +22,7 @@ pub struct OdtParser;
 
 impl Parser for OdtParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing odt file");
 		let file = File::open(&context.file_path)
 			.with_context(|| format!("Failed to open ODT file '{}'", context.file_path))?;
 		let mut archive = ZipArchive::new(BufReader::new(file))
@@ -39,6 +40,7 @@ impl Parser for OdtParser {
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		document.toc_items = toc_items;
+		tracing::debug!(path = %context.file_path, "parsed odt file successfully");
 		Ok(document)
 	}
 }
@@ -47,6 +49,7 @@ pub struct FodtParser;
 
 impl Parser for FodtParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing fodt file");
 		let content_str = fs::read_to_string(&context.file_path)
 			.with_context(|| format!("Failed to open FODT file '{}'", context.file_path))?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid FODT document")?;
@@ -60,6 +63,7 @@ impl Parser for FodtParser {
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		document.toc_items = toc_items;
+		tracing::debug!(path = %context.file_path, "parsed fodt file successfully");
 		Ok(document)
 	}
 }
@@ -198,42 +202,33 @@ fn process_table(
 			id_positions.insert(id.to_string(), table_start);
 		}
 	}
-	let mut html_content = String::from("<table border=\"1\">");
-	let mut table_caption = String::new();
-	let mut found_first_row = false;
+	let mut rows: Vec<Vec<String>> = Vec::new();
 	let mut has_content = false;
-	// Build the table HTML and caption from the XML nodes directly. Cell text is collected via
+	// Build the table grid from the XML nodes directly. Cell text is collected via
 	// `collect_element_text` (operating on the XML tree), NOT by slicing the display buffer — the
 	// display buffer is indexed in display units, so slicing it with those offsets as byte indices
 	// mis-sliced (and could panic) on non-ASCII cell content.
 	for child in node.children() {
 		if child.is_element() && child.tag_name().name() == "table-row" {
-			html_content.push_str("<tr>");
+			let mut cells: Vec<String> = Vec::new();
 			for cell in child.children() {
 				if cell.is_element() && cell.tag_name().name() == "table-cell" {
 					let cell_text = collect_element_text(cell);
 					if !cell_text.trim().is_empty() {
 						has_content = true;
 					}
-					if !found_first_row {
-						table_caption.push_str(cell_text.trim());
-						table_caption.push(' ');
-					}
-					html_content.push_str("<td>");
-					html_content.push_str(&cell_text.replace('\n', "<br/>"));
-					html_content.push_str("</td>");
+					cells.push(cell_text.trim().to_string());
 				}
 			}
-			html_content.push_str("</tr>");
-			found_first_row = true;
+			rows.push(cells);
 		}
 	}
-	html_content.push_str("</table>");
 	if !has_content {
+		tracing::debug!("dropped table with no non-blank cell content");
 		return;
 	}
-	let marker_text =
-		if table_caption.trim().is_empty() { "table".to_string() } else { table_caption.trim().to_string() };
+	let html_content = build_html_table_from_grid(&rows);
+	let marker_text = table_caption_from_html(&html_content).unwrap_or_else(|| "table".to_string());
 	let display_text = html_table_to_display(&html_content, render_tables_inline);
 	buffer.append(&display_text);
 	buffer.append("\n");

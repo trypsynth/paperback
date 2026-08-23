@@ -12,8 +12,9 @@ coroutines = "1.11.0"
 junit = "4.13.2"
 kotlin = "2.4.10"
 ktlintPlugin = "14.2.0"
-nav3Core = "1.1.5"
+nav3Core = "1.1.6"
 lifecycleViewmodelNav3 = "2.11.0"
+media3 = "1.11.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -38,7 +39,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
-androidx-media = { module = "androidx.media:media", version = "1.8.0" }
+androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 
 [plugins]

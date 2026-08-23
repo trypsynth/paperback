@@ -13,11 +13,7 @@ use paperback_core::{
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::show_note_entry_dialog;
-
-const DIALOG_PADDING: i32 = 10;
-const KEY_DELETE: i32 = 127;
-const KEY_NUMPAD_DELETE: i32 = 330;
+use super::{DIALOG_PADDING, show_note_entry_dialog};
 
 pub struct BookmarkDialogResult {
 	pub start: i64,
@@ -248,7 +244,7 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 			let line_start =
 				content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
 			let chars_after_start: String = content.chars().skip(line_start).collect();
-			let line_end = chars_after_start.find('\n').map_or(chars_after_start.len(), |idx| idx);
+			let line_end = chars_after_start.find('\n').unwrap_or(chars_after_start.len());
 			chars_after_start.chars().take(line_end).collect()
 		};
 		let previous_selected = selected_start.get();
@@ -491,7 +487,7 @@ fn bind_bookmark_key_actions(
 ) {
 	bookmark_list.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);
-		if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
+		if key == WXK_DELETE || key == WXK_NUMPAD_DELETE {
 			let start = selected_start.get();
 			let end = selected_end.get();
 			if start >= 0 {

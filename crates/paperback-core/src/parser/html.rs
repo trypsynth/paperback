@@ -6,7 +6,7 @@ use crate::{
 	document::{Document, DocumentBuffer, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
-		html_to_text::{HtmlSourceMode, HtmlToText},
+		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
 	t,
@@ -17,20 +17,25 @@ pub struct HtmlParser;
 
 impl Parser for HtmlParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing html file");
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open HTML file '{}'", context.file_path))?;
 		if bytes.is_empty() {
+			tracing::warn!(path = %context.file_path, "html file is empty");
 			// TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 			anyhow::bail!(t("HTML file is empty: {}").replace("{}", &context.file_path));
 		}
 		let html_content = convert_to_utf8(&bytes);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&html_content, HtmlSourceMode::NativeHtml) {
+			// currently unreachable, HtmlToText::convert never returns false today
+			tracing::warn!(path = %context.file_path, "failed to convert html to text");
 			// TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
 			anyhow::bail!(t("Failed to convert HTML to text: {}").replace("{}", &context.file_path));
 		}
 		let extracted_title = converter.get_title();
 		let title = if extracted_title.is_empty() {
+			tracing::debug!(path = %context.file_path, "html file has no title element, falling back to file name");
 			extract_title_from_path(&context.file_path)
 		} else {
 			extracted_title.to_string()
@@ -44,6 +49,7 @@ impl Parser for HtmlParser {
 		doc.set_buffer(buffer);
 		doc.toc_items = toc_items;
 		doc.id_positions = id_positions;
+		tracing::debug!(path = %context.file_path, chars = doc.buffer.content.chars().count(), "parsed html file");
 		Ok(doc)
 	}
 }

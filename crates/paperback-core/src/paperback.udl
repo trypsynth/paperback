@@ -13,7 +13,7 @@ dictionary TocEntry {
 	i32 level;
 };
 
-enum MarkerTypeFfi {
+enum MarkerType {
 	"Heading1", "Heading2", "Heading3", "Heading4", "Heading5", "Heading6",
 	"PageBreak", "SectionBreak", "TocItem", "Link",
 	"List", "ListItem", "Table", "Separator", "Image", "Figure",
@@ -21,7 +21,7 @@ enum MarkerTypeFfi {
 };
 
 dictionary LineMarker {
-	MarkerTypeFfi mtype;
+	MarkerType mtype;
 	i64 position;
 	string text;
 	string reference;
@@ -77,6 +77,27 @@ dictionary SearchResultFfi {
 	i64 position;
 };
 
+dictionary AudioClipFfi {
+	boolean found;
+	i32 source;
+	i64 clip_begin_ms;
+	i64 clip_end_ms;
+	i64 start;
+	i64 end;
+};
+
+dictionary AudioCursorFfi {
+	boolean found;
+	i32 clip_index;
+	i64 seek_ms;
+};
+
+dictionary AudioPointFfi {
+	boolean found;
+	i64 position;
+	i64 time_ms;
+};
+
 dictionary StatusInfo {
 	i64 line_number;
 	i64 character_number;
@@ -117,30 +138,42 @@ interface DocumentSession {
 	i64 position_from_line(i64 line);
 	i64 line_from_position(i64 position);
 	sequence<LineMarker> get_line_markers(i64 line);
-	LinkActivationResult activate_link_ffi(i64 position);
+	LinkActivationResult activate_link(i64 position);
 	TextSegmentFfi get_text_segment(i64 position, SegmentTypeFfi segment_type, SegmentDirectionFfi direction);
 
-	StatusInfo get_status_info_ffi(i64 position);
-	i64 position_from_percent_ffi(i32 percent);
-	i32 current_page_ffi(i64 position);
+	StatusInfo get_status_info(i64 position);
+	i64 position_from_percent(i32 percent);
+	i32 current_page(i64 position);
 	i32 page_count_ffi();
-	i64 page_offset_ffi(i32 page);
+	i64 page_offset(i32 page);
 
 	HeadingTreeFfi get_heading_tree_ffi(i64 position);
 	LinkListFfi get_link_list_ffi(i64 position);
 
 	sequence<TocEntry> get_toc();
 
+	boolean has_audio_ffi();
+	i32 audio_source_count_ffi();
+	string audio_source_direct_path_ffi(i32 index);
+	boolean audio_extract_source_ffi(i32 index, string output_path);
+	i32 audio_clip_count_ffi();
+	AudioClipFfi audio_clip_ffi(i32 index);
+	i64 audio_total_duration_ms_ffi();
+	AudioCursorFfi audio_cursor_at_elapsed_ffi(i64 elapsed_ms);
+	AudioPointFfi audio_point_for_position_ffi(i64 position);
+	i64 audio_elapsed_for_source_position_ffi(i32 source, i64 raw_ms);
+	i32 audio_next_source_after_ffi(i32 current_source);
+
 	DocumentStatsFfi get_stats_ffi();
 	sequence<SegmentTypeFfi> get_supported_segment_types_ffi();
 
 	SearchResultFfi search_ffi(string query, i64 start_position, SearchOptionsFfi options);
 
-	sequence<ExportFormatFfi> get_supported_export_formats_ffi();
-	string render_export_ffi(ExportFormatFfi format);
+	sequence<ExportFormat> get_supported_export_formats_ffi();
+	string render_export_ffi(ExportFormat format);
 };
 
-enum ExportFormatFfi {
+enum ExportFormat {
 	"Text",
 	"Html",
 	"Markdown"
@@ -158,6 +191,8 @@ interface ConfigManagerFfi {
 	void associate_uri_with_local_file(string uri, string local_path);
 	void set_document_position(string path, i64 position);
 	i64 get_document_position(string path);
+	void set_document_audio_time_ffi(string path, i64 time_ms);
+	i64 get_document_audio_time_ffi(string path);
 	void set_document_password(string path, string password);
 	string get_document_password(string path);
 	void add_recent_document(string path);

@@ -5,9 +5,8 @@ use paperback_core::{config::ConfigManager, reader_core, util::text::display_len
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::document_manager::DocumentManager;
+use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager};
 
-const DIALOG_PADDING: i32 = 10;
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 
 #[derive(Clone, Debug, Default)]
@@ -471,5 +470,6 @@ fn do_find(
 	text_ctrl.set_focus();
 	text_ctrl.set_selection(start, end);
 	text_ctrl.show_position(start);
+	doc_manager.lock().unwrap().seek_audio_to_caret();
 	state.dialog.show(false);
 }

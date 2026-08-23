@@ -1,19 +1,18 @@
-#[cfg(target_os = "linux")]
-use std::collections::HashMap;
 #[cfg(target_os = "windows")]
-use std::ptr::{addr_of_mut, copy_nonoverlapping};
+use std::ptr::addr_of_mut;
 use std::{
 	cell::Cell,
+	fs,
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{Mutex, atomic::Ordering},
-	time::Instant,
+	time::{Instant, SystemTime},
 };
 
 use paperback_core::{
-	config::{ConfigManager, ReadabilityFont},
+	config::{ActionId, ConfigManager, ReadabilityFont},
 	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
-	session::DocumentSession,
+	session::{DocumentSession, WindowSlice},
 };
 use patois::t;
 use wxdragon::{
@@ -23,11 +22,18 @@ use wxdragon::{
 };
 
 #[cfg(target_os = "windows")]
-use super::rtf_write::{self, RtfFontInfo};
+use super::rtf::{
+	stream::stream_rtf_into_ctrl,
+	write::{self, RtfFontInfo},
+};
 use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
-	menu_ids, status,
+	menu_ids,
+	navigation::{move_to_offset_and_record_history, persist_navigation_history},
+	status,
+	text_window::{self, TextWindow},
 };
+use crate::audio_player::AudioPlayer;
 
 pub struct DocumentTab {
 	pub panel: Panel,
@@ -35,6 +41,27 @@ pub struct DocumentTab {
 	pub session: DocumentSession,
 	pub file_path: PathBuf,
 	pub track: bool,
+	pub audio_player: Option<AudioPlayer>,
+	disk_fingerprint: Option<FileFingerprint>,
+	/// The document-absolute bounds of whatever's currently loaded into `text_ctrl`. See
+	/// `ui::text_window` - for most documents this covers the whole thing, same as before
+	/// windowing existed; only huge documents actually get a partial window.
+	pub window: TextWindow,
+}
+
+/// Change-detection stamp for an open document's file, compared on every frame activation and
+/// tab switch. Metadata-only on purpose: `config::compute_document_hash` would read up to 2 MiB
+/// from disk per check and still miss mid-file edits in files larger than that (it hashes only
+/// head, tail and size), whereas a single `fs::metadata` call catches any completed write.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct FileFingerprint {
+	modified: SystemTime,
+	len: u64,
+}
+
+fn read_fingerprint(path: &Path) -> Option<FileFingerprint> {
+	let meta = fs::metadata(path).ok()?;
+	Some(FileFingerprint { modified: meta.modified().ok()?, len: meta.len() })
 }
 
 pub fn title_or_filename(title: String, path: &Path) -> String {
@@ -50,12 +77,6 @@ pub fn display_title(tab: &DocumentTab) -> String {
 }
 
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
-const WXK_F10: i32 = 349;
-const WXK_WINDOWS_MENU: i32 = 395;
-#[cfg(target_os = "windows")]
-const WXK_UP: i32 = 315;
-#[cfg(target_os = "windows")]
-const WXK_DOWN: i32 = 317;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -65,10 +86,9 @@ pub struct DocumentManager {
 	live_region_label: StaticText,
 	last_position_save: Cell<Option<Instant>>,
 	last_sound_position: Cell<Option<i64>>,
+	last_audio_seek_position: Cell<Option<i64>>,
 	preferred_column: Cell<Option<i64>>,
 	recently_closed: Vec<PathBuf>,
-	#[cfg(target_os = "linux")]
-	navigation_key_map: Rc<HashMap<(i32, bool), i32>>,
 }
 
 impl DocumentManager {
@@ -86,10 +106,9 @@ impl DocumentManager {
 			live_region_label,
 			last_position_save: Cell::new(None),
 			last_sound_position: Cell::new(None),
+			last_audio_seek_position: Cell::new(None),
 			preferred_column: Cell::new(None),
 			recently_closed: Vec::new(),
-			#[cfg(target_os = "linux")]
-			navigation_key_map: Rc::new(build_navigation_key_map()),
 		}
 	}
 
@@ -208,10 +227,7 @@ impl DocumentManager {
 		let config = self.config.lock().unwrap();
 		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
-		#[cfg(target_os = "linux")]
-		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc, self.frame, Rc::clone(&self.navigation_key_map));
-		#[cfg(not(target_os = "linux"))]
-		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc);
+		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc, self.frame);
 		let rf = config.get_readability_font();
 		if let Some(font) = build_font_from_readability(&rf) {
 			text_ctrl.set_font(&font);
@@ -221,8 +237,12 @@ impl DocumentManager {
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
-		let content = session.content();
-		fill_text_ctrl_with_formatting(text_ctrl, &session, &content);
+
+		let path_str = path.to_string_lossy();
+		let doc_len = session.document_len();
+		let saved_pos = config.get_validated_document_position(&path_str, doc_len);
+		let initial_pos = if saved_pos >= 0 { saved_pos } else { 0 };
+		let window = load_window_into_ctrl(text_ctrl, &session, initial_pos, doc_len);
 		apply_readability_format_to_ctrl(
 			text_ctrl,
 			config.get_line_spacing(),
@@ -230,27 +250,60 @@ impl DocumentManager {
 			config.get_letter_spacing(),
 			config.get_text_alignment(),
 		);
+		// `add_page(select: true)` can synchronously fire the notebook's page-changed event
+		// before returning (e.g. while it's still the only page, or otherwise reentering here
+		// on this same thread), and that handler path can itself want `self.config` again.
+		// `Mutex` isn't reentrant, so holding this lock across the call self-deadlocks the app
+		// forever on documents whose formatting makes that reentrant path reachable - drop it
+		// first and reacquire once `add_page` returns.
+		drop(config);
 		self.notebook.add_page(&panel, &title, true, None);
-		let path_str = path.to_string_lossy();
+		let config = self.config.lock().unwrap();
 		let nav_history = config.get_navigation_history(&path_str);
 		session.set_history(&nav_history.positions, nav_history.index);
-		self.tabs.push(DocumentTab { panel, text_ctrl, session, file_path: path.to_path_buf(), track });
+		let audio_player = session.audio().cloned().and_then(|timeline| match AudioPlayer::new(&panel, timeline) {
+			Ok(player) => Some(player),
+			Err(err) => {
+				tracing::warn!(error = %err, "failed to initialize audio playback for this document");
+				None
+			}
+		});
+		self.tabs.push(DocumentTab {
+			panel,
+			text_ctrl,
+			session,
+			file_path: path.to_path_buf(),
+			track,
+			audio_player,
+			disk_fingerprint: read_fingerprint(path),
+			window,
+		});
 		if !password.is_empty() {
 			config.set_document_password(&path_str, password);
 		}
 		let tab_index = self.tabs.len() - 1;
-		let max_pos = self.tabs[tab_index].text_ctrl.get_last_position();
-		let saved_pos = config.get_validated_document_position(&path_str, max_pos);
-		let initial_pos = if saved_pos >= 0 {
-			self.tabs[tab_index].text_ctrl.set_insertion_point(saved_pos);
-			self.tabs[tab_index].text_ctrl.show_position(saved_pos);
-			saved_pos
-		} else {
-			self.tabs[tab_index].text_ctrl.set_insertion_point(0);
-			self.tabs[tab_index].text_ctrl.show_position(0);
-			0
-		};
+		{
+			let tab = &self.tabs[tab_index];
+			let local = tab.window.to_local(initial_pos);
+			tab.text_ctrl.set_insertion_point(local);
+			tab.text_ctrl.show_position(local);
+		}
 		self.tabs[tab_index].session.set_stable_position(initial_pos);
+		// Resume the narration from the time that was actually reached, not from the caret.
+		// Deriving it from the caret only lands on the start of whichever clip contains that
+		// position, so it loses however much of that clip had already played, and loses
+		// everything since the last explicit jump if the caret wasn't following the audio.
+		let saved_audio_time = config.get_document_audio_time(&path_str);
+		if let Some(player) = self.tabs[tab_index].audio_player.as_mut() {
+			match saved_audio_time {
+				Some(time_ms) => {
+					player.seek_to_ms(time_ms);
+				}
+				None => {
+					player.seek_to_position(usize::try_from(initial_pos).unwrap_or(0));
+				}
+			}
+		}
 		if track {
 			config.add_recent_document(&path_str);
 			config.set_document_opened(&path_str, true);
@@ -273,14 +326,23 @@ impl DocumentManager {
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
 			if save_state && tab.track {
-				let position = tab.text_ctrl.get_insertion_point();
+				let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 				config.set_document_position(&path_str, position);
+				config.set_document_audio_time(
+					&path_str,
+					tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms),
+				);
 				let (history, history_index) = tab.session.get_history();
 				config.set_navigation_history(&path_str, history, history_index);
 				config.set_document_opened(&path_str, false);
 			}
 			config.remove_opened_document(&path_str);
 			config.flush();
+		}
+		if let Some(tab) = self.tabs.get_mut(index)
+			&& let Some(player) = tab.audio_player.as_mut()
+		{
+			player.stop();
 		}
 		let _page = self.notebook.get_page(index);
 		self.notebook.remove_page(index);
@@ -314,13 +376,24 @@ impl DocumentManager {
 			if !tab.track {
 				continue;
 			}
-			let position = tab.text_ctrl.get_insertion_point();
+			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 			let path_str = tab.file_path.to_string_lossy();
 			config.set_document_position(&path_str, position);
+			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
 			let (history, history_index) = tab.session.get_history();
 			config.set_navigation_history(&path_str, history, history_index);
 		}
 		config.flush();
+	}
+
+	/// Stops every tab's audio ahead of the app closing, winding the native media sessions
+	/// down deliberately rather than as a side effect of the frame being destroyed.
+	pub fn stop_all_audio(&mut self) {
+		for tab in &mut self.tabs {
+			if let Some(player) = tab.audio_player.as_mut() {
+				player.stop();
+			}
+		}
 	}
 
 	pub fn save_position_throttled(&self) {
@@ -333,10 +406,11 @@ impl DocumentManager {
 		if let Some(tab) = self.active_tab()
 			&& tab.track
 		{
-			let position = tab.text_ctrl.get_insertion_point();
+			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
 			config.set_document_position(&path_str, position);
+			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
 			config.flush();
 		}
 		self.last_position_save.set(Some(now));
@@ -398,14 +472,18 @@ impl DocumentManager {
 
 	pub fn activate_current_link(&mut self) {
 		if let Some(tab) = self.active_tab_mut() {
-			let pos = tab.text_ctrl.get_insertion_point();
+			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 			let result = tab.session.activate_link(pos);
 			if result.found {
 				match result.action {
 					paperback_core::session::LinkAction::Internal => {
+						if tab.window.needs_reload_for(result.offset, tab.session.document_len()) {
+							reload_window_around(tab, result.offset);
+						}
+						let local = tab.window.to_local(result.offset);
 						tab.text_ctrl.set_focus();
-						tab.text_ctrl.set_insertion_point(result.offset);
-						tab.text_ctrl.show_position(result.offset);
+						tab.text_ctrl.set_insertion_point(local);
+						tab.text_ctrl.show_position(local);
 						tab.session.check_and_record_history(result.offset);
 						// TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 						live_region::announce(self.live_region_label, &t("Navigated to internal link."));
@@ -420,7 +498,7 @@ impl DocumentManager {
 	}
 	pub fn activate_current_table(&self) -> Option<String> {
 		self.active_tab().and_then(|tab| {
-			let pos = tab.text_ctrl.get_insertion_point();
+			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 			tab.session.get_table_at_position(pos)
 		})
 	}
@@ -440,7 +518,7 @@ impl DocumentManager {
 			return;
 		}
 		if let Some(tab) = self.active_tab() {
-			let position = tab.text_ctrl.get_insertion_point();
+			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 			let status_info = tab.session.get_status_info(position);
 			let mut status_text = status::format_status_text(&status_info);
 			if sleep_start > 0 {
@@ -461,7 +539,7 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
-		let position = tab.text_ctrl.get_insertion_point();
+		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let prev = self.last_sound_position.get().unwrap_or(position);
 		self.last_sound_position.set(Some(position));
 		if prev == position {
@@ -491,8 +569,184 @@ impl DocumentManager {
 		}
 	}
 
+	/// Seeks the active tab's audio to the caret, if it has any and the caret moved since the
+	/// last call. Only explicit "jump to X" actions call this, not plain caret movement, so
+	/// arrowing around the document doesn't drag the audio along.
+	pub fn seek_audio_to_caret(&mut self) {
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		if self.last_audio_seek_position.get() == Some(position) {
+			return;
+		}
+		self.last_audio_seek_position.set(Some(position));
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		let Some(player) = tab.audio_player.as_mut() else {
+			return;
+		};
+		player.seek_to_position(usize::try_from(position).unwrap_or(0));
+	}
+
+	/// When "sync caret to audio" is on, moves the caret to follow playback. Called from a
+	/// recurring timer; a no-op for documents with no audio.
+	///
+	/// Uses `try_lock` on `config` rather than `lock`: this runs on the main thread on every
+	/// timer tick, and a modal dialog (e.g. Options) pumps the OS message loop while it holds
+	/// that same lock across `show_modal`. A blocking `lock` here would deadlock the UI thread
+	/// against itself the moment a tick landed mid-dialog; skipping the tick is harmless since
+	/// it just retries in 250ms.
+	pub fn pump_audio(&mut self) {
+		let Ok(config) = self.config.try_lock() else {
+			return;
+		};
+		let sync_enabled = config.get_app_bool("sync_caret_to_audio", true);
+		drop(config);
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		let Some(player) = tab.audio_player.as_ref() else {
+			return;
+		};
+		if !sync_enabled || !player.is_playing() {
+			return;
+		}
+		let Some(elapsed) = player.elapsed_ms() else {
+			tracing::warn!("sync caret to audio: playing but no elapsed position available");
+			return;
+		};
+		let Some(cursor) = player.timeline().cursor_at_elapsed(elapsed) else {
+			tracing::warn!(elapsed, "sync caret to audio: no clip covers the current elapsed time");
+			return;
+		};
+		let Some(position) = player.timeline().clip(cursor.clip).map(|clip| clip.start) else {
+			tracing::warn!(clip_index = cursor.clip, "sync caret to audio: cursor names a clip that doesn't exist");
+			return;
+		};
+		// TODO(windowing, phase 3): still sets the caret directly rather than through a
+		// window-aware jump, see C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md - a
+		// scrub target outside the loaded window is silently clamped instead of reloading.
+		let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		if i64::try_from(position).ok() != Some(current) {
+			let target = i64::try_from(position).unwrap_or(current);
+			let local = tab.window.to_local(target);
+			tab.text_ctrl.set_insertion_point(local);
+			tab.text_ctrl.show_position(local);
+		}
+	}
+
+	/// Reloads the active tab's window if the caret has drifted near a loaded edge, regardless of
+	/// what moved it there. Every other reload trigger in this app is wired to a specific input
+	/// path (arrow keys, heading/bookmark jumps, ...), which covers keyboard and mouse navigation
+	/// but not a screen reader's own text-walking: NVDA's Say-All (and similar continuous-reading
+	/// features) for an edit control typically drives RichEdit's UI Automation text pattern
+	/// directly, never touching this app's key handlers. Without this, reaching a loaded window's
+	/// edge during Say-All would look identical to reaching the real end of the document - nothing
+	/// would ever trigger a reload, and reading would just silently stop mid-paragraph with 16
+	/// million characters still unread. Polling and reacting to the caret's actual position sidesteps
+	/// needing to know how it got there. `RELOAD_MARGIN` (a quarter of the window) is generous
+	/// enough that even fast reading has time to reload well before actually running out of loaded
+	/// text, given this runs on the same 250ms cadence as `pump_audio`.
+	///
+	/// Repositioning the caret after a reload (needed so `text_ctrl`'s local position still points
+	/// at the same document-absolute spot) does mean this fires a caret-moved accessibility event on
+	/// every crossing - if that turns out to interrupt an in-progress Say-All rather than just
+	/// silently extending it, that's a real, currently-unverified risk; hasn't been tested against
+	/// an actual screen reader yet.
+	pub fn pump_window_reload(&mut self) {
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let doc_len = tab.session.document_len();
+		if !tab.window.needs_reload_for(doc_pos, doc_len) {
+			return;
+		}
+		reload_window_around(tab, doc_pos);
+		let local = tab.window.to_local(doc_pos);
+		tab.text_ctrl.set_insertion_point(local);
+		tab.text_ctrl.show_position(local);
+	}
+
+	/// Pauses audio on every tab except the active one, so switching tabs can't leave two
+	/// documents narrating at once (the active tab may have audio of its own still playing,
+	/// which this leaves untouched).
+	pub fn pause_inactive_audio(&mut self) {
+		let active = self.active_tab_index();
+		for (index, tab) in self.tabs.iter_mut().enumerate() {
+			if Some(index) != active
+				&& let Some(player) = tab.audio_player.as_mut()
+				&& player.is_playing()
+			{
+				player.pause();
+			}
+		}
+	}
+
+	/// Announces the current caret position as a percentage of the document via the live region.
+	pub fn announce_current_percent(&self) {
+		let Some(tab) = self.active_tab() else {
+			return;
+		};
+		let percent = tab.session.get_status_info(tab.window.to_doc(tab.text_ctrl.get_insertion_point())).percentage;
+		live_region::announce(self.live_region_label, &format!("{percent}%"));
+	}
+
 	pub fn reset_sound_line(&self) {
 		self.last_sound_position.set(None);
+		self.last_audio_seek_position.set(None);
+	}
+
+	/// Sets the temporary bookmark at the current caret position and announces it.
+	pub fn set_temporary_bookmark(&self) {
+		let Some(tab) = self.active_tab() else {
+			return;
+		};
+		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let path_str = tab.file_path.to_string_lossy().to_string();
+		let config = self.config.lock().unwrap();
+		config.set_temporary_bookmark(&path_str, Some(position));
+		config.flush();
+		drop(config);
+		// TRANSLATORS: Announced after setting a temporary bookmark at the current position
+		live_region::announce(self.live_region_label, &t("Temporary bookmark set."));
+	}
+
+	/// Jumps to the temporary bookmark, announcing the line text there, or "No temporary bookmark."
+	/// if none has been set.
+	pub fn jump_to_temporary_bookmark(&mut self) {
+		let path_str = {
+			let Some(tab) = self.active_tab() else {
+				return;
+			};
+			tab.file_path.to_string_lossy().to_string()
+		};
+		let position = {
+			let config = self.config.lock().unwrap();
+			config.get_temporary_bookmark(&path_str)
+		};
+		let Some(position) = position else {
+			// TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
+			live_region::announce(self.live_region_label, &t("No temporary bookmark."));
+			return;
+		};
+		let (message, track, update) = {
+			let tab = self.active_tab_mut().unwrap();
+			let position = position.clamp(0, tab.session.document_len().max(0));
+			let line_text = tab.session.get_line_text(position);
+			let message = if line_text.trim().is_empty() {
+				// TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
+				t("Temporary bookmark.")
+			} else {
+				line_text
+			};
+			let update = move_to_offset_and_record_history(tab, position);
+			(message, tab.track, update)
+		};
+		live_region::announce(self.live_region_label, &message);
+		persist_navigation_history(&self.config, track.then_some(&update));
 	}
 
 	pub fn apply_font(&self, font: &Font) {
@@ -558,17 +812,18 @@ impl DocumentManager {
 		};
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
-			let current_pos = old_ctrl.get_insertion_point();
-			let content = old_ctrl.get_value();
-			#[cfg(target_os = "linux")]
-			let text_ctrl =
-				Self::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame, Rc::clone(&self.navigation_key_map));
-			#[cfg(not(target_os = "linux"))]
-			let text_ctrl = Self::build_text_ctrl(tab.panel, word_wrap, self_rc);
+			let current_doc_pos = tab.window.to_doc(old_ctrl.get_insertion_point());
+			// TODO(windowing): still whole-document on every wrap toggle, see
+			// C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md Phase 2 - should re-slice just
+			// `tab.window`'s existing range instead of reloading the whole document.
+			let doc_len = tab.session.document_len();
+			let slice = tab.session.get_window(0, doc_len);
+			let text_ctrl = Self::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame);
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
-			fill_text_ctrl_with_formatting(text_ctrl, &tab.session, &content);
+			fill_text_ctrl_with_formatting(text_ctrl, &slice);
+			tab.window = TextWindow::whole(doc_len);
 			if let Some(font) = build_font_from_readability(&rf) {
 				text_ctrl.set_font(&font);
 			}
@@ -582,7 +837,7 @@ impl DocumentManager {
 				text_alignment,
 			);
 			let max_pos = text_ctrl.get_last_position();
-			let pos = current_pos.clamp(0, max_pos);
+			let pos = tab.window.to_local(current_doc_pos).clamp(0, max_pos);
 			tab.panel.layout();
 			text_ctrl.set_insertion_point(pos);
 			text_ctrl.show_position(pos);
@@ -598,7 +853,7 @@ impl DocumentManager {
 	pub fn apply_render_tables_inline(&mut self, render_tables_inline: bool) {
 		// Read readability settings and collect each tab's parse inputs (path, password, forced
 		// format) under a single config lock, so we don't re-lock per tab while mutating the tabs.
-		let (rf, line_spacing, bg_color, text_alignment, letter_spacing, paragraph_spacing, parse_inputs) = {
+		let (style, parse_inputs) = {
 			let cfg = self.config.lock().unwrap();
 			let parse_inputs: Vec<(String, String, String)> = self
 				.tabs
@@ -610,83 +865,110 @@ impl DocumentManager {
 					(path_str, password, forced_extension)
 				})
 				.collect();
-			(
-				cfg.get_readability_font(),
-				cfg.get_line_spacing(),
-				cfg.get_bg_color(),
-				cfg.get_text_alignment(),
-				cfg.get_letter_spacing(),
-				cfg.get_paragraph_spacing(),
-				parse_inputs,
-			)
+			(readability_style(&cfg), parse_inputs)
 		};
 		for (tab, (path_str, password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
-			let current_pos = tab.text_ctrl.get_insertion_point();
-			let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
-
-			// Find the nearest anchor at-or-before the cursor using the full id_positions key
-			// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
-			// making the subsequent lookup fail). Record the within-block offset so the cursor
-			// lands at the same structural position after reparsing. Fallback: percentage-based
-			// position for formats with no anchors.
-			let stable_anchor = {
-				let id_positions = &tab.session.handle().document().id_positions;
-				id_positions
-					.iter()
-					.filter(|&(_, &off)| off <= pos)
-					.max_by_key(|&(_, &off)| off)
-					.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
-			};
-			let fallback_percent = tab.session.get_status_info(current_pos).percentage;
-
-			let new_session = match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline)
-			{
-				Ok(session) => session,
-				Err(err) => {
-					tracing::error!(path = %path_str, error = %err, "failed to re-parse document for render_tables_inline toggle");
-					continue;
-				}
-			};
-			tab.session = new_session;
-			let content = tab.session.content();
-			fill_text_ctrl_with_formatting(tab.text_ctrl, &tab.session, &content);
-			if let Some(font) = build_font_from_readability(&rf) {
-				tab.text_ctrl.set_font(&font);
-			}
-			apply_foreground_color_to_ctrl(tab.text_ctrl, rf.color);
-			apply_bg_color_to_ctrl(tab.text_ctrl, bg_color);
-			apply_readability_format_to_ctrl(
-				tab.text_ctrl,
-				line_spacing,
-				paragraph_spacing,
-				letter_spacing,
-				text_alignment,
-			);
-			tab.panel.layout();
-			let max_pos = tab.text_ctrl.get_last_position();
-
-			let restored_pos = if let Some((ref key, within)) = stable_anchor {
-				match tab.session.handle().document().id_positions.get(key) {
-					Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
-					None => tab.session.position_from_percent(fallback_percent).clamp(0, max_pos),
-				}
-			} else {
-				tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
-			};
-
-			tab.text_ctrl.set_insertion_point(restored_pos);
-			tab.text_ctrl.show_position(restored_pos);
-			tab.session.set_stable_position(restored_pos);
+			let _ = reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style);
 		}
 	}
 
-	fn build_text_ctrl(
-		panel: Panel,
-		word_wrap: bool,
-		self_rc: &Rc<Mutex<Self>>,
-		#[cfg(target_os = "linux")] frame: Frame,
-		#[cfg(target_os = "linux")] navigation_key_map: Rc<HashMap<(i32, bool), i32>>,
-	) -> TextCtrl {
+	/// Reloads the tab at `index` if its file changed on disk since it was last parsed. Returns
+	/// true only when the tab content was actually replaced. If the stored password no longer
+	/// decrypts the file, prompts for a new one and retries once. Uses `try_lock` on the config:
+	/// the caller may be a frame-activation handler running inside a nested modal event loop
+	/// whose opener already holds the lock.
+	pub fn reload_tab_if_changed(&mut self, index: usize) -> bool {
+		let Some(tab) = self.tabs.get(index) else {
+			return false;
+		};
+		if !tab.track {
+			return false;
+		}
+		let Some(current) = read_fingerprint(&tab.file_path) else {
+			return false;
+		};
+		if tab.disk_fingerprint == Some(current) {
+			return false;
+		}
+		let path_str = tab.file_path.to_string_lossy().to_string();
+		let Ok(cfg) = self.config.try_lock() else {
+			return false;
+		};
+		if !cfg.get_app_bool("auto_reload_documents", true) {
+			return false;
+		}
+		let password = cfg.get_document_password(&path_str);
+		let forced_extension = cfg.get_document_format(&path_str);
+		let render_tables_inline = cfg.get_app_bool("render_tables_inline", true);
+		let style = readability_style(&cfg);
+		drop(cfg);
+		let tab = &mut self.tabs[index];
+		let (positions, history_index) = tab.session.get_history();
+		let positions = positions.to_vec();
+		let reloaded =
+			match reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style) {
+				Ok(()) => true,
+				Err(err) if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+					// Recorded before the prompt so a re-entrant call during its modal
+					// event loop sees the file as unchanged and skips a second prompt.
+					tab.disk_fingerprint = Some(current);
+					self.reprompt_password_and_reparse(
+						index,
+						&path_str,
+						&forced_extension,
+						render_tables_inline,
+						&style,
+					)
+				}
+				Err(_) => false,
+			};
+		let tab = &mut self.tabs[index];
+		if reloaded {
+			tab.session.set_history(&positions, history_index);
+			tracing::info!(path = %path_str, "document reloaded after on-disk change");
+		} else {
+			tab.disk_fingerprint = Some(current);
+		}
+		reloaded
+	}
+
+	/// Asks for a fresh password after a reload attempt failed to decrypt the file, then retries
+	/// the re-parse once. Dismissing the prompt keeps the old tab content without an error: the
+	/// reload was not user-initiated, so there is nothing to recover from. A wrong password shows
+	/// the same load-error dialog as the open flow.
+	fn reprompt_password_and_reparse(
+		&mut self,
+		index: usize,
+		path_str: &str,
+		forced_extension: &str,
+		render_tables_inline: bool,
+		style: &ReadabilityStyle,
+	) -> bool {
+		if let Ok(cfg) = self.config.try_lock() {
+			cfg.set_document_password(path_str, "");
+		}
+		let Some(password) = prompt_for_password(&self.notebook) else {
+			return false;
+		};
+		let tab = &mut self.tabs[index];
+		match reparse_tab_in_place(tab, path_str, &password, forced_extension, render_tables_inline, style) {
+			Ok(()) => {
+				if !password.is_empty()
+					&& let Ok(cfg) = self.config.try_lock()
+				{
+					cfg.set_document_password(path_str, &password);
+				}
+				true
+			}
+			Err(err) => {
+				let message = build_document_load_error_message(&self.tabs[index].file_path, &err);
+				show_error_dialog(&self.notebook, &message, &t("Error"));
+				false
+			}
+		}
+	}
+
+	fn build_text_ctrl(panel: Panel, word_wrap: bool, self_rc: &Rc<Mutex<Self>>, frame: Frame) -> TextCtrl {
 		let style = TextCtrlStyle::MultiLine
 			| TextCtrlStyle::ReadOnly
 			| TextCtrlStyle::Rich2
@@ -696,14 +978,12 @@ impl DocumentManager {
 		text_ctrl.on_char(move |event| {
 			if let WindowEventData::Keyboard(kbd) = event {
 				if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
-					// 13 is KEY_RETURN, 32 is space
 					let table_html = {
 						let dm = dm_for_enter.lock().unwrap();
 						dm.activate_current_table()
 					};
 					if let Some(html) = table_html {
 						let frame = dm_for_enter.lock().unwrap().frame;
-						// TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
 						super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
 					} else {
 						let mut dm = dm_for_enter.lock().unwrap();
@@ -734,11 +1014,7 @@ impl DocumentManager {
 			}
 		});
 		let text_ctrl_for_menu = text_ctrl;
-		#[cfg(target_os = "windows")]
-		let dm_for_nav = Rc::clone(self_rc);
-		#[cfg(target_os = "linux")]
-		let key_map = navigation_key_map;
-		#[cfg(target_os = "linux")]
+		let dm_for_keys = Rc::clone(self_rc);
 		let frame_for_keys = frame;
 		text_ctrl.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(kbd) = &event
@@ -749,25 +1025,20 @@ impl DocumentManager {
 					show_reader_context_menu(text_ctrl_for_menu);
 					return;
 				}
-				#[cfg(target_os = "linux")]
-				if !kbd.control_down() && !kbd.alt_down() {
-					if let Some(&menu_id) = key_map.get(&(key, kbd.shift_down())) {
-						kbd.event.skip(false);
-						frame_for_keys.process_menu_command(menu_id);
-						return;
-					}
-				}
 				#[cfg(target_os = "windows")]
-				if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() {
+				if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
 					let going_down = key == WXK_DOWN;
-					let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
-						navigate_line_by_column(text_ctrl_for_menu, going_down, dm.preferred_column.get())
+					let nav_result = dm_for_keys.try_lock().ok().and_then(|mut dm| {
+						let start_of_line = dm.config.lock().unwrap().get_app_bool("line_start_navigation", false);
+						let pref_col = dm.preferred_column.get();
+						dm.active_tab_mut()
+							.and_then(|tab| navigate_line_by_column(tab, going_down, pref_col, start_of_line))
 					});
 					if let Some((new_pos, new_col)) = nav_result {
 						kbd.event.skip(false);
 						text_ctrl_for_menu.set_insertion_point(new_pos);
 						text_ctrl_for_menu.show_position(new_pos);
-						if let Ok(dm) = dm_for_nav.try_lock() {
+						if let Ok(dm) = dm_for_keys.try_lock() {
 							dm.preferred_column.set(Some(new_col));
 							dm.update_status_bar();
 						}
@@ -777,8 +1048,51 @@ impl DocumentManager {
 					return;
 				}
 				#[cfg(target_os = "windows")]
-				if let Ok(dm) = dm_for_nav.try_lock() {
+				if let Ok(dm) = dm_for_keys.try_lock() {
 					dm.preferred_column.set(None);
+				}
+
+				let action = {
+					if let Ok(dm) = dm_for_keys.try_lock() {
+						let config = dm.config.lock().unwrap();
+						config.get_shortcuts().find_action(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down())
+					} else {
+						None
+					}
+				};
+
+				if let Some(act) = action {
+					match act {
+						ActionId::AnnouncePercent => {
+							kbd.event.skip(false);
+							if let Ok(dm) = dm_for_keys.try_lock() {
+								dm.announce_current_percent();
+							}
+							return;
+						}
+						ActionId::SetTemporaryBookmark => {
+							kbd.event.skip(false);
+							if let Ok(dm) = dm_for_keys.try_lock() {
+								dm.set_temporary_bookmark();
+							}
+							return;
+						}
+						ActionId::JumpToTemporaryBookmark => {
+							kbd.event.skip(false);
+							if let Ok(mut dm) = dm_for_keys.try_lock() {
+								dm.jump_to_temporary_bookmark();
+							}
+							return;
+						}
+						_ => {
+							if !kbd.control_down() && !kbd.alt_down() || cfg!(target_os = "linux") {
+								let menu_id = menu_ids::action_to_menu_id(act);
+								kbd.event.skip(false);
+								frame_for_keys.process_menu_command(menu_id);
+								return;
+							}
+						}
+					}
 				}
 			}
 			event.skip(true);
@@ -792,25 +1106,68 @@ impl DocumentManager {
 	}
 }
 
-/// Returns (`new_position`, `preferred_column`) for character-column-based vertical navigation.
-/// Uses wxdragon `PositionToXY`, `XYToPosition`, and `GetLineLength` so the cursor lands on the same
-/// character column (not pixel column) on the target visual line.
+/// One line-vertical-navigation attempt within whatever's currently loaded in `tab.text_ctrl`.
+/// Returns `None` (outer) if the current position has no known line/column (shouldn't happen in
+/// practice), `Some(None)` if the target line falls outside what's currently loaded - the caller
+/// checks whether there's more document in that direction and, if so, reloads and retries - or
+/// `Some(Some(..))` on success.
 #[cfg(target_os = "windows")]
-fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Option<i64>) -> Option<(i64, i64)> {
+fn try_navigate_line_by_column(
+	tab: &DocumentTab,
+	going_down: bool,
+	pref_col: Option<i64>,
+	start_of_line: bool,
+) -> Option<Option<(i64, i64)>> {
+	let text_ctrl = tab.text_ctrl;
 	let current_pos = text_ctrl.get_insertion_point().max(0);
 	let (current_col, current_line) = text_ctrl.position_to_xy(current_pos)?;
 	let col = pref_col.unwrap_or(current_col);
 	let target_line = if going_down { current_line + 1 } else { current_line - 1 };
 	if target_line < 0 {
-		return None;
+		return Some(None);
 	}
 	let target_line_start = text_ctrl.xy_to_position(0, target_line);
 	if target_line_start < 0 {
-		return None;
+		return Some(None);
+	}
+	if start_of_line {
+		return Some(Some((target_line_start, 0)));
 	}
 	let target_line_len = i64::from(text_ctrl.get_line_length(target_line));
 	let new_pos = target_line_start + col.min(target_line_len);
-	Some((new_pos, col))
+	Some(Some((new_pos, col)))
+}
+
+/// Returns (`new_position`, `preferred_column`) for vertical navigation.
+/// With `start_of_line` set, the caret lands at the start of the target visual line. Otherwise it
+/// uses character-column-based navigation (`pref_col` or the current column), so the cursor lands on
+/// the same character column (not pixel column) on the target visual line.
+///
+/// Reloads `tab`'s window and retries once if Up/Down would otherwise stop at a loaded-window
+/// boundary that isn't the document's actual start/end. Without this, Up/Down (and Page Up/Down,
+/// which RichEdit handles natively with no window awareness at all) can strand the caret mid-chapter
+/// with no keyboard-only way past it except an explicit jump (heading/bookmark navigation etc.) -
+/// found the hard way testing a huge book, not something worth leaving as a TODO.
+#[cfg(target_os = "windows")]
+fn navigate_line_by_column(
+	tab: &mut DocumentTab,
+	going_down: bool,
+	pref_col: Option<i64>,
+	start_of_line: bool,
+) -> Option<(i64, i64)> {
+	if let Some(result) = try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)? {
+		return Some(result);
+	}
+	let doc_len = tab.session.document_len();
+	let has_more = if going_down { tab.window.end() < doc_len } else { tab.window.start() > 0 };
+	if !has_more {
+		return None;
+	}
+	let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point().max(0));
+	reload_window_around(tab, doc_pos);
+	let local = tab.window.to_local(doc_pos);
+	tab.text_ctrl.set_insertion_point(local);
+	try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)?
 }
 
 fn normalized_path_key(path: &Path) -> String {
@@ -859,25 +1216,158 @@ fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 	text_ctrl.set_value(content);
 }
 
-/// Sets `content` on `text_ctrl` and applies its bold/italic/underline markers.
+struct ReadabilityStyle {
+	rf: ReadabilityFont,
+	line_spacing: i32,
+	bg_color: i32,
+	text_alignment: i32,
+	letter_spacing: i32,
+	paragraph_spacing: i32,
+}
+
+fn readability_style(cfg: &ConfigManager) -> ReadabilityStyle {
+	ReadabilityStyle {
+		rf: cfg.get_readability_font(),
+		line_spacing: cfg.get_line_spacing(),
+		bg_color: cfg.get_bg_color(),
+		text_alignment: cfg.get_text_alignment(),
+		letter_spacing: cfg.get_letter_spacing(),
+		paragraph_spacing: cfg.get_paragraph_spacing(),
+	}
+}
+
+/// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
+/// position. Returns the parse error and leaves the tab unchanged if the re-parse fails.
+fn reparse_tab_in_place(
+	tab: &mut DocumentTab,
+	path_str: &str,
+	password: &str,
+	forced_extension: &str,
+	render_tables_inline: bool,
+	style: &ReadabilityStyle,
+) -> Result<(), String> {
+	let new_fingerprint = read_fingerprint(&tab.file_path);
+	let current_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+	let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
+
+	// Find the nearest anchor at-or-before the cursor using the full id_positions key
+	// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
+	// making the subsequent lookup fail). Record the within-block offset so the cursor
+	// lands at the same structural position after reparsing. Fallback: percentage-based
+	// position for formats with no anchors.
+	let stable_anchor = {
+		let id_positions = &tab.session.handle().document().id_positions;
+		id_positions
+			.iter()
+			.filter(|&(_, &off)| off <= pos)
+			.max_by_key(|&(_, &off)| off)
+			.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
+	};
+	let fallback_percent = tab.session.get_status_info(current_pos).percentage;
+
+	let new_session = match DocumentSession::new(path_str, password, forced_extension, render_tables_inline) {
+		Ok(session) => session,
+		Err(err) => {
+			tracing::error!(path = %path_str, error = %err, "failed to re-parse document");
+			return Err(err);
+		}
+	};
+	tab.session = new_session;
+	// TODO(windowing): still whole-document on every reparse, see
+	// C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md Phase 2 - should load a window
+	// centered on `restored_pos` instead.
+	let doc_len = tab.session.document_len();
+	let slice = tab.session.get_window(0, doc_len);
+	fill_text_ctrl_with_formatting(tab.text_ctrl, &slice);
+	tab.window = TextWindow::whole(doc_len);
+	if let Some(font) = build_font_from_readability(&style.rf) {
+		tab.text_ctrl.set_font(&font);
+	}
+	apply_foreground_color_to_ctrl(tab.text_ctrl, style.rf.color);
+	apply_bg_color_to_ctrl(tab.text_ctrl, style.bg_color);
+	apply_readability_format_to_ctrl(
+		tab.text_ctrl,
+		style.line_spacing,
+		style.paragraph_spacing,
+		style.letter_spacing,
+		style.text_alignment,
+	);
+	tab.panel.layout();
+	let max_pos = tab.text_ctrl.get_last_position();
+
+	let restored_pos = if let Some((ref key, within)) = stable_anchor {
+		match tab.session.handle().document().id_positions.get(key) {
+			Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
+			None => tab.session.position_from_percent(fallback_percent).clamp(0, max_pos),
+		}
+	} else {
+		tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
+	};
+
+	tab.text_ctrl.set_insertion_point(restored_pos);
+	tab.text_ctrl.show_position(restored_pos);
+	tab.session.set_stable_position(restored_pos);
+	tab.disk_fingerprint = new_fingerprint;
+	Ok(())
+}
+
+/// Loads into `text_ctrl` whichever window of `session`'s content contains `target_pos`: the
+/// whole document for anything under `text_window::should_use_whole_document`'s threshold
+/// (identical to the app's pre-windowing behavior), otherwise a bounded window centered on
+/// `target_pos`. Returns the `TextWindow` describing what's now actually loaded.
+fn load_window_into_ctrl(text_ctrl: TextCtrl, session: &DocumentSession, target_pos: i64, doc_len: i64) -> TextWindow {
+	let slice = if text_window::should_use_whole_document(doc_len) {
+		session.get_window(0, doc_len)
+	} else {
+		let (raw_start, raw_end) = text_window::target_window_bounds(target_pos, doc_len);
+		session.get_window(raw_start, raw_end)
+	};
+	let window = TextWindow::new(slice.start, slice.end);
+	fill_text_ctrl_with_formatting(text_ctrl, &slice);
+	window
+}
+
+/// Reloads `tab`'s window to one centered on `doc_offset`. Call sites go through
+/// `navigation::jump_to_doc_offset`, which checks `TextWindow::needs_reload_for` first, so this
+/// always actually reloads when called.
+///
+/// TODO(windowing, phase 2): this doesn't reapply readability/font/color formatting the way a
+/// full rebuild does (`apply_readability_format_to_ctrl` and friends), since those need
+/// `ConfigManager` values that aren't available at the navigation chokepoints this is called
+/// from without changing their signatures (defeating the point of routing ~90 call sites
+/// through two unchanged chokepoints). Bold/italic/underline markers are unaffected (handled by
+/// `load_window_into_ctrl`/`fill_text_ctrl_with_formatting` from the document's own markers,
+/// not from readability settings) - this only means a reload can momentarily show default
+/// line/paragraph/letter spacing and alignment until something else (a settings change, a
+/// word-wrap toggle) reapplies them across all tabs. Fix by caching the last-applied readability
+/// values on `DocumentTab` itself, updated wherever `apply_line_spacing`/`apply_paragraph_spacing`/
+/// `apply_letter_spacing`/`apply_text_alignment` already loop over every tab.
+pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: i64) {
+	let doc_len = tab.session.document_len();
+	tab.window = load_window_into_ctrl(tab.text_ctrl, &tab.session, doc_offset, doc_len);
+}
+
+/// Fills `text_ctrl` with `slice`'s text and bold/italic/underline markers. `slice` may be a
+/// window into a much larger document (see `ui::text_window`) rather than its full content;
+/// this function has no notion of "the whole document" and just fills whatever it's handed.
 ///
 /// On Windows this streams a single RTF blob into the native `RichEdit` control
-/// via `EM_STREAMIN` (see `stream_rtf_into_ctrl`) instead of issuing one
-/// `SetStyle` call per formatting span, which is far cheaper on documents with
-/// thousands of spans. `wxTextCtrl::SetValue` can't be used for this — it does
-/// not forward to the native `WM_SETTEXT` handler that auto-detects a `{\rtf`
-/// prefix, so it would just store the markup as literal text. If streaming
-/// doesn't round-trip back to the original content, this falls back to the
-/// plain-text + per-segment path used on every other platform.
-fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession, content: &str) {
-	let markers = session.get_formatting_markers();
-	let segments = merge_formatting_markers(&markers);
+/// via `EM_STREAMIN` (see `rtf::stream::stream_rtf_into_ctrl`) instead of issuing
+/// one `SetStyle` call per formatting span, which is far cheaper on documents
+/// with thousands of spans. `wxTextCtrl::SetValue` can't be used for this, since it
+/// does not forward to the native `WM_SETTEXT` handler that auto-detects a
+/// `{\rtf` prefix, so it would just store the markup as literal text. If
+/// streaming doesn't round-trip back to the original content, this falls back
+/// to the plain-text + per-segment path used on every other platform.
+fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &WindowSlice) {
+	let content = slice.text.as_str();
+	let segments = merge_formatting_markers(&slice.markers);
 
 	#[cfg(target_os = "windows")]
 	if !segments.is_empty()
 		&& let Some(font) = text_ctrl.get_font()
 	{
-		let rtf = rtf_write::build_rtf(
+		let rtf = write::build_rtf(
 			content,
 			&segments,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
@@ -888,8 +1378,11 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession
 			// wholly-trailing "\par" (with no content after it) doesn't manifest
 			// as a stored character. Tolerate exactly that one known, harmless
 			// discrepancy rather than falling back over it: the very last
-			// position of the document ends up one short of `content`, which
-			// only matters at the literal last character of the book.
+			// position of *whatever we streamed in* ends up one short of `content`,
+			// which only matters at its literal last character. This applies the same
+			// way to a windowed slice as to the whole document - RichEdit has no notion
+			// of "there's more after this that isn't loaded"; from its perspective
+			// `content` (window or not) *is* the whole buffer it was asked to store.
 			let matched = round_tripped == content
 				|| (content.ends_with('\n')
 					&& round_tripped.len() + 1 == content.len()
@@ -905,70 +1398,6 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession
 
 	fill_text_ctrl(text_ctrl, content);
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments);
-}
-
-#[cfg(target_os = "windows")]
-struct RtfStreamCursor<'a> {
-	data: &'a [u8],
-	pos: usize,
-}
-
-/// `EDITSTREAMCALLBACK` for `EM_STREAMIN`: `RichEdit` calls this repeatedly,
-/// asking for up to `cb` bytes each time, until we report 0 bytes written
-/// (end of stream) or return a nonzero error code. Called synchronously
-/// within `SendMessageW` on the same thread, so the `RtfStreamCursor` borrow
-/// in `stream_rtf_into_ctrl` stays valid for every call.
-#[cfg(target_os = "windows")]
-unsafe extern "system" fn rtf_stream_read_callback(dwcookie: usize, pbbuff: *mut u8, cb: i32, pcb: *mut i32) -> u32 {
-	if pbbuff.is_null() || pcb.is_null() || dwcookie == 0 {
-		return 1;
-	}
-	let cursor = unsafe { &mut *(dwcookie as *mut RtfStreamCursor<'_>) };
-	let remaining = cursor.data.len() - cursor.pos;
-	let to_copy = remaining.min(usize::try_from(cb.max(0)).unwrap_or(0));
-	if to_copy > 0 {
-		unsafe { copy_nonoverlapping(cursor.data[cursor.pos..].as_ptr(), pbbuff, to_copy) };
-		cursor.pos += to_copy;
-	}
-	unsafe { *pcb = i32::try_from(to_copy).unwrap_or(i32::MAX) };
-	0
-}
-
-/// Feeds `rtf` into the native `RichEdit` control behind `text_ctrl` via the
-/// Win32 `EM_STREAMIN` message. `wxTextCtrl::SetValue` cannot be used for this:
-/// it does not forward to the native `WM_SETTEXT` handler that auto-detects a
-/// `{\rtf` prefix, so it just stores the markup as literal text (confirmed by
-/// a round-trip mismatch where `GetValue()` returned the raw RTF source
-/// unchanged). `EM_STREAMIN` is the documented, explicit way to load RTF into
-/// a `RichEdit` control, and is why this needs a raw `SendMessageW` call rather
-/// than a wx-level API — the same pattern already used for letter-spacing
-/// (`EM_SETCHARFORMAT`) in `apply_readability_format_to_ctrl`.
-///
-/// Returns `false` if the control has no native handle yet or the stream
-/// didn't fully complete, in which case callers should fall back to the
-/// plain-text + segment-loop path rather than trust partial content.
-#[cfg(target_os = "windows")]
-fn stream_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
-	use windows::Win32::{
-		Foundation::{HWND, LPARAM, WPARAM},
-		UI::{
-			Controls::RichEdit::{EDITSTREAM, EM_STREAMIN, SF_RTF},
-			WindowsAndMessaging::SendMessageW,
-		},
-	};
-
-	let hwnd_ptr = text_ctrl.get_handle();
-	if hwnd_ptr.is_null() {
-		return false;
-	}
-	let hwnd = HWND(hwnd_ptr);
-	let mut cursor = RtfStreamCursor { data: rtf.as_bytes(), pos: 0 };
-	let mut stream =
-		EDITSTREAM { dwCookie: addr_of_mut!(cursor) as usize, dwError: 0, pfnCallback: Some(rtf_stream_read_callback) };
-	unsafe {
-		SendMessageW(hwnd, EM_STREAMIN, Some(WPARAM(SF_RTF as usize)), Some(LPARAM(addr_of_mut!(stream) as isize)));
-	}
-	stream.dwError == 0 && cursor.pos == cursor.data.len()
 }
 
 pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
@@ -1207,7 +1636,7 @@ pub struct FormatSegment {
 /// of the naive O(n^2) "rescan every marker at every boundary" approach, which
 /// took several seconds on books with tens of thousands of formatting spans.
 pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker]) -> Vec<FormatSegment> {
-	use paperback_core::session::MarkerTypeFfi;
+	use paperback_core::document::MarkerType;
 
 	#[derive(Clone, Copy)]
 	struct Event {
@@ -1222,9 +1651,9 @@ pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker])
 			continue;
 		}
 		let style_idx = match m.mtype {
-			MarkerTypeFfi::Bold => 0,
-			MarkerTypeFfi::Italic => 1,
-			MarkerTypeFfi::Underline => 2,
+			MarkerType::Bold => 0,
+			MarkerType::Italic => 1,
+			MarkerType::Underline => 2,
 			_ => continue,
 		};
 		events.push(Event { position: m.position, delta: 1, style_idx });
@@ -1340,63 +1769,57 @@ fn show_reader_context_menu(text_ctrl: TextCtrl) {
 	text_ctrl.popup_menu(&mut menu, None);
 }
 
-/// Build a map from (key_code, shift) to menu ID for single-key navigation shortcuts.
-/// Parses shortcut strings from menu entry labels to stay in sync with menu definitions.
-#[cfg(target_os = "linux")]
-fn build_navigation_key_map() -> HashMap<(i32, bool), i32> {
-	use super::menu::{self, MenuEntry};
-
-	let mut map = HashMap::new();
-	let all_entries = [
-		menu::headings_entries(),
-		menu::sections_entries(),
-		menu::pages_entries(),
-		menu::links_entries(),
-		menu::tables_entries(),
-		menu::separators_entries(),
-		menu::lists_entries(),
-		menu::containers_entries(),
-		menu::bookmarks_entries(),
-	];
-	for entries in &all_entries {
-		for entry in entries {
-			if let MenuEntry::Item(spec) = entry {
-				if let Some((key, shift)) = parse_single_key_shortcut(&spec.label) {
-					map.insert((key, shift), spec.id);
-				}
-			}
-		}
-	}
-	map
-}
-
-/// Parse a single-key or Shift+key shortcut from a menu label like `"&Next Heading\tH"`.
-/// Returns None for shortcuts involving Ctrl, Alt, or function keys.
-#[cfg(target_os = "linux")]
-fn parse_single_key_shortcut(label: &str) -> Option<(i32, bool)> {
-	let shortcut = label.split('\t').nth(1)?;
-	if shortcut.contains("Ctrl") || shortcut.contains("Alt") {
-		return None;
-	}
-	let shift = shortcut.contains("Shift+");
-	let key_name = shortcut.rsplit('+').next()?;
-	if key_name.starts_with('F') && key_name.len() > 1 && key_name[1..].chars().all(|c| c.is_ascii_digit()) {
-		return None;
-	}
-	if key_name.len() == 1 {
-		let key = key_name.as_bytes()[0].to_ascii_uppercase() as i32;
-		return Some((key, shift));
-	}
-	None
-}
-
 #[cfg(test)]
 mod tests {
-	use paperback_core::session::{LineMarker, MarkerTypeFfi};
+	use std::{env, fs, path::PathBuf, process};
 
-	use super::{FormatSegment, merge_formatting_markers};
+	use paperback_core::{document::MarkerType, session::LineMarker};
 
-	fn marker(mtype: MarkerTypeFfi, position: i64, length: i64) -> LineMarker {
+	use super::{FormatSegment, merge_formatting_markers, read_fingerprint};
+
+	struct TempFile {
+		path: PathBuf,
+	}
+
+	impl TempFile {
+		fn with_content(name: &str, content: &[u8]) -> Self {
+			let path = env::temp_dir().join(format!("paperback-fingerprint-{}-{name}", process::id()));
+			fs::write(&path, content).unwrap();
+			Self { path }
+		}
+	}
+
+	impl Drop for TempFile {
+		fn drop(&mut self) {
+			let _ = fs::remove_file(&self.path);
+		}
+	}
+
+	#[test]
+	fn fingerprint_of_missing_path_is_none() {
+		let path = env::temp_dir().join(format!("paperback-fingerprint-{}-does-not-exist", process::id()));
+		assert_eq!(read_fingerprint(&path), None);
+	}
+
+	#[test]
+	fn unchanged_file_keeps_the_same_fingerprint() {
+		let file = TempFile::with_content("unchanged", b"stable content");
+		let first = read_fingerprint(&file.path);
+		assert!(first.is_some());
+		assert_eq!(first, read_fingerprint(&file.path));
+	}
+
+	#[test]
+	fn rewriting_with_a_different_length_changes_the_fingerprint() {
+		let file = TempFile::with_content("grows", b"short");
+		let before = read_fingerprint(&file.path);
+		fs::write(&file.path, b"content that is clearly longer").unwrap();
+		let after = read_fingerprint(&file.path);
+		assert!(before.is_some() && after.is_some());
+		assert_ne!(before, after);
+	}
+
+	fn marker(mtype: MarkerType, position: i64, length: i64) -> LineMarker {
 		LineMarker { mtype, position, text: String::new(), reference: String::new(), level: 0, length }
 	}
 
@@ -1407,19 +1830,19 @@ mod tests {
 
 	#[test]
 	fn zero_length_markers_are_ignored() {
-		let markers = [marker(MarkerTypeFfi::Bold, 5, 0)];
+		let markers = [marker(MarkerType::Bold, 5, 0)];
 		assert_eq!(merge_formatting_markers(&markers), Vec::new());
 	}
 
 	#[test]
 	fn non_format_markers_are_ignored() {
-		let markers = [marker(MarkerTypeFfi::Heading1, 0, 10), marker(MarkerTypeFfi::Link, 2, 3)];
+		let markers = [marker(MarkerType::Heading1, 0, 10), marker(MarkerType::Link, 2, 3)];
 		assert_eq!(merge_formatting_markers(&markers), Vec::new());
 	}
 
 	#[test]
 	fn single_bold_marker_produces_one_segment() {
-		let markers = [marker(MarkerTypeFfi::Bold, 0, 4)];
+		let markers = [marker(MarkerType::Bold, 0, 4)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false }]
@@ -1429,7 +1852,7 @@ mod tests {
 	#[test]
 	fn overlapping_bold_and_italic_keep_both_on_the_intersection() {
 		// Bold over [0,10), italic over [4,7): the middle run must carry both.
-		let markers = [marker(MarkerTypeFfi::Bold, 0, 10), marker(MarkerTypeFfi::Italic, 4, 3)];
+		let markers = [marker(MarkerType::Bold, 0, 10), marker(MarkerType::Italic, 4, 3)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![
@@ -1442,7 +1865,7 @@ mod tests {
 
 	#[test]
 	fn adjacent_identical_segments_are_coalesced() {
-		let markers = [marker(MarkerTypeFfi::Bold, 0, 4), marker(MarkerTypeFfi::Bold, 4, 4)];
+		let markers = [marker(MarkerType::Bold, 0, 4), marker(MarkerType::Bold, 4, 4)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![FormatSegment { start: 0, end: 8, bold: true, italic: false, underline: false }]
@@ -1451,11 +1874,8 @@ mod tests {
 
 	#[test]
 	fn all_three_styles_can_stack() {
-		let markers = [
-			marker(MarkerTypeFfi::Bold, 0, 6),
-			marker(MarkerTypeFfi::Italic, 0, 6),
-			marker(MarkerTypeFfi::Underline, 0, 6),
-		];
+		let markers =
+			[marker(MarkerType::Bold, 0, 6), marker(MarkerType::Italic, 0, 6), marker(MarkerType::Underline, 0, 6)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![FormatSegment { start: 0, end: 6, bold: true, italic: true, underline: true }]

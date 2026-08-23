@@ -25,22 +25,18 @@ use wxdragon::{prelude::*, timer::Timer};
 use super::tray;
 use super::{
 	dialogs,
-	document_manager::{DocumentManager, build_font_from_readability, display_title},
+	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
 	menu, menu_ids,
 	navigation::{self, MarkerNavTarget},
 	status,
 };
+#[cfg(not(target_os = "macos"))]
+use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IpcCommand;
-use crate::{
-	config_ext::{UpdateChannel, get_update_channel, set_update_channel},
-	translation_manager::TranslationManager,
-};
-
-const KEY_DELETE: i32 = 127;
-const KEY_NUMPAD_DELETE: i32 = 330;
+use crate::{config_ext::set_update_channel, translation_manager::TranslationManager};
 
 pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
 pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
@@ -61,6 +57,10 @@ pub struct MainWindow {
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
 	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
+	/// Recurring timers, held for the window's lifetime. `Timer`'s `Drop` destroys the
+	/// underlying `wxTimer`, which stops it, so a timer that is only started and then dropped
+	/// at the end of the function that set it up never fires again.
+	_timers: Vec<Rc<Timer<Frame>>>,
 }
 
 #[cfg(target_os = "windows")]
@@ -94,7 +94,7 @@ impl MainWindow {
 		let find_dialog = Rc::new(Mutex::new(None));
 		#[cfg(target_os = "windows")]
 		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(&config.lock().unwrap().get_hotkey())));
-		Self::bind_menu_events(
+		let timers = Self::bind_menu_events(
 			&frame,
 			&doc_manager,
 			&config,
@@ -118,20 +118,54 @@ impl MainWindow {
 				live_region::announce(live_region_label, &display_title(tab));
 			}
 		});
+		let reload_guard = Rc::new(Cell::new(false));
 		let dm = Rc::clone(&doc_manager);
+		let page_reload_guard = Rc::clone(&reload_guard);
 		notebook.on_page_changed(move |_event| {
-			let Ok(dm_ref) = dm.try_lock() else {
+			let Ok(mut dm_ref) = dm.try_lock() else {
 				return;
 			};
+			if !page_reload_guard.get() {
+				page_reload_guard.set(true);
+				if let Some(index) = dm_ref.active_tab_index()
+					&& dm_ref.reload_tab_if_changed(index)
+				{
+					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+					live_region::announce(live_region_label, &t("Document reloaded."));
+				}
+				page_reload_guard.set(false);
+			}
 			update_title_from_manager(&frame_copy, &dm_ref);
 			dm_ref.reset_sound_line();
+			dm_ref.pause_inactive_audio();
+		});
+		let dm_for_activate = Rc::clone(&doc_manager);
+		let activate_reload_guard = Rc::clone(&reload_guard);
+		let frame_for_activate = frame;
+		frame.on_activate(move |event| {
+			event.skip(true);
+			if let WindowEventData::Activate(activate) = &event
+				&& activate.is_active()
+				&& !activate_reload_guard.get()
+				&& let Ok(mut dm_ref) = dm_for_activate.try_lock()
+				&& let Some(index) = dm_ref.active_tab_index()
+			{
+				activate_reload_guard.set(true);
+				if dm_ref.reload_tab_if_changed(index) {
+					update_title_from_manager(&frame_for_activate, &dm_ref);
+					dm_ref.update_status_bar();
+					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+					live_region::announce(live_region_label, &t("Document reloaded."));
+				}
+				activate_reload_guard.set(false);
+			}
 		});
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
 		notebook.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(key_event) = &event
 				&& let Some(key) = key_event.get_key_code()
-				&& (key == KEY_DELETE || key == KEY_NUMPAD_DELETE)
+				&& (key == WXK_DELETE || key == WXK_NUMPAD_DELETE)
 			{
 				let mut dm = dm.lock().unwrap();
 				close_active_document_announced(&mut dm, live_region_label);
@@ -163,7 +197,7 @@ impl MainWindow {
 			#[cfg(target_os = "windows")]
 			let hotkey_for_close = Rc::clone(&hotkey_handle);
 			frame.on_close(move |event| {
-				let dm = dm_for_close.lock().unwrap();
+				let mut dm = dm_for_close.lock().unwrap();
 				if let Some(tab) = dm.active_tab() {
 					let path = tab.file_path.to_string_lossy();
 					let cfg = config_for_close.lock().unwrap();
@@ -171,14 +205,18 @@ impl MainWindow {
 					cfg.flush();
 				}
 				dm.save_all_positions();
+				// Stop audio and move focus off the per-tab child controls (the hidden audio
+				// control included) before the frame tears its children down.
+				dm.stop_all_audio();
+				frame.set_focus();
 				#[cfg(target_os = "macos")]
-				if let WindowEventData::General(ref ev) = event {
-					if ev.can_veto() {
-						drop(dm);
-						ev.veto();
-						frame.show(false);
-						return;
-					}
+				if let WindowEventData::General(ref ev) = event
+					&& ev.can_veto()
+				{
+					drop(dm);
+					ev.veto();
+					frame.show(false);
+					return;
 				}
 				#[cfg(target_os = "windows")]
 				if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
@@ -219,6 +257,7 @@ impl MainWindow {
 			_find_dialog: find_dialog,
 			#[cfg(target_os = "windows")]
 			_hotkey_handle: hotkey_handle,
+			_timers: timers,
 		}
 	}
 
@@ -237,6 +276,7 @@ impl MainWindow {
 		self.doc_manager.lock().unwrap().restore_focus();
 	}
 
+	#[cfg(not(target_os = "macos"))]
 	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
 		help::run_update_check(silent, channel);
 	}
@@ -496,6 +536,43 @@ impl MainWindow {
 		});
 	}
 
+	/// Prompts for a save path and exports `tab`'s document as `format`, showing a
+	/// generic failure dialog on error. Shared by the `EXPORT_TO_PLAIN_TEXT` /
+	/// `EXPORT_TO_HTML` / `EXPORT_TO_MARKDOWN` menu handlers, which differ only in
+	/// `format`, the default file `extension`, the file-picker `wildcard`, and the
+	/// file-picker `dialog_title`.
+	fn export_document_as(
+		frame: &Frame,
+		tab: &DocumentTab,
+		format: paperback_core::export::ExportFormat,
+		extension: &str,
+		wildcard: &str,
+		dialog_title: &str,
+	) {
+		let default_name =
+			// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+			tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+		let default_file = format!("{default_name}.{extension}");
+		let dialog = FileDialog::builder(frame)
+			.with_message(dialog_title)
+			.with_default_file(&default_file)
+			.with_wildcard(wildcard)
+			.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+			.build();
+		if dialog.show_modal() == ID_OK
+			&& let Some(path) = dialog.get_path()
+			&& let Err(e) = tab.session.export_as(&path, format)
+		{
+			tracing::error!(path = %path, error = %e, format = ?format, "failed to export document");
+			let dialog =
+				// TRANSLATORS: Error dialog shown when exporting a document to another format fails
+				MessageDialog::builder(frame, &t("Failed to export document."), &t("Error"))
+					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+					.build();
+			dialog.show_modal();
+		}
+	}
+
 	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 		let wildcard = build_file_filter_string();
 		// TRANSLATORS: Title of the file picker dialog shown when opening a document
@@ -532,7 +609,7 @@ impl MainWindow {
 		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
 		live_region_label: StaticText,
 		#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
-	) {
+	) -> Vec<Rc<Timer<Frame>>> {
 		let frame_copy = *frame;
 		let dm = Rc::clone(doc_manager);
 		let config = Rc::clone(config);
@@ -545,10 +622,31 @@ impl MainWindow {
 		let sleep_timer_duration_minutes = Rc::new(Cell::new(0i32));
 		let sleep_timer_for_tick = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_tick = Rc::clone(&sleep_timer_running);
+		let sleep_timer_start_for_tick = Rc::clone(&sleep_timer_start_time);
+		let sleep_timer_duration_for_tick = Rc::clone(&sleep_timer_duration_minutes);
 		let frame_for_timer = *frame;
 		let dm_for_timer = Rc::clone(doc_manager);
 		let config_for_timer = Rc::clone(&config);
 		sleep_timer.on_tick(move |_| {
+			// `Timer::on_tick` binds `EventType::TIMER` on the *owner*, not on the timer, and
+			// wxdragon gives its timers no distinguishing id, so every timer parented to this
+			// frame delivers its ticks to every handler bound here. This one shuts the app down,
+			// so it has to confirm the deadline really passed rather than trust that being
+			// called means its own timer fired.
+			if !sleep_timer_running_for_tick.get() {
+				return;
+			}
+			let now_ms = SystemTime::now()
+				.duration_since(UNIX_EPOCH)
+				.ok()
+				.and_then(|d| i64::try_from(d.as_millis()).ok())
+				.unwrap_or(0);
+			let deadline_ms = sleep_timer_start_for_tick
+				.get()
+				.saturating_add(i64::from(sleep_timer_duration_for_tick.get()) * 60_000);
+			if now_ms < deadline_ms {
+				return;
+			}
 			tracing::info!("sleep timer fired, closing application");
 			sleep_timer_running_for_tick.set(false);
 			sleep_timer_for_tick.stop();
@@ -589,6 +687,22 @@ impl MainWindow {
 			);
 		});
 		status_update_timer.start(1000, false);
+		let audio_sync_timer = Rc::new(Timer::new(frame));
+		let dm_for_audio_sync = Rc::clone(doc_manager);
+		audio_sync_timer.on_tick(move |_| {
+			if let Ok(mut dm) = dm_for_audio_sync.try_lock() {
+				dm.pump_audio();
+			}
+		});
+		audio_sync_timer.start(250, false);
+		let window_reload_timer = Rc::new(Timer::new(frame));
+		let dm_for_window_reload = Rc::clone(doc_manager);
+		window_reload_timer.on_tick(move |_| {
+			if let Ok(mut dm) = dm_for_window_reload.try_lock() {
+				dm.pump_window_reload();
+			}
+		});
+		window_reload_timer.start(250, false);
 		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
 		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
@@ -655,6 +769,21 @@ impl MainWindow {
 				menu_ids::FIND_PREVIOUS => {
 					find::handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, false);
 				}
+				menu_ids::ANNOUNCE_PERCENT => {
+					if let Ok(dm_ref) = dm.try_lock() {
+						dm_ref.announce_current_percent();
+					}
+				}
+				menu_ids::SET_TEMPORARY_BOOKMARK => {
+					if let Ok(dm_ref) = dm.try_lock() {
+						dm_ref.set_temporary_bookmark();
+					}
+				}
+				menu_ids::JUMP_TO_TEMPORARY_BOOKMARK => {
+					if let Ok(mut dm_ref) = dm.try_lock() {
+						dm_ref.jump_to_temporary_bookmark();
+					}
+				}
 				menu_ids::GO_TO_LINE => {
 					let (current_line, max_lines) = {
 						let mut dm_guard = dm.lock().unwrap();
@@ -675,27 +804,19 @@ impl MainWindow {
 						(current_line, max_lines)
 					};
 					if let Some(line) = dialogs::show_go_to_line_dialog(&frame_copy, current_line, max_lines) {
-						let (history, history_index, path_str) = {
+						let update = {
 							let mut dm_guard = dm.lock().unwrap();
-							let (history, history_index, path_str) = {
+							let update = {
 								let Some(tab) = dm_guard.active_tab_mut() else {
 									return;
 								};
 								let target_pos = tab.session.position_from_line(i64::from(line));
-								tab.text_ctrl.set_focus();
-								tab.text_ctrl.set_insertion_point(target_pos);
-								tab.text_ctrl.show_position(target_pos);
-								tab.session.check_and_record_history(target_pos);
-								let (history, history_index) = tab.session.get_history();
-								let history = history.to_vec();
-								let path_str = tab.file_path.to_string_lossy().to_string();
-								(history, history_index, path_str)
+								navigation::move_to_offset_and_record_history(tab, target_pos)
 							};
 							drop(dm_guard);
-							(history, history_index, path_str)
+							update
 						};
-						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, &history, history_index);
+						navigation::persist_navigation_history(&config, Some(&update));
 					}
 				}
 				menu_ids::GO_TO_PAGE => {
@@ -720,27 +841,19 @@ impl MainWindow {
 						(current_page, max_page)
 					};
 					if let Some(page) = dialogs::show_go_to_page_dialog(&frame_copy, current_page, max_page) {
-						let (history, history_index, path_str) = {
+						let update = {
 							let mut dm_guard = dm.lock().unwrap();
-							let (history, history_index, path_str) = {
+							let update = {
 								let Some(tab) = dm_guard.active_tab_mut() else {
 									return;
 								};
 								let target_pos = tab.session.page_offset(page);
-								tab.text_ctrl.set_focus();
-								tab.text_ctrl.set_insertion_point(target_pos);
-								tab.text_ctrl.show_position(target_pos);
-								tab.session.check_and_record_history(target_pos);
-								let (history, history_index) = tab.session.get_history();
-								let history = history.to_vec();
-								let path_str = tab.file_path.to_string_lossy().to_string();
-								(history, history_index, path_str)
+								navigation::move_to_offset_and_record_history(tab, target_pos)
 							};
 							drop(dm_guard);
-							(history, history_index, path_str)
+							update
 						};
-						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, &history, history_index);
+						navigation::persist_navigation_history(&config, Some(&update));
 					}
 				}
 				menu_ids::GO_TO_PERCENT => {
@@ -758,27 +871,19 @@ impl MainWindow {
 						current_percent
 					};
 					if let Some(percent) = dialogs::show_go_to_percent_dialog(&frame_copy, current_percent) {
-						let (history, history_index, path_str) = {
+						let update = {
 							let mut dm_guard = dm.lock().unwrap();
-							let (history, history_index, path_str) = {
+							let update = {
 								let Some(tab) = dm_guard.active_tab_mut() else {
 									return;
 								};
 								let target_pos = tab.session.position_from_percent(percent);
-								tab.text_ctrl.set_focus();
-								tab.text_ctrl.set_insertion_point(target_pos);
-								tab.text_ctrl.show_position(target_pos);
-								tab.session.check_and_record_history(target_pos);
-								let (history, history_index) = tab.session.get_history();
-								let history = history.to_vec();
-								let path_str = tab.file_path.to_string_lossy().to_string();
-								(history, history_index, path_str)
+								navigation::move_to_offset_and_record_history(tab, target_pos)
 							};
 							drop(dm_guard);
-							(history, history_index, path_str)
+							update
 						};
-						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, &history, history_index);
+						navigation::persist_navigation_history(&config, Some(&update));
 					}
 				}
 				menu_ids::GO_BACK => {
@@ -1003,6 +1108,31 @@ impl MainWindow {
 					live_region::announce(live_region_label, &msg);
 					dm.lock().unwrap().restore_focus();
 				}
+				menu_ids::PLAY_PAUSE_AUDIO => {
+					navigation::handle_toggle_play_pause_audio(&dm, live_region_label);
+				}
+				menu_ids::SEEK_AUDIO_FORWARD => {
+					navigation::handle_seek_audio(&dm, &config, live_region_label, true);
+				}
+				menu_ids::SEEK_AUDIO_BACKWARD => {
+					navigation::handle_seek_audio(&dm, &config, live_region_label, false);
+				}
+				menu_ids::INCREASE_AUDIO_SEEK_AMOUNT => {
+					navigation::handle_change_seek_amount(&config, live_region_label, true);
+				}
+				menu_ids::DECREASE_AUDIO_SEEK_AMOUNT => {
+					navigation::handle_change_seek_amount(&config, live_region_label, false);
+				}
+				menu_ids::TOGGLE_FULL_SCREEN => {
+					let new_state = !frame_copy.is_full_screen();
+					frame_copy.show_full_screen(new_state);
+					if let Some(menu_bar) = frame_copy.get_menu_bar() {
+						menu_bar.check_item(menu_ids::TOGGLE_FULL_SCREEN, new_state);
+					}
+					// TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+					let msg = if new_state { t("Full screen on.") } else { t("Full screen off.") };
+					live_region::announce(live_region_label, &msg);
+				}
 				menu_ids::VIEW_NOTE_TEXT => {
 					navigation::handle_view_note_text(&frame_copy, &dm, &config);
 				}
@@ -1109,34 +1239,16 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name =
-						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-					let default_file = format!("{default_name}.txt");
-					// TRANSLATORS: File filter shown in the "Export to plain text" save dialog
-					let wildcard = t("Plain text files (*.txt)|*.txt|All files (*.*)|*.*");
-					let dialog = FileDialog::builder(&frame_copy)
+					Self::export_document_as(
+						&frame_copy,
+						tab,
+						paperback_core::export::ExportFormat::Text,
+						"txt",
+						// TRANSLATORS: File filter shown in the "Export to plain text" save dialog
+						&t("Plain text files (*.txt)|*.txt|All files (*.*)|*.*"),
 						// TRANSLATORS: Title of the file save dialog when exporting a document to plain text
-						.with_message(&t("Export document to plain text"))
-						.with_default_file(&default_file)
-						.with_wildcard(&wildcard)
-						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-						.build();
-					if dialog.show_modal() == ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Text)
-					{
-						tracing::error!(path = %path, error = %e, "failed to export document as text");
-						let dialog =
-									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-										.with_style(
-											MessageDialogStyle::OK
-												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-										)
-										.build();
-						dialog.show_modal();
-					}
+						&t("Export document to plain text"),
+					);
 				}
 				menu_ids::EXPORT_TO_HTML => {
 					let Ok(dm_ref) = dm.try_lock() else {
@@ -1145,34 +1257,16 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name =
-						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-					let default_file = format!("{default_name}.html");
-					// TRANSLATORS: File filter shown in the "Export to HTML" save dialog
-					let wildcard = t("HTML files (*.html)|*.html|All files (*.*)|*.*");
-					let dialog = FileDialog::builder(&frame_copy)
+					Self::export_document_as(
+						&frame_copy,
+						tab,
+						paperback_core::export::ExportFormat::Html,
+						"html",
+						// TRANSLATORS: File filter shown in the "Export to HTML" save dialog
+						&t("HTML files (*.html)|*.html|All files (*.*)|*.*"),
 						// TRANSLATORS: Title of the file save dialog when exporting a document to HTML
-						.with_message(&t("Export document to HTML"))
-						.with_default_file(&default_file)
-						.with_wildcard(&wildcard)
-						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-						.build();
-					if dialog.show_modal() == ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Html)
-					{
-						tracing::error!(path = %path, error = %e, "failed to export document as HTML");
-						let dialog =
-									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-										.with_style(
-											MessageDialogStyle::OK
-												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-										)
-										.build();
-						dialog.show_modal();
-					}
+						&t("Export document to HTML"),
+					);
 				}
 				menu_ids::EXPORT_TO_MARKDOWN => {
 					let Ok(dm_ref) = dm.try_lock() else {
@@ -1181,34 +1275,16 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name =
-						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-					let default_file = format!("{default_name}.md");
-					// TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
-					let wildcard = t("Markdown files (*.md)|*.md|All files (*.*)|*.*");
-					let dialog = FileDialog::builder(&frame_copy)
+					Self::export_document_as(
+						&frame_copy,
+						tab,
+						paperback_core::export::ExportFormat::Markdown,
+						"md",
+						// TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
+						&t("Markdown files (*.md)|*.md|All files (*.*)|*.*"),
 						// TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
-						.with_message(&t("Export document to Markdown"))
-						.with_default_file(&default_file)
-						.with_wildcard(&wildcard)
-						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-						.build();
-					if dialog.show_modal() == ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown)
-					{
-						tracing::error!(path = %path, error = %e, "failed to export document as Markdown");
-						let dialog =
-									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-										.with_style(
-											MessageDialogStyle::OK
-												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-										)
-										.build();
-						dialog.show_modal();
-					}
+						&t("Export document to Markdown"),
+					);
 				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {
 					let Ok(dm_ref) = dm.try_lock() else {
@@ -1337,14 +1413,8 @@ impl MainWindow {
 							toc_items,
 							i32::try_from(current_toc_offset).unwrap_or(i32::MAX),
 						) {
-							tab.text_ctrl.set_focus();
-							tab.text_ctrl.set_insertion_point(i64::from(offset));
-							tab.text_ctrl.show_position(i64::from(offset));
-							tab.session.check_and_record_history(i64::from(offset));
-							let (history, history_index) = tab.session.get_history();
-							let path_str = tab.file_path.to_string_lossy();
-							let cfg = config.lock().unwrap();
-							cfg.set_navigation_history(&path_str, history, history_index);
+							let update = navigation::move_to_offset_and_record_history(tab, i64::from(offset));
+							navigation::persist_navigation_history(&config, Some(&update));
 						}
 					}
 				}
@@ -1353,14 +1423,8 @@ impl MainWindow {
 					if let Some(tab) = dm_guard.active_tab_mut() {
 						let current_pos = tab.text_ctrl.get_insertion_point();
 						if let Some(offset) = dialogs::show_elements_dialog(&frame_copy, &tab.session, current_pos) {
-							tab.text_ctrl.set_focus();
-							tab.text_ctrl.set_insertion_point(offset);
-							tab.text_ctrl.show_position(offset);
-							tab.session.check_and_record_history(offset);
-							let (history, history_index) = tab.session.get_history();
-							let path_str = tab.file_path.to_string_lossy();
-							let cfg = config.lock().unwrap();
-							cfg.set_navigation_history(&path_str, history, history_index);
+							let update = navigation::move_to_offset_and_record_history(tab, offset);
+							navigation::persist_navigation_history(&config, Some(&update));
 						}
 					}
 				}
@@ -1513,13 +1577,22 @@ impl MainWindow {
 					cfg.set_app_bool("start_maximized", options.start_maximized);
 					cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
 					cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
+					cfg.set_app_bool("line_start_navigation", options.line_start_navigation);
 					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
 					cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
+					cfg.set_app_bool("sync_caret_to_audio", options.sync_caret_to_audio);
+					cfg.set_app_int("audio_seek_amount_seconds", options.audio_seek_amount_seconds);
+					cfg.set_app_bool(
+						"audio_seek_continues_into_next_file",
+						options.audio_seek_continues_into_next_file,
+					);
+					cfg.set_app_bool("auto_reload_documents", options.auto_reload_documents);
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 					cfg.set_app_string("language", &options.language);
 					set_update_channel(&cfg, options.update_channel);
 					cfg.set_hotkey(&options.hotkey);
+					cfg.set_shortcuts(&options.shortcuts);
 					cfg.set_readability_font(&options.readability_font);
 					cfg.set_line_spacing(options.line_spacing);
 					cfg.set_bg_color(options.bg_color);
@@ -1596,6 +1669,24 @@ impl MainWindow {
 					menu::update_menu_item_states(&frame_copy, has_docs);
 					menu::update_reopen_state(&frame_copy, has_reopen);
 				}
+				menu_ids::CUSTOMIZE_SHORTCUTS => {
+					let initial_shortcuts = config.lock().unwrap().get_shortcuts();
+					if let Some(updated) = dialogs::prompt_for_shortcuts(&frame_copy, &initial_shortcuts) {
+						{
+							let cfg = config.lock().unwrap();
+							cfg.set_shortcuts(&updated);
+							cfg.flush();
+						}
+						let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+						frame_copy.set_menu_bar(menu_bar);
+						let dm_ref = dm.lock().unwrap();
+						let has_docs = dm_ref.tab_count() > 0;
+						let has_reopen = dm_ref.has_recently_closed();
+						drop(dm_ref);
+						menu::update_menu_item_states(&frame_copy, has_docs);
+						menu::update_reopen_state(&frame_copy, has_reopen);
+					}
+				}
 				menu_ids::SLEEP_TIMER => {
 					if sleep_timer_running_for_menu.get() {
 						sleep_timer_for_menu.stop();
@@ -1661,6 +1752,7 @@ impl MainWindow {
 						menu::update_reopen_state(&frame_copy, has_reopen);
 					}
 				}
+				#[cfg(not(target_os = "macos"))]
 				menu_ids::CHECK_FOR_UPDATES => {
 					let channel = get_update_channel(&config.lock().unwrap());
 					help::run_update_check(false, channel);
@@ -1762,6 +1854,7 @@ impl MainWindow {
 				}
 			}
 		});
+		vec![sleep_timer, status_update_timer, audio_sync_timer, window_reload_timer]
 	}
 }
 

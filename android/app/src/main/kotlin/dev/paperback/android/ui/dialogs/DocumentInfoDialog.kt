@@ -2,19 +2,44 @@ package dev.paperback.android.ui.dialogs
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.SpaceBar
+import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 import dev.paperback.android.ui.DocumentTabState
 import uniffi.paperback.DocumentStatsFfi
+
+@Composable
+private fun InfoRow(
+	icon: ImageVector,
+	label: String,
+	value: String
+) {
+	ListItem(
+		leadingContent = { Icon(icon, contentDescription = null) },
+		overlineContent = { Text(label) },
+		headlineContent = { Text(value) },
+		colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+	)
+}
 
 @Composable
 fun DocumentInfoDialog(
@@ -30,53 +55,33 @@ fun DocumentInfoDialog(
 		text = {
 			Column(modifier = Modifier.fillMaxWidth()) {
 				if (docState.title.isNotBlank()) {
-					Text(
-						"Title: ${docState.title}",
-						style = MaterialTheme.typography.bodyLarge,
-						modifier = Modifier.padding(vertical = 4.dp)
-					)
+					// TRANSLATORS: Label for the document's title in the Document Information dialog
+					InfoRow(Icons.Filled.Title, t("Title"), docState.title)
 				}
 				if (docState.author.isNotBlank()) {
-					Text(
-						"Author: ${docState.author}",
-						style = MaterialTheme.typography.bodyLarge,
-						modifier = Modifier.padding(vertical = 4.dp)
-					)
+					// TRANSLATORS: Label for the document's author in the Document Information dialog
+					InfoRow(Icons.Filled.Person, t("Author"), docState.author)
 				}
 				if (docState.documentUri.isNotBlank()) {
 					if (docState.documentUri.startsWith("content://")) {
-						Text(
-							"File Name: ${docState.fileName}",
-							style = MaterialTheme.typography.bodyLarge,
-							modifier = Modifier.padding(vertical = 4.dp)
-						)
+						// TRANSLATORS: Label for the document's file name in the Document Information dialog
+						InfoRow(Icons.AutoMirrored.Filled.InsertDriveFile, t("File Name"), docState.fileName)
 					} else {
-						Text(
-							"Path: ${docState.documentUri.removePrefix("file://")}",
-							style = MaterialTheme.typography.bodyLarge,
-							modifier = Modifier.padding(vertical = 4.dp)
-						)
+						// TRANSLATORS: Label for the document's file path in the Document Information dialog
+						InfoRow(Icons.Filled.Folder, t("Path"), docState.documentUri.removePrefix("file://"))
 					}
 				}
-				Text(
-					"Words: ${stats.wordCount}",
-					style = MaterialTheme.typography.bodyLarge,
-					modifier = Modifier.padding(vertical = 4.dp)
-				)
-				Text(
-					"Lines: ${stats.lineCount}",
-					style = MaterialTheme.typography.bodyLarge,
-					modifier = Modifier.padding(vertical = 4.dp)
-				)
-				Text(
-					"Characters: ${stats.charCount}",
-					style = MaterialTheme.typography.bodyLarge,
-					modifier = Modifier.padding(vertical = 4.dp)
-				)
-				Text(
-					"Characters (excluding spaces): ${stats.charCountNoWhitespace}",
-					style = MaterialTheme.typography.bodyLarge,
-					modifier = Modifier.padding(vertical = 4.dp)
+				// TRANSLATORS: Label for the document's word count in the Document Information dialog
+				InfoRow(Icons.AutoMirrored.Filled.Article, t("Words"), "${stats.wordCount}")
+				// TRANSLATORS: Label for the document's line count in the Document Information dialog
+				InfoRow(Icons.AutoMirrored.Filled.List, t("Lines"), "${stats.lineCount}")
+				// TRANSLATORS: Label for the document's character count in the Document Information dialog
+				InfoRow(Icons.Filled.TextFields, t("Characters"), "${stats.charCount}")
+				InfoRow(
+					Icons.Filled.SpaceBar,
+					// TRANSLATORS: Label for the document's character count excluding whitespace in the Document Information dialog
+					t("Characters (excluding spaces)"),
+					"${stats.charCountNoWhitespace}"
 				)
 			}
 		},

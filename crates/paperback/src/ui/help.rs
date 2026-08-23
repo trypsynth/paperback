@@ -1,30 +1,37 @@
+#[cfg(any(target_os = "macos", target_os = "windows", test))]
+use std::process::Command;
+#[cfg(not(target_os = "macos"))]
+use std::sync::{Arc, atomic::Ordering};
 use std::{
 	env, fs,
 	path::{Path, PathBuf},
-	process::Command,
 	rc::Rc,
-	sync::{
-		Arc, Mutex,
-		atomic::{AtomicUsize, Ordering},
-	},
+	sync::{Mutex, atomic::AtomicUsize},
 };
 
 mod lang_readmes {
 	include!(concat!(env!("OUT_DIR"), "/lang_readmes.rs"));
 }
 
-use paperback_core::{config::ConfigManager, parser, version};
+#[cfg(not(target_os = "macos"))]
+use paperback_core::version;
+use paperback_core::{config::ConfigManager, parser};
 use patois::t;
+#[cfg(not(target_os = "macos"))]
 use ship_shape::{UpdateChannel as ShipChannel, UpdaterConfig};
 use wx_utils::show_error;
 use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager};
-use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
+#[cfg(not(target_os = "macos"))]
+use crate::config_ext::UpdateChannel;
+use crate::translation_manager::TranslationManager;
 
 pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 
+#[cfg(not(target_os = "macos"))]
 const PAPERBACK_GITHUB_REPO: &str = "trypsynth/paperback";
+#[cfg(not(target_os = "macos"))]
 const PAPERBACK_MINISIGN_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs574QJHEkoRiGX7";
 
 // Matches the `-x64`/`-arm64` suffixes the release workflow appends to Windows asset names
@@ -34,9 +41,10 @@ const PAPERBACK_MINISIGN_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs
 const UPDATE_ASSET_SUFFIX: &str = "-x64";
 #[cfg(all(target_os = "windows", target_arch = "aarch64"))]
 const UPDATE_ASSET_SUFFIX: &str = "-arm64";
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 const UPDATE_ASSET_SUFFIX: &str = "";
 
+#[cfg(not(target_os = "macos"))]
 pub fn run_update_check(silent: bool, channel: UpdateChannel) {
 	tracing::info!(channel = %channel, silent, "checking for updates");
 	let config = Arc::new(
@@ -64,6 +72,7 @@ pub fn run_update_check(silent: bool, channel: UpdateChannel) {
 	);
 }
 
+#[cfg(not(target_os = "macos"))]
 pub fn is_installer_distribution() -> bool {
 	let Ok(exe_path) = env::current_exe() else {
 		return false;
@@ -107,7 +116,11 @@ pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<Docume
 			show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
 		}
 	}
-	#[cfg(not(target_os = "windows"))]
+	#[cfg(target_os = "macos")]
+	if finder_reveal_command(&file_path).spawn().is_err() {
+		show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
+	}
+	#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 	{
 		if let Some(dir) = file_path.parent() {
 			let url = format!("file://{}", dir.to_string_lossy());
@@ -116,6 +129,13 @@ pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<Docume
 			}
 		}
 	}
+}
+
+#[cfg(any(target_os = "macos", test))]
+fn finder_reveal_command(file_path: &Path) -> Command {
+	let mut command = Command::new("/usr/bin/open");
+	command.arg("-R").arg(file_path);
+	command
 }
 
 pub fn handle_view_help_browser(frame: &Frame) {
@@ -195,4 +215,20 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 	}
 	config.set_document_format(&path_str, &format);
 	true
+}
+
+#[cfg(test)]
+mod tests {
+	use std::{ffi::OsStr, path::Path};
+
+	use super::finder_reveal_command;
+
+	#[test]
+	fn finder_reveal_command_preserves_paths_with_spaces() {
+		let file_path = Path::new("/Users/reader/Fics in progress/story.epub");
+		let command = finder_reveal_command(file_path);
+
+		assert_eq!(command.get_program(), OsStr::new("/usr/bin/open"));
+		assert_eq!(command.get_args().collect::<Vec<_>>(), [OsStr::new("-R"), file_path.as_os_str()]);
+	}
 }

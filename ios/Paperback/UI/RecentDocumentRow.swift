@@ -1,12 +1,16 @@
 import SwiftUI
 
-// A single row in a recent-documents list: title, path, and an open/closed/missing
-// status, with Locate (when the file can't be found) and Remove actions — mirrors
-// Android's RecentDocumentItemRow, reused by both the compact empty-state preview
-// and the full Recent Documents sheet.
+// A single row in a recent-documents list: title and an open/closed/missing status,
+// with Locate (when the file can't be found) and Remove actions — mirrors Android's
+// RecentDocumentItemRow, reused by both the compact empty-state preview and the full
+// Recent Documents sheet.
 struct RecentDocumentRow: View {
 	let doc: RecentDocument
 	var showClosedStatus: Bool = true
+	// The full Recent Documents list uses a swipe action for Remove instead (the standard
+	// iOS list-deletion idiom); the compact empty-state preview isn't a List, so it keeps
+	// this inline button as its only way to remove a document.
+	var showRemoveButton: Bool = true
 	let onOpen: () -> Void
 	let onRemove: () -> Void
 	let onLocate: (() -> Void)?
@@ -30,10 +34,6 @@ struct RecentDocumentRow: View {
 				Text(doc.title)
 					.foregroundStyle(doc.isMissing ? .secondary : .primary)
 					.lineLimit(1)
-				Text(doc.url.path(percentEncoded: false))
-					.font(.caption)
-					.foregroundStyle(.secondary)
-					.lineLimit(2)
 				statusText
 			}
 			.frame(maxWidth: .infinity, alignment: .leading)
@@ -47,10 +47,12 @@ struct RecentDocumentRow: View {
 					.font(.footnote)
 					.buttonStyle(.borderless)
 			}
-			// TRANSLATORS: Button to remove a document from the recent documents list
-			Button(t("Remove"), role: .destructive, action: onRemove)
-				.font(.footnote)
-				.buttonStyle(.borderless)
+			if showRemoveButton {
+				// TRANSLATORS: Button to remove a document from the recent documents list
+				Button(t("Remove"), role: .destructive, action: onRemove)
+					.font(.footnote)
+					.buttonStyle(.borderless)
+			}
 		}
 		.padding(.vertical, 8)
 		.accessibilityElement(children: .combine)

@@ -7,9 +7,10 @@ mod main_window;
 mod menu;
 mod menu_ids;
 mod navigation;
-mod rtf_write;
+mod rtf;
 mod sounds;
 mod status;
+mod text_window;
 #[cfg(target_os = "windows")]
 mod tray;
 

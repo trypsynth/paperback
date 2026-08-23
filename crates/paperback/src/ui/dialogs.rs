@@ -1,7 +1,17 @@
-// Shared constants used by sub-modules that import via `use super::`.
-pub(super) const DIALOG_PADDING: i32 = 10;
-pub(super) const KEY_RETURN: i32 = 13;
-pub(super) const KEY_NUMPAD_ENTER: i32 = 370;
+// `build_ok_cancel_buttons` translates its own "Cancel" label via patois, since
+// wx-utils is itself a `[package.metadata.patois] translatable = true` crate whose
+// `t()` calls patois-build folds into this app's own catalog at build time (see
+// `build_translations` in build.rs) — the same mechanism ship-shape uses. `ok_label`
+// is still supplied by each dialog, since it varies ("OK" vs. a verb like "Go").
+//
+// Not a fit for every dialog: `toc.rs` deliberately gives its OK button a non-stock
+// ID so a custom handler can block ending the modal until a selection is made, and
+// `options.rs`'s `prompt_for_hotkey` parents its buttons to a `Panel` (with an extra
+// "Clear" button) rather than the dialog directly. Both build their buttons by hand
+// instead of calling this.
+pub(super) use wx_utils::{
+	DIALOG_PADDING, add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons,
+};
 
 mod about;
 pub use about::show_about_dialog;
@@ -24,7 +34,10 @@ pub use note_entry::show_note_entry_dialog;
 mod open_as;
 pub use open_as::show_open_as_dialog;
 mod options;
+pub(crate) use options::AUDIO_SEEK_AMOUNTS_SECONDS;
 pub use options::show_options_dialog;
+mod shortcuts;
+pub use shortcuts::prompt_for_shortcuts;
 mod sleep_timer;
 pub use sleep_timer::show_sleep_timer_dialog;
 mod toc;

@@ -3,11 +3,17 @@ package dev.paperback.android.ui.dialogs
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreTime
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -37,6 +43,7 @@ fun SleepTimerDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Sleep Timer" },
+		icon = { Icon(Icons.Filled.Timer, contentDescription = null) },
 		// TRANSLATORS: Dialog title, switches between the main sleep timer view and the custom-minutes entry view
 		title = { Text(if (showCustomInput) t("Custom Timer") else t("Sleep Timer")) },
 		text = {
@@ -100,11 +107,42 @@ fun SleepTimerDialog(
 					if (remainingSeconds != null) {
 						val min = remainingSeconds / 60
 						val sec = remainingSeconds % 60
-						Text(
-							"Active: %d:%02d remaining".format(min, sec),
-							style = MaterialTheme.typography.bodyLarge,
-							modifier = Modifier.padding(bottom = 8.dp)
-						)
+						val timeText = "%d:%02d".format(min, sec)
+						// TRANSLATORS: Sentence announced to screen readers with the sleep timer's remaining time; {} is replaced with e.g. "3:45"
+						val remainingAnnouncement = t("Active: {} remaining", timeText)
+						Surface(
+							color = MaterialTheme.colorScheme.secondaryContainer,
+							shape = MaterialTheme.shapes.medium,
+							modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+						) {
+							Row(
+								modifier = Modifier
+									.fillMaxWidth()
+									.padding(16.dp)
+									.clearAndSetSemantics { contentDescription = remainingAnnouncement },
+								verticalAlignment = Alignment.CenterVertically
+							) {
+								Icon(
+									Icons.Filled.Timer,
+									contentDescription = null,
+									tint = MaterialTheme.colorScheme.onSecondaryContainer
+								)
+								Spacer(modifier = Modifier.width(12.dp))
+								Column {
+									Text(
+										text = timeText,
+										style = MaterialTheme.typography.headlineSmall,
+										color = MaterialTheme.colorScheme.onSecondaryContainer
+									)
+									Text(
+										// TRANSLATORS: Unit label shown under the sleep timer's remaining time
+										text = t("remaining"),
+										style = MaterialTheme.typography.bodySmall,
+										color = MaterialTheme.colorScheme.onSecondaryContainer
+									)
+								}
+							}
+						}
 						OutlinedButton(
 							onClick = {
 								onCancelTimer()
@@ -115,38 +153,37 @@ fun SleepTimerDialog(
 							// TRANSLATORS: Button to cancel the currently running sleep timer
 							Text(t("Cancel Timer"))
 						}
-						// TRANSLATORS: Heading introducing the preset duration buttons, shown while a sleep timer is already active
+						// TRANSLATORS: Heading introducing the preset duration chips, shown while a sleep timer is already active
 						Text(t("Change to:"), style = MaterialTheme.typography.labelMedium)
 						Spacer(modifier = Modifier.height(8.dp))
 					}
-					presets.chunked(2).forEach { row ->
-						Row(
-							modifier = Modifier.fillMaxWidth(),
-							horizontalArrangement = Arrangement.spacedBy(8.dp)
-						) {
-							row.forEach { minutes ->
-								OutlinedButton(
-									onClick = {
-										onSetTimer(minutes)
-										onDismiss()
-									},
-									modifier = Modifier.weight(1f)
-								) {
-									Text("$minutes minutes")
-								}
-							}
-							if (row.size == 1) {
-								Spacer(modifier = Modifier.weight(1f))
-							}
-						}
-						Spacer(modifier = Modifier.height(8.dp))
-					}
-					OutlinedButton(
-						onClick = { showCustomInput = true },
+					FlowRow(
+						horizontalArrangement = Arrangement.spacedBy(8.dp),
+						verticalArrangement = Arrangement.spacedBy(8.dp),
 						modifier = Modifier.fillMaxWidth()
 					) {
-						// TRANSLATORS: Button to switch to the custom-minutes entry view for the sleep timer
-						Text(t("Custom time..."))
+						presets.forEach { minutes ->
+							AssistChip(
+								onClick = {
+									onSetTimer(minutes)
+									onDismiss()
+								},
+								// TRANSLATORS: Preset sleep timer duration chip; {} is replaced with the number of minutes
+								label = { Text(t("{} minutes", "$minutes")) }
+							)
+						}
+						AssistChip(
+							onClick = { showCustomInput = true },
+							// TRANSLATORS: Chip to switch to the custom-minutes entry view for the sleep timer
+							label = { Text(t("Custom time...")) },
+							leadingIcon = {
+								Icon(
+									Icons.Filled.MoreTime,
+									contentDescription = null,
+									modifier = Modifier.size(AssistChipDefaults.IconSize)
+								)
+							}
+						)
 					}
 				}
 			}

@@ -12,7 +12,7 @@ android {
 		applicationId = "dev.paperback.android"
 		minSdk = 24
 		targetSdk = 36
-		versionCode = 2
+		versionCode = 4
 		versionName = "0.9.0"
 	}
 
@@ -90,7 +90,7 @@ dependencies {
 	// Arch Components
 	implementation(libs.androidx.lifecycle.runtime.compose)
 	implementation(libs.androidx.lifecycle.viewmodel.compose)
-	implementation(libs.androidx.media)
+	implementation(libs.androidx.media3.session)
 	// Compose
 	implementation(libs.androidx.compose.ui)
 	implementation(libs.androidx.compose.ui.tooling.preview)

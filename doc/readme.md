@@ -182,6 +182,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Jonathan Rodriguez
 * Jonathan Schuster
 * Keao Wright
+* Michael Marshall
 * Pratik Patel
 * Roberto Perez
 * Sean Randall
@@ -195,6 +196,8 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added a CLI tool, called pb, to quickly convert any of Paperback's supported formats to HTML, Markdown, or plain text.
 * Added a Configurable keyboard shortcut to Restore Paperback from the system tray.
 * Added a locate button to the all documents dialog to locate missing books that just changed their path.
+* Added a status filter and status bar to the all documents dialog, so you can filter by document status and see how many documents are shown and selected.
+* Added the `Ctrl+Shift+A` shortcut to deselect all documents in the all documents dialog.
 * Added a readability tab to the options dialog, with the following options:
     * Word wrap (moved from general);
     * Render tables inline (new in this release, see below);
@@ -216,6 +219,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added support for lists, list items, figures, and images in CHM documents.
 * Added a word wrap menu item and subsequent hotkey.
 * Bookmark/note sounds should now properly play exclusively when you navigate over a word containing one.
+* Documents encoded in legacy CJK encodings, such as GBK, Big5, and Shift_JIS, will now render properly instead of as a bunch of mojibake.
 * Expanded the export menu item to allow exporting to HTML and Markdown in addition to plain text.
 * Fixed applying word wrap shooting you to the start of your document.
 * Fix daisy books showing incorrect  info in the status bar.
@@ -225,12 +229,15 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed lag when getting near the end of the text field in large documents.
 * Fixed links in legacy mobi books.
 * Fixed loading DAISY books with bogus encoding declarations.
+* Fixed page navigation announcing incorrect line text in some situations.
 * Fixed parsing RTF documents with non-Latin characters in them.
+* Fixed "Reopen last closed" attempting to reopen the bundled readme.
 * Fixed the title bar not updating after closing a document from the all documents dialog.
 * Fix the webview dialog not being resizable and popping up at a very small initial size.
 * Fixed word documents with locale-specific style names not rendering their headings properly.
 * Fixed your selected tab not getting properly focused after restarting Paperback.
 * If a selection is active when you open the word count dialog, how many words you have selected will now be shown.
+* Images should now properly display in the embedded webview.
 * Improved Paperback's handling of files on Windows network drives: pressing show file in folder now properly focuses the file on the network storage, and the paths no longer contain strange characters.
 * Majorly improved AZW3 parsing.
 * Migrated away from chmlib to our own pure-Rust CHM file reader.

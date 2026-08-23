@@ -19,6 +19,7 @@ pub struct OdpParser;
 
 impl Parser for OdpParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing odp file");
 		let file = File::open(&context.file_path)
 			.with_context(|| format!("Failed to open ODP file '{}'", context.file_path))?;
 		let mut archive = ZipArchive::new(BufReader::new(file))
@@ -30,6 +31,7 @@ impl Parser for OdpParser {
 		let id_positions = HashMap::new();
 		let pages = find_all_pages(xml_doc.root());
 		if pages.is_empty() {
+			tracing::warn!(path = %context.file_path, "odp file has no pages");
 			// TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 			anyhow::bail!(t("ODP file does not contain any pages"));
 		}
@@ -50,12 +52,15 @@ impl Parser for OdpParser {
 						Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
 					);
 				}
+			} else {
+				tracing::debug!(slide = index + 1, "skipped odp slide with no text");
 			}
 		}
 		let title = extract_title_from_path(&context.file_path);
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
+		tracing::debug!(path = %context.file_path, "parsed odp file successfully");
 		Ok(document)
 	}
 }
@@ -64,6 +69,7 @@ pub struct FodpParser;
 
 impl Parser for FodpParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing fodp file");
 		let content_str = fs::read_to_string(&context.file_path)
 			.with_context(|| format!("Failed to open FODP file '{}'", context.file_path))?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid FODP document")?;
@@ -71,6 +77,7 @@ impl Parser for FodpParser {
 		let id_positions = HashMap::new();
 		let pages = find_all_pages(xml_doc.root());
 		if pages.is_empty() {
+			tracing::warn!(path = %context.file_path, "fodp file has no pages");
 			// TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 			anyhow::bail!(t("FODP file does not contain any pages"));
 		}
@@ -91,12 +98,15 @@ impl Parser for FodpParser {
 						Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
 					);
 				}
+			} else {
+				tracing::debug!(slide = index + 1, "skipped fodp slide with no text");
 			}
 		}
 		let title = extract_title_from_path(&context.file_path);
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
+		tracing::debug!(path = %context.file_path, "parsed fodp file successfully");
 		Ok(document)
 	}
 }
@@ -263,11 +273,7 @@ mod tests {
 		let dir = TempDir::new("odp-parser");
 		let path = dir.write_str("deck.odp", cursor.into_inner());
 		let doc = OdpParser.parse(&ParserContext::new(path)).expect("parse odp document");
-		assert_eq!(
-			doc.buffer.content,
-			"Zipped slide
-"
-		);
+		assert_eq!(doc.buffer.content, "Zipped slide\n");
 	}
 
 	#[test]

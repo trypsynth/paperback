@@ -1,25 +1,28 @@
 package dev.paperback.android.tts
 
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
-import androidx.core.content.ContextCompat
-import androidx.media.session.MediaButtonReceiver
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaSession
+import dev.paperback.android.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +36,9 @@ class TtsManager(
 	private val config: ConfigManagerFfi
 ) : TextToSpeech.OnInitListener {
 	private var tts: TextToSpeech? = null
-	private var mediaSession: MediaSessionCompat? = null
+	private var mediaSession: MediaSession? = null
+	private var ttsPlayer: TtsPlayer? = null
+	private var serviceConnection: ServiceConnection? = null
 	private var mediaPlayer: MediaPlayer? = null
 	private var nextMediaPlayer: MediaPlayer? = null
 	private var isNextMediaPlayerPrepared = false
@@ -62,7 +67,6 @@ class TtsManager(
 		}
 	private var audioFocusRequest: AudioFocusRequest? = null
 	private var wasPlayingBeforeFocusLoss = false
-	private var hasStartedService = false
 
 	private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
 		when (focusChange) {
@@ -171,97 +175,56 @@ class TtsManager(
 	}
 
 	private fun initMediaSession() {
-		val mediaButtonIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
-			setClass(context, MediaButtonReceiver::class.java)
-		}
+		val player = TtsPlayer(
+			onPlayCommand = { onPlayCommand?.invoke() },
+			onPauseCommand = { onPauseCommand?.invoke() },
+			onNextCommand = { onNextCommand?.invoke() },
+			onPrevCommand = { onPrevCommand?.invoke() }
+		)
+		ttsPlayer = player
 
-		val pendingIntent = PendingIntent.getBroadcast(
+		val sessionActivityIntent = Intent(context, MainActivity::class.java)
+		val sessionActivityPendingIntent = PendingIntent.getActivity(
 			context,
 			0,
-			mediaButtonIntent,
+			sessionActivityIntent,
 			PendingIntent.FLAG_IMMUTABLE
 		)
 
-		mediaSession = MediaSessionCompat(context, "PaperbackTtsSession").apply {
-			setMediaButtonReceiver(pendingIntent)
-		}
+		mediaSession = MediaSession
+			.Builder(context, player)
+			.setSessionActivity(sessionActivityPendingIntent)
+			.build()
 
 		PlaybackService.activeMediaSession = mediaSession
-		@Suppress("DEPRECATION")
-		mediaSession?.setFlags(
-			MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
-				MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-		)
-		mediaSession?.setCallback(object : MediaSessionCompat.Callback() {
-			override fun onPlay() {
-				onPlayCommand?.invoke()
-			}
-
-			override fun onPause() {
-				onPauseCommand?.invoke()
-			}
-
-			override fun onSkipToNext() {
-				onNextCommand?.invoke()
-			}
-
-			override fun onSkipToPrevious() {
-				onPrevCommand?.invoke()
-			}
-		})
-
-		mediaSession?.isActive = true
-
-		val playbackState = PlaybackStateCompat
-			.Builder()
-			.setActions(
-				PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_PAUSE or PlaybackStateCompat.ACTION_PLAY_PAUSE or
-					PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-					PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-			).setState(PlaybackStateCompat.STATE_PAUSED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f)
-			.build()
-		mediaSession?.setPlaybackState(playbackState)
 		updateMediaMetadata()
+
+		// Binding (rather than Context.startForegroundService()) keeps PlaybackService
+		// alive and its Media3 internals already observing the player before playback
+		// ever begins. Starting it with a plain Intent instead races the 5-second
+		// startForeground() deadline against Media3's async notification/session wiring
+		// and intermittently crashes with ForegroundServiceDidNotStartInTimeException —
+		// see https://github.com/androidx/media/issues/167, where the Media3 maintainers
+		// confirm a bound controller/client is the supported way to avoid it.
+		val connection = object : ServiceConnection {
+			override fun onServiceConnected(
+				name: ComponentName,
+				binder: IBinder?
+			) {
+			}
+
+			override fun onServiceDisconnected(name: ComponentName) {}
+		}
+		serviceConnection = connection
+		context.bindService(Intent(context, PlaybackService::class.java), connection, Context.BIND_AUTO_CREATE)
 	}
 
 	private fun updatePlaybackState(isPlaying: Boolean) {
-		if (mediaSession?.isActive != true && (isPlaying || hasStartedService)) {
-			mediaSession?.isActive = true
-		}
-
-		val state = if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
-		val playbackState = PlaybackStateCompat
-			.Builder()
-			.setActions(
-				PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_PAUSE or PlaybackStateCompat.ACTION_PLAY_PAUSE or
-					PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-					PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-			).setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f)
-			.build()
-		mediaSession?.setPlaybackState(playbackState)
-
-		if (isPlaying && !hasStartedService) {
-			hasStartedService = true
-		}
-		updateMediaMetadata()
+		ttsPlayer?.updatePlaybackState(isPlaying)
 	}
 
 	private fun updateMediaMetadata() {
-		val metadata = MediaMetadataCompat
-			.Builder()
-			.putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentDocumentTitle)
-			.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentDocumentAuthor)
-			.build()
-		mediaSession?.setMetadata(metadata)
-
-		if (hasStartedService) {
-			val intent = Intent(context, PlaybackService::class.java).apply {
-				putExtra(PlaybackService.EXTRA_IS_PLAYING, _isSpeaking.value)
-				putExtra(PlaybackService.EXTRA_TITLE, currentDocumentTitle)
-				putExtra(PlaybackService.EXTRA_AUTHOR, currentDocumentAuthor)
-			}
-			ContextCompat.startForegroundService(context, intent)
-		}
+		ttsPlayer?.updateMetadata(currentDocumentTitle, currentDocumentAuthor)
 	}
 
 	fun precache(text: String) {
@@ -288,9 +251,7 @@ class TtsManager(
 		} else {
 			TextToSpeech(context, this)
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			tts?.setAudioAttributes(speechAudioAttributes())
-		}
+		tts?.setAudioAttributes(speechAudioAttributes())
 	}
 
 	override fun onInit(status: Int) {
@@ -537,6 +498,15 @@ class TtsManager(
 		}
 	}
 
+	/** Reflects a non-TTS playback engine's (e.g. DaisyAudioPlayer) play/pause state into
+	 * isSpeaking/isPaused and the MediaSession, so the UI, notification, and lock-screen
+	 * controls behave the same regardless of which engine is narrating. */
+	fun setExternalPlaybackState(isPlaying: Boolean) {
+		_isSpeaking.value = isPlaying
+		_isPaused.value = !isPlaying
+		updatePlaybackState(isPlaying)
+	}
+
 	fun resume() {
 		if (_isPaused.value) {
 			_isPaused.value = false
@@ -669,16 +639,25 @@ class TtsManager(
 
 	fun getCurrentVoice(): Voice? = _currentVoice.value
 
+	@OptIn(UnstableApi::class)
 	fun shutdown() {
 		stop()
-		val stopIntent = Intent(context, PlaybackService::class.java).apply {
-			action = PlaybackService.ACTION_STOP
-		}
-		context.startService(stopIntent)
-
 		tts?.shutdown()
+
 		mediaSession?.release()
+		mediaSession = null
+		ttsPlayer?.release()
+		ttsPlayer = null
 		PlaybackService.activeMediaSession = null
-		hasStartedService = false
+
+		// Unbind rather than force-stopping the service — Media3's own lifecycle
+		// handling decides when it's actually safe for the service to go away.
+		serviceConnection?.let { context.unbindService(it) }
+		serviceConnection = null
+
+		// Last, so nothing torn down above can leave work queued: a late onDone callback
+		// would otherwise launch on this scope after shutdown and build a MediaPlayer for a
+		// temp file that no longer exists, with nothing left to release it.
+		ttsScope.cancel()
 	}
 }

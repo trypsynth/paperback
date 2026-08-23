@@ -36,11 +36,11 @@ fun GoToDialog(
 	val maxPages = remember(docState.session) { docState.session.pageCountFfi() }
 	val onSubmit = {
 		val targetPos = when (selectedMode) {
-			"Percentage" -> docState.session.positionFromPercentFfi(sliderPercent)
+			"Percentage" -> docState.session.positionFromPercent(sliderPercent)
 			else -> inputValue.toLongOrNull()?.let { value ->
 				when (selectedMode) {
 					"Line" -> docState.session.positionFromLine(value.coerceIn(1L, maxLines))
-					"Page" -> if (maxPages > 0) docState.session.pageOffsetFfi(value.toInt().coerceIn(1, maxPages)) else null
+					"Page" -> if (maxPages > 0) docState.session.pageOffset(value.toInt().coerceIn(1, maxPages)) else null
 					else -> null
 				}
 			}

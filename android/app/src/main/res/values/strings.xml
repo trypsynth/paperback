@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Paperback</string>
+    <string name="tts_notification_channel_name">TTS Playback</string>
 </resources>

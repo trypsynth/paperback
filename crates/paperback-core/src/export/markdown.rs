@@ -1,6 +1,6 @@
 use crate::{
 	document::{Document, MarkerType},
-	util::text::{ch_width, display_len},
+	util::text::ch_width,
 };
 
 #[must_use]
@@ -32,12 +32,7 @@ pub fn render(doc: &Document) -> String {
 			MarkerType::Heading5 => events.push(Ev { pos, kind: Mk::Prefix("##### ") }),
 			MarkerType::Heading6 => events.push(Ev { pos, kind: Mk::Prefix("###### ") }),
 			MarkerType::Link => {
-				let text: String = marker.text.split_whitespace().collect::<Vec<_>>().join(" ");
-				let implied_len = if marker.length > 0 { marker.length } else { display_len(&text) };
-				if implied_len == 0 {
-					continue;
-				}
-				let end = pos + implied_len;
+				let Some(end) = super::link_span_end(marker) else { continue };
 				events.push(Ev { pos, kind: Mk::LinkOpen });
 				events.push(Ev { pos: end, kind: Mk::LinkClose(marker.reference.clone()) });
 			}

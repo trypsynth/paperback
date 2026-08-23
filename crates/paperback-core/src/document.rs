@@ -3,11 +3,12 @@ use std::collections::HashMap;
 /// Re-exported so `crate::document::ParserFlags` keeps working; the flags themselves are
 /// declared alongside the rest of each format's metadata in `paperback-formats`.
 pub use paperback_formats::ParserFlags;
+use rayon::prelude::*;
 
 use crate::{
 	audio::AudioTimeline,
 	types::HeadingInfo,
-	util::text::{display_len, is_space_like},
+	util::text::{ch_width, display_len, is_space_like},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -127,6 +128,80 @@ pub struct DocumentBuffer {
 	content_char_count: usize,
 	newline_char_positions: Vec<usize>,
 	char_to_byte_map: Vec<usize>,
+	/// `display_len_at_char[i]` is the display-unit offset (UTF-16 code units on
+	/// Windows/macOS, Unicode scalars on GTK — see `util::text::display_len`) of the `i`-th
+	/// char, with a trailing end-boundary entry equal to `content_display_len`, mirroring
+	/// `char_to_byte_map`'s shape. Needed because `Marker.position`/the GUI caret use display
+	/// units while `char_to_byte_map`/`newline_char_positions` use char units — on Windows and
+	/// macOS these two diverge for any character outside the Basic Multilingual Plane.
+	display_len_at_char: Vec<usize>,
+}
+
+/// A part's `[start, end)` span in the assembled buffer's display units — the same units as
+/// `Marker::position` and `DocumentBuffer::current_position` — as returned by
+/// [`DocumentBuffer::from_parts`].
+#[derive(Debug, Clone, Copy)]
+pub struct PartSpan {
+	pub start: usize,
+	pub end: usize,
+}
+
+/// The per-char indexing for one [`DocumentBuffer::from_parts`] part, computed independently of
+/// every other part so it can run on a rayon worker in parallel. All offsets are local to the
+/// part's own text (byte 0 / char 0 / display 0 is the part's first char), not including the
+/// optional trailing newline `from_parts` adds when placing the part into the buffer.
+struct PartIndex {
+	/// `char_to_byte[i]` is the local byte offset of the part's `i`-th char.
+	char_to_byte: Vec<usize>,
+	/// `display_len_at_char[i]` is the local display-unit offset of the part's `i`-th char.
+	display_len_at_char: Vec<usize>,
+	/// Local char indices of every `\n` in the part's own text.
+	newline_chars: Vec<usize>,
+	byte_len: usize,
+	char_len: usize,
+	display_len: usize,
+	/// Whether `from_parts` needs to add a `\n` after this part — mirrors `append`'s callers that
+	/// append a separator when the just-appended text didn't already end with one.
+	trailing_newline: bool,
+}
+
+fn index_part(text: &str) -> PartIndex {
+	let mut char_to_byte = Vec::with_capacity(text.len());
+	let mut display_len_at_char = Vec::with_capacity(text.len());
+	let mut newline_chars = Vec::new();
+	let mut char_len = 0usize;
+	let mut display_len = 0usize;
+	for (byte_idx, c) in text.char_indices() {
+		char_to_byte.push(byte_idx);
+		display_len_at_char.push(display_len);
+		if c == '\n' {
+			newline_chars.push(char_len);
+		}
+		char_len += 1;
+		display_len += ch_width(c);
+	}
+	let trailing_newline = !text.is_empty() && !text.ends_with('\n');
+	PartIndex {
+		char_to_byte,
+		display_len_at_char,
+		newline_chars,
+		byte_len: text.len(),
+		char_len,
+		display_len,
+		trailing_newline,
+	}
+}
+
+/// Splits `slice` into consecutive, disjoint sub-slices with the given lengths (which must sum to
+/// `slice.len()`), so each can be handed to a different rayon task and written into independently.
+fn split_mut_slices<'a, T>(mut slice: &'a mut [T], lens: &[usize]) -> Vec<&'a mut [T]> {
+	let mut out = Vec::with_capacity(lens.len());
+	for &len in lens {
+		let (head, tail) = slice.split_at_mut(len);
+		out.push(head);
+		slice = tail;
+	}
+	out
 }
 
 impl DocumentBuffer {
@@ -139,30 +214,37 @@ impl DocumentBuffer {
 			content_char_count: 0,
 			newline_char_positions: Vec::new(),
 			char_to_byte_map: Vec::new(),
+			display_len_at_char: Vec::new(),
 		}
 	}
 
 	#[must_use]
 	pub fn with_content(content: String) -> Self {
-		let display = display_len(&content);
 		let mut char_count = 0usize;
+		let mut display_count = 0usize;
 		let mut newline_char_positions = Vec::new();
 		let mut char_to_byte_map = Vec::with_capacity(content.len().min(1024));
+		let mut display_len_at_char = Vec::with_capacity(content.len().min(1024));
 		for (byte_idx, c) in content.char_indices() {
 			char_to_byte_map.push(byte_idx);
+			display_len_at_char.push(display_count);
 			if c == '\n' {
 				newline_char_positions.push(char_count);
 			}
 			char_count += 1;
+			display_count += ch_width(c);
 		}
 		char_to_byte_map.push(content.len()); // append end boundary
+		display_len_at_char.push(display_count);
+		debug_assert_eq!(display_count, display_len(&content));
 		Self {
 			content,
 			markers: Vec::new(),
-			content_display_len: display,
+			content_display_len: display_count,
 			content_char_count: char_count,
 			newline_char_positions,
 			char_to_byte_map,
+			display_len_at_char,
 		}
 	}
 
@@ -173,24 +255,163 @@ impl DocumentBuffer {
 	pub fn append(&mut self, text: &str) {
 		let base = self.content_char_count;
 		let mut count = 0usize;
+		let mut display_count = self.content_display_len;
 
 		// Remove the end boundary temporarily
 		if !self.char_to_byte_map.is_empty() {
 			self.char_to_byte_map.pop();
 		}
+		if !self.display_len_at_char.is_empty() {
+			self.display_len_at_char.pop();
+		}
 
 		let start_byte = self.content.len();
 		for (byte_idx, c) in text.char_indices() {
 			self.char_to_byte_map.push(start_byte + byte_idx);
+			self.display_len_at_char.push(display_count);
 			if c == '\n' {
 				self.newline_char_positions.push(base + count);
 			}
 			count += 1;
+			display_count += ch_width(c);
 		}
 		self.content.push_str(text);
 		self.char_to_byte_map.push(self.content.len()); // append end boundary back
-		self.content_display_len += display_len(text);
+		self.display_len_at_char.push(display_count);
+		self.content_display_len = display_count;
 		self.content_char_count += count;
+	}
+
+	/// Builds a buffer from independent parts (e.g. one EPUB spine item's converted text each) in
+	/// parallel across cores, equivalent to calling [`Self::append`] with each part in order (each
+	/// non-empty part gets a trailing `\n` if it doesn't already end with one, exactly as `append`
+	/// callers that need a separator do today). Returns the buffer alongside each part's
+	/// display-unit `[start, end)` span, so callers that need per-part offsets (to place markers,
+	/// resolve id positions, etc. — the reason `append` couldn't already be called in parallel, since
+	/// those offsets come from the buffer's running position) don't need to re-derive them.
+	///
+	/// This trades `append`'s single incremental pass over the whole document for: a parallel pass
+	/// indexing each part's own chars, a cheap sequential prefix-sum over parts (not chars) to place
+	/// them, and a parallel pass filling preallocated buffers at those positions.
+	#[must_use]
+	pub fn from_parts(parts: Vec<String>) -> (Self, Vec<PartSpan>) {
+		let indexed: Vec<(String, PartIndex)> = parts
+			.into_par_iter()
+			.map(|text| {
+				let idx = index_part(&text);
+				(text, idx)
+			})
+			.collect();
+
+		struct PartStart {
+			byte: usize,
+			char: usize,
+			display: usize,
+		}
+		let mut starts = Vec::with_capacity(indexed.len());
+		let mut spans = Vec::with_capacity(indexed.len());
+		let mut byte_acc = 0usize;
+		let mut char_acc = 0usize;
+		let mut display_acc = 0usize;
+		for (_, idx) in &indexed {
+			let extra = usize::from(idx.trailing_newline);
+			starts.push(PartStart { byte: byte_acc, char: char_acc, display: display_acc });
+			spans.push(PartSpan { start: display_acc, end: display_acc + idx.display_len + extra });
+			byte_acc += idx.byte_len + extra;
+			char_acc += idx.char_len + extra;
+			display_acc += idx.display_len + extra; // ch_width('\n') == 1 on every platform
+		}
+
+		if char_acc == 0 {
+			// No part contributed any text, so no `append` equivalent ever ran; match `new()`'s
+			// all-empty (not one-boundary-entry) shape rather than building degenerate arrays.
+			return (Self::new(), spans);
+		}
+
+		let mut content_bytes = vec![0u8; byte_acc];
+		let mut char_to_byte_map = vec![0usize; char_acc + 1];
+		let mut display_len_at_char = vec![0usize; char_acc + 1];
+		let (char_to_byte_main, char_to_byte_boundary) = char_to_byte_map.split_at_mut(char_acc);
+		let (display_main, display_boundary) = display_len_at_char.split_at_mut(char_acc);
+		char_to_byte_boundary[0] = byte_acc;
+		display_boundary[0] = display_acc;
+
+		let byte_lens: Vec<usize> =
+			indexed.iter().map(|(_, idx)| idx.byte_len + usize::from(idx.trailing_newline)).collect();
+		let char_lens: Vec<usize> =
+			indexed.iter().map(|(_, idx)| idx.char_len + usize::from(idx.trailing_newline)).collect();
+		let content_slices = split_mut_slices(content_bytes.as_mut_slice(), &byte_lens);
+		let char_to_byte_slices = split_mut_slices(char_to_byte_main, &char_lens);
+		let display_slices = split_mut_slices(display_main, &char_lens);
+
+		let mut newline_char_positions = Vec::new();
+		for ((_, idx), start) in indexed.iter().zip(&starts) {
+			for &pos in &idx.newline_chars {
+				newline_char_positions.push(start.char + pos);
+			}
+			if idx.trailing_newline {
+				newline_char_positions.push(start.char + idx.char_len);
+			}
+		}
+
+		struct PartWork<'a> {
+			text: &'a str,
+			idx: &'a PartIndex,
+			start_byte: usize,
+			start_display: usize,
+			content: &'a mut [u8],
+			char_to_byte: &'a mut [usize],
+			display: &'a mut [usize],
+		}
+		let work: Vec<PartWork<'_>> = indexed
+			.iter()
+			.zip(&starts)
+			.zip(content_slices)
+			.zip(char_to_byte_slices)
+			.zip(display_slices)
+			.map(|((((entry, start), content), char_to_byte), display)| {
+				let (text, idx) = entry;
+				PartWork {
+					text,
+					idx,
+					start_byte: start.byte,
+					start_display: start.display,
+					content,
+					char_to_byte,
+					display,
+				}
+			})
+			.collect();
+
+		work.into_par_iter().for_each(|w| {
+			w.content[..w.idx.byte_len].copy_from_slice(w.text.as_bytes());
+			if w.idx.trailing_newline {
+				w.content[w.idx.byte_len] = b'\n';
+			}
+			for i in 0..w.idx.char_len {
+				w.char_to_byte[i] = w.start_byte + w.idx.char_to_byte[i];
+				w.display[i] = w.start_display + w.idx.display_len_at_char[i];
+			}
+			if w.idx.trailing_newline {
+				w.char_to_byte[w.idx.char_len] = w.start_byte + w.idx.byte_len;
+				w.display[w.idx.char_len] = w.start_display + w.idx.display_len;
+			}
+		});
+
+		let content = String::from_utf8(content_bytes)
+			.expect("each part is a valid &str and concatenating valid UTF-8 stays valid UTF-8");
+		(
+			Self {
+				content,
+				markers: Vec::new(),
+				content_display_len: display_acc,
+				content_char_count: char_acc,
+				newline_char_positions,
+				char_to_byte_map,
+				display_len_at_char,
+			},
+			spans,
+		)
 	}
 
 	#[must_use]
@@ -203,8 +424,46 @@ impl DocumentBuffer {
 		self.char_to_byte_map.binary_search(&byte_index).unwrap_or_else(|idx| idx)
 	}
 
+	/// The display-unit offset of the `char_index`-th char (or the document's total display
+	/// length, for a char index at or past the end).
+	#[must_use]
+	pub fn display_index_for_char(&self, char_index: usize) -> usize {
+		self.display_len_at_char.get(char_index).copied().unwrap_or(self.content_display_len)
+	}
+
+	/// The char index whose char covers `display_index`, or the nearest one before it if
+	/// `display_index` lands inside a surrogate pair (shouldn't happen for a well-formed
+	/// caller, but this stays well-defined rather than panicking).
+	#[must_use]
+	pub fn char_index_for_display(&self, display_index: usize) -> usize {
+		self.display_len_at_char.binary_search(&display_index).unwrap_or_else(|idx| idx)
+	}
+
+	/// The byte offset corresponding to `display_index`, composing [`Self::char_index_for_display`]
+	/// with [`Self::byte_index_for_char`].
+	#[must_use]
+	pub fn byte_index_for_display(&self, display_index: usize) -> usize {
+		self.byte_index_for_char(self.char_index_for_display(display_index))
+	}
+
+	/// The display-unit offset corresponding to `byte_index`, composing
+	/// [`Self::char_index_for_byte`] with [`Self::display_index_for_char`].
+	#[must_use]
+	pub fn display_index_for_byte(&self, byte_index: usize) -> usize {
+		self.display_index_for_char(self.char_index_for_byte(byte_index))
+	}
+
 	#[must_use]
 	pub const fn current_position(&self) -> usize {
+		self.content_display_len
+	}
+
+	/// Total document length in display units (UTF-16 code units on Windows/macOS, Unicode
+	/// scalars on GTK) — the same unit the GUI caret and `Marker.position` use. An alias of
+	/// [`Self::current_position`] under the name callers building a window/range API actually
+	/// want; `current_position` is kept for the parser-cursor callers already using that name.
+	#[must_use]
+	pub const fn total_display_len(&self) -> usize {
 		self.content_display_len
 	}
 
@@ -248,13 +507,109 @@ pub struct DocumentStats {
 	pub char_count_no_whitespace: usize,
 }
 
+/// Per-chunk counts from [`count_chunk`], plus the whitespace-ness of the chunk's first and last
+/// chars so [`DocumentStats::from_text`] can correct `word_count` for words split across a chunk
+/// boundary (each half otherwise counts as its own word).
+struct ChunkStats {
+	char_count: usize,
+	char_count_no_whitespace: usize,
+	newline_count: usize,
+	word_count: usize,
+	first_is_whitespace: bool,
+	last_is_whitespace: bool,
+}
+
+fn count_chunk(text: &str) -> ChunkStats {
+	let mut char_count = 0usize;
+	let mut char_count_no_whitespace = 0usize;
+	let mut newline_count = 0usize;
+	let mut word_count = 0usize;
+	let mut in_word = false;
+	let mut first_is_whitespace = false;
+	let mut last_is_whitespace = false;
+	for (i, c) in text.chars().enumerate() {
+		if i == 0 {
+			first_is_whitespace = c.is_whitespace();
+		}
+		last_is_whitespace = c.is_whitespace();
+		char_count += 1;
+		if !is_space_like(c) {
+			char_count_no_whitespace += 1;
+		}
+		if c == '\n' {
+			newline_count += 1;
+		}
+		if c.is_whitespace() {
+			in_word = false;
+		} else if !in_word {
+			in_word = true;
+			word_count += 1;
+		}
+	}
+	ChunkStats {
+		char_count,
+		char_count_no_whitespace,
+		newline_count,
+		word_count,
+		first_is_whitespace,
+		last_is_whitespace,
+	}
+}
+
+/// Splits `text` into up to `target_chunks` roughly-equal pieces, snapped to char boundaries, for
+/// parallel counting. Never splits mid-char, and returns fewer/no chunks for short input.
+fn split_into_chunks(text: &str, target_chunks: usize) -> Vec<&str> {
+	if text.is_empty() || target_chunks <= 1 {
+		return vec![text];
+	}
+	let chunk_len = text.len().div_ceil(target_chunks).max(1);
+	let mut chunks = Vec::with_capacity(target_chunks);
+	let mut start = 0;
+	while start < text.len() {
+		let mut end = (start + chunk_len).min(text.len());
+		while end < text.len() && !text.is_char_boundary(end) {
+			end += 1;
+		}
+		chunks.push(&text[start..end]);
+		start = end;
+	}
+	chunks
+}
+
 impl DocumentStats {
 	#[must_use]
 	pub fn from_text(text: &str) -> Self {
-		let char_count = text.chars().count();
-		let line_count = text.lines().count();
-		let word_count = text.split_whitespace().count();
-		let char_count_no_whitespace = text.chars().filter(|c| !is_space_like(*c)).count();
+		Self::from_text_with_chunk_count(text, rayon::current_num_threads())
+	}
+
+	fn from_text_with_chunk_count(text: &str, target_chunks: usize) -> Self {
+		let chunks = split_into_chunks(text, target_chunks);
+		let counted: Vec<ChunkStats> = chunks.into_par_iter().map(count_chunk).collect();
+		let mut char_count = 0usize;
+		let mut char_count_no_whitespace = 0usize;
+		let mut newline_count = 0usize;
+		let mut word_count = 0usize;
+		let mut prev_last_is_whitespace = true;
+		for chunk in &counted {
+			char_count += chunk.char_count;
+			char_count_no_whitespace += chunk.char_count_no_whitespace;
+			newline_count += chunk.newline_count;
+			word_count += chunk.word_count;
+			// A word split across the boundary was counted once by each neighboring chunk; merge them.
+			if chunk.char_count > 0 && !prev_last_is_whitespace && !chunk.first_is_whitespace {
+				word_count -= 1;
+			}
+			if chunk.char_count > 0 {
+				prev_last_is_whitespace = chunk.last_is_whitespace;
+			}
+		}
+		let line_count = if text.is_empty() {
+			0
+		} else if text.ends_with('\n') {
+			newline_count
+		} else {
+			newline_count + 1
+		};
 		Self { word_count, line_count, char_count, char_count_no_whitespace }
 	}
 }
@@ -579,6 +934,8 @@ impl ParserContext {
 
 #[cfg(test)]
 mod tests {
+	use rstest::rstest;
+
 	use super::*;
 
 	fn sample_handle() -> DocumentHandle {
@@ -686,6 +1043,65 @@ mod tests {
 		assert_eq!(stats.line_count, 2);
 		assert_eq!(stats.char_count, 5);
 		assert_eq!(stats.char_count_no_whitespace, 3);
+	}
+
+	/// Naive reference matching the pre-parallel single-pass implementation, used to check the
+	/// chunked version agrees regardless of how the text happens to get split.
+	fn naive_stats(text: &str) -> (usize, usize, usize, usize) {
+		let char_count = text.chars().count();
+		let line_count = text.lines().count();
+		let word_count = text.split_whitespace().count();
+		let char_count_no_whitespace = text.chars().filter(|c| !is_space_like(*c)).count();
+		(word_count, line_count, char_count, char_count_no_whitespace)
+	}
+
+	#[rstest]
+	#[case("")]
+	#[case(" ")]
+	#[case("a")]
+	#[case("hello world")]
+	#[case("a b\nc")]
+	#[case("word-boundary straddles the chunk split here on purpose across many words")]
+	#[case("   leading and trailing whitespace   ")]
+	#[case("line1\nline2\nline3\n")]
+	#[case("line1\nline2\nline3")]
+	#[case("no newlines at all just words words words")]
+	#[case("münchhausen café naïve 日本語 emoji 🎉🎉 straddling")]
+	#[case("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
+	#[case("x x x x x x x x x x x x x x x x word y y y y y y y y y y y y y y y y")]
+	fn from_text_with_chunk_count_matches_naive_single_pass_for_any_chunk_count(#[case] text: &str) {
+		let (word_count, line_count, char_count, char_count_no_whitespace) = naive_stats(text);
+		for target_chunks in [1, 2, 3, 4, 7, 16, 64] {
+			let stats = DocumentStats::from_text_with_chunk_count(text, target_chunks);
+			assert_eq!(
+				stats.word_count, word_count,
+				"word_count mismatch at target_chunks={target_chunks} for {text:?}"
+			);
+			assert_eq!(
+				stats.line_count, line_count,
+				"line_count mismatch at target_chunks={target_chunks} for {text:?}"
+			);
+			assert_eq!(
+				stats.char_count, char_count,
+				"char_count mismatch at target_chunks={target_chunks} for {text:?}"
+			);
+			assert_eq!(
+				stats.char_count_no_whitespace, char_count_no_whitespace,
+				"char_count_no_whitespace mismatch at target_chunks={target_chunks} for {text:?}"
+			);
+		}
+	}
+
+	#[test]
+	fn split_into_chunks_never_splits_mid_char_and_preserves_content() {
+		let text = "münchhausen café naïve 日本語 emoji 🎉🎉 straddling boundaries on purpose";
+		for target_chunks in [1, 2, 3, 5, 8, 32] {
+			let chunks = split_into_chunks(text, target_chunks);
+			assert_eq!(chunks.concat(), text);
+			for chunk in &chunks {
+				assert!(text.contains(chunk));
+			}
+		}
 	}
 
 	#[test]
@@ -811,5 +1227,128 @@ mod tests {
 		let handle = sample_handle();
 		assert_eq!(handle.next_heading_index(0, Some(6)), None);
 		assert_eq!(handle.previous_heading_index(100, Some(6)), None);
+	}
+
+	// `ch_width`/`display_len` return UTF-16 code-unit counts on Windows/macOS and Unicode
+	// scalar counts on GTK, so a BMP-only string ("abc") behaves identically on every
+	// platform and is the right fixture for testing the display<->char<->byte bridge itself
+	// without also depending on which platform the test runs on.
+	#[test]
+	fn display_char_byte_indices_agree_for_bmp_only_content() {
+		let buffer = DocumentBuffer::with_content("abc".to_string());
+		for i in 0..=3 {
+			assert_eq!(buffer.display_index_for_char(i), i);
+			assert_eq!(buffer.char_index_for_display(i), i);
+			assert_eq!(buffer.byte_index_for_display(i), i);
+			assert_eq!(buffer.display_index_for_byte(i), i);
+		}
+		assert_eq!(buffer.total_display_len(), 3);
+	}
+
+	#[cfg(any(windows, target_os = "macos"))]
+	#[test]
+	fn display_index_accounts_for_surrogate_pairs_on_windows_and_macos() {
+		// U+1F600 (an astral-plane emoji) is 1 char, 4 UTF-8 bytes, but 2 UTF-16 code units.
+		let buffer = DocumentBuffer::with_content("a\u{1F600}b".to_string());
+		// chars: 'a' (char 0), emoji (char 1), 'b' (char 2), end boundary (char 3)
+		assert_eq!(buffer.display_index_for_char(0), 0); // 'a' starts at display 0
+		assert_eq!(buffer.display_index_for_char(1), 1); // emoji starts at display 1
+		assert_eq!(buffer.display_index_for_char(2), 3); // 'b' starts at display 3 (emoji took 2 units)
+		assert_eq!(buffer.total_display_len(), 4);
+
+		assert_eq!(buffer.char_index_for_display(0), 0);
+		assert_eq!(buffer.char_index_for_display(1), 1);
+		assert_eq!(buffer.char_index_for_display(3), 2);
+
+		// byte<->display composition round-trips through the char index for every char start.
+		assert_eq!(buffer.byte_index_for_display(0), 0);
+		assert_eq!(buffer.byte_index_for_display(1), 1);
+		assert_eq!(buffer.byte_index_for_display(3), 5); // 1 byte 'a' + 4 byte emoji
+		assert_eq!(buffer.display_index_for_byte(0), 0);
+		assert_eq!(buffer.display_index_for_byte(1), 1);
+		assert_eq!(buffer.display_index_for_byte(5), 3);
+	}
+
+	#[test]
+	fn display_index_for_char_clamps_past_the_end() {
+		let buffer = DocumentBuffer::with_content("abc".to_string());
+		assert_eq!(buffer.display_index_for_char(999), buffer.total_display_len());
+	}
+
+	#[test]
+	fn append_extends_the_display_index_incrementally() {
+		let mut buffer = DocumentBuffer::new();
+		buffer.append("ab");
+		buffer.append("cd");
+		assert_eq!(buffer.total_display_len(), 4);
+		for i in 0..=4 {
+			assert_eq!(buffer.display_index_for_char(i), i, "char {i}");
+		}
+	}
+
+	/// Mirrors how `epub.rs::convert_spine_items` used to build a buffer one section at a time
+	/// with sequential `append` calls (a trailing `\n` added per non-empty part unless it already
+	/// ends with one), so `from_parts_matches_sequential_append_for_any_parts` can check the new
+	/// parallel path agrees with it exactly.
+	fn naive_buffer_from_parts(parts: &[&str]) -> (DocumentBuffer, Vec<PartSpan>) {
+		let mut buffer = DocumentBuffer::new();
+		let mut spans = Vec::with_capacity(parts.len());
+		for part in parts {
+			let start = buffer.current_position();
+			if !part.is_empty() {
+				buffer.append(part);
+				if !buffer.content.ends_with('\n') {
+					buffer.append("\n");
+				}
+			}
+			spans.push(PartSpan { start, end: buffer.current_position() });
+		}
+		(buffer, spans)
+	}
+
+	fn assert_buffers_equivalent(a: &DocumentBuffer, b: &DocumentBuffer) {
+		assert_eq!(a.content, b.content);
+		assert_eq!(a.char_count(), b.char_count());
+		assert_eq!(a.total_display_len(), b.total_display_len());
+		assert_eq!(a.newline_positions(), b.newline_positions());
+		for i in 0..=a.char_count() {
+			assert_eq!(a.byte_index_for_char(i), b.byte_index_for_char(i), "byte_index_for_char({i})");
+			assert_eq!(a.display_index_for_char(i), b.display_index_for_char(i), "display_index_for_char({i})");
+		}
+		for byte in 0..=a.content.len() {
+			assert_eq!(a.char_index_for_byte(byte), b.char_index_for_byte(byte), "char_index_for_byte({byte})");
+		}
+		for display in 0..=a.total_display_len() {
+			assert_eq!(
+				a.char_index_for_display(display),
+				b.char_index_for_display(display),
+				"char_index_for_display({display})"
+			);
+		}
+	}
+
+	#[rstest]
+	#[case(&[])]
+	#[case(&[""])]
+	#[case(&["", "", ""])]
+	#[case(&["a"])]
+	#[case(&["a", "b", "c"])]
+	#[case(&["no trailing newline", "another one", "and another"])]
+	#[case(&["ends with newline\n", "also ends with newline\n"])]
+	#[case(&["mixed\n", "no newline here", "\n", "final"])]
+	#[case(&["", "empty parts", "", "sprinkled", "", "in", "", ""])]
+	#[case(&["multi\nline\ntext\nhere", "and\nmore\nlines"])]
+	#[case(&["münchhausen café naïve", "日本語 text here", "emoji 🎉🎉 straddling", "naïve again"])]
+	#[case(&["🎉", "🎉🎉", "a🎉b", "\n🎉\n"])]
+	fn from_parts_matches_sequential_append_for_any_parts(#[case] parts: &[&str]) {
+		let owned: Vec<String> = parts.iter().map(ToString::to_string).collect();
+		let (naive_buffer, naive_spans) = naive_buffer_from_parts(parts);
+		let (parallel_buffer, parallel_spans) = DocumentBuffer::from_parts(owned);
+		assert_buffers_equivalent(&naive_buffer, &parallel_buffer);
+		assert_eq!(naive_spans.len(), parallel_spans.len());
+		for (i, (naive, parallel)) in naive_spans.iter().zip(&parallel_spans).enumerate() {
+			assert_eq!(naive.start, parallel.start, "part {i} start");
+			assert_eq!(naive.end, parallel.end, "part {i} end");
+		}
 	}
 }

@@ -3,6 +3,8 @@ package dev.paperback.android.ui.dialogs
 import android.content.Context
 import android.os.Environment
 import android.os.storage.StorageManager
+import android.text.format.DateFormat
+import android.text.format.Formatter
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -31,9 +33,7 @@ import dev.paperback.android.t
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -230,15 +230,11 @@ fun FileListItem(
 	file: File,
 	onClick: () -> Unit
 ) {
-	val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
-	val dateString = remember(file) { dateFormat.format(Date(file.lastModified())) }
-	val sizeString = remember(file) {
-		if (file.isDirectory) {
-			""
-		} else {
-			val kb = file.length() / 1024
-			if (kb > 1024) "${kb / 1024} MB" else "$kb KB"
-		}
+	val context = LocalContext.current
+	val dateFormat = remember(context) { DateFormat.getMediumDateFormat(context) }
+	val dateString = remember(file, dateFormat) { dateFormat.format(Date(file.lastModified())) }
+	val sizeString = remember(file, context) {
+		if (file.isDirectory) "" else Formatter.formatShortFileSize(context, file.length())
 	}
 
 	Row(

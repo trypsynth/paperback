@@ -20,13 +20,14 @@ anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
 cfb = "0.14.0"
+chardetng = "1.0.0"
 ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
-icu_properties = { version = "2.2.0", features = ["unicode_bidi"] }
+icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
 libchm = "0.2.0"
 office-crypto = "0.3.0"
 paperback-formats = { path = "../paperback-formats" }
-patois = { git = "https://github.com/trypsynth/patois.git" }
+patois = "0.2.1"
 pdfium = "0.10.4"
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.4", default-features = false, features = ["html"] }
@@ -38,8 +39,9 @@ rtf-parser = "0.4.3"
 scraper = "0.27.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 sha1 = "0.11.0"
-thiserror = "2.0.19"
+thiserror = "2.0.20"
 toml = { workspace = true }
+tracing = "0.1.44"
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.0", features = ["cli"], optional = true }
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
@@ -49,6 +51,10 @@ uniffi = { version = "0.32.0", features = ["build"], optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
+# Only for constructing password-protected archives in tests; matches the main `zip`
+# dependency's default-features = false, adding just aes-crypto rather than the full
+# default bundle (bzip2, lzma, ppmd, zstd).
+zip = { version = "8.6.0", default-features = false, features = ["deflate", "aes-crypto"] }
 
 [features]
 uniffi = ["dep:uniffi"]

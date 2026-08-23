@@ -22,6 +22,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 
+/**
+ * A single menu entry, rendered as both a visible [DropdownMenuItem] and a TalkBack
+ * [CustomAccessibilityAction] from one definition, so the two can't drift out of sync.
+ */
+private data class MenuAction(
+	val label: String,
+	val onClick: () -> Unit
+)
+
+private fun List<MenuAction>.toCustomActions(): List<CustomAccessibilityAction> =
+	map { action ->
+		CustomAccessibilityAction(action.label) {
+			action.onClick()
+			true
+		}
+	}
+
+@Composable
+private fun MenuActionItems(
+	actions: List<MenuAction>,
+	onItemClick: () -> Unit
+) {
+	actions.forEach { action ->
+		DropdownMenuItem(
+			text = { Text(action.label) },
+			onClick = {
+				onItemClick()
+				action.onClick()
+			}
+		)
+	}
+}
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreenTopBar(
@@ -48,6 +81,21 @@ fun MainScreenTopBar(
 	onHelpOpen: () -> Unit
 ) {
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
+	val bookMenuActions = listOf(
+		MenuAction(
+			// TRANSLATORS: Menu item / accessibility action to import a document's saved settings and bookmarks from a .paperback file
+			t("Import Document Data"),
+			onImportSettings
+		),
+		MenuAction(
+			// TRANSLATORS: Menu item / accessibility action to export a document's saved settings and bookmarks to a .paperback file
+			t("Export Document Data"),
+			onExportSettings
+		)
+	)
+	// TRANSLATORS: Accessibility label for the overflow icon button that opens the options menu
+	val moreOptionsLabel = t("More Options")
+
 	Column(
 		modifier = Modifier
 			.fillMaxWidth()
@@ -89,18 +137,7 @@ fun MainScreenTopBar(
 								onLongClickLabel = "show import and export options"
 							).semantics {
 								traversalIndex = 1f
-								customActions = listOf(
-									// TRANSLATORS: Accessibility action to import a document's saved settings and bookmarks from a .paperback file
-									CustomAccessibilityAction(t("Import Document Data")) {
-										onImportSettings()
-										true
-									},
-									// TRANSLATORS: Accessibility action to export a document's saved settings and bookmarks to a .paperback file
-									CustomAccessibilityAction(t("Export Document Data")) {
-										onExportSettings()
-										true
-									}
-								)
+								customActions = bookMenuActions.toCustomActions()
 							}
 					) {
 						Row(
@@ -116,26 +153,102 @@ fun MainScreenTopBar(
 						expanded = openBookMenuExpanded,
 						onDismissRequest = { openBookMenuExpanded = false }
 					) {
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to import a document's saved settings and bookmarks from a .paperback file
-							text = { Text(t("Import Document Data")) },
-							onClick = {
-								openBookMenuExpanded = false
-								onImportSettings()
-							}
-						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to export a document's saved settings and bookmarks to a .paperback file
-							text = { Text(t("Export Document Data")) },
-							onClick = {
-								openBookMenuExpanded = false
-								onExportSettings()
-							}
-						)
+						MenuActionItems(bookMenuActions) { openBookMenuExpanded = false }
 					}
 				}
 			}
 			if (state is MainScreenUiState.Success && state.tabs.isNotEmpty()) {
+				val menuActions = buildList {
+					add(
+						MenuAction(
+							// TRANSLATORS: Menu item / accessibility action toggling between the read-aloud view and the plain text view; label names the mode that tapping it switches TO
+							if (isTextMode) t("Switch to TTS Mode") else t("Switch to Text Mode"),
+							onToggleTextMode
+						)
+					)
+					if (isTextMode) {
+						add(
+							MenuAction(
+								// TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
+								if (isSpeaking) t("Pause Read Aloud") else t("Read Aloud"),
+								onTogglePlayPause
+							)
+						)
+					}
+					if (state.activeTab != null) {
+						add(
+							MenuAction(
+								// TRANSLATORS: Menu item / accessibility action to open the table of contents for the current document
+								t("Table of Contents"),
+								onTocOpen
+							)
+						)
+						add(MenuAction(t("Export As"), onExportDocumentOpen))
+					}
+					add(
+						MenuAction(
+							// TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
+							t("Elements List"),
+							onElementsOpen
+						)
+					)
+					add(
+						MenuAction(
+							// TRANSLATORS: Menu item / accessibility action to open the find/search bar
+							t("Find"),
+							onFindOpen
+						)
+					)
+					add(
+						MenuAction(
+							// TRANSLATORS: Menu item / accessibility action to open the go-to dialog, for jumping to a page, line, or percentage
+							t("Go To"),
+							onGoToOpen
+						)
+					)
+					add(
+						MenuAction(
+							// TRANSLATORS: Menu item / accessibility action to open the list of recently opened documents
+							t("Recent Documents"),
+							onRecentsOpen
+						)
+					)
+					add(
+						MenuAction(
+							// TRANSLATORS: Menu item / accessibility action to show word/character/line count statistics for the current document
+							t("Word Count"),
+							onWordCountOpen
+						)
+					)
+					add(
+						MenuAction(
+							// TRANSLATORS: Menu item / accessibility action to show metadata (title, author, etc.) about the current document
+							t("Document Information"),
+							onDocumentInfoOpen
+						)
+					)
+					add(
+						MenuAction(
+							// TRANSLATORS: Menu item / accessibility action to open the sleep timer dialog
+							t("Sleep Timer"),
+							onSleepTimerOpen
+						)
+					)
+					add(
+						MenuAction(
+							// TRANSLATORS: Menu item / accessibility action to open the in-app help document
+							t("Help"),
+							onHelpOpen
+						)
+					)
+					add(
+						MenuAction(
+							// TRANSLATORS: Menu item / accessibility action to open the app's settings
+							t("Settings"),
+							onSettingsOpen
+						)
+					)
+				}
 				Box {
 					IconButton(
 						onClick = { moreOptionsExpanded = true },
@@ -145,222 +258,24 @@ fun MainScreenTopBar(
 								moreOptionsExpanded = true
 								true
 							}
-							customActions = mutableListOf<CustomAccessibilityAction>().apply {
-								if (state.activeTab != null) {
-									add(
-										// TRANSLATORS: Accessibility action to open the table of contents for the current document
-										CustomAccessibilityAction(t("Table of Contents")) {
-											onTocOpen()
-											true
-										}
-									)
-									add(
-										CustomAccessibilityAction(t("Export As")) {
-											onExportDocumentOpen()
-											true
-										}
-									)
-								}
-								add(
-									// TRANSLATORS: Accessibility action to open the list of headings and links in the current document
-									CustomAccessibilityAction(t("Elements List")) {
-										onElementsOpen()
-										true
-									}
-								)
-								add(
-									// TRANSLATORS: Accessibility action to open the find/search bar
-									CustomAccessibilityAction(t("Find")) {
-										onFindOpen()
-										true
-									}
-								)
-								add(
-									// TRANSLATORS: Accessibility action to open the go-to dialog, for jumping to a page, line, or percentage
-									CustomAccessibilityAction(t("Go To")) {
-										onGoToOpen()
-										true
-									}
-								)
-								add(
-									// TRANSLATORS: Accessibility action to open the list of recently opened documents
-									CustomAccessibilityAction(t("Recent Documents")) {
-										onRecentsOpen()
-										true
-									}
-								)
-								add(
-									// TRANSLATORS: Accessibility action to show word/character/line count statistics for the current document
-									CustomAccessibilityAction(t("Word Count")) {
-										onWordCountOpen()
-										true
-									}
-								)
-								add(
-									// TRANSLATORS: Accessibility action to show metadata (title, author, etc.) about the current document
-									CustomAccessibilityAction(t("Document Information")) {
-										onDocumentInfoOpen()
-										true
-									}
-								)
-								add(
-									// TRANSLATORS: Accessibility action toggling between the read-aloud view and the plain text view; label names the view that tapping it switches to
-									CustomAccessibilityAction(if (isTextMode) t("Show Document") else t("Show Text")) {
-										onToggleTextMode()
-										true
-									}
-								)
-								if (isTextMode) {
-									add(
-										// TRANSLATORS: Accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-										CustomAccessibilityAction(if (isSpeaking) t("Pause Read Aloud") else t("Read Aloud")) {
-											onTogglePlayPause()
-											true
-										}
-									)
-								}
-								add(
-									// TRANSLATORS: Accessibility action to open the sleep timer dialog
-									CustomAccessibilityAction(t("Sleep Timer")) {
-										onSleepTimerOpen()
-										true
-									}
-								)
-								add(
-									// TRANSLATORS: Accessibility action to open the in-app help document
-									CustomAccessibilityAction(t("Help")) {
-										onHelpOpen()
-										true
-									}
-								)
-								add(
-									// TRANSLATORS: Accessibility action to open the app's settings
-									CustomAccessibilityAction(t("Settings")) {
-										onSettingsOpen()
-										true
-									}
-								)
-							}
+							customActions = menuActions.toCustomActions()
 						}
 					) {
-						// TRANSLATORS: Accessibility label for the overflow icon button that opens the options menu
-						Icon(Icons.Filled.MoreVert, contentDescription = t("More Options"))
+						Icon(Icons.Filled.MoreVert, contentDescription = moreOptionsLabel)
 					}
 					DropdownMenu(
 						expanded = moreOptionsExpanded,
 						onDismissRequest = { moreOptionsExpanded = false }
 					) {
-						if (state.activeTab != null) {
-							DropdownMenuItem(
-								// TRANSLATORS: Menu item to open the table of contents for the current document
-								text = { Text(t("Table of Contents")) },
-								onClick = {
-									moreOptionsExpanded = false
-									onTocOpen()
-								}
-							)
-							DropdownMenuItem(
-								text = { Text(t("Export As")) },
-								onClick = {
-									moreOptionsExpanded = false
-									onExportDocumentOpen()
-								}
-							)
-						}
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the list of headings and links in the current document
-							text = { Text(t("Elements List")) },
-							onClick = {
-								moreOptionsExpanded = false
-								onElementsOpen()
-							}
-						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the find/search bar
-							text = { Text(t("Find")) },
-							onClick = {
-								moreOptionsExpanded = false
-								onFindOpen()
-							}
-						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the go-to dialog, for jumping to a page, line, or percentage
-							text = { Text(t("Go To")) },
-							onClick = {
-								moreOptionsExpanded = false
-								onGoToOpen()
-							}
-						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the list of recently opened documents
-							text = { Text(t("Recent Documents")) },
-							onClick = {
-								moreOptionsExpanded = false
-								onRecentsOpen()
-							}
-						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to show word/character/line count statistics for the current document
-							text = { Text(t("Word Count")) },
-							onClick = {
-								moreOptionsExpanded = false
-								onWordCountOpen()
-							}
-						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to show metadata (title, author, etc.) about the current document
-							text = { Text(t("Document Information")) },
-							onClick = {
-								moreOptionsExpanded = false
-								onDocumentInfoOpen()
-							}
-						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item toggling between the read-aloud view and the plain text view; label names the view that tapping it switches to
-							text = { Text(if (isTextMode) t("Show Document") else t("Show Text")) },
-							onClick = {
-								onToggleTextMode()
-								moreOptionsExpanded = false
-							}
-						)
-						if (isTextMode) {
-							DropdownMenuItem(
-								// TRANSLATORS: Menu item toggling text-to-speech playback; label names the action that tapping it performs
-								text = { Text(if (isSpeaking) t("Pause Read Aloud") else t("Read Aloud")) },
-								onClick = {
-									onTogglePlayPause()
-									moreOptionsExpanded = false
-								}
-							)
-						}
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the sleep timer dialog
-							text = { Text(t("Sleep Timer")) },
-							onClick = {
-								moreOptionsExpanded = false
-								onSleepTimerOpen()
-							}
-						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the in-app help document
-							text = { Text(t("Help")) },
-							onClick = {
-								moreOptionsExpanded = false
-								onHelpOpen()
-							}
-						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the app's settings
-							text = { Text(t("Settings")) },
-							onClick = {
-								moreOptionsExpanded = false
-								onSettingsOpen()
-							}
-						)
+						MenuActionItems(menuActions) { moreOptionsExpanded = false }
 					}
 				}
 			} else {
 				var emptyMenuExpanded by remember { mutableStateOf(false) }
+				val emptyMenuActions = listOf(
+					MenuAction(t("Help"), onHelpOpen),
+					MenuAction(t("Settings"), onSettingsOpen)
+				)
 				Box {
 					IconButton(
 						onClick = { emptyMenuExpanded = true },
@@ -370,43 +285,16 @@ fun MainScreenTopBar(
 								emptyMenuExpanded = true
 								true
 							}
-							customActions = listOf(
-								// TRANSLATORS: Accessibility action to open the in-app help document
-								CustomAccessibilityAction(t("Help")) {
-									onHelpOpen()
-									true
-								},
-								// TRANSLATORS: Accessibility action to open the app's settings
-								CustomAccessibilityAction(t("Settings")) {
-									onSettingsOpen()
-									true
-								}
-							)
+							customActions = emptyMenuActions.toCustomActions()
 						}
 					) {
-						// TRANSLATORS: Accessibility label for the overflow icon button that opens the options menu
-						Icon(Icons.Filled.MoreVert, contentDescription = t("More Options"))
+						Icon(Icons.Filled.MoreVert, contentDescription = moreOptionsLabel)
 					}
 					DropdownMenu(
 						expanded = emptyMenuExpanded,
 						onDismissRequest = { emptyMenuExpanded = false }
 					) {
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the in-app help document
-							text = { Text(t("Help")) },
-							onClick = {
-								emptyMenuExpanded = false
-								onHelpOpen()
-							}
-						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the app's settings
-							text = { Text(t("Settings")) },
-							onClick = {
-								emptyMenuExpanded = false
-								onSettingsOpen()
-							}
-						)
+						MenuActionItems(emptyMenuActions) { emptyMenuExpanded = false }
 					}
 				}
 			}

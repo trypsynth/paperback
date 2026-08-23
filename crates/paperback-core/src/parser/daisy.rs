@@ -1,357 +1,68 @@
 use std::{
-	collections::HashMap,
-	fs::{self, File},
+	fs::File,
 	io::{BufReader, Read},
 	path::Path,
 };
 
-use anyhow::{Context, Result};
-use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
-use zip::ZipArchive;
+use anyhow::Result;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
-	parser::{
-		PASSWORD_REQUIRED_ERROR_PREFIX, Parser, add_converter_markers,
-		html_to_text::{HtmlSourceMode, HtmlToText},
-		util::{path::extract_title_from_path, toc::build_toc_from_headings},
-		xml_to_text::XmlToText,
-	},
-	t,
-	util::{encoding::convert_to_utf8, zip::read_zip_entry_by_name_with_password},
+	document::{Document, ParserContext},
+	parser::Parser,
 };
+
+mod loose;
+mod ncx;
+mod opf;
+mod plain_audio;
+mod smil;
+mod timeline;
+mod zip;
 
 pub struct DaisyParser;
 
 impl Parser for DaisyParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let path = Path::new(&context.file_path);
-		let mut title = extract_title_from_path(&context.file_path);
-		let mut author = String::new();
-		let mut buffer;
-		let is_zip = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
-			|| File::open(path)
-				.and_then(|f| {
-					let mut header = [0; 4];
-					let mut reader = BufReader::new(f);
-					reader.read_exact(&mut header)?;
-					Ok(header == [0x50, 0x4b, 0x03, 0x04])
-				})
-				.unwrap_or(false);
+		let ext_is_zip = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"));
+		let is_zip = ext_is_zip || {
+			let magic_result = File::open(path).and_then(|f| {
+				let mut header = [0; 4];
+				let mut reader = BufReader::new(f);
+				reader.read_exact(&mut header)?;
+				Ok(header == [0x50, 0x4b, 0x03, 0x04])
+			});
+			if let Err(ref e) = magic_result {
+				tracing::warn!(path = %path.display(), error = %e, "failed to read file header while checking for zip magic bytes");
+			}
+			magic_result.unwrap_or(false)
+		};
+		if ext_is_zip {
+			tracing::debug!(path = %path.display(), "detected zip via file extension");
+		} else if is_zip {
+			tracing::debug!(path = %path.display(), "detected zip via magic bytes");
+		}
+		tracing::debug!(path = %path.display(), is_zip, "starting daisy parse");
 		if is_zip {
-			let file = File::open(path).context("Failed to open zip file")?;
-			let mut archive = ZipArchive::new(BufReader::new(file)).context("Failed to read zip archive")?;
-			let opf_path = archive
-				.file_names()
-				.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("opf")))
-				.map(String::from);
-			if let Some(opf_name) = opf_path {
-				let (manifest_xml, metadata) = {
-					let opf_content =
-						read_zip_entry_by_name_with_password(&mut archive, &opf_name, context.password.as_deref())
-							.map_err(|e| {
-								if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
-									e
-								} else {
-									e.context("Failed to read OPF file")
-								}
-							})?;
-					parse_opf_metadata_and_manifest(&opf_content)?
-				};
-				if let Some(t) = metadata.0 {
-					title = t;
-				}
-				if let Some(a) = metadata.1 {
-					author = a;
-				}
-				if let Some(dtbook_path) = manifest_xml {
-					let base_dir = Path::new(&opf_name).parent().unwrap_or_else(|| Path::new(""));
-					let xml_full_path = if base_dir.as_os_str().is_empty() {
-						dtbook_path
-					} else {
-						base_dir.join(&dtbook_path).to_string_lossy().to_string().replace('\\', "/")
-					};
-					let xml_content =
-						read_zip_entry_by_name_with_password(&mut archive, &xml_full_path, context.password.as_deref())
-							.map_err(|e| {
-								if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
-									e
-								} else {
-									e.context("Failed to read XML file from zip")
-								}
-							})?;
-					let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
-					if converter.convert(&xml_content) {
-						buffer = DocumentBuffer::with_content(converter.get_text());
-						add_converter_markers(&mut buffer, &converter, 0);
-						for pb in converter.get_page_breaks() {
-							buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
-						}
-					} else {
-						// TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
-						anyhow::bail!(t("Failed to convert DTBook XML to text"));
-					}
-					let mut toc_items = None;
-					let ncx_path = archive
-						.file_names()
-						.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ncx")))
-						.map(String::from);
-					if let Some(ncx_name) = ncx_path
-						&& let Ok(ncx_content) =
-							read_zip_entry_by_name_with_password(&mut archive, &ncx_name, context.password.as_deref())
-						&& !ncx_content.is_empty()
-						&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
-						&& !ncx_toc.is_empty()
-					{
-						toc_items = Some(ncx_toc);
-					}
-					let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
-					return Ok(Document {
-						title,
-						author,
-						buffer,
-						toc_items,
-						id_positions: converter.get_id_positions().clone(),
-						..Document::default()
-					});
-				}
-			}
-			let ncc_path =
-				archive.file_names().find(|n| n.ends_with("ncc.html") || n.ends_with("NCC.html")).map(String::from);
-			if let Some(ncc_name) = ncc_path {
-				let ncc_content =
-					read_zip_entry_by_name_with_password(&mut archive, &ncc_name, context.password.as_deref())
-						.map_err(|e| {
-							if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
-								e
-							} else {
-								e.context("Failed to read ncc.html")
-							}
-						})?;
-				let links = extract_daisy2_links(&ncc_content);
-				let mut combined_html = String::new();
-				let base_dir = Path::new(&ncc_name).parent().unwrap_or_else(|| Path::new(""));
-				for link in links {
-					let link_path = if base_dir.as_os_str().is_empty() {
-						link.clone()
-					} else {
-						base_dir.join(&link).to_string_lossy().to_string().replace('\\', "/")
-					};
-					if let Ok(c) =
-						read_zip_entry_by_name_with_password(&mut archive, &link_path, context.password.as_deref())
-					{
-						combined_html.push_str(&c);
-						combined_html.push_str("\n\n");
-					}
-				}
-				let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
-				if converter.convert(&combined_html, HtmlSourceMode::NativeHtml) {
-					buffer = DocumentBuffer::with_content(converter.get_text());
-					add_converter_markers(&mut buffer, &converter, 0);
-					let toc_items = build_toc_from_headings(converter.get_headings());
-					return Ok(Document {
-						title,
-						author,
-						buffer,
-						toc_items,
-						id_positions: converter.get_id_positions().clone(),
-						..Document::default()
-					});
-				}
-			}
-			// TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
-			anyhow::bail!(t("ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"));
-		}
-		let file_content = convert_to_utf8(&fs::read(path)?);
-		let (manifest_xml, metadata) = parse_opf_metadata_and_manifest(&file_content)?;
-		if let Some(t) = metadata.0 {
-			title = t;
-		}
-		if let Some(a) = metadata.1 {
-			author = a;
-		}
-		if let Some(dtbook_path) = manifest_xml {
-			let base_dir = path.parent().unwrap_or_else(|| Path::new(""));
-			let xml_full_path = base_dir.join(&dtbook_path);
-			let xml_content = convert_to_utf8(
-				&fs::read(&xml_full_path)
-					.with_context(|| format!("Failed to read DTBook XML file at {}", xml_full_path.display()))?,
-			);
-			let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
-			if converter.convert(&xml_content) {
-				buffer = DocumentBuffer::with_content(converter.get_text());
-				add_converter_markers(&mut buffer, &converter, 0);
-				for pb in converter.get_page_breaks() {
-					buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
-				}
-				let mut toc_items = None;
-				if let Ok(entries) = fs::read_dir(base_dir) {
-					for entry in entries.flatten() {
-						let path = entry.path();
-						if path.is_file()
-							&& path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx"))
-							&& let Some(ncx_content) = fs::read(&path).ok().map(|b| convert_to_utf8(&b))
-							&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
-							&& !ncx_toc.is_empty()
-						{
-							toc_items = Some(ncx_toc);
-							break;
-						}
-					}
-				}
-				let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
-				return Ok(Document {
-					title,
-					author,
-					buffer,
-					toc_items,
-					id_positions: converter.get_id_positions().clone(),
-					..Document::default()
-				});
-			}
-		}
-		// TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
-		anyhow::bail!(t("Invalid DAISY .opf file or could not find DTBook XML in manifest"));
-	}
-}
-
-type OpfMetadataResult = Result<(Option<String>, (Option<String>, Option<String>))>;
-
-fn parse_opf_metadata_and_manifest(opf_content: &str) -> OpfMetadataResult {
-	let doc =
-		XmlDocument::parse_with_options(opf_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
-			.context("Failed to parse OPF XML")?;
-	let mut dtbook_href = None;
-	let mut title = None;
-	let mut author = None;
-	if let Some(package) =
-		doc.descendants().find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "package")
-	{
-		for child in package.children() {
-			if child.is_element() {
-				if child.tag_name().name() == "metadata" {
-					for meta_child in child.children() {
-						if meta_child.is_element() {
-							let name = meta_child.tag_name().name();
-							if name == "Title" || name == "title" {
-								title = meta_child.text().map(|s| s.trim().to_string());
-							} else if name == "Creator" || name == "creator" {
-								author = meta_child.text().map(|s| s.trim().to_string());
-							}
-						}
-					}
-					for meta_child in child.descendants() {
-						if meta_child.is_element() {
-							let name = meta_child.tag_name().name();
-							if name == "Title" || name == "title" {
-								if title.is_none() {
-									title = meta_child.text().map(|s| s.trim().to_string());
-								}
-							} else if (name == "Creator" || name == "creator") && author.is_none() {
-								author = meta_child.text().map(|s| s.trim().to_string());
-							}
-						}
-					}
-				} else if child.tag_name().name() == "manifest" {
-					for item in child.children() {
-						if item.is_element() && item.tag_name().name() == "item" {
-							let media_type = item.attribute("media-type").unwrap_or("");
-							if media_type == "application/x-dtbook+xml" || media_type == "text/xml" {
-								let href = item.attribute("href").map(ToString::to_string);
-								if media_type == "application/x-dtbook+xml" {
-									dtbook_href = href;
-									break;
-								} else if dtbook_href.is_none()
-									&& href.as_ref().is_some_and(|h| {
-										Path::new(h).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("xml"))
-									}) {
-									dtbook_href = href;
-								}
-							}
-						}
-					}
-				}
-			}
+			tracing::debug!("taking zip archive parse path");
+			zip::parse(context, path)
+		} else {
+			tracing::debug!(path = %path.display(), "taking loose files parse path");
+			loose::parse(context, path)
 		}
 	}
-	Ok((dtbook_href, (title, author)))
-}
-
-fn extract_daisy2_links(ncc_content: &str) -> Vec<String> {
-	let mut links = Vec::new();
-	let scraper = scraper::Html::parse_document(ncc_content);
-	let selector = scraper::Selector::parse("a[href]").unwrap();
-	for element in scraper.select(&selector) {
-		if let Some(href) = element.value().attr("href") {
-			let file_path = href.split('#').next().unwrap_or(href);
-			if !file_path.is_empty() && !links.contains(&file_path.to_string()) {
-				links.push(file_path.to_string());
-			}
-		}
-	}
-	links
-}
-
-fn parse_daisy_ncx(ncx_content: &str, id_positions: &HashMap<String, usize>) -> Option<Vec<TocItem>> {
-	let ncx_doc =
-		XmlDocument::parse_with_options(ncx_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
-			.ok()?;
-	let nav_map =
-		ncx_doc.descendants().find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "navMap")?;
-	let mut items = Vec::new();
-	for navpoint in nav_map.children() {
-		if navpoint.node_type() == NodeType::Element
-			&& navpoint.tag_name().name() == "navPoint"
-			&& let Some(item) = convert_daisy_navpoint(navpoint, id_positions)
-		{
-			items.push(item);
-		}
-	}
-	if items.is_empty() { None } else { Some(items) }
-}
-
-fn convert_daisy_navpoint(nav: Node, id_positions: &HashMap<String, usize>) -> Option<TocItem> {
-	let label = nav
-		.children()
-		.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "navLabel")
-		.and_then(|label| {
-			label
-				.children()
-				.find(|t| t.node_type() == NodeType::Element && t.tag_name().name() == "text")
-				.and_then(|t| t.text())
-		})
-		.unwrap_or("")
-		.to_string();
-	let content_src = nav
-		.children()
-		.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "content")
-		.and_then(|c| c.attribute("src"))?;
-	if label.trim().is_empty() {
-		return None;
-	}
-	let target_id =
-		content_src.find('#').map_or_else(|| nav.attribute("id").unwrap_or(content_src), |idx| &content_src[idx + 1..]);
-	let offset = id_positions
-		.get(target_id)
-		.or_else(|| nav.attribute("id").and_then(|id| id_positions.get(id)))
-		.copied()
-		.unwrap_or(0);
-	let mut item = TocItem::new(label, target_id.to_string(), offset);
-	for child in nav.children() {
-		if child.node_type() == NodeType::Element
-			&& child.tag_name().name() == "navPoint"
-			&& let Some(child_item) = convert_daisy_navpoint(child, id_positions)
-		{
-			item.children.push(child_item);
-		}
-	}
-	Some(item)
 }
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use crate::util::test_support::TempDir;
+	use std::fs;
+
+	use super::DaisyParser;
+	use crate::{
+		document::{MarkerType, ParserContext},
+		parser::Parser,
+		util::test_support::TempDir,
+	};
 
 	// Regression test for https://github.com/trypsynth/paperback/issues/606: a real-world DAISY
 	// book declared its DTBook XML as ISO-8859-1 but was actually encoded as Windows-1252 (a very
@@ -396,5 +107,512 @@ mod tests {
 		assert!(document.buffer.content.contains("François"), "c-cedilla should decode correctly");
 		assert!(document.buffer.content.contains('\u{201C}'), "left curly quote should decode correctly");
 		assert!(document.buffer.content.contains('\u{201D}'), "right curly quote should decode correctly");
+		assert!(document.audio.is_none());
+	}
+
+	fn write_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
+		use std::io::Write;
+
+		use zip::{ZipWriter, write::FileOptions};
+
+		let mut buf = Vec::new();
+		{
+			let cursor = std::io::Cursor::new(&mut buf);
+			let mut writer = ZipWriter::new(cursor);
+			for (name, data) in entries {
+				writer.start_file(*name, FileOptions::<()>::default()).unwrap();
+				writer.write_all(data).unwrap();
+			}
+			writer.finish().unwrap();
+		}
+		buf
+	}
+
+	/// A minimal two-section DAISY 3 "full text, full audio" book, exercising the multi-file
+	/// offset math and the SMIL-to-text-position audio linkage end to end.
+	#[test]
+	fn parses_multi_file_daisy_book_with_audio() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata>
+    <dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:Title>Two Section Book</dc:Title>
+      <dc:Creator>A. Author</dc:Creator>
+    </dc-metadata>
+  </metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="application/x-dtbook+xml" />
+    <item id="xml2" href="book2.xml" media-type="application/x-dtbook+xml" />
+    <item id="ncx" href="book.ncx" media-type="application/x-dtbncx+xml" />
+    <item id="audio1" href="book1.mp3" media-type="audio/mpeg" />
+    <item id="audio2" href="book2.mp3" media-type="audio/mpeg" />
+    <item id="smil1" href="section1.smil" media-type="application/smil" />
+    <item id="smil2" href="section2.smil" media-type="application/smil" />
+  </manifest>
+  <spine>
+    <itemref idref="smil1" />
+    <itemref idref="smil2" />
+  </spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter>
+<h1 id="h1">Chapter One</h1>
+<p id="p1">First paragraph.</p>
+</bodymatter></book></dtbook>"#;
+		let book2 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter>
+<h1 id="h2">Chapter Two</h1>
+<p id="p2">Second paragraph.</p>
+</bodymatter></book></dtbook>"#;
+		let smil1 = br#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="s">
+<par id="par_h1"><text src="book1.xml#h1" /><audio src="book1.mp3" clipBegin="0s" clipEnd="2s" /></par>
+<par id="par_p1"><text src="book1.xml#p1" /><audio src="book1.mp3" clipBegin="2s" clipEnd="5s" /></par>
+</seq></body></smil>"#;
+		let smil2 = br#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="s">
+<par id="par_h2"><text src="book2.xml#h2" /><audio src="book2.mp3" clipBegin="0s" clipEnd="1.5s" /></par>
+<par id="par_p2"><text src="book2.xml#p2" /><audio src="book2.mp3" clipBegin="1.5s" clipEnd="4s" /></par>
+</seq></body></smil>"#;
+		let ncx = br#"<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"><navMap>
+<navPoint id="np1"><navLabel><text>Chapter One</text></navLabel><content src="book1.xml#h1" /></navPoint>
+<navPoint id="np2"><navLabel><text>Chapter Two</text></navLabel><content src="book2.xml#h2" /></navPoint>
+</navMap></ncx>"#;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("book2.xml", book2.as_slice()),
+			("book.ncx", ncx.as_slice()),
+			("section1.smil", smil1.as_slice()),
+			("section2.smil", smil2.as_slice()),
+			("book1.mp3", b"fake-mp3-1"),
+			("book2.mp3", b"fake-mp3-2"),
+		]);
+
+		let dir = TempDir::new("daisy_multi");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("multi-file DAISY parse should succeed");
+
+		assert_eq!(document.title, "Two Section Book");
+		assert_eq!(document.author, "A. Author");
+		assert!(document.buffer.content.contains("Chapter One"));
+		assert!(document.buffer.content.contains("Chapter Two"));
+		assert!(
+			document.buffer.content.find("Chapter One").unwrap() < document.buffer.content.find("Chapter Two").unwrap()
+		);
+		assert_eq!(document.toc_items.len(), 2);
+		assert_eq!(document.toc_items[1].name, "Chapter Two");
+
+		let audio = document.audio.expect("audio timeline should be populated");
+		assert_eq!(audio.clips().len(), 4);
+		assert_eq!(audio.sources().len(), 2);
+		// The second file's clips resume the elapsed clock where the first file's left off.
+		assert_eq!(audio.total_duration_ms(), 2000 + 3000 + 1500 + 2500);
+		let h2_pos = document.buffer.content.find("Chapter Two").unwrap();
+		let clip_index = audio.clip_index_at_position(h2_pos).expect("chapter two should be narrated");
+		assert_eq!(audio.clip_start_ms(clip_index), Some(5000));
+	}
+
+	/// Two chapters can legally reuse the same bare id; the merged map keeps the first file's
+	/// position while still exposing both via their path-qualified keys.
+	#[test]
+	fn multi_file_daisy_book_keeps_first_occurrence_of_a_duplicate_bare_id() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata>
+    <dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:Title>Duplicate Id Book</dc:Title>
+    </dc-metadata>
+  </metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="application/x-dtbook+xml" />
+    <item id="xml2" href="book2.xml" media-type="application/x-dtbook+xml" />
+  </manifest>
+  <spine>
+    <itemref idref="xml1" />
+    <itemref idref="xml2" />
+  </spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter><p id="dup">First occurrence.</p></bodymatter></book></dtbook>"#;
+		let book2 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter><p id="dup">Second occurrence.</p></bodymatter></book></dtbook>"#;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("book2.xml", book2.as_slice()),
+		]);
+
+		let dir = TempDir::new("daisy_dup_id");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
+
+		let first_pos = document.buffer.content.find("First occurrence.").unwrap();
+		let second_pos = document.buffer.content.find("Second occurrence.").unwrap();
+		assert_eq!(
+			document.id_positions.get("dup").copied(),
+			Some(first_pos),
+			"bare id should keep the first file's position"
+		);
+		assert_eq!(document.id_positions.get("book1.xml#dup").copied(), Some(first_pos));
+		assert_eq!(document.id_positions.get("book2.xml#dup").copied(), Some(second_pos));
+	}
+
+	/// Some OPFs label their DTBook items as generic `text/xml` rather than the proper
+	/// `application/x-dtbook+xml`. `find_single_dtbook_href`'s legacy fallback already tolerates
+	/// this for a single-file book; the multi-file spine walk in `build_daisy_document` must too,
+	/// or every such chapter gets skipped, `converted_any` never becomes true, and the whole book
+	/// falls back to that same single-file path, which then only recovers the first chapter.
+	#[test]
+	fn multi_file_daisy_book_accepts_untyped_xml_chapters_referenced_directly_from_the_spine() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata>
+    <dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:Title>Untyped Chapters Book</dc:Title>
+    </dc-metadata>
+  </metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="text/xml" />
+    <item id="xml2" href="book2.xml" media-type="text/xml" />
+  </manifest>
+  <spine>
+    <itemref idref="xml1" />
+    <itemref idref="xml2" />
+  </spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter><h1 id="h1">Chapter One</h1></bodymatter></book></dtbook>"#;
+		let book2 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter><h1 id="h2">Chapter Two</h1></bodymatter></book></dtbook>"#;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("book2.xml", book2.as_slice()),
+		]);
+
+		let dir = TempDir::new("daisy_untyped_xml_chapters");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
+
+		assert!(document.buffer.content.contains("Chapter One"));
+		assert!(document.buffer.content.contains("Chapter Two"), "second chapter should not be silently dropped");
+		assert!(
+			document.buffer.content.find("Chapter One").unwrap() < document.buffer.content.find("Chapter Two").unwrap()
+		);
+	}
+
+	/// A `<text src="#id">` with no file part resolves against the most recent explicit
+	/// `<text src="file#id">` in the same SMIL, rather than losing that clip.
+	#[test]
+	fn smil_bare_fragment_resolves_against_the_last_explicit_text_file() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata>
+    <dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:Title>Bare Fragment Book</dc:Title>
+    </dc-metadata>
+  </metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="application/x-dtbook+xml" />
+    <item id="audio1" href="book1.mp3" media-type="audio/mpeg" />
+    <item id="smil1" href="section1.smil" media-type="application/smil" />
+  </manifest>
+  <spine>
+    <itemref idref="smil1" />
+  </spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter>
+<p id="p1">First sentence.</p>
+<p id="p2">Second sentence.</p>
+</bodymatter></book></dtbook>"#;
+		let smil1 = br##"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="s">
+<par id="par_p1"><text src="book1.xml#p1" /><audio src="book1.mp3" clipBegin="0s" clipEnd="2s" /></par>
+<par id="par_p2"><text src="#p2" /><audio src="book1.mp3" clipBegin="2s" clipEnd="4s" /></par>
+</seq></body></smil>"##;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("section1.smil", smil1.as_slice()),
+			("book1.mp3", b"fake-mp3"),
+		]);
+
+		let dir = TempDir::new("daisy_bare_fragment");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
+
+		let audio = document.audio.expect("audio timeline should be populated");
+		assert_eq!(audio.clips().len(), 2, "the bare-fragment par's clip must not be dropped");
+		let p2_pos = document.buffer.content.find("Second sentence.").unwrap();
+		let clip_index = audio.clip_index_at_position(p2_pos).expect("second sentence should be narrated");
+		assert_eq!(audio.clip_start_ms(clip_index), Some(2000));
+	}
+
+	/// A DAISY 3 NCX points `content/@src` at SMIL ids, not `DTBook` ids. Here the SMIL par
+	/// ids are deliberately unrelated to the `DTBook` ids (as producers other than Bookshare
+	/// number them), so resolving against `DTBook` ids alone would strand every entry at 0.
+	#[test]
+	fn ncx_targets_resolve_through_smil_par_ids() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:Title>Smil Ncx Book</dc:Title></dc-metadata></metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="application/x-dtbook+xml" />
+    <item id="ncx" href="book.ncx" media-type="application/x-dtbncx+xml" />
+    <item id="audio1" href="book1.mp3" media-type="audio/mpeg" />
+    <item id="smil1" href="section1.smil" media-type="application/smil" />
+  </manifest>
+  <spine><itemref idref="smil1" /></spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter>
+<h1 id="h1">Chapter One</h1>
+<p id="p1">First paragraph.</p>
+<h1 id="h2">Chapter Two</h1>
+</bodymatter></book></dtbook>"#;
+		let smil1 = br#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="baseseq">
+<par id="tcp00001"><text src="book1.xml#h1" /><audio src="book1.mp3" clipBegin="0s" clipEnd="2s" /></par>
+<par id="tcp00002"><text src="book1.xml#p1" /><audio src="book1.mp3" clipBegin="2s" clipEnd="5s" /></par>
+<par id="tcp00003"><text src="book1.xml#h2" /><audio src="book1.mp3" clipBegin="5s" clipEnd="7s" /></par>
+</seq></body></smil>"#;
+		let ncx = br#"<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"><navMap>
+<navPoint id="np1"><navLabel><text>Chapter One</text></navLabel><content src="section1.smil#tcp00001" /></navPoint>
+<navPoint id="np2"><navLabel><text>Chapter Two</text></navLabel><content src="section1.smil#tcp00003" /></navPoint>
+</navMap></ncx>"#;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("book.ncx", ncx.as_slice()),
+			("section1.smil", smil1.as_slice()),
+			("book1.mp3", b"fake-mp3"),
+		]);
+		let dir = TempDir::new("daisy_smil_ncx");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
+
+		assert_eq!(document.toc_items.len(), 2);
+		let chapter_two = document.buffer.content.find("Chapter Two").unwrap();
+		assert_eq!(document.toc_items[0].offset, document.buffer.content.find("Chapter One").unwrap());
+		assert_eq!(document.toc_items[1].offset, chapter_two, "second entry must not be stranded at 0");
+	}
+
+	/// An NCX naming a `<seq>` rather than a `<par>` resolves to where that `<seq>` begins.
+	#[test]
+	fn ncx_targets_resolve_through_smil_seq_ids() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:Title>Seq Ncx Book</dc:Title></dc-metadata></metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="application/x-dtbook+xml" />
+    <item id="ncx" href="book.ncx" media-type="application/x-dtbncx+xml" />
+    <item id="audio1" href="book1.mp3" media-type="audio/mpeg" />
+    <item id="smil1" href="section1.smil" media-type="application/smil" />
+  </manifest>
+  <spine><itemref idref="smil1" /></spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter>
+<h1 id="h1">Chapter One</h1>
+<h1 id="h2">Chapter Two</h1>
+</bodymatter></book></dtbook>"#;
+		let smil1 = br#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="baseseq">
+<seq id="chapter1"><par id="p_a"><text src="book1.xml#h1" /><audio src="book1.mp3" clipBegin="0s" clipEnd="2s" /></par></seq>
+<seq id="chapter2"><par id="p_b"><text src="book1.xml#h2" /><audio src="book1.mp3" clipBegin="2s" clipEnd="4s" /></par></seq>
+</seq></body></smil>"#;
+		let ncx = br#"<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"><navMap>
+<navPoint id="np2"><navLabel><text>Chapter Two</text></navLabel><content src="section1.smil#chapter2" /></navPoint>
+</navMap></ncx>"#;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("book.ncx", ncx.as_slice()),
+			("section1.smil", smil1.as_slice()),
+			("book1.mp3", b"fake-mp3"),
+		]);
+		let dir = TempDir::new("daisy_seq_ncx");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
+
+		assert_eq!(document.toc_items.len(), 1);
+		assert_eq!(document.toc_items[0].offset, document.buffer.content.find("Chapter Two").unwrap());
+	}
+
+	/// `clipEnd` is optional in SMIL 2.0 and means "to the end of the media". Such a par must
+	/// keep its audio, bounded by whatever plays next from the same file.
+	#[test]
+	fn par_without_clip_end_is_bounded_by_the_next_clip_on_the_same_source() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:Title>Open Clip Book</dc:Title></dc-metadata></metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="application/x-dtbook+xml" />
+    <item id="audio1" href="book1.mp3" media-type="audio/mpeg" />
+    <item id="smil1" href="section1.smil" media-type="application/smil" />
+  </manifest>
+  <spine><itemref idref="smil1" /></spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter>
+<p id="p1">First sentence.</p>
+<p id="p2">Second sentence.</p>
+<p id="p3">Third sentence.</p>
+</bodymatter></book></dtbook>"#;
+		// p1 has no clipEnd and must be bounded by p2's clipBegin; p3 is the trailing
+		// open-ended clip, which has nothing to measure against.
+		let smil1 = br#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="s">
+<par id="par1"><text src="book1.xml#p1" /><audio src="book1.mp3" clipBegin="0s" /></par>
+<par id="par2"><text src="book1.xml#p2" /><audio src="book1.mp3" clipBegin="3s" clipEnd="5s" /></par>
+<par id="par3"><text src="book1.xml#p3" /><audio src="book1.mp3" clipBegin="5s" /></par>
+</seq></body></smil>"#;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("section1.smil", smil1.as_slice()),
+			("book1.mp3", b"fake-mp3"),
+		]);
+		let dir = TempDir::new("daisy_open_clip");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
+
+		let audio = document.audio.expect("audio timeline should be populated");
+		assert_eq!(audio.clips().len(), 2, "the open-ended first par must survive; only the trailing one is dropped");
+		assert_eq!(audio.clips()[0].clip_begin_ms, 0);
+		assert_eq!(audio.clips()[0].clip_end_ms, 3000, "bounded by the next clip against the same source");
+		assert_eq!(audio.total_duration_ms(), 3000 + 2000);
+	}
+
+	/// One unparseable chapter shouldn't cost the reader the rest of the book.
+	#[test]
+	fn corrupt_chapter_does_not_abort_the_whole_book() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata>
+    <dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:Title>Partly Corrupt Book</dc:Title>
+    </dc-metadata>
+  </metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="application/x-dtbook+xml" />
+    <item id="xml2" href="book2.xml" media-type="application/x-dtbook+xml" />
+  </manifest>
+  <spine>
+    <itemref idref="xml1" />
+    <itemref idref="xml2" />
+  </spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter><p id="p1">Valid chapter text.</p></bodymatter></book></dtbook>"#;
+		// Deliberately malformed: unclosed tags fail XML parsing outright.
+		let book2 = b"<dtbook><book><bodymatter><p id=\"p2\">Broken chapter";
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("book2.xml", book2.as_slice()),
+		]);
+
+		let dir = TempDir::new("daisy_corrupt_chapter");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed despite one corrupt chapter");
+
+		assert!(document.buffer.content.contains("Valid chapter text."));
+	}
+
+	/// A zip with nothing but audio files and no DAISY markup at all (e.g. an AudioVault-style
+	/// bundle) should still open: one textless section per audio file, in natural file-name
+	/// order, each playable end to end.
+	#[test]
+	fn plain_audio_zip_becomes_one_textless_section_per_file() {
+		let zip_bytes = write_zip(&[
+			("Track 2.mp3", b"fake-mp3-2"),
+			("Track 10.mp3", b"fake-mp3-10"),
+			("Track 1.mp3", b"fake-mp3-1"),
+			("cover.jpg", b"not-audio"),
+		]);
+
+		let dir = TempDir::new("daisy_plain_audio_zip");
+		let zip_path = dir.path().join("Some Audiobook.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("plain audio zip should parse");
+
+		assert_eq!(document.toc_items.len(), 3, "the non-audio entry must not become a section");
+		assert_eq!(
+			document.toc_items.iter().map(|item| item.name.as_str()).collect::<Vec<_>>(),
+			vec!["Track 1", "Track 2", "Track 10"]
+		);
+		assert!(
+			!document.buffer.content.chars().any(|c| c != ' '),
+			"the text field must show no real content for a plain audio bundle"
+		);
+
+		// Each section must carry a SectionBreak marker, or Previous/Next Section navigation
+		// (bound to [ and ]) finds nothing to jump to.
+		let section_marker_positions: Vec<usize> = document
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| m.mtype == MarkerType::SectionBreak)
+			.map(|m| m.position)
+			.collect();
+		assert_eq!(section_marker_positions, document.toc_items.iter().map(|item| item.offset).collect::<Vec<_>>());
+
+		let audio = document.audio.expect("audio timeline should be populated");
+		assert_eq!(audio.sources().len(), 3);
+		assert_eq!(audio.clips().len(), 3);
+
+		// Each section is independently seekable and switching sections switches files.
+		let second_section_offset = document.toc_items[1].offset;
+		let clip_index = audio.clip_index_at_position(second_section_offset).expect("section should have a clip");
+		assert_eq!(audio.clip(clip_index).unwrap().source, 1);
+		assert_eq!(audio.next_source_after(0), Some(1));
+		assert_eq!(audio.next_source_after(1), Some(2));
+		assert_eq!(audio.next_source_after(2), None);
+	}
+
+	#[test]
+	fn zip_with_no_audio_and_no_daisy_markup_still_errors() {
+		let zip_bytes = write_zip(&[("notes.txt", b"just some text"), ("cover.jpg", b"not-audio")]);
+		let dir = TempDir::new("daisy_no_audio_zip");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let err = DaisyParser.parse(&context).expect_err("a zip with neither DAISY markup nor audio should still fail");
+		assert!(err.to_string().contains("does not appear to be a valid DAISY"));
 	}
 }
