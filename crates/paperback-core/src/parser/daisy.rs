@@ -412,6 +412,17 @@ fn is_dtbook_item(item: &ManifestItem) -> bool {
 	item.media_type == "application/x-dtbook+xml"
 }
 
+/// Whether `item` is plausibly DTBook content convertible directly, without a SMIL layer:
+/// the manifest's declared type, or the same untyped-`.xml` fallback `find_single_dtbook_href`
+/// uses for a book whose OPF mislabels its DTBook items as generic `text/xml`. Unlike
+/// `is_dtbook_item`, this doesn't rank one match over the other, since the spine walk in
+/// `build_daisy_document` decides per item rather than picking a single best match package-wide.
+fn is_dtbook_like_item(item: &ManifestItem) -> bool {
+	is_dtbook_item(item)
+		|| (item.media_type == "text/xml"
+			&& Path::new(&item.href).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("xml")))
+}
+
 /// Finds the single `DTBook` XML file for a legacy single-file DAISY book: the manifest's
 /// declared `DTBook` item, or failing that, the first plain `.xml` item.
 fn find_single_dtbook_href(package: &OpfPackage) -> Option<String> {
@@ -645,7 +656,7 @@ fn build_daisy_document(
 
 	for idref in &package.spine {
 		let Some(item) = package.item(idref) else { continue };
-		if is_dtbook_item(item) {
+		if is_dtbook_like_item(item) {
 			// One malformed chapter shouldn't cost the reader the whole book: skip it and keep
 			// assembling the rest instead of falling back to single-file handling.
 			if convert_dtbook_file(
@@ -1071,6 +1082,54 @@ mod tests {
 		);
 		assert_eq!(document.id_positions.get("book1.xml#dup").copied(), Some(first_pos));
 		assert_eq!(document.id_positions.get("book2.xml#dup").copied(), Some(second_pos));
+	}
+
+	/// Some OPFs label their DTBook items as generic `text/xml` rather than the proper
+	/// `application/x-dtbook+xml`. `find_single_dtbook_href`'s legacy fallback already tolerates
+	/// this for a single-file book; the multi-file spine walk in `build_daisy_document` must too,
+	/// or every such chapter gets skipped, `converted_any` never becomes true, and the whole book
+	/// falls back to that same single-file path, which then only recovers the first chapter.
+	#[test]
+	fn multi_file_daisy_book_accepts_untyped_xml_chapters_referenced_directly_from_the_spine() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata>
+    <dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:Title>Untyped Chapters Book</dc:Title>
+    </dc-metadata>
+  </metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="text/xml" />
+    <item id="xml2" href="book2.xml" media-type="text/xml" />
+  </manifest>
+  <spine>
+    <itemref idref="xml1" />
+    <itemref idref="xml2" />
+  </spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter><h1 id="h1">Chapter One</h1></bodymatter></book></dtbook>"#;
+		let book2 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter><h1 id="h2">Chapter Two</h1></bodymatter></book></dtbook>"#;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("book2.xml", book2.as_slice()),
+		]);
+
+		let dir = TempDir::new("daisy_untyped_xml_chapters");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
+
+		assert!(document.buffer.content.contains("Chapter One"));
+		assert!(document.buffer.content.contains("Chapter Two"), "second chapter should not be silently dropped");
+		assert!(
+			document.buffer.content.find("Chapter One").unwrap() < document.buffer.content.find("Chapter Two").unwrap()
+		);
 	}
 
 	/// A `<text src="#id">` with no file part resolves against the most recent explicit
