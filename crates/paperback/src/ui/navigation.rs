@@ -8,7 +8,7 @@ use wxdragon::prelude::*;
 
 use super::{
 	dialogs,
-	document_manager::{DocumentManager, DocumentTab},
+	document_manager::{DocumentManager, DocumentTab, reload_window_around},
 };
 use crate::audio_player::AudioPlayer;
 
@@ -41,15 +41,55 @@ fn record_history(tab: &mut DocumentTab, offset: i64) -> HistoryUpdate {
 	(tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index)
 }
 
+/// Reads the caret's document-absolute position, translating it out of `tab`'s currently
+/// loaded window. Use this instead of `tab.text_ctrl.get_insertion_point()` directly - that
+/// method only knows about whatever window is currently loaded, not the document as a whole.
+pub fn doc_caret(tab: &DocumentTab) -> i64 {
+	tab.window.to_doc(tab.text_ctrl.get_insertion_point())
+}
+
+/// The current selection (or, absent one, the caret collapsed to a zero-length range), as
+/// document-absolute positions. Use this instead of `selected_range(tab.text_ctrl)` directly
+/// for anything that persists the result (bookmarks) or otherwise treats it as a document
+/// position rather than a ctrl-local one.
+pub fn doc_selected_range(tab: &DocumentTab) -> (i64, i64) {
+	let (start, end) = selected_range(tab.text_ctrl);
+	(tab.window.to_doc(start), tab.window.to_doc(end))
+}
+
+/// Moves the caret to document-absolute `offset`, focusing the document and reloading `tab`'s
+/// window first if `offset` falls outside it (see `DocumentTab::window`). Does not touch audio -
+/// use [`jump_to_doc_offset`] for the common case where a caret jump should also drive audio to
+/// match. This lower-level form exists for the reverse flow (audio driving the caret, e.g.
+/// `handle_seek_audio`), where re-seeking audio from the position we just derived it from would
+/// undo whatever precision produced that position (a mid-clip offset, or one "spilled" into the
+/// next file).
+fn set_caret_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
+	if tab.window.needs_reload_for(offset, tab.session.document_len()) {
+		reload_window_around(tab, offset);
+	}
+	let local = tab.window.to_local(offset);
+	tab.text_ctrl.set_focus();
+	tab.text_ctrl.set_insertion_point(local);
+	tab.text_ctrl.show_position(local);
+}
+
+/// Moves the caret to document-absolute `offset`, focuses the document, shows the position,
+/// and keeps audio in sync - reloading `tab`'s window first if `offset` falls outside it (see
+/// `DocumentTab::window`). This is the one chokepoint every caret-jump in the app routes
+/// through, directly or via [`move_to_offset_and_record_history`], so callers never need to
+/// think about the window themselves.
+fn jump_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
+	set_caret_to_doc_offset(tab, offset);
+	seek_audio_to_position(tab, offset);
+}
+
 /// Moves the caret to `offset`, focuses the document, shows the position, and
 /// records the jump in the session's position history. Returns the resulting
 /// history snapshot unconditionally — gate on `tab.track` at the call site if the
 /// update should only be persisted when history tracking is enabled for this tab.
 pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> HistoryUpdate {
-	tab.text_ctrl.set_focus();
-	tab.text_ctrl.set_insertion_point(offset);
-	tab.text_ctrl.show_position(offset);
-	seek_audio_to_position(tab, offset);
+	jump_to_doc_offset(tab, offset);
 	record_history(tab, offset)
 }
 
@@ -291,11 +331,7 @@ fn apply_navigation_result(
 	};
 	let message = format_nav_found_message(&ann, &context_text, context_index, result.wrapped, next);
 	live_region::announce(live_region_label, &message);
-	let offset = result.offset;
-	tab.text_ctrl.set_focus();
-	tab.text_ctrl.set_insertion_point(offset);
-	tab.text_ctrl.show_position(offset);
-	seek_audio_to_position(tab, offset);
+	jump_to_doc_offset(tab, result.offset);
 	true
 }
 
@@ -310,7 +346,7 @@ pub fn handle_history_navigation(
 		let Some(tab) = dm.active_tab_mut() else {
 			return;
 		};
-		let current_pos = tab.text_ctrl.get_insertion_point();
+		let current_pos = doc_caret(tab);
 		let result = if forward {
 			tab.session.history_go_forward(current_pos)
 		} else {
@@ -319,10 +355,7 @@ pub fn handle_history_navigation(
 		if result.found {
 			// TRANSLATORS: Announced when moving forward/backward through the caret position history
 			let message = if forward { t("Navigated to next position.") } else { t("Navigated to previous position.") };
-			tab.text_ctrl.set_focus();
-			tab.text_ctrl.set_insertion_point(result.offset);
-			tab.text_ctrl.show_position(result.offset);
-			seek_audio_to_position(tab, result.offset);
+			jump_to_doc_offset(tab, result.offset);
 			tab.session.set_stable_position(result.offset);
 			let history_update = tracked_history_update(tab);
 			(message, history_update)
@@ -350,7 +383,7 @@ pub fn handle_marker_navigation(
 		let Some(tab) = dm.active_tab_mut() else {
 			return;
 		};
-		let current_pos = tab.text_ctrl.get_insertion_point();
+		let current_pos = doc_caret(tab);
 		let result = match target {
 			MarkerNavTarget::Section => tab.session.navigate_section(current_pos, wrap, next),
 			MarkerNavTarget::Page => tab.session.navigate_page(current_pos, wrap, next),
@@ -389,7 +422,7 @@ pub fn handle_container_navigation(
 		let Some(tab) = dm.active_tab_mut() else {
 			return;
 		};
-		let current_pos = tab.text_ctrl.get_insertion_point();
+		let current_pos = doc_caret(tab);
 		let result = tab.session.navigate_container(current_pos, to_end);
 		if result.not_supported {
 			// TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
@@ -442,7 +475,7 @@ pub fn handle_bookmark_navigation(
 		let Some(tab) = dm.active_tab_mut() else {
 			return;
 		};
-		let current_pos = tab.text_ctrl.get_insertion_point();
+		let current_pos = doc_caret(tab);
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let (result, has_items) = {
 			let cfg = config.lock().unwrap();
@@ -514,7 +547,7 @@ pub fn handle_bookmark_dialog(
 		let Some(tab) = dm.active_tab_mut() else {
 			return;
 		};
-		let current_pos = tab.text_ctrl.get_insertion_point();
+		let current_pos = doc_caret(tab);
 		let selection = dialogs::show_bookmark_dialog(frame, &tab.session, &Rc::clone(config), current_pos, filter);
 		let Some(selection) = selection else {
 			return;
@@ -554,7 +587,7 @@ pub fn handle_toggle_bookmark(
 			let Some(tab) = dm.active_tab_mut() else {
 				return;
 			};
-			let (start, end) = selected_range(tab.text_ctrl);
+			let (start, end) = doc_selected_range(tab);
 			let path_str = tab.file_path.to_string_lossy().to_string();
 			(start, end, path_str)
 		};
@@ -671,13 +704,12 @@ pub fn handle_seek_audio(
 		current_ms.saturating_sub(amount_ms)
 	};
 	player.seek_to_ms(target_ms);
-	if sync_enabled
-		&& let Some(cursor) = player.timeline().cursor_at_elapsed(target_ms)
-		&& let Some(clip) = player.timeline().clip(cursor.clip)
-	{
-		let position = i64::try_from(clip.start).unwrap_or(0);
-		tab.text_ctrl.set_insertion_point(position);
-		tab.text_ctrl.show_position(position);
+	let sync_position = sync_enabled
+		.then(|| player.timeline().cursor_at_elapsed(target_ms))
+		.flatten()
+		.and_then(|cursor| player.timeline().clip(cursor.clip).map(|clip| i64::try_from(clip.start).unwrap_or(0)));
+	if let Some(position) = sync_position {
+		set_caret_to_doc_offset(tab, position);
 	}
 }
 
@@ -754,7 +786,7 @@ pub fn handle_bookmark_with_note(
 			let Some(tab) = dm.active_tab_mut() else {
 				return;
 			};
-			let (start, end) = selected_range(tab.text_ctrl);
+			let (start, end) = doc_selected_range(tab);
 			let path_str = tab.file_path.to_string_lossy().to_string();
 			(start, end, path_str)
 		};
@@ -794,7 +826,7 @@ pub fn handle_view_note_text(
 			let Some(tab) = dm.active_tab() else {
 				return;
 			};
-			let current_pos = tab.text_ctrl.get_insertion_point();
+			let current_pos = doc_caret(tab);
 			let path_str = tab.file_path.to_string_lossy().to_string();
 			(current_pos, path_str)
 		};
