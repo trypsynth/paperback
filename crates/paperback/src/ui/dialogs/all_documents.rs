@@ -4,7 +4,7 @@ use paperback_core::{config::ConfigManager, parser::build_file_filter_string, ty
 use patois::t;
 use wxdragon::{ffi, prelude::*, timer::Timer, window::FromWindowWithClassName};
 
-use super::{DIALOG_PADDING, KEY_DELETE, KEY_NUMPAD_DELETE, KEY_NUMPAD_ENTER, KEY_RETURN};
+use super::DIALOG_PADDING;
 
 const RECENT_DOCS_LIST_WIDTH: i32 = 800;
 const RECENT_DOCS_LIST_HEIGHT: i32 = 600;
@@ -484,12 +484,12 @@ fn bind_all_documents_keys(
 	let list_for_keys = widgets.list;
 	widgets.list.bind_internal(EventType::KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code() {
-			if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
+			if key == WXK_DELETE || key == WXK_NUMPAD_DELETE {
 				remove_action_for_keys();
 				event.skip(false);
 				return;
 			}
-			if key == KEY_RETURN || key == KEY_NUMPAD_ENTER {
+			if key == WXK_RETURN || key == WXK_NUMPAD_ENTER {
 				open_action_for_keys();
 				event.skip(false);
 				return;
@@ -506,7 +506,7 @@ fn bind_all_documents_keys(
 	let open_action_for_char = Rc::clone(open_action);
 	widgets.list.bind_internal(EventType::CHAR, move |event| {
 		if let Some(key) = event.get_key_code()
-			&& (key == KEY_RETURN || key == KEY_NUMPAD_ENTER)
+			&& (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
 		{
 			open_action_for_char();
 			event.skip(false);

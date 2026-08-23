@@ -1,9 +1,3 @@
-// Shared constants used by sub-modules that import via `use super::`.
-pub(super) const KEY_RETURN: i32 = 13;
-pub(super) const KEY_NUMPAD_ENTER: i32 = 370;
-pub(super) const KEY_DELETE: i32 = 127;
-pub(super) const KEY_NUMPAD_DELETE: i32 = 330;
-
 // `build_ok_cancel_buttons` translates its own "Cancel" label via patois, since
 // wx-utils is itself a `[package.metadata.patois] translatable = true` crate whose
 // `t()` calls patois-build folds into this app's own catalog at build time (see

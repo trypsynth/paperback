@@ -77,12 +77,6 @@ pub fn display_title(tab: &DocumentTab) -> String {
 }
 
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
-const WXK_F10: i32 = 349;
-const WXK_WINDOWS_MENU: i32 = 395;
-#[cfg(target_os = "windows")]
-const WXK_UP: i32 = 315;
-#[cfg(target_os = "windows")]
-const WXK_DOWN: i32 = 317;
 
 pub struct DocumentManager {
 	frame: Frame,

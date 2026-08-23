@@ -38,9 +38,6 @@ use crate::config_ext::{UpdateChannel, get_update_channel};
 use crate::ipc::IpcCommand;
 use crate::{config_ext::set_update_channel, translation_manager::TranslationManager};
 
-const KEY_DELETE: i32 = 127;
-const KEY_NUMPAD_DELETE: i32 = 330;
-
 pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
 pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
 
@@ -168,7 +165,7 @@ impl MainWindow {
 		notebook.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(key_event) = &event
 				&& let Some(key) = key_event.get_key_code()
-				&& (key == KEY_DELETE || key == KEY_NUMPAD_DELETE)
+				&& (key == WXK_DELETE || key == WXK_NUMPAD_DELETE)
 			{
 				let mut dm = dm.lock().unwrap();
 				close_active_document_announced(&mut dm, live_region_label);

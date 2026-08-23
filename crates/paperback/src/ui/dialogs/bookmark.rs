@@ -13,7 +13,7 @@ use paperback_core::{
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, KEY_DELETE, KEY_NUMPAD_DELETE, show_note_entry_dialog};
+use super::{DIALOG_PADDING, show_note_entry_dialog};
 
 pub struct BookmarkDialogResult {
 	pub start: i64,
@@ -487,7 +487,7 @@ fn bind_bookmark_key_actions(
 ) {
 	bookmark_list.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);
-		if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
+		if key == WXK_DELETE || key == WXK_NUMPAD_DELETE {
 			let start = selected_start.get();
 			let end = selected_end.get();
 			if start >= 0 {
