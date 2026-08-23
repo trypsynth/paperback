@@ -137,6 +137,73 @@ pub struct DocumentBuffer {
 	display_len_at_char: Vec<usize>,
 }
 
+/// A part's `[start, end)` span in the assembled buffer's display units — the same units as
+/// `Marker::position` and `DocumentBuffer::current_position` — as returned by
+/// [`DocumentBuffer::from_parts`].
+#[derive(Debug, Clone, Copy)]
+pub struct PartSpan {
+	pub start: usize,
+	pub end: usize,
+}
+
+/// The per-char indexing for one [`DocumentBuffer::from_parts`] part, computed independently of
+/// every other part so it can run on a rayon worker in parallel. All offsets are local to the
+/// part's own text (byte 0 / char 0 / display 0 is the part's first char), not including the
+/// optional trailing newline `from_parts` adds when placing the part into the buffer.
+struct PartIndex {
+	/// `char_to_byte[i]` is the local byte offset of the part's `i`-th char.
+	char_to_byte: Vec<usize>,
+	/// `display_len_at_char[i]` is the local display-unit offset of the part's `i`-th char.
+	display_len_at_char: Vec<usize>,
+	/// Local char indices of every `\n` in the part's own text.
+	newline_chars: Vec<usize>,
+	byte_len: usize,
+	char_len: usize,
+	display_len: usize,
+	/// Whether `from_parts` needs to add a `\n` after this part — mirrors `append`'s callers that
+	/// append a separator when the just-appended text didn't already end with one.
+	trailing_newline: bool,
+}
+
+fn index_part(text: &str) -> PartIndex {
+	let mut char_to_byte = Vec::with_capacity(text.len());
+	let mut display_len_at_char = Vec::with_capacity(text.len());
+	let mut newline_chars = Vec::new();
+	let mut char_len = 0usize;
+	let mut display_len = 0usize;
+	for (byte_idx, c) in text.char_indices() {
+		char_to_byte.push(byte_idx);
+		display_len_at_char.push(display_len);
+		if c == '\n' {
+			newline_chars.push(char_len);
+		}
+		char_len += 1;
+		display_len += ch_width(c);
+	}
+	let trailing_newline = !text.is_empty() && !text.ends_with('\n');
+	PartIndex {
+		char_to_byte,
+		display_len_at_char,
+		newline_chars,
+		byte_len: text.len(),
+		char_len,
+		display_len,
+		trailing_newline,
+	}
+}
+
+/// Splits `slice` into consecutive, disjoint sub-slices with the given lengths (which must sum to
+/// `slice.len()`), so each can be handed to a different rayon task and written into independently.
+fn split_mut_slices<'a, T>(mut slice: &'a mut [T], lens: &[usize]) -> Vec<&'a mut [T]> {
+	let mut out = Vec::with_capacity(lens.len());
+	for &len in lens {
+		let (head, tail) = slice.split_at_mut(len);
+		out.push(head);
+		slice = tail;
+	}
+	out
+}
+
 impl DocumentBuffer {
 	#[must_use]
 	pub const fn new() -> Self {
@@ -213,6 +280,138 @@ impl DocumentBuffer {
 		self.display_len_at_char.push(display_count);
 		self.content_display_len = display_count;
 		self.content_char_count += count;
+	}
+
+	/// Builds a buffer from independent parts (e.g. one EPUB spine item's converted text each) in
+	/// parallel across cores, equivalent to calling [`Self::append`] with each part in order (each
+	/// non-empty part gets a trailing `\n` if it doesn't already end with one, exactly as `append`
+	/// callers that need a separator do today). Returns the buffer alongside each part's
+	/// display-unit `[start, end)` span, so callers that need per-part offsets (to place markers,
+	/// resolve id positions, etc. — the reason `append` couldn't already be called in parallel, since
+	/// those offsets come from the buffer's running position) don't need to re-derive them.
+	///
+	/// This trades `append`'s single incremental pass over the whole document for: a parallel pass
+	/// indexing each part's own chars, a cheap sequential prefix-sum over parts (not chars) to place
+	/// them, and a parallel pass filling preallocated buffers at those positions.
+	#[must_use]
+	pub fn from_parts(parts: Vec<String>) -> (Self, Vec<PartSpan>) {
+		let indexed: Vec<(String, PartIndex)> = parts
+			.into_par_iter()
+			.map(|text| {
+				let idx = index_part(&text);
+				(text, idx)
+			})
+			.collect();
+
+		struct PartStart {
+			byte: usize,
+			char: usize,
+			display: usize,
+		}
+		let mut starts = Vec::with_capacity(indexed.len());
+		let mut spans = Vec::with_capacity(indexed.len());
+		let mut byte_acc = 0usize;
+		let mut char_acc = 0usize;
+		let mut display_acc = 0usize;
+		for (_, idx) in &indexed {
+			let extra = usize::from(idx.trailing_newline);
+			starts.push(PartStart { byte: byte_acc, char: char_acc, display: display_acc });
+			spans.push(PartSpan { start: display_acc, end: display_acc + idx.display_len + extra });
+			byte_acc += idx.byte_len + extra;
+			char_acc += idx.char_len + extra;
+			display_acc += idx.display_len + extra; // ch_width('\n') == 1 on every platform
+		}
+
+		if char_acc == 0 {
+			// No part contributed any text, so no `append` equivalent ever ran; match `new()`'s
+			// all-empty (not one-boundary-entry) shape rather than building degenerate arrays.
+			return (Self::new(), spans);
+		}
+
+		let mut content_bytes = vec![0u8; byte_acc];
+		let mut char_to_byte_map = vec![0usize; char_acc + 1];
+		let mut display_len_at_char = vec![0usize; char_acc + 1];
+		let (char_to_byte_main, char_to_byte_boundary) = char_to_byte_map.split_at_mut(char_acc);
+		let (display_main, display_boundary) = display_len_at_char.split_at_mut(char_acc);
+		char_to_byte_boundary[0] = byte_acc;
+		display_boundary[0] = display_acc;
+
+		let byte_lens: Vec<usize> =
+			indexed.iter().map(|(_, idx)| idx.byte_len + usize::from(idx.trailing_newline)).collect();
+		let char_lens: Vec<usize> =
+			indexed.iter().map(|(_, idx)| idx.char_len + usize::from(idx.trailing_newline)).collect();
+		let content_slices = split_mut_slices(content_bytes.as_mut_slice(), &byte_lens);
+		let char_to_byte_slices = split_mut_slices(char_to_byte_main, &char_lens);
+		let display_slices = split_mut_slices(display_main, &char_lens);
+
+		let mut newline_char_positions = Vec::new();
+		for ((_, idx), start) in indexed.iter().zip(&starts) {
+			for &pos in &idx.newline_chars {
+				newline_char_positions.push(start.char + pos);
+			}
+			if idx.trailing_newline {
+				newline_char_positions.push(start.char + idx.char_len);
+			}
+		}
+
+		struct PartWork<'a> {
+			text: &'a str,
+			idx: &'a PartIndex,
+			start_byte: usize,
+			start_display: usize,
+			content: &'a mut [u8],
+			char_to_byte: &'a mut [usize],
+			display: &'a mut [usize],
+		}
+		let work: Vec<PartWork<'_>> = indexed
+			.iter()
+			.zip(&starts)
+			.zip(content_slices)
+			.zip(char_to_byte_slices)
+			.zip(display_slices)
+			.map(|((((entry, start), content), char_to_byte), display)| {
+				let (text, idx) = entry;
+				PartWork {
+					text,
+					idx,
+					start_byte: start.byte,
+					start_display: start.display,
+					content,
+					char_to_byte,
+					display,
+				}
+			})
+			.collect();
+
+		work.into_par_iter().for_each(|w| {
+			w.content[..w.idx.byte_len].copy_from_slice(w.text.as_bytes());
+			if w.idx.trailing_newline {
+				w.content[w.idx.byte_len] = b'\n';
+			}
+			for i in 0..w.idx.char_len {
+				w.char_to_byte[i] = w.start_byte + w.idx.char_to_byte[i];
+				w.display[i] = w.start_display + w.idx.display_len_at_char[i];
+			}
+			if w.idx.trailing_newline {
+				w.char_to_byte[w.idx.char_len] = w.start_byte + w.idx.byte_len;
+				w.display[w.idx.char_len] = w.start_display + w.idx.display_len;
+			}
+		});
+
+		let content = String::from_utf8(content_bytes)
+			.expect("each part is a valid &str and concatenating valid UTF-8 stays valid UTF-8");
+		(
+			Self {
+				content,
+				markers: Vec::new(),
+				content_display_len: display_acc,
+				content_char_count: char_acc,
+				newline_char_positions,
+				char_to_byte_map,
+				display_len_at_char,
+			},
+			spans,
+		)
 	}
 
 	#[must_use]
@@ -1084,6 +1283,72 @@ mod tests {
 		assert_eq!(buffer.total_display_len(), 4);
 		for i in 0..=4 {
 			assert_eq!(buffer.display_index_for_char(i), i, "char {i}");
+		}
+	}
+
+	/// Mirrors how `epub.rs::convert_spine_items` used to build a buffer one section at a time
+	/// with sequential `append` calls (a trailing `\n` added per non-empty part unless it already
+	/// ends with one), so `from_parts_matches_sequential_append_for_any_parts` can check the new
+	/// parallel path agrees with it exactly.
+	fn naive_buffer_from_parts(parts: &[&str]) -> (DocumentBuffer, Vec<PartSpan>) {
+		let mut buffer = DocumentBuffer::new();
+		let mut spans = Vec::with_capacity(parts.len());
+		for part in parts {
+			let start = buffer.current_position();
+			if !part.is_empty() {
+				buffer.append(part);
+				if !buffer.content.ends_with('\n') {
+					buffer.append("\n");
+				}
+			}
+			spans.push(PartSpan { start, end: buffer.current_position() });
+		}
+		(buffer, spans)
+	}
+
+	fn assert_buffers_equivalent(a: &DocumentBuffer, b: &DocumentBuffer) {
+		assert_eq!(a.content, b.content);
+		assert_eq!(a.char_count(), b.char_count());
+		assert_eq!(a.total_display_len(), b.total_display_len());
+		assert_eq!(a.newline_positions(), b.newline_positions());
+		for i in 0..=a.char_count() {
+			assert_eq!(a.byte_index_for_char(i), b.byte_index_for_char(i), "byte_index_for_char({i})");
+			assert_eq!(a.display_index_for_char(i), b.display_index_for_char(i), "display_index_for_char({i})");
+		}
+		for byte in 0..=a.content.len() {
+			assert_eq!(a.char_index_for_byte(byte), b.char_index_for_byte(byte), "char_index_for_byte({byte})");
+		}
+		for display in 0..=a.total_display_len() {
+			assert_eq!(
+				a.char_index_for_display(display),
+				b.char_index_for_display(display),
+				"char_index_for_display({display})"
+			);
+		}
+	}
+
+	#[rstest]
+	#[case(&[])]
+	#[case(&[""])]
+	#[case(&["", "", ""])]
+	#[case(&["a"])]
+	#[case(&["a", "b", "c"])]
+	#[case(&["no trailing newline", "another one", "and another"])]
+	#[case(&["ends with newline\n", "also ends with newline\n"])]
+	#[case(&["mixed\n", "no newline here", "\n", "final"])]
+	#[case(&["", "empty parts", "", "sprinkled", "", "in", "", ""])]
+	#[case(&["multi\nline\ntext\nhere", "and\nmore\nlines"])]
+	#[case(&["münchhausen café naïve", "日本語 text here", "emoji 🎉🎉 straddling", "naïve again"])]
+	#[case(&["🎉", "🎉🎉", "a🎉b", "\n🎉\n"])]
+	fn from_parts_matches_sequential_append_for_any_parts(#[case] parts: &[&str]) {
+		let owned: Vec<String> = parts.iter().map(ToString::to_string).collect();
+		let (naive_buffer, naive_spans) = naive_buffer_from_parts(parts);
+		let (parallel_buffer, parallel_spans) = DocumentBuffer::from_parts(owned);
+		assert_buffers_equivalent(&naive_buffer, &parallel_buffer);
+		assert_eq!(naive_spans.len(), parallel_spans.len());
+		for (i, (naive, parallel)) in naive_spans.iter().zip(&parallel_spans).enumerate() {
+			assert_eq!(naive.start, parallel.start, "part {i} start");
+			assert_eq!(naive.end, parallel.end, "part {i} end");
 		}
 	}
 }

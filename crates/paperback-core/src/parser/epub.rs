@@ -217,20 +217,33 @@ fn convert_spine_items(
 			},
 		)
 		.collect();
-	let mut buffer = DocumentBuffer::new();
-	let mut id_positions = HashMap::new();
-	let mut sections = Vec::new();
+
+	// Keep each spine item's original index (for the "Section N" label, which reflects spine
+	// position even across skipped items) alongside its manifest item and converted section.
+	let mut ok_entries: Vec<(usize, &ManifestItem, SectionContent)> = Vec::with_capacity(converted.len());
 	let mut conversion_errors = Vec::new();
 	for (idx, slot) in converted.into_iter().enumerate() {
-		let (item, section) = match slot {
-			Ok(pair) => pair,
+		match slot {
+			Ok((item, section)) => ok_entries.push((idx, item, section)),
 			Err(err) => {
 				tracing::warn!(error = %err, "skipping epub spine item that could not be read or converted");
 				conversion_errors.push(err);
-				continue;
 			}
-		};
-		let section_start = buffer.current_position();
+		}
+	}
+
+	// `DocumentBuffer::from_parts` builds the buffer's content and per-char indices for every
+	// section in parallel, in one pass, instead of appending them one at a time; it hands back
+	// each section's `[start, end)` span so markers and id positions (below) can still be placed
+	// relative to where each section landed.
+	let texts: Vec<String> = ok_entries.iter_mut().map(|(_, _, section)| std::mem::take(&mut section.text)).collect();
+	let (mut buffer, spans) = DocumentBuffer::from_parts(texts);
+
+	let mut id_positions = HashMap::new();
+	let mut sections = Vec::new();
+	for (entry, span) in ok_entries.iter().zip(&spans) {
+		let (idx, item, section) = entry;
+		let section_start = span.start;
 		let section_label = format!("Section {}", idx + 1);
 		buffer.add_marker(
 			Marker::new(MarkerType::SectionBreak, section_start)
@@ -243,7 +256,7 @@ fn convert_spine_items(
 			id_positions.entry(id.clone()).or_insert(absolute);
 			id_positions.insert(format!("{}#{id}", item.path), absolute);
 		}
-		add_converter_markers_excluding_links(&mut buffer, &section, section_start);
+		add_converter_markers_excluding_links(&mut buffer, section, section_start);
 		for link in &section.links {
 			let resolved = resolve_href(&item.path, &link.reference);
 			buffer.add_marker(
@@ -252,14 +265,7 @@ fn convert_spine_items(
 					.with_reference(resolved),
 			);
 		}
-		if !section.text.is_empty() {
-			buffer.append(&section.text);
-			if !buffer.content.ends_with('\n') {
-				buffer.append("\n");
-			}
-		}
-		let section_end = buffer.current_position();
-		sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: section_end });
+		sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: span.end });
 	}
 	SpineConversionResult { buffer, id_positions, sections, conversion_errors }
 }
