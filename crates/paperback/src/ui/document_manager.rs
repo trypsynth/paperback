@@ -247,7 +247,15 @@ impl DocumentManager {
 			config.get_letter_spacing(),
 			config.get_text_alignment(),
 		);
+		// `add_page(select: true)` can synchronously fire the notebook's page-changed event
+		// before returning (e.g. while it's still the only page, or otherwise reentering here
+		// on this same thread), and that handler path can itself want `self.config` again.
+		// `Mutex` isn't reentrant, so holding this lock across the call self-deadlocks the app
+		// forever on documents whose formatting makes that reentrant path reachable - drop it
+		// first and reacquire once `add_page` returns.
+		drop(config);
 		self.notebook.add_page(&panel, &title, true, None);
+		let config = self.config.lock().unwrap();
 		let path_str = path.to_string_lossy();
 		let nav_history = config.get_navigation_history(&path_str);
 		session.set_history(&nav_history.positions, nav_history.index);
