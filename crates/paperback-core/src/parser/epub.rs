@@ -127,7 +127,7 @@ impl Parser for EpubParser {
 			// TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 			.ok_or_else(|| anyhow::anyhow!(t("OPF package element missing")))?;
 		let (manifest, spine, nav_path, ncx_path, metadata) = parse_package(package_node, &opf_dir);
-		let mut conversion = convert_spine_items(&mut archive, &manifest, &spine, context.render_tables_inline);
+		let mut conversion = convert_spine_items(&context.file_path, &manifest, &spine, context.render_tables_inline);
 		if conversion.sections.is_empty() {
 			let reason = if conversion.conversion_errors.is_empty() {
 				// TRANSLATORS: Reason given when an EPUB has no spine items that could be read
@@ -188,28 +188,34 @@ impl Parser for EpubParser {
 	}
 }
 
-fn convert_spine_items<R: Read + Seek>(
-	archive: &mut ZipArchive<R>,
+/// Reads and converts every spine item to text. Each rayon worker opens its own independent
+/// `ZipArchive` (via `map_init`, so this happens once per task rather than once per item) so the
+/// zip-read I/O and the HTML-to-text conversion both run across cores instead of the read being
+/// serialized through one shared archive handle before conversion can start.
+fn convert_spine_items(
+	file_path: &str,
 	manifest: &HashMap<String, ManifestItem>,
 	spine: &[String],
 	render_tables_inline: bool,
 ) -> SpineConversionResult {
-	let entries: Vec<Result<(&ManifestItem, String), String>> = spine
-		.iter()
-		.map(|idref| {
-			let item = manifest.get(idref).ok_or_else(|| format!("missing manifest item for {idref}"))?;
-			let data = read_zip_entry_by_name(archive, &item.path).map_err(|err| format!("{} ({err})", item.path))?;
-			Ok((item, data))
-		})
-		.collect();
-	let converted: Vec<Result<(&ManifestItem, SectionContent), String>> = entries
-		.into_par_iter()
-		.map(|entry| {
-			let (item, data) = entry?;
-			let section =
-				convert_section(&data, render_tables_inline).map_err(|err| format!("{} ({err})", item.path))?;
-			Ok((item, section))
-		})
+	let converted: Vec<Result<(&ManifestItem, SectionContent), String>> = spine
+		.par_iter()
+		.map_init(
+			|| {
+				File::open(file_path)
+					.map_err(|err| err.to_string())
+					.and_then(|file| ZipArchive::new(BufReader::new(file)).map_err(|err| err.to_string()))
+			},
+			|archive_result, idref| {
+				let item = manifest.get(idref).ok_or_else(|| format!("missing manifest item for {idref}"))?;
+				let archive = archive_result.as_mut().map_err(|err| format!("{} ({err})", item.path))?;
+				let data =
+					read_zip_entry_by_name(archive, &item.path).map_err(|err| format!("{} ({err})", item.path))?;
+				let section =
+					convert_section(&data, render_tables_inline).map_err(|err| format!("{} ({err})", item.path))?;
+				Ok((item, section))
+			},
+		)
 		.collect();
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
