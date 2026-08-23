@@ -742,53 +742,6 @@ pub fn handle_change_seek_amount(config: &Rc<Mutex<ConfigManager>>, live_region_
 	live_region::announce(live_region_label, &message);
 }
 
-#[cfg(test)]
-mod tests {
-	use paperback_core::audio::{AudioLocation, AudioTimelineBuilder};
-
-	use super::*;
-
-	/// Two "files", each one placeholder-duration clip covering its whole 24h declared length
-	/// (like `build_plain_audio_zip_document`'s clips), so a real file length far shorter than
-	/// that placeholder is what has to trigger the spill, not the document's own clip bounds.
-	fn plain_audio_zip_timeline() -> AudioTimeline {
-		const PLACEHOLDER_MS: u64 = 24 * 60 * 60 * 1000;
-		let mut builder = AudioTimelineBuilder::new();
-		let file1 = builder.add_source(AudioLocation::File("chapter1.mp3".to_string()), None);
-		let file2 = builder.add_source(AudioLocation::File("chapter2.mp3".to_string()), None);
-		builder.add_clip(file1, 0, PLACEHOLDER_MS, 0, 1);
-		builder.add_clip(file2, 0, PLACEHOLDER_MS, 1, 2);
-		builder.build()
-	}
-
-	#[test]
-	fn spill_overflow_into_next_source_is_none_when_the_seek_stays_within_the_real_file() {
-		let timeline = plain_audio_zip_timeline();
-		// 30s into a 45s file, seeking 10s: lands at 40s, still short of the real 45s end.
-		assert_eq!(spill_overflow_into_next_source(&timeline, 0, 30_000, 45_000, 10_000), None);
-	}
-
-	#[test]
-	fn spill_overflow_into_next_source_is_none_exactly_at_the_real_end() {
-		let timeline = plain_audio_zip_timeline();
-		assert_eq!(spill_overflow_into_next_source(&timeline, 0, 35_000, 45_000, 10_000), None);
-	}
-
-	#[test]
-	fn spill_overflow_into_next_source_lands_the_overflow_into_the_next_files_start() {
-		let timeline = plain_audio_zip_timeline();
-		// 40s into a 45s file, seeking 10s: 5s of that seek belongs to whatever plays next.
-		let target = spill_overflow_into_next_source(&timeline, 0, 40_000, 45_000, 10_000);
-		assert_eq!(target, timeline.elapsed_for_source_position(1, 5_000));
-	}
-
-	#[test]
-	fn spill_overflow_into_next_source_is_none_past_the_last_file() {
-		let timeline = plain_audio_zip_timeline();
-		assert_eq!(spill_overflow_into_next_source(&timeline, 1, 40_000, 45_000, 10_000), None);
-	}
-}
-
 pub fn handle_bookmark_with_note(
 	frame: &Frame,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
@@ -861,4 +814,51 @@ pub fn handle_view_note_text(
 		return;
 	}
 	dialogs::show_view_note_dialog(frame, &note);
+}
+
+#[cfg(test)]
+mod tests {
+	use paperback_core::audio::{AudioLocation, AudioTimelineBuilder};
+
+	use super::*;
+
+	/// Two "files", each one placeholder-duration clip covering its whole 24h declared length
+	/// (like `build_plain_audio_zip_document`'s clips), so a real file length far shorter than
+	/// that placeholder is what has to trigger the spill, not the document's own clip bounds.
+	fn plain_audio_zip_timeline() -> AudioTimeline {
+		const PLACEHOLDER_MS: u64 = 24 * 60 * 60 * 1000;
+		let mut builder = AudioTimelineBuilder::new();
+		let file1 = builder.add_source(AudioLocation::File("chapter1.mp3".to_string()), None);
+		let file2 = builder.add_source(AudioLocation::File("chapter2.mp3".to_string()), None);
+		builder.add_clip(file1, 0, PLACEHOLDER_MS, 0, 1);
+		builder.add_clip(file2, 0, PLACEHOLDER_MS, 1, 2);
+		builder.build()
+	}
+
+	#[test]
+	fn spill_overflow_into_next_source_is_none_when_the_seek_stays_within_the_real_file() {
+		let timeline = plain_audio_zip_timeline();
+		// 30s into a 45s file, seeking 10s: lands at 40s, still short of the real 45s end.
+		assert_eq!(spill_overflow_into_next_source(&timeline, 0, 30_000, 45_000, 10_000), None);
+	}
+
+	#[test]
+	fn spill_overflow_into_next_source_is_none_exactly_at_the_real_end() {
+		let timeline = plain_audio_zip_timeline();
+		assert_eq!(spill_overflow_into_next_source(&timeline, 0, 35_000, 45_000, 10_000), None);
+	}
+
+	#[test]
+	fn spill_overflow_into_next_source_lands_the_overflow_into_the_next_files_start() {
+		let timeline = plain_audio_zip_timeline();
+		// 40s into a 45s file, seeking 10s: 5s of that seek belongs to whatever plays next.
+		let target = spill_overflow_into_next_source(&timeline, 0, 40_000, 45_000, 10_000);
+		assert_eq!(target, timeline.elapsed_for_source_position(1, 5_000));
+	}
+
+	#[test]
+	fn spill_overflow_into_next_source_is_none_past_the_last_file() {
+		let timeline = plain_audio_zip_timeline();
+		assert_eq!(spill_overflow_into_next_source(&timeline, 1, 40_000, 45_000, 10_000), None);
+	}
 }
