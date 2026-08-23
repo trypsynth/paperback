@@ -643,6 +643,39 @@ impl DocumentManager {
 		}
 	}
 
+	/// Reloads the active tab's window if the caret has drifted near a loaded edge, regardless of
+	/// what moved it there. Every other reload trigger in this app is wired to a specific input
+	/// path (arrow keys, heading/bookmark jumps, ...), which covers keyboard and mouse navigation
+	/// but not a screen reader's own text-walking: NVDA's Say-All (and similar continuous-reading
+	/// features) for an edit control typically drives RichEdit's UI Automation text pattern
+	/// directly, never touching this app's key handlers. Without this, reaching a loaded window's
+	/// edge during Say-All would look identical to reaching the real end of the document - nothing
+	/// would ever trigger a reload, and reading would just silently stop mid-paragraph with 16
+	/// million characters still unread. Polling and reacting to the caret's actual position sidesteps
+	/// needing to know how it got there. `RELOAD_MARGIN` (a quarter of the window) is generous
+	/// enough that even fast reading has time to reload well before actually running out of loaded
+	/// text, given this runs on the same 250ms cadence as `pump_audio`.
+	///
+	/// Repositioning the caret after a reload (needed so `text_ctrl`'s local position still points
+	/// at the same document-absolute spot) does mean this fires a caret-moved accessibility event on
+	/// every crossing - if that turns out to interrupt an in-progress Say-All rather than just
+	/// silently extending it, that's a real, currently-unverified risk; hasn't been tested against
+	/// an actual screen reader yet.
+	pub fn pump_window_reload(&mut self) {
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let doc_len = tab.session.document_len();
+		if !tab.window.needs_reload_for(doc_pos, doc_len) {
+			return;
+		}
+		reload_window_around(tab, doc_pos);
+		let local = tab.window.to_local(doc_pos);
+		tab.text_ctrl.set_insertion_point(local);
+		tab.text_ctrl.show_position(local);
+	}
+
 	/// Pauses audio on every tab except the active one, so switching tabs can't leave two
 	/// documents narrating at once (the active tab may have audio of its own still playing,
 	/// which this leaves untouched).

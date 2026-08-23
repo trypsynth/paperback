@@ -698,6 +698,14 @@ impl MainWindow {
 			}
 		});
 		audio_sync_timer.start(250, false);
+		let window_reload_timer = Rc::new(Timer::new(frame));
+		let dm_for_window_reload = Rc::clone(doc_manager);
+		window_reload_timer.on_tick(move |_| {
+			if let Ok(mut dm) = dm_for_window_reload.try_lock() {
+				dm.pump_window_reload();
+			}
+		});
+		window_reload_timer.start(250, false);
 		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
 		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
@@ -1849,7 +1857,7 @@ impl MainWindow {
 				}
 			}
 		});
-		vec![sleep_timer, status_update_timer, audio_sync_timer]
+		vec![sleep_timer, status_update_timer, audio_sync_timer, window_reload_timer]
 	}
 }
 
