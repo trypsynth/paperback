@@ -13,7 +13,9 @@ data class DocumentTabState(
 	val documentUri: String,
 	val docKey: String,
 	val initialScrollIndex: Int = 0,
-	val savedPosition: Long = 0L
+	val savedPosition: Long = 0L,
+	/** True when read-aloud should play this document's recorded narration instead of TTS. */
+	val hasAudio: Boolean = false
 )
 
 data class RecentDocumentItem(

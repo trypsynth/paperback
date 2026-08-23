@@ -192,6 +192,12 @@ pub struct DocumentConfig {
 	pub path: String,
 	#[serde(default)]
 	pub last_position: i64,
+	/// Elapsed milliseconds into a recorded narration, for documents that have one. Kept
+	/// separately from `last_position` because the caret and the audio are independent axes:
+	/// resuming an audiobook should return to what was last *heard*, which a text position can
+	/// only approximate to the nearest clip. `None` for documents with no audio.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub audio_time_ms: Option<u64>,
 	#[serde(default)]
 	pub navigation_history: Vec<i64>,
 	#[serde(default)]
@@ -257,5 +263,16 @@ mod tests {
 		// Old config files without the field must load as None.
 		let parsed: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
 		assert_eq!(parsed.temporary_bookmark, None);
+	}
+
+	#[test]
+	fn audio_time_round_trips_and_defaults_to_none_when_missing() {
+		let doc = DocumentConfig { path: "book.zip".into(), audio_time_ms: Some(999), ..DocumentConfig::default() };
+		let parsed: DocumentConfig = toml::from_str(&toml::to_string(&doc).unwrap()).unwrap();
+		assert_eq!(parsed.audio_time_ms, Some(999));
+		// Text-only documents and older config files carry no field at all.
+		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
+		assert_eq!(bare.audio_time_ms, None);
+		assert!(!toml::to_string(&bare).unwrap().contains("audio_time_ms"));
 	}
 }

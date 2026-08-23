@@ -45,12 +45,35 @@ pub fn read_zip_entry_by_name_with_password<R: Read + Seek>(
 	Ok(convert_to_utf8(&contents))
 }
 
+/// Reads a zip entry's raw bytes, unlike `read_zip_entry_by_name` which assumes text and
+/// converts it to UTF-8. For binary payloads such as audio clips.
+pub fn read_zip_entry_bytes<R: Read + Seek>(archive: &mut ZipArchive<R>, name: &str) -> Result<Vec<u8>> {
+	let mut entry = archive.by_name(name).with_context(|| format!("Failed to get entry '{name}'"))?;
+	let mut contents = Vec::new();
+	entry.read_to_end(&mut contents).with_context(|| format!("Failed to read entry '{name}'"))?;
+	Ok(contents)
+}
+
 pub fn extract_zip_entry_to_file<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	name: &str,
 	output_path: &Path,
 ) -> Result<()> {
-	let mut entry = archive.by_name(name).with_context(|| format!("Failed to get entry '{name}'"))?;
+	extract_zip_entry_to_file_with_password(archive, name, output_path, None)
+}
+
+pub fn extract_zip_entry_to_file_with_password<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	name: &str,
+	output_path: &Path,
+	password: Option<&str>,
+) -> Result<()> {
+	let mut entry = match password {
+		Some(pass) => {
+			archive.by_name_decrypt(name, pass.as_bytes()).with_context(|| format!("Failed to get entry '{name}'"))?
+		}
+		None => archive.by_name(name).with_context(|| format!("Failed to get entry '{name}'"))?,
+	};
 	if let Some(parent) = output_path.parent() {
 		fs::create_dir_all(parent).with_context(|| format!("Failed to create directory '{}'", parent.display()))?;
 	}
@@ -130,6 +153,19 @@ mod tests {
 	}
 
 	#[test]
+	fn read_zip_entry_bytes_reads_raw_contents() {
+		let mut archive = build_test_archive();
+		let contents = read_zip_entry_bytes(&mut archive, "foo.txt").expect("read entry");
+		assert_eq!(contents, b"hello world");
+	}
+
+	#[test]
+	fn read_zip_entry_bytes_reports_missing_entry() {
+		let mut archive = build_test_archive();
+		assert!(read_zip_entry_bytes(&mut archive, "missing.txt").is_err());
+	}
+
+	#[test]
 	fn extract_zip_entry_to_file_writes_to_nested_path() {
 		let mut archive = build_test_archive();
 		let dir = TempDir::new("zip");
@@ -159,6 +195,48 @@ mod tests {
 		extract_zip_entry_to_file(&mut archive, "foo.txt", &output_path).expect("extract entry");
 		let contents = fs::read_to_string(&output_path).expect("read output");
 		assert_eq!(contents, "hello world");
+	}
+
+	fn build_encrypted_test_archive() -> ZipArchive<Cursor<Vec<u8>>> {
+		let mut cursor = Cursor::new(Vec::new());
+		{
+			let mut writer = ZipWriter::new(&mut cursor);
+			let options = FileOptions::<()>::default().with_aes_encryption(zip::AesMode::Aes256, "hunter2");
+			writer.start_file("secret.mp3", options).expect("start file");
+			writer.write_all(b"secret-audio-bytes").expect("write file");
+			writer.finish().expect("finish zip");
+		}
+		cursor.set_position(0);
+		ZipArchive::new(cursor).expect("open zip")
+	}
+
+	#[test]
+	fn extract_zip_entry_to_file_with_password_decrypts_with_the_right_password() {
+		let mut archive = build_encrypted_test_archive();
+		let dir = TempDir::new("zip");
+		let output_path = dir.path().join("secret.mp3");
+		extract_zip_entry_to_file_with_password(&mut archive, "secret.mp3", &output_path, Some("hunter2"))
+			.expect("extract entry");
+		let contents = fs::read(&output_path).expect("read output");
+		assert_eq!(contents, b"secret-audio-bytes");
+	}
+
+	#[test]
+	fn extract_zip_entry_to_file_with_password_rejects_the_wrong_password() {
+		let mut archive = build_encrypted_test_archive();
+		let dir = TempDir::new("zip");
+		let output_path = dir.path().join("secret.mp3");
+		assert!(
+			extract_zip_entry_to_file_with_password(&mut archive, "secret.mp3", &output_path, Some("wrong")).is_err()
+		);
+	}
+
+	#[test]
+	fn extract_zip_entry_to_file_with_password_reports_a_missing_password() {
+		let mut archive = build_encrypted_test_archive();
+		let dir = TempDir::new("zip");
+		let output_path = dir.path().join("secret.mp3");
+		assert!(extract_zip_entry_to_file_with_password(&mut archive, "secret.mp3", &output_path, None).is_err());
 	}
 
 	#[test]

@@ -540,6 +540,30 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
+	/// Records how far into its narration an audio document had played. `None` leaves any
+	/// stored value alone, so a document that hasn't started playing can't wipe it.
+	pub fn set_document_audio_time(&self, path: &str, time_ms: Option<u64>) {
+		if !self.initialized {
+			return;
+		}
+		let Some(time_ms) = time_ms else { return };
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, key, path).audio_time_ms = Some(time_ms);
+		}
+		self.dirty.set(true);
+	}
+
+	#[must_use]
+	pub fn get_document_audio_time(&self, path: &str) -> Option<u64> {
+		if !self.initialized {
+			return None;
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).and_then(|d| d.audio_time_ms)
+	}
+
 	#[must_use]
 	pub fn get_document_position(&self, path: &str) -> i64 {
 		if !self.initialized {
@@ -1018,5 +1042,29 @@ mod tests {
 
 		let missing_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Missing));
 		assert_eq!(missing_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&missing_path]);
+	}
+
+	#[test]
+	fn audio_time_set_get_and_overwrite() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		let path = "book.zip";
+		assert_eq!(config.get_document_audio_time(path), None);
+		config.set_document_audio_time(path, Some(24_739_688));
+		assert_eq!(config.get_document_audio_time(path), Some(24_739_688));
+		config.set_document_audio_time(path, Some(24_800_000));
+		assert_eq!(config.get_document_audio_time(path), Some(24_800_000));
+	}
+
+	/// A player that hasn't established a position yet reports `None`, and that must not wipe
+	/// the stored time, since otherwise merely opening a book would discard where it was up to.
+	#[test]
+	fn audio_time_none_does_not_clear_a_stored_value() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		let path = "book.zip";
+		config.set_document_audio_time(path, Some(5_000));
+		config.set_document_audio_time(path, None);
+		assert_eq!(config.get_document_audio_time(path), Some(5_000));
 	}
 }

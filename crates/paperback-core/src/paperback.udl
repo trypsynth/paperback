@@ -77,6 +77,27 @@ dictionary SearchResultFfi {
 	i64 position;
 };
 
+dictionary AudioClipFfi {
+	boolean found;
+	i32 source;
+	i64 clip_begin_ms;
+	i64 clip_end_ms;
+	i64 start;
+	i64 end;
+};
+
+dictionary AudioCursorFfi {
+	boolean found;
+	i32 clip_index;
+	i64 seek_ms;
+};
+
+dictionary AudioPointFfi {
+	boolean found;
+	i64 position;
+	i64 time_ms;
+};
+
 dictionary StatusInfo {
 	i64 line_number;
 	i64 character_number;
@@ -131,6 +152,18 @@ interface DocumentSession {
 
 	sequence<TocEntry> get_toc();
 
+	boolean has_audio_ffi();
+	i32 audio_source_count_ffi();
+	string audio_source_direct_path_ffi(i32 index);
+	boolean audio_extract_source_ffi(i32 index, string output_path);
+	i32 audio_clip_count_ffi();
+	AudioClipFfi audio_clip_ffi(i32 index);
+	i64 audio_total_duration_ms_ffi();
+	AudioCursorFfi audio_cursor_at_elapsed_ffi(i64 elapsed_ms);
+	AudioPointFfi audio_point_for_position_ffi(i64 position);
+	i64 audio_elapsed_for_source_position_ffi(i32 source, i64 raw_ms);
+	i32 audio_next_source_after_ffi(i32 current_source);
+
 	DocumentStatsFfi get_stats_ffi();
 	sequence<SegmentTypeFfi> get_supported_segment_types_ffi();
 
@@ -158,6 +191,8 @@ interface ConfigManagerFfi {
 	void associate_uri_with_local_file(string uri, string local_path);
 	void set_document_position(string path, i64 position);
 	i64 get_document_position(string path);
+	void set_document_audio_time_ffi(string path, i64 time_ms);
+	i64 get_document_audio_time_ffi(string path);
 	void set_document_password(string path, string password);
 	string get_document_password(string path);
 	void add_recent_document(string path);

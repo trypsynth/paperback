@@ -470,5 +470,6 @@ fn do_find(
 	text_ctrl.set_focus();
 	text_ctrl.set_selection(start, end);
 	text_ctrl.show_position(start);
+	doc_manager.lock().unwrap().seek_audio_to_caret();
 	state.dialog.show(false);
 }

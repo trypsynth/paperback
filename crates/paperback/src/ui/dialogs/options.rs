@@ -17,6 +17,11 @@ use crate::{
 	translation_manager::TranslationManager,
 };
 
+/// Selectable audio seek amounts, in seconds, shown in the Options dialog and indexed by
+/// `audio_seek_amount_ctrl`'s selection. Also the step sequence `navigation::handle_change_seek_amount`
+/// walks when nudging the seek amount via keyboard shortcut, so the two stay in lockstep.
+pub(crate) const AUDIO_SEEK_AMOUNTS_SECONDS: [i32; 9] = [5, 10, 30, 60, 120, 300, 600, 1800, 3600];
+
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
 	pub restore_previous_documents: bool,
@@ -29,6 +34,8 @@ pub struct OptionsDialogResult {
 	pub line_start_navigation: bool,
 	pub check_for_updates_on_startup: bool,
 	pub bookmark_sounds: bool,
+	pub sync_caret_to_audio: bool,
+	pub audio_seek_amount_seconds: i32,
 	pub auto_reload_documents: bool,
 	pub recent_documents_to_show: i32,
 	pub reading_speed_wpm: i32,
@@ -57,6 +64,8 @@ struct OptionsDialogUi {
 	line_start_nav_check: CheckBox,
 	check_for_updates_check: CheckBox,
 	bookmark_sounds_check: CheckBox,
+	sync_caret_to_audio_check: CheckBox,
+	audio_seek_amount_ctrl: Choice,
 	auto_reload_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
 	reading_speed_ctrl: SpinCtrl,
@@ -93,6 +102,11 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	let text_alignment = ui.text_alignment_ctrl.get_selection().unwrap_or(0) as i32;
 	let letter_spacing = ui.letter_spacing_ctrl.get_selection().unwrap_or(0) as i32;
 	let paragraph_spacing = ui.paragraph_spacing_ctrl.get_selection().unwrap_or(0) as i32;
+	let audio_seek_amount_seconds = ui
+		.audio_seek_amount_ctrl
+		.get_selection()
+		.and_then(|idx| AUDIO_SEEK_AMOUNTS_SECONDS.get(idx as usize).copied())
+		.unwrap_or(10);
 	Some(OptionsDialogResult {
 		restore_previous_documents: ui.restore_docs_check.is_checked(),
 		word_wrap: ui.word_wrap_check.is_checked(),
@@ -104,6 +118,8 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		line_start_navigation: ui.line_start_nav_check.is_checked(),
 		check_for_updates_on_startup: ui.check_for_updates_check.is_checked(),
 		bookmark_sounds: ui.bookmark_sounds_check.is_checked(),
+		sync_caret_to_audio: ui.sync_caret_to_audio_check.is_checked(),
+		audio_seek_amount_seconds,
 		auto_reload_documents: ui.auto_reload_check.is_checked(),
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
@@ -152,6 +168,42 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let bookmark_sounds_check =
 		// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
+	let sync_caret_to_audio_check =
+		// TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+		CheckBox::builder(&reading_panel).with_label(&t("&Sync caret to audio playback")).build();
+	// TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+	let audio_seek_amount_label_text = t("&Audio seek amount:");
+	let audio_seek_amount_label = StaticText::builder(&reading_panel).with_label(&audio_seek_amount_label_text).build();
+	let audio_seek_amount_ctrl = Choice::builder(&reading_panel).build();
+	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+	audio_seek_amount_ctrl.append(&t("5 seconds"));
+	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+	audio_seek_amount_ctrl.append(&t("10 seconds"));
+	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+	audio_seek_amount_ctrl.append(&t("30 seconds"));
+	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+	audio_seek_amount_ctrl.append(&t("1 minute"));
+	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+	audio_seek_amount_ctrl.append(&t("2 minutes"));
+	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+	audio_seek_amount_ctrl.append(&t("5 minutes"));
+	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+	audio_seek_amount_ctrl.append(&t("10 minutes"));
+	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+	audio_seek_amount_ctrl.append(&t("30 minutes"));
+	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+	audio_seek_amount_ctrl.append(&t("1 hour"));
+	#[cfg(target_os = "macos")]
+	audio_seek_amount_ctrl
+		.set_accessibility_label(audio_seek_amount_label_text.replace('&', "").trim_end_matches(':').trim());
+	let audio_seek_amount_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	audio_seek_amount_sizer.add(
+		&audio_seek_amount_label,
+		0,
+		SizerFlag::AlignCenterVertical | SizerFlag::Right,
+		DIALOG_PADDING,
+	);
+	audio_seek_amount_sizer.add(&audio_seek_amount_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	let check_for_updates_check =
 		// TRANSLATORS: Option to check for app updates automatically on startup
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
@@ -182,9 +234,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
 	reading_sizer.add(&line_start_nav_check, 0, SizerFlag::All, option_padding);
-	for check in [&compact_go_menu_check, &bookmark_sounds_check] {
+	for check in [&compact_go_menu_check, &bookmark_sounds_check, &sync_caret_to_audio_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
+	reading_sizer.add_sizer(&audio_seek_amount_sizer, 0, SizerFlag::All, option_padding);
 	let reading_speed_label =
 		// TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 		StaticText::builder(&reading_panel).with_label(&t("&Reading speed (words per minute):")).build();
@@ -379,6 +432,14 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
 	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
 	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
+	sync_caret_to_audio_check.set_value(config.get_app_bool("sync_caret_to_audio", true));
+	let stored_seek_amount = config.get_app_int("audio_seek_amount_seconds", 10);
+	let seek_amount_index = AUDIO_SEEK_AMOUNTS_SECONDS
+		.iter()
+		.position(|&secs| secs == stored_seek_amount)
+		.or_else(|| AUDIO_SEEK_AMOUNTS_SECONDS.iter().position(|&secs| secs == 10))
+		.unwrap_or(1);
+	audio_seek_amount_ctrl.set_selection(u32::try_from(seek_amount_index).unwrap_or(1));
 	auto_reload_check.set_value(config.get_app_bool("auto_reload_documents", true));
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
@@ -494,6 +555,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		line_start_nav_check,
 		check_for_updates_check,
 		bookmark_sounds_check,
+		sync_caret_to_audio_check,
+		audio_seek_amount_ctrl,
 		auto_reload_check,
 		recent_docs_ctrl,
 		reading_speed_ctrl,

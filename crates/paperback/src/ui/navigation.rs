@@ -46,7 +46,16 @@ pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> 
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(offset);
 	tab.text_ctrl.show_position(offset);
+	seek_audio_to_position(tab, offset);
 	record_history(tab, offset)
+}
+
+/// Keeps a document's audio in step with the caret, called after every jump that moves the
+/// insertion point. A no-op for documents with no recorded audio.
+fn seek_audio_to_position(tab: &mut DocumentTab, offset: i64) {
+	if let Some(player) = tab.audio_player.as_mut() {
+		player.seek_to_position(usize::try_from(offset).unwrap_or(0));
+	}
 }
 
 /// Persists a [`HistoryUpdate`] built by [`move_to_offset_and_record_history`] (or
@@ -242,7 +251,7 @@ fn format_nav_found_message(
 }
 
 fn apply_navigation_result(
-	tab: &DocumentTab,
+	tab: &mut DocumentTab,
 	result: &NavigationResult,
 	target: MarkerNavTarget,
 	next: bool,
@@ -283,6 +292,7 @@ fn apply_navigation_result(
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(offset);
 	tab.text_ctrl.show_position(offset);
+	seek_audio_to_position(tab, offset);
 	true
 }
 
@@ -309,6 +319,7 @@ pub fn handle_history_navigation(
 			tab.text_ctrl.set_focus();
 			tab.text_ctrl.set_insertion_point(result.offset);
 			tab.text_ctrl.show_position(result.offset);
+			seek_audio_to_position(tab, result.offset);
 			tab.session.set_stable_position(result.offset);
 			let history_update = tracked_history_update(tab);
 			(message, history_update)
@@ -554,6 +565,130 @@ pub fn handle_toggle_bookmark(
 	drop(cfg);
 	// TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 	let message = if existed { t("Bookmark removed.") } else { t("Bookmark added.") };
+	live_region::announce(live_region_label, &message);
+}
+
+pub fn handle_toggle_play_pause_audio(doc_manager: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+	let mut dm = doc_manager.lock().unwrap();
+	let has_audio = {
+		let Some(tab) = dm.active_tab_mut() else { return };
+		if let Some(player) = tab.audio_player.as_mut() {
+			player.toggle();
+			true
+		} else {
+			false
+		}
+	};
+	drop(dm);
+	if !has_audio {
+		// TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+		live_region::announce(live_region_label, &t("This document has no audio."));
+	}
+}
+
+/// Skips the active document's audio narration backward or forward by the configured seek
+/// amount (`audio_seek_amount_seconds`, default 10). When "sync caret to audio" is on, the
+/// caret follows the new audio position, mirroring what `pump_audio` does during playback;
+/// this is the one-shot equivalent for an explicit seek rather than passive following.
+pub fn handle_seek_audio(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+	forward: bool,
+) {
+	let (sync_enabled, amount_seconds) = {
+		let cfg = config.lock().unwrap();
+		(cfg.get_app_bool("sync_caret_to_audio", true), cfg.get_app_int("audio_seek_amount_seconds", 10))
+	};
+	let amount_ms = u64::try_from(amount_seconds.max(1)).unwrap_or(10) * 1000;
+
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else { return };
+	let Some(player) = tab.audio_player.as_mut() else {
+		drop(dm);
+		// TRANSLATORS: Announced when trying to seek audio on a document that has none
+		live_region::announce(live_region_label, &t("This document has no audio."));
+		return;
+	};
+	let Some(current_ms) = player.resume_point_ms() else {
+		drop(dm);
+		// TRANSLATORS: Announced when trying to seek audio before playback has established a position
+		live_region::announce(live_region_label, &t("Audio hasn't started playing yet."));
+		return;
+	};
+	let total_ms = player.timeline().total_duration_ms();
+	let target_ms =
+		if forward { current_ms.saturating_add(amount_ms).min(total_ms) } else { current_ms.saturating_sub(amount_ms) };
+	player.seek_to_ms(target_ms);
+	if sync_enabled
+		&& let Some(cursor) = player.timeline().cursor_at_elapsed(target_ms)
+		&& let Some(clip) = player.timeline().clip(cursor.clip)
+	{
+		let position = i64::try_from(clip.start).unwrap_or(0);
+		tab.text_ctrl.set_insertion_point(position);
+		tab.text_ctrl.show_position(position);
+	}
+}
+
+/// A human-readable label for one of `dialogs::AUDIO_SEEK_AMOUNTS_SECONDS`, matching the text
+/// shown for it in the Options dialog's seek-amount dropdown, for the live-region announcement
+/// made when the amount changes via keyboard shortcut.
+fn seek_amount_label(seconds: i32) -> String {
+	match seconds {
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		5 => t("5 seconds"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		10 => t("10 seconds"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		30 => t("30 seconds"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		60 => t("1 minute"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		120 => t("2 minutes"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		300 => t("5 minutes"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		600 => t("10 minutes"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		1800 => t("30 minutes"),
+		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+		3600 => t("1 hour"),
+		other => format!("{other}s"),
+	}
+}
+
+/// Nudges the configured audio seek amount (used by `handle_seek_audio`) one step up or down
+/// through the same preset list shown in the Options dialog's dropdown, and announces the new
+/// value. A global setting rather than a per-document action, so unlike `handle_seek_audio` this
+/// doesn't need an active document or audio player.
+pub fn handle_change_seek_amount(config: &Rc<Mutex<ConfigManager>>, live_region_label: StaticText, increase: bool) {
+	let presets = dialogs::AUDIO_SEEK_AMOUNTS_SECONDS;
+	let cfg = config.lock().unwrap();
+	let current = cfg.get_app_int("audio_seek_amount_seconds", 10);
+	let index = presets.iter().position(|&secs| secs == current).unwrap_or_else(|| {
+		presets
+			.iter()
+			.enumerate()
+			.min_by_key(|&(_, &secs)| (secs - current).abs())
+			.map_or(0, |(nearest_index, _)| nearest_index)
+	});
+	let new_index = if increase { (index + 1).min(presets.len() - 1) } else { index.saturating_sub(1) };
+	let new_value = presets[new_index];
+	let at_limit = new_index == index;
+	cfg.set_app_int("audio_seek_amount_seconds", new_value);
+	cfg.flush();
+	drop(cfg);
+	let label = seek_amount_label(new_value);
+	let message = if at_limit && increase {
+		// TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+		t("Audio seek amount: {} (maximum).").replace("{}", &label)
+	} else if at_limit {
+		// TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+		t("Audio seek amount: {} (minimum).").replace("{}", &label)
+	} else {
+		// TRANSLATORS: Announced after changing the audio seek amount via keyboard shortcut; {} is the new amount, e.g. "30 seconds"
+		t("Audio seek amount: {}.").replace("{}", &label)
+	};
 	live_region::announce(live_region_label, &message);
 }
 

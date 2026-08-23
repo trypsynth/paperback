@@ -60,6 +60,10 @@ pub struct MainWindow {
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
 	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
+	/// Recurring timers, held for the window's lifetime. `Timer`'s `Drop` destroys the
+	/// underlying `wxTimer`, which stops it, so a timer that is only started and then dropped
+	/// at the end of the function that set it up never fires again.
+	_timers: Vec<Rc<Timer<Frame>>>,
 }
 
 #[cfg(target_os = "windows")]
@@ -93,7 +97,7 @@ impl MainWindow {
 		let find_dialog = Rc::new(Mutex::new(None));
 		#[cfg(target_os = "windows")]
 		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(&config.lock().unwrap().get_hotkey())));
-		Self::bind_menu_events(
+		let timers = Self::bind_menu_events(
 			&frame,
 			&doc_manager,
 			&config,
@@ -136,6 +140,7 @@ impl MainWindow {
 			}
 			update_title_from_manager(&frame_copy, &dm_ref);
 			dm_ref.reset_sound_line();
+			dm_ref.pause_inactive_audio();
 		});
 		let dm_for_activate = Rc::clone(&doc_manager);
 		let activate_reload_guard = Rc::clone(&reload_guard);
@@ -195,7 +200,7 @@ impl MainWindow {
 			#[cfg(target_os = "windows")]
 			let hotkey_for_close = Rc::clone(&hotkey_handle);
 			frame.on_close(move |event| {
-				let dm = dm_for_close.lock().unwrap();
+				let mut dm = dm_for_close.lock().unwrap();
 				if let Some(tab) = dm.active_tab() {
 					let path = tab.file_path.to_string_lossy();
 					let cfg = config_for_close.lock().unwrap();
@@ -203,6 +208,10 @@ impl MainWindow {
 					cfg.flush();
 				}
 				dm.save_all_positions();
+				// Stop audio and move focus off the per-tab child controls (the hidden audio
+				// control included) before the frame tears its children down.
+				dm.stop_all_audio();
+				frame.set_focus();
 				#[cfg(target_os = "macos")]
 				if let WindowEventData::General(ref ev) = event
 					&& ev.can_veto()
@@ -251,6 +260,7 @@ impl MainWindow {
 			_find_dialog: find_dialog,
 			#[cfg(target_os = "windows")]
 			_hotkey_handle: hotkey_handle,
+			_timers: timers,
 		}
 	}
 
@@ -602,7 +612,7 @@ impl MainWindow {
 		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
 		live_region_label: StaticText,
 		#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
-	) {
+	) -> Vec<Rc<Timer<Frame>>> {
 		let frame_copy = *frame;
 		let dm = Rc::clone(doc_manager);
 		let config = Rc::clone(config);
@@ -615,10 +625,31 @@ impl MainWindow {
 		let sleep_timer_duration_minutes = Rc::new(Cell::new(0i32));
 		let sleep_timer_for_tick = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_tick = Rc::clone(&sleep_timer_running);
+		let sleep_timer_start_for_tick = Rc::clone(&sleep_timer_start_time);
+		let sleep_timer_duration_for_tick = Rc::clone(&sleep_timer_duration_minutes);
 		let frame_for_timer = *frame;
 		let dm_for_timer = Rc::clone(doc_manager);
 		let config_for_timer = Rc::clone(&config);
 		sleep_timer.on_tick(move |_| {
+			// `Timer::on_tick` binds `EventType::TIMER` on the *owner*, not on the timer, and
+			// wxdragon gives its timers no distinguishing id, so every timer parented to this
+			// frame delivers its ticks to every handler bound here. This one shuts the app down,
+			// so it has to confirm the deadline really passed rather than trust that being
+			// called means its own timer fired.
+			if !sleep_timer_running_for_tick.get() {
+				return;
+			}
+			let now_ms = SystemTime::now()
+				.duration_since(UNIX_EPOCH)
+				.ok()
+				.and_then(|d| i64::try_from(d.as_millis()).ok())
+				.unwrap_or(0);
+			let deadline_ms = sleep_timer_start_for_tick
+				.get()
+				.saturating_add(i64::from(sleep_timer_duration_for_tick.get()) * 60_000);
+			if now_ms < deadline_ms {
+				return;
+			}
 			tracing::info!("sleep timer fired, closing application");
 			sleep_timer_running_for_tick.set(false);
 			sleep_timer_for_tick.stop();
@@ -659,6 +690,14 @@ impl MainWindow {
 			);
 		});
 		status_update_timer.start(1000, false);
+		let audio_sync_timer = Rc::new(Timer::new(frame));
+		let dm_for_audio_sync = Rc::clone(doc_manager);
+		audio_sync_timer.on_tick(move |_| {
+			if let Ok(mut dm) = dm_for_audio_sync.try_lock() {
+				dm.pump_audio();
+			}
+		});
+		audio_sync_timer.start(250, false);
 		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
 		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
@@ -1063,6 +1102,21 @@ impl MainWindow {
 					let msg = if new_state { t("Word wrap on.") } else { t("Word wrap off.") };
 					live_region::announce(live_region_label, &msg);
 					dm.lock().unwrap().restore_focus();
+				}
+				menu_ids::PLAY_PAUSE_AUDIO => {
+					navigation::handle_toggle_play_pause_audio(&dm, live_region_label);
+				}
+				menu_ids::SEEK_AUDIO_FORWARD => {
+					navigation::handle_seek_audio(&dm, &config, live_region_label, true);
+				}
+				menu_ids::SEEK_AUDIO_BACKWARD => {
+					navigation::handle_seek_audio(&dm, &config, live_region_label, false);
+				}
+				menu_ids::INCREASE_AUDIO_SEEK_AMOUNT => {
+					navigation::handle_change_seek_amount(&config, live_region_label, true);
+				}
+				menu_ids::DECREASE_AUDIO_SEEK_AMOUNT => {
+					navigation::handle_change_seek_amount(&config, live_region_label, false);
 				}
 				menu_ids::TOGGLE_FULL_SCREEN => {
 					let new_state = !frame_copy.is_full_screen();
@@ -1521,6 +1575,8 @@ impl MainWindow {
 					cfg.set_app_bool("line_start_navigation", options.line_start_navigation);
 					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
 					cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
+					cfg.set_app_bool("sync_caret_to_audio", options.sync_caret_to_audio);
+					cfg.set_app_int("audio_seek_amount_seconds", options.audio_seek_amount_seconds);
 					cfg.set_app_bool("auto_reload_documents", options.auto_reload_documents);
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
@@ -1789,6 +1845,7 @@ impl MainWindow {
 				}
 			}
 		});
+		vec![sleep_timer, status_update_timer, audio_sync_timer]
 	}
 }
 

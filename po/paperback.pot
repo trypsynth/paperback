@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 00:25+0000\n"
+"POT-Creation-Date: 2026-08-23 02:06+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -349,6 +349,52 @@ msgstr ""
 msgid "Play &sounds on bookmarks and notes"
 msgstr ""
 
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+msgid "&Sync caret to audio playback"
+msgstr ""
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+msgid "&Audio seek amount:"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "5 seconds"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "10 seconds"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "30 seconds"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 minute duration
+msgid "1 minute"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "2 minutes"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "5 minutes"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "10 minutes"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "30 minutes"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 hour duration
+msgid "1 hour"
+msgstr ""
+
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr ""
@@ -609,16 +655,8 @@ msgstr ""
 msgid "View Note"
 msgstr ""
 
-#. TRANSLATORS: Singular label for 1 hour duration
-msgid "1 hour"
-msgstr ""
-
 #. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
 msgid "hours"
-msgstr ""
-
-#. TRANSLATORS: Singular label for 1 minute duration
-msgid "1 minute"
 msgstr ""
 
 #. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
@@ -1412,6 +1450,24 @@ msgstr ""
 msgid "Toggle word wrap"
 msgstr ""
 
+msgid "&Play/Pause Audio"
+msgstr ""
+
+msgid "Play or pause this document's audio narration"
+msgstr ""
+
+msgid "Seek Audio &Forward"
+msgstr ""
+
+msgid "Skip the audio narration forward"
+msgstr ""
+
+msgid "Seek Audio &Backward"
+msgstr ""
+
+msgid "Skip the audio narration backward"
+msgstr ""
+
 msgid "&Full Screen"
 msgstr ""
 
@@ -1654,6 +1710,15 @@ msgid "Bookmark removed."
 msgstr ""
 
 msgid "Bookmark added."
+msgstr ""
+
+#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+#. TRANSLATORS: Announced when trying to seek audio on a document that has none
+msgid "This document has no audio."
+msgstr ""
+
+#. TRANSLATORS: Announced when trying to seek audio before playback has established a position
+msgid "Audio hasn't started playing yet."
 msgstr ""
 
 msgid "Enter bookmark note:"
@@ -1990,12 +2055,6 @@ msgid "Failed to launch update script"
 msgstr ""
 
 msgid "Unknown update file format."
-msgstr ""
-
-msgid "&Play/Pause Audio"
-msgstr ""
-
-msgid "Play or pause this document's audio narration"
 msgstr ""
 
 msgid "Previous Section\t["
