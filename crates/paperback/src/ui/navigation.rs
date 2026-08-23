@@ -681,13 +681,12 @@ pub fn handle_change_seek_amount(config: &Rc<Mutex<ConfigManager>>, live_region_
 	let label = seek_amount_label(new_value);
 	let message = if at_limit && increase {
 		// TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-		t("Audio seek amount: {} (maximum).").replace("{}", &label)
+		t("{} (maximum)").replace("{}", &label)
 	} else if at_limit {
 		// TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-		t("Audio seek amount: {} (minimum).").replace("{}", &label)
+		t("{} (minimum)").replace("{}", &label)
 	} else {
-		// TRANSLATORS: Announced after changing the audio seek amount via keyboard shortcut; {} is the new amount, e.g. "30 seconds"
-		t("Audio seek amount: {}.").replace("{}", &label)
+		label
 	};
 	live_region::announce(live_region_label, &message);
 }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-23 02:06+0530\n"
+"POT-Creation-Date: 2026-08-22 19:39-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -358,40 +358,49 @@ msgid "&Audio seek amount:"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "5 seconds"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "10 seconds"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "30 seconds"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Singular label for 1 minute duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "1 minute"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "2 minutes"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "5 minutes"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "10 minutes"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "30 minutes"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Singular label for 1 hour duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "1 hour"
 msgstr ""
 
@@ -1468,6 +1477,18 @@ msgstr ""
 msgid "Skip the audio narration backward"
 msgstr ""
 
+msgid "&Increase Audio Seek Amount"
+msgstr ""
+
+msgid "Increase how far seeking the audio narration moves"
+msgstr ""
+
+msgid "&Decrease Audio Seek Amount"
+msgstr ""
+
+msgid "Decrease how far seeking the audio narration moves"
+msgstr ""
+
 msgid "&Full Screen"
 msgstr ""
 
@@ -1719,6 +1740,14 @@ msgstr ""
 
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 msgid "Audio hasn't started playing yet."
+msgstr ""
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+msgid "{} (maximum)"
+msgstr ""
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+msgid "{} (minimum)"
 msgstr ""
 
 msgid "Enter bookmark note:"
