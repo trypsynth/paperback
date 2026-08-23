@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-18 16:53+0000\n"
+"POT-Creation-Date: 2026-08-22 20:02-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -349,6 +349,65 @@ msgstr ""
 msgid "Play &sounds on bookmarks and notes"
 msgstr ""
 
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+msgid "&Sync caret to audio playback"
+msgstr ""
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+msgid "&Audio seek amount:"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "5 seconds"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "10 seconds"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "30 seconds"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 minute duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "1 minute"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "2 minutes"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "5 minutes"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "10 minutes"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "30 minutes"
+msgstr ""
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 hour duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "1 hour"
+msgstr ""
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr ""
+
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr ""
@@ -609,16 +668,8 @@ msgstr ""
 msgid "View Note"
 msgstr ""
 
-#. TRANSLATORS: Singular label for 1 hour duration
-msgid "1 hour"
-msgstr ""
-
 #. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
 msgid "hours"
-msgstr ""
-
-#. TRANSLATORS: Singular label for 1 minute duration
-msgid "1 minute"
 msgstr ""
 
 #. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
@@ -1412,6 +1463,36 @@ msgstr ""
 msgid "Toggle word wrap"
 msgstr ""
 
+msgid "&Play/Pause Audio"
+msgstr ""
+
+msgid "Play or pause this document's audio narration"
+msgstr ""
+
+msgid "Seek Audio &Forward"
+msgstr ""
+
+msgid "Skip the audio narration forward"
+msgstr ""
+
+msgid "Seek Audio &Backward"
+msgstr ""
+
+msgid "Skip the audio narration backward"
+msgstr ""
+
+msgid "&Increase Audio Seek Amount"
+msgstr ""
+
+msgid "Increase how far seeking the audio narration moves"
+msgstr ""
+
+msgid "&Decrease Audio Seek Amount"
+msgstr ""
+
+msgid "Decrease how far seeking the audio narration moves"
+msgstr ""
+
 msgid "&Full Screen"
 msgstr ""
 
@@ -1656,6 +1737,23 @@ msgstr ""
 msgid "Bookmark added."
 msgstr ""
 
+#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+#. TRANSLATORS: Announced when trying to seek audio on a document that has none
+msgid "This document has no audio."
+msgstr ""
+
+#. TRANSLATORS: Announced when trying to seek audio before playback has established a position
+msgid "Audio hasn't started playing yet."
+msgstr ""
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+msgid "{} (maximum)"
+msgstr ""
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+msgid "{} (minimum)"
+msgstr ""
+
 msgid "Enter bookmark note:"
 msgstr ""
 
@@ -1689,6 +1787,13 @@ msgstr ""
 
 #. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 msgid "Exit Paperback"
+msgstr ""
+
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+msgid "Figure"
+msgstr ""
+
+msgid "Image"
 msgstr ""
 
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
@@ -1739,59 +1844,8 @@ msgstr ""
 msgid "Failed to convert HTML to text: {}"
 msgstr ""
 
-#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-msgid "Figure"
-msgstr ""
-
-msgid "Image"
-msgstr ""
-
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 msgid "Failed to convert Markdown to text: {}"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
-msgid "File too short"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-msgid "Invalid record offsets"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file has no records
-msgid "No records found"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-msgid "Invalid Record 0 offsets"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-msgid "Invalid Record 0"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-msgid "No MOBI header"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-msgid "Invalid MOBI identifier"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-msgid "Invalid content record range"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-msgid "Invalid HUFF/CDIC records"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-msgid "Missing HUFF parameters in header"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-msgid "Unsupported compression mode ({})"
 msgstr ""
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
@@ -1842,6 +1896,50 @@ msgstr ""
 msgid "Decode stack overflow"
 msgstr ""
 
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+msgid "File too short"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+msgid "Invalid record offsets"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+msgid "No records found"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+msgid "Invalid Record 0 offsets"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+msgid "Invalid Record 0"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+msgid "No MOBI header"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+msgid "Invalid MOBI identifier"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+msgid "Invalid content record range"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+msgid "Invalid HUFF/CDIC records"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+msgid "Missing HUFF parameters in header"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+msgid "Unsupported compression mode ({})"
+msgstr ""
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
 msgstr ""
@@ -1881,14 +1979,6 @@ msgstr ""
 msgid "Failed to parse RTF document: {}"
 msgstr ""
 
-#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
-msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr ""
-
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-msgid "No readable content found in the ZIP archive"
-msgstr ""
-
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
 msgstr ""
@@ -1913,12 +2003,20 @@ msgstr ""
 msgid "No readable text content found"
 msgstr ""
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+msgid "No readable content found in the ZIP archive"
+msgstr ""
+
 #. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
 msgid "File is encrypted and requires a password"
 msgstr ""
 
 #. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
 msgid "Decryption failed (wrong password?): {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
 msgstr ""
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
@@ -1990,12 +2088,6 @@ msgid "Failed to launch update script"
 msgstr ""
 
 msgid "Unknown update file format."
-msgstr ""
-
-msgid "&Play/Pause Audio"
-msgstr ""
-
-msgid "Play or pause this document's audio narration"
 msgstr ""
 
 msgid "Previous Section\t["

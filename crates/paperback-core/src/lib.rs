@@ -15,9 +15,9 @@ pub use crate::{
 	export::ExportFormat,
 	ffi_config::ConfigManagerFfi,
 	session::{
-		DocumentError, DocumentSession, DocumentStatsFfi, HeadingTreeFfi, HeadingTreeItemFfi, LineMarker, LinkAction,
-		LinkActivationResult, LinkListFfi, LinkListItemFfi, SearchOptionsFfi, SearchResultFfi, SegmentDirectionFfi,
-		SegmentTypeFfi, StatusInfo, TextSegmentFfi, TocEntry,
+		AudioClipFfi, AudioCursorFfi, AudioPointFfi, DocumentError, DocumentSession, DocumentStatsFfi, HeadingTreeFfi,
+		HeadingTreeItemFfi, LineMarker, LinkAction, LinkActivationResult, LinkListFfi, LinkListItemFfi,
+		SearchOptionsFfi, SearchResultFfi, SegmentDirectionFfi, SegmentTypeFfi, StatusInfo, TextSegmentFfi, TocEntry,
 	},
 };
 

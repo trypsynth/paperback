@@ -6,7 +6,7 @@ use crate::{
 	document::{Document, DocumentBuffer, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
-		html_to_text::{HtmlSourceMode, HtmlToText},
+		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
 	t,

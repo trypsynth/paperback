@@ -1,5 +1,5 @@
 #[cfg(target_os = "windows")]
-use std::ptr::{addr_of_mut, copy_nonoverlapping};
+use std::ptr::addr_of_mut;
 use std::{
 	cell::Cell,
 	fs,
@@ -22,13 +22,17 @@ use wxdragon::{
 };
 
 #[cfg(target_os = "windows")]
-use super::rtf_write::{self, RtfFontInfo};
+use super::rtf::{
+	stream::stream_rtf_into_ctrl,
+	write::{self, RtfFontInfo},
+};
 use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
 	menu_ids,
 	navigation::{move_to_offset_and_record_history, persist_navigation_history},
 	status,
 };
+use crate::audio_player::AudioPlayer;
 
 pub struct DocumentTab {
 	pub panel: Panel,
@@ -36,6 +40,7 @@ pub struct DocumentTab {
 	pub session: DocumentSession,
 	pub file_path: PathBuf,
 	pub track: bool,
+	pub audio_player: Option<AudioPlayer>,
 	disk_fingerprint: Option<FileFingerprint>,
 }
 
@@ -82,6 +87,7 @@ pub struct DocumentManager {
 	live_region_label: StaticText,
 	last_position_save: Cell<Option<Instant>>,
 	last_sound_position: Cell<Option<i64>>,
+	last_audio_seek_position: Cell<Option<i64>>,
 	preferred_column: Cell<Option<i64>>,
 	recently_closed: Vec<PathBuf>,
 }
@@ -101,6 +107,7 @@ impl DocumentManager {
 			live_region_label,
 			last_position_save: Cell::new(None),
 			last_sound_position: Cell::new(None),
+			last_audio_seek_position: Cell::new(None),
 			preferred_column: Cell::new(None),
 			recently_closed: Vec::new(),
 		}
@@ -240,16 +247,32 @@ impl DocumentManager {
 			config.get_letter_spacing(),
 			config.get_text_alignment(),
 		);
+		// `add_page(select: true)` can synchronously fire the notebook's page-changed event
+		// before returning (e.g. while it's still the only page, or otherwise reentering here
+		// on this same thread), and that handler path can itself want `self.config` again.
+		// `Mutex` isn't reentrant, so holding this lock across the call self-deadlocks the app
+		// forever on documents whose formatting makes that reentrant path reachable - drop it
+		// first and reacquire once `add_page` returns.
+		drop(config);
 		self.notebook.add_page(&panel, &title, true, None);
+		let config = self.config.lock().unwrap();
 		let path_str = path.to_string_lossy();
 		let nav_history = config.get_navigation_history(&path_str);
 		session.set_history(&nav_history.positions, nav_history.index);
+		let audio_player = session.audio().cloned().and_then(|timeline| match AudioPlayer::new(&panel, timeline) {
+			Ok(player) => Some(player),
+			Err(err) => {
+				tracing::warn!(error = %err, "failed to initialize audio playback for this document");
+				None
+			}
+		});
 		self.tabs.push(DocumentTab {
 			panel,
 			text_ctrl,
 			session,
 			file_path: path.to_path_buf(),
 			track,
+			audio_player,
 			disk_fingerprint: read_fingerprint(path),
 		});
 		if !password.is_empty() {
@@ -268,6 +291,21 @@ impl DocumentManager {
 			0
 		};
 		self.tabs[tab_index].session.set_stable_position(initial_pos);
+		// Resume the narration from the time that was actually reached, not from the caret.
+		// Deriving it from the caret only lands on the start of whichever clip contains that
+		// position, so it loses however much of that clip had already played, and loses
+		// everything since the last explicit jump if the caret wasn't following the audio.
+		let saved_audio_time = config.get_document_audio_time(&path_str);
+		if let Some(player) = self.tabs[tab_index].audio_player.as_mut() {
+			match saved_audio_time {
+				Some(time_ms) => {
+					player.seek_to_ms(time_ms);
+				}
+				None => {
+					player.seek_to_position(usize::try_from(initial_pos).unwrap_or(0));
+				}
+			}
+		}
 		if track {
 			config.add_recent_document(&path_str);
 			config.set_document_opened(&path_str, true);
@@ -292,12 +330,21 @@ impl DocumentManager {
 			if save_state && tab.track {
 				let position = tab.text_ctrl.get_insertion_point();
 				config.set_document_position(&path_str, position);
+				config.set_document_audio_time(
+					&path_str,
+					tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms),
+				);
 				let (history, history_index) = tab.session.get_history();
 				config.set_navigation_history(&path_str, history, history_index);
 				config.set_document_opened(&path_str, false);
 			}
 			config.remove_opened_document(&path_str);
 			config.flush();
+		}
+		if let Some(tab) = self.tabs.get_mut(index)
+			&& let Some(player) = tab.audio_player.as_mut()
+		{
+			player.stop();
 		}
 		let _page = self.notebook.get_page(index);
 		self.notebook.remove_page(index);
@@ -334,10 +381,21 @@ impl DocumentManager {
 			let position = tab.text_ctrl.get_insertion_point();
 			let path_str = tab.file_path.to_string_lossy();
 			config.set_document_position(&path_str, position);
+			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
 			let (history, history_index) = tab.session.get_history();
 			config.set_navigation_history(&path_str, history, history_index);
 		}
 		config.flush();
+	}
+
+	/// Stops every tab's audio ahead of the app closing, winding the native media sessions
+	/// down deliberately rather than as a side effect of the frame being destroyed.
+	pub fn stop_all_audio(&mut self) {
+		for tab in &mut self.tabs {
+			if let Some(player) = tab.audio_player.as_mut() {
+				player.stop();
+			}
+		}
 	}
 
 	pub fn save_position_throttled(&self) {
@@ -354,6 +412,7 @@ impl DocumentManager {
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
 			config.set_document_position(&path_str, position);
+			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
 			config.flush();
 		}
 		self.last_position_save.set(Some(now));
@@ -508,6 +567,85 @@ impl DocumentManager {
 		}
 	}
 
+	/// Seeks the active tab's audio to the caret, if it has any and the caret moved since the
+	/// last call. Only explicit "jump to X" actions call this, not plain caret movement, so
+	/// arrowing around the document doesn't drag the audio along.
+	pub fn seek_audio_to_caret(&mut self) {
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		let position = tab.text_ctrl.get_insertion_point();
+		if self.last_audio_seek_position.get() == Some(position) {
+			return;
+		}
+		self.last_audio_seek_position.set(Some(position));
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		let Some(player) = tab.audio_player.as_mut() else {
+			return;
+		};
+		player.seek_to_position(usize::try_from(position).unwrap_or(0));
+	}
+
+	/// When "sync caret to audio" is on, moves the caret to follow playback. Called from a
+	/// recurring timer; a no-op for documents with no audio.
+	///
+	/// Uses `try_lock` on `config` rather than `lock`: this runs on the main thread on every
+	/// timer tick, and a modal dialog (e.g. Options) pumps the OS message loop while it holds
+	/// that same lock across `show_modal`. A blocking `lock` here would deadlock the UI thread
+	/// against itself the moment a tick landed mid-dialog; skipping the tick is harmless since
+	/// it just retries in 250ms.
+	pub fn pump_audio(&mut self) {
+		let Ok(config) = self.config.try_lock() else {
+			return;
+		};
+		let sync_enabled = config.get_app_bool("sync_caret_to_audio", true);
+		drop(config);
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		let Some(player) = tab.audio_player.as_ref() else {
+			return;
+		};
+		if !sync_enabled || !player.is_playing() {
+			return;
+		}
+		let Some(elapsed) = player.elapsed_ms() else {
+			tracing::warn!("sync caret to audio: playing but no elapsed position available");
+			return;
+		};
+		let Some(cursor) = player.timeline().cursor_at_elapsed(elapsed) else {
+			tracing::warn!(elapsed, "sync caret to audio: no clip covers the current elapsed time");
+			return;
+		};
+		let Some(position) = player.timeline().clip(cursor.clip).map(|clip| clip.start) else {
+			tracing::warn!(clip_index = cursor.clip, "sync caret to audio: cursor names a clip that doesn't exist");
+			return;
+		};
+		let current = tab.text_ctrl.get_insertion_point();
+		if i64::try_from(position).ok() != Some(current) {
+			let target = i64::try_from(position).unwrap_or(current);
+			tab.text_ctrl.set_insertion_point(target);
+			tab.text_ctrl.show_position(target);
+		}
+	}
+
+	/// Pauses audio on every tab except the active one, so switching tabs can't leave two
+	/// documents narrating at once (the active tab may have audio of its own still playing,
+	/// which this leaves untouched).
+	pub fn pause_inactive_audio(&mut self) {
+		let active = self.active_tab_index();
+		for (index, tab) in self.tabs.iter_mut().enumerate() {
+			if Some(index) != active
+				&& let Some(player) = tab.audio_player.as_mut()
+				&& player.is_playing()
+			{
+				player.pause();
+			}
+		}
+	}
+
 	/// Announces the current caret position as a percentage of the document via the live region.
 	pub fn announce_current_percent(&self) {
 		let Some(tab) = self.active_tab() else {
@@ -519,6 +657,7 @@ impl DocumentManager {
 
 	pub fn reset_sound_line(&self) {
 		self.last_sound_position.set(None);
+		self.last_audio_seek_position.set(None);
 	}
 
 	/// Sets the temporary bookmark at the current caret position and announces it.
@@ -1095,13 +1234,13 @@ fn reparse_tab_in_place(
 /// Sets `content` on `text_ctrl` and applies its bold/italic/underline markers.
 ///
 /// On Windows this streams a single RTF blob into the native `RichEdit` control
-/// via `EM_STREAMIN` (see `stream_rtf_into_ctrl`) instead of issuing one
-/// `SetStyle` call per formatting span, which is far cheaper on documents with
-/// thousands of spans. `wxTextCtrl::SetValue` can't be used for this — it does
-/// not forward to the native `WM_SETTEXT` handler that auto-detects a `{\rtf`
-/// prefix, so it would just store the markup as literal text. If streaming
-/// doesn't round-trip back to the original content, this falls back to the
-/// plain-text + per-segment path used on every other platform.
+/// via `EM_STREAMIN` (see `rtf::stream::stream_rtf_into_ctrl`) instead of issuing
+/// one `SetStyle` call per formatting span, which is far cheaper on documents
+/// with thousands of spans. `wxTextCtrl::SetValue` can't be used for this — it
+/// does not forward to the native `WM_SETTEXT` handler that auto-detects a
+/// `{\rtf` prefix, so it would just store the markup as literal text. If
+/// streaming doesn't round-trip back to the original content, this falls back
+/// to the plain-text + per-segment path used on every other platform.
 fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession, content: &str) {
 	let markers = session.get_formatting_markers();
 	let segments = merge_formatting_markers(&markers);
@@ -1110,7 +1249,7 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession
 	if !segments.is_empty()
 		&& let Some(font) = text_ctrl.get_font()
 	{
-		let rtf = rtf_write::build_rtf(
+		let rtf = write::build_rtf(
 			content,
 			&segments,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
@@ -1138,70 +1277,6 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession
 
 	fill_text_ctrl(text_ctrl, content);
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments);
-}
-
-#[cfg(target_os = "windows")]
-struct RtfStreamCursor<'a> {
-	data: &'a [u8],
-	pos: usize,
-}
-
-/// `EDITSTREAMCALLBACK` for `EM_STREAMIN`: `RichEdit` calls this repeatedly,
-/// asking for up to `cb` bytes each time, until we report 0 bytes written
-/// (end of stream) or return a nonzero error code. Called synchronously
-/// within `SendMessageW` on the same thread, so the `RtfStreamCursor` borrow
-/// in `stream_rtf_into_ctrl` stays valid for every call.
-#[cfg(target_os = "windows")]
-unsafe extern "system" fn rtf_stream_read_callback(dwcookie: usize, pbbuff: *mut u8, cb: i32, pcb: *mut i32) -> u32 {
-	if pbbuff.is_null() || pcb.is_null() || dwcookie == 0 {
-		return 1;
-	}
-	let cursor = unsafe { &mut *(dwcookie as *mut RtfStreamCursor<'_>) };
-	let remaining = cursor.data.len() - cursor.pos;
-	let to_copy = remaining.min(usize::try_from(cb.max(0)).unwrap_or(0));
-	if to_copy > 0 {
-		unsafe { copy_nonoverlapping(cursor.data[cursor.pos..].as_ptr(), pbbuff, to_copy) };
-		cursor.pos += to_copy;
-	}
-	unsafe { *pcb = i32::try_from(to_copy).unwrap_or(i32::MAX) };
-	0
-}
-
-/// Feeds `rtf` into the native `RichEdit` control behind `text_ctrl` via the
-/// Win32 `EM_STREAMIN` message. `wxTextCtrl::SetValue` cannot be used for this:
-/// it does not forward to the native `WM_SETTEXT` handler that auto-detects a
-/// `{\rtf` prefix, so it just stores the markup as literal text (confirmed by
-/// a round-trip mismatch where `GetValue()` returned the raw RTF source
-/// unchanged). `EM_STREAMIN` is the documented, explicit way to load RTF into
-/// a `RichEdit` control, and is why this needs a raw `SendMessageW` call rather
-/// than a wx-level API — the same pattern already used for letter-spacing
-/// (`EM_SETCHARFORMAT`) in `apply_readability_format_to_ctrl`.
-///
-/// Returns `false` if the control has no native handle yet or the stream
-/// didn't fully complete, in which case callers should fall back to the
-/// plain-text + segment-loop path rather than trust partial content.
-#[cfg(target_os = "windows")]
-fn stream_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
-	use windows::Win32::{
-		Foundation::{HWND, LPARAM, WPARAM},
-		UI::{
-			Controls::RichEdit::{EDITSTREAM, EM_STREAMIN, SF_RTF},
-			WindowsAndMessaging::SendMessageW,
-		},
-	};
-
-	let hwnd_ptr = text_ctrl.get_handle();
-	if hwnd_ptr.is_null() {
-		return false;
-	}
-	let hwnd = HWND(hwnd_ptr);
-	let mut cursor = RtfStreamCursor { data: rtf.as_bytes(), pos: 0 };
-	let mut stream =
-		EDITSTREAM { dwCookie: addr_of_mut!(cursor) as usize, dwError: 0, pfnCallback: Some(rtf_stream_read_callback) };
-	unsafe {
-		SendMessageW(hwnd, EM_STREAMIN, Some(WPARAM(SF_RTF as usize)), Some(LPARAM(addr_of_mut!(stream) as isize)));
-	}
-	stream.dwError == 0 && cursor.pos == cursor.data.len()
 }
 
 pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {

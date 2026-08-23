@@ -11,7 +11,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
-		table_text::{display_lines_and_length, html_table_to_display},
+		convert::table_text::{display_lines_and_length, html_table_to_display},
 		util::{bidi, path::extract_title_from_path},
 	},
 	t,
@@ -583,7 +583,11 @@ fn map_load_error(err: PdfiumError) -> anyhow::Error {
 }
 
 fn metadata_value(document: &PdfiumDocument, key: &str) -> Option<String> {
-	document.metadata_value(key).ok().map(|value| trim_string(&value)).filter(|value| !value.is_empty())
+	document
+		.metadata_value(key)
+		.ok()
+		.map(|value| trim_string(&sanitize_pdf_text(&value)))
+		.filter(|value| !value.is_empty())
 }
 
 fn extract_toc(
@@ -610,7 +614,7 @@ fn extract_toc(
 			skipped_count += 1;
 			continue;
 		};
-		let title = trim_string(&collapse_whitespace(&raw_title));
+		let title = trim_string(&collapse_whitespace(&sanitize_pdf_text(&raw_title)));
 		if title.is_empty() {
 			skipped_count += 1;
 			continue;
@@ -894,7 +898,7 @@ fn html_escape(s: &str) -> String {
 }
 
 /// Append a PDF table's on-screen text to the buffer and add the Table marker. The text is produced
-/// by [`crate::parser::table_text::html_table_to_display`]: the full tab-separated rendering when
+/// by [`crate::parser::convert::table_text::html_table_to_display`]: the full tab-separated rendering when
 /// `render_tables_inline` is set, otherwise a `"[Table]: <first row>"` placeholder. The helper
 /// output may span multiple lines (one per table row); each line is recorded as its own
 /// `current_lines_info` / `page_display_text` line, mirroring the rest of the PDF line tracking.

@@ -2,12 +2,9 @@ use std::{collections::HashMap, mem};
 
 use roxmltree::{Document, Node, NodeType, ParsingOptions};
 
+use super::table_text::{push_finalized_line, table_render_bundle};
 use crate::{
-	parser::{
-		ConverterOutput,
-		table_text::{push_finalized_line, table_render_bundle},
-		util::xml::collect_element_text,
-	},
+	parser::{ConverterOutput, util::xml::collect_element_text},
 	t,
 	types::{
 		FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo,
@@ -239,8 +236,46 @@ impl XmlToText {
 		}
 	}
 
+	/// Re-anchors `node`'s `id_positions` entry (if any) to `position`. Headings, list items,
+	/// tables and `<hr>` call `finalize_current_line` while opening, which moves the text
+	/// position past where `handle_element_opening_xml` first captured the id.
+	fn resync_id_position(&mut self, node: Node<'_, '_>, position: usize) {
+		if self.in_body
+			&& let Some(id) = node.attribute("id").or_else(|| node.attribute("name"))
+		{
+			self.id_positions.insert(id.to_string(), position);
+		}
+	}
+
+	/// Records every id *inside* `node` at `position`. `<a>` and `<table>` emit their text
+	/// through a helper and skip recursing into their children, so without this the ids on
+	/// those children are never seen at all, and a DAISY SMIL `<par>` anchored to one (a
+	/// narrated `<em>` inside a link, say) loses its audio clip entirely. `position` is the
+	/// containing element's own start, since the skipped subtree's text is emitted as one
+	/// run with no per-descendant offsets to attribute; for the common case of an element
+	/// wrapping the whole link that is exactly right.
+	fn record_descendant_ids(&mut self, node: Node<'_, '_>, position: usize) {
+		if !self.in_body {
+			return;
+		}
+		for descendant in node.descendants().skip(1) {
+			if descendant.is_element()
+				&& let Some(id) = descendant.attribute("id").or_else(|| descendant.attribute("name"))
+			{
+				self.id_positions.entry(id.to_string()).or_insert(position);
+			}
+		}
+	}
+
 	fn handle_element_opening_xml(&mut self, tag_name: &str, node: Node<'_, '_>) -> bool {
 		let mut skip_children = false;
+		// Recorded before the tag-specific handling below, which (notably for `<a>`) can push
+		// this element's own text into `current_line` and shift the position past its start.
+		if self.in_body
+			&& let Some(id) = node.attribute("id").or_else(|| node.attribute("name"))
+		{
+			self.id_positions.insert(id.to_string(), self.get_current_text_position());
+		}
 		if Self::tag_is(tag_name, "table") {
 			self.handle_table_xml(node);
 			return true;
@@ -248,6 +283,7 @@ impl XmlToText {
 		if Self::tag_is(tag_name, "hr") && self.in_body {
 			self.finalize_current_line();
 			let offset = self.get_current_text_position();
+			self.resync_id_position(node, offset);
 			let line = Self::separator_line();
 			self.current_line.push_str(line);
 			self.finalize_current_line();
@@ -270,6 +306,7 @@ impl XmlToText {
 				let link_offset = self.get_current_text_position();
 				self.current_line.push_str(&processed_link_text);
 				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
+				self.record_descendant_ids(node, link_offset);
 				skip_children = true;
 			}
 		} else if Self::tag_is(tag_name, "body")
@@ -297,41 +334,38 @@ impl XmlToText {
 		} else if Self::tag_is(tag_name, "u") {
 			self.open_underlines.push(self.get_current_text_position());
 		}
-		if self.in_body {
-			if let Some(id) = node.attribute("id").or_else(|| node.attribute("name")) {
-				self.id_positions.insert(id.to_string(), self.get_current_text_position());
-			}
-			if Self::tag_is(tag_name, "img") || Self::tag_is(tag_name, "image") || Self::tag_is(tag_name, "figure") {
-				let mut description = node
-					.attribute("alt")
-					.or_else(|| node.attribute("aria-label"))
-					.or_else(|| node.attribute("aria-description"))
-					.or_else(|| node.attribute("title"))
-					.map(collapse_whitespace)
-					.unwrap_or_default();
+		if self.in_body
+			&& (Self::tag_is(tag_name, "img") || Self::tag_is(tag_name, "image") || Self::tag_is(tag_name, "figure"))
+		{
+			let mut description = node
+				.attribute("alt")
+				.or_else(|| node.attribute("aria-label"))
+				.or_else(|| node.attribute("aria-description"))
+				.or_else(|| node.attribute("title"))
+				.map(collapse_whitespace)
+				.unwrap_or_default();
 
-				if description.is_empty() && Self::tag_is(tag_name, "figure") {
-					for child in node.children() {
-						if child.is_element() && Self::tag_is(child.tag_name().name(), "figcaption") {
-							description = collapse_whitespace(&collect_element_text(child));
-							break;
-						}
+			if description.is_empty() && Self::tag_is(tag_name, "figure") {
+				for child in node.children() {
+					if child.is_element() && Self::tag_is(child.tag_name().name(), "figcaption") {
+						description = collapse_whitespace(&collect_element_text(child));
+						break;
 					}
 				}
+			}
 
-				if !description.is_empty() {
-					let is_figure = Self::tag_is(tag_name, "figure");
-					// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-					let label = if is_figure { t("Figure") } else { t("Image") };
-					let image_text = format!("[{label}: {description}]");
-					let offset = self.get_current_text_position();
-					self.current_line.push_str(&image_text);
-					let info = ImageInfo { offset, alt_text: description };
-					if is_figure {
-						self.figures.push(info);
-					} else {
-						self.images.push(info);
-					}
+			if !description.is_empty() {
+				let is_figure = Self::tag_is(tag_name, "figure");
+				// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+				let label = if is_figure { t("Figure") } else { t("Image") };
+				let image_text = format!("[{label}: {description}]");
+				let offset = self.get_current_text_position();
+				self.current_line.push_str(&image_text);
+				let info = ImageInfo { offset, alt_text: description };
+				if is_figure {
+					self.figures.push(info);
+				} else {
+					self.images.push(info);
 				}
 			}
 		}
@@ -342,6 +376,8 @@ impl XmlToText {
 		self.finalize_current_line();
 		let table_xml = node.document().input_text()[node.range()].to_string();
 		let start_offset = self.get_current_text_position();
+		self.resync_id_position(node, start_offset);
+		self.record_descendant_ids(node, start_offset);
 		// Emit the table's on-screen text via the shared helper instead of recursing children to
 		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
 		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
@@ -368,6 +404,7 @@ impl XmlToText {
 
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {
 		self.finalize_current_line();
+		self.resync_id_position(node, self.get_current_text_position());
 		let li_text = collect_element_text(node);
 		self.list_items.push(ListItemInfo {
 			offset: self.get_current_text_position(),
@@ -413,8 +450,10 @@ impl XmlToText {
 		}
 		if item_count > 0 {
 			self.finalize_current_line();
+			let offset = self.get_current_text_position();
+			self.resync_id_position(node, offset);
 			self.open_lists.push(Some(self.lists.len()));
-			self.lists.push(ListInfo { offset: self.get_current_text_position(), item_count, length: 0 });
+			self.lists.push(ListInfo { offset, item_count, length: 0 });
 		} else {
 			self.open_lists.push(None);
 		}
@@ -431,6 +470,7 @@ impl XmlToText {
 				if (1..=6).contains(&level) {
 					self.finalize_current_line();
 					let heading_offset = self.get_current_text_position();
+					self.resync_id_position(node, heading_offset);
 					let text = collect_element_text(node);
 					if !text.is_empty() {
 						let normalized = trim_string(&collapse_whitespace(&text));
@@ -708,6 +748,70 @@ mod tests {
 		assert_eq!(links[0].text, "Hello world");
 		assert_eq!(links[0].reference, "https://example.com");
 		assert_eq!(converter.get_text(), "Hello world");
+	}
+
+	// SMIL audio and NCX targets anchor to an id expecting it to mark the start of what it
+	// narrates, so a link's own id must resolve to where its text starts, not where it ends.
+	#[test]
+	fn link_id_position_is_the_start_of_its_text_not_the_end() {
+		let xml = r##"<root><body><p>Before. <a id="lnk1" href="#x">Link text</a> After.</p></body></root>"##;
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let links = converter.get_links();
+		assert_eq!(links.len(), 1);
+		let link_offset = links[0].offset;
+		assert_eq!(converter.get_id_positions().get("lnk1").copied(), Some(link_offset));
+		assert_eq!(&converter.get_text()[link_offset..link_offset + "Link text".len()], "Link text");
+	}
+
+	#[test]
+	fn heading_id_position_is_the_start_of_the_heading_not_the_previous_line() {
+		let xml = r##"<root><body><p>Before paragraph.</p><h2 id="hdr1">Chapter One</h2></body></root>"##;
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let headings = converter.get_headings();
+		assert_eq!(headings.len(), 1);
+		let heading_offset = headings[0].offset;
+		assert_eq!(converter.get_id_positions().get("hdr1").copied(), Some(heading_offset));
+		assert_eq!(&converter.get_text()[heading_offset..heading_offset + "Chapter One".len()], "Chapter One");
+	}
+
+	// `<a>` emits its text in one go and skips its children, so ids on elements inside a link
+	// were never recorded, losing the audio clip of any DAISY SMIL par anchored to one.
+	#[test]
+	fn ids_inside_a_link_are_recorded_at_the_links_start() {
+		let xml = r##"<root><body><p>Before. <a href="#x"><em id="em1">Title Page</em></a></p></body></root>"##;
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let link_offset = converter.get_links()[0].offset;
+		assert_eq!(converter.get_id_positions().get("em1").copied(), Some(link_offset));
+		assert_eq!(&converter.get_text()[link_offset..link_offset + "Title Page".len()], "Title Page");
+	}
+
+	// Same skipped-subtree problem for tables, which emit their text through a helper.
+	#[test]
+	fn ids_inside_a_table_are_recorded_at_the_tables_start() {
+		let xml =
+			r#"<root><body><p>Before.</p><table id="t1"><tr><td id="cell1">Value</td></tr></table></body></root>"#;
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let table_offset = converter.get_id_positions().get("t1").copied().expect("table id recorded");
+		assert_eq!(converter.get_id_positions().get("cell1").copied(), Some(table_offset));
+		assert_ne!(table_offset, 0, "table should start after the preceding paragraph");
+	}
+
+	// Same off-by-one-line bug as headings/list items/tables/`<hr>`, which
+	// `handle_list_start_xml` was missing.
+	#[test]
+	fn list_id_position_is_the_start_of_the_list_not_the_previous_line() {
+		let xml = r##"<root><body><p>Before paragraph.</p><ul id="lst1"><li>One</li><li>Two</li></ul></body></root>"##;
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let lists = converter.get_lists();
+		assert_eq!(lists.len(), 1);
+		let list_offset = lists[0].offset;
+		assert_eq!(converter.get_id_positions().get("lst1").copied(), Some(list_offset));
+		assert_ne!(list_offset, 0, "list offset should be after the preceding paragraph, not at document start");
 	}
 
 	#[test]

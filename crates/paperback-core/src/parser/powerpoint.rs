@@ -14,13 +14,13 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		Parser,
-		table_text::{
+		convert::table_text::{
 			build_html_table_from_grid, display_lines_and_length, html_table_to_display, table_caption_from_html,
 		},
 		util::{
 			ooxml::read_ooxml_relationships, path::extract_title_from_path, xml::collect_text_from_tagged_elements,
 		},
-		word::try_decrypt_office_file,
+		word::ooxml::try_decrypt_office_file,
 	},
 	t,
 	types::LinkInfo,
@@ -297,7 +297,7 @@ fn parse_text_chars_atom(data: &[u8]) -> Option<String> {
 		return None;
 	}
 	let mut chars = Vec::with_capacity(data.len() / 2);
-	for chunk in data.chunks_exact(2) {
+	for chunk in data.as_chunks::<2>().0 {
 		let code_unit = u16::from_le_bytes([chunk[0], chunk[1]]);
 		if code_unit == 0 {
 			break;

@@ -4,11 +4,9 @@ use bitflags::bitflags;
 use ego_tree::NodeRef;
 use scraper::{ElementRef, Html, Node, node};
 
+use super::table_text::{collect_dom_text, push_finalized_line, table_render_bundle};
 use crate::{
-	parser::{
-		ConverterOutput,
-		table_text::{collect_dom_text, push_finalized_line, table_render_bundle},
-	},
+	parser::ConverterOutput,
 	t,
 	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},

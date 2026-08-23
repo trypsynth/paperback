@@ -1,25 +1,17 @@
-use std::{
-	fs::{self, File},
-	io::{self, BufReader, Write},
-	path::Path,
-};
-
-use base64::Engine;
-use zip::ZipArchive;
-
 use crate::{
-	config::{ConfigManager, compute_document_hash},
+	audio::AudioTimeline,
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
-	export::{ExportFormat, render},
 	parser,
-	reader_core::{
-		SearchOptions, bookmark_navigate, encode_url_fragment, history_go_next, history_go_previous,
-		nearest_fragment_before, reader_container_navigate, reader_navigate, reader_search_with_wrap,
-		record_history_position, resolve_link,
-	},
-	types::{self as ffi, NavDirection, NavTarget},
-	util::{encoding::convert_to_utf8, zip as zip_utils},
+	reader_core::record_history_position,
+	types::{self as ffi},
 };
+
+mod audio;
+mod export;
+mod links;
+mod navigation;
+mod search;
+mod stats;
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: i64 = 300;
@@ -153,6 +145,34 @@ pub struct TextSegmentFfi {
 	pub end_pos: i64,
 }
 
+/// `found` is `false` (other fields zeroed) when the lookup misses, e.g. an out-of-range clip
+/// index. Mirrors `AudioClip` from `AudioTimeline` for platforms driving their own player.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct AudioClipFfi {
+	pub found: bool,
+	pub source: i32,
+	pub clip_begin_ms: i64,
+	pub clip_end_ms: i64,
+	pub start: i64,
+	pub end: i64,
+}
+
+/// See `AudioTimeline::cursor_at_elapsed`.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct AudioCursorFfi {
+	pub found: bool,
+	pub clip_index: i32,
+	pub seek_ms: i64,
+}
+
+/// See `AudioTimeline::point_for_position`.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct AudioPointFfi {
+	pub found: bool,
+	pub position: i64,
+	pub time_ms: i64,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum DocumentError {
 	#[error("Parse error: {0}")]
@@ -178,15 +198,6 @@ pub struct DocumentSession {
 	history_index: usize,
 	parser_flags: ParserFlags,
 	last_stable_position: Option<i64>,
-}
-
-#[derive(Copy, Clone)]
-struct NavigateParams {
-	position: i64,
-	wrap: bool,
-	next: bool,
-	target: NavTarget,
-	level_filter: i32,
 }
 
 #[derive(Debug, Clone)]
@@ -286,6 +297,13 @@ impl DocumentSession {
 		&self.handle
 	}
 
+	/// This document's recorded audio, when it has any (DAISY audiobooks; text-only
+	/// documents have none).
+	#[must_use]
+	pub fn audio(&self) -> Option<&AudioTimeline> {
+		self.handle.document().audio.as_ref()
+	}
+
 	#[must_use]
 	pub fn file_path(&self) -> &str {
 		&self.file_path
@@ -336,1120 +354,23 @@ impl DocumentSession {
 	pub const fn set_stable_position(&mut self, position: i64) {
 		self.last_stable_position = Some(position);
 	}
-
-	const fn nav_direction(next: bool) -> NavDirection {
-		if next { NavDirection::Next } else { NavDirection::Previous }
-	}
-
-	const fn nav_request(
-		position: i64,
-		wrap: bool,
-		next: bool,
-		target: NavTarget,
-		level_filter: i32,
-	) -> ffi::NavRequest {
-		ffi::NavRequest { position, wrap, direction: Self::nav_direction(next), target, level_filter }
-	}
-
-	fn has_marker(&self, marker_type: MarkerType) -> bool {
-		self.handle.count_markers_by_type(marker_type) > 0
-	}
-
-	fn fill_marker_text_if_empty(&self, nav_result: &mut NavigationResult) {
-		if nav_result.found && nav_result.marker_text.is_empty() {
-			nav_result.marker_text = self.get_line_text(nav_result.offset);
-		}
-	}
-
-	fn navigate_with_post(
-		&self,
-		params: NavigateParams,
-		is_supported: bool,
-		post: impl FnOnce(&Self, &mut NavigationResult),
-	) -> NavigationResult {
-		if !is_supported {
-			return NavigationResult::not_supported();
-		}
-		let req = Self::nav_request(params.position, params.wrap, params.next, params.target, params.level_filter);
-		let result = reader_navigate(&self.handle, &req);
-		let mut nav_result = NavigationResult::from_nav_result(&result);
-		post(self, &mut nav_result);
-		nav_result
-	}
-
-	#[must_use]
-	pub fn navigate_section(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let is_supported = self.parser_flags.contains(ParserFlags::SUPPORTS_SECTIONS);
-		self.navigate_with_post(
-			NavigateParams { position, wrap, next, target: NavTarget::Section, level_filter: 0 },
-			is_supported,
-			|s, nav_result| {
-				s.fill_marker_text_if_empty(nav_result);
-			},
-		)
-	}
-
-	#[must_use]
-	pub fn navigate_heading(&self, position: i64, wrap: bool, next: bool, level: i32) -> NavigationResult {
-		let is_supported = self.has_headings(if level > 0 { Some(level) } else { None });
-		self.navigate_with_post(
-			NavigateParams { position, wrap, next, target: NavTarget::Heading, level_filter: level },
-			is_supported,
-			|_s, _nav_result| {},
-		)
-	}
-
-	#[must_use]
-	pub fn navigate_page(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let is_supported = self.has_marker(MarkerType::PageBreak);
-		self.navigate_with_post(
-			NavigateParams { position, wrap, next, target: NavTarget::Page, level_filter: 0 },
-			is_supported,
-			|s, nav_result| {
-				if nav_result.found {
-					let offset = usize::try_from(nav_result.offset).unwrap_or(0);
-					nav_result.marker_index = s.handle.page_index(offset).unwrap_or(-1);
-				}
-				s.fill_marker_text_if_empty(nav_result);
-			},
-		)
-	}
-
-	#[must_use]
-	pub fn navigate_link(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let is_supported = self.has_marker(MarkerType::Link);
-		self.navigate_with_post(
-			NavigateParams { position, wrap, next, target: NavTarget::Link, level_filter: 0 },
-			is_supported,
-			|s, nav_result| {
-				s.fill_marker_text_if_empty(nav_result);
-			},
-		)
-	}
-
-	#[must_use]
-	pub fn navigate_list(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let is_supported = self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::List);
-		self.navigate_with_post(
-			NavigateParams { position, wrap, next, target: NavTarget::List, level_filter: 0 },
-			is_supported,
-			|s, nav_result| {
-				s.fill_marker_text_if_empty(nav_result);
-			},
-		)
-	}
-
-	#[must_use]
-	pub fn navigate_list_item(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let is_supported =
-			self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::ListItem);
-		self.navigate_with_post(
-			NavigateParams { position, wrap, next, target: NavTarget::ListItem, level_filter: 0 },
-			is_supported,
-			|s, nav_result| {
-				s.fill_marker_text_if_empty(nav_result);
-			},
-		)
-	}
-
-	#[must_use]
-	pub fn navigate_table(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let is_supported = self.has_marker(MarkerType::Table);
-		self.navigate_with_post(
-			NavigateParams { position, wrap, next, target: NavTarget::Table, level_filter: 0 },
-			is_supported,
-			|s, nav_result| {
-				s.fill_marker_text_if_empty(nav_result);
-			},
-		)
-	}
-
-	/// Move relative to the container (list/table) the caret is currently inside: `to_end` jumps
-	/// just past its end, otherwise to its start. Not found when the caret is not in a container.
-	#[must_use]
-	pub fn navigate_container(&self, position: i64, to_end: bool) -> NavigationResult {
-		if !(self.has_marker(MarkerType::List) || self.has_marker(MarkerType::Table)) {
-			return NavigationResult::not_supported();
-		}
-		let result = reader_container_navigate(&self.handle, position, to_end);
-		NavigationResult::from_nav_result(&result)
-	}
-
-	#[must_use]
-	pub fn navigate_separator(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let is_supported = self.has_marker(MarkerType::Separator);
-		self.navigate_with_post(
-			NavigateParams { position, wrap, next, target: NavTarget::Separator, level_filter: 0 },
-			is_supported,
-			|s, nav_result| {
-				s.fill_marker_text_if_empty(nav_result);
-			},
-		)
-	}
-
-	#[must_use]
-	pub fn navigate_image(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let is_supported = self.has_marker(MarkerType::Image);
-		self.navigate_with_post(
-			NavigateParams { position, wrap, next, target: NavTarget::Image, level_filter: 0 },
-			is_supported,
-			|s, nav_result| {
-				s.fill_marker_text_if_empty(nav_result);
-			},
-		)
-	}
-
-	#[must_use]
-	pub fn navigate_figure(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let is_supported = self.has_marker(MarkerType::Figure);
-		self.navigate_with_post(
-			NavigateParams { position, wrap, next, target: NavTarget::Figure, level_filter: 0 },
-			is_supported,
-			|s, nav_result| {
-				s.fill_marker_text_if_empty(nav_result);
-			},
-		)
-	}
-
-	fn navigate_bookmark_inner(
-		&self,
-		config: &ConfigManager,
-		position: i64,
-		wrap: bool,
-		next: bool,
-		notes_only: bool,
-	) -> NavigationResult {
-		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, notes_only);
-		if result.found {
-			NavigationResult {
-				found: true,
-				wrapped: result.wrapped,
-				offset: result.start,
-				marker_text: result.note.clone(),
-				marker_level: 0,
-				marker_index: result.index,
-				not_supported: false,
-			}
-		} else {
-			NavigationResult::not_found()
-		}
-	}
-
-	#[must_use]
-	pub fn navigate_bookmark(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		self.navigate_bookmark_inner(config, position, wrap, next, false)
-	}
-
-	#[must_use]
-	pub fn navigate_note(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		self.navigate_bookmark_inner(config, position, wrap, next, true)
-	}
-
-	#[must_use]
-	pub fn bookmark_display_at_position(
-		&self,
-		config: &ConfigManager,
-		position: i64,
-	) -> ffi::BookmarkDisplayAtPosition {
-		let bookmark = config.get_bookmarks(&self.file_path).into_iter().find(|bm| bm.start == position);
-		let Some(bookmark) = bookmark else {
-			return ffi::BookmarkDisplayAtPosition { found: false, note: String::new(), snippet: String::new() };
-		};
-		let snippet = if bookmark.start == bookmark.end {
-			self.get_line_text(bookmark.start)
-		} else {
-			self.get_text_range(bookmark.start, bookmark.end)
-		};
-		ffi::BookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
-	}
-
-	#[must_use]
-	pub fn link_list(&self, position: i64) -> ffi::LinkList {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
-		let mut closest_index = -1;
-		let mut items = Vec::new();
-		for marker in self.handle.document().buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::Link) {
-			let text = if marker.text.is_empty() {
-				self.get_line_text(i64::try_from(marker.position).unwrap_or(0))
-			} else {
-				marker.text.clone()
-			};
-			if marker.position <= pos {
-				closest_index = i32::try_from(items.len()).unwrap_or(-1);
-			}
-			items.push(ffi::LinkListItem { offset: marker.position, text });
-		}
-		ffi::LinkList { items, closest_index }
-	}
-
-	#[must_use]
-	pub fn get_formatting_markers(&self) -> Vec<LineMarker> {
-		self.handle
-			.document()
-			.buffer
-			.markers
-			.iter()
-			.filter(|m| matches!(m.mtype, MarkerType::Bold | MarkerType::Italic | MarkerType::Underline))
-			.map(|m| LineMarker {
-				mtype: m.mtype,
-				position: i64::try_from(m.position).unwrap_or(0),
-				text: String::new(),
-				reference: String::new(),
-				level: 0,
-				length: i64::try_from(m.length).unwrap_or(0),
-			})
-			.collect()
-	}
-
-	#[must_use]
-	pub fn heading_tree(&self, position: i64) -> ffi::HeadingTree {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
-		let mut items = Vec::new();
-		let mut closest_index = -1;
-		let mut min_distance = usize::MAX;
-		let markers = &self.handle.document().buffer.markers;
-		let mut item_stack: Vec<(i32, i32)> = Vec::new(); // (level, index)
-		for marker in markers {
-			if !document::is_heading_marker(marker.mtype) {
-				continue;
-			}
-			let level = marker.level;
-			while item_stack.last().is_some_and(|(l, _)| *l >= level) {
-				item_stack.pop();
-			}
-			let parent_index = item_stack.last().map_or(-1, |(_, idx)| *idx);
-			let current_index = i32::try_from(items.len()).unwrap_or(-1);
-			let text = if marker.text.is_empty() {
-				self.get_line_text(i64::try_from(marker.position).unwrap_or(0))
-			} else {
-				marker.text.clone()
-			};
-			items.push(ffi::HeadingTreeItem { offset: marker.position, text, parent_index });
-			item_stack.push((level, current_index));
-			if marker.position <= pos {
-				let dist = pos - marker.position;
-				if dist < min_distance {
-					min_distance = dist;
-					closest_index = current_index;
-				}
-			}
-		}
-		ffi::HeadingTree { items, closest_index }
-	}
-
-	#[must_use]
-	pub fn get_heading_tree_ffi(&self, position: i64) -> HeadingTreeFfi {
-		let tree = self.heading_tree(position);
-		HeadingTreeFfi {
-			items: tree
-				.items
-				.into_iter()
-				.map(|i| HeadingTreeItemFfi {
-					offset: i64::try_from(i.offset).unwrap_or(i64::MAX),
-					text: i.text,
-					parent_index: i.parent_index,
-				})
-				.collect(),
-			closest_index: tree.closest_index,
-		}
-	}
-
-	#[must_use]
-	pub fn get_link_list_ffi(&self, position: i64) -> LinkListFfi {
-		let list = self.link_list(position);
-		LinkListFfi {
-			items: list
-				.items
-				.into_iter()
-				.map(|i| LinkListItemFfi { offset: i64::try_from(i.offset).unwrap_or(i64::MAX), text: i.text })
-				.collect(),
-			closest_index: list.closest_index,
-		}
-	}
-
-	fn history_navigate(&mut self, current_pos: i64, forward: bool) -> NavigationResult {
-		if self.history.is_empty() {
-			return NavigationResult::not_found();
-		}
-		let result = if forward {
-			history_go_next(&self.history, self.history_index, current_pos, MAX_HISTORY_LEN)
-		} else {
-			history_go_previous(&self.history, self.history_index, current_pos, MAX_HISTORY_LEN)
-		};
-		self.history = result.positions;
-		self.history_index = result.index;
-		if result.found {
-			NavigationResult {
-				found: true,
-				wrapped: false,
-				offset: result.target,
-				marker_text: String::new(),
-				marker_level: 0,
-				marker_index: -1,
-				not_supported: false,
-			}
-		} else {
-			NavigationResult::not_found()
-		}
-	}
-
-	pub fn history_go_back(&mut self, current_pos: i64) -> NavigationResult {
-		self.history_navigate(current_pos, false)
-	}
-
-	pub fn history_go_forward(&mut self, current_pos: i64) -> NavigationResult {
-		self.history_navigate(current_pos, true)
-	}
-
-	#[must_use]
-	pub fn activate_link(&self, position: i64) -> LinkActivationResult {
-		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let href = {
-			let link_index = self.handle.current_marker_index(pos_usize, MarkerType::Link);
-			let Some(link_index) = link_index else {
-				return LinkActivationResult::not_found();
-			};
-			let Some(marker) = self.handle.document().buffer.markers.get(link_index) else {
-				return LinkActivationResult::not_found();
-			};
-			let link_end = marker.position + marker.text.chars().count();
-			if pos_usize < marker.position || pos_usize > link_end {
-				return LinkActivationResult::not_found();
-			}
-			if marker.reference.is_empty() {
-				return LinkActivationResult::not_found();
-			}
-			// Clone the href so we can drop the borrow on self.handle.
-			marker.reference.clone()
-		};
-		let resolution = resolve_link(&self.handle, &href, position);
-		if !resolution.found {
-			LinkActivationResult::not_found()
-		} else if resolution.is_external {
-			LinkActivationResult { found: true, action: LinkAction::External, offset: 0, url: resolution.url }
-		} else {
-			LinkActivationResult {
-				found: true,
-				action: LinkAction::Internal,
-				offset: i64::try_from(resolution.offset).unwrap_or(0),
-				url: String::new(),
-			}
-		}
-	}
-
-	#[must_use]
-	pub fn activate_link_ffi(&self, position: i64) -> LinkActivationResult {
-		self.activate_link(position)
-	}
-
-	#[must_use]
-	pub fn get_stats_ffi(&self) -> DocumentStatsFfi {
-		let s = self.stats();
-		DocumentStatsFfi {
-			word_count: i64::try_from(s.word_count).unwrap_or(0),
-			line_count: i64::try_from(s.line_count).unwrap_or(0),
-			char_count: i64::try_from(s.char_count).unwrap_or(0),
-			char_count_no_whitespace: i64::try_from(s.char_count_no_whitespace).unwrap_or(0),
-		}
-	}
-
-	#[must_use]
-	pub fn get_supported_segment_types_ffi(&self) -> Vec<SegmentTypeFfi> {
-		let mut supported = vec![SegmentTypeFfi::Paragraph, SegmentTypeFfi::Line];
-
-		let has_heading = (0..=5).any(|level| {
-			let mtype = match level {
-				0 => MarkerType::Heading1,
-				1 => MarkerType::Heading2,
-				2 => MarkerType::Heading3,
-				3 => MarkerType::Heading4,
-				4 => MarkerType::Heading5,
-				_ => MarkerType::Heading6,
-			};
-			self.has_marker(mtype)
-		});
-		if has_heading {
-			supported.push(SegmentTypeFfi::Heading);
-		}
-
-		if self.has_marker(MarkerType::Link) {
-			supported.push(SegmentTypeFfi::Link);
-		}
-
-		if self.parser_flags.contains(ParserFlags::SUPPORTS_SECTIONS) && self.has_marker(MarkerType::SectionBreak) {
-			supported.push(SegmentTypeFfi::Section);
-		}
-
-		if self.parser_flags.contains(ParserFlags::SUPPORTS_PAGES) && self.has_marker(MarkerType::PageBreak) {
-			supported.push(SegmentTypeFfi::Page);
-		}
-
-		if self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::List) {
-			supported.push(SegmentTypeFfi::List);
-		}
-
-		if self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::ListItem) {
-			supported.push(SegmentTypeFfi::ListItem);
-		}
-
-		if self.has_marker(MarkerType::Table) {
-			supported.push(SegmentTypeFfi::Table);
-		}
-
-		if self.has_marker(MarkerType::Separator) {
-			supported.push(SegmentTypeFfi::Separator);
-		}
-
-		if self.has_marker(MarkerType::Image) {
-			supported.push(SegmentTypeFfi::Image);
-		}
-
-		if self.has_marker(MarkerType::Figure) {
-			supported.push(SegmentTypeFfi::Figure);
-		}
-
-		supported
-	}
-
-	// `query: String` (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
-	#[must_use]
-	#[allow(clippy::needless_pass_by_value)]
-	pub fn search_ffi(&self, query: String, start_position: i64, options: SearchOptionsFfi) -> SearchResultFfi {
-		let mut search_options = SearchOptions::empty();
-		if options.match_case {
-			search_options.insert(SearchOptions::MATCH_CASE);
-		}
-		if options.whole_word {
-			search_options.insert(SearchOptions::WHOLE_WORD);
-		}
-		if options.regex {
-			search_options.insert(SearchOptions::REGEX);
-		}
-		if options.forward {
-			search_options.insert(SearchOptions::FORWARD);
-		}
-
-		let result =
-			reader_search_with_wrap(&self.handle.document().buffer.content, &query, start_position, search_options);
-		SearchResultFfi { found: result.found, wrapped: result.wrapped, position: result.position }
-	}
-
-	#[must_use]
-	pub fn get_status_info_ffi(&self, position: i64) -> StatusInfo {
-		self.get_status_info(position)
-	}
-
-	#[must_use]
-	pub fn position_from_percent_ffi(&self, percent: i32) -> i64 {
-		self.position_from_percent(percent)
-	}
-
-	#[must_use]
-	pub fn current_page_ffi(&self, position: i64) -> i32 {
-		self.current_page(position)
-	}
-
-	#[must_use]
-	pub fn page_count_ffi(&self) -> i32 {
-		i32::try_from(self.page_count()).unwrap_or(0)
-	}
-
-	#[must_use]
-	pub fn page_offset_ffi(&self, page: i32) -> i64 {
-		self.page_offset(page)
-	}
-
-	#[must_use]
-	pub fn get_table_at_position(&self, position: i64) -> Option<String> {
-		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let table_index = self.handle.current_marker_index(pos_usize, MarkerType::Table)?;
-		let marker = self.handle.document().buffer.markers.get(table_index)?;
-		// `length` is the display extent (Tasks 2-3); valid range is the half-open `[position, end)`.
-		let table_end = marker.position + marker.length;
-		if pos_usize < marker.position || pos_usize >= table_end {
-			return None;
-		}
-		if marker.reference.is_empty() {
-			return None;
-		}
-		Some(marker.reference.clone())
-	}
-
-	#[must_use]
-	pub fn get_current_section_path(&self, position: i64) -> Option<String> {
-		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let section_index = self.handle.current_marker_index(pos_usize, MarkerType::SectionBreak)?;
-		let marker = self.handle.document().buffer.markers.get(section_index)?;
-		if marker.reference.is_empty() {
-			return None;
-		}
-		Some(marker.reference.clone())
-	}
-
-	#[must_use]
-	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<WebviewTarget> {
-		let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty());
-		if let Some(section_path) = section_path {
-			let digest = compute_document_hash(&self.file_path);
-			let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
-			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
-			if fs::create_dir_all(&doc_temp_dir).is_ok() {
-				// Extract every entry (images, stylesheets, fonts, ...) once, preserving
-				// the epub's internal layout, so the section's relative resource
-				// references (e.g. `<img src="../images/foo.jpg">`) resolve on disk.
-				let _ = self.ensure_epub_resources_extracted(&doc_temp_dir);
-				// Re-extract the section itself fresh at its original relative path so
-				// the reading-position anchor below is injected into a clean copy.
-				let output_path = doc_temp_dir.join(&section_path);
-				let output_str = output_path.to_string_lossy().to_string();
-				if self.extract_resource(&section_path, &output_str).ok() == Some(true) {
-					let fragment = self.inject_reading_anchor(position, &output_str);
-					return Some(WebviewTarget { path: output_str, fragment });
-				}
-			}
-		}
-		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
-		match ext.as_deref() {
-			Some("html" | "htm" | "xhtml") => Some(WebviewTarget { path: self.file_path.clone(), fragment: None }),
-			Some("md" | "markdown") => {
-				let digest = compute_document_hash(&self.file_path);
-				let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
-				let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
-				if fs::create_dir_all(&doc_temp_dir).is_ok() {
-					let html_path = doc_temp_dir.join("document.html");
-					if let Ok(bytes) = fs::read(&self.file_path) {
-						let markdown_text = convert_to_utf8(&bytes);
-						let html_body = parser::markdown::markdown_to_html(&markdown_text);
-						let full_html =
-							format!("<html><head><meta charset=\"utf-8\"></head><body>{html_body}</body></html>");
-						if fs::write(&html_path, full_html.as_bytes()).is_ok() {
-							return Some(WebviewTarget {
-								path: html_path.to_string_lossy().to_string(),
-								fragment: None,
-							});
-						}
-					}
-				}
-				None
-			}
-			_ => None,
-		}
-	}
-
-	/// Inserts an empty anchor element at the current reading position into the
-	/// extracted section file and returns its id, for use as a URL `#fragment`.
-	fn inject_reading_anchor(&self, position: i64, file_path: &str) -> Option<String> {
-		const READING_POS_ANCHOR_ID: &str = "paperback-reading-pos";
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
-		let section_index = self.handle.current_marker_index(pos, MarkerType::SectionBreak)?;
-		let section_start = self.handle.document().buffer.markers.get(section_index)?.position;
-		let relative = pos.checked_sub(section_start)?;
-		let content = convert_to_utf8(&fs::read(file_path).ok()?);
-		let injected = parser::xml_to_text::inject_anchor_at_position(&content, relative, READING_POS_ANCHOR_ID)?;
-		fs::write(file_path, injected.as_bytes()).ok()?;
-		Some(READING_POS_ANCHOR_ID.to_string())
-	}
-
-	/// Returns the id of the element closest at-or-before `position` in the current
-	/// section, for use as a `#fragment` when opening the section in a web view.
-	#[must_use]
-	pub fn webview_fragment_for_position(&self, position: i64) -> Option<String> {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
-		nearest_fragment_before(&self.handle, pos).map(|id| encode_url_fragment(&id))
-	}
-
-	fn is_epub(&self) -> bool {
-		self.file_path.to_lowercase().ends_with(".epub")
-	}
-
-	/// Returns true when the document's underlying source can be shown as text.
-	#[must_use]
-	pub fn source_view_available(&self) -> bool {
-		if self.is_epub() {
-			return true;
-		}
-		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
-		matches!(ext.as_deref(), Some("html" | "htm" | "xhtml" | "md" | "markdown"))
-	}
-
-	/// Writes the underlying source of the document at `position` to a temp `.txt`
-	/// file and returns its path plus the caret offset matching the reading position.
-	///
-	/// For EPUB the current spine section is used; for standalone HTML/XHTML and
-	/// Markdown the original file is used. The caret is mapped to the source the
-	/// same way the web view positions it: HTML/XHTML/EPUB via the source byte
-	/// offset of the element at the reading position, Markdown via the nearest
-	/// block anchor. Returns `None` for formats without a meaningful text source.
-	#[must_use]
-	pub fn view_source(&self, position: i64, temp_dir: &str) -> Option<SourceView> {
-		let (content, caret, name) = self.source_content_for_position(position)?;
-		let digest = compute_document_hash(&self.file_path);
-		let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
-		let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
-		fs::create_dir_all(&doc_temp_dir).ok()?;
-		let output_path = doc_temp_dir.join(format!("{name}.source.txt"));
-		fs::write(&output_path, content.as_bytes()).ok()?;
-		Some(SourceView { path: output_path.to_string_lossy().to_string(), caret: i64::try_from(caret).unwrap_or(0) })
-	}
-
-	/// Returns `(source_text, caret_char_offset, file_name)` for the document at
-	/// `position`. The caret is mapped into the returned source text.
-	fn source_content_for_position(&self, position: i64) -> Option<(String, usize, String)> {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
-		if self.is_epub() {
-			let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty())?;
-			let file = File::open(&self.file_path).ok()?;
-			let mut archive = ZipArchive::new(BufReader::new(file)).ok()?;
-			let content = zip_utils::read_zip_entry_by_name(&mut archive, &section_path).ok()?;
-			let section_index = self.handle.current_marker_index(pos, MarkerType::SectionBreak)?;
-			let section_start = self.handle.document().buffer.markers.get(section_index)?.position;
-			let relative = pos.saturating_sub(section_start);
-			let caret = Self::xml_caret(&content, relative);
-			let name = Path::new(&section_path).file_name()?.to_string_lossy().to_string();
-			return Some((content, caret, name));
-		}
-		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
-		let name = Path::new(&self.file_path).file_name()?.to_string_lossy().to_string();
-		let content = convert_to_utf8(&fs::read(&self.file_path).ok()?);
-		let caret = match ext.as_deref() {
-			Some("html" | "htm" | "xhtml") => Self::xml_caret(&content, pos),
-			Some("md" | "markdown") => self.markdown_caret(&content, pos),
-			_ => return None,
-		};
-		Some((content, caret, name))
-	}
-
-	/// Maps a rendered character position to a caret offset in XML/HTML source
-	/// via the byte offset of the element at that position.
-	fn xml_caret(content: &str, relative: usize) -> usize {
-		parser::xml_to_text::XmlToText::new()
-			.find_anchor_byte_offset(content, relative)
-			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
-			.unwrap_or(0)
-	}
-
-	/// Maps a rendered character position to a caret offset in Markdown source
-	/// via the nearest `pb-block-N` anchor recorded during parsing.
-	fn markdown_caret(&self, content: &str, pos: usize) -> usize {
-		nearest_fragment_before(&self.handle, pos)
-			.and_then(|id| id.strip_prefix("pb-block-").and_then(|n| n.parse::<usize>().ok()))
-			.and_then(|index| parser::markdown::block_source_offset(content, index))
-			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
-			.unwrap_or(0)
-	}
-
-	/// Extracts every non-markup entry of the EPUB (images, stylesheets, fonts,
-	/// ...) into `doc_temp_dir`, preserving the archive's internal directory
-	/// structure, so that resources referenced relatively from a spine section
-	/// are present on disk wherever a webview loading that section would look
-	/// for them. Spine XHTML/HTML/NCX/OPF/XML entries are skipped here: they're
-	/// never needed as sibling resources for rendering, and skipping them avoids
-	/// extracting every chapter in the book just to view one. Runs at most once
-	/// per `doc_temp_dir`; subsequent calls are a no-op.
-	fn ensure_epub_resources_extracted(&self, doc_temp_dir: &Path) -> anyhow::Result<()> {
-		if !self.is_epub() {
-			return Ok(());
-		}
-		let marker = doc_temp_dir.join(".resources_extracted");
-		if marker.exists() {
-			return Ok(());
-		}
-		let file = File::open(&self.file_path)?;
-		let mut archive = ZipArchive::new(BufReader::new(file))?;
-		zip_utils::extract_zip_to_dir(&mut archive, doc_temp_dir, |path| {
-			matches!(
-				path.extension().and_then(|ext| ext.to_str()).map(str::to_ascii_lowercase).as_deref(),
-				Some("xhtml" | "html" | "htm" | "ncx" | "opf" | "xml")
-			)
-		})?;
-		fs::write(&marker, b"").ok();
-		Ok(())
-	}
-
-	/// # Errors
-	///
-	/// Returns an error if the EPUB cannot be opened or the resource cannot be written.
-	pub fn extract_resource(&self, resource_path: &str, output_path: &str) -> anyhow::Result<bool> {
-		if self.is_epub() {
-			let file = File::open(&self.file_path)?;
-			let mut archive = ZipArchive::new(BufReader::new(file))?;
-			zip_utils::extract_zip_entry_to_file(&mut archive, resource_path, Path::new(output_path))?;
-			Ok(true)
-		} else {
-			Ok(false)
-		}
-	}
-
-	/// Exports the document content to a file.
-	///
-	/// # Errors
-	///
-	/// Returns an error if the file cannot be written.
-	pub fn export_as(&self, output_path: &str, format: ExportFormat) -> io::Result<()> {
-		let content = render(&self.handle, format);
-		let mut file = File::create(output_path)?;
-		file.write_all(content.as_bytes())?;
-		file.flush()?;
-		Ok(())
-	}
-
-	#[must_use]
-	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormat> {
-		vec![ExportFormat::Text, ExportFormat::Html, ExportFormat::Markdown]
-	}
-
-	#[must_use]
-	pub fn render_export_ffi(&self, format: ExportFormat) -> String {
-		render(&self.handle, format)
-	}
-
-	#[must_use]
-	pub fn get_text_segment(
-		&self,
-		position: i64,
-		segment_type: SegmentTypeFfi,
-		direction: SegmentDirectionFfi,
-	) -> TextSegmentFfi {
-		let nav_target = match segment_type {
-			SegmentTypeFfi::Heading => Some(NavTarget::Heading),
-			SegmentTypeFfi::Link => Some(NavTarget::Link),
-			SegmentTypeFfi::Section => Some(NavTarget::Section),
-			SegmentTypeFfi::Page => Some(NavTarget::Page),
-			SegmentTypeFfi::List => Some(NavTarget::List),
-			SegmentTypeFfi::ListItem => Some(NavTarget::ListItem),
-			SegmentTypeFfi::Table => Some(NavTarget::Table),
-			SegmentTypeFfi::Separator => Some(NavTarget::Separator),
-			SegmentTypeFfi::Image => Some(NavTarget::Image),
-			SegmentTypeFfi::Figure => Some(NavTarget::Figure),
-			_ => None,
-		};
-
-		if let Some(target) = nav_target {
-			let direction_nav = match direction {
-				SegmentDirectionFfi::Previous => NavDirection::Previous,
-				_ => NavDirection::Next,
-			};
-			let nav_req = ffi::NavRequest { position, wrap: false, direction: direction_nav, target, level_filter: 0 };
-			let res = reader_navigate(&self.handle, &nav_req);
-			if res.found {
-				let mut text = res.marker_text.clone();
-				let mut offset = res.offset as i64;
-				let mut end_pos = offset;
-
-				if text.trim().is_empty() {
-					let content = &self.handle.document().buffer.content;
-					let total_chars = self.handle.document().buffer.char_count();
-					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(total_chars);
-					let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
-
-					let (start_byte, end_byte) =
-						self.find_paragraph_boundaries(content, byte_idx, SegmentDirectionFfi::Current);
-					text = content[start_byte..end_byte].trim().to_string();
-					let start_char = self.handle.document().buffer.char_index_for_byte(start_byte) as i64;
-					let end_char = self.handle.document().buffer.char_index_for_byte(end_byte) as i64;
-
-					offset = start_char;
-					end_pos = end_char;
-				} else {
-					end_pos += i64::try_from(text.chars().count()).unwrap_or(0);
-				}
-
-				return TextSegmentFfi { text, start_pos: offset, end_pos };
-			}
-			return TextSegmentFfi { text: String::new(), start_pos: position, end_pos: position };
-		}
-
-		let content = &self.handle.document().buffer.content;
-		let total_chars = self.handle.document().buffer.char_count();
-		let start_pos_char = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
-
-		let (start_byte, end_byte) = if matches!(segment_type, SegmentTypeFfi::Line) {
-			let line_num = self.line_from_position(start_pos_char as i64);
-			let target_line = match direction {
-				SegmentDirectionFfi::Previous => (line_num - 1).max(1),
-				SegmentDirectionFfi::Next => line_num + 1,
-				SegmentDirectionFfi::Current => line_num,
-			};
-			let start_char_idx = usize::try_from(self.position_from_line(target_line)).unwrap_or(0);
-			let end_char_idx = usize::try_from(self.position_from_line(target_line + 1)).unwrap_or(0);
-
-			let sb = self.handle.document().buffer.byte_index_for_char(start_char_idx);
-			let eb = self.handle.document().buffer.byte_index_for_char(end_char_idx);
-			(sb, eb)
-		} else {
-			self.find_paragraph_boundaries(content, byte_idx, direction)
-		};
-		let text = content[start_byte..end_byte].trim().to_string();
-		let start_char = self.handle.document().buffer.char_index_for_byte(start_byte);
-		let end_char = self.handle.document().buffer.char_index_for_byte(end_byte);
-		TextSegmentFfi {
-			text,
-			start_pos: i64::try_from(start_char).unwrap_or(0),
-			end_pos: i64::try_from(end_char).unwrap_or(0),
-		}
-	}
-
-	fn find_paragraph_boundaries(
-		&self,
-		content: &str,
-		byte_idx: usize,
-		direction: SegmentDirectionFfi,
-	) -> (usize, usize) {
-		let mut start = byte_idx;
-
-		if matches!(direction, SegmentDirectionFfi::Previous) {
-			let mut search_end = byte_idx;
-			while search_end > 0
-				&& (content.as_bytes()[search_end - 1] == b'\n' || content.as_bytes()[search_end - 1] == b'\r')
-			{
-				search_end -= 1;
-			}
-			start = content[..search_end].rfind('\n').map_or(0, |i| i + 1);
-		} else if matches!(direction, SegmentDirectionFfi::Next) {
-			if let Some(next) = content[byte_idx..].find('\n') {
-				start = byte_idx + next;
-				while start < content.len()
-					&& (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r')
-				{
-					start += 1;
-				}
-			} else {
-				start = content.len();
-			}
-		} else {
-			// Current: byte_idx may land anywhere inside the enclosing paragraph (e.g. a link
-			// marker mid-sentence), not just at its start, so search backward for the nearest
-			// preceding newline rather than only trimming forward from byte_idx.
-			while start < content.len() && (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r') {
-				start += 1;
-			}
-			start = content[..start].rfind('\n').map_or(0, |i| i + 1);
-		}
-
-		let end = content[start..].find('\n').map_or(content.len(), |i| start + i);
-		(start, end)
-	}
-
-	#[must_use]
-	pub fn get_status_info(&self, position: i64) -> StatusInfo {
-		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
-		let character_number = pos + 1;
-		let percentage = (pos * 100).checked_div(total_chars).unwrap_or(0);
-		StatusInfo {
-			line_number: i64::try_from(line_number).unwrap_or(1),
-			character_number: i64::try_from(character_number).unwrap_or(1),
-			percentage: i32::try_from(percentage).unwrap_or(0),
-		}
-	}
-
-	#[must_use]
-	pub fn position_from_percent(&self, percent: i32) -> i64 {
-		let total_chars = i64::try_from(self.handle.document().buffer.char_count()).unwrap_or(0);
-		let percent = i64::from(percent.clamp(0, 100));
-		if total_chars == 0 {
-			return 0;
-		}
-		// Ceiling division: (percent * total_chars + 99) / 100
-		(percent * total_chars + 99) / 100
-	}
-
-	#[must_use]
-	pub fn line_count(&self) -> i64 {
-		let newline_count = self.handle.document().buffer.newline_positions().len();
-		// Line count is newlines + 1 (last line may not have trailing newline)
-		i64::try_from(newline_count + 1).unwrap_or(1)
-	}
-
-	#[must_use]
-	pub fn position_from_line(&self, line: i64) -> i64 {
-		if line <= 1 {
-			return 0;
-		}
-		let buf = &self.handle.document().buffer;
-		let target_newlines = usize::try_from(line - 1).unwrap_or(0);
-		let newlines = buf.newline_positions();
-		if target_newlines <= newlines.len() {
-			i64::try_from(newlines[target_newlines - 1] + 1).unwrap_or(0)
-		} else {
-			i64::try_from(buf.char_count()).unwrap_or(0)
-		}
-	}
-
-	#[must_use]
-	pub fn line_from_position(&self, position: i64) -> i64 {
-		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
-		i64::try_from(line_number).unwrap_or(1)
-	}
-
-	#[must_use]
-	pub fn page_count(&self) -> usize {
-		self.handle.count_markers_by_type(MarkerType::PageBreak)
-	}
-
-	#[must_use]
-	pub fn current_page(&self, position: i64) -> i32 {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
-		self.handle.page_index(pos).map_or(0, |idx| idx + 1)
-	}
-
-	#[must_use]
-	pub fn page_offset(&self, page_number: i32) -> i64 {
-		let index = page_number - 1;
-		if index < 0 {
-			return -1;
-		}
-		self.handle
-			.get_marker_position_by_index(MarkerType::PageBreak, index)
-			.map_or(-1, |offset| i64::try_from(offset).unwrap_or(-1))
-	}
-
-	/// Returns the text between two positions (start inclusive, end exclusive).
-	#[must_use]
-	pub fn get_text_range(&self, start: i64, end: i64) -> String {
-		let total_chars = self.handle.document().buffer.char_count();
-		let start_pos = usize::try_from(start.max(0)).unwrap_or(0).min(total_chars);
-		let end_pos = usize::try_from(end.max(0)).unwrap_or(0).min(total_chars);
-		if start_pos >= end_pos {
-			return String::new();
-		}
-
-		let start_byte = self.handle.document().buffer.byte_index_for_char(start_pos);
-		let end_byte = self.handle.document().buffer.byte_index_for_char(end_pos);
-
-		self.handle.document().buffer.content[start_byte..end_byte].to_string()
-	}
-
-	#[must_use]
-	pub fn get_line_text(&self, position: i64) -> String {
-		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let newlines = buf.newline_positions();
-		let line_start = match newlines.partition_point(|&p| p < pos) {
-			0 => 0,
-			idx => newlines[idx - 1] + 1,
-		};
-
-		let start_byte = buf.byte_index_for_char(line_start);
-		let line_end_byte = buf.content[start_byte..].find('\n').map_or(buf.content.len(), |i| start_byte + i);
-
-		buf.content[start_byte..line_end_byte].to_string()
-	}
-
-	/// Returns the first non-blank line of real content at or after `position`, skipping blank
-	/// lines and bare page-number headers (e.g. "27" or "Page 27"). Returns an empty string if
-	/// no such line exists. Used for page-navigation announcements so the page number isn't
-	/// announced twice (the page marker's own text is a "Page N" label).
-	#[must_use]
-	pub fn first_content_line_after(&self, position: i64) -> String {
-		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		let mut pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let newlines = buf.newline_positions();
-		loop {
-			let idx = newlines.partition_point(|&p| p < pos);
-			let line_start = if idx == 0 { 0 } else { newlines[idx - 1] + 1 };
-			let line_end = newlines.get(idx).copied().unwrap_or(total_chars);
-			let line =
-				self.get_text_range(i64::try_from(line_start).unwrap_or(0), i64::try_from(line_end).unwrap_or(0));
-			if is_content_line(line.trim()) {
-				return line;
-			}
-			if line_end >= total_chars {
-				return String::new();
-			}
-			pos = line_end + 1;
-		}
-	}
-
-	#[must_use]
-	pub fn get_line_markers(&self, line: i64) -> Vec<LineMarker> {
-		let start_pos = self.position_from_line(line);
-		let end_pos = self.position_from_line(line + 1);
-		let start_usize = usize::try_from(start_pos.max(0)).unwrap_or(0);
-		// If line + 1 overflows or is the end, end_pos might be equal to start_pos
-		let end_usize = if start_pos == end_pos { usize::MAX } else { usize::try_from(end_pos.max(0)).unwrap_or(0) };
-
-		let mut res = Vec::new();
-		for marker in &self.handle.document().buffer.markers {
-			if marker.position >= start_usize && marker.position < end_usize {
-				res.push(LineMarker {
-					mtype: marker.mtype,
-					position: i64::try_from(marker.position).unwrap_or(0),
-					text: marker.text.clone(),
-					reference: marker.reference.clone(),
-					level: marker.level,
-					length: i64::try_from(marker.length).unwrap_or(0),
-				});
-			} else if marker.position > end_usize {
-				break;
-			}
-		}
-		res
-	}
-
-	fn has_headings(&self, level: Option<i32>) -> bool {
-		if let Some(lvl) = level {
-			let marker_type = match lvl {
-				1 => MarkerType::Heading1,
-				2 => MarkerType::Heading2,
-				3 => MarkerType::Heading3,
-				4 => MarkerType::Heading4,
-				5 => MarkerType::Heading5,
-				6 => MarkerType::Heading6,
-				_ => return false,
-			};
-			self.handle.count_markers_by_type(marker_type) > 0
-		} else {
-			self.handle.count_markers_by_type(MarkerType::Heading1) > 0
-				|| self.handle.count_markers_by_type(MarkerType::Heading2) > 0
-				|| self.handle.count_markers_by_type(MarkerType::Heading3) > 0
-				|| self.handle.count_markers_by_type(MarkerType::Heading4) > 0
-				|| self.handle.count_markers_by_type(MarkerType::Heading5) > 0
-				|| self.handle.count_markers_by_type(MarkerType::Heading6) > 0
-		}
-	}
-
-	#[must_use]
-	pub fn get_toc(&self) -> Vec<TocEntry> {
-		let mut flat = Vec::new();
-		fn flatten(items: &[document::TocItem], level: i32, flat: &mut Vec<TocEntry>) {
-			for item in items {
-				flat.push(TocEntry {
-					title: item.name.clone(),
-					position: i64::try_from(item.offset).unwrap_or(0),
-					level,
-				});
-				flatten(&item.children, level + 1, flat);
-			}
-		}
-		flatten(&self.handle.document().toc_items, 0, &mut flat);
-		flat
-	}
-}
-
-/// Whether a trimmed line looks like real page content rather than a blank line, a bare page
-/// number ("27", "27 / 300"), or a "Page N" header.
-fn is_content_line(trimmed: &str) -> bool {
-	if trimmed.is_empty() {
-		return false;
-	}
-	let lower = trimmed.to_ascii_lowercase();
-	let body = lower.strip_prefix("page ").unwrap_or(&lower);
-	body.chars().any(char::is_alphabetic)
 }
 
 #[cfg(test)]
 mod tests {
+	use std::{
+		fs::{self, File},
+		io::Write,
+		path::Path,
+	};
+
 	use super::*;
-	use crate::document::{Document, DocumentBuffer, Marker};
+	use crate::{
+		audio::AudioLocation,
+		config::ConfigManager,
+		document::{Document, DocumentBuffer, Marker},
+		types::{NavDirection, NavTarget},
+	};
 
 	fn sample_session(parser_flags: ParserFlags) -> DocumentSession {
 		let mut buffer = DocumentBuffer::with_content("line1\nline2\nline3".to_string());
@@ -2157,5 +1078,191 @@ mod tests {
 		assert!(image_path.exists(), "expected image extracted at {}", image_path.display());
 
 		fs::remove_dir_all(&temp_root).ok();
+	}
+
+	fn session_with_audio(timeline: AudioTimeline) -> DocumentSession {
+		let buffer = DocumentBuffer::with_content("line1\nline2\nline3".to_string());
+		let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
+		doc.set_buffer(buffer);
+		doc.set_audio(timeline);
+		DocumentSession {
+			handle: DocumentHandle::new(doc),
+			file_path: "book.zip".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::empty(),
+			last_stable_position: None,
+		}
+	}
+
+	fn two_source_timeline() -> AudioTimeline {
+		let mut builder = crate::audio::AudioTimelineBuilder::new();
+		let source0 = builder.add_source(AudioLocation::File("chapter1.mp3".to_string()), Some(9000));
+		let source1 = builder.add_source(AudioLocation::File("chapter2.mp3".to_string()), Some(4000));
+		builder.add_clip(source0, 0, 9000, 0, 10);
+		builder.add_clip(source1, 0, 4000, 10, 17);
+		builder.build()
+	}
+
+	#[test]
+	fn has_audio_ffi_is_false_without_a_timeline() {
+		let session = sample_session(ParserFlags::empty());
+		assert!(!session.has_audio_ffi());
+	}
+
+	#[test]
+	fn has_audio_ffi_is_true_with_a_non_empty_timeline() {
+		let session = session_with_audio(two_source_timeline());
+		assert!(session.has_audio_ffi());
+		assert_eq!(session.audio_source_count_ffi(), 2);
+		assert_eq!(session.audio_clip_count_ffi(), 2);
+	}
+
+	#[test]
+	fn audio_clip_ffi_reports_found_and_its_fields() {
+		let session = session_with_audio(two_source_timeline());
+		let clip = session.audio_clip_ffi(1);
+		assert!(clip.found);
+		assert_eq!(clip.source, 1);
+		assert_eq!(clip.clip_begin_ms, 0);
+		assert_eq!(clip.clip_end_ms, 4000);
+		assert_eq!(clip.start, 10);
+		assert_eq!(clip.end, 17);
+	}
+
+	#[test]
+	fn audio_clip_ffi_is_not_found_out_of_range() {
+		let session = session_with_audio(two_source_timeline());
+		assert!(!session.audio_clip_ffi(99).found);
+		assert!(!sample_session(ParserFlags::empty()).audio_clip_ffi(0).found);
+	}
+
+	#[test]
+	fn audio_cursor_at_elapsed_ffi_resolves_the_containing_clip() {
+		let session = session_with_audio(two_source_timeline());
+		let cursor = session.audio_cursor_at_elapsed_ffi(9500);
+		assert!(cursor.found);
+		assert_eq!(cursor.clip_index, 1);
+		assert_eq!(cursor.seek_ms, 500);
+	}
+
+	#[test]
+	fn audio_point_for_position_ffi_anchors_to_the_clip_start() {
+		let session = session_with_audio(two_source_timeline());
+		let point = session.audio_point_for_position_ffi(15);
+		assert!(point.found);
+		assert_eq!(point.position, 10);
+		assert_eq!(point.time_ms, 9000);
+	}
+
+	#[test]
+	fn audio_point_for_position_ffi_is_not_found_in_a_gap() {
+		let session = session_with_audio(two_source_timeline());
+		assert!(!session.audio_point_for_position_ffi(30).found);
+	}
+
+	#[test]
+	fn audio_elapsed_for_source_position_ffi_round_trips_and_has_a_sentinel() {
+		let session = session_with_audio(two_source_timeline());
+		assert_eq!(session.audio_elapsed_for_source_position_ffi(1, 500), 9500);
+		assert_eq!(session.audio_elapsed_for_source_position_ffi(9, 0), -1);
+	}
+
+	#[test]
+	fn audio_next_source_after_ffi_advances_and_has_a_sentinel_at_the_end() {
+		let session = session_with_audio(two_source_timeline());
+		assert_eq!(session.audio_next_source_after_ffi(0), 1);
+		assert_eq!(session.audio_next_source_after_ffi(1), -1);
+	}
+
+	#[test]
+	fn audio_source_direct_path_ffi_returns_the_path_for_a_file_source_only() {
+		let session = session_with_audio(two_source_timeline());
+		assert_eq!(session.audio_source_direct_path_ffi(0), "chapter1.mp3");
+		assert_eq!(session.audio_source_direct_path_ffi(99), "");
+	}
+
+	#[test]
+	fn audio_extract_source_ffi_copies_a_file_source() {
+		let dir = std::env::temp_dir().join("paperback-session-audio-extract-test");
+		fs::create_dir_all(&dir).unwrap();
+		let source_path = dir.join("chapter1.mp3");
+		fs::write(&source_path, b"chapter-one-bytes").unwrap();
+		let mut builder = crate::audio::AudioTimelineBuilder::new();
+		let source = builder.add_source(AudioLocation::File(source_path.to_string_lossy().to_string()), None);
+		builder.add_clip(source, 0, 1000, 0, 10);
+		let session = session_with_audio(builder.build());
+
+		let output_path = dir.join("out.mp3");
+		assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
+		assert_eq!(fs::read(&output_path).unwrap(), b"chapter-one-bytes");
+	}
+
+	#[test]
+	fn audio_extract_source_ffi_extracts_a_zip_entry_source() {
+		use std::io::Write;
+
+		use zip::{ZipWriter, write::FileOptions};
+
+		let dir = std::env::temp_dir().join("paperback-session-audio-extract-zip-test");
+		fs::create_dir_all(&dir).unwrap();
+		let zip_path = dir.join("book.zip");
+		{
+			let file = File::create(&zip_path).unwrap();
+			let mut writer = ZipWriter::new(file);
+			writer.start_file("chapter1.mp3", FileOptions::<()>::default()).unwrap();
+			writer.write_all(b"zipped-chapter-bytes").unwrap();
+			writer.finish().unwrap();
+		}
+		let mut builder = crate::audio::AudioTimelineBuilder::new();
+		let source = builder.add_source(
+			AudioLocation::ZipEntry {
+				archive: zip_path.to_string_lossy().to_string(),
+				entry: "chapter1.mp3".to_string(),
+				password: None,
+			},
+			None,
+		);
+		builder.add_clip(source, 0, 1000, 0, 10);
+		let session = session_with_audio(builder.build());
+
+		let output_path = dir.join("out.mp3");
+		assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
+		assert_eq!(fs::read(&output_path).unwrap(), b"zipped-chapter-bytes");
+		assert_eq!(session.audio_source_direct_path_ffi(0), "");
+	}
+
+	#[test]
+	fn audio_extract_source_ffi_extracts_a_password_protected_zip_entry_source() {
+		use std::io::Write;
+
+		use zip::{ZipWriter, write::FileOptions};
+
+		let dir = std::env::temp_dir().join("paperback-session-audio-extract-encrypted-zip-test");
+		fs::create_dir_all(&dir).unwrap();
+		let zip_path = dir.join("book.zip");
+		{
+			let file = File::create(&zip_path).unwrap();
+			let mut writer = ZipWriter::new(file);
+			let options = FileOptions::<()>::default().with_aes_encryption(zip::AesMode::Aes256, "hunter2");
+			writer.start_file("chapter1.mp3", options).unwrap();
+			writer.write_all(b"zipped-chapter-bytes").unwrap();
+			writer.finish().unwrap();
+		}
+		let mut builder = crate::audio::AudioTimelineBuilder::new();
+		let source = builder.add_source(
+			AudioLocation::ZipEntry {
+				archive: zip_path.to_string_lossy().to_string(),
+				entry: "chapter1.mp3".to_string(),
+				password: Some("hunter2".to_string()),
+			},
+			None,
+		);
+		builder.add_clip(source, 0, 1000, 0, 10);
+		let session = session_with_audio(builder.build());
+
+		let output_path = dir.join("out.mp3");
+		assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
+		assert_eq!(fs::read(&output_path).unwrap(), b"zipped-chapter-bytes");
 	}
 }

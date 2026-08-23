@@ -40,6 +40,7 @@ pub use note_entry::show_note_entry_dialog;
 mod open_as;
 pub use open_as::show_open_as_dialog;
 mod options;
+pub(crate) use options::AUDIO_SEEK_AMOUNTS_SECONDS;
 pub use options::show_options_dialog;
 mod shortcuts;
 pub use shortcuts::prompt_for_shortcuts;

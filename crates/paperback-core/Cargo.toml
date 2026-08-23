@@ -51,6 +51,10 @@ uniffi = { version = "0.32.0", features = ["build"], optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
+# Only for constructing password-protected archives in tests; matches the main `zip`
+# dependency's default-features = false, adding just aes-crypto rather than the full
+# default bundle (bzip2, lzma, ppmd, zstd).
+zip = { version = "8.6.0", default-features = false, features = ["deflate", "aes-crypto"] }
 
 [features]
 uniffi = ["dep:uniffi"]

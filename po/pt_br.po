@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-18 16:53+0000\n"
+"POT-Creation-Date: 2026-08-22 00:25+0000\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -1903,6 +1903,13 @@ msgstr "Restaurar o PaperBack"
 msgid "Exit Paperback"
 msgstr "Sair do Paperback"
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+msgid "Figure"
+msgstr "Figura"
+
+msgid "Image"
+msgstr "Imagem"
+
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
 msgid "Failed to convert DTBook XML to text"
@@ -1963,72 +1970,10 @@ msgstr "O arquivo HTML está vazio: {}"
 msgid "Failed to convert HTML to text: {}"
 msgstr "Falha ao converter HTML para texto: {}"
 
-#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-msgid "Figure"
-msgstr "Figura"
-
-msgid "Image"
-msgstr "Imagem"
-
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 #, fuzzy
 msgid "Failed to convert Markdown to text: {}"
 msgstr "Falha na conversão de Markdown para texto: {}"
-
-#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
-#, fuzzy
-msgid "File too short"
-msgstr "O arquivo é muito curto"
-
-#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-#, fuzzy
-msgid "Invalid record offsets"
-msgstr "Deslocamentos inválidos de registros"
-
-#. TRANSLATORS: Error shown when a MOBI file has no records
-#, fuzzy
-msgid "No records found"
-msgstr "Nenhum registro encontrado"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-#, fuzzy
-msgid "Invalid Record 0 offsets"
-msgstr "Registro inválido: 0 deslocamentos"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-#, fuzzy
-msgid "Invalid Record 0"
-msgstr "Registro inválido 0"
-
-#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-#, fuzzy
-msgid "No MOBI header"
-msgstr "Sem cabeçalho MOBI"
-
-#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-#, fuzzy
-msgid "Invalid MOBI identifier"
-msgstr "Identificador MOBI inválido"
-
-#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-#, fuzzy
-msgid "Invalid content record range"
-msgstr "Intervalo inválido de registros de conteúdo"
-
-#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-#, fuzzy
-msgid "Invalid HUFF/CDIC records"
-msgstr "Registros HUFF/CDIC inválidos"
-
-#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-#, fuzzy
-msgid "Missing HUFF parameters in header"
-msgstr "Parâmetros HUFF ausentes no cabeçalho"
-
-#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-#, fuzzy
-msgid "Unsupported compression mode ({})"
-msgstr "Modo de compactação não compatível ({})"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
 #, fuzzy
@@ -2090,6 +2035,61 @@ msgstr "code_len inválido{}"
 msgid "Decode stack overflow"
 msgstr "Decodificar estouro de pilha"
 
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+#, fuzzy
+msgid "File too short"
+msgstr "O arquivo é muito curto"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+#, fuzzy
+msgid "Invalid record offsets"
+msgstr "Deslocamentos inválidos de registros"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+#, fuzzy
+msgid "No records found"
+msgstr "Nenhum registro encontrado"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+#, fuzzy
+msgid "Invalid Record 0 offsets"
+msgstr "Registro inválido: 0 deslocamentos"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+#, fuzzy
+msgid "Invalid Record 0"
+msgstr "Registro inválido 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+#, fuzzy
+msgid "No MOBI header"
+msgstr "Sem cabeçalho MOBI"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+#, fuzzy
+msgid "Invalid MOBI identifier"
+msgstr "Identificador MOBI inválido"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+#, fuzzy
+msgid "Invalid content record range"
+msgstr "Intervalo inválido de registros de conteúdo"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+#, fuzzy
+msgid "Invalid HUFF/CDIC records"
+msgstr "Registros HUFF/CDIC inválidos"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+#, fuzzy
+msgid "Missing HUFF parameters in header"
+msgstr "Parâmetros HUFF ausentes no cabeçalho"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+#, fuzzy
+msgid "Unsupported compression mode ({})"
+msgstr "Modo de compactação não compatível ({})"
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 #, fuzzy
 msgid "ODP file does not contain any pages"
@@ -2138,16 +2138,6 @@ msgstr "Fluxo do documento do PowerPoint não encontrado"
 msgid "Failed to parse RTF document: {}"
 msgstr "Falha ao analisar o documento RTF: {}"
 
-#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
-#, fuzzy
-msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "Falha na análise do DOC legado: {}. Falha no recurso alternativo do OOXML: {}"
-
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-#, fuzzy
-msgid "No readable content found in the ZIP archive"
-msgstr "Não foi encontrado nenhum conteúdo legível no arquivo ZIP"
-
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
 msgid "DOC file is missing required FIB fields"
@@ -2178,6 +2168,11 @@ msgstr "O conteúdo do arquivo não parece ser texto simples"
 msgid "No readable text content found"
 msgstr "Não foi encontrado nenhum conteúdo de texto legível"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#, fuzzy
+msgid "No readable content found in the ZIP archive"
+msgstr "Não foi encontrado nenhum conteúdo legível no arquivo ZIP"
+
 #. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
 #, fuzzy
 msgid "File is encrypted and requires a password"
@@ -2187,6 +2182,11 @@ msgstr "O arquivo está criptografado e requer uma senha"
 #, fuzzy
 msgid "Decryption failed (wrong password?): {}"
 msgstr "Falha na descriptografia (senha incorreta?): {}"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+#, fuzzy
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr "Falha na análise do DOC legado: {}. Falha no recurso alternativo do OOXML: {}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 #, fuzzy

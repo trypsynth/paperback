@@ -7,7 +7,15 @@ import MediaPlayer
 final class AppViewModel: ObservableObject {
 	// MARK: - Tabs
 	@Published var tabs: [DocumentTab] = []
-	@Published var activeTabId: UUID? = nil
+	// Stops TTS whenever the active document changes so a paused/playing utterance from the
+	// previous book can never bleed into the next one (its buffer stays scheduled on the audio
+	// node across pause() until something clears it — see TtsManager.pause()).
+	@Published var activeTabId: UUID? = nil {
+		didSet {
+			guard activeTabId != oldValue else { return }
+			ttsManager.stop()
+		}
+	}
 
 	var activeTab: DocumentTab? {
 		guard let id = activeTabId else { return nil }
@@ -272,7 +280,6 @@ final class AppViewModel: ObservableObject {
 	}
 
 	func setActiveTab(_ tab: DocumentTab) {
-		ttsManager.stop()
 		activeTabId = tab.id
 		if let t = activeTab {
 			loadSegment(for: t)
@@ -285,12 +292,17 @@ final class AppViewModel: ObservableObject {
 		let paths = configManager.getRecentDocuments()
 		let openPaths = Set(tabs.map { $0.url.path(percentEncoded: false) })
 		recentDocuments = paths.map { path in
-			let url = URL(fileURLWithPath: path)
+			// Resolve the persisted security-scoped bookmark rather than constructing a plain
+			// path URL: files picked from outside the app's own container (the common case)
+			// aren't readable via a bare path once the picker's access grant has ended, which
+			// otherwise shows every such entry as missing and fails to open with a parse error.
+			let resolved = resolvedURL(forPath: path)
+			let url = resolved ?? URL(fileURLWithPath: path)
 			let title = url.deletingPathExtension().lastPathComponent
 			return RecentDocument(
 				title: title,
 				url: url,
-				isMissing: !FileManager.default.fileExists(atPath: path),
+				isMissing: resolved == nil,
 				isOpen: openPaths.contains(path)
 			)
 		}
@@ -396,7 +408,7 @@ final class AppViewModel: ObservableObject {
 		ttsPosition = seg.startPos
 		currentSegmentText = seg.text
 		updateTabPosition(seg.startPos)
-		ttsManager.speak(seg.text)
+		ttsManager.speak(seg.text, isAutoAdvance: true)
 		prefetchAdjacentSegments(around: seg.startPos)
 	}
 
@@ -561,7 +573,7 @@ final class AppViewModel: ObservableObject {
 
 	func goToPage(_ page: Int32) {
 		guard let session = activeSession else { return }
-		let pos = session.pageOffsetFfi(page: page)
+		let pos = session.pageOffset(page: page)
 		ttsPosition = pos
 		updateTabPosition(pos)
 		refreshCurrentSegment()
@@ -569,7 +581,7 @@ final class AppViewModel: ObservableObject {
 
 	func goToPercent(_ percent: Int32) {
 		guard let session = activeSession else { return }
-		let pos = session.positionFromPercentFfi(percent: percent)
+		let pos = session.positionFromPercent(percent: percent)
 		ttsPosition = pos
 		updateTabPosition(pos)
 		refreshCurrentSegment()
@@ -578,15 +590,21 @@ final class AppViewModel: ObservableObject {
 	// MARK: - Private helpers
 
 	private func tryRestoreDocument(path: String) {
+		guard let url = resolvedURL(forPath: path) else { return }
+		openDocument(url: url)
+	}
+
+	// Resolves a stored path back to a usable URL: prefers the persisted security-scoped
+	// bookmark (needed for files outside the app's own container), falling back to a plain
+	// path URL for files the app can read directly. Returns nil if neither resolves.
+	private func resolvedURL(forPath path: String) -> URL? {
 		if let data = UserDefaults.standard.data(forKey: bookmarkKey(path)) {
 			var isStale = false
 			if let url = try? URL(resolvingBookmarkData: data, bookmarkDataIsStale: &isStale) {
-				openDocument(url: url)
-				return
+				return url
 			}
 		}
-		guard FileManager.default.fileExists(atPath: path) else { return }
-		openDocument(url: URL(fileURLWithPath: path))
+		return FileManager.default.fileExists(atPath: path) ? URL(fileURLWithPath: path) : nil
 	}
 
 	private func saveBookmark(for url: URL, path: String) {

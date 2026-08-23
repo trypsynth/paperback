@@ -8,7 +8,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
 	parser::{
 		Parser,
-		table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
+		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},

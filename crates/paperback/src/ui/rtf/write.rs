@@ -10,7 +10,7 @@ use std::fmt::Write as _;
 
 use paperback_core::util::text::ch_width;
 
-use super::document_manager::FormatSegment;
+use crate::ui::document_manager::FormatSegment;
 
 pub struct RtfFontInfo {
 	pub face_name: String,

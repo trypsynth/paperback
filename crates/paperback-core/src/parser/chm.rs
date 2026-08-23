@@ -8,7 +8,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		Parser, add_converter_markers_excluding_links,
-		html_to_text::{HtmlSourceMode, HtmlToText},
+		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		is_external_url,
 		util::path::{extract_title_from_path, resolve_relative_path},
 	},

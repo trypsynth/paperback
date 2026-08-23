@@ -14,13 +14,15 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		ConverterOutput, Parser, add_converter_markers_excluding_links,
-		html_to_text::{HtmlSourceMode, HtmlToText},
+		convert::{
+			html_to_text::{HtmlSourceMode, HtmlToText},
+			xml_to_text::XmlToText,
+		},
 		is_external_url,
 		util::{
 			path::{extract_title_from_path, resolve_relative_path},
 			xml::collect_element_text,
 		},
-		xml_to_text::XmlToText,
 	},
 	t,
 	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},

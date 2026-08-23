@@ -12,13 +12,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  pull-requests: write
 jobs:
   translate:
-    # Guards against the bot's own push (made with this workflow's token) re-triggering
-    # itself: github.actor on that push event is github-actions[bot], so this run gets
-    # skipped. One "settle" run still fires after a real commit; it just finds nothing
-    # left to translate and exits without pushing.
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -34,14 +30,16 @@ jobs:
         env:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
         run: cargo run -p xtask --release -- translate
-      - name: Commit and push if anything changed
-        run: |
-          if git status --porcelain -- po/ doc/ | grep -q .; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add po/ doc/
-            git commit -m "chore: machine-translate missing strings via DeepL"
-            git push
-          else
-            echo "Nothing to translate."
-          fi
+      - name: Open or update translation PR
+        uses: peter-evans/create-pull-request@v8
+        with:
+          add-paths: |
+            po/
+            doc/
+          commit-message: "chore: machine-translate missing strings via DeepL"
+          committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          branch: auto-translate-strings
+          delete-branch: true
+          title: "chore: machine-translate missing strings via DeepL"
+          body: Automated DeepL translation update. Runs on every push to master; safe to leave open and merge periodically.
