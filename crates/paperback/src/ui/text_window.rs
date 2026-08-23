@@ -43,14 +43,10 @@ impl TextWindow {
 		Self { start: 0, end: doc_len }
 	}
 
-	// Not yet read anywhere - kept for the later phases that need to reason about the loaded
-	// range directly (Select-All/Copy interception, diagnostics). See the plan's Phase 4/5.
-	#[allow(dead_code)]
 	pub const fn start(&self) -> i64 {
 		self.start
 	}
 
-	#[allow(dead_code)]
 	pub const fn end(&self) -> i64 {
 		self.end
 	}

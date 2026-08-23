@@ -1001,14 +1001,11 @@ impl DocumentManager {
 				#[cfg(target_os = "windows")]
 				if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
 					let going_down = key == WXK_DOWN;
-					let nav_result = dm_for_keys.try_lock().ok().and_then(|dm| {
+					let nav_result = dm_for_keys.try_lock().ok().and_then(|mut dm| {
 						let start_of_line = dm.config.lock().unwrap().get_app_bool("line_start_navigation", false);
-						navigate_line_by_column(
-							text_ctrl_for_menu,
-							going_down,
-							dm.preferred_column.get(),
-							start_of_line,
-						)
+						let pref_col = dm.preferred_column.get();
+						dm.active_tab_mut()
+							.and_then(|tab| navigate_line_by_column(tab, going_down, pref_col, start_of_line))
 					});
 					if let Some((new_pos, new_col)) = nav_result {
 						kbd.event.skip(false);
@@ -1082,38 +1079,68 @@ impl DocumentManager {
 	}
 }
 
-/// Returns (`new_position`, `preferred_column`) for vertical navigation.
-/// With `start_of_line` set, the caret lands at the start of the target visual line. Otherwise it
-/// uses character-column-based navigation (`pref_col` or the current column), so the cursor lands on
-/// the same character column (not pixel column) on the target visual line.
-///
-/// TODO(windowing, phase 3): operates purely in ctrl-local coordinates and never reloads the
-/// window, see C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md - Up/Down at a loaded
-/// window's edge stops rather than crossing into the next window.
+/// One line-vertical-navigation attempt within whatever's currently loaded in `tab.text_ctrl`.
+/// Returns `None` (outer) if the current position has no known line/column (shouldn't happen in
+/// practice), `Some(None)` if the target line falls outside what's currently loaded - the caller
+/// checks whether there's more document in that direction and, if so, reloads and retries - or
+/// `Some(Some(..))` on success.
 #[cfg(target_os = "windows")]
-fn navigate_line_by_column(
-	text_ctrl: TextCtrl,
+fn try_navigate_line_by_column(
+	tab: &DocumentTab,
 	going_down: bool,
 	pref_col: Option<i64>,
 	start_of_line: bool,
-) -> Option<(i64, i64)> {
+) -> Option<Option<(i64, i64)>> {
+	let text_ctrl = tab.text_ctrl;
 	let current_pos = text_ctrl.get_insertion_point().max(0);
 	let (current_col, current_line) = text_ctrl.position_to_xy(current_pos)?;
 	let col = pref_col.unwrap_or(current_col);
 	let target_line = if going_down { current_line + 1 } else { current_line - 1 };
 	if target_line < 0 {
-		return None;
+		return Some(None);
 	}
 	let target_line_start = text_ctrl.xy_to_position(0, target_line);
 	if target_line_start < 0 {
-		return None;
+		return Some(None);
 	}
 	if start_of_line {
-		return Some((target_line_start, 0));
+		return Some(Some((target_line_start, 0)));
 	}
 	let target_line_len = i64::from(text_ctrl.get_line_length(target_line));
 	let new_pos = target_line_start + col.min(target_line_len);
-	Some((new_pos, col))
+	Some(Some((new_pos, col)))
+}
+
+/// Returns (`new_position`, `preferred_column`) for vertical navigation.
+/// With `start_of_line` set, the caret lands at the start of the target visual line. Otherwise it
+/// uses character-column-based navigation (`pref_col` or the current column), so the cursor lands on
+/// the same character column (not pixel column) on the target visual line.
+///
+/// Reloads `tab`'s window and retries once if Up/Down would otherwise stop at a loaded-window
+/// boundary that isn't the document's actual start/end. Without this, Up/Down (and Page Up/Down,
+/// which RichEdit handles natively with no window awareness at all) can strand the caret mid-chapter
+/// with no keyboard-only way past it except an explicit jump (heading/bookmark navigation etc.) -
+/// found the hard way testing a huge book, not something worth leaving as a TODO.
+#[cfg(target_os = "windows")]
+fn navigate_line_by_column(
+	tab: &mut DocumentTab,
+	going_down: bool,
+	pref_col: Option<i64>,
+	start_of_line: bool,
+) -> Option<(i64, i64)> {
+	if let Some(result) = try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)? {
+		return Some(result);
+	}
+	let doc_len = tab.session.document_len();
+	let has_more = if going_down { tab.window.end() < doc_len } else { tab.window.start() > 0 };
+	if !has_more {
+		return None;
+	}
+	let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point().max(0));
+	reload_window_around(tab, doc_pos);
+	let local = tab.window.to_local(doc_pos);
+	tab.text_ctrl.set_insertion_point(local);
+	try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)?
 }
 
 fn normalized_path_key(path: &Path) -> String {
