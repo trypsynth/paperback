@@ -53,6 +53,12 @@ class MainScreenViewModel(
 	// The document URI daisyAudioPlayer is currently attached to.
 	private var daisyAttachedDocumentUri: String? = null
 
+	// Whether playback controls should route to daisyAudioPlayer instead of ttsManager.
+	// Centralized so every dispatch site checks the exact same condition rather than each
+	// re-deriving "the active tab, if any, has audio" on its own.
+	private val activeTabHasAudio: Boolean
+		get() = (uiState.value as? MainScreenUiState.Success)?.activeTab?.hasAudio == true
+
 	private val _currentSegmentType = MutableStateFlow(SegmentTypeFfi.PARAGRAPH)
 	val currentSegmentType: StateFlow<SegmentTypeFfi> = _currentSegmentType.asStateFlow()
 
@@ -623,8 +629,7 @@ class MainScreenViewModel(
 	}
 
 	fun togglePlayPause() {
-		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab
-		if (tab != null && tab.hasAudio) {
+		if (activeTabHasAudio) {
 			daisyAudioPlayer.toggle()
 			return
 		}
@@ -675,6 +680,21 @@ class MainScreenViewModel(
 		}
 	}
 
+	/** Seeks daisyAudioPlayer to `segment`'s start, then either resumes playback there or just
+	 * announces it, for a next/prev/type-directed navigation landing on an audio-backed tab. */
+	private fun navigateDaisyAudioToSegment(
+		segment: TextSegmentFfi,
+		speak: Boolean,
+		announce: Boolean
+	) {
+		daisyAudioPlayer.seekToPosition(segment.startPos)
+		if (speak) {
+			daisyAudioPlayer.play()
+		} else if (announce) {
+			announceNavigationCue(segment.text)
+		}
+	}
+
 	fun playNextSegment(
 		speak: Boolean = true,
 		announce: Boolean = false
@@ -688,12 +708,7 @@ class MainScreenViewModel(
 				_currentSegmentText.value = segment.text
 				saveTtsPositionToConfig(segment.startPos)
 				if (tab.hasAudio) {
-					daisyAudioPlayer.seekToPosition(segment.startPos)
-					if (speak) {
-						daisyAudioPlayer.play()
-					} else if (announce) {
-						announceNavigationCue(segment.text)
-					}
+					navigateDaisyAudioToSegment(segment, speak, announce)
 					return
 				}
 				if (speak) {
@@ -778,12 +793,7 @@ class MainScreenViewModel(
 				_currentSegmentText.value = segment.text
 				saveTtsPositionToConfig(segment.startPos)
 				if (tab.hasAudio) {
-					daisyAudioPlayer.seekToPosition(segment.startPos)
-					if (speak) {
-						daisyAudioPlayer.play()
-					} else if (announce) {
-						announceNavigationCue(segment.text)
-					}
+					navigateDaisyAudioToSegment(segment, speak, announce)
 					return
 				}
 				if (speak) {
@@ -802,8 +812,7 @@ class MainScreenViewModel(
 	}
 
 	fun pauseTts() {
-		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab
-		if (tab != null && tab.hasAudio) {
+		if (activeTabHasAudio) {
 			daisyAudioPlayer.pause()
 			return
 		}
@@ -844,8 +853,7 @@ class MainScreenViewModel(
 			_currentSegmentText.value = segment.text
 			saveTtsPositionToConfig(segment.startPos)
 			if (tab.hasAudio) {
-				daisyAudioPlayer.seekToPosition(segment.startPos)
-				daisyAudioPlayer.play()
+				navigateDaisyAudioToSegment(segment, speak = true, announce = false)
 				return
 			}
 			ttsManager.stop()
@@ -855,8 +863,7 @@ class MainScreenViewModel(
 	}
 
 	fun resumeTts() {
-		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab
-		if (tab != null && tab.hasAudio) {
+		if (activeTabHasAudio) {
 			daisyAudioPlayer.play()
 			return
 		}
@@ -1016,8 +1023,7 @@ class MainScreenViewModel(
 		_ttsPosition.value = pos
 		refreshSegmentPreview()
 		saveTtsPositionToConfig(pos)
-		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab
-		if (tab != null && tab.hasAudio) {
+		if (activeTabHasAudio) {
 			daisyAudioPlayer.seekToPosition(pos)
 			return
 		}
