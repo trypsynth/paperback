@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 19:39-0600\n"
+"POT-Creation-Date: 2026-08-22 20:02-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -402,6 +402,10 @@ msgstr ""
 #. TRANSLATORS: Singular label for 1 hour duration
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "1 hour"
+msgstr ""
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+msgid "Seeking &past the end of a chapter continues into the next"
 msgstr ""
 
 #. TRANSLATORS: Option to check for app updates automatically on startup

@@ -36,6 +36,7 @@ pub struct OptionsDialogResult {
 	pub bookmark_sounds: bool,
 	pub sync_caret_to_audio: bool,
 	pub audio_seek_amount_seconds: i32,
+	pub audio_seek_continues_into_next_file: bool,
 	pub auto_reload_documents: bool,
 	pub recent_documents_to_show: i32,
 	pub reading_speed_wpm: i32,
@@ -66,6 +67,7 @@ struct OptionsDialogUi {
 	bookmark_sounds_check: CheckBox,
 	sync_caret_to_audio_check: CheckBox,
 	audio_seek_amount_ctrl: Choice,
+	audio_seek_continues_into_next_file_check: CheckBox,
 	auto_reload_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
 	reading_speed_ctrl: SpinCtrl,
@@ -120,6 +122,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		bookmark_sounds: ui.bookmark_sounds_check.is_checked(),
 		sync_caret_to_audio: ui.sync_caret_to_audio_check.is_checked(),
 		audio_seek_amount_seconds,
+		audio_seek_continues_into_next_file: ui.audio_seek_continues_into_next_file_check.is_checked(),
 		auto_reload_documents: ui.auto_reload_check.is_checked(),
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
@@ -196,6 +199,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(target_os = "macos")]
 	audio_seek_amount_ctrl
 		.set_accessibility_label(audio_seek_amount_label_text.replace('&', "").trim_end_matches(':').trim());
+	let audio_seek_continues_into_next_file_check =
+		// TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+		CheckBox::builder(&reading_panel).with_label(&t("Seeking &past the end of a chapter continues into the next")).build();
 	let audio_seek_amount_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	audio_seek_amount_sizer.add(
 		&audio_seek_amount_label,
@@ -238,6 +244,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
 	reading_sizer.add_sizer(&audio_seek_amount_sizer, 0, SizerFlag::All, option_padding);
+	reading_sizer.add(&audio_seek_continues_into_next_file_check, 0, SizerFlag::All, option_padding);
 	let reading_speed_label =
 		// TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 		StaticText::builder(&reading_panel).with_label(&t("&Reading speed (words per minute):")).build();
@@ -440,6 +447,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		.or_else(|| AUDIO_SEEK_AMOUNTS_SECONDS.iter().position(|&secs| secs == 10))
 		.unwrap_or(1);
 	audio_seek_amount_ctrl.set_selection(u32::try_from(seek_amount_index).unwrap_or(1));
+	audio_seek_continues_into_next_file_check
+		.set_value(config.get_app_bool("audio_seek_continues_into_next_file", false));
 	auto_reload_check.set_value(config.get_app_bool("auto_reload_documents", true));
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
@@ -557,6 +566,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		bookmark_sounds_check,
 		sync_caret_to_audio_check,
 		audio_seek_amount_ctrl,
+		audio_seek_continues_into_next_file_check,
 		auto_reload_check,
 		recent_docs_ctrl,
 		reading_speed_ctrl,

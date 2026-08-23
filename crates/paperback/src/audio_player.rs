@@ -254,6 +254,28 @@ impl AudioPlayer {
 	pub fn resume_point_ms(&self) -> Option<u64> {
 		self.state.borrow().pending_target_ms.or_else(|| self.elapsed_ms())
 	}
+
+	/// The native decoder's current position within the currently loaded source's own file,
+	/// and that file's real (decoder-reported) length. `None` with no source loaded yet, or
+	/// mid-load, when the native length isn't known yet. Distinct from the document's own
+	/// declared clip duration for that source, which a plain-audio-zip bundle's placeholder
+	/// (see `build_plain_audio_zip_document`) can put far past the file's real end, so
+	/// callers that need to know when a seek is about to run off the real end of the file
+	/// (e.g. "continue into the next file" seeking) can't get this from the timeline alone.
+	#[must_use]
+	pub fn current_file_position_and_length_ms(&self) -> Option<(usize, u64, u64)> {
+		let (source, load_in_flight) = {
+			let state = self.state.borrow();
+			(state.current_source, state.load_in_flight)
+		};
+		let source = source?;
+		if load_in_flight {
+			return None;
+		}
+		let raw_ms = u64::try_from(self.media.tell().max(0)).unwrap_or(0);
+		let length_ms = u64::try_from(self.media.length().max(0)).unwrap_or(0);
+		(length_ms > 0).then_some((source, raw_ms, length_ms))
+	}
 }
 
 fn apply_seek(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: usize, seek_ms: u64, playing: bool) {

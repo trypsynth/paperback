@@ -1577,6 +1577,10 @@ impl MainWindow {
 					cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
 					cfg.set_app_bool("sync_caret_to_audio", options.sync_caret_to_audio);
 					cfg.set_app_int("audio_seek_amount_seconds", options.audio_seek_amount_seconds);
+					cfg.set_app_bool(
+						"audio_seek_continues_into_next_file",
+						options.audio_seek_continues_into_next_file,
+					);
 					cfg.set_app_bool("auto_reload_documents", options.auto_reload_documents);
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
