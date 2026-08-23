@@ -12,6 +12,9 @@ mod links;
 mod navigation;
 mod search;
 mod stats;
+mod window;
+
+pub use window::WindowSlice;
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: i64 = 300;

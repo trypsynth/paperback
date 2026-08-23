@@ -7,7 +7,7 @@ pub use paperback_formats::ParserFlags;
 use crate::{
 	audio::AudioTimeline,
 	types::HeadingInfo,
-	util::text::{display_len, is_space_like},
+	util::text::{ch_width, display_len, is_space_like},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -127,6 +127,13 @@ pub struct DocumentBuffer {
 	content_char_count: usize,
 	newline_char_positions: Vec<usize>,
 	char_to_byte_map: Vec<usize>,
+	/// `display_len_at_char[i]` is the display-unit offset (UTF-16 code units on
+	/// Windows/macOS, Unicode scalars on GTK — see `util::text::display_len`) of the `i`-th
+	/// char, with a trailing end-boundary entry equal to `content_display_len`, mirroring
+	/// `char_to_byte_map`'s shape. Needed because `Marker.position`/the GUI caret use display
+	/// units while `char_to_byte_map`/`newline_char_positions` use char units — on Windows and
+	/// macOS these two diverge for any character outside the Basic Multilingual Plane.
+	display_len_at_char: Vec<usize>,
 }
 
 impl DocumentBuffer {
@@ -139,30 +146,37 @@ impl DocumentBuffer {
 			content_char_count: 0,
 			newline_char_positions: Vec::new(),
 			char_to_byte_map: Vec::new(),
+			display_len_at_char: Vec::new(),
 		}
 	}
 
 	#[must_use]
 	pub fn with_content(content: String) -> Self {
-		let display = display_len(&content);
 		let mut char_count = 0usize;
+		let mut display_count = 0usize;
 		let mut newline_char_positions = Vec::new();
 		let mut char_to_byte_map = Vec::with_capacity(content.len().min(1024));
+		let mut display_len_at_char = Vec::with_capacity(content.len().min(1024));
 		for (byte_idx, c) in content.char_indices() {
 			char_to_byte_map.push(byte_idx);
+			display_len_at_char.push(display_count);
 			if c == '\n' {
 				newline_char_positions.push(char_count);
 			}
 			char_count += 1;
+			display_count += ch_width(c);
 		}
 		char_to_byte_map.push(content.len()); // append end boundary
+		display_len_at_char.push(display_count);
+		debug_assert_eq!(display_count, display_len(&content));
 		Self {
 			content,
 			markers: Vec::new(),
-			content_display_len: display,
+			content_display_len: display_count,
 			content_char_count: char_count,
 			newline_char_positions,
 			char_to_byte_map,
+			display_len_at_char,
 		}
 	}
 
@@ -173,23 +187,30 @@ impl DocumentBuffer {
 	pub fn append(&mut self, text: &str) {
 		let base = self.content_char_count;
 		let mut count = 0usize;
+		let mut display_count = self.content_display_len;
 
 		// Remove the end boundary temporarily
 		if !self.char_to_byte_map.is_empty() {
 			self.char_to_byte_map.pop();
 		}
+		if !self.display_len_at_char.is_empty() {
+			self.display_len_at_char.pop();
+		}
 
 		let start_byte = self.content.len();
 		for (byte_idx, c) in text.char_indices() {
 			self.char_to_byte_map.push(start_byte + byte_idx);
+			self.display_len_at_char.push(display_count);
 			if c == '\n' {
 				self.newline_char_positions.push(base + count);
 			}
 			count += 1;
+			display_count += ch_width(c);
 		}
 		self.content.push_str(text);
 		self.char_to_byte_map.push(self.content.len()); // append end boundary back
-		self.content_display_len += display_len(text);
+		self.display_len_at_char.push(display_count);
+		self.content_display_len = display_count;
 		self.content_char_count += count;
 	}
 
@@ -203,8 +224,46 @@ impl DocumentBuffer {
 		self.char_to_byte_map.binary_search(&byte_index).unwrap_or_else(|idx| idx)
 	}
 
+	/// The display-unit offset of the `char_index`-th char (or the document's total display
+	/// length, for a char index at or past the end).
+	#[must_use]
+	pub fn display_index_for_char(&self, char_index: usize) -> usize {
+		self.display_len_at_char.get(char_index).copied().unwrap_or(self.content_display_len)
+	}
+
+	/// The char index whose char covers `display_index`, or the nearest one before it if
+	/// `display_index` lands inside a surrogate pair (shouldn't happen for a well-formed
+	/// caller, but this stays well-defined rather than panicking).
+	#[must_use]
+	pub fn char_index_for_display(&self, display_index: usize) -> usize {
+		self.display_len_at_char.binary_search(&display_index).unwrap_or_else(|idx| idx)
+	}
+
+	/// The byte offset corresponding to `display_index`, composing [`Self::char_index_for_display`]
+	/// with [`Self::byte_index_for_char`].
+	#[must_use]
+	pub fn byte_index_for_display(&self, display_index: usize) -> usize {
+		self.byte_index_for_char(self.char_index_for_display(display_index))
+	}
+
+	/// The display-unit offset corresponding to `byte_index`, composing
+	/// [`Self::char_index_for_byte`] with [`Self::display_index_for_char`].
+	#[must_use]
+	pub fn display_index_for_byte(&self, byte_index: usize) -> usize {
+		self.display_index_for_char(self.char_index_for_byte(byte_index))
+	}
+
 	#[must_use]
 	pub const fn current_position(&self) -> usize {
+		self.content_display_len
+	}
+
+	/// Total document length in display units (UTF-16 code units on Windows/macOS, Unicode
+	/// scalars on GTK) — the same unit the GUI caret and `Marker.position` use. An alias of
+	/// [`Self::current_position`] under the name callers building a window/range API actually
+	/// want; `current_position` is kept for the parser-cursor callers already using that name.
+	#[must_use]
+	pub const fn total_display_len(&self) -> usize {
 		self.content_display_len
 	}
 
@@ -811,5 +870,62 @@ mod tests {
 		let handle = sample_handle();
 		assert_eq!(handle.next_heading_index(0, Some(6)), None);
 		assert_eq!(handle.previous_heading_index(100, Some(6)), None);
+	}
+
+	// `ch_width`/`display_len` return UTF-16 code-unit counts on Windows/macOS and Unicode
+	// scalar counts on GTK, so a BMP-only string ("abc") behaves identically on every
+	// platform and is the right fixture for testing the display<->char<->byte bridge itself
+	// without also depending on which platform the test runs on.
+	#[test]
+	fn display_char_byte_indices_agree_for_bmp_only_content() {
+		let buffer = DocumentBuffer::with_content("abc".to_string());
+		for i in 0..=3 {
+			assert_eq!(buffer.display_index_for_char(i), i);
+			assert_eq!(buffer.char_index_for_display(i), i);
+			assert_eq!(buffer.byte_index_for_display(i), i);
+			assert_eq!(buffer.display_index_for_byte(i), i);
+		}
+		assert_eq!(buffer.total_display_len(), 3);
+	}
+
+	#[cfg(any(windows, target_os = "macos"))]
+	#[test]
+	fn display_index_accounts_for_surrogate_pairs_on_windows_and_macos() {
+		// U+1F600 (an astral-plane emoji) is 1 char, 4 UTF-8 bytes, but 2 UTF-16 code units.
+		let buffer = DocumentBuffer::with_content("a\u{1F600}b".to_string());
+		// chars: 'a' (char 0), emoji (char 1), 'b' (char 2), end boundary (char 3)
+		assert_eq!(buffer.display_index_for_char(0), 0); // 'a' starts at display 0
+		assert_eq!(buffer.display_index_for_char(1), 1); // emoji starts at display 1
+		assert_eq!(buffer.display_index_for_char(2), 3); // 'b' starts at display 3 (emoji took 2 units)
+		assert_eq!(buffer.total_display_len(), 4);
+
+		assert_eq!(buffer.char_index_for_display(0), 0);
+		assert_eq!(buffer.char_index_for_display(1), 1);
+		assert_eq!(buffer.char_index_for_display(3), 2);
+
+		// byte<->display composition round-trips through the char index for every char start.
+		assert_eq!(buffer.byte_index_for_display(0), 0);
+		assert_eq!(buffer.byte_index_for_display(1), 1);
+		assert_eq!(buffer.byte_index_for_display(3), 5); // 1 byte 'a' + 4 byte emoji
+		assert_eq!(buffer.display_index_for_byte(0), 0);
+		assert_eq!(buffer.display_index_for_byte(1), 1);
+		assert_eq!(buffer.display_index_for_byte(5), 3);
+	}
+
+	#[test]
+	fn display_index_for_char_clamps_past_the_end() {
+		let buffer = DocumentBuffer::with_content("abc".to_string());
+		assert_eq!(buffer.display_index_for_char(999), buffer.total_display_len());
+	}
+
+	#[test]
+	fn append_extends_the_display_index_incrementally() {
+		let mut buffer = DocumentBuffer::new();
+		buffer.append("ab");
+		buffer.append("cd");
+		assert_eq!(buffer.total_display_len(), 4);
+		for i in 0..=4 {
+			assert_eq!(buffer.display_index_for_char(i), i, "char {i}");
+		}
 	}
 }
