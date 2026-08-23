@@ -310,10 +310,33 @@ pub struct DocumentStats {
 impl DocumentStats {
 	#[must_use]
 	pub fn from_text(text: &str) -> Self {
-		let char_count = text.chars().count();
-		let line_count = text.lines().count();
-		let word_count = text.split_whitespace().count();
-		let char_count_no_whitespace = text.chars().filter(|c| !is_space_like(*c)).count();
+		let mut char_count = 0usize;
+		let mut char_count_no_whitespace = 0usize;
+		let mut word_count = 0usize;
+		let mut newline_count = 0usize;
+		let mut in_word = false;
+		for c in text.chars() {
+			char_count += 1;
+			if !is_space_like(c) {
+				char_count_no_whitespace += 1;
+			}
+			if c == '\n' {
+				newline_count += 1;
+			}
+			if c.is_whitespace() {
+				in_word = false;
+			} else if !in_word {
+				in_word = true;
+				word_count += 1;
+			}
+		}
+		let line_count = if text.is_empty() {
+			0
+		} else if text.ends_with('\n') {
+			newline_count
+		} else {
+			newline_count + 1
+		};
 		Self { word_count, line_count, char_count, char_count_no_whitespace }
 	}
 }
