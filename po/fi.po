@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-18 16:53+0000\n"
-"PO-Revision-Date: 2026-08-19 18:38+0300\n"
+"POT-Creation-Date: 2026-08-22 20:02-0600\n"
+"PO-Revision-Date: 2026-08-23 15:03+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -60,7 +60,6 @@ msgid "Path"
 msgstr "Polku"
 
 #. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
-#| msgid "Status"
 msgid "&Status:"
 msgstr "T&ila:"
 
@@ -128,32 +127,26 @@ msgstr ""
 "kirjanmerkit poistetaan."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
-#| msgid "No Documents"
 msgid "No documents."
 msgstr "Asiakirjoja ei ole."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
-#| msgid "document"
 msgid "1 document."
 msgstr "1 asiakirja."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
-#| msgid "document"
 msgid "%d documents."
 msgstr "%d asiakirjaa."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
-#| msgid "Document reloaded."
 msgid "1 of 1 document selected."
 msgstr "1 / 1 asiakirjaa valittu."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
-#| msgid "All Documents"
 msgid "All %d documents selected."
 msgstr "Kaikki %d asiakirjaa valittu."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
-#| msgid "End of document"
 msgid "%d of %d documents selected."
 msgstr "%d / %d asiakirjaa valittu."
 
@@ -372,6 +365,73 @@ msgstr "Siirry rivin &alkuun"
 msgid "Play &sounds on bookmarks and notes"
 msgstr "Ilmaise kirjanmerkit ja muistiinpanot merkkiäänellä"
 
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+msgid "&Sync caret to audio playback"
+msgstr "&Kohdistin seuraa äänitteen toistokohtaa"
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+msgid "&Audio seek amount:"
+msgstr "&Äänitteen aikasiirtymä:"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#| msgid "seconds"
+msgid "5 seconds"
+msgstr "5 sekuntia"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#| msgid "1 second"
+msgid "10 seconds"
+msgstr "10 sekuntia"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#| msgid "seconds"
+msgid "30 seconds"
+msgstr "30 sekuntia"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 minute duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "1 minute"
+msgstr "1 minuutti"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#| msgid "minutes"
+msgid "2 minutes"
+msgstr "2 minuuttia"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#| msgid "minutes"
+msgid "5 minutes"
+msgstr "5 minuuttia"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#| msgid "1 minute"
+msgid "10 minutes"
+msgstr "10 minuuttia"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#| msgid "minutes"
+msgid "30 minutes"
+msgstr "30 minuuttia"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 hour duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "1 hour"
+msgstr "1 tunti"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr ""
+"Jatka toistoa &seuraavasta luvusta nykyisen luvun lopun yli siirryttäessä"
+
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr "Tarkista &päivitykset käynnistettäessä"
@@ -384,7 +444,6 @@ msgstr "&Päivitä muuttuneeet asiakirjat automaattisesti"
 msgid "Customize &Window Hotkey..."
 msgstr "&Ikkunan pikanäppäin..."
 
-#| msgid "Customize &Window Hotkey..."
 msgid "Customize &Keyboard Shortcuts..."
 msgstr "Muokkaa &pikanäppäimiä..."
 
@@ -588,11 +647,9 @@ msgstr "&Määritä pikanäppäin..."
 msgid "&Clear Shortcut"
 msgstr "&Poista pikanäppäin"
 
-#| msgid "&Reset to Default Font"
 msgid "&Reset to Default"
 msgstr "&Palauta oletukset"
 
-#| msgid "&Reset to Default Font"
 msgid "Reset &All to Defaults"
 msgstr "Palauta &kaikki oletuspikanäppäimet"
 
@@ -610,7 +667,6 @@ msgstr ""
 "Vihje: Napsauta näppäimen  muokkauskenttää ja paina haluamaasi "
 "näppäinyhdistelmää."
 
-#| msgid "Clear"
 msgid "&Clear"
 msgstr "&Poista"
 
@@ -638,17 +694,9 @@ msgstr "Ei valintaa"
 msgid "View Note"
 msgstr "Näytä muistiinpano"
 
-#. TRANSLATORS: Singular label for 1 hour duration
-msgid "1 hour"
-msgstr "1 tunti"
-
 #. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
 msgid "hours"
 msgstr "tuntia"
-
-#. TRANSLATORS: Singular label for 1 minute duration
-msgid "1 minute"
-msgstr "1 minuutti"
 
 #. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
 msgid "minutes"
@@ -1009,21 +1057,18 @@ msgstr "L&iitä\tCtrl+V"
 msgid "Select &All\tCtrl+A"
 msgstr "Valitse k&aikki\tCtrl+A"
 
-#| msgid "&Open"
 msgid "&Open..."
 msgstr "&Avaa..."
 
 msgid "Open a document"
 msgstr "Avaa asiakirja"
 
-#| msgid "Close"
 msgid "&Close"
 msgstr "&Sulje"
 
 msgid "Close the current document"
 msgstr "Sulje nykyinen asiakirja"
 
-#| msgid "Close"
 msgid "Close &All"
 msgstr "Sulje k&aikki"
 
@@ -1052,225 +1097,180 @@ msgstr "Lopeta sovellus"
 msgid "(No recent documents)"
 msgstr "(Ei viimeisimpiä asiakirjoja)"
 
-#| msgid "Show All"
 msgid "Show All..."
 msgstr "Näytä kaikki..."
 
-#| msgid "Previous Section\t["
 msgid "Previous Section"
 msgstr "Edellinen luku"
 
 msgid "Go to previous section"
 msgstr "Siirry edelliseen lukuun"
 
-#| msgid "Next Section\t]"
 msgid "Next Section"
 msgstr "Seuraava luku"
 
 msgid "Go to next section"
 msgstr "Siirry seuraavaan lukuun"
 
-#| msgid "Go to &page"
 msgid "Go to &Page"
 msgstr "Siirry s&ivulle"
 
-#| msgid "Previous Pa&ge\tShift+P"
 msgid "Previous Pa&ge"
 msgstr "Ede&llinen sivu"
 
-#| msgid "Next Pag&e\tP"
 msgid "Next Pag&e"
 msgstr "&Seuraava sivu"
 
-#| msgid "Previous Lin&k\tShift+K"
 msgid "Previous Lin&k"
 msgstr "Edellinen lin&kki"
 
-#| msgid "Next Lin&k\tK"
 msgid "Next Lin&k"
 msgstr "Seuraava li&nkki"
 
-#| msgid "Previous Ima&ge\tShift+G"
 msgid "Previous Ima&ge"
 msgstr "Edellinen &kuva"
 
-#| msgid "Next Ima&ge\tG"
 msgid "Next Ima&ge"
 msgstr "Seuraava k&uva"
 
-#| msgid "Previous Figu&re\tShift+F"
 msgid "Previous Figu&re"
 msgstr "Edellinen ku&vitus"
 
-#| msgid "Next Figu&re\tF"
 msgid "Next Figu&re"
 msgstr "Seuraava kuv&itus"
 
-#| msgid "Previous &Table\tShift+T"
 msgid "Previous &Table"
 msgstr "Edellinen t&aulukko"
 
-#| msgid "Next &Table\tT"
 msgid "Next &Table"
 msgstr "Seuraava ta&ulukko"
 
-#| msgid "Previous Se&parator\tShift+S"
 msgid "Previous Se&parator"
 msgstr "Edellinen e&rotin"
 
-#| msgid "Next Se&parator\tS"
 msgid "Next Se&parator"
 msgstr "Seuraava er&otin"
 
-#| msgid "Previous L&ist\tShift+L"
 msgid "Previous L&ist"
 msgstr "Edellinen l&uettelo"
 
-#| msgid "Next L&ist\tL"
 msgid "Next L&ist"
 msgstr "Seuraava lue&ttelo"
 
-#| msgid "Previous List &Item\tShift+I"
 msgid "Previous List &Item"
 msgstr "Edellinen luettelok&ohde"
 
-#| msgid "Next List I&tem\tI"
 msgid "Next List I&tem"
 msgstr "Seuraava luetteloko&hde"
 
-#| msgid "Container &Start\tShift+,"
 msgid "Container &Start"
 msgstr "Säilön &alku"
 
 msgid "Go to the start of the current list or table"
 msgstr "Siirry nykyisen luettelon tai taulukon alkuun"
 
-#| msgid "Past Container &End\t,"
 msgid "Past Container &End"
 msgstr "Säilön &jälkeinen kohta"
 
 msgid "Go past the end of the current list or table"
 msgstr "Siirry luettelon tai taulukon lopun jälkeiseen kohtaan"
 
-#| msgid "&Previous Heading\tShift+H"
 msgid "&Previous Heading"
 msgstr "Edellinen &otsikko"
 
 msgid "Go to previous heading"
 msgstr "Siirry edelliseen otsikkoon"
 
-#| msgid "&Next Heading\tH"
 msgid "&Next Heading"
 msgstr "Seuraava o&tsikko"
 
 msgid "Go to next heading"
 msgstr "Siirry seuraavaan otsikkoon"
 
-#| msgid "Previous Heading Level &1\tShift+1"
 msgid "Previous Heading Level &1"
 msgstr "Edellinen otsikkotaso &1"
 
-#| msgid "Next Heading Level 1\t1"
 msgid "Next Heading Level 1"
 msgstr "Seuraava otsikkotaso 1"
 
-#| msgid "Previous Heading Level &2\tShift+2"
 msgid "Previous Heading Level &2"
 msgstr "Edellinen otsikkotaso &2"
 
-#| msgid "Next Heading Level 2\t2"
 msgid "Next Heading Level 2"
 msgstr "Seuraava otsikkotaso 2"
 
-#| msgid "Previous Heading Level &3\tShift+3"
 msgid "Previous Heading Level &3"
 msgstr "Edellinen otsikkotaso &3"
 
-#| msgid "Next Heading Level 3\t3"
 msgid "Next Heading Level 3"
 msgstr "Seuraava otsikkotaso 3"
 
-#| msgid "Previous Heading Level &4\tShift+4"
 msgid "Previous Heading Level &4"
 msgstr "Edellinen otsikkotaso &4"
 
-#| msgid "Next Heading Level 4\t4"
 msgid "Next Heading Level 4"
 msgstr "Seuraava otsikkotaso 4"
 
-#| msgid "Previous Heading Level &5\tShift+5"
 msgid "Previous Heading Level &5"
 msgstr "Edellinen otsikkotaso &5"
 
-#| msgid "Next Heading Level 5\t5"
 msgid "Next Heading Level 5"
 msgstr "Seuraava otsikkotaso 5"
 
-#| msgid "Previous Heading Level &6\tShift+6"
 msgid "Previous Heading Level &6"
 msgstr "Edellinen otsikkotaso &6"
 
-#| msgid "Next Heading Level 6\t6"
 msgid "Next Heading Level 6"
 msgstr "Seuraava otsikkotaso 6"
 
-#| msgid "&Previous Bookmark\tShift+B"
 msgid "&Previous Bookmark"
 msgstr "Edellinen &kirjanmerkki"
 
 msgid "Go to previous bookmark"
 msgstr "Siirry edelliseen kirjanmerkkiin"
 
-#| msgid "&Next Bookmark\tB"
 msgid "&Next Bookmark"
 msgstr "Seuraava ki&rjanmerkki"
 
 msgid "Go to next bookmark"
 msgstr "Siirry seuraavaan kirjanmerkkiin"
 
-#| msgid "Previous &Note\tShift+N"
 msgid "Previous &Note"
 msgstr "Edellinen &muistiinpano"
 
 msgid "Go to previous note"
 msgstr "Siirry edelliseen muistiinpanoon"
 
-#| msgid "Next N&ote\tN"
 msgid "Next N&ote"
 msgstr "Seuraava m&uistiinpano"
 
 msgid "Go to next note"
 msgstr "Siirry seuraavaan muistiinpanoon"
 
-#| msgid "Jump to &All...\tCtrl+B"
 msgid "Jump to &All..."
 msgstr "Siirry k&aikkiin..."
 
 msgid "Show all bookmarks and notes"
 msgstr "Näytä kaikki kirjanmerkit ja muistiinpanot"
 
-#| msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
 msgid "Jump to &Bookmarks Only..."
 msgstr "Siirry vain &kirjanmerkkeihin..."
 
 msgid "Show bookmarks only"
 msgstr "Näytä vain kirjanmerkit"
 
-#| msgid "Jump to Notes &Only...\tCtrl+Alt+M"
 msgid "Jump to Notes &Only..."
 msgstr "Siirry vain mu&istiinpanoihin..."
 
 msgid "Show notes only"
 msgstr "Näytä vain muistiinpanot"
 
-#| msgid "View Note"
 msgid "&View Note Text"
 msgstr "&Näytä muistiinpano"
 
 msgid "View the note at current position"
 msgstr "Näytä nykyisen sijainnin muistiinpano"
 
-#| msgid "&Find"
 msgid "&Find..."
 msgstr "&Etsi..."
 
@@ -1283,28 +1283,24 @@ msgstr "Etsi seuraava esiintymä"
 msgid "Find previous occurrence"
 msgstr "Etsi edellinen esiintymä"
 
-#| msgid "Go to &line"
 msgid "Go to &line..."
 msgstr "Siirry rivi&lle..."
 
 msgid "Go to a specific line"
 msgstr "Siirry tietylle riville"
 
-#| msgid "Go to &percent"
 msgid "Go to &percent..."
 msgstr "Siirry &prosenttiin..."
 
 msgid "Go to a percentage of the document"
 msgstr "Siirry prosenttiin"
 
-#| msgid "Go &Back\tCtrl+["
 msgid "Go &Back"
 msgstr "Siirry &taaksepäin"
 
 msgid "Go back in history"
 msgstr "Siirry historiassa taaksepäin"
 
-#| msgid "Go &Forward\tCtrl+]"
 msgid "Go &Forward"
 msgstr "Siirry &eteenpäin"
 
@@ -1377,56 +1373,48 @@ msgstr "&Säilöt"
 msgid "Navigate by containers"
 msgstr "Siirry säilöittäin"
 
-#| msgid "&About Paperback\tCtrl+F1"
 msgid "&About Paperback"
 msgstr "&Tietoa Paperbackista"
 
 msgid "About this application"
 msgstr "Tietoa sovelluksesta"
 
-#| msgid "View Help in &Browser\tF1"
 msgid "View Help in &Browser"
 msgstr "Näytä &ohje selaimessa"
 
 msgid "View help in default browser"
 msgstr "Näytä ohje oletusselaimessa"
 
-#| msgid "View help in Paperback"
 msgid "View Help in &Paperback"
 msgstr "Näytä ohje &Paperbackissa"
 
 msgid "View help in Paperback"
 msgstr "Näytä ohje Paperbackissa"
 
-#| msgid "Check for updates"
 msgid "Check for &Updates"
 msgstr "Tarkista pä&ivitykset"
 
 msgid "Check for updates"
 msgstr "Tarkista päivitykset"
 
-#| msgid "&Donate\tCtrl+D"
 msgid "&Donate"
 msgstr "&Lahjoita"
 
 msgid "Support Paperback development"
 msgstr "Tue Paperbackin kehitystä"
 
-#| msgid "Import Document Data"
 msgid "&Import Document Data..."
 msgstr "&Tuo asiakirjan tiedot..."
 
 msgid "Import bookmarks and position"
 msgstr "Tuo kirjanmerkit ja sijainti"
 
-#| msgid "Export Document Data"
 msgid "&Export Document Data..."
 msgstr "&Vie asiakirjan tiedot..."
 
 msgid "Export bookmarks and position"
 msgstr "Vie kirjanmerkit ja sijainti"
 
-#| msgid "Export to &Plain Text...\tCtrl+E"
 msgid "Export to &Plain Text..."
 msgstr "Vie te&kstimuotoon..."
 
@@ -1445,49 +1433,42 @@ msgstr "Vie &Markdown-muotoon..."
 msgid "Export document as Markdown"
 msgstr "Vie asiakirja Markdown-muodossa"
 
-#| msgid "Word Count"
 msgid "&Word Count"
 msgstr "&Sanamäärä"
 
 msgid "Show word count"
 msgstr "Näytä sanamäärä"
 
-#| msgid "Document Info"
 msgid "Document &Info"
 msgstr "Asiakir&jan tiedot"
 
 msgid "Show document information"
 msgstr "Näytä asiakirjan tiedot"
 
-#| msgid "Table of Contents"
 msgid "&Table of Contents"
 msgstr "&Sisällysluettelo"
 
 msgid "Show table of contents"
 msgstr "Näytä sisällysluettelo"
 
-#| msgid "&Elements List...\tF7"
 msgid "&Elements List..."
 msgstr "&Elementtilista..."
 
 msgid "Show elements list"
 msgstr "Näytä elementtilista"
 
-#| msgid "Reveal &File in Folder\tCtrl+Shift+C"
 msgid "Reveal &File in Folder"
 msgstr "Avaa as&iakirjan kansio"
 
 msgid "Reveal document in the file manager"
 msgstr "Avaa asiakirjan kansio tiedostonhallinnassa"
 
-#| msgid "Open in &Web View\tCtrl+Shift+V"
 msgid "Open in &Web View"
 msgstr "Avaa sel&ainnäkymässä"
 
 msgid "Open document in web view"
 msgstr "Avaa asiakirja selainnäkymässä"
 
-#| msgid "View &Source\tCtrl+U"
 msgid "View &Source"
 msgstr "Näytä läh&dekoodi"
 
@@ -1500,20 +1481,51 @@ msgstr "T&uo ja vie"
 msgid "Import and export options"
 msgstr "Tuonnin ja viennin asetukset"
 
-#| msgid "Toggle &Bookmark\tCtrl+Shift+B"
 msgid "Toggle &Bookmark"
 msgstr "Lisää tai poista &kirjanmerkki"
 
-#| msgid "Bookmark with &note"
 msgid "Bookmark with &Note"
 msgstr "Kirjanmerkki muistiinpan&olla"
 
-#| msgid "&Word wrap"
 msgid "Word w&rap"
 msgstr "Rivit&ys"
 
 msgid "Toggle word wrap"
 msgstr "Ota rivitys käyttöön tai poista se käytöstä"
+
+msgid "&Play/Pause Audio"
+msgstr "&Toista tai pysäytä änite"
+
+msgid "Play or pause this document's audio narration"
+msgstr "Toista tai pysäytä asiakirjan äänite"
+
+#| msgid "Go &Forward"
+msgid "Seek Audio &Forward"
+msgstr "Siirry etee&npäin äänitteessä"
+
+msgid "Skip the audio narration forward"
+msgstr "Siirry eteenpäin äänitteessä"
+
+msgid "Seek Audio &Backward"
+msgstr "Siirry t&aaksepäin äänitteessä"
+
+msgid "Skip the audio narration backward"
+msgstr "Siirry taaksepäin äänitteessä"
+
+msgid "&Increase Audio Seek Amount"
+msgstr "P&idennä äänitteen aikasiirtymää"
+
+msgid "Increase how far seeking the audio narration moves"
+msgstr ""
+"Pidennä aikaa, jonka verran äänitteessä siirrytään eteen- tai taaksepäin"
+
+msgid "&Decrease Audio Seek Amount"
+msgstr ""
+"&Lyhennä aikaa, jonka verran äänitteessä siirrytään eteen- tai taaksepäin"
+
+msgid "Decrease how far seeking the audio narration moves"
+msgstr ""
+"Pidennä aikaa, jonka verran äänitteessä siirrytään eteen- tai taaksepäin"
 
 msgid "&Full Screen"
 msgstr "&Koko näyttö"
@@ -1521,11 +1533,9 @@ msgstr "&Koko näyttö"
 msgid "Toggle full screen"
 msgstr "Ota koko näytön tila käyttöön tai poista se käytöstä"
 
-#| msgid "Options"
 msgid "&Options"
 msgstr "&Asetukset"
 
-#| msgid "Sleep Timer"
 msgid "&Sleep Timer..."
 msgstr "&Uniajastin..."
 
@@ -1761,6 +1771,24 @@ msgstr "Kirjanmerkki poistettu."
 msgid "Bookmark added."
 msgstr "Kirjanmerkki lisätty."
 
+#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+#. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#| msgid "This document has no table of contents."
+msgid "This document has no audio."
+msgstr "Tässä asiakirjassa ei ole äänitettä."
+
+#. TRANSLATORS: Announced when trying to seek audio before playback has established a position
+msgid "Audio hasn't started playing yet."
+msgstr "Äänitteen toisto ei ole käynnissä."
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+msgid "{} (maximum)"
+msgstr "{} (enimmäisaika)"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+msgid "{} (minimum)"
+msgstr "{} (vähimmäisaika)"
+
 msgid "Enter bookmark note:"
 msgstr "Anna kirjanmerkin muistiinpano:"
 
@@ -1795,6 +1823,13 @@ msgstr "Palauta Paperback"
 #. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 msgid "Exit Paperback"
 msgstr "Lopeta Paperback"
+
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+msgid "Figure"
+msgstr "Kuvio"
+
+msgid "Image"
+msgstr "Kuva"
 
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 msgid "Failed to convert DTBook XML to text"
@@ -1846,60 +1881,9 @@ msgstr "HTML-tiedosto on tyhjä: {}"
 msgid "Failed to convert HTML to text: {}"
 msgstr "HTML-tiedoston tekstimuunnos epäonnistui: {}"
 
-#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-msgid "Figure"
-msgstr "Kuvio"
-
-msgid "Image"
-msgstr "Kuva"
-
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 msgid "Failed to convert Markdown to text: {}"
 msgstr "Markdown-tiedoston tekstimuunnos epäonnistui: {}"
-
-#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
-msgid "File too short"
-msgstr "Tiedosto on liian lyhyt"
-
-#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-msgid "Invalid record offsets"
-msgstr "Virhe tietueiden sijaintitiedoissa"
-
-#. TRANSLATORS: Error shown when a MOBI file has no records
-msgid "No records found"
-msgstr "Tietueita ei löydy"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-msgid "Invalid Record 0 offsets"
-msgstr "Virhe 0-tietueen sijaintitiedoissa"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-msgid "Invalid Record 0"
-msgstr "Tietue 0 on virheellinen"
-
-#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-msgid "No MOBI header"
-msgstr "MOBI-tiedoston otsaketta ei löydy"
-
-#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-msgid "Invalid MOBI identifier"
-msgstr "Virhe MOBI-tiedoston tunnisteessa"
-
-#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-msgid "Invalid content record range"
-msgstr "Virhe sisältötietueiden alueessa"
-
-#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-msgid "Invalid HUFF/CDIC records"
-msgstr "Virhe HUFF- tai CDIC-pakkaustietueissa"
-
-#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-msgid "Missing HUFF parameters in header"
-msgstr "Tiedoston otsakkeessa ei ole HUFF-pakkausparametreja"
-
-#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-msgid "Unsupported compression mode ({})"
-msgstr "Pakkaustilaa {} ei tueta"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
 msgid "Invalid HUFF record"
@@ -1949,6 +1933,50 @@ msgstr "Virhe koodin pituudessa {}"
 msgid "Decode stack overflow"
 msgstr "Purkupinon ylivuoto"
 
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+msgid "File too short"
+msgstr "Tiedosto on liian lyhyt"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+msgid "Invalid record offsets"
+msgstr "Virhe tietueiden sijaintitiedoissa"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+msgid "No records found"
+msgstr "Tietueita ei löydy"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+msgid "Invalid Record 0 offsets"
+msgstr "Virhe 0-tietueen sijaintitiedoissa"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+msgid "Invalid Record 0"
+msgstr "Tietue 0 on virheellinen"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+msgid "No MOBI header"
+msgstr "MOBI-tiedoston otsaketta ei löydy"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+msgid "Invalid MOBI identifier"
+msgstr "Virhe MOBI-tiedoston tunnisteessa"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+msgid "Invalid content record range"
+msgstr "Virhe sisältötietueiden alueessa"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+msgid "Invalid HUFF/CDIC records"
+msgstr "Virhe HUFF- tai CDIC-pakkaustietueissa"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+msgid "Missing HUFF parameters in header"
+msgstr "Tiedoston otsakkeessa ei ole HUFF-pakkausparametreja"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+msgid "Unsupported compression mode ({})"
+msgstr "Pakkaustilaa {} ei tueta"
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
 msgstr "ODP-tiedostossa ei ole sivuja"
@@ -1996,16 +2024,6 @@ msgstr "PowerPoint-asiakirjan tietovirtaa ei löydy"
 msgid "Failed to parse RTF document: {}"
 msgstr "RTF-asiakirjan jäsennys epäonnistui: {}"
 
-#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
-msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr ""
-"Perinteisen DOC-tiedoston jäsennys epäonnistui: {}. OOXML-varamenetelmän "
-"käyttö epäonnistui: {}"
-
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-msgid "No readable content found in the ZIP archive"
-msgstr "ZIP-paketista ei löydy luettavaa sisältöä"
-
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
 msgstr "DOC-tiedostossa ei ole pakollisia FIB-lohkon kenttiä"
@@ -2030,6 +2048,10 @@ msgstr "Tiedoston sisältö ei ole muotoilematonta tekstiä"
 msgid "No readable text content found"
 msgstr "Luettavaa tekstisisältöä ei löydy"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+msgid "No readable content found in the ZIP archive"
+msgstr "ZIP-paketista ei löydy luettavaa sisältöä"
+
 #. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
 msgid "File is encrypted and requires a password"
 msgstr "Tiedosto on salattu ja sen avaamiseen tarvitaan salasana"
@@ -2037,6 +2059,12 @@ msgstr "Tiedosto on salattu ja sen avaamiseen tarvitaan salasana"
 #. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
 msgid "Decryption failed (wrong password?): {}"
 msgstr "Virhe salausta purettaessa (tarkista salasana): {}"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr ""
+"Perinteisen DOC-tiedoston jäsennys epäonnistui: {}. OOXML-varamenetelmän "
+"käyttö epäonnistui: {}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 msgid "No file extension found for: {}"
@@ -2113,12 +2141,6 @@ msgstr "Päivitysskriptin käynnistys epäonnistui"
 
 msgid "Unknown update file format."
 msgstr "Tuntematon päivitystiedoston muoto."
-
-msgid "&Play/Pause Audio"
-msgstr "&Toista tai pysäytä änite"
-
-msgid "Play or pause this document's audio narration"
-msgstr "Toista tai pysäytä asiakirjan äänite"
 
 msgid "Previous Section\t["
 msgstr "Edellinen luku\t["
