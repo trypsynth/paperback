@@ -52,7 +52,7 @@ pub struct MainWindow {
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	config: Rc<Mutex<ConfigManager>>,
 	#[cfg(target_os = "windows")]
-	_tray_state: Rc<Mutex<Option<tray::TrayState>>>,
+	tray_state: Rc<Mutex<Option<tray::TrayState>>>,
 	_live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
@@ -252,7 +252,7 @@ impl MainWindow {
 			doc_manager,
 			config,
 			#[cfg(target_os = "windows")]
-			_tray_state: tray_state,
+			tray_state,
 			_live_region_label: live_region_label,
 			_find_dialog: find_dialog,
 			#[cfg(target_os = "windows")]
@@ -404,7 +404,7 @@ impl MainWindow {
 		}
 
 		#[cfg(not(target_os = "linux"))]
-		if let Some(state) = self._tray_state.lock().unwrap().as_mut() {
+		if let Some(state) = self.tray_state.lock().unwrap().as_mut() {
 			if let Some(bundle) =
 				ArtProvider::get_bitmap_bundle(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
 			{
