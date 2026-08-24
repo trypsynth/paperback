@@ -4,7 +4,6 @@ import UniformTypeIdentifiers
 struct ReaderView: View {
 	@EnvironmentObject var viewModel: AppViewModel
 	@State private var showFilePicker = false
-	@State private var isScreenDimmed = false
 
 	var body: some View {
 		ZStack {
@@ -13,21 +12,11 @@ struct ReaderView: View {
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar { readerToolbar }
 				.safeAreaInset(edge: .bottom) { bottomBar }
-			if isScreenDimmed {
-				Color.black
-					.ignoresSafeArea()
-					.onTapGesture { isScreenDimmed = false }
-					// TRANSLATORS: Accessibility label for the black overlay shown when the sleep timer dims the screen; tapping it wakes the screen
-					.accessibilityLabel(t("Screen dimmed by sleep timer. Tap to wake."))
-			}
 		}
 		.safeAreaInset(edge: .top, spacing: 0) {
 			if !viewModel.tabs.isEmpty {
 				TabStripView().environmentObject(viewModel)
 			}
-		}
-		.onReceive(viewModel.$sleepTimerRemaining) { remaining in
-			if remaining == 0 { isScreenDimmed = true }
 		}
 		.navigationDestination(isPresented: $viewModel.showToc) {
 			TocView().environmentObject(viewModel)

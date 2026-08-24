@@ -1,7 +1,7 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, KEY_RETURN, add_ok_cancel_footer, build_ok_cancel_buttons};
+use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 
 pub fn show_note_entry_dialog(
 	parent: &dyn WxWidget,
@@ -20,7 +20,7 @@ pub fn show_note_entry_dialog(
 	let dialog_for_key = dialog;
 	note_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code()
-			&& key == KEY_RETURN
+			&& key == WXK_RETURN
 		{
 			if event.shift_down() {
 				event.skip(true);

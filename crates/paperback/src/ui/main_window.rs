@@ -38,9 +38,6 @@ use crate::config_ext::{UpdateChannel, get_update_channel};
 use crate::ipc::IpcCommand;
 use crate::{config_ext::set_update_channel, translation_manager::TranslationManager};
 
-const KEY_DELETE: i32 = 127;
-const KEY_NUMPAD_DELETE: i32 = 330;
-
 pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
 pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
 
@@ -55,7 +52,7 @@ pub struct MainWindow {
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	config: Rc<Mutex<ConfigManager>>,
 	#[cfg(target_os = "windows")]
-	_tray_state: Rc<Mutex<Option<tray::TrayState>>>,
+	tray_state: Rc<Mutex<Option<tray::TrayState>>>,
 	_live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
@@ -168,7 +165,7 @@ impl MainWindow {
 		notebook.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(key_event) = &event
 				&& let Some(key) = key_event.get_key_code()
-				&& (key == KEY_DELETE || key == KEY_NUMPAD_DELETE)
+				&& (key == WXK_DELETE || key == WXK_NUMPAD_DELETE)
 			{
 				let mut dm = dm.lock().unwrap();
 				close_active_document_announced(&mut dm, live_region_label);
@@ -255,7 +252,7 @@ impl MainWindow {
 			doc_manager,
 			config,
 			#[cfg(target_os = "windows")]
-			_tray_state: tray_state,
+			tray_state,
 			_live_region_label: live_region_label,
 			_find_dialog: find_dialog,
 			#[cfg(target_os = "windows")]
@@ -407,7 +404,7 @@ impl MainWindow {
 		}
 
 		#[cfg(not(target_os = "linux"))]
-		if let Some(state) = self._tray_state.lock().unwrap().as_mut() {
+		if let Some(state) = self.tray_state.lock().unwrap().as_mut() {
 			if let Some(bundle) =
 				ArtProvider::get_bitmap_bundle(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
 			{
@@ -698,6 +695,14 @@ impl MainWindow {
 			}
 		});
 		audio_sync_timer.start(250, false);
+		let window_reload_timer = Rc::new(Timer::new(frame));
+		let dm_for_window_reload = Rc::clone(doc_manager);
+		window_reload_timer.on_tick(move |_| {
+			if let Ok(mut dm) = dm_for_window_reload.try_lock() {
+				dm.pump_window_reload();
+			}
+		});
+		window_reload_timer.start(250, false);
 		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
 		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
@@ -1849,7 +1854,7 @@ impl MainWindow {
 				}
 			}
 		});
-		vec![sleep_timer, status_update_timer, audio_sync_timer]
+		vec![sleep_timer, status_update_timer, audio_sync_timer, window_reload_timer]
 	}
 }
 

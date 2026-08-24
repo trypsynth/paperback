@@ -225,6 +225,27 @@ impl AudioTimeline {
 			.min_by_key(|(index, _)| self.clip_start_ms(*index).unwrap_or(u64::MAX))
 			.map(|(_, clip)| clip.source)
 	}
+
+	/// The mirror of `next_source_after`: whichever source's narration runs up to where
+	/// `current`'s begins, for a seek that runs off the front of the file now playing.
+	#[must_use]
+	pub fn previous_source_before(&self, current: usize) -> Option<usize> {
+		let first_start_ms = self
+			.clips
+			.iter()
+			.enumerate()
+			.filter(|(_, clip)| clip.source == current)
+			.filter_map(|(index, _)| self.clip_start_ms(index))
+			.min()?;
+		self.clips
+			.iter()
+			.enumerate()
+			.filter(|(index, clip)| {
+				clip.source != current && self.clip_start_ms(*index).is_some_and(|start| start < first_start_ms)
+			})
+			.max_by_key(|(index, _)| self.clip_start_ms(*index).unwrap_or(0))
+			.map(|(_, clip)| clip.source)
+	}
 }
 
 #[derive(Debug, Clone, Default)]
@@ -442,6 +463,24 @@ mod tests {
 	fn next_source_after_is_none_for_an_unknown_source() {
 		let timeline = narrated_timeline();
 		assert_eq!(timeline.next_source_after(9), None);
+	}
+
+	#[test]
+	fn previous_source_before_finds_the_source_the_narration_came_from() {
+		let timeline = audiobook_timeline();
+		assert_eq!(timeline.previous_source_before(1), Some(0));
+	}
+
+	#[test]
+	fn previous_source_before_is_none_for_the_first_source() {
+		let timeline = audiobook_timeline();
+		assert_eq!(timeline.previous_source_before(0), None);
+	}
+
+	#[test]
+	fn previous_source_before_is_none_for_an_unknown_source() {
+		let timeline = narrated_timeline();
+		assert_eq!(timeline.previous_source_before(9), None);
 	}
 
 	#[test]

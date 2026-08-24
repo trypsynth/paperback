@@ -1,6 +1,6 @@
-//! Modern OOXML `.docx` parsing (including the batch-`.zip`-of-`.docx` and single-file
-//! password-protected cases), plus [`try_decrypt_office_file`], the shared OLE-container
-//! decryption check reused by `powerpoint`'s `.pptx` parsing.
+//! Modern OOXML `.docx` parsing, including the batch-`.zip`-of-`.docx` and single-file
+//! password-protected cases (the latter via [`util::ooxml::try_decrypt_office_file`], the
+//! shared OLE-container decryption check also reused by `powerpoint`'s `.pptx` parsing).
 
 use std::{
 	collections::HashMap,
@@ -9,18 +9,15 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use cfb::CompoundFile;
-use office_crypto::decrypt_from_file;
 use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
 	parser::{
-		PASSWORD_REQUIRED_ERROR_PREFIX,
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
-			ooxml::{collect_ooxml_run_text, read_ooxml_relationships},
+			ooxml::{collect_ooxml_run_text, read_ooxml_relationships, try_decrypt_office_file},
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},
 			xml::find_child_element,
@@ -533,29 +530,6 @@ fn extract_field_display_text(paragraph: Node, instr_run: Node) -> (String, bool
 fn extract_number_from_string(s: &str) -> Option<i32> {
 	let digits: String = s.chars().filter(char::is_ascii_digit).collect();
 	digits.parse().ok()
-}
-
-/// If `path` looks like an encrypted OLE compound file (has an `EncryptionInfo` stream),
-/// attempts to decrypt it with `password` and returns the decrypted bytes.
-/// Returns `None` if the file is not a compound file or is not encrypted.
-/// Returns an error if it is encrypted but decryption fails (wrong password, etc.).
-pub fn try_decrypt_office_file(path: &str, password: Option<&str>) -> Result<Option<Vec<u8>>> {
-	// Try opening as a CFB compound file. Plain ZIPs will fail here.
-	let file = File::open(path).with_context(|| format!("Failed to open '{path}'"))?;
-	// Not a compound file at all
-	let Ok(compound) = CompoundFile::open(file) else { return Ok(None) };
-	// Encrypted OOXML files always contain an EncryptionInfo stream.
-	if compound.entry("/EncryptionInfo").is_err() {
-		return Ok(None); // Compound file but not encrypted Office format
-	}
-	let Some(password) = password else {
-		// TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-		anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} {}", t("File is encrypted and requires a password"));
-	};
-	let decrypted = decrypt_from_file(path, password)
-		// TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-		.map_err(|e| anyhow::anyhow!(t("Decryption failed (wrong password?): {}").replace("{}", &e.to_string())))?;
-	Ok(Some(decrypted))
 }
 
 #[cfg(test)]

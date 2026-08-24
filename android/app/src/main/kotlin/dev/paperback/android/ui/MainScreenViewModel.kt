@@ -37,6 +37,9 @@ import java.io.IOException
 import java.security.MessageDigest
 import java.util.Locale
 
+private const val AUDIO_SEEK_AMOUNT_KEY = "audio_seek_amount_seconds"
+private const val DEFAULT_AUDIO_SEEK_SECONDS = 10
+
 class MainScreenViewModel(
 	application: Application
 ) : AndroidViewModel(application) {
@@ -60,8 +63,12 @@ class MainScreenViewModel(
 	private val activeTabHasAudio: Boolean
 		get() = (uiState.value as? MainScreenUiState.Success)?.activeTab?.hasAudio == true
 
-	private val _currentSegmentType = MutableStateFlow(SegmentTypeFfi.PARAGRAPH)
-	val currentSegmentType: StateFlow<SegmentTypeFfi> = _currentSegmentType.asStateFlow()
+	private val _currentNavUnit = MutableStateFlow<NavUnit>(NavUnit.Segment(SegmentTypeFfi.PARAGRAPH))
+	val currentNavUnit: StateFlow<NavUnit> = _currentNavUnit.asStateFlow()
+
+	// The source whose position was last announced after an audio seek, so a seek that stays in
+	// the same file doesn't repeat its name every time.
+	private var lastAnnouncedAudioSource: Int? = null
 
 	private val _ttsPosition = MutableStateFlow(0L)
 	val ttsPosition: StateFlow<Long> = _ttsPosition.asStateFlow()
@@ -201,6 +208,9 @@ class MainScreenViewModel(
 		daisyAudioPlayer.onPlaybackStateChanged = { isPlaying ->
 			ttsManager.setExternalPlaybackState(isPlaying)
 			if (!isPlaying) persistDaisyAudioPosition()
+		}
+		daisyAudioPlayer.onRelativeSeekLanded = { elapsedMs ->
+			announceAudioSeek(elapsedMs)
 		}
 		daisyAudioPlayer.onClipChanged = { position ->
 			_ttsPosition.value = position
@@ -548,7 +558,8 @@ class MainScreenViewModel(
 					docKey = docKey,
 					initialScrollIndex = initialScrollIndex,
 					savedPosition = savedPosition,
-					hasAudio = session.hasAudioFfi()
+					hasAudio = session.hasAudioFfi(),
+					isAudioOnly = session.isAudioOnlyFfi()
 				)
 			} catch (e: Exception) {
 				val msg = e.message ?: ""
@@ -625,8 +636,68 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun setSegmentType(type: SegmentTypeFfi) {
-		_currentSegmentType.value = type
+	fun setNavUnit(unit: NavUnit) {
+		_currentNavUnit.value = unit
+		// Seek amounts are a global preference rather than per-document, and share desktop's
+		// setting so the two agree about what "forward" means.
+		if (unit is NavUnit.Time) {
+			viewModelScope.launch(Dispatchers.IO) {
+				config.setAppInt(AUDIO_SEEK_AMOUNT_KEY, unit.seconds)
+				config.flush()
+			}
+		}
+	}
+
+	/** The navigation units `tab` can offer. A document whose text spine is only there to anchor
+	 * audio has nothing to step through but the recording itself, so it gets seek amounts alone;
+	 * a DAISY book with real prose gets both, seek amounts first. */
+	fun navUnitsFor(tab: DocumentTabState): List<NavUnit> {
+		val segments = tab.session.getSupportedSegmentTypesFfi().map { NavUnit.Segment(it) }
+		if (!tab.hasAudio) return segments
+		val times = AUDIO_SEEK_AMOUNTS_SECONDS.map { NavUnit.Time(it) }
+		return if (tab.isAudioOnly) times else times + segments
+	}
+
+	/** Falls back to a unit the newly active document actually supports, preferring the saved
+	 * seek amount where seek amounts are on offer. */
+	fun ensureNavUnitSupported(units: List<NavUnit>) {
+		if (units.isEmpty() || units.contains(_currentNavUnit.value)) return
+		val savedSeconds = config.getAppInt(AUDIO_SEEK_AMOUNT_KEY, DEFAULT_AUDIO_SEEK_SECONDS)
+		_currentNavUnit.value = units.firstOrNull { it == NavUnit.Time(savedSeconds) } ?: units.first()
+	}
+
+	private fun navSegmentType(): SegmentTypeFfi =
+		(_currentNavUnit.value as? NavUnit.Segment)?.type ?: SegmentTypeFfi.PARAGRAPH
+
+	/** Handles previous/next for a document being navigated by elapsed time rather than by text
+	 * unit. False when that isn't what's happening, leaving the ordinary text path to run. */
+	private fun seekAudioByNavUnit(forward: Boolean): Boolean {
+		val unit = _currentNavUnit.value
+		if (unit !is NavUnit.Time || !activeTabHasAudio) return false
+		val deltaMs = unit.seconds * 1000L
+		daisyAudioPlayer.seekRelativeMs(if (forward) deltaMs else -deltaMs)
+		return true
+	}
+
+	/** Speaks where an audio seek landed. An audiobook that is a bundle of narration files has
+	 * no meaningful document-wide elapsed time (its clips carry placeholder durations), so its
+	 * position reads as an offset into the file now playing, named whenever the file changes. */
+	private fun announceAudioSeek(elapsedMs: Long) {
+		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab ?: return
+		val cursor = tab.session.audioCursorAtElapsedFfi(elapsedMs)
+		if (!cursor.found) return
+		val clip = tab.session.audioClipFfi(cursor.clipIndex)
+		if (!clip.found) return
+		val time = formatDuration(if (tab.isAudioOnly) cursor.seekMs else elapsedMs)
+		val fileChanged = lastAnnouncedAudioSource != clip.source
+		lastAnnouncedAudioSource = clip.source
+		val sectionTitle = tab.toc
+			.lastOrNull { it.position <= clip.start }
+			?.title
+			.orEmpty()
+		_accessibilityAnnouncement.tryEmit(
+			if (fileChanged && sectionTitle.isNotBlank()) "$sectionTitle, $time" else time
+		)
 	}
 
 	fun togglePlayPause() {
@@ -700,10 +771,11 @@ class MainScreenViewModel(
 		speak: Boolean = true,
 		announce: Boolean = false
 	) {
+		if (seekAudioByNavUnit(forward = true)) return
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
-			val segment = tab.session.getTextSegment(_ttsPosition.value, _currentSegmentType.value, SegmentDirectionFfi.NEXT)
+			val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.NEXT)
 			if (segment.text.isNotBlank()) {
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
@@ -785,10 +857,11 @@ class MainScreenViewModel(
 		speak: Boolean = true,
 		announce: Boolean = false
 	) {
+		if (seekAudioByNavUnit(forward = false)) return
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
-			val segment = tab.session.getTextSegment(_ttsPosition.value, _currentSegmentType.value, SegmentDirectionFfi.PREVIOUS)
+			val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.PREVIOUS)
 			if (segment.text.isNotBlank()) {
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
@@ -1009,6 +1082,7 @@ class MainScreenViewModel(
 		persistDaisyAudioPosition()
 		daisyAudioPlayer.detach()
 		daisyAttachedDocumentUri = null
+		lastAnnouncedAudioSource = null
 	}
 
 	private fun persistDaisyAudioPosition() {

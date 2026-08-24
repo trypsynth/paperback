@@ -10,6 +10,7 @@ mod navigation;
 mod rtf;
 mod sounds;
 mod status;
+mod text_window;
 #[cfg(target_os = "windows")]
 mod tray;
 

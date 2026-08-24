@@ -1,18 +1,7 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{
-	DIALOG_PADDING, KEY_NUMPAD_ENTER, KEY_RETURN, add_ok_cancel_footer, bind_enter_confirms, build_ok_cancel_buttons,
-};
-
-const WXK_END: i32 = 312;
-const WXK_HOME: i32 = 313;
-const WXK_LEFT: i32 = 314;
-const WXK_UP: i32 = 315;
-const WXK_RIGHT: i32 = 316;
-const WXK_DOWN: i32 = 317;
-const WXK_PAGEUP: i32 = 366;
-const WXK_PAGEDOWN: i32 = 367;
+use super::{DIALOG_PADDING, add_ok_cancel_footer, bind_enter_confirms, build_ok_cancel_buttons};
 
 pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option<i32> {
 	// TRANSLATORS: Title of the Go to Percent dialog
@@ -42,7 +31,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	let dialog_for_slider_enter = dialog;
 	percent_slider.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);
-		if key == KEY_RETURN || key == KEY_NUMPAD_ENTER {
+		if key == WXK_RETURN || key == WXK_NUMPAD_ENTER {
 			event.skip(false);
 			dialog_for_slider_enter.end_modal(ID_OK);
 			return;

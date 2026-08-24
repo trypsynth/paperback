@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 00:25+0000\n"
+"POT-Creation-Date: 2026-08-24 00:33+0000\n"
 "PO-Revision-Date: 2026-06-25 21:58+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
@@ -367,6 +367,75 @@ msgstr "&行頭へ移動"
 msgid "Play &sounds on bookmarks and notes"
 msgstr "しおりとメモでサウンドを再生(&S)"
 
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+#, fuzzy
+msgid "&Sync caret to audio playback"
+msgstr "&カーソルを音声の再生位置に合わせる"
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+#, fuzzy
+msgid "&Audio seek amount:"
+msgstr "&オーディオのシーク量："
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "5 seconds"
+msgstr "秒"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "10 seconds"
+msgstr "1秒"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "30 seconds"
+msgstr "秒"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 minute duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "1 minute"
+msgstr "1分"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "2 minutes"
+msgstr "分"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "5 minutes"
+msgstr "分"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "10 minutes"
+msgstr "1分"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "30 minutes"
+msgstr "分"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 hour duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "1 hour"
+msgstr "1時間"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+#, fuzzy
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr "「Seeking」は、章の終わりを超えて次の章へと続いていく"
+
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr "起動時に更新を確認(&U)"
@@ -651,17 +720,9 @@ msgstr "選択なし"
 msgid "View Note"
 msgstr "メモの表示"
 
-#. TRANSLATORS: Singular label for 1 hour duration
-msgid "1 hour"
-msgstr "1時間"
-
 #. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
 msgid "hours"
 msgstr "時間"
-
-#. TRANSLATORS: Singular label for 1 minute duration
-msgid "1 minute"
-msgstr "1分"
 
 #. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
 msgid "minutes"
@@ -1555,6 +1616,46 @@ msgid "Toggle word wrap"
 msgstr "行の折り返しを切り替える"
 
 #, fuzzy
+msgid "&Play/Pause Audio"
+msgstr "&音声の再生／一時停止"
+
+#, fuzzy
+msgid "Play or pause this document's audio narration"
+msgstr "このドキュメントの音声ナレーションを再生または一時停止する"
+
+#, fuzzy
+msgid "Seek Audio &Forward"
+msgstr "Go &Forward    Ctrl+]"
+
+#, fuzzy
+msgid "Skip the audio narration forward"
+msgstr "音声ナレーションを早送りする"
+
+#, fuzzy
+msgid "Seek Audio &Backward"
+msgstr "「Seek Audio」および「Backward」"
+
+#, fuzzy
+msgid "Skip the audio narration backward"
+msgstr "音声ナレーションを逆方向にスキップする"
+
+#, fuzzy
+msgid "&Increase Audio Seek Amount"
+msgstr "&オーディオのシーク量を増加させる"
+
+#, fuzzy
+msgid "Increase how far seeking the audio narration moves"
+msgstr "音声ナレーションの検索範囲を広げる"
+
+#, fuzzy
+msgid "&Decrease Audio Seek Amount"
+msgstr "&オーディオのシーク量を減らす"
+
+#, fuzzy
+msgid "Decrease how far seeking the audio narration moves"
+msgstr "音声ナレーションの検索範囲を狭める"
+
+#, fuzzy
 msgid "&Full Screen"
 msgstr "&全画面表示    F11"
 
@@ -1808,6 +1909,27 @@ msgstr "しおりを削除しました。"
 msgid "Bookmark added."
 msgstr "しおりを追加しました。"
 
+#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+#. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#, fuzzy
+msgid "This document has no audio."
+msgstr "この文書には目次がありません。"
+
+#. TRANSLATORS: Announced when trying to seek audio before playback has established a position
+#, fuzzy
+msgid "Audio hasn't started playing yet."
+msgstr "まだ音声が再生されていません。"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+#, fuzzy
+msgid "{} (maximum)"
+msgstr "{} （最大）"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+#, fuzzy
+msgid "{} (minimum)"
+msgstr "{} （最低）"
+
 msgid "Enter bookmark note:"
 msgstr "しおりのメモを入力:"
 
@@ -1852,6 +1974,11 @@ msgstr "図"
 msgid "Image"
 msgstr "画像"
 
+#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+#, fuzzy
+msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
+msgstr "DAISY .opf ファイルが無効であるか、マニフェスト内に DTBook XML が見つかりませんでした"
+
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
 msgid "Failed to convert DTBook XML to text"
@@ -1861,11 +1988,6 @@ msgstr "DTBook XML をテキストに変換できませんでした"
 #, fuzzy
 msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
 msgstr "ZIPアーカイブは、有効なDAISY 3またはDAISY 2.02形式の書籍ではないようです"
-
-#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
-#, fuzzy
-msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr "DAISY .opf ファイルが無効であるか、マニフェスト内に DTBook XML が見つかりませんでした"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 #, fuzzy
@@ -2056,11 +2178,6 @@ msgstr "パスワードが必要です、またはパスワードが間違って
 msgid "Failed to open PDF document: {}"
 msgstr "PDFドキュメントを開くことができませんでした：{}"
 
-#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
-#, fuzzy
-msgid "PPTX file contains no slides"
-msgstr "PPTXファイルにはスライドが含まれていません"
-
 #, fuzzy
 msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
 msgstr "現在、パスワードで保護されたPPTファイルはサポートされていません。ファイルをPPTX形式で保存し、そのファイルを開いてみてください。"
@@ -2075,10 +2192,25 @@ msgstr "PPTファイルにはスライドが含まれていません"
 msgid "PowerPoint Document stream not found"
 msgstr "PowerPoint ドキュメント ストリームが見つかりません"
 
+#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
+#, fuzzy
+msgid "PPTX file contains no slides"
+msgstr "PPTXファイルにはスライドが含まれていません"
+
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 #, fuzzy
 msgid "Failed to parse RTF document: {}"
 msgstr "RTF ドキュメントの解析に失敗しました：{}"
+
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "File is encrypted and requires a password"
+msgstr "ファイルは暗号化されており、パスワードが必要です"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+#, fuzzy
+msgid "Decryption failed (wrong password?): {}"
+msgstr "復号に失敗しました（パスワードが間違っているのでしょうか？）：{}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
@@ -2114,16 +2246,6 @@ msgstr "読み取れるテキストコンテンツが見つかりませんでし
 #, fuzzy
 msgid "No readable content found in the ZIP archive"
 msgstr "ZIPアーカイブ内に読み取り可能なコンテンツが見つかりませんでした"
-
-#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "File is encrypted and requires a password"
-msgstr "ファイルは暗号化されており、パスワードが必要です"
-
-#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-#, fuzzy
-msgid "Decryption failed (wrong password?): {}"
-msgstr "復号に失敗しました（パスワードが間違っているのでしょうか？）：{}"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 #, fuzzy
@@ -2209,14 +2331,6 @@ msgstr "更新スクリプトを起動できません"
 
 msgid "Unknown update file format."
 msgstr "更新ファイルが不明な形式です。"
-
-#, fuzzy
-msgid "&Play/Pause Audio"
-msgstr "&音声の再生／一時停止"
-
-#, fuzzy
-msgid "Play or pause this document's audio narration"
-msgstr "このドキュメントの音声ナレーションを再生または一時停止する"
 
 msgid "Previous Section\t["
 msgstr "前のセクション\t["

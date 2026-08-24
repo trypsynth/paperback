@@ -1,26 +1,4 @@
-use pulldown_cmark::{Event, Parser, TagEnd};
 use roman::to;
-
-#[must_use]
-pub fn markdown_to_text(markdown: &str) -> String {
-	let mut text = String::new();
-	let parser = Parser::new(markdown);
-	for event in parser {
-		match event {
-			Event::Text(t) | Event::Code(t) => {
-				text.push_str(&t);
-			}
-			Event::End(TagEnd::Paragraph | TagEnd::Heading(_)) => {
-				text.push_str("\n\n");
-			}
-			Event::End(TagEnd::Item) => {
-				text.push('\n');
-			}
-			_ => {}
-		}
-	}
-	text.trim().to_string()
-}
 
 #[must_use]
 pub fn remove_soft_hyphens(input: &str) -> String {
@@ -200,41 +178,6 @@ mod tests {
 	#[case(53, "A", "BA")]
 	fn test_format_list_item(#[case] number: i32, #[case] list_type: &str, #[case] expected: &str) {
 		assert_eq!(format_list_item(number, list_type), expected);
-	}
-
-	#[test]
-	fn test_markdown_to_text_paragraphs_and_lists() {
-		let md = "# Title\n\nFirst paragraph.\n\n- One\n- Two";
-		let text = markdown_to_text(md);
-		assert!(text.contains("Title"));
-		assert!(text.contains("First paragraph."));
-		assert!(text.contains("One\nTwo"));
-	}
-
-	#[test]
-	fn test_markdown_to_text_preserves_issue_references() {
-		let md = "Fixes #12, closes #7, and resolves #312.";
-		let text = markdown_to_text(md);
-		assert!(text.contains("#12"), "#12 was dropped");
-		assert!(text.contains("#7"), "#7 was dropped");
-		assert!(text.contains("#312"), "#312 was dropped");
-	}
-
-	#[test]
-	fn test_markdown_to_text_preserves_inline_code() {
-		let md = "Bumps `pdfium` from `969d3b7` to `42b6c95`.";
-		let text = markdown_to_text(md);
-		assert!(text.contains("969d3b7"), "commit hash before 'to' was dropped");
-		assert!(text.contains("42b6c95"), "commit hash after 'to' was dropped");
-	}
-
-	#[test]
-	fn test_markdown_to_text_preserves_hash_tokens() {
-		let md = "Topic #rust and issue #x1 and number #42";
-		let text = markdown_to_text(md);
-		assert!(text.contains("#rust"));
-		assert!(text.contains("#x1"));
-		assert!(text.contains("#42"));
 	}
 
 	#[rstest]

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 00:25+0000\n"
+"POT-Creation-Date: 2026-08-24 00:33+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -373,6 +373,77 @@ msgstr "Ir a &principio de línea"
 msgid "Play &sounds on bookmarks and notes"
 msgstr "Reproducir &sonidos en marcadores y notas"
 
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+#, fuzzy
+msgid "&Sync caret to audio playback"
+msgstr "&Sincronizar el cursor con la reproducción de audio"
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+#, fuzzy
+msgid "&Audio seek amount:"
+msgstr "&Valor de búsqueda de audio:"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "5 seconds"
+msgstr "segundos"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "10 seconds"
+msgstr "1 segundo"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "30 seconds"
+msgstr "segundos"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 minute duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "1 minute"
+msgstr "1 minuto"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "2 minutes"
+msgstr "minutos"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "5 minutes"
+msgstr "minutos"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "10 minutes"
+msgstr "1 minuto"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "30 minutes"
+msgstr "minutos"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 hour duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "1 hour"
+msgstr "1 hora"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+#, fuzzy
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr "La búsqueda más allá del final de un capítulo continúa en el siguiente"
+
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr "Buscar &actualizaciones al iniciar"
@@ -686,20 +757,10 @@ msgstr "Sin selección"
 msgid "View Note"
 msgstr "Ver nota"
 
-#. TRANSLATORS: Singular label for 1 hour duration
-#, fuzzy
-msgid "1 hour"
-msgstr "1 hora"
-
 #. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
 #, fuzzy
 msgid "hours"
 msgstr "horas"
-
-#. TRANSLATORS: Singular label for 1 minute duration
-#, fuzzy
-msgid "1 minute"
-msgstr "1 minuto"
 
 #. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
 #, fuzzy
@@ -1614,6 +1675,46 @@ msgid "Toggle word wrap"
 msgstr "Activar/desactivar el ajuste de línea"
 
 #, fuzzy
+msgid "&Play/Pause Audio"
+msgstr "&Reproducir/Pausar audio"
+
+#, fuzzy
+msgid "Play or pause this document's audio narration"
+msgstr "Reproducir o pausar la narración de audio de este documento"
+
+#, fuzzy
+msgid "Seek Audio &Forward"
+msgstr "Avanzar    Ctrl+]"
+
+#, fuzzy
+msgid "Skip the audio narration forward"
+msgstr "Avanzar la narración de audio"
+
+#, fuzzy
+msgid "Seek Audio &Backward"
+msgstr "Buscar audio y retroceso"
+
+#, fuzzy
+msgid "Skip the audio narration backward"
+msgstr "Rebobinar la narración de audio"
+
+#, fuzzy
+msgid "&Increase Audio Seek Amount"
+msgstr "&Aumentar el intervalo de búsqueda de audio"
+
+#, fuzzy
+msgid "Increase how far seeking the audio narration moves"
+msgstr "Aumenta la distancia a la que se desplaza la narración de audio"
+
+#, fuzzy
+msgid "&Decrease Audio Seek Amount"
+msgstr "&Reducir la cantidad de búsqueda de audio"
+
+#, fuzzy
+msgid "Decrease how far seeking the audio narration moves"
+msgstr "Reducir la distancia a la que se desplaza la narración de audio"
+
+#, fuzzy
 msgid "&Full Screen"
 msgstr "&Pantalla completa    F11"
 
@@ -1873,6 +1974,27 @@ msgstr "Marcador eliminado."
 msgid "Bookmark added."
 msgstr "Marcador añadido."
 
+#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+#. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#, fuzzy
+msgid "This document has no audio."
+msgstr "Este documento no tiene índice."
+
+#. TRANSLATORS: Announced when trying to seek audio before playback has established a position
+#, fuzzy
+msgid "Audio hasn't started playing yet."
+msgstr "El audio aún no ha empezado a reproducirse."
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+#, fuzzy
+msgid "{} (maximum)"
+msgstr "{} (máximo)"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+#, fuzzy
+msgid "{} (minimum)"
+msgstr "{} (mínimo)"
+
 msgid "Enter bookmark note:"
 msgstr "Escriba una nota para el marcador:"
 
@@ -1917,6 +2039,11 @@ msgstr "Figura"
 msgid "Image"
 msgstr "Imagen"
 
+#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+#, fuzzy
+msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
+msgstr "El archivo .opf de DAISY no es válido o no se ha encontrado el archivo XML de DTBook en el manifiesto"
+
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
 msgid "Failed to convert DTBook XML to text"
@@ -1926,11 +2053,6 @@ msgstr "No se ha podido convertir el XML de DTBook a texto"
 #, fuzzy
 msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
 msgstr "El archivo ZIP no parece ser un libro válido en formato DAISY 3 o DAISY 2.02."
-
-#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
-#, fuzzy
-msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr "El archivo .opf de DAISY no es válido o no se ha encontrado el archivo XML de DTBook en el manifiesto"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 #, fuzzy
@@ -2121,11 +2243,6 @@ msgstr "Se requiere contraseña o la contraseña es incorrecta"
 msgid "Failed to open PDF document: {}"
 msgstr "No se ha podido abrir el documento PDF: {}"
 
-#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
-#, fuzzy
-msgid "PPTX file contains no slides"
-msgstr "El archivo PPTX no contiene diapositivas"
-
 #, fuzzy
 msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
 msgstr "Actualmente no se admiten archivos PPT protegidos con contraseña. Intenta guardar el archivo como PPTX y abrirlo en su lugar."
@@ -2140,10 +2257,25 @@ msgstr "El archivo PPT no contiene diapositivas"
 msgid "PowerPoint Document stream not found"
 msgstr "No se ha encontrado el flujo de documentos de PowerPoint"
 
+#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
+#, fuzzy
+msgid "PPTX file contains no slides"
+msgstr "El archivo PPTX no contiene diapositivas"
+
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 #, fuzzy
 msgid "Failed to parse RTF document: {}"
 msgstr "No se ha podido analizar el documento RTF: {}"
+
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "File is encrypted and requires a password"
+msgstr "El archivo está cifrado y requiere una contraseña"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+#, fuzzy
+msgid "Decryption failed (wrong password?): {}"
+msgstr "Error al descifrar (¿contraseña incorrecta?): {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
@@ -2179,16 +2311,6 @@ msgstr "No se ha encontrado ningún contenido de texto legible"
 #, fuzzy
 msgid "No readable content found in the ZIP archive"
 msgstr "No se ha encontrado ningún contenido legible en el archivo ZIP"
-
-#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "File is encrypted and requires a password"
-msgstr "El archivo está cifrado y requiere una contraseña"
-
-#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-#, fuzzy
-msgid "Decryption failed (wrong password?): {}"
-msgstr "Error al descifrar (¿contraseña incorrecta?): {}"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 #, fuzzy
@@ -2283,14 +2405,6 @@ msgstr "No se pudo ejecutar el script de actualización"
 
 msgid "Unknown update file format."
 msgstr "Formato de archivo de actualización desconocido."
-
-#, fuzzy
-msgid "&Play/Pause Audio"
-msgstr "&Reproducir/Pausar audio"
-
-#, fuzzy
-msgid "Play or pause this document's audio narration"
-msgstr "Reproducir o pausar la narración de audio de este documento"
 
 msgid "Previous Section\t["
 msgstr "Sección anterior\t["
