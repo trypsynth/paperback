@@ -11,6 +11,5 @@ bs
 cs
 de
 fi
-nl
 pl
 sr
