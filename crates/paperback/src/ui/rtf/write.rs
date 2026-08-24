@@ -6,11 +6,59 @@
 //! one shot instead of literal text, which is far cheaper than issuing one
 //! `SetStyle` call per formatting span on documents with thousands of them.
 
-use std::fmt::Write as _;
+use std::{borrow::Cow, fmt::Write as _};
 
 use paperback_core::util::text::ch_width;
 
 use crate::ui::document_manager::FormatSegment;
+
+/// Replaces every character `RichEdit` silently discards instead of storing with a space, so
+/// its buffer holds exactly one display unit per display unit of `content`. Borrows unchanged
+/// when there is nothing to replace, which is the overwhelmingly common case.
+///
+/// Every position the app hands the control is an offset into that buffer - the caret, a
+/// bookmark, a heading jump, the document-absolute translation in `ui::text_window` - so a
+/// character that vanishes on the way in shifts everything after it by one and quietly breaks
+/// all of them. Sweeping the entire BMP through [`build_rtf`] + `EM_STREAMIN` and comparing
+/// `RichEdit`'s own reported buffer length found exactly one discarded range, the tail of the
+/// Unicode Specials block: the interlinear annotation marks, the object replacement character,
+/// the replacement character, and the two noncharacters. Nothing else in the BMP is dropped,
+/// and no astral character is.
+///
+/// A space is what `wxTextCtrl::SetValue` - the non-RTF path the caller falls back to - already
+/// substitutes for these, so both paths leave identical text in the control.
+///
+/// U+FFFD is the one that turns up in practice: it is what every decoder emits for malformed
+/// input, so any document that discusses or demonstrates broken encodings is littered with
+/// them. Before this, one such character anywhere in a window made the round-trip check fail on
+/// every single load of that window and fall back to issuing one `SetStyle` call per formatting
+/// span - seconds rather than milliseconds.
+#[must_use]
+pub fn sanitize_for_rich_edit(content: &str) -> Cow<'_, str> {
+	if content.chars().any(is_discarded_by_rich_edit) {
+		Cow::Owned(content.replace(is_discarded_by_rich_edit, " "))
+	} else {
+		Cow::Borrowed(content)
+	}
+}
+
+/// U+FFF9..=U+FFFF - see [`sanitize_for_rich_edit`] for how this range was established.
+const fn is_discarded_by_rich_edit(ch: char) -> bool {
+	matches!(ch, '\u{FFF9}'..='\u{FFFF}')
+}
+
+/// How many display units `content` occupies once `RichEdit` has stored it, which is what
+/// `wxTextCtrl::GetLastPosition` reports back.
+///
+/// A wholly-trailing `\par` - one with no content after it - doesn't manifest as a stored
+/// character, since `RichEdit`'s document model implicitly terminates the buffer, so a trailing
+/// newline is not counted.
+#[must_use]
+pub fn stored_display_len(content: &str) -> i64 {
+	let total: usize = content.chars().map(ch_width).sum();
+	let trailing_newline = usize::from(content.ends_with('\n'));
+	i64::try_from(total.saturating_sub(trailing_newline)).unwrap_or(i64::MAX)
+}
 
 pub struct RtfFontInfo {
 	pub face_name: String,
@@ -121,6 +169,54 @@ mod tests {
 
 	fn seg(start: i64, end: i64, bold: bool, italic: bool, underline: bool) -> FormatSegment {
 		FormatSegment { start, end, bold, italic, underline }
+	}
+
+	#[test]
+	fn sanitize_borrows_when_there_is_nothing_to_replace() {
+		let content = "ordinary text with é, ←, 😀 and a BOM \u{FEFF}";
+		assert!(matches!(sanitize_for_rich_edit(content), Cow::Borrowed(_)));
+	}
+
+	#[test]
+	fn sanitize_replaces_the_characters_rich_edit_discards() {
+		// U+FFFD is the one that matters in practice - see `sanitize_for_rich_edit`.
+		let content = "Before: r\u{FFFD}sum\u{FFFD}";
+		assert_eq!(sanitize_for_rich_edit(content), "Before: r sum ");
+	}
+
+	#[test]
+	fn sanitize_is_width_preserving_across_the_whole_discarded_range() {
+		for cp in 0xFFF9..=0xFFFFu32 {
+			let ch = char::from_u32(cp).expect("valid scalar value");
+			let content = format!("a{ch}b");
+			let sanitized = sanitize_for_rich_edit(&content);
+			assert_eq!(sanitized, "a b", "U+{cp:04X} should become a space");
+			assert_eq!(stored_display_len(&sanitized), stored_display_len(&content), "U+{cp:04X} changed width");
+		}
+	}
+
+	#[test]
+	fn sanitize_leaves_the_neighbouring_specials_alone() {
+		// The sweep that established the range found these stored faithfully; replacing them
+		// would be a silent, pointless downgrade of the text.
+		let content = "a\u{FFF8}b\u{FFF0}c";
+		assert!(matches!(sanitize_for_rich_edit(content), Cow::Borrowed(_)));
+	}
+
+	#[test]
+	fn stored_display_len_drops_only_a_wholly_trailing_newline() {
+		assert_eq!(stored_display_len("abc"), 3);
+		assert_eq!(stored_display_len("abc\n"), 3);
+		assert_eq!(stored_display_len("abc\n\n"), 4);
+		assert_eq!(stored_display_len("a\nb"), 3);
+		assert_eq!(stored_display_len(""), 0);
+	}
+
+	#[test]
+	fn stored_display_len_counts_display_units_not_chars() {
+		// Astral characters are two display units where the app measures in UTF-16.
+		let expected = i64::try_from(ch_width('a') + ch_width('\u{1D538}') + ch_width('b')).unwrap();
+		assert_eq!(stored_display_len("a\u{1D538}b"), expected);
 	}
 
 	#[test]

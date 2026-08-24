@@ -1422,8 +1422,12 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &WindowSlice) {
 	if !segments.is_empty()
 		&& let Some(font) = text_ctrl.get_font()
 	{
+		// What RichEdit will actually end up holding, which is not always what it is handed -
+		// see `write::sanitize_for_rich_edit`. Everything below compares against this rather
+		// than against `content`.
+		let expected = write::sanitize_for_rich_edit(content);
 		let rtf = write::build_rtf(
-			content,
+			&expected,
 			&segments,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
 		);
@@ -1433,22 +1437,39 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &WindowSlice) {
 			// wholly-trailing "\par" (with no content after it) doesn't manifest
 			// as a stored character. Tolerate exactly that one known, harmless
 			// discrepancy rather than falling back over it: the very last
-			// position of *whatever we streamed in* ends up one short of `content`,
+			// position of *whatever we streamed in* ends up one short of `expected`,
 			// which only matters at its literal last character. This applies the same
 			// way to a windowed slice as to the whole document - RichEdit has no notion
 			// of "there's more after this that isn't loaded"; from its perspective
-			// `content` (window or not) *is* the whole buffer it was asked to store.
-			let matched = round_tripped == content
-				|| (content.ends_with('\n')
-					&& round_tripped.len() + 1 == content.len()
-					&& content.starts_with(round_tripped.as_str()));
+			// `expected` (window or not) *is* the whole buffer it was asked to store.
+			let matched = round_tripped == *expected
+				|| (expected.ends_with('\n')
+					&& round_tripped.len() + 1 == expected.len()
+					&& expected.starts_with(round_tripped.as_str()));
 			if matched {
 				return;
 			}
+			// Not identical, but harmless as long as it cost no display units: every position
+			// the app hands the control is an offset into this buffer, so a length change
+			// breaks the caret, bookmarks and `ui::text_window`'s translation alike, whereas a
+			// same-width substitution is only cosmetic. RichEdit does make a few of those on
+			// its own - U+2028 comes back as a vertical tab, U+FDD0..=U+FDEF as spaces - and
+			// falling back over those would cost seconds per window load to fix nothing. A
+			// length check is still decisive against the failure this guards: unparsed RTF
+			// stored as literal text would be tens of thousands of display units longer than
+			// the content it encodes.
+			let expected_len = write::stored_display_len(&expected);
+			let stored_len = text_ctrl.get_last_position();
+			if stored_len == expected_len {
+				tracing::debug!(expected_len, "RTF round-trip was substituted but not resized; keeping it");
+				return;
+			}
+			tracing::warn!(stored_len, expected_len, "RTF fast path changed the content's length; falling back");
+		} else {
+			tracing::warn!("RTF stream-in did not complete; falling back");
 		}
 		// Never leave raw RTF markup on screen for an accessibility user;
 		// fall back below to the plain-text + segment-loop path.
-		tracing::warn!("RTF fast path for formatting markers did not round-trip; falling back");
 	}
 
 	fill_text_ctrl(text_ctrl, content);
