@@ -14,13 +14,14 @@ use paperback_core::config::ConfigManager;
 use wxdragon::prelude::*;
 
 use super::MainWindow;
-use crate::config_ext::get_update_channel;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME};
 use crate::{
-	config_ext::config_toml_path, ipc::normalize_cli_path, legacy_config::migrate_if_needed,
+	config_ext::{config_toml_path, get_update_channel},
+	ipc::normalize_cli_path,
+	legacy_config::migrate_if_needed,
 	translation_manager::TranslationManager,
 };
 

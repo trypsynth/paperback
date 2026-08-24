@@ -4,23 +4,24 @@ use std::{
 	env, fs,
 	path::{Path, PathBuf},
 	rc::Rc,
-	sync::{Arc, Mutex, atomic::AtomicUsize, atomic::Ordering},
+	sync::{
+		Arc, Mutex,
+		atomic::{AtomicUsize, Ordering},
+	},
 };
 
 mod lang_readmes {
 	include!(concat!(env!("OUT_DIR"), "/lang_readmes.rs"));
 }
 
-use paperback_core::version;
-use paperback_core::{config::ConfigManager, parser};
+use paperback_core::{config::ConfigManager, parser, version};
 use patois::t;
 use ship_shape::{UpdateChannel as ShipChannel, UpdaterConfig};
 use wx_utils::show_error;
 use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager};
-use crate::config_ext::UpdateChannel;
-use crate::translation_manager::TranslationManager;
+use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
 
 pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 

@@ -32,10 +32,12 @@ use super::{
 	navigation::{self, MarkerNavTarget},
 	status,
 };
-use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IpcCommand;
-use crate::{config_ext::set_update_channel, translation_manager::TranslationManager};
+use crate::{
+	config_ext::{UpdateChannel, get_update_channel, set_update_channel},
+	translation_manager::TranslationManager,
+};
 
 pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
 pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
