@@ -447,6 +447,8 @@ impl MainWindow {
 		if dm.tab_count() == 0 {
 			// TRANSLATORS: Main window title when no document is open
 			self.frame.set_title(&t("Paperback"));
+			#[cfg(target_os = "macos")]
+			self.frame.set_represented_filename("");
 			// TRANSLATORS: Default status bar text when no document is open
 			self.frame.set_status_text(&t("Ready"), 0);
 			return;
@@ -455,6 +457,8 @@ impl MainWindow {
 			// TRANSLATORS: Window title when a document is open; {} is the document title
 			let template = t("Paperback - {}");
 			self.frame.set_title(&template.replace("{}", &display_title(tab)));
+			#[cfg(target_os = "macos")]
+			self.frame.set_represented_filename(&tab.file_path.to_string_lossy());
 			// TRANSLATORS: Status bar character count; {} is the number of characters
 			let chars_label = t("{} chars");
 			self.frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
@@ -1933,6 +1937,8 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 	let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
 	if dm.tab_count() == 0 {
 		frame.set_title(&t("Paperback"));
+		#[cfg(target_os = "macos")]
+		frame.set_represented_filename("");
 		let mut status_text = t("Ready");
 		if sleep_start > 0 {
 			let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
@@ -1947,6 +1953,8 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		// TRANSLATORS: Window title when a document is open; {} is the document title
 		let template = t("Paperback - {}");
 		frame.set_title(&template.replace("{}", &display_title(tab)));
+		#[cfg(target_os = "macos")]
+		frame.set_represented_filename(&tab.file_path.to_string_lossy());
 		let position = tab.text_ctrl.get_insertion_point();
 		let status_info = tab.session.get_status_info(position);
 		let mut status_text = status::format_status_text(&status_info);
