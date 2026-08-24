@@ -1,6 +1,7 @@
 mod app;
 mod dialogs;
 mod document_manager;
+mod dpi;
 mod find;
 mod help;
 mod icon;

@@ -8,6 +8,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{add_ok_cancel_footer, build_ok_cancel_buttons};
+use crate::ui::dpi;
 
 type RefreshCallbacks = Rc<RefCell<Vec<Box<dyn Fn()>>>>;
 
@@ -15,7 +16,9 @@ pub fn prompt_for_shortcuts(parent: &dyn WxWidget, initial: &ShortcutsConfig) ->
 	let config_state = Rc::new(RefCell::new(initial.clone()));
 	let refresh_all_callbacks: RefreshCallbacks = Rc::new(RefCell::new(Vec::new()));
 
-	let dialog = Dialog::builder(parent, &t("Customize Keyboard Shortcuts")).with_size(600, 560).build();
+	let dialog = Dialog::builder(parent, &t("Customize Keyboard Shortcuts"))
+		.with_size(dpi::scale(parent, 600), dpi::scale(parent, 560))
+		.build();
 	let notebook = Notebook::builder(&dialog).build();
 
 	for &category in ShortcutCategory::all() {
@@ -222,7 +225,7 @@ fn prompt_for_key_chord(
 	initial: Option<&KeyChord>,
 ) -> Option<Option<KeyChord>> {
 	let title = format!("Set Shortcut for {}", action.display_name());
-	let dialog = Dialog::builder(parent, &title).with_size(400, 260).build();
+	let dialog = Dialog::builder(parent, &title).with_size(dpi::scale(parent, 400), dpi::scale(parent, 260)).build();
 	let panel = Panel::builder(&dialog).build();
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 

@@ -26,6 +26,7 @@ use super::tray;
 use super::{
 	dialogs,
 	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
+	dpi,
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
 	icon, menu, menu_ids,
@@ -38,6 +39,10 @@ use crate::{
 	config_ext::{UpdateChannel, get_update_channel, set_update_channel},
 	translation_manager::TranslationManager,
 };
+
+/// The main window's starting size, in device-independent pixels (see `ui::dpi`).
+const DEFAULT_WINDOW_WIDTH: i32 = 800;
+const DEFAULT_WINDOW_HEIGHT: i32 = 600;
 
 pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
 pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
@@ -71,7 +76,11 @@ impl MainWindow {
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
 		// TRANSLATORS: Main window title when no document is open
 		let app_title = t("Paperback");
-		let frame = Frame::builder().with_title(&app_title).with_size(Size::new(800, 600)).build();
+		let frame = Frame::builder().with_title(&app_title).build();
+		// Sized after building rather than through the builder: the size has to be scaled for
+		// the display the window actually lands on, and there is nothing to ask about that
+		// until the frame exists. It isn't shown until later, so there's no visible resize.
+		frame.set_size(dpi::scale_size(&frame, Size::new(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)));
 		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
 		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
 		// (embedded by build.rs) already covers the taskbar and the shell; this is what the

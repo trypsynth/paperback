@@ -15,6 +15,7 @@ use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
 	translation_manager::TranslationManager,
+	ui::dpi,
 };
 
 /// Selectable audio seek amounts, in seconds, shown in the Options dialog and indexed by
@@ -700,7 +701,9 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 #[cfg(not(target_os = "macos"))]
 fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<HotkeyConfig> {
 	// TRANSLATORS: Title of the hotkey customization dialog
-	let dialog = Dialog::builder(parent, &t("Window Hotkey")).with_size(300, 230).build();
+	let dialog = Dialog::builder(parent, &t("Window Hotkey"))
+		.with_size(dpi::scale(parent, 300), dpi::scale(parent, 230))
+		.build();
 	let panel = Panel::builder(&dialog).build();
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 

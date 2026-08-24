@@ -2,6 +2,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
+use crate::ui::dpi;
 
 pub fn show_note_entry_dialog(
 	parent: &dyn WxWidget,
@@ -14,7 +15,7 @@ pub fn show_note_entry_dialog(
 	let note_ctrl = TextCtrl::builder(&dialog)
 		.with_value(existing_note)
 		.with_style(TextCtrlStyle::MultiLine)
-		.with_size(Size::new(400, 200))
+		.with_size(dpi::scale_size(&dialog, Size::new(400, 200)))
 		.build();
 	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("OK"));
 	let dialog_for_key = dialog;

@@ -9,6 +9,8 @@ use wxdragon::prelude::*;
 #[cfg(target_os = "windows")]
 const KEY_SPACE: i32 = 32;
 
+use crate::ui::dpi;
+
 pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
 	#[cfg(not(target_os = "windows"))]
 	return show_toc_dialog_dv(parent, toc_items, current_offset);
@@ -25,7 +27,7 @@ fn show_toc_dialog_dv(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_offset = Rc::new(Cell::new(-1i32));
 
-	let tree = DataViewTreeCtrl::builder(&dialog).with_size(Size::new(400, 500)).build();
+	let tree = DataViewTreeCtrl::builder(&dialog).with_size(dpi::scale_size(&dialog, Size::new(400, 500))).build();
 
 	let mut item_offsets: HashMap<usize, i32> = HashMap::new();
 	populate_toc_tree_dv(tree, &DataViewItem::default(), toc_items, &mut item_offsets);
@@ -192,7 +194,7 @@ fn show_toc_dialog_wx(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 fn build_toc_tree(dialog: Dialog, toc_items: &[TocItem], current_offset: i32) -> (TreeCtrl, TreeItemId) {
 	let tree = TreeCtrl::builder(&dialog)
 		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
-		.with_size(Size::new(400, 500))
+		.with_size(dpi::scale_size(&dialog, Size::new(400, 500)))
 		.build();
 	let root = tree.add_root("Root", None, None).unwrap();
 	populate_toc_tree(tree, &root, toc_items);

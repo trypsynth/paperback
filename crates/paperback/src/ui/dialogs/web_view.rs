@@ -4,6 +4,8 @@ use wxdragon::{event::WebViewEvents, prelude::*, widgets::WebView};
 type NavigationHandler = Box<dyn Fn(&str) -> bool>;
 use std::cell::Cell;
 
+use crate::ui::dpi;
+
 thread_local! {
 	pub static ACTIVE_WEB_VIEW: Cell<Option<Dialog>> = const { Cell::new(None) };
 }
@@ -17,7 +19,7 @@ pub fn show_web_view_dialog(
 ) {
 	let dialog = Dialog::builder(parent, title)
 		.with_style(DialogStyle::DefaultDialogStyle | DialogStyle::ResizeBorder)
-		.with_size(800, 600)
+		.with_size(dpi::scale(parent, 800), dpi::scale(parent, 600))
 		.build();
 	ACTIVE_WEB_VIEW.with(|v| v.set(Some(dialog)));
 	let web_view = WebView::builder(&dialog).build();
