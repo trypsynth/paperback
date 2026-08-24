@@ -118,8 +118,18 @@ fn bind_toc_layout_dv(dialog: Dialog, tree: DataViewTreeCtrl, ok_button: Button,
 	content_sizer.add(&tree, 1, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
+	// macOS HIG puts the default/affirmative action rightmost (Cancel, then OK); this
+	// implementation also covers Linux, which keeps the OK-then-Cancel order.
+	#[cfg(target_os = "macos")]
+	{
+		button_sizer.add(&cancel_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
+		button_sizer.add(&ok_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
+	}
+	#[cfg(not(target_os = "macos"))]
+	{
+		button_sizer.add(&ok_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
+		button_sizer.add(&cancel_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
+	}
 	content_sizer.add_sizer(
 		&button_sizer,
 		0,

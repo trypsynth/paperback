@@ -160,8 +160,18 @@ fn show_yes_no_dialog(parent: &dyn WxWidget, message: &str, title: &str) -> bool
 	content_sizer.add(&message_label, 0, SizerFlag::All, DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&yes_button, 0, SizerFlag::Right, DIALOG_PADDING);
-	button_sizer.add(&no_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	// macOS HIG puts the default/affirmative action rightmost (No, then Yes); Windows puts
+	// it leftmost (Yes, then No).
+	#[cfg(target_os = "macos")]
+	{
+		button_sizer.add(&no_button, 0, SizerFlag::Right, DIALOG_PADDING);
+		button_sizer.add(&yes_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	}
+	#[cfg(not(target_os = "macos"))]
+	{
+		button_sizer.add(&yes_button, 0, SizerFlag::Right, DIALOG_PADDING);
+		button_sizer.add(&no_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	}
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, 0);
 	panel.set_sizer(content_sizer, true);
 	let dialog_sizer = BoxSizer::builder(Orientation::Vertical).build();
