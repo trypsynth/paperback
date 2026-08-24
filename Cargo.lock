@@ -1682,6 +1682,7 @@ dependencies = [
  "dunce",
  "embed-manifest",
  "flate2",
+ "image",
  "live-region",
  "objc",
  "paperback-core",

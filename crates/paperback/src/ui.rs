@@ -3,6 +3,7 @@ mod dialogs;
 mod document_manager;
 mod find;
 mod help;
+mod icon;
 mod main_window;
 mod menu;
 mod menu_ids;

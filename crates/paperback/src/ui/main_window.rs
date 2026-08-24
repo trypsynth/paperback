@@ -28,7 +28,7 @@ use super::{
 	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
-	menu, menu_ids,
+	icon, menu, menu_ids,
 	navigation::{self, MarkerNavTarget},
 	status,
 };
@@ -73,6 +73,12 @@ impl MainWindow {
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).with_size(Size::new(800, 600)).build();
 		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
+		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
+		// (embedded by build.rs) already covers the taskbar and the shell; this is what the
+		// window itself carries, and is the only icon at all on the other platforms.
+		if let Some(bitmap) = icon::frame_bitmap() {
+			frame.set_icon(&bitmap);
+		}
 		frame.create_status_bar(1, 0, -1, "statusbar");
 		// TRANSLATORS: Default status bar text when no document is open
 		frame.set_status_text(&t("Ready"), 0);
@@ -405,15 +411,7 @@ impl MainWindow {
 
 		#[cfg(not(target_os = "linux"))]
 		if let Some(state) = self.tray_state.lock().unwrap().as_mut() {
-			if let Some(bundle) =
-				ArtProvider::get_bitmap_bundle(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
-			{
-				state.icon.set_icon_bundle(&bundle, "Paperback");
-			} else if let Some(bitmap) =
-				ArtProvider::get_bitmap(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
-			{
-				state.icon.set_icon(&bitmap, "Paperback");
-			}
+			tray::set_tray_icon(&state.icon);
 		}
 	}
 

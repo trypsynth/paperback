@@ -96,6 +96,11 @@ fn embed_version_info() {
 		version.clone()
 	};
 	let mut res = WindowsResource::new();
+	// Explorer, the taskbar, Alt+Tab, the Start menu, the uninstall entry and the document
+	// types the installer registers (`paperback.exe,0`) all read the icon straight out of the
+	// executable, so without this the app and every file associated with it show the generic
+	// "no icon" placeholder. `ui::icon` handles the places that need a bitmap at runtime.
+	res.set_icon("assets/paperback.ico");
 	res.set("ProductName", "Paperback")
 		.set("FileDescription", "Paperback")
 		.set("LegalCopyright", "Copyright © 2025 Quin Gillespie")
@@ -114,6 +119,7 @@ fn track_packaging_inputs() {
 	println!("cargo:rerun-if-changed=Cargo.lock");
 	println!("cargo:rerun-if-changed=src");
 	println!("cargo:rerun-if-changed=app");
+	println!("cargo:rerun-if-changed=assets");
 	println!("cargo:rerun-if-changed=paperback.iss.in");
 }
 
