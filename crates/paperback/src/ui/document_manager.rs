@@ -1047,11 +1047,11 @@ impl DocumentManager {
 					show_reader_context_menu(text_ctrl_for_menu);
 					return;
 				}
-				if (key == WXK_HOME || key == WXK_END) && kbd.control_down() && !kbd.shift_down() && !kbd.alt_down() {
+				if let Some(to_end) = document_edge_for_key(key, kbd.control_down(), kbd.shift_down(), kbd.alt_down()) {
 					kbd.event.skip(false);
 					if let Ok(mut dm) = dm_for_keys.try_lock() {
 						dm.preferred_column.set(None);
-						dm.jump_to_document_edge(key == WXK_END);
+						dm.jump_to_document_edge(to_end);
 					}
 					return;
 				}
@@ -1133,6 +1133,31 @@ impl DocumentManager {
 			show_reader_context_menu(text_ctrl_for_right_click);
 		});
 		text_ctrl
+	}
+}
+
+/// Which end of the document a key press names as a "jump to the very start/end" gesture, if
+/// any: `Some(true)` for the end, `Some(false)` for the start. See
+/// `DocumentManager::jump_to_document_edge` for why these are intercepted rather than left to
+/// the text control.
+///
+/// Ctrl+Home/Ctrl+End everywhere - wxWidgets reports macOS's Command key as `control_down`, so
+/// that covers Cmd+Home/Cmd+End there - plus Cmd+Up/Cmd+Down on macOS, which is what Mac text
+/// views actually bind document start/end to, and the only one of the two most Apple keyboards
+/// can even type (they have no Home/End keys). Bare Home/End are deliberately not included on
+/// macOS: there they scroll without moving the caret, which is a different gesture.
+const fn document_edge_for_key(key: i32, control: bool, shift: bool, alt: bool) -> Option<bool> {
+	if !control || shift || alt {
+		return None;
+	}
+	match key {
+		WXK_HOME => Some(false),
+		WXK_END => Some(true),
+		#[cfg(target_os = "macos")]
+		WXK_UP => Some(false),
+		#[cfg(target_os = "macos")]
+		WXK_DOWN => Some(true),
+		_ => None,
 	}
 }
 
