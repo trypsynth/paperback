@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 00:25+0000\n"
+"POT-Creation-Date: 2026-08-24 00:33+0000\n"
 "PO-Revision-Date: 2026-03-22 21:37+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
@@ -367,6 +367,77 @@ msgstr "移至 &行首"
 msgid "Play &sounds on bookmarks and notes"
 msgstr "在书签和笔记上播放声音(&S)"
 
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+#, fuzzy
+msgid "&Sync caret to audio playback"
+msgstr "&将光标与音频播放同步"
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+#, fuzzy
+msgid "&Audio seek amount:"
+msgstr "&音频寻址量："
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "5 seconds"
+msgstr "秒"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "10 seconds"
+msgstr "1秒"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "30 seconds"
+msgstr "秒"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 minute duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "1 minute"
+msgstr "1分钟"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "2 minutes"
+msgstr "分钟"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "5 minutes"
+msgstr "分钟"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "10 minutes"
+msgstr "1分钟"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "30 minutes"
+msgstr "分钟"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Singular label for 1 hour duration
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "1 hour"
+msgstr "1小时"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+#, fuzzy
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr "“探索”一章的结尾之后，故事将延续到下一章"
+
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr "启动时检查更新(&U)"
@@ -680,20 +751,10 @@ msgstr "未选择"
 msgid "View Note"
 msgstr "查看笔记"
 
-#. TRANSLATORS: Singular label for 1 hour duration
-#, fuzzy
-msgid "1 hour"
-msgstr "1小时"
-
 #. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
 #, fuzzy
 msgid "hours"
 msgstr "小时"
-
-#. TRANSLATORS: Singular label for 1 minute duration
-#, fuzzy
-msgid "1 minute"
-msgstr "1分钟"
 
 #. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
 #, fuzzy
@@ -1603,6 +1664,46 @@ msgid "Toggle word wrap"
 msgstr "切换自动换行"
 
 #, fuzzy
+msgid "&Play/Pause Audio"
+msgstr "&播放/暂停音频"
+
+#, fuzzy
+msgid "Play or pause this document's audio narration"
+msgstr "播放或暂停本文档的语音朗读"
+
+#, fuzzy
+msgid "Seek Audio &Forward"
+msgstr "前进    Ctrl+]"
+
+#, fuzzy
+msgid "Skip the audio narration forward"
+msgstr "跳过音频解说，直接播放"
+
+#, fuzzy
+msgid "Seek Audio &Backward"
+msgstr "“Seek Audio &Backward”"
+
+#, fuzzy
+msgid "Skip the audio narration backward"
+msgstr "跳过音频旁白的倒放部分"
+
+#, fuzzy
+msgid "&Increase Audio Seek Amount"
+msgstr "&增加音频寻址量"
+
+#, fuzzy
+msgid "Increase how far seeking the audio narration moves"
+msgstr "增加音频旁白的搜索范围"
+
+#, fuzzy
+msgid "&Decrease Audio Seek Amount"
+msgstr "&减少音频寻址量"
+
+#, fuzzy
+msgid "Decrease how far seeking the audio narration moves"
+msgstr "减少音频旁白搜索的范围"
+
+#, fuzzy
 msgid "&Full Screen"
 msgstr "&全屏    F11"
 
@@ -1856,6 +1957,27 @@ msgstr "书签已移除。"
 msgid "Bookmark added."
 msgstr "书签已添加。"
 
+#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+#. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#, fuzzy
+msgid "This document has no audio."
+msgstr "本文件没有目录。"
+
+#. TRANSLATORS: Announced when trying to seek audio before playback has established a position
+#, fuzzy
+msgid "Audio hasn't started playing yet."
+msgstr "音频尚未开始播放。"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+#, fuzzy
+msgid "{} (maximum)"
+msgstr "{} (最大值)"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+#, fuzzy
+msgid "{} (minimum)"
+msgstr "{} （最低）"
+
 msgid "Enter bookmark note:"
 msgstr "输入书签笔记："
 
@@ -1898,6 +2020,11 @@ msgstr "图表"
 msgid "Image"
 msgstr "图片"
 
+#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+#, fuzzy
+msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
+msgstr "DAISY .opf 文件无效，或无法在清单中找到 DTBook XML 文件"
+
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
 msgid "Failed to convert DTBook XML to text"
@@ -1907,11 +2034,6 @@ msgstr "无法将 DTBook XML 转换为文本"
 #, fuzzy
 msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
 msgstr "该 ZIP 压缩包似乎不是有效的 DAISY 3 或 DAISY 2.02 电子书"
-
-#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
-#, fuzzy
-msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr "DAISY .opf 文件无效，或无法在清单中找到 DTBook XML 文件"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 #, fuzzy
@@ -2102,11 +2224,6 @@ msgstr "需要输入密码或密码错误"
 msgid "Failed to open PDF document: {}"
 msgstr "无法打开 PDF 文档：{}"
 
-#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
-#, fuzzy
-msgid "PPTX file contains no slides"
-msgstr "PPTX 文件中没有幻灯片"
-
 #, fuzzy
 msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
 msgstr "目前不支持受密码保护的 PPT 文件。请尝试将文件另存为 PPTX 格式，然后打开该文件。"
@@ -2121,10 +2238,25 @@ msgstr "该PPT文件中没有幻灯片"
 msgid "PowerPoint Document stream not found"
 msgstr "未找到 PowerPoint 文档流"
 
+#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
+#, fuzzy
+msgid "PPTX file contains no slides"
+msgstr "PPTX 文件中没有幻灯片"
+
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 #, fuzzy
 msgid "Failed to parse RTF document: {}"
 msgstr "无法解析 RTF 文档：{}"
+
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "File is encrypted and requires a password"
+msgstr "该文件已加密，需要密码"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+#, fuzzy
+msgid "Decryption failed (wrong password?): {}"
+msgstr "解密失败（密码错误？）：{}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
@@ -2160,16 +2292,6 @@ msgstr "未找到可读的文本内容"
 #, fuzzy
 msgid "No readable content found in the ZIP archive"
 msgstr "在 ZIP 压缩包中未找到可读内容"
-
-#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "File is encrypted and requires a password"
-msgstr "该文件已加密，需要密码"
-
-#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-#, fuzzy
-msgid "Decryption failed (wrong password?): {}"
-msgstr "解密失败（密码错误？）：{}"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 #, fuzzy
@@ -2263,14 +2385,6 @@ msgstr "启动更新脚本失败"
 
 msgid "Unknown update file format."
 msgstr "未知的更新文件格式。"
-
-#, fuzzy
-msgid "&Play/Pause Audio"
-msgstr "&播放/暂停音频"
-
-#, fuzzy
-msgid "Play or pause this document's audio narration"
-msgstr "播放或暂停本文档的语音朗读"
 
 msgid "Previous Section\t["
 msgstr "上一章节\t["
