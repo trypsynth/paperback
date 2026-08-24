@@ -670,6 +670,28 @@ impl DocumentManager {
 		tab.text_ctrl.show_position(local);
 	}
 
+	/// Jumps the caret to the very first or very last character of the *document*, reloading the
+	/// text control's window at that edge (see `ui::text_window`).
+	///
+	/// `text_ctrl`'s own Ctrl+Home/Ctrl+End can only ever reach the ends of whatever window is
+	/// currently loaded, which on a huge document is an arbitrary spot mid-book rather than the
+	/// start or end of the document - and reaching a loaded edge that way then makes
+	/// `pump_window_reload` recentre the window on it, so the keys both landed in the wrong place
+	/// and paid for a reload to get there. `build_text_ctrl` intercepts them and routes here
+	/// instead, which also keeps them consistent with every other jump in the app (history,
+	/// audio sync, focus).
+	pub fn jump_to_document_edge(&mut self, to_end: bool) {
+		let (track, update) = {
+			let Some(tab) = self.active_tab_mut() else {
+				return;
+			};
+			let offset = if to_end { tab.session.document_len().max(0) } else { 0 };
+			let update = move_to_offset_and_record_history(tab, offset);
+			(tab.track, update)
+		};
+		persist_navigation_history(&self.config, track.then_some(&update));
+	}
+
 	/// Pauses audio on every tab except the active one, so switching tabs can't leave two
 	/// documents narrating at once (the active tab may have audio of its own still playing,
 	/// which this leaves untouched).
@@ -1023,6 +1045,14 @@ impl DocumentManager {
 				if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
 					kbd.event.skip(false);
 					show_reader_context_menu(text_ctrl_for_menu);
+					return;
+				}
+				if (key == WXK_HOME || key == WXK_END) && kbd.control_down() && !kbd.shift_down() && !kbd.alt_down() {
+					kbd.event.skip(false);
+					if let Ok(mut dm) = dm_for_keys.try_lock() {
+						dm.preferred_column.set(None);
+						dm.jump_to_document_edge(key == WXK_END);
+					}
 					return;
 				}
 				#[cfg(target_os = "windows")]
