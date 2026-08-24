@@ -280,6 +280,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	update_channel_combo.append(&t("Stable"));
 	// TRANSLATORS: Developer/development update channel option
 	update_channel_combo.append(&t("Dev"));
+	#[cfg(target_os = "macos")]
+	update_channel_combo.set_accessibility_label(channel_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
