@@ -626,6 +626,10 @@ pub struct Document {
 	pub stats: DocumentStats,
 	/// Recorded audio for this document, when it has any.
 	pub audio: Option<AudioTimeline>,
+	/// True when the text spine exists only to anchor audio, carrying no prose of its own -
+	/// a zip of bare narration files, say. Read-aloud UIs use this to offer time-based
+	/// navigation instead of paragraph/section units that would have nothing to land on.
+	pub audio_only: bool,
 }
 
 impl Document {
@@ -641,6 +645,7 @@ impl Document {
 			manifest_items: HashMap::new(),
 			stats: DocumentStats::default(),
 			audio: None,
+			audio_only: false,
 		}
 	}
 

@@ -41,6 +41,14 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().set_app_bool(&key, value);
 	}
 
+	pub fn get_app_int(&self, key: String, default_value: i32) -> i32 {
+		self.inner.lock().unwrap().get_app_int(&key, default_value)
+	}
+
+	pub fn set_app_int(&self, key: String, value: i32) {
+		self.inner.lock().unwrap().set_app_int(&key, value);
+	}
+
 	pub fn associate_uri_with_local_file(&self, uri: String, local_path: String) {
 		self.inner.lock().unwrap().associate_uri_with_local_file(&uri, &local_path);
 	}

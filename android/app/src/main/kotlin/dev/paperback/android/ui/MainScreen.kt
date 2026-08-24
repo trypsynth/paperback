@@ -205,7 +205,7 @@ fun MainScreen(
 		}
 	}
 	val isSpeaking by viewModel.ttsManager.isSpeaking.collectAsStateWithLifecycle()
-	val currentSegmentType by viewModel.currentSegmentType.collectAsStateWithLifecycle()
+	val currentNavUnit by viewModel.currentNavUnit.collectAsStateWithLifecycle()
 	val ttsPosition by viewModel.ttsPosition.collectAsStateWithLifecycle()
 	val currentSegmentText by viewModel.currentSegmentText.collectAsStateWithLifecycle()
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
@@ -427,13 +427,9 @@ fun MainScreen(
 					(state as MainScreenUiState.Success).activeTab != null
 				) {
 					val activeTab = (state as MainScreenUiState.Success).activeTab!!
-					val supportedSegmentTypes = remember(activeTab.session) {
-						activeTab.session.getSupportedSegmentTypesFfi()
-					}
-					LaunchedEffect(supportedSegmentTypes) {
-						if (!supportedSegmentTypes.contains(currentSegmentType)) {
-							viewModel.setSegmentType(uniffi.paperback.SegmentTypeFfi.PARAGRAPH)
-						}
+					val navUnits = remember(activeTab.session) { viewModel.navUnitsFor(activeTab) }
+					LaunchedEffect(navUnits) {
+						viewModel.ensureNavUnitSupported(navUnits)
 					}
 					TtsBottomBar(
 						isSpeaking = isSpeaking,
@@ -442,9 +438,9 @@ fun MainScreen(
 						onNext = { viewModel.playNextSegment(speak = isSpeaking, announce = !isSpeaking) },
 						onPrevButton = { viewModel.playPrevSegment(speak = isSpeaking) },
 						onNextButton = { viewModel.playNextSegment(speak = isSpeaking) },
-						currentSegmentType = currentSegmentType,
-						supportedSegmentTypes = supportedSegmentTypes,
-						onSegmentTypeChange = { viewModel.setSegmentType(it) },
+						currentUnit = currentNavUnit,
+						navUnits = navUnits,
+						onNavUnitChange = { viewModel.setNavUnit(it) },
 						swipeUpMovesForward = swipeUpMovesForward
 					)
 				}

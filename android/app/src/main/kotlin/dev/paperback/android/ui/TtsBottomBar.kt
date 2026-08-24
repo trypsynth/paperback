@@ -25,7 +25,6 @@ import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
-import uniffi.paperback.SegmentTypeFfi
 import kotlin.math.roundToInt
 
 private const val SEEK_RANGE = 10000
@@ -33,35 +32,6 @@ private const val SEEK_RANGE = 10000
 // Zero-width space: satisfies TalkBack's non-null stateDescription check so it doesn't
 // fall back to announcing the raw slider value, while reading aloud as nothing.
 private const val ZWSP = "​"
-
-fun getSegmentTypeName(type: SegmentTypeFfi): String =
-	// TRANSLATORS: Name of a navigation/reading unit shown in the "jump by unit" picker and read-aloud controls (e.g. "Paragraph", "Line", "Heading")
-	when (type) {
-		// TRANSLATORS: Name of the "paragraph" reading/navigation unit
-		SegmentTypeFfi.PARAGRAPH -> t("Paragraph")
-		// TRANSLATORS: Name of the "line" reading/navigation unit
-		SegmentTypeFfi.LINE -> t("Line")
-		// TRANSLATORS: Name of the "heading" reading/navigation unit
-		SegmentTypeFfi.HEADING -> t("Heading")
-		// TRANSLATORS: Name of the "link" reading/navigation unit
-		SegmentTypeFfi.LINK -> t("Link")
-		// TRANSLATORS: Name of the "section" reading/navigation unit
-		SegmentTypeFfi.SECTION -> t("Section")
-		// TRANSLATORS: Name of the "page" reading/navigation unit
-		SegmentTypeFfi.PAGE -> t("Page")
-		// TRANSLATORS: Name of the "list" reading/navigation unit
-		SegmentTypeFfi.LIST -> t("List")
-		// TRANSLATORS: Name of the "list item" reading/navigation unit
-		SegmentTypeFfi.LIST_ITEM -> t("List Item")
-		// TRANSLATORS: Name of the "table" reading/navigation unit
-		SegmentTypeFfi.TABLE -> t("Table")
-		// TRANSLATORS: Name of the "separator" reading/navigation unit
-		SegmentTypeFfi.SEPARATOR -> t("Separator")
-		// TRANSLATORS: Name of the "image" reading/navigation unit
-		SegmentTypeFfi.IMAGE -> t("Image")
-		// TRANSLATORS: Name of the "figure" reading/navigation unit
-		SegmentTypeFfi.FIGURE -> t("Figure")
-	}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,16 +42,32 @@ fun TtsBottomBar(
 	onNext: () -> Unit,
 	onPrevButton: () -> Unit,
 	onNextButton: () -> Unit,
-	currentSegmentType: SegmentTypeFfi,
-	supportedSegmentTypes: List<SegmentTypeFfi>,
-	onSegmentTypeChange: (SegmentTypeFfi) -> Unit,
+	currentUnit: NavUnit,
+	navUnits: List<NavUnit>,
+	onNavUnitChange: (NavUnit) -> Unit,
 	modifier: Modifier = Modifier,
 	swipeUpMovesForward: Boolean = true
 ) {
 	var dropdownExpanded by remember { mutableStateOf(false) }
-	val types = supportedSegmentTypes
-	val segmentTypeName = getSegmentTypeName(currentSegmentType)
-	val currentTypeIndex = types.indexOf(currentSegmentType)
+	val unitName = getNavUnitName(currentUnit)
+	val currentUnitIndex = navUnits.indexOf(currentUnit)
+	// A time unit means the prev/next controls seek the recording rather than stepping through
+	// text, so they read as "back"/"forward" by that amount instead of "previous"/"next" thing.
+	val isTimeUnit = currentUnit is NavUnit.Time
+	val prevLabel = if (isTimeUnit) {
+		// TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
+		t("Back {}").replace("{}", unitName)
+	} else {
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button; {} is a unit name like "Paragraph"
+		t("Previous {}").replace("{}", unitName)
+	}
+	val nextLabel = if (isTimeUnit) {
+		// TRANSLATORS: TalkBack label for the read-aloud bar's forward button when navigating audio by time; {} is an amount like "30 seconds"
+		t("Forward {}").replace("{}", unitName)
+	} else {
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button; {} is a unit name like "Paragraph"
+		t("Next {}").replace("{}", unitName)
+	}
 
 	BottomAppBar(
 		modifier = modifier,
@@ -91,14 +77,14 @@ fun TtsBottomBar(
 				FilterChip(
 					selected = false,
 					onClick = { dropdownExpanded = true },
-					label = { Text(segmentTypeName) },
+					label = { Text(unitName) },
 					trailingIcon = {
 						Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
 					},
 					modifier = Modifier.clearAndSetSemantics {
 						// TRANSLATORS: TalkBack label for the control that seeks between reading/navigation units (paragraph, line, heading, etc.)
 						contentDescription = t("Navigation unit")
-						stateDescription = segmentTypeName
+						stateDescription = unitName
 						progressBarRangeInfo = ProgressBarRangeInfo(
 							current = (SEEK_RANGE / 2).toFloat(),
 							range = 0f..SEEK_RANGE.toFloat(),
@@ -107,13 +93,13 @@ fun TtsBottomBar(
 						setProgress { targetValue ->
 							val current = SEEK_RANGE / 2
 							val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
-							val idx = if (currentTypeIndex == -1) 0 else currentTypeIndex
+							val idx = if (currentUnitIndex == -1) 0 else currentUnitIndex
 							when {
-								newPos > current -> onSegmentTypeChange(
-									types[(idx + 1) % types.size]
+								newPos > current -> onNavUnitChange(
+									navUnits[(idx + 1) % navUnits.size]
 								)
-								newPos < current -> onSegmentTypeChange(
-									types[(idx - 1 + types.size) % types.size]
+								newPos < current -> onNavUnitChange(
+									navUnits[(idx - 1 + navUnits.size) % navUnits.size]
 								)
 							}
 							true
@@ -128,11 +114,11 @@ fun TtsBottomBar(
 					expanded = dropdownExpanded,
 					onDismissRequest = { dropdownExpanded = false },
 				) {
-					types.forEach { type ->
+					navUnits.forEach { unit ->
 						DropdownMenuItem(
-							text = { Text(getSegmentTypeName(type)) },
+							text = { Text(getNavUnitName(unit)) },
 							onClick = {
-								onSegmentTypeChange(type)
+								onNavUnitChange(unit)
 								dropdownExpanded = false
 							},
 						)
@@ -141,7 +127,7 @@ fun TtsBottomBar(
 			}
 
 			IconButton(onClick = onPrevButton) {
-				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous $segmentTypeName")
+				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = prevLabel)
 			}
 
 			// Play/pause: tap to play/pause, swipe up/down (TalkBack) to seek by the current unit.
@@ -184,7 +170,7 @@ fun TtsBottomBar(
 			}
 
 			IconButton(onClick = onNextButton) {
-				Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next $segmentTypeName")
+				Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = nextLabel)
 			}
 		},
 	)

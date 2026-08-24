@@ -579,6 +579,7 @@ mod tests {
 			!document.buffer.content.chars().any(|c| c != ' '),
 			"the text field must show no real content for a plain audio bundle"
 		);
+		assert!(document.audio_only, "read-aloud UIs navigate this by elapsed time, not by text unit");
 
 		// Each section must carry a SectionBreak marker, or Previous/Next Section navigation
 		// (bound to [ and ]) finds nothing to jump to.

@@ -153,6 +153,7 @@ interface DocumentSession {
 	sequence<TocEntry> get_toc();
 
 	boolean has_audio_ffi();
+	boolean is_audio_only_ffi();
 	i32 audio_source_count_ffi();
 	string audio_source_direct_path_ffi(i32 index);
 	boolean audio_extract_source_ffi(i32 index, string output_path);
@@ -163,6 +164,7 @@ interface DocumentSession {
 	AudioPointFfi audio_point_for_position_ffi(i64 position);
 	i64 audio_elapsed_for_source_position_ffi(i32 source, i64 raw_ms);
 	i32 audio_next_source_after_ffi(i32 current_source);
+	i32 audio_previous_source_before_ffi(i32 current_source);
 
 	DocumentStatsFfi get_stats_ffi();
 	sequence<SegmentTypeFfi> get_supported_segment_types_ffi();
@@ -188,6 +190,8 @@ interface ConfigManagerFfi {
 	void set_app_string(string key, string value);
 	boolean get_app_bool(string key, boolean default_value);
 	void set_app_bool(string key, boolean value);
+	i32 get_app_int(string key, i32 default_value);
+	void set_app_int(string key, i32 value);
 	void associate_uri_with_local_file(string uri, string local_path);
 	void set_document_position(string path, i64 position);
 	i64 get_document_position(string path);
