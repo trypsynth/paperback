@@ -566,6 +566,8 @@ fn generate_app_bundle() {
 	<string>{version}</string>
 	<key>CFBundleExecutable</key>
 	<string>paperback</string>
+	<key>CFBundleIconFile</key>
+	<string>paperback</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>NSHighResolutionCapable</key>
@@ -604,5 +606,11 @@ fn generate_app_bundle() {
 	let readme = target_dir.join("readme.html");
 	if readme.exists() {
 		let _ = fs::copy(&readme, bundle_dir.join("Resources/readme.html"));
+	}
+	// Named to match CFBundleIconFile above; without it the Dock, Finder and the app switcher
+	// all fall back to the blank generic-application icon.
+	let icns = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default()).join("assets/paperback.icns");
+	if let Err(e) = fs::copy(&icns, bundle_dir.join("Resources/paperback.icns")) {
+		println!("cargo:warning=Failed to copy the app bundle icon: {e}");
 	}
 }
