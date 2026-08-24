@@ -87,7 +87,6 @@ fun MainScreen(
 	val goToInitialMode by viewModel.goToInitialMode.collectAsStateWithLifecycle()
 	val findDialogOpen by viewModel.findDialog.isOpen.collectAsStateWithLifecycle()
 	val sleepTimerDialogOpen by viewModel.sleepTimerDialog.isOpen.collectAsStateWithLifecycle()
-	var isScreenDimmed by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	val restorePreviousDocuments by viewModel.restorePreviousDocuments.collectAsStateWithLifecycle()
 	val useInAppFileBrowser by viewModel.useInAppFileBrowser.collectAsStateWithLifecycle()
@@ -226,7 +225,7 @@ fun MainScreen(
 
 	LaunchedEffect(Unit) {
 		viewModel.sleepTimerExpired.collect {
-			isScreenDimmed = true
+			(context as? Activity)?.moveTaskToBack(true)
 		}
 	}
 	val accessibilityManager =
@@ -775,16 +774,6 @@ fun MainScreen(
 					}
 				}
 			}
-		}
-		if (isScreenDimmed) {
-			Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.background(Color.Black)
-					.pointerInput(Unit) { detectTapGestures { isScreenDimmed = false } }
-					// TRANSLATORS: Accessibility description of the black overlay shown when the sleep timer dims the screen
-					.semantics { contentDescription = t("Screen dimmed by sleep timer. Tap to wake.") }
-			)
 		}
 		if (passwordPromptUri != null) {
 			PasswordDialog(
