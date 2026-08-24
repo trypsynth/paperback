@@ -225,7 +225,7 @@ jobs:
         fetch-depth: 0
     - name: Install dependencies
       run: |
-        brew install cmake ninja pandoc gettext
+        brew install cmake ninja pandoc gettext minisign
         echo "/opt/homebrew/opt/gettext/bin" >> $GITHUB_PATH
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
@@ -303,6 +303,16 @@ jobs:
         fi
         xcrun stapler staple target/release/paperback.dmg
         rm -f "$KEY_PATH"
+    - name: Sign artifact
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      env:
+        MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
+        MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+      run: |
+        KEY_PATH="$RUNNER_TEMP/paperback.key"
+        printf '%s' "$MINISIGN_KEY" > "$KEY_PATH"
+        printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.dmg
+        rm -f "$KEY_PATH"
     - name: Clean up signing keychain
       if: always() && github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       run: |
@@ -314,6 +324,13 @@ jobs:
       with:
         name: paperback-macos
         path: target/release/paperback.dmg
+        retention-days: 30
+    - name: Upload signature
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-macos-signature
+        path: target/release/paperback.dmg.minisig
         retention-days: 30
 
   release:
@@ -354,6 +371,11 @@ jobs:
       uses: actions/download-artifact@v8
       with:
         name: paperback-macos
+        path: macos-build
+    - name: Download macOS signature
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-macos-signature
         path: macos-build
     - name: Rename Windows artifacts for release
       shell: bash
@@ -406,6 +428,7 @@ jobs:
           android-build/paperback-android-arm64.apk
           android-build/paperback-android-arm.apk
           macos-build/paperback.dmg
+          macos-build/paperback.dmg.minisig
         prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

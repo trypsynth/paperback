@@ -14,7 +14,6 @@ use paperback_core::config::ConfigManager;
 use wxdragon::prelude::*;
 
 use super::MainWindow;
-#[cfg(not(target_os = "macos"))]
 use crate::config_ext::get_update_channel;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY;
@@ -91,15 +90,12 @@ impl PaperbackApp {
 			}
 		});
 		open_from_command_line(&main_window);
-		#[cfg(not(target_os = "macos"))]
-		{
-			let (check_updates, channel) = {
-				let cfg = config.lock().unwrap();
-				(cfg.get_app_bool("check_for_updates_on_startup", true), get_update_channel(&cfg))
-			};
-			if check_updates {
-				MainWindow::check_for_updates(true, channel);
-			}
+		let (check_updates, channel) = {
+			let cfg = config.lock().unwrap();
+			(cfg.get_app_bool("check_for_updates_on_startup", true), get_update_channel(&cfg))
+		};
+		if check_updates {
+			MainWindow::check_for_updates(true, channel);
 		}
 		Self {
 			_config: config,

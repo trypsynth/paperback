@@ -16,15 +16,13 @@ pub fn create_help_menu(config: &ConfigManager) -> Menu {
 	let updates_help = t("Check for updates");
 	let donate_label = format_menu_label(&t("&Donate"), ActionId::Donate, config);
 	let donate_help = t("Support Paperback development");
-	#[cfg_attr(target_os = "macos", allow(unused_mut))]
-	let mut builder = Menu::builder()
+	Menu::builder()
 		.append_item(menu_ids::ABOUT, &about_label, &about_help)
 		.append_item(menu_ids::VIEW_HELP_BROWSER, &help_browser_label, &help_browser_help)
 		.append_item(menu_ids::VIEW_HELP_PAPERBACK, &help_paperback_label, &help_paperback_help)
-		.append_separator();
-	#[cfg(not(target_os = "macos"))]
-	{
-		builder = builder.append_item(menu_ids::CHECK_FOR_UPDATES, &updates_label, &updates_help).append_separator();
-	}
-	builder.append_item(menu_ids::DONATE, &donate_label, &donate_help).build()
+		.append_separator()
+		.append_item(menu_ids::CHECK_FOR_UPDATES, &updates_label, &updates_help)
+		.append_separator()
+		.append_item(menu_ids::DONATE, &donate_label, &donate_help)
+		.build()
 }

@@ -21,7 +21,7 @@ patois = { version = "0.2.1", features = ["ui"] }
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-ship-shape = "0.1.7"
+ship-shape = "0.2.0"
 toml = { workspace = true }
 wx-utils = "0.1.2"
 wxdragon = { version = "0.9.19", features = ["webview", "media-ctrl"] }

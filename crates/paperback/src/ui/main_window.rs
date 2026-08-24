@@ -32,7 +32,6 @@ use super::{
 	navigation::{self, MarkerNavTarget},
 	status,
 };
-#[cfg(not(target_os = "macos"))]
 use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IpcCommand;
@@ -276,7 +275,6 @@ impl MainWindow {
 		self.doc_manager.lock().unwrap().restore_focus();
 	}
 
-	#[cfg(not(target_os = "macos"))]
 	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
 		help::run_update_check(silent, channel);
 	}
@@ -1752,7 +1750,6 @@ impl MainWindow {
 						menu::update_reopen_state(&frame_copy, has_reopen);
 					}
 				}
-				#[cfg(not(target_os = "macos"))]
 				menu_ids::CHECK_FOR_UPDATES => {
 					let channel = get_update_channel(&config.lock().unwrap());
 					help::run_update_check(false, channel);
