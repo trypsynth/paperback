@@ -12,6 +12,5 @@ cs
 de
 fi
 ja
-nl
 pl
 sr
