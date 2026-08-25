@@ -2,6 +2,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_single_button_footer};
+use crate::ui::dpi;
 
 pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
 	// TRANSLATORS: Title of the View Note dialog
@@ -9,7 +10,7 @@ pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
 	let note_ctrl = TextCtrl::builder(&dialog)
 		.with_value(note_text)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly | TextCtrlStyle::Rich2)
-		.with_size(Size::new(400, 200))
+		.with_size(dpi::scale_size(&dialog, Size::new(400, 200)))
 		.build();
 	let close_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Close")).build();
 	dialog.set_affirmative_id(ID_OK);

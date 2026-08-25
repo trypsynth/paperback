@@ -26,17 +26,23 @@ use super::tray;
 use super::{
 	dialogs,
 	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
+	dpi,
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
-	menu, menu_ids,
+	icon, menu, menu_ids,
 	navigation::{self, MarkerNavTarget},
 	status,
 };
-#[cfg(not(target_os = "macos"))]
-use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IpcCommand;
-use crate::{config_ext::set_update_channel, translation_manager::TranslationManager};
+use crate::{
+	config_ext::{UpdateChannel, get_update_channel, set_update_channel},
+	translation_manager::TranslationManager,
+};
+
+/// The main window's starting size, in device-independent pixels (see `ui::dpi`).
+const DEFAULT_WINDOW_WIDTH: i32 = 800;
+const DEFAULT_WINDOW_HEIGHT: i32 = 600;
 
 pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
 pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
@@ -52,7 +58,7 @@ pub struct MainWindow {
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	config: Rc<Mutex<ConfigManager>>,
 	#[cfg(target_os = "windows")]
-	_tray_state: Rc<Mutex<Option<tray::TrayState>>>,
+	tray_state: Rc<Mutex<Option<tray::TrayState>>>,
 	_live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
@@ -70,8 +76,18 @@ impl MainWindow {
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
 		// TRANSLATORS: Main window title when no document is open
 		let app_title = t("Paperback");
-		let frame = Frame::builder().with_title(&app_title).with_size(Size::new(800, 600)).build();
+		let frame = Frame::builder().with_title(&app_title).build();
+		// Sized after building rather than through the builder: the size has to be scaled for
+		// the display the window actually lands on, and there is nothing to ask about that
+		// until the frame exists. It isn't shown until later, so there's no visible resize.
+		frame.set_size(dpi::scale_size(&frame, Size::new(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)));
 		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
+		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
+		// (embedded by build.rs) already covers the taskbar and the shell; this is what the
+		// window itself carries, and is the only icon at all on the other platforms.
+		if let Some(bitmap) = icon::frame_bitmap() {
+			frame.set_icon(&bitmap);
+		}
 		frame.create_status_bar(1, 0, -1, "statusbar");
 		// TRANSLATORS: Default status bar text when no document is open
 		frame.set_status_text(&t("Ready"), 0);
@@ -252,7 +268,7 @@ impl MainWindow {
 			doc_manager,
 			config,
 			#[cfg(target_os = "windows")]
-			_tray_state: tray_state,
+			tray_state,
 			_live_region_label: live_region_label,
 			_find_dialog: find_dialog,
 			#[cfg(target_os = "windows")]
@@ -276,7 +292,6 @@ impl MainWindow {
 		self.doc_manager.lock().unwrap().restore_focus();
 	}
 
-	#[cfg(not(target_os = "macos"))]
 	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
 		help::run_update_check(silent, channel);
 	}
@@ -404,16 +419,8 @@ impl MainWindow {
 		}
 
 		#[cfg(not(target_os = "linux"))]
-		if let Some(state) = self._tray_state.lock().unwrap().as_mut() {
-			if let Some(bundle) =
-				ArtProvider::get_bitmap_bundle(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
-			{
-				state.icon.set_icon_bundle(&bundle, "Paperback");
-			} else if let Some(bitmap) =
-				ArtProvider::get_bitmap(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
-			{
-				state.icon.set_icon(&bitmap, "Paperback");
-			}
+		if let Some(state) = self.tray_state.lock().unwrap().as_mut() {
+			tray::set_tray_icon(&state.icon);
 		}
 	}
 
@@ -447,6 +454,8 @@ impl MainWindow {
 		if dm.tab_count() == 0 {
 			// TRANSLATORS: Main window title when no document is open
 			self.frame.set_title(&t("Paperback"));
+			#[cfg(target_os = "macos")]
+			self.frame.set_represented_filename("");
 			// TRANSLATORS: Default status bar text when no document is open
 			self.frame.set_status_text(&t("Ready"), 0);
 			return;
@@ -455,6 +464,8 @@ impl MainWindow {
 			// TRANSLATORS: Window title when a document is open; {} is the document title
 			let template = t("Paperback - {}");
 			self.frame.set_title(&template.replace("{}", &display_title(tab)));
+			#[cfg(target_os = "macos")]
+			self.frame.set_represented_filename(&tab.file_path.to_string_lossy());
 			// TRANSLATORS: Status bar character count; {} is the number of characters
 			let chars_label = t("{} chars");
 			self.frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
@@ -1752,7 +1763,6 @@ impl MainWindow {
 						menu::update_reopen_state(&frame_copy, has_reopen);
 					}
 				}
-				#[cfg(not(target_os = "macos"))]
 				menu_ids::CHECK_FOR_UPDATES => {
 					let channel = get_update_channel(&config.lock().unwrap());
 					help::run_update_check(false, channel);
@@ -1934,6 +1944,8 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 	let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
 	if dm.tab_count() == 0 {
 		frame.set_title(&t("Paperback"));
+		#[cfg(target_os = "macos")]
+		frame.set_represented_filename("");
 		let mut status_text = t("Ready");
 		if sleep_start > 0 {
 			let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
@@ -1948,6 +1960,8 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		// TRANSLATORS: Window title when a document is open; {} is the document title
 		let template = t("Paperback - {}");
 		frame.set_title(&template.replace("{}", &display_title(tab)));
+		#[cfg(target_os = "macos")]
+		frame.set_represented_filename(&tab.file_path.to_string_lossy());
 		let position = tab.text_ctrl.get_insertion_point();
 		let status_info = tab.session.get_status_info(position);
 		let mut status_text = status::format_status_text(&status_info);

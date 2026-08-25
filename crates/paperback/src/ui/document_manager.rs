@@ -670,6 +670,28 @@ impl DocumentManager {
 		tab.text_ctrl.show_position(local);
 	}
 
+	/// Jumps the caret to the very first or very last character of the *document*, reloading the
+	/// text control's window at that edge (see `ui::text_window`).
+	///
+	/// `text_ctrl`'s own Ctrl+Home/Ctrl+End can only ever reach the ends of whatever window is
+	/// currently loaded, which on a huge document is an arbitrary spot mid-book rather than the
+	/// start or end of the document - and reaching a loaded edge that way then makes
+	/// `pump_window_reload` recentre the window on it, so the keys both landed in the wrong place
+	/// and paid for a reload to get there. `build_text_ctrl` intercepts them and routes here
+	/// instead, which also keeps them consistent with every other jump in the app (history,
+	/// audio sync, focus).
+	pub fn jump_to_document_edge(&mut self, to_end: bool) {
+		let (track, update) = {
+			let Some(tab) = self.active_tab_mut() else {
+				return;
+			};
+			let offset = if to_end { tab.session.document_len().max(0) } else { 0 };
+			let update = move_to_offset_and_record_history(tab, offset);
+			(tab.track, update)
+		};
+		persist_navigation_history(&self.config, track.then_some(&update));
+	}
+
 	/// Pauses audio on every tab except the active one, so switching tabs can't leave two
 	/// documents narrating at once (the active tab may have audio of its own still playing,
 	/// which this leaves untouched).
@@ -1025,6 +1047,14 @@ impl DocumentManager {
 					show_reader_context_menu(text_ctrl_for_menu);
 					return;
 				}
+				if let Some(to_end) = document_edge_for_key(key, kbd.control_down(), kbd.shift_down(), kbd.alt_down()) {
+					kbd.event.skip(false);
+					if let Ok(mut dm) = dm_for_keys.try_lock() {
+						dm.preferred_column.set(None);
+						dm.jump_to_document_edge(to_end);
+					}
+					return;
+				}
 				#[cfg(target_os = "windows")]
 				if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
 					let going_down = key == WXK_DOWN;
@@ -1103,6 +1133,31 @@ impl DocumentManager {
 			show_reader_context_menu(text_ctrl_for_right_click);
 		});
 		text_ctrl
+	}
+}
+
+/// Which end of the document a key press names as a "jump to the very start/end" gesture, if
+/// any: `Some(true)` for the end, `Some(false)` for the start. See
+/// `DocumentManager::jump_to_document_edge` for why these are intercepted rather than left to
+/// the text control.
+///
+/// Ctrl+Home/Ctrl+End everywhere - wxWidgets reports macOS's Command key as `control_down`, so
+/// that covers Cmd+Home/Cmd+End there - plus Cmd+Up/Cmd+Down on macOS, which is what Mac text
+/// views actually bind document start/end to, and the only one of the two most Apple keyboards
+/// can even type (they have no Home/End keys). Bare Home/End are deliberately not included on
+/// macOS: there they scroll without moving the caret, which is a different gesture.
+const fn document_edge_for_key(key: i32, control: bool, shift: bool, alt: bool) -> Option<bool> {
+	if !control || shift || alt {
+		return None;
+	}
+	match key {
+		WXK_HOME => Some(false),
+		WXK_END => Some(true),
+		#[cfg(target_os = "macos")]
+		WXK_UP => Some(false),
+		#[cfg(target_os = "macos")]
+		WXK_DOWN => Some(true),
+		_ => None,
 	}
 }
 
@@ -1367,8 +1422,12 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &WindowSlice) {
 	if !segments.is_empty()
 		&& let Some(font) = text_ctrl.get_font()
 	{
+		// What RichEdit will actually end up holding, which is not always what it is handed -
+		// see `write::sanitize_for_rich_edit`. Everything below compares against this rather
+		// than against `content`.
+		let expected = write::sanitize_for_rich_edit(content);
 		let rtf = write::build_rtf(
-			content,
+			&expected,
 			&segments,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
 		);
@@ -1378,22 +1437,39 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &WindowSlice) {
 			// wholly-trailing "\par" (with no content after it) doesn't manifest
 			// as a stored character. Tolerate exactly that one known, harmless
 			// discrepancy rather than falling back over it: the very last
-			// position of *whatever we streamed in* ends up one short of `content`,
+			// position of *whatever we streamed in* ends up one short of `expected`,
 			// which only matters at its literal last character. This applies the same
 			// way to a windowed slice as to the whole document - RichEdit has no notion
 			// of "there's more after this that isn't loaded"; from its perspective
-			// `content` (window or not) *is* the whole buffer it was asked to store.
-			let matched = round_tripped == content
-				|| (content.ends_with('\n')
-					&& round_tripped.len() + 1 == content.len()
-					&& content.starts_with(round_tripped.as_str()));
+			// `expected` (window or not) *is* the whole buffer it was asked to store.
+			let matched = round_tripped == *expected
+				|| (expected.ends_with('\n')
+					&& round_tripped.len() + 1 == expected.len()
+					&& expected.starts_with(round_tripped.as_str()));
 			if matched {
 				return;
 			}
+			// Not identical, but harmless as long as it cost no display units: every position
+			// the app hands the control is an offset into this buffer, so a length change
+			// breaks the caret, bookmarks and `ui::text_window`'s translation alike, whereas a
+			// same-width substitution is only cosmetic. RichEdit does make a few of those on
+			// its own - U+2028 comes back as a vertical tab, U+FDD0..=U+FDEF as spaces - and
+			// falling back over those would cost seconds per window load to fix nothing. A
+			// length check is still decisive against the failure this guards: unparsed RTF
+			// stored as literal text would be tens of thousands of display units longer than
+			// the content it encodes.
+			let expected_len = write::stored_display_len(&expected);
+			let stored_len = text_ctrl.get_last_position();
+			if stored_len == expected_len {
+				tracing::debug!(expected_len, "RTF round-trip was substituted but not resized; keeping it");
+				return;
+			}
+			tracing::warn!(stored_len, expected_len, "RTF fast path changed the content's length; falling back");
+		} else {
+			tracing::warn!("RTF stream-in did not complete; falling back");
 		}
 		// Never leave raw RTF markup on screen for an accessibility user;
 		// fall back below to the plain-text + segment-loop path.
-		tracing::warn!("RTF fast path for formatting markers did not round-trip; falling back");
 	}
 
 	fill_text_ctrl(text_ctrl, content);

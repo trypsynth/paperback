@@ -485,6 +485,7 @@ final class AppViewModel: ObservableObject {
 				if Task.isCancelled { return }
 				guard let r = sleepTimerRemaining, r > 0 else {
 					ttsManager.pause()
+					UIApplication.shared.isIdleTimerDisabled = false
 					return
 				}
 				sleepTimerRemaining = r - 1

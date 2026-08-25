@@ -4,7 +4,16 @@ use paperback_core::config::ConfigManager;
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{document_manager::DocumentManager, menu_ids};
+use super::{document_manager::DocumentManager, icon, menu_ids};
+
+/// Gives `tray_icon` the application icon. Left as-is if the artwork can't be built, which is
+/// better than the stock "information" glyph this used to show: the notification area falls
+/// back to a blank slot rather than to something that looks like a message from another app.
+pub fn set_tray_icon(tray_icon: &TaskBarIcon) {
+	if let Some(bundle) = icon::notification_area_bundle() {
+		tray_icon.set_icon_bundle(&bundle, "Paperback");
+	}
+}
 
 pub struct TrayState {
 	pub icon: TaskBarIcon,
@@ -52,15 +61,7 @@ fn handle_minimize_to_tray(
 		*tray_state_guard = Some(state);
 	} else {
 		let state = tray_state_guard.as_mut().unwrap();
-		if let Some(bundle) =
-			ArtProvider::get_bitmap_bundle(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
-		{
-			state.icon.set_icon_bundle(&bundle, "Paperback");
-		} else if let Some(bitmap) =
-			ArtProvider::get_bitmap(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
-		{
-			state.icon.set_icon(&bitmap, "Paperback");
-		}
+		set_tray_icon(&state.icon);
 	}
 	drop(tray_state_guard);
 	frame.show(false);
@@ -86,15 +87,7 @@ fn create_tray_state(
 		.build();
 
 	let icon = TaskBarIcon::builder().build();
-	if let Some(bundle) =
-		ArtProvider::get_bitmap_bundle(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
-	{
-		icon.set_icon_bundle(&bundle, "Paperback");
-	} else if let Some(bitmap) =
-		ArtProvider::get_bitmap(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
-	{
-		icon.set_icon(&bitmap, "Paperback");
-	}
+	set_tray_icon(&icon);
 	icon.set_popup_menu(&mut menu);
 	{
 		let doc_manager = Rc::clone(&doc_manager);

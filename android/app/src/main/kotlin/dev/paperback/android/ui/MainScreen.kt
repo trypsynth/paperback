@@ -87,7 +87,6 @@ fun MainScreen(
 	val goToInitialMode by viewModel.goToInitialMode.collectAsStateWithLifecycle()
 	val findDialogOpen by viewModel.findDialog.isOpen.collectAsStateWithLifecycle()
 	val sleepTimerDialogOpen by viewModel.sleepTimerDialog.isOpen.collectAsStateWithLifecycle()
-	var isScreenDimmed by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	val restorePreviousDocuments by viewModel.restorePreviousDocuments.collectAsStateWithLifecycle()
 	val useInAppFileBrowser by viewModel.useInAppFileBrowser.collectAsStateWithLifecycle()
@@ -205,7 +204,7 @@ fun MainScreen(
 		}
 	}
 	val isSpeaking by viewModel.ttsManager.isSpeaking.collectAsStateWithLifecycle()
-	val currentSegmentType by viewModel.currentSegmentType.collectAsStateWithLifecycle()
+	val currentNavUnit by viewModel.currentNavUnit.collectAsStateWithLifecycle()
 	val ttsPosition by viewModel.ttsPosition.collectAsStateWithLifecycle()
 	val currentSegmentText by viewModel.currentSegmentText.collectAsStateWithLifecycle()
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
@@ -226,7 +225,7 @@ fun MainScreen(
 
 	LaunchedEffect(Unit) {
 		viewModel.sleepTimerExpired.collect {
-			isScreenDimmed = true
+			(context as? Activity)?.moveTaskToBack(true)
 		}
 	}
 	val accessibilityManager =
@@ -427,13 +426,9 @@ fun MainScreen(
 					(state as MainScreenUiState.Success).activeTab != null
 				) {
 					val activeTab = (state as MainScreenUiState.Success).activeTab!!
-					val supportedSegmentTypes = remember(activeTab.session) {
-						activeTab.session.getSupportedSegmentTypesFfi()
-					}
-					LaunchedEffect(supportedSegmentTypes) {
-						if (!supportedSegmentTypes.contains(currentSegmentType)) {
-							viewModel.setSegmentType(uniffi.paperback.SegmentTypeFfi.PARAGRAPH)
-						}
+					val navUnits = remember(activeTab.session) { viewModel.navUnitsFor(activeTab) }
+					LaunchedEffect(navUnits) {
+						viewModel.ensureNavUnitSupported(navUnits)
 					}
 					TtsBottomBar(
 						isSpeaking = isSpeaking,
@@ -442,9 +437,9 @@ fun MainScreen(
 						onNext = { viewModel.playNextSegment(speak = isSpeaking, announce = !isSpeaking) },
 						onPrevButton = { viewModel.playPrevSegment(speak = isSpeaking) },
 						onNextButton = { viewModel.playNextSegment(speak = isSpeaking) },
-						currentSegmentType = currentSegmentType,
-						supportedSegmentTypes = supportedSegmentTypes,
-						onSegmentTypeChange = { viewModel.setSegmentType(it) },
+						currentUnit = currentNavUnit,
+						navUnits = navUnits,
+						onNavUnitChange = { viewModel.setNavUnit(it) },
 						swipeUpMovesForward = swipeUpMovesForward
 					)
 				}
@@ -779,16 +774,6 @@ fun MainScreen(
 					}
 				}
 			}
-		}
-		if (isScreenDimmed) {
-			Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.background(Color.Black)
-					.pointerInput(Unit) { detectTapGestures { isScreenDimmed = false } }
-					// TRANSLATORS: Accessibility description of the black overlay shown when the sleep timer dims the screen
-					.semantics { contentDescription = t("Screen dimmed by sleep timer. Tap to wake.") }
-			)
 		}
 		if (passwordPromptUri != null) {
 			PasswordDialog(

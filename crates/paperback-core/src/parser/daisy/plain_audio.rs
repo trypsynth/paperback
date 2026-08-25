@@ -60,14 +60,17 @@ fn take_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> u64 {
 /// no markup relating them to any text. Each audio file becomes its own textless section, named
 /// after the file and ordered naturally by file name. Playback has no per-sentence granularity to
 /// offer, so each section is a single clip spanning its whole source; seeking within a section and
-/// reaching the end of one (which the existing DAISY audio playback already advances past, see
-/// `AudioTimeline::next_source_after`) are the only ways to move around.
+/// crossing between sections (see `AudioTimeline::next_source_after` and
+/// `previous_source_before`) are the only ways to move around, which is why the document is
+/// marked `audio_only`: there is no text spine for a reading unit to step through, so read-aloud
+/// UIs navigate it by elapsed time instead.
 ///
 /// Every clip is given the same generous placeholder duration rather than the file's real length,
 /// which this parser never decodes: `AudioTimeline`'s bookkeeping only cares that a source's clip
 /// ends after every other clip against the same source begins (there is only one), so the actual
-/// value just has to outlast any real recording. The native player clamps seeks past a file's real
-/// end on its own.
+/// value just has to outlast any real recording. The cost is that elapsed time can't say where
+/// one file ends and the next begins, so players resolve a seek that runs off either end of a
+/// file against that file's own real length, which only a prepared decoder knows.
 pub(super) fn build_plain_audio_zip_document<R: Read + std::io::Seek>(
 	archive: &ZipArchive<R>,
 	archive_path: &str,
@@ -106,5 +109,5 @@ pub(super) fn build_plain_audio_zip_document<R: Read + std::io::Seek>(
 	}
 	let audio = audio_builder.build();
 
-	Some(Document { title, author, buffer, toc_items, audio: Some(audio), ..Document::default() })
+	Some(Document { title, author, buffer, toc_items, audio: Some(audio), audio_only: true, ..Document::default() })
 }

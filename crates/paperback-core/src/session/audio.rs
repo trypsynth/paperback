@@ -19,6 +19,14 @@ impl DocumentSession {
 		self.audio().is_some_and(|timeline| !timeline.is_empty())
 	}
 
+	/// True when this document's text spine is only there to anchor audio (see
+	/// `Document::audio_only`), so a read-aloud UI should navigate it by elapsed time rather
+	/// than by paragraph, section, or any other text unit.
+	#[must_use]
+	pub fn is_audio_only_ffi(&self) -> bool {
+		self.handle().document().audio_only && self.has_audio_ffi()
+	}
+
 	#[must_use]
 	pub fn audio_source_count_ffi(&self) -> i32 {
 		self.audio().map_or(0, |timeline| i32::try_from(timeline.sources().len()).unwrap_or(0))
@@ -124,5 +132,13 @@ impl DocumentSession {
 		let Some(timeline) = self.audio() else { return -1 };
 		let Ok(current_source) = usize::try_from(current_source) else { return -1 };
 		timeline.next_source_after(current_source).and_then(|source| i32::try_from(source).ok()).unwrap_or(-1)
+	}
+
+	/// `-1` at the start of the book. See `AudioTimeline::previous_source_before`.
+	#[must_use]
+	pub fn audio_previous_source_before_ffi(&self, current_source: i32) -> i32 {
+		let Some(timeline) = self.audio() else { return -1 };
+		let Ok(current_source) = usize::try_from(current_source) else { return -1 };
+		timeline.previous_source_before(current_source).and_then(|source| i32::try_from(source).ok()).unwrap_or(-1)
 	}
 }

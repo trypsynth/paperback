@@ -525,8 +525,18 @@ fn finalize_bookmark_dialog_layout(
 	let action_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	action_sizer.add(&edit_button, 0, SizerFlag::Right, DIALOG_PADDING);
 	action_sizer.add(&delete_button, 0, SizerFlag::Right, DIALOG_PADDING);
-	action_sizer.add(&jump_button, 0, SizerFlag::Right, DIALOG_PADDING);
-	action_sizer.add(&cancel_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	// macOS HIG puts the default/affirmative action rightmost (Cancel, then Jump); Windows
+	// puts it leftmost (Jump, then Cancel).
+	#[cfg(target_os = "macos")]
+	{
+		action_sizer.add(&cancel_button, 0, SizerFlag::Right, DIALOG_PADDING);
+		action_sizer.add(&jump_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	}
+	#[cfg(not(target_os = "macos"))]
+	{
+		action_sizer.add(&jump_button, 0, SizerFlag::Right, DIALOG_PADDING);
+		action_sizer.add(&cancel_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	}
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&filter_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	content_sizer.add(
