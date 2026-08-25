@@ -7,17 +7,19 @@ use paperback_core::config::{ActionId, KeyChord, ShortcutCategory, ShortcutsConf
 use patois::t;
 use wxdragon::prelude::*;
 
+use super::{add_ok_cancel_footer, build_ok_cancel_buttons};
+use crate::ui::dpi;
+
 type RefreshCallbacks = Rc<RefCell<Vec<Box<dyn Fn()>>>>;
 
 pub fn prompt_for_shortcuts(parent: &dyn WxWidget, initial: &ShortcutsConfig) -> Option<ShortcutsConfig> {
 	let config_state = Rc::new(RefCell::new(initial.clone()));
 	let refresh_all_callbacks: RefreshCallbacks = Rc::new(RefCell::new(Vec::new()));
 
-	let dialog = Dialog::builder(parent, &t("Customize Keyboard Shortcuts")).with_size(600, 560).build();
-	let panel = Panel::builder(&dialog).build();
-	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
-
-	let notebook = Notebook::builder(&panel).build();
+	let dialog = Dialog::builder(parent, &t("Customize Keyboard Shortcuts"))
+		.with_size(dpi::scale(parent, 600), dpi::scale(parent, 560))
+		.build();
+	let notebook = Notebook::builder(&dialog).build();
 
 	for &category in ShortcutCategory::all() {
 		let tab_panel =
@@ -25,23 +27,13 @@ pub fn prompt_for_shortcuts(parent: &dyn WxWidget, initial: &ShortcutsConfig) ->
 		notebook.add_page(&tab_panel, &t(category.display_name()), category == ShortcutCategory::File, None);
 	}
 
-	main_sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 8);
-
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	let ok_button = Button::builder(&panel).with_id(ID_OK).with_label(&t("OK")).build();
-	ok_button.set_default();
-	let cancel_button = Button::builder(&panel).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::Right, 8);
-	button_sizer.add(&cancel_button, 0, SizerFlag::Right, 8);
-	main_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, 8);
-
-	panel.set_sizer(main_sizer, true);
-	let dialog_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	dialog_sizer.add(&panel, 1, SizerFlag::Expand, 0);
-	dialog.set_sizer(dialog_sizer, true);
-	dialog.set_affirmative_id(ID_OK);
-	dialog.set_escape_id(ID_CANCEL);
+	// Uses the shared `wxStdDialogButtonSizer`-backed helper so OK/Cancel follow platform HIG
+	// order (Cancel/OK on macOS, OK/Cancel on Windows) instead of a hardcoded LTR order.
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("OK"));
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	content_sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 8);
+	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
+	dialog.set_sizer(content_sizer, true);
 	dialog.centre();
 
 	if dialog.show_modal() == ID_OK {
@@ -233,7 +225,7 @@ fn prompt_for_key_chord(
 	initial: Option<&KeyChord>,
 ) -> Option<Option<KeyChord>> {
 	let title = format!("Set Shortcut for {}", action.display_name());
-	let dialog = Dialog::builder(parent, &title).with_size(400, 260).build();
+	let dialog = Dialog::builder(parent, &title).with_size(dpi::scale(parent, 400), dpi::scale(parent, 260)).build();
 	let panel = Panel::builder(&dialog).build();
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 
@@ -349,8 +341,18 @@ fn prompt_for_key_chord(
 
 	button_sizer.add(&clear_button, 0, SizerFlag::Right, 8);
 	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::Right, 8);
-	button_sizer.add(&cancel_button, 0, SizerFlag::Right, 8);
+	// macOS HIG puts the default/affirmative action rightmost (Cancel, then OK); Windows
+	// puts it leftmost (OK, then Cancel).
+	#[cfg(target_os = "macos")]
+	{
+		button_sizer.add(&cancel_button, 0, SizerFlag::Right, 8);
+		button_sizer.add(&ok_button, 0, SizerFlag::Right, 8);
+	}
+	#[cfg(not(target_os = "macos"))]
+	{
+		button_sizer.add(&ok_button, 0, SizerFlag::Right, 8);
+		button_sizer.add(&cancel_button, 0, SizerFlag::Right, 8);
+	}
 	main_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, 8);
 
 	panel.set_sizer(main_sizer, true);

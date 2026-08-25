@@ -96,10 +96,16 @@ pub const fn should_use_whole_document(doc_len: i64) -> bool {
 
 /// The raw `[start, end)` a fresh window should request (before `DocumentSession::get_window`'s
 /// paragraph-boundary snapping) to contain `doc_pos` with headroom on both sides.
+///
+/// Stays `TARGET_WINDOW_SIZE` wide even when `doc_pos` sits within half a window of either end
+/// of the document, sliding the window inward rather than truncating it: a jump to the very
+/// last character (Ctrl+End) would otherwise load only the trailing half-window, leaving the
+/// caret `RELOAD_MARGIN` from a start edge that can still move and so re-triggering a reload on
+/// the first Up/Page Up afterwards.
 pub fn target_window_bounds(doc_pos: i64, doc_len: i64) -> (i64, i64) {
 	let half = TARGET_WINDOW_SIZE / 2;
-	let raw_start = (doc_pos - half).max(0);
-	let raw_end = (raw_start + TARGET_WINDOW_SIZE).min(doc_len);
+	let raw_end = (doc_pos + half).min(doc_len).max(TARGET_WINDOW_SIZE.min(doc_len));
+	let raw_start = (raw_end - TARGET_WINDOW_SIZE).max(0);
 	(raw_start, raw_end)
 }
 
@@ -174,9 +180,19 @@ mod tests {
 		assert_eq!(start, 0);
 		assert_eq!(end, TARGET_WINDOW_SIZE);
 
-		// Near the very end: end clamps to the document length.
+		// Near the very end: end clamps to the document length, and the window slides back
+		// rather than shrinking.
 		let (start, end) = target_window_bounds(9_999_000, 10_000_000);
 		assert_eq!(end, 10_000_000);
-		assert!(start < end);
+		assert_eq!(start, 10_000_000 - TARGET_WINDOW_SIZE);
+
+		// At the very last character: same, and the caret is far enough from the (movable)
+		// start edge that landing there doesn't immediately ask for another reload.
+		let (start, end) = target_window_bounds(10_000_000, 10_000_000);
+		assert_eq!((start, end), (10_000_000 - TARGET_WINDOW_SIZE, 10_000_000));
+		assert!(!TextWindow::new(start, end).needs_reload_for(10_000_000, 10_000_000));
+
+		// A document shorter than a full window is covered whole, not slid past its start.
+		assert_eq!(target_window_bounds(300, 1000), (0, 1000));
 	}
 }

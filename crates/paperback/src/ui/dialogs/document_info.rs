@@ -5,6 +5,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_single_button_footer};
+use crate::ui::dpi;
 
 const DOC_INFO_WIDTH: i32 = 600;
 const DOC_INFO_HEIGHT: i32 = 400;
@@ -16,7 +17,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	dialog.set_escape_id(ID_CANCEL);
 	let info_ctrl = TextCtrl::builder(&dialog)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly)
-		.with_size(Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT))
+		.with_size(dpi::scale_size(&dialog, Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT)))
 		.build();
 	// TRANSLATORS: Label for the document's file path
 	let path_label = t("Path:");

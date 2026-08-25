@@ -15,6 +15,7 @@ use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
 	translation_manager::TranslationManager,
+	ui::dpi,
 };
 
 /// Selectable audio seek amounts, in seconds, shown in the Options dialog and indexed by
@@ -230,10 +231,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	general_sizer.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "macos")]
 	minimize_to_tray_check.show(false);
-	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
-	#[cfg(target_os = "macos")]
-	check_for_updates_check.show(false);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&shortcuts_button, 0, SizerFlag::All, option_padding);
@@ -283,17 +281,13 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	update_channel_combo.append(&t("Stable"));
 	// TRANSLATORS: Developer/development update channel option
 	update_channel_combo.append(&t("Dev"));
+	#[cfg(target_os = "macos")]
+	update_channel_combo.set_accessibility_label(channel_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
-	#[cfg(not(target_os = "macos"))]
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
-	#[cfg(target_os = "macos")]
-	{
-		channel_label.show(false);
-		update_channel_combo.show(false);
-	}
 	// TRANSLATORS: Label/header for the Font options section
 	let font_group_box = StaticBox::builder(&readability_panel).with_label(&t("Font")).build();
 	let font_group_sizer = StaticBoxSizerBuilder::new_with_box(&font_group_box, Orientation::Vertical).build();
@@ -707,7 +701,9 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 #[cfg(not(target_os = "macos"))]
 fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<HotkeyConfig> {
 	// TRANSLATORS: Title of the hotkey customization dialog
-	let dialog = Dialog::builder(parent, &t("Window Hotkey")).with_size(300, 230).build();
+	let dialog = Dialog::builder(parent, &t("Window Hotkey"))
+		.with_size(dpi::scale(parent, 300), dpi::scale(parent, 230))
+		.build();
 	let panel = Panel::builder(&dialog).build();
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 

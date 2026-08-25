@@ -1682,6 +1682,7 @@ dependencies = [
  "dunce",
  "embed-manifest",
  "flate2",
+ "image",
  "live-region",
  "objc",
  "paperback-core",
@@ -2544,9 +2545,9 @@ dependencies = [
 
 [[package]]
 name = "ship-shape"
-version = "0.1.7"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83997e4880f438dfbf7d8a8bf9367f700e1a39f4217772e3b74a4e8bfc736402"
+checksum = "20be0c0df76d3290384bd3271039638cb2af1069ee1a8ad119beea227887f357"
 dependencies = [
  "minisign-verify",
  "patois",

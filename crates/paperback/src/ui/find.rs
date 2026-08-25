@@ -5,7 +5,7 @@ use paperback_core::{config::ConfigManager, reader_core, util::text::display_len
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager};
+use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, dpi};
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 
@@ -180,7 +180,7 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	let find_label = StaticText::builder(&dialog).with_label(&t("Find &what:")).build();
 	let find_combo = ComboBox::builder(&dialog)
 		.with_style(ComboBoxStyle::ProcessEnter)
-		.with_size(Size::new(combo_width, -1))
+		.with_size(dpi::scale_size(&dialog, Size::new(combo_width, -1)))
 		.build();
 	let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("Options")).build();
 	// TRANSLATORS: Checkbox to make the search case-sensitive
