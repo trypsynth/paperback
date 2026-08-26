@@ -47,10 +47,10 @@
     const stable = releases.find(isStable);
     const dev = releases.find(r => r.tag_name === "latest");
     const previousStable = releases.filter(isStable).slice(1);
-    stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users") : "No stable release found.";
+    stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users", false, true) : "No stable release found.";
     devEl.innerHTML = dev ? render(dev, "Master Build", "Includes experimental features, may be unstable", true, true) : "No development builds found.";
     if (previousStable.length > 0) {
-      const blocks = previousStable.map(r => render(r, "Stable Version")).join("");
+      const blocks = previousStable.map(r => render(r, "Stable Version", "", false, true)).join("");
       historyEl.innerHTML = `
         <details>
           <summary>Previous Stable Releases</summary>
