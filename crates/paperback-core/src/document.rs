@@ -127,14 +127,31 @@ pub struct DocumentBuffer {
 	content_display_len: usize,
 	content_char_count: usize,
 	newline_char_positions: Vec<usize>,
-	char_to_byte_map: Vec<usize>,
+	/// Byte offset of the `i`-th char, stored as `u32` rather than `usize` — halves this
+	/// table's footprint, which matters because it has one entry per char in the whole
+	/// document (a large book can have hundreds of millions of chars). A document whose byte
+	/// length exceeds `u32::MAX` (4 GiB of text) isn't supported; see `to_u32`.
+	char_to_byte_map: Vec<u32>,
 	/// `display_len_at_char[i]` is the display-unit offset (UTF-16 code units on
 	/// Windows/macOS, Unicode scalars on GTK — see `util::text::display_len`) of the `i`-th
 	/// char, with a trailing end-boundary entry equal to `content_display_len`, mirroring
 	/// `char_to_byte_map`'s shape. Needed because `Marker.position`/the GUI caret use display
 	/// units while `char_to_byte_map`/`newline_char_positions` use char units — on Windows and
-	/// macOS these two diverge for any character outside the Basic Multilingual Plane.
-	display_len_at_char: Vec<usize>,
+	/// macOS these two diverge for any character outside the Basic Multilingual Plane. Stored
+	/// as `u32` for the same reason as `char_to_byte_map`; display length never exceeds byte
+	/// length so the same bound applies.
+	display_len_at_char: Vec<u32>,
+}
+
+/// Narrows a byte/display offset to `u32` for storage in `DocumentBuffer`'s per-char index
+/// tables. Debug-only bounds check: documents are read fully into memory elsewhere (e.g. the
+/// EPUB parser) long before reaching 4 GiB, so this is unreachable in practice, and checking it
+/// on every char in release builds would cost real time on large books.
+#[inline]
+#[allow(clippy::cast_possible_truncation)]
+fn to_u32(value: usize) -> u32 {
+	debug_assert!(u32::try_from(value).is_ok(), "DocumentBuffer offset exceeds u32::MAX");
+	value as u32
 }
 
 /// A part's `[start, end)` span in the assembled buffer's display units — the same units as
@@ -152,9 +169,9 @@ pub struct PartSpan {
 /// optional trailing newline `from_parts` adds when placing the part into the buffer.
 struct PartIndex {
 	/// `char_to_byte[i]` is the local byte offset of the part's `i`-th char.
-	char_to_byte: Vec<usize>,
+	char_to_byte: Vec<u32>,
 	/// `display_len_at_char[i]` is the local display-unit offset of the part's `i`-th char.
-	display_len_at_char: Vec<usize>,
+	display_len_at_char: Vec<u32>,
 	/// Local char indices of every `\n` in the part's own text.
 	newline_chars: Vec<usize>,
 	byte_len: usize,
@@ -172,8 +189,8 @@ fn index_part(text: &str) -> PartIndex {
 	let mut char_len = 0usize;
 	let mut display_len = 0usize;
 	for (byte_idx, c) in text.char_indices() {
-		char_to_byte.push(byte_idx);
-		display_len_at_char.push(display_len);
+		char_to_byte.push(to_u32(byte_idx));
+		display_len_at_char.push(to_u32(display_len));
 		if c == '\n' {
 			newline_chars.push(char_len);
 		}
@@ -226,16 +243,16 @@ impl DocumentBuffer {
 		let mut char_to_byte_map = Vec::with_capacity(content.len().min(1024));
 		let mut display_len_at_char = Vec::with_capacity(content.len().min(1024));
 		for (byte_idx, c) in content.char_indices() {
-			char_to_byte_map.push(byte_idx);
-			display_len_at_char.push(display_count);
+			char_to_byte_map.push(to_u32(byte_idx));
+			display_len_at_char.push(to_u32(display_count));
 			if c == '\n' {
 				newline_char_positions.push(char_count);
 			}
 			char_count += 1;
 			display_count += ch_width(c);
 		}
-		char_to_byte_map.push(content.len()); // append end boundary
-		display_len_at_char.push(display_count);
+		char_to_byte_map.push(to_u32(content.len())); // append end boundary
+		display_len_at_char.push(to_u32(display_count));
 		debug_assert_eq!(display_count, display_len(&content));
 		Self {
 			content,
@@ -267,8 +284,8 @@ impl DocumentBuffer {
 
 		let start_byte = self.content.len();
 		for (byte_idx, c) in text.char_indices() {
-			self.char_to_byte_map.push(start_byte + byte_idx);
-			self.display_len_at_char.push(display_count);
+			self.char_to_byte_map.push(to_u32(start_byte + byte_idx));
+			self.display_len_at_char.push(to_u32(display_count));
 			if c == '\n' {
 				self.newline_char_positions.push(base + count);
 			}
@@ -276,8 +293,8 @@ impl DocumentBuffer {
 			display_count += ch_width(c);
 		}
 		self.content.push_str(text);
-		self.char_to_byte_map.push(self.content.len()); // append end boundary back
-		self.display_len_at_char.push(display_count);
+		self.char_to_byte_map.push(to_u32(self.content.len())); // append end boundary back
+		self.display_len_at_char.push(to_u32(display_count));
 		self.content_display_len = display_count;
 		self.content_char_count += count;
 	}
@@ -329,12 +346,12 @@ impl DocumentBuffer {
 		}
 
 		let mut content_bytes = vec![0u8; byte_acc];
-		let mut char_to_byte_map = vec![0usize; char_acc + 1];
-		let mut display_len_at_char = vec![0usize; char_acc + 1];
+		let mut char_to_byte_map = vec![0u32; char_acc + 1];
+		let mut display_len_at_char = vec![0u32; char_acc + 1];
 		let (char_to_byte_main, char_to_byte_boundary) = char_to_byte_map.split_at_mut(char_acc);
 		let (display_main, display_boundary) = display_len_at_char.split_at_mut(char_acc);
-		char_to_byte_boundary[0] = byte_acc;
-		display_boundary[0] = display_acc;
+		char_to_byte_boundary[0] = to_u32(byte_acc);
+		display_boundary[0] = to_u32(display_acc);
 
 		let byte_lens: Vec<usize> =
 			indexed.iter().map(|(_, idx)| idx.byte_len + usize::from(idx.trailing_newline)).collect();
@@ -360,8 +377,8 @@ impl DocumentBuffer {
 			start_byte: usize,
 			start_display: usize,
 			content: &'a mut [u8],
-			char_to_byte: &'a mut [usize],
-			display: &'a mut [usize],
+			char_to_byte: &'a mut [u32],
+			display: &'a mut [u32],
 		}
 		let work: Vec<PartWork<'_>> = indexed
 			.iter()
@@ -389,12 +406,12 @@ impl DocumentBuffer {
 				w.content[w.idx.byte_len] = b'\n';
 			}
 			for i in 0..w.idx.char_len {
-				w.char_to_byte[i] = w.start_byte + w.idx.char_to_byte[i];
-				w.display[i] = w.start_display + w.idx.display_len_at_char[i];
+				w.char_to_byte[i] = to_u32(w.start_byte + w.idx.char_to_byte[i] as usize);
+				w.display[i] = to_u32(w.start_display + w.idx.display_len_at_char[i] as usize);
 			}
 			if w.idx.trailing_newline {
-				w.char_to_byte[w.idx.char_len] = w.start_byte + w.idx.byte_len;
-				w.display[w.idx.char_len] = w.start_display + w.idx.display_len;
+				w.char_to_byte[w.idx.char_len] = to_u32(w.start_byte + w.idx.byte_len);
+				w.display[w.idx.char_len] = to_u32(w.start_display + w.idx.display_len);
 			}
 		});
 
@@ -416,19 +433,19 @@ impl DocumentBuffer {
 
 	#[must_use]
 	pub fn byte_index_for_char(&self, char_index: usize) -> usize {
-		self.char_to_byte_map.get(char_index).copied().unwrap_or(self.content.len())
+		self.char_to_byte_map.get(char_index).map_or(self.content.len(), |&v| v as usize)
 	}
 
 	#[must_use]
 	pub fn char_index_for_byte(&self, byte_index: usize) -> usize {
-		self.char_to_byte_map.binary_search(&byte_index).unwrap_or_else(|idx| idx)
+		self.char_to_byte_map.binary_search(&to_u32(byte_index)).unwrap_or_else(|idx| idx)
 	}
 
 	/// The display-unit offset of the `char_index`-th char (or the document's total display
 	/// length, for a char index at or past the end).
 	#[must_use]
 	pub fn display_index_for_char(&self, char_index: usize) -> usize {
-		self.display_len_at_char.get(char_index).copied().unwrap_or(self.content_display_len)
+		self.display_len_at_char.get(char_index).map_or(self.content_display_len, |&v| v as usize)
 	}
 
 	/// The char index whose char covers `display_index`, or the nearest one before it if
@@ -436,7 +453,7 @@ impl DocumentBuffer {
 	/// caller, but this stays well-defined rather than panicking).
 	#[must_use]
 	pub fn char_index_for_display(&self, display_index: usize) -> usize {
-		self.display_len_at_char.binary_search(&display_index).unwrap_or_else(|idx| idx)
+		self.display_len_at_char.binary_search(&to_u32(display_index)).unwrap_or_else(|idx| idx)
 	}
 
 	/// The byte offset corresponding to `display_index`, composing [`Self::char_index_for_display`]
