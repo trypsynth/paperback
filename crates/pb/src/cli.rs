@@ -22,6 +22,9 @@ pub struct Cli {
 	/// Exit with code 2 instead of prompting for a password (useful for batch processing)
 	#[arg(long)]
 	pub no_prompt: bool,
+	/// Print paperback-core's parser log output to stderr (set RUST_LOG for finer control)
+	#[arg(short, long)]
+	pub verbose: bool,
 }
 
 #[derive(Clone, ValueEnum)]
@@ -65,6 +68,13 @@ mod tests {
 		assert!(cli.password.is_none());
 		assert!(!cli.metadata);
 		assert!(!cli.no_prompt);
+		assert!(!cli.verbose);
+	}
+
+	#[test]
+	fn accepts_the_verbose_flag() {
+		assert!(parse(&["pb", "b.epub", "-v"]).verbose);
+		assert!(parse(&["pb", "b.epub", "--verbose"]).verbose);
 	}
 
 	#[test]
