@@ -669,7 +669,7 @@ impl MainWindow {
 				let cfg = config_for_timer.lock().unwrap();
 				for i in 0..dm.tab_count() {
 					if let Some(tab) = dm.get_tab(i) {
-						let current_pos = tab.text_ctrl.get_insertion_point();
+						let current_pos = navigation::doc_caret(tab);
 						let path_str = tab.file_path.to_string_lossy();
 						cfg.set_document_position(&path_str, current_pos);
 					}
@@ -1417,7 +1417,7 @@ impl MainWindow {
 							live_region::announce(live_region_label, &t("No table of contents."));
 							return;
 						}
-						let current_pos = tab.text_ctrl.get_insertion_point();
+						let current_pos = navigation::doc_caret(tab);
 						let current_pos_usize = usize::try_from(current_pos).unwrap_or(0);
 						let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos_usize);
 						if let Some(offset) = dialogs::show_toc_dialog(
@@ -1433,7 +1433,7 @@ impl MainWindow {
 				menu_ids::ELEMENTS_LIST => {
 					let mut dm_guard = dm.lock().unwrap();
 					if let Some(tab) = dm_guard.active_tab_mut() {
-						let current_pos = tab.text_ctrl.get_insertion_point();
+						let current_pos = navigation::doc_caret(tab);
 						if let Some(offset) = dialogs::show_elements_dialog(&frame_copy, &tab.session, current_pos) {
 							let update = navigation::move_to_offset_and_record_history(tab, offset);
 							navigation::persist_navigation_history(&config, Some(&update));
@@ -1447,7 +1447,7 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let current_pos = tab.text_ctrl.get_insertion_point();
+					let current_pos = navigation::doc_caret(tab);
 					let temp_dir = env::temp_dir().to_string_lossy().to_string();
 					if let Some(target) = tab.session.webview_target_path(current_pos, &temp_dir) {
 						let mut url = format!("file:///{}", target.path.replace('\\', "/"));
@@ -1504,7 +1504,7 @@ impl MainWindow {
 							return;
 						};
 						if tab.session.source_view_available() {
-							let current_pos = tab.text_ctrl.get_insertion_point();
+							let current_pos = navigation::doc_caret(tab);
 							let orig_name = tab
 								.file_path
 								.file_name()
@@ -1963,7 +1963,7 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		frame.set_title(&template.replace("{}", &display_title(tab)));
 		#[cfg(target_os = "macos")]
 		frame.set_represented_filename(&tab.file_path.to_string_lossy());
-		let position = tab.text_ctrl.get_insertion_point();
+		let position = navigation::doc_caret(tab);
 		let status_info = tab.session.get_status_info(position);
 		let mut status_text = status::format_status_text(&status_info);
 		if sleep_start > 0 {
