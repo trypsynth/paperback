@@ -230,7 +230,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed dl, dt, and dd elements not producing line breaks in XHTML documents.
 * Fixed Escape not closing the Document Info and All Documents dialogs.
 * Fixed filepos anchors in Mobi books splitting HTML tags and putting garbage in the book text.
-* Fixed lag when getting near the end of the text field in large documents.
 * Fixed links in legacy mobi books.
 * Fixed loading DAISY books with bogus encoding declarations.
 * Fixed page navigation announcing incorrect line text in some situations.
@@ -256,7 +255,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Removing documents from the recents dialog will now also close their active tab.
 * Switched to a much more secure method of IPC on Windows.
 * The active document title will now be read when switching between tabs.
-* The text field containing your book's content is now paginated, meaning you can load books with tens of millions of words in only a couple seconds now. Please report any weirdness found with this.
+* The text field containing your book's content is now paginated, meaning you can load books with tens of millions of words in only a couple seconds now, and weird problems with lag in some situations, especially towards the end of the book text, have been fixed. Please report any weirdness found with this.
 * The updater now properly shows the content of markdown code tags in release notes.
 * The updater now validates the downloaded file hasn't been tampered with.
 * The webview is now opened at your current reading position.
