@@ -18,7 +18,7 @@ use paperback_core::{
 	parser::{build_file_filter_string, parser_supports_extension},
 	types::BookmarkFilterType,
 };
-use patois::t;
+use patois::{nt, t};
 use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
@@ -466,9 +466,10 @@ impl MainWindow {
 			self.frame.set_title(&template.replace("{}", &display_title(tab)));
 			#[cfg(target_os = "macos")]
 			self.frame.set_represented_filename(&tab.file_path.to_string_lossy());
-			// TRANSLATORS: Status bar character count; {} is the number of characters
-			let chars_label = t("{} chars");
-			self.frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
+			// TRANSLATORS: Status bar character count. The %d placeholder is replaced with the number of characters.
+			let char_count = tab.session.content().len();
+			let chars_label = nt("%d char", "%d chars", char_count as u64).replacen("%d", &char_count.to_string(), 1);
+			self.frame.set_status_text(&chars_label, 0);
 		}
 	}
 
@@ -1733,13 +1734,13 @@ impl MainWindow {
 						sleep_timer_duration_for_menu.set(duration);
 						SLEEP_TIMER_START_MS.store(now, Ordering::SeqCst);
 						SLEEP_TIMER_DURATION_MINUTES.store(duration, Ordering::SeqCst);
-						let msg = if duration == 1 {
-							// TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
-							t("Sleep timer set for 1 minute.")
-						} else {
-							// TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-							t("Sleep timer set for %d minutes.").replace("%d", &duration.to_string())
-						};
+						// TRANSLATORS: Announcement when the sleep timer is set. The %d placeholder is replaced with the number of minutes.
+						let msg = nt(
+							"Sleep timer set for %d minute.",
+							"Sleep timer set for %d minutes.",
+							u64::try_from(duration).unwrap_or(0),
+						)
+						.replacen("%d", &duration.to_string(), 1);
 						live_region::announce(live_region_label, &msg);
 					}
 				}
