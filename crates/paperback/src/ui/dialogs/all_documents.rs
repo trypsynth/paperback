@@ -1,7 +1,7 @@
 use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::DocumentListStatus};
-use patois::t;
+use patois::{nt, t};
 use wxdragon::{ffi, prelude::*, timer::Timer, window::FromWindowWithClassName};
 
 use super::DIALOG_PADDING;
@@ -676,22 +676,22 @@ fn format_document_status_text(total: i32, selected: usize) -> String {
 		if total == 0 {
 			// TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
 			t("No documents.")
-		} else if total == 1 {
-			// TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
-			t("1 document.")
 		} else {
-			// TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
-			t("%d documents.").replacen("%d", &total.to_string(), 1)
+			// TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count. Plural form is chosen by that count.
+			nt("%d document.", "%d documents.", u64::try_from(total).unwrap_or(0)).replacen("%d", &total.to_string(), 1)
 		}
 	} else if total == 1 {
 		// TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
 		t("1 of 1 document selected.")
 	} else if usize::try_from(total).is_ok_and(|total| total == selected) {
-		// TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
-		t("All %d documents selected.").replacen("%d", &total.to_string(), 1)
+		// TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
+		nt("All %d document selected.", "All %d documents selected.", u64::try_from(total).unwrap_or(0))
+			.replacen("%d", &total.to_string(), 1)
 	} else {
-		// TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
-		t("%d of %d documents selected.").replacen("%d", &selected.to_string(), 1).replacen("%d", &total.to_string(), 1)
+		// TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
+		nt("%d of %d document selected.", "%d of %d documents selected.", u64::try_from(total).unwrap_or(0))
+			.replacen("%d", &selected.to_string(), 1)
+			.replacen("%d", &total.to_string(), 1)
 	}
 }
 

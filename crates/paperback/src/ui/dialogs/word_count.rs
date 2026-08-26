@@ -1,4 +1,4 @@
-use patois::t;
+use patois::{nt, t};
 use wxdragon::prelude::*;
 
 fn format_reading_time(word_count: usize, wpm: i32) -> String {
@@ -10,26 +10,17 @@ fn format_reading_time(word_count: usize, wpm: i32) -> String {
 	let minutes = (total_seconds % 3600) / 60;
 	let seconds = total_seconds % 60;
 	let mut parts: Vec<String> = Vec::new();
-	if hours == 1 {
-		// TRANSLATORS: Singular label for 1 hour duration
-		parts.push(t("1 hour"));
-	} else if hours > 1 {
-		// TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
-		parts.push(format!("{} {}", hours, t("hours")));
+	if hours >= 1 {
+		// TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+		parts.push(nt("%d hour", "%d hours", hours).replacen("%d", &hours.to_string(), 1));
 	}
-	if minutes == 1 {
-		// TRANSLATORS: Singular label for 1 minute duration
-		parts.push(t("1 minute"));
-	} else if minutes > 1 {
-		// TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
-		parts.push(format!("{} {}", minutes, t("minutes")));
+	if minutes >= 1 {
+		// TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+		parts.push(nt("%d minute", "%d minutes", minutes).replacen("%d", &minutes.to_string(), 1));
 	}
-	if seconds == 1 {
-		// TRANSLATORS: Singular label for 1 second duration
-		parts.push(t("1 second"));
-	} else if seconds > 1 || total_seconds == 0 {
-		// TRANSLATORS: Plural label for seconds duration (e.g. "2 seconds")
-		parts.push(format!("{} {}", seconds, t("seconds")));
+	if seconds >= 1 || total_seconds == 0 {
+		// TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+		parts.push(nt("%d second", "%d seconds", seconds).replacen("%d", &seconds.to_string(), 1));
 	}
 	let time_str = parts.join(", ");
 	// TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
@@ -39,13 +30,13 @@ fn format_reading_time(word_count: usize, wpm: i32) -> String {
 
 pub fn show_word_count_dialog(parent: &Frame, word_count: usize, reading_speed_wpm: i32, is_selection: bool) {
 	let words_template = if is_selection {
-		// TRANSLATORS: Message template for selection word count. The {} placeholder is replaced with the number of words.
-		t("The selection contains {} words.")
+		// TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
+		nt("The selection contains %d word.", "The selection contains %d words.", word_count as u64)
 	} else {
-		// TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
-		t("This document contains {} words.")
+		// TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
+		nt("This document contains %d word.", "This document contains %d words.", word_count as u64)
 	};
-	let mut msg = words_template.replace("{}", &word_count.to_string());
+	let mut msg = words_template.replacen("%d", &word_count.to_string(), 1);
 	let reading_time = format_reading_time(word_count, reading_speed_wpm);
 	if !reading_time.is_empty() {
 		msg.push('\n');
