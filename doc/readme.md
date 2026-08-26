@@ -1,4 +1,4 @@
-# Paperback - version 0.8.5
+# Paperback - version 0.9.0
 
 ## Introduction
 
@@ -200,7 +200,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ## Changelog
 
-### Version 0.9.0 (unreleased)
+### Version 0.9.0
 
 #### Added
 
