@@ -6,7 +6,7 @@ Paperback is a lightweight, fast, and accessible ebook and document reader for e
 
 ## System Requirements
 
-Paperback currently runs on Windows, macOS, iOS, and Android.
+Paperback currently runs on Windows 10/11 and all the modern versions of ARM macOS, with native iOS and Android apps in active development.
 
 ## Features
 
@@ -197,7 +197,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added a Configurable keyboard shortcut to Restore Paperback from the system tray.
 * Added a locate button to the all documents dialog to locate missing books that just changed their path.
 * Added a status filter and status bar to the all documents dialog, so you can filter by document status and see how many documents are shown and selected.
-* Added the `Ctrl+Shift+A` shortcut to deselect all documents in the all documents dialog.
 * Added a readability tab to the options dialog, with the following options:
     * Word wrap (moved from general);
     * Render tables inline (new in this release, see below);
@@ -209,15 +208,20 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
     * Text alignment.
 * Added a toggle to determine how you want tables displayed, and unified how tables are displayed across documents.
 * added a View Source option to open a document's source in a new tab, useful for editing Markdown for example.
-* Added estimated reading time to the word count dialog, as well as the ability to set your reading speed to make this metric actually useful.
 * Added ARM64 Windows support!
-* Added Android support!
-* Added iOS support!
-* Added macOS support!
+* Added a word wrap menu item and subsequent hotkey.
+* Added an option to automatically move the cursor to the start of the line when navigating between lines, similar to browse mode in screen readers.
+* Added an option to reload documents that have been modified by other programs on disk.
+* Added estimated reading time to the word count dialog, as well as the ability to set your reading speed to make this metric actually useful.
+* Added native macOS support!
 * Added new languages: Dutch, Finish, and Polish.
 * Added support for navigating by container.
 * Added support for lists, list items, figures, and images in CHM documents.
-* Added a word wrap menu item and subsequent hotkey.
+* Added temperary bookmarks: you can have one per document, and they do persist. Use slash to set one and backslash to jump to it.
+* Added the ability to customize every keyboard shortcut in the app through a simple dialog.
+* Added the ability to play audio books, currently supporting both DAISY audio (including DAISY audio + text) and zips of audio files.
+* Added the `Ctrl+Shift+A` shortcut to deselect all documents in the all documents dialog.
+* Added the equals keyboartd shortcut to announce your current percentage through a document.
 * Bookmark/note sounds should now properly play exclusively when you navigate over a word containing one.
 * Documents encoded in legacy CJK encodings, such as GBK, Big5, and Shift_JIS, will now render properly instead of as a bunch of mojibake.
 * Expanded the export menu item to allow exporting to HTML and Markdown in addition to plain text.
@@ -240,17 +244,19 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Images should now properly display in the embedded webview.
 * Improved Paperback's handling of files on Windows network drives: pressing show file in folder now properly focuses the file on the network storage, and the paths no longer contain strange characters.
 * Majorly improved AZW3 parsing.
-* Migrated away from chmlib to our own pure-Rust CHM file reader.
 * On desktop, .paperback files will no longer be forcefully loaded on document restoration. Instead, you will be asked for  Confirmation  when the file is found.
-* Paperback now falls back to plain text extraction for falsely-tagged PDFs.
 * Open containing folder now focuses the given file in explorer.
 * Opening the readme will now respect your selected language.
+* Paperback now falls back to plain text extraction for falsely-tagged PDFs.
+* Paperback's user interface will now scale properly on high-DPI displays.
+* PDF documents containing control characters in their titles and/or bookmarks will no longer crash Paperback on open.
 * PowerPoint documents now support tables.
 * Properly update the menu and set focus to the text control when opening help in paperback.
 * Readme.html will no longer be added to your all documents list when opened via Shift+F1.
 * Removing documents from the recents dialog will now also close their active tab.
 * Switched to a much more secure method of IPC on Windows.
 * The active document title will now be read when switching between tabs.
+* The text field containing your book's content is now paginated, meaning you can load books with tens of millions of words in only a couple seconds now. Please report any weirdness found with this.
 * The updater now properly shows the content of markdown code tags in release notes.
 * The updater now validates the downloaded file hasn't been tampered with.
 * The webview is now opened at your current reading position.
