@@ -204,7 +204,11 @@ id="toc-supported-languages">Supported languages</a></li>
 <li><a href="#changelog" id="toc-changelog">Changelog</a>
 <ul>
 <li><a href="#version-0.9.0-unreleased"
-id="toc-version-0.9.0-unreleased">Version 0.9.0 (unreleased)</a></li>
+id="toc-version-0.9.0-unreleased">Version 0.9.0 (unreleased)</a>
+<ul>
+<li><a href="#added" id="toc-added">Added</a></li>
+<li><a href="#fixed" id="toc-fixed">Fixed</a></li>
+</ul></li>
 <li><a href="#version-0.8.5" id="toc-version-0.8.5">Version
 0.8.5</a></li>
 <li><a href="#version-0.8.2" id="toc-version-0.8.2">Version
@@ -243,8 +247,9 @@ designed for screen reader accessibility, fast speeds, and a bloat-free
 experience.</p>
 <h1 id="system-requirements">System Requirements</h1>
 <p>Paperback currently runs on Windows 10/11 and all the modern versions
-of ARM macOS, with native iOS and Android apps in active
-development.</p>
+of ARM macOS. Native iOS and Android apps are in active development,
+with public test builds planned soon after the 0.9.0 desktop release,
+ahead of a unified 1.0 release covering all four platforms.</p>
 <h1 id="features">Features</h1>
 <ul>
 <li>Completely standalone, not requiring any software to be installed on
@@ -483,130 +488,217 @@ inclusion in this list.</p>
 </ul>
 <h1 id="changelog">Changelog</h1>
 <h2 id="version-0.9.0-unreleased">Version 0.9.0 (unreleased)</h2>
+<h3 id="added">Added</h3>
+<h4 id="general">General</h4>
 <ul>
-<li>Added a cancel button to the update-in-progress dialog.</li>
-<li>Added a CLI tool, called pb, to quickly convert any of Paperback’s
+<li>A CLI tool, called pb, to quickly convert any of Paperback’s
 supported formats to HTML, Markdown, or plain text.</li>
-<li>Added a Configurable keyboard shortcut to Restore Paperback from the
-system tray.</li>
-<li>Added a locate button to the all documents dialog to locate missing
-books that just changed their path.</li>
-<li>Added a status filter and status bar to the all documents dialog, so
-you can filter by document status and see how many documents are shown
-and selected.</li>
-<li>Added a readability tab to the options dialog, with the following
-options:
+<li>An option to reload documents that have been modified by other
+programs on disk.</li>
+<li>A View Source option to open a document’s source in a new tab,
+useful for editing Markdown for example.</li>
+<li>Document text is now paginated, meaning you can load books with tens
+of millions of words in only a couple seconds now. Please report any
+weirdness found with this.</li>
+</ul>
+<h4 id="platform-support">Platform Support</h4>
+<ul>
+<li>ARM64 Windows support!</li>
+<li>Native macOS support!</li>
+</ul>
+<h4 id="all-documents-dialog">All Documents Dialog</h4>
+<ul>
+<li>A locate button to locate missing books that just changed their
+path.</li>
+<li>A status filter and status bar, so you can filter by document status
+and see how many documents are shown and selected.</li>
+<li>The <code>Ctrl+Shift+A</code> shortcut to deselect all
+documents.</li>
+</ul>
+<h4 id="options-and-readability">Options and Readability</h4>
+<ul>
+<li>A readability tab, with the following options:
 <ul>
 <li>Word wrap (moved from general);</li>
 <li>Render tables inline (new in this release, see below);</li>
 <li>Font;</li>
 <li>Background color;</li>
 <li>Line spacing;</li>
-<li>paragraph spacing;</li>
+<li>Paragraph spacing;</li>
 <li>Letter spacing;</li>
 <li>Text alignment.</li>
 </ul></li>
-<li>Added a toggle to determine how you want tables displayed, and
-unified how tables are displayed across documents.</li>
-<li>added a View Source option to open a document’s source in a new tab,
-useful for editing Markdown for example.</li>
-<li>Added ARM64 Windows support!</li>
-<li>Added a word wrap menu item and subsequent hotkey.</li>
-<li>Added an option to automatically move the cursor to the start of the
-line when navigating between lines, similar to browse mode in screen
+<li>A word wrap menu item and subsequent hotkey.</li>
+<li>A toggle to determine how you want tables displayed, and unified how
+tables are displayed across documents.</li>
+</ul>
+<h4 id="navigation">Navigation</h4>
+<ul>
+<li>Support for navigating by container.</li>
+<li>An option to automatically move the cursor to the start of the line
+when navigating between lines, similar to browse mode in screen
 readers.</li>
-<li>Added an option to reload documents that have been modified by other
-programs on disk.</li>
-<li>Added estimated reading time to the word count dialog, as well as
-the ability to set your reading speed to make this metric actually
+<li>The equals keyboard shortcut to announce your current percentage
+through a document.</li>
+</ul>
+<h4 id="bookmarks">Bookmarks</h4>
+<ul>
+<li>Temporary bookmarks: you can have one per document, and they do
+persist. Use slash to set one and backslash to jump to it.</li>
+</ul>
+<h4 id="word-count">Word Count</h4>
+<ul>
+<li>Estimated reading time in the word count dialog, as well as the
+ability to set your reading speed to make this metric actually
 useful.</li>
-<li>Added native macOS support!</li>
-<li>Added new languages: Dutch, Finish, and Polish.</li>
-<li>Added support for navigating by container.</li>
-<li>Added support for lists, list items, figures, and images in CHM
-documents.</li>
-<li>Added temperary bookmarks: you can have one per document, and they
-do persist. Use slash to set one and backslash to jump to it.</li>
-<li>Added the ability to customize every keyboard shortcut in the app
-through a simple dialog.</li>
-<li>Added the ability to play audio books, currently supporting both
-DAISY audio (including DAISY audio + text) and zips of audio files.</li>
-<li>Added the <code>Ctrl+Shift+A</code> shortcut to deselect all
-documents in the all documents dialog.</li>
-<li>Added the equals keyboartd shortcut to announce your current
-percentage through a document.</li>
-<li>Bookmark/note sounds should now properly play exclusively when you
-navigate over a word containing one.</li>
+<li>If a selection is active when you open the word count dialog, how
+many words you have selected will now be shown.</li>
+</ul>
+<h4 id="keyboard-shortcuts-1">Keyboard Shortcuts</h4>
+<ul>
+<li>The ability to customize every keyboard shortcut in the app through
+a simple dialog.</li>
+<li>A configurable keyboard shortcut to restore Paperback from the
+system tray.</li>
+</ul>
+<h4 id="languages">Languages</h4>
+<ul>
+<li>Dutch, Finnish, and Polish.</li>
+</ul>
+<h4 id="export">Export</h4>
+<ul>
+<li>Expanded the export menu item to allow exporting to HTML and
+Markdown, in addition to plain text.</li>
+</ul>
+<h4 id="updater">Updater</h4>
+<ul>
+<li>A cancel button to the update-in-progress dialog.</li>
+<li>The updater now validates the downloaded file hasn’t been tampered
+with.</li>
+</ul>
+<h4 id="web-view">Web View</h4>
+<ul>
+<li>The webview is now opened at your current reading position.</li>
+</ul>
+<h4 id="daisy-books">DAISY Books</h4>
+<ul>
+<li>Support for DAISY 2.0 books.</li>
+<li>Support for DAISY 2.02 audio playback.</li>
+</ul>
+<h4 id="audio-books">Audio Books</h4>
+<ul>
+<li>The ability to play audio books, currently supporting both DAISY
+audio (including DAISY audio + text) and zips of audio files.</li>
+</ul>
+<h4 id="chm-documents">CHM Documents</h4>
+<ul>
+<li>Support for lists, list items, figures, and images.</li>
+</ul>
+<h4 id="powerpoint">PowerPoint</h4>
+<ul>
+<li>PowerPoint documents now support tables.</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<h4 id="general-1">General</h4>
+<ul>
 <li>Documents encoded in legacy CJK encodings, such as GBK, Big5, and
 Shift_JIS, will now render properly instead of as a bunch of
 mojibake.</li>
-<li>Expanded the export menu item to allow exporting to HTML and
-Markdown in addition to plain text.</li>
-<li>Fixed applying word wrap shooting you to the start of your
-document.</li>
-<li>Fix daisy books showing incorrect info in the status bar.</li>
-<li>Fixed dl, dt, and dd elements not producing line breaks in XHTML
-documents.</li>
-<li>Fixed Escape not closing the Document Info and All Documents
-dialogs.</li>
-<li>Fixed filepos anchors in Mobi books splitting HTML tags and putting
-garbage in the book text.</li>
-<li>Fixed links in legacy mobi books.</li>
-<li>Fixed loading DAISY books with bogus encoding declarations.</li>
-<li>Fixed page navigation announcing incorrect line text in some
-situations.</li>
-<li>Fixed parsing RTF documents with non-Latin characters in them.</li>
-<li>Fixed “Reopen last closed” attempting to reopen the bundled
-readme.</li>
-<li>Fixed the title bar not updating after closing a document from the
-all documents dialog.</li>
-<li>Fix the webview dialog not being resizable and popping up at a very
-small initial size.</li>
-<li>Fixed word documents with locale-specific style names not rendering
-their headings properly.</li>
-<li>Fixed your selected tab not getting properly focused after
-restarting Paperback.</li>
-<li>If a selection is active when you open the word count dialog, how
-many words you have selected will now be shown.</li>
-<li>Images should now properly display in the embedded webview.</li>
-<li>Improved Paperback’s handling of files on Windows network drives:
-pressing show file in folder now properly focuses the file on the
-network storage, and the paths no longer contain strange
-characters.</li>
-<li>Majorly improved AZW3 parsing.</li>
-<li>On desktop, .paperback files will no longer be forcefully loaded on
-document restoration. Instead, you will be asked for Confirmation when
-the file is found.</li>
+<li>“Reopen last closed” attempting to reopen the bundled readme.</li>
+<li>Your selected tab not getting properly focused after restarting
+Paperback.</li>
+<li>Paperback’s handling of files on Windows network drives: pressing
+show file in folder now properly focuses the file on the network
+storage, and the paths no longer contain strange characters.</li>
+<li>.paperback files will no longer be forcefully loaded on document
+restoration; instead, you’ll be asked for confirmation when one is
+found.</li>
 <li>Open containing folder now focuses the given file in explorer.</li>
 <li>Opening the readme will now respect your selected language.</li>
-<li>Paperback now falls back to plain text extraction for falsely-tagged
-PDFs.</li>
 <li>Paperback’s user interface will now scale properly on high-DPI
 displays.</li>
-<li>PDF documents containing control characters in their titles and/or
-bookmarks will no longer crash Paperback on open.</li>
-<li>PowerPoint documents now support tables.</li>
-<li>Properly update the menu and set focus to the text control when
-opening help in paperback.</li>
+<li>The menu now properly updates, and focus moves to the text control,
+when opening help in Paperback.</li>
+<li>Switched to a much more secure method of IPC on Windows.</li>
+<li>The active document title will now be read when switching between
+tabs.</li>
+<li>Reduced memory usage on large documents by halving the size of the
+internal per-character index tables.</li>
+</ul>
+<h4 id="all-documents-dialog-1">All Documents Dialog</h4>
+<ul>
+<li>Escape not closing the Document Info and All Documents dialogs.</li>
+<li>The title bar not updating after closing a document from the all
+documents dialog.</li>
 <li>Readme.html will no longer be added to your all documents list when
 opened via Shift+F1.</li>
 <li>Removing documents from the recents dialog will now also close their
 active tab.</li>
-<li>Switched to a much more secure method of IPC on Windows.</li>
-<li>The active document title will now be read when switching between
-tabs.</li>
-<li>The text field containing your book’s content is now paginated,
-meaning you can load books with tens of millions of words in only a
-couple seconds now, and weird problems with lag in some situations,
-especially towards the end of the book text, have been fixed. Please
-report any weirdness found with this.</li>
+<li>Your search filter is now preserved after removing a document.</li>
+</ul>
+<h4 id="navigation-1">Navigation</h4>
+<ul>
+<li>Page navigation announcing incorrect line text in some
+situations.</li>
+<li>Go to Line, Go to Page, and Go to Percent placing your cursor at the
+wrong position in large documents.</li>
+<li>Find and Find Next not respecting the loaded document window in
+large documents.</li>
+</ul>
+<h4 id="bookmarks-1">Bookmarks</h4>
+<ul>
+<li>Bookmark/note sounds should now properly play exclusively when you
+navigate over a word containing one.</li>
+</ul>
+<h4 id="readability">Readability</h4>
+<ul>
+<li>Applying word wrap shooting you to the start of your document.</li>
+</ul>
+<h4 id="web-view-1">Web View</h4>
+<ul>
+<li>The webview dialog not being resizable and popping up at a very
+small initial size.</li>
+<li>Images should now properly display in the embedded webview.</li>
+</ul>
+<h4 id="updater-1">Updater</h4>
+<ul>
 <li>The updater now properly shows the content of markdown code tags in
 release notes.</li>
-<li>The updater now validates the downloaded file hasn’t been tampered
-with.</li>
-<li>The webview is now opened at your current reading position.</li>
-<li>Your search filter in the all documents dialog is now preserved
-after removing a document.</li>
+</ul>
+<h4 id="daisy-books-1">DAISY Books</h4>
+<ul>
+<li>DAISY books showing incorrect info in the status bar.</li>
+<li>Loading DAISY books with bogus encoding declarations.</li>
+</ul>
+<h4 id="rtf-documents">RTF Documents</h4>
+<ul>
+<li>Parsing RTF documents with non-Latin characters in them.</li>
+<li>RTF <code>\pict</code> groups so embedded image data no longer leaks
+into the document text.</li>
+</ul>
+<h4 id="mobiazw3-books">Mobi/AZW3 Books</h4>
+<ul>
+<li>Filepos anchors in Mobi books splitting HTML tags and putting
+garbage in the book text.</li>
+<li>Links in legacy Mobi books.</li>
+<li>Majorly improved AZW3 parsing.</li>
+</ul>
+<h4 id="word-documents">Word Documents</h4>
+<ul>
+<li>Word documents with locale-specific style names not rendering their
+headings properly.</li>
+</ul>
+<h4 id="htmlxhtml-documents">HTML/XHTML Documents</h4>
+<ul>
+<li>dl, dt, and dd elements not producing line breaks in XHTML
+documents.</li>
+</ul>
+<h4 id="pdf-documents">PDF Documents</h4>
+<ul>
+<li>Paperback now falls back to plain text extraction for falsely-tagged
+PDFs.</li>
+<li>PDF documents containing control characters in their titles and/or
+bookmarks will no longer crash Paperback on open.</li>
 </ul>
 <h2 id="version-0.8.5">Version 0.8.5</h2>
 <ul>
