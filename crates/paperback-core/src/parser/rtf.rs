@@ -616,6 +616,7 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 						r"\ldblquote" => buffer.append("\u{201C}"),
 						r"\emdash" => buffer.append("\u{2014}"),
 						r"\endash" => buffer.append("\u{2013}"),
+						r"\pict" => skip_until_depth = Some(depth - 1),
 						_ => {}
 					},
 					_ => {}
@@ -912,6 +913,18 @@ mod tests {
 		let out = normalize_escapes(rtf, default_enc, &font_table);
 		assert!(out.contains('Ć'), "expected Ć (Windows-1250 0xC6), got: {out}");
 		assert!(!out.contains('Æ'), "should not contain Æ (Windows-1252 0xC6)");
+	}
+
+	#[test]
+	fn extract_content_skips_pict_groups() {
+		// A bare {\pict...} group (no leading \*) still carries binary image data as
+		// hex text, which must not leak into the document body.
+		let rtf = r"{\rtf1\ansi\pard before{\pict\wmetafile8\picw100\pich100 010009000003}after}";
+		let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "beforeafter");
+		assert!(!buffer.content.contains("010009000003"));
 	}
 
 	#[test]
