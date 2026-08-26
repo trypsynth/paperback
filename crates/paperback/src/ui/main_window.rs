@@ -803,7 +803,7 @@ impl MainWindow {
 							let Some(tab) = dm_guard.active_tab_mut() else {
 								return;
 							};
-							let current_pos = tab.text_ctrl.get_insertion_point();
+							let current_pos = navigation::doc_caret(tab);
 							let status = tab.session.get_status_info(current_pos);
 							let total_lines = tab.session.line_count().max(1);
 							let max_lines = i32::try_from(total_lines.min(i64::from(i32::MAX))).unwrap_or(i32::MAX);
@@ -844,7 +844,7 @@ impl MainWindow {
 								live_region::announce(live_region_label, &t("No pages."));
 								return;
 							}
-							let current_pos = tab.text_ctrl.get_insertion_point();
+							let current_pos = navigation::doc_caret(tab);
 							let current_page = tab.session.current_page(current_pos);
 							let max_page = i32::try_from(page_count.max(1)).unwrap_or(i32::MAX);
 							(current_page, max_page)
@@ -875,7 +875,7 @@ impl MainWindow {
 							let Some(tab) = dm_guard.active_tab_mut() else {
 								return;
 							};
-							let current_pos = tab.text_ctrl.get_insertion_point();
+							let current_pos = navigation::doc_caret(tab);
 							let status = tab.session.get_status_info(current_pos);
 							status.percentage.clamp(0, 100)
 						};
