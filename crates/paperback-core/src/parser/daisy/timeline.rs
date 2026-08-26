@@ -58,19 +58,19 @@ fn convert_dtbook_file(
 
 /// One SMIL `<par>`'s audio, before its text span is known. `end_ms` is `None` while the
 /// par's `clipEnd` was absent, i.e. it plays to the end of its file.
-struct PendingClip {
-	source: usize,
-	begin_ms: u64,
-	end_ms: Option<u64>,
-	start: usize,
+pub(super) struct PendingClip {
+	pub(super) source: usize,
+	pub(super) begin_ms: u64,
+	pub(super) end_ms: Option<u64>,
+	pub(super) start: usize,
 }
 
 /// A clip with a known text position and a known end time, ready for the timeline.
-struct ResolvedClip {
-	source: usize,
-	begin_ms: u64,
-	end_ms: u64,
-	start: usize,
+pub(super) struct ResolvedClip {
+	pub(super) source: usize,
+	pub(super) begin_ms: u64,
+	pub(super) end_ms: u64,
+	pub(super) start: usize,
 }
 
 /// Gives every clip a concrete end time and sorts the result by text position. A par with no
@@ -79,7 +79,7 @@ struct ResolvedClip {
 /// that source, searched across the whole book rather than just its own SMIL. A trailing
 /// open-ended clip has nothing after it to measure against and would need the file's real
 /// duration, which the parser doesn't decode, so it is dropped.
-fn bound_open_ended_clips(pending: &[PendingClip]) -> Vec<ResolvedClip> {
+pub(super) fn bound_open_ended_clips(pending: &[PendingClip]) -> Vec<ResolvedClip> {
 	let mut resolved: Vec<ResolvedClip> = pending
 		.iter()
 		.filter_map(|clip| {

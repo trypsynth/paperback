@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 00:33+0000\n"
+"POT-Creation-Date: 2026-08-26 22:34+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -131,30 +131,31 @@ msgstr "Voulez-vous vraiment retirer tous les documents de la liste ? Cela suppr
 msgid "No documents."
 msgstr "Aucun document"
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count. Plural form is chosen by that count.
 #, fuzzy
-msgid "1 document."
-msgstr "document"
-
-#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d documents."
-msgstr "document"
+msgid "%d document."
+msgid_plural "%d documents."
+msgstr[0] "document"
+msgstr[1] "document"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
 #, fuzzy
 msgid "1 of 1 document selected."
 msgstr "Le document a été rechargé."
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
 #, fuzzy
-msgid "All %d documents selected."
-msgstr "Tous les documents"
+msgid "All %d document selected."
+msgid_plural "All %d documents selected."
+msgstr[0] "Tous les documents"
+msgstr[1] "Tous les documents"
 
-#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
 #, fuzzy
-msgid "%d of %d documents selected."
-msgstr "Fin du document"
+msgid "%d of %d document selected."
+msgid_plural "%d of %d documents selected."
+msgstr[0] "Fin du document"
+msgstr[1] "Fin du document"
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 #, fuzzy
@@ -405,7 +406,6 @@ msgid "30 seconds"
 msgstr "secondes"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Singular label for 1 minute duration
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #, fuzzy
 msgid "1 minute"
@@ -436,7 +436,6 @@ msgid "30 minutes"
 msgstr "minutes"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Singular label for 1 hour duration
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #, fuzzy
 msgid "1 hour"
@@ -760,40 +759,45 @@ msgstr "Aucune sélection"
 msgid "View Note"
 msgstr "Afficher la note"
 
-#. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
+#. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
 #, fuzzy
-msgid "hours"
-msgstr "heures"
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "1 heure"
+msgstr[1] "1 heure"
 
-#. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
+#. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
 #, fuzzy
-msgid "minutes"
-msgstr "minutes"
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "1 minute"
+msgstr[1] "1 minute"
 
-#. TRANSLATORS: Singular label for 1 second duration
+#. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
 #, fuzzy
-msgid "1 second"
-msgstr "1 seconde"
-
-#. TRANSLATORS: Plural label for seconds duration (e.g. "2 seconds")
-#, fuzzy
-msgid "seconds"
-msgstr "secondes"
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "1 seconde"
+msgstr[1] "1 seconde"
 
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 #, fuzzy
 msgid "Estimated reading time: {}"
 msgstr "Temps de lecture estimé : {}"
 
-#. TRANSLATORS: Message template for selection word count. The {} placeholder is replaced with the number of words.
+#. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
 #, fuzzy
-msgid "The selection contains {} words."
-msgstr "Cette sélection contient {} mots."
+msgid "The selection contains %d word."
+msgid_plural "The selection contains %d words."
+msgstr[0] "Cette sélection contient {} mots."
+msgstr[1] "Cette sélection contient {} mots."
 
-#. TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
+#. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
 #, fuzzy
-msgid "This document contains {} words."
-msgstr "Ce document contient{}s de mots."
+msgid "This document contains %d word."
+msgid_plural "This document contains %d words."
+msgstr[0] "Ce document contient{}s de mots."
+msgstr[1] "Ce document contient{}s de mots."
 
 #. TRANSLATORS: Title of the Word Count dialog
 #, fuzzy
@@ -993,9 +997,11 @@ msgstr "Paperback ne peut effectuer aucune action tant que Web View est ouvert."
 msgid "Paperback - {}"
 msgstr "Paperback - {}"
 
-#. TRANSLATORS: Status bar character count; {} is the number of characters
-msgid "{} chars"
-msgstr "{} caractères"
+#, fuzzy
+msgid "%d char"
+msgid_plural "%d chars"
+msgstr[0] "{} caractères"
+msgstr[1] "{} caractères"
 
 #. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 msgid "document"
@@ -1118,13 +1124,11 @@ msgstr "Impossible de charger la source du document."
 msgid "Sleep timer cancelled."
 msgstr "Minuterie de veille annulée."
 
-#. TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
-msgid "Sleep timer set for 1 minute."
-msgstr "Minuterie de veille réglée sur 1 minute."
-
-#. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-msgid "Sleep timer set for %d minutes."
-msgstr "Minuterie de veille réglée sur %d minutes."
+#, fuzzy
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Minuterie de veille réglée sur %d minutes."
+msgstr[1] "Minuterie de veille réglée sur %d minutes."
 
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -2047,6 +2051,11 @@ msgstr "Image"
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
 msgstr "Fichier .opf DAISY non valide ou impossibilité de trouver le fichier XML DTBook dans le manifeste"
 
+#. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
+#, fuzzy
+msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
+msgstr "Fichier .opf DAISY non valide ou impossibilité de trouver le fichier XML DTBook dans le manifeste"
+
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
 msgid "Failed to convert DTBook XML to text"
@@ -2056,6 +2065,16 @@ msgstr "Échec de la conversion du fichier XML DTBook en texte"
 #, fuzzy
 msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
 msgstr "L'archive ZIP ne semble pas correspondre à un livre DAISY 3 ou DAISY 2.02 valide."
+
+#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+#, fuzzy
+msgid "rootfile not found in container.xml"
+msgstr "Fichier racine introuvable dans container.xml"
+
+#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+#, fuzzy
+msgid "unsupported content"
+msgstr "contenu non pris en charge"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 #, fuzzy
@@ -2076,16 +2095,6 @@ msgstr "Échec de la conversion des éléments de la colonne vertébrale : {}"
 #, fuzzy
 msgid "EPUB has no readable content ({})"
 msgstr "Le fichier EPUB ne contient aucun contenu lisible ({})"
-
-#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
-#, fuzzy
-msgid "rootfile not found in container.xml"
-msgstr "Fichier racine introuvable dans container.xml"
-
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-#, fuzzy
-msgid "unsupported content"
-msgstr "contenu non pris en charge"
 
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 #, fuzzy
@@ -2232,10 +2241,6 @@ msgstr "Le fichier ODP ne contient aucune page"
 msgid "FODP file does not contain any pages"
 msgstr "Le fichier FODP ne contient aucune page"
 
-#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
-msgstr "Ce PDF ne contient que des images, sans texte extractible. Vous devrez peut-être le traiter avec un logiciel OCR pour en lire le contenu."
-
 #. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 #, fuzzy
 msgid "Password required or incorrect"
@@ -2245,6 +2250,10 @@ msgstr "Mot de passe requis ou incorrect"
 #, fuzzy
 msgid "Failed to open PDF document: {}"
 msgstr "Impossible d'ouvrir le document PDF : {}"
+
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
+msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+msgstr "Ce PDF ne contient que des images, sans texte extractible. Vous devrez peut-être le traiter avec un logiciel OCR pour en lire le contenu."
 
 #, fuzzy
 msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
@@ -2344,6 +2353,55 @@ msgstr "Mot de passe requis"
 #, fuzzy
 msgid "Password incorrect"
 msgstr "Mot de passe incorrect"
+
+#, fuzzy
+msgid "1 document."
+msgstr "document"
+
+#, fuzzy
+msgid "%d documents."
+msgstr "document"
+
+#, fuzzy
+msgid "All %d documents selected."
+msgstr "Tous les documents"
+
+#, fuzzy
+msgid "%d of %d documents selected."
+msgstr "Fin du document"
+
+#, fuzzy
+msgid "hours"
+msgstr "heures"
+
+#, fuzzy
+msgid "minutes"
+msgstr "minutes"
+
+#, fuzzy
+msgid "1 second"
+msgstr "1 seconde"
+
+#, fuzzy
+msgid "seconds"
+msgstr "secondes"
+
+#, fuzzy
+msgid "The selection contains {} words."
+msgstr "Cette sélection contient {} mots."
+
+#, fuzzy
+msgid "This document contains {} words."
+msgstr "Ce document contient{}s de mots."
+
+msgid "{} chars"
+msgstr "{} caractères"
+
+msgid "Sleep timer set for 1 minute."
+msgstr "Minuterie de veille réglée sur 1 minute."
+
+msgid "Sleep timer set for %d minutes."
+msgstr "Minuterie de veille réglée sur %d minutes."
 
 msgid "Update to %s"
 msgstr "Mettre à jour vers %s"

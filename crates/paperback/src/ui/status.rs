@@ -4,7 +4,7 @@ use paperback_core::session::StatusInfo;
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::document_manager::DocumentManager;
+use super::{document_manager::DocumentManager, navigation};
 
 pub fn format_status_text(info: &StatusInfo) -> String {
 	// TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
@@ -58,7 +58,7 @@ pub fn update_status_bar_with_sleep_timer(
 		return;
 	}
 	if let Some(tab) = dm.active_tab() {
-		let position = tab.text_ctrl.get_insertion_point();
+		let position = navigation::doc_caret(tab);
 		let status_info = tab.session.get_status_info(position);
 		let mut status_text = format_status_text(&status_info);
 		if sleep_timer_start_ms > 0 {

@@ -83,7 +83,7 @@ mod tests {
 		// The iOS app ships a placeholder icon that is a solid white square; this makes sure
 		// the same thing can never quietly happen here.
 		let (_, rgba) = rgba_at(&[32]).pop().expect("artwork should decode");
-		let first = &rgba[..4];
-		assert!(rgba.chunks_exact(4).any(|px| px != first), "the icon artwork is a single flat colour");
+		let first: [u8; 4] = rgba[..4].try_into().unwrap();
+		assert!(rgba.as_chunks::<4>().0.iter().any(|px| *px != first), "the icon artwork is a single flat colour");
 	}
 }

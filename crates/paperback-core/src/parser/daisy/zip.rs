@@ -4,7 +4,8 @@ use anyhow::{Context, Result};
 use zip::ZipArchive;
 
 use super::{
-	ncx::{extract_daisy2_links, parse_daisy_ncx},
+	daisy2::{build_daisy2_document, build_daisy2_text_only_document},
+	ncx::{parse_daisy_ncx, parse_daisy2_ncc_metadata},
 	opf::{find_single_dtbook_href, parse_opf_package},
 	plain_audio::build_plain_audio_zip_document,
 	timeline::build_daisy_document,
@@ -14,10 +15,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, add_converter_markers,
-		convert::{
-			html_to_text::{HtmlSourceMode, HtmlToText},
-			xml_to_text::XmlToText,
-		},
+		convert::xml_to_text::XmlToText,
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
 	t,
@@ -154,42 +152,51 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 					e.context("Failed to read ncc.html")
 				}
 			})?;
-		let links = extract_daisy2_links(&ncc_content);
-		let mut combined_html = String::new();
-		let base_dir = Path::new(&ncc_name).parent().unwrap_or_else(|| Path::new(""));
-		for link in links {
-			let link_path = if base_dir.as_os_str().is_empty() {
-				link.clone()
-			} else {
-				base_dir.join(&link).to_string_lossy().to_string().replace('\\', "/")
+		let (ncc_title, ncc_author) = parse_daisy2_ncc_metadata(&ncc_content);
+		if let Some(t) = ncc_title {
+			title = t;
+		}
+		if let Some(a) = ncc_author {
+			author = a;
+		}
+		let password = context.password.clone();
+		let archive_path = context.file_path.clone();
+		{
+			let mut read_text = |href: &str| -> Result<String> {
+				read_zip_entry_by_name_with_password(&mut archive, href, password.as_deref())
 			};
-			match read_zip_entry_by_name_with_password(&mut archive, &link_path, context.password.as_deref()) {
-				Ok(c) => {
-					combined_html.push_str(&c);
-					combined_html.push_str("\n\n");
-				}
-				Err(e) => {
-					tracing::warn!(link = %link_path, error = %e, "failed to read linked content page, skipping");
-				}
+			let resolve_audio = |href: &str| AudioLocation::ZipEntry {
+				archive: archive_path.clone(),
+				entry: href.to_string(),
+				password: password.clone(),
+			};
+			if let Some(document) = build_daisy2_document(
+				&ncc_content,
+				&ncc_name,
+				title.clone(),
+				author.clone(),
+				context.render_tables_inline,
+				&mut read_text,
+				&resolve_audio,
+			) {
+				tracing::debug!(path = %path.display(), "parsed daisy book as daisy 2.02 (ncc.html + smil audio) from zip archive");
+				return Ok(document);
 			}
 		}
-		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
-		if converter.convert(&combined_html, HtmlSourceMode::NativeHtml) {
-			let mut converted_buffer = DocumentBuffer::with_content(converter.get_text());
-			add_converter_markers(&mut converted_buffer, &converter, 0);
-			let toc_items = build_toc_from_headings(converter.get_headings());
-			tracing::debug!(path = %path.display(), "parsed daisy book as daisy 2.02 (ncc.html) from zip archive");
-			return Ok(Document {
-				title,
-				author,
-				buffer: converted_buffer,
-				toc_items,
-				id_positions: converter.get_id_positions().clone(),
-				..Document::default()
-			});
+		let mut read_text = |href: &str| -> Result<String> {
+			read_zip_entry_by_name_with_password(&mut archive, href, password.as_deref())
+		};
+		if let Some(document) = build_daisy2_text_only_document(
+			&ncc_content,
+			&ncc_name,
+			title.clone(),
+			author.clone(),
+			context.render_tables_inline,
+			&mut read_text,
+		) {
+			tracing::debug!(path = %path.display(), "parsed daisy book as daisy 2.02 (ncc.html, text-only) from zip archive");
+			return Ok(document);
 		}
-		// currently unreachable since HtmlToText::convert always returns true today
-		tracing::warn!("html to text conversion reported failure for daisy 2.02 book");
 	}
 	tracing::warn!(opf_found, ncc_found, "exhausted daisy 3 and daisy 2.02 detection attempts in zip archive");
 	// Not a recognizable DAISY book, but plenty of "audiobook" zips out there (e.g. from

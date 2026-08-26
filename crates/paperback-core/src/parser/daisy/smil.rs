@@ -38,15 +38,20 @@ pub fn parse_smil_pars(content: &str) -> Vec<SmilPar> {
 
 fn par_from_node(par: Node) -> Option<SmilPar> {
 	let text = par.children().find(|n| n.is_element() && n.tag_name().name() == "text")?;
-	let audio = par.children().find(|n| n.is_element() && n.tag_name().name() == "audio")?;
+	// DAISY 2.02 producers commonly nest `<audio>` inside a `<seq>` rather than placing it
+	// directly under `<par>`, so this searches descendants, not just direct children.
+	let audio = par.descendants().find(|n| n.is_element() && n.tag_name().name() == "audio")?;
 	let src = text.attribute("src")?;
 	let (text_file, text_id) = match src.split_once('#') {
 		Some((file, id)) => (if file.is_empty() { None } else { Some(file.to_string()) }, id.to_string()),
 		None => (None, src.to_string()),
 	};
 	let audio_src = audio.attribute("src")?.to_string();
-	let clip_begin_ms = audio.attribute("clipBegin").map_or(0, parse_smil_time);
-	let clip_end_ms = audio.attribute("clipEnd").map(parse_smil_time);
+	// SMIL 1.0 (DAISY 2.02) spells these `clip-begin`/`clip-end`; SMIL 2.0 (DAISY 3) uses
+	// `clipBegin`/`clipEnd`.
+	let clip_begin_ms =
+		audio.attribute("clipBegin").or_else(|| audio.attribute("clip-begin")).map_or(0, parse_smil_time);
+	let clip_end_ms = audio.attribute("clipEnd").or_else(|| audio.attribute("clip-end")).map(parse_smil_time);
 	let mut anchor_ids: Vec<String> = par
 		.attribute("id")
 		.into_iter()

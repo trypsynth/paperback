@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 00:33+0000\n"
+"POT-Creation-Date: 2026-08-26 22:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -116,25 +117,27 @@ msgstr ""
 msgid "No documents."
 msgstr ""
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
-msgid "1 document."
-msgstr ""
-
-#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
-msgid "%d documents."
-msgstr ""
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count. Plural form is chosen by that count.
+msgid "%d document."
+msgid_plural "%d documents."
+msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
 msgid "1 of 1 document selected."
 msgstr ""
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
-msgid "All %d documents selected."
-msgstr ""
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
+msgid "All %d document selected."
+msgid_plural "All %d documents selected."
+msgstr[0] ""
+msgstr[1] ""
 
-#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
-msgid "%d of %d documents selected."
-msgstr ""
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
+msgid "%d of %d document selected."
+msgid_plural "%d of %d documents selected."
+msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 msgid "Locate Book"
@@ -373,7 +376,6 @@ msgid "30 seconds"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Singular label for 1 minute duration
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "1 minute"
 msgstr ""
@@ -399,7 +401,6 @@ msgid "30 minutes"
 msgstr ""
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Singular label for 1 hour duration
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "1 hour"
 msgstr ""
@@ -668,33 +669,39 @@ msgstr ""
 msgid "View Note"
 msgstr ""
 
-#. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
-msgid "hours"
-msgstr ""
+#. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] ""
+msgstr[1] ""
 
-#. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
-msgid "minutes"
-msgstr ""
+#. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] ""
+msgstr[1] ""
 
-#. TRANSLATORS: Singular label for 1 second duration
-msgid "1 second"
-msgstr ""
-
-#. TRANSLATORS: Plural label for seconds duration (e.g. "2 seconds")
-msgid "seconds"
-msgstr ""
+#. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
 msgstr ""
 
-#. TRANSLATORS: Message template for selection word count. The {} placeholder is replaced with the number of words.
-msgid "The selection contains {} words."
-msgstr ""
+#. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
+msgid "The selection contains %d word."
+msgid_plural "The selection contains %d words."
+msgstr[0] ""
+msgstr[1] ""
 
-#. TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
-msgid "This document contains {} words."
-msgstr ""
+#. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
+msgid "This document contains %d word."
+msgid_plural "This document contains %d words."
+msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATORS: Title of the Word Count dialog
 msgid "Word Count"
@@ -883,9 +890,10 @@ msgstr ""
 msgid "Paperback - {}"
 msgstr ""
 
-#. TRANSLATORS: Status bar character count; {} is the number of characters
-msgid "{} chars"
-msgstr ""
+msgid "%d char"
+msgid_plural "%d chars"
+msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 msgid "document"
@@ -997,13 +1005,10 @@ msgstr ""
 msgid "Sleep timer cancelled."
 msgstr ""
 
-#. TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
-msgid "Sleep timer set for 1 minute."
-msgstr ""
-
-#. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-msgid "Sleep timer set for %d minutes."
-msgstr ""
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -1800,12 +1805,24 @@ msgstr ""
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
 msgstr ""
 
+#. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
+msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
+msgstr ""
+
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 msgid "Failed to convert DTBook XML to text"
 msgstr ""
 
 #. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
 msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+msgid "rootfile not found in container.xml"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+msgid "unsupported content"
 msgstr ""
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
@@ -1822,14 +1839,6 @@ msgstr ""
 
 #. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
 msgid "EPUB has no readable content ({})"
-msgstr ""
-
-#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
-msgid "rootfile not found in container.xml"
-msgstr ""
-
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-msgid "unsupported content"
 msgstr ""
 
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
@@ -1948,16 +1957,16 @@ msgstr ""
 msgid "FODP file does not contain any pages"
 msgstr ""
 
-#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
-msgstr ""
-
 #. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 msgid "Password required or incorrect"
 msgstr ""
 
 #. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
 msgid "Failed to open PDF document: {}"
+msgstr ""
+
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
+msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
 msgstr ""
 
 msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
@@ -2037,6 +2046,45 @@ msgstr ""
 
 #. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
 msgid "Password incorrect"
+msgstr ""
+
+msgid "1 document."
+msgstr ""
+
+msgid "%d documents."
+msgstr ""
+
+msgid "All %d documents selected."
+msgstr ""
+
+msgid "%d of %d documents selected."
+msgstr ""
+
+msgid "hours"
+msgstr ""
+
+msgid "minutes"
+msgstr ""
+
+msgid "1 second"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "The selection contains {} words."
+msgstr ""
+
+msgid "This document contains {} words."
+msgstr ""
+
+msgid "{} chars"
+msgstr ""
+
+msgid "Sleep timer set for 1 minute."
+msgstr ""
+
+msgid "Sleep timer set for %d minutes."
 msgstr ""
 
 msgid "Update to %s"

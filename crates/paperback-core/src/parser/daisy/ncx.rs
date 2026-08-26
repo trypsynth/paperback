@@ -2,7 +2,30 @@ use std::collections::HashMap;
 
 use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 
-use crate::{document::TocItem, parser::util::path::resolve_relative_path};
+use crate::{document::TocItem, parser::util::path::resolve_relative_path, types::HeadingInfo};
+
+/// Reads `dc:title`/`dc:creator` out of `ncc.html`'s `<meta>` tags (case-insensitively — some
+/// producers write `dc:Title`), the same metadata a DAISY 3 OPF carries in `<dc-metadata>`.
+pub(super) fn parse_daisy2_ncc_metadata(ncc_content: &str) -> (Option<String>, Option<String>) {
+	let doc = scraper::Html::parse_document(ncc_content);
+	let selector = scraper::Selector::parse("meta[name][content]").unwrap();
+	let mut title = None;
+	let mut author = None;
+	for element in doc.select(&selector) {
+		let Some(name) = element.value().attr("name") else { continue };
+		let Some(content) = element.value().attr("content") else { continue };
+		let content = content.trim();
+		if content.is_empty() {
+			continue;
+		}
+		if title.is_none() && name.eq_ignore_ascii_case("dc:title") {
+			title = Some(content.to_string());
+		} else if author.is_none() && name.eq_ignore_ascii_case("dc:creator") {
+			author = Some(content.to_string());
+		}
+	}
+	(title, author)
+}
 
 pub(super) fn extract_daisy2_links(ncc_content: &str) -> Vec<String> {
 	let mut links = Vec::new();
@@ -17,6 +40,40 @@ pub(super) fn extract_daisy2_links(ncc_content: &str) -> Vec<String> {
 		}
 	}
 	links
+}
+
+/// Parses DAISY 2.02 `ncc.html` headings (`h1`-`h6`, each wrapping an `<a href>` into a SMIL
+/// file) into the heading list `build_toc_from_headings` expects. `smil_anchors` (the SMIL id
+/// to text-position map built while walking the SMIL files, keyed both bare and
+/// `{smil_href}#{id}`-qualified) resolves the link the same way a DAISY 3 NCX target is
+/// resolved against its SMIL; `id_positions` is the fallback for a text-only book whose links
+/// point straight at the content HTML instead. Headings whose link target didn't resolve are
+/// dropped rather than stranding them at position 0.
+pub(super) fn parse_daisy2_ncc_headings(
+	ncc_content: &str,
+	id_positions: &HashMap<String, usize>,
+	smil_anchors: &HashMap<String, usize>,
+) -> Vec<HeadingInfo> {
+	let doc = scraper::Html::parse_document(ncc_content);
+	let heading_selector = scraper::Selector::parse("h1, h2, h3, h4, h5, h6").unwrap();
+	let link_selector = scraper::Selector::parse("a[href]").unwrap();
+	let mut headings = Vec::new();
+	for element in doc.select(&heading_selector) {
+		let level = element.value().name()[1..].parse::<i32>().unwrap_or(1);
+		let text = element.text().collect::<String>().trim().to_string();
+		if text.is_empty() {
+			continue;
+		}
+		let Some(href) = element.select(&link_selector).next().and_then(|a| a.value().attr("href")) else { continue };
+		let fragment = href.split_once('#').map_or(href, |(_, frag)| frag);
+		let Some(&offset) =
+			smil_anchors.get(href).or_else(|| smil_anchors.get(fragment)).or_else(|| id_positions.get(fragment))
+		else {
+			continue;
+		};
+		headings.push(HeadingInfo { offset, level, text });
+	}
+	headings
 }
 
 /// Parses an NCX `navMap` into TOC items. `smil_anchors` maps ids *within the SMIL files* to

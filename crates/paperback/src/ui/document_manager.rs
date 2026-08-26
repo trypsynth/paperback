@@ -569,27 +569,6 @@ impl DocumentManager {
 		}
 	}
 
-	/// Seeks the active tab's audio to the caret, if it has any and the caret moved since the
-	/// last call. Only explicit "jump to X" actions call this, not plain caret movement, so
-	/// arrowing around the document doesn't drag the audio along.
-	pub fn seek_audio_to_caret(&mut self) {
-		let Some(tab) = self.active_tab_mut() else {
-			return;
-		};
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		if self.last_audio_seek_position.get() == Some(position) {
-			return;
-		}
-		self.last_audio_seek_position.set(Some(position));
-		let Some(tab) = self.active_tab_mut() else {
-			return;
-		};
-		let Some(player) = tab.audio_player.as_mut() else {
-			return;
-		};
-		player.seek_to_position(usize::try_from(position).unwrap_or(0));
-	}
-
 	/// When "sync caret to audio" is on, moves the caret to follow playback. Called from a
 	/// recurring timer; a no-op for documents with no audio.
 	///
