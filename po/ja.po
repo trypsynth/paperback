@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-24 00:33+0000\n"
-"PO-Revision-Date: 2026-06-25 21:58+0900\n"
+"PO-Revision-Date: 2026-08-25 22:11+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
-msgstr "IPCサーバーの作成に失敗しました"
+msgstr "IPCサーバーを作成できません"
 
 #. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
@@ -59,9 +59,8 @@ msgid "Path"
 msgstr "パス"
 
 #. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
-#, fuzzy
 msgid "&Status:"
-msgstr "状態"
+msgstr "状態(&S):"
 
 #. TRANSLATORS: Option in the All Documents status filter to show documents of every status
 #. TRANSLATORS: Option in the filter dropdown to show all entries
@@ -85,9 +84,8 @@ msgid "&Open"
 msgstr "開く(&O)"
 
 #. TRANSLATORS: Button label to locate a missing file on disk
-#, fuzzy
 msgid "&Locate…"
-msgstr "&検索…"
+msgstr "場所を指定(&L)…"
 
 #. TRANSLATORS: Button label to remove selected documents from the list
 msgid "&Remove"
@@ -101,13 +99,11 @@ msgstr "すべて削除(&C)"
 msgid "Close"
 msgstr "閉じる"
 
-#, fuzzy
 msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
-msgstr "選択したドキュメントを削除してもよろしいですか？ 削除すると、そのドキュメントの読み進め位置やブックマークも削除されます。"
+msgstr "選択した文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
 
-#, fuzzy
 msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
-msgstr "選択した{}のドキュメントを削除してもよろしいですか？これにより、それらの読み進め位置やブックマークも削除されます。"
+msgstr "{}件の文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
@@ -115,42 +111,35 @@ msgstr "確認"
 
 #. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
 msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
-msgstr "リストからすべての文書を削除しますか？これにより、すべての文書の読み上げ位置としおりも削除されます。"
+msgstr "すべての文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
-#, fuzzy
 msgid "No documents."
-msgstr "書類なし"
+msgstr "文書なし。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
-#, fuzzy
 msgid "1 document."
-msgstr "文書"
+msgstr "1件の文書。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
-#, fuzzy
 msgid "%d documents."
-msgstr "文書"
+msgstr "%d件の文書。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
-#, fuzzy
 msgid "1 of 1 document selected."
-msgstr "ドキュメントが再読み込みされました。"
+msgstr "1 / 1件を選択。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
-#, fuzzy
 msgid "All %d documents selected."
-msgstr "すべての文書"
+msgstr "%d件すべてを選択。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
-#, fuzzy
 msgid "%d of %d documents selected."
-msgstr "文書の終わり"
+msgstr "%d / %d件を選択。"
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
-#, fuzzy
 msgid "Locate Book"
-msgstr "書籍を検索"
+msgstr "文書の場所を指定"
 
 #. TRANSLATORS: Title of the Jump to Bookmark dialog
 msgid "Jump to Bookmark"
@@ -169,9 +158,8 @@ msgid "Notes"
 msgstr "メモ"
 
 #. TRANSLATORS: Label for the bookmark/note list (used only as an accessibility label on macOS)
-#, fuzzy
 msgid "&Bookmarks:"
-msgstr "&ブックマーク："
+msgstr "しおり(&B):"
 
 #. TRANSLATORS: Label for the button to edit a note
 msgid "&Edit Note"
@@ -238,7 +226,7 @@ msgstr "文字数:"
 
 #. TRANSLATORS: Label for the number of characters in the document excluding space characters
 msgid "Characters (excluding spaces):"
-msgstr "文字数(スペースを除く):"
+msgstr "文字数（スペースを除く）:"
 
 #. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
@@ -273,9 +261,8 @@ msgid "&Line number:"
 msgstr "行番号(&L):"
 
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
-#, fuzzy
 msgid "Go"
-msgstr "Go"
+msgstr "移動"
 
 #. TRANSLATORS: Title of the Go to page dialog
 msgid "Go to page"
@@ -283,7 +270,7 @@ msgstr "指定ページへ移動"
 
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
 msgid "Go to page (%d/%d):"
-msgstr "ページ数(%d/%d):"
+msgstr "ページ数（%d/%d）:"
 
 #. TRANSLATORS: Title of the Go to Percent dialog
 msgid "Go to Percent"
@@ -306,7 +293,7 @@ msgid ""
 "No suitable parser was found for {}.\n"
 "How would you like to open this file?"
 msgstr ""
-"{}に対応したパーサーが見つかりませんでした。\n"
+"{}に対応するパーサーが見つかりませんでした。\n"
 "このファイルをどのように開きますか？"
 
 #. TRANSLATORS: Label for the format selection dropdown
@@ -335,12 +322,11 @@ msgstr "起動時に前回の文書を開く(&R)"
 
 #. TRANSLATORS: Option to toggle word wrapping of text
 msgid "&Word wrap"
-msgstr "折り返し(&W)"
+msgstr "ワードラップ(&W)"
 
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
-#, fuzzy
 msgid "Render tables &inline"
-msgstr "テーブルのレンダリングとインライン表示"
+msgstr "テーブルをインライン表示(&I)"
 
 #. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
 msgid "&Minimize to system tray"
@@ -359,41 +345,35 @@ msgid "&Wrap navigation"
 msgstr "ナビゲーションの折り返し(&W)"
 
 #. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
-#, fuzzy
 msgid "Move to &start of line"
-msgstr "&行頭へ移動"
+msgstr "上下移動時に行頭へ移動(&S)"
 
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr "しおりとメモでサウンドを再生(&S)"
 
 #. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
-#, fuzzy
 msgid "&Sync caret to audio playback"
-msgstr "&カーソルを音声の再生位置に合わせる"
+msgstr "キャレットを音声再生に同期(&S)"
 
 #. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
-#, fuzzy
 msgid "&Audio seek amount:"
-msgstr "&オーディオのシーク量："
+msgstr "音声の移動量(&A):"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
 msgid "5 seconds"
-msgstr "秒"
+msgstr "5秒"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
 msgid "10 seconds"
-msgstr "1秒"
+msgstr "10秒"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
 msgid "30 seconds"
-msgstr "秒"
+msgstr "30秒"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Singular label for 1 minute duration
@@ -403,27 +383,23 @@ msgstr "1分"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
 msgid "2 minutes"
-msgstr "分"
+msgstr "2分"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
 msgid "5 minutes"
-msgstr "分"
+msgstr "5分"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
 msgid "10 minutes"
-msgstr "1分"
+msgstr "10分"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
 msgid "30 minutes"
-msgstr "分"
+msgstr "30分"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Singular label for 1 hour duration
@@ -432,26 +408,23 @@ msgid "1 hour"
 msgstr "1時間"
 
 #. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
-#, fuzzy
 msgid "Seeking &past the end of a chapter continues into the next"
-msgstr "「Seeking」は、章の終わりを超えて次の章へと続いていく"
+msgstr "章をまたいで音声を移動する(&P)"
 
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr "起動時に更新を確認(&U)"
 
 #. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
-#, fuzzy
 msgid "&Automatically reload changed documents"
-msgstr "&変更されたドキュメントを自動的に再読み込みする"
+msgstr "変更された文書を自動的に再読み込み(&A)"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
 msgstr "ウィンドウを開くホットキーの変更(&W)..."
 
-#, fuzzy
 msgid "Customize &Keyboard Shortcuts..."
-msgstr "ウィンドウを開くホットキーの変更(&W)..."
+msgstr "キーボードショートカットのカスタマイズ(&K)..."
 
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
@@ -522,21 +495,18 @@ msgid "&Paragraph spacing:"
 msgstr "段落の間隔(&P):"
 
 #. TRANSLATORS: Relaxed paragraph spacing option
-#, fuzzy
 msgid "Relaxed"
-msgstr "ゆったりとした"
+msgstr "やや広い"
 
 #. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-#, fuzzy
 msgid "Wide"
-msgstr "ワイド"
+msgstr "広い"
 
 #. TRANSLATORS: Label for the letter spacing dropdown
 msgid "L&etter spacing:"
 msgstr "文字の間隔(&E):"
 
 #. TRANSLATORS: Very Wide letter spacing option
-#, fuzzy
 msgid "Very Wide"
 msgstr "非常に広い"
 
@@ -545,22 +515,18 @@ msgid "Text &alignment:"
 msgstr "テキストの配置(&A):"
 
 #. TRANSLATORS: Left text alignment option
-#, fuzzy
 msgid "Left"
-msgstr "左"
+msgstr "左揃え"
 
 #. TRANSLATORS: Center text alignment option
-#, fuzzy
 msgid "Center"
-msgstr "センター"
+msgstr "中央揃え"
 
 #. TRANSLATORS: Right text alignment option
-#, fuzzy
 msgid "Right"
-msgstr "そう"
+msgstr "右揃え"
 
 #. TRANSLATORS: Justified text alignment option
-#, fuzzy
 msgid "Justify"
 msgstr "両端揃え"
 
@@ -573,9 +539,8 @@ msgid "Reading"
 msgstr "閲覧"
 
 #. TRANSLATORS: Tab label for the Readability options panel
-#, fuzzy
 msgid "Readability"
-msgstr "読みやすさ"
+msgstr "表示"
 
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
@@ -590,14 +555,12 @@ msgid "Default"
 msgstr "既定"
 
 #. TRANSLATORS: Font description prefix; {} is the font face name
-#, fuzzy
 msgid "Font: {}"
-msgstr "フォント：{}"
+msgstr "フォント: {}"
 
 #. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
-#, fuzzy
 msgid "{}pt"
-msgstr "{} pt"
+msgstr "{}ポイント"
 
 #. TRANSLATORS: Font weight attribute name
 msgid "Bold"
@@ -640,9 +603,8 @@ msgid "&Key:"
 msgstr "キー(&K):"
 
 #. TRANSLATORS: Button label to clear the current hotkey selection
-#, fuzzy
 msgid "Clear"
-msgstr "クリア"
+msgstr "設定解除"
 
 #. TRANSLATORS: Label for the cancellation button
 msgid "Cancel"
@@ -652,49 +614,38 @@ msgstr "キャンセル"
 msgid "Space"
 msgstr "Space"
 
-#, fuzzy
 msgid "Customize Keyboard Shortcuts"
 msgstr "キーボードショートカットのカスタマイズ"
 
-#, fuzzy
 msgid "&Shortcuts:"
-msgstr "&ショートカット："
+msgstr "ショートカット(&S):"
 
-#, fuzzy
 msgid "&Set Shortcut..."
-msgstr "&ショートカットを設定..."
+msgstr "ショートカットを設定(&S)..."
 
-#, fuzzy
 msgid "&Clear Shortcut"
-msgstr "&ショートカットをクリア"
+msgstr "ショートカットを解除(&C)"
 
-#, fuzzy
 msgid "&Reset to Default"
-msgstr "既定のフォントに戻す(&R)"
+msgstr "既定に戻す(&R)"
 
-#, fuzzy
 msgid "Reset &All to Defaults"
-msgstr "既定のフォントに戻す(&R)"
+msgstr "すべて既定に戻す(&A)"
 
-#, fuzzy
 msgid "Shortcut Conflict"
-msgstr "ショートカットの競合"
+msgstr "ショートカットの重複"
 
-#, fuzzy
 msgid "Reset all shortcuts to their default values?"
-msgstr "すべてのショートカットをデフォルト値にリセットしますか？"
+msgstr "すべてのショートカットを既定に戻しますか？"
 
-#, fuzzy
 msgid "Reset Shortcuts"
-msgstr "ショートカットのリセット"
+msgstr "ショートカットの初期化"
 
-#, fuzzy
 msgid "Tip: click in the key field and press the key combination you want."
-msgstr "ヒント：キー欄をクリックして、使用したいキーの組み合わせを押してください。"
+msgstr "ヒント: キー入力欄をクリックして、割り当てたいキーの組み合わせを押してください。"
 
-#, fuzzy
 msgid "&Clear"
-msgstr "クリア"
+msgstr "割り当てを解除(&C)"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -741,9 +692,8 @@ msgid "Estimated reading time: {}"
 msgstr "推定閲覧時間: {}"
 
 #. TRANSLATORS: Message template for selection word count. The {} placeholder is replaced with the number of words.
-#, fuzzy
 msgid "The selection contains {} words."
-msgstr "この選集には、『{}』の語句が含まれています。"
+msgstr "選択範囲の単語数は{}です。"
 
 #. TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
 msgid "This document contains {} words."
@@ -778,19 +728,16 @@ msgid "Ready"
 msgstr "準備完了"
 
 #. TRANSLATORS: Announced after setting a temporary bookmark at the current position
-#, fuzzy
 msgid "Temporary bookmark set."
-msgstr "しおりがありません。"
+msgstr "一時しおりを設定しました。"
 
 #. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
-#, fuzzy
 msgid "No temporary bookmark."
-msgstr "次のしおりがありません。"
+msgstr "一時しおりがありません。"
 
 #. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
-#, fuzzy
 msgid "Temporary bookmark."
-msgstr "しおりがありません。"
+msgstr "一時しおり。"
 
 msgid "Table View"
 msgstr "テーブルビュー"
@@ -804,17 +751,15 @@ msgstr "文書のパスワード"
 
 #. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
 msgid "Failed to load document."
-msgstr "文書の読み込みに失敗しました。"
+msgstr "文書を読み込めません。"
 
 #. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
-#, fuzzy
 msgid "File: {}"
-msgstr "ファイル：{}"
+msgstr "ファイル: {}"
 
 #. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
-#, fuzzy
 msgid "Details: {}"
-msgstr "詳細：{}"
+msgstr "詳細: {}"
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
@@ -906,9 +851,8 @@ msgid "No more results. Wrapping search."
 msgstr "これ以上見つかりません。折り返して検索します。"
 
 #. TRANSLATORS: Error shown when the active document has no known file path to reveal
-#, fuzzy
 msgid "Failed to reveal file in folder."
-msgstr "フォルダ内のファイルを表示できませんでした。"
+msgstr "ファイルの場所を開けません。"
 
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 msgid "readme.html not found. Please ensure the application was built properly."
@@ -931,14 +875,12 @@ msgid "Paperback"
 msgstr "Paperback"
 
 #. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
-#, fuzzy
 msgid "Document reloaded."
-msgstr "ドキュメントが再読み込みされました。"
+msgstr "文書を再読み込みしました。"
 
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
-#, fuzzy
 msgid "Paperback cannot perform any actions while Web View is open."
-msgstr "Web Viewが開いている間は、Paperbackではいかなる操作も実行できません。"
+msgstr "Webビューが開いている間はアクションを実行できません。"
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
 msgid "Paperback - {}"
@@ -954,7 +896,7 @@ msgstr "文書"
 
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
-msgstr "文書のエクスポートに失敗しました。"
+msgstr "文書をエクスポートできません。"
 
 #. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
@@ -965,22 +907,18 @@ msgid "No pages."
 msgstr "ページがありません。"
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-#, fuzzy
 msgid "Word wrap on."
-msgstr "行末自動改行を有効にする。"
+msgstr "ワードラップ オン。"
 
-#, fuzzy
 msgid "Word wrap off."
-msgstr "行末自動改行をオフにする。"
+msgstr "ワードラップ オフ。"
 
 #. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-#, fuzzy
 msgid "Full screen on."
-msgstr "全画面表示をオンにします。"
+msgstr "全画面表示 オン。"
 
-#, fuzzy
 msgid "Full screen off."
-msgstr "全画面表示をオフにします。"
+msgstr "全画面表示 オフ。"
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -1047,19 +985,16 @@ msgid "Could not determine content to display in Web View."
 msgstr "Webビューに表示する内容を特定できません。"
 
 #. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
-#, fuzzy
 msgid "Source:"
-msgstr "出典："
+msgstr "ソース:"
 
 #. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
-#, fuzzy
 msgid "Source view is not available for this document format."
-msgstr "このドキュメント形式では、ソースビューは利用できません。"
+msgstr "この文書形式ではソースを表示できません。"
 
 #. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
-#, fuzzy
 msgid "Could not load the document source."
-msgstr "ドキュメントのソースを読み込めませんでした。"
+msgstr "ソースの表示に失敗しました。"
 
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
@@ -1077,54 +1012,44 @@ msgstr "スリープタイマーを%d分に設定しました。"
 msgid "No recent documents."
 msgstr "最近開いた文書はありません。"
 
-#, fuzzy
 msgid "&Undo\tCtrl+Z"
-msgstr "&元に戻す    Ctrl+Z"
+msgstr "元に戻す(&U)\tCtrl+Z"
 
-#, fuzzy
 msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&やり直し    Ctrl+Shift+Z"
+msgstr "やり直し(&R)\tCtrl+Shift+Z"
 
-#, fuzzy
 msgid "Cu&t\tCtrl+X"
-msgstr "Cu&t    Ctrl+X"
+msgstr "切り取り(&T)\tCtrl+X"
 
-#, fuzzy
 msgid "&Copy\tCtrl+C"
-msgstr "&コピー    Ctrl+C"
+msgstr "コピー(&C)\tCtrl+C"
 
-#, fuzzy
 msgid "&Paste\tCtrl+V"
-msgstr "&貼り付け    Ctrl+V"
+msgstr "貼り付け(&P)\tCtrl+V"
 
-#, fuzzy
 msgid "Select &All\tCtrl+A"
-msgstr "「すべて選択」    Ctrl+A"
+msgstr "すべて選択(&A)\tCtrl+A"
 
-#, fuzzy
 msgid "&Open..."
-msgstr "開く(&O)"
+msgstr "開く(&O)..."
 
 msgid "Open a document"
 msgstr "文書を開きます"
 
-#, fuzzy
 msgid "&Close"
-msgstr "閉じる"
+msgstr "閉じる(&C)"
 
 msgid "Close the current document"
 msgstr "現在の文書を閉じます"
 
-#, fuzzy
 msgid "Close &All"
-msgstr "閉じる"
+msgstr "すべて閉じる(&A)"
 
 msgid "Close all documents"
 msgstr "すべての文書を閉じます"
 
-#, fuzzy
 msgid "Reopen &Last Closed"
-msgstr "最後に閉じた文書を開く(&L)\tCtrl+Shift+T"
+msgstr "最後に閉じた文書を開く(&L)"
 
 msgid "Reopen the last closed document"
 msgstr "最後に閉じた文書を開きます"
@@ -1143,231 +1068,184 @@ msgid "Exit the application"
 msgstr "アプリケーションを終了します"
 
 msgid "(No recent documents)"
-msgstr "(最近開いた文書なし)"
+msgstr "（最近開いた文書なし）"
 
-#, fuzzy
 msgid "Show All..."
-msgstr "すべて表示"
+msgstr "すべて表示..."
 
-#, fuzzy
 msgid "Previous Section"
-msgstr "前のセクション\t["
+msgstr "前のセクション"
 
 msgid "Go to previous section"
-msgstr "前のセクションへ移動"
+msgstr "前のセクションへ移動します"
 
-#, fuzzy
 msgid "Next Section"
-msgstr "次のセクション\t]"
+msgstr "次のセクション"
 
 msgid "Go to next section"
-msgstr "次のセクションへ移動"
+msgstr "次のセクションへ移動します"
 
-#, fuzzy
 msgid "Go to &Page"
 msgstr "指定ページへ移動(&P)"
 
-#, fuzzy
 msgid "Previous Pa&ge"
-msgstr "前のページ(&g)\tShift+P"
+msgstr "前のページ(&g)"
 
-#, fuzzy
 msgid "Next Pag&e"
-msgstr "次のページ(&e)\tP"
+msgstr "次のページ(&e)"
 
-#, fuzzy
 msgid "Previous Lin&k"
-msgstr "前のリンク(&k)\tShift+K"
+msgstr "前のリンク(&k)"
 
-#, fuzzy
 msgid "Next Lin&k"
-msgstr "次のリンク(&k)\tK"
+msgstr "次のリンク(&k)"
 
-#, fuzzy
 msgid "Previous Ima&ge"
-msgstr "前の画像(&G)\tShift+G"
+msgstr "前の画像(&G)"
 
-#, fuzzy
 msgid "Next Ima&ge"
-msgstr "次の画像(&G)\tG"
+msgstr "次の画像(&G)"
 
-#, fuzzy
 msgid "Previous Figu&re"
-msgstr "前の図(&R)\tShift+F"
+msgstr "前の図(&R)"
 
-#, fuzzy
 msgid "Next Figu&re"
-msgstr "次の図(&R)\tF"
+msgstr "次の図(&R)"
 
-#, fuzzy
 msgid "Previous &Table"
-msgstr "前のテーブル(&T)\tShift+T"
+msgstr "前のテーブル(&T)"
 
-#, fuzzy
 msgid "Next &Table"
-msgstr "次のテーブル(&T)\tT"
+msgstr "次のテーブル(&T)"
 
-#, fuzzy
 msgid "Previous Se&parator"
-msgstr "前の区切り線(&p)\tShift+S"
+msgstr "前の区切り線(&p)"
 
-#, fuzzy
 msgid "Next Se&parator"
-msgstr "次の区切り線(&p)\tS"
+msgstr "次の区切り線(&p)"
 
-#, fuzzy
 msgid "Previous L&ist"
-msgstr "前のリスト(&i)\tShift+L"
+msgstr "前のリスト(&i)"
 
-#, fuzzy
 msgid "Next L&ist"
-msgstr "次のリスト(&i)\tL"
+msgstr "次のリスト(&i)"
 
-#, fuzzy
 msgid "Previous List &Item"
-msgstr "前のリスト項目(&I)\tShift+I"
+msgstr "前のリスト項目(&I)"
 
-#, fuzzy
 msgid "Next List I&tem"
-msgstr "次のリスト項目(&t)\tI"
+msgstr "次のリスト項目(&t)"
 
-#, fuzzy
 msgid "Container &Start"
-msgstr "コンテナ＆スタート    Shift+,"
+msgstr "コンテナーの先頭(&S)"
 
-#, fuzzy
 msgid "Go to the start of the current list or table"
-msgstr "現在のリストまたは表の先頭へ移動する"
+msgstr "テーブルやリストの先頭へ移動します"
 
-#, fuzzy
 msgid "Past Container &End"
-msgstr "過去のコンテナ＆終了    ,"
+msgstr "コンテナーの末尾(&E)"
 
-#, fuzzy
 msgid "Go past the end of the current list or table"
-msgstr "現在のリストまたは表の最後を過ぎて先へ進む"
+msgstr "テーブルやリストの末尾へ移動します"
 
-#, fuzzy
 msgid "&Previous Heading"
-msgstr "前の見出し(&P)\tShift+H"
+msgstr "前の見出し(&P)"
 
 msgid "Go to previous heading"
 msgstr "前の見出しへ移動します"
 
-#, fuzzy
 msgid "&Next Heading"
-msgstr "次の見出し(&N)\tH"
+msgstr "次の見出し(&N)"
 
 msgid "Go to next heading"
 msgstr "次の見出しへ移動します"
 
-#, fuzzy
 msgid "Previous Heading Level &1"
-msgstr "前の見出しレベル&1\tShift+1"
+msgstr "前の見出しレベル&1"
 
-#, fuzzy
 msgid "Next Heading Level 1"
-msgstr "次の見出しレベル1\t1"
+msgstr "次の見出しレベル1"
 
-#, fuzzy
 msgid "Previous Heading Level &2"
-msgstr "前の見出しレベル&2\tShift+2"
+msgstr "前の見出しレベル&2"
 
-#, fuzzy
 msgid "Next Heading Level 2"
-msgstr "次の見出しレベル2\t2"
+msgstr "次の見出しレベル2"
 
-#, fuzzy
 msgid "Previous Heading Level &3"
-msgstr "前の見出しレベル&3\tShift+3"
+msgstr "前の見出しレベル&3"
 
-#, fuzzy
 msgid "Next Heading Level 3"
-msgstr "次の見出しレベル3\t3"
+msgstr "次の見出しレベル3"
 
-#, fuzzy
 msgid "Previous Heading Level &4"
-msgstr "前の見出しレベル&4\tShift+4"
+msgstr "前の見出しレベル&4"
 
-#, fuzzy
 msgid "Next Heading Level 4"
-msgstr "次の見出しレベル4\t4"
+msgstr "次の見出しレベル4"
 
-#, fuzzy
 msgid "Previous Heading Level &5"
-msgstr "前の見出しレベル&5\tShift+5"
+msgstr "前の見出しレベル&5"
 
-#, fuzzy
 msgid "Next Heading Level 5"
-msgstr "次の見出しレベル5\t5"
+msgstr "次の見出しレベル5"
 
-#, fuzzy
 msgid "Previous Heading Level &6"
-msgstr "前の見出しレベル&6\tShift+6"
+msgstr "前の見出しレベル&6"
 
-#, fuzzy
 msgid "Next Heading Level 6"
-msgstr "次の見出しレベル6\t6"
+msgstr "次の見出しレベル6"
 
-#, fuzzy
 msgid "&Previous Bookmark"
-msgstr "前のしおり(&P)\tShift+B"
+msgstr "前のしおり(&P)"
 
 msgid "Go to previous bookmark"
 msgstr "前のしおりへ移動します"
 
-#, fuzzy
 msgid "&Next Bookmark"
-msgstr "次のしおり(&N)\tB"
+msgstr "次のしおり(&N)"
 
 msgid "Go to next bookmark"
 msgstr "次のしおりへ移動します"
 
-#, fuzzy
 msgid "Previous &Note"
-msgstr "前のメモ(&N)\tShift+N"
+msgstr "前のメモ(&N)"
 
 msgid "Go to previous note"
 msgstr "前のメモへ移動します"
 
-#, fuzzy
 msgid "Next N&ote"
-msgstr "次のメモ(&o)\tN"
+msgstr "次のメモ(&o)"
 
 msgid "Go to next note"
 msgstr "次のメモへ移動します"
 
-#, fuzzy
 msgid "Jump to &All..."
-msgstr "しおりまたはメモへ移動(&A)...\tCtrl+B"
+msgstr "しおりまたはメモへ移動(&A)..."
 
 msgid "Show all bookmarks and notes"
 msgstr "すべてのしおりとメモを表示します"
 
-#, fuzzy
 msgid "Jump to &Bookmarks Only..."
-msgstr "しおりへ移動(&B)...\tCtrl+Alt+B"
+msgstr "しおりへ移動(&B)..."
 
 msgid "Show bookmarks only"
-msgstr "すべてのしおりを表示します"
+msgstr "しおりのみを表示します"
 
-#, fuzzy
 msgid "Jump to Notes &Only..."
-msgstr "メモへ移動(&O)...\tCtrl+Alt+M"
+msgstr "メモへ移動(&O)..."
 
 msgid "Show notes only"
-msgstr "すべてのメモを表示します"
+msgstr "メモのみを表示します"
 
-#, fuzzy
 msgid "&View Note Text"
-msgstr "メモの表示"
+msgstr "メモの本文を表示(&V)"
 
 msgid "View the note at current position"
 msgstr "現在位置のメモを表示します"
 
-#, fuzzy
 msgid "&Find..."
-msgstr "検索(&F)"
+msgstr "検索(&F)..."
 
 msgid "Find text in the document"
 msgstr "文書内のテキストを検索します"
@@ -1378,30 +1256,26 @@ msgstr "次のテキストを検索します"
 msgid "Find previous occurrence"
 msgstr "前のテキストを検索します"
 
-#, fuzzy
 msgid "Go to &line..."
-msgstr "指定行へ移動(&L)"
+msgstr "指定行へ移動(&L)..."
 
 msgid "Go to a specific line"
 msgstr "指定した行へ移動します"
 
-#, fuzzy
 msgid "Go to &percent..."
-msgstr "パーセント移動(&P)"
+msgstr "パーセント移動(&P)..."
 
 msgid "Go to a percentage of the document"
 msgstr "文書内のパーセンテージを指定して移動します"
 
-#, fuzzy
 msgid "Go &Back"
-msgstr "進む・戻る    Ctrl+["
+msgstr "戻る(&B)"
 
 msgid "Go back in history"
 msgstr "履歴を戻ります"
 
-#, fuzzy
 msgid "Go &Forward"
-msgstr "Go &Forward    Ctrl+]"
+msgstr "進む(&F)"
 
 msgid "Go forward in history"
 msgstr "履歴を進みます"
@@ -1466,66 +1340,56 @@ msgstr "リスト(&L)"
 msgid "Navigate by lists"
 msgstr "リスト単位で移動します"
 
-#, fuzzy
 msgid "&Containers"
-msgstr "&コンテナ"
+msgstr "コンテナー(&C)"
 
-#, fuzzy
 msgid "Navigate by containers"
-msgstr "コンテナ別に閲覧する"
+msgstr "コンテナー単位で移動します"
 
-#, fuzzy
 msgid "&About Paperback"
-msgstr "Paperbackについて(&A)\tCtrl+F1"
+msgstr "Paperbackについて(&A)"
 
 msgid "About this application"
 msgstr "このアプリケーションについて"
 
-#, fuzzy
 msgid "View Help in &Browser"
-msgstr "ブラウザーでヘルプを表示(&B)\tF1"
+msgstr "ブラウザーでヘルプを表示(&B)"
 
 msgid "View help in default browser"
 msgstr "既定のブラウザーでヘルプを表示します"
 
-#, fuzzy
 msgid "View Help in &Paperback"
-msgstr "Paperbackでヘルプを表示します"
+msgstr "Paperbackでヘルプを表示(&P)"
 
 msgid "View help in Paperback"
 msgstr "Paperbackでヘルプを表示します"
 
-#, fuzzy
 msgid "Check for &Updates"
-msgstr "更新を確認します"
+msgstr "更新を確認(&U)"
 
 msgid "Check for updates"
 msgstr "更新を確認します"
 
-#, fuzzy
 msgid "&Donate"
-msgstr "寄付(&D)\tCtrl+D"
+msgstr "寄付(&D)"
 
 msgid "Support Paperback development"
 msgstr "Paperbackの開発を支援します"
 
-#, fuzzy
 msgid "&Import Document Data..."
-msgstr "ドキュメントデータのインポート"
+msgstr "文書データのインポート(&I)..."
 
 msgid "Import bookmarks and position"
 msgstr "しおりと位置情報をインポートします"
 
-#, fuzzy
 msgid "&Export Document Data..."
-msgstr "ドキュメントデータのエクスポート"
+msgstr "文書データのエクスポート(&E)..."
 
 msgid "Export bookmarks and position"
 msgstr "しおりと位置情報をエクスポートします"
 
-#, fuzzy
 msgid "Export to &Plain Text..."
-msgstr "プレーンテキストにエクスポート(&P)...\tCtrl+E"
+msgstr "プレーンテキストにエクスポート(&P)..."
 
 msgid "Export document as plain text"
 msgstr "文書をプレーンテキストにエクスポートします"
@@ -1542,56 +1406,47 @@ msgstr "&Markdownにエクスポート..."
 msgid "Export document as Markdown"
 msgstr "文書をMarkdownにエクスポートします"
 
-#, fuzzy
 msgid "&Word Count"
-msgstr "単語数"
+msgstr "単語数(&W)"
 
 msgid "Show word count"
 msgstr "単語数を表示します"
 
-#, fuzzy
 msgid "Document &Info"
-msgstr "文書情報"
+msgstr "文書情報(&I)"
 
 msgid "Show document information"
-msgstr "文書の情報を表示します"
+msgstr "文書情報を表示します"
 
-#, fuzzy
 msgid "&Table of Contents"
-msgstr "目次"
+msgstr "目次(&T)"
 
 msgid "Show table of contents"
 msgstr "目次を表示します"
 
-#, fuzzy
 msgid "&Elements List..."
-msgstr "要素リスト(&E)...\tF7"
+msgstr "要素リスト(&E)..."
 
 msgid "Show elements list"
 msgstr "要素リストを表示します"
 
-#, fuzzy
 msgid "Reveal &File in Folder"
-msgstr "フォルダ内のファイルを表示・保存    Ctrl+Shift+C"
+msgstr "ファイルの場所を開く(&C)"
 
-#, fuzzy
 msgid "Reveal document in the file manager"
-msgstr "ファイルマネージャーでドキュメントを表示する"
+msgstr "文書が保存されているフォルダーを開きます"
 
-#, fuzzy
 msgid "Open in &Web View"
-msgstr "&Webビューで開く\tCtrl+Shift+V"
+msgstr "&Webビューで開く"
 
 msgid "Open document in web view"
 msgstr "文書をWebビューで開きます"
 
-#, fuzzy
 msgid "View &Source"
-msgstr "表示とソース    Ctrl+U"
+msgstr "ソースを表示(&S)"
 
-#, fuzzy
 msgid "Open the document source in a new tab"
-msgstr "ドキュメントのソースを新しいタブで開く"
+msgstr "新しいタブで文書のソースを開きます"
 
 msgid "I&mport/Export"
 msgstr "インポート/エクスポート(&M)"
@@ -1599,77 +1454,59 @@ msgstr "インポート/エクスポート(&M)"
 msgid "Import and export options"
 msgstr "インポート/エクスポートオプション"
 
-#, fuzzy
 msgid "Toggle &Bookmark"
-msgstr "しおりの切り替え(&B)\tCtrl+Shift+B"
+msgstr "しおりの切り替え(&B)"
 
-#, fuzzy
 msgid "Bookmark with &Note"
 msgstr "メモ付きのしおりを作成(&N)"
 
-#, fuzzy
 msgid "Word w&rap"
-msgstr "折り返し(&W)"
+msgstr "ワードラップ(&R)"
 
-#, fuzzy
 msgid "Toggle word wrap"
-msgstr "行の折り返しを切り替える"
+msgstr "ワードラップを切り替えます"
 
-#, fuzzy
 msgid "&Play/Pause Audio"
-msgstr "&音声の再生／一時停止"
+msgstr "音声の再生/一時停止(&P)"
 
-#, fuzzy
 msgid "Play or pause this document's audio narration"
-msgstr "このドキュメントの音声ナレーションを再生または一時停止する"
+msgstr "この文書の音声ナレーションを再生または一時停止します"
 
-#, fuzzy
 msgid "Seek Audio &Forward"
-msgstr "Go &Forward    Ctrl+]"
+msgstr "音声を進める(&F)"
 
-#, fuzzy
 msgid "Skip the audio narration forward"
-msgstr "音声ナレーションを早送りする"
+msgstr "音声ナレーションを前へスキップします"
 
-#, fuzzy
 msgid "Seek Audio &Backward"
-msgstr "「Seek Audio」および「Backward」"
+msgstr "音声を戻す(&B)"
 
-#, fuzzy
 msgid "Skip the audio narration backward"
-msgstr "音声ナレーションを逆方向にスキップする"
+msgstr "音声ナレーションを後ろへスキップします"
 
-#, fuzzy
 msgid "&Increase Audio Seek Amount"
-msgstr "&オーディオのシーク量を増加させる"
+msgstr "音声の移動量を増やす(&I)"
 
-#, fuzzy
 msgid "Increase how far seeking the audio narration moves"
-msgstr "音声ナレーションの検索範囲を広げる"
+msgstr "音声ナレーションを1回で移動する量を増やします"
 
-#, fuzzy
 msgid "&Decrease Audio Seek Amount"
-msgstr "&オーディオのシーク量を減らす"
+msgstr "音声の移動量を減らす(&D)"
 
-#, fuzzy
 msgid "Decrease how far seeking the audio narration moves"
-msgstr "音声ナレーションの検索範囲を狭める"
+msgstr "音声ナレーションを1回で移動する量を減らします"
 
-#, fuzzy
 msgid "&Full Screen"
-msgstr "&全画面表示    F11"
+msgstr "全画面表示(&F)"
 
-#, fuzzy
 msgid "Toggle full screen"
-msgstr "全画面表示を切り替える"
+msgstr "全画面表示を切り替えます"
 
-#, fuzzy
 msgid "&Options"
-msgstr "オプション"
+msgstr "オプション(&O)"
 
-#, fuzzy
 msgid "&Sleep Timer..."
-msgstr "スリープタイマー"
+msgstr "スリープタイマー(&S)..."
 
 msgid "&File"
 msgstr "ファイル(&F)"
@@ -1683,9 +1520,8 @@ msgstr "ツール(&T)"
 msgid "&Help"
 msgstr "ヘルプ(&H)"
 
-#, fuzzy
 msgid "&Edit"
-msgstr "&編集"
+msgstr "編集(&E)"
 
 #. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
@@ -1827,9 +1663,8 @@ msgid "%s Heading level %d"
 msgstr "%s 見出しレベル%d"
 
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-#, fuzzy
 msgid "Page %d"
-msgstr "ページ%d: %s"
+msgstr "ページ%d"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 msgid "Page %d: %s"
@@ -1854,23 +1689,19 @@ msgid "No previous position."
 msgstr "前の位置がありません。"
 
 #. TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
-#, fuzzy
 msgid "No containers."
-msgstr "容器は使用しないでください。"
+msgstr "コンテナーがありません。"
 
 #. TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
-#, fuzzy
 msgid "Not in a container."
-msgstr "コンテナには入っていません。"
+msgstr "コンテナー内ではありません。"
 
 #. TRANSLATORS: Announced when jumping to the start/end of the container (list/table) the caret is inside, and the target line is blank
-#, fuzzy
 msgid "Past end of container."
-msgstr "コンテナの端を越えています。"
+msgstr "コンテナーの末尾です。"
 
-#, fuzzy
 msgid "Start of container."
-msgstr "コンテナの開始。"
+msgstr "コンテナーの先頭です。"
 
 #. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
 msgid "%s - Bookmark %d"
@@ -1911,24 +1742,20 @@ msgstr "しおりを追加しました。"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
-#, fuzzy
 msgid "This document has no audio."
-msgstr "この文書には目次がありません。"
+msgstr "この文書には音声ナレーションがありません。"
 
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
-#, fuzzy
 msgid "Audio hasn't started playing yet."
-msgstr "まだ音声が再生されていません。"
+msgstr "音声はまだ再生されていません。"
 
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-#, fuzzy
 msgid "{} (maximum)"
-msgstr "{} （最大）"
+msgstr "{}（最大）"
 
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-#, fuzzy
 msgid "{} (minimum)"
-msgstr "{} （最低）"
+msgstr "{}（最小）"
 
 msgid "Enter bookmark note:"
 msgstr "しおりのメモを入力:"
@@ -1966,314 +1793,252 @@ msgid "Exit Paperback"
 msgstr "Paperbackの終了"
 
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-#, fuzzy
 msgid "Figure"
 msgstr "図"
 
-#, fuzzy
 msgid "Image"
 msgstr "画像"
 
 #. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
-#, fuzzy
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr "DAISY .opf ファイルが無効であるか、マニフェスト内に DTBook XML が見つかりませんでした"
+msgstr "DAISY .opfファイルが正しくないか、マニフェストにDTBook XMLが見つかりません"
 
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
-#, fuzzy
 msgid "Failed to convert DTBook XML to text"
-msgstr "DTBook XML をテキストに変換できませんでした"
+msgstr "DTBook XMLをテキストに変換できません"
 
 #. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
-#, fuzzy
 msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
-msgstr "ZIPアーカイブは、有効なDAISY 3またはDAISY 2.02形式の書籍ではないようです"
+msgstr "このZIPファイルはDAISY 3やDAISY 2.02の図書ではありません"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
-#, fuzzy
 msgid "OPF package element missing"
-msgstr "OPFパッケージ要素が見つかりません"
+msgstr "OPFに package要素がありません"
 
 #. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
-#, fuzzy
 msgid "no readable spine items"
-msgstr "読み取れる背表紙項目はありません"
+msgstr "読み取り可能なspine要素がありません"
 
 #. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
-#, fuzzy
 msgid "failed to convert spine items: {}"
-msgstr "スパイン項目の変換に失敗しました：{}"
+msgstr "spine要素を変換できません: {}"
 
 #. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
-#, fuzzy
 msgid "EPUB has no readable content ({})"
-msgstr "EPUBには読み取り可能なコンテンツが含まれていません（{}）"
+msgstr "EPUBに読み取り可能な要素がありません（{}）"
 
 #. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
-#, fuzzy
 msgid "rootfile not found in container.xml"
-msgstr "container.xml に rootfile が見つかりません"
+msgstr "container.xmlにルートファイルがありません"
 
 #. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-#, fuzzy
 msgid "unsupported content"
-msgstr "サポート対象外のコンテンツ"
+msgstr "サポートされていないコンテンツ"
 
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
-#, fuzzy
 msgid "Failed to convert FB2 XML to text"
-msgstr "FB2 XMLをテキストに変換できませんでした"
+msgstr "FB2 XMLをテキストに変換できません"
 
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
-#, fuzzy
 msgid "HTML file is empty: {}"
-msgstr "HTMLファイルが空です：{}"
+msgstr "HTMLファイルが空です: {}"
 
 #. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-#, fuzzy
 msgid "Failed to convert HTML to text: {}"
-msgstr "HTMLからテキストへの変換に失敗しました：{}"
+msgstr "HTMLをテキストに変換できません: {}"
 
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-#, fuzzy
 msgid "Failed to convert Markdown to text: {}"
-msgstr "Markdownからテキストへの変換に失敗しました：{}"
+msgstr "Markdownをテキストに変換できません: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
-#, fuzzy
 msgid "Invalid HUFF record"
-msgstr "無効なHUFFレコード"
+msgstr "HUFFレコードが不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record has the wrong signature
-#, fuzzy
 msgid "Invalid HUFF header"
-msgstr "無効なHUFFヘッダー"
+msgstr "HUFFヘッダーが不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman cache table offset is out of bounds
-#, fuzzy
 msgid "Invalid HUFF cache offset"
-msgstr "無効なHUFFキャッシュオフセット"
+msgstr "HUFFキャッシュのオフセットが不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman code length is invalid
-#, fuzzy
 msgid "Code len out of bounds"
-msgstr "コードの長さが範囲外です"
+msgstr "符号長が範囲外です"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman table has an invalid terminal-code entry
-#, fuzzy
 msgid "Bad term"
-msgstr "不適切な用語"
+msgstr "終端エントリが不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman base table offset is out of bounds
-#, fuzzy
 msgid "Invalid HUFF base offset"
-msgstr "無効なHUFFベースオフセット"
+msgstr "HUFFベーステーブルのオフセットが不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's compressed dictionary record has the wrong signature
-#, fuzzy
 msgid "Invalid CDIC header"
-msgstr "無効なCDICヘッダー"
+msgstr "CDICヘッダーが不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's compressed dictionary offset table is out of bounds
-#, fuzzy
 msgid "Invalid CDIC offsets"
-msgstr "無効なCDICオフセット"
+msgstr "CDICのオフセット表が不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase offset is out of bounds
-#, fuzzy
 msgid "Invalid CDIC phrase offset"
-msgstr "無効なCDICフレーズオフセット"
+msgstr "CDICフレーズのオフセットが不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase length is out of bounds
-#, fuzzy
 msgid "Invalid CDIC phrase length"
 msgstr "CDICフレーズの長さが不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman code length is out of range; {} is the invalid length value
-#, fuzzy
 msgid "Invalid code_len {}"
-msgstr "code_len が無効です {}"
+msgstr "符号長{}は不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
-#, fuzzy
 msgid "Decode stack overflow"
-msgstr "スタックオーバーフローの解析"
+msgstr "復号スタックがオーバーフローしました"
 
 #. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
-#, fuzzy
 msgid "File too short"
 msgstr "ファイルが短すぎます"
 
 #. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-#, fuzzy
 msgid "Invalid record offsets"
-msgstr "無効なレコードオフセット"
+msgstr "レコードのオフセット表が不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file has no records
-#, fuzzy
 msgid "No records found"
-msgstr "該当する記録が見つかりませんでした"
+msgstr "レコードが見つかりません"
 
 #. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-#, fuzzy
 msgid "Invalid Record 0 offsets"
-msgstr "無効なレコード 0 オフセット"
+msgstr "Record 0のオフセットが不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-#, fuzzy
 msgid "Invalid Record 0"
-msgstr "無効なレコード 0"
+msgstr "Record 0が不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-#, fuzzy
 msgid "No MOBI header"
-msgstr "MOBIヘッダーなし"
+msgstr "MOBIヘッダーが見つかりません"
 
 #. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-#, fuzzy
 msgid "Invalid MOBI identifier"
-msgstr "無効な MOBI 識別子"
+msgstr "MOBI識別子が不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-#, fuzzy
 msgid "Invalid content record range"
-msgstr "無効なコンテンツレコードの範囲"
+msgstr "本文レコードの範囲が不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-#, fuzzy
 msgid "Invalid HUFF/CDIC records"
-msgstr "無効なHUFF/CDICレコード"
+msgstr "HUFF/CDICレコードが不正です"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-#, fuzzy
 msgid "Missing HUFF parameters in header"
-msgstr "ヘッダーにHUFFパラメータが欠落しています"
+msgstr "ヘッダーにHUFFパラメーターがありません"
 
 #. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-#, fuzzy
 msgid "Unsupported compression mode ({})"
-msgstr "サポートされていない圧縮モード（{}）"
+msgstr "未対応の圧縮方式です（{}）"
 
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
-#, fuzzy
 msgid "ODP file does not contain any pages"
-msgstr "ODP ファイルにはページが含まれていません"
+msgstr "ODPファイルにページがありません"
 
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
-#, fuzzy
 msgid "FODP file does not contain any pages"
-msgstr "FODPファイルにはページが含まれていません"
+msgstr "FODPファイルにページがありません"
 
 #. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
 msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
 msgstr "このPDFには画像のみが含まれ、抽出可能なテキストがありません。内容を読むにはOCRソフトウェアが必要です。"
 
 #. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
-#, fuzzy
 msgid "Password required or incorrect"
-msgstr "パスワードが必要です、またはパスワードが間違っています"
+msgstr "パスワードが必要または間違っています"
 
 #. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
-#, fuzzy
 msgid "Failed to open PDF document: {}"
-msgstr "PDFドキュメントを開くことができませんでした：{}"
+msgstr "PDFファイルを開けません: {}"
 
-#, fuzzy
 msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
-msgstr "現在、パスワードで保護されたPPTファイルはサポートされていません。ファイルをPPTX形式で保存し、そのファイルを開いてみてください。"
+msgstr "パスワードで保護されたPPTファイルは現在サポートされていません。ファイルをPPTX形式で保存してそちらを開いてください。"
 
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
-#, fuzzy
 msgid "PPT file contains no slides"
-msgstr "PPTファイルにはスライドが含まれていません"
+msgstr "PPTファイルにスライドがありません"
 
 #. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
-#, fuzzy
 msgid "PowerPoint Document stream not found"
-msgstr "PowerPoint ドキュメント ストリームが見つかりません"
+msgstr "PowerPoint文書ストリームが見つかりません"
 
 #. TRANSLATORS: Error shown when a PPTX presentation file has no slides
-#, fuzzy
 msgid "PPTX file contains no slides"
-msgstr "PPTXファイルにはスライドが含まれていません"
+msgstr "PPTXファイルにスライドがありません"
 
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
-#, fuzzy
 msgid "Failed to parse RTF document: {}"
-msgstr "RTF ドキュメントの解析に失敗しました：{}"
+msgstr "RTFファイルを解析できません: {}"
 
 #. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
 msgid "File is encrypted and requires a password"
 msgstr "ファイルは暗号化されており、パスワードが必要です"
 
 #. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-#, fuzzy
 msgid "Decryption failed (wrong password?): {}"
-msgstr "復号に失敗しました（パスワードが間違っているのでしょうか？）：{}"
+msgstr "復号に失敗しました（パスワードが違う可能性があります）: {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
-#, fuzzy
 msgid "DOC file is missing required FIB fields"
-msgstr "DOCファイルに必要なFIBフィールドが欠落しています"
+msgstr "DOCファイルに必須のFIBフィールドがありません"
 
 #. TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
-#, fuzzy
 msgid "Not a valid DOC file (invalid FIB magic)"
-msgstr "有効なDOCファイルではありません（FIBマジックが不正です）"
+msgstr "有効なDOCファイルではありません（FIBマジックが不正）"
 
 #. TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
 msgid "DOC file is encrypted and requires a password"
 msgstr "DOCファイルは暗号化されており、パスワードが必要です"
 
 #. TRANSLATORS: Error detail shown when decrypting a legacy DOC file fails (the internal sentinel prefix before it is not translated); {} is the underlying error
-#, fuzzy
 msgid "DOC decryption failed (wrong password?): {}"
-msgstr "DOCの復号に失敗しました（パスワードが間違っているのでしょうか？）：{}"
+msgstr "DOCの復号に失敗しました（パスワードが違う可能性があります）: {}"
 
 #. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
-#, fuzzy
 msgid "File content does not look like plain text"
-msgstr "ファイルの内容はプレーンテキストのようには見えません"
+msgstr "ファイルの内容がプレーンテキストではないようです"
 
 #. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
-#, fuzzy
 msgid "No readable text content found"
-msgstr "読み取れるテキストコンテンツが見つかりませんでした"
+msgstr "読み取れるテキストが見つかりません"
 
 #. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-#, fuzzy
 msgid "No readable content found in the ZIP archive"
-msgstr "ZIPアーカイブ内に読み取り可能なコンテンツが見つかりませんでした"
+msgstr "ZIPアーカイブ内に読み取れる内容が見つかりません"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
-#, fuzzy
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "レガシー DOC の解析に失敗しました：{}。OOXML のフォールバックに失敗しました：{}"
+msgstr "旧形式DOCとしての解析に失敗しました: {}。OOXMLとしての再試行も失敗しました: {}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
-#, fuzzy
 msgid "No file extension found for: {}"
-msgstr "「{}」というファイルの拡張子がありません。"
+msgstr "拡張子がありません: {}"
 
 #. TRANSLATORS: Error shown when no parser supports a file's extension; {} is the extension (without the leading dot)
-#, fuzzy
 msgid "No parser found for extension: .{}"
-msgstr "拡張子「.{}」に対応するパーサーが見つかりませんでした。"
+msgstr "この拡張子に対応するパーサーがありません: .{}"
 
 #. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
-#, fuzzy
 msgid "All parsers failed for extension: .{}"
-msgstr "拡張子「.{}」に対して、すべてのパーサーが失敗しました。"
+msgstr "この拡張子のパーサーがすべて失敗しました: .{}"
 
 #. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
 msgid "Password required"
 msgstr "パスワードが必要です"
 
 #. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
-#, fuzzy
 msgid "Password incorrect"
 msgstr "パスワードが間違っています"
 
@@ -2389,13 +2154,11 @@ msgstr "前のリスト項目(&I)\tShift+I"
 msgid "Next List I&tem\tI"
 msgstr "次のリスト項目(&t)\tI"
 
-#, fuzzy
 msgid "Container &Start\tShift+,"
-msgstr "コンテナ＆スタート    Shift+,"
+msgstr "コンテナーの先頭(&S)\tShift+,"
 
-#, fuzzy
 msgid "Past Container &End\t,"
-msgstr "過去のコンテナ＆終了    ,"
+msgstr "コンテナーの末尾(&E)\t,"
 
 msgid "Next Heading Level 1\t1"
 msgstr "次の見出しレベル1\t1"
@@ -2490,44 +2253,38 @@ msgstr "終了(&X)\tCtrl+Q"
 msgid "&Find...\tCtrl+F"
 msgstr "検索(&F)...\tCtrl+F"
 
-#, fuzzy
 msgid "Find &Next\tCtrl+G"
-msgstr "検索＆次へ    Ctrl+G"
+msgstr "次を検索(&N)\tCtrl+G"
 
 msgid "Find &Next\tF3"
 msgstr "次を検索(&N)\tF3"
 
-#, fuzzy
 msgid "Find &Previous\tCtrl+Shift+G"
-msgstr "検索＆前へ    Ctrl+Shift+G"
+msgstr "前を検索(&P)\tCtrl+Shift+G"
 
 msgid "Find &Previous\tShift+F3"
 msgstr "前を検索(&P)\tShift+F3"
 
-#, fuzzy
 msgid "Go to &line...\tCtrl+L"
-msgstr "&line... に移動    Ctrl+L"
+msgstr "指定行へ移動(&l)...\tCtrl+L"
 
 msgid "Go to &line...\tCtrl+G"
 msgstr "指定行へ移動(&l)...\tCtrl+G"
 
-#, fuzzy
 msgid "Go to &percent...\tCtrl+Shift+L"
-msgstr "&percent... に移動    Ctrl+Shift+L"
+msgstr "パーセント移動(&P)...\tCtrl+Shift+L"
 
 msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "パーセント移動(&p)...\tCtrl+Shift+G"
+msgstr "パーセント移動(&P)...\tCtrl+Shift+G"
 
-#, fuzzy
 msgid "Go &Back\tCtrl+["
-msgstr "進む・戻る    Ctrl+["
+msgstr "戻る(&B)\tCtrl+["
 
 msgid "Go &Back\tAlt+Left"
 msgstr "戻る(&B)\tAlt+Left"
 
-#, fuzzy
 msgid "Go &Forward\tCtrl+]"
-msgstr "Go &Forward    Ctrl+]"
+msgstr "進む(&F)\tCtrl+]"
 
 msgid "Go &Forward\tAlt+Right"
 msgstr "進む(&F)\tAlt+Right"
@@ -2556,16 +2313,14 @@ msgstr "目次(&T)\tCtrl+T"
 msgid "&Elements List...\tF7"
 msgstr "要素リスト(&E)...\tF7"
 
-#, fuzzy
 msgid "Reveal &File in Folder\tCtrl+Shift+C"
-msgstr "フォルダ内のファイルを表示・保存    Ctrl+Shift+C"
+msgstr "ファイルの場所を開く(&C)\tCtrl+Shift+C"
 
 msgid "Open in &Web View\tCtrl+Shift+V"
 msgstr "&Webビューで開く\tCtrl+Shift+V"
 
-#, fuzzy
 msgid "View &Source\tCtrl+U"
-msgstr "表示とソース    Ctrl+U"
+msgstr "ソースを表示(&S)\tCtrl+U"
 
 msgid "Toggle &Bookmark\tCtrl+Shift+B"
 msgstr "しおりの切り替え(&B)\tCtrl+Shift+B"
@@ -2573,17 +2328,14 @@ msgstr "しおりの切り替え(&B)\tCtrl+Shift+B"
 msgid "Bookmark with &Note\tCtrl+Shift+N"
 msgstr "メモ付きのしおりを設定(&N)\tCtrl+Shift+N"
 
-#, fuzzy
 msgid "Word w&rap\tCtrl+Alt+W"
-msgstr "Wordの改行    Ctrl+Alt+W"
+msgstr "ワードラップ(&R)\tCtrl+Alt+W"
 
-#, fuzzy
 msgid "&Full Screen\tRawCtrl+Ctrl+F"
-msgstr "&全画面表示    RawCtrl+Ctrl+F"
+msgstr "全画面表示(&F)\tRawCtrl+Ctrl+F"
 
-#, fuzzy
 msgid "&Full Screen\tF11"
-msgstr "&全画面表示    F11"
+msgstr "全画面表示(&F)\tF11"
 
 msgid "&Options\tCtrl+,"
 msgstr "オプション(&O)\tCtrl+,"
@@ -2609,645 +2361,485 @@ msgstr "寄付(&D)\tCtrl+D"
 msgid "Show All...\tCtrl+R"
 msgstr "すべて表示...\tCtrl+R"
 
-#, fuzzy
 msgid "Go To…"
-msgstr "「移動先…」"
+msgstr ""
 
-#, fuzzy
 msgid "Recent Documents"
-msgstr "最近の文書"
+msgstr ""
 
-#, fuzzy
 msgid "Switch to TTS Mode"
-msgstr "TTSモードに切り替える"
+msgstr ""
 
-#, fuzzy
 msgid "Switch to Text Mode"
-msgstr "テキストモードに切り替える"
+msgstr ""
 
-#, fuzzy
 msgid "Sleep Timer (active)"
-msgstr "スリープタイマー（有効）"
+msgstr ""
 
-#, fuzzy
 msgid "Settings"
-msgstr "設定"
+msgstr ""
 
-#, fuzzy
 msgid "More options"
-msgstr "その他のオプション"
+msgstr ""
 
-#, fuzzy
 msgid "No document open"
-msgstr "開いているドキュメントはありません"
+msgstr ""
 
-#, fuzzy
 msgid "Recent"
-msgstr "最近の"
+msgstr ""
 
-#, fuzzy
 msgid "Screen dimmed by sleep timer. Tap to wake."
-msgstr "スリープタイマーにより画面が暗くなりました。タップして画面を点灯させてください。"
+msgstr ""
 
-#, fuzzy
 msgid "Open Error"
-msgstr "エラーを開く"
+msgstr ""
 
-#, fuzzy
 msgid "Open document"
-msgstr "ドキュメントを開く"
+msgstr ""
 
-#, fuzzy
 msgid "Title"
-msgstr "タイトル"
+msgstr ""
 
-#, fuzzy
 msgid "Author"
-msgstr "著者"
+msgstr ""
 
-#, fuzzy
 msgid "File"
-msgstr "ファイル"
+msgstr ""
 
-#, fuzzy
 msgid "Words"
-msgstr "言葉"
+msgstr ""
 
-#, fuzzy
 msgid "Lines"
-msgstr "行"
+msgstr ""
 
-#, fuzzy
 msgid "Characters"
-msgstr "登場人物"
+msgstr ""
 
-#, fuzzy
 msgid "Characters (excluding spaces)"
-msgstr "文字数（スペースを除く）"
+msgstr ""
 
-#, fuzzy
 msgid "Type"
-msgstr "種類"
+msgstr ""
 
-#, fuzzy
 msgid "Done"
-msgstr "完了"
+msgstr ""
 
-#, fuzzy
 msgid "No Elements"
-msgstr "要素なし"
+msgstr ""
 
-#, fuzzy
 msgid "Headings, images, and other elements will appear here."
-msgstr "見出し、画像、その他の要素がここに表示されます。"
+msgstr ""
 
-#, fuzzy
 msgid "Search…"
-msgstr "検索…"
+msgstr ""
 
-#, fuzzy
 msgid "Match Case"
-msgstr "大文字小文字を区別する"
+msgstr ""
 
-#, fuzzy
 msgid "Whole Word"
-msgstr "単語全体"
+msgstr ""
 
-#, fuzzy
 msgid "Regular Expression"
-msgstr "正規表現"
+msgstr ""
 
-#, fuzzy
 msgid "Previous result"
-msgstr "前回の結果"
+msgstr ""
 
-#, fuzzy
 msgid "Next result"
-msgstr "次の検索結果"
+msgstr ""
 
-#, fuzzy
 msgid "Search"
-msgstr "検索"
+msgstr ""
 
-#, fuzzy
 msgid "Mode"
-msgstr "モード"
+msgstr ""
 
-#, fuzzy
 msgid "Page"
-msgstr "ページ"
+msgstr ""
 
-#, fuzzy
 msgid "Percent"
-msgstr "パーセント"
+msgstr ""
 
-#, fuzzy
 msgid "Line number"
-msgstr "行番号"
+msgstr ""
 
-#, fuzzy
 msgid "Page number"
-msgstr "ページ番号"
+msgstr ""
 
-#, fuzzy
 msgid "Percentage"
-msgstr "割合"
+msgstr ""
 
-#, fuzzy
 msgid "Go To"
-msgstr "移動先"
+msgstr ""
 
-#, fuzzy
 msgid "Password"
-msgstr "パスワード"
+msgstr ""
 
-#, fuzzy
 msgid "Enter password for {}"
-msgstr "{} のパスワードを入力してください"
+msgstr ""
 
-#, fuzzy
 msgid "Password Required"
-msgstr "パスワードが必要です"
+msgstr ""
 
-#, fuzzy
 msgid "No Recent Documents"
-msgstr "最近のドキュメントはありません"
+msgstr ""
 
-#, fuzzy
 msgid "Documents you open will appear here."
-msgstr "開いたドキュメントはここに表示されます。"
+msgstr ""
 
-#, fuzzy
 msgid "Remove"
-msgstr "削除"
+msgstr ""
 
-#, fuzzy
 msgid "Rule"
-msgstr "ルール"
+msgstr ""
 
-#, fuzzy
 msgid "Scope"
-msgstr "適用範囲"
+msgstr ""
 
-#, fuzzy
 msgid "Word"
-msgstr "Word"
+msgstr ""
 
-#, fuzzy
 msgid "Paragraph"
-msgstr "段落"
+msgstr ""
 
-#, fuzzy
 msgid "Pattern & Replacement"
-msgstr "パターンと交換"
+msgstr ""
 
-#, fuzzy
 msgid "Pattern"
-msgstr "パターン"
+msgstr ""
 
-#, fuzzy
 msgid "Replacement"
-msgstr "交換"
+msgstr ""
 
-#, fuzzy
 msgid "Whole word only"
-msgstr "単語単位のみ"
+msgstr ""
 
-#, fuzzy
 msgid "Regular expression (\\1 = first capture group)"
-msgstr "正規表現（\\1 = 最初のキャプチャグループ）"
+msgstr ""
 
-#, fuzzy
 msgid "Enabled"
-msgstr "有効"
+msgstr ""
 
-#, fuzzy
 msgid "Apply to"
-msgstr "応募先"
+msgstr ""
 
-#, fuzzy
 msgid "Voices"
-msgstr "声"
+msgstr ""
 
-#, fuzzy
 msgid "New Rule"
-msgstr "新しいルール"
+msgstr ""
 
-#, fuzzy
 msgid "Edit Rule"
-msgstr "ルールの編集"
+msgstr ""
 
-#, fuzzy
 msgid "Save"
-msgstr "保存"
+msgstr ""
 
-#, fuzzy
 msgid "All voices"
-msgstr "すべての声"
+msgstr ""
 
-#, fuzzy
 msgid "Apply To"
-msgstr "応募する"
+msgstr ""
 
-#, fuzzy
 msgid "Text to Speech"
-msgstr "テキスト読み上げ"
+msgstr ""
 
-#, fuzzy
 msgid "Voice"
-msgstr "音声"
+msgstr ""
 
-#, fuzzy
 msgid "Rate"
-msgstr "レート"
+msgstr ""
 
-#, fuzzy
 msgid "Speech Rate"
-msgstr "発話速度"
+msgstr ""
 
-#, fuzzy
 msgid "Pitch"
-msgstr "ピッチ"
+msgstr ""
 
-#, fuzzy
 msgid "Speech Dictionary"
-msgstr "音声辞書"
+msgstr ""
 
-#, fuzzy
 msgid "Play Sample"
-msgstr "サンプルを再生"
+msgstr ""
 
-#, fuzzy
 msgid "Behavior"
-msgstr "行動"
+msgstr ""
 
-#, fuzzy
 msgid "Restore last open documents"
-msgstr "最後に開いたドキュメントを復元する"
+msgstr ""
 
-#, fuzzy
 msgid "Swipe up moves forward"
-msgstr "上にスワイプすると先に進む"
+msgstr ""
 
-#, fuzzy
 msgid "Active"
-msgstr "アクティブ"
+msgstr ""
 
-#, fuzzy
 msgid "Time remaining"
-msgstr "残り時間"
+msgstr ""
 
-#, fuzzy
 msgid "Cancel Timer"
-msgstr "タイマーをキャンセル"
+msgstr ""
 
-#, fuzzy
 msgid "Set timer"
-msgstr "タイマーを設定する"
+msgstr ""
 
-#, fuzzy
 msgid "Edit"
-msgstr "編集"
+msgstr ""
 
-#, fuzzy
 msgid "Add Rule"
-msgstr "ルールを追加"
+msgstr ""
 
-#, fuzzy
 msgid "No Rules"
-msgstr "ルールなし"
+msgstr ""
 
-#, fuzzy
 msgid "Contents"
-msgstr "目次"
+msgstr ""
 
-#, fuzzy
 msgid "No Table of Contents"
-msgstr "目次なし"
+msgstr ""
 
-#, fuzzy
 msgid "This document has no table of contents."
-msgstr "この文書には目次がありません。"
+msgstr ""
 
-#, fuzzy
 msgid "Tabs"
-msgstr "タブ"
+msgstr ""
 
-#, fuzzy
 msgid "Navigation unit"
-msgstr "ナビゲーションユニット"
+msgstr ""
 
-#, fuzzy
 msgid "Previous {}"
-msgstr "前の記事 {}"
+msgstr ""
 
-#, fuzzy
 msgid "Pause"
-msgstr "一時停止"
+msgstr ""
 
-#, fuzzy
 msgid "Play"
-msgstr "再生"
+msgstr ""
 
-#, fuzzy
 msgid "End of document"
-msgstr "文書の終わり"
+msgstr ""
 
-#, fuzzy
 msgid "Beginning of document"
-msgstr "文書の冒頭"
+msgstr ""
 
-#, fuzzy
 msgid "Next {}"
-msgstr "次の記事 {}"
+msgstr ""
 
-#, fuzzy
 msgid "Press play to start listening."
-msgstr "再生ボタンを押して、再生を開始してください。"
+msgstr ""
 
-#, fuzzy
 msgid "Locate"
-msgstr "検索"
+msgstr ""
 
-#, fuzzy
 msgid "File Missing"
-msgstr "ファイルが見つかりません"
+msgstr ""
 
-#, fuzzy
 msgid "Currently Open"
-msgstr "現在募集中"
+msgstr ""
 
-#, fuzzy
 msgid "Document Information"
-msgstr "文書情報"
+msgstr ""
 
-#, fuzzy
 msgid "Expanded"
-msgstr "詳細"
+msgstr ""
 
-#, fuzzy
 msgid "Collapsed"
-msgstr "折りたたみ"
+msgstr ""
 
-#, fuzzy
 msgid "Collapse"
-msgstr "折りたたむ"
+msgstr ""
 
-#, fuzzy
 msgid "Expand"
-msgstr "展開"
+msgstr ""
 
-#, fuzzy
 msgid "Untitled Link"
-msgstr "無題のリンク"
+msgstr ""
 
-#, fuzzy
 msgid "No supported books or folders found here."
-msgstr "この場所には、サポートされている書籍やフォルダが見つかりませんでした。"
+msgstr ""
 
-#, fuzzy
 msgid "Folder"
-msgstr "フォルダ"
+msgstr ""
 
-#, fuzzy
 msgid "Internal Storage"
-msgstr "内部ストレージ"
+msgstr ""
 
-#, fuzzy
 msgid "Search Term"
-msgstr "検索語"
+msgstr ""
 
-#, fuzzy
 msgid "Search History"
-msgstr "検索履歴"
+msgstr ""
 
-#, fuzzy
 msgid "Find Next"
-msgstr "次を探す"
+msgstr ""
 
-#, fuzzy
 msgid "Password:"
-msgstr "パスワード："
+msgstr ""
 
-#, fuzzy
 msgid "All Files Access Required"
-msgstr "すべてのファイルへのアクセス権が必要"
+msgstr ""
 
-#, fuzzy
 msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
-msgstr "Paperbackでは、アプリ内のカスタムファイルブラウザを有効にするために、「すべてのファイルへのアクセス」権限が必要です。"
+msgstr ""
 
-#, fuzzy
 msgid "Why we need this:"
-msgstr "これが必要な理由："
+msgstr ""
 
-#, fuzzy
 msgid "• To provide a fast, fully screen-reader accessible file manager inside the app."
-msgstr "• アプリ内に、高速で、スクリーンリーダーに完全に対応したファイルマネージャーを提供すること。"
+msgstr ""
 
-#, fuzzy
 msgid "• To load large files instantly without needing to copy them into the app's cache."
-msgstr "• アプリ内のキャッシュにコピーすることなく、大容量のファイルを瞬時に読み込むため。"
+msgstr ""
 
-#, fuzzy
 msgid "• To display the exact local file paths of your documents."
-msgstr "• ドキュメントの正確なローカルファイルパスを表示するには。"
+msgstr ""
 
-#, fuzzy
 msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
-msgstr "この権限を拒否した場合でも、「カスタムファイルブラウザ」の設定をオフにすることで、Androidのシステムファイルピッカーを使用して書籍を開くことができます。"
+msgstr ""
 
-#, fuzzy
 msgid "Grant"
-msgstr "助成金"
+msgstr ""
 
-#, fuzzy
 msgid "Not Now"
-msgstr "今はだめ"
+msgstr ""
 
-#, fuzzy
 msgid "Restore last open book"
-msgstr "最後に開いていた書籍を復元する"
+msgstr ""
 
-#, fuzzy
 msgid "Use in-app file browser (requires All Files permission)"
-msgstr "アプリ内のファイルブラウザを使用する（「すべてのファイル」へのアクセス権が必要です）"
+msgstr ""
 
-#, fuzzy
 msgid "Text-to-Speech"
-msgstr "テキスト読み上げ"
+msgstr ""
 
-#, fuzzy
 msgid "System Default"
-msgstr "システムのデフォルト設定"
+msgstr ""
 
-#, fuzzy
 msgid "Custom Timer"
-msgstr "カスタムタイマー"
+msgstr ""
 
-#, fuzzy
 msgid "Minutes"
-msgstr "議事録"
+msgstr ""
 
-#, fuzzy
 msgid "Back"
-msgstr "戻る"
+msgstr ""
 
-#, fuzzy
 msgid "Start"
-msgstr "開始"
+msgstr ""
 
-#, fuzzy
 msgid "Change to:"
-msgstr "次のように変更してください："
+msgstr ""
 
-#, fuzzy
 msgid "Custom time..."
-msgstr "カスタムタイム……"
+msgstr ""
 
-#, fuzzy
 msgid "Find Previous"
-msgstr "前のページへ"
+msgstr ""
 
-#, fuzzy
 msgid "Close Search"
-msgstr "検索を閉じる"
+msgstr ""
 
-#, fuzzy
 msgid "Settings imported"
-msgstr "設定がインポートされました"
+msgstr ""
 
-#, fuzzy
 msgid "Failed to import settings"
-msgstr "設定のインポートに失敗しました"
+msgstr ""
 
-#, fuzzy
 msgid "Settings exported"
-msgstr "設定のエクスポート"
+msgstr ""
 
-#, fuzzy
 msgid "Failed to export settings"
-msgstr "設定のエクスポートに失敗しました"
+msgstr ""
 
-#, fuzzy
 msgid "No document open. Please open a book."
-msgstr "開いているドキュメントはありません。本を開いてください。"
+msgstr ""
 
-#, fuzzy
 msgid "No Documents"
-msgstr "書類なし"
+msgstr ""
 
-#, fuzzy
 msgid "Show All"
-msgstr "すべて表示"
+msgstr ""
 
-#, fuzzy
 msgid "Sleep timer: {}"
-msgstr "スリープタイマー：{}"
+msgstr ""
 
-#, fuzzy
 msgid "Cancel sleep timer"
-msgstr "スリープタイマーを解除する"
+msgstr ""
 
-#, fuzzy
 msgid "Import"
-msgstr "インポート"
+msgstr ""
 
-#, fuzzy
 msgid "Import Document Data"
-msgstr "ドキュメントデータのインポート"
+msgstr ""
 
-#, fuzzy
 msgid "Export Document Data"
-msgstr "ドキュメントデータのエクスポート"
+msgstr ""
 
-#, fuzzy
 msgid "Open Book"
-msgstr "オープンブック"
+msgstr ""
 
-#, fuzzy
 msgid "Elements List"
-msgstr "要素一覧"
+msgstr ""
 
-#, fuzzy
 msgid "Show Document"
-msgstr "ドキュメントを表示"
+msgstr ""
 
-#, fuzzy
 msgid "Show Text"
-msgstr "テキストを表示"
+msgstr ""
 
-#, fuzzy
 msgid "Pause Read Aloud"
-msgstr "読み上げを一時停止"
+msgstr ""
 
-#, fuzzy
 msgid "Read Aloud"
-msgstr "読み聞かせ"
+msgstr ""
 
-#, fuzzy
 msgid "Help"
-msgstr "ヘルプ"
+msgstr ""
 
-#, fuzzy
 msgid "More Options"
-msgstr "その他のオプション"
+msgstr ""
 
-#, fuzzy
 msgid "Heading"
-msgstr "見出し"
+msgstr ""
 
-#, fuzzy
 msgid "Link"
-msgstr "リンク"
+msgstr ""
 
-#, fuzzy
 msgid "Section"
-msgstr "セクション"
+msgstr ""
 
-#, fuzzy
 msgid "List"
-msgstr "一覧"
+msgstr ""
 
-#, fuzzy
 msgid "List Item"
-msgstr "リスト項目"
+msgstr ""
 
-#, fuzzy
 msgid "Table"
-msgstr "表"
+msgstr ""
 
-#, fuzzy
 msgid "Separator"
-msgstr "区切り記号"
+msgstr ""
 
-#, fuzzy
 msgid "Document Data"
-msgstr "ドキュメントデータ"
+msgstr ""
 
-#, fuzzy
 msgid "Sleep timer running, {} remaining"
-msgstr "スリープタイマーが作動中、残り{}"
+msgstr ""
 
-#, fuzzy
 msgid "Custom"
-msgstr "カスタム"
+msgstr ""
 
-#, fuzzy
 msgid "Custom: {} minutes"
-msgstr "カスタム：{}分"
+msgstr ""
 
-#, fuzzy
 msgid "Duration"
-msgstr "所要時間"
+msgstr ""
 
-#, fuzzy
 msgid "Stop Timer"
-msgstr "タイマーを停止する"
+msgstr ""
 
-#, fuzzy
 msgid "Start Timer"
-msgstr "タイマーを開始"
+msgstr ""
 
 #~ msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
 #~ msgstr "リストからこの文書を削除しますか？これにより、文書の読み上げ位置の情報も削除されます。"
