@@ -1735,8 +1735,12 @@ impl MainWindow {
 						SLEEP_TIMER_START_MS.store(now, Ordering::SeqCst);
 						SLEEP_TIMER_DURATION_MINUTES.store(duration, Ordering::SeqCst);
 						// TRANSLATORS: Announcement when the sleep timer is set. The %d placeholder is replaced with the number of minutes.
-						let msg = nt("Sleep timer set for %d minute.", "Sleep timer set for %d minutes.", u64::try_from(duration).unwrap_or(0))
-							.replacen("%d", &duration.to_string(), 1);
+						let msg = nt(
+							"Sleep timer set for %d minute.",
+							"Sleep timer set for %d minutes.",
+							u64::try_from(duration).unwrap_or(0),
+						)
+						.replacen("%d", &duration.to_string(), 1);
 						live_region::announce(live_region_label, &msg);
 					}
 				}

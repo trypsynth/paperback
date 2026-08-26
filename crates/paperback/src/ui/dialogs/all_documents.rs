@@ -685,8 +685,11 @@ fn format_document_status_text(total: i32, selected: usize) -> String {
 		t("1 of 1 document selected.")
 	} else if usize::try_from(total).is_ok_and(|total| total == selected) {
 		// TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
-		nt("All %d document selected.", "All %d documents selected.", u64::try_from(total).unwrap_or(0))
-			.replacen("%d", &total.to_string(), 1)
+		nt("All %d document selected.", "All %d documents selected.", u64::try_from(total).unwrap_or(0)).replacen(
+			"%d",
+			&total.to_string(),
+			1,
+		)
 	} else {
 		// TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
 		nt("%d of %d document selected.", "%d of %d documents selected.", u64::try_from(total).unwrap_or(0))
