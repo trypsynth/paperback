@@ -72,6 +72,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+G` (macOS: `Cmd+L`): Go to line.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Go to percent.
 * `Ctrl+P`: Go to page (when supported by the current document).
+* `=`: Announce your current reading percentage.
 * `Alt+Left` (macOS: `Cmd+[`): Go back in navigation history.
 * `Alt+Right` (macOS: `Cmd+]`): Go forward in navigation history.
 * `[`: Previous section.
@@ -84,6 +85,8 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `P`: Next page.
 * `Shift+B`: Previous bookmark.
 * `B`: Next bookmark.
+* `/`: Set your temporary bookmark.
+* `\`: Jump to your temporary bookmark.
 * `Shift+N`: Previous note.
 * `N`: Next note.
 * `Ctrl+B`: Jump to all bookmarks and notes.
@@ -122,6 +125,12 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+Shift+B`: Toggle bookmark at the current selection/cursor.
 * `Ctrl+Shift+N`: Add or edit bookmark note at the current selection/cursor.
 * `Ctrl+Alt+W`: Toggle word wrap.
+* `Ctrl+Space`: Play/pause audio narration.
+* `'`: Seek audio narration forward.
+* `;`: Seek audio narration backward.
+* `Ctrl+'`: Increase the audio seek amount.
+* `Ctrl+;`: Decrease the audio seek amount.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, i.e. Control+Command+F): Toggle full screen.
 * `Ctrl+,`: Open options (macOS: Preferences, under the app menu).
 * `Ctrl+Shift+S`: Toggle sleep timer.
 
@@ -204,6 +213,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 ##### Platform Support
 * ARM64 Windows support!
 * Native macOS support!
+* A full screen toggle.
 
 ##### All Documents Dialog
 * A locate button to locate missing books that just changed their path.
@@ -258,6 +268,8 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ##### Audio Books
 * The ability to play audio books, currently supporting both DAISY audio (including DAISY audio + text) and zips of audio files.
+* Keyboard shortcuts and menu items to play/pause narration, seek forward and backward, and adjust the seek amount.
+* Options to sync the reading caret to audio playback, set the audio seek amount, and choose whether seeking past the end of a chapter continues into the next.
 
 ##### CHM Documents
 * Support for lists, list items, figures, and images.
