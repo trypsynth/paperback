@@ -1,8 +1,13 @@
-use std::{collections::HashMap, mem};
+use std::collections::HashMap;
 
 use roxmltree::{Document, Node, NodeType, ParsingOptions};
 
-use super::table_text::{push_finalized_line, table_render_bundle};
+use super::{
+	block_elements::is_block_element,
+	format_spans::{FormatKind, FormatSpans},
+	line_builder::LineBuilder,
+	table_text::table_render_bundle,
+};
 use crate::{
 	parser::{ConverterOutput, util::xml::collect_element_text},
 	t,
@@ -27,8 +32,7 @@ impl Default for ListStyle {
 
 #[derive(Default)]
 pub struct XmlToText {
-	lines: Vec<String>,
-	current_line: String,
+	text: LineBuilder,
 	id_positions: HashMap<String, usize>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
@@ -43,20 +47,13 @@ pub struct XmlToText {
 	position_watch: Option<usize>,
 	watched_byte_offset: Option<usize>,
 	in_body: bool,
-	preserve_whitespace_depth: usize,
 	list_level: i32,
 	list_style_stack: Vec<ListStyle>,
 	/// Indices into `lists` for currently open `<ul>`/`<ol>` elements, in nesting order.
 	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
 	/// balanced with the start/close handlers so list lengths are set on the right entries.
 	open_lists: Vec<Option<usize>>,
-	bolds: Vec<FormatInfo>,
-	italics: Vec<FormatInfo>,
-	underlines: Vec<FormatInfo>,
-	open_bolds: Vec<usize>,
-	open_italics: Vec<usize>,
-	open_underlines: Vec<usize>,
-	cached_char_length: usize,
+	format_spans: FormatSpans,
 	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
 	/// `"[Table]: <first row>"` placeholder. A config flag, not parse state: it survives `clear()`.
 	render_tables_inline: bool,
@@ -89,14 +86,14 @@ impl XmlToText {
 		for child in doc.root().children() {
 			self.process_node(child);
 		}
-		self.finalize_current_line();
-		tracing::debug!(bytes = xml_content.len(), lines = self.lines.len(), "converted xml document to text");
+		self.text.finalize_current_line();
+		tracing::debug!(bytes = xml_content.len(), lines = self.text.lines.len(), "converted xml document to text");
 		true
 	}
 
 	#[must_use]
 	pub fn get_text(&self) -> String {
-		self.lines.join("\n")
+		self.text.get_text()
 	}
 
 	/// Returns the source byte offset of the start tag of the element nearest
@@ -163,22 +160,21 @@ impl XmlToText {
 
 	#[must_use]
 	pub fn get_bolds(&self) -> &[FormatInfo] {
-		&self.bolds
+		self.format_spans.bolds()
 	}
 
 	#[must_use]
 	pub fn get_italics(&self) -> &[FormatInfo] {
-		&self.italics
+		self.format_spans.italics()
 	}
 
 	#[must_use]
 	pub fn get_underlines(&self) -> &[FormatInfo] {
-		&self.underlines
+		self.format_spans.underlines()
 	}
 
 	pub fn clear(&mut self) {
-		self.lines.clear();
-		self.current_line.clear();
+		self.text.clear();
 		self.id_positions.clear();
 		self.headings.clear();
 		self.links.clear();
@@ -191,17 +187,10 @@ impl XmlToText {
 		self.list_items.clear();
 		self.section_offsets.clear();
 		self.in_body = false;
-		self.preserve_whitespace_depth = 0;
 		self.list_level = 0;
-		self.cached_char_length = 0;
 		self.list_style_stack.clear();
 		self.open_lists.clear();
-		self.bolds.clear();
-		self.italics.clear();
-		self.underlines.clear();
-		self.open_bolds.clear();
-		self.open_italics.clear();
-		self.open_underlines.clear();
+		self.format_spans.clear();
 	}
 
 	fn process_node(&mut self, node: Node<'_, '_>) {
@@ -212,7 +201,7 @@ impl XmlToText {
 					return;
 				}
 				if let Some(target) = self.position_watch
-					&& self.in_body && self.get_current_text_position() <= target
+					&& self.in_body && self.text.get_current_text_position() <= target
 				{
 					self.watched_byte_offset = Some(node.range().start);
 				}
@@ -274,37 +263,37 @@ impl XmlToText {
 		if self.in_body
 			&& let Some(id) = node.attribute("id").or_else(|| node.attribute("name"))
 		{
-			self.id_positions.insert(id.to_string(), self.get_current_text_position());
+			self.id_positions.insert(id.to_string(), self.text.get_current_text_position());
 		}
 		if Self::tag_is(tag_name, "table") {
 			self.handle_table_xml(node);
 			return true;
 		}
 		if Self::tag_is(tag_name, "hr") && self.in_body {
-			self.finalize_current_line();
-			let offset = self.get_current_text_position();
+			self.text.finalize_current_line();
+			let offset = self.text.get_current_text_position();
 			self.resync_id_position(node, offset);
-			let line = Self::separator_line();
-			self.current_line.push_str(line);
-			self.finalize_current_line();
+			let line = LineBuilder::separator_line();
+			self.text.current_line.push_str(line);
+			self.text.finalize_current_line();
 			self.separators.push(SeparatorInfo { offset, length: display_len(line) });
 			return true;
 		}
 		if Self::tag_is(tag_name, "pagenum") {
 			let text = collapse_whitespace(&collect_element_text(node)).trim().to_string();
-			self.page_breaks.push(PageBreakInfo { offset: self.get_current_text_position(), text });
+			self.page_breaks.push(PageBreakInfo { offset: self.text.get_current_text_position(), text });
 			return true;
 		}
 		if Self::tag_is(tag_name, "section") {
-			self.section_offsets.push(self.get_current_text_position());
+			self.section_offsets.push(self.text.get_current_text_position());
 		}
 		if Self::tag_is(tag_name, "a") {
 			let link_text = collect_element_text(node);
 			if !link_text.is_empty() {
 				let href = node.attribute("href").unwrap_or("").to_string();
 				let processed_link_text = collapse_whitespace(&link_text);
-				let link_offset = self.get_current_text_position();
-				self.current_line.push_str(&processed_link_text);
+				let link_offset = self.text.get_current_text_position();
+				self.text.current_line.push_str(&processed_link_text);
 				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
 				self.record_descendant_ids(node, link_offset);
 				skip_children = true;
@@ -317,22 +306,22 @@ impl XmlToText {
 		{
 			self.in_body = true;
 		} else if Self::tag_is(tag_name, "pre") {
-			self.finalize_current_line();
-			self.start_preserve_whitespace();
+			self.text.finalize_current_line();
+			self.text.start_preserve_whitespace();
 		} else if Self::tag_is(tag_name, "code") {
-			self.start_preserve_whitespace();
+			self.text.start_preserve_whitespace();
 		} else if Self::tag_is(tag_name, "br") {
-			self.finalize_current_line();
+			self.text.finalize_current_line();
 		} else if Self::tag_is(tag_name, "li") {
 			self.handle_list_item_xml(node);
 		} else if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") || Self::tag_is(tag_name, "list") {
 			self.handle_list_start_xml(tag_name, node);
 		} else if Self::tag_is(tag_name, "b") || Self::tag_is(tag_name, "strong") {
-			self.open_bolds.push(self.get_current_text_position());
+			self.format_spans.open(&FormatKind::Bold, self.text.get_current_text_position());
 		} else if Self::tag_is(tag_name, "i") || Self::tag_is(tag_name, "em") {
-			self.open_italics.push(self.get_current_text_position());
+			self.format_spans.open(&FormatKind::Italic, self.text.get_current_text_position());
 		} else if Self::tag_is(tag_name, "u") {
-			self.open_underlines.push(self.get_current_text_position());
+			self.format_spans.open(&FormatKind::Underline, self.text.get_current_text_position());
 		}
 		if self.in_body
 			&& (Self::tag_is(tag_name, "img") || Self::tag_is(tag_name, "image") || Self::tag_is(tag_name, "figure"))
@@ -359,8 +348,8 @@ impl XmlToText {
 				// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 				let label = if is_figure { t("Figure") } else { t("Image") };
 				let image_text = format!("[{label}: {description}]");
-				let offset = self.get_current_text_position();
-				self.current_line.push_str(&image_text);
+				let offset = self.text.get_current_text_position();
+				self.text.current_line.push_str(&image_text);
 				let info = ImageInfo { offset, alt_text: description };
 				if is_figure {
 					self.figures.push(info);
@@ -373,9 +362,9 @@ impl XmlToText {
 	}
 
 	fn handle_table_xml(&mut self, node: Node<'_, '_>) {
-		self.finalize_current_line();
+		self.text.finalize_current_line();
 		let table_xml = node.document().input_text()[node.range()].to_string();
-		let start_offset = self.get_current_text_position();
+		let start_offset = self.text.get_current_text_position();
 		self.resync_id_position(node, start_offset);
 		self.record_descendant_ids(node, start_offset);
 		// Emit the table's on-screen text via the shared helper instead of recursing children to
@@ -383,7 +372,7 @@ impl XmlToText {
 		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
 		let render = table_render_bundle(&table_xml, self.render_tables_inline);
 		for line in render.lines {
-			self.push_finalized_line(line);
+			self.text.push_finalized_line(line);
 		}
 		let table_caption = render.caption;
 		let display_length = render.display_length;
@@ -395,24 +384,17 @@ impl XmlToText {
 		});
 	}
 
-	/// Push a line to the output verbatim (no whitespace collapsing/trimming), updating the cached
-	/// length so position tracking stays correct. Used for table rows whose tab separators and empty
-	/// cells must not be mangled by `add_line`.
-	fn push_finalized_line(&mut self, line: String) {
-		push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
-	}
-
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {
-		self.finalize_current_line();
-		self.resync_id_position(node, self.get_current_text_position());
+		self.text.finalize_current_line();
+		self.resync_id_position(node, self.text.get_current_text_position());
 		let li_text = collect_element_text(node);
 		self.list_items.push(ListItemInfo {
-			offset: self.get_current_text_position(),
+			offset: self.text.get_current_text_position(),
 			level: self.list_level,
 			text: li_text,
 		});
 		let indent = usize::try_from(self.list_level).unwrap_or(0) * 2;
-		self.current_line.push_str(&" ".repeat(indent));
+		self.text.current_line.push_str(&" ".repeat(indent));
 		let bullet = if let Some(style) = self.list_style_stack.last_mut() {
 			if style.ordered {
 				let item_text = format_list_item(style.item_number, &style.list_type);
@@ -424,7 +406,7 @@ impl XmlToText {
 		} else {
 			format!("{} ", Self::get_bullet_for_level(self.list_level))
 		};
-		self.current_line.push_str(&bullet);
+		self.text.current_line.push_str(&bullet);
 	}
 
 	fn handle_list_start_xml(&mut self, tag_name: &str, node: Node<'_, '_>) {
@@ -449,8 +431,8 @@ impl XmlToText {
 			}
 		}
 		if item_count > 0 {
-			self.finalize_current_line();
-			let offset = self.get_current_text_position();
+			self.text.finalize_current_line();
+			let offset = self.text.get_current_text_position();
 			self.resync_id_position(node, offset);
 			self.open_lists.push(Some(self.lists.len()));
 			self.lists.push(ListInfo { offset, item_count, length: 0 });
@@ -468,8 +450,8 @@ impl XmlToText {
 			{
 				let level = level_char as u8 - b'0';
 				if (1..=6).contains(&level) {
-					self.finalize_current_line();
-					let heading_offset = self.get_current_text_position();
+					self.text.finalize_current_line();
+					let heading_offset = self.text.get_current_text_position();
 					self.resync_id_position(node, heading_offset);
 					let text = collect_element_text(node);
 					if !text.is_empty() {
@@ -490,58 +472,31 @@ impl XmlToText {
 	fn handle_element_closing_xml(&mut self, tag_name: &str) {
 		let is_pre = Self::tag_is(tag_name, "pre");
 		if is_pre {
-			self.finalize_current_line();
-			self.stop_preserve_whitespace();
+			self.text.finalize_current_line();
+			self.text.stop_preserve_whitespace();
 		} else {
-			if Self::is_block_element(tag_name) {
-				self.finalize_current_line();
+			if is_block_element(tag_name) {
+				self.text.finalize_current_line();
 			}
 			if Self::tag_is(tag_name, "code") {
-				self.stop_preserve_whitespace();
+				self.text.stop_preserve_whitespace();
 			} else if Self::tag_is(tag_name, "b") || Self::tag_is(tag_name, "strong") {
-				if let Some(start) = self.open_bolds.pop() {
-					self.bolds.push(FormatInfo {
-						offset: start,
-						length: self.get_current_text_position().saturating_sub(start),
-					});
-				}
+				self.format_spans.close(&FormatKind::Bold, self.text.get_current_text_position());
 			} else if Self::tag_is(tag_name, "i") || Self::tag_is(tag_name, "em") {
-				if let Some(start) = self.open_italics.pop() {
-					self.italics.push(FormatInfo {
-						offset: start,
-						length: self.get_current_text_position().saturating_sub(start),
-					});
-				}
-			} else if Self::tag_is(tag_name, "u")
-				&& let Some(start) = self.open_underlines.pop()
-			{
-				self.underlines
-					.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
+				self.format_spans.close(&FormatKind::Italic, self.text.get_current_text_position());
+			} else if Self::tag_is(tag_name, "u") {
+				self.format_spans.close(&FormatKind::Underline, self.text.get_current_text_position());
 			}
 		}
 		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
 			self.list_level = (self.list_level - 1).max(0);
 			self.list_style_stack.pop();
 			if let Some(open) = self.open_lists.pop().flatten() {
-				self.finalize_current_line();
+				self.text.finalize_current_line();
 				let offset = self.lists[open].offset;
-				self.lists[open].length = self.get_current_text_position().saturating_sub(offset);
+				self.lists[open].length = self.text.get_current_text_position().saturating_sub(offset);
 			}
 		}
-	}
-
-	const fn start_preserve_whitespace(&mut self) {
-		self.preserve_whitespace_depth += 1;
-	}
-
-	const fn stop_preserve_whitespace(&mut self) {
-		if self.preserve_whitespace_depth > 0 {
-			self.preserve_whitespace_depth -= 1;
-		}
-	}
-
-	const fn is_preserving_whitespace(&self) -> bool {
-		self.preserve_whitespace_depth > 0
 	}
 
 	fn process_text_node(&mut self, node: Node<'_, '_>) {
@@ -553,116 +508,20 @@ impl XmlToText {
 				return;
 			}
 			let processed_text = remove_soft_hyphens(text);
-			if self.is_preserving_whitespace() {
-				self.current_line.push_str(&processed_text);
+			if self.text.is_preserving_whitespace() {
+				self.text.current_line.push_str(&processed_text);
 			} else {
 				let mut collapsed = collapse_whitespace(&processed_text);
-				if self.current_line.is_empty() {
+				if self.text.current_line.is_empty() {
 					collapsed = collapsed.trim_start().to_string();
-				} else if self.current_line.ends_with(' ') && collapsed.starts_with(' ') {
+				} else if self.text.current_line.ends_with(' ') && collapsed.starts_with(' ') {
 					collapsed.remove(0);
 				}
 				if !collapsed.is_empty() {
-					self.current_line.push_str(&collapsed);
+					self.text.current_line.push_str(&collapsed);
 				}
 			}
 		}
-	}
-
-	fn add_line(&mut self, mut line: String) {
-		if self.is_preserving_whitespace() {
-			while line.ends_with(['\n', '\r']) {
-				line.pop();
-			}
-			self.cached_char_length += display_len(&line) + 1;
-			self.lines.push(line);
-		} else {
-			let collapsed = collapse_whitespace(&line);
-			let collapsed = collapsed.trim().to_string();
-			if collapsed.is_empty() {
-				return;
-			}
-			self.cached_char_length += display_len(&collapsed) + 1;
-			self.lines.push(collapsed);
-		}
-	}
-
-	const fn separator_line() -> &'static str {
-		"----------------------------------------"
-	}
-
-	fn finalize_current_line(&mut self) {
-		let line = mem::take(&mut self.current_line);
-		self.add_line(line);
-	}
-
-	fn current_display_len(&self) -> usize {
-		if self.is_preserving_whitespace() {
-			return display_len(&self.current_line);
-		}
-		let collapsed = collapse_whitespace(&self.current_line);
-		// Use trim_start() not trim(): trailing whitespace before an inline element IS
-		// preserved in the output line, so including it in the position count keeps
-		// link/anchor offsets correctly aligned with the final text.
-		let trimmed = collapsed.trim_start();
-		display_len(trimmed)
-	}
-
-	fn get_current_text_position(&self) -> usize {
-		self.cached_char_length + self.current_display_len()
-	}
-
-	fn is_block_element(tag_name: &str) -> bool {
-		[
-			"div",
-			"p",
-			"pre",
-			"h1",
-			"h2",
-			"h3",
-			"h4",
-			"h5",
-			"h6",
-			"blockquote",
-			"ul",
-			"ol",
-			"list",
-			"li",
-			"dl",
-			"dt",
-			"dd",
-			"section",
-			"article",
-			"header",
-			"footer",
-			"nav",
-			"aside",
-			"main",
-			"figure",
-			"figcaption",
-			"address",
-			"hr",
-			"table",
-			"thead",
-			"tbody",
-			"tfoot",
-			"tr",
-			"td",
-			"th",
-			"level1",
-			"level2",
-			"level3",
-			"level4",
-			"level5",
-			"level6",
-			"frontmatter",
-			"bodymatter",
-			"rearmatter",
-			"doctitle",
-			"docauthor",
-		]
-		.iter()
-		.any(|t| Self::tag_is(tag_name, t))
 	}
 
 	fn is_ignored_element(tag_name: &str) -> bool {
@@ -721,13 +580,13 @@ impl ConverterOutput for XmlToText {
 		&self.list_items
 	}
 	fn get_bolds(&self) -> &[FormatInfo] {
-		&self.bolds
+		self.format_spans.bolds()
 	}
 	fn get_italics(&self) -> &[FormatInfo] {
-		&self.italics
+		self.format_spans.italics()
 	}
 	fn get_underlines(&self) -> &[FormatInfo] {
-		&self.underlines
+		self.format_spans.underlines()
 	}
 }
 
