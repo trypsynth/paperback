@@ -90,8 +90,12 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 				continue;
 			}
 			Token::IgnorableDestination => {
-				// {\* \keyword content} — skip the entire enclosing group.
-				skip_until_depth = Some(depth - 1);
+				// {\* \keyword content} — skip the entire enclosing group. A destination
+				// nested inside another skipped destination (e.g. \picprop inside \pict
+				// inside \shppict) must not shrink the skip window: keep the outermost
+				// (smallest) depth so skipping doesn't end early when the inner group closes.
+				let candidate = depth - 1;
+				skip_until_depth = Some(skip_until_depth.map_or(candidate, |sd| sd.min(candidate)));
 				continue;
 			}
 			_ => {}
@@ -366,6 +370,20 @@ mod tests {
 		let buffer = extract_content_from_tokens(&tokens);
 		assert_eq!(buffer.content, "beforeafter");
 		assert!(!buffer.content.contains("010009000003"));
+	}
+
+	#[test]
+	fn extract_content_skips_nested_ignorable_destination_without_leaking_hex() {
+		// Word writes shapes as {\*\shppict{\pict{\*\picprop ...}\jpegblip <hex>}}: an
+		// ignorable destination (\shppict) wrapping a \pict group that itself contains
+		// another ignorable destination (\picprop). The inner \picprop group closing must
+		// not end the skip early and let the outer \jpegblip hex data leak as text.
+		let rtf = r"{\rtf1\ansi\pard before {\*\shppict{\pict{\*\picprop\shplid1{\sp{\sn shapeType}{\sv 75}}}\picscalex100\jpegblip abc123def456}} after}";
+		let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "before  after");
+		assert!(!buffer.content.contains("abc123def456"));
 	}
 
 	#[test]
