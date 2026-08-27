@@ -3,7 +3,7 @@
 //! nor `super::ooxml` can make sense of the file.
 
 use std::{
-	fs::File,
+	fs::{self, File},
 	io::{Cursor, Read, Seek},
 };
 
@@ -279,7 +279,7 @@ fn normalize_doc_text(text: &str) -> String {
 }
 
 pub(super) fn parse_text_like_doc(context: &ParserContext) -> Result<Document> {
-	let bytes = std::fs::read(&context.file_path)
+	let bytes = fs::read(&context.file_path)
 		.with_context(|| format!("Failed to read potential text DOC '{}'", context.file_path))?;
 	let decoded = convert_to_utf8(&bytes);
 	if !looks_like_text_content(&decoded) {

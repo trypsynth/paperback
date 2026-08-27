@@ -4,7 +4,7 @@
 
 use std::{
 	collections::HashMap,
-	fs::File,
+	fs::{self, File},
 	io::{BufReader, Cursor, Read, Seek},
 };
 
@@ -33,38 +33,29 @@ pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool
 		File::open(&context.file_path).with_context(|| format!("Failed to open ZIP file '{}'", context.file_path))?;
 	let mut archive = ZipArchive::new(BufReader::new(file))
 		.with_context(|| format!("Failed to read ZIP archive '{}'", context.file_path))?;
-
 	tracing::debug!(path = %context.file_path, entries = archive.len(), "scanning zip archive for embedded docx entries");
-
 	let mut docx_names: Vec<String> =
 		archive.file_names().filter(|name| name.to_ascii_lowercase().ends_with(".docx")).map(String::from).collect();
-
 	if docx_names.is_empty() {
 		tracing::warn!(path = %context.file_path, "no docx entries found in zip archive");
 		// TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
 		anyhow::bail!(t("No readable content found in the ZIP archive"));
 	}
-
 	docx_names.sort();
-
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
 	let mut headings = Vec::new();
-
 	for docx_name in &docx_names {
 		let mut inner_file_data = Vec::new();
 		{
 			let mut inner_file = archive.by_name(docx_name)?;
 			inner_file.read_to_end(&mut inner_file_data)?;
 		}
-
 		if !buffer.content.is_empty() {
 			buffer.add_marker(Marker::new(MarkerType::SectionBreak, buffer.current_position()));
 		}
-
 		let mut inner_archive = ZipArchive::new(Cursor::new(inner_file_data))
 			.with_context(|| format!("Failed to parse inner DOCX '{docx_name}' as zip"))?;
-
 		parse_ooxml_from_archive(
 			&mut inner_archive,
 			&mut buffer,
@@ -74,7 +65,6 @@ pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool
 		)
 		.with_context(|| format!("Failed to parse DOCX contents of '{docx_name}'"))?;
 	}
-
 	let title = extract_title_from_path(&context.file_path);
 	let toc_items = build_toc_from_buffer(&buffer);
 	let mut document = Document::new().with_title(title);
@@ -107,7 +97,7 @@ pub(super) fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: boo
 /// Read a DOCX/OOXML file's raw bytes, decrypting first if the file is an encrypted OLE container.
 fn load_ooxml_bytes(path: &str, password: Option<&str>) -> Result<Vec<u8>> {
 	try_decrypt_office_file(path, password)?
-		.map_or_else(|| std::fs::read(path).with_context(|| format!("Failed to read '{path}'")), Ok)
+		.map_or_else(|| fs::read(path).with_context(|| format!("Failed to read '{path}'")), Ok)
 }
 
 fn parse_ooxml_from_archive<R: Read + Seek>(
@@ -560,7 +550,6 @@ mod tests {
 			</tbl>
 		</body></document>";
 		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
-
 		// OFF: placeholder "[Table]: Kop 𝄞".
 		let mut buffer = DocumentBuffer::new();
 		let mut headings = Vec::new();
@@ -572,7 +561,6 @@ mod tests {
 		assert_eq!(table_marker.text, "Kop \u{1D11E}", "marker caption is the first-row text, no prefix");
 		assert_eq!(table_marker.length, display_len("[Table]: Kop \u{1D11E}") + 1, "marker length in display units");
 		assert!(table_marker.reference.contains("<td>Kop</td>"), "marker reference is the table HTML");
-
 		// ON: full TSV "Kop\t𝄞".
 		let mut buffer = DocumentBuffer::new();
 		let mut headings = Vec::new();
