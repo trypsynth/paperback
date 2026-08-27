@@ -1,8 +1,9 @@
 use std::{
+	collections::BTreeSet,
 	env,
 	fmt::Write as _,
-	fs, io,
-	io::{Cursor, Read},
+	fs::{self, DirEntry},
+	io::{self, Cursor, Read},
 	path::{Path, PathBuf},
 	process::Command,
 };
@@ -380,7 +381,7 @@ fn build_docs() {
 		}
 		if let Ok(entries) = fs::read_dir(&doc_dir) {
 			let mut doc_entries: Vec<_> = entries.flatten().collect();
-			doc_entries.sort_by_key(std::fs::DirEntry::file_name);
+			doc_entries.sort_by_key(DirEntry::file_name);
 			for entry in doc_entries {
 				let path = entry.path();
 				if path.extension().and_then(|e| e.to_str()) != Some("md") {
@@ -531,7 +532,7 @@ fn configure_installer() {
 /// Builds the `<string>ext</string>` lines for `CFBundleTypeExtensions`, deduped since a couple
 /// of extensions (e.g. `zip`) are shared by more than one entry in `paperback_formats::ALL`.
 fn bundle_document_extensions_block() -> String {
-	let mut extensions = std::collections::BTreeSet::new();
+	let mut extensions = BTreeSet::new();
 	for format in paperback_formats::ALL {
 		extensions.extend(format.extensions.iter().copied());
 	}
