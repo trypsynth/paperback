@@ -53,7 +53,6 @@ pub fn stream_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
-
 	let hwnd_ptr = text_ctrl.get_handle();
 	if hwnd_ptr.is_null() {
 		return false;

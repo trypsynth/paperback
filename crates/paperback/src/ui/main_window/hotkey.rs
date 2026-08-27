@@ -2,7 +2,12 @@
 //! doesn't block the UI thread), torn down and re-registered whenever the user changes it
 //! in Options.
 
-use std::{cell::RefCell, rc::Rc};
+use std::{
+	cell::RefCell,
+	rc::Rc,
+	sync::mpsc,
+	thread::{self, JoinHandle},
+};
 
 use windows::Win32::{
 	Foundation::{LPARAM, WPARAM},
@@ -20,7 +25,7 @@ use crate::ipc::IpcCommand;
 
 pub(super) struct HotkeyHandle {
 	pub(super) thread_id: u32,
-	pub(super) join_handle: std::thread::JoinHandle<()>,
+	pub(super) join_handle: JoinHandle<()>,
 }
 
 pub(super) fn start_hotkey_listener(hotkey: &paperback_core::config::HotkeyConfig) -> Option<HotkeyHandle> {
@@ -39,8 +44,8 @@ pub(super) fn start_hotkey_listener(hotkey: &paperback_core::config::HotkeyConfi
 		modifiers |= MOD_WIN;
 	}
 	let vk = char_to_vk(hotkey.key)?;
-	let (thread_id_tx, thread_id_rx) = std::sync::mpsc::channel();
-	let join_handle = std::thread::spawn(move || {
+	let (thread_id_tx, thread_id_rx) = mpsc::channel();
+	let join_handle = thread::spawn(move || {
 		let thread_id = unsafe { GetCurrentThreadId() };
 		let _ = thread_id_tx.send(thread_id);
 		let registered = unsafe { RegisterHotKey(None, HOTKEY_ID, modifiers, vk).is_ok() };

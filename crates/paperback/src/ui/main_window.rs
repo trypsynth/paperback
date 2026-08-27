@@ -7,7 +7,7 @@ use std::{
 	rc::Rc,
 	sync::{
 		Mutex,
-		atomic::{AtomicI32, AtomicI64, Ordering},
+		atomic::{AtomicI32, AtomicI64, AtomicIsize, Ordering},
 	},
 	time::{SystemTime, UNIX_EPOCH},
 };
@@ -73,7 +73,7 @@ pub struct MainWindow {
 }
 
 #[cfg(target_os = "windows")]
-static HIDDEN_POPUP: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
+static HIDDEN_POPUP: AtomicIsize = AtomicIsize::new(0);
 
 impl MainWindow {
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
@@ -319,7 +319,6 @@ impl MainWindow {
 		dialogs::ACTIVE_WEB_VIEW.with(|v| {
 			web_view_dialog = v.get();
 		});
-
 		if let Some(parent_dialog) = web_view_dialog {
 			let dialog = MessageDialog::builder(
 				&parent_dialog,
@@ -333,7 +332,6 @@ impl MainWindow {
 			dialog.show_modal();
 			return;
 		}
-
 		match command {
 			IpcCommand::Activate => {
 				self.activate_from_ipc();
@@ -372,7 +370,6 @@ impl MainWindow {
 					}
 				}
 			}
-
 			if has_popup {
 				self.frame.show(false);
 			} else {
@@ -389,7 +386,6 @@ impl MainWindow {
 		self.frame.iconize(false);
 		self.frame.request_user_attention(UserAttentionFlag::Info);
 		self.frame.raise();
-
 		#[allow(unused_mut)]
 		let mut has_popup = false;
 		#[cfg(target_os = "windows")]
@@ -401,7 +397,6 @@ impl MainWindow {
 			let handle = self.frame.get_handle();
 			if !handle.is_null() {
 				let frame_hwnd = HWND(handle);
-
 				let hidden = HIDDEN_POPUP.swap(0, Ordering::SeqCst);
 				if hidden != 0 {
 					let active_popup = HWND(hidden as _);
@@ -411,16 +406,13 @@ impl MainWindow {
 				} else {
 					let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
 					has_popup = active_popup != frame_hwnd;
-
 					let _ = unsafe { SetForegroundWindow(active_popup) };
 				}
 			}
 		}
-
 		if !has_popup {
 			self.doc_manager.lock().unwrap().restore_focus();
 		}
-
 		#[cfg(not(target_os = "linux"))]
 		if let Some(state) = self.tray_state.lock().unwrap().as_mut() {
 			tray::set_tray_icon(&state.icon);

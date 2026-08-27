@@ -424,7 +424,6 @@ fn do_find(
 	if state.use_regex.is_checked() {
 		options |= FindOptions::USE_REGEX;
 	}
-
 	let mut dm = doc_manager.lock().unwrap();
 	let Some(tab) = dm.active_tab_mut() else {
 		return;
