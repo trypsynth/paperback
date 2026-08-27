@@ -27,6 +27,9 @@ jobs:
       - name: Install gettext and pandoc
         run: sudo apt-get update && sudo apt-get install -y gettext pandoc
       - name: Translate
+        # DeepL quota exhaustion (HTTP 456) shouldn't turn every push red; untranslated
+        # entries are simply retried on the next run once quota resets.
+        continue-on-error: true
         env:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
         run: cargo run -p xtask --release -- translate

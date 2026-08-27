@@ -12,7 +12,7 @@ android {
 		applicationId = "dev.paperback.android"
 		minSdk = 24
 		targetSdk = 36
-		versionCode = 4
+		versionCode = 5
 		versionName = "0.9.0"
 	}
 

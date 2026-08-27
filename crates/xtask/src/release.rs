@@ -13,12 +13,20 @@ use crate::project_root;
 
 pub fn release() -> Result<(), Box<dyn Error>> {
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-	let status = Command::new(&cargo)
-		.current_dir(project_root())
-		.args(["build", "--release", "-p", "paperback", "-p", "pb"])
-		.status()?;
-	if !status.success() {
-		return Err("Cargo build failed".into());
+	// Built as two separate invocations rather than `-p paperback -p pb` in one: Cargo leaks
+	// wxdragon-sys's build-script native-library search paths (wxWidgets' own libs) into
+	// every binary linked in the same invocation when multiple root packages are requested
+	// together, even into pb, which doesn't depend on wxdragon at all. That pulled GUI DLL
+	// imports (comctl32's GetWindowSubclass and friends) into pb.exe, which then failed to
+	// launch on end-user machines with "entry point not found" since it never gets the
+	// comctl32-v6 manifest paperback.exe's build.rs embeds. Building one package per
+	// invocation keeps each link step's inputs isolated.
+	for package in ["paperback", "pb"] {
+		let status =
+			Command::new(&cargo).current_dir(project_root()).args(["build", "--release", "-p", package]).status()?;
+		if !status.success() {
+			return Err(format!("Cargo build failed for {package}").into());
+		}
 	}
 	let target_dir = project_root().join("target/release");
 	#[cfg(target_os = "macos")]

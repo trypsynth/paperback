@@ -13,8 +13,8 @@ mod cli;
 use cli::{Cli, Format};
 
 fn main() -> Result<()> {
-	init_logging();
 	let cli = Cli::parse();
+	init_logging(cli.verbose);
 	let ext = cli.input.extension().and_then(|e| e.to_str()).unwrap_or("");
 	if !parser::parser_supports_extension(ext) {
 		bail!("unsupported file format: .{ext}");
@@ -79,10 +79,12 @@ fn main() -> Result<()> {
 	}
 }
 
-/// Prints paperback-core's tracing output to stderr so parser logging is visible when testing
-/// with this tool. Defaults to debug level for paperback-core; override with `RUST_LOG`.
-fn init_logging() {
-	let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "paperback_core=debug".to_string());
+/// Prints paperback-core's tracing output to stderr, off by default so normal conversions
+/// aren't flooded with parser debug logging. Pass `-v`/`--verbose` to turn it on, or set
+/// `RUST_LOG` directly for finer-grained control (which always takes precedence).
+fn init_logging(verbose: bool) {
+	let default_filter = if verbose { "paperback_core=debug" } else { "off" };
+	let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| default_filter.to_string());
 	tracing_subscriber::fmt().with_env_filter(filter).with_writer(std::io::stderr).with_target(false).init();
 }
 

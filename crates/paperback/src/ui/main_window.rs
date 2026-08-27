@@ -18,7 +18,7 @@ use paperback_core::{
 	parser::{build_file_filter_string, parser_supports_extension},
 	types::BookmarkFilterType,
 };
-use patois::t;
+use patois::{nt, t};
 use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
@@ -466,9 +466,10 @@ impl MainWindow {
 			self.frame.set_title(&template.replace("{}", &display_title(tab)));
 			#[cfg(target_os = "macos")]
 			self.frame.set_represented_filename(&tab.file_path.to_string_lossy());
-			// TRANSLATORS: Status bar character count; {} is the number of characters
-			let chars_label = t("{} chars");
-			self.frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
+			// TRANSLATORS: Status bar character count. The %d placeholder is replaced with the number of characters.
+			let char_count = tab.session.content().len();
+			let chars_label = nt("%d char", "%d chars", char_count as u64).replacen("%d", &char_count.to_string(), 1);
+			self.frame.set_status_text(&chars_label, 0);
 		}
 	}
 
@@ -668,7 +669,7 @@ impl MainWindow {
 				let cfg = config_for_timer.lock().unwrap();
 				for i in 0..dm.tab_count() {
 					if let Some(tab) = dm.get_tab(i) {
-						let current_pos = tab.text_ctrl.get_insertion_point();
+						let current_pos = navigation::doc_caret(tab);
 						let path_str = tab.file_path.to_string_lossy();
 						cfg.set_document_position(&path_str, current_pos);
 					}
@@ -802,7 +803,7 @@ impl MainWindow {
 							let Some(tab) = dm_guard.active_tab_mut() else {
 								return;
 							};
-							let current_pos = tab.text_ctrl.get_insertion_point();
+							let current_pos = navigation::doc_caret(tab);
 							let status = tab.session.get_status_info(current_pos);
 							let total_lines = tab.session.line_count().max(1);
 							let max_lines = i32::try_from(total_lines.min(i64::from(i32::MAX))).unwrap_or(i32::MAX);
@@ -843,7 +844,7 @@ impl MainWindow {
 								live_region::announce(live_region_label, &t("No pages."));
 								return;
 							}
-							let current_pos = tab.text_ctrl.get_insertion_point();
+							let current_pos = navigation::doc_caret(tab);
 							let current_page = tab.session.current_page(current_pos);
 							let max_page = i32::try_from(page_count.max(1)).unwrap_or(i32::MAX);
 							(current_page, max_page)
@@ -874,7 +875,7 @@ impl MainWindow {
 							let Some(tab) = dm_guard.active_tab_mut() else {
 								return;
 							};
-							let current_pos = tab.text_ctrl.get_insertion_point();
+							let current_pos = navigation::doc_caret(tab);
 							let status = tab.session.get_status_info(current_pos);
 							status.percentage.clamp(0, 100)
 						};
@@ -1416,7 +1417,7 @@ impl MainWindow {
 							live_region::announce(live_region_label, &t("No table of contents."));
 							return;
 						}
-						let current_pos = tab.text_ctrl.get_insertion_point();
+						let current_pos = navigation::doc_caret(tab);
 						let current_pos_usize = usize::try_from(current_pos).unwrap_or(0);
 						let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos_usize);
 						if let Some(offset) = dialogs::show_toc_dialog(
@@ -1432,7 +1433,7 @@ impl MainWindow {
 				menu_ids::ELEMENTS_LIST => {
 					let mut dm_guard = dm.lock().unwrap();
 					if let Some(tab) = dm_guard.active_tab_mut() {
-						let current_pos = tab.text_ctrl.get_insertion_point();
+						let current_pos = navigation::doc_caret(tab);
 						if let Some(offset) = dialogs::show_elements_dialog(&frame_copy, &tab.session, current_pos) {
 							let update = navigation::move_to_offset_and_record_history(tab, offset);
 							navigation::persist_navigation_history(&config, Some(&update));
@@ -1446,7 +1447,7 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let current_pos = tab.text_ctrl.get_insertion_point();
+					let current_pos = navigation::doc_caret(tab);
 					let temp_dir = env::temp_dir().to_string_lossy().to_string();
 					if let Some(target) = tab.session.webview_target_path(current_pos, &temp_dir) {
 						let mut url = format!("file:///{}", target.path.replace('\\', "/"));
@@ -1503,7 +1504,7 @@ impl MainWindow {
 							return;
 						};
 						if tab.session.source_view_available() {
-							let current_pos = tab.text_ctrl.get_insertion_point();
+							let current_pos = navigation::doc_caret(tab);
 							let orig_name = tab
 								.file_path
 								.file_name()
@@ -1733,13 +1734,13 @@ impl MainWindow {
 						sleep_timer_duration_for_menu.set(duration);
 						SLEEP_TIMER_START_MS.store(now, Ordering::SeqCst);
 						SLEEP_TIMER_DURATION_MINUTES.store(duration, Ordering::SeqCst);
-						let msg = if duration == 1 {
-							// TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
-							t("Sleep timer set for 1 minute.")
-						} else {
-							// TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-							t("Sleep timer set for %d minutes.").replace("%d", &duration.to_string())
-						};
+						// TRANSLATORS: Announcement when the sleep timer is set. The %d placeholder is replaced with the number of minutes.
+						let msg = nt(
+							"Sleep timer set for %d minute.",
+							"Sleep timer set for %d minutes.",
+							u64::try_from(duration).unwrap_or(0),
+						)
+						.replacen("%d", &duration.to_string(), 1);
 						live_region::announce(live_region_label, &msg);
 					}
 				}
@@ -1962,7 +1963,7 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		frame.set_title(&template.replace("{}", &display_title(tab)));
 		#[cfg(target_os = "macos")]
 		frame.set_represented_filename(&tab.file_path.to_string_lossy());
-		let position = tab.text_ctrl.get_insertion_point();
+		let position = navigation::doc_caret(tab);
 		let status_info = tab.session.get_status_info(position);
 		let mut status_text = status::format_status_text(&status_info);
 		if sleep_start > 0 {

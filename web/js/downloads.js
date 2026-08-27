@@ -15,8 +15,13 @@
 
   const fmtCount = n => `downloaded ${n} ${n === 1 ? "time" : "times"}`;
 
+  // "paperback.zip"/"paperback_setup.exe" are unsuffixed duplicates of the x64 build, kept
+  // in the release only so pre-ship-shape (0.8.5 and earlier) clients' exact-name update
+  // check still finds a match. Hide them here so the site doesn't list x64 twice.
+  const legacyAssetNames = new Set(["paperback.zip", "paperback_setup.exe"]);
+
   const render = (release, label, subtitle = "", showApk = false, showMac = false) => {
-    const assets = release.assets ?? [];
+    const assets = (release.assets ?? []).filter(a => !legacyAssetNames.has(a.name.toLowerCase()));
     const exes = assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
     const winZips = assets.filter(a => a.name.toLowerCase().endsWith(".zip"));
     const macDmg = assets.find(a => a.name.toLowerCase().endsWith(".dmg"));
@@ -47,10 +52,10 @@
     const stable = releases.find(isStable);
     const dev = releases.find(r => r.tag_name === "latest");
     const previousStable = releases.filter(isStable).slice(1);
-    stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users") : "No stable release found.";
+    stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users", false, true) : "No stable release found.";
     devEl.innerHTML = dev ? render(dev, "Master Build", "Includes experimental features, may be unstable", true, true) : "No development builds found.";
     if (previousStable.length > 0) {
-      const blocks = previousStable.map(r => render(r, "Stable Version")).join("");
+      const blocks = previousStable.map(r => render(r, "Stable Version", "", false, true)).join("");
       historyEl.innerHTML = `
         <details>
           <summary>Previous Stable Releases</summary>

@@ -5,7 +5,7 @@ use paperback_core::{config::ConfigManager, reader_core, util::text::display_len
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, dpi};
+use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, dpi, navigation};
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 
@@ -402,23 +402,6 @@ fn do_find(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 ) {
-	let (text_ctrl, raw_text) = {
-		let dm = doc_manager.lock().unwrap();
-		match dm.active_tab() {
-			Some(tab) => (tab.text_ctrl, tab.session.content()),
-			None => return,
-		}
-	};
-	// On Windows the Rich Edit control normalizes line endings to \n, so
-	// positions from get_selection() / set_selection() are in \n-only space.
-	// session.content() may contain raw \r\n (e.g. Windows .txt files), which
-	// would cause search positions to drift by one per newline after the first
-	// match.  Normalize to \n so the haystack coordinate system matches the
-	// text control's coordinate system.
-	let text = if raw_text.contains('\r') { raw_text.replace("\r\n", "\n").replace('\r', "\n") } else { raw_text };
-	if !text_ctrl.is_valid() {
-		return;
-	}
 	let query = state.find_text();
 	if query.trim().is_empty() {
 		return;
@@ -441,11 +424,24 @@ fn do_find(
 	if state.use_regex.is_checked() {
 		options |= FindOptions::USE_REGEX;
 	}
-	let (sel_start, sel_end) = text_ctrl.get_selection();
+
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else {
+		return;
+	};
+	if !tab.text_ctrl.is_valid() {
+		return;
+	}
+	// Search the whole document (not just whatever window is currently loaded into
+	// text_ctrl) in the same document-absolute coordinate space `tab.window` uses, so a
+	// found match can be reached even when it falls outside the loaded window.
+	let text = tab.session.content();
+	let (sel_start, sel_end) = navigation::doc_selected_range(tab);
 	let start_pos = if forward { sel_end } else { sel_start };
 	let result = find_text_with_wrap(&text, &query, start_pos, options);
 	tracing::debug!(query = %query, forward, found = result.found, wrapped = result.wrapped, "find search");
 	if !result.found {
+		drop(dm);
 		// TRANSLATORS: Announced when a search finds no matches in the document
 		live_region::announce(live_region_label, &t("Not found."));
 		state.dialog.show(true);
@@ -460,16 +456,14 @@ fn do_find(
 	if result.position < 0 {
 		return;
 	}
-	let len = i64::try_from(display_len(&query)).unwrap_or(i64::MAX);
-	let last_pos = text_ctrl.get_last_position();
-	if last_pos <= 0 {
+	let doc_len = tab.session.document_len();
+	if doc_len <= 0 {
 		return;
 	}
-	let start = result.position.clamp(0, last_pos);
-	let end = (start + len).min(last_pos);
-	text_ctrl.set_focus();
-	text_ctrl.set_selection(start, end);
-	text_ctrl.show_position(start);
-	doc_manager.lock().unwrap().seek_audio_to_caret();
+	let len = i64::try_from(display_len(&query)).unwrap_or(i64::MAX);
+	let start = result.position.clamp(0, doc_len);
+	let end = (start + len).min(doc_len);
+	navigation::select_doc_range(tab, start, end);
+	drop(dm);
 	state.dialog.show(false);
 }

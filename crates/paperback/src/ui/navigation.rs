@@ -84,6 +84,25 @@ fn jump_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
 	seek_audio_to_position(tab, offset);
 }
 
+/// Selects the document-absolute range `[start, end)`, focusing the document and reloading
+/// `tab`'s window first if `start` falls outside it (see `DocumentTab::window`) - the range form
+/// of [`jump_to_doc_offset`], for jumps that should highlight a span of text (e.g. a Find match)
+/// rather than just place the caret. Keeps audio in sync with `start`, like `jump_to_doc_offset`.
+///
+/// Only `start` is checked against the window: a match is expected to be far shorter than a
+/// window's `RELOAD_MARGIN`, so `end` lands safely inside whatever window `start` triggers.
+pub fn select_doc_range(tab: &mut DocumentTab, start: i64, end: i64) {
+	if tab.window.needs_reload_for(start, tab.session.document_len()) {
+		reload_window_around(tab, start);
+	}
+	let local_start = tab.window.to_local(start);
+	let local_end = tab.window.to_local(end);
+	tab.text_ctrl.set_focus();
+	tab.text_ctrl.set_selection(local_start, local_end);
+	tab.text_ctrl.show_position(local_start);
+	seek_audio_to_position(tab, start);
+}
+
 /// Moves the caret to `offset`, focuses the document, shows the position, and
 /// records the jump in the session's position history. Returns the resulting
 /// history snapshot unconditionally — gate on `tab.track` at the call site if the
