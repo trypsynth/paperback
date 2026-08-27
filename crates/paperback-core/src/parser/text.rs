@@ -5,7 +5,10 @@ use anyhow::{Context, Result};
 use crate::{
 	document::{Document, DocumentBuffer, ParserContext},
 	parser::{Parser, util::path::extract_title_from_path},
-	util::{encoding::convert_to_utf8, text::remove_soft_hyphens},
+	util::{
+		encoding::convert_to_utf8,
+		text::{normalize_line_endings, remove_soft_hyphens},
+	},
 };
 
 pub struct TextParser;
@@ -16,7 +19,7 @@ impl Parser for TextParser {
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open text file '{}'", context.file_path))?;
 		let utf8_content = convert_to_utf8(&bytes);
-		let processed = remove_soft_hyphens(&utf8_content);
+		let processed = remove_soft_hyphens(&normalize_line_endings(&utf8_content));
 		let title = extract_title_from_path(&context.file_path);
 		let mut doc = Document::new().with_title(title);
 		let char_len = processed.chars().count();
@@ -41,6 +44,17 @@ mod tests {
 	fn reads_utf8_content_verbatim() {
 		let doc = parse_bytes("book.txt", "first line\nsecond line\n");
 		assert_eq!(doc.buffer.content, "first line\nsecond line\n");
+	}
+
+	/// A raw `\r` in the buffer counts as its own character in `DocumentBuffer`'s position
+	/// tables, but the GUI's native text control doesn't necessarily agree - so Windows-style
+	/// CRLF line endings (extremely common in plain text files) must be normalized away rather
+	/// than passed through, or every position past the first line drifts out of sync with what
+	/// the control actually shows.
+	#[test]
+	fn normalizes_crlf_and_bare_cr_line_endings() {
+		let doc = parse_bytes("book.txt", "first line\r\nsecond line\rthird line\r\n");
+		assert_eq!(doc.buffer.content, "first line\nsecond line\nthird line\n");
 	}
 
 	#[test]
