@@ -611,6 +611,8 @@ impl MainWindow {
 				update_title_from_manager(frame, &dm_ref);
 				dm_ref.restore_focus();
 				drop(dm_ref);
+				let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+				frame.set_menu_bar(menu_bar);
 				menu::update_menu_item_states(frame, true);
 			}
 		}
