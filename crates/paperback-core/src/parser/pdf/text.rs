@@ -5,7 +5,7 @@
 //! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by metadata and TOC
 //! extraction as well.
 
-use std::mem;
+use std::{cmp::Ordering, mem};
 
 use pdfium::PdfiumTextPage;
 
@@ -88,7 +88,7 @@ fn sorted_median(values: &mut [f64]) -> f64 {
 	if values.is_empty() {
 		return 0.0;
 	}
-	values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+	values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
 	values[values.len() / 2]
 }
 

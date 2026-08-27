@@ -99,7 +99,6 @@ impl HtmlToText {
 						.or_else(|| element.attr("title"))
 						.map(collapse_whitespace)
 						.unwrap_or_default();
-
 					if description.is_empty() && tag_name == "figure" {
 						for child in node.children() {
 							if let Node::Element(child_elem) = child.value()
@@ -110,7 +109,6 @@ impl HtmlToText {
 							}
 						}
 					}
-
 					if !description.is_empty() {
 						let is_figure = tag_name == "figure";
 						// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"

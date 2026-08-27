@@ -22,22 +22,17 @@ fn html_converter_emits_table_inline_or_placeholder(#[case] inline: bool) {
 		"<h2>After heading</h2>",
 		"</body></html>"
 	);
-
 	let mut converter = HtmlToText::with_render_tables_inline(inline);
 	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
-
 	let tables = converter.get_tables();
 	assert_eq!(tables.len(), 1);
 	assert_eq!(tables[0].offset, 6, "table follows 'Intro\n' (6 display units)");
-
 	let table_line = if inline { "A\tB" } else { "[Table]: A B" };
 	let expected_text = format!("Intro\n{table_line}\nAfter heading");
 	assert_eq!(converter.get_text(), expected_text, "table emitted as {table_line:?}");
-
 	// display_length equals the emitted display extent (the table line plus its newline).
 	let expected_display_length = display_len(table_line) + 1;
 	assert_eq!(tables[0].length, expected_display_length);
-
 	// The heading marker that follows the table sits right after the emitted table span.
 	let headings = converter.get_headings();
 	assert_eq!(headings.len(), 1);
@@ -46,7 +41,6 @@ fn html_converter_emits_table_inline_or_placeholder(#[case] inline: bool) {
 		tables[0].offset + expected_display_length,
 		"h2 immediately follows the emitted table span"
 	);
-
 	// Through the real marker path, the Table marker's length matches the emitted extent.
 	let mut buffer = DocumentBuffer::with_content(converter.get_text());
 	add_converter_markers(&mut buffer, &converter, 0);
@@ -102,11 +96,9 @@ fn test_format_span_nested_bold_and_italic() {
 	let mut converter = HtmlToText::new();
 	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
 	let text = converter.get_text();
-
 	let italics = converter.get_italics();
 	assert_eq!(italics.len(), 1);
 	assert_eq!(&text[italics[0].offset..italics[0].offset + italics[0].length], "inner");
-
 	let bolds = converter.get_bolds();
 	assert_eq!(bolds.len(), 1);
 	assert_eq!(&text[bolds[0].offset..bolds[0].offset + bolds[0].length], "outer inner");
@@ -274,11 +266,9 @@ fn html_two_tables_offsets_are_cumulative() {
 	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
 	let tables = converter.get_tables();
 	assert_eq!(tables.len(), 2, "expected two tables");
-
 	let t1_offset = tables[0].offset;
 	let t1_display_length = tables[0].length;
 	let t2_offset = tables[1].offset;
-
 	assert_eq!(t1_offset, 0, "first table starts at 0");
 	assert!(t1_display_length > 0, "first table has non-zero display_length");
 	assert_eq!(

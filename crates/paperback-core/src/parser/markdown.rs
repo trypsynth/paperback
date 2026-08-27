@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, iter};
 
 use anyhow::{Context, Result};
 use pulldown_cmark::{Event, Options, Parser as MarkdownParserImpl, Tag, html::push_html};
@@ -33,7 +33,7 @@ pub fn markdown_to_html(markdown_text: &str) -> String {
 			}
 			_ => None,
 		};
-		anchor.into_iter().chain(std::iter::once(event))
+		anchor.into_iter().chain(iter::once(event))
 	});
 	let mut html_content = String::new();
 	push_html(&mut html_content, events);

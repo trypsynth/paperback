@@ -416,7 +416,7 @@ pub fn is_external_url(url: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-	use std::iter;
+	use std::{iter, ptr};
 
 	use rstest::rstest;
 
@@ -643,7 +643,7 @@ mod tests {
 		let registered: Vec<&'static FormatMeta> =
 			ParserRegistry::global().all_parsers().iter().map(RegisteredParser::format).collect();
 		for format in paperback_formats::ALL {
-			let count = registered.iter().filter(|candidate| std::ptr::eq(**candidate, *format)).count();
+			let count = registered.iter().filter(|candidate| ptr::eq(**candidate, *format)).count();
 			assert_eq!(count, 1, "{} must have exactly one registered parser, found {count}", format.name);
 		}
 		assert_eq!(registered.len(), paperback_formats::ALL.len(), "a parser was registered for an unlisted format");
@@ -710,7 +710,6 @@ mod tests {
 		let mut buffer = DocumentBuffer::new();
 		let base_offset = 100usize;
 		add_converter_markers(&mut buffer, &converter, base_offset);
-
 		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 		assert_eq!(table_marker.position, base_offset + 10, "position = offset + table.offset");
 		assert_eq!(table_marker.length, 7, "marker length must equal table length, not byte length");

@@ -157,7 +157,6 @@ impl XmlToText {
 				.or_else(|| node.attribute("title"))
 				.map(collapse_whitespace)
 				.unwrap_or_default();
-
 			if description.is_empty() && Self::tag_is(tag_name, "figure") {
 				for child in node.children() {
 					if child.is_element() && Self::tag_is(child.tag_name().name(), "figcaption") {
@@ -166,7 +165,6 @@ impl XmlToText {
 					}
 				}
 			}
-
 			if !description.is_empty() {
 				let is_figure = Self::tag_is(tag_name, "figure");
 				// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"

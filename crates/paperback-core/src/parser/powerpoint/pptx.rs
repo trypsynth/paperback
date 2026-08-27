@@ -2,7 +2,7 @@
 //! single flattened text stream the way `.doc`x does), plus relationship-based hyperlink
 //! resolution and `DrawingML` table extraction.
 
-use std::{collections::HashMap, io::Cursor, path::Path};
+use std::{collections::HashMap, fs, io::Cursor, path::Path};
 
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
@@ -38,8 +38,9 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 	tracing::debug!(path = %context.file_path, "parsing pptx file");
 	let bytes = match try_decrypt_office_file(&context.file_path, context.password.as_deref())? {
 		Some(decrypted) => decrypted,
-		None => std::fs::read(&context.file_path)
-			.with_context(|| format!("Failed to read PPTX file '{}'", context.file_path))?,
+		None => {
+			fs::read(&context.file_path).with_context(|| format!("Failed to read PPTX file '{}'", context.file_path))?
+		}
 	};
 	let mut archive = ZipArchive::new(Cursor::new(bytes))
 		.with_context(|| format!("Failed to read PPTX as zip '{}'", context.file_path))?;

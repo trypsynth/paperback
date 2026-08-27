@@ -230,7 +230,6 @@ fn xml_table_display_length_is_display_extent_not_byte_length() {
 	let tables = converter.get_tables();
 	assert_eq!(tables.len(), 1, "expected exactly one table");
 	let table = &tables[0];
-
 	assert_eq!(table.offset, 6, "table starts after 'Intro\\n'");
 	// display_length = 5 (display extent); emitted byte length = 6 — they differ.
 	assert_eq!(table.length, 5, "length must be the display extent (5), not byte length (6)");
@@ -240,11 +239,9 @@ fn xml_table_display_length_is_display_extent_not_byte_length() {
 #[test]
 fn xml_table_emits_placeholder_or_tsv_by_flag() {
 	let xml = "<root><body><table><tr><td>A</td><td>B</td></tr><tr><td>c</td><td>d</td></tr></table></body></root>";
-
 	let mut off = XmlToText::new();
 	assert!(off.convert(xml));
 	assert_eq!(off.get_text(), "[Table]: A B");
-
 	let mut on = XmlToText::with_render_tables_inline(true);
 	assert!(on.convert(xml));
 	assert_eq!(on.get_text(), "A\tB\nc\td");
@@ -263,11 +260,9 @@ fn xml_two_tables_offsets_are_cumulative() {
 	assert!(converter.convert(xml));
 	let tables = converter.get_tables();
 	assert_eq!(tables.len(), 2, "expected two tables");
-
 	let t1_offset = tables[0].offset;
 	let t1_display_length = tables[0].length;
 	let t2_offset = tables[1].offset;
-
 	assert_eq!(t1_offset, 0, "first table starts at 0");
 	assert!(t1_display_length > 0, "first table has non-zero display_length");
 	assert_eq!(
@@ -315,11 +310,9 @@ fn test_format_span_nested_bold_and_italic() {
 	let mut converter = XmlToText::new();
 	assert!(converter.convert(xml));
 	let text = converter.get_text();
-
 	let italics = converter.get_italics();
 	assert_eq!(italics.len(), 1);
 	assert_eq!(&text[italics[0].offset..italics[0].offset + italics[0].length], "inner");
-
 	let bolds = converter.get_bolds();
 	assert_eq!(bolds.len(), 1);
 	assert_eq!(&text[bolds[0].offset..bolds[0].offset + bolds[0].length], "outer inner");
