@@ -6,6 +6,7 @@ use super::{
 	block_elements::is_block_element,
 	format_spans::{FormatKind, FormatSpans},
 	line_builder::LineBuilder,
+	list_style::ListStyle,
 	table_text::table_render_bundle,
 };
 use crate::{
@@ -16,19 +17,6 @@ use crate::{
 	},
 	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
-
-#[derive(Clone)]
-struct ListStyle {
-	ordered: bool,
-	item_number: i32,
-	list_type: String,
-}
-
-impl Default for ListStyle {
-	fn default() -> Self {
-		Self { ordered: false, item_number: 1, list_type: "1".to_string() }
-	}
-}
 
 #[derive(Default)]
 pub struct XmlToText {
@@ -411,18 +399,7 @@ impl XmlToText {
 
 	fn handle_list_start_xml(&mut self, tag_name: &str, node: Node<'_, '_>) {
 		self.list_level += 1;
-		let mut style = ListStyle::default();
-		if Self::tag_is(tag_name, "ol") {
-			style.ordered = true;
-			if let Some(start_val) = node.attribute("start")
-				&& let Ok(start_num) = start_val.parse::<i32>()
-			{
-				style.item_number = start_num;
-			}
-			if let Some(type_val) = node.attribute("type") {
-				style.list_type = type_val.to_lowercase();
-			}
-		}
+		let style = ListStyle::new(Self::tag_is(tag_name, "ol"), node.attribute("start"), node.attribute("type"));
 		self.list_style_stack.push(style);
 		let mut item_count = 0;
 		for child in node.children() {

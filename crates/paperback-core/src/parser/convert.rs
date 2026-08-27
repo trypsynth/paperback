@@ -6,6 +6,7 @@
 mod block_elements;
 mod format_spans;
 mod line_builder;
+mod list_style;
 
 pub mod html_to_text;
 pub mod table_text;
