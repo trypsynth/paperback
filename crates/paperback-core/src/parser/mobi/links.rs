@@ -6,6 +6,7 @@
 use std::{
 	collections::{BTreeSet, HashMap},
 	fmt::Write as _,
+	str,
 	sync::LazyLock,
 };
 
@@ -42,13 +43,11 @@ pub(super) fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header
 	if frag_indx == 0xFFFFFFFF || frag_indx >= records.len() - 1 {
 		return frag_offsets;
 	}
-
 	let prim_rec = &data[records[frag_indx]..records[frag_indx + 1]];
 	if prim_rec.len() < 28 || &prim_rec[0..4] != b"INDX" {
 		return frag_offsets;
 	}
 	let num_data_recs = u32::from_be_bytes([prim_rec[24], prim_rec[25], prim_rec[26], prim_rec[27]]) as usize;
-
 	for i in 1..=num_data_recs {
 		if frag_indx + i >= records.len() - 1 {
 			break;
@@ -57,10 +56,8 @@ pub(super) fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header
 		if data_rec.len() < 28 || &data_rec[0..4] != b"INDX" {
 			continue;
 		}
-
 		let idxt_offset = u32::from_be_bytes([data_rec[20], data_rec[21], data_rec[22], data_rec[23]]) as usize;
 		let num_entries = u32::from_be_bytes([data_rec[24], data_rec[25], data_rec[26], data_rec[27]]) as usize;
-
 		if idxt_offset + 4 > data_rec.len() {
 			continue;
 		}
@@ -68,7 +65,6 @@ pub(super) fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header
 		if &idxt[0..4] != b"IDXT" {
 			continue;
 		}
-
 		for j in 0..num_entries {
 			let entry_idx = 4 + j * 2;
 			if entry_idx + 2 > idxt.len() {
@@ -78,23 +74,20 @@ pub(super) fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header
 			if entry_offset >= data_rec.len() {
 				continue;
 			}
-
 			let mut pos = entry_offset;
 			let label_len = data_rec[pos] as usize;
 			pos += 1;
 			if pos + label_len > data_rec.len() {
 				continue;
 			}
-			let Ok(label_str) = std::str::from_utf8(&data_rec[pos..pos + label_len]) else { continue };
+			let Ok(label_str) = str::from_utf8(&data_rec[pos..pos + label_len]) else { continue };
 			let Ok(insert_offset) = label_str.parse::<usize>() else { continue };
 			pos += label_len;
-
 			if pos >= data_rec.len() {
 				continue;
 			}
 			let control = data_rec[pos];
 			pos += 1;
-
 			if (control & 1) != 0 {
 				let (_, p) = decode_vwi(data_rec, pos);
 				pos = p;
@@ -120,7 +113,6 @@ pub(super) fn rewrite_internal_links(
 	static RE_LINKS: LazyLock<regex::Regex> = LazyLock::new(|| {
 		regex::Regex::new(r#"(?i)<a\b[^>]*?(?:filepos\s*=\s*['"]?(\d+)|href\s*=\s*['"]?kindle:pos:(?:fid:([0-9A-Va-v]+):)?off:([0-9A-Va-v]+))[^>]*>"#).unwrap()
 	});
-
 	let mut links: Vec<(usize, usize, usize)> = Vec::new();
 	let mut targets = extra_targets.clone();
 	for cap in RE_LINKS.captures_iter(html) {
@@ -139,7 +131,6 @@ pub(super) fn rewrite_internal_links(
 				filepos = Some(off_val);
 			}
 		}
-
 		if let Some(filepos) = filepos
 			&& filepos < html.len()
 		{
