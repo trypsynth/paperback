@@ -3,7 +3,7 @@
 //! [`super::escapes::normalize_escapes`] consults so a `\'xx` byte escape decodes under
 //! whichever font is active at that point in the document.
 
-use std::collections::HashMap;
+use std::{collections::HashMap, str};
 
 use encoding_rs::Encoding;
 
@@ -69,7 +69,6 @@ pub(super) fn extract_font_table(rtf: &str, default_encoding: &'static Encoding)
 		tracing::debug!("no font table found in rtf document, per-font encoding is unavailable");
 		return map;
 	};
-
 	// Find the matching closing brace for the {\fonttbl} group.
 	let bytes = rtf.as_bytes();
 	let mut depth = 0usize;
@@ -87,12 +86,10 @@ pub(super) fn extract_font_table(rtf: &str, default_encoding: &'static Encoding)
 			_ => {}
 		}
 	}
-
 	let fonttbl = &rtf[start..fonttbl_end];
 	let fb = fonttbl.as_bytes();
 	// Start at 1 to skip the outer '{' of {\fonttbl} itself; inner {\fN...} entries follow.
 	let mut j = 1;
-
 	while j < fb.len() {
 		if fb[j] != b'{' {
 			j += 1;
@@ -117,10 +114,8 @@ pub(super) fn extract_font_table(rtf: &str, default_encoding: &'static Encoding)
 			}
 			k += 1;
 		}
-
 		let entry = &fonttbl[entry_start..entry_end];
 		let eb = entry.as_bytes();
-
 		// Find the first \fN (font number selection) in this entry.
 		// \fcharset, \fbidi, \froman, etc. all start with \f + non-digit so they won't match.
 		let mut font_num: Option<u32> = None;
@@ -132,14 +127,13 @@ pub(super) fn extract_font_table(rtf: &str, default_encoding: &'static Encoding)
 				while num_end < eb.len() && eb[num_end].is_ascii_digit() {
 					num_end += 1;
 				}
-				if let Some(n) = std::str::from_utf8(&eb[num_start..num_end]).ok().and_then(|s| s.parse::<u32>().ok()) {
+				if let Some(n) = str::from_utf8(&eb[num_start..num_end]).ok().and_then(|s| s.parse::<u32>().ok()) {
 					font_num = Some(n);
 					break;
 				}
 			}
 			ei += 1;
 		}
-
 		if let Some(fnum) = font_num
 			&& let Some(cs_pos) = entry.find("\\fcharset")
 		{
@@ -149,10 +143,8 @@ pub(super) fn extract_font_table(rtf: &str, default_encoding: &'static Encoding)
 				map.insert(fnum, encoding_for_fcharset(cs, default_encoding));
 			}
 		}
-
 		j = entry_end.max(j + 1);
 	}
-
 	map
 }
 
