@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+	collections::{HashMap, HashSet},
+	mem,
+};
 
 use anyhow::{Context, Result};
 use libchm::{ChmFile, Entry, EntryCategory, EntrySel};
@@ -72,7 +75,7 @@ impl Parser for ChmParser {
 			.iter_mut()
 			.enumerate()
 			.map(|(pos, (_, _, section))| {
-				let text = std::mem::take(&mut section.text);
+				let text = mem::take(&mut section.text);
 				if text.ends_with('\n') || (text.is_empty() && pos > 0) { text } else { text + "\n" }
 			})
 			.collect();
@@ -183,7 +186,7 @@ fn convert_sections(
 	ordered_files: &[String],
 	entries_by_path: &HashMap<String, Entry>,
 	render_tables_inline: bool,
-) -> Vec<std::result::Result<SectionContent, String>> {
+) -> Vec<Result<SectionContent, String>> {
 	ordered_files
 		.par_iter()
 		.map_init(
