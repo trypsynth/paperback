@@ -3,6 +3,7 @@ use std::{
 	error::Error,
 	fs,
 	path::{Path, PathBuf},
+	process::Command,
 };
 
 mod android;
@@ -52,7 +53,6 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 	let root = project_root();
 	let po_dir = root.join("po");
 	let pot_file = po_dir.join("paperback.pot");
-
 	// Step 1: generate from Rust crates tagged with translatable = true. `xgettext
 	// --language=C` doesn't understand Rust lifetimes (`'a`) or raw strings (`r#"..."#`) and
 	// runs on past them as "unterminated" literals, sometimes splicing unrelated strings
@@ -75,19 +75,16 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 	let gen_result = patois_build::gen_pot_from_dirs(&sanitized_dirs, &po_dir, "paperback", &version);
 	let _ = fs::remove_dir_all(&sanitized_root);
 	gen_result?;
-
 	// Step 2: extend with iOS Swift sources (t() calls in Swift files)
 	let ios_src = root.join("ios/Paperback");
 	if ios_src.is_dir() {
 		patois_build::extend_pot_from_source_dirs(&[&ios_src], "swift", &pot_file)?;
 	}
-
 	// Step 3: extend with Android Kotlin sources (excluding uniffi-generated bindings)
 	let kt_src = root.join("android/app/src/main/kotlin/dev/paperback/mobile");
 	if kt_src.is_dir() {
 		patois_build::extend_pot_from_source_dirs(&[&kt_src], "kt", &pot_file)?;
 	}
-
 	Ok(())
 }
 
@@ -122,10 +119,8 @@ fn translatable_crate_src_dirs(root: &Path) -> Vec<PathBuf> {
 /// produce a wrong default.
 fn crate_version(root: &Path, package_name: &str) -> Result<String, Box<dyn Error>> {
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-	let output = std::process::Command::new(&cargo)
-		.args(["metadata", "--format-version", "1", "--no-deps"])
-		.current_dir(root)
-		.output()?;
+	let output =
+		Command::new(&cargo).args(["metadata", "--format-version", "1", "--no-deps"]).current_dir(root).output()?;
 	if !output.status.success() {
 		return Err("cargo metadata failed".into());
 	}

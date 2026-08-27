@@ -74,7 +74,6 @@ impl DeepLClient {
 		struct Resp {
 			translations: Vec<TranslationItem>,
 		}
-
 		let protected: Vec<String> = texts.iter().map(|t| protect_placeholders(t)).collect();
 		let url = format!("{}/v2/translate", self.base_url);
 		let req = Req {
@@ -135,7 +134,6 @@ impl DeepLClient {
 		struct Resp {
 			translations: Vec<TranslationItem>,
 		}
-
 		let url = format!("{}/v2/translate", self.base_url);
 		let req =
 			Req { text: [html], target_lang, source_lang: "EN", tag_handling: "html", ignore_tags: &["code", "pre"] };
@@ -222,6 +220,8 @@ fn xml_unescape(s: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+	use std::iter;
+
 	use super::*;
 
 	#[test]
@@ -233,13 +233,13 @@ mod tests {
 
 	#[test]
 	fn resolves_pt_br_to_hyphenated_form() {
-		let supported: HashSet<String> = std::iter::once("PT-BR".to_string()).collect();
+		let supported: HashSet<String> = iter::once("PT-BR".to_string()).collect();
 		assert_eq!(resolve_target_lang("pt_br", &supported), Some("PT-BR".to_string()));
 	}
 
 	#[test]
 	fn resolves_zh_cn_falling_back_to_zh_hans() {
-		let supported: HashSet<String> = std::iter::once("ZH-HANS".to_string()).collect();
+		let supported: HashSet<String> = iter::once("ZH-HANS".to_string()).collect();
 		assert_eq!(resolve_target_lang("zh_CN", &supported), Some("ZH-HANS".to_string()));
 	}
 

@@ -4,7 +4,7 @@ use std::{
 	error::Error,
 	fs,
 	path::{Path, PathBuf},
-	process::Command,
+	process::{self, Command},
 };
 
 mod deepl;
@@ -37,11 +37,9 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 			return Err(format!("Unknown argument for translate: {arg}").into());
 		}
 	}
-
 	let root = project_root();
 	let po_dir = root.join("po");
 	let pot_path = po_dir.join("paperback.pot");
-
 	// gen_pot() unconditionally rewrites paperback.pot with a fresh POT-Creation-Date
 	// even when no translatable string actually changed. Left as-is, that alone would
 	// make every run "dirty" and every --dry-run leave the working tree modified. Restore
@@ -59,7 +57,6 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 			}
 		}
 	}
-
 	// --dry-run makes no API calls and needs no key, so it can be run by anyone locally
 	// to preview what a real run would do.
 	let client_and_supported = if dry_run {
@@ -70,7 +67,6 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 		let supported = client.supported_target_languages()?;
 		Some((client, supported))
 	};
-
 	let mut po_files: Vec<PathBuf> = fs::read_dir(&po_dir)?
 		.filter_map(Result::ok)
 		.map(|e| e.path())
@@ -79,9 +75,7 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 	po_files.sort();
 	let langs: Vec<String> =
 		po_files.iter().filter_map(|p| p.file_stem().and_then(|s| s.to_str()).map(str::to_string)).collect();
-
 	let human_maintained = load_human_maintained_locales(&root)?;
-
 	for po_path in &po_files {
 		let lang = po_path.file_stem().and_then(|s| s.to_str()).unwrap_or_default();
 		if human_maintained.contains(lang) {
@@ -90,10 +84,8 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 		}
 		translate_one(po_path, &pot_path, dry_run, client_and_supported.as_ref())?;
 	}
-
 	let auto_langs: Vec<String> = langs.into_iter().filter(|l| !human_maintained.contains(l.as_str())).collect();
 	readme::sync_readmes(&root, &auto_langs, client_and_supported.as_ref(), dry_run)?;
-
 	Ok(())
 }
 
@@ -118,18 +110,17 @@ fn parse_human_maintained_locales(content: &str) -> HashSet<String> {
 }
 
 fn translate_one(
-	po_path: &std::path::Path,
-	pot_path: &std::path::Path,
+	po_path: &Path,
+	pot_path: &Path,
 	dry_run: bool,
 	client_and_supported: Option<&(deepl::DeepLClient, HashSet<String>)>,
 ) -> Result<(), Box<dyn Error>> {
 	let lang = po_path.file_stem().and_then(|s| s.to_str()).unwrap_or_default().to_string();
 	let original = fs::read_to_string(po_path)?;
-
 	// Work on a scratch copy so po_path is never touched unless there's a real change to
 	// write back (checked at the end) — true for --dry-run and for the "msgmerge only
 	// bumped a timestamp" case alike.
-	let tmp = env::temp_dir().join(format!("paperback-translate-{lang}-{}.po", std::process::id()));
+	let tmp = env::temp_dir().join(format!("paperback-translate-{lang}-{}.po", process::id()));
 	fs::write(&tmp, &original)?;
 	let msgmerge_ok = Command::new("msgmerge")
 		.args(["--update", "--backup=none", "--no-wrap"])
@@ -144,10 +135,8 @@ fn translate_one(
 	}
 	let merged = fs::read_to_string(&tmp)?;
 	let _ = fs::remove_file(&tmp);
-
 	let mut doc = PoDocument::parse(&merged);
 	let candidates: Vec<(usize, String)> = doc.needs_translation().map(|(i, m)| (i, m.to_string())).collect();
-
 	if dry_run {
 		if candidates.is_empty() {
 			println!("{lang}: fully translated, nothing to do");
@@ -156,7 +145,6 @@ fn translate_one(
 		}
 		return Ok(());
 	}
-
 	let final_content = if candidates.is_empty() {
 		merged
 	} else {
@@ -194,7 +182,6 @@ fn translate_one(
 			}
 		}
 	};
-
 	if content_without_volatile_headers(&original) == content_without_volatile_headers(&final_content) {
 		return Ok(());
 	}

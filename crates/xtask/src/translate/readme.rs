@@ -5,7 +5,7 @@ use std::{
 	fs,
 	hash::{Hash, Hasher},
 	path::Path,
-	process::Command,
+	process::{self, Command},
 };
 
 use super::deepl::{DeepLClient, resolve_target_lang};
@@ -31,7 +31,6 @@ pub fn sync_readmes(
 		return Ok(());
 	};
 	let hash = source_hash(&source_md);
-
 	for lang in langs {
 		let target_path = doc_dir.join(format!("readme-{lang}.md"));
 		let existing = fs::read_to_string(&target_path).ok();
@@ -84,7 +83,7 @@ fn existing_marker_hash(content: &str) -> Option<&str> {
 /// `crates/xtask/src/{android,ios}.rs`), not a standalone document: no `<html>`/`<head>`
 /// wrapper, since this is headed straight into a `DeepL` request, not rendered directly.
 fn md_to_html_fragment(path: &Path) -> Result<String, Box<dyn Error>> {
-	let tmp_html = env::temp_dir().join(format!("paperback-readme-{}.html", std::process::id()));
+	let tmp_html = env::temp_dir().join(format!("paperback-readme-{}.html", process::id()));
 	let status = Command::new("pandoc")
 		.arg(path)
 		.arg("-f")
@@ -108,7 +107,7 @@ fn md_to_html_fragment(path: &Path) -> Result<String, Box<dyn Error>> {
 /// renders the same, and it's still `pandoc` doing the final `readme.html` render either
 /// way, so that cosmetic difference never reaches an actual reader.
 fn html_to_md(html: &str) -> Result<String, Box<dyn Error>> {
-	let pid = std::process::id();
+	let pid = process::id();
 	let tmp_html = env::temp_dir().join(format!("paperback-readme-in-{pid}.html"));
 	let tmp_md = env::temp_dir().join(format!("paperback-readme-out-{pid}.md"));
 	fs::write(&tmp_html, html)?;

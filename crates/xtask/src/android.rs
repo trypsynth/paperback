@@ -21,7 +21,6 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	let args = env::args().skip(2);
 	let mut gradle_tasks = Vec::new();
 	let mut build_aab = false;
-
 	for arg in args {
 		match arg.as_str() {
 			"--release" => gradle_tasks.push("assembleRelease"),
@@ -35,12 +34,10 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			}
 		}
 	}
-
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
 	let jni_libs = project_root().join("android/app/src/main/jniLibs");
 	download_pdfium_so(PDFIUM_ANDROID_ARM64_URL, &jni_libs.join("arm64-v8a/libpdfium.so"))?;
 	download_pdfium_so(PDFIUM_ANDROID_ARM_URL, &jni_libs.join("armeabi-v7a/libpdfium.so"))?;
-
 	println!("Generating Kotlin bindings via uniffi-bindgen...");
 	let status = Command::new(&cargo)
 		.current_dir(project_root())
@@ -88,7 +85,6 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 		return Err("cargo ndk build failed".into());
 	}
 	println!("Android native build complete.");
-
 	// Generate translation JSON assets for each translated language
 	let po_dir = project_root().join("po");
 	let assets_dir = project_root().join("android/app/src/main/assets");
@@ -97,7 +93,6 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	{
 		println!("Warning: could not generate Android translations: {e}");
 	}
-
 	let readmes_assets_dir = assets_dir.join("readmes");
 	let _ = fs::create_dir_all(&readmes_assets_dir);
 	let doc_dir = project_root().join("doc");
@@ -138,7 +133,6 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			}
 		}
 	}
-
 	if gradle_tasks.is_empty() && !build_aab {
 		println!("Open android/ in Android Studio to build the APK.");
 	} else {
@@ -157,7 +151,6 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			println!("App Bundle built: android/app/build/outputs/bundle/release/app-release.aab");
 		}
 	}
-
 	Ok(())
 }
 

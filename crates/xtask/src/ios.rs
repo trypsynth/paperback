@@ -28,11 +28,9 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	let root = project_root();
 	let generated_dir = root.join("ios/Paperback/Generated");
 	fs::create_dir_all(&generated_dir)?;
-
 	let pdfium_dest = root.join("ios/libpdfium.dylib");
 	download_pdfium_dylib(PDFIUM_IOS_ARM64_URL, &pdfium_dest)?;
 	wrap_pdfium_framework(&root, &pdfium_dest)?;
-
 	println!("Generating Swift bindings via uniffi-bindgen...");
 	let status = Command::new(&cargo)
 		.current_dir(&root)
@@ -57,28 +55,23 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("uniffi-bindgen Swift generation failed".into());
 	}
-
 	let profile = if release { "release" } else { "debug" };
 	let mut build_args = vec!["build", "-p", "paperback-core", "--features", "uniffi"];
 	if release {
 		build_args.push("--release");
 	}
-
 	println!("Building for aarch64-apple-ios (device)...");
 	let status =
 		Command::new(&cargo).current_dir(&root).args(&build_args).args(["--target", "aarch64-apple-ios"]).status()?;
 	if !status.success() {
 		return Err("cargo build for aarch64-apple-ios failed".into());
 	}
-
 	let headers_dir = root.join("ios/Paperback/Generated");
 	let device_lib = root.join(format!("target/aarch64-apple-ios/{profile}/libpaperback_core.a"));
 	let xcframework_out = root.join("ios/paperbackFFI.xcframework");
-
 	if xcframework_out.exists() {
 		fs::remove_dir_all(&xcframework_out)?;
 	}
-
 	println!("Creating paperbackFFI.xcframework...");
 	let status = Command::new("xcodebuild")
 		.args(["-create-xcframework"])
@@ -92,7 +85,6 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("xcodebuild -create-xcframework failed".into());
 	}
-
 	// Generate Localizable.strings for each translated language
 	let po_dir = root.join("po");
 	let ios_dir = root.join("ios/Paperback");
@@ -114,9 +106,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 			}
 		}
 	}
-
 	generate_readmes(&root, &ios_dir.join("Readmes"))?;
-
 	println!("iOS build complete.");
 	println!("  XCFramework: ios/paperbackFFI.xcframework");
 	println!("  PDFium framework: ios/libpdfium.framework");
@@ -133,11 +123,9 @@ pub fn ios_release() -> Result<(), Box<dyn Error>> {
 	let archive_path = root.join("target/Paperback.xcarchive");
 	let export_path = root.join("target/PaperbackExport");
 	let export_options = ios_dir.join("ExportOptions.plist");
-
 	if !export_options.exists() {
 		return Err("ios/ExportOptions.plist not found".into());
 	}
-
 	println!("Archiving Paperback.xcodeproj...");
 	let status = Command::new("xcodebuild")
 		.args([
@@ -155,7 +143,6 @@ pub fn ios_release() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("xcodebuild archive failed".into());
 	}
-
 	println!("Exporting IPA...");
 	let _ = fs::remove_dir_all(&export_path);
 	let status = Command::new("xcodebuild")
@@ -172,13 +159,11 @@ pub fn ios_release() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("xcodebuild -exportArchive failed".into());
 	}
-
 	let ipa = export_path.join("Paperback.ipa");
 	if !ipa.exists() {
 		return Err(format!("IPA not found at {}", ipa.display()).into());
 	}
 	println!("IPA ready: {}", ipa.display());
-
 	if upload {
 		println!("Uploading to App Store Connect...");
 		let status = Command::new("xcrun")
@@ -204,7 +189,6 @@ pub fn ios_release() -> Result<(), Box<dyn Error>> {
 		println!("To upload, run:  cargo xtask ios-release --upload");
 		println!("Or drag {} into Transporter or Xcode Organizer.", ipa.display());
 	}
-
 	Ok(())
 }
 
@@ -263,10 +247,8 @@ fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>
 		fs::remove_dir_all(&framework_dir)?;
 	}
 	fs::create_dir_all(&framework_dir)?;
-
 	let framework_binary = framework_dir.join("libpdfium.dylib");
 	fs::copy(dylib, &framework_binary)?;
-
 	let status = Command::new("install_name_tool")
 		.args(["-id", "@rpath/libpdfium.framework/libpdfium.dylib"])
 		.arg(&framework_binary)
@@ -274,7 +256,6 @@ fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>
 	if !status.success() {
 		return Err("install_name_tool -id failed on libpdfium.framework/libpdfium.dylib".into());
 	}
-
 	// The prebuilt binary's LC_BUILD_VERSION load command declares a minos far above our own
 	// deployment target (observed: iOS 26.0, just whatever SDK the upstream release happened to
 	// be built with) — nothing in PDFium actually requires that OS version, but App Store
@@ -290,7 +271,6 @@ fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>
 	if !status.success() {
 		return Err("vtool -set-build-version failed on libpdfium.framework/libpdfium.dylib".into());
 	}
-
 	fs::write(framework_dir.join("Info.plist"), pdfium_framework_info_plist())?;
 	Ok(())
 }
@@ -337,7 +317,6 @@ fn generate_readmes(root: &Path, readmes_dir: &Path) -> Result<(), Box<dyn Error
 	}
 	fs::create_dir_all(readmes_dir)?;
 	let pandoc_config = doc_dir.join("pandoc.yaml");
-
 	let default_readme = doc_dir.join("readme.md");
 	if default_readme.exists() {
 		let status = Command::new("pandoc")
@@ -351,7 +330,6 @@ fn generate_readmes(root: &Path, readmes_dir: &Path) -> Result<(), Box<dyn Error
 			_ => println!("Warning: Failed to generate default English documentation"),
 		}
 	}
-
 	for entry in fs::read_dir(&doc_dir)?.flatten() {
 		let path = entry.path();
 		let Some(name) = path.file_name().and_then(|n| n.to_str()) else { continue };
@@ -370,6 +348,5 @@ fn generate_readmes(root: &Path, readmes_dir: &Path) -> Result<(), Box<dyn Error
 			_ => println!("Warning: Failed to generate documentation for language: {name}"),
 		}
 	}
-
 	Ok(())
 }
