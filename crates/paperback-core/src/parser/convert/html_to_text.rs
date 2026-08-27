@@ -1,10 +1,15 @@
-use std::{collections::HashMap, fmt::Write, mem};
+use std::{collections::HashMap, fmt::Write};
 
 use bitflags::bitflags;
 use ego_tree::NodeRef;
 use scraper::{ElementRef, Html, Node, node};
 
-use super::table_text::{collect_dom_text, push_finalized_line, table_render_bundle};
+use super::{
+	block_elements::is_block_element,
+	format_spans::{FormatKind, FormatSpans},
+	line_builder::LineBuilder,
+	table_text::{collect_dom_text, table_render_bundle},
+};
 use crate::{
 	parser::ConverterOutput,
 	t,
@@ -16,7 +21,6 @@ bitflags! {
 	#[derive(Default, Clone, Copy)]
 	struct ProcessingFlags: u8 {
 		const IN_BODY = 1;
-		const PRESERVE_WHITESPACE = 2;
 		const IN_CODE = 4;
 		const IN_LINK = 8;
 	}
@@ -41,9 +45,9 @@ impl Default for ListStyle {
 	}
 }
 
+#[derive(Default)]
 pub struct HtmlToText {
-	lines: Vec<String>,
-	current_line: String,
+	text: LineBuilder,
 	id_positions: HashMap<String, usize>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
@@ -54,7 +58,6 @@ pub struct HtmlToText {
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
 	title: String,
-	preserve_whitespace_depth: usize,
 	flags: ProcessingFlags,
 	current_link_href: String,
 	current_link_text: String,
@@ -65,14 +68,8 @@ pub struct HtmlToText {
 	/// balanced with the start/close handlers so list lengths are set on the right entries.
 	open_lists: Vec<Option<usize>>,
 	link_start_pos: usize,
-	bolds: Vec<FormatInfo>,
-	italics: Vec<FormatInfo>,
-	underlines: Vec<FormatInfo>,
-	open_bolds: Vec<usize>,
-	open_italics: Vec<usize>,
-	open_underlines: Vec<usize>,
-	source_mode: HtmlSourceMode,
-	cached_char_length: usize,
+	format_spans: FormatSpans,
+	source_mode_markdown: bool,
 	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
 	/// `"[Table]: <first row>"` placeholder. A config flag, not parse state: it survives `clear()`.
 	render_tables_inline: bool,
@@ -81,37 +78,7 @@ pub struct HtmlToText {
 impl HtmlToText {
 	#[must_use]
 	pub fn new() -> Self {
-		Self {
-			lines: Vec::new(),
-			current_line: String::new(),
-			id_positions: HashMap::new(),
-			headings: Vec::new(),
-			links: Vec::new(),
-			images: Vec::new(),
-			figures: Vec::new(),
-			tables: Vec::new(),
-			separators: Vec::new(),
-			lists: Vec::new(),
-			list_items: Vec::new(),
-			title: String::new(),
-			preserve_whitespace_depth: 0,
-			flags: ProcessingFlags::empty(),
-			current_link_href: String::new(),
-			current_link_text: String::new(),
-			list_style_stack: Vec::new(),
-			list_level: 0,
-			open_lists: Vec::new(),
-			link_start_pos: 0,
-			bolds: Vec::new(),
-			italics: Vec::new(),
-			underlines: Vec::new(),
-			open_bolds: Vec::new(),
-			open_italics: Vec::new(),
-			open_underlines: Vec::new(),
-			source_mode: HtmlSourceMode::NativeHtml,
-			cached_char_length: 0,
-			render_tables_inline: false,
-		}
+		Self::default()
 	}
 
 	/// Like [`new`](Self::new) but sets whether tables are rendered inline (full TSV) or as a
@@ -119,22 +86,22 @@ impl HtmlToText {
 	/// `convert`/`clear`.
 	#[must_use]
 	pub fn with_render_tables_inline(render_tables_inline: bool) -> Self {
-		Self { render_tables_inline, ..Self::new() }
+		Self { render_tables_inline, ..Self::default() }
 	}
 
 	pub fn convert(&mut self, html_content: &str, mode: HtmlSourceMode) -> bool {
 		self.clear();
-		self.source_mode = mode;
+		self.source_mode_markdown = mode == HtmlSourceMode::Markdown;
 		let document = Html::parse_document(html_content);
 		let root = document.tree.root();
 		self.process_node(root, &document);
-		self.finalize_current_line();
+		self.text.finalize_current_line();
 		true
 	}
 
 	#[must_use]
 	pub fn get_text(&self) -> String {
-		self.lines.join("\n")
+		self.text.get_text()
 	}
 
 	#[must_use]
@@ -179,22 +146,21 @@ impl HtmlToText {
 
 	#[must_use]
 	pub fn get_bolds(&self) -> &[FormatInfo] {
-		&self.bolds
+		self.format_spans.bolds()
 	}
 
 	#[must_use]
 	pub fn get_italics(&self) -> &[FormatInfo] {
-		&self.italics
+		self.format_spans.italics()
 	}
 
 	#[must_use]
 	pub fn get_underlines(&self) -> &[FormatInfo] {
-		&self.underlines
+		self.format_spans.underlines()
 	}
 
 	pub fn clear(&mut self) {
-		self.lines.clear();
-		self.current_line.clear();
+		self.text.clear();
 		self.id_positions.clear();
 		self.headings.clear();
 		self.links.clear();
@@ -205,7 +171,6 @@ impl HtmlToText {
 		self.lists.clear();
 		self.list_items.clear();
 		self.title.clear();
-		self.preserve_whitespace_depth = 0;
 		self.flags = ProcessingFlags::empty();
 		self.current_link_href.clear();
 		self.current_link_text.clear();
@@ -213,13 +178,7 @@ impl HtmlToText {
 		self.list_level = 0;
 		self.open_lists.clear();
 		self.link_start_pos = 0;
-		self.bolds.clear();
-		self.italics.clear();
-		self.underlines.clear();
-		self.open_bolds.clear();
-		self.open_italics.clear();
-		self.open_underlines.clear();
-		self.cached_char_length = 0;
+		self.format_spans.clear();
 	}
 
 	const fn get_bullet_for_level(level: i32) -> &'static str {
@@ -239,7 +198,7 @@ impl HtmlToText {
 					if self.flags.contains(ProcessingFlags::IN_BODY)
 						&& let Some(id) = element.attr("id").or_else(|| element.attr("name"))
 					{
-						self.id_positions.insert(id.to_string(), self.get_current_text_position());
+						self.id_positions.insert(id.to_string(), self.text.get_current_text_position());
 					}
 					self.handle_table(node, document);
 					return;
@@ -267,15 +226,15 @@ impl HtmlToText {
 	}
 
 	fn handle_table(&mut self, node: NodeRef<'_, Node>, document: &Html) {
-		self.finalize_current_line();
+		self.text.finalize_current_line();
 		let table_html = Self::serialize_node(node, document);
-		let start_offset = self.get_current_text_position();
+		let start_offset = self.text.get_current_text_position();
 		// Emit the table's on-screen text via the shared helper instead of recursing children to
 		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
 		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
 		let render = table_render_bundle(&table_html, self.render_tables_inline);
 		for line in render.lines {
-			self.push_finalized_line(line);
+			self.text.push_finalized_line(line);
 		}
 		let table_caption = render.caption;
 		let display_length = render.display_length;
@@ -287,18 +246,11 @@ impl HtmlToText {
 		});
 	}
 
-	/// Push a line to the output verbatim (no whitespace collapsing/trimming), updating the cached
-	/// length so position tracking stays correct. Used for table rows whose tab separators and empty
-	/// cells must not be mangled by `add_line`.
-	fn push_finalized_line(&mut self, line: String) {
-		push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
-	}
-
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
 		if let Node::Element(element) = node.value() {
 			if self.flags.contains(ProcessingFlags::IN_BODY) {
 				if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
-					self.id_positions.insert(id.to_string(), self.get_current_text_position());
+					self.id_positions.insert(id.to_string(), self.text.get_current_text_position());
 				}
 				if tag_name == "img" || tag_name == "image" || tag_name == "figure" {
 					let mut description = element
@@ -325,8 +277,8 @@ impl HtmlToText {
 						// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 						let label = if is_figure { t("Figure") } else { t("Image") };
 						let image_text = format!("[{label}: {description}]");
-						let offset = self.get_current_text_position();
-						self.current_line.push_str(&image_text);
+						let offset = self.text.get_current_text_position();
+						self.text.current_line.push_str(&image_text);
 						let info = ImageInfo { offset, alt_text: description };
 						if is_figure {
 							self.figures.push(info);
@@ -341,14 +293,14 @@ impl HtmlToText {
 				if let Some(href) = element.attr("href") {
 					self.current_link_href = href.to_string();
 				}
-				self.link_start_pos = self.get_current_text_position();
+				self.link_start_pos = self.text.get_current_text_position();
 			}
 			if tag_name == "b" || tag_name == "strong" {
-				self.open_bolds.push(self.get_current_text_position());
+				self.format_spans.open(&FormatKind::Bold, self.text.get_current_text_position());
 			} else if tag_name == "i" || tag_name == "em" {
-				self.open_italics.push(self.get_current_text_position());
+				self.format_spans.open(&FormatKind::Italic, self.text.get_current_text_position());
 			} else if tag_name == "u" {
-				self.open_underlines.push(self.get_current_text_position());
+				self.format_spans.open(&FormatKind::Underline, self.text.get_current_text_position());
 			}
 		}
 		if tag_name == "title" && self.title.is_empty() {
@@ -357,47 +309,47 @@ impl HtmlToText {
 		} else if tag_name == "body" {
 			self.flags.insert(ProcessingFlags::IN_BODY);
 		} else if tag_name == "pre" {
-			self.finalize_current_line();
-			self.start_preserve_whitespace();
+			self.text.finalize_current_line();
+			self.text.start_preserve_whitespace();
 		} else if tag_name == "hr" && self.flags.contains(ProcessingFlags::IN_BODY) {
-			self.finalize_current_line();
-			let offset = self.get_current_text_position();
-			let line = Self::separator_line();
-			self.current_line.push_str(line);
-			self.finalize_current_line();
+			self.text.finalize_current_line();
+			let offset = self.text.get_current_text_position();
+			let line = LineBuilder::separator_line();
+			self.text.current_line.push_str(line);
+			self.text.finalize_current_line();
 			self.separators.push(SeparatorInfo { offset, length: display_len(line) });
 		} else if tag_name == "code" {
 			self.flags.insert(ProcessingFlags::IN_CODE);
-			self.start_preserve_whitespace();
+			self.text.start_preserve_whitespace();
 		} else if tag_name == "br" {
-			self.finalize_current_line();
+			self.text.finalize_current_line();
 		}
 	}
 
 	fn handle_list_item(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
 		if tag_name == "li" {
-			self.finalize_current_line();
+			self.text.finalize_current_line();
 			let li_text = Self::get_element_text(node, document);
 			self.list_items.push(ListItemInfo {
-				offset: self.get_current_text_position(),
+				offset: self.text.get_current_text_position(),
 				level: self.list_level,
 				text: li_text,
 			});
 			for _ in 0..self.list_level {
-				self.current_line.push_str("  ");
+				self.text.current_line.push_str("  ");
 			}
 			if let Some(style) = self.list_style_stack.last_mut() {
 				if style.ordered {
 					let item_text = format_list_item(style.item_number, &style.list_type);
-					let _ = write!(&mut self.current_line, "{item_text}. ");
+					let _ = write!(&mut self.text.current_line, "{item_text}. ");
 					style.item_number += 1;
 				} else {
-					self.current_line.push_str(Self::get_bullet_for_level(self.list_level));
-					self.current_line.push(' ');
+					self.text.current_line.push_str(Self::get_bullet_for_level(self.list_level));
+					self.text.current_line.push(' ');
 				}
 			} else {
-				self.current_line.push_str(Self::get_bullet_for_level(self.list_level));
-				self.current_line.push(' ');
+				self.text.current_line.push_str(Self::get_bullet_for_level(self.list_level));
+				self.text.current_line.push(' ');
 			}
 		}
 	}
@@ -429,9 +381,9 @@ impl HtmlToText {
 				}
 			}
 			if item_count > 0 {
-				self.finalize_current_line();
+				self.text.finalize_current_line();
 				self.open_lists.push(Some(self.lists.len()));
-				self.lists.push(ListInfo { offset: self.get_current_text_position(), item_count, length: 0 });
+				self.lists.push(ListInfo { offset: self.text.get_current_text_position(), item_count, length: 0 });
 			} else {
 				self.open_lists.push(None);
 			}
@@ -447,8 +399,8 @@ impl HtmlToText {
 			&& let Some(level) = level_char.to_digit(10)
 			&& (1..=6).contains(&level)
 		{
-			self.finalize_current_line();
-			let heading_offset = self.get_current_text_position();
+			self.text.finalize_current_line();
+			let heading_offset = self.text.get_current_text_position();
 			let heading_text = Self::get_element_text(node, document);
 			if !heading_text.is_empty() {
 				#[allow(clippy::cast_possible_wrap)]
@@ -458,15 +410,15 @@ impl HtmlToText {
 	}
 
 	fn process_element_children(&mut self, node: NodeRef<'_, Node>, document: &Html, tag_name: &str) {
-		let is_markdown_code = self.source_mode == HtmlSourceMode::Markdown
+		let is_markdown_code = self.source_mode_markdown
 			&& self.flags.contains(ProcessingFlags::IN_CODE)
-			&& self.flags.contains(ProcessingFlags::PRESERVE_WHITESPACE)
+			&& self.text.is_preserving_whitespace()
 			&& tag_name == "code";
 		if is_markdown_code {
 			for child in node.children() {
 				if let Node::Element(_) = child.value() {
 					let html_str = Self::serialize_node(child, document);
-					self.current_line.push_str(&html_str);
+					self.text.current_line.push_str(&html_str);
 				} else {
 					self.process_node(child, document);
 				}
@@ -488,51 +440,42 @@ impl HtmlToText {
 					text: collapsed_text.clone(),
 					reference: self.current_link_href.clone(),
 				});
-				self.current_line.push_str(&collapsed_text);
+				self.text.current_line.push_str(&collapsed_text);
 			}
 			self.current_link_href.clear();
 			self.current_link_text.clear();
 		}
 		if tag_name == "code" {
 			self.flags.remove(ProcessingFlags::IN_CODE);
-			self.stop_preserve_whitespace();
+			self.text.stop_preserve_whitespace();
 		}
 		if tag_name == "ul" || tag_name == "ol" {
 			self.list_level -= 1;
 			self.list_style_stack.pop();
 			if let Some(open) = self.open_lists.pop().flatten() {
-				self.finalize_current_line();
+				self.text.finalize_current_line();
 				let offset = self.lists[open].offset;
-				self.lists[open].length = self.get_current_text_position().saturating_sub(offset);
+				self.lists[open].length = self.text.get_current_text_position().saturating_sub(offset);
 			}
 		}
 		if tag_name == "pre" {
 			let has_preserved_trailing_whitespace =
-				self.flags.contains(ProcessingFlags::PRESERVE_WHITESPACE) && self.current_line.trim().is_empty();
+				self.text.is_preserving_whitespace() && self.text.current_line.trim().is_empty();
 			if has_preserved_trailing_whitespace {
-				self.current_line.clear();
+				self.text.current_line.clear();
 			} else {
-				self.finalize_current_line();
+				self.text.finalize_current_line();
 			}
-			self.stop_preserve_whitespace();
-		} else if Self::is_block_element(tag_name) {
-			self.finalize_current_line();
+			self.text.stop_preserve_whitespace();
+		} else if is_block_element(tag_name) {
+			self.text.finalize_current_line();
 		}
 		if tag_name == "b" || tag_name == "strong" {
-			if let Some(start) = self.open_bolds.pop() {
-				self.bolds
-					.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
-			}
+			self.format_spans.close(&FormatKind::Bold, self.text.get_current_text_position());
 		} else if tag_name == "i" || tag_name == "em" {
-			if let Some(start) = self.open_italics.pop() {
-				self.italics
-					.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
-			}
-		} else if tag_name == "u"
-			&& let Some(start) = self.open_underlines.pop()
-		{
-			self.underlines
-				.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
+			self.format_spans.close(&FormatKind::Italic, self.text.get_current_text_position());
+		} else if tag_name == "u" {
+			self.format_spans.close(&FormatKind::Underline, self.text.get_current_text_position());
 		}
 	}
 
@@ -545,32 +488,18 @@ impl HtmlToText {
 			return;
 		}
 		let processed_text = remove_soft_hyphens(&text_content);
-		if self.flags.contains(ProcessingFlags::PRESERVE_WHITESPACE) {
+		if self.text.is_preserving_whitespace() {
 			let lines: Vec<&str> = processed_text.split('\n').collect();
 			for (i, line) in lines.iter().enumerate() {
-				self.current_line.push_str(line);
+				self.text.current_line.push_str(line);
 				if i < lines.len() - 1 {
-					self.finalize_current_line();
+					self.text.finalize_current_line();
 				}
 			}
 		} else if self.flags.contains(ProcessingFlags::IN_LINK) {
 			self.current_link_text.push_str(&collapse_whitespace(&processed_text));
 		} else {
-			self.current_line.push_str(&collapse_whitespace(&processed_text));
-		}
-	}
-
-	fn start_preserve_whitespace(&mut self) {
-		self.preserve_whitespace_depth += 1;
-		self.flags.insert(ProcessingFlags::PRESERVE_WHITESPACE);
-	}
-
-	fn stop_preserve_whitespace(&mut self) {
-		if self.preserve_whitespace_depth > 0 {
-			self.preserve_whitespace_depth -= 1;
-		}
-		if self.preserve_whitespace_depth == 0 {
-			self.flags.remove(ProcessingFlags::PRESERVE_WHITESPACE);
+			self.text.current_line.push_str(&collapse_whitespace(&processed_text));
 		}
 	}
 
@@ -590,77 +519,6 @@ impl HtmlToText {
 			Node::Text(text) => text.text.to_string(),
 			_ => String::new(),
 		}
-	}
-
-	fn add_line(&mut self, line: String) {
-		if self.flags.contains(ProcessingFlags::PRESERVE_WHITESPACE) {
-			self.cached_char_length += display_len(&line) + 1; // +1 for newline
-			self.lines.push(line);
-		} else {
-			let processed_line = collapse_whitespace(&line);
-			let processed_line = processed_line.trim().to_string();
-			if processed_line.is_empty() {
-				return;
-			}
-			self.cached_char_length += display_len(&processed_line) + 1; // +1 for newline
-			self.lines.push(processed_line);
-		}
-	}
-
-	const fn separator_line() -> &'static str {
-		"----------------------------------------"
-	}
-
-	fn finalize_current_line(&mut self) {
-		let line = mem::take(&mut self.current_line);
-		self.add_line(line);
-	}
-
-	fn current_display_len(&self) -> usize {
-		if self.flags.contains(ProcessingFlags::PRESERVE_WHITESPACE) {
-			return display_len(&self.current_line);
-		}
-		let collapsed = collapse_whitespace(&self.current_line);
-		// Use trim_start() not trim(): trailing whitespace before an inline element (e.g. a
-		// space before <a>) IS preserved in the output line, so including it in the position
-		// count keeps link/anchor offsets correctly aligned with the final text.
-		let trimmed = collapsed.trim_start();
-		display_len(trimmed)
-	}
-
-	fn get_current_text_position(&self) -> usize {
-		self.cached_char_length + self.current_display_len()
-	}
-
-	fn is_block_element(tag_name: &str) -> bool {
-		matches!(
-			tag_name,
-			"div"
-				| "p" | "pre"
-				| "h1" | "h2"
-				| "h3" | "h4"
-				| "h5" | "h6"
-				| "blockquote"
-				| "ul" | "ol"
-				| "li" | "dl"
-				| "dt" | "dd"
-				| "section" | "article"
-				| "header" | "footer"
-				| "nav" | "aside"
-				| "main" | "figure"
-				| "figcaption"
-				| "address" | "hr"
-				| "table" | "thead"
-				| "tbody" | "tfoot"
-				| "tr" | "td"
-				| "th"
-		)
-	}
-}
-
-impl Default for HtmlToText {
-	fn default() -> Self {
-		Self::new()
 	}
 }
 
@@ -690,13 +548,13 @@ impl ConverterOutput for HtmlToText {
 		&self.list_items
 	}
 	fn get_bolds(&self) -> &[FormatInfo] {
-		&self.bolds
+		self.format_spans.bolds()
 	}
 	fn get_italics(&self) -> &[FormatInfo] {
-		&self.italics
+		self.format_spans.italics()
 	}
 	fn get_underlines(&self) -> &[FormatInfo] {
-		&self.underlines
+		self.format_spans.underlines()
 	}
 }
 
@@ -926,6 +784,17 @@ mod tests {
 		let mut converter = HtmlToText::new();
 		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
 		assert!(converter.get_text().contains("  spaced  "));
+	}
+
+	/// A `<pre>` block whose source text uses CRLF line endings must not leak a stray `\r` onto
+	/// the end of each preserved line - the shared `LineBuilder::add_line` strips trailing
+	/// `\r`/`\n` from a preserved line before storing it, same as `XmlToText` already relied on.
+	#[test]
+	fn pre_block_with_crlf_content_does_not_leak_carriage_returns() {
+		let html = "<html><body><pre>line one\r\nline two</pre></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		assert!(!converter.get_text().contains('\r'), "got: {:?}", converter.get_text());
 	}
 
 	#[test]
