@@ -46,7 +46,6 @@ impl DocumentSession {
 	#[must_use]
 	pub fn get_supported_segment_types_ffi(&self) -> Vec<SegmentTypeFfi> {
 		let mut supported = vec![SegmentTypeFfi::Paragraph, SegmentTypeFfi::Line];
-
 		let has_heading = (0..=5).any(|level| {
 			let mtype = match level {
 				0 => MarkerType::Heading1,
@@ -61,43 +60,33 @@ impl DocumentSession {
 		if has_heading {
 			supported.push(SegmentTypeFfi::Heading);
 		}
-
 		if self.has_marker(MarkerType::Link) {
 			supported.push(SegmentTypeFfi::Link);
 		}
-
 		if self.parser_flags.contains(ParserFlags::SUPPORTS_SECTIONS) && self.has_marker(MarkerType::SectionBreak) {
 			supported.push(SegmentTypeFfi::Section);
 		}
-
 		if self.parser_flags.contains(ParserFlags::SUPPORTS_PAGES) && self.has_marker(MarkerType::PageBreak) {
 			supported.push(SegmentTypeFfi::Page);
 		}
-
 		if self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::List) {
 			supported.push(SegmentTypeFfi::List);
 		}
-
 		if self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::ListItem) {
 			supported.push(SegmentTypeFfi::ListItem);
 		}
-
 		if self.has_marker(MarkerType::Table) {
 			supported.push(SegmentTypeFfi::Table);
 		}
-
 		if self.has_marker(MarkerType::Separator) {
 			supported.push(SegmentTypeFfi::Separator);
 		}
-
 		if self.has_marker(MarkerType::Image) {
 			supported.push(SegmentTypeFfi::Image);
 		}
-
 		if self.has_marker(MarkerType::Figure) {
 			supported.push(SegmentTypeFfi::Figure);
 		}
-
 		supported
 	}
 
@@ -153,7 +142,6 @@ impl DocumentSession {
 			SegmentTypeFfi::Figure => Some(NavTarget::Figure),
 			_ => None,
 		};
-
 		if let Some(target) = nav_target {
 			let direction_nav = match direction {
 				SegmentDirectionFfi::Previous => NavDirection::Previous,
@@ -165,35 +153,29 @@ impl DocumentSession {
 				let mut text = res.marker_text.clone();
 				let mut offset = res.offset as i64;
 				let mut end_pos = offset;
-
 				if text.trim().is_empty() {
 					let content = &self.handle.document().buffer.content;
 					let total_chars = self.handle.document().buffer.char_count();
 					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(total_chars);
 					let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
-
 					let (start_byte, end_byte) =
 						self.find_paragraph_boundaries(content, byte_idx, SegmentDirectionFfi::Current);
 					text = content[start_byte..end_byte].trim().to_string();
 					let start_char = self.handle.document().buffer.char_index_for_byte(start_byte) as i64;
 					let end_char = self.handle.document().buffer.char_index_for_byte(end_byte) as i64;
-
 					offset = start_char;
 					end_pos = end_char;
 				} else {
 					end_pos += i64::try_from(text.chars().count()).unwrap_or(0);
 				}
-
 				return TextSegmentFfi { text, start_pos: offset, end_pos };
 			}
 			return TextSegmentFfi { text: String::new(), start_pos: position, end_pos: position };
 		}
-
 		let content = &self.handle.document().buffer.content;
 		let total_chars = self.handle.document().buffer.char_count();
 		let start_pos_char = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
 		let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
-
 		let (start_byte, end_byte) = if matches!(segment_type, SegmentTypeFfi::Line) {
 			let line_num = self.line_from_position(start_pos_char as i64);
 			let target_line = match direction {
@@ -203,7 +185,6 @@ impl DocumentSession {
 			};
 			let start_char_idx = usize::try_from(self.position_from_line(target_line)).unwrap_or(0);
 			let end_char_idx = usize::try_from(self.position_from_line(target_line + 1)).unwrap_or(0);
-
 			let sb = self.handle.document().buffer.byte_index_for_char(start_char_idx);
 			let eb = self.handle.document().buffer.byte_index_for_char(end_char_idx);
 			(sb, eb)
@@ -227,7 +208,6 @@ impl DocumentSession {
 		direction: SegmentDirectionFfi,
 	) -> (usize, usize) {
 		let mut start = byte_idx;
-
 		if matches!(direction, SegmentDirectionFfi::Previous) {
 			let mut search_end = byte_idx;
 			while search_end > 0
@@ -256,7 +236,6 @@ impl DocumentSession {
 			}
 			start = content[..start].rfind('\n').map_or(0, |i| i + 1);
 		}
-
 		let end = content[start..].find('\n').map_or(content.len(), |i| start + i);
 		(start, end)
 	}
@@ -349,10 +328,8 @@ impl DocumentSession {
 		if start_pos >= end_pos {
 			return String::new();
 		}
-
 		let start_byte = self.handle.document().buffer.byte_index_for_char(start_pos);
 		let end_byte = self.handle.document().buffer.byte_index_for_char(end_pos);
-
 		self.handle.document().buffer.content[start_byte..end_byte].to_string()
 	}
 
@@ -366,10 +343,8 @@ impl DocumentSession {
 			0 => 0,
 			idx => newlines[idx - 1] + 1,
 		};
-
 		let start_byte = buf.byte_index_for_char(line_start);
 		let line_end_byte = buf.content[start_byte..].find('\n').map_or(buf.content.len(), |i| start_byte + i);
-
 		buf.content[start_byte..line_end_byte].to_string()
 	}
 
@@ -406,7 +381,6 @@ impl DocumentSession {
 		let start_usize = usize::try_from(start_pos.max(0)).unwrap_or(0);
 		// If line + 1 overflows or is the end, end_pos might be equal to start_pos
 		let end_usize = if start_pos == end_pos { usize::MAX } else { usize::try_from(end_pos.max(0)).unwrap_or(0) };
-
 		let mut res = Vec::new();
 		for marker in &self.handle.document().buffer.markers {
 			if marker.position >= start_usize && marker.position < end_usize {

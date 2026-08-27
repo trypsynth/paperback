@@ -38,14 +38,11 @@ impl DocumentSession {
 		let doc_len = buf.total_display_len();
 		let raw_start = usize::try_from(raw_start.max(0)).unwrap_or(0).min(doc_len);
 		let raw_end = usize::try_from(raw_end.max(0)).unwrap_or(0).clamp(raw_start, doc_len);
-
 		let byte_start = snap_start_to_paragraph_boundary(&buf.content, buf.byte_index_for_display(raw_start));
 		let byte_end = snap_end_to_paragraph_boundary(&buf.content, buf.byte_index_for_display(raw_end));
-
 		let start = buf.display_index_for_byte(byte_start);
 		let end = buf.display_index_for_byte(byte_end);
 		let text = buf.content[byte_start..byte_end].to_string();
-
 		let markers = buf
 			.markers
 			.iter()
@@ -68,7 +65,6 @@ impl DocumentSession {
 				})
 			})
 			.collect();
-
 		WindowSlice { start: i64::try_from(start).unwrap_or(0), end: i64::try_from(end).unwrap_or(0), text, markers }
 	}
 }
@@ -148,13 +144,11 @@ mod tests {
 		assert_eq!(&content[marker_start..marker_start + marker_len], "ha\nbeta g");
 		let markers = [Marker::new(MarkerType::Bold, marker_start).with_length(marker_len)];
 		let session = session_with(content, &markers);
-
 		// A request landing inside "beta gamma" should snap to just that paragraph, not pull
 		// in "alpha" too.
 		let raw_start = content.find("beta").unwrap() as i64;
 		let slice = session.get_window(raw_start, raw_start + 2);
 		assert_eq!(slice.text, "beta gamma\n");
-
 		// The marker is clipped to only the portion that falls inside this window.
 		assert_eq!(slice.markers.len(), 1);
 		let m = &slice.markers[0];

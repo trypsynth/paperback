@@ -1,8 +1,12 @@
 use std::{
+	env,
 	fs::{self, File},
 	io::Write,
-	path::Path,
+	path::{Path, PathBuf},
+	time::{SystemTime, UNIX_EPOCH},
 };
+
+use zip::{ZipWriter, write::FileOptions};
 
 use super::*;
 use crate::{
@@ -226,9 +230,7 @@ fn get_formatting_markers_returns_only_bold_italic_underline_markers() {
 		parser_flags: ParserFlags::NONE,
 		last_stable_position: None,
 	};
-
 	let markers = session.get_formatting_markers();
-
 	assert_eq!(markers.len(), 3);
 	assert_eq!(markers[0].mtype, MarkerType::Bold);
 	assert_eq!(markers[0].position, 0);
@@ -374,9 +376,9 @@ fn session_with_path(file_path: &str) -> DocumentSession {
 	}
 }
 
-fn unique_temp_dir() -> std::path::PathBuf {
-	let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
-	std::env::temp_dir().join(format!("paperback_source_test_{nanos}"))
+fn unique_temp_dir() -> PathBuf {
+	let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+	env::temp_dir().join(format!("paperback_source_test_{nanos}"))
 }
 
 #[test]
@@ -411,12 +413,10 @@ fn view_source_writes_html_source_and_maps_caret_forward() {
 	let src = dir.join("page.html");
 	fs::write(&src, html.as_bytes()).unwrap();
 	let session = session_with_path(&src.to_string_lossy());
-
 	let at_start = session.view_source(0, &dir.to_string_lossy()).expect("source at start");
 	// Source written verbatim to a .txt file.
 	assert!(at_start.path.ends_with("page.html.source.txt"));
 	assert_eq!(fs::read_to_string(&at_start.path).unwrap(), html);
-
 	// A later reading position maps to a caret deeper in the source.
 	let at_bravo = session.view_source(6, &dir.to_string_lossy()).expect("source at bravo");
 	assert!(at_bravo.caret > at_start.caret);
@@ -434,11 +434,9 @@ fn view_source_for_markdown_maps_caret_to_current_block() {
 	fs::write(&src, md.as_bytes()).unwrap();
 	// A real session populates id_positions with pb-block-N anchors.
 	let session = DocumentSession::new(&src.to_string_lossy(), "", "", false).expect("open markdown");
-
 	let rendered = session.content();
 	let pos = i64::try_from(rendered.find("Second").expect("second block rendered")).unwrap();
 	let view = session.view_source(pos, &dir.to_string_lossy()).expect("markdown source");
-
 	assert!(view.path.ends_with("notes.md.source.txt"));
 	assert_eq!(fs::read_to_string(&view.path).unwrap(), md);
 	// Caret lands at the start of the second paragraph in the raw Markdown.
@@ -629,17 +627,14 @@ fn activate_link_returns_not_found_when_reference_missing() {
 /// Builds a minimal real EPUB on disk whose spine chapter references an image
 /// via a relative path that only resolves if sibling directory structure is
 /// preserved on extraction, then returns its path.
-fn build_epub_with_relative_image(dir: &Path) -> std::path::PathBuf {
+fn build_epub_with_relative_image(dir: &Path) -> PathBuf {
 	use zip::{ZipWriter, write::FileOptions};
-
 	let epub_path = dir.join("book.epub");
 	let file = File::create(&epub_path).expect("create epub file");
 	let mut writer = ZipWriter::new(file);
 	let opts = FileOptions::<()>::default();
-
 	writer.start_file("mimetype", opts).unwrap();
 	writer.write_all(b"application/epub+zip").unwrap();
-
 	writer.start_file("META-INF/container.xml", opts).unwrap();
 	writer
 		.write_all(
@@ -651,7 +646,6 @@ fn build_epub_with_relative_image(dir: &Path) -> std::path::PathBuf {
 </container>"#,
 		)
 		.unwrap();
-
 	writer.start_file("OEBPS/content.opf", opts).unwrap();
 	writer
 		.write_all(
@@ -671,7 +665,6 @@ fn build_epub_with_relative_image(dir: &Path) -> std::path::PathBuf {
 </package>"#,
 		)
 		.unwrap();
-
 	writer.start_file("OEBPS/Text/chapter1.xhtml", opts).unwrap();
 	writer
 		.write_all(
@@ -682,38 +675,30 @@ fn build_epub_with_relative_image(dir: &Path) -> std::path::PathBuf {
 </body></html>"#,
 		)
 		.unwrap();
-
 	writer.start_file("OEBPS/Images/cover.jpg", opts).unwrap();
 	// The filler text intentionally avoids starting with a hex digit right after the
 	// \xNN escapes above: `gen-pot`'s xgettext pass parses this file in C mode, where
 	// \x escapes are greedy and would otherwise swallow leading hex-looking characters
 	// (e.g. "fake" starting with a valid hex digit) into a wildly out-of-range escape.
 	writer.write_all(b"\xFF\xD8\xFF\xE0placeholder-jpeg-bytes").unwrap();
-
 	writer.finish().unwrap();
 	epub_path
 }
 
 #[test]
 fn webview_target_path_extracts_sibling_image_resources() {
-	let temp_root = std::env::temp_dir().join(format!(
-		"paperback_webview_test_{}",
-		std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
-	));
+	let temp_root = env::temp_dir()
+		.join(format!("paperback_webview_test_{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
 	fs::create_dir_all(&temp_root).unwrap();
 	let epub_path = build_epub_with_relative_image(&temp_root);
-
 	let session = DocumentSession::new(&epub_path.to_string_lossy(), "", "", false).expect("parse test epub");
 	let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
-
 	let section_content = fs::read_to_string(&target.path).expect("read extracted section");
 	assert!(section_content.contains("Images/cover.jpg"));
-
 	// The image referenced relatively from the section must have been
 	// extracted alongside it at the same relative location.
 	let image_path = Path::new(&target.path).parent().unwrap().parent().unwrap().join("Images/cover.jpg");
 	assert!(image_path.exists(), "expected image extracted at {}", image_path.display());
-
 	fs::remove_dir_all(&temp_root).ok();
 }
 
@@ -821,7 +806,7 @@ fn audio_source_direct_path_ffi_returns_the_path_for_a_file_source_only() {
 
 #[test]
 fn audio_extract_source_ffi_copies_a_file_source() {
-	let dir = std::env::temp_dir().join("paperback-session-audio-extract-test");
+	let dir = env::temp_dir().join("paperback-session-audio-extract-test");
 	fs::create_dir_all(&dir).unwrap();
 	let source_path = dir.join("chapter1.mp3");
 	fs::write(&source_path, b"chapter-one-bytes").unwrap();
@@ -829,7 +814,6 @@ fn audio_extract_source_ffi_copies_a_file_source() {
 	let source = builder.add_source(AudioLocation::File(source_path.to_string_lossy().to_string()), None);
 	builder.add_clip(source, 0, 1000, 0, 10);
 	let session = session_with_audio(builder.build());
-
 	let output_path = dir.join("out.mp3");
 	assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
 	assert_eq!(fs::read(&output_path).unwrap(), b"chapter-one-bytes");
@@ -837,11 +821,7 @@ fn audio_extract_source_ffi_copies_a_file_source() {
 
 #[test]
 fn audio_extract_source_ffi_extracts_a_zip_entry_source() {
-	use std::io::Write;
-
-	use zip::{ZipWriter, write::FileOptions};
-
-	let dir = std::env::temp_dir().join("paperback-session-audio-extract-zip-test");
+	let dir = env::temp_dir().join("paperback-session-audio-extract-zip-test");
 	fs::create_dir_all(&dir).unwrap();
 	let zip_path = dir.join("book.zip");
 	{
@@ -862,7 +842,6 @@ fn audio_extract_source_ffi_extracts_a_zip_entry_source() {
 	);
 	builder.add_clip(source, 0, 1000, 0, 10);
 	let session = session_with_audio(builder.build());
-
 	let output_path = dir.join("out.mp3");
 	assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
 	assert_eq!(fs::read(&output_path).unwrap(), b"zipped-chapter-bytes");
@@ -871,11 +850,7 @@ fn audio_extract_source_ffi_extracts_a_zip_entry_source() {
 
 #[test]
 fn audio_extract_source_ffi_extracts_a_password_protected_zip_entry_source() {
-	use std::io::Write;
-
-	use zip::{ZipWriter, write::FileOptions};
-
-	let dir = std::env::temp_dir().join("paperback-session-audio-extract-encrypted-zip-test");
+	let dir = env::temp_dir().join("paperback-session-audio-extract-encrypted-zip-test");
 	fs::create_dir_all(&dir).unwrap();
 	let zip_path = dir.join("book.zip");
 	{
@@ -897,7 +872,6 @@ fn audio_extract_source_ffi_extracts_a_password_protected_zip_entry_source() {
 	);
 	builder.add_clip(source, 0, 1000, 0, 10);
 	let session = session_with_audio(builder.build());
-
 	let output_path = dir.join("out.mp3");
 	assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
 	assert_eq!(fs::read(&output_path).unwrap(), b"zipped-chapter-bytes");
