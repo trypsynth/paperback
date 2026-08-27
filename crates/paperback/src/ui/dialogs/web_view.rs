@@ -75,6 +75,5 @@ pub fn show_web_view_dialog(
 	dialog.set_sizer(sizer, true);
 	dialog.centre();
 	dialog.show_modal();
-
 	ACTIVE_WEB_VIEW.with(|v| v.set(None));
 }
