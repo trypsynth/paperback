@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-26 22:34+0000\n"
+"POT-Creation-Date: 2026-08-27 20:20+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -979,63 +979,44 @@ msgstr "Impossible d'ouvrir la page de don dans le navigateur."
 msgid "Unsupported format selected."
 msgstr "Format non pris en charge sélectionné."
 
-#. TRANSLATORS: Main window title when no document is open
-msgid "Paperback"
-msgstr "Paperback"
-
-#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
-#, fuzzy
-msgid "Document reloaded."
-msgstr "Le document a été rechargé."
-
-#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
-#, fuzzy
-msgid "Paperback cannot perform any actions while Web View is open."
-msgstr "Paperback ne peut effectuer aucune action tant que Web View est ouvert."
-
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "Paperback - {}"
-msgstr "Paperback - {}"
-
-#, fuzzy
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "{} caractères"
-msgstr[1] "{} caractères"
-
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "document"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Impossible d'exporter le document."
-
-#. TRANSLATORS: Title of the file picker dialog shown when opening a document
-msgid "Open Document"
-msgstr "Ouvrir un document"
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "Aucun document récent."
 
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Aucune page."
 
-#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-#, fuzzy
-msgid "Word wrap on."
-msgstr "Retour à la ligne automatique activé."
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
+msgstr "Aucune table des matières."
 
-#, fuzzy
-msgid "Word wrap off."
-msgstr "Retour à la ligne désactivé."
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+msgid "Web View"
+msgstr "Vue web"
 
-#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-#, fuzzy
-msgid "Full screen on."
-msgstr "Mode plein écran activé."
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+msgid "Could not determine content to display in Web View."
+msgstr "Impossible de déterminer le contenu à afficher dans la vue web."
 
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "document"
+
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
 #, fuzzy
-msgid "Full screen off."
-msgstr "Mode plein écran désactivé."
+msgid "Source:"
+msgstr "Source :"
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+#, fuzzy
+msgid "Source view is not available for this document format."
+msgstr "L'affichage « Source » n'est pas disponible pour ce format de document."
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+#, fuzzy
+msgid "Could not load the document source."
+msgstr "Impossible de charger la source du document."
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -1093,33 +1074,6 @@ msgstr "Notes et signets importés avec succès."
 msgid "Import Successful"
 msgstr "Importation réussie"
 
-#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-msgid "No table of contents."
-msgstr "Aucune table des matières."
-
-#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
-msgid "Web View"
-msgstr "Vue web"
-
-#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
-msgid "Could not determine content to display in Web View."
-msgstr "Impossible de déterminer le contenu à afficher dans la vue web."
-
-#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
-#, fuzzy
-msgid "Source:"
-msgstr "Source :"
-
-#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
-#, fuzzy
-msgid "Source view is not available for this document format."
-msgstr "L'affichage « Source » n'est pas disponible pour ce format de document."
-
-#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
-#, fuzzy
-msgid "Could not load the document source."
-msgstr "Impossible de charger la source du document."
-
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "Minuterie de veille annulée."
@@ -1130,9 +1084,55 @@ msgid_plural "Sleep timer set for %d minutes."
 msgstr[0] "Minuterie de veille réglée sur %d minutes."
 msgstr[1] "Minuterie de veille réglée sur %d minutes."
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
-msgstr "Aucun document récent."
+#. TRANSLATORS: Main window title when no document is open
+msgid "Paperback"
+msgstr "Paperback"
+
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+#, fuzzy
+msgid "Document reloaded."
+msgstr "Le document a été rechargé."
+
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+#, fuzzy
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback ne peut effectuer aucune action tant que Web View est ouvert."
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+#, fuzzy
+msgid "%d char"
+msgid_plural "%d chars"
+msgstr[0] "{} caractères"
+msgstr[1] "{} caractères"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Impossible d'exporter le document."
+
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+msgid "Open Document"
+msgstr "Ouvrir un document"
+
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+#, fuzzy
+msgid "Word wrap on."
+msgstr "Retour à la ligne automatique activé."
+
+#, fuzzy
+msgid "Word wrap off."
+msgstr "Retour à la ligne désactivé."
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "Mode plein écran activé."
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "Mode plein écran désactivé."
 
 #, fuzzy
 msgid "&Undo\tCtrl+Z"
