@@ -13,11 +13,7 @@ use std::{
 	time::{SystemTime, UNIX_EPOCH},
 };
 
-use paperback_core::{
-	config::ConfigManager,
-	parser::{build_file_filter_string, parser_supports_extension},
-	types::BookmarkFilterType,
-};
+use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::BookmarkFilterType};
 use patois::{nt, t};
 use wxdragon::{prelude::*, timer::Timer};
 
@@ -39,6 +35,14 @@ use crate::{
 	config_ext::{UpdateChannel, get_update_channel, set_update_channel},
 	translation_manager::TranslationManager,
 };
+
+mod parser_ready;
+use parser_ready::ensure_parser_ready_for_path;
+
+#[cfg(target_os = "windows")]
+mod hotkey;
+#[cfg(target_os = "windows")]
+use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
 
 /// The main window's starting size, in device-independent pixels (see `ui::dpi`).
 const DEFAULT_WINDOW_WIDTH: i32 = 800;
@@ -1869,60 +1873,6 @@ impl MainWindow {
 	}
 }
 
-fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
-	let extension = parser_extension_for_path(path);
-	if extension.is_empty() || parser_supports_extension(&extension) {
-		return true;
-	}
-	let cfg = config.lock().unwrap();
-	ensure_parser_for_unknown_file(frame, path, &cfg)
-}
-
-fn parser_extension_for_path(path: &Path) -> String {
-	let from_path = path.extension().and_then(|ext| ext.to_str()).map(clean_extension_token).unwrap_or_default();
-	if !from_path.is_empty() {
-		return from_path;
-	}
-	// Fallback for odd IPC/CLI strings that may contain trailing quotes or whitespace.
-	let raw = path.to_string_lossy();
-	let cleaned = raw.trim().trim_matches(['"', '\'', '\0']);
-	let candidate = cleaned
-		.rsplit_once(['/', '\\'])
-		.map_or(cleaned, |(_, file_name)| file_name)
-		.rsplit_once('.')
-		.map_or("", |(_, ext)| ext)
-		.trim();
-	clean_extension_token(candidate)
-}
-
-fn clean_extension_token(raw: &str) -> String {
-	let trimmed = raw.trim().trim_matches(['"', '\'', '\0']);
-	trimmed.chars().take_while(char::is_ascii_alphanumeric).collect()
-}
-
-fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigManager) -> bool {
-	let path_str = path.to_string_lossy();
-	let saved_format = config.get_document_format(&path_str);
-	if !saved_format.is_empty() && parser_supports_extension(&saved_format) {
-		return true;
-	}
-	let Some(format) = dialogs::show_open_as_dialog(parent, path) else {
-		return false;
-	};
-	if !parser_supports_extension(&format) {
-		// TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
-		let message = t("Unsupported format selected.");
-		let title = t("Error");
-		let dialog = MessageDialog::builder(parent, &message, &title)
-			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-			.build();
-		dialog.show_modal();
-		return false;
-	}
-	config.set_document_format(&path_str, &format);
-	true
-}
-
 /// Close the active document, announcing the newly focused document for screen readers.
 ///
 /// The `set_selection` inside `close_document` fires `on_page_changing` while the
@@ -1973,130 +1923,5 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 			}
 		}
 		frame.set_status_text(&status_text, 0);
-	}
-}
-
-#[cfg(target_os = "windows")]
-pub struct HotkeyHandle {
-	pub(crate) thread_id: u32,
-	pub(crate) join_handle: std::thread::JoinHandle<()>,
-}
-
-#[cfg(target_os = "windows")]
-pub fn start_hotkey_listener(hotkey: &paperback_core::config::HotkeyConfig) -> Option<HotkeyHandle> {
-	use windows::Win32::{
-		System::Threading::GetCurrentThreadId,
-		UI::{
-			Input::KeyboardAndMouse::{
-				HOT_KEY_MODIFIERS, MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_WIN, RegisterHotKey, UnregisterHotKey,
-			},
-			WindowsAndMessaging::{GetMessageW, MSG, WM_HOTKEY},
-		},
-	};
-	const HOTKEY_ID: i32 = 1;
-	let mut modifiers = HOT_KEY_MODIFIERS(0);
-	if hotkey.ctrl {
-		modifiers |= MOD_CONTROL;
-	}
-	if hotkey.alt {
-		modifiers |= MOD_ALT;
-	}
-	if hotkey.shift {
-		modifiers |= MOD_SHIFT;
-	}
-	if hotkey.win {
-		modifiers |= MOD_WIN;
-	}
-	let vk = char_to_vk(hotkey.key)?;
-	let (thread_id_tx, thread_id_rx) = std::sync::mpsc::channel();
-	let join_handle = std::thread::spawn(move || {
-		let thread_id = unsafe { GetCurrentThreadId() };
-		let _ = thread_id_tx.send(thread_id);
-		let registered = unsafe { RegisterHotKey(None, HOTKEY_ID, modifiers, vk).is_ok() };
-		if !registered {
-			return;
-		}
-		let mut msg = MSG::default();
-		loop {
-			let result = unsafe { GetMessageW(&raw mut msg, None, 0, 0) };
-			if result.0 <= 0 {
-				break;
-			}
-			if msg.message == WM_HOTKEY {
-				call_after(Box::new(|| {
-					if let Some(window) = super::app::main_window_from_ptr() {
-						window.handle_ipc_command(IpcCommand::ToggleVisibility);
-					}
-				}));
-				wake_up_idle();
-			}
-		}
-		unsafe {
-			let _ = UnregisterHotKey(None, HOTKEY_ID);
-		}
-	});
-	let thread_id = thread_id_rx.recv().ok()?;
-	Some(HotkeyHandle { thread_id, join_handle })
-}
-
-#[cfg(target_os = "windows")]
-fn char_to_vk(ch: char) -> Option<u32> {
-	if ch == '\0' {
-		return None;
-	}
-	use windows::Win32::UI::Input::KeyboardAndMouse::VkKeyScanW;
-	let code = u16::try_from(u32::from(ch)).ok()?;
-	let result = unsafe { VkKeyScanW(code) };
-	let low_byte = u8::try_from(result & 0xFF).ok()?;
-	if low_byte == 0xFF { None } else { Some(u32::from(low_byte)) }
-}
-
-#[cfg(target_os = "windows")]
-fn re_register_hotkey(
-	hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
-	hotkey: &paperback_core::config::HotkeyConfig,
-) {
-	use windows::Win32::{
-		Foundation::{LPARAM, WPARAM},
-		UI::WindowsAndMessaging::{PostThreadMessageW, WM_QUIT},
-	};
-	if let Some(handle) = hotkey_handle.borrow_mut().take() {
-		if handle.thread_id != 0 {
-			unsafe {
-				let _ = PostThreadMessageW(handle.thread_id, WM_QUIT, WPARAM(0), LPARAM(0));
-			}
-		}
-		let _ = handle.join_handle.join();
-	}
-	*hotkey_handle.borrow_mut() = start_hotkey_listener(hotkey);
-}
-
-#[cfg(test)]
-mod tests {
-	use std::path::Path;
-
-	use super::parser_extension_for_path;
-
-	#[test]
-	fn parser_extension_for_path_handles_normal_paths() {
-		assert_eq!(parser_extension_for_path(Path::new("book.epub")), "epub");
-		assert_eq!(parser_extension_for_path(Path::new("C:\\docs\\book.PDF")), "PDF");
-	}
-
-	#[test]
-	fn parser_extension_for_path_strips_quotes_and_whitespace() {
-		assert_eq!(parser_extension_for_path(Path::new("  \"book.epub\"  ")), "epub");
-		assert_eq!(parser_extension_for_path(Path::new("'book.txt'")), "txt");
-	}
-
-	#[test]
-	fn parser_extension_for_path_returns_empty_for_no_extension() {
-		assert_eq!(parser_extension_for_path(Path::new("README")), "");
-	}
-
-	#[test]
-	fn parser_extension_for_path_handles_ipc_artifacts() {
-		assert_eq!(parser_extension_for_path(Path::new("book.epub\u{0}")), "epub");
-		assert_eq!(parser_extension_for_path(Path::new(" \"book.epub\u{0}\" ")), "epub");
 	}
 }
