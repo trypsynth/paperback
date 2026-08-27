@@ -1,4 +1,10 @@
-use std::{io::Read, path::Path};
+use std::{
+	cmp::Ordering,
+	io::{Read, Seek},
+	iter::Peekable,
+	path::Path,
+	str::Chars,
+};
 
 use zip::ZipArchive;
 
@@ -20,8 +26,7 @@ fn is_plain_audio_entry(name: &str) -> bool {
 /// Orders file names the way a person would: numeric runs compare by value, so "track2" sorts
 /// before "track10" instead of after it, which plain byte-wise sorting would get wrong for the
 /// common case of unpadded track numbers.
-fn natural_cmp(a: &str, b: &str) -> std::cmp::Ordering {
-	use std::cmp::Ordering;
+fn natural_cmp(a: &str, b: &str) -> Ordering {
 	let mut a = a.chars().peekable();
 	let mut b = b.chars().peekable();
 	loop {
@@ -47,7 +52,7 @@ fn natural_cmp(a: &str, b: &str) -> std::cmp::Ordering {
 	}
 }
 
-fn take_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> u64 {
+fn take_number(chars: &mut Peekable<Chars>) -> u64 {
 	let mut value: u64 = 0;
 	while let Some(c) = chars.peek().copied().filter(char::is_ascii_digit) {
 		value = value.saturating_mul(10).saturating_add(u64::from(c as u8 - b'0'));
@@ -71,7 +76,7 @@ fn take_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> u64 {
 /// value just has to outlast any real recording. The cost is that elapsed time can't say where
 /// one file ends and the next begins, so players resolve a seek that runs off either end of a
 /// file against that file's own real length, which only a prepared decoder knows.
-pub(super) fn build_plain_audio_zip_document<R: Read + std::io::Seek>(
+pub(super) fn build_plain_audio_zip_document<R: Read + Seek>(
 	archive: &ZipArchive<R>,
 	archive_path: &str,
 	title: String,
@@ -79,14 +84,12 @@ pub(super) fn build_plain_audio_zip_document<R: Read + std::io::Seek>(
 	password: Option<&str>,
 ) -> Option<Document> {
 	const PLACEHOLDER_CLIP_DURATION_MS: u64 = 24 * 60 * 60 * 1000;
-
 	let mut entries: Vec<String> =
 		archive.file_names().filter(|name| is_plain_audio_entry(name)).map(String::from).collect();
 	if entries.is_empty() {
 		return None;
 	}
 	entries.sort_by(|a, b| natural_cmp(a, b));
-
 	let mut buffer = DocumentBuffer::new();
 	let mut toc_items = Vec::with_capacity(entries.len());
 	let mut audio_builder = AudioTimelineBuilder::new();
@@ -108,6 +111,5 @@ pub(super) fn build_plain_audio_zip_document<R: Read + std::io::Seek>(
 		toc_items.push(TocItem::new(name, entry.clone(), position));
 	}
 	let audio = audio_builder.build();
-
 	Some(Document { title, author, buffer, toc_items, audio: Some(audio), audio_only: true, ..Document::default() })
 }

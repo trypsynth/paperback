@@ -27,11 +27,9 @@ use crate::{
 pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	let mut title = extract_title_from_path(&context.file_path);
 	let mut author = String::new();
-
 	if path.file_name().is_some_and(|n| n.eq_ignore_ascii_case("ncc.html")) {
 		return parse_daisy2(context, path, title);
 	}
-
 	let opf_content = convert_to_utf8(&fs::read(path)?);
 	let package = parse_opf_package(&opf_content, "")?;
 	if let Some(t) = package.title.clone() {
