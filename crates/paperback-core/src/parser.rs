@@ -155,6 +155,17 @@ impl ParserRegistry {
 	}
 }
 
+/// The extension that selects a file's parser: ordinarily just `path`'s own extension, except a
+/// loose DAISY 2.02 book's master file is named `ncc.html`, which would otherwise route to the
+/// HTML parser since DAISY only claims `opf`/`zip` (an `.html` extension can't be reserved for
+/// DAISY without also capturing every ordinary HTML file).
+fn resolve_extension(path: &Path) -> Option<&str> {
+	if path.file_name().is_some_and(|n| n.eq_ignore_ascii_case("ncc.html")) {
+		return Some("opf");
+	}
+	path.extension().and_then(|e| e.to_str())
+}
+
 /// Parse a document from the given context.
 ///
 /// # Errors
@@ -167,7 +178,7 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 	let path = Path::new(&context.file_path);
 	let extension = context.forced_extension.as_ref().map_or_else(
 		|| {
-			path.extension().and_then(|e| e.to_str()).ok_or_else(|| {
+			resolve_extension(path).ok_or_else(|| {
 				// TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 				anyhow::anyhow!(t("No file extension found for: {}").replace("{}", &context.file_path))
 			})
@@ -207,10 +218,8 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 #[must_use]
 pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 	let path = Path::new(&context.file_path);
-	let extension = context
-		.forced_extension
-		.as_ref()
-		.map_or_else(|| path.extension().and_then(|e| e.to_str()).unwrap_or(""), |ext| ext.as_str());
+	let extension =
+		context.forced_extension.as_ref().map_or_else(|| resolve_extension(path).unwrap_or(""), |ext| ext.as_str());
 	ParserRegistry::global()
 		.get_parsers_for_extension(extension)
 		.iter()
@@ -593,6 +602,17 @@ mod tests {
 		let mut buffer = DocumentBuffer::new();
 		add_converter_markers(&mut buffer, &converter, 0);
 		assert!(buffer.markers.is_empty());
+	}
+
+	#[test]
+	fn resolve_extension_routes_loose_ncc_html_to_opf() {
+		assert_eq!(resolve_extension(Path::new(r"C:\books\daisy2\ncc.html")), Some("opf"));
+		assert_eq!(resolve_extension(Path::new(r"C:\books\daisy2\NCC.HTML")), Some("opf"));
+	}
+
+	#[test]
+	fn resolve_extension_leaves_other_html_files_alone() {
+		assert_eq!(resolve_extension(Path::new(r"C:\books\chapter1.html")), Some("html"));
 	}
 
 	#[test]
