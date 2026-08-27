@@ -470,7 +470,6 @@ impl ActionId {
 			Self::CheckForUpdates => Some(KeyChord::new(true, false, true, "U")),
 			Self::Donate => Some(KeyChord::new(true, false, false, "D")),
 		}
-
 		#[cfg(not(target_os = "macos"))]
 		match self {
 			Self::Open => Some(KeyChord::new(true, false, false, "O")),

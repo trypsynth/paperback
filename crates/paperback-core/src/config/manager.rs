@@ -62,16 +62,13 @@ impl ConfigManager {
 		} else {
 			(ConfigData::default(), true)
 		};
-
 		self.config_path = config_path;
 		self.initialized = true;
 		*self.data.borrow_mut() = data;
-
 		if needs_save {
 			self.dirty.set(true);
 			self.flush();
 		}
-
 		true
 	}
 
@@ -88,7 +85,6 @@ impl ConfigManager {
 		let digest = compute_document_hash(path);
 		let encoded = URL_SAFE_NO_PAD.encode(digest);
 		let new_key = format!("doc_{encoded}");
-
 		let mut data = self.data.borrow_mut();
 		if let Some(old_key) = data.path_hashes.get(path).cloned() {
 			if old_key != new_key {
@@ -105,7 +101,6 @@ impl ConfigManager {
 				old_hasher.update(path.as_bytes());
 				let old_encoded = URL_SAFE_NO_PAD.encode(old_hasher.finalize());
 				let old_key = format!("doc_{old_encoded}");
-
 				if let Some(mut doc) = data.documents.remove(&old_key) {
 					doc.path = path.to_string();
 					data.documents.insert(new_key.clone(), doc);
@@ -120,7 +115,6 @@ impl ConfigManager {
 		let digest = compute_document_hash(local_path);
 		let encoded = URL_SAFE_NO_PAD.encode(digest);
 		let new_key = format!("doc_{encoded}");
-
 		let mut data = self.data.borrow_mut();
 		data.path_hashes.insert(uri.to_string(), new_key);
 		self.dirty.set(true);
@@ -133,23 +127,19 @@ impl ConfigManager {
 				return hash.clone();
 			}
 		}
-
 		let digest = compute_document_hash(path);
 		let encoded = URL_SAFE_NO_PAD.encode(digest);
 		let new_key = format!("doc_{encoded}");
-
 		let mut data = self.data.borrow_mut();
 		if !data.documents.contains_key(&new_key) {
 			let mut old_hasher = Sha1::new();
 			old_hasher.update(path.as_bytes());
 			let old_encoded = URL_SAFE_NO_PAD.encode(old_hasher.finalize());
 			let old_key = format!("doc_{old_encoded}");
-
 			if let Some(doc) = data.documents.remove(&old_key) {
 				data.documents.insert(new_key.clone(), doc);
 			}
 		}
-
 		data.path_hashes.insert(path.to_string(), new_key.clone());
 		self.dirty.set(true);
 		new_key

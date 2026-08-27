@@ -3,7 +3,11 @@
 //! [`compute_document_hash`], the content-based fingerprint [`super::ConfigManager::get_doc_key`]
 //! hashes a document path down to.
 
-use std::{cmp::Ordering, fs, path::Path};
+use std::{
+	cmp::{self, Ordering},
+	fs,
+	path::Path,
+};
 
 use sha1::{Digest, Sha1};
 
@@ -70,7 +74,7 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 		let mut total_read = 0;
 		let max_read = 1024 * 1024;
 		while total_read < max_read {
-			let to_read = std::cmp::min(buffer.len(), max_read - total_read);
+			let to_read = cmp::min(buffer.len(), max_read - total_read);
 			if let Ok(n) = file.read(&mut buffer[..to_read]) {
 				if n == 0 {
 					break;
@@ -85,12 +89,12 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 			let file_size = metadata.len();
 			hasher.update(file_size.to_le_bytes());
 			if file_size > max_read as u64 {
-				let seek_pos = std::cmp::max(file_size.saturating_sub(max_read as u64), max_read as u64);
+				let seek_pos = cmp::max(file_size.saturating_sub(max_read as u64), max_read as u64);
 				if file.seek(SeekFrom::Start(seek_pos)).is_ok() {
 					let mut end_read = 0;
 					let end_max = (file_size - seek_pos) as usize;
 					while end_read < end_max {
-						let to_read = std::cmp::min(buffer.len(), end_max - end_read);
+						let to_read = cmp::min(buffer.len(), end_max - end_read);
 						if let Ok(n) = file.read(&mut buffer[..to_read]) {
 							if n == 0 {
 								break;
@@ -117,7 +121,6 @@ mod tests {
 	#[test]
 	fn get_sorted_document_list_filters_by_status() {
 		use crate::util::test_support::TempDir;
-
 		let dir = TempDir::new("document-list-status-filter");
 		let open_path = dir.write_str("open.txt", "content");
 		let closed_path = dir.write_str("closed.txt", "content");
@@ -128,16 +131,12 @@ mod tests {
 			config.add_recent_document(path);
 		}
 		let open_paths = vec![open_path.clone()];
-
 		let all = get_sorted_document_list(&config, &open_paths, "", None);
 		assert_eq!(all.len(), 3);
-
 		let open_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Open));
 		assert_eq!(open_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&open_path]);
-
 		let closed_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Closed));
 		assert_eq!(closed_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&closed_path]);
-
 		let missing_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Missing));
 		assert_eq!(missing_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&missing_path]);
 	}

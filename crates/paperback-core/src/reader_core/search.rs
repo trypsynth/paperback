@@ -22,7 +22,6 @@ pub fn reader_search(haystack: &str, needle: &str, start: i64, options: SearchOp
 		return -1;
 	}
 	let start_utf16 = usize::try_from(start.clamp(0, i64::MAX)).unwrap_or(0);
-
 	let utf16_to_byte_index = |s: &str, utf16_idx: usize| -> usize {
 		let mut utf16_count = 0usize;
 		for (byte_idx, ch) in s.char_indices() {
@@ -45,7 +44,6 @@ pub fn reader_search(haystack: &str, needle: &str, start: i64, options: SearchOp
 		utf16_count
 	};
 	let start_byte = utf16_to_byte_index(haystack, start_utf16);
-
 	// Build regex for search - this avoids copying/lowercasing the entire haystack
 	let escaped_needle =
 		if options.contains(SearchOptions::REGEX) { needle.to_string() } else { regex::escape(needle) };
@@ -58,7 +56,6 @@ pub fn reader_search(haystack: &str, needle: &str, start: i64, options: SearchOp
 	let Ok(re) = builder.build() else {
 		return -1;
 	};
-
 	if options.contains(SearchOptions::FORWARD) {
 		if let Some(m) = re.find(&haystack[start_byte..]) {
 			let byte_pos = start_byte + m.start();

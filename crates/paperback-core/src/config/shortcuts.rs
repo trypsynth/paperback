@@ -126,14 +126,12 @@ mod tests {
 		assert!(!chord.alt);
 		assert_eq!(chord.key, "O");
 		assert_eq!(chord.to_shortcut_string(), "Ctrl+Shift+O");
-
 		let single = KeyChord::parse("H").unwrap();
 		assert!(!single.ctrl);
 		assert!(!single.shift);
 		assert!(!single.alt);
 		assert_eq!(single.key, "H");
 		assert_eq!(single.to_shortcut_string(), "H");
-
 		assert_eq!(KeyChord::parse("none"), None);
 		assert_eq!(KeyChord::parse(""), None);
 	}
@@ -143,14 +141,11 @@ mod tests {
 		let mut sc = ShortcutsConfig::default();
 		let default_open = sc.get_chord(ActionId::Open);
 		assert!(default_open.is_some());
-
 		let new_chord = KeyChord::new(true, true, false, "K");
 		sc.set_chord(ActionId::Open, Some(new_chord.clone()));
 		assert_eq!(sc.get_chord(ActionId::Open), Some(new_chord));
-
 		let matched = sc.find_action(75, true, true, false);
 		assert_eq!(matched, Some(ActionId::Open));
-
 		sc.reset_action(ActionId::Open);
 		assert_eq!(sc.get_chord(ActionId::Open), default_open);
 	}

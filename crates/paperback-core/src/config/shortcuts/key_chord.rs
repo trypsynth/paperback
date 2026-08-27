@@ -103,7 +103,6 @@ impl KeyChord {
 		let mut alt = false;
 		let mut shift = false;
 		let mut remaining = trimmed;
-
 		while let Some(plus_idx) = remaining.find('+') {
 			let prefix = &remaining[..plus_idx];
 			if prefix.eq_ignore_ascii_case("rawctrl") {
