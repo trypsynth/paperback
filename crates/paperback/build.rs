@@ -348,10 +348,6 @@ fn target_profile_dir() -> Option<PathBuf> {
 }
 
 fn build_docs() {
-	let Some(target_dir) = target_profile_dir() else {
-		println!("cargo:warning=Could not determine target directory for docs.");
-		return;
-	};
 	let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap_or_default());
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
 	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
@@ -360,24 +356,25 @@ fn build_docs() {
 	let config = doc_dir.join("pandoc.yaml");
 	println!("cargo:rerun-if-changed={}", readme.display());
 	println!("cargo:rerun-if-changed={}", config.display());
+	// The readmes are embedded in the binary and nothing reads them from the install directory,
+	// so a build without them would ship an app whose Help menu does nothing. Fail instead.
+	assert!(
+		Command::new("pandoc").arg("--version").output().is_ok(),
+		"pandoc is required to build Paperback: it converts doc/readme*.md into the help shown by \
+		 the Help menu, which is embedded in the binary. Install it and build again."
+	);
 	let mut embedded_langs: Vec<String> = Vec::new();
-	let pandoc_available = Command::new("pandoc").arg("--version").output().is_ok();
-	if pandoc_available {
-		// English readme: build to both target_dir (for macOS bundle) and OUT_DIR (for embedding)
-		let target_output = target_dir.join("readme.html");
+	{
 		let out_output = out_dir.join("readme.html");
 		let status = Command::new("pandoc")
 			.arg(format!("--defaults={}", config.display()))
 			.arg(&readme)
 			.arg("-o")
-			.arg(&target_output)
+			.arg(&out_output)
 			.status();
 		match status {
-			Ok(s) if s.success() => {
-				let _ = fs::copy(&target_output, &out_output);
-				embedded_langs.push("en".to_string());
-			}
-			_ => println!("cargo:warning=Failed to generate documentation."),
+			Ok(s) if s.success() => embedded_langs.push("en".to_string()),
+			_ => panic!("pandoc failed to convert {}", readme.display()),
 		}
 		if let Ok(entries) = fs::read_dir(&doc_dir) {
 			let mut doc_entries: Vec<_> = entries.flatten().collect();
@@ -405,16 +402,12 @@ fn build_docs() {
 					.status();
 				match status {
 					Ok(s) if s.success() => embedded_langs.push(lang_code),
-					_ => println!("cargo:warning=Failed to generate documentation for language: {lang_code}"),
+					_ => panic!("pandoc failed to convert {}", path.display()),
 				}
 			}
 		}
-	} else {
-		println!("cargo:warning=Pandoc not found. Documentation will not be generated.");
 	}
-	let code = if embedded_langs.is_empty() {
-		"pub fn readme_for_lang(_lang: &str) -> Option<&'static [u8]> {\n    None\n}\n".to_string()
-	} else {
+	let code = {
 		let mut code =
 			String::from("pub fn readme_for_lang(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
 		for lang_code in &embedded_langs {
@@ -603,10 +596,6 @@ fn generate_app_bundle() {
 	let dylib_path = target_dir.join("libpdfium.dylib");
 	if dylib_path.exists() {
 		let _ = fs::copy(&dylib_path, macos_dir.join("libpdfium.dylib"));
-	}
-	let readme = target_dir.join("readme.html");
-	if readme.exists() {
-		let _ = fs::copy(&readme, bundle_dir.join("Resources/readme.html"));
 	}
 	// Named to match CFBundleIconFile above; without it the Dock, Finder and the app switcher
 	// all fall back to the blank generic-application icon.

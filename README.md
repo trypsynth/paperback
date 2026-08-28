@@ -54,12 +54,13 @@ This is a Cargo workspace. The main crates are:
   rustup toolchain install nightly
   ```
 - CMake and Ninja, required to compile wxWidgets via wxDragon.
+- `pandoc` on `PATH`: converts the readmes into the HTML help embedded in the binary. The build
+  fails without it, since the Help menu has nothing else to show.
 
 ### Optional tools
 
 These are not needed for a basic build but are required for a complete release:
 
-- `pandoc` on `PATH`: generates the HTML readme
 - gettext tools (`xgettext`, `msgfmt`, `msgmerge`) on `PATH`: generates the translation template and compiles translations
 - InnoSetup: creates the Windows installer
 
