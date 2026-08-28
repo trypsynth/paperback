@@ -105,11 +105,14 @@ final class AppViewModel {
 		ttsManager.onPlaybackStateChanged = { [weak self] in
 			self?.updateNowPlaying()
 		}
-		ttsManager.onSettingsChanged = { [weak self] in
-			guard let self else { return }
-			configManager.setAppString(key: "tts_speech_rate", value: "\(ttsManager.speechRate)")
-			configManager.setAppString(key: "tts_pitch", value: "\(ttsManager.pitch)")
-			configManager.setAppString(key: "tts_voice_identifier", value: ttsManager.selectedVoiceIdentifier ?? "")
+		ttsManager.onSpeechRateChanged = { [weak self] rate in
+			self?.configManager.setAppString(key: "tts_speech_rate", value: "\(rate)")
+		}
+		ttsManager.onPitchChanged = { [weak self] pitch in
+			self?.configManager.setAppString(key: "tts_pitch", value: "\(pitch)")
+		}
+		ttsManager.onVoiceChanged = { [weak self] identifier in
+			self?.configManager.setAppString(key: "tts_voice_identifier", value: identifier ?? "")
 		}
 
 		if let data = UserDefaults.standard.data(forKey: "tts_rules"),

@@ -61,30 +61,33 @@ final class TtsManager: NSObject {
 		didSet {
 			guard oldValue != speechRate else { return }
 			invalidatePrefetch()
-			onSettingsChanged?()
+			onSpeechRateChanged?(speechRate)
 		}
 	}
 	var pitch: Float = 1.0 {
 		didSet {
 			guard oldValue != pitch else { return }
 			invalidatePrefetch()
-			onSettingsChanged?()
+			onPitchChanged?(pitch)
 		}
 	}
 	var selectedVoiceIdentifier: String? = nil {
 		didSet {
 			guard oldValue != selectedVoiceIdentifier else { return }
 			invalidatePrefetch()
-			onSettingsChanged?()
+			onVoiceChanged?(selectedVoiceIdentifier)
 		}
 	}
 
 	var availableVoices: [AVSpeechSynthesisVoice] { AVSpeechSynthesisVoice.speechVoices() }
 	@ObservationIgnored var onUtteranceFinished: (() -> Void)?
-	// Observation replaces the old Combine forwarding for redraws; these two carry the side
-	// effects that used to ride those sinks — refreshing Now Playing and persisting settings.
+	// Observation replaces the old Combine forwarding for redraws; these carry the side effects
+	// that used to ride those sinks — refreshing Now Playing and persisting settings. One per
+	// setting, so changing the rate does not rewrite the pitch and voice keys as well.
 	@ObservationIgnored var onPlaybackStateChanged: (() -> Void)?
-	@ObservationIgnored var onSettingsChanged: (() -> Void)?
+	@ObservationIgnored var onSpeechRateChanged: ((Float) -> Void)?
+	@ObservationIgnored var onPitchChanged: ((Float) -> Void)?
+	@ObservationIgnored var onVoiceChanged: ((String?) -> Void)?
 	@ObservationIgnored var rules: [TtsRule] = [] {
 		didSet { invalidatePrefetch() }
 	}
