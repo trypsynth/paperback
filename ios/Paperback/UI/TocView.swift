@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TocView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 
 	var body: some View {
@@ -53,19 +53,12 @@ struct TocView: View {
 	}
 
 	@ViewBuilder private var emptyView: some View {
-		if #available(iOS 17, *) {
-			ContentUnavailableView(
-				// TRANSLATORS: Title shown when the current document has no table of contents
-				t("No Table of Contents"),
-				systemImage: "list.bullet",
-				// TRANSLATORS: Description shown below the "No Table of Contents" title
-				description: Text(t("This document has no table of contents."))
-			)
-		} else {
-			// TRANSLATORS: Title shown when the current document has no table of contents (pre-iOS 17 fallback)
-			Text(t("No Table of Contents"))
-				.foregroundStyle(.secondary)
-				.frame(maxWidth: .infinity, maxHeight: .infinity)
-		}
+		ContentUnavailableView(
+			// TRANSLATORS: Title shown when the current document has no table of contents
+			t("No Table of Contents"),
+			systemImage: "list.bullet",
+			// TRANSLATORS: Description shown below the "No Table of Contents" title
+			description: Text(t("This document has no table of contents."))
+		)
 	}
 }

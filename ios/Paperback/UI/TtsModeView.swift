@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TtsModeView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 
 	var body: some View {
 		VStack(spacing: 16) {

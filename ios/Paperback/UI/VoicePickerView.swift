@@ -2,7 +2,7 @@ import SwiftUI
 import AVFoundation
 
 struct VoicePickerView: View {
-	@ObservedObject var ttsManager: TtsManager
+	let ttsManager: TtsManager
 	let onSelect: (String?) -> Void
 	@Environment(\.dismiss) private var dismiss
 

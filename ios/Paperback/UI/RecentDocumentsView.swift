@@ -2,27 +2,20 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct RecentDocumentsView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 	@State private var locateTarget: RecentDocument? = nil
 
 	var body: some View {
 		Group {
 			if viewModel.recentDocuments.isEmpty {
-				if #available(iOS 17, *) {
-					ContentUnavailableView(
-						// TRANSLATORS: Title of the empty-state view shown when no documents have been opened yet
-						t("No Recent Documents"),
-						systemImage: "clock",
-						// TRANSLATORS: Description text under the "No Recent Documents" empty-state title
-						description: Text(t("Documents you open will appear here."))
-					)
-				} else {
-					// TRANSLATORS: Fallback empty-state title shown on iOS versions before 17, when no documents have been opened yet
-					Text(t("No Recent Documents"))
-						.foregroundStyle(.secondary)
-						.frame(maxWidth: .infinity, maxHeight: .infinity)
-				}
+				ContentUnavailableView(
+					// TRANSLATORS: Title of the empty-state view shown when no documents have been opened yet
+					t("No Recent Documents"),
+					systemImage: "clock",
+					// TRANSLATORS: Description text under the "No Recent Documents" empty-state title
+					description: Text(t("Documents you open will appear here."))
+				)
 			} else {
 				List {
 					ForEach(viewModel.recentDocuments) { doc in

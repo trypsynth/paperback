@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct GoToSheet: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 	@State private var mode: GoToMode = .line
@@ -74,7 +74,7 @@ struct GoToSheet: View {
 				}
 			}
 			.onAppear { populate() }
-			.onChange(of: mode) { _ in viewModel.goToInitialMode = mode }
+			.onChange(of: mode) { viewModel.goToInitialMode = mode }
 		}
 		.sheetAccessibilityFocus(title: "Go To")
 	}

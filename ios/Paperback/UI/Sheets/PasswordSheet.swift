@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PasswordSheet: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 
 	@State private var password = ""

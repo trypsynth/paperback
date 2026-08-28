@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TabStripView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 
 	var body: some View {
 		ScrollViewReader { proxy in
@@ -18,7 +18,7 @@ struct TabStripView: View {
 			.accessibilityElement(children: .contain)
 			// TRANSLATORS: Accessibility label for the horizontal strip of open document tabs
 			.accessibilityLabel(t("Tabs"))
-			.onChange(of: viewModel.activeTabId) { id in
+			.onChange(of: viewModel.activeTabId) { _, id in
 				guard let id else { return }
 				withAnimation { proxy.scrollTo(id, anchor: .center) }
 			}
@@ -30,7 +30,7 @@ struct TabStripView: View {
 }
 
 private struct TabChip: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	let tab: DocumentTab
 
 	private var isActive: Bool { tab.id == viewModel.activeTabId }

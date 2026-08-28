@@ -4,7 +4,7 @@ import AVFoundation
 private let sampleText = "This is a sample of the current voice and speed settings."
 
 private struct TtsSettingsSection<VoiceDestination: View>: View {
-	@ObservedObject var ttsManager: TtsManager
+	@Bindable var ttsManager: TtsManager
 	let onPlaySample: () -> Void
 	@ViewBuilder let voiceDestination: () -> VoiceDestination
 
@@ -87,7 +87,7 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 }
 
 struct SettingsView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 
 	var body: some View {
 		Form {

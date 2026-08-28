@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct DocumentMenu: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 
 	var body: some View {
 		if viewModel.activeTab != nil {

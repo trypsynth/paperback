@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TextModeView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	let tab: DocumentTab
 	@State private var visibleLineIndices: Set<Int> = []
 
@@ -36,7 +36,7 @@ struct TextModeView: View {
 				proxy.scrollTo(tab.lineScrollIndex, anchor: .top)
 			}
 		}
-		.onChange(of: visibleLineIndices) { indices in
+		.onChange(of: visibleLineIndices) { _, indices in
 			if let min = indices.min() {
 				viewModel.textModeFirstLine = min
 			}

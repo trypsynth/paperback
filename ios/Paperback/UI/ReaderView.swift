@@ -2,11 +2,12 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ReaderView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@State private var showFilePicker = false
 
 	var body: some View {
-		ZStack {
+		@Bindable var viewModel = viewModel
+		return ZStack {
 			mainContent
 				.navigationTitle(viewModel.activeTab?.title ?? "Paperback")
 				.navigationBarTitleDisplayMode(.inline)
@@ -15,23 +16,23 @@ struct ReaderView: View {
 		}
 		.safeAreaInset(edge: .top, spacing: 0) {
 			if !viewModel.tabs.isEmpty {
-				TabStripView().environmentObject(viewModel)
+				TabStripView().environment(viewModel)
 			}
 		}
 		.navigationDestination(isPresented: $viewModel.showToc) {
-			TocView().environmentObject(viewModel)
+			TocView().environment(viewModel)
 		}
 		.navigationDestination(isPresented: $viewModel.showFind) {
-			FindView().environmentObject(viewModel)
+			FindView().environment(viewModel)
 		}
 		.sheet(isPresented: $viewModel.showGoTo) {
-			GoToSheet().environmentObject(viewModel)
+			GoToSheet().environment(viewModel)
 		}
 		.navigationDestination(isPresented: $viewModel.showSettings) {
-			SettingsView().environmentObject(viewModel)
+			SettingsView().environment(viewModel)
 		}
 		.navigationDestination(isPresented: $viewModel.showRecents) {
-			RecentDocumentsView().environmentObject(viewModel)
+			RecentDocumentsView().environment(viewModel)
 		}
 		// TRANSLATORS: Title of the alert dialog showing the current document's word count
 		.alert(t("Word Count"), isPresented: $viewModel.showWordCount) {
@@ -43,13 +44,13 @@ struct ReaderView: View {
 			}
 		}
 		.sheet(isPresented: $viewModel.showDocumentInfo) {
-			DocumentInfoSheet().environmentObject(viewModel)
+			DocumentInfoSheet().environment(viewModel)
 		}
 		.navigationDestination(isPresented: $viewModel.showSleepTimer) {
-			SleepTimerView().environmentObject(viewModel)
+			SleepTimerView().environment(viewModel)
 		}
 		.navigationDestination(isPresented: $viewModel.showElements) {
-			ElementsView().environmentObject(viewModel)
+			ElementsView().environment(viewModel)
 		}
 		.sheet(
 			isPresented: Binding(
@@ -57,7 +58,7 @@ struct ReaderView: View {
 				set: { if !$0 { viewModel.passwordPromptUrl = nil } }
 			)
 		) {
-			PasswordSheet().environmentObject(viewModel)
+			PasswordSheet().environment(viewModel)
 		}
 		.fileImporter(
 			isPresented: $showFilePicker,
@@ -103,13 +104,13 @@ struct ReaderView: View {
 				// Floats as a Liquid Glass pill inset from the edges, matching Safari's bottom
 				// toolbar, instead of a flat bar spanning the full width.
 				TtsControlBar()
-					.environmentObject(viewModel)
+					.environment(viewModel)
 					.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 26))
 					.padding(.horizontal, 12)
 					.padding(.bottom, 8)
 			} else {
 				TtsControlBar()
-					.environmentObject(viewModel)
+					.environment(viewModel)
 					.background {
 						Rectangle()
 							.fill(.bar)
@@ -130,7 +131,7 @@ struct ReaderView: View {
 			// TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
 			.accessibilityLabel(t("Open Book"))
 			.documentDataTransferMenu()
-			DocumentMenu().environmentObject(viewModel)
+			DocumentMenu().environment(viewModel)
 		}
 	}
 }

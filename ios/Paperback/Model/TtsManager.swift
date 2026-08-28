@@ -7,7 +7,8 @@ private final class GenBox {
 }
 
 @MainActor
-final class TtsManager: NSObject, ObservableObject {
+@Observable
+final class TtsManager: NSObject {
 	private let synthesizer = AVSpeechSynthesizer()
 	private let prefetchSynthesizer = AVSpeechSynthesizer()
 	private let prevPrefetchSynthesizer = AVSpeechSynthesizer()
@@ -49,22 +50,42 @@ final class TtsManager: NSObject, ObservableObject {
 	/// Lets us ignore the spurious play command some speakers send on auto-pair.
 	var suppressExternalPlay: Bool { Date() < ignoreExternalPlayUntil }
 
-	@Published var isSpeaking = false
-	@Published var isPaused = false
+	var isSpeaking = false {
+		didSet { if oldValue != isSpeaking { onPlaybackStateChanged?() } }
+	}
+	var isPaused = false {
+		didSet { if oldValue != isPaused { onPlaybackStateChanged?() } }
+	}
 
-	@Published var speechRate: Float = AVSpeechUtteranceDefaultSpeechRate {
-		didSet { if oldValue != speechRate { invalidatePrefetch() } }
+	var speechRate: Float = AVSpeechUtteranceDefaultSpeechRate {
+		didSet {
+			guard oldValue != speechRate else { return }
+			invalidatePrefetch()
+			onSettingsChanged?()
+		}
 	}
-	@Published var pitch: Float = 1.0 {
-		didSet { if oldValue != pitch { invalidatePrefetch() } }
+	var pitch: Float = 1.0 {
+		didSet {
+			guard oldValue != pitch else { return }
+			invalidatePrefetch()
+			onSettingsChanged?()
+		}
 	}
-	@Published var selectedVoiceIdentifier: String? = nil {
-		didSet { if oldValue != selectedVoiceIdentifier { invalidatePrefetch() } }
+	var selectedVoiceIdentifier: String? = nil {
+		didSet {
+			guard oldValue != selectedVoiceIdentifier else { return }
+			invalidatePrefetch()
+			onSettingsChanged?()
+		}
 	}
 
 	var availableVoices: [AVSpeechSynthesisVoice] { AVSpeechSynthesisVoice.speechVoices() }
-	var onUtteranceFinished: (() -> Void)?
-	var rules: [TtsRule] = [] {
+	@ObservationIgnored var onUtteranceFinished: (() -> Void)?
+	// Observation replaces the old Combine forwarding for redraws; these two carry the side
+	// effects that used to ride those sinks — refreshing Now Playing and persisting settings.
+	@ObservationIgnored var onPlaybackStateChanged: (() -> Void)?
+	@ObservationIgnored var onSettingsChanged: (() -> Void)?
+	@ObservationIgnored var rules: [TtsRule] = [] {
 		didSet { invalidatePrefetch() }
 	}
 

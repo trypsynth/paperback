@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FindView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@State private var query = ""
 	@State private var matchCase = false
 	@State private var wholeWord = false

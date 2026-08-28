@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SpeechDictionaryView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@State private var editingRule: TtsRule? = nil
 	@State private var showAddRule = false
 	@Environment(\.editMode) private var editMode
@@ -49,7 +49,7 @@ struct SpeechDictionaryView: View {
 		}
 		.sheet(isPresented: $showAddRule) {
 			RuleEditSheet(rule: nil) { viewModel.ttsRules.append($0) }
-				.environmentObject(viewModel)
+				.environment(viewModel)
 		}
 		.sheet(item: $editingRule) { rule in
 			RuleEditSheet(rule: rule) { updated in
@@ -57,7 +57,7 @@ struct SpeechDictionaryView: View {
 					viewModel.ttsRules[idx] = updated
 				}
 			}
-			.environmentObject(viewModel)
+			.environment(viewModel)
 		}
 	}
 

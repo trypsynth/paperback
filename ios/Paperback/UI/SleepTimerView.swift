@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SleepTimerView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 
 	private enum Choice: Hashable {
 		case preset(Int)
@@ -67,7 +67,7 @@ struct SleepTimerView: View {
 					TextField(t("Minutes"), text: $customMinutesText)
 						.keyboardType(.numberPad)
 						.focused($customFieldFocused)
-						.onChange(of: customMinutesText) { newValue in
+						.onChange(of: customMinutesText) { _, newValue in
 							let filtered = newValue.filter(\.isNumber)
 							if filtered != newValue { customMinutesText = filtered }
 						}
@@ -103,7 +103,7 @@ struct SleepTimerView: View {
 		// TRANSLATORS: Navigation title of the Sleep Timer screen
 		.navigationTitle(t("Sleep Timer"))
 		.navigationBarTitleDisplayMode(.inline)
-		.onChange(of: choice) { newValue in
+		.onChange(of: choice) { _, newValue in
 			if newValue == .custom { customFieldFocused = true }
 		}
 		.sheetAccessibilityFocus(title: "Sleep Timer")

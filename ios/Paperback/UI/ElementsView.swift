@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ElementsView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 	@State private var tab = 0
 
@@ -56,19 +56,12 @@ struct ElementsView: View {
 	}
 
 	@ViewBuilder private var emptyView: some View {
-		if #available(iOS 17, *) {
-			ContentUnavailableView(
-				// TRANSLATORS: Title shown when a document has no headings or links to list in the Elements sheet
-				t("No Elements"),
-				systemImage: "list.bullet.indent",
-				// TRANSLATORS: Description shown under the "No Elements" title explaining what would appear here
-				description: Text(t("Headings, images, and other elements will appear here."))
-			)
-		} else {
+		ContentUnavailableView(
 			// TRANSLATORS: Title shown when a document has no headings or links to list in the Elements sheet
-			Text(t("No Elements"))
-				.foregroundStyle(.secondary)
-				.frame(maxWidth: .infinity, maxHeight: .infinity)
-		}
+			t("No Elements"),
+			systemImage: "list.bullet.indent",
+			// TRANSLATORS: Description shown under the "No Elements" title explaining what would appear here
+			description: Text(t("Headings, images, and other elements will appear here."))
+		)
 	}
 }

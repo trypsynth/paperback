@@ -9,7 +9,7 @@ private extension UTType {
 // saved settings and bookmarks as a .paperback sidecar file, matching Android's
 // long-press menu on its Open Book button.
 struct DocumentDataTransferMenu: ViewModifier {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@State private var exportURL: URL? = nil
 	@State private var showImportPicker = false
 	@State private var resultMessage: String? = nil

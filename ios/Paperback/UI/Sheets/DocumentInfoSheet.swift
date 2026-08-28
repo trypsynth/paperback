@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct DocumentInfoSheet: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 
 	var body: some View {

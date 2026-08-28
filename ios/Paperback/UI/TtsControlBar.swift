@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TtsControlBar: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 
 	var body: some View {
 		HStack(spacing: 0) {

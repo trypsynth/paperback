@@ -4,13 +4,14 @@ import UIKit
 import MediaPlayer
 
 @MainActor
-final class AppViewModel: ObservableObject {
+@Observable
+final class AppViewModel {
 	// MARK: - Tabs
-	@Published var tabs: [DocumentTab] = []
+	var tabs: [DocumentTab] = []
 	// Stops TTS whenever the active document changes so a paused/playing utterance from the
 	// previous book can never bleed into the next one (its buffer stays scheduled on the audio
 	// node across pause() until something clears it — see TtsManager.pause()).
-	@Published var activeTabId: UUID? = nil {
+	var activeTabId: UUID? = nil {
 		didSet {
 			guard activeTabId != oldValue else { return }
 			ttsManager.stop()
@@ -25,48 +26,59 @@ final class AppViewModel: ObservableObject {
 	var activeSession: DocumentSession? { activeTab?.session }
 
 	// MARK: - Reading mode
-	@Published var isTextMode: Bool = false
+	var isTextMode: Bool = false
 	// Tracks the first visible 0-indexed line in TextModeView; updated eagerly while scrolling.
 	var textModeFirstLine: Int = 0
 
 	// MARK: - TTS
 	let ttsManager = TtsManager()
-	@Published var ttsPosition: Int64 = 0
-	@Published var currentSegmentText: String = ""
-	@Published var currentSegmentType: SegmentType = .paragraph
-	@Published var ttsRules: [TtsRule] = []
+	var ttsPosition: Int64 = 0
+	var currentSegmentText: String = ""
+	var currentSegmentType: SegmentType = .paragraph
+	var ttsRules: [TtsRule] = [] {
+		didSet {
+			ttsManager.rules = ttsRules
+			if let data = try? JSONEncoder().encode(ttsRules) {
+				UserDefaults.standard.set(data, forKey: "tts_rules")
+			}
+		}
+	}
 
 	// MARK: - Search
-	@Published var activeSearchQuery: String? = nil
-	@Published var searchOptions = SearchOptions()
+	var activeSearchQuery: String? = nil
+	var searchOptions = SearchOptions()
 
 	// MARK: - Sleep timer
-	@Published var sleepTimerRemaining: Int? = nil
+	var sleepTimerRemaining: Int? = nil
 	private var sleepTimerTask: Task<Void, Never>? = nil
 
 	// MARK: - Sheet visibility
-	@Published var showToc = false
-	@Published var showFind = false
-	@Published var showGoTo = false
-	@Published var goToInitialMode: GoToMode = .line
-	@Published var showSettings = false
-	@Published var showRecents = false
-	@Published var showWordCount = false
-	@Published var showDocumentInfo = false
-	@Published var showSleepTimer = false
-	@Published var showElements = false
-	@Published var passwordPromptUrl: URL? = nil
+	var showToc = false
+	var showFind = false
+	var showGoTo = false
+	var goToInitialMode: GoToMode = .line
+	var showSettings = false
+	var showRecents = false
+	var showWordCount = false
+	var showDocumentInfo = false
+	var showSleepTimer = false
+	var showElements = false
+	var passwordPromptUrl: URL? = nil
 
 	// MARK: - Settings
-	@Published var restorePreviousDocuments = true
-	@Published var swipeUpMovesForward = true
+	var restorePreviousDocuments = true {
+		didSet { configManager.setAppBool(key: "restore_previous_documents", value: restorePreviousDocuments) }
+	}
+	var swipeUpMovesForward = true {
+		didSet { configManager.setAppBool(key: "swipe_up_moves_forward", value: swipeUpMovesForward) }
+	}
 
 	// MARK: - Recents
-	@Published var recentDocuments: [RecentDocument] = []
+	var recentDocuments: [RecentDocument] = []
 
 	// MARK: - Config
 	let configManager = ConfigManagerFfi()
-	private var cancellables = Set<AnyCancellable>()
+	@ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
 	init() {
 		setPdfiumLibraryPath(path: Bundle.main.bundlePath + "/Frameworks/libpdfium.framework")
@@ -90,66 +102,21 @@ final class AppViewModel: ObservableObject {
 			self?.advanceTtsAfterUtterance()
 			self?.updateNowPlaying()
 		}
-		ttsManager.$isSpeaking
-			.dropFirst()
-			.sink { [weak self] _ in
-				self?.objectWillChange.send()
-				self?.updateNowPlaying()
-			}
-			.store(in: &cancellables)
-		ttsManager.$isPaused
-			.dropFirst()
-			.sink { [weak self] _ in
-				self?.objectWillChange.send()
-				self?.updateNowPlaying()
-			}
-			.store(in: &cancellables)
-		$restorePreviousDocuments
-			.dropFirst()
-			.sink { [weak self] value in
-				self?.configManager.setAppBool(key: "restore_previous_documents", value: value)
-			}
-			.store(in: &cancellables)
-		$swipeUpMovesForward
-			.dropFirst()
-			.sink { [weak self] value in
-				self?.configManager.setAppBool(key: "swipe_up_moves_forward", value: value)
-			}
-			.store(in: &cancellables)
-		ttsManager.$speechRate
-			.dropFirst()
-			.sink { [weak self] value in
-				self?.configManager.setAppString(key: "tts_speech_rate", value: "\(value)")
-			}
-			.store(in: &cancellables)
-		ttsManager.$pitch
-			.dropFirst()
-			.sink { [weak self] value in
-				self?.configManager.setAppString(key: "tts_pitch", value: "\(value)")
-			}
-			.store(in: &cancellables)
-		ttsManager.$selectedVoiceIdentifier
-			.dropFirst()
-			.sink { [weak self] value in
-				self?.configManager.setAppString(key: "tts_voice_identifier", value: value ?? "")
-			}
-			.store(in: &cancellables)
+		ttsManager.onPlaybackStateChanged = { [weak self] in
+			self?.updateNowPlaying()
+		}
+		ttsManager.onSettingsChanged = { [weak self] in
+			guard let self else { return }
+			configManager.setAppString(key: "tts_speech_rate", value: "\(ttsManager.speechRate)")
+			configManager.setAppString(key: "tts_pitch", value: "\(ttsManager.pitch)")
+			configManager.setAppString(key: "tts_voice_identifier", value: ttsManager.selectedVoiceIdentifier ?? "")
+		}
 
 		if let data = UserDefaults.standard.data(forKey: "tts_rules"),
 		   let loaded = try? JSONDecoder().decode([TtsRule].self, from: data) {
 			ttsRules = loaded
 			ttsManager.rules = loaded
 		}
-		$ttsRules
-			.dropFirst()
-			.sink { [weak self] rules in
-				self?.ttsManager.rules = rules
-				if let data = try? JSONEncoder().encode(rules) {
-					UserDefaults.standard.set(data, forKey: "tts_rules")
-				}
-			}
-			.store(in: &cancellables)
-
 		setupRemoteCommands()
 		if restorePreviousDocuments {
 			for path in configManager.getOpenedDocuments() {
@@ -173,7 +140,7 @@ final class AppViewModel: ObservableObject {
 
 	// MARK: - Document management
 
-	@Published var debugMessage: String? = nil
+	var debugMessage: String? = nil
 
 	func openDocument(url: URL, password: String? = nil, track: Bool = true) {
 		if let existing = tabs.first(where: { $0.url == url }) {

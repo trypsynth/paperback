@@ -5,7 +5,7 @@ struct RuleEditSheet: View {
 	let original: TtsRule?
 	let onSave: (TtsRule) -> Void
 
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 	@State private var rule: TtsRule
 
