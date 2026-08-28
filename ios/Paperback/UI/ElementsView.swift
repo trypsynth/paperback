@@ -8,8 +8,8 @@ struct ElementsView: View {
 	var body: some View {
 		Group {
 			if let session = viewModel.activeSession {
-				let headings = session.getHeadingTreeFfi(position: viewModel.ttsPosition)
-				let links = session.getLinkListFfi(position: viewModel.ttsPosition)
+				let headings = session.getHeadingTreeFfi(position: viewModel.reading.ttsPosition)
+				let links = session.getLinkListFfi(position: viewModel.reading.ttsPosition)
 				if headings.items.isEmpty && links.items.isEmpty {
 					emptyView
 				} else {
@@ -27,7 +27,7 @@ struct ElementsView: View {
 						if tab == 0 {
 							List(headings.items, id: \.offset) { item in
 								Button {
-									viewModel.goToPosition(item.offset)
+									viewModel.reading.goToPosition(item.offset)
 									dismiss()
 								} label: {
 									Text(item.text)
@@ -36,7 +36,7 @@ struct ElementsView: View {
 						} else {
 							List(links.items, id: \.offset) { item in
 								Button {
-									viewModel.goToPosition(item.offset)
+									viewModel.reading.goToPosition(item.offset)
 									dismiss()
 								} label: {
 									Text(item.text)

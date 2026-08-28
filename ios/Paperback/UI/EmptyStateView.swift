@@ -54,7 +54,7 @@ struct EmptyStateView: View {
 				Divider().padding(.leading)
 			}
 			// TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
-			Button(t("Show All")) { viewModel.showRecents = true }
+			Button(t("Show All")) { viewModel.navigation.showRecents = true }
 				.padding()
 		}
 	}

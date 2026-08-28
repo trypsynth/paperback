@@ -8,11 +8,11 @@ struct SpeechDictionaryView: View {
 
 	var body: some View {
 		Group {
-			if viewModel.ttsRules.isEmpty {
+			if viewModel.reading.ttsRules.isEmpty {
 				emptyState
 			} else {
 				List {
-					ForEach(viewModel.ttsRules) { rule in
+					ForEach(viewModel.reading.ttsRules) { rule in
 						RuleRow(rule: rule)
 							.contentShape(Rectangle())
 							.onTapGesture { editingRule = rule }
@@ -31,7 +31,7 @@ struct SpeechDictionaryView: View {
 		.toolbar {
 			ToolbarItem(placement: .primaryAction) {
 				HStack(spacing: 16) {
-					if !viewModel.ttsRules.isEmpty {
+					if !viewModel.reading.ttsRules.isEmpty {
 						// TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
 						Button(editMode?.wrappedValue.isEditing == true ? t("Done") : t("Edit")) {
 							withAnimation {
@@ -48,13 +48,13 @@ struct SpeechDictionaryView: View {
 			}
 		}
 		.sheet(isPresented: $showAddRule) {
-			RuleEditSheet(rule: nil) { viewModel.ttsRules.append($0) }
+			RuleEditSheet(rule: nil) { viewModel.reading.ttsRules.append($0) }
 				.environment(viewModel)
 		}
 		.sheet(item: $editingRule) { rule in
 			RuleEditSheet(rule: rule) { updated in
-				if let idx = viewModel.ttsRules.firstIndex(where: { $0.id == updated.id }) {
-					viewModel.ttsRules[idx] = updated
+				if let idx = viewModel.reading.ttsRules.firstIndex(where: { $0.id == updated.id }) {
+					viewModel.reading.ttsRules[idx] = updated
 				}
 			}
 			.environment(viewModel)
@@ -77,26 +77,26 @@ struct SpeechDictionaryView: View {
 	}
 
 	private func moveUp(_ rule: TtsRule) {
-		guard let idx = viewModel.ttsRules.firstIndex(where: { $0.id == rule.id }), idx > 0 else { return }
-		viewModel.ttsRules.swapAt(idx, idx - 1)
+		guard let idx = viewModel.reading.ttsRules.firstIndex(where: { $0.id == rule.id }), idx > 0 else { return }
+		viewModel.reading.ttsRules.swapAt(idx, idx - 1)
 	}
 
 	private func moveDown(_ rule: TtsRule) {
-		guard let idx = viewModel.ttsRules.firstIndex(where: { $0.id == rule.id }),
-		      idx < viewModel.ttsRules.count - 1 else { return }
-		viewModel.ttsRules.swapAt(idx, idx + 1)
+		guard let idx = viewModel.reading.ttsRules.firstIndex(where: { $0.id == rule.id }),
+		      idx < viewModel.reading.ttsRules.count - 1 else { return }
+		viewModel.reading.ttsRules.swapAt(idx, idx + 1)
 	}
 
 	private func delete(_ rule: TtsRule) {
-		viewModel.ttsRules.removeAll { $0.id == rule.id }
+		viewModel.reading.ttsRules.removeAll { $0.id == rule.id }
 	}
 
 	private func move(from source: IndexSet, to destination: Int) {
-		viewModel.ttsRules.move(fromOffsets: source, toOffset: destination)
+		viewModel.reading.ttsRules.move(fromOffsets: source, toOffset: destination)
 	}
 
 	private func deleteAt(_ offsets: IndexSet) {
-		viewModel.ttsRules.remove(atOffsets: offsets)
+		viewModel.reading.ttsRules.remove(atOffsets: offsets)
 	}
 }
 

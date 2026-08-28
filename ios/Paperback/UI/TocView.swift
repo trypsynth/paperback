@@ -16,7 +16,7 @@ struct TocView: View {
 						List(entries, id: \.position) { entry in
 							let isActive = entry.position == activePos
 							Button {
-								viewModel.goToPosition(entry.position)
+								viewModel.reading.goToPosition(entry.position)
 								dismiss()
 							} label: {
 								HStack {
@@ -49,7 +49,7 @@ struct TocView: View {
 
 	// The active entry is the last one whose position is at or before the current position.
 	private func activePosition(in entries: [TocEntry]) -> Int64? {
-		entries.last(where: { $0.position <= viewModel.ttsPosition })?.position
+		entries.last(where: { $0.position <= viewModel.reading.ttsPosition })?.position
 	}
 
 	@ViewBuilder private var emptyView: some View {

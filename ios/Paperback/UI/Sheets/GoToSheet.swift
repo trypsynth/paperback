@@ -74,7 +74,7 @@ struct GoToSheet: View {
 				}
 			}
 			.onAppear { populate() }
-			.onChange(of: mode) { viewModel.goToInitialMode = mode }
+			.onChange(of: mode) { viewModel.navigation.goToInitialMode = mode }
 		}
 		.sheetAccessibilityFocus(title: "Go To")
 	}
@@ -88,11 +88,11 @@ struct GoToSheet: View {
 	}
 
 	private func populate() {
-		let initialMode = viewModel.goToInitialMode
+		let initialMode = viewModel.navigation.goToInitialMode
 		mode = (initialMode == .page && !hasPages) ? .line : initialMode
 
 		guard let session else { return }
-		let pos = viewModel.ttsPosition
+		let pos = viewModel.reading.ttsPosition
 		let status = session.getStatusInfo(position: pos)
 		lineValue = "\(status.lineNumber)"
 		percentValue = Double(status.percentage)
@@ -107,12 +107,12 @@ struct GoToSheet: View {
 		switch mode {
 		case .line:
 			guard let n = Int64(lineValue) else { dismiss(); return }
-			viewModel.goToLine(n)
+			viewModel.reading.goToLine(n)
 		case .page:
 			guard let n = Int64(pageValue) else { dismiss(); return }
-			viewModel.goToPage(Int32(n))
+			viewModel.reading.goToPage(Int32(n))
 		case .percent:
-			viewModel.goToPercent(Int32(percentValue))
+			viewModel.reading.goToPercent(Int32(percentValue))
 		}
 		dismiss()
 	}

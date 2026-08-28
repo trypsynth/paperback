@@ -95,7 +95,7 @@ struct RuleEditSheet: View {
 			.navigationDestination(for: String.self) { _ in
 				VoiceFilterPicker(
 					filter: $rule.voiceFilter,
-					voices: viewModel.ttsManager.availableVoices
+					voices: viewModel.reading.ttsManager.availableVoices
 				)
 			}
 		}

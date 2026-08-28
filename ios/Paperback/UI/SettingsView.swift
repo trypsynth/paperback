@@ -105,8 +105,8 @@ struct SettingsView: View {
 				))
 			}
 			TtsSettingsSection(
-				ttsManager: viewModel.ttsManager,
-				onPlaySample: { viewModel.ttsManager.speakSample(sampleText) },
+				ttsManager: viewModel.reading.ttsManager,
+				onPlaySample: { viewModel.reading.ttsManager.speakSample(sampleText) },
 				voiceDestination: { voicePicker }
 			)
 		}
@@ -116,15 +116,15 @@ struct SettingsView: View {
 	}
 
 	private var voicePicker: some View {
-		VoicePickerView(ttsManager: viewModel.ttsManager) { identifier in
-			let wasPlaying = viewModel.ttsManager.isSpeaking
-			let wasPaused = viewModel.ttsManager.isPaused
-			viewModel.ttsManager.selectedVoiceIdentifier = identifier
+		VoicePickerView(ttsManager: viewModel.reading.ttsManager) { identifier in
+			let wasPlaying = viewModel.reading.ttsManager.isSpeaking
+			let wasPaused = viewModel.reading.ttsManager.isPaused
+			viewModel.reading.ttsManager.selectedVoiceIdentifier = identifier
 			if wasPlaying {
-				viewModel.ttsManager.stop()
-				viewModel.playCurrentSegment()
+				viewModel.reading.ttsManager.stop()
+				viewModel.reading.playCurrentSegment()
 			} else if wasPaused {
-				viewModel.ttsManager.stop()
+				viewModel.reading.ttsManager.stop()
 			}
 		}
 	}

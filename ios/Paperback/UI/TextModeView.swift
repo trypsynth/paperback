@@ -38,7 +38,7 @@ struct TextModeView: View {
 		}
 		.onChange(of: visibleLineIndices) { _, indices in
 			if let min = indices.min() {
-				viewModel.textModeFirstLine = min
+				viewModel.reading.textModeFirstLine = min
 			}
 		}
 	}

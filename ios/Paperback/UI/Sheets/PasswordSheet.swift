@@ -16,7 +16,7 @@ struct PasswordSheet: View {
 						.focused($isFocused)
 						.onSubmit { submit() }
 				} footer: {
-					if let url = viewModel.passwordPromptUrl {
+					if let url = viewModel.navigation.passwordPromptUrl {
 						// TRANSLATORS: Footer text naming the file that needs a password; {} is the file name
 						Text(t("Enter password for {}").replacingOccurrences(of: "{}", with: url.lastPathComponent))
 					}
@@ -41,7 +41,7 @@ struct PasswordSheet: View {
 	}
 
 	private func submit() {
-		guard !password.isEmpty, let url = viewModel.passwordPromptUrl else { return }
+		guard !password.isEmpty, let url = viewModel.navigation.passwordPromptUrl else { return }
 		viewModel.openDocument(url: url, password: password)
 		dismiss()
 	}

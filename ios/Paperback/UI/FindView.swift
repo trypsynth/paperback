@@ -52,10 +52,10 @@ struct FindView: View {
 		.navigationTitle(t("Find"))
 		.navigationBarTitleDisplayMode(.inline)
 		.onAppear {
-			query = viewModel.activeSearchQuery ?? ""
-			matchCase = viewModel.searchOptions.matchCase
-			wholeWord = viewModel.searchOptions.wholeWord
-			useRegex = viewModel.searchOptions.regex
+			query = viewModel.reading.activeSearchQuery ?? ""
+			matchCase = viewModel.reading.searchOptions.matchCase
+			wholeWord = viewModel.reading.searchOptions.wholeWord
+			useRegex = viewModel.reading.searchOptions.regex
 			queryFocused = true
 		}
 		.sheetAccessibilityFocus(title: "Find")
@@ -64,7 +64,7 @@ struct FindView: View {
 	private func find(forward: Bool) {
 		let trimmed = query.trimmingCharacters(in: .whitespaces)
 		guard !trimmed.isEmpty else { return }
-		viewModel.startSearch(
+		viewModel.reading.startSearch(
 			query: trimmed,
 			options: SearchOptions(matchCase: matchCase, wholeWord: wholeWord, regex: useRegex),
 			forward: forward
