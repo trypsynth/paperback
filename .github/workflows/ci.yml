@@ -44,6 +44,7 @@ jobs:
           $libPath = Join-Path $pkg.FullName "build\native\x64"
           echo "LIB=$env:LIB;$libPath" >> $env:GITHUB_ENV
       - name: Install Gettext via MSYS2
+        id: msys2
         uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
@@ -51,6 +52,12 @@ jobs:
           install: >-
             gettext
             mingw-w64-ucrt-x86_64-gettext-tools
+      # setup-msys2 leaves msgfmt off the PATH of later steps, so the build scripts silently
+      # skip every .po file unless the MSYS2 bin directories are added here.
+      - name: Add Gettext to PATH
+        run: |
+          echo "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin" >> $env:GITHUB_PATH
+          echo "${{ steps.msys2.outputs.msys2-location }}\usr\bin" >> $env:GITHUB_PATH
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
       - name: Run tests
@@ -80,6 +87,7 @@ jobs:
           $libPath = Join-Path $pkg.FullName "build\native\x64"
           echo "LIB=$env:LIB;$libPath" >> $env:GITHUB_ENV
       - name: Install Gettext via MSYS2
+        id: msys2
         uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
@@ -87,6 +95,12 @@ jobs:
           install: >-
             gettext
             mingw-w64-ucrt-x86_64-gettext-tools
+      # setup-msys2 leaves msgfmt off the PATH of later steps, so the build scripts silently
+      # skip every .po file unless the MSYS2 bin directories are added here.
+      - name: Add Gettext to PATH
+        run: |
+          echo "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin" >> $env:GITHUB_PATH
+          echo "${{ steps.msys2.outputs.msys2-location }}\usr\bin" >> $env:GITHUB_PATH
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
       # `clippy::all` is denied through [workspace.lints] in Cargo.toml, so this fails the job on
