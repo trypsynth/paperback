@@ -1,4 +1,4 @@
-# Paperback - verzija 0.8.5
+# Paperback - verzija 0.9.0
 
 ## Uvod
 
@@ -6,19 +6,19 @@ Paperback je lagan, brz i pristupačan čitač digitalnih knjiga i dokumenata za
 
 ## Sistemski zahtevi
 
-Paperback trenutno radi na Windowsu, MacOS-u, Linuxu, iOS-u i Androidu.
+Paperback trenutno radi na Windowsu 10 i 11 kao i svim modernim verzijama ARM macOS-a. Izvorne iOS i Android aplikacije su u aktivnom razvoju, javne verzije za testiranje su u planu ubrzo nakon 0.9.0 desktop verzije, pre jedinstvene 1.0 verzije koja pokriva sve četiri platforme.
 
 ## Funkcije
 
 * U potpunosti je samostalan, i ne zahteva da nijedan program bude instaliran na vašem računaru kako biste započeli čitanje.
 * Neverovatno brz, čak i na starijem hardveru.
 * Jednostavan interfejs sa karticama, koji vam dozvoljava da otvorite koliko god dokumenata želite na jednom mestu.
-* Čuva poziciju vašeg kursora u svakom dokumentu koji otvorite.
+* Čuva vašu preciznu poziciju čitanja u svakom dokumentu koji otvorite.
 * Opciono pamti koje ste dokumente imali otvorene kada ste zatvorili program, i vraća ih kada se sledeći put pokrene.
-* Dizajnirao ga je korisnik čitača ekrana za korisnike čitača ekrana.
 * Uključuje funkcije navigacije slične funkcijama koje su dostupne u režimu kretanja po Web stranicama mnogih čitača ekrana, koje vam dozvoljavaju da se lako i brzo krećete kroz dokument.
 * Uključuje obiman dijalog pretrage, koji sadrži funkcije kao što su istorija i podrška za regularne izraze.
 * Može se u potpunosti pokrenuti kao prenosni program, ili se instalirati uz automatsko pridruživanje podržanih vrsta datoteka.
+* Podržava ogromnu listu čestih formata datoteka.
 
 ## Kompatibilnost sa čitačima ekrana
 
@@ -35,40 +35,46 @@ Način da se ova greška zaobiđ je konačno pronađen u JAWS grupi za Diskusiju
 Paperback podržava sledeće formate i ekstenzije:
 
 * CHM datoteke pomoći (`.chm`)
+* DAISY knjige (`.opf`, `.zip`)
 * EPUB knjige (`.epub`)
 * FB2 digitalne knjige (`.fb2`)
-* HTML dokumenti (`.htm`, `.html`, `.xhtml`)
-* Markdown dokumenti (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Microsoft Word dokumenti (`.docx`, `.docm`)
+* HTML dokumente (`.htm`, `.html`, `.xhtml`)
+* Markdown dokumente (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
+* Microsoft Word dokumente (`.docx`, `.docm`, `.doc`)
+* MOBI/Kindle knjige (`.mobi`, `.azw`, `.azw3`)
 * OpenDocument prezentacije (`.odp`, `.fodp`)
 * OpenDocument tekstualne datoteke (`.odt`, `.fodt`)
-* PDF dokumenti (`.pdf`)
-* PowerPoint prezentacije (`.pptx`, `.pptm`)
-* RTF dokumenti (`.rtf`)
-* Datoteke običnog teksta ili dnevnici (`.txt`, `.log`)
-* XML dokumenti (`.xml`)
+* PDF dokumente (`.pdf`)
+* PowerPoint prezentacije (`.pptx`, `.pptm`, `.ppt`)
+* RTF dokumente (`.rtf`)
+* Datoteke običnog teksta ili dnevnike (`.txt`, `.log`)
 
 ## Prečice na tastaturi
 
-Paperback je dizajniran za korišćenje prvenstveno putem tastature i uz čitač ekrana. Ovo su trenutne prečice.
+Paperback je dizajniran za korišćenje prvenstveno putem tastature. Ovo su trenutne prečice.
+
+Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su u zagradama — obično zato što su CTRL+G, Ctrl+W i Alt+levo/desno zauzete za druge konvencije sistema ili ostalih aplikacija na ovoj platformi.
 
 ### Meni datoteke
 
 * `Ctrl+O`: otvori dokumnt.
-* `Ctrl+F4`: zatvori trenutni dokument.
-* `Ctrl+Šift+F4`: zatvori sve otvorene dokumente.
+* `Ctrl+F4` (macOS: `Cmd+W`): zatvori trenutni dokument.
+* `Ctrl+Šift+F4` (macOS: `Cmd+Šift+W`): zatvori sve otvorene dokumente.
+* `Ctrl+Šift+T`: ponovo otvori poslednji zatvoren dokument.
 * `Ctrl+R`: prikaži dijalog sa svim dokumentima (iz nedavnih dokumenata).
+* `Ctrl+Q`: Izlaz iz aplikacije (Samo na Windowsu; na macOS-u ovo je u meniju aplikacije).
 
 ### Meni kretanja
 
 * `Ctrl+F`: prikaži dijalog pretrage.
-* `F3`: pronađi sledeće.
-* `Šift+F3`: pronađi prethodno.
-* `Ctrl+G`: pređi na red.
-* `Ctrl+Šift+G`: pređi na procenat.
+* `F3`(macOS: `Cmd+G`): pronađi sledeće.
+* `Šift+F3` (macOS: `Cmd+Šift+G`): pronađi prethodno.
+* `Ctrl+G` (macOS: `Cmd+L`): pređi u red.
+* `Ctrl+Šift+G` (macOS: `Cmd+Šift+L`): pređi na procenat.
 * `Ctrl+P`: pređi na stranicu (kada trenutni dokument ovo podržava).
-* `Alt+Levo`: vrati se nazad u istoriji navigacije.
-* `Alt+Desno`: kreći se napred u istoriji navigacije.
+* `=`: izgovori trenutni procenat čitanja.
+* `Alt+Levo` (macOS: `Cmd+[`): vrati se nazad u istoriji navigacije.
+* `Alt+Desno` (macOS: `Cmd+]`): kreći se napred u istoriji navigacije.
 * `[`: prethodni odeljak.
 * `]`: naredni odeljak.
 * `Šift+H`: prethodni naslov.
@@ -79,14 +85,20 @@ Paperback je dizajniran za korišćenje prvenstveno putem tastature i uz čitač
 * `P`: naredna stranica.
 * `Šift+B`: prethodna knjižna oznaka.
 * `B`: naredna knjižna oznaka.
+* `/`: postavi  privremenu knjižnu oznaku.
+* `\`: skoči na privremenu knjižnu oznaku.
 * `Šift+N`: prethodna napomena.
 * `N`: naredna napomena.
 * `Ctrl+B`: skoči na sve knjižne oznake i napomene.
 * `Ctrl+Alt+B`: skoči samo na knjižne oznake.
 * `Ctrl+Alt+M`: skoči samo na napomene.
-* `Ctrl+Šift+W`: prikaži tekst napomene na trenutnoj poziciji.
+* `Ctrl+Šift+W` (macOS: `FizičkiCtrl+Šift+W`, kontrol taster, a ne CMD): prikaži tekst napomene na trenutnoj poziciji.
 * `Šift+K`: prethodni link.
 * `K`: naredni link.
+* `Šift+G`: prethodna slika.
+* `G`: naredna slika.
+* `Šift+F`: prethodna figura.
+* `F`: naredna figura.
 * `Šift+T`: prethodna tabela.
 * `T`: naredna tabela.
 * `Šift+S`: prethodni separator.
@@ -100,7 +112,7 @@ Paperback je dizajniran za korišćenje prvenstveno putem tastature i uz čitač
 
 ### Meni sa alatima
 
-* `Ctrl+W`: prikaži broj reči za trenutni dokument.
+* `Ctrl+W` (macOS: `FizičkiCtrl+W`, CTRL taster, a ne CMD): prikaži broj reči za trenutni dokument.
 * `Ctrl+I`: prikaži informacije o dokumentu.
 * `Ctrl+T`: prikaži sadržaj.
 * `F7`: prikaži listu elemenata.
@@ -113,7 +125,13 @@ Paperback je dizajniran za korišćenje prvenstveno putem tastature i uz čitač
 * `Ctrl+Šift+B`: dodaj ili ukloni knjižnu oznaku na poziciji trenutno izabranog teksta ili kursora.
 * `Ctrl+Šift+N`: dodaj ili izmeni napomenu knjižne oznake na poziciji trenutno izabranog teksta ili kursora.
 * `Ctrl+Alt+W`: uključi ili isključi prelamanje reči.
-* `Ctrl+,`: otvori podešavanja.
+* `Ctrl+razmak`: reprodukuj ili pauziraj zvučnu naraciju.
+* `'`: premotaj zvučnu naraciju napred.
+* `;`: premotaj zvučnu naraciju nazad.
+* `Ctrl+'`: povećaj količinu premotavanja zvuka.
+* `Ctrl+;`: smanji količinu premotavanja zvuka.
+* `F11` (macOS: `FizičkiCtrl+Ctrl+F`, CTRL+Command+F): uključi ili isključi režim celog ekrana.
+* `Ctrl+,`: otvori podešavanja (macOS: postavke, u meniju aplikacije).
 * `Ctrl+Šift+S`: uključi ili isključi tajmer pre spavanja.
 
 ### Meni pomoći
@@ -127,8 +145,8 @@ Paperback je dizajniran za korišćenje prvenstveno putem tastature i uz čitač
 ### Dodatni tasteri pri prikazivanju dokumenta
 
 * `Delete` ili `numerički Delete` na kontroli kartica: zatvara izabranu karticu dokumenta.
-* `Enter` u tekstu dokumenta: aktivira link na poziciji kursora, ili otvara prikaz tabele kada ste na markeru tabele.
-* `Šift+F10` u tekstu dokumenta: otvara kontekstni meni.
+* `Enter` ili `razmak` u tekstu dokumenta: aktivira link na poziciji kursora, ili otvara prikaz tabele kada ste na markeru tabele.
+* `Šift+F10` ili aplikacioni/taster za meni u tekstu dokumenta: otvara kontekstni meni.
 
 ## Podržani jezici
 
@@ -173,6 +191,7 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 * Jonathan Rodriguez
 * Jonathan Schuster
 * Keao Wright
+* Michael Marshall
 * Pratik Patel
 * Roberto Perez
 * Sean Randall
@@ -182,12 +201,28 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 ## Dnevnik promena
 
 ### Verzija 0.9.0
-* Dodato dugme za otkazivanje u dijalogu ažuriranja koje je u toku.
-* Dodat alat komandne linije, pb, koji brzo pretvara bilo koji format koji Paperback podržava u HTML, Markdown ili običan tekst.
-* Dodata mogućnost da podesite prečicu za vraćanje Paperbacka iz sistemske trake.
-* Dodato dugme za lociranje u dijalogu sa svim dokumentima koje vam dozvoljava da pronađete knjige koje nedostaju zato što je njihova putanja promenjena.
-* Dodata kartica čitljivosti u podešavanjima, sa sledećim opcijama:
-    * Prelamanje reči (premešteno iz opšte kartice);
+
+#### Dodato
+
+##### Opšte
+* Alat komandne linije, pb, koji brzo pretvara bilo koji format koji Paperback podržava u HTML, Markdown ili običan tekst.
+* Opcija za ponovno učitavanje dokumenata koje su drugi programi izmenili na disku.
+* Opcija za prikazivanje izvora koja otvara izvor dokumenta u novoj kartici, što može biti korisno na primer za uređivanje Markdown dokumenata.
+* Tekst dokumenta se sada odvaja po stranicama, što znači da sada možete da učitate knjige sa desetinama miliona reči za nekoliko sekundi. Molimo prijavite bilo koje čudno ponašanje sa ovom funkcijom.
+
+##### Podrška za platforme
+* ARM64 Windows podrška!
+* Izvorna macOS podrška!
+* Opcija prikazivanja na celom ekranu.
+
+##### Dijalog svih dokumenata
+* Dugme za lociranje u dijalogu sa svim dokumentima koje vam dozvoljava da pronađete knjige koje nedostaju zato što je njihova putanja promenjena.
+* Filtriranje stanja i statusna traka, kako biste mogli da izdvojite dokumente prema stanju dokumenta i vidite koliko dokumenata je prikazano, kao i izabrano.
+* Prečica `Ctrl+Šift+A` da poništite izbor svih dokumenata.
+
+##### Opcije i čitljivost
+* Kartica čitljivosti, sa sledećim opcijama:
+* Prelamanje reči (premešteno iz opšte kartice);
     * Obradi table u redu (novo u ovoj verziji, pogledajte ispod);
     * Font;
     * Boja pozadine;
@@ -195,47 +230,117 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
     * Odvajanje pasusa;
     * Odvajanje slova;
     * Poravnanje teksta.
-* Dodato podešavanje koje određuje kako će se prikazivati tabele, a prikazivanje tabela je sada jedinstveno u svim dokumentima.
-* Dodata opcija za prikazivanje izvora koja otvara izvor dokumenta u novoj kartici, što može biti korisno na primer za uređivanje Markdown dokumenata.
-* Dodato očekivano vreme čitanja, kao i mogućnost da podesite vašu brzinu čitanja kako bi ovo vreme zapravo bilo korisno.
-* Dodata Android podrška!
-* Dodata iOS podrška!
-* Dodata Linux podrška!
-* Dodata macOS podrška!
-* Dodati novi jezici: holandski, finski i poljski.
-* Dodata podrška za kretanje po sadrživačima.
-* Dodata podrška za liste, stavke liste, figure i slike u CHM dokumentima.
-* Dodata stavka menija za prelamanje reči kao i odgovarajuća prečica.
-* Dozvoljeno menjanje veličine dijaloga Web prikaza, a on se sada podrazumevano otvara u veličini koja je mnogo lakša za pregled.
-* Meni izvoza je proširen i sada dozvoljava izvoz u HTML i Markdown uz običan tekst.
-* Ispravljeno primenjivanje prelamanja reči koje vas je prebacivalo na početak dokumenta.
-* Ispravljeno prikazivanje pogrešnih informacija na statusnoj traci u daisy knjigama.
-* Ispravljeni dl, dt i dd elementi koji nisu dodavali nove redove u XHTML dokumentima.
-* Ispravljen taster Escape koji nije zatvarao dijalog informacija o dokumentu i dijalog sa svim dokumentima.
-* Ispravljeni filepos veznici u Mobi knjigama koji su razdvajali HTML tagove i ostavljali smeće u tekstu knjige.
-* Ispravljena usporavanja kada ste blizu kraja tekstualnog polja u velikim dokumentima.
-* Ispravljeni linkovi u zastarelim mobi knjigama.
-* Ispravljeno obrađivanje RTF dokumenata koji imaju znakove koji nisu latinični.
-* Ispravljena traka sa naslovom koja se nije ažurirala nakon što se dokument zatvori iz dijaloga sa svim dokumentima.
-*Ispravljeni word dokumenti sa imenima stilova u zavisnosti od jezika koji nisu ispravno obrađivali naslove.
-* Ispravljeno neispravno fokusiranje vaše izabrane kartice nakon što se restartuje Paperback.
+* Stavka menija za prelamanje reči kao i odgovarajuća prečica.
+* Podešavanje koje određuje kako će se prikazivati tabele, a prikazivanje tabela je sada jedinstveno u svim dokumentima.
+
+##### Navigacija
+* Podrška za kretanje po sadrživačima.
+* Opcija za automatsko pomeranje kursora na početak reda kada se krećete po redovima, slično režimu pretraživanja u čitačima ekrana.
+* Taster jednako koji izgovara vaš trenutni procenat u dokumentu.
+
+##### Knjižne oznake
+* Privremene knjižne oznake: možete imati jednu po dokumentu, i one ostaju. Koristite kosu crtu da postavite privremenu knjižnu oznaku a obrnutu kosu crtu da skočite na nju.
+
+##### Broj  reči
+* Očekivano vreme čitanja, kao i mogućnost da podesite vašu brzinu čitanja kako bi ovo vreme zapravo bilo korisno.
 * Ako je tekst izabran kada otvorite dijalog sa brojem reči, biće prikazano koliko reči ste izabrali.
-* Prelazak sa biblioteke chmlib na naš sopstveni čitač CHM datoteka koji je u potpunosti u Rustu.
-* Na računarima, .paperback datoteke se više neće prisilno učitati nakon što se dokument vrati. Umesto toga, bićete upitani za potvrdu kada se datoteka pronađe.
-* Paperback se vraća na izvlačenje običnog teksta za PDF datoteke sa pogrešnim tagovima.
+
+##### Tasterske prečice
+* Mogućnost da prilagodite svaku tastersku prečicu u aplikaciji kroz jednostavan dijalog.
+* Mogućnost da podesite prečicu za vraćanje Paperbacka iz sistemske trake.
+
+##### Jezici
+* Holandski, finski i poljski.
+
+##### Izvoz
+* Meni izvoza je proširen i sada dozvoljava izvoz u HTML i Markdown uz običan tekst.
+
+##### Ažuriranje
+* Dugme za otkazivanje u dijalogu ažuriranja koje je u toku.
+* Ažuriranje će sada proveriti da li  preuzeta datoteka nije neočekivano izmenjena.
+
+##### Web prikaz
+* Web prikaz se sada otvara na vašoj trenutnoj poziciji čitanja.
+
+##### DAISY knjige
+* Podrška za DAISY 2.0 knjige.
+* Podrška Za reprodukciju DAISY 2.02 zvuka.
+
+##### Zvučne knjige
+* Mogućnost reprodukcije zvučnih knjiga, trenutno podržava i DAISY zvuk (uključjući DAISY zvuk + tekst) i zipove zvučnih datoteka.
+* Tasterske prečice i stavke menija za reprodukciju ili pauziranje naracije, premotavanje napred i nazad i menjanje količine premotavanja.
+* Opcija sinhronizacije kursora sa reprodukcijom zvuka, podešavanje količine premotavanja zvuka kao i izbor da li će premotavanje nakon kraja poglavlja nastaviti na sledeće poglavlje.
+
+##### CHM dokumenti
+* Podrška za liste, stavke liste, figure i slike.
+
+##### PowerPoint
+* PowerPoint dokumenti sada podržavaju tabele.
+
+#### Ispravljeno
+
+##### Opšte
+* Dokumenti kodirani u zastarelim CJK kodiranjima, kao što su GBK, Big5 i Shift_JIS će se sada ispravno obraditi umesto kao gomila  modžibakea.
+* Opcija za ponovno otvaranje poslednjeg zatvorenog dokumenta je pokušavala da otvori ugrađenu pomoć.
+* Vaša izabrana kartica se nije ispravno fokusirala nakon što se Paperback ponovo pokrene.
+* Paperbackovo obrađivanje datoteka na Windows mrežnim diskovima: aktiviranje opcije za prikazivanje datoteke u folderu će sada ispravno fokusirati datoteku na mrežnoj memoriji, a putanje više neće sadržati čudne znakove.
+* .paperback datoteke se više neće prisilno učitati nakon što se dokument vrati; umesto toga, bićete upitani za potvrdu kada se datoteka pronađe.
 * Otvaranje izvornog foldera sada fokusira datu datoteku u istraživaču datoteka.
 * Otvaranje dokumentacije će sada uzeti u obzir vaš izabran jezik.
-* PowerPoint dokumenti sada podržavaju tabele.
+* Paperbackov korisnički interfejs će se sada ispravno pozicionirati na ekranima sa visokim DPI-om.
 * Meni se ispravno ažurira i fokus se prebacuje na kontrolu teksta kada se pomoć otvori u Paperbacku.
-* Readme.html se više neće dodavati u vašu listu svih dokumenata kada se otvori prečicom Šift+F1.
-* Uklonjena AZW3 podrška koja nije radila kako treba.
-* Uklanjanje dokumenata iz dijaloga nedavnih dokumenata sada takođe zatvara njihovu aktivnu karticu.
 * Prelazak na mnogo bezbedniji način međuprocesne komunikacije na Windowsu.
-* Prikaz ažuriranja sada ispravno prikazuje sadržaj markdown tagova koda u informacijama o verziji.
-* Ažuriranje će sada proveriti da li  preuzeta datoteka nije neočekivano izmenjena.
-* Web prikaz se sada otvara na vašoj trenutnoj poziciji čitanja.
-* Vaš filter pretrage u dijalogu svih dokumenata se sada čuva nakon što uklonite dokument.
+* Naslov aktivnog dokumenta će se sada čitati kada se prebacujete između kartica.
+* Smanjena potrošnja memorije u velikim dokumentima tako što  je veličina internih indeksnih tabela po znaku prepolovljena.
 
+##### Dijalog svih dokumenata
+* Taster Escape  nije zatvarao dijalog informacija o dokumentu i dijalog sa svim dokumentima.
+* Traka naslova se nije ažurirala nakon što se dokument zatvori iz dijaloga svih dokumenata.
+* Readme.html se više neće dodavati u vašu listu svih dokumenata kada se otvori prečicom Šift+F1.
+* Uklanjanje dokumenata iz dijaloga nedavnih dokumenata sada takođe zatvara njihovu aktivnu karticu.
+* Vaš filter pretrage se sada čuva nakon što se dokument ukloni.
+
+##### Navigacija
+* Navigacija po stranicama je izgovarala neispravan tekst reda u nekim situacijama.
+* Funkcije prelaska u red, prelaska na stranicu i prelaska na procenat su vaš kursor stavljale na pogrešnu poziciju u većim dokumentima.
+* Funkcije pretrage i pretrage sledećeg nisu uzimale u obzir prozor učitanog dokumenta u većim dokumentima.
+
+##### Knjižne oznake
+* Zvukovi knjižnih oznaka i napomena bi sada ispravno trebali da se reprodukuju samo kada se krećete po rečima koje ih sadrže.
+
+##### Čitljivost
+* Primena prelamanja reči vas je vraćala na početak dokumenta.
+
+##### Web prikaz
+* Veličina dijaloga Web prikaza nije bila promenljiva, a on se takođe otvarao u veoma maloj veličini.
+* Slike bi sada trebale ispravno da se prikažu u umetnutom Web prikazu.
+
+##### Ažuriranje
+* Prikaz ažuriranja sada ispravno prikazuje sadržaj markdown tagova koda u informacijama o verziji.
+
+##### DAISY knjige
+*  daisy knjige su prikazivale pogrešne informacije na statusnoj traci.
+* Učitavanje DAISY knjiga sa lažnim deklaracijama o kodiranju.
+
+##### RTF dokumenti
+* Obrađivanje RTF dokumenata koji imaju znakove koji nisu latinični.
+* RTF `\pict` grupe kao umetnuti podaci slika se više ne prikazuju kao tekst dokumenta.
+
+##### Mobi/AZW3 knjige
+* filepos veznici u Mobi knjigama su razdvajali HTML tagove i ostavljali smeće u tekstu knjige.
+* Linkovi u zastarelim Mobi knjigama.
+* Značajno poboljšano AZW3 obrađivanje.
+
+##### Word dokumenti
+* Word dokumenti sa imenima stilova u zavisnosti od jezika nisu ispravno obrađivali naslove.
+
+##### HTML/XHTML dokumenti
+* dl, dt i dd elementi nisu dodavali nove redove u XHTML dokumentima.
+
+##### PDF dokumenti
+* Paperback se vraća na izvlačenje običnog teksta za PDF datoteke sa pogrešnim tagovima.
+* PDF dokumenti koji sadrže kontrolne znakove u naslovima i/ili knjižnim oznakama više neće rušiti Paperback pri otvaranju.
+ 
 ### Verzija 0.8.5
 * Dodata podrška za stranice u epub knjige.
 * Dodata podrška za šifrovane  Microsoft Office dokumente. Trenutno su podržani zastareli word, moderni Word i moderni Powerpoint, a zastareli Powerpoint je planiran u budućnosti.
