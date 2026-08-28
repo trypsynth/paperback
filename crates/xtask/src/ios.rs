@@ -60,14 +60,18 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	if release {
 		build_args.push("--release");
 	}
-	println!("Building for aarch64-apple-ios (device)...");
-	let status =
-		Command::new(&cargo).current_dir(&root).args(&build_args).args(["--target", "aarch64-apple-ios"]).status()?;
-	if !status.success() {
-		return Err("cargo build for aarch64-apple-ios failed".into());
+	// Both slices: without the simulator one the app cannot be built for, let alone run in,
+	// the Simulator — xcodebuild fails with "no library for this platform was found".
+	for (target, label) in [("aarch64-apple-ios", "device"), ("aarch64-apple-ios-sim", "simulator")] {
+		println!("Building for {target} ({label})...");
+		let status = Command::new(&cargo).current_dir(&root).args(&build_args).args(["--target", target]).status()?;
+		if !status.success() {
+			return Err(format!("cargo build for {target} failed").into());
+		}
 	}
 	let headers_dir = root.join("ios/Paperback/Generated");
 	let device_lib = root.join(format!("target/aarch64-apple-ios/{profile}/libpaperback_core.a"));
+	let simulator_lib = root.join(format!("target/aarch64-apple-ios-sim/{profile}/libpaperback_core.a"));
 	let xcframework_out = root.join("ios/paperbackFFI.xcframework");
 	if xcframework_out.exists() {
 		fs::remove_dir_all(&xcframework_out)?;
@@ -77,6 +81,10 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		.args(["-create-xcframework"])
 		.arg("-library")
 		.arg(&device_lib)
+		.arg("-headers")
+		.arg(&headers_dir)
+		.arg("-library")
+		.arg(&simulator_lib)
 		.arg("-headers")
 		.arg(&headers_dir)
 		.arg("-output")

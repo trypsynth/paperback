@@ -3,9 +3,10 @@ import AVFoundation
 
 private let sampleText = "This is a sample of the current voice and speed settings."
 
-private struct TtsSettingsSection: View {
+private struct TtsSettingsSection<VoiceDestination: View>: View {
 	@ObservedObject var ttsManager: TtsManager
 	let onPlaySample: () -> Void
+	@ViewBuilder let voiceDestination: () -> VoiceDestination
 
 	private var selectedVoiceName: String {
 		guard let id = ttsManager.selectedVoiceIdentifier,
@@ -26,7 +27,9 @@ private struct TtsSettingsSection: View {
 	var body: some View {
 		// TRANSLATORS: Section header in Settings grouping text-to-speech voice/rate/pitch controls
 		Section(t("Text to Speech")) {
-			NavigationLink(value: "voice") {
+			NavigationLink {
+				voiceDestination()
+			} label: {
 				HStack {
 					// TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 					Text(t("Voice"))
@@ -69,7 +72,9 @@ private struct TtsSettingsSection: View {
 					.accessibilityLabel(t("Pitch"))
 					.accessibilityValue("\(pitchPercent)%")
 			}
-			NavigationLink(value: "speechDictionary") {
+			NavigationLink {
+				SpeechDictionaryView()
+			} label: {
 				// TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
 				Text(t("Speech Dictionary"))
 			}
@@ -81,62 +86,46 @@ private struct TtsSettingsSection: View {
 	}
 }
 
-struct SettingsSheet: View {
+struct SettingsView: View {
 	@EnvironmentObject var viewModel: AppViewModel
-	@Environment(\.dismiss) private var dismiss
-	@State private var restore = true
 
 	var body: some View {
-		NavigationStack {
-			Form {
-				// TRANSLATORS: Section header in Settings grouping general app behavior toggles
-				Section(t("Behavior")) {
-					// TRANSLATORS: Toggle to reopen previously open documents on next launch
-					Toggle(t("Restore last open documents"), isOn: $restore)
-					// TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
-					Toggle(t("Swipe up moves forward"), isOn: Binding(
-						get: { viewModel.swipeUpMovesForward },
-						set: { viewModel.swipeUpMovesForward = $0 }
-					))
-				}
-				TtsSettingsSection(
-					ttsManager: viewModel.ttsManager,
-					onPlaySample: { viewModel.ttsManager.speakSample(sampleText) }
-				)
+		Form {
+			// TRANSLATORS: Section header in Settings grouping general app behavior toggles
+			Section(t("Behavior")) {
+				// TRANSLATORS: Toggle to reopen previously open documents on next launch
+				Toggle(t("Restore last open documents"), isOn: Binding(
+					get: { viewModel.restorePreviousDocuments },
+					set: { viewModel.restorePreviousDocuments = $0 }
+				))
+				// TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
+				Toggle(t("Swipe up moves forward"), isOn: Binding(
+					get: { viewModel.swipeUpMovesForward },
+					set: { viewModel.swipeUpMovesForward = $0 }
+				))
 			}
-			// TRANSLATORS: Navigation bar title of the Settings sheet
-			.navigationTitle(t("Settings"))
-			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .confirmationAction) {
-					// TRANSLATORS: Button that saves and dismisses the Settings sheet
-					Button(t("Done")) {
-						viewModel.restorePreviousDocuments = restore
-						dismiss()
-					}
-				}
-			}
-			.navigationDestination(for: String.self) { destination in
-				if destination == "speechDictionary" {
-					SpeechDictionaryView()
-				} else {
-					VoicePickerView(ttsManager: viewModel.ttsManager) { identifier in
-						let wasPlaying = viewModel.ttsManager.isSpeaking
-						let wasPaused = viewModel.ttsManager.isPaused
-						viewModel.ttsManager.selectedVoiceIdentifier = identifier
-						if wasPlaying {
-							viewModel.ttsManager.stop()
-							viewModel.playCurrentSegment()
-						} else if wasPaused {
-							viewModel.ttsManager.stop()
-						}
-					}
-				}
-			}
-			.onAppear {
-				restore = viewModel.restorePreviousDocuments
+			TtsSettingsSection(
+				ttsManager: viewModel.ttsManager,
+				onPlaySample: { viewModel.ttsManager.speakSample(sampleText) },
+				voiceDestination: { voicePicker }
+			)
+		}
+		// TRANSLATORS: Navigation bar title of the Settings screen
+		.navigationTitle(t("Settings"))
+		.navigationBarTitleDisplayMode(.inline)
+	}
+
+	private var voicePicker: some View {
+		VoicePickerView(ttsManager: viewModel.ttsManager) { identifier in
+			let wasPlaying = viewModel.ttsManager.isSpeaking
+			let wasPaused = viewModel.ttsManager.isPaused
+			viewModel.ttsManager.selectedVoiceIdentifier = identifier
+			if wasPlaying {
+				viewModel.ttsManager.stop()
+				viewModel.playCurrentSegment()
+			} else if wasPaused {
+				viewModel.ttsManager.stop()
 			}
 		}
-		.sheetAccessibilityFocus(title: "Settings")
 	}
 }

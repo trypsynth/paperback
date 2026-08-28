@@ -27,8 +27,8 @@ struct ReaderView: View {
 		.sheet(isPresented: $viewModel.showGoTo) {
 			GoToSheet().environmentObject(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showSettings) {
-			SettingsSheet().environmentObject(viewModel)
+		.navigationDestination(isPresented: $viewModel.showSettings) {
+			SettingsView().environmentObject(viewModel)
 		}
 		.sheet(isPresented: $viewModel.showRecents) {
 			RecentDocumentsSheet().environmentObject(viewModel)
