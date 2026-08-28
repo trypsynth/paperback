@@ -141,8 +141,8 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 }
 
 fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDialogUi {
-	// TRANSLATORS: Title of the Options dialog
-	let dialog = Dialog::builder(parent, &t("Options")).build();
+	// TRANSLATORS: Title of the Settings dialog
+	let dialog = Dialog::builder(parent, &t("Settings")).build();
 	let notebook = Notebook::builder(&dialog).with_style(NotebookStyle::Top).build();
 	let general_panel = Panel::builder(&notebook).build();
 	let reading_panel = Panel::builder(&notebook).build();

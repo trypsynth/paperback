@@ -358,7 +358,7 @@ impl ActionId {
 			Self::IncreaseAudioSeekAmount => crate::t("Increase Audio Seek Amount"),
 			Self::DecreaseAudioSeekAmount => crate::t("Decrease Audio Seek Amount"),
 			Self::ToggleFullScreen => crate::t("Full Screen"),
-			Self::Options => crate::t("Options..."),
+			Self::Options => crate::t("Settings..."),
 			Self::SleepTimer => crate::t("Sleep Timer..."),
 			Self::CustomizeShortcuts => crate::t("Customize Keyboard Shortcuts..."),
 			Self::ImportDocumentData => crate::t("Import Document Data..."),
