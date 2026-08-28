@@ -85,8 +85,8 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisi
 * `P`: Seuraava sivu.
 * `Shift+B`: Edellinen kirjanmerkki.
 * `B`: Seuraava kirjanmerkki.
-* `/`: Lisää tilapäisen kirjanmerkin.
-* `\`: Siirtyy tilapäiseen kirjanmerkkiin.
+* `/`: Lisää tilapäinen kirjanmerkki.
+* `\`: Siirry tilapäiseen kirjanmerkkiin.
 * `Shift+N`: Edellinen muistiinpano.
 * `N`: Seuraava muistiinpano.
 * `Ctrl+B`: Siirry kaikkiin kirjanmerkkeihin ja muistiinpanoihin.
@@ -204,8 +204,8 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 
 #### Lisätty
 
-##### Yleistä
-* pb-niminen komentorivityökalu, jolla voit muuntaa nopeasti minkä tahansa Paperbackin tukeman tiedostomuodon HTML:ksi, Markdowniksi tai pelkäksi tekstiksi.
+##### Yleiset
+* Pb-niminen komentorivityökalu, jolla voi muuntaa nopeasti minkä tahansa Paperbackin tukeman tiedostomuodon HTML:ksi, Markdowniksi tai pelkäksi tekstiksi.
 * Asetusz, joka päivittää muilla sovelluksilla muokattujen asiakirjojen sisällön automaattisesti tekstinäkymään.
 * Näytä lähdekoodi -vaihtoehto, joka avaa asiakirjan lähdekoodin uuteen välilehteen, josta on hyötyä esimerkiksi Markdown-tiedostojen muokkauksessa.
 * Asiakirjan teksti näytetään nyt sivuittain, minkä ansiosta jopa kymmeniä miljoonia sanoja sisältävät kirjat avautuvat vain parissa sekunnissa. Ilmoitathan, jos havaitset toiminnassa jotain poikkeavaa.
