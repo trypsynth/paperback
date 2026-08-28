@@ -497,10 +497,22 @@ final class TtsManager: NSObject, ObservableObject {
 	}
 
 	// Soft hyphens (\u{00AD}) and null bytes cause AVSpeechSynthesizer to truncate utterances.
+	// The synthesizer also parses its input as markup, so a bare `<` swallows everything up to
+	// the next `>` (and an unterminated one swallows the rest of the utterance, wedging playback
+	// until the app is restarted). Escaping the three markup characters makes them literal again.
 	private func sanitizeForSpeech(_ text: String) -> String {
-		text.unicodeScalars
-			.filter { $0.value != 0x00 && $0.value != 0x00AD }
-			.reduce(into: "") { $0.unicodeScalars.append($1) }
+		var out = ""
+		out.reserveCapacity(text.count)
+		for scalar in text.unicodeScalars {
+			switch scalar {
+			case "\u{00}", "\u{AD}": continue
+			case "&": out += "&amp;"
+			case "<": out += "&lt;"
+			case ">": out += "&gt;"
+			default: out.unicodeScalars.append(scalar)
+			}
+		}
+		return out
 	}
 
 	private func scheduleConverted(_ buffers: [AVAudioPCMBuffer], gen: Int, suppress: Bool) {
