@@ -84,6 +84,7 @@ pub struct DocumentManager {
 	tabs: Vec<DocumentTab>,
 	config: Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	empty_state: TextCtrl,
 	last_position_save: Cell<Option<Instant>>,
 	last_sound_position: Cell<Option<i64>>,
 	last_audio_seek_position: Cell<Option<i64>>,
@@ -97,6 +98,7 @@ impl DocumentManager {
 		notebook: Notebook,
 		config: Rc<Mutex<ConfigManager>>,
 		live_region_label: StaticText,
+		empty_state: TextCtrl,
 	) -> Self {
 		Self {
 			frame,
@@ -104,6 +106,7 @@ impl DocumentManager {
 			tabs: Vec::new(),
 			config,
 			live_region_label,
+			empty_state,
 			last_position_save: Cell::new(None),
 			last_sound_position: Cell::new(None),
 			last_audio_seek_position: Cell::new(None),
@@ -307,6 +310,7 @@ impl DocumentManager {
 			config.add_opened_document(&path_str);
 		}
 		config.flush();
+		self.sync_empty_state();
 		true
 	}
 
@@ -344,6 +348,7 @@ impl DocumentManager {
 		let _page = self.notebook.get_page(index);
 		self.notebook.remove_page(index);
 		self.tabs.remove(index);
+		self.sync_empty_state();
 		let count = self.tabs.len();
 		if count > 0 {
 			let new_index = index.min(count - 1);
@@ -441,6 +446,26 @@ impl DocumentManager {
 	pub fn find_tab_by_path(&self, path: &Path) -> Option<usize> {
 		let target = normalized_path_key(path);
 		self.tabs.iter().position(|tab| normalized_path_key(&tab.file_path) == target)
+	}
+
+	/// Swaps the notebook and the empty-state text control depending on whether anything is
+	/// open, so the window always has exactly one focusable thing in it.
+	pub fn sync_empty_state(&self) {
+		let has_docs = !self.tabs.is_empty();
+		self.notebook.show(has_docs);
+		self.empty_state.show(!has_docs);
+		if let Some(parent) = self.empty_state.get_parent() {
+			parent.layout();
+		}
+		// Closing the last document leaves focus on a control that just went away, so hand it
+		// to the empty state: a screen reader otherwise falls back to announcing the window.
+		if !has_docs {
+			self.empty_state.set_focus();
+		}
+	}
+
+	pub fn focus_empty_state(&self) {
+		self.empty_state.set_focus();
 	}
 
 	pub fn restore_focus(&self) {
