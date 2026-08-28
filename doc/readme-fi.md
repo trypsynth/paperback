@@ -1,4 +1,4 @@
-# Paperback - versio 0.8.5
+# Paperback - versio 0.9.0
 
 ## Johdanto
 
@@ -6,7 +6,7 @@ Paperback on kevyt ja saavutettava e- ja asiakirjojen lukusovellus kaikille satu
 
 ## Järjestelmävaatimukset
 
-Paperback toimii Windowsissa, macOS:ssä, iOS:ssä ja Androidissa.
+Paperback toimii Windows 10:ssä ja 11:ssä sekä kaikissa uudemmissa ARM-pohjaisissa macOS:n versioissa. Myös iOS- ja Android-sovellukset ovat kehitteillä. Niistä on määrä julkaista testiversiot pian työpöytäversio 0.9.0:n jälkeen ennen kaikkia neljää alustaa kattavaa 1.0-versiota.
 
 ## Ominaisuudet
 
@@ -71,7 +71,8 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisi
 * `Shift+F3` (macOS: `Cmd+Shift+G`): Etsi edellinen.
 * `Ctrl+G` (macOS: `Cmd+L`): Siirry riville.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Siirry prosenttiin.
-* `Ctrl+P`: Siirry sivulle (jos nykyinen asiakirja tukee sitä).
+* `Ctrl+P`: Siirry sivulle (jos asiakirja tukee sitä).
+* `=`: Ilmoittaa asiakirjan lukukohdan prosentteina.
 * `Alt+Vasen nuoli` (macOS: `Cmd+[`): Siirry taaksepäin navigointihistoriassa.
 * `Alt+Oikea nuoli` (macOS: `Cmd+]`): Siirry eteenpäin navigointihistoriassa.
 * `[`: Edellinen luku.
@@ -84,6 +85,8 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisi
 * `P`: Seuraava sivu.
 * `Shift+B`: Edellinen kirjanmerkki.
 * `B`: Seuraava kirjanmerkki.
+* `/`: Lisää tilapäisen kirjanmerkin.
+* `\`: Siirtyy tilapäiseen kirjanmerkkiin.
 * `Shift+N`: Edellinen muistiinpano.
 * `N`: Seuraava muistiinpano.
 * `Ctrl+B`: Siirry kaikkiin kirjanmerkkeihin ja muistiinpanoihin.
@@ -122,6 +125,12 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisi
 * `Ctrl+Shift+B`: Lisää kirjanmerkki nykyisen valinnan kohdalle tai kohdistimen sijaintiin tai poista se.
 * `Ctrl+Shift+N`: Lisää kirjanmerkin muistiinpano nykyisen valinnan tai kohdistimen kohdalle tai muokkaa sitä.
 * `Ctrl+Alt+W`: Ota rivitys käyttöön tai poista se käytöstä.
+* `Ctrl+Väli`: Toista äänite tai pysäytä sen toisto.
+* `'`: Kelaa äänitettä eteenpäin.
+* `;`: Kelaa äänitettä taaksepäin.
+* `Ctrl+'`: Pidennä äänitteen kelauksen aikasiirtymää.
+* `Ctrl+;`: Lyhennä äänitteen kelauksen aikasiirtymää.
+* `F11` (macOS: `RawCtrl+Ctrl+F` eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.
 * `Ctrl+,`: Avaa asetukset (löytyy macOS:ää käytettäessä sovellusvalikosta).
 * `Ctrl+Shift+S`: Ota uniajastin käyttöön tai poista se käytöstä.
 
@@ -191,14 +200,28 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 
 ## Muutosloki
 
-### Versio 0.9.0 (ei vielä julkaistu)
-* Lisätty Peruuta-painike käynnissä olevan päivityksen valintaikkunaan.
-* Lisätty pb-komentorivityökalu, jolla voi muuntaa nopeasti minkä tahansa Paperbackin tukeman tiedostomuodon HTML-, Markdown- tai pelkkä teksti -muotoon.
-* Lisätty muokattava pikanäppäin Paperbackin palauttamiseen ilmoitusalueelta.
-* Lisätty Etsi kirja -painike Kaikki asiakirjat -valintaikkunaan sellaisten puuttuvien kirjojen löytämiseksi, joiden tiedostopolku on muuttunut.
-* Kaikki asiakirjat -valintaikkunaan on lisätty tilasuodatin ja tilarivi, joiden avulla asiakirjoja voi suodattaa tilan perusteella sekä nähdä näytettävien ja valittujen asiakirjojen määrän.
-* Lisätty `Ctrl+Shift+A`-pikanäppäin, jolla voi Kaikki asiakirjat -valintaikkunassa poistaa kaikkien asiakirjojen valinnan.
-* Lisätty Asetukset-valintaikkunaan Luettavuus-välilehti, jossa on seuraavat asetukset:
+### Versio 0.9.0
+
+#### Lisätty
+
+##### Yleistä
+* pb-niminen komentorivityökalu, jolla voit muuntaa nopeasti minkä tahansa Paperbackin tukeman tiedostomuodon HTML:ksi, Markdowniksi tai pelkäksi tekstiksi.
+* Asetusz, joka päivittää muilla sovelluksilla muokattujen asiakirjojen sisällön automaattisesti tekstinäkymään.
+* Näytä lähdekoodi -vaihtoehto, joka avaa asiakirjan lähdekoodin uuteen välilehteen, josta on hyötyä esimerkiksi Markdown-tiedostojen muokkauksessa.
+* Asiakirjan teksti näytetään nyt sivuittain, minkä ansiosta jopa kymmeniä miljoonia sanoja sisältävät kirjat avautuvat vain parissa sekunnissa. Ilmoitathan, jos havaitset toiminnassa jotain poikkeavaa.
+
+##### Tuettavat käyttöjärjestelmät
+* Tuki ARM64-pohjaiselle Windowsille.
+* Tuki macOS:lle.
+* Koko näytön tilan käyttöönotto tai käytöstä poisto.
+
+##### Kaikki asiakirjat -valintaikkuna
+* Etsi-painike sellaisten kirjojen etsimiseen, joiden hakemistopolut ovat muuttuneet.
+* Tilasuodatin ja tilarivi, joiden avulla voit suodattaa asiakirjoja tilan perusteella sekä nähdä näytettävien ja valittujen asiakirjojen määrän.
+* `Ctrl+Shift+A`-pikanäppäin kaikkien asiakirjojen valinnan perumiseen.
+
+##### Asetukset ja luettavuus
+* Luettavuus-välilehti, jossa on seuraavat asetukset:
     * Tekstin rivitys (siirretty Yleiset-välilehdeltä)
     * Näytä taulukot tekstin osana (uusi tässä versiossa, katso jäljempää)
     * Fontti
@@ -207,54 +230,116 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
     * Kappaleväli
     * Kirjainväli
     * Tekstin tasaus
-* Lisätty asetus taulukoiden näyttötavan määrittämiseksi sekä yhtenäistetty taulukoiden esitystapa kaikille asiakirjoille.
-* Lisätty Näytä lähdekoodi -vaihtoehto, joka avaa asiakirjan lähdekoodin uuteen välilehteen, josta on hyötyä esimerkiksi Markdown-tiedostojen muokkauksessa.
-* Sanamäärä-valintaikkunaan on lisätty arvioitu lukuaika sekä mahdollisuus oman lukunopeuden määrittämiseen, jotta tästä tiedosta on oikeasti hyötyä.
-* ARM64-pohjaisen Windowsin tuki on lisätty.
-* Android-tuki on lisätty.
-* iOS-tuki on lisätty.
-* macOS-tuki on lisätty.
-* Lisätty hollannin-, puolan- ja suomenkieliset käännökset.
+* Rivitys-vaihtoehto ja sille oma pikanäppäin.
+* Asetus taulukoiden näyttötavan määrittämiseksi sekä yhtenäistetty taulukoiden esitystapa kaikille asiakirjoille.
+
+##### Navigointi
 * Lisätty tuki säilöittäin navigoimiselle.
-* Lisätty CHM-asiakirjoihin luetteloiden, luettelokohteiden, kuvitusten ja kuvien tuki.
-* Lisätty Rivitys-vaihtoehto ja sille vastaava pikanäppäin.
-* Merkkiääni toistetaan nyt vain sellaisten sanojen kohdalla, joihin on lisätty kirjanmerkki tai muistiinpano.
-	* Vanhoilla CJK-merkistöillä (kuten GBK, Big5 ja Shift_JIS) koodattuja asiakirjoja ei näytetä enää pelkkänä merkkisotkuna.
-* Vientitoimintoa on laajennettu siten, että se mahdollistaa viennin pelkän tekstin lisäksi myös HTML- ja Markdown-muotoihin.
-* Korjattu ongelma, jonka vuoksi tekstin rivityksen käyttöönotto siirsi kohdistuksen asiakirjan alkuun.
-* Korjattu ongelma, jonka vuoksi DAISY-kirjoista näytettiin tilarivillä virheellisiä tietoja.
-* Korjattu ongelma, jonka vuoksi XHTML-asiakirjojen dl-, dt- ja dd-elementtien kohdalle ei lisätty rivinvaihtoja.
-* Korjattu ongelma, jonka vuoksi Asiakirjan tiedot- ja Kaikki asiakirjat -valintaikkunat eivät sulkeutuneet Esc-näppäimellä.
-* Korjattu ongelma, jonka vuoksi Mobi-kirjojen filepos-ankkurit rikkoivat HTML-elementtejä ja aiheuttivat merkkisotkua kirjan tekstiin.
-* Korjattu suurten asiakirjojen loppupuolella esiintynyt lukunäkymän hidastelu.
-* Vanhojen Mobi-kirjojen linkit korjattu.
-* Korjattu ongelma virheellisen koodausmäärityksen sisältävien DAISY-kirjojen lataamisessa.
-* Korjattu ongelma, jonka vuoksi ruudunlukija puhui joissakin tilanteissa väärän rivin asiakirjassa liikuttaessa.
-* Korjattu muita kuin latinalaisia kirjaimia sisältävien RTF-asiakirjojen jäsentäminen.
-* Korjattu ongelma, jonka vuoksi Avaa viimeksi suljettu -toiminto yritti avata sovelluksen mukana toimitettavan readme-tiedoston.
-* Korjattu ongelma, jonka vuoksi otsikkopalkki ei päivittynyt, kun dokumentti suljettiin Kaikki asiakirjat -valintaikkunasta.
-* Selainnäkymävalintaikkunan kokoa voi nyt muuttaa, eikä se avaudu enää aivan liian pienenä.
-* Korjattu ongelma, jonka vuoksi eri kielisiä tyylinimiä sisältävien Word-asiakirjojen otsikoita ei näytetty oikein.
-* Korjattu ongelma, jonka vuoksi kohdistus ei siirtynyt oikein valitulle välilehdelle Paperbackin uudelleenkäynnistyksen jälkeen.
+* Asetus, joka siirtää kohdistimen navigoitaessa rivin alkuun, kuten ruudunlukijoiden selaustilassa.
+* Kohdistimen sijainnin kirjassa prosentteina ilmoittava =-pikanäppäin.
+
+##### Kirjanmerkit
+* Tuki tilapäisille kirjanmerkeille, joita voi olla yksi kussakin asiakirjassa, ja ne säilyvät myös asiakirjan sulkemisen jälkeen. Lisää painamalla / ja siirry siihen painamalla \.
+
+##### Sanamäärä
+* Sanamäärä-valintaikkunaan arvioitu lukuaika sekä mahdollisuus oman lukunopeuden määrittämiseen, jotta tästä tiedosta on oikeasti hyötyä.
 * Jos tekstiä on valittuna Sanamäärä-valintaikkunaa avattaessa, näkymässä näytetään nyt valittujen sanojen määrä.
-* Kuvat näytetään nyt oikein selainnäkymässä.
-* Verkkolevyillä sijaitsevien tiedostojen käsittelyä on parannettu: Avaa asiakirjan kansio -toiminto siirtää nyt kohdistuksen asianmukaisesti verkkolevyllä olevan tiedoston kohdalle, eikä tiedostopoluissa ole enää outoja merkkejä.
-* AZW3-kirjojen jäsentämistä on parannettu huomattavasti.
-* Chmlib-kirjasto on vaihdettu täysin Rust-ohjelmointikielellä kirjoitettuun CHM-lukijaan.
+
+##### Pikanäppäimet
+* Helppokäyttöinen valintaikkuna, jossa voi muokata kaikkia sovelluksen pikanäppäimiä.
+* Muokattava pikanäppäin Paperbackin palauttamiseen ilmoitusalueelta.
+
+##### Kielet
+* Hollannin-, puolan- ja suomenkieliset käännökset.
+
+##### Vienti
+* Vientitoimintoa on laajennettu siten, että se mahdollistaa viennin pelkän tekstin lisäksi myös HTML- ja Markdown-muotoihin.
+
+##### Päivittäjä
+* Peruuta-painike käynnissä olevan päivityksen valintaikkunaan.
+* Päivittäjä varmistaa nyt, ettei ladattua tiedostoa ole peukaloitu.
+
+##### Selainnäkymä
+* Selainnäkymä avautuu nyt nykyisessä lukukohdassa.
+
+##### DAISY-kirjat
+* DAISY 2.0 -kirjojen tuki.
+* DAISY 2.02 -äänikirjojen tuki.
+
+##### Äänikirjat
+* Mahdollisuus äänikirjojen kuunteluun. Sovellus tukee ZIP-tiedostoiksi pakattuja tai niistä purettuja pelkkää ääntä tai sekä tekstiä että ääntä sisältäviä DAISY-kirjoja.
+* Äänitteen toiston ja pysäytyksen, eteen- ja taaksepäin kelauksen sekä kelattaessa käytettävän aikasiirtymän muuttamisen näppäinkomennot ja valikkokohteet.
+* Asetukset, joilla lukukohdistin seuraa äänitteen toistokohtaa, määritetään äänitteen kelauksen aikasiirtymä ja valitaan, jatkuuko toisto seuraavasta luvusta nykyisen luvun loppua pidemmälle kelattaessa.
+
+##### CHM-asiakirjat
+* Luetteloiden, luettelokohteiden, kuvitusten ja kuvien tuki.
+
+##### PowerPoint
+* PowerPoint-esitykset tukevat nyt taulukoita.
+
+#### Korjattu
+
+##### Yleiset
+* Vanhoja CJK-merkistöjä, kuten GBK, Big5 ja Shift_JIS, käyttäviä asiakirjoja ei näytetä enää pelkkänä merkkisotkuna.
+* Avaa viimeksi suljettu -toiminto yritti avata sovelluksen mukana toimitettavan readme-tiedoston.
+* Kohdistus ei siirtynyt oikein valitulle välilehdelle Paperbackin uudelleenkäynnistyksen jälkeen.
+* Verkkolevyillä sijaitsevien tiedostojen käsittelyä on parannettu. Avaa asiakirjan kansio -toiminto siirtää nyt kohdistuksen asianmukaisesti verkkolevyllä olevan tiedoston kohdalle, eikä hakemistopoluissa ole enää outoja merkkejä.
 * Työpöytäversiossa .paperback-tiedostoja ei enää avata automaattisesti asiakirjoja palautettaessa, vaan tiedoston löytyessä pyydetään vahvistus.
-* Paperback käyttää nyt virheellisesti merkityille PDF-tiedostoille varavaihtoehtona pelkän tekstin poimimista.
 * Avaa asiakirjan kansio -toiminto siirtää nyt kohdistuksen kyseisen tiedoston kohdalle Resurssienhallinnassa.
 * Käytössä oleva kieli otetaan nyt huomioon Readme-tiedostoa avattaessa.
-* PowerPoint-esitykset tukevat nyt taulukoita.
+* Paperbackin käyttöliittymä mukautuu nyt oikein tarkoilla näytöillä.
 * Valikko päivittyy nyt oikein ja kohdistus siirtyy asiakirjan tekstiin, kun ohje avataan Paperbackissa.
-* Readme.html-tiedostoa ei enää lisätä Kaikki asiakirjat -luetteloon, kun se avataan Shift+F1-pikanäppäimellä.
-* Asiakirjojen poistaminen Viimeisimmät asiakirjat -valintaikkunasta sulkee nyt myös niiden aktiiviset välilehdet.
 * Windowsissa on otettu käyttöön huomattavasti turvallisempi prosessien välinen viestintämenetelmä.
 * Aktiivisen asiakirjan nimi luetaan nyt välilehteä vaihdettaessa.
+* Suurten asiakirjojen muistinkäyttöä on vähennetty puolittamalla sisäisten merkkikohtaisten indeksitaulukoiden koko.
+
+##### Kaikki asiakirjat -valintaikkuna
+* Asiakirjan tiedot- ja Kaikki asiakirjat -valintaikkunat eivät sulkeutuneet Esc-näppäimellä.
+* Otsikkopalkki ei päivittynyt, kun asiakirja suljettiin Kaikki asiakirjat -valintaikkunasta.
+* Readme.html-tiedostoa ei enää lisätä Kaikki asiakirjat -luetteloon, kun se avataan Shift+F1-pikanäppäimellä.
+* Asiakirjojen poistaminen Viimeisimmät asiakirjat -valintaikkunasta sulkee nyt myös niiden aktiiviset välilehdet.
+* Hakusuodatin säilytetään nyt myös asiakirjan poistamisen jälkeen.
+
+##### Navigointi
+* Ruudunlukija puhui joissakin tilanteissa väärän rivin asiakirjassa liikuttaessa.
+* Siirry riville-, Siirry sivulle- ja Siirry prosenttiin -toiminnot siirsivät kohdistimen suurissa asiakirjoissa väärään kohtaan.
+* Etsi- ja Etsi seuraava -toiminnot eivät huomioineet suurten asiakirjojen näkyvissä olevaa osaa.
+
+##### Kirjanmerkit
+* Merkkiääni toistetaan nyt vain sellaisten sanojen kohdalla, joihin on lisätty kirjanmerkki tai muistiinpano.
+
+##### Luettavuus
+* Rivityksen käyttöönotto siirsi kohdistuksen asiakirjan alkuun.
+
+##### Selainnäkymä
+* Selainnäkymäikkunan kokoa voi nyt muuttaa, eikä se avaudu enää liian pienenä.
+* Kuvat näytetään nyt oikein selainnäkymässä.
+
+##### Päivittäjä
 * Päivittäjä näyttää nyt versiotiedoissa oikein Markdown-kooditunnisteiden sisällön.
-* Päivittäjä varmistaa nyt, ettei ladattua tiedostoa ole peukaloitu.
-* Selainnäkymä avautuu nyt suoraan nykyisessä lukukohdassa.
-* Kaikki asiakirjat -valintaikkunan hakusuodatin säilytetään nyt myös asiakirjan poistamisen jälkeen.
+
+##### DAISY-kirjat
+* DAISY-kirjoista näytettiin tilarivillä virheellisiä tietoja.
+* Virheellisen koodausmäärityksen sisältävien DAISY-kirjojen lataaminen.
+
+##### RTF-asiakirjat
+* Muita kuin latinalaisia kirjaimia sisältävien RTF-asiakirjojen jäsennys.
+* RTF-tiedostojen `\pict`-ryhmien käsittely, jotta upotettujen kuvien tiedot eivät enää päädy asiakirjan tekstiin.
+
+##### Mobi- ja AZW3-kirjat
+* Mobi-kirjojen filepos-ankkurit rikkoivat HTML-elementtejä ja aiheuttivat merkkisotkua kirjan tekstiin.
+* Vanhojen Mobi-kirjojen linkkien toiminta.
+* AZW3-kirjojen jäsennystä on parannettu huomattavasti.
+
+##### Word-asiakirjat
+* Eri kielisiä tyylinimiä sisältävien Word-asiakirjojen otsikoita ei näytetty oikein.
+
+##### HTML- ja XHTML-asiakirjat
+* XHTML-asiakirjojen dl-, dt- ja dd-elementit eivät tehneet rivinvaihtoja.
+
+##### PDF-asiakirjat
+* Paperback käyttää nyt virheellisesti merkityille PDF-tiedostoille varavaihtoehtona pelkän tekstin poimimista.
+* Paperback ei enää kaadu avattaessa PDF-asiakirjoja, joiden otsikoissa ja/tai kirjanmerkeissä on ohjausmerkkejä.
 
 ### Versio 0.8.5
 * Lisätty alkeellinen tuki tunnisteita sisältäville PDF-tiedostoille. [#364](https://github.com/trypsynth/paperback/pull/364), [#365](https://github.com/trypsynth/paperback/pull/365).

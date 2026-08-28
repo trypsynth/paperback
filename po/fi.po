@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 20:02-0600\n"
-"PO-Revision-Date: 2026-08-23 18:32+0300\n"
+"POT-Creation-Date: 2026-08-26 22:34+0000\n"
+"PO-Revision-Date: 2026-08-28 02:52+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -111,7 +111,7 @@ msgid ""
 "Are you sure you want to remove the {} selected documents? This will also "
 "remove their reading positions and bookmarks."
 msgstr ""
-"Haluatko varmasti poistaa kaikki {} valittua asiakirjaa? Myös lukukohdat ja "
+"Haluatko varmasti poistaa {} valittua asiakirjaa? Myös lukukohdat ja "
 "kirjanmerkit poistetaan."
 
 #. TRANSLATORS: Title of the confirmation dialog
@@ -130,25 +130,28 @@ msgstr ""
 msgid "No documents."
 msgstr "Asiakirjoja ei ole."
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
-msgid "1 document."
-msgstr "1 asiakirja."
-
-#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
-msgid "%d documents."
-msgstr "%d asiakirjaa."
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count. Plural form is chosen by that count.
+#| msgid "%d documents."
+msgid "%d document."
+msgid_plural "%d documents."
+msgstr[0] "%d asiakirja."
+msgstr[1] "%d asiakirjaa."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
 msgid "1 of 1 document selected."
-msgstr "1 / 1 asiakirjaa valittu."
+msgstr "1 / 1 asiakirjaa valittuna."
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
-msgid "All %d documents selected."
-msgstr "Kaikki %d asiakirjaa valittu."
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
+msgid "All %d document selected."
+msgid_plural "All %d documents selected."
+msgstr[0] "%d asiakirja valittuna."
+msgstr[1] "Kaikki %d asiakirjaa valittuina."
 
-#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
-msgid "%d of %d documents selected."
-msgstr "%d / %d asiakirjaa valittu."
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
+msgid "%d of %d document selected."
+msgid_plural "%d of %d documents selected."
+msgstr[0] "%d / %d asiakirjaa valittuna."
+msgstr[1] "%d / %d asiakirjaa valittuina."
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 msgid "Locate Book"
@@ -306,7 +309,7 @@ msgid ""
 "No suitable parser was found for {}.\n"
 "How would you like to open this file?"
 msgstr ""
-"Tiedostolle {} ei löytynyt sopivaa jäsentäjää.\n"
+"Tiedostolle {} ei löydy sopivaa jäsennintä.\n"
 "Miten haluat avata tämän tiedoston?"
 
 #. TRANSLATORS: Label for the format selection dropdown
@@ -371,58 +374,49 @@ msgstr "&Kohdistin seuraa äänitteen toistokohtaa"
 
 #. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
 msgid "&Audio seek amount:"
-msgstr "&Äänitteen aikasiirtymä:"
+msgstr "&Äänitteen kelauksen aikasiirtymä:"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#| msgid "seconds"
 msgid "5 seconds"
 msgstr "5 sekuntia"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#| msgid "1 second"
 msgid "10 seconds"
 msgstr "10 sekuntia"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#| msgid "seconds"
 msgid "30 seconds"
 msgstr "30 sekuntia"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Singular label for 1 minute duration
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "1 minute"
 msgstr "1 minuutti"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#| msgid "minutes"
 msgid "2 minutes"
 msgstr "2 minuuttia"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#| msgid "minutes"
 msgid "5 minutes"
 msgstr "5 minuuttia"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#| msgid "1 minute"
 msgid "10 minutes"
 msgstr "10 minuuttia"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#| msgid "minutes"
 msgid "30 minutes"
 msgstr "30 minuuttia"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Singular label for 1 hour duration
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "1 hour"
 msgstr "1 tunti"
@@ -430,7 +424,8 @@ msgstr "1 tunti"
 #. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
 msgid "Seeking &past the end of a chapter continues into the next"
 msgstr ""
-"Jatka toistoa &seuraavasta luvusta nykyisen luvun lopun yli siirryttäessä"
+"Jatka toistoa &seuraavasta luvusta nykyisen luvun loppua pidemmälle "
+"kelattaessa"
 
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
@@ -694,33 +689,44 @@ msgstr "Ei valintaa"
 msgid "View Note"
 msgstr "Näytä muistiinpano"
 
-#. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
-msgid "hours"
-msgstr "tuntia"
+#. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#| msgid "1 hour"
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d tunti"
+msgstr[1] "%d tuntia"
 
-#. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
-msgid "minutes"
-msgstr "minuuttia"
+#. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#| msgid "1 minute"
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minuutti"
+msgstr[1] "%d minuuttia"
 
-#. TRANSLATORS: Singular label for 1 second duration
-msgid "1 second"
-msgstr "1 sekunti"
-
-#. TRANSLATORS: Plural label for seconds duration (e.g. "2 seconds")
-msgid "seconds"
-msgstr "sekuntia"
+#. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#| msgid "1 second"
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d sekunti"
+msgstr[1] "%d sekuntia"
 
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
 msgstr "Arvioitu lukuaika: {}"
 
-#. TRANSLATORS: Message template for selection word count. The {} placeholder is replaced with the number of words.
-msgid "The selection contains {} words."
-msgstr "Valitussa tekstissä on {} sanaa."
+#. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
+#| msgid "The selection contains {} words."
+msgid "The selection contains %d word."
+msgid_plural "The selection contains %d words."
+msgstr[0] "Valitussa tekstissä on %d sana."
+msgstr[1] "Valitussa tekstissä on %d sanaa."
 
-#. TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
-msgid "This document contains {} words."
-msgstr "Asiakirjassa on {} sanaa."
+#. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
+#| msgid "This document contains {} words."
+msgid "This document contains %d word."
+msgid_plural "This document contains %d words."
+msgstr[0] "Asiakirjassa on %d sana."
+msgstr[1] "Asiakirjassa on %d sanaa."
 
 #. TRANSLATORS: Title of the Word Count dialog
 msgid "Word Count"
@@ -913,9 +919,11 @@ msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
 msgid "Paperback - {}"
 msgstr "Paperback - {}"
 
-#. TRANSLATORS: Status bar character count; {} is the number of characters
-msgid "{} chars"
-msgstr "{} merkkiä"
+#| msgid "{} chars"
+msgid "%d char"
+msgid_plural "%d chars"
+msgstr[0] "%d merkki"
+msgstr[1] "%d merkkiä"
 
 #. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 msgid "document"
@@ -1027,13 +1035,11 @@ msgstr "Asiakirjan lähdekoodia ei voitu näyttää."
 msgid "Sleep timer cancelled."
 msgstr "Uniajastin peruutettu."
 
-#. TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
-msgid "Sleep timer set for 1 minute."
-msgstr "Uniajastin: 1 minuutti."
-
-#. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-msgid "Sleep timer set for %d minutes."
-msgstr "Uniajastin: %d minuuttia."
+#| msgid "Sleep timer set for %d minutes."
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Uniajastin %d minuutti."
+msgstr[1] "Uniajastin %d minuuttia."
 
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -1494,38 +1500,34 @@ msgid "Toggle word wrap"
 msgstr "Ota rivitys käyttöön tai poista se käytöstä"
 
 msgid "&Play/Pause Audio"
-msgstr "&Toista tai pysäytä änite"
+msgstr "&Toista/pysäytä änite"
 
 msgid "Play or pause this document's audio narration"
 msgstr "Toista tai pysäytä asiakirjan äänite"
 
-#| msgid "Go &Forward"
 msgid "Seek Audio &Forward"
-msgstr "Siirry etee&npäin äänitteessä"
+msgstr "Kelaa äänitettä etee&npäin"
 
 msgid "Skip the audio narration forward"
-msgstr "Siirry eteenpäin äänitteessä"
+msgstr "Kelaa äänitettä eteenpäin"
 
 msgid "Seek Audio &Backward"
-msgstr "Siirry t&aaksepäin äänitteessä"
+msgstr "Kelaa äänitettä t&aaksepäin"
 
 msgid "Skip the audio narration backward"
-msgstr "Siirry taaksepäin äänitteessä"
+msgstr "Kelaa äänitettä taaksepäin"
 
 msgid "&Increase Audio Seek Amount"
-msgstr "P&idennä äänitteen aikasiirtymää"
+msgstr "P&idennä äänitteen kelauksen aikasiirtymää"
 
 msgid "Increase how far seeking the audio narration moves"
-msgstr ""
-"Pidennä aikaa, jonka verran äänitteessä siirrytään eteen- tai taaksepäin"
+msgstr "Pidennä aikaa, jonka verran äänitettä kelataan eteen- tai taaksepäin"
 
 msgid "&Decrease Audio Seek Amount"
-msgstr ""
-"&Lyhennä aikaa, jonka verran äänitteessä siirrytään eteen- tai taaksepäin"
+msgstr "&Lyhennä äänitteen kelauksen aikasiirtymää"
 
 msgid "Decrease how far seeking the audio narration moves"
-msgstr ""
-"Lyhennä aikaa, jonka verran äänitteessä siirrytään eteen- tai taaksepäin"
+msgstr "Lyhennä aikaa, jonka verran äänitettä kelataan eteen- tai taaksepäin"
 
 msgid "&Full Screen"
 msgstr "&Koko näyttö"
@@ -1773,9 +1775,8 @@ msgstr "Kirjanmerkki lisätty."
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
-#| msgid "This document has no table of contents."
 msgid "This document has no audio."
-msgstr "Tässä asiakirjassa ei ole äänitettä."
+msgstr "Asiakirjassa ei ole äänitettä."
 
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 msgid "Audio hasn't started playing yet."
@@ -1831,6 +1832,18 @@ msgstr "Kuvio"
 msgid "Image"
 msgstr "Kuva"
 
+#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
+msgstr ""
+"DAISY-kirjan .opf-tiedosto on virheellinen tai manifestista ei löytynyt "
+"DTBook XML -tiedostoa"
+
+#. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
+msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
+msgstr ""
+"DAISY 2.02 -kirjan ncc.html-tiedosto on virheellinen tai sen "
+"sisältötiedostoja ei löydy"
+
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 msgid "Failed to convert DTBook XML to text"
 msgstr "DTBook XML -tiedoston tekstimuunnos epäonnistui"
@@ -1839,11 +1852,13 @@ msgstr "DTBook XML -tiedoston tekstimuunnos epäonnistui"
 msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
 msgstr "Tämä ZIP-paketti ei ole kelvollinen DAISY 3- tai DAISY 2.02 -kirja"
 
-#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
-msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr ""
-"DAISY-kirjan .opf-tiedosto on virheellinen tai manifestista ei löytynyt "
-"DTBook XML -tiedostoa"
+#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+msgid "rootfile not found in container.xml"
+msgstr "container.xml-tiedostosta ei löydy rootfile-elementtiä"
+
+#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+msgid "unsupported content"
+msgstr "sisältöä ei tueta"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
@@ -1860,14 +1875,6 @@ msgstr "luettavan sisällön muuntaminen epäonnistui: {}"
 #. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
 msgid "EPUB has no readable content ({})"
 msgstr "EPUB-kirjassa ei ole luettavaa sisältöä ({})"
-
-#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
-msgid "rootfile not found in container.xml"
-msgstr "container.xml-tiedostosta ei löydy rootfile-elementtiä"
-
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-msgid "unsupported content"
-msgstr "sisältöä ei tueta"
 
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 msgid "Failed to convert FB2 XML to text"
@@ -1985,14 +1992,6 @@ msgstr "ODP-tiedostossa ei ole sivuja"
 msgid "FODP file does not contain any pages"
 msgstr "FODP-tiedostossa ei ole sivuja"
 
-#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"Tässä PDF-asiakirjassa on pelkkiä kuvia ilman luettavaa tekstiä. Tiedostolle "
-"on suoritettava tekstintunnistus, jotta sen sisältöä voidaan lukea."
-
 #. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 msgid "Password required or incorrect"
 msgstr "Tarvitaan salasana tai se on virheellinen"
@@ -2001,9 +2000,13 @@ msgstr "Tarvitaan salasana tai se on virheellinen"
 msgid "Failed to open PDF document: {}"
 msgstr "PDF-asiakirjan avaus epäonnistui: {}"
 
-#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
-msgid "PPTX file contains no slides"
-msgstr "PPTX-tiedostossa ei ole dioja"
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+"Tässä PDF-asiakirjassa on pelkkiä kuvia. Tiedostolle on suoritettava "
+"tekstintunnistus, jotta sen sisältöä voidaan lukea."
 
 msgid ""
 "Password-protected PPT files are not currently supported. Try saving the "
@@ -2020,9 +2023,21 @@ msgstr "PPT-tiedostossa ei ole dioja"
 msgid "PowerPoint Document stream not found"
 msgstr "PowerPoint-asiakirjan tietovirtaa ei löydy"
 
+#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
+msgid "PPTX file contains no slides"
+msgstr "PPTX-tiedostossa ei ole dioja"
+
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 msgid "Failed to parse RTF document: {}"
 msgstr "RTF-asiakirjan jäsennys epäonnistui: {}"
+
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+msgid "File is encrypted and requires a password"
+msgstr "Tiedosto on salattu ja sen avaamiseen tarvitaan salasana"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+msgid "Decryption failed (wrong password?): {}"
+msgstr "Virhe salausta purettaessa (tarkista salasana): {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -2042,7 +2057,7 @@ msgstr "Virhe purettaessa DOC-tiedoston salausta (tarkista salasana): {}"
 
 #. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
 msgid "File content does not look like plain text"
-msgstr "Tiedoston sisältö ei ole muotoilematonta tekstiä"
+msgstr "Tiedoston sisältö ei ole pelkkää tekstiä"
 
 #. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
 msgid "No readable text content found"
@@ -2051,14 +2066,6 @@ msgstr "Luettavaa tekstisisältöä ei löydy"
 #. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
 msgid "No readable content found in the ZIP archive"
 msgstr "ZIP-paketista ei löydy luettavaa sisältöä"
-
-#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-msgid "File is encrypted and requires a password"
-msgstr "Tiedosto on salattu ja sen avaamiseen tarvitaan salasana"
-
-#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-msgid "Decryption failed (wrong password?): {}"
-msgstr "Virhe salausta purettaessa (tarkista salasana): {}"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
@@ -2086,8 +2093,47 @@ msgstr "Tarvitaan salasana"
 msgid "Password incorrect"
 msgstr "Virheellinen salasana"
 
+msgid "1 document."
+msgstr "1 asiakirja."
+
+msgid "%d documents."
+msgstr "%d asiakirjaa."
+
+msgid "All %d documents selected."
+msgstr "Kaikki %d asiakirjaa valittuina."
+
+msgid "%d of %d documents selected."
+msgstr "%d / %d asiakirjaa valittuina."
+
+msgid "hours"
+msgstr "tuntia"
+
+msgid "minutes"
+msgstr "minuuttia"
+
+msgid "1 second"
+msgstr "1 sekunti"
+
+msgid "seconds"
+msgstr "sekuntia"
+
+msgid "The selection contains {} words."
+msgstr "Valitussa tekstissä on {} sanaa."
+
+msgid "This document contains {} words."
+msgstr "Asiakirjassa on {} sanaa."
+
+msgid "{} chars"
+msgstr "{} merkkiä"
+
+msgid "Sleep timer set for 1 minute."
+msgstr "Uniajastin 1 minuutti."
+
+msgid "Sleep timer set for %d minutes."
+msgstr "Uniajastin %d minuuttia."
+
 msgid "Update to %s"
-msgstr "Päivitä versioon %s"
+msgstr "Päivitys versioon %s"
 
 msgid "A new version of %s is available. Here's what's new:"
 msgstr "%sista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
@@ -2644,7 +2690,7 @@ msgid "No Table of Contents"
 msgstr "Ei sisällysluetteloa"
 
 msgid "This document has no table of contents."
-msgstr "Tässä asiakirjassa ei ole sisällysluetteloa."
+msgstr "Asiakirjassa ei ole sisällysluetteloa."
 
 msgid "Tabs"
 msgstr "Välilehdet"
@@ -2656,7 +2702,7 @@ msgid "Previous {}"
 msgstr "Edellinen {}"
 
 msgid "Pause"
-msgstr "Tauota"
+msgstr "Pysäytä"
 
 msgid "Play"
 msgstr "Toista"
@@ -2671,7 +2717,7 @@ msgid "Next {}"
 msgstr "Seuraava {}"
 
 msgid "Press play to start listening."
-msgstr "Aloita kuuntelu painamalla Toista-painiketta."
+msgstr "Aloita kuuntelu painamalla Toista."
 
 msgid "Locate"
 msgstr "Etsi"
@@ -2769,9 +2815,7 @@ msgid "Restore last open book"
 msgstr "Palauta viimeksi avattu kirja"
 
 msgid "Use in-app file browser (requires All Files permission)"
-msgstr ""
-"Käytä sovelluksen sisäistä tiedostoselainta (edellyttää kaikkien tiedostojen "
-"käyttöoikeutta)"
+msgstr "Käytä sovelluksen sisäistä tiedostoselainta"
 
 msgid "Text-to-Speech"
 msgstr "Tekstistä puheeksi"
@@ -2852,10 +2896,10 @@ msgid "Show Text"
 msgstr "Näytä teksti"
 
 msgid "Pause Read Aloud"
-msgstr "Tauota ääneen lukeminen"
+msgstr "Pysäytä tekstistä puheeksi -toiminto"
 
 msgid "Read Aloud"
-msgstr "Lue ääneen"
+msgstr "Lue tekstistä puheeksi -toiminnolla"
 
 msgid "Help"
 msgstr "Ohje"
