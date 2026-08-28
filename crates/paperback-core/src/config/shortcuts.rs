@@ -44,12 +44,12 @@ impl ShortcutCategory {
 		&[Self::File, Self::Go, Self::Tools, Self::Help]
 	}
 
-	pub const fn display_name(self) -> &'static str {
+	pub fn display_name(self) -> String {
 		match self {
-			Self::File => "File",
-			Self::Go => "Go",
-			Self::Tools => "Tools",
-			Self::Help => "Help",
+			Self::File => crate::t("File"),
+			Self::Go => crate::t("Go"),
+			Self::Tools => crate::t("Tools"),
+			Self::Help => crate::t("Help"),
 		}
 	}
 
@@ -77,7 +77,7 @@ impl ShortcutsConfig {
 	}
 
 	pub fn get_display_str(&self, action: ActionId) -> String {
-		self.get_chord(action).map_or_else(|| "None".to_string(), |c| c.to_shortcut_string())
+		self.get_chord(action).map_or_else(|| crate::t("None"), |c| c.to_shortcut_string())
 	}
 
 	pub fn get_menu_str(&self, action: ActionId) -> String {

@@ -22,7 +22,7 @@ pub fn prompt_for_shortcuts(parent: &dyn WxWidget, initial: &ShortcutsConfig) ->
 	for &category in ShortcutCategory::all() {
 		let tab_panel =
 			build_category_tab(&notebook, config_state.clone(), category, &dialog, refresh_all_callbacks.clone());
-		notebook.add_page(&tab_panel, &t(category.display_name()), category == ShortcutCategory::File, None);
+		notebook.add_page(&tab_panel, &category.display_name(), category == ShortcutCategory::File, None);
 	}
 	// Uses the shared `wxStdDialogButtonSizer`-backed helper so OK/Cancel follow platform HIG
 	// order (Cancel/OK on macOS, OK/Cancel on Windows) instead of a hardcoded LTR order.
@@ -105,12 +105,11 @@ fn build_category_tab(
 				if let Some(new_chord) = &result {
 					let conflict = find_conflict(&config_state.borrow(), action, new_chord);
 					if let Some(other_action) = conflict {
-						let msg = format!(
-							"'{}' is already assigned to '{}'. Reassign it to '{}'?",
-							new_chord.to_shortcut_string(),
-							other_action.display_name(),
-							action.display_name()
-						);
+						// TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+						let msg = t("'{}' is already assigned to '{}'. Reassign it to '{}'?")
+							.replacen("{}", &new_chord.to_shortcut_string(), 1)
+							.replacen("{}", &other_action.display_name(), 1)
+							.replacen("{}", &action.display_name(), 1);
 						let warn = MessageDialog::builder(&parent, &msg, &t("Shortcut Conflict"))
 							.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconWarning)
 							.build();
@@ -205,14 +204,14 @@ fn prompt_for_key_chord(
 	action: ActionId,
 	initial: Option<&KeyChord>,
 ) -> Option<Option<KeyChord>> {
-	let title = format!("Set Shortcut for {}", action.display_name());
+	let title = t("Set Shortcut for {}").replace("{}", &action.display_name());
 	let dialog = Dialog::builder(parent, &title).with_size(dpi::scale(parent, 400), dpi::scale(parent, 260)).build();
 	let panel = Panel::builder(&dialog).build();
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let live_region_label = StaticText::builder(&panel).with_label("").with_size(Size::new(0, 0)).build();
 	live_region_label.show(false);
 	let _ = live_region::set_live_region(&live_region_label);
-	let info_text = format!("Configure shortcut for {}:", action.display_name());
+	let info_text = t("Configure shortcut for {}:").replace("{}", &action.display_name());
 	let info_label = StaticText::builder(&panel).with_label(&info_text).build();
 	main_sizer.add(&info_label, 0, SizerFlag::Expand | SizerFlag::All, 8);
 	let ctrl_cb = CheckBox::builder(&panel).with_label(&t("&Ctrl")).build();
@@ -244,7 +243,7 @@ fn prompt_for_key_chord(
 		.with_label(&t("Tip: click in the key field and press the key combination you want."))
 		.build();
 	main_sizer.add(&hint_label, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Top, 8);
-	let preview_label = StaticText::builder(&panel).with_label("Detected: (none)").build();
+	let preview_label = StaticText::builder(&panel).with_label(&t("Detected: (none)")).build();
 	main_sizer.add(&preview_label, 0, SizerFlag::Expand | SizerFlag::All, 8);
 	let current_shortcut_text = move || {
 		let key = key_text_ctrl.get_value();
@@ -257,14 +256,15 @@ fn prompt_for_key_chord(
 		}
 	};
 	let refresh_preview_label = move || {
-		let text = current_shortcut_text().map_or_else(|| "Detected: (none)".to_string(), |s| format!("Detected: {s}"));
+		let text =
+			current_shortcut_text().map_or_else(|| t("Detected: (none)"), |s| t("Detected: {}").replace("{}", &s));
 		preview_label.set_label(&text);
 	};
 	refresh_preview_label();
 	let update_preview = move || {
 		refresh_preview_label();
 		let announce_text =
-			current_shortcut_text().map_or_else(|| "No key detected".to_string(), |s| format!("Detected: {s}"));
+			current_shortcut_text().map_or_else(|| t("No key detected"), |s| t("Detected: {}").replace("{}", &s));
 		live_region::announce(live_region_label, &announce_text);
 	};
 	let update_preview_key = update_preview;
