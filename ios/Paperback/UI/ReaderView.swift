@@ -30,8 +30,8 @@ struct ReaderView: View {
 		.navigationDestination(isPresented: $viewModel.showSettings) {
 			SettingsView().environmentObject(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showRecents) {
-			RecentDocumentsSheet().environmentObject(viewModel)
+		.navigationDestination(isPresented: $viewModel.showRecents) {
+			RecentDocumentsView().environmentObject(viewModel)
 		}
 		// TRANSLATORS: Title of the alert dialog showing the current document's word count
 		.alert(t("Word Count"), isPresented: $viewModel.showWordCount) {
