@@ -212,6 +212,7 @@
 				A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerView.swift */,
 				A2A2A2A2A2A2A2A2A2A2000F /* SettingsView.swift */,
 				A2A2A2A2A2A2A2A2A2A20016 /* VoicePickerView.swift */,
+				E3E3E3E3E3E3E3E3E3E30006 /* SpeechDictionaryView.swift */,
 				B1B1B1B1B1B1B1B1B1B10001 /* Sheets */,
 			);
 			path = UI;
@@ -224,7 +225,6 @@
 				A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20015 /* PasswordSheet.swift */,
-				E3E3E3E3E3E3E3E3E3E30006 /* SpeechDictionaryView.swift */,
 				E3E3E3E3E3E3E3E3E3E30008 /* RuleEditSheet.swift */,
 			);
 			path = Sheets;
