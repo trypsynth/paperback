@@ -143,8 +143,6 @@ final class TtsManager: NSObject {
 		)
 	}
 
-	// MARK: - Sample playback
-
 	func speakSample(_ text: String) {
 		invalidatePrefetch()
 		internalStop()
@@ -167,8 +165,6 @@ final class TtsManager: NSObject {
 			}
 		}
 	}
-
-	// MARK: - Session / route / engine notifications
 
 	@objc private func handleRouteChange(_ notification: Notification) {
 		guard let info = notification.userInfo,
@@ -289,8 +285,6 @@ final class TtsManager: NSObject {
 			}
 		}
 	}
-
-	// MARK: - Playback
 
 	// `isAutoAdvance` must be true only when this call is the natural continuation onto the
 	// buffer already queued next (i.e. from the utterance-finished callback) — never for a
@@ -455,8 +449,6 @@ final class TtsManager: NSObject {
 		engine.stop()
 		try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
 	}
-
-	// MARK: - Private
 
 	private func internalStop() {
 		wasInterruptedWhilePlaying = false

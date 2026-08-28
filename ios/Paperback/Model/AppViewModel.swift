@@ -5,7 +5,6 @@ import UIKit
 @MainActor
 @Observable
 final class AppViewModel {
-	// MARK: - Tabs
 	var tabs: [DocumentTab] = []
 	// Stops TTS whenever the active document changes so a paused/playing utterance from the
 	// previous book can never bleed into the next one (its buffer stays scheduled on the audio
@@ -24,13 +23,10 @@ final class AppViewModel {
 
 	var activeSession: DocumentSession? { activeTab?.session }
 
-	// MARK: - Navigation
 	let navigation = NavigationRouter()
 
-	// MARK: - Reading
 	let reading = ReadingController()
 
-	// MARK: - Settings
 	var restorePreviousDocuments = true {
 		didSet { configManager.setAppBool(key: "restore_previous_documents", value: restorePreviousDocuments) }
 	}
@@ -38,10 +34,8 @@ final class AppViewModel {
 		didSet { configManager.setAppBool(key: "swipe_up_moves_forward", value: swipeUpMovesForward) }
 	}
 
-	// MARK: - Recents
 	var recentDocuments: [RecentDocument] = []
 
-	// MARK: - Config
 	let configManager = ConfigManagerFfi()
 	@ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
@@ -96,8 +90,6 @@ final class AppViewModel {
 			.store(in: &cancellables)
 		reading.updateNowPlaying()
 	}
-
-	// MARK: - Document management
 
 	var debugMessage: String? = nil
 
@@ -155,8 +147,6 @@ final class AppViewModel {
 		openDocument(url: url, track: false)
 	}
 
-	// MARK: - Document data import/export
-
 	// Writes the active document's bookmarks/position to a temporary .paperback
 	// file and returns its URL, ready to hand to a file mover/exporter. Returns
 	// nil if there's no active document or the write failed.
@@ -211,8 +201,6 @@ final class AppViewModel {
 		}
 	}
 
-	// MARK: - Recents
-
 	private func loadRecentsFromConfig() {
 		let paths = configManager.getRecentDocuments()
 		let openPaths = Set(tabs.map { $0.url.path(percentEncoded: false) })
@@ -253,8 +241,6 @@ final class AppViewModel {
 		recentDocuments.removeAll { $0.url == url }
 	}
 
-	// MARK: - Private helpers
-
 	private func tryRestoreDocument(path: String) {
 		guard let url = resolvedURL(forPath: path) else { return }
 		openDocument(url: url)
@@ -291,8 +277,6 @@ final class AppViewModel {
 	}
 }
 
-// MARK: - ReadingContext
-
 extension AppViewModel: ReadingContext {
 	var activeTitle: String? { activeTab?.title }
 
@@ -309,8 +293,6 @@ extension AppViewModel: ReadingContext {
 		updateTabPosition(position)
 	}
 }
-
-// MARK: - Supporting types
 
 enum SegmentType: String, CaseIterable {
 	case paragraph = "Paragraph"

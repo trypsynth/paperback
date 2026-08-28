@@ -39,12 +39,10 @@ final class ReadingController {
 		setupRemoteCommands()
 	}
 
-	// MARK: - Reading mode
 	var isTextMode: Bool = false
 	// Tracks the first visible 0-indexed line in TextModeView; updated eagerly while scrolling.
 	var textModeFirstLine: Int = 0
 
-	// MARK: - TTS
 	let ttsManager = TtsManager()
 	var ttsPosition: Int64 = 0
 	var currentSegmentText: String = ""
@@ -58,16 +56,11 @@ final class ReadingController {
 		}
 	}
 
-	// MARK: - Search
 	var activeSearchQuery: String? = nil
 	var searchOptions = SearchOptions()
 
-	// MARK: - Sleep timer
 	var sleepTimerRemaining: Int? = nil
 	private var sleepTimerTask: Task<Void, Never>? = nil
-
-
-	// MARK: - TTS
 
 	func togglePlayPause() {
 		if ttsManager.isSpeaking {
@@ -213,8 +206,6 @@ final class ReadingController {
 		}
 	}
 
-	// MARK: - Sleep timer
-
 	func setSleepTimer(seconds: Int) {
 		cancelSleepTimer()
 		sleepTimerRemaining = seconds
@@ -237,8 +228,6 @@ final class ReadingController {
 		sleepTimerTask = nil
 		sleepTimerRemaining = nil
 	}
-
-	// MARK: - Search
 
 	// Starts (or re-runs) a search and immediately jumps to the first match in the given
 	// direction, matching desktop/Android: there's no separate "start search" step, pressing
@@ -295,8 +284,6 @@ final class ReadingController {
 		}
 	}
 
-	// MARK: - Navigation
-
 	func goToLine(_ line: Int64) {
 		guard let session = activeSession else { return }
 		let pos = session.positionFromLine(line: line)
@@ -327,8 +314,6 @@ final class ReadingController {
 		refreshCurrentSegment()
 	}
 
-	// MARK: - Segment helpers
-
 	func loadSegment(for tab: DocumentTab) {
 		guard let session = tab.session else { return }
 		ttsPosition = tab.currentPosition
@@ -349,8 +334,6 @@ final class ReadingController {
 		)
 		currentSegmentText = seg.text
 	}
-
-	// MARK: - Text mode
 
 	// Computes and stores the text-mode scroll position BEFORE flipping isTextMode, rather than
 	// reacting to the flag afterward: TextModeView's initial scroll only runs once, on its own
@@ -384,8 +367,6 @@ final class ReadingController {
 		refreshCurrentSegment()
 		context?.activeLineScrollIndex = textModeFirstLine
 	}
-
-	// MARK: - Now Playing
 
 	private func setupRemoteCommands() {
 		let center = MPRemoteCommandCenter.shared()

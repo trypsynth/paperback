@@ -88,8 +88,6 @@ extension MagicTapWindow {
 		return k
 	}
 
-	// MARK: - Actions
-
 	@objc private func kbTogglePlayPause()  { onMain { $0.reading.togglePlayPause() } }
 
 	@objc private func kbNextSection()    { onMain { $0.reading.navigateByType(.section,  direction: .next) } }

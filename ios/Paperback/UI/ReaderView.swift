@@ -80,8 +80,6 @@ struct ReaderView: View {
 		}
 	}
 
-	// MARK: - Main content
-
 	@ViewBuilder
 	private var mainContent: some View {
 		if let tab = viewModel.activeTab {
@@ -94,8 +92,6 @@ struct ReaderView: View {
 			EmptyStateView(onOpenFile: { showFilePicker = true })
 		}
 	}
-
-	// MARK: - Bottom bar
 
 	@ViewBuilder
 	private var bottomBar: some View {
@@ -119,8 +115,6 @@ struct ReaderView: View {
 			}
 		}
 	}
-
-	// MARK: - Toolbar
 
 	@ToolbarContentBuilder
 	private var readerToolbar: some ToolbarContent {
