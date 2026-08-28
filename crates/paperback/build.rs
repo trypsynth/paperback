@@ -30,7 +30,6 @@ fn main() {
 	version::embed_commit_hash();
 	if target.contains("apple") {
 		pdfium::copy_dylib();
-		macos::link_libiconv(&target);
 		macos::generate_app_bundle();
 	}
 	if target.contains("windows") {

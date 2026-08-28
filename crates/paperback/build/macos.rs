@@ -1,19 +1,9 @@
-//! The macOS side of packaging: the linker search path for Homebrew's libiconv and the
-//! `Paperback.app` bundle laid out around the freshly built binary.
+//! The macOS side of packaging: the `Paperback.app` bundle laid out around the freshly built
+//! binary.
 
-use std::{collections::BTreeSet, env, fs, path::Path};
+use std::{collections::BTreeSet, env, fs};
 
 use crate::paths::{self, target_profile_dir};
-
-/// Homebrew's libiconv is keg-only and not on the default search path. wxWidgets links against
-/// it, so we need to tell the linker where to find it.
-pub fn link_libiconv(target: &str) {
-	let homebrew_prefix = if target.contains("aarch64") { "/opt/homebrew" } else { "/usr/local" };
-	let iconv_lib = format!("{homebrew_prefix}/opt/libiconv/lib");
-	if Path::new(&iconv_lib).exists() {
-		println!("cargo:rustc-link-search=native={iconv_lib}");
-	}
-}
 
 /// Builds the `<string>ext</string>` lines for `CFBundleTypeExtensions`, deduped since a couple
 /// of extensions (e.g. `zip`) are shared by more than one entry in `paperback_formats::ALL`.
