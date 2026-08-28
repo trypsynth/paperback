@@ -35,8 +35,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-      - name: Install CMake and Ninja
-        run: choco install cmake ninja -y
+      - name: Install CMake, Ninja, and Pandoc
+        run: choco install cmake ninja pandoc -y
       - name: Install WebView2 SDK
         run: |
           nuget install Microsoft.Web.WebView2 -OutputDirectory packages
@@ -71,8 +71,8 @@ jobs:
         with:
           toolchain: stable
           components: clippy
-      - name: Install CMake and Ninja
-        run: choco install cmake ninja -y
+      - name: Install CMake, Ninja, and Pandoc
+        run: choco install cmake ninja pandoc -y
       - name: Install WebView2 SDK
         run: |
           nuget install Microsoft.Web.WebView2 -OutputDirectory packages
