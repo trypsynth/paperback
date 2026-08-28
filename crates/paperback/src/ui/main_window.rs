@@ -107,25 +107,9 @@ impl MainWindow {
 		#[cfg(windows)]
 		notebook.msw_disable_composited();
 		sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 0);
-		// An empty notebook has no pages, and a page is the only thing in this window a screen
-		// reader can land on. Without this the window has no focusable content at all when no
-		// document is open: VoiceOver announces the window instead, twice, and arrowing does
-		// nothing until you interact with the group. A read-only text control gives the empty
-		// state the same shape an open document has -- something focusable that reads itself.
-		let empty_state =
-			TextCtrl::builder(&panel).with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly).build();
-		// TRANSLATORS: Shown in the main window, and read by screen readers, when no document is open
-		empty_state.set_value(&t("No document open. Use the File menu to open a document."));
-		sizer.add(&empty_state, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
-		let doc_manager = Rc::new(Mutex::new(DocumentManager::new(
-			frame,
-			notebook,
-			Rc::clone(&config),
-			live_region_label,
-			empty_state,
-		)));
-		doc_manager.lock().unwrap().sync_empty_state();
+		let doc_manager =
+			Rc::new(Mutex::new(DocumentManager::new(frame, notebook, Rc::clone(&config), live_region_label)));
 		let find_dialog = Rc::new(Mutex::new(None));
 		#[cfg(target_os = "windows")]
 		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(&config.lock().unwrap().get_hotkey())));
@@ -210,7 +194,7 @@ impl MainWindow {
 				if has_docs {
 					dm.restore_focus();
 				} else {
-					dm.focus_empty_state();
+					dm.notebook().set_focus();
 				}
 				drop(dm);
 				menu::update_menu_item_states(&frame_copy, has_docs);
