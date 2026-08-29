@@ -58,7 +58,7 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 	// runs on past them as "unterminated" literals, sometimes splicing unrelated strings
 	// together. Feed it sanitized copies of the source instead of the real files so those
 	// constructs can't confuse it; see sanitize_rust for why comments/strings stay untouched.
-	let translatable_dirs = translatable_crate_src_dirs(&root);
+	let translatable_dirs = translatable_crate_src_dirs(&root)?;
 	if translatable_dirs.is_empty() {
 		return Err("no translatable crates found — check [package.metadata.patois] translatable = true".into());
 	}
@@ -88,29 +88,40 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-/// Find `src/` directories of every crate under `crates/` tagged
-/// `[package.metadata.patois] translatable = true`.
-fn translatable_crate_src_dirs(root: &Path) -> Vec<PathBuf> {
-	let crates_dir = root.join("crates");
+/// Find the `src/` directory of every package in the build graph tagged
+/// `[package.metadata.patois] translatable = true`: Paperback's own crates plus
+/// dependencies like ship-shape and wx-utils, whose strings show up in Paperback's own
+/// dialogs and therefore have to live in Paperback's catalog. Scanning only `crates/`
+/// silently left every dependency string out of the pot, so anything a dependency added
+/// after it was vendored in stayed untranslated no matter what the po files said.
+fn translatable_crate_src_dirs(root: &Path) -> Result<Vec<PathBuf>, Box<dyn Error>> {
+	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
+	let output = Command::new(&cargo).args(["metadata", "--format-version", "1"]).current_dir(root).output()?;
+	if !output.status.success() {
+		return Err("cargo metadata failed".into());
+	}
+	let meta: serde_json::Value = serde_json::from_slice(&output.stdout)?;
+	let mut packages: Vec<&serde_json::Value> =
+		meta["packages"].as_array().ok_or("cargo metadata: missing packages")?.iter().collect();
+	// Order by name and version rather than by manifest path: a dependency's manifest lives
+	// under CARGO_HOME, whose absolute spelling differs per machine (`.cargo` vs `scoop`, say)
+	// and sorts differently from the workspace paths, which would reorder xgettext's input and
+	// churn the pot for whoever regenerates it next.
+	packages.sort_by_key(|pkg| {
+		(pkg["name"].as_str().unwrap_or_default().to_string(), pkg["version"].as_str().unwrap_or_default().to_string())
+	});
 	let mut dirs = Vec::new();
-	let Ok(entries) = fs::read_dir(&crates_dir) else {
-		return dirs;
-	};
-	for entry in entries.flatten() {
-		let path = entry.path();
-		if !path.is_dir() {
+	for pkg in packages {
+		if pkg["metadata"]["patois"]["translatable"] != true {
 			continue;
 		}
-		let manifest = path.join("Cargo.toml");
-		let Ok(content) = fs::read_to_string(&manifest) else {
-			continue;
-		};
-		if content.contains("[package.metadata.patois]") && content.contains("translatable = true") {
-			dirs.push(path.join("src"));
+		let manifest = pkg["manifest_path"].as_str().ok_or("cargo metadata: missing manifest_path")?;
+		let src = Path::new(manifest).parent().unwrap().join("src");
+		if src.is_dir() {
+			dirs.push(src);
 		}
 	}
-	dirs.sort();
-	dirs
+	Ok(dirs)
 }
 
 /// Resolve `package_name`'s version via `cargo metadata`, which correctly follows
