@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 20:20+0000\n"
+"POT-Creation-Date: 2026-08-28 23:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -312,8 +312,8 @@ msgstr ""
 msgid "Markdown"
 msgstr ""
 
-#. TRANSLATORS: Title of the Options dialog
-msgid "Options"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
 msgstr ""
 
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
@@ -630,6 +630,10 @@ msgstr ""
 msgid "Reset &All to Defaults"
 msgstr ""
 
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr ""
+
 msgid "Shortcut Conflict"
 msgstr ""
 
@@ -639,7 +643,22 @@ msgstr ""
 msgid "Reset Shortcuts"
 msgstr ""
 
+msgid "Set Shortcut for {}"
+msgstr ""
+
+msgid "Configure shortcut for {}:"
+msgstr ""
+
 msgid "Tip: click in the key field and press the key combination you want."
+msgstr ""
+
+msgid "Detected: (none)"
+msgstr ""
+
+msgid "Detected: {}"
+msgstr ""
+
+msgid "No key detected"
 msgstr ""
 
 msgid "&Clear"
@@ -824,6 +843,9 @@ msgstr ""
 
 #. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
+msgstr ""
+
+msgid "Options"
 msgstr ""
 
 #. TRANSLATORS: Checkbox to make the search case-sensitive
@@ -1504,7 +1526,7 @@ msgstr ""
 msgid "Toggle full screen"
 msgstr ""
 
-msgid "&Options"
+msgid "&Settings"
 msgstr ""
 
 msgid "&Sleep Timer..."
@@ -1794,6 +1816,246 @@ msgstr ""
 msgid "Exit Paperback"
 msgstr ""
 
+msgid "Open..."
+msgstr ""
+
+msgid "Close All"
+msgstr ""
+
+msgid "Reopen Last Closed"
+msgstr ""
+
+msgid "Show All Recent Documents..."
+msgstr ""
+
+msgid "Exit"
+msgstr ""
+
+msgid "Find..."
+msgstr ""
+
+msgid "Find Next"
+msgstr ""
+
+msgid "Find Previous"
+msgstr ""
+
+msgid "Go to Line..."
+msgstr ""
+
+msgid "Go to Percent..."
+msgstr ""
+
+msgid "Go to Page..."
+msgstr ""
+
+msgid "Go Back"
+msgstr ""
+
+msgid "Go Forward"
+msgstr ""
+
+msgid "Announce Percentage"
+msgstr ""
+
+msgid "Set Temporary Bookmark"
+msgstr ""
+
+msgid "Jump to Temporary Bookmark"
+msgstr ""
+
+msgid "Previous Heading"
+msgstr ""
+
+msgid "Next Heading"
+msgstr ""
+
+msgid "Previous Heading Level 1"
+msgstr ""
+
+msgid "Previous Heading Level 2"
+msgstr ""
+
+msgid "Previous Heading Level 3"
+msgstr ""
+
+msgid "Previous Heading Level 4"
+msgstr ""
+
+msgid "Previous Heading Level 5"
+msgstr ""
+
+msgid "Previous Heading Level 6"
+msgstr ""
+
+msgid "Previous Page"
+msgstr ""
+
+msgid "Next Page"
+msgstr ""
+
+msgid "Previous Bookmark"
+msgstr ""
+
+msgid "Next Bookmark"
+msgstr ""
+
+msgid "Previous Note"
+msgstr ""
+
+msgid "Next Note"
+msgstr ""
+
+msgid "Jump to All Bookmarks..."
+msgstr ""
+
+msgid "Jump to Bookmarks Only..."
+msgstr ""
+
+msgid "Jump to Notes Only..."
+msgstr ""
+
+msgid "View Note Text"
+msgstr ""
+
+msgid "Previous Link"
+msgstr ""
+
+msgid "Next Link"
+msgstr ""
+
+msgid "Previous Image"
+msgstr ""
+
+msgid "Next Image"
+msgstr ""
+
+msgid "Previous Figure"
+msgstr ""
+
+msgid "Next Figure"
+msgstr ""
+
+msgid "Previous Table"
+msgstr ""
+
+msgid "Next Table"
+msgstr ""
+
+msgid "Previous Separator"
+msgstr ""
+
+msgid "Next Separator"
+msgstr ""
+
+msgid "Previous List"
+msgstr ""
+
+msgid "Next List"
+msgstr ""
+
+msgid "Previous List Item"
+msgstr ""
+
+msgid "Next List Item"
+msgstr ""
+
+msgid "Container Start"
+msgstr ""
+
+msgid "Past Container End"
+msgstr ""
+
+msgid "Elements List..."
+msgstr ""
+
+msgid "Reveal File in Folder"
+msgstr ""
+
+msgid "Open in Web View"
+msgstr ""
+
+msgid "View Source"
+msgstr ""
+
+msgid "Toggle Bookmark"
+msgstr ""
+
+msgid "Bookmark with Note"
+msgstr ""
+
+msgid "Toggle Word Wrap"
+msgstr ""
+
+msgid "Play/Pause Audio"
+msgstr ""
+
+msgid "Seek Audio Forward"
+msgstr ""
+
+msgid "Seek Audio Backward"
+msgstr ""
+
+msgid "Increase Audio Seek Amount"
+msgstr ""
+
+msgid "Decrease Audio Seek Amount"
+msgstr ""
+
+msgid "Full Screen"
+msgstr ""
+
+msgid "Settings..."
+msgstr ""
+
+msgid "Sleep Timer..."
+msgstr ""
+
+msgid "Customize Keyboard Shortcuts..."
+msgstr ""
+
+msgid "Import Document Data..."
+msgstr ""
+
+msgid "Export Document Data..."
+msgstr ""
+
+msgid "Export to Plain Text..."
+msgstr ""
+
+msgid "Export to HTML..."
+msgstr ""
+
+msgid "Export to Markdown..."
+msgstr ""
+
+msgid "About Paperback"
+msgstr ""
+
+msgid "View Help in Browser"
+msgstr ""
+
+msgid "View Help in Paperback"
+msgstr ""
+
+msgid "Check for Updates"
+msgstr ""
+
+msgid "Donate"
+msgstr ""
+
+msgid "File"
+msgstr ""
+
+msgid "Tools"
+msgstr ""
+
+msgid "Help"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr ""
@@ -2046,6 +2308,9 @@ msgstr ""
 
 #. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
 msgid "Password incorrect"
+msgstr ""
+
+msgid "&Options"
 msgstr ""
 
 msgid "1 document."
@@ -2417,9 +2682,6 @@ msgstr ""
 msgid "Sleep Timer (active)"
 msgstr ""
 
-msgid "Settings"
-msgstr ""
-
 msgid "More options"
 msgstr ""
 
@@ -2442,9 +2704,6 @@ msgid "Title"
 msgstr ""
 
 msgid "Author"
-msgstr ""
-
-msgid "File"
 msgstr ""
 
 msgid "Words"
@@ -2711,9 +2970,6 @@ msgstr ""
 msgid "Search History"
 msgstr ""
 
-msgid "Find Next"
-msgstr ""
-
 msgid "Password:"
 msgstr ""
 
@@ -2774,9 +3030,6 @@ msgstr ""
 msgid "Custom time..."
 msgstr ""
 
-msgid "Find Previous"
-msgstr ""
-
 msgid "Close Search"
 msgstr ""
 
@@ -2832,9 +3085,6 @@ msgid "Pause Read Aloud"
 msgstr ""
 
 msgid "Read Aloud"
-msgstr ""
-
-msgid "Help"
 msgstr ""
 
 msgid "More Options"
