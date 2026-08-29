@@ -46,8 +46,6 @@ use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
 /// The main window's starting size, in device-independent pixels (see `ui::dpi`).
 const DEFAULT_WINDOW_WIDTH: i32 = 800;
 const DEFAULT_WINDOW_HEIGHT: i32 = 600;
-/// Delay before restoring screen-reader focus after window activation (see `focus_restore_timer`).
-const FOCUS_RESTORE_DELAY_MS: i32 = 100;
 
 pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
 pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
@@ -126,28 +124,6 @@ impl MainWindow {
 		);
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
-		// One-shot timer that restores screen-reader focus after window activation. On Windows the
-		// read-only Richedit does not emit its own focus event when the window is re-activated, so
-		// screen readers keep announcing the frame ("pane") instead of the book text. Defer past
-		// Windows' own activation/focus processing, restore focus to the text control, then fire the
-		// MSAA focus event explicitly so screen readers re-sync. Owned by the notebook so its events
-		// don't cross-fire with the frame-owned sleep/status timers.
-		let focus_restore_timer = Rc::new(Timer::new(&notebook));
-		{
-			let dm_for_focus_timer = Rc::clone(&doc_manager);
-			focus_restore_timer.on_tick(move |_| {
-				let dm = dm_for_focus_timer.lock().unwrap();
-				dm.restore_focus();
-				#[cfg(target_os = "windows")]
-				if let Some(tab) = dm.active_tab() {
-					let hwnd = windows::Win32::Foundation::HWND(tab.text_ctrl.get_handle());
-					// EVENT_OBJECT_FOCUS = 0x8005, OBJID_CLIENT = -4, CHILDID_SELF = 0
-					unsafe {
-						windows::Win32::UI::Accessibility::NotifyWinEvent(0x8005, hwnd, -4, 0);
-					}
-				}
-			});
-		}
 		let dm = Rc::clone(&doc_manager);
 		notebook.on_page_changing(move |event| {
 			let Ok(dm_ref) = dm.try_lock() else {
@@ -185,15 +161,26 @@ impl MainWindow {
 		let dm_for_activate = Rc::clone(&doc_manager);
 		let activate_reload_guard = Rc::clone(&reload_guard);
 		let frame_for_activate = frame;
-		let focus_timer = Rc::clone(&focus_restore_timer);
 		frame.on_activate(move |event| {
 			event.skip(true);
 			if let WindowEventData::Activate(activate) = &event
 				&& activate.is_active()
 			{
-				// Defer focus restoration past Windows' own activation/focus processing so screen
-				// readers land back on the book text (see focus_restore_timer above).
-				focus_timer.start(FOCUS_RESTORE_DELAY_MS, true);
+				// On Windows the read-only Richedit does not emit its own focus event when the
+				// window is re-activated, so screen readers keep announcing the frame ("pane")
+				// instead of the book text. Restore focus to the text control and fire the MSAA
+				// focus event explicitly so screen readers re-sync.
+				#[cfg(target_os = "windows")]
+				if let Ok(dm) = dm_for_activate.try_lock() {
+					dm.restore_focus();
+					if let Some(tab) = dm.active_tab() {
+						let hwnd = windows::Win32::Foundation::HWND(tab.text_ctrl.get_handle());
+						// EVENT_OBJECT_FOCUS = 0x8005, OBJID_CLIENT = -4, CHILDID_SELF = 0
+						unsafe {
+							windows::Win32::UI::Accessibility::NotifyWinEvent(0x8005, hwnd, -4, 0);
+						}
+					}
+				}
 			}
 			if let WindowEventData::Activate(activate) = &event
 				&& activate.is_active()
