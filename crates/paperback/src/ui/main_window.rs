@@ -1,5 +1,3 @@
-#[cfg(target_os = "windows")]
-use std::cell::RefCell;
 use std::{
 	cell::Cell,
 	path::Path,
@@ -7,17 +5,20 @@ use std::{
 	rc::Rc,
 	sync::{
 		Mutex,
-		atomic::{AtomicI32, AtomicI64, AtomicIsize, Ordering},
+		atomic::{AtomicI32, AtomicI64, Ordering},
 	},
 	time::{SystemTime, UNIX_EPOCH},
 };
+#[cfg(target_os = "windows")]
+use std::{cell::RefCell, sync::atomic::AtomicIsize};
 
 use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::BookmarkFilterType};
 use patois::{nt, t};
-#[cfg(target_os = "windows")]
 use wx_utils::dpi;
 use wxdragon::{prelude::*, timer::Timer};
 
+#[cfg(target_os = "windows")]
+use super::tray;
 use super::{
 	dialogs,
 	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
@@ -25,7 +26,7 @@ use super::{
 	help::{self, MAIN_WINDOW_PTR},
 	icon, menu, menu_ids,
 	navigation::{self, MarkerNavTarget},
-	status, tray,
+	status,
 };
 use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]

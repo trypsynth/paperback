@@ -45,6 +45,8 @@ pub use toc::show_toc_dialog;
 mod view_note;
 pub use view_note::show_view_note_dialog;
 mod web_view;
-pub use web_view::{ACTIVE_WEB_VIEW, show_web_view_dialog};
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+pub use web_view::ACTIVE_WEB_VIEW;
+pub use web_view::show_web_view_dialog;
 mod word_count;
 pub use word_count::show_word_count_dialog;

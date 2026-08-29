@@ -2,8 +2,10 @@
 //! source view, the Options dialog (and applying whatever changed), shortcut customization,
 //! sleep timer, and document import/export.
 
+#[cfg(target_os = "windows")]
+use std::cell::RefCell;
 use std::{
-	cell::{Cell, RefCell},
+	cell::Cell,
 	env,
 	path::Path,
 	rc::Rc,

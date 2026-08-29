@@ -7,6 +7,7 @@ use std::{
 
 use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont, ShortcutsConfig};
 use patois::{t, ui::populate_language_choice};
+#[cfg(not(target_os = "macos"))]
 use wx_utils::dpi;
 #[cfg(target_os = "windows")]
 use wxdragon::accessible::AccRole;
