@@ -28,6 +28,23 @@ impl DocumentHandle {
 		&self.doc
 	}
 
+	/// Replaces the text spanning `start..end` (display units) with `replacement`, keeping the
+	/// document's external position maps in sync: [`Document::id_positions`] values at or after
+	/// `end` shift by the returned display-unit delta, and markers are re-sorted to preserve the
+	/// ordering invariant `new` establishes. Returns the delta so callers (e.g. the UI's sliding
+	/// text window) can adjust their own position accounting.
+	#[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+	pub fn replace_range(&mut self, start: usize, end: usize, replacement: &str) -> i64 {
+		let delta = self.doc.buffer.replace_range(start, end, replacement);
+		for position in self.doc.id_positions.values_mut() {
+			if *position >= end {
+				*position = (*position as i64 + delta) as usize;
+			}
+		}
+		self.doc.buffer.markers.sort_by_key(|m| m.position);
+		delta
+	}
+
 	fn markers_by_type(&self, marker_type: MarkerType) -> impl Iterator<Item = (usize, &Marker)> {
 		self.doc.buffer.markers.iter().enumerate().filter(move |(_, m)| m.mtype == marker_type)
 	}

@@ -8,6 +8,8 @@ mod main_window;
 mod menu;
 mod menu_ids;
 mod navigation;
+#[cfg(target_os = "windows")]
+mod ocr;
 mod rtf;
 mod shell;
 mod sounds;

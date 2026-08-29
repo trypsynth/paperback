@@ -83,6 +83,7 @@ pub enum ActionId {
 	ToggleFullScreen,
 	Options,
 	SleepTimer,
+	BatchOcr,
 	CustomizeShortcuts,
 	ImportDocumentData,
 	ExportDocumentData,
@@ -176,6 +177,7 @@ impl ActionId {
 			Self::ToggleFullScreen,
 			Self::Options,
 			Self::SleepTimer,
+			Self::BatchOcr,
 			Self::CustomizeShortcuts,
 			Self::ImportDocumentData,
 			Self::ExportDocumentData,
@@ -269,6 +271,7 @@ impl ActionId {
 			| Self::ToggleFullScreen
 			| Self::Options
 			| Self::SleepTimer
+			| Self::BatchOcr
 			| Self::CustomizeShortcuts
 			| Self::ImportDocumentData
 			| Self::ExportDocumentData
@@ -360,6 +363,7 @@ impl ActionId {
 			Self::ToggleFullScreen => crate::t("Full Screen"),
 			Self::Options => crate::t("Settings..."),
 			Self::SleepTimer => crate::t("Sleep Timer..."),
+			Self::BatchOcr => crate::t("Batch OCR..."),
 			Self::CustomizeShortcuts => crate::t("Customize Keyboard Shortcuts..."),
 			Self::ImportDocumentData => crate::t("Import Document Data..."),
 			Self::ExportDocumentData => crate::t("Export Document Data..."),
@@ -458,6 +462,7 @@ impl ActionId {
 			}
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
+			Self::BatchOcr => Some(KeyChord::new(true, false, true, "O")),
 			Self::CustomizeShortcuts => None,
 			Self::ImportDocumentData => Some(KeyChord::new(true, false, true, "I")),
 			Self::ExportDocumentData => Some(KeyChord::new(true, false, true, "E")),
@@ -549,6 +554,7 @@ impl ActionId {
 			Self::ToggleFullScreen => Some(KeyChord::new(false, false, false, "F11")),
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
+			Self::BatchOcr => Some(KeyChord::new(true, false, true, "O")),
 			Self::CustomizeShortcuts => None,
 			Self::ImportDocumentData => Some(KeyChord::new(true, false, true, "I")),
 			Self::ExportDocumentData => Some(KeyChord::new(true, false, true, "E")),

@@ -5,6 +5,7 @@ use pdfium::{PdfiumDocument, lib};
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
+	ocr::IMAGE_ONLY_PLACEHOLDER,
 	parser::{Parser, util::path::extract_title_from_path},
 	t,
 };
@@ -95,29 +96,32 @@ impl Parser for PdfParser {
 					page_display_text.push('\n');
 				}
 			}
-			// Check for image objects on this page
-			if !has_any_images {
-				let obj_count = lib().FPDFPage_CountObjects(&page);
-				for i in 0..obj_count {
-					if let Ok(obj) = lib().FPDFPage_GetObject(&page, i)
-						&& lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE
-					{
-						has_any_images = true;
-						break;
-					}
+			// Check for image objects on this page. This runs per page (rather than stopping at
+			// the first image anywhere) so an image-only page can still get its OCR placeholder
+			// when earlier pages contributed text.
+			let mut page_has_image = false;
+			let obj_count = lib().FPDFPage_CountObjects(&page);
+			for i in 0..obj_count {
+				if let Ok(obj) = lib().FPDFPage_GetObject(&page, i)
+					&& lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE
+				{
+					page_has_image = true;
+					break;
 				}
+			}
+			if page_has_image {
+				has_any_images = true;
+			}
+			// A page with an image but no extractable text gets a placeholder the user can OCR
+			// from (Enter on it replaces it with the recognized text).
+			let page_has_text = buffer.current_position() > page_start_offset;
+			if !page_has_text && page_has_image {
+				buffer.append(&t(IMAGE_ONLY_PLACEHOLDER));
+				buffer.append("\n");
 			}
 			extract_web_links(&text_page, page_start_offset, &page_display_text, &mut buffer);
 			extract_annotation_links(&page, &text_page, &document, page_start_offset, &page_display_text, &mut buffer);
 			page_lines_info.push(current_lines_info);
-		}
-		if !has_any_text && has_any_images {
-			tracing::warn!(path = %context.file_path, "pdf has images but no extractable text, likely needs ocr");
-			let marker_position = buffer.current_position();
-			buffer.add_marker(Marker::new(MarkerType::PageBreak, marker_position).with_text(String::new()));
-			// TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-			buffer.append(&t("This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."));
-			buffer.append("\n");
 		}
 		let title = metadata_value(&document, "Title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let author = metadata_value(&document, "Author").unwrap_or_default();

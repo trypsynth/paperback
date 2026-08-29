@@ -125,12 +125,29 @@ impl DocumentBuffer {
 
 	#[must_use]
 	pub fn with_content(content: String) -> Self {
+		let mut buffer = Self {
+			content,
+			markers: Vec::new(),
+			content_display_len: 0,
+			content_char_count: 0,
+			newline_char_positions: Vec::new(),
+			char_to_byte_map: Vec::new(),
+			display_len_at_char: Vec::new(),
+		};
+		buffer.rebuild_indexes();
+		buffer
+	}
+
+	/// Rebuilds every per-char index table from `self.content`, which is the single source of
+	/// truth for all of them. Called by [`Self::with_content`] and after any in-place content
+	/// mutation (currently only [`Self::replace_range`]).
+	fn rebuild_indexes(&mut self) {
 		let mut char_count = 0usize;
 		let mut display_count = 0usize;
 		let mut newline_char_positions = Vec::new();
-		let mut char_to_byte_map = Vec::with_capacity(content.len().min(1024));
-		let mut display_len_at_char = Vec::with_capacity(content.len().min(1024));
-		for (byte_idx, c) in content.char_indices() {
+		let mut char_to_byte_map = Vec::with_capacity(self.content.len().min(1024));
+		let mut display_len_at_char = Vec::with_capacity(self.content.len().min(1024));
+		for (byte_idx, c) in self.content.char_indices() {
 			char_to_byte_map.push(to_u32(byte_idx));
 			display_len_at_char.push(to_u32(display_count));
 			if c == '\n' {
@@ -139,18 +156,41 @@ impl DocumentBuffer {
 			char_count += 1;
 			display_count += ch_width(c);
 		}
-		char_to_byte_map.push(to_u32(content.len())); // append end boundary
+		char_to_byte_map.push(to_u32(self.content.len())); // append end boundary
 		display_len_at_char.push(to_u32(display_count));
-		debug_assert_eq!(display_count, display_len(&content));
-		Self {
-			content,
-			markers: Vec::new(),
-			content_display_len: display_count,
-			content_char_count: char_count,
-			newline_char_positions,
-			char_to_byte_map,
-			display_len_at_char,
-		}
+		debug_assert_eq!(display_count, display_len(&self.content));
+		self.content_display_len = display_count;
+		self.content_char_count = char_count;
+		self.newline_char_positions = newline_char_positions;
+		self.char_to_byte_map = char_to_byte_map;
+		self.display_len_at_char = display_len_at_char;
+	}
+
+	/// Replaces the text spanning `start..end` (display units) with `replacement`, in place.
+	///
+	/// This is the buffer's first mutation beyond appending: it rewrites `content`, rebuilds the
+	/// per-char index tables, drops any marker whose position falls strictly inside the replaced
+	/// range, and shifts markers at or after `end` by the display-unit length delta. `start` and
+	/// `end` must land on char boundaries (callers derive such offsets from
+	/// [`Self::display_index_for_char`]). Returns the delta (`new_len - old_len`) in display
+	/// units so callers can adjust position maps stored outside the buffer, e.g.
+	/// `Document::id_positions`.
+	#[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+	pub fn replace_range(&mut self, start: usize, end: usize, replacement: &str) -> i64 {
+		let start_byte = self.byte_index_for_display(start);
+		let end_byte = self.byte_index_for_display(end);
+		self.content.replace_range(start_byte..end_byte, replacement);
+		self.rebuild_indexes();
+		let delta = display_len(replacement) as i64 - (end - start) as i64;
+		self.markers.retain_mut(|marker| {
+			if marker.position >= end {
+				marker.position = (marker.position as i64 + delta) as usize;
+				true
+			} else {
+				marker.position <= start
+			}
+		});
+		delta
 	}
 
 	pub fn add_marker(&mut self, marker: Marker) {
@@ -384,6 +424,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
+	use crate::document::marker::{Marker, MarkerType};
 
 	#[test]
 	fn document_buffer_append_updates_position() {
@@ -513,5 +554,56 @@ mod tests {
 			assert_eq!(naive.start, parallel.start, "part {i} start");
 			assert_eq!(naive.end, parallel.end, "part {i} end");
 		}
+	}
+
+	#[test]
+	fn replace_range_matches_sequential_build_and_shifts_markers() {
+		let mut buffer = DocumentBuffer::with_content("aaa\nbbb\nccc".to_string());
+		// Marker at the start of the "bbb" line (display 4) and of the "ccc" line (display 8),
+		// plus one strictly inside the span being replaced (display 5, should be dropped).
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 4));
+		buffer.add_marker(Marker::new(MarkerType::Heading2, 5));
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 8));
+		let delta = buffer.replace_range(4, 7, "XY");
+		assert_eq!(delta, -1); // 2 display units replacing 3
+		let expected = DocumentBuffer::with_content("aaa\nXY\nccc".to_string());
+		assert_buffers_equivalent(&buffer, &expected);
+		assert_eq!(buffer.content, "aaa\nXY\nccc");
+		// The "bbb"-start marker (== start) is kept; the inside marker is dropped; the "ccc"
+		// marker shifted from 8 to 7.
+		let positions: Vec<usize> = buffer.markers.iter().map(|m| m.position).collect();
+		assert_eq!(positions, vec![4, 7]);
+	}
+
+	#[test]
+	fn replace_range_can_insert_and_grow() {
+		let mut buffer = DocumentBuffer::with_content("aaa\nccc".to_string());
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 4));
+		let delta = buffer.replace_range(4, 4, "bbb\n"); // insert at start of the "ccc" line
+		assert_eq!(delta, 4); // "bbb\n" is 4 display units
+		let expected = DocumentBuffer::with_content("aaa\nbbb\nccc".to_string());
+		assert_buffers_equivalent(&buffer, &expected);
+		// The marker at 4 shifts forward by the inserted length.
+		assert_eq!(buffer.markers[0].position, 8);
+	}
+
+	#[cfg(any(windows, target_os = "macos"))]
+	#[test]
+	fn replace_range_preserves_surrogate_pair_display_units() {
+		// "a" then an astral emoji (1 char but 2 display units) before the replaced span, so the
+		// display/char conversion must stay correct through the mutation.
+		let mut buffer = DocumentBuffer::with_content("a\u{1F600}b\nXYZ\nc".to_string());
+		// display offsets: a=0, emoji=1..2, b=3, \n=4, X=5, Y=6, Z=7, \n=8, c=9 (len 10).
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 5));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 9));
+		let delta = buffer.replace_range(5, 8, "Q");
+		assert_eq!(delta, -2);
+		let expected = DocumentBuffer::with_content("a\u{1F600}b\nQ\nc".to_string());
+		assert_buffers_equivalent(&buffer, &expected);
+		// The marker at 5 (== start) stays; the marker at 9 shifts by -2 to 7.
+		let positions: Vec<usize> = buffer.markers.iter().map(|m| m.position).collect();
+		assert_eq!(positions, vec![5, 7]);
+		assert_eq!(buffer.total_display_len(), 8);
+		assert_eq!(buffer.byte_index_for_display(5), 7);
 	}
 }

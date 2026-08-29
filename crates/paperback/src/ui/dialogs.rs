@@ -15,6 +15,8 @@ pub(super) use wx_utils::{
 
 mod about;
 pub use about::show_about_dialog;
+mod batch_ocr;
+pub use batch_ocr::show_batch_ocr_dialog;
 mod all_documents;
 pub use all_documents::show_all_documents_dialog;
 mod bookmark;
