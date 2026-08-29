@@ -14,19 +14,18 @@ use std::{
 
 use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::BookmarkFilterType};
 use patois::{nt, t};
+#[cfg(target_os = "windows")]
+use wx_utils::dpi;
 use wxdragon::{prelude::*, timer::Timer};
 
-#[cfg(target_os = "windows")]
-use super::tray;
 use super::{
 	dialogs,
 	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
-	dpi,
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
 	icon, menu, menu_ids,
 	navigation::{self, MarkerNavTarget},
-	status,
+	status, tray,
 };
 use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]

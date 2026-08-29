@@ -5,10 +5,10 @@ use std::{
 
 use paperback_core::config::{ActionId, KeyChord, ShortcutCategory, ShortcutsConfig};
 use patois::t;
+use wx_utils::{confirm, dpi};
 use wxdragon::prelude::*;
 
 use super::{add_ok_cancel_footer, build_ok_cancel_buttons};
-use crate::ui::dpi;
 
 type RefreshCallbacks = Rc<RefCell<Vec<Box<dyn Fn()>>>>;
 
@@ -26,7 +26,7 @@ pub fn prompt_for_shortcuts(parent: &dyn WxWidget, initial: &ShortcutsConfig) ->
 	}
 	// Uses the shared `wxStdDialogButtonSizer`-backed helper so OK/Cancel follow platform HIG
 	// order (Cancel/OK on macOS, OK/Cancel on Windows) instead of a hardcoded LTR order.
-	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("OK"));
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 8);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
@@ -110,10 +110,8 @@ fn build_category_tab(
 							.replacen("{}", &new_chord.to_shortcut_string(), 1)
 							.replacen("{}", &other_action.display_name(), 1)
 							.replacen("{}", &action.display_name(), 1);
-						let warn = MessageDialog::builder(&parent, &msg, &t("Shortcut Conflict"))
-							.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconWarning)
-							.build();
-						if warn.show_modal() != ID_YES {
+						// TRANSLATORS: Title of the dialog warning that a shortcut is already taken
+						if !confirm(&parent, &msg, &t("Shortcut Conflict")) {
 							return;
 						}
 						config_state.borrow_mut().set_chord(other_action, None);

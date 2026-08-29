@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 03:56-0600\n"
+"POT-Creation-Date: 2026-08-29 05:09-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,14 +36,6 @@ msgstr ""
 
 #. TRANSLATORS: Label for the search input field in the All Documents dialog
 msgid "&search"
-msgstr ""
-
-#. TRANSLATORS: Label for the confirmation dialog "Yes" button
-msgid "&Yes"
-msgstr ""
-
-#. TRANSLATORS: Label for the confirmation dialog "No" button
-msgid "&No"
 msgstr ""
 
 #. TRANSLATORS: Column header for the document filename in the All Documents list
@@ -634,6 +626,7 @@ msgstr ""
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
 msgstr ""
 
+#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
 msgid "Shortcut Conflict"
 msgstr ""
 
@@ -2343,6 +2336,14 @@ msgid "Update to %s"
 msgstr ""
 
 msgid "A new version of %s is available. Here's what's new:"
+msgstr ""
+
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
+msgid "&Yes"
+msgstr ""
+
+#. TRANSLATORS: Label for the confirmation dialog "No" button
+msgid "&No"
 msgstr ""
 
 msgid "No release notes provided."
