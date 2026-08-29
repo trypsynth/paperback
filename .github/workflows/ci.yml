@@ -61,6 +61,36 @@ jobs:
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
           cargo test --workspace
+  test-macos:
+    name: Tests (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Install CMake, Ninja, Pandoc, and Gettext
+        run: |
+          brew install cmake ninja pandoc gettext
+          echo "/opt/homebrew/opt/gettext/bin" >> $GITHUB_PATH
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Cache wxWidgets source
+        id: wxwidgets-cache
+        uses: actions/cache@v6
+        with:
+          path: wxWidgets
+          key: wxwidgets-${{ runner.os }}-${{ runner.arch }}-v1
+      - name: Clone wxWidgets
+        if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
+        run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
+      - name: Run tests
+        env:
+          WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
+        run: cargo test --workspace
   clippy:
     name: Clippy
     runs-on: windows-latest
