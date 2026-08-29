@@ -16,7 +16,6 @@ use crate::{
 pub fn render(doc: &DocumentHandle) -> String {
 	let document = doc.document();
 	let content = &document.buffer.content;
-
 	// Precompute section boundaries once so link resolution is O(log S) per link
 	// instead of O(M) per link (where M = total marker count).
 	let section_break_positions: Vec<usize> =

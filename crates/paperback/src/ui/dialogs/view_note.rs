@@ -1,8 +1,8 @@
 use patois::t;
+use wx_utils::dpi;
 use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_single_button_footer};
-use crate::ui::dpi;
 
 pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
 	// TRANSLATORS: Title of the View Note dialog

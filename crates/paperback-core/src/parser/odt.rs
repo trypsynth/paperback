@@ -264,7 +264,6 @@ mod tests {
 		let mut id_positions = HashMap::new();
 		let format_style_map = HashMap::new();
 		traverse(xml_doc.root(), &mut buffer, &mut id_positions, false, &format_style_map);
-
 		assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
 		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 		assert_eq!(table_marker.position, 0, "marker starts at buffer start");
@@ -303,7 +302,6 @@ mod tests {
 		let mut id_positions = HashMap::new();
 		let format_style_map = HashMap::new();
 		traverse(xml_doc.root(), &mut buffer, &mut id_positions, true, &format_style_map);
-
 		assert_eq!(buffer.content, "Kop\t\u{1D11E}\n");
 		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 		assert_eq!(table_marker.length, display_len("Kop\t\u{1D11E}") + 1, "marker length spans the TSV");
@@ -332,7 +330,6 @@ mod tests {
 	fn odt_span_bold_style_adds_bold_marker() {
 		let xml = span_fixture("font-weight", "bold", "bold text");
 		let buffer = traverse_fixture(&xml);
-
 		assert_eq!(buffer.content, "bold text\n");
 		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
 		assert_eq!(marker.position, 0);
@@ -344,7 +341,6 @@ mod tests {
 	fn odt_span_italic_style_adds_italic_marker() {
 		let xml = span_fixture("font-style", "italic", "italic text");
 		let buffer = traverse_fixture(&xml);
-
 		assert_eq!(buffer.content, "italic text\n");
 		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Italic).expect("Italic marker");
 		assert_eq!(marker.position, 0);
@@ -356,7 +352,6 @@ mod tests {
 	fn odt_span_underline_solid_style_adds_underline_marker() {
 		let xml = span_fixture("text-underline-style", "solid", "underlined text");
 		let buffer = traverse_fixture(&xml);
-
 		assert_eq!(buffer.content, "underlined text\n");
 		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Underline).expect("Underline marker");
 		assert_eq!(marker.position, 0);
@@ -368,7 +363,6 @@ mod tests {
 	fn odt_span_underline_none_style_adds_no_underline_marker() {
 		let xml = span_fixture("text-underline-style", "none", "plain text");
 		let buffer = traverse_fixture(&xml);
-
 		assert_eq!(buffer.content, "plain text\n");
 		assert!(
 			buffer.markers.iter().all(|m| m.mtype != MarkerType::Underline),
@@ -380,7 +374,6 @@ mod tests {
 	fn odt_span_combined_bold_and_italic_style_adds_both_markers() {
 		let xml = "<document><automatic-styles><style family=\"text\" name=\"T1\"><text-properties font-weight=\"bold\" font-style=\"italic\"/></style></automatic-styles><p><span style-name=\"T1\">both</span></p></document>";
 		let buffer = traverse_fixture(xml);
-
 		assert_eq!(buffer.content, "both\n");
 		let bold = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
 		let italic = buffer.markers.iter().find(|m| m.mtype == MarkerType::Italic).expect("Italic marker");
@@ -397,7 +390,6 @@ mod tests {
 	fn odt_span_with_unknown_style_falls_through_unformatted() {
 		let xml = "<document><automatic-styles><style family=\"text\" name=\"T1\"><text-properties font-weight=\"bold\"/></style></automatic-styles><p><span style-name=\"Unknown\">plain</span></p></document>";
 		let buffer = traverse_fixture(xml);
-
 		assert_eq!(buffer.content, "plain\n");
 		assert!(
 			buffer.markers.iter().all(|m| m.mtype != MarkerType::Bold
@@ -412,7 +404,6 @@ mod tests {
 	fn odt_span_without_style_name_falls_through_unformatted() {
 		let xml = "<document><p><span>plain</span></p></document>";
 		let buffer = traverse_fixture(xml);
-
 		assert_eq!(buffer.content, "plain\n");
 		assert!(
 			buffer.markers.iter().all(|m| m.mtype != MarkerType::Bold

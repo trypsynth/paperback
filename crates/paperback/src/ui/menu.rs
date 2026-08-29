@@ -26,7 +26,6 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let help_label = t("&Help");
 	#[allow(unused_mut)]
 	let mut builder = MenuBar::builder().append(file_menu, &file_label);
-
 	#[cfg(target_os = "macos")]
 	{
 		let edit_label = t("&Edit");

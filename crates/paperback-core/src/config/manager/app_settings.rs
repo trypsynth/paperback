@@ -40,6 +40,13 @@ impl ConfigManager {
 			"recent_documents_to_show" => data.app.recent_documents_to_show,
 			"sleep_timer_duration" => data.app.sleep_timer_duration,
 			"reading_speed_wpm" => data.app.reading_speed_wpm,
+			// Readability settings have typed fields on AppConfig. Without these arms the
+			// generic API would read a stale copy from `extra` while writing a second one
+			// beside the real field, giving the [app] table two entries with the same name.
+			"line_spacing" => data.app.line_spacing,
+			"paragraph_spacing" => data.app.paragraph_spacing,
+			"letter_spacing" => data.app.letter_spacing,
+			"text_alignment" => data.app.text_alignment,
 			_ => {
 				return data
 					.app
@@ -93,6 +100,10 @@ impl ConfigManager {
 				"recent_documents_to_show" => data.app.recent_documents_to_show = i64::from(value),
 				"sleep_timer_duration" => data.app.sleep_timer_duration = i64::from(value),
 				"reading_speed_wpm" => data.app.reading_speed_wpm = i64::from(value),
+				"line_spacing" => data.app.line_spacing = i64::from(value),
+				"paragraph_spacing" => data.app.paragraph_spacing = i64::from(value),
+				"letter_spacing" => data.app.letter_spacing = i64::from(value),
+				"text_alignment" => data.app.text_alignment = i64::from(value),
 				_ => {
 					data.app.extra.insert(key.to_string(), toml::Value::Integer(i64::from(value)));
 				}
@@ -115,5 +126,18 @@ mod tests {
 		assert!(!config.get_app_bool("render_tables_inline", true));
 		config.set_app_bool("render_tables_inline", true);
 		assert!(config.get_app_bool("render_tables_inline", true));
+	}
+
+	// These have typed fields on AppConfig, so the generic int API has to reach the field
+	// rather than the `extra` map: two entries under one name make the [app] table invalid.
+	#[test]
+	fn readability_ints_use_their_typed_fields() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		for key in ["line_spacing", "paragraph_spacing", "letter_spacing", "text_alignment"] {
+			config.set_app_int(key, 2);
+			assert_eq!(config.get_app_int(key, 0), 2, "{key} did not round trip");
+			assert!(!config.data.borrow().app.extra.contains_key(key), "{key} leaked into extra");
+		}
 	}
 }

@@ -26,7 +26,7 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	format_combo.set_selection(0);
 	#[cfg(target_os = "macos")]
 	format_combo.set_accessibility_label(format_label_text.replace('&', "").trim_end_matches(':').trim());
-	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("OK"));
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&label, 0, SizerFlag::All, DIALOG_PADDING / 2);
 	let format_sizer = BoxSizer::builder(Orientation::Horizontal).build();

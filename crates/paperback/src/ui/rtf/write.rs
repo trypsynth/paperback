@@ -85,7 +85,6 @@ pub fn build_rtf(content: &str, segments: &[FormatSegment], font: &RtfFontInfo) 
 	// RTF font size is in half-points.
 	out.push_str(&(font.point_size.max(1) * 2).to_string());
 	out.push_str("\\b0\\i0\\ulnone\n");
-
 	let mut seg_idx = 0;
 	let mut current = ActiveStyle::default();
 	let mut position: i64 = 0;
@@ -161,6 +160,8 @@ fn append_escaped_char(ch: char, out: &mut String) {
 
 #[cfg(test)]
 mod tests {
+	use std::{env, fs, process};
+
 	use super::*;
 
 	fn font() -> RtfFontInfo {
@@ -308,7 +309,6 @@ mod tests {
 			document::{MarkerType, ParserContext},
 			parser::{Parser, rtf::RtfParser},
 		};
-
 		let text = "plain bold plain italic plain underline plain both plain";
 		let idx = |needle: &str| i64::try_from(text.find(needle).unwrap()).unwrap();
 		let seg_for = |needle: &str, bold: bool, italic: bool, underline: bool| {
@@ -323,16 +323,13 @@ mod tests {
 			seg_for("both", true, true, false),
 		];
 		let rtf = build_rtf(text, &segments, &font());
-
-		let path = std::env::temp_dir().join(format!("rtf_write_roundtrip_test_{}.rtf", std::process::id()));
-		std::fs::write(&path, &rtf).expect("write temp RTF file");
+		let path = env::temp_dir().join(format!("rtf_write_roundtrip_test_{}.rtf", process::id()));
+		fs::write(&path, &rtf).expect("write temp RTF file");
 		let context = ParserContext::new(path.to_string_lossy().into_owned());
 		let parse_result = RtfParser.parse(&context);
-		let _ = std::fs::remove_file(&path);
+		let _ = fs::remove_file(&path);
 		let doc = parse_result.expect("generated RTF should parse back cleanly");
-
 		assert_eq!(doc.buffer.content, text);
-
 		let span_text_for = |mtype: MarkerType| {
 			doc.buffer
 				.markers

@@ -140,7 +140,7 @@ fn ipc_command_from_cli() -> IpcCommand {
 // different users on the same machine never share a pipe.
 #[cfg(windows)]
 mod pipe {
-	use std::{ffi::OsStr, os::windows::ffi::OsStrExt as _};
+	use std::{ffi::OsStr, iter, os::windows::ffi::OsStrExt as _, thread};
 
 	use windows::{
 		Win32::{
@@ -163,7 +163,7 @@ mod pipe {
 	const PIPE_UNLIMITED_INSTANCES: u32 = 255;
 
 	fn wide_nul(s: &str) -> Vec<u16> {
-		OsStr::new(s).encode_wide().chain(std::iter::once(0)).collect()
+		OsStr::new(s).encode_wide().chain(iter::once(0)).collect()
 	}
 
 	/// Try to create the server-side named pipe instance.
@@ -189,7 +189,7 @@ mod pipe {
 	/// HANDLE is !Send; convert to raw usize so the closure can cross the thread boundary.
 	pub fn serve_loop(handle: HANDLE, on_data: impl Fn(Vec<u8>) + Send + 'static) {
 		let raw = handle.0 as usize;
-		std::thread::spawn(move || {
+		thread::spawn(move || {
 			let h = HANDLE(raw as *mut _);
 			loop {
 				let conn = unsafe { ConnectNamedPipe(h, None) };
@@ -236,15 +236,17 @@ mod pipe {
 #[cfg(target_os = "linux")]
 mod pipe_unix {
 	use std::{
+		env, fs,
 		io::{Read, Write},
 		os::unix::net::{UnixListener, UnixStream},
-		path::PathBuf,
+		path::{Path, PathBuf},
+		thread,
 	};
 
 	pub fn socket_path() -> Option<PathBuf> {
-		let dir = std::env::var("XDG_RUNTIME_DIR").ok()?;
-		let user = std::env::var("USER").unwrap_or_else(|_| "user".to_string());
-		Some(std::path::Path::new(&dir).join(format!("paperback-{user}.sock")))
+		let dir = env::var("XDG_RUNTIME_DIR").ok()?;
+		let user = env::var("USER").unwrap_or_else(|_| "user".to_string());
+		Some(Path::new(&dir).join(format!("paperback-{user}.sock")))
 	}
 
 	/// Create the listening socket, removing any stale file first.
@@ -252,12 +254,12 @@ mod pipe_unix {
 	pub fn try_create_server() -> Option<UnixListener> {
 		let path = socket_path()?;
 		// Safe to remove: SingleInstanceChecker already confirmed no other instance.
-		let _ = std::fs::remove_file(&path);
+		let _ = fs::remove_file(&path);
 		UnixListener::bind(&path).ok()
 	}
 
 	pub fn serve_loop(listener: UnixListener, on_data: impl Fn(Vec<u8>) + Send + 'static) {
-		std::thread::spawn(move || {
+		thread::spawn(move || {
 			for conn in listener.incoming() {
 				if let Ok(mut stream) = conn {
 					let mut buf = vec![0u8; 4096];

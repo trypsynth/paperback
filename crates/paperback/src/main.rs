@@ -22,7 +22,6 @@ fn main() {
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
 	set_pdfium_path_from_exe();
 	cleanup_legacy_files();
-
 	// When running in dev via `cargo run`, make sure the app gets a proper menu bar on Mac OS.
 	// Binaries not inside an app bundle are essentially treated as background processes of Terminal.app, which leads to all sorts of nastiness.
 	// This needs to be called before WX initializes to properly take effect.
@@ -38,7 +37,6 @@ fn main() {
 #[cfg(target_os = "macos")]
 fn promote_unbundled_to_regular_app() {
 	use objc::{class, msg_send, runtime::Object, sel, sel_impl};
-
 	// When in a bundle, MacOS handles this for us.
 	let in_bundle = env::current_exe().is_ok_and(|exe| exe.to_string_lossy().contains(".app/Contents/MacOS/"));
 	if in_bundle {

@@ -7,6 +7,7 @@
 use std::{
 	env, fs,
 	path::{Path, PathBuf},
+	process,
 	sync::atomic::{AtomicU64, Ordering},
 	time::{SystemTime, UNIX_EPOCH},
 };
@@ -26,7 +27,7 @@ impl TempDir {
 		static COUNTER: AtomicU64 = AtomicU64::new(0);
 		let nanos = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |elapsed| elapsed.as_nanos());
 		let unique = COUNTER.fetch_add(1, Ordering::Relaxed);
-		let path = env::temp_dir().join(format!("paperback_test_{label}_{}_{nanos}_{unique}", std::process::id()));
+		let path = env::temp_dir().join(format!("paperback_test_{label}_{}_{nanos}_{unique}", process::id()));
 		fs::create_dir_all(&path).expect("create temp dir");
 		Self { path }
 	}

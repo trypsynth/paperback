@@ -22,7 +22,6 @@ impl DocumentSession {
 		if options.forward {
 			search_options.insert(SearchOptions::FORWARD);
 		}
-
 		let result =
 			reader_search_with_wrap(&self.handle.document().buffer.content, &query, start_position, search_options);
 		SearchResultFfi { found: result.found, wrapped: result.wrapped, position: result.position }

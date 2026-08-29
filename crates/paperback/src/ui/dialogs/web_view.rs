@@ -4,7 +4,7 @@ use wxdragon::{event::WebViewEvents, prelude::*, widgets::WebView};
 type NavigationHandler = Box<dyn Fn(&str) -> bool>;
 use std::cell::Cell;
 
-use crate::ui::dpi;
+use wx_utils::dpi;
 
 thread_local! {
 	pub static ACTIVE_WEB_VIEW: Cell<Option<Dialog>> = const { Cell::new(None) };
@@ -75,6 +75,5 @@ pub fn show_web_view_dialog(
 	dialog.set_sizer(sizer, true);
 	dialog.centre();
 	dialog.show_modal();
-
 	ACTIVE_WEB_VIEW.with(|v| v.set(None));
 }

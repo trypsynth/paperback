@@ -35,8 +35,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-      - name: Install CMake and Ninja
-        run: choco install cmake ninja -y
+      - name: Install CMake, Ninja, and Pandoc
+        run: choco install cmake ninja pandoc -y
       - name: Install WebView2 SDK
         run: |
           nuget install Microsoft.Web.WebView2 -OutputDirectory packages
@@ -44,6 +44,7 @@ jobs:
           $libPath = Join-Path $pkg.FullName "build\native\x64"
           echo "LIB=$env:LIB;$libPath" >> $env:GITHUB_ENV
       - name: Install Gettext via MSYS2
+        id: msys2
         uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
@@ -53,8 +54,13 @@ jobs:
             mingw-w64-ucrt-x86_64-gettext-tools
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+      # msgfmt comes from MSYS2, which setup-msys2 leaves off this step's PATH, so the build
+      # scripts would silently skip every .po file. Appended rather than prepended: MSYS2's
+      # usr/bin has a coreutils link.exe that would otherwise shadow the MSVC linker.
       - name: Run tests
-        run: cargo test --workspace
+        run: |
+          $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
+          cargo test --workspace
   clippy:
     name: Clippy
     runs-on: windows-latest
@@ -71,8 +77,8 @@ jobs:
         with:
           toolchain: stable
           components: clippy
-      - name: Install CMake and Ninja
-        run: choco install cmake ninja -y
+      - name: Install CMake, Ninja, and Pandoc
+        run: choco install cmake ninja pandoc -y
       - name: Install WebView2 SDK
         run: |
           nuget install Microsoft.Web.WebView2 -OutputDirectory packages
@@ -80,6 +86,7 @@ jobs:
           $libPath = Join-Path $pkg.FullName "build\native\x64"
           echo "LIB=$env:LIB;$libPath" >> $env:GITHUB_ENV
       - name: Install Gettext via MSYS2
+        id: msys2
         uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
@@ -92,5 +99,10 @@ jobs:
       # `clippy::all` is denied through [workspace.lints] in Cargo.toml, so this fails the job on
       # any of those lints. The pedantic and nursery groups stay warnings and are printed, not
       # enforced -- see the comment on the lint table for why.
+      # msgfmt comes from MSYS2, which setup-msys2 leaves off this step's PATH, so the build
+      # scripts would silently skip every .po file. Appended rather than prepended: MSYS2's
+      # usr/bin has a coreutils link.exe that would otherwise shadow the MSVC linker.
       - name: Run clippy
-        run: cargo clippy --workspace --all-targets --release
+        run: |
+          $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
+          cargo clippy --workspace --all-targets --release

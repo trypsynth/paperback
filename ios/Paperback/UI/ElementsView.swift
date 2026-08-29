@@ -1,15 +1,15 @@
 import SwiftUI
 
 struct ElementsView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 	@State private var tab = 0
 
 	var body: some View {
 		Group {
 			if let session = viewModel.activeSession {
-				let headings = session.getHeadingTreeFfi(position: viewModel.ttsPosition)
-				let links = session.getLinkListFfi(position: viewModel.ttsPosition)
+				let headings = session.getHeadingTreeFfi(position: viewModel.reading.ttsPosition)
+				let links = session.getLinkListFfi(position: viewModel.reading.ttsPosition)
 				if headings.items.isEmpty && links.items.isEmpty {
 					emptyView
 				} else {
@@ -27,7 +27,7 @@ struct ElementsView: View {
 						if tab == 0 {
 							List(headings.items, id: \.offset) { item in
 								Button {
-									viewModel.goToPosition(item.offset)
+									viewModel.reading.goToPosition(item.offset)
 									dismiss()
 								} label: {
 									Text(item.text)
@@ -36,7 +36,7 @@ struct ElementsView: View {
 						} else {
 							List(links.items, id: \.offset) { item in
 								Button {
-									viewModel.goToPosition(item.offset)
+									viewModel.reading.goToPosition(item.offset)
 									dismiss()
 								} label: {
 									Text(item.text)
@@ -56,19 +56,12 @@ struct ElementsView: View {
 	}
 
 	@ViewBuilder private var emptyView: some View {
-		if #available(iOS 17, *) {
-			ContentUnavailableView(
-				// TRANSLATORS: Title shown when a document has no headings or links to list in the Elements sheet
-				t("No Elements"),
-				systemImage: "list.bullet.indent",
-				// TRANSLATORS: Description shown under the "No Elements" title explaining what would appear here
-				description: Text(t("Headings, images, and other elements will appear here."))
-			)
-		} else {
+		ContentUnavailableView(
 			// TRANSLATORS: Title shown when a document has no headings or links to list in the Elements sheet
-			Text(t("No Elements"))
-				.foregroundStyle(.secondary)
-				.frame(maxWidth: .infinity, maxHeight: .infinity)
-		}
+			t("No Elements"),
+			systemImage: "list.bullet.indent",
+			// TRANSLATORS: Description shown under the "No Elements" title explaining what would appear here
+			description: Text(t("Headings, images, and other elements will appear here."))
+		)
 	}
 }

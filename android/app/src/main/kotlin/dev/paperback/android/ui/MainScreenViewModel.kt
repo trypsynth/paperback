@@ -91,6 +91,11 @@ class MainScreenViewModel(
 	private var currentActiveIndex = -1
 	private var recentDocumentsList = emptyList<RecentDocumentItem>()
 
+	// The active tab's document URI as of the last `updateTtsMetadata` call, so that function can
+	// tell a real tab switch (clear the active search) apart from a no-op call, e.g. closing a
+	// background tab that leaves the active one unchanged.
+	private var lastMetadataDocumentUri: String? = null
+
 	private fun emitTabsState() {
 		_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
 	}
@@ -195,11 +200,19 @@ class MainScreenViewModel(
 	}
 
 	init {
+		// Continuous-reading auto-advance: once an utterance finishes, keep moving forward
+		// paragraph by paragraph on its own. That's the right behavior for ordinary reading, but
+		// wrong while browsing Find matches — landing on a match should just speak its context
+		// and then wait, not silently keep auto-advancing past it before the next button press.
 		ttsManager.onSegmentTransition = {
-			transitionToNextContinuousSegment()
+			if (_currentNavUnit.value !is NavUnit.Find) {
+				transitionToNextContinuousSegment()
+			}
 		}
 		ttsManager.onUtteranceCompleted = {
-			playNextContinuousSegment()
+			if (_currentNavUnit.value !is NavUnit.Find) {
+				playNextContinuousSegment()
+			}
 		}
 		ttsManager.onPlayCommand = { resumeTts() }
 		ttsManager.onPauseCommand = { pauseTts() }
@@ -213,11 +226,18 @@ class MainScreenViewModel(
 			announceAudioSeek(elapsedMs)
 		}
 		daisyAudioPlayer.onClipChanged = { position ->
-			_ttsPosition.value = position
-			refreshSegmentPreview()
-			saveTtsPositionToConfig(position)
-			// Unlike desktop's on-close save, Android can kill this process with no lifecycle
-			// callback at all, so persist on every clip change rather than only on pause/stop.
+			// Same reasoning as the TTS auto-advance callbacks above: natural playback tracking
+			// would otherwise keep dragging the tracked position forward (mid-clip, off the exact
+			// match) while browsing Find, racing with the next Find Previous/Next press. This
+			// doesn't extend to persistDaisyAudioPosition() below: unlike desktop's on-close save,
+			// Android can kill this process with no lifecycle callback at all, so the raw audio
+			// time still needs saving on every clip change (not just pause/stop) regardless of
+			// nav unit, or a kill mid-Find would resume from before the jump on relaunch.
+			if (_currentNavUnit.value !is NavUnit.Find) {
+				_ttsPosition.value = position
+				refreshSegmentPreview()
+				saveTtsPositionToConfig(position)
+			}
 			persistDaisyAudioPosition()
 		}
 		viewModelScope.launch(Dispatchers.IO) {
@@ -649,13 +669,17 @@ class MainScreenViewModel(
 	}
 
 	/** The navigation units `tab` can offer. A document whose text spine is only there to anchor
-	 * audio has nothing to step through but the recording itself, so it gets seek amounts alone;
-	 * a DAISY book with real prose gets both, seek amounts first. */
+	 * audio has nothing to step through but the recording itself, so it gets seek amounts plus
+	 * Section (each underlying audio file is its own section); a DAISY book with real prose gets
+	 * seek amounts and every supported segment type, seek amounts first. */
 	fun navUnitsFor(tab: DocumentTabState): List<NavUnit> {
 		val segments = tab.session.getSupportedSegmentTypesFfi().map { NavUnit.Segment(it) }
 		if (!tab.hasAudio) return segments
 		val times = AUDIO_SEEK_AMOUNTS_SECONDS.map { NavUnit.Time(it) }
-		return if (tab.isAudioOnly) times else times + segments
+		if (tab.isAudioOnly) {
+			return times + segments.filter { it.type == SegmentTypeFfi.SECTION }
+		}
+		return times + segments
 	}
 
 	/** Falls back to a unit the newly active document actually supports, preferring the saved
@@ -676,6 +700,54 @@ class MainScreenViewModel(
 		if (unit !is NavUnit.Time || !activeTabHasAudio) return false
 		val deltaMs = unit.seconds * 1000L
 		daisyAudioPlayer.seekRelativeMs(if (forward) deltaMs else -deltaMs)
+		return true
+	}
+
+	/** Handles previous/next for a document being navigated by Find match instead of by text
+	 * unit or elapsed time. False when that isn't what's happening, leaving the ordinary text
+	 * path to run. Always returns true once "Find" is the active unit, even with no query or no
+	 * more matches, since there is nothing else for prev/next to fall back to in that case. */
+	private fun navigateByFind(
+		forward: Boolean,
+		speak: Boolean,
+		announce: Boolean
+	): Boolean {
+		if (_currentNavUnit.value !is NavUnit.Find) return false
+		val query = _activeSearchQuery.value
+		val options = _activeSearchOptions.value
+		val state = uiState.value as? MainScreenUiState.Success ?: return true
+		val tab = state.activeTab ?: return true
+		if (query == null || options == null) return true
+		// Forward search is inclusive of the start position, so searching from the current
+		// match's own start would just re-find it; nudge past it first. Backward search is
+		// already exclusive of the start position, so it needs no such adjustment.
+		val searchPos = if (forward) _ttsPosition.value + 1L else _ttsPosition.value
+		val res = tab.session.searchFfi(query, searchPos, options.copy(forward = forward))
+		if (!res.found) {
+			// TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+			_accessibilityAnnouncement.tryEmit(t("No more matches."))
+			return true
+		}
+		_ttsPosition.value = res.position
+		val text = displayTextFor(tab, tab.session.getTextSegment(res.position, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT))
+		_currentSegmentText.value = text
+		saveTtsPositionToConfig(res.position)
+		if (tab.hasAudio) {
+			daisyAudioPlayer.seekToPosition(res.position)
+			if (speak) {
+				daisyAudioPlayer.play()
+			} else if (announce) {
+				announceNavigationCue(text)
+			}
+		} else if (speak) {
+			ttsManager.stop()
+			ttsManager.speak(text)
+		} else if (announce) {
+			if (ttsManager.isPaused.value) {
+				ttsManager.stop()
+			}
+			announceNavigationCue(text)
+		}
 		return true
 	}
 
@@ -726,11 +798,9 @@ class MainScreenViewModel(
 	fun refreshSegmentPreview() {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
-		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
-		_currentSegmentText.value = if (segment.text.isNotBlank()) {
-			segment.text
-		} else {
-			tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT).text
+		val current = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		_currentSegmentText.value = displayTextFor(tab, current).ifBlank {
+			displayTextFor(tab, tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT))
 		}
 	}
 
@@ -753,9 +823,10 @@ class MainScreenViewModel(
 	}
 
 	/** Seeks daisyAudioPlayer to `segment`'s start, then either resumes playback there or just
-	 * announces it, for a next/prev/type-directed navigation landing on an audio-backed tab. */
+	 * announces `announceText`. */
 	private fun navigateDaisyAudioToSegment(
 		segment: TextSegmentFfi,
+		announceText: String,
 		speak: Boolean,
 		announce: Boolean
 	) {
@@ -763,7 +834,46 @@ class MainScreenViewModel(
 		if (speak) {
 			daisyAudioPlayer.play()
 		} else if (announce) {
-			announceNavigationCue(segment.text)
+			announceNavigationCue(announceText)
+		}
+	}
+
+	/** A segment's own text, falling back to its enclosing section's TOC title when blank — the
+	 * case for a plain-audio DAISY section, whose buffer content is just a placeholder space. */
+	private fun displayTextFor(tab: DocumentTabState, segment: TextSegmentFfi): String =
+		segment.text.ifBlank {
+			tab.toc.lastOrNull { it.position <= segment.startPos }?.title.orEmpty()
+		}
+
+	/** Jumps straight to `pos` (a freshly found Find match) and, if `resume` says the reader was
+	 * already going, speaks/plays from exactly there. Deliberately does not go through
+	 * `updateTtsPosition`/`speakCurrentSegment`, which re-derive the *enclosing paragraph* of a
+	 * position and snap to its start — fine for ordinary navigation, but it would silently move
+	 * a Find jump off the match it just found and back to that paragraph's beginning. */
+	fun jumpToFoundPosition(
+		pos: Long,
+		resume: Boolean
+	) {
+		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab ?: return
+		_ttsPosition.value = pos
+		val segment = tab.session.getTextSegment(pos, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		val text = displayTextFor(tab, segment)
+		_currentSegmentText.value = text
+		saveTtsPositionToConfig(pos)
+		if (tab.hasAudio) {
+			daisyAudioPlayer.seekToPosition(pos)
+			if (resume) {
+				daisyAudioPlayer.play()
+			}
+			return
+		}
+		if (resume) {
+			ttsManager.stop()
+			ttsManager.speak(text)
+		} else if (ttsManager.isPaused.value) {
+			// Was paused mid-utterance elsewhere; clear that stale state so a later resume
+			// doesn't play the old paragraph's audio instead of the new position.
+			ttsManager.stop()
 		}
 	}
 
@@ -771,28 +881,30 @@ class MainScreenViewModel(
 		speak: Boolean = true,
 		announce: Boolean = false
 	) {
+		if (navigateByFind(forward = true, speak = speak, announce = announce)) return
 		if (seekAudioByNavUnit(forward = true)) return
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
 			val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.NEXT)
-			if (segment.text.isNotBlank()) {
+			if (segment.found) {
+				val text = displayTextFor(tab, segment)
 				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = segment.text
+				_currentSegmentText.value = text
 				saveTtsPositionToConfig(segment.startPos)
 				if (tab.hasAudio) {
-					navigateDaisyAudioToSegment(segment, speak, announce)
+					navigateDaisyAudioToSegment(segment, text, speak, announce)
 					return
 				}
 				if (speak) {
-					ttsManager.speak(segment.text)
+					ttsManager.speak(text)
 					precacheNextContinuousSegment()
 				} else {
 					if (ttsManager.isPaused.value) {
 						ttsManager.stop()
 					}
 					if (announce) {
-						announceNavigationCue(segment.text)
+						announceNavigationCue(text)
 					}
 				}
 			}
@@ -857,28 +969,30 @@ class MainScreenViewModel(
 		speak: Boolean = true,
 		announce: Boolean = false
 	) {
+		if (navigateByFind(forward = false, speak = speak, announce = announce)) return
 		if (seekAudioByNavUnit(forward = false)) return
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
 			val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.PREVIOUS)
-			if (segment.text.isNotBlank()) {
+			if (segment.found) {
+				val text = displayTextFor(tab, segment)
 				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = segment.text
+				_currentSegmentText.value = text
 				saveTtsPositionToConfig(segment.startPos)
 				if (tab.hasAudio) {
-					navigateDaisyAudioToSegment(segment, speak, announce)
+					navigateDaisyAudioToSegment(segment, text, speak, announce)
 					return
 				}
 				if (speak) {
-					ttsManager.speak(segment.text)
+					ttsManager.speak(text)
 					precacheNextContinuousSegment()
 				} else {
 					if (ttsManager.isPaused.value) {
 						ttsManager.stop()
 					}
 					if (announce) {
-						announceNavigationCue(segment.text)
+						announceNavigationCue(text)
 					}
 				}
 			}
@@ -922,16 +1036,17 @@ class MainScreenViewModel(
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
 		val segment = tab.session.getTextSegment(_ttsPosition.value, type, direction)
-		if (segment.text.isNotBlank()) {
+		if (segment.found) {
+			val text = displayTextFor(tab, segment)
 			_ttsPosition.value = segment.startPos
-			_currentSegmentText.value = segment.text
+			_currentSegmentText.value = text
 			saveTtsPositionToConfig(segment.startPos)
 			if (tab.hasAudio) {
-				navigateDaisyAudioToSegment(segment, speak = true, announce = false)
+				navigateDaisyAudioToSegment(segment, text, speak = true, announce = false)
 				return
 			}
 			ttsManager.stop()
-			ttsManager.speak(segment.text)
+			ttsManager.speak(text)
 			precacheNextContinuousSegment()
 		}
 	}
@@ -1048,6 +1163,17 @@ class MainScreenViewModel(
 	}
 
 	private fun updateTtsMetadata() {
+		// A search's matches belong to the document it ran against; carrying it over to whatever
+		// tab becomes active next (including the Find nav unit it puts on the slider) is never
+		// correct, and is actively wrong for an audio-only tab, which has no real searchable text.
+		// This function also runs when closing a tab that wasn't the active one, though, which
+		// doesn't change what's active at all — guard on the active document's identity actually
+		// changing so that case doesn't wipe an in-progress search on the tab still being read.
+		val activeDocumentUri = currentTabs.getOrNull(currentActiveIndex)?.documentUri
+		if (activeDocumentUri != lastMetadataDocumentUri) {
+			lastMetadataDocumentUri = activeDocumentUri
+			clearSearch()
+		}
 		if (currentActiveIndex in currentTabs.indices) {
 			val tab = currentTabs[currentActiveIndex]
 			ttsManager.currentDocumentTitle = tab.title.ifBlank { tab.fileName }

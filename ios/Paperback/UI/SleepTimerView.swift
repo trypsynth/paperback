@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SleepTimerView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 
 	private enum Choice: Hashable {
 		case preset(Int)
@@ -14,7 +14,7 @@ struct SleepTimerView: View {
 	@State private var customMinutesText = ""
 	@FocusState private var customFieldFocused: Bool
 
-	private var isRunning: Bool { viewModel.sleepTimerRemaining != nil }
+	private var isRunning: Bool { viewModel.reading.sleepTimerRemaining != nil }
 
 	private var resolvedMinutes: Int? {
 		switch choice {
@@ -40,7 +40,7 @@ struct SleepTimerView: View {
 
 	var body: some View {
 		Form {
-			if let remaining = viewModel.sleepTimerRemaining {
+			if let remaining = viewModel.reading.sleepTimerRemaining {
 				Section {
 					HStack {
 						Spacer()
@@ -67,7 +67,7 @@ struct SleepTimerView: View {
 					TextField(t("Minutes"), text: $customMinutesText)
 						.keyboardType(.numberPad)
 						.focused($customFieldFocused)
-						.onChange(of: customMinutesText) { newValue in
+						.onChange(of: customMinutesText) { _, newValue in
 							let filtered = newValue.filter(\.isNumber)
 							if filtered != newValue { customMinutesText = filtered }
 						}
@@ -84,9 +84,9 @@ struct SleepTimerView: View {
 		.safeAreaInset(edge: .bottom) {
 			Button {
 				if isRunning {
-					viewModel.cancelSleepTimer()
+					viewModel.reading.cancelSleepTimer()
 				} else if let minutes = resolvedMinutes, minutes > 0 {
-					viewModel.setSleepTimer(seconds: minutes * 60)
+					viewModel.reading.setSleepTimer(seconds: minutes * 60)
 				}
 			} label: {
 				// TRANSLATORS: Button that starts the sleep timer with the selected duration, or stops it if one is already running
@@ -103,7 +103,7 @@ struct SleepTimerView: View {
 		// TRANSLATORS: Navigation title of the Sleep Timer screen
 		.navigationTitle(t("Sleep Timer"))
 		.navigationBarTitleDisplayMode(.inline)
-		.onChange(of: choice) { newValue in
+		.onChange(of: choice) { _, newValue in
 			if newValue == .custom { customFieldFocused = true }
 		}
 		.sheetAccessibilityFocus(title: "Sleep Timer")

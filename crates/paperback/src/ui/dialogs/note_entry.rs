@@ -1,8 +1,8 @@
 use patois::t;
+use wx_utils::dpi;
 use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
-use crate::ui::dpi;
 
 pub fn show_note_entry_dialog(
 	parent: &dyn WxWidget,
@@ -17,7 +17,7 @@ pub fn show_note_entry_dialog(
 		.with_style(TextCtrlStyle::MultiLine)
 		.with_size(dpi::scale_size(&dialog, Size::new(400, 200)))
 		.build();
-	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("OK"));
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));
 	let dialog_for_key = dialog;
 	note_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code()

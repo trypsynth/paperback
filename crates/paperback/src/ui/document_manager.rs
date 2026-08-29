@@ -149,7 +149,6 @@ impl DocumentManager {
 			self.notebook.set_selection(index);
 			return true;
 		}
-
 		let import_path = path.with_extension("paperback");
 		if !is_restore && import_path.exists() {
 			// TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
@@ -164,7 +163,6 @@ impl DocumentManager {
 				config.import_settings_from_file(&path.to_string_lossy(), import_path.to_str().unwrap());
 			}
 		}
-
 		let (password, forced_extension, render_tables_inline) = {
 			let config = self.config.lock().unwrap();
 			let path_str = path.to_string_lossy();
@@ -237,7 +235,6 @@ impl DocumentManager {
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
-
 		let path_str = path.to_string_lossy();
 		let doc_len = session.document_len();
 		let saved_pos = config.get_validated_document_position(&path_str, doc_len);
@@ -548,7 +545,6 @@ impl DocumentManager {
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let bookmarks = config.get_bookmarks(&path_str);
 		drop(config);
-
 		let mut has_note = false;
 		let mut has_bookmark = false;
 		for bm in &bookmarks {
@@ -1060,7 +1056,6 @@ impl DocumentManager {
 				if let Ok(dm) = dm_for_keys.try_lock() {
 					dm.preferred_column.set(None);
 				}
-
 				let action = {
 					if let Ok(dm) = dm_for_keys.try_lock() {
 						let config = dm.config.lock().unwrap();
@@ -1069,7 +1064,6 @@ impl DocumentManager {
 						None
 					}
 				};
-
 				if let Some(act) = action {
 					match act {
 						ActionId::AnnouncePercent => {
@@ -1283,7 +1277,6 @@ fn reparse_tab_in_place(
 	let new_fingerprint = read_fingerprint(&tab.file_path);
 	let current_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 	let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
-
 	// Find the nearest anchor at-or-before the cursor using the full id_positions key
 	// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
 	// making the subsequent lookup fail). Record the within-block offset so the cursor
@@ -1298,7 +1291,6 @@ fn reparse_tab_in_place(
 			.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
 	};
 	let fallback_percent = tab.session.get_status_info(current_pos).percentage;
-
 	let new_session = match DocumentSession::new(path_str, password, forced_extension, render_tables_inline) {
 		Ok(session) => session,
 		Err(err) => {
@@ -1328,7 +1320,6 @@ fn reparse_tab_in_place(
 	);
 	tab.panel.layout();
 	let max_pos = tab.text_ctrl.get_last_position();
-
 	let restored_pos = if let Some((ref key, within)) = stable_anchor {
 		match tab.session.handle().document().id_positions.get(key) {
 			Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
@@ -1337,7 +1328,6 @@ fn reparse_tab_in_place(
 	} else {
 		tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
 	};
-
 	tab.text_ctrl.set_insertion_point(restored_pos);
 	tab.text_ctrl.show_position(restored_pos);
 	tab.session.set_stable_position(restored_pos);
@@ -1396,7 +1386,6 @@ pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: i64) {
 fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &WindowSlice) {
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
-
 	#[cfg(target_os = "windows")]
 	if !segments.is_empty()
 		&& let Some(font) = text_ctrl.get_font()
@@ -1450,7 +1439,6 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &WindowSlice) {
 		// Never leave raw RTF markup on screen for an accessibility user;
 		// fall back below to the plain-text + segment-loop path.
 	}
-
 	fill_text_ctrl(text_ctrl, content);
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments);
 }
@@ -1692,14 +1680,12 @@ pub struct FormatSegment {
 /// took several seconds on books with tens of thousands of formatting spans.
 pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker]) -> Vec<FormatSegment> {
 	use paperback_core::document::MarkerType;
-
 	#[derive(Clone, Copy)]
 	struct Event {
 		position: i64,
 		delta: i32,
 		style_idx: usize,
 	}
-
 	let mut events: Vec<Event> = Vec::new();
 	for m in markers {
 		if m.length <= 0 {
@@ -1715,7 +1701,6 @@ pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker])
 		events.push(Event { position: m.position + m.length, delta: -1, style_idx });
 	}
 	events.sort_unstable_by_key(|e| e.position);
-
 	let mut active = [0i32; 3];
 	let mut segments: Vec<FormatSegment> = Vec::new();
 	// The segment currently being extended, if the active style set is non-empty.

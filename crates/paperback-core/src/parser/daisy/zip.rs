@@ -29,7 +29,6 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	let mut title = extract_title_from_path(&context.file_path);
 	let mut author = String::new();
 	let buffer;
-
 	let file = File::open(path).context("Failed to open zip file")?;
 	let mut archive = ZipArchive::new(BufReader::new(file)).context("Failed to read zip archive")?;
 	let opf_path = archive

@@ -76,7 +76,6 @@ pub(super) fn build_daisy2_document(
 	if smil_links.is_empty() {
 		return None;
 	}
-
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions: HashMap<String, usize> = HashMap::new();
 	let mut file_offsets: HashMap<String, usize> = HashMap::new();
@@ -89,7 +88,6 @@ pub(super) fn build_daisy2_document(
 	// written in `ncc.html`), first occurrence winning.
 	let mut smil_anchors: HashMap<String, usize> = HashMap::new();
 	let mut converted_any = false;
-
 	for smil_link in &smil_links {
 		let smil_href = resolve_relative_path(&ncc_dir, smil_link);
 		let Ok(smil_content) = read_text(&smil_href) else { continue };
@@ -146,14 +144,11 @@ pub(super) fn build_daisy2_document(
 			});
 		}
 	}
-
 	if !converted_any {
 		return None;
 	}
-
 	let headings = parse_daisy2_ncc_headings(ncc_content, &id_positions, &smil_anchors);
 	let toc_items = build_toc_from_headings(&headings);
-
 	let resolved_clips = bound_open_ended_clips(&pending_clips);
 	let doc_end = buffer.current_position();
 	for index in 0..resolved_clips.len() {
@@ -162,7 +157,6 @@ pub(super) fn build_daisy2_document(
 		audio_builder.add_clip(clip.source, clip.begin_ms, clip.end_ms, clip.start, end);
 	}
 	let audio = audio_builder.build();
-
 	Some(Document {
 		title,
 		author,

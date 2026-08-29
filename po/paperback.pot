@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-26 22:34+0000\n"
+"POT-Creation-Date: 2026-08-29 05:09-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,14 +36,6 @@ msgstr ""
 
 #. TRANSLATORS: Label for the search input field in the All Documents dialog
 msgid "&search"
-msgstr ""
-
-#. TRANSLATORS: Label for the confirmation dialog "Yes" button
-msgid "&Yes"
-msgstr ""
-
-#. TRANSLATORS: Label for the confirmation dialog "No" button
-msgid "&No"
 msgstr ""
 
 #. TRANSLATORS: Column header for the document filename in the All Documents list
@@ -312,8 +304,8 @@ msgstr ""
 msgid "Markdown"
 msgstr ""
 
-#. TRANSLATORS: Title of the Options dialog
-msgid "Options"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
 msgstr ""
 
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
@@ -630,6 +622,11 @@ msgstr ""
 msgid "Reset &All to Defaults"
 msgstr ""
 
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr ""
+
+#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
 msgid "Shortcut Conflict"
 msgstr ""
 
@@ -639,7 +636,22 @@ msgstr ""
 msgid "Reset Shortcuts"
 msgstr ""
 
+msgid "Set Shortcut for {}"
+msgstr ""
+
+msgid "Configure shortcut for {}:"
+msgstr ""
+
 msgid "Tip: click in the key field and press the key combination you want."
+msgstr ""
+
+msgid "Detected: (none)"
+msgstr ""
+
+msgid "Detected: {}"
+msgstr ""
+
+msgid "No key detected"
 msgstr ""
 
 msgid "&Clear"
@@ -826,6 +838,9 @@ msgstr ""
 msgid "Find &what:"
 msgstr ""
 
+msgid "Options"
+msgstr ""
+
 #. TRANSLATORS: Checkbox to make the search case-sensitive
 msgid "&Match case"
 msgstr ""
@@ -874,55 +889,40 @@ msgstr ""
 msgid "Unsupported format selected."
 msgstr ""
 
-#. TRANSLATORS: Main window title when no document is open
-msgid "Paperback"
-msgstr ""
-
-#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
-msgid "Document reloaded."
-msgstr ""
-
-#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
-msgid "Paperback cannot perform any actions while Web View is open."
-msgstr ""
-
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "Paperback - {}"
-msgstr ""
-
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] ""
-msgstr[1] ""
-
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr ""
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr ""
-
-#. TRANSLATORS: Title of the file picker dialog shown when opening a document
-msgid "Open Document"
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
 msgstr ""
 
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr ""
 
-#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-msgid "Word wrap on."
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
 msgstr ""
 
-msgid "Word wrap off."
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+msgid "Web View"
 msgstr ""
 
-#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-msgid "Full screen on."
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+msgid "Could not determine content to display in Web View."
 msgstr ""
 
-msgid "Full screen off."
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr ""
+
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+msgid "Source:"
+msgstr ""
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+msgid "Source view is not available for this document format."
+msgstr ""
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+msgid "Could not load the document source."
 msgstr ""
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
@@ -977,30 +977,6 @@ msgstr ""
 msgid "Import Successful"
 msgstr ""
 
-#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-msgid "No table of contents."
-msgstr ""
-
-#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
-msgid "Web View"
-msgstr ""
-
-#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
-msgid "Could not determine content to display in Web View."
-msgstr ""
-
-#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
-msgid "Source:"
-msgstr ""
-
-#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
-msgid "Source view is not available for this document format."
-msgstr ""
-
-#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
-msgid "Could not load the document source."
-msgstr ""
-
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr ""
@@ -1010,8 +986,47 @@ msgid_plural "Sleep timer set for %d minutes."
 msgstr[0] ""
 msgstr[1] ""
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
+#. TRANSLATORS: Main window title when no document is open
+msgid "Paperback"
+msgstr ""
+
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+msgid "Document reloaded."
+msgstr ""
+
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr ""
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "Paperback - {}"
+msgstr ""
+
+msgid "%d char"
+msgid_plural "%d chars"
+msgstr[0] ""
+msgstr[1] ""
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr ""
+
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+msgid "Open Document"
+msgstr ""
+
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+msgid "Word wrap on."
+msgstr ""
+
+msgid "Word wrap off."
+msgstr ""
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+msgid "Full screen on."
+msgstr ""
+
+msgid "Full screen off."
 msgstr ""
 
 msgid "&Undo\tCtrl+Z"
@@ -1504,7 +1519,7 @@ msgstr ""
 msgid "Toggle full screen"
 msgstr ""
 
-msgid "&Options"
+msgid "&Settings"
 msgstr ""
 
 msgid "&Sleep Timer..."
@@ -1794,6 +1809,246 @@ msgstr ""
 msgid "Exit Paperback"
 msgstr ""
 
+msgid "Open..."
+msgstr ""
+
+msgid "Close All"
+msgstr ""
+
+msgid "Reopen Last Closed"
+msgstr ""
+
+msgid "Show All Recent Documents..."
+msgstr ""
+
+msgid "Exit"
+msgstr ""
+
+msgid "Find..."
+msgstr ""
+
+msgid "Find Next"
+msgstr ""
+
+msgid "Find Previous"
+msgstr ""
+
+msgid "Go to Line..."
+msgstr ""
+
+msgid "Go to Percent..."
+msgstr ""
+
+msgid "Go to Page..."
+msgstr ""
+
+msgid "Go Back"
+msgstr ""
+
+msgid "Go Forward"
+msgstr ""
+
+msgid "Announce Percentage"
+msgstr ""
+
+msgid "Set Temporary Bookmark"
+msgstr ""
+
+msgid "Jump to Temporary Bookmark"
+msgstr ""
+
+msgid "Previous Heading"
+msgstr ""
+
+msgid "Next Heading"
+msgstr ""
+
+msgid "Previous Heading Level 1"
+msgstr ""
+
+msgid "Previous Heading Level 2"
+msgstr ""
+
+msgid "Previous Heading Level 3"
+msgstr ""
+
+msgid "Previous Heading Level 4"
+msgstr ""
+
+msgid "Previous Heading Level 5"
+msgstr ""
+
+msgid "Previous Heading Level 6"
+msgstr ""
+
+msgid "Previous Page"
+msgstr ""
+
+msgid "Next Page"
+msgstr ""
+
+msgid "Previous Bookmark"
+msgstr ""
+
+msgid "Next Bookmark"
+msgstr ""
+
+msgid "Previous Note"
+msgstr ""
+
+msgid "Next Note"
+msgstr ""
+
+msgid "Jump to All Bookmarks..."
+msgstr ""
+
+msgid "Jump to Bookmarks Only..."
+msgstr ""
+
+msgid "Jump to Notes Only..."
+msgstr ""
+
+msgid "View Note Text"
+msgstr ""
+
+msgid "Previous Link"
+msgstr ""
+
+msgid "Next Link"
+msgstr ""
+
+msgid "Previous Image"
+msgstr ""
+
+msgid "Next Image"
+msgstr ""
+
+msgid "Previous Figure"
+msgstr ""
+
+msgid "Next Figure"
+msgstr ""
+
+msgid "Previous Table"
+msgstr ""
+
+msgid "Next Table"
+msgstr ""
+
+msgid "Previous Separator"
+msgstr ""
+
+msgid "Next Separator"
+msgstr ""
+
+msgid "Previous List"
+msgstr ""
+
+msgid "Next List"
+msgstr ""
+
+msgid "Previous List Item"
+msgstr ""
+
+msgid "Next List Item"
+msgstr ""
+
+msgid "Container Start"
+msgstr ""
+
+msgid "Past Container End"
+msgstr ""
+
+msgid "Elements List..."
+msgstr ""
+
+msgid "Reveal File in Folder"
+msgstr ""
+
+msgid "Open in Web View"
+msgstr ""
+
+msgid "View Source"
+msgstr ""
+
+msgid "Toggle Bookmark"
+msgstr ""
+
+msgid "Bookmark with Note"
+msgstr ""
+
+msgid "Toggle Word Wrap"
+msgstr ""
+
+msgid "Play/Pause Audio"
+msgstr ""
+
+msgid "Seek Audio Forward"
+msgstr ""
+
+msgid "Seek Audio Backward"
+msgstr ""
+
+msgid "Increase Audio Seek Amount"
+msgstr ""
+
+msgid "Decrease Audio Seek Amount"
+msgstr ""
+
+msgid "Full Screen"
+msgstr ""
+
+msgid "Settings..."
+msgstr ""
+
+msgid "Sleep Timer..."
+msgstr ""
+
+msgid "Customize Keyboard Shortcuts..."
+msgstr ""
+
+msgid "Import Document Data..."
+msgstr ""
+
+msgid "Export Document Data..."
+msgstr ""
+
+msgid "Export to Plain Text..."
+msgstr ""
+
+msgid "Export to HTML..."
+msgstr ""
+
+msgid "Export to Markdown..."
+msgstr ""
+
+msgid "About Paperback"
+msgstr ""
+
+msgid "View Help in Browser"
+msgstr ""
+
+msgid "View Help in Paperback"
+msgstr ""
+
+msgid "Check for Updates"
+msgstr ""
+
+msgid "Donate"
+msgstr ""
+
+msgid "File"
+msgstr ""
+
+msgid "Tools"
+msgstr ""
+
+msgid "Help"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr ""
@@ -2048,6 +2303,76 @@ msgstr ""
 msgid "Password incorrect"
 msgstr ""
 
+msgid "Unknown update file format."
+msgstr ""
+
+msgid "Failed to open disk image"
+msgstr ""
+
+msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
+msgstr ""
+
+msgid "Update Ready"
+msgstr ""
+
+msgid "Failed to get current exe path"
+msgstr ""
+
+msgid "Failed to launch installer script"
+msgstr ""
+
+msgid "Failed to launch update script"
+msgstr ""
+
+msgid "Update failed"
+msgstr ""
+
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+
+msgid "Update to %s"
+msgstr ""
+
+msgid "A new version of %s is available. Here's what's new:"
+msgstr ""
+
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
+msgid "&Yes"
+msgstr ""
+
+#. TRANSLATORS: Label for the confirmation dialog "No" button
+msgid "&No"
+msgstr ""
+
+msgid "No release notes provided."
+msgstr ""
+
+msgid "%s Update"
+msgstr ""
+
+msgid "Downloading update..."
+msgstr ""
+
+msgid "No updates available."
+msgstr ""
+
+msgid "No updates available. Latest version: %s"
+msgstr ""
+
+msgid "Info"
+msgstr ""
+
+msgid "Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+
+msgid "Security Error"
+msgstr ""
+
+msgid "&Options"
+msgstr ""
+
 msgid "1 document."
 msgstr ""
 
@@ -2085,57 +2410,6 @@ msgid "Sleep timer set for 1 minute."
 msgstr ""
 
 msgid "Sleep timer set for %d minutes."
-msgstr ""
-
-msgid "Update to %s"
-msgstr ""
-
-msgid "A new version of %s is available. Here's what's new:"
-msgstr ""
-
-msgid "No release notes provided."
-msgstr ""
-
-msgid "%s Update"
-msgstr ""
-
-msgid "Downloading update..."
-msgstr ""
-
-msgid "No updates available."
-msgstr ""
-
-msgid "No updates available. Latest version: %s"
-msgstr ""
-
-msgid "Info"
-msgstr ""
-
-msgid "Security verification failed. The update might have been tampered with: %s"
-msgstr ""
-
-msgid "Security Error"
-msgstr ""
-
-msgid "Update failed"
-msgstr ""
-
-msgid "Update downloaded to: %s\nPlease install it manually."
-msgstr ""
-
-msgid "Update Ready"
-msgstr ""
-
-msgid "Failed to get current exe path"
-msgstr ""
-
-msgid "Failed to launch installer script"
-msgstr ""
-
-msgid "Failed to launch update script"
-msgstr ""
-
-msgid "Unknown update file format."
 msgstr ""
 
 msgid "Previous Section\t["
@@ -2417,9 +2691,6 @@ msgstr ""
 msgid "Sleep Timer (active)"
 msgstr ""
 
-msgid "Settings"
-msgstr ""
-
 msgid "More options"
 msgstr ""
 
@@ -2442,9 +2713,6 @@ msgid "Title"
 msgstr ""
 
 msgid "Author"
-msgstr ""
-
-msgid "File"
 msgstr ""
 
 msgid "Words"
@@ -2711,9 +2979,6 @@ msgstr ""
 msgid "Search History"
 msgstr ""
 
-msgid "Find Next"
-msgstr ""
-
 msgid "Password:"
 msgstr ""
 
@@ -2774,9 +3039,6 @@ msgstr ""
 msgid "Custom time..."
 msgstr ""
 
-msgid "Find Previous"
-msgstr ""
-
 msgid "Close Search"
 msgstr ""
 
@@ -2834,9 +3096,6 @@ msgstr ""
 msgid "Read Aloud"
 msgstr ""
 
-msgid "Help"
-msgstr ""
-
 msgid "More Options"
 msgstr ""
 
@@ -2880,4 +3139,16 @@ msgid "Stop Timer"
 msgstr ""
 
 msgid "Start Timer"
+msgstr ""
+
+msgid "Text Size"
+msgstr ""
+
+msgid "Line Spacing"
+msgstr ""
+
+msgid "Paragraph Spacing"
+msgstr ""
+
+msgid "Alignment"
 msgstr ""

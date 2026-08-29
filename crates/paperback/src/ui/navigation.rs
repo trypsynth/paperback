@@ -696,7 +696,6 @@ pub fn handle_seek_audio(
 		)
 	};
 	let amount_ms = u64::try_from(amount_seconds.max(1)).unwrap_or(10) * 1000;
-
 	let mut dm = doc_manager.lock().unwrap();
 	let Some(tab) = dm.active_tab_mut() else { return };
 	let Some(player) = tab.audio_player.as_mut() else {

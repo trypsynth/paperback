@@ -85,7 +85,6 @@ fn create_tray_state(
 		.append_separator()
 		.append_item(menu_ids::EXIT, &exit_label, &exit_help)
 		.build();
-
 	let icon = TaskBarIcon::builder().build();
 	set_tray_icon(&icon);
 	icon.set_popup_menu(&mut menu);

@@ -23,6 +23,10 @@ sealed interface NavUnit {
 	data class Time(
 		val seconds: Int
 	) : NavUnit
+
+	/** Steps through matches of the active Find query instead of a structural unit or elapsed
+	 * time. Only offered while a search is active; see `MainScreen`'s nav-unit list building. */
+	data object Find : NavUnit
 }
 
 fun getSegmentTypeName(type: SegmentTypeFfi): String =
@@ -82,6 +86,8 @@ fun getNavUnitName(unit: NavUnit): String =
 	when (unit) {
 		is NavUnit.Segment -> getSegmentTypeName(unit.type)
 		is NavUnit.Time -> getSeekAmountName(unit.seconds)
+		// TRANSLATORS: Name of the "Find" navigation unit, which moves between search matches
+		is NavUnit.Find -> t("Find")
 	}
 
 /** "1:23" or "1:02:03": the shortest form that still reads unambiguously. */

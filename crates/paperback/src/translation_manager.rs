@@ -91,6 +91,26 @@ mod tests {
 		assert!(!manager.is_language_available("xx"));
 	}
 
+	/// The updater's dialogs (including their "&Yes"/"&No" buttons) live in the `ship-shape`
+	/// dependency rather than in this crate, and reach this app's catalog through
+	/// `patois::t` and the default domain. That path has broken twice: once when the app and
+	/// the dependency linked separate copies of patois, so the dependency saw no default
+	/// domain at all, and once when pot generation only scanned `crates/`, leaving every
+	/// dependency-owned string out of the catalog. Both look identical to a user: an
+	/// otherwise translated dialog with English buttons (issue #285).
+	#[test]
+	fn dependency_owned_strings_translate_through_the_app_catalog() {
+		patois::set_default_domain("paperback");
+		patois::set_locale("fr");
+		// "&Yes"/"&No" are also used by this crate's own confirmation dialog; "Downloading
+		// update..." exists only in ship-shape, so it fails if dependency strings stop being
+		// extracted into the pot even while the app's own strings keep working.
+		for msgid in ["&Yes", "&No", "Downloading update..."] {
+			assert_ne!(patois::t(msgid), msgid, "{msgid} is missing from the French catalog");
+		}
+		patois::set_locale("en");
+	}
+
 	/// Confirms `patois::embed_wx_translations!()` (invoked in `main.rs`) actually embedded
 	/// real wxstd catalogs restricted to paperback's own shipped languages, without needing
 	/// a visible window — mirrors the `wxdragon`/`patois` upstream headless test pattern.

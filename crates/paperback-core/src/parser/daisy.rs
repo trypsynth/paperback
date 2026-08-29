@@ -56,7 +56,12 @@ impl Parser for DaisyParser {
 
 #[cfg(test)]
 mod tests {
-	use std::fs;
+	use std::{
+		fs,
+		io::{Cursor, Write},
+	};
+
+	use zip::{ZipWriter, write::FileOptions};
 
 	use super::DaisyParser;
 	use crate::{
@@ -98,10 +103,8 @@ mod tests {
 		xml_bytes.extend_from_slice(b"<dtbook><book><frontmatter><p id=\"p1\">Fran\xE7ois said, \x93hello\x94.</p>");
 		xml_bytes.extend_from_slice(b"</frontmatter></book></dtbook>");
 		fs::write(&xml_path, &xml_bytes).expect("write dtbook xml");
-
 		let context = ParserContext::new(opf_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed on mislabeled encoding");
-
 		assert_eq!(document.title, "Test Book");
 		assert_eq!(document.author, "Test Author");
 		assert!(!document.buffer.content.contains('\u{FFFD}'), "no replacement characters expected");
@@ -112,13 +115,9 @@ mod tests {
 	}
 
 	fn write_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
-		use std::io::Write;
-
-		use zip::{ZipWriter, write::FileOptions};
-
 		let mut buf = Vec::new();
 		{
-			let cursor = std::io::Cursor::new(&mut buf);
+			let cursor = Cursor::new(&mut buf);
 			let mut writer = ZipWriter::new(cursor);
 			for (name, data) in entries {
 				writer.start_file(*name, FileOptions::<()>::default()).unwrap();
@@ -178,7 +177,6 @@ mod tests {
 <navPoint id="np1"><navLabel><text>Chapter One</text></navLabel><content src="book1.xml#h1" /></navPoint>
 <navPoint id="np2"><navLabel><text>Chapter Two</text></navLabel><content src="book2.xml#h2" /></navPoint>
 </navMap></ncx>"#;
-
 		let zip_bytes = write_zip(&[
 			("book.opf", opf.as_slice()),
 			("book1.xml", book1.as_slice()),
@@ -189,14 +187,11 @@ mod tests {
 			("book1.mp3", b"fake-mp3-1"),
 			("book2.mp3", b"fake-mp3-2"),
 		]);
-
 		let dir = TempDir::new("daisy_multi");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("multi-file DAISY parse should succeed");
-
 		assert_eq!(document.title, "Two Section Book");
 		assert_eq!(document.author, "A. Author");
 		assert!(document.buffer.content.contains("Chapter One"));
@@ -206,7 +201,6 @@ mod tests {
 		);
 		assert_eq!(document.toc_items.len(), 2);
 		assert_eq!(document.toc_items[1].name, "Chapter Two");
-
 		let audio = document.audio.expect("audio timeline should be populated");
 		assert_eq!(audio.clips().len(), 4);
 		assert_eq!(audio.sources().len(), 2);
@@ -241,20 +235,16 @@ mod tests {
 <dtbook><book><bodymatter><p id="dup">First occurrence.</p></bodymatter></book></dtbook>"#;
 		let book2 = br#"<?xml version="1.0" encoding="UTF-8"?>
 <dtbook><book><bodymatter><p id="dup">Second occurrence.</p></bodymatter></book></dtbook>"#;
-
 		let zip_bytes = write_zip(&[
 			("book.opf", opf.as_slice()),
 			("book1.xml", book1.as_slice()),
 			("book2.xml", book2.as_slice()),
 		]);
-
 		let dir = TempDir::new("daisy_dup_id");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
-
 		let first_pos = document.buffer.content.find("First occurrence.").unwrap();
 		let second_pos = document.buffer.content.find("Second occurrence.").unwrap();
 		assert_eq!(
@@ -293,20 +283,16 @@ mod tests {
 <dtbook><book><bodymatter><h1 id="h1">Chapter One</h1></bodymatter></book></dtbook>"#;
 		let book2 = br#"<?xml version="1.0" encoding="UTF-8"?>
 <dtbook><book><bodymatter><h1 id="h2">Chapter Two</h1></bodymatter></book></dtbook>"#;
-
 		let zip_bytes = write_zip(&[
 			("book.opf", opf.as_slice()),
 			("book1.xml", book1.as_slice()),
 			("book2.xml", book2.as_slice()),
 		]);
-
 		let dir = TempDir::new("daisy_untyped_xml_chapters");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
-
 		assert!(document.buffer.content.contains("Chapter One"));
 		assert!(document.buffer.content.contains("Chapter Two"), "second chapter should not be silently dropped");
 		assert!(
@@ -343,21 +329,17 @@ mod tests {
 <par id="par_p1"><text src="book1.xml#p1" /><audio src="book1.mp3" clipBegin="0s" clipEnd="2s" /></par>
 <par id="par_p2"><text src="#p2" /><audio src="book1.mp3" clipBegin="2s" clipEnd="4s" /></par>
 </seq></body></smil>"##;
-
 		let zip_bytes = write_zip(&[
 			("book.opf", opf.as_slice()),
 			("book1.xml", book1.as_slice()),
 			("section1.smil", smil1.as_slice()),
 			("book1.mp3", b"fake-mp3"),
 		]);
-
 		let dir = TempDir::new("daisy_bare_fragment");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
-
 		let audio = document.audio.expect("audio timeline should be populated");
 		assert_eq!(audio.clips().len(), 2, "the bare-fragment par's clip must not be dropped");
 		let p2_pos = document.buffer.content.find("Second sentence.").unwrap();
@@ -397,7 +379,6 @@ mod tests {
 <navPoint id="np1"><navLabel><text>Chapter One</text></navLabel><content src="section1.smil#tcp00001" /></navPoint>
 <navPoint id="np2"><navLabel><text>Chapter Two</text></navLabel><content src="section1.smil#tcp00003" /></navPoint>
 </navMap></ncx>"#;
-
 		let zip_bytes = write_zip(&[
 			("book.opf", opf.as_slice()),
 			("book1.xml", book1.as_slice()),
@@ -408,10 +389,8 @@ mod tests {
 		let dir = TempDir::new("daisy_smil_ncx");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
-
 		assert_eq!(document.toc_items.len(), 2);
 		let chapter_two = document.buffer.content.find("Chapter Two").unwrap();
 		assert_eq!(document.toc_items[0].offset, document.buffer.content.find("Chapter One").unwrap());
@@ -445,7 +424,6 @@ mod tests {
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"><navMap>
 <navPoint id="np2"><navLabel><text>Chapter Two</text></navLabel><content src="section1.smil#chapter2" /></navPoint>
 </navMap></ncx>"#;
-
 		let zip_bytes = write_zip(&[
 			("book.opf", opf.as_slice()),
 			("book1.xml", book1.as_slice()),
@@ -456,10 +434,8 @@ mod tests {
 		let dir = TempDir::new("daisy_seq_ncx");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
-
 		assert_eq!(document.toc_items.len(), 1);
 		assert_eq!(document.toc_items[0].offset, document.buffer.content.find("Chapter Two").unwrap());
 	}
@@ -491,7 +467,6 @@ mod tests {
 <par id="par2"><text src="book1.xml#p2" /><audio src="book1.mp3" clipBegin="3s" clipEnd="5s" /></par>
 <par id="par3"><text src="book1.xml#p3" /><audio src="book1.mp3" clipBegin="5s" /></par>
 </seq></body></smil>"#;
-
 		let zip_bytes = write_zip(&[
 			("book.opf", opf.as_slice()),
 			("book1.xml", book1.as_slice()),
@@ -501,10 +476,8 @@ mod tests {
 		let dir = TempDir::new("daisy_open_clip");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
-
 		let audio = document.audio.expect("audio timeline should be populated");
 		assert_eq!(audio.clips().len(), 2, "the open-ended first par must survive; only the trailing one is dropped");
 		assert_eq!(audio.clips()[0].clip_begin_ms, 0);
@@ -535,20 +508,16 @@ mod tests {
 <dtbook><book><bodymatter><p id="p1">Valid chapter text.</p></bodymatter></book></dtbook>"#;
 		// Deliberately malformed: unclosed tags fail XML parsing outright.
 		let book2 = b"<dtbook><book><bodymatter><p id=\"p2\">Broken chapter";
-
 		let zip_bytes = write_zip(&[
 			("book.opf", opf.as_slice()),
 			("book1.xml", book1.as_slice()),
 			("book2.xml", book2.as_slice()),
 		]);
-
 		let dir = TempDir::new("daisy_corrupt_chapter");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed despite one corrupt chapter");
-
 		assert!(document.buffer.content.contains("Valid chapter text."));
 	}
 
@@ -563,14 +532,11 @@ mod tests {
 			("Track 1.mp3", b"fake-mp3-1"),
 			("cover.jpg", b"not-audio"),
 		]);
-
 		let dir = TempDir::new("daisy_plain_audio_zip");
 		let zip_path = dir.path().join("Some Audiobook.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("plain audio zip should parse");
-
 		assert_eq!(document.toc_items.len(), 3, "the non-audio entry must not become a section");
 		assert_eq!(
 			document.toc_items.iter().map(|item| item.name.as_str()).collect::<Vec<_>>(),
@@ -581,7 +547,6 @@ mod tests {
 			"the text field must show no real content for a plain audio bundle"
 		);
 		assert!(document.audio_only, "read-aloud UIs navigate this by elapsed time, not by text unit");
-
 		// Each section must carry a SectionBreak marker, or Previous/Next Section navigation
 		// (bound to [ and ]) finds nothing to jump to.
 		let section_marker_positions: Vec<usize> = document
@@ -592,11 +557,9 @@ mod tests {
 			.map(|m| m.position)
 			.collect();
 		assert_eq!(section_marker_positions, document.toc_items.iter().map(|item| item.offset).collect::<Vec<_>>());
-
 		let audio = document.audio.expect("audio timeline should be populated");
 		assert_eq!(audio.sources().len(), 3);
 		assert_eq!(audio.clips().len(), 3);
-
 		// Each section is independently seekable and switching sections switches files.
 		let second_section_offset = document.toc_items[1].offset;
 		let clip_index = audio.clip_index_at_position(second_section_offset).expect("section should have a clip");
@@ -639,7 +602,6 @@ mod tests {
 <p id="p1">First paragraph.</p>
 <h1 id="h2">Chapter Two</h1>
 </body></html>"#;
-
 		let zip_bytes = write_zip(&[
 			("ncc.html", ncc.as_slice()),
 			("dtb_0001.smil", smil1.as_slice()),
@@ -648,26 +610,21 @@ mod tests {
 			("ch1.mp3", b"fake-mp3-1"),
 			("ch2.mp3", b"fake-mp3-2"),
 		]);
-
 		let dir = TempDir::new("daisy2_audio");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("DAISY 2.02 book with SMIL audio should parse");
-
 		assert_eq!(document.title, "Fire Safety", "dc:title from ncc.html should override the path-derived fallback");
 		assert_eq!(document.author, "Wendy Blaxland");
 		assert!(document.buffer.content.contains("Chapter One"));
 		assert!(document.buffer.content.contains("Chapter Two"));
 		assert!(document.buffer.content.contains("First paragraph."));
-
 		assert_eq!(document.toc_items.len(), 2);
 		assert_eq!(document.toc_items[0].name, "Chapter One");
 		assert_eq!(document.toc_items[1].name, "Chapter Two");
 		let chapter_two_pos = document.buffer.content.find("Chapter Two").unwrap();
 		assert_eq!(document.toc_items[1].offset, chapter_two_pos, "second heading must not be stranded at 0");
-
 		let audio = document.audio.expect("audio timeline should be populated for a DAISY 2.02 book with SMIL audio");
 		assert_eq!(audio.clips().len(), 3, "clip-begin/clip-end and audio nested under seq must both be recognized");
 		assert_eq!(audio.sources().len(), 2);
@@ -691,16 +648,12 @@ mod tests {
 <h1 id="h1">Chapter One</h1>
 <p>Some text with no narration.</p>
 </body></html>"#;
-
 		let zip_bytes = write_zip(&[("ncc.html", ncc.as_slice()), ("content.html", content.as_slice())]);
-
 		let dir = TempDir::new("daisy2_text_only");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("text-only DAISY 2.02 book should still parse");
-
 		assert_eq!(document.title, "Text Only Book");
 		assert!(document.buffer.content.contains("Chapter One"));
 		assert!(document.buffer.content.contains("Some text with no narration."));
@@ -724,16 +677,13 @@ mod tests {
 </seq></body></smil>"#;
 		let content = br#"<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml"><body><h1 id="h1">Chapter One</h1></body></html>"#;
-
 		let dir = TempDir::new("daisy2_loose_audio");
 		fs::write(dir.path().join("ncc.html"), ncc).expect("write ncc.html");
 		fs::write(dir.path().join("dtb_0001.smil"), smil1).expect("write smil");
 		fs::write(dir.path().join("content.html"), content).expect("write content html");
 		fs::write(dir.path().join("ch1.mp3"), b"fake-mp3").expect("write mp3");
-
 		let context = ParserContext::new(dir.path().join("ncc.html").to_string_lossy().to_string());
 		let document = DaisyParser.parse(&context).expect("loose DAISY 2.02 book with SMIL audio should parse");
-
 		assert_eq!(document.title, "Loose Book", "dc:title from ncc.html should override the ncc.html-stem fallback");
 		assert!(document.buffer.content.contains("Chapter One"));
 		let audio = document.audio.expect("audio timeline should be populated");
@@ -747,7 +697,6 @@ mod tests {
 		let dir = TempDir::new("daisy_no_audio_zip");
 		let zip_path = dir.path().join("book.zip");
 		fs::write(&zip_path, &zip_bytes).expect("write zip");
-
 		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 		let err = DaisyParser.parse(&context).expect_err("a zip with neither DAISY markup nor audio should still fail");
 		assert!(err.to_string().contains("does not appear to be a valid DAISY"));

@@ -3,9 +3,10 @@ use std::{cell::Cell, rc::Rc, sync::Mutex};
 use bitflags::bitflags;
 use paperback_core::{config::ConfigManager, reader_core, util::text::display_len};
 use patois::t;
+use wx_utils::dpi;
 use wxdragon::prelude::*;
 
-use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, dpi, navigation};
+use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigation};
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 
@@ -424,7 +425,6 @@ fn do_find(
 	if state.use_regex.is_checked() {
 		options |= FindOptions::USE_REGEX;
 	}
-
 	let mut dm = doc_manager.lock().unwrap();
 	let Some(tab) = dm.active_tab_mut() else {
 		return;

@@ -76,19 +76,23 @@ pub fn is_installer_distribution() -> bool {
 	exe_dir.join("unins000.exe").exists()
 }
 
+/// Materializes the readme for the current UI language and returns its path. Every readme is
+/// embedded at build time, so this reads nothing from the install directory; languages without a
+/// translated readme fall back to English rather than to no help at all.
 pub fn readme_path() -> Option<PathBuf> {
 	let lang = TranslationManager::instance().lock().unwrap().current_language();
-	if let Some(bytes) = lang_readmes::readme_for_lang(&lang) {
-		let tmp = env::temp_dir().join(format!("paperback-readme-{lang}.html"));
-		match fs::write(&tmp, bytes) {
-			Ok(()) => return Some(tmp),
-			Err(e) => tracing::warn!(path = %tmp.display(), error = %e, "failed to write readme temp file"),
+	let (lang, bytes) = match lang_readmes::readme_for_lang(&lang) {
+		Some(bytes) => (lang, bytes),
+		None => ("en".to_string(), lang_readmes::readme_for_lang("en")?),
+	};
+	let tmp = env::temp_dir().join(format!("paperback-readme-{lang}.html"));
+	match fs::write(&tmp, bytes) {
+		Ok(()) => Some(tmp),
+		Err(e) => {
+			tracing::warn!(path = %tmp.display(), error = %e, "failed to write readme temp file");
+			None
 		}
 	}
-	// Fallback for builds without pandoc: look for readme.html next to the exe
-	let exe = env::current_exe().ok()?;
-	let dir = exe.parent()?;
-	Some(dir.join("readme.html"))
 }
 
 pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
@@ -98,7 +102,6 @@ pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<Docume
 		show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
 		return;
 	};
-
 	#[cfg(target_os = "windows")]
 	{
 		use std::os::windows::process::CommandExt;
@@ -220,7 +223,6 @@ mod tests {
 	fn finder_reveal_command_preserves_paths_with_spaces() {
 		let file_path = Path::new("/Users/reader/Fics in progress/story.epub");
 		let command = finder_reveal_command(file_path);
-
 		assert_eq!(command.get_program(), OsStr::new("/usr/bin/open"));
 		assert_eq!(command.get_args().collect::<Vec<_>>(), [OsStr::new("-R"), file_path.as_os_str()]);
 	}

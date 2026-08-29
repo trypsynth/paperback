@@ -95,7 +95,7 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	let full_screen_help = t("Toggle full screen");
 	menu.append(menu_ids::TOGGLE_FULL_SCREEN, &full_screen_label, &full_screen_help, ItemKind::Check);
 	menu.append_separator();
-	let options_label = format_menu_label(&t("&Options"), ActionId::Options, config);
+	let options_label = format_menu_label(&t("&Settings"), ActionId::Options, config);
 	let shortcuts_label =
 		format_menu_label(&t("Customize &Keyboard Shortcuts..."), ActionId::CustomizeShortcuts, config);
 	let sleep_label = format_menu_label(&t("&Sleep Timer..."), ActionId::SleepTimer, config);

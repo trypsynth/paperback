@@ -7,7 +7,8 @@ private final class GenBox {
 }
 
 @MainActor
-final class TtsManager: NSObject, ObservableObject {
+@Observable
+final class TtsManager: NSObject {
 	private let synthesizer = AVSpeechSynthesizer()
 	private let prefetchSynthesizer = AVSpeechSynthesizer()
 	private let prevPrefetchSynthesizer = AVSpeechSynthesizer()
@@ -49,22 +50,45 @@ final class TtsManager: NSObject, ObservableObject {
 	/// Lets us ignore the spurious play command some speakers send on auto-pair.
 	var suppressExternalPlay: Bool { Date() < ignoreExternalPlayUntil }
 
-	@Published var isSpeaking = false
-	@Published var isPaused = false
+	var isSpeaking = false {
+		didSet { if oldValue != isSpeaking { onPlaybackStateChanged?() } }
+	}
+	var isPaused = false {
+		didSet { if oldValue != isPaused { onPlaybackStateChanged?() } }
+	}
 
-	@Published var speechRate: Float = AVSpeechUtteranceDefaultSpeechRate {
-		didSet { if oldValue != speechRate { invalidatePrefetch() } }
+	var speechRate: Float = AVSpeechUtteranceDefaultSpeechRate {
+		didSet {
+			guard oldValue != speechRate else { return }
+			invalidatePrefetch()
+			onSpeechRateChanged?(speechRate)
+		}
 	}
-	@Published var pitch: Float = 1.0 {
-		didSet { if oldValue != pitch { invalidatePrefetch() } }
+	var pitch: Float = 1.0 {
+		didSet {
+			guard oldValue != pitch else { return }
+			invalidatePrefetch()
+			onPitchChanged?(pitch)
+		}
 	}
-	@Published var selectedVoiceIdentifier: String? = nil {
-		didSet { if oldValue != selectedVoiceIdentifier { invalidatePrefetch() } }
+	var selectedVoiceIdentifier: String? = nil {
+		didSet {
+			guard oldValue != selectedVoiceIdentifier else { return }
+			invalidatePrefetch()
+			onVoiceChanged?(selectedVoiceIdentifier)
+		}
 	}
 
 	var availableVoices: [AVSpeechSynthesisVoice] { AVSpeechSynthesisVoice.speechVoices() }
-	var onUtteranceFinished: (() -> Void)?
-	var rules: [TtsRule] = [] {
+	@ObservationIgnored var onUtteranceFinished: (() -> Void)?
+	// Observation replaces the old Combine forwarding for redraws; these carry the side effects
+	// that used to ride those sinks — refreshing Now Playing and persisting settings. One per
+	// setting, so changing the rate does not rewrite the pitch and voice keys as well.
+	@ObservationIgnored var onPlaybackStateChanged: (() -> Void)?
+	@ObservationIgnored var onSpeechRateChanged: ((Float) -> Void)?
+	@ObservationIgnored var onPitchChanged: ((Float) -> Void)?
+	@ObservationIgnored var onVoiceChanged: ((String?) -> Void)?
+	@ObservationIgnored var rules: [TtsRule] = [] {
 		didSet { invalidatePrefetch() }
 	}
 
@@ -82,8 +106,9 @@ final class TtsManager: NSObject, ObservableObject {
 
 	override init() {
 		super.init()
-		try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
-
+		// The audio session is deliberately left alone here. Configuring it at launch claims
+		// the route and stops whatever else the device is playing before the user has asked
+		// for any speech, so both the category and activation wait for playback.
 		let hwRate = AVAudioSession.sharedInstance().sampleRate
 		outputFormat = AVAudioFormat(
 			standardFormatWithSampleRate: hwRate > 0 ? hwRate : 44100,
@@ -119,8 +144,6 @@ final class TtsManager: NSObject, ObservableObject {
 		)
 	}
 
-	// MARK: - Sample playback
-
 	func speakSample(_ text: String) {
 		invalidatePrefetch()
 		internalStop()
@@ -143,8 +166,6 @@ final class TtsManager: NSObject, ObservableObject {
 			}
 		}
 	}
-
-	// MARK: - Session / route / engine notifications
 
 	@objc private func handleRouteChange(_ notification: Notification) {
 		guard let info = notification.userInfo,
@@ -223,7 +244,7 @@ final class TtsManager: NSObject, ObservableObject {
 				wasInterruptedWhilePlaying = false
 				let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
 				let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
-				try? AVAudioSession.sharedInstance().setActive(true)
+				activateAudioSession()
 				if !engine.isRunning { try? engine.start() }
 				if options.contains(.shouldResume) {
 					player.play()
@@ -260,13 +281,11 @@ final class TtsManager: NSObject, ObservableObject {
 			// Only reactivate if audio was actually playing/paused before the reset;
 			// unconditionally starting the engine keeps the app alive in the background.
 			if wasActive {
-				try? AVAudioSession.sharedInstance().setActive(true)
+				activateAudioSession()
 				try? engine.start()
 			}
 		}
 	}
-
-	// MARK: - Playback
 
 	// `isAutoAdvance` must be true only when this call is the natural continuation onto the
 	// buffer already queued next (i.e. from the utterance-finished callback) — never for a
@@ -413,6 +432,9 @@ final class TtsManager: NSObject, ObservableObject {
 
 	func resume() {
 		guard isPaused else { return }
+		// pause() deactivated the session so other apps could take the route back; resuming has
+		// to claim it again, and no new buffer is scheduled here to do it for us.
+		activateAudioSession()
 		if !engine.isRunning { try? engine.start() }
 		player.play()
 		isSpeaking = true
@@ -431,8 +453,6 @@ final class TtsManager: NSObject, ObservableObject {
 		engine.stop()
 		try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
 	}
-
-	// MARK: - Private
 
 	private func internalStop() {
 		wasInterruptedWhilePlaying = false
@@ -497,10 +517,22 @@ final class TtsManager: NSObject, ObservableObject {
 	}
 
 	// Soft hyphens (\u{00AD}) and null bytes cause AVSpeechSynthesizer to truncate utterances.
+	// The synthesizer also parses its input as markup, so a bare `<` swallows everything up to
+	// the next `>` (and an unterminated one swallows the rest of the utterance, wedging playback
+	// until the app is restarted). Escaping the three markup characters makes them literal again.
 	private func sanitizeForSpeech(_ text: String) -> String {
-		text.unicodeScalars
-			.filter { $0.value != 0x00 && $0.value != 0x00AD }
-			.reduce(into: "") { $0.unicodeScalars.append($1) }
+		var out = ""
+		out.reserveCapacity(text.count)
+		for scalar in text.unicodeScalars {
+			switch scalar {
+			case "\u{00}", "\u{AD}": continue
+			case "&": out += "&amp;"
+			case "<": out += "&lt;"
+			case ">": out += "&gt;"
+			default: out.unicodeScalars.append(scalar)
+			}
+		}
+		return out
 	}
 
 	private func scheduleConverted(_ buffers: [AVAudioPCMBuffer], gen: Int, suppress: Bool) {
@@ -515,9 +547,20 @@ final class TtsManager: NSObject, ObservableObject {
 		schedule(pcm, gen: gen, suppress: suppress)
 	}
 
+	/// Configures and activates the session, immediately before audio is actually produced.
+	/// The category is set here rather than once at startup because `.playback` is not
+	/// mixable: applying it interrupts other apps' audio, which must not happen just because
+	/// Paperback was opened. Setting it again on every activation is cheap, and it is also
+	/// what restores the configuration after a media services reset wipes it.
+	private func activateAudioSession() {
+		let session = AVAudioSession.sharedInstance()
+		try? session.setCategory(.playback, mode: .spokenAudio)
+		try? session.setActive(true)
+	}
+
 	private func schedule(_ pcm: AVAudioPCMBuffer, gen: Int, suppress: Bool) {
 		lastScheduledGen = gen
-		try? AVAudioSession.sharedInstance().setActive(true)
+		activateAudioSession()
 		if !engine.isRunning { try? engine.start() }
 		player.scheduleBuffer(pcm) { [weak self] in
 			DispatchQueue.main.async { [weak self] in

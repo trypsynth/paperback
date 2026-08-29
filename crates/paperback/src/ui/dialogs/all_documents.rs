@@ -2,10 +2,10 @@ use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::DocumentListStatus};
 use patois::{nt, t};
+use wx_utils::{confirm, dpi};
 use wxdragon::{ffi, prelude::*, timer::Timer, window::FromWindowWithClassName};
 
 use super::DIALOG_PADDING;
-use crate::ui::dpi;
 
 const RECENT_DOCS_LIST_WIDTH: i32 = 800;
 const RECENT_DOCS_LIST_HEIGHT: i32 = 600;
@@ -145,41 +145,6 @@ pub fn show_all_documents_dialog(
 		open: selected_path.lock().unwrap().clone(),
 		paths_to_close: paths_to_close.lock().unwrap().clone(),
 	}
-}
-
-fn show_yes_no_dialog(parent: &dyn WxWidget, message: &str, title: &str) -> bool {
-	let dialog = Dialog::builder(parent, title).build();
-	let panel = Panel::builder(&dialog).build();
-	let message_label = StaticText::builder(&panel).with_label(message).build();
-	// TRANSLATORS: Label for the confirmation dialog "Yes" button
-	let yes_button = Button::builder(&panel).with_id(ID_OK).with_label(&t("&Yes")).build();
-	// TRANSLATORS: Label for the confirmation dialog "No" button
-	let no_button = Button::builder(&panel).with_id(ID_CANCEL).with_label(&t("&No")).build();
-	dialog.set_escape_id(ID_CANCEL);
-	dialog.set_affirmative_id(ID_OK);
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&message_label, 0, SizerFlag::All, DIALOG_PADDING);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	// macOS HIG puts the default/affirmative action rightmost (No, then Yes); Windows puts
-	// it leftmost (Yes, then No).
-	#[cfg(target_os = "macos")]
-	{
-		button_sizer.add(&no_button, 0, SizerFlag::Right, DIALOG_PADDING);
-		button_sizer.add(&yes_button, 0, SizerFlag::Right, DIALOG_PADDING);
-	}
-	#[cfg(not(target_os = "macos"))]
-	{
-		button_sizer.add(&yes_button, 0, SizerFlag::Right, DIALOG_PADDING);
-		button_sizer.add(&no_button, 0, SizerFlag::Right, DIALOG_PADDING);
-	}
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, 0);
-	panel.set_sizer(content_sizer, true);
-	let dialog_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	dialog_sizer.add(&panel, 1, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(dialog_sizer, true);
-	dialog.centre();
-	dialog.show_modal() == ID_OK
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -375,7 +340,7 @@ fn make_all_documents_remove_action(
 			template.replace("{}", &indices.len().to_string())
 		};
 		// TRANSLATORS: Title of the confirmation dialog
-		if !show_yes_no_dialog(&dialog, &confirm_message, &t("Confirm")) {
+		if !confirm(&dialog, &confirm_message, &t("Confirm")) {
 			return;
 		}
 		let paths_to_remove: Vec<String> =
@@ -422,7 +387,7 @@ fn bind_all_documents_clear(
 		if document_list_item_count(widgets.list) == 0 {
 			return;
 		}
-		if !show_yes_no_dialog(
+		if !confirm(
 			&dialog,
 			// TRANSLATORS: Confirmation prompt when clearing all documents from the list.
 			&t("Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."),

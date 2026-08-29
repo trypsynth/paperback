@@ -24,7 +24,7 @@ chardetng = "1.0.0"
 ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
 icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
-libchm = "0.2.0"
+libchm = "0.3.0"
 office-crypto = "0.3.0"
 paperback-formats = { path = "../paperback-formats" }
 patois = "0.2.1"

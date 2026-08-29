@@ -161,7 +161,6 @@ impl DocumentBuffer {
 		let base = self.content_char_count;
 		let mut count = 0usize;
 		let mut display_count = self.content_display_len;
-
 		// Remove the end boundary temporarily
 		if !self.char_to_byte_map.is_empty() {
 			self.char_to_byte_map.pop();
@@ -169,7 +168,6 @@ impl DocumentBuffer {
 		if !self.display_len_at_char.is_empty() {
 			self.display_len_at_char.pop();
 		}
-
 		let start_byte = self.content.len();
 		for (byte_idx, c) in text.char_indices() {
 			self.char_to_byte_map.push(to_u32(start_byte + byte_idx));
@@ -207,7 +205,6 @@ impl DocumentBuffer {
 				(text, idx)
 			})
 			.collect();
-
 		struct PartStart {
 			byte: usize,
 			char: usize,
@@ -226,13 +223,11 @@ impl DocumentBuffer {
 			char_acc += idx.char_len + extra;
 			display_acc += idx.display_len + extra; // ch_width('\n') == 1 on every platform
 		}
-
 		if char_acc == 0 {
 			// No part contributed any text, so no `append` equivalent ever ran; match `new()`'s
 			// all-empty (not one-boundary-entry) shape rather than building degenerate arrays.
 			return (Self::new(), spans);
 		}
-
 		let mut content_bytes = vec![0u8; byte_acc];
 		let mut char_to_byte_map = vec![0u32; char_acc + 1];
 		let mut display_len_at_char = vec![0u32; char_acc + 1];
@@ -240,7 +235,6 @@ impl DocumentBuffer {
 		let (display_main, display_boundary) = display_len_at_char.split_at_mut(char_acc);
 		char_to_byte_boundary[0] = to_u32(byte_acc);
 		display_boundary[0] = to_u32(display_acc);
-
 		let byte_lens: Vec<usize> =
 			indexed.iter().map(|(_, idx)| idx.byte_len + usize::from(idx.trailing_newline)).collect();
 		let char_lens: Vec<usize> =
@@ -248,7 +242,6 @@ impl DocumentBuffer {
 		let content_slices = split_mut_slices(content_bytes.as_mut_slice(), &byte_lens);
 		let char_to_byte_slices = split_mut_slices(char_to_byte_main, &char_lens);
 		let display_slices = split_mut_slices(display_main, &char_lens);
-
 		let mut newline_char_positions = Vec::new();
 		for ((_, idx), start) in indexed.iter().zip(&starts) {
 			for &pos in &idx.newline_chars {
@@ -258,7 +251,6 @@ impl DocumentBuffer {
 				newline_char_positions.push(start.char + idx.char_len);
 			}
 		}
-
 		struct PartWork<'a> {
 			text: &'a str,
 			idx: &'a PartIndex,
@@ -287,7 +279,6 @@ impl DocumentBuffer {
 				}
 			})
 			.collect();
-
 		work.into_par_iter().for_each(|w| {
 			w.content[..w.idx.byte_len].copy_from_slice(w.text.as_bytes());
 			if w.idx.trailing_newline {
@@ -302,7 +293,6 @@ impl DocumentBuffer {
 				w.display[w.idx.char_len] = to_u32(w.start_display + w.idx.display_len);
 			}
 		});
-
 		let content = String::from_utf8(content_bytes)
 			.expect("each part is a valid &str and concatenating valid UTF-8 stays valid UTF-8");
 		(
@@ -430,11 +420,9 @@ mod tests {
 		assert_eq!(buffer.display_index_for_char(1), 1); // emoji starts at display 1
 		assert_eq!(buffer.display_index_for_char(2), 3); // 'b' starts at display 3 (emoji took 2 units)
 		assert_eq!(buffer.total_display_len(), 4);
-
 		assert_eq!(buffer.char_index_for_display(0), 0);
 		assert_eq!(buffer.char_index_for_display(1), 1);
 		assert_eq!(buffer.char_index_for_display(3), 2);
-
 		// byte<->display composition round-trips through the char index for every char start.
 		assert_eq!(buffer.byte_index_for_display(0), 0);
 		assert_eq!(buffer.byte_index_for_display(1), 1);

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FindView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@State private var query = ""
 	@State private var matchCase = false
 	@State private var wholeWord = false
@@ -16,6 +16,9 @@ struct FindView: View {
 					.autocorrectionDisabled()
 					.textInputAutocapitalization(.never)
 					.focused($queryFocused)
+					// Labels the keyboard's return key "Search" rather than "return", which is
+					// what the field's submit action actually does.
+					.submitLabel(.search)
 					.onSubmit { find(forward: true) }
 			}
 			Section {
@@ -52,10 +55,10 @@ struct FindView: View {
 		.navigationTitle(t("Find"))
 		.navigationBarTitleDisplayMode(.inline)
 		.onAppear {
-			query = viewModel.activeSearchQuery ?? ""
-			matchCase = viewModel.searchOptions.matchCase
-			wholeWord = viewModel.searchOptions.wholeWord
-			useRegex = viewModel.searchOptions.regex
+			query = viewModel.reading.activeSearchQuery ?? ""
+			matchCase = viewModel.reading.searchOptions.matchCase
+			wholeWord = viewModel.reading.searchOptions.wholeWord
+			useRegex = viewModel.reading.searchOptions.regex
 			queryFocused = true
 		}
 		.sheetAccessibilityFocus(title: "Find")
@@ -64,7 +67,7 @@ struct FindView: View {
 	private func find(forward: Bool) {
 		let trimmed = query.trimmingCharacters(in: .whitespaces)
 		guard !trimmed.isEmpty else { return }
-		viewModel.startSearch(
+		viewModel.reading.startSearch(
 			query: trimmed,
 			options: SearchOptions(matchCase: matchCase, wholeWord: wholeWord, regex: useRegex),
 			forward: forward

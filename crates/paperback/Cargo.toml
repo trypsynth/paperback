@@ -25,7 +25,7 @@ tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.2.0"
 toml = { workspace = true }
-wx-utils = "0.1.2"
+wx-utils = "0.2.0"
 wxdragon = { version = "0.9.20", features = ["webview", "media-ctrl"] }
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 
@@ -39,7 +39,7 @@ objc = "0.2.7"
 embed-manifest = "1.5.0"
 flate2 = { version = "1.1.9", default-features = false }
 paperback-formats = { path = "../paperback-formats" }
-patois-build = "0.1.6"
+patois-build = "0.1.7"
 tar = "0.4.46"
 ureq = { version = "3.4.0", default-features = false, features = ["rustls"] }
 winres = "0.1.12"

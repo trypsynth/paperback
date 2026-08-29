@@ -452,12 +452,10 @@ mod tests {
 		];
 		let buffer = extract_content_from_tokens(&tokens);
 		assert_eq!(buffer.content, "bold more still-bold");
-
 		let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
 		assert_eq!(bold.len(), 1);
 		assert_eq!(bold[0].position, 0);
 		assert_eq!(bold[0].length, "bold more still-bold ".chars().count());
-
 		let italic: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Italic).collect();
 		assert_eq!(italic.len(), 1);
 		assert_eq!(italic[0].position, "bold ".chars().count());
@@ -499,7 +497,6 @@ mod tests {
 		];
 		let buffer = extract_content_from_tokens(&tokens);
 		assert_eq!(buffer.content, "before middle after");
-
 		let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
 		assert_eq!(bold.len(), 2, "expected two Bold spans, got {bold:?}");
 		// "before "

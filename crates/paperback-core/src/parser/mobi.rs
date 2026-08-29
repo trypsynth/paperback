@@ -253,7 +253,6 @@ impl Parser for MobiParser {
 				tracing::debug!(fdst_idx, num_records, "fdst index is out of range, skipping html end truncation");
 			}
 		}
-
 		let mut content = Vec::new();
 		let mut trailing_entry_fallback_count = 0usize;
 		let mut huff_decoder_missing_count = 0usize;
@@ -321,13 +320,11 @@ impl Parser for MobiParser {
 				"huffman decoder unexpectedly missing, dropped record content"
 			);
 		}
-
 		if let Some(html_end) = fdst_html_end
 			&& html_end < content.len()
 		{
 			content.truncate(html_end);
 		}
-
 		const MAX_MOBI_TEXT_BYTES: usize = 20 * 1024 * 1024;
 		if content.len() > MAX_MOBI_TEXT_BYTES {
 			tracing::warn!(
@@ -344,7 +341,6 @@ impl Parser for MobiParser {
 			tracing::debug!(text_encoding, "decoding mobi content as windows-1252");
 			WINDOWS_1252.decode(&content).0.into_owned()
 		};
-
 		// Rewrite MOBI-style filepos links into standard href/id anchors before any
 		// content is stripped, since filepos values are byte offsets into the raw HTML.
 		let frag_offsets = build_fragment_offsets(&data, &record_offsets, mobi_header);
@@ -358,7 +354,6 @@ impl Parser for MobiParser {
 		};
 		tracing::debug!(is_kf8, "detected mobi format version");
 		let mut ncx_toc = parse_ncx(&data, &record_offsets, mobi_header, &exth_map, is_kf8, &frag_offsets);
-
 		fn extract_targets(items: &[TocItem], targets: &mut BTreeSet<usize>) {
 			let mut stack = vec![items];
 			while let Some(current_items) = stack.pop() {
@@ -377,28 +372,22 @@ impl Parser for MobiParser {
 		let mut extra_targets = BTreeSet::new();
 		extract_targets(&ncx_toc, &mut extra_targets);
 		let mut text = rewrite_internal_links(&text, &frag_offsets, &extra_targets);
-
 		static RE_AID: LazyLock<regex::Regex> =
 			LazyLock::new(|| regex::Regex::new(r#"(?i)\s[ac]id\s*=\s*["'][^"']*["']"#).unwrap());
 		text = RE_AID.replace_all(&text, "").into_owned();
-
 		// KF8 / AZW3 files concatenate the skeleton and fragments, often leaving
 		// `</body></html>` inside unclosed tags at insertion points. We strip these
 		// to allow `scraper` to parse the fragments cleanly.
 		static RE_BODY: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?is)</body>|</html>").unwrap());
 		text = RE_BODY.replace_all(&text, "").into_owned();
-
 		static RE_TITLE: LazyLock<regex::Regex> =
 			LazyLock::new(|| regex::Regex::new(r"(?is)<title[^>]*>.*?</title>").unwrap());
 		text = RE_TITLE.replace_all(&text, "").into_owned();
-
 		static RE_STYLE: LazyLock<regex::Regex> =
 			LazyLock::new(|| regex::Regex::new(r"(?is)<style[^>]*>.*?</style>").unwrap());
 		text = RE_STYLE.replace_all(&text, "").into_owned();
-
 		static RE_PAGE: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?is)@page\s*\{[^<]+").unwrap());
 		text = RE_PAGE.replace_all(&text, "").into_owned();
-
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
 		// Rewrite them so the heading-based TOC builder can pick them up.
 		text = rewrite_font_size_headings(&text);

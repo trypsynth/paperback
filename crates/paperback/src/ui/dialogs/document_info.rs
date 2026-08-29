@@ -2,10 +2,10 @@ use std::{fmt::Write, path::Path};
 
 use paperback_core::document::DocumentStats;
 use patois::t;
+use wx_utils::dpi;
 use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_single_button_footer};
-use crate::ui::dpi;
 
 const DOC_INFO_WIDTH: i32 = 600;
 const DOC_INFO_HEIGHT: i32 = 400;
