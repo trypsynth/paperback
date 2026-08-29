@@ -25,6 +25,7 @@ use super::{
 use crate::audio_player::AudioPlayer;
 
 mod audio;
+mod ocr;
 
 pub struct DocumentTab {
 	pub panel: Panel,
@@ -42,6 +43,8 @@ pub struct DocumentTab {
 	/// `ui::text_window` - for most documents this covers the whole thing, same as before
 	/// windowing existed; only huge documents actually get a partial window.
 	pub window: TextWindow,
+	/// The OCR job running for this tab, if one is. Written and read only on the UI thread.
+	ocr_job: Option<ocr::OcrJob>,
 }
 
 /// Change-detection stamp for an open document's file, compared on every frame activation and
@@ -273,6 +276,7 @@ impl DocumentManager {
 			disk_fingerprint: read_fingerprint(path),
 			preferred_column: Cell::new(None),
 			window,
+			ocr_job: None,
 		});
 		if !password.is_empty() {
 			config.set_document_password(&path_str, password);
@@ -554,6 +558,7 @@ impl DocumentManager {
 		})
 	}
 
+	/// Whether the caret is on an image-only PDF page's OCR placeholder line.
 	pub fn update_status_bar(&self) {
 		let sleep_start = sleep_timer::start_ms();
 		let sleep_duration = sleep_timer::duration_minutes();

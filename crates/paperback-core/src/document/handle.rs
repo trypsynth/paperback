@@ -6,6 +6,7 @@
 
 use super::{
 	Document,
+	buffer::{Edit, ReplaceOutcome},
 	marker::{ContainerSpan, Marker, MarkerType, is_container_marker, is_heading_marker},
 	toc::TocItem,
 };
@@ -26,6 +27,29 @@ impl DocumentHandle {
 	#[must_use]
 	pub const fn document(&self) -> &Document {
 		&self.doc
+	}
+
+	/// Replaces the text spanning `start..end` (display units) with `replacement`, keeping the
+	/// document's external position maps in sync. See [`Self::replace_ranges`], which this wraps.
+	pub fn replace_range(&mut self, start: usize, end: usize, replacement: &str) -> i64 {
+		self.replace_ranges(vec![Edit { start, end, text: replacement.to_string() }]).total_delta
+	}
+
+	/// Applies a batch of replacements to the buffer and keeps the document's external position
+	/// maps in sync: [`Document::id_positions`] shift the same way the buffer's markers do, and
+	/// markers are re-sorted once at the end to preserve the ordering invariant `new` establishes.
+	/// Returns the outcome so callers (the UI's sliding text window, the config's stored
+	/// positions) can remap positions of their own.
+	pub fn replace_ranges(&mut self, edits: Vec<Edit>) -> ReplaceOutcome {
+		let outcome = self.doc.buffer.replace_ranges(edits);
+		if outcome.is_empty() {
+			return outcome;
+		}
+		for position in self.doc.id_positions.values_mut() {
+			*position = outcome.shift(*position);
+		}
+		self.doc.buffer.markers.sort_by_key(|m| m.position);
+		outcome
 	}
 
 	fn markers_by_type(&self, marker_type: MarkerType) -> impl Iterator<Item = (usize, &Marker)> {

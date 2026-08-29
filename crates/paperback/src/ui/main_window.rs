@@ -63,6 +63,13 @@ pub struct MainWindow {
 static HIDDEN_POPUP: AtomicIsize = AtomicIsize::new(0);
 
 impl MainWindow {
+	/// Accessor for background callbacks (e.g. the OCR worker thread) that can't hold the app's
+	/// own `Rc<Mutex<DocumentManager>>` (an `Rc` is not `Send`); they reach the window via
+	/// [`crate::ui::app::main_window_from_ptr`] and then this method.
+	pub(crate) fn document_manager(&self) -> &Rc<Mutex<DocumentManager>> {
+		&self.doc_manager
+	}
+
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
 		// TRANSLATORS: Main window title when no document is open
 		let app_title = t("Paperback");
@@ -750,6 +757,10 @@ impl MainWindow {
 				}
 				menu_ids::SLEEP_TIMER => {
 					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label);
+				}
+				#[cfg(any(target_os = "windows", target_os = "macos"))]
+				menu_ids::BATCH_OCR => {
+					menu_tools::handle_batch_ocr(&frame_copy, &dm, live_region_label);
 				}
 				menu_ids::ABOUT => {
 					dialogs::show_about_dialog(&frame_copy);

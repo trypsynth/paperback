@@ -5,7 +5,7 @@
 
 use rayon::prelude::*;
 
-use super::marker::Marker;
+use super::marker::{Marker, MarkerType};
 use crate::util::text::{ch_width, display_len};
 
 #[derive(Debug, Clone)]
@@ -125,12 +125,29 @@ impl DocumentBuffer {
 
 	#[must_use]
 	pub fn with_content(content: String) -> Self {
+		let mut buffer = Self {
+			content,
+			markers: Vec::new(),
+			content_display_len: 0,
+			content_char_count: 0,
+			newline_char_positions: Vec::new(),
+			char_to_byte_map: Vec::new(),
+			display_len_at_char: Vec::new(),
+		};
+		buffer.rebuild_indexes();
+		buffer
+	}
+
+	/// Rebuilds every per-char index table from `self.content`, which is the single source of
+	/// truth for all of them. Called by [`Self::with_content`] and after any in-place content
+	/// mutation (currently only [`Self::replace_ranges`]).
+	fn rebuild_indexes(&mut self) {
 		let mut char_count = 0usize;
 		let mut display_count = 0usize;
 		let mut newline_char_positions = Vec::new();
-		let mut char_to_byte_map = Vec::with_capacity(content.len().min(1024));
-		let mut display_len_at_char = Vec::with_capacity(content.len().min(1024));
-		for (byte_idx, c) in content.char_indices() {
+		let mut char_to_byte_map = Vec::with_capacity(self.content.len().min(1024));
+		let mut display_len_at_char = Vec::with_capacity(self.content.len().min(1024));
+		for (byte_idx, c) in self.content.char_indices() {
 			char_to_byte_map.push(to_u32(byte_idx));
 			display_len_at_char.push(to_u32(display_count));
 			if c == '\n' {
@@ -139,18 +156,66 @@ impl DocumentBuffer {
 			char_count += 1;
 			display_count += ch_width(c);
 		}
-		char_to_byte_map.push(to_u32(content.len())); // append end boundary
+		char_to_byte_map.push(to_u32(self.content.len())); // append end boundary
 		display_len_at_char.push(to_u32(display_count));
-		debug_assert_eq!(display_count, display_len(&content));
-		Self {
-			content,
-			markers: Vec::new(),
-			content_display_len: display_count,
-			content_char_count: char_count,
-			newline_char_positions,
-			char_to_byte_map,
-			display_len_at_char,
+		debug_assert_eq!(display_count, display_len(&self.content));
+		self.content_display_len = display_count;
+		self.content_char_count = char_count;
+		self.newline_char_positions = newline_char_positions;
+		self.char_to_byte_map = char_to_byte_map;
+		self.display_len_at_char = display_len_at_char;
+	}
+
+	/// Replaces the text spanning `start..end` (display units) with `replacement`, in place.
+	/// A convenience wrapper over [`Self::replace_ranges`] for the single-edit case; see there
+	/// for the marker rules. Returns the delta (`new_len - old_len`) in display units.
+	pub fn replace_range(&mut self, start: usize, end: usize, replacement: &str) -> i64 {
+		self.replace_ranges(vec![Edit { start, end, text: replacement.to_string() }]).total_delta
+	}
+
+	/// Applies several replacements in one pass and rebuilds the per-char index tables **once**.
+	///
+	/// Rebuilding is linear in the whole document, so applying edits one at a time is quadratic in
+	/// the number of edits. Batch OCR of a long scan produces one edit per page, which is exactly
+	/// the case that made this necessary.
+	///
+	/// `edits` may arrive in any order but must not overlap; they are sorted here and applied back
+	/// to front so earlier byte offsets stay valid. Every `start`/`end` must land on a char
+	/// boundary (callers derive such offsets from [`Self::display_index_for_char`]).
+	///
+	/// Marker rules, applied against the pre-edit positions: a marker strictly inside a replaced
+	/// span is dropped, as is a [`MarkerType::ImageOnlyPage`] marker sitting exactly at a span's
+	/// start (the placeholder it tags is precisely what the edit consumes). Every other marker
+	/// survives and shifts by the total delta of the edits that end at or before it, so a page
+	/// break at the start of a replaced line keeps its position.
+	#[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
+	pub fn replace_ranges(&mut self, mut edits: Vec<Edit>) -> ReplaceOutcome {
+		edits.sort_by_key(|edit| edit.start);
+		debug_assert!(
+			edits.windows(2).all(|pair| pair[0].end <= pair[1].start),
+			"replace_ranges requires non-overlapping edits"
+		);
+		let mut deltas = Vec::with_capacity(edits.len());
+		for edit in &edits {
+			deltas.push(display_len(&edit.text) as i64 - (edit.end - edit.start) as i64);
 		}
+		for edit in edits.iter().rev() {
+			let start_byte = self.byte_index_for_display(edit.start);
+			let end_byte = self.byte_index_for_display(edit.end);
+			self.content.replace_range(start_byte..end_byte, &edit.text);
+		}
+		self.rebuild_indexes();
+		self.markers.retain_mut(|marker| shift_marker(marker, &edits, &deltas));
+		let total_delta = deltas.iter().sum();
+		// Running sums of the deltas, so callers can map a pre-edit position to its post-edit one
+		// the same way the markers were mapped.
+		let mut shifts = Vec::with_capacity(edits.len());
+		let mut running = 0i64;
+		for (edit, delta) in edits.iter().zip(&deltas) {
+			running += delta;
+			shifts.push((edit.end, running));
+		}
+		ReplaceOutcome { total_delta, shifts }
 	}
 
 	pub fn add_marker(&mut self, marker: Marker) {
@@ -379,11 +444,70 @@ impl Default for DocumentBuffer {
 	}
 }
 
+/// One replacement for [`DocumentBuffer::replace_ranges`]: the display-unit span `start..end`
+/// and the text that takes its place.
+#[derive(Debug, Clone)]
+pub struct Edit {
+	pub start: usize,
+	pub end: usize,
+	pub text: String,
+}
+
+/// What [`DocumentBuffer::replace_ranges`] changed: the net display-unit growth, plus the
+/// running shift after each edit so positions stored outside the buffer can be remapped.
+#[derive(Debug, Clone)]
+pub struct ReplaceOutcome {
+	pub total_delta: i64,
+	shifts: Vec<(usize, i64)>,
+}
+
+impl ReplaceOutcome {
+	/// Maps a pre-edit display position to its post-edit one. Positions inside a replaced span
+	/// have no exact answer; they collapse to the shifted end of that span.
+	#[must_use]
+	#[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
+	pub fn shift(&self, position: usize) -> usize {
+		let applied = self.shifts.partition_point(|(end, _)| *end <= position);
+		if applied == 0 {
+			return position;
+		}
+		(position as i64 + self.shifts[applied - 1].1).max(0) as usize
+	}
+
+	#[must_use]
+	pub fn is_empty(&self) -> bool {
+		self.shifts.is_empty()
+	}
+}
+
+/// Repositions `marker` for a batch of edits, or reports that it should be dropped. See the
+/// marker rules on [`DocumentBuffer::replace_ranges`].
+#[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
+fn shift_marker(marker: &mut Marker, edits: &[Edit], deltas: &[i64]) -> bool {
+	let mut shift = 0i64;
+	for (edit, delta) in edits.iter().zip(deltas) {
+		if edit.end <= marker.position {
+			shift += delta;
+			continue;
+		}
+		if marker.position > edit.start {
+			return false; // strictly inside the replaced span
+		}
+		if marker.position == edit.start && marker.mtype == MarkerType::ImageOnlyPage {
+			return false; // the placeholder this marker tags is what the edit consumes
+		}
+		break; // edits are sorted, so nothing later can affect this marker
+	}
+	marker.position = (marker.position as i64 + shift).max(0) as usize;
+	true
+}
+
 #[cfg(test)]
 mod tests {
 	use rstest::rstest;
 
 	use super::*;
+	use crate::document::marker::{Marker, MarkerType};
 
 	#[test]
 	fn document_buffer_append_updates_position() {
@@ -513,5 +637,129 @@ mod tests {
 			assert_eq!(naive.start, parallel.start, "part {i} start");
 			assert_eq!(naive.end, parallel.end, "part {i} end");
 		}
+	}
+
+	#[test]
+	fn replace_range_matches_sequential_build_and_shifts_markers() {
+		let mut buffer = DocumentBuffer::with_content("aaa\nbbb\nccc".to_string());
+		// Marker at the start of the "bbb" line (display 4) and of the "ccc" line (display 8),
+		// plus one strictly inside the span being replaced (display 5, should be dropped).
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 4));
+		buffer.add_marker(Marker::new(MarkerType::Heading2, 5));
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 8));
+		let delta = buffer.replace_range(4, 7, "XY");
+		assert_eq!(delta, -1); // 2 display units replacing 3
+		let expected = DocumentBuffer::with_content("aaa\nXY\nccc".to_string());
+		assert_buffers_equivalent(&buffer, &expected);
+		assert_eq!(buffer.content, "aaa\nXY\nccc");
+		// The "bbb"-start marker (== start) is kept; the inside marker is dropped; the "ccc"
+		// marker shifted from 8 to 7.
+		let positions: Vec<usize> = buffer.markers.iter().map(|m| m.position).collect();
+		assert_eq!(positions, vec![4, 7]);
+	}
+
+	#[test]
+	fn replace_range_can_insert_and_grow() {
+		let mut buffer = DocumentBuffer::with_content("aaa\nccc".to_string());
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 4));
+		let delta = buffer.replace_range(4, 4, "bbb\n"); // insert at start of the "ccc" line
+		assert_eq!(delta, 4); // "bbb\n" is 4 display units
+		let expected = DocumentBuffer::with_content("aaa\nbbb\nccc".to_string());
+		assert_buffers_equivalent(&buffer, &expected);
+		// The marker at 4 shifts forward by the inserted length.
+		assert_eq!(buffer.markers[0].position, 8);
+	}
+
+	#[cfg(any(windows, target_os = "macos"))]
+	#[test]
+	fn replace_range_preserves_surrogate_pair_display_units() {
+		// "a" then an astral emoji (1 char but 2 display units) before the replaced span, so the
+		// display/char conversion must stay correct through the mutation.
+		let mut buffer = DocumentBuffer::with_content("a\u{1F600}b\nXYZ\nc".to_string());
+		// display offsets: a=0, emoji=1..2, b=3, \n=4, X=5, Y=6, Z=7, \n=8, c=9 (len 10).
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 5));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 9));
+		let delta = buffer.replace_range(5, 8, "Q");
+		assert_eq!(delta, -2);
+		let expected = DocumentBuffer::with_content("a\u{1F600}b\nQ\nc".to_string());
+		assert_buffers_equivalent(&buffer, &expected);
+		// The marker at 5 (== start) stays; the marker at 9 shifts by -2 to 7.
+		let positions: Vec<usize> = buffer.markers.iter().map(|m| m.position).collect();
+		assert_eq!(positions, vec![5, 7]);
+		assert_eq!(buffer.total_display_len(), 8);
+		assert_eq!(buffer.byte_index_for_display(5), 7);
+	}
+	#[test]
+	fn replace_ranges_applies_every_edit_in_one_pass() {
+		let mut buffer = DocumentBuffer::with_content(
+			"aaa
+bbb
+ccc
+ddd"
+			.to_string(),
+		);
+		// Replace the "bbb" line (4..7) and the "ddd" line (12..15) in one call.
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 4));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 8));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 12));
+		let outcome = buffer.replace_ranges(vec![
+			Edit { start: 12, end: 15, text: "WXYZ".to_string() },
+			Edit { start: 4, end: 7, text: "B".to_string() },
+		]);
+		assert_eq!(
+			buffer.content,
+			"aaa
+B
+ccc
+WXYZ"
+		);
+		let expected = DocumentBuffer::with_content(
+			"aaa
+B
+ccc
+WXYZ"
+				.to_string(),
+		);
+		assert_buffers_equivalent(&buffer, &expected);
+		assert_eq!(outcome.total_delta, -1); // -2 for the shrinking edit, +1 for the growing one
+		// The markers at each edit's start survive; the one after the first edit shifts by -2.
+		let positions: Vec<usize> = buffer.markers.iter().map(|m| m.position).collect();
+		assert_eq!(positions, vec![4, 6, 10]);
+	}
+
+	#[test]
+	fn replace_ranges_shifts_positions_the_way_it_shifts_markers() {
+		let mut buffer = DocumentBuffer::with_content(
+			"aaa
+bbb
+ccc
+ddd"
+			.to_string(),
+		);
+		let outcome = buffer.replace_ranges(vec![
+			Edit { start: 4, end: 7, text: "B".to_string() },
+			Edit { start: 12, end: 15, text: "WXYZ".to_string() },
+		]);
+		assert_eq!(outcome.shift(0), 0); // before every edit
+		assert_eq!(outcome.shift(8), 6); // after the first edit only
+		assert_eq!(outcome.shift(15), 14); // after both: the old end of a document that shrank by one
+	}
+
+	#[test]
+	fn replace_ranges_drops_the_image_only_marker_it_consumes() {
+		let mut buffer = DocumentBuffer::with_content(
+			"aaa
+bbb
+ccc"
+			.to_string(),
+		);
+		// A page break and an image-only marker share the placeholder line's start. The page
+		// break has to survive OCR; the image-only marker is exactly what OCR consumes.
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 4));
+		buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, 4));
+		buffer.replace_ranges(vec![Edit { start: 4, end: 7, text: "recognized".to_string() }]);
+		let kinds: Vec<MarkerType> = buffer.markers.iter().map(|m| m.mtype).collect();
+		assert_eq!(kinds, vec![MarkerType::PageBreak]);
+		assert_eq!(buffer.markers[0].position, 4);
 	}
 }

@@ -1,6 +1,6 @@
 use crate::{
 	audio::AudioTimeline,
-	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
+	document::{self, DocumentHandle, Edit, MarkerType, ParserContext, ParserFlags, ReplaceOutcome},
 	parser,
 	reader_core::record_history_position,
 	types::{self as ffi},
@@ -306,6 +306,72 @@ impl DocumentSession {
 	#[must_use]
 	pub const fn handle(&self) -> &DocumentHandle {
 		&self.handle
+	}
+
+	/// Replaces the text spanning `start..end` (display units) with `text`, keeping the buffer
+	/// indexes, markers, and `id_positions` in sync. Returns the display-unit length delta so the
+	/// caller can adjust its sliding window. Used by the OCR flow to swap an image-only
+	/// placeholder line for recognized text.
+	pub fn replace_range(&mut self, start: i64, end: i64, text: &str) -> i64 {
+		let start = usize::try_from(start.max(0)).unwrap_or(0);
+		let end = usize::try_from(end.max(0)).unwrap_or(0);
+		self.handle.replace_range(start, end, text)
+	}
+
+	/// Every page still awaiting OCR, as `(1-based page number, placeholder offset)` pairs in
+	/// document order. Driven by the `ImageOnlyPage` markers the PDF parser leaves behind, which
+	/// [`Self::replace_image_only_pages`] removes as it consumes them, so a page already
+	/// recognized in this session never appears here twice.
+	#[must_use]
+	pub fn image_only_pages(&self) -> Vec<(i32, i64)> {
+		self.handle
+			.document()
+			.buffer
+			.markers
+			.iter()
+			.filter(|marker| marker.mtype == MarkerType::ImageOnlyPage)
+			.map(|marker| {
+				let offset = i64::try_from(marker.position).unwrap_or(0);
+				(self.current_page(offset), offset)
+			})
+			.collect()
+	}
+
+	/// The offset of the OCR placeholder on the line containing `position`, if that line is one.
+	/// This is what Enter keys off, so pressing it anywhere on the placeholder line works.
+	#[must_use]
+	pub fn image_only_page_at(&self, position: i64) -> Option<i64> {
+		let (start, end) = self.line_bounds_at(position)?;
+		self.handle
+			.document()
+			.buffer
+			.markers
+			.iter()
+			.find(|marker| {
+				marker.mtype == MarkerType::ImageOnlyPage
+					&& i64::try_from(marker.position).is_ok_and(|p| p >= start && p <= end)
+			})
+			.map(|marker| i64::try_from(marker.position).unwrap_or(start))
+	}
+
+	/// Swaps each `(placeholder offset, recognized text)` pair for the whole placeholder line,
+	/// in one pass. Offsets must be ones [`Self::image_only_pages`] or
+	/// [`Self::image_only_page_at`] reported and must still be placeholders; anything else is
+	/// skipped. Returns the outcome so callers can remap positions they hold themselves.
+	pub fn replace_image_only_pages(&mut self, pages: &[(i64, String)]) -> ReplaceOutcome {
+		let edits: Vec<Edit> = pages
+			.iter()
+			.filter(|(offset, _)| self.image_only_page_at(*offset).is_some())
+			.filter_map(|(offset, text)| {
+				let (start, end) = self.line_bounds_at(*offset)?;
+				Some(Edit {
+					start: usize::try_from(start.max(0)).unwrap_or(0),
+					end: usize::try_from(end.max(0)).unwrap_or(0),
+					text: text.clone(),
+				})
+			})
+			.collect();
+		self.handle.replace_ranges(edits)
 	}
 
 	/// This document's recorded audio, when it has any (DAISY audiobooks; text-only

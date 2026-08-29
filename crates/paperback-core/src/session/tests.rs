@@ -6,6 +6,7 @@ mod audio;
 mod find_all;
 mod links;
 mod navigation;
+mod ocr;
 mod webview;
 
 fn sample_session(parser_flags: ParserFlags) -> DocumentSession {
