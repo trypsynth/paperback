@@ -16,6 +16,9 @@ struct FindView: View {
 					.autocorrectionDisabled()
 					.textInputAutocapitalization(.never)
 					.focused($queryFocused)
+					// Labels the keyboard's return key "Search" rather than "return", which is
+					// what the field's submit action actually does.
+					.submitLabel(.search)
 					.onSubmit { find(forward: true) }
 			}
 			Section {
