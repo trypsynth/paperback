@@ -462,6 +462,7 @@ impl DocumentManager {
 	/// Records whether the text control or the notebook currently has focus, so focus can be
 	/// restored to the same place when the window is next activated. Only updates when one of
 	/// the two is confidently focused (a mid-focus-transition leaves the previous value).
+	#[cfg(target_os = "windows")]
 	pub fn record_focus_target(&self) {
 		if self.active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()) {
 			self.last_focus_in_text.set(true);
