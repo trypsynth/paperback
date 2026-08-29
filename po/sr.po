@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 20:20+0000\n"
-"PO-Revision-Date: 2026-08-28 18:45+0200\n"
+"POT-Creation-Date: 2026-08-29 05:09-0600\n"
+"PO-Revision-Date: 2026-08-29 15:21+0200\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
 "Language: sr\n"
@@ -47,14 +47,6 @@ msgstr "Svi dokumenti"
 msgid "&search"
 msgstr "&Pretraga"
 
-#. TRANSLATORS: Label for the confirmation dialog "Yes" button
-msgid "&Yes"
-msgstr "&Da"
-
-#. TRANSLATORS: Label for the confirmation dialog "No" button
-msgid "&No"
-msgstr "&Ne"
-
 #. TRANSLATORS: Column header for the document filename in the All Documents list
 msgid "File Name"
 msgstr "Ime datoteke"
@@ -68,7 +60,6 @@ msgid "Path"
 msgstr "Putanja"
 
 #. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
-#| msgid "Status"
 msgid "&Status:"
 msgstr "&Stanje:"
 
@@ -109,9 +100,6 @@ msgstr "&Očisti sve"
 msgid "Close"
 msgstr "Zatvori"
 
-#| msgid ""
-#| "Are you sure you want to remove all documents from the list? This will "
-#| "also remove all reading positions and bookmarks."
 msgid ""
 "Are you sure you want to remove the selected document? This will also remove "
 "its reading position and bookmarks."
@@ -119,9 +107,6 @@ msgstr ""
 "Da li ste sigurni da želite da uklonite izabrani dokument? Ovo će takođe "
 "ukloniti njegovu poziciju čitanja i knjižne oznake."
 
-#| msgid ""
-#| "Are you sure you want to remove all documents from the list? This will "
-#| "also remove all reading positions and bookmarks."
 msgid ""
 "Are you sure you want to remove the {} selected documents? This will also "
 "remove their reading positions and bookmarks."
@@ -142,12 +127,10 @@ msgstr ""
 "takođe ukloniti sve pozicije čitanja i knjižne oznake."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
-#| msgid "No recent documents."
 msgid "No documents."
 msgstr "Nema dokumenata."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count. Plural form is chosen by that count.
-#| msgid "document"
 msgid "%d document."
 msgid_plural "%d documents."
 msgstr[0] "%d dokument."
@@ -155,12 +138,10 @@ msgstr[1] "%d dokumenta."
 msgstr[2] "%d dokumenata."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
-#| msgid "End of document"
 msgid "1 of 1 document selected."
 msgstr "1 od 1 dokument je izabran."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
-#| msgid "All Documents"
 msgid "All %d document selected."
 msgid_plural "All %d documents selected."
 msgstr[0] "%d dokument izabran."
@@ -168,7 +149,6 @@ msgstr[1] "%d dokumenta izabrana."
 msgstr[2] "%d dokumenata izabrano."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
-#| msgid "End of document"
 msgid "%d of %d document selected."
 msgid_plural "%d of %d documents selected."
 msgstr[0] "%d od %d dokument izabran."
@@ -350,8 +330,8 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
-#. TRANSLATORS: Title of the Options dialog
-msgid "Options"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
 msgstr "Podešavanja"
 
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
@@ -665,10 +645,16 @@ msgstr "&Obriši prečicu"
 msgid "&Reset to Default"
 msgstr "&Vrati na podrazumevano"
 
-#| msgid "&Reset to Default Font"
 msgid "Reset &All to Defaults"
 msgstr "Vrati &sve na podrazumevano"
 
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr ""
+"\"{}\" je već podešeno na \"{}\". Da li želite da umesto toga podesite na "
+"\"{}\"?"
+
+#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
 msgid "Shortcut Conflict"
 msgstr "Sukob prečica"
 
@@ -678,9 +664,26 @@ msgstr "Da li želite da vratite sve prečice na podrazumevane?"
 msgid "Reset Shortcuts"
 msgstr "Vrati prečice"
 
+#| msgid "&Set Shortcut..."
+msgid "Set Shortcut for {}"
+msgstr "Podesi prečicu za {}"
+
+msgid "Configure shortcut for {}:"
+msgstr "Podesi prečicu za{}:"
+
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr ""
 "Savet: kliknite na polje tastera i pritisnite željenu kombinaciju tastera."
+
+msgid "Detected: (none)"
+msgstr "Prepoznato: (ništa)"
+
+#| msgid "Details: {}"
+msgid "Detected: {}"
+msgstr "Prepoznato: {}"
+
+msgid "No key detected"
+msgstr "Nijedan taster nije prepoznat"
 
 msgid "&Clear"
 msgstr "&Obriši"
@@ -710,7 +713,6 @@ msgid "View Note"
 msgstr "Prikaži napomenu"
 
 #. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-#| msgid "1 hour"
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d sat"
@@ -718,7 +720,6 @@ msgstr[1] "%d sata"
 msgstr[2] "%d sati"
 
 #. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-#| msgid "1 minute"
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minut"
@@ -726,7 +727,6 @@ msgstr[1] "%d minuta"
 msgstr[2] "%d minuta"
 
 #. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-#| msgid "1 second"
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d sekunda"
@@ -738,7 +738,6 @@ msgid "Estimated reading time: {}"
 msgstr "Očekivano vreme čitanja: {}"
 
 #. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
-#| msgid "The selection contains {} words."
 msgid "The selection contains %d word."
 msgid_plural "The selection contains %d words."
 msgstr[0] "Izbor sadrži %d reč."
@@ -746,7 +745,6 @@ msgstr[1] "Izbor sadrži %d reči."
 msgstr[2] "Izbor sadrži %d reči."
 
 #. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
-#| msgid "This document contains {} words."
 msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "Ovaj dokument sadrži %d reč."
@@ -811,7 +809,6 @@ msgid "Failed to load document."
 msgstr "Učitavanje dokumenta nije uspelo."
 
 #. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
-#| msgid "File"
 msgid "File: {}"
 msgstr "Datoteka: {}"
 
@@ -879,6 +876,9 @@ msgstr "Pronađi"
 #. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
 msgstr "&Šta pronaći:"
+
+msgid "Options"
+msgstr "Podešavanja"
 
 #. TRANSLATORS: Checkbox to make the search case-sensitive
 msgid "&Match case"
@@ -1024,7 +1024,6 @@ msgstr "Uvoz uspešan"
 msgid "Sleep timer cancelled."
 msgstr "Tajmer pre spavanja otkazan."
 
-#| msgid "Sleep timer set for %d minutes."
 msgid "Sleep timer set for %d minute."
 msgid_plural "Sleep timer set for %d minutes."
 msgstr[0] "Tajmer pre spavanja podešen na %d minut."
@@ -1036,7 +1035,6 @@ msgid "Paperback"
 msgstr "Paperback"
 
 #. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
-#| msgid "Document Info"
 msgid "Document reloaded."
 msgstr "Dokument ponovo učitan."
 
@@ -1048,7 +1046,6 @@ msgstr "Paperback ne može da vrši druge radnje dok je Web prikaz otvoren."
 msgid "Paperback - {}"
 msgstr "Paperback - {}"
 
-#| msgid "{} chars"
 msgid "%d char"
 msgid_plural "%d chars"
 msgstr[0] "%d znak"
@@ -1095,7 +1092,6 @@ msgstr "&Nalepi\tCtrl+V"
 msgid "Select &All\tCtrl+A"
 msgstr "Izaberi &sve\tCtrl+A"
 
-#| msgid "&Open"
 msgid "&Open..."
 msgstr "&Otvori..."
 
@@ -1568,7 +1564,8 @@ msgstr "&Režim celog ekrana"
 msgid "Toggle full screen"
 msgstr "Uključi ili isključi režim celog ekrana"
 
-msgid "&Options"
+#| msgid "Settings"
+msgid "&Settings"
 msgstr "&Podešavanja"
 
 msgid "&Sleep Timer..."
@@ -1858,6 +1855,249 @@ msgstr "Vrati Paperback"
 msgid "Exit Paperback"
 msgstr "Zatvori Paperback"
 
+#| msgid "&Open..."
+msgid "Open..."
+msgstr "Otvori..."
+
+msgid "Close All"
+msgstr "Zatvori sve"
+
+msgid "Reopen Last Closed"
+msgstr "Ponovo otvori poslednje zatvoreno"
+
+#| msgid "No Recent Documents"
+msgid "Show All Recent Documents..."
+msgstr "Prikaži sve nedavne dokumente..."
+
+msgid "Exit"
+msgstr "Izlaz"
+
+#| msgid "&Find..."
+msgid "Find..."
+msgstr "Pronađi..."
+
+msgid "Find Next"
+msgstr "Pronađi sledeće"
+
+msgid "Find Previous"
+msgstr "Pronađi prethodno"
+
+msgid "Go to Line..."
+msgstr "Pređi u red..."
+
+msgid "Go to Percent..."
+msgstr "Pređi na procenat..."
+
+msgid "Go to Page..."
+msgstr "Pređi na stranicu..."
+
+msgid "Go Back"
+msgstr "Vrati se nazad"
+
+msgid "Go Forward"
+msgstr "Idi napred"
+
+msgid "Announce Percentage"
+msgstr "Izgovori procenat"
+
+msgid "Set Temporary Bookmark"
+msgstr "Postavi privremenu knjižnu oznaku"
+
+msgid "Jump to Temporary Bookmark"
+msgstr "Skoči na privremenu knjižnu oznaku"
+
+msgid "Previous Heading"
+msgstr "Prethodni naslov"
+
+msgid "Next Heading"
+msgstr "Naredni naslov"
+
+msgid "Previous Heading Level 1"
+msgstr "Prethodni naslov na nivou 1"
+
+msgid "Previous Heading Level 2"
+msgstr "Prethodni naslov na nivou 2"
+
+msgid "Previous Heading Level 3"
+msgstr "Prethodni naslov na nivou 3"
+
+msgid "Previous Heading Level 4"
+msgstr "Prethodni naslov na nivou 4"
+
+msgid "Previous Heading Level 5"
+msgstr "Prethodni naslov na nivou 5"
+
+msgid "Previous Heading Level 6"
+msgstr "Prethodni naslov na nivou 6"
+
+msgid "Previous Page"
+msgstr "Prethodna stranica"
+
+msgid "Next Page"
+msgstr "Naredna stranica"
+
+msgid "Previous Bookmark"
+msgstr "Prethodna knjižna oznaka"
+
+msgid "Next Bookmark"
+msgstr "Naredna knjižna oznaka"
+
+msgid "Previous Note"
+msgstr "Prethodna napomena"
+
+msgid "Next Note"
+msgstr "Naredna Napomena"
+
+msgid "Jump to All Bookmarks..."
+msgstr "Skoči na sve knjižne oznake..."
+
+msgid "Jump to Bookmarks Only..."
+msgstr "Skoči samo na knjižne oznake..."
+
+msgid "Jump to Notes Only..."
+msgstr "Skoči samo na napomene..."
+
+msgid "View Note Text"
+msgstr "Prikaži tekst napomene"
+
+msgid "Previous Link"
+msgstr "Prethodni Link"
+
+msgid "Next Link"
+msgstr "Naredni link"
+
+msgid "Previous Image"
+msgstr "Prethodna slika"
+
+msgid "Next Image"
+msgstr "Naredna slika"
+
+msgid "Previous Figure"
+msgstr "Prethodna figura"
+
+msgid "Next Figure"
+msgstr "Naredna figura"
+
+msgid "Previous Table"
+msgstr "Prethodna tabela"
+
+msgid "Next Table"
+msgstr "Naredna tabela"
+
+msgid "Previous Separator"
+msgstr "Prethodni separator"
+
+msgid "Next Separator"
+msgstr "Naredni Separator"
+
+msgid "Previous List"
+msgstr "Prethodna lista"
+
+msgid "Next List"
+msgstr "Naredna lista"
+
+msgid "Previous List Item"
+msgstr "Prethodna stavka liste"
+
+msgid "Next List Item"
+msgstr "Naredna stavka liste"
+
+msgid "Container Start"
+msgstr "Početak sadrživača"
+
+msgid "Past Container End"
+msgstr "Nakon kraja sadrživača"
+
+msgid "Elements List..."
+msgstr "Lista elemenata..."
+
+msgid "Reveal File in Folder"
+msgstr "Otkrij datoteku u folderu"
+
+msgid "Open in Web View"
+msgstr "Otvori u Web prikazu"
+
+msgid "View Source"
+msgstr "Prikaži izvor"
+
+msgid "Toggle Bookmark"
+msgstr "Dodaj ili ukloni knjižnu oznaku"
+
+msgid "Bookmark with Note"
+msgstr "Knjižna oznaka sa napomenom"
+
+msgid "Toggle Word Wrap"
+msgstr "Uključi ili isključi prelamanje reči"
+
+msgid "Play/Pause Audio"
+msgstr "Reprodukuj/pauziraj zvuk"
+
+msgid "Seek Audio Forward"
+msgstr "Premotaj zvuk napred"
+
+msgid "Seek Audio Backward"
+msgstr "Premotaj zvuk nazad"
+
+msgid "Increase Audio Seek Amount"
+msgstr "Povećaj količinu premotavanja zvuka"
+
+msgid "Decrease Audio Seek Amount"
+msgstr "Smanji količinu premotavanja zvuka"
+
+msgid "Full Screen"
+msgstr "&Režim celog ekrana"
+
+msgid "Settings..."
+msgstr "Podešavanja..."
+
+msgid "Sleep Timer..."
+msgstr "Tajmer pre spavanja..."
+
+msgid "Customize Keyboard Shortcuts..."
+msgstr "Prilagodi tasterske prečice..."
+
+msgid "Import Document Data..."
+msgstr "Uvezi podatke o dokumentu..."
+
+msgid "Export Document Data..."
+msgstr "Izvezi podatke o dokumentu..."
+
+msgid "Export to Plain Text..."
+msgstr "Izvezi kao običan tekst..."
+
+msgid "Export to HTML..."
+msgstr "Izvezi kao HTML..."
+
+msgid "Export to Markdown..."
+msgstr "Izvezi kao Markdown..."
+
+msgid "About Paperback"
+msgstr "O Paperbacku"
+
+msgid "View Help in Browser"
+msgstr "Prikaži pomoć u pretraživaču"
+
+msgid "View Help in Paperback"
+msgstr "Prikaži pomoć u Paperbacku"
+
+msgid "Check for Updates"
+msgstr "Proveri da li postoje ažuriranja"
+
+msgid "Donate"
+msgstr "Doniraj"
+
+msgid "File"
+msgstr "Datoteka"
+
+msgid "Tools"
+msgstr "Alati"
+
+msgid "Help"
+msgstr "Pomoć"
+
+msgid "None"
+msgstr "Ništa"
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "Figura"
@@ -2029,7 +2269,6 @@ msgid "Password required or incorrect"
 msgstr "Lozinka je obavezna ili je netačna"
 
 #. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
-#| msgid "Failed to parse document: %s"
 msgid "Failed to open PDF document: {}"
 msgstr "Neuspešno otvaranje PDF dokumenta: {}"
 
@@ -2062,7 +2301,6 @@ msgid "PPTX file contains no slides"
 msgstr "PPTX datoteka ne sadrži slajdove"
 
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
-#| msgid "Failed to parse document: %s"
 msgid "Failed to parse RTF document: {}"
 msgstr "Neuspešna obrada RTF dokumenta: {}"
 
@@ -2109,7 +2347,6 @@ msgstr ""
 "{}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
-#| msgid "File not found: {}"
 msgid "No file extension found for: {}"
 msgstr "Ekstenzija datoteke nije pronađena za: {}"
 
@@ -2129,18 +2366,95 @@ msgstr "Lozinka je obavezna"
 msgid "Password incorrect"
 msgstr "Lozinka je netačna"
 
+msgid "Unknown update file format."
+msgstr "Nepoznat format ažuriranja datoteke."
+
+msgid "Failed to open disk image"
+msgstr "Otvaranje slike diska nije uspelo"
+
+msgid ""
+"The update has been downloaded and its disk image opened. Quit %s and drag "
+"the new version into Applications to finish installing."
+msgstr ""
+"Ažuriranje je preuzeto i njegova slika diska je otvorena. Zatvorite %s a "
+"zatim prevucite novu verziju u aplikacije kako biste završili njenu "
+"instalaciju."
+
+msgid "Update Ready"
+msgstr "Ažuriranje je spremno"
+
+msgid "Failed to get current exe path"
+msgstr "Pribavljanje putanje do trenutne izvršne datoteke nije uspelo"
+
+msgid "Failed to launch installer script"
+msgstr "Pokretanje instalacione skripte nije uspelo"
+
+msgid "Failed to launch update script"
+msgstr "Pokretanje skripte ažuriranja nije uspelo"
+
+msgid "Update failed"
+msgstr "Ažuriranje nije uspelo"
+
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Ažuriranje je preuzeto u: %s\n"
+"Molimo ručno ga instalirajte."
+
+msgid "Update to %s"
+msgstr "Ažuriraj na %s"
+
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "Dostupna je nova verzija programa %s. Ovo su novosti:"
+
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
+msgid "&Yes"
+msgstr "&Da"
+
+#. TRANSLATORS: Label for the confirmation dialog "No" button
+msgid "&No"
+msgstr "&Ne"
+
+msgid "No release notes provided."
+msgstr "Nema informacija o novostima."
+
+msgid "%s Update"
+msgstr "%s ažuriranje"
+
+msgid "Downloading update..."
+msgstr "Preuzimanje ažuriranja..."
+
+msgid "No updates available."
+msgstr "Nema dostupnih ažuriranja."
+
+msgid "No updates available. Latest version: %s"
+msgstr "Nema dostupnih ažuriranja. Najnovija verzija: %s"
+
+msgid "Info"
+msgstr "Informacija"
+
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+"Bezbednosna provera nije uspela. Ažuriranje je možda neočekivano izmenjeno: "
+"%s"
+
+msgid "Security Error"
+msgstr "Bezbednosna greška"
+
+msgid "&Options"
+msgstr "&Podešavanja"
+
 msgid "1 document."
 msgstr "1 dokument."
 
-#| msgid "document"
 msgid "%d documents."
 msgstr "%d dokumenata."
 
-#| msgid "All Documents"
 msgid "All %d documents selected."
 msgstr "%d dokumenata izabrano."
 
-#| msgid "End of document"
 msgid "%d of %d documents selected."
 msgstr "%d od %d dokumenata izabrano."
 
@@ -2170,64 +2484,6 @@ msgstr "Tajmer pre spavanja podešen na 1 minut."
 
 msgid "Sleep timer set for %d minutes."
 msgstr "Tajmer pre spavanja podešen na %d minuta."
-
-msgid "Update to %s"
-msgstr "Ažuriraj na %s"
-
-msgid "A new version of %s is available. Here's what's new:"
-msgstr "Dostupna je nova verzija programa %s. Ovo su novosti:"
-
-msgid "No release notes provided."
-msgstr "Nema informacija o novostima."
-
-msgid "%s Update"
-msgstr "%s ažuriranje"
-
-msgid "Downloading update..."
-msgstr "Preuzimanje ažuriranja..."
-
-msgid "No updates available."
-msgstr "Nema dostupnih ažuriranja."
-
-msgid "No updates available. Latest version: %s"
-msgstr "Nema dostupnih ažuriranja. Najnovija verzija: %s"
-
-msgid "Info"
-msgstr "Informacija"
-
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr ""
-"Bezbednosna provera nije uspela. Ažuriranje je možda neočekivano izmenjeno: "
-"%s"
-
-msgid "Security Error"
-msgstr "Bezbednosna greška"
-
-msgid "Update failed"
-msgstr "Ažuriranje nije uspelo"
-
-msgid ""
-"Update downloaded to: %s\n"
-"Please install it manually."
-msgstr ""
-"Ažuriranje je preuzeto u: %s\n"
-"Molimo ručno ga instalirajte."
-
-msgid "Update Ready"
-msgstr "Ažuriranje je spremno"
-
-msgid "Failed to get current exe path"
-msgstr "Pribavljanje putanje do trenutne izvršne datoteke nije uspelo"
-
-msgid "Failed to launch installer script"
-msgstr "Pokretanje instalacione skripte nije uspelo"
-
-msgid "Failed to launch update script"
-msgstr "Pokretanje skripte ažuriranja nije uspelo"
-
-msgid "Unknown update file format."
-msgstr "Nepoznat format ažuriranja datoteke."
 
 msgid "Previous Section\t["
 msgstr "Prethodni odeljak\t["
@@ -2508,9 +2764,6 @@ msgstr "Pređi u tekstualni režim"
 msgid "Sleep Timer (active)"
 msgstr "Tajmer pre spavanja (aktivan)"
 
-msgid "Settings"
-msgstr "Podešavanja"
-
 msgid "More options"
 msgstr "Još opcija"
 
@@ -2535,9 +2788,6 @@ msgstr "Naslov"
 
 msgid "Author"
 msgstr "Autor"
-
-msgid "File"
-msgstr "Datoteka"
 
 msgid "Words"
 msgstr "Reči"
@@ -2740,7 +2990,6 @@ msgstr "Kartice"
 msgid "Navigation unit"
 msgstr "Jedinica navigacije"
 
-#| msgid "previous"
 msgid "Previous {}"
 msgstr "Prethodni {}"
 
@@ -2762,7 +3011,6 @@ msgstr "Sledeće {}"
 msgid "Press play to start listening."
 msgstr "Pritisnite dugme za reprodukciju da biste započeli slušanje."
 
-#| msgid "&Locate…"
 msgid "Locate"
 msgstr "Pronađi"
 
@@ -2804,9 +3052,6 @@ msgstr "Termin za pretragu"
 
 msgid "Search History"
 msgstr "Istorija pretrage"
-
-msgid "Find Next"
-msgstr "Pronađi sledeće"
 
 msgid "Password:"
 msgstr "Lozinka:"
@@ -2887,9 +3132,6 @@ msgstr "Promeni na:"
 msgid "Custom time..."
 msgstr "Prilagođeno vreme..."
 
-msgid "Find Previous"
-msgstr "Pronađi prethodno"
-
 msgid "Close Search"
 msgstr "Zatvori pretragu"
 
@@ -2914,7 +3156,6 @@ msgstr "Nema dokumenata"
 msgid "Show All"
 msgstr "Prikaži sve"
 
-#| msgid "Sleep timer"
 msgid "Sleep timer: {}"
 msgstr "Tajmer pre spavanja: {}"
 
@@ -2947,9 +3188,6 @@ msgstr "Pauziraj čitanje na glas"
 
 msgid "Read Aloud"
 msgstr "Čitanje na glas"
-
-msgid "Help"
-msgstr "Pomoć"
 
 msgid "More Options"
 msgstr "Još opcija"
@@ -2984,7 +3222,6 @@ msgstr "Tajmer pre spavanja je pokrenut, preostalo {}"
 msgid "Custom"
 msgstr "Prilagođeno"
 
-#| msgid "Custom Timer"
 msgid "Custom: {} minutes"
 msgstr "Prilagođeno: {} minuta"
 
@@ -2996,6 +3233,18 @@ msgstr "Zaustavi tajmer"
 
 msgid "Start Timer"
 msgstr "Započni tajmer"
+
+msgid "Text Size"
+msgstr "Veličina teksta"
+
+msgid "Line Spacing"
+msgstr "Odvajanje redova"
+
+msgid "Paragraph Spacing"
+msgstr "ODvajanje pasusa"
+
+msgid "Alignment"
+msgstr "Poravnanje"
 
 #~ msgid ""
 #~ "Are you sure you want to remove this document from the list? This will "
@@ -3043,9 +3292,6 @@ msgstr "Započni tajmer"
 
 #~ msgid "Opening link in default browser."
 #~ msgstr "Otvaranje linka u podrazumevanom pretraživaču."
-
-#~ msgid "Failed to open link."
-#~ msgstr "Otvaranje linka nije uspelo."
 
 #~ msgid "Internal link target not found."
 #~ msgstr "Odredište unutrašnjeg linka nije pronađeno."
