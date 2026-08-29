@@ -43,10 +43,12 @@ impl TextWindow {
 		Self { start: 0, end: doc_len }
 	}
 
+	#[cfg(target_os = "windows")]
 	pub const fn start(&self) -> i64 {
 		self.start
 	}
 
+	#[cfg(target_os = "windows")]
 	pub const fn end(&self) -> i64 {
 		self.end
 	}
