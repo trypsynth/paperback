@@ -106,8 +106,9 @@ final class TtsManager: NSObject {
 
 	override init() {
 		super.init()
-		try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
-
+		// The audio session is deliberately left alone here. Configuring it at launch claims
+		// the route and stops whatever else the device is playing before the user has asked
+		// for any speech, so both the category and activation wait for playback.
 		let hwRate = AVAudioSession.sharedInstance().sampleRate
 		outputFormat = AVAudioFormat(
 			standardFormatWithSampleRate: hwRate > 0 ? hwRate : 44100,
@@ -243,7 +244,7 @@ final class TtsManager: NSObject {
 				wasInterruptedWhilePlaying = false
 				let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
 				let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
-				try? AVAudioSession.sharedInstance().setActive(true)
+				activateAudioSession()
 				if !engine.isRunning { try? engine.start() }
 				if options.contains(.shouldResume) {
 					player.play()
@@ -280,7 +281,7 @@ final class TtsManager: NSObject {
 			// Only reactivate if audio was actually playing/paused before the reset;
 			// unconditionally starting the engine keeps the app alive in the background.
 			if wasActive {
-				try? AVAudioSession.sharedInstance().setActive(true)
+				activateAudioSession()
 				try? engine.start()
 			}
 		}
@@ -431,6 +432,9 @@ final class TtsManager: NSObject {
 
 	func resume() {
 		guard isPaused else { return }
+		// pause() deactivated the session so other apps could take the route back; resuming has
+		// to claim it again, and no new buffer is scheduled here to do it for us.
+		activateAudioSession()
 		if !engine.isRunning { try? engine.start() }
 		player.play()
 		isSpeaking = true
@@ -543,9 +547,20 @@ final class TtsManager: NSObject {
 		schedule(pcm, gen: gen, suppress: suppress)
 	}
 
+	/// Configures and activates the session, immediately before audio is actually produced.
+	/// The category is set here rather than once at startup because `.playback` is not
+	/// mixable: applying it interrupts other apps' audio, which must not happen just because
+	/// Paperback was opened. Setting it again on every activation is cheap, and it is also
+	/// what restores the configuration after a media services reset wipes it.
+	private func activateAudioSession() {
+		let session = AVAudioSession.sharedInstance()
+		try? session.setCategory(.playback, mode: .spokenAudio)
+		try? session.setActive(true)
+	}
+
 	private func schedule(_ pcm: AVAudioPCMBuffer, gen: Int, suppress: Bool) {
 		lastScheduledGen = gen
-		try? AVAudioSession.sharedInstance().setActive(true)
+		activateAudioSession()
 		if !engine.isRunning { try? engine.start() }
 		player.scheduleBuffer(pcm) { [weak self] in
 			DispatchQueue.main.async { [weak self] in
