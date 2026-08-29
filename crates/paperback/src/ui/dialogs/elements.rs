@@ -4,9 +4,8 @@ use std::{collections::HashMap, ffi::c_void};
 
 use paperback_core::session::DocumentSession;
 use patois::t;
+use wx_utils::dpi;
 use wxdragon::prelude::*;
-
-use crate::ui::dpi;
 
 pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
 	#[cfg(not(target_os = "windows"))]
@@ -486,7 +485,7 @@ fn bind_elements_ok_action(
 
 fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 	// TRANSLATORS: Label for the confirmation button
-	super::build_ok_cancel_buttons(dialog, &t("OK"))
+	super::build_ok_cancel_buttons(&dialog, &t("OK"))
 }
 
 fn finalize_elements_layout(dialog: Dialog, content_sizer: BoxSizer, ok_button: Button, cancel_button: Button) {

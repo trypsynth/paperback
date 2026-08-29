@@ -3,9 +3,10 @@ use std::{cell::Cell, rc::Rc, sync::Mutex};
 use bitflags::bitflags;
 use paperback_core::{config::ConfigManager, reader_core, util::text::display_len};
 use patois::t;
+use wx_utils::dpi;
 use wxdragon::prelude::*;
 
-use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, dpi, navigation};
+use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigation};
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 

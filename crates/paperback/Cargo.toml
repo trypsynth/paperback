@@ -25,7 +25,7 @@ tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.2.0"
 toml = { workspace = true }
-wx-utils = "0.1.2"
+wx-utils = "0.2.0"
 wxdragon = { version = "0.9.20", features = ["webview", "media-ctrl"] }
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 

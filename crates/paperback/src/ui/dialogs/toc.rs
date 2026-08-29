@@ -9,7 +9,7 @@ use wxdragon::prelude::*;
 #[cfg(target_os = "windows")]
 const KEY_SPACE: i32 = 32;
 
-use crate::ui::dpi;
+use wx_utils::dpi;
 
 pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
 	#[cfg(not(target_os = "windows"))]
