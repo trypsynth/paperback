@@ -3131,3 +3131,15 @@ msgstr ""
 
 msgid "Start Timer"
 msgstr ""
+
+msgid "Text Size"
+msgstr ""
+
+msgid "Line Spacing"
+msgstr ""
+
+msgid "Paragraph Spacing"
+msgstr ""
+
+msgid "Alignment"
+msgstr ""
