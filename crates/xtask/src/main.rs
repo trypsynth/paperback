@@ -39,7 +39,7 @@ pub(crate) fn print_help() {
 	println!("	ios-release   Archive and export a release IPA for App Store Connect");
 	println!("	  --upload           Upload directly to App Store Connect via altool");
 	println!("	translate     Regenerate the pot, sync po/*.po via msgmerge, and fill blank/fuzzy");
-	println!("	              entries via the DeepL API (needs DEEPL_API_KEY)");
+	println!("	              entries via the Claude API (needs ANTHROPIC_API_KEY)");
 	println!("	  --dry-run          Report what would change; no API calls, no writes");
 }
 

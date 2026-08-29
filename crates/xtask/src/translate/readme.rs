@@ -1,28 +1,31 @@
 use std::{
-	collections::{HashSet, hash_map::DefaultHasher},
-	env,
+	collections::hash_map::DefaultHasher,
 	error::Error,
 	fs,
 	hash::{Hash, Hasher},
 	path::Path,
-	process::{self, Command},
 };
 
-use super::deepl::{DeepLClient, resolve_target_lang};
+use super::claude::{ClaudeClient, language_name};
 
 const MARKER_PREFIX: &str = "<!-- machine-translated from doc/readme.md (source-hash: ";
 const MARKER_SUFFIX: &str = "); please review and edit as needed -->";
 
 /// Machine-translates `doc/readme.md` into `doc/readme-<lang>.md` for every language in
-/// `langs` that `DeepL` supports. Every language goes through the same pipeline —
-/// including ones that already have a translated file, machine-generated or not, since
-/// there's no reliable way to tell how stale a hand-written one has become — gated only
-/// on whether the English source has changed since the last time that language's file
-/// was (re)written (see [`needs_translation`]).
+/// `langs`. Every language goes through the same pipeline, including ones that already have
+/// a translated file, machine-generated or not, since there's no reliable way to tell how
+/// stale a hand-written one has become. It is gated only on whether the English source has
+/// changed since the last time that language's file was (re)written (see
+/// [`needs_translation`]).
+///
+/// The gate is still all-or-nothing per language: one edited sentence re-translates the whole
+/// document. Hashing per section instead would cut what a typical edit costs by roughly an
+/// order of magnitude, and the chunking in [`ClaudeClient::translate_markdown`] is where that
+/// would hook in.
 pub fn sync_readmes(
 	root: &Path,
 	langs: &[String],
-	client_and_supported: Option<&(DeepLClient, HashSet<String>)>,
+	client: Option<&ClaudeClient>,
 	dry_run: bool,
 ) -> Result<(), Box<dyn Error>> {
 	let doc_dir = root.join("doc");
@@ -41,17 +44,13 @@ pub fn sync_readmes(
 			println!("readme-{lang}.md: would be translated");
 			continue;
 		}
-		let Some((client, supported)) = client_and_supported else {
-			unreachable!("client_and_supported is always Some outside --dry-run")
-		};
-		let Some(target_lang) = resolve_target_lang(lang, supported) else {
+		let Some(client) = client else { unreachable!("client is always Some outside --dry-run") };
+		let Some(language) = language_name(lang) else {
 			continue;
 		};
-		let html = md_to_html_fragment(&source_path)?;
-		let translated_html = client.translate_html(&html, &target_lang)?;
-		let translated_md = html_to_md(&translated_html)?;
+		let translated_md = client.translate_markdown(&source_md, language)?;
 		fs::write(&target_path, format!("{}\n\n{}\n", marker_line(&hash), translated_md.trim_end()))?;
-		println!("readme-{lang}.md ({target_lang}): translated");
+		println!("readme-{lang}.md ({language}): translated");
 	}
 	Ok(())
 }
@@ -76,58 +75,6 @@ fn marker_line(hash: &str) -> String {
 
 fn existing_marker_hash(content: &str) -> Option<&str> {
 	content.lines().next()?.trim().strip_prefix(MARKER_PREFIX)?.strip_suffix(MARKER_SUFFIX)
-}
-
-/// Converts `path` (Markdown) to an HTML fragment via `pandoc` (already a hard
-/// requirement of this toolchain — see `crates/paperback/build.rs`,
-/// `crates/xtask/src/{android,ios}.rs`), not a standalone document: no `<html>`/`<head>`
-/// wrapper, since this is headed straight into a `DeepL` request, not rendered directly.
-fn md_to_html_fragment(path: &Path) -> Result<String, Box<dyn Error>> {
-	let tmp_html = env::temp_dir().join(format!("paperback-readme-{}.html", process::id()));
-	let status = Command::new("pandoc")
-		.arg(path)
-		.arg("-f")
-		.arg("markdown")
-		.arg("-t")
-		.arg("html")
-		.arg("-o")
-		.arg(&tmp_html)
-		.status()?;
-	if !status.success() {
-		return Err("pandoc markdown->html conversion failed".into());
-	}
-	let html = fs::read_to_string(&tmp_html)?;
-	let _ = fs::remove_file(&tmp_html);
-	Ok(html)
-}
-
-/// Converts an HTML fragment back to Markdown via `pandoc`. The round trip isn't
-/// byte-for-byte cosmetically identical to hand-written Markdown (e.g. indented code
-/// blocks instead of fenced, `-` bullets instead of `*`) but is valid Markdown that
-/// renders the same, and it's still `pandoc` doing the final `readme.html` render either
-/// way, so that cosmetic difference never reaches an actual reader.
-fn html_to_md(html: &str) -> Result<String, Box<dyn Error>> {
-	let pid = process::id();
-	let tmp_html = env::temp_dir().join(format!("paperback-readme-in-{pid}.html"));
-	let tmp_md = env::temp_dir().join(format!("paperback-readme-out-{pid}.md"));
-	fs::write(&tmp_html, html)?;
-	let status = Command::new("pandoc")
-		.arg(&tmp_html)
-		.arg("-f")
-		.arg("html")
-		.arg("-t")
-		.arg("markdown")
-		.arg("-o")
-		.arg(&tmp_md)
-		.status();
-	let _ = fs::remove_file(&tmp_html);
-	if !status.is_ok_and(|s| s.success()) {
-		let _ = fs::remove_file(&tmp_md);
-		return Err("pandoc html->markdown conversion failed".into());
-	}
-	let md = fs::read_to_string(&tmp_md)?;
-	let _ = fs::remove_file(&tmp_md);
-	Ok(md)
 }
 
 #[cfg(test)]
