@@ -477,11 +477,7 @@ impl DocumentManager {
 	/// selected tab on its own (firing a whole-control event here would swallow that).
 	#[cfg(target_os = "windows")]
 	pub fn focus_target_handle(&self) -> Option<*mut std::ffi::c_void> {
-		if self.last_focus_in_text.get() {
-			self.active_tab().map(|tab| tab.text_ctrl.get_handle())
-		} else {
-			None
-		}
+		if self.last_focus_in_text.get() { self.active_tab().map(|tab| tab.text_ctrl.get_handle()) } else { None }
 	}
 
 	pub fn pop_recently_closed(&mut self) -> Option<PathBuf> {
