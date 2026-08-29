@@ -88,6 +88,7 @@ pub struct DocumentManager {
 	last_sound_position: Cell<Option<i64>>,
 	last_audio_seek_position: Cell<Option<i64>>,
 	preferred_column: Cell<Option<i64>>,
+	last_focus_in_text: Cell<bool>,
 	recently_closed: Vec<PathBuf>,
 }
 
@@ -108,6 +109,7 @@ impl DocumentManager {
 			last_sound_position: Cell::new(None),
 			last_audio_seek_position: Cell::new(None),
 			preferred_column: Cell::new(None),
+			last_focus_in_text: Cell::new(true),
 			recently_closed: Vec::new(),
 		}
 	}
@@ -443,12 +445,39 @@ impl DocumentManager {
 		self.tabs.iter().position(|tab| normalized_path_key(&tab.file_path) == target)
 	}
 
+	/// Restores focus to whichever control had it when the window was last active (the text
+	/// control or the notebook), falling back to the notebook when there's no active document.
 	pub fn restore_focus(&self) {
-		if let Some(tab) = self.active_tab() {
-			tab.text_ctrl.set_focus();
+		if self.last_focus_in_text.get() {
+			if let Some(tab) = self.active_tab() {
+				tab.text_ctrl.set_focus();
+			} else {
+				self.notebook.set_focus();
+			}
 		} else {
 			self.notebook.set_focus();
 		}
+	}
+
+	/// Records whether the text control or the notebook currently has focus, so focus can be
+	/// restored to the same place when the window is next activated. Only updates when one of
+	/// the two is confidently focused (a mid-focus-transition leaves the previous value).
+	pub fn record_focus_target(&self) {
+		if self.active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()) {
+			self.last_focus_in_text.set(true);
+		} else if self.notebook.has_focus() {
+			self.last_focus_in_text.set(false);
+		}
+	}
+
+	/// Returns the native handle to fire an accessibility focus event on after `restore_focus`,
+	/// or `None` when the control emits its own focus event and no manual event is needed. On
+	/// Windows the read-only Richedit does not emit its own focus event on re-activation, so the
+	/// text control needs the explicit event; the notebook's native tab control announces its
+	/// selected tab on its own (firing a whole-control event here would swallow that).
+	#[cfg(target_os = "windows")]
+	pub fn focus_target_handle(&self) -> Option<*mut std::ffi::c_void> {
+		if self.last_focus_in_text.get() { self.active_tab().map(|tab| tab.text_ctrl.get_handle()) } else { None }
 	}
 
 	pub fn pop_recently_closed(&mut self) -> Option<PathBuf> {
