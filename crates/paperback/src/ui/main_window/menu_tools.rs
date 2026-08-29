@@ -79,6 +79,24 @@ pub(super) fn handle_table_of_contents(
 	}
 }
 
+pub(super) fn handle_batch_ocr(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+	let max_page = {
+		let dm_ref = dm.lock().unwrap();
+		let Some(tab) = dm_ref.active_tab() else {
+			// TRANSLATORS: Announced when Batch OCR is chosen with no document open
+			live_region::announce(live_region_label, &t("No document open."));
+			return;
+		};
+		let max_page = i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX);
+		drop(dm_ref);
+		max_page
+	};
+	if let Some((start, end)) = dialogs::show_batch_ocr_dialog(frame, max_page) {
+		let mut dm_ref = dm.lock().unwrap();
+		dm_ref.start_batch_ocr(start, end);
+	}
+}
+
 pub(super) fn handle_elements_list(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 	let mut dm_guard = dm.lock().unwrap();
 	if let Some(tab) = dm_guard.active_tab_mut() {

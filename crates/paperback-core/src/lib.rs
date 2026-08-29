@@ -3,6 +3,7 @@ pub mod config;
 pub mod document;
 pub mod export;
 pub mod ffi_config;
+pub mod ocr;
 pub mod parser;
 pub mod reader_core;
 pub mod session;

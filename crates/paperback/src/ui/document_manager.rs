@@ -6,15 +6,17 @@ use std::{
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{Mutex, atomic::Ordering},
+	thread,
 	time::{Instant, SystemTime},
 };
 
 use paperback_core::{
 	config::{ActionId, ConfigManager, ReadabilityFont},
+	ocr::{IMAGE_ONLY_PLACEHOLDER, render_pdf_page},
 	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
 	session::{DocumentSession, WindowSlice},
 };
-use patois::t;
+use patois::{nt, t};
 use wxdragon::{
 	color::Colour,
 	event::{EventType, WindowEventData},
@@ -47,6 +49,9 @@ pub struct DocumentTab {
 	/// `ui::text_window` - for most documents this covers the whole thing, same as before
 	/// windowing existed; only huge documents actually get a partial window.
 	pub window: TextWindow,
+	/// Set while a background OCR job for this tab is in flight, so Enter can't start a second
+	/// one. Written and read only on the UI thread.
+	ocr_in_progress: bool,
 }
 
 /// Change-detection stamp for an open document's file, compared on every frame activation and
@@ -77,6 +82,9 @@ pub fn display_title(tab: &DocumentTab) -> String {
 }
 
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
+
+/// How many pages between spoken progress announcements during a batch OCR job.
+const BATCH_OCR_PROGRESS_EVERY: i32 = 20;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -276,6 +284,7 @@ impl DocumentManager {
 			audio_player,
 			disk_fingerprint: read_fingerprint(path),
 			window,
+			ocr_in_progress: false,
 		});
 		if !password.is_empty() {
 			config.set_document_password(&path_str, password);
@@ -528,6 +537,306 @@ impl DocumentManager {
 			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 			tab.session.get_table_at_position(pos)
 		})
+	}
+
+	/// Whether the caret is on an image-only PDF page's OCR placeholder line.
+	pub fn is_on_image_only_placeholder(&self) -> bool {
+		self.active_tab().is_some_and(|tab| {
+			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+			tab.session.line_text_at(pos).trim() == t(IMAGE_ONLY_PLACEHOLDER)
+		})
+	}
+
+	/// Starts OCR for the image-only page the caret is on. Renders the page to RGBA on the UI
+	/// thread (pdfium is process-global and only used on this thread), then hands the pixels to a
+	/// worker thread that runs the Windows OCR engine. The recognized text comes back via
+	/// `wxdragon::call_after` and is applied by [`Self::apply_ocr_result`].
+	pub fn start_ocr_for_current_page(&mut self) {
+		let label = self.live_region_label;
+		let (line_start, line_end, page_index) = {
+			let Some(tab) = self.active_tab() else {
+				return;
+			};
+			if tab.ocr_in_progress {
+				// TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while an OCR job is already running
+				live_region::announce(label, &t("OCR in progress."));
+				return;
+			}
+			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+			let Some((line_start, line_end)) = tab.session.line_bounds_at(pos) else {
+				return;
+			};
+			if tab.session.line_text_at(pos).trim() != t(IMAGE_ONLY_PLACEHOLDER) {
+				return;
+			}
+			let Some(page_index) = tab.session.handle().page_index(usize::try_from(line_start).unwrap_or(0)) else {
+				return;
+			};
+			(line_start, line_end, page_index)
+		};
+		#[cfg(target_os = "windows")]
+		{
+			let path_str =
+				self.active_tab().map_or_else(String::new, |tab| tab.file_path.to_string_lossy().to_string());
+			if path_str.is_empty() {
+				return;
+			}
+			let password = self.config.lock().unwrap().get_document_password(&path_str);
+			let password = (!password.is_empty()).then_some(password.as_str());
+			let rendered = match render_pdf_page(&path_str, password, page_index) {
+				Ok(page) => page,
+				Err(err) => {
+					tracing::warn!(error = %err, "failed to render pdf page for ocr");
+					live_region::announce(label, &t("OCR failed."));
+					return;
+				}
+			};
+			if let Some(tab) = self.active_tab_mut() {
+				tab.ocr_in_progress = true;
+			}
+			let file_path = PathBuf::from(&path_str);
+			let worker = thread::Builder::new().name("paperback-ocr".into()).spawn(move || {
+				let result = super::ocr::recognize_rgba(&rendered.rgba, rendered.width, rendered.height)
+					.map_err(|err| err.to_string());
+				wxdragon::call_after(Box::new(move || {
+					if let Some(window) = crate::ui::app::main_window_from_ptr() {
+						let mut dm = window.document_manager().lock().unwrap();
+						dm.apply_ocr_result(&file_path, line_start, line_end, result);
+					}
+				}));
+				wxdragon::wake_up_idle();
+			});
+			if let Err(err) = worker {
+				if let Some(tab) = self.active_tab_mut() {
+					tab.ocr_in_progress = false;
+				}
+				tracing::warn!(error = %err, "failed to spawn ocr worker thread");
+				live_region::announce(label, &t("OCR failed."));
+			}
+		}
+		#[cfg(not(target_os = "windows"))]
+		{
+			let _ = (line_start, line_end, page_index);
+			// TRANSLATORS: Announced when Enter is pressed on an OCR placeholder on a platform without Windows OCR support
+			live_region::announce(label, &t("OCR is only available on Windows."));
+		}
+	}
+
+	/// Applies a finished OCR job on the UI thread: replaces the placeholder span with the
+	/// recognized text and refreshes the sliding window when the span is visible.
+	pub fn apply_ocr_result(
+		&mut self,
+		file_path: &Path,
+		line_start: i64,
+		line_end: i64,
+		result: Result<String, String>,
+	) {
+		let label = self.live_region_label;
+		let Some(tab_index) = self.tabs.iter().position(|tab| tab.file_path.as_path() == file_path) else {
+			return;
+		};
+		let is_active = self.active_tab_index() == Some(tab_index);
+		let tab = &mut self.tabs[tab_index];
+		tab.ocr_in_progress = false;
+		let text = match result {
+			Ok(text) => text,
+			Err(err) => {
+				tracing::warn!(error = %err, "ocr failed");
+				// TRANSLATORS: Announced when the Windows OCR engine fails on a page
+				live_region::announce(label, &t("OCR failed."));
+				return;
+			}
+		};
+		if text.trim().is_empty() {
+			// TRANSLATORS: Announced when OCR runs on a page but finds no recognizable text
+			live_region::announce(label, &t("No text found."));
+			return;
+		}
+		// Guard against the document having been reparsed while OCR ran.
+		if tab.session.line_text_at(line_start).trim() != t(IMAGE_ONLY_PLACEHOLDER) {
+			return;
+		}
+		let delta = tab.session.replace_range(line_start, line_end, &text);
+		let window = tab.window;
+		if line_start >= window.start() && line_start < window.end() {
+			// The replaced span is on screen: reload the window so the OCR text appears.
+			reload_window_around(tab, line_start);
+			if is_active {
+				let local = tab.window.to_local(line_start);
+				tab.text_ctrl.set_focus();
+				tab.text_ctrl.set_insertion_point(local);
+				tab.text_ctrl.show_position(local);
+			}
+		} else if line_end <= window.start() {
+			// Replaced entirely before the current window: shift the window so absolute<->local
+			// mapping stays consistent until the next reload.
+			tab.window = TextWindow::new(window.start() + delta, window.end() + delta);
+		}
+		// TRANSLATORS: Announced after OCR successfully replaces an image-only placeholder with text
+		live_region::announce(label, &t("OCR complete."));
+	}
+
+	/// Batch-OCRs every image-only page in `start..=end` (1-based page numbers, clamped to the
+	/// document). Placeholder pages are resolved on the UI thread, then OCR runs on a background
+	/// worker; progress is announced through the live region every [`BATCH_OCR_PROGRESS_EVERY`]
+	/// pages and the results are applied by [`Self::apply_batch_ocr_results`].
+	pub fn start_batch_ocr(&mut self, start: i32, end: i32) {
+		let label = self.live_region_label;
+		#[cfg(not(target_os = "windows"))]
+		{
+			let _ = (start, end);
+			// TRANSLATORS: Announced when batch OCR is requested on a platform without Windows OCR support
+			live_region::announce(label, &t("OCR is only available on Windows."));
+			return;
+		}
+		#[cfg(target_os = "windows")]
+		{
+			let Some(tab) = self.active_tab() else {
+				// TRANSLATORS: Announced when batch OCR is triggered with no document open
+				live_region::announce(label, &t("No document open."));
+				return;
+			};
+			if tab.ocr_in_progress {
+				// TRANSLATORS: Announced when batch OCR is started while another OCR job is running
+				live_region::announce(label, &t("OCR already in progress."));
+				return;
+			}
+			if !tab.file_path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("pdf")) {
+				// TRANSLATORS: Announced when batch OCR is used on a document that isn't a PDF
+				live_region::announce(label, &t("Batch OCR is only available for PDF documents."));
+				return;
+			}
+			let page_count = tab.session.page_count();
+			if page_count == 0 {
+				// TRANSLATORS: Announced when batch OCR is used on a document with no pages
+				live_region::announce(label, &t("No pages."));
+				return;
+			}
+			let max_page = i32::try_from(page_count).unwrap_or(i32::MAX);
+			let (start, end) = (start.clamp(1, max_page), end.clamp(1, max_page));
+			let (start, end) = if start <= end { (start, end) } else { (end, start) };
+			// Only pages that still show the image-only placeholder need OCR; resolve them here
+			// (UI thread) before handing the list to the worker.
+			let pages: Vec<i32> = (start..=end)
+				.filter(|page| {
+					let offset = tab.session.page_offset(*page);
+					offset >= 0 && tab.session.line_text_at(offset).trim() == t(IMAGE_ONLY_PLACEHOLDER)
+				})
+				.collect();
+			if pages.is_empty() {
+				// TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
+				live_region::announce(label, &t("No image-only pages in the given range."));
+				return;
+			}
+			let path_str = tab.file_path.to_string_lossy().to_string();
+			let password = self.config.lock().unwrap().get_document_password(&path_str);
+			let password = (!password.is_empty()).then_some(password);
+			let file_path = PathBuf::from(&path_str);
+			if let Some(tab) = self.active_tab_mut() {
+				tab.ocr_in_progress = true;
+			}
+			let total = pages.len();
+			let worker = thread::Builder::new().name("paperback-ocr-batch".into()).spawn(move || {
+				let mut results = Vec::with_capacity(total);
+				for (done, page) in pages.into_iter().enumerate() {
+					// `render_pdf_page` takes a 0-based page index; the batch list is 1-based.
+					let result = render_pdf_page(&path_str, password.as_deref(), page - 1)
+						.and_then(|rendered| {
+							super::ocr::recognize_rgba(&rendered.rgba, rendered.width, rendered.height)
+						})
+						.map_err(|err| err.to_string());
+					results.push((page, result));
+					let done = i32::try_from(done + 1).unwrap_or(i32::MAX);
+					// Skip the last page: the completion message is announced right after, and two
+					// live-region changes back-to-back make screen readers repeat the tail.
+					let total = i32::try_from(total).unwrap_or(i32::MAX);
+					if done % BATCH_OCR_PROGRESS_EVERY == 0 && done != total {
+						wxdragon::call_after(Box::new(move || {
+							if let Some(window) = crate::ui::app::main_window_from_ptr() {
+								let dm = window.document_manager().lock().unwrap();
+								dm.announce_ocr_progress(done, total);
+							}
+						}));
+						wxdragon::wake_up_idle();
+					}
+				}
+				wxdragon::call_after(Box::new(move || {
+					if let Some(window) = crate::ui::app::main_window_from_ptr() {
+						let mut dm = window.document_manager().lock().unwrap();
+						dm.apply_batch_ocr_results(&file_path, results);
+					}
+				}));
+				wxdragon::wake_up_idle();
+			});
+			if let Err(err) = worker {
+				if let Some(tab) = self.active_tab_mut() {
+					tab.ocr_in_progress = false;
+				}
+				tracing::warn!(error = %err, "failed to spawn batch ocr worker thread");
+				live_region::announce(label, &t("OCR failed."));
+			}
+		}
+	}
+
+	/// Announces batch OCR progress through the live region. Runs on the UI thread.
+	pub fn announce_ocr_progress(&self, done: i32, total: i32) {
+		// TRANSLATORS: Batch OCR progress announcement; the two %d placeholders are the pages done and the total pages
+		let msg = t("OCR %d of %d.").replacen("%d", &done.to_string(), 1).replacen("%d", &total.to_string(), 1);
+		live_region::announce(self.live_region_label, &msg);
+	}
+
+	/// Applies the results of a finished batch OCR job: replaces each recognized placeholder and
+	/// refreshes the loaded window once. `results` pairs 1-based page numbers with their OCR
+	/// outcome. Runs on the UI thread.
+	pub fn apply_batch_ocr_results(&mut self, file_path: &Path, results: Vec<(i32, Result<String, String>)>) {
+		let label = self.live_region_label;
+		let Some(tab_index) = self.tabs.iter().position(|tab| tab.file_path.as_path() == file_path) else {
+			return;
+		};
+		let is_active = self.active_tab_index() == Some(tab_index);
+		let tab = &mut self.tabs[tab_index];
+		tab.ocr_in_progress = false;
+		let mut caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let mut recognized = 0usize;
+		for (page, result) in results {
+			let Ok(text) = result else {
+				tracing::warn!(page, "batch ocr failed on page");
+				continue;
+			};
+			if text.trim().is_empty() {
+				continue;
+			}
+			// Re-resolve the page offset fresh: earlier replacements in this batch shift the
+			// marker positions of later pages.
+			let offset = tab.session.page_offset(page);
+			if offset < 0 || tab.session.line_text_at(offset).trim() != t(IMAGE_ONLY_PLACEHOLDER) {
+				continue;
+			}
+			let Some((start, end)) = tab.session.line_bounds_at(offset) else {
+				continue;
+			};
+			let delta = tab.session.replace_range(start, end, &text);
+			recognized += 1;
+			if start < caret {
+				caret = (caret + delta).clamp(start, tab.session.document_len());
+			}
+		}
+		caret = caret.clamp(0, tab.session.document_len());
+		reload_window_around(tab, caret);
+		if is_active {
+			let local = tab.window.to_local(caret);
+			tab.text_ctrl.set_focus();
+			tab.text_ctrl.set_insertion_point(local);
+			tab.text_ctrl.show_position(local);
+		}
+		// TRANSLATORS: Announcement after batch OCR finishes; %d is the number of pages recognized
+		let msg = nt(
+			"Batch OCR complete. %d page recognized.",
+			"Batch OCR complete. %d pages recognized.",
+			u64::try_from(recognized).unwrap_or(0),
+		)
+		.replacen("%d", &recognized.to_string(), 1);
+		live_region::announce(label, &msg);
 	}
 
 	pub fn update_status_bar(&self) {
@@ -1005,6 +1314,19 @@ impl DocumentManager {
 		text_ctrl.on_char(move |event| {
 			if let WindowEventData::Keyboard(kbd) = event {
 				if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
+					// Enter on an image-only placeholder runs OCR instead of the table/link
+					// fallback below. Enter only — Space keeps the old behavior.
+					if kbd.get_key_code() == Some(13) {
+						let is_placeholder = {
+							let dm = dm_for_enter.lock().unwrap();
+							dm.is_on_image_only_placeholder()
+						};
+						if is_placeholder {
+							let mut dm = dm_for_enter.lock().unwrap();
+							dm.start_ocr_for_current_page();
+							return;
+						}
+					}
 					let table_html = {
 						let dm = dm_for_enter.lock().unwrap();
 						dm.activate_current_table()

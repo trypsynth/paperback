@@ -355,6 +355,44 @@ impl DocumentSession {
 		buf.content[start_byte..line_end_byte].to_string()
 	}
 
+	/// The display-unit `[start, end)` span of the line containing `position` (display units),
+	/// where `end` is the index of the line's terminating `\n` (exclusive of it). Unlike
+	/// [`Self::get_line_text`], which treats its argument as a *char* index, this converts via
+	/// [`DocumentBuffer::char_index_for_display`]/[`display_index_for_char`], so astral
+	/// characters before the caret (which occupy two display units) can't misalign the result.
+	/// Returns `None` for an empty document.
+	#[must_use]
+	pub fn line_bounds_at(&self, position: i64) -> Option<(i64, i64)> {
+		let buf = &self.handle.document().buffer;
+		let total_chars = buf.char_count();
+		if total_chars == 0 {
+			return None;
+		}
+		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(buf.total_display_len());
+		let char_pos = buf.char_index_for_display(pos);
+		let newlines = buf.newline_positions();
+		let idx = newlines.partition_point(|&p| p < char_pos);
+		let line_start_char = if idx == 0 { 0 } else { newlines[idx - 1] + 1 };
+		let line_end_char = newlines.get(idx).copied().unwrap_or(total_chars);
+		Some((
+			i64::try_from(buf.display_index_for_char(line_start_char)).unwrap_or(0),
+			i64::try_from(buf.display_index_for_char(line_end_char)).unwrap_or(0),
+		))
+	}
+
+	/// The text of the line containing `position` (display units), using display-unit-correct
+	/// bounds (see [`Self::line_bounds_at`]); an empty string at the end of the document.
+	#[must_use]
+	pub fn line_text_at(&self, position: i64) -> String {
+		let Some((start, end)) = self.line_bounds_at(position) else {
+			return String::new();
+		};
+		let buf = &self.handle.document().buffer;
+		let start_char = buf.char_index_for_display(usize::try_from(start.max(0)).unwrap_or(0));
+		let end_char = buf.char_index_for_display(usize::try_from(end.max(0)).unwrap_or(0));
+		self.get_text_range(i64::try_from(start_char).unwrap_or(0), i64::try_from(end_char).unwrap_or(0))
+	}
+
 	/// Returns the first non-blank line of real content at or after `position`, skipping blank
 	/// lines and bare page-number headers (e.g. "27" or "Page 27"). Returns an empty string if
 	/// no such line exists. Used for page-navigation announcements so the page number isn't

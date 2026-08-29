@@ -81,6 +81,29 @@ fn first_content_line_after_returns_empty_without_content() {
 }
 
 #[test]
+fn line_bounds_at_and_line_text_at_return_the_containing_line() {
+	let session = session_with_content("aaa\nbbb\nccc");
+	// (start, end) are display units; end excludes the line's trailing newline.
+	assert_eq!(session.line_bounds_at(0), Some((0, 3)));
+	assert_eq!(session.line_text_at(0), "aaa");
+	assert_eq!(session.line_bounds_at(5), Some((4, 7)));
+	assert_eq!(session.line_text_at(5), "bbb");
+	assert_eq!(session.line_bounds_at(11), Some((8, 11)));
+	assert_eq!(session.line_text_at(11), "ccc");
+}
+
+#[test]
+fn replace_range_swaps_a_line_and_updates_subsequent_lookups() {
+	let mut session = session_with_content("line one\n[Image only. Press enter to OCR.]\nline three");
+	let (start, end) = session.line_bounds_at(11).unwrap();
+	assert_eq!(session.line_text_at(11), "[Image only. Press enter to OCR.]");
+	session.replace_range(start, end, "recognized text here");
+	assert_eq!(session.line_text_at(start), "recognized text here");
+	// The line after the replacement is still reachable at the document's end.
+	assert_eq!(session.line_text_at(session.document_len()), "line three");
+}
+
+#[test]
 fn navigation_result_constructors_have_expected_flags() {
 	let not_found = NavigationResult::not_found();
 	assert!(!not_found.found);

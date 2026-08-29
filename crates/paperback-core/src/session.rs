@@ -304,6 +304,16 @@ impl DocumentSession {
 		&self.handle
 	}
 
+	/// Replaces the text spanning `start..end` (display units) with `text`, keeping the buffer
+	/// indexes, markers, and `id_positions` in sync. Returns the display-unit length delta so the
+	/// caller can adjust its sliding window. Used by the OCR flow to swap an image-only
+	/// placeholder line for recognized text.
+	pub fn replace_range(&mut self, start: i64, end: i64, text: &str) -> i64 {
+		let start = usize::try_from(start.max(0)).unwrap_or(0);
+		let end = usize::try_from(end.max(0)).unwrap_or(0);
+		self.handle.replace_range(start, end, text)
+	}
+
 	/// This document's recorded audio, when it has any (DAISY audiobooks; text-only
 	/// documents have none).
 	#[must_use]

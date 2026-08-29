@@ -103,5 +103,9 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	menu.append(options_id, &options_label, "", ItemKind::Normal);
 	menu.append(menu_ids::CUSTOMIZE_SHORTCUTS, &shortcuts_label, "", ItemKind::Normal);
 	menu.append(menu_ids::SLEEP_TIMER, &sleep_label, "", ItemKind::Normal);
+	menu.append_separator();
+	// TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
+	let batch_ocr_label = format_menu_label(&t("&Batch OCR..."), ActionId::BatchOcr, config);
+	menu.append(menu_ids::BATCH_OCR, &batch_ocr_label, "", ItemKind::Normal);
 	menu
 }
