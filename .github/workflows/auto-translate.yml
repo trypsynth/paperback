@@ -39,7 +39,11 @@ jobs:
         continue-on-error: true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: cargo run -p xtask --release -- translate
+        # --repair also re-translates entries whose existing translation provably dropped a
+        # placeholder, an accelerator or a shortcut suffix. Self-limiting: once an entry passes
+        # the checks it stops being flagged, so this only ever costs anything while there is
+        # real damage to undo.
+        run: cargo run -p xtask --release -- translate --repair
       - name: Open or update translation PR
         uses: peter-evans/create-pull-request@v8
         with:

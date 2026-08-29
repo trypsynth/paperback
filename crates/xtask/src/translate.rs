@@ -30,12 +30,15 @@ use crate::project_root;
 /// <https://github.com/trypsynth/paperback/issues/638>.
 pub fn translate() -> Result<(), Box<dyn Error>> {
 	let mut dry_run = false;
+	let mut repair = false;
 	for arg in env::args().skip(2) {
-		if arg == "--dry-run" {
-			dry_run = true;
-		} else {
-			crate::print_help();
-			return Err(format!("Unknown argument for translate: {arg}").into());
+		match arg.as_str() {
+			"--dry-run" => dry_run = true,
+			"--repair" => repair = true,
+			_ => {
+				crate::print_help();
+				return Err(format!("Unknown argument for translate: {arg}").into());
+			}
 		}
 	}
 	let root = project_root();
@@ -87,7 +90,7 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 			println!("{lang}: human-maintained, skipping");
 			continue;
 		}
-		translate_one(po_path, &pot_path, dry_run, client.as_ref(), &context)?;
+		translate_one(po_path, &pot_path, dry_run, repair, client.as_ref(), &context)?;
 	}
 	let auto_langs: Vec<String> = langs.into_iter().filter(|l| !human_maintained.contains(l.as_str())).collect();
 	readme::sync_readmes(&root, &auto_langs, client.as_ref(), dry_run)?;
@@ -189,10 +192,38 @@ fn parse_human_maintained_locales(content: &str) -> HashSet<String> {
 		.collect()
 }
 
+/// Adds entries whose existing translation is provably damaged to `candidates`, returning how
+/// many were added.
+///
+/// Needed because `--previous` only helps from here on. `msgmerge` writes the `#| msgid` line
+/// that marks an entry for re-translation at the moment it fuzzy-matches, so entries stranded
+/// before the flag was added are already `#, fuzzy` with no `#|`, their msgids still match the
+/// pot exactly, and no future merge will ever touch them again. Nothing in the normal flow can
+/// reach them; this is what does.
+///
+/// Only entries that fail a mechanical check are added - a dropped placeholder, accelerator or
+/// shortcut suffix. A translation that merely looks doubtful is left alone: re-translating on
+/// suspicion would churn thousands of entries that are perfectly fine, and the checks are the
+/// only part of this that can be right or wrong on its own.
+fn add_damaged_entries(doc: &PoDocument, candidates: &mut Vec<(usize, String)>) -> usize {
+	let already: HashSet<usize> = candidates.iter().map(|(i, _)| *i).collect();
+	let damaged: Vec<(usize, String)> = doc
+		.entries
+		.iter()
+		.enumerate()
+		.filter(|(i, e)| !already.contains(i) && claude::is_damaged(&e.msgid, &e.msgstr))
+		.map(|(i, e)| (i, e.msgid.clone()))
+		.collect();
+	let count = damaged.len();
+	candidates.extend(damaged);
+	count
+}
+
 fn translate_one(
 	po_path: &Path,
 	pot_path: &Path,
 	dry_run: bool,
+	repair: bool,
 	client: Option<&claude::ClaudeClient>,
 	context: &HashMap<String, String>,
 ) -> Result<(), Box<dyn Error>> {
@@ -229,10 +260,13 @@ fn translate_one(
 	let merged = fs::read_to_string(&tmp)?;
 	let _ = fs::remove_file(&tmp);
 	let mut doc = PoDocument::parse(&merged);
-	let candidates: Vec<(usize, String)> = doc.needs_translation().map(|(i, m)| (i, m.to_string())).collect();
+	let mut candidates: Vec<(usize, String)> = doc.needs_translation().map(|(i, m)| (i, m.to_string())).collect();
+	let repaired = if repair { add_damaged_entries(&doc, &mut candidates) } else { 0 };
 	if dry_run {
 		if candidates.is_empty() {
 			println!("{lang}: fully translated, nothing to do");
+		} else if repaired > 0 {
+			println!("{lang}: {} entries would be translated ({repaired} of them damaged)", candidates.len());
 		} else {
 			println!("{lang}: {} entries would be translated", candidates.len());
 		}
@@ -264,6 +298,9 @@ fn translate_one(
 				let skipped = candidates.len() - count;
 				doc.apply_all(&translations);
 				print!("{lang} ({language}): translated {count} entries");
+				if repaired > 0 {
+					print!(", {repaired} of them repaired");
+				}
 				if annotated > 0 {
 					print!(", {annotated} with translator notes");
 				}

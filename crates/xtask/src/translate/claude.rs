@@ -444,6 +444,18 @@ fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
 	chunks
 }
 
+/// Whether an existing translation is provably damaged: it dropped a placeholder, an
+/// accelerator, or a shortcut suffix that the English has.
+///
+/// The same rules [`check`] applies to fresh output, pointed at what is already in the catalog.
+/// Entries that fail this were never translated as such - they are what `msgmerge` copied in
+/// from a similar string before anything checked - and since nothing in the normal flow will
+/// ever revisit them, this is what marks them for re-translation.
+#[must_use]
+pub fn is_damaged(source: &str, translated: &str) -> bool {
+	!translated.is_empty() && check(source, translated).is_none()
+}
+
 /// Accepts a translation only if it kept the parts that aren't prose, returning `None` when it
 /// didn't so the caller leaves the entry for the next run instead of writing damage into the
 /// catalog.
@@ -696,6 +708,28 @@ mod tests {
 		assert!(content.contains("&Settings"), "the source string must reach the request");
 		assert!(content.contains("Menu item"), "the translator note must reach the request");
 		assert!(content.contains("\"id\": 0") && content.contains("\"id\": 1"), "every entry needs its id");
+	}
+
+	// Real entries from the catalog, each one something msgmerge copied in from a similar
+	// string before anything checked.
+	#[test]
+	fn damage_already_in_the_catalog_is_recognised() {
+		assert!(is_damaged("&Status:", "Estado"), "dropped accelerator");
+		assert!(is_damaged("Choose &Background Color...", "Seleccionar color de fondo..."), "dropped accelerator");
+		assert!(is_damaged("{} minutes", "minutos"), "dropped placeholder");
+		// An *extra* placeholder is the dangerous direction: nothing fills it.
+		assert!(is_damaged("Page %d", "Página %d: %s"), "invented placeholder");
+		assert!(is_damaged("&Copy\tCtrl+C", "&Copiar\tCtrl+D"), "rewritten shortcut");
+	}
+
+	#[test]
+	fn a_sound_translation_is_not_flagged_as_damaged() {
+		assert!(!is_damaged("E&xit", "В&ыход"));
+		assert!(!is_damaged("Ready", "Listo"));
+		assert!(!is_damaged("Page %d", "Página %d"));
+		assert!(!is_damaged("&Copy\tCtrl+C", "&Copiar\tCtrl+C"));
+		// An untranslated entry is the normal flow's job, not the repair pass's.
+		assert!(!is_damaged("Ready", ""));
 	}
 
 	// A typo here is a 404 on every request, and only at runtime.

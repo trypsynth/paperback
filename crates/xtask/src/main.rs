@@ -41,6 +41,8 @@ pub(crate) fn print_help() {
 	println!("	translate     Regenerate the pot, sync po/*.po via msgmerge, and fill blank/fuzzy");
 	println!("	              entries via the Claude API (needs ANTHROPIC_API_KEY)");
 	println!("	  --dry-run          Report what would change; no API calls, no writes");
+	println!("	  --repair           Also re-translate entries whose existing translation dropped");
+	println!("	                     a placeholder, an accelerator or a shortcut suffix");
 }
 
 pub(crate) fn project_root() -> PathBuf {
