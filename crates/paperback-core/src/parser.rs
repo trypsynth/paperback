@@ -606,13 +606,15 @@ mod tests {
 
 	#[test]
 	fn resolve_extension_routes_loose_ncc_html_to_opf() {
-		assert_eq!(resolve_extension(Path::new(r"C:\books\daisy2\ncc.html")), Some("opf"));
-		assert_eq!(resolve_extension(Path::new(r"C:\books\daisy2\NCC.HTML")), Some("opf"));
+		let book_directory = Path::new("books").join("daisy2");
+		assert_eq!(resolve_extension(&book_directory.join("ncc.html")), Some("opf"));
+		assert_eq!(resolve_extension(&book_directory.join("NCC.HTML")), Some("opf"));
 	}
 
 	#[test]
 	fn resolve_extension_leaves_other_html_files_alone() {
-		assert_eq!(resolve_extension(Path::new(r"C:\books\chapter1.html")), Some("html"));
+		let chapter = Path::new("books").join("chapter1.html");
+		assert_eq!(resolve_extension(&chapter), Some("html"));
 	}
 
 	#[test]
