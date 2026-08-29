@@ -15,6 +15,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.9\n"
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
@@ -731,22 +732,22 @@ msgstr "Notitie bekijken"
 #, fuzzy
 msgid "%d hour"
 msgid_plural "%d hours"
-msgstr[0] "1 uur"
-msgstr[1] "1 uur"
+msgstr[0] "%d hour"
+msgstr[1] "%d hours"
 
 #. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d minute"
 msgid_plural "%d minutes"
-msgstr[0] "1 minuut"
-msgstr[1] "1 minuut"
+msgstr[0] "%d minute"
+msgstr[1] "%d minutes"
 
 #. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d second"
 msgid_plural "%d seconds"
-msgstr[0] "1 seconde"
-msgstr[1] "1 seconde"
+msgstr[0] "%d second"
+msgstr[1] "%d seconds"
 
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
@@ -756,15 +757,15 @@ msgstr "Geschatte leestijd: {}"
 #, fuzzy
 msgid "The selection contains %d word."
 msgid_plural "The selection contains %d words."
-msgstr[0] "De selectie bevat {} woorden."
-msgstr[1] "De selectie bevat {} woorden."
+msgstr[0] "The selection contains %d word."
+msgstr[1] "The selection contains %d words."
 
 #. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
 #, fuzzy
 msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
-msgstr[0] "Dit document bevat {} woorden."
-msgstr[1] "Dit document bevat {} woorden."
+msgstr[0] "This document contains %d word."
+msgstr[1] "This document contains %d words."
 
 #. TRANSLATORS: Title of the Word Count dialog
 msgid "Word Count"
@@ -1064,8 +1065,8 @@ msgstr "{} - Paperback"
 #, fuzzy
 msgid "%d char"
 msgid_plural "%d chars"
-msgstr[0] "{} tekens"
-msgstr[1] "{} tekens"
+msgstr[0] "%d char"
+msgstr[1] "%d chars"
 
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."

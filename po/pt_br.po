@@ -16,6 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.9\n"
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
@@ -118,8 +119,8 @@ msgstr "Sem documentos"
 #, fuzzy
 msgid "%d document."
 msgid_plural "%d documents."
-msgstr[0] "documento"
-msgstr[1] "documento"
+msgstr[0] "%d documento."
+msgstr[1] "%d documentos."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
 #, fuzzy
@@ -130,15 +131,15 @@ msgstr "Documento recarregado."
 #, fuzzy
 msgid "All %d document selected."
 msgid_plural "All %d documents selected."
-msgstr[0] "Todos os documentos"
-msgstr[1] "Todos os documentos"
+msgstr[0] "Todos os %d documentos selecionados."
+msgstr[1] "Todos os %d documentos selecionados."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
 #, fuzzy
 msgid "%d of %d document selected."
 msgid_plural "%d of %d documents selected."
-msgstr[0] "Fim do documento"
-msgstr[1] "Fim do documento"
+msgstr[0] "%d de %d documentos selecionados."
+msgstr[1] "%d de %d documentos selecionados."
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 #, fuzzy
@@ -775,22 +776,22 @@ msgstr "Visualizar Nota"
 #, fuzzy
 msgid "%d hour"
 msgid_plural "%d hours"
-msgstr[0] "1 hora"
-msgstr[1] "1 hora"
+msgstr[0] "%d hora"
+msgstr[1] "%d horas"
 
 #. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d minute"
 msgid_plural "%d minutes"
-msgstr[0] "1 minuto"
-msgstr[1] "1 minuto"
+msgstr[0] "%d minuto"
+msgstr[1] "%d minutos"
 
 #. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d second"
 msgid_plural "%d seconds"
-msgstr[0] "1 segundo"
-msgstr[1] "1 segundo"
+msgstr[0] "%d segundo"
+msgstr[1] "%d segundos"
 
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 #, fuzzy
@@ -801,15 +802,15 @@ msgstr "Tempo estimado de leitura: {}"
 #, fuzzy
 msgid "The selection contains %d word."
 msgid_plural "The selection contains %d words."
-msgstr[0] "A seleção contém {} palavras."
-msgstr[1] "A seleção contém {} palavras."
+msgstr[0] "A seleção contém %d palavra."
+msgstr[1] "A seleção contém %d palavras."
 
 #. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
 #, fuzzy
 msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
-msgstr[0] "Este documento contém{}palavras."
-msgstr[1] "Este documento contém{}palavras."
+msgstr[0] "Este documento contém %d palavra."
+msgstr[1] "Este documento contém %d palavras."
 
 #. TRANSLATORS: Title of the Word Count dialog
 #, fuzzy
@@ -1125,8 +1126,8 @@ msgstr "{} - Paperback"
 #, fuzzy
 msgid "%d char"
 msgid_plural "%d chars"
-msgstr[0] "{} caracteres"
-msgstr[1] "{} caracteres"
+msgstr[0] "%d caractere"
+msgstr[1] "%d caracteres"
 
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."

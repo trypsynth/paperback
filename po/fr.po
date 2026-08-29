@@ -2185,7 +2185,7 @@ msgstr "Aller au signet"
 
 #, fuzzy
 msgid "Jump to Bookmarks Only..."
-msgstr "Accéder aux &signets seulement...\tCtrl+Alt+B"
+msgstr "Atteindre les signets uniquement..."
 
 #, fuzzy
 msgid "Jump to Notes Only..."
@@ -2289,11 +2289,11 @@ msgstr "Activer/désactiver le retour à la ligne automatique"
 
 #, fuzzy
 msgid "Play/Pause Audio"
-msgstr "&Lecture/Pause audio"
+msgstr "Lecture/Pause audio"
 
 #, fuzzy
 msgid "Seek Audio Forward"
-msgstr "Aller à &Suivant    Ctrl+]"
+msgstr "Avancer dans l'audio"
 
 #, fuzzy
 msgid "Seek Audio Backward"
@@ -2309,7 +2309,7 @@ msgstr "Diminuer le saut audio"
 
 #, fuzzy
 msgid "Full Screen"
-msgstr "&Plein écran    F11"
+msgstr "Plein écran"
 
 #, fuzzy
 msgid "Settings..."
@@ -2333,7 +2333,7 @@ msgstr "Exporter les données du document"
 
 #, fuzzy
 msgid "Export to Plain Text..."
-msgstr "Exporter en texte &brut...\tCtrl+E"
+msgstr "Exporter en texte brut..."
 
 #, fuzzy
 msgid "Export to HTML..."
@@ -2341,15 +2341,15 @@ msgstr "Exporter au format HTML..."
 
 #, fuzzy
 msgid "Export to Markdown..."
-msgstr "Exporter vers &Markdown..."
+msgstr "Exporter en Markdown..."
 
 #, fuzzy
 msgid "About Paperback"
-msgstr "À &propos de Paperback\tCtrl+F1"
+msgstr "À propos de Paperback"
 
 #, fuzzy
 msgid "View Help in Browser"
-msgstr "Afficher l'aide dans le &navigateur\tF1"
+msgstr "Afficher l'aide dans le navigateur"
 
 #, fuzzy
 msgid "View Help in Paperback"
@@ -2361,7 +2361,7 @@ msgstr "Rechercher des mises à jour"
 
 #, fuzzy
 msgid "Donate"
-msgstr "Faire un &don\tCtrl+D"
+msgstr "Faire un don"
 
 #, fuzzy
 msgid "File"
@@ -2369,7 +2369,7 @@ msgstr "Fichier"
 
 #, fuzzy
 msgid "Tools"
-msgstr "&Outils"
+msgstr "Outils"
 
 #, fuzzy
 msgid "Help"
@@ -2969,12 +2969,12 @@ msgstr "Synthèse vocale"
 #: swift
 #, fuzzy
 msgid "Line Spacing"
-msgstr "&Interligne :"
+msgstr "Espacement des lignes"
 
 #: swift
 #, fuzzy
 msgid "Paragraph Spacing"
-msgstr "&Espacement entre les paragraphes :"
+msgstr "Espacement des paragraphes"
 
 #: swift
 #, fuzzy
@@ -3619,7 +3619,7 @@ msgstr "Accès à tous les fichiers requis"
 #: kt
 #, fuzzy
 msgid "Continue"
-msgstr "&Conteneurs"
+msgstr "Continuer"
 
 #: kt
 #, fuzzy
@@ -3649,7 +3649,7 @@ msgstr "Retour {}"
 #: kt
 #, fuzzy
 msgid "Forward {}"
-msgstr "Aller à &Suivant    Ctrl+]"
+msgstr "Avancer {}"
 
 #, fuzzy
 #~ msgid "&Options"
