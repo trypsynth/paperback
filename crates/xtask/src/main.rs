@@ -60,16 +60,25 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 	}
 	let version = crate_version(&root, "paperback")?;
 	patois_build::gen_pot_from_dirs(&translatable_dirs, &po_dir, "paperback", &version)?;
-	// Step 2: extend with iOS Swift sources (t() calls in Swift files)
-	let ios_src = root.join("ios/Paperback");
-	if ios_src.is_dir() {
-		patois_build::extend_pot_from_source_dirs(&[&ios_src], "swift", &pot_file)?;
+	// Steps 2 and 3: layer the mobile front-ends' own strings on top. Both directories are
+	// required rather than skipped when absent: the Kotlin path spent a package rename
+	// (dev.paperback.mobile -> dev.paperback.android) pointing at nothing, and because a
+	// missing directory was silently fine, the only symptom was that Kotlin strings stopped
+	// being extracted, which stayed invisible for as long as the pot carried the last good
+	// copy of them forward.
+	extend_pot_from(&pot_file, &root.join("ios/Paperback"), "swift")?;
+	// The uniffi-generated bindings live in the sibling `kotlin/uniffi` tree and have no
+	// translatable strings, so the scan starts below them.
+	extend_pot_from(&pot_file, &root.join("android/app/src/main/kotlin/dev/paperback/android"), "kt")
+}
+
+/// Scan one mobile front-end's sources and add whatever they turn up to the pot, failing loudly
+/// if the directory isn't where it's expected to be.
+fn extend_pot_from(pot_file: &Path, src: &Path, extension: &str) -> Result<(), Box<dyn Error>> {
+	if !src.is_dir() {
+		return Err(format!("{extension} sources not found at {}", src.display()).into());
 	}
-	// Step 3: extend with Android Kotlin sources (excluding uniffi-generated bindings)
-	let kt_src = root.join("android/app/src/main/kotlin/dev/paperback/mobile");
-	if kt_src.is_dir() {
-		patois_build::extend_pot_from_source_dirs(&[&kt_src], "kt", &pot_file)?;
-	}
+	patois_build::extend_pot_from_source_dirs(&[src], extension, pot_file)?;
 	Ok(())
 }
 
