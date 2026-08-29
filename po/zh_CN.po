@@ -1,4 +1,4 @@
-# Simplified Chinese translation
+        # Simplified Chinese translation
 # Copyright (C) 2026 YongQuan Yang
 # This file is distributed under the same license as the paperback package.
 # YongQuan Yang <qt06.com@gmail.com>, 2026.
@@ -8,14 +8,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 00:33+0000\n"
-"PO-Revision-Date: 2026-08-26 19:38+0800\n"
+"POT-Creation-Date: 2026-08-28 23:02+0000\n"
+"PO-Revision-Date: 2026-08-29 17:34+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
-"Language: zh\n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 3.9\n"
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
@@ -123,25 +124,24 @@ msgstr "确定要从列表中移除所有文档吗？这将同时移除所有阅
 msgid "No documents."
 msgstr "没有文档。"
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
-msgid "1 document."
-msgstr "1 个文档。"
-
-#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
-msgid "%d documents."
-msgstr "%d 个文档。"
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count. Plural form is chosen by that count.
+msgid "%d document."
+msgid_plural "%d documents."
+msgstr[0] "%d 个文档。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
 msgid "1 of 1 document selected."
 msgstr "已选择 1 个文档，共 1 个。"
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
-msgid "All %d documents selected."
-msgstr "已选择全部 %d 个文档。"
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
+msgid "All %d document selected."
+msgid_plural "All %d documents selected."
+msgstr[0] "已选择全部 %d 个文档。"
 
-#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
-msgid "%d of %d documents selected."
-msgstr "已选择 %d 个文档，共 %d 个。"
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
+msgid "%d of %d document selected."
+msgid_plural "%d of %d documents selected."
+msgstr[0] "已选择 %d 个文档，共 %d 个。"
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 msgid "Locate Book"
@@ -318,9 +318,9 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
-#. TRANSLATORS: Title of the Options dialog
-msgid "Options"
-msgstr "选项"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
+msgstr "设置"
 
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
@@ -382,7 +382,6 @@ msgid "30 seconds"
 msgstr "30 秒"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Singular label for 1 minute duration
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "1 minute"
 msgstr "1 分钟"
@@ -408,7 +407,6 @@ msgid "30 minutes"
 msgstr "30 分钟"
 
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Singular label for 1 hour duration
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "1 hour"
 msgstr "1 小时"
@@ -638,6 +636,10 @@ msgstr "重置为默认(&R)"
 msgid "Reset &All to Defaults"
 msgstr "全部重置为默认(&A)"
 
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr "“{}”已分配给“{}”。是否将其重新分配给“{}”？"
+
 msgid "Shortcut Conflict"
 msgstr "快捷键冲突"
 
@@ -647,8 +649,23 @@ msgstr "将所有快捷键重置为默认值？"
 msgid "Reset Shortcuts"
 msgstr "重置快捷键"
 
+msgid "Set Shortcut for {}"
+msgstr "为 {} 设置快捷键"
+
+msgid "Configure shortcut for {}:"
+msgstr "配置 {} 的快捷键:"
+
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr "提示: 单击按键字段，然后按下所需的组合键。"
+
+msgid "Detected: (none)"
+msgstr "检测到:（无）"
+
+msgid "Detected: {}"
+msgstr "检测到: {}"
+
+msgid "No key detected"
+msgstr "未检测到按键"
 
 msgid "&Clear"
 msgstr "清除(&C)"
@@ -677,33 +694,34 @@ msgstr "未选择"
 msgid "View Note"
 msgstr "查看笔记"
 
-#. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
-msgid "hours"
-msgstr "小时"
+#. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d 小时"
 
-#. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
-msgid "minutes"
-msgstr "分钟"
+#. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d 分钟"
 
-#. TRANSLATORS: Singular label for 1 second duration
-msgid "1 second"
-msgstr "1 秒"
-
-#. TRANSLATORS: Plural label for seconds duration (e.g. "2 seconds")
-msgid "seconds"
-msgstr "秒"
+#. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d 秒"
 
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
 msgstr "预计阅读时间: {}"
 
-#. TRANSLATORS: Message template for selection word count. The {} placeholder is replaced with the number of words.
-msgid "The selection contains {} words."
-msgstr "所选内容包含 {} 个单词。"
+#. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
+msgid "The selection contains %d word."
+msgid_plural "The selection contains %d words."
+msgstr[0] "所选内容包含 %d 个单词。"
 
-#. TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
-msgid "This document contains {} words."
-msgstr "本文档包含 {} 个单词。"
+#. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
+msgid "This document contains %d word."
+msgid_plural "This document contains %d words."
+msgstr[0] "本文档包含 %d 个单词。"
 
 #. TRANSLATORS: Title of the Word Count dialog
 msgid "Word Count"
@@ -829,6 +847,9 @@ msgstr "查找"
 msgid "Find &what:"
 msgstr "查找内容(&W):"
 
+msgid "Options"
+msgstr "选项"
+
 #. TRANSLATORS: Checkbox to make the search case-sensitive
 msgid "&Match case"
 msgstr "区分大小写(&M)"
@@ -878,55 +899,41 @@ msgstr "无法在浏览器中打开捐赠页面。"
 msgid "Unsupported format selected."
 msgstr "选择了不支持的格式。"
 
-#. TRANSLATORS: Main window title when no document is open
-msgid "Paperback"
-msgstr "Paperback"
-
-#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
-msgid "Document reloaded."
-msgstr "文档已重新加载。"
-
-#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
-msgid "Paperback cannot perform any actions while Web View is open."
-msgstr "当 Web 视图打开时，Paperback 无法执行任何操作。"
-
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "Paperback - {}"
-msgstr "Paperback - {}"
-
-#. TRANSLATORS: Status bar character count; {} is the number of characters
-msgid "{} chars"
-msgstr "{} 字符"
-
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "文档"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "导出文档失败。"
-
-#. TRANSLATORS: Title of the file picker dialog shown when opening a document
-msgid "Open Document"
-msgstr "打开文档"
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "没有最近文档。"
 
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "没有页面。"
 
-#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-msgid "Word wrap on."
-msgstr "自动换行已开启。"
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
+msgstr "没有目录。"
 
-msgid "Word wrap off."
-msgstr "自动换行已关闭。"
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+msgid "Web View"
+msgstr "Web 视图"
 
-#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-msgid "Full screen on."
-msgstr "全屏已开启。"
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+msgid "Could not determine content to display in Web View."
+msgstr "无法确定要在 Web 视图中显示的内容。"
 
-msgid "Full screen off."
-msgstr "全屏已关闭。"
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "文档"
+
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+msgid "Source:"
+msgstr "源:"
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+msgid "Source view is not available for this document format."
+msgstr "此文档格式不支持源视图。"
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+msgid "Could not load the document source."
+msgstr "无法加载文档源。"
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -980,45 +987,55 @@ msgstr "笔记和书签已成功导入。"
 msgid "Import Successful"
 msgstr "导入成功"
 
-#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-msgid "No table of contents."
-msgstr "没有目录。"
-
-#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
-msgid "Web View"
-msgstr "Web 视图"
-
-#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
-msgid "Could not determine content to display in Web View."
-msgstr "无法确定要在 Web 视图中显示的内容。"
-
-#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
-msgid "Source:"
-msgstr "源:"
-
-#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
-msgid "Source view is not available for this document format."
-msgstr "此文档格式不支持源视图。"
-
-#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
-msgid "Could not load the document source."
-msgstr "无法加载文档源。"
-
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "睡眠定时器已取消。"
 
-#. TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
-msgid "Sleep timer set for 1 minute."
-msgstr "睡眠定时器已设置为 1 分钟。"
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "睡眠定时器已设置为 %d 分钟。"
 
-#. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-msgid "Sleep timer set for %d minutes."
-msgstr "睡眠定时器已设置为 %d 分钟。"
+#. TRANSLATORS: Main window title when no document is open
+msgid "Paperback"
+msgstr "Paperback"
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
-msgstr "没有最近文档。"
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+msgid "Document reloaded."
+msgstr "文档已重新加载。"
+
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "当 Web 视图打开时，Paperback 无法执行任何操作。"
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+msgid "%d char"
+msgid_plural "%d chars"
+msgstr[0] "%d 字符"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "导出文档失败。"
+
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+msgid "Open Document"
+msgstr "打开文档"
+
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+msgid "Word wrap on."
+msgstr "自动换行已开启。"
+
+msgid "Word wrap off."
+msgstr "自动换行已关闭。"
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+msgid "Full screen on."
+msgstr "全屏已开启。"
+
+msgid "Full screen off."
+msgstr "全屏已关闭。"
 
 msgid "&Undo\tCtrl+Z"
 msgstr "撤销(&U)\tCtrl+Z"
@@ -1510,8 +1527,8 @@ msgstr "全屏(&F)"
 msgid "Toggle full screen"
 msgstr "切换全屏"
 
-msgid "&Options"
-msgstr "选项(&O)"
+msgid "&Settings"
+msgstr "设置(&S)"
 
 msgid "&Sleep Timer..."
 msgstr "睡眠定时器(&S)..."
@@ -1800,6 +1817,246 @@ msgstr "恢复 Paperback"
 msgid "Exit Paperback"
 msgstr "退出 Paperback"
 
+msgid "Open..."
+msgstr "打开..."
+
+msgid "Close All"
+msgstr "全部关闭"
+
+msgid "Reopen Last Closed"
+msgstr "重新打开上次关闭的文档"
+
+msgid "Show All Recent Documents..."
+msgstr "显示所有最近文档..."
+
+msgid "Exit"
+msgstr "退出"
+
+msgid "Find..."
+msgstr "查找..."
+
+msgid "Find Next"
+msgstr "查找下一个"
+
+msgid "Find Previous"
+msgstr "查找上一个"
+
+msgid "Go to Line..."
+msgstr "转到行..."
+
+msgid "Go to Percent..."
+msgstr "转到百分比..."
+
+msgid "Go to Page..."
+msgstr "转到页..."
+
+msgid "Go Back"
+msgstr "后退"
+
+msgid "Go Forward"
+msgstr "前进"
+
+msgid "Announce Percentage"
+msgstr "朗读百分比"
+
+msgid "Set Temporary Bookmark"
+msgstr "设置临时书签"
+
+msgid "Jump to Temporary Bookmark"
+msgstr "跳转到临时书签"
+
+msgid "Previous Heading"
+msgstr "上一个标题"
+
+msgid "Next Heading"
+msgstr "下一个标题"
+
+msgid "Previous Heading Level 1"
+msgstr "上一个 1 级标题"
+
+msgid "Previous Heading Level 2"
+msgstr "上一个 2 级标题"
+
+msgid "Previous Heading Level 3"
+msgstr "上一个 3 级标题"
+
+msgid "Previous Heading Level 4"
+msgstr "上一个 4 级标题"
+
+msgid "Previous Heading Level 5"
+msgstr "上一个 5 级标题"
+
+msgid "Previous Heading Level 6"
+msgstr "上一个 6 级标题"
+
+msgid "Previous Page"
+msgstr "上一页"
+
+msgid "Next Page"
+msgstr "下一页"
+
+msgid "Previous Bookmark"
+msgstr "上一个书签"
+
+msgid "Next Bookmark"
+msgstr "下一个书签"
+
+msgid "Previous Note"
+msgstr "上一个笔记"
+
+msgid "Next Note"
+msgstr "下一个笔记"
+
+msgid "Jump to All Bookmarks..."
+msgstr "跳转到所有书签..."
+
+msgid "Jump to Bookmarks Only..."
+msgstr "仅跳转到书签..."
+
+msgid "Jump to Notes Only..."
+msgstr "仅跳转到笔记..."
+
+msgid "View Note Text"
+msgstr "查看笔记文本"
+
+msgid "Previous Link"
+msgstr "上一个链接"
+
+msgid "Next Link"
+msgstr "下一个链接"
+
+msgid "Previous Image"
+msgstr "上一张图片"
+
+msgid "Next Image"
+msgstr "下一张图片"
+
+msgid "Previous Figure"
+msgstr "上一个图形"
+
+msgid "Next Figure"
+msgstr "下一个图形"
+
+msgid "Previous Table"
+msgstr "上一个表格"
+
+msgid "Next Table"
+msgstr "下一个表格"
+
+msgid "Previous Separator"
+msgstr "上一个分隔符"
+
+msgid "Next Separator"
+msgstr "下一个分隔符"
+
+msgid "Previous List"
+msgstr "上一个列表"
+
+msgid "Next List"
+msgstr "下一个列表"
+
+msgid "Previous List Item"
+msgstr "上一个列表项"
+
+msgid "Next List Item"
+msgstr "下一个列表项"
+
+msgid "Container Start"
+msgstr "容器开头"
+
+msgid "Past Container End"
+msgstr "越过容器末尾"
+
+msgid "Elements List..."
+msgstr "元素列表..."
+
+msgid "Reveal File in Folder"
+msgstr "在文件夹中显示文件"
+
+msgid "Open in Web View"
+msgstr "在 Web 视图中打开"
+
+msgid "View Source"
+msgstr "查看源"
+
+msgid "Toggle Bookmark"
+msgstr "切换书签"
+
+msgid "Bookmark with Note"
+msgstr "带笔记的书签"
+
+msgid "Toggle Word Wrap"
+msgstr "切换自动换行"
+
+msgid "Play/Pause Audio"
+msgstr "播放/暂停音频"
+
+msgid "Seek Audio Forward"
+msgstr "音频向前跳转"
+
+msgid "Seek Audio Backward"
+msgstr "音频向后跳转"
+
+msgid "Increase Audio Seek Amount"
+msgstr "增大音频跳转步长"
+
+msgid "Decrease Audio Seek Amount"
+msgstr "减小音频跳转步长"
+
+msgid "Full Screen"
+msgstr "全屏"
+
+msgid "Settings..."
+msgstr "设置..."
+
+msgid "Sleep Timer..."
+msgstr "睡眠定时器..."
+
+msgid "Customize Keyboard Shortcuts..."
+msgstr "自定义键盘快捷键..."
+
+msgid "Import Document Data..."
+msgstr "导入文档数据..."
+
+msgid "Export Document Data..."
+msgstr "导出文档数据..."
+
+msgid "Export to Plain Text..."
+msgstr "导出为纯文本..."
+
+msgid "Export to HTML..."
+msgstr "导出为 HTML..."
+
+msgid "Export to Markdown..."
+msgstr "导出为 Markdown..."
+
+msgid "About Paperback"
+msgstr "关于 Paperback"
+
+msgid "View Help in Browser"
+msgstr "在浏览器中查看帮助"
+
+msgid "View Help in Paperback"
+msgstr "在 Paperback 中查看帮助"
+
+msgid "Check for Updates"
+msgstr "检查更新"
+
+msgid "Donate"
+msgstr "捐赠"
+
+msgid "File"
+msgstr "文件"
+
+msgid "Tools"
+msgstr "工具"
+
+msgid "Help"
+msgstr "帮助"
+
+msgid "None"
+msgstr "无"
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "图形"
@@ -1811,6 +2068,10 @@ msgstr "图片"
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
 msgstr "DAISY .opf 文件无效或在清单中找不到 DTBook XML"
 
+#. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
+msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
+msgstr "DAISY 2.02 ncc.html 文件无效或找不到其内容页面"
+
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 msgid "Failed to convert DTBook XML to text"
 msgstr "无法将 DTBook XML 转换为文本"
@@ -1818,6 +2079,14 @@ msgstr "无法将 DTBook XML 转换为文本"
 #. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
 msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
 msgstr "ZIP 压缩包似乎不是有效的 DAISY 3 或 DAISY 2.02 图书"
+
+#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+msgid "rootfile not found in container.xml"
+msgstr "在 container.xml 中未找到 rootfile"
+
+#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+msgid "unsupported content"
+msgstr "不支持的内容"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
@@ -1834,14 +2103,6 @@ msgstr "转换 spine 项目失败: {}"
 #. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
 msgid "EPUB has no readable content ({})"
 msgstr "EPUB 没有可读内容（{}）"
-
-#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
-msgid "rootfile not found in container.xml"
-msgstr "在 container.xml 中未找到 rootfile"
-
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-msgid "unsupported content"
-msgstr "不支持的内容"
 
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 msgid "Failed to convert FB2 XML to text"
@@ -1959,14 +2220,6 @@ msgstr "ODP 文件不包含任何页面"
 msgid "FODP file does not contain any pages"
 msgstr "FODP 文件不包含任何页面"
 
-#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"此 PDF 仅包含图片，没有可提取的文本。您可能需要通过 OCR 软件进行识别才能阅读"
-"其内容。"
-
 #. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 msgid "Password required or incorrect"
 msgstr "需要密码或密码错误"
@@ -1974,6 +2227,14 @@ msgstr "需要密码或密码错误"
 #. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
 msgid "Failed to open PDF document: {}"
 msgstr "打开 PDF 文档失败: {}"
+
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+"此 PDF 仅包含图片，没有可提取的文本。您可能需要通过 OCR 软件进行识别才能阅读"
+"其内容。"
 
 msgid ""
 "Password-protected PPT files are not currently supported. Try saving the "
@@ -2055,6 +2316,48 @@ msgstr "需要密码"
 #. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
 msgid "Password incorrect"
 msgstr "密码错误"
+
+msgid "&Options"
+msgstr "选项(&O)"
+
+msgid "1 document."
+msgstr "1 个文档。"
+
+msgid "%d documents."
+msgstr "%d 个文档。"
+
+msgid "All %d documents selected."
+msgstr "已选择全部 %d 个文档。"
+
+msgid "%d of %d documents selected."
+msgstr "已选择 %d 个文档，共 %d 个。"
+
+msgid "hours"
+msgstr "小时"
+
+msgid "minutes"
+msgstr "分钟"
+
+msgid "1 second"
+msgstr "1 秒"
+
+msgid "seconds"
+msgstr "秒"
+
+msgid "The selection contains {} words."
+msgstr "所选内容包含 {} 个单词。"
+
+msgid "This document contains {} words."
+msgstr "本文档包含 {} 个单词。"
+
+msgid "{} chars"
+msgstr "{} 字符"
+
+msgid "Sleep timer set for 1 minute."
+msgstr "睡眠定时器已设置为 1 分钟。"
+
+msgid "Sleep timer set for %d minutes."
+msgstr "睡眠定时器已设置为 %d 分钟。"
 
 msgid "Update to %s"
 msgstr "更新到 %s"
@@ -2391,9 +2694,6 @@ msgstr "切换到文本模式"
 msgid "Sleep Timer (active)"
 msgstr "睡眠定时器（活动中）"
 
-msgid "Settings"
-msgstr "设置"
-
 msgid "More options"
 msgstr "更多选项"
 
@@ -2417,9 +2717,6 @@ msgstr "标题"
 
 msgid "Author"
 msgstr "作者"
-
-msgid "File"
-msgstr "文件"
 
 msgid "Words"
 msgstr "字数"
@@ -2685,9 +2982,6 @@ msgstr "搜索词"
 msgid "Search History"
 msgstr "搜索历史"
 
-msgid "Find Next"
-msgstr "查找下一个"
-
 msgid "Password:"
 msgstr "密码:"
 
@@ -2758,9 +3052,6 @@ msgstr "更改为:"
 msgid "Custom time..."
 msgstr "自定义时间..."
 
-msgid "Find Previous"
-msgstr "查找上一个"
-
 msgid "Close Search"
 msgstr "关闭搜索"
 
@@ -2817,9 +3108,6 @@ msgstr "暂停朗读"
 
 msgid "Read Aloud"
 msgstr "朗读"
-
-msgid "Help"
-msgstr "帮助"
 
 msgid "More Options"
 msgstr "更多选项"
