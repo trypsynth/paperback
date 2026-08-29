@@ -943,8 +943,8 @@ msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Приложение Paperback не может выполнять никаких действий, пока открыт Web View."
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "Paperback - {}"
-msgstr "Paperback - {}"
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 #. TRANSLATORS: Status bar character count; {} is the number of characters
 msgid "{} chars"

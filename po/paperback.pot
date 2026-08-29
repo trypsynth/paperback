@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 05:09-0600\n"
+"POT-Creation-Date: 2026-08-29 10:57-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -999,7 +999,7 @@ msgid "Paperback cannot perform any actions while Web View is open."
 msgstr ""
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "Paperback - {}"
+msgid "{} - Paperback"
 msgstr ""
 
 msgid "%d char"

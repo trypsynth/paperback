@@ -1022,8 +1022,8 @@ msgstr "Paperback không thể thực hiện bất kỳ thao tác nào khi Web V
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
 #, fuzzy
-msgid "Paperback - {}"
-msgstr "Bản bìa mềm - {}"
+msgid "{} - Paperback"
+msgstr "{} - Bản bìa mềm"
 
 #. TRANSLATORS: Status bar character count; {} is the number of characters
 #, fuzzy

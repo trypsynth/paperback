@@ -14,7 +14,6 @@ use std::{cell::RefCell, sync::atomic::AtomicIsize};
 
 use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::BookmarkFilterType};
 use patois::{nt, t};
-use wx_utils::dpi;
 use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
@@ -26,7 +25,7 @@ use super::{
 	help::{self, MAIN_WINDOW_PTR},
 	icon, menu, menu_ids,
 	navigation::{self, MarkerNavTarget},
-	status,
+	status, window_geometry,
 };
 use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -42,10 +41,6 @@ use parser_ready::ensure_parser_ready_for_path;
 mod hotkey;
 #[cfg(target_os = "windows")]
 use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
-
-/// The main window's starting size, in device-independent pixels (see `ui::dpi`).
-const DEFAULT_WINDOW_WIDTH: i32 = 800;
-const DEFAULT_WINDOW_HEIGHT: i32 = 600;
 
 pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
 pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
@@ -80,10 +75,7 @@ impl MainWindow {
 		// TRANSLATORS: Main window title when no document is open
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).build();
-		// Sized after building rather than through the builder: the size has to be scaled for
-		// the display the window actually lands on, and there is nothing to ask about that
-		// until the frame exists. It isn't shown until later, so there's no visible resize.
-		frame.set_size(dpi::scale_size(&frame, Size::new(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)));
+		window_geometry::apply_defaults(&frame);
 		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
 		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
 		// (embedded by build.rs) already covers the taskbar and the shell; this is what the
@@ -244,10 +236,12 @@ impl MainWindow {
 			let hotkey_for_close = Rc::clone(&hotkey_handle);
 			frame.on_close(move |event| {
 				let mut dm = dm_for_close.lock().unwrap();
-				if let Some(tab) = dm.active_tab() {
-					let path = tab.file_path.to_string_lossy();
+				{
 					let cfg = config_for_close.lock().unwrap();
-					cfg.set_app_string("active_document", &path);
+					window_geometry::save(&frame, &cfg);
+					if let Some(tab) = dm.active_tab() {
+						cfg.set_app_string("active_document", &tab.file_path.to_string_lossy());
+					}
 					cfg.flush();
 				}
 				dm.save_all_positions();
@@ -308,11 +302,8 @@ impl MainWindow {
 	}
 
 	pub fn show(&self) {
-		if self.config.lock().unwrap().get_app_bool("start_maximized", false) {
-			self.frame.maximize(true);
-		}
+		window_geometry::restore(&self.frame, &self.config.lock().unwrap());
 		self.frame.show(true);
-		self.frame.centre();
 	}
 
 	#[cfg(target_os = "macos")]
@@ -484,7 +475,7 @@ impl MainWindow {
 		}
 		if let Some(tab) = dm.active_tab() {
 			// TRANSLATORS: Window title when a document is open; {} is the document title
-			let template = t("Paperback - {}");
+			let template = t("{} - Paperback");
 			self.frame.set_title(&template.replace("{}", &display_title(tab)));
 			#[cfg(target_os = "macos")]
 			self.frame.set_represented_filename(&tab.file_path.to_string_lossy());
@@ -1306,8 +1297,11 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		return;
 	}
 	if let Some(tab) = dm.active_tab() {
+		// The document leads and the app name trails, which is the Windows convention and not
+		// just a cosmetic one: the taskbar and Alt+Tab truncate the end of a title, so an
+		// app-first title makes every open book look identical in both.
 		// TRANSLATORS: Window title when a document is open; {} is the document title
-		let template = t("Paperback - {}");
+		let template = t("{} - Paperback");
 		frame.set_title(&template.replace("{}", &display_title(tab)));
 		#[cfg(target_os = "macos")]
 		frame.set_represented_filename(&tab.file_path.to_string_lossy());

@@ -883,8 +883,8 @@ msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Webビューが開いている間はアクションを実行できません。"
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "Paperback - {}"
-msgstr "Paperback - {}"
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 #. TRANSLATORS: Status bar character count; {} is the number of characters
 msgid "{} chars"

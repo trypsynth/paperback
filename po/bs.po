@@ -587,8 +587,8 @@ msgstr "Paperback"
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback ne može izvršiti nikakve radnje dok je otvoren web prikaz."
 
-msgid "Paperback - {}"
-msgstr "Paperback - {}"
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 msgid "{} chars"
 msgstr "Znakovi"

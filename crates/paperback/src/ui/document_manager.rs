@@ -30,7 +30,7 @@ use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
 	menu_ids,
 	navigation::{move_to_offset_and_record_history, persist_navigation_history},
-	status,
+	shell, status,
 	text_window::{self, TextWindow},
 };
 use crate::audio_player::AudioPlayer;
@@ -305,6 +305,7 @@ impl DocumentManager {
 		}
 		if track {
 			config.add_recent_document(&path_str);
+			shell::add_recent_document(path);
 			config.set_document_opened(&path_str, true);
 			config.add_opened_document(&path_str);
 		}
