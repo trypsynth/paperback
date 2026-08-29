@@ -39,6 +39,10 @@ const DEFAULT_MODEL: &str = "claude-haiku-4-5";
 /// and to lose only one batch, not a whole language, when a request fails.
 const BATCH_LIMIT: usize = 60;
 
+/// Plural entries are batched smaller: each one comes back as several forms rather than one
+/// string, so the same number of entries is several times the output tokens.
+const PLURAL_BATCH_LIMIT: usize = 20;
+
 /// Source characters per README chunk. The README is split on section headings and sent a few
 /// sections at a time so no single response has to be enormous.
 const README_CHUNK_CHARS: usize = 6000;
@@ -53,6 +57,14 @@ const MAX_ATTEMPTS: u32 = 4;
 pub struct Phrase {
 	pub source: String,
 	/// The `#. TRANSLATORS:` comment from the pot, when the string has one.
+	pub context: Option<String>,
+}
+
+/// One plural string to translate: the English singular and plural, and how many forms the
+/// target language wants back.
+pub struct PluralPhrase {
+	pub singular: String,
+	pub plural: String,
 	pub context: Option<String>,
 }
 
@@ -146,6 +158,88 @@ impl ClaudeClient {
 			if let Some(slot) = out.get_mut(item.id) {
 				*slot = check(&phrases[item.id].source, &item.text);
 			}
+		}
+		Ok(out)
+	}
+
+	/// Translates plural strings, asking for `nplurals` forms of each.
+	///
+	/// Separate from [`Self::translate_phrases`] because the unit is different: one English
+	/// singular/plural pair goes in, and a whole set of forms comes back, as many as the target
+	/// language uses. That count is not a property of the string - Russian wants three where
+	/// French wants two - so it is read from the file's `Plural-Forms` header and passed in
+	/// rather than assumed.
+	pub fn translate_plurals(
+		&self,
+		phrases: &[PluralPhrase],
+		language: &str,
+		nplurals: usize,
+		plural_rule: &str,
+	) -> Result<Vec<Option<Vec<String>>>, Box<dyn Error>> {
+		let mut out = Vec::with_capacity(phrases.len());
+		for chunk in phrases.chunks(PLURAL_BATCH_LIMIT) {
+			out.extend(self.translate_plural_chunk(chunk, language, nplurals, plural_rule)?);
+		}
+		Ok(out)
+	}
+
+	fn translate_plural_chunk(
+		&self,
+		phrases: &[PluralPhrase],
+		language: &str,
+		nplurals: usize,
+		plural_rule: &str,
+	) -> Result<Vec<Option<Vec<String>>>, Box<dyn Error>> {
+		let items: Vec<Value> = phrases
+			.iter()
+			.enumerate()
+			.map(|(i, p)| {
+				let mut item = json!({ "id": i, "singular": p.singular, "plural": p.plural });
+				if let Some(context) = &p.context {
+					item["context"] = json!(context);
+				}
+				item
+			})
+			.collect();
+		let request = json!({
+			"model": self.model,
+			"max_tokens": MAX_TOKENS,
+			"output_config": {
+				"effort": "low",
+				"format": { "type": "json_schema", "schema": plural_schema(nplurals) }
+			},
+			"system": [{
+				"type": "text",
+				"text": plural_system_prompt(),
+				"cache_control": { "type": "ephemeral" }
+			}],
+			"messages": [{
+				"role": "user",
+				"content": format!(
+					"Target language: {language}\n\
+					 This language has {nplurals} plural forms. Its gettext rule is:\n{plural_rule}\n\n\
+					 Return exactly {nplurals} forms for each entry, in index order: forms[i] is used \
+					 for the counts where that rule yields i.\n\n{}",
+					serde_json::to_string_pretty(&items)?
+				)
+			}]
+		});
+		let text = self.send(&request)?;
+		#[derive(Deserialize)]
+		struct Item {
+			id: usize,
+			forms: Vec<String>,
+		}
+		#[derive(Deserialize)]
+		struct Payload {
+			translations: Vec<Item>,
+		}
+		let payload: Payload = serde_json::from_str(&text)
+			.map_err(|e| format!("Claude returned a response that did not match the schema: {e} (body: {text})"))?;
+		let mut out: Vec<Option<Vec<String>>> = vec![None; phrases.len()];
+		for item in payload.translations {
+			let Some(slot) = out.get_mut(item.id) else { continue };
+			*slot = check_plural(&phrases[item.id], &item.forms, nplurals);
 		}
 		Ok(out)
 	}
@@ -294,6 +388,35 @@ fn translations_schema() -> Value {
 	})
 }
 
+/// Schema for a plural batch. `minItems`/`maxItems` pin the form count at `nplurals`, so a
+/// response with too few forms is rejected by the API rather than arriving here to be caught.
+fn plural_schema(nplurals: usize) -> Value {
+	json!({
+		"type": "object",
+		"properties": {
+			"translations": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"id": { "type": "integer" },
+						"forms": {
+							"type": "array",
+							"items": { "type": "string" },
+							"minItems": nplurals,
+							"maxItems": nplurals
+						}
+					},
+					"required": ["id", "forms"],
+					"additionalProperties": false
+				}
+			}
+		},
+		"required": ["translations"],
+		"additionalProperties": false
+	})
+}
+
 fn markdown_schema() -> Value {
 	json!({
 		"type": "object",
@@ -333,6 +456,32 @@ const fn phrase_system_prompt() -> &'static str {
 	 and URLs.\n\
 	 \n\
 	 Translate the text and nothing else. Do not explain, comment, or add notes."
+}
+
+const fn plural_system_prompt() -> &'static str {
+	"You are translating the user interface of Paperback, a desktop ebook and document reader \
+	 used heavily with screen readers. Translate from English into the target language.\n\
+	 \n\
+	 Each entry is one countable message, given as its English `singular` and `plural`, and \
+	 sometimes a `context` note from the developers. Return the full set of plural forms the \
+	 target language uses for it.\n\
+	 \n\
+	 Rules:\n\
+	 \n\
+	 1. Return exactly the number of forms asked for, in index order. Index i is the form used \
+	 for the counts where the stated gettext rule evaluates to i. Languages that inflect for \
+	 few and many need genuinely different wordings per index; do not repeat one form to fill \
+	 the slots, and do not return the English.\n\
+	 2. Every form must keep the `%d`, `%s` or `{}` placeholder the English has, exactly once \
+	 each unless the English repeats it. The count is substituted into that placeholder, so a \
+	 form without it renders a number-less sentence.\n\
+	 3. A form is the whole message, not a suffix: write the complete phrase for that count, \
+	 not just the ending that changes.\n\
+	 4. Use the `context` note when there is one, and keep the register short and plain, the \
+	 way status bar text and dialog labels read in the target language.\n\
+	 5. Leave proper nouns alone: Paperback, EPUB, PDF, DAISY, and file extensions.\n\
+	 \n\
+	 Return the forms and nothing else. Do not explain or add notes."
 }
 
 const fn markdown_system_prompt() -> &'static str {
@@ -454,6 +603,23 @@ fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
 #[must_use]
 pub fn is_damaged(source: &str, translated: &str) -> bool {
 	!translated.is_empty() && check(source, translated).is_none()
+}
+
+/// The plural counterpart of [`check`]: every form has to be present and carry the English's
+/// placeholders, or the whole set is rejected.
+///
+/// All-or-nothing on purpose. A partly-good set written into the file leaves some `msgstr[N]`
+/// filled and others blank, which reads as translated to every tool that looks at it while
+/// gettext quietly falls back to the English for the missing counts.
+fn check_plural(phrase: &PluralPhrase, forms: &[String], nplurals: usize) -> Option<Vec<String>> {
+	if forms.len() != nplurals || forms.iter().any(|f| f.trim().is_empty()) {
+		return None;
+	}
+	// Checked against the English plural rather than the singular: the placeholder belongs to
+	// the countable message as a whole, and `1 document.` / `%d documents.` legitimately
+	// differ in whether the singular spells the number out.
+	let expected = placeholder_counts(&phrase.plural);
+	forms.iter().all(|f| placeholder_counts(f) == expected).then(|| forms.to_vec())
 }
 
 /// Accepts a translation only if it kept the parts that aren't prose, returning `None` when it
@@ -730,6 +896,60 @@ mod tests {
 		assert!(!is_damaged("&Copy\tCtrl+C", "&Copiar\tCtrl+C"));
 		// An untranslated entry is the normal flow's job, not the repair pass's.
 		assert!(!is_damaged("Ready", ""));
+	}
+
+	fn plural(singular: &str, plural: &str) -> PluralPhrase {
+		PluralPhrase { singular: singular.to_string(), plural: plural.to_string(), context: None }
+	}
+
+	#[test]
+	fn a_complete_plural_set_is_accepted() {
+		let p = plural("%d document.", "%d documents.");
+		let forms = ["%d документ.".to_string(), "%d документа.".to_string(), "%d документов.".to_string()];
+		assert_eq!(check_plural(&p, &forms, 3), Some(forms.to_vec()));
+	}
+
+	// Russian needs three. Two written into a three-form entry leaves msgstr[2] blank, which
+	// looks translated to every tool that inspects the file while gettext falls back to the
+	// English for those counts.
+	#[test]
+	fn a_short_plural_set_is_rejected() {
+		let p = plural("%d document.", "%d documents.");
+		let forms = ["%d документ.".to_string(), "%d документа.".to_string()];
+		assert_eq!(check_plural(&p, &forms, 3), None);
+	}
+
+	#[test]
+	fn a_plural_set_with_a_blank_form_is_rejected() {
+		let p = plural("%d document.", "%d documents.");
+		let forms = ["a".to_string(), "  ".to_string()];
+		assert_eq!(check_plural(&p, &forms, 2), None);
+	}
+
+	// The count is substituted into the placeholder, so a form without it renders a sentence
+	// with no number in it.
+	#[test]
+	fn a_plural_form_that_dropped_the_placeholder_is_rejected() {
+		let p = plural("%d document.", "%d documents.");
+		let forms = ["%d документ.".to_string(), "документа.".to_string()];
+		assert_eq!(check_plural(&p, &forms, 2), None);
+	}
+
+	// Checked against the English plural, not the singular: `1 document.` spells the number
+	// out and has no placeholder, which would reject every correct translation.
+	#[test]
+	fn the_placeholder_check_uses_the_english_plural() {
+		let p = plural("1 document.", "%d documents.");
+		let forms = ["%d документ.".to_string(), "%d документа.".to_string()];
+		assert!(check_plural(&p, &forms, 2).is_some());
+	}
+
+	#[test]
+	fn the_plural_schema_pins_the_form_count() {
+		let schema = plural_schema(3);
+		let forms = &schema["properties"]["translations"]["items"]["properties"]["forms"];
+		assert_eq!(forms["minItems"], 3);
+		assert_eq!(forms["maxItems"], 3);
 	}
 
 	// A typo here is a 404 on every request, and only at runtime.

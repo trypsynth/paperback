@@ -10,7 +10,7 @@ use std::{
 mod claude;
 mod readme;
 
-use patois_build::po::PoDocument;
+use patois_build::po::{PoDocument, Translation};
 
 use crate::project_root;
 
@@ -199,6 +199,76 @@ fn parse_human_maintained_locales(content: &str) -> HashSet<String> {
 		.collect()
 }
 
+/// What to splice into a document: the entry index and its translated result.
+type Applied = Vec<(usize, Translation)>;
+
+/// Translates the ordinary entries, returning what to apply and how many carried a note.
+fn translate_singulars(
+	client: &claude::ClaudeClient,
+	language: &str,
+	candidates: &[(usize, String)],
+	context: &HashMap<String, String>,
+) -> Result<(Applied, usize), Box<dyn Error>> {
+	if candidates.is_empty() {
+		return Ok((Vec::new(), 0));
+	}
+	let phrases: Vec<claude::Phrase> = candidates
+		.iter()
+		.map(|(_, text)| claude::Phrase { source: text.clone(), context: context.get(text).cloned() })
+		.collect();
+	let annotated = phrases.iter().filter(|p| p.context.is_some()).count();
+	let results = client.translate_phrases(&phrases, language)?;
+	let applied = candidates
+		.iter()
+		.map(|(i, _)| *i)
+		.zip(results)
+		.filter_map(|(i, result)| result.map(|text| (i, Translation::Singular(text))))
+		.collect();
+	Ok((applied, annotated))
+}
+
+/// Translates the plural entries, asking for `nplurals` forms of each.
+fn translate_plurals(
+	client: &claude::ClaudeClient,
+	language: &str,
+	candidates: &[(usize, String, String)],
+	context: &HashMap<String, String>,
+	nplurals: usize,
+	rule: &str,
+) -> Result<Applied, Box<dyn Error>> {
+	if candidates.is_empty() {
+		return Ok(Vec::new());
+	}
+	let phrases: Vec<claude::PluralPhrase> = candidates
+		.iter()
+		.map(|(_, singular, plural)| claude::PluralPhrase {
+			singular: singular.clone(),
+			plural: plural.clone(),
+			// The note is filed under the singular, which is the msgid the pot comment sits
+			// above.
+			context: context.get(singular).cloned(),
+		})
+		.collect();
+	let results = client.translate_plurals(&phrases, language, nplurals, rule)?;
+	Ok(candidates
+		.iter()
+		.map(|(i, _, _)| *i)
+		.zip(results)
+		.filter_map(|(i, result)| result.map(|forms| (i, Translation::Plural(forms))))
+		.collect())
+}
+
+/// The `nplurals` count and the raw plural rule from a po file's `Plural-Forms` header.
+///
+/// The count comes from the parsed document, and the rule expression is taken verbatim from the
+/// header text so the model is told the language's actual rule rather than a description of it.
+fn plural_forms(content: &str) -> Option<(usize, String)> {
+	let nplurals = PoDocument::parse(content).nplurals()?;
+	let line = content.lines().map(str::trim).find(|l| l.contains("Plural-Forms:"))?;
+	let rule = line.trim_start_matches('"').trim_end_matches("\\n\"").trim().to_string();
+	Some((nplurals, rule))
+}
+
 /// Adds entries whose existing translation is provably damaged to `candidates`, returning how
 /// many were added.
 ///
@@ -212,17 +282,35 @@ fn parse_human_maintained_locales(content: &str) -> HashSet<String> {
 /// shortcut suffix. A translation that merely looks doubtful is left alone: re-translating on
 /// suspicion would churn thousands of entries that are perfectly fine, and the checks are the
 /// only part of this that can be right or wrong on its own.
-fn add_damaged_entries(doc: &PoDocument, candidates: &mut Vec<(usize, String)>) -> usize {
+fn add_damaged_entries(
+	doc: &PoDocument,
+	candidates: &mut Vec<(usize, String)>,
+	plurals: &mut Vec<(usize, String, String)>,
+) -> usize {
 	let already: HashSet<usize> = candidates.iter().map(|(i, _)| *i).collect();
-	let damaged: Vec<(usize, String)> = doc
-		.entries
-		.iter()
-		.enumerate()
-		.filter(|(i, e)| !already.contains(i) && claude::is_damaged(&e.msgid, &e.msgstr))
-		.map(|(i, e)| (i, e.msgid.clone()))
-		.collect();
-	let count = damaged.len();
-	candidates.extend(damaged);
+	let already_plural: HashSet<usize> = plurals.iter().map(|(i, _, _)| *i).collect();
+	let mut count = 0;
+	for (i, entry) in doc.entries.iter().enumerate() {
+		match entry.msgid_plural.as_deref() {
+			// A plural entry is damaged when any one of its forms is: the whole set is
+			// rewritten together, so one broken form condemns the entry.
+			Some(plural) => {
+				if already_plural.contains(&i) {
+					continue;
+				}
+				if entry.msgstr_plural.iter().any(|form| claude::is_damaged(plural, form)) {
+					plurals.push((i, entry.msgid.clone(), plural.to_string()));
+					count += 1;
+				}
+			}
+			None => {
+				if !already.contains(&i) && claude::is_damaged(&entry.msgid, &entry.msgstr) {
+					candidates.push((i, entry.msgid.clone()));
+					count += 1;
+				}
+			}
+		}
+	}
 	count
 }
 
@@ -268,43 +356,54 @@ fn translate_one(
 	let _ = fs::remove_file(&tmp);
 	let mut doc = PoDocument::parse(&merged);
 	let mut candidates: Vec<(usize, String)> = doc.needs_translation().map(|(i, m)| (i, m.to_string())).collect();
-	let repaired = if repair { add_damaged_entries(&doc, &mut candidates) } else { 0 };
+	let mut plurals: Vec<(usize, String, String)> =
+		doc.needs_plural_translation().map(|(i, s, p)| (i, s.to_string(), p.to_string())).collect();
+	let repaired = if repair { add_damaged_entries(&doc, &mut candidates, &mut plurals) } else { 0 };
+	let total = candidates.len() + plurals.len();
 	if dry_run {
-		if candidates.is_empty() {
+		if total == 0 {
 			println!("{lang}: fully translated, nothing to do");
-		} else if repaired > 0 {
-			println!("{lang}: {} entries would be translated ({repaired} of them damaged)", candidates.len());
 		} else {
-			println!("{lang}: {} entries would be translated", candidates.len());
+			let plural_note = if plurals.is_empty() { String::new() } else { format!(", {} plural", plurals.len()) };
+			let repair_note = if repaired > 0 { format!(" ({repaired} damaged)") } else { String::new() };
+			println!("{lang}: {total} entries would be translated{plural_note}{repair_note}");
 		}
 		return Ok(());
 	}
-	let final_content = if candidates.is_empty() {
+	let final_content = if total == 0 {
 		merged
 	} else {
 		let Some(client) = client else { unreachable!("client is always Some outside --dry-run") };
 		match claude::language_name(&lang) {
 			None => {
-				println!("{lang}: no language name mapped, skipping ({} entries need one)", candidates.len());
+				println!("{lang}: no language name mapped, skipping ({total} entries need one)");
 				merged
 			}
 			Some(language) => {
-				let phrases: Vec<claude::Phrase> = candidates
-					.iter()
-					.map(|(_, text)| claude::Phrase { source: text.clone(), context: context.get(text).cloned() })
-					.collect();
-				let annotated = phrases.iter().filter(|p| p.context.is_some()).count();
-				let results = client.translate_phrases(&phrases, language)?;
-				let translations: Vec<(usize, String)> = candidates
-					.iter()
-					.map(|(i, _)| *i)
-					.zip(results)
-					.filter_map(|(i, result)| result.map(|text| (i, text)))
-					.collect();
-				let count = translations.len();
-				let skipped = candidates.len() - count;
-				doc.apply_all(&translations);
-				print!("{lang} ({language}): translated {count} entries");
+				let (mut applied, annotated) = translate_singulars(client, language, &candidates, context)?;
+				let plural_done = match plural_forms(&merged) {
+					// Without a usable Plural-Forms header there is no way to know how many
+					// forms to ask for, and guessing at two would write a Russian file that is
+					// wrong in a way gettext accepts silently.
+					None if !plurals.is_empty() => {
+						eprintln!("warning: {lang} has no usable Plural-Forms header, leaving its plural entries");
+						0
+					}
+					None => 0,
+					Some((nplurals, rule)) => {
+						let translated = translate_plurals(client, language, &plurals, context, nplurals, &rule)?;
+						let done = translated.len();
+						applied.extend(translated);
+						done
+					}
+				};
+				let singular_done = applied.len() - plural_done;
+				let skipped = total - applied.len();
+				doc.apply(&applied);
+				print!("{lang} ({language}): translated {singular_done} entries");
+				if plural_done > 0 {
+					print!(", {plural_done} plural");
+				}
 				if repaired > 0 {
 					print!(", {repaired} of them repaired");
 				}
@@ -426,6 +525,22 @@ mod tests {
 
 	// The header's empty msgid is not a translatable string, so a note above it has nothing
 	// to attach to and must not leak onto the first real entry.
+	#[test]
+	fn plural_forms_reads_the_count_and_the_rule() {
+		let po = "msgid \"\"\nmsgstr \"\"\n\"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : 1);\\n\"\n";
+		let (nplurals, rule) = plural_forms(po).unwrap();
+		assert_eq!(nplurals, 3);
+		assert!(rule.starts_with("Plural-Forms: nplurals=3;"), "got: {rule}");
+		assert!(!rule.ends_with("\\n\""), "the header's line ending should not reach the prompt: {rule}");
+	}
+
+	// Without the header there is no way to know how many forms to ask for, and guessing at
+	// two writes a Russian file that is wrong in a way gettext accepts silently.
+	#[test]
+	fn plural_forms_is_none_without_the_header() {
+		assert!(plural_forms("msgid \"\"\nmsgstr \"\"\n").is_none());
+	}
+
 	#[test]
 	fn the_header_entry_never_takes_a_note() {
 		let pot = "#. TRANSLATORS: stray\nmsgid \"\"\nmsgstr \"\"\n\nmsgid \"Ready\"\nmsgstr \"\"\n";
