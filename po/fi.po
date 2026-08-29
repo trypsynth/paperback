@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-26 22:34+0000\n"
-"PO-Revision-Date: 2026-08-28 18:17+0300\n"
+"POT-Creation-Date: 2026-08-29 05:09-0600\n"
+"PO-Revision-Date: 2026-08-29 15:44+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -38,14 +38,6 @@ msgstr "Kaikki asiakirjat"
 #. TRANSLATORS: Label for the search input field in the All Documents dialog
 msgid "&search"
 msgstr "&Haku"
-
-#. TRANSLATORS: Label for the confirmation dialog "Yes" button
-msgid "&Yes"
-msgstr "&Kyllä"
-
-#. TRANSLATORS: Label for the confirmation dialog "No" button
-msgid "&No"
-msgstr "&Ei"
 
 #. TRANSLATORS: Column header for the document filename in the All Documents list
 msgid "File Name"
@@ -131,7 +123,6 @@ msgid "No documents."
 msgstr "Asiakirjoja ei ole."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count. Plural form is chosen by that count.
-#| msgid "%d documents."
 msgid "%d document."
 msgid_plural "%d documents."
 msgstr[0] "%d asiakirja."
@@ -328,8 +319,8 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
-#. TRANSLATORS: Title of the Options dialog
-msgid "Options"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
 msgstr "Asetukset"
 
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
@@ -648,6 +639,13 @@ msgstr "&Palauta oletukset"
 msgid "Reset &All to Defaults"
 msgstr "Palauta &kaikki oletuspikanäppäimet"
 
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr ""
+"Pikanäppäin {} on jo määritetty komentoon {}. Haluatko määrittää sen "
+"uudelleen komennolle {}?"
+
+#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
 msgid "Shortcut Conflict"
 msgstr "Pikanäppäimen ristiriita"
 
@@ -657,10 +655,27 @@ msgstr "Palautetaanko oletuspikanäppäimet?"
 msgid "Reset Shortcuts"
 msgstr "Oletuspikanäppäinten palautus"
 
+#| msgid "&Set Shortcut..."
+msgid "Set Shortcut for {}"
+msgstr "Määritä pikanäppäin komennolle {}"
+
+msgid "Configure shortcut for {}:"
+msgstr "Määritä komennon {} pikanäppäin:"
+
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr ""
 "Vihje: Napsauta näppäimen  muokkauskenttää ja paina haluamaasi "
 "näppäinyhdistelmää."
+
+msgid "Detected: (none)"
+msgstr "Havaittu: (ei mitään)"
+
+#| msgid "Details: {}"
+msgid "Detected: {}"
+msgstr "Havaittu: {}"
+
+msgid "No key detected"
+msgstr "Näppäinpainallusta ei havaittu"
 
 msgid "&Clear"
 msgstr "&Poista"
@@ -690,21 +705,18 @@ msgid "View Note"
 msgstr "Näytä muistiinpano"
 
 #. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-#| msgid "1 hour"
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d tunti"
 msgstr[1] "%d tuntia"
 
 #. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-#| msgid "1 minute"
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minuutti"
 msgstr[1] "%d minuuttia"
 
 #. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-#| msgid "1 second"
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d sekunti"
@@ -715,14 +727,12 @@ msgid "Estimated reading time: {}"
 msgstr "Arvioitu lukuaika: {}"
 
 #. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
-#| msgid "The selection contains {} words."
 msgid "The selection contains %d word."
 msgid_plural "The selection contains %d words."
 msgstr[0] "Valitussa tekstissä on %d sana."
 msgstr[1] "Valitussa tekstissä on %d sanaa."
 
 #. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
-#| msgid "This document contains {} words."
 msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "Asiakirjassa on %d sana."
@@ -852,6 +862,9 @@ msgstr "Etsi"
 msgid "Find &what:"
 msgstr "Ets&ittävä:"
 
+msgid "Options"
+msgstr "Asetukset"
+
 #. TRANSLATORS: Checkbox to make the search case-sensitive
 msgid "&Match case"
 msgstr "Sama &kirjainkoko"
@@ -903,57 +916,41 @@ msgstr "Lahjoitussivun avaaminen selaimessa epäonnistui."
 msgid "Unsupported format selected."
 msgstr "Valittua tiedostomuotoa ei tueta."
 
-#. TRANSLATORS: Main window title when no document is open
-msgid "Paperback"
-msgstr "Paperback"
-
-#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
-msgid "Document reloaded."
-msgstr "Asiakirja päivitetty."
-
-#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
-msgid "Paperback cannot perform any actions while Web View is open."
-msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
-
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "Paperback - {}"
-msgstr "Paperback - {}"
-
-#| msgid "{} chars"
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d merkki"
-msgstr[1] "%d merkkiä"
-
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "asiakirja"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Asiakirjan vienti epäonnistui."
-
-#. TRANSLATORS: Title of the file picker dialog shown when opening a document
-msgid "Open Document"
-msgstr "Asiakirjan avaaminen"
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "Ei viimeisimpiä asiakirjoja."
 
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Ei sivuja."
 
-#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-msgid "Word wrap on."
-msgstr "Rivitys käytössä."
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
+msgstr "Ei sisällysluetteloa."
 
-msgid "Word wrap off."
-msgstr "Rivitys pois."
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+msgid "Web View"
+msgstr "Selainnäkymä"
 
-#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-msgid "Full screen on."
-msgstr "Koko näyttö käytössä."
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+msgid "Could not determine content to display in Web View."
+msgstr "Selainnäkymässä näytettävää sisältöä ei voitu määrittää."
 
-msgid "Full screen off."
-msgstr "Koko näyttö pois."
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "asiakirja"
+
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+msgid "Source:"
+msgstr "Lähdekoodi:"
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+msgid "Source view is not available for this document format."
+msgstr "Tämä asiakirjamuoto ei tue lähdekoodinäkymää."
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+msgid "Could not load the document source."
+msgstr "Asiakirjan lähdekoodia ei voitu näyttää."
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -1007,43 +1004,57 @@ msgstr "Muistiinpanot ja kirjanmerkit tuotu onnistuneesti."
 msgid "Import Successful"
 msgstr "Tuonti onnistui"
 
-#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-msgid "No table of contents."
-msgstr "Ei sisällysluetteloa."
-
-#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
-msgid "Web View"
-msgstr "Selainnäkymä"
-
-#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
-msgid "Could not determine content to display in Web View."
-msgstr "Selainnäkymässä näytettävää sisältöä ei voitu määrittää."
-
-#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
-msgid "Source:"
-msgstr "Lähdekoodi:"
-
-#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
-msgid "Source view is not available for this document format."
-msgstr "Tämä asiakirjamuoto ei tue lähdekoodinäkymää."
-
-#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
-msgid "Could not load the document source."
-msgstr "Asiakirjan lähdekoodia ei voitu näyttää."
-
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "Uniajastin peruutettu."
 
-#| msgid "Sleep timer set for %d minutes."
 msgid "Sleep timer set for %d minute."
 msgid_plural "Sleep timer set for %d minutes."
 msgstr[0] "Uniajastin %d minuutti."
 msgstr[1] "Uniajastin %d minuuttia."
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
-msgstr "Ei viimeisimpiä asiakirjoja."
+#. TRANSLATORS: Main window title when no document is open
+msgid "Paperback"
+msgstr "Paperback"
+
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+msgid "Document reloaded."
+msgstr "Asiakirja päivitetty."
+
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+msgid "%d char"
+msgid_plural "%d chars"
+msgstr[0] "%d merkki"
+msgstr[1] "%d merkkiä"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Asiakirjan vienti epäonnistui."
+
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+msgid "Open Document"
+msgstr "Asiakirjan avaaminen"
+
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+msgid "Word wrap on."
+msgstr "Rivitys käytössä."
+
+msgid "Word wrap off."
+msgstr "Rivitys pois."
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+msgid "Full screen on."
+msgstr "Koko näyttö käytössä."
+
+msgid "Full screen off."
+msgstr "Koko näyttö pois."
 
 msgid "&Undo\tCtrl+Z"
 msgstr "K&umoa\tCtrl+Z"
@@ -1518,13 +1529,13 @@ msgid "Skip the audio narration backward"
 msgstr "Kelaa äänitettä taaksepäin"
 
 msgid "&Increase Audio Seek Amount"
-msgstr "P&idennä äänitteen kelauksen aikasiirtymää"
+msgstr "P&idennä kelauksen aikasiirtymää"
 
 msgid "Increase how far seeking the audio narration moves"
 msgstr "Pidennä aikaa, jonka verran äänitettä kelataan eteen- tai taaksepäin"
 
 msgid "&Decrease Audio Seek Amount"
-msgstr "&Lyhennä äänitteen kelauksen aikasiirtymää"
+msgstr "&Lyhennä kelauksen aikasiirtymää"
 
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Lyhennä aikaa, jonka verran äänitettä kelataan eteen- tai taaksepäin"
@@ -1535,7 +1546,8 @@ msgstr "&Koko näyttö"
 msgid "Toggle full screen"
 msgstr "Ota koko näytön tila käyttöön tai poista se käytöstä"
 
-msgid "&Options"
+#| msgid "Settings"
+msgid "&Settings"
 msgstr "&Asetukset"
 
 msgid "&Sleep Timer..."
@@ -1825,6 +1837,318 @@ msgstr "Palauta Paperback"
 msgid "Exit Paperback"
 msgstr "Lopeta Paperback"
 
+#| msgid "&Open..."
+msgid "Open..."
+msgstr "Avaa..."
+
+#| msgid "Close &All"
+msgid "Close All"
+msgstr "Sulje kaikki"
+
+#| msgid "Reopen &Last Closed"
+msgid "Reopen Last Closed"
+msgstr "Avaa viimeksi suljettu"
+
+#| msgid "No Recent Documents"
+msgid "Show All Recent Documents..."
+msgstr "Näytä viimeksi avatut asiakirjat..."
+
+msgid "Exit"
+msgstr "Lopeta"
+
+#| msgid "&Find..."
+msgid "Find..."
+msgstr "Etsi..."
+
+msgid "Find Next"
+msgstr "Etsi seuraava"
+
+msgid "Find Previous"
+msgstr "Etsi edellinen"
+
+#| msgid "Go to &line..."
+msgid "Go to Line..."
+msgstr "Siirry riville..."
+
+#| msgid "Go to &percent..."
+msgid "Go to Percent..."
+msgstr "Siirry prosenttiin..."
+
+#| msgid "Go to &Page"
+msgid "Go to Page..."
+msgstr "Siirry sivulle..."
+
+#| msgid "Go &Back"
+msgid "Go Back"
+msgstr "Siirry taaksepäin"
+
+#| msgid "Go &Forward"
+msgid "Go Forward"
+msgstr "Siirry eteenpäin"
+
+#| msgid "Percentage"
+msgid "Announce Percentage"
+msgstr "Ilmoita lukukohta prosentteina"
+
+#| msgid "Temporary bookmark."
+msgid "Set Temporary Bookmark"
+msgstr "Lisää tilapäinen kirjanmerkki"
+
+msgid "Jump to Temporary Bookmark"
+msgstr "Siirry tilapäiseen kirjanmerkkiin"
+
+#| msgid "&Previous Heading"
+msgid "Previous Heading"
+msgstr "Edellinen otsikko"
+
+#| msgid "&Next Heading"
+msgid "Next Heading"
+msgstr "Seuraava otsikko"
+
+#| msgid "Previous Heading Level &1"
+msgid "Previous Heading Level 1"
+msgstr "Edellinen otsikkotaso 1"
+
+#| msgid "Previous Heading Level &2"
+msgid "Previous Heading Level 2"
+msgstr "Edellinen otsikkotaso 2"
+
+#| msgid "Previous Heading Level &3"
+msgid "Previous Heading Level 3"
+msgstr "Edellinen otsikkotaso 3"
+
+#| msgid "Previous Heading Level &4"
+msgid "Previous Heading Level 4"
+msgstr "Edellinen otsikkotaso 4"
+
+#| msgid "Previous Heading Level &5"
+msgid "Previous Heading Level 5"
+msgstr "Edellinen otsikkotaso 5"
+
+#| msgid "Previous Heading Level &6"
+msgid "Previous Heading Level 6"
+msgstr "Edellinen otsikkotaso 6"
+
+#| msgid "Previous Pa&ge"
+msgid "Previous Page"
+msgstr "Edellinen sivu"
+
+#| msgid "Next Pag&e"
+msgid "Next Page"
+msgstr "Seuraava sivu"
+
+#| msgid "&Previous Bookmark"
+msgid "Previous Bookmark"
+msgstr "Edellinen kirjanmerkki"
+
+#| msgid "&Next Bookmark"
+msgid "Next Bookmark"
+msgstr "Seuraava kirjanmerkki"
+
+#| msgid "Previous &Note"
+msgid "Previous Note"
+msgstr "Edellinen muistiinpano"
+
+#| msgid "Next N&ote"
+msgid "Next Note"
+msgstr "Seuraava muistiinpano"
+
+#| msgid "Jump to Bookmark"
+msgid "Jump to All Bookmarks..."
+msgstr "Siirry kaikkiin kirjanmerkkeihin..."
+
+#| msgid "Jump to &Bookmarks Only..."
+msgid "Jump to Bookmarks Only..."
+msgstr "Siirry vain kirjanmerkkeihin..."
+
+msgid "Jump to Notes Only..."
+msgstr "Siirry vain muistiinpanoihin..."
+
+#| msgid "&View Note Text"
+msgid "View Note Text"
+msgstr "Näytä muistiinpano"
+
+#| msgid "Previous Lin&k"
+msgid "Previous Link"
+msgstr "Edellinen linkki"
+
+#| msgid "Next Lin&k"
+msgid "Next Link"
+msgstr "Seuraava linkki"
+
+#| msgid "Previous Ima&ge"
+msgid "Previous Image"
+msgstr "Edellinen kuva"
+
+#| msgid "Next Ima&ge"
+msgid "Next Image"
+msgstr "Seuraava kuva"
+
+#| msgid "Previous Figu&re"
+msgid "Previous Figure"
+msgstr "Edellinen kuvitus"
+
+#| msgid "Next Figu&re"
+msgid "Next Figure"
+msgstr "Seuraava kuvitus"
+
+#| msgid "Previous &Table"
+msgid "Previous Table"
+msgstr "Edellinen taulukko"
+
+#| msgid "Next &Table"
+msgid "Next Table"
+msgstr "Seuraava taulukko"
+
+#| msgid "Previous Se&parator"
+msgid "Previous Separator"
+msgstr "Edellinen erotin"
+
+#| msgid "Next Se&parator"
+msgid "Next Separator"
+msgstr "Seuraava erotin"
+
+#| msgid "Previous L&ist"
+msgid "Previous List"
+msgstr "Edellinen luettelo"
+
+#| msgid "Next L&ist"
+msgid "Next List"
+msgstr "Seuraava luettelo"
+
+#| msgid "Previous List &Item"
+msgid "Previous List Item"
+msgstr "Edellinen luettelokohde"
+
+#| msgid "Next List I&tem"
+msgid "Next List Item"
+msgstr "Seuraava luettelokohde"
+
+#| msgid "Container &Start"
+msgid "Container Start"
+msgstr "Säilön alku"
+
+#| msgid "Past Container &End"
+msgid "Past Container End"
+msgstr "Säilön jälkeinen kohta"
+
+#| msgid "&Elements List..."
+msgid "Elements List..."
+msgstr "Elementtilista..."
+
+#| msgid "Reveal &File in Folder"
+msgid "Reveal File in Folder"
+msgstr "Avaa asiakirjan kansio"
+
+#| msgid "Open in &Web View"
+msgid "Open in Web View"
+msgstr "Avaa selainnäkymässä"
+
+#| msgid "View &Source"
+msgid "View Source"
+msgstr "Näytä lähdekoodi"
+
+#| msgid "Toggle &Bookmark"
+msgid "Toggle Bookmark"
+msgstr "Lisää tai poista kirjanmerkki"
+
+#| msgid "Bookmark with &Note"
+msgid "Bookmark with Note"
+msgstr "Kirjanmerkki muistiinpanolla"
+
+#| msgid "Toggle word wrap"
+msgid "Toggle Word Wrap"
+msgstr "Ota rivitys käyttöön tai poista se käytöstä"
+
+#| msgid "&Play/Pause Audio"
+msgid "Play/Pause Audio"
+msgstr "Toista/pysäytä äänite"
+
+#| msgid "Seek Audio &Forward"
+msgid "Seek Audio Forward"
+msgstr "Kelaa äänitettä eteenpäin"
+
+#| msgid "Seek Audio &Backward"
+msgid "Seek Audio Backward"
+msgstr "Kelaa äänitettä taaksepäin"
+
+#| msgid "&Increase Audio Seek Amount"
+msgid "Increase Audio Seek Amount"
+msgstr "Pidennä kelauksen aikasiirtymää"
+
+#| msgid "&Decrease Audio Seek Amount"
+msgid "Decrease Audio Seek Amount"
+msgstr "Lyhennä kelauksen aikasiirtymää"
+
+#| msgid "&Full Screen"
+msgid "Full Screen"
+msgstr "Koko näyttö"
+
+#| msgid "Settings"
+msgid "Settings..."
+msgstr "Asetukset..."
+
+#| msgid "&Sleep Timer..."
+msgid "Sleep Timer..."
+msgstr "Uniajastin..."
+
+#| msgid "Customize &Keyboard Shortcuts..."
+msgid "Customize Keyboard Shortcuts..."
+msgstr "Muokkaa pikanäppäimiä..."
+
+#| msgid "&Import Document Data..."
+msgid "Import Document Data..."
+msgstr "Tuo asiakirjan tiedot..."
+
+#| msgid "&Export Document Data..."
+msgid "Export Document Data..."
+msgstr "Vie asiakirjan tiedot..."
+
+#| msgid "Export to &Plain Text..."
+msgid "Export to Plain Text..."
+msgstr "Vie tekstimuotoon..."
+
+#| msgid "Export to &HTML..."
+msgid "Export to HTML..."
+msgstr "Vie HTML-muotoon..."
+
+#| msgid "Export to &Markdown..."
+msgid "Export to Markdown..."
+msgstr "Vie Markdown-muotoon..."
+
+#| msgid "&About Paperback"
+msgid "About Paperback"
+msgstr "Tietoa Paperbackista"
+
+#| msgid "View Help in &Browser"
+msgid "View Help in Browser"
+msgstr "Näytä ohje selaimessa"
+
+#| msgid "View Help in &Paperback"
+msgid "View Help in Paperback"
+msgstr "Näytä ohje Paperbackissa"
+
+#| msgid "Check for &Updates"
+msgid "Check for Updates"
+msgstr "Tarkista päivitykset"
+
+#| msgid "&Donate"
+msgid "Donate"
+msgstr "Lahjoita"
+
+msgid "File"
+msgstr "Tiedosto"
+
+#| msgid "&Tools"
+msgid "Tools"
+msgstr "Työkalut"
+
+msgid "Help"
+msgstr "Ohje"
+
+msgid "None"
+msgstr "Ei mitään"
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "Kuvio"
@@ -2093,6 +2417,84 @@ msgstr "Tarvitaan salasana"
 msgid "Password incorrect"
 msgstr "Virheellinen salasana"
 
+msgid "Unknown update file format."
+msgstr "Tuntematon päivitystiedoston muoto."
+
+#| msgid "Failed to open donation page in browser."
+msgid "Failed to open disk image"
+msgstr "Levykuvan avaaminen epäonnistui"
+
+msgid ""
+"The update has been downloaded and its disk image opened. Quit %s and drag "
+"the new version into Applications to finish installing."
+msgstr ""
+"Päivitys on ladattu ja sen levykuva avattu. Sulje %s ja viimeistele asennus "
+"vetämällä uusi versio Ohjelmat-kansioon."
+
+msgid "Update Ready"
+msgstr "Päivitys valmiina"
+
+msgid "Failed to get current exe path"
+msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
+
+msgid "Failed to launch installer script"
+msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
+
+msgid "Failed to launch update script"
+msgstr "Päivitysskriptin käynnistys epäonnistui"
+
+msgid "Update failed"
+msgstr "Päivitys epäonnistui"
+
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Päivitys ladattu kansioon: %s\n"
+"Asenna se manuaalisesti."
+
+msgid "Update to %s"
+msgstr "Päivitys versioon %s"
+
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "%sista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
+
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
+msgid "&Yes"
+msgstr "&Kyllä"
+
+#. TRANSLATORS: Label for the confirmation dialog "No" button
+msgid "&No"
+msgstr "&Ei"
+
+msgid "No release notes provided."
+msgstr "Julkaisutietoja ei saatavilla."
+
+msgid "%s Update"
+msgstr "%sin päivitys"
+
+msgid "Downloading update..."
+msgstr "Päivitystä ladataan..."
+
+msgid "No updates available."
+msgstr "Päivityksiä ei saatavilla."
+
+msgid "No updates available. Latest version: %s"
+msgstr "Päivityksiä ei saatavilla. Uusin versio: %s"
+
+msgid "Info"
+msgstr "Tiedot"
+
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %s"
+
+msgid "Security Error"
+msgstr "Suojausvirhe"
+
+msgid "&Options"
+msgstr "&Asetukset"
+
 msgid "1 document."
 msgstr "1 asiakirja."
 
@@ -2131,62 +2533,6 @@ msgstr "Uniajastin 1 minuutti."
 
 msgid "Sleep timer set for %d minutes."
 msgstr "Uniajastin %d minuuttia."
-
-msgid "Update to %s"
-msgstr "Päivitys versioon %s"
-
-msgid "A new version of %s is available. Here's what's new:"
-msgstr "%sista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
-
-msgid "No release notes provided."
-msgstr "Julkaisutietoja ei saatavilla."
-
-msgid "%s Update"
-msgstr "%sin päivitys"
-
-msgid "Downloading update..."
-msgstr "Päivitystä ladataan..."
-
-msgid "No updates available."
-msgstr "Päivityksiä ei saatavilla."
-
-msgid "No updates available. Latest version: %s"
-msgstr "Päivityksiä ei saatavilla. Uusin versio: %s"
-
-msgid "Info"
-msgstr "Tiedot"
-
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %s"
-
-msgid "Security Error"
-msgstr "Suojausvirhe"
-
-msgid "Update failed"
-msgstr "Päivitys epäonnistui"
-
-msgid ""
-"Update downloaded to: %s\n"
-"Please install it manually."
-msgstr ""
-"Päivitys ladattu kansioon: %s\n"
-"Asenna se manuaalisesti."
-
-msgid "Update Ready"
-msgstr "Päivitys valmiina"
-
-msgid "Failed to get current exe path"
-msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
-
-msgid "Failed to launch installer script"
-msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
-
-msgid "Failed to launch update script"
-msgstr "Päivitysskriptin käynnistys epäonnistui"
-
-msgid "Unknown update file format."
-msgstr "Tuntematon päivitystiedoston muoto."
 
 msgid "Previous Section\t["
 msgstr "Edellinen luku\t["
@@ -2467,9 +2813,6 @@ msgstr "Vaihda tekstitilaan"
 msgid "Sleep Timer (active)"
 msgstr "Uniajastin (aktiivinen)"
 
-msgid "Settings"
-msgstr "Asetukset"
-
 msgid "More options"
 msgstr "Lisää asetuksia"
 
@@ -2493,9 +2836,6 @@ msgstr "Nimi"
 
 msgid "Author"
 msgstr "Tekijä"
-
-msgid "File"
-msgstr "Tiedosto"
 
 msgid "Words"
 msgstr "Sanojen määrä"
@@ -2761,9 +3101,6 @@ msgstr "Hakusana"
 msgid "Search History"
 msgstr "Hakuhistoria"
 
-msgid "Find Next"
-msgstr "Etsi seuraava"
-
 msgid "Password:"
 msgstr "Salasana:"
 
@@ -2841,9 +3178,6 @@ msgstr "Uusi arvo:"
 msgid "Custom time..."
 msgstr "Mukautettu aika..."
 
-msgid "Find Previous"
-msgstr "Etsi edellinen"
-
 msgid "Close Search"
 msgstr "Sulje haku"
 
@@ -2901,9 +3235,6 @@ msgstr "Pysäytä tekstistä puheeksi -toiminto"
 msgid "Read Aloud"
 msgstr "Lue tekstistä puheeksi -toiminnolla"
 
-msgid "Help"
-msgstr "Ohje"
-
 msgid "More Options"
 msgstr "Lisää asetuksia"
 
@@ -2948,3 +3279,19 @@ msgstr "Pysäytä ajastin"
 
 msgid "Start Timer"
 msgstr "Käynnistä ajastin"
+
+#| msgid "Text to Speech"
+msgid "Text Size"
+msgstr "Tekstin koko"
+
+#| msgid "&Line spacing:"
+msgid "Line Spacing"
+msgstr "Riviväli"
+
+#| msgid "&Paragraph spacing:"
+msgid "Paragraph Spacing"
+msgstr "Kappaleväli"
+
+#| msgid "Text &alignment:"
+msgid "Alignment"
+msgstr "Tekstin tasaus"
