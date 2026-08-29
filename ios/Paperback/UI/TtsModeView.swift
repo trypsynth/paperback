@@ -13,10 +13,8 @@ struct TtsModeView: View {
 						? t("Press play to start listening.")
 						: viewModel.reading.currentSegmentText
 				)
-				.font(.body)
-				.multilineTextAlignment(.leading)
-				.padding(24)
-				.frame(maxWidth: .infinity, alignment: .leading)
+				.readabilityStyle(viewModel)
+				.padding(.horizontal, 24)
 			}
 			.frame(maxHeight: 400)
 			if let session = viewModel.activeSession {

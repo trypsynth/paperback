@@ -86,6 +86,53 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 	}
 }
 
+private struct ReadabilitySettingsSection: View {
+	@Bindable var viewModel: AppViewModel
+
+	var body: some View {
+		// TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
+		Section(t("Readability")) {
+			Stepper(value: $viewModel.textScalePercent, in: 70...300, step: 10) {
+				HStack {
+					// TRANSLATORS: Row label for the control that scales the size of document text
+					Text(t("Text Size"))
+					Spacer()
+					Text("\(viewModel.textScalePercent)%")
+						.foregroundStyle(.secondary)
+						.monospacedDigit()
+				}
+			}
+			.accessibilityValue("\(viewModel.textScalePercent)%")
+			// TRANSLATORS: Label for the picker choosing how much space sits between lines of text
+			Picker(t("Line Spacing"), selection: $viewModel.lineSpacingChoice) {
+				// TRANSLATORS: Default spacing option, shown in the line and paragraph spacing pickers
+				Text(t("Normal")).tag(0)
+				// TRANSLATORS: 1.5x line spacing option
+				Text(t("1.5\u{00d7}")).tag(1)
+				// TRANSLATORS: Double line spacing option
+				Text(t("Double")).tag(2)
+			}
+			// TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
+			Picker(t("Paragraph Spacing"), selection: $viewModel.paragraphSpacingChoice) {
+				Text(t("Normal")).tag(0)
+				// TRANSLATORS: Relaxed paragraph spacing option
+				Text(t("Relaxed")).tag(1)
+				// TRANSLATORS: Wide paragraph spacing option
+				Text(t("Wide")).tag(2)
+			}
+			// TRANSLATORS: Label for the picker choosing how document text is aligned
+			Picker(t("Alignment"), selection: $viewModel.textAlignmentChoice) {
+				// TRANSLATORS: Left text alignment option
+				Text(t("Left")).tag(0)
+				// TRANSLATORS: Center text alignment option
+				Text(t("Center")).tag(1)
+				// TRANSLATORS: Right text alignment option
+				Text(t("Right")).tag(2)
+			}
+		}
+	}
+}
+
 struct SettingsView: View {
 	@Environment(AppViewModel.self) private var viewModel
 
@@ -104,6 +151,7 @@ struct SettingsView: View {
 					set: { viewModel.swipeUpMovesForward = $0 }
 				))
 			}
+			ReadabilitySettingsSection(viewModel: viewModel)
 			TtsSettingsSection(
 				ttsManager: viewModel.reading.ttsManager,
 				onPlaySample: { viewModel.reading.ttsManager.speakSample(sampleText) },

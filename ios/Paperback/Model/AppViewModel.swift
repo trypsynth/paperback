@@ -34,6 +34,23 @@ final class AppViewModel {
 		didSet { configManager.setAppBool(key: "swipe_up_moves_forward", value: swipeUpMovesForward) }
 	}
 
+	// Spacing and alignment share the desktop's config keys and value meanings (spacing
+	// 0/1/2, alignment 0 leading, 1 center, 2 trailing) so a document reads the same way on
+	// both. Text size does not: the desktop stores an absolute point size, while this scales
+	// whatever size Dynamic Type is already asking for.
+	var textScalePercent: Int = 100 {
+		didSet { configManager.setAppInt(key: "text_scale_percent", value: Int32(textScalePercent)) }
+	}
+	var lineSpacingChoice: Int = 0 {
+		didSet { configManager.setAppInt(key: "line_spacing", value: Int32(lineSpacingChoice)) }
+	}
+	var paragraphSpacingChoice: Int = 0 {
+		didSet { configManager.setAppInt(key: "paragraph_spacing", value: Int32(paragraphSpacingChoice)) }
+	}
+	var textAlignmentChoice: Int = 0 {
+		didSet { configManager.setAppInt(key: "text_alignment", value: Int32(textAlignmentChoice)) }
+	}
+
 	var recentDocuments: [RecentDocument] = []
 
 	let configManager = ConfigManagerFfi()
@@ -46,6 +63,10 @@ final class AppViewModel {
 		_ = configManager.initialize(configPath: configPath)
 		restorePreviousDocuments = configManager.getAppBool(key: "restore_previous_documents", defaultValue: true)
 		swipeUpMovesForward = configManager.getAppBool(key: "swipe_up_moves_forward", defaultValue: true)
+		textScalePercent = Int(configManager.getAppInt(key: "text_scale_percent", defaultValue: 100))
+		lineSpacingChoice = Int(configManager.getAppInt(key: "line_spacing", defaultValue: 0))
+		paragraphSpacingChoice = Int(configManager.getAppInt(key: "paragraph_spacing", defaultValue: 0))
+		textAlignmentChoice = Int(configManager.getAppInt(key: "text_alignment", defaultValue: 0))
 
 		reading.context = self
 
