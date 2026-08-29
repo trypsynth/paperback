@@ -1,7 +1,6 @@
 use std::{
 	env,
 	error::Error,
-	fs,
 	path::{Path, PathBuf},
 	process::Command,
 };
@@ -9,7 +8,6 @@ use std::{
 mod android;
 mod ios;
 mod release;
-mod sanitize_rust;
 mod translate;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -53,28 +51,15 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 	let root = project_root();
 	let po_dir = root.join("po");
 	let pot_file = po_dir.join("paperback.pot");
-	// Step 1: generate from Rust crates tagged with translatable = true. `xgettext
-	// --language=C` doesn't understand Rust lifetimes (`'a`) or raw strings (`r#"..."#`) and
-	// runs on past them as "unterminated" literals, sometimes splicing unrelated strings
-	// together. Feed it sanitized copies of the source instead of the real files so those
-	// constructs can't confuse it; see sanitize_rust for why comments/strings stay untouched.
+	// Step 1: generate from Rust crates tagged with translatable = true. patois-build
+	// sanitizes the sources for `xgettext --language=C` itself, so the real source dirs go
+	// straight in.
 	let translatable_dirs = translatable_crate_src_dirs(&root)?;
 	if translatable_dirs.is_empty() {
 		return Err("no translatable crates found — check [package.metadata.patois] translatable = true".into());
 	}
-	let sanitized_root = root.join("target/gen-pot-sanitized");
-	let _ = fs::remove_dir_all(&sanitized_root);
-	let mut sanitized_dirs = Vec::new();
-	for src_dir in &translatable_dirs {
-		let crate_name = src_dir.parent().and_then(|p| p.file_name()).unwrap().to_string_lossy().into_owned();
-		let dest = sanitized_root.join(crate_name).join("src");
-		sanitize_dir_into(src_dir, &dest)?;
-		sanitized_dirs.push(dest);
-	}
 	let version = crate_version(&root, "paperback")?;
-	let gen_result = patois_build::gen_pot_from_dirs(&sanitized_dirs, &po_dir, "paperback", &version);
-	let _ = fs::remove_dir_all(&sanitized_root);
-	gen_result?;
+	patois_build::gen_pot_from_dirs(&translatable_dirs, &po_dir, "paperback", &version)?;
 	// Step 2: extend with iOS Swift sources (t() calls in Swift files)
 	let ios_src = root.join("ios/Paperback");
 	if ios_src.is_dir() {
@@ -142,24 +127,4 @@ fn crate_version(root: &Path, package_name: &str) -> Result<String, Box<dyn Erro
 		.and_then(|p| p["version"].as_str())
 		.map(str::to_string)
 		.ok_or_else(|| format!("cargo metadata: package {package_name} not found").into())
-}
-
-/// Copy every `.rs` file under `src` into the same relative layout under `dest`, sanitizing
-/// each one for `xgettext --language=C` on the way (see `sanitize_rust`).
-fn sanitize_dir_into(src: &Path, dest: &Path) -> Result<(), Box<dyn Error>> {
-	for entry in walkdir::WalkDir::new(src) {
-		let entry = entry?;
-		let path = entry.path();
-		if path.extension().and_then(|e| e.to_str()) != Some("rs") {
-			continue;
-		}
-		let rel = path.strip_prefix(src)?;
-		let out_path = dest.join(rel);
-		if let Some(parent) = out_path.parent() {
-			fs::create_dir_all(parent)?;
-		}
-		let content = fs::read_to_string(path)?;
-		fs::write(&out_path, sanitize_rust::sanitize_for_xgettext(&content))?;
-	}
-	Ok(())
 }
