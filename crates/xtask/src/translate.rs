@@ -67,6 +67,13 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 		None
 	} else {
 		let api_key = env::var("ANTHROPIC_API_KEY").map_err(|_| "ANTHROPIC_API_KEY environment variable is not set")?;
+		// An empty value is its own case, and worth naming. A CI secret that exists but holds
+		// an empty string satisfies `env::var`, so without this the run gets all the way to the
+		// API and comes back "x-api-key header is required", which reads like a broken key
+		// rather than a missing one and sends you looking in the wrong place.
+		if api_key.trim().is_empty() {
+			return Err("ANTHROPIC_API_KEY is set but empty".into());
+		}
 		let client = claude::ClaudeClient::new(api_key);
 		println!("translating with {}", client.model());
 		Some(client)
