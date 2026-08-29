@@ -165,6 +165,25 @@ impl MainWindow {
 			event.skip(true);
 			if let WindowEventData::Activate(activate) = &event
 				&& activate.is_active()
+			{
+				// On Windows the read-only Richedit does not emit its own focus event when the
+				// window is re-activated, so screen readers keep announcing the frame ("pane")
+				// instead of the book text. Restore focus to the text control and fire the MSAA
+				// focus event explicitly so screen readers re-sync.
+				#[cfg(target_os = "windows")]
+				if let Ok(dm) = dm_for_activate.try_lock() {
+					dm.restore_focus();
+					if let Some(tab) = dm.active_tab() {
+						let hwnd = windows::Win32::Foundation::HWND(tab.text_ctrl.get_handle());
+						// EVENT_OBJECT_FOCUS = 0x8005, OBJID_CLIENT = -4, CHILDID_SELF = 0
+						unsafe {
+							windows::Win32::UI::Accessibility::NotifyWinEvent(0x8005, hwnd, -4, 0);
+						}
+					}
+				}
+			}
+			if let WindowEventData::Activate(activate) = &event
+				&& activate.is_active()
 				&& !activate_reload_guard.get()
 				&& let Ok(mut dm_ref) = dm_for_activate.try_lock()
 				&& let Some(index) = dm_ref.active_tab_index()
