@@ -85,6 +85,21 @@ impl ClaudeClient {
 		&self.model
 	}
 
+	/// The `output_config` for a request, with `effort` included only where the model takes it.
+	///
+	/// `effort` is not universal: the Haiku tier rejects it outright with "This model does not
+	/// support the effort parameter", a 400 on every request rather than a warning. It is worth
+	/// setting on the models that do have it - it holds down thinking tokens on a task whose
+	/// rules are all supplied up front - but it has to be conditional, because the model is
+	/// configurable and the cheap default is exactly the one that refuses it.
+	fn output_config(&self, format: &Value) -> Value {
+		let mut config = json!({ "format": format });
+		if supports_effort(&self.model) {
+			config["effort"] = json!("low");
+		}
+		config
+	}
+
 	/// Translates `phrases` into `language`, in batches. Returns one result per input, in
 	/// order, with `None` where the result failed a check (see [`check`]).
 	pub fn translate_phrases(&self, phrases: &[Phrase], language: &str) -> Result<Vec<Option<String>>, Box<dyn Error>> {
@@ -113,13 +128,7 @@ impl ClaudeClient {
 		Ok(json!({
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
-			// A well-specified transformation with the rules supplied up front, which is what
-			// low effort is for. Raising it costs thinking tokens on every batch and has
-			// nothing extra to work out.
-			"output_config": {
-				"effort": "low",
-				"format": { "type": "json_schema", "schema": translations_schema() }
-			},
+			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": translations_schema() })),
 			// The rules are identical for every batch and every language, so they sit in a
 			// cacheable system block rather than being repeated in each user message.
 			"system": [{
@@ -204,10 +213,7 @@ impl ClaudeClient {
 		let request = json!({
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
-			"output_config": {
-				"effort": "low",
-				"format": { "type": "json_schema", "schema": plural_schema(nplurals) }
-			},
+			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": plural_schema() })),
 			"system": [{
 				"type": "text",
 				"text": plural_system_prompt(),
@@ -263,10 +269,7 @@ impl ClaudeClient {
 		let request = json!({
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
-			"output_config": {
-				"effort": "low",
-				"format": { "type": "json_schema", "schema": markdown_schema() }
-			},
+			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": markdown_schema() })),
 			"system": [{
 				"type": "text",
 				"text": markdown_system_prompt(),
@@ -366,6 +369,16 @@ fn first_text_block(body: &str) -> Result<String, Box<dyn Error>> {
 		.ok_or_else(|| format!("Claude response had no text block (body: {body})").into())
 }
 
+/// Whether `output_config.effort` is accepted by this model.
+///
+/// The Haiku tier does not take it and returns a 400 for the whole request, so this is a
+/// correctness check, not a tuning one. Written as "everything except Haiku" rather than a list
+/// of models that do support it, so a newer model set through `PAPERBACK_TRANSLATE_MODEL` gets
+/// the parameter by default instead of silently losing it.
+fn supports_effort(model: &str) -> bool {
+	!model.contains("haiku")
+}
+
 fn translations_schema() -> Value {
 	json!({
 		"type": "object",
@@ -388,9 +401,14 @@ fn translations_schema() -> Value {
 	})
 }
 
-/// Schema for a plural batch. `minItems`/`maxItems` pin the form count at `nplurals`, so a
-/// response with too few forms is rejected by the API rather than arriving here to be caught.
-fn plural_schema(nplurals: usize) -> Value {
+/// Schema for a plural batch.
+///
+/// The form count is deliberately not pinned here. The obvious spelling - `minItems`/`maxItems`
+/// set to `nplurals` - is rejected outright: the API supports `minItems` of 0 or 1 only, and a
+/// request asking for `[2, 5]` comes back as a 400 for the whole batch. So the schema asks only
+/// for a non-empty array of strings, the prompt states the exact count, and [`check_plural`]
+/// enforces it on the way back, which it has to do regardless.
+fn plural_schema() -> Value {
 	json!({
 		"type": "object",
 		"properties": {
@@ -403,8 +421,7 @@ fn plural_schema(nplurals: usize) -> Value {
 						"forms": {
 							"type": "array",
 							"items": { "type": "string" },
-							"minItems": nplurals,
-							"maxItems": nplurals
+							"minItems": 1
 						}
 					},
 					"required": ["id", "forms"],
@@ -861,7 +878,7 @@ mod tests {
 		];
 		let request = client.phrase_request(&phrases, "Russian").unwrap();
 		assert_eq!(request["model"], "test-model", "the configured model has to reach the request");
-		assert_eq!(request["output_config"]["effort"], "low");
+		assert_eq!(request["output_config"]["effort"], "low", "a model that accepts effort gets it");
 		// `format` nests inside output_config; as a top-level `output_format` it is the
 		// deprecated spelling and would be rejected.
 		assert_eq!(request["output_config"]["format"]["type"], "json_schema");
@@ -944,12 +961,32 @@ mod tests {
 		assert!(check_plural(&p, &forms, 2).is_some());
 	}
 
+	// The count cannot live in the schema: the API takes minItems of 0 or 1 only, and rejects
+	// the whole request otherwise. check_plural is what enforces it.
 	#[test]
-	fn the_plural_schema_pins_the_form_count() {
-		let schema = plural_schema(3);
+	fn the_plural_schema_asks_only_for_a_non_empty_array() {
+		let schema = plural_schema();
 		let forms = &schema["properties"]["translations"]["items"]["properties"]["forms"];
-		assert_eq!(forms["minItems"], 3);
-		assert_eq!(forms["maxItems"], 3);
+		assert_eq!(forms["minItems"], 1);
+		assert!(forms["maxItems"].is_null());
+	}
+
+	// Sending `effort` to a model that does not take it is a 400 on every single request, so
+	// this is correctness rather than tuning. Haiku is the default, which is what made it bite.
+	#[test]
+	fn effort_is_sent_only_to_models_that_accept_it() {
+		assert!(!supports_effort("claude-haiku-4-5"));
+		assert!(supports_effort("claude-opus-5"));
+		assert!(supports_effort("claude-sonnet-5"));
+	}
+
+	#[test]
+	fn the_opus_request_still_carries_effort() {
+		let client = ClaudeClient { api_key: "test".to_string(), model: "claude-opus-5".to_string() };
+		let phrases = vec![Phrase { source: "Ready".to_string(), context: None }];
+		let request = client.phrase_request(&phrases, "French").unwrap();
+		assert_eq!(request["output_config"]["effort"], "low");
+		assert_eq!(request["output_config"]["format"]["type"], "json_schema");
 	}
 
 	// A typo here is a 404 on every request, and only at runtime.

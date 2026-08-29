@@ -52,7 +52,7 @@ msgstr "Pad"
 #. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
 #, fuzzy
 msgid "&Status:"
-msgstr "Status"
+msgstr "&Status:"
 
 #. TRANSLATORS: Option in the All Documents status filter to show documents of every status
 #. TRANSLATORS: Option in the filter dropdown to show all entries
@@ -332,7 +332,7 @@ msgstr "Automatische &terugloop"
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 #, fuzzy
 msgid "Render tables &inline"
-msgstr "Tabellen weergeven & inline"
+msgstr "Tabellen &inline weergeven"
 
 #. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
 msgid "&Minimize to system tray"
@@ -701,7 +701,7 @@ msgstr "Geen toets gedetecteerd"
 
 #, fuzzy
 msgid "&Clear"
-msgstr "Wissen"
+msgstr "&Wissen"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -1093,27 +1093,27 @@ msgstr "Volledig scherm uit."
 
 #, fuzzy
 msgid "&Undo\tCtrl+Z"
-msgstr "&Ongedaan maken    Ctrl+Z"
+msgstr "&Ongedaan maken\tCtrl+Z"
 
 #, fuzzy
 msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Opnieuw    Ctrl+Shift+Z"
+msgstr "&Opnieuw\tCtrl+Shift+Z"
 
 #, fuzzy
 msgid "Cu&t\tCtrl+X"
-msgstr "Cu&t    Ctrl+X"
+msgstr "Kni&ppen\tCtrl+X"
 
 #, fuzzy
 msgid "&Copy\tCtrl+C"
-msgstr "&Kopiëren    Ctrl+C"
+msgstr "&Kopiëren\tCtrl+C"
 
 #, fuzzy
 msgid "&Paste\tCtrl+V"
-msgstr "&Plakken    Ctrl+V"
+msgstr "&Plakken\tCtrl+V"
 
 #, fuzzy
 msgid "Select &All\tCtrl+A"
-msgstr "Selecteer 'Alles'    Ctrl+A"
+msgstr "Alles &selecteren\tCtrl+A"
 
 #, fuzzy
 msgid "&Open..."
@@ -1124,21 +1124,21 @@ msgstr "Een document openen"
 
 #, fuzzy
 msgid "&Close"
-msgstr "Sluiten"
+msgstr "&Sluiten"
 
 msgid "Close the current document"
 msgstr "Het huidige document sluiten"
 
 #, fuzzy
 msgid "Close &All"
-msgstr "Sluiten"
+msgstr "Alles &sluiten"
 
 msgid "Close all documents"
 msgstr "Alle documenten sluiten"
 
 #, fuzzy
 msgid "Reopen &Last Closed"
-msgstr "&Laatst gesloten heropenen\tCtrl+Shift+T"
+msgstr "&Laatst gesloten opnieuw openen"
 
 msgid "Reopen the last closed document"
 msgstr "Het laatst gesloten document heropenen"
@@ -1165,14 +1165,14 @@ msgstr "Alles weergeven"
 
 #, fuzzy
 msgid "Previous Section"
-msgstr "Vorige sectie\t["
+msgstr "Vorige sectie"
 
 msgid "Go to previous section"
 msgstr "Ga naar vorige sectie"
 
 #, fuzzy
 msgid "Next Section"
-msgstr "Volgende sectie\t]"
+msgstr "Volgende sectie"
 
 msgid "Go to next section"
 msgstr "Ga naar volgende sectie"
@@ -1183,196 +1183,196 @@ msgstr "Ga naar &pagina"
 
 #, fuzzy
 msgid "Previous Pa&ge"
-msgstr "Vorige pa&gina\tShift+P"
+msgstr "Vorige &pagina"
 
 #, fuzzy
 msgid "Next Pag&e"
-msgstr "Volgende pagin&a\tP"
+msgstr "Volgende &pagina"
 
 #, fuzzy
 msgid "Previous Lin&k"
-msgstr "Vorige lin&k\tShift+K"
+msgstr "Vorige &koppeling"
 
 #, fuzzy
 msgid "Next Lin&k"
-msgstr "Volgende lin&k\tK"
+msgstr "Volgende &koppeling"
 
 #, fuzzy
 msgid "Previous Ima&ge"
-msgstr "Vorige afbeeldin&g\tShift+G"
+msgstr "Vorige &afbeelding"
 
 #, fuzzy
 msgid "Next Ima&ge"
-msgstr "Volgende afbeeldin&g\tG"
+msgstr "Volgende &afbeelding"
 
 #, fuzzy
 msgid "Previous Figu&re"
-msgstr "Vorige figuu&r\tShift+F"
+msgstr "Vorige &figuur"
 
 #, fuzzy
 msgid "Next Figu&re"
-msgstr "Volgende figuu&r\tF"
+msgstr "Volgende &figuur"
 
 #, fuzzy
 msgid "Previous &Table"
-msgstr "Vorige &tabel\tShift+T"
+msgstr "Vorige &tabel"
 
 #, fuzzy
 msgid "Next &Table"
-msgstr "Volgende &tabel\tT"
+msgstr "Volgende &tabel"
 
 #, fuzzy
 msgid "Previous Se&parator"
-msgstr "Vorige &scheiding\tShift+S"
+msgstr "Vorige &scheidingsteken"
 
 #, fuzzy
 msgid "Next Se&parator"
-msgstr "Volgende &scheiding\tS"
+msgstr "Volgende &scheidingsteken"
 
 #, fuzzy
 msgid "Previous L&ist"
-msgstr "Vorige lij&st\tShift+L"
+msgstr "Vorige &lijst"
 
 #, fuzzy
 msgid "Next L&ist"
-msgstr "Volgende lij&st\tL"
+msgstr "Volgende &lijst"
 
 #, fuzzy
 msgid "Previous List &Item"
-msgstr "Vorige lijst&item\tShift+I"
+msgstr "Vorig &lijstitem"
 
 #, fuzzy
 msgid "Next List I&tem"
-msgstr "Volgende lijsti&tem\tI"
+msgstr "Volgende &lijstitem"
 
 #, fuzzy
 msgid "Container &Start"
-msgstr "&Containerbegin\tShift+,"
+msgstr "Container&begin"
 
 msgid "Go to the start of the current list or table"
 msgstr "Ga naar het begin van de huidige lijst of tabel"
 
 #, fuzzy
 msgid "Past Container &End"
-msgstr "Voorbij container&einde\t,"
+msgstr "Na container&einde"
 
 msgid "Go past the end of the current list or table"
 msgstr "Ga voorbij het einde van de huidige lijst of tabel"
 
 #, fuzzy
 msgid "&Previous Heading"
-msgstr "&Vorige kop\tShift+H"
+msgstr "&Vorige kop"
 
 msgid "Go to previous heading"
 msgstr "Ga naar vorige kop"
 
 #, fuzzy
 msgid "&Next Heading"
-msgstr "V&olgende kop\tH"
+msgstr "&Volgende kop"
 
 msgid "Go to next heading"
 msgstr "Ga naar volgende kop"
 
 #, fuzzy
 msgid "Previous Heading Level &1"
-msgstr "Vorige kop niveau &1\tShift+1"
+msgstr "Vorige kop niveau &1"
 
 #, fuzzy
 msgid "Next Heading Level 1"
-msgstr "Volgende kop niveau 1\t1"
+msgstr "Volgende kopniveau 1"
 
 #, fuzzy
 msgid "Previous Heading Level &2"
-msgstr "Vorige kop niveau &2\tShift+2"
+msgstr "Vorige kop niveau &2"
 
 #, fuzzy
 msgid "Next Heading Level 2"
-msgstr "Volgende kop niveau 2\t2"
+msgstr "Volgende kopniveau 2"
 
 #, fuzzy
 msgid "Previous Heading Level &3"
-msgstr "Vorige kop niveau &3\tShift+3"
+msgstr "Vorige kop niveau &3"
 
 #, fuzzy
 msgid "Next Heading Level 3"
-msgstr "Volgende kop niveau 3\t3"
+msgstr "Volgende kopniveau 3"
 
 #, fuzzy
 msgid "Previous Heading Level &4"
-msgstr "Vorige kop niveau &4\tShift+4"
+msgstr "Vorige kop niveau &4"
 
 #, fuzzy
 msgid "Next Heading Level 4"
-msgstr "Volgende kop niveau 4\t4"
+msgstr "Volgende kopniveau 4"
 
 #, fuzzy
 msgid "Previous Heading Level &5"
-msgstr "Vorige kop niveau &5\tShift+5"
+msgstr "Vorige kop niveau &5"
 
 #, fuzzy
 msgid "Next Heading Level 5"
-msgstr "Volgende kop niveau 5\t5"
+msgstr "Volgende kopniveau 5"
 
 #, fuzzy
 msgid "Previous Heading Level &6"
-msgstr "Vorige kop niveau &6\tShift+6"
+msgstr "Vorige kop niveau &6"
 
 #, fuzzy
 msgid "Next Heading Level 6"
-msgstr "Volgende kop niveau 6\t6"
+msgstr "Volgende kopniveau 6"
 
 #, fuzzy
 msgid "&Previous Bookmark"
-msgstr "&Vorige bladwijzer\tShift+B"
+msgstr "Vorig &bladwijzer"
 
 msgid "Go to previous bookmark"
 msgstr "Ga naar vorige bladwijzer"
 
 #, fuzzy
 msgid "&Next Bookmark"
-msgstr "V&olgende bladwijzer\tB"
+msgstr "Volgende &bladwijzer"
 
 msgid "Go to next bookmark"
 msgstr "Ga naar volgende bladwijzer"
 
 #, fuzzy
 msgid "Previous &Note"
-msgstr "Vorige &notitie\tShift+N"
+msgstr "Vorige &notitie"
 
 msgid "Go to previous note"
 msgstr "Ga naar vorige notitie"
 
 #, fuzzy
 msgid "Next N&ote"
-msgstr "Volgende n&otitie\tN"
+msgstr "Volgende &notitie"
 
 msgid "Go to next note"
 msgstr "Ga naar volgende notitie"
 
 #, fuzzy
 msgid "Jump to &All..."
-msgstr "Naar &allen springen...\tCtrl+B"
+msgstr "Naar &alles..."
 
 msgid "Show all bookmarks and notes"
 msgstr "Alle bladwijzers en notities tonen"
 
 #, fuzzy
 msgid "Jump to &Bookmarks Only..."
-msgstr "Alleen naar &bladwijzers springen...\tCtrl+Alt+B"
+msgstr "Naar &bladwijzers alleen..."
 
 msgid "Show bookmarks only"
 msgstr "Alleen bladwijzers tonen"
 
 #, fuzzy
 msgid "Jump to Notes &Only..."
-msgstr "Alleen naar n&otities springen...\tCtrl+Alt+M"
+msgstr "Naar &notities alleen..."
 
 msgid "Show notes only"
 msgstr "Alleen notities tonen"
 
 #, fuzzy
 msgid "&View Note Text"
-msgstr "Notitie bekijken"
+msgstr "&Notitiestekst weergeven"
 
 msgid "View the note at current position"
 msgstr "De notitie op de huidige positie bekijken"
@@ -1486,56 +1486,56 @@ msgstr "Navigeren per container"
 
 #, fuzzy
 msgid "&About Paperback"
-msgstr "&Over Paperback\tCtrl+F1"
+msgstr "&Over Paperback"
 
 msgid "About this application"
 msgstr "Over deze applicatie"
 
 #, fuzzy
 msgid "View Help in &Browser"
-msgstr "Help bekijken in &browser\tF1"
+msgstr "Help in &browser weergeven"
 
 msgid "View help in default browser"
 msgstr "Help bekijken in standaardbrowser"
 
 #, fuzzy
 msgid "View Help in &Paperback"
-msgstr "Help bekijken in Paperback"
+msgstr "Help in &Paperback weergeven"
 
 msgid "View help in Paperback"
 msgstr "Help bekijken in Paperback"
 
 #, fuzzy
 msgid "Check for &Updates"
-msgstr "Controleren op updates"
+msgstr "Controleren op &updates"
 
 msgid "Check for updates"
 msgstr "Controleren op updates"
 
 #, fuzzy
 msgid "&Donate"
-msgstr "&Doneren\tCtrl+D"
+msgstr "&Doneren"
 
 msgid "Support Paperback development"
 msgstr "Ontwikkeling van Paperback steunen"
 
 #, fuzzy
 msgid "&Import Document Data..."
-msgstr "Documentgegevens importeren"
+msgstr "&Documentgegevens importeren..."
 
 msgid "Import bookmarks and position"
 msgstr "Bladwijzers en positie importeren"
 
 #, fuzzy
 msgid "&Export Document Data..."
-msgstr "Documentgegevens exporteren"
+msgstr "&Documentgegevens exporteren..."
 
 msgid "Export bookmarks and position"
 msgstr "Bladwijzers en positie exporteren"
 
 #, fuzzy
 msgid "Export to &Plain Text..."
-msgstr "Exporteren naar &platte tekst...\tCtrl+E"
+msgstr "Naar &platte tekst exporteren..."
 
 msgid "Export document as plain text"
 msgstr "Document exporteren als platte tekst"
@@ -1554,35 +1554,35 @@ msgstr "Document exporteren als Markdown"
 
 #, fuzzy
 msgid "&Word Count"
-msgstr "Woordenaantal"
+msgstr "&Woordentelling"
 
 msgid "Show word count"
 msgstr "Woordenaantal tonen"
 
 #, fuzzy
 msgid "Document &Info"
-msgstr "Documentinformatie"
+msgstr "Document&info"
 
 msgid "Show document information"
 msgstr "Documentinformatie tonen"
 
 #, fuzzy
 msgid "&Table of Contents"
-msgstr "Inhoudsopgave"
+msgstr "&Inhoudsopgave"
 
 msgid "Show table of contents"
 msgstr "Inhoudsopgave tonen"
 
 #, fuzzy
 msgid "&Elements List..."
-msgstr "&Elementenlijst...\tF7"
+msgstr "&Elementenlijst..."
 
 msgid "Show elements list"
 msgstr "Elementenlijst tonen"
 
 #, fuzzy
 msgid "Reveal &File in Folder"
-msgstr "Weergeven en opslaan in map    Ctrl+Shift+C"
+msgstr "&Bestand in map weergeven"
 
 #, fuzzy
 msgid "Reveal document in the file manager"
@@ -1590,14 +1590,14 @@ msgstr "Document weergeven in de bestandsbeheerder"
 
 #, fuzzy
 msgid "Open in &Web View"
-msgstr "Openen in &webweergave\tCtrl+Shift+V"
+msgstr "In &webweergave openen"
 
 msgid "Open document in web view"
 msgstr "Document openen in webweergave"
 
 #, fuzzy
 msgid "View &Source"
-msgstr "&Bron weergeven\tCtrl+U"
+msgstr "&Bron weergeven"
 
 msgid "Open the document source in a new tab"
 msgstr "Documentbron openen in een nieuw tabblad"
@@ -1610,7 +1610,7 @@ msgstr "Import- en exportopties"
 
 #, fuzzy
 msgid "Toggle &Bookmark"
-msgstr "&Bladwijzer in-/uitschakelen\tCtrl+Shift+B"
+msgstr "&Bladwijzer wisselen"
 
 #, fuzzy
 msgid "Bookmark with &Note"
@@ -1673,11 +1673,11 @@ msgstr "Volledig scherm aan/uit"
 
 #, fuzzy
 msgid "&Settings"
-msgstr "Instellingen"
+msgstr "&Instellingen"
 
 #, fuzzy
 msgid "&Sleep Timer..."
-msgstr "Slaaptimer"
+msgstr "&Slaaptimer..."
 
 msgid "&File"
 msgstr "&Bestand"
@@ -1837,7 +1837,7 @@ msgstr "%s Kop niveau %d"
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
 #, fuzzy
 msgid "Page %d"
-msgstr "Pagina %d: %s"
+msgstr "Pagina %d"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 msgid "Page %d: %s"
@@ -1975,11 +1975,11 @@ msgstr "Open"
 
 #, fuzzy
 msgid "Close All"
-msgstr "Alles &wissen"
+msgstr "Alles sluiten"
 
 #, fuzzy
 msgid "Reopen Last Closed"
-msgstr "&Laatst gesloten heropenen\tCtrl+Shift+T"
+msgstr "Laatst gesloten opnieuw openen"
 
 #, fuzzy
 msgid "Show All Recent Documents..."
@@ -2019,7 +2019,7 @@ msgstr "Terug"
 
 #, fuzzy
 msgid "Go Forward"
-msgstr "Ga naar &Vooruit    Ctrl+]"
+msgstr "Vooruit gaan"
 
 #, fuzzy
 msgid "Announce Percentage"
@@ -2035,59 +2035,59 @@ msgstr "Naar bladwijzer springen"
 
 #, fuzzy
 msgid "Previous Heading"
-msgstr "&Vorige kop\tShift+H"
+msgstr "Vorige kop"
 
 #, fuzzy
 msgid "Next Heading"
-msgstr "V&olgende kop\tH"
+msgstr "Volgende kop"
 
 #, fuzzy
 msgid "Previous Heading Level 1"
-msgstr "Vorige kop niveau &1\tShift+1"
+msgstr "Vorige kop niveau 1"
 
 #, fuzzy
 msgid "Previous Heading Level 2"
-msgstr "Vorige kop niveau &2\tShift+2"
+msgstr "Vorige kop niveau 2"
 
 #, fuzzy
 msgid "Previous Heading Level 3"
-msgstr "Vorige kop niveau &3\tShift+3"
+msgstr "Vorige kop niveau 3"
 
 #, fuzzy
 msgid "Previous Heading Level 4"
-msgstr "Vorige kop niveau &4\tShift+4"
+msgstr "Vorige kop niveau 4"
 
 #, fuzzy
 msgid "Previous Heading Level 5"
-msgstr "Vorige kop niveau &5\tShift+5"
+msgstr "Vorige kop niveau 5"
 
 #, fuzzy
 msgid "Previous Heading Level 6"
-msgstr "Vorige kop niveau &6\tShift+6"
+msgstr "Vorige kop niveau 6"
 
 #, fuzzy
 msgid "Previous Page"
-msgstr "Vorige {}"
+msgstr "Vorige pagina"
 
 #, fuzzy
 msgid "Next Page"
-msgstr "Volgende pagin&a\tP"
+msgstr "Volgende pagina"
 
 #, fuzzy
 msgid "Previous Bookmark"
-msgstr "&Vorige bladwijzer\tShift+B"
+msgstr "Vorige bladwijzer"
 
 #, fuzzy
 msgid "Next Bookmark"
-msgstr "V&olgende bladwijzer\tB"
+msgstr "Volgende bladwijzer"
 
 #, fuzzy
 msgid "Previous Note"
-msgstr "Vorige {}"
+msgstr "Vorige notitie"
 
 #, fuzzy
 msgid "Next Note"
-msgstr "Volgende n&otitie\tN"
+msgstr "Volgende notitie"
 
 #, fuzzy
 msgid "Jump to All Bookmarks..."
@@ -2095,11 +2095,11 @@ msgstr "Naar bladwijzer springen"
 
 #, fuzzy
 msgid "Jump to Bookmarks Only..."
-msgstr "Alleen naar &bladwijzers springen...\tCtrl+Alt+B"
+msgstr "Naar bladwijzers springen..."
 
 #, fuzzy
 msgid "Jump to Notes Only..."
-msgstr "Alleen naar n&otities springen...\tCtrl+Alt+M"
+msgstr "Naar notities springen..."
 
 #, fuzzy
 msgid "View Note Text"
@@ -2107,43 +2107,43 @@ msgstr "Notitie bekijken"
 
 #, fuzzy
 msgid "Previous Link"
-msgstr "Vorige {}"
+msgstr "Vorige koppeling"
 
 #, fuzzy
 msgid "Next Link"
-msgstr "Volgende lin&k\tK"
+msgstr "Volgende koppeling"
 
 #, fuzzy
 msgid "Previous Image"
-msgstr "Vorige afbeeldin&g\tShift+G"
+msgstr "Vorige afbeelding"
 
 #, fuzzy
 msgid "Next Image"
-msgstr "Volgende afbeeldin&g\tG"
+msgstr "Volgende afbeelding"
 
 #, fuzzy
 msgid "Previous Figure"
-msgstr "Vorige figuu&r\tShift+F"
+msgstr "Vorige figuur"
 
 #, fuzzy
 msgid "Next Figure"
-msgstr "Volgende figuu&r\tF"
+msgstr "Volgende figuur"
 
 #, fuzzy
 msgid "Previous Table"
-msgstr "Vorige &tabel\tShift+T"
+msgstr "Vorige tabel"
 
 #, fuzzy
 msgid "Next Table"
-msgstr "Volgende &tabel\tT"
+msgstr "Volgende tabel"
 
 #, fuzzy
 msgid "Previous Separator"
-msgstr "Vorige &scheiding\tShift+S"
+msgstr "Vorige scheidingsteken"
 
 #, fuzzy
 msgid "Next Separator"
-msgstr "Volgende &scheiding\tS"
+msgstr "Volgende scheidingsteken"
 
 #, fuzzy
 msgid "Previous List"
@@ -2151,23 +2151,23 @@ msgstr "Vorige uitslag"
 
 #, fuzzy
 msgid "Next List"
-msgstr "Volgende lij&st\tL"
+msgstr "Volgende lijst"
 
 #, fuzzy
 msgid "Previous List Item"
-msgstr "Vorige lijst&item\tShift+I"
+msgstr "Vorig lijstitem"
 
 #, fuzzy
 msgid "Next List Item"
-msgstr "Volgende lijsti&tem\tI"
+msgstr "Volgende lijstitem"
 
 #, fuzzy
 msgid "Container Start"
-msgstr "&Containerbegin\tShift+,"
+msgstr "Container Start"
 
 #, fuzzy
 msgid "Past Container End"
-msgstr "Voorbij container&einde\t,"
+msgstr "Voorbij containereinde"
 
 #, fuzzy
 msgid "Elements List..."
@@ -2179,19 +2179,19 @@ msgstr "Weergeven en opslaan in map    Ctrl+Shift+C"
 
 #, fuzzy
 msgid "Open in Web View"
-msgstr "Openen in &webweergave\tCtrl+Shift+V"
+msgstr "In webweergave openen"
 
 #, fuzzy
 msgid "View Source"
-msgstr "&Bron weergeven\tCtrl+U"
+msgstr "Bron weergeven"
 
 #, fuzzy
 msgid "Toggle Bookmark"
-msgstr "&Bladwijzer in-/uitschakelen\tCtrl+Shift+B"
+msgstr "Bladwijzer wisselen"
 
 #, fuzzy
 msgid "Bookmark with Note"
-msgstr "Bladwijzer met &notitie"
+msgstr "Bladwijzer met notitie"
 
 #, fuzzy
 msgid "Toggle Word Wrap"
@@ -2243,23 +2243,23 @@ msgstr "Documentgegevens exporteren"
 
 #, fuzzy
 msgid "Export to Plain Text..."
-msgstr "Exporteren naar &platte tekst...\tCtrl+E"
+msgstr "Naar platte tekst exporteren..."
 
 #, fuzzy
 msgid "Export to HTML..."
-msgstr "Exporteren naar &HTML..."
+msgstr "Naar HTML exporteren..."
 
 #, fuzzy
 msgid "Export to Markdown..."
-msgstr "Exporteren naar &Markdown..."
+msgstr "Naar Markdown exporteren..."
 
 #, fuzzy
 msgid "About Paperback"
-msgstr "&Over Paperback\tCtrl+F1"
+msgstr "Over Paperback"
 
 #, fuzzy
 msgid "View Help in Browser"
-msgstr "Help bekijken in &browser\tF1"
+msgstr "Help in browser weergeven"
 
 #, fuzzy
 msgid "View Help in Paperback"
@@ -2271,7 +2271,7 @@ msgstr "Controleren op updates"
 
 #, fuzzy
 msgid "Donate"
-msgstr "&Doneren\tCtrl+D"
+msgstr "Donatie"
 
 #, fuzzy
 msgid "File"
@@ -2279,7 +2279,7 @@ msgstr "Bestand"
 
 #, fuzzy
 msgid "Tools"
-msgstr "E&xtra"
+msgstr "Gereedschappen"
 
 #, fuzzy
 msgid "Help"
@@ -2871,17 +2871,17 @@ msgstr "Tekst-naar-spraak"
 #: swift
 #, fuzzy
 msgid "Line Spacing"
-msgstr "&Regelafstand:"
+msgstr "Regelafstand"
 
 #: swift
 #, fuzzy
 msgid "Paragraph Spacing"
-msgstr "&Alinea-afstand:"
+msgstr "Alinea-afstand"
 
 #: swift
 #, fuzzy
 msgid "Alignment"
-msgstr "Tekst&uitlijning:"
+msgstr "Uitlijning"
 
 #: swift
 #, fuzzy
@@ -3306,7 +3306,7 @@ msgstr "Start"
 #: kt
 #, fuzzy
 msgid "Active: {} remaining"
-msgstr "Resterende tijd"
+msgstr "Actief: {} resterend"
 
 #: kt
 #, fuzzy
@@ -3326,7 +3326,7 @@ msgstr "Wijzig in:"
 #: kt
 #, fuzzy
 msgid "{} minutes"
-msgstr "minuten"
+msgstr "{} minuten"
 
 #: kt
 #, fuzzy
@@ -3470,7 +3470,7 @@ msgstr "Scheidingsteken"
 #: kt
 #, fuzzy
 msgid "{} seconds"
-msgstr "seconden"
+msgstr "{} seconden"
 
 #: kt
 #, fuzzy
@@ -3520,7 +3520,7 @@ msgstr "Toegang tot alle bestanden vereist"
 #: kt
 #, fuzzy
 msgid "Continue"
-msgstr "&Containers"
+msgstr "Doorgaan"
 
 #: kt
 #, fuzzy
@@ -3545,7 +3545,7 @@ msgstr "Systeemstandaard"
 #: kt
 #, fuzzy
 msgid "Back {}"
-msgstr "Terug"
+msgstr "Terug {}"
 
 #: kt
 #, fuzzy

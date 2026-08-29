@@ -53,7 +53,7 @@ msgstr "Caminho"
 #. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
 #, fuzzy
 msgid "&Status:"
-msgstr "Status"
+msgstr "&Status:"
 
 #. TRANSLATORS: Option in the All Documents status filter to show documents of every status
 #. TRANSLATORS: Option in the filter dropdown to show all entries
@@ -334,7 +334,7 @@ msgstr "&Quebra de palavras"
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 #, fuzzy
 msgid "Render tables &inline"
-msgstr "Exibir tabelas e conteúdo embutido"
+msgstr "Renderizar tabelas &em linha"
 
 #. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
 msgid "&Minimize to system tray"
@@ -349,17 +349,19 @@ msgid "Show compact &go menu"
 msgstr "Mostrar menu compacto &para ir"
 
 #. TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
+#, fuzzy
 msgid "&Wrap navigation"
-msgstr "Navegação em loop"
+msgstr "&Envolver navegação"
 
 #. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
 #, fuzzy
 msgid "Move to &start of line"
-msgstr "Ir para o início da linha"
+msgstr "Mover para &início da linha"
 
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+#, fuzzy
 msgid "Play &sounds on bookmarks and notes"
-msgstr "Tocar sons em marcadores e notas"
+msgstr "Reproduzir &sons em marcadores e notas"
 
 #. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
 #, fuzzy
@@ -428,7 +430,7 @@ msgstr "1 hora"
 #. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
 #, fuzzy
 msgid "Seeking &past the end of a chapter continues into the next"
-msgstr "A busca, mesmo após o fim de um capítulo, continua no próximo"
+msgstr "Buscar &além do fim do capítulo continua no próximo"
 
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
@@ -442,11 +444,11 @@ msgstr "&Recarregar automaticamente os documentos alterados"
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 #, fuzzy
 msgid "Customize &Window Hotkey..."
-msgstr "Personalizar a tecla de atalho da janela..."
+msgstr "Personalizar &Atalho de Janela..."
 
 #, fuzzy
 msgid "Customize &Keyboard Shortcuts..."
-msgstr "Personalizar a tecla de atalho da janela..."
+msgstr "Personalizar &Atalhos do Teclado..."
 
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 #, fuzzy
@@ -496,12 +498,12 @@ msgstr "Cor de fundo"
 #. TRANSLATORS: Button label to pick a background color
 #, fuzzy
 msgid "Choose &Background Color..."
-msgstr "Escolha a cor de fundo..."
+msgstr "Escolher &Cor de Fundo..."
 
 #. TRANSLATORS: Button label to restore background color to default values
 #, fuzzy
 msgid "Reset to &Default Background"
-msgstr "Redefinir para o plano de fundo padrão"
+msgstr "Redefinir para &Fundo Padrão"
 
 #. TRANSLATORS: Label for the line spacing dropdown
 #, fuzzy
@@ -541,7 +543,7 @@ msgstr "Amplo"
 #. TRANSLATORS: Label for the letter spacing dropdown
 #, fuzzy
 msgid "L&etter spacing:"
-msgstr "Espaçamento entre letras:"
+msgstr "E&spaçamento de letras:"
 
 #. TRANSLATORS: Very Wide letter spacing option
 #, fuzzy
@@ -551,7 +553,7 @@ msgstr "Muito amplo"
 #. TRANSLATORS: Label for the text alignment dropdown
 #, fuzzy
 msgid "Text &alignment:"
-msgstr "Texto e alinhamento:"
+msgstr "&Alinhamento de texto:"
 
 #. TRANSLATORS: Left text alignment option
 #, fuzzy
@@ -719,7 +721,7 @@ msgstr "Redefinir atalhos"
 
 #, fuzzy
 msgid "Set Shortcut for {}"
-msgstr "&Definir atalho..."
+msgstr "Definir Atalho para {}"
 
 #, fuzzy
 msgid "Configure shortcut for {}:"
@@ -743,7 +745,7 @@ msgstr "Nenhuma tecla detectada"
 
 #, fuzzy
 msgid "&Clear"
-msgstr "Limpar"
+msgstr "&Limpar"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -880,8 +882,9 @@ msgid "Details: {}"
 msgstr "Detalhes: {}"
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
+#, fuzzy
 msgid "Create &bookmark"
-msgstr "Criar Marcador"
+msgstr "Criar &marcador"
 
 msgid "Create bookmark"
 msgstr "Criar marcador"
@@ -901,8 +904,9 @@ msgid "Find text"
 msgstr "Localizar Texto"
 
 #. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
+#, fuzzy
 msgid "Find &next"
-msgstr "Localizar Próximo"
+msgstr "Locali&zar próximo"
 
 msgid "Find next match"
 msgstr "Localizar próximo correspondente"
@@ -944,16 +948,19 @@ msgid "Options"
 msgstr "Opções"
 
 #. TRANSLATORS: Checkbox to make the search case-sensitive
+#, fuzzy
 msgid "&Match case"
-msgstr "Difererenciar maiúsculas de minúscula"
+msgstr "&Diferenciar maiúsculas"
 
 #. TRANSLATORS: Checkbox to only match whole words, not substrings
+#, fuzzy
 msgid "Match &whole word"
-msgstr "Palavras inteiras"
+msgstr "Corresponder &palavra inteira"
 
 #. TRANSLATORS: Checkbox to treat the search text as a regular expression
+#, fuzzy
 msgid "Use &regular expressions"
-msgstr "Usar expressões regulares"
+msgstr "Usar &expressões regulares"
 
 #. TRANSLATORS: Button to search backward for the previous match
 msgid "Find &Previous"
@@ -1149,27 +1156,27 @@ msgstr "Desativar tela cheia."
 
 #, fuzzy
 msgid "&Undo\tCtrl+Z"
-msgstr "&Desfazer    Ctrl+Z"
+msgstr "&Desfazer\tCtrl+Z"
 
 #, fuzzy
 msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Refazer    Ctrl+Shift+Z"
+msgstr "&Refazer\tCtrl+Shift+Z"
 
 #, fuzzy
 msgid "Cu&t\tCtrl+X"
-msgstr "Copiar e colar    Ctrl+X"
+msgstr "Cor&tar\tCtrl+X"
 
 #, fuzzy
 msgid "&Copy\tCtrl+C"
-msgstr "&Copiar    Ctrl+C"
+msgstr "&Copiar\tCtrl+C"
 
 #, fuzzy
 msgid "&Paste\tCtrl+V"
-msgstr "&Colar    Ctrl+V"
+msgstr "&Colar\tCtrl+V"
 
 #, fuzzy
 msgid "Select &All\tCtrl+A"
-msgstr "Selecionar tudo    Ctrl+A"
+msgstr "Selecionar &Tudo\tCtrl+A"
 
 #, fuzzy
 msgid "&Open..."
@@ -1180,21 +1187,21 @@ msgstr "Abrir um documento"
 
 #, fuzzy
 msgid "&Close"
-msgstr "Fechar"
+msgstr "&Fechar"
 
 msgid "Close the current document"
 msgstr "Fechar o documento atual"
 
 #, fuzzy
 msgid "Close &All"
-msgstr "Fechar"
+msgstr "Fechar &Tudo"
 
 msgid "Close all documents"
 msgstr "Fechar todos os documentos"
 
 #, fuzzy
 msgid "Reopen &Last Closed"
-msgstr "Abrir &o Último arquivo Fechado\tCtrl+Shift+T"
+msgstr "Reabrir &Último Fechado"
 
 msgid "Reopen the last closed document"
 msgstr "Reabrir o último documento fechado"
@@ -1221,14 +1228,14 @@ msgstr "Mostrar tudo"
 
 #, fuzzy
 msgid "Previous Section"
-msgstr "Seção Anterior\t["
+msgstr "Seção Anterior"
 
 msgid "Go to previous section"
 msgstr "Ir para seção anterior"
 
 #, fuzzy
 msgid "Next Section"
-msgstr "Próxima Seção\t]"
+msgstr "Próxima Seção"
 
 msgid "Go to next section"
 msgstr "Ir para próxima seção"
@@ -1239,67 +1246,67 @@ msgstr "Ir para &página"
 
 #, fuzzy
 msgid "Previous Pa&ge"
-msgstr "Pá&gina Anterior\tShift+P"
+msgstr "Página &Anterior"
 
 #, fuzzy
 msgid "Next Pag&e"
-msgstr "Próxima Pág&ina\tP"
+msgstr "Próxima Pá&gina"
 
 #, fuzzy
 msgid "Previous Lin&k"
-msgstr "Lin&k\tShift+K anterior"
+msgstr "Li&gação Anterior"
 
 #, fuzzy
 msgid "Next Lin&k"
-msgstr "Próximo Lin&k\tK"
+msgstr "Próxima Li&gação"
 
 #, fuzzy
 msgid "Previous Ima&ge"
-msgstr "Imagem anterior    Shift+G"
+msgstr "Imagem &Anterior"
 
 #, fuzzy
 msgid "Next Ima&ge"
-msgstr "Próxima imagem    G"
+msgstr "Próxima &Imagem"
 
 #, fuzzy
 msgid "Previous Figu&re"
-msgstr "Figura anterior    Shift+F"
+msgstr "Figu&ra Anterior"
 
 #, fuzzy
 msgid "Next Figu&re"
-msgstr "Próxima figura    F"
+msgstr "Próxima Figu&ra"
 
 #, fuzzy
 msgid "Previous &Table"
-msgstr "&Tabela\tShift+T anterior"
+msgstr "&Tabela Anterior"
 
 #, fuzzy
 msgid "Next &Table"
-msgstr "Próxima &Tabela\tT"
+msgstr "Próxima &Tabela"
 
 #, fuzzy
 msgid "Previous Se&parator"
-msgstr "Se&parator\tShift+S anterior"
+msgstr "Separador &Anterior"
 
 #, fuzzy
 msgid "Next Se&parator"
-msgstr "Próximo Se&parator\tS"
+msgstr "Próximo &Separador"
 
 #, fuzzy
 msgid "Previous L&ist"
-msgstr "L&ista\tShift+L anterior"
+msgstr "&Lista Anterior"
 
 #, fuzzy
 msgid "Next L&ist"
-msgstr "Próxima L&ist\tL"
+msgstr "Próxima &Lista"
 
 #, fuzzy
 msgid "Previous List &Item"
-msgstr "&Item\tShift+I anterior da lista"
+msgstr "Item da Lista &Anterior"
 
 #, fuzzy
 msgid "Next List I&tem"
-msgstr "Próximo I&tem da Lista\tI"
+msgstr "Próximo Item da &Lista"
 
 #, fuzzy
 msgid "Container &Start"
@@ -1311,7 +1318,7 @@ msgstr "Ir para o início da lista ou tabela atual"
 
 #, fuzzy
 msgid "Past Container &End"
-msgstr "Contêiner anterior e fim    ,"
+msgstr "Além do Fim do Contêine&r"
 
 #, fuzzy
 msgid "Go past the end of the current list or table"
@@ -1319,118 +1326,118 @@ msgstr "Ir além do final da lista ou tabela atual"
 
 #, fuzzy
 msgid "&Previous Heading"
-msgstr "&Índice Anterior\tShift+H"
+msgstr "&Título Anterior"
 
 msgid "Go to previous heading"
 msgstr "Ir para Índice Anterior"
 
 #, fuzzy
 msgid "&Next Heading"
-msgstr "&Próximo Índice\tH"
+msgstr "&Próximo Título"
 
 msgid "Go to next heading"
 msgstr "Ir para  Próximo Índice"
 
 #, fuzzy
 msgid "Previous Heading Level &1"
-msgstr "Nível de Índice Anterior&1\tShift+1"
+msgstr "Título &Anterior Nível 1"
 
 #, fuzzy
 msgid "Next Heading Level 1"
-msgstr "Próximo Nível de índice 1\t1"
+msgstr "Próximo Título Nível 1"
 
 #, fuzzy
 msgid "Previous Heading Level &2"
-msgstr "Próximo Nivel do índice &2\tShift+2"
+msgstr "Título &Anterior Nível 2"
 
 #, fuzzy
 msgid "Next Heading Level 2"
-msgstr "Próximo  Nível do índice 2\t2"
+msgstr "Próximo Título Nível 2"
 
 #, fuzzy
 msgid "Previous Heading Level &3"
-msgstr "Nível Anterior do índice &3\tShift+3"
+msgstr "Título &Anterior Nível 3"
 
 #, fuzzy
 msgid "Next Heading Level 3"
-msgstr "Próximo  Nível do índice 3\t3"
+msgstr "Próximo Título Nível 3"
 
 #, fuzzy
 msgid "Previous Heading Level &4"
-msgstr "Nível Anterior de Índice  &4\tShift+4"
+msgstr "Título &Anterior Nível 4"
 
 #, fuzzy
 msgid "Next Heading Level 4"
-msgstr "Próximo Nível de Índice 4\t4"
+msgstr "Próximo Título Nível 4"
 
 #, fuzzy
 msgid "Previous Heading Level &5"
-msgstr "Índice de NívellAnterior &5\tShift+5"
+msgstr "Título &Anterior Nível 5"
 
 #, fuzzy
 msgid "Next Heading Level 5"
-msgstr "Próximo Nível de Índice 5\t5"
+msgstr "Próximo Título Nível 5"
 
 #, fuzzy
 msgid "Previous Heading Level &6"
-msgstr "Índice de Nível Anterior &6\tShift+6"
+msgstr "Título &Anterior Nível 6"
 
 #, fuzzy
 msgid "Next Heading Level 6"
-msgstr "Próximo Índice de Nível 6\t6"
+msgstr "Próximo Nível de Título 6"
 
 #, fuzzy
 msgid "&Previous Bookmark"
-msgstr "&Marcador Anterior\tShift+B"
+msgstr "&Marcador Anterior"
 
 msgid "Go to previous bookmark"
 msgstr "Ir para Marcador Anterior"
 
 #, fuzzy
 msgid "&Next Bookmark"
-msgstr "&Próximo Marcador\tB"
+msgstr "&Próximo Marcador"
 
 msgid "Go to next bookmark"
 msgstr "Ir para Próximo Marcador"
 
 #, fuzzy
 msgid "Previous &Note"
-msgstr "&Nota Anterior\tShift+N"
+msgstr "Anotação &Anterior"
 
 msgid "Go to previous note"
 msgstr "Ir para Nota Anterior"
 
 #, fuzzy
 msgid "Next N&ote"
-msgstr "Próxima N&ota\tN"
+msgstr "Próxima Anotaçã&o"
 
 msgid "Go to next note"
 msgstr "Ir para próxima nota"
 
 #, fuzzy
 msgid "Jump to &All..."
-msgstr "Ir para &Todos...\tCtrl+B"
+msgstr "Ir para &Todos..."
 
 msgid "Show all bookmarks and notes"
 msgstr "Mostrar Todos os Marcadores e notas"
 
 #, fuzzy
 msgid "Jump to &Bookmarks Only..."
-msgstr "Ir Somente ppara &Marcadores ...\tCtrl+Alt+B"
+msgstr "Ir para &Marcadores Apenas..."
 
 msgid "Show bookmarks only"
 msgstr "Mostrar Somente Marcadores"
 
 #, fuzzy
 msgid "Jump to Notes &Only..."
-msgstr "Ir &Somente para Notas...\tCtrl+Alt+M"
+msgstr "Ir para Anotações A&penas..."
 
 msgid "Show notes only"
 msgstr "Mostrar Somente Notas"
 
 #, fuzzy
 msgid "&View Note Text"
-msgstr "Visualizar Nota"
+msgstr "&Visualizar Texto da Anotação"
 
 msgid "View the note at current position"
 msgstr "Visualizar Nota Atual"
@@ -1464,14 +1471,14 @@ msgstr "Ir para uma porcentagem do documento"
 
 #, fuzzy
 msgid "Go &Back"
-msgstr "Ir e Voltar    Ctrl+["
+msgstr "Voltar &Atrás"
 
 msgid "Go back in history"
 msgstr "Voltar no histórico"
 
 #, fuzzy
 msgid "Go &Forward"
-msgstr "Avançar    Ctrl+]"
+msgstr "Avan&çar"
 
 msgid "Go forward in history"
 msgstr "IR para a frente no histórico"
@@ -1482,8 +1489,9 @@ msgstr "&Seções"
 msgid "Navigate by sections"
 msgstr "Navegar por seções"
 
+#, fuzzy
 msgid "&Headings"
-msgstr "&´Índices"
+msgstr "&Títulos"
 
 msgid "Navigate by headings"
 msgstr "Navegação por índices"
@@ -1550,63 +1558,63 @@ msgstr "Navegar por contêineres"
 
 #, fuzzy
 msgid "&About Paperback"
-msgstr "&Sobre o Paperback\tCtrl+F1"
+msgstr "&Sobre Paperback"
 
 msgid "About this application"
 msgstr "Sobre este aplicativo"
 
 #, fuzzy
 msgid "View Help in &Browser"
-msgstr "Visualizar Ajuda no &navegador da internet\tF1"
+msgstr "Ver Ajuda no &Navegador"
 
 msgid "View help in default browser"
 msgstr "Visualizar a Ajuda no navegador padrão de internet"
 
 #, fuzzy
 msgid "View Help in &Paperback"
-msgstr "Visualizar a ajuda no Paperback"
+msgstr "Ver Ajuda no &Paperback"
 
 msgid "View help in Paperback"
 msgstr "Visualizar a ajuda no Paperback"
 
 #, fuzzy
 msgid "Check for &Updates"
-msgstr "Verificar Atualizações"
+msgstr "Verificar &Atualizações"
 
 msgid "Check for updates"
 msgstr "Verificar Atualizações"
 
 #, fuzzy
 msgid "&Donate"
-msgstr "&Doar\tCtrl+D"
+msgstr "&Doação"
 
 msgid "Support Paperback development"
 msgstr "Ajude no desenvolvimento do Paperback"
 
 #, fuzzy
 msgid "&Import Document Data..."
-msgstr "Importar dados do documento"
+msgstr "&Importar Dados do Documento..."
 
 msgid "Import bookmarks and position"
 msgstr "Importar marcadores e posição"
 
 #, fuzzy
 msgid "&Export Document Data..."
-msgstr "Exportar dados do documento"
+msgstr "&Exportar Dados do Documento..."
 
 msgid "Export bookmarks and position"
 msgstr "Exportar marcadores e posição"
 
 #, fuzzy
 msgid "Export to &Plain Text..."
-msgstr "Exportar para &Texto Simples...\tCtrl+E"
+msgstr "Exportar para &Texto Simples..."
 
 msgid "Export document as plain text"
 msgstr "Exportar documento como texto simples"
 
 #, fuzzy
 msgid "Export to &HTML..."
-msgstr "Exportar para HTML..."
+msgstr "Exportar para &HTML..."
 
 #, fuzzy
 msgid "Export document as HTML"
@@ -1622,35 +1630,35 @@ msgstr "Exportar documento como Markdown"
 
 #, fuzzy
 msgid "&Word Count"
-msgstr "Contagem de palavras"
+msgstr "Contagem de &Palavras"
 
 msgid "Show word count"
 msgstr "Mostrar contagem de palavras"
 
 #, fuzzy
 msgid "Document &Info"
-msgstr "Informação do Documento"
+msgstr "&Informações do Documento"
 
 msgid "Show document information"
 msgstr "Mostrar informação do documento"
 
 #, fuzzy
 msgid "&Table of Contents"
-msgstr "Índice"
+msgstr "&Índice"
 
 msgid "Show table of contents"
 msgstr "Mostrar índice"
 
 #, fuzzy
 msgid "&Elements List..."
-msgstr "&Lista de Elementos...\tF7"
+msgstr "&Lista de Elementos..."
 
 msgid "Show elements list"
 msgstr "Mostrar lista de elementos"
 
 #, fuzzy
 msgid "Reveal &File in Folder"
-msgstr "Exibir e salvar na pasta    Ctrl+Shift+C"
+msgstr "Revelar &Arquivo na Pasta"
 
 #, fuzzy
 msgid "Reveal document in the file manager"
@@ -1658,16 +1666,14 @@ msgstr "Exibir o documento no gerenciador de arquivos"
 
 #, fuzzy
 msgid "Open in &Web View"
-msgstr ""
-"Abrir em &visualização de página de internet\tCtrl+Shift+V\n"
-"Open in &Web View\tCtrl+Shift+V"
+msgstr "Abrir em Visualização &Web"
 
 msgid "Open document in web view"
 msgstr "Visualizar o documento como página de internet"
 
 #, fuzzy
 msgid "View &Source"
-msgstr "Exibir e fonte    Ctrl+U"
+msgstr "Visualizar &Código-Fonte"
 
 #, fuzzy
 msgid "Open the document source in a new tab"
@@ -1681,7 +1687,7 @@ msgstr "Opções de Importação e exportação"
 
 #, fuzzy
 msgid "Toggle &Bookmark"
-msgstr "Alternar &Marcadores\tCtrl+Shift+B"
+msgstr "Ativar/Desativar &Marcador"
 
 #, fuzzy
 msgid "Bookmark with &Note"
@@ -1705,7 +1711,7 @@ msgstr "Reproduzir ou pausar a narração em áudio deste documento"
 
 #, fuzzy
 msgid "Seek Audio &Forward"
-msgstr "Avançar    Ctrl+]"
+msgstr "Avançar &Áudio"
 
 #, fuzzy
 msgid "Skip the audio narration forward"
@@ -1713,7 +1719,7 @@ msgstr "Avançar a narração em áudio"
 
 #, fuzzy
 msgid "Seek Audio &Backward"
-msgstr "Buscar Áudio e Voltar"
+msgstr "Retroceder &Áudio"
 
 #, fuzzy
 msgid "Skip the audio narration backward"
@@ -1745,11 +1751,11 @@ msgstr "Alternar para tela cheia"
 
 #, fuzzy
 msgid "&Settings"
-msgstr "Configurações"
+msgstr "&Configurações"
 
 #, fuzzy
 msgid "&Sleep Timer..."
-msgstr "Temporizador"
+msgstr "&Temporizador de Dormir..."
 
 msgid "&File"
 msgstr "&Arquivo"
@@ -1915,7 +1921,7 @@ msgstr "%s índice nível %d"
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
 #, fuzzy
 msgid "Page %d"
-msgstr "Página %d: %s"
+msgstr "Página %d"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 msgid "Page %d: %s"
@@ -2053,7 +2059,7 @@ msgstr "Sair do Paperback"
 
 #, fuzzy
 msgid "Open..."
-msgstr "&Abrir"
+msgstr "Abrir..."
 
 #, fuzzy
 msgid "Close All"
@@ -2061,7 +2067,7 @@ msgstr "Fechar"
 
 #, fuzzy
 msgid "Reopen Last Closed"
-msgstr "Abrir &o Último arquivo Fechado\tCtrl+Shift+T"
+msgstr "Reabrir Última Fechada"
 
 #, fuzzy
 msgid "Show All Recent Documents..."
@@ -2073,7 +2079,7 @@ msgstr "Sair"
 
 #, fuzzy
 msgid "Find..."
-msgstr "&Localizar"
+msgstr "Localizar..."
 
 #, fuzzy
 msgid "Find Next"
@@ -2085,15 +2091,15 @@ msgstr "Encontrar anterior"
 
 #, fuzzy
 msgid "Go to Line..."
-msgstr "Ir para &linha"
+msgstr "Ir para Linha..."
 
 #, fuzzy
 msgid "Go to Percent..."
-msgstr "Ir para &porcento"
+msgstr "Ir para Porcentagem..."
 
 #, fuzzy
 msgid "Go to Page..."
-msgstr "Ir para &página"
+msgstr "Ir para Página..."
 
 #, fuzzy
 msgid "Go Back"
@@ -2117,59 +2123,59 @@ msgstr "Ir para marcador"
 
 #, fuzzy
 msgid "Previous Heading"
-msgstr "&Índice Anterior\tShift+H"
+msgstr "Título Anterior"
 
 #, fuzzy
 msgid "Next Heading"
-msgstr "&Próximo Índice\tH"
+msgstr "Próximo Título"
 
 #, fuzzy
 msgid "Previous Heading Level 1"
-msgstr "Nível de Índice Anterior&1\tShift+1"
+msgstr "Título de Nível 1 Anterior"
 
 #, fuzzy
 msgid "Previous Heading Level 2"
-msgstr "Próximo Nivel do índice &2\tShift+2"
+msgstr "Título de Nível 2 Anterior"
 
 #, fuzzy
 msgid "Previous Heading Level 3"
-msgstr "Nível Anterior do índice &3\tShift+3"
+msgstr "Título de Nível 3 Anterior"
 
 #, fuzzy
 msgid "Previous Heading Level 4"
-msgstr "Nível Anterior de Índice  &4\tShift+4"
+msgstr "Título de Nível 4 Anterior"
 
 #, fuzzy
 msgid "Previous Heading Level 5"
-msgstr "Índice de NívellAnterior &5\tShift+5"
+msgstr "Título de Nível 5 Anterior"
 
 #, fuzzy
 msgid "Previous Heading Level 6"
-msgstr "Índice de Nível Anterior &6\tShift+6"
+msgstr "Título de Nível 6 Anterior"
 
 #, fuzzy
 msgid "Previous Page"
-msgstr "Pá&gina Anterior\tShift+P"
+msgstr "Página Anterior"
 
 #, fuzzy
 msgid "Next Page"
-msgstr "Próxima Pág&ina\tP"
+msgstr "Próxima Página"
 
 #, fuzzy
 msgid "Previous Bookmark"
-msgstr "&Marcador Anterior\tShift+B"
+msgstr "Marcador Anterior"
 
 #, fuzzy
 msgid "Next Bookmark"
-msgstr "&Próximo Marcador\tB"
+msgstr "Próximo Marcador"
 
 #, fuzzy
 msgid "Previous Note"
-msgstr "&Nota Anterior\tShift+N"
+msgstr "Anotação Anterior"
 
 #, fuzzy
 msgid "Next Note"
-msgstr "Próxima N&ota\tN"
+msgstr "Próxima Anotação"
 
 #, fuzzy
 msgid "Jump to All Bookmarks..."
@@ -2177,11 +2183,11 @@ msgstr "Ir para marcador"
 
 #, fuzzy
 msgid "Jump to Bookmarks Only..."
-msgstr "Ir Somente ppara &Marcadores ...\tCtrl+Alt+B"
+msgstr "Ir para Marcadores Apenas..."
 
 #, fuzzy
 msgid "Jump to Notes Only..."
-msgstr "Ir &Somente para Notas...\tCtrl+Alt+M"
+msgstr "Ir para Anotações Apenas..."
 
 #, fuzzy
 msgid "View Note Text"
@@ -2189,11 +2195,11 @@ msgstr "Visualizar Nota"
 
 #, fuzzy
 msgid "Previous Link"
-msgstr "Lin&k\tShift+K anterior"
+msgstr "Link Anterior"
 
 #, fuzzy
 msgid "Next Link"
-msgstr "Próximo Lin&k\tK"
+msgstr "Próximo Link"
 
 #, fuzzy
 msgid "Previous Image"
@@ -2213,39 +2219,39 @@ msgstr "Próxima figura    F"
 
 #, fuzzy
 msgid "Previous Table"
-msgstr "&Tabela\tShift+T anterior"
+msgstr "Tabela Anterior"
 
 #, fuzzy
 msgid "Next Table"
-msgstr "Próxima &Tabela\tT"
+msgstr "Próxima Tabela"
 
 #, fuzzy
 msgid "Previous Separator"
-msgstr "Se&parator\tShift+S anterior"
+msgstr "Separador Anterior"
 
 #, fuzzy
 msgid "Next Separator"
-msgstr "Próximo Se&parator\tS"
+msgstr "Próximo Separador"
 
 #, fuzzy
 msgid "Previous List"
-msgstr "L&ista\tShift+L anterior"
+msgstr "Lista Anterior"
 
 #, fuzzy
 msgid "Next List"
-msgstr "Próxima L&ist\tL"
+msgstr "Próxima Lista"
 
 #, fuzzy
 msgid "Previous List Item"
-msgstr "&Item\tShift+I anterior da lista"
+msgstr "Item de Lista Anterior"
 
 #, fuzzy
 msgid "Next List Item"
-msgstr "Próximo I&tem da Lista\tI"
+msgstr "Próximo Item de Lista"
 
 #, fuzzy
 msgid "Container Start"
-msgstr "Container &Start    Shift+,"
+msgstr "Início do Contêiner"
 
 #, fuzzy
 msgid "Past Container End"
@@ -2261,9 +2267,7 @@ msgstr "Exibir e salvar na pasta    Ctrl+Shift+C"
 
 #, fuzzy
 msgid "Open in Web View"
-msgstr ""
-"Abrir em &visualização de página de internet\tCtrl+Shift+V\n"
-"Open in &Web View\tCtrl+Shift+V"
+msgstr "Abrir em Visualização da Web"
 
 #, fuzzy
 msgid "View Source"
@@ -2271,11 +2275,11 @@ msgstr "Exibir e fonte    Ctrl+U"
 
 #, fuzzy
 msgid "Toggle Bookmark"
-msgstr "Alternar &Marcadores\tCtrl+Shift+B"
+msgstr "Alternar Marcador"
 
 #, fuzzy
 msgid "Bookmark with Note"
-msgstr "Marcador com &nota"
+msgstr "Marcador com Nota"
 
 #, fuzzy
 msgid "Toggle Word Wrap"
@@ -2283,7 +2287,7 @@ msgstr "Ativar/desativar quebra automática de linha"
 
 #, fuzzy
 msgid "Play/Pause Audio"
-msgstr "&Reproduzir/Pausar Áudio"
+msgstr "Reproduzir/Pausar Áudio"
 
 #, fuzzy
 msgid "Seek Audio Forward"
@@ -2295,15 +2299,15 @@ msgstr "Buscar Áudio e Voltar"
 
 #, fuzzy
 msgid "Increase Audio Seek Amount"
-msgstr "&Aumentar a quantidade de busca de áudio"
+msgstr "Aumentar Quantidade de Busca de Áudio"
 
 #, fuzzy
 msgid "Decrease Audio Seek Amount"
-msgstr "&Diminuir o valor da busca de áudio"
+msgstr "Diminuir Quantidade de Busca de Áudio"
 
 #, fuzzy
 msgid "Full Screen"
-msgstr "&Tela inteira    F11"
+msgstr "Tela Cheia"
 
 #, fuzzy
 msgid "Settings..."
@@ -2327,7 +2331,7 @@ msgstr "Exportar dados do documento"
 
 #, fuzzy
 msgid "Export to Plain Text..."
-msgstr "Exportar para &Texto Simples...\tCtrl+E"
+msgstr "Exportar como Texto Simples..."
 
 #, fuzzy
 msgid "Export to HTML..."
@@ -2335,15 +2339,15 @@ msgstr "Exportar para HTML..."
 
 #, fuzzy
 msgid "Export to Markdown..."
-msgstr "Exportar para &Markdown..."
+msgstr "Exportar como Markdown..."
 
 #, fuzzy
 msgid "About Paperback"
-msgstr "&Sobre o Paperback\tCtrl+F1"
+msgstr "Sobre Paperback"
 
 #, fuzzy
 msgid "View Help in Browser"
-msgstr "Visualizar Ajuda no &navegador da internet\tF1"
+msgstr "Ver Ajuda no Navegador"
 
 #, fuzzy
 msgid "View Help in Paperback"
@@ -2355,7 +2359,7 @@ msgstr "Verificar Atualizações"
 
 #, fuzzy
 msgid "Donate"
-msgstr "&Doar\tCtrl+D"
+msgstr "Doar"
 
 #, fuzzy
 msgid "File"
@@ -2363,7 +2367,7 @@ msgstr "Arquivo"
 
 #, fuzzy
 msgid "Tools"
-msgstr "&Ferramentas"
+msgstr "Ferramentas"
 
 #, fuzzy
 msgid "Help"
@@ -2735,8 +2739,9 @@ msgid "&Yes"
 msgstr "&Sim"
 
 #. TRANSLATORS: Label for the confirmation dialog "No" button
+#, fuzzy
 msgid "&No"
-msgstr "Não"
+msgstr "&Não"
 
 #, fuzzy
 msgid "No release notes provided."
@@ -2960,12 +2965,12 @@ msgstr "Conversão de texto em fala"
 #: swift
 #, fuzzy
 msgid "Line Spacing"
-msgstr "&Espaçamento entre linhas:"
+msgstr "Espaçamento de Linhas"
 
 #: swift
 #, fuzzy
 msgid "Paragraph Spacing"
-msgstr "&Espaçamento entre parágrafos:"
+msgstr "Espaçamento de Parágrafos"
 
 #: swift
 #, fuzzy
@@ -3395,7 +3400,7 @@ msgstr "Início"
 #: kt
 #, fuzzy
 msgid "Active: {} remaining"
-msgstr "Tempo restante"
+msgstr "Ativo: {} restante"
 
 #: kt
 #, fuzzy
@@ -3415,7 +3420,7 @@ msgstr "Alterar para:"
 #: kt
 #, fuzzy
 msgid "{} minutes"
-msgstr "minutos"
+msgstr "{} minutos"
 
 #: kt
 #, fuzzy
@@ -3560,7 +3565,7 @@ msgstr "Separador"
 #: kt
 #, fuzzy
 msgid "{} seconds"
-msgstr "segundos"
+msgstr "{} segundos"
 
 #: kt
 #, fuzzy
@@ -3610,7 +3615,7 @@ msgstr "É necessário ter acesso a todos os arquivos"
 #: kt
 #, fuzzy
 msgid "Continue"
-msgstr "&Contêineres"
+msgstr "Continuar"
 
 #: kt
 #, fuzzy
@@ -3635,12 +3640,12 @@ msgstr "Padrão do sistema"
 #: kt
 #, fuzzy
 msgid "Back {}"
-msgstr "Voltar"
+msgstr "Voltar {}"
 
 #: kt
 #, fuzzy
 msgid "Forward {}"
-msgstr "Avançar    Ctrl+]"
+msgstr "Avançar {}"
 
 #, fuzzy
 #~ msgid "1 document."

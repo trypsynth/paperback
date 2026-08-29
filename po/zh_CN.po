@@ -2523,17 +2523,17 @@ msgstr "文字转语音"
 #: swift
 #, fuzzy
 msgid "Line Spacing"
-msgstr "行距(&L):"
+msgstr "行距"
 
 #: swift
 #, fuzzy
 msgid "Paragraph Spacing"
-msgstr "段落间距(&P):"
+msgstr "段距"
 
 #: swift
 #, fuzzy
 msgid "Alignment"
-msgstr "文本对齐(&A):"
+msgstr "对齐"
 
 #: swift
 msgid "Behavior"
@@ -2883,7 +2883,7 @@ msgstr "开始"
 #: kt
 #, fuzzy
 msgid "Active: {} remaining"
-msgstr "剩余时间"
+msgstr "活跃：{}剩余"
 
 #: kt
 #, fuzzy
@@ -2901,7 +2901,7 @@ msgstr "更改为:"
 #: kt
 #, fuzzy
 msgid "{} minutes"
-msgstr "2 分钟"
+msgstr "{}分钟"
 
 #: kt
 msgid "Custom time..."
@@ -3023,7 +3023,7 @@ msgstr "分隔符"
 #: kt
 #, fuzzy
 msgid "{} seconds"
-msgstr "5 秒"
+msgstr "{}秒"
 
 #: kt
 #, fuzzy
@@ -3073,7 +3073,7 @@ msgstr "需要所有文件访问权限"
 #: kt
 #, fuzzy
 msgid "Continue"
-msgstr "容器(&C)"
+msgstr "继续"
 
 #: kt
 msgid "Restore last open book"
@@ -3094,12 +3094,12 @@ msgstr "系统默认"
 #: kt
 #, fuzzy
 msgid "Back {}"
-msgstr "返回"
+msgstr "后退{}"
 
 #: kt
 #, fuzzy
 msgid "Forward {}"
-msgstr "前进"
+msgstr "前进{}"
 
 #~ msgid "&Options"
 #~ msgstr "选项(&O)"

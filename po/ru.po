@@ -35,8 +35,9 @@ msgid "All Documents"
 msgstr "Все документы"
 
 #. TRANSLATORS: Label for the search input field in the All Documents dialog
+#, fuzzy
 msgid "&search"
-msgstr "Поиск"
+msgstr "&поиск"
 
 #. TRANSLATORS: Column header for the document filename in the All Documents list
 msgid "File Name"
@@ -53,7 +54,7 @@ msgstr "Путь"
 #. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
 #, fuzzy
 msgid "&Status:"
-msgstr "Состояние"
+msgstr "&Статус:"
 
 #. TRANSLATORS: Option in the All Documents status filter to show documents of every status
 #. TRANSLATORS: Option in the filter dropdown to show all entries
@@ -73,8 +74,9 @@ msgid "Missing"
 msgstr "Отсутствует"
 
 #. TRANSLATORS: Button label to open the selected document
+#, fuzzy
 msgid "&Open"
-msgstr "Открыть"
+msgstr "&Открыть"
 
 #. TRANSLATORS: Button label to locate a missing file on disk
 #, fuzzy
@@ -82,12 +84,14 @@ msgid "&Locate…"
 msgstr "&Найти…"
 
 #. TRANSLATORS: Button label to remove selected documents from the list
+#, fuzzy
 msgid "&Remove"
-msgstr "Удалить"
+msgstr "&Удалить"
 
 #. TRANSLATORS: Button label to clear all documents from the list
+#, fuzzy
 msgid "&Clear All"
-msgstr "Очистить всё"
+msgstr "&Очистить всё"
 
 #. TRANSLATORS: Label for a button that closes a dialog
 msgid "Close"
@@ -118,9 +122,9 @@ msgstr "Документов нет"
 #, fuzzy
 msgid "%d document."
 msgid_plural "%d documents."
-msgstr[0] "Документы"
-msgstr[1] "Документы"
-msgstr[2] "Документы"
+msgstr[0] "%d документ."
+msgstr[1] "документов: %d."
+msgstr[2] "документов: %d."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
 #, fuzzy
@@ -131,17 +135,17 @@ msgstr "Документ перезагружен."
 #, fuzzy
 msgid "All %d document selected."
 msgid_plural "All %d documents selected."
-msgstr[0] "Все документы"
-msgstr[1] "Все документы"
-msgstr[2] "Все документы"
+msgstr[0] "Выбран %d документ."
+msgstr[1] "Выбрано %d документа."
+msgstr[2] "Выбрано %d документов."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
 #, fuzzy
 msgid "%d of %d document selected."
 msgid_plural "%d of %d documents selected."
-msgstr[0] "Конец документа"
-msgstr[1] "Конец документа"
-msgstr[2] "Конец документа"
+msgstr[0] "%d из %d документа выбран."
+msgstr[1] "Выбрано %d из %d документов."
+msgstr[2] "Выбрано %d из %d документов."
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 #, fuzzy
@@ -153,8 +157,9 @@ msgid "Jump to Bookmark"
 msgstr "Переход к закладком"
 
 #. TRANSLATORS: Label for the bookmark filter dropdown
+#, fuzzy
 msgid "&Filter:"
-msgstr "Фильтр"
+msgstr "&Фильтр:"
 
 #. TRANSLATORS: Option in the filter dropdown to show bookmarks only
 msgid "Bookmarks"
@@ -170,19 +175,23 @@ msgid "&Bookmarks:"
 msgstr "&Закладки:"
 
 #. TRANSLATORS: Label for the button to edit a note
+#, fuzzy
 msgid "&Edit Note"
-msgstr "Редактировать заметку"
+msgstr "&Редактировать заметку"
 
+#, fuzzy
 msgid "&Delete"
-msgstr "Удалить"
+msgstr "&Удалить"
 
 #. TRANSLATORS: Label for the button to jump to the selected bookmark
+#, fuzzy
 msgid "&Jump"
-msgstr "Перейти"
+msgstr "&Перейти"
 
 #. TRANSLATORS: Label for the button to cancel the action
+#, fuzzy
 msgid "&Cancel"
-msgstr "Отменить"
+msgstr "&Отмена"
 
 #. TRANSLATORS: Placeholder text shown in the bookmarks list when the bookmark text range is empty or blank
 msgid "blank"
@@ -241,8 +250,9 @@ msgid "Elements"
 msgstr "Элементы"
 
 #. TRANSLATORS: Label for the view selection dropdown in the Elements dialog
+#, fuzzy
 msgid "&View:"
-msgstr "Просмотр"
+msgstr "&Вид:"
 
 #. TRANSLATORS: Choice option in the view dropdown to show headings list
 msgid "Headings"
@@ -265,8 +275,9 @@ msgid "Go to Line"
 msgstr "Перейти к строке"
 
 #. TRANSLATORS: Label for the input field where users enter the target line number.
+#, fuzzy
 msgid "&Line number:"
-msgstr "Номер строки:"
+msgstr "&Номер строки:"
 
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #, fuzzy
@@ -286,12 +297,14 @@ msgid "Go to Percent"
 msgstr "Перейти к проценту"
 
 #. TRANSLATORS: Label for the percentage selection slider
+#, fuzzy
 msgid "&Percent"
-msgstr "Процент"
+msgstr "&Процент"
 
 #. TRANSLATORS: Label for the numeric percentage entry field
+#, fuzzy
 msgid "P&ercent:"
-msgstr "Процент:"
+msgstr "П&роцент:"
 
 #. TRANSLATORS: Title of the Open As dialog
 msgid "Open As"
@@ -306,8 +319,9 @@ msgstr ""
 "Как бы вы хотели открыть этот файл?"
 
 #. TRANSLATORS: Label for the format selection dropdown
+#, fuzzy
 msgid "Open &as:"
-msgstr "Открыть как:"
+msgstr "Открыть &как:"
 
 #. TRANSLATORS: Choice option to open a file as plain text
 msgid "Plain Text"
@@ -327,42 +341,49 @@ msgid "Settings"
 msgstr "Настройки"
 
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
+#, fuzzy
 msgid "&Restore previously opened documents on startup"
-msgstr "Восстанавливать ранее открытые документы при запуске"
+msgstr "&Восстанавливать открытые документы при запуске"
 
 #. TRANSLATORS: Option to toggle word wrapping of text
+#, fuzzy
 msgid "&Word wrap"
-msgstr "Переносить слова"
+msgstr "&Перенос строк"
 
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 #, fuzzy
 msgid "Render tables &inline"
-msgstr "Таблицы с визуализацией и встроенные таблицы"
+msgstr "Отображать таблицы &встроенно"
 
 #. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+#, fuzzy
 msgid "&Minimize to system tray"
-msgstr "Минимизировать в системный трей"
+msgstr "&Свернуть в системный трей"
 
 #. TRANSLATORS: Option to start the app maximized
+#, fuzzy
 msgid "&Start maximized"
-msgstr "Разворачивать при запуске"
+msgstr "&Запускать развёрнутым"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
+#, fuzzy
 msgid "Show compact &go menu"
-msgstr "Отображать переход в компактном меню"
+msgstr "Показывать компактное меню &переходов"
 
 #. TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
+#, fuzzy
 msgid "&Wrap navigation"
-msgstr "Циклическая навигация"
+msgstr "&Циклическая навигация"
 
 #. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
 #, fuzzy
 msgid "Move to &start of line"
-msgstr "Перейти к началу строки"
+msgstr "Переходить в &начало строки"
 
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+#, fuzzy
 msgid "Play &sounds on bookmarks and notes"
-msgstr "Воспроизводить звуки в закладкох и заметкох"
+msgstr "Воспроизводить &звуки для закладок и заметок"
 
 #. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
 #, fuzzy
@@ -429,11 +450,12 @@ msgstr "1 час"
 #. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
 #, fuzzy
 msgid "Seeking &past the end of a chapter continues into the next"
-msgstr "Поиск… и далее, после завершения главы, продолжается в следующей"
+msgstr "При перемотке за конец главы &переходить в следующую"
 
 #. TRANSLATORS: Option to check for app updates automatically on startup
+#, fuzzy
 msgid "Check for &updates on startup"
-msgstr "Проверять наличие обновлений при запуске"
+msgstr "Проверять &обновления при запуске"
 
 #. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
 #, fuzzy
@@ -450,16 +472,19 @@ msgid "Customize &Keyboard Shortcuts..."
 msgstr "Настройка горячей клавиши &Window..."
 
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
+#, fuzzy
 msgid "&Reading speed (words per minute):"
-msgstr "Скорость чтения (слов в менуту):"
+msgstr "&Скорость чтения (слов в минуту):"
 
 #. TRANSLATORS: Label for the number of recently opened documents to keep in history
+#, fuzzy
 msgid "Number of &recent documents to show:"
-msgstr "Количество последних документов для отображения:"
+msgstr "Количество &последних документов:"
 
 #. TRANSLATORS: Label for the language selection dropdown
+#, fuzzy
 msgid "&Language:"
-msgstr "Язык:"
+msgstr "&Язык:"
 
 #. TRANSLATORS: Label for the update channel selection dropdown
 msgid "Update Channel:"
@@ -478,28 +503,33 @@ msgid "Font"
 msgstr "Шрифт"
 
 #. TRANSLATORS: Button label to pick a font
+#, fuzzy
 msgid "Choose &Font..."
-msgstr "Выбрать шрифт"
+msgstr "Выбрать &шрифт..."
 
 #. TRANSLATORS: Button label to restore font settings to default values
+#, fuzzy
 msgid "&Reset to Default Font"
-msgstr "Зброс к шрифту поумолчанию"
+msgstr "&Восстановить шрифт по умолчанию"
 
 #. TRANSLATORS: Label/header for the Background Color options section
 msgid "Background Color"
 msgstr "Цвет фона"
 
 #. TRANSLATORS: Button label to pick a background color
+#, fuzzy
 msgid "Choose &Background Color..."
-msgstr "Выбрать цвет фона..."
+msgstr "Выбрать &цвет фона..."
 
 #. TRANSLATORS: Button label to restore background color to default values
+#, fuzzy
 msgid "Reset to &Default Background"
-msgstr "Зброс к фону поумолчанию"
+msgstr "Восстановить &фон по умолчанию"
 
 #. TRANSLATORS: Label for the line spacing dropdown
+#, fuzzy
 msgid "&Line spacing:"
-msgstr "Интервал между строками:"
+msgstr "&Межстрочный интервал:"
 
 #. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 msgid "Normal"
@@ -514,8 +544,9 @@ msgid "Double"
 msgstr "Двойной"
 
 #. TRANSLATORS: Label for the paragraph spacing dropdown
+#, fuzzy
 msgid "&Paragraph spacing:"
-msgstr "Интервал между абзацами:"
+msgstr "&Расстояние между абзацами:"
 
 #. TRANSLATORS: Relaxed paragraph spacing option
 msgid "Relaxed"
@@ -526,16 +557,18 @@ msgid "Wide"
 msgstr "Широкий"
 
 #. TRANSLATORS: Label for the letter spacing dropdown
+#, fuzzy
 msgid "L&etter spacing:"
-msgstr "Интервал между буквами:"
+msgstr "&Расстояние между буквами:"
 
 #. TRANSLATORS: Very Wide letter spacing option
 msgid "Very Wide"
 msgstr "Очень широкий"
 
 #. TRANSLATORS: Label for the text alignment dropdown
+#, fuzzy
 msgid "Text &alignment:"
-msgstr "Выравнивание текста:"
+msgstr "Выравнивание &текста:"
 
 #. TRANSLATORS: Left text alignment option
 msgid "Left"
@@ -665,11 +698,11 @@ msgstr "&Очистить ярлык"
 
 #, fuzzy
 msgid "&Reset to Default"
-msgstr "Зброс к шрифту поумолчанию"
+msgstr "&Восстановить по умолчанию"
 
 #, fuzzy
 msgid "Reset &All to Defaults"
-msgstr "Зброс к шрифту поумолчанию"
+msgstr "Восстановить &все по умолчанию"
 
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 #, fuzzy
@@ -691,7 +724,7 @@ msgstr "Сброс сочетаний клавиш"
 
 #, fuzzy
 msgid "Set Shortcut for {}"
-msgstr "&Установить ярлык..."
+msgstr "Установить сочетание клавиш для {}"
 
 #, fuzzy
 msgid "Configure shortcut for {}:"
@@ -715,15 +748,16 @@ msgstr "Клавиша не обнаружена"
 
 #, fuzzy
 msgid "&Clear"
-msgstr "Очистить"
+msgstr "&Очистить"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Таймер сна"
 
 #. TRANSLATORS: Label for the input field where users enter the number of minutes for the sleep timer.
+#, fuzzy
 msgid "&Minutes:"
-msgstr "Менуты:"
+msgstr "&Минут:"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
 msgid "Table of Contents"
@@ -745,25 +779,25 @@ msgstr "Просмотр заметки"
 #, fuzzy
 msgid "%d hour"
 msgid_plural "%d hours"
-msgstr[0] "1 час"
-msgstr[1] "1 час"
-msgstr[2] "1 час"
+msgstr[0] "%d час"
+msgstr[1] "%d часа"
+msgstr[2] "%d часов"
 
 #. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d minute"
 msgid_plural "%d minutes"
-msgstr[0] "1 минута"
-msgstr[1] "1 минута"
-msgstr[2] "1 минута"
+msgstr[0] "%d минута"
+msgstr[1] "%d минуты"
+msgstr[2] "%d минут"
 
 #. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d second"
 msgid_plural "%d seconds"
-msgstr[0] "1 сикунда"
-msgstr[1] "1 сикунда"
-msgstr[2] "1 сикунда"
+msgstr[0] "%d секунда"
+msgstr[1] "%d секунды"
+msgstr[2] "%d секунд"
 
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
@@ -773,17 +807,17 @@ msgstr "Расчётное время чтения: {}"
 #, fuzzy
 msgid "The selection contains %d word."
 msgid_plural "The selection contains %d words."
-msgstr[0] "В подборке содержится {} слов."
-msgstr[1] "В подборке содержится {} слов."
-msgstr[2] "В подборке содержится {} слов."
+msgstr[0] "Выделение содержит %d слово."
+msgstr[1] "Выделение содержит %d слова."
+msgstr[2] "Выделение содержит %d слов."
 
 #. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
 #, fuzzy
 msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
-msgstr[0] "Этот документ содержет {} слов."
-msgstr[1] "Этот документ содержет {} слов."
-msgstr[2] "Этот документ содержет {} слов."
+msgstr[0] "Документ содержит %d слово."
+msgstr[1] "Документ содержит %d слова."
+msgstr[2] "Документ содержит %d слов."
 
 #. TRANSLATORS: Title of the Word Count dialog
 msgid "Word Count"
@@ -834,8 +868,9 @@ msgid "Table View"
 msgstr "Просмотр таблицы"
 
 #. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
+#, fuzzy
 msgid "&Password:"
-msgstr "Пароль:"
+msgstr "&Пароль:"
 
 msgid "Document Password"
 msgstr "Пароль документа"
@@ -855,54 +890,62 @@ msgid "Details: {}"
 msgstr "Подробности: {}"
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
+#, fuzzy
 msgid "Create &bookmark"
-msgstr "Создания закладки"
+msgstr "Создать &закладку"
 
 msgid "Create bookmark"
 msgstr "Создать закладку"
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
+#, fuzzy
 msgid "Bookmark with &note"
-msgstr "Закладка с заметкой"
+msgstr "Закладка с &заметкой"
 
 msgid "Create bookmark with note"
 msgstr "Создать закладку с  заметкой"
 
 #. TRANSLATORS: Right-click context menu item and status text to open the find dialog
+#, fuzzy
 msgid "&Find"
-msgstr "Найти"
+msgstr "&Найти"
 
 msgid "Find text"
 msgstr "Найти текст"
 
 #. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
+#, fuzzy
 msgid "Find &next"
-msgstr "Найти следующее"
+msgstr "Найти &далее"
 
 msgid "Find next match"
 msgstr "Найти следующее совпадение"
 
 #. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
+#, fuzzy
 msgid "Find &previous"
-msgstr "Найти предыдущее"
+msgstr "Найти &назад"
 
 msgid "Find previous match"
 msgstr "Найти предыдущее совпадение"
 
 #. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
+#, fuzzy
 msgid "Go to &page"
-msgstr "Перейти к странице"
+msgstr "Перейти на &страницу"
 
 #. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
+#, fuzzy
 msgid "Go to &line"
-msgstr "Перейти к строке"
+msgstr "Перейти на &строку"
 
 msgid "Go to line"
 msgstr "Перейти к строке"
 
 #. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
+#, fuzzy
 msgid "Go to &percent"
-msgstr "Перейти к проценту"
+msgstr "Перейти на &процент"
 
 msgid "Go to percent"
 msgstr "Перейти к процентом"
@@ -912,31 +955,37 @@ msgid "Find"
 msgstr "Найти"
 
 #. TRANSLATORS: Label for the text field where the user types what to search for
+#, fuzzy
 msgid "Find &what:"
-msgstr "Что найти:"
+msgstr "Что &искать:"
 
 msgid "Options"
 msgstr "Параметры"
 
 #. TRANSLATORS: Checkbox to make the search case-sensitive
+#, fuzzy
 msgid "&Match case"
-msgstr "Совподение с регистром"
+msgstr "&Учитывать регистр"
 
 #. TRANSLATORS: Checkbox to only match whole words, not substrings
+#, fuzzy
 msgid "Match &whole word"
-msgstr "Совподение с целым словом"
+msgstr "Совпадение &целого слова"
 
 #. TRANSLATORS: Checkbox to treat the search text as a regular expression
+#, fuzzy
 msgid "Use &regular expressions"
-msgstr "Использовать регулярное вырожение"
+msgstr "Использовать &регулярные выражения"
 
 #. TRANSLATORS: Button to search backward for the previous match
+#, fuzzy
 msgid "Find &Previous"
-msgstr "Найти предыдущее"
+msgstr "Найти &назад"
 
 #. TRANSLATORS: Button to search forward for the next match
+#, fuzzy
 msgid "Find &Next"
-msgstr "Найти следующее"
+msgstr "Найти &далее"
 
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
@@ -1011,8 +1060,9 @@ msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*"
 
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
+#, fuzzy
 msgid "Export document to plain text"
-msgstr "Экспорт документа в в обычный текст...\tCtrl+E"
+msgstr "Экспортировать документ в простой текст"
 
 #. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 #, fuzzy
@@ -1094,9 +1144,9 @@ msgstr "{} - Paperback"
 #, fuzzy
 msgid "%d char"
 msgid_plural "%d chars"
-msgstr[0] "Символы"
-msgstr[1] "Символы"
-msgstr[2] "Символы"
+msgstr[0] "%d символ"
+msgstr[1] "%d символа"
+msgstr[2] "%d символов"
 
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
@@ -1126,65 +1176,67 @@ msgstr "Полный экран выключен."
 
 #, fuzzy
 msgid "&Undo\tCtrl+Z"
-msgstr "&Отменить    Ctrl+Z"
+msgstr "&Отменить\tCtrl+Z"
 
 #, fuzzy
 msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Повторить    Ctrl+Shift+Z"
+msgstr "&Повторить\tCtrl+Shift+Z"
 
 #, fuzzy
 msgid "Cu&t\tCtrl+X"
-msgstr "Cu&t    Ctrl+X"
+msgstr "Выр&езать\tCtrl+X"
 
 #, fuzzy
 msgid "&Copy\tCtrl+C"
-msgstr "&Копировать    Ctrl+C"
+msgstr "&Копировать\tCtrl+C"
 
 #, fuzzy
 msgid "&Paste\tCtrl+V"
-msgstr "&Вставить    Ctrl+V"
+msgstr "&Вставить\tCtrl+V"
 
 #, fuzzy
 msgid "Select &All\tCtrl+A"
-msgstr "Выбрать «Все»    Ctrl+A"
+msgstr "Выделить &всё\tCtrl+A"
 
 #, fuzzy
 msgid "&Open..."
-msgstr "Открыть"
+msgstr "&Открыть..."
 
 msgid "Open a document"
 msgstr "Открыть документ"
 
 #, fuzzy
 msgid "&Close"
-msgstr "Закрыть"
+msgstr "&Закрыть"
 
 msgid "Close the current document"
 msgstr "Закрыть текущий документ"
 
 #, fuzzy
 msgid "Close &All"
-msgstr "Закрыть"
+msgstr "Закрыть &всё"
 
 msgid "Close all documents"
 msgstr "Закрыть все документы"
 
 #, fuzzy
 msgid "Reopen &Last Closed"
-msgstr "Повторно открыть последние закрытое\tCtrl+Shift+T"
+msgstr "Вновь открыть &последний"
 
 msgid "Reopen the last closed document"
 msgstr "Повторно открыть последний закрытый документ"
 
+#, fuzzy
 msgid "&Recent Documents"
-msgstr "Последние документы"
+msgstr "&Последние документы"
 
 msgid "Open a recent document"
 msgstr "Открыть недавний документ"
 
 #. TRANSLATORS: System tray menu item to quit the application
+#, fuzzy
 msgid "E&xit"
-msgstr "Выход"
+msgstr "В&ыход"
 
 msgid "Exit the application"
 msgstr "Выход из приложения"
@@ -1198,89 +1250,89 @@ msgstr "Показать всё"
 
 #, fuzzy
 msgid "Previous Section"
-msgstr "Предыдущей раздел\t["
+msgstr "Предыдущий раздел"
 
 msgid "Go to previous section"
 msgstr "Нет предыдущего раздела"
 
 #, fuzzy
 msgid "Next Section"
-msgstr "Следующей раздел\t]"
+msgstr "Следующий раздел"
 
 msgid "Go to next section"
 msgstr "Нет следующего раздела"
 
 #, fuzzy
 msgid "Go to &Page"
-msgstr "Перейти к странице"
+msgstr "Перейти на &страницу"
 
 #, fuzzy
 msgid "Previous Pa&ge"
-msgstr "Предыдущая страница\tShift+P"
+msgstr "Предыдущая стра&ница"
 
 #, fuzzy
 msgid "Next Pag&e"
-msgstr "Следующая страница\tP"
+msgstr "Следующая страни&ца"
 
 #, fuzzy
 msgid "Previous Lin&k"
-msgstr "Предыдущая ссылка\tShift+K"
+msgstr "Предыдущая ссыл&ка"
 
 #, fuzzy
 msgid "Next Lin&k"
-msgstr "Следующая ссылка\tK"
+msgstr "Следующая ссыл&ка"
 
 #, fuzzy
 msgid "Previous Ima&ge"
-msgstr "Предыдущее изображение\tShift+G"
+msgstr "Предыдущее изобра&жение"
 
 #, fuzzy
 msgid "Next Ima&ge"
-msgstr "Следующее изображение\tG"
+msgstr "Следующее изобра&жение"
 
 #, fuzzy
 msgid "Previous Figu&re"
-msgstr "Предыдущая фигура\tShift+F"
+msgstr "Предыдущий рисуно&к"
 
 #, fuzzy
 msgid "Next Figu&re"
-msgstr "Следующая фигура\tF"
+msgstr "Следующий рисуно&к"
 
 #, fuzzy
 msgid "Previous &Table"
-msgstr "Предыдущая таблица\tShift+T"
+msgstr "Предыдущая &таблица"
 
 #, fuzzy
 msgid "Next &Table"
-msgstr "Следующая таблица\tT"
+msgstr "Следующая &таблица"
 
 #, fuzzy
 msgid "Previous Se&parator"
-msgstr "Предыдущей разделитель\tShift+S"
+msgstr "Предыдущий разделит&ель"
 
 #, fuzzy
 msgid "Next Se&parator"
-msgstr "Следующей разделитель\tS"
+msgstr "Следующий разделит&ель"
 
 #, fuzzy
 msgid "Previous L&ist"
-msgstr "Предыдущей список\tShift+L"
+msgstr "Предыдущий с&пиок"
 
 #, fuzzy
 msgid "Next L&ist"
-msgstr "Следующей список\tL"
+msgstr "Следующий сп&иок"
 
 #, fuzzy
 msgid "Previous List &Item"
-msgstr "Предыдущей элемент списка\tShift+I"
+msgstr "Предыдущий элемент &списка"
 
 #, fuzzy
 msgid "Next List I&tem"
-msgstr "Следующей элемент списка\tI"
+msgstr "Следующий элемент спи&ска"
 
 #, fuzzy
 msgid "Container &Start"
-msgstr "Контейнер и запуск    Shift+,"
+msgstr "Начало контейнер&а"
 
 #, fuzzy
 msgid "Go to the start of the current list or table"
@@ -1296,125 +1348,126 @@ msgstr "Перейти за конец текущего списка или та
 
 #, fuzzy
 msgid "&Previous Heading"
-msgstr "Предыдущей заголовок\tShift+H"
+msgstr "&Предыдущий заголовок"
 
 msgid "Go to previous heading"
 msgstr "Переход к  предыдущему заголовку"
 
 #, fuzzy
 msgid "&Next Heading"
-msgstr "Следующей заголовок\tH"
+msgstr "&Следующий заголовок"
 
+#, fuzzy
 msgid "Go to next heading"
-msgstr "Переход к следующему заголовку\tH"
+msgstr "Перейти на следующий заголовок"
 
 #, fuzzy
 msgid "Previous Heading Level &1"
-msgstr "Предыдущей уровень заголовка 1\tShift+1"
+msgstr "Предыдущий заголовок уровня &1"
 
 #, fuzzy
 msgid "Next Heading Level 1"
-msgstr "Следующей уровень заголовка 1\t1"
+msgstr "Следующий заголовок уровня 1"
 
 #, fuzzy
 msgid "Previous Heading Level &2"
-msgstr "Предыдущей уровень заголовка 2\tShift+2"
+msgstr "Предыдущий заголовок уровня &2"
 
 #, fuzzy
 msgid "Next Heading Level 2"
-msgstr "Следующей уровень заголовка 2\t2"
+msgstr "Следующий заголовок уровня 2"
 
 #, fuzzy
 msgid "Previous Heading Level &3"
-msgstr "Предыдущей уровень заголовка 3\tShift+%d"
+msgstr "Предыдущий заголовок уровня &3"
 
 #, fuzzy
 msgid "Next Heading Level 3"
-msgstr "Следующей уровень заголовка 3\t3"
+msgstr "Следующий заголовок уровня 3"
 
 #, fuzzy
 msgid "Previous Heading Level &4"
-msgstr "Предыдущей уровень заголовка 4\tShift+%d"
+msgstr "Предыдущий заголовок уровня &4"
 
 #, fuzzy
 msgid "Next Heading Level 4"
-msgstr "Следующей уровень заголовка 4\t4"
+msgstr "Следующий заголовок уровня 4"
 
 #, fuzzy
 msgid "Previous Heading Level &5"
-msgstr "Предыдущей уровень заголовка 5\tShift+%d"
+msgstr "Предыдущий заголовок уровня &5"
 
 #, fuzzy
 msgid "Next Heading Level 5"
-msgstr "Следующей уровень заголовка 5\t5"
+msgstr "Следующий заголовок уровня 5"
 
 #, fuzzy
 msgid "Previous Heading Level &6"
-msgstr "Предыдущей уровень заголовка 6\tShift+%d"
+msgstr "Предыдущий заголовок уровня &6"
 
 #, fuzzy
 msgid "Next Heading Level 6"
-msgstr "Следующей уровень заголовка 6\t6"
+msgstr "Следующий заголовок уровня 6"
 
 #, fuzzy
 msgid "&Previous Bookmark"
-msgstr "Предыдущая закладка\tShift+B"
+msgstr "&Предыдущая закладка"
 
 msgid "Go to previous bookmark"
 msgstr "Нет предыдущей закладки"
 
 #, fuzzy
 msgid "&Next Bookmark"
-msgstr "Следующая закладка\tB"
+msgstr "&Следующая закладка"
 
 msgid "Go to next bookmark"
 msgstr "Нет следующей закладки"
 
 #, fuzzy
 msgid "Previous &Note"
-msgstr "Предыдущая заметка\tShift+N"
+msgstr "Предыдущая &заметка"
 
 msgid "Go to previous note"
 msgstr "Переход  предыдущей заметки"
 
 #, fuzzy
 msgid "Next N&ote"
-msgstr "Следующая заметка\tN"
+msgstr "Следующая зам&етка"
 
 msgid "Go to next note"
 msgstr "Переход к  следующей заметки"
 
 #, fuzzy
 msgid "Jump to &All..."
-msgstr "Перейти ко всем...\tCtrl+B"
+msgstr "Перейти &ко всем..."
 
 msgid "Show all bookmarks and notes"
 msgstr "Показать все закладки и заметки"
 
 #, fuzzy
 msgid "Jump to &Bookmarks Only..."
-msgstr "Перейти только  к закладком...\tCtrl+Alt+B"
+msgstr "Перейти только к &закладкам..."
 
 msgid "Show bookmarks only"
 msgstr "Показать только закладки"
 
 #, fuzzy
 msgid "Jump to Notes &Only..."
-msgstr "Перейти только к заметком...\tCtrl+Alt+M"
+msgstr "Перейти только к &заметкам..."
 
 msgid "Show notes only"
 msgstr "Показать только заметки"
 
 #, fuzzy
 msgid "&View Note Text"
-msgstr "Просмотр заметки"
+msgstr "&Просмотр текста заметки"
 
 msgid "View the note at current position"
 msgstr "просмотр заметки  в текущей позиции"
 
 #, fuzzy
 msgid "&Find..."
-msgstr "Найти"
+msgstr "&Найти..."
 
 msgid "Find text in the document"
 msgstr "Найти текст в документе"
@@ -1427,88 +1480,98 @@ msgstr "Найти предыдущее символы"
 
 #, fuzzy
 msgid "Go to &line..."
-msgstr "Перейти к строке"
+msgstr "Перейти на стро&ку..."
 
 msgid "Go to a specific line"
 msgstr "Переход к определенной строке"
 
 #, fuzzy
 msgid "Go to &percent..."
-msgstr "Перейти к проценту"
+msgstr "Перейти на &процент..."
 
 msgid "Go to a percentage of the document"
 msgstr "Переход к проценту документа"
 
 #, fuzzy
 msgid "Go &Back"
-msgstr "Вперед и Назад    Ctrl+["
+msgstr "Вернут&ься"
 
 msgid "Go back in history"
 msgstr "Переход назад по истории"
 
 #, fuzzy
 msgid "Go &Forward"
-msgstr "Перейти вперед    Ctrl+]"
+msgstr "Пе&рейти вперёд"
 
 msgid "Go forward in history"
 msgstr "Переход вперёд по истории"
 
+#, fuzzy
 msgid "&Sections"
-msgstr "Разделы"
+msgstr "&Разделы"
 
 msgid "Navigate by sections"
 msgstr "Навигация по разделам"
 
+#, fuzzy
 msgid "&Headings"
-msgstr "Заголовки"
+msgstr "&Заголовки"
 
 msgid "Navigate by headings"
 msgstr "Навигация по заголовкам"
 
+#, fuzzy
 msgid "&Pages"
-msgstr "Страницы"
+msgstr "&Страницы"
 
 msgid "Navigate by pages"
 msgstr "Навигация по страницам"
 
+#, fuzzy
 msgid "&Bookmarks"
-msgstr "Закладки"
+msgstr "&Закладки"
 
 msgid "Navigate by bookmarks"
 msgstr "Навигация по закладкам"
 
+#, fuzzy
 msgid "&Links"
-msgstr "Ссылки"
+msgstr "&Ссылки"
 
 msgid "Navigate by links"
 msgstr "Навигация по ссылкам."
 
+#, fuzzy
 msgid "&Images"
-msgstr "Изображения"
+msgstr "&Изображения"
 
 msgid "Navigate by images"
 msgstr "Навигация по изображениям"
 
+#, fuzzy
 msgid "&Figures"
-msgstr "Фигуры"
+msgstr "&Иллюстрации"
 
 msgid "Navigate by figures"
 msgstr "Навигация по фигуром"
 
+#, fuzzy
 msgid "&Tables"
-msgstr "Таблицы"
+msgstr "&Таблицы"
 
 msgid "Navigate by tables"
 msgstr "Навигация по таблицам"
 
+#, fuzzy
 msgid "&Separators"
-msgstr "Разделители"
+msgstr "&Разделители"
 
 msgid "Navigate by separators"
 msgstr "Навигация по разделителям"
 
+#, fuzzy
 msgid "&Lists"
-msgstr "Списки"
+msgstr "&Списки"
 
 msgid "Navigate by lists"
 msgstr "Навигация по спискам"
@@ -1523,63 +1586,65 @@ msgstr "Навигация по контейнерам"
 
 #, fuzzy
 msgid "&About Paperback"
-msgstr "О Paperback\tCtrl+F1"
+msgstr "&О программе Paperback"
 
 msgid "About this application"
 msgstr "Об этом приложение"
 
 #, fuzzy
 msgid "View Help in &Browser"
-msgstr "Просмотреть справку в браузере\tF1"
+msgstr "Открыть справку в &браузере"
 
+#, fuzzy
 msgid "View help in default browser"
-msgstr "Просмотреть справку в браузере по умолчанию\tF1"
+msgstr "Открыть справку в браузере по умолчанию"
 
 #, fuzzy
 msgid "View Help in &Paperback"
-msgstr "Просмотр справки в Paperback"
+msgstr "Открыть справку в &Paperback"
 
 msgid "View help in Paperback"
 msgstr "Просмотр справки в Paperback"
 
 #, fuzzy
 msgid "Check for &Updates"
-msgstr "Проверить обновления"
+msgstr "Проверить &обновления"
 
 msgid "Check for updates"
 msgstr "Проверить обновления"
 
 #, fuzzy
 msgid "&Donate"
-msgstr "Пожертвование\tCtrl+D"
+msgstr "&Пожертвовать"
 
 msgid "Support Paperback development"
 msgstr "Поддержка разработки Paperback"
 
 #, fuzzy
 msgid "&Import Document Data..."
-msgstr "Импорт данных из документа"
+msgstr "&Импортировать данные документа..."
 
 msgid "Import bookmarks and position"
 msgstr "Импорт закладок и их позиции"
 
 #, fuzzy
 msgid "&Export Document Data..."
-msgstr "Экспорт данных документа"
+msgstr "&Экспортировать данные документа..."
 
 msgid "Export bookmarks and position"
 msgstr "Экспорт закладок и их позиции"
 
 #, fuzzy
 msgid "Export to &Plain Text..."
-msgstr "Экспортировать в обычный текст...\tCtrl+E"
+msgstr "Экспортировать в &обычный текст..."
 
+#, fuzzy
 msgid "Export document as plain text"
-msgstr "Экспортировать документ виде  обычного текста...\tCtrl+E"
+msgstr "Экспортировать документ как обычный текст"
 
 #, fuzzy
 msgid "Export to &HTML..."
-msgstr "Экспорт в формат HTML..."
+msgstr "Экспортировать в &HTML..."
 
 #, fuzzy
 msgid "Export document as HTML"
@@ -1595,35 +1660,35 @@ msgstr "Экспорт документа в формате Markdown"
 
 #, fuzzy
 msgid "&Word Count"
-msgstr "Количество слов"
+msgstr "&Количество слов"
 
 msgid "Show word count"
 msgstr "Показать каличество  слов"
 
 #, fuzzy
 msgid "Document &Info"
-msgstr "Информация о документе"
+msgstr "&Информация о документе"
 
 msgid "Show document information"
 msgstr "Показать информацию о документе"
 
 #, fuzzy
 msgid "&Table of Contents"
-msgstr "Оглавление"
+msgstr "&Оглавление"
 
 msgid "Show table of contents"
 msgstr "Показать оглавления"
 
 #, fuzzy
 msgid "&Elements List..."
-msgstr "Список элементов\tF7"
+msgstr "&Список элементов..."
 
 msgid "Show elements list"
 msgstr "Показать список элементов"
 
 #, fuzzy
 msgid "Reveal &File in Folder"
-msgstr "Показать и сохранить в папке    Ctrl+Shift+C"
+msgstr "Показать &файл в папке"
 
 #, fuzzy
 msgid "Reveal document in the file manager"
@@ -1631,36 +1696,37 @@ msgstr "Открыть документ в файловом менеджере"
 
 #, fuzzy
 msgid "Open in &Web View"
-msgstr "Открыть веб представлении\tCtrl+Shift+V"
+msgstr "Открыть в &веб-просмотре"
 
 msgid "Open document in web view"
 msgstr "Открытие документа в веб представление"
 
 #, fuzzy
 msgid "View &Source"
-msgstr "Просмотр и исходный код    Ctrl+U"
+msgstr "Посмотреть &исходный код"
 
 #, fuzzy
 msgid "Open the document source in a new tab"
 msgstr "Откройте исходный текст документа в новой вкладке"
 
+#, fuzzy
 msgid "I&mport/Export"
-msgstr "Импорт/Экспорт"
+msgstr "&Импорт/экспорт"
 
 msgid "Import and export options"
 msgstr "Параметры импорта и экспорта"
 
 #, fuzzy
 msgid "Toggle &Bookmark"
-msgstr "Переключить закладку\tCtrl+Shift+B"
+msgstr "Переключить &закладку"
 
 #, fuzzy
 msgid "Bookmark with &Note"
-msgstr "Закладка с заметкой"
+msgstr "Закладка с &примечанием"
 
 #, fuzzy
 msgid "Word w&rap"
-msgstr "Переносить слова"
+msgstr "Перенос &слов"
 
 #, fuzzy
 msgid "Toggle word wrap"
@@ -1676,7 +1742,7 @@ msgstr "Воспроизвести или приостановить аудио�
 
 #, fuzzy
 msgid "Seek Audio &Forward"
-msgstr "Перейти вперед    Ctrl+]"
+msgstr "Перемотать звук &вперёд"
 
 #, fuzzy
 msgid "Skip the audio narration forward"
@@ -1684,7 +1750,7 @@ msgstr "Пропустить аудиокомментарий вперед"
 
 #, fuzzy
 msgid "Seek Audio &Backward"
-msgstr "Поиск аудио и «Назад»"
+msgstr "Перемотать звук &назад"
 
 #, fuzzy
 msgid "Skip the audio narration backward"
@@ -1716,23 +1782,27 @@ msgstr "Переключить в полноэкранный режим"
 
 #, fuzzy
 msgid "&Settings"
-msgstr "Настройки"
+msgstr "&Параметры"
 
 #, fuzzy
 msgid "&Sleep Timer..."
-msgstr "Таймер сна"
+msgstr "&Таймер сна..."
 
+#, fuzzy
 msgid "&File"
-msgstr "Файл"
+msgstr "&Файл"
 
+#, fuzzy
 msgid "&Go"
-msgstr "Переход"
+msgstr "&Переход"
 
+#, fuzzy
 msgid "&Tools"
-msgstr "Инструменты"
+msgstr "&Инструменты"
 
+#, fuzzy
 msgid "&Help"
-msgstr "Справка"
+msgstr "&Справка"
 
 #, fuzzy
 msgid "&Edit"
@@ -1880,7 +1950,7 @@ msgstr "%s уровень заголовка %d"
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
 #, fuzzy
 msgid "Page %d"
-msgstr "Страница %d: %s"
+msgstr "Страница %d"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 msgid "Page %d: %s"
@@ -2005,8 +2075,9 @@ msgid "Sleep timer"
 msgstr "Таймер сна"
 
 #. TRANSLATORS: System tray menu item to restore the main window from the tray
+#, fuzzy
 msgid "&Restore"
-msgstr "Восстановить"
+msgstr "&Восстановить"
 
 #. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
 msgid "Restore Paperback"
@@ -2026,7 +2097,7 @@ msgstr "Закрыть"
 
 #, fuzzy
 msgid "Reopen Last Closed"
-msgstr "Повторно открыть последние закрытое\tCtrl+Shift+T"
+msgstr "Открыть закрытый документ"
 
 #, fuzzy
 msgid "Show All Recent Documents..."
@@ -2082,59 +2153,59 @@ msgstr "Переход к закладком"
 
 #, fuzzy
 msgid "Previous Heading"
-msgstr "Предыдущей заголовок\tShift+H"
+msgstr "Предыдущий заголовок"
 
 #, fuzzy
 msgid "Next Heading"
-msgstr "Следующей заголовок\tH"
+msgstr "Следующий заголовок"
 
 #, fuzzy
 msgid "Previous Heading Level 1"
-msgstr "Предыдущей уровень заголовка 1\tShift+1"
+msgstr "Предыдущий заголовок уровня 1"
 
 #, fuzzy
 msgid "Previous Heading Level 2"
-msgstr "Предыдущей уровень заголовка 2\tShift+2"
+msgstr "Предыдущий заголовок уровня 2"
 
 #, fuzzy
 msgid "Previous Heading Level 3"
-msgstr "Предыдущей уровень заголовка 3\tShift+%d"
+msgstr "Предыдущий заголовок уровня 3"
 
 #, fuzzy
 msgid "Previous Heading Level 4"
-msgstr "Предыдущей уровень заголовка 4\tShift+%d"
+msgstr "Предыдущий заголовок уровня 4"
 
 #, fuzzy
 msgid "Previous Heading Level 5"
-msgstr "Предыдущей уровень заголовка 5\tShift+%d"
+msgstr "Предыдущий заголовок уровня 5"
 
 #, fuzzy
 msgid "Previous Heading Level 6"
-msgstr "Предыдущей уровень заголовка 6\tShift+%d"
+msgstr "Предыдущий заголовок уровня 6"
 
 #, fuzzy
 msgid "Previous Page"
-msgstr "Предыдущая страница\tShift+P"
+msgstr "Предыдущая страница"
 
 #, fuzzy
 msgid "Next Page"
-msgstr "Следующая страница\tP"
+msgstr "Следующая страница"
 
 #, fuzzy
 msgid "Previous Bookmark"
-msgstr "Предыдущая закладка\tShift+B"
+msgstr "Предыдущая закладка"
 
 #, fuzzy
 msgid "Next Bookmark"
-msgstr "Следующая закладка\tB"
+msgstr "Следующая закладка"
 
 #, fuzzy
 msgid "Previous Note"
-msgstr "Предыдущая заметка\tShift+N"
+msgstr "Предыдущее примечание"
 
 #, fuzzy
 msgid "Next Note"
-msgstr "Следующая заметка\tN"
+msgstr "Следующее примечание"
 
 #, fuzzy
 msgid "Jump to All Bookmarks..."
@@ -2142,11 +2213,11 @@ msgstr "Переход к закладком"
 
 #, fuzzy
 msgid "Jump to Bookmarks Only..."
-msgstr "Перейти только  к закладком...\tCtrl+Alt+B"
+msgstr "Перейти только к закладкам..."
 
 #, fuzzy
 msgid "Jump to Notes Only..."
-msgstr "Перейти только к заметком...\tCtrl+Alt+M"
+msgstr "Перейти только к примечаниям..."
 
 #, fuzzy
 msgid "View Note Text"
@@ -2154,59 +2225,59 @@ msgstr "Просмотр заметки"
 
 #, fuzzy
 msgid "Previous Link"
-msgstr "Предыдущая ссылка\tShift+K"
+msgstr "Предыдущая ссылка"
 
 #, fuzzy
 msgid "Next Link"
-msgstr "Следующая ссылка\tK"
+msgstr "Следующая ссылка"
 
 #, fuzzy
 msgid "Previous Image"
-msgstr "Предыдущее изображение\tShift+G"
+msgstr "Предыдущее изображение"
 
 #, fuzzy
 msgid "Next Image"
-msgstr "Следующее изображение\tG"
+msgstr "Следующее изображение"
 
 #, fuzzy
 msgid "Previous Figure"
-msgstr "Предыдущая фигура\tShift+F"
+msgstr "Предыдущий рисунок"
 
 #, fuzzy
 msgid "Next Figure"
-msgstr "Следующая фигура\tF"
+msgstr "Следующий рисунок"
 
 #, fuzzy
 msgid "Previous Table"
-msgstr "Предыдущая таблица\tShift+T"
+msgstr "Предыдущая таблица"
 
 #, fuzzy
 msgid "Next Table"
-msgstr "Следующая таблица\tT"
+msgstr "Следующая таблица"
 
 #, fuzzy
 msgid "Previous Separator"
-msgstr "Предыдущей разделитель\tShift+S"
+msgstr "Предыдущий разделитель"
 
 #, fuzzy
 msgid "Next Separator"
-msgstr "Следующей разделитель\tS"
+msgstr "Следующий разделитель"
 
 #, fuzzy
 msgid "Previous List"
-msgstr "Предыдущей список\tShift+L"
+msgstr "Предыдущий список"
 
 #, fuzzy
 msgid "Next List"
-msgstr "Следующей список\tL"
+msgstr "Следующий список"
 
 #, fuzzy
 msgid "Previous List Item"
-msgstr "Предыдущей элемент списка\tShift+I"
+msgstr "Предыдущий элемент списка"
 
 #, fuzzy
 msgid "Next List Item"
-msgstr "Следующей элемент списка\tI"
+msgstr "Следующий элемент списка"
 
 #, fuzzy
 msgid "Container Start"
@@ -2214,11 +2285,11 @@ msgstr "Контейнер и запуск    Shift+,"
 
 #, fuzzy
 msgid "Past Container End"
-msgstr "Пропустить «Container &End»    ,"
+msgstr "За пределами контейнера"
 
 #, fuzzy
 msgid "Elements List..."
-msgstr "Список элементов\tF7"
+msgstr "Список элементов..."
 
 #, fuzzy
 msgid "Reveal File in Folder"
@@ -2226,7 +2297,7 @@ msgstr "Показать и сохранить в папке    Ctrl+Shift+C"
 
 #, fuzzy
 msgid "Open in Web View"
-msgstr "Открыть веб представлении\tCtrl+Shift+V"
+msgstr "Открыть в веб-просмотре"
 
 #, fuzzy
 msgid "View Source"
@@ -2234,7 +2305,7 @@ msgstr "Просмотр и исходный код    Ctrl+U"
 
 #, fuzzy
 msgid "Toggle Bookmark"
-msgstr "Переключить закладку\tCtrl+Shift+B"
+msgstr "Переключить закладку"
 
 #, fuzzy
 msgid "Bookmark with Note"
@@ -2246,7 +2317,7 @@ msgstr "Включить/выключить перенос слов"
 
 #, fuzzy
 msgid "Play/Pause Audio"
-msgstr "&Воспроизведение/пауза аудио"
+msgstr "Воспроизведение/пауза аудио"
 
 #, fuzzy
 msgid "Seek Audio Forward"
@@ -2258,15 +2329,15 @@ msgstr "Поиск аудио и «Назад»"
 
 #, fuzzy
 msgid "Increase Audio Seek Amount"
-msgstr "&Увеличить шаг перехода в аудио"
+msgstr "Увеличить объём перемотки аудио"
 
 #, fuzzy
 msgid "Decrease Audio Seek Amount"
-msgstr "&Уменьшить шаг поиска аудио"
+msgstr "Уменьшить объём перемотки аудио"
 
 #, fuzzy
 msgid "Full Screen"
-msgstr "&Полноэкранный режим    F11"
+msgstr "Полный экран"
 
 #, fuzzy
 msgid "Settings..."
@@ -2278,7 +2349,7 @@ msgstr "Таймер сна"
 
 #, fuzzy
 msgid "Customize Keyboard Shortcuts..."
-msgstr "Настройка горячей клавиши &Window..."
+msgstr "Настроить горячие клавиши..."
 
 #, fuzzy
 msgid "Import Document Data..."
@@ -2290,7 +2361,7 @@ msgstr "Экспорт данных документа"
 
 #, fuzzy
 msgid "Export to Plain Text..."
-msgstr "Экспортировать в обычный текст...\tCtrl+E"
+msgstr "Экспортировать в простой текст..."
 
 #, fuzzy
 msgid "Export to HTML..."
@@ -2298,15 +2369,15 @@ msgstr "Экспорт в формат HTML..."
 
 #, fuzzy
 msgid "Export to Markdown..."
-msgstr "Экспорт в формат &Markdown..."
+msgstr "Экспортировать в Markdown..."
 
 #, fuzzy
 msgid "About Paperback"
-msgstr "О Paperback\tCtrl+F1"
+msgstr "О Paperback"
 
 #, fuzzy
 msgid "View Help in Browser"
-msgstr "Просмотреть справку в браузере\tF1"
+msgstr "Просмотреть справку в браузере"
 
 #, fuzzy
 msgid "View Help in Paperback"
@@ -2318,7 +2389,7 @@ msgstr "Проверить обновления"
 
 #, fuzzy
 msgid "Donate"
-msgstr "Пожертвование\tCtrl+D"
+msgstr "Поддержать"
 
 #, fuzzy
 msgid "File"
@@ -3358,7 +3429,7 @@ msgstr "Начало"
 #: kt
 #, fuzzy
 msgid "Active: {} remaining"
-msgstr "Оставшееся время"
+msgstr "Активно: {} осталось"
 
 #: kt
 #, fuzzy
@@ -3378,7 +3449,7 @@ msgstr "Изменить на:"
 #: kt
 #, fuzzy
 msgid "{} minutes"
-msgstr "менут"
+msgstr "{} минут"
 
 #: kt
 #, fuzzy
@@ -3522,7 +3593,7 @@ msgstr "Разделитель"
 #: kt
 #, fuzzy
 msgid "{} seconds"
-msgstr "сикунд"
+msgstr "{} секунд"
 
 #: kt
 #, fuzzy
@@ -3572,7 +3643,7 @@ msgstr "Требуется доступ ко всем файлам"
 #: kt
 #, fuzzy
 msgid "Continue"
-msgstr "&Контейнеры"
+msgstr "Продолжить"
 
 #: kt
 #, fuzzy
@@ -3597,12 +3668,12 @@ msgstr "Настройки по умолчанию системы"
 #: kt
 #, fuzzy
 msgid "Back {}"
-msgstr "Назад"
+msgstr "Назад {}"
 
 #: kt
 #, fuzzy
 msgid "Forward {}"
-msgstr "Перейти вперед    Ctrl+]"
+msgstr "Вперёд {}"
 
 #, fuzzy
 #~ msgid "1 document."
