@@ -5,6 +5,10 @@ on:
       - master
     paths:
       - 'crates/**/*.rs'
+      # Dependencies tagged translatable (ship-shape, wx-utils) contribute strings to
+      # paperback.pot too, so a version bump can add strings without touching any .rs
+      # file here. The lockfile moves for both a manifest bump and a plain cargo update.
+      - 'Cargo.lock'
       - 'android/app/src/main/kotlin/**/*.kt'
       - 'ios/Paperback/**/*.swift'
       - 'po/**/*.po'
