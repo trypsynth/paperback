@@ -141,11 +141,15 @@ pub enum SegmentDirectionFfi {
 	Previous,
 }
 
+/// `found` is independent of `text`: a segment can be found but have no text of its own (e.g. a
+/// plain-audio DAISY section marker, whose buffer content is just a placeholder space), so
+/// callers must check `found` rather than treating blank `text` as "not found".
 #[derive(Debug, Clone)]
 pub struct TextSegmentFfi {
 	pub text: String,
 	pub start_pos: i64,
 	pub end_pos: i64,
+	pub found: bool,
 }
 
 /// `found` is `false` (other fields zeroed) when the lookup misses, e.g. an out-of-range clip

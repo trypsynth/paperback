@@ -158,15 +158,20 @@ fun MainScreenTopBar(
 				}
 			}
 			if (state is MainScreenUiState.Success && state.tabs.isNotEmpty()) {
+				// An audio-only book (a zip of nothing but narration files) has no real text
+				// spine, so switching to Text Mode or counting words doesn't make sense for it.
+				val isAudioOnly = state.activeTab?.isAudioOnly == true
 				val menuActions = buildList {
-					add(
-						MenuAction(
-							// TRANSLATORS: Menu item / accessibility action toggling between the read-aloud view and the plain text view; label names the mode that tapping it switches TO
-							if (isTextMode) t("Switch to TTS Mode") else t("Switch to Text Mode"),
-							onToggleTextMode
+					if (!isAudioOnly) {
+						add(
+							MenuAction(
+								// TRANSLATORS: Menu item / accessibility action toggling between the read-aloud view and the plain text view; label names the mode that tapping it switches TO
+								if (isTextMode) t("Switch to TTS Mode") else t("Switch to Text Mode"),
+								onToggleTextMode
+							)
 						)
-					)
-					if (isTextMode) {
+					}
+					if (isTextMode && !isAudioOnly) {
 						add(
 							MenuAction(
 								// TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
@@ -213,13 +218,15 @@ fun MainScreenTopBar(
 							onRecentsOpen
 						)
 					)
-					add(
-						MenuAction(
-							// TRANSLATORS: Menu item / accessibility action to show word/character/line count statistics for the current document
-							t("Word Count"),
-							onWordCountOpen
+					if (!isAudioOnly) {
+						add(
+							MenuAction(
+								// TRANSLATORS: Menu item / accessibility action to show word/character/line count statistics for the current document
+								t("Word Count"),
+								onWordCountOpen
+							)
 						)
-					)
+					}
 					add(
 						MenuAction(
 							// TRANSLATORS: Menu item / accessibility action to show metadata (title, author, etc.) about the current document

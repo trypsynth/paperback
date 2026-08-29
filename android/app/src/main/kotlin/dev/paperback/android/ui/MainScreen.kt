@@ -125,6 +125,15 @@ fun MainScreen(
 	var activeTocIndex by remember { mutableStateOf<Int?>(null) }
 	var isTextMode by remember { mutableStateOf(false) }
 
+	// An audio-only tab has no real text spine to show in Text Mode (its top-bar toggle is
+	// hidden for the same reason), so switching to one from a Text Mode session falls back to
+	// Read-Aloud mode instead of stranding the user on a blank text view with no way back.
+	LaunchedEffect((state as? MainScreenUiState.Success)?.activeTab?.documentUri) {
+		if ((state as? MainScreenUiState.Success)?.activeTab?.isAudioOnly == true) {
+			isTextMode = false
+		}
+	}
+
 	LaunchedEffect(tocSheetOpen) {
 		if (tocSheetOpen) {
 			val stateValue = viewModel.uiState.value
@@ -164,39 +173,43 @@ fun MainScreen(
 		}
 	}
 
+	// F3/Shift+F3 (MainActivity) trigger this. In Read-Aloud mode, Find is a nav unit, so this
+	// just steps it the same way the nav-unit slider's Previous/Next buttons do; only Text mode
+	// (which has no nav-unit slider) still needs this handler's own search-and-scroll logic.
 	LaunchedEffect(Unit) {
 		viewModel.performSearchEvent.collect { forward ->
+			if (!isTextMode) {
+				// No active search means Find isn't the nav unit, so there's nothing for F3 to
+				// step through here; without this guard it would fall through to whatever unit
+				// currently is selected (Section, a Time seek, ordinary Paragraph...), silently
+				// doing the wrong thing instead of the no-op F3 has always been without a search.
+				if (activeSearchQuery != null && activeSearchOptions != null) {
+					val speaking = viewModel.ttsManager.isSpeaking.value
+					if (forward) {
+						viewModel.playNextSegment(speak = speaking, announce = !speaking)
+					} else {
+						viewModel.playPrevSegment(speak = speaking, announce = !speaking)
+					}
+				}
+				return@collect
+			}
 			if (activeSearchQuery != null && activeSearchOptions != null) {
 				val state = viewModel.uiState.value
 				if (state is MainScreenUiState.Success) {
 					val tab = state.activeTab
 					if (tab != null) {
-						val searchPos = if (isTextMode) {
-							val listState = listStates[tab.documentUri]
-							if (listState != null) {
-								val nextLine = (listState.firstVisibleItemIndex + if (forward) 2 else 1).toLong()
-								tab.session.positionFromLine(nextLine)
-							} else {
-								viewModel.ttsPosition.value
-							}
+						val listState = listStates[tab.documentUri]
+						val searchPos = if (listState != null) {
+							val nextLine = (listState.firstVisibleItemIndex + if (forward) 2 else 1).toLong()
+							tab.session.positionFromLine(nextLine)
 						} else {
-							val currentPos = viewModel.ttsPosition.value
-							if (forward) currentPos + 1L else currentPos
+							viewModel.ttsPosition.value
 						}
 						val res = tab.session.searchFfi(activeSearchQuery!!, searchPos, activeSearchOptions!!.copy(forward = forward))
 						if (res.found) {
-							if (isTextMode) {
-								val line = tab.session.lineFromPosition(res.position)
-								val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
-								val listState = listStates[tab.documentUri]
-								listState?.scrollToItem(indexToScroll)
-							} else {
-								viewModel.updateTtsPosition(res.position)
-								viewModel.refreshSegmentPreview()
-								if (viewModel.ttsManager.isSpeaking.value) {
-									viewModel.resumeTts()
-								}
-							}
+							val line = tab.session.lineFromPosition(res.position)
+							val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
+							listState?.scrollToItem(indexToScroll)
 						}
 					}
 				}
@@ -406,7 +419,9 @@ fun MainScreen(
 				)
 			},
 			bottomBar = {
-				val searchDocState = if (activeSearchQuery != null && activeSearchOptions != null && !isTouchExplorationEnabled) {
+				val searchDocState = if (
+					isTextMode && activeSearchQuery != null && activeSearchOptions != null && !isTouchExplorationEnabled
+				) {
 					(state as? MainScreenUiState.Success)?.activeTab
 				} else {
 					null
@@ -426,7 +441,10 @@ fun MainScreen(
 					(state as MainScreenUiState.Success).activeTab != null
 				) {
 					val activeTab = (state as MainScreenUiState.Success).activeTab!!
-					val navUnits = remember(activeTab.session) { viewModel.navUnitsFor(activeTab) }
+					val baseNavUnits = remember(activeTab.session) { viewModel.navUnitsFor(activeTab) }
+					// Find is only offered as a nav unit once a search is active; it steps through
+					// that search's matches instead of opening a separate find bar.
+					val navUnits = if (activeSearchQuery != null) baseNavUnits + NavUnit.Find else baseNavUnits
 					LaunchedEffect(navUnits) {
 						viewModel.ensureNavUnitSupported(navUnits)
 					}
@@ -544,38 +562,12 @@ fun MainScreen(
 									horizontalAlignment = Alignment.CenterHorizontally,
 									verticalArrangement = Arrangement.Center
 								) {
+									// Find is a nav unit in this mode (see TtsBottomBar), with its own Previous/Next
+									// buttons and slider, so this text no longer needs its own Find custom actions.
 									Text(
 										text = currentSegmentText,
 										style = MaterialTheme.typography.bodyLarge,
-										modifier = Modifier.padding(16.dp).semantics {
-											val actions = mutableListOf<CustomAccessibilityAction>()
-											if (activeSearchQuery != null && activeSearchOptions != null) {
-												// TRANSLATORS: Accessibility action to jump to the next search match while reading
-												actions.add(
-													CustomAccessibilityAction(t("Find Next")) {
-														viewModel.triggerFindNext()
-														true
-													}
-												)
-												// TRANSLATORS: Accessibility action to jump to the previous search match while reading
-												actions.add(
-													CustomAccessibilityAction(t("Find Previous")) {
-														viewModel.triggerFindPrevious()
-														true
-													}
-												)
-												// TRANSLATORS: Accessibility action to dismiss the active search and return to normal reading
-												actions.add(
-													CustomAccessibilityAction(t("Close Search")) {
-														viewModel.clearSearch()
-														true
-													}
-												)
-											}
-											if (actions.isNotEmpty()) {
-												customActions = actions
-											}
-										}
+										modifier = Modifier.padding(16.dp)
 									)
 									val remaining = sleepTimerRemaining
 									if (remaining != null) {
@@ -667,6 +659,9 @@ fun MainScreen(
 											activeSearchOptions?.wholeWord == options.wholeWord &&
 											activeSearchOptions?.regex == options.regex
 										viewModel.startSearch(query, options)
+										if (!isTextMode) {
+											viewModel.setNavUnit(NavUnit.Find)
+										}
 										val searchPos = if (isTextMode) {
 											val nextLineOffset = if (isSameQuery) 2 else 1
 											docState.session.positionFromLine((listState.firstVisibleItemIndex + nextLineOffset).toLong())
@@ -684,11 +679,7 @@ fun MainScreen(
 													lineIndexToFocus = targetIndex
 												}
 											} else {
-												viewModel.updateTtsPosition(res.position)
-												viewModel.refreshSegmentPreview()
-												if (wasSpeaking) {
-													viewModel.resumeTts()
-												}
+												viewModel.jumpToFoundPosition(res.position, resume = wasSpeaking)
 											}
 										}
 									}

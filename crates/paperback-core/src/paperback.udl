@@ -55,6 +55,7 @@ dictionary TextSegmentFfi {
 	string text;
 	i64 start_pos;
 	i64 end_pos;
+	boolean found;
 };
 
 dictionary DocumentStatsFfi {

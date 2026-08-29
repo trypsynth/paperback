@@ -150,8 +150,14 @@ impl DocumentSession {
 			let nav_req = ffi::NavRequest { position, wrap: false, direction: direction_nav, target, level_filter: 0 };
 			let res = reader_navigate(&self.handle, &nav_req);
 			if res.found {
+				// `offset` is the marker's own real position and must never move, regardless of
+				// what the fallback below does for display text: a plain-audio DAISY section, for
+				// instance, has no newlines anywhere in its buffer, so `find_paragraph_boundaries`
+				// collapses to the whole buffer (0..len) at every position, and re-deriving
+				// `start_pos` from that would silently discard the section actually found and
+				// snap every result back to position 0.
+				let offset = res.offset as i64;
 				let mut text = res.marker_text.clone();
-				let mut offset = res.offset as i64;
 				let mut end_pos = offset;
 				if text.trim().is_empty() {
 					let content = &self.handle.document().buffer.content;
@@ -161,16 +167,13 @@ impl DocumentSession {
 					let (start_byte, end_byte) =
 						self.find_paragraph_boundaries(content, byte_idx, SegmentDirectionFfi::Current);
 					text = content[start_byte..end_byte].trim().to_string();
-					let start_char = self.handle.document().buffer.char_index_for_byte(start_byte) as i64;
-					let end_char = self.handle.document().buffer.char_index_for_byte(end_byte) as i64;
-					offset = start_char;
-					end_pos = end_char;
+					end_pos = offset + i64::try_from(text.chars().count()).unwrap_or(0);
 				} else {
 					end_pos += i64::try_from(text.chars().count()).unwrap_or(0);
 				}
-				return TextSegmentFfi { text, start_pos: offset, end_pos };
+				return TextSegmentFfi { text, start_pos: offset, end_pos, found: true };
 			}
-			return TextSegmentFfi { text: String::new(), start_pos: position, end_pos: position };
+			return TextSegmentFfi { text: String::new(), start_pos: position, end_pos: position, found: false };
 		}
 		let content = &self.handle.document().buffer.content;
 		let total_chars = self.handle.document().buffer.char_count();
@@ -198,6 +201,10 @@ impl DocumentSession {
 			text,
 			start_pos: i64::try_from(start_char).unwrap_or(0),
 			end_pos: i64::try_from(end_char).unwrap_or(0),
+			// Next past the last paragraph/line (or Previous before the first) yields an empty
+			// range here rather than an error; treat that the same as any other not-found miss
+			// so callers don't stop on it and speak/persist a bogus end-of-buffer position.
+			found: start_byte < end_byte,
 		}
 	}
 
