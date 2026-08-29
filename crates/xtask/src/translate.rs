@@ -203,8 +203,20 @@ fn translate_one(
 	// bumped a timestamp" case alike.
 	let tmp = env::temp_dir().join(format!("paperback-translate-{lang}-{}.po", process::id()));
 	fs::write(&tmp, &original)?;
+	// `--previous` is load-bearing, not cosmetic. When msgmerge fuzzy-matches a changed string
+	// against a similar old one, it copies that old translation across and marks the entry
+	// `#, fuzzy`; only `--previous` also records the string it matched against, as a `#| msgid`
+	// line. That line is the sole thing distinguishing "msgmerge just guessed at this, it needs
+	// translating" from "already machine-translated, flagged for a human, leave it alone", and
+	// `PoDocument::needs_translation` selects on exactly that.
+	//
+	// Without the flag every fuzzy entry looked like the second kind, so a changed string
+	// silently kept whatever translation msgmerge had guessed and was never offered for
+	// translation again. That is how `&Settings` ended up showing the old translation of
+	// `Settings` and `&Close` the old translation of `Close`: same words, accelerator quietly
+	// gone, and nothing would ever have revisited them.
 	let msgmerge_ok = Command::new("msgmerge")
-		.args(["--update", "--backup=none", "--no-wrap"])
+		.args(["--update", "--backup=none", "--no-wrap", "--previous"])
 		.arg(&tmp)
 		.arg(pot_path)
 		.status()

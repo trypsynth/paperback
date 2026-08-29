@@ -26,12 +26,14 @@ const API_URL: &str = "https://api.anthropic.com/v1/messages";
 /// The API version header, which pins the request/response shape. Unrelated to the model.
 const API_VERSION: &str = "2023-06-01";
 
-/// Overridable with `PAPERBACK_TRANSLATE_MODEL`. Translating a UI catalog is cheap at any
-/// model in the range (a full rebuild of all seven locales is a couple of dollars here, and
-/// `claude-haiku-4-5` does the same job for roughly a fifth of that), so this defaults to the
-/// most capable one rather than the cheapest: the failure mode being fixed is a subtly wrong
-/// menu label that no one on the team can read back, which is worth more than the difference.
-const DEFAULT_MODEL: &str = "claude-opus-5";
+/// Overridable with `PAPERBACK_TRANSLATE_MODEL`, e.g. `claude-opus-5` for a language the
+/// results look weak in.
+///
+/// Short UI strings with the rules stated up front, and a checked output, is squarely what the
+/// cheapest model is for: a full rebuild of all seven locales lands well under a dollar, and
+/// the accelerator, placeholder and shortcut checks below don't care which model produced the
+/// text. What a larger model buys here is phrasing, not correctness.
+const DEFAULT_MODEL: &str = "claude-haiku-4-5";
 
 /// Strings per request. Well under what the model can hold; the point is to bound `max_tokens`
 /// and to lose only one batch, not a whole language, when a request fails.
@@ -159,7 +161,8 @@ impl ClaudeClient {
 		for chunk in split_markdown(markdown, README_CHUNK_CHARS) {
 			translated.push(self.translate_markdown_chunk(&chunk, language)?);
 		}
-		Ok(translated.join("\n\n"))
+		let joined = translated.join("\n\n");
+		Ok(restore_code_spans(markdown, &joined))
 	}
 
 	fn translate_markdown_chunk(&self, markdown: &str, language: &str) -> Result<String, Box<dyn Error>> {
@@ -343,13 +346,72 @@ const fn markdown_system_prompt() -> &'static str {
 	 1. Preserve the Markdown structure exactly: heading levels, list nesting, tables, emphasis, \
 	 blockquotes, and the blank lines between blocks.\n\
 	 2. Do not translate anything inside backtick code spans or fenced code blocks. Commands, \
-	 file names, file extensions, keyboard shortcuts and configuration keys stay verbatim.\n\
+	 file names, file extensions, keyboard shortcuts and configuration keys stay verbatim. This \
+	 includes key names that are ordinary words: `Alt+Left`, `Ctrl+Space`, `Shift+Home` and \
+	 `Page Down` keep their English key names, because they name physical keys rather than \
+	 describing a direction.\n\
 	 3. In links, translate the link text but never the URL.\n\
 	 4. Leave proper nouns alone: Paperback, EPUB, PDF, DAISY, and the names of formats and \
 	 programs.\n\
 	 5. Translate the prose fully and naturally. Do not summarise, expand, or add notes.\n\
 	 \n\
 	 Return only the translated Markdown."
+}
+
+/// Puts the source's inline code spans back, so a `` `Alt+Left` `` stays `Alt+Left`.
+///
+/// The prompt says code spans are verbatim, and the model mostly obeys, but the exceptions are
+/// the ones that matter: `Alt+Left` came back as `Alt+Gauche` in French, `Alt+Links` in Dutch
+/// and `Alt+Влево` in Russian. Those read as translations and are not keys anyone can press.
+/// The rule is absolute, so it is enforced here rather than left to the prompt.
+///
+/// Only runs when the span counts match. A different count means the model added or dropped
+/// one, so the nth span in the translation isn't the nth in the source and positional
+/// restoration would put text in the wrong place; the translation is then left exactly as it
+/// came back, for a human to look at.
+fn restore_code_spans(source: &str, translated: &str) -> String {
+	let source_spans = code_spans(source);
+	let translated_spans = code_spans(translated);
+	if source_spans.len() != translated_spans.len() {
+		return translated.to_string();
+	}
+	let mut out = String::with_capacity(translated.len());
+	let mut last = 0;
+	for ((range, _), (_, original)) in translated_spans.into_iter().zip(source_spans) {
+		out.push_str(&translated[last..range.start]);
+		out.push_str(original);
+		last = range.end;
+	}
+	out.push_str(&translated[last..]);
+	out
+}
+
+/// The inner text of every single-backtick inline code span, with its byte range.
+///
+/// Deliberately single-line: a span never spans a newline in Markdown, and stopping at one
+/// keeps a stray unmatched backtick from swallowing the rest of the document.
+fn code_spans(text: &str) -> Vec<(std::ops::Range<usize>, &str)> {
+	let bytes = text.as_bytes();
+	let mut out = Vec::new();
+	let mut i = 0;
+	while i < bytes.len() {
+		if bytes[i] != b'`' {
+			i += 1;
+			continue;
+		}
+		let start = i + 1;
+		let mut j = start;
+		while j < bytes.len() && bytes[j] != b'`' && bytes[j] != b'\n' {
+			j += 1;
+		}
+		if j < bytes.len() && bytes[j] == b'`' && j > start {
+			out.push((start..j, &text[start..j]));
+			i = j + 1;
+		} else {
+			i += 1;
+		}
+	}
+	out
 }
 
 /// Splits Markdown into chunks of at most `limit` characters, breaking only at `##` headings so
@@ -535,6 +597,53 @@ mod tests {
 		assert_eq!(chunks[0].trim(), doc.trim());
 	}
 
+	// The real case: French came back with `Alt+Gauche` where the source said `Alt+Left`.
+	#[test]
+	fn a_translated_key_name_is_put_back() {
+		let source = "Press `Alt+Left` to go back, or `Ctrl+Space` to play.";
+		let translated = "Appuyez sur `Alt+Gauche` pour revenir, ou `Ctrl+Espace` pour lire.";
+		assert_eq!(
+			restore_code_spans(source, translated),
+			"Appuyez sur `Alt+Left` pour revenir, ou `Ctrl+Space` pour lire."
+		);
+	}
+
+	#[test]
+	fn prose_around_a_restored_span_is_left_alone() {
+		let source = "The `readme.md` file.";
+		let translated = "Het `readme.md` bestand.";
+		assert_eq!(restore_code_spans(source, translated), translated);
+	}
+
+	// A changed count means the nth span in the translation is no longer the nth in the
+	// source, so restoring by position would drop text into the wrong place.
+	#[test]
+	fn a_mismatched_span_count_leaves_the_translation_untouched() {
+		let source = "Press `Alt+Left` then `Ctrl+C`.";
+		let translated = "Appuyez sur `Alt+Gauche`.";
+		assert_eq!(restore_code_spans(source, translated), translated);
+	}
+
+	#[test]
+	fn code_spans_do_not_run_past_a_newline() {
+		// A stray unmatched backtick must not swallow the rest of the document.
+		let spans = code_spans("a ` stray\nand `real` one");
+		assert_eq!(spans.len(), 1);
+		assert_eq!(spans[0].1, "real");
+	}
+
+	#[test]
+	fn an_empty_span_is_not_a_span() {
+		assert!(code_spans("nothing `` here").is_empty());
+	}
+
+	#[test]
+	fn restoring_handles_multibyte_text_around_the_spans() {
+		let source = "Press `Alt+Left` now.";
+		let translated = "Нажмите `Alt+Влево` сейчас.";
+		assert_eq!(restore_code_spans(source, translated), "Нажмите `Alt+Left` сейчас.");
+	}
+
 	#[test]
 	fn markdown_round_trips_when_nothing_needs_splitting() {
 		let doc = "# Title\n\nIntro.\n\n## One\n\nBody one.";
@@ -567,13 +676,13 @@ mod tests {
 	// never talks to. This pins the parts that have to be exactly where they are.
 	#[test]
 	fn the_request_body_has_the_shape_the_api_expects() {
-		let client = ClaudeClient { api_key: "test".to_string(), model: "claude-opus-5".to_string() };
+		let client = ClaudeClient { api_key: "test".to_string(), model: "test-model".to_string() };
 		let phrases = vec![
 			Phrase { source: "&Settings".to_string(), context: Some("Menu item".to_string()) },
 			Phrase { source: "Ready".to_string(), context: None },
 		];
 		let request = client.phrase_request(&phrases, "Russian").unwrap();
-		assert_eq!(request["model"], "claude-opus-5");
+		assert_eq!(request["model"], "test-model", "the configured model has to reach the request");
 		assert_eq!(request["output_config"]["effort"], "low");
 		// `format` nests inside output_config; as a top-level `output_format` it is the
 		// deprecated spelling and would be rejected.
@@ -589,9 +698,15 @@ mod tests {
 		assert!(content.contains("\"id\": 0") && content.contains("\"id\": 1"), "every entry needs its id");
 	}
 
+	// A typo here is a 404 on every request, and only at runtime.
+	#[test]
+	fn the_default_model_is_a_real_model_id() {
+		assert_eq!(DEFAULT_MODEL, "claude-haiku-4-5");
+	}
+
 	#[test]
 	fn a_phrase_without_a_note_carries_no_context_field() {
-		let client = ClaudeClient { api_key: "test".to_string(), model: "claude-opus-5".to_string() };
+		let client = ClaudeClient { api_key: "test".to_string(), model: "test-model".to_string() };
 		let phrases = vec![Phrase { source: "Ready".to_string(), context: None }];
 		let request = client.phrase_request(&phrases, "French").unwrap();
 		let content = request["messages"][0]["content"].as_str().unwrap();
