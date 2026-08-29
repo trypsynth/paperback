@@ -17,7 +17,7 @@ bitflags = { workspace = true }
 dunce = "1.0.5"
 # Decodes the embedded application icon in `ui::icon`; already in the tree via pdfium.
 image = { version = "0.25.10", default-features = false, features = ["png"] }
-live-region = "0.2.0"
+live-region = "0.2.1"
 paperback-core = { path = "../paperback-core" }
 patois = { version = "0.2.1", features = ["ui"] }
 tracing = "0.1.44"
@@ -37,7 +37,7 @@ objc = "0.2.7"
 
 [build-dependencies]
 embed-manifest = "1.5.0"
-flate2 = { version = "1.1.9", default-features = false }
+flate2 = { version = "1.1.10", default-features = false }
 paperback-formats = { path = "../paperback-formats" }
 patois-build = "0.1.7"
 tar = "0.4.46"
