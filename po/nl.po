@@ -118,8 +118,8 @@ msgstr "Geen documenten"
 #, fuzzy
 msgid "%d document."
 msgid_plural "%d documents."
-msgstr[0] "document"
-msgstr[1] "document"
+msgstr[0] "%d document."
+msgstr[1] "%d documenten."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
 #, fuzzy
@@ -130,15 +130,15 @@ msgstr "Het document is opnieuw geladen."
 #, fuzzy
 msgid "All %d document selected."
 msgid_plural "All %d documents selected."
-msgstr[0] "Alle documenten"
-msgstr[1] "Alle documenten"
+msgstr[0] "Alle %d document geselecteerd."
+msgstr[1] "Alle %d documenten geselecteerd."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
 #, fuzzy
 msgid "%d of %d document selected."
 msgid_plural "%d of %d documents selected."
-msgstr[0] "Einde van het document"
-msgstr[1] "Einde van het document"
+msgstr[0] "%d van %d document geselecteerd."
+msgstr[1] "%d van %d documenten geselecteerd."
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 #, fuzzy
