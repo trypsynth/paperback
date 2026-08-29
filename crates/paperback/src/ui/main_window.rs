@@ -325,7 +325,7 @@ impl MainWindow {
 		if result {
 			self.update_title();
 			self.update_recent_documents_menu();
-			self.doc_manager.lock().unwrap().restore_focus();
+			self.doc_manager.lock().unwrap().focus_document_text();
 		}
 		result
 	}
@@ -361,7 +361,7 @@ impl MainWindow {
 				self.activate_from_ipc();
 				self.open_file(&path);
 				self.frame.raise();
-				self.doc_manager.lock().unwrap().restore_focus();
+				self.doc_manager.lock().unwrap().focus_document_text();
 			}
 		}
 	}
@@ -619,7 +619,7 @@ impl MainWindow {
 					return;
 				};
 				update_title_from_manager(frame, &dm_ref);
-				dm_ref.restore_focus();
+				dm_ref.focus_document_text();
 				drop(dm_ref);
 				let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 				frame.set_menu_bar(menu_bar);
@@ -773,7 +773,7 @@ impl MainWindow {
 						if dm.lock().unwrap().open_file(&dm, &path) {
 							let dm_ref = dm.lock().unwrap();
 							update_title_from_manager(&frame_copy, &dm_ref);
-							dm_ref.restore_focus();
+							dm_ref.focus_document_text();
 							drop(dm_ref);
 							let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 							frame_copy.set_menu_bar(menu_bar);
