@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:22-0600\n"
+"POT-Creation-Date: 2026-08-29 11:48-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2370,527 +2370,702 @@ msgstr ""
 msgid "Security Error"
 msgstr ""
 
+#: swift
 msgid "Export Document Data"
 msgstr ""
 
+#: swift
 msgid "Import Document Data"
 msgstr ""
 
+#: swift
 msgid "Settings exported"
 msgstr ""
 
+#: swift
 msgid "Failed to export settings"
 msgstr ""
 
+#: swift
 msgid "Settings imported"
 msgstr ""
 
+#: swift
 msgid "Failed to import settings"
 msgstr ""
 
+#: swift
 msgid "Document Data"
 msgstr ""
 
+#: swift
 msgid "More options"
 msgstr ""
 
+#: swift
 msgid "Switch to TTS Mode"
 msgstr ""
 
+#: swift
 msgid "Switch to Text Mode"
 msgstr ""
 
+#: swift
 msgid "Go To…"
 msgstr ""
 
+#: swift
 msgid "Recent Documents"
 msgstr ""
 
+#: swift
 msgid "Sleep Timer (active)"
 msgstr ""
 
+#: swift
 msgid "Type"
 msgstr ""
 
+#: swift
 msgid "No Elements"
 msgstr ""
 
+#: swift
 msgid "Headings, images, and other elements will appear here."
 msgstr ""
 
+#: swift
 msgid "No document open"
 msgstr ""
 
+#: swift
 msgid "Show All"
 msgstr ""
 
+#: swift
 msgid "Search…"
 msgstr ""
 
+#: swift
 msgid "Match Case"
 msgstr ""
 
+#: swift
 msgid "Whole Word"
 msgstr ""
 
+#: swift
 msgid "Regular Expression"
 msgstr ""
 
+#: swift
 msgid "Open Error"
 msgstr ""
 
+#: swift
 msgid "Open Book"
 msgstr ""
 
+#: swift
 msgid "Locate"
 msgstr ""
 
+#: swift
 msgid "Remove"
 msgstr ""
 
+#: swift
 msgid "File Missing"
 msgstr ""
 
+#: swift
 msgid "Currently Open"
 msgstr ""
 
+#: swift
 msgid "No Recent Documents"
 msgstr ""
 
+#: swift
 msgid "Documents you open will appear here."
 msgstr ""
 
+#: swift
 msgid "Text to Speech"
 msgstr ""
 
+#: swift
 msgid "Voice"
 msgstr ""
 
+#: swift
 msgid "Rate"
 msgstr ""
 
+#: swift
 msgid "Speech Rate"
 msgstr ""
 
+#: swift
 msgid "Pitch"
 msgstr ""
 
+#: swift
 msgid "Speech Dictionary"
 msgstr ""
 
+#: swift
 msgid "Play Sample"
 msgstr ""
 
+#: swift
 msgid "Text Size"
 msgstr ""
 
+#: swift
 msgid "Line Spacing"
 msgstr ""
 
+#: swift
 msgid "Paragraph Spacing"
 msgstr ""
 
+#: swift
 msgid "Alignment"
 msgstr ""
 
+#: swift
 msgid "Behavior"
 msgstr ""
 
+#: swift
 msgid "Restore last open documents"
 msgstr ""
 
+#: swift
 msgid "Swipe up moves forward"
 msgstr ""
 
+#: swift
 msgid "Title"
 msgstr ""
 
+#: swift
 msgid "Author"
 msgstr ""
 
+#: swift
 msgid "Words"
 msgstr ""
 
+#: swift
 msgid "Lines"
 msgstr ""
 
+#: swift
 msgid "Characters"
 msgstr ""
 
+#: swift
 msgid "Characters (excluding spaces)"
 msgstr ""
 
+#: swift
 msgid "Mode"
 msgstr ""
 
+#: swift
 msgid "Page"
 msgstr ""
 
+#: swift
 msgid "Percent"
 msgstr ""
 
+#: swift
 msgid "Line number"
 msgstr ""
 
+#: swift
 msgid "Page number"
 msgstr ""
 
+#: swift
 msgid "Percentage"
 msgstr ""
 
+#: swift
 msgid "Go To"
 msgstr ""
 
+#: swift
 msgid "Password"
 msgstr ""
 
+#: swift
 msgid "Enter password for {}"
 msgstr ""
 
+#: swift
 msgid "Password Required"
 msgstr ""
 
+#: swift
 msgid "Rule"
 msgstr ""
 
+#: swift
 msgid "Scope"
 msgstr ""
 
+#: swift
 msgid "Word"
 msgstr ""
 
+#: swift
 msgid "Paragraph"
 msgstr ""
 
+#: swift
 msgid "Pattern & Replacement"
 msgstr ""
 
+#: swift
 msgid "Pattern"
 msgstr ""
 
+#: swift
 msgid "Replacement"
 msgstr ""
 
+#: swift
 msgid "Whole word only"
 msgstr ""
 
+#: swift
 msgid "Regular expression (\\1 = first capture group)"
 msgstr ""
 
+#: swift
 msgid "Enabled"
 msgstr ""
 
+#: swift
 msgid "Apply to"
 msgstr ""
 
+#: swift
 msgid "Voices"
 msgstr ""
 
+#: swift
 msgid "New Rule"
 msgstr ""
 
+#: swift
 msgid "Edit Rule"
 msgstr ""
 
+#: swift
 msgid "Save"
 msgstr ""
 
+#: swift
 msgid "All voices"
 msgstr ""
 
+#: swift
 msgid "Apply To"
 msgstr ""
 
+#: swift
 msgid "Sleep timer running, {} remaining"
 msgstr ""
 
+#: swift
 msgid "Custom"
 msgstr ""
 
+#: swift
 msgid "Custom: {} minutes"
 msgstr ""
 
+#: swift
 msgid "Duration"
 msgstr ""
 
+#: swift
 msgid "Minutes"
 msgstr ""
 
+#: swift
 msgid "Done"
 msgstr ""
 
+#: swift
 msgid "Stop Timer"
 msgstr ""
 
+#: swift
 msgid "Start Timer"
 msgstr ""
 
+#: swift
 msgid "Edit"
 msgstr ""
 
+#: swift
 msgid "Add Rule"
 msgstr ""
 
+#: swift
 msgid "No Rules"
 msgstr ""
 
+#: swift
 msgid "Tabs"
 msgstr ""
 
+#: swift
 msgid "Contents"
 msgstr ""
 
+#: swift
 msgid "No Table of Contents"
 msgstr ""
 
+#: swift
 msgid "This document has no table of contents."
 msgstr ""
 
+#: swift
 msgid "Navigation unit"
 msgstr ""
 
+#: swift
 msgid "Previous {}"
 msgstr ""
 
+#: swift
 msgid "Pause"
 msgstr ""
 
+#: swift
 msgid "Play"
 msgstr ""
 
+#: swift
 msgid "End of document"
 msgstr ""
 
+#: swift
 msgid "Beginning of document"
 msgstr ""
 
+#: swift
 msgid "Next {}"
 msgstr ""
 
+#: swift
 msgid "Press play to start listening."
 msgstr ""
 
+#: kt
 msgid "Document Information"
 msgstr ""
 
+#: kt
 msgid "Untitled Link"
 msgstr ""
 
+#: kt
 msgid "Export Document"
 msgstr ""
 
+#: kt
 msgid "Select a format to export the current document:"
 msgstr ""
 
+#: kt
 msgid "Plain Text (.txt)"
 msgstr ""
 
+#: kt
 msgid "HTML (.html)"
 msgstr ""
 
+#: kt
 msgid "Markdown (.md)"
 msgstr ""
 
+#: kt
 msgid "No supported books or folders found here."
 msgstr ""
 
+#: kt
 msgid "Folder"
 msgstr ""
 
+#: kt
 msgid "Internal Storage"
 msgstr ""
 
+#: kt
 msgid "Search Term"
 msgstr ""
 
+#: kt
 msgid "Search History"
 msgstr ""
 
+#: kt
 msgid "Password:"
 msgstr ""
 
+#: kt
 msgid "All Files Access Required"
 msgstr ""
 
+#: kt
 msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
 msgstr ""
 
+#: kt
 msgid "Why we need this:"
 msgstr ""
 
+#: kt
 msgid "To provide a fast, fully screen-reader accessible file manager inside the app."
 msgstr ""
 
+#: kt
 msgid "To load large files instantly without needing to copy them into the app's cache."
 msgstr ""
 
+#: kt
 msgid "To display the exact local file paths of your documents."
 msgstr ""
 
+#: kt
 msgid "If you deny this permission, you can still use the Android System File Picker to open your "
 msgstr ""
 
+#: kt
 msgid "Grant"
 msgstr ""
 
+#: kt
 msgid "Not Now"
 msgstr ""
 
+#: kt
 msgid "Custom Timer"
 msgstr ""
 
+#: kt
 msgid "Back"
 msgstr ""
 
+#: kt
 msgid "Start"
 msgstr ""
 
+#: kt
 msgid "Active: {} remaining"
 msgstr ""
 
+#: kt
 msgid "remaining"
 msgstr ""
 
+#: kt
 msgid "Cancel Timer"
 msgstr ""
 
+#: kt
 msgid "Change to:"
 msgstr ""
 
+#: kt
 msgid "{} minutes"
 msgstr ""
 
+#: kt
 msgid "Custom time..."
 msgstr ""
 
+#: kt
 msgid "Expanded"
 msgstr ""
 
+#: kt
 msgid "Collapsed"
 msgstr ""
 
+#: kt
 msgid "Collapse"
 msgstr ""
 
+#: kt
 msgid "Expand"
 msgstr ""
 
+#: kt
 msgid "This document contains {} words."
 msgstr ""
 
+#: kt
 msgid "words"
 msgstr ""
 
+#: kt
 msgid "Close Search"
 msgstr ""
 
+#: kt
 msgid "Document exported"
 msgstr ""
 
+#: kt
 msgid "Failed to export document"
 msgstr ""
 
+#: kt
 msgid "No document open. Please open a book."
 msgstr ""
 
+#: kt
 msgid "No Documents"
 msgstr ""
 
+#: kt
 msgid "Sleep timer: {}"
 msgstr ""
 
+#: kt
 msgid "Cancel sleep timer"
 msgstr ""
 
+#: kt
 msgid "Import"
 msgstr ""
 
+#: kt
 msgid "More Options"
 msgstr ""
 
+#: kt
 msgid "Pause Read Aloud"
 msgstr ""
 
+#: kt
 msgid "Read Aloud"
 msgstr ""
 
+#: kt
 msgid "Export As"
 msgstr ""
 
+#: kt
 msgid "Elements List"
 msgstr ""
 
+#: kt
 msgid "No more matches."
 msgstr ""
 
+#: kt
 msgid "Heading"
 msgstr ""
 
+#: kt
 msgid "Link"
 msgstr ""
 
+#: kt
 msgid "Section"
 msgstr ""
 
+#: kt
 msgid "List"
 msgstr ""
 
+#: kt
 msgid "List Item"
 msgstr ""
 
+#: kt
 msgid "Table"
 msgstr ""
 
+#: kt
 msgid "Separator"
 msgstr ""
 
+#: kt
 msgid "{} seconds"
 msgstr ""
 
+#: kt
 msgid "✓ Granted"
 msgstr ""
 
+#: kt
 msgid "Before You Start"
 msgstr ""
 
+#: kt
 msgid "Paperback works best with a couple of permissions. Here's what we ask for and why:"
 msgstr ""
 
+#: kt
 msgid "Notifications"
 msgstr ""
 
+#: kt
 msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is "
 msgstr ""
 
+#: kt
 msgid "Enable Notifications"
 msgstr ""
 
+#: kt
 msgid "All Files Access"
 msgstr ""
 
+#: kt
 msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your "
 msgstr ""
 
+#: kt
 msgid "Enable File Access"
 msgstr ""
 
+#: kt
 msgid "Continue"
 msgstr ""
 
+#: kt
 msgid "Restore last open book"
 msgstr ""
 
+#: kt
 msgid "Use in-app file browser (requires All Files permission)"
 msgstr ""
 
+#: kt
 msgid "Text-to-Speech"
 msgstr ""
 
+#: kt
 msgid "System Default"
 msgstr ""
 
+#: kt
 msgid "Back {}"
 msgstr ""
 
+#: kt
 msgid "Forward {}"
 msgstr ""
