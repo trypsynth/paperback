@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 05:09-0600\n"
-"PO-Revision-Date: 2026-08-29 15:44+0300\n"
+"POT-Creation-Date: 2026-08-29 11:48-0600\n"
+"PO-Revision-Date: 2026-08-30 01:13+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -655,7 +655,6 @@ msgstr "Palautetaanko oletuspikanäppäimet?"
 msgid "Reset Shortcuts"
 msgstr "Oletuspikanäppäinten palautus"
 
-#| msgid "&Set Shortcut..."
 msgid "Set Shortcut for {}"
 msgstr "Määritä pikanäppäin komennolle {}"
 
@@ -670,7 +669,6 @@ msgstr ""
 msgid "Detected: (none)"
 msgstr "Havaittu: (ei mitään)"
 
-#| msgid "Details: {}"
 msgid "Detected: {}"
 msgstr "Havaittu: {}"
 
@@ -1546,7 +1544,6 @@ msgstr "&Koko näyttö"
 msgid "Toggle full screen"
 msgstr "Ota koko näytön tila käyttöön tai poista se käytöstä"
 
-#| msgid "Settings"
 msgid "&Settings"
 msgstr "&Asetukset"
 
@@ -1837,26 +1834,21 @@ msgstr "Palauta Paperback"
 msgid "Exit Paperback"
 msgstr "Lopeta Paperback"
 
-#| msgid "&Open..."
 msgid "Open..."
 msgstr "Avaa..."
 
-#| msgid "Close &All"
 msgid "Close All"
 msgstr "Sulje kaikki"
 
-#| msgid "Reopen &Last Closed"
 msgid "Reopen Last Closed"
 msgstr "Avaa viimeksi suljettu"
 
-#| msgid "No Recent Documents"
 msgid "Show All Recent Documents..."
 msgstr "Näytä viimeksi avatut asiakirjat..."
 
 msgid "Exit"
 msgstr "Lopeta"
 
-#| msgid "&Find..."
 msgid "Find..."
 msgstr "Etsi..."
 
@@ -1866,280 +1858,213 @@ msgstr "Etsi seuraava"
 msgid "Find Previous"
 msgstr "Etsi edellinen"
 
-#| msgid "Go to &line..."
 msgid "Go to Line..."
 msgstr "Siirry riville..."
 
-#| msgid "Go to &percent..."
 msgid "Go to Percent..."
 msgstr "Siirry prosenttiin..."
 
-#| msgid "Go to &Page"
 msgid "Go to Page..."
 msgstr "Siirry sivulle..."
 
-#| msgid "Go &Back"
 msgid "Go Back"
 msgstr "Siirry taaksepäin"
 
-#| msgid "Go &Forward"
 msgid "Go Forward"
 msgstr "Siirry eteenpäin"
 
-#| msgid "Percentage"
 msgid "Announce Percentage"
 msgstr "Ilmoita lukukohta prosentteina"
 
-#| msgid "Temporary bookmark."
 msgid "Set Temporary Bookmark"
 msgstr "Lisää tilapäinen kirjanmerkki"
 
 msgid "Jump to Temporary Bookmark"
 msgstr "Siirry tilapäiseen kirjanmerkkiin"
 
-#| msgid "&Previous Heading"
 msgid "Previous Heading"
 msgstr "Edellinen otsikko"
 
-#| msgid "&Next Heading"
 msgid "Next Heading"
 msgstr "Seuraava otsikko"
 
-#| msgid "Previous Heading Level &1"
 msgid "Previous Heading Level 1"
 msgstr "Edellinen otsikkotaso 1"
 
-#| msgid "Previous Heading Level &2"
 msgid "Previous Heading Level 2"
 msgstr "Edellinen otsikkotaso 2"
 
-#| msgid "Previous Heading Level &3"
 msgid "Previous Heading Level 3"
 msgstr "Edellinen otsikkotaso 3"
 
-#| msgid "Previous Heading Level &4"
 msgid "Previous Heading Level 4"
 msgstr "Edellinen otsikkotaso 4"
 
-#| msgid "Previous Heading Level &5"
 msgid "Previous Heading Level 5"
 msgstr "Edellinen otsikkotaso 5"
 
-#| msgid "Previous Heading Level &6"
 msgid "Previous Heading Level 6"
 msgstr "Edellinen otsikkotaso 6"
 
-#| msgid "Previous Pa&ge"
 msgid "Previous Page"
 msgstr "Edellinen sivu"
 
-#| msgid "Next Pag&e"
 msgid "Next Page"
 msgstr "Seuraava sivu"
 
-#| msgid "&Previous Bookmark"
 msgid "Previous Bookmark"
 msgstr "Edellinen kirjanmerkki"
 
-#| msgid "&Next Bookmark"
 msgid "Next Bookmark"
 msgstr "Seuraava kirjanmerkki"
 
-#| msgid "Previous &Note"
 msgid "Previous Note"
 msgstr "Edellinen muistiinpano"
 
-#| msgid "Next N&ote"
 msgid "Next Note"
 msgstr "Seuraava muistiinpano"
 
-#| msgid "Jump to Bookmark"
 msgid "Jump to All Bookmarks..."
 msgstr "Siirry kaikkiin kirjanmerkkeihin..."
 
-#| msgid "Jump to &Bookmarks Only..."
 msgid "Jump to Bookmarks Only..."
 msgstr "Siirry vain kirjanmerkkeihin..."
 
 msgid "Jump to Notes Only..."
 msgstr "Siirry vain muistiinpanoihin..."
 
-#| msgid "&View Note Text"
 msgid "View Note Text"
 msgstr "Näytä muistiinpano"
 
-#| msgid "Previous Lin&k"
 msgid "Previous Link"
 msgstr "Edellinen linkki"
 
-#| msgid "Next Lin&k"
 msgid "Next Link"
 msgstr "Seuraava linkki"
 
-#| msgid "Previous Ima&ge"
 msgid "Previous Image"
 msgstr "Edellinen kuva"
 
-#| msgid "Next Ima&ge"
 msgid "Next Image"
 msgstr "Seuraava kuva"
 
-#| msgid "Previous Figu&re"
 msgid "Previous Figure"
 msgstr "Edellinen kuvitus"
 
-#| msgid "Next Figu&re"
 msgid "Next Figure"
 msgstr "Seuraava kuvitus"
 
-#| msgid "Previous &Table"
 msgid "Previous Table"
 msgstr "Edellinen taulukko"
 
-#| msgid "Next &Table"
 msgid "Next Table"
 msgstr "Seuraava taulukko"
 
-#| msgid "Previous Se&parator"
 msgid "Previous Separator"
 msgstr "Edellinen erotin"
 
-#| msgid "Next Se&parator"
 msgid "Next Separator"
 msgstr "Seuraava erotin"
 
-#| msgid "Previous L&ist"
 msgid "Previous List"
 msgstr "Edellinen luettelo"
 
-#| msgid "Next L&ist"
 msgid "Next List"
 msgstr "Seuraava luettelo"
 
-#| msgid "Previous List &Item"
 msgid "Previous List Item"
 msgstr "Edellinen luettelokohde"
 
-#| msgid "Next List I&tem"
 msgid "Next List Item"
 msgstr "Seuraava luettelokohde"
 
-#| msgid "Container &Start"
 msgid "Container Start"
 msgstr "Säilön alku"
 
-#| msgid "Past Container &End"
 msgid "Past Container End"
 msgstr "Säilön jälkeinen kohta"
 
-#| msgid "&Elements List..."
 msgid "Elements List..."
 msgstr "Elementtilista..."
 
-#| msgid "Reveal &File in Folder"
 msgid "Reveal File in Folder"
 msgstr "Avaa asiakirjan kansio"
 
-#| msgid "Open in &Web View"
 msgid "Open in Web View"
 msgstr "Avaa selainnäkymässä"
 
-#| msgid "View &Source"
 msgid "View Source"
 msgstr "Näytä lähdekoodi"
 
-#| msgid "Toggle &Bookmark"
 msgid "Toggle Bookmark"
 msgstr "Lisää tai poista kirjanmerkki"
 
-#| msgid "Bookmark with &Note"
 msgid "Bookmark with Note"
 msgstr "Kirjanmerkki muistiinpanolla"
 
-#| msgid "Toggle word wrap"
 msgid "Toggle Word Wrap"
 msgstr "Ota rivitys käyttöön tai poista se käytöstä"
 
-#| msgid "&Play/Pause Audio"
 msgid "Play/Pause Audio"
 msgstr "Toista/pysäytä äänite"
 
-#| msgid "Seek Audio &Forward"
 msgid "Seek Audio Forward"
 msgstr "Kelaa äänitettä eteenpäin"
 
-#| msgid "Seek Audio &Backward"
 msgid "Seek Audio Backward"
 msgstr "Kelaa äänitettä taaksepäin"
 
-#| msgid "&Increase Audio Seek Amount"
 msgid "Increase Audio Seek Amount"
 msgstr "Pidennä kelauksen aikasiirtymää"
 
-#| msgid "&Decrease Audio Seek Amount"
 msgid "Decrease Audio Seek Amount"
 msgstr "Lyhennä kelauksen aikasiirtymää"
 
-#| msgid "&Full Screen"
 msgid "Full Screen"
 msgstr "Koko näyttö"
 
-#| msgid "Settings"
 msgid "Settings..."
 msgstr "Asetukset..."
 
-#| msgid "&Sleep Timer..."
 msgid "Sleep Timer..."
 msgstr "Uniajastin..."
 
-#| msgid "Customize &Keyboard Shortcuts..."
 msgid "Customize Keyboard Shortcuts..."
 msgstr "Muokkaa pikanäppäimiä..."
 
-#| msgid "&Import Document Data..."
 msgid "Import Document Data..."
 msgstr "Tuo asiakirjan tiedot..."
 
-#| msgid "&Export Document Data..."
 msgid "Export Document Data..."
 msgstr "Vie asiakirjan tiedot..."
 
-#| msgid "Export to &Plain Text..."
 msgid "Export to Plain Text..."
 msgstr "Vie tekstimuotoon..."
 
-#| msgid "Export to &HTML..."
 msgid "Export to HTML..."
 msgstr "Vie HTML-muotoon..."
 
-#| msgid "Export to &Markdown..."
 msgid "Export to Markdown..."
 msgstr "Vie Markdown-muotoon..."
 
-#| msgid "&About Paperback"
 msgid "About Paperback"
 msgstr "Tietoa Paperbackista"
 
-#| msgid "View Help in &Browser"
 msgid "View Help in Browser"
 msgstr "Näytä ohje selaimessa"
 
-#| msgid "View Help in &Paperback"
 msgid "View Help in Paperback"
 msgstr "Näytä ohje Paperbackissa"
 
-#| msgid "Check for &Updates"
 msgid "Check for Updates"
 msgstr "Tarkista päivitykset"
 
-#| msgid "&Donate"
 msgid "Donate"
 msgstr "Lahjoita"
 
 msgid "File"
 msgstr "Tiedosto"
 
-#| msgid "&Tools"
 msgid "Tools"
 msgstr "Työkalut"
 
@@ -2420,7 +2345,6 @@ msgstr "Virheellinen salasana"
 msgid "Unknown update file format."
 msgstr "Tuntematon päivitystiedoston muoto."
 
-#| msgid "Failed to open donation page in browser."
 msgid "Failed to open disk image"
 msgstr "Levykuvan avaaminen epäonnistui"
 
@@ -2492,621 +2416,467 @@ msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %
 msgid "Security Error"
 msgstr "Suojausvirhe"
 
-msgid "&Options"
-msgstr "&Asetukset"
-
-msgid "1 document."
-msgstr "1 asiakirja."
-
-msgid "%d documents."
-msgstr "%d asiakirjaa."
-
-msgid "All %d documents selected."
-msgstr "Kaikki %d asiakirjaa valittuina."
-
-msgid "%d of %d documents selected."
-msgstr "%d / %d asiakirjaa valittuina."
-
-msgid "hours"
-msgstr "tuntia"
-
-msgid "minutes"
-msgstr "minuuttia"
-
-msgid "1 second"
-msgstr "1 sekunti"
-
-msgid "seconds"
-msgstr "sekuntia"
-
-msgid "The selection contains {} words."
-msgstr "Valitussa tekstissä on {} sanaa."
-
-msgid "This document contains {} words."
-msgstr "Asiakirjassa on {} sanaa."
-
-msgid "{} chars"
-msgstr "{} merkkiä"
-
-msgid "Sleep timer set for 1 minute."
-msgstr "Uniajastin 1 minuutti."
-
-msgid "Sleep timer set for %d minutes."
-msgstr "Uniajastin %d minuuttia."
-
-msgid "Previous Section\t["
-msgstr "Edellinen luku\t["
-
-msgid "Next Section\t]"
-msgstr "Seuraava luku\t]"
-
-msgid "Go to &Page\tCtrl+P"
-msgstr "S&iirry sivulle\tCtrl+P"
-
-msgid "Previous Pa&ge\tShift+P"
-msgstr "Ede&llinen sivu\tShift+P"
-
-msgid "Next Pag&e\tP"
-msgstr "&Seuraava sivu\tP"
-
-msgid "Previous Lin&k\tShift+K"
-msgstr "Edellinen lin&kki\tShift+K"
-
-msgid "Next Lin&k\tK"
-msgstr "Seuraava li&nkki\tK"
-
-msgid "Previous Ima&ge\tShift+G"
-msgstr "Edellinen &kuva\tShift+G"
-
-msgid "Next Ima&ge\tG"
-msgstr "Seuraava k&uva\tG"
-
-msgid "Previous Figu&re\tShift+F"
-msgstr "Edellinen ku&vitus\tShift+F"
-
-msgid "Next Figu&re\tF"
-msgstr "Seuraava kuv&itus\tF"
-
-msgid "Previous &Table\tShift+T"
-msgstr "Edellinen t&aulukko\tShift+T"
-
-msgid "Next &Table\tT"
-msgstr "Seuraava ta&ulukko\tT"
-
-msgid "Previous Se&parator\tShift+S"
-msgstr "Edellinen e&rotin\tShift+S"
-
-msgid "Next Se&parator\tS"
-msgstr "Seuraava er&otin\tS"
-
-msgid "Previous L&ist\tShift+L"
-msgstr "Edellinen l&uettelo\tShift+L"
-
-msgid "Next L&ist\tL"
-msgstr "Seuraava lue&ttelo\tL"
-
-msgid "Previous List &Item\tShift+I"
-msgstr "Edellinen luettelok&ohde\tShift+I"
-
-msgid "Next List I&tem\tI"
-msgstr "Seuraava luetteloko&hde\tI"
-
-msgid "Container &Start\tShift+,"
-msgstr "Säilön &alku\tShift+,"
-
-msgid "Past Container &End\t,"
-msgstr "Säilön &jälkeinen kohta\t,"
-
-msgid "Next Heading Level 1\t1"
-msgstr "Seuraava otsikkotaso 1\t1"
-
-msgid "Previous Heading Level &2\tShift+2"
-msgstr "Edellinen otsikkotaso &2\tShift+2"
-
-msgid "Next Heading Level 2\t2"
-msgstr "Seuraava otsikkotaso 2\t2"
-
-msgid "Previous Heading Level &3\tShift+3"
-msgstr "Edellinen otsikkotaso &3\tShift+3"
-
-msgid "Next Heading Level 3\t3"
-msgstr "Seuraava otsikkotaso 3\t3"
-
-msgid "Previous Heading Level &4\tShift+4"
-msgstr "Edellinen otsikkotaso &4\tShift+4"
-
-msgid "Next Heading Level 4\t4"
-msgstr "Seuraava otsikkotaso 4\t4"
-
-msgid "Previous Heading Level &5\tShift+5"
-msgstr "Edellinen otsikkotaso &5\tShift+5"
-
-msgid "Next Heading Level 5\t5"
-msgstr "Seuraava otsikkotaso 5\t5"
-
-msgid "Previous Heading Level &6\tShift+6"
-msgstr "Edellinen otsikkotaso &6\tShift+6"
-
-msgid "Next Heading Level 6\t6"
-msgstr "Seuraava otsikkotaso 6\t6"
-
-msgid "&Previous Heading\tShift+H"
-msgstr "Edellinen &otsikko\tShift+H"
-
-msgid "&Next Heading\tH"
-msgstr "Seuraava o&tsikko\tH"
-
-msgid "Previous Heading Level &1\tShift+1"
-msgstr "Edellinen otsikkotaso &1\tShift+1"
-
-msgid "&Previous Bookmark\tShift+B"
-msgstr "Edellinen &kirjanmerkki\tShift+B"
-
-msgid "&Next Bookmark\tB"
-msgstr "Seuraava ki&rjanmerkki\tB"
-
-msgid "Previous &Note\tShift+N"
-msgstr "Edellinen &muistiinpano\tShift+N"
-
-msgid "Next N&ote\tN"
-msgstr "Seuraava m&uistiinpano\tN"
-
-msgid "Jump to &All...\tCtrl+B"
-msgstr "Siirry k&aikkiin...\tCtrl+B"
-
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr "Siirry vain &kirjanmerkkeihin...\tCtrl+Alt+B"
-
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "Siirry vain mu&istiinpanoihin...\tCtrl+Alt+M"
-
-msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "&Näytä muistiinpanon teksti\tRawCtrl+Shift+W"
-
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "&Näytä muistiinpanon teksti\tCtrl+Shift+W"
-
-msgid "&Open...\tCtrl+O"
-msgstr "&Avaa...\tCtrl+O"
-
-msgid "&Close\tCtrl+W"
-msgstr "&Sulje\tCtrl+W"
-
-msgid "&Close\tCtrl+F4"
-msgstr "&Sulje\tCtrl+F4"
-
-msgid "Close &All\tCtrl+Shift+W"
-msgstr "Sulje k&aikki\tCtrl+Shift+W"
-
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "Sulje k&aikki\tCtrl+Shift+F4"
-
-msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "Avaa &viimeksi suljettu\tCtrl+Shift+T"
-
-msgid "E&xit\tCtrl+Q"
-msgstr "&Lopeta\tCtrl+Q"
-
-msgid "&Find...\tCtrl+F"
-msgstr "&Etsi...\tCtrl+F"
-
-msgid "Find &Next\tCtrl+G"
-msgstr "Etsi se&uraava\tCtrl+G"
-
-msgid "Find &Next\tF3"
-msgstr "Etsi &seuraava\tF3"
-
-msgid "Find &Previous\tCtrl+Shift+G"
-msgstr "Etsi e&dellinen\tCtrl+Shift+G"
-
-msgid "Find &Previous\tShift+F3"
-msgstr "Etsi e&dellinen\tShift+F3"
-
-msgid "Go to &line...\tCtrl+L"
-msgstr "Siirry &riville...\tCtrl+L"
-
-msgid "Go to &line...\tCtrl+G"
-msgstr "Siirry &riville...\tCtrl+G"
-
-msgid "Go to &percent...\tCtrl+Shift+L"
-msgstr "Siirry &prosenttiin...\tCtrl+Shift+L"
-
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Siirry &prosenttiin...\tCtrl+Shift+G"
-
-msgid "Go &Back\tCtrl+["
-msgstr "Siirry &taaksepäin\tCtrl+["
-
-msgid "Go &Back\tAlt+Left"
-msgstr "Siirry t&aaksepäin\tAlt+Vasen"
-
-msgid "Go &Forward\tCtrl+]"
-msgstr "Siirry &eteenpäin\tCtrl+]"
-
-msgid "Go &Forward\tAlt+Right"
-msgstr "Siirry &eteenpäin\tAlt+Oikea"
-
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr "Tu&o asiakirjan tiedot...\tCtrl+Shift+I"
-
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr "V&ie asiakirjan tiedot...\tCtrl+Shift+E"
-
-msgid "Export to &Plain Text...\tCtrl+E"
-msgstr "Vie te&kstimuotoon...\tCtrl+E"
-
-msgid "&Word Count\tRawCtrl+W"
-msgstr "Sana&määrä\tRawCtrl+W"
-
-msgid "&Word Count\tCtrl+W"
-msgstr "Sana&määrä\tCtrl+W"
-
-msgid "Document &Info\tCtrl+I"
-msgstr "Asiakirjan t&iedot\tCtrl+I"
-
-msgid "&Table of Contents\tCtrl+T"
-msgstr "&Sisällysluettelo\tCtrl+T"
-
-msgid "&Elements List...\tF7"
-msgstr "&Elementtilista...\tF7"
-
-msgid "Reveal &File in Folder\tCtrl+Shift+C"
-msgstr "Avaa as&iakirjan kansio\tCtrl+Shift+C"
-
-msgid "Open in &Web View\tCtrl+Shift+V"
-msgstr "Avaa sel&ainnäkymässä\tCtrl+Shift+V"
-
-msgid "View &Source\tCtrl+U"
-msgstr "Näytä läh&dekoodi\tCtrl+U"
-
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
-msgstr "Lisää tai poista &kirjanmerkki\tCtrl+Shift+B"
-
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "Lisää kirjanmerkki &muistiinpanolla\tCtrl+Shift+N"
-
-msgid "Word w&rap\tCtrl+Alt+W"
-msgstr "R&ivitys\tCtrl+Alt+W"
-
-msgid "&Full Screen\tRawCtrl+Ctrl+F"
-msgstr "&Koko näyttö\tRawCtrl+Ctrl+F"
-
-msgid "&Full Screen\tF11"
-msgstr "&Koko näyttö\tF11"
-
-msgid "&Options\tCtrl+,"
-msgstr "&Asetukset\tCtrl+,"
-
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "&Uniajastin...\tCtrl+Shift+S"
-
-msgid "&About Paperback\tCtrl+F1"
-msgstr "&Tietoa Paperbackista\tCtrl+F1"
-
-msgid "View Help in &Browser\tF1"
-msgstr "Näytä &ohje selaimessa\tF1"
-
-msgid "View Help in &Paperback\tShift+F1"
-msgstr "Näytä ohje &Paperbackissa\tShift+F1"
-
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "Tarkista &päivitykset\tCtrl+Shift+U"
-
-msgid "&Donate\tCtrl+D"
-msgstr "&Lahjoita\tCtrl+D"
-
-msgid "Show All...\tCtrl+R"
-msgstr "Näytä kaikki...\tCtrl+R"
-
-msgid "Go To…"
-msgstr "Siirry…"
-
-msgid "Recent Documents"
-msgstr "Viimeisimmät asiakirjat"
-
-msgid "Switch to TTS Mode"
-msgstr "Vaihda tekstistä puheeksi -tilaan"
-
-msgid "Switch to Text Mode"
-msgstr "Vaihda tekstitilaan"
-
-msgid "Sleep Timer (active)"
-msgstr "Uniajastin (aktiivinen)"
-
+#: swift
+msgid "Export Document Data"
+msgstr "Vie asiakirjan tiedot"
+
+#: swift
+msgid "Import Document Data"
+msgstr "Tuo asiakirjan tiedot"
+
+#: swift
+msgid "Settings exported"
+msgstr "Asetukset viety"
+
+#: swift
+msgid "Failed to export settings"
+msgstr "Asetusten vienti epäonnistui"
+
+#: swift
+msgid "Settings imported"
+msgstr "Asetukset tuotu"
+
+#: swift
+msgid "Failed to import settings"
+msgstr "Asetusten tuonti epäonnistui"
+
+#: swift
+msgid "Document Data"
+msgstr "Asiakirjan tiedot"
+
+#: swift
 msgid "More options"
 msgstr "Lisää asetuksia"
 
-msgid "No document open"
-msgstr "Ei avointa asiakirjaa"
+#: swift
+msgid "Switch to TTS Mode"
+msgstr "Vaihda tekstistä puheeksi -tilaan"
 
-msgid "Recent"
-msgstr "Viimeisimmät"
+#: swift
+msgid "Switch to Text Mode"
+msgstr "Vaihda tekstitilaan"
 
-msgid "Screen dimmed by sleep timer. Tap to wake."
-msgstr "Uniajastin on himmentänyt näytön. Herätä napauttamalla."
+#: swift
+msgid "Go To…"
+msgstr "Siirry…"
 
-msgid "Open Error"
-msgstr "Avausvirhe"
+#: swift
+msgid "Recent Documents"
+msgstr "Viimeisimmät asiakirjat"
 
-msgid "Open document"
-msgstr "Avaa asiakirja"
+#: swift
+msgid "Sleep Timer (active)"
+msgstr "Uniajastin (aktiivinen)"
 
-msgid "Title"
-msgstr "Nimi"
-
-msgid "Author"
-msgstr "Tekijä"
-
-msgid "Words"
-msgstr "Sanojen määrä"
-
-msgid "Lines"
-msgstr "Rivien määrä"
-
-msgid "Characters"
-msgstr "Merkkien määrä"
-
-msgid "Characters (excluding spaces)"
-msgstr "Merkkien määrä (ilman välilyöntejä)"
-
+#: swift
 msgid "Type"
 msgstr "Tyyppi"
 
-msgid "Done"
-msgstr "Valmis"
-
+#: swift
 msgid "No Elements"
 msgstr "Ei elementtejä"
 
+#: swift
 msgid "Headings, images, and other elements will appear here."
 msgstr "Otsikot, kuvat ja muut elementit näytetään tässä."
 
+#: swift
+msgid "No document open"
+msgstr "Ei avointa asiakirjaa"
+
+#: swift
+msgid "Show All"
+msgstr "Näytä kaikki"
+
+#: swift
 msgid "Search…"
 msgstr "Hae…"
 
+#: swift
 msgid "Match Case"
 msgstr "Sama kirjainkoko"
 
+#: swift
 msgid "Whole Word"
 msgstr "Koko sana"
 
+#: swift
 msgid "Regular Expression"
 msgstr "Säännöllinen lauseke"
 
-msgid "Previous result"
-msgstr "Edellinen tulos"
+#: swift
+msgid "Open Error"
+msgstr "Avausvirhe"
 
-msgid "Next result"
-msgstr "Seuraava tulos"
+#: swift
+msgid "Open Book"
+msgstr "Avaa kirja"
 
-msgid "Search"
-msgstr "Haku"
-
-msgid "Mode"
-msgstr "Tila"
-
-msgid "Page"
-msgstr "Sivu"
-
-msgid "Percent"
-msgstr "Prosenttia"
-
-msgid "Line number"
-msgstr "Rivinumero"
-
-msgid "Page number"
-msgstr "Sivunumero"
-
-msgid "Percentage"
-msgstr "Prosenttia luettu"
-
-msgid "Go To"
-msgstr "Siirry"
-
-msgid "Password"
-msgstr "salasana"
-
-msgid "Enter password for {}"
-msgstr "Anna asiakirjan {} salasana"
-
-msgid "Password Required"
-msgstr "Tarvitaan salasana"
-
-msgid "No Recent Documents"
-msgstr "Ei viimeisimpiä asiakirjoja"
-
-msgid "Documents you open will appear here."
-msgstr "Avaamasi asiakirjat näytetään tässä."
-
-msgid "Remove"
-msgstr "Poista"
-
-msgid "Rule"
-msgstr "Sääntö"
-
-msgid "Scope"
-msgstr "Laajuus"
-
-msgid "Word"
-msgstr "Sana"
-
-msgid "Paragraph"
-msgstr "Kappale"
-
-msgid "Pattern & Replacement"
-msgstr "Etsittävä ja korvaava teksti"
-
-msgid "Pattern"
-msgstr "Etsittävä teksti"
-
-msgid "Replacement"
-msgstr "Korvaava teksti"
-
-msgid "Whole word only"
-msgstr "Koko sana"
-
-msgid "Regular expression (\\1 = first capture group)"
-msgstr "Säännöllinen lauseke (\\1 = ensimmäinen sieppausryhmä)"
-
-msgid "Enabled"
-msgstr "Käytössä"
-
-msgid "Apply to"
-msgstr "Käytä kohteessa"
-
-msgid "Voices"
-msgstr "Puheäänet"
-
-msgid "New Rule"
-msgstr "Uusi sääntö"
-
-msgid "Edit Rule"
-msgstr "Muokkaa sääntöä"
-
-msgid "Save"
-msgstr "Tallenna"
-
-msgid "All voices"
-msgstr "Kaikki puheäänet"
-
-msgid "Apply To"
-msgstr "Käytä kohteessa"
-
-msgid "Text to Speech"
-msgstr "Tekstistä puheeksi"
-
-msgid "Voice"
-msgstr "Puheääni"
-
-msgid "Rate"
-msgstr "Nopeus"
-
-msgid "Speech Rate"
-msgstr "Puhenopeus"
-
-msgid "Pitch"
-msgstr "Korkeus"
-
-msgid "Speech Dictionary"
-msgstr "Käyttäjän sanasto"
-
-msgid "Play Sample"
-msgstr "Toista näyte"
-
-msgid "Behavior"
-msgstr "Toiminta"
-
-msgid "Restore last open documents"
-msgstr "Palauta viimeksi avatut asiakirjat"
-
-msgid "Swipe up moves forward"
-msgstr "Pitkä pyyhkäisy siirtää eteenpäin"
-
-msgid "Active"
-msgstr "Aktiivinen"
-
-msgid "Time remaining"
-msgstr "Aikaa jäljellä"
-
-msgid "Cancel Timer"
-msgstr "Peruuta ajastin"
-
-msgid "Set timer"
-msgstr "Aseta ajastin"
-
-msgid "Edit"
-msgstr "Muokkaa"
-
-msgid "Add Rule"
-msgstr "Säännön lisäys"
-
-msgid "No Rules"
-msgstr "Ei sääntöjä"
-
-msgid "Contents"
-msgstr "Sisällys"
-
-msgid "No Table of Contents"
-msgstr "Ei sisällysluetteloa"
-
-msgid "This document has no table of contents."
-msgstr "Asiakirjassa ei ole sisällysluetteloa."
-
-msgid "Tabs"
-msgstr "Välilehdet"
-
-msgid "Navigation unit"
-msgstr "Navigoinnin tarkkuus"
-
-msgid "Previous {}"
-msgstr "Edellinen {}"
-
-msgid "Pause"
-msgstr "Pysäytä"
-
-msgid "Play"
-msgstr "Toista"
-
-msgid "End of document"
-msgstr "Asiakirjan loppu"
-
-msgid "Beginning of document"
-msgstr "Asiakirjan alku"
-
-msgid "Next {}"
-msgstr "Seuraava {}"
-
-msgid "Press play to start listening."
-msgstr "Aloita kuuntelu painamalla Toista."
-
+#: swift
 msgid "Locate"
 msgstr "Etsi"
 
+#: swift
+msgid "Remove"
+msgstr "Poista"
+
+#: swift
 msgid "File Missing"
 msgstr "Tiedostoa ei ole"
 
+#: swift
 msgid "Currently Open"
 msgstr "Avoinna tällä hetkellä"
 
+#: swift
+msgid "No Recent Documents"
+msgstr "Ei viimeisimpiä asiakirjoja"
+
+#: swift
+msgid "Documents you open will appear here."
+msgstr "Avaamasi asiakirjat näytetään tässä."
+
+#: swift
+msgid "Text to Speech"
+msgstr "Tekstistä puheeksi"
+
+#: swift
+msgid "Voice"
+msgstr "Puheääni"
+
+#: swift
+msgid "Rate"
+msgstr "Nopeus"
+
+#: swift
+msgid "Speech Rate"
+msgstr "Puhenopeus"
+
+#: swift
+msgid "Pitch"
+msgstr "Korkeus"
+
+#: swift
+msgid "Speech Dictionary"
+msgstr "Käyttäjän sanasto"
+
+#: swift
+msgid "Play Sample"
+msgstr "Toista näyte"
+
+#: swift
+msgid "Text Size"
+msgstr "Tekstin koko"
+
+#: swift
+msgid "Line Spacing"
+msgstr "Riviväli"
+
+#: swift
+msgid "Paragraph Spacing"
+msgstr "Kappaleväli"
+
+#: swift
+msgid "Alignment"
+msgstr "Tekstin tasaus"
+
+#: swift
+msgid "Behavior"
+msgstr "Toiminta"
+
+#: swift
+msgid "Restore last open documents"
+msgstr "Palauta viimeksi avatut asiakirjat"
+
+#: swift
+msgid "Swipe up moves forward"
+msgstr "Pitkä pyyhkäisy siirtää eteenpäin"
+
+#: swift
+msgid "Title"
+msgstr "Nimi"
+
+#: swift
+msgid "Author"
+msgstr "Tekijä"
+
+#: swift
+msgid "Words"
+msgstr "Sanojen määrä"
+
+#: swift
+msgid "Lines"
+msgstr "Rivien määrä"
+
+#: swift
+msgid "Characters"
+msgstr "Merkkien määrä"
+
+#: swift
+msgid "Characters (excluding spaces)"
+msgstr "Merkkien määrä (ilman välilyöntejä)"
+
+#: swift
+msgid "Mode"
+msgstr "Tila"
+
+#: swift
+msgid "Page"
+msgstr "Sivu"
+
+#: swift
+msgid "Percent"
+msgstr "Prosenttia"
+
+#: swift
+msgid "Line number"
+msgstr "Rivinumero"
+
+#: swift
+msgid "Page number"
+msgstr "Sivunumero"
+
+#: swift
+msgid "Percentage"
+msgstr "Prosenttia luettu"
+
+#: swift
+msgid "Go To"
+msgstr "Siirry"
+
+#: swift
+msgid "Password"
+msgstr "Salasana"
+
+#: swift
+msgid "Enter password for {}"
+msgstr "Anna asiakirjan {} salasana"
+
+#: swift
+msgid "Password Required"
+msgstr "Tarvitaan salasana"
+
+#: swift
+msgid "Rule"
+msgstr "Sääntö"
+
+#: swift
+msgid "Scope"
+msgstr "Laajuus"
+
+#: swift
+msgid "Word"
+msgstr "Sana"
+
+#: swift
+msgid "Paragraph"
+msgstr "Kappale"
+
+#: swift
+msgid "Pattern & Replacement"
+msgstr "Etsittävä ja korvaava teksti"
+
+#: swift
+msgid "Pattern"
+msgstr "Etsittävä teksti"
+
+#: swift
+msgid "Replacement"
+msgstr "Korvaava teksti"
+
+#: swift
+msgid "Whole word only"
+msgstr "Koko sana"
+
+#: swift
+msgid "Regular expression (\\1 = first capture group)"
+msgstr "Säännöllinen lauseke (\\1 = ensimmäinen sieppausryhmä)"
+
+#: swift
+msgid "Enabled"
+msgstr "Käytössä"
+
+#: swift
+msgid "Apply to"
+msgstr "Käytä kohteessa"
+
+#: swift
+msgid "Voices"
+msgstr "Puheäänet"
+
+#: swift
+msgid "New Rule"
+msgstr "Uusi sääntö"
+
+#: swift
+msgid "Edit Rule"
+msgstr "Muokkaa sääntöä"
+
+#: swift
+msgid "Save"
+msgstr "Tallenna"
+
+#: swift
+msgid "All voices"
+msgstr "Kaikki puheäänet"
+
+#: swift
+msgid "Apply To"
+msgstr "Käytä kohteessa"
+
+#: swift
+msgid "Sleep timer running, {} remaining"
+msgstr "Uniajastin käynnissä, jäljellä {}"
+
+#: swift
+msgid "Custom"
+msgstr "Oma"
+
+#: swift
+msgid "Custom: {} minutes"
+msgstr "Oma: {} minuuttia"
+
+#: swift
+msgid "Duration"
+msgstr "Kesto"
+
+#: swift
+msgid "Minutes"
+msgstr "Minuuttia"
+
+#: swift
+msgid "Done"
+msgstr "Valmis"
+
+#: swift
+msgid "Stop Timer"
+msgstr "Pysäytä ajastin"
+
+#: swift
+msgid "Start Timer"
+msgstr "Käynnistä ajastin"
+
+#: swift
+msgid "Edit"
+msgstr "Muokkaa"
+
+#: swift
+msgid "Add Rule"
+msgstr "Säännön lisäys"
+
+#: swift
+msgid "No Rules"
+msgstr "Ei sääntöjä"
+
+#: swift
+msgid "Tabs"
+msgstr "Välilehdet"
+
+#: swift
+msgid "Contents"
+msgstr "Sisällys"
+
+#: swift
+msgid "No Table of Contents"
+msgstr "Ei sisällysluetteloa"
+
+#: swift
+msgid "This document has no table of contents."
+msgstr "Asiakirjassa ei ole sisällysluetteloa."
+
+#: swift
+msgid "Navigation unit"
+msgstr "Navigoinnin tarkkuus"
+
+#: swift
+msgid "Previous {}"
+msgstr "Edellinen {}"
+
+#: swift
+msgid "Pause"
+msgstr "Pysäytä"
+
+#: swift
+msgid "Play"
+msgstr "Toista"
+
+#: swift
+msgid "End of document"
+msgstr "Asiakirjan loppu"
+
+#: swift
+msgid "Beginning of document"
+msgstr "Asiakirjan alku"
+
+#: swift
+msgid "Next {}"
+msgstr "Seuraava {}"
+
+#: swift
+msgid "Press play to start listening."
+msgstr "Aloita kuuntelu painamalla Toista."
+
+#: kt
 msgid "Document Information"
 msgstr "Asiakirjan tiedot"
 
-msgid "Expanded"
-msgstr "Laajennettu"
-
-msgid "Collapsed"
-msgstr "Kutistettu"
-
-msgid "Collapse"
-msgstr "Kutista"
-
-msgid "Expand"
-msgstr "Laajenna"
-
+#: kt
 msgid "Untitled Link"
 msgstr "Nimetön linkki"
 
+#: kt
+#| msgid "Export Document Data"
+msgid "Export Document"
+msgstr "Asiakirjan vienti"
+
+#: kt
+#| msgid "Close the current document"
+msgid "Select a format to export the current document:"
+msgstr "Valitse asiakirjan vientimuoto:"
+
+#: kt
+#| msgid "Plain Text"
+msgid "Plain Text (.txt)"
+msgstr "Pelkkä teksti (.txt)"
+
+#: kt
+msgid "HTML (.html)"
+msgstr "HTML (.html)"
+
+#: kt
+#| msgid "Markdown"
+msgid "Markdown (.md)"
+msgstr "Markdown (.md)"
+
+#: kt
 msgid "No supported books or folders found here."
 msgstr "Tästä sijainnista ei löydy tuettuja kirjoja eikä kansioita."
 
+#: kt
 msgid "Folder"
 msgstr "Kansio"
 
+#: kt
 msgid "Internal Storage"
 msgstr "Sisäinen tallennustila"
 
+#: kt
 msgid "Search Term"
 msgstr "Hakusana"
 
+#: kt
 msgid "Search History"
 msgstr "Hakuhistoria"
 
+#: kt
 msgid "Password:"
 msgstr "Salasana:"
 
+#: kt
 msgid "All Files Access Required"
 msgstr "Tarvitaan kaikkien tiedostojen käyttöoikeus"
 
+#: kt
 msgid ""
 "Paperback requires the 'All Files Access' permission to enable the custom in-"
 "app file browser."
@@ -3114,184 +2884,613 @@ msgstr ""
 "Paperback tarvitsee kaikkien tiedostojen käyttöoikeuden sovelluksen sisäisen "
 "tiedostoselaimen käyttämiseen."
 
+#: kt
 msgid "Why we need this:"
 msgstr "Mihin tätä tarvitaan:"
 
+#: kt
 msgid ""
-"• To provide a fast, fully screen-reader accessible file manager inside the "
+"To provide a fast, fully screen-reader accessible file manager inside the "
 "app."
 msgstr ""
-"• Sovelluksen sisäisen, nopean ja ruudunlukijalla täysin saavutettavan "
-"tiedostonhallinnan toteuttamiseen."
+"Nopean ja ruudunlukijalla saavutettavan sovelluksen sisäisen "
+"tiedostonhallinnan tarjoamiseksi."
 
+#: kt
 msgid ""
-"• To load large files instantly without needing to copy them into the app's "
+"To load large files instantly without needing to copy them into the app's "
 "cache."
 msgstr ""
-"• Suurten tiedostojen nopeaan avaamiseen ilman sovelluksen välimuistiin "
+"Suurten tiedostojen nopeaan avaamiseen ilman sovelluksen välimuistiin "
 "kopiointia."
 
-msgid "• To display the exact local file paths of your documents."
-msgstr "• Asiakirjojen tarkkojen paikallisten tiedostopolkujen näyttämiseen."
+#: kt
+msgid "To display the exact local file paths of your documents."
+msgstr "Asiakirjojen paikallisten tiedostopolkujen näyttämiseen."
 
+#: kt
 msgid ""
 "If you deny this permission, you can still use the Android System File "
-"Picker to open your books by turning off the custom file browser setting."
+"Picker to open your "
 msgstr ""
 "Jos et salli tätä käyttöoikeutta, voit silti käyttää Androidin omaa "
 "tiedostonvalitsinta kirjojen avaamiseen poistamalla asetuksissa käytöstä "
 "sovelluksen sisäisen tiedostoselaimen."
 
+#: kt
 msgid "Grant"
 msgstr "Salli"
 
+#: kt
 msgid "Not Now"
 msgstr "Älä salli"
 
-msgid "Restore last open book"
-msgstr "Palauta viimeksi avattu kirja"
-
-msgid "Use in-app file browser (requires All Files permission)"
-msgstr "Käytä sovelluksen sisäistä tiedostoselainta"
-
-msgid "Text-to-Speech"
-msgstr "Tekstistä puheeksi"
-
-msgid "System Default"
-msgstr "Järjestelmän oletus"
-
+#: kt
 msgid "Custom Timer"
 msgstr "Mukautettu ajastin"
 
-msgid "Minutes"
-msgstr "Minuuttia"
-
+#: kt
 msgid "Back"
 msgstr "Takaisin"
 
+#: kt
 msgid "Start"
 msgstr "Käynnistä"
 
+#: kt
+#| msgid "Time remaining"
+msgid "Active: {} remaining"
+msgstr "Käytössä: {} jäljellä"
+
+#: kt
+#| msgid "Time remaining"
+msgid "remaining"
+msgstr "jäljellä"
+
+#: kt
+msgid "Cancel Timer"
+msgstr "Peruuta ajastin"
+
+#: kt
 msgid "Change to:"
 msgstr "Uusi arvo:"
 
+#: kt
+#| msgid "2 minutes"
+msgid "{} minutes"
+msgstr "{} minuuttia"
+
+#: kt
 msgid "Custom time..."
 msgstr "Mukautettu aika..."
 
+#: kt
+msgid "Expanded"
+msgstr "Laajennettu"
+
+#: kt
+msgid "Collapsed"
+msgstr "Kutistettu"
+
+#: kt
+msgid "Collapse"
+msgstr "Kutista"
+
+#: kt
+msgid "Expand"
+msgstr "Laajenna"
+
+#: kt
+msgid "This document contains {} words."
+msgstr "Asiakirjassa on {} sanaa."
+
+#: kt
+#| msgid "Words"
+msgid "words"
+msgstr "sanaa"
+
+#: kt
 msgid "Close Search"
 msgstr "Sulje haku"
 
-msgid "Settings imported"
-msgstr "Asetukset tuotu"
+#: kt
+#| msgid "Document reloaded."
+msgid "Document exported"
+msgstr "Asiakirja viety"
 
-msgid "Failed to import settings"
-msgstr "Asetusten tuonti epäonnistui"
+#: kt
+#| msgid "Failed to export document."
+msgid "Failed to export document"
+msgstr "Asiakirjan vienti epäonnistui"
 
-msgid "Settings exported"
-msgstr "Asetukset viety"
-
-msgid "Failed to export settings"
-msgstr "Asetusten vienti epäonnistui"
-
+#: kt
 msgid "No document open. Please open a book."
 msgstr "Ei avointa asiakirjaa."
 
+#: kt
 msgid "No Documents"
 msgstr "Asiakirjoja ei ole"
 
-msgid "Show All"
-msgstr "Näytä kaikki"
-
+#: kt
 msgid "Sleep timer: {}"
 msgstr "Uniajastin: {}"
 
+#: kt
 msgid "Cancel sleep timer"
 msgstr "Peruuta uniajastin"
 
+#: kt
 msgid "Import"
 msgstr "Tuo"
 
-msgid "Import Document Data"
-msgstr "Tuo asiakirjan tiedot"
-
-msgid "Export Document Data"
-msgstr "Vie asiakirjan tiedot"
-
-msgid "Open Book"
-msgstr "Avaa kirja"
-
-msgid "Elements List"
-msgstr "Elementtilista"
-
-msgid "Show Document"
-msgstr "Näytä asiakirja"
-
-msgid "Show Text"
-msgstr "Näytä teksti"
-
-msgid "Pause Read Aloud"
-msgstr "Pysäytä tekstistä puheeksi -toiminto"
-
-msgid "Read Aloud"
-msgstr "Lue tekstistä puheeksi -toiminnolla"
-
+#: kt
 msgid "More Options"
 msgstr "Lisää asetuksia"
 
+#: kt
+msgid "Pause Read Aloud"
+msgstr "Pysäytä tekstistä puheeksi -toiminto"
+
+#: kt
+msgid "Read Aloud"
+msgstr "Lue tekstistä puheeksi -toiminnolla"
+
+#: kt
+#| msgid "Export Successful"
+msgid "Export As"
+msgstr "Vie muodossa"
+
+#: kt
+msgid "Elements List"
+msgstr "Elementtilista"
+
+#: kt
+msgid "No more matches."
+msgstr "Ei enempää tuloksia."
+
+#: kt
 msgid "Heading"
 msgstr "Otsikko"
 
+#: kt
 msgid "Link"
 msgstr "Linkki"
 
+#: kt
 msgid "Section"
 msgstr "Luku"
 
+#: kt
 msgid "List"
 msgstr "Luettelo"
 
+#: kt
 msgid "List Item"
 msgstr "Luettelon kohde"
 
+#: kt
 msgid "Table"
 msgstr "Taulukko"
 
+#: kt
 msgid "Separator"
 msgstr "Erotin"
 
-msgid "Document Data"
-msgstr "Asiakirjan tiedot"
+#: kt
+#| msgid "5 seconds"
+msgid "{} seconds"
+msgstr "{} sekuntia"
 
-msgid "Sleep timer running, {} remaining"
-msgstr "Uniajastin käynnissä, jäljellä {}"
+#: kt
+#| msgid "Grant"
+msgid "✓ Granted"
+msgstr "✓ Sallittu"
 
-msgid "Custom"
-msgstr "Oma"
+#: kt
+msgid "Before You Start"
+msgstr "Lue tämä ensin"
 
-msgid "Custom: {} minutes"
-msgstr "Oma: {} minuuttia"
+#: kt
+msgid ""
+"Paperback works best with a couple of permissions. Here's what we ask for "
+"and why:"
+msgstr ""
+"Paperback toimii parhaiten, kun sille myönnetään muutama käyttöoikeus. Alla "
+"on selvitys pyydettävistä oikeuksista perusteluineen:"
 
-msgid "Duration"
-msgstr "Kesto"
+#: kt
+#| msgid "No sections."
+msgid "Notifications"
+msgstr "Ilmoitukset"
 
-msgid "Stop Timer"
-msgstr "Pysäytä ajastin"
+#: kt
+msgid ""
+"Lets Paperback show playback controls in the notification shade while text-"
+"to-speech is "
+msgstr ""
+"Sallii Paperbackin näyttää toistosäätimet ilmoitusvalikossa tekstistä "
+"puheeksi -toiminnon ollessa käynnissä"
 
-msgid "Start Timer"
-msgstr "Käynnistä ajastin"
+#: kt
+msgid "Enable Notifications"
+msgstr "Ilmoitusten käyttöönotto"
 
-#| msgid "Text to Speech"
-msgid "Text Size"
-msgstr "Tekstin koko"
+#: kt
+msgid "All Files Access"
+msgstr "Kaikkien tiedostojen käyttöoikeus"
 
-#| msgid "&Line spacing:"
-msgid "Line Spacing"
-msgstr "Riviväli"
+#: kt
+msgid ""
+"Powers the optional in-app file browser, so you can open documents from "
+"anywhere on your "
+msgstr ""
+"Mahdollistaa sovelluksen valinnaisen tiedostoselaimen käytön, jotta voit "
+"avata asiakirjoja mistä tahansa laitteeltasi"
 
-#| msgid "&Paragraph spacing:"
-msgid "Paragraph Spacing"
-msgstr "Kappaleväli"
+#: kt
+msgid "Enable File Access"
+msgstr "Salli tiedostojen käyttöoikeus"
 
-#| msgid "Text &alignment:"
-msgid "Alignment"
-msgstr "Tekstin tasaus"
+#: kt
+#| msgid "&Containers"
+msgid "Continue"
+msgstr "Jatka"
+
+#: kt
+msgid "Restore last open book"
+msgstr "Palauta viimeksi avattu kirja"
+
+#: kt
+msgid "Use in-app file browser (requires All Files permission)"
+msgstr "Käytä sovelluksen sisäistä tiedostoselainta"
+
+#: kt
+msgid "Text-to-Speech"
+msgstr "Tekstistä puheeksi"
+
+#: kt
+msgid "System Default"
+msgstr "Järjestelmän oletus"
+
+#: kt
+#| msgid "Back"
+msgid "Back {}"
+msgstr "{} taaksepäin"
+
+#: kt
+#| msgid "Go Forward"
+msgid "Forward {}"
+msgstr "{} eteenpäin"
+
+#~ msgid "&Options"
+#~ msgstr "&Asetukset"
+
+#~ msgid "1 document."
+#~ msgstr "1 asiakirja."
+
+#~ msgid "%d documents."
+#~ msgstr "%d asiakirjaa."
+
+#~ msgid "All %d documents selected."
+#~ msgstr "Kaikki %d asiakirjaa valittuina."
+
+#~ msgid "%d of %d documents selected."
+#~ msgstr "%d / %d asiakirjaa valittuina."
+
+#~ msgid "hours"
+#~ msgstr "tuntia"
+
+#~ msgid "minutes"
+#~ msgstr "minuuttia"
+
+#~ msgid "1 second"
+#~ msgstr "1 sekunti"
+
+#~ msgid "seconds"
+#~ msgstr "sekuntia"
+
+#~ msgid "The selection contains {} words."
+#~ msgstr "Valitussa tekstissä on {} sanaa."
+
+#~ msgid "{} chars"
+#~ msgstr "{} merkkiä"
+
+#~ msgid "Sleep timer set for 1 minute."
+#~ msgstr "Uniajastin 1 minuutti."
+
+#~ msgid "Sleep timer set for %d minutes."
+#~ msgstr "Uniajastin %d minuuttia."
+
+#~ msgid "Previous Section\t["
+#~ msgstr "Edellinen luku\t["
+
+#~ msgid "Next Section\t]"
+#~ msgstr "Seuraava luku\t]"
+
+#~ msgid "Go to &Page\tCtrl+P"
+#~ msgstr "S&iirry sivulle\tCtrl+P"
+
+#~ msgid "Previous Pa&ge\tShift+P"
+#~ msgstr "Ede&llinen sivu\tShift+P"
+
+#~ msgid "Next Pag&e\tP"
+#~ msgstr "&Seuraava sivu\tP"
+
+#~ msgid "Previous Lin&k\tShift+K"
+#~ msgstr "Edellinen lin&kki\tShift+K"
+
+#~ msgid "Next Lin&k\tK"
+#~ msgstr "Seuraava li&nkki\tK"
+
+#~ msgid "Previous Ima&ge\tShift+G"
+#~ msgstr "Edellinen &kuva\tShift+G"
+
+#~ msgid "Next Ima&ge\tG"
+#~ msgstr "Seuraava k&uva\tG"
+
+#~ msgid "Previous Figu&re\tShift+F"
+#~ msgstr "Edellinen ku&vitus\tShift+F"
+
+#~ msgid "Next Figu&re\tF"
+#~ msgstr "Seuraava kuv&itus\tF"
+
+#~ msgid "Previous &Table\tShift+T"
+#~ msgstr "Edellinen t&aulukko\tShift+T"
+
+#~ msgid "Next &Table\tT"
+#~ msgstr "Seuraava ta&ulukko\tT"
+
+#~ msgid "Previous Se&parator\tShift+S"
+#~ msgstr "Edellinen e&rotin\tShift+S"
+
+#~ msgid "Next Se&parator\tS"
+#~ msgstr "Seuraava er&otin\tS"
+
+#~ msgid "Previous L&ist\tShift+L"
+#~ msgstr "Edellinen l&uettelo\tShift+L"
+
+#~ msgid "Next L&ist\tL"
+#~ msgstr "Seuraava lue&ttelo\tL"
+
+#~ msgid "Previous List &Item\tShift+I"
+#~ msgstr "Edellinen luettelok&ohde\tShift+I"
+
+#~ msgid "Next List I&tem\tI"
+#~ msgstr "Seuraava luetteloko&hde\tI"
+
+#~ msgid "Container &Start\tShift+,"
+#~ msgstr "Säilön &alku\tShift+,"
+
+#~ msgid "Past Container &End\t,"
+#~ msgstr "Säilön &jälkeinen kohta\t,"
+
+#~ msgid "Next Heading Level 1\t1"
+#~ msgstr "Seuraava otsikkotaso 1\t1"
+
+#~ msgid "Previous Heading Level &2\tShift+2"
+#~ msgstr "Edellinen otsikkotaso &2\tShift+2"
+
+#~ msgid "Next Heading Level 2\t2"
+#~ msgstr "Seuraava otsikkotaso 2\t2"
+
+#~ msgid "Previous Heading Level &3\tShift+3"
+#~ msgstr "Edellinen otsikkotaso &3\tShift+3"
+
+#~ msgid "Next Heading Level 3\t3"
+#~ msgstr "Seuraava otsikkotaso 3\t3"
+
+#~ msgid "Previous Heading Level &4\tShift+4"
+#~ msgstr "Edellinen otsikkotaso &4\tShift+4"
+
+#~ msgid "Next Heading Level 4\t4"
+#~ msgstr "Seuraava otsikkotaso 4\t4"
+
+#~ msgid "Previous Heading Level &5\tShift+5"
+#~ msgstr "Edellinen otsikkotaso &5\tShift+5"
+
+#~ msgid "Next Heading Level 5\t5"
+#~ msgstr "Seuraava otsikkotaso 5\t5"
+
+#~ msgid "Previous Heading Level &6\tShift+6"
+#~ msgstr "Edellinen otsikkotaso &6\tShift+6"
+
+#~ msgid "Next Heading Level 6\t6"
+#~ msgstr "Seuraava otsikkotaso 6\t6"
+
+#~ msgid "&Previous Heading\tShift+H"
+#~ msgstr "Edellinen &otsikko\tShift+H"
+
+#~ msgid "&Next Heading\tH"
+#~ msgstr "Seuraava o&tsikko\tH"
+
+#~ msgid "Previous Heading Level &1\tShift+1"
+#~ msgstr "Edellinen otsikkotaso &1\tShift+1"
+
+#~ msgid "&Previous Bookmark\tShift+B"
+#~ msgstr "Edellinen &kirjanmerkki\tShift+B"
+
+#~ msgid "&Next Bookmark\tB"
+#~ msgstr "Seuraava ki&rjanmerkki\tB"
+
+#~ msgid "Previous &Note\tShift+N"
+#~ msgstr "Edellinen &muistiinpano\tShift+N"
+
+#~ msgid "Next N&ote\tN"
+#~ msgstr "Seuraava m&uistiinpano\tN"
+
+#~ msgid "Jump to &All...\tCtrl+B"
+#~ msgstr "Siirry k&aikkiin...\tCtrl+B"
+
+#~ msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+#~ msgstr "Siirry vain &kirjanmerkkeihin...\tCtrl+Alt+B"
+
+#~ msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+#~ msgstr "Siirry vain mu&istiinpanoihin...\tCtrl+Alt+M"
+
+#~ msgid "&View Note Text\tRawCtrl+Shift+W"
+#~ msgstr "&Näytä muistiinpanon teksti\tRawCtrl+Shift+W"
+
+#~ msgid "&View Note Text\tCtrl+Shift+W"
+#~ msgstr "&Näytä muistiinpanon teksti\tCtrl+Shift+W"
+
+#~ msgid "&Open...\tCtrl+O"
+#~ msgstr "&Avaa...\tCtrl+O"
+
+#~ msgid "&Close\tCtrl+W"
+#~ msgstr "&Sulje\tCtrl+W"
+
+#~ msgid "&Close\tCtrl+F4"
+#~ msgstr "&Sulje\tCtrl+F4"
+
+#~ msgid "Close &All\tCtrl+Shift+W"
+#~ msgstr "Sulje k&aikki\tCtrl+Shift+W"
+
+#~ msgid "Close &All\tCtrl+Shift+F4"
+#~ msgstr "Sulje k&aikki\tCtrl+Shift+F4"
+
+#~ msgid "Reopen &Last Closed\tCtrl+Shift+T"
+#~ msgstr "Avaa &viimeksi suljettu\tCtrl+Shift+T"
+
+#~ msgid "E&xit\tCtrl+Q"
+#~ msgstr "&Lopeta\tCtrl+Q"
+
+#~ msgid "&Find...\tCtrl+F"
+#~ msgstr "&Etsi...\tCtrl+F"
+
+#~ msgid "Find &Next\tCtrl+G"
+#~ msgstr "Etsi se&uraava\tCtrl+G"
+
+#~ msgid "Find &Next\tF3"
+#~ msgstr "Etsi &seuraava\tF3"
+
+#~ msgid "Find &Previous\tCtrl+Shift+G"
+#~ msgstr "Etsi e&dellinen\tCtrl+Shift+G"
+
+#~ msgid "Find &Previous\tShift+F3"
+#~ msgstr "Etsi e&dellinen\tShift+F3"
+
+#~ msgid "Go to &line...\tCtrl+L"
+#~ msgstr "Siirry &riville...\tCtrl+L"
+
+#~ msgid "Go to &line...\tCtrl+G"
+#~ msgstr "Siirry &riville...\tCtrl+G"
+
+#~ msgid "Go to &percent...\tCtrl+Shift+L"
+#~ msgstr "Siirry &prosenttiin...\tCtrl+Shift+L"
+
+#~ msgid "Go to &percent...\tCtrl+Shift+G"
+#~ msgstr "Siirry &prosenttiin...\tCtrl+Shift+G"
+
+#~ msgid "Go &Back\tCtrl+["
+#~ msgstr "Siirry &taaksepäin\tCtrl+["
+
+#~ msgid "Go &Back\tAlt+Left"
+#~ msgstr "Siirry t&aaksepäin\tAlt+Vasen"
+
+#~ msgid "Go &Forward\tCtrl+]"
+#~ msgstr "Siirry &eteenpäin\tCtrl+]"
+
+#~ msgid "Go &Forward\tAlt+Right"
+#~ msgstr "Siirry &eteenpäin\tAlt+Oikea"
+
+#~ msgid "&Import Document Data...\tCtrl+Shift+I"
+#~ msgstr "Tu&o asiakirjan tiedot...\tCtrl+Shift+I"
+
+#~ msgid "&Export Document Data...\tCtrl+Shift+E"
+#~ msgstr "V&ie asiakirjan tiedot...\tCtrl+Shift+E"
+
+#~ msgid "Export to &Plain Text...\tCtrl+E"
+#~ msgstr "Vie te&kstimuotoon...\tCtrl+E"
+
+#~ msgid "&Word Count\tRawCtrl+W"
+#~ msgstr "Sana&määrä\tRawCtrl+W"
+
+#~ msgid "&Word Count\tCtrl+W"
+#~ msgstr "Sana&määrä\tCtrl+W"
+
+#~ msgid "Document &Info\tCtrl+I"
+#~ msgstr "Asiakirjan t&iedot\tCtrl+I"
+
+#~ msgid "&Table of Contents\tCtrl+T"
+#~ msgstr "&Sisällysluettelo\tCtrl+T"
+
+#~ msgid "&Elements List...\tF7"
+#~ msgstr "&Elementtilista...\tF7"
+
+#~ msgid "Reveal &File in Folder\tCtrl+Shift+C"
+#~ msgstr "Avaa as&iakirjan kansio\tCtrl+Shift+C"
+
+#~ msgid "Open in &Web View\tCtrl+Shift+V"
+#~ msgstr "Avaa sel&ainnäkymässä\tCtrl+Shift+V"
+
+#~ msgid "View &Source\tCtrl+U"
+#~ msgstr "Näytä läh&dekoodi\tCtrl+U"
+
+#~ msgid "Toggle &Bookmark\tCtrl+Shift+B"
+#~ msgstr "Lisää tai poista &kirjanmerkki\tCtrl+Shift+B"
+
+#~ msgid "Bookmark with &Note\tCtrl+Shift+N"
+#~ msgstr "Lisää kirjanmerkki &muistiinpanolla\tCtrl+Shift+N"
+
+#~ msgid "Word w&rap\tCtrl+Alt+W"
+#~ msgstr "R&ivitys\tCtrl+Alt+W"
+
+#~ msgid "&Full Screen\tRawCtrl+Ctrl+F"
+#~ msgstr "&Koko näyttö\tRawCtrl+Ctrl+F"
+
+#~ msgid "&Full Screen\tF11"
+#~ msgstr "&Koko näyttö\tF11"
+
+#~ msgid "&Options\tCtrl+,"
+#~ msgstr "&Asetukset\tCtrl+,"
+
+#~ msgid "&Sleep Timer...\tCtrl+Shift+S"
+#~ msgstr "&Uniajastin...\tCtrl+Shift+S"
+
+#~ msgid "&About Paperback\tCtrl+F1"
+#~ msgstr "&Tietoa Paperbackista\tCtrl+F1"
+
+#~ msgid "View Help in &Browser\tF1"
+#~ msgstr "Näytä &ohje selaimessa\tF1"
+
+#~ msgid "View Help in &Paperback\tShift+F1"
+#~ msgstr "Näytä ohje &Paperbackissa\tShift+F1"
+
+#~ msgid "Check for &Updates\tCtrl+Shift+U"
+#~ msgstr "Tarkista &päivitykset\tCtrl+Shift+U"
+
+#~ msgid "&Donate\tCtrl+D"
+#~ msgstr "&Lahjoita\tCtrl+D"
+
+#~ msgid "Show All...\tCtrl+R"
+#~ msgstr "Näytä kaikki...\tCtrl+R"
+
+#~ msgid "Recent"
+#~ msgstr "Viimeisimmät"
+
+#~ msgid "Screen dimmed by sleep timer. Tap to wake."
+#~ msgstr "Uniajastin on himmentänyt näytön. Herätä napauttamalla."
+
+#~ msgid "Open document"
+#~ msgstr "Avaa asiakirja"
+
+#~ msgid "Previous result"
+#~ msgstr "Edellinen tulos"
+
+#~ msgid "Next result"
+#~ msgstr "Seuraava tulos"
+
+#~ msgid "Search"
+#~ msgstr "Haku"
+
+#~ msgid "Active"
+#~ msgstr "Aktiivinen"
+
+#~ msgid "Set timer"
+#~ msgstr "Aseta ajastin"
+
+#~ msgid "Show Document"
+#~ msgstr "Näytä asiakirja"
+
+#~ msgid "Show Text"
+#~ msgstr "Näytä teksti"
