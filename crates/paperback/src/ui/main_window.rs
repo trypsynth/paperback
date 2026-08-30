@@ -726,10 +726,19 @@ impl MainWindow {
 		let dm_for_window_reload = Rc::clone(doc_manager);
 		window_reload_timer.on_tick(move |_| {
 			if let Ok(mut dm) = dm_for_window_reload.try_lock() {
-				dm.pump_window_reload();
+				dm.pump_window_extend();
 			}
 		});
 		window_reload_timer.start(250, false);
+		// A resize forces RichEdit to rewrap, whose cost scales with how much is loaded ahead of
+		// the caret. Give back any growth a long read accumulated before paying for that.
+		let dm_for_resize = Rc::clone(doc_manager);
+		frame.on_size(move |event| {
+			event.skip(true);
+			if let Ok(mut dm) = dm_for_resize.try_lock() {
+				dm.compact_window_if_grown();
+			}
+		});
 		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
 		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);

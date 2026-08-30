@@ -20,6 +20,11 @@ const TARGET_WINDOW_SIZE: i64 = 500_000;
 /// literally every keystroke - the new window is recentered with headroom on both sides.
 const RELOAD_MARGIN: i64 = TARGET_WINDOW_SIZE / 4;
 
+/// How much text a single forward extension appends. Comfortably wider than
+/// [`RELOAD_MARGIN`] so a steady forward read crosses the trigger once per chunk rather
+/// than appending on nearly every tick.
+const EXTEND_CHUNK: i64 = TARGET_WINDOW_SIZE / 2;
+
 /// Below this document length, just load the whole thing as one window - identical to the
 /// app's behavior before windowing existed, so ordinary documents are completely unaffected by
 /// this feature (new-path risk is isolated to documents that actually need it).
@@ -51,6 +56,53 @@ impl TextWindow {
 	#[cfg(target_os = "windows")]
 	pub const fn end(&self) -> i64 {
 		self.end
+	}
+
+	/// Whether more text should be appended to the end of this window to stay ahead of a
+	/// forward reader: the caret is within [`RELOAD_MARGIN`] of the loaded end and there is
+	/// more document past it.
+	///
+	/// Extension is the *safe* half of window maintenance. Appending leaves every existing
+	/// offset into the control pointing at the same text, so a screen reader part-way through
+	/// a Say-All - which holds its own offsets, advances them itself, and has no way to learn
+	/// the text changed - simply finds more text ahead of it and reads on.
+	pub const fn wants_extension_for(&self, doc_pos: i64, doc_len: i64) -> bool {
+		self.end < doc_len && doc_pos >= self.start && self.end - doc_pos < RELOAD_MARGIN
+	}
+
+	/// Whether this window has to be rebuilt around `doc_pos`, discarding what is loaded.
+	///
+	/// Compaction is the *destructive* half: it moves `start`, which shifts every offset in
+	/// the control and silently invalidates the position a Say-All is reading from. Only two
+	/// things justify it from the caret's own movement - the caret leaving the loaded range
+	/// outright (nothing can be rendered otherwise), and running out of text *behind* the
+	/// caret, which cannot happen to a reader that only ever moves forward.
+	pub const fn needs_compaction_for(&self, doc_pos: i64, _doc_len: i64) -> bool {
+		if doc_pos < self.start || doc_pos > self.end {
+			return true;
+		}
+		self.start > 0 && doc_pos - self.start < RELOAD_MARGIN
+	}
+
+	/// The `[start, end)` range a forward extension should ask the session for.
+	///
+	/// Starts exactly at the current `end`, which is always a paragraph boundary (the session
+	/// snapped it there when it produced this window), and re-snapping a boundary is a no-op -
+	/// so the appended slice abuts the loaded text with no gap and no repeated paragraph.
+	pub fn extend_bounds(&self, doc_len: i64) -> (i64, i64) {
+		(self.end, (self.end + EXTEND_CHUNK).min(doc_len))
+	}
+
+	/// Moves the loaded end forward after an append. Never moves `start`.
+	pub const fn extend_end_to(&mut self, end: i64) {
+		if end > self.end {
+			self.end = end;
+		}
+	}
+
+	/// How much text is currently loaded.
+	pub const fn loaded_len(&self) -> i64 {
+		self.end - self.start
 	}
 
 	/// Whether this window already covers the whole document, given its current length (which
@@ -88,6 +140,14 @@ impl TextWindow {
 		let near_end = self.end < doc_len && doc_len - doc_pos > 0 && self.end - doc_pos < RELOAD_MARGIN;
 		near_start || near_end
 	}
+}
+
+/// How large the loaded window may grow before a relayout is worth compacting for.
+///
+/// Twice the target, so a read that has crossed one or two extension boundaries is left alone
+/// and only a genuinely long one pays for a rebuild.
+pub const fn compaction_threshold() -> i64 {
+	TARGET_WINDOW_SIZE * 2
 }
 
 /// Whether a document of `doc_len` display units should just be loaded whole rather than
@@ -191,5 +251,76 @@ mod tests {
 		assert!(!TextWindow::new(start, end).needs_reload_for(10_000_000, 10_000_000));
 		// A document shorter than a full window is covered whole, not slid past its start.
 		assert_eq!(target_window_bounds(300, 1000), (0, 1000));
+	}
+	// Extension is the operation a Say-All can survive, so it must be what a forward-moving
+	// caret triggers - never the rebuild that moves `start` and invalidates the reader's offsets.
+	#[test]
+	fn a_caret_approaching_the_loaded_end_extends_rather_than_compacts() {
+		let window = TextWindow::new(1_000_000, 1_000_000 + TARGET_WINDOW_SIZE);
+		let near_end = window.end - RELOAD_MARGIN + 1;
+		assert!(window.wants_extension_for(near_end, 10_000_000));
+		assert!(!window.needs_compaction_for(near_end, 10_000_000));
+	}
+
+	#[test]
+	fn a_caret_in_the_middle_wants_nothing() {
+		let window = TextWindow::new(1_000_000, 1_000_000 + TARGET_WINDOW_SIZE);
+		let middle = window.start + TARGET_WINDOW_SIZE / 2;
+		assert!(!window.wants_extension_for(middle, 10_000_000));
+		assert!(!window.needs_compaction_for(middle, 10_000_000));
+	}
+
+	// Reading backwards off the front is the case compaction still exists for. A Say-All cannot
+	// reach it, because it only ever moves forward.
+	#[test]
+	fn a_caret_approaching_a_movable_start_compacts() {
+		let window = TextWindow::new(1_000_000, 1_000_000 + TARGET_WINDOW_SIZE);
+		assert!(window.needs_compaction_for(window.start + RELOAD_MARGIN - 1, 10_000_000));
+	}
+
+	#[test]
+	fn nothing_is_wanted_at_the_real_end_of_the_document() {
+		let doc_len = 10_000_000;
+		let window = TextWindow::new(doc_len - TARGET_WINDOW_SIZE, doc_len);
+		assert!(!window.wants_extension_for(doc_len - 10, doc_len));
+		assert!(!window.needs_compaction_for(doc_len - 10, doc_len));
+	}
+
+	// The appended range has to begin exactly where the loaded one ends: a gap would drop text
+	// and an overlap would repeat a paragraph, and either would shift every later offset.
+	#[test]
+	fn extension_starts_exactly_at_the_loaded_end() {
+		let window = TextWindow::new(1_000_000, 1_500_000);
+		let (from, to) = window.extend_bounds(10_000_000);
+		assert_eq!(from, 1_500_000);
+		assert_eq!(to, 1_500_000 + EXTEND_CHUNK);
+	}
+
+	#[test]
+	fn extension_stops_at_the_end_of_the_document() {
+		let window = TextWindow::new(0, 900_000);
+		assert_eq!(window.extend_bounds(1_000_000), (900_000, 1_000_000));
+	}
+
+	// Extending must only ever move `end`; `start` moving is what breaks a reader.
+	#[test]
+	fn extending_never_moves_the_start() {
+		let mut window = TextWindow::new(1_000_000, 1_500_000);
+		window.extend_end_to(1_750_000);
+		assert_eq!(window.start, 1_000_000);
+		assert_eq!(window.end, 1_750_000);
+		assert_eq!(window.loaded_len(), 750_000);
+		// An out-of-order or repeated append must not shrink what is loaded.
+		window.extend_end_to(1_600_000);
+		assert_eq!(window.end, 1_750_000);
+	}
+
+	// A window that grew across several extensions is what a resize has to pay for.
+	#[test]
+	fn compaction_threshold_tolerates_a_couple_of_extensions() {
+		let one = TextWindow::new(0, TARGET_WINDOW_SIZE + EXTEND_CHUNK);
+		assert!(one.loaded_len() <= compaction_threshold());
+		let many = TextWindow::new(0, TARGET_WINDOW_SIZE + EXTEND_CHUNK * 6);
+		assert!(many.loaded_len() > compaction_threshold());
 	}
 }

@@ -177,4 +177,50 @@ mod tests {
 		assert_eq!(slice.markers.len(), 1);
 		assert_eq!(slice.markers[0].mtype, MarkerType::Bold);
 	}
+	// The UI grows a document window forward by asking for the range starting at the one it
+	// already has loaded, and appending the result. That only works because an existing window's
+	// `end` is already on a paragraph boundary, so snapping it again as a `start` is a no-op. If
+	// that ever stopped holding, every extension would repeat or drop a paragraph and shift every
+	// offset the text control has already handed out.
+	#[test]
+	fn a_windows_end_is_a_boundary_that_the_next_window_starts_exactly_on() {
+		let content = "alpha paragraph
+beta paragraph
+gamma paragraph
+delta paragraph
+epsilon";
+		let session = session_with(content, &[]);
+		let len = session.document_len();
+		let first = session.get_window(0, 20);
+		assert!(first.end > 0 && first.end < len, "need a window that stops short of the end");
+		let second = session.get_window(first.end, len);
+		assert_eq!(second.start, first.end, "the next window must begin where the last one ended");
+		assert_eq!(
+			format!("{}{}", first.text, second.text),
+			session.get_window(0, len).text,
+			"appending the two must reconstruct the document exactly"
+		);
+	}
+
+	// Same property across several hops, which is what a long read actually does.
+	#[test]
+	fn repeated_extensions_reconstruct_the_document() {
+		let mut content = String::new();
+		for i in 0..50 {
+			use std::fmt::Write as _;
+			let _ = writeln!(content, "paragraph number {i} with some words in it");
+		}
+		let session = session_with(&content, &[]);
+		let len = session.document_len();
+		let mut assembled = String::new();
+		let mut cursor = 0;
+		while cursor < len {
+			let slice = session.get_window(cursor, cursor + 30);
+			assert_eq!(slice.start, cursor, "extension must abut the previous window");
+			assert!(slice.end > cursor, "extension must make progress");
+			assembled.push_str(&slice.text);
+			cursor = slice.end;
+		}
+		assert_eq!(assembled, content);
+	}
 }
