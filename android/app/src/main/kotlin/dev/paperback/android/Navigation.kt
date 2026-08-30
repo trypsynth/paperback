@@ -15,6 +15,7 @@ import androidx.navigation3.ui.NavDisplay
 import dev.paperback.android.ui.MainScreen
 import dev.paperback.android.ui.MainScreenViewModel
 import dev.paperback.android.ui.SettingsScreen
+import dev.paperback.android.ui.TocScreen
 
 @Composable
 fun MainNavigation() {
@@ -30,6 +31,16 @@ fun MainNavigation() {
 				backStack.add(SettingsRoute)
 			}
 			viewModel.settingsDialog.close()
+		}
+	}
+
+	val tocRequested by viewModel.tocDialog.isOpen.collectAsStateWithLifecycle()
+	LaunchedEffect(tocRequested) {
+		if (tocRequested) {
+			if (backStack.lastOrNull() != TocRoute) {
+				backStack.add(TocRoute)
+			}
+			viewModel.tocDialog.close()
 		}
 	}
 
@@ -49,6 +60,12 @@ fun MainNavigation() {
 				}
 				entry<SettingsRoute> {
 					SettingsScreen(
+						viewModel = viewModel,
+						onDismiss = { backStack.removeLastOrNull() }
+					)
+				}
+				entry<TocRoute> {
+					TocScreen(
 						viewModel = viewModel,
 						onDismiss = { backStack.removeLastOrNull() }
 					)

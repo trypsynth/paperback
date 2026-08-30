@@ -141,6 +141,54 @@ class MainScreenViewModel(
 
 	val tocDialog = DialogState()
 
+	private val _tocState = MutableStateFlow(TocUiState())
+	val tocState: StateFlow<TocUiState> = _tocState.asStateFlow()
+
+	fun toggleTocExpanded(index: Int) {
+		val expanded = _tocState.value.expandedIndices
+		_tocState.value = _tocState.value.copy(
+			expandedIndices = if (expanded.contains(index)) expanded - index else expanded + index
+		)
+	}
+
+	/**
+	 * Points the table of contents at wherever the reader currently is: the nearest entry at or
+	 * before the reading position becomes the active one, and its ancestors are expanded so it is
+	 * actually on screen when the list opens.
+	 */
+	fun prepareToc() {
+		val toc = (uiState.value as? MainScreenUiState.Success)?.activeTab?.toc.orEmpty()
+		if (toc.isEmpty()) {
+			_tocState.value = _tocState.value.copy(activeIndex = null)
+			return
+		}
+		var activeIndex = 0
+		var bestDistance = Long.MAX_VALUE
+		val currentPos = _ttsPosition.value
+		for (i in toc.indices) {
+			if (toc[i].position <= currentPos) {
+				val distance = currentPos - toc[i].position
+				if (distance < bestDistance) {
+					bestDistance = distance
+					activeIndex = i
+				}
+			}
+		}
+		val toExpand = mutableSetOf<Int>()
+		var currentLevel = toc[activeIndex].level
+		for (i in activeIndex - 1 downTo 0) {
+			if (toc[i].level < currentLevel) {
+				toExpand.add(i)
+				currentLevel = toc[i].level
+				if (currentLevel == 0) break
+			}
+		}
+		_tocState.value = TocUiState(
+			expandedIndices = _tocState.value.expandedIndices + toExpand,
+			activeIndex = activeIndex
+		)
+	}
+
 	private val goToDialogState = DialogState()
 	val showGoToDialog: StateFlow<Boolean> = goToDialogState.isOpen
 

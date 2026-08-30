@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -77,7 +78,6 @@ fun MainScreen(
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
-	val tocSheetOpen by viewModel.tocDialog.isOpen.collectAsStateWithLifecycle()
 	var recentsDialogOpen by remember { mutableStateOf(false) }
 	var exportDocumentDialogOpen by remember { mutableStateOf(false) }
 	var selectedExportFormat by remember { mutableStateOf<uniffi.paperback.ExportFormat?>(null) }
@@ -121,9 +121,7 @@ fun MainScreen(
 		)
 	val activeSearchQuery by viewModel.activeSearchQuery.collectAsStateWithLifecycle()
 	val activeSearchOptions by viewModel.activeSearchOptions.collectAsStateWithLifecycle()
-	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
-	var activeTocIndex by remember { mutableStateOf<Int?>(null) }
-	var isTextMode by remember { mutableStateOf(false) }
+	var isTextMode by rememberSaveable { mutableStateOf(false) }
 
 	// An audio-only tab has no real text spine to show in Text Mode (its top-bar toggle is
 	// hidden for the same reason), so switching to one from a Text Mode session falls back to
@@ -131,45 +129,6 @@ fun MainScreen(
 	LaunchedEffect((state as? MainScreenUiState.Success)?.activeTab?.documentUri) {
 		if ((state as? MainScreenUiState.Success)?.activeTab?.isAudioOnly == true) {
 			isTextMode = false
-		}
-	}
-
-	LaunchedEffect(tocSheetOpen) {
-		if (tocSheetOpen) {
-			val stateValue = viewModel.uiState.value
-			if (stateValue is MainScreenUiState.Success) {
-				val tab = stateValue.activeTab
-				if (tab != null) {
-					val toc = tab.toc
-					if (toc.isNotEmpty()) {
-						var activeIndex = 0
-						var bestDistance = Long.MAX_VALUE
-						val currentPos = viewModel.ttsPosition.value
-						for (i in toc.indices) {
-							if (toc[i].position <= currentPos) {
-								val distance = currentPos - toc[i].position
-								if (distance < bestDistance) {
-									bestDistance = distance
-									activeIndex = i
-								}
-							}
-						}
-						activeTocIndex = activeIndex
-						val toExpand = mutableSetOf<Int>()
-						var currentLevel = toc[activeIndex].level
-						for (i in activeIndex - 1 downTo 0) {
-							if (toc[i].level < currentLevel) {
-								toExpand.add(i)
-								currentLevel = toc[i].level
-								if (currentLevel == 0) break
-							}
-						}
-						expandedTocIndices = expandedTocIndices + toExpand
-					}
-				}
-			}
-		} else {
-			activeTocIndex = null
 		}
 	}
 
@@ -607,31 +566,6 @@ fun MainScreen(
 									onCloseSearch = {
 										viewModel.clearSearch()
 									}
-								)
-							}
-							if (tocSheetOpen) {
-								TocDialog(
-									toc = docState.toc,
-									expandedTocIndices = expandedTocIndices,
-									activeTocIndex = activeTocIndex,
-									onToggleExpand = { originalIndex ->
-										expandedTocIndices = if (expandedTocIndices.contains(originalIndex)) {
-											expandedTocIndices - originalIndex
-										} else {
-											expandedTocIndices + originalIndex
-										}
-									},
-									onItemClick = { item ->
-										viewModel.updateTtsPosition(item.position)
-										val line = docState.session.lineFromPosition(item.position)
-										val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
-										scope.launch {
-											viewModel.tocDialog.close()
-											listState.scrollToItem(indexToScroll)
-											lineIndexToFocus = indexToScroll
-										}
-									},
-									onDismiss = { viewModel.tocDialog.close() }
 								)
 							}
 							if (goToDialogOpen) {
