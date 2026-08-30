@@ -204,11 +204,11 @@ class MainActivity : ComponentActivity() {
 					true
 				}
 				KeyEvent.KEYCODE_COMMA -> {
-					vm.settingsDialog.open()
+					vm.settingsRequest.request()
 					true
 				}
 				KeyEvent.KEYCODE_T -> {
-					vm.tocDialog.open()
+					vm.tocRequest.request()
 					true
 				}
 				KeyEvent.KEYCODE_P -> {

@@ -24,23 +24,23 @@ fun MainNavigation() {
 
 	// Bridges non-UI triggers (e.g. the Ctrl+, keyboard shortcut in MainActivity) that
 	// can't reach this composable's backStack directly into a real navigation push.
-	val settingsRequested by viewModel.settingsDialog.isOpen.collectAsStateWithLifecycle()
+	val settingsRequested by viewModel.settingsRequest.isRequested.collectAsStateWithLifecycle()
 	LaunchedEffect(settingsRequested) {
 		if (settingsRequested) {
 			if (backStack.lastOrNull() != SettingsRoute) {
 				backStack.add(SettingsRoute)
 			}
-			viewModel.settingsDialog.close()
+			viewModel.settingsRequest.consume()
 		}
 	}
 
-	val tocRequested by viewModel.tocDialog.isOpen.collectAsStateWithLifecycle()
+	val tocRequested by viewModel.tocRequest.isRequested.collectAsStateWithLifecycle()
 	LaunchedEffect(tocRequested) {
 		if (tocRequested) {
 			if (backStack.lastOrNull() != TocRoute) {
 				backStack.add(TocRoute)
 			}
-			viewModel.tocDialog.close()
+			viewModel.tocRequest.consume()
 		}
 	}
 

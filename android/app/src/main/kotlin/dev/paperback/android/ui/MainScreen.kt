@@ -338,7 +338,7 @@ fun MainScreen(
 							filePickerLauncher.launch(supportedMimeTypes)
 						}
 					},
-					onTocOpen = { viewModel.tocDialog.open() },
+					onTocOpen = { viewModel.tocRequest.request() },
 					onTabSelect = { viewModel.setActiveTab(it) },
 					onTabClose = { viewModel.closeTab(it) },
 					onToggleTextMode = { isTextMode = !isTextMode },

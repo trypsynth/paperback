@@ -112,7 +112,7 @@ class MainScreenViewModel(
 
 	val findDialog = DialogState()
 
-	val settingsDialog = DialogState()
+	val settingsRequest = ScreenRequest()
 
 	private val _restorePreviousDocuments = MutableStateFlow(config.getAppBool("restore_previous_documents", true))
 	val restorePreviousDocuments: StateFlow<Boolean> = _restorePreviousDocuments.asStateFlow()
@@ -139,7 +139,7 @@ class MainScreenViewModel(
 	private val _textAlignment = MutableStateFlow(config.getAppInt("text_alignment", 0))
 	val textAlignment: StateFlow<Int> = _textAlignment.asStateFlow()
 
-	val tocDialog = DialogState()
+	val tocRequest = ScreenRequest()
 
 	private val _tocState = MutableStateFlow(TocUiState())
 	val tocState: StateFlow<TocUiState> = _tocState.asStateFlow()
