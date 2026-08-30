@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import dev.paperback.android.AllDocumentsRoute
 import dev.paperback.android.SettingsRoute
 import dev.paperback.android.t
 import dev.paperback.android.ui.dialogs.*
@@ -78,7 +79,6 @@ fun MainScreen(
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
-	var recentsDialogOpen by remember { mutableStateOf(false) }
 	var exportDocumentDialogOpen by remember { mutableStateOf(false) }
 	var selectedExportFormat by remember { mutableStateOf<uniffi.paperback.ExportFormat?>(null) }
 	val wordCountDialogOpen by viewModel.wordCountDialog.isOpen.collectAsStateWithLifecycle()
@@ -347,7 +347,7 @@ fun MainScreen(
 					onTabClose = { viewModel.closeTab(it) },
 					onToggleTextMode = { isTextMode = !isTextMode },
 					onTogglePlayPause = { viewModel.togglePlayPause() },
-					onRecentsOpen = { recentsDialogOpen = true },
+					onRecentsOpen = { onItemClick(AllDocumentsRoute) },
 					onGoToOpen = { viewModel.openGoToDialog() },
 					onFindOpen = { viewModel.findDialog.open() },
 					onWordCountOpen = { viewModel.openWordCountDialog() },
@@ -482,10 +482,10 @@ fun MainScreen(
 										}
 									}
 									TextButton(
-										onClick = { recentsDialogOpen = true },
+										onClick = { onItemClick(AllDocumentsRoute) },
 										modifier = Modifier.padding(top = 8.dp)
 									) {
-										// TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents dialog
+										// TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents screen
 										Text(t("Show All"))
 									}
 								}
@@ -668,15 +668,6 @@ fun MainScreen(
 							} ?: run {
 								exportDocumentDialogOpen = false
 							}
-						}
-						if (recentsDialogOpen) {
-							AllDocumentsDialog(
-								recentDocuments = successState.recentDocuments,
-								onDismiss = { recentsDialogOpen = false },
-								onOpenDocument = { uri -> viewModel.openDocument(uri) },
-								onRemoveDocument = { uri -> viewModel.removeRecentDocument(uri) },
-								onLocateDocument = onLocateRecentDocument
-							)
 						}
 						if (wordCountDialogOpen && docState != null) {
 							val stats = remember(docState.session) { docState.session.getStatsFfi() }
