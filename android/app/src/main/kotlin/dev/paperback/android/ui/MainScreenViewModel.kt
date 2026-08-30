@@ -1308,6 +1308,14 @@ class MainScreenViewModel(
 		updateTtsPosition(pos)
 	}
 
+	fun openWordCountDialog() {
+		// Nothing to count in an audio-only book. The menu hides the entry for one; this keeps
+		// the Ctrl+W shortcut from opening a dialog full of zeroes anyway.
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		if (state.activeTab?.isAudioOnly == true) return
+		wordCountDialog.open()
+	}
+
 	fun openElementsDialog() {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return

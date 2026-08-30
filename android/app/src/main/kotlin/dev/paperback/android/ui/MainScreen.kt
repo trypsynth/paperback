@@ -350,7 +350,7 @@ fun MainScreen(
 					onRecentsOpen = { recentsDialogOpen = true },
 					onGoToOpen = { viewModel.openGoToDialog() },
 					onFindOpen = { viewModel.findDialog.open() },
-					onWordCountOpen = { viewModel.wordCountDialog.open() },
+					onWordCountOpen = { viewModel.openWordCountDialog() },
 					onDocumentInfoOpen = { viewModel.documentInfoDialog.open() },
 					onSettingsOpen = { onItemClick(SettingsRoute) },
 					onSleepTimerOpen = { viewModel.sleepTimerDialog.open() },

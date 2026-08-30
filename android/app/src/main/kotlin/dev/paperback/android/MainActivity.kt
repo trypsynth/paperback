@@ -224,7 +224,7 @@ class MainActivity : ComponentActivity() {
 					true
 				}
 				KeyEvent.KEYCODE_W -> {
-					vm.wordCountDialog.open()
+					vm.openWordCountDialog()
 					true
 				}
 				KeyEvent.KEYCODE_I -> {
