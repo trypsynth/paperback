@@ -10,6 +10,8 @@ import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import dev.paperback.android.assetLocaleTags
+import dev.paperback.android.bestLocaleMatch
 import dev.paperback.android.t
 import dev.paperback.android.tts.DaisyAudioPlayer
 import dev.paperback.android.tts.TtsManager
@@ -1458,13 +1460,13 @@ class MainScreenViewModel(
 	}
 
 	fun openHelpDocument() {
-		val lang = Locale.getDefault().language
+		// Matched against the readmes actually shipped rather than a hardcoded language list,
+		// which drifts out of sync, and by the same rule as the string catalogue: the files are
+		// named for the po files ("readme-zh_CN.html"), not for the bare language code a device
+		// reports, so asking for readme-zh.html only ever found the English fallback.
+		val lang = bestLocaleMatch(assetLocaleTags(context, "readmes", "readme-", ".html"), Locale.getDefault())
 		viewModelScope.launch(Dispatchers.IO) {
 			try {
-				// Try the localized doc first, falling back to English rather than checking
-				// a hardcoded language list against a hand-maintained set of asset names --
-				// that list drifts out of sync with which readme-$lang.html files actually
-				// exist in assets/readmes/.
 				val assetStream = try {
 					context.assets.open("readmes/readme-$lang.html")
 				} catch (_: IOException) {
