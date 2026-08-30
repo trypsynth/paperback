@@ -8,6 +8,7 @@ mod main_window;
 mod menu;
 mod menu_ids;
 mod navigation;
+#[cfg(any(target_os = "windows", test))]
 mod rtf;
 mod shell;
 mod sounds;

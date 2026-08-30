@@ -484,6 +484,7 @@ impl DocumentManager {
 	/// prefers the tab strip" made the next document open onto its own tab strip instead of its
 	/// text, because [`Self::restore_focus`] honours the preference and could not tell a real
 	/// one from the absence of an alternative.
+	#[cfg(target_os = "windows")]
 	pub fn record_focus_target(&self) {
 		if self.tabs.is_empty() {
 			return;

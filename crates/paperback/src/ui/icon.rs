@@ -14,6 +14,7 @@ const ICON_PNG: &[u8] = include_bytes!("../../assets/paperback.png");
 
 /// Sizes to offer the notification area. Windows picks 16 at 100% scaling and 32 at 200%, and
 /// wants 20 or 24 at the scalings in between; anything else is scaled from the nearest of these.
+#[cfg(any(target_os = "windows", test))]
 const NOTIFICATION_AREA_SIZES: [u32; 4] = [16, 20, 24, 32];
 
 /// The size handed to `Frame::set_icon`, which takes a single bitmap rather than a bundle. wx
@@ -46,6 +47,7 @@ fn bitmaps_at(sizes: &[u32]) -> Vec<Bitmap> {
 /// The application icon as a bundle covering the notification area's sizes, so the shell can
 /// pick the right one for the display it is drawn on instead of rescaling a single bitmap.
 #[must_use]
+#[cfg(target_os = "windows")]
 pub fn notification_area_bundle() -> Option<BitmapBundle> {
 	let bitmaps = bitmaps_at(&NOTIFICATION_AREA_SIZES);
 	if bitmaps.is_empty() {
