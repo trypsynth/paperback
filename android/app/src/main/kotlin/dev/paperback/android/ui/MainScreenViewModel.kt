@@ -1311,6 +1311,9 @@ class MainScreenViewModel(
 	fun openElementsDialog() {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
+		// An audio-only book has no text spine, so both tabs of the dialog would come up empty.
+		// The menu hides the entry for one; this keeps the F7 shortcut from opening it anyway.
+		if (tab.isAudioOnly) return
 		viewModelScope.launch(Dispatchers.IO) {
 			val pos = _ttsPosition.value
 			val headings = tab.session.getHeadingTreeFfi(pos)
