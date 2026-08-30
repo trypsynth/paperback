@@ -202,38 +202,38 @@ impl MainWindow {
 		let frame_copy = frame;
 		let find_dialog_for_keys = Rc::clone(&find_dialog);
 		notebook.on_key_down(move |event| {
-			if let WindowEventData::Keyboard(key_event) = &event {
-				if let Some(key) = key_event.get_key_code() {
-					// Escape hides the find strip. The strip's own combo/panel handlers usually
-					// catch it first, but when they don't the key bubbles up to here.
-					if key == WXK_ESCAPE && find::is_find_shown(&find_dialog_for_keys) {
-						find::hide_find_dialog(&find_dialog_for_keys);
-						event.skip(false);
+			if let WindowEventData::Keyboard(key_event) = &event
+				&& let Some(key) = key_event.get_key_code()
+			{
+				// Escape hides the find strip. The strip's own combo/panel handlers usually
+				// catch it first, but when they don't the key bubbles up to here.
+				if key == WXK_ESCAPE && find::is_find_shown(&find_dialog_for_keys) {
+					find::hide_find_dialog(&find_dialog_for_keys);
+					event.skip(false);
+					return;
+				}
+				if key == WXK_DELETE || key == WXK_NUMPAD_DELETE {
+					// Delete while focus is in the find strip edits its text; it must not be
+					// read as the tab strip's "close this document" gesture.
+					if find::is_find_shown(&find_dialog_for_keys) {
+						event.skip(true);
 						return;
 					}
-					if key == WXK_DELETE || key == WXK_NUMPAD_DELETE {
-						// Delete while focus is in the find strip edits its text; it must not be
-						// read as the tab strip's "close this document" gesture.
-						if find::is_find_shown(&find_dialog_for_keys) {
-							event.skip(true);
-							return;
-						}
-						let mut dm = dm.lock().unwrap();
-						close_active_document_announced(&mut dm, live_region_label);
-						update_title_from_manager(&frame_copy, &dm);
-						let has_docs = dm.tab_count() > 0;
-						let has_reopen = dm.has_recently_closed();
-						if has_docs {
-							dm.restore_focus();
-						} else {
-							dm.notebook().set_focus();
-						}
-						drop(dm);
-						menu::update_menu_item_states(&frame_copy, has_docs);
-						menu::update_reopen_state(&frame_copy, has_reopen);
-						event.skip(false);
-						return;
+					let mut dm = dm.lock().unwrap();
+					close_active_document_announced(&mut dm, live_region_label);
+					update_title_from_manager(&frame_copy, &dm);
+					let has_docs = dm.tab_count() > 0;
+					let has_reopen = dm.has_recently_closed();
+					if has_docs {
+						dm.restore_focus();
+					} else {
+						dm.notebook().set_focus();
 					}
+					drop(dm);
+					menu::update_menu_item_states(&frame_copy, has_docs);
+					menu::update_reopen_state(&frame_copy, has_reopen);
+					event.skip(false);
+					return;
 				}
 			}
 			event.skip(true);
