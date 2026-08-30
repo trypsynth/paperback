@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-29 11:48-0600\n"
-"PO-Revision-Date: 2026-08-29 17:34+0800\n"
+"PO-Revision-Date: 2026-08-30 17:32+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -92,10 +92,14 @@ msgstr "全部清除(&C)"
 msgid "Close"
 msgstr "关闭"
 
-msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
+msgid ""
+"Are you sure you want to remove the selected document? This will also remove "
+"its reading position and bookmarks."
 msgstr "确定要移除所选文档吗？这将同时移除其阅读位置和书签。"
 
-msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
+msgid ""
+"Are you sure you want to remove the {} selected documents? This will also "
+"remove their reading positions and bookmarks."
 msgstr "确定要移除所选的 {} 个文档吗？这将同时移除它们的阅读位置和书签。"
 
 #. TRANSLATORS: Title of the confirmation dialog
@@ -103,7 +107,9 @@ msgid "Confirm"
 msgstr "确认"
 
 #. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
-msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
 msgstr "确定要从列表中移除所有文档吗？这将同时移除所有阅读位置和书签。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
@@ -719,7 +725,8 @@ msgid "File not found: {}"
 msgstr "找不到文件: {}"
 
 #. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
-msgid "A .paperback file was found for this document. Would you like to import it?"
+msgid ""
+"A .paperback file was found for this document. Would you like to import it?"
 msgstr "找到与此文档关联的 .paperback 文件。是否导入？"
 
 #. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
@@ -869,7 +876,8 @@ msgid "Failed to reveal file in folder."
 msgstr "无法在文件夹中显示文件。"
 
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
-msgid "readme.html not found. Please ensure the application was built properly."
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
 msgstr "未找到 readme.html。请确保应用程序已正确构建。"
 
 #. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
@@ -2214,10 +2222,16 @@ msgid "Failed to open PDF document: {}"
 msgstr "打开 PDF 文档失败: {}"
 
 #. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
-msgstr "此 PDF 仅包含图片，没有可提取的文本。您可能需要通过 OCR 软件进行识别才能阅读其内容。"
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+"此 PDF 仅包含图片，没有可提取的文本。您可能需要通过 OCR 软件进行识别才能阅读"
+"其内容。"
 
-msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+msgid ""
+"Password-protected PPT files are not currently supported. Try saving the "
+"file as PPTX and opening that instead."
 msgstr "目前不支持受密码保护的 PPT 文件。请尝试将文件另存为 PPTX 后再打开。"
 
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
@@ -2299,13 +2313,14 @@ msgstr "密码错误"
 msgid "Unknown update file format."
 msgstr "未知的更新文件格式。"
 
-#, fuzzy
 msgid "Failed to open disk image"
-msgstr "无法在浏览器中打开捐赠页面。"
+msgstr "无法打开磁盘映像"
 
-#, fuzzy
-msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
-msgstr "更新已下载并打开其磁盘映像。请退出 %s 并将新版本拖入“应用程序”以完成安装。"
+msgid ""
+"The update has been downloaded and its disk image opened. Quit %s and drag "
+"the new version into Applications to finish installing."
+msgstr ""
+"更新已下载，其磁盘映像已打开。退出 %s 并将新版本拖入“应用程序”以完成安装。"
 
 msgid "Update Ready"
 msgstr "更新已就绪"
@@ -2361,7 +2376,8 @@ msgstr "没有可用更新。最新版本: %s"
 msgid "Info"
 msgstr "信息"
 
-msgid "Security verification failed. The update might have been tampered with: %s"
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
 msgstr "安全验证失败。更新可能已被篡改: %s"
 
 msgid "Security Error"
@@ -2516,22 +2532,18 @@ msgid "Play Sample"
 msgstr "播放示例"
 
 #: swift
-#, fuzzy
 msgid "Text Size"
-msgstr "文字转语音"
+msgstr "文本大小"
 
 #: swift
-#, fuzzy
 msgid "Line Spacing"
 msgstr "行距"
 
 #: swift
-#, fuzzy
 msgid "Paragraph Spacing"
-msgstr "段距"
+msgstr "段落间距"
 
 #: swift
-#, fuzzy
 msgid "Alignment"
 msgstr "对齐"
 
@@ -2780,29 +2792,24 @@ msgid "Untitled Link"
 msgstr "无标题链接"
 
 #: kt
-#, fuzzy
 msgid "Export Document"
-msgstr "导出文档数据"
+msgstr "导出文档"
 
 #: kt
-#, fuzzy
 msgid "Select a format to export the current document:"
-msgstr "关闭当前文档"
+msgstr "选择导出当前文档的格式:"
 
 #: kt
-#, fuzzy
 msgid "Plain Text (.txt)"
-msgstr "纯文本"
+msgstr "纯文本（.txt）"
 
 #: kt
-#, fuzzy
 msgid "HTML (.html)"
-msgstr "HTML (.html)"
+msgstr "HTML（.html）"
 
 #: kt
-#, fuzzy
 msgid "Markdown (.md)"
-msgstr "Markdown"
+msgstr "Markdown（.md）"
 
 #: kt
 msgid "No supported books or folders found here."
@@ -2833,7 +2840,9 @@ msgid "All Files Access Required"
 msgstr "需要所有文件访问权限"
 
 #: kt
-msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgid ""
+"Paperback requires the 'All Files Access' permission to enable the custom in-"
+"app file browser."
 msgstr "Paperback 需要“所有文件访问”权限才能启用应用内自定义文件浏览器。"
 
 #: kt
@@ -2841,24 +2850,26 @@ msgid "Why we need this:"
 msgstr "我们为什么需要此权限:"
 
 #: kt
-#, fuzzy
-msgid "To provide a fast, fully screen-reader accessible file manager inside the app."
-msgstr "• 在应用内提供快速、完全支持屏幕阅读器的文件管理器。"
+msgid ""
+"To provide a fast, fully screen-reader accessible file manager inside the "
+"app."
+msgstr "在应用内提供快速、完全支持屏幕阅读器的文件管理器。"
 
 #: kt
-#, fuzzy
-msgid "To load large files instantly without needing to copy them into the app's cache."
-msgstr "• 无需将大文件复制到应用缓存即可即时加载。"
+msgid ""
+"To load large files instantly without needing to copy them into the app's "
+"cache."
+msgstr "无需将大文件复制到应用缓存即可即时加载。"
 
 #: kt
-#, fuzzy
 msgid "To display the exact local file paths of your documents."
-msgstr "• 显示文档的准确本地文件路径。"
+msgstr "显示文档的准确本地文件路径。"
 
 #: kt
-#, fuzzy
-msgid "If you deny this permission, you can still use the Android System File Picker to open your "
-msgstr "如果您拒绝此权限，仍可通过关闭自定义文件浏览器设置来使用 Android 系统文件选择器打开图书。"
+msgid ""
+"If you deny this permission, you can still use the Android System File "
+"Picker to open your "
+msgstr "如果您拒绝此权限，仍可使用 Android 系统文件选择器打开您的 "
 
 #: kt
 msgid "Grant"
@@ -2881,14 +2892,12 @@ msgid "Start"
 msgstr "开始"
 
 #: kt
-#, fuzzy
 msgid "Active: {} remaining"
-msgstr "活跃：{}剩余"
+msgstr "活动中: 剩余 {}"
 
 #: kt
-#, fuzzy
 msgid "remaining"
-msgstr "剩余时间"
+msgstr "剩余"
 
 #: kt
 msgid "Cancel Timer"
@@ -2899,9 +2908,8 @@ msgid "Change to:"
 msgstr "更改为:"
 
 #: kt
-#, fuzzy
 msgid "{} minutes"
-msgstr "{}分钟"
+msgstr "{} 分钟"
 
 #: kt
 msgid "Custom time..."
@@ -2928,23 +2936,20 @@ msgid "This document contains {} words."
 msgstr "本文档包含 {} 个单词。"
 
 #: kt
-#, fuzzy
 msgid "words"
-msgstr "字数"
+msgstr "单词"
 
 #: kt
 msgid "Close Search"
 msgstr "关闭搜索"
 
 #: kt
-#, fuzzy
 msgid "Document exported"
-msgstr "文档已重新加载。"
+msgstr "文档已导出"
 
 #: kt
-#, fuzzy
 msgid "Failed to export document"
-msgstr "导出文档失败。"
+msgstr "导出文档失败"
 
 #: kt
 msgid "No document open. Please open a book."
@@ -2979,16 +2984,14 @@ msgid "Read Aloud"
 msgstr "朗读"
 
 #: kt
-#, fuzzy
 msgid "Export As"
-msgstr "导出成功"
+msgstr "导出为"
 
 #: kt
 msgid "Elements List"
 msgstr "元素列表"
 
 #: kt
-#, fuzzy
 msgid "No more matches."
 msgstr "没有更多匹配项。"
 
@@ -3021,57 +3024,52 @@ msgid "Separator"
 msgstr "分隔符"
 
 #: kt
-#, fuzzy
 msgid "{} seconds"
-msgstr "{}秒"
+msgstr "{} 秒"
 
 #: kt
-#, fuzzy
 msgid "✓ Granted"
-msgstr "授予"
+msgstr "✓ 已授予"
 
 #: kt
-#, fuzzy
 msgid "Before You Start"
 msgstr "开始之前"
 
 #: kt
-#, fuzzy
-msgid "Paperback works best with a couple of permissions. Here's what we ask for and why:"
-msgstr "Paperback 在获得若干权限后效果最佳。以下是我们请求的权限及原因："
+msgid ""
+"Paperback works best with a couple of permissions. Here's what we ask for "
+"and why:"
+msgstr "Paperback 在获得一些权限时运行效果最佳。以下是我们请求的权限及原因:"
 
 #: kt
-#, fuzzy
 msgid "Notifications"
-msgstr "没有章节。"
+msgstr "通知"
 
 #: kt
-#, fuzzy
-msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is "
-msgstr "允许 Paperback 在文字转语音进行时于通知栏中显示播放控件"
+msgid ""
+"Lets Paperback show playback controls in the notification shade while text-"
+"to-speech is "
+msgstr "允许 Paperback 在文字转语音播放时于通知栏显示播放控制 "
 
 #: kt
-#, fuzzy
 msgid "Enable Notifications"
 msgstr "启用通知"
 
 #: kt
-#, fuzzy
 msgid "All Files Access"
-msgstr "需要所有文件访问权限"
+msgstr "所有文件访问"
 
 #: kt
-#, fuzzy
-msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your "
-msgstr "为可选的应用内文件浏览器提供支持，让你可以打开设备上任意位置的文档"
+msgid ""
+"Powers the optional in-app file browser, so you can open documents from "
+"anywhere on your "
+msgstr "为可选的应用内文件浏览器提供支持，使您可以从设备任何位置打开文档 "
 
 #: kt
-#, fuzzy
 msgid "Enable File Access"
-msgstr "需要所有文件访问权限"
+msgstr "启用文件访问"
 
 #: kt
-#, fuzzy
 msgid "Continue"
 msgstr "继续"
 
@@ -3092,364 +3090,25 @@ msgid "System Default"
 msgstr "系统默认"
 
 #: kt
-#, fuzzy
 msgid "Back {}"
-msgstr "后退{}"
+msgstr "后退 {}"
 
 #: kt
-#, fuzzy
 msgid "Forward {}"
-msgstr "前进{}"
+msgstr "前进 {}"
 
 #: kt
-#, fuzzy
 msgid "Enter {}"
 msgstr "进入 {}"
 
 #: kt
-#, fuzzy
 msgid "Error loading document: {}"
-msgstr "加载文档出错: {}"
+msgstr "加载文档错误: {}"
 
 #: kt
-#, fuzzy
 msgid "1.5×"
 msgstr "1.5×"
 
 #: kt
-#, fuzzy
 msgid "Speech Engine"
 msgstr "语音引擎"
-
-#~ msgid "&Options"
-#~ msgstr "选项(&O)"
-
-#~ msgid "1 document."
-#~ msgstr "1 个文档。"
-
-#~ msgid "%d documents."
-#~ msgstr "%d 个文档。"
-
-#~ msgid "All %d documents selected."
-#~ msgstr "已选择全部 %d 个文档。"
-
-#~ msgid "%d of %d documents selected."
-#~ msgstr "已选择 %d 个文档，共 %d 个。"
-
-#~ msgid "hours"
-#~ msgstr "小时"
-
-#~ msgid "minutes"
-#~ msgstr "分钟"
-
-#~ msgid "1 second"
-#~ msgstr "1 秒"
-
-#~ msgid "seconds"
-#~ msgstr "秒"
-
-#~ msgid "The selection contains {} words."
-#~ msgstr "所选内容包含 {} 个单词。"
-
-#~ msgid "{} chars"
-#~ msgstr "{} 字符"
-
-#~ msgid "Sleep timer set for 1 minute."
-#~ msgstr "睡眠定时器已设置为 1 分钟。"
-
-#~ msgid "Sleep timer set for %d minutes."
-#~ msgstr "睡眠定时器已设置为 %d 分钟。"
-
-#~ msgid "Previous Section\t["
-#~ msgstr "上一章节\t["
-
-#~ msgid "Next Section\t]"
-#~ msgstr "下一章节\t]"
-
-#~ msgid "Go to &Page\tCtrl+P"
-#~ msgstr "转到页(&P)\tCtrl+P"
-
-#~ msgid "Previous Pa&ge\tShift+P"
-#~ msgstr "上一页(&G)\tShift+P"
-
-#~ msgid "Next Pag&e\tP"
-#~ msgstr "下一页(&E)\tP"
-
-#~ msgid "Previous Lin&k\tShift+K"
-#~ msgstr "上一个链接(&K)\tShift+K"
-
-#~ msgid "Next Lin&k\tK"
-#~ msgstr "下一个链接(&K)\tK"
-
-#~ msgid "Previous Ima&ge\tShift+G"
-#~ msgstr "上一张图片(&G)\tShift+G"
-
-#~ msgid "Next Ima&ge\tG"
-#~ msgstr "下一张图片(&G)\tG"
-
-#~ msgid "Previous Figu&re\tShift+F"
-#~ msgstr "上一个图形(&R)\tShift+F"
-
-#~ msgid "Next Figu&re\tF"
-#~ msgstr "下一个图形(&R)\tF"
-
-#~ msgid "Previous &Table\tShift+T"
-#~ msgstr "上一个表格(&T)\tShift+T"
-
-#~ msgid "Next &Table\tT"
-#~ msgstr "下一个表格(&T)\tT"
-
-#~ msgid "Previous Se&parator\tShift+S"
-#~ msgstr "上一个分隔符(&P)\tShift+S"
-
-#~ msgid "Next Se&parator\tS"
-#~ msgstr "下一个分隔符(&P)\tS"
-
-#~ msgid "Previous L&ist\tShift+L"
-#~ msgstr "上一个列表(&I)\tShift+L"
-
-#~ msgid "Next L&ist\tL"
-#~ msgstr "下一个列表(&I)\tL"
-
-#~ msgid "Previous List &Item\tShift+I"
-#~ msgstr "上一个列表项(&I)\tShift+I"
-
-#~ msgid "Next List I&tem\tI"
-#~ msgstr "下一个列表项(&T)\tI"
-
-#~ msgid "Container &Start\tShift+,"
-#~ msgstr "容器开头(&S)\tShift+,"
-
-#~ msgid "Past Container &End\t,"
-#~ msgstr "越过容器末尾(&E)\t,"
-
-#~ msgid "Next Heading Level 1\t1"
-#~ msgstr "下一个 1 级标题\t1"
-
-#~ msgid "Previous Heading Level &2\tShift+2"
-#~ msgstr "上一个 2 级标题(&2)\tShift+2"
-
-#~ msgid "Next Heading Level 2\t2"
-#~ msgstr "下一个 2 级标题\t2"
-
-#~ msgid "Previous Heading Level &3\tShift+3"
-#~ msgstr "上一个 3 级标题(&3)\tShift+3"
-
-#~ msgid "Next Heading Level 3\t3"
-#~ msgstr "下一个 3 级标题\t3"
-
-#~ msgid "Previous Heading Level &4\tShift+4"
-#~ msgstr "上一个 4 级标题(&4)\tShift+4"
-
-#~ msgid "Next Heading Level 4\t4"
-#~ msgstr "下一个 4 级标题\t4"
-
-#~ msgid "Previous Heading Level &5\tShift+5"
-#~ msgstr "上一个 5 级标题(&5)\tShift+5"
-
-#~ msgid "Next Heading Level 5\t5"
-#~ msgstr "下一个 5 级标题\t5"
-
-#~ msgid "Previous Heading Level &6\tShift+6"
-#~ msgstr "上一个 6 级标题(&6)\tShift+6"
-
-#~ msgid "Next Heading Level 6\t6"
-#~ msgstr "下一个 6 级标题\t6"
-
-#~ msgid "&Previous Heading\tShift+H"
-#~ msgstr "上一个标题(&P)\tShift+H"
-
-#~ msgid "&Next Heading\tH"
-#~ msgstr "下一个标题(&N)\tH"
-
-#~ msgid "Previous Heading Level &1\tShift+1"
-#~ msgstr "上一个 1 级标题(&1)\tShift+1"
-
-#~ msgid "&Previous Bookmark\tShift+B"
-#~ msgstr "上一个书签(&P)\tShift+B"
-
-#~ msgid "&Next Bookmark\tB"
-#~ msgstr "下一个书签(&N)\tB"
-
-#~ msgid "Previous &Note\tShift+N"
-#~ msgstr "上一个笔记(&N)\tShift+N"
-
-#~ msgid "Next N&ote\tN"
-#~ msgstr "下一个笔记(&O)\tN"
-
-#~ msgid "Jump to &All...\tCtrl+B"
-#~ msgstr "跳转到全部(&A)...\tCtrl+B"
-
-#~ msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-#~ msgstr "仅跳转到书签(&B)...\tCtrl+Alt+B"
-
-#~ msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-#~ msgstr "仅跳转到笔记(&O)...\tCtrl+Alt+M"
-
-#~ msgid "&View Note Text\tRawCtrl+Shift+W"
-#~ msgstr "查看笔记文本(&V)\tRawCtrl+Shift+W"
-
-#~ msgid "&View Note Text\tCtrl+Shift+W"
-#~ msgstr "查看笔记文本(&V)\tCtrl+Shift+W"
-
-#~ msgid "&Open...\tCtrl+O"
-#~ msgstr "打开(&O)...\tCtrl+O"
-
-#~ msgid "&Close\tCtrl+W"
-#~ msgstr "关闭(&C)\tCtrl+W"
-
-#~ msgid "&Close\tCtrl+F4"
-#~ msgstr "关闭(&C)\tCtrl+F4"
-
-#~ msgid "Close &All\tCtrl+Shift+W"
-#~ msgstr "全部关闭(&A)\tCtrl+Shift+W"
-
-#~ msgid "Close &All\tCtrl+Shift+F4"
-#~ msgstr "全部关闭(&A)\tCtrl+Shift+F4"
-
-#~ msgid "Reopen &Last Closed\tCtrl+Shift+T"
-#~ msgstr "重新打开上次关闭的文档(&L)\tCtrl+Shift+T"
-
-#~ msgid "E&xit\tCtrl+Q"
-#~ msgstr "退出(&X)\tCtrl+Q"
-
-#~ msgid "&Find...\tCtrl+F"
-#~ msgstr "查找(&F)...\tCtrl+F"
-
-#~ msgid "Find &Next\tCtrl+G"
-#~ msgstr "查找下一个(&N)\tCtrl+G"
-
-#~ msgid "Find &Next\tF3"
-#~ msgstr "查找下一个(&N)\tF3"
-
-#~ msgid "Find &Previous\tCtrl+Shift+G"
-#~ msgstr "查找上一个(&P)\tCtrl+Shift+G"
-
-#~ msgid "Find &Previous\tShift+F3"
-#~ msgstr "查找上一个(&P)\tShift+F3"
-
-#~ msgid "Go to &line...\tCtrl+L"
-#~ msgstr "转到行(&L)...\tCtrl+L"
-
-#~ msgid "Go to &line...\tCtrl+G"
-#~ msgstr "转到行(&L)...\tCtrl+G"
-
-#~ msgid "Go to &percent...\tCtrl+Shift+L"
-#~ msgstr "转到百分比(&P)...\tCtrl+Shift+L"
-
-#~ msgid "Go to &percent...\tCtrl+Shift+G"
-#~ msgstr "转到百分比(&P)...\tCtrl+Shift+G"
-
-#~ msgid "Go &Back\tCtrl+["
-#~ msgstr "后退(&B)\tCtrl+["
-
-#~ msgid "Go &Back\tAlt+Left"
-#~ msgstr "后退(&B)\tAlt+Left"
-
-#~ msgid "Go &Forward\tCtrl+]"
-#~ msgstr "前进(&F)\tCtrl+]"
-
-#~ msgid "Go &Forward\tAlt+Right"
-#~ msgstr "前进(&F)\tAlt+Right"
-
-#~ msgid "&Import Document Data...\tCtrl+Shift+I"
-#~ msgstr "导入文档数据(&I)...\tCtrl+Shift+I"
-
-#~ msgid "&Export Document Data...\tCtrl+Shift+E"
-#~ msgstr "导出文档数据(&E)...\tCtrl+Shift+E"
-
-#~ msgid "Export to &Plain Text...\tCtrl+E"
-#~ msgstr "导出为纯文本(&P)...\tCtrl+E"
-
-#~ msgid "&Word Count\tRawCtrl+W"
-#~ msgstr "字数统计(&W)\tRawCtrl+W"
-
-#~ msgid "&Word Count\tCtrl+W"
-#~ msgstr "字数统计(&W)\tCtrl+W"
-
-#~ msgid "Document &Info\tCtrl+I"
-#~ msgstr "文档信息(&I)\tCtrl+I"
-
-#~ msgid "&Table of Contents\tCtrl+T"
-#~ msgstr "目录(&T)\tCtrl+T"
-
-#~ msgid "&Elements List...\tF7"
-#~ msgstr "元素列表(&E)...\tF7"
-
-#~ msgid "Reveal &File in Folder\tCtrl+Shift+C"
-#~ msgstr "在文件夹中显示文件(&F)\tCtrl+Shift+C"
-
-#~ msgid "Open in &Web View\tCtrl+Shift+V"
-#~ msgstr "在 Web 视图中打开(&W)\tCtrl+Shift+V"
-
-#~ msgid "View &Source\tCtrl+U"
-#~ msgstr "查看源(&S)\tCtrl+U"
-
-#~ msgid "Toggle &Bookmark\tCtrl+Shift+B"
-#~ msgstr "切换书签(&B)\tCtrl+Shift+B"
-
-#~ msgid "Bookmark with &Note\tCtrl+Shift+N"
-#~ msgstr "带笔记的书签(&N)\tCtrl+Shift+N"
-
-#~ msgid "Word w&rap\tCtrl+Alt+W"
-#~ msgstr "自动换行(&R)\tCtrl+Alt+W"
-
-#~ msgid "&Full Screen\tRawCtrl+Ctrl+F"
-#~ msgstr "全屏(&F)\tRawCtrl+Ctrl+F"
-
-#~ msgid "&Full Screen\tF11"
-#~ msgstr "全屏(&F)\tF11"
-
-#~ msgid "&Options\tCtrl+,"
-#~ msgstr "选项(&O)\tCtrl+,"
-
-#~ msgid "&Sleep Timer...\tCtrl+Shift+S"
-#~ msgstr "睡眠定时器(&S)...\tCtrl+Shift+S"
-
-#~ msgid "&About Paperback\tCtrl+F1"
-#~ msgstr "关于 Paperback(&A)\tCtrl+F1"
-
-#~ msgid "View Help in &Browser\tF1"
-#~ msgstr "在浏览器中查看帮助(&B)\tF1"
-
-#~ msgid "View Help in &Paperback\tShift+F1"
-#~ msgstr "在 Paperback 中查看帮助(&P)\tShift+F1"
-
-#~ msgid "Check for &Updates\tCtrl+Shift+U"
-#~ msgstr "检查更新(&U)\tCtrl+Shift+U"
-
-#~ msgid "&Donate\tCtrl+D"
-#~ msgstr "捐赠(&D)\tCtrl+D"
-
-#~ msgid "Show All...\tCtrl+R"
-#~ msgstr "显示全部...\tCtrl+R"
-
-#~ msgid "Recent"
-#~ msgstr "最近"
-
-#~ msgid "Screen dimmed by sleep timer. Tap to wake."
-#~ msgstr "屏幕已由睡眠定时器调暗。点击唤醒。"
-
-#~ msgid "Open document"
-#~ msgstr "打开文档"
-
-#~ msgid "Previous result"
-#~ msgstr "上一个结果"
-
-#~ msgid "Next result"
-#~ msgstr "下一个结果"
-
-#~ msgid "Search"
-#~ msgstr "搜索"
-
-#~ msgid "Active"
-#~ msgstr "活动中"
-
-#~ msgid "Set timer"
-#~ msgstr "设置定时器"
-
-#~ msgid "Show Document"
-#~ msgstr "显示文档"
-
-#~ msgid "Show Text"
-#~ msgstr "显示文本"
