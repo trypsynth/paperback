@@ -146,7 +146,8 @@ fun FileManagerDialog(
 					},
 					actions = {
 						TextButton(onClick = onDismiss) {
-							Text("Cancel")
+							// TRANSLATORS: Button dismissing the in-app file browser without opening anything
+							Text(t("Cancel"))
 						}
 					}
 				)

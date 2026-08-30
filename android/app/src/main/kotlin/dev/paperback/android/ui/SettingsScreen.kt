@@ -277,8 +277,10 @@ fun SettingsScreen(
 						onClick = { engineExpanded = true },
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
 					) {
-						val selectedName = engines.find { it.name == currentEngine }?.label ?: currentEngine ?: "Default"
-						Text("Speech Engine: $selectedName", modifier = Modifier.weight(1f))
+						// TRANSLATORS: Value shown when a setting is following the system/engine default
+						val selectedName = engines.find { it.name == currentEngine }?.label ?: currentEngine ?: t("Default")
+						// TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
+						Text("${t("Speech Engine")}: $selectedName", modifier = Modifier.weight(1f))
 						ExposedDropdownMenuDefaults.TrailingIcon(expanded = engineExpanded)
 					}
 					ExposedDropdownMenu(
@@ -307,8 +309,9 @@ fun SettingsScreen(
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
 						enabled = !isSystemDefault
 					) {
-						val voiceName = currentVoice?.name ?: "Default"
-						Text("Voice: $voiceName", modifier = Modifier.weight(1f))
+						val voiceName = currentVoice?.name ?: t("Default")
+						// TRANSLATORS: Label for the dropdown choosing which text-to-speech voice to speak with
+						Text("${t("Voice")}: $voiceName", modifier = Modifier.weight(1f))
 						ExposedDropdownMenuDefaults.TrailingIcon(expanded = voiceExpanded)
 					}
 					ExposedDropdownMenu(
@@ -349,7 +352,11 @@ fun SettingsScreen(
 						}
 					}
 				) {
-					val rateText = if (isSystemDefault) "Speech Rate: System Default" else "Speech Rate: $currentSpeechRate%"
+					val rateText = if (isSystemDefault) {
+						"${t("Speech Rate")}: ${t("System Default")}"
+					} else {
+						"${t("Speech Rate")}: $currentSpeechRate%"
+					}
 					Text(rateText, style = MaterialTheme.typography.labelLarge)
 					Slider(
 						value = if (isSystemDefault) 50f else currentSpeechRate.toFloat(),
@@ -381,7 +388,11 @@ fun SettingsScreen(
 						}
 					}
 				) {
-					val pitchText = if (isSystemDefault) "Pitch: System Default" else "Pitch: $currentPitch%"
+					val pitchText = if (isSystemDefault) {
+						"${t("Pitch")}: ${t("System Default")}"
+					} else {
+						"${t("Pitch")}: $currentPitch%"
+					}
 					Text(pitchText, style = MaterialTheme.typography.labelLarge)
 					Slider(
 						value = if (isSystemDefault) 50f else currentPitch.toFloat(),

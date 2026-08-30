@@ -106,7 +106,7 @@ fun GoToDialog(
 						onDismissRequest = { dropdownExpanded = false }
 					) {
 						DropdownMenuItem(
-							text = { Text("Line") },
+							text = { Text(t("Line")) },
 							onClick = {
 								selectedMode = "Line"
 								dropdownExpanded = false
@@ -114,7 +114,7 @@ fun GoToDialog(
 						)
 						if (maxPages > 0) {
 							DropdownMenuItem(
-								text = { Text("Page") },
+								text = { Text(t("Page")) },
 								onClick = {
 									selectedMode = "Page"
 									dropdownExpanded = false
@@ -122,7 +122,7 @@ fun GoToDialog(
 							)
 						}
 						DropdownMenuItem(
-							text = { Text("Percentage") },
+							text = { Text(t("Percentage")) },
 							onClick = {
 								selectedMode = "Percentage"
 								dropdownExpanded = false
@@ -146,7 +146,8 @@ fun GoToDialog(
 					TextField(
 						value = inputValue,
 						onValueChange = { inputValue = it.filter { char -> char.isDigit() } },
-						label = { Text("Enter $selectedMode") },
+						// TRANSLATORS: Placeholder in the Go To dialog's number field; {} is the mode name ("Line", "Page", or "Percentage")
+						label = { Text(t("Enter {}", t(selectedMode))) },
 						keyboardOptions = KeyboardOptions(
 							keyboardType = KeyboardType.Number,
 							imeAction = ImeAction.Go

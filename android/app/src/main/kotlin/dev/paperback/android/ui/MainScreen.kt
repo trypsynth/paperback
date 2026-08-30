@@ -704,7 +704,8 @@ fun MainScreen(
 					}
 					is MainScreenUiState.Error -> {
 						Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-							Text("Error loading document: ${(state as MainScreenUiState.Error).message}")
+							// TRANSLATORS: Shown in place of the document when it could not be opened; {} is the reason
+							Text(t("Error loading document: {}", (state as MainScreenUiState.Error).message))
 						}
 					}
 				}
