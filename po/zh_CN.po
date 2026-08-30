@@ -3101,6 +3101,26 @@ msgstr "后退{}"
 msgid "Forward {}"
 msgstr "前进{}"
 
+#: kt
+#, fuzzy
+msgid "Enter {}"
+msgstr "进入 {}"
+
+#: kt
+#, fuzzy
+msgid "Error loading document: {}"
+msgstr "加载文档出错: {}"
+
+#: kt
+#, fuzzy
+msgid "1.5×"
+msgstr "1.5×"
+
+#: kt
+#, fuzzy
+msgid "Speech Engine"
+msgstr "语音引擎"
+
 #~ msgid "&Options"
 #~ msgstr "选项(&O)"
 
