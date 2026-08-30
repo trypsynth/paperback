@@ -20,8 +20,8 @@ jobs:
           components: rustfmt
       - name: Check formatting
         run: cargo +nightly fmt --check
-  ktlint:
-    name: Kotlin format check
+  android:
+    name: Android checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -30,6 +30,21 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+      # The unit tests run on the host JVM and never call into the native library, but the code
+      # they cover is compiled against the uniffi types, so the bindings have to exist for the
+      # app module to compile at all. Generating them is a host build of paperback-core alone:
+      # no NDK or cargo-ndk, and none of the pdfium, translation, or pandoc assets that the APK
+      # build in build.yml needs on top. ktlint skips the generated file either way.
+      - name: Generate Kotlin bindings
+        run: >
+          cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --
+          generate crates/paperback-core/src/paperback.udl
+          --language kotlin --out-dir android/app/src/main/kotlin --no-format
       - name: Cache Gradle packages
         uses: actions/cache@v6
         with:
@@ -38,15 +53,18 @@ jobs:
             ~/.gradle/wrapper
           key: gradle-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gradle-
-      # ktlint only parses sources, so unlike the APK build in build.yml this needs neither the
-      # Rust toolchain nor the NDK: the Android SDK already on the runner is enough for Gradle
-      # to configure the app module. The uniffi bindings aren't generated here either, and are
-      # excluded from ktlint anyway.
-      - name: Check Kotlin formatting
+      - name: Check formatting and run unit tests
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew ktlintCheck
+          ./gradlew ktlintCheck testDebugUnitTest
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-test-report
+          path: android/app/build/reports/tests/
+          retention-days: 7
   test:
     name: Tests
     runs-on: windows-latest

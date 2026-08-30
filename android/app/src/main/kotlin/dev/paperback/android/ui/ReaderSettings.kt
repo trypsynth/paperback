@@ -6,17 +6,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import uniffi.paperback.ConfigManagerFfi
 
 /**
- * One observable preference, backed by a key in the shared config file. The stored value is read
- * once when the setting is built and written back (and flushed) on every change, because Android
- * can kill this process with no lifecycle callback at all, so there is no later point at which
- * saving would be guaranteed to happen.
+ * One observable value that is persisted as soon as it changes. [persist] runs on every write
+ * rather than at some later checkpoint because Android can kill this process with no lifecycle
+ * callback at all, so there is no later point at which saving would be guaranteed to happen.
+ *
+ * [sanitize] applies to the stored value as well as to every write, so a config file holding
+ * something outside the accepted range comes back in range rather than reaching the UI.
  */
 class Setting<T>(
-	private val config: ConfigManagerFfi,
-	private val key: String,
 	stored: T,
-	private val write: ConfigManagerFfi.(String, T) -> Unit,
-	private val sanitize: (T) -> T
+	private val sanitize: (T) -> T = { it },
+	private val persist: (T) -> Unit
 ) {
 	private val _state = MutableStateFlow(sanitize(stored))
 	val state: StateFlow<T> = _state.asStateFlow()
@@ -24,8 +24,7 @@ class Setting<T>(
 	fun set(value: T) {
 		val sanitized = sanitize(value)
 		_state.value = sanitized
-		config.write(key, sanitized)
-		config.flush()
+		persist(sanitized)
 	}
 }
 
@@ -61,13 +60,19 @@ class ReaderSettings(
 	private fun boolSetting(
 		key: String,
 		default: Boolean
-	) = Setting(config, key, config.getAppBool(key, default), ConfigManagerFfi::setAppBool) { it }
+	) = Setting(config.getAppBool(key, default)) {
+		config.setAppBool(key, it)
+		config.flush()
+	}
 
 	private fun intSetting(
 		key: String,
 		default: Int,
 		sanitize: (Int) -> Int = { it }
-	) = Setting(config, key, config.getAppInt(key, default), ConfigManagerFfi::setAppInt, sanitize)
+	) = Setting(config.getAppInt(key, default), sanitize) {
+		config.setAppInt(key, it)
+		config.flush()
+	}
 
 	companion object {
 		/** Bounds of the readability text size multiplier, shared with the settings slider. */
