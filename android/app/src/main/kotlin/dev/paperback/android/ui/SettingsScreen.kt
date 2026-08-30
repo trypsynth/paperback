@@ -16,6 +16,62 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.paperback.android.t
 
+private val MIN_SCALE = MainScreenViewModel.MIN_TEXT_SCALE_PERCENT.toFloat()
+
+private val MAX_SCALE = MainScreenViewModel.MAX_TEXT_SCALE_PERCENT.toFloat()
+
+/** Discrete slider positions between the bounds, one per [MainScreenViewModel.TEXT_SCALE_PERCENT_STEP]. */
+private const val SCALE_STEPS =
+	(MainScreenViewModel.MAX_TEXT_SCALE_PERCENT - MainScreenViewModel.MIN_TEXT_SCALE_PERCENT) /
+		MainScreenViewModel.TEXT_SCALE_PERCENT_STEP - 1
+
+/** Rounds a raw slider value so the text size only ever lands on a whole step. */
+private fun snapScale(value: Float): Int =
+	kotlin.math.round(value / MainScreenViewModel.TEXT_SCALE_PERCENT_STEP).toInt() *
+		MainScreenViewModel.TEXT_SCALE_PERCENT_STEP
+
+/**
+ * A labelled dropdown over a fixed list of options, where the stored value is the option's index.
+ * The readability choices all share the desktop's index meanings, so the index is the setting.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChoiceSetting(
+	label: String,
+	options: List<String>,
+	selectedIndex: Int,
+	onSelect: (Int) -> Unit
+) {
+	var expanded by remember { mutableStateOf(false) }
+	val selectedLabel = options.getOrElse(selectedIndex) { options.first() }
+	ExposedDropdownMenuBox(
+		expanded = expanded,
+		onExpandedChange = { expanded = it }
+	) {
+		OutlinedButton(
+			onClick = { expanded = true },
+			modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+		) {
+			Text("$label: $selectedLabel", modifier = Modifier.weight(1f))
+			ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+		}
+		ExposedDropdownMenu(
+			expanded = expanded,
+			onDismissRequest = { expanded = false }
+		) {
+			options.forEachIndexed { index, option ->
+				DropdownMenuItem(
+					text = { Text(option) },
+					onClick = {
+						onSelect(index)
+						expanded = false
+					}
+				)
+			}
+		}
+	}
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -25,6 +81,10 @@ fun SettingsScreen(
 	val restorePreviousDocuments by viewModel.restorePreviousDocuments.collectAsStateWithLifecycle()
 	val useInAppFileBrowser by viewModel.useInAppFileBrowser.collectAsStateWithLifecycle()
 	val swipeUpMovesForward by viewModel.swipeUpMovesForward.collectAsStateWithLifecycle()
+	val textScalePercent by viewModel.textScalePercent.collectAsStateWithLifecycle()
+	val lineSpacing by viewModel.lineSpacing.collectAsStateWithLifecycle()
+	val paragraphSpacing by viewModel.paragraphSpacing.collectAsStateWithLifecycle()
+	val textAlignment by viewModel.textAlignment.collectAsStateWithLifecycle()
 	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
 	val currentPitch by viewModel.ttsManager.currentPitch.collectAsStateWithLifecycle()
 	val availableVoices by viewModel.ttsManager.availableVoices.collectAsStateWithLifecycle()
@@ -120,6 +180,86 @@ fun SettingsScreen(
 						onCheckedChange = null
 					)
 				}
+
+				Spacer(modifier = Modifier.height(24.dp))
+				// TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
+				Text(
+					t("Readability"),
+					style = MaterialTheme.typography.titleMedium,
+					modifier = Modifier.padding(bottom = 8.dp).semantics { heading() }
+				)
+
+				// TRANSLATORS: Row label for the control that scales the size of document text
+				val textSizeLabel = t("Text Size")
+				Column(
+					modifier = Modifier.clearAndSetSemantics {
+						contentDescription = textSizeLabel
+						stateDescription = "$textScalePercent percent"
+						progressBarRangeInfo = ProgressBarRangeInfo(
+							current = textScalePercent.toFloat(),
+							range = MIN_SCALE..MAX_SCALE,
+							steps = SCALE_STEPS
+						)
+						setProgress { targetValue ->
+							viewModel.setTextScalePercent(snapScale(targetValue))
+							true
+						}
+					}
+				) {
+					Text("$textSizeLabel: $textScalePercent%", style = MaterialTheme.typography.labelLarge)
+					Slider(
+						value = textScalePercent.toFloat(),
+						onValueChange = { viewModel.setTextScalePercent(snapScale(it)) },
+						valueRange = MIN_SCALE..MAX_SCALE,
+						steps = SCALE_STEPS
+					)
+				}
+				Spacer(modifier = Modifier.height(16.dp))
+				ChoiceSetting(
+					// TRANSLATORS: Label for the picker choosing how much space sits between lines of text
+					label = t("Line Spacing"),
+					options = listOf(
+						// TRANSLATORS: Default spacing option, shown in the line and paragraph spacing pickers
+						t("Normal"),
+						// TRANSLATORS: 1.5x line spacing option
+						t("1.5×"),
+						// TRANSLATORS: Double line spacing option
+						t("Double")
+					),
+					selectedIndex = lineSpacing,
+					onSelect = { viewModel.setLineSpacing(it) }
+				)
+				Spacer(modifier = Modifier.height(16.dp))
+				ChoiceSetting(
+					// TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
+					label = t("Paragraph Spacing"),
+					options = listOf(
+						t("Normal"),
+						// TRANSLATORS: Relaxed paragraph spacing option
+						t("Relaxed"),
+						// TRANSLATORS: Wide paragraph spacing option
+						t("Wide")
+					),
+					selectedIndex = paragraphSpacing,
+					onSelect = { viewModel.setParagraphSpacing(it) }
+				)
+				Spacer(modifier = Modifier.height(16.dp))
+				ChoiceSetting(
+					// TRANSLATORS: Label for the picker choosing how document text is aligned
+					label = t("Alignment"),
+					options = listOf(
+						// TRANSLATORS: Left text alignment option
+						t("Left"),
+						// TRANSLATORS: Center text alignment option
+						t("Center"),
+						// TRANSLATORS: Right text alignment option
+						t("Right"),
+						// TRANSLATORS: Justified text alignment option
+						t("Justify")
+					),
+					selectedIndex = textAlignment,
+					onSelect = { viewModel.setTextAlignment(it) }
+				)
 
 				Spacer(modifier = Modifier.height(24.dp))
 				// TRANSLATORS: Section heading for text-to-speech (read-aloud) settings

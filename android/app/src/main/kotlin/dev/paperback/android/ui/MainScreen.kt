@@ -220,6 +220,11 @@ fun MainScreen(
 	val currentNavUnit by viewModel.currentNavUnit.collectAsStateWithLifecycle()
 	val ttsPosition by viewModel.ttsPosition.collectAsStateWithLifecycle()
 	val currentSegmentText by viewModel.currentSegmentText.collectAsStateWithLifecycle()
+	val textScalePercent by viewModel.textScalePercent.collectAsStateWithLifecycle()
+	val lineSpacing by viewModel.lineSpacing.collectAsStateWithLifecycle()
+	val paragraphSpacing by viewModel.paragraphSpacing.collectAsStateWithLifecycle()
+	val textAlignment by viewModel.textAlignment.collectAsStateWithLifecycle()
+	val readability = rememberReadabilityStyle(textScalePercent, lineSpacing, paragraphSpacing, textAlignment)
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
 	val sleepTimerRemaining by viewModel.sleepTimerRemaining.collectAsStateWithLifecycle()
 	val showElementsDialog by viewModel.showElementsDialog.collectAsStateWithLifecycle()
@@ -566,8 +571,8 @@ fun MainScreen(
 									// buttons and slider, so this text no longer needs its own Find custom actions.
 									Text(
 										text = currentSegmentText,
-										style = MaterialTheme.typography.bodyLarge,
-										modifier = Modifier.padding(16.dp)
+										style = readability.textStyle,
+										modifier = Modifier.fillMaxWidth().padding(16.dp)
 									)
 									val remaining = sleepTimerRemaining
 									if (remaining != null) {
@@ -594,6 +599,7 @@ fun MainScreen(
 								DocumentTextView(
 									docState = docState,
 									listState = listState,
+									readability = readability,
 									lineIndexToFocus = lineIndexToFocus,
 									onLineIndexChange = { lineIndexToFocus = it },
 									activeSearchQuery = activeSearchQuery,

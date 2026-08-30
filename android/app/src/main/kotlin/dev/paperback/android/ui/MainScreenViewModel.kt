@@ -123,6 +123,22 @@ class MainScreenViewModel(
 	private val _swipeUpMovesForward = MutableStateFlow(config.getAppBool("swipe_up_moves_forward", true))
 	val swipeUpMovesForward: StateFlow<Boolean> = _swipeUpMovesForward.asStateFlow()
 
+	// Spacing and alignment share the desktop's config keys and value meanings (spacing 0/1/2,
+	// alignment 0 leading, 1 center, 2 trailing, 3 justify) so a document reads the same way on
+	// every platform. Text size does not: the desktop stores an absolute point size, while this
+	// scales whatever size the system font setting is already asking for.
+	private val _textScalePercent = MutableStateFlow(config.getAppInt("text_scale_percent", 100))
+	val textScalePercent: StateFlow<Int> = _textScalePercent.asStateFlow()
+
+	private val _lineSpacing = MutableStateFlow(config.getAppInt("line_spacing", 0))
+	val lineSpacing: StateFlow<Int> = _lineSpacing.asStateFlow()
+
+	private val _paragraphSpacing = MutableStateFlow(config.getAppInt("paragraph_spacing", 0))
+	val paragraphSpacing: StateFlow<Int> = _paragraphSpacing.asStateFlow()
+
+	private val _textAlignment = MutableStateFlow(config.getAppInt("text_alignment", 0))
+	val textAlignment: StateFlow<Int> = _textAlignment.asStateFlow()
+
 	val tocDialog = DialogState()
 
 	private val goToDialogState = DialogState()
@@ -1281,6 +1297,31 @@ class MainScreenViewModel(
 		config.flush()
 	}
 
+	fun setTextScalePercent(value: Int) {
+		val clamped = value.coerceIn(MIN_TEXT_SCALE_PERCENT, MAX_TEXT_SCALE_PERCENT)
+		_textScalePercent.value = clamped
+		config.setAppInt("text_scale_percent", clamped)
+		config.flush()
+	}
+
+	fun setLineSpacing(value: Int) {
+		_lineSpacing.value = value
+		config.setAppInt("line_spacing", value)
+		config.flush()
+	}
+
+	fun setParagraphSpacing(value: Int) {
+		_paragraphSpacing.value = value
+		config.setAppInt("paragraph_spacing", value)
+		config.flush()
+	}
+
+	fun setTextAlignment(value: Int) {
+		_textAlignment.value = value
+		config.setAppInt("text_alignment", value)
+		config.flush()
+	}
+
 	private val _accessibilityAnnouncement = MutableSharedFlow<String>(extraBufferCapacity = 1)
 	val accessibilityAnnouncement: SharedFlow<String> = _accessibilityAnnouncement.asSharedFlow()
 
@@ -1400,6 +1441,11 @@ class MainScreenViewModel(
 	}
 
 	companion object {
+		/** Bounds of the readability text size multiplier, shared with the settings slider. */
+		const val MIN_TEXT_SCALE_PERCENT = 70
+		const val MAX_TEXT_SCALE_PERCENT = 300
+		const val TEXT_SCALE_PERCENT_STEP = 10
+
 		private val WHITESPACE_REGEX = "\\s+".toRegex()
 		private const val DOCUMENT_CACHE_DIR = "documents"
 		private val UUID_DIR_REGEX = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
