@@ -30,6 +30,7 @@ pub fn build() {
 		let out_output = out_dir.join("readme.html");
 		let status = Command::new("pandoc")
 			.arg(format!("--defaults={}", config.display()))
+			.args(["-M", "lang=en"])
 			.arg(&readme)
 			.arg("-o")
 			.arg(&out_output)
@@ -56,8 +57,14 @@ pub fn build() {
 				};
 				println!("cargo:rerun-if-changed={}", path.display());
 				let lang_output = out_dir.join(format!("readme-{lang_code}.html"));
+				// Pandoc needs the language as BCP 47 to emit a usable `lang` attribute, but our
+				// locale codes use gettext's underscore form (zh_CN). Without this metadata every
+				// readme ships with `lang=""`, so a screen reader has no idea which language the
+				// help is in and may read a translated page with an English voice.
+				let bcp47 = lang_code.replace('_', "-");
 				let status = Command::new("pandoc")
 					.arg(format!("--defaults={}", config.display()))
+					.args(["-M", &format!("lang={bcp47}")])
 					.arg(&path)
 					.arg("-o")
 					.arg(&lang_output)

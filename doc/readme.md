@@ -1,4 +1,4 @@
-# Paperback - version 0.9.0
+# Paperback - version 0.9.1
 
 ## Introduction
 
@@ -199,6 +199,23 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Tyler Rodick
 
 ## Changelog
+
+### Version 0.9.1
+* Bookmark and note sounds now play on macOS.
+* DAISY books now play their audio on macOS, rather than opening and tracking their timeline in silence.
+* Fixed curly quotes, em dashes and similar characters vanishing from RTF documents, running the surrounding words together as they went.
+* Fixed RTF pictures leaking their raw data into the document as garbled text.
+* Fixed the Recent Documents submenu keeping stale entries until something else happened to rebuild it.
+* Keyboard accelerators are back in every translation, so Russian's menus have keyboard access again.
+* Large CHM documents now open up to seven times faster.
+* Opened documents are now registered with Windows, so they show up in the taskbar jump list and the Start menu's recent list.
+* Options has been renamed to Settings, matching the mobile apps and, on macOS, the platform convention.
+* Paperback now remembers its window position, size, and maximized state between runs.
+* Plural forms are now translated, so messages that count things read properly in languages that need more than one form.
+* Selecting a DAISY book's ncc.html now opens the complete audio book instead of just its text.
+* The Customize Keyboard Shortcuts dialog's action names can now be translated.
+* The document title now comes first in the title bar, so open books can be told apart in the taskbar and Alt+Tab.
+* The update dialog is now translated.
 
 ### Version 0.9.0
 

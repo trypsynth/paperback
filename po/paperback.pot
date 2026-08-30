@@ -3069,3 +3069,19 @@ msgstr ""
 #: kt
 msgid "Forward {}"
 msgstr ""
+
+#: kt
+msgid "Enter {}"
+msgstr ""
+
+#: kt
+msgid "Error loading document: {}"
+msgstr ""
+
+#: kt
+msgid "1.5×"
+msgstr ""
+
+#: kt
+msgid "Speech Engine"
+msgstr ""

@@ -325,7 +325,7 @@ impl MainWindow {
 		if result {
 			self.update_title();
 			self.update_recent_documents_menu();
-			self.doc_manager.lock().unwrap().restore_focus();
+			self.doc_manager.lock().unwrap().focus_document_text();
 		}
 		result
 	}
@@ -361,7 +361,7 @@ impl MainWindow {
 				self.activate_from_ipc();
 				self.open_file(&path);
 				self.frame.raise();
-				self.doc_manager.lock().unwrap().restore_focus();
+				self.doc_manager.lock().unwrap().focus_document_text();
 			}
 		}
 	}
@@ -619,7 +619,7 @@ impl MainWindow {
 					return;
 				};
 				update_title_from_manager(frame, &dm_ref);
-				dm_ref.restore_focus();
+				dm_ref.focus_document_text();
 				drop(dm_ref);
 				let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 				frame.set_menu_bar(menu_bar);
@@ -726,10 +726,19 @@ impl MainWindow {
 		let dm_for_window_reload = Rc::clone(doc_manager);
 		window_reload_timer.on_tick(move |_| {
 			if let Ok(mut dm) = dm_for_window_reload.try_lock() {
-				dm.pump_window_reload();
+				dm.pump_window_extend();
 			}
 		});
 		window_reload_timer.start(250, false);
+		// A resize forces RichEdit to rewrap, whose cost scales with how much is loaded ahead of
+		// the caret. Give back any growth a long read accumulated before paying for that.
+		let dm_for_resize = Rc::clone(doc_manager);
+		frame.on_size(move |event| {
+			event.skip(true);
+			if let Ok(mut dm) = dm_for_resize.try_lock() {
+				dm.compact_window_if_grown();
+			}
+		});
 		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
 		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
@@ -773,7 +782,7 @@ impl MainWindow {
 						if dm.lock().unwrap().open_file(&dm, &path) {
 							let dm_ref = dm.lock().unwrap();
 							update_title_from_manager(&frame_copy, &dm_ref);
-							dm_ref.restore_focus();
+							dm_ref.focus_document_text();
 							drop(dm_ref);
 							let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 							frame_copy.set_menu_bar(menu_bar);
@@ -1252,6 +1261,15 @@ impl MainWindow {
 				}
 				menu_ids::DONATE => {
 					help::handle_donate(&frame_copy);
+				}
+				#[cfg(target_os = "macos")]
+				menu_ids::COPY => {
+					// Only macOS builds an Edit menu, so only macOS sees Copy as a menu event; every
+					// other platform intercepts the key in `build_text_ctrl`.
+					let widened = dm.lock().unwrap().copy_whole_document_if_all_selected();
+					if !widened {
+						event.skip(true);
+					}
 				}
 				_ => {
 					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);

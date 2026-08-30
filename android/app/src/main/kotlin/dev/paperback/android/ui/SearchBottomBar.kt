@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -19,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 import kotlinx.coroutines.launch
@@ -49,7 +50,7 @@ fun SearchBottomBar(
 				// TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 				modifier = Modifier.semantics { contentDescription = t("Close Search") }
 			) {
-				Text("X", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+				Icon(Icons.Filled.Close, contentDescription = null)
 			}
 			Row {
 				Button(

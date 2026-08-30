@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Painted in the starting window while the activity launches, before Compose draws anything.
+      Matches Material 3's default light background so the handover is invisible.
+    -->
+    <color name="window_background">#FFFBFE</color>
+</resources>

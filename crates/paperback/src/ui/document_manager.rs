@@ -16,6 +16,7 @@ use paperback_core::{
 };
 use patois::t;
 use wxdragon::{
+	clipboard::Clipboard,
 	color::Colour,
 	event::{EventType, WindowEventData},
 	prelude::*,
@@ -23,7 +24,7 @@ use wxdragon::{
 
 #[cfg(target_os = "windows")]
 use super::rtf::{
-	stream::stream_rtf_into_ctrl,
+	stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl},
 	write::{self, RtfFontInfo},
 };
 use super::{
@@ -448,6 +449,21 @@ impl DocumentManager {
 
 	/// Restores focus to whichever control had it when the window was last active (the text
 	/// control or the notebook), falling back to the notebook when there's no active document.
+	/// Puts focus on the freshly opened document's text, and makes that the target a later
+	/// [`Self::restore_focus`] will return to.
+	///
+	/// Opening a document is a request to read it, so it is not a case for restoring an earlier
+	/// preference: whatever had focus a moment ago was about a different document, or about
+	/// there being none.
+	pub fn focus_document_text(&self) {
+		if let Some(tab) = self.active_tab() {
+			self.last_focus_in_text.set(true);
+			tab.text_ctrl.set_focus();
+		} else {
+			self.notebook.set_focus();
+		}
+	}
+
 	pub fn restore_focus(&self) {
 		if self.last_focus_in_text.get() {
 			if let Some(tab) = self.active_tab() {
@@ -463,7 +479,17 @@ impl DocumentManager {
 	/// Records whether the text control or the notebook currently has focus, so focus can be
 	/// restored to the same place when the window is next activated. Only updates when one of
 	/// the two is confidently focused (a mid-focus-transition leaves the previous value).
+	///
+	/// With no documents open there is nothing to record: the notebook is the only focusable
+	/// control, so it has focus by default rather than by choice. Writing that down as "the user
+	/// prefers the tab strip" made the next document open onto its own tab strip instead of its
+	/// text, because [`Self::restore_focus`] honours the preference and could not tell a real
+	/// one from the absence of an alternative.
+	#[cfg(target_os = "windows")]
 	pub fn record_focus_target(&self) {
+		if self.tabs.is_empty() {
+			return;
+		}
 		if self.active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()) {
 			self.last_focus_in_text.set(true);
 		} else if self.notebook.has_focus() {
@@ -653,26 +679,145 @@ impl DocumentManager {
 	/// million characters still unread. Polling and reacting to the caret's actual position sidesteps
 	/// needing to know how it got there. `RELOAD_MARGIN` (a quarter of the window) is generous
 	/// enough that even fast reading has time to reload well before actually running out of loaded
-	/// text, given this runs on the same 250ms cadence as `pump_audio`.
+	/// Keeps the loaded window ahead of a caret that is moving forward, by appending to it.
 	///
-	/// Repositioning the caret after a reload (needed so `text_ctrl`'s local position still points
-	/// at the same document-absolute spot) does mean this fires a caret-moved accessibility event on
-	/// every crossing - if that turns out to interrupt an in-progress Say-All rather than just
-	/// silently extending it, that's a real, currently-unverified risk; hasn't been tested against
-	/// an actual screen reader yet.
-	pub fn pump_window_reload(&mut self) {
+	/// Runs on a timer, so it must never do anything a reader could notice. Appending qualifies:
+	/// it leaves every existing offset into the control pointing at the same character. Rebuilding
+	/// the window does not, and this used to do exactly that.
+	///
+	/// The bug that motivated the split: NVDA's Say-All holds its own offsets into the control,
+	/// advances them itself rather than re-reading the caret, and has no handling for the text
+	/// changing underneath it (`_TextReader` only checks whether the object died). Recentring the
+	/// window swapped the whole buffer and moved `start`, so those offsets silently came to mean a
+	/// different place in the book. Say-All read on from the wrong spot, moved the real caret there
+	/// with it, and this timer then saw *that* position, decided it was near an edge, and recentred
+	/// again - walking the window backwards to the top of the document a few hundred thousand
+	/// characters at a time while the user listened. Reported as reading randomly jumping to the
+	/// start of large text files.
+	///
+	/// Compaction still happens, just never from here: at the navigation chokepoints (where a
+	/// keypress has already stopped any Say-All) and on resize, where the cost it exists to avoid
+	/// is actually billed.
+	pub fn pump_window_extend(&mut self) {
 		let Some(tab) = self.active_tab_mut() else {
 			return;
 		};
 		let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let doc_len = tab.session.document_len();
-		if !tab.window.needs_reload_for(doc_pos, doc_len) {
+		// Compaction is still reachable from here, but only for a caret that has run out of text
+		// *behind* it or left the loaded range altogether - neither of which a forward reader can
+		// do. Arrowing up to the top of the window is the real case, and by then any Say-All has
+		// already been stopped by the keypress that got there.
+		if tab.window.needs_compaction_for(doc_pos, doc_len) {
+			reload_window_around(tab, doc_pos);
+			let local = tab.window.to_local(doc_pos);
+			tab.text_ctrl.set_insertion_point(local);
+			tab.text_ctrl.show_position(local);
 			return;
 		}
+		if !tab.window.wants_extension_for(doc_pos, doc_len) {
+			return;
+		}
+		if !Self::extend_window_forward(tab) {
+			// The append did not land cleanly, so the control and the window no longer agree on
+			// what is loaded. Every later position translation would be wrong by the difference;
+			// rebuild to get back to a state that is at least consistent.
+			reload_window_around(tab, doc_pos);
+			let local = tab.window.to_local(doc_pos);
+			tab.text_ctrl.set_insertion_point(local);
+		}
+	}
+
+	/// Copies the current selection, widening it to the whole document when everything loaded is
+	/// selected but only part of the document is.
+	///
+	/// Select All can only ever reach what the control holds, which for a windowed document is a
+	/// slice of the book rather than the book. The window is not something a reader can see, name
+	/// or reason about, so a selection covering all of it means all of it in the only sense the
+	/// user has - and copying half a chapter when they asked for the book is a silent wrong answer.
+	///
+	/// Deliberately keyed off the selection rather than a remembered Select All: clicking anywhere
+	/// collapses the selection, so this stops applying on its own with no flag to keep in step.
+	///
+	/// Returns whether it copied. False means nothing special applied and the caller should let
+	/// the control's own copy run.
+	pub fn copy_whole_document_if_all_selected(&self) -> bool {
+		let Some(tab) = self.active_tab() else {
+			return false;
+		};
+		let (from, to) = tab.text_ctrl.get_selection();
+		if from >= to {
+			return false;
+		}
+		let doc_len = tab.session.document_len();
+		// Only the widened case is handled here. Anything else is left to the control's own copy,
+		// which is better tested than anything this could put in its place.
+		let covers_everything_loaded = from <= 0 && to >= tab.text_ctrl.get_last_position();
+		if !covers_everything_loaded || tab.window.is_whole_document(doc_len) {
+			return false;
+		}
+		let text = tab.session.get_text_range(0, doc_len);
+		if text.is_empty() {
+			return false;
+		}
+		Clipboard::get().set_text(&text)
+	}
+
+	/// Collapses a window that grew during a long read back to target size around the caret.
+	///
+	/// Called before a relayout, which is the one place a deep caret in a big loaded buffer is
+	/// actually billed. Measured on a 16.5M-character document, the per-line work a screen reader
+	/// does costs about a millisecond even at the far end - nothing against the seconds spent
+	/// speaking that line - whereas rewrapping the same buffer costs tens of seconds. So growth is
+	/// free while reading and only has to be paid back when the layout actually changes.
+	///
+	/// Resize events arrive continuously during a drag; this is self-limiting because the first
+	/// one brings the window back under the threshold and the rest return immediately.
+	pub fn compact_window_if_grown(&mut self) {
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		if tab.window.loaded_len() <= text_window::compaction_threshold() {
+			return;
+		}
+		let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		reload_window_around(tab, doc_pos);
 		let local = tab.window.to_local(doc_pos);
 		tab.text_ctrl.set_insertion_point(local);
 		tab.text_ctrl.show_position(local);
+	}
+
+	/// Appends the next chunk of the document to the end of the loaded window, leaving
+	/// `window.start` and every offset already in play untouched.
+	///
+	/// Returns false if the append did not land cleanly, meaning the caller should compact rather
+	/// than carry on with a control and a `TextWindow` that disagree.
+	fn extend_window_forward(tab: &mut DocumentTab) -> bool {
+		let doc_len = tab.session.document_len();
+		let (from, to) = tab.window.extend_bounds(doc_len);
+		if to <= from {
+			return true;
+		}
+		// `from` is the current loaded end, which the session snapped to a paragraph boundary when
+		// it produced this window. Snapping a boundary again is a no-op, so this slice abuts the
+		// loaded text exactly: no gap, no repeated paragraph.
+		let slice = tab.session.get_window(from, to);
+		if slice.end <= from {
+			return true;
+		}
+		if !append_slice_to_ctrl(tab.text_ctrl, &slice) {
+			return false;
+		}
+		tab.window.extend_end_to(slice.end);
+		// The control and the window have to agree on how much is loaded, give or take the single
+		// display unit RichEdit does not store for a wholly-trailing paragraph mark (see
+		// `write::stored_display_len`). Drift past that would offset every translation from here on.
+		let drift = tab.text_ctrl.get_last_position() - tab.window.loaded_len();
+		if !(-1..=0).contains(&drift) {
+			tracing::warn!(drift, "window extension left the control and the window disagreeing");
+			return false;
+		}
+		true
 	}
 
 	/// Jumps the caret to the very first or very last character of the *document*, reloading the
@@ -1021,6 +1166,20 @@ impl DocumentManager {
 				}
 			}
 		});
+		// Ctrl+C is intercepted here rather than through the Edit menu because that menu only
+		// exists on macOS; elsewhere the control handles the key itself and no menu event fires.
+		#[cfg(not(target_os = "macos"))]
+		{
+			let dm_for_copy = Rc::clone(self_rc);
+			text_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
+				let handled = event.get_key_code() == Some(i32::from(b'C'))
+					&& event.control_down()
+					&& dm_for_copy.try_lock().is_ok_and(|dm| dm.copy_whole_document_if_all_selected());
+				if !handled {
+					event.skip(true);
+				}
+			});
+		}
 		let dm_for_key_up = Rc::clone(self_rc);
 		text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
 			event.skip(true);
@@ -1399,6 +1558,43 @@ fn load_window_into_ctrl(text_ctrl: TextCtrl, session: &DocumentSession, target_
 pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: i64) {
 	let doc_len = tab.session.document_len();
 	tab.window = load_window_into_ctrl(tab.text_ctrl, &tab.session, doc_offset, doc_len);
+}
+
+/// Appends `slice` to whatever the control already holds, preserving existing offsets.
+///
+/// The counterpart to [`fill_text_ctrl_with_formatting`], which replaces everything. Returns
+/// false if the append did not complete, so the caller can rebuild instead of trusting a control
+/// that is now part-way through a chunk.
+fn append_slice_to_ctrl(text_ctrl: TextCtrl, slice: &WindowSlice) -> bool {
+	let content = slice.text.as_str();
+	let segments = merge_formatting_markers(&slice.markers);
+	#[cfg(target_os = "windows")]
+	if !segments.is_empty()
+		&& let Some(font) = text_ctrl.get_font()
+	{
+		let expected = write::sanitize_for_rich_edit(content);
+		let rtf = write::build_rtf(
+			&expected,
+			&segments,
+			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
+		);
+		if append_rtf_into_ctrl(text_ctrl, &rtf) {
+			return true;
+		}
+		tracing::warn!("RTF append did not complete");
+		return false;
+	}
+	// Plain-text path: the same one `fill_text_ctrl_with_formatting` falls back to, with the
+	// segments shifted past what is already loaded so they land on the text just appended.
+	let base = text_ctrl.get_last_position();
+	text_ctrl.append_text(content);
+	if text_ctrl.get_last_position() <= base {
+		return false;
+	}
+	let shifted: Vec<FormatSegment> =
+		segments.iter().map(|seg| FormatSegment { start: seg.start + base, end: seg.end + base, ..*seg }).collect();
+	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &shifted);
+	true
 }
 
 /// Fills `text_ctrl` with `slice`'s text and bold/italic/underline markers. `slice` may be a

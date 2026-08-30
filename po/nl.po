@@ -3553,6 +3553,26 @@ msgstr "Terug {}"
 msgid "Forward {}"
 msgstr "Vooruit {}"
 
+#: kt
+#, fuzzy
+msgid "Enter {}"
+msgstr "Enter {}"
+
+#: kt
+#, fuzzy
+msgid "Error loading document: {}"
+msgstr "Fout bij laden document: {}"
+
+#: kt
+#, fuzzy
+msgid "1.5×"
+msgstr "1,5×"
+
+#: kt
+#, fuzzy
+msgid "Speech Engine"
+msgstr "Spreeksnelheid"
+
 #~ msgid "hours"
 #~ msgstr "uur"
 

@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -338,7 +339,11 @@ fun MainScreenTopBar(
 									onClick = { onTabClose(index) },
 									modifier = Modifier.size(24.dp).clearAndSetSemantics { }
 								) {
-									Text("X", fontWeight = FontWeight.Bold)
+									Icon(
+										Icons.Filled.Close,
+										contentDescription = null,
+										modifier = Modifier.size(16.dp)
+									)
 								}
 							}
 						}

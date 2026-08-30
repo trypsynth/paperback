@@ -3651,6 +3651,26 @@ msgstr "Retour {}"
 msgid "Forward {}"
 msgstr "Avancer {}"
 
+#: kt
+#, fuzzy
+msgid "Enter {}"
+msgstr "Entrer {}"
+
+#: kt
+#, fuzzy
+msgid "Error loading document: {}"
+msgstr "Erreur au chargement du document : {}"
+
+#: kt
+#, fuzzy
+msgid "1.5×"
+msgstr "1,5×"
+
+#: kt
+#, fuzzy
+msgid "Speech Engine"
+msgstr "Vitesse d'élocution"
+
 #, fuzzy
 #~ msgid "&Options"
 #~ msgstr "Options"

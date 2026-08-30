@@ -66,3 +66,48 @@ pub fn stream_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
 	}
 	stream.dwError == 0 && cursor.pos == cursor.data.len()
 }
+
+/// Appends `rtf` to the end of the control's existing content, leaving what is already there
+/// untouched.
+///
+/// The same `EM_STREAMIN` as [`stream_rtf_into_ctrl`] but with `SFF_SELECTION`, which replaces
+/// the current selection instead of the whole document; collapsing the selection to the very end
+/// first turns that into an insert-at-end.
+///
+/// This is what lets a document window grow forward without disturbing a screen reader mid-read:
+/// every offset into the text that already existed still points at the same character afterwards,
+/// which is not true of any operation that moves the start of the loaded range.
+///
+/// Returns `false` if the control has no native handle or the stream did not fully complete, so
+/// callers can leave the window bounds alone rather than record text that was never loaded.
+pub fn append_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
+	use windows::Win32::{
+		Foundation::{HWND, LPARAM, WPARAM},
+		UI::{
+			Controls::RichEdit::{CHARRANGE, EDITSTREAM, EM_EXSETSEL, EM_STREAMIN, SF_RTF, SFF_SELECTION},
+			WindowsAndMessaging::SendMessageW,
+		},
+	};
+	let hwnd_ptr = text_ctrl.get_handle();
+	if hwnd_ptr.is_null() {
+		return false;
+	}
+	let hwnd = HWND(hwnd_ptr);
+	// -1/-1 is RichEdit's own idiom for the end of the text, so this does not need the length.
+	let end = CHARRANGE { cpMin: -1, cpMax: -1 };
+	unsafe {
+		SendMessageW(hwnd, EM_EXSETSEL, Some(WPARAM(0)), Some(LPARAM(&raw const end as isize)));
+	}
+	let mut cursor = RtfStreamCursor { data: rtf.as_bytes(), pos: 0 };
+	let mut stream =
+		EDITSTREAM { dwCookie: addr_of_mut!(cursor) as usize, dwError: 0, pfnCallback: Some(rtf_stream_read_callback) };
+	unsafe {
+		SendMessageW(
+			hwnd,
+			EM_STREAMIN,
+			Some(WPARAM((SF_RTF | SFF_SELECTION) as usize)),
+			Some(LPARAM(addr_of_mut!(stream) as isize)),
+		);
+	}
+	stream.dwError == 0 && cursor.pos == cursor.data.len()
+}
