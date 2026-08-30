@@ -98,7 +98,12 @@ pub(super) fn build_plain_audio_zip_document<R: Read + Seek>(
 			Path::new(entry).file_stem().map_or_else(|| entry.clone(), |stem| stem.to_string_lossy().to_string());
 		let position = buffer.current_position();
 		buffer.append(" ");
-		buffer.add_marker(Marker::new(MarkerType::SectionBreak, position));
+		// The marker carries the file name so section navigation has something to announce.
+		// Without it the name lives only in the TOC, and `fill_marker_text_if_empty` falls back
+		// to the line enclosing the marker, which in a buffer of placeholder spaces with no
+		// newline anywhere is the entire book: every section would announce the same run of
+		// blanks, however far navigation had actually moved.
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, position).with_text(name.clone()));
 		let source = audio_builder.add_source(
 			AudioLocation::ZipEntry {
 				archive: archive_path.to_string(),

@@ -56,11 +56,16 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 					return build_nav_result(false, wrapped, 0, 0, String::new());
 				};
 				let offset = doc.marker_position(idx_i32).unwrap_or(0);
-				// Section markers only carry a synthetic "Section N" label, not the chapter's real
-				// title, so leave the text empty here; the UI falls back to the text of the line at
-				// `offset`, which is the section's actual heading. Page markers carry a meaningful
-				// label (the page number/name) that should be announced as-is.
-				let text = if req.target == NavTarget::Page {
+				// Section markers usually carry only a synthetic "Section N" label, not the
+				// chapter's real title, so leave the text empty; the UI falls back to the text of
+				// the line at `offset`, which is the section's actual heading. An audio-only book
+				// is the exception: its buffer is placeholder spaces with no newline anywhere, so
+				// that fallback resolves to the whole book and every section would announce the
+				// same run of blanks. There the marker's text is the narration file's name, and
+				// the only label there is. Page markers carry a meaningful label (the page
+				// number/name) that should be announced as-is.
+				let marker_text_is_the_label = req.target == NavTarget::Page || doc.document().audio_only;
+				let text = if marker_text_is_the_label {
 					doc.document().buffer.markers.get(idx).map(|m| m.text.clone()).unwrap_or_default()
 				} else {
 					String::new()
