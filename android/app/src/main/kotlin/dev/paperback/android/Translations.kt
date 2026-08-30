@@ -78,14 +78,37 @@ fun bestLocaleMatch(
 
 fun t(str: String): String = Translations.map[str] ?: str
 
-/** Translates [str], then substitutes each "{}" placeholder in order with the given [args]. */
+/** The marker a translatable string uses where an argument goes. */
+private const val PLACEHOLDER = "{}"
+
+/**
+ * Translates [str], then substitutes each "{}" placeholder in order with the given [args].
+ *
+ * Done as one left-to-right scan rather than a `replaceFirst` per argument, so that text an
+ * argument brings with it is never itself substituted into: a file name or search term
+ * containing "{}" would otherwise stay the leftmost placeholder and swallow the argument
+ * meant for the one after it. Spare placeholders and spare arguments are both left alone.
+ */
 fun t(
 	str: String,
 	vararg args: String
 ): String {
-	var result = t(str)
-	for (arg in args) {
-		result = result.replaceFirst("{}", arg)
+	val translated = t(str)
+	if (args.isEmpty()) {
+		return translated
 	}
-	return result
+	val result = StringBuilder(translated.length)
+	var index = 0
+	var next = 0
+	while (next < args.size) {
+		val placeholder = translated.indexOf(PLACEHOLDER, index)
+		if (placeholder == -1) {
+			break
+		}
+		result.append(translated, index, placeholder).append(args[next])
+		index = placeholder + PLACEHOLDER.length
+		next++
+	}
+	result.append(translated, index, translated.length)
+	return result.toString()
 }
