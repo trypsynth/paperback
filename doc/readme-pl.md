@@ -1,4 +1,4 @@
-# Paperback - wersja 0.9.0
+# Paperback - wersja 0.9.1
 
 ## Wprowadzenie
 
@@ -201,6 +201,23 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 * Tyler Rodick
 
 ## Lista zmian
+
+### Wersja 0.9.1
+* Dźwięki zakładek i notatek odtwarzają się teraz w systemie macOS.
+* Książki DAISY odtwarzają teraz dźwięk w systemie macOS, zamiast otwierać się i odmierzać czas w ciszy.
+* Naprawiono znikanie z dokumentów RTF cudzysłowów drukarskich, myślników i podobnych znaków, które przy okazji zlepiały ze sobą otaczające wyrazy.
+* Naprawiono wyciekanie surowych danych obrazów RTF do treści dokumentu w postaci nieczytelnego tekstu.
+* Naprawiono pozostawanie nieaktualnych pozycji w podmenu Ostatnie dokumenty, dopóki coś innego nie zbudowało go od nowa.
+* Litery dostępu wróciły do wszystkich tłumaczeń, więc rosyjskie menu znów mają dostęp z klawiatury.
+* Duże dokumenty CHM otwierają się teraz do siedmiu razy szybciej.
+* Otwierane dokumenty są teraz zgłaszane systemowi Windows, więc pojawiają się na liście szybkiego dostępu na pasku zadań i wśród ostatnich elementów w menu Start.
+* Pozycja Opcje została przemianowana na Ustawienia, spójnie z aplikacjami mobilnymi, a w systemie macOS zgodnie z konwencją platformy.
+* Paperback pamięta teraz między uruchomieniami położenie i rozmiar okna oraz to, czy było zmaksymalizowane.
+* Formy mnogie są teraz tłumaczone, więc komunikaty podające liczby czytają się poprawnie w językach, które potrzebują więcej niż jednej formy.
+* Wybranie pliku ncc.html książki DAISY otwiera teraz cały audiobook, a nie tylko jego tekst.
+* Nazwy akcji w dialogu Dostosuj skróty klawiszowe można teraz tłumaczyć.
+* Tytuł dokumentu jest teraz pierwszy na pasku tytułu, więc otwarte książki da się rozróżnić na pasku zadań i w oknie Alt+Tab.
+* Dialog aktualizacji jest teraz przetłumaczony.
 
 ### Wersja 0.9.0
 
