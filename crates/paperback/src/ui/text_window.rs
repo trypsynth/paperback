@@ -108,7 +108,6 @@ impl TextWindow {
 	/// Whether this window already covers the whole document, given its current length (which
 	/// the caller re-reads fresh from the session rather than this type caching a stale copy -
 	/// see the doc comment on `needs_reload_for`).
-	#[allow(dead_code)]
 	pub const fn is_whole_document(&self, doc_len: i64) -> bool {
 		self.start <= 0 && self.end >= doc_len
 	}

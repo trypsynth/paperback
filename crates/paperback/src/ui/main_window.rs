@@ -1262,6 +1262,15 @@ impl MainWindow {
 				menu_ids::DONATE => {
 					help::handle_donate(&frame_copy);
 				}
+				#[cfg(target_os = "macos")]
+				menu_ids::COPY => {
+					// Only macOS builds an Edit menu, so only macOS sees Copy as a menu event; every
+					// other platform intercepts the key in `build_text_ctrl`.
+					let widened = dm.lock().unwrap().copy_whole_document_if_all_selected();
+					if !widened {
+						event.skip(true);
+					}
+				}
 				_ => {
 					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);
 				}

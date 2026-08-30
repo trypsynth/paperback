@@ -16,6 +16,7 @@ use paperback_core::{
 };
 use patois::t;
 use wxdragon::{
+	clipboard::Clipboard,
 	color::Colour,
 	event::{EventType, WindowEventData},
 	prelude::*,
@@ -727,6 +728,41 @@ impl DocumentManager {
 		}
 	}
 
+	/// Copies the current selection, widening it to the whole document when everything loaded is
+	/// selected but only part of the document is.
+	///
+	/// Select All can only ever reach what the control holds, which for a windowed document is a
+	/// slice of the book rather than the book. The window is not something a reader can see, name
+	/// or reason about, so a selection covering all of it means all of it in the only sense the
+	/// user has - and copying half a chapter when they asked for the book is a silent wrong answer.
+	///
+	/// Deliberately keyed off the selection rather than a remembered Select All: clicking anywhere
+	/// collapses the selection, so this stops applying on its own with no flag to keep in step.
+	///
+	/// Returns whether it copied. False means nothing special applied and the caller should let
+	/// the control's own copy run.
+	pub fn copy_whole_document_if_all_selected(&self) -> bool {
+		let Some(tab) = self.active_tab() else {
+			return false;
+		};
+		let (from, to) = tab.text_ctrl.get_selection();
+		if from >= to {
+			return false;
+		}
+		let doc_len = tab.session.document_len();
+		// Only the widened case is handled here. Anything else is left to the control's own copy,
+		// which is better tested than anything this could put in its place.
+		let covers_everything_loaded = from <= 0 && to >= tab.text_ctrl.get_last_position();
+		if !covers_everything_loaded || tab.window.is_whole_document(doc_len) {
+			return false;
+		}
+		let text = tab.session.get_text_range(0, doc_len);
+		if text.is_empty() {
+			return false;
+		}
+		Clipboard::get().set_text(&text)
+	}
+
 	/// Collapses a window that grew during a long read back to target size around the caret.
 	///
 	/// Called before a relayout, which is the one place a deep caret in a big loaded buffer is
@@ -1130,6 +1166,20 @@ impl DocumentManager {
 				}
 			}
 		});
+		// Ctrl+C is intercepted here rather than through the Edit menu because that menu only
+		// exists on macOS; elsewhere the control handles the key itself and no menu event fires.
+		#[cfg(not(target_os = "macos"))]
+		{
+			let dm_for_copy = Rc::clone(self_rc);
+			text_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
+				let handled = event.get_key_code() == Some(i32::from(b'C'))
+					&& event.control_down()
+					&& dm_for_copy.try_lock().is_ok_and(|dm| dm.copy_whole_document_if_all_selected());
+				if !handled {
+					event.skip(true);
+				}
+			});
+		}
 		let dm_for_key_up = Rc::clone(self_rc);
 		text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
 			event.skip(true);
