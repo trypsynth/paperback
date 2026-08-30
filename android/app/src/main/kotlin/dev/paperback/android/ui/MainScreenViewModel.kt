@@ -109,39 +109,30 @@ class MainScreenViewModel(
 	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
 	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes.asStateFlow()
 
+	val settings = ReaderSettings(config)
+
+	// Every screen and dialog the reading UI can put on top of itself, in one place: a
+	// ScreenRequest for the two that are real navigation destinations, a DialogState for the
+	// rest. The ones whose state is private are opened through a function on this class that
+	// has work to do first (loading the element lists, choosing the Go To mode), so nothing
+	// outside can open them straight into an empty or stale state.
+	val settingsRequest = ScreenRequest()
+	val tocRequest = ScreenRequest()
+
+	val findDialog = DialogState()
+	val wordCountDialog = DialogState()
+	val documentInfoDialog = DialogState()
+	val sleepTimerDialog = DialogState()
+	val permissionRationaleDialog = DialogState()
+
 	private val elementsDialogState = DialogState()
 	val showElementsDialog: StateFlow<Boolean> = elementsDialogState.isOpen
 
-	val findDialog = DialogState()
+	private val goToDialogState = DialogState()
+	val showGoToDialog: StateFlow<Boolean> = goToDialogState.isOpen
 
-	val settingsRequest = ScreenRequest()
-
-	private val _restorePreviousDocuments = MutableStateFlow(config.getAppBool("restore_previous_documents", true))
-	val restorePreviousDocuments: StateFlow<Boolean> = _restorePreviousDocuments.asStateFlow()
-
-	private val _useInAppFileBrowser = MutableStateFlow(config.getAppBool("use_in_app_file_browser", false))
-	val useInAppFileBrowser: StateFlow<Boolean> = _useInAppFileBrowser.asStateFlow()
-
-	private val _swipeUpMovesForward = MutableStateFlow(config.getAppBool("swipe_up_moves_forward", true))
-	val swipeUpMovesForward: StateFlow<Boolean> = _swipeUpMovesForward.asStateFlow()
-
-	// Spacing and alignment share the desktop's config keys and value meanings (spacing 0/1/2,
-	// alignment 0 leading, 1 center, 2 trailing, 3 justify) so a document reads the same way on
-	// every platform. Text size does not: the desktop stores an absolute point size, while this
-	// scales whatever size the system font setting is already asking for.
-	private val _textScalePercent = MutableStateFlow(config.getAppInt("text_scale_percent", 100))
-	val textScalePercent: StateFlow<Int> = _textScalePercent.asStateFlow()
-
-	private val _lineSpacing = MutableStateFlow(config.getAppInt("line_spacing", 0))
-	val lineSpacing: StateFlow<Int> = _lineSpacing.asStateFlow()
-
-	private val _paragraphSpacing = MutableStateFlow(config.getAppInt("paragraph_spacing", 0))
-	val paragraphSpacing: StateFlow<Int> = _paragraphSpacing.asStateFlow()
-
-	private val _textAlignment = MutableStateFlow(config.getAppInt("text_alignment", 0))
-	val textAlignment: StateFlow<Int> = _textAlignment.asStateFlow()
-
-	val tocRequest = ScreenRequest()
+	private val _goToInitialMode = MutableStateFlow("Line")
+	val goToInitialMode: StateFlow<String> = _goToInitialMode.asStateFlow()
 
 	private val _tocState = MutableStateFlow(TocUiState())
 	val tocState: StateFlow<TocUiState> = _tocState.asStateFlow()
@@ -191,16 +182,6 @@ class MainScreenViewModel(
 		)
 	}
 
-	private val goToDialogState = DialogState()
-	val showGoToDialog: StateFlow<Boolean> = goToDialogState.isOpen
-
-	private val _goToInitialMode = MutableStateFlow("Line")
-	val goToInitialMode: StateFlow<String> = _goToInitialMode.asStateFlow()
-
-	val wordCountDialog = DialogState()
-
-	val documentInfoDialog = DialogState()
-
 	private val _activeSearchQuery = MutableStateFlow<String?>(null)
 	val activeSearchQuery: StateFlow<String?> = _activeSearchQuery.asStateFlow()
 
@@ -231,8 +212,6 @@ class MainScreenViewModel(
 		_performSearchEvent.tryEmit(false)
 	}
 
-	val sleepTimerDialog = DialogState()
-
 	private val _currentHeadings = MutableStateFlow<HeadingTreeFfi?>(null)
 	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings.asStateFlow()
 
@@ -241,8 +220,6 @@ class MainScreenViewModel(
 
 	private val _passwordPromptUri = MutableStateFlow<Uri?>(null)
 	val passwordPromptUri = _passwordPromptUri.asStateFlow()
-
-	val permissionRationaleDialog = DialogState()
 
 	private val _importPromptPath = MutableStateFlow<String?>(null)
 	val importPromptPath: StateFlow<String?> = _importPromptPath.asStateFlow()
@@ -1372,49 +1349,6 @@ class MainScreenViewModel(
 		_currentLinks.value = null
 	}
 
-	fun setRestorePreviousDocuments(value: Boolean) {
-		_restorePreviousDocuments.value = value
-		config.setAppBool("restore_previous_documents", value)
-		config.flush()
-	}
-
-	fun setUseInAppFileBrowser(value: Boolean) {
-		_useInAppFileBrowser.value = value
-		config.setAppBool("use_in_app_file_browser", value)
-		config.flush()
-	}
-
-	fun setSwipeUpMovesForward(value: Boolean) {
-		_swipeUpMovesForward.value = value
-		config.setAppBool("swipe_up_moves_forward", value)
-		config.flush()
-	}
-
-	fun setTextScalePercent(value: Int) {
-		val clamped = value.coerceIn(MIN_TEXT_SCALE_PERCENT, MAX_TEXT_SCALE_PERCENT)
-		_textScalePercent.value = clamped
-		config.setAppInt("text_scale_percent", clamped)
-		config.flush()
-	}
-
-	fun setLineSpacing(value: Int) {
-		_lineSpacing.value = value
-		config.setAppInt("line_spacing", value)
-		config.flush()
-	}
-
-	fun setParagraphSpacing(value: Int) {
-		_paragraphSpacing.value = value
-		config.setAppInt("paragraph_spacing", value)
-		config.flush()
-	}
-
-	fun setTextAlignment(value: Int) {
-		_textAlignment.value = value
-		config.setAppInt("text_alignment", value)
-		config.flush()
-	}
-
 	private val _accessibilityAnnouncement = MutableSharedFlow<String>(extraBufferCapacity = 1)
 	val accessibilityAnnouncement: SharedFlow<String> = _accessibilityAnnouncement.asSharedFlow()
 
@@ -1534,11 +1468,6 @@ class MainScreenViewModel(
 	}
 
 	companion object {
-		/** Bounds of the readability text size multiplier, shared with the settings slider. */
-		const val MIN_TEXT_SCALE_PERCENT = 70
-		const val MAX_TEXT_SCALE_PERCENT = 300
-		const val TEXT_SCALE_PERCENT_STEP = 10
-
 		private val WHITESPACE_REGEX = "\\s+".toRegex()
 		private const val DOCUMENT_CACHE_DIR = "documents"
 		private val UUID_DIR_REGEX = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
