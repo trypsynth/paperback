@@ -3675,6 +3675,26 @@ msgstr "Назад {}"
 msgid "Forward {}"
 msgstr "Вперёд {}"
 
+#: kt
+#, fuzzy
+msgid "Enter {}"
+msgstr "Введите {}"
+
+#: kt
+#, fuzzy
+msgid "Error loading document: {}"
+msgstr "Ошибка загрузки документа: {}"
+
+#: kt
+#, fuzzy
+msgid "1.5×"
+msgstr "1,5×"
+
+#: kt
+#, fuzzy
+msgid "Speech Engine"
+msgstr "Скорость речи"
+
 #, fuzzy
 #~ msgid "1 document."
 #~ msgstr "Документы"
