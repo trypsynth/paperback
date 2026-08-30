@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -94,6 +95,9 @@ fun TocScreen(
 								viewModel.updateTtsPosition(item.position)
 								onDismiss()
 							}.semantics(mergeDescendants = true) {
+								// The row's indentation shows the level on screen, so the number
+								// itself is spoken rather than drawn.
+								contentDescription = "${item.title}, Level ${item.level + 1}"
 								if (isActive) {
 									selected = true
 								}
@@ -105,7 +109,7 @@ fun TocScreen(
 					) {
 						TreeExpandChevron(hasChildren, isExpanded) { viewModel.toggleTocExpanded(originalIndex) }
 						Text(
-							text = "${item.title}, Level ${item.level + 1}",
+							text = item.title,
 							style = if (isActive) {
 								MaterialTheme.typography.titleMedium
 							} else {

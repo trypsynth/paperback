@@ -1,12 +1,8 @@
 package dev.paperback.android
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
@@ -54,8 +50,7 @@ fun MainNavigation() {
 						viewModel = viewModel,
 						onItemClick = { navKey ->
 							backStack.add(navKey)
-						},
-						modifier = Modifier.safeDrawingPadding().padding(16.dp)
+						}
 					)
 				}
 				entry<SettingsRoute> {

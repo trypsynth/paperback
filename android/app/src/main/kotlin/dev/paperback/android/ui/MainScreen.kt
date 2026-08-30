@@ -322,6 +322,10 @@ fun MainScreen(
 
 	Box(modifier = Modifier.fillMaxSize()) {
 		Scaffold(
+			// safeDrawing rather than the default systemBars so text keeps clear of a landscape
+			// display cutout. The bars each pad themselves, so letting the Scaffold be the one
+			// place that applies these is what stops them being counted twice.
+			contentWindowInsets = WindowInsets.safeDrawing,
 			topBar = {
 				MainScreenTopBar(
 					state = state,
