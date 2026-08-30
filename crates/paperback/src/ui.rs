@@ -10,11 +10,13 @@ mod menu_ids;
 mod navigation;
 #[cfg(any(target_os = "windows", test))]
 mod rtf;
+mod shell;
 mod sounds;
 mod status;
 mod text_window;
 #[cfg(target_os = "windows")]
 mod tray;
+mod window_geometry;
 
 pub use app::PaperbackApp;
 pub use main_window::MainWindow;

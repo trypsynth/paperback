@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -79,6 +80,8 @@ fun ElementsDialog(
 							val hasChildren = hasTreeChildren(items.size, levelAt, originalIndex)
 							val isExpanded = expandedHeadingIndices.contains(originalIndex)
 							val paddingLeft = (16 + (level * 16)).dp
+							// TRANSLATORS: Fallback label for a heading in the Elements dialog when the document gave it no text
+							val headingLabel = item.text.ifBlank { t("Untitled") }
 							val toggleExpanded = {
 								expandedHeadingIndices = if (isExpanded) {
 									expandedHeadingIndices - originalIndex
@@ -94,14 +97,16 @@ fun ElementsDialog(
 										onNavigate(item.offset)
 										onDismiss()
 									}.semantics(mergeDescendants = true) {
+										// The row's indentation shows the level on screen, so the
+										// number itself is spoken rather than drawn.
+										contentDescription = "$headingLabel, Level ${level + 1}"
 										applyTreeExpandSemantics(hasChildren, isExpanded, toggleExpanded)
 									}.padding(start = paddingLeft, top = 8.dp, bottom = 8.dp, end = 16.dp),
 								verticalAlignment = Alignment.CenterVertically
 							) {
 								TreeExpandChevron(hasChildren, isExpanded, toggleExpanded)
 								Text(
-									// TRANSLATORS: Fallback label for a heading in the Elements dialog when the document gave it no text
-									text = "${item.text.ifBlank { t("Untitled") }}, Level ${level + 1}",
+									text = headingLabel,
 									modifier = Modifier.weight(1f).padding(start = 8.dp)
 								)
 							}

@@ -30,7 +30,7 @@ use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
 	menu_ids,
 	navigation::{move_to_offset_and_record_history, persist_navigation_history},
-	status,
+	shell, status,
 	text_window::{self, TextWindow},
 };
 use crate::audio_player::AudioPlayer;
@@ -305,6 +305,7 @@ impl DocumentManager {
 		}
 		if track {
 			config.add_recent_document(&path_str);
+			shell::add_recent_document(path);
 			config.set_document_opened(&path_str, true);
 			config.add_opened_document(&path_str);
 		}
@@ -447,6 +448,21 @@ impl DocumentManager {
 
 	/// Restores focus to whichever control had it when the window was last active (the text
 	/// control or the notebook), falling back to the notebook when there's no active document.
+	/// Puts focus on the freshly opened document's text, and makes that the target a later
+	/// [`Self::restore_focus`] will return to.
+	///
+	/// Opening a document is a request to read it, so it is not a case for restoring an earlier
+	/// preference: whatever had focus a moment ago was about a different document, or about
+	/// there being none.
+	pub fn focus_document_text(&self) {
+		if let Some(tab) = self.active_tab() {
+			self.last_focus_in_text.set(true);
+			tab.text_ctrl.set_focus();
+		} else {
+			self.notebook.set_focus();
+		}
+	}
+
 	pub fn restore_focus(&self) {
 		if self.last_focus_in_text.get() {
 			if let Some(tab) = self.active_tab() {
@@ -462,8 +478,17 @@ impl DocumentManager {
 	/// Records whether the text control or the notebook currently has focus, so focus can be
 	/// restored to the same place when the window is next activated. Only updates when one of
 	/// the two is confidently focused (a mid-focus-transition leaves the previous value).
+	///
+	/// With no documents open there is nothing to record: the notebook is the only focusable
+	/// control, so it has focus by default rather than by choice. Writing that down as "the user
+	/// prefers the tab strip" made the next document open onto its own tab strip instead of its
+	/// text, because [`Self::restore_focus`] honours the preference and could not tell a real
+	/// one from the absence of an alternative.
 	#[cfg(target_os = "windows")]
 	pub fn record_focus_target(&self) {
+		if self.tabs.is_empty() {
+			return;
+		}
 		if self.active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()) {
 			self.last_focus_in_text.set(true);
 		} else if self.notebook.has_focus() {

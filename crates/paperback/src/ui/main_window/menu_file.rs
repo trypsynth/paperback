@@ -37,7 +37,7 @@ pub(super) fn handle_fallback(
 				{
 					let dm_ref = dm.lock().unwrap();
 					update_title_from_manager(frame, &dm_ref);
-					dm_ref.restore_focus();
+					dm_ref.focus_document_text();
 				}
 				let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 				frame.set_menu_bar(menu_bar);
@@ -92,7 +92,7 @@ fn handle_show_all_documents(
 			{
 				let dm_ref = dm.lock().unwrap();
 				update_title_from_manager(frame, &dm_ref);
-				dm_ref.restore_focus();
+				dm_ref.focus_document_text();
 			}
 			let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 			frame.set_menu_bar(menu_bar);

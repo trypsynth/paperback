@@ -112,7 +112,7 @@ class MainScreenViewModel(
 
 	val findDialog = DialogState()
 
-	val settingsDialog = DialogState()
+	val settingsRequest = ScreenRequest()
 
 	private val _restorePreviousDocuments = MutableStateFlow(config.getAppBool("restore_previous_documents", true))
 	val restorePreviousDocuments: StateFlow<Boolean> = _restorePreviousDocuments.asStateFlow()
@@ -123,7 +123,71 @@ class MainScreenViewModel(
 	private val _swipeUpMovesForward = MutableStateFlow(config.getAppBool("swipe_up_moves_forward", true))
 	val swipeUpMovesForward: StateFlow<Boolean> = _swipeUpMovesForward.asStateFlow()
 
-	val tocDialog = DialogState()
+	// Spacing and alignment share the desktop's config keys and value meanings (spacing 0/1/2,
+	// alignment 0 leading, 1 center, 2 trailing, 3 justify) so a document reads the same way on
+	// every platform. Text size does not: the desktop stores an absolute point size, while this
+	// scales whatever size the system font setting is already asking for.
+	private val _textScalePercent = MutableStateFlow(config.getAppInt("text_scale_percent", 100))
+	val textScalePercent: StateFlow<Int> = _textScalePercent.asStateFlow()
+
+	private val _lineSpacing = MutableStateFlow(config.getAppInt("line_spacing", 0))
+	val lineSpacing: StateFlow<Int> = _lineSpacing.asStateFlow()
+
+	private val _paragraphSpacing = MutableStateFlow(config.getAppInt("paragraph_spacing", 0))
+	val paragraphSpacing: StateFlow<Int> = _paragraphSpacing.asStateFlow()
+
+	private val _textAlignment = MutableStateFlow(config.getAppInt("text_alignment", 0))
+	val textAlignment: StateFlow<Int> = _textAlignment.asStateFlow()
+
+	val tocRequest = ScreenRequest()
+
+	private val _tocState = MutableStateFlow(TocUiState())
+	val tocState: StateFlow<TocUiState> = _tocState.asStateFlow()
+
+	fun toggleTocExpanded(index: Int) {
+		val expanded = _tocState.value.expandedIndices
+		_tocState.value = _tocState.value.copy(
+			expandedIndices = if (expanded.contains(index)) expanded - index else expanded + index
+		)
+	}
+
+	/**
+	 * Points the table of contents at wherever the reader currently is: the nearest entry at or
+	 * before the reading position becomes the active one, and its ancestors are expanded so it is
+	 * actually on screen when the list opens.
+	 */
+	fun prepareToc() {
+		val toc = (uiState.value as? MainScreenUiState.Success)?.activeTab?.toc.orEmpty()
+		if (toc.isEmpty()) {
+			_tocState.value = _tocState.value.copy(activeIndex = null)
+			return
+		}
+		var activeIndex = 0
+		var bestDistance = Long.MAX_VALUE
+		val currentPos = _ttsPosition.value
+		for (i in toc.indices) {
+			if (toc[i].position <= currentPos) {
+				val distance = currentPos - toc[i].position
+				if (distance < bestDistance) {
+					bestDistance = distance
+					activeIndex = i
+				}
+			}
+		}
+		val toExpand = mutableSetOf<Int>()
+		var currentLevel = toc[activeIndex].level
+		for (i in activeIndex - 1 downTo 0) {
+			if (toc[i].level < currentLevel) {
+				toExpand.add(i)
+				currentLevel = toc[i].level
+				if (currentLevel == 0) break
+			}
+		}
+		_tocState.value = TocUiState(
+			expandedIndices = _tocState.value.expandedIndices + toExpand,
+			activeIndex = activeIndex
+		)
+	}
 
 	private val goToDialogState = DialogState()
 	val showGoToDialog: StateFlow<Boolean> = goToDialogState.isOpen
@@ -1281,6 +1345,31 @@ class MainScreenViewModel(
 		config.flush()
 	}
 
+	fun setTextScalePercent(value: Int) {
+		val clamped = value.coerceIn(MIN_TEXT_SCALE_PERCENT, MAX_TEXT_SCALE_PERCENT)
+		_textScalePercent.value = clamped
+		config.setAppInt("text_scale_percent", clamped)
+		config.flush()
+	}
+
+	fun setLineSpacing(value: Int) {
+		_lineSpacing.value = value
+		config.setAppInt("line_spacing", value)
+		config.flush()
+	}
+
+	fun setParagraphSpacing(value: Int) {
+		_paragraphSpacing.value = value
+		config.setAppInt("paragraph_spacing", value)
+		config.flush()
+	}
+
+	fun setTextAlignment(value: Int) {
+		_textAlignment.value = value
+		config.setAppInt("text_alignment", value)
+		config.flush()
+	}
+
 	private val _accessibilityAnnouncement = MutableSharedFlow<String>(extraBufferCapacity = 1)
 	val accessibilityAnnouncement: SharedFlow<String> = _accessibilityAnnouncement.asSharedFlow()
 
@@ -1400,6 +1489,11 @@ class MainScreenViewModel(
 	}
 
 	companion object {
+		/** Bounds of the readability text size multiplier, shared with the settings slider. */
+		const val MIN_TEXT_SCALE_PERCENT = 70
+		const val MAX_TEXT_SCALE_PERCENT = 300
+		const val TEXT_SCALE_PERCENT_STEP = 10
+
 		private val WHITESPACE_REGEX = "\\s+".toRegex()
 		private const val DOCUMENT_CACHE_DIR = "documents"
 		private val UUID_DIR_REGEX = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")

@@ -28,25 +28,32 @@ jobs:
           toolchain: stable
       - name: Cache Rust build artifacts
         uses: Swatinem/rust-cache@v2
+      # pandoc is still needed by the build and the android/ios tasks; the translate task
+      # itself no longer converts the readme through HTML.
       - name: Install gettext and pandoc
         run: sudo apt-get update && sudo apt-get install -y gettext pandoc
       - name: Translate
-        # DeepL quota exhaustion (HTTP 456) shouldn't turn every push red; untranslated
-        # entries are simply retried on the next run once quota resets.
+        # A rate limit or an outage shouldn't turn every push red; entries that didn't get
+        # translated, and any that failed a placeholder/accelerator check, are simply retried
+        # on the next run.
         continue-on-error: true
         env:
-          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
-        run: cargo run -p xtask --release -- translate
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        # --repair also re-translates entries whose existing translation provably dropped a
+        # placeholder, an accelerator or a shortcut suffix. Self-limiting: once an entry passes
+        # the checks it stops being flagged, so this only ever costs anything while there is
+        # real damage to undo.
+        run: cargo run -p xtask --release -- translate --repair
       - name: Open or update translation PR
         uses: peter-evans/create-pull-request@v8
         with:
           add-paths: |
             po/
             doc/
-          commit-message: "chore: machine-translate missing strings via DeepL"
+          commit-message: "chore: machine-translate missing strings"
           committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
           author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
           branch: auto-translate-strings
           delete-branch: true
-          title: "chore: machine-translate missing strings via DeepL"
-          body: Automated DeepL translation update. Runs on every push to master; safe to leave open and merge periodically.
+          title: "chore: machine-translate missing strings"
+          body: Automated translation update. Runs on every push to master; safe to leave open and merge periodically.

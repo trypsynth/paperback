@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 05:09-0600\n"
+"POT-Creation-Date: 2026-08-29 11:48-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -999,7 +999,7 @@ msgid "Paperback cannot perform any actions while Web View is open."
 msgstr ""
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "Paperback - {}"
+msgid "{} - Paperback"
 msgstr ""
 
 msgid "%d char"
@@ -2370,785 +2370,718 @@ msgstr ""
 msgid "Security Error"
 msgstr ""
 
-msgid "&Options"
-msgstr ""
-
-msgid "1 document."
-msgstr ""
-
-msgid "%d documents."
-msgstr ""
-
-msgid "All %d documents selected."
-msgstr ""
-
-msgid "%d of %d documents selected."
-msgstr ""
-
-msgid "hours"
-msgstr ""
-
-msgid "minutes"
-msgstr ""
-
-msgid "1 second"
-msgstr ""
-
-msgid "seconds"
-msgstr ""
-
-msgid "The selection contains {} words."
-msgstr ""
-
-msgid "This document contains {} words."
-msgstr ""
-
-msgid "{} chars"
-msgstr ""
-
-msgid "Sleep timer set for 1 minute."
-msgstr ""
-
-msgid "Sleep timer set for %d minutes."
-msgstr ""
-
-msgid "Previous Section\t["
-msgstr ""
-
-msgid "Next Section\t]"
-msgstr ""
-
-msgid "Go to &Page\tCtrl+P"
-msgstr ""
-
-msgid "Previous Pa&ge\tShift+P"
-msgstr ""
-
-msgid "Next Pag&e\tP"
-msgstr ""
-
-msgid "Previous Lin&k\tShift+K"
-msgstr ""
-
-msgid "Next Lin&k\tK"
-msgstr ""
-
-msgid "Previous Ima&ge\tShift+G"
-msgstr ""
-
-msgid "Next Ima&ge\tG"
-msgstr ""
-
-msgid "Previous Figu&re\tShift+F"
-msgstr ""
-
-msgid "Next Figu&re\tF"
-msgstr ""
-
-msgid "Previous &Table\tShift+T"
-msgstr ""
-
-msgid "Next &Table\tT"
-msgstr ""
-
-msgid "Previous Se&parator\tShift+S"
-msgstr ""
-
-msgid "Next Se&parator\tS"
-msgstr ""
-
-msgid "Previous L&ist\tShift+L"
-msgstr ""
-
-msgid "Next L&ist\tL"
-msgstr ""
-
-msgid "Previous List &Item\tShift+I"
-msgstr ""
-
-msgid "Next List I&tem\tI"
-msgstr ""
-
-msgid "Container &Start\tShift+,"
-msgstr ""
-
-msgid "Past Container &End\t,"
-msgstr ""
-
-msgid "Next Heading Level 1\t1"
-msgstr ""
-
-msgid "Previous Heading Level &2\tShift+2"
-msgstr ""
-
-msgid "Next Heading Level 2\t2"
-msgstr ""
-
-msgid "Previous Heading Level &3\tShift+3"
-msgstr ""
-
-msgid "Next Heading Level 3\t3"
-msgstr ""
-
-msgid "Previous Heading Level &4\tShift+4"
-msgstr ""
-
-msgid "Next Heading Level 4\t4"
-msgstr ""
-
-msgid "Previous Heading Level &5\tShift+5"
-msgstr ""
-
-msgid "Next Heading Level 5\t5"
-msgstr ""
-
-msgid "Previous Heading Level &6\tShift+6"
-msgstr ""
-
-msgid "Next Heading Level 6\t6"
-msgstr ""
-
-msgid "&Previous Heading\tShift+H"
-msgstr ""
-
-msgid "&Next Heading\tH"
-msgstr ""
-
-msgid "Previous Heading Level &1\tShift+1"
-msgstr ""
-
-msgid "&Previous Bookmark\tShift+B"
-msgstr ""
-
-msgid "&Next Bookmark\tB"
-msgstr ""
-
-msgid "Previous &Note\tShift+N"
-msgstr ""
-
-msgid "Next N&ote\tN"
-msgstr ""
-
-msgid "Jump to &All...\tCtrl+B"
-msgstr ""
-
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr ""
-
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr ""
-
-msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr ""
-
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr ""
-
-msgid "&Open...\tCtrl+O"
-msgstr ""
-
-msgid "&Close\tCtrl+W"
-msgstr ""
-
-msgid "&Close\tCtrl+F4"
-msgstr ""
-
-msgid "Close &All\tCtrl+Shift+W"
-msgstr ""
-
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr ""
-
-msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr ""
-
-msgid "E&xit\tCtrl+Q"
-msgstr ""
-
-msgid "&Find...\tCtrl+F"
-msgstr ""
-
-msgid "Find &Next\tCtrl+G"
-msgstr ""
-
-msgid "Find &Next\tF3"
-msgstr ""
-
-msgid "Find &Previous\tCtrl+Shift+G"
-msgstr ""
-
-msgid "Find &Previous\tShift+F3"
-msgstr ""
-
-msgid "Go to &line...\tCtrl+L"
-msgstr ""
-
-msgid "Go to &line...\tCtrl+G"
-msgstr ""
-
-msgid "Go to &percent...\tCtrl+Shift+L"
-msgstr ""
-
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr ""
-
-msgid "Go &Back\tCtrl+["
-msgstr ""
-
-msgid "Go &Back\tAlt+Left"
-msgstr ""
-
-msgid "Go &Forward\tCtrl+]"
-msgstr ""
-
-msgid "Go &Forward\tAlt+Right"
-msgstr ""
-
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr ""
-
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr ""
-
-msgid "Export to &Plain Text...\tCtrl+E"
-msgstr ""
-
-msgid "&Word Count\tRawCtrl+W"
-msgstr ""
-
-msgid "&Word Count\tCtrl+W"
-msgstr ""
-
-msgid "Document &Info\tCtrl+I"
-msgstr ""
-
-msgid "&Table of Contents\tCtrl+T"
-msgstr ""
-
-msgid "&Elements List...\tF7"
-msgstr ""
-
-msgid "Reveal &File in Folder\tCtrl+Shift+C"
-msgstr ""
-
-msgid "Open in &Web View\tCtrl+Shift+V"
-msgstr ""
-
-msgid "View &Source\tCtrl+U"
-msgstr ""
-
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
-msgstr ""
-
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr ""
-
-msgid "Word w&rap\tCtrl+Alt+W"
-msgstr ""
-
-msgid "&Full Screen\tRawCtrl+Ctrl+F"
-msgstr ""
-
-msgid "&Full Screen\tF11"
-msgstr ""
-
-msgid "&Options\tCtrl+,"
-msgstr ""
-
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr ""
-
-msgid "&About Paperback\tCtrl+F1"
-msgstr ""
-
-msgid "View Help in &Browser\tF1"
-msgstr ""
-
-msgid "View Help in &Paperback\tShift+F1"
-msgstr ""
-
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr ""
-
-msgid "&Donate\tCtrl+D"
-msgstr ""
-
-msgid "Show All...\tCtrl+R"
-msgstr ""
-
-msgid "Go To…"
-msgstr ""
-
-msgid "Recent Documents"
-msgstr ""
-
-msgid "Switch to TTS Mode"
-msgstr ""
-
-msgid "Switch to Text Mode"
-msgstr ""
-
-msgid "Sleep Timer (active)"
-msgstr ""
-
-msgid "More options"
-msgstr ""
-
-msgid "No document open"
-msgstr ""
-
-msgid "Recent"
-msgstr ""
-
-msgid "Screen dimmed by sleep timer. Tap to wake."
-msgstr ""
-
-msgid "Open Error"
-msgstr ""
-
-msgid "Open document"
-msgstr ""
-
-msgid "Title"
-msgstr ""
-
-msgid "Author"
-msgstr ""
-
-msgid "Words"
-msgstr ""
-
-msgid "Lines"
-msgstr ""
-
-msgid "Characters"
-msgstr ""
-
-msgid "Characters (excluding spaces)"
-msgstr ""
-
-msgid "Type"
-msgstr ""
-
-msgid "Done"
-msgstr ""
-
-msgid "No Elements"
-msgstr ""
-
-msgid "Headings, images, and other elements will appear here."
-msgstr ""
-
-msgid "Search…"
-msgstr ""
-
-msgid "Match Case"
-msgstr ""
-
-msgid "Whole Word"
-msgstr ""
-
-msgid "Regular Expression"
-msgstr ""
-
-msgid "Previous result"
-msgstr ""
-
-msgid "Next result"
-msgstr ""
-
-msgid "Search"
-msgstr ""
-
-msgid "Mode"
-msgstr ""
-
-msgid "Page"
-msgstr ""
-
-msgid "Percent"
-msgstr ""
-
-msgid "Line number"
-msgstr ""
-
-msgid "Page number"
-msgstr ""
-
-msgid "Percentage"
-msgstr ""
-
-msgid "Go To"
-msgstr ""
-
-msgid "Password"
-msgstr ""
-
-msgid "Enter password for {}"
-msgstr ""
-
-msgid "Password Required"
-msgstr ""
-
-msgid "No Recent Documents"
-msgstr ""
-
-msgid "Documents you open will appear here."
-msgstr ""
-
-msgid "Remove"
-msgstr ""
-
-msgid "Rule"
-msgstr ""
-
-msgid "Scope"
-msgstr ""
-
-msgid "Word"
-msgstr ""
-
-msgid "Paragraph"
-msgstr ""
-
-msgid "Pattern & Replacement"
-msgstr ""
-
-msgid "Pattern"
-msgstr ""
-
-msgid "Replacement"
-msgstr ""
-
-msgid "Whole word only"
-msgstr ""
-
-msgid "Regular expression (\\1 = first capture group)"
-msgstr ""
-
-msgid "Enabled"
-msgstr ""
-
-msgid "Apply to"
-msgstr ""
-
-msgid "Voices"
-msgstr ""
-
-msgid "New Rule"
-msgstr ""
-
-msgid "Edit Rule"
-msgstr ""
-
-msgid "Save"
-msgstr ""
-
-msgid "All voices"
-msgstr ""
-
-msgid "Apply To"
-msgstr ""
-
-msgid "Text to Speech"
-msgstr ""
-
-msgid "Voice"
-msgstr ""
-
-msgid "Rate"
-msgstr ""
-
-msgid "Speech Rate"
-msgstr ""
-
-msgid "Pitch"
-msgstr ""
-
-msgid "Speech Dictionary"
-msgstr ""
-
-msgid "Play Sample"
-msgstr ""
-
-msgid "Behavior"
-msgstr ""
-
-msgid "Restore last open documents"
-msgstr ""
-
-msgid "Swipe up moves forward"
-msgstr ""
-
-msgid "Active"
-msgstr ""
-
-msgid "Time remaining"
-msgstr ""
-
-msgid "Cancel Timer"
-msgstr ""
-
-msgid "Set timer"
-msgstr ""
-
-msgid "Edit"
-msgstr ""
-
-msgid "Add Rule"
-msgstr ""
-
-msgid "No Rules"
-msgstr ""
-
-msgid "Contents"
-msgstr ""
-
-msgid "No Table of Contents"
-msgstr ""
-
-msgid "This document has no table of contents."
-msgstr ""
-
-msgid "Tabs"
-msgstr ""
-
-msgid "Navigation unit"
-msgstr ""
-
-msgid "Previous {}"
-msgstr ""
-
-msgid "Pause"
-msgstr ""
-
-msgid "Play"
-msgstr ""
-
-msgid "End of document"
-msgstr ""
-
-msgid "Beginning of document"
-msgstr ""
-
-msgid "Next {}"
-msgstr ""
-
-msgid "Press play to start listening."
-msgstr ""
-
-msgid "Locate"
-msgstr ""
-
-msgid "File Missing"
-msgstr ""
-
-msgid "Currently Open"
-msgstr ""
-
-msgid "Document Information"
-msgstr ""
-
-msgid "Expanded"
-msgstr ""
-
-msgid "Collapsed"
-msgstr ""
-
-msgid "Collapse"
-msgstr ""
-
-msgid "Expand"
-msgstr ""
-
-msgid "Untitled Link"
-msgstr ""
-
-msgid "No supported books or folders found here."
-msgstr ""
-
-msgid "Folder"
-msgstr ""
-
-msgid "Internal Storage"
-msgstr ""
-
-msgid "Search Term"
-msgstr ""
-
-msgid "Search History"
-msgstr ""
-
-msgid "Password:"
-msgstr ""
-
-msgid "All Files Access Required"
-msgstr ""
-
-msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
-msgstr ""
-
-msgid "Why we need this:"
-msgstr ""
-
-msgid "• To provide a fast, fully screen-reader accessible file manager inside the app."
-msgstr ""
-
-msgid "• To load large files instantly without needing to copy them into the app's cache."
-msgstr ""
-
-msgid "• To display the exact local file paths of your documents."
-msgstr ""
-
-msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
-msgstr ""
-
-msgid "Grant"
-msgstr ""
-
-msgid "Not Now"
-msgstr ""
-
-msgid "Restore last open book"
-msgstr ""
-
-msgid "Use in-app file browser (requires All Files permission)"
-msgstr ""
-
-msgid "Text-to-Speech"
-msgstr ""
-
-msgid "System Default"
-msgstr ""
-
-msgid "Custom Timer"
-msgstr ""
-
-msgid "Minutes"
-msgstr ""
-
-msgid "Back"
-msgstr ""
-
-msgid "Start"
-msgstr ""
-
-msgid "Change to:"
-msgstr ""
-
-msgid "Custom time..."
-msgstr ""
-
-msgid "Close Search"
-msgstr ""
-
-msgid "Settings imported"
-msgstr ""
-
-msgid "Failed to import settings"
-msgstr ""
-
-msgid "Settings exported"
-msgstr ""
-
-msgid "Failed to export settings"
-msgstr ""
-
-msgid "No document open. Please open a book."
-msgstr ""
-
-msgid "No Documents"
-msgstr ""
-
-msgid "Show All"
-msgstr ""
-
-msgid "Sleep timer: {}"
-msgstr ""
-
-msgid "Cancel sleep timer"
-msgstr ""
-
-msgid "Import"
-msgstr ""
-
-msgid "Import Document Data"
-msgstr ""
-
+#: swift
 msgid "Export Document Data"
 msgstr ""
 
-msgid "Open Book"
+#: swift
+msgid "Import Document Data"
 msgstr ""
 
-msgid "Elements List"
+#: swift
+msgid "Settings exported"
 msgstr ""
 
-msgid "Show Document"
+#: swift
+msgid "Failed to export settings"
 msgstr ""
 
-msgid "Show Text"
+#: swift
+msgid "Settings imported"
 msgstr ""
 
-msgid "Pause Read Aloud"
+#: swift
+msgid "Failed to import settings"
 msgstr ""
 
-msgid "Read Aloud"
-msgstr ""
-
-msgid "More Options"
-msgstr ""
-
-msgid "Heading"
-msgstr ""
-
-msgid "Link"
-msgstr ""
-
-msgid "Section"
-msgstr ""
-
-msgid "List"
-msgstr ""
-
-msgid "List Item"
-msgstr ""
-
-msgid "Table"
-msgstr ""
-
-msgid "Separator"
-msgstr ""
-
+#: swift
 msgid "Document Data"
 msgstr ""
 
-msgid "Sleep timer running, {} remaining"
+#: swift
+msgid "More options"
 msgstr ""
 
-msgid "Custom"
+#: swift
+msgid "Switch to TTS Mode"
 msgstr ""
 
-msgid "Custom: {} minutes"
+#: swift
+msgid "Switch to Text Mode"
 msgstr ""
 
-msgid "Duration"
+#: swift
+msgid "Go To…"
 msgstr ""
 
-msgid "Stop Timer"
+#: swift
+msgid "Recent Documents"
 msgstr ""
 
-msgid "Start Timer"
+#: swift
+msgid "Sleep Timer (active)"
 msgstr ""
 
+#: swift
+msgid "Type"
+msgstr ""
+
+#: swift
+msgid "No Elements"
+msgstr ""
+
+#: swift
+msgid "Headings, images, and other elements will appear here."
+msgstr ""
+
+#: swift
+msgid "No document open"
+msgstr ""
+
+#: swift
+msgid "Show All"
+msgstr ""
+
+#: swift
+msgid "Search…"
+msgstr ""
+
+#: swift
+msgid "Match Case"
+msgstr ""
+
+#: swift
+msgid "Whole Word"
+msgstr ""
+
+#: swift
+msgid "Regular Expression"
+msgstr ""
+
+#: swift
+msgid "Open Error"
+msgstr ""
+
+#: swift
+msgid "Open Book"
+msgstr ""
+
+#: swift
+msgid "Locate"
+msgstr ""
+
+#: swift
+msgid "Remove"
+msgstr ""
+
+#: swift
+msgid "File Missing"
+msgstr ""
+
+#: swift
+msgid "Currently Open"
+msgstr ""
+
+#: swift
+msgid "No Recent Documents"
+msgstr ""
+
+#: swift
+msgid "Documents you open will appear here."
+msgstr ""
+
+#: swift
+msgid "Text to Speech"
+msgstr ""
+
+#: swift
+msgid "Voice"
+msgstr ""
+
+#: swift
+msgid "Rate"
+msgstr ""
+
+#: swift
+msgid "Speech Rate"
+msgstr ""
+
+#: swift
+msgid "Pitch"
+msgstr ""
+
+#: swift
+msgid "Speech Dictionary"
+msgstr ""
+
+#: swift
+msgid "Play Sample"
+msgstr ""
+
+#: swift
 msgid "Text Size"
 msgstr ""
 
+#: swift
 msgid "Line Spacing"
 msgstr ""
 
+#: swift
 msgid "Paragraph Spacing"
 msgstr ""
 
+#: swift
 msgid "Alignment"
+msgstr ""
+
+#: swift
+msgid "Behavior"
+msgstr ""
+
+#: swift
+msgid "Restore last open documents"
+msgstr ""
+
+#: swift
+msgid "Swipe up moves forward"
+msgstr ""
+
+#: swift
+msgid "Title"
+msgstr ""
+
+#: swift
+msgid "Author"
+msgstr ""
+
+#: swift
+msgid "Words"
+msgstr ""
+
+#: swift
+msgid "Lines"
+msgstr ""
+
+#: swift
+msgid "Characters"
+msgstr ""
+
+#: swift
+msgid "Characters (excluding spaces)"
+msgstr ""
+
+#: swift
+msgid "Mode"
+msgstr ""
+
+#: swift
+msgid "Page"
+msgstr ""
+
+#: swift
+msgid "Percent"
+msgstr ""
+
+#: swift
+msgid "Line number"
+msgstr ""
+
+#: swift
+msgid "Page number"
+msgstr ""
+
+#: swift
+msgid "Percentage"
+msgstr ""
+
+#: swift
+msgid "Go To"
+msgstr ""
+
+#: swift
+msgid "Password"
+msgstr ""
+
+#: swift
+msgid "Enter password for {}"
+msgstr ""
+
+#: swift
+msgid "Password Required"
+msgstr ""
+
+#: swift
+msgid "Rule"
+msgstr ""
+
+#: swift
+msgid "Scope"
+msgstr ""
+
+#: swift
+msgid "Word"
+msgstr ""
+
+#: swift
+msgid "Paragraph"
+msgstr ""
+
+#: swift
+msgid "Pattern & Replacement"
+msgstr ""
+
+#: swift
+msgid "Pattern"
+msgstr ""
+
+#: swift
+msgid "Replacement"
+msgstr ""
+
+#: swift
+msgid "Whole word only"
+msgstr ""
+
+#: swift
+msgid "Regular expression (\\1 = first capture group)"
+msgstr ""
+
+#: swift
+msgid "Enabled"
+msgstr ""
+
+#: swift
+msgid "Apply to"
+msgstr ""
+
+#: swift
+msgid "Voices"
+msgstr ""
+
+#: swift
+msgid "New Rule"
+msgstr ""
+
+#: swift
+msgid "Edit Rule"
+msgstr ""
+
+#: swift
+msgid "Save"
+msgstr ""
+
+#: swift
+msgid "All voices"
+msgstr ""
+
+#: swift
+msgid "Apply To"
+msgstr ""
+
+#: swift
+msgid "Sleep timer running, {} remaining"
+msgstr ""
+
+#: swift
+msgid "Custom"
+msgstr ""
+
+#: swift
+msgid "Custom: {} minutes"
+msgstr ""
+
+#: swift
+msgid "Duration"
+msgstr ""
+
+#: swift
+msgid "Minutes"
+msgstr ""
+
+#: swift
+msgid "Done"
+msgstr ""
+
+#: swift
+msgid "Stop Timer"
+msgstr ""
+
+#: swift
+msgid "Start Timer"
+msgstr ""
+
+#: swift
+msgid "Edit"
+msgstr ""
+
+#: swift
+msgid "Add Rule"
+msgstr ""
+
+#: swift
+msgid "No Rules"
+msgstr ""
+
+#: swift
+msgid "Tabs"
+msgstr ""
+
+#: swift
+msgid "Contents"
+msgstr ""
+
+#: swift
+msgid "No Table of Contents"
+msgstr ""
+
+#: swift
+msgid "This document has no table of contents."
+msgstr ""
+
+#: swift
+msgid "Navigation unit"
+msgstr ""
+
+#: swift
+msgid "Previous {}"
+msgstr ""
+
+#: swift
+msgid "Pause"
+msgstr ""
+
+#: swift
+msgid "Play"
+msgstr ""
+
+#: swift
+msgid "End of document"
+msgstr ""
+
+#: swift
+msgid "Beginning of document"
+msgstr ""
+
+#: swift
+msgid "Next {}"
+msgstr ""
+
+#: swift
+msgid "Press play to start listening."
+msgstr ""
+
+#: kt
+msgid "Document Information"
+msgstr ""
+
+#: kt
+msgid "Untitled Link"
+msgstr ""
+
+#: kt
+msgid "Export Document"
+msgstr ""
+
+#: kt
+msgid "Select a format to export the current document:"
+msgstr ""
+
+#: kt
+msgid "Plain Text (.txt)"
+msgstr ""
+
+#: kt
+msgid "HTML (.html)"
+msgstr ""
+
+#: kt
+msgid "Markdown (.md)"
+msgstr ""
+
+#: kt
+msgid "No supported books or folders found here."
+msgstr ""
+
+#: kt
+msgid "Folder"
+msgstr ""
+
+#: kt
+msgid "Internal Storage"
+msgstr ""
+
+#: kt
+msgid "Search Term"
+msgstr ""
+
+#: kt
+msgid "Search History"
+msgstr ""
+
+#: kt
+msgid "Password:"
+msgstr ""
+
+#: kt
+msgid "All Files Access Required"
+msgstr ""
+
+#: kt
+msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgstr ""
+
+#: kt
+msgid "Why we need this:"
+msgstr ""
+
+#: kt
+msgid "To provide a fast, fully screen-reader accessible file manager inside the app."
+msgstr ""
+
+#: kt
+msgid "To load large files instantly without needing to copy them into the app's cache."
+msgstr ""
+
+#: kt
+msgid "To display the exact local file paths of your documents."
+msgstr ""
+
+#: kt
+msgid "If you deny this permission, you can still use the Android System File Picker to open your "
+msgstr ""
+
+#: kt
+msgid "Grant"
+msgstr ""
+
+#: kt
+msgid "Not Now"
+msgstr ""
+
+#: kt
+msgid "Custom Timer"
+msgstr ""
+
+#: kt
+msgid "Back"
+msgstr ""
+
+#: kt
+msgid "Start"
+msgstr ""
+
+#: kt
+msgid "Active: {} remaining"
+msgstr ""
+
+#: kt
+msgid "remaining"
+msgstr ""
+
+#: kt
+msgid "Cancel Timer"
+msgstr ""
+
+#: kt
+msgid "Change to:"
+msgstr ""
+
+#: kt
+msgid "{} minutes"
+msgstr ""
+
+#: kt
+msgid "Custom time..."
+msgstr ""
+
+#: kt
+msgid "Expanded"
+msgstr ""
+
+#: kt
+msgid "Collapsed"
+msgstr ""
+
+#: kt
+msgid "Collapse"
+msgstr ""
+
+#: kt
+msgid "Expand"
+msgstr ""
+
+#: kt
+msgid "This document contains {} words."
+msgstr ""
+
+#: kt
+msgid "words"
+msgstr ""
+
+#: kt
+msgid "Close Search"
+msgstr ""
+
+#: kt
+msgid "Document exported"
+msgstr ""
+
+#: kt
+msgid "Failed to export document"
+msgstr ""
+
+#: kt
+msgid "No document open. Please open a book."
+msgstr ""
+
+#: kt
+msgid "No Documents"
+msgstr ""
+
+#: kt
+msgid "Sleep timer: {}"
+msgstr ""
+
+#: kt
+msgid "Cancel sleep timer"
+msgstr ""
+
+#: kt
+msgid "Import"
+msgstr ""
+
+#: kt
+msgid "More Options"
+msgstr ""
+
+#: kt
+msgid "Pause Read Aloud"
+msgstr ""
+
+#: kt
+msgid "Read Aloud"
+msgstr ""
+
+#: kt
+msgid "Export As"
+msgstr ""
+
+#: kt
+msgid "Elements List"
+msgstr ""
+
+#: kt
+msgid "No more matches."
+msgstr ""
+
+#: kt
+msgid "Heading"
+msgstr ""
+
+#: kt
+msgid "Link"
+msgstr ""
+
+#: kt
+msgid "Section"
+msgstr ""
+
+#: kt
+msgid "List"
+msgstr ""
+
+#: kt
+msgid "List Item"
+msgstr ""
+
+#: kt
+msgid "Table"
+msgstr ""
+
+#: kt
+msgid "Separator"
+msgstr ""
+
+#: kt
+msgid "{} seconds"
+msgstr ""
+
+#: kt
+msgid "✓ Granted"
+msgstr ""
+
+#: kt
+msgid "Before You Start"
+msgstr ""
+
+#: kt
+msgid "Paperback works best with a couple of permissions. Here's what we ask for and why:"
+msgstr ""
+
+#: kt
+msgid "Notifications"
+msgstr ""
+
+#: kt
+msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is "
+msgstr ""
+
+#: kt
+msgid "Enable Notifications"
+msgstr ""
+
+#: kt
+msgid "All Files Access"
+msgstr ""
+
+#: kt
+msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your "
+msgstr ""
+
+#: kt
+msgid "Enable File Access"
+msgstr ""
+
+#: kt
+msgid "Continue"
+msgstr ""
+
+#: kt
+msgid "Restore last open book"
+msgstr ""
+
+#: kt
+msgid "Use in-app file browser (requires All Files permission)"
+msgstr ""
+
+#: kt
+msgid "Text-to-Speech"
+msgstr ""
+
+#: kt
+msgid "System Default"
+msgstr ""
+
+#: kt
+msgid "Back {}"
+msgstr ""
+
+#: kt
+msgid "Forward {}"
+msgstr ""
+
+#: kt
+msgid "Enter {}"
+msgstr ""
+
+#: kt
+msgid "Error loading document: {}"
+msgstr ""
+
+#: kt
+msgid "1.5×"
+msgstr ""
+
+#: kt
+msgid "Speech Engine"
 msgstr ""

@@ -1,5 +1,5 @@
 use std::{
-	collections::HashSet,
+	collections::{HashMap, HashSet},
 	env,
 	error::Error,
 	fs,
@@ -7,16 +7,17 @@ use std::{
 	process::{self, Command},
 };
 
-mod deepl;
+mod claude;
 mod readme;
 
-use patois_build::po::PoDocument;
+use patois_build::po::{PoDocument, Translation};
 
 use crate::project_root;
 
 /// Regenerates `po/paperback.pot`, syncs every `po/<lang>.po` against it via `msgmerge`
 /// (adds blank entries for new strings, flags changed-but-similar entries `#, fuzzy`),
-/// then fills any blank/fuzzy entry via the `DeepL` API for languages `DeepL` supports.
+/// then fills any blank/fuzzy entry via the Claude API (see `claude`), passing each string's
+/// `#. TRANSLATORS:` note along with it.
 /// Writes back only when something genuinely changed: `msgmerge` regenerates the
 /// `POT-Creation-Date`/`PO-Revision-Date` header lines on every run regardless of real
 /// content changes, so those are ignored when deciding whether to touch a file, to avoid
@@ -29,12 +30,15 @@ use crate::project_root;
 /// <https://github.com/trypsynth/paperback/issues/638>.
 pub fn translate() -> Result<(), Box<dyn Error>> {
 	let mut dry_run = false;
+	let mut repair = false;
 	for arg in env::args().skip(2) {
-		if arg == "--dry-run" {
-			dry_run = true;
-		} else {
-			crate::print_help();
-			return Err(format!("Unknown argument for translate: {arg}").into());
+		match arg.as_str() {
+			"--dry-run" => dry_run = true,
+			"--repair" => repair = true,
+			_ => {
+				crate::print_help();
+				return Err(format!("Unknown argument for translate: {arg}").into());
+			}
 		}
 	}
 	let root = project_root();
@@ -59,14 +63,25 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 	}
 	// --dry-run makes no API calls and needs no key, so it can be run by anyone locally
 	// to preview what a real run would do.
-	let client_and_supported = if dry_run {
+	let client = if dry_run {
 		None
 	} else {
-		let api_key = env::var("DEEPL_API_KEY").map_err(|_| "DEEPL_API_KEY environment variable is not set")?;
-		let client = deepl::DeepLClient::new(api_key);
-		let supported = client.supported_target_languages()?;
-		Some((client, supported))
+		let api_key = env::var("ANTHROPIC_API_KEY").map_err(|_| "ANTHROPIC_API_KEY environment variable is not set")?;
+		// An empty value is its own case, and worth naming. A CI secret that exists but holds
+		// an empty string satisfies `env::var`, so without this the run gets all the way to the
+		// API and comes back "x-api-key header is required", which reads like a broken key
+		// rather than a missing one and sends you looking in the wrong place.
+		if api_key.trim().is_empty() {
+			return Err("ANTHROPIC_API_KEY is set but empty".into());
+		}
+		let client = claude::ClaudeClient::new(api_key);
+		println!("translating with {}", client.model());
+		Some(client)
 	};
+	// The `#. TRANSLATORS:` comments, keyed by the string they annotate. They live in the pot
+	// rather than in any po file, and the po parser doesn't carry them, so they're collected
+	// once here and handed to the translator alongside each string.
+	let context = translator_comments(&fs::read_to_string(&pot_path)?);
 	let mut po_files: Vec<PathBuf> = fs::read_dir(&po_dir)?
 		.filter_map(Result::ok)
 		.map(|e| e.path())
@@ -82,11 +97,86 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 			println!("{lang}: human-maintained, skipping");
 			continue;
 		}
-		translate_one(po_path, &pot_path, dry_run, client_and_supported.as_ref())?;
+		translate_one(po_path, &pot_path, dry_run, repair, client.as_ref(), &context)?;
 	}
 	let auto_langs: Vec<String> = langs.into_iter().filter(|l| !human_maintained.contains(l.as_str())).collect();
-	readme::sync_readmes(&root, &auto_langs, client_and_supported.as_ref(), dry_run)?;
+	readme::sync_readmes(&root, &auto_langs, client.as_ref(), dry_run)?;
 	Ok(())
+}
+
+/// Parses `#. TRANSLATORS:` comments out of a pot, keyed by the msgid each one sits above.
+///
+/// Comment lines accumulate until a `msgid` line claims them, which is how gettext associates
+/// them; a run of them belonging to one entry is joined into a single note.
+///
+/// The keys have to match what `PoDocument` reports as an entry's msgid, so they are unescaped
+/// and joined across continuation lines the same way it does. Keying on the raw quoted text
+/// instead would silently miss exactly the long or quote-containing strings that need a
+/// translator note most.
+fn translator_comments(pot: &str) -> HashMap<String, String> {
+	let mut out = HashMap::new();
+	let mut pending: Vec<String> = Vec::new();
+	let lines: Vec<&str> = pot.lines().map(str::trim).collect();
+	let mut i = 0;
+	while i < lines.len() {
+		let line = lines[i];
+		if let Some(rest) = line.strip_prefix("#.") {
+			let rest = rest.trim();
+			// "TRANSLATORS:" is a convention for whoever reads the pot; the note after it is
+			// what carries the meaning, so the marker itself is dropped.
+			pending.push(rest.strip_prefix("TRANSLATORS:").unwrap_or(rest).trim().to_string());
+			i += 1;
+			continue;
+		}
+		if let Some(rest) = line.strip_prefix("msgid ") {
+			let mut msgid = po_unquote(rest);
+			i += 1;
+			while i < lines.len() && lines[i].starts_with('"') {
+				msgid.push_str(&po_unquote(lines[i]));
+				i += 1;
+			}
+			if !pending.is_empty() && !msgid.is_empty() {
+				out.insert(msgid, pending.join(" "));
+			}
+			pending.clear();
+			continue;
+		}
+		// Any other line (a blank separator, a #, flag, a msgstr) ends the comment run: a
+		// note only ever belongs to the entry directly below it.
+		if !line.starts_with('#') {
+			pending.clear();
+		}
+		i += 1;
+	}
+	out
+}
+
+/// Decodes one quoted po/pot string, matching the unescaping `PoDocument` applies.
+fn po_unquote(s: &str) -> String {
+	let s = s.trim();
+	if s.len() < 2 || !s.starts_with('"') || !s.ends_with('"') {
+		return String::new();
+	}
+	let mut out = String::new();
+	let mut chars = s[1..s.len() - 1].chars();
+	while let Some(c) = chars.next() {
+		if c != '\\' {
+			out.push(c);
+			continue;
+		}
+		match chars.next() {
+			Some('n') => out.push('\n'),
+			Some('t') => out.push('\t'),
+			Some('"') => out.push('"'),
+			// An escaped backslash, and a stray one at the very end, both yield one backslash.
+			Some('\\') | None => out.push('\\'),
+			Some(other) => {
+				out.push('\\');
+				out.push(other);
+			}
+		}
+	}
+	out
 }
 
 /// Locale codes listed in `po/human-maintained-locales.txt`, one per line (`#` starts a
@@ -109,11 +199,128 @@ fn parse_human_maintained_locales(content: &str) -> HashSet<String> {
 		.collect()
 }
 
+/// What to splice into a document: the entry index and its translated result.
+type Applied = Vec<(usize, Translation)>;
+
+/// Translates the ordinary entries, returning what to apply and how many carried a note.
+fn translate_singulars(
+	client: &claude::ClaudeClient,
+	language: &str,
+	candidates: &[(usize, String)],
+	context: &HashMap<String, String>,
+) -> Result<(Applied, usize), Box<dyn Error>> {
+	if candidates.is_empty() {
+		return Ok((Vec::new(), 0));
+	}
+	let phrases: Vec<claude::Phrase> = candidates
+		.iter()
+		.map(|(_, text)| claude::Phrase { source: text.clone(), context: context.get(text).cloned() })
+		.collect();
+	let annotated = phrases.iter().filter(|p| p.context.is_some()).count();
+	let results = client.translate_phrases(&phrases, language)?;
+	let applied = candidates
+		.iter()
+		.map(|(i, _)| *i)
+		.zip(results)
+		.filter_map(|(i, result)| result.map(|text| (i, Translation::Singular(text))))
+		.collect();
+	Ok((applied, annotated))
+}
+
+/// Translates the plural entries, asking for `nplurals` forms of each.
+fn translate_plurals(
+	client: &claude::ClaudeClient,
+	language: &str,
+	candidates: &[(usize, String, String)],
+	context: &HashMap<String, String>,
+	nplurals: usize,
+	rule: &str,
+) -> Result<Applied, Box<dyn Error>> {
+	if candidates.is_empty() {
+		return Ok(Vec::new());
+	}
+	let phrases: Vec<claude::PluralPhrase> = candidates
+		.iter()
+		.map(|(_, singular, plural)| claude::PluralPhrase {
+			singular: singular.clone(),
+			plural: plural.clone(),
+			// The note is filed under the singular, which is the msgid the pot comment sits
+			// above.
+			context: context.get(singular).cloned(),
+		})
+		.collect();
+	let results = client.translate_plurals(&phrases, language, nplurals, rule)?;
+	Ok(candidates
+		.iter()
+		.map(|(i, _, _)| *i)
+		.zip(results)
+		.filter_map(|(i, result)| result.map(|forms| (i, Translation::Plural(forms))))
+		.collect())
+}
+
+/// The `nplurals` count and the raw plural rule from a po file's `Plural-Forms` header.
+///
+/// The count comes from the parsed document, and the rule expression is taken verbatim from the
+/// header text so the model is told the language's actual rule rather than a description of it.
+fn plural_forms(content: &str) -> Option<(usize, String)> {
+	let nplurals = PoDocument::parse(content).nplurals()?;
+	let line = content.lines().map(str::trim).find(|l| l.contains("Plural-Forms:"))?;
+	let rule = line.trim_start_matches('"').trim_end_matches("\\n\"").trim().to_string();
+	Some((nplurals, rule))
+}
+
+/// Adds entries whose existing translation is provably damaged to `candidates`, returning how
+/// many were added.
+///
+/// Needed because `--previous` only helps from here on. `msgmerge` writes the `#| msgid` line
+/// that marks an entry for re-translation at the moment it fuzzy-matches, so entries stranded
+/// before the flag was added are already `#, fuzzy` with no `#|`, their msgids still match the
+/// pot exactly, and no future merge will ever touch them again. Nothing in the normal flow can
+/// reach them; this is what does.
+///
+/// Only entries that fail a mechanical check are added - a dropped placeholder, accelerator or
+/// shortcut suffix. A translation that merely looks doubtful is left alone: re-translating on
+/// suspicion would churn thousands of entries that are perfectly fine, and the checks are the
+/// only part of this that can be right or wrong on its own.
+fn add_damaged_entries(
+	doc: &PoDocument,
+	candidates: &mut Vec<(usize, String)>,
+	plurals: &mut Vec<(usize, String, String)>,
+) -> usize {
+	let already: HashSet<usize> = candidates.iter().map(|(i, _)| *i).collect();
+	let already_plural: HashSet<usize> = plurals.iter().map(|(i, _, _)| *i).collect();
+	let mut count = 0;
+	for (i, entry) in doc.entries.iter().enumerate() {
+		match entry.msgid_plural.as_deref() {
+			// A plural entry is damaged when any one of its forms is: the whole set is
+			// rewritten together, so one broken form condemns the entry.
+			Some(plural) => {
+				if already_plural.contains(&i) {
+					continue;
+				}
+				if entry.msgstr_plural.iter().any(|form| claude::is_damaged(plural, form)) {
+					plurals.push((i, entry.msgid.clone(), plural.to_string()));
+					count += 1;
+				}
+			}
+			None => {
+				if !already.contains(&i) && claude::is_damaged(&entry.msgid, &entry.msgstr) {
+					candidates.push((i, entry.msgid.clone()));
+					count += 1;
+				}
+			}
+		}
+	}
+	count
+}
+
 fn translate_one(
 	po_path: &Path,
 	pot_path: &Path,
 	dry_run: bool,
-	client_and_supported: Option<&(deepl::DeepLClient, HashSet<String>)>,
+	repair: bool,
+	client: Option<&claude::ClaudeClient>,
+	context: &HashMap<String, String>,
 ) -> Result<(), Box<dyn Error>> {
 	let lang = po_path.file_stem().and_then(|s| s.to_str()).unwrap_or_default().to_string();
 	let original = fs::read_to_string(po_path)?;
@@ -122,8 +329,20 @@ fn translate_one(
 	// bumped a timestamp" case alike.
 	let tmp = env::temp_dir().join(format!("paperback-translate-{lang}-{}.po", process::id()));
 	fs::write(&tmp, &original)?;
+	// `--previous` is load-bearing, not cosmetic. When msgmerge fuzzy-matches a changed string
+	// against a similar old one, it copies that old translation across and marks the entry
+	// `#, fuzzy`; only `--previous` also records the string it matched against, as a `#| msgid`
+	// line. That line is the sole thing distinguishing "msgmerge just guessed at this, it needs
+	// translating" from "already machine-translated, flagged for a human, leave it alone", and
+	// `PoDocument::needs_translation` selects on exactly that.
+	//
+	// Without the flag every fuzzy entry looked like the second kind, so a changed string
+	// silently kept whatever translation msgmerge had guessed and was never offered for
+	// translation again. That is how `&Settings` ended up showing the old translation of
+	// `Settings` and `&Close` the old translation of `Close`: same words, accelerator quietly
+	// gone, and nothing would ever have revisited them.
 	let msgmerge_ok = Command::new("msgmerge")
-		.args(["--update", "--backup=none", "--no-wrap"])
+		.args(["--update", "--backup=none", "--no-wrap", "--previous"])
 		.arg(&tmp)
 		.arg(pot_path)
 		.status()
@@ -136,48 +355,65 @@ fn translate_one(
 	let merged = fs::read_to_string(&tmp)?;
 	let _ = fs::remove_file(&tmp);
 	let mut doc = PoDocument::parse(&merged);
-	let candidates: Vec<(usize, String)> = doc.needs_translation().map(|(i, m)| (i, m.to_string())).collect();
+	let mut candidates: Vec<(usize, String)> = doc.needs_translation().map(|(i, m)| (i, m.to_string())).collect();
+	let mut plurals: Vec<(usize, String, String)> =
+		doc.needs_plural_translation().map(|(i, s, p)| (i, s.to_string(), p.to_string())).collect();
+	let repaired = if repair { add_damaged_entries(&doc, &mut candidates, &mut plurals) } else { 0 };
+	let total = candidates.len() + plurals.len();
 	if dry_run {
-		if candidates.is_empty() {
+		if total == 0 {
 			println!("{lang}: fully translated, nothing to do");
 		} else {
-			println!("{lang}: {} entries would be translated", candidates.len());
+			let plural_note = if plurals.is_empty() { String::new() } else { format!(", {} plural", plurals.len()) };
+			let repair_note = if repaired > 0 { format!(" ({repaired} damaged)") } else { String::new() };
+			println!("{lang}: {total} entries would be translated{plural_note}{repair_note}");
 		}
 		return Ok(());
 	}
-	let final_content = if candidates.is_empty() {
+	let final_content = if total == 0 {
 		merged
 	} else {
-		let Some((client, supported)) = client_and_supported else {
-			unreachable!("client_and_supported is always Some outside --dry-run")
-		};
-		match deepl::resolve_target_lang(&lang, supported) {
+		let Some(client) = client else { unreachable!("client is always Some outside --dry-run") };
+		match claude::language_name(&lang) {
 			None => {
-				println!(
-					"{lang}: not supported by DeepL, skipping ({} entries need a human translator)",
-					candidates.len()
-				);
+				println!("{lang}: no language name mapped, skipping ({total} entries need one)");
 				merged
 			}
-			Some(target_lang) => {
-				let texts: Vec<String> = candidates.iter().map(|(_, t)| t.clone()).collect();
-				let results = client.translate_batch(&texts, &target_lang)?;
-				let translations: Vec<(usize, String)> = candidates
-					.iter()
-					.map(|(i, _)| *i)
-					.zip(results)
-					.filter_map(|(i, result)| result.map(|text| (i, text)))
-					.collect();
-				let count = translations.len();
-				let skipped = candidates.len() - count;
-				doc.apply_all(&translations);
-				if skipped > 0 {
-					println!(
-						"{lang} ({target_lang}): translated {count} entries, skipped {skipped} (placeholder mismatch, will retry next run)"
-					);
-				} else {
-					println!("{lang} ({target_lang}): translated {count} entries");
+			Some(language) => {
+				let (mut applied, annotated) = translate_singulars(client, language, &candidates, context)?;
+				let plural_done = match plural_forms(&merged) {
+					// Without a usable Plural-Forms header there is no way to know how many
+					// forms to ask for, and guessing at two would write a Russian file that is
+					// wrong in a way gettext accepts silently.
+					None if !plurals.is_empty() => {
+						eprintln!("warning: {lang} has no usable Plural-Forms header, leaving its plural entries");
+						0
+					}
+					None => 0,
+					Some((nplurals, rule)) => {
+						let translated = translate_plurals(client, language, &plurals, context, nplurals, &rule)?;
+						let done = translated.len();
+						applied.extend(translated);
+						done
+					}
+				};
+				let singular_done = applied.len() - plural_done;
+				let skipped = total - applied.len();
+				doc.apply(&applied);
+				print!("{lang} ({language}): translated {singular_done} entries");
+				if plural_done > 0 {
+					print!(", {plural_done} plural");
 				}
+				if repaired > 0 {
+					print!(", {repaired} of them repaired");
+				}
+				if annotated > 0 {
+					print!(", {annotated} with translator notes");
+				}
+				if skipped > 0 {
+					print!(", skipped {skipped} (failed a placeholder/accelerator check, will retry next run)");
+				}
+				println!();
 				doc.render()
 			}
 		}
@@ -239,5 +475,75 @@ mod tests {
 	fn human_maintained_locales_empty_when_only_comments() {
 		let content = "# nothing here yet\n";
 		assert!(parse_human_maintained_locales(content).is_empty());
+	}
+
+	#[test]
+	fn a_translator_note_attaches_to_the_msgid_below_it() {
+		let pot = "#. TRANSLATORS: Default status bar text when no document is open\nmsgid \"Ready\"\nmsgstr \"\"\n";
+		let notes = translator_comments(pot);
+		assert_eq!(notes.get("Ready").map(String::as_str), Some("Default status bar text when no document is open"));
+	}
+
+	#[test]
+	fn a_msgid_with_no_note_gets_no_entry() {
+		let pot = "msgid \"Ready\"\nmsgstr \"\"\n\nmsgid \"Cancel\"\nmsgstr \"\"\n";
+		assert!(translator_comments(pot).is_empty());
+	}
+
+	// A note belongs only to the entry directly below it. Without the reset, a blank line
+	// after an entry would let its note drift onto the next, unrelated string.
+	#[test]
+	fn a_note_does_not_drift_onto_the_following_entry() {
+		let pot = "#. TRANSLATORS: about Ready\nmsgid \"Ready\"\nmsgstr \"\"\n\nmsgid \"Cancel\"\nmsgstr \"\"\n";
+		let notes = translator_comments(pot);
+		assert!(notes.contains_key("Ready"));
+		assert!(!notes.contains_key("Cancel"));
+	}
+
+	// The keys have to match PoDocument's unescaped, joined msgid or the lookup silently
+	// misses, which would hit exactly the long strings that most need their note.
+	#[test]
+	fn keys_are_unescaped_and_joined_across_continuation_lines() {
+		let pot =
+			"#. TRANSLATORS: a two-line prompt\nmsgid \"\"\n\"No parser for {}.\\n\"\n\"Open it how?\"\nmsgstr \"\"\n";
+		let notes = translator_comments(pot);
+		assert_eq!(notes.get("No parser for {}.\nOpen it how?").map(String::as_str), Some("a two-line prompt"));
+	}
+
+	#[test]
+	fn an_escaped_quote_in_a_msgid_survives_the_key() {
+		let pot = "#. TRANSLATORS: note\nmsgid \"Say \\\"hi\\\"\"\nmsgstr \"\"\n";
+		assert!(translator_comments(pot).contains_key("Say \"hi\""));
+	}
+
+	#[test]
+	fn several_note_lines_join_into_one() {
+		let pot = "#. TRANSLATORS: first line\n#. second line\nmsgid \"Ready\"\nmsgstr \"\"\n";
+		let notes = translator_comments(pot);
+		assert_eq!(notes.get("Ready").map(String::as_str), Some("first line second line"));
+	}
+
+	// The header's empty msgid is not a translatable string, so a note above it has nothing
+	// to attach to and must not leak onto the first real entry.
+	#[test]
+	fn plural_forms_reads_the_count_and_the_rule() {
+		let po = "msgid \"\"\nmsgstr \"\"\n\"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : 1);\\n\"\n";
+		let (nplurals, rule) = plural_forms(po).unwrap();
+		assert_eq!(nplurals, 3);
+		assert!(rule.starts_with("Plural-Forms: nplurals=3;"), "got: {rule}");
+		assert!(!rule.ends_with("\\n\""), "the header's line ending should not reach the prompt: {rule}");
+	}
+
+	// Without the header there is no way to know how many forms to ask for, and guessing at
+	// two writes a Russian file that is wrong in a way gettext accepts silently.
+	#[test]
+	fn plural_forms_is_none_without_the_header() {
+		assert!(plural_forms("msgid \"\"\nmsgstr \"\"\n").is_none());
+	}
+
+	#[test]
+	fn the_header_entry_never_takes_a_note() {
+		let pot = "#. TRANSLATORS: stray\nmsgid \"\"\nmsgstr \"\"\n\nmsgid \"Ready\"\nmsgstr \"\"\n";
+		assert!(translator_comments(pot).is_empty());
 	}
 }
