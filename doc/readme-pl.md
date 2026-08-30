@@ -1,4 +1,4 @@
-# Paperback - wersja 0.8.5
+# Paperback - wersja 0.9.0
 
 ## Wprowadzenie
 
@@ -6,59 +6,77 @@ Paperback to lekki, szybki i dostępny czytnik e-booków i dokumentów dla wszys
 
 ## Wymagania systemowe
 
-Paperback działa obecnie w systemach Windows 10/11 i Linux. Obsługa systemu macOS jest planowana.
+Paperback działa obecnie w systemach Windows 10/11 oraz we wszystkich nowoczesnych wersjach macOS na procesorach ARM. Trwają intensywne prace nad natywnymi aplikacjami dla systemów iOS i Android. Publiczne wersje testowe są planowane niedługo po wydaniu wersji 0.9.0 na komputery. Nastąpi to przed wspólnym wydaniem 1.0, które obejmie wszystkie cztery platformy.
 
 ## Funkcje
 
 * Całkowicie samodzielna aplikacja, która nie wymaga instalowania dodatkowego oprogramowania na komputerze, aby zacząć czytać.
 * Bardzo szybkie działanie, nawet na starszym sprzęcie.
-* Prosty interfejs z kartami, który pozwala otworzyć obok siebie tyle dokumentów, ile potrzebujesz.
-* Zapisuje pozycję kursora w każdym otwieranym dokumencie.
+* Prosty interfejs z kartami, który pozwala otworzyć obok siebie tyle dokumentów, ile chcesz.
+* Zapisuje dokładną pozycję czytania w każdym otwieranym dokumencie.
 * Opcjonalnie zapamiętuje dokumenty otwarte przy zamknięciu programu i przywraca je przy następnym uruchomieniu.
-* Zaprojektowany przez użytkownika czytnika ekranu dla użytkowników czytników ekranu.
 * Zawiera funkcje nawigacji podobne do tych znanych z trybu przeglądania stron internetowych w wielu czytnikach ekranu, aby szybko i łatwo poruszać się po dokumentach.
 * Zawiera rozbudowany dialog Znajdź, między innymi z historią i obsługą wyrażeń regularnych.
 * Może działać w pełni przenośnie albo zostać zainstalowany z automatycznym skojarzeniem typów plików.
+* Obsługuje ogromną liczbę popularnych formatów plików.
+
+## Zgodność z czytnikami ekranu
+
+Paperback dobrze współpracuje ze wszystkimi głównymi czytnikami ekranu. Istnieje jednak jeden znany problem dotyczący użytkowników JAWS.
+
+### JAWS i linijki brajlowskie
+
+Jeśli używasz JAWS z linijką brajlowską, możesz zauważyć, że długie akapity są ucinane przy przesuwaniu w przód klawiszami nawigacji linijki. Dotyczy to również polecenia odczytu bieżącego akapitu. To błąd w obsłudze kontrolki tekstowej RICHEDIT50W po stronie JAWS, a nie w samym Paperbacku. Na rozwiązanie trzeba było długo czekać, przy znanej opieszałości firmy Vispero w odpowiadaniu na zgłoszenia dotyczące otwartego oprogramowania.
+
+Obejście, które po miesiącach oczekiwania wyszło w końcu na grupie dyskusyjnej JAWS, polega na edycji pliku `paperback.jcf` i ustawieniu opcji „Braille Presentation and Panning” na „Always use DOM if available”. Warto też włączyć „Pan Text by Paragraph”, bo inaczej linijka pozostanie na aktywnym akapicie, zamiast przesuwać się dalej. Przy obu ustawieniach przesuwanie linijki powinno działać poprawnie.
+
+Nazwy tych opcji podano po angielsku, bo tak brzmią w pliku konfiguracyjnym. W polskiej wersji JAWS ich etykiety w okienku ustawień mogą być przetłumaczone.
 
 ## Aktualnie obsługiwane typy plików
 
 Paperback obsługuje następujące formaty i rozszerzenia:
 
 * Pliki pomocy CHM (`.chm`)
+* Książki DAISY (`.opf`, `.zip`)
 * Książki EPUB (`.epub`)
 * E-booki FB2 (`.fb2`)
 * Dokumenty HTML (`.htm`, `.html`, `.xhtml`)
 * Dokumenty Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Dokumenty Microsoft Word (`.docx`, `.docm`)
+* Dokumenty Microsoft Word (`.docx`, `.docm`, `.doc`)
+* Książki MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
 * Prezentacje OpenDocument (`.odp`, `.fodp`)
 * Pliki tekstowe OpenDocument (`.odt`, `.fodt`)
 * Dokumenty PDF (`.pdf`)
-* Prezentacje PowerPoint (`.pptx`, `.pptm`)
+* Prezentacje PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Dokumenty RTF (`.rtf`)
 * Pliki zwykłego tekstu i dzienników (`.txt`, `.log`)
-* Dokumenty XML (`.xml`)
 
 ## Skróty klawiszowe
 
-Paperback został zaprojektowany przede wszystkim do pracy z klawiaturą i czytnikiem ekranu. Poniżej znajdują się aktualne skróty.
+Paperback został zaprojektowany przede wszystkim do pracy z klawiaturą. Poniżej znajdują się aktualne skróty.
+
+Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowiednik podano w nawiasie. Wynika to głównie z tego, że skróty Ctrl+G, Ctrl+W oraz Alt+Strzałka w lewo i w prawo są w tym systemie zajęte przez inne konwencje systemowe lub aplikacyjne.
 
 ### Menu Plik
 
 * `Ctrl+O`: Otwórz dokument.
-* `Ctrl+F4`: Zamknij bieżący dokument.
-* `Ctrl+Shift+F4`: Zamknij wszystkie otwarte dokumenty.
+* `Ctrl+F4` (macOS: `Cmd+W`): Zamknij bieżący dokument.
+* `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Zamknij wszystkie otwarte dokumenty.
+* `Ctrl+Shift+T`: Otwórz ponownie ostatnio zamknięty dokument.
 * `Ctrl+R`: Pokaż dialog Wszystkie dokumenty (z menu Ostatnie dokumenty).
+* `Ctrl+Q`: Zakończ (tylko Windows; w systemie macOS znajduje się w menu aplikacji).
 
 ### Menu Przejdź
 
 * `Ctrl+F`: Pokaż dialog Znajdź.
-* `F3`: Znajdź następne.
-* `Shift+F3`: Znajdź poprzednie.
-* `Ctrl+G`: Przejdź do wiersza.
-* `Ctrl+Shift+G`: Przejdź do procentu.
+* `F3` (macOS: `Cmd+G`): Znajdź następne.
+* `Shift+F3` (macOS: `Cmd+Shift+G`): Znajdź poprzednie.
+* `Ctrl+G` (macOS: `Cmd+L`): Przejdź do wiersza.
+* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Przejdź do procentu.
 * `Ctrl+P`: Przejdź do strony (gdy jest obsługiwana przez bieżący dokument).
-* `Alt+Left`: Przejdź wstecz w historii nawigacji.
-* `Alt+Right`: Przejdź do przodu w historii nawigacji.
+* `=`: Odczytaj bieżącą pozycję procentową w dokumencie.
+* `Alt+Strzałka w lewo` (macOS: `Cmd+[`): Przejdź wstecz w historii nawigacji.
+* `Alt+Strzałka w prawo` (macOS: `Cmd+]`): Przejdź do przodu w historii nawigacji.
 * `[`: Poprzednia sekcja.
 * `]`: Następna sekcja.
 * `Shift+H`: Poprzedni nagłówek.
@@ -69,14 +87,20 @@ Paperback został zaprojektowany przede wszystkim do pracy z klawiaturą i czytn
 * `P`: Następna strona.
 * `Shift+B`: Poprzednia zakładka.
 * `B`: Następna zakładka.
+* `/`: Ustaw zakładkę tymczasową.
+* `\`: Przejdź do zakładki tymczasowej.
 * `Shift+N`: Poprzednia notatka.
 * `N`: Następna notatka.
 * `Ctrl+B`: Przejdź do wszystkich zakładek i notatek.
 * `Ctrl+Alt+B`: Przejdź tylko do zakładek.
 * `Ctrl+Alt+M`: Przejdź tylko do notatek.
-* `Ctrl+Shift+W`: Wyświetl tekst notatki w bieżącej pozycji.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, czyli fizyczny klawisz Control, a nie Cmd): Wyświetl tekst notatki w bieżącej pozycji.
 * `Shift+K`: Poprzedni odnośnik.
 * `K`: Następny odnośnik.
+* `Shift+G`: Poprzedni obraz.
+* `G`: Następny obraz.
+* `Shift+F`: Poprzedni rysunek.
+* `F`: Następny rysunek.
 * `Shift+T`: Poprzednia tabela.
 * `T`: Następna tabela.
 * `Shift+S`: Poprzedni separator.
@@ -85,21 +109,31 @@ Paperback został zaprojektowany przede wszystkim do pracy z klawiaturą i czytn
 * `L`: Następna lista.
 * `Shift+I`: Poprzedni element listy.
 * `I`: Następny element listy.
+* `Shift+,`: Przejdź na początek bieżącego kontenera (listy lub tabeli).
+* `,`: Przejdź poza koniec bieżącego kontenera (listy lub tabeli).
 
 ### Menu Narzędzia
 
-* `Ctrl+W`: Pokaż liczbę słów w bieżącym dokumencie.
+* `Ctrl+W` (macOS: `RawCtrl+W`, czyli fizyczny klawisz Control, a nie Cmd): Pokaż liczbę słów w bieżącym dokumencie.
 * `Ctrl+I`: Pokaż informacje o dokumencie.
 * `Ctrl+T`: Pokaż Spis treści.
 * `F7`: Pokaż Listę elementów.
 * `Ctrl+Shift+C`: Otwórz folder zawierający.
 * `Ctrl+Shift+V`: Otwórz bieżącą treść w Widoku WWW.
+* `Ctrl+U`: Wyświetl źródło dokumentu w nowej karcie.
 * `Ctrl+Shift+E`: Eksportuj dane dokumentu (`.paperback`).
 * `Ctrl+Shift+I`: Importuj dane dokumentu (`.paperback`).
 * `Ctrl+E`: Eksportuj bieżący dokument do zwykłego tekstu.
 * `Ctrl+Shift+B`: Przełącz zakładkę przy bieżącym zaznaczeniu lub kursorze.
-* `Ctrl+Shift+N`: Dodaj lub edytuj notatkę zakładki przy bieżącym zaznaczeniu lub kursorze.
-* `Ctrl+,`: Otwórz Opcje.
+* `Ctrl+Shift+N`: Dodaj lub edytuj notatkę do zakładki przy bieżącym zaznaczeniu lub kursorze.
+* `Ctrl+Alt+W`: Przełącz zawijanie wierszy.
+* `Ctrl+Spacja`: Odtwórz lub wstrzymaj narrację dźwiękową.
+* `'`: Przewiń narrację dźwiękową w przód.
+* `;`: Przewiń narrację dźwiękową w tył.
+* `Ctrl+'`: Zwiększ skok przewijania dźwięku.
+* `Ctrl+;`: Zmniejsz skok przewijania dźwięku.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, czyli Control+Command+F): Przełącz tryb pełnoekranowy.
+* `Ctrl+,`: Otwórz Opcje (w systemie macOS: Preferencje, w menu aplikacji).
 * `Ctrl+Shift+S`: Przełącz Wyłącznik czasowy.
 
 ### Menu Pomoc
@@ -112,15 +146,15 @@ Paperback został zaprojektowany przede wszystkim do pracy z klawiaturą i czytn
 
 ### Dodatkowe klawisze w widoku dokumentu
 
-* `Delete` / `Numpad Delete` na kontrolce kart: zamknij kartę wybranego dokumentu.
-* `Enter` w tekście dokumentu: aktywuj odnośnik pod kursorem albo otwórz Widok tabeli, jeśli kursor znajduje się na znaczniku tabeli.
-* `Shift+F10` w tekście dokumentu: otwórz menu kontekstowe.
+* `Delete` / `Delete na klawiaturze numerycznej` na kontrolce kart: zamknij kartę wybranego dokumentu.
+* `Enter` albo `Spacja` w tekście dokumentu: aktywuj odnośnik pod kursorem albo otwórz Widok tabeli, jeśli kursor znajduje się na znaczniku tabeli.
+* `Shift+F10` albo klawisz Menu/Aplikacje w tekście dokumentu: otwórz menu kontekstowe.
 
 ## Obsługiwane języki
 
 Paperback jest tłumaczony na wiele języków, a kolejne są stale dodawane. Pełna lista znajduje się poniżej.
 
-Aby dowiedzieć się, jak pomóc w tłumaczeniu, przeczytaj [Przewodnik po tłumaczeniach](https://paperback.dev/translations/).
+Aby dowiedzieć się, jak pomóc w tłumaczeniu, przeczytaj [Przewodnik po tłumaczeniach](translating.md).
 
 * Bośniacki
 * Chiński uproszczony
@@ -128,6 +162,7 @@ Aby dowiedzieć się, jak pomóc w tłumaczeniu, przeczytaj [Przewodnik po tłum
 * Fiński
 * Francuski
 * Hiszpański
+* Holenderski
 * Japoński
 * Niemiecki
 * Polski
@@ -142,7 +177,7 @@ Aby dowiedzieć się, jak pomóc w tłumaczeniu, przeczytaj [Przewodnik po tłum
 * Aryan Choudhary: główny współtwórca.
 
 ### Darowizny
-Poniższe osoby przekazały darowizny na rozwój Paperbacka. Jeśli przekażesz darowiznę, Twoje imię i nazwisko nie zostanie tu dodane automatycznie. Dodaję tylko osoby, które chcą, aby ich wsparcie było publiczne.
+Poniższe osoby przekazały jakąkolwiek darowiznę na rozwój Paperbacka. Jeśli przekażesz darowiznę, Twoje imię i nazwisko nie zostanie tu dodane automatycznie. Dodaję tylko osoby, które chcą, aby ich wsparcie było publiczne.
 
 Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatycznego dodania do tej listy.
 
@@ -158,6 +193,7 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 * Jonathan Rodriguez
 * Jonathan Schuster
 * Keao Wright
+* Michael Marshall
 * Pratik Patel
 * Roberto Perez
 * Sean Randall
@@ -165,6 +201,147 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 * Tyler Rodick
 
 ## Lista zmian
+
+### Wersja 0.9.0
+
+#### Dodano
+
+##### Ogólne
+* Narzędzie wiersza poleceń o nazwie pb, które szybko przekształca dowolny format obsługiwany przez Paperbacka na HTML, Markdown albo zwykły tekst.
+* Opcję ponownego wczytywania dokumentów zmienionych na dysku przez inne programy.
+* Opcję Wyświetl źródło, która otwiera źródło dokumentu w nowej karcie. Jest przydatna na przykład przy edytowaniu plików Markdown.
+* Tekst dokumentu jest teraz dzielony na strony, dzięki czemu książki liczące dziesiątki milionów słów wczytują się w kilka sekund. Prosimy o zgłaszanie wszelkich nieprawidłowości związanych z tą zmianą.
+
+##### Obsługa platform
+* Obsługę systemu Windows na procesorach ARM64!
+* Natywną obsługę systemu macOS!
+* Przełącznik trybu pełnoekranowego.
+
+##### Dialog Wszystkie dokumenty
+* Przycisk Zlokalizuj, który pozwala znaleźć brakujące książki po zmianie ich ścieżki.
+* Filtr statusu i pasek statusu, dzięki którym można filtrować dokumenty według statusu oraz sprawdzić, ile dokumentów jest wyświetlanych i zaznaczonych.
+* Skrót `Ctrl+Shift+A`, który odznacza wszystkie dokumenty.
+
+##### Opcje i czytelność
+* Kartę czytelności z następującymi opcjami:
+    * zawijanie wierszy (przeniesione z karty ogólnej),
+    * wyświetlanie tabel w treści (nowość w tym wydaniu, opis poniżej),
+    * czcionka,
+    * kolor tła,
+    * odstęp między wierszami,
+    * odstęp między akapitami,
+    * odstęp między literami,
+    * wyrównanie tekstu.
+* Pozycję menu dla zawijania wierszy oraz przypisany do niej skrót klawiszowy.
+* Przełącznik sposobu wyświetlania tabel oraz ujednolicony wygląd tabel we wszystkich dokumentach.
+
+##### Nawigacja
+* Obsługę nawigacji po kontenerach.
+* Opcję automatycznego przenoszenia kursora na początek wiersza przy przechodzeniu między wierszami, podobnie jak w trybie przeglądania w czytnikach ekranu.
+* Skrót klawiszowy ze znakiem równości, który odczytuje bieżącą pozycję procentową w dokumencie.
+
+##### Zakładki
+* Zakładki tymczasowe: można mieć jedną na dokument i zostaje ona zapamiętana między uruchomieniami. Ukośnik ustawia zakładkę, a ukośnik odwrotny przenosi do niej.
+
+##### Liczba słów
+* Szacowany czas czytania w dialogu liczby słów oraz możliwość ustawienia własnej szybkości czytania, dzięki której ta informacja staje się naprawdę użyteczna.
+* Gdy przy otwieraniu dialogu liczby słów aktywne jest zaznaczenie, pokazywana jest też liczba zaznaczonych słów.
+
+##### Skróty klawiszowe
+* Możliwość dostosowania każdego skrótu klawiszowego w aplikacji za pomocą prostego dialogu.
+* Konfigurowalny skrót klawiszowy przywracający Paperbacka z zasobnika systemowego.
+
+##### Języki
+* Holenderski, fiński i polski.
+
+##### Eksport
+* Rozszerzono pozycję menu eksportu, aby umożliwić eksport do HTML i Markdown, obok zwykłego tekstu.
+
+##### Aktualizator
+* Przycisk anulowania w dialogu trwającej aktualizacji.
+* Aktualizator sprawdza teraz, czy w pobrany plik nikt nie ingerował.
+
+##### Widok WWW
+* Widok WWW otwiera się teraz na bieżącej pozycji czytania.
+
+##### Książki DAISY
+* Obsługę książek DAISY 2.0.
+* Obsługę odtwarzania dźwięku w formacie DAISY 2.02.
+
+##### Audiobooki
+* Możliwość odtwarzania audiobooków. Obsługiwane są audiobooki DAISY, również z tekstem, oraz archiwa ZIP z plikami dźwiękowymi.
+* Skróty klawiszowe i pozycje menu do odtwarzania i wstrzymywania narracji, przewijania w przód i w tył oraz zmiany skoku przewijania.
+* Opcje synchronizacji kursora czytania z odtwarzanym dźwiękiem, ustawienia skoku przewijania oraz wyboru, czy przewijanie poza koniec rozdziału przenosi do następnego.
+
+##### Dokumenty CHM
+* Obsługę list, elementów list, rysunków i obrazów.
+
+##### PowerPoint
+* Dokumenty PowerPoint obsługują teraz tabele.
+
+#### Naprawiono
+
+##### Ogólne
+* Dokumenty zapisane w starszych kodowaniach chińskich, japońskich i koreańskich, takich jak GBK, Big5 i Shift_JIS, wyświetlają się teraz poprawnie, a nie jako ciąg nieczytelnych znaków.
+* Polecenie „Otwórz ponownie ostatnio zamknięty”, które próbowało otwierać dołączony plik pomocy.
+* Wybrana karta nie otrzymywała poprawnie fokusa po ponownym uruchomieniu Paperbacka.
+* Obsługę plików na dyskach sieciowych Windows: polecenie pokazania pliku w folderze prawidłowo wskazuje teraz plik na dysku sieciowym, a ścieżki nie zawierają już dziwnych znaków.
+* Pliki .paperback nie są już wczytywane samoczynnie przy przywracaniu dokumentów. Zamiast tego po znalezieniu takiego pliku pojawia się pytanie o potwierdzenie.
+* Polecenie otwarcia folderu zawierającego wskazuje teraz dany plik w Eksploratorze.
+* Otwarcie pliku pomocy uwzględnia teraz wybrany język.
+* Interfejs Paperbacka skaluje się teraz poprawnie na ekranach o dużej gęstości pikseli.
+* Menu aktualizuje się teraz prawidłowo, a fokus przenosi się na kontrolkę tekstu przy otwieraniu pomocy w Paperbacku.
+* Zastosowano znacznie bezpieczniejszą metodę komunikacji między procesami w systemie Windows.
+* Tytuł aktywnego dokumentu jest teraz odczytywany przy przechodzeniu między kartami.
+* Zmniejszono zużycie pamięci przy dużych dokumentach przez zmniejszenie o połowę wewnętrznych tablic indeksu znaków.
+
+##### Dialog Wszystkie dokumenty
+* Klawisz Escape nie zamykał dialogów Informacje o dokumencie i Wszystkie dokumenty.
+* Pasek tytułu nie aktualizował się po zamknięciu dokumentu z dialogu Wszystkie dokumenty.
+* Plik readme.html nie będzie już dodawany do listy wszystkich dokumentów po otwarciu skrótem Shift+F1.
+* Usunięcie dokumentu z dialogu ostatnich dokumentów zamyka teraz również jego aktywną kartę.
+* Filtr wyszukiwania jest teraz zachowywany po usunięciu dokumentu.
+
+##### Nawigacja
+* Odczytywanie nieprawidłowego tekstu wiersza przy nawigacji po stronach w niektórych sytuacjach.
+* Ustawianie kursora w niewłaściwym miejscu przez polecenia Przejdź do wiersza, Przejdź do strony i Przejdź do procentu w dużych dokumentach.
+* Nieuwzględnianie wczytanego fragmentu dokumentu przez polecenia Znajdź i Znajdź następne w dużych dokumentach.
+
+##### Zakładki
+* Dźwięki zakładek i notatek odtwarzają się teraz wyłącznie przy przejściu przez słowo, które je zawiera.
+
+##### Czytelność
+* Przeskok na początek dokumentu przy włączaniu zawijania wierszy.
+
+##### Widok WWW
+* Okna Widoku WWW nie dało się rozciągnąć, a otwierało się w bardzo małym rozmiarze.
+* Obrazy wyświetlają się teraz poprawnie w osadzonym Widoku WWW.
+
+##### Aktualizator
+* Aktualizator pokazuje teraz poprawnie treść znaczników kodu w informacjach o wydaniu.
+
+##### Książki DAISY
+* Nieprawidłowe informacje na pasku statusu przy książkach DAISY.
+* Wczytywanie książek DAISY z błędnymi deklaracjami kodowania.
+
+##### Dokumenty RTF
+* Przetwarzanie dokumentów RTF ze znakami spoza alfabetu łacińskiego.
+* Grupy `\pict` w RTF, dzięki czemu dane osadzonych obrazów nie trafiają już do tekstu dokumentu.
+
+##### Książki Mobi/AZW3
+* Kotwice pozycji w pliku (filepos) w książkach Mobi, które rozrywały znaczniki HTML i wstawiały śmieci do tekstu książki.
+* Odnośniki w starszych książkach Mobi.
+* Znacznie ulepszono przetwarzanie plików AZW3.
+
+##### Dokumenty Word
+* Dokumenty Word z nazwami stylów zależnymi od języka, w których nagłówki nie wyświetlały się poprawnie.
+
+##### Dokumenty HTML/XHTML
+* Elementy HTML o nazwach dl, dt i dd, które nie powodowały podziału wiersza w dokumentach XHTML.
+
+##### Dokumenty PDF
+* Paperback wraca teraz do zwykłego wyodrębniania tekstu w przypadku błędnie otagowanych plików PDF.
+* Dokumenty PDF zawierające znaki sterujące w tytułach lub zakładkach nie powodują już awarii Paperbacka przy otwieraniu.
 
 ### Wersja 0.8.5
 * Dodano obsługę stron w książkach EPUB.
@@ -254,7 +431,7 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 
 ### Wersja 0.6.1
 * Dodano obsługę plików PDF chronionych hasłem!
-* Dodano bardzo prostą funkcję przechodzenia do poprzedniej/następnej pozycji. Jeśli naciśniesz `Enter` na odnośniku wewnętrznym i kursor zostanie przeniesiony, ta pozycja zostanie zapamiętana i będzie można do niej wracać za pomocą `Alt+Left`/`Alt+Right`.
+* Dodano bardzo prostą funkcję przechodzenia do poprzedniej/następnej pozycji. Jeśli naciśniesz `Enter` na odnośniku wewnętrznym i kursor zostanie przeniesiony, ta pozycja zostanie zapamiętana i będzie można do niej wracać za pomocą `Alt+Strzałka w lewo`/`Alt+Strzałka w prawo`.
 * Dodano Listę elementów! Obecnie pokazuje tylko drzewo wszystkich nagłówków w dokumencie albo listę odnośników, ale w przyszłości planowane jest jej rozszerzenie.
 * Dodano opcję uruchamiania Paperbacka w zmaksymalizowanym oknie domyślnie.
 * Naprawiono nieprawidłowe działanie odnośników w niektórych dokumentach EPUB.
@@ -293,7 +470,7 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 * Wprowadzono wiele wewnętrznych refaktoryzacji, dzięki którym aplikacja jest szybsza, a plik binarny mniejszy.
 * Treść Markdown jest teraz wstępnie przetwarzana do zgodności z CommonMark przed renderowaniem.
 * Nawigacja po listach i ich elementach jest teraz w pełni obsługiwana. Użyj `L` i `Shift+L`, aby przechodzić po listach, oraz `I` i `Shift+I`, aby przechodzić po elementach listy.
-* `Numpad Delete` działa teraz przy usuwaniu dokumentów z paska kart, tak samo jak zwykły `Delete`.
+* `Delete na klawiaturze numerycznej` działa teraz przy usuwaniu dokumentów z paska kart, tak samo jak zwykły `Delete`.
 * Paperback może teraz opcjonalnie minimalizować się do zasobnika systemowego. Ta opcja jest domyślnie wyłączona, ale po jej włączeniu minimalizacja z menu systemowego przenosi Paperback do zasobnika, skąd można go przywrócić kliknięciem utworzonej ikony.
 * Paperback jest teraz w pełni tłumaczalny! Lista obsługiwanych języków jest obecnie dość krótka, ale stale rośnie.
 * Paperback ma teraz oficjalną stronę: [paperback.dev](https://paperback.dev)!
