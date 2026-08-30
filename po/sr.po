@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 05:09-0600\n"
-"PO-Revision-Date: 2026-08-29 15:21+0200\n"
+"POT-Creation-Date: 2026-08-29 11:48-0600\n"
+"PO-Revision-Date: 2026-08-30 17:56+0200\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
 "Language: sr\n"
@@ -664,7 +664,6 @@ msgstr "Da li želite da vratite sve prečice na podrazumevane?"
 msgid "Reset Shortcuts"
 msgstr "Vrati prečice"
 
-#| msgid "&Set Shortcut..."
 msgid "Set Shortcut for {}"
 msgstr "Podesi prečicu za {}"
 
@@ -678,7 +677,6 @@ msgstr ""
 msgid "Detected: (none)"
 msgstr "Prepoznato: (ništa)"
 
-#| msgid "Details: {}"
 msgid "Detected: {}"
 msgstr "Prepoznato: {}"
 
@@ -1564,7 +1562,6 @@ msgstr "&Režim celog ekrana"
 msgid "Toggle full screen"
 msgstr "Uključi ili isključi režim celog ekrana"
 
-#| msgid "Settings"
 msgid "&Settings"
 msgstr "&Podešavanja"
 
@@ -1855,7 +1852,6 @@ msgstr "Vrati Paperback"
 msgid "Exit Paperback"
 msgstr "Zatvori Paperback"
 
-#| msgid "&Open..."
 msgid "Open..."
 msgstr "Otvori..."
 
@@ -1865,14 +1861,12 @@ msgstr "Zatvori sve"
 msgid "Reopen Last Closed"
 msgstr "Ponovo otvori poslednje zatvoreno"
 
-#| msgid "No Recent Documents"
 msgid "Show All Recent Documents..."
 msgstr "Prikaži sve nedavne dokumente..."
 
 msgid "Exit"
 msgstr "Izlaz"
 
-#| msgid "&Find..."
 msgid "Find..."
 msgstr "Pronađi..."
 
@@ -2443,622 +2437,465 @@ msgstr ""
 msgid "Security Error"
 msgstr "Bezbednosna greška"
 
-msgid "&Options"
-msgstr "&Podešavanja"
-
-msgid "1 document."
-msgstr "1 dokument."
-
-msgid "%d documents."
-msgstr "%d dokumenata."
-
-msgid "All %d documents selected."
-msgstr "%d dokumenata izabrano."
-
-msgid "%d of %d documents selected."
-msgstr "%d od %d dokumenata izabrano."
-
-msgid "hours"
-msgstr "sati"
-
-msgid "minutes"
-msgstr "minuta"
-
-msgid "1 second"
-msgstr "1 sekunda"
-
-msgid "seconds"
-msgstr "sekundi"
-
-msgid "The selection contains {} words."
-msgstr "Izbor sadrži {} reči."
-
-msgid "This document contains {} words."
-msgstr "Ovaj dokument sadrži {} reči."
-
-msgid "{} chars"
-msgstr "{} znakova"
-
-msgid "Sleep timer set for 1 minute."
-msgstr "Tajmer pre spavanja podešen na 1 minut."
-
-msgid "Sleep timer set for %d minutes."
-msgstr "Tajmer pre spavanja podešen na %d minuta."
-
-msgid "Previous Section\t["
-msgstr "Prethodni odeljak\t["
-
-msgid "Next Section\t]"
-msgstr "Naredni odeljak\t]"
-
-msgid "Go to &Page\tCtrl+P"
-msgstr "Pređi na &stranicu\tCtrl+P"
-
-msgid "Previous Pa&ge\tShift+P"
-msgstr "Prethodna &stranica\tShift+P"
-
-msgid "Next Pag&e\tP"
-msgstr "&Naredna stranica\tP"
-
-msgid "Previous Lin&k\tShift+K"
-msgstr "Prethodni Lin&k\tShift+K"
-
-msgid "Next Lin&k\tK"
-msgstr "Naredni lin&k\tK"
-
-msgid "Previous Ima&ge\tShift+G"
-msgstr "Prethodna &slika\tShift+G"
-
-msgid "Next Ima&ge\tG"
-msgstr "Naredna &slika\tG"
-
-msgid "Previous Figu&re\tShift+F"
-msgstr "Prethodna figu&ra\tShift+F"
-
-msgid "Next Figu&re\tF"
-msgstr "Naredna figu&ra\tF"
-
-msgid "Previous &Table\tShift+T"
-msgstr "Prethodna &tabela\tShift+T"
-
-msgid "Next &Table\tT"
-msgstr "Naredna &tabela\tT"
-
-msgid "Previous Se&parator\tShift+S"
-msgstr "Prethodni se&parator\tShift+S"
-
-msgid "Next Se&parator\tS"
-msgstr "Naredni Se&parator\tS"
-
-msgid "Previous L&ist\tShift+L"
-msgstr "Prethodna l&ista\tShift+L"
-
-msgid "Next L&ist\tL"
-msgstr "Naredna l&ista\tL"
-
-msgid "Previous List &Item\tShift+I"
-msgstr "Prethodna stavka l&iste\tShift+I"
-
-msgid "Next List I&tem\tI"
-msgstr "Naredna stavka li&ste\tI"
-
-msgid "Container &Start\tShift+,"
-msgstr "&Početak sadrživača\tShift+,"
-
-msgid "Past Container &End\t,"
-msgstr "Nakon &kraja sadrživača\t,"
-
-msgid "Next Heading Level 1\t1"
-msgstr "Naredni naslov na nivou 1\t1"
-
-msgid "Previous Heading Level &2\tShift+2"
-msgstr "Prethodni naslov na nivou &2\tShift+2"
-
-msgid "Next Heading Level 2\t2"
-msgstr "Naredni naslov na nivou 2\t2"
-
-msgid "Previous Heading Level &3\tShift+3"
-msgstr "Prethodni naslov na nivou &3\tShift+3"
-
-msgid "Next Heading Level 3\t3"
-msgstr "Naredni naslov na nivou 3\t3"
-
-msgid "Previous Heading Level &4\tShift+4"
-msgstr "Prethodni naslov na nivou &4\tShift+4"
-
-msgid "Next Heading Level 4\t4"
-msgstr "Naredni naslov na nivou 4\t4"
-
-msgid "Previous Heading Level &5\tShift+5"
-msgstr "Prethodni naslov na nivou &5\tShift+5"
-
-msgid "Next Heading Level 5\t5"
-msgstr "Naredni naslov na nivou 5\t5"
-
-msgid "Previous Heading Level &6\tShift+6"
-msgstr "Prethodni naslov na nivou &6\tShift+6"
-
-msgid "Next Heading Level 6\t6"
-msgstr "Naredni naslov na nivou 6\t6"
-
-msgid "&Previous Heading\tShift+H"
-msgstr "&Prethodni naslov\tShift+H"
-
-msgid "&Next Heading\tH"
-msgstr "&Naredni naslov\tH"
-
-msgid "Previous Heading Level &1\tShift+1"
-msgstr "Prethodni naslov na nivou &1\tShift+1"
-
-msgid "&Previous Bookmark\tShift+B"
-msgstr "&Prethodna knjižna oznaka\tShift+B"
-
-msgid "&Next Bookmark\tB"
-msgstr "&Naredna knjižna oznaka\tB"
-
-msgid "Previous &Note\tShift+N"
-msgstr "Prethodna &napomena\tShift+N"
-
-msgid "Next N&ote\tN"
-msgstr "Naredna Nap&omena\tN"
-
-msgid "Jump to &All...\tCtrl+B"
-msgstr "Skoči n&a sve...\tCtrl+B"
-
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr "Skoči samo na &knjižne oznake...\tCtrl+Alt+B"
-
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "Skoči sam&o na napomene...\tCtrl+Alt+M"
-
-msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "&Prikaži tekst napomene\tRawCtrl+Shift+W"
-
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "&Prikaži tekst napomene\tCtrl+Shift+W"
-
-msgid "&Open...\tCtrl+O"
-msgstr "&Otvori...\tCtrl+O"
-
-msgid "&Close\tCtrl+W"
-msgstr "&Zatvori\tCtrl+W"
-
-msgid "&Close\tCtrl+F4"
-msgstr "&Zatvori\tCtrl+F4"
-
-msgid "Close &All\tCtrl+Shift+W"
-msgstr "Zatvori &sve\tCtrl+Shift+W"
-
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "Zatvori &sve\tCtrl+Shift+F4"
-
-msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "Ponovo otvori pos&lednje zatvoreno\tCtrl+Shift+T"
-
-msgid "E&xit\tCtrl+Q"
-msgstr "&Izlaz\tCtrl+Q"
-
-msgid "&Find...\tCtrl+F"
-msgstr "&Pronađi...\tCtrl+F"
-
-msgid "Find &Next\tCtrl+G"
-msgstr "Pronađi &sledeće\tCtrl+G"
-
-msgid "Find &Next\tF3"
-msgstr "Pro&nađi sledeće\tF3"
-
-msgid "Find &Previous\tCtrl+Shift+G"
-msgstr "Pronađi &prethodno\tCtrl+Shift+G"
-
-msgid "Find &Previous\tShift+F3"
-msgstr "&Pronađi prethodno\tShift+F3"
-
-msgid "Go to &line...\tCtrl+L"
-msgstr "Idi u &red...\tCtrl+L"
-
-msgid "Go to &line...\tCtrl+G"
-msgstr "Pređi na &red...\tCtrl+G"
-
-msgid "Go to &percent...\tCtrl+Shift+L"
-msgstr "Idi na &procenat...\tCtrl+Shift+L"
-
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Pređi na &procenat...\tCtrl+Shift+G"
-
-msgid "Go &Back\tCtrl+["
-msgstr "Vrati se &nazad\tCtrl+["
-
-msgid "Go &Back\tAlt+Left"
-msgstr "Vrati se &nazad\tAlt+Left"
-
-msgid "Go &Forward\tCtrl+]"
-msgstr "Idi n&apred\tCtrl+]"
-
-msgid "Go &Forward\tAlt+Right"
-msgstr "Idi &napred\tAlt+Right"
-
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr "Uvez&i podatke o dokumentu...\tCtrl+Shift+I"
-
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr "Izv&ezi podatke o dokumentu...\tCtrl+Shift+E"
-
-msgid "Export to &Plain Text...\tCtrl+E"
-msgstr "Izvezi kao &običan tekst...\tCtrl+E"
-
-msgid "&Word Count\tRawCtrl+W"
-msgstr "Broj &reči\tRawCtrl+W"
-
-msgid "&Word Count\tCtrl+W"
-msgstr "Broj &reči\tCtrl+W"
-
-msgid "Document &Info\tCtrl+I"
-msgstr "&Informacije o dokumentu\tCtrl+I"
-
-msgid "&Table of Contents\tCtrl+T"
-msgstr "&Sadržaj\tCtrl+T"
-
-msgid "&Elements List...\tF7"
-msgstr "&Lista elemenata...\tF7"
-
-msgid "Reveal &File in Folder\tCtrl+Shift+C"
-msgstr "Otkrij &datoteku u folderu\tCtrl+Shift+C"
-
-msgid "Open in &Web View\tCtrl+Shift+V"
-msgstr "Otvori u &Web prikazu\tCtrl+Shift+V"
-
-msgid "View &Source\tCtrl+U"
-msgstr "Prikaži &izvor\tCtrl+U"
-
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
-msgstr "Dodaj ili ukloni &knjižnu oznaku\tCtrl+Shift+B"
-
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "Knjižna oznaka sa &napomenom\tCtrl+Shift+N"
-
-msgid "Word w&rap\tCtrl+Alt+W"
-msgstr "P&relamanje reči\tCtrl+Alt+W"
-
-msgid "&Full Screen\tRawCtrl+Ctrl+F"
-msgstr "&Režim celog ekrana\tRawCtrl+Ctrl+F"
-
-msgid "&Full Screen\tF11"
-msgstr "&Režim celog ekrana\tF11"
-
-msgid "&Options\tCtrl+,"
-msgstr "&Podešavanja\tCtrl+,"
-
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "Tajmer pre &spavanja...\tCtrl+Shift+S"
-
-msgid "&About Paperback\tCtrl+F1"
-msgstr "O P&aperbacku\tCtrl+F1"
-
-msgid "View Help in &Browser\tF1"
-msgstr "Prikaži pomoć u &pretraživaču\tF1"
-
-msgid "View Help in &Paperback\tShift+F1"
-msgstr "Prikaži pomoć u &Paperbacku\tShift+F1"
-
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "Proveri &ažuriranja\tCtrl+Shift+U"
-
-msgid "&Donate\tCtrl+D"
-msgstr "&Doniraj\tCtrl+D"
-
-msgid "Show All...\tCtrl+R"
-msgstr "Prikaži sve...\tCtrl+R"
-
-msgid "Go To…"
-msgstr "Idi na…"
-
-msgid "Recent Documents"
-msgstr "Nedavni dokumenti"
-
-msgid "Switch to TTS Mode"
-msgstr "Pređi u TTS režim"
-
-msgid "Switch to Text Mode"
-msgstr "Pređi u tekstualni režim"
-
-msgid "Sleep Timer (active)"
-msgstr "Tajmer pre spavanja (aktivan)"
-
+#: swift
+msgid "Export Document Data"
+msgstr "Izvezi podatke o dokumentu"
+
+#: swift
+msgid "Import Document Data"
+msgstr "Uvezi podatke o dokumentu"
+
+#: swift
+msgid "Settings exported"
+msgstr "Podešavanja izvezena"
+
+#: swift
+msgid "Failed to export settings"
+msgstr "Izvoz podešavanja nije uspeo"
+
+#: swift
+msgid "Settings imported"
+msgstr "Podešavanja uvezena"
+
+#: swift
+msgid "Failed to import settings"
+msgstr "Uvoz podešavanja nije uspeo"
+
+#: swift
+msgid "Document Data"
+msgstr "Podaci o dokumentu"
+
+#: swift
 msgid "More options"
 msgstr "Još opcija"
 
-msgid "No document open"
-msgstr "Nijedan dokument nije otvoren"
+#: swift
+msgid "Switch to TTS Mode"
+msgstr "Pređi u TTS režim"
 
-msgid "Recent"
-msgstr "Nedavno"
+#: swift
+msgid "Switch to Text Mode"
+msgstr "Pređi u tekstualni režim"
 
-msgid "Screen dimmed by sleep timer. Tap to wake."
-msgstr ""
-"Ekran zatamnjen zbog tajmera pre spavanje. Dodirnite za ponovno buđenje."
+#: swift
+msgid "Go To…"
+msgstr "Idi na…"
 
-msgid "Open Error"
-msgstr "Greška pri otvaranju"
+#: swift
+msgid "Recent Documents"
+msgstr "Nedavni dokumenti"
 
-msgid "Open document"
-msgstr "Otvori dokument"
+#: swift
+msgid "Sleep Timer (active)"
+msgstr "Tajmer pre spavanja (aktivan)"
 
-msgid "Title"
-msgstr "Naslov"
-
-msgid "Author"
-msgstr "Autor"
-
-msgid "Words"
-msgstr "Reči"
-
-msgid "Lines"
-msgstr "Redovi"
-
-msgid "Characters"
-msgstr "Znakovi"
-
-msgid "Characters (excluding spaces)"
-msgstr "Znakovi (bez razmaka)"
-
+#: swift
 msgid "Type"
 msgstr "Tip"
 
-msgid "Done"
-msgstr "Gotovo"
-
+#: swift
 msgid "No Elements"
 msgstr "Nema elemenata"
 
+#: swift
 msgid "Headings, images, and other elements will appear here."
 msgstr "Naslovi, slike i drugi elementi se pojavljuju ovde."
 
+#: swift
+msgid "No document open"
+msgstr "Nijedan dokument nije otvoren"
+
+#: swift
+msgid "Show All"
+msgstr "Prikaži sve"
+
+#: swift
 msgid "Search…"
 msgstr "Pretraga…"
 
+#: swift
 msgid "Match Case"
 msgstr "Osetljiva na veličinu slova"
 
+#: swift
 msgid "Whole Word"
 msgstr "Cela reč"
 
+#: swift
 msgid "Regular Expression"
 msgstr "Regularni izraz"
 
-msgid "Previous result"
-msgstr "Prethodni rezultat"
+#: swift
+msgid "Open Error"
+msgstr "Greška pri otvaranju"
 
-msgid "Next result"
-msgstr "Naredni rezultat"
+#: swift
+msgid "Open Book"
+msgstr "Otvori knjigu"
 
-msgid "Search"
-msgstr "Pretraga"
-
-msgid "Mode"
-msgstr "Režim"
-
-msgid "Page"
-msgstr "Stranica"
-
-msgid "Percent"
-msgstr "Procenat"
-
-msgid "Line number"
-msgstr "Broj reda"
-
-msgid "Page number"
-msgstr "Broj stranice"
-
-msgid "Percentage"
-msgstr "Procenat"
-
-msgid "Go To"
-msgstr "Idi na"
-
-msgid "Password"
-msgstr "Lozinka"
-
-msgid "Enter password for {}"
-msgstr "Upišite lozinku za {}"
-
-msgid "Password Required"
-msgstr "Lozinka je obavezna"
-
-msgid "No Recent Documents"
-msgstr "Nema nedavnih dokumenata"
-
-msgid "Documents you open will appear here."
-msgstr "Dokumenti koje otvorite će se pojaviti ovde."
-
-msgid "Remove"
-msgstr "Ukloni"
-
-msgid "Rule"
-msgstr "Pravilo"
-
-msgid "Scope"
-msgstr "Obim"
-
-msgid "Word"
-msgstr "Reč"
-
-msgid "Paragraph"
-msgstr "Pasus"
-
-msgid "Pattern & Replacement"
-msgstr "Oblik i zamena"
-
-msgid "Pattern"
-msgstr "Oblik"
-
-msgid "Replacement"
-msgstr "Zamena"
-
-msgid "Whole word only"
-msgstr "Samo cele reči"
-
-msgid "Regular expression (\\1 = first capture group)"
-msgstr "Regularni izraz (\\1 = prva obuhvaćena grupa)"
-
-msgid "Enabled"
-msgstr "Omogućeno"
-
-msgid "Apply to"
-msgstr "Primeni na"
-
-msgid "Voices"
-msgstr "Glasovi"
-
-msgid "New Rule"
-msgstr "Novo pravilo"
-
-msgid "Edit Rule"
-msgstr "Uredi pravilo"
-
-msgid "Save"
-msgstr "Sačuvaj"
-
-msgid "All voices"
-msgstr "Svi glasovi"
-
-msgid "Apply To"
-msgstr "Primeni na"
-
-msgid "Text to Speech"
-msgstr "Tekst u govor"
-
-msgid "Voice"
-msgstr "Glas"
-
-msgid "Rate"
-msgstr "Brzina"
-
-msgid "Speech Rate"
-msgstr "Brzina govora"
-
-msgid "Pitch"
-msgstr "Visina"
-
-msgid "Speech Dictionary"
-msgstr "Govorni rečnik"
-
-msgid "Play Sample"
-msgstr "Reprodukuj primer"
-
-msgid "Behavior"
-msgstr "Ponašanje"
-
-msgid "Restore last open documents"
-msgstr "Vrati poslednje zatvorene dokumente"
-
-msgid "Swipe up moves forward"
-msgstr "Prevlačenje gore se kreće napred"
-
-msgid "Active"
-msgstr "Aktivno"
-
-msgid "Time remaining"
-msgstr "Preostalo vreme"
-
-msgid "Cancel Timer"
-msgstr "Otkaži tajmer"
-
-msgid "Set timer"
-msgstr "Podesi tajmer"
-
-msgid "Edit"
-msgstr "Uredi"
-
-msgid "Add Rule"
-msgstr "Dodaj pravilo"
-
-msgid "No Rules"
-msgstr "Nema pravila"
-
-msgid "Contents"
-msgstr "Sadržaj"
-
-msgid "No Table of Contents"
-msgstr "Nema sadržaja"
-
-msgid "This document has no table of contents."
-msgstr "Ovaj dokument nema sadržaj."
-
-msgid "Tabs"
-msgstr "Kartice"
-
-msgid "Navigation unit"
-msgstr "Jedinica navigacije"
-
-msgid "Previous {}"
-msgstr "Prethodni {}"
-
-msgid "Pause"
-msgstr "Pauziraj"
-
-msgid "Play"
-msgstr "Reprodukuj"
-
-msgid "End of document"
-msgstr "Kraj dokumenta"
-
-msgid "Beginning of document"
-msgstr "Početak dokumenta"
-
-msgid "Next {}"
-msgstr "Sledeće {}"
-
-msgid "Press play to start listening."
-msgstr "Pritisnite dugme za reprodukciju da biste započeli slušanje."
-
+#: swift
 msgid "Locate"
 msgstr "Pronađi"
 
+#: swift
+msgid "Remove"
+msgstr "Ukloni"
+
+#: swift
 msgid "File Missing"
 msgstr "Datoteka nedostaje"
 
+#: swift
 msgid "Currently Open"
 msgstr "Trenutno otvoreno"
 
+#: swift
+msgid "No Recent Documents"
+msgstr "Nema nedavnih dokumenata"
+
+#: swift
+msgid "Documents you open will appear here."
+msgstr "Dokumenti koje otvorite će se pojaviti ovde."
+
+#: swift
+msgid "Text to Speech"
+msgstr "Tekst u govor"
+
+#: swift
+msgid "Voice"
+msgstr "Glas"
+
+#: swift
+msgid "Rate"
+msgstr "Brzina"
+
+#: swift
+msgid "Speech Rate"
+msgstr "Brzina govora"
+
+#: swift
+msgid "Pitch"
+msgstr "Visina"
+
+#: swift
+msgid "Speech Dictionary"
+msgstr "Govorni rečnik"
+
+#: swift
+msgid "Play Sample"
+msgstr "Reprodukuj primer"
+
+#: swift
+msgid "Text Size"
+msgstr "Veličina teksta"
+
+#: swift
+msgid "Line Spacing"
+msgstr "Odvajanje redova"
+
+#: swift
+msgid "Paragraph Spacing"
+msgstr "ODvajanje pasusa"
+
+#: swift
+msgid "Alignment"
+msgstr "Poravnanje"
+
+#: swift
+msgid "Behavior"
+msgstr "Ponašanje"
+
+#: swift
+msgid "Restore last open documents"
+msgstr "Vrati poslednje zatvorene dokumente"
+
+#: swift
+msgid "Swipe up moves forward"
+msgstr "Prevlačenje gore se kreće napred"
+
+#: swift
+msgid "Title"
+msgstr "Naslov"
+
+#: swift
+msgid "Author"
+msgstr "Autor"
+
+#: swift
+msgid "Words"
+msgstr "Reči"
+
+#: swift
+msgid "Lines"
+msgstr "Redovi"
+
+#: swift
+msgid "Characters"
+msgstr "Znakovi"
+
+#: swift
+msgid "Characters (excluding spaces)"
+msgstr "Znakovi (bez razmaka)"
+
+#: swift
+msgid "Mode"
+msgstr "Režim"
+
+#: swift
+msgid "Page"
+msgstr "Stranica"
+
+#: swift
+msgid "Percent"
+msgstr "Procenat"
+
+#: swift
+msgid "Line number"
+msgstr "Broj reda"
+
+#: swift
+msgid "Page number"
+msgstr "Broj stranice"
+
+#: swift
+msgid "Percentage"
+msgstr "Procenat"
+
+#: swift
+msgid "Go To"
+msgstr "Idi na"
+
+#: swift
+msgid "Password"
+msgstr "Lozinka"
+
+#: swift
+msgid "Enter password for {}"
+msgstr "Upišite lozinku za {}"
+
+#: swift
+msgid "Password Required"
+msgstr "Lozinka je obavezna"
+
+#: swift
+msgid "Rule"
+msgstr "Pravilo"
+
+#: swift
+msgid "Scope"
+msgstr "Obim"
+
+#: swift
+msgid "Word"
+msgstr "Reč"
+
+#: swift
+msgid "Paragraph"
+msgstr "Pasus"
+
+#: swift
+msgid "Pattern & Replacement"
+msgstr "Oblik i zamena"
+
+#: swift
+msgid "Pattern"
+msgstr "Oblik"
+
+#: swift
+msgid "Replacement"
+msgstr "Zamena"
+
+#: swift
+msgid "Whole word only"
+msgstr "Samo cele reči"
+
+#: swift
+msgid "Regular expression (\\1 = first capture group)"
+msgstr "Regularni izraz (\\1 = prva obuhvaćena grupa)"
+
+#: swift
+msgid "Enabled"
+msgstr "Omogućeno"
+
+#: swift
+msgid "Apply to"
+msgstr "Primeni na"
+
+#: swift
+msgid "Voices"
+msgstr "Glasovi"
+
+#: swift
+msgid "New Rule"
+msgstr "Novo pravilo"
+
+#: swift
+msgid "Edit Rule"
+msgstr "Uredi pravilo"
+
+#: swift
+msgid "Save"
+msgstr "Sačuvaj"
+
+#: swift
+msgid "All voices"
+msgstr "Svi glasovi"
+
+#: swift
+msgid "Apply To"
+msgstr "Primeni na"
+
+#: swift
+msgid "Sleep timer running, {} remaining"
+msgstr "Tajmer pre spavanja je pokrenut, preostalo {}"
+
+#: swift
+msgid "Custom"
+msgstr "Prilagođeno"
+
+#: swift
+msgid "Custom: {} minutes"
+msgstr "Prilagođeno: {} minuta"
+
+#: swift
+msgid "Duration"
+msgstr "Trajanje"
+
+#: swift
+msgid "Minutes"
+msgstr "Minuti"
+
+#: swift
+msgid "Done"
+msgstr "Gotovo"
+
+#: swift
+msgid "Stop Timer"
+msgstr "Zaustavi tajmer"
+
+#: swift
+msgid "Start Timer"
+msgstr "Započni tajmer"
+
+#: swift
+msgid "Edit"
+msgstr "Uredi"
+
+#: swift
+msgid "Add Rule"
+msgstr "Dodaj pravilo"
+
+#: swift
+msgid "No Rules"
+msgstr "Nema pravila"
+
+#: swift
+msgid "Tabs"
+msgstr "Kartice"
+
+#: swift
+msgid "Contents"
+msgstr "Sadržaj"
+
+#: swift
+msgid "No Table of Contents"
+msgstr "Nema sadržaja"
+
+#: swift
+msgid "This document has no table of contents."
+msgstr "Ovaj dokument nema sadržaj."
+
+#: swift
+msgid "Navigation unit"
+msgstr "Jedinica navigacije"
+
+#: swift
+msgid "Previous {}"
+msgstr "Prethodni {}"
+
+#: swift
+msgid "Pause"
+msgstr "Pauziraj"
+
+#: swift
+msgid "Play"
+msgstr "Reprodukuj"
+
+#: swift
+msgid "End of document"
+msgstr "Kraj dokumenta"
+
+#: swift
+msgid "Beginning of document"
+msgstr "Početak dokumenta"
+
+#: swift
+msgid "Next {}"
+msgstr "Sledeće {}"
+
+#: swift
+msgid "Press play to start listening."
+msgstr "Pritisnite dugme za reprodukciju da biste započeli slušanje."
+
+#: kt
 msgid "Document Information"
 msgstr "Informacije o dokumentu"
 
-msgid "Expanded"
-msgstr "Prošireno"
-
-msgid "Collapsed"
-msgstr "Skupljeno"
-
-msgid "Collapse"
-msgstr "Skupi"
-
-msgid "Expand"
-msgstr "Proširi"
-
+#: kt
 msgid "Untitled Link"
 msgstr "Nenaslovljen link"
 
+#: kt
+msgid "Export Document"
+msgstr "Izvezi dokument"
+
+#: kt
+msgid "Select a format to export the current document:"
+msgstr "Izaberite format za izvoz trenutnog dokumenta:"
+
+#: kt
+#| msgid "Plain Text"
+msgid "Plain Text (.txt)"
+msgstr "Običan tekst (.txt)"
+
+#: kt
+msgid "HTML (.html)"
+msgstr "HTML (.html)"
+
+#: kt
+#| msgid "Markdown"
+msgid "Markdown (.md)"
+msgstr "Markdown (.md)"
+
+#: kt
 msgid "No supported books or folders found here."
 msgstr "Nijedna podržana knjiga ili folder nije pronađen ovde."
 
+#: kt
 msgid "Folder"
 msgstr "Folder"
 
+#: kt
 msgid "Internal Storage"
 msgstr "Interna memorija"
 
+#: kt
 msgid "Search Term"
 msgstr "Termin za pretragu"
 
+#: kt
 msgid "Search History"
 msgstr "Istorija pretrage"
 
+#: kt
 msgid "Password:"
 msgstr "Lozinka:"
 
+#: kt
 msgid "All Files Access Required"
 msgstr "Pristup svim datotekama je neophodan"
 
+#: kt
 msgid ""
 "Paperback requires the 'All Files Access' permission to enable the custom in-"
 "app file browser."
@@ -3066,185 +2903,632 @@ msgstr ""
 "Paperbacku je neophodna dozvola za pristup svim datotekama kako bi "
 "prilagođeni istraživač datoteka bio omogućen."
 
+#: kt
 msgid "Why we need this:"
 msgstr "Zašto nam ovo treba:"
 
+#: kt
+#| msgid ""
+#| "• To provide a fast, fully screen-reader accessible file manager inside "
+#| "the app."
 msgid ""
-"• To provide a fast, fully screen-reader accessible file manager inside the "
+"To provide a fast, fully screen-reader accessible file manager inside the "
 "app."
 msgstr ""
-"• Kako bismo pružili brz upravljač datoteka u aplikaciji koji je u "
-"potpunosti pristupačan sa čitačima ekrana."
+"Kako bi pružio upravljač datotekama koji je brz, i u potpunosti pristupačan "
+"sa čitačima ekrana u aplikaciji."
 
+#: kt
 msgid ""
-"• To load large files instantly without needing to copy them into the app's "
+"To load large files instantly without needing to copy them into the app's "
 "cache."
 msgstr ""
-"• Za momentalno učitavanje velikih datoteka bez potrebe da se kopiraju u keš "
+"Za momentalno učitavanje velikih datoteka bez potrebe da se kopiraju u keš "
 "aplikacije."
 
-msgid "• To display the exact local file paths of your documents."
-msgstr "• Za prikazivanje preciznih lokalnih putanja do vaših dokumenata."
+#: kt
+msgid "To display the exact local file paths of your documents."
+msgstr "Za prikazivanje preciznih lokalnih putanja do vaših dokumenata."
 
+#: kt
 msgid ""
 "If you deny this permission, you can still use the Android System File "
-"Picker to open your books by turning off the custom file browser setting."
+"Picker to open your "
 msgstr ""
 "Ako odbijete ovu dozvolu, još uvek možete da koristite sistemski birač "
-"datoteka Androida kako biste otvorili vaše knjige nakon što isključite "
-"podešavanje za prilagođeni istraživač datoteka."
+"datoteka Androida kako biste otvorili vaše "
 
+#: kt
 msgid "Grant"
 msgstr "Dozvoli"
 
+#: kt
 msgid "Not Now"
 msgstr "Ne sada"
 
+#: kt
+msgid "Custom Timer"
+msgstr "Prilagođeni tajmer"
+
+#: kt
+msgid "Back"
+msgstr "Nazad"
+
+#: kt
+msgid "Start"
+msgstr "Počni"
+
+#: kt
+#| msgid "Time remaining"
+msgid "Active: {} remaining"
+msgstr "Aktivno: {} preostalo"
+
+#: kt
+msgid "remaining"
+msgstr "preostalo"
+
+#: kt
+msgid "Cancel Timer"
+msgstr "Otkaži tajmer"
+
+#: kt
+msgid "Change to:"
+msgstr "Promeni na:"
+
+#: kt
+#| msgid "2 minutes"
+msgid "{} minutes"
+msgstr "{} minuta"
+
+#: kt
+msgid "Custom time..."
+msgstr "Prilagođeno vreme..."
+
+#: kt
+msgid "Expanded"
+msgstr "Prošireno"
+
+#: kt
+msgid "Collapsed"
+msgstr "Skupljeno"
+
+#: kt
+msgid "Collapse"
+msgstr "Skupi"
+
+#: kt
+msgid "Expand"
+msgstr "Proširi"
+
+#: kt
+msgid "This document contains {} words."
+msgstr "Ovaj dokument sadrži {} reči."
+
+#: kt
+msgid "words"
+msgstr "reči"
+
+#: kt
+msgid "Close Search"
+msgstr "Zatvori pretragu"
+
+#: kt
+msgid "Document exported"
+msgstr "Dokument izvezen"
+
+#: kt
+msgid "Failed to export document"
+msgstr "Izvoz dokumenta nije uspeo"
+
+#: kt
+msgid "No document open. Please open a book."
+msgstr "Nijedan dokument nije otvoren. Molimo otvorite knjigu."
+
+#: kt
+msgid "No Documents"
+msgstr "Nema dokumenata"
+
+#: kt
+msgid "Sleep timer: {}"
+msgstr "Tajmer pre spavanja: {}"
+
+#: kt
+msgid "Cancel sleep timer"
+msgstr "Otkaži tajmer pre spavanja"
+
+#: kt
+msgid "Import"
+msgstr "Uvezi"
+
+#: kt
+msgid "More Options"
+msgstr "Još opcija"
+
+#: kt
+msgid "Pause Read Aloud"
+msgstr "Pauziraj čitanje na glas"
+
+#: kt
+msgid "Read Aloud"
+msgstr "Čitanje na glas"
+
+#: kt
+msgid "Export As"
+msgstr "Izvezi kao"
+
+#: kt
+msgid "Elements List"
+msgstr "Lista elemenata"
+
+#: kt
+msgid "No more matches."
+msgstr "Nema više podudaranja."
+
+#: kt
+msgid "Heading"
+msgstr "Naslov"
+
+#: kt
+msgid "Link"
+msgstr "Link"
+
+#: kt
+msgid "Section"
+msgstr "Odeljak"
+
+#: kt
+msgid "List"
+msgstr "Lista"
+
+#: kt
+msgid "List Item"
+msgstr "Stavka liste"
+
+#: kt
+msgid "Table"
+msgstr "Tabela"
+
+#: kt
+msgid "Separator"
+msgstr "Separator"
+
+#: kt
+#| msgid "5 seconds"
+msgid "{} seconds"
+msgstr "{} sekundi"
+
+#: kt
+#| msgid "Grant"
+msgid "✓ Granted"
+msgstr "✓ odobreno"
+
+#: kt
+msgid "Before You Start"
+msgstr "Pre nego što počnete"
+
+#: kt
+msgid ""
+"Paperback works best with a couple of permissions. Here's what we ask for "
+"and why:"
+msgstr "Paperback radi najbolje uz nekoliko dozvola. Evo šta tražimo i zašto:"
+
+#: kt
+#| msgid "No sections."
+msgid "Notifications"
+msgstr "Obaveštenja"
+
+#: kt
+msgid ""
+"Lets Paperback show playback controls in the notification shade while text-"
+"to-speech is "
+msgstr ""
+"Dozvoljava da Paperback prikaže kontrole za reprodukciju u traci sa "
+"obaveštenjima dok je tekst u govor "
+
+#: kt
+msgid "Enable Notifications"
+msgstr "Omogući obaveštenja"
+
+#: kt
+msgid "All Files Access"
+msgstr "Pristup svim datotekama"
+
+#: kt
+msgid ""
+"Powers the optional in-app file browser, so you can open documents from "
+"anywhere on your "
+msgstr ""
+"Pokreće opcioni istraživač datoteka u aplikaciji, kako biste mogli da "
+"otvorite dokumente bilo gde na vašem "
+
+#: kt
+msgid "Enable File Access"
+msgstr "Omogući pristup svim datotekama"
+
+#: kt
+#| msgid "&Containers"
+msgid "Continue"
+msgstr "Nastavi"
+
+#: kt
 msgid "Restore last open book"
 msgstr "Vrati poslednju otvorenu knjigu"
 
+#: kt
 msgid "Use in-app file browser (requires All Files permission)"
 msgstr ""
 "Koristi istraživač datoteka u aplikaciji (zahteva dozvolu za pristup svim "
 "datotekama)"
 
+#: kt
 msgid "Text-to-Speech"
 msgstr "Tekst u govor"
 
+#: kt
 msgid "System Default"
 msgstr "Sistemski podrazumevani"
 
-msgid "Custom Timer"
-msgstr "Prilagođeni tajmer"
+#: kt
+#| msgid "Back"
+msgid "Back {}"
+msgstr "Nazad {}"
 
-msgid "Minutes"
-msgstr "Minuti"
+#: kt
+#| msgid "Go Forward"
+msgid "Forward {}"
+msgstr "Napred {}"
 
-msgid "Back"
-msgstr "Nazad"
+#: kt
+msgid "Enter {}"
+msgstr "Upišite {}"
 
-msgid "Start"
-msgstr "Počni"
+#: kt
+#| msgid "Failed to load document."
+msgid "Error loading document: {}"
+msgstr "Greška pri učitavanju dokumenta: {}"
 
-msgid "Change to:"
-msgstr "Promeni na:"
+#: kt
+msgid "1.5×"
+msgstr "1.5×"
 
-msgid "Custom time..."
-msgstr "Prilagođeno vreme..."
+#: kt
+#| msgid "Speech Rate"
+msgid "Speech Engine"
+msgstr "Govorni izlaz"
 
-msgid "Close Search"
-msgstr "Zatvori pretragu"
+#~ msgid "&Options"
+#~ msgstr "&Podešavanja"
 
-msgid "Settings imported"
-msgstr "Podešavanja uvezena"
+#~ msgid "1 document."
+#~ msgstr "1 dokument."
 
-msgid "Failed to import settings"
-msgstr "Uvoz podešavanja nije uspeo"
+#~ msgid "%d documents."
+#~ msgstr "%d dokumenata."
 
-msgid "Settings exported"
-msgstr "Podešavanja izvezena"
+#~ msgid "All %d documents selected."
+#~ msgstr "%d dokumenata izabrano."
 
-msgid "Failed to export settings"
-msgstr "Izvoz podešavanja nije uspeo"
+#~ msgid "%d of %d documents selected."
+#~ msgstr "%d od %d dokumenata izabrano."
 
-msgid "No document open. Please open a book."
-msgstr "Nijedan dokument nije otvoren. Molimo otvorite knjigu."
+#~ msgid "hours"
+#~ msgstr "sati"
 
-msgid "No Documents"
-msgstr "Nema dokumenata"
+#~ msgid "minutes"
+#~ msgstr "minuta"
 
-msgid "Show All"
-msgstr "Prikaži sve"
+#~ msgid "1 second"
+#~ msgstr "1 sekunda"
 
-msgid "Sleep timer: {}"
-msgstr "Tajmer pre spavanja: {}"
+#~ msgid "seconds"
+#~ msgstr "sekundi"
 
-msgid "Cancel sleep timer"
-msgstr "Otkaži tajmer pre spavanja"
+#~ msgid "The selection contains {} words."
+#~ msgstr "Izbor sadrži {} reči."
 
-msgid "Import"
-msgstr "Uvezi"
+#~ msgid "{} chars"
+#~ msgstr "{} znakova"
 
-msgid "Import Document Data"
-msgstr "Uvezi podatke o dokumentu"
+#~ msgid "Sleep timer set for 1 minute."
+#~ msgstr "Tajmer pre spavanja podešen na 1 minut."
 
-msgid "Export Document Data"
-msgstr "Izvezi podatke o dokumentu"
+#~ msgid "Sleep timer set for %d minutes."
+#~ msgstr "Tajmer pre spavanja podešen na %d minuta."
 
-msgid "Open Book"
-msgstr "Otvori knjigu"
+#~ msgid "Previous Section\t["
+#~ msgstr "Prethodni odeljak\t["
 
-msgid "Elements List"
-msgstr "Lista elemenata"
+#~ msgid "Next Section\t]"
+#~ msgstr "Naredni odeljak\t]"
 
-msgid "Show Document"
-msgstr "Prikaži dokument"
+#~ msgid "Go to &Page\tCtrl+P"
+#~ msgstr "Pređi na &stranicu\tCtrl+P"
 
-msgid "Show Text"
-msgstr "Prikaži tekst"
+#~ msgid "Previous Pa&ge\tShift+P"
+#~ msgstr "Prethodna &stranica\tShift+P"
 
-msgid "Pause Read Aloud"
-msgstr "Pauziraj čitanje na glas"
+#~ msgid "Next Pag&e\tP"
+#~ msgstr "&Naredna stranica\tP"
 
-msgid "Read Aloud"
-msgstr "Čitanje na glas"
+#~ msgid "Previous Lin&k\tShift+K"
+#~ msgstr "Prethodni Lin&k\tShift+K"
 
-msgid "More Options"
-msgstr "Još opcija"
+#~ msgid "Next Lin&k\tK"
+#~ msgstr "Naredni lin&k\tK"
 
-msgid "Heading"
-msgstr "Naslov"
+#~ msgid "Previous Ima&ge\tShift+G"
+#~ msgstr "Prethodna &slika\tShift+G"
 
-msgid "Link"
-msgstr "Link"
+#~ msgid "Next Ima&ge\tG"
+#~ msgstr "Naredna &slika\tG"
 
-msgid "Section"
-msgstr "Odeljak"
+#~ msgid "Previous Figu&re\tShift+F"
+#~ msgstr "Prethodna figu&ra\tShift+F"
 
-msgid "List"
-msgstr "Lista"
+#~ msgid "Next Figu&re\tF"
+#~ msgstr "Naredna figu&ra\tF"
 
-msgid "List Item"
-msgstr "Stavka liste"
+#~ msgid "Previous &Table\tShift+T"
+#~ msgstr "Prethodna &tabela\tShift+T"
 
-msgid "Table"
-msgstr "Tabela"
+#~ msgid "Next &Table\tT"
+#~ msgstr "Naredna &tabela\tT"
 
-msgid "Separator"
-msgstr "Separator"
+#~ msgid "Previous Se&parator\tShift+S"
+#~ msgstr "Prethodni se&parator\tShift+S"
 
-msgid "Document Data"
-msgstr "Podaci o dokumentu"
+#~ msgid "Next Se&parator\tS"
+#~ msgstr "Naredni Se&parator\tS"
 
-msgid "Sleep timer running, {} remaining"
-msgstr "Tajmer pre spavanja je pokrenut, preostalo {}"
+#~ msgid "Previous L&ist\tShift+L"
+#~ msgstr "Prethodna l&ista\tShift+L"
 
-msgid "Custom"
-msgstr "Prilagođeno"
+#~ msgid "Next L&ist\tL"
+#~ msgstr "Naredna l&ista\tL"
 
-msgid "Custom: {} minutes"
-msgstr "Prilagođeno: {} minuta"
+#~ msgid "Previous List &Item\tShift+I"
+#~ msgstr "Prethodna stavka l&iste\tShift+I"
 
-msgid "Duration"
-msgstr "Trajanje"
+#~ msgid "Next List I&tem\tI"
+#~ msgstr "Naredna stavka li&ste\tI"
 
-msgid "Stop Timer"
-msgstr "Zaustavi tajmer"
+#~ msgid "Container &Start\tShift+,"
+#~ msgstr "&Početak sadrživača\tShift+,"
 
-msgid "Start Timer"
-msgstr "Započni tajmer"
+#~ msgid "Past Container &End\t,"
+#~ msgstr "Nakon &kraja sadrživača\t,"
 
-msgid "Text Size"
-msgstr "Veličina teksta"
+#~ msgid "Next Heading Level 1\t1"
+#~ msgstr "Naredni naslov na nivou 1\t1"
 
-msgid "Line Spacing"
-msgstr "Odvajanje redova"
+#~ msgid "Previous Heading Level &2\tShift+2"
+#~ msgstr "Prethodni naslov na nivou &2\tShift+2"
 
-msgid "Paragraph Spacing"
-msgstr "ODvajanje pasusa"
+#~ msgid "Next Heading Level 2\t2"
+#~ msgstr "Naredni naslov na nivou 2\t2"
 
-msgid "Alignment"
-msgstr "Poravnanje"
+#~ msgid "Previous Heading Level &3\tShift+3"
+#~ msgstr "Prethodni naslov na nivou &3\tShift+3"
+
+#~ msgid "Next Heading Level 3\t3"
+#~ msgstr "Naredni naslov na nivou 3\t3"
+
+#~ msgid "Previous Heading Level &4\tShift+4"
+#~ msgstr "Prethodni naslov na nivou &4\tShift+4"
+
+#~ msgid "Next Heading Level 4\t4"
+#~ msgstr "Naredni naslov na nivou 4\t4"
+
+#~ msgid "Previous Heading Level &5\tShift+5"
+#~ msgstr "Prethodni naslov na nivou &5\tShift+5"
+
+#~ msgid "Next Heading Level 5\t5"
+#~ msgstr "Naredni naslov na nivou 5\t5"
+
+#~ msgid "Previous Heading Level &6\tShift+6"
+#~ msgstr "Prethodni naslov na nivou &6\tShift+6"
+
+#~ msgid "Next Heading Level 6\t6"
+#~ msgstr "Naredni naslov na nivou 6\t6"
+
+#~ msgid "&Previous Heading\tShift+H"
+#~ msgstr "&Prethodni naslov\tShift+H"
+
+#~ msgid "&Next Heading\tH"
+#~ msgstr "&Naredni naslov\tH"
+
+#~ msgid "Previous Heading Level &1\tShift+1"
+#~ msgstr "Prethodni naslov na nivou &1\tShift+1"
+
+#~ msgid "&Previous Bookmark\tShift+B"
+#~ msgstr "&Prethodna knjižna oznaka\tShift+B"
+
+#~ msgid "&Next Bookmark\tB"
+#~ msgstr "&Naredna knjižna oznaka\tB"
+
+#~ msgid "Previous &Note\tShift+N"
+#~ msgstr "Prethodna &napomena\tShift+N"
+
+#~ msgid "Next N&ote\tN"
+#~ msgstr "Naredna Nap&omena\tN"
+
+#~ msgid "Jump to &All...\tCtrl+B"
+#~ msgstr "Skoči n&a sve...\tCtrl+B"
+
+#~ msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+#~ msgstr "Skoči samo na &knjižne oznake...\tCtrl+Alt+B"
+
+#~ msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+#~ msgstr "Skoči sam&o na napomene...\tCtrl+Alt+M"
+
+#~ msgid "&View Note Text\tRawCtrl+Shift+W"
+#~ msgstr "&Prikaži tekst napomene\tRawCtrl+Shift+W"
+
+#~ msgid "&View Note Text\tCtrl+Shift+W"
+#~ msgstr "&Prikaži tekst napomene\tCtrl+Shift+W"
+
+#~ msgid "&Open...\tCtrl+O"
+#~ msgstr "&Otvori...\tCtrl+O"
+
+#~ msgid "&Close\tCtrl+W"
+#~ msgstr "&Zatvori\tCtrl+W"
+
+#~ msgid "&Close\tCtrl+F4"
+#~ msgstr "&Zatvori\tCtrl+F4"
+
+#~ msgid "Close &All\tCtrl+Shift+W"
+#~ msgstr "Zatvori &sve\tCtrl+Shift+W"
+
+#~ msgid "Close &All\tCtrl+Shift+F4"
+#~ msgstr "Zatvori &sve\tCtrl+Shift+F4"
+
+#~ msgid "Reopen &Last Closed\tCtrl+Shift+T"
+#~ msgstr "Ponovo otvori pos&lednje zatvoreno\tCtrl+Shift+T"
+
+#~ msgid "E&xit\tCtrl+Q"
+#~ msgstr "&Izlaz\tCtrl+Q"
+
+#~ msgid "&Find...\tCtrl+F"
+#~ msgstr "&Pronađi...\tCtrl+F"
+
+#~ msgid "Find &Next\tCtrl+G"
+#~ msgstr "Pronađi &sledeće\tCtrl+G"
+
+#~ msgid "Find &Next\tF3"
+#~ msgstr "Pro&nađi sledeće\tF3"
+
+#~ msgid "Find &Previous\tCtrl+Shift+G"
+#~ msgstr "Pronađi &prethodno\tCtrl+Shift+G"
+
+#~ msgid "Find &Previous\tShift+F3"
+#~ msgstr "&Pronađi prethodno\tShift+F3"
+
+#~ msgid "Go to &line...\tCtrl+L"
+#~ msgstr "Idi u &red...\tCtrl+L"
+
+#~ msgid "Go to &line...\tCtrl+G"
+#~ msgstr "Pređi na &red...\tCtrl+G"
+
+#~ msgid "Go to &percent...\tCtrl+Shift+L"
+#~ msgstr "Idi na &procenat...\tCtrl+Shift+L"
+
+#~ msgid "Go to &percent...\tCtrl+Shift+G"
+#~ msgstr "Pređi na &procenat...\tCtrl+Shift+G"
+
+#~ msgid "Go &Back\tCtrl+["
+#~ msgstr "Vrati se &nazad\tCtrl+["
+
+#~ msgid "Go &Back\tAlt+Left"
+#~ msgstr "Vrati se &nazad\tAlt+Left"
+
+#~ msgid "Go &Forward\tCtrl+]"
+#~ msgstr "Idi n&apred\tCtrl+]"
+
+#~ msgid "Go &Forward\tAlt+Right"
+#~ msgstr "Idi &napred\tAlt+Right"
+
+#~ msgid "&Import Document Data...\tCtrl+Shift+I"
+#~ msgstr "Uvez&i podatke o dokumentu...\tCtrl+Shift+I"
+
+#~ msgid "&Export Document Data...\tCtrl+Shift+E"
+#~ msgstr "Izv&ezi podatke o dokumentu...\tCtrl+Shift+E"
+
+#~ msgid "Export to &Plain Text...\tCtrl+E"
+#~ msgstr "Izvezi kao &običan tekst...\tCtrl+E"
+
+#~ msgid "&Word Count\tRawCtrl+W"
+#~ msgstr "Broj &reči\tRawCtrl+W"
+
+#~ msgid "&Word Count\tCtrl+W"
+#~ msgstr "Broj &reči\tCtrl+W"
+
+#~ msgid "Document &Info\tCtrl+I"
+#~ msgstr "&Informacije o dokumentu\tCtrl+I"
+
+#~ msgid "&Table of Contents\tCtrl+T"
+#~ msgstr "&Sadržaj\tCtrl+T"
+
+#~ msgid "&Elements List...\tF7"
+#~ msgstr "&Lista elemenata...\tF7"
+
+#~ msgid "Reveal &File in Folder\tCtrl+Shift+C"
+#~ msgstr "Otkrij &datoteku u folderu\tCtrl+Shift+C"
+
+#~ msgid "Open in &Web View\tCtrl+Shift+V"
+#~ msgstr "Otvori u &Web prikazu\tCtrl+Shift+V"
+
+#~ msgid "View &Source\tCtrl+U"
+#~ msgstr "Prikaži &izvor\tCtrl+U"
+
+#~ msgid "Toggle &Bookmark\tCtrl+Shift+B"
+#~ msgstr "Dodaj ili ukloni &knjižnu oznaku\tCtrl+Shift+B"
+
+#~ msgid "Bookmark with &Note\tCtrl+Shift+N"
+#~ msgstr "Knjižna oznaka sa &napomenom\tCtrl+Shift+N"
+
+#~ msgid "Word w&rap\tCtrl+Alt+W"
+#~ msgstr "P&relamanje reči\tCtrl+Alt+W"
+
+#~ msgid "&Full Screen\tRawCtrl+Ctrl+F"
+#~ msgstr "&Režim celog ekrana\tRawCtrl+Ctrl+F"
+
+#~ msgid "&Full Screen\tF11"
+#~ msgstr "&Režim celog ekrana\tF11"
+
+#~ msgid "&Options\tCtrl+,"
+#~ msgstr "&Podešavanja\tCtrl+,"
+
+#~ msgid "&Sleep Timer...\tCtrl+Shift+S"
+#~ msgstr "Tajmer pre &spavanja...\tCtrl+Shift+S"
+
+#~ msgid "&About Paperback\tCtrl+F1"
+#~ msgstr "O P&aperbacku\tCtrl+F1"
+
+#~ msgid "View Help in &Browser\tF1"
+#~ msgstr "Prikaži pomoć u &pretraživaču\tF1"
+
+#~ msgid "View Help in &Paperback\tShift+F1"
+#~ msgstr "Prikaži pomoć u &Paperbacku\tShift+F1"
+
+#~ msgid "Check for &Updates\tCtrl+Shift+U"
+#~ msgstr "Proveri &ažuriranja\tCtrl+Shift+U"
+
+#~ msgid "&Donate\tCtrl+D"
+#~ msgstr "&Doniraj\tCtrl+D"
+
+#~ msgid "Show All...\tCtrl+R"
+#~ msgstr "Prikaži sve...\tCtrl+R"
+
+#~ msgid "Recent"
+#~ msgstr "Nedavno"
+
+#~ msgid "Screen dimmed by sleep timer. Tap to wake."
+#~ msgstr ""
+#~ "Ekran zatamnjen zbog tajmera pre spavanje. Dodirnite za ponovno buđenje."
+
+#~ msgid "Open document"
+#~ msgstr "Otvori dokument"
+
+#~ msgid "Previous result"
+#~ msgstr "Prethodni rezultat"
+
+#~ msgid "Next result"
+#~ msgstr "Naredni rezultat"
+
+#~ msgid "Search"
+#~ msgstr "Pretraga"
+
+#~ msgid "Active"
+#~ msgstr "Aktivno"
+
+#~ msgid "Set timer"
+#~ msgstr "Podesi tajmer"
+
+#~ msgid "Show Document"
+#~ msgstr "Prikaži dokument"
+
+#~ msgid "Show Text"
+#~ msgstr "Prikaži tekst"
 
 #~ msgid ""
 #~ "Are you sure you want to remove this document from the list? This will "
