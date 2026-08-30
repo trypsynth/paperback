@@ -223,6 +223,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(not(target_os = "macos"))]
 	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
+	// TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 	let shortcuts_button = Button::builder(&general_panel).with_label(&t("Customize &Keyboard Shortcuts...")).build();
 	let option_padding = 5;
 	general_sizer.add(&restore_docs_check, 0, SizerFlag::All, option_padding);

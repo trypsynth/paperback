@@ -190,6 +190,7 @@ fun MainScreenTopBar(
 								onTocOpen
 							)
 						)
+						// TRANSLATORS: Menu item / accessibility action to open the export document dialog
 						add(MenuAction(t("Export As"), onExportDocumentOpen))
 					}
 					if (!isAudioOnly) {
@@ -284,7 +285,9 @@ fun MainScreenTopBar(
 			} else {
 				var emptyMenuExpanded by remember { mutableStateOf(false) }
 				val emptyMenuActions = listOf(
+					// TRANSLATORS: Menu item / accessibility action to open the in-app help document, shown in the top bar menu when no document is open
 					MenuAction(t("Help"), onHelpOpen),
+					// TRANSLATORS: Menu item / accessibility action to open the app's settings, shown in the top bar menu when no document is open
 					MenuAction(t("Settings"), onSettingsOpen)
 				)
 				Box {

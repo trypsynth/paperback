@@ -17,6 +17,7 @@ pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<
 	let input_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	input_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	input_sizer.add(&input_ctrl, 1, SizerFlag::Expand, 0);
+	// TRANSLATORS: OK button that confirms the entered sleep timer duration
 	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&input_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);

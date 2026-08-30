@@ -12,7 +12,7 @@ struct FindView: View {
 		Form {
 			Section {
 				// TRANSLATORS: Placeholder text shown in the empty search field of the Find screen
-				TextField(t("Search…"), text: $query)
+				TextField(t("Search..."), text: $query)
 					.autocorrectionDisabled()
 					.textInputAutocapitalization(.never)
 					.focused($queryFocused)

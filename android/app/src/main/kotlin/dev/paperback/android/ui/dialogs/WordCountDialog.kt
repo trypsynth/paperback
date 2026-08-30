@@ -16,6 +16,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
+import dev.paperback.android.nt
 import dev.paperback.android.t
 import uniffi.paperback.DocumentStatsFfi
 
@@ -24,8 +25,16 @@ fun WordCountDialog(
 	stats: DocumentStatsFfi,
 	onDismiss: () -> Unit
 ) {
-	// TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is replaced with the number
-	val announcement = t("This document contains {} words.", "${stats.wordCount}")
+	// TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is
+	// replaced with the number. Three forms picked by the count's last digits (see nt() in
+	// Translations.kt): one = counts ending in 1 except 11 (1, 21, 31, ...), few = counts ending
+	// in 2-4 except 12-14 (2, 3, 4, 22, 23, 24, ...), many = everything else (0, 5-20, 25-30, ...).
+	val announcement = nt(
+		t("This document contains {} word."),
+		t("This document contains {} words."),
+		t("This document contains {} words."),
+		stats.wordCount
+	).replaceFirst("{}", "${stats.wordCount}")
 
 	AlertDialog(
 		onDismissRequest = onDismiss,
@@ -45,8 +54,10 @@ fun WordCountDialog(
 					style = MaterialTheme.typography.displaySmall
 				)
 				Text(
-					// TRANSLATORS: Unit label shown under the large word-count number
-					text = t("words"),
+					// TRANSLATORS: Unit label shown under the large word-count number. Three forms
+					// picked by the count's last digits (see nt() in Translations.kt): one = counts
+					// ending in 1 except 11, few = counts ending in 2-4 except 12-14, many = everything else.
+					text = nt(t("word"), t("words"), t("words"), stats.wordCount),
 					style = MaterialTheme.typography.bodyMedium,
 					color = MaterialTheme.colorScheme.onSurfaceVariant
 				)

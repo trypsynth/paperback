@@ -47,6 +47,7 @@ struct DocumentDataTransferMenu: ViewModifier {
 					// TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
 					resultMessage = t("Settings exported")
 				case .failure:
+					// TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
 					resultMessage = t("Failed to export settings")
 				}
 				exportURL = nil
@@ -62,9 +63,11 @@ struct DocumentDataTransferMenu: ViewModifier {
 						// TRANSLATORS: Confirmation shown after importing a document's settings and bookmarks from a .paperback file
 						resultMessage = t("Settings imported")
 					} else {
+						// TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
 						resultMessage = t("Failed to import settings")
 					}
 				case .failure:
+					// TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
 					resultMessage = t("Failed to import settings")
 				}
 			}
@@ -73,6 +76,7 @@ struct DocumentDataTransferMenu: ViewModifier {
 				get: { resultMessage != nil },
 				set: { if !$0 { resultMessage = nil } }
 			)) {
+				// TRANSLATORS: OK button dismissing the document import/export result alert
 				Button(t("OK")) { resultMessage = nil }
 			} message: {
 				Text(resultMessage ?? "")
@@ -82,6 +86,7 @@ struct DocumentDataTransferMenu: ViewModifier {
 	private func beginExport() {
 		exportURL = viewModel.exportActiveDocumentSettings()
 		if exportURL == nil {
+			// TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
 			resultMessage = t("Failed to export settings")
 		}
 	}
