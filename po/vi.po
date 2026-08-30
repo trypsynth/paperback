@@ -3760,6 +3760,26 @@ msgstr "Quay Lại {}"
 msgid "Forward {}"
 msgstr "Tiến Tới {}"
 
+#: kt
+#, fuzzy
+msgid "Enter {}"
+msgstr "Nhập {}"
+
+#: kt
+#, fuzzy
+msgid "Error loading document: {}"
+msgstr "Lỗi tải tài liệu: {}"
+
+#: kt
+#, fuzzy
+msgid "1.5×"
+msgstr "1.5×"
+
+#: kt
+#, fuzzy
+msgid "Speech Engine"
+msgstr "Tốc độ nói"
+
 #, fuzzy
 #~ msgid "1 document."
 #~ msgstr "tài liệu"
