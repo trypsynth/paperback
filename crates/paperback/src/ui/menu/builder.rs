@@ -43,6 +43,19 @@ pub fn append_menu_entries(menu: &Menu, entries: &[MenuEntry]) {
 }
 
 pub fn format_menu_label(base: &str, action: ActionId, config: &ConfigManager) -> String {
-	let shortcut = config.get_shortcut_menu_str(action);
-	if shortcut.is_empty() { base.to_string() } else { format!("{base}\t{shortcut}") }
+	// Single-key shortcuts (t = next table, l = next list, …) are deliberately NOT registered as
+	// OS menu accelerators: a menu accelerator fires even while typing in an editable control
+	// inside the window, which would swallow those letters in the in-window find strip. Instead
+	// they're shown inline (e.g. "Next Table (T)") and handled by the text control's own key
+	// handler, so they respond while reading the book but never while typing. Modifier combos
+	// (Ctrl/Alt) stay as real accelerators — they can't be typed as plain text.
+	let Some(chord) = config.get_shortcuts().get_chord(action) else {
+		return base.to_string();
+	};
+	let shortcut = chord.to_shortcut_string();
+	if !chord.ctrl && !chord.raw_ctrl && !chord.alt {
+		format!("{base} ({shortcut})")
+	} else {
+		format!("{base}\t{shortcut}")
+	}
 }

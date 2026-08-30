@@ -51,7 +51,16 @@ pub fn find_text_with_wrap(haystack: &str, needle: &str, start: i64, options: Fi
 
 #[derive(Clone)]
 pub struct FindDialogState {
-	pub dialog: Dialog,
+	/// The in-window find strip. A child of the active tab's page rather than a separate dialog
+	/// window, so focus moving between the find controls and the book text stays within the same
+	/// top-level window and NVDA doesn't announce the whole "Paperback, tab control" chain on the
+	/// way back. Shown/hidden (with a border and a heading) so it still reads as a dialog.
+	pub panel: Panel,
+	/// The tab page the strip was created under, so it can be rebuilt if the active tab changes.
+	host_page: Panel,
+	/// Used to return focus to the book text when the strip hides: a hidden panel's combo keeps
+	/// keyboard focus, so without this ESC keeps landing on the (invisible) find strip.
+	doc_manager: Rc<Mutex<DocumentManager>>,
 	find_combo: ComboBox,
 	match_case: CheckBox,
 	whole_word: CheckBox,
@@ -62,13 +71,15 @@ pub struct FindDialogState {
 impl FindDialogState {
 	pub fn new(
 		frame: &Frame,
+		host_page: Panel,
 		config: &Rc<Mutex<ConfigManager>>,
 		doc_manager: &Rc<Mutex<DocumentManager>>,
 		find_dialog: &Rc<Mutex<Option<Self>>>,
 		live_region_label: StaticText,
+		initial_text: &str,
 	) -> Self {
-		// TRANSLATORS: Title of the Find dialog
-		let dialog = Dialog::builder(frame, &t("Find")).build();
+		// TRANSLATORS: Heading shown at the top of the Find panel
+		let panel = Panel::builder(&host_page).with_style(PanelStyle::TabTraversal | PanelStyle::BorderRaised).build();
 		let FindDialogWidgets {
 			find_combo,
 			match_case,
@@ -77,10 +88,10 @@ impl FindDialogState {
 			find_prev_btn,
 			find_next_btn,
 			cancel_btn,
-		} = build_find_dialog_ui(dialog);
+		} = build_find_dialog_ui(panel);
 		bind_find_dialog_actions(FindDialogActionParams {
 			frame: *frame,
-			dialog,
+			panel,
 			find_combo,
 			find_prev_btn,
 			find_next_btn,
@@ -90,11 +101,41 @@ impl FindDialogState {
 			find_dialog: Rc::clone(find_dialog),
 			live_region_label,
 		});
-		let state =
-			Self { dialog, find_combo, match_case, whole_word, use_regex, in_progress: Rc::new(Cell::new(false)) };
+		let state = Self {
+			panel,
+			host_page,
+			doc_manager: Rc::clone(doc_manager),
+			find_combo,
+			match_case,
+			whole_word,
+			use_regex,
+			in_progress: Rc::new(Cell::new(false)),
+		};
 		state.reload_history(config);
 		state.save_settings(config);
+		if !initial_text.is_empty() {
+			state.set_find_text(initial_text);
+		}
 		state
+	}
+
+	pub fn show(&self) {
+		self.panel.show(true);
+		self.panel.raise();
+	}
+
+	pub fn hide(&self) {
+		let panel_rect = Rect::from_point_and_size(self.panel.get_position(), self.panel.get_size());
+		self.panel.show(false);
+		// ShowWindow(SW_HIDE) leaves the combo holding keyboard focus, so keys (Escape included)
+		// keep landing on the invisible strip. Move focus back to the book text, which also forces
+		// the page to repaint the area the strip covered (its pixels would otherwise linger).
+		if let Ok(dm) = self.doc_manager.try_lock() {
+			dm.restore_focus();
+		}
+		if let Some(parent) = self.panel.get_parent() {
+			parent.refresh(true, Some(&panel_rect));
+		}
 	}
 
 	pub fn reload_history(&self, config: &Rc<Mutex<ConfigManager>>) {
@@ -162,7 +203,7 @@ struct FindDialogWidgets {
 
 struct FindDialogActionParams {
 	frame: Frame,
-	dialog: Dialog,
+	panel: Panel,
 	find_combo: ComboBox,
 	find_prev_btn: Button,
 	find_next_btn: Button,
@@ -173,33 +214,33 @@ struct FindDialogActionParams {
 	live_region_label: StaticText,
 }
 
-fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
+fn build_find_dialog_ui(panel: Panel) -> FindDialogWidgets {
 	let combo_width = 250;
 	let option_padding = 2;
 	let button_spacing = 5;
+	// TRANSLATORS: Heading shown at the top of the Find panel
+	let title = StaticText::builder(&panel).with_label(&t("Find")).build();
 	// TRANSLATORS: Label for the text field where the user types what to search for
-	let find_label = StaticText::builder(&dialog).with_label(&t("Find &what:")).build();
-	let find_combo = ComboBox::builder(&dialog)
+	let find_label = StaticText::builder(&panel).with_label(&t("Find &what:")).build();
+	let find_combo = ComboBox::builder(&panel)
 		.with_style(ComboBoxStyle::ProcessEnter)
-		.with_size(dpi::scale_size(&dialog, Size::new(combo_width, -1)))
+		.with_size(dpi::scale_size(&panel, Size::new(combo_width, -1)))
 		.build();
-	let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("Options")).build();
+	let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &panel, &t("Options")).build();
 	// TRANSLATORS: Checkbox to make the search case-sensitive
-	let match_case = CheckBox::builder(&dialog).with_label(&t("&Match case")).build();
+	let match_case = CheckBox::builder(&panel).with_label(&t("&Match case")).build();
 	// TRANSLATORS: Checkbox to only match whole words, not substrings
-	let whole_word = CheckBox::builder(&dialog).with_label(&t("Match &whole word")).build();
+	let whole_word = CheckBox::builder(&panel).with_label(&t("Match &whole word")).build();
 	// TRANSLATORS: Checkbox to treat the search text as a regular expression
-	let use_regex = CheckBox::builder(&dialog).with_label(&t("Use &regular expressions")).build();
+	let use_regex = CheckBox::builder(&panel).with_label(&t("Use &regular expressions")).build();
 	options_box.add(&match_case, 0, SizerFlag::All, option_padding);
 	options_box.add(&whole_word, 0, SizerFlag::All, option_padding);
 	options_box.add(&use_regex, 0, SizerFlag::All, option_padding);
 	// TRANSLATORS: Button to search backward for the previous match
-	let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
+	let find_prev_btn = Button::builder(&panel).with_label(&t("Find &Previous")).build();
 	// TRANSLATORS: Button to search forward for the next match
-	let find_next_btn = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Find &Next")).build();
-	let cancel_btn = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(ID_CANCEL);
-	dialog.set_affirmative_id(ID_OK);
+	let find_next_btn = Button::builder(&panel).with_label(&t("Find &Next")).build();
+	let cancel_btn = Button::builder(&panel).with_label(&t("Cancel")).build();
 	let find_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	find_sizer.add(&find_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	find_sizer.add(&find_combo, 1, SizerFlag::Expand, 0);
@@ -209,6 +250,7 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	button_sizer.add_stretch_spacer(1);
 	button_sizer.add(&cancel_btn, 0, SizerFlag::All, 0);
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	main_sizer.add(&title, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, DIALOG_PADDING);
 	main_sizer.add_sizer(&find_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	main_sizer.add_sizer(
 		&options_box,
@@ -222,15 +264,14 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
 		DIALOG_PADDING,
 	);
-	dialog.set_sizer_and_fit(main_sizer, true);
-	dialog.centre();
+	panel.set_sizer_and_fit(main_sizer, true);
 	FindDialogWidgets { find_combo, match_case, whole_word, use_regex, find_prev_btn, find_next_btn, cancel_btn }
 }
 
 fn bind_find_dialog_actions(params: FindDialogActionParams) {
 	let FindDialogActionParams {
 		frame,
-		dialog,
+		panel,
 		find_combo,
 		find_prev_btn,
 		find_next_btn,
@@ -268,13 +309,12 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 			false,
 		);
 	});
-	let dialog_for_cancel = dialog;
 	let find_dialog_for_cancel = Rc::clone(&find_dialog);
 	let config_for_cancel = Rc::clone(&config);
 	cancel_btn.on_click(move |_| {
 		if let Some(state) = find_dialog_for_cancel.lock().unwrap().as_ref() {
 			state.save_settings(&config_for_cancel);
-			dialog_for_cancel.show(false);
+			state.hide();
 		}
 	});
 	let frame_for_enter = frame;
@@ -292,15 +332,39 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 		);
 		event.skip(false);
 	});
-	let dialog_for_close = dialog;
-	let find_dialog_for_close = Rc::clone(&find_dialog);
-	let config_for_close = Rc::clone(&config);
-	dialog.on_close(move |event| {
-		if let Some(state) = find_dialog_for_close.lock().unwrap().as_ref() {
-			state.save_settings(&config_for_close);
+	// Escape hides the strip, standing in for the dialog window's escape-to-cancel behaviour.
+	// Bind both the combo and the panel: the combo may consume Escape natively before it would
+	// bubble up to the panel, and the panel catches it when focus is on one of the other
+	// controls.
+	let find_dialog_for_combo_escape = Rc::clone(&find_dialog);
+	let config_for_combo_escape = Rc::clone(&config);
+	find_combo.on_key_down(move |event| {
+		if let WindowEventData::Keyboard(key) = &event
+			&& key.get_key_code() == Some(WXK_ESCAPE)
+		{
+			if let Some(state) = find_dialog_for_combo_escape.lock().unwrap().as_ref() {
+				state.save_settings(&config_for_combo_escape);
+				state.hide();
+			}
+			event.skip(false);
+		} else {
+			event.skip(true);
 		}
-		dialog_for_close.show(false);
-		event.skip(false);
+	});
+	let find_dialog_for_escape = Rc::clone(&find_dialog);
+	let config_for_escape = Rc::clone(&config);
+	panel.on_key_down(move |event| {
+		if let WindowEventData::Keyboard(key) = &event
+			&& key.get_key_code() == Some(WXK_ESCAPE)
+		{
+			if let Some(state) = find_dialog_for_escape.lock().unwrap().as_ref() {
+				state.save_settings(&config_for_escape);
+				state.hide();
+			}
+			event.skip(false);
+		} else {
+			event.skip(true);
+		}
 	});
 }
 
@@ -322,11 +386,38 @@ pub fn ensure_find_dialog(
 	live_region_label: StaticText,
 ) {
 	let mut dialog_guard = find_dialog.lock().unwrap();
-	if dialog_guard.is_some() {
-		return;
+	let host_page = {
+		let dm = doc_manager.lock().unwrap();
+		dm.active_tab().map(|tab| tab.panel)
+	};
+	let needs_build = match (dialog_guard.as_ref(), host_page) {
+		(None, Some(_)) => true,
+		(Some(state), Some(page)) => !state.panel.is_valid() || state.host_page.handle_ptr() != page.handle_ptr(),
+		_ => false,
+	};
+	if needs_build {
+		// Keep the previous query across the rebuild.
+		let initial_text = dialog_guard.as_ref().map(FindDialogState::find_text).unwrap_or_default();
+		let Some(page) = host_page else {
+			return;
+		};
+		if let Some(state) = dialog_guard.take() {
+			state.panel.destroy();
+		}
+		let state =
+			FindDialogState::new(frame, page, config, doc_manager, find_dialog, live_region_label, &initial_text);
+		*dialog_guard = Some(state);
 	}
-	let state = FindDialogState::new(frame, config, doc_manager, find_dialog, live_region_label);
-	*dialog_guard = Some(state);
+}
+
+/// Centres the find strip over the tab page so it reads as a dialog floating over the book
+/// rather than a fixed toolbar.
+fn position_find_panel(panel: Panel, host_page: Panel) {
+	let page_size = host_page.get_client_size();
+	let panel_size = panel.get_best_size();
+	let x = ((page_size.width - panel_size.width) / 2).max(0);
+	let y = ((page_size.height - panel_size.height) / 3).max(0);
+	panel.move_window(x, y);
 }
 
 pub fn show_find_dialog(
@@ -344,9 +435,15 @@ pub fn show_find_dialog(
 	let Some(state) = state else {
 		return;
 	};
-	let text_ctrl = {
+	let (text_ctrl, page) = {
 		let dm = doc_manager.lock().unwrap();
-		dm.active_tab().map(|tab| tab.text_ctrl)
+		let tab = dm.active_tab();
+		let result = (tab.map(|t| t.text_ctrl), tab.map(|t| t.panel));
+		drop(dm);
+		result
+	};
+	let Some(page) = page else {
+		return;
 	};
 	if let Some(text_ctrl) = text_ctrl {
 		let (start, end) = text_ctrl.get_selection();
@@ -355,9 +452,23 @@ pub fn show_find_dialog(
 			state.set_find_text(&selection);
 		}
 	}
-	state.dialog.show(true);
-	state.dialog.raise();
+	position_find_panel(state.panel, page);
+	state.show();
 	state.focus_find_text();
+}
+
+/// Whether the find strip is currently visible, so app-wide key handling (the notebook's
+/// Delete-to-close, for instance) can leave the keys alone while the user types in it.
+pub fn is_find_shown(find_dialog: &Rc<Mutex<Option<FindDialogState>>>) -> bool {
+	find_dialog.lock().unwrap().as_ref().is_some_and(|state| state.panel.is_shown())
+}
+
+/// Hides the find strip if it's showing. Used by app-wide key handling (the notebook's Escape
+/// fallback) that can't reach the strip's own controls.
+pub fn hide_find_dialog(find_dialog: &Rc<Mutex<Option<FindDialogState>>>) {
+	if let Some(state) = find_dialog.lock().unwrap().as_ref() {
+		state.hide();
+	}
 }
 
 pub fn handle_find_action(
@@ -444,8 +555,7 @@ fn do_find(
 		drop(dm);
 		// TRANSLATORS: Announced when a search finds no matches in the document
 		live_region::announce(live_region_label, &t("Not found."));
-		state.dialog.show(true);
-		state.dialog.raise();
+		state.show();
 		state.focus_find_text();
 		return;
 	}
@@ -463,7 +573,15 @@ fn do_find(
 	let len = i64::try_from(display_len(&query)).unwrap_or(i64::MAX);
 	let start = result.position.clamp(0, doc_len);
 	let end = (start + len).min(doc_len);
+	let found_line = tab.session.get_line_text(start);
+	let announce_line = !found_line.trim().is_empty();
+	if announce_line {
+		// Speak the found line before focus returns to the book text, so the match text comes
+		// first. The strip shares the book's window, so the focus move back is reported briefly
+		// (just the text control) rather than as the whole "Paperback, tab control" chain.
+		live_region::announce(live_region_label, &found_line);
+	}
 	navigation::select_doc_range(tab, start, end);
 	drop(dm);
-	state.dialog.show(false);
+	state.hide();
 }
