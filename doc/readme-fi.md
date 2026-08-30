@@ -1,4 +1,4 @@
-# Paperback - versio 0.9.0
+# Paperback - versio 0.9.1
 
 ## Johdanto
 
@@ -16,7 +16,7 @@ Paperback toimii Windows 10:ssä ja 11:ssä sekä kaikissa uudemmissa ARM-pohjai
 * Tallentaa tarkan lukukohdan jokaisessa avaamassasi asiakirjassa.
 * Muistaa valinnaisesti, mitkä asiakirjat olivat avoinna ohjelmaa suljettaessa, ja avaa ne seuraavalla käynnistyskerralla.
 * Sisältää ruudunlukijoista tuttua verkkoselaustilaa muistuttavan navigointitoiminnon, jonka avulla voit liikkua asiakirjoissa nopeasti ja vaivattomasti.
-* Sisältää tehokkaan etsintävalintaikkunan, jossa on muun muassa historia ja sääntölausekkeiden tuki.
+* Sisältää tehokkaan etsintäikkunan, jossa on muun muassa historia ja sääntölausekkeiden tuki.
 * Voidaan käyttää massamuistiversiona tai asentaa siten, että tiedostokytkennät määritetään automaattisesti.
 Tukee erittäin kattavasti yleisiä tiedostomuotoja.
 
@@ -199,6 +199,23 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Tyler Rodick
 
 ## Muutosloki
+
+### Versio 0.9.1
+* Kirjanmerkkien ja muistiinpanojen merkkiäänet toistuvat nyt macOS:ssä.
+* DAISY-kirjojen ääni kuuluu nyt macOS:ssä, eikä niiden aikajanaa seurata äänettömästi.
+* Korjattu ongelma, jonka vuoksi kaarevat lainausmerkit, ajatusviivat ja vastaavat merkit katosivat RTF-asiakirjoista yhdistäen samalla ympäröivät sanat toisiinsa.
+* Korjattu ongelma, jonka vuoksi RTF-kuvien raakadata vuoti asiakirjaan tekstisotkuna.
+* Korjattu ongelma, jonka vuoksi Viimeisimmät asiakirjat -alivalikossa säilyi vanhentuneita merkintöjä, kunnes valikon sisältö muodostettiin uudelleen.
+* Valikkojen pikanäppäimet ovat palanneet kaikkiin käännöksiin, joten esimerkiksi venäjänkielistä käyttöliittymää käytettäessä valikkokohteita on taas mahdollista avata korostetuilla näppäimillä.
+* Suuret CHM-asiakirjat avautuvat nyt jopa seitsemän kertaa nopeammin.
+* Avatut asiakirjat rekisteröidään Windowsiin, joten ne näkyvät nyt tehtäväpalkin pikavalikossa ja Käynnistä-valikon viimeisimpien tiedostojen luettelossa.
+* Asetukset-valikon englanninkielinen nimi (Options) on muutettu muotoon Settings, mikä vastaa mobiilisovelluksia sekä macOS-käyttöjärjestelmän käytäntöä.
+* Paperback muistaa nyt ikkunan sijainnin, koon ja suurennetun tilan käynnistysten välillä.
+* Monikkomuodot on nyt käännetty, joten lukumääriä sisältävät viestit toimivat oikein kielissä, joissa tarvitaan yhtä useampaa monikkomuotoa.
+* DAISY-kirjan ncc.html-tiedoston valitseminen avaa nyt koko äänikirjan pelkän tekstin sijaan.
+* Muokkaa pikanäppäimiä -ikkunan toimintojen nimet ovat nyt käännettävissä eri kielille.
+* Asiakirjan nimi näkyy nyt ensimmäisenä otsikkopalkissa, joten avoinna olevat kirjat on helpompi erottaa toisistaan tehtäväpalkissa ja Alt+Sarkain-näppäimiä käytettäessä.
+* Päivitysikkuna on nyt käännetty eri kielille.
 
 ### Versio 0.9.0
 

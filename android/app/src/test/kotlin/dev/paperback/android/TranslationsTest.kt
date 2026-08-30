@@ -1,5 +1,6 @@
 package dev.paperback.android
 
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -63,5 +64,54 @@ class BestLocaleMatchTest {
 		val both = listOf("pt", "pt_br")
 		assertEquals("pt_br", bestLocaleMatch(both, Locale("pt", "BR")))
 		assertEquals("pt", bestLocaleMatch(both, Locale("pt", "PT")))
+	}
+}
+
+class TranslateTest {
+	@After
+	fun clearCatalogue() {
+		Translations.map = HashMap()
+	}
+
+	// English ships no catalogue at all, so an untranslated build has to read as the msgids.
+	@Test
+	fun `a string with no catalogue entry is its own translation`() {
+		assertEquals("Recent Documents", t("Recent Documents"))
+	}
+
+	@Test
+	fun `a string in the catalogue is translated`() {
+		Translations.map = hashMapOf("Recent Documents" to "Dokumente")
+		assertEquals("Dokumente", t("Recent Documents"))
+	}
+
+	@Test
+	fun `placeholders are filled in the order the arguments are given`() {
+		Translations.map = hashMapOf("{} of {}" to "{} von {}")
+		assertEquals("3 von 9", t("{} of {}", "3", "9"))
+	}
+
+	// The nav-unit labels translate first and substitute after, so a translation is free to move
+	// its placeholder somewhere else in the sentence.
+	@Test
+	fun `a translation may put its placeholder anywhere`() {
+		Translations.map = hashMapOf("Back {}" to "{} zurück")
+		assertEquals("30 seconds zurück", t("Back {}", "30 seconds"))
+	}
+
+	// An argument that itself contains a placeholder must not be re-scanned, or a filename or
+	// search term containing "{}" would swallow the argument meant for the next placeholder.
+	@Test
+	fun `an argument containing a placeholder is not substituted into`() {
+		assertEquals("{} and b", t("{} and {}", "{}", "b"))
+	}
+
+	// Both mismatches are survivable and neither should throw: a translation that dropped a
+	// placeholder, and one that kept more than the call site has arguments for.
+	@Test
+	fun `spare placeholders and spare arguments are both left alone`() {
+		assertEquals("a and {}", t("{} and {}", "a"))
+		assertEquals("just a", t("just {}", "a", "b"))
+		assertEquals("no placeholders", t("no placeholders", "a"))
 	}
 }

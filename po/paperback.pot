@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 21:25+0200\n"
+"POT-Creation-Date: 2026-08-30 23:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3392,30 +3392,6 @@ msgid "Speech Engine"
 msgstr ""
 
 #: swift
-msgid "Go To..."
-msgstr ""
-
-#: swift
-msgid "Search..."
-msgstr ""
-
-#: kt
-msgid "{} second"
-msgstr ""
-
-#: swift
-msgid "Custom: {} minute"
-msgstr ""
-
-#: kt
-msgid "This document contains {} word."
-msgstr ""
-
-#: kt
-msgid "word"
-msgstr ""
-
-#: swift
 msgid "1 book"
 msgstr ""
 
@@ -3428,7 +3404,31 @@ msgid "..."
 msgstr ""
 
 #: swift
+msgid "Go To..."
+msgstr ""
+
+#: swift
+msgid "Search..."
+msgstr ""
+
+#: swift
+msgid "Custom: {} minute"
+msgstr ""
+
+#: swift
 msgid "Custom: {} minutes⁣"
+msgstr ""
+
+#: kt
+msgid "This document contains {} word."
+msgstr ""
+
+#: kt
+msgid "word"
+msgstr ""
+
+#: kt
+msgid "{} second"
 msgstr ""
 
 #: kt

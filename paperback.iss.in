@@ -49,6 +49,14 @@
 	Root: HKCR; Subkey: "Paperback.Document"; ValueType: string; ValueName: ""; ValueData: "Paperback Document"; Flags: uninsdeletekey
 	Root: HKCR; Subkey: "Paperback.Document\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\paperback.exe,0"
 	Root: HKCR; Subkey: "Paperback.Document\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\paperback.exe"" ""%1"""
+	; The name Explorer's "Open with" list shows. Without an explicit FriendlyAppName Windows falls
+	; back to the executable's FileDescription resource, which used to be the full tagline, and it
+	; keeps that first-seen name in MuiCache even after the resource is corrected.
+	Root: HKCR; Subkey: "Paperback.Document"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Paperback"
+	; The same entry for picking paperback.exe directly out of "More apps" or the file browser.
+	Root: HKCR; Subkey: "Applications\paperback.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Paperback"; Flags: uninsdeletekey
+	Root: HKCR; Subkey: "Applications\paperback.exe\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\paperback.exe,0"
+	Root: HKCR; Subkey: "Applications\paperback.exe\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\paperback.exe"" ""%1"""
 @FORMAT_REGISTRY@
 	; ZIP archives. Shared by multiple parsers (DAISY, Word-in-zip), so it is kept as its own opt-in task
 	; rather than tied to any single format's checkbox.

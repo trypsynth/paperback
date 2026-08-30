@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-29 11:48-0600\n"
-"PO-Revision-Date: 2026-08-30 01:13+0300\n"
+"PO-Revision-Date: 2026-08-31 00:19+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -2825,17 +2825,14 @@ msgid "Untitled Link"
 msgstr "Nimetön linkki"
 
 #: kt
-#| msgid "Export Document Data"
 msgid "Export Document"
 msgstr "Asiakirjan vienti"
 
 #: kt
-#| msgid "Close the current document"
 msgid "Select a format to export the current document:"
 msgstr "Valitse asiakirjan vientimuoto:"
 
 #: kt
-#| msgid "Plain Text"
 msgid "Plain Text (.txt)"
 msgstr "Pelkkä teksti (.txt)"
 
@@ -2844,7 +2841,6 @@ msgid "HTML (.html)"
 msgstr "HTML (.html)"
 
 #: kt
-#| msgid "Markdown"
 msgid "Markdown (.md)"
 msgstr "Markdown (.md)"
 
@@ -2938,12 +2934,10 @@ msgid "Start"
 msgstr "Käynnistä"
 
 #: kt
-#| msgid "Time remaining"
 msgid "Active: {} remaining"
 msgstr "Käytössä: {} jäljellä"
 
 #: kt
-#| msgid "Time remaining"
 msgid "remaining"
 msgstr "jäljellä"
 
@@ -2956,7 +2950,6 @@ msgid "Change to:"
 msgstr "Uusi arvo:"
 
 #: kt
-#| msgid "2 minutes"
 msgid "{} minutes"
 msgstr "{} minuuttia"
 
@@ -2985,7 +2978,6 @@ msgid "This document contains {} words."
 msgstr "Asiakirjassa on {} sanaa."
 
 #: kt
-#| msgid "Words"
 msgid "words"
 msgstr "sanaa"
 
@@ -2994,12 +2986,10 @@ msgid "Close Search"
 msgstr "Sulje haku"
 
 #: kt
-#| msgid "Document reloaded."
 msgid "Document exported"
 msgstr "Asiakirja viety"
 
 #: kt
-#| msgid "Failed to export document."
 msgid "Failed to export document"
 msgstr "Asiakirjan vienti epäonnistui"
 
@@ -3036,7 +3026,6 @@ msgid "Read Aloud"
 msgstr "Lue tekstistä puheeksi -toiminnolla"
 
 #: kt
-#| msgid "Export Successful"
 msgid "Export As"
 msgstr "Vie muodossa"
 
@@ -3077,12 +3066,10 @@ msgid "Separator"
 msgstr "Erotin"
 
 #: kt
-#| msgid "5 seconds"
 msgid "{} seconds"
 msgstr "{} sekuntia"
 
 #: kt
-#| msgid "Grant"
 msgid "✓ Granted"
 msgstr "✓ Sallittu"
 
@@ -3099,7 +3086,6 @@ msgstr ""
 "on selvitys pyydettävistä oikeuksista perusteluineen:"
 
 #: kt
-#| msgid "No sections."
 msgid "Notifications"
 msgstr "Ilmoitukset"
 
@@ -3132,7 +3118,6 @@ msgid "Enable File Access"
 msgstr "Salli tiedostojen käyttöoikeus"
 
 #: kt
-#| msgid "&Containers"
 msgid "Continue"
 msgstr "Jatka"
 
@@ -3153,14 +3138,30 @@ msgid "System Default"
 msgstr "Järjestelmän oletus"
 
 #: kt
-#| msgid "Back"
 msgid "Back {}"
 msgstr "{} taaksepäin"
 
 #: kt
-#| msgid "Go Forward"
 msgid "Forward {}"
 msgstr "{} eteenpäin"
+
+#: kt
+msgid "Enter {}"
+msgstr "Syötä {}"
+
+#: kt
+#| msgid "Failed to load document."
+msgid "Error loading document: {}"
+msgstr "Virhe avattaessa asiakirjaa: {}"
+
+#: kt
+msgid "1.5×"
+msgstr "1,5×"
+
+#: kt
+#| msgid "Speech Rate"
+msgid "Speech Engine"
+msgstr "Puhemoottori"
 
 #~ msgid "&Options"
 #~ msgstr "&Asetukset"
