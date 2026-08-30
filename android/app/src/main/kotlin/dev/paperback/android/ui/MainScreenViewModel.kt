@@ -795,7 +795,8 @@ class MainScreenViewModel(
 			return true
 		}
 		_ttsPosition.value = res.position
-		val text = displayTextFor(tab, tab.session.getTextSegment(res.position, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT))
+		val segment = tab.session.getTextSegment(res.position, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		val text = displayTextFor(tab, segment)
 		_currentSegmentText.value = text
 		saveTtsPositionToConfig(res.position)
 		if (tab.hasAudio) {
@@ -866,7 +867,8 @@ class MainScreenViewModel(
 		val tab = state.activeTab ?: return
 		val current = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
 		_currentSegmentText.value = displayTextFor(tab, current).ifBlank {
-			displayTextFor(tab, tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT))
+			val next = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
+			displayTextFor(tab, next)
 		}
 	}
 
@@ -906,10 +908,14 @@ class MainScreenViewModel(
 
 	/** A segment's own text, falling back to its enclosing section's TOC title when blank — the
 	 * case for a plain-audio DAISY section, whose buffer content is just a placeholder space. */
-	private fun displayTextFor(tab: DocumentTabState, segment: TextSegmentFfi): String =
-		segment.text.ifBlank {
-			tab.toc.lastOrNull { it.position <= segment.startPos }?.title.orEmpty()
-		}
+	private fun displayTextFor(
+		tab: DocumentTabState,
+		segment: TextSegmentFfi
+	): String {
+		if (segment.text.isNotBlank()) return segment.text
+		val section = tab.toc.lastOrNull { it.position <= segment.startPos }
+		return section?.title.orEmpty()
+	}
 
 	/** Jumps straight to `pos` (a freshly found Find match) and, if `resume` says the reader was
 	 * already going, speaks/plays from exactly there. Deliberately does not go through
