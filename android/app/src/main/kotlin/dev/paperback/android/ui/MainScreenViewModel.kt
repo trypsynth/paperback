@@ -830,10 +830,7 @@ class MainScreenViewModel(
 		val time = formatDuration(if (tab.isAudioOnly) cursor.seekMs else elapsedMs)
 		val fileChanged = lastAnnouncedAudioSource != clip.source
 		lastAnnouncedAudioSource = clip.source
-		val sectionTitle = tab.toc
-			.lastOrNull { it.position <= clip.start }
-			?.title
-			.orEmpty()
+		val sectionTitle = sectionTitleAt(tab, clip.start)
 		_accessibilityAnnouncement.tryEmit(
 			if (fileChanged && sectionTitle.isNotBlank()) "$sectionTitle, $time" else time
 		)
@@ -865,6 +862,15 @@ class MainScreenViewModel(
 	fun refreshSegmentPreview() {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
+		// An audio-only book's buffer is one placeholder space per file with no newlines
+		// anywhere, so asking for the paragraph enclosing a position collapses to the whole
+		// buffer and reports it as starting at 0. Deriving the label from that would pin it to
+		// the first file's name for the life of the book, however far playback had moved; the
+		// section (that is, the file) holding the current position is the only label there is.
+		if (tab.isAudioOnly) {
+			_currentSegmentText.value = sectionTitleAt(tab, _ttsPosition.value)
+			return
+		}
 		val current = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
 		_currentSegmentText.value = displayTextFor(tab, current).ifBlank {
 			val next = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
@@ -890,8 +896,9 @@ class MainScreenViewModel(
 		}
 	}
 
-	/** Seeks daisyAudioPlayer to `segment`'s start, then either resumes playback there or just
-	 * announces `announceText`. */
+	/** Seeks daisyAudioPlayer to `segment`'s start, resumes playback there when `speak` says
+	 * the reader was already going, and announces `announceText` where that is the only sign
+	 * anything moved. */
 	private fun navigateDaisyAudioToSegment(
 		segment: TextSegmentFfi,
 		announceText: String,
@@ -901,7 +908,16 @@ class MainScreenViewModel(
 		daisyAudioPlayer.seekToPosition(segment.startPos)
 		if (speak) {
 			daisyAudioPlayer.play()
-		} else if (announce) {
+		}
+		// Stepping by section moves between whole narration files, so name where the jump
+		// landed the way a time seek names the file it crossed into: unconditionally, because
+		// with playback resuming there is otherwise no cue at all that anything moved, and in
+		// full rather than announceNavigationCue's five-word prefix, since here the name is the
+		// whole message rather than the opening of a paragraph being previewed.
+		val bySection = (_currentNavUnit.value as? NavUnit.Segment)?.type == SegmentTypeFfi.SECTION
+		if (bySection && announceText.isNotBlank()) {
+			_accessibilityAnnouncement.tryEmit(announceText)
+		} else if (!speak && announce) {
 			announceNavigationCue(announceText)
 		}
 	}
@@ -913,7 +929,17 @@ class MainScreenViewModel(
 		segment: TextSegmentFfi
 	): String {
 		if (segment.text.isNotBlank()) return segment.text
-		val section = tab.toc.lastOrNull { it.position <= segment.startPos }
+		return sectionTitleAt(tab, segment.startPos)
+	}
+
+	/** The title of the TOC section `position` falls inside, empty when the document has no TOC.
+	 * In a book that is just a bundle of narration files, each file is its own section, so this
+	 * is the name of the file covering `position`. */
+	private fun sectionTitleAt(
+		tab: DocumentTabState,
+		position: Long
+	): String {
+		val section = tab.toc.lastOrNull { it.position <= position }
 		return section?.title.orEmpty()
 	}
 
