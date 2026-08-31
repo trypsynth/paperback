@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:48-0600\n"
+"POT-Creation-Date: 2026-08-30 23:46+0200\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -78,6 +78,8 @@ msgid "Closed"
 msgstr "Fermé"
 
 #. TRANSLATORS: Status of a document whose file could not be found on disk
+#. TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the row's displayed status to decide whether the Open button is enabled.
+#. TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the selected row's displayed status to decide whether the Locate button is enabled.
 msgid "Missing"
 msgstr "Manquant"
 
@@ -87,8 +89,8 @@ msgstr "&Ouvrir"
 
 #. TRANSLATORS: Button label to locate a missing file on disk
 #, fuzzy
-msgid "&Locate…"
-msgstr "&Rechercher…"
+msgid "&Locate..."
+msgstr "&Localiser..."
 
 #. TRANSLATORS: Button label to remove selected documents from the list
 msgid "&Remove"
@@ -99,6 +101,10 @@ msgid "&Clear All"
 msgstr "Tout &effacer"
 
 #. TRANSLATORS: Label for a button that closes a dialog
+#. TRANSLATORS: Label for a button that closes the Document Info dialog
+#. TRANSLATORS: Label for a button that closes the View Note dialog
+#. TRANSLATORS: Label for a button that closes the Web View dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Close"
 msgstr "Fermer"
 
@@ -130,9 +136,9 @@ msgid_plural "%d documents."
 msgstr[0] "%d document."
 msgstr[1] "Tous les %d documents."
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
+#. TRANSLATORS: Status bar text in the All Documents dialog when the only document in the list is selected
 #, fuzzy
-msgid "1 of 1 document selected."
+msgid "1 document selected."
 msgstr "Le document a été rechargé."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
@@ -179,6 +185,8 @@ msgstr "&Signets :"
 msgid "&Edit Note"
 msgstr "&Modifier la note"
 
+#. TRANSLATORS: Label for the button to delete the selected bookmark/note
+#. TRANSLATORS: Menu item in the Edit menu to delete the current selection.
 msgid "&Delete"
 msgstr "&Supprimer"
 
@@ -203,6 +211,7 @@ msgid "Error"
 msgstr "Erreur"
 
 #. TRANSLATORS: Title of the Bookmark Note editor dialog
+#. TRANSLATORS: Title of the dialog for adding or editing a bookmark note
 msgid "Bookmark Note"
 msgstr "Note de signet"
 
@@ -211,6 +220,7 @@ msgid "Edit bookmark note:"
 msgstr "Modifier la note du signet :"
 
 #. TRANSLATORS: Title of the Document Info dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "Informations sur le document"
 
@@ -259,9 +269,18 @@ msgid "Links"
 msgstr "Liens"
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
+#. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
+#. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
 msgid "Untitled"
 msgstr "Sans titre"
 
+#. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button that confirms the entered bookmark/note text
+#. TRANSLATORS: OK button that confirms the chosen file format in the Open As dialog
+#. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
+#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
+#. TRANSLATORS: OK button that confirms the entered sleep timer duration
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr "OK"
@@ -275,6 +294,7 @@ msgid "&Line number:"
 msgstr "&Numéro de ligne :"
 
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
+#. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
 msgid "Go"
 msgstr "Aller"
@@ -453,6 +473,7 @@ msgstr "&Recharger automatiquement les documents modifiés"
 msgid "Customize &Window Hotkey..."
 msgstr "Personnaliser le raccourci &fenêtre..."
 
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 #, fuzzy
 msgid "Customize &Keyboard Shortcuts..."
 msgstr "Personnaliser les &raccourcis clavier..."
@@ -587,6 +608,7 @@ msgid "General"
 msgstr "Général"
 
 #. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Lecture"
 
@@ -646,16 +668,19 @@ msgid "Window Hotkey"
 msgstr "Raccourci clavier pour les fenêtres"
 
 #. TRANSLATORS: Checkbox label for Control modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
 #, fuzzy
 msgid "&Ctrl"
 msgstr "&Ctrl"
 
 #. TRANSLATORS: Checkbox label for Alt modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
 #, fuzzy
 msgid "&Alt"
 msgstr "&Alt"
 
 #. TRANSLATORS: Checkbox label for Shift modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
 #, fuzzy
 msgid "&Shift"
 msgstr "&Maj+"
@@ -666,6 +691,7 @@ msgid "&Win"
 msgstr "&Gagner"
 
 #. TRANSLATORS: Label for the hotkey key selection input field
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
 #, fuzzy
 msgid "&Key:"
 msgstr "&Clé :"
@@ -676,6 +702,10 @@ msgid "Clear"
 msgstr "Effacer"
 
 #. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -684,26 +714,32 @@ msgstr "Annuler"
 msgid "Space"
 msgstr "Espace"
 
+#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
 #, fuzzy
 msgid "Customize Keyboard Shortcuts"
 msgstr "Personnaliser les raccourcis clavier"
 
+#. TRANSLATORS: Label above the list of shortcuts for a category in the Keyboard Shortcuts dialog.
 #, fuzzy
 msgid "&Shortcuts:"
 msgstr "&Raccourcis :"
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
 #, fuzzy
 msgid "&Set Shortcut..."
 msgstr "&Définir un raccourci..."
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
 #, fuzzy
 msgid "&Clear Shortcut"
 msgstr "&Effacer le raccourci"
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
 #, fuzzy
 msgid "&Reset to Default"
 msgstr "&Rétablir la police par défaut"
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
 #, fuzzy
 msgid "Reset &All to Defaults"
 msgstr "&Rétablir la police par défaut"
@@ -722,14 +758,17 @@ msgstr "Conflit de raccourcis"
 msgid "Reset all shortcuts to their default values?"
 msgstr "Réinitialiser tous les raccourcis à leurs valeurs par défaut ?"
 
+#. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
 #, fuzzy
 msgid "Reset Shortcuts"
 msgstr "Réinitialiser les raccourcis"
 
+#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 #, fuzzy
 msgid "Set Shortcut for {}"
 msgstr "Définir le raccourci pour {}"
 
+#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 #, fuzzy
 msgid "Configure shortcut for {}:"
 msgstr "Configurer le raccourci pour {} :"
@@ -738,6 +777,7 @@ msgstr "Configurer le raccourci pour {} :"
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr "Astuce : cliquez dans le champ « Touche » et appuyez sur la combinaison de touches souhaitée."
 
+#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
 #, fuzzy
 msgid "Detected: (none)"
 msgstr "Détecté : (aucun)"
@@ -750,6 +790,7 @@ msgstr "Plus d'informations : {}"
 msgid "No key detected"
 msgstr "Aucune touche détectée"
 
+#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
 #, fuzzy
 msgid "&Clear"
 msgstr "&Effacer"
@@ -763,6 +804,7 @@ msgid "&Minutes:"
 msgstr "&Minutes :"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "Table des matières"
 
@@ -819,6 +861,7 @@ msgstr[0] "Ce document contient %d mot."
 msgstr[1] "Ce document contient %d mots."
 
 #. TRANSLATORS: Title of the Word Count dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Word Count"
 msgstr "Nombre de mots"
@@ -864,6 +907,7 @@ msgstr "Aucun signet suivant."
 msgid "Temporary bookmark."
 msgstr "Aucun signet."
 
+#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
 msgid "Table View"
 msgstr "Vue tableau"
 
@@ -875,6 +919,7 @@ msgid "Document Password"
 msgstr "Mot de passe du document"
 
 #. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
 msgid "Failed to load document."
 msgstr "Impossible de charger le document."
 
@@ -949,6 +994,7 @@ msgstr "Rechercher"
 msgid "Find &what:"
 msgstr "Rechercher &quoi :"
 
+#. TRANSLATORS: Group box heading for the search options in the Find dialog
 msgid "Options"
 msgstr "Options"
 
@@ -965,10 +1011,12 @@ msgid "Use &regular expressions"
 msgstr "Utiliser les expressions &régulières"
 
 #. TRANSLATORS: Button to search backward for the previous match
+#. TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
 msgid "Find &Previous"
 msgstr "Rechercher le &précédent"
 
 #. TRANSLATORS: Button to search forward for the next match
+#. TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
 msgid "Find &Next"
 msgstr "Rechercher le &suivant"
 
@@ -981,6 +1029,7 @@ msgid "No more results. Wrapping search."
 msgstr "Plus de résultats. Reprise depuis le début."
 
 #. TRANSLATORS: Error shown when the active document has no known file path to reveal
+#. TRANSLATORS: Error shown when the file manager could not be launched to reveal the active document's file
 #, fuzzy
 msgid "Failed to reveal file in folder."
 msgstr "Impossible d'afficher le fichier dans le dossier."
@@ -1156,271 +1205,350 @@ msgstr "Mode plein écran activé."
 msgid "Full screen off."
 msgstr "Mode plein écran désactivé."
 
+#. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 #, fuzzy
 msgid "&Undo\tCtrl+Z"
 msgstr "&Annuler\tCtrl+Z"
 
+#. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
 #, fuzzy
 msgid "&Redo\tCtrl+Shift+Z"
 msgstr "&Refaire\tCtrl+Shift+Z"
 
+#. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
 #, fuzzy
 msgid "Cu&t\tCtrl+X"
 msgstr "Co&uper\tCtrl+X"
 
+#. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
 #, fuzzy
 msgid "&Copy\tCtrl+C"
 msgstr "&Copier\tCtrl+C"
 
+#. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
 #, fuzzy
 msgid "&Paste\tCtrl+V"
 msgstr "Co&ller\tCtrl+V"
 
+#. TRANSLATORS: Menu item in the Edit menu to select all text.
 #, fuzzy
 msgid "Select &All\tCtrl+A"
 msgstr "Sélectionner &tout\tCtrl+A"
 
+#. TRANSLATORS: Menu item in the File menu to open a document.
 #, fuzzy
 msgid "&Open..."
 msgstr "&Ouvrir"
 
+#. TRANSLATORS: Status-bar help text for the File > Open menu item.
 msgid "Open a document"
 msgstr "Ouvrir un document"
 
+#. TRANSLATORS: Menu item in the File menu to close the current document.
 #, fuzzy
 msgid "&Close"
 msgstr "&Fermer"
 
+#. TRANSLATORS: Status-bar help text for the File > Close menu item.
 msgid "Close the current document"
 msgstr "Fermer le document actuel"
 
+#. TRANSLATORS: Menu item in the File menu to close all open documents.
 #, fuzzy
 msgid "Close &All"
 msgstr "Fermer &tout"
 
+#. TRANSLATORS: Status-bar help text for the File > Close All menu item.
 msgid "Close all documents"
 msgstr "Fermer tous les documents"
 
+#. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
 #, fuzzy
 msgid "Reopen &Last Closed"
 msgstr "Rouvrir le &dernier fermé"
 
+#. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 #, fuzzy
 msgid "Reopen the last closed document"
 msgstr "Rouvrir le dernier document fermé"
 
+#. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
 msgstr "Documents &récents"
 
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 msgid "Open a recent document"
 msgstr "Ouvrir un document récent"
 
+#. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
 msgid "E&xit"
 msgstr "&Quitter"
 
+#. TRANSLATORS: Status-bar help text for the File > Exit menu item.
 msgid "Exit the application"
 msgstr "Quitter l'application"
 
+#. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
 msgstr "(Aucun document récent)"
 
+#. TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
 #, fuzzy
 msgid "Show All..."
 msgstr "Tout afficher"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Section"
 msgstr "Section précédente"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
 msgid "Go to previous section"
 msgstr "Aller à la section précédente"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Section"
 msgstr "Section suivante"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
 msgid "Go to next section"
 msgstr "Aller à la section suivante"
 
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
 #, fuzzy
 msgid "Go to &Page"
 msgstr "Aller à la &page"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous page.
 #, fuzzy
 msgid "Previous Pa&ge"
 msgstr "Pa&ge précédente"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next page.
 #, fuzzy
 msgid "Next Pag&e"
 msgstr "Pa&ge suivante"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
 #, fuzzy
 msgid "Previous Lin&k"
 msgstr "Lie&n précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
 #, fuzzy
 msgid "Next Lin&k"
 msgstr "Lie&n suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
 #, fuzzy
 msgid "Previous Ima&ge"
 msgstr "&Image précédente"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
 #, fuzzy
 msgid "Next Ima&ge"
 msgstr "&Image suivante"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
 #, fuzzy
 msgid "Previous Figu&re"
 msgstr "Figu&re précédente"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
 #, fuzzy
 msgid "Next Figu&re"
 msgstr "Figu&re suivante"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
 #, fuzzy
 msgid "Previous &Table"
 msgstr "&Tableau précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
 #, fuzzy
 msgid "Next &Table"
 msgstr "&Tableau suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 #, fuzzy
 msgid "Previous Se&parator"
 msgstr "Sé&parateur précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
 #, fuzzy
 msgid "Next Se&parator"
 msgstr "Sé&parateur suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
 #, fuzzy
 msgid "Previous L&ist"
 msgstr "&Liste précédente"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
 #, fuzzy
 msgid "Next L&ist"
 msgstr "&Liste suivante"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
 #, fuzzy
 msgid "Previous List &Item"
 msgstr "Élément de &liste précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
 #, fuzzy
 msgid "Next List I&tem"
 msgstr "Élément de l&iste suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
 #, fuzzy
 msgid "Container &Start"
 msgstr "&Début du conteneur"
 
+#. TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
 #, fuzzy
 msgid "Go to the start of the current list or table"
 msgstr "Aller au début de la liste ou du tableau actuel"
 
+#. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
 #, fuzzy
 msgid "Past Container &End"
 msgstr "&Fin du conteneur"
 
+#. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
 #, fuzzy
 msgid "Go past the end of the current list or table"
 msgstr "Aller au-delà de la fin de la liste ou du tableau actuel"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
 #, fuzzy
 msgid "&Previous Heading"
 msgstr "&Titre précédent"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
 msgid "Go to previous heading"
 msgstr "Aller au titre précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
 #, fuzzy
 msgid "&Next Heading"
 msgstr "&Titre suivant"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
 msgid "Go to next heading"
 msgstr "Aller au titre suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
 #, fuzzy
 msgid "Previous Heading Level &1"
 msgstr "Titre de niveau &1 précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Heading Level 1"
 msgstr "Titre de niveau 1 suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
 #, fuzzy
 msgid "Previous Heading Level &2"
 msgstr "Titre de niveau &2 précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Heading Level 2"
 msgstr "Titre de niveau 2 suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
 #, fuzzy
 msgid "Previous Heading Level &3"
 msgstr "Titre de niveau &3 précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Heading Level 3"
 msgstr "Titre de niveau 3 suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
 #, fuzzy
 msgid "Previous Heading Level &4"
 msgstr "Titre de niveau &4 précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Heading Level 4"
 msgstr "Titre de niveau 4 suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
 #, fuzzy
 msgid "Previous Heading Level &5"
 msgstr "Titre de niveau &5 précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Heading Level 5"
 msgstr "Titre de niveau 5 suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
 #, fuzzy
 msgid "Previous Heading Level &6"
 msgstr "Titre de niveau &6 précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Heading Level 6"
 msgstr "Titre de niveau 6 suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
 #, fuzzy
 msgid "&Previous Bookmark"
 msgstr "&Signet précédent"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
 msgid "Go to previous bookmark"
 msgstr "Aller au signet précédent"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
 #, fuzzy
 msgid "&Next Bookmark"
 msgstr "&Signet suivant"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
 msgid "Go to next bookmark"
 msgstr "Aller au signet suivant"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
 #, fuzzy
 msgid "Previous &Note"
 msgstr "Note &précédente"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
 msgid "Go to previous note"
 msgstr "Aller à la note précédente"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
 #, fuzzy
 msgid "Next N&ote"
 msgstr "Note &suivante"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
 msgid "Go to next note"
 msgstr "Aller à la note suivante"
 
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
 #, fuzzy
 msgid "Jump to &All..."
 msgstr "Aller à &tout..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
 msgid "Show all bookmarks and notes"
 msgstr "Afficher tous les signets et les notes"
 
@@ -1428,301 +1556,386 @@ msgstr "Afficher tous les signets et les notes"
 msgid "Jump to &Bookmarks Only..."
 msgstr "Aller aux &signets uniquement..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
 msgid "Show bookmarks only"
 msgstr "Afficher les signets seulement"
 
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
 #, fuzzy
 msgid "Jump to Notes &Only..."
 msgstr "Aller aux &Notes uniquement..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
 msgid "Show notes only"
 msgstr "Afficher les notes seulement"
 
+#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
 #, fuzzy
 msgid "&View Note Text"
 msgstr "&Afficher le texte de la note"
 
+#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
 msgid "View the note at current position"
 msgstr "Afficher la note à la position actuelle"
 
+#. TRANSLATORS: Menu item in the Go menu to open the find dialog.
 #, fuzzy
 msgid "&Find..."
 msgstr "&Rechercher"
 
+#. TRANSLATORS: Status-bar help text for the Go > Find menu item.
 msgid "Find text in the document"
 msgstr "Rechercher du texte dans le document"
 
+#. TRANSLATORS: Status-bar help text for the Go > Find Next menu item.
 msgid "Find next occurrence"
 msgstr "Rechercher l'occurrence suivante"
 
+#. TRANSLATORS: Status-bar help text for the Go > Find Previous menu item.
 msgid "Find previous occurrence"
 msgstr "Rechercher l'occurrence précédente"
 
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
 #, fuzzy
 msgid "Go to &line..."
 msgstr "Aller à la &ligne"
 
+#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
 msgid "Go to a specific line"
 msgstr "Aller à une ligne spécifique"
 
+#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
 #, fuzzy
 msgid "Go to &percent..."
 msgstr "Aller au &pourcentage"
 
+#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
 msgid "Go to a percentage of the document"
 msgstr "Aller à un pourcentage du document"
 
+#. TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
 #, fuzzy
 msgid "Go &Back"
 msgstr "&Retour"
 
+#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
 msgid "Go back in history"
 msgstr "Reculer dans l'historique"
 
+#. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
 #, fuzzy
 msgid "Go &Forward"
 msgstr "Aller à &Suivant    Ctrl+]"
 
+#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
 msgid "Go forward in history"
 msgstr "Avancer dans l'historique"
 
+#. TRANSLATORS: Label for the Sections submenu in the compact Go menu.
 msgid "&Sections"
 msgstr "&Sections"
 
+#. TRANSLATORS: Status-bar help text for the Go > Sections submenu.
 msgid "Navigate by sections"
 msgstr "Naviguer par sections"
 
+#. TRANSLATORS: Label for the Headings submenu in the compact Go menu.
 msgid "&Headings"
 msgstr "&Titres"
 
+#. TRANSLATORS: Status-bar help text for the Go > Headings submenu.
 msgid "Navigate by headings"
 msgstr "Naviguer par titres"
 
+#. TRANSLATORS: Label for the Pages submenu in the compact Go menu.
 msgid "&Pages"
 msgstr "&Pages"
 
+#. TRANSLATORS: Status-bar help text for the Go > Pages submenu.
 msgid "Navigate by pages"
 msgstr "Naviguer par pages"
 
+#. TRANSLATORS: Label for the Bookmarks submenu in the compact Go menu.
 msgid "&Bookmarks"
 msgstr "&Signets"
 
+#. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
 msgid "Navigate by bookmarks"
 msgstr "Naviguer par signets"
 
+#. TRANSLATORS: Label for the Links submenu in the compact Go menu.
 msgid "&Links"
 msgstr "&Liens"
 
+#. TRANSLATORS: Status-bar help text for the Go > Links submenu.
 msgid "Navigate by links"
 msgstr "Naviguer par liens"
 
+#. TRANSLATORS: Label for the Images submenu in the compact Go menu.
 #, fuzzy
 msgid "&Images"
 msgstr "&Images"
 
+#. TRANSLATORS: Status-bar help text for the Go > Images submenu.
 #, fuzzy
 msgid "Navigate by images"
 msgstr "Navigation par images"
 
+#. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
 #, fuzzy
 msgid "&Figures"
 msgstr "&Figures"
 
+#. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
 #, fuzzy
 msgid "Navigate by figures"
 msgstr "Navigation par chiffres"
 
+#. TRANSLATORS: Label for the Tables submenu in the compact Go menu.
 msgid "&Tables"
 msgstr "&Tableaux"
 
+#. TRANSLATORS: Status-bar help text for the Go > Tables submenu.
 msgid "Navigate by tables"
 msgstr "Naviguer par tableaux"
 
+#. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
 msgstr "&Séparateurs"
 
+#. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
 msgid "Navigate by separators"
 msgstr "Naviguer par séparateurs"
 
+#. TRANSLATORS: Label for the Lists submenu in the compact Go menu.
 msgid "&Lists"
 msgstr "&Listes"
 
+#. TRANSLATORS: Status-bar help text for the Go > Lists submenu.
 msgid "Navigate by lists"
 msgstr "Naviguer par listes"
 
+#. TRANSLATORS: Label for the Containers submenu in the compact Go menu.
 #, fuzzy
 msgid "&Containers"
 msgstr "&Conteneurs"
 
+#. TRANSLATORS: Status-bar help text for the Go > Containers submenu.
 #, fuzzy
 msgid "Navigate by containers"
 msgstr "Navigation par conteneurs"
 
+#. TRANSLATORS: Menu item in the Help menu to show information about the application.
 #, fuzzy
 msgid "&About Paperback"
 msgstr "&À propos de Paperback"
 
+#. TRANSLATORS: Status-bar help text for the Help > About Paperback menu item.
 msgid "About this application"
 msgstr "À propos de cette application"
 
+#. TRANSLATORS: Menu item in the Help menu to open the help documentation in the user's web browser.
 #, fuzzy
 msgid "View Help in &Browser"
 msgstr "Afficher l'aide dans le &Navigateur"
 
+#. TRANSLATORS: Status-bar help text for the Help > View Help in Browser menu item.
 msgid "View help in default browser"
 msgstr "Afficher l'aide dans le navigateur par défaut"
 
+#. TRANSLATORS: Menu item in the Help menu to open the help documentation inside Paperback itself.
 #, fuzzy
 msgid "View Help in &Paperback"
 msgstr "Afficher l'aide dans &Paperback"
 
+#. TRANSLATORS: Status-bar help text for the Help > View Help in Paperback menu item.
 msgid "View help in Paperback"
 msgstr "Afficher l'aide dans Paperback"
 
+#. TRANSLATORS: Menu item in the Help menu to check for application updates.
 #, fuzzy
 msgid "Check for &Updates"
 msgstr "Vérifier les &Mises à jour"
 
+#. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
 msgid "Check for updates"
 msgstr "Rechercher des mises à jour"
 
+#. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
 #, fuzzy
 msgid "&Donate"
 msgstr "&Faire un don"
 
+#. TRANSLATORS: Status-bar help text for the Help > Donate menu item.
 msgid "Support Paperback development"
 msgstr "Soutenir le développement de Paperback"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to import bookmarks and reading position from a file.
 #, fuzzy
 msgid "&Import Document Data..."
 msgstr "&Importer les données du document..."
 
+#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
 msgid "Import bookmarks and position"
 msgstr "Importer les signets et la position"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export bookmarks and reading position to a file.
 #, fuzzy
 msgid "&Export Document Data..."
 msgstr "&Exporter les données du document..."
 
+#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "Exporter les signets et la position"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a plain text file.
 #, fuzzy
 msgid "Export to &Plain Text..."
 msgstr "Exporter en &Texte brut..."
 
+#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
 msgid "Export document as plain text"
 msgstr "Exporter le document en texte brut"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as an HTML file.
 #, fuzzy
 msgid "Export to &HTML..."
 msgstr "Exporter en &HTML..."
 
+#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
 #, fuzzy
 msgid "Export document as HTML"
 msgstr "Exporter le document au format HTML"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a Markdown file.
 #, fuzzy
 msgid "Export to &Markdown..."
 msgstr "Exporter vers &Markdown..."
 
+#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
 #, fuzzy
 msgid "Export document as Markdown"
 msgstr "Exporter le document au format Markdown"
 
+#. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
 #, fuzzy
 msgid "&Word Count"
 msgstr "Nombre de &Mots"
 
+#. TRANSLATORS: Status-bar help text for the Word Count menu item.
 msgid "Show word count"
 msgstr "Afficher le nombre de mots"
 
+#. TRANSLATORS: Menu item in the Tools menu to show information about the document.
 #, fuzzy
 msgid "Document &Info"
 msgstr "&Informations du document"
 
+#. TRANSLATORS: Status-bar help text for the Document Info menu item.
 msgid "Show document information"
 msgstr "Afficher les informations sur le document"
 
+#. TRANSLATORS: Menu item in the Tools menu to show the document's table of contents.
 #, fuzzy
 msgid "&Table of Contents"
 msgstr "&Table des matières"
 
+#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
 msgid "Show table of contents"
 msgstr "Afficher la table des matières"
 
+#. TRANSLATORS: Menu item in the Tools menu to show a list of the document's structural elements.
 #, fuzzy
 msgid "&Elements List..."
 msgstr "&Liste des éléments..."
 
+#. TRANSLATORS: Status-bar help text for the Elements List menu item.
 msgid "Show elements list"
 msgstr "Afficher la liste des éléments"
 
+#. TRANSLATORS: Menu item in the Tools menu to reveal the document's file in the system file manager.
 #, fuzzy
 msgid "Reveal &File in Folder"
 msgstr "Afficher le &Fichier dans le dossier"
 
+#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
 #, fuzzy
 msgid "Reveal document in the file manager"
 msgstr "Afficher le document dans le gestionnaire de fichiers"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the document in a web view.
 #, fuzzy
 msgid "Open in &Web View"
 msgstr "Ouvrir en affichage &Web"
 
+#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
 msgid "Open document in web view"
 msgstr "Ouvrir le document dans la vue web"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the document's underlying source markup in a new tab.
 #, fuzzy
 msgid "View &Source"
 msgstr "Afficher la &Source"
 
+#. TRANSLATORS: Status-bar help text for the View Source menu item.
 #, fuzzy
 msgid "Open the document source in a new tab"
 msgstr "Ouvrir le document source dans un nouvel onglet"
 
+#. TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
 msgid "I&mport/Export"
 msgstr "I&mporter/Exporter"
 
+#. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
 msgid "Import and export options"
 msgstr "Options d'importation et d'exportation"
 
+#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
 #, fuzzy
 msgid "Toggle &Bookmark"
 msgstr "Basculer le &Signet"
 
+#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
 #, fuzzy
 msgid "Bookmark with &Note"
 msgstr "Signet avec &note"
 
+#. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 #, fuzzy
 msgid "Word w&rap"
 msgstr "&Retour à la ligne automatique"
 
+#. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 #, fuzzy
 msgid "Toggle word wrap"
 msgstr "Activer/désactiver le retour à la ligne automatique"
 
+#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 #, fuzzy
 msgid "&Play/Pause Audio"
 msgstr "&Lecture/Pause audio"
 
+#. TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
 #, fuzzy
 msgid "Play or pause this document's audio narration"
 msgstr "Lancer ou mettre en pause la lecture audio de ce document"
 
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
 #, fuzzy
 msgid "Seek Audio &Forward"
 msgstr "Aller à &Suivant    Ctrl+]"
 
+#. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
 #, fuzzy
 msgid "Skip the audio narration forward"
 msgstr "Passer la narration audio"
 
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
 #, fuzzy
 msgid "Seek Audio &Backward"
 msgstr "Rembobiner l'audio &En arrière"
 
+#. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
 #, fuzzy
 msgid "Skip the audio narration backward"
 msgstr "Passer la narration audio en arrière"
@@ -1731,6 +1944,7 @@ msgstr "Passer la narration audio en arrière"
 msgid "&Increase Audio Seek Amount"
 msgstr "&Augmenter la valeur de recherche audio"
 
+#. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 #, fuzzy
 msgid "Increase how far seeking the audio narration moves"
 msgstr "Augmenter la distance parcourue par la narration audio"
@@ -1739,38 +1953,48 @@ msgstr "Augmenter la distance parcourue par la narration audio"
 msgid "&Decrease Audio Seek Amount"
 msgstr "&Réduire la valeur de recherche audio"
 
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 #, fuzzy
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Réduire la distance parcourue par la narration audio"
 
+#. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
 #, fuzzy
 msgid "&Full Screen"
 msgstr "&Plein écran    F11"
 
+#. TRANSLATORS: Status-bar help text for the Full Screen menu item.
 #, fuzzy
 msgid "Toggle full screen"
 msgstr "Passer en mode plein écran"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
 #, fuzzy
 msgid "&Settings"
 msgstr "&Paramètres"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
 #, fuzzy
 msgid "&Sleep Timer..."
 msgstr "&Minuteur de veille..."
 
+#. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Fichier"
 
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
 msgid "&Go"
 msgstr "&Aller"
 
+#. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
 msgstr "&Outils"
 
+#. TRANSLATORS: Top-level "Help" menu label in the menu bar
 msgid "&Help"
 msgstr "&Aide"
 
+#. TRANSLATORS: Top-level "Edit" menu label in the menu bar (macOS only)
 #, fuzzy
 msgid "&Edit"
 msgstr "&Modifier"
@@ -1780,12 +2004,14 @@ msgid "No sections."
 msgstr "Aucune section."
 
 #. TRANSLATORS: Announced when there is no next section from the current position
-msgid "No next section"
-msgstr "Aucune section suivante"
+#, fuzzy
+msgid "No next section."
+msgstr "Aucune section suivante."
 
 #. TRANSLATORS: Announced when there is no previous section from the current position
-msgid "No previous section"
-msgstr "Aucune section précédente"
+#, fuzzy
+msgid "No previous section."
+msgstr "Aucune section précédente."
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
 msgid "No headings at level %d."
@@ -2024,6 +2250,7 @@ msgstr "{} (maximum)"
 msgid "{} (minimum)"
 msgstr "{} (minimum)"
 
+#. TRANSLATORS: Prompt label in the bookmark note dialog asking the user to type their note
 msgid "Enter bookmark note:"
 msgstr "Saisir la note du signet :"
 
@@ -2059,322 +2286,402 @@ msgstr "Restaurer Paperback"
 msgid "Exit Paperback"
 msgstr "Quitter Paperback"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Open..."
 msgstr "Ouvrir..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Close All"
 msgstr "Fermer"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Reopen Last Closed"
 msgstr "Rouvrir & Dernière fermeture    Ctrl+Maj+T"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Show All Recent Documents..."
 msgstr "Aucun document récent"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Exit"
 msgstr "Quitter"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Find..."
 msgstr "Chercher..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Find Next"
 msgstr "Rechercher suivant"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Find Previous"
 msgstr "Rechercher le précédent"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Go to Line..."
 msgstr "Aller à la ligne..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Go to Percent..."
 msgstr "Aller au pourcentage..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Go to Page..."
 msgstr "Aller à la page..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Go Back"
 msgstr "Aller & Retour    Ctrl+["
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Go Forward"
 msgstr "Aller en avant"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Announce Percentage"
 msgstr "Pourcentage"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Set Temporary Bookmark"
 msgstr "Aucun signet."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Jump to Temporary Bookmark"
 msgstr "Aller au signet"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Heading"
 msgstr "Titre précédent"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Heading"
 msgstr "Titre suivant"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Heading Level 1"
 msgstr "Titre précédent niveau 1"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Heading Level 2"
 msgstr "Titre précédent niveau 2"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Heading Level 3"
 msgstr "Titre précédent niveau 3"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Heading Level 4"
 msgstr "Titre précédent niveau 4"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Heading Level 5"
 msgstr "Titre précédent niveau 5"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Heading Level 6"
 msgstr "Titre précédent niveau 6"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Page"
 msgstr "Page précédente"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Page"
 msgstr "Page suivante"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Bookmark"
 msgstr "Signet précédent"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Bookmark"
 msgstr "Signet suivant"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Note"
 msgstr "Note précédente"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Note"
 msgstr "Note suivante"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Jump to All Bookmarks..."
 msgstr "Aller au signet"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Jump to Bookmarks Only..."
 msgstr "Atteindre les signets uniquement..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Jump to Notes Only..."
 msgstr "Aller aux notes uniquement..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "View Note Text"
 msgstr "Afficher la note"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Link"
 msgstr "Lien précédent"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Link"
 msgstr "Lien suivant"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Image"
 msgstr "Image précédente    Maj+G"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Image"
 msgstr "Image suivante    G"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Figure"
 msgstr "Figure précédente    Maj+F"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Figure"
 msgstr "Figure suivante    F"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Table"
 msgstr "Tableau précédent"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Table"
 msgstr "Tableau suivant"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Separator"
 msgstr "Séparateur précédent"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next Separator"
 msgstr "Séparateur suivant"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous List"
 msgstr "Liste précédente"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next List"
 msgstr "Liste suivante"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous List Item"
 msgstr "Élément de liste précédent"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Next List Item"
 msgstr "Élément de liste suivant"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Container Start"
 msgstr "Conteneur & Démarrer    Maj+,"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Past Container End"
 msgstr "Conteneur précédent et fin    ,"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Elements List..."
 msgstr "Liste des éléments..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Reveal File in Folder"
 msgstr "Afficher et enregistrer dans le dossier    Ctrl+Maj+C"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Open in Web View"
 msgstr "Ouvrir en affichage Web"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "View Source"
 msgstr "Afficher la source    Ctrl+U"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Toggle Bookmark"
 msgstr "Basculer le signet"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Bookmark with Note"
 msgstr "Signet avec note"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Toggle Word Wrap"
 msgstr "Activer/désactiver le retour à la ligne automatique"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Play/Pause Audio"
 msgstr "Lecture/Pause audio"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Seek Audio Forward"
 msgstr "Avancer dans l'audio"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Seek Audio Backward"
 msgstr "Rechercher « Audio » et « Backward »"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Increase Audio Seek Amount"
 msgstr "Augmenter le saut audio"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Decrease Audio Seek Amount"
 msgstr "Diminuer le saut audio"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Full Screen"
 msgstr "Plein écran"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Settings..."
 msgstr "Paramètres"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Sleep Timer..."
 msgstr "Minuterie de veille"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Customize Keyboard Shortcuts..."
 msgstr "Personnaliser le raccourci clavier de la fenêtre..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Import Document Data..."
 msgstr "Importer les données d'un document"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Export Document Data..."
 msgstr "Exporter les données du document"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Export to Plain Text..."
 msgstr "Exporter en texte brut..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Export to HTML..."
 msgstr "Exporter au format HTML..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Export to Markdown..."
 msgstr "Exporter en Markdown..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "About Paperback"
 msgstr "À propos de Paperback"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "View Help in Browser"
 msgstr "Afficher l'aide dans le navigateur"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "View Help in Paperback"
 msgstr "Afficher l'aide dans Paperback"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Check for Updates"
 msgstr "Rechercher des mises à jour"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Donate"
 msgstr "Faire un don"
 
+#. TRANSLATORS: Name of the "File" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
 msgid "File"
 msgstr "Fichier"
 
+#. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
 msgid "Tools"
 msgstr "Outils"
 
+#. TRANSLATORS: Name of the "Help" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
 msgid "Help"
 msgstr "Aide"
 
+#. TRANSLATORS: Shown in the Customize Keyboard Shortcuts list in place of a key combination when an action has no shortcut assigned
 #, fuzzy
 msgid "None"
 msgstr "Aucun"
@@ -3671,6 +3978,65 @@ msgstr "1,5×"
 msgid "Speech Engine"
 msgstr "Vitesse d'élocution"
 
+#: swift
+#, fuzzy
+msgid "1 book"
+msgstr "1 livre"
+
+#: swift
+#, fuzzy
+msgid "{} books"
+msgstr "{} livres"
+
+#: swift
+#, fuzzy
+msgid "..."
+msgstr "Ouvrir..."
+
+#: swift
+#, fuzzy
+msgid "Go To..."
+msgstr "Aller à"
+
+#: swift
+#, fuzzy
+msgid "Search..."
+msgstr "Rechercher"
+
+#: swift
+#, fuzzy
+msgid "Custom: {} minute"
+msgstr "Personnalisé : « {} minutes »"
+
+#: swift
+#, fuzzy
+msgid "Custom: {} minutes⁣"
+msgstr "Personnalisé : « {} minutes »"
+
+#: kt
+#, fuzzy
+msgid "This document contains {} word."
+msgstr "Ce document contient{}s de mots."
+
+#: kt
+#, fuzzy
+msgid "word"
+msgstr "Mots"
+
+#: kt
+#, fuzzy
+msgid "{} second"
+msgstr "{} secondes"
+
+#: kt
+#, fuzzy
+msgid "{} seconds⁣"
+msgstr "{} secondes"
+
+#, fuzzy
+#~ msgid "&Locate…"
+#~ msgstr "&Rechercher…"
+
 #, fuzzy
 #~ msgid "&Options"
 #~ msgstr "Options"
@@ -4022,10 +4388,6 @@ msgstr "Vitesse d'élocution"
 #, fuzzy
 #~ msgid "Next result"
 #~ msgstr "Résultat suivant"
-
-#, fuzzy
-#~ msgid "Search"
-#~ msgstr "Rechercher"
 
 #, fuzzy
 #~ msgid "Active"
