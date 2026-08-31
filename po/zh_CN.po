@@ -6,10 +6,10 @@
 # partial written by AI
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 0.9.0\n"
+"Project-Id-Version: paperback 0.9.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:48-0600\n"
-"PO-Revision-Date: 2026-08-30 17:32+0800\n"
+"POT-Creation-Date: 2026-08-30 23:46+0200\n"
+"PO-Revision-Date: 2026-08-31 19:50+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -69,6 +69,8 @@ msgid "Closed"
 msgstr "已关闭"
 
 #. TRANSLATORS: Status of a document whose file could not be found on disk
+#. TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the row's displayed status to decide whether the Open button is enabled.
+#. TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the selected row's displayed status to decide whether the Locate button is enabled.
 msgid "Missing"
 msgstr "缺失"
 
@@ -77,8 +79,8 @@ msgid "&Open"
 msgstr "打开(&O)"
 
 #. TRANSLATORS: Button label to locate a missing file on disk
-msgid "&Locate…"
-msgstr "定位(&L)…"
+msgid "&Locate..."
+msgstr "定位(&L)..."
 
 #. TRANSLATORS: Button label to remove selected documents from the list
 msgid "&Remove"
@@ -89,6 +91,10 @@ msgid "&Clear All"
 msgstr "全部清除(&C)"
 
 #. TRANSLATORS: Label for a button that closes a dialog
+#. TRANSLATORS: Label for a button that closes the Document Info dialog
+#. TRANSLATORS: Label for a button that closes the View Note dialog
+#. TRANSLATORS: Label for a button that closes the Web View dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Close"
 msgstr "关闭"
 
@@ -121,9 +127,9 @@ msgid "%d document."
 msgid_plural "%d documents."
 msgstr[0] "%d 个文档。"
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
-msgid "1 of 1 document selected."
-msgstr "已选择 1 个文档，共 1 个。"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the only document in the list is selected
+msgid "1 document selected."
+msgstr "已选择 1 个文档。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
 msgid "All %d document selected."
@@ -163,6 +169,8 @@ msgstr "书签(&B):"
 msgid "&Edit Note"
 msgstr "编辑笔记(&E)"
 
+#. TRANSLATORS: Label for the button to delete the selected bookmark/note
+#. TRANSLATORS: Menu item in the Edit menu to delete the current selection.
 msgid "&Delete"
 msgstr "删除(&D)"
 
@@ -187,6 +195,7 @@ msgid "Error"
 msgstr "错误"
 
 #. TRANSLATORS: Title of the Bookmark Note editor dialog
+#. TRANSLATORS: Title of the dialog for adding or editing a bookmark note
 msgid "Bookmark Note"
 msgstr "书签笔记"
 
@@ -195,6 +204,7 @@ msgid "Edit bookmark note:"
 msgstr "编辑书签笔记:"
 
 #. TRANSLATORS: Title of the Document Info dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "文档信息"
 
@@ -243,9 +253,18 @@ msgid "Links"
 msgstr "链接"
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
+#. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
+#. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
 msgid "Untitled"
 msgstr "无标题"
 
+#. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button that confirms the entered bookmark/note text
+#. TRANSLATORS: OK button that confirms the chosen file format in the Open As dialog
+#. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
+#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
+#. TRANSLATORS: OK button that confirms the entered sleep timer duration
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr "确定"
@@ -259,6 +278,7 @@ msgid "&Line number:"
 msgstr "行号(&L):"
 
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
+#. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
 msgstr "转到"
 
@@ -419,6 +439,7 @@ msgstr "自动重新加载已更改的文档(&A)"
 msgid "Customize &Window Hotkey..."
 msgstr "自定义窗口热键(&W)..."
 
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
 msgstr "自定义键盘快捷键(&K)..."
 
@@ -531,6 +552,7 @@ msgid "General"
 msgstr "常规"
 
 #. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "阅读"
 
@@ -579,14 +601,17 @@ msgid "Window Hotkey"
 msgstr "窗口热键"
 
 #. TRANSLATORS: Checkbox label for Control modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
 msgid "&Ctrl"
 msgstr "Ctrl(&C)"
 
 #. TRANSLATORS: Checkbox label for Alt modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
 msgid "&Alt"
 msgstr "Alt(&A)"
 
 #. TRANSLATORS: Checkbox label for Shift modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
 msgid "&Shift"
 msgstr "Shift(&S)"
 
@@ -595,6 +620,7 @@ msgid "&Win"
 msgstr "Win(&W)"
 
 #. TRANSLATORS: Label for the hotkey key selection input field
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
 msgid "&Key:"
 msgstr "键(&K):"
 
@@ -603,6 +629,10 @@ msgid "Clear"
 msgstr "清除"
 
 #. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
 msgid "Cancel"
 msgstr "取消"
 
@@ -610,21 +640,27 @@ msgstr "取消"
 msgid "Space"
 msgstr "空格"
 
+#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
 msgid "Customize Keyboard Shortcuts"
 msgstr "自定义键盘快捷键"
 
+#. TRANSLATORS: Label above the list of shortcuts for a category in the Keyboard Shortcuts dialog.
 msgid "&Shortcuts:"
 msgstr "快捷键(&S):"
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
 msgid "&Set Shortcut..."
 msgstr "设置快捷键(&S)..."
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
 msgid "&Clear Shortcut"
 msgstr "清除快捷键(&C)"
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
 msgid "&Reset to Default"
 msgstr "重置为默认(&R)"
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
 msgid "Reset &All to Defaults"
 msgstr "全部重置为默认(&A)"
 
@@ -639,18 +675,22 @@ msgstr "快捷键冲突"
 msgid "Reset all shortcuts to their default values?"
 msgstr "将所有快捷键重置为默认值？"
 
+#. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
 msgstr "重置快捷键"
 
+#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 msgid "Set Shortcut for {}"
 msgstr "为 {} 设置快捷键"
 
+#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 msgid "Configure shortcut for {}:"
 msgstr "配置 {} 的快捷键:"
 
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr "提示: 单击按键字段，然后按下所需的组合键。"
 
+#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
 msgid "Detected: (none)"
 msgstr "检测到:（无）"
 
@@ -660,6 +700,7 @@ msgstr "检测到: {}"
 msgid "No key detected"
 msgstr "未检测到按键"
 
+#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
 msgid "&Clear"
 msgstr "清除(&C)"
 
@@ -672,6 +713,7 @@ msgid "&Minutes:"
 msgstr "分钟(&M):"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "目录"
 
@@ -717,6 +759,7 @@ msgid_plural "This document contains %d words."
 msgstr[0] "本文档包含 %d 个单词。"
 
 #. TRANSLATORS: Title of the Word Count dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Word Count"
 msgstr "字数统计"
 
@@ -757,6 +800,7 @@ msgstr "没有临时书签。"
 msgid "Temporary bookmark."
 msgstr "临时书签。"
 
+#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
 msgid "Table View"
 msgstr "表格视图"
 
@@ -768,6 +812,7 @@ msgid "Document Password"
 msgstr "文档密码"
 
 #. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
 msgid "Failed to load document."
 msgstr "加载文档失败。"
 
@@ -840,6 +885,7 @@ msgstr "查找"
 msgid "Find &what:"
 msgstr "查找内容(&W):"
 
+#. TRANSLATORS: Group box heading for the search options in the Find dialog
 msgid "Options"
 msgstr "选项"
 
@@ -856,10 +902,12 @@ msgid "Use &regular expressions"
 msgstr "使用正则表达式(&R)"
 
 #. TRANSLATORS: Button to search backward for the previous match
+#. TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
 msgid "Find &Previous"
 msgstr "查找上一个(&P)"
 
 #. TRANSLATORS: Button to search forward for the next match
+#. TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
 msgid "Find &Next"
 msgstr "查找下一个(&N)"
 
@@ -872,6 +920,7 @@ msgid "No more results. Wrapping search."
 msgstr "没有更多结果。搜索已循环。"
 
 #. TRANSLATORS: Error shown when the active document has no known file path to reveal
+#. TRANSLATORS: Error shown when the file manager could not be launched to reveal the active document's file
 msgid "Failed to reveal file in folder."
 msgstr "无法在文件夹中显示文件。"
 
@@ -1030,514 +1079,689 @@ msgstr "全屏已开启。"
 msgid "Full screen off."
 msgstr "全屏已关闭。"
 
+#. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 msgid "&Undo\tCtrl+Z"
 msgstr "撤销(&U)\tCtrl+Z"
 
+#. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
 msgid "&Redo\tCtrl+Shift+Z"
 msgstr "重做(&R)\tCtrl+Shift+Z"
 
+#. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
 msgid "Cu&t\tCtrl+X"
 msgstr "剪切(&T)\tCtrl+X"
 
+#. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
 msgid "&Copy\tCtrl+C"
 msgstr "复制(&C)\tCtrl+C"
 
+#. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
 msgid "&Paste\tCtrl+V"
 msgstr "粘贴(&P)\tCtrl+V"
 
+#. TRANSLATORS: Menu item in the Edit menu to select all text.
 msgid "Select &All\tCtrl+A"
 msgstr "全选(&A)\tCtrl+A"
 
+#. TRANSLATORS: Menu item in the File menu to open a document.
 msgid "&Open..."
 msgstr "打开(&O)..."
 
+#. TRANSLATORS: Status-bar help text for the File > Open menu item.
 msgid "Open a document"
 msgstr "打开文档"
 
+#. TRANSLATORS: Menu item in the File menu to close the current document.
 msgid "&Close"
 msgstr "关闭(&C)"
 
+#. TRANSLATORS: Status-bar help text for the File > Close menu item.
 msgid "Close the current document"
 msgstr "关闭当前文档"
 
+#. TRANSLATORS: Menu item in the File menu to close all open documents.
 msgid "Close &All"
 msgstr "全部关闭(&A)"
 
+#. TRANSLATORS: Status-bar help text for the File > Close All menu item.
 msgid "Close all documents"
 msgstr "关闭所有文档"
 
+#. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
 msgid "Reopen &Last Closed"
 msgstr "重新打开上次关闭的文档(&L)"
 
+#. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "重新打开上次关闭的文档"
 
+#. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
 msgstr "最近文档(&R)"
 
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 msgid "Open a recent document"
 msgstr "打开最近文档"
 
+#. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
 msgid "E&xit"
 msgstr "退出(&X)"
 
+#. TRANSLATORS: Status-bar help text for the File > Exit menu item.
 msgid "Exit the application"
 msgstr "退出应用程序"
 
+#. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
 msgstr "（没有最近文档）"
 
+#. TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
 msgid "Show All..."
 msgstr "显示全部..."
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Section"
 msgstr "上一章节"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
 msgid "Go to previous section"
 msgstr "转到上一章节"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Section"
 msgstr "下一章节"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
 msgid "Go to next section"
 msgstr "转到下一章节"
 
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
 msgid "Go to &Page"
 msgstr "转到页(&P)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous page.
 msgid "Previous Pa&ge"
 msgstr "上一页(&G)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next page.
 msgid "Next Pag&e"
 msgstr "下一页(&E)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
 msgid "Previous Lin&k"
 msgstr "上一个链接(&K)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
 msgid "Next Lin&k"
 msgstr "下一个链接(&K)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
 msgid "Previous Ima&ge"
 msgstr "上一张图片(&G)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
 msgid "Next Ima&ge"
 msgstr "下一张图片(&G)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
 msgid "Previous Figu&re"
 msgstr "上一个图形(&R)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
 msgid "Next Figu&re"
 msgstr "下一个图形(&R)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
 msgid "Previous &Table"
 msgstr "上一个表格(&T)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
 msgid "Next &Table"
 msgstr "下一个表格(&T)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 msgid "Previous Se&parator"
 msgstr "上一个分隔符(&P)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
 msgid "Next Se&parator"
 msgstr "下一个分隔符(&P)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
 msgid "Previous L&ist"
 msgstr "上一个列表(&I)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
 msgid "Next L&ist"
 msgstr "下一个列表(&I)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
 msgid "Previous List &Item"
 msgstr "上一个列表项(&I)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
 msgid "Next List I&tem"
 msgstr "下一个列表项(&T)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
 msgid "Container &Start"
 msgstr "容器开头(&S)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
 msgid "Go to the start of the current list or table"
 msgstr "转到当前列表或表格的开头"
 
+#. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
 msgid "Past Container &End"
 msgstr "越过容器末尾(&E)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
 msgid "Go past the end of the current list or table"
 msgstr "越过当前列表或表格的末尾"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
 msgid "&Previous Heading"
 msgstr "上一个标题(&P)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
 msgid "Go to previous heading"
 msgstr "转到上一个标题"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
 msgid "&Next Heading"
 msgstr "下一个标题(&N)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
 msgid "Go to next heading"
 msgstr "转到下一个标题"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
 msgid "Previous Heading Level &1"
 msgstr "上一个 1 级标题(&1)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 1"
 msgstr "下一个 1 级标题"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
 msgid "Previous Heading Level &2"
 msgstr "上一个 2 级标题(&2)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 2"
 msgstr "下一个 2 级标题"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
 msgid "Previous Heading Level &3"
 msgstr "上一个 3 级标题(&3)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 3"
 msgstr "下一个 3 级标题"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
 msgid "Previous Heading Level &4"
 msgstr "上一个 4 级标题(&4)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 4"
 msgstr "下一个 4 级标题"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
 msgid "Previous Heading Level &5"
 msgstr "上一个 5 级标题(&5)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 5"
 msgstr "下一个 5 级标题"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
 msgid "Previous Heading Level &6"
 msgstr "上一个 6 级标题(&6)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 6"
 msgstr "下一个 6 级标题"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
 msgid "&Previous Bookmark"
 msgstr "上一个书签(&P)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
 msgid "Go to previous bookmark"
 msgstr "转到上一个书签"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
 msgid "&Next Bookmark"
 msgstr "下一个书签(&N)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
 msgid "Go to next bookmark"
 msgstr "转到下一个书签"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
 msgid "Previous &Note"
 msgstr "上一个笔记(&N)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
 msgid "Go to previous note"
 msgstr "转到上一个笔记"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
 msgid "Next N&ote"
 msgstr "下一个笔记(&O)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
 msgid "Go to next note"
 msgstr "转到下一个笔记"
 
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
 msgid "Jump to &All..."
 msgstr "跳转到全部(&A)..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
 msgid "Show all bookmarks and notes"
 msgstr "显示所有书签和笔记"
 
 msgid "Jump to &Bookmarks Only..."
 msgstr "仅跳转到书签(&B)..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
 msgid "Show bookmarks only"
 msgstr "仅显示书签"
 
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
 msgid "Jump to Notes &Only..."
 msgstr "仅跳转到笔记(&O)..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
 msgid "Show notes only"
 msgstr "仅显示笔记"
 
+#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
 msgid "&View Note Text"
 msgstr "查看笔记文本(&V)"
 
+#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
 msgid "View the note at current position"
 msgstr "查看当前位置的笔记"
 
+#. TRANSLATORS: Menu item in the Go menu to open the find dialog.
 msgid "&Find..."
 msgstr "查找(&F)..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Find menu item.
 msgid "Find text in the document"
 msgstr "在文档中查找文本"
 
+#. TRANSLATORS: Status-bar help text for the Go > Find Next menu item.
 msgid "Find next occurrence"
 msgstr "查找下一个匹配项"
 
+#. TRANSLATORS: Status-bar help text for the Go > Find Previous menu item.
 msgid "Find previous occurrence"
 msgstr "查找上一个匹配项"
 
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
 msgid "Go to &line..."
 msgstr "转到行(&L)..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
 msgid "Go to a specific line"
 msgstr "转到指定行"
 
+#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
 msgid "Go to &percent..."
 msgstr "转到百分比(&P)..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
 msgid "Go to a percentage of the document"
 msgstr "转到文档的某个百分比位置"
 
+#. TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
 msgid "Go &Back"
 msgstr "后退(&B)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
 msgid "Go back in history"
 msgstr "后退历史记录"
 
+#. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
 msgid "Go &Forward"
 msgstr "前进(&F)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
 msgid "Go forward in history"
 msgstr "前进历史记录"
 
+#. TRANSLATORS: Label for the Sections submenu in the compact Go menu.
 msgid "&Sections"
 msgstr "章节(&S)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Sections submenu.
 msgid "Navigate by sections"
 msgstr "按章节导航"
 
+#. TRANSLATORS: Label for the Headings submenu in the compact Go menu.
 msgid "&Headings"
 msgstr "标题(&H)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Headings submenu.
 msgid "Navigate by headings"
 msgstr "按标题导航"
 
+#. TRANSLATORS: Label for the Pages submenu in the compact Go menu.
 msgid "&Pages"
 msgstr "页面(&P)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Pages submenu.
 msgid "Navigate by pages"
 msgstr "按页面导航"
 
+#. TRANSLATORS: Label for the Bookmarks submenu in the compact Go menu.
 msgid "&Bookmarks"
 msgstr "书签(&B)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
 msgid "Navigate by bookmarks"
 msgstr "按书签导航"
 
+#. TRANSLATORS: Label for the Links submenu in the compact Go menu.
 msgid "&Links"
 msgstr "链接(&L)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Links submenu.
 msgid "Navigate by links"
 msgstr "按链接导航"
 
+#. TRANSLATORS: Label for the Images submenu in the compact Go menu.
 msgid "&Images"
 msgstr "图片(&I)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Images submenu.
 msgid "Navigate by images"
 msgstr "按图片导航"
 
+#. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
 msgid "&Figures"
 msgstr "图形(&F)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
 msgid "Navigate by figures"
 msgstr "按图形导航"
 
+#. TRANSLATORS: Label for the Tables submenu in the compact Go menu.
 msgid "&Tables"
 msgstr "表格(&T)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Tables submenu.
 msgid "Navigate by tables"
 msgstr "按表格导航"
 
+#. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
 msgstr "分隔符(&S)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
 msgid "Navigate by separators"
 msgstr "按分隔符导航"
 
+#. TRANSLATORS: Label for the Lists submenu in the compact Go menu.
 msgid "&Lists"
 msgstr "列表(&L)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Lists submenu.
 msgid "Navigate by lists"
 msgstr "按列表导航"
 
+#. TRANSLATORS: Label for the Containers submenu in the compact Go menu.
 msgid "&Containers"
 msgstr "容器(&C)"
 
+#. TRANSLATORS: Status-bar help text for the Go > Containers submenu.
 msgid "Navigate by containers"
 msgstr "按容器导航"
 
+#. TRANSLATORS: Menu item in the Help menu to show information about the application.
 msgid "&About Paperback"
 msgstr "关于 Paperback(&A)"
 
+#. TRANSLATORS: Status-bar help text for the Help > About Paperback menu item.
 msgid "About this application"
 msgstr "关于此应用程序"
 
+#. TRANSLATORS: Menu item in the Help menu to open the help documentation in the user's web browser.
 msgid "View Help in &Browser"
 msgstr "在浏览器中查看帮助(&B)"
 
+#. TRANSLATORS: Status-bar help text for the Help > View Help in Browser menu item.
 msgid "View help in default browser"
 msgstr "在默认浏览器中查看帮助"
 
+#. TRANSLATORS: Menu item in the Help menu to open the help documentation inside Paperback itself.
 msgid "View Help in &Paperback"
 msgstr "在 Paperback 中查看帮助(&P)"
 
+#. TRANSLATORS: Status-bar help text for the Help > View Help in Paperback menu item.
 msgid "View help in Paperback"
 msgstr "在 Paperback 中查看帮助"
 
+#. TRANSLATORS: Menu item in the Help menu to check for application updates.
 msgid "Check for &Updates"
 msgstr "检查更新(&U)"
 
+#. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
 msgid "Check for updates"
 msgstr "检查更新"
 
+#. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
 msgid "&Donate"
 msgstr "捐赠(&D)"
 
+#. TRANSLATORS: Status-bar help text for the Help > Donate menu item.
 msgid "Support Paperback development"
 msgstr "支持 Paperback 开发"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to import bookmarks and reading position from a file.
 msgid "&Import Document Data..."
 msgstr "导入文档数据(&I)..."
 
+#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
 msgid "Import bookmarks and position"
 msgstr "导入书签和阅读位置"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export bookmarks and reading position to a file.
 msgid "&Export Document Data..."
 msgstr "导出文档数据(&E)..."
 
+#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "导出书签和阅读位置"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a plain text file.
 msgid "Export to &Plain Text..."
 msgstr "导出为纯文本(&P)..."
 
+#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
 msgid "Export document as plain text"
 msgstr "将文档导出为纯文本"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as an HTML file.
 msgid "Export to &HTML..."
 msgstr "导出为 HTML(&H)..."
 
+#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
 msgid "Export document as HTML"
 msgstr "将文档导出为 HTML"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a Markdown file.
 msgid "Export to &Markdown..."
 msgstr "导出为 Markdown(&M)..."
 
+#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
 msgid "Export document as Markdown"
 msgstr "将文档导出为 Markdown"
 
+#. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
 msgid "&Word Count"
 msgstr "字数统计(&W)"
 
+#. TRANSLATORS: Status-bar help text for the Word Count menu item.
 msgid "Show word count"
 msgstr "显示字数统计"
 
+#. TRANSLATORS: Menu item in the Tools menu to show information about the document.
 msgid "Document &Info"
 msgstr "文档信息(&I)"
 
+#. TRANSLATORS: Status-bar help text for the Document Info menu item.
 msgid "Show document information"
 msgstr "显示文档信息"
 
+#. TRANSLATORS: Menu item in the Tools menu to show the document's table of contents.
 msgid "&Table of Contents"
 msgstr "目录(&T)"
 
+#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
 msgid "Show table of contents"
 msgstr "显示目录"
 
+#. TRANSLATORS: Menu item in the Tools menu to show a list of the document's structural elements.
 msgid "&Elements List..."
 msgstr "元素列表(&E)..."
 
+#. TRANSLATORS: Status-bar help text for the Elements List menu item.
 msgid "Show elements list"
 msgstr "显示元素列表"
 
+#. TRANSLATORS: Menu item in the Tools menu to reveal the document's file in the system file manager.
 msgid "Reveal &File in Folder"
 msgstr "在文件夹中显示文件(&F)"
 
+#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
 msgid "Reveal document in the file manager"
 msgstr "在文件管理器中显示文档"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the document in a web view.
 msgid "Open in &Web View"
 msgstr "在 Web 视图中打开(&W)"
 
+#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
 msgid "Open document in web view"
 msgstr "在 Web 视图中打开文档"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the document's underlying source markup in a new tab.
 msgid "View &Source"
 msgstr "查看源(&S)"
 
+#. TRANSLATORS: Status-bar help text for the View Source menu item.
 msgid "Open the document source in a new tab"
 msgstr "在新标签页中打开文档源"
 
+#. TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
 msgid "I&mport/Export"
 msgstr "导入/导出(&M)"
 
+#. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
 msgid "Import and export options"
 msgstr "导入和导出选项"
 
+#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
 msgid "Toggle &Bookmark"
 msgstr "切换书签(&B)"
 
+#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
 msgid "Bookmark with &Note"
 msgstr "带笔记的书签(&N)"
 
+#. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
 msgstr "自动换行(&R)"
 
+#. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 msgid "Toggle word wrap"
 msgstr "切换自动换行"
 
+#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
 msgstr "播放/暂停音频(&P)"
 
+#. TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
 msgid "Play or pause this document's audio narration"
 msgstr "播放或暂停此文档的音频朗读"
 
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
 msgstr "音频向前跳转(&F)"
 
+#. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
 msgid "Skip the audio narration forward"
 msgstr "向前跳过音频朗读"
 
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
 msgid "Seek Audio &Backward"
 msgstr "音频向后跳转(&B)"
 
+#. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
 msgid "Skip the audio narration backward"
 msgstr "向后跳过音频朗读"
 
 msgid "&Increase Audio Seek Amount"
 msgstr "增大音频跳转步长(&I)"
 
+#. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 msgid "Increase how far seeking the audio narration moves"
 msgstr "增大音频朗读跳转的距离"
 
 msgid "&Decrease Audio Seek Amount"
 msgstr "减小音频跳转步长(&D)"
 
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "减小音频朗读跳转的距离"
 
+#. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
 msgid "&Full Screen"
 msgstr "全屏(&F)"
 
+#. TRANSLATORS: Status-bar help text for the Full Screen menu item.
 msgid "Toggle full screen"
 msgstr "切换全屏"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
 msgid "&Settings"
 msgstr "设置(&S)"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
 msgid "&Sleep Timer..."
 msgstr "睡眠定时器(&S)..."
 
+#. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "文件(&F)"
 
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
 msgid "&Go"
 msgstr "转到(&G)"
 
+#. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
 msgstr "工具(&T)"
 
+#. TRANSLATORS: Top-level "Help" menu label in the menu bar
 msgid "&Help"
 msgstr "帮助(&H)"
 
+#. TRANSLATORS: Top-level "Edit" menu label in the menu bar (macOS only)
 msgid "&Edit"
 msgstr "编辑(&E)"
 
@@ -1546,12 +1770,12 @@ msgid "No sections."
 msgstr "没有章节。"
 
 #. TRANSLATORS: Announced when there is no next section from the current position
-msgid "No next section"
-msgstr "没有下一章节"
+msgid "No next section."
+msgstr "没有下一章节。"
 
 #. TRANSLATORS: Announced when there is no previous section from the current position
-msgid "No previous section"
-msgstr "没有上一章节"
+msgid "No previous section."
+msgstr "没有上一章节。"
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
 msgid "No headings at level %d."
@@ -1775,6 +1999,7 @@ msgstr "{}（最大值）"
 msgid "{} (minimum)"
 msgstr "{}（最小值）"
 
+#. TRANSLATORS: Prompt label in the bookmark note dialog asking the user to type their note
 msgid "Enter bookmark note:"
 msgstr "输入书签笔记:"
 
@@ -1810,243 +2035,323 @@ msgstr "恢复 Paperback"
 msgid "Exit Paperback"
 msgstr "退出 Paperback"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Open..."
 msgstr "打开..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Close All"
 msgstr "全部关闭"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Reopen Last Closed"
 msgstr "重新打开上次关闭的文档"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "显示所有最近文档..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Exit"
 msgstr "退出"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Find..."
 msgstr "查找..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Find Next"
 msgstr "查找下一个"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Find Previous"
 msgstr "查找上一个"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go to Line..."
 msgstr "转到行..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go to Percent..."
 msgstr "转到百分比..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go to Page..."
 msgstr "转到页..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go Back"
 msgstr "后退"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go Forward"
 msgstr "前进"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Announce Percentage"
 msgstr "朗读百分比"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Set Temporary Bookmark"
 msgstr "设置临时书签"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Jump to Temporary Bookmark"
 msgstr "跳转到临时书签"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading"
 msgstr "上一个标题"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading"
 msgstr "下一个标题"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 1"
 msgstr "上一个 1 级标题"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 2"
 msgstr "上一个 2 级标题"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 3"
 msgstr "上一个 3 级标题"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 4"
 msgstr "上一个 4 级标题"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 5"
 msgstr "上一个 5 级标题"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 6"
 msgstr "上一个 6 级标题"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Page"
 msgstr "上一页"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Page"
 msgstr "下一页"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Bookmark"
 msgstr "上一个书签"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Bookmark"
 msgstr "下一个书签"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Note"
 msgstr "上一个笔记"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Note"
 msgstr "下一个笔记"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Jump to All Bookmarks..."
 msgstr "跳转到所有书签..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Jump to Bookmarks Only..."
 msgstr "仅跳转到书签..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Jump to Notes Only..."
 msgstr "仅跳转到笔记..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "View Note Text"
 msgstr "查看笔记文本"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Link"
 msgstr "上一个链接"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Link"
 msgstr "下一个链接"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Image"
 msgstr "上一张图片"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Image"
 msgstr "下一张图片"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Figure"
 msgstr "上一个图形"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Figure"
 msgstr "下一个图形"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Table"
 msgstr "上一个表格"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Table"
 msgstr "下一个表格"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Separator"
 msgstr "上一个分隔符"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Separator"
 msgstr "下一个分隔符"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous List"
 msgstr "上一个列表"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next List"
 msgstr "下一个列表"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous List Item"
 msgstr "上一个列表项"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next List Item"
 msgstr "下一个列表项"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Container Start"
 msgstr "容器开头"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Past Container End"
 msgstr "越过容器末尾"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Elements List..."
 msgstr "元素列表..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Reveal File in Folder"
 msgstr "在文件夹中显示文件"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Open in Web View"
 msgstr "在 Web 视图中打开"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "View Source"
 msgstr "查看源"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Bookmark"
 msgstr "切换书签"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Bookmark with Note"
 msgstr "带笔记的书签"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Word Wrap"
 msgstr "切换自动换行"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Play/Pause Audio"
 msgstr "播放/暂停音频"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
 msgstr "音频向前跳转"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Backward"
 msgstr "音频向后跳转"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Increase Audio Seek Amount"
 msgstr "增大音频跳转步长"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Decrease Audio Seek Amount"
 msgstr "减小音频跳转步长"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
 msgstr "全屏"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Settings..."
 msgstr "设置..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Sleep Timer..."
 msgstr "睡眠定时器..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Customize Keyboard Shortcuts..."
 msgstr "自定义键盘快捷键..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Import Document Data..."
 msgstr "导入文档数据..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
 msgstr "导出文档数据..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
 msgstr "导出为纯文本..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to HTML..."
 msgstr "导出为 HTML..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Markdown..."
 msgstr "导出为 Markdown..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "About Paperback"
 msgstr "关于 Paperback"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "View Help in Browser"
 msgstr "在浏览器中查看帮助"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "View Help in Paperback"
 msgstr "在 Paperback 中查看帮助"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Check for Updates"
 msgstr "检查更新"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Donate"
 msgstr "捐赠"
 
+#. TRANSLATORS: Name of the "File" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "File"
 msgstr "文件"
 
+#. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Tools"
 msgstr "工具"
 
+#. TRANSLATORS: Name of the "Help" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Help"
 msgstr "帮助"
 
+#. TRANSLATORS: Shown in the Customize Keyboard Shortcuts list in place of a key combination when an action has no shortcut assigned
 msgid "None"
 msgstr "无"
 
@@ -2424,7 +2729,7 @@ msgid "Switch to Text Mode"
 msgstr "切换到文本模式"
 
 #: swift
-msgid "Go To…"
+msgid "Go Toâ¦"
 msgstr "转到…"
 
 #: swift
@@ -2456,7 +2761,7 @@ msgid "Show All"
 msgstr "显示全部"
 
 #: swift
-msgid "Search…"
+msgid "Searchâ¦"
 msgstr "搜索…"
 
 #: swift
@@ -3028,7 +3333,7 @@ msgid "{} seconds"
 msgstr "{} 秒"
 
 #: kt
-msgid "✓ Granted"
+msgid "â Granted"
 msgstr "✓ 已授予"
 
 #: kt
@@ -3106,9 +3411,53 @@ msgid "Error loading document: {}"
 msgstr "加载文档错误: {}"
 
 #: kt
-msgid "1.5×"
-msgstr "1.5×"
+msgid "1.5Ã"
+msgstr "1.5Ã"
 
 #: kt
 msgid "Speech Engine"
 msgstr "语音引擎"
+
+#: swift
+msgid "1 book"
+msgstr "1 本书"
+
+#: swift
+msgid "{} books"
+msgstr "{} 本书"
+
+#: swift
+msgid "..."
+msgstr "..."
+
+#: swift
+msgid "Go To..."
+msgstr "转到..."
+
+#: swift
+msgid "Search..."
+msgstr "搜索..."
+
+#: swift
+msgid "Custom: {} minute"
+msgstr "自定义: {} 分钟"
+
+#: swift
+msgid "Custom: {} minutesâ£"
+msgstr "自定义: {} 分钟⁣"
+
+#: kt
+msgid "This document contains {} word."
+msgstr "本文档包含 {} 个单词。"
+
+#: kt
+msgid "word"
+msgstr "单词"
+
+#: kt
+msgid "{} second"
+msgstr "{} 秒"
+
+#: kt
+msgid "{} secondsâ£"
+msgstr "{} 秒⁣"
