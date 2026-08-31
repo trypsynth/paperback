@@ -14,6 +14,16 @@ use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigati
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 
+/// How long after the Find dialog closes the found line is announced.
+///
+/// The interrupt must land after NVDA has started the focus-return chain — if it fires
+/// before, the chain reads over the found line instead — but as close to the chain's
+/// start as possible, so as little of it escapes before the cut. NVDA's own find dialog
+/// uses 100ms; Paperback's chain starts quickly, and 30ms was chosen by binary search
+/// (60ms left a barely-audible sliver of the chain, 10ms occasionally let the full chain
+/// through after the found line, 0ms always did).
+const FIND_RESULT_INTERRUPT_DELAY_MS: i32 = 30;
+
 #[derive(Clone, Debug, Default)]
 pub struct SearchResult {
 	pub found: bool,
@@ -477,8 +487,8 @@ fn do_find(
 	drop(dm);
 	state.dialog.show(false);
 	// NVDA starts reading the "Paperback, tab control, ..." ancestor chain the moment
-	// focus returns to the book. Delay the found-line announcement by 100ms so it lands
-	// mid-sentence: live-region's High priority maps to UIA
+	// focus returns to the book. Delay the found-line announcement so it cuts the chain
+	// right as it begins: live-region's High priority maps to UIA
 	// NotificationProcessing_ImportantMostRecent, which NVDA handles as
 	// cancelSpeech() + speak — the same interrupt NVDA itself uses for its own find
 	// dialog. (During a say-all NVDA speaks at Spri.NOW instead of cancelling, so
@@ -488,7 +498,7 @@ fn do_find(
 	}
 }
 
-/// Announces `found_line` about 100ms after the Find dialog closes, so it cuts off the
+/// Announces `found_line` shortly after the Find dialog closes, so it cuts off the
 /// focus-chain announcement the screen reader starts when focus returns to the book.
 ///
 /// The one-shot `wxTimer` is kept alive through its single tick by the `Rc`/`RefCell`
@@ -504,7 +514,7 @@ fn announce_found_line_after_delay(frame: &Frame, live_region_label: StaticText,
 		live_region::announce(live_region_label, &announce_found_line);
 		*holder.borrow_mut() = None;
 	});
-	if !timer.start(100, true) {
+	if !timer.start(FIND_RESULT_INTERRUPT_DELAY_MS, true) {
 		live_region::announce(live_region_label, &found_line);
 		return;
 	}
