@@ -202,6 +202,21 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 
 ## Lista zmian
 
+### Wersja 0.9.2
+* Audiobooki nie każą już czytnikowi ekranu odczytywać ciągu spacji, kiedy przejdziesz do pola tekstowego.
+* Audiobooki podają teraz nazwę pliku, kiedy przechodzisz między nimi po sekcjach.
+* Audiobooki pokazują teraz swoją prawdziwą długość, zamiast twierdzić, że każdy plik trwa 24 godziny.
+* Zamknięcie widoku WWW klawiszem Escape nie wyświetla już komunikatu diagnostycznego, kiedy wcześniej otworzyłeś w nim odsyłacz.
+* Kopiowanie po zaznaczeniu wszystkiego daje teraz cały dokument, a nie tylko tę jego część, która jest właśnie wczytana.
+* Wyszukiwanie przenosi teraz od razu do znalezionego wiersza, bez wysłuchiwania, jak czytnik ekranu ponownie odczytuje całe okno przy powrocie do książki.
+* Naprawiono otwieranie plików EPUB z pozostawionym blokiem ZIP64, które kończyło się komunikatem „Invalid local file header".
+* Naprawiono wracanie długich dokumentów na początek, kiedy czytnik ekranu czytał je ciągiem.
+* Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast kończyć się komunikatem „Nie znaleziono pliku".
+* Automatyczny komunikat o przeładowaniu dokumentu nie przerywa już czytnikowi ekranu w połowie zdania, a czeka, aż skończy wypowiedź.
+* Na karcie Ogólne w oknie ustawień tabulator przechodzi teraz przez opcje w kolejności, w jakiej są widoczne na ekranie, a kanał aktualizacji następuje bezpośrednio po opcji sprawdzania aktualizacji.
+* Windows pokazuje teraz zawsze „Paperback" w menu Otwórz za pomocą, a nie pełne hasło programu.
+* Licznik słów oraz informacje o dokumencie pokazują teraz, ile plików zawiera audiobook i jak długo trwa w całości.
+
 ### Wersja 0.9.1
 * Dźwięki zakładek i notatek odtwarzają się teraz w systemie macOS.
 * Książki DAISY odtwarzają teraz dźwięk w systemie macOS, zamiast otwierać się i odmierzać czas w ciszy.
@@ -371,7 +386,6 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 * Dodano obsługę spakowanych książek z Bookshare (zarówno DAISY, jak i Word)!
 * Tekst alternatywny osadzonych obrazów powinien być teraz poprawnie pokazywany.
 * Dokumenty CHM prawidłowo obsługują teraz nawigację po odnośnikach wewnętrznych.
-* Naprawiono odtwarzanie dźwięków zakładek na początku akapitu zamiast w pozycji zakładki.
 * Naprawiono przesunięcie o 1 przy poleceniu Przejdź do strony.
 * Naprawiono brak możliwości zamknięcia dialogu Otwórz jako klawiszem Escape.
 * Naprawiono niewyświetlanie menu kontekstowego czytnika po kliknięciu prawym przyciskiem myszy albo użyciu klawisza Aplikacje.
@@ -416,7 +430,6 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 * Naprawiono pokazywanie surowego tekstu zamiast wyrenderowanego HTML w Widoku WWW dla dokumentów Markdown.
 * Naprawiono nieprawidłowe renderowanie tabel w plikach Markdown.
 * Pliki PDF zawierające wyłącznie obrazy wyświetlają teraz ostrzeżenie przy próbie wczytania.
-* Podczas sprawdzania aktualizacji można teraz szukać nowych wersji deweloperskich zamiast tylko wydań stabilnych.
 * Poprawnie osadzono informacje o wersji w pliku wykonywalnym Paperbacka.
 * Podzielono dialog Opcje na karty, aby ułatwić używanie i nawigację.
 * Przejście na bibliotekę Hayro do parsowania PDF zwiększyło niezawodność i szybkość oraz zmniejszyło liczbę bibliotek DLL.
