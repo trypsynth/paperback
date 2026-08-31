@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 15:15+0000\n"
+"POT-Creation-Date: 2026-08-31 20:57+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -250,6 +250,39 @@ msgstr "Nhân vật:"
 msgid "Characters (excluding spaces):"
 msgstr "Số ký tự (không tính khoảng trắng):"
 
+#. TRANSLATORS: Label for the number of audio files in the document
+#, fuzzy
+msgid "Number of files:"
+msgstr "Số lượng tệp:"
+
+#. TRANSLATORS: Label for the total playback duration across all of the document's audio files
+#, fuzzy
+msgid "Total duration:"
+msgstr "Thời lượng"
+
+#. TRANSLATORS: Label for the average playback duration per audio file in the document
+#, fuzzy
+msgid "Average duration:"
+msgstr "Thời lượng trung bình:"
+
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d giờ"
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d phút"
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d giây"
+
 #. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr "Thành phần"
@@ -357,6 +390,19 @@ msgstr "Cài đặt"
 msgid "&Restore previously opened documents on startup"
 msgstr "&Khôi phục các tài liệu đã mở khi khởi động"
 
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+#, fuzzy
+msgid "&Automatically reload changed documents"
+msgstr "&Tự động tải lại các tài liệu đã được chỉnh sửa"
+
+#. TRANSLATORS: Option to start the app maximized
+msgid "&Start maximized"
+msgstr "&Khởi động ở chế độ toàn màn hình"
+
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+msgid "&Minimize to system tray"
+msgstr "&Thu nhỏ xuống khay hệ thống"
+
 #. TRANSLATORS: Option to toggle word wrapping of text
 msgid "&Word wrap"
 msgstr "&Tự động ngắt dòng"
@@ -365,14 +411,6 @@ msgstr "&Tự động ngắt dòng"
 #, fuzzy
 msgid "Render tables &inline"
 msgstr "Hiển thị bảng &inline"
-
-#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
-msgid "&Minimize to system tray"
-msgstr "&Thu nhỏ xuống khay hệ thống"
-
-#. TRANSLATORS: Option to start the app maximized
-msgid "&Start maximized"
-msgstr "&Khởi động ở chế độ toàn màn hình"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -465,10 +503,20 @@ msgstr "Tìm kiếm &vượt quá cuối chương tiếp tục vào chương ti�
 msgid "Check for &updates on startup"
 msgstr "&Kiểm tra cập nhật khi khởi động"
 
-#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+#. TRANSLATORS: Label for the update channel selection dropdown
 #, fuzzy
-msgid "&Automatically reload changed documents"
-msgstr "&Tự động tải lại các tài liệu đã được chỉnh sửa"
+msgid "Update Channel:"
+msgstr "Kênh cập nhật:"
+
+#. TRANSLATORS: Stable update channel option
+#, fuzzy
+msgid "Stable"
+msgstr "Ổn định"
+
+#. TRANSLATORS: Developer/development update channel option
+#, fuzzy
+msgid "Dev"
+msgstr "Dev"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 #, fuzzy
@@ -492,21 +540,6 @@ msgstr "Số lượng tài liệu &gần đây hiển thị:"
 #. TRANSLATORS: Label for the language selection dropdown
 msgid "&Language:"
 msgstr "&Ngôn ngữ:"
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-#, fuzzy
-msgid "Update Channel:"
-msgstr "Kênh cập nhật:"
-
-#. TRANSLATORS: Stable update channel option
-#, fuzzy
-msgid "Stable"
-msgstr "Ổn định"
-
-#. TRANSLATORS: Developer/development update channel option
-#, fuzzy
-msgid "Dev"
-msgstr "Dev"
 
 #. TRANSLATORS: Label/header for the Font options section
 #, fuzzy
@@ -826,28 +859,26 @@ msgstr "Chưa chọn"
 msgid "View Note"
 msgstr "Xem ghi chú"
 
-#. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d giờ"
-
-#. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d phút"
-
-#. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d giây"
-
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 #, fuzzy
 msgid "Estimated reading time: {}"
 msgstr "Thời gian đọc ước tính: {}"
+
+#. TRANSLATORS: Title of the Word Count dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Word Count"
+msgstr "Số từ"
+
+#, fuzzy
+msgid "This document contains %d audio file."
+msgid_plural "This document contains %d audio files."
+msgstr[0] "Tài liệu này chứa %d từ."
+
+#. TRANSLATORS: Prompt showing an audio-only document's total playback duration across all its files. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+#, fuzzy
+msgid "Total duration: {}"
+msgstr "Tổng thời lượng: {}"
 
 #. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
 #, fuzzy
@@ -860,12 +891,6 @@ msgstr[0] "Lựa chọn chứa %d từ."
 msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "Tài liệu này chứa %d từ."
-
-#. TRANSLATORS: Title of the Word Count dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
-msgid "Word Count"
-msgstr "Số từ"
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 #, fuzzy
@@ -4582,9 +4607,6 @@ msgstr "Từ"
 
 #~ msgid "Total number of words: "
 #~ msgstr "Tổng số từ: "
-
-#~ msgid "Total number of lines: "
-#~ msgstr "Tổng số dòng: "
 
 #~ msgid "Total number of characters: "
 #~ msgstr "Tổng số ký tự: "

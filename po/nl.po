@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 15:15+0000\n"
+"POT-Creation-Date: 2026-08-31 20:57+0000\n"
 "PO-Revision-Date: 2026-06-08 22:23+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -243,6 +243,42 @@ msgstr "Tekens:"
 msgid "Characters (excluding spaces):"
 msgstr "Tekens (exclusief spaties):"
 
+#. TRANSLATORS: Label for the number of audio files in the document
+#, fuzzy
+msgid "Number of files:"
+msgstr "Aantal bestanden:"
+
+#. TRANSLATORS: Label for the total playback duration across all of the document's audio files
+#, fuzzy
+msgid "Total duration:"
+msgstr "Duur"
+
+#. TRANSLATORS: Label for the average playback duration per audio file in the document
+#, fuzzy
+msgid "Average duration:"
+msgstr "Gemiddelde duur:"
+
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d hour"
+msgstr[1] "%d hours"
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minute"
+msgstr[1] "%d minutes"
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d second"
+msgstr[1] "%d seconds"
+
 #. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr "Elementen"
@@ -346,6 +382,19 @@ msgstr "Instellingen"
 msgid "&Restore previously opened documents on startup"
 msgstr "Eerder geopende documenten &herstellen bij opstarten"
 
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+#, fuzzy
+msgid "&Automatically reload changed documents"
+msgstr "&Gewijzigde documenten automatisch opnieuw laden"
+
+#. TRANSLATORS: Option to start the app maximized
+msgid "&Start maximized"
+msgstr "Ge&maximaliseerd starten"
+
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+msgid "&Minimize to system tray"
+msgstr "&Minimaliseren naar systeemvak"
+
 #. TRANSLATORS: Option to toggle word wrapping of text
 msgid "&Word wrap"
 msgstr "Automatische &terugloop"
@@ -354,14 +403,6 @@ msgstr "Automatische &terugloop"
 #, fuzzy
 msgid "Render tables &inline"
 msgstr "Tabellen &inline weergeven"
-
-#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
-msgid "&Minimize to system tray"
-msgstr "&Minimaliseren naar systeemvak"
-
-#. TRANSLATORS: Option to start the app maximized
-msgid "&Start maximized"
-msgstr "Ge&maximaliseerd starten"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -451,10 +492,17 @@ msgstr "Zoeken &voorbij het einde van een hoofdstuk gaat door naar het volgende"
 msgid "Check for &updates on startup"
 msgstr "Controleren op &updates bij opstarten"
 
-#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
-#, fuzzy
-msgid "&Automatically reload changed documents"
-msgstr "&Gewijzigde documenten automatisch opnieuw laden"
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "Updatekanaal:"
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "Stabiel"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "Ontwikkel"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
@@ -476,18 +524,6 @@ msgstr "Aantal te tonen &recente documenten:"
 #. TRANSLATORS: Label for the language selection dropdown
 msgid "&Language:"
 msgstr "&Taal:"
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-msgid "Update Channel:"
-msgstr "Updatekanaal:"
-
-#. TRANSLATORS: Stable update channel option
-msgid "Stable"
-msgstr "Stabiel"
-
-#. TRANSLATORS: Developer/development update channel option
-msgid "Dev"
-msgstr "Ontwikkel"
 
 #. TRANSLATORS: Label/header for the Font options section
 msgid "Font"
@@ -770,30 +806,25 @@ msgstr "Geen selectie"
 msgid "View Note"
 msgstr "Notitie bekijken"
 
-#. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d hour"
-msgstr[1] "%d hours"
-
-#. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minute"
-msgstr[1] "%d minutes"
-
-#. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d second"
-msgstr[1] "%d seconds"
-
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
 msgstr "Geschatte leestijd: {}"
+
+#. TRANSLATORS: Title of the Word Count dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Word Count"
+msgstr "Woordenaantal"
+
+#, fuzzy
+msgid "This document contains %d audio file."
+msgid_plural "This document contains %d audio files."
+msgstr[0] "This document contains %d word."
+msgstr[1] "This document contains %d words."
+
+#. TRANSLATORS: Prompt showing an audio-only document's total playback duration across all its files. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+#, fuzzy
+msgid "Total duration: {}"
+msgstr "Totale duur: {}"
 
 #. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
 #, fuzzy
@@ -808,11 +839,6 @@ msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "This document contains %d word."
 msgstr[1] "This document contains %d words."
-
-#. TRANSLATORS: Title of the Word Count dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Word Count"
-msgstr "Woordenaantal"
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
