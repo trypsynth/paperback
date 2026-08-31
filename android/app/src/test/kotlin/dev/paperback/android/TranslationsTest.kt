@@ -71,6 +71,7 @@ class TranslateTest {
 	@After
 	fun clearCatalogue() {
 		Translations.map = HashMap()
+		Translations.pluralRule = null
 	}
 
 	// English ships no catalogue at all, so an untranslated build has to read as the msgids.
@@ -113,5 +114,134 @@ class TranslateTest {
 		assertEquals("a and {}", t("{} and {}", "a"))
 		assertEquals("just a", t("just {}", "a", "b"))
 		assertEquals("no placeholders", t("no placeholders", "a"))
+	}
+}
+
+/** The `Plural-Forms` headers the shipped catalogues actually carry. */
+private const val POLISH =
+	"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);"
+private const val SERBIAN =
+	"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && " +
+		"(n%100<12 || n%100>14) ? 1 : 2);"
+private const val GERMAN = "Plural-Forms: nplurals=2; plural=(n != 1);"
+private const val CHINESE = "Plural-Forms: nplurals=1; plural=0;"
+
+class PluralFormTest {
+	@After
+	fun clearCatalogue() {
+		Translations.map = HashMap()
+		Translations.pluralRule = null
+	}
+
+	private fun forCount(count: Long) = nt("one", "few", "many", count)
+
+	// The bug this exists for: Serbian gives 21 the same form as 1, Polish does not, and a single
+	// hardcoded rule served the first while making the second read "21 sekunda" for "21 sekund".
+	@Test
+	fun `Polish gives the singular to one alone`() {
+		Translations.pluralRule = PluralRule.parse(POLISH)
+		assertEquals("one", forCount(1))
+		assertEquals("few", forCount(2))
+		assertEquals("many", forCount(5))
+		assertEquals("many", forCount(11))
+		assertEquals("many", forCount(21))
+		assertEquals("few", forCount(22))
+		assertEquals("many", forCount(101))
+		assertEquals("many", forCount(121))
+	}
+
+	// The same counts under the rule the hardcoded fallback was written for, which must keep
+	// working: this is the language the marker mechanism was introduced for.
+	@Test
+	fun `Serbian keeps giving twenty-one the singular`() {
+		Translations.pluralRule = PluralRule.parse(SERBIAN)
+		assertEquals("one", forCount(1))
+		assertEquals("one", forCount(21))
+		assertEquals("few", forCount(22))
+		assertEquals("many", forCount(11))
+	}
+
+	// A two-form language must never reach the third slot, whose text is a duplicate of the second
+	// for it, and a one-form language must never leave the first.
+	@Test
+	fun `a two-form language uses only the first two forms`() {
+		Translations.pluralRule = PluralRule.parse(GERMAN)
+		assertEquals("one", forCount(1))
+		assertEquals("few", forCount(0))
+		assertEquals("few", forCount(2))
+		assertEquals("few", forCount(21))
+	}
+
+	@Test
+	fun `a one-form language always uses the first form`() {
+		Translations.pluralRule = PluralRule.parse(CHINESE)
+		assertEquals("one", forCount(0))
+		assertEquals("one", forCount(1))
+		assertEquals("one", forCount(5))
+		assertEquals("one", forCount(21))
+	}
+
+	// Czech writes the same three-form rule with its comparisons parenthesized instead of bare,
+	// so the parser has to handle both shapes.
+	@Test
+	fun `a rule written with parenthesized comparisons parses`() {
+		Translations.pluralRule = PluralRule.parse("Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;")
+		assertEquals("one", forCount(1))
+		assertEquals("few", forCount(3))
+		assertEquals("many", forCount(9))
+	}
+
+	// A language with more forms than nt() has slots (Arabic has six) must still select a form
+	// rather than throw or fall through to the wrong one.
+	@Test
+	fun `more forms than slots clamps to the last slot`() {
+		Translations.pluralRule =
+			PluralRule.parse(
+				"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : " +
+					"n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);"
+			)
+		assertEquals("one", forCount(0))
+		assertEquals("few", forCount(1))
+		assertEquals("many", forCount(2))
+		assertEquals("many", forCount(5))
+	}
+
+	// Everything below is about not making things worse than the hardcoded rule when the header
+	// can't be trusted: no catalogue, no header line, and a truncated expression.
+	@Test
+	fun `no catalogue keeps the previous behaviour`() {
+		assertEquals("one", forCount(21))
+		assertEquals("few", forCount(22))
+		assertEquals("many", forCount(11))
+	}
+
+	@Test
+	fun `a header without a plural rule parses to nothing`() {
+		assertNull(PluralRule.parse("Language: pl\nMIME-Version: 1.0\n"))
+		assertNull(PluralRule.parse(null))
+	}
+
+	@Test
+	fun `a rule with no usable form count parses to nothing`() {
+		assertNull(PluralRule.parse("Plural-Forms: nplurals=; plural=0;"))
+		assertNull(PluralRule.parse("Plural-Forms: nplurals=0; plural=0;"))
+		assertNull(PluralRule.parse("Plural-Forms: nplurals=2;"))
+	}
+
+	// A malformed expression must not silently select form 0 for every count; falling back to the
+	// hardcoded rule at least keeps three-form Slavic languages readable.
+	@Test
+	fun `an unevaluatable expression falls back instead of picking form zero`() {
+		Translations.pluralRule = PluralRule.parse("Plural-Forms: nplurals=3; plural=(n==1 ? 0 : ;")
+		assertEquals("one", forCount(1))
+		assertEquals("few", forCount(22))
+		assertEquals("many", forCount(11))
+	}
+
+	// An out-of-range index is a malformed header, not a form to index with.
+	@Test
+	fun `an index beyond the declared form count is refused`() {
+		val rule = PluralRule.parse("Plural-Forms: nplurals=2; plural=5;")
+		assertNull(rule?.formIndex(1))
 	}
 }

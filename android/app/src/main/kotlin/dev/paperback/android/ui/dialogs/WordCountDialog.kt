@@ -26,10 +26,9 @@ fun WordCountDialog(
 	onDismiss: () -> Unit
 ) {
 	// TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is
-	// replaced with the number. Three forms picked by the count's last digits (see nt() in
-	// Translations.kt): one = counts ending in 1 except 11 (1, 21, 31, ...), few = counts ending
-	// in 2-4 except 12-14 (2, 3, 4, 22, 23, 24, ...), many = everything else (0, 5-20, 25-30, ...).
-	// The "many" form's trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
+	// replaced with the number. Which of the three forms is used depends on the target language's
+	// own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
+	// trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 	val announcement = nt(
 		t("This document contains {} word."),
 		t("This document contains {} words."),
@@ -55,11 +54,10 @@ fun WordCountDialog(
 					style = MaterialTheme.typography.displaySmall
 				)
 				Text(
-					// TRANSLATORS: Unit label shown under the large word-count number. Three forms
-					// picked by the count's last digits (see nt() in Translations.kt): one = counts
-					// ending in 1 except 11, few = counts ending in 2-4 except 12-14, many = everything
-					// else. The "many" form's trailing character isn't a typo — see PLURAL_MANY_MARKER
-					// in Translations.kt.
+					// TRANSLATORS: Unit label shown under the large word-count number. Which of the
+					// three forms is used depends on the target language's own plural rule, read
+					// from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+					// character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 					text = nt(t("word"), t("words"), t("words⁣"), stats.wordCount),
 					style = MaterialTheme.typography.bodyMedium,
 					color = MaterialTheme.colorScheme.onSurfaceVariant
