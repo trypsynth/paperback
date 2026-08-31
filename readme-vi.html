@@ -208,33 +208,35 @@
 <nav id="TOC" role="doc-toc">
 <ul>
 <li><a href="#giới-thiệu" id="toc-giới-thiệu">Giới thiệu</a></li>
-<li><a href="#yêu-cầu-hệ-thống" id="toc-yêu-cầu-hệ-thống">Yêu cầu Hệ
+<li><a href="#yêu-cầu-hệ-thống" id="toc-yêu-cầu-hệ-thống">Yêu cầu hệ
 thống</a></li>
-<li><a href="#tính-năng" id="toc-tính-năng">Tính năng</a></li>
-<li><a href="#khả-năng-tương-thích-screen-reader"
-id="toc-khả-năng-tương-thích-screen-reader">Khả năng tương thích Screen
-Reader</a>
+<li><a href="#các-tính-năng" id="toc-các-tính-năng">Các tính
+năng</a></li>
+<li><a href="#khả-năng-tương-thích-với-trình-đọc-màn-hình"
+id="toc-khả-năng-tương-thích-với-trình-đọc-màn-hình">Khả năng tương
+thích với trình đọc màn hình</a>
 <ul>
-<li><a href="#jaws-và-màn-hình-braille"
-id="toc-jaws-và-màn-hình-braille">JAWS và Màn hình Braille</a></li>
+<li><a href="#jaws-và-hiển-thị-braille"
+id="toc-jaws-và-hiển-thị-braille">JAWS và Hiển thị Braille</a></li>
 </ul></li>
 <li><a href="#các-loại-tệp-được-hỗ-trợ-hiện-tại"
 id="toc-các-loại-tệp-được-hỗ-trợ-hiện-tại">Các loại tệp được hỗ trợ hiện
 tại</a></li>
-<li><a href="#phím-tắt" id="toc-phím-tắt">Phím tắt</a>
+<li><a href="#phím-tắt-bàn-phím" id="toc-phím-tắt-bàn-phím">Phím tắt bàn
+phím</a>
 <ul>
 <li><a href="#menu-tệp" id="toc-menu-tệp">Menu Tệp</a></li>
-<li><a href="#menu-đi-tới" id="toc-menu-đi-tới">Menu Đi tới</a></li>
+<li><a href="#menu-đi" id="toc-menu-đi">Menu Đi</a></li>
 <li><a href="#menu-công-cụ" id="toc-menu-công-cụ">Menu Công cụ</a></li>
 <li><a href="#menu-trợ-giúp" id="toc-menu-trợ-giúp">Menu Trợ
 giúp</a></li>
-<li><a href="#các-phím-xem-tài-liệu-bổ-sung"
-id="toc-các-phím-xem-tài-liệu-bổ-sung">Các phím xem tài liệu bổ
-sung</a></li>
+<li><a href="#các-phím-bổ-sung-trong-chế-độ-xem-tài-liệu"
+id="toc-các-phím-bổ-sung-trong-chế-độ-xem-tài-liệu">Các phím bổ sung
+trong chế độ xem tài liệu</a></li>
 </ul></li>
-<li><a href="#ngôn-ngữ-được-hỗ-trợ" id="toc-ngôn-ngữ-được-hỗ-trợ">Ngôn
-ngữ được hỗ trợ</a></li>
-<li><a href="#ghi-công" id="toc-ghi-công">Ghi công</a>
+<li><a href="#các-ngôn-ngữ-được-hỗ-trợ"
+id="toc-các-ngôn-ngữ-được-hỗ-trợ">Các ngôn ngữ được hỗ trợ</a></li>
+<li><a href="#ghi-nhận" id="toc-ghi-nhận">Ghi nhận</a>
 <ul>
 <li><a href="#phát-triển" id="toc-phát-triển">Phát triển</a></li>
 <li><a href="#quyên-góp" id="toc-quyên-góp">Quyên góp</a></li>
@@ -249,8 +251,9 @@ ngữ được hỗ trợ</a></li>
 <li><a href="#phiên-bản-0.9.0" id="toc-phiên-bản-0.9.0">Phiên bản
 0.9.0</a>
 <ul>
-<li><a href="#thêm" id="toc-thêm">Thêm</a></li>
-<li><a href="#đã-sửa" id="toc-đã-sửa">Đã sửa</a></li>
+<li><a href="#được-thêm-vào" id="toc-được-thêm-vào">Được thêm
+vào</a></li>
+<li><a href="#được-sửa" id="toc-được-sửa">Được sửa</a></li>
 </ul></li>
 <li><a href="#phiên-bản-0.8.5" id="toc-phiên-bản-0.8.5">Phiên bản
 0.8.5</a></li>
@@ -283,59 +286,60 @@ ngữ được hỗ trợ</a></li>
 </ul></li>
 </ul>
 </nav>
-<!-- machine-translated from doc/readme.md (source-hash: df18cffffe239932); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 13c58fb50049f608); please review and edit as needed -->
 <p>Paperback - phiên bản 0.9.1</p>
 <h1 id="giới-thiệu">Giới thiệu</h1>
-<p>Paperback là một trình đọc sách điện tử và tài liệu nhẹ, nhanh và dễ
-tiếp cận cho mọi người, từ những người đọc thường xuyên đến những người
-dùng năng suất cao. Nó được thiết kế với sự hỗ trợ screen reader, tốc độ
-nhanh và trải nghiệm không có tính năng không cần thiết.</p>
-<h1 id="yêu-cầu-hệ-thống">Yêu cầu Hệ thống</h1>
-<p>Paperback hiện chạy trên Windows 10/11 và tất cả các phiên bản hiện
-đại của ARM macOS. Các ứng dụng iOS và Android gốc đang được phát triển
-tích cực, với các bản dựng thử nghiệm công khai dự kiến sẽ được phát
-hành không lâu sau bản phát hành desktop 0.9.0, trước bản phát hành
-thống nhất 1.0 bao gồm cả bốn nền tảng.</p>
-<h1 id="tính-năng">Tính năng</h1>
+<p>Paperback là một ứng dụng đọc sách điện tử và tài liệu nhẹ, nhanh
+chóng và dễ tiếp cập cho mọi người, từ những độc giả bình thường đến
+những người dùng nâng cao. Nó được thiết kế để có khả năng tiếp cập màn
+hình đọc, tốc độ nhanh và trải nghiệm không có tính năng không cần
+thiết.</p>
+<h1 id="yêu-cầu-hệ-thống">Yêu cầu hệ thống</h1>
+<p>Paperback hiện chạy trên Windows 10/11 và tất cả các phiên bản macOS
+ARM hiện đại. Các ứng dụng iOS và Android gốc đang được phát triển tích
+cực, với các bản dựng thử nghiệm công khai được lên kế hoạch sớm sau khi
+phát hành desktop 0.9.0, trước khi phát hành thống nhất 1.0 bao gồm cả
+bốn nền tảng.</p>
+<h1 id="các-tính-năng">Các tính năng</h1>
 <ul>
-<li>Hoàn toàn độc lập, không yêu cầu cài đặt bất kỳ phần mềm nào trên
-máy tính của bạn để bắt đầu đọc.</li>
-<li>Cực kỳ nhanh, ngay cả trên phần cứng cũ.</li>
-<li>Giao diện tab đơn giản, cho phép bạn mở nhiều tài liệu cùng
-lúc.</li>
-<li>Lưu lại vị trí đọc chính xác của bạn trên mọi tài liệu bạn mở.</li>
+<li>Hoàn toàn độc lập, không yêu cầu bất kỳ phần mềm nào được cài đặt
+trên máy tính của bạn để bắt đầu đọc.</li>
+<li>Cực kỳ nhanh chóng, ngay cả trên phần cứng cũ.</li>
+<li>Giao diện được chia thành các tab đơn giản, cho phép bạn mở bao
+nhiêu tài liệu tùy thích cạnh nhau.</li>
+<li>Lưu vị trí đọc chính xác của bạn trên mọi tài liệu bạn mở.</li>
 <li>Tùy chọn ghi nhớ những tài liệu bạn đã mở khi đóng chương trình và
-khôi phục chúng khi khởi chạy lần tiếp theo.</li>
-<li>Bao gồm chức năng điều hướng tương tự như chế độ duyệt web được tìm
-thấy trong nhiều screen reader để nhanh chóng và dễ dàng điều hướng qua
-các tài liệu.</li>
+khôi phục chúng khi khởi động lần tới.</li>
+<li>Bao gồm chức năng điều hướng tương tự như chế độ duyệt web của nhiều
+trình đọc màn hình để điều hướng nhanh chóng và dễ dàng qua các tài
+liệu.</li>
 <li>Bao gồm hộp thoại tìm kiếm mạnh mẽ, bao gồm các tính năng như lịch
 sử và hỗ trợ biểu thức chính quy.</li>
-<li>Có thể chạy hoàn toàn di động, hoặc được cài đặt với các liên kết
-tệp được thiết lập tự động.</li>
-<li>Hỗ trợ một mảng khổng lồ các định dạng tệp phổ biến.</li>
+<li>Có thể chạy hoàn toàn di động hoặc được cài đặt với các liên kết tệp
+được thiết lập tự động.</li>
+<li>Hỗ trợ một loạt lớn các định dạng tệp phổ biến.</li>
 </ul>
-<h1 id="khả-năng-tương-thích-screen-reader">Khả năng tương thích Screen
-Reader</h1>
-<p>Paperback hoạt động tốt với tất cả các screen reader chính. Tuy
-nhiên, có một vấn đề được biết đến cho người dùng JAWS.</p>
-<h2 id="jaws-và-màn-hình-braille">JAWS và Màn hình Braille</h2>
+<h1 id="khả-năng-tương-thích-với-trình-đọc-màn-hình">Khả năng tương
+thích với trình đọc màn hình</h1>
+<p>Paperback hoạt động tốt với tất cả các trình đọc màn hình chính. Tuy
+nhiên, có một vấn đề đã biết cho người dùng JAWS.</p>
+<h2 id="jaws-và-hiển-thị-braille">JAWS và Hiển thị Braille</h2>
 <p>Nếu bạn sử dụng JAWS với màn hình Braille, bạn có thể thấy rằng các
-đoạn văn dài bị cắt ngắn khi panning tiến với các phím điều hướng của
-màn hình. Lệnh đọc đoạn hiện tại cũng bị ảnh hưởng. Đây là một lỗi trong
-cách xử lý điều khiển văn bản RICHEDIT50W của JAWS, không phải là điều
-gì đó trong chính Paperback, và đó là điều mất khá lâu để tìm ra bản sửa
-lỗi cho nó với mức độ nhiệt tình của Vispero trong việc phản hồi các vấn
-đề với phần mềm mã nguồn mở.</p>
-<p>Cách khắc phục, cuối cùng được phát hiện thông qua nhóm thảo luận
-JAWS sau nhiều tháng chờ đợi, là chỉnh sửa <code>paperback.jcf</code> và
-đặt “Braille Presentation and Panning” thành “Always use DOM if
-available”. Bạn cũng sẽ muốn bật “Pan Text by Paragraph”, nếu không màn
-hình của bạn sẽ ở lại đoạn hoạt động thay vì tiến lên. Với cả hai cài
-đặt được thực hiện, panning sẽ hoạt động chính xác.</p>
+đoạn dài bị cắt ngắn khi xoay tiến với các phím điều hướng của màn hình.
+Lệnh đọc đoạn hiện tại cũng bị ảnh hưởng. Đây là một lỗi trong cách JAWS
+xử lý kiểm soát văn bản RICHEDIT50W, không phải là lỗi ở Paperback, và
+là lỗi mất khá nhiều thời gian để nâng lên từng bước để thể hiện một bản
+sửa chữa cho sự phấn khích của Vispero đối với việc trả lời các vấn đề
+với phần mềm nguồn mở.</p>
+<p>Giải pháp, cuối cùng được tiết lộ thông qua nhóm thảo luận JAWS sau
+nhiều tháng chờ đợi, là chỉnh sửa <code>paperback.jcf</code> và đặt
+“Braille Presentation and Panning” thành “Always use DOM if available”.
+Bạn cũng sẽ muốn bật “Pan Text by Paragraph”, nếu không hiển thị của bạn
+sẽ ở lại đoạn hoạt động chứ không phải tiến hành. Với cả hai cài đặt,
+xoay ngang sẽ hoạt động chính xác.</p>
 <h1 id="các-loại-tệp-được-hỗ-trợ-hiện-tại">Các loại tệp được hỗ trợ hiện
 tại</h1>
-<p>Paperback hỗ trợ các định dạng và tiện ích mở rộng sau:</p>
+<p>Paperback hỗ trợ các định dạng và phần mở rộng sau:</p>
 <ul>
 <li>Tệp trợ giúp CHM (<code>.chm</code>)</li>
 <li>Sách DAISY (<code>.opf</code>, <code>.zip</code>)</li>
@@ -359,15 +363,15 @@ tại</h1>
 <li>Bài thuyết trình PowerPoint (<code>.pptx</code>, <code>.pptm</code>,
 <code>.ppt</code>)</li>
 <li>Tài liệu RTF (<code>.rtf</code>)</li>
-<li>Tệp văn bản thô và nhật ký (<code>.txt</code>,
+<li>Tệp văn bản thuần túy và nhật ký (<code>.txt</code>,
 <code>.log</code>)</li>
 </ul>
-<h1 id="phím-tắt">Phím tắt</h1>
-<p>Paperback được thiết kế để sử dụng theo hướng tiên dụng bàn phím.
-Dưới đây là các phím tắt hiện tại.</p>
-<p>Các phím tắt dưới đây dành cho Windows. Nếu macOS khác, phím tương
-đương được ghi chú trong dấu ngoặc đơn — chủ yếu vì Ctrl+G, Ctrl+W, và
-Alt+Left/Right đã được sử dụng bởi các quy ước hệ thống hoặc ứng dụng
+<h1 id="phím-tắt-bàn-phím">Phím tắt bàn phím</h1>
+<p>Paperback được thiết kế để sử dụng ưu tiên bàn phím. Dưới đây là các
+phím tắt hiện tại.</p>
+<p>Các phím tắt dưới đây dành cho Windows. Khi macOS khác, phím tương
+đương được ghi chú trong dấu ngoặc — chủ yếu là vì Ctrl+G, Ctrl+W, và
+Alt+Left/Right đã được yêu cầu bởi các quy ước hệ thống hoặc ứng dụng
 khác trên nền tảng đó.</p>
 <h2 id="menu-tệp">Menu Tệp</h2>
 <ul>
@@ -376,25 +380,24 @@ khác trên nền tảng đó.</p>
 tại.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Đóng
 tất cả các tài liệu đang mở.</li>
-<li><code>Ctrl+Shift+T</code>: Mở lại tài liệu vừa đóng.</li>
-<li><code>Ctrl+R</code>: Hiển thị hộp thoại “Tất cả tài liệu” (từ Tài
-liệu gần đây).</li>
-<li><code>Ctrl+Q</code>: Thoát (chỉ Windows; trên macOS điều này nằm
-dưới menu ứng dụng thay vào đó).</li>
+<li><code>Ctrl+Shift+T</code>: Mở lại tài liệu đã đóng lần cuối.</li>
+<li><code>Ctrl+R</code>: Hiển thị hộp thoại “Tất cả Tài liệu” (từ Tài
+liệu Gần đây).</li>
+<li><code>Ctrl+Q</code>: Thoát (chỉ Windows; trên macOS tùy chọn này nằm
+trong menu ứng dụng thay vào đó).</li>
 </ul>
-<h2 id="menu-đi-tới">Menu Đi tới</h2>
+<h2 id="menu-đi">Menu Đi</h2>
 <ul>
 <li><code>Ctrl+F</code>: Hiển thị hộp thoại Tìm kiếm.</li>
-<li><code>F3</code> (macOS: <code>Cmd+G</code>): Tìm kiếm tiếp
-theo.</li>
-<li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Tìm kiếm
-trước đó.</li>
-<li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Đi tới dòng.</li>
-<li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Đi tới
+<li><code>F3</code> (macOS: <code>Cmd+G</code>): Tìm tiếp theo.</li>
+<li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Tìm trước
+đó.</li>
+<li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Đi đến dòng.</li>
+<li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Đi đến
 phần trăm.</li>
-<li><code>Ctrl+P</code>: Đi tới trang (khi được hỗ trợ bởi tài liệu hiện
+<li><code>Ctrl+P</code>: Đi đến trang (khi được hỗ trợ bởi tài liệu hiện
 tại).</li>
-<li><code>=</code>: Thông báo phần trăm đọc hiện tại của bạn.</li>
+<li><code>=</code>: Thông báo tỷ lệ phần trăm đọc hiện tại của bạn.</li>
 <li><code>Alt+Left</code> (macOS: <code>Cmd+[</code>): Quay lại trong
 lịch sử điều hướng.</li>
 <li><code>Alt+Right</code> (macOS: <code>Cmd+]</code>): Tiến lên trong
@@ -403,23 +406,23 @@ lịch sử điều hướng.</li>
 <li><code>]</code>: Phần tiếp theo.</li>
 <li><code>Shift+H</code>: Tiêu đề trước.</li>
 <li><code>H</code>: Tiêu đề tiếp theo.</li>
-<li><code>Shift+1</code> đến <code>Shift+6</code>: Tiêu đề trước ở cấp
+<li><code>Shift+1</code> đến <code>Shift+6</code>: Tiêu đề trước ở mức
 1-6.</li>
-<li><code>1</code> đến <code>6</code>: Tiêu đề tiếp theo ở cấp 1-6.</li>
+<li><code>1</code> đến <code>6</code>: Tiêu đề tiếp theo ở mức 1-6.</li>
 <li><code>Shift+P</code>: Trang trước.</li>
 <li><code>P</code>: Trang tiếp theo.</li>
 <li><code>Shift+B</code>: Dấu trang trước.</li>
 <li><code>B</code>: Dấu trang tiếp theo.</li>
 <li><code>/</code>: Đặt dấu trang tạm thời của bạn.</li>
-<li><code>\</code>: Nhảy tới dấu trang tạm thời của bạn.</li>
+<li><code>\</code>: Nhảy đến dấu trang tạm thời của bạn.</li>
 <li><code>Shift+N</code>: Ghi chú trước.</li>
 <li><code>N</code>: Ghi chú tiếp theo.</li>
-<li><code>Ctrl+B</code>: Nhảy tới tất cả dấu trang và ghi chú.</li>
-<li><code>Ctrl+Alt+B</code>: Nhảy tới dấu trang chỉ.</li>
-<li><code>Ctrl+Alt+M</code>: Nhảy tới ghi chú chỉ.</li>
+<li><code>Ctrl+B</code>: Nhảy đến tất cả các dấu trang và ghi chú.</li>
+<li><code>Ctrl+Alt+B</code>: Nhảy đến chỉ các dấu trang.</li>
+<li><code>Ctrl+Alt+M</code>: Nhảy đến chỉ các ghi chú.</li>
 <li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, tức
-là phím Control vật lý thay vì Cmd): Xem văn bản ghi chú ở vị trí hiện
-tại.</li>
+là phím Control vật lý chứ không phải Cmd): Xem văn bản ghi chú tại vị
+trí hiện tại.</li>
 <li><code>Shift+K</code>: Liên kết trước.</li>
 <li><code>K</code>: Liên kết tiếp theo.</li>
 <li><code>Shift+G</code>: Hình ảnh trước.</li>
@@ -434,43 +437,42 @@ tại.</li>
 <li><code>L</code>: Danh sách tiếp theo.</li>
 <li><code>Shift+I</code>: Mục danh sách trước.</li>
 <li><code>I</code>: Mục danh sách tiếp theo.</li>
-<li><code>Shift+,</code>: Đi tới đầu vùng chứa hiện tại (danh sách hoặc
+<li><code>Shift+,</code>: Đi đến đầu hộp chứa hiện tại (danh sách hoặc
 bảng).</li>
-<li><code>,</code>: Đi vượt qua cuối vùng chứa hiện tại (danh sách hoặc
+<li><code>,</code>: Đi quá cuối hộp chứa hiện tại (danh sách hoặc
 bảng).</li>
 </ul>
 <h2 id="menu-công-cụ">Menu Công cụ</h2>
 <ul>
 <li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, tức là phím
-Control vật lý thay vì Cmd): Hiển thị số từ cho tài liệu hiện tại.</li>
+Control vật lý chứ không phải Cmd): Hiển thị số lượng từ cho tài liệu
+hiện tại.</li>
 <li><code>Ctrl+I</code>: Hiển thị thông tin tài liệu.</li>
 <li><code>Ctrl+T</code>: Hiển thị mục lục.</li>
 <li><code>F7</code>: Hiển thị danh sách phần tử.</li>
 <li><code>Ctrl+Shift+C</code>: Mở thư mục chứa.</li>
-<li><code>Ctrl+Shift+V</code>: Mở nội dung hiện tại trong Chế độ xem
-Web.</li>
+<li><code>Ctrl+Shift+V</code>: Mở nội dung hiện tại trong Web View.</li>
 <li><code>Ctrl+U</code>: Xem nguồn tài liệu trong tab mới.</li>
 <li><code>Ctrl+Shift+E</code>: Xuất dữ liệu tài liệu
 (<code>.paperback</code>).</li>
 <li><code>Ctrl+Shift+I</code>: Nhập dữ liệu tài liệu
 (<code>.paperback</code>).</li>
-<li><code>Ctrl+E</code>: Xuất tài liệu hiện tại dưới dạng văn bản thuần
-túy.</li>
-<li><code>Ctrl+Shift+B</code>: Bật/tắt dấu trang ở lựa chọn/con trỏ hiện
-tại.</li>
-<li><code>Ctrl+Shift+N</code>: Thêm hoặc chỉnh sửa ghi chú dấu trang ở
+<li><code>Ctrl+E</code>: Xuất tài liệu hiện tại sang văn bản thuần.</li>
+<li><code>Ctrl+Shift+B</code>: Chuyển đổi dấu trang tại lựa chọn/con trỏ
+hiện tại.</li>
+<li><code>Ctrl+Shift+N</code>: Thêm hoặc chỉnh sửa ghi chú dấu trang tại
 lựa chọn/con trỏ hiện tại.</li>
-<li><code>Ctrl+Alt+W</code>: Bật/tắt ngắt dòng chữ.</li>
-<li><code>Ctrl+Space</code>: Phát/tạm dừng tường thuật âm thanh.</li>
-<li><code>'</code>: Tua nhanh tường thuật âm thanh.</li>
-<li><code>;</code>: Tua lại tường thuật âm thanh.</li>
-<li><code>Ctrl+'</code>: Tăng lượng tua âm thanh.</li>
-<li><code>Ctrl+;</code>: Giảm lượng tua âm thanh.</li>
+<li><code>Ctrl+Alt+W</code>: Chuyển đổi bao ngoại từ.</li>
+<li><code>Ctrl+Space</code>: Phát/tạm dừng kể chuyện âm thanh.</li>
+<li><code>'</code>: Tìm kiếm kể chuyện âm thanh về phía trước.</li>
+<li><code>;</code>: Tìm kiếm kể chuyện âm thanh về phía sau.</li>
+<li><code>Ctrl+'</code>: Tăng lượng tìm kiếm âm thanh.</li>
+<li><code>Ctrl+;</code>: Giảm lượng tìm kiếm âm thanh.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, tức là
-Control+Command+F): Bật/tắt toàn màn hình.</li>
+Control+Command+F): Chuyển đổi toàn màn hình.</li>
 <li><code>Ctrl+,</code>: Mở tùy chọn (macOS: Tùy chỉnh, dưới menu ứng
 dụng).</li>
-<li><code>Ctrl+Shift+S</code>: Bật/tắt bộ hẹn giờ ngủ.</li>
+<li><code>Ctrl+Shift+S</code>: Chuyển đổi hẹn giờ ngủ.</li>
 </ul>
 <h2 id="menu-trợ-giúp">Menu Trợ giúp</h2>
 <ul>
@@ -482,22 +484,22 @@ bạn.</li>
 <li><code>Ctrl+D</code>: Mở trang quyên góp trong trình duyệt mặc định
 của bạn.</li>
 </ul>
-<h2 id="các-phím-xem-tài-liệu-bổ-sung">Các phím xem tài liệu bổ
-sung</h2>
+<h2 id="các-phím-bổ-sung-trong-chế-độ-xem-tài-liệu">Các phím bổ sung
+trong chế độ xem tài liệu</h2>
 <ul>
 <li><code>Delete</code> / <code>Numpad Delete</code> trên điều khiển
-tab: Đóng tab tài liệu đã chọn.</li>
+tab: Đóng tab tài liệu được chọn.</li>
 <li><code>Enter</code> hoặc <code>Space</code> trong văn bản tài liệu:
-Kích hoạt liên kết ở con trỏ, hoặc mở chế độ xem bảng khi ở trên dấu
+Kích hoạt liên kết ở con trỏ, hoặc mở chế độ xem bảng khi trên dấu tích
 bảng.</li>
 <li><code>Shift+F10</code> hoặc phím Menu/Ứng dụng trong văn bản tài
-liệu: Mở menu bối cảnh.</li>
+liệu: Mở menu ngữ cảnh.</li>
 </ul>
-<h1 id="ngôn-ngữ-được-hỗ-trợ">Ngôn ngữ được hỗ trợ</h1>
-<p>Paperback được dịch sang nhiều ngôn ngữ khác nhau, và luôn có thêm
-ngôn ngữ được bổ sung. Danh sách đầy đủ như sau.</p>
+<h1 id="các-ngôn-ngữ-được-hỗ-trợ">Các ngôn ngữ được hỗ trợ</h1>
+<p>Paperback được dịch sang nhiều ngôn ngữ khác nhau, với ngày càng
+nhiều thêm vào. Danh sách đầy đủ theo dõi bên dưới.</p>
 <p>Để tìm hiểu cách đóng góp, vui lòng đọc <a
-href="translating.md">Hướng dẫn dịch của chúng tôi</a>.</p>
+href="translating.md">Hướng dẫn Dịch thuật</a> của chúng tôi.</p>
 <ul>
 <li>Bosnian</li>
 <li>Czech</li>
@@ -514,18 +516,19 @@ href="translating.md">Hướng dẫn dịch của chúng tôi</a>.</p>
 <li>Spanish</li>
 <li>Vietnamese</li>
 </ul>
-<h1 id="ghi-công">Ghi công</h1>
+<h1 id="ghi-nhận">Ghi nhận</h1>
 <h2 id="phát-triển">Phát triển</h2>
 <ul>
-<li>Quin Gillespie: nhà phát triển chính và nhà sáng lập dự án.</li>
-<li>Aryan Choudhary: người đóng góp chính.</li>
+<li>Quin Gillespie: nhà phát triển chính và người sáng lập dự án.</li>
+<li>Aryan Choudhary: cộng tác viên chính.</li>
 </ul>
 <h2 id="quyên-góp">Quyên góp</h2>
-<p>Các người sau đây đã quyên góp một số tiền cho việc phát triển
-Paperback. Nếu bạn quyên góp, tên của bạn sẽ không tự động được thêm vào
-đây, tôi chỉ thêm những người muốn quyên góp của họ được công khai.</p>
-<p>Lưu ý: Tôi coi bất kỳ nhà tài trợ GitHub công khai nào là cơ sở để tự
-động đưa vào danh sách này.</p>
+<p>Các người sau đây đã thực hiện các khoản quyên góp có kích thước cho
+phát triển Paperback. Nếu bạn thực hiện quyên góp, tên của bạn sẽ không
+được tự động thêm vào đây, tôi chỉ thêm những người muốn quyên góp của
+họ được công khai.</p>
+<p>Lưu ý: Tôi coi nhà tài trợ GitHub công khai là lý do để tự động đưa
+vào danh sách này.</p>
 <ul>
 <li>Alex Hall</li>
 <li>Brandon McGinty</li>
@@ -549,139 +552,140 @@ Paperback. Nếu bạn quyên góp, tên của bạn sẽ không tự động đ
 <h1 id="nhật-ký-thay-đổi">Nhật ký thay đổi</h1>
 <h2 id="phiên-bản-0.9.2">Phiên bản 0.9.2</h2>
 <ul>
-<li>Sách âm thanh không còn làm trình đọc màn hình đọc một loạt khoảng
-trắng khi bạn focus trường văn bản.</li>
-<li>Sách âm thanh giờ đây đặt tên tệp khi bạn bước qua từng phần.</li>
-<li>Sách âm thanh giờ đây báo cáo độ dài thực tế của chúng, thay vì
-tuyên bố mọi tệp trong đó chạy trong 24 giờ.</li>
-<li>Đóng Web View bằng Escape không còn đưa ra cảnh báo gỡ lỗi sau khi
+<li>Sách nói không còn khiến trình đọc màn hình của bạn đọc một loạt
+khoảng trắng khi bạn tập trung vào trường văn bản.</li>
+<li>Sách nói hiện đặt tên tệp khi bạn điều hướng qua chúng theo
+phần.</li>
+<li>Sách nói hiện báo cáo độ dài thực tế của chúng, thay vì khẳng định
+mọi tệp trong chúng chạy trong 24 giờ.</li>
+<li>Đóng Web View bằng Escape không còn làm hiện cảnh báo gỡ lỗi sau khi
 bạn đã theo một liên kết bên trong nó.</li>
-<li>Sao chép sau Select All giờ đây cung cấp cho bạn toàn bộ tài liệu,
-thay vì chỉ phần hiện đang được tải.</li>
-<li>Find giờ đây đi thẳng đến dòng mà nó tìm thấy, thay vì yêu cầu bạn
-chịu đựng trình đọc màn hình đọc lại cửa sổ khi focus quay lại
+<li>Sao chép sau Select All hiện cung cấp cho bạn toàn bộ tài liệu, thay
+vì chỉ phần hiện được tải.</li>
+<li>Find hiện chuyển thẳng đến dòng nó tìm thấy, thay vì khiến bạn phải
+chờ trình đọc màn hình đọc cửa sổ lại khi con trỏ quay trở lại
 sách.</li>
-<li>Đã sửa các EPUB có khối ZIP64 lạc lẫm từ chối mở bằng “Invalid local
-file header”.</li>
-<li>Đã sửa các tài liệu dài quay lại điểm bắt đầu của chúng trong khi
+<li>Đã sửa EPUB mang khối ZIP64 lạc từng không mở được với “Invalid
+local file header”.</li>
+<li>Đã sửa các tài liệu dài quay trở lại điểm bắt đầu của chúng khi
 trình đọc màn hình đọc liên tục qua chúng.</li>
-<li>Các liên kết trong Web View giờ đây đưa bạn đến phần mà chúng trỏ
-đến, thay vì thất bại với “File not found”.</li>
-<li>Thông báo tự động “Document reloaded” không còn cắt trình đọc màn
-hình của bạn giữa câu, thay vào đó chờ nó hoàn thành những gì nó đang
-nói.</li>
-<li>Tab General của hộp thoại Settings giờ đây tab qua các tùy chọn của
-nó theo thứ tự chúng xuất hiện trên màn hình, với kênh cập nhật ngay sau
-tùy chọn kiểm tra cập nhật.</li>
+<li>Các liên kết trong WebView hiện đưa bạn đến phần mà chúng trỏ tới,
+thay vì thất bại với “File not found”.</li>
+<li>Thông báo tự động “Document reloaded” không còn cắt đứt trình đọc
+màn hình của bạn ở giữa câu, thay vào đó chờ nó kết thúc những gì nó
+đang nói.</li>
+<li>Tab General của hộp thoại Settings hiện lần qua các tùy chọn của nó
+theo thứ tự chúng xuất hiện trên màn hình, với kênh cập nhật trực tiếp
+sau tùy chọn kiểm tra cập nhật.</li>
 <li>Windows sẽ luôn hiển thị “Paperback” trong menu Open With, thay vì
-thẻ đầu đủ của chương trình.</li>
-<li>Word Count và Document Info giờ đây hiển thị có bao nhiêu tệp mà một
-sách âm thanh chứa, và nó chạy bao lâu tổng cộng.</li>
+tagline đầy đủ của chương trình.</li>
+<li>Word Count và Document Info hiện cho biết có bao nhiêu tệp trong
+sách nói, và tổng thời gian nó chạy.</li>
 </ul>
 <h2 id="phiên-bản-0.9.1">Phiên bản 0.9.1</h2>
 <ul>
-<li>Âm thanh dấu trang và ghi chú giờ đây phát trên macOS.</li>
-<li>Sách DAISY giờ đây phát âm thanh của chúng trên macOS, thay vì mở và
-theo dõi dòng thời gian của chúng trong im lặng.</li>
-<li>Đã sửa dấu ngoặc kép cong, dấu gạch ngang dài và các ký tự tương tự
-biến mất từ các tài liệu RTF, chạy các từ xung quanh chúng với nhau khi
-chúng đi.</li>
-<li>Đã sửa hình ảnh RTF rò rỉ dữ liệu thô của chúng vào tài liệu dưới
-dạng văn bản lộn xộn.</li>
-<li>Đã sửa trình đơn Recent Documents giữ lại các mục cũ cho đến khi có
-gì khác xảy ra để xây dựng lại nó.</li>
-<li>Các phím tắt bàn phím hiện đã quay lại trong mỗi bản dịch, vì vậy
-menu tiếng Nga có quyền truy cập bàn phím lại.</li>
-<li>Các tài liệu CHM lớn giờ đây mở nhanh hơn gấp bảy lần.</li>
-<li>Các tài liệu được mở giờ đây được đăng ký với Windows, vì vậy chúng
-xuất hiện trong danh sách nhảy thanh tác vụ và danh sách gần đây của
-menu Start.</li>
+<li>Âm thanh trang sách và ghi chú hiện phát được trên macOS.</li>
+<li>Sách DAISY hiện phát âm thanh của chúng trên macOS, thay vì mở và
+theo dõi dòng thời gian của chúng im lặng.</li>
+<li>Đã sửa dấu ngoặc cong, dấu gạch dài và các ký tự tương tự biến mất
+từ các tài liệu RTF, làm chạy các từ xung quanh lại với nhau.</li>
+<li>Đã sửa các ảnh RTF lọt dữ liệu thô của chúng vào tài liệu dưới dạng
+văn bản bị hỏng.</li>
+<li>Đã sửa menu Documents gần đây giữ các mục cũ cho đến khi có thứ gì
+khác xảy ra để xây dựng lại nó.</li>
+<li>Các bộ tăng tốc bàn phím đã quay trở lại trong mọi bản dịch, vì vậy
+menu của Nga hiện có quyền truy cập bàn phím.</li>
+<li>Các tài liệu CHM lớn hiện mở nhanh hơn tới bảy lần.</li>
+<li>Các tài liệu được mở hiện được đăng ký với Windows, vì vậy chúng
+hiển thị trong danh sách nhảy thanh tác vụ và danh sách gần đây của menu
+Start.</li>
 <li>Options đã được đổi tên thành Settings, phù hợp với các ứng dụng di
-động và trên macOS, quy ước nền tảng.</li>
-<li>Paperback giờ đây ghi nhớ vị trí cửa sổ, kích thước và trạng thái
-tối đa hóa của nó giữa các lần chạy.</li>
-<li>Các dạng số nhiều giờ đây được dịch, vì vậy các thông báo đếm những
-thứ đọc đúng cách trong các ngôn ngữ cần nhiều hơn một dạng.</li>
-<li>Chọn ncc.html của sách DAISY giờ đây mở sách âm thanh hoàn chỉnh
-thay vì chỉ văn bản của nó.</li>
-<li>Tên hành động của hộp thoại Customize Keyboard Shortcuts giờ đây có
+động và, trên macOS, quy ước nền tảng.</li>
+<li>Paperback hiện ghi nhớ vị trí cửa sổ, kích thước và trạng thái phóng
+to giữa các lần chạy.</li>
+<li>Các dạng số nhiều hiện được dịch, vì vậy các tin nhắn đếm những thứ
+đọc đúng cách trong các ngôn ngữ cần nhiều hơn một dạng.</li>
+<li>Chọn ncc.html của một sách DAISY hiện mở toàn bộ sách âm thanh thay
+vì chỉ văn bản của nó.</li>
+<li>Các tên hành động của hộp thoại Customize Keyboard Shortcuts hiện có
 thể được dịch.</li>
-<li>Tiêu đề tài liệu giờ đây xuất hiện trước tiên trong thanh tiêu đề,
-vì vậy các sách mở có thể được phân biệt trong thanh tác vụ và
+<li>Tiêu đề tài liệu hiện xuất hiện trước tiên trên thanh tiêu đề, vì
+vậy các sách mở có thể phân biệt được trong thanh tác vụ và
 Alt+Tab.</li>
-<li>Hộp thoại cập nhật giờ đây đã được dịch.</li>
+<li>Hộp thoại cập nhật hiện được dịch.</li>
 </ul>
 <h2 id="phiên-bản-0.9.0">Phiên bản 0.9.0</h2>
-<h3 id="thêm">Thêm</h3>
-<h4 id="chung">Chung</h4>
+<h3 id="được-thêm-vào">Được thêm vào</h3>
+<h4 id="general">General</h4>
 <ul>
-<li>Một công cụ CLI gọi là pb để nhanh chóng chuyển đổi bất kỳ định dạng
-được hỗ trợ nào của Paperback sang HTML, Markdown hoặc văn bản
-thuần.</li>
-<li>Một tùy chọn để tải lại các tài liệu đã bị các chương trình khác
-trên đĩa sửa đổi.</li>
-<li>Một tùy chọn View Source để mở nguồn của tài liệu trong một tab mới,
-hữu ích cho việc chỉnh sửa Markdown chẳng hạn.</li>
-<li>Văn bản tài liệu giờ đây được phân trang, có nghĩa là bạn có thể tải
-các sách có hàng chục triệu từ chỉ trong vài giây. Vui lòng báo cáo bất
-kỳ điều kỳ lạ nào được tìm thấy với cái này.</li>
+<li>Một công cụ CLI gọi là pb, để nhanh chóng chuyển đổi bất kỳ định
+dạng nào được Paperback hỗ trợ thành HTML, Markdown hoặc văn bản thuần
+túy.</li>
+<li>Một tùy chọn để tải lại các tài liệu đã được sửa đổi bởi các chương
+trình khác trên đĩa.</li>
+<li>Một tùy chọn View Source để mở mã nguồn của tài liệu trong một tab
+mới, hữu ích để chỉnh sửa Markdown chẳng hạn.</li>
+<li>Văn bản tài liệu hiện được phân trang, có nghĩa là bạn có thể tải
+sách có hàng chục triệu từ chỉ trong vài giây. Vui lòng báo cáo bất kỳ
+điều lạ nào được tìm thấy với điều này.</li>
 </ul>
 <h4 id="hỗ-trợ-nền-tảng">Hỗ trợ nền tảng</h4>
 <ul>
 <li>Hỗ trợ ARM64 Windows!</li>
-<li>Hỗ trợ macOS asli!</li>
-<li>Một toggle toàn màn hình.</li>
+<li>Hỗ trợ macOS gốc!</li>
+<li>Một nút bật/tắt toàn màn hình.</li>
 </ul>
-<h4 id="hộp-thoại-tất-cả-tài-liệu">Hộp thoại Tất cả tài liệu</h4>
+<h4 id="hộp-thoại-all-documents">Hộp thoại All Documents</h4>
 <ul>
-<li>Một nút định vị để định vị các sách bị thiếu vừa thay đổi đường dẫn
-của chúng.</li>
+<li>Một nút định vị để định vị sách bị thiếu vừa thay đổi đường dẫn của
+chúng.</li>
 <li>Một bộ lọc trạng thái và thanh trạng thái, vì vậy bạn có thể lọc
 theo trạng thái tài liệu và xem có bao nhiêu tài liệu được hiển thị và
 chọn.</li>
-<li>Phím tắt <code>Ctrl+Shift+A</code> để bỏ chọn tất cả tài liệu.</li>
+<li>Lối tắt <code>Ctrl+Shift+A</code> để bỏ chọn tất cả các tài
+liệu.</li>
 </ul>
-<h4 id="tùy-chọn-và-khả-năng-đọc">Tùy chọn và Khả năng đọc</h4>
+<h4 id="tùy-chọn-và-khả-năng-đọc">Tùy chọn và khả năng đọc</h4>
 <ul>
 <li>Một tab khả năng đọc, với các tùy chọn sau:
 <ul>
-<li>Bao quanh từ (được chuyển từ chung);</li>
-<li>Hiển thị bảng nội tuyến (mới trong phiên bản này, xem bên
+<li>Word wrap (được chuyển từ general);</li>
+<li>Render tables inline (mới trong bản phát hành này, xem bên
 dưới);</li>
-<li>Font chữ;</li>
-<li>Màu nền;</li>
-<li>Khoảng cách dòng;</li>
-<li>Khoảng cách đoạn;</li>
-<li>Khoảng cách chữ;</li>
-<li>Căn chỉnh văn bản.</li>
+<li>Font;</li>
+<li>Background color;</li>
+<li>Line spacing;</li>
+<li>Paragraph spacing;</li>
+<li>Letter spacing;</li>
+<li>Text alignment.</li>
 </ul></li>
-<li>Một mục menu bao quanh từ và phím nóng tiếp theo.</li>
-<li>Một toggle để xác định cách bạn muốn bảng được hiển thị, và hợp nhất
-cách bảng được hiển thị trên các tài liệu.</li>
+<li>Một mục menu word wrap và phím tắt tiếp theo.</li>
+<li>Một nút bật/tắt để xác định cách bạn muốn các bảng được hiển thị và
+hợp nhất cách các bảng được hiển thị trên các tài liệu.</li>
 </ul>
 <h4 id="điều-hướng">Điều hướng</h4>
 <ul>
-<li>Hỗ trợ điều hướng theo vùng chứa.</li>
-<li>Một tùy chọn để tự động di chuyển con trỏ đến điểm bắt đầu của dòng
-khi điều hướng giữa các dòng, tương tự như chế độ duyệt trong trình đọc
-màn hình.</li>
-<li>Phím tắt bằng để thông báo phần trăm hiện tại của bạn qua một tài
-liệu.</li>
+<li>Hỗ trợ điều hướng theo container.</li>
+<li>Một tùy chọn để tự động di chuyển con trỏ đến đầu dòng khi điều
+hướng giữa các dòng, tương tự như chế độ duyệt trong trình đọc màn
+hình.</li>
+<li>Lối tắt bàn phím bằng để thông báo phần trăm hiện tại của bạn qua
+tài liệu.</li>
 </ul>
-<h4 id="dấu-trang">Dấu trang</h4>
+<h4 id="trang-sách">Trang sách</h4>
 <ul>
-<li>Dấu trang tạm thời: bạn có thể có một cho mỗi tài liệu, và chúng vẫn
-còn tồn tại. Sử dụng dấu gạch chéo để đặt một và dấu gạch chéo ngược để
-nhảy tới nó.</li>
+<li>Trang sách tạm thời: bạn có thể có một trang trên mỗi tài liệu, và
+chúng vẫn tồn tại. Sử dụng dấu gạch chéo để đặt một cái và dấu gạch chéo
+ngược để nhảy tới nó.</li>
 </ul>
-<h4 id="số-lượng-từ">Số lượng từ</h4>
+<h4 id="word-count">Word Count</h4>
 <ul>
-<li>Thời gian đọc ước tính trong hộp thoại số lượng từ, cũng như khả
-năng đặt tốc độ đọc của bạn để làm cho số liệu này thực sự hữu ích.</li>
-<li>Nếu lựa chọn đang hoạt động khi bạn mở hộp thoại số lượng từ, có bao
-nhiêu từ bạn đã chọn sẽ được hiển thị.</li>
+<li>Thời gian đọc ước tính trong hộp thoại số từ, cũng như khả năng đặt
+tốc độ đọc của bạn để làm cho số liệu này thực sự hữu ích.</li>
+<li>Nếu một lựa chọn hoạt động khi bạn mở hộp thoại số từ, sẽ hiển thị
+bao nhiêu từ bạn đã chọn.</li>
 </ul>
-<h4 id="phím-tắt-bàn-phím">Phím tắt bàn phím</h4>
+<h4 id="phím-tắt-bàn-phím-1">Phím tắt bàn phím</h4>
 <ul>
 <li>Khả năng tùy chỉnh mọi phím tắt bàn phím trong ứng dụng thông qua
 một hộp thoại đơn giản.</li>
@@ -690,18 +694,17 @@ hệ thống.</li>
 </ul>
 <h4 id="ngôn-ngữ">Ngôn ngữ</h4>
 <ul>
-<li>Hà Lan, Phần Lan và Ba Lan.</li>
+<li>Tiếng Hà Lan, tiếng Phần Lan và tiếng Ba Lan.</li>
 </ul>
 <h4 id="xuất">Xuất</h4>
 <ul>
-<li>Mở rộng mục xuất để cho phép xuất sang HTML và Markdown, ngoài văn
-bản thuần.</li>
+<li>Mở rộng mục menu xuất để cho phép xuất sang HTML và Markdown, ngoài
+văn bản thuần túy.</li>
 </ul>
-<h4 id="trình-cập-nhật">Trình cập nhật</h4>
+<h4 id="bộ-cập-nhật">Bộ cập nhật</h4>
 <ul>
-<li>Một nút hủy cho hộp thoại cập nhật đang diễn ra.</li>
-<li>Trình cập nhật giờ đây xác thực tệp đã tải xuống chưa bị giả
-mạo.</li>
+<li>Một nút hủy để cập nhật hộp thoại đang diễn ra.</li>
+<li>Bộ cập nhật hiện xác thực tệp đã tải xuống chưa bị giả mạo.</li>
 </ul>
 <h4 id="web-view">Web View</h4>
 <ul>
@@ -710,285 +713,277 @@ mạo.</li>
 <h4 id="sách-daisy">Sách DAISY</h4>
 <ul>
 <li>Hỗ trợ sách DAISY 2.0.</li>
-<li>Hỗ trợ phát lại âm thanh DAISY 2.02.</li>
+<li>Hỗ trợ phát DAISY 2.02.</li>
 </ul>
-<h4 id="sách-âm-thanh">Sách âm thanh</h4>
+<h4 id="sách-nói">Sách nói</h4>
 <ul>
-<li>Khả năng phát lại sách âm thanh, hiện hỗ trợ cả DAISY âm thanh (bao
-gồm DAISY âm thanh + văn bản) và zip các tệp âm thanh.</li>
-<li>Phím tắt bàn phím và mục menu để phát/tạm dừng lời kể, tìm kiếm về
-phía trước và phía sau, và điều chỉnh mức tìm kiếm.</li>
-<li>Các tùy chọn để đồng bộ hóa dấu đọc với phát lại âm thanh, đặt mức
-tìm kiếm âm thanh và chọn liệu tìm kiếm vượt quá cuối chương có tiếp tục
-vào chương tiếp theo hay không.</li>
+<li>Khả năng phát sách nói, hiện hỗ trợ cả âm thanh DAISY (bao gồm âm
+thanh DAISY + văn bản) và các tệp zip của các tệp âm thanh.</li>
+<li>Phím tắt bàn phím và các mục menu để phát/tạm dừng tiếng kể, tìm
+kiếm về phía trước và phía sau, và điều chỉnh lượng tìm kiếm.</li>
+<li>Các tùy chọn để đồng bộ hóa dấu hiệu đọc với phát lại âm thanh, đặt
+lượng tìm kiếm âm thanh và chọn liệu tìm kiếm qua phần cuối của chương
+có tiếp tục vào phần tiếp theo hay không.</li>
 </ul>
 <h4 id="tài-liệu-chm">Tài liệu CHM</h4>
 <ul>
-<li>Hỗ trợ danh sách, các mục danh sách, hình vẽ và hình ảnh.</li>
+<li>Hỗ trợ danh sách, mục danh sách, hình và hình ảnh.</li>
 </ul>
 <h4 id="powerpoint">PowerPoint</h4>
 <ul>
-<li>Tài liệu PowerPoint giờ đây hỗ trợ bảng.</li>
+<li>Tài liệu PowerPoint hiện hỗ trợ bảng.</li>
 </ul>
-<h3 id="đã-sửa">Đã sửa</h3>
-<h4 id="chung-1">Chung</h4>
+<h3 id="được-sửa">Được sửa</h3>
+<h4 id="general-1">General</h4>
 <ul>
-<li>Các tài liệu được mã hóa trong mã hóa CJK cũ, chẳng hạn như GBK,
-Big5 và Shift_JIS, giờ đây sẽ hiển thị đúng thay vì một loạt
+<li>Các tài liệu được mã hóa trong các bảng mã CJK cũ, chẳng hạn như
+GBK, Big5 và Shift_JIS, sẽ hiển thị đúng cách thay vì như một loạt
 mojibake.</li>
-<li>“Reopen last closed” cố gắng mở lại readme được đóng gói.</li>
-<li>Tab được chọn của bạn không được lấy focus đúng cách sau khi khởi
+<li>“Reopen last closed” cố gắng mở lại tệp readme được đóng gói.</li>
+<li>Tab được chọn của bạn không được tập trung đúng cách sau khi khởi
 động lại Paperback.</li>
-<li>Xử lý các tệp trên ổ đĩa mạng Windows của Paperback: nhấn show file
-in folder giờ đây lấy focus đúng cách tệp trên bộ nhớ mạng, và các đường
-dẫn không còn chứa các ký tự lạ.</li>
-<li>Các tệp .paperback sẽ không còn bị tải bắt buộc khi khôi phục tài
-liệu; thay vào đó, bạn sẽ được yêu cầu xác nhận khi tìm thấy một.</li>
-<li>Open containing folder giờ đây lấy focus tệp đã cho trong
+<li>Cách xử lý các tệp trên ổ đĩa mạng Windows của Paperback: nhấn show
+file in folder hiện đúng tập trung vào tệp trên bộ nhớ mạng, và các
+đường dẫn không còn chứa các ký tự lạ.</li>
+<li>Các tệp .paperback sẽ không còn được tải bắt buộc khi khôi phục tài
+liệu; thay vào đó, bạn sẽ được hỏi xác nhận khi tìm thấy một tệp.</li>
+<li>Open containing folder hiện tập trung vào tệp đã cho trong
 explorer.</li>
-<li>Mở readme giờ đây sẽ tôn trọng ngôn ngữ được chọn của bạn.</li>
-<li>Giao diện người dùng Paperback giờ đây sẽ được chia tỷ lệ đúng cách
-trên màn hình DPI cao.</li>
-<li>Menu giờ đây cập nhật đúng cách, và focus di chuyển đến kiểm soát
-văn bản, khi mở trợ giúp trong Paperback.</li>
+<li>Mở readme hiện sẽ tôn trọng ngôn ngữ được chọn của bạn.</li>
+<li>Giao diện người dùng của Paperback hiện sẽ được mở rộng đúng cách
+trên các màn hình có DPI cao.</li>
+<li>Menu hiện được cập nhật đúng cách, và con trỏ di chuyển đến điều
+khiển văn bản khi mở trợ giúp trong Paperback.</li>
 <li>Chuyển sang một phương pháp IPC an toàn hơn nhiều trên Windows.</li>
-<li>Tiêu đề tài liệu hoạt động sẽ được đọc khi chuyển đổi giữa các
+<li>Tiêu đề tài liệu hoạt động hiện sẽ được đọc khi chuyển đổi giữa các
 tab.</li>
 <li>Giảm mức sử dụng bộ nhớ trên các tài liệu lớn bằng cách giảm một nửa
-kích thước của các bảng chỉ mục trên mỗi ký tự nội bộ.</li>
+kích thước của các bảng chỉ mục mỗi ký tự nội bộ.</li>
 </ul>
-<h4 id="hộp-thoại-tất-cả-tài-liệu-1">Hộp thoại Tất cả tài liệu</h4>
+<h4 id="hộp-thoại-all-documents-1">Hộp thoại All Documents</h4>
 <ul>
 <li>Escape không đóng các hộp thoại Document Info và All Documents.</li>
-<li>Thanh tiêu đề không cập nhật sau khi đóng tài liệu từ hộp thoại tất
-cả tài liệu.</li>
-<li>Readme.html sẽ không còn được thêm vào danh sách tất cả tài liệu của
-bạn khi được mở qua Shift+F1.</li>
-<li>Xóa các tài liệu từ hộp thoại recents giờ đây cũng sẽ đóng tab hoạt
+<li>Thanh tiêu đề không cập nhật sau khi đóng tài liệu từ hộp thoại all
+documents.</li>
+<li>Readme.html sẽ không còn được thêm vào danh sách all documents của
+bạn khi được mở thông qua Shift+F1.</li>
+<li>Loại bỏ tài liệu khỏi hộp thoại recents hiện cũng sẽ đóng tab hoạt
 động của chúng.</li>
-<li>Bộ lọc tìm kiếm của bạn giờ đây được bảo toàn sau khi xóa một tài
+<li>Bộ lọc tìm kiếm của bạn hiện được giữ nguyên sau khi loại bỏ tài
 liệu.</li>
 </ul>
 <h4 id="điều-hướng-1">Điều hướng</h4>
 <ul>
-<li>Điều hướng trang thông báo văn bản dòng không chính xác trong một số
+<li>Điều hướng trang báo cáo văn bản dòng không chính xác trong một số
 tình huống.</li>
 <li>Go to Line, Go to Page và Go to Percent đặt con trỏ của bạn ở vị trí
 sai trong các tài liệu lớn.</li>
-<li>Find và Find Next không tôn trọng cửa sổ tài liệu được tải trong các
+<li>Find và Find Next không tôn trọng cửa sổ tài liệu đã tải trong các
 tài liệu lớn.</li>
 </ul>
-<h4 id="dấu-trang-1">Dấu trang</h4>
+<h4 id="trang-sách-1">Trang sách</h4>
 <ul>
-<li>Âm thanh dấu trang/ghi chú giờ đây sẽ phát đúng cách độc quyền khi
-bạn điều hướng qua một từ chứa một.</li>
+<li>Âm thanh trang sách/ghi chú hiện phát đúng cách khi bạn điều hướng
+qua một từ chứa một từ.</li>
 </ul>
 <h4 id="khả-năng-đọc">Khả năng đọc</h4>
 <ul>
-<li>Áp dụng bao quanh từ bắn bạn đến đầu tài liệu của bạn.</li>
+<li>Áp dụng word wrap đưa bạn đến đầu tài liệu của bạn.</li>
 </ul>
 <h4 id="web-view-1">Web View</h4>
 <ul>
-<li>Hộp thoại webview không thay đổi kích thước và bật lên ở kích thước
-ban đầu rất nhỏ.</li>
-<li>Hình ảnh giờ đây sẽ hiển thị đúng cách trong webview được
-nhúng.</li>
+<li>Hộp thoại webview không thể thay đổi kích thước và bật lên ở kích
+thước ban đầu rất nhỏ.</li>
+<li>Các ảnh hiện phải hiển thị đúng cách trong webview nhúng.</li>
 </ul>
-<h4 id="trình-cập-nhật-1">Trình cập nhật</h4>
+<h4 id="bộ-cập-nhật-1">Bộ cập nhật</h4>
 <ul>
-<li>Trình cập nhật giờ đây hiển thị đúng cách nội dung của các thẻ mã
-markdown trong ghi chú phát hành.</li>
+<li>Bộ cập nhật hiện hiển thị đúng nội dung của các thẻ mã markdown
+trong ghi chú phát hành.</li>
 </ul>
 <h4 id="sách-daisy-1">Sách DAISY</h4>
 <ul>
 <li>Sách DAISY hiển thị thông tin không chính xác trong thanh trạng
 thái.</li>
-<li>Tải sách DAISY với các khai báo mã hóa giả.</li>
+<li>Sách DAISY tải với các khai báo mã hóa giả.</li>
 </ul>
 <h4 id="tài-liệu-rtf">Tài liệu RTF</h4>
 <ul>
-<li>Phân tích cú pháp các tài liệu RTF có chứa các ký tự không phải
-Latin.</li>
-<li>Nhóm RTF <code>\pict</code> vì vậy dữ liệu hình ảnh nhúng không còn
-rò rỉ vào văn bản tài liệu.</li>
+<li>Phân tích các tài liệu RTF với các ký tự không phải Latin trong
+chúng.</li>
+<li>Các nhóm RTF <code>\pict</code> vì vậy dữ liệu hình ảnh nhúng không
+còn rò rỉ vào văn bản tài liệu.</li>
 </ul>
 <h4 id="sách-mobiazw3">Sách Mobi/AZW3</h4>
 <ul>
-<li>Các neo Filepos trong các sách Mobi chia tách các thẻ HTML và đưa
-rác vào văn bản sách.</li>
+<li>Các anchor filepos trong sách Mobi chia các thẻ HTML và đặt rác vào
+văn bản sách.</li>
 <li>Liên kết trong sách Mobi cũ.</li>
-<li>Phân tích cú pháp AZW3 được cải thiện rất nhiều.</li>
+<li>Phân tích AZW3 được cải thiện rất nhiều.</li>
 </ul>
 <h4 id="tài-liệu-word">Tài liệu Word</h4>
 <ul>
-<li>Tài liệu Word với tên kiểu cụ thể locale không hiển thị các tiêu đề
+<li>Tài liệu Word với tên kiểu cụ thể từng vị trí không hiển thị tiêu đề
 đúng cách.</li>
 </ul>
 <h4 id="tài-liệu-htmlxhtml">Tài liệu HTML/XHTML</h4>
 <ul>
-<li>Các phần tử dl, dt và dd không tạo ra ngắt dòng trong tài liệu
+<li>Các phần tử dl, dt và dd không tạo ngắt dòng trong tài liệu
 XHTML.</li>
 </ul>
 <h4 id="tài-liệu-pdf">Tài liệu PDF</h4>
 <ul>
-<li>Paperback giờ đây quay lại trích xuất văn bản thuần cho các PDF bị
-gắn thẻ sai.</li>
-<li>Tài liệu PDF chứa các ký tự điều khiển trong tiêu đề và/hoặc dấu
-trang của chúng sẽ không còn làm Paperback gặp sự cố khi mở.</li>
+<li>Paperback hiện quay trở lại trích xuất văn bản thuần túy cho PDF
+được gắn thẻ sai.</li>
+<li>Các tài liệu PDF chứa các ký tự điều khiển trong tiêu đề và/hoặc dấu
+trang sẽ không còn làm cho Paperback gặp sự cố khi mở.</li>
 </ul>
 <h2 id="phiên-bản-0.8.5">Phiên bản 0.8.5</h2>
 <ul>
-<li>Thêm hỗ trợ trang cho sách epub.</li>
-<li>Thêm hỗ trợ cho các tài liệu Microsoft Office được mã hóa. Hiện tại
-Word cũ, Word hiện đại và Powerpoint hiện đại được hỗ trợ, với
-Powerpoint cũ được lên kế hoạch cho tương lai.</li>
-<li>Thêm hỗ trợ cho các tài liệu Microsoft Word cũ (*.doc)!</li>
-<li>Thêm hỗ trợ cho các bản trình bày Powerpoint cũ (*.ppt)!</li>
-<li>Thêm hỗ trợ cho sách mobi và AZW3!</li>
-<li>Thêm hỗ trợ cho các tệp PDF được gắn thẻ!</li>
-<li>Thêm phím tắt ctrl+q để thoát ứng dụng.</li>
-<li>Thêm hỗ trợ cho các sách nén từ Bookshare (cả DAISY và Word)!</li>
-<li>Văn bản thay thế cho hình ảnh nhúng giờ đây sẽ được hiển thị đúng
+<li>Đã thêm hỗ trợ trang cho sách epub.</li>
+<li>Đã thêm hỗ trợ cho các tài liệu Microsoft Office được mã hóa. Hiện
+tại hỗ trợ Legacy Word, modern Word và modern Powerpoint, với legacy
+Powerpoint được lên kế hoạch cho tương lai.</li>
+<li>Đã thêm hỗ trợ cho các tài liệu Microsoft Word cũ!</li>
+<li>Đã thêm hỗ trợ cho các bài thuyết trình Powerpoint cũ!</li>
+<li>Đã thêm hỗ trợ cho sách mobi và AZW3!</li>
+<li>Đã thêm hỗ trợ cho các tệp PDF được gắn thẻ!</li>
+<li>Đã thêm lối tắt ctrl+q để thoát ứng dụng.</li>
+<li>Đã thêm hỗ trợ cho các sách zip từ Bookshare (cả DAISY và
+Word)!</li>
+<li>Văn bản thay thế cho hình ảnh nhúng hiện phải được hiển thị đúng
 cách.</li>
-<li>Các tài liệu CHM giờ đây hỗ trợ đúng cách điều hướng liên kết nội
-bộ.</li>
-<li>Đã sửa các âm thanh dấu trang kích hoạt tại điểm bắt đầu đoạn thay
-vì vị trí của dấu trang.</li>
-<li>Đã sửa go to page bị sai 1.</li>
-<li>Đã sửa phím escape không hoạt động để đóng hộp thoại mở dưới
-dạng.</li>
-<li>Đã sửa menu ngữ cảnh trình đọc không hiển thị khi nhấp chuột phải
+<li>Tài liệu CHM hiện hỗ trợ đúng điều hướng liên kết nội bộ.</li>
+<li>Đã sửa go to page sai 1.</li>
+<li>Đã sửa phím Escape không hoạt động để đóng hộp thoại open as.</li>
+<li>Đã sửa menu bối cảnh của trình đọc không hiển thị trên chuột phải
 hoặc phím Applications.</li>
-<li>Đã sửa tài liệu sai đôi khi được lấy focus khi mở tài liệu từ dòng
+<li>Đã sửa tài liệu sai đôi khi được tập trung khi mở tài liệu từ dòng
 lệnh.</li>
 <li>Các PDF chỉ chứa hình ảnh một lần nữa được phát hiện và cảnh báo bạn
 về sự tồn tại của chúng.</li>
-<li>Giờ đây có thể điều hướng qua hình ảnh và hình vẽ với g/shift+g và
+<li>Hiện có thể điều hướng qua hình ảnh và hình vẽ bằng g/shift+g và
 f/shift+f, tương ứng.</li>
-<li>Paperback giờ đây sẽ tôn trọng cài đặt chế độ tối của ứng dụng của
+<li>Paperback hiện sẽ tôn trọng cài đặt chế độ tối của ứng dụng của
 bạn.</li>
-<li>Đã xóa hỗ trợ DAISY XML, vì nó không còn cần thiết nữa.</li>
-<li>Quay lại điều hướng chữ cái đầu tiên Win32 gốc trong chế độ xem cây
-nội dung.</li>
-<li>Hộp thoại lỗi tải giờ đây hiển thị các thông báo lỗi chi tiết
-hơn.</li>
-<li>Webview giờ đây sẽ mở nhanh hơn và mượt hơn nhiều.</li>
+<li>Đã loại bỏ hỗ trợ DAISY XML vì không còn cần thiết.</li>
+<li>Chuyển ngược trở lại điều hướng chữ cái đầu tiên Win32 gốc trong cây
+Mục lục.</li>
+<li>Hộp thoại lỗi tải hiện hiển thị các tin nhắn lỗi chi tiết hơn.</li>
+<li>Webview hiện sẽ mở nhanh hơn nhiều và mượt mà hơn.</li>
 </ul>
 <h2 id="phiên-bản-0.8.2">Phiên bản 0.8.2</h2>
 <ul>
-<li>Thêm hỗ trợ trang cho tài liệu RTF!</li>
+<li>Đã thêm hỗ trợ trang cho tài liệu RTF!</li>
 <li>Đã sửa lỗi khi mở webview trong epub chứa các liên kết bên ngoài sẽ
 tự động kích hoạt chúng.</li>
 <li>Đã sửa lỗi khi trình phân tích cú pháp RTF sẽ không đặt khoảng trắng
-giữa các từ trong các trường hợp hiếm.</li>
+giữa các từ trong trường hợp hiếm hoi.</li>
 <li>Đã sửa các đoạn được chia thành nhiều dòng ngắn trong một số tài
 liệu PDF.</li>
-<li>Tài liệu PDF giờ đây có hỗ trợ điều hướng liên kết và tiêu đề cơ
+<li>Các tài liệu PDF hiện có hỗ trợ điều hướng liên kết và tiêu đề cơ
 bản!</li>
-<li>Các tab RTF và dòng feed giờ đây được hiển thị chính xác khi chúng
-xuất hiện trong tài liệu.</li>
-<li>Quay lại thư viện pdfium đã thử và kiểm tra đúng để phân tích PDF,
-làm cho kết xuất PDF đáng tin cậy hơn nhiều một lần nữa.</li>
+<li>Tab RTF và nguồn cấp dữ liệu dòng hiện được hiển thị chính xác như
+chúng xuất hiện trong tài liệu.</li>
+<li>Chuyển ngược trở lại thư viện pdfium đã được thử nghiệm, làm cho kết
+xuất PDF nhiều lần tin cây hơn.</li>
 </ul>
 <h2 id="phiên-bản-0.8.1">Phiên bản 0.8.1</h2>
 <ul>
-<li>Thêm Ctrl+Shift+T để mở lại tài liệu được đóng gần đây.</li>
-<li>Hộp thoại All Documents giờ đây hỗ trợ chọn nhiều tài liệu để mở
-cùng một lúc.</li>
+<li>Đã thêm Ctrl+Shift+T để mở lại tài liệu đóng cuối cùng.</li>
+<li>Hộp thoại All Documents hiện hỗ trợ chọn nhiều tài liệu để mở cùng
+một lúc.</li>
 <li>Đã sửa một vài lỗi với trình phân tích cú pháp RTF.</li>
-<li>Đã sửa đường dẫn tệp chứa các ký tự không phải ASCII (chẳng hạn như
-š, č, ć, ž của Bosnian) bị hỏng khi mở tệp qua phiên bản Paperback thứ
-hai.</li>
-<li>Đã sửa văn bản PDF được đọc theo thứ tự sai và khoảng cách không
+<li>Đã sửa các đường dẫn tệp chứa các ký tự không phải ASCII (chẳng hạn
+như Bosnian š, č, ć, ž) bị hỏng khi mở tệp thông qua phiên bản Paperback
+thứ hai.</li>
+<li>Đã sửa văn bản PDF được đọc theo thứ tự sai và khoảng trắng không
 chính xác xung quanh các từ viết hoa.</li>
 <li>Đã sửa tải tài liệu chậm khi mở các tệp lớn.</li>
-<li>Đã sửa bản địa hóa các nút Có/Không trong các hộp thoại xác
-nhận.</li>
+<li>Đã sửa bản địa hóa của các nút Yes/No trong hộp thoại xác nhận.</li>
 </ul>
 <h2 id="phiên-bản-0.8.0">Phiên bản 0.8.0</h2>
 <ul>
-<li>Thêm bản dịch tiếng Nhật, tiếng Trung đơn giản và tiếng Việt!</li>
-<li>Thêm trình cập nhật tự động sẽ giờ đây thay thế phiên bản Paperback
-hiện được cài đặt của bạn thay vì chỉ tải xuống phiên bản mới!</li>
-<li>Thêm phản hồi âm thanh tùy chọn để đạt được dấu trang hoặc ghi chú,
-cảm ơn Andre Louis cho các âm thanh!</li>
-<li>Thêm hỗ trợ tài liệu RTF!</li>
-<li>Thêm hỗ trợ cho các tài liệu DAISY XML.</li>
-<li>Thêm hỗ trợ cho các tệp Open Document Text phẳng!</li>
-<li>Thêm hỗ trợ cho các bản trình bày Open Document phẳng!</li>
-<li>Thêm hỗ trợ cho các dấu phân cách với s và shift+s.</li>
+<li>Đã thêm bản dịch tiếng Nhật, tiếng Trung giản thể và tiếng
+Việt!</li>
+<li>Đã thêm một bộ cập nhật tự động sẽ thay thế phiên bản Paperback hiện
+được cài đặt của bạn thay vì chỉ tải xuống phiên bản mới!</li>
+<li>Đã thêm phản hồi âm thanh tùy chọn để tới dấu trang hoặc ghi chú,
+cảm ơn Andre Louis vì các âm thanh!</li>
+<li>Đã thêm hỗ trợ tài liệu RTF!</li>
+<li>Đã thêm hỗ trợ cho các tài liệu DAISY XML.</li>
+<li>Đã thêm hỗ trợ cho các tệp Open Document Text phẳng!</li>
+<li>Đã thêm hỗ trợ cho các bài thuyết trình Open Document phẳng!</li>
+<li>Đã thêm hỗ trợ cho dấu phân cách với s và shift+s.</li>
 <li>Bất kỳ chuyển động nào lớn hơn 300 ký tự sẽ tự động thêm vào lịch sử
 điều hướng của bạn.</li>
 <li>Đã sửa khôi phục cửa sổ Paperback từ khay hệ thống.</li>
-<li>Đã sửa tài liệu Markdown hiển thị văn bản thô thay vì HTML được hiển
-thị trong Web View.</li>
+<li>Đã sửa các tài liệu Markdown hiển thị văn bản thô thay vì HTML được
+hiển thị trong Web View.</li>
 <li>Đã sửa bảng không hiển thị đúng cách trong các tệp Markdown.</li>
-<li>PDF chỉ chứa hình ảnh sẽ giờ đây cảnh báo bạn về sự tồn tại của
-chúng khi bạn cố gắng tải một.</li>
-<li>Giờ đây có thể kiểm tra các bản dựng phát triển mới thay vì các bản
-phát hành ổn định khi kiểm tra cập nhật.</li>
+<li>Các PDF chỉ chứa hình ảnh sẽ cảnh báo bạn về sự tồn tại của chúng
+khi bạn cố gắng tải một hình ảnh.</li>
 <li>Nhúng đúng cách thông tin phiên bản trong tệp thực thi
 Paperback.</li>
 <li>Chia hộp thoại tùy chọn thành các tab để dễ sử dụng và điều
 hướng.</li>
 <li>Chuyển sang Hayro để phân tích cú pháp PDF, dẫn đến độ tin cậy, tốc
 độ và ít DLL hơn.</li>
-<li>Viết lại toàn bộ ứng dụng trong Rust. Codebase mới an toàn hơn, tải
+<li>Viết lại toàn bộ ứng dụng trong Rust. Cơ sở mã mới an toàn hơn, tải
 tài liệu nhanh hơn và dễ bảo trì và mở rộng hơn.</li>
-<li>Menu ngữ cảnh kiểm soát văn bản giờ đây sẽ bao gồm các hành động đọc
-cụ thể thay vì các mục chung như cắt và dán.</li>
+<li>Menu bối cảnh của điều khiển văn bản hiện sẽ bao gồm các hành động
+dành riêng cho trình đọc thay vì các mục chung chung như cắt và
+dán.</li>
 </ul>
 <h2 id="phiên-bản-0.7.0">Phiên bản 0.7.0</h2>
 <ul>
-<li>Thêm hỗ trợ bảng cho tài liệu dựa trên HTML và XHTML! Điều hướng
-giữa các bảng bằng T và Shift+T, và nhấn Enter để xem một bảng trong
-webview.</li>
-<li>Thêm tính năng kết xuất web cơ bản! Nhấn Ctrl+Shift+V để mở phần
+<li>Đã thêm hỗ trợ bảng cho các tài liệu dựa trên HTML và XHTML! Điều
+hướng giữa các bảng bằng T và Shift+T, và nhấn Enter để xem một cái
+trong webview.</li>
+<li>Đã thêm tính năng kết xuất web cơ bản! Nhấn Ctrl+Shift+V để mở phần
 hiện tại của tài liệu của bạn trong trình kết xuất dựa trên web, hữu ích
 cho nội dung như định dạng phức tạp hoặc mẫu mã.</li>
-<li>Thêm bản dịch tiếng Nga, cảm ơn Ruslan Gulmagomedov!</li>
-<li>Thêm nút Clear All vào hộp thoại All Documents.</li>
-<li>Trình kiểm tra cập nhật giờ đây hiển thị ghi chú phát hành khi có
-phiên bản mới được cung cấp.</li>
+<li>Đã thêm bản dịch tiếng Nga, cảm ơn Ruslan Gulmagomedov!</li>
+<li>Đã thêm nút Clear All vào hộp thoại All Documents.</li>
+<li>Trình kiểm tra cập nhật hiện hiển thị ghi chú phát hành khi có phiên
+bản mới.</li>
 <li>Đã sửa khôi phục cửa sổ từ khay hệ thống.</li>
-<li>Đã sửa bản dịch nút Có/Không trong các hộp thoại xác nhận.</li>
-<li>Đã sửa tải cấu hình khi chạy dưới quyền quản trị viên.</li>
+<li>Đã sửa bản dịch nút Yes/No trong hộp thoại xác nhận.</li>
+<li>Đã sửa tải configs khi chạy dưới quyền quản trị viên.</li>
 <li>Đã sửa xử lý nhận xét trong tài liệu XML và HTML.</li>
-<li>Đã sửa phân tích cú pháp TOC trong sách Epub 2.</li>
-<li>Đã sửa điều hướng đến mục tiếp theo có cùng chữ cái trong nội
-dung.</li>
-<li>Đã sửa hộp thoại tìm không ẩn đúng cách khi sử dụng các nút tiếp
-theo/trước.</li>
-<li>Đã sửa TOC epub đôi khi ném bạn đến mục sai.</li>
-<li>Đã sửa các vấn đề xử lý khoảng trắng khác nhau trong các thẻ XML,
-HTML và pre.</li>
-<li>Đã sửa lỗi sai số một trong điều hướng liên kết.</li>
-<li>Đã sửa một số sách có khoảng trắng thừa ở cuối dòng của chúng.</li>
+<li>Đã sửa phân tích TOC trong sách Epub 2.</li>
+<li>Đã sửa điều hướng đến mục tiếp theo có cùng chữ trong mục lục.</li>
+<li>Đã sửa hộp thoại tìm kiếm không ẩn đúng cách khi sử dụng các nút
+tiếp theo/trước đó.</li>
+<li>Đã sửa TOC epub đôi khi đưa bạn đến mục sai.</li>
+<li>Đã sửa nhiều vấn đề xử lý khoảng trắng trong thẻ XML, HTML và
+pre.</li>
+<li>Đã sửa lỗi sai một trong điều hướng liên kết.</li>
+<li>Đã sửa một số sách có khoảng trắng ở cuối dòng của chúng.</li>
 <li>Đã sửa các vấn đề trình phân tích cú pháp khác nhau.</li>
-<li>Các mục menu liên quan đến dấu trang cũng như danh sách phần tử giờ
-đây được tắt đúng cách khi không có tài liệu nào được mở.</li>
+<li>Các mục menu liên quan đến trang sách cũng như danh sách phần tử
+hiện được vô hiệu hóa đúng cách khi không có tài liệu nào mở.</li>
 <li>Cải thiện xử lý danh sách trong các định dạng tài liệu khác
 nhau.</li>
 <li>Cải thiện quy trình dịch cho những người đóng góp.</li>
-<li>Nhiều yếu tố nội bộ được tối ưu hóa, chuyển phần lớn logic kinh
-doanh của ứng dụng từ C++ sang Rust để cải thiện hiệu suất và khả năng
-bảo trì.</li>
+<li>Nhiều cấu trúc lại nội bộ, chuyển phần lớn logic kinh doanh của ứng
+dụng từ C++ sang Rust để cải thiện hiệu suất và khả năng bảo trì.</li>
 </ul>
 <h2 id="phiên-bản-0.6.1">Phiên bản 0.6.1</h2>
 <ul>
-<li>Thêm hỗ trợ PDF được bảo vệ bằng mật khẩu!</li>
-<li>Thêm tính năng đi đến vị trí trước/tiếp theo rất cơ bản. Nếu bạn
-nhấn enter trên liên kết nội bộ và nó di chuyển con trỏ của bạn, vị trí
-đó sẽ được nhớ, và có thể điều hướng đến bằng các phím mũi tên
+<li>Đã thêm hỗ trợ PDF được bảo vệ bằng mật khẩu!</li>
+<li>Đã thêm tính năng đi đến vị trí trước/tiếp theo rất cơ bản. Nếu bạn
+nhấn enter trên một liên kết nội bộ và nó di chuyển con trỏ của bạn, vị
+trí đó hiện sẽ được ghi nhớ và có thể điều hướng đến bằng các mũi tên
 alt+left/right.</li>
-<li>Thêm danh sách phần tử! Hiện tại nó chỉ hiển thị một cây tất cả các
-tiêu đề trong tài liệu của bạn hoặc danh sách các liên kết, nhưng có kế
-hoạch mở rộng nó trong tương lai.</li>
-<li>Thêm tùy chọn để bắt đầu Paperback ở chế độ tối đa hóa theo mặc
+<li>Đã thêm danh sách phần tử! Hiện tại nó chỉ hiển thị cây của tất cả
+các tiêu đề trong tài liệu của bạn hoặc danh sách các liên kết, nhưng có
+kế hoạch mở rộng nó trong tương lai.</li>
+<li>Đã thêm tùy chọn để khởi động Paperback ở chế độ tối đa theo mặc
 định.</li>
 <li>Đã sửa các liên kết trong một số tài liệu Epub không hoạt động đúng
 cách.</li>
-<li>Đã sửa phân tích cú pháp Epub TOCs chứa đường dẫn tương đối.</li>
+<li>Đã sửa phân tích Epub TOC chứa đường dẫn tương đối.</li>
 <li>Đã sửa một số tài liệu epub không hiển thị tiêu đề hoặc tác
 giả.</li>
 <li>Đã sửa tiêu đề của một số chương epub không hiển thị đúng cách trong
@@ -996,239 +991,244 @@ hộp thoại TOC.</li>
 <li>Đã sửa bạn không thể sử dụng thanh cách để kích hoạt các nút
 OK/cancel trong hộp thoại TOC.</li>
 <li>Cải thiện xử lý tiêu đề trong tài liệu Word.</li>
-<li>Bạn sẽ nhận được phản hồi nói nếu danh sách tài liệu gần đây trống
-khi bạn cố gắng đưa ra hộp thoại.</li>
+<li>Bạn sẽ nhận được phản hồi được nói nếu danh sách các tài liệu gần
+đây trống khi bạn cố gắng mở hộp thoại.</li>
 </ul>
 <h2 id="phiên-bản-0.6.0">Phiên bản 0.6.0</h2>
 <ul>
-<li>Một tùy chọn mới để hiển thị menu go ở dạng gọn gàng hơn nhiều đã
-được thêm vào hộp thoại tùy chọn, được kiểm tra theo mặc định.</li>
-<li>Thêm tùy chọn để điều hướng theo các phần tử cấu trúc quấn.</li>
-<li>Thêm tùy chọn vào menu công cụ để mở thư mục chứa tài liệu được lấy
-focus hiện tại.</li>
-<li>Thêm một hệ thống cập nhật khá đơn giản, nhưng rất hiệu quả.</li>
-<li>Thêm tính năng bộ định thời ngủ cơ bản, có thể truy cập bằng
+<li>Một tùy chọn mới để hiển thị menu đi theo hình thức nhỏ gọn hơn
+nhiều đã được thêm vào hộp thoại tùy chọn, được kiểm tra theo mặc
+định.</li>
+<li>Đã thêm tùy chọn để điều hướng theo các phần tử cấu trúc bọc
+lại.</li>
+<li>Đã thêm tùy chọn vào menu công cụ để mở thư mục chứa tài liệu hiện
+được tập trung.</li>
+<li>Đã thêm một hệ thống cập nhật khá đơn giản nhưng rất hiệu quả.</li>
+<li>Đã thêm tính năng trình hẹn giờ ngủ cơ bản, có thể truy cập bằng
 Ctrl+Shift+S.</li>
-<li>Thêm hỗ trợ cho phân tích cú pháp sách điện tử FB2!</li>
-<li>Thêm hỗ trợ cho phân tích cú pháp bản trình bày OpenDocument!</li>
-<li>Thêm hỗ trợ cho phân tích cú pháp các tệp OpenDocument Text!</li>
-<li>Dấu trang giờ đây có thể được tạo để đánh dấu toàn bộ dòng, hoặc chỉ
-đánh dấu một số văn bản được chỉ định. Nếu bạn không có lựa chọn hoạt
-động khi đặt dấu trang, hành vi sẽ như trước 0.6, và nó sẽ đánh dấu toàn
-bộ dòng. Tuy nhiên, nếu bạn chọn một số văn bản, chỉ văn bản đó sẽ được
-bao gồm trong dấu trang.</li>
-<li>Dấu trang giờ đây có thể có ghi chú văn bản tùy chọn được đính kèm!
-Điều hướng giữa các dấu trang chứa ghi chú với N và Shift+N, hoặc bật
-hộp thoại dấu trang với tất cả các dấu trang, chỉ ghi chú hoặc chỉ không
-ghi chú được chọn với phím tắt cụ thể.</li>
-<li>Dấu trang trong hộp thoại dấu trang sẽ không còn có tiền tố
+<li>Đã thêm hỗ trợ để phân tích cú pháp sách điện tử FB2!</li>
+<li>Đã thêm hỗ trợ để phân tích cú pháp bài thuyết trình
+OpenDocument!</li>
+<li>Đã thêm hỗ trợ để phân tích cú pháp các tệp OpenDocument Text!</li>
+<li>Trang sách hiện có thể được tạo để đánh dấu toàn bộ dòng hoặc để
+đánh dấu chỉ một số văn bản được chỉ định. Nếu bạn không có lựa chọn
+hoạt động khi đặt dấu trang, hành vi giống như pre-0.6 và sẽ đánh dấu
+toàn bộ dòng. Tuy nhiên, nếu bạn chọn một số văn bản, chỉ văn bản đó sẽ
+được đưa vào dấu trang.</li>
+<li>Trang sách hiện có thể có ghi chú văn bản tùy chọn được đính kèm!
+Điều hướng giữa các trang sách chứa ghi chú với N và Shift+N, hoặc bật
+hộp thoại trang sách với tất cả các trang sách, chỉ ghi chú hoặc chỉ các
+trang sách không có ghi chú được chọn bằng các phím nóng cụ thể.</li>
+<li>Trang sách trong hộp thoại trang sách sẽ không còn có tiền tố
 “bookmark x” khó chịu.</li>
-<li>Sách Epub chứa nội dung HTML giả mạo thành XML giờ đây sẽ được xử lý
-đúng cách.</li>
+<li>Sách Epub chứa nội dung HTML giả vờ là XML hiện sẽ được xử lý đúng
+cách.</li>
 <li>Đã sửa tải các tài liệu Markdown lớn.</li>
-<li>Đã sửa nhấn space trong chế độ xem cây nội dung kích hoạt nút
+<li>Đã sửa nhấn dấu cách trong cây chế độ xem Mục lục kích hoạt nút
 OK.</li>
 <li>Đã sửa xử lý khoảng trắng ở đầu thẻ pre trong cả tài liệu HTML và
 XHTML.</li>
-<li>Đã sửa kiểm soát văn bản không lấy focus lại đôi khi khi quay lại
-cửa sổ Paperback.</li>
+<li>Đã sửa điều khiển văn bản đôi khi không lấy lại tiêu điểm khi quay
+trở lại cửa sổ Paperback.</li>
 <li>Đã sửa trường văn bản trong hộp thoại go to percent không cập nhật
 giá trị của thanh trượt.</li>
-<li>Đã sửa kết xuất các ID HTML tùy chỉnh trong tài liệu Markdown.</li>
-<li>HTML bên trong khối mã Markdown giờ đây sẽ được hiển thị đúng
+<li>Đã sửa hiển thị các ID HTML tùy chỉnh trong tài liệu Markdown.</li>
+<li>HTML bên trong các khối mã Markdown hiện sẽ được hiển thị đúng
 cách.</li>
-<li>Nếu tải sách có tham số dòng lệnh trong khi phiên bản Paperback hiện
-có đang chạy, bạn sẽ không còn nhận được lỗi nếu tải tài liệu của bạn
-mất hơn 5 giây.</li>
-<li>Nếu chạy Paperback dưới quyền quản trị viên, cấu hình giờ đây sẽ
-được tải và lưu đúng cách.</li>
-<li>Giờ đây có thể xóa dấu trang trực tiếp từ hộp thoại dấu trang.</li>
-<li>Giờ đây có thể nhập và xuất các dấu trang và vị trí đọc cho một tài
-liệu cụ thể. Tệp được tạo được đặt tên theo tệp có phần mở rộng
-.paperback. Nếu tìm thấy tệp như vậy trong cùng thư mục với tệp khi tải
-nó, nó sẽ được tải tự động. Ngược lại, bạn có thể nhập chúng theo cách
-thủ công bằng mục trong menu công cụ.</li>
-<li>Các liên kết bên trong tài liệu giờ đây được hỗ trợ đầy đủ! Sử dụng
-k và shift+k để di chuyển về phía trước và phía sau qua chúng, và nhấn
-enter để mở/kích hoạt một.</li>
-<li>Nhiều yếu tố nội bộ được tối ưu hóa, làm cho ứng dụng nhanh hơn và
-tệp nhị phân nhỏ hơn.</li>
-<li>Nội dung Markdown giờ đây được xử lý trước để tuân theo CommonMark
-trước khi kết xuất.</li>
-<li>Điều hướng theo danh sách và các mục của chúng giờ đây được hỗ trợ
-đầy đủ! Sử dụng L và Shift+L để đi qua danh sách chính nó, và I và
-Shift+I để đi qua các mục danh sách.</li>
-<li>Numpad delete giờ đây hoạt động để xóa tài liệu từ thanh tab ngoài
+<li>Nếu tải một sách với tham số dòng lệnh khi phiên bản Paperback hiện
+có sẵn đang chạy, bạn sẽ không còn gặp lỗi nếu tải tài liệu của bạn mất
+hơn 5 giây.</li>
+<li>Nếu chạy Paperback dưới quyền quản trị viên, cấu hình hiện sẽ được
+tải và lưu đúng cách.</li>
+<li>Hiện có thể xóa trang sách trực tiếp từ trong hộp thoại trang
+sách.</li>
+<li>Hiện có thể nhập và xuất trang sách và vị trí đọc cho một tài liệu
+cụ thể. Tệp được tạo được đặt tên theo tệp với phần mở rộng .paperback.
+Nếu tìm thấy tệp như vậy trong cùng thư mục với tệp khi tải nó, nó sẽ
+được tự động tải. Ngoài ra, bạn có thể nhập chúng theo cách thủ công
+bằng cách sử dụng mục trong menu công cụ.</li>
+<li>Các liên kết bên trong tài liệu hiện được hỗ trợ đầy đủ! Sử dụng k
+và shift+k để chuyển động về phía trước và về phía sau qua chúng, và
+nhấn enter để mở/kích hoạt một.</li>
+<li>Nhiều cấu trúc lại nội bộ, làm cho ứng dụng nhanh hơn và nhị phân
+nhỏ hơn.</li>
+<li>Nội dung Markdown hiện được xử lý trước để tuân thủ CommonMark trước
+khi hiển thị.</li>
+<li>Điều hướng theo danh sách và các mục của chúng hiện được hỗ trợ đầy
+đủ! Sử dụng L và Shift+L để đi theo chính danh sách, và I và Shift+I để
+đi qua các mục danh sách.</li>
+<li>Numpad delete hiện hoạt động để loại bỏ tài liệu từ thanh tab ngoài
 delete thông thường.</li>
-<li>Paperback giờ đây có thể tùy chọn giảm thiểu vào khay hệ thống của
-bạn! Tùy chọn này tắt theo mặc định, nhưng bật nó sẽ làm cho tùy chọn
-thu nhỏ trong menu hệ thống đặt Paperback vào khay của bạn, có thể được
-khôi phục bằng cách nhấp vào biểu tượng được tạo.</li>
-<li>Paperback giờ đây có thể dịch đầy đủ! Danh sách các ngôn ngữ mà nó
-hỗ trợ hiện khá nhỏ, nhưng nó luôn phát triển!</li>
-<li>Paperback giờ đây có một trang web chính thức, tại <a
+<li>Paperback hiện có thể tùy chọn thu nhỏ vào khay hệ thống của bạn!
+Tùy chọn này tắt theo mặc định, nhưng bật nó sẽ làm cho tùy chọn thu nhỏ
+trong menu hệ thống đặt Paperback vào khay của bạn, có thể được khôi
+phục bằng cách nhấp vào biểu tượng được tạo.</li>
+<li>Paperback hiện hoàn toàn có thể dịch được! Danh sách các ngôn ngữ mà
+nó hỗ trợ hiện khá nhỏ, nhưng nó luôn phát triển!</li>
+<li>Paperback hiện có trang web chính thức tại <a
 href="https://paperback.dev">paperback.dev</a>!</li>
-<li>Tài liệu PPTX giờ đây sẽ hiển thị nội dung cơ bản, chứa tất cả các
-trang trình bày.</li>
-<li>Đường dẫn đầy đủ đến tài liệu được mở giờ đây sẽ được hiển thị trong
+<li>Tài liệu PPTX sẽ hiển thị mục lục cơ bản, chứa tất cả các
+slide.</li>
+<li>Đường dẫn đầy đủ đến tài liệu được mở hiện sẽ được hiển thị trong
 hộp thoại thông tin tài liệu.</li>
-<li>Trình cài đặt giờ đây bao gồm một tùy chọn để xem readme trong trình
-duyệt của bạn sau khi cài đặt.</li>
-<li>Danh sách tài liệu gần đây đã được mở rộng rất nhiều! Thay vì chỉ
-hiển thị cho bạn 10 tài liệu cuối cùng bạn đã mở, giờ đây nó sẽ hiển thị
-cho bạn một số có thể tùy chỉnh, với phần còn lại của các tài liệu bạn
-đã mở được truy cập qua một hộp thoại nhỏ.</li>
+<li>Trình cài đặt hiện bao gồm tùy chọn để xem readme trong trình duyệt
+của bạn sau khi cài đặt.</li>
+<li>Danh sách các tài liệu gần đây đã được mở rộng rất nhiều! Thay vì
+chỉ hiển thị cho bạn 10 tài liệu cuối cùng bạn đã mở, nó sẽ hiển thị cho
+bạn một số tùy chỉnh, với phần còn lại của các tài liệu bạn đã mở được
+truy cập qua một hộp thoại nhỏ.</li>
 <li>Các cải tiến nhỏ khác nhau cho các trình phân tích cú pháp trên toàn
-bộ bảng, bao gồm đặt dòng trống giữa các trang trình bày trong bản trình
-bày PPTX, sửa xử lý dòng mới bên trong các đoạn văn trong tài liệu word
-và thêm dấu đầu dòng vào các mục danh sách.</li>
+bộ bảng, bao gồm đặt dòng trống giữa các slide trong bài thuyết trình
+PPTX, sửa xử lý dòng mới bên trong các đoạn trong tài liệu word và thêm
+các dấu đầu dòng vào các mục danh sách.</li>
 </ul>
 <h2 id="phiên-bản-0.5.0">Phiên bản 0.5.0</h2>
 <ul>
-<li>Thêm hỗ trợ tài liệu Microsoft Word!</li>
-<li>Thêm hỗ trợ cho bản trình bày PowerPoint!</li>
-<li>Đã sửa các mục menu nhất định không bị tắt khi không có tài liệu nào
-được mở.</li>
+<li>Đã thêm hỗ trợ tài liệu Microsoft Word!</li>
+<li>Đã thêm hỗ trợ cho bài thuyết trình PowerPoint!</li>
+<li>Đã sửa một số mục menu không được vô hiệu hóa khi không có tài liệu
+nào mở.</li>
 <li>Đã sửa hướng của thanh trượt go to percent.</li>
-<li>Đã sửa nội dung trong sách Epub với đường dẫn tệp được mã hóa URL
+<li>Đã sửa mục lục trong sách Epub với đường dẫn tệp được mã hóa URL
 và/hoặc ID đoạn.</li>
-<li>Đã sửa khoảng trắng bị tước từ tiêu đề XHTML theo những cách
+<li>Đã sửa khoảng trắng được tách từ tiêu đề XHTML theo những cách
 lạ.</li>
 <li>Đã sửa xử lý khoảng trắng bên trong các thẻ pre lồng nhau trong tài
 liệu HTML.</li>
-<li>Tài liệu HTML và Markdown giờ đây hỗ trợ tính năng nội dung! Khi bạn
-tải tài liệu HTML/Markdown, Paperback sẽ xây dựng nội dung của riêng
-mình từ cấu trúc của các tiêu đề trong tài liệu của bạn, và nó sẽ hiển
-thị cho bạn trong hộp thoại ctrl+t.</li>
-<li>Tài liệu HTML giờ đây sẽ có tiêu đề được đặt trong thẻ tiêu đề, nếu
-nó tồn tại. Ngược lại, họ sẽ tiếp tục sử dụng tên tệp mà không có phần
-mở rộng.</li>
+<li>Các tài liệu dựa trên HTML và Markdown hiện hỗ trợ tính năng mục
+lục! Khi bạn tải tài liệu HTML/Markdown, Paperback sẽ xây dựng mục lục
+của riêng nó từ cấu trúc của các tiêu đề trong tài liệu của bạn, và nó
+sẽ hiển thị điều đó cho bạn trong hộp thoại ctrl+t.</li>
+<li>Các tài liệu HTML sẽ hiện có tiêu đề như được đặt trong thẻ tiêu đề,
+nếu nó tồn tại. Nếu không, chúng sẽ tiếp tục sử dụng tên tệp mà không
+cần phần mở rộng.</li>
 <li>Chuyển từ UniversalSpeech sang sử dụng vùng trực tiếp để báo cáo lời
-nói. Điều này có nghĩa là không có DLL trình đọc màn hình được gửi cùng
-với chương trình nữa, và nhiều trình đọc màn hình sẽ được hỗ trợ bây
-giờ, chẳng hạn như Microsoft Narrator.</li>
-<li>Chuyển đổi thư viện zip để cho phép mở một loạt sách epub rộng
-hơn.</li>
-<li>Hộp thoại hỏi bạn có muốn mở tài liệu dưới dạng văn bản thuần đã
-được viết lại hoàn toàn, và bây giờ nó cho phép bạn mở tài liệu dưới
-dạng văn bản thuần, HTML hoặc Markdown.</li>
-<li>Hộp thoại go to percent giờ đây bao gồm trường văn bản cho phép bạn
-nhập thủ công phần trăm để nhảy tới.</li>
-<li>Trình phân tích cú pháp HTML giờ đây sẽ nhận ra dd, dt và dl là các
-phần tử danh sách.</li>
-<li>Nội dung trong sách Epub giờ đây sẽ được bảo toàn chính xác.</li>
-<li>Khoảng trắng không phá vỡ Unicode giờ đây được xem xét khi tước các
-dòng trống.</li>
-<li>Bạn sẽ không còn được hỏi cách bạn muốn mở tệp chưa được công nhận
-mỗi lần bạn tải nó, chỉ lần đầu tiên.</li>
+nói. Điều này có nghĩa là không có DLL trình đọc màn hình được vận
+chuyển cùng với chương trình, và nhiều trình đọc màn hình sẽ được hỗ
+trợ, chẳng hạn như Microsoft Narrator.</li>
+<li>Chuyển thư viện zip để cho phép mở một loạt sách epub rộng hơn.</li>
+<li>Hộp thoại yêu cầu bạn có muốn mở tài liệu dưới dạng văn bản thuần
+túy đã được viết lại hoàn toàn, và hiện cho phép bạn mở tài liệu dưới
+dạng văn bản thuần túy, HTML hoặc Markdown.</li>
+<li>Hộp thoại go to percent hiện bao gồm một trường văn bản cho phép bạn
+nhập thủ công tỷ lệ phần trăm để nhảy tới.</li>
+<li>Trình phân tích cú pháp HTML sẽ nhận ra dd, dt và dl là các phần tử
+danh sách.</li>
+<li>Mục lục trong sách Epub sẽ được bảo toàn chính xác một lần nữa.</li>
+<li>Không gian không ngắt unicode hiện được xem xét khi tách các dòng
+trống.</li>
+<li>Bạn sẽ không còn được hỏi cách bạn muốn mở một tệp không được nhận
+ra mỗi lần bạn tải nó, chỉ khi lần đầu tiên.</li>
 </ul>
 <h2 id="phiên-bản-0.4.1">Phiên bản 0.4.1</h2>
 <ul>
-<li>Thêm biểu tượng menu Start tùy chọn vào trình cài đặt.</li>
-<li>Nội dung giờ đây sẽ sạch hơn trong một vài trường hợp, ví dụ nếu bạn
-có một mục con và cha với cùng văn bản ở cùng vị trí, bạn sẽ chỉ thấy
-mục cha.</li>
-<li>Đã sửa nội dung trong một số tài liệu CHM nhất định.</li>
-<li>Đã sửa nội dung trong sách Epub 3 với các đường dẫn tuyệt đối.</li>
-<li>Tài liệu CHM giờ đây sẽ hiển thị tiêu đề của chúng được đặt trong
+<li>Đã thêm biểu tượng menu start tùy chọn vào trình cài đặt.</li>
+<li>Mục lục hiện phải sạch hơn trong một vài trường hợp, ví dụ: nếu bạn
+có mục con và cha có cùng văn bản ở cùng vị trí, bạn sẽ chỉ thấy mục
+cha.</li>
+<li>Đã sửa mục lục trong một số tài liệu CHM.</li>
+<li>Đã sửa mục lục trong sách Epub 3 với đường dẫn tuyệt đối trong
+chúng.</li>
+<li>Tài liệu CHM hiện phải hiển thị tiêu đề của chúng như được đặt trong
 tệp siêu dữ liệu.</li>
 </ul>
 <h2 id="phiên-bản-0.4.0">Phiên bản 0.4.0</h2>
 <ul>
-<li>Thêm hỗ trợ tệp CHM!</li>
-<li>Thêm hỗ trợ dấu trang! Bạn có thể có bao nhiêu dấu trang tùy thích
-trên bao nhiêu tài liệu tùy thích. Bạn có thể nhảy về phía trước và phía
-sau qua chúng với b và shift+b, đặt một bằng control+shift+b, và đưa ra
-hộp thoại để nhảy đến dấu trang cụ thể với control+b.</li>
-<li>Thêm trình cài đặt cùng với tệp zip di động! Trình cài đặt sẽ cài
-đặt Paperback vào thư mục Program Files của bạn, và tự động thiết lập
+<li>Đã thêm hỗ trợ tệp CHM!</li>
+<li>Đã thêm hỗ trợ trang sách! Bạn có thể có bao nhiêu trang sách trên
+bao nhiêu tài liệu tùy thích. Bạn có thể nhảy về phía trước và phía sau
+qua chúng với b và shift+b, đặt một cái với control+shift+b, và mở hộp
+thoại để nhảy tới trang sách cụ thể với control+b.</li>
+<li>Đã thêm trình cài đặt bên cạnh tệp zip di động! Trình cài đặt sẽ cài
+đặt Paperback vào thư mục Program Files của bạn và tự động thiết lập
 liên kết tệp cho bạn.</li>
-<li>Tệp văn bản với BOM giờ đây sẽ được giải mã đúng cách, và BOM sẽ
-không còn được hiển thị ở đầu văn bản nữa.</li>
-<li>Thêm thông tin nhiều hơn vào thanh trạng thái. Giờ đây nó sẽ hiển
-thị dòng, ký tự và phần trăm đọc hiện tại của bạn.</li>
-<li>Nhận xét HTML, cũng như nội dung của các thẻ tập lệnh và kiểu, sẽ
+<li>Các tệp văn bản có BOM hiện phải được giải mã đúng cách, và BOM sẽ
+không còn hiển thị ở đầu văn bản nữa.</li>
+<li>Đã thêm thông tin chi tiết hơn nhiều vào thanh trạng thái. Nó sẽ
+hiển thị cho bạn dòng, ký tự và phần trăm đọc hiện tại của bạn.</li>
+<li>Nhận xét HTML cũng như nội dung của các thẻ tập lệnh và kiểu sẽ
 không còn được hiển thị trong đầu ra văn bản.</li>
-<li>Nếu chuyển một đường dẫn tương đối đến Paperback trên dòng lệnh, nó
-giờ đây sẽ giải quyết nó đúng cách.</li>
-<li>Chuyển động phần trăm giờ đây được xử lý bởi hộp thoại dựa trên
-thanh trượt của riêng nó, có thể truy cập bằng control+shift+g.</li>
-<li>Tài liệu không có tiêu đề hoặc tác giả được biết đến giờ đây sẽ luôn
-có mặc định.</li>
-<li>Logic lưu vị trí giờ đây thông minh hơn nhiều và sẽ chỉ ghi vào đĩa
+<li>Nếu chuyển đường dẫn tương đối đến Paperback trên dòng lệnh, nó sẽ
+hiện giải quyết nó đúng cách.</li>
+<li>Chuyển động phần trăm hiện được xử lý bởi hộp thoại dựa trên thanh
+trượt của riêng nó, có thể truy cập được với control+shift+g.</li>
+<li>Tài liệu không có tiêu đề hoặc tác giả đã biết sẽ luôn có một mặc
+định.</li>
+<li>Logic lưu vị trí hiện thông minh hơn nhiều và chỉ phải ghi vào đĩa
 khi hoàn toàn cần thiết.</li>
-<li>Tài liệu mà bạn đã lấy focus khi bạn đóng Paperback giờ đây được nhớ
-lại trên các lần khởi động lại ứng dụng.</li>
-<li>Đầu vào vào các hộp thoại go to line và go to page giờ đây sẽ được
-vệ sinh chặt chẽ hơn.</li>
-<li>Đã sửa điều hướng nội dung trong sách epub 3 với các đường dẫn tương
-đối trong biểu thức tuyên bố của chúng.</li>
+<li>Tài liệu bạn đã tập trung khi đóng Paperback hiện được ghi nhớ trên
+toàn bộ khởi động lại ứng dụng.</li>
+<li>Đầu vào vào các hộp thoại go to line và go to page hiện phải được
+tiêu trùng hơn.</li>
+<li>Đã sửa điều hướng mục lục trong sách epub 3 với đường dẫn tương đối
+trong bản kê khai của chúng.</li>
 </ul>
 <h2 id="phiên-bản-0.3.0">Phiên bản 0.3.0</h2>
 <ul>
-<li>Đã sửa nội dung trong sách epub với biểu thức được mã hóa URL.</li>
+<li>Đã sửa mục lục trong sách epub với bản kê khai được mã hóa URL.</li>
 <li>Đã sửa điều hướng tiêu đề trong tài liệu HTML chứa các ký tự Unicode
-nhiều byte.</li>
-<li>Đã sửa mức sử dụng CPU cao trong các tài liệu có tiêu đề dài do hồi
-quy trong wxWidgets.</li>
+đa byte.</li>
+<li>Đã sửa mức sử dụng CPU cao trong tài liệu có tiêu đề dài do suy
+thoái trong wxWidgets.</li>
 <li>Đã sửa tải các tệp văn bản UTF-8.</li>
 <li>Đã sửa các mục TOC lồng nhau trong sách Epub đặt con trỏ của bạn ở
 vị trí sai.</li>
 <li>Đã sửa sự cố khi thoát ứng dụng trong một số trường hợp.</li>
-<li>Thêm hộp kiểm trong hộp thoại tùy chọn để bật hoặc tắt bao quanh
-từ!</li>
-<li>Giờ đây có thể quyên góp cho sự phát triển của Paperback, thông qua
-mục quyên góp mới trong menu trợ giúp hoặc thông qua liên kết dự án tài
-trợ ở dưới cùng của trang chính kho lưu trữ GitHub.</li>
-<li>Tài liệu Markdown giờ đây sẽ luôn có tiêu đề, và Paperback giờ đây
-sẽ có thể tải hầu như bất kỳ tệp Markdown nào.</li>
-<li>Tài liệu PDF giờ đây sẽ luôn có tiêu đề, ngay cả khi siêu dữ liệu bị
+<li>Đã thêm hộp kiểm trong hộp thoại tùy chọn để bật hoặc tắt word
+wrap!</li>
+<li>Hiện có thể quyên góp cho phát triển Paperback, thông qua mục quyên
+góp mới trong menu trợ giúp hoặc thông qua liên kết tài trợ dự án ở dưới
+cùng của trang chính của kho GitHub.</li>
+<li>Tài liệu Markdown sẽ luôn có tiêu đề, và Paperback hiện phải có thể
+tải hầu như bất kỳ tệp Markdown nào.</li>
+<li>Tài liệu PDF sẽ luôn có tiêu đề, ngay cả khi siêu dữ liệu bị
 thiếu.</li>
 <li>Chuyển thư viện PDF sang thư viện được sử dụng trong Chromium, dẫn
-đến phân tích cú pháp PDF đáng tin cậy hơn nhiều trên toàn bộ bảng.</li>
-<li>Bạn giờ đây chỉ có thể có một phiên bản Paperback chạy cùng một lúc.
-Chạy paperback.exe với tên tệp trong khi nó đã chạy sẽ mở tài liệu đó
-trong phiên bản đang chạy.</li>
-<li>Bạn giờ đây có thể nhấn delete trên tài liệu trong kiểm soát tab để
-đóng nó.</li>
+đến phân tích cú pháp PDF nhiều lần tin cây trên toàn bảng.</li>
+<li>Bạn hiện chỉ có thể chạy một phiên bản Paperback cùng một lúc. Chạy
+paperback.exe với tên tệp khi nó đã chạy sẽ mở tài liệu đó trong phiên
+bản đã chạy.</li>
+<li>Bạn hiện có thể nhấn xóa trên tài liệu trong điều khiển tab để đóng
+nó.</li>
 </ul>
 <h2 id="phiên-bản-0.2.1">Phiên bản 0.2.1</h2>
 <ul>
-<li>Thêm tổng số trang vào nhãn trang trong hộp thoại go to page.</li>
+<li>Đã thêm số trang tổng cộng vào nhãn trang trong hộp thoại go to
+page.</li>
 <li>Cho phép tab từ nội dung tài liệu đến danh sách các tài liệu được mở
 của bạn.</li>
-<li>Đã sửa các phím gạch đầu dòng đôi khi mở các tài liệu gần đây nếu
-bạn có đủ số chúng.</li>
-<li>Paperback giờ đây sẽ xóa gạch nối mềm không cần thiết khỏi đầu ra
-văn bản.</li>
-<li>Đã sửa điều hướng tiêu đề đôi khi đưa bạn đến ký tự sai.</li>
+<li>Đã sửa các phím gõ tiêu đề đôi khi mở các tài liệu gần đây nếu bạn
+có đủ chúng.</li>
+<li>Paperback hiện sẽ loại bỏ dấu gạch dưới mềm không cần thiết từ đầu
+ra văn bản.</li>
+<li>Đã sửa điều hướng tiêu đề đôi khi đặt bạn trên ký tự sai.</li>
 </ul>
 <h2 id="phiên-bản-0.2.0">Phiên bản 0.2.0</h2>
 <ul>
-<li>Thêm hỗ trợ tài liệu markdown!</li>
-<li>Thêm hỗ trợ tài liệu PDF, bao gồm khả năng điều hướng giữa các
+<li>Đã thêm hỗ trợ tài liệu markdown!</li>
+<li>Đã thêm hỗ trợ tài liệu PDF, bao gồm khả năng điều hướng giữa các
 trang!</li>
-<li>Thêm các phím cho điều hướng theo tiêu đề trong nội dung HTML, bao
-gồm sách epub và tài liệu markdown. Các phím này được thiết kế để hoạt
-động tương tự như trình đọc màn hình.</li>
-<li>Đã sửa tải epub với tên tệp được mã hóa URL trong biểu thức tuyên bố
-của chúng.</li>
-<li>Đã sửa tải sách epub 3 với XHTML được nhúng bên trong chúng.</li>
-<li>Một thông báo bây giờ được nói nếu tài liệu không hỗ trợ nội dung
-hoặc phần, đối với các mục menu bị tắt.</li>
-<li>Thêm menu tài liệu gần đây! Hiện tại nó lưu trữ 10 tài liệu được mở
-gần đây của bạn, và nhấn enter trên một sẽ mở nó để đọc.</li>
-<li>Viết lại hoàn toàn hộp thoại Tìm, làm cho nó đơn giản hơn nhiều để
-sử dụng, đồng thời thêm lịch sử 25 lần tìm kiếm cuối cùng của bạn và hỗ
-trợ biểu thức chính quy!</li>
-<li>Các tài liệu được mở trước đây giờ đây được nhớ lại trên các lần
-khởi động lại ứng dụng. Điều này có thể cấu hình thông qua mục tùy chọn
+<li>Đã thêm các phím gõ để điều hướng theo tiêu đề trong nội dung HTML,
+bao gồm sách epub và tài liệu markdown. Các phím gõ này được thiết kế để
+hoạt động tương tự như trình đọc màn hình.</li>
+<li>Đã sửa tải epub với tên tệp được mã hóa URL trong bản kê khai của
+chúng.</li>
+<li>Đã sửa tải sách epub 3 với XHTML nhúng bên trong chúng.</li>
+<li>Một tin nhắn hiện được nói nếu tài liệu không hỗ trợ mục lục hoặc
+phần, ngược lại với các mục menu bị vô hiệu hóa.</li>
+<li>Đã thêm menu tài liệu gần đây! Hiện tại nó lưu trữ 10 tài liệu được
+mở cuối cùng của bạn, và nhấn enter trên một cái sẽ mở nó để đọc.</li>
+<li>Viết lại hoàn toàn hộp thoại Tìm kiếm, làm cho nó đơn giản hơn nhiều
+để sử dụng, đồng thời thêm lịch sử 25 tìm kiếm cuối cùng và hỗ trợ biểu
+thức chính quy!</li>
+<li>Các tài liệu được mở trước đây hiện được ghi nhớ trên toàn bộ khởi
+động lại ứng dụng. Điều này có thể được cấu hình thông qua mục tùy chọn
 mới trong menu công cụ.</li>
-<li>Thêm shift+f1 để mở readme trực tiếp trong Paperback.</li>
+<li>Đã thêm shift+f1 để mở readme trực tiếp trong Paperback.</li>
 </ul>
 <h2 id="phiên-bản-0.1.0">Phiên bản 0.1.0</h2>
 <ul>
-<li>Phát hành ban đầu.</li>
+<li>Bản phát hành ban đầu.</li>
 </ul>
 </body>
 </html>
