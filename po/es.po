@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 23:46+0200\n"
+"POT-Creation-Date: 2026-08-31 15:15+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -1156,7 +1156,6 @@ msgstr[1] "Temporizador de suspensión configurado para %d minutos."
 msgid "Paperback"
 msgstr "Paperback"
 
-#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
 #, fuzzy
 msgid "Document reloaded."
 msgstr "El documento se ha vuelto a cargar."
@@ -4029,6 +4028,16 @@ msgstr "{} segundos"
 #, fuzzy
 msgid "{} seconds⁣"
 msgstr "{} segundos"
+
+#: kt
+#, fuzzy
+msgid "This document contains {} words.⁣"
+msgstr "Este documento contiene un{}s de palabras."
+
+#: kt
+#, fuzzy
+msgid "words⁣"
+msgstr "Palabras"
 
 #, fuzzy
 #~ msgid "&Locate…"
