@@ -376,15 +376,14 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 ### Version 0.8.5
 * Added page support to epub books.
 * Added support for encrypted Microsoft Office documents. Currently Legacy word, modern Word and modern Powerpoint are supported, with legacy Powerpoint planned for the future.
-* Added support for legacy Microsoft Word documents (*.doc)!
-* Added support for legacy Powerpoint presentations (*.ppt)!
+* Added support for legacy Microsoft Word documents!
+* Added support for legacy Powerpoint presentations!
 * Added support for mobi and AZW3 books!
 * Added support for tagged PDF files!
 * Added the ctrl+q shortcut to exit the app.
 * Added support for zipped books from Bookshare (both DAISY and Word)!
 * Alt text for embedded images should now be properly shown.
 * CHM documents now properly support internal link navigation.
-* Fixed bookmark sounds triggering at paragraph start instead of the bookmark's position.
 * Fixed go to page being off by 1.
 * Fixed the escape key not working to close the open as dialog.
 * Fixed the reader context menu not showing up on right-click or the Applications key.
@@ -429,7 +428,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed Markdown documents showing raw text instead of rendered HTML in the Web View.
 * Fixed tables not rendering properly in Markdown files.
 * Image only PDFs will now warn you of their existence when you attempt to load one.
-* It is now possible to check for new dev builds instead of stable releases when checking for updates.
 * Properly embed version information in the Paperback executable.
 * Split the options dialog into tabs for ease of use and navigation.
 * Switched to Hayro for parsing PDFs, leading to more reliability, speed, and fewer DLLs.
@@ -449,7 +447,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed TOC parsing in Epub 2 books.
 * Fixed navigating to the next item with the same letter in the table of contents.
 * Fixed the find dialog not hiding properly when using the next/previous buttons.
-* Fixed epub TOCs occasionally throwing you to the wrong item.
+* Fixed epub TOC's occasionally throwing you to the wrong item.
 * Fixed various whitespace handling issues in XML, HTML, and pre tags.
 * Fixed off-by-one error in link navigation.
 * Fixed some books having trailing whitespace on their lines.
