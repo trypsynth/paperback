@@ -1,4 +1,4 @@
-# Paperback - version 0.9.1
+# Paperback - version 0.9.2
 
 ## Introduction
 
