@@ -1,4 +1,4 @@
-# Paperback - verzija 0.9.1
+# Paperback - verzija 0.9.2
 
 ## Uvod
 
@@ -372,7 +372,7 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 ##### PDF dokumenti
 * Paperback se vraća na izvlačenje običnog teksta za PDF datoteke sa pogrešnim tagovima.
 * PDF dokumenti koji sadrže kontrolne znakove u naslovima i/ili knjižnim oznakama više neće rušiti Paperback pri otvaranju.
- 
+
 ### Verzija 0.8.5
 * Dodata podrška za stranice u epub knjige.
 * Dodata podrška za šifrovane  Microsoft Office dokumente. Trenutno su podržani zastareli word, moderni Word i moderni Powerpoint, a zastareli Powerpoint je planiran u budućnosti.
