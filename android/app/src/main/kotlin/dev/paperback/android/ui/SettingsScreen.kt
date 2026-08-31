@@ -16,19 +16,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.paperback.android.t
 
-private val MIN_SCALE = MainScreenViewModel.MIN_TEXT_SCALE_PERCENT.toFloat()
+private val MIN_SCALE = ReaderSettings.MIN_TEXT_SCALE_PERCENT.toFloat()
 
-private val MAX_SCALE = MainScreenViewModel.MAX_TEXT_SCALE_PERCENT.toFloat()
+private val MAX_SCALE = ReaderSettings.MAX_TEXT_SCALE_PERCENT.toFloat()
 
-/** Discrete slider positions between the bounds, one per [MainScreenViewModel.TEXT_SCALE_PERCENT_STEP]. */
+/** Discrete slider positions between the bounds, one per [ReaderSettings.TEXT_SCALE_PERCENT_STEP]. */
 private const val SCALE_STEPS =
-	(MainScreenViewModel.MAX_TEXT_SCALE_PERCENT - MainScreenViewModel.MIN_TEXT_SCALE_PERCENT) /
-		MainScreenViewModel.TEXT_SCALE_PERCENT_STEP - 1
+	(ReaderSettings.MAX_TEXT_SCALE_PERCENT - ReaderSettings.MIN_TEXT_SCALE_PERCENT) /
+		ReaderSettings.TEXT_SCALE_PERCENT_STEP - 1
 
 /** Rounds a raw slider value so the text size only ever lands on a whole step. */
 private fun snapScale(value: Float): Int =
-	kotlin.math.round(value / MainScreenViewModel.TEXT_SCALE_PERCENT_STEP).toInt() *
-		MainScreenViewModel.TEXT_SCALE_PERCENT_STEP
+	kotlin.math.round(value / ReaderSettings.TEXT_SCALE_PERCENT_STEP).toInt() *
+		ReaderSettings.TEXT_SCALE_PERCENT_STEP
 
 /**
  * A labelled dropdown over a fixed list of options, where the stored value is the option's index.
@@ -78,13 +78,14 @@ fun SettingsScreen(
 	viewModel: MainScreenViewModel = viewModel(),
 	onDismiss: () -> Unit
 ) {
-	val restorePreviousDocuments by viewModel.restorePreviousDocuments.collectAsStateWithLifecycle()
-	val useInAppFileBrowser by viewModel.useInAppFileBrowser.collectAsStateWithLifecycle()
-	val swipeUpMovesForward by viewModel.swipeUpMovesForward.collectAsStateWithLifecycle()
-	val textScalePercent by viewModel.textScalePercent.collectAsStateWithLifecycle()
-	val lineSpacing by viewModel.lineSpacing.collectAsStateWithLifecycle()
-	val paragraphSpacing by viewModel.paragraphSpacing.collectAsStateWithLifecycle()
-	val textAlignment by viewModel.textAlignment.collectAsStateWithLifecycle()
+	val settings = viewModel.settings
+	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
+	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()
+	val swipeUpMovesForward by settings.swipeUpMovesForward.state.collectAsStateWithLifecycle()
+	val textScalePercent by settings.textScalePercent.state.collectAsStateWithLifecycle()
+	val lineSpacing by settings.lineSpacing.state.collectAsStateWithLifecycle()
+	val paragraphSpacing by settings.paragraphSpacing.state.collectAsStateWithLifecycle()
+	val textAlignment by settings.textAlignment.state.collectAsStateWithLifecycle()
 	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
 	val currentPitch by viewModel.ttsManager.currentPitch.collectAsStateWithLifecycle()
 	val availableVoices by viewModel.ttsManager.availableVoices.collectAsStateWithLifecycle()
@@ -131,7 +132,7 @@ fun SettingsScreen(
 						.fillMaxWidth()
 						.toggleable(
 							value = restorePreviousDocuments,
-							onValueChange = { viewModel.setRestorePreviousDocuments(it) },
+							onValueChange = { settings.restorePreviousDocuments.set(it) },
 							role = Role.Switch
 						).padding(vertical = 8.dp),
 					verticalAlignment = Alignment.CenterVertically,
@@ -149,7 +150,7 @@ fun SettingsScreen(
 						.fillMaxWidth()
 						.toggleable(
 							value = useInAppFileBrowser,
-							onValueChange = { viewModel.setUseInAppFileBrowser(it) },
+							onValueChange = { settings.useInAppFileBrowser.set(it) },
 							role = Role.Switch
 						).padding(vertical = 8.dp),
 					verticalAlignment = Alignment.CenterVertically,
@@ -167,7 +168,7 @@ fun SettingsScreen(
 						.fillMaxWidth()
 						.toggleable(
 							value = swipeUpMovesForward,
-							onValueChange = { viewModel.setSwipeUpMovesForward(it) },
+							onValueChange = { settings.swipeUpMovesForward.set(it) },
 							role = Role.Switch
 						).padding(vertical = 8.dp),
 					verticalAlignment = Alignment.CenterVertically,
@@ -201,7 +202,7 @@ fun SettingsScreen(
 							steps = SCALE_STEPS
 						)
 						setProgress { targetValue ->
-							viewModel.setTextScalePercent(snapScale(targetValue))
+							settings.textScalePercent.set(snapScale(targetValue))
 							true
 						}
 					}
@@ -209,7 +210,7 @@ fun SettingsScreen(
 					Text("$textSizeLabel: $textScalePercent%", style = MaterialTheme.typography.labelLarge)
 					Slider(
 						value = textScalePercent.toFloat(),
-						onValueChange = { viewModel.setTextScalePercent(snapScale(it)) },
+						onValueChange = { settings.textScalePercent.set(snapScale(it)) },
 						valueRange = MIN_SCALE..MAX_SCALE,
 						steps = SCALE_STEPS
 					)
@@ -227,7 +228,7 @@ fun SettingsScreen(
 						t("Double")
 					),
 					selectedIndex = lineSpacing,
-					onSelect = { viewModel.setLineSpacing(it) }
+					onSelect = { settings.lineSpacing.set(it) }
 				)
 				Spacer(modifier = Modifier.height(16.dp))
 				ChoiceSetting(
@@ -241,7 +242,7 @@ fun SettingsScreen(
 						t("Wide")
 					),
 					selectedIndex = paragraphSpacing,
-					onSelect = { viewModel.setParagraphSpacing(it) }
+					onSelect = { settings.paragraphSpacing.set(it) }
 				)
 				Spacer(modifier = Modifier.height(16.dp))
 				ChoiceSetting(
@@ -258,7 +259,7 @@ fun SettingsScreen(
 						t("Justify")
 					),
 					selectedIndex = textAlignment,
-					onSelect = { viewModel.setTextAlignment(it) }
+					onSelect = { settings.textAlignment.set(it) }
 				)
 
 				Spacer(modifier = Modifier.height(24.dp))
@@ -372,6 +373,7 @@ fun SettingsScreen(
 						// TRANSLATORS: TalkBack label for the speech pitch slider
 						contentDescription = t("Pitch")
 						if (isSystemDefault) {
+							// TRANSLATORS: TalkBack state description for a slider (pitch or speech rate) when it is following the system default instead of a custom value
 							stateDescription = t("System Default")
 							disabled()
 						} else {

@@ -1,9 +1,8 @@
-package dev.paperback.android.ui.dialogs
+package dev.paperback.android.ui
 
-import android.net.Uri
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.Delete
@@ -15,52 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.core.net.toUri
 import dev.paperback.android.t
-import dev.paperback.android.ui.RecentDocumentItem
-import androidx.compose.foundation.lazy.itemsIndexed as lazyItemsIndexed
 
-@Composable
-fun AllDocumentsDialog(
-	recentDocuments: List<RecentDocumentItem>,
-	onDismiss: () -> Unit,
-	onOpenDocument: (Uri) -> Unit,
-	onRemoveDocument: (String) -> Unit,
-	onLocateDocument: (String) -> Unit
-) {
-	AlertDialog(
-		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = "Recent Documents" },
-		// TRANSLATORS: Title of the dialog listing every previously opened document
-		title = { Text(t("Recent Documents")) },
-		text = {
-			LazyColumn(
-				modifier = Modifier.fillMaxWidth()
-			) {
-				lazyItemsIndexed(recentDocuments) { index, recentDoc ->
-					RecentDocumentItemRow(
-						item = recentDoc,
-						onOpen = {
-							onDismiss()
-							onOpenDocument(recentDoc.uri.toUri())
-						},
-						onRemove = { onRemoveDocument(recentDoc.uri) },
-						onLocate = { onLocateDocument(recentDoc.uri) }
-					)
-					if (index < recentDocuments.lastIndex) {
-						HorizontalDivider()
-					}
-				}
-			}
-		},
-		confirmButton = {
-			TextButton(onClick = onDismiss) {
-				Text(t("Close"))
-			}
-		}
-	)
-}
-
+/**
+ * One entry in a recent-documents list, shared by the short preview on the no-document screen and
+ * the full Recent Documents screen.
+ */
 @Composable
 fun RecentDocumentItemRow(
 	item: RecentDocumentItem,
@@ -73,8 +32,12 @@ fun RecentDocumentItemRow(
 		item.isMissing ->
 			// TRANSLATORS: Status label for a recent document: its file can't be found, it's open in a tab right now, or it's just closed
 			t("File Missing")
-		item.isOpen -> t("Currently Open")
-		showClosedStatus -> t("Closed")
+		item.isOpen ->
+			// TRANSLATORS: Status label for a recent document that is currently open in a tab
+			t("Currently Open")
+		showClosedStatus ->
+			// TRANSLATORS: Status label for a recent document that is closed (not open in any tab)
+			t("Closed")
 		else -> null
 	}
 

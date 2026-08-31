@@ -44,8 +44,10 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 	};
 	let mut archive = ZipArchive::new(Cursor::new(bytes))
 		.with_context(|| format!("Failed to read PPTX as zip '{}'", context.file_path))?;
+	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
+	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
 	let mut slides = (0..archive.len())
-		.filter_map(|i| archive.by_index(i).ok().map(|entry| entry.name().to_string()))
+		.filter_map(|i| archive.by_index(i).ok().and_then(|entry| entry.name().ok().map(|name| name.into_owned())))
 		.filter(|name| {
 			name.starts_with("ppt/slides/slide")
 				&& Path::new(name).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("xml"))

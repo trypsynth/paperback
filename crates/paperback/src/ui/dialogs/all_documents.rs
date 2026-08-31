@@ -224,7 +224,7 @@ fn build_all_documents_buttons(dialog: Dialog) -> (Button, Button, Button, Butto
 	// TRANSLATORS: Button label to open the selected document
 	let open_button = Button::builder(&dialog).with_label(&t("&Open")).build();
 	// TRANSLATORS: Button label to locate a missing file on disk
-	let locate_button = Button::builder(&dialog).with_label(&t("&Locate…")).build();
+	let locate_button = Button::builder(&dialog).with_label(&t("&Locate...")).build();
 	// TRANSLATORS: Button label to remove selected documents from the list
 	let remove_button = Button::builder(&dialog).with_label(&t("&Remove")).build();
 	// TRANSLATORS: Button label to clear all documents from the list
@@ -646,8 +646,8 @@ fn format_document_status_text(total: i32, selected: usize) -> String {
 			nt("%d document.", "%d documents.", u64::try_from(total).unwrap_or(0)).replacen("%d", &total.to_string(), 1)
 		}
 	} else if total == 1 {
-		// TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
-		t("1 of 1 document selected.")
+		// TRANSLATORS: Status bar text in the All Documents dialog when the only document in the list is selected
+		t("1 document selected.")
 	} else if usize::try_from(total).is_ok_and(|total| total == selected) {
 		// TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
 		nt("All %d document selected.", "All %d documents selected.", u64::try_from(total).unwrap_or(0)).replacen(
@@ -669,11 +669,13 @@ fn update_open_button_for_index(list: DocumentList, open_button: Button, index: 
 		return;
 	}
 	let status = get_document_list_text(list, index, 1);
+	// TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the row's displayed status to decide whether the Open button is enabled.
 	open_button.enable(status != t("Missing"));
 }
 
 fn update_locate_button(list: DocumentList, locate_button: Button) {
 	let indices = get_selected_indices(list);
+	// TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the selected row's displayed status to decide whether the Locate button is enabled.
 	let enabled = if indices.len() == 1 { get_document_list_text(list, indices[0], 1) == t("Missing") } else { false };
 	locate_button.enable(enabled);
 }

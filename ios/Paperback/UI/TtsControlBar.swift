@@ -19,6 +19,7 @@ struct TtsControlBar: View {
 					}
 				}
 			} label: {
+				// TRANSLATORS: Name of the currently selected navigation unit, shown as the label of the "jump by unit" menu button (e.g. "Paragraph", "Line", "Heading", "Section")
 				Text(t(viewModel.reading.currentSegmentType.rawValue))
 					.font(.caption)
 					.foregroundStyle(.secondary)
@@ -26,6 +27,7 @@ struct TtsControlBar: View {
 			}
 			// TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
 			.accessibilityLabel(t("Navigation unit"))
+			// TRANSLATORS: VoiceOver accessibility value announcing the currently selected navigation unit for the control above
 			.accessibilityValue(t(viewModel.reading.currentSegmentType.rawValue))
 			.accessibilityRemoveTraits(.isButton)
 			.accessibilityAdjustableAction { direction in

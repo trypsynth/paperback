@@ -65,7 +65,7 @@ mod tests {
 
 	use super::DaisyParser;
 	use crate::{
-		document::{MarkerType, ParserContext},
+		document::{Marker, MarkerType, ParserContext},
 		parser::Parser,
 		util::test_support::TempDir,
 	};
@@ -549,14 +549,19 @@ mod tests {
 		assert!(document.audio_only, "read-aloud UIs navigate this by elapsed time, not by text unit");
 		// Each section must carry a SectionBreak marker, or Previous/Next Section navigation
 		// (bound to [ and ]) finds nothing to jump to.
-		let section_marker_positions: Vec<usize> = document
-			.buffer
-			.markers
-			.iter()
-			.filter(|m| m.mtype == MarkerType::SectionBreak)
-			.map(|m| m.position)
-			.collect();
-		assert_eq!(section_marker_positions, document.toc_items.iter().map(|item| item.offset).collect::<Vec<_>>());
+		let section_markers: Vec<&Marker> =
+			document.buffer.markers.iter().filter(|m| m.mtype == MarkerType::SectionBreak).collect();
+		assert_eq!(
+			section_markers.iter().map(|m| m.position).collect::<Vec<_>>(),
+			document.toc_items.iter().map(|item| item.offset).collect::<Vec<_>>()
+		);
+		// Each marker names its file, so stepping by section announces where the jump landed.
+		// The buffer is placeholder spaces with no newline, so a marker with no text of its own
+		// would make navigation fall back to the whole book and announce nothing but blanks.
+		assert_eq!(
+			section_markers.iter().map(|m| m.text.as_str()).collect::<Vec<_>>(),
+			vec!["Track 1", "Track 2", "Track 10"]
+		);
 		let audio = document.audio.expect("audio timeline should be populated");
 		assert_eq!(audio.sources().len(), 3);
 		assert_eq!(audio.clips().len(), 3);

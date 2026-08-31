@@ -76,16 +76,82 @@ fun bestLocaleMatch(
 	return available.firstOrNull { it.substringBefore('_').equals(language, ignoreCase = true) }
 }
 
-fun t(str: String): String = Translations.map[str] ?: str
+/**
+ * U+2063 INVISIBLE SEPARATOR: renders nothing and isn't spoken by screen readers, so it's silent
+ * in the UI either way. Appended to an English source string only where [nt]'s "many" form would
+ * otherwise be byte-identical to its "few" form (e.g. both are "{} seconds" in English, but
+ * Bosnian needs distinct "sekunde" vs "sekundi") — since [Translations.map] is a flat
+ * string-to-string table with no separate context field, two entries with the same English text
+ * can only be told apart by making that text itself differ, invisibly. [t] strips it from the
+ * untranslated fallback so it never leaks into English UI; a provided translation is used as-is
+ * since translators write the translated text only, without the marker.
+ *
+ * IMPORTANT for anyone editing translatable strings: don't strip this character if you see it —
+ * it's deliberate, not stray whitespace.
+ */
+private const val PLURAL_MANY_MARKER = "⁣"
 
-/** Translates [str], then substitutes each "{}" placeholder in order with the given [args]. */
+fun t(str: String): String = Translations.map[str] ?: str.removeSuffix(PLURAL_MANY_MARKER)
+
+/** The marker a translatable string uses where an argument goes. */
+private const val PLACEHOLDER = "{}"
+
+/**
+ * Translates [str], then substitutes each "{}" placeholder in order with the given [args].
+ *
+ * Done as one left-to-right scan rather than a `replaceFirst` per argument, so that text an
+ * argument brings with it is never itself substituted into: a file name or search term
+ * containing "{}" would otherwise stay the leftmost placeholder and swallow the argument
+ * meant for the one after it. Spare placeholders and spare arguments are both left alone.
+ */
 fun t(
 	str: String,
 	vararg args: String
 ): String {
-	var result = t(str)
-	for (arg in args) {
-		result = result.replaceFirst("{}", arg)
+	val translated = t(str)
+	if (args.isEmpty()) {
+		return translated
 	}
-	return result
+	val result = StringBuilder(translated.length)
+	var index = 0
+	var next = 0
+	while (next < args.size) {
+		val placeholder = translated.indexOf(PLACEHOLDER, index)
+		if (placeholder == -1) {
+			break
+		}
+		result.append(translated, index, placeholder).append(args[next])
+		index = placeholder + PLACEHOLDER.length
+		next++
+	}
+	result.append(translated, index, translated.length)
+	return result.toString()
+}
+
+/**
+ * Selects among three already-translated forms for languages (e.g. Bosnian, Serbian, Croatian)
+ * whose grammar needs three: [one] for a count ending in 1, except one ending in 11 (1, 21, 31,
+ * ...); [few] for a count ending in 2-4, except one ending in 12-14 (2, 3, 4, 22, 23, 24, ...);
+ * and [many] for everything else (0, 5-20, 25-30, ...). Desktop gets this for free from the
+ * target language's own `Plural-Forms` rule via patois; mobile has no such runtime, so this
+ * hardcodes the one three-form rule Paperback ships a mobile translation for.
+ *
+ * Callers translate each form themselves with [t] *before* calling this — `nt(t("1 book"),
+ * t("{} books"), t("{} books"), count)`, never `nt("1 book", "{} books", "{} books", count)` —
+ * because the pot scanner only recognizes plain `t("...")` calls; a bare string literal handed
+ * straight to `nt()` would never be extracted and could never be translated.
+ */
+fun nt(
+	one: String,
+	few: String,
+	many: String,
+	count: Long
+): String {
+	val mod10 = count % 10
+	val mod100 = count % 100
+	return when {
+		mod10 == 1L && mod100 != 11L -> one
+		mod10 in 2L..4L && mod100 !in 12L..14L -> few
+		else -> many
+	}
 }

@@ -67,6 +67,7 @@ fn read_fingerprint(path: &Path) -> Option<FileFingerprint> {
 
 pub fn title_or_filename(title: String, path: &Path) -> String {
 	if title.is_empty() {
+		// TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
 		path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
 	} else {
 		title
@@ -196,6 +197,7 @@ impl DocumentManager {
 						Err(retry_error) => {
 							tracing::error!(path = %path.display(), error = %retry_error, "failed to open document");
 							let message = build_document_load_error_message(path, &retry_error);
+							// TRANSLATORS: Generic error dialog title
 							show_error_dialog(&self.notebook, &message, &t("Error"));
 							false
 						}
@@ -203,6 +205,7 @@ impl DocumentManager {
 				} else {
 					tracing::error!(path = %path.display(), error = %err, "failed to open document");
 					let message = build_document_load_error_message(path, &err);
+					// TRANSLATORS: Generic error dialog title
 					show_error_dialog(&self.notebook, &message, &t("Error"));
 					false
 				}
@@ -531,7 +534,7 @@ impl DocumentManager {
 				match result.action {
 					paperback_core::session::LinkAction::Internal => {
 						if tab.window.needs_reload_for(result.offset, tab.session.document_len()) {
-							reload_window_around(tab, result.offset);
+							reload_window_around(tab, result.offset, "reparse");
 						}
 						let local = tab.window.to_local(result.offset);
 						tab.text_ctrl.set_focus();
@@ -560,6 +563,7 @@ impl DocumentManager {
 		let sleep_start = SLEEP_TIMER_START_MS.load(Ordering::SeqCst);
 		let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
 		if self.tabs.is_empty() {
+			// TRANSLATORS: Default status bar text when no document is open
 			let mut status_text = t("Ready");
 			if sleep_start > 0 {
 				let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
@@ -668,22 +672,19 @@ impl DocumentManager {
 		}
 	}
 
-	/// Reloads the active tab's window if the caret has drifted near a loaded edge, regardless of
-	/// what moved it there. Every other reload trigger in this app is wired to a specific input
-	/// path (arrow keys, heading/bookmark jumps, ...), which covers keyboard and mouse navigation
-	/// but not a screen reader's own text-walking: NVDA's Say-All (and similar continuous-reading
-	/// features) for an edit control typically drives RichEdit's UI Automation text pattern
-	/// directly, never touching this app's key handlers. Without this, reaching a loaded window's
-	/// edge during Say-All would look identical to reaching the real end of the document - nothing
-	/// would ever trigger a reload, and reading would just silently stop mid-paragraph with 16
-	/// million characters still unread. Polling and reacting to the caret's actual position sidesteps
-	/// needing to know how it got there. `RELOAD_MARGIN` (a quarter of the window) is generous
-	/// enough that even fast reading has time to reload well before actually running out of loaded
 	/// Keeps the loaded window ahead of a caret that is moving forward, by appending to it.
 	///
-	/// Runs on a timer, so it must never do anything a reader could notice. Appending qualifies:
-	/// it leaves every existing offset into the control pointing at the same character. Rebuilding
-	/// the window does not, and this used to do exactly that.
+	/// A timer rather than an input hook because a screen reader's own text-walking never reaches
+	/// this app's key handlers: NVDA's Say-All (and similar continuous-reading features) drives
+	/// RichEdit's UI Automation text pattern directly. Without polling, reaching the loaded end
+	/// during a Say-All would look exactly like reaching the real end of the document, and reading
+	/// would stop mid-paragraph with millions of characters still unread. Reacting to where the
+	/// caret actually is sidesteps having to know what put it there. `RELOAD_MARGIN`, a quarter of
+	/// the window, gives even fast reading time to load more well before it runs out.
+	///
+	/// Because it runs on a timer, it must never do anything a reader could notice. Appending
+	/// qualifies: every offset already handed out still points at the same character. Rebuilding
+	/// the window does not, and this used to do that.
 	///
 	/// The bug that motivated the split: NVDA's Say-All holds its own offsets into the control,
 	/// advances them itself rather than re-reading the caret, and has no handling for the text
@@ -695,37 +696,63 @@ impl DocumentManager {
 	/// characters at a time while the user listened. Reported as reading randomly jumping to the
 	/// start of large text files.
 	///
-	/// Compaction still happens, just never from here: at the navigation chokepoints (where a
-	/// keypress has already stopped any Say-All) and on resize, where the cost it exists to avoid
-	/// is actually billed.
+	/// Splitting extension from compaction was not enough on its own, because compaction stayed
+	/// reachable from here for a caret that had run out of text behind it, on the reasoning that a
+	/// forward reader could never be in that position. A reader whose offsets have gone stale can:
+	/// compaction moves the loaded start out from under offsets their holder never revisits, which
+	/// leaves those offsets sitting near the new start, which is the very condition to compact
+	/// again. Each tick walked the window another `RELOAD_MARGIN` back, and the read reached the
+	/// top of the document in about three seconds. A tick that can only extend cannot start that
+	/// loop, so this one cannot.
+	///
+	/// Compaction happens elsewhere: at the navigation chokepoints, on the key and mouse events
+	/// that end a read (see [`Self::compact_window_after_user_move`]), and on a resize, where the
+	/// cost it exists to avoid is actually billed.
 	pub fn pump_window_extend(&mut self) {
 		let Some(tab) = self.active_tab_mut() else {
 			return;
 		};
 		let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let doc_len = tab.session.document_len();
-		// Compaction is still reachable from here, but only for a caret that has run out of text
-		// *behind* it or left the loaded range altogether - neither of which a forward reader can
-		// do. Arrowing up to the top of the window is the real case, and by then any Say-All has
-		// already been stopped by the keypress that got there.
-		if tab.window.needs_compaction_for(doc_pos, doc_len) {
-			reload_window_around(tab, doc_pos);
-			let local = tab.window.to_local(doc_pos);
-			tab.text_ctrl.set_insertion_point(local);
-			tab.text_ctrl.show_position(local);
-			return;
-		}
 		if !tab.window.wants_extension_for(doc_pos, doc_len) {
 			return;
 		}
 		if !Self::extend_window_forward(tab) {
 			// The append did not land cleanly, so the control and the window no longer agree on
 			// what is loaded. Every later position translation would be wrong by the difference;
-			// rebuild to get back to a state that is at least consistent.
-			reload_window_around(tab, doc_pos);
+			// rebuild to get back to a state that is at least consistent. This does move the
+			// loaded start, so it is the one thing here a reader can notice, but a control whose
+			// contents no one can locate is worse than a read that loses its place.
+			reload_window_around(tab, doc_pos, "append failed");
 			let local = tab.window.to_local(doc_pos);
 			tab.text_ctrl.set_insertion_point(local);
 		}
+	}
+
+	/// Compacts the window around the caret if the caret has run out of text behind it.
+	///
+	/// The counterpart to [`Self::pump_window_extend`], called from the key and mouse handlers
+	/// rather than the timer. Anything that moves the loaded start invalidates the offsets a
+	/// screen reader is reading from, so it may only happen where the user has already done
+	/// something that stops a read, and a keypress or a click is exactly that.
+	///
+	/// Holding Up-arrow is the case this exists for. Auto-repeat sends key *down* events and no
+	/// key up until release, so a held key eats into [`RELOAD_MARGIN`] without compacting; that
+	/// margin is a quarter of the window, which is over a minute of held arrow before the caret
+	/// reaches the loaded start, and releasing the key compacts well before then.
+	pub fn compact_window_after_user_move(&mut self) {
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let doc_len = tab.session.document_len();
+		if !tab.window.needs_compaction_for(doc_pos, doc_len) {
+			return;
+		}
+		reload_window_around(tab, doc_pos, "caret ran out of text behind it");
+		let local = tab.window.to_local(doc_pos);
+		tab.text_ctrl.set_insertion_point(local);
+		tab.text_ctrl.show_position(local);
 	}
 
 	/// Copies the current selection, widening it to the whole document when everything loaded is
@@ -781,7 +808,7 @@ impl DocumentManager {
 			return;
 		}
 		let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		reload_window_around(tab, doc_pos);
+		reload_window_around(tab, doc_pos, "resize");
 		let local = tab.window.to_local(doc_pos);
 		tab.text_ctrl.set_insertion_point(local);
 		tab.text_ctrl.show_position(local);
@@ -808,7 +835,19 @@ impl DocumentManager {
 		if !append_slice_to_ctrl(tab.text_ctrl, &slice) {
 			return false;
 		}
+		let previous_end = tab.window.end();
 		tab.window.extend_end_to(slice.end);
+		// The safe half, logged at debug so a report can be read alongside the window moves above.
+		// A healthy forward read extends about once per chunk; a burst of these with the caret
+		// pinned at the loaded end is the signature of the caret being moved by the append itself,
+		// which is what `append_rtf_into_ctrl` saves and restores the selection to prevent.
+		tracing::debug!(
+			caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point()),
+			from_end = previous_end,
+			to_end = tab.window.end(),
+			loaded = tab.window.loaded_len(),
+			"extended loaded window"
+		);
 		// The control and the window have to agree on how much is loaded, give or take the single
 		// display unit RichEdit does not store for a wholly-trailing paragraph mark (see
 		// `write::stored_display_len`). Drift past that would offset every translation from here on.
@@ -1134,6 +1173,7 @@ impl DocumentManager {
 			}
 			Err(err) => {
 				let message = build_document_load_error_message(&self.tabs[index].file_path, &err);
+				// TRANSLATORS: Generic error dialog title
 				show_error_dialog(&self.notebook, &message, &t("Error"));
 				false
 			}
@@ -1156,6 +1196,7 @@ impl DocumentManager {
 					};
 					if let Some(html) = table_html {
 						let frame = dm_for_enter.lock().unwrap().frame;
+						// TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
 						super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
 					} else {
 						let mut dm = dm_for_enter.lock().unwrap();
@@ -1183,7 +1224,9 @@ impl DocumentManager {
 		let dm_for_key_up = Rc::clone(self_rc);
 		text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
 			event.skip(true);
-			if let Ok(dm) = dm_for_key_up.try_lock() {
+			if let Ok(mut dm) = dm_for_key_up.try_lock() {
+				// Before the status bar reads the position, so it reports the compacted window.
+				dm.compact_window_after_user_move();
 				dm.update_status_bar();
 				dm.save_position_throttled();
 				dm.check_bookmark_sounds();
@@ -1192,8 +1235,9 @@ impl DocumentManager {
 		let dm_for_mouse = Rc::clone(self_rc);
 		text_ctrl.bind_internal(wxdragon::event::EventType::LEFT_UP, move |event| {
 			event.skip(true);
-			if let Ok(dm) = dm_for_mouse.try_lock() {
+			if let Ok(mut dm) = dm_for_mouse.try_lock() {
 				dm.preferred_column.set(None);
+				dm.compact_window_after_user_move();
 				dm.update_status_bar();
 				dm.save_position_throttled();
 				dm.check_bookmark_sounds();
@@ -1381,7 +1425,7 @@ fn navigate_line_by_column(
 		return None;
 	}
 	let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point().max(0));
-	reload_window_around(tab, doc_pos);
+	reload_window_around(tab, doc_pos, "line navigation");
 	let local = tab.window.to_local(doc_pos);
 	tab.text_ctrl.set_insertion_point(local);
 	try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)?
@@ -1426,6 +1470,7 @@ fn build_document_load_error_message(path: &Path, error: &str) -> String {
 	let file_line = t("File: {}").replace("{}", &path.display().to_string());
 	// TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
 	let details_line = t("Details: {}").replace("{}", details);
+	// TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
 	format!("{}\n\n{file_line}\n{details_line}", t("Failed to load document."))
 }
 
@@ -1555,9 +1600,28 @@ fn load_window_into_ctrl(text_ctrl: TextCtrl, session: &DocumentSession, target_
 /// word-wrap toggle) reapplies them across all tabs. Fix by caching the last-applied readability
 /// values on `DocumentTab` itself, updated wherever `apply_line_spacing`/`apply_paragraph_spacing`/
 /// `apply_letter_spacing`/`apply_text_alignment` already loop over every tab.
-pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: i64) {
+///
+/// `reason` names the call site in the log. Moving the loaded start is the one thing that can
+/// pull the ground out from under a screen reader mid-read, so every one of these is recorded:
+/// when someone reports a Say-All losing its place, the log says whether the window moved and
+/// which path moved it, without anyone having to reproduce it first. Equally, a report with no
+/// line here is evidence the window is not what moved, which is worth just as much.
+pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: i64, reason: &'static str) {
 	let doc_len = tab.session.document_len();
+	let before = tab.window;
 	tab.window = load_window_into_ctrl(tab.text_ctrl, &tab.session, doc_offset, doc_len);
+	if before.start() != tab.window.start() {
+		tracing::info!(
+			reason,
+			caret = doc_offset,
+			from_start = before.start(),
+			from_end = before.end(),
+			to_start = tab.window.start(),
+			to_end = tab.window.end(),
+			doc_len,
+			"loaded window start moved"
+		);
+	}
 }
 
 /// Appends `slice` to whatever the control already holds, preserving existing offsets.

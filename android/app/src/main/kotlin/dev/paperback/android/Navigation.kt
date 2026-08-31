@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import dev.paperback.android.ui.AllDocumentsScreen
 import dev.paperback.android.ui.MainScreen
 import dev.paperback.android.ui.MainScreenViewModel
 import dev.paperback.android.ui.SettingsScreen
@@ -61,6 +62,12 @@ fun MainNavigation() {
 				}
 				entry<TocRoute> {
 					TocScreen(
+						viewModel = viewModel,
+						onDismiss = { backStack.removeLastOrNull() }
+					)
+				}
+				entry<AllDocumentsRoute> {
+					AllDocumentsScreen(
 						viewModel = viewModel,
 						onDismiss = { backStack.removeLastOrNull() }
 					)

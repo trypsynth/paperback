@@ -68,11 +68,16 @@ pub fn stream_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
 }
 
 /// Appends `rtf` to the end of the control's existing content, leaving what is already there
-/// untouched.
+/// untouched, the caret included.
 ///
 /// The same `EM_STREAMIN` as [`stream_rtf_into_ctrl`] but with `SFF_SELECTION`, which replaces
 /// the current selection instead of the whole document; collapsing the selection to the very end
 /// first turns that into an insert-at-end.
+///
+/// That collapse moves the caret, so the selection is saved and put back around it. Leaving the
+/// caret parked at the end was its own bug: the window pump samples the caret to decide what to
+/// do next, saw a position the user had never gone to, read it as a reader who had arrived at
+/// the loaded end, and appended again on every tick until the whole document was loaded.
 ///
 /// This is what lets a document window grow forward without disturbing a screen reader mid-read:
 /// every offset into the text that already existed still points at the same character afterwards,
@@ -84,7 +89,7 @@ pub fn append_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
 	use windows::Win32::{
 		Foundation::{HWND, LPARAM, WPARAM},
 		UI::{
-			Controls::RichEdit::{CHARRANGE, EDITSTREAM, EM_EXSETSEL, EM_STREAMIN, SF_RTF, SFF_SELECTION},
+			Controls::RichEdit::{CHARRANGE, EDITSTREAM, EM_EXGETSEL, EM_EXSETSEL, EM_STREAMIN, SF_RTF, SFF_SELECTION},
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
@@ -93,6 +98,10 @@ pub fn append_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
 		return false;
 	}
 	let hwnd = HWND(hwnd_ptr);
+	let mut previous = CHARRANGE { cpMin: 0, cpMax: 0 };
+	unsafe {
+		SendMessageW(hwnd, EM_EXGETSEL, Some(WPARAM(0)), Some(LPARAM(&raw mut previous as isize)));
+	}
 	// -1/-1 is RichEdit's own idiom for the end of the text, so this does not need the length.
 	let end = CHARRANGE { cpMin: -1, cpMax: -1 };
 	unsafe {
@@ -108,6 +117,11 @@ pub fn append_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
 			Some(WPARAM((SF_RTF | SFF_SELECTION) as usize)),
 			Some(LPARAM(addr_of_mut!(stream) as isize)),
 		);
+	}
+	// Restored even when the stream failed: the caller rebuilds from the caret in that case, so
+	// a caret left at the end would decide where the rebuild centres.
+	unsafe {
+		SendMessageW(hwnd, EM_EXSETSEL, Some(WPARAM(0)), Some(LPARAM(&raw const previous as isize)));
 	}
 	stream.dwError == 0 && cursor.pos == cursor.data.len()
 }

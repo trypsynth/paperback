@@ -15,6 +15,7 @@ type RefreshCallbacks = Rc<RefCell<Vec<Box<dyn Fn()>>>>;
 pub fn prompt_for_shortcuts(parent: &dyn WxWidget, initial: &ShortcutsConfig) -> Option<ShortcutsConfig> {
 	let config_state = Rc::new(RefCell::new(initial.clone()));
 	let refresh_all_callbacks: RefreshCallbacks = Rc::new(RefCell::new(Vec::new()));
+	// TRANSLATORS: Title of the Keyboard Shortcuts dialog.
 	let dialog = Dialog::builder(parent, &t("Customize Keyboard Shortcuts"))
 		.with_size(dpi::scale(parent, 600), dpi::scale(parent, 560))
 		.build();
@@ -22,10 +23,12 @@ pub fn prompt_for_shortcuts(parent: &dyn WxWidget, initial: &ShortcutsConfig) ->
 	for &category in ShortcutCategory::all() {
 		let tab_panel =
 			build_category_tab(&notebook, config_state.clone(), category, &dialog, refresh_all_callbacks.clone());
-		notebook.add_page(&tab_panel, &category.display_name(), category == ShortcutCategory::File, None);
+		// TRANSLATORS: Tab label in the Keyboard Shortcuts dialog naming a category of shortcuts (e.g. Navigation, File).
+		notebook.add_page(&tab_panel, &t(&category.display_name()), category == ShortcutCategory::File, None);
 	}
 	// Uses the shared `wxStdDialogButtonSizer`-backed helper so OK/Cancel follow platform HIG
 	// order (Cancel/OK on macOS, OK/Cancel on Windows) instead of a hardcoded LTR order.
+	// TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
 	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 8);
@@ -49,6 +52,7 @@ fn build_category_tab(
 ) -> Panel {
 	let panel = Panel::builder(notebook).with_style(PanelStyle::TabTraversal).build();
 	let sizer = BoxSizer::builder(Orientation::Vertical).build();
+	// TRANSLATORS: Label above the list of shortcuts for a category in the Keyboard Shortcuts dialog.
 	let list_label = StaticText::builder(&panel).with_label(&t("&Shortcuts:")).build();
 	sizer.add(&list_label, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Top, 8);
 	let list_box = ListBox::builder(&panel).build();
@@ -62,9 +66,13 @@ fn build_category_tab(
 	}
 	sizer.add(&list_box, 1, SizerFlag::Expand | SizerFlag::All, 8);
 	let buttons_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	// TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
 	let set_button = Button::builder(&panel).with_label(&t("&Set Shortcut...")).build();
+	// TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
 	let clear_button = Button::builder(&panel).with_label(&t("&Clear Shortcut")).build();
+	// TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
 	let reset_button = Button::builder(&panel).with_label(&t("&Reset to Default")).build();
+	// TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
 	let reset_all_button = Button::builder(&panel).with_label(&t("Reset &All to Defaults")).build();
 	buttons_sizer.add(&set_button, 0, SizerFlag::Right, 8);
 	buttons_sizer.add(&clear_button, 0, SizerFlag::Right, 8);
@@ -156,9 +164,11 @@ fn build_category_tab(
 	let refresh_on_reset_all = refresh_all;
 	let parent_reset_all = *parent_dialog;
 	reset_all_button.on_click(move |_| {
+		// TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
 		let warn = MessageDialog::builder(
 			&parent_reset_all,
 			&t("Reset all shortcuts to their default values?"),
+			// TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
 			&t("Reset Shortcuts"),
 		)
 		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion)
@@ -202,6 +212,7 @@ fn prompt_for_key_chord(
 	action: ActionId,
 	initial: Option<&KeyChord>,
 ) -> Option<Option<KeyChord>> {
+	// TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 	let title = t("Set Shortcut for {}").replace("{}", &action.display_name());
 	let dialog = Dialog::builder(parent, &title).with_size(dpi::scale(parent, 400), dpi::scale(parent, 260)).build();
 	let panel = Panel::builder(&dialog).build();
@@ -209,11 +220,15 @@ fn prompt_for_key_chord(
 	let live_region_label = StaticText::builder(&panel).with_label("").with_size(Size::new(0, 0)).build();
 	live_region_label.show(false);
 	let _ = live_region::set_live_region(&live_region_label);
+	// TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 	let info_text = t("Configure shortcut for {}:").replace("{}", &action.display_name());
 	let info_label = StaticText::builder(&panel).with_label(&info_text).build();
 	main_sizer.add(&info_label, 0, SizerFlag::Expand | SizerFlag::All, 8);
+	// TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
 	let ctrl_cb = CheckBox::builder(&panel).with_label(&t("&Ctrl")).build();
+	// TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
 	let alt_cb = CheckBox::builder(&panel).with_label(&t("&Alt")).build();
+	// TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
 	let shift_cb = CheckBox::builder(&panel).with_label(&t("&Shift")).build();
 	let raw_ctrl = Rc::new(Cell::new(initial.is_some_and(|chord| chord.raw_ctrl)));
 	if let Some(chord) = initial {
@@ -226,6 +241,7 @@ fn prompt_for_key_chord(
 	mod_sizer.add(&alt_cb, 0, SizerFlag::Right, 12);
 	mod_sizer.add(&shift_cb, 0, SizerFlag::Right, 12);
 	main_sizer.add_sizer(&mod_sizer, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom, 8);
+	// TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
 	let key_label = StaticText::builder(&panel).with_label(&t("&Key:")).build();
 	let key_text_ctrl = TextCtrl::builder(&panel)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly | TextCtrlStyle::DontWrap)
@@ -237,10 +253,12 @@ fn prompt_for_key_chord(
 	key_sizer.add(&key_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 8);
 	key_sizer.add(&key_text_ctrl, 1, SizerFlag::Expand, 0);
 	main_sizer.add_sizer(&key_sizer, 0, SizerFlag::Expand | SizerFlag::All, 8);
+	// TRANSLATORS: Hint text in the Set Shortcut dialog explaining how to capture a new key combination.
 	let hint_label = StaticText::builder(&panel)
 		.with_label(&t("Tip: click in the key field and press the key combination you want."))
 		.build();
 	main_sizer.add(&hint_label, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Top, 8);
+	// TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
 	let preview_label = StaticText::builder(&panel).with_label(&t("Detected: (none)")).build();
 	main_sizer.add(&preview_label, 0, SizerFlag::Expand | SizerFlag::All, 8);
 	let current_shortcut_text = move || {
@@ -254,6 +272,7 @@ fn prompt_for_key_chord(
 		}
 	};
 	let refresh_preview_label = move || {
+		// TRANSLATORS: Preview text in the Set Shortcut dialog showing the key combination captured so far. The {} placeholder is replaced with the shortcut, e.g. "Ctrl+Shift+K".
 		let text =
 			current_shortcut_text().map_or_else(|| t("Detected: (none)"), |s| t("Detected: {}").replace("{}", &s));
 		preview_label.set_label(&text);
@@ -261,6 +280,7 @@ fn prompt_for_key_chord(
 	refresh_preview_label();
 	let update_preview = move || {
 		refresh_preview_label();
+		// TRANSLATORS: Accessibility announcement in the Set Shortcut dialog spoken when no key combination has been captured yet
 		let announce_text =
 			current_shortcut_text().map_or_else(|| t("No key detected"), |s| t("Detected: {}").replace("{}", &s));
 		live_region::announce(live_region_label, &announce_text);
@@ -297,9 +317,12 @@ fn prompt_for_key_chord(
 	let update_preview_shift = update_preview;
 	shift_cb.on_toggled(move |_| update_preview_shift());
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	// TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
 	let ok_button = Button::builder(&panel).with_id(ID_OK).with_label(&t("OK")).build();
 	ok_button.set_default();
+	// TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
 	let clear_button = Button::builder(&panel).with_id(ID_CLEAR_SHORTCUT).with_label(&t("&Clear")).build();
+	// TRANSLATORS: Cancel button in the Set Shortcut dialog.
 	let cancel_button = Button::builder(&panel).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 	button_sizer.add(&clear_button, 0, SizerFlag::Right, 8);
 	button_sizer.add_stretch_spacer(1);

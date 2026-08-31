@@ -84,8 +84,10 @@ pub(super) fn build_plain_audio_zip_document<R: Read + Seek>(
 	password: Option<&str>,
 ) -> Option<Document> {
 	const PLACEHOLDER_CLIP_DURATION_MS: u64 = 24 * 60 * 60 * 1000;
+	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
+	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
 	let mut entries: Vec<String> =
-		archive.file_names().filter(|name| is_plain_audio_entry(name)).map(String::from).collect();
+		archive.file_names().flatten().filter(|name| is_plain_audio_entry(name)).map(String::from).collect();
 	if entries.is_empty() {
 		return None;
 	}
@@ -98,7 +100,12 @@ pub(super) fn build_plain_audio_zip_document<R: Read + Seek>(
 			Path::new(entry).file_stem().map_or_else(|| entry.clone(), |stem| stem.to_string_lossy().to_string());
 		let position = buffer.current_position();
 		buffer.append(" ");
-		buffer.add_marker(Marker::new(MarkerType::SectionBreak, position));
+		// The marker carries the file name so section navigation has something to announce.
+		// Without it the name lives only in the TOC, and `fill_marker_text_if_empty` falls back
+		// to the line enclosing the marker, which in a buffer of placeholder spaces with no
+		// newline anywhere is the entire book: every section would announce the same run of
+		// blanks, however far navigation had actually moved.
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, position).with_text(name.clone()));
 		let source = audio_builder.add_source(
 			AudioLocation::ZipEntry {
 				archive: archive_path.to_string(),

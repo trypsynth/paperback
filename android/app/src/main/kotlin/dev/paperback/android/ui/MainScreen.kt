@@ -13,26 +13,14 @@ import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.customActions
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.paneTitle
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
@@ -41,6 +29,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import dev.paperback.android.AllDocumentsRoute
 import dev.paperback.android.SettingsRoute
 import dev.paperback.android.t
 import dev.paperback.android.ui.dialogs.*
@@ -51,7 +40,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import androidx.compose.foundation.lazy.items as lazyItems
 
 /** True once Android enforces scoped storage (R+) and the app still lacks "All files access". */
 internal fun needsAllFilesAccessPermission(): Boolean =
@@ -78,25 +66,22 @@ fun MainScreen(
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
-	var recentsDialogOpen by remember { mutableStateOf(false) }
 	var exportDocumentDialogOpen by remember { mutableStateOf(false) }
 	var selectedExportFormat by remember { mutableStateOf<uniffi.paperback.ExportFormat?>(null) }
-	val wordCountDialogOpen by viewModel.wordCountDialog.isOpen.collectAsStateWithLifecycle()
-	val documentInfoDialogOpen by viewModel.documentInfoDialog.isOpen.collectAsStateWithLifecycle()
 	val goToDialogOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
 	val goToInitialMode by viewModel.goToInitialMode.collectAsStateWithLifecycle()
 	val findDialogOpen by viewModel.findDialog.isOpen.collectAsStateWithLifecycle()
-	val sleepTimerDialogOpen by viewModel.sleepTimerDialog.isOpen.collectAsStateWithLifecycle()
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
-	val restorePreviousDocuments by viewModel.restorePreviousDocuments.collectAsStateWithLifecycle()
-	val useInAppFileBrowser by viewModel.useInAppFileBrowser.collectAsStateWithLifecycle()
+	val settings = viewModel.settings
+	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
+	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()
 	// Guards the one-time auto-switch to the in-app browser right after All Files
 	// Access is first granted, so it doesn't keep re-enabling itself on every later
 	// resume (e.g. after using the system picker) and fight the user's own toggle.
 	var hasAutoEnabledInAppFileBrowser by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("auto_enabled_in_app_file_browser", false))
 	}
-	val swipeUpMovesForward by viewModel.swipeUpMovesForward.collectAsStateWithLifecycle()
+	val swipeUpMovesForward by settings.swipeUpMovesForward.state.collectAsStateWithLifecycle()
 	var onboardingCompleted by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("permissions_onboarding_shown", false))
 	}
@@ -179,18 +164,16 @@ fun MainScreen(
 	val currentNavUnit by viewModel.currentNavUnit.collectAsStateWithLifecycle()
 	val ttsPosition by viewModel.ttsPosition.collectAsStateWithLifecycle()
 	val currentSegmentText by viewModel.currentSegmentText.collectAsStateWithLifecycle()
-	val textScalePercent by viewModel.textScalePercent.collectAsStateWithLifecycle()
-	val lineSpacing by viewModel.lineSpacing.collectAsStateWithLifecycle()
-	val paragraphSpacing by viewModel.paragraphSpacing.collectAsStateWithLifecycle()
-	val textAlignment by viewModel.textAlignment.collectAsStateWithLifecycle()
+	val textScalePercent by settings.textScalePercent.state.collectAsStateWithLifecycle()
+	val lineSpacing by settings.lineSpacing.state.collectAsStateWithLifecycle()
+	val paragraphSpacing by settings.paragraphSpacing.state.collectAsStateWithLifecycle()
+	val textAlignment by settings.textAlignment.state.collectAsStateWithLifecycle()
 	val readability = rememberReadabilityStyle(textScalePercent, lineSpacing, paragraphSpacing, textAlignment)
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
 	val sleepTimerRemaining by viewModel.sleepTimerRemaining.collectAsStateWithLifecycle()
 	val showElementsDialog by viewModel.showElementsDialog.collectAsStateWithLifecycle()
 	val currentHeadings by viewModel.currentHeadings.collectAsStateWithLifecycle()
 	val currentLinks by viewModel.currentLinks.collectAsStateWithLifecycle()
-	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()
-	val importPromptPath by viewModel.importPromptPath.collectAsStateWithLifecycle()
 
 	val view = androidx.compose.ui.platform.LocalView.current
 	LaunchedEffect(Unit) {
@@ -310,6 +293,7 @@ fun MainScreen(
 				selectedExportFormat?.let { format ->
 					scope.launch(Dispatchers.IO) {
 						val success = viewModel.exportDocumentToUri(context, uri, format)
+						// TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 						val message = if (success) t("Document exported") else t("Failed to export document")
 						withContext(Dispatchers.Main) {
 							Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -347,10 +331,10 @@ fun MainScreen(
 					onTabClose = { viewModel.closeTab(it) },
 					onToggleTextMode = { isTextMode = !isTextMode },
 					onTogglePlayPause = { viewModel.togglePlayPause() },
-					onRecentsOpen = { recentsDialogOpen = true },
+					onRecentsOpen = { onItemClick(AllDocumentsRoute) },
 					onGoToOpen = { viewModel.openGoToDialog() },
 					onFindOpen = { viewModel.findDialog.open() },
-					onWordCountOpen = { viewModel.wordCountDialog.open() },
+					onWordCountOpen = { viewModel.openWordCountDialog() },
 					onDocumentInfoOpen = { viewModel.documentInfoDialog.open() },
 					onSettingsOpen = { onItemClick(SettingsRoute) },
 					onSleepTimerOpen = { viewModel.sleepTimerDialog.open() },
@@ -362,6 +346,7 @@ fun MainScreen(
 							if (activeDocUri.startsWith("content://")) {
 								exportSettingsLauncher.launch("document.paperback")
 							} else {
+								// TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
 								if (viewModel.exportCurrentSettings()) {
 									Toast.makeText(context, t("Settings exported"), Toast.LENGTH_SHORT).show()
 								} else {
@@ -448,51 +433,28 @@ fun MainScreen(
 						val successState = state as MainScreenUiState.Success
 						val docState = successState.activeTab
 						if (docState == null) {
-							Column(
-								modifier = Modifier.fillMaxSize().padding(16.dp),
-								horizontalAlignment = Alignment.CenterHorizontally,
-								verticalArrangement = Arrangement.Center
-							) {
-								if (successState.recentDocuments.isEmpty()) {
-									Text(
-										// TRANSLATORS: Shown on the main screen when no document is open and there are no recent documents to list
-										t("No Documents"),
-										style = MaterialTheme.typography.titleLarge,
-										modifier = Modifier.padding(bottom = 24.dp)
-									)
-								} else {
-									Text(
-										// TRANSLATORS: Heading above the list of recently opened documents, shown when no document is currently open
-										t("Recent Documents"),
-										style = MaterialTheme.typography.titleMedium,
-										modifier = Modifier.padding(bottom = 8.dp).semantics { heading() }
-									)
-									LazyColumn(
-										modifier = Modifier.weight(1f).fillMaxWidth(),
-										contentPadding = PaddingValues(vertical = 8.dp)
-									) {
-										lazyItems(successState.recentDocuments.take(5)) { recentDoc ->
-											RecentDocumentItemRow(
-												item = recentDoc,
-												showClosedStatus = false,
-												onOpen = { viewModel.openDocument(recentDoc.uri.toUri()) },
-												onRemove = { viewModel.removeRecentDocument(recentDoc.uri) },
-												onLocate = { onLocateRecentDocument(recentDoc.uri) }
-											)
-										}
-									}
-									TextButton(
-										onClick = { recentsDialogOpen = true },
-										modifier = Modifier.padding(top = 8.dp)
-									) {
-										// TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents dialog
-										Text(t("Show All"))
-									}
-								}
-							}
+							NoDocumentPane(
+								recentDocuments = successState.recentDocuments,
+								onOpenDocument = { viewModel.openDocument(it.toUri()) },
+								onRemoveDocument = { viewModel.removeRecentDocument(it) },
+								onLocateDocument = onLocateRecentDocument,
+								onShowAllDocuments = { onItemClick(AllDocumentsRoute) }
+							)
 						} else {
 							val listState = listStates.getOrPut(docState.documentUri) {
 								LazyListState(firstVisibleItemIndex = docState.initialScrollIndex)
+							}
+							// What every "take me there" control in this view does once it has worked
+							// out which line it wants: record the new position, switch to Text Mode so
+							// the destination is actually on screen, and put the focus on it.
+							val jumpToLine: (Int) -> Unit = { indexToScroll ->
+								viewModel.savePosition(docState.session, docState.documentUri, indexToScroll)
+								viewModel.refreshSegmentPreview()
+								isTextMode = true
+								scope.launch {
+									listState.scrollToItem(indexToScroll)
+									lineIndexToFocus = indexToScroll
+								}
 							}
 							LaunchedEffect(docState.documentUri) {
 								if (docState.initialScrollIndex > 0) {
@@ -525,39 +487,12 @@ fun MainScreen(
 									.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
 							}
 							if (!isTextMode) {
-								Column(
-									modifier = Modifier.fillMaxSize().padding(16.dp),
-									horizontalAlignment = Alignment.CenterHorizontally,
-									verticalArrangement = Arrangement.Center
-								) {
-									// Find is a nav unit in this mode (see TtsBottomBar), with its own Previous/Next
-									// buttons and slider, so this text no longer needs its own Find custom actions.
-									Text(
-										text = currentSegmentText,
-										style = readability.textStyle,
-										modifier = Modifier.fillMaxWidth().padding(16.dp)
-									)
-									val remaining = sleepTimerRemaining
-									if (remaining != null) {
-										val min = remaining / 60
-										val sec = remaining % 60
-										Text(
-											// TRANSLATORS: Countdown shown while the reading sleep timer is active; {} is the remaining time as minutes:seconds
-											t("Sleep timer: {}", "%d:%02d".format(min, sec)),
-											style = MaterialTheme.typography.labelMedium,
-											color = MaterialTheme.colorScheme.onSurfaceVariant,
-											modifier = Modifier.semantics {
-												customActions = listOf(
-													// TRANSLATORS: Accessibility action to cancel the active reading sleep timer
-													CustomAccessibilityAction(t("Cancel sleep timer")) {
-														viewModel.cancelSleepTimer()
-														true
-													}
-												)
-											}
-										)
-									}
-								}
+								ReadAloudPane(
+									segmentText = currentSegmentText,
+									textStyle = readability.textStyle,
+									sleepTimerRemaining = sleepTimerRemaining,
+									onCancelSleepTimer = { viewModel.cancelSleepTimer() }
+								)
 							} else {
 								DocumentTextView(
 									docState = docState,
@@ -577,15 +512,7 @@ fun MainScreen(
 									docState = docState,
 									onDismiss = { viewModel.closeGoToDialog() },
 									initialMode = goToInitialMode,
-									onGoTo = { indexToScroll ->
-										viewModel.savePosition(docState.session, docState.documentUri, indexToScroll)
-										viewModel.refreshSegmentPreview()
-										isTextMode = true
-										scope.launch {
-											listState.scrollToItem(indexToScroll)
-											lineIndexToFocus = indexToScroll
-										}
-									}
+									onGoTo = jumpToLine
 								)
 							}
 							if (findDialogOpen) {
@@ -635,14 +562,7 @@ fun MainScreen(
 									links = currentLinks,
 									onNavigate = { offset ->
 										val line = docState.session.lineFromPosition(offset)
-										val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
-										viewModel.savePosition(docState.session, docState.documentUri, indexToScroll)
-										viewModel.refreshSegmentPreview()
-										isTextMode = true
-										scope.launch {
-											listState.scrollToItem(indexToScroll)
-											lineIndexToFocus = indexToScroll
-										}
+										jumpToLine((line - 1).toInt().coerceAtLeast(0))
 									},
 									onDismiss = { viewModel.closeElementsDialog() }
 								)
@@ -669,38 +589,7 @@ fun MainScreen(
 								exportDocumentDialogOpen = false
 							}
 						}
-						if (recentsDialogOpen) {
-							AllDocumentsDialog(
-								recentDocuments = successState.recentDocuments,
-								onDismiss = { recentsDialogOpen = false },
-								onOpenDocument = { uri -> viewModel.openDocument(uri) },
-								onRemoveDocument = { uri -> viewModel.removeRecentDocument(uri) },
-								onLocateDocument = onLocateRecentDocument
-							)
-						}
-						if (wordCountDialogOpen && docState != null) {
-							val stats = remember(docState.session) { docState.session.getStatsFfi() }
-							WordCountDialog(
-								stats = stats,
-								onDismiss = { viewModel.wordCountDialog.close() }
-							)
-						}
-						if (documentInfoDialogOpen && docState != null) {
-							val stats = remember(docState.session) { docState.session.getStatsFfi() }
-							DocumentInfoDialog(
-								docState = docState,
-								stats = stats,
-								onDismiss = { viewModel.documentInfoDialog.close() }
-							)
-						}
-						if (sleepTimerDialogOpen) {
-							SleepTimerDialog(
-								remainingSeconds = sleepTimerRemaining,
-								onSetTimer = { viewModel.setSleepTimer(it) },
-								onCancelTimer = { viewModel.cancelSleepTimer() },
-								onDismiss = { viewModel.sleepTimerDialog.close() }
-							)
-						}
+						DocumentToolDialogs(docState = docState, viewModel = viewModel)
 					}
 					is MainScreenUiState.Error -> {
 						Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -711,41 +600,14 @@ fun MainScreen(
 				}
 			}
 		}
-		if (passwordPromptUri != null) {
-			PasswordDialog(
-				onConfirm = { viewModel.submitPassword(it) },
-				onDismiss = { viewModel.cancelPasswordPrompt() }
-			)
-		}
-		if (importPromptPath != null) {
-			AlertDialog(
-				onDismissRequest = { viewModel.cancelImportSettings() },
-				modifier = Modifier.semantics { paneTitle = "Import document data" },
-				// TRANSLATORS: Title of the dialog offering to import a document's saved settings/bookmarks found alongside it
-				title = { Text(t("Import document data")) },
-				// TRANSLATORS: Body text of the dialog offering to import a found .paperback settings file for the current document
-				text = { Text(t("A .paperback file was found for this document. Would you like to import it?")) },
-				confirmButton = {
-					TextButton(onClick = { viewModel.confirmImportSettings() }) {
-						// TRANSLATORS: Confirm button to proceed with importing the found document settings
-						Text(t("Import"))
-					}
-				},
-				dismissButton = {
-					TextButton(onClick = { viewModel.cancelImportSettings() }) {
-						// TRANSLATORS: Button to decline importing the found document settings
-						Text(t("Cancel"))
-					}
-				}
-			)
-		}
+		DocumentPromptDialogs(viewModel)
 		val lifecycleOwner = LocalLifecycleOwner.current
 		DisposableEffect(lifecycleOwner) {
 			val observer = LifecycleEventObserver { _, event ->
 				if (event == Lifecycle.Event.ON_RESUME) {
 					permissionResumeTrigger++
 					if (hasAllFilesAccessOnR() && !useInAppFileBrowser && !hasAutoEnabledInAppFileBrowser) {
-						viewModel.setUseInAppFileBrowser(true)
+						settings.useInAppFileBrowser.set(true)
 						hasAutoEnabledInAppFileBrowser = true
 						viewModel.configManager.setAppBool("auto_enabled_in_app_file_browser", true)
 						viewModel.configManager.flush()
@@ -818,6 +680,7 @@ fun MainScreen(
 					showFileManagerForImport = false
 					val uri = Uri.fromFile(file)
 					scope.launch(Dispatchers.IO) {
+						// TRANSLATORS: Toast confirming a .paperback settings file was imported successfully, or the failure message if not
 						if (viewModel.importSettingsFromUri(context, uri)) {
 							launch(Dispatchers.Main) {
 								Toast.makeText(context, t("Settings imported"), Toast.LENGTH_SHORT).show()

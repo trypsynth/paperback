@@ -30,7 +30,7 @@ Jeśli używasz JAWS z linijką brajlowską, możesz zauważyć, że długie aka
 
 Obejście, które po miesiącach oczekiwania wyszło w końcu na grupie dyskusyjnej JAWS, polega na edycji pliku `paperback.jcf` i ustawieniu opcji „Braille Presentation and Panning” na „Always use DOM if available”. Warto też włączyć „Pan Text by Paragraph”, bo inaczej linijka pozostanie na aktywnym akapicie, zamiast przesuwać się dalej. Przy obu ustawieniach przesuwanie linijki powinno działać poprawnie.
 
-Nazwy tych opcji podano po angielsku, bo tak brzmią w pliku konfiguracyjnym. W polskiej wersji JAWS ich etykiety w okienku ustawień mogą być przetłumaczone.
+Nazwy tych opcji podano po angielsku, bo w takiej postaci występują w pliku konfiguracyjnym. Polska wersja JAWS ma odpowiadające im etykiety przetłumaczone, więc w okienku ustawień będą brzmiały inaczej.
 
 ## Aktualnie obsługiwane typy plików
 

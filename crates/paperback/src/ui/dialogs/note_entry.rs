@@ -17,6 +17,7 @@ pub fn show_note_entry_dialog(
 		.with_style(TextCtrlStyle::MultiLine)
 		.with_size(dpi::scale_size(&dialog, Size::new(400, 200)))
 		.build();
+	// TRANSLATORS: OK button that confirms the entered bookmark/note text
 	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));
 	let dialog_for_key = dialog;
 	note_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {

@@ -494,6 +494,40 @@ fn navigate_section_returns_found_when_flag_enabled() {
 	assert!(!result.not_supported);
 }
 
+/// A plain audio bundle's buffer is one placeholder space per file with no newline anywhere, so
+/// the line enclosing any marker is the whole book. Section navigation must therefore announce
+/// the marker's own text (the file name), not the line it falls on, or every section reads out
+/// the same run of blanks.
+#[test]
+fn navigate_section_in_an_audio_only_book_announces_the_file_name() {
+	let mut buffer = DocumentBuffer::new();
+	for name in ["Track 1", "Track 2", "Track 3"] {
+		let position = buffer.current_position();
+		buffer.append(" ");
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, position).with_text(name.to_string()));
+	}
+	let mut doc = Document::new().with_title("Some Audiobook".to_string());
+	doc.set_buffer(buffer);
+	doc.audio_only = true;
+	let session = DocumentSession {
+		handle: DocumentHandle::new(doc),
+		file_path: "Some Audiobook.zip".to_string(),
+		history: Vec::new(),
+		history_index: 0,
+		parser_flags: ParserFlags::SUPPORTS_SECTIONS,
+		last_stable_position: None,
+	};
+	let first = session.navigate_section(-1, false, true);
+	assert!(first.found);
+	assert_eq!(first.marker_text, "Track 1");
+	let second = session.navigate_section(first.offset, false, true);
+	assert!(second.found);
+	assert_eq!(second.marker_text, "Track 2");
+	let back = session.navigate_section(second.offset, false, false);
+	assert!(back.found);
+	assert_eq!(back.marker_text, "Track 1");
+}
+
 #[test]
 fn navigate_bookmark_and_note_return_not_found_with_empty_config() {
 	let session = sample_session(ParserFlags::NONE);
@@ -817,6 +851,38 @@ fn audio_extract_source_ffi_copies_a_file_source() {
 	let output_path = dir.join("out.mp3");
 	assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
 	assert_eq!(fs::read(&output_path).unwrap(), b"chapter-one-bytes");
+}
+
+/// The whole path a real audiobook takes: a zip that is nothing but audio files, opened through
+/// `DocumentSession::new`, stepped through with the same `navigate_section` the `[` and `]` keys
+/// call. Guards the seam the two narrower tests leave open, where the parser stores the file name
+/// on the marker but `reader_navigate` decides whether a section's marker text reaches the UI.
+#[test]
+fn navigate_section_names_each_file_of_a_real_plain_audio_zip() {
+	let dir = env::temp_dir().join("paperback-session-plain-audio-section-nav-test");
+	fs::create_dir_all(&dir).unwrap();
+	let zip_path = dir.join("Some Audiobook.zip");
+	{
+		let file = File::create(&zip_path).unwrap();
+		let mut writer = ZipWriter::new(file);
+		for entry in ["Track 2.mp3", "Track 10.mp3", "Track 1.mp3"] {
+			writer.start_file(entry, FileOptions::<()>::default()).unwrap();
+			writer.write_all(b"fake-audio").unwrap();
+		}
+		writer.finish().unwrap();
+	}
+	let session = DocumentSession::new(&zip_path.to_string_lossy(), "", "", false).expect("plain audio zip opens");
+	let mut announced = Vec::new();
+	let mut position = -1;
+	for _ in 0..3 {
+		let result = session.navigate_section(position, false, true);
+		assert!(result.found);
+		announced.push(result.marker_text.clone());
+		position = result.offset;
+	}
+	// Natural order, and a distinct name per section rather than the same blank line three times.
+	assert_eq!(announced, vec!["Track 1", "Track 2", "Track 10"]);
+	assert!(!session.navigate_section(position, false, true).found, "no fourth file to step onto");
 }
 
 #[test]

@@ -66,7 +66,7 @@ pub fn doc_selected_range(tab: &DocumentTab) -> (i64, i64) {
 /// next file).
 fn set_caret_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
 	if tab.window.needs_reload_for(offset, tab.session.document_len()) {
-		reload_window_around(tab, offset);
+		reload_window_around(tab, offset, "caret jump");
 	}
 	let local = tab.window.to_local(offset);
 	tab.text_ctrl.set_focus();
@@ -93,7 +93,7 @@ fn jump_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
 /// window's `RELOAD_MARGIN`, so `end` lands safely inside whatever window `start` triggers.
 pub fn select_doc_range(tab: &mut DocumentTab, start: i64, end: i64) {
 	if tab.window.needs_reload_for(start, tab.session.document_len()) {
-		reload_window_around(tab, start);
+		reload_window_around(tab, start, "selection jump");
 	}
 	let local_start = tab.window.to_local(start);
 	let local_end = tab.window.to_local(end);
@@ -165,9 +165,9 @@ fn nav_announcements(target: MarkerNavTarget, level_filter: i32) -> NavAnnouncem
 			// TRANSLATORS: Announced when the document has no sections to navigate
 			not_supported: t("No sections."),
 			// TRANSLATORS: Announced when there is no next section from the current position
-			not_found_next: t("No next section"),
+			not_found_next: t("No next section."),
 			// TRANSLATORS: Announced when there is no previous section from the current position
-			not_found_prev: t("No previous section"),
+			not_found_prev: t("No previous section."),
 			format: NavFoundFormat::TextOnly,
 		},
 		MarkerNavTarget::Heading(level) => {
@@ -816,8 +816,12 @@ pub fn handle_bookmark_with_note(
 		cfg.get_bookmarks(&path_str).into_iter().find(|bm| bm.start == start && bm.end == end)
 	};
 	let existing_note = existing.as_ref().map(|bm| bm.note.clone()).unwrap_or_default();
+	// TRANSLATORS: Title of the dialog for adding or editing a bookmark note
+	let bookmark_note_title = t("Bookmark Note");
+	// TRANSLATORS: Prompt label in the bookmark note dialog asking the user to type their note
+	let bookmark_note_prompt = t("Enter bookmark note:");
 	let Some(note) =
-		dialogs::show_note_entry_dialog(frame, &t("Bookmark Note"), &t("Enter bookmark note:"), &existing_note)
+		dialogs::show_note_entry_dialog(frame, &bookmark_note_title, &bookmark_note_prompt, &existing_note)
 	else {
 		return;
 	};

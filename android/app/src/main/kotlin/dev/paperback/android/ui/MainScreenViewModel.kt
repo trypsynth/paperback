@@ -109,39 +109,30 @@ class MainScreenViewModel(
 	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
 	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes.asStateFlow()
 
+	val settings = ReaderSettings(config)
+
+	// Every screen and dialog the reading UI can put on top of itself, in one place: a
+	// ScreenRequest for the two that are real navigation destinations, a DialogState for the
+	// rest. The ones whose state is private are opened through a function on this class that
+	// has work to do first (loading the element lists, choosing the Go To mode), so nothing
+	// outside can open them straight into an empty or stale state.
+	val settingsRequest = ScreenRequest()
+	val tocRequest = ScreenRequest()
+
+	val findDialog = DialogState()
+	val wordCountDialog = DialogState()
+	val documentInfoDialog = DialogState()
+	val sleepTimerDialog = DialogState()
+	val permissionRationaleDialog = DialogState()
+
 	private val elementsDialogState = DialogState()
 	val showElementsDialog: StateFlow<Boolean> = elementsDialogState.isOpen
 
-	val findDialog = DialogState()
+	private val goToDialogState = DialogState()
+	val showGoToDialog: StateFlow<Boolean> = goToDialogState.isOpen
 
-	val settingsRequest = ScreenRequest()
-
-	private val _restorePreviousDocuments = MutableStateFlow(config.getAppBool("restore_previous_documents", true))
-	val restorePreviousDocuments: StateFlow<Boolean> = _restorePreviousDocuments.asStateFlow()
-
-	private val _useInAppFileBrowser = MutableStateFlow(config.getAppBool("use_in_app_file_browser", false))
-	val useInAppFileBrowser: StateFlow<Boolean> = _useInAppFileBrowser.asStateFlow()
-
-	private val _swipeUpMovesForward = MutableStateFlow(config.getAppBool("swipe_up_moves_forward", true))
-	val swipeUpMovesForward: StateFlow<Boolean> = _swipeUpMovesForward.asStateFlow()
-
-	// Spacing and alignment share the desktop's config keys and value meanings (spacing 0/1/2,
-	// alignment 0 leading, 1 center, 2 trailing, 3 justify) so a document reads the same way on
-	// every platform. Text size does not: the desktop stores an absolute point size, while this
-	// scales whatever size the system font setting is already asking for.
-	private val _textScalePercent = MutableStateFlow(config.getAppInt("text_scale_percent", 100))
-	val textScalePercent: StateFlow<Int> = _textScalePercent.asStateFlow()
-
-	private val _lineSpacing = MutableStateFlow(config.getAppInt("line_spacing", 0))
-	val lineSpacing: StateFlow<Int> = _lineSpacing.asStateFlow()
-
-	private val _paragraphSpacing = MutableStateFlow(config.getAppInt("paragraph_spacing", 0))
-	val paragraphSpacing: StateFlow<Int> = _paragraphSpacing.asStateFlow()
-
-	private val _textAlignment = MutableStateFlow(config.getAppInt("text_alignment", 0))
-	val textAlignment: StateFlow<Int> = _textAlignment.asStateFlow()
-
-	val tocRequest = ScreenRequest()
+	private val _goToInitialMode = MutableStateFlow("Line")
+	val goToInitialMode: StateFlow<String> = _goToInitialMode.asStateFlow()
 
 	private val _tocState = MutableStateFlow(TocUiState())
 	val tocState: StateFlow<TocUiState> = _tocState.asStateFlow()
@@ -191,16 +182,6 @@ class MainScreenViewModel(
 		)
 	}
 
-	private val goToDialogState = DialogState()
-	val showGoToDialog: StateFlow<Boolean> = goToDialogState.isOpen
-
-	private val _goToInitialMode = MutableStateFlow("Line")
-	val goToInitialMode: StateFlow<String> = _goToInitialMode.asStateFlow()
-
-	val wordCountDialog = DialogState()
-
-	val documentInfoDialog = DialogState()
-
 	private val _activeSearchQuery = MutableStateFlow<String?>(null)
 	val activeSearchQuery: StateFlow<String?> = _activeSearchQuery.asStateFlow()
 
@@ -231,8 +212,6 @@ class MainScreenViewModel(
 		_performSearchEvent.tryEmit(false)
 	}
 
-	val sleepTimerDialog = DialogState()
-
 	private val _currentHeadings = MutableStateFlow<HeadingTreeFfi?>(null)
 	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings.asStateFlow()
 
@@ -241,8 +220,6 @@ class MainScreenViewModel(
 
 	private val _passwordPromptUri = MutableStateFlow<Uri?>(null)
 	val passwordPromptUri = _passwordPromptUri.asStateFlow()
-
-	val permissionRationaleDialog = DialogState()
 
 	private val _importPromptPath = MutableStateFlow<String?>(null)
 	val importPromptPath: StateFlow<String?> = _importPromptPath.asStateFlow()
@@ -795,7 +772,8 @@ class MainScreenViewModel(
 			return true
 		}
 		_ttsPosition.value = res.position
-		val text = displayTextFor(tab, tab.session.getTextSegment(res.position, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT))
+		val segment = tab.session.getTextSegment(res.position, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		val text = displayTextFor(tab, segment)
 		_currentSegmentText.value = text
 		saveTtsPositionToConfig(res.position)
 		if (tab.hasAudio) {
@@ -829,10 +807,7 @@ class MainScreenViewModel(
 		val time = formatDuration(if (tab.isAudioOnly) cursor.seekMs else elapsedMs)
 		val fileChanged = lastAnnouncedAudioSource != clip.source
 		lastAnnouncedAudioSource = clip.source
-		val sectionTitle = tab.toc
-			.lastOrNull { it.position <= clip.start }
-			?.title
-			.orEmpty()
+		val sectionTitle = sectionTitleAt(tab, clip.start)
 		_accessibilityAnnouncement.tryEmit(
 			if (fileChanged && sectionTitle.isNotBlank()) "$sectionTitle, $time" else time
 		)
@@ -864,9 +839,19 @@ class MainScreenViewModel(
 	fun refreshSegmentPreview() {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
+		// An audio-only book's buffer is one placeholder space per file with no newlines
+		// anywhere, so asking for the paragraph enclosing a position collapses to the whole
+		// buffer and reports it as starting at 0. Deriving the label from that would pin it to
+		// the first file's name for the life of the book, however far playback had moved; the
+		// section (that is, the file) holding the current position is the only label there is.
+		if (tab.isAudioOnly) {
+			_currentSegmentText.value = sectionTitleAt(tab, _ttsPosition.value)
+			return
+		}
 		val current = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
 		_currentSegmentText.value = displayTextFor(tab, current).ifBlank {
-			displayTextFor(tab, tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT))
+			val next = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
+			displayTextFor(tab, next)
 		}
 	}
 
@@ -888,8 +873,9 @@ class MainScreenViewModel(
 		}
 	}
 
-	/** Seeks daisyAudioPlayer to `segment`'s start, then either resumes playback there or just
-	 * announces `announceText`. */
+	/** Seeks daisyAudioPlayer to `segment`'s start, resumes playback there when `speak` says
+	 * the reader was already going, and announces `announceText` where that is the only sign
+	 * anything moved. */
 	private fun navigateDaisyAudioToSegment(
 		segment: TextSegmentFfi,
 		announceText: String,
@@ -899,17 +885,40 @@ class MainScreenViewModel(
 		daisyAudioPlayer.seekToPosition(segment.startPos)
 		if (speak) {
 			daisyAudioPlayer.play()
-		} else if (announce) {
+		}
+		// Stepping by section moves between whole narration files, so name where the jump
+		// landed the way a time seek names the file it crossed into: unconditionally, because
+		// with playback resuming there is otherwise no cue at all that anything moved, and in
+		// full rather than announceNavigationCue's five-word prefix, since here the name is the
+		// whole message rather than the opening of a paragraph being previewed.
+		val bySection = (_currentNavUnit.value as? NavUnit.Segment)?.type == SegmentTypeFfi.SECTION
+		if (bySection && announceText.isNotBlank()) {
+			_accessibilityAnnouncement.tryEmit(announceText)
+		} else if (!speak && announce) {
 			announceNavigationCue(announceText)
 		}
 	}
 
 	/** A segment's own text, falling back to its enclosing section's TOC title when blank — the
 	 * case for a plain-audio DAISY section, whose buffer content is just a placeholder space. */
-	private fun displayTextFor(tab: DocumentTabState, segment: TextSegmentFfi): String =
-		segment.text.ifBlank {
-			tab.toc.lastOrNull { it.position <= segment.startPos }?.title.orEmpty()
-		}
+	private fun displayTextFor(
+		tab: DocumentTabState,
+		segment: TextSegmentFfi
+	): String {
+		if (segment.text.isNotBlank()) return segment.text
+		return sectionTitleAt(tab, segment.startPos)
+	}
+
+	/** The title of the TOC section `position` falls inside, empty when the document has no TOC.
+	 * In a book that is just a bundle of narration files, each file is its own section, so this
+	 * is the name of the file covering `position`. */
+	private fun sectionTitleAt(
+		tab: DocumentTabState,
+		position: Long
+	): String {
+		val section = tab.toc.lastOrNull { it.position <= position }
+		return section?.title.orEmpty()
+	}
 
 	/** Jumps straight to `pos` (a freshly found Find match) and, if `resume` says the reader was
 	 * already going, speaks/plays from exactly there. Deliberately does not go through
@@ -1308,9 +1317,20 @@ class MainScreenViewModel(
 		updateTtsPosition(pos)
 	}
 
+	fun openWordCountDialog() {
+		// Nothing to count in an audio-only book. The menu hides the entry for one; this keeps
+		// the Ctrl+W shortcut from opening a dialog full of zeroes anyway.
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		if (state.activeTab?.isAudioOnly == true) return
+		wordCountDialog.open()
+	}
+
 	fun openElementsDialog() {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
+		// An audio-only book has no text spine, so both tabs of the dialog would come up empty.
+		// The menu hides the entry for one; this keeps the F7 shortcut from opening it anyway.
+		if (tab.isAudioOnly) return
 		viewModelScope.launch(Dispatchers.IO) {
 			val pos = _ttsPosition.value
 			val headings = tab.session.getHeadingTreeFfi(pos)
@@ -1327,49 +1347,6 @@ class MainScreenViewModel(
 		elementsDialogState.close()
 		_currentHeadings.value = null
 		_currentLinks.value = null
-	}
-
-	fun setRestorePreviousDocuments(value: Boolean) {
-		_restorePreviousDocuments.value = value
-		config.setAppBool("restore_previous_documents", value)
-		config.flush()
-	}
-
-	fun setUseInAppFileBrowser(value: Boolean) {
-		_useInAppFileBrowser.value = value
-		config.setAppBool("use_in_app_file_browser", value)
-		config.flush()
-	}
-
-	fun setSwipeUpMovesForward(value: Boolean) {
-		_swipeUpMovesForward.value = value
-		config.setAppBool("swipe_up_moves_forward", value)
-		config.flush()
-	}
-
-	fun setTextScalePercent(value: Int) {
-		val clamped = value.coerceIn(MIN_TEXT_SCALE_PERCENT, MAX_TEXT_SCALE_PERCENT)
-		_textScalePercent.value = clamped
-		config.setAppInt("text_scale_percent", clamped)
-		config.flush()
-	}
-
-	fun setLineSpacing(value: Int) {
-		_lineSpacing.value = value
-		config.setAppInt("line_spacing", value)
-		config.flush()
-	}
-
-	fun setParagraphSpacing(value: Int) {
-		_paragraphSpacing.value = value
-		config.setAppInt("paragraph_spacing", value)
-		config.flush()
-	}
-
-	fun setTextAlignment(value: Int) {
-		_textAlignment.value = value
-		config.setAppInt("text_alignment", value)
-		config.flush()
 	}
 
 	private val _accessibilityAnnouncement = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -1491,11 +1468,6 @@ class MainScreenViewModel(
 	}
 
 	companion object {
-		/** Bounds of the readability text size multiplier, shared with the settings slider. */
-		const val MIN_TEXT_SCALE_PERCENT = 70
-		const val MAX_TEXT_SCALE_PERCENT = 300
-		const val TEXT_SCALE_PERCENT_STEP = 10
-
 		private val WHITESPACE_REGEX = "\\s+".toRegex()
 		private const val DOCUMENT_CACHE_DIR = "documents"
 		private val UUID_DIR_REGEX = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")

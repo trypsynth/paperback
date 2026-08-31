@@ -44,7 +44,7 @@ toml = { workspace = true }
 tracing = "0.1.44"
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.0", features = ["cli"], optional = true }
-zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
+zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
 uniffi = { version = "0.32.0", features = ["build"], optional = true }
@@ -54,7 +54,7 @@ rstest = { workspace = true }
 # Only for constructing password-protected archives in tests; matches the main `zip`
 # dependency's default-features = false, adding just aes-crypto rather than the full
 # default bundle (bzip2, lzma, ppmd, zstd).
-zip = { version = "8.6.0", default-features = false, features = ["deflate", "aes-crypto"] }
+zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate", "aes-crypto"] }
 
 [features]
 uniffi = ["dep:uniffi"]

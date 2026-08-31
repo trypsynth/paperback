@@ -11,6 +11,7 @@ pub fn format_status_text(info: &StatusInfo) -> String {
 	let line_label = t("Line");
 	// TRANSLATORS: Status bar label for the current character offset within the line
 	let char_label = t("Character");
+	// TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 	let reading_label = t("Reading");
 	format!(
 		"{} {}, {} {}, {} {}%",
@@ -54,6 +55,7 @@ pub fn update_status_bar_with_sleep_timer(
 				return;
 			}
 		}
+		// TRANSLATORS: Default status bar text when no document is open
 		frame.set_status_text(&t("Ready"), 0);
 		return;
 	}
