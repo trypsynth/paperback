@@ -17,13 +17,13 @@ jobs:
           sudo mv cobalt /usr/local/bin/
       - name: Install Pandoc
         run: sudo apt-get update && sudo apt-get install -y pandoc
-      - name: Build README with Pandoc
-        run: pandoc --defaults=doc/pandoc.yaml doc/readme.md -o readme.html
       - name: Build Cobalt site
         run: cobalt build
         working-directory: web
-      - name: Copy README to site
-        run: cp readme.html web/_site/readme.html
+      # After cobalt, which regenerates _site: this writes the manual in every
+      # language into the built site, English at readme.html as before.
+      - name: Build the documentation in every language
+        run: bash web/build-docs.sh
       - name: Copy CNAME to site
         run: cp CNAME web/_site/CNAME
       - name: Deploy to GitHub Pages
