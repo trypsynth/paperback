@@ -172,12 +172,14 @@ internal class PluralRule private constructor(
 				?.lineSequence()
 				?.firstOrNull { it.startsWith("Plural-Forms:") }
 				?: return null
-			val nplurals = line.substringAfter("nplurals=", "")
+			val nplurals = line
+				.substringAfter("nplurals=", "")
 				.takeWhile { it.isDigit() }
 				.toIntOrNull()
 				?.takeIf { it > 0 }
 				?: return null
-			val expression = line.substringAfter("plural=", "")
+			val expression = line
+				.substringAfter("plural=", "")
 				.substringBefore(';')
 				.trim()
 				.takeIf { it.isNotEmpty() }

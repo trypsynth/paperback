@@ -118,8 +118,11 @@ class TranslateTest {
 }
 
 /** The `Plural-Forms` headers the shipped catalogues actually carry. */
-private const val POLISH = "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);"
-private const val SERBIAN = "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);"
+private const val POLISH =
+	"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);"
+private const val SERBIAN =
+	"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && " +
+		"(n%100<12 || n%100>14) ? 1 : 2);"
 private const val GERMAN = "Plural-Forms: nplurals=2; plural=(n != 1);"
 private const val CHINESE = "Plural-Forms: nplurals=1; plural=0;"
 
@@ -193,7 +196,10 @@ class PluralFormTest {
 	@Test
 	fun `more forms than slots clamps to the last slot`() {
 		Translations.pluralRule =
-			PluralRule.parse("Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);")
+			PluralRule.parse(
+				"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : " +
+					"n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);"
+			)
 		assertEquals("one", forCount(0))
 		assertEquals("few", forCount(1))
 		assertEquals("many", forCount(2))
