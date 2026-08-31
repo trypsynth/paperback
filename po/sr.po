@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:48-0600\n"
-"PO-Revision-Date: 2026-08-30 17:56+0200\n"
+"POT-Creation-Date: 2026-08-31 20:57+0000\n"
+"PO-Revision-Date: 2026-08-31 23:48+0200\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
 "Language: sr\n"
@@ -77,6 +77,8 @@ msgid "Closed"
 msgstr "Zatvoreno"
 
 #. TRANSLATORS: Status of a document whose file could not be found on disk
+#. TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the row's displayed status to decide whether the Open button is enabled.
+#. TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the selected row's displayed status to decide whether the Locate button is enabled.
 msgid "Missing"
 msgstr "Nedostaje"
 
@@ -85,8 +87,9 @@ msgid "&Open"
 msgstr "&Otvori"
 
 #. TRANSLATORS: Button label to locate a missing file on disk
-msgid "&Locate…"
-msgstr "&Lociraj…"
+#| msgid "Locate"
+msgid "&Locate..."
+msgstr "&Pronađi..."
 
 #. TRANSLATORS: Button label to remove selected documents from the list
 msgid "&Remove"
@@ -97,6 +100,10 @@ msgid "&Clear All"
 msgstr "&Očisti sve"
 
 #. TRANSLATORS: Label for a button that closes a dialog
+#. TRANSLATORS: Label for a button that closes the Document Info dialog
+#. TRANSLATORS: Label for a button that closes the View Note dialog
+#. TRANSLATORS: Label for a button that closes the Web View dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Close"
 msgstr "Zatvori"
 
@@ -137,9 +144,10 @@ msgstr[0] "%d dokument."
 msgstr[1] "%d dokumenta."
 msgstr[2] "%d dokumenata."
 
-#. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
-msgid "1 of 1 document selected."
-msgstr "1 od 1 dokument je izabran."
+#. TRANSLATORS: Status bar text in the All Documents dialog when the only document in the list is selected
+#| msgid "1 of 1 document selected."
+msgid "1 document selected."
+msgstr "1 dokument izabran."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
 msgid "All %d document selected."
@@ -183,6 +191,8 @@ msgstr "&knjižne oznake:"
 msgid "&Edit Note"
 msgstr "&Uredi napomenu"
 
+#. TRANSLATORS: Label for the button to delete the selected bookmark/note
+#. TRANSLATORS: Menu item in the Edit menu to delete the current selection.
 msgid "&Delete"
 msgstr "&Obriši"
 
@@ -207,6 +217,7 @@ msgid "Error"
 msgstr "Greška"
 
 #. TRANSLATORS: Title of the Bookmark Note editor dialog
+#. TRANSLATORS: Title of the dialog for adding or editing a bookmark note
 msgid "Bookmark Note"
 msgstr "Napomena knjižne oznake"
 
@@ -215,6 +226,7 @@ msgid "Edit bookmark note:"
 msgstr "Uredi napomenu knjižne oznake:"
 
 #. TRANSLATORS: Title of the Document Info dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "Informacije o dokumentu"
 
@@ -246,6 +258,41 @@ msgstr "Znakovi:"
 msgid "Characters (excluding spaces):"
 msgstr "Znakovi (bez razmaka):"
 
+#. TRANSLATORS: Label for the number of audio files in the document
+#| msgid "Total number of lines: "
+msgid "Number of files:"
+msgstr "Broj datoteka:"
+
+#. TRANSLATORS: Label for the total playback duration across all of the document's audio files
+#| msgid "Duration"
+msgid "Total duration:"
+msgstr "Ukupno trajanje:"
+
+#. TRANSLATORS: Label for the average playback duration per audio file in the document
+msgid "Average duration:"
+msgstr "Prosečno trajanje:"
+
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d sat"
+msgstr[1] "%d sata"
+msgstr[2] "%d sati"
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minut"
+msgstr[1] "%d minuta"
+msgstr[2] "%d minuta"
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d sekunda"
+msgstr[1] "%d sekunde"
+msgstr[2] "%d sekundi"
+
 #. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr "Elementi"
@@ -263,9 +310,18 @@ msgid "Links"
 msgstr "Linkovi"
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
+#. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
+#. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
 msgid "Untitled"
 msgstr "Nenaslovljeno"
 
+#. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button that confirms the entered bookmark/note text
+#. TRANSLATORS: OK button that confirms the chosen file format in the Open As dialog
+#. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
+#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
+#. TRANSLATORS: OK button that confirms the entered sleep timer duration
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr "U redu"
@@ -279,6 +335,7 @@ msgid "&Line number:"
 msgstr "&Broj reda:"
 
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
+#. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
 msgstr "Kretanje"
 
@@ -338,6 +395,18 @@ msgstr "Podešavanja"
 msgid "&Restore previously opened documents on startup"
 msgstr "&Vrati prethodno otvorene dokumente pri pokretanju"
 
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+msgid "&Automatically reload changed documents"
+msgstr "&Automatski ponovo učitaj promenjene dokumente"
+
+#. TRANSLATORS: Option to start the app maximized
+msgid "&Start maximized"
+msgstr "&Pokreni uvećan"
+
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+msgid "&Minimize to system tray"
+msgstr "&Umanji u sistemsku traku"
+
 #. TRANSLATORS: Option to toggle word wrapping of text
 msgid "&Word wrap"
 msgstr "&Prelamanje reči"
@@ -345,14 +414,6 @@ msgstr "&Prelamanje reči"
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
 msgstr "Obradi tabele &u redu"
-
-#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
-msgid "&Minimize to system tray"
-msgstr "&Umanji u sistemsku traku"
-
-#. TRANSLATORS: Option to start the app maximized
-msgid "&Start maximized"
-msgstr "&Pokreni uvećan"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -431,14 +492,23 @@ msgstr "Premotavanje &nakon kraja poglavlja nastavlja na sledeće"
 msgid "Check for &updates on startup"
 msgstr "Proveri &ažuriranja pri pokretanju"
 
-#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
-msgid "&Automatically reload changed documents"
-msgstr "&Automatski ponovo učitaj promenjene dokumente"
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "Kanal ažuriranja:"
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "Stabilni"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "Dev"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
 msgstr "Prilagodi &prečicu prozora..."
 
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
 msgstr "Prilagodi &tasterske prečice..."
 
@@ -453,18 +523,6 @@ msgstr "Broj &nedavnih dokumenata za prikazivanje:"
 #. TRANSLATORS: Label for the language selection dropdown
 msgid "&Language:"
 msgstr "&Jezik:"
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-msgid "Update Channel:"
-msgstr "Kanal ažuriranja:"
-
-#. TRANSLATORS: Stable update channel option
-msgid "Stable"
-msgstr "Stabilni"
-
-#. TRANSLATORS: Developer/development update channel option
-msgid "Dev"
-msgstr "Dev"
 
 #. TRANSLATORS: Label/header for the Font options section
 msgid "Font"
@@ -551,6 +609,7 @@ msgid "General"
 msgstr "Opšta"
 
 #. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Čitanje"
 
@@ -599,14 +658,17 @@ msgid "Window Hotkey"
 msgstr "Prečica prozora"
 
 #. TRANSLATORS: Checkbox label for Control modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
 msgid "&Ctrl"
 msgstr "&Ctrl"
 
 #. TRANSLATORS: Checkbox label for Alt modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
 msgid "&Alt"
 msgstr "&Alt"
 
 #. TRANSLATORS: Checkbox label for Shift modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
 msgid "&Shift"
 msgstr "&Šift"
 
@@ -615,6 +677,7 @@ msgid "&Win"
 msgstr "&Win"
 
 #. TRANSLATORS: Label for the hotkey key selection input field
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
 msgid "&Key:"
 msgstr "&Taster:"
 
@@ -623,6 +686,10 @@ msgid "Clear"
 msgstr "Očisti"
 
 #. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
 msgid "Cancel"
 msgstr "Otkaži"
 
@@ -630,21 +697,27 @@ msgstr "Otkaži"
 msgid "Space"
 msgstr "Razmak"
 
+#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
 msgid "Customize Keyboard Shortcuts"
 msgstr "Prilagodi tasterske prečice"
 
+#. TRANSLATORS: Label above the list of shortcuts for a category in the Keyboard Shortcuts dialog.
 msgid "&Shortcuts:"
 msgstr "&Prečice:"
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
 msgid "&Set Shortcut..."
 msgstr "&Podesi prečicu..."
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
 msgid "&Clear Shortcut"
 msgstr "&Obriši prečicu"
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
 msgid "&Reset to Default"
 msgstr "&Vrati na podrazumevano"
 
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
 msgid "Reset &All to Defaults"
 msgstr "Vrati &sve na podrazumevano"
 
@@ -661,12 +734,15 @@ msgstr "Sukob prečica"
 msgid "Reset all shortcuts to their default values?"
 msgstr "Da li želite da vratite sve prečice na podrazumevane?"
 
+#. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
 msgstr "Vrati prečice"
 
+#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 msgid "Set Shortcut for {}"
 msgstr "Podesi prečicu za {}"
 
+#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 msgid "Configure shortcut for {}:"
 msgstr "Podesi prečicu za{}:"
 
@@ -674,6 +750,7 @@ msgid "Tip: click in the key field and press the key combination you want."
 msgstr ""
 "Savet: kliknite na polje tastera i pritisnite željenu kombinaciju tastera."
 
+#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
 msgid "Detected: (none)"
 msgstr "Prepoznato: (ništa)"
 
@@ -683,6 +760,7 @@ msgstr "Prepoznato: {}"
 msgid "No key detected"
 msgstr "Nijedan taster nije prepoznat"
 
+#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
 msgid "&Clear"
 msgstr "&Obriši"
 
@@ -695,6 +773,7 @@ msgid "&Minutes:"
 msgstr "&Minuti:"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "Sadržaj"
 
@@ -710,30 +789,26 @@ msgstr "Bez izbora"
 msgid "View Note"
 msgstr "Prikaži napomenu"
 
-#. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d sat"
-msgstr[1] "%d sata"
-msgstr[2] "%d sati"
-
-#. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minut"
-msgstr[1] "%d minuta"
-msgstr[2] "%d minuta"
-
-#. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d sekunda"
-msgstr[1] "%d sekunde"
-msgstr[2] "%d sekundi"
-
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
 msgstr "Očekivano vreme čitanja: {}"
+
+#. TRANSLATORS: Title of the Word Count dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Word Count"
+msgstr "Broj reči"
+
+#| msgid "This document contains %d word."
+#| msgid_plural "This document contains %d words."
+msgid "This document contains %d audio file."
+msgid_plural "This document contains %d audio files."
+msgstr[0] "Ovaj dokument sadrži %d zvučnu datoteku."
+msgstr[1] "Ovaj dokument sadrži %d zvučne datoteke."
+msgstr[2] "Ovaj dokument sadrži %d zvučnih datoteka."
+
+#. TRANSLATORS: Prompt showing an audio-only document's total playback duration across all its files. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+msgid "Total duration: {}"
+msgstr "Ukupno trajanje: {}"
 
 #. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
 msgid "The selection contains %d word."
@@ -748,10 +823,6 @@ msgid_plural "This document contains %d words."
 msgstr[0] "Ovaj dokument sadrži %d reč."
 msgstr[1] "Ovaj dokument sadrži %d reči."
 msgstr[2] "Ovaj dokument sadrži %d reči."
-
-#. TRANSLATORS: Title of the Word Count dialog
-msgid "Word Count"
-msgstr "Broj reči"
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
@@ -792,6 +863,7 @@ msgstr "Nema privremene knjižne oznake."
 msgid "Temporary bookmark."
 msgstr "Privremena knjižna oznaka."
 
+#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
 msgid "Table View"
 msgstr "Prikaz tabele"
 
@@ -803,6 +875,7 @@ msgid "Document Password"
 msgstr "Lozinka dokumenta"
 
 #. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
 msgid "Failed to load document."
 msgstr "Učitavanje dokumenta nije uspelo."
 
@@ -875,6 +948,7 @@ msgstr "Pronađi"
 msgid "Find &what:"
 msgstr "&Šta pronaći:"
 
+#. TRANSLATORS: Group box heading for the search options in the Find dialog
 msgid "Options"
 msgstr "Podešavanja"
 
@@ -891,10 +965,12 @@ msgid "Use &regular expressions"
 msgstr "Koristi &regularne izraze"
 
 #. TRANSLATORS: Button to search backward for the previous match
+#. TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
 msgid "Find &Previous"
 msgstr "Pronađi &prethodno"
 
 #. TRANSLATORS: Button to search forward for the next match
+#. TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
 msgid "Find &Next"
 msgstr "Pronađi &sledeće"
 
@@ -907,6 +983,7 @@ msgid "No more results. Wrapping search."
 msgstr "Nema više rezultata. Vraćanje pretrage na početak."
 
 #. TRANSLATORS: Error shown when the active document has no known file path to reveal
+#. TRANSLATORS: Error shown when the file manager could not be launched to reveal the active document's file
 msgid "Failed to reveal file in folder."
 msgstr "Neuspešno otkrivanje datoteke u folderu."
 
@@ -1032,7 +1109,6 @@ msgstr[2] "Tajmer pre spavanja podešen na %d minuta."
 msgid "Paperback"
 msgstr "Paperback"
 
-#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
 msgid "Document reloaded."
 msgstr "Dokument ponovo učitan."
 
@@ -1072,514 +1148,689 @@ msgstr "Uključen režim celog ekrana."
 msgid "Full screen off."
 msgstr "Isključen režim celog ekrana."
 
+#. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 msgid "&Undo\tCtrl+Z"
 msgstr "&Poništi\tCtrl+Z"
 
+#. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
 msgid "&Redo\tCtrl+Shift+Z"
 msgstr "&Ponovi\tCtrl+Shift+Z"
 
+#. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
 msgid "Cu&t\tCtrl+X"
 msgstr "Isec&i\tCtrl+X"
 
+#. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
 msgid "&Copy\tCtrl+C"
 msgstr "&Kopiraj\tCtrl+C"
 
+#. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
 msgid "&Paste\tCtrl+V"
 msgstr "&Nalepi\tCtrl+V"
 
+#. TRANSLATORS: Menu item in the Edit menu to select all text.
 msgid "Select &All\tCtrl+A"
 msgstr "Izaberi &sve\tCtrl+A"
 
+#. TRANSLATORS: Menu item in the File menu to open a document.
 msgid "&Open..."
 msgstr "&Otvori..."
 
+#. TRANSLATORS: Status-bar help text for the File > Open menu item.
 msgid "Open a document"
 msgstr "Otvori dokument"
 
+#. TRANSLATORS: Menu item in the File menu to close the current document.
 msgid "&Close"
 msgstr "&Zatvori"
 
+#. TRANSLATORS: Status-bar help text for the File > Close menu item.
 msgid "Close the current document"
 msgstr "Zatvori trenutni dokument"
 
+#. TRANSLATORS: Menu item in the File menu to close all open documents.
 msgid "Close &All"
 msgstr "Zatvori &sve"
 
+#. TRANSLATORS: Status-bar help text for the File > Close All menu item.
 msgid "Close all documents"
 msgstr "Zatvori sve dokumente"
 
+#. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
 msgid "Reopen &Last Closed"
 msgstr "Ponovo otvori pos&lednje zatvoreno"
 
+#. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Ponovo otvori poslednji zatvoreni dokument"
 
+#. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
 msgstr "&Nedavni dokumenti"
 
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 msgid "Open a recent document"
 msgstr "Otvori nedavni dokument"
 
+#. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
 msgid "E&xit"
 msgstr "I&zlaz"
 
+#. TRANSLATORS: Status-bar help text for the File > Exit menu item.
 msgid "Exit the application"
 msgstr "Zatvori aplikaciju"
 
+#. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
 msgstr "(nema nedavnih dokumenata)"
 
+#. TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
 msgid "Show All..."
 msgstr "Prikaži sve..."
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Section"
 msgstr "Prethodni odeljak"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
 msgid "Go to previous section"
 msgstr "Pređi na prethodni odeljak"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Section"
 msgstr "Naredni odeljak"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
 msgid "Go to next section"
 msgstr "Pređi na naredni odeljak"
 
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
 msgid "Go to &Page"
 msgstr "Pređi na &stranicu"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous page.
 msgid "Previous Pa&ge"
 msgstr "Prethodna &stranica"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next page.
 msgid "Next Pag&e"
 msgstr "&Naredna stranica"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
 msgid "Previous Lin&k"
 msgstr "Prethodni Lin&k"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
 msgid "Next Lin&k"
 msgstr "Naredni lin&k"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
 msgid "Previous Ima&ge"
 msgstr "Prethodna &slika"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
 msgid "Next Ima&ge"
 msgstr "Naredna &slika"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
 msgid "Previous Figu&re"
 msgstr "Prethodna figu&ra"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
 msgid "Next Figu&re"
 msgstr "Naredna figu&ra"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
 msgid "Previous &Table"
 msgstr "Prethodna &tabela"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
 msgid "Next &Table"
 msgstr "Naredna &tabela"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 msgid "Previous Se&parator"
 msgstr "Prethodni se&parator"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
 msgid "Next Se&parator"
 msgstr "Naredni Se&parator"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
 msgid "Previous L&ist"
 msgstr "Prethodna l&ista"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
 msgid "Next L&ist"
 msgstr "Naredna l&ista"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
 msgid "Previous List &Item"
 msgstr "Prethodna stavka l&iste"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
 msgid "Next List I&tem"
 msgstr "Naredna stavka li&ste"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
 msgid "Container &Start"
 msgstr "&Početak sadrživača"
 
+#. TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
 msgid "Go to the start of the current list or table"
 msgstr "Pređi na početak trenutne liste ili tabele"
 
+#. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
 msgid "Past Container &End"
 msgstr "Nakon &kraja sadrživača"
 
+#. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
 msgid "Go past the end of the current list or table"
 msgstr "Idi nakon kraja trenutne liste ili tabele"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
 msgid "&Previous Heading"
 msgstr "&Prethodni naslov"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
 msgid "Go to previous heading"
 msgstr "Pređi na prethodni naslov"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
 msgid "&Next Heading"
 msgstr "&Naredni naslov"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
 msgid "Go to next heading"
 msgstr "Pređi na naredni naslov"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
 msgid "Previous Heading Level &1"
 msgstr "Prethodni naslov na nivou &1"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 1"
 msgstr "Naredni naslov na nivou 1"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
 msgid "Previous Heading Level &2"
 msgstr "Prethodni naslov na nivou &2"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 2"
 msgstr "Naredni naslov na nivou 2"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
 msgid "Previous Heading Level &3"
 msgstr "Prethodni naslov na nivou &3"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 3"
 msgstr "Naredni naslov na nivou 3"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
 msgid "Previous Heading Level &4"
 msgstr "Prethodni naslov na nivou &4"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 4"
 msgstr "Naredni naslov na nivou 4"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
 msgid "Previous Heading Level &5"
 msgstr "Prethodni naslov na nivou &5"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 5"
 msgstr "Naredni naslov na nivou 5"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
 msgid "Previous Heading Level &6"
 msgstr "Prethodni naslov na nivou &6"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading Level 6"
 msgstr "Naredni naslov na nivou 6"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
 msgid "&Previous Bookmark"
 msgstr "&Prethodna knjižna oznaka"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
 msgid "Go to previous bookmark"
 msgstr "Pređi na prethodnu knjižnu oznaku"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
 msgid "&Next Bookmark"
 msgstr "&Naredna knjižna oznaka"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
 msgid "Go to next bookmark"
 msgstr "Pređi na narednu knjižnu oznaku"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
 msgid "Previous &Note"
 msgstr "Prethodna &napomena"
 
+#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
 msgid "Go to previous note"
 msgstr "Pređi na prethodnu napomenu"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
 msgid "Next N&ote"
 msgstr "Naredna Nap&omena"
 
+#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
 msgid "Go to next note"
 msgstr "Pređi na narednu napomenu"
 
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
 msgid "Jump to &All..."
 msgstr "Skoči n&a sve..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
 msgid "Show all bookmarks and notes"
 msgstr "Prikaži sve knjižne oznake i napomene"
 
 msgid "Jump to &Bookmarks Only..."
 msgstr "Skoči samo na &knjižne oznake..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
 msgid "Show bookmarks only"
 msgstr "Prikaži samo knjižne oznake"
 
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
 msgid "Jump to Notes &Only..."
 msgstr "Skoči sam&o na napomene..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
 msgid "Show notes only"
 msgstr "Prikaži samo napomene"
 
+#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
 msgid "&View Note Text"
 msgstr "Prikaži tekst napomene"
 
+#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
 msgid "View the note at current position"
 msgstr "Prikaži napomenu na trenutnoj poziciji"
 
+#. TRANSLATORS: Menu item in the Go menu to open the find dialog.
 msgid "&Find..."
 msgstr "&Pronađi..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Find menu item.
 msgid "Find text in the document"
 msgstr "Pronađi tekst u dokumentu"
 
+#. TRANSLATORS: Status-bar help text for the Go > Find Next menu item.
 msgid "Find next occurrence"
 msgstr "Pronađi sledeću pojavu"
 
+#. TRANSLATORS: Status-bar help text for the Go > Find Previous menu item.
 msgid "Find previous occurrence"
 msgstr "Pronađi prethodnu pojavu"
 
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
 msgid "Go to &line..."
 msgstr "Pređi u &red..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
 msgid "Go to a specific line"
 msgstr "Pređi u određeni red"
 
+#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
 msgid "Go to &percent..."
 msgstr "Pređi na &procenat..."
 
+#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
 msgid "Go to a percentage of the document"
 msgstr "Pređi na procenat dokumenta"
 
+#. TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
 msgid "Go &Back"
 msgstr "Vrati se &nazad"
 
+#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
 msgid "Go back in history"
 msgstr "Vrati se nazad u istoriji"
 
+#. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
 msgid "Go &Forward"
 msgstr "Idi n&apred"
 
+#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
 msgid "Go forward in history"
 msgstr "Kreni napred u istoriji"
 
+#. TRANSLATORS: Label for the Sections submenu in the compact Go menu.
 msgid "&Sections"
 msgstr "&odeljci"
 
+#. TRANSLATORS: Status-bar help text for the Go > Sections submenu.
 msgid "Navigate by sections"
 msgstr "Kreći se po odeljcima"
 
+#. TRANSLATORS: Label for the Headings submenu in the compact Go menu.
 msgid "&Headings"
 msgstr "&naslovi"
 
+#. TRANSLATORS: Status-bar help text for the Go > Headings submenu.
 msgid "Navigate by headings"
 msgstr "Kreći se po naslovima"
 
+#. TRANSLATORS: Label for the Pages submenu in the compact Go menu.
 msgid "&Pages"
 msgstr "&stranice"
 
+#. TRANSLATORS: Status-bar help text for the Go > Pages submenu.
 msgid "Navigate by pages"
 msgstr "Kreći se po stranicama"
 
+#. TRANSLATORS: Label for the Bookmarks submenu in the compact Go menu.
 msgid "&Bookmarks"
 msgstr "&knjižne oznake"
 
+#. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
 msgid "Navigate by bookmarks"
 msgstr "Kreći se po knjižnim oznakama"
 
+#. TRANSLATORS: Label for the Links submenu in the compact Go menu.
 msgid "&Links"
 msgstr "&linkovi"
 
+#. TRANSLATORS: Status-bar help text for the Go > Links submenu.
 msgid "Navigate by links"
 msgstr "Kreći se po linkovima"
 
+#. TRANSLATORS: Label for the Images submenu in the compact Go menu.
 msgid "&Images"
 msgstr "Sl&ike"
 
+#. TRANSLATORS: Status-bar help text for the Go > Images submenu.
 msgid "Navigate by images"
 msgstr "Kreći se po slikama"
 
+#. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
 msgid "&Figures"
 msgstr "&Figure"
 
+#. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
 msgid "Navigate by figures"
 msgstr "Kreći se po figurama"
 
+#. TRANSLATORS: Label for the Tables submenu in the compact Go menu.
 msgid "&Tables"
 msgstr "&Tabele"
 
+#. TRANSLATORS: Status-bar help text for the Go > Tables submenu.
 msgid "Navigate by tables"
 msgstr "Kreći se po tabelama"
 
+#. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
 msgstr "&separatori"
 
+#. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
 msgid "Navigate by separators"
 msgstr "Kreći se po separatorima"
 
+#. TRANSLATORS: Label for the Lists submenu in the compact Go menu.
 msgid "&Lists"
 msgstr "&Liste"
 
+#. TRANSLATORS: Status-bar help text for the Go > Lists submenu.
 msgid "Navigate by lists"
 msgstr "Kreći se po listama"
 
+#. TRANSLATORS: Label for the Containers submenu in the compact Go menu.
 msgid "&Containers"
 msgstr "&Sadrživači"
 
+#. TRANSLATORS: Status-bar help text for the Go > Containers submenu.
 msgid "Navigate by containers"
 msgstr "Kreći se po sadrživačima"
 
+#. TRANSLATORS: Menu item in the Help menu to show information about the application.
 msgid "&About Paperback"
 msgstr "O P&aperbacku"
 
+#. TRANSLATORS: Status-bar help text for the Help > About Paperback menu item.
 msgid "About this application"
 msgstr "O ovoj aplikaciji"
 
+#. TRANSLATORS: Menu item in the Help menu to open the help documentation in the user's web browser.
 msgid "View Help in &Browser"
 msgstr "Prikaži pomoć u &pretraživaču"
 
+#. TRANSLATORS: Status-bar help text for the Help > View Help in Browser menu item.
 msgid "View help in default browser"
 msgstr "Prikaži pomoć u podrazumevanom pretraživaču"
 
+#. TRANSLATORS: Menu item in the Help menu to open the help documentation inside Paperback itself.
 msgid "View Help in &Paperback"
 msgstr "Prikaži pomoć u &Paperbacku"
 
+#. TRANSLATORS: Status-bar help text for the Help > View Help in Paperback menu item.
 msgid "View help in Paperback"
 msgstr "Prikaži pomoć u Paperbacku"
 
+#. TRANSLATORS: Menu item in the Help menu to check for application updates.
 msgid "Check for &Updates"
 msgstr "Proveri da li postoje &ažuriranja"
 
+#. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
 msgid "Check for updates"
 msgstr "Proveri da li postoje ažuriranja"
 
+#. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
 msgid "&Donate"
 msgstr "&Doniraj"
 
+#. TRANSLATORS: Status-bar help text for the Help > Donate menu item.
 msgid "Support Paperback development"
 msgstr "Podrži razvoj Paperbacka"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to import bookmarks and reading position from a file.
 msgid "&Import Document Data..."
 msgstr "&Uvezi podatke o dokumentu..."
 
+#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
 msgid "Import bookmarks and position"
 msgstr "Uvezi knjižne oznake i poziciju"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export bookmarks and reading position to a file.
 msgid "&Export Document Data..."
 msgstr "&Izvezi podatke o dokumentu..."
 
+#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "Izvezi knjižne oznake i poziciju"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a plain text file.
 msgid "Export to &Plain Text..."
 msgstr "Izvezi kao &običan tekst..."
 
+#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
 msgid "Export document as plain text"
 msgstr "Izvezi dokument kao običan tekst"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as an HTML file.
 msgid "Export to &HTML..."
 msgstr "Izvezi kao &HTML..."
 
+#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
 msgid "Export document as HTML"
 msgstr "Izvezi dokument kao HTML"
 
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a Markdown file.
 msgid "Export to &Markdown..."
 msgstr "Izvezi kao &Markdown..."
 
+#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
 msgid "Export document as Markdown"
 msgstr "Izvezi dokument kao Markdown"
 
+#. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
 msgid "&Word Count"
 msgstr "Broj &reči"
 
+#. TRANSLATORS: Status-bar help text for the Word Count menu item.
 msgid "Show word count"
 msgstr "Prikaži broj reči"
 
+#. TRANSLATORS: Menu item in the Tools menu to show information about the document.
 msgid "Document &Info"
 msgstr "&Informacije o dokumentu"
 
+#. TRANSLATORS: Status-bar help text for the Document Info menu item.
 msgid "Show document information"
 msgstr "Prikaži informacije o dokumentu"
 
+#. TRANSLATORS: Menu item in the Tools menu to show the document's table of contents.
 msgid "&Table of Contents"
 msgstr "&Sadržaj"
 
+#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
 msgid "Show table of contents"
 msgstr "Prikaži sadržaj"
 
+#. TRANSLATORS: Menu item in the Tools menu to show a list of the document's structural elements.
 msgid "&Elements List..."
 msgstr "&Lista elemenata..."
 
+#. TRANSLATORS: Status-bar help text for the Elements List menu item.
 msgid "Show elements list"
 msgstr "Prikaži listu elemenata"
 
+#. TRANSLATORS: Menu item in the Tools menu to reveal the document's file in the system file manager.
 msgid "Reveal &File in Folder"
 msgstr "Otkrij &datoteku u folderu"
 
+#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
 msgid "Reveal document in the file manager"
 msgstr "Otkri dokument u upravljaču datoteka"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the document in a web view.
 msgid "Open in &Web View"
 msgstr "Otvori u &Web prikazu"
 
+#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
 msgid "Open document in web view"
 msgstr "Otvori dokument u Web prikazu"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the document's underlying source markup in a new tab.
 msgid "View &Source"
 msgstr "Prikaži &izvor"
 
+#. TRANSLATORS: Status-bar help text for the View Source menu item.
 msgid "Open the document source in a new tab"
 msgstr "Otvori izvor dokumenta u novoj kartici"
 
+#. TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
 msgid "I&mport/Export"
 msgstr "U&vezi ili izvezi"
 
+#. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
 msgid "Import and export options"
 msgstr "Opcije uvoza i izvoza"
 
+#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
 msgid "Toggle &Bookmark"
 msgstr "Dodaj ili ukloni &knjižnu oznaku"
 
+#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
 msgid "Bookmark with &Note"
 msgstr "Knjižna oznaka sa &napomenom"
 
+#. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
 msgstr "&Prelamanje reči"
 
+#. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 msgid "Toggle word wrap"
 msgstr "Uključi ili isključi prelamanje reči"
 
+#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
 msgstr "&Reprodukuj/pauziraj zvuk"
 
+#. TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
 msgid "Play or pause this document's audio narration"
 msgstr "Reprodukuj ili pauziraj zvučnu naraciju ovog dokumenta"
 
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
 msgstr "Premotaj zvuk &napred"
 
+#. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
 msgid "Skip the audio narration forward"
 msgstr "Premotaj zvučnu naraciju napred"
 
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
 msgid "Seek Audio &Backward"
 msgstr "Premotaj zvuk na&zad"
 
+#. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
 msgid "Skip the audio narration backward"
 msgstr "Premotaj zvučnu naraciju nazad"
 
 msgid "&Increase Audio Seek Amount"
 msgstr "&Povećaj količinu premotavanja zvuka"
 
+#. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 msgid "Increase how far seeking the audio narration moves"
 msgstr "Povećaj koliko daleko će se premotavanje naracije zvuka pomerati"
 
 msgid "&Decrease Audio Seek Amount"
 msgstr "&Smanji količinu premotavanja zvuka"
 
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Smanji koliko daleko će se premotavanje naracije zvuka pomerati"
 
+#. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
 msgid "&Full Screen"
 msgstr "&Režim celog ekrana"
 
+#. TRANSLATORS: Status-bar help text for the Full Screen menu item.
 msgid "Toggle full screen"
 msgstr "Uključi ili isključi režim celog ekrana"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
 msgid "&Settings"
 msgstr "&Podešavanja"
 
+#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
 msgid "&Sleep Timer..."
 msgstr "&Tajmer pre spavanja..."
 
+#. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Datoteka"
 
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
 msgid "&Go"
 msgstr "&Kretanje"
 
+#. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
 msgstr "&Alati"
 
+#. TRANSLATORS: Top-level "Help" menu label in the menu bar
 msgid "&Help"
 msgstr "&Pomoć"
 
+#. TRANSLATORS: Top-level "Edit" menu label in the menu bar (macOS only)
 msgid "&Edit"
 msgstr "&Uredi"
 
@@ -1588,12 +1839,12 @@ msgid "No sections."
 msgstr "Nema odeljaka."
 
 #. TRANSLATORS: Announced when there is no next section from the current position
-msgid "No next section"
-msgstr "Nema narednog odeljka"
+msgid "No next section."
+msgstr "Nema narednog odeljka."
 
 #. TRANSLATORS: Announced when there is no previous section from the current position
-msgid "No previous section"
-msgstr "Nema prethodnog odeljka"
+msgid "No previous section."
+msgstr "Nema prethodnog odeljka."
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
 msgid "No headings at level %d."
@@ -1817,6 +2068,7 @@ msgstr "{} (maksimalno)"
 msgid "{} (minimum)"
 msgstr "{} (minimalno)"
 
+#. TRANSLATORS: Prompt label in the bookmark note dialog asking the user to type their note
 msgid "Enter bookmark note:"
 msgstr "Upišite napomenu za knjižnu oznaku:"
 
@@ -1852,243 +2104,323 @@ msgstr "Vrati Paperback"
 msgid "Exit Paperback"
 msgstr "Zatvori Paperback"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Open..."
 msgstr "Otvori..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Close All"
 msgstr "Zatvori sve"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Reopen Last Closed"
 msgstr "Ponovo otvori poslednje zatvoreno"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "Prikaži sve nedavne dokumente..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Exit"
 msgstr "Izlaz"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Find..."
 msgstr "Pronađi..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Find Next"
 msgstr "Pronađi sledeće"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Find Previous"
 msgstr "Pronađi prethodno"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go to Line..."
 msgstr "Pređi u red..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go to Percent..."
 msgstr "Pređi na procenat..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go to Page..."
 msgstr "Pređi na stranicu..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go Back"
 msgstr "Vrati se nazad"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go Forward"
 msgstr "Idi napred"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Announce Percentage"
 msgstr "Izgovori procenat"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Set Temporary Bookmark"
 msgstr "Postavi privremenu knjižnu oznaku"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Jump to Temporary Bookmark"
 msgstr "Skoči na privremenu knjižnu oznaku"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading"
 msgstr "Prethodni naslov"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Heading"
 msgstr "Naredni naslov"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 1"
 msgstr "Prethodni naslov na nivou 1"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 2"
 msgstr "Prethodni naslov na nivou 2"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 3"
 msgstr "Prethodni naslov na nivou 3"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 4"
 msgstr "Prethodni naslov na nivou 4"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 5"
 msgstr "Prethodni naslov na nivou 5"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Heading Level 6"
 msgstr "Prethodni naslov na nivou 6"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Page"
 msgstr "Prethodna stranica"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Page"
 msgstr "Naredna stranica"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Bookmark"
 msgstr "Prethodna knjižna oznaka"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Bookmark"
 msgstr "Naredna knjižna oznaka"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Note"
 msgstr "Prethodna napomena"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Note"
 msgstr "Naredna Napomena"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Jump to All Bookmarks..."
 msgstr "Skoči na sve knjižne oznake..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Jump to Bookmarks Only..."
 msgstr "Skoči samo na knjižne oznake..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Jump to Notes Only..."
 msgstr "Skoči samo na napomene..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "View Note Text"
 msgstr "Prikaži tekst napomene"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Link"
 msgstr "Prethodni Link"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Link"
 msgstr "Naredni link"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Image"
 msgstr "Prethodna slika"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Image"
 msgstr "Naredna slika"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Figure"
 msgstr "Prethodna figura"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Figure"
 msgstr "Naredna figura"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Table"
 msgstr "Prethodna tabela"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Table"
 msgstr "Naredna tabela"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Separator"
 msgstr "Prethodni separator"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Separator"
 msgstr "Naredni Separator"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous List"
 msgstr "Prethodna lista"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next List"
 msgstr "Naredna lista"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous List Item"
 msgstr "Prethodna stavka liste"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next List Item"
 msgstr "Naredna stavka liste"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Container Start"
 msgstr "Početak sadrživača"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Past Container End"
 msgstr "Nakon kraja sadrživača"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Elements List..."
 msgstr "Lista elemenata..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Reveal File in Folder"
 msgstr "Otkrij datoteku u folderu"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Open in Web View"
 msgstr "Otvori u Web prikazu"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "View Source"
 msgstr "Prikaži izvor"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Bookmark"
 msgstr "Dodaj ili ukloni knjižnu oznaku"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Bookmark with Note"
 msgstr "Knjižna oznaka sa napomenom"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Word Wrap"
 msgstr "Uključi ili isključi prelamanje reči"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Play/Pause Audio"
 msgstr "Reprodukuj/pauziraj zvuk"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
 msgstr "Premotaj zvuk napred"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Backward"
 msgstr "Premotaj zvuk nazad"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Increase Audio Seek Amount"
 msgstr "Povećaj količinu premotavanja zvuka"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Decrease Audio Seek Amount"
 msgstr "Smanji količinu premotavanja zvuka"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
 msgstr "&Režim celog ekrana"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Settings..."
 msgstr "Podešavanja..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Sleep Timer..."
 msgstr "Tajmer pre spavanja..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Customize Keyboard Shortcuts..."
 msgstr "Prilagodi tasterske prečice..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Import Document Data..."
 msgstr "Uvezi podatke o dokumentu..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
 msgstr "Izvezi podatke o dokumentu..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
 msgstr "Izvezi kao običan tekst..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to HTML..."
 msgstr "Izvezi kao HTML..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Markdown..."
 msgstr "Izvezi kao Markdown..."
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "About Paperback"
 msgstr "O Paperbacku"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "View Help in Browser"
 msgstr "Prikaži pomoć u pretraživaču"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "View Help in Paperback"
 msgstr "Prikaži pomoć u Paperbacku"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Check for Updates"
 msgstr "Proveri da li postoje ažuriranja"
 
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Donate"
 msgstr "Doniraj"
 
+#. TRANSLATORS: Name of the "File" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "File"
 msgstr "Datoteka"
 
+#. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Tools"
 msgstr "Alati"
 
+#. TRANSLATORS: Name of the "Help" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Help"
 msgstr "Pomoć"
 
+#. TRANSLATORS: Shown in the Customize Keyboard Shortcuts list in place of a key combination when an action has no shortcut assigned
 msgid "None"
 msgstr "Ništa"
 
@@ -2478,8 +2810,9 @@ msgid "Switch to Text Mode"
 msgstr "Pređi u tekstualni režim"
 
 #: swift
-msgid "Go To…"
-msgstr "Idi na…"
+#| msgid "Go To…"
+msgid "Go Toâ¦"
+msgstr "Idi na"
 
 #: swift
 msgid "Recent Documents"
@@ -2510,8 +2843,8 @@ msgid "Show All"
 msgstr "Prikaži sve"
 
 #: swift
-msgid "Search…"
-msgstr "Pretraga…"
+msgid "Searchâ¦"
+msgstr "Pretraga"
 
 #: swift
 msgid "Match Case"
@@ -2854,7 +3187,6 @@ msgid "Select a format to export the current document:"
 msgstr "Izaberite format za izvoz trenutnog dokumenta:"
 
 #: kt
-#| msgid "Plain Text"
 msgid "Plain Text (.txt)"
 msgstr "Običan tekst (.txt)"
 
@@ -2863,7 +3195,6 @@ msgid "HTML (.html)"
 msgstr "HTML (.html)"
 
 #: kt
-#| msgid "Markdown"
 msgid "Markdown (.md)"
 msgstr "Markdown (.md)"
 
@@ -2908,9 +3239,6 @@ msgid "Why we need this:"
 msgstr "Zašto nam ovo treba:"
 
 #: kt
-#| msgid ""
-#| "• To provide a fast, fully screen-reader accessible file manager inside "
-#| "the app."
 msgid ""
 "To provide a fast, fully screen-reader accessible file manager inside the "
 "app."
@@ -2959,7 +3287,6 @@ msgid "Start"
 msgstr "Počni"
 
 #: kt
-#| msgid "Time remaining"
 msgid "Active: {} remaining"
 msgstr "Aktivno: {} preostalo"
 
@@ -2976,7 +3303,6 @@ msgid "Change to:"
 msgstr "Promeni na:"
 
 #: kt
-#| msgid "2 minutes"
 msgid "{} minutes"
 msgstr "{} minuta"
 
@@ -3093,14 +3419,12 @@ msgid "Separator"
 msgstr "Separator"
 
 #: kt
-#| msgid "5 seconds"
 msgid "{} seconds"
 msgstr "{} sekundi"
 
 #: kt
-#| msgid "Grant"
-msgid "✓ Granted"
-msgstr "✓ odobreno"
+msgid "â Granted"
+msgstr "odobreno"
 
 #: kt
 msgid "Before You Start"
@@ -3113,7 +3437,6 @@ msgid ""
 msgstr "Paperback radi najbolje uz nekoliko dozvola. Evo šta tražimo i zašto:"
 
 #: kt
-#| msgid "No sections."
 msgid "Notifications"
 msgstr "Obaveštenja"
 
@@ -3146,7 +3469,6 @@ msgid "Enable File Access"
 msgstr "Omogući pristup svim datotekama"
 
 #: kt
-#| msgid "&Containers"
 msgid "Continue"
 msgstr "Nastavi"
 
@@ -3169,12 +3491,10 @@ msgid "System Default"
 msgstr "Sistemski podrazumevani"
 
 #: kt
-#| msgid "Back"
 msgid "Back {}"
 msgstr "Nazad {}"
 
 #: kt
-#| msgid "Go Forward"
 msgid "Forward {}"
 msgstr "Napred {}"
 
@@ -3183,18 +3503,83 @@ msgid "Enter {}"
 msgstr "Upišite {}"
 
 #: kt
-#| msgid "Failed to load document."
 msgid "Error loading document: {}"
 msgstr "Greška pri učitavanju dokumenta: {}"
 
 #: kt
-msgid "1.5×"
-msgstr "1.5×"
+msgid "1.5Ã"
+msgstr "1.5Ã"
 
 #: kt
-#| msgid "Speech Rate"
 msgid "Speech Engine"
 msgstr "Govorni izlaz"
+
+#: swift
+msgid "1 book"
+msgstr "1 knjiga"
+
+#: swift
+msgid "{} books"
+msgstr "{} knjiga"
+
+#: swift
+#| msgid "Open..."
+msgid "..."
+msgstr "..."
+
+#: swift
+#| msgid "Go To"
+msgid "Go To..."
+msgstr "Idi na..."
+
+#: swift
+#| msgid "Search"
+msgid "Search..."
+msgstr "Pretraga..."
+
+#: swift
+#| msgid "Custom: {} minutes"
+msgid "Custom: {} minute"
+msgstr "Prilagođeno: {} minut"
+
+#: swift
+#| msgid "Custom: {} minutes"
+msgid "Custom: {} minutesâ£"
+msgstr "Prilagođeno: {} minuta"
+
+#: kt
+#| msgid "This document contains {} words."
+msgid "This document contains {} word."
+msgstr "Ovaj dokument sadrži {} reč."
+
+#: kt
+msgid "word"
+msgstr "reč"
+
+#: kt
+#| msgid "{} seconds"
+msgid "{} second"
+msgstr "{} sekunda"
+
+#: kt
+#| msgid "{} seconds"
+msgid "{} secondsâ£"
+msgstr "{} sekundi"
+
+#: kt
+#| msgid "This document contains {} words."
+msgid "This document contains {} words.â£"
+msgstr "Ovaj dokument sadrži {} reči"
+
+#: kt
+msgid "wordsâ£"
+msgstr "reči"
+
+#~ msgid "&Locate…"
+#~ msgstr "&Lociraj…"
+
+#~ msgid "1.5×"
+#~ msgstr "1.5×"
 
 #~ msgid "&Options"
 #~ msgstr "&Podešavanja"
@@ -3515,9 +3900,6 @@ msgstr "Govorni izlaz"
 #~ msgid "Next result"
 #~ msgstr "Naredni rezultat"
 
-#~ msgid "Search"
-#~ msgstr "Pretraga"
-
 #~ msgid "Active"
 #~ msgstr "Aktivno"
 
@@ -3672,9 +4054,6 @@ msgstr "Govorni izlaz"
 
 #~ msgid "Total number of words: "
 #~ msgstr "Ukupan broj reči: "
-
-#~ msgid "Total number of lines: "
-#~ msgstr "Ukupan broj redova: "
 
 #~ msgid "Total number of characters: "
 #~ msgstr "Ukupan broj znakova: "
