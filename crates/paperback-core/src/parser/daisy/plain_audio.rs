@@ -84,8 +84,10 @@ pub(super) fn build_plain_audio_zip_document<R: Read + Seek>(
 	password: Option<&str>,
 ) -> Option<Document> {
 	const PLACEHOLDER_CLIP_DURATION_MS: u64 = 24 * 60 * 60 * 1000;
+	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
+	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
 	let mut entries: Vec<String> =
-		archive.file_names().filter(|name| is_plain_audio_entry(name)).map(String::from).collect();
+		archive.file_names().flatten().filter(|name| is_plain_audio_entry(name)).map(String::from).collect();
 	if entries.is_empty() {
 		return None;
 	}

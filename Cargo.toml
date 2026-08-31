@@ -51,3 +51,12 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+# zip reads a ZIP64 extended information extra field over an entry's own size and offset fields
+# whenever the block is 24 bytes or longer, without checking that any of those fields actually
+# holds the 0xFFFFFFFF sentinel asking for it. Some EPUB writers attach a malformed block that
+# no field asked for, and the bad offset that results fails the whole archive with "Invalid
+# local file header", even though unzip, Python and 7-Zip all read it fine.
+# Fix submitted upstream as zip-rs/zip2#962. Drop this once it reaches a release.
+[patch.crates-io]
+zip = { git = "https://github.com/trypsynth/zip2.git", branch = "fix-zip64-extra-field-without-sentinel" }

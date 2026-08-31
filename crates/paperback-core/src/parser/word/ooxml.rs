@@ -34,8 +34,14 @@ pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool
 	let mut archive = ZipArchive::new(BufReader::new(file))
 		.with_context(|| format!("Failed to read ZIP archive '{}'", context.file_path))?;
 	tracing::debug!(path = %context.file_path, entries = archive.len(), "scanning zip archive for embedded docx entries");
-	let mut docx_names: Vec<String> =
-		archive.file_names().filter(|name| name.to_ascii_lowercase().ends_with(".docx")).map(String::from).collect();
+	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
+	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
+	let mut docx_names: Vec<String> = archive
+		.file_names()
+		.flatten()
+		.filter(|name| name.to_ascii_lowercase().ends_with(".docx"))
+		.map(String::from)
+		.collect();
 	if docx_names.is_empty() {
 		tracing::warn!(path = %context.file_path, "no docx entries found in zip archive");
 		// TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
