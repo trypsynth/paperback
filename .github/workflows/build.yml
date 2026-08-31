@@ -175,7 +175,8 @@ jobs:
         sudo apt-get install -y cmake ninja-build pandoc gettext minisign \
           libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
           libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
-          libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev
+          libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev \
+          libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
     - name: Install appimagetool
       run: |
         curl -L -o /usr/local/bin/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
@@ -232,7 +233,8 @@ jobs:
         sudo apt-get install -y cmake ninja-build pandoc gettext minisign \
           libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
           libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
-          libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev
+          libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev \
+          libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
     - name: Install appimagetool
       run: |
         curl -L -o /usr/local/bin/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage
