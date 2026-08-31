@@ -732,9 +732,21 @@ impl MainWindow {
 		window_reload_timer.start(250, false);
 		// A resize forces RichEdit to rewrap, whose cost scales with how much is loaded ahead of
 		// the caret. Give back any growth a long read accumulated before paying for that.
+		//
+		// Only when the frame actually changed shape. Compaction moves the loaded start, which
+		// silently invalidates the offsets a screen reader is reading from, so a size event that
+		// resizes nothing must not trigger it: those arrive from ordinary layout work, including
+		// while a Say-All is running, where the user has done nothing that would stop the read.
 		let dm_for_resize = Rc::clone(doc_manager);
+		let last_frame_size = Rc::new(Cell::new((0, 0)));
+		let frame_for_resize = *frame;
 		frame.on_size(move |event| {
 			event.skip(true);
+			let size = frame_for_resize.get_size();
+			let dimensions = (size.width, size.height);
+			if last_frame_size.replace(dimensions) == dimensions {
+				return;
+			}
 			if let Ok(mut dm) = dm_for_resize.try_lock() {
 				dm.compact_window_if_grown();
 			}

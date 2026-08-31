@@ -48,12 +48,10 @@ impl TextWindow {
 		Self { start: 0, end: doc_len }
 	}
 
-	#[cfg(target_os = "windows")]
 	pub const fn start(&self) -> i64 {
 		self.start
 	}
 
-	#[cfg(target_os = "windows")]
 	pub const fn end(&self) -> i64 {
 		self.end
 	}
@@ -321,5 +319,67 @@ mod tests {
 		assert!(one.loaded_len() <= compaction_threshold());
 		let many = TextWindow::new(0, TARGET_WINDOW_SIZE + EXTEND_CHUNK * 6);
 		assert!(many.loaded_len() > compaction_threshold());
+	}
+
+	// The failure this guards against, reported as a Say-All that restarted from the top of a
+	// large file mid-read. A screen reader holds its own offsets into the control and advances
+	// them itself, so anything the window pump does on a timer has to leave those offsets meaning
+	// the same character. Extension does. Compaction does not, and it is self sustaining: moving
+	// the loaded start leaves a stale offset sitting near the new start, which is the very
+	// condition to compact again. Driving that policy from a tick walked the window back to the
+	// top of the document in twelve ticks, three seconds at the pump's cadence.
+	//
+	// So the pump extends and nothing else, and this pins that: a reader that only moves forward
+	// must find the ground under it unchanged, however long it reads for.
+	#[test]
+	fn the_pump_never_moves_the_ground_under_a_reader() {
+		let doc_len = 5_000_000;
+		let start = 1_750_000;
+		let mut window = TextWindow::new(start, start + TARGET_WINDOW_SIZE);
+		// Seeded just inside RELOAD_MARGIN of the start, which is what a compaction used to leave
+		// behind and what made the old loop run away rather than settle.
+		let mut reader_local = RELOAD_MARGIN - 25_000;
+		for _ in 0..500 {
+			let before = window.to_doc(reader_local);
+			if window.wants_extension_for(before, doc_len) {
+				let (from, to) = window.extend_bounds(doc_len);
+				assert_eq!(from, window.end, "an extension must begin exactly at the loaded end");
+				window.extend_end_to(to);
+			}
+			assert_eq!(window.to_doc(0), start, "the pump must never move the loaded start");
+			assert_eq!(window.to_doc(reader_local), before, "a held offset must still mean the same character");
+			// The reader speaks a line and advances its own offset.
+			reader_local += 200;
+		}
+		// And it stayed ahead of the reader the whole way rather than running out of text.
+		assert!(window.to_doc(reader_local) <= window.end, "extension must keep up with the reader");
+	}
+
+	// Compaction is still the right answer for a caret that has run out of text behind it; it just
+	// may only happen where the user has already stopped any read. This is the case it exists for.
+	#[test]
+	fn a_caret_that_has_run_out_of_text_behind_it_still_asks_to_compact() {
+		let window = TextWindow::new(1_000_000, 1_000_000 + TARGET_WINDOW_SIZE);
+		assert!(window.needs_compaction_for(1_000_000 + RELOAD_MARGIN - 1, 10_000_000));
+	}
+
+	// Why the split exists at all, as a property rather than a comment: the two operations differ
+	// exactly in whether an offset someone else is holding still means the same character.
+	#[test]
+	fn extension_leaves_a_held_offset_alone_and_compaction_moves_it() {
+		let doc_len = 5_000_000;
+		let window = TextWindow::new(1_750_000, 1_750_000 + TARGET_WINDOW_SIZE);
+		let held_local = RELOAD_MARGIN - 25_000;
+		let before = window.to_doc(held_local);
+		let mut extended = window;
+		extended.extend_end_to(window.end + EXTEND_CHUNK);
+		assert_eq!(extended.to_doc(held_local), before, "extension must leave a held offset meaning the same place");
+		let (start, end) = target_window_bounds(before, doc_len);
+		let compacted = TextWindow::new(start, end);
+		assert_ne!(
+			compacted.to_doc(held_local),
+			before,
+			"compaction moves a held offset, which is why only a user action may trigger it"
+		);
 	}
 }

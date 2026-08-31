@@ -66,7 +66,7 @@ pub fn doc_selected_range(tab: &DocumentTab) -> (i64, i64) {
 /// next file).
 fn set_caret_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
 	if tab.window.needs_reload_for(offset, tab.session.document_len()) {
-		reload_window_around(tab, offset);
+		reload_window_around(tab, offset, "caret jump");
 	}
 	let local = tab.window.to_local(offset);
 	tab.text_ctrl.set_focus();
@@ -93,7 +93,7 @@ fn jump_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
 /// window's `RELOAD_MARGIN`, so `end` lands safely inside whatever window `start` triggers.
 pub fn select_doc_range(tab: &mut DocumentTab, start: i64, end: i64) {
 	if tab.window.needs_reload_for(start, tab.session.document_len()) {
-		reload_window_around(tab, start);
+		reload_window_around(tab, start, "selection jump");
 	}
 	let local_start = tab.window.to_local(start);
 	let local_end = tab.window.to_local(end);
