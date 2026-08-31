@@ -1,4 +1,8 @@
-use std::{cell::Cell, rc::Rc, sync::Mutex};
+use std::{
+	cell::{Cell, RefCell},
+	rc::Rc,
+	sync::Mutex,
+};
 
 use bitflags::bitflags;
 use paperback_core::{config::ConfigManager, reader_core, util::text::display_len};
@@ -395,10 +399,11 @@ pub fn handle_find_action(
 		show_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
 		return;
 	}
-	do_find(forward, &state, doc_manager, config, live_region_label);
+	do_find(frame, forward, &state, doc_manager, config, live_region_label);
 }
 
 fn do_find(
+	frame: &Frame,
 	forward: bool,
 	state: &FindDialogState,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
@@ -465,7 +470,43 @@ fn do_find(
 	let len = i64::try_from(display_len(&query)).unwrap_or(i64::MAX);
 	let start = result.position.clamp(0, doc_len);
 	let end = (start + len).min(doc_len);
+	// Capture the line containing the match while the document lock is held; it is
+	// announced later, after focus has returned to the book.
+	let found_line = tab.session.get_line_text(start);
 	navigation::select_doc_range(tab, start, end);
 	drop(dm);
 	state.dialog.show(false);
+	// NVDA starts reading the "Paperback, tab control, ..." ancestor chain the moment
+	// focus returns to the book. Delay the found-line announcement by 100ms so it lands
+	// mid-sentence: live-region's High priority maps to UIA
+	// NotificationProcessing_ImportantMostRecent, which NVDA handles as
+	// cancelSpeech() + speak — the same interrupt NVDA itself uses for its own find
+	// dialog. (During a say-all NVDA speaks at Spri.NOW instead of cancelling, so
+	// continuous reading is not chopped up.)
+	if !found_line.trim().is_empty() {
+		announce_found_line_after_delay(frame, live_region_label, found_line);
+	}
+}
+
+/// Announces `found_line` about 100ms after the Find dialog closes, so it cuts off the
+/// focus-chain announcement the screen reader starts when focus returns to the book.
+///
+/// The one-shot `wxTimer` is kept alive through its single tick by the `Rc`/`RefCell`
+/// it hands its own callback: the tick clears the cell, which drops the timer and
+/// destroys the native timer. If the timer cannot be armed, fall back to announcing
+/// immediately rather than silently dropping the result.
+fn announce_found_line_after_delay(frame: &Frame, live_region_label: StaticText, found_line: String) {
+	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
+	let holder = Rc::clone(&timer_holder);
+	let timer = Timer::new(frame);
+	let announce_found_line = found_line.clone();
+	timer.on_tick(move |_event| {
+		live_region::announce(live_region_label, &announce_found_line);
+		*holder.borrow_mut() = None;
+	});
+	if !timer.start(100, true) {
+		live_region::announce(live_region_label, &found_line);
+		return;
+	}
+	*timer_holder.borrow_mut() = Some(timer);
 }
