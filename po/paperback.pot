@@ -3434,3 +3434,11 @@ msgstr ""
 #: kt
 msgid "{} seconds⁣"
 msgstr ""
+
+#: kt
+msgid "This document contains {} words.⁣"
+msgstr ""
+
+#: kt
+msgid "words⁣"
+msgstr ""
