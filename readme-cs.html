@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="cs" xml:lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paperback - verze 0.8.5</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="alternate" hreflang="en" href="https://paperback.dev/readme.html">
+  <link rel="alternate" hreflang="bs" href="https://paperback.dev/readme-bs.html">
+  <link rel="alternate" hreflang="cs" href="https://paperback.dev/readme-cs.html">
+  <link rel="alternate" hreflang="de" href="https://paperback.dev/readme-de.html">
+  <link rel="alternate" hreflang="es" href="https://paperback.dev/readme-es.html">
+  <link rel="alternate" hreflang="fi" href="https://paperback.dev/readme-fi.html">
+  <link rel="alternate" hreflang="fr" href="https://paperback.dev/readme-fr.html">
+  <link rel="alternate" hreflang="nl" href="https://paperback.dev/readme-nl.html">
+  <link rel="alternate" hreflang="pl" href="https://paperback.dev/readme-pl.html">
+  <link rel="alternate" hreflang="pt-br" href="https://paperback.dev/readme-pt_br.html">
+  <link rel="alternate" hreflang="ru" href="https://paperback.dev/readme-ru.html">
+  <link rel="alternate" hreflang="sr" href="https://paperback.dev/readme-sr.html">
+  <link rel="alternate" hreflang="vi" href="https://paperback.dev/readme-vi.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://paperback.dev/readme-zh_CN.html">
+  <link rel="alternate" hreflang="x-default" href="https://paperback.dev/readme.html">
+  <style>
+  .language-bar ul { list-style: none; padding: 0; margin: 0 0 1.5em; display: flex; flex-wrap: wrap; gap: 0.4em 1em; }
+  .language-bar [aria-current] { font-weight: bold; }
+  </style>
+</head>
+<body>
+<nav class="language-bar" aria-label="Language">
+<ul>
+<li><a href="/readme.html" lang="en" hreflang="en">English</a></li>
+<li><a href="/readme-bs.html" lang="bs" hreflang="bs">Bosanski</a></li>
+<li><span lang="cs" aria-current="true">Čeština</span></li>
+<li><a href="/readme-de.html" lang="de" hreflang="de">Deutsch</a></li>
+<li><a href="/readme-es.html" lang="es" hreflang="es">Español</a></li>
+<li><a href="/readme-fi.html" lang="fi" hreflang="fi">Suomi</a></li>
+<li><a href="/readme-fr.html" lang="fr" hreflang="fr">Français</a></li>
+<li><a href="/readme-nl.html" lang="nl" hreflang="nl">Nederlands</a></li>
+<li><a href="/readme-pl.html" lang="pl" hreflang="pl">Polski</a></li>
+<li><a href="/readme-pt_br.html" lang="pt-br" hreflang="pt-br">Português (Brasil)</a></li>
+<li><a href="/readme-ru.html" lang="ru" hreflang="ru">Русский</a></li>
+<li><a href="/readme-sr.html" lang="sr" hreflang="sr">Српски</a></li>
+<li><a href="/readme-vi.html" lang="vi" hreflang="vi">Tiếng Việt</a></li>
+<li><a href="/readme-zh_CN.html" lang="zh-CN" hreflang="zh-CN">中文（简体）</a></li>
+</ul>
+</nav>
+<header id="title-block-header">
+<h1 class="title">Paperback - verze 0.8.5</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#představení" id="toc-představení">Představení</a></li>
+<li><a href="#systémové-požadavky"
+id="toc-systémové-požadavky">Systémové požadavky</a></li>
+<li><a href="#funkce" id="toc-funkce">Funkce</a></li>
+<li><a href="#aktuálně-podporované-typy-souborů"
+id="toc-aktuálně-podporované-typy-souborů">Aktuálně podporované typy
+souborů</a></li>
+<li><a href="#klávesové-zkratky" id="toc-klávesové-zkratky">Klávesové
+zkratky</a>
+<ul>
+<li><a href="#nabídka-soubor" id="toc-nabídka-soubor">Nabídka
+Soubor</a></li>
+<li><a href="#nabídka-přejít" id="toc-nabídka-přejít">Nabídka
+Přejít</a></li>
+<li><a href="#nabídka-nástroje" id="toc-nabídka-nástroje">Nabídka
+Nástroje</a></li>
+<li><a href="#nabídka-nápověda" id="toc-nabídka-nápověda">Nabídka
+Nápověda</a></li>
+<li><a href="#další-zkratky-v-zobrazení-dokumentu"
+id="toc-další-zkratky-v-zobrazení-dokumentu">Další zkratky v zobrazení
+dokumentu</a></li>
+</ul></li>
+<li><a href="#podporované-jazyky"
+id="toc-podporované-jazyky">Podporované jazyky</a></li>
+<li><a href="#poděkování" id="toc-poděkování">Poděkování</a>
+<ul>
+<li><a href="#vývoj" id="toc-vývoj">Vývoj</a></li>
+<li><a href="#podpora" id="toc-podpora">Podpora</a></li>
+</ul></li>
+<li><a href="#historie-změn" id="toc-historie-změn">Historie změn</a>
+<ul>
+<li><a href="#verze-0.8.5" id="toc-verze-0.8.5">Verze 0.8.5</a></li>
+<li><a href="#verze-0.8.2" id="toc-verze-0.8.2">Verze 0.8.2</a></li>
+<li><a href="#verze-0.8.1" id="toc-verze-0.8.1">Verze 0.8.1</a></li>
+<li><a href="#verze-0.8.0" id="toc-verze-0.8.0">Verze 0.8.0</a></li>
+<li><a href="#verze-0.7.0" id="toc-verze-0.7.0">Verze 0.7.0</a></li>
+<li><a href="#verze-0.6.1" id="toc-verze-0.6.1">Verze 0.6.1</a></li>
+<li><a href="#verze-0.6.0" id="toc-verze-0.6.0">Verze 0.6.0</a></li>
+<li><a href="#verze-0.5.0" id="toc-verze-0.5.0">Verze 0.5.0</a></li>
+<li><a href="#verze-0.4.1" id="toc-verze-0.4.1">Verze 0.4.1</a></li>
+<li><a href="#verze-0.4.0" id="toc-verze-0.4.0">Verze 0.4.0</a></li>
+<li><a href="#verze-0.3.0" id="toc-verze-0.3.0">Verze 0.3.0</a></li>
+<li><a href="#verze-0.2.1" id="toc-verze-0.2.1">Verze 0.2.1</a></li>
+<li><a href="#verze-0.2.0" id="toc-verze-0.2.0">Verze 0.2.0</a></li>
+<li><a href="#verze-0.1.0" id="toc-verze-0.1.0">Verze 0.1.0</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="představení">Představení</h1>
+<p>Paperback je nenáročná, rychlá a přístupná čtečka e-knih a dokumentů
+určená komukoli, od příležitostných čtenářů až po náročné pokročilé
+uživatele. Je navržen pro maximální podporu odečítačů obrazovky, rychlou
+odezvu a uživatelský zážitek bez rušivých prvků.</p>
+<h1 id="systémové-požadavky">Systémové požadavky</h1>
+<p>Paperback v současnosti funguje na Windows 10 a 11. Podpora macOS a
+Linuxu je v plánu.</p>
+<h1 id="funkce">Funkce</h1>
+<ul>
+<li>Kompletně soběstačný program, který nevyžaduje mít v počítači
+nainstalovaný žádný další software k tomu, abyste mohli prostě začít
+číst.</li>
+<li>Neuvěřitelně rychlý, dokonce i na starém hardwaru.</li>
+<li>Jednoduché vícepanelové rozhraní, takže si můžete vedle sebe
+otevřít, kolik dokumentů chcete.</li>
+<li>Ukládá místo, kde jste přestali, v každém dokumentu, který
+otevřete.</li>
+<li>Volitelně si pamatuje, které dokumenty jste měli při zavření
+programu otevřené, a při příštím spuštění je znovu načte.</li>
+<li>Navržen uživatelem odečítače pro ostatní uživatele odečítačů.</li>
+<li>Obsahuje funkce rychlé navigace, podobné režimu procházení webu ve
+většině odečítačů, pro rychlý a snadný pohyb v dokumentech.</li>
+<li>Obsahuje robustní dialog pro vyhledávání, včetně funkcí, jako je
+historie nebo podpora regulárních výrazů.</li>
+<li>Lze spouštět v přenosné verzi nebo nainstalovat i s automatickým
+nastavením přidružených typů souborů.</li>
+</ul>
+<h1 id="aktuálně-podporované-typy-souborů">Aktuálně podporované typy
+souborů</h1>
+<p>Paperback podporuje následující formáty a přípony:</p>
+<ul>
+<li>CHM soubory nápovědy (<code>.chm</code>)</li>
+<li>E-knihy ve formátu EPUB (<code>.epub</code>)</li>
+<li>E-knihy ve formátu FB2 (<code>.fb2</code>)</li>
+<li>HTML dokumenty (<code>.htm</code>, <code>.html</code>,
+<code>.xhtml</code>)</li>
+<li>Dokumenty ve formátu Markdown (<code>.md</code>,
+<code>.markdown</code>, <code>.mdx</code>, <code>.mdown</code>,
+<code>.mdwn</code>, <code>.mkd</code>, <code>.mkdn</code>,
+<code>.mkdown</code>, <code>.ronn</code>)</li>
+<li>Dokumenty Microsoft Wordu (<code>.docx</code>,
+<code>.docm</code>)</li>
+<li>OpenDocument prezentace (<code>.odp</code>, <code>.fodp</code>)</li>
+<li>OpenDocument textové soubory (<code>.odt</code>,
+<code>.fodt</code>)</li>
+<li>PDF dokumenty (<code>.pdf</code>)</li>
+<li>PowerPointové prezentace (<code>.pptx</code>,
+<code>.pptm</code>)</li>
+<li>RTF dokumenty (<code>.rtf</code>)</li>
+<li>Soubory v prostém textu a log soubory (<code>.txt</code>,
+<code>.log</code>)</li>
+<li>XML dokumenty (<code>.xml</code>)</li>
+</ul>
+<h1 id="klávesové-zkratky">Klávesové zkratky</h1>
+<p>Paperback je navržen především pro použití s klávesnicí a s
+odečítačem obrazovky. Toto jsou aktuální klávesové zkratky:</p>
+<h2 id="nabídka-soubor">Nabídka Soubor</h2>
+<ul>
+<li><code>Ctrl+O</code>: Otevření dokumentu.</li>
+<li><code>Ctrl+F4</code>: Zavření aktuálního dokumentu.</li>
+<li><code>Ctrl+Shift+F4</code>: Zavření všech otevřených dokumentů.</li>
+<li><code>Ctrl+R</code>: Zobrazení dialogu “Všechny dokumenty” (z
+nabídky Nedávné dokumenty).</li>
+</ul>
+<h2 id="nabídka-přejít">Nabídka Přejít</h2>
+<ul>
+<li><code>Ctrl+F</code>: Zobrazení dialogu Najít.</li>
+<li><code>F3</code>: Najít další.</li>
+<li><code>Shift+F3</code>: Najít předchozí.</li>
+<li><code>Ctrl+G</code>: Přejít na řádek.</li>
+<li><code>Ctrl+Shift+G</code>: Přejít na procenta.</li>
+<li><code>Ctrl+P</code>: Přejít na stránku (pokud je podporováno v
+aktuálním dokumentu).</li>
+<li><code>Alt+Left</code>: Posun zpět v historii navigace.</li>
+<li><code>Alt+Right</code>: Posun vpřed v historii navigace.</li>
+<li><code>[</code>: Předchozí oddíl.</li>
+<li><code>]</code>: Další oddíl.</li>
+<li><code>Shift+H</code>: Předchozí nadpis.</li>
+<li><code>H</code>: Další nadpis.</li>
+<li><code>Shift+1</code> až <code>Shift+6</code>: Předchozí nadpis
+úrovně 1 až 6.</li>
+<li><code>1</code> až <code>6</code>: Další nadpis úrovně 1 až 6.</li>
+<li><code>Shift+P</code>: Předchozí stránka.</li>
+<li><code>P</code>: Další stránka.</li>
+<li><code>Shift+B</code>: Předchozí záložka.</li>
+<li><code>B</code>: Další záložka.</li>
+<li><code>Shift+N</code>: Předchozí poznámka.</li>
+<li><code>N</code>: Další poznámka.</li>
+<li><code>Ctrl+B</code>: Zobrazení všech záložek a poznámek.</li>
+<li><code>Ctrl+Alt+B</code>: Zobrazení pouze záložek.</li>
+<li><code>Ctrl+Alt+M</code>: Zobrazení pouze poznámek.</li>
+<li><code>Ctrl+Shift+W</code>: Zobrazení textu poznámky na aktuální
+pozici.</li>
+<li><code>Shift+K</code>: Předchozí odkaz.</li>
+<li><code>K</code>: Další odkaz.</li>
+<li><code>Shift+T</code>: Předchozí tabulka.</li>
+<li><code>T</code>: Další tabulka.</li>
+<li><code>Shift+S</code>: Předchozí oddělovač.</li>
+<li><code>S</code>: Další oddělovač.</li>
+<li><code>Shift+L</code>: Předchozí seznam.</li>
+<li><code>L</code>: Další seznam.</li>
+<li><code>Shift+I</code>: Předchozí položka seznamu.</li>
+<li><code>I</code>: Další položka seznamu.</li>
+</ul>
+<h2 id="nabídka-nástroje">Nabídka Nástroje</h2>
+<ul>
+<li><code>Ctrl+W</code>: Zobrazení počtu slov v aktuálním
+dokumentu.</li>
+<li><code>Ctrl+I</code>: Zobrazení informací o dokumentu.</li>
+<li><code>Ctrl+T</code>: Zobrazení obsahu (osnovy) dokumentu.</li>
+<li><code>F7</code>: Zobrazení seznamu prvků.</li>
+<li><code>Ctrl+Shift+C</code>: Otevření nadřazené složky (kde je
+aktuální dokument uložen).</li>
+<li><code>Ctrl+Shift+V</code>: Otevření aktuálního dokumentu ve webovém
+zobrazení.</li>
+<li><code>Ctrl+Shift+E</code>: Export dat dokumentu
+(<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Import dat dokumentu
+(<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Export aktuálního dokumentu do prostého
+textu.</li>
+<li><code>Ctrl+Shift+B</code>: Přepnutí záložky v aktuálním výběru / na
+aktuální pozici.</li>
+<li><code>Ctrl+Shift+N</code>: Přidání nebo úpravy poznámky k záložce v
+aktuálním výběru / na aktuální pozici.</li>
+<li><code>Ctrl+,</code>: Otevření dialogu Možnosti.</li>
+<li><code>Ctrl+Shift+S</code>: Přepnutí časovače spánku.</li>
+</ul>
+<h2 id="nabídka-nápověda">Nabídka Nápověda</h2>
+<ul>
+<li><code>Ctrl+F1</code>: Zobrazení dialogu O Paperbacku.</li>
+<li><code>F1</code>: Zobrazení této nápovědy ve výchozím webovém
+prohlížeči.</li>
+<li><code>Shift+F1</code>: Zobrazení této nápovědy přímo v
+Paperbacku.</li>
+<li><code>Ctrl+Shift+U</code>: Vyhledání aktualizací.</li>
+<li><code>Ctrl+D</code>: Otevření stránky podpory ve výchozím webovém
+prohlížeči.</li>
+</ul>
+<h2 id="další-zkratky-v-zobrazení-dokumentu">Další zkratky v zobrazení
+dokumentu</h2>
+<ul>
+<li><code>Delete</code> / <code>Numpad Delete</code> na seznamu záložek:
+Zavření záložky (panelu) vybraného dokumentu.</li>
+<li><code>Enter</code> v textu dokumentu: Aktivuje odkaz pod kurzorem
+nebo otevře zobrazení tabulky, pokud se kurzor nachází na značce
+tabulky.</li>
+<li><code>Shift+F10</code> v textu dokumentu: Otevření kontextové
+nabídky.</li>
+</ul>
+<h1 id="podporované-jazyky">Podporované jazyky</h1>
+<p>Paperback je přeložen do mnoha různých jazyků a další neustále
+přibývají. Následuje kompletní výčet:</p>
+<ul>
+<li>Bosenština</li>
+<li>Čeština</li>
+<li>Francouzština</li>
+<li>Němčina</li>
+<li>Japonština</li>
+<li>Ruština</li>
+<li>Zjednodušená čínština</li>
+<li>Srbština</li>
+<li>Španělština</li>
+<li>Vietnamština</li>
+</ul>
+<h1 id="poděkování">Poděkování</h1>
+<h2 id="vývoj">Vývoj</h2>
+<ul>
+<li>Quin Gillespie: Primární vývojář a zakladatel projektu.</li>
+<li>Aryan Choudhary: primární přispěvatel.</li>
+</ul>
+<h2 id="podpora">Podpora</h2>
+<p>Následující lidé podpořili další vývoj Paperbacku finančním
+příspěvkem. Pokud přispějete i vy, vaše jméno se zde automaticky
+neobjeví. Uvádím pouze lidi, kteří si přáli svůj příspěvek
+zveřejnit.</p>
+<p>Upozornění: Veřejné sponzory na GitHubu automaticky považuji za
+určené ke zveřejnění.</p>
+<ul>
+<li>Alex Hall</li>
+<li>Brandon McGinty</li>
+<li>Brian Hartgen</li>
+<li>Debbie Yuille</li>
+<li>Devin Prater</li>
+<li>Felix Steindorff</li>
+<li>Hamish Mackenzie</li>
+<li>James Scholes</li>
+<li>Jayson Smith</li>
+<li>Jonathan Rodriguez</li>
+<li>Jonathan Schuster</li>
+<li>Keao Wright</li>
+<li>Pratik Patel</li>
+<li>Roberto Perez</li>
+<li>Sean Randall</li>
+<li>Timothy Wynn</li>
+<li>Tyler Rodick</li>
+</ul>
+<h1 id="historie-změn">Historie změn</h1>
+<h2 id="verze-0.8.5">Verze 0.8.5</h2>
+<ul>
+<li>Přidána podpora tagovaných PDF souborů!</li>
+<li>Přidána podpora stránek pro knihy ve formátu epub.</li>
+<li>Přidána podpora PowerPointových prezentací ve starém formátu
+(*.ppt)!</li>
+<li>Přidána podpora starého formátu dokumentů Microsoft Wordu
+(*.doc)!</li>
+<li>Přidána podpora knih ve formátu mobi a AZW3!</li>
+<li>Přidána podpora šifrovaných dokumentů Microsoft Office. Aktuálně
+jsou podporovány formáty starého Wordu, moderního Wordu a moderního
+PowerPointu. Starý PowerPoint je plánován do budoucna.</li>
+<li>Přidána klávesová zkratka ctrl+q pro ukončení aplikace.</li>
+<li>Přidána podpora zazipovaných knih z Bookshare (DAISY i Word)!</li>
+<li>U obrázků v dokumentech by se nyní měl správně zobrazovat alt
+text.</li>
+<li>Soubory CHM nyní správně podporují navigaci po vnitřních
+odkazech.</li>
+<li>Opravena chyba, kdy se zvuky záložek přehrávaly na začátku odstavce
+místo na skutečné pozici záložky.</li>
+<li>Opravena chyba, kdy přechod na konkrétní číslo stránky byl posunutý
+o 1.</li>
+<li>Opravena chyba, kdy se dialog Otevřít jako nedal zavřít klávesou
+escape.</li>
+<li>Opravena chyba, kdy se kontextové menu ve čtečce nezobrazovalo při
+kliknutí pravým tlačítkem myši nebo stisknutí shift+F10.</li>
+<li>Opravena chyba, kdy se při otevírání dokumentů z příkazové řádky
+někdy fokusoval nesprávný dokument.</li>
+<li>PDF, která jsou pouze obrázková, jsou nyní znovu správně detekována
+a upozorní vás na tuto skutečnost.</li>
+<li>Nyní je možné navigovat po obrázcích a ilustracích pomocí zkratek
+G/shift+G a F/shift+F.</li>
+<li>Paperback bude nyní respektovat vaše nastavení tmavého režimu pro
+aplikace.</li>
+<li>Odstraněna podpora DAISY XML, protože už není potřeba.</li>
+<li>Ve stromovém zobrazení obsahu dokumentu jsem přešel zpátky na
+nativní Win32 navigaci prvními písmeny.</li>
+<li>Dialog o chybě při spuštění nyní zobrazuje podrobnější chybové
+hlášky.</li>
+<li>Webové zobrazení se nyní bude načítat mnohem rychleji a
+hladčeji.</li>
+</ul>
+<h2 id="verze-0.8.2">Verze 0.8.2</h2>
+<ul>
+<li>Přidána podpora stránek pro RTF dokumenty!</li>
+<li>Opravena chyba, kdy se při otevření EPUB dokumentu ve webovém
+zobrazení automaticky aktivovaly odkazy, pokud je dokument
+obsahoval.</li>
+<li>Opravena chyba, kdy RTF parser ve vzácných případech nevkládal
+mezery mezi slova.</li>
+<li>Opraveno rozdělování odstavců v některých PDF dokumentech na několik
+krátkých řádků. <a
+href="https://github.com/trypsynth/paperback/issues/101">#101</a>, <a
+href="https://github.com/trypsynth/paperback/pull/355">#355</a>.</li>
+<li>PDF dokumenty teď mají základní podporu pro pohyb po odkazech a po
+nadpisech! <a
+href="https://github.com/trypsynth/paperback/issues/291">#291</a>, <a
+href="https://github.com/trypsynth/paperback/pull/353">#353</a>, <a
+href="https://github.com/trypsynth/paperback/pull/354">#354</a>.</li>
+<li>RTF tabulátory a konce řádků se teď vykreslují přesně tak, jak se v
+dokumentu vyskytují.</li>
+<li>Přešel jsem zpátky na vyzkoušenou a osvědčenou knihovnu pdfium pro
+parsování PDF souborů, takže je jejich renderování opět výrazně
+spolehlivější.</li>
+</ul>
+<h2 id="verze-0.8.1">Verze 0.8.1</h2>
+<ul>
+<li>Přidána klávesová zkratka Ctrl+Shift+T pro znovuotevření naposledy
+zavřeného dokumentu. <a
+href="https://github.com/trypsynth/paperback/issues/343">#343</a>.</li>
+<li>Dialog Všechny dokumenty teď podporuje výběr více dokumentů, které
+se mají otevřít najednou. <a
+href="https://github.com/trypsynth/paperback/issues/344">#344</a>.</li>
+<li>Opraveno několik chyb v RTF parseru. <a
+href="https://github.com/trypsynth/paperback/issues/345">#345</a>.</li>
+<li>Opravena chyba, kdy cesty k souborům obsahující jiné než ascii znaky
+(například bosenské š, č, ć, ž) přestaly fungovat při otevření stejného
+souboru ve druhé instanci Paperbacku. <a
+href="https://github.com/trypsynth/paperback/issues/346">#346</a>.</li>
+<li>Opraveno čtení textu z PDF v nesprávném pořadí a chybové vkládání
+mezer okolo slov s velkými písmeny. <a
+href="https://github.com/trypsynth/paperback/issues/44">#44</a>.</li>
+<li>Opraveno pomalé načítání dokumentů při otevírání velkých
+souborů.</li>
+<li>Opravena lokalizace tlačítek Ano a Ne v potvrzovacích dialozích. <a
+href="https://github.com/trypsynth/paperback/issues/285">#285</a>.</li>
+</ul>
+<h2 id="verze-0.8.0">Verze 0.8.0</h2>
+<ul>
+<li>Přidány lokalizace pro japonštinu, vietnamštinu a zjednodušenou
+čínštinu! <a
+href="https://github.com/trypsynth/paperback/pull/300">#300</a>, <a
+href="https://github.com/trypsynth/paperback/pull/326">#326</a>, <a
+href="https://github.com/trypsynth/paperback/pull/335">#335</a>.</li>
+<li>Přidán automatický updater, který nyní nahradí aktuálně
+nainstalovanou verzi Paperbacku, místo aby jenom stáhnul novou verzi! <a
+href="https://github.com/trypsynth/paperback/pull/323">#323</a>.</li>
+<li>Přidána volitelná zvuková odezva pro přesun na záložku nebo poznámku
+(za zvuky děkuji Andre Louisovi)! <a
+href="https://github.com/trypsynth/paperback/issues/110">#110</a>.</li>
+<li>Přidána podpora RTF dokumentů! <a
+href="https://github.com/trypsynth/paperback/issues/26">#26</a>.</li>
+<li>Přidána podpora dokumentů ve formátu DAISY XML. <a
+href="https://github.com/trypsynth/paperback/issues/136">#136</a>.</li>
+<li>Přidána podpora textových souborů Flat Open Document Text!</li>
+<li>Přidána podpora Flat Open Document prezentací!</li>
+<li>Přidána podpora oddělovačů a zkratky S a shift+S. <a
+href="https://github.com/trypsynth/paperback/issues/294">#294</a>.</li>
+<li>Každý posun o víc než 300 znaků se nyní automaticky přidá do
+historie navigace. <a
+href="https://github.com/trypsynth/paperback/issues/179">#179</a>.</li>
+<li>Opraveno obnovování okna Paperbacku ze systémové lišty. <a
+href="https://github.com/trypsynth/paperback/issues/284">#284</a>.</li>
+<li>Opravena chyba, kdy se ve webovém zobrazení pro dokumenty v
+Markdownu zobrazoval původní text místo renderovaného HTML.</li>
+<li>Opraveno nesprávné renderování tabulek v Markdown souborech. <a
+href="https://github.com/trypsynth/paperback/issues/303">#303</a>.</li>
+<li>PDF, která jsou pouze obrázková, vás na tuto skutečnost nyní
+upozorní, když se takový soubor pokusíte načíst. <a
+href="https://github.com/trypsynth/paperback/issues/89">#89</a>.</li>
+<li>Při kontrole aktualizací je nyní možné vyhledávat kromě stabilních
+verzí i vývojové verze. <a
+href="https://github.com/trypsynth/paperback/pull/333">#333</a>.</li>
+<li>Ve spustitelném souboru Paperbacku jsou správně uvedeny informace o
+verzi. <a
+href="https://github.com/trypsynth/paperback/issues/204">#204</a>.</li>
+<li>Dialog Možnosti byl rozdělen do záložek pro snadnější používání a
+pohodlnější navigaci.</li>
+<li>Přešel jsem na knihovnu Hayro pro parsování souborů PDF, což vede k
+větší spolehlivosti, rychlejší odezvě a menšímu počtu DLL knihoven.</li>
+<li>Přepsal jsem celou aplikaci do Rustu. Nový kód je bezpečnější,
+načítá dokumenty rychleji a je ho jednodušší udržovat a rozšiřovat.</li>
+<li>Kontextová nabídka na textovém prvku s obsahem dokumentu teď
+obsahuje příkazy specifické pro čtečku a ne obecné příkazy jako Vyjmout
+nebo Vložit. <a
+href="https://github.com/trypsynth/paperback/issues/114">#114</a>.</li>
+</ul>
+<h2 id="verze-0.7.0">Verze 0.7.0</h2>
+<ul>
+<li>Přidána podpora tabulek pro dokumenty založené na HTML a XHTML! Mezi
+tabulkami se můžete pohybovat pomocí T a Shift+T a stisknutím Enteru si
+některou zobrazit ve webovém zobrazení. <a
+href="https://github.com/trypsynth/paperback/issues/81">#81</a>, <a
+href="https://github.com/trypsynth/paperback/pull/98">#98</a>, <a
+href="https://github.com/trypsynth/paperback/pull/226">#226</a>, <a
+href="https://github.com/trypsynth/paperback/pull/228">#228</a>.</li>
+<li>Přidány základy funkce webového vykreslování! Stisknutím
+Ctrl+Shift+V otevřete aktuální část dokumentu ve webovém zobrazení. Může
+se to hodit zejména u obsahu, jako je složité formátování nebo ukázky
+kódu. <a
+href="https://github.com/trypsynth/paperback/issues/188">#188</a>, <a
+href="https://github.com/trypsynth/paperback/pull/239">#239</a>.</li>
+<li>Přidán ruský překlad (díky Ruslanu Gulmagomedovovi)! <a
+href="https://github.com/trypsynth/paperback/pull/211">#211</a>, <a
+href="https://github.com/trypsynth/paperback/pull/212">#212</a>.</li>
+<li>Do dialogu Všechny dokumenty přidáno tlačítko Vymazat vše. <a
+href="https://github.com/trypsynth/paperback/issues/217">#217</a>.</li>
+<li>Kontrola aktualizací nyní při dostupnosti nové verze zobrazuje
+poznámky k vydání. <a
+href="https://github.com/trypsynth/paperback/pull/210">#210</a>.</li>
+<li>Aktualizován srbský překlad. <a
+href="https://github.com/trypsynth/paperback/pull/219">#219</a>, <a
+href="https://github.com/trypsynth/paperback/pull/229">#229</a>.</li>
+<li>Aktualizován bosenský překlad. <a
+href="https://github.com/trypsynth/paperback/pull/218">#218</a>, <a
+href="https://github.com/trypsynth/paperback/pull/225">#225</a>.</li>
+<li>Opraveno obnovování okna ze systémové lišty. <a
+href="https://github.com/trypsynth/paperback/issues/284">#284</a>.</li>
+<li>Opraveny překlady tlačítek Ano/Ne v potvrzovacích dialozích. <a
+href="https://github.com/trypsynth/paperback/issues/285">#285</a>.</li>
+<li>Opraveno načítání konfigurace při spuštění jako správce. <a
+href="https://github.com/trypsynth/paperback/issues/201">#201</a>.</li>
+<li>Opraveno zpracování komentářů v dokumentech XML a HTML. <a
+href="https://github.com/trypsynth/paperback/issues/198">#198</a>.</li>
+<li>Opraveno parsování obsahu v knihách Epub 2. <a
+href="https://github.com/trypsynth/paperback/pull/192">#192</a>.</li>
+<li>Opraven přechod na další položku se stejným písmenem v obsahu. <a
+href="https://github.com/trypsynth/paperback/pull/191">#191</a>.</li>
+<li>Opravena chyba, kdy se dialog Hledat při použití tlačítek
+další/předchozí neskrýval správně.</li>
+<li>Opravena chyba, kdy vás obsah v epub dokumentech občas přesunul na
+nesprávnou položku.</li>
+<li>Opraveny různé problémy se zpracováním bílých znaků v XML, HTML a
+značkách pre.</li>
+<li>Opraven posun o jeden odkaz mimo při navigaci po odkazech.</li>
+<li>Opravena chyba, kdy některé knihy měly na konci řádků nadbytečné
+bílé znaky.</li>
+<li>Opraveny různé problémy parseru. <a
+href="https://github.com/trypsynth/paperback/pull/208">#208</a>.</li>
+<li>Položky nabídky související se záložkami jsou nyní správně zakázány,
+když není otevřen žádný dokument. <a
+href="https://github.com/trypsynth/paperback/pull/196">#196</a>.</li>
+<li>Seznam prvků je nyní správně zakázán, když není otevřen žádný
+dokument. <a
+href="https://github.com/trypsynth/paperback/issues/194">#194</a>.</li>
+<li>Vylepšeno zpracování seznamů v různých formátech dokumentů. <a
+href="https://github.com/trypsynth/paperback/pull/213">#213</a>.</li>
+<li>Vylepšen pracovní postup pro překladatele. <a
+href="https://github.com/trypsynth/paperback/issues/270">#270</a>.</li>
+<li>Mnoho interních refaktorizací, při nichž byla většina aplikační
+logiky přesunuta z C++ do Rustu kvůli vyššímu výkonu a lepší
+udržitelnosti.</li>
+</ul>
+<h2 id="verze-0.6.1">Verze 0.6.1</h2>
+<ul>
+<li>Přidána podpora PDF chráněných heslem! <a
+href="https://github.com/trypsynth/paperback/issues/169">#169</a>.</li>
+<li>Přidána velmi základní funkce pro přesun na předchozí/další pozici.
+Pokud stisknete Enter na vnitřním odkazu a kurzor se přesune, tato
+pozice se nyní zapamatuje a lze se na ni vracet pomocí Alt+šipka
+vlevo/vpravo. <a
+href="https://github.com/trypsynth/paperback/issues/115">#115</a>, <a
+href="https://github.com/trypsynth/paperback/pull/174">#174</a>.</li>
+<li>Přidán seznam prvků! Momentálně zobrazuje jen strom všech nadpisů v
+dokumentu nebo seznam odkazů, ale do budoucna počítám s jeho rozšířením.
+<a href="https://github.com/trypsynth/paperback/issues/173">#173</a>, <a
+href="https://github.com/trypsynth/paperback/pull/177">#177</a>.</li>
+<li>Přidána možnost spouštět Paperback ve výchozím nastavení
+maximalizovaný. <a
+href="https://github.com/trypsynth/paperback/issues/164">#164</a>, <a
+href="https://github.com/trypsynth/paperback/pull/172">#172</a>.</li>
+<li>Opravena chyba, kdy odkazy v některých dokumentech Epub nefungovaly
+správně. <a
+href="https://github.com/trypsynth/paperback/issues/167">#167</a>, <a
+href="https://github.com/trypsynth/paperback/pull/171">#171</a>, <a
+href="https://github.com/trypsynth/paperback/issues/178">#178</a>, <a
+href="https://github.com/trypsynth/paperback/pull/180">#180</a>.</li>
+<li>Opraveno parsování obsahu v Epub souborech obsahujících relativní
+cesty. <a
+href="https://github.com/trypsynth/paperback/issues/187">#187</a>.</li>
+<li>Opravena chyba, kdy se u některých epub dokumentů nezobrazoval název
+nebo autor. <a
+href="https://github.com/trypsynth/paperback/issues/175">#175</a>.</li>
+<li>Opravena chyba, kdy se názvy některých kapitol v epub dokumentech v
+dialogu obsahu nezobrazovaly správně. <a
+href="https://github.com/trypsynth/paperback/pull/176">#176</a>.</li>
+<li>Opravena chyba, kdy v dialogu obsahu nebylo možné aktivovat tlačítka
+OK/Zrušit mezerníkem. <a
+href="https://github.com/trypsynth/paperback/issues/170">#170</a>.</li>
+<li>Vylepšeno zpracování nadpisů v dokumentech Microsoft Wordu. <a
+href="https://github.com/trypsynth/paperback/pull/183">#183</a>.</li>
+<li>Pokud se pokusíte vyvolat dialog Nedávné dokumenty a seznam bude
+prázdný, dostanete nyní hlasovou odezvu. <a
+href="https://github.com/trypsynth/paperback/issues/185">#185</a>.</li>
+</ul>
+<h2 id="verze-0.6.0">Verze 0.6.0</h2>
+<ul>
+<li>Do dialogu Možnosti přidána nová volba, která zobrazuje nabídku
+Přejít v mnohem kompaktnější podobě; ve výchozím stavu je zapnutá.</li>
+<li>Přidána možnost cyklické rychlé navigace po strukturních prvcích. <a
+href="https://github.com/trypsynth/paperback/pull/116">#116</a>.</li>
+<li>Do nabídky Nástroje byla přidána možnost otevřít složku obsahující
+právě fokusovaný dokument. <a
+href="https://github.com/trypsynth/paperback/pull/142">#142</a>.</li>
+<li>Přidán poměrně jednoduchý, ale velmi účinný systém aktualizací. <a
+href="https://github.com/trypsynth/paperback/issues/28">#28</a>.</li>
+<li>Přidána základní funkce časovače spánku, dostupná pomocí
+Ctrl+Shift+S. <a
+href="https://github.com/trypsynth/paperback/issues/117">#117</a>, <a
+href="https://github.com/trypsynth/paperback/pull/118">#118</a>.</li>
+<li>Přidána podpora parsování e-knih ve formátu FB2! <a
+href="https://github.com/trypsynth/paperback/issues/30">#30</a>, <a
+href="https://github.com/trypsynth/paperback/pull/107">#107</a>.</li>
+<li>Přidána podpora parsování OpenDocument prezentací! <a
+href="https://github.com/trypsynth/paperback/issues/105">#105</a>, <a
+href="https://github.com/trypsynth/paperback/pull/106">#106</a>.</li>
+<li>Přidána podpora parsování OpenDocument textových souborů! <a
+href="https://github.com/trypsynth/paperback/issues/29">#29</a>, <a
+href="https://github.com/trypsynth/paperback/pull/90">#90</a>.</li>
+<li>Záložky nyní mohou označovat celý řádek nebo jen vybranou část
+textu. Pokud při vytvoření záložky nemáte nic označeno, chová se to
+stejně jako před verzí 0.6 a označí se celý řádek. Pokud ale nějaký text
+vyberete, bude do záložky zahrnut pouze tento text. <a
+href="https://github.com/trypsynth/paperback/issues/99">#99</a>.</li>
+<li>K záložkám lze nyní připojit volitelné textové poznámky! Mezi
+záložkami obsahujícími poznámky se můžete pohybovat pomocí N a Shift+N,
+případně můžete vyvolat dialog záložek se zobrazením všech záložek, jen
+poznámek nebo jen záložek bez poznámek pomocí konkrétních klávesových
+zkratek. <a
+href="https://github.com/trypsynth/paperback/issues/68">#68</a>, <a
+href="https://github.com/trypsynth/paperback/issues/128">#128</a>, <a
+href="https://github.com/trypsynth/paperback/issues/156">#156</a>, <a
+href="https://github.com/trypsynth/paperback/issues/157">#157</a>, <a
+href="https://github.com/trypsynth/paperback/pull/158">#158</a>, <a
+href="https://github.com/trypsynth/paperback/issues/159">#159</a>, <a
+href="https://github.com/trypsynth/paperback/pull/161">#161</a>.</li>
+<li>Záložky v dialogu Záložky už nebudou mít obtěžující předponu
+„záložka x“. <a
+href="https://github.com/trypsynth/paperback/issues/86">#86</a>.</li>
+<li>Knihy Epub obsahující HTML kód, který se tváří jako XML, budou nyní
+zpracovávány správně. <a
+href="https://github.com/trypsynth/paperback/issues/96">#96</a>.</li>
+<li>Opraveno načítání velkých dokumentů Markdown. <a
+href="https://github.com/trypsynth/paperback/issues/97">#97</a>.</li>
+<li>Opravena chyba, kdy stisknutí mezerníku ve stromovém zobrazení
+obsahu aktivovalo tlačítko OK. <a
+href="https://github.com/trypsynth/paperback/issues/121">#121</a>, <a
+href="https://github.com/trypsynth/paperback/pull/123">#123</a>.</li>
+<li>Opraveno zpracování bílých znaků na začátku značek pre v dokumentech
+HTML i XHTML.</li>
+<li>Opravena chyba, kdy textové pole někdy po návratu do okna Paperbacku
+znovu nezískalo fokus. <a
+href="https://github.com/trypsynth/paperback/issues/138">#138</a>.</li>
+<li>Opravena chyba, kdy textové pole v dialogu Přejít na procenta
+neaktualizovalo hodnotu posuvníku.</li>
+<li>Opraveno vykreslování vlastních HTML ID v dokumentech Markdown. <a
+href="https://github.com/trypsynth/paperback/issues/113">#113</a>.</li>
+<li>HTML uvnitř bloků kódu v Markdownu se nyní bude vykreslovat správně.
+<a href="https://github.com/trypsynth/paperback/issues/79">#79</a>.</li>
+<li>Při načítání knihy pomocí parametru příkazového řádku za běhu již
+existující instance Paperbacku už nedostanete chybu, pokud načtení
+dokumentu trvá déle než 5 sekund.</li>
+<li>Pokud Paperback spouštíte jako správce, konfigurace se nyní bude
+správně načítat i ukládat. <a
+href="https://github.com/trypsynth/paperback/issues/148">#148</a>, <a
+href="https://github.com/trypsynth/paperback/pull/149">#149</a>.</li>
+<li>Nyní je možné smazat záložku přímo z dialogu Záložky. <a
+href="https://github.com/trypsynth/paperback/issues/100">#100</a>, <a
+href="https://github.com/trypsynth/paperback/pull/103">#103</a>.</li>
+<li>Nyní je možné importovat a exportovat vaše záložky a pozici čtení
+pro konkrétní dokument. Vygenerovaný soubor se pojmenuje podle daného
+souboru s příponou .paperback. Pokud se takový soubor při načítání najde
+ve stejné složce jako dokument, načte se automaticky. Jinak ho můžete
+importovat ručně pomocí položky v nabídce Nástroje. <a
+href="https://github.com/trypsynth/paperback/issues/146">#146</a>, <a
+href="https://github.com/trypsynth/paperback/pull/147">#147</a>.</li>
+<li>Odkazy uvnitř dokumentů jsou nyní plně podporovány! Pomocí K a
+Shift+K se mezi nimi můžete pohybovat vpřed a vzad a stisknutím Enteru
+některý otevřít nebo aktivovat. <a
+href="https://github.com/trypsynth/paperback/issues/74">#74</a>, <a
+href="https://github.com/trypsynth/paperback/pull/87">#87</a>, <a
+href="https://github.com/trypsynth/paperback/issues/126">#126</a>, <a
+href="https://github.com/trypsynth/paperback/issues/129">#129</a>, <a
+href="https://github.com/trypsynth/paperback/issues/130">#130</a>.</li>
+<li>Mnoho interních refaktorizací, díky nimž je aplikace rychlejší a
+binární soubor menší.</li>
+<li>Obsah v Markdownu se nyní před vykreslením předzpracovává tak, aby
+odpovídal CommonMarku.</li>
+<li>Navigace po seznamech a jejich položkách je nyní plně podporována!
+Pomocí L a Shift+L přecházíte po samotných seznamech a pomocí I a
+Shift+I po položkách seznamu. <a
+href="https://github.com/trypsynth/paperback/issues/119">#119</a>, <a
+href="https://github.com/trypsynth/paperback/pull/124">#124</a>.</li>
+<li>Kromě běžné klávesy Delete nyní také funguje klávesa Delete na
+numerické klávesnici pro odstraňování dokumentů ze seznamu záložek.</li>
+<li>Paperback se nyní může volitelně minimalizovat do systémové lišty!
+Tato volba je ve výchozím stavu vypnutá, ale po jejím zapnutí přesune
+možnost minimalizace v systémové nabídce Paperback do lišty, odkud jej
+bude možné obnovit kliknutím na vytvořenou ikonu. <a
+href="https://github.com/trypsynth/paperback/issues/49">#49</a>, <a
+href="https://github.com/trypsynth/paperback/pull/85">#85</a>.</li>
+<li>Paperback je nyní plně přeložitelný! Seznam podporovaných jazyků je
+zatím poměrně malý, ale neustále roste! <a
+href="https://github.com/trypsynth/paperback/issues/75">#75</a>, <a
+href="https://github.com/trypsynth/paperback/pull/92">#92</a>, <a
+href="https://github.com/trypsynth/paperback/pull/95">#95</a>, <a
+href="https://github.com/trypsynth/paperback/pull/134">#134</a>, <a
+href="https://github.com/trypsynth/paperback/pull/137">#137</a>, <a
+href="https://github.com/trypsynth/paperback/pull/141">#141</a>, <a
+href="https://github.com/trypsynth/paperback/pull/152">#152</a>.</li>
+<li>Paperback má nyní oficiální web na adrese <a
+href="https://paperback.dev">paperback.dev</a>!</li>
+<li>Dokumenty PPTX nyní budou zobrazovat základní obsah všech slidů. <a
+href="https://github.com/trypsynth/paperback/issues/122">#122</a>.</li>
+<li>V dialogu s informacemi o dokumentu se nyní bude zobrazovat úplná
+cesta k otevřenému dokumentu. <a
+href="https://github.com/trypsynth/paperback/issues/139">#139</a>, <a
+href="https://github.com/trypsynth/paperback/pull/140">#140</a>.</li>
+<li>Instalační program nyní obsahuje možnost po instalaci zobrazit
+readme v prohlížeči.</li>
+<li>Seznam nedávných dokumentů byl výrazně rozšířen! Místo pouhého
+zobrazení posledních 10 otevřených dokumentů nyní zobrazí nastavitelný
+počet a ostatní dokumenty, které jste kdy otevřeli, budou dostupné přes
+malý dialog. <a
+href="https://github.com/trypsynth/paperback/issues/78">#78</a>, <a
+href="https://github.com/trypsynth/paperback/pull/80">#80</a>, <a
+href="https://github.com/trypsynth/paperback/pull/84">#84</a>, <a
+href="https://github.com/trypsynth/paperback/pull/135">#135</a>.</li>
+<li>Různá drobná vylepšení parserů napříč aplikací, včetně vložení
+prázdného řádku mezi slidy v prezentacích PPTX, opravy zpracování nových
+řádků uvnitř odstavců v dokumentech Wordu a přidání odrážek k položkám
+seznamů.</li>
+</ul>
+<h2 id="verze-0.5.0">Verze 0.5.0</h2>
+<ul>
+<li>Přidána podpora dokumentů Microsoft Wordu! <a
+href="https://github.com/trypsynth/paperback/issues/27">#27</a>.</li>
+<li>Přidána podpora PowerPointových prezentací! <a
+href="https://github.com/trypsynth/paperback/issues/25">#25</a>.</li>
+<li>Opravena chyba, kdy některé položky nabídky nebyly zakázány, když
+nebyl otevřen žádný dokument.</li>
+<li>Opravena orientace posuvníku v dialogu Přejít na procenta. <a
+href="https://github.com/trypsynth/paperback/issues/70">#70</a>.</li>
+<li>Opraven obsah v knihách Epub s URL-kódovanými cestami k souborům
+a/nebo ID fragmentů.</li>
+<li>Opraveno podivné odstraňování bílých znaků z nadpisů XHTML.</li>
+<li>Opraveno zpracování bílých znaků uvnitř vnořených značek pre v
+dokumentech HTML.</li>
+<li>Dokumenty HTML a Markdown nyní podporují funkci obsahu! Když načtete
+dokument HTML/Markdown, Paperback sestaví vlastní obsah ze struktury
+nadpisů v dokumentu a zobrazí vám ho v dialogu Ctrl+T.</li>
+<li>Dokumenty HTML nyní budou mít název nastavený podle značky title,
+pokud existuje. Jinak se nadále použije název souboru bez přípony.</li>
+<li>Místo UniversalSpeech se nově používá live region pro oznamování
+řeči. To znamená, že se spolu s programem už nedodávají žádné DLL
+soubory pro odečítače obrazovky a bude nyní podporováno více odečítačů,
+například Microsoft Narrator.</li>
+<li>Změněny ZIP knihovny, aby bylo možné otevírat širší škálu knih Epub.
+<a href="https://github.com/trypsynth/paperback/issues/73">#73</a>.</li>
+<li>Dialog, který se vás ptá, zda chcete dokument otevřít jako prostý
+text, byl úplně přepracován a nyní umožňuje otevřít dokument jako prostý
+text, HTML nebo Markdown.</li>
+<li>Dialog Přejít na procenta nyní obsahuje textové pole, do něhož lze
+ručně zadat procento, na které se má přeskočit. <a
+href="https://github.com/trypsynth/paperback/issues/66">#66</a>.</li>
+<li>HTML parser nyní rozpozná dd, dt a dl jako prvky seznamu.</li>
+<li>Obsah v knihách Epub bude opět zachován přesně.</li>
+<li>Unicode nezalomitelná mezera se nyní bere v úvahu při odstraňování
+prázdných řádků. <a
+href="https://github.com/trypsynth/paperback/issues/71">#71</a>.</li>
+<li>Program se vás už nebude ptát, jak chcete otevřít nerozpoznaný
+soubor, při každém otevření, ale jen při prvním.</li>
+</ul>
+<h2 id="verze-0.4.1">Verze 0.4.1</h2>
+<ul>
+<li>Do instalátoru byla přidána volitelná ikona v nabídce Start.</li>
+<li>Zobrazování obsahu by nyní mělo být v některých případech čistší;
+například pokud máte podřízenou i nadřazenou položku se stejným textem
+na stejné pozici, uvidíte nyní jen nadřazenou položku.</li>
+<li>Opraven obsah u některých dokumentů CHM.</li>
+<li>Opraven obsah v knihách Epub 3, které obsahovaly absolutní cesty. <a
+href="https://github.com/trypsynth/paperback/issues/67">#67</a>.</li>
+<li>Dokumenty CHM by nyní měly zobrazovat název nastavený v souboru
+metadat.</li>
+</ul>
+<h2 id="verze-0.4.0">Verze 0.4.0</h2>
+<ul>
+<li>Přidána podpora souborů CHM! <a
+href="https://github.com/trypsynth/paperback/issues/23">#23</a>.</li>
+<li>Přidána podpora záložek! Můžete jich mít libovolné množství v
+libovolném počtu dokumentů. Můžete mezi nimi skákat vpřed a vzad pomocí
+B a Shift+B, nastavovat je pomocí Ctrl+Shift+B a vyvolat dialog pro skok
+na konkrétní záložku pomocí Ctrl+B. <a
+href="https://github.com/trypsynth/paperback/issues/13">#13</a>.</li>
+<li>Kromě portable ZIP souboru byl přidán i instalátor! Ten nainstaluje
+Paperback do adresáře Program Files a automaticky za vás nastaví
+asociace souborů. <a
+href="https://github.com/trypsynth/paperback/issues/33">#33</a>.</li>
+<li>Textové soubory se značkou BOM by se nyní měly dekódovat správně a
+BOM se už nebude zobrazovat ani na začátku textu.</li>
+<li>Do stavového řádku bylo přidáno mnohem více informací. Nyní se v něm
+zobrazí aktuální řádek, znak a procento přečtení. <a
+href="https://github.com/trypsynth/paperback/issues/51">#51</a>.</li>
+<li>HTML komentáře ani obsah značek script a style se už v textovém
+výstupu nebudou zobrazovat.</li>
+<li>Pokud Paperbacku na příkazové řádce předáte relativní cestu, nyní ji
+správně vyhodnotí.</li>
+<li>Pohyb po procentech je nyní řešen vlastním dialogem s posuvníkem,
+dostupným pomocí Ctrl+Shift+G. <a
+href="https://github.com/trypsynth/paperback/issues/57">#57</a>.</li>
+<li>Dokumenty bez známého názvu nebo autora budou nyní vždy mít výchozí
+hodnotu.</li>
+<li>Logika ukládání pozice je nyní mnohem chytřejší a na disk by měla
+zapisovat jen tehdy, když je to opravdu nutné.</li>
+<li>Dokument, který jste měli aktivní při zavření Paperbacku, se nyní
+znovu otevře po restartu aplikace.</li>
+<li>Vstup v dialozích Přejít na řádek a Přejít na stránku by nyní měl
+být přísněji čištěn.</li>
+<li>Opravena navigace v obsahu v knihách Epub 3 s relativními cestami v
+manifestech.</li>
+</ul>
+<h2 id="verze-0.3.0">Verze 0.3.0</h2>
+<ul>
+<li>Opraven obsah v knihách Epub s URL-kódovanými manifesty. <a
+href="https://github.com/trypsynth/paperback/issues/34">#34</a>.</li>
+<li>Opravena navigace po nadpisech v dokumentech HTML obsahujících
+vícebajtové znaky Unicode. <a
+href="https://github.com/trypsynth/paperback/issues/42">#42</a>, <a
+href="https://github.com/trypsynth/paperback/issues/59">#59</a>, <a
+href="https://github.com/trypsynth/paperback/issues/61">#61</a>.</li>
+<li>Opraveno vysoké využití CPU u dokumentů s dlouhými názvy kvůli
+regresi ve wxWidgets. <a
+href="https://github.com/trypsynth/paperback/issues/60">#60</a>.</li>
+<li>Opraveno načítání textových souborů UTF-8.</li>
+<li>Opravena chyba, kdy vnořené položky obsahu v knihách Epub umisťovaly
+kurzor na nesprávnou pozici.</li>
+<li>V některých případech opraven pád při ukončení aplikace. <a
+href="https://github.com/trypsynth/paperback/issues/45">#45</a>.</li>
+<li>Do dialogu Možnosti bylo přidáno zaškrtávací políčko pro zapnutí
+nebo vypnutí zalamování řádků!</li>
+<li>Nyní je možné přispět na vývoj Paperbacku, a to buď přes novou
+položku Přispět v nabídce Nápověda, nebo přes odkaz sponsor this project
+ve spodní části hlavní stránky repozitáře na GitHubu.</li>
+<li>Dokumenty Markdown nyní budou mít vždy název a Paperback by nyní měl
+zvládnout načíst prakticky jakýkoli soubor Markdown. <a
+href="https://github.com/trypsynth/paperback/issues/52">#52</a>.</li>
+<li>Dokumenty PDF nyní budou mít vždy název, i když metadata chybějí. <a
+href="https://github.com/trypsynth/paperback/issues/56">#56</a>.</li>
+<li>Pro PDF byla nasazena knihovna používaná v Chromiu, což vede k
+výrazně spolehlivějšímu parsování PDF napříč aplikací. <a
+href="https://github.com/trypsynth/paperback/issues/41">#41</a>.</li>
+<li>Nyní může být spuštěna vždy jen jedna instance Paperbacku. Spuštění
+paperback.exe s názvem souboru ve chvíli, kdy už Paperback běží, otevře
+tento dokument v již běžící instanci.</li>
+<li>Na libovolném dokumentu v seznamu záložek nyní můžete stisknout
+Delete a zavřít jej.</li>
+</ul>
+<h2 id="verze-0.2.1">Verze 0.2.1</h2>
+<ul>
+<li>Do popisku stránky v dialogu Přejít na stránku byl přidán celkový
+počet stránek. <a
+href="https://github.com/trypsynth/paperback/issues/46">#46</a>.</li>
+<li>Umožněn přesun tabulátorem z obsahu dokumentu na seznam otevřených
+dokumentů. <a
+href="https://github.com/trypsynth/paperback/issues/19">#19</a>.</li>
+<li>Opravena chyba, kdy klávesy pro pohyb po nadpisech někdy otevíraly
+poslední dokumenty, pokud jich bylo dostatek. <a
+href="https://github.com/trypsynth/paperback/issues/47">#47</a>.</li>
+<li>Paperback nyní z textového výstupu odstraňuje zbytečné měkké
+pomlčky.</li>
+<li>Opravena chyba, kdy navigace po nadpisech někdy umístila kurzor na
+nesprávný znak.</li>
+</ul>
+<h2 id="verze-0.2.0">Verze 0.2.0</h2>
+<ul>
+<li>Přidána podpora dokumentů Markdown! <a
+href="https://github.com/trypsynth/paperback/issues/22">#22</a>.</li>
+<li>Přidána podpora dokumentů PDF, včetně možnosti pohybovat se po
+stránkách! <a
+href="https://github.com/trypsynth/paperback/issues/12">#12</a>, <a
+href="https://github.com/trypsynth/paperback/issues/37">#37</a>.</li>
+<li>Přidány klávesové zkratky pro navigaci po nadpisech v HTML obsahu,
+včetně knih Epub a dokumentů Markdown. Tyto klávesové zkratky byly
+navrženy tak, aby fungovaly podobně jako u odečítačů obrazovky. <a
+href="https://github.com/trypsynth/paperback/issues/3">#3</a>.</li>
+<li>Opraveno načítání Epubů s URL-kódovanými názvy souborů v
+manifestech. <a
+href="https://github.com/trypsynth/paperback/issues/20">#20</a>.</li>
+<li>Opraveno načítání knih Epub 3 s vloženým obsahem XHTML. <a
+href="https://github.com/trypsynth/paperback/issues/35">#35</a>.</li>
+<li>Pokud dokument nepodporuje obsah nebo oddíly, je nyní místo zakázání
+příslušných položek nabídky přečtena odpovídající zpráva. <a
+href="https://github.com/trypsynth/paperback/issues/39">#39</a>.</li>
+<li>Přidána nabídka nedávných dokumentů! Momentálně ukládá posledních 10
+otevřených dokumentů a stisknutí Enteru na některém z nich jej otevře
+pro čtení. <a
+href="https://github.com/trypsynth/paperback/issues/32">#32</a>.</li>
+<li>Dialog Hledat byl kompletně přepsán, takže je teď mnohem jednodušší
+na používání, a zároveň byla přidána historie posledních 25 hledání a
+podpora regulárních výrazů! <a
+href="https://github.com/trypsynth/paperback/issues/21">#21</a>.</li>
+<li>Dříve otevřené dokumenty nyní zůstanou zapamatovány i po restartu
+aplikace. Toto chování lze nastavit pomocí nové položky Možnosti v
+nabídce Nástroje. <a
+href="https://github.com/trypsynth/paperback/issues/18">#18</a>.</li>
+<li>Přidána klávesová zkratka Shift+F1 pro otevření readme přímo v
+Paperbacku.</li>
+</ul>
+<h2 id="verze-0.1.0">Verze 0.1.0</h2>
+<ul>
+<li>První vydaná verze.</li>
+</ul>
+</body>
+</html>

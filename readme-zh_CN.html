@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paperback - 版本 0.9.1</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="alternate" hreflang="en" href="https://paperback.dev/readme.html">
+  <link rel="alternate" hreflang="bs" href="https://paperback.dev/readme-bs.html">
+  <link rel="alternate" hreflang="cs" href="https://paperback.dev/readme-cs.html">
+  <link rel="alternate" hreflang="de" href="https://paperback.dev/readme-de.html">
+  <link rel="alternate" hreflang="es" href="https://paperback.dev/readme-es.html">
+  <link rel="alternate" hreflang="fi" href="https://paperback.dev/readme-fi.html">
+  <link rel="alternate" hreflang="fr" href="https://paperback.dev/readme-fr.html">
+  <link rel="alternate" hreflang="nl" href="https://paperback.dev/readme-nl.html">
+  <link rel="alternate" hreflang="pl" href="https://paperback.dev/readme-pl.html">
+  <link rel="alternate" hreflang="pt-br" href="https://paperback.dev/readme-pt_br.html">
+  <link rel="alternate" hreflang="ru" href="https://paperback.dev/readme-ru.html">
+  <link rel="alternate" hreflang="sr" href="https://paperback.dev/readme-sr.html">
+  <link rel="alternate" hreflang="vi" href="https://paperback.dev/readme-vi.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://paperback.dev/readme-zh_CN.html">
+  <link rel="alternate" hreflang="x-default" href="https://paperback.dev/readme.html">
+  <style>
+  .language-bar ul { list-style: none; padding: 0; margin: 0 0 1.5em; display: flex; flex-wrap: wrap; gap: 0.4em 1em; }
+  .language-bar [aria-current] { font-weight: bold; }
+  </style>
+</head>
+<body>
+<nav class="language-bar" aria-label="Language">
+<ul>
+<li><a href="/readme.html" lang="en" hreflang="en">English</a></li>
+<li><a href="/readme-bs.html" lang="bs" hreflang="bs">Bosanski</a></li>
+<li><a href="/readme-cs.html" lang="cs" hreflang="cs">Čeština</a></li>
+<li><a href="/readme-de.html" lang="de" hreflang="de">Deutsch</a></li>
+<li><a href="/readme-es.html" lang="es" hreflang="es">Español</a></li>
+<li><a href="/readme-fi.html" lang="fi" hreflang="fi">Suomi</a></li>
+<li><a href="/readme-fr.html" lang="fr" hreflang="fr">Français</a></li>
+<li><a href="/readme-nl.html" lang="nl" hreflang="nl">Nederlands</a></li>
+<li><a href="/readme-pl.html" lang="pl" hreflang="pl">Polski</a></li>
+<li><a href="/readme-pt_br.html" lang="pt-br" hreflang="pt-br">Português (Brasil)</a></li>
+<li><a href="/readme-ru.html" lang="ru" hreflang="ru">Русский</a></li>
+<li><a href="/readme-sr.html" lang="sr" hreflang="sr">Српски</a></li>
+<li><a href="/readme-vi.html" lang="vi" hreflang="vi">Tiếng Việt</a></li>
+<li><span lang="zh-CN" aria-current="true">中文（简体）</span></li>
+</ul>
+</nav>
+<header id="title-block-header">
+<h1 class="title">Paperback - 版本 0.9.1</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#简介" id="toc-简介">简介</a></li>
+<li><a href="#系统要求" id="toc-系统要求">系统要求</a></li>
+<li><a href="#功能" id="toc-功能">功能</a></li>
+<li><a href="#屏幕阅读器兼容性"
+id="toc-屏幕阅读器兼容性">屏幕阅读器兼容性</a>
+<ul>
+<li><a href="#jaws-与盲文显示器" id="toc-jaws-与盲文显示器">JAWS
+与盲文显示器</a></li>
+</ul></li>
+<li><a href="#当前支持的文件类型"
+id="toc-当前支持的文件类型">当前支持的文件类型</a></li>
+<li><a href="#键盘快捷键" id="toc-键盘快捷键">键盘快捷键</a>
+<ul>
+<li><a href="#文件菜单" id="toc-文件菜单">文件菜单</a></li>
+<li><a href="#转到菜单" id="toc-转到菜单">转到菜单</a></li>
+<li><a href="#工具菜单" id="toc-工具菜单">工具菜单</a></li>
+<li><a href="#帮助菜单" id="toc-帮助菜单">帮助菜单</a></li>
+<li><a href="#文档视图附加按键"
+id="toc-文档视图附加按键">文档视图附加按键</a></li>
+</ul></li>
+<li><a href="#支持的语言" id="toc-支持的语言">支持的语言</a></li>
+<li><a href="#鸣谢" id="toc-鸣谢">鸣谢</a>
+<ul>
+<li><a href="#开发" id="toc-开发">开发</a></li>
+<li><a href="#捐赠" id="toc-捐赠">捐赠</a></li>
+</ul></li>
+<li><a href="#更新日志" id="toc-更新日志">更新日志</a>
+<ul>
+<li><a href="#版本-0.9.1" id="toc-版本-0.9.1">版本 0.9.1</a></li>
+<li><a href="#版本-0.9.0" id="toc-版本-0.9.0">版本 0.9.0</a>
+<ul>
+<li><a href="#新增" id="toc-新增">新增</a></li>
+<li><a href="#修复" id="toc-修复">修复</a></li>
+</ul></li>
+<li><a href="#版本-0.8.5" id="toc-版本-0.8.5">版本 0.8.5</a></li>
+<li><a href="#版本-0.8.2" id="toc-版本-0.8.2">版本 0.8.2</a></li>
+<li><a href="#版本-0.8.1" id="toc-版本-0.8.1">版本 0.8.1</a></li>
+<li><a href="#版本-0.8.0" id="toc-版本-0.8.0">版本 0.8.0</a></li>
+<li><a href="#版本-0.7.0" id="toc-版本-0.7.0">版本 0.7.0</a></li>
+<li><a href="#版本-0.6.1" id="toc-版本-0.6.1">版本 0.6.1</a></li>
+<li><a href="#版本-0.6.0" id="toc-版本-0.6.0">版本 0.6.0</a></li>
+<li><a href="#版本-0.5.0" id="toc-版本-0.5.0">版本 0.5.0</a></li>
+<li><a href="#版本-0.4.1" id="toc-版本-0.4.1">版本 0.4.1</a></li>
+<li><a href="#版本-0.4.0" id="toc-版本-0.4.0">版本 0.4.0</a></li>
+<li><a href="#版本-0.3.0" id="toc-版本-0.3.0">版本 0.3.0</a></li>
+<li><a href="#版本-0.2.1" id="toc-版本-0.2.1">版本 0.2.1</a></li>
+<li><a href="#版本-0.2.0" id="toc-版本-0.2.0">版本 0.2.0</a></li>
+<li><a href="#版本-0.1.0" id="toc-版本-0.1.0">版本 0.1.0</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="简介">简介</h1>
+<p>Paperback
+是一款轻量、快速且无障碍的电子书和文档阅读器，适合从普通读者到重度高级用户的各类人群。它专为屏幕阅读器无障碍访问、高速运行以及无臃肿体验而设计。</p>
+<h1 id="系统要求">系统要求</h1>
+<p>Paperback 目前可在 Windows 10/11 以及所有现代版本的 ARM macOS
+上运行。原生 iOS 和 Android 应用正在积极开发中，公共测试版本计划在 0.9.0
+桌面版发布后不久推出，最终将实现覆盖四个平台的统一 1.0 版本。</p>
+<h1 id="功能">功能</h1>
+<ul>
+<li>完全独立运行，无需在计算机上安装任何其他软件即可开始阅读。</li>
+<li>速度极快，即使在老旧硬件上也能流畅运行。</li>
+<li>简洁的选项卡式界面，允许您并排打开任意数量的文档。</li>
+<li>为您打开的每个文档保存精确的阅读位置。</li>
+<li>可选择记住程序关闭时打开的文档，并在下次启动时恢复。</li>
+<li>包含与许多屏幕阅读器网页浏览模式类似的导航功能，可快速轻松地在文档中移动。</li>
+<li>包含强大的查找对话框，支持历史记录和正则表达式等功能。</li>
+<li>既可以完全便携运行，也可以安装并自动设置文件关联。</li>
+<li>支持大量常见文件格式。</li>
+</ul>
+<h1 id="屏幕阅读器兼容性">屏幕阅读器兼容性</h1>
+<p>Paperback 可与所有主流屏幕阅读器良好配合。不过，对于 JAWS
+用户存在一个已知问题。</p>
+<h2 id="jaws-与盲文显示器">JAWS 与盲文显示器</h2>
+<p>如果您将 JAWS
+与盲文显示器配合使用，可能会发现使用显示器的导航键向前平移时长段落被截断。“朗读当前段落”命令也受到影响。这是
+JAWS 处理 RICHEDIT50W 文本控件时的一个错误，并非 Paperback
+本身的问题，而且鉴于 Vispero
+对回应开源软件问题的积极性，找到修复方案花费了相当长的时间。</p>
+<p>经过数月的等待，最终通过 JAWS 讨论组找到了解决办法：编辑
+<code>paperback.jcf</code>，将“盲文显示与平移”设置为“可用时始终使用
+DOM”。您还需要启用“按段落平移文本”，否则显示器会停留在当前活动段落而不会前进。完成这两项设置后，平移应该就能正常工作了。</p>
+<h1 id="当前支持的文件类型">当前支持的文件类型</h1>
+<p>Paperback 支持以下格式和扩展名：</p>
+<ul>
+<li>CHM 帮助文件（<code>.chm</code>）</li>
+<li>DAISY 图书（<code>.opf</code>、<code>.zip</code>）</li>
+<li>EPUB 图书（<code>.epub</code>）</li>
+<li>FB2 电子书（<code>.fb2</code>）</li>
+<li>HTML
+文档（<code>.htm</code>、<code>.html</code>、<code>.xhtml</code>）</li>
+<li>Markdown
+文档（<code>.md</code>、<code>.markdown</code>、<code>.mdx</code>、<code>.mdown</code>、<code>.mdwn</code>、<code>.mkd</code>、<code>.mkdn</code>、<code>.mkdown</code>、<code>.ronn</code>）</li>
+<li>Microsoft Word
+文档（<code>.docx</code>、<code>.docm</code>、<code>.doc</code>）</li>
+<li>MOBI/Kindle
+图书（<code>.mobi</code>、<code>.azw</code>、<code>.azw3</code>）</li>
+<li>OpenDocument 演示文稿（<code>.odp</code>、<code>.fodp</code>）</li>
+<li>OpenDocument 文本文件（<code>.odt</code>、<code>.fodt</code>）</li>
+<li>PDF 文档（<code>.pdf</code>）</li>
+<li>PowerPoint
+演示文稿（<code>.pptx</code>、<code>.pptm</code>、<code>.ppt</code>）</li>
+<li>RTF 文档（<code>.rtf</code>）</li>
+<li>纯文本和日志文件（<code>.txt</code>、<code>.log</code>）</li>
+</ul>
+<h1 id="键盘快捷键">键盘快捷键</h1>
+<p>Paperback 专为键盘优先使用而设计。以下是当前的快捷键。</p>
+<p>以下快捷键适用于 Windows。若 macOS
+有所不同，将在括号中注明等效按键——主要是因为在该平台上 Ctrl+G、Ctrl+W
+以及 Alt+左/右箭头已被其他系统或应用约定占用。</p>
+<h2 id="文件菜单">文件菜单</h2>
+<ul>
+<li><code>Ctrl+O</code>：打开文档。</li>
+<li><code>Ctrl+F4</code>（macOS：<code>Cmd+W</code>）：关闭当前文档。</li>
+<li><code>Ctrl+Shift+F4</code>（macOS：<code>Cmd+Shift+W</code>）：关闭所有打开的文档。</li>
+<li><code>Ctrl+Shift+T</code>：重新打开上次关闭的文档。</li>
+<li><code>Ctrl+R</code>：显示“所有文档”对话框（来自“最近文档”）。</li>
+<li><code>Ctrl+Q</code>：退出（仅限 Windows；在 macOS
+上此功能位于应用菜单下）。</li>
+</ul>
+<h2 id="转到菜单">转到菜单</h2>
+<ul>
+<li><code>Ctrl+F</code>：显示查找对话框。</li>
+<li><code>F3</code>（macOS：<code>Cmd+G</code>）：查找下一个。</li>
+<li><code>Shift+F3</code>（macOS：<code>Cmd+Shift+G</code>）：查找上一个。</li>
+<li><code>Ctrl+G</code>（macOS：<code>Cmd+L</code>）：转到行。</li>
+<li><code>Ctrl+Shift+G</code>（macOS：<code>Cmd+Shift+L</code>）：转到百分比。</li>
+<li><code>Ctrl+P</code>：转到页（当当前文档支持时）。</li>
+<li><code>=</code>：朗读当前阅读百分比。</li>
+<li><code>Alt+Left</code>（macOS：<code>Cmd+[</code>）：后退导航历史。</li>
+<li><code>Alt+Right</code>（macOS：<code>Cmd+]</code>）：前进导航历史。</li>
+<li><code>[</code>：上一章节。</li>
+<li><code>]</code>：下一章节。</li>
+<li><code>Shift+H</code>：上一个标题。</li>
+<li><code>H</code>：下一个标题。</li>
+<li><code>Shift+1</code> 至 <code>Shift+6</code>：上一个 1-6
+级标题。</li>
+<li><code>1</code> 至 <code>6</code>：下一个 1-6 级标题。</li>
+<li><code>Shift+P</code>：上一页。</li>
+<li><code>P</code>：下一页。</li>
+<li><code>Shift+B</code>：上一个书签。</li>
+<li><code>B</code>：下一个书签。</li>
+<li><code>/</code>：设置临时书签。</li>
+<li><code>\</code>：跳转到临时书签。</li>
+<li><code>Shift+N</code>：上一个笔记。</li>
+<li><code>N</code>：下一个笔记。</li>
+<li><code>Ctrl+B</code>：跳转到所有书签和笔记。</li>
+<li><code>Ctrl+Alt+B</code>：仅跳转到书签。</li>
+<li><code>Ctrl+Alt+M</code>：仅跳转到笔记。</li>
+<li><code>Ctrl+Shift+W</code>（macOS：<code>RawCtrl+Shift+W</code>，即物理
+Control 键而非 Cmd）：查看当前位置的笔记文本。</li>
+<li><code>Shift+K</code>：上一个链接。</li>
+<li><code>K</code>：下一个链接。</li>
+<li><code>Shift+G</code>：上一张图片。</li>
+<li><code>G</code>：下一张图片。</li>
+<li><code>Shift+F</code>：上一个图形。</li>
+<li><code>F</code>：下一个图形。</li>
+<li><code>Shift+T</code>：上一个表格。</li>
+<li><code>T</code>：下一个表格。</li>
+<li><code>Shift+S</code>：上一个分隔符。</li>
+<li><code>S</code>：下一个分隔符。</li>
+<li><code>Shift+L</code>：上一个列表。</li>
+<li><code>L</code>：下一个列表。</li>
+<li><code>Shift+I</code>：上一个列表项。</li>
+<li><code>I</code>：下一个列表项。</li>
+<li><code>Shift+,</code>：转到当前容器（列表或表格）的开头。</li>
+<li><code>,</code>：越过当前容器（列表或表格）的末尾。</li>
+</ul>
+<h2 id="工具菜单">工具菜单</h2>
+<ul>
+<li><code>Ctrl+W</code>（macOS：<code>RawCtrl+W</code>，即物理 Control
+键而非 Cmd）：显示当前文档的字数统计。</li>
+<li><code>Ctrl+I</code>：显示文档信息。</li>
+<li><code>Ctrl+T</code>：显示目录。</li>
+<li><code>F7</code>：显示元素列表。</li>
+<li><code>Ctrl+Shift+C</code>：打开所在文件夹。</li>
+<li><code>Ctrl+Shift+V</code>：在 Web 视图中打开当前内容。</li>
+<li><code>Ctrl+U</code>：在新标签页中查看文档源。</li>
+<li><code>Ctrl+Shift+E</code>：导出文档数据（<code>.paperback</code>）。</li>
+<li><code>Ctrl+Shift+I</code>：导入文档数据（<code>.paperback</code>）。</li>
+<li><code>Ctrl+E</code>：将当前文档导出为纯文本。</li>
+<li><code>Ctrl+Shift+B</code>：在当前选择/光标处切换书签。</li>
+<li><code>Ctrl+Shift+N</code>：在当前选择/光标处添加或编辑书签笔记。</li>
+<li><code>Ctrl+Alt+W</code>：切换自动换行。</li>
+<li><code>Ctrl+Space</code>：播放/暂停音频朗读。</li>
+<li><code>'</code>：音频朗读向前跳转。</li>
+<li><code>;</code>：音频朗读向后跳转。</li>
+<li><code>Ctrl+'</code>：增大音频跳转步长。</li>
+<li><code>Ctrl+;</code>：减小音频跳转步长。</li>
+<li><code>F11</code>（macOS：<code>RawCtrl+Ctrl+F</code>，即
+Control+Command+F）：切换全屏。</li>
+<li><code>Ctrl+,</code>：打开设置（macOS：偏好设置，位于应用菜单下）。</li>
+<li><code>Ctrl+Shift+S</code>：切换睡眠定时器。</li>
+</ul>
+<h2 id="帮助菜单">帮助菜单</h2>
+<ul>
+<li><code>Ctrl+F1</code>：显示关于对话框。</li>
+<li><code>F1</code>：在默认浏览器中查看帮助。</li>
+<li><code>Shift+F1</code>：在 Paperback 中查看帮助。</li>
+<li><code>Ctrl+Shift+U</code>：检查更新。</li>
+<li><code>Ctrl+D</code>：在默认浏览器中打开捐赠页面。</li>
+</ul>
+<h2 id="文档视图附加按键">文档视图附加按键</h2>
+<ul>
+<li>选项卡控件上的 <code>Delete</code> /
+<code>数字键盘 Delete</code>：关闭选中的文档选项卡。</li>
+<li>文档文本中的 <code>Enter</code> 或
+<code>Space</code>：激活光标处的链接，或在表格标记处打开表格视图。</li>
+<li>文档文本中的 <code>Shift+F10</code>
+或菜单/应用程序键：打开上下文菜单。</li>
+</ul>
+<h1 id="支持的语言">支持的语言</h1>
+<p>Paperback 已被翻译成多种语言，并且数量在不断增加。完整列表如下。</p>
+<p>要了解如何贡献翻译，请阅读我们的<a
+href="translating.md">翻译指南</a>。</p>
+<ul>
+<li>波斯尼亚语</li>
+<li>捷克语</li>
+<li>荷兰语</li>
+<li>芬兰语</li>
+<li>法语</li>
+<li>德语</li>
+<li>日语</li>
+<li>波兰语</li>
+<li>葡萄牙语（巴西）</li>
+<li>俄语</li>
+<li>简体中文</li>
+<li>塞尔维亚语</li>
+<li>西班牙语</li>
+<li>越南语</li>
+</ul>
+<h1 id="鸣谢">鸣谢</h1>
+<h2 id="开发">开发</h2>
+<ul>
+<li>Quin Gillespie：主要开发者及项目创始人。</li>
+<li>Aryan Choudhary：主要贡献者。</li>
+</ul>
+<h2 id="捐赠">捐赠</h2>
+<p>以下人士曾为 Paperback
+的开发进行过一定数额的捐赠。如果您进行捐赠，您的名字不会自动添加到此列表，我只会添加那些希望公开捐赠的人。</p>
+<p>注意：我认为公开的 GitHub 赞助者自动有资格列入此列表。</p>
+<ul>
+<li>Alex Hall</li>
+<li>Brandon McGinty</li>
+<li>Brian Hartgen</li>
+<li>Debbie Yuille</li>
+<li>Devin Prater</li>
+<li>Felix Steindorff</li>
+<li>Hamish Mackenzie</li>
+<li>James Scholes</li>
+<li>Jayson Smith</li>
+<li>Jonathan Rodriguez</li>
+<li>Jonathan Schuster</li>
+<li>Keao Wright</li>
+<li>Michael Marshall</li>
+<li>Pratik Patel</li>
+<li>Roberto Perez</li>
+<li>Sean Randall</li>
+<li>Timothy Wynn</li>
+<li>Tyler Rodick</li>
+</ul>
+<h1 id="更新日志">更新日志</h1>
+<h2 id="版本-0.9.1">版本 0.9.1</h2>
+<ul>
+<li>书签和笔记声音现在可在 macOS 上播放。</li>
+<li>DAISY 图书现在可在 macOS
+上播放音频，而不是在静音状态下打开并跟踪其时间轴。</li>
+<li>修复了 RTF
+文档中弯引号、长破折号及类似字符消失，导致周围单词连在一起的问题。</li>
+<li>修复了 RTF 图片将其原始数据作为乱码文本泄漏到文档中的问题。</li>
+<li>修复了“最近文档”子菜单保留过期条目直到其他操作触发重建的问题。</li>
+<li>键盘加速键重新出现在所有翻译中，因此俄语菜单再次拥有键盘访问功能。</li>
+<li>大型 CHM 文档的打开速度现在最多可提升七倍。</li>
+<li>打开的文档现在会注册到 Windows
+中，因此它们会显示在任务栏跳转列表和开始菜单的最近列表中。</li>
+<li>“选项”已更名为“设置”，与移动应用以及 macOS
+上的平台惯例保持一致。</li>
+<li>Paperback 现在会记住运行之间的窗口位置、大小和最大化状态。</li>
+<li>复数形式现已翻译，因此计数类消息在需要多种复数形式的语言中能正确显示。</li>
+<li>选择 DAISY 图书的 ncc.html
+现在会打开完整的音频书，而不仅仅是其文本。</li>
+<li>“自定义键盘快捷键”对话框中的操作名称现在可以翻译。</li>
+<li>文档标题现在位于标题栏的最前面，以便在任务栏和 Alt+Tab
+中区分打开的书籍。</li>
+<li>更新对话框现已翻译。</li>
+</ul>
+<h2 id="版本-0.9.0">版本 0.9.0</h2>
+<h3 id="新增">新增</h3>
+<h4 id="常规">常规</h4>
+<ul>
+<li>一个名为 pb 的命令行工具，可快速将 Paperback 支持的任何格式转换为
+HTML、Markdown 或纯文本。</li>
+<li>一个选项，用于重新加载已被其他程序在磁盘上修改的文档。</li>
+<li>查看源代码选项，可在新标签页中打开文档源，例如对编辑 Markdown
+很有用。</li>
+<li>文档文本现在进行了分页，这意味着您现在可以在几秒钟内加载数千万字的书籍。如果发现任何异常，请报告。</li>
+</ul>
+<h4 id="平台支持">平台支持</h4>
+<ul>
+<li>ARM64 Windows 支持！</li>
+<li>原生 macOS 支持！</li>
+<li>全屏切换。</li>
+</ul>
+<h4 id="所有文档对话框">所有文档对话框</h4>
+<ul>
+<li>定位按钮，用于定位仅路径发生更改的缺失书籍。</li>
+<li>状态筛选器和状态栏，您可以按文档状态筛选，并查看显示和选中的文档数量。</li>
+<li><code>Ctrl+Shift+A</code> 快捷键，用于取消选择所有文档。</li>
+</ul>
+<h4 id="选项与可读性">选项与可读性</h4>
+<ul>
+<li>一个可读性选项卡，包含以下选项：
+<ul>
+<li>自动换行（从常规选项卡移入）；</li>
+<li>内联渲染表格（此版本新增，见下文）；</li>
+<li>字体；</li>
+<li>背景颜色；</li>
+<li>行距；</li>
+<li>段落间距；</li>
+<li>字距；</li>
+<li>文本对齐。</li>
+</ul></li>
+<li>自动换行菜单项及其热键。</li>
+<li>一个用于决定表格显示方式的开关，并统一了跨文档的表格显示方式。</li>
+</ul>
+<h4 id="导航">导航</h4>
+<ul>
+<li>支持按容器导航。</li>
+<li>一个选项，可在行间导航时自动将光标移至行首，类似于屏幕阅读器的浏览模式。</li>
+<li>等号快捷键，用于朗读您在文档中的当前百分比。</li>
+</ul>
+<h4 id="书签">书签</h4>
+<ul>
+<li>临时书签：每个文档可以有一个，并且会持久保存。使用斜杠设置，使用反斜杠跳转。</li>
+</ul>
+<h4 id="字数统计">字数统计</h4>
+<ul>
+<li>字数统计对话框中新增预计阅读时间，并允许设置阅读速度以使该指标真正有用。</li>
+<li>打开字数统计对话框时，如果有选区处于活动状态，现在会显示所选内容的字数。</li>
+</ul>
+<h4 id="键盘快捷键-1">键盘快捷键</h4>
+<ul>
+<li>能够通过一个简单的对话框自定义应用中的每个键盘快捷键。</li>
+<li>一个可配置的键盘快捷键，用于从系统托盘恢复 Paperback。</li>
+</ul>
+<h4 id="语言">语言</h4>
+<ul>
+<li>荷兰语、芬兰语和波兰语。</li>
+</ul>
+<h4 id="导出">导出</h4>
+<ul>
+<li>扩展了导出菜单项，除了纯文本外，还允许导出为 HTML 和 Markdown。</li>
+</ul>
+<h4 id="更新器">更新器</h4>
+<ul>
+<li>为更新进行中对话框添加了取消按钮。</li>
+<li>更新器现在会验证下载的文件未被篡改。</li>
+</ul>
+<h4 id="web-视图">Web 视图</h4>
+<ul>
+<li>Web 视图现在会在您当前的阅读位置打开。</li>
+</ul>
+<h4 id="daisy-图书">DAISY 图书</h4>
+<ul>
+<li>支持 DAISY 2.0 图书。</li>
+<li>支持 DAISY 2.02 音频播放。</li>
+</ul>
+<h4 id="有声书">有声书</h4>
+<ul>
+<li>能够播放有声书，目前支持 DAISY 音频（包括 DAISY
+音频+文本）和音频文件压缩包。</li>
+<li>用于播放/暂停朗读、前后跳转以及调整跳转步长的键盘快捷键和菜单项。</li>
+<li>选项：将阅读光标同步到音频播放、设置音频跳转步长，以及选择在章节末尾继续跳转是否进入下一章。</li>
+</ul>
+<h4 id="chm-文档">CHM 文档</h4>
+<ul>
+<li>支持列表、列表项、图形和图片。</li>
+</ul>
+<h4 id="powerpoint">PowerPoint</h4>
+<ul>
+<li>PowerPoint 文档现在支持表格。</li>
+</ul>
+<h3 id="修复">修复</h3>
+<h4 id="常规-1">常规</h4>
+<ul>
+<li>使用旧版 CJK 编码（如 GBK、Big5 和
+Shift_JIS）的文档现在可以正确渲染，而不会显示为一堆乱码。</li>
+<li>“重新打开上次关闭的文档”试图重新打开捆绑的 readme。</li>
+<li>重新启动 Paperback 后，所选选项卡未正确获得焦点。</li>
+<li>Paperback 对 Windows
+网络驱动器上文件的处理：按下“在文件夹中显示文件”现在可以在网络存储上正确定位文件，路径中不再包含奇怪字符。</li>
+<li><code>.paperback</code>
+文件在文档恢复时将不再被强制加载；相反，当发现此类文件时会询问确认。</li>
+<li>“打开所在文件夹”现在会在资源管理器中定位到给定文件。</li>
+<li>打开 readme 现在会遵循您选择的语言。</li>
+<li>Paperback 的用户界面现在在高 DPI 显示器上正确缩放。</li>
+<li>在 Paperback
+中打开帮助时，菜单现在会正确更新，焦点会移至文本控件。</li>
+<li>在 Windows 上切换到了一种更安全的 IPC 方法。</li>
+<li>切换选项卡时现在会朗读活动文档的标题。</li>
+<li>通过将内部每字符索引表的大小减半，减少了大型文档的内存使用量。</li>
+</ul>
+<h4 id="所有文档对话框-1">所有文档对话框</h4>
+<ul>
+<li>Esc 键无法关闭“文档信息”和“所有文档”对话框。</li>
+<li>从“所有文档”对话框关闭文档后，标题栏未更新。</li>
+<li>通过 Shift+F1 打开时，Readme.html
+将不再被添加到所有文档列表中。</li>
+<li>从最近文档对话框中移除文档现在也会关闭其活动选项卡。</li>
+<li>移除文档后，搜索筛选器现在会被保留。</li>
+</ul>
+<h4 id="导航-1">导航</h4>
+<ul>
+<li>页面导航在某些情况下朗读错误的行文本。</li>
+<li>转到行、转到页和转到百分比在大型文档中将光标置于错误位置。</li>
+<li>在大型文档中，查找和查找下一个未遵守已加载的文档窗口。</li>
+</ul>
+<h4 id="书签-1">书签</h4>
+<ul>
+<li>书签/笔记声音现在应当仅在您导航到包含它们的单词时才正确播放。</li>
+</ul>
+<h4 id="可读性">可读性</h4>
+<ul>
+<li>应用自动换行会将您弹到文档开头。</li>
+</ul>
+<h4 id="web-视图-1">Web 视图</h4>
+<ul>
+<li>Web 视图对话框不可调整大小，并且初始弹出尺寸非常小。</li>
+<li>图片现在应能在嵌入式 Web 视图中正确显示。</li>
+</ul>
+<h4 id="更新器-1">更新器</h4>
+<ul>
+<li>更新器现在能正确显示发行说明中 Markdown 代码标签的内容。</li>
+</ul>
+<h4 id="daisy-图书-1">DAISY 图书</h4>
+<ul>
+<li>DAISY 图书在状态栏中显示不正确的信息。</li>
+<li>加载带有虚假编码声明的 DAISY 图书。</li>
+</ul>
+<h4 id="rtf-文档">RTF 文档</h4>
+<ul>
+<li>解析包含非拉丁字符的 RTF 文档。</li>
+<li>RTF <code>\pict</code> 组，嵌入式图片数据不再泄漏到文档文本中。</li>
+</ul>
+<h4 id="mobiazw3-图书">Mobi/AZW3 图书</h4>
+<ul>
+<li>Mobi 图书中的 Filepos 锚点会拆分 HTML
+标签并在图书文本中产生垃圾内容。</li>
+<li>旧版 Mobi 图书中的链接。</li>
+<li>大幅改进了 AZW3 解析。</li>
+</ul>
+<h4 id="word-文档">Word 文档</h4>
+<ul>
+<li>具有区域设置特定样式名称的 Word 文档无法正确渲染其标题。</li>
+</ul>
+<h4 id="htmlxhtml-文档">HTML/XHTML 文档</h4>
+<ul>
+<li>dl、dt 和 dd 元素在 XHTML 文档中不产生换行符。</li>
+</ul>
+<h4 id="pdf-文档">PDF 文档</h4>
+<ul>
+<li>对于标记错误的 PDF，Paperback 现在会回退到纯文本提取。</li>
+<li>标题和/或书签中包含控制字符的 PDF 文档在打开时不再导致 Paperback
+崩溃。</li>
+</ul>
+<h2 id="版本-0.8.5">版本 0.8.5</h2>
+<ul>
+<li>为 epub 图书添加了页面支持。</li>
+<li>添加了对加密 Microsoft Office 文档的支持。目前支持旧版 Word、新版
+Word 和新版 PowerPoint，旧版 PowerPoint 计划在未来支持。</li>
+<li>添加了对旧版 Microsoft Word 文档（*.doc）的支持！</li>
+<li>添加了对旧版 PowerPoint 演示文稿（*.ppt）的支持！</li>
+<li>添加了对 mobi 和 AZW3 图书的支持！</li>
+<li>添加了对带标签的 PDF 文件的支持！</li>
+<li>添加了 Ctrl+Q 快捷键退出应用。</li>
+<li>添加了对 Bookshare 压缩图书（DAISY 和 Word）的支持！</li>
+<li>嵌入式图片的替代文本现在应能正确显示。</li>
+<li>CHM 文档现在正确支持内部链接导航。</li>
+<li>修复了书签声音在段落开头而非书签位置触发的问题。</li>
+<li>修复了转到页相差 1 的问题。</li>
+<li>修复了 Esc 键无法关闭“打开方式”对话框的问题。</li>
+<li>修复了右键或应用程序键无法弹出阅读器上下文菜单的问题。</li>
+<li>修复了从命令行打开文档时有时聚焦到错误文档的问题。</li>
+<li>仅包含图片的 PDF 再次被检测到并提醒您其存在。</li>
+<li>现在可以分别使用 G/Shift+G 和 F/Shift+F 在图片和图形之间导航。</li>
+<li>Paperback 现在会遵循您的应用程序深色模式设置。</li>
+<li>移除了 DAISY XML 支持，因为不再需要。</li>
+<li>在目录树中切换回原生 Win32 首字母导航。</li>
+<li>错误加载对话框现在显示更详细的错误消息。</li>
+<li>Web 视图现在打开得更快、更流畅。</li>
+</ul>
+<h2 id="版本-0.8.2">版本 0.8.2</h2>
+<ul>
+<li>为 RTF 文档添加了页面支持！</li>
+<li>修复了在包含外部链接的 epub 中打开 Web
+视图会自动激活这些链接的错误。</li>
+<li>修复了 RTF 解析器在极少数情况下不会在单词之间添加空格的错误。</li>
+<li>修复了某些 PDF 文档中段落被拆分为多个短行的问题。</li>
+<li>PDF 文档现在具有基本的链接和标题导航支持！</li>
+<li>RTF 制表符和换行符现在完全按照文档中的样式渲染。</li>
+<li>切换回经过验证的 pdfium 库来解析 PDF，使 PDF
+渲染再次变得更加可靠。</li>
+</ul>
+<h2 id="版本-0.8.1">版本 0.8.1</h2>
+<ul>
+<li>添加了 Ctrl+Shift+T 以重新打开上次关闭的文档。</li>
+<li>“所有文档”对话框现在支持同时选择多个文档打开。</li>
+<li>修复了 RTF 解析器的几个错误。</li>
+<li>修复了通过第二个 Paperback 实例打开文件时，包含非 ASCII
+字符（如波斯尼亚语 š、č、ć、ž）的文件路径损坏的问题。</li>
+<li>修复了 PDF 文本读取顺序错误以及大写单词周围间距不正确的问题。</li>
+<li>修复了打开大文件时文档加载缓慢的问题。</li>
+<li>修复了确认对话框中“是/否”按钮的本地化问题。</li>
+</ul>
+<h2 id="版本-0.8.0">版本 0.8.0</h2>
+<ul>
+<li>添加了日语、简体中文和越南语翻译！</li>
+<li>添加了自动更新程序，现在会替换您当前安装的 Paperback
+版本，而不仅仅是下载新版本！</li>
+<li>添加了到达书签或笔记时的可选声音反馈，感谢 Andre Louis
+提供的声音！</li>
+<li>添加了 RTF 文档支持！</li>
+<li>添加了对 DAISY XML 文档的支持。</li>
+<li>添加了对 Flat Open Document Text 文件的支持！</li>
+<li>添加了对 Flat Open Document 演示文稿的支持！</li>
+<li>添加了对分隔符的支持，使用 S 和 Shift+S。</li>
+<li>任何超过 300 个字符的移动现在都会自动添加到导航历史记录中。</li>
+<li>修复了从系统托盘恢复 Paperback 窗口的问题。</li>
+<li>修复了 Markdown 文档在 Web 视图中显示原始文本而非渲染后的 HTML
+的问题。</li>
+<li>修复了 Markdown 文件中表格渲染不正确的问题。</li>
+<li>仅包含图片的 PDF 现在会在您尝试加载时警告其存在。</li>
+<li>现在可以在检查更新时检查新的开发版而非稳定版。</li>
+<li>在 Paperback 可执行文件中正确嵌入版本信息。</li>
+<li>将选项对话框拆分为选项卡，以便使用和导航。</li>
+<li>切换到 Hayro 解析 PDF，带来更高的可靠性、速度，并减少 DLL
+数量。</li>
+<li>用 Rust
+重写了整个应用。新代码库更安全，加载文档更快，更易于维护和扩展。</li>
+<li>文本控件的上下文菜单现在会包含阅读器特定的操作，而不是剪切和粘贴等通用项目。</li>
+</ul>
+<h2 id="版本-0.7.0">版本 0.7.0</h2>
+<ul>
+<li>为 HTML 和 XHTML 文档添加了表格支持！使用 T 和 Shift+T
+在表格之间导航，按 Enter 可在 Web 视图中查看一个表格。</li>
+<li>添加了基本的 Web 渲染功能！按 Ctrl+Shift+V 可在基于 Web
+的渲染器中打开文档的当前部分，适用于复杂格式或代码示例等内容。</li>
+<li>添加了俄语翻译，感谢 Ruslan Gulmagomedov！</li>
+<li>为“所有文档”对话框添加了“全部清除”按钮。</li>
+<li>更新检查器现在会在新版本可用时显示发行说明。</li>
+<li>修复了从系统托盘恢复窗口的问题。</li>
+<li>修复了确认对话框中“是/否”按钮的翻译问题。</li>
+<li>修复了以管理员身份运行时加载配置的问题。</li>
+<li>修复了 XML 和 HTML 文档中的注释处理。</li>
+<li>修复了 Epub 2 图书中的目录解析。</li>
+<li>修复了在目录中导航到具有相同字母的下一个项目的问题。</li>
+<li>修复了使用下一个/上一个按钮时查找对话框未正确隐藏的问题。</li>
+<li>修复了 epub 目录偶尔会将您带到错误项目的问题。</li>
+<li>修复了 XML、HTML 和 pre 标签中的各种空白处理问题。</li>
+<li>修复了链接导航中的差一错误。</li>
+<li>修复了某些书籍行尾有多余空白的问题。</li>
+<li>修复了各种解析器问题。</li>
+<li>当没有文档打开时，与书签相关的菜单项以及元素列表现在会被正确禁用。</li>
+<li>改进了各种文档格式中的列表处理。</li>
+<li>改进了贡献者的翻译工作流程。</li>
+<li>进行了许多内部重构，将应用程序的大部分业务逻辑从 C++ 迁移到
+Rust，以提高性能和可维护性。</li>
+</ul>
+<h2 id="版本-0.6.1">版本 0.6.1</h2>
+<ul>
+<li>添加了受密码保护的 PDF 支持！</li>
+<li>添加了一个非常基本的转到上一个/下一个位置功能。如果您在内部链接上按
+Enter 并且它移动了光标，该位置现在会被记住，并可通过
+Alt+左/右箭头导航。</li>
+<li>添加了元素列表！目前它仅显示文档中所有标题的树形结构或链接列表，但未来有计划扩展。</li>
+<li>添加了一个选项，使 Paperback 默认以最大化模式启动。</li>
+<li>修复了某些 Epub 文档中链接无法正常工作的问题。</li>
+<li>修复了解析包含相对路径的 Epub 目录的问题。</li>
+<li>修复了某些 epub 文档不显示标题或作者的问题。</li>
+<li>修复了某些 epub 章节标题在目录对话框中未正确显示的问题。</li>
+<li>修复了无法使用空格键激活目录对话框中的确定/取消按钮的问题。</li>
+<li>改进了 Word 文档中标题的处理。</li>
+<li>当您尝试打开最近文档对话框但列表为空时，现在会得到语音反馈。</li>
+</ul>
+<h2 id="版本-0.6.0">版本 0.6.0</h2>
+<ul>
+<li>在选项对话框中添加了一个新选项，以更紧凑的形式显示“转到”菜单，默认选中。</li>
+<li>添加了一个使按结构元素导航循环的选项。</li>
+<li>在工具菜单中添加了一个选项，用于打开当前聚焦文档所在的文件夹。</li>
+<li>添加了一个简单但非常有效的更新系统。</li>
+<li>添加了基本的睡眠定时器功能，可通过 Ctrl+Shift+S 访问。</li>
+<li>添加了对解析 FB2 电子书的支持！</li>
+<li>添加了对解析 OpenDocument 演示文稿的支持！</li>
+<li>添加了对解析 OpenDocument 文本文件的支持！</li>
+<li>书签现在可以标记整行，或仅标记某些指定文本。如果您放置书签时没有活动选区，行为与
+0.6
+之前相同，将标记整行。但是，如果您选择了一些文本，则只有该文本会被包含在书签中。</li>
+<li>书签现在可以附带可选的文本笔记！使用 N 和 Shift+N
+在包含笔记的书签之间导航，或使用特定热键弹出包含所有书签、仅笔记或仅非笔记的书签对话框。</li>
+<li>书签对话框中的书签将不再带有烦人的“书签 x”前缀。</li>
+<li>包含伪装成 XML 的 HTML 内容的 Epub 图书现在将被正确处理。</li>
+<li>修复了加载大型 Markdown 文档的问题。</li>
+<li>修复了在目录树视图中按空格键激活确定按钮的问题。</li>
+<li>修复了 HTML 和 XHTML 文档中 pre 标签开头空白处理的问题。</li>
+<li>修复了返回 Paperback 窗口时文本控件有时无法重新获得焦点的问题。</li>
+<li>修复了转到百分比对话框中文本字段未更新滑块值的问题。</li>
+<li>修复了 Markdown 文档中自定义 HTML ID 的渲染。</li>
+<li>Markdown 代码块内的 HTML 现在会正确渲染。</li>
+<li>如果使用命令行参数加载书籍时已有 Paperback
+实例在运行，如果文档加载超过 5 秒，您将不再收到错误。</li>
+<li>如果以管理员身份运行 Paperback，配置现在会被正确加载和保存。</li>
+<li>现在可以直接从书签对话框中删除书签。</li>
+<li>现在可以导入和导出特定文档的书签和阅读位置。生成的文件以原文件命名，扩展名为
+.paperback。如果在加载文件时在同一目录中发现此类文件，它将自动加载。否则，您可以使用工具菜单中的项目手动导入。</li>
+<li>文档内的链接现已完全支持！使用 K 和 Shift+K 在它们之间前后移动，按
+Enter 打开/激活。</li>
+<li>进行了许多内部重构，使应用更快，二进制文件更小。</li>
+<li>Markdown 内容现在经过预处理，以符合 CommonMark 规范后再渲染。</li>
+<li>按列表及其项目导航现已完全支持！使用 L 和 Shift+L
+按列表本身导航，使用 I 和 Shift+I 遍历列表项。</li>
+<li>除了普通 Delete 键外，数字键盘 Delete
+现在也可用于从选项卡栏移除文档。</li>
+<li>Paperback
+现在可以选择最小化到系统托盘！此选项默认关闭，但开启后，系统菜单中的最小化选项会将
+Paperback 放入托盘，可通过点击生成的图标恢复。</li>
+<li>Paperback
+现已完全可翻译！它支持的语言列表目前还比较小，但正在不断增长！</li>
+<li>Paperback 现在有了官方网站，地址为 <a
+href="https://paperback.dev">paperback.dev</a>！</li>
+<li>PPTX 文档现在将显示一个包含所有幻灯片的基本目录。</li>
+<li>打开文档的完整路径现在将显示在文档信息对话框中。</li>
+<li>安装程序现在包含一个选项，可在安装后在浏览器中查看 readme。</li>
+<li>最近文档列表已大幅扩展！它不再只是显示您最近打开的 10
+个文档，而是显示可自定义数量的文档，其余曾经打开过的文档可通过一个小对话框访问。</li>
+<li>对解析器进行了各种小改进，包括在 PPTX
+演示文稿的幻灯片之间放置空行，修复 Word
+文档中段落内换行符的处理，以及为列表项添加项目符号。</li>
+</ul>
+<h2 id="版本-0.5.0">版本 0.5.0</h2>
+<ul>
+<li>添加了 Microsoft Word 文档支持！</li>
+<li>添加了对 PowerPoint 演示文稿的支持！</li>
+<li>修复了没有文档打开时某些菜单项未禁用的问题。</li>
+<li>修复了转到百分比滑块的方向。</li>
+<li>修复了 Epub 图书中具有 URL 编码文件路径和/或片段 ID 的目录。</li>
+<li>修复了 XHTML 标题以奇怪方式剥离空白的问题。</li>
+<li>修复了 HTML 文档中嵌套 pre 标签内的空白处理。</li>
+<li>HTML 和 Markdown 文档现在支持目录功能！当您加载 HTML/Markdown
+文档时，Paperback 将根据文档中标题的结构构建自己的目录，并在 Ctrl+T
+对话框中显示给您。</li>
+<li>HTML 文档现在将使用 title
+标签中设置的标题（如果存在）。否则，将继续使用不带扩展名的文件名。</li>
+<li>从 UniversalSpeech
+切换到使用活动区域来报告语音。这意味着不再随程序附带屏幕阅读器
+DLL，并且将支持更多屏幕阅读器，例如 Microsoft 讲述人。</li>
+<li>切换了 zip 库，以允许打开更广泛的 epub 图书。</li>
+<li>询问您是否要将文档作为纯文本打开的对话框已完全重做，现在允许您以纯文本、HTML
+或 Markdown 格式打开文档。</li>
+<li>转到百分比对话框现在包含一个文本字段，允许您手动输入要跳转到的百分比。</li>
+<li>HTML 解析器现在将 dd、dt 和 dl 识别为列表元素。</li>
+<li>Epub 图书中的目录将再次被精确保留。</li>
+<li>在剥离空行时现在会考虑 Unicode 不间断空格。</li>
+<li>您将不再每次加载无法识别的文件时都被询问如何打开，只在第一次询问。</li>
+</ul>
+<h2 id="版本-0.4.1">版本 0.4.1</h2>
+<ul>
+<li>向安装程序添加了可选的开始菜单图标。</li>
+<li>目录在几种情况下现在应该更简洁，例如，如果子项和父项在相同位置具有相同文本，您现在只会看到父项。</li>
+<li>修复了某些 CHM 文档中的目录。</li>
+<li>修复了 Epub 3 图书中包含绝对路径的目录。</li>
+<li>CHM 文档现在应显示元数据文件中设置的标题。</li>
+</ul>
+<h2 id="版本-0.4.0">版本 0.4.0</h2>
+<ul>
+<li>添加了 CHM 文件支持！</li>
+<li>添加了书签支持！您可以在任意数量的文档中拥有任意数量的书签。您可以使用
+B 和 Shift+B 在它们之间前后跳转，使用 Ctrl+Shift+B 设置一个，使用 Ctrl+B
+弹出对话框跳转到特定书签。</li>
+<li>在便携式 zip 文件旁边添加了安装程序！安装程序会将 Paperback
+安装到您的 Program Files 目录，并自动为您设置文件关联。</li>
+<li>带有 BOM 的文本文件现在应能正确解码，BOM
+也将不再显示在文本开头。</li>
+<li>向状态栏添加了更多信息。它现在会显示您的当前行、字符和阅读百分比。</li>
+<li>HTML 注释以及 script 和 style
+标签的内容将不再显示在文本输出中。</li>
+<li>如果在命令行中向 Paperback 传递相对路径，现在会正确解析。</li>
+<li>百分比移动现在由自己的基于滑块的对话框处理，可通过 Ctrl+Shift+G
+访问。</li>
+<li>没有已知标题或作者的文档现在将始终有一个默认值。</li>
+<li>位置保存逻辑现在更加智能，只应在绝对必要时才写入磁盘。</li>
+<li>关闭 Paperback 时聚焦的文档现在会在应用程序重启后记住。</li>
+<li>转到行和转到页对话框中的输入现在应进行更严格的清理。</li>
+<li>修复了 epub 3 图书中清单包含相对路径的目录导航。</li>
+</ul>
+<h2 id="版本-0.3.0">版本 0.3.0</h2>
+<ul>
+<li>修复了 epub 图书中具有 URL 编码清单的目录。</li>
+<li>修复了包含多字节 Unicode 字符的 HTML 文档中的标题导航。</li>
+<li>修复了由于 wxWidgets 回归导致的标题较长的文档中 CPU
+使用率过高的问题。</li>
+<li>修复了加载 UTF-8 文本文件的问题。</li>
+<li>修复了 Epub 图书中嵌套目录项将光标置于错误位置的问题。</li>
+<li>修复了某些情况下应用程序退出时崩溃的问题。</li>
+<li>在选项对话框中添加了一个复选框以启用或禁用自动换行！</li>
+<li>现在可以向 Paperback
+的开发捐赠，既可以通过帮助菜单中的新捐赠项，也可以通过 GitHub
+仓库主页底部的赞助此项目链接。</li>
+<li>Markdown 文档现在将始终具有标题，并且 Paperback
+现在应该能够加载几乎任何 Markdown 文件。</li>
+<li>PDF 文档现在将始终具有标题，即使元数据缺失。</li>
+<li>将 PDF 库切换到 Chromium 使用的库，全面提高了 PDF
+解析的可靠性。</li>
+<li>您现在一次只能运行一个 Paperback 实例。在已运行时使用文件名运行
+paperback.exe 将在已运行的实例中打开该文档。</li>
+<li>您现在可以在选项卡控件中按 Delete 键关闭文档。</li>
+</ul>
+<h2 id="版本-0.2.1">版本 0.2.1</h2>
+<ul>
+<li>在转到页对话框中为页面标签添加了总页数。</li>
+<li>允许从文档内容切换到已打开文档列表。</li>
+<li>修复了如果您有足够多的最近文档，标题快捷键有时会打开最近文档的问题。</li>
+<li>Paperback 现在会从文本输出中移除不必要的软连字符。</li>
+<li>修复了标题导航有时将您置于错误字符的问题。</li>
+</ul>
+<h2 id="版本-0.2.0">版本 0.2.0</h2>
+<ul>
+<li>添加了 Markdown 文档支持！</li>
+<li>添加了 PDF 文档支持，包括页面间导航的能力！</li>
+<li>添加了用于在 HTML 内容（包括 epub 图书和 Markdown
+文档）中按标题导航的按键。这些按键设计为与屏幕阅读器类似。</li>
+<li>修复了加载清单中具有 URL 编码文件名的 epub 的问题。</li>
+<li>修复了加载内部嵌有 XHTML 的 epub 3 图书的问题。</li>
+<li>如果文档不支持目录或章节，现在会朗读一条消息，而不是禁用菜单项。</li>
+<li>添加了最近文档菜单！它目前存储您最近打开的 10 个文档，在其中一个上按
+Enter 将打开以供阅读。</li>
+<li>完全重写了查找对话框，使其更易于使用，同时添加了最近 25
+次搜索的历史记录和正则表达式支持！</li>
+<li>以前打开的文档现在会在应用程序重启后记住。这可以通过工具菜单中的新选项项进行配置。</li>
+<li>添加了 Shift+F1 直接在 Paperback 中打开 readme。</li>
+</ul>
+<h2 id="版本-0.1.0">版本 0.1.0</h2>
+<ul>
+<li>初始版本。</li>
+</ul>
+</body>
+</html>
