@@ -200,6 +200,19 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ## Changelog
 
+### Version 0.9.2
+* Audio books no longer make your screen reader read out a run of spaces when you focus the text field.
+* Audio books now name the file as you step through them by section.
+* Audio books now report their real length, rather than claiming every file in them runs for 24 hours.
+* Copying after Select All now gives you the whole document, instead of only the part of it currently loaded.
+* Find now cuts straight to the line it found, rather than making you sit through the screen reader reading out the window again as focus returns to the book.
+* Fixed EPUB's that carry a stray ZIP64 block refusing to open with "Invalid local file header".
+* Fixed long documents walking back to their start while a screen reader read continuously through them.
+* The automatic "Document reloaded" announcement no longer cuts your screen reader off mid sentence, instead waiting for it to finish what it was saying.
+* The Settings dialog's General tab now tabs through its options in the order they appear on screen, with the update channel directly after the check for updates option.
+* Windows will now always show "Paperback" in the Open With menu, rather than the program's full tagline.
+* Word Count and Document Info now show how many files an audio book holds, and how long it runs in total.
+
 ### Version 0.9.1
 * Bookmark and note sounds now play on macOS.
 * DAISY books now play their audio on macOS, rather than opening and tracking their timeline in silence.
