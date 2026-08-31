@@ -80,10 +80,9 @@ fun getSeekAmountName(seconds: Int): String =
 		// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
 		3600 -> t("1 hour")
 		// TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
-		// above; {} is the number of seconds. Three forms picked by the count's last digits (see
-		// nt() in Translations.kt): one = counts ending in 1 except 11 (1, 21, 31, ...), few =
-		// counts ending in 2-4 except 12-14 (2, 3, 4, 22, 23, 24, ...), many = everything else
-		// (0, 5-20, 25-30, ...). The "many" form's trailing character isn't a typo — see
+		// above; {} is the number of seconds. Which of the three forms is used depends on the
+		// target language's own plural rule, read from its catalogue (see nt() in
+		// Translations.kt). The "many" form's trailing character isn't a typo — see
 		// PLURAL_MANY_MARKER in Translations.kt.
 		else -> nt(t("{} second"), t("{} seconds"), t("{} seconds⁣"), seconds.toLong()).replace("{}", seconds.toString())
 	}
