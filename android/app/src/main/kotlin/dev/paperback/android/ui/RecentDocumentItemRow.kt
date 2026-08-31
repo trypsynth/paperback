@@ -32,8 +32,12 @@ fun RecentDocumentItemRow(
 		item.isMissing ->
 			// TRANSLATORS: Status label for a recent document: its file can't be found, it's open in a tab right now, or it's just closed
 			t("File Missing")
-		item.isOpen -> t("Currently Open")
-		showClosedStatus -> t("Closed")
+		item.isOpen ->
+			// TRANSLATORS: Status label for a recent document that is currently open in a tab
+			t("Currently Open")
+		showClosedStatus ->
+			// TRANSLATORS: Status label for a recent document that is closed (not open in any tab)
+			t("Closed")
 		else -> null
 	}
 

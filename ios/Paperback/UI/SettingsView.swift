@@ -69,6 +69,7 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 						.accessibilityHidden(true)
 				}
 				Slider(value: $ttsManager.pitch, in: 0.5...2.0, step: 0.015)
+					// TRANSLATORS: VoiceOver accessibility label for the pitch slider
 					.accessibilityLabel(t("Pitch"))
 					.accessibilityValue("\(pitchPercent)%")
 			}

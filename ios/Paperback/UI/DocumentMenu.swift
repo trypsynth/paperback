@@ -91,7 +91,7 @@ struct DocumentMenu: View {
 			viewModel.navigation.showGoTo = true
 		} label: {
 			// TRANSLATORS: Menu item to jump to a specific page, line, or percentage in the document
-			Label(t("Go To…"), systemImage: "arrow.right.circle")
+			Label(t("Go To..."), systemImage: "arrow.right.circle")
 		}
 	}
 

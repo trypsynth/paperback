@@ -183,6 +183,7 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 		.with_style(ComboBoxStyle::ProcessEnter)
 		.with_size(dpi::scale_size(&dialog, Size::new(combo_width, -1)))
 		.build();
+	// TRANSLATORS: Group box heading for the search options in the Find dialog
 	let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("Options")).build();
 	// TRANSLATORS: Checkbox to make the search case-sensitive
 	let match_case = CheckBox::builder(&dialog).with_label(&t("&Match case")).build();
@@ -197,6 +198,7 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
 	// TRANSLATORS: Button to search forward for the next match
 	let find_next_btn = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Find &Next")).build();
+	// TRANSLATORS: Cancel button that closes the Find dialog
 	let cancel_btn = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(ID_CANCEL);
 	dialog.set_affirmative_id(ID_OK);

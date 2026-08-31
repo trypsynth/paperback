@@ -1313,9 +1313,11 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 	let sleep_start = SLEEP_TIMER_START_MS.load(Ordering::SeqCst);
 	let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
 	if dm.tab_count() == 0 {
+		// TRANSLATORS: Main window title when no document is open
 		frame.set_title(&t("Paperback"));
 		#[cfg(target_os = "macos")]
 		frame.set_represented_filename("");
+		// TRANSLATORS: Default status bar text when no document is open
 		let mut status_text = t("Ready");
 		if sleep_start > 0 {
 			let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);

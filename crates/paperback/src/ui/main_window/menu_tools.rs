@@ -131,6 +131,7 @@ pub(super) fn handle_open_in_web_view(frame: &Frame, dm: &Rc<Mutex<DocumentManag
 			frame,
 			// TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
 			&t("Could not determine content to display in Web View."),
+			// TRANSLATORS: Generic error dialog title
 			&t("Error"),
 		)
 		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
@@ -186,6 +187,7 @@ pub(super) fn handle_view_source(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>)
 				// TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 				t("Could not load the document source.")
 			};
+			// TRANSLATORS: Generic error dialog title
 			let dialog = MessageDialog::builder(frame, &message, &t("Error"))
 				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
 				.build();

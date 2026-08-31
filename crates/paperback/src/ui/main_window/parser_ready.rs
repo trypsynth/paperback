@@ -53,6 +53,7 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 	if !parser_supports_extension(&format) {
 		// TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 		let message = t("Unsupported format selected.");
+		// TRANSLATORS: Generic error dialog title
 		let title = t("Error");
 		let dialog = MessageDialog::builder(parent, &message, &title)
 			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)

@@ -46,9 +46,13 @@ impl ShortcutCategory {
 
 	pub fn display_name(self) -> String {
 		match self {
+			// TRANSLATORS: Name of the "File" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::File => crate::t("File"),
+			// TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::Go => crate::t("Go"),
+			// TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::Tools => crate::t("Tools"),
+			// TRANSLATORS: Name of the "Help" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::Help => crate::t("Help"),
 		}
 	}
@@ -77,6 +81,7 @@ impl ShortcutsConfig {
 	}
 
 	pub fn get_display_str(&self, action: ActionId) -> String {
+		// TRANSLATORS: Shown in the Customize Keyboard Shortcuts list in place of a key combination when an action has no shortcut assigned
 		self.get_chord(action).map_or_else(|| crate::t("None"), |c| c.to_shortcut_string())
 	}
 

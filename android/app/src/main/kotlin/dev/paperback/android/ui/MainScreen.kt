@@ -293,6 +293,7 @@ fun MainScreen(
 				selectedExportFormat?.let { format ->
 					scope.launch(Dispatchers.IO) {
 						val success = viewModel.exportDocumentToUri(context, uri, format)
+						// TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 						val message = if (success) t("Document exported") else t("Failed to export document")
 						withContext(Dispatchers.Main) {
 							Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -345,6 +346,7 @@ fun MainScreen(
 							if (activeDocUri.startsWith("content://")) {
 								exportSettingsLauncher.launch("document.paperback")
 							} else {
+								// TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
 								if (viewModel.exportCurrentSettings()) {
 									Toast.makeText(context, t("Settings exported"), Toast.LENGTH_SHORT).show()
 								} else {
@@ -678,6 +680,7 @@ fun MainScreen(
 					showFileManagerForImport = false
 					val uri = Uri.fromFile(file)
 					scope.launch(Dispatchers.IO) {
+						// TRANSLATORS: Toast confirming a .paperback settings file was imported successfully, or the failure message if not
 						if (viewModel.importSettingsFromUri(context, uri)) {
 							launch(Dispatchers.Main) {
 								Toast.makeText(context, t("Settings imported"), Toast.LENGTH_SHORT).show()

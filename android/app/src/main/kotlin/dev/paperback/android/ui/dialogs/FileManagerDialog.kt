@@ -267,6 +267,7 @@ fun FileListItem(
 			modifier = Modifier.size(32.dp).padding(end = 16.dp)
 		)
 		Column {
+			// TRANSLATORS: Display name for the device's root storage folder in the in-app file browser
 			val displayName = if (file.absolutePath ==
 				Environment.getExternalStorageDirectory().absolutePath
 			) {

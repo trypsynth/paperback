@@ -67,6 +67,7 @@ fn read_fingerprint(path: &Path) -> Option<FileFingerprint> {
 
 pub fn title_or_filename(title: String, path: &Path) -> String {
 	if title.is_empty() {
+		// TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
 		path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
 	} else {
 		title
@@ -196,6 +197,7 @@ impl DocumentManager {
 						Err(retry_error) => {
 							tracing::error!(path = %path.display(), error = %retry_error, "failed to open document");
 							let message = build_document_load_error_message(path, &retry_error);
+							// TRANSLATORS: Generic error dialog title
 							show_error_dialog(&self.notebook, &message, &t("Error"));
 							false
 						}
@@ -203,6 +205,7 @@ impl DocumentManager {
 				} else {
 					tracing::error!(path = %path.display(), error = %err, "failed to open document");
 					let message = build_document_load_error_message(path, &err);
+					// TRANSLATORS: Generic error dialog title
 					show_error_dialog(&self.notebook, &message, &t("Error"));
 					false
 				}
@@ -560,6 +563,7 @@ impl DocumentManager {
 		let sleep_start = SLEEP_TIMER_START_MS.load(Ordering::SeqCst);
 		let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
 		if self.tabs.is_empty() {
+			// TRANSLATORS: Default status bar text when no document is open
 			let mut status_text = t("Ready");
 			if sleep_start > 0 {
 				let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
@@ -1169,6 +1173,7 @@ impl DocumentManager {
 			}
 			Err(err) => {
 				let message = build_document_load_error_message(&self.tabs[index].file_path, &err);
+				// TRANSLATORS: Generic error dialog title
 				show_error_dialog(&self.notebook, &message, &t("Error"));
 				false
 			}
@@ -1191,6 +1196,7 @@ impl DocumentManager {
 					};
 					if let Some(html) = table_html {
 						let frame = dm_for_enter.lock().unwrap().frame;
+						// TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
 						super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
 					} else {
 						let mut dm = dm_for_enter.lock().unwrap();
@@ -1464,6 +1470,7 @@ fn build_document_load_error_message(path: &Path, error: &str) -> String {
 	let file_line = t("File: {}").replace("{}", &path.display().to_string());
 	// TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
 	let details_line = t("Details: {}").replace("{}", details);
+	// TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
 	format!("{}\n\n{file_line}\n{details_line}", t("Failed to load document."))
 }
 

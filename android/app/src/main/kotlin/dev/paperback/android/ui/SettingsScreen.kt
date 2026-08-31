@@ -373,6 +373,7 @@ fun SettingsScreen(
 						// TRANSLATORS: TalkBack label for the speech pitch slider
 						contentDescription = t("Pitch")
 						if (isSystemDefault) {
+							// TRANSLATORS: TalkBack state description for a slider (pitch or speech rate) when it is following the system default instead of a custom value
 							stateDescription = t("System Default")
 							disabled()
 						} else {

@@ -31,17 +31,22 @@ fun ExportDocumentDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Export Document" },
+		// TRANSLATORS: Title of the dialog for exporting the current document to another file format
 		title = { Text(t("Export Document")) },
 		text = {
 			Column {
 				Text(
+					// TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
 					t("Select a format to export the current document:"),
 					modifier = Modifier.padding(bottom = 8.dp)
 				)
 				supportedFormats.forEachIndexed { index, format ->
 					val (label, icon) = when (format) {
+						// TRANSLATORS: Export format option to save the document as a plain text file
 						ExportFormat.TEXT -> t("Plain Text (.txt)") to Icons.Filled.Description
+						// TRANSLATORS: Export format option to save the document as an HTML file
 						ExportFormat.HTML -> t("HTML (.html)") to Icons.Filled.Code
+						// TRANSLATORS: Export format option to save the document as a Markdown file
 						ExportFormat.MARKDOWN -> t("Markdown (.md)") to Icons.AutoMirrored.Filled.Article
 					}
 					ListItem(
@@ -57,6 +62,7 @@ fun ExportDocumentDialog(
 		},
 		confirmButton = {
 			TextButton(onClick = onDismiss) {
+				// TRANSLATORS: Button to close the Export Document dialog without exporting
 				Text(t("Cancel"))
 			}
 		}

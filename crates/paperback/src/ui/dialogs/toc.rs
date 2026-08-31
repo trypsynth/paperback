@@ -55,6 +55,7 @@ fn populate_toc_tree_dv(
 	item_offsets: &mut HashMap<usize, i32>,
 ) {
 	for item in items {
+		// TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
 		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
 		let node = if item.children.is_empty() {
@@ -261,6 +262,7 @@ fn bind_toc_layout(dialog: Dialog, tree: TreeCtrl, ok_button: Button, cancel_but
 #[cfg(target_os = "windows")]
 fn populate_toc_tree(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 	for item in items {
+		// TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
 		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
 		if let Some(id) = tree.append_item_with_data(parent, &display_text, offset, None, None)

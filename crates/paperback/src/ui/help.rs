@@ -109,11 +109,13 @@ pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<Docume
 			dunce::canonicalize(&file_path).unwrap_or_else(|_| dunce::simplified(&file_path).to_path_buf());
 		let path_str = path_to_reveal.to_string_lossy();
 		if Command::new("explorer").raw_arg(format!("/select,\"{path_str}\"")).spawn().is_err() {
+			// TRANSLATORS: Error shown when the file manager could not be launched to reveal the active document's file
 			show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
 		}
 	}
 	#[cfg(target_os = "macos")]
 	if finder_reveal_command(&file_path).spawn().is_err() {
+		// TRANSLATORS: Error shown when the file manager could not be launched to reveal the active document's file
 		show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
 	}
 	#[cfg(not(any(target_os = "macos", target_os = "windows")))]
@@ -121,6 +123,7 @@ pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<Docume
 		if let Some(dir) = file_path.parent() {
 			let url = format!("file://{}", dir.to_string_lossy());
 			if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
+				// TRANSLATORS: Error shown when the file manager could not be launched to reveal the active document's file
 				show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
 			}
 		}
@@ -141,6 +144,7 @@ pub fn handle_view_help_browser(frame: &Frame) {
 		return;
 	};
 	if !path.exists() {
+		// TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return;
 	}
@@ -163,6 +167,7 @@ pub fn handle_view_help_paperback(
 		return false;
 	};
 	if !path.exists() {
+		// TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return false;
 	}
@@ -202,6 +207,7 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 	if !parser::parser_supports_extension(&format) {
 		// TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 		let message = t("Unsupported format selected.");
+		// TRANSLATORS: Generic error dialog title
 		let title = t("Error");
 		let dialog = MessageDialog::builder(parent, &message, &title)
 			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
