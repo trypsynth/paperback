@@ -31,9 +31,11 @@ impl DocumentSession {
 			let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
 			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 			if fs::create_dir_all(&doc_temp_dir).is_ok() {
-				// Extract every entry (images, stylesheets, fonts, ...) once, preserving
-				// the epub's internal layout, so the section's relative resource
-				// references (e.g. `<img src="../images/foo.jpg">`) resolve on disk.
+				// Extract every entry (sections, images, stylesheets, fonts, ...) once,
+				// preserving the epub's internal layout, so the section's relative
+				// references resolve on disk: both its resources (e.g.
+				// `<img src="../images/foo.jpg">`) and its links to other sections,
+				// which is what a table of contents is made of.
 				let _ = self.ensure_epub_resources_extracted(&doc_temp_dir);
 				// Re-extract the section itself fresh at its original relative path so
 				// the reading-position anchor below is injected into a clean copy.
@@ -176,30 +178,31 @@ impl DocumentSession {
 			.unwrap_or(0)
 	}
 
-	/// Extracts every non-markup entry of the EPUB (images, stylesheets, fonts,
-	/// ...) into `doc_temp_dir`, preserving the archive's internal directory
-	/// structure, so that resources referenced relatively from a spine section
-	/// are present on disk wherever a webview loading that section would look
-	/// for them. Spine XHTML/HTML/NCX/OPF/XML entries are skipped here: they're
-	/// never needed as sibling resources for rendering, and skipping them avoids
-	/// extracting every chapter in the book just to view one. Runs at most once
-	/// per `doc_temp_dir`; subsequent calls are a no-op.
+	/// Extracts every entry of the EPUB into `doc_temp_dir`, preserving the
+	/// archive's internal directory structure, so that anything referenced
+	/// relatively from a spine section is present on disk wherever a webview
+	/// loading that section would look for it. That covers resources
+	/// (images, stylesheets, fonts, ...) and the other spine sections, which a
+	/// table of contents links to: skipping markup here used to leave every one
+	/// of those links resolving to a file that was never written, so following
+	/// one in the web view failed with ERR_FILE_NOT_FOUND. Runs at most once per
+	/// `doc_temp_dir`; subsequent calls are a no-op.
 	fn ensure_epub_resources_extracted(&self, doc_temp_dir: &Path) -> anyhow::Result<()> {
 		if !self.is_epub() {
 			return Ok(());
 		}
-		let marker = doc_temp_dir.join(".resources_extracted");
+		// The marker is versioned: an earlier release extracted everything *except*
+		// markup, so a temp dir left behind by one would otherwise be treated as
+		// complete and its sections would stay missing.
+		let marker = doc_temp_dir.join(".resources_extracted_v2");
 		if marker.exists() {
 			return Ok(());
 		}
 		let file = File::open(&self.file_path)?;
 		let mut archive = ZipArchive::new(BufReader::new(file))?;
-		zip_utils::extract_zip_to_dir(&mut archive, doc_temp_dir, |path| {
-			matches!(
-				path.extension().and_then(|ext| ext.to_str()).map(str::to_ascii_lowercase).as_deref(),
-				Some("xhtml" | "html" | "htm" | "ncx" | "opf" | "xml")
-			)
-		})?;
+		// Nothing is skipped. The current section is re-extracted fresh by the caller
+		// afterwards, so the copy written here being anchor-free does not matter.
+		zip_utils::extract_zip_to_dir(&mut archive, doc_temp_dir, |_| false)?;
 		fs::write(&marker, b"").ok();
 		Ok(())
 	}

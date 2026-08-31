@@ -736,6 +736,82 @@ fn webview_target_path_extracts_sibling_image_resources() {
 	fs::remove_dir_all(&temp_root).ok();
 }
 
+/// Builds a minimal real EPUB whose first spine section is a table of contents
+/// linking to a second section, then returns its path.
+fn build_epub_with_linked_sections(dir: &Path) -> PathBuf {
+	let epub_path = dir.join("linked.epub");
+	let file = fs::File::create(&epub_path).unwrap();
+	let mut writer = zip::ZipWriter::new(file);
+	let opts = zip::write::FileOptions::<()>::default();
+	writer.start_file("META-INF/container.xml", opts).unwrap();
+	writer
+		.write_all(
+			br#"<?xml version="1.0"?>
+<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
+	<rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles>
+</container>"#,
+		)
+		.unwrap();
+	writer.start_file("OEBPS/content.opf", opts).unwrap();
+	writer
+		.write_all(
+			br#"<?xml version="1.0"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid">
+	<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+		<dc:title>Linked Book</dc:title>
+		<dc:identifier id="bookid">linked-book</dc:identifier>
+	</metadata>
+	<manifest>
+		<item id="toc" href="Text/toc.xhtml" media-type="application/xhtml+xml"/>
+		<item id="chapter1" href="Text/chapter1.xhtml" media-type="application/xhtml+xml"/>
+	</manifest>
+	<spine>
+		<itemref idref="toc"/>
+		<itemref idref="chapter1"/>
+	</spine>
+</package>"#,
+		)
+		.unwrap();
+	writer.start_file("OEBPS/Text/toc.xhtml", opts).unwrap();
+	writer
+		.write_all(
+			br#"<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><body>
+	<h1>Contents</h1>
+	<p><a href="chapter1.xhtml">Chapter One</a></p>
+</body></html>"#,
+		)
+		.unwrap();
+	writer.start_file("OEBPS/Text/chapter1.xhtml", opts).unwrap();
+	writer
+		.write_all(
+			br#"<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><body>
+	<p>Chapter text.</p>
+</body></html>"#,
+		)
+		.unwrap();
+	writer.finish().unwrap();
+	epub_path
+}
+
+/// The section a table of contents links to has to be on disk too, or following
+/// that link in the web view fails with ERR_FILE_NOT_FOUND (issue #719).
+#[test]
+fn webview_target_path_extracts_linked_sibling_sections() {
+	let temp_root = env::temp_dir()
+		.join(format!("paperback_webview_toc_{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
+	fs::create_dir_all(&temp_root).unwrap();
+	let epub_path = build_epub_with_linked_sections(&temp_root);
+	let session = DocumentSession::new(&epub_path.to_string_lossy(), "", "", false).expect("parse test epub");
+	let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
+	let toc_content = fs::read_to_string(&target.path).expect("read extracted toc");
+	assert!(toc_content.contains("chapter1.xhtml"), "expected the toc to link to the chapter");
+	let linked = Path::new(&target.path).parent().unwrap().join("chapter1.xhtml");
+	assert!(linked.exists(), "expected linked section extracted at {}", linked.display());
+	fs::remove_dir_all(&temp_root).ok();
+}
+
 fn session_with_audio(timeline: AudioTimeline) -> DocumentSession {
 	let buffer = DocumentBuffer::with_content("line1\nline2\nline3".to_string());
 	let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
