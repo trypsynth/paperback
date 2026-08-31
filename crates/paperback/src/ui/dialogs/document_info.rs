@@ -5,7 +5,7 @@ use patois::t;
 use wx_utils::dpi;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_single_button_footer};
+use super::{DIALOG_PADDING, add_single_button_footer, duration_format::format_duration_ms};
 
 const DOC_INFO_WIDTH: i32 = 600;
 const DOC_INFO_HEIGHT: i32 = 400;
@@ -33,6 +33,12 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	let characters_label = t("Characters:");
 	// TRANSLATORS: Label for the number of characters in the document excluding space characters
 	let characters_no_spaces_label = t("Characters (excluding spaces):");
+	// TRANSLATORS: Label for the number of audio files in the document
+	let audio_file_count_label = t("Number of files:");
+	// TRANSLATORS: Label for the total playback duration across all of the document's audio files
+	let total_duration_label = t("Total duration:");
+	// TRANSLATORS: Label for the average playback duration per audio file in the document
+	let average_duration_label = t("Average duration:");
 	let mut info = String::new();
 	let _ = writeln!(info, "{path_label} {}", path.display());
 	if !title.is_empty() {
@@ -45,6 +51,12 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	let _ = writeln!(info, "{lines_label} {}", stats.line_count);
 	let _ = writeln!(info, "{characters_label} {}", stats.char_count);
 	let _ = writeln!(info, "{characters_no_spaces_label} {}", stats.char_count_no_whitespace);
+	if stats.audio_file_count > 0 {
+		let _ = writeln!(info, "{audio_file_count_label} {}", stats.audio_file_count);
+		let _ = writeln!(info, "{total_duration_label} {}", format_duration_ms(stats.audio_total_duration_ms));
+		let average_ms = stats.audio_total_duration_ms / stats.audio_file_count as u64;
+		let _ = writeln!(info, "{average_duration_label} {}", format_duration_ms(average_ms));
+	}
 	info_ctrl.set_value(&info);
 	// TRANSLATORS: Label for a button that closes the Document Info dialog
 	let ok_label = t("Close");

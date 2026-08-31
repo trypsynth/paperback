@@ -63,6 +63,8 @@ dictionary DocumentStatsFfi {
 	i64 line_count;
 	i64 char_count;
 	i64 char_count_no_whitespace;
+	i64 audio_file_count;
+	i64 audio_total_duration_ms;
 };
 
 dictionary SearchOptionsFfi {

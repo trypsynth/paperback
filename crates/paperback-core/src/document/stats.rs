@@ -12,6 +12,13 @@ pub struct DocumentStats {
 	pub line_count: usize,
 	pub char_count: usize,
 	pub char_count_no_whitespace: usize,
+	/// Number of recorded audio files, when the document has any. Filled in by
+	/// [`crate::document::Document::compute_stats`] from the document's audio timeline, not by
+	/// [`DocumentStats::from_text`], which only ever sees the text spine.
+	pub audio_file_count: usize,
+	/// Total playback length across every recorded audio file, in milliseconds. See
+	/// `audio_file_count`.
+	pub audio_total_duration_ms: u64,
 }
 
 /// Per-chunk counts from [`count_chunk`], plus the whitespace-ness of the chunk's first and last
@@ -117,7 +124,7 @@ impl DocumentStats {
 		} else {
 			newline_count + 1
 		};
-		Self { word_count, line_count, char_count, char_count_no_whitespace }
+		Self { word_count, line_count, char_count, char_count_no_whitespace, ..Self::default() }
 	}
 }
 

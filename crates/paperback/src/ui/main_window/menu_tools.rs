@@ -31,13 +31,21 @@ pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, 
 	};
 	if let Some(tab) = dm_ref.active_tab() {
 		let selection = tab.text_ctrl.get_string_selection();
-		let (word_count, is_selection) = if selection.trim().is_empty() {
-			(tab.session.stats().word_count, false)
-		} else {
-			(DocumentStats::from_text(&selection).word_count, true)
-		};
+		let is_selection = !selection.trim().is_empty();
+		let word_count =
+			if is_selection { DocumentStats::from_text(&selection).word_count } else { tab.session.stats().word_count };
+		let audio_only = (!is_selection
+			&& tab.session.handle().document().audio_only
+			&& tab.session.audio().is_some_and(|timeline| !timeline.is_empty()))
+		.then(|| {
+			let stats = tab.session.stats();
+			dialogs::AudioOnlySummary {
+				file_count: stats.audio_file_count,
+				total_duration_ms: stats.audio_total_duration_ms,
+			}
+		});
 		let wpm = config.lock().unwrap().get_app_int("reading_speed_wpm", 150);
-		dialogs::show_word_count_dialog(frame, word_count, wpm, is_selection);
+		dialogs::show_word_count_dialog(frame, word_count, wpm, is_selection, audio_only);
 	}
 }
 
