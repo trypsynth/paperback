@@ -466,7 +466,11 @@ fn do_find(
 		state.focus_find_text();
 		return;
 	}
-	if result.wrapped {
+	// Whether the dialog was on screen matters: hiding a visible dialog makes NVDA
+	// start the focus-return chain, which the found line must interrupt; a closed
+	// dialog produces no chain to cut.
+	let dialog_was_shown = state.dialog.is_shown();
+	if result.wrapped && !dialog_was_shown {
 		// TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 		live_region::announce(live_region_label, &t("No more results. Wrapping search."));
 	}
@@ -481,20 +485,41 @@ fn do_find(
 	let start = result.position.clamp(0, doc_len);
 	let end = (start + len).min(doc_len);
 	// Capture the line containing the match while the document lock is held; it is
-	// announced later, after focus has returned to the book.
+	// announced after focus has returned to the book.
 	let found_line = tab.session.get_line_text(start);
 	navigation::select_doc_range(tab, start, end);
 	drop(dm);
 	state.dialog.show(false);
-	// NVDA starts reading the "Paperback, tab control, ..." ancestor chain the moment
-	// focus returns to the book. Delay the found-line announcement so it cuts the chain
-	// right as it begins: live-region's High priority maps to UIA
-	// NotificationProcessing_ImportantMostRecent, which NVDA handles as
-	// cancelSpeech() + speak — the same interrupt NVDA itself uses for its own find
-	// dialog. (During a say-all NVDA speaks at Spri.NOW instead of cancelling, so
-	// continuous reading is not chopped up.)
-	if !found_line.trim().is_empty() {
-		announce_found_line_after_delay(frame, live_region_label, found_line);
+	if dialog_was_shown {
+		// NVDA starts reading the "Paperback, tab control, ..." ancestor chain the
+		// moment focus returns to the book. Delay the found-line announcement so it
+		// cuts the chain right as it begins: live-region's High priority maps to UIA
+		// NotificationProcessing_ImportantMostRecent, which NVDA handles as
+		// cancelSpeech() + speak — the same interrupt NVDA itself uses for its own
+		// find dialog. (During a say-all NVDA speaks at Spri.NOW instead of
+		// cancelling, so continuous reading is not chopped up.)
+		// When the search wrapped, the wrap notice was deferred above so it can be
+		// folded into this same announcement and cannot be cut off by it.
+		let message = if result.wrapped {
+			let notice = t("No more results. Wrapping search.");
+			if found_line.trim().is_empty() { notice } else { format!("{notice} {}", found_line.trim()) }
+		} else {
+			found_line
+		};
+		if !message.trim().is_empty() {
+			announce_found_line_after_delay(frame, live_region_label, message);
+		}
+	} else if result.wrapped {
+		// Find-next / Find-previous with the dialog closed. There is no focus chain
+		// to cut, and the wrap notice was announced above, so announce at Medium to
+		// queue the found line behind it rather than cutting it off.
+		if !found_line.trim().is_empty() {
+			live_region::announce_with_priority(live_region_label, &found_line, live_region::Priority::Medium);
+		}
+	} else if !found_line.trim().is_empty() {
+		// Find-next / Find-previous with the dialog closed and no wrap: no chain, so
+		// announce the found line directly.
+		live_region::announce(live_region_label, &found_line);
 	}
 }
 
