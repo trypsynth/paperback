@@ -54,9 +54,15 @@ pub struct FormatMeta {
 	pub name: &'static str,
 	/// Lowercase extensions (without the leading dot) this format is known by.
 	pub extensions: &'static [&'static str],
+	/// IANA media types this format is known by, used to register Linux (`xdg-mime`) file
+	/// associations. Excludes `application/zip`, even for formats whose `extensions` includes
+	/// `zip`: that extension is shared by multiple formats and gets its own standalone
+	/// association entry instead, same as the Windows installer's `assoc_zip` task.
+	pub mime_types: &'static [&'static str],
 	/// Navigation features the format's parser can produce.
 	pub flags: ParserFlags,
-	/// Packaging-only settings; ignored outside the Windows installer.
+	/// Packaging-only settings; ignored outside the Windows installer and the Linux file
+	/// association dialog.
 	pub installer: InstallerMeta,
 }
 
@@ -72,6 +78,7 @@ macro_rules! formats {
 		$konst:ident {
 			name: $name:literal,
 			extensions: [$($ext:literal),+ $(,)?],
+			mime_types: [$($mime:literal),+ $(,)?],
 			flags: $($flag:ident)|+
 			$(, installer: $installer:ident)?
 			$(,)?
@@ -82,6 +89,7 @@ macro_rules! formats {
 			pub static $konst: FormatMeta = FormatMeta {
 				name: $name,
 				extensions: &[$($ext),+],
+				mime_types: &[$($mime),+],
 				flags: ParserFlags::NONE $(.union(ParserFlags::$flag))+,
 				installer: formats!(@installer $($installer)?),
 			};
@@ -97,45 +105,59 @@ formats! {
 	CHM {
 		name: "Compiled HTML Help files",
 		extensions: ["chm"],
+		mime_types: ["application/x-chm"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_SECTIONS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 	},
 	/// Declared ahead of [`WORD`] so that it gets first crack at the `.zip` both claim.
+	///
+	/// `application/x-daisy-opf` isn't a registered freedesktop.org media type (DAISY's `.opf`
+	/// has no standard one), so the Linux association dialog installs a small supplementary
+	/// shared-mime-info entry for it alongside the desktop file, the same way the Windows
+	/// installer needs no such thing since it maps extensions directly rather than through a
+	/// system-wide type registry.
 	DAISY {
 		name: "DAISY Books",
 		extensions: ["opf", "zip"],
+		mime_types: ["application/x-daisy-opf"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES,
 	},
 	WORD {
 		name: "Word Documents",
 		extensions: ["docx", "docm", "doc", "zip"],
+		mime_types: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS,
 	},
 	EPUB {
 		name: "EPUB Books",
 		extensions: ["epub"],
+		mime_types: ["application/epub+zip"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 		installer: CHECKED_HANDLER,
 	},
 	FB2 {
 		name: "FictionBook Documents",
 		extensions: ["fb2"],
+		mime_types: ["application/x-fictionbook+xml"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS,
 		installer: OPT_IN_HANDLER,
 	},
 	HTML {
 		name: "HTML Files",
 		extensions: ["htm", "html", "xhtml"],
+		mime_types: ["text/html", "application/xhtml+xml"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
 	},
 	PDF {
 		name: "PDF Documents",
 		extensions: ["pdf"],
+		mime_types: ["application/pdf"],
 		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS,
 		installer: CHECKED,
 	},
 	MARKDOWN {
 		name: "Markdown Files",
 		extensions: ["md", "markdown", "mdx", "mdown", "mdwn", "mkd", "mkdn", "mkdown", "ronn"],
+		mime_types: ["text/markdown"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
 	},
 	M4B {
@@ -146,42 +168,50 @@ formats! {
 	MOBI {
 		name: "MOBI Books",
 		extensions: ["mobi", "azw", "azw3"],
+		mime_types: ["application/x-mobipocket-ebook", "application/vnd.amazon.ebook"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
 	},
 	FODP {
 		name: "Flat OpenDocument Presentations",
 		extensions: ["fodp"],
+		mime_types: ["application/vnd.oasis.opendocument.presentation-flat-xml"],
 		flags: NONE,
 	},
 	ODP {
 		name: "OpenDocument Presentations",
 		extensions: ["odp"],
+		mime_types: ["application/vnd.oasis.opendocument.presentation"],
 		flags: NONE,
 	},
 	FODT {
 		name: "Flat OpenDocument Text Files",
 		extensions: ["fodt"],
+		mime_types: ["application/vnd.oasis.opendocument.text-flat-xml"],
 		flags: SUPPORTS_TOC,
 	},
 	ODT {
 		name: "OpenDocument Text Files",
 		extensions: ["odt"],
+		mime_types: ["application/vnd.oasis.opendocument.text"],
 		flags: SUPPORTS_TOC,
 	},
 	POWERPOINT {
 		name: "PowerPoint Presentations",
 		extensions: ["pptx", "pptm", "ppt"],
+		mime_types: ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.ms-powerpoint"],
 		flags: SUPPORTS_TOC,
 	},
 	RTF {
 		name: "RTF Documents",
 		extensions: ["rtf"],
+		mime_types: ["application/rtf", "text/rtf"],
 		flags: SUPPORTS_PAGES,
 		installer: CHECKED,
 	},
 	TEXT {
 		name: "Text Files",
 		extensions: ["txt", "log"],
+		mime_types: ["text/plain"],
 		flags: NONE,
 	},
 }
@@ -205,6 +235,24 @@ mod tests {
 			for ext in format.extensions {
 				assert!(!ext.starts_with('.'), "{}: extension '{ext}' must not include the dot", format.name);
 				assert_eq!(**ext, ext.to_ascii_lowercase(), "{}: extension '{ext}' must be lowercase", format.name);
+			}
+		}
+	}
+
+	#[test]
+	fn mime_types_are_present_and_never_the_shared_zip_type() {
+		for format in ALL {
+			assert!(!format.mime_types.is_empty(), "{}: must declare at least one MIME type", format.name);
+			for mime in format.mime_types {
+				assert!(mime.contains('/'), "{}: '{mime}' doesn't look like a MIME type", format.name);
+				// `application/zip` is shared by DAISY and Word-in-zip and gets its own
+				// standalone association entry on Linux instead — see the doc comment on
+				// `FormatMeta::mime_types`.
+				assert_ne!(
+					*mime, "application/zip",
+					"{}: application/zip belongs to the standalone zip task",
+					format.name
+				);
 			}
 		}
 	}

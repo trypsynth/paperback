@@ -36,4 +36,7 @@ fn main() {
 		windows::embed_app_manifest();
 		windows::embed_version_info();
 	}
+	if target.contains("linux") {
+		pdfium::copy_so();
+	}
 }

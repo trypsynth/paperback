@@ -154,6 +154,120 @@ jobs:
           target/release/paperback_setup.exe.minisig
         retention-days: 30
 
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+    - name: Cache Rust build artifacts
+      uses: Swatinem/rust-cache@v2
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build pandoc gettext minisign \
+          libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
+          libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
+          libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev
+    - name: Install appimagetool
+      run: |
+        curl -L -o /usr/local/bin/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+        chmod +x /usr/local/bin/appimagetool
+    - name: Build
+      run: cargo release
+    - name: Sign artifacts
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      env:
+        MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
+        MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+      run: |
+        KEY_PATH="$RUNNER_TEMP/paperback.key"
+        printf '%s' "$MINISIGN_KEY" > "$KEY_PATH"
+        printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.tar.gz
+        printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.AppImage
+        rm -f "$KEY_PATH"
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-linux
+        path: |
+          target/release/paperback.tar.gz
+          target/release/paperback.AppImage
+        retention-days: 30
+    - name: Upload signatures
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-linux-signatures
+        path: |
+          target/release/paperback.tar.gz.minisig
+          target/release/paperback.AppImage.minisig
+        retention-days: 30
+
+  build-linux-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+    - name: Cache Rust build artifacts
+      uses: Swatinem/rust-cache@v2
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build pandoc gettext minisign \
+          libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
+          libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
+          libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev
+    - name: Install appimagetool
+      run: |
+        curl -L -o /usr/local/bin/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage
+        chmod +x /usr/local/bin/appimagetool
+    - name: Build
+      run: cargo release
+    - name: Sign artifacts
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      env:
+        MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
+        MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+      run: |
+        KEY_PATH="$RUNNER_TEMP/paperback.key"
+        printf '%s' "$MINISIGN_KEY" > "$KEY_PATH"
+        printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.tar.gz
+        printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.AppImage
+        rm -f "$KEY_PATH"
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-linux-arm64
+        path: |
+          target/release/paperback.tar.gz
+          target/release/paperback.AppImage
+        retention-days: 30
+    - name: Upload signatures
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-linux-arm64-signatures
+        path: |
+          target/release/paperback.tar.gz.minisig
+          target/release/paperback.AppImage.minisig
+        retention-days: 30
+
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -339,7 +453,7 @@ jobs:
         retention-days: 30
 
   release:
-    needs: [build-windows, build-windows-arm64, build-android, build-macos]
+    needs: [build-windows, build-windows-arm64, build-linux, build-linux-arm64, build-android, build-macos]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
     steps:
@@ -367,6 +481,26 @@ jobs:
       with:
         name: paperback-windows-arm64-signatures
         path: windows-arm64-build
+    - name: Download Linux artifacts
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-linux
+        path: linux-build
+    - name: Download Linux signatures
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-linux-signatures
+        path: linux-build
+    - name: Download Linux ARM64 artifacts
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-linux-arm64
+        path: linux-arm64-build
+    - name: Download Linux ARM64 signatures
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-linux-arm64-signatures
+        path: linux-arm64-build
     - name: Download Android APK
       uses: actions/download-artifact@v8
       with:
@@ -382,7 +516,7 @@ jobs:
       with:
         name: paperback-macos-signature
         path: macos-build
-    - name: Rename Windows artifacts for release
+    - name: Rename artifacts for release
       shell: bash
       run: |
         mv windows-build/paperback.zip windows-build/paperback-x64.zip
@@ -393,6 +527,14 @@ jobs:
         mv windows-arm64-build/paperback.zip.minisig windows-arm64-build/paperback-arm64.zip.minisig
         mv windows-arm64-build/paperback_setup.exe windows-arm64-build/paperback_setup-arm64.exe
         mv windows-arm64-build/paperback_setup.exe.minisig windows-arm64-build/paperback_setup-arm64.exe.minisig
+        mv linux-build/paperback.tar.gz linux-build/paperback-x64.tar.gz
+        mv linux-build/paperback.tar.gz.minisig linux-build/paperback-x64.tar.gz.minisig
+        mv linux-build/paperback.AppImage linux-build/paperback-x64.AppImage
+        mv linux-build/paperback.AppImage.minisig linux-build/paperback-x64.AppImage.minisig
+        mv linux-arm64-build/paperback.tar.gz linux-arm64-build/paperback-arm64.tar.gz
+        mv linux-arm64-build/paperback.tar.gz.minisig linux-arm64-build/paperback-arm64.tar.gz.minisig
+        mv linux-arm64-build/paperback.AppImage linux-arm64-build/paperback-arm64.AppImage
+        mv linux-arm64-build/paperback.AppImage.minisig linux-arm64-build/paperback-arm64.AppImage.minisig
     - name: Get latest tag reachable from HEAD
       id: get_tag
       shell: bash
@@ -430,6 +572,14 @@ jobs:
           windows-arm64-build/paperback-arm64.zip.minisig
           windows-arm64-build/paperback_setup-arm64.exe
           windows-arm64-build/paperback_setup-arm64.exe.minisig
+          linux-build/paperback-x64.tar.gz
+          linux-build/paperback-x64.tar.gz.minisig
+          linux-build/paperback-x64.AppImage
+          linux-build/paperback-x64.AppImage.minisig
+          linux-arm64-build/paperback-arm64.tar.gz
+          linux-arm64-build/paperback-arm64.tar.gz.minisig
+          linux-arm64-build/paperback-arm64.AppImage
+          linux-arm64-build/paperback-arm64.AppImage.minisig
           android-build/paperback-android-arm64.apk
           android-build/paperback-android-arm.apk
           macos-build/paperback.dmg

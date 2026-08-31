@@ -22,6 +22,75 @@ const PDFIUM_MAC_X64_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-mac-x64.tgz";
 const PDFIUM_MAC_ARM64_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-mac-arm64.tgz";
+const PDFIUM_LINUX_X64_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-linux-x64.tgz";
+const PDFIUM_LINUX_ARM64_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-linux-arm64.tgz";
+
+pub fn copy_so() {
+	println!("cargo:rerun-if-env-changed=PAPERBACK_PDFIUM_SO");
+	println!("cargo:rerun-if-env-changed=PAPERBACK_SKIP_PDFIUM_DOWNLOAD");
+	println!("cargo:rerun-if-env-changed=PAPERBACK_REFRESH_PDFIUM");
+	let refresh =
+		env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
+	let Some(target_dir) = target_profile_dir() else {
+		println!("cargo:warning=Could not determine target output directory for libpdfium.so.");
+		return;
+	};
+	let dest = target_dir.join("libpdfium.so");
+	if let Ok(path) = env::var("PAPERBACK_PDFIUM_SO") {
+		let src = PathBuf::from(path);
+		if src.is_file() {
+			println!("cargo:rerun-if-changed={}", src.display());
+			if src != dest
+				&& let Err(err) = fs::copy(&src, &dest)
+			{
+				println!("cargo:warning=Failed to copy libpdfium.so from {}: {}", src.display(), err);
+			}
+			return;
+		}
+	}
+	if dest.exists() && !refresh {
+		return;
+	}
+	if let Err(err) = ensure_pdfium_so(&dest) {
+		println!(
+			"cargo:warning=libpdfium.so not found. Automatic download failed: {err}. Set PAPERBACK_PDFIUM_SO or place libpdfium.so in the project root."
+		);
+	} else if dest.exists() {
+		println!("cargo:rerun-if-changed={}", dest.display());
+	}
+}
+
+fn ensure_pdfium_so(dest: &Path) -> io::Result<()> {
+	let skip_download = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD")
+		.is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
+	if skip_download {
+		return Err(io::Error::other("download disabled by PAPERBACK_SKIP_PDFIUM_DOWNLOAD"));
+	}
+	let refresh =
+		env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
+	if dest.exists() && !refresh {
+		return Ok(());
+	}
+	let Some(url) = pdfium_so_download_url_for_target() else {
+		return Err(io::Error::other("no PDFium URL configured for this Linux target architecture"));
+	};
+	download_pdfium_so(url, dest)
+}
+
+fn pdfium_so_download_url_for_target() -> Option<&'static str> {
+	let arch = env::var("CARGO_CFG_TARGET_ARCH").ok()?;
+	match arch.as_str() {
+		"x86_64" => Some(PDFIUM_LINUX_X64_URL),
+		"aarch64" => Some(PDFIUM_LINUX_ARM64_URL),
+		_ => None,
+	}
+}
+
+fn download_pdfium_so(url: &str, dest_so: &Path) -> io::Result<()> {
+	download_and_extract_from_tgz(url, dest_so, "libpdfium.so")
+}
 
 pub fn copy_dylib() {
 	println!("cargo:rerun-if-env-changed=PAPERBACK_PDFIUM_DYLIB");

@@ -24,17 +24,21 @@
     const assets = (release.assets ?? []).filter(a => !legacyAssetNames.has(a.name.toLowerCase()));
     const exes = assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
     const winZips = assets.filter(a => a.name.toLowerCase().endsWith(".zip"));
+    const linuxTarballs = assets.filter(a => a.name.toLowerCase().endsWith(".tar.gz"));
+    const linuxAppImages = assets.filter(a => a.name.toLowerCase().endsWith(".appimage"));
     const macDmg = assets.find(a => a.name.toLowerCase().endsWith(".dmg"));
     const apks = showApk ? assets.filter(a => a.name.toLowerCase().endsWith(".apk")) : [];
     const version = release.tag_name.replace(/^v/, "");
-    const winArchLabel = name => name.toLowerCase().includes("arm64") ? " (ARM64)" : name.toLowerCase().includes("x64") ? " (x64)" : "";
-    const winArchOrder = name => name.toLowerCase().includes("arm64") ? 1 : 0;
+    const archLabel = name => name.toLowerCase().includes("arm64") ? " (ARM64)" : name.toLowerCase().includes("x64") ? " (x64)" : "";
+    const archOrder = name => name.toLowerCase().includes("arm64") ? 1 : 0;
     return `
       <div>
         <h3>${label} ${version}</h3>
         ${subtitle ? `<p>${subtitle}</p>` : ""}
-        ${exes.sort((a, b) => winArchOrder(a.name) - winArchOrder(b.name)).map(exe => `<p><a href="${exe.browser_download_url}">Windows Installer${winArchLabel(exe.name)} (.exe)</a> - ${fmtCount(exe.download_count)}</p>`).join("")}
-        ${winZips.sort((a, b) => winArchOrder(a.name) - winArchOrder(b.name)).map(zip => `<p><a href="${zip.browser_download_url}">Windows Portable${winArchLabel(zip.name)} (.zip)</a> - ${fmtCount(zip.download_count)}</p>`).join("")}
+        ${exes.sort((a, b) => archOrder(a.name) - archOrder(b.name)).map(exe => `<p><a href="${exe.browser_download_url}">Windows Installer${archLabel(exe.name)} (.exe)</a> - ${fmtCount(exe.download_count)}</p>`).join("")}
+        ${winZips.sort((a, b) => archOrder(a.name) - archOrder(b.name)).map(zip => `<p><a href="${zip.browser_download_url}">Windows Portable${archLabel(zip.name)} (.zip)</a> - ${fmtCount(zip.download_count)}</p>`).join("")}
+        ${linuxAppImages.sort((a, b) => archOrder(a.name) - archOrder(b.name)).map(appImage => `<p><a href="${appImage.browser_download_url}">Linux Installer${archLabel(appImage.name)} (.AppImage)</a> - ${fmtCount(appImage.download_count)}</p>`).join("")}
+        ${linuxTarballs.sort((a, b) => archOrder(a.name) - archOrder(b.name)).map(tarball => `<p><a href="${tarball.browser_download_url}">Linux Portable${archLabel(tarball.name)} (.tar.gz)</a> - ${fmtCount(tarball.download_count)}</p>`).join("")}
         ${showMac && macDmg ? `<p><a href="${macDmg.browser_download_url}">macOS (.dmg)</a> - ${fmtCount(macDmg.download_count)}</p>` : ""}
         ${apks.map(a => {
           const apkLabel = a.name.includes("arm64") ? "Android APK (arm64-v8a)" : a.name.includes("arm") ? "Android APK (armeabi-v7a)" : "Android APK";

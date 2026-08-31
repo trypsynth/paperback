@@ -19,6 +19,7 @@ dunce = "1.0.5"
 image = { version = "0.25.10", default-features = false, features = ["png"] }
 live-region = "0.3.0"
 paperback-core = { path = "../paperback-core" }
+paperback-formats = { path = "../paperback-formats" }
 patois = { version = "0.2.1", features = ["ui"] }
 tracing = "0.1.44"
 tracing-appender = "0.2.5"

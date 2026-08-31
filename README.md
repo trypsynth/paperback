@@ -71,7 +71,7 @@ These are not needed for a basic build but are required for a complete release:
 cargo build --release
 ```
 
-This produces the binary in `target/release/`. To build a full release package (zip, translations, etc.):
+This produces the binary in `target/release/`. To build a full release package (zip on Windows, tar.gz + AppImage on Linux, translations, etc.):
 
 ```
 cargo release
@@ -99,6 +99,8 @@ The following hooks run on every commit:
 ## Linux
 
 Building on Linux requires wxWidgets 3.2+ with the GTK3 backend. The wxDragon build system handles compiling the wxWidgets bindings automatically.
+
+`cargo release` produces both a portable `.tar.gz` and, if `appimagetool` is on `PATH`, an `.AppImage`. The first time Paperback is launched from the AppImage, it offers to associate itself with file types and add itself to the desktop menu — the same choices the Windows installer offers as checkboxes during setup, applied via `xdg-mime` instead of the registry. Missing `appimagetool` just skips that package; the portable tarball is still built either way.
 
 ## Contributing
 
