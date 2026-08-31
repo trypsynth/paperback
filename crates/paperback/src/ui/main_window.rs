@@ -141,8 +141,15 @@ impl MainWindow {
 				if let Some(index) = dm_ref.active_tab_index()
 					&& dm_ref.reload_tab_if_changed(index)
 				{
+					// Medium rather than the default high: a file changing on disk is not
+					// something the user asked for, so it waits for the current utterance to
+					// finish instead of cutting them off mid sentence.
 					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
-					live_region::announce(live_region_label, &t("Document reloaded."));
+					live_region::announce_with_priority(
+						live_region_label,
+						&t("Document reloaded."),
+						live_region::Priority::Medium,
+					);
 				}
 				page_reload_guard.set(false);
 			}
@@ -192,8 +199,14 @@ impl MainWindow {
 				if dm_ref.reload_tab_if_changed(index) {
 					update_title_from_manager(&frame_for_activate, &dm_ref);
 					dm_ref.update_status_bar();
+					// Medium rather than the default high, for the same reason as the reload
+					// announcement on the page change path.
 					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
-					live_region::announce(live_region_label, &t("Document reloaded."));
+					live_region::announce_with_priority(
+						live_region_label,
+						&t("Document reloaded."),
+						live_region::Priority::Medium,
+					);
 				}
 				activate_reload_guard.set(false);
 			}

@@ -1,4 +1,8 @@
-use std::{cell::Cell, rc::Rc, sync::Mutex};
+use std::{
+	cell::{Cell, RefCell},
+	rc::Rc,
+	sync::Mutex,
+};
 
 use bitflags::bitflags;
 use paperback_core::{config::ConfigManager, reader_core, util::text::display_len};
@@ -9,6 +13,16 @@ use wxdragon::prelude::*;
 use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigation};
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
+
+/// How long after the Find dialog closes the found line is announced.
+///
+/// The interrupt must land after NVDA has started the focus-return chain — if it fires
+/// before, the chain reads over the found line instead — but as close to the chain's
+/// start as possible, so as little of it escapes before the cut. NVDA's own find dialog
+/// uses 100ms; Paperback's chain starts quickly, and 30ms was chosen by binary search
+/// (60ms left a barely-audible sliver of the chain, 10ms occasionally let the full chain
+/// through after the found line, 0ms always did).
+const FIND_RESULT_INTERRUPT_DELAY_MS: i32 = 30;
 
 #[derive(Clone, Debug, Default)]
 pub struct SearchResult {
@@ -395,10 +409,11 @@ pub fn handle_find_action(
 		show_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
 		return;
 	}
-	do_find(forward, &state, doc_manager, config, live_region_label);
+	do_find(frame, forward, &state, doc_manager, config, live_region_label);
 }
 
 fn do_find(
+	frame: &Frame,
 	forward: bool,
 	state: &FindDialogState,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
@@ -451,7 +466,11 @@ fn do_find(
 		state.focus_find_text();
 		return;
 	}
-	if result.wrapped {
+	// Whether the dialog was on screen matters: hiding a visible dialog makes NVDA
+	// start the focus-return chain, which the found line must interrupt; a closed
+	// dialog produces no chain to cut.
+	let dialog_was_shown = state.dialog.is_shown();
+	if result.wrapped && !dialog_was_shown {
 		// TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 		live_region::announce(live_region_label, &t("No more results. Wrapping search."));
 	}
@@ -465,7 +484,64 @@ fn do_find(
 	let len = i64::try_from(display_len(&query)).unwrap_or(i64::MAX);
 	let start = result.position.clamp(0, doc_len);
 	let end = (start + len).min(doc_len);
+	// Capture the line containing the match while the document lock is held; it is
+	// announced after focus has returned to the book.
+	let found_line = tab.session.get_line_text(start);
 	navigation::select_doc_range(tab, start, end);
 	drop(dm);
 	state.dialog.show(false);
+	if dialog_was_shown {
+		// NVDA starts reading the "Paperback, tab control, ..." ancestor chain the
+		// moment focus returns to the book. Delay the found-line announcement so it
+		// cuts the chain right as it begins: live-region's High priority maps to UIA
+		// NotificationProcessing_ImportantMostRecent, which NVDA handles as
+		// cancelSpeech() + speak — the same interrupt NVDA itself uses for its own
+		// find dialog. (During a say-all NVDA speaks at Spri.NOW instead of
+		// cancelling, so continuous reading is not chopped up.)
+		// When the search wrapped, the wrap notice was deferred above so it can be
+		// folded into this same announcement and cannot be cut off by it.
+		let message = if result.wrapped {
+			let notice = t("No more results. Wrapping search.");
+			if found_line.trim().is_empty() { notice } else { format!("{notice} {}", found_line.trim()) }
+		} else {
+			found_line
+		};
+		if !message.trim().is_empty() {
+			announce_found_line_after_delay(frame, live_region_label, message);
+		}
+	} else if result.wrapped {
+		// Find-next / Find-previous with the dialog closed. There is no focus chain
+		// to cut, and the wrap notice was announced above, so announce at Medium to
+		// queue the found line behind it rather than cutting it off.
+		if !found_line.trim().is_empty() {
+			live_region::announce_with_priority(live_region_label, &found_line, live_region::Priority::Medium);
+		}
+	} else if !found_line.trim().is_empty() {
+		// Find-next / Find-previous with the dialog closed and no wrap: no chain, so
+		// announce the found line directly.
+		live_region::announce(live_region_label, &found_line);
+	}
+}
+
+/// Announces `found_line` shortly after the Find dialog closes, so it cuts off the
+/// focus-chain announcement the screen reader starts when focus returns to the book.
+///
+/// The one-shot `wxTimer` is kept alive through its single tick by the `Rc`/`RefCell`
+/// it hands its own callback: the tick clears the cell, which drops the timer and
+/// destroys the native timer. If the timer cannot be armed, fall back to announcing
+/// immediately rather than silently dropping the result.
+fn announce_found_line_after_delay(frame: &Frame, live_region_label: StaticText, found_line: String) {
+	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
+	let holder = Rc::clone(&timer_holder);
+	let timer = Timer::new(frame);
+	let announce_found_line = found_line.clone();
+	timer.on_tick(move |_event| {
+		live_region::announce(live_region_label, &announce_found_line);
+		*holder.borrow_mut() = None;
+	});
+	if !timer.start(FIND_RESULT_INTERRUPT_DELAY_MS, true) {
+		live_region::announce(live_region_label, &found_line);
+		return;
+	}
+	*timer_holder.borrow_mut() = Some(timer);
 }

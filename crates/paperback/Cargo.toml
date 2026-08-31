@@ -17,7 +17,7 @@ bitflags = { workspace = true }
 dunce = "1.0.5"
 # Decodes the embedded application icon in `ui::icon`; already in the tree via pdfium.
 image = { version = "0.25.10", default-features = false, features = ["png"] }
-live-region = "0.2.1"
+live-region = "0.3.0"
 paperback-core = { path = "../paperback-core" }
 patois = { version = "0.2.1", features = ["ui"] }
 tracing = "0.1.44"
@@ -26,7 +26,7 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.2.0"
 toml = { workspace = true }
 wx-utils = "0.2.0"
-wxdragon = { version = "0.9.20", features = ["webview", "media-ctrl"] }
+wxdragon = { version = "0.9.21", features = ["webview", "media-ctrl"] }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]

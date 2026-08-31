@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 23:46+0200\n"
+"POT-Creation-Date: 2026-08-31 15:15+0000\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -1158,7 +1158,6 @@ msgstr[1] "Temporizador configurado para %d minutos."
 msgid "Paperback"
 msgstr "Paperback"
 
-#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
 #, fuzzy
 msgid "Document reloaded."
 msgstr "Documento recarregado."
@@ -4029,6 +4028,16 @@ msgstr "{} segundos"
 #, fuzzy
 msgid "{} seconds⁣"
 msgstr "{} segundos"
+
+#: kt
+#, fuzzy
+msgid "This document contains {} words.⁣"
+msgstr "Este documento contém{}palavras."
+
+#: kt
+#, fuzzy
+msgid "words⁣"
+msgstr "Palavras"
 
 #, fuzzy
 #~ msgid "&Locate…"

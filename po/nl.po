@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 23:46+0200\n"
+"POT-Creation-Date: 2026-08-31 15:15+0000\n"
 "PO-Revision-Date: 2026-06-08 22:23+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -1098,7 +1098,6 @@ msgstr[1] "Slaaptimer ingesteld op %d minuten."
 msgid "Paperback"
 msgstr "Paperback"
 
-#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
 #, fuzzy
 msgid "Document reloaded."
 msgstr "Het document is opnieuw geladen."
@@ -3934,6 +3933,16 @@ msgstr "{} seconden"
 #, fuzzy
 msgid "{} seconds⁣"
 msgstr "{} seconden"
+
+#: kt
+#, fuzzy
+msgid "This document contains {} words.⁣"
+msgstr "Dit document bevat {} woorden.⁣"
+
+#: kt
+#, fuzzy
+msgid "words⁣"
+msgstr "Woorden"
 
 #, fuzzy
 #~ msgid "&Locate…"
