@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 23:46+0200\n"
+"POT-Creation-Date: 2026-08-31 15:15+0000\n"
 "PO-Revision-Date: 2026-06-08 13:45+0200\n"
 "Last-Translator: Michał Dziwisz <michal@dziwisz.net>\n"
 "Language-Team: Polish\n"
@@ -1067,7 +1067,6 @@ msgstr[2] "Wyłącznik czasowy ustawiony na %d minut."
 msgid "Paperback"
 msgstr "Paperback"
 
-#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
 msgid "Document reloaded."
 msgstr "Dokument został przeładowany."
 
@@ -3287,7 +3286,7 @@ msgstr "Rozwiń"
 
 #: kt
 msgid "This document contains {} words."
-msgstr "Ten dokument zawiera {} słów."
+msgstr "Ten dokument zawiera {} słowa."
 
 #: kt
 msgid "words"
@@ -3518,6 +3517,14 @@ msgstr "{} sekunda"
 #: kt
 msgid "{} seconds⁣"
 msgstr "{} sekund"
+
+#: kt
+msgid "This document contains {} words.⁣"
+msgstr "Ten dokument zawiera {} słów."
+
+#: kt
+msgid "words⁣"
+msgstr "słów"
 
 #~ msgid "&Locate…"
 #~ msgstr "&Zlokalizuj…"
