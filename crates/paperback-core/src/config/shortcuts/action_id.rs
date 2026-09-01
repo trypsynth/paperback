@@ -534,7 +534,7 @@ impl ActionId {
 			Self::ToggleBookmark => Some(KeyChord::new(true, false, true, "B")),
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
 			Self::ToggleWordWrap => Some(KeyChord::new(true, true, false, "W")),
-			Self::PlayPauseAudio => Some(KeyChord::new(true, false, false, "Space")),
+			Self::PlayPauseAudio => Some(KeyChord::new_raw_ctrl(true, false, false, "Space")),
 			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),

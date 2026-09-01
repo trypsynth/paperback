@@ -155,6 +155,15 @@ mod tests {
 		assert_eq!(sc.get_chord(ActionId::Open), default_open);
 	}
 
+	#[cfg(target_os = "macos")]
+	#[test]
+	fn play_pause_audio_uses_physical_control_on_macos() {
+		let chord = ActionId::PlayPauseAudio.default_chord().unwrap();
+		assert!(!chord.ctrl);
+		assert!(chord.raw_ctrl);
+		assert_eq!(chord.key, "Space");
+	}
+
 	#[test]
 	fn shortcut_category_actions_coverage() {
 		let mut total_actions = 0;
