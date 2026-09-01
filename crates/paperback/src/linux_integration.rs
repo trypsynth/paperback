@@ -14,6 +14,7 @@ use std::{
 	env, fs,
 	io::{self, Write},
 	path::{Path, PathBuf},
+	process,
 	process::Command,
 	sync::Mutex,
 };
@@ -25,8 +26,9 @@ use wxdragon::prelude::Frame;
 
 use crate::ui::{AssociationChoice, ChoiceAction, show_linux_setup_dialog};
 
-/// Config key marking that the user has already been through the dialog (or dismissed it),
-/// so it never shows more than once.
+/// Config key marking that the user has confirmed the dialog, so it never shows more than once.
+/// Left unset on Cancel/Escape, so declining shows it again next launch rather than silently
+/// skipping setup for good.
 const SETUP_DONE_KEY: &str = "linux_file_associations_setup_done";
 
 const DESKTOP_FILE_ID: &str = "paperback.desktop";
@@ -48,15 +50,20 @@ const DAISY_OPF_MIME_INFO: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 /// through it before. Best-effort throughout: a missing `xdg-mime`/`update-desktop-database`,
 /// or a read-only home directory, just means the OS-level association doesn't stick — it
 /// doesn't stop the app from starting.
+///
+/// Cancel/Escape quits Paperback outright rather than dropping the user into a main window
+/// they never asked to open, and leaves `SETUP_DONE_KEY` unset so the dialog is offered again
+/// next launch.
 pub fn maybe_run_first_run_setup(parent: &Frame, config: &Mutex<ConfigManager>) {
 	let Ok(appimage_path) = env::var("APPIMAGE") else { return };
 	if config.lock().unwrap().get_app_bool(SETUP_DONE_KEY, false) {
 		return;
 	}
 	let choices = association_choices();
-	if let Some(selections) = show_linux_setup_dialog(parent, &choices)
-		&& let Err(err) = apply_selections(&appimage_path, &choices, &selections)
-	{
+	let Some(selections) = show_linux_setup_dialog(parent, &choices) else {
+		process::exit(0);
+	};
+	if let Err(err) = apply_selections(&appimage_path, &choices, &selections) {
 		tracing::warn!(error = %err, "failed to set up Linux file associations");
 	}
 	config.lock().unwrap().set_app_bool(SETUP_DONE_KEY, true);
