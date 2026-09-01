@@ -10,7 +10,7 @@ use std::{borrow::Cow, fmt::Write as _};
 
 use paperback_core::util::text::ch_width;
 
-use crate::ui::document_manager::FormatSegment;
+use crate::ui::text_render::FormatSegment;
 
 /// Replaces every character `RichEdit` silently discards instead of storing with a space, so
 /// its buffer holds exactly one display unit per display unit of `content`. Borrows unchanged
