@@ -44,6 +44,12 @@ pub fn open(ctx: &Ctx) {
 			let menu_bar = menu::create_menu_bar(&ctx.config.lock().unwrap());
 			ctx.frame.set_menu_bar(menu_bar);
 			menu::update_menu_item_states(ctx.frame, true);
+			// The rebuilt menu bar comes back with every item enabled, so the reopen item has
+			// to be told again whether there is anything to reopen. Every other place that
+			// rebuilds the bar does this; this one did not, which left Reopen Last Closed
+			// enabled and doing nothing after opening a document from a fresh start.
+			let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
+			menu::update_reopen_state(ctx.frame, has_reopen);
 		}
 	}
 }
