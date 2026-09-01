@@ -274,7 +274,17 @@ fn build_appimage(
 	let apprun_path = app_dir.join("AppRun");
 	fs::write(
 		&apprun_path,
-		"#!/bin/sh\nHERE=\"$(dirname \"$(readlink -f \"${0}\")\")\"\nexec \"${HERE}/usr/bin/paperback\" \"$@\"\n",
+		// The AppImage runtime sets ARGV0 to the name this AppImage was invoked as when that
+		// differs from its own filename (e.g. through a symlink), so the ~/.local/bin/pb
+		// symlink linux_integration.rs's setup dialog can write dispatches into the pb CLI
+		// instead of the paperback GUI.
+		r#"#!/bin/sh
+HERE="$(dirname "$(readlink -f "${0}")")"
+case "$(basename "${ARGV0:-$0}")" in
+	pb) exec "${HERE}/usr/bin/pb" "$@" ;;
+	*) exec "${HERE}/usr/bin/paperback" "$@" ;;
+esac
+"#,
 	)?;
 	make_executable(&apprun_path)?;
 	let appimagetool = env::var("APPIMAGETOOL").unwrap_or_else(|_| "appimagetool".to_string());

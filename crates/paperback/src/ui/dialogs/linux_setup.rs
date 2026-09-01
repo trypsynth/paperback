@@ -3,12 +3,21 @@ use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 
-/// One line item in the Linux file-association dialog: either a real document format from
-/// `paperback_formats::ALL`, or the standalone ZIP entry shared by DAISY and Word-in-zip. See
-/// `FormatMeta::mime_types`'s doc comment for why zip isn't part of either format's own entry.
+/// What checking a [`AssociationChoice`] applies.
+pub enum ChoiceAction {
+	/// Register these MIME types with the desktop file and `xdg-mime`.
+	Associate(&'static [&'static str]),
+	/// Symlink the `pb` command-line tool into `~/.local/bin`.
+	AddPbToPath,
+}
+
+/// One line item in the Linux setup dialog: a real document format from
+/// `paperback_formats::ALL`, the standalone ZIP entry shared by DAISY and Word-in-zip (see
+/// `FormatMeta::mime_types`'s doc comment for why zip isn't part of either format's own entry),
+/// or the "add `pb` to PATH" action.
 pub struct AssociationChoice {
 	pub label: String,
-	pub mime_types: &'static [&'static str],
+	pub action: ChoiceAction,
 	pub default_checked: bool,
 }
 

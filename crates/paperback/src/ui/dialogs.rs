@@ -34,7 +34,7 @@ pub use go_to_percent::show_go_to_percent_dialog;
 #[cfg(target_os = "linux")]
 mod linux_setup;
 #[cfg(target_os = "linux")]
-pub use linux_setup::{AssociationChoice, show_linux_setup_dialog};
+pub use linux_setup::{AssociationChoice, ChoiceAction, show_linux_setup_dialog};
 mod note_entry;
 pub use note_entry::show_note_entry_dialog;
 mod open_as;

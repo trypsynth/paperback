@@ -28,5 +28,5 @@ mod window_geometry;
 
 pub use app::PaperbackApp;
 #[cfg(target_os = "linux")]
-pub use dialogs::{AssociationChoice, show_linux_setup_dialog};
+pub use dialogs::{AssociationChoice, ChoiceAction, show_linux_setup_dialog};
 pub use main_window::MainWindow;
