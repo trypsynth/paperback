@@ -242,6 +242,7 @@ kielet</a></li>
 </ul></li>
 <li><a href="#muutosloki" id="toc-muutosloki">Muutosloki</a>
 <ul>
+<li><a href="#versio-0.9.2" id="toc-versio-0.9.2">Versio 0.9.2</a></li>
 <li><a href="#versio-0.9.1" id="toc-versio-0.9.1">Versio 0.9.1</a></li>
 <li><a href="#versio-0.9.0" id="toc-versio-0.9.0">Versio 0.9.0</a>
 <ul>
@@ -331,6 +332,7 @@ asetuksilla vierityksen pitäisi toimia oikein.</p>
 <code>.ronn</code>)</li>
 <li>Microsoft Word -asiakirjat (<code>.docx</code>, <code>.docm</code>,
 <code>.doc</code>)</li>
+<li>M4B-äänikirjat (<code>.m4b</code>)</li>
 <li>MOBI- ja Kindle-kirjat (<code>.mobi</code>, <code>.azw</code>,
 <code>.azw3</code>)</li>
 <li>OpenDocument-esitykset (<code>.odp</code>, <code>.fodp</code>)</li>
@@ -530,6 +532,38 @@ perusteena.</p>
 <li>Tyler Rodick</li>
 </ul>
 <h1 id="muutosloki">Muutosloki</h1>
+<h2 id="versio-0.9.2">Versio 0.9.2</h2>
+<ul>
+<li>Ruudunlukija ei enää lue äänikirjoissa peräkkäisiä välilyöntejä
+kohdistuksen siirtyessä kirjan tekstinäkymään.</li>
+<li>Äänikirjojen tiedostonimet ilmoitetaan nyt luvuittain
+navigoitaessa.</li>
+<li>Sovellus ilmoittaa nyt äänikirjojen todellisen keston sen sijaan,
+että kaikkien väitettäisiin olevan 24 tunnin mittaisia</li>
+<li>Kun selainnäkymässä on siirrytty linkin osoittamaan kohtaan, näkymän
+sulkeminen Esc-näppäimellä ei aiheuta enää vianmääritysilmoitusta.</li>
+<li>Valitse kaikki -toiminnon jälkeinen kopiointi kattaa nyt koko
+asiakirjan eikä pelkkää näytettävää osaa.</li>
+<li>Etsi-toiminto siirtää suoraan löytämälleen riville eikä ruudunlukija
+enää lue koko ikkunaa uudelleen kohdistuksen palatessa kirjaan.</li>
+<li>Korjattu ongelma, jonka vuoksi ylimääräisen ZIP64-lohkon sisältämät
+EPUB-tiedostot eivät avautuneet, vaan antoivat virheilmoituksen ”Invalid
+local file header”.</li>
+<li>Pitkissä asiakirjoissa ei enää palata alkuun, kun niitä luetaan
+ruudunlukijan jatkuvalla luvulla.</li>
+<li>Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä
+aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.</li>
+<li>Automaattinen ”Asiakirja päivitetty” -ilmoitus odottaa nyt
+ruudunlukijan puheen päättymistä eikä keskeytä sitä enää kesken
+lauseen.</li>
+<li>Asetukset-ikkunan Yleiset-välilehden sarkainjärjestys noudattaa nyt
+näytön järjestystä, ja päivityskanava on heti päivitystarkistuksen
+jälkeen.</li>
+<li>Avaa sovelluksessa -valikossa ei näytetä enää sovelluksen koko
+kuvausta vaan pelkkä “Paperback”.</li>
+<li>Sanamäärä- ja Asiakirjan tiedot -ikkunoissa näytetään nyt äänikirjan
+tiedostomäärä sekä kokonaiskesto.</li>
+</ul>
 <h2 id="versio-0.9.1">Versio 0.9.1</h2>
 <ul>
 <li>Kirjanmerkkien ja muistiinpanojen merkkiäänet toistuvat nyt
@@ -808,137 +842,97 @@ otsikoissa ja/tai kirjanmerkeissä on ohjausmerkkejä.</li>
 </ul>
 <h2 id="versio-0.8.5">Versio 0.8.5</h2>
 <ul>
-<li>Lisätty alkeellinen tuki tunnisteita sisältäville PDF-tiedostoille.
-<a href="https://github.com/trypsynth/paperback/pull/364">#364</a>, <a
-href="https://github.com/trypsynth/paperback/pull/365">#365</a>.</li>
-<li>Lisätty sivujen tuki EPUB-kirjoille. <a
-href="https://github.com/trypsynth/paperback/issues/379">#379</a>, <a
-href="https://github.com/trypsynth/paperback/pull/380">#380</a>.</li>
-<li>Lisätty tuki vanhoille PowerPoint-esityksille (*.ppt).</li>
-<li>Lisätty tuki vanhoille Microsoft Word -asiakirjoille (*.doc).</li>
-<li>Lisätty tuki mobi- ja AZW3-kirjoille. <a
-href="https://github.com/trypsynth/pull/369">#369</a>, <a
-href="https://github.com/trypsynth/pull/378">#378</a>.</li>
+<li>Lisätty sivujen tuki EPUB-kirjoille.</li>
 <li>Lisätty tuki salatuille Microsoft Office -asiakirjoille. Tällä
 hetkellä tuetaan vanhaa ja uudempaa Wordia sekä uudempaa PowerPointia,
 ja vanhan PowerPointin tuki on tulossa myöhemmin.</li>
-<li>Lisätty Ctrl+Q-näppäinkomento sovelluksen lopettamista varten. <a
-href="https://github.com/trypsynth/paperback/issues/368">#368</a>.</li>
+<li>Lisätty tuki vanhoille Microsoft Word -asiakirjoille.</li>
+<li>Lisätty tuki vanhoille PowerPoint-esityksille.</li>
+<li>Lisätty tuki mobi- ja AZW3-kirjoille.</li>
+<li>Lisätty tuki tunnisteita sisältäville PDF-tiedostoille.</li>
+<li>Lisätty Ctrl+Q-näppäinkomento sovelluksen lopettamista varten.</li>
 <li>Lisätty tuki sekä DAISY- että Word-muodossa oleville Booksharen
-pakatuille kirjoille. <a
-href="https://github.com/trypsynth/paperback/issues/36">#36</a>, <a
-href="https://github.com/trypsynth/paperback/pull/358">#358</a>, <a
-href="https://github.com/trypsynth/paperback/pull/360">#360</a>.</li>
+pakatuille kirjoille.</li>
 <li>Upotettujen kuvien vaihtoehtoisen tekstin pitäisi nyt näkyä
 oikein.</li>
 <li>CHM-asiakirjoissa tuetaan nyt asianmukaisesti sisäisten linkkien
 navigointia.</li>
-<li>Korjattu kirjanmerkkien merkkiääni, joka ei kuulunut kirjanmerkin
-kohdalla vaan kappaleen alussa. <a
-href="https://github.com/trypsynth/paperback/issues/363">#363</a>.</li>
-<li>Korjattu “Siirry sivulle” -toiminnon virhe, jossa tietylle sivulle
-siirtyminen oli aina yhden numeron verran pielessä. <a
-href="https://github.com/trypsynth/paperback/pull/389">#389</a>.</li>
-<li>Korjattu ongelma, jossa “Avaa muodossa” -valintaikkunaa ei voinut
-sulkea Esc-näppäimellä.</li>
+<li>Korjattu “Siirry sivulle” -toiminnon virhe, jonka vuoksi tietylle
+sivulle siirtyminen oli aina yhden numeron verran pielessä.</li>
+<li>Korjattu ongelma, jonka vuoksi “Avaa muodossa” -valintaikkuna ei
+sulkeutunut Esc-näppäimellä.</li>
 <li>Korjattu lukijan pikavalikko, joka ei avautunut hiiren oikealla
-painikkeella eikä sovellusnäppäimellä. <a
-href="https://github.com/trypsynth/paperback/issues/362">#362</a>.</li>
-<li>Korjattu virhe, jossa kohdistus siirtyi toisinaan väärään
+painikkeella eikä sovellusnäppäimellä.</li>
+<li>Korjattu ongelma, jonka vuoksi kohdistus siirtyi toisinaan väärään
 asiakirjaan, kun niitä avattiin komentoriviltä.</li>
-<li>Pelkkiä kuvia sisältävät PDF-tiedostot tunnistetaan taas ja niiden
-olemassaolosta ilmoitetaan.</li>
+<li>Pelkkiä kuvia sisältävät PDF-tiedostot tunnistetaan taas ja sovellus
+ilmoittaa niistä.</li>
 <li>Kuvien ja kuvitusten välillä on nyt mahdollista liikkua G/Shift+G-
 ja F/Shift+F-näppäimillä.</li>
-<li>Paperback noudattaa nyt sovelluksen “Tumma tila” -asetusta.</li>
-<li>Poistettu DAISY XML -tuki, koska sitä ei enää tarvita.</li>
+<li>Paperback noudattaa nyt sovelluksen tumman tilan asetusta.</li>
+<li>DAISY XML -tuki on poistettu, koska sitä ei enää tarvita.</li>
 <li>Palattu käyttämään alkuperäistä Win32:n ensimmäisen kirjaimen
 navigointia sisällysluettelopuussa.</li>
-<li>Virheenkäsittelyikkuna näyttää nyt yksityiskohtaisempia
-virheilmoituksia.</li>
-<li>Selainnäkymä avautuu nyt paljon nopeammin ja sulavammin. <a
-href="https://github.com/trypsynth/paperback/pull/359">#359</a>.</li>
+<li>Asiakirjan avaamisvirheestä ilmoittava ikkuna näyttää nyt
+yksityiskohtaisempia virheilmoituksia.</li>
+<li>Selainnäkymä avautuu nyt paljon nopeammin ja sulavammin.</li>
 </ul>
 <h2 id="versio-0.8.2">Versio 0.8.2</h2>
 <ul>
 <li>Lisätty sivujen tuki RTF-asiakirjoille.</li>
-<li>Korjattu virhe, jossa selainnäkymän avaaminen aktivoi
-automaattisesti EPUB-kirjojen ulkoiset linkit.</li>
-<li>Korjattu virhe, jossa RTF-jäsennin ei lisännyt joissakin
-harvinaisissa tapauksissa sanaväliä sanojen väliin.</li>
+<li>Korjattu virhe, jonka vuoksi EPUB-kirjojen ulkoiset linkit avattiin
+automaattisesti selainnäkymää avattaessa.</li>
+<li>Korjattu virhe, jonka vuoksi RTF-jäsennin ei lisännyt joissakin
+harvinaisissa tapauksissa välilyöntiä sanojen väliin.</li>
 <li>Korjattu kappaleet, jotka jakautuivat useiksi lyhyiksi riveiksi
-joissakin PDF-asiakirjoissa. <a
-href="https://github.com/trypsynth/paperback/issues/101">#101</a>, <a
-href="https://github.com/trypsynth/paperback/pull/355">#355</a>.</li>
-<li>PDF-asiakirjoissa on nyt perustason linkki- ja otsikkonavigointi. <a
-href="https://github.com/trypsynth/paperback/issues/291">#291</a>, <a
-href="https://github.com/trypsynth/paperback/pull/353">#353</a>, <a
-href="https://github.com/trypsynth/paperback/pull/354">#354</a>.</li>
+joissakin PDF-asiakirjoissa.</li>
+<li>PDF-asiakirjoissa on nyt perustason linkki- ja
+otsikkonavigointi.</li>
 <li>RTF:n sarkaimet ja rivinvaihdot piirretään nyt täsmälleen niin kuin
 ne näkyvät asiakirjassa.</li>
-<li>Palattu käyttämään luotettavaa pdfium-kirjastoa PDF-tiedostojen
-jäsentämiseen, mikä tekee PDF-renderöinnistä jälleen paljon
-luotettavampaa.</li>
+<li>Palattu käyttämään hyväksi havaittua pdfium-kirjastoa
+PDF-tiedostojen jäsentämiseen, minkä ansiosta niiden näyttäminen toimii
+jälleen huomattavasti luotettavammin.</li>
 </ul>
 <h2 id="versio-0.8.1">Versio 0.8.1</h2>
 <ul>
 <li>Lisätty Ctrl+Shift+T viimeksi suljetun asiakirjan uudelleenavaamista
-varten. <a
-href="https://github.com/trypsynth/paperback/issues/343">#343</a>.</li>
+varten.</li>
 <li>Kaikki asiakirjat -valintaikkuna tukee nyt kerralla useiden
-avattavien asiakirjojen valintaa. <a
-href="https://github.com/trypsynth/paperback/issues/344">#344</a>.</li>
-<li>Korjattu muutamia RTF-jäsentimen virheitä. <a
-href="https://github.com/trypsynth/paperback/issues/345">#345</a>.</li>
+avattavien asiakirjojen valintaa.</li>
+<li>Korjattu muutamia RTF-jäsentimen virheitä.</li>
 <li>Korjattu muita kuin ASCII-merkkejä (kuten bosnian š, č, ć ja ž)
 sisältävät tiedostopolut, jotka vioittuivat, kun tiedosto avattiin
-toisen Paperback-kopion kautta. <a
-href="https://github.com/trypsynth/paperback/issues/346">#346</a>.</li>
+toisen Paperback-kopion kautta.</li>
 <li>Korjattu PDF-tekstin lukujärjestys sekä virheellinen sanaväli isolla
-kirjaimella alkavien sanojen ympärillä. <a
-href="https://github.com/trypsynth/paperback/issues/44">#44</a>.</li>
+kirjaimella alkavien sanojen ympärillä.</li>
 <li>Korjattu hitaat asiakirjojen lataukset suuria tiedostoja
 avattaessa.</li>
 <li>Korjattu vahvistusvalintaikkunoiden Kyllä- ja Ei-painikkeiden
-lokalisointi. <a
-href="https://github.com/trypsynth/paperback/issues/285">#285</a>.</li>
+lokalisointi.</li>
 </ul>
 <h2 id="versio-0.8.0">Versio 0.8.0</h2>
 <ul>
-<li>Lisätty japanin, yksinkertaistetun kiinan ja vietnamin käännökset!
-<a href="https://github.com/trypsynth/paperback/pull/300">#300</a>, <a
-href="https://github.com/trypsynth/paperback/pull/326">#326</a>, <a
-href="https://github.com/trypsynth/paperback/pull/335">#335</a>.</li>
+<li>Lisätty japanin, yksinkertaistetun kiinan ja vietnamin
+käännökset.</li>
 <li>Lisätty automaattinen päivittäjä, joka korvaa nyt nykyisen asennetun
-Paperback-version sen sijaan, että vain lataisi uuden version. <a
-href="https://github.com/trypsynth/paperback/pull/323">#323</a>.</li>
+Paperback-version sen sijaan, että vain lataisi uuden version.</li>
 <li>Lisätty valinnainen äänipalaute kirjanmerkin tai muistiinpanon
-kohdalle siirtymisestä. Kiitos Andre Louis’lle merkkiäänistä. <a
-href="https://github.com/trypsynth/paperback/issues/110">#110</a>.</li>
-<li>Lisätty RTF-asiakirjojen tuki. <a
-href="https://github.com/trypsynth/paperback/issues/26">#26</a>.</li>
-<li>Lisätty tuki DAISY XML -asiakirjoille. <a
-href="https://github.com/trypsynth/paperback/issues/136">#136</a>.</li>
+kohdalle siirtymisestä. Kiitos Andre Louis’lle merkkiäänistä.</li>
+<li>Lisätty RTF-asiakirjojen tuki.</li>
+<li>Lisätty tuki DAISY XML -asiakirjoille.</li>
 <li>Lisätty tuki Flat Open Document Text -tiedostoille.</li>
 <li>Lisätty tuki Flat Open Document -esityksille.</li>
-<li>Lisätty tuki erottimiin siirtymiselle S- ja Shift+S-näppäimillä. <a
-href="https://github.com/trypsynth/paperback/issues/294">#294</a>.</li>
+<li>Lisätty tuki erottimiin siirtymiselle S- ja
+Shift+S-näppäimillä.</li>
 <li>Kaikki yli 300 merkin pituiset siirtymät lisätään nyt
-automaattisesti navigointihistoriaan. <a
-href="https://github.com/trypsynth/paperback/issues/179">#179</a>.</li>
-<li>Korjattu Paperbackin ikkunan palautus järjestelmäpalkista. <a
-href="https://github.com/trypsynth/paperback/issues/284">#284</a>.</li>
+automaattisesti navigointihistoriaan.</li>
+<li>Korjattu Paperbackin ikkunan palautus ilmoitusalueelta.</li>
 <li>Korjattu Markdown-asiakirjojen näyttäminen selainnäkymässä
-raakatekstinä renderöidyn HTML:n sijaan.</li>
-<li>Korjattu Markdown-tiedostojen sisältämien taulukoiden virheellinen
-renderöinti. <a
-href="https://github.com/trypsynth/paperback/issues/303">#303</a>.</li>
+raakatekstinä muotoillun HTML:n sijaan.</li>
+<li>Korjattu Markdown-taulukoiden virheellinen muotoilu.</li>
 <li>Paperback varoittaa nyt yritettäessä avata pelkkiä kuvia sisältäviä
-PDF-tiedostoja. <a
-href="https://github.com/trypsynth/paperback/issues/89">#89</a>.</li>
-<li>Päivityksiä haettaessa on nyt mahdollista tarkistaa uudet
-kehitysversiot vakaiden julkaisujen sijaan. <a
-href="https://github.com/trypsynth/paperback/pull/333">#333</a>.</li>
+PDF-tiedostoja.</li>
 <li>Versiotiedot upotetaan nyt oikein Paperbackin
 sovellustiedostoon.</li>
 <li>Asetusvalintaikkuna jaettu välilehtiin käytön ja navigoinnin
@@ -950,43 +944,30 @@ määrää.</li>
 koodipohja on turvallisempi, lataa asiakirjat nopeammin ja sitä on
 helpompi ylläpitää ja laajentaa.</li>
 <li>Sisältöä näyttävän elementin pikavalikossa on nyt lukusovellukselle
-ominaisia komentoja eikä yleisiä toimintoja, kuten Leikkaa tai Liitä. <a
-href="https://github.com/trypsynth/paperback/issues/114">#114</a>.</li>
+ominaisia komentoja eikä yleisiä toimintoja, kuten Leikkaa tai
+Liitä.</li>
 </ul>
 <h2 id="versio-0.7.0">Versio 0.7.0</h2>
 <ul>
 <li>Lisätty taulukoiden tuki HTML- ja XHTML-pohjaisille asiakirjoille.
 Liiku taulukoiden välillä T:llä ja Shift+T:llä ja avaa taulukko
-selainnäkymässä painamalla Enter. <a
-href="https://github.com/trypsynth/paperback/issues/81">#81</a>, <a
-href="https://github.com/trypsynth/paperback/pull/98">#98</a>, <a
-href="https://github.com/trypsynth/paperback/pull/226">#226</a>, <a
-href="https://github.com/trypsynth/paperback/pull/228">#228</a>.</li>
+selainnäkymässä painamalla Enter.</li>
 <li>Lisätty alkeellinen verkkorenderöinti. Avaa asiakirjan nykyinen luku
 verkkopohjaisessa renderöijässä painamalla Ctrl+Shift+V. Tästä on hyötyä
-esimerkiksi monimutkaisessa muotoilussa tai koodiesimerkeissä. <a
-href="https://github.com/trypsynth/paperback/issues/188">#188</a>, <a
-href="https://github.com/trypsynth/paperback/pull/239">#239</a>.</li>
-<li>Lisätty venäjänkielinen käännös. Kiitos Ruslan Gulmagomedoville. <a
-href="https://github.com/trypsynth/paperback/pull/211">#211</a>, <a
-href="https://github.com/trypsynth/paperback/pull/212">#212</a>.</li>
+esimerkiksi monimutkaisessa muotoilussa tai koodiesimerkeissä.</li>
+<li>Lisätty venäjänkielinen käännös. Kiitos Ruslan
+Gulmagomedoville.</li>
 <li>Lisätty “Tyhjennä kaikki” -painike Kaikki asiakirjat
--valintaikkunaan. <a
-href="https://github.com/trypsynth/paperback/issues/217">#217</a>.</li>
+-valintaikkunaan.</li>
 <li>Päivitysten tarkistaja näyttää nyt julkaisutiedot, kun uusi versio
-on saatavilla. <a
-href="https://github.com/trypsynth/paperback/pull/210">#210</a>.</li>
-<li>Korjattu ikkunan palautus ilmaisinalueelta. <a
-href="https://github.com/trypsynth/paperback/issues/284">#284</a>.</li>
+on saatavilla.</li>
+<li>Korjattu ikkunan palautus ilmaisinalueelta.</li>
 <li>Kyllä/Ei-painikkeiden käännökset korjattu
-vahvistusvalintaikkunoissa. <a
-href="https://github.com/trypsynth/paperback/issues/285">#285</a>.</li>
+vahvistusvalintaikkunoissa.</li>
 <li>Korjattu asetusten lataus, kun ohjelmaa ajetaan
 järjestelmänvalvojana.</li>
-<li>Kommenttien käsittely korjattu XML- ja HTML-asiakirjoissa. <a
-href="https://github.com/trypsynth/paperback/issues/198">#198</a>.</li>
-<li>Korjattu sisällysluettelon jäsennys EPUB 2 -kirjoissa. <a
-href="https://github.com/trypsynth/paperback/pull/192">#192</a>.</li>
+<li>Kommenttien käsittely korjattu XML- ja HTML-asiakirjoissa.</li>
+<li>Korjattu sisällysluettelon jäsennys EPUB 2 -kirjoissa.</li>
 <li>Korjattu siirtyminen sisällysluettelon seuraavaan samalla
 kirjaimella alkavaan kohteeseen.</li>
 <li>Korjattu Etsi-valintaikkuna, jota ei aina piilotettu oikein
@@ -999,13 +980,11 @@ HTML- ja pre-tageissa.</li>
 verran pielessä.</li>
 <li>Korjattu joissakin kirjoissa esiintynyt rivien loppuun jäävä
 ylimääräinen välilyönti.</li>
-<li>Korjattu useita jäsentimen ongelmia. <a
-href="https://github.com/trypsynth/paperback/pull/208">#208</a>.</li>
+<li>Korjattu useita jäsentimen ongelmia.</li>
 <li>Kirjanmerkkeihin liittyvät valikkokohdat sekä elementtilista
 poistetaan nyt käytöstä asianmukaisesti, kun yhtään asiakirjaa ei ole
 avoinna.</li>
-<li>Parannettu luetteloiden käsittelyä useissa asiakirjamuodoissa. <a
-href="https://github.com/trypsynth/paperback/pull/213">#213</a>.</li>
+<li>Parannettu luetteloiden käsittelyä useissa asiakirjamuodoissa.</li>
 <li>Kääntäjien työnkulkua parannettu. <a
 href="https://github.com/trypsynth/paperback/issues/270">#270</a>.</li>
 <li>Useita sisäisiä uudelleenjärjestelyjä, joissa suurin osa
@@ -1020,36 +999,30 @@ href="https://github.com/trypsynth/paperback/issues/169">#169</a>.</li>
 sijaintiin siirtymistä varten. Kun painat Enteriä sisäisen linkin
 kohdalla ja kohdistin siirtyy, kyseinen sijainti tallennetaan, ja siihen
 voi palata komennolla Alt+vasen/oikea nuolinäppäin. <a
-href="https://github.com/trypsynth/paperback/issues/115">#115</a>, <a
-href="https://github.com/trypsynth/paperback/pull/174">#174</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/115">#115</a>,</li>
 <li>Elementtilista lisätty. Tällä hetkellä se näyttää vain kaikkien
 asiakirjan otsikoiden puunäkymän tai linkkiluettelon, mutta sitä on
 tarkoitus laajentaa tulevaisuudessa. <a
-href="https://github.com/trypsynth/paperback/issues/173">#173</a>, <a
-href="https://github.com/trypsynth/paperback/pull/177">#177</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/173">#173</a>,</li>
 <li>Lisätty asetus, jolla Paperback käynnistyy oletusarvoisesti
 suurennettuna. <a
-href="https://github.com/trypsynth/paperback/issues/164">#164</a>, <a
-href="https://github.com/trypsynth/paperback/pull/172">#172</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/164">#164</a>,</li>
 <li>Korjattu joidenkin EPUB-asiakirjojen virheellisesti toimineet
 linkit. <a
 href="https://github.com/trypsynth/paperback/issues/167">#167</a>, <a
 href="https://github.com/trypsynth/paperback/pull/171">#171</a>, <a
-href="https://github.com/trypsynth/paperback/issues/178">#178</a>, <a
-href="https://github.com/trypsynth/paperback/pull/180">#180</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/178">#178</a>,</li>
 <li>Korjattu suhteellisia polkuja sisältävien EPUB-kirjojen
 sisällysluetteloiden jäsennys. <a
 href="https://github.com/trypsynth/paperback/issues/187">#187</a>.</li>
 <li>Korjattu virhe, jossa nimeä tai tekijää ei näytetty joissakin
 EPUB-asiakirjoissa.</li>
 <li>Korjattu virhe, jossa joidenkin EPUB-asiakirjojen lukujen nimet
-eivät näkyneet oikein sisällysluettelovalintaikkunassa. <a
-href="https://github.com/trypsynth/paperback/pull/176">#176</a>.</li>
+eivät näkyneet oikein sisällysluettelovalintaikkunassa.</li>
 <li>Korjattu virhe, jossa sisällysluettelovalintaikkunan OK- tai
 Peruuta-painikkeita ei voinut painaa Väli-näppäimellä. <a
 href="https://github.com/trypsynth/paperback/issues/170">#170</a>.</li>
-<li>Otsikoiden käsittelyä parannettu Word-asiakirjoissa. <a
-href="https://github.com/trypsynth/paperback/pull/183">#183</a>.</li>
+<li>Otsikoiden käsittelyä parannettu Word-asiakirjoissa.</li>
 <li>Paperback antaa nyt äänipalautteen yritettäessä avata “Viimeisimmät
 asiakirjat” -valintaikkunaa, kun luettelo on tyhjä. <a
 href="https://github.com/trypsynth/paperback/issues/185">#185</a>.</li>
@@ -1060,27 +1033,21 @@ href="https://github.com/trypsynth/paperback/issues/185">#185</a>.</li>
 voidaan näyttää huomattavasti tiiviimmässä muodossa. Se on
 oletusarvoisesti käytössä.</li>
 <li>Lisätty asetus, jolla rakenteisten elementtien perusteella tapahtuva
-navigointi palaa asiakirjan lopussa takaisin alkuun. <a
-href="https://github.com/trypsynth/paperback/pull/116">#116</a>.</li>
+navigointi palaa asiakirjan lopussa takaisin alkuun.</li>
 <li>Työkalut-valikkoon lisätty vaihtoehto, jolla voidaan avata nykyisen
-asiakirjan sisältävä kansio. <a
-href="https://github.com/trypsynth/paperback/pull/142">#142</a>.</li>
+asiakirjan sisältävä kansio.</li>
 <li>Lisätty melko yksinkertainen mutta erittäin tehokas
 päivitysjärjestelmä. <a
 href="https://github.com/trypsynth/paperback/issues/28">#28</a>.</li>
 <li>Lisätty perustason uniajastin, jonka voi avata
 Ctrl+Shift+S-näppäinkomennolla. <a
-href="https://github.com/trypsynth/paperback/issues/117">#117</a>, <a
-href="https://github.com/trypsynth/paperback/pull/118">#118</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/117">#117</a>,</li>
 <li>Lisätty FB2-e-kirjojen jäsennystuki! <a
-href="https://github.com/trypsynth/paperback/issues/30">#30</a>, <a
-href="https://github.com/trypsynth/paperback/pull/107">#107</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/30">#30</a>,</li>
 <li>Lisätty OpenDocument-esitysten jäsennystuki! <a
-href="https://github.com/trypsynth/paperback/issues/105">#105</a>, <a
-href="https://github.com/trypsynth/paperback/pull/106">#106</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/105">#105</a>,</li>
 <li>Lisätty OpenDocument-tekstitiedostojen jäsennystuki! <a
-href="https://github.com/trypsynth/paperback/issues/29">#29</a>, <a
-href="https://github.com/trypsynth/paperback/pull/90">#90</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/29">#29</a>,</li>
 <li>Kirjanmerkit voivat nyt kohdistua koko riville tai pelkästään
 valittuun tekstiin. Jos tekstiä ei ole valittuna kirjanmerkkiä
 luotaessa, toiminnallisuus on sama kuin ennen versiota 0.6, ja koko rivi
@@ -1097,8 +1064,7 @@ href="https://github.com/trypsynth/paperback/issues/128">#128</a>, <a
 href="https://github.com/trypsynth/paperback/issues/156">#156</a>, <a
 href="https://github.com/trypsynth/paperback/issues/157">#157</a>, <a
 href="https://github.com/trypsynth/paperback/pull/158">#158</a>, <a
-href="https://github.com/trypsynth/paperback/issues/159">#159</a>, <a
-href="https://github.com/trypsynth/paperback/pull/161">#161</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/159">#159</a>,</li>
 <li>Kirjanmerkeissä ei enää ole ärsyttävää “bookmark x” -etuliitettä
 kirjanmerkkien valintaikkunassa. <a
 href="https://github.com/trypsynth/paperback/issues/86">#86</a>.</li>
@@ -1109,8 +1075,7 @@ href="https://github.com/trypsynth/paperback/issues/96">#96</a>.</li>
 href="https://github.com/trypsynth/paperback/issues/97">#97</a>.</li>
 <li>Väli-näppäimen painaminen sisällysluettelon puurakenteessa ei enää
 paina OK-painiketta. <a
-href="https://github.com/trypsynth/paperback/issues/121">#121</a>, <a
-href="https://github.com/trypsynth/paperback/pull/123">#123</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/121">#121</a>,</li>
 <li>Välilyöntien käsittely korjattu pre-tagien alussa sekä HTML- että
 XHTML-asiakirjoissa.</li>
 <li>Korjattu virhe, jossa kohdistus ei siirtynyt takaisin tekstikenttään
@@ -1127,20 +1092,17 @@ Paperback-kopioon, virheilmoitusta ei enää näytetä, vaikka dokumentin
 lataus kestäisi yli 5 sekuntia.</li>
 <li>Asetukset ladataan ja tallennetaan nyt asianmukaisesti, kun
 Paperback on käynnissä järjestelmänvalvojana. <a
-href="https://github.com/trypsynth/paperback/issues/148">#148</a>, <a
-href="https://github.com/trypsynth/paperback/pull/149">#149</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/148">#148</a>,</li>
 <li>Kirjanmerkki voidaan nyt poistaa suoraan kirjanmerkkien
 valintaikkunasta. <a
-href="https://github.com/trypsynth/paperback/issues/100">#100</a>, <a
-href="https://github.com/trypsynth/paperback/pull/103">#103</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/100">#100</a>,</li>
 <li>Asiakirjan kirjanmerkkien ja lukukohdan tuonti ja vienti on nyt
 mahdollista. Luotu tiedosto nimetään asiakirjan tiedostonimen
 perusteella ja sen tunniste on .paperback. Mikäli tällainen tiedosto
 löytyy ladattaessa asiakirjan kansiosta, se ladataan automaattisesti.
 Muussa tapauksessa voit tuoda sen manuaalisesti Työkalut-valikon
 toiminnolla. <a
-href="https://github.com/trypsynth/paperback/issues/146">#146</a>, <a
-href="https://github.com/trypsynth/paperback/pull/147">#147</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/146">#146</a>,</li>
 <li>Asiakirjojen sisäiset linkit ovat nyt täysin tuettuja. Siirry niiden
 välillä eteen- ja taaksepäin K- ja Shift+K-näppäimillä ja avaa tai
 aktivoi linkki Enterillä. <a
@@ -1156,8 +1118,7 @@ renderöintiä.</li>
 <li>Luetteloiden ja niiden kohteiden välillä navigointia tuetaan nyt
 täysin. Voit siirtyä luetteloiden välillä L- ja Shift+L-näppäimillä ja
 luettelokohteiden välillä I- ja Shift+I-näppäimillä. <a
-href="https://github.com/trypsynth/paperback/issues/119">#119</a>, <a
-href="https://github.com/trypsynth/paperback/pull/124">#124</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/119">#119</a>,</li>
 <li>Tavallisen Delete-näppäimen lisäksi myös numeronäppäimistön Deleteä
 voi nyt käyttää asiakirjojen poistamiseen välilehtipalkista.</li>
 <li>Paperback voidaan nyt haluttaessa pienentää ilmaisinalueelle. Tämä
@@ -1165,8 +1126,7 @@ asetus on oletusarvoisesti poissa käytöstä, mutta kun se otetaan
 käyttöön, Paperbackin järjestelmävalikon pienennystoiminto siirtää
 sovelluksen ilmaisinalueelle, josta se voidaan palauttaa napsauttamalla
 Paperbackin kuvaketta. <a
-href="https://github.com/trypsynth/paperback/issues/49">#49</a>, <a
-href="https://github.com/trypsynth/paperback/pull/85">#85</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/49">#49</a>,</li>
 <li>Paperback on nyt käännettävissä eri kielille. Sen tukemien kielten
 luettelo on toistaiseksi melko pieni, mutta se kasvaa jatkuvasti. <a
 href="https://github.com/trypsynth/paperback/issues/75">#75</a>, <a
@@ -1174,8 +1134,7 @@ href="https://github.com/trypsynth/paperback/pull/92">#92</a>, <a
 href="https://github.com/trypsynth/paperback/pull/95">#95</a>, <a
 href="https://github.com/trypsynth/paperback/pull/134">#134</a>, <a
 href="https://github.com/trypsynth/paperback/pull/137">#137</a>, <a
-href="https://github.com/trypsynth/paperback/pull/141">#141</a>, <a
-href="https://github.com/trypsynth/paperback/pull/152">#152</a>.</li>
+href="https://github.com/trypsynth/paperback/pull/141">#141</a>,</li>
 <li>Paperbackilla on nyt virallinen verkkosivusto osoitteessa <a
 href="https://paperback.dev">paperback.dev</a>.</li>
 <li>PPTX-asiakirjoissa olevat diat näytetään nyt yksinkertaisessa
@@ -1183,8 +1142,7 @@ sisällysluettelossa. <a
 href="https://github.com/trypsynth/paperback/issues/122">#122</a>.</li>
 <li>Asiakirjan tiedot -valintaikkunassa näytetään nyt avoimen asiakirjan
 koko polku. <a
-href="https://github.com/trypsynth/paperback/issues/139">#139</a>, <a
-href="https://github.com/trypsynth/paperback/pull/140">#140</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/139">#139</a>,</li>
 <li>Asennusohjelma sisältää nyt vaihtoehdon, jolla readme-tiedosto
 voidaan avata selaimessa asennuksen jälkeen.</li>
 <li>Viimeisimpien asiakirjojen luetteloa on laajennettu huomattavasti.
@@ -1193,8 +1151,7 @@ näytettävä määrä on nyt mahdollista määrittää itse, ja muut aiemmin
 avatut asiakirjat ovat käytettävissä erillisen valintaikkunan kautta. <a
 href="https://github.com/trypsynth/paperback/issues/78">#78</a>, <a
 href="https://github.com/trypsynth/paperback/pull/80">#80</a>, <a
-href="https://github.com/trypsynth/paperback/pull/84">#84</a>, <a
-href="https://github.com/trypsynth/paperback/pull/135">#135</a>.</li>
+href="https://github.com/trypsynth/paperback/pull/84">#84</a>,</li>
 <li>Useita pieniä parannuksia jäsentimiin kautta linjan, kuten tyhjän
 rivin lisääminen diojen väliin PPTX-esityksissä, rivinvaihtojen
 käsittelyn korjaaminen Word-asiakirjojen kappaleissa ja
