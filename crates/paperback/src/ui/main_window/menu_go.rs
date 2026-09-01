@@ -72,19 +72,39 @@ pub(super) fn handle_go_to_page(
 		(current_page, max_page)
 	};
 	if let Some(page) = dialogs::show_go_to_page_dialog(frame, current_page, max_page) {
-		let update = {
+		let (message, update) = {
 			let mut dm_guard = dm.lock().unwrap();
-			let update = {
+			let (message, update) = {
 				let Some(tab) = dm_guard.active_tab_mut() else {
 					return;
 				};
 				let target_pos = tab.session.page_offset(page);
-				navigation::move_to_offset_and_record_history(tab, target_pos)
+				// Capture the page's announcement while the document lock is held; it is
+				// spoken after focus has returned to the book, cutting off the focus chain.
+				let content = tab.session.first_content_line_after(target_pos);
+				let message = page_announcement(page, &content);
+				let update = navigation::move_to_offset_and_record_history(tab, target_pos);
+				(message, update)
 			};
 			drop(dm_guard);
-			update
+			(message, update)
 		};
 		navigation::persist_navigation_history(config, Some(&update));
+		navigation::announce_after_delay(frame, live_region_label, message);
+	}
+}
+
+/// The announcement for landing on page `page`, whose first line of real content is
+/// `content` (possibly empty for a blank or image-only page). Matches what page
+/// navigation announces, so "Go to page" and page-down read the same.
+fn page_announcement(page: i32, content: &str) -> String {
+	let page_text = page.to_string();
+	if content.is_empty() {
+		// TRANSLATORS: Announced when landing on a page with no extractable text; %d is the page number
+		t("Page %d").replacen("%d", &page_text, 1)
+	} else {
+		// TRANSLATORS: Announced when landing on a page; %d is the page number, %s is the page text
+		t("Page %d: %s").replacen("%d", &page_text, 1).replacen("%s", content, 1)
 	}
 }
 

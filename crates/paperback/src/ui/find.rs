@@ -1,8 +1,4 @@
-use std::{
-	cell::{Cell, RefCell},
-	rc::Rc,
-	sync::Mutex,
-};
+use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use bitflags::bitflags;
 use paperback_core::{config::ConfigManager, reader_core, util::text::display_len};
@@ -13,16 +9,6 @@ use wxdragon::prelude::*;
 use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigation};
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
-
-/// How long after the Find dialog closes the found line is announced.
-///
-/// The interrupt must land after NVDA has started the focus-return chain — if it fires
-/// before, the chain reads over the found line instead — but as close to the chain's
-/// start as possible, so as little of it escapes before the cut. NVDA's own find dialog
-/// uses 100ms; Paperback's chain starts quickly, and 30ms was chosen by binary search
-/// (60ms left a barely-audible sliver of the chain, 10ms occasionally let the full chain
-/// through after the found line, 0ms always did).
-const FIND_RESULT_INTERRUPT_DELAY_MS: i32 = 30;
 
 #[derive(Clone, Debug, Default)]
 pub struct SearchResult {
@@ -507,7 +493,7 @@ fn do_find(
 			found_line
 		};
 		if !message.trim().is_empty() {
-			announce_found_line_after_delay(frame, live_region_label, message);
+			navigation::announce_after_delay(frame, live_region_label, message);
 		}
 	} else if result.wrapped {
 		// Find-next / Find-previous with the dialog closed. There is no focus chain
@@ -521,27 +507,4 @@ fn do_find(
 		// announce the found line directly.
 		live_region::announce(live_region_label, &found_line);
 	}
-}
-
-/// Announces `found_line` shortly after the Find dialog closes, so it cuts off the
-/// focus-chain announcement the screen reader starts when focus returns to the book.
-///
-/// The one-shot `wxTimer` is kept alive through its single tick by the `Rc`/`RefCell`
-/// it hands its own callback: the tick clears the cell, which drops the timer and
-/// destroys the native timer. If the timer cannot be armed, fall back to announcing
-/// immediately rather than silently dropping the result.
-fn announce_found_line_after_delay(frame: &Frame, live_region_label: StaticText, found_line: String) {
-	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
-	let holder = Rc::clone(&timer_holder);
-	let timer = Timer::new(frame);
-	let announce_found_line = found_line.clone();
-	timer.on_tick(move |_event| {
-		live_region::announce(live_region_label, &announce_found_line);
-		*holder.borrow_mut() = None;
-	});
-	if !timer.start(FIND_RESULT_INTERRUPT_DELAY_MS, true) {
-		live_region::announce(live_region_label, &found_line);
-		return;
-	}
-	*timer_holder.borrow_mut() = Some(timer);
 }
