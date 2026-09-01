@@ -35,8 +35,8 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 	});
 	let slider_for_input = percent_slider;
 	input_ctrl.bind_internal(EventType::TEXT, move |_event| {
-		if let Ok(value) = input_ctrl.get_value().trim().parse::<i32>() {
-			slider_for_input.set_value(value.clamp(0, 100));
+		if let Some(resolved) = resolve_percent(&input_ctrl.get_value(), current_percent) {
+			slider_for_input.set_value(resolved);
 		}
 	});
 	// Enter in the field, Enter on the slider, and the Go button all submit through the
@@ -46,7 +46,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 	let dialog_for_enter = dialog;
 	input_for_enter.bind_internal(EventType::TEXT_ENTER, move |event| {
 		event.skip(false);
-		submit_go_to_percent(dialog_for_enter, input_for_enter, &result_for_enter, live_region_label);
+		submit_go_to_percent(dialog_for_enter, input_for_enter, &result_for_enter, live_region_label, current_percent);
 	});
 	// TRANSLATORS: Label for the button that jumps to the entered percentage
 	let ok_button = Button::builder(&dialog).with_label(&t("Go")).build();
@@ -58,7 +58,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 	let result_for_ok = Rc::clone(&result);
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
-		submit_go_to_percent(dialog_for_ok, input_for_ok, &result_for_ok, live_region_label);
+		submit_go_to_percent(dialog_for_ok, input_for_ok, &result_for_ok, live_region_label, current_percent);
 	});
 	// Keyboard control of the slider: arrows/Page/Home/End move it, Enter submits.
 	let input_for_slider_enter = input_ctrl;
@@ -73,6 +73,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 				input_for_slider_enter,
 				&result_for_slider_enter,
 				live_region_label,
+				current_percent,
 			);
 			return;
 		}
@@ -123,10 +124,28 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 }
 
 /// Resolves the entered `text` to a percentage in `0..=100`, or `None` when the text is
-/// not a bare percentage or the value is out of range.
-fn resolve_percent(text: &str) -> Option<i32> {
-	let percent = text.trim().parse::<i64>().ok()?;
-	if (0..=100).contains(&percent) { i32::try_from(percent).ok() } else { None }
+/// not a valid percentage expression or resolves out of range.
+///
+/// A bare number is the percentage itself; a leading `+`/`-` moves that many percentage
+/// points forward or backward from `current_percent`, so "+10" is ten points ahead and
+/// "-5" five points back.
+fn resolve_percent(text: &str, current_percent: i32) -> Option<i32> {
+	let trimmed = text.trim();
+	if trimmed.is_empty() {
+		return None;
+	}
+	let (sign, digits) = match trimmed.as_bytes()[0] {
+		b'+' | b'-' => (trimmed.as_bytes()[0], &trimmed[1..]),
+		_ => (0, trimmed),
+	};
+	let amount = digits.parse::<i64>().ok()?;
+	let current = i64::from(current_percent);
+	let resolved = match sign {
+		b'+' => current.checked_add(amount)?,
+		b'-' => current.checked_sub(amount)?,
+		_ => amount,
+	};
+	if (0..=100).contains(&resolved) { i32::try_from(resolved).ok() } else { None }
 }
 
 /// Validates the field and either confirms the dialog with the resolved percentage or, when
@@ -136,8 +155,9 @@ fn submit_go_to_percent(
 	input_ctrl: TextCtrl,
 	result: &Rc<Cell<Option<i32>>>,
 	live_region_label: StaticText,
+	current_percent: i32,
 ) {
-	let Some(percent) = resolve_percent(&input_ctrl.get_value()) else {
+	let Some(percent) = resolve_percent(&input_ctrl.get_value(), current_percent) else {
 		// TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 		live_region::announce(live_region_label, &t("Percent out of range."));
 		input_ctrl.set_focus();
@@ -146,4 +166,41 @@ fn submit_go_to_percent(
 	};
 	result.set(Some(percent));
 	dialog.end_modal(ID_OK);
+}
+
+#[cfg(test)]
+mod tests {
+	use super::resolve_percent;
+
+	#[test]
+	fn absolute_percentages_resolve_and_reject_out_of_range() {
+		assert_eq!(resolve_percent("45", 40), Some(45));
+		assert_eq!(resolve_percent(" 0 ", 40), Some(0));
+		assert_eq!(resolve_percent("100", 40), Some(100));
+		assert_eq!(resolve_percent("101", 40), None);
+		assert_eq!(resolve_percent("99999999999", 40), None);
+	}
+
+	#[test]
+	fn relative_offsets_resolve_from_the_current_percentage() {
+		assert_eq!(resolve_percent("+10", 45), Some(55));
+		assert_eq!(resolve_percent("-5", 45), Some(40));
+		assert_eq!(resolve_percent("+0", 45), Some(45));
+	}
+
+	#[test]
+	fn relative_offsets_out_of_range_are_rejected() {
+		assert_eq!(resolve_percent("+60", 45), None);
+		assert_eq!(resolve_percent("-60", 45), None);
+	}
+
+	#[test]
+	fn garbage_is_rejected() {
+		assert_eq!(resolve_percent("", 45), None);
+		assert_eq!(resolve_percent("   ", 45), None);
+		assert_eq!(resolve_percent("abc", 45), None);
+		assert_eq!(resolve_percent("4+5", 45), None);
+		assert_eq!(resolve_percent("+", 45), None);
+		assert_eq!(resolve_percent("-", 45), None);
+	}
 }
