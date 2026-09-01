@@ -137,6 +137,12 @@ fun TtsBottomBar(
 				}
 			}
 
+			// BottomAppBar start-aligns its actions and keeps the end for a floating action
+			// button, which this bar does not have, so without these the four controls crowd
+			// into the left edge against a wide empty gap. The weights centre back/play/forward
+			// and leave the unit selector where it is, at the start.
+			Spacer(Modifier.weight(1f))
+
 			IconButton(onClick = onPrevButton) {
 				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = prevLabel)
 			}
@@ -183,6 +189,8 @@ fun TtsBottomBar(
 			IconButton(onClick = onNextButton) {
 				Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = nextLabel)
 			}
+
+			Spacer(Modifier.weight(1f))
 		},
 	)
 }

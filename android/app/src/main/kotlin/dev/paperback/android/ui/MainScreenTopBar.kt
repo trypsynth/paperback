@@ -160,8 +160,9 @@ fun MainScreenTopBar(
 			}
 			if (state is MainScreenUiState.Success && state.tabs.isNotEmpty()) {
 				// An audio-only book (a zip of nothing but narration files) has no real text
-				// spine, so switching to Text Mode, listing elements, or counting words doesn't
-				// make sense for it.
+				// spine, so switching to Text Mode, listing elements, counting words or
+				// exporting doesn't make sense for it. Its buffer is one blank line per audio
+				// file, so an export would write a file of nothing.
 				val isAudioOnly = state.activeTab?.isAudioOnly == true
 				val menuActions = buildList {
 					if (!isAudioOnly) {
@@ -190,8 +191,10 @@ fun MainScreenTopBar(
 								onTocOpen
 							)
 						)
-						// TRANSLATORS: Menu item / accessibility action to open the export document dialog
-						add(MenuAction(t("Export As"), onExportDocumentOpen))
+						if (!isAudioOnly) {
+							// TRANSLATORS: Menu item / accessibility action to open the export document dialog
+							add(MenuAction(t("Export As"), onExportDocumentOpen))
+						}
 					}
 					if (!isAudioOnly) {
 						add(
