@@ -15,6 +15,9 @@ import dev.paperback.android.bestLocaleMatch
 import dev.paperback.android.t
 import dev.paperback.android.tts.DaisyAudioPlayer
 import dev.paperback.android.tts.TtsManager
+import dev.paperback.android.ui.dialogs.GO_TO_LINE
+import dev.paperback.android.ui.dialogs.GO_TO_PAGE
+import dev.paperback.android.ui.dialogs.GO_TO_PERCENTAGE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -1356,16 +1359,21 @@ class MainScreenViewModel(
 		_accessibilityAnnouncement.tryEmit(message)
 	}
 
-	fun openGoToDialog(initialMode: String = "Line") {
+	fun openGoToDialog(initialMode: String = GO_TO_LINE) {
 		val state = uiState.value
+		var mode = initialMode
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab
-			if (tab != null && initialMode == "Page" && tab.session.pageCountFfi() == 0) {
+			// Line and page mean nothing in a book whose text is one blank line per audio file,
+			// so the shortcuts for them land on the one mode it does have.
+			if (tab != null && tab.isAudioOnly) {
+				mode = GO_TO_PERCENTAGE
+			} else if (tab != null && mode == GO_TO_PAGE && tab.session.pageCountFfi() == 0) {
 				announceForAccessibility("This document does not contain pages.")
 				return
 			}
 		}
-		_goToInitialMode.value = initialMode
+		_goToInitialMode.value = mode
 		goToDialogState.open()
 	}
 

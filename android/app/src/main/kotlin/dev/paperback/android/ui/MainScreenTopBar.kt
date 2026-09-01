@@ -205,13 +205,15 @@ fun MainScreenTopBar(
 							)
 						)
 					}
-					add(
-						MenuAction(
-							// TRANSLATORS: Menu item / accessibility action to open the find/search bar
-							t("Find"),
-							onFindOpen
+					if (!isAudioOnly) {
+						add(
+							MenuAction(
+								// TRANSLATORS: Menu item / accessibility action to open the find/search bar
+								t("Find"),
+								onFindOpen
+							)
 						)
-					)
+					}
 					add(
 						MenuAction(
 							// TRANSLATORS: Menu item / accessibility action to open the go-to dialog, for jumping to a page, line, or percentage
