@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 15:15+0000\n"
-"PO-Revision-Date: 2026-08-31 21:50+0300\n"
+"POT-Creation-Date: 2026-08-31 20:57+0000\n"
+"PO-Revision-Date: 2026-09-01 16:02+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -79,7 +79,6 @@ msgid "&Open"
 msgstr "&Avaa"
 
 #. TRANSLATORS: Button label to locate a missing file on disk
-#| msgid "Locate"
 msgid "&Locate..."
 msgstr "Et&si..."
 
@@ -136,7 +135,6 @@ msgstr[0] "%d asiakirja."
 msgstr[1] "%d asiakirjaa."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the only document in the list is selected
-#| msgid "1 of 1 document selected."
 msgid "1 document selected."
 msgstr "1 asiakirja valittuna."
 
@@ -247,6 +245,37 @@ msgstr "Merkkien määrä:"
 msgid "Characters (excluding spaces):"
 msgstr "Merkkien määrä (ilman välilyöntejä):"
 
+#. TRANSLATORS: Label for the number of audio files in the document
+msgid "Number of files:"
+msgstr "Tiedostojen määrä:"
+
+#. TRANSLATORS: Label for the total playback duration across all of the document's audio files
+#| msgid "Duration"
+msgid "Total duration:"
+msgstr "Kesto yhteensä:"
+
+#. TRANSLATORS: Label for the average playback duration per audio file in the document
+msgid "Average duration:"
+msgstr "Kesto keskimäärin:"
+
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d tunti"
+msgstr[1] "%d tuntia"
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minuutti"
+msgstr[1] "%d minuuttia"
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d sekunti"
+msgstr[1] "%d sekuntia"
+
 #. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr "Elementit"
@@ -349,6 +378,18 @@ msgstr "Asetukset"
 msgid "&Restore previously opened documents on startup"
 msgstr "Pala&uta aiemmin avatut asiakirjat käynnistettäessä"
 
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+msgid "&Automatically reload changed documents"
+msgstr "&Päivitä muuttuneeet asiakirjat automaattisesti"
+
+#. TRANSLATORS: Option to start the app maximized
+msgid "&Start maximized"
+msgstr "&Käynnistä suurennettuna"
+
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+msgid "&Minimize to system tray"
+msgstr "&Pienennä ilmaisinalueelle"
+
 #. TRANSLATORS: Option to toggle word wrapping of text
 msgid "&Word wrap"
 msgstr "Rivit&ys"
@@ -356,14 +397,6 @@ msgstr "Rivit&ys"
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
 msgstr "Näytä taulukot tekst&in osana"
-
-#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
-msgid "&Minimize to system tray"
-msgstr "&Pienennä ilmaisinalueelle"
-
-#. TRANSLATORS: Option to start the app maximized
-msgid "&Start maximized"
-msgstr "&Käynnistä suurennettuna"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -444,9 +477,17 @@ msgstr ""
 msgid "Check for &updates on startup"
 msgstr "Tarkista &päivitykset käynnistettäessä"
 
-#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
-msgid "&Automatically reload changed documents"
-msgstr "&Päivitä muuttuneeet asiakirjat automaattisesti"
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "Päivityskanava:"
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "Vakaa"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "Kehitys"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
@@ -467,18 +508,6 @@ msgstr "V&iimeisimpien asiakirjojen määrä:"
 #. TRANSLATORS: Label for the language selection dropdown
 msgid "&Language:"
 msgstr "&Kieli:"
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-msgid "Update Channel:"
-msgstr "Päivityskanava:"
-
-#. TRANSLATORS: Stable update channel option
-msgid "Stable"
-msgstr "Vakaa"
-
-#. TRANSLATORS: Developer/development update channel option
-msgid "Dev"
-msgstr "Kehitys"
 
 #. TRANSLATORS: Label/header for the Font options section
 msgid "Font"
@@ -671,11 +700,11 @@ msgstr "&Poista pikanäppäin"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
 msgid "&Reset to Default"
-msgstr "&Palauta oletukset"
+msgstr "&Palauta oletus"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
 msgid "Reset &All to Defaults"
-msgstr "Palauta &kaikki oletuspikanäppäimet"
+msgstr "Palauta &oletukset"
 
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
@@ -688,7 +717,7 @@ msgid "Shortcut Conflict"
 msgstr "Pikanäppäimen ristiriita"
 
 msgid "Reset all shortcuts to their default values?"
-msgstr "Palautetaanko oletuspikanäppäimet?"
+msgstr "Palautetaanko kaikki oletuspikanäppäimet?"
 
 #. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
@@ -746,27 +775,25 @@ msgstr "Ei valintaa"
 msgid "View Note"
 msgstr "Näytä muistiinpano"
 
-#. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d tunti"
-msgstr[1] "%d tuntia"
-
-#. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minuutti"
-msgstr[1] "%d minuuttia"
-
-#. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d sekunti"
-msgstr[1] "%d sekuntia"
-
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
 msgstr "Arvioitu lukuaika: {}"
+
+#. TRANSLATORS: Title of the Word Count dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Word Count"
+msgstr "Sanamäärä"
+
+#| msgid "This document contains %d word."
+#| msgid_plural "This document contains %d words."
+msgid "This document contains %d audio file."
+msgid_plural "This document contains %d audio files."
+msgstr[0] "Asiakirjassa on %d äänitiedosto."
+msgstr[1] "Asiakirjassa on %d äänitiedostoa."
+
+#. TRANSLATORS: Prompt showing an audio-only document's total playback duration across all its files. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+msgid "Total duration: {}"
+msgstr "Kesto yhteensä: {}"
 
 #. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
 msgid "The selection contains %d word."
@@ -779,11 +806,6 @@ msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "Asiakirjassa on %d sana."
 msgstr[1] "Asiakirjassa on %d sanaa."
-
-#. TRANSLATORS: Title of the Word Count dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Word Count"
-msgstr "Sanamäärä"
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
@@ -1795,12 +1817,10 @@ msgid "No sections."
 msgstr "Ei lukuja."
 
 #. TRANSLATORS: Announced when there is no next section from the current position
-#| msgid "No next section"
 msgid "No next section."
 msgstr "Ei seuraavaa lukua."
 
 #. TRANSLATORS: Announced when there is no previous section from the current position
-#| msgid "No previous section"
 msgid "No previous section."
 msgstr "Ei edellistä lukua."
 
@@ -2765,11 +2785,6 @@ msgid "Switch to Text Mode"
 msgstr "Vaihda tekstitilaan"
 
 #: swift
-#| msgid "Go To…"
-msgid "Go Toâ¦"
-msgstr "Siirry…"
-
-#: swift
 msgid "Recent Documents"
 msgstr "Viimeisimmät asiakirjat"
 
@@ -2796,11 +2811,6 @@ msgstr "Ei avointa asiakirjaa"
 #: swift
 msgid "Show All"
 msgstr "Näytä kaikki"
-
-#: swift
-#| msgid "Search…"
-msgid "Searchâ¦"
-msgstr "Hae…"
 
 #: swift
 msgid "Match Case"
@@ -3380,7 +3390,6 @@ msgid "{} seconds"
 msgstr "{} sekuntia"
 
 #: kt
-#| msgid "✓ Granted"
 msgid "â Granted"
 msgstr "✓ Sallittu"
 
@@ -3481,59 +3490,56 @@ msgid "{} books"
 msgstr "{} kirjaa"
 
 #: swift
-#| msgid "Open..."
 msgid "..."
 msgstr "..."
 
 #: swift
-#| msgid "Go To"
 msgid "Go To..."
 msgstr "Siirry..."
 
 #: swift
-#| msgid "Search"
 msgid "Search..."
 msgstr "Hae..."
 
 #: swift
-#| msgid "Custom: {} minutes"
 msgid "Custom: {} minute"
 msgstr "Oma: {} minuutti"
 
 #: swift
-#| msgid "Custom: {} minutes"
 msgid "Custom: {} minutesâ£"
 msgstr "Oma: {} minuuttia"
 
 #: kt
-#| msgid "This document contains {} words."
 msgid "This document contains {} word."
 msgstr "Asiakirjassa on {} sana."
 
 #: kt
-#| msgid "words"
 msgid "word"
 msgstr "sana"
 
 #: kt
-#| msgid "{} seconds"
 msgid "{} second"
 msgstr "{} sekunti"
 
 #: kt
-#| msgid "{} seconds"
 msgid "{} secondsâ£"
 msgstr "{} sekuntia"
 
 #: kt
-#| msgid "This document contains {} words."
 msgid "This document contains {} words.â£"
 msgstr "Asiakirjassa on {} sanaa."
 
 #: kt
-#| msgid "words"
 msgid "wordsâ£"
 msgstr "sanaa"
+
+#~| msgid "Go To…"
+#~ msgid "Go Toâ¦"
+#~ msgstr "Siirry…"
+
+#~| msgid "Search…"
+#~ msgid "Searchâ¦"
+#~ msgstr "Hae…"
 
 #~ msgid "&Locate…"
 #~ msgstr "Et&si…"
