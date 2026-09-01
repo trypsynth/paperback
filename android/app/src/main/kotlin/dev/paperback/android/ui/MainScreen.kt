@@ -469,13 +469,16 @@ fun MainScreen(
 									lineIndexToFocus = docState.initialScrollIndex
 								}
 							}
+							var previousTextMode by remember { mutableStateOf<Boolean?>(null) }
 							LaunchedEffect(isTextMode) {
+								val previous = previousTextMode
+								previousTextMode = isTextMode
 								if (isTextMode) {
 									val line = docState.session.lineFromPosition(ttsPosition)
 									val index = (line - 1).toInt().coerceAtLeast(0)
 									listState.scrollToItem(index)
 									lineIndexToFocus = index
-								} else {
+								} else if (shouldSyncPositionFromList(previous, isTextMode)) {
 									viewModel.savePosition(docState.session, docState.documentUri, listState.firstVisibleItemIndex)
 									viewModel.refreshSegmentPreview()
 								}
