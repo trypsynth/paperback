@@ -2,11 +2,7 @@ use std::{
 	cell::Cell,
 	path::Path,
 	rc::Rc,
-	sync::{
-		Mutex,
-		atomic::{AtomicI32, AtomicI64, Ordering},
-	},
-	time::{SystemTime, UNIX_EPOCH},
+	sync::{Mutex, atomic::Ordering},
 };
 #[cfg(target_os = "windows")]
 use std::{cell::RefCell, sync::atomic::AtomicIsize};
@@ -22,7 +18,7 @@ use super::{
 	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
-	icon, menu, menu_ids, navigation, status, window_geometry,
+	icon, menu, menu_ids, navigation, sleep_timer, status, window_geometry,
 };
 use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -38,9 +34,6 @@ pub(crate) use parser_ready::ensure_parser_ready_for_path;
 mod hotkey;
 #[cfg(target_os = "windows")]
 use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
-
-pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
-pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
 
 #[derive(Default)]
 struct RestoreState {
@@ -623,64 +616,15 @@ impl MainWindow {
 		let find_dialog = Rc::clone(find_dialog);
 		#[cfg(target_os = "windows")]
 		let hotkey_handle_for_options = Rc::clone(hotkey_handle);
-		let sleep_timer = Rc::new(Timer::new(frame));
-		let sleep_timer_running = Rc::new(Cell::new(false));
-		let sleep_timer_start_time = Rc::new(Cell::new(0i64));
-		let sleep_timer_duration_minutes = Rc::new(Cell::new(0i32));
-		let sleep_timer_for_tick = Rc::clone(&sleep_timer);
-		let sleep_timer_running_for_tick = Rc::clone(&sleep_timer_running);
-		let sleep_timer_start_for_tick = Rc::clone(&sleep_timer_start_time);
-		let sleep_timer_duration_for_tick = Rc::clone(&sleep_timer_duration_minutes);
-		let frame_for_timer = *frame;
-		let dm_for_timer = Rc::clone(doc_manager);
-		let config_for_timer = Rc::clone(&config);
-		sleep_timer.on_tick(move |_| {
-			// `Timer::on_tick` binds `EventType::TIMER` on the *owner*, not on the timer, and
-			// wxdragon gives its timers no distinguishing id, so every timer parented to this
-			// frame delivers its ticks to every handler bound here. This one shuts the app down,
-			// so it has to confirm the deadline really passed rather than trust that being
-			// called means its own timer fired.
-			if !sleep_timer_running_for_tick.get() {
-				return;
-			}
-			let now_ms = SystemTime::now()
-				.duration_since(UNIX_EPOCH)
-				.ok()
-				.and_then(|d| i64::try_from(d.as_millis()).ok())
-				.unwrap_or(0);
-			let deadline_ms = sleep_timer_start_for_tick
-				.get()
-				.saturating_add(i64::from(sleep_timer_duration_for_tick.get()) * 60_000);
-			if now_ms < deadline_ms {
-				return;
-			}
-			tracing::info!("sleep timer fired, closing application");
-			sleep_timer_running_for_tick.set(false);
-			sleep_timer_for_tick.stop();
-			SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
-			SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
-			{
-				let dm = dm_for_timer.lock().unwrap();
-				let cfg = config_for_timer.lock().unwrap();
-				for i in 0..dm.tab_count() {
-					if let Some(tab) = dm.get_tab(i) {
-						let current_pos = navigation::doc_caret(tab);
-						let path_str = tab.file_path.to_string_lossy();
-						cfg.set_document_position(&path_str, current_pos);
-					}
-				}
-				cfg.flush();
-			}
-			frame_for_timer.close(true);
-		});
+		let sleep_timer = sleep_timer::SleepTimer::new(frame, doc_manager, &config);
+		// Taken before the menu closure captures the SleepTimer: the returned vec is what
+		// keeps the wx timer alive for the window's lifetime.
+		let sleep_timer_handle = Rc::clone(sleep_timer.timer());
 		let status_update_timer = Rc::new(Timer::new(frame));
-		let sleep_timer_running_for_status = Rc::clone(&sleep_timer_running);
-		let sleep_timer_start_for_status = Rc::clone(&sleep_timer_start_time);
-		let sleep_timer_duration_for_status = Rc::clone(&sleep_timer_duration_minutes);
 		let dm_for_status = Rc::clone(doc_manager);
 		let frame_for_status = *frame;
 		status_update_timer.on_tick(move |_| {
-			if !sleep_timer_running_for_status.get() {
+			if !sleep_timer::is_running() {
 				return;
 			}
 			let Ok(dm) = dm_for_status.try_lock() else {
@@ -689,8 +633,8 @@ impl MainWindow {
 			status::update_status_bar_with_sleep_timer(
 				&frame_for_status,
 				&dm,
-				sleep_timer_start_for_status.get(),
-				sleep_timer_duration_for_status.get(),
+				sleep_timer::start_ms(),
+				sleep_timer::duration_minutes(),
 			);
 		});
 		status_update_timer.start(1000, false);
@@ -731,10 +675,6 @@ impl MainWindow {
 				dm.compact_window_if_grown();
 			}
 		});
-		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
-		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
-		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
-		let sleep_timer_duration_for_menu = Rc::clone(&sleep_timer_duration_minutes);
 		frame.on_menu(move |event| {
 			let id = event.get_id();
 			// Commands that have moved to the table handle themselves; the match below is the
@@ -934,16 +874,7 @@ impl MainWindow {
 					menu_tools::handle_customize_shortcuts(&frame_copy, &dm, &config);
 				}
 				menu_ids::SLEEP_TIMER => {
-					menu_tools::handle_sleep_timer(
-						&frame_copy,
-						&dm,
-						&config,
-						live_region_label,
-						&sleep_timer_for_menu,
-						&sleep_timer_running_for_menu,
-						&sleep_timer_start_for_menu,
-						&sleep_timer_duration_for_menu,
-					);
+					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label);
 				}
 				menu_ids::ABOUT => {
 					dialogs::show_about_dialog(&frame_copy);
@@ -986,7 +917,7 @@ impl MainWindow {
 				}
 			}
 		});
-		vec![sleep_timer, status_update_timer, audio_sync_timer, window_reload_timer]
+		vec![sleep_timer_handle, status_update_timer, audio_sync_timer, window_reload_timer]
 	}
 }
 
@@ -1008,8 +939,8 @@ pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_reg
 }
 
 pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
-	let sleep_start = SLEEP_TIMER_START_MS.load(Ordering::SeqCst);
-	let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
+	let sleep_start = sleep_timer::start_ms();
+	let sleep_duration = sleep_timer::duration_minutes();
 	if dm.tab_count() == 0 {
 		// TRANSLATORS: Main window title when no document is open
 		frame.set_title(&t("Paperback"));

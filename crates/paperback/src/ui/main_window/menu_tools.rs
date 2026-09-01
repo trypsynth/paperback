@@ -4,22 +4,14 @@
 
 #[cfg(target_os = "windows")]
 use std::cell::RefCell;
-use std::{
-	cell::Cell,
-	env,
-	path::Path,
-	rc::Rc,
-	sync::{Mutex, atomic::Ordering},
-	time::{SystemTime, UNIX_EPOCH},
-};
+use std::{env, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{config::ConfigManager, document::DocumentStats, export::ExportFormat, session::SourceView};
-use patois::{nt, t};
-use wxdragon::{prelude::*, timer::Timer};
+use patois::t;
+use wxdragon::prelude::*;
 
 use super::{
-	DocumentManager, MainWindow, SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS, build_font_from_readability,
-	dialogs, menu, navigation, update_title_from_manager,
+	DocumentManager, MainWindow, build_font_from_readability, dialogs, menu, navigation, update_title_from_manager,
 };
 #[cfg(target_os = "windows")]
 use super::{HotkeyHandle, re_register_hotkey};
@@ -507,61 +499,5 @@ pub(super) fn handle_customize_shortcuts(
 		drop(dm_ref);
 		menu::update_menu_item_states(frame, has_docs);
 		menu::update_reopen_state(frame, has_reopen);
-	}
-}
-
-#[allow(clippy::too_many_arguments)]
-pub(super) fn handle_sleep_timer(
-	frame: &Frame,
-	dm: &Rc<Mutex<DocumentManager>>,
-	config: &Rc<Mutex<ConfigManager>>,
-	live_region_label: StaticText,
-	sleep_timer: &Rc<Timer<Frame>>,
-	sleep_timer_running: &Rc<Cell<bool>>,
-	sleep_timer_start_time: &Rc<Cell<i64>>,
-	sleep_timer_duration_minutes: &Rc<Cell<i32>>,
-) {
-	if sleep_timer_running.get() {
-		sleep_timer.stop();
-		sleep_timer_running.set(false);
-		sleep_timer_start_time.set(0);
-		sleep_timer_duration_minutes.set(0);
-		SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
-		SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
-		tracing::info!("sleep timer cancelled");
-		let dm_ref = dm.lock().unwrap();
-		update_title_from_manager(frame, &dm_ref);
-		// TRANSLATORS: Announced when the user cancels a running sleep timer
-		live_region::announce(live_region_label, &t("Sleep timer cancelled."));
-		return;
-	}
-	let initial_duration = config.lock().unwrap().get_app_int("sleep_timer_duration", 30);
-	if let Some(duration) = dialogs::show_sleep_timer_dialog(frame, initial_duration) {
-		{
-			let cfg = config.lock().unwrap();
-			cfg.set_app_int("sleep_timer_duration", duration);
-			cfg.flush();
-		}
-		let duration_ms = u64::try_from(duration).unwrap_or(0) * 60 * 1000;
-		sleep_timer.start(i32::try_from(duration_ms).unwrap_or(i32::MAX), true);
-		sleep_timer_running.set(true);
-		tracing::info!(duration_minutes = duration, "sleep timer started");
-		let now = SystemTime::now()
-			.duration_since(UNIX_EPOCH)
-			.ok()
-			.and_then(|d| i64::try_from(d.as_millis()).ok())
-			.unwrap_or(0);
-		sleep_timer_start_time.set(now);
-		sleep_timer_duration_minutes.set(duration);
-		SLEEP_TIMER_START_MS.store(now, Ordering::SeqCst);
-		SLEEP_TIMER_DURATION_MINUTES.store(duration, Ordering::SeqCst);
-		// TRANSLATORS: Announcement when the sleep timer is set. The %d placeholder is replaced with the number of minutes.
-		let msg = nt(
-			"Sleep timer set for %d minute.",
-			"Sleep timer set for %d minutes.",
-			u64::try_from(duration).unwrap_or(0),
-		)
-		.replacen("%d", &duration.to_string(), 1);
-		live_region::announce(live_region_label, &msg);
 	}
 }

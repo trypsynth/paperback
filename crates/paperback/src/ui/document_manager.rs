@@ -5,7 +5,7 @@ use std::{
 	fs,
 	path::{Path, PathBuf},
 	rc::Rc,
-	sync::{Mutex, atomic::Ordering},
+	sync::Mutex,
 	time::{Instant, SystemTime},
 };
 
@@ -23,14 +23,14 @@ use wxdragon::{
 };
 
 #[cfg(target_os = "windows")]
-use super::rtf::{
-	stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl},
-	write::{self, RtfFontInfo},
-};
+use super::sleep_timer;
 use super::{
-	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
 	menu_ids,
 	navigation::{move_to_offset_and_record_history, persist_navigation_history},
+	rtf::{
+		stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl},
+		write::{self, RtfFontInfo},
+	},
 	shell, status,
 	text_window::{self, TextWindow},
 };
@@ -560,8 +560,8 @@ impl DocumentManager {
 	}
 
 	pub fn update_status_bar(&self) {
-		let sleep_start = SLEEP_TIMER_START_MS.load(Ordering::SeqCst);
-		let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
+		let sleep_start = sleep_timer::start_ms();
+		let sleep_duration = sleep_timer::duration_minutes();
 		if self.tabs.is_empty() {
 			// TRANSLATORS: Default status bar text when no document is open
 			let mut status_text = t("Ready");

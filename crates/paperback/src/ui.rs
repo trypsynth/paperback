@@ -12,6 +12,7 @@ mod navigation;
 #[cfg(any(target_os = "windows", test))]
 mod rtf;
 mod shell;
+mod sleep_timer;
 mod sounds;
 mod status;
 mod text_window;
