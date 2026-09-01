@@ -25,6 +25,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 		.with_value(&current_percent.to_string())
 		.with_style(TextCtrlStyle::ProcessEnter)
 		.build();
+	restrict_to_number_input(input_ctrl);
 	let result = Rc::new(Cell::new(None::<i32>));
 	// Keep the slider and the field in step. Dragging the slider rewrites the field
 	// (`change_value` fires no event, so there is no loop); typing moves the slider to the
@@ -146,6 +147,30 @@ fn resolve_percent(text: &str, current_percent: i32) -> Option<i32> {
 		_ => amount,
 	};
 	if (0..=100).contains(&resolved) { i32::try_from(resolved).ok() } else { None }
+}
+
+/// Swallows any keystroke that cannot be part of a percentage expression: digits, `+`/`-`
+/// (for relative jumps), and Enter (which submits). Letters and punctuation never reach
+/// the field, so an invalid entry can't be typed in the first place.
+///
+/// Only `CHAR` events are filtered, which fire for character insertion. Everything that
+/// is not a printable character passes through untouched, so every navigation, editing
+/// and shortcut key keeps working: control codes below space (Tab, Backspace, Enter,
+/// Escape), Delete, the special keys at [`WXK_START`] and above (arrows, Home/End, Page
+/// keys, Insert, F-keys, numpad Enter), and all Ctrl/Cmd shortcuts.
+fn restrict_to_number_input(ctrl: TextCtrl) {
+	ctrl.bind_internal(EventType::CHAR, move |event| {
+		let key = event.get_key_code().unwrap_or(0);
+		let allowed = event.control_down()
+			|| event.cmd_down()
+			|| key < i32::from(b' ')
+			|| key == WXK_DELETE
+			|| key >= WXK_START
+			|| (i32::from(b'0')..=i32::from(b'9')).contains(&key)
+			|| key == i32::from(b'+')
+			|| key == i32::from(b'-');
+		event.skip(allowed);
+	});
 }
 
 /// Validates the field and either confirms the dialog with the resolved percentage or, when
