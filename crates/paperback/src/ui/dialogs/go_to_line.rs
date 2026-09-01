@@ -35,7 +35,14 @@ pub fn show_go_to_line_dialog(
 	let dialog_for_enter = dialog;
 	line_ctrl_for_enter.bind_internal(EventType::TEXT_ENTER, move |event| {
 		event.skip(false);
-		submit_go_to_line(dialog_for_enter, line_ctrl_for_enter, &result_for_enter, live_region_label, max_lines);
+		submit_go_to_line(
+			dialog_for_enter,
+			line_ctrl_for_enter,
+			&result_for_enter,
+			live_region_label,
+			current_line,
+			max_lines,
+		);
 	});
 	// TRANSLATORS: Label for the button that jumps to the entered line
 	let ok_button = Button::builder(&dialog).with_label(&t("Go")).build();
@@ -47,7 +54,7 @@ pub fn show_go_to_line_dialog(
 	let result_for_ok = Rc::clone(&result);
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
-		submit_go_to_line(dialog_for_ok, line_ctrl_for_ok, &result_for_ok, live_region_label, max_lines);
+		submit_go_to_line(dialog_for_ok, line_ctrl_for_ok, &result_for_ok, live_region_label, current_line, max_lines);
 	});
 	let line_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
@@ -67,10 +74,27 @@ pub fn show_go_to_line_dialog(
 }
 
 /// Resolves the entered `text` to a line number in `1..=max_lines`, or `None` when the text
-/// is not a bare line number or the line is out of range.
-fn resolve_line(text: &str, max_lines: i32) -> Option<i32> {
-	let line = text.trim().parse::<i64>().ok()?;
-	if (1..=i64::from(max_lines)).contains(&line) { i32::try_from(line).ok() } else { None }
+/// is not a valid line expression or resolves out of range.
+///
+/// A bare number is the line itself; a leading `+`/`-` moves that many lines forward or
+/// backward from `current_line`, so "+5" is five lines ahead and "-3" three lines back.
+fn resolve_line(text: &str, current_line: i32, max_lines: i32) -> Option<i32> {
+	let trimmed = text.trim();
+	if trimmed.is_empty() {
+		return None;
+	}
+	let (sign, digits) = match trimmed.as_bytes()[0] {
+		b'+' | b'-' => (trimmed.as_bytes()[0], &trimmed[1..]),
+		_ => (0, trimmed),
+	};
+	let amount = digits.parse::<i64>().ok()?;
+	let current = i64::from(current_line);
+	let resolved = match sign {
+		b'+' => current.checked_add(amount)?,
+		b'-' => current.checked_sub(amount)?,
+		_ => amount,
+	};
+	if (1..=i64::from(max_lines)).contains(&resolved) { i32::try_from(resolved).ok() } else { None }
 }
 
 /// Validates the field and either confirms the dialog with the resolved line or, when the
@@ -80,9 +104,10 @@ fn submit_go_to_line(
 	line_ctrl: TextCtrl,
 	result: &Rc<Cell<Option<i32>>>,
 	live_region_label: StaticText,
+	current_line: i32,
 	max_lines: i32,
 ) {
-	let Some(line) = resolve_line(&line_ctrl.get_value(), max_lines) else {
+	let Some(line) = resolve_line(&line_ctrl.get_value(), current_line, max_lines) else {
 		// TRANSLATORS: Announced when the entered line number is outside the document's range
 		live_region::announce(live_region_label, &t("Line out of range."));
 		line_ctrl.set_focus();
@@ -91,4 +116,42 @@ fn submit_go_to_line(
 	};
 	result.set(Some(line));
 	dialog.end_modal(ID_OK);
+}
+
+#[cfg(test)]
+mod tests {
+	use super::resolve_line;
+
+	#[test]
+	fn absolute_lines_resolve_and_reject_out_of_range() {
+		assert_eq!(resolve_line("5", 10, 100), Some(5));
+		assert_eq!(resolve_line(" 42 ", 10, 100), Some(42));
+		assert_eq!(resolve_line("0", 10, 100), None);
+		assert_eq!(resolve_line("101", 10, 100), None);
+		assert_eq!(resolve_line("99999999999", 10, 100), None);
+	}
+
+	#[test]
+	fn relative_offsets_resolve_from_the_current_line() {
+		assert_eq!(resolve_line("+5", 10, 100), Some(15));
+		assert_eq!(resolve_line("-3", 10, 100), Some(7));
+		assert_eq!(resolve_line("+0", 10, 100), Some(10));
+		assert_eq!(resolve_line("-0", 10, 100), Some(10));
+	}
+
+	#[test]
+	fn relative_offsets_out_of_range_are_rejected() {
+		assert_eq!(resolve_line("-20", 10, 100), None);
+		assert_eq!(resolve_line("+100", 10, 100), None);
+	}
+
+	#[test]
+	fn garbage_is_rejected() {
+		assert_eq!(resolve_line("", 10, 100), None);
+		assert_eq!(resolve_line("   ", 10, 100), None);
+		assert_eq!(resolve_line("abc", 10, 100), None);
+		assert_eq!(resolve_line("5+3", 10, 100), None);
+		assert_eq!(resolve_line("+", 10, 100), None);
+		assert_eq!(resolve_line("-", 10, 100), None);
+	}
 }
