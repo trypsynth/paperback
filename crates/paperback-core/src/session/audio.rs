@@ -11,7 +11,10 @@ use std::{
 use zip::ZipArchive;
 
 use super::{AudioClipFfi, AudioCursorFfi, AudioPointFfi, DocumentSession};
-use crate::{audio::AudioLocation, util::zip as zip_utils};
+use crate::{
+	audio::{AudioLocation, TimelinePoint},
+	util::zip as zip_utils,
+};
 
 impl DocumentSession {
 	#[must_use]
@@ -140,5 +143,40 @@ impl DocumentSession {
 		let Some(timeline) = self.audio() else { return -1 };
 		let Ok(current_source) = usize::try_from(current_source) else { return -1 };
 		timeline.previous_source_before(current_source).and_then(|source| i32::try_from(source).ok()).unwrap_or(-1)
+	}
+
+	/// How far through the recording `elapsed_ms` is, as a whole percent, when that can be
+	/// answered honestly.
+	///
+	/// `None` for a document with no audio, and for one where any file's length was never
+	/// established: see `AudioTimeline::durations_are_known`. Callers fall back to the
+	/// character-count percentage in both cases, which is what they showed before.
+	///
+	/// This takes elapsed time rather than a caret position on purpose. A position only says
+	/// which clip is playing, so a percentage derived from it steps at clip boundaries and
+	/// stands still through a long chapter, which for a bundle of whole-file recordings means
+	/// it moves once per file and not at all in between.
+	#[must_use]
+	pub fn audio_progress_percent(&self, elapsed_ms: u64) -> Option<i32> {
+		let timeline = self.audio()?;
+		if !timeline.durations_are_known() {
+			return None;
+		}
+		let progress = timeline.progress(TimelinePoint::new(0, elapsed_ms));
+		// Truncating rather than rounding keeps 100% for the end alone: a book is not "100%"
+		// with half a minute left to play.
+		Some((progress * 100.0) as i32)
+	}
+
+	/// The elapsed time to seek to for `percent` of the recording, when that can be answered
+	/// honestly. `None` under the same conditions as [`Self::audio_progress_percent`].
+	#[must_use]
+	pub fn audio_elapsed_for_percent(&self, percent: i32) -> Option<u64> {
+		let timeline = self.audio()?;
+		if !timeline.durations_are_known() {
+			return None;
+		}
+		let percent = u64::try_from(percent.clamp(0, 100)).unwrap_or(0);
+		Some(timeline.total_duration_ms().saturating_mul(percent) / 100)
 	}
 }

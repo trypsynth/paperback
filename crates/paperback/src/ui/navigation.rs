@@ -48,6 +48,41 @@ pub fn doc_caret(tab: &DocumentTab) -> i64 {
 	tab.window.to_doc(tab.text_ctrl.get_insertion_point())
 }
 
+/// Seeks `tab`'s audio to `percent` of the recording, reporting the text position that lands on.
+///
+/// `None` when the document has no audio, or its file lengths are not all known, leaving the
+/// caller to fall back to the character-count mapping. Seeking by time rather than by text
+/// position is the whole point: the text of a bundle of whole-file recordings is one blank line
+/// per file, so mapping a percentage through it lands on a file boundary chosen by file count
+/// rather than by how long any of them runs.
+pub fn seek_audio_to_percent(tab: &mut DocumentTab, percent: i32) -> Option<i64> {
+	let target_ms = tab.session.audio_elapsed_for_percent(percent)?;
+	let player = tab.audio_player.as_mut()?;
+	player.seek_to_ms(target_ms);
+	let cursor = player.timeline().cursor_at_elapsed(target_ms)?;
+	let start = player.timeline().clip(cursor.clip).map(|clip| clip.start)?;
+	i64::try_from(start).ok()
+}
+
+/// How far the reader has got through `tab`, as a whole percent.
+///
+/// For a document with audio whose files all have a known length, this is progress through the
+/// recording, taken from where the player actually is. That is what a listener means by how far
+/// in they are: the character-count percentage measures the text spine, which for an audiobook
+/// is a handful of chapter headings and, for a bundle of whole-file recordings, one blank line
+/// per file, so it reports every file as an equal share however long it runs.
+///
+/// Falls back to the character-count percentage for text, for audio the player has not started,
+/// and for audio whose lengths could not all be established.
+pub fn reading_percent(tab: &DocumentTab, position: i64) -> i32 {
+	let audio_percent = tab
+		.audio_player
+		.as_ref()
+		.and_then(AudioPlayer::resume_point_ms)
+		.and_then(|elapsed_ms| tab.session.audio_progress_percent(elapsed_ms));
+	audio_percent.unwrap_or_else(|| tab.session.get_status_info(position).percentage).clamp(0, 100)
+}
+
 /// The current selection (or, absent one, the caret collapsed to a zero-length range), as
 /// document-absolute positions. Use this instead of `selected_range(tab.text_ctrl)` directly
 /// for anything that persists the result (bookmarks) or otherwise treats it as a document
