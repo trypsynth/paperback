@@ -10,7 +10,6 @@ pub struct AssociationChoice {
 	pub label: String,
 	pub mime_types: &'static [&'static str],
 	pub default_checked: bool,
-	pub default_handler: bool,
 }
 
 /// Shows the one-time "set up file associations" dialog offered the first time Paperback runs

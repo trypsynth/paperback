@@ -62,8 +62,13 @@ pub fn maybe_run_first_run_setup(parent: &Frame, config: &Mutex<ConfigManager>) 
 }
 
 /// Builds the checkbox list from `paperback_formats::ALL`, plus a standalone ZIP entry shared
-/// by DAISY and Word-in-zip — mirrors `format_tasks_block()` in `build/installer.rs`, whose
-/// per-format loop also skips `zip` in favor of one shared, unchecked, non-default task.
+/// by DAISY and Word-in-zip — mirrors which boxes `format_tasks_block()` in `build/installer.rs`
+/// offers and pre-checks, whose per-format loop also skips `zip` in favor of one shared,
+/// unchecked task. Unlike Windows, this dialog doesn't distinguish "Open with" from "default
+/// handler" (`format.installer.default_handler` is ignored here): it's an explicit, one-time
+/// action the user walks through on purpose rather than a task list ticked mid-install, and its
+/// own copy says "should open in Paperback" — so every checked box becomes the default handler
+/// for its MIME types.
 fn association_choices() -> Vec<AssociationChoice> {
 	let mut choices: Vec<AssociationChoice> = paperback_formats::ALL
 		.iter()
@@ -71,7 +76,6 @@ fn association_choices() -> Vec<AssociationChoice> {
 			label: format_label(format),
 			mime_types: format.mime_types,
 			default_checked: format.installer.default_checked,
-			default_handler: format.installer.default_handler,
 		})
 		.collect();
 	choices.push(AssociationChoice {
@@ -81,7 +85,6 @@ fn association_choices() -> Vec<AssociationChoice> {
 		label: t("ZIP Archives (.zip)"),
 		mime_types: &["application/zip"],
 		default_checked: false,
-		default_handler: false,
 	});
 	choices
 }
@@ -102,20 +105,15 @@ fn apply_selections(appimage_path: &str, choices: &[AssociationChoice], selectio
 	fs::create_dir_all(&apps_dir)?;
 	let icon_name = install_icon().unwrap_or_else(|_| "paperback".to_string());
 	let mut mime_types: Vec<&str> = Vec::new();
-	let mut default_handler_mime_types: Vec<&str> = Vec::new();
 	for (choice, &checked) in choices.iter().zip(selections) {
-		if !checked {
-			continue;
-		}
-		mime_types.extend(choice.mime_types.iter().copied());
-		if choice.default_handler {
-			default_handler_mime_types.extend(choice.mime_types.iter().copied());
+		if checked {
+			mime_types.extend(choice.mime_types.iter().copied());
 		}
 	}
 	write_desktop_file(&apps_dir, appimage_path, &icon_name, &mime_types)?;
 	install_daisy_opf_mime_info();
 	run_best_effort("update-desktop-database", &[&apps_dir.to_string_lossy()]);
-	for mime in &default_handler_mime_types {
+	for mime in &mime_types {
 		run_best_effort("xdg-mime", &["default", DESKTOP_FILE_ID, mime]);
 	}
 	Ok(())
