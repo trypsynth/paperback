@@ -64,6 +64,7 @@ fun MainScreen(
 ) {
 	val context = LocalContext.current
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
+	val pendingJumpOffset by viewModel.pendingJumpOffset.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
 	var exportDocumentDialogOpen by remember { mutableStateOf(false) }
@@ -171,9 +172,6 @@ fun MainScreen(
 	val readability = rememberReadabilityStyle(textScalePercent, lineSpacing, paragraphSpacing, textAlignment)
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
 	val sleepTimerRemaining by viewModel.sleepTimerRemaining.collectAsStateWithLifecycle()
-	val showElementsDialog by viewModel.showElementsDialog.collectAsStateWithLifecycle()
-	val currentHeadings by viewModel.currentHeadings.collectAsStateWithLifecycle()
-	val currentLinks by viewModel.currentLinks.collectAsStateWithLifecycle()
 
 	val view = androidx.compose.ui.platform.LocalView.current
 	LaunchedEffect(Unit) {
@@ -338,7 +336,7 @@ fun MainScreen(
 					onDocumentInfoOpen = { viewModel.documentInfoDialog.open() },
 					onSettingsOpen = { onItemClick(SettingsRoute) },
 					onSleepTimerOpen = { viewModel.sleepTimerDialog.open() },
-					onElementsOpen = { viewModel.openElementsDialog() },
+					onElementsOpen = { viewModel.openElements() },
 					onExportDocumentOpen = { exportDocumentDialogOpen = true },
 					onExportSettings = {
 						val activeDocUri = (state as? MainScreenUiState.Success)?.activeTab?.documentUri
@@ -456,6 +454,16 @@ fun MainScreen(
 									lineIndexToFocus = indexToScroll
 								}
 							}
+							// Set by the elements screen, which cannot switch to Text Mode or
+							// scroll the list itself.
+							LaunchedEffect(pendingJumpOffset) {
+								val offset = pendingJumpOffset
+								if (offset != null) {
+									val line = docState.session.lineFromPosition(offset)
+									jumpToLine((line - 1).toInt().coerceAtLeast(0))
+									viewModel.consumeJumpRequest()
+								}
+							}
 							LaunchedEffect(docState.documentUri) {
 								if (docState.initialScrollIndex > 0) {
 									lineIndexToFocus = docState.initialScrollIndex
@@ -554,17 +562,6 @@ fun MainScreen(
 											}
 										}
 									}
-								)
-							}
-							if (showElementsDialog) {
-								ElementsDialog(
-									headings = currentHeadings,
-									links = currentLinks,
-									onNavigate = { offset ->
-										val line = docState.session.lineFromPosition(offset)
-										jumpToLine((line - 1).toInt().coerceAtLeast(0))
-									},
-									onDismiss = { viewModel.closeElementsDialog() }
 								)
 							}
 						}

@@ -193,7 +193,7 @@ class MainActivity : ComponentActivity() {
 		if (currentFocus is EditText) return super.dispatchKeyEvent(event)
 		// F7: elements list (matches desktop)
 		if (event.keyCode == KeyEvent.KEYCODE_F7) {
-			vm.openElementsDialog()
+			vm.openElements()
 			return true
 		}
 		// Ctrl shortcuts: parity with desktop app

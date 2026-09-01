@@ -10,3 +10,5 @@ import kotlinx.serialization.Serializable
 @Serializable data object TocRoute : NavKey
 
 @Serializable data object AllDocumentsRoute : NavKey
+
+@Serializable data object ElementsRoute : NavKey
