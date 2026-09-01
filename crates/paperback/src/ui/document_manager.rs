@@ -1472,6 +1472,8 @@ fn build_document_load_error_message(path: &Path, error: &str) -> String {
 	format!("{}\n\n{file_line}\n{details_line}", t("Failed to load document."))
 }
 
+/// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
+/// position. Returns the parse error and leaves the tab unchanged if the re-parse fails.
 fn reparse_tab_in_place(
 	tab: &mut DocumentTab,
 	path_str: &str,

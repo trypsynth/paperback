@@ -31,9 +31,6 @@ pub fn readability_style(cfg: &ConfigManager) -> ReadabilityStyle {
 	}
 }
 
-/// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
-/// position. Returns the parse error and leaves the tab unchanged if the re-parse fails.
-
 pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
 	let mut attr = wxdragon::widgets::textctrl::TextAttr::new();
 	attr.set_line_spacing(match line_spacing {
