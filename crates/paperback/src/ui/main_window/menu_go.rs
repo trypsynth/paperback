@@ -33,7 +33,7 @@ pub(super) fn handle_go_to_line(
 		drop(dm_guard);
 		(current_line, max_lines)
 	};
-	if let Some(line) = dialogs::show_go_to_line_dialog(frame, current_line, max_lines) {
+	if let Some(line) = dialogs::show_go_to_line_dialog(frame, current_line, max_lines, live_region_label) {
 		let (message, update) = {
 			let mut dm_guard = dm.lock().unwrap();
 			let (message, update) = {
