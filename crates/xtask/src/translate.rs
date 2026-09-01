@@ -10,6 +10,7 @@ use std::{
 mod checks;
 mod claude;
 mod markdown;
+mod prompts;
 mod readme;
 
 use patois_build::po::{PoDocument, Translation};
