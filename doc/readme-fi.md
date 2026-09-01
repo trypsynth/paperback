@@ -41,6 +41,7 @@ Paperback tukee seuraavia tiedostomuotoja:
 * HTML-asiakirjat (`.htm`, `.html`, `.xhtml`)
 * Markdown-asiakirjat (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word -asiakirjat (`.docx`, `.docm`, `.doc`)
+* M4B-äänikirjat (`.m4b`)
 * MOBI- ja Kindle-kirjat (`.mobi`, `.azw`, `.azw3`)
 * OpenDocument-esitykset (`.odp`, `.fodp`)
 * OpenDocument-tekstiasiakirjat (`.odt`, `.fodt`)
