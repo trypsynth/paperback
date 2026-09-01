@@ -23,6 +23,7 @@ Paperback is a fully accessible, fast, and native ebook and document reader for 
 - EPUB
 - FB2
 - HTML
+- M4B audiobooks
 - Markdown
 - MOBI, AZW, and AZW3 (Kindle)
 - ODP and FODP (OpenDocument Presentations)

@@ -41,6 +41,7 @@ Paperback supports the following formats and extensions:
 * HTML documents (`.htm`, `.html`, `.xhtml`)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word documents (`.docx`, `.docm`, `.doc`)
+* M4B audiobooks (`.m4b`)
 * MOBI/Kindle books (`.mobi`, `.azw`, `.azw3`)
 * OpenDocument presentations (`.odp`, `.fodp`)
 * OpenDocument text files (`.odt`, `.fodt`)

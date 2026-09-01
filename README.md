@@ -17,6 +17,7 @@
   - OpenDocument text files (odt/fodt)
   - OpenDocument presentations (odp/fodp)
   - RTF documents (rtf)
+  - M4B audiobooks (m4b)
   - MOBI/Kindle books (mobi/azw/azw3)
   - Markdown documents (md/markdown/mdx/mdown/mdwn/mkd/mkdn/mkdown/ronn)
   - Plain text and log files (txt/log)
