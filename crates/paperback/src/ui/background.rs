@@ -1,9 +1,7 @@
 //! The window's periodic work: the timers that tick while the app runs, and the resize
 //! handling that goes with them.
 //!
-//! These lived in `bind_menu_events` because that is where the frame was to hand, not because
-//! they have anything to do with menus. Nothing here is triggered by the user choosing
-//! something; it all runs on its own.
+//! Nothing here is triggered by the user choosing something; it all runs on its own.
 
 use std::{cell::Cell, rc::Rc, sync::Mutex};
 

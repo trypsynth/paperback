@@ -1,19 +1,13 @@
 //! One record per user-triggerable command: its identity, its menu label and help text, when
 //! it is available, and what it does.
 //!
-//! Commands used to be described in four places at once, split by which menu they happened to
-//! sit under: `menu/<name>_menu.rs` built the item, `main_window/menu_<name>.rs` or an arm of
-//! `bind_menu_events`' dispatch match ran it, `menu_ids` named its wx id, and `menu/state.rs`
-//! listed it by hand if it needed a document open. Adding one meant four edits in three
-//! directories, keyed to a position in the menu bar rather than to anything about the command.
+//! A [`Command`] holds all of it, so the menu bar, the dispatcher and the enable/disable pass
+//! can be derived from one list and a command described once. [`ActionId`] is the identity,
+//! shared with the shortcuts dialog and the keyboard config, which already carry its display
+//! name and default key chord. Handlers live in submodules by feature.
 //!
-//! A [`Command`] holds all of it, [`ActionId`] is the identity (it already carries the display
-//! name and default key chord for the shortcuts dialog), and the menu bar, the dispatcher and
-//! the enable/disable pass are all derived from the same list. Handlers live in submodules by
-//! feature, not by menu.
-//!
-//! Commands are ported over a few at a time. Anything not in [`COMMANDS`] yet is still handled
-//! by `bind_menu_events`, which falls through to its own match when [`dispatch`] returns false.
+//! Not every command is here. Anything absent from [`COMMANDS`] is handled by
+//! `bind_menu_events`, which falls through to its own match when [`dispatch`] returns false.
 
 use std::{rc::Rc, sync::Mutex};
 
@@ -32,9 +26,8 @@ pub mod file;
 
 /// What has to be true for a command to be usable.
 ///
-/// Replaces the hand-maintained id list in `menu/state.rs`: a command declares its own
-/// condition, so a new one cannot be forgotten there and then silently stay enabled with no
-/// document open.
+/// A command declares its own condition, so it cannot end up enabled with no document open
+/// by being left out of a list kept somewhere else.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Enable {
 	/// Always available, document or not.
@@ -47,9 +40,7 @@ pub enum Enable {
 
 /// What a handler is allowed to touch.
 ///
-/// One borrow of the shared state rather than a clone per closure: the old dispatch match
-/// opened with two dozen `Rc::clone`s and `_for_<handler>` rebindings, one set per arm that
-/// needed them.
+/// One borrow of the shared state for every handler, rather than a clone per closure.
 pub struct Ctx<'a> {
 	pub frame: &'a Frame,
 	pub dm: &'a Rc<Mutex<DocumentManager>>,
@@ -59,10 +50,9 @@ pub struct Ctx<'a> {
 
 /// What running a command does.
 ///
-/// Marker navigation is data rather than a function because 32 of the dispatch match's arms
-/// were the same `handle_marker_navigation` call differing only in these two values, and the
-/// Go menu built the same 32 items with the same shape. Expressing it once means adding a new
-/// navigable element is a row, not an arm plus an item plus an id.
+/// Marker navigation is data rather than a function: every one of those commands is the same
+/// `handle_marker_navigation` call with a different target and direction, so holding the
+/// difference as values makes a new navigable element one row rather than a handler of its own.
 pub enum Behavior {
 	/// Run this handler.
 	Run(fn(&Ctx)),
@@ -79,8 +69,7 @@ pub struct Command {
 	/// A function rather than a string so the text is translated at menu-build time, which is
 	/// what makes the menu bar follow a language change at runtime.
 	pub label: fn() -> String,
-	/// Status-bar help text, where the item has any. Most of the Go menu's items were built
-	/// without one and keep it that way.
+	/// Status-bar help text, for the items that have one. Most of the Go menu's do not.
 	pub help: Option<fn() -> String>,
 	pub enable: Enable,
 	pub behavior: Behavior,

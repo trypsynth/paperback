@@ -6,7 +6,9 @@
 use std::cell::RefCell;
 use std::{env, path::Path, rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ConfigManager, document::DocumentStats, export::ExportFormat, session::SourceView};
+use paperback_core::{
+	config::ConfigManager, document::DocumentStats, export::ExportFormat, parser::is_external_url, session::SourceView,
+};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -114,10 +116,7 @@ pub(super) fn handle_open_in_web_view(frame: &Frame, dm: &Rc<Mutex<DocumentManag
 			&url,
 			true,
 			Some(Box::new(|url| {
-				if url.to_lowercase().starts_with("http://")
-					|| url.to_lowercase().starts_with("https://")
-					|| url.to_lowercase().starts_with("mailto:")
-				{
+				if is_external_url(url) {
 					launch_default_browser(url, BrowserLaunchFlags::Default);
 					false
 				} else {

@@ -183,25 +183,22 @@ impl DocumentSession {
 	/// relatively from a spine section is present on disk wherever a webview
 	/// loading that section would look for it. That covers resources
 	/// (images, stylesheets, fonts, ...) and the other spine sections, which a
-	/// table of contents links to: skipping markup here used to leave every one
-	/// of those links resolving to a file that was never written, so following
-	/// one in the web view failed with ERR_FILE_NOT_FOUND. Runs at most once per
-	/// `doc_temp_dir`; subsequent calls are a no-op.
+	/// table of contents links to. Runs at most once per `doc_temp_dir`;
+	/// subsequent calls are a no-op.
 	fn ensure_epub_resources_extracted(&self, doc_temp_dir: &Path) -> anyhow::Result<()> {
 		if !self.is_epub() {
 			return Ok(());
 		}
-		// The marker is versioned: an earlier release extracted everything *except*
-		// markup, so a temp dir left behind by one would otherwise be treated as
-		// complete and its sections would stay missing.
+		// Versioned so a temp directory written by a release that left markup out is
+		// refilled rather than trusted as complete.
 		let marker = doc_temp_dir.join(".resources_extracted_v2");
 		if marker.exists() {
 			return Ok(());
 		}
 		let file = File::open(&self.file_path)?;
 		let mut archive = ZipArchive::new(BufReader::new(file))?;
-		// Nothing is skipped. The current section is re-extracted fresh by the caller
-		// afterwards, so the copy written here being anchor-free does not matter.
+		// Nothing is skipped. The caller re-extracts the current section fresh
+		// afterwards, so the anchor-free copy written here does not matter.
 		zip_utils::extract_zip_to_dir(&mut archive, doc_temp_dir, |_| false)?;
 		fs::write(&marker, b"").ok();
 		Ok(())

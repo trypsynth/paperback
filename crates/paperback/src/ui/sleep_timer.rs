@@ -1,12 +1,8 @@
 //! The sleep timer: shuts the app down after a chosen number of minutes, saving reading
 //! positions on the way out.
 //!
-//! This used to live inside `bind_menu_events`, which meant a feature's whole lifetime sat in
-//! the middle of a function about menu dispatch, and its state was kept twice: four
-//! `Rc<Cell<..>>` threaded through eight arguments into `handle_sleep_timer`, and two atomics
-//! that the status bar and `document_manager` read because they had no access to the cells.
-//! Both copies were written together on every path, so they could only ever disagree by
-//! mistake. Only the atomics remain, and they live here with the code that maintains them.
+//! The countdown lives in atomics rather than on the [`SleepTimer`] itself: the status bar and
+//! `document_manager` both display it, and neither holds the timer.
 
 use std::{
 	rc::Rc,
