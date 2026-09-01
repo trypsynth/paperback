@@ -28,6 +28,7 @@ pub fn show_go_to_page_dialog(
 	// not silently clamped, and (later) relative +n/-n input has no spinner equivalent.
 	let page_ctrl =
 		TextCtrl::builder(&dialog).with_value(&current.to_string()).with_style(TextCtrlStyle::ProcessEnter).build();
+	restrict_to_number_input(page_ctrl);
 	let result = Rc::new(Cell::new(None::<i32>));
 	// Enter in the field and the Go button both submit through the same validation.
 	let page_ctrl_for_enter = page_ctrl;
@@ -95,6 +96,30 @@ fn resolve_page(text: &str, current_page: i32, max_page: i32) -> Option<i32> {
 		_ => amount,
 	};
 	if (1..=i64::from(max_page)).contains(&resolved) { i32::try_from(resolved).ok() } else { None }
+}
+
+/// Swallows any keystroke that cannot be part of a page expression: digits, `+`/`-` (for
+/// relative jumps), and Enter (which submits). Letters and punctuation never reach the
+/// field, so an invalid entry can't be typed in the first place.
+///
+/// Only `CHAR` events are filtered, which fire for character insertion. Everything that
+/// is not a printable character passes through untouched, so every navigation, editing
+/// and shortcut key keeps working: control codes below space (Tab, Backspace, Enter,
+/// Escape), Delete, the special keys at [`WXK_START`] and above (arrows, Home/End, Page
+/// keys, Insert, F-keys, numpad Enter), and all Ctrl/Cmd shortcuts.
+fn restrict_to_number_input(ctrl: TextCtrl) {
+	ctrl.bind_internal(EventType::CHAR, move |event| {
+		let key = event.get_key_code().unwrap_or(0);
+		let allowed = event.control_down()
+			|| event.cmd_down()
+			|| key < i32::from(b' ')
+			|| key == WXK_DELETE
+			|| key >= WXK_START
+			|| (i32::from(b'0')..=i32::from(b'9')).contains(&key)
+			|| key == i32::from(b'+')
+			|| key == i32::from(b'-');
+		event.skip(allowed);
+	});
 }
 
 /// Validates the field and either confirms the dialog with the resolved page or, when the
