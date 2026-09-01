@@ -71,7 +71,7 @@ pub(super) fn handle_go_to_page(
 		drop(dm_guard);
 		(current_page, max_page)
 	};
-	if let Some(page) = dialogs::show_go_to_page_dialog(frame, current_page, max_page) {
+	if let Some(page) = dialogs::show_go_to_page_dialog(frame, current_page, max_page, live_region_label) {
 		let (message, update) = {
 			let mut dm_guard = dm.lock().unwrap();
 			let (message, update) = {
