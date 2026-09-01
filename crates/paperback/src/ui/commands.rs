@@ -19,10 +19,13 @@ use super::{
 	document_manager::DocumentManager,
 	menu::{MenuEntry, format_menu_label, item_with_help},
 	menu_ids,
-	navigation::{self, MarkerNavTarget},
+	navigation::{MarkerNavTarget, handle_marker_navigation},
 };
 
+pub mod audio;
+pub mod bookmarks;
 pub mod file;
+pub mod navigation;
 
 /// What has to be true for a command to be usable.
 ///
@@ -95,7 +98,7 @@ impl Command {
 		match self.behavior {
 			Behavior::Run(handler) => handler(ctx),
 			Behavior::Navigate { target, next } => {
-				navigation::handle_marker_navigation(ctx.dm, ctx.config, ctx.live_region_label, target, next);
+				handle_marker_navigation(ctx.dm, ctx.config, ctx.live_region_label, target, next);
 			}
 		}
 	}
@@ -407,6 +410,173 @@ pub static COMMANDS: &[Command] = &[
 		help: None,
 		enable: Enable::HasDocument,
 		behavior: Behavior::Navigate { target: MarkerNavTarget::ListItem, next: true },
+	},
+	Command {
+		action: ActionId::GoBack,
+		// TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
+		label: || t("Go &Back"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(navigation::go_back),
+	},
+	Command {
+		action: ActionId::GoForward,
+		// TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
+		label: || t("Go &Forward"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(navigation::go_forward),
+	},
+	Command {
+		action: ActionId::ContainerStart,
+		// TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
+		label: || t("Container &Start"),
+		// TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
+		help: Some(|| t("Go to the start of the current list or table")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(navigation::container_start),
+	},
+	Command {
+		action: ActionId::ContainerEnd,
+		// TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
+		label: || t("Past Container &End"),
+		// TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
+		help: Some(|| t("Go past the end of the current list or table")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(navigation::container_end),
+	},
+	Command {
+		action: ActionId::PreviousBookmark,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+		label: || t("&Previous Bookmark"),
+		// TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
+		help: Some(|| t("Go to previous bookmark")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::previous_bookmark),
+	},
+	Command {
+		action: ActionId::NextBookmark,
+		// TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+		label: || t("&Next Bookmark"),
+		// TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
+		help: Some(|| t("Go to next bookmark")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::next_bookmark),
+	},
+	Command {
+		action: ActionId::PreviousNote,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
+		label: || t("Previous &Note"),
+		// TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
+		help: Some(|| t("Go to previous note")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::previous_note),
+	},
+	Command {
+		action: ActionId::NextNote,
+		// TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+		label: || t("Next N&ote"),
+		// TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
+		help: Some(|| t("Go to next note")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::next_note),
+	},
+	Command {
+		action: ActionId::JumpToAllBookmarks,
+		// TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+		label: || t("Jump to &All..."),
+		// TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
+		help: Some(|| t("Show all bookmarks and notes")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::jump_to_all),
+	},
+	Command {
+		action: ActionId::JumpToBookmarksOnly,
+		// TRANSLATORS: Menu item in the Go menu to open a dialog listing only bookmarks.
+		label: || t("Jump to &Bookmarks Only..."),
+		// TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
+		help: Some(|| t("Show bookmarks only")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::jump_to_bookmarks_only),
+	},
+	Command {
+		action: ActionId::JumpToNotesOnly,
+		// TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
+		label: || t("Jump to Notes &Only..."),
+		// TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
+		help: Some(|| t("Show notes only")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::jump_to_notes_only),
+	},
+	Command {
+		action: ActionId::ViewNoteText,
+		// TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
+		label: || t("&View Note Text"),
+		// TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
+		help: Some(|| t("View the note at current position")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::view_note_text),
+	},
+	Command {
+		action: ActionId::ToggleBookmark,
+		// TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
+		label: || t("Toggle &Bookmark"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::toggle),
+	},
+	Command {
+		action: ActionId::BookmarkWithNote,
+		// TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
+		label: || t("Bookmark with &Note"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::with_note),
+	},
+	Command {
+		action: ActionId::PlayPauseAudio,
+		// TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
+		label: || t("&Play/Pause Audio"),
+		// TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
+		help: Some(|| t("Play or pause this document's audio narration")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(audio::toggle_play_pause),
+	},
+	Command {
+		action: ActionId::SeekAudioForward,
+		// TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
+		label: || t("Seek Audio &Forward"),
+		// TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
+		help: Some(|| t("Skip the audio narration forward")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(audio::seek_forward),
+	},
+	Command {
+		action: ActionId::SeekAudioBackward,
+		// TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
+		label: || t("Seek Audio &Backward"),
+		// TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
+		help: Some(|| t("Skip the audio narration backward")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(audio::seek_backward),
+	},
+	Command {
+		action: ActionId::IncreaseAudioSeekAmount,
+		// TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
+		label: || t("&Increase Audio Seek Amount"),
+		// TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
+		help: Some(|| t("Increase how far seeking the audio narration moves")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(audio::increase_seek_amount),
+	},
+	Command {
+		action: ActionId::DecreaseAudioSeekAmount,
+		// TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
+		label: || t("&Decrease Audio Seek Amount"),
+		// TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
+		help: Some(|| t("Decrease how far seeking the audio narration moves")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(audio::decrease_seek_amount),
 	},
 ];
 

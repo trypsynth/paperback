@@ -3,7 +3,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::builder::format_menu_label;
-use crate::ui::menu_ids;
+use crate::ui::{commands, menu_ids};
 
 pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	// TRANSLATORS: Menu item in Tools > Import/Export to import bookmarks and reading position from a file.
@@ -80,12 +80,8 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	let import_export_help = t("Import and export options");
 	menu.append_submenu(import_export_menu, &import_export_label, &import_export_help);
 	menu.append_separator();
-	// TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
-	let toggle_bookmark_label = format_menu_label(&t("Toggle &Bookmark"), ActionId::ToggleBookmark, config);
-	// TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
-	let bookmark_note_label = format_menu_label(&t("Bookmark with &Note"), ActionId::BookmarkWithNote, config);
-	menu.append(menu_ids::TOGGLE_BOOKMARK, &toggle_bookmark_label, "", ItemKind::Normal);
-	menu.append(menu_ids::BOOKMARK_WITH_NOTE, &bookmark_note_label, "", ItemKind::Normal);
+	commands::append_item(&menu, ActionId::ToggleBookmark, config);
+	commands::append_item(&menu, ActionId::BookmarkWithNote, config);
 	menu.append_separator();
 	// TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 	let word_wrap_label = format_menu_label(&t("Word w&rap"), ActionId::ToggleWordWrap, config);
@@ -94,43 +90,15 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	menu.append(menu_ids::TOGGLE_WORD_WRAP, &word_wrap_label, &word_wrap_help, ItemKind::Check);
 	menu.check_item(menu_ids::TOGGLE_WORD_WRAP, config.get_app_bool("word_wrap", false));
 	menu.append_separator();
-	// TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
-	let play_pause_label = format_menu_label(&t("&Play/Pause Audio"), ActionId::PlayPauseAudio, config);
-	// TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
-	let play_pause_help = t("Play or pause this document's audio narration");
-	menu.append(menu_ids::PLAY_PAUSE_AUDIO, &play_pause_label, &play_pause_help, ItemKind::Normal);
-	// TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
-	let seek_forward_label = format_menu_label(&t("Seek Audio &Forward"), ActionId::SeekAudioForward, config);
-	// TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
-	let seek_forward_help = t("Skip the audio narration forward");
-	menu.append(menu_ids::SEEK_AUDIO_FORWARD, &seek_forward_label, &seek_forward_help, ItemKind::Normal);
-	// TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
-	let seek_backward_label = format_menu_label(&t("Seek Audio &Backward"), ActionId::SeekAudioBackward, config);
-	// TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
-	let seek_backward_help = t("Skip the audio narration backward");
-	menu.append(menu_ids::SEEK_AUDIO_BACKWARD, &seek_backward_label, &seek_backward_help, ItemKind::Normal);
-	// TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
-	let increase_seek_amount_label =
-		format_menu_label(&t("&Increase Audio Seek Amount"), ActionId::IncreaseAudioSeekAmount, config);
-	// TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
-	let increase_seek_amount_help = t("Increase how far seeking the audio narration moves");
-	menu.append(
-		menu_ids::INCREASE_AUDIO_SEEK_AMOUNT,
-		&increase_seek_amount_label,
-		&increase_seek_amount_help,
-		ItemKind::Normal,
-	);
-	// TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
-	let decrease_seek_amount_label =
-		format_menu_label(&t("&Decrease Audio Seek Amount"), ActionId::DecreaseAudioSeekAmount, config);
-	// TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
-	let decrease_seek_amount_help = t("Decrease how far seeking the audio narration moves");
-	menu.append(
-		menu_ids::DECREASE_AUDIO_SEEK_AMOUNT,
-		&decrease_seek_amount_label,
-		&decrease_seek_amount_help,
-		ItemKind::Normal,
-	);
+	for action in [
+		ActionId::PlayPauseAudio,
+		ActionId::SeekAudioForward,
+		ActionId::SeekAudioBackward,
+		ActionId::IncreaseAudioSeekAmount,
+		ActionId::DecreaseAudioSeekAmount,
+	] {
+		commands::append_item(&menu, action, config);
+	}
 	// TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
 	let full_screen_label = format_menu_label(&t("&Full Screen"), ActionId::ToggleFullScreen, config);
 	// TRANSLATORS: Status-bar help text for the Full Screen menu item.
@@ -149,4 +117,27 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	menu.append(menu_ids::CUSTOMIZE_SHORTCUTS, &shortcuts_label, "", ItemKind::Normal);
 	menu.append(menu_ids::SLEEP_TIMER, &sleep_label, "", ItemKind::Normal);
 	menu
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	/// `commands::append_item` panics on an action the table does not have, which would take the
+	/// menu bar down as it was being built at startup.
+	#[test]
+	fn every_tools_menu_command_is_in_the_table() {
+		let actions = [
+			ActionId::ToggleBookmark,
+			ActionId::BookmarkWithNote,
+			ActionId::PlayPauseAudio,
+			ActionId::SeekAudioForward,
+			ActionId::SeekAudioBackward,
+			ActionId::IncreaseAudioSeekAmount,
+			ActionId::DecreaseAudioSeekAmount,
+		];
+		for action in actions {
+			assert!(commands::for_action(action).is_some(), "{action:?} is in the Tools menu but not in COMMANDS");
+		}
+	}
 }
