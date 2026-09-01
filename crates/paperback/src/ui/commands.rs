@@ -21,7 +21,12 @@ use paperback_core::config::{ActionId, ConfigManager};
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{document_manager::DocumentManager, menu::format_menu_label, menu_ids};
+use super::{
+	document_manager::DocumentManager,
+	menu::{MenuEntry, format_menu_label, item_with_help},
+	menu_ids,
+	navigation::{self, MarkerNavTarget},
+};
 
 pub mod file;
 
@@ -52,6 +57,19 @@ pub struct Ctx<'a> {
 	pub live_region_label: StaticText,
 }
 
+/// What running a command does.
+///
+/// Marker navigation is data rather than a function because 32 of the dispatch match's arms
+/// were the same `handle_marker_navigation` call differing only in these two values, and the
+/// Go menu built the same 32 items with the same shape. Expressing it once means adding a new
+/// navigable element is a row, not an arm plus an item plus an id.
+pub enum Behavior {
+	/// Run this handler.
+	Run(fn(&Ctx)),
+	/// Move to the previous or next `target`.
+	Navigate { target: MarkerNavTarget, next: bool },
+}
+
 /// A single command: identity, presentation, availability, behaviour.
 pub struct Command {
 	/// Identity, shared with the shortcuts dialog and the keyboard config.
@@ -61,10 +79,11 @@ pub struct Command {
 	/// A function rather than a string so the text is translated at menu-build time, which is
 	/// what makes the menu bar follow a language change at runtime.
 	pub label: fn() -> String,
-	/// Status-bar help text.
-	pub help: fn() -> String,
+	/// Status-bar help text, where the item has any. Most of the Go menu's items were built
+	/// without one and keep it that way.
+	pub help: Option<fn() -> String>,
 	pub enable: Enable,
-	pub run: fn(&Ctx),
+	pub behavior: Behavior,
 }
 
 impl Command {
@@ -77,6 +96,20 @@ impl Command {
 	pub fn menu_label(&self, config: &ConfigManager) -> String {
 		format_menu_label(&(self.label)(), self.action, config)
 	}
+
+	/// Status-bar help text, empty when the item has none.
+	pub fn help_text(&self) -> String {
+		self.help.map_or_else(String::new, |help| help())
+	}
+
+	fn run(&self, ctx: &Ctx) {
+		match self.behavior {
+			Behavior::Run(handler) => handler(ctx),
+			Behavior::Navigate { target, next } => {
+				navigation::handle_marker_navigation(ctx.dm, ctx.config, ctx.live_region_label, target, next);
+			}
+		}
+	}
 }
 
 /// Every command that has been ported to the table.
@@ -86,51 +119,325 @@ pub static COMMANDS: &[Command] = &[
 		// TRANSLATORS: Menu item in the File menu to open a document.
 		label: || t("&Open..."),
 		// TRANSLATORS: Status-bar help text for the File > Open menu item.
-		help: || t("Open a document"),
+		help: Some(|| t("Open a document")),
 		enable: Enable::Always,
-		run: file::open,
+		behavior: Behavior::Run(file::open),
 	},
 	Command {
 		action: ActionId::Close,
 		// TRANSLATORS: Menu item in the File menu to close the current document.
 		label: || t("&Close"),
 		// TRANSLATORS: Status-bar help text for the File > Close menu item.
-		help: || t("Close the current document"),
+		help: Some(|| t("Close the current document")),
 		enable: Enable::HasDocument,
-		run: file::close,
+		behavior: Behavior::Run(file::close),
 	},
 	Command {
 		action: ActionId::CloseAll,
 		// TRANSLATORS: Menu item in the File menu to close all open documents.
 		label: || t("Close &All"),
 		// TRANSLATORS: Status-bar help text for the File > Close All menu item.
-		help: || t("Close all documents"),
+		help: Some(|| t("Close all documents")),
 		enable: Enable::HasDocument,
-		run: file::close_all,
+		behavior: Behavior::Run(file::close_all),
 	},
 	Command {
 		action: ActionId::ReopenLastClosed,
 		// TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
 		label: || t("Reopen &Last Closed"),
 		// TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
-		help: || t("Reopen the last closed document"),
+		help: Some(|| t("Reopen the last closed document")),
 		enable: Enable::HasRecentlyClosed,
-		run: file::reopen_last_closed,
+		behavior: Behavior::Run(file::reopen_last_closed),
 	},
 	Command {
 		action: ActionId::Exit,
 		// TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 		label: || t("E&xit"),
 		// TRANSLATORS: Status-bar help text for the File > Exit menu item.
-		help: || t("Exit the application"),
+		help: Some(|| t("Exit the application")),
 		enable: Enable::Always,
-		run: file::exit,
+		behavior: Behavior::Run(file::exit),
+	},
+	Command {
+		action: ActionId::PreviousSection,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
+		label: || t("Previous Section"),
+		// TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
+		help: Some(|| t("Go to previous section")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Section, next: false },
+	},
+	Command {
+		action: ActionId::NextSection,
+		// TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
+		label: || t("Next Section"),
+		// TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
+		help: Some(|| t("Go to next section")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Section, next: true },
+	},
+	Command {
+		action: ActionId::PreviousHeading,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
+		label: || t("&Previous Heading"),
+		// TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
+		help: Some(|| t("Go to previous heading")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(0), next: false },
+	},
+	Command {
+		action: ActionId::NextHeading,
+		// TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
+		label: || t("&Next Heading"),
+		// TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
+		help: Some(|| t("Go to next heading")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(0), next: true },
+	},
+	Command {
+		action: ActionId::PreviousHeading1,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
+		label: || t("Previous Heading Level &1"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(1), next: false },
+	},
+	Command {
+		action: ActionId::NextHeading1,
+		// TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
+		label: || t("Next Heading Level 1"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(1), next: true },
+	},
+	Command {
+		action: ActionId::PreviousHeading2,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
+		label: || t("Previous Heading Level &2"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(2), next: false },
+	},
+	Command {
+		action: ActionId::NextHeading2,
+		// TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
+		label: || t("Next Heading Level 2"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(2), next: true },
+	},
+	Command {
+		action: ActionId::PreviousHeading3,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
+		label: || t("Previous Heading Level &3"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(3), next: false },
+	},
+	Command {
+		action: ActionId::NextHeading3,
+		// TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
+		label: || t("Next Heading Level 3"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(3), next: true },
+	},
+	Command {
+		action: ActionId::PreviousHeading4,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
+		label: || t("Previous Heading Level &4"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(4), next: false },
+	},
+	Command {
+		action: ActionId::NextHeading4,
+		// TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
+		label: || t("Next Heading Level 4"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(4), next: true },
+	},
+	Command {
+		action: ActionId::PreviousHeading5,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
+		label: || t("Previous Heading Level &5"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(5), next: false },
+	},
+	Command {
+		action: ActionId::NextHeading5,
+		// TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
+		label: || t("Next Heading Level 5"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(5), next: true },
+	},
+	Command {
+		action: ActionId::PreviousHeading6,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
+		label: || t("Previous Heading Level &6"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(6), next: false },
+	},
+	Command {
+		action: ActionId::NextHeading6,
+		// TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
+		label: || t("Next Heading Level 6"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Heading(6), next: true },
+	},
+	Command {
+		action: ActionId::PreviousPage,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous page.
+		label: || t("Previous Pa&ge"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Page, next: false },
+	},
+	Command {
+		action: ActionId::NextPage,
+		// TRANSLATORS: Menu item in the Go menu to move to the next page.
+		label: || t("Next Pag&e"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Page, next: true },
+	},
+	Command {
+		action: ActionId::PreviousLink,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
+		label: || t("Previous Lin&k"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Link, next: false },
+	},
+	Command {
+		action: ActionId::NextLink,
+		// TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
+		label: || t("Next Lin&k"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Link, next: true },
+	},
+	Command {
+		action: ActionId::PreviousImage,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
+		label: || t("Previous Ima&ge"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Image, next: false },
+	},
+	Command {
+		action: ActionId::NextImage,
+		// TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
+		label: || t("Next Ima&ge"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Image, next: true },
+	},
+	Command {
+		action: ActionId::PreviousFigure,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
+		label: || t("Previous Figu&re"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Figure, next: false },
+	},
+	Command {
+		action: ActionId::NextFigure,
+		// TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
+		label: || t("Next Figu&re"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Figure, next: true },
+	},
+	Command {
+		action: ActionId::PreviousTable,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
+		label: || t("Previous &Table"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Table, next: false },
+	},
+	Command {
+		action: ActionId::NextTable,
+		// TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
+		label: || t("Next &Table"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Table, next: true },
+	},
+	Command {
+		action: ActionId::PreviousSeparator,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
+		label: || t("Previous Se&parator"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Separator, next: false },
+	},
+	Command {
+		action: ActionId::NextSeparator,
+		// TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
+		label: || t("Next Se&parator"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Separator, next: true },
+	},
+	Command {
+		action: ActionId::PreviousList,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
+		label: || t("Previous L&ist"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::List, next: false },
+	},
+	Command {
+		action: ActionId::NextList,
+		// TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
+		label: || t("Next L&ist"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::List, next: true },
+	},
+	Command {
+		action: ActionId::PreviousListItem,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
+		label: || t("Previous List &Item"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::ListItem, next: false },
+	},
+	Command {
+		action: ActionId::NextListItem,
+		// TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
+		label: || t("Next List I&tem"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::ListItem, next: true },
 	},
 ];
 
 /// Looks up a ported command by its action.
 pub fn for_action(action: ActionId) -> Option<&'static Command> {
 	COMMANDS.iter().find(|command| command.action == action)
+}
+
+/// One menu entry for `action`, for the group builders in `menu/go_menu.rs`.
+///
+/// Panics for the same reason [`append_item`] does, and is covered by the same kind of test.
+pub fn menu_entry(action: ActionId, config: &ConfigManager) -> MenuEntry {
+	let command =
+		for_action(action).unwrap_or_else(|| panic!("{action:?} is in a menu's item list but not in COMMANDS"));
+	item_with_help(command.id(), command.menu_label(config), command.help_text())
+}
+
+/// Menu entries for `actions`, in the order given.
+pub fn menu_entries(actions: &[ActionId], config: &ConfigManager) -> Vec<MenuEntry> {
+	actions.iter().map(|&action| menu_entry(action, config)).collect()
 }
 
 /// Appends `action`'s menu item, with its label, shortcut and help text, to `menu`.
@@ -141,7 +448,7 @@ pub fn for_action(action: ActionId) -> Option<&'static Command> {
 pub fn append_item(menu: &Menu, action: ActionId, config: &ConfigManager) {
 	let command =
 		for_action(action).unwrap_or_else(|| panic!("{action:?} is in a menu's item list but not in COMMANDS"));
-	let _ = menu.append(command.id(), &command.menu_label(config), &(command.help)(), ItemKind::Normal);
+	let _ = menu.append(command.id(), &command.menu_label(config), &command.help_text(), ItemKind::Normal);
 }
 
 /// Looks up a ported command by wx id.
@@ -155,7 +462,7 @@ pub fn find(id: i32) -> Option<&'static Command> {
 /// should fall through to its own dispatch.
 pub fn dispatch(id: i32, ctx: &Ctx) -> bool {
 	find(id).is_some_and(|command| {
-		(command.run)(ctx);
+		command.run(ctx);
 		true
 	})
 }

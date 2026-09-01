@@ -3,92 +3,45 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::builder::{MenuEntry, append_menu_entries, build_menu, format_menu_label, item, item_with_help};
-use crate::ui::menu_ids;
+use crate::ui::{commands, menu_ids};
 
 fn sections_entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
-	let prev_section_label = format_menu_label(&t("Previous Section"), ActionId::PreviousSection, config);
-	// TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
-	let prev_section_help = t("Go to previous section");
-	// TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
-	let next_section_label = format_menu_label(&t("Next Section"), ActionId::NextSection, config);
-	// TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
-	let next_section_help = t("Go to next section");
-	vec![
-		item_with_help(menu_ids::PREVIOUS_SECTION, prev_section_label, prev_section_help),
-		item_with_help(menu_ids::NEXT_SECTION, next_section_label, next_section_help),
-	]
+	commands::menu_entries(&[ActionId::PreviousSection, ActionId::NextSection], config)
 }
 
 fn pages_entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	// TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
 	let goto_page_label = format_menu_label(&t("Go to &Page"), ActionId::GoToPage, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the previous page.
-	let prev_page_label = format_menu_label(&t("Previous Pa&ge"), ActionId::PreviousPage, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next page.
-	let next_page_label = format_menu_label(&t("Next Pag&e"), ActionId::NextPage, config);
-	vec![
-		item(menu_ids::GO_TO_PAGE, goto_page_label),
-		item(menu_ids::PREVIOUS_PAGE, prev_page_label),
-		item(menu_ids::NEXT_PAGE, next_page_label),
-	]
+	let mut entries = vec![item(menu_ids::GO_TO_PAGE, goto_page_label)];
+	entries.extend(commands::menu_entries(&[ActionId::PreviousPage, ActionId::NextPage], config));
+	entries
 }
 
 fn links_entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
-	let prev_link_label = format_menu_label(&t("Previous Lin&k"), ActionId::PreviousLink, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
-	let next_link_label = format_menu_label(&t("Next Lin&k"), ActionId::NextLink, config);
-	vec![item(menu_ids::PREVIOUS_LINK, prev_link_label), item(menu_ids::NEXT_LINK, next_link_label)]
+	commands::menu_entries(&[ActionId::PreviousLink, ActionId::NextLink], config)
 }
 
 fn images_entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
-	let prev_image_label = format_menu_label(&t("Previous Ima&ge"), ActionId::PreviousImage, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
-	let next_image_label = format_menu_label(&t("Next Ima&ge"), ActionId::NextImage, config);
-	vec![item(menu_ids::PREVIOUS_IMAGE, prev_image_label), item(menu_ids::NEXT_IMAGE, next_image_label)]
+	commands::menu_entries(&[ActionId::PreviousImage, ActionId::NextImage], config)
 }
 
 fn figures_entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
-	let prev_figure_label = format_menu_label(&t("Previous Figu&re"), ActionId::PreviousFigure, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
-	let next_figure_label = format_menu_label(&t("Next Figu&re"), ActionId::NextFigure, config);
-	vec![item(menu_ids::PREVIOUS_FIGURE, prev_figure_label), item(menu_ids::NEXT_FIGURE, next_figure_label)]
+	commands::menu_entries(&[ActionId::PreviousFigure, ActionId::NextFigure], config)
 }
 
 fn tables_entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
-	let prev_table_label = format_menu_label(&t("Previous &Table"), ActionId::PreviousTable, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
-	let next_table_label = format_menu_label(&t("Next &Table"), ActionId::NextTable, config);
-	vec![item(menu_ids::PREVIOUS_TABLE, prev_table_label), item(menu_ids::NEXT_TABLE, next_table_label)]
+	commands::menu_entries(&[ActionId::PreviousTable, ActionId::NextTable], config)
 }
 
 fn separators_entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
-	let prev_separator_label = format_menu_label(&t("Previous Se&parator"), ActionId::PreviousSeparator, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
-	let next_separator_label = format_menu_label(&t("Next Se&parator"), ActionId::NextSeparator, config);
-	vec![item(menu_ids::PREVIOUS_SEPARATOR, prev_separator_label), item(menu_ids::NEXT_SEPARATOR, next_separator_label)]
+	commands::menu_entries(&[ActionId::PreviousSeparator, ActionId::NextSeparator], config)
 }
 
 fn lists_entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
-	let prev_list_label = format_menu_label(&t("Previous L&ist"), ActionId::PreviousList, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
-	let next_list_label = format_menu_label(&t("Next L&ist"), ActionId::NextList, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
-	let prev_list_item_label = format_menu_label(&t("Previous List &Item"), ActionId::PreviousListItem, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
-	let next_list_item_label = format_menu_label(&t("Next List I&tem"), ActionId::NextListItem, config);
-	vec![
-		item(menu_ids::PREVIOUS_LIST, prev_list_label),
-		item(menu_ids::NEXT_LIST, next_list_label),
-		item(menu_ids::PREVIOUS_LIST_ITEM, prev_list_item_label),
-		item(menu_ids::NEXT_LIST_ITEM, next_list_item_label),
-	]
+	commands::menu_entries(
+		&[ActionId::PreviousList, ActionId::NextList, ActionId::PreviousListItem, ActionId::NextListItem],
+		config,
+	)
 }
 
 fn containers_entries(config: &ConfigManager) -> Vec<MenuEntry> {
@@ -107,55 +60,25 @@ fn containers_entries(config: &ConfigManager) -> Vec<MenuEntry> {
 }
 
 fn headings_entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
-	let prev_heading_label = format_menu_label(&t("&Previous Heading"), ActionId::PreviousHeading, config);
-	// TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
-	let prev_heading_help = t("Go to previous heading");
-	// TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
-	let next_heading_label = format_menu_label(&t("&Next Heading"), ActionId::NextHeading, config);
-	// TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
-	let next_heading_help = t("Go to next heading");
-	// TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
-	let prev_heading1_label = format_menu_label(&t("Previous Heading Level &1"), ActionId::PreviousHeading1, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
-	let next_heading1_label = format_menu_label(&t("Next Heading Level 1"), ActionId::NextHeading1, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
-	let prev_heading2_label = format_menu_label(&t("Previous Heading Level &2"), ActionId::PreviousHeading2, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
-	let next_heading2_label = format_menu_label(&t("Next Heading Level 2"), ActionId::NextHeading2, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
-	let prev_heading3_label = format_menu_label(&t("Previous Heading Level &3"), ActionId::PreviousHeading3, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
-	let next_heading3_label = format_menu_label(&t("Next Heading Level 3"), ActionId::NextHeading3, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
-	let prev_heading4_label = format_menu_label(&t("Previous Heading Level &4"), ActionId::PreviousHeading4, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
-	let next_heading4_label = format_menu_label(&t("Next Heading Level 4"), ActionId::NextHeading4, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
-	let prev_heading5_label = format_menu_label(&t("Previous Heading Level &5"), ActionId::PreviousHeading5, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
-	let next_heading5_label = format_menu_label(&t("Next Heading Level 5"), ActionId::NextHeading5, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
-	let prev_heading6_label = format_menu_label(&t("Previous Heading Level &6"), ActionId::PreviousHeading6, config);
-	// TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
-	let next_heading6_label = format_menu_label(&t("Next Heading Level 6"), ActionId::NextHeading6, config);
-	vec![
-		item_with_help(menu_ids::PREVIOUS_HEADING, prev_heading_label, prev_heading_help),
-		item_with_help(menu_ids::NEXT_HEADING, next_heading_label, next_heading_help),
-		MenuEntry::Separator,
-		item(menu_ids::PREVIOUS_HEADING_1, prev_heading1_label),
-		item(menu_ids::NEXT_HEADING_1, next_heading1_label),
-		item(menu_ids::PREVIOUS_HEADING_2, prev_heading2_label),
-		item(menu_ids::NEXT_HEADING_2, next_heading2_label),
-		item(menu_ids::PREVIOUS_HEADING_3, prev_heading3_label),
-		item(menu_ids::NEXT_HEADING_3, next_heading3_label),
-		item(menu_ids::PREVIOUS_HEADING_4, prev_heading4_label),
-		item(menu_ids::NEXT_HEADING_4, next_heading4_label),
-		item(menu_ids::PREVIOUS_HEADING_5, prev_heading5_label),
-		item(menu_ids::NEXT_HEADING_5, next_heading5_label),
-		item(menu_ids::PREVIOUS_HEADING_6, prev_heading6_label),
-		item(menu_ids::NEXT_HEADING_6, next_heading6_label),
-	]
+	commands::menu_entries(
+		&[
+			ActionId::PreviousHeading,
+			ActionId::NextHeading,
+			ActionId::PreviousHeading1,
+			ActionId::NextHeading1,
+			ActionId::PreviousHeading2,
+			ActionId::NextHeading2,
+			ActionId::PreviousHeading3,
+			ActionId::NextHeading3,
+			ActionId::PreviousHeading4,
+			ActionId::NextHeading4,
+			ActionId::PreviousHeading5,
+			ActionId::NextHeading5,
+			ActionId::PreviousHeading6,
+			ActionId::NextHeading6,
+		],
+		config,
+	)
 }
 
 fn bookmarks_entries(config: &ConfigManager) -> Vec<MenuEntry> {
@@ -438,4 +361,52 @@ pub fn create_go_menu(config: &ConfigManager, compact: bool) -> Menu {
 		append_containers_items(&menu, config);
 	}
 	menu
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	/// Every action these builders name has to be in the command table: `menu_entries` panics
+	/// otherwise, which would take the menu bar down while it was being built at startup.
+	#[test]
+	fn every_go_menu_item_is_a_known_command() {
+		let actions = [
+			ActionId::PreviousSection,
+			ActionId::NextSection,
+			ActionId::PreviousPage,
+			ActionId::NextPage,
+			ActionId::PreviousLink,
+			ActionId::NextLink,
+			ActionId::PreviousImage,
+			ActionId::NextImage,
+			ActionId::PreviousFigure,
+			ActionId::NextFigure,
+			ActionId::PreviousTable,
+			ActionId::NextTable,
+			ActionId::PreviousSeparator,
+			ActionId::NextSeparator,
+			ActionId::PreviousList,
+			ActionId::NextList,
+			ActionId::PreviousListItem,
+			ActionId::NextListItem,
+			ActionId::PreviousHeading,
+			ActionId::NextHeading,
+			ActionId::PreviousHeading1,
+			ActionId::NextHeading1,
+			ActionId::PreviousHeading2,
+			ActionId::NextHeading2,
+			ActionId::PreviousHeading3,
+			ActionId::NextHeading3,
+			ActionId::PreviousHeading4,
+			ActionId::NextHeading4,
+			ActionId::PreviousHeading5,
+			ActionId::NextHeading5,
+			ActionId::PreviousHeading6,
+			ActionId::NextHeading6,
+		];
+		for action in actions {
+			assert!(commands::for_action(action).is_some(), "{action:?} is in the Go menu but not in COMMANDS");
+		}
+	}
 }
