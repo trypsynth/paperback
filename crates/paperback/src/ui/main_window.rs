@@ -15,10 +15,12 @@ use wxdragon::{prelude::*, timer::Timer};
 use super::tray;
 use super::{
 	background, commands, dialogs,
-	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
+	document_manager::{DocumentManager, DocumentTab, display_title},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
-	icon, menu, menu_ids, navigation, sleep_timer, status, window_geometry,
+	icon, menu, menu_ids, navigation,
+	readability::build_font_from_readability,
+	sleep_timer, status, window_geometry,
 };
 use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
