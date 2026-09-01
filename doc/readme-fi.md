@@ -210,7 +210,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu ongelma, jonka vuoksi ylimääräisen ZIP64-lohkon sisältämät EPUB-tiedostot eivät avautuneet, vaan antoivat virheilmoituksen ”Invalid local file header”.
 * Pitkissä asiakirjoissa ei enää palata alkuun, kun niitä luetaan ruudunlukijan jatkuvalla luvulla.
 * Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.
-* Automaattinen ”Asiakirja avattu” -ilmoitus odottaa nyt ruudunlukijan puheen päättymistä eikä keskeytä sitä enää kesken lauseen.
+* Automaattinen ”Asiakirja päivitetty” -ilmoitus odottaa nyt ruudunlukijan puheen päättymistä eikä keskeytä sitä enää kesken lauseen.
 * Asetukset-ikkunan Yleiset-välilehden sarkainjärjestys noudattaa nyt näytön järjestystä, ja päivityskanava on heti päivitystarkistuksen jälkeen.
 * Avaa sovelluksessa -valikossa ei näytetä enää sovelluksen koko kuvausta vaan pelkkä "Paperback".
 * Sanamäärä- ja Asiakirjan tiedot -ikkunoissa näytetään nyt äänikirjan tiedostomäärä sekä kokonaiskesto.
