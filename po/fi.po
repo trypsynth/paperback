@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 15:15+0000\n"
-"PO-Revision-Date: 2026-08-31 21:50+0300\n"
+"POT-Creation-Date: 2026-09-01 07:12-0600\n"
+"PO-Revision-Date: 2026-09-01 18:17+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -26,6 +26,203 @@ msgstr "IPC-palvelimen luonti epäonnistui"
 #. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
 msgstr "Varoitus"
+
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+msgid "Open Document"
+msgstr "Asiakirjan avaaminen"
+
+#. TRANSLATORS: Menu item in the File menu to open a document.
+msgid "&Open..."
+msgstr "&Avaa..."
+
+#. TRANSLATORS: Status-bar help text for the File > Open menu item.
+msgid "Open a document"
+msgstr "Avaa asiakirja"
+
+#. TRANSLATORS: Menu item in the File menu to close the current document.
+msgid "&Close"
+msgstr "&Sulje"
+
+#. TRANSLATORS: Status-bar help text for the File > Close menu item.
+msgid "Close the current document"
+msgstr "Sulje nykyinen asiakirja"
+
+#. TRANSLATORS: Menu item in the File menu to close all open documents.
+msgid "Close &All"
+msgstr "Sulje k&aikki"
+
+#. TRANSLATORS: Status-bar help text for the File > Close All menu item.
+msgid "Close all documents"
+msgstr "Sulje kaikki asiakirjat"
+
+#. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
+msgid "Reopen &Last Closed"
+msgstr "Avaa &viimeksi suljettu"
+
+#. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
+msgid "Reopen the last closed document"
+msgstr "Avaa viimeksi suljettu asiakirja"
+
+#. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "&Lopeta"
+
+#. TRANSLATORS: Status-bar help text for the File > Exit menu item.
+msgid "Exit the application"
+msgstr "Lopeta sovellus"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Section"
+msgstr "Edellinen luku"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
+msgid "Go to previous section"
+msgstr "Siirry edelliseen lukuun"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Section"
+msgstr "Seuraava luku"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
+msgid "Go to next section"
+msgstr "Siirry seuraavaan lukuun"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
+msgid "&Previous Heading"
+msgstr "Edellinen &otsikko"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
+msgid "Go to previous heading"
+msgstr "Siirry edelliseen otsikkoon"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
+msgid "&Next Heading"
+msgstr "Seuraava o&tsikko"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
+msgid "Go to next heading"
+msgstr "Siirry seuraavaan otsikkoon"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
+msgid "Previous Heading Level &1"
+msgstr "Edellinen otsikkotaso &1"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 1"
+msgstr "Seuraava otsikkotaso 1"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
+msgid "Previous Heading Level &2"
+msgstr "Edellinen otsikkotaso &2"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 2"
+msgstr "Seuraava otsikkotaso 2"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
+msgid "Previous Heading Level &3"
+msgstr "Edellinen otsikkotaso &3"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 3"
+msgstr "Seuraava otsikkotaso 3"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
+msgid "Previous Heading Level &4"
+msgstr "Edellinen otsikkotaso &4"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 4"
+msgstr "Seuraava otsikkotaso 4"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
+msgid "Previous Heading Level &5"
+msgstr "Edellinen otsikkotaso &5"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 5"
+msgstr "Seuraava otsikkotaso 5"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
+msgid "Previous Heading Level &6"
+msgstr "Edellinen otsikkotaso &6"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 6"
+msgstr "Seuraava otsikkotaso 6"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous page.
+msgid "Previous Pa&ge"
+msgstr "Ede&llinen sivu"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next page.
+msgid "Next Pag&e"
+msgstr "&Seuraava sivu"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
+msgid "Previous Lin&k"
+msgstr "Edellinen lin&kki"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
+msgid "Next Lin&k"
+msgstr "Seuraava li&nkki"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
+msgid "Previous Ima&ge"
+msgstr "Edellinen &kuva"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
+msgid "Next Ima&ge"
+msgstr "Seuraava k&uva"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
+msgid "Previous Figu&re"
+msgstr "Edellinen ku&vitus"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
+msgid "Next Figu&re"
+msgstr "Seuraava kuv&itus"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
+msgid "Previous &Table"
+msgstr "Edellinen t&aulukko"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
+msgid "Next &Table"
+msgstr "Seuraava ta&ulukko"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
+msgid "Previous Se&parator"
+msgstr "Edellinen e&rotin"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
+msgid "Next Se&parator"
+msgstr "Seuraava er&otin"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
+msgid "Previous L&ist"
+msgstr "Edellinen l&uettelo"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
+msgid "Next L&ist"
+msgstr "Seuraava lue&ttelo"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
+msgid "Previous List &Item"
+msgstr "Edellinen luettelok&ohde"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
+msgid "Next List I&tem"
+msgstr "Seuraava luetteloko&hde"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
@@ -79,7 +276,6 @@ msgid "&Open"
 msgstr "&Avaa"
 
 #. TRANSLATORS: Button label to locate a missing file on disk
-#| msgid "Locate"
 msgid "&Locate..."
 msgstr "Et&si..."
 
@@ -136,7 +332,6 @@ msgstr[0] "%d asiakirja."
 msgstr[1] "%d asiakirjaa."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the only document in the list is selected
-#| msgid "1 of 1 document selected."
 msgid "1 document selected."
 msgstr "1 asiakirja valittuna."
 
@@ -247,6 +442,36 @@ msgstr "Merkkien määrä:"
 msgid "Characters (excluding spaces):"
 msgstr "Merkkien määrä (ilman välilyöntejä):"
 
+#. TRANSLATORS: Label for the number of audio files in the document
+msgid "Number of files:"
+msgstr "Tiedostojen määrä:"
+
+#. TRANSLATORS: Label for the total playback duration across all of the document's audio files
+msgid "Total duration:"
+msgstr "Kesto yhteensä:"
+
+#. TRANSLATORS: Label for the average playback duration per audio file in the document
+msgid "Average duration:"
+msgstr "Kesto keskimäärin:"
+
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d tunti"
+msgstr[1] "%d tuntia"
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minuutti"
+msgstr[1] "%d minuuttia"
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d sekunti"
+msgstr[1] "%d sekuntia"
+
 #. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr "Elementit"
@@ -349,6 +574,18 @@ msgstr "Asetukset"
 msgid "&Restore previously opened documents on startup"
 msgstr "Pala&uta aiemmin avatut asiakirjat käynnistettäessä"
 
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+msgid "&Automatically reload changed documents"
+msgstr "&Päivitä muuttuneeet asiakirjat automaattisesti"
+
+#. TRANSLATORS: Option to start the app maximized
+msgid "&Start maximized"
+msgstr "&Käynnistä suurennettuna"
+
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+msgid "&Minimize to system tray"
+msgstr "&Pienennä ilmaisinalueelle"
+
 #. TRANSLATORS: Option to toggle word wrapping of text
 msgid "&Word wrap"
 msgstr "Rivit&ys"
@@ -356,14 +593,6 @@ msgstr "Rivit&ys"
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
 msgstr "Näytä taulukot tekst&in osana"
-
-#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
-msgid "&Minimize to system tray"
-msgstr "&Pienennä ilmaisinalueelle"
-
-#. TRANSLATORS: Option to start the app maximized
-msgid "&Start maximized"
-msgstr "&Käynnistä suurennettuna"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -444,9 +673,17 @@ msgstr ""
 msgid "Check for &updates on startup"
 msgstr "Tarkista &päivitykset käynnistettäessä"
 
-#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
-msgid "&Automatically reload changed documents"
-msgstr "&Päivitä muuttuneeet asiakirjat automaattisesti"
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "Päivityskanava:"
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "Vakaa"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "Kehitys"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
@@ -467,18 +704,6 @@ msgstr "V&iimeisimpien asiakirjojen määrä:"
 #. TRANSLATORS: Label for the language selection dropdown
 msgid "&Language:"
 msgstr "&Kieli:"
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-msgid "Update Channel:"
-msgstr "Päivityskanava:"
-
-#. TRANSLATORS: Stable update channel option
-msgid "Stable"
-msgstr "Vakaa"
-
-#. TRANSLATORS: Developer/development update channel option
-msgid "Dev"
-msgstr "Kehitys"
 
 #. TRANSLATORS: Label/header for the Font options section
 msgid "Font"
@@ -671,11 +896,11 @@ msgstr "&Poista pikanäppäin"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
 msgid "&Reset to Default"
-msgstr "&Palauta oletukset"
+msgstr "&Palauta oletus"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
 msgid "Reset &All to Defaults"
-msgstr "Palauta &kaikki oletuspikanäppäimet"
+msgstr "Palauta &oletukset"
 
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
@@ -688,7 +913,7 @@ msgid "Shortcut Conflict"
 msgstr "Pikanäppäimen ristiriita"
 
 msgid "Reset all shortcuts to their default values?"
-msgstr "Palautetaanko oletuspikanäppäimet?"
+msgstr "Palautetaanko kaikki oletuspikanäppäimet?"
 
 #. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
@@ -746,27 +971,23 @@ msgstr "Ei valintaa"
 msgid "View Note"
 msgstr "Näytä muistiinpano"
 
-#. TRANSLATORS: Duration segment for hours in the estimated reading time (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d tunti"
-msgstr[1] "%d tuntia"
-
-#. TRANSLATORS: Duration segment for minutes in the estimated reading time (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minuutti"
-msgstr[1] "%d minuuttia"
-
-#. TRANSLATORS: Duration segment for seconds in the estimated reading time (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d sekunti"
-msgstr[1] "%d sekuntia"
-
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
 msgstr "Arvioitu lukuaika: {}"
+
+#. TRANSLATORS: Title of the Word Count dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Word Count"
+msgstr "Sanamäärä"
+
+msgid "This document contains %d audio file."
+msgid_plural "This document contains %d audio files."
+msgstr[0] "Asiakirjassa on %d äänitiedosto."
+msgstr[1] "Asiakirjassa on %d äänitiedostoa."
+
+#. TRANSLATORS: Prompt showing an audio-only document's total playback duration across all its files. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+msgid "Total duration: {}"
+msgstr "Kesto yhteensä: {}"
 
 #. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
 msgid "The selection contains %d word."
@@ -779,11 +1000,6 @@ msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "Asiakirjassa on %d sana."
 msgstr[1] "Asiakirjassa on %d sanaa."
-
-#. TRANSLATORS: Title of the Word Count dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Word Count"
-msgstr "Sanamäärä"
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
@@ -947,8 +1163,7 @@ msgid "Failed to reveal file in folder."
 msgstr "Tiedostokansion avaaminen epäonnistui."
 
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
-msgid ""
-"readme.html not found. Please ensure the application was built properly."
+msgid "readme.html not found. Please ensure the application was built properly."
 msgstr ""
 "Tiedostoa readme.html ei löydy. Varmista, että sovellus on käännetty oikein "
 "lähdekoodista."
@@ -1053,15 +1268,6 @@ msgstr "Muistiinpanot ja kirjanmerkit tuotu onnistuneesti."
 msgid "Import Successful"
 msgstr "Tuonti onnistui"
 
-#. TRANSLATORS: Announced when the user cancels a running sleep timer
-msgid "Sleep timer cancelled."
-msgstr "Uniajastin peruutettu."
-
-msgid "Sleep timer set for %d minute."
-msgid_plural "Sleep timer set for %d minutes."
-msgstr[0] "Uniajastin %d minuutti."
-msgstr[1] "Uniajastin %d minuuttia."
-
 #. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
 msgstr "Paperback"
@@ -1085,10 +1291,6 @@ msgstr[1] "%d merkkiä"
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Asiakirjan vienti epäonnistui."
-
-#. TRANSLATORS: Title of the file picker dialog shown when opening a document
-msgid "Open Document"
-msgstr "Asiakirjan avaaminen"
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
@@ -1128,38 +1330,6 @@ msgstr "L&iitä\tCtrl+V"
 msgid "Select &All\tCtrl+A"
 msgstr "Valitse k&aikki\tCtrl+A"
 
-#. TRANSLATORS: Menu item in the File menu to open a document.
-msgid "&Open..."
-msgstr "&Avaa..."
-
-#. TRANSLATORS: Status-bar help text for the File > Open menu item.
-msgid "Open a document"
-msgstr "Avaa asiakirja"
-
-#. TRANSLATORS: Menu item in the File menu to close the current document.
-msgid "&Close"
-msgstr "&Sulje"
-
-#. TRANSLATORS: Status-bar help text for the File > Close menu item.
-msgid "Close the current document"
-msgstr "Sulje nykyinen asiakirja"
-
-#. TRANSLATORS: Menu item in the File menu to close all open documents.
-msgid "Close &All"
-msgstr "Sulje k&aikki"
-
-#. TRANSLATORS: Status-bar help text for the File > Close All menu item.
-msgid "Close all documents"
-msgstr "Sulje kaikki asiakirjat"
-
-#. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
-msgid "Reopen &Last Closed"
-msgstr "Avaa &viimeksi suljettu"
-
-#. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
-msgid "Reopen the last closed document"
-msgstr "Avaa viimeksi suljettu asiakirja"
-
 #. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
 msgstr "&Viimeisimmät asiakirjat"
@@ -1167,15 +1337,6 @@ msgstr "&Viimeisimmät asiakirjat"
 #. TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 msgid "Open a recent document"
 msgstr "Avaa viimeksi avattu asiakirja"
-
-#. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
-#. TRANSLATORS: System tray menu item to quit the application
-msgid "E&xit"
-msgstr "&Lopeta"
-
-#. TRANSLATORS: Status-bar help text for the File > Exit menu item.
-msgid "Exit the application"
-msgstr "Lopeta sovellus"
 
 #. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
@@ -1185,91 +1346,9 @@ msgstr "(Ei viimeisimpiä asiakirjoja)"
 msgid "Show All..."
 msgstr "Näytä kaikki..."
 
-#. TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Previous Section"
-msgstr "Edellinen luku"
-
-#. TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
-msgid "Go to previous section"
-msgstr "Siirry edelliseen lukuun"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Next Section"
-msgstr "Seuraava luku"
-
-#. TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
-msgid "Go to next section"
-msgstr "Siirry seuraavaan lukuun"
-
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
 msgid "Go to &Page"
 msgstr "Siirry s&ivulle"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous page.
-msgid "Previous Pa&ge"
-msgstr "Ede&llinen sivu"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next page.
-msgid "Next Pag&e"
-msgstr "&Seuraava sivu"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
-msgid "Previous Lin&k"
-msgstr "Edellinen lin&kki"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
-msgid "Next Lin&k"
-msgstr "Seuraava li&nkki"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
-msgid "Previous Ima&ge"
-msgstr "Edellinen &kuva"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
-msgid "Next Ima&ge"
-msgstr "Seuraava k&uva"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
-msgid "Previous Figu&re"
-msgstr "Edellinen ku&vitus"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
-msgid "Next Figu&re"
-msgstr "Seuraava kuv&itus"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
-msgid "Previous &Table"
-msgstr "Edellinen t&aulukko"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
-msgid "Next &Table"
-msgstr "Seuraava ta&ulukko"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
-msgid "Previous Se&parator"
-msgstr "Edellinen e&rotin"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
-msgid "Next Se&parator"
-msgstr "Seuraava er&otin"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
-msgid "Previous L&ist"
-msgstr "Edellinen l&uettelo"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
-msgid "Next L&ist"
-msgstr "Seuraava lue&ttelo"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
-msgid "Previous List &Item"
-msgstr "Edellinen luettelok&ohde"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
-msgid "Next List I&tem"
-msgstr "Seuraava luetteloko&hde"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
 msgid "Container &Start"
@@ -1286,76 +1365,6 @@ msgstr "Säilön &jälkeinen kohta"
 #. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
 msgid "Go past the end of the current list or table"
 msgstr "Siirry luettelon tai taulukon lopun jälkeiseen kohtaan"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
-msgid "&Previous Heading"
-msgstr "Edellinen &otsikko"
-
-#. TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
-msgid "Go to previous heading"
-msgstr "Siirry edelliseen otsikkoon"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
-msgid "&Next Heading"
-msgstr "Seuraava o&tsikko"
-
-#. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
-msgid "Go to next heading"
-msgstr "Siirry seuraavaan otsikkoon"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
-msgid "Previous Heading Level &1"
-msgstr "Edellinen otsikkotaso &1"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Next Heading Level 1"
-msgstr "Seuraava otsikkotaso 1"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
-msgid "Previous Heading Level &2"
-msgstr "Edellinen otsikkotaso &2"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Next Heading Level 2"
-msgstr "Seuraava otsikkotaso 2"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
-msgid "Previous Heading Level &3"
-msgstr "Edellinen otsikkotaso &3"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Next Heading Level 3"
-msgstr "Seuraava otsikkotaso 3"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
-msgid "Previous Heading Level &4"
-msgstr "Edellinen otsikkotaso &4"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Next Heading Level 4"
-msgstr "Seuraava otsikkotaso 4"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
-msgid "Previous Heading Level &5"
-msgstr "Edellinen otsikkotaso &5"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Next Heading Level 5"
-msgstr "Seuraava otsikkotaso 5"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
-msgid "Previous Heading Level &6"
-msgstr "Edellinen otsikkotaso &6"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Next Heading Level 6"
-msgstr "Seuraava otsikkotaso 6"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
 msgid "&Previous Bookmark"
@@ -1795,12 +1804,10 @@ msgid "No sections."
 msgstr "Ei lukuja."
 
 #. TRANSLATORS: Announced when there is no next section from the current position
-#| msgid "No next section"
 msgid "No next section."
 msgstr "Ei seuraavaa lukua."
 
 #. TRANSLATORS: Announced when there is no previous section from the current position
-#| msgid "No previous section"
 msgid "No previous section."
 msgstr "Ei edellistä lukua."
 
@@ -2037,6 +2044,15 @@ msgstr "Kirjanmerkki tallennettu."
 #. TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
 msgid "No note at the current position."
 msgstr "Ei muistiinpanoa nykyisessä sijainnissa."
+
+#. TRANSLATORS: Announced when the user cancels a running sleep timer
+msgid "Sleep timer cancelled."
+msgstr "Uniajastin peruutettu."
+
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Uniajastin %d minuutti."
+msgstr[1] "Uniajastin %d minuuttia."
 
 #. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Line"
@@ -2445,6 +2461,11 @@ msgstr "HTML-tiedosto on tyhjä: {}"
 msgid "Failed to convert HTML to text: {}"
 msgstr "HTML-tiedoston tekstimuunnos epäonnistui: {}"
 
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+#| msgid "Enter {}"
+msgid "Chapter {}"
+msgstr "Luku {}"
+
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 msgid "Failed to convert Markdown to text: {}"
 msgstr "Markdown-tiedoston tekstimuunnos epäonnistui: {}"
@@ -2566,8 +2587,8 @@ msgstr ""
 "tekstintunnistus, jotta sen sisältöä voidaan lukea."
 
 msgid ""
-"Password-protected PPT files are not currently supported. Try saving the "
-"file as PPTX and opening that instead."
+"Password-protected PPT files are not currently supported. Try saving the file "
+"as PPTX and opening that instead."
 msgstr ""
 "Salasanalla suojattuja PPT-tiedostoja ei tueta. Kokeile tallentaa tiedosto "
 "PPTX-muodossa."
@@ -2724,312 +2745,377 @@ msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %
 msgid "Security Error"
 msgstr "Suojausvirhe"
 
+#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 #: swift
 msgid "Export Document Data"
 msgstr "Vie asiakirjan tiedot"
 
+#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
 #: swift
 msgid "Import Document Data"
 msgstr "Tuo asiakirjan tiedot"
 
+#. TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
 #: swift
 msgid "Settings exported"
 msgstr "Asetukset viety"
 
+#. TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
 #: swift
 msgid "Failed to export settings"
 msgstr "Asetusten vienti epäonnistui"
 
+#. TRANSLATORS: Confirmation shown after importing a document's settings and bookmarks from a .paperback file
 #: swift
 msgid "Settings imported"
 msgstr "Asetukset tuotu"
 
+#. TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
 #: swift
 msgid "Failed to import settings"
 msgstr "Asetusten tuonti epäonnistui"
 
+#. TRANSLATORS: Title of the alert reporting the result of importing/exporting a document's settings and bookmarks
 #: swift
 msgid "Document Data"
 msgstr "Asiakirjan tiedot"
 
+#. TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
 #: swift
 msgid "More options"
 msgstr "Lisää asetuksia"
 
+#. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
 #: swift
 msgid "Switch to TTS Mode"
 msgstr "Vaihda tekstistä puheeksi -tilaan"
 
+#. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
 #: swift
 msgid "Switch to Text Mode"
 msgstr "Vaihda tekstitilaan"
 
-#: swift
-#| msgid "Go To…"
-msgid "Go Toâ¦"
-msgstr "Siirry…"
-
+#. TRANSLATORS: Menu item to open the list of recently opened documents
 #: swift
 msgid "Recent Documents"
 msgstr "Viimeisimmät asiakirjat"
 
+#. TRANSLATORS: Menu item to open the sleep timer; the "(active)" variant is shown while a timer is currently counting down
 #: swift
 msgid "Sleep Timer (active)"
 msgstr "Uniajastin (aktiivinen)"
 
+#. TRANSLATORS: Label for the wheel picker choosing between the Headings and Links tabs
 #: swift
 msgid "Type"
 msgstr "Tyyppi"
 
+#. TRANSLATORS: Title shown when a document has no headings or links to list in the Elements sheet
 #: swift
 msgid "No Elements"
 msgstr "Ei elementtejä"
 
+#. TRANSLATORS: Description shown under the "No Elements" title explaining what would appear here
 #: swift
 msgid "Headings, images, and other elements will appear here."
 msgstr "Otsikot, kuvat ja muut elementit näytetään tässä."
 
+#. TRANSLATORS: Shown in the main reading area when no document is currently open
 #: swift
 msgid "No document open"
 msgstr "Ei avointa asiakirjaa"
 
+#. TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
 #: swift
 msgid "Show All"
 msgstr "Näytä kaikki"
 
-#: swift
-#| msgid "Search…"
-msgid "Searchâ¦"
-msgstr "Hae…"
-
+#. TRANSLATORS: Toggle label; when on, search matching is case-sensitive
 #: swift
 msgid "Match Case"
 msgstr "Sama kirjainkoko"
 
+#. TRANSLATORS: Toggle label; when on, search only matches whole words
 #: swift
 msgid "Whole Word"
 msgstr "Koko sana"
 
+#. TRANSLATORS: Toggle label; when on, the search query is treated as a regular expression
 #: swift
 msgid "Regular Expression"
 msgstr "Säännöllinen lauseke"
 
+#. TRANSLATORS: Title of the alert shown when a document fails to open
 #: swift
 msgid "Open Error"
 msgstr "Avausvirhe"
 
+#. TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
 #: swift
 msgid "Open Book"
 msgstr "Avaa kirja"
 
+#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
 #: swift
 msgid "Locate"
 msgstr "Etsi"
 
+#. TRANSLATORS: Button to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr "Poista"
 
+#. TRANSLATORS: Status label for a recent document whose file can no longer be found
 #: swift
 msgid "File Missing"
 msgstr "Tiedostoa ei ole"
 
+#. TRANSLATORS: Status label for a recent document that's currently open in a tab
 #: swift
 msgid "Currently Open"
 msgstr "Avoinna tällä hetkellä"
 
+#. TRANSLATORS: Title of the empty-state view shown when no documents have been opened yet
 #: swift
 msgid "No Recent Documents"
 msgstr "Ei viimeisimpiä asiakirjoja"
 
+#. TRANSLATORS: Description text under the "No Recent Documents" empty-state title
 #: swift
 msgid "Documents you open will appear here."
 msgstr "Avaamasi asiakirjat näytetään tässä."
 
+#. TRANSLATORS: Section header in Settings grouping text-to-speech voice/rate/pitch controls
 #: swift
 msgid "Text to Speech"
 msgstr "Tekstistä puheeksi"
 
+#. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: swift
 msgid "Voice"
 msgstr "Puheääni"
 
+#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
 #: swift
 msgid "Rate"
 msgstr "Nopeus"
 
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
 #: swift
 msgid "Speech Rate"
 msgstr "Puhenopeus"
 
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
 #: swift
 msgid "Pitch"
 msgstr "Korkeus"
 
+#. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
 #: swift
 msgid "Speech Dictionary"
 msgstr "Käyttäjän sanasto"
 
+#. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
 #: swift
 msgid "Play Sample"
 msgstr "Toista näyte"
 
+#. TRANSLATORS: Row label for the control that scales the size of document text
 #: swift
 msgid "Text Size"
 msgstr "Tekstin koko"
 
+#. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
 #: swift
 msgid "Line Spacing"
 msgstr "Riviväli"
 
+#. TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
 #: swift
 msgid "Paragraph Spacing"
 msgstr "Kappaleväli"
 
+#. TRANSLATORS: Label for the picker choosing how document text is aligned
 #: swift
 msgid "Alignment"
 msgstr "Tekstin tasaus"
 
+#. TRANSLATORS: Section header in Settings grouping general app behavior toggles
 #: swift
 msgid "Behavior"
 msgstr "Toiminta"
 
+#. TRANSLATORS: Toggle to reopen previously open documents on next launch
 #: swift
 msgid "Restore last open documents"
 msgstr "Palauta viimeksi avatut asiakirjat"
 
+#. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
 #: swift
 msgid "Swipe up moves forward"
 msgstr "Pitkä pyyhkäisy siirtää eteenpäin"
 
+#. TRANSLATORS: Row label for the document's title in the Document Info sheet
 #: swift
 msgid "Title"
 msgstr "Nimi"
 
+#. TRANSLATORS: Row label for the document's author in the Document Info sheet
 #: swift
 msgid "Author"
 msgstr "Tekijä"
 
+#. TRANSLATORS: Row label for the document's total word count
 #: swift
 msgid "Words"
 msgstr "Sanojen määrä"
 
+#. TRANSLATORS: Row label for the document's total line count
 #: swift
 msgid "Lines"
 msgstr "Rivien määrä"
 
+#. TRANSLATORS: Row label for the document's total character count (including spaces)
 #: swift
 msgid "Characters"
 msgstr "Merkkien määrä"
 
+#. TRANSLATORS: Row label for the document's character count with whitespace excluded
 #: swift
 msgid "Characters (excluding spaces)"
 msgstr "Merkkien määrä (ilman välilyöntejä)"
 
+#. TRANSLATORS: Label for the wheel picker that chooses whether Go To navigates by line, page, or percent
 #: swift
 msgid "Mode"
 msgstr "Tila"
 
+#. TRANSLATORS: Go To mode option: navigate to a specific page number
 #: swift
 msgid "Page"
 msgstr "Sivu"
 
+#. TRANSLATORS: Go To mode option: navigate to a percentage through the document
 #: swift
 msgid "Percent"
 msgstr "Prosenttia"
 
+#. TRANSLATORS: Placeholder for the line number input field in Go To
 #: swift
 msgid "Line number"
 msgstr "Rivinumero"
 
+#. TRANSLATORS: Placeholder for the page number input field in Go To
 #: swift
 msgid "Page number"
 msgstr "Sivunumero"
 
+#. TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
 #: swift
 msgid "Percentage"
 msgstr "Prosenttia luettu"
 
+#. TRANSLATORS: Navigation title of the Go To sheet
 #: swift
 msgid "Go To"
 msgstr "Siirry"
 
+#. TRANSLATORS: Placeholder text for the password entry field
 #: swift
 msgid "Password"
 msgstr "Salasana"
 
+#. TRANSLATORS: Footer text naming the file that needs a password; {} is the file name
 #: swift
 msgid "Enter password for {}"
 msgstr "Anna asiakirjan {} salasana"
 
+#. TRANSLATORS: Navigation title of the sheet prompting for a document's password
 #: swift
 msgid "Password Required"
 msgstr "Tarvitaan salasana"
 
+#. TRANSLATORS: Section header grouping the scope picker for a text-substitution rule
 #: swift
 msgid "Rule"
 msgstr "Sääntö"
 
+#. TRANSLATORS: Label for the picker choosing whether a rule applies to a whole word or a whole paragraph
 #: swift
 msgid "Scope"
 msgstr "Laajuus"
 
+#. TRANSLATORS: Rule scope option: the rule matches within a single word
 #: swift
 msgid "Word"
 msgstr "Sana"
 
+#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
 #: swift
 msgid "Paragraph"
 msgstr "Kappale"
 
+#. TRANSLATORS: Section header grouping the find/replace pattern fields for a text-substitution rule
 #: swift
 msgid "Pattern & Replacement"
 msgstr "Etsittävä ja korvaava teksti"
 
+#. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
 #: swift
 msgid "Pattern"
 msgstr "Etsittävä teksti"
 
+#. TRANSLATORS: Placeholder for the text field where the user enters the replacement text
 #: swift
 msgid "Replacement"
 msgstr "Korvaava teksti"
 
+#. TRANSLATORS: Toggle limiting a word-scope rule to whole-word matches only (no partial-word matches)
 #: swift
 msgid "Whole word only"
 msgstr "Koko sana"
 
+#. TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
 #: swift
 msgid "Regular expression (\\1 = first capture group)"
 msgstr "Säännöllinen lauseke (\\1 = ensimmäinen sieppausryhmä)"
 
+#. TRANSLATORS: Toggle for whether this text-substitution rule is currently active
 #: swift
 msgid "Enabled"
 msgstr "Käytössä"
 
+#. TRANSLATORS: Section header for choosing which TTS voices a rule applies to
 #: swift
 msgid "Apply to"
 msgstr "Käytä kohteessa"
 
+#. TRANSLATORS: Row label leading to the voice-filter picker for this rule
 #: swift
 msgid "Voices"
 msgstr "Puheäänet"
 
+#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
 #: swift
 msgid "New Rule"
 msgstr "Uusi sääntö"
 
+#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
 #: swift
 msgid "Edit Rule"
 msgstr "Muokkaa sääntöä"
 
+#. TRANSLATORS: Button to save the rule and dismiss the editor
 #: swift
 msgid "Save"
 msgstr "Tallenna"
 
+#. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
 #: swift
 msgid "All voices"
 msgstr "Kaikki puheäänet"
 
+#. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
 #: swift
 msgid "Apply To"
 msgstr "Käytä kohteessa"
@@ -3038,6 +3124,13 @@ msgstr "Käytä kohteessa"
 msgid "Sleep timer running, {} remaining"
 msgstr "Uniajastin käynnissä, jäljellä {}"
 
+#. TRANSLATORS: Sleep timer duration option that reveals a field to type a custom number of
+#. minutes; {} is the number typed so far, e.g. "Custom: 45 minutes" â shown once non-empty
+#. so VoiceOver users don't need to swipe into the text field to hear the current value.
+#. Three forms picked by the count's last digits (see nt() in Translations.swift): one =
+#. counts ending in 1 except 11 (1, 21, 31, ...), few = counts ending in 2-4 except 12-14
+#. (2, 3, 4, 22, 23, 24, ...), many = everything else (0, 5-20, 25-30, ...). The "many" form's
+#. trailing character isn't a typo â see pluralManyMarker in Translations.swift.
 #: swift
 msgid "Custom"
 msgstr "Oma"
@@ -3050,78 +3143,97 @@ msgstr "Oma: {} minuuttia"
 msgid "Duration"
 msgstr "Kesto"
 
+#. TRANSLATORS: Placeholder in the custom sleep timer duration field, asking for a number of minutes
 #: swift
 msgid "Minutes"
 msgstr "Minuuttia"
 
+#. TRANSLATORS: Button that dismisses the keyboard after typing a custom sleep timer duration
 #: swift
 msgid "Done"
 msgstr "Valmis"
 
+#. TRANSLATORS: Button that starts the sleep timer with the selected duration, or stops it if one is already running
 #: swift
 msgid "Stop Timer"
 msgstr "Pysäytä ajastin"
 
+#. TRANSLATORS: Button that starts the sleep timer with the selected duration, or stops it if one is already running
 #: swift
 msgid "Start Timer"
 msgstr "Käynnistä ajastin"
 
+#. TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
 #: swift
 msgid "Edit"
 msgstr "Muokkaa"
 
+#. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
 #: swift
 msgid "Add Rule"
 msgstr "Säännön lisäys"
 
+#. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
 #: swift
 msgid "No Rules"
 msgstr "Ei sääntöjä"
 
+#. TRANSLATORS: Accessibility label for the horizontal strip of open document tabs
 #: swift
 msgid "Tabs"
 msgstr "Välilehdet"
 
+#. TRANSLATORS: Navigation title of the table of contents screen
 #: swift
 msgid "Contents"
 msgstr "Sisällys"
 
+#. TRANSLATORS: Title shown when the current document has no table of contents
 #: swift
 msgid "No Table of Contents"
 msgstr "Ei sisällysluetteloa"
 
+#. TRANSLATORS: Description shown below the "No Table of Contents" title
 #: swift
 msgid "This document has no table of contents."
 msgstr "Asiakirjassa ei ole sisällysluetteloa."
 
+#. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
 #: swift
 msgid "Navigation unit"
 msgstr "Navigoinnin tarkkuus"
 
+#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
 #: swift
 msgid "Previous {}"
 msgstr "Edellinen {}"
 
+#. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
 #: swift
 msgid "Pause"
 msgstr "Pysäytä"
 
+#. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
 #: swift
 msgid "Play"
 msgstr "Toista"
 
+#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
 msgid "End of document"
 msgstr "Asiakirjan loppu"
 
+#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
 msgid "Beginning of document"
 msgstr "Asiakirjan alku"
 
+#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
 #: swift
 msgid "Next {}"
 msgstr "Seuraava {}"
 
+#. TRANSLATORS: Placeholder shown in the read-aloud view before the user has started playback
 #: swift
 msgid "Press play to start listening."
 msgstr "Aloita kuuntelu painamalla Toista."
@@ -3130,6 +3242,7 @@ msgstr "Aloita kuuntelu painamalla Toista."
 msgid "Document Information"
 msgstr "Asiakirjan tiedot"
 
+#. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 msgid "Untitled Link"
 msgstr "Nimetön linkki"
@@ -3138,42 +3251,52 @@ msgstr "Nimetön linkki"
 msgid "Export Document"
 msgstr "Asiakirjan vienti"
 
+#. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
 #: kt
 msgid "Select a format to export the current document:"
 msgstr "Valitse asiakirjan vientimuoto:"
 
+#. TRANSLATORS: Export format option to save the document as a plain text file
 #: kt
 msgid "Plain Text (.txt)"
 msgstr "Pelkkä teksti (.txt)"
 
+#. TRANSLATORS: Export format option to save the document as an HTML file
 #: kt
 msgid "HTML (.html)"
 msgstr "HTML (.html)"
 
+#. TRANSLATORS: Export format option to save the document as a Markdown file
 #: kt
 msgid "Markdown (.md)"
 msgstr "Markdown (.md)"
 
+#. TRANSLATORS: Shown in the in-app file browser when a folder has no openable documents or subfolders
 #: kt
 msgid "No supported books or folders found here."
 msgstr "Tästä sijainnista ei löydy tuettuja kirjoja eikä kansioita."
 
+#. TRANSLATORS: TalkBack description of a file browser entry's type, read as e.g. "myfile.epub, File, modified ..."
 #: kt
 msgid "Folder"
 msgstr "Kansio"
 
+#. TRANSLATORS: Display name for the device's root storage folder in the in-app file browser
 #: kt
 msgid "Internal Storage"
 msgstr "Sisäinen tallennustila"
 
+#. TRANSLATORS: Label for the text field where the user types what to search for
 #: kt
 msgid "Search Term"
 msgstr "Hakusana"
 
+#. TRANSLATORS: Button that opens a dropdown of previously used search terms
 #: kt
 msgid "Search History"
 msgstr "Hakuhistoria"
 
+#. TRANSLATORS: Label for the password input field
 #: kt
 msgid "Password:"
 msgstr "Salasana:"
@@ -3182,6 +3305,7 @@ msgstr "Salasana:"
 msgid "All Files Access Required"
 msgstr "Tarvitaan kaikkien tiedostojen käyttöoikeus"
 
+#. TRANSLATORS: Intro sentence explaining what the "All Files Access" permission is used for
 #: kt
 msgid ""
 "Paperback requires the 'All Files Access' permission to enable the custom in-"
@@ -3190,18 +3314,20 @@ msgstr ""
 "Paperback tarvitsee kaikkien tiedostojen käyttöoikeuden sovelluksen sisäisen "
 "tiedostoselaimen käyttämiseen."
 
+#. TRANSLATORS: Heading introducing the list of reasons the permission is needed
 #: kt
 msgid "Why we need this:"
 msgstr "Mihin tätä tarvitaan:"
 
+#. TRANSLATORS: First reason for requesting the "All Files Access" permission
 #: kt
 msgid ""
-"To provide a fast, fully screen-reader accessible file manager inside the "
-"app."
+"To provide a fast, fully screen-reader accessible file manager inside the app."
 msgstr ""
 "Nopean ja ruudunlukijalla saavutettavan sovelluksen sisäisen "
 "tiedostonhallinnan tarjoamiseksi."
 
+#. TRANSLATORS: Second reason for requesting the "All Files Access" permission
 #: kt
 msgid ""
 "To load large files instantly without needing to copy them into the app's "
@@ -3210,75 +3336,82 @@ msgstr ""
 "Suurten tiedostojen nopeaan avaamiseen ilman sovelluksen välimuistiin "
 "kopiointia."
 
+#. TRANSLATORS: Third reason for requesting the "All Files Access" permission
 #: kt
 msgid "To display the exact local file paths of your documents."
 msgstr "Asiakirjojen paikallisten tiedostopolkujen näyttämiseen."
 
-#: kt
-msgid ""
-"If you deny this permission, you can still use the Android System File "
-"Picker to open your "
-msgstr ""
-"Jos et salli tätä käyttöoikeutta, voit silti käyttää Androidin omaa "
-"tiedostonvalitsinta kirjojen avaamiseen poistamalla asetuksissa käytöstä "
-"sovelluksen sisäisen tiedostoselaimen."
-
+#. TRANSLATORS: Button label to grant the requested permission
 #: kt
 msgid "Grant"
 msgstr "Salli"
 
+#. TRANSLATORS: Button label to dismiss the permission rationale dialog without granting it
 #: kt
 msgid "Not Now"
 msgstr "Älä salli"
 
+#. TRANSLATORS: Dialog title, switches between the main sleep timer view and the custom-minutes entry view
 #: kt
 msgid "Custom Timer"
 msgstr "Mukautettu ajastin"
 
+#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
 #: kt
 msgid "Back"
 msgstr "Takaisin"
 
+#. TRANSLATORS: Button to confirm and start the sleep timer with the custom minutes entered
 #: kt
 msgid "Start"
 msgstr "Käynnistä"
 
+#. TRANSLATORS: Sentence announced to screen readers with the sleep timer's remaining time; {} is replaced with e.g. "3:45"
 #: kt
 msgid "Active: {} remaining"
 msgstr "Käytössä: {} jäljellä"
 
+#. TRANSLATORS: Unit label shown under the sleep timer's remaining time
 #: kt
 msgid "remaining"
 msgstr "jäljellä"
 
+#. TRANSLATORS: Button to cancel the currently running sleep timer
 #: kt
 msgid "Cancel Timer"
 msgstr "Peruuta ajastin"
 
+#. TRANSLATORS: Heading introducing the preset duration chips, shown while a sleep timer is already active
 #: kt
 msgid "Change to:"
 msgstr "Uusi arvo:"
 
+#. TRANSLATORS: Preset sleep timer duration chip; {} is replaced with the number of minutes
 #: kt
 msgid "{} minutes"
 msgstr "{} minuuttia"
 
+#. TRANSLATORS: Chip to switch to the custom-minutes entry view for the sleep timer
 #: kt
 msgid "Custom time..."
 msgstr "Mukautettu aika..."
 
+#. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
 #: kt
 msgid "Expanded"
 msgstr "Laajennettu"
 
+#. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
 #: kt
 msgid "Collapsed"
 msgstr "Kutistettu"
 
+#. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
 #: kt
 msgid "Collapse"
 msgstr "Kutista"
 
+#. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
 #: kt
 msgid "Expand"
 msgstr "Laajenna"
@@ -3287,187 +3420,218 @@ msgstr "Laajenna"
 msgid "This document contains {} words."
 msgstr "Asiakirjassa on {} sanaa."
 
+#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
+#. three forms is used depends on the target language's own plural rule, read
+#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+#. character isn't a typo â see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 msgid "words"
 msgstr "sanaa"
 
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr "Sulje haku"
 
+#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 msgid "Document exported"
 msgstr "Asiakirja viety"
 
+#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 msgid "Failed to export document"
 msgstr "Asiakirjan vienti epäonnistui"
 
+#. TRANSLATORS: Shown on the main screen before the app has finished loading any document state
 #: kt
 msgid "No document open. Please open a book."
 msgstr "Ei avointa asiakirjaa."
 
+#. TRANSLATORS: Shown on the main screen when no document is open and there are no recent documents to list
 #: kt
 msgid "No Documents"
 msgstr "Asiakirjoja ei ole"
 
+#. TRANSLATORS: Countdown shown while the reading sleep timer is active; {} is the remaining time as minutes:seconds
 #: kt
 msgid "Sleep timer: {}"
 msgstr "Uniajastin: {}"
 
+#. TRANSLATORS: Accessibility action to cancel the active reading sleep timer
 #: kt
 msgid "Cancel sleep timer"
 msgstr "Peruuta uniajastin"
 
+#. TRANSLATORS: Confirm button to proceed with importing the found document settings
 #: kt
 msgid "Import"
 msgstr "Tuo"
 
+#. TRANSLATORS: Accessibility label for the overflow icon button that opens the options menu
 #: kt
 msgid "More Options"
 msgstr "Lisää asetuksia"
 
+#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
 #: kt
 msgid "Pause Read Aloud"
 msgstr "Pysäytä tekstistä puheeksi -toiminto"
 
+#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
 #: kt
 msgid "Read Aloud"
 msgstr "Lue tekstistä puheeksi -toiminnolla"
 
+#. TRANSLATORS: Menu item / accessibility action to open the export document dialog
 #: kt
 msgid "Export As"
 msgstr "Vie muodossa"
 
+#. TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
 #: kt
 msgid "Elements List"
 msgstr "Elementtilista"
 
+#. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
 #: kt
 msgid "No more matches."
 msgstr "Ei enempää tuloksia."
 
+#. TRANSLATORS: Name of the "heading" reading/navigation unit
 #: kt
 msgid "Heading"
 msgstr "Otsikko"
 
+#. TRANSLATORS: Name of the "link" reading/navigation unit
 #: kt
 msgid "Link"
 msgstr "Linkki"
 
+#. TRANSLATORS: Name of the "section" reading/navigation unit
 #: kt
 msgid "Section"
 msgstr "Luku"
 
+#. TRANSLATORS: Name of the "list" reading/navigation unit
 #: kt
 msgid "List"
 msgstr "Luettelo"
 
+#. TRANSLATORS: Name of the "list item" reading/navigation unit
 #: kt
 msgid "List Item"
 msgstr "Luettelon kohde"
 
+#. TRANSLATORS: Name of the "table" reading/navigation unit
 #: kt
 msgid "Table"
 msgstr "Taulukko"
 
+#. TRANSLATORS: Name of the "separator" reading/navigation unit
 #: kt
 msgid "Separator"
 msgstr "Erotin"
 
+#. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
+#. above; {} is the number of seconds. Which of the three forms is used depends on the
+#. target language's own plural rule, read from its catalogue (see nt() in
+#. Translations.kt). The "many" form's trailing character isn't a typo â see
+#. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 msgid "{} seconds"
 msgstr "{} sekuntia"
 
+#. TRANSLATORS: Shown next to a permission on the onboarding screen once it has been granted
 #: kt
-#| msgid "✓ Granted"
 msgid "â Granted"
 msgstr "✓ Sallittu"
 
+#. TRANSLATORS: Heading shown on the first-run permissions onboarding screen
 #: kt
 msgid "Before You Start"
 msgstr "Lue tämä ensin"
 
+#. TRANSLATORS: Intro paragraph explaining that the following sections describe requested permissions
 #: kt
 msgid ""
-"Paperback works best with a couple of permissions. Here's what we ask for "
-"and why:"
+"Paperback works best with a couple of permissions. Here's what we ask for and "
+"why:"
 msgstr ""
 "Paperback toimii parhaiten, kun sille myönnetään muutama käyttöoikeus. Alla "
 "on selvitys pyydettävistä oikeuksista perusteluineen:"
 
+#. TRANSLATORS: Heading for the notifications permission section on the onboarding screen
 #: kt
 msgid "Notifications"
 msgstr "Ilmoitukset"
 
-#: kt
-msgid ""
-"Lets Paperback show playback controls in the notification shade while text-"
-"to-speech is "
-msgstr ""
-"Sallii Paperbackin näyttää toistosäätimet ilmoitusvalikossa tekstistä "
-"puheeksi -toiminnon ollessa käynnissä"
-
+#. TRANSLATORS: Button to grant the notifications permission during onboarding
 #: kt
 msgid "Enable Notifications"
 msgstr "Ilmoitusten käyttöönotto"
 
+#. TRANSLATORS: Heading for the all files access permission section on the onboarding screen
 #: kt
 msgid "All Files Access"
 msgstr "Kaikkien tiedostojen käyttöoikeus"
 
-#: kt
-msgid ""
-"Powers the optional in-app file browser, so you can open documents from "
-"anywhere on your "
-msgstr ""
-"Mahdollistaa sovelluksen valinnaisen tiedostoselaimen käytön, jotta voit "
-"avata asiakirjoja mistä tahansa laitteeltasi"
-
+#. TRANSLATORS: Button to open system settings for the all files access permission during onboarding
 #: kt
 msgid "Enable File Access"
 msgstr "Salli tiedostojen käyttöoikeus"
 
+#. TRANSLATORS: Button to leave the onboarding screen and continue into the app, whether or not permissions were granted
 #: kt
 msgid "Continue"
 msgstr "Jatka"
 
+#. TRANSLATORS: Settings switch: reopen the last-read book automatically on launch
 #: kt
 msgid "Restore last open book"
 msgstr "Palauta viimeksi avattu kirja"
 
+#. TRANSLATORS: Settings switch: use the app's built-in file browser instead of the system document picker
 #: kt
 msgid "Use in-app file browser (requires All Files permission)"
 msgstr "Käytä sovelluksen sisäistä tiedostoselainta"
 
+#. TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
 #: kt
 msgid "Text-to-Speech"
 msgstr "Tekstistä puheeksi"
 
+#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
 msgstr "Järjestelmän oletus"
 
+#. TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
 #: kt
 msgid "Back {}"
 msgstr "{} taaksepäin"
 
+#. TRANSLATORS: TalkBack label for the read-aloud bar's forward button when navigating audio by time; {} is an amount like "30 seconds"
 #: kt
 msgid "Forward {}"
 msgstr "{} eteenpäin"
 
+#. TRANSLATORS: Placeholder in the Go To dialog's number field; {} is the mode name ("Line", "Page", or "Percentage")
 #: kt
 msgid "Enter {}"
 msgstr "Syötä {}"
 
+#. TRANSLATORS: Shown in place of the document when it could not be opened; {} is the reason
 #: kt
 msgid "Error loading document: {}"
 msgstr "Virhe avattaessa asiakirjaa: {}"
 
+#. TRANSLATORS: 1.5x line spacing option
 #: kt
 msgid "1.5Ã"
 msgstr "1,5×"
 
+#. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
 msgid "Speech Engine"
 msgstr "Puhemoottori"
@@ -3481,59 +3645,128 @@ msgid "{} books"
 msgstr "{} kirjaa"
 
 #: swift
-#| msgid "Open..."
 msgid "..."
 msgstr "..."
 
+#. TRANSLATORS: Menu item to jump to a specific page, line, or percentage in the document
 #: swift
-#| msgid "Go To"
 msgid "Go To..."
 msgstr "Siirry..."
 
+#. TRANSLATORS: Placeholder text shown in the empty search field of the Find screen
 #: swift
-#| msgid "Search"
 msgid "Search..."
 msgstr "Hae..."
 
 #: swift
-#| msgid "Custom: {} minutes"
 msgid "Custom: {} minute"
 msgstr "Oma: {} minuutti"
 
 #: swift
-#| msgid "Custom: {} minutes"
 msgid "Custom: {} minutesâ£"
 msgstr "Oma: {} minuuttia"
 
+#. TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is
+#. replaced with the number. Which of the three forms is used depends on the target language's
+#. own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
+#. trailing character isn't a typo â see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
-#| msgid "This document contains {} words."
 msgid "This document contains {} word."
 msgstr "Asiakirjassa on {} sana."
 
+#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
+#. three forms is used depends on the target language's own plural rule, read
+#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+#. character isn't a typo â see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
-#| msgid "words"
 msgid "word"
 msgstr "sana"
 
+#. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
+#. above; {} is the number of seconds. Which of the three forms is used depends on the
+#. target language's own plural rule, read from its catalogue (see nt() in
+#. Translations.kt). The "many" form's trailing character isn't a typo â see
+#. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
-#| msgid "{} seconds"
 msgid "{} second"
 msgstr "{} sekunti"
 
+#. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
+#. above; {} is the number of seconds. Which of the three forms is used depends on the
+#. target language's own plural rule, read from its catalogue (see nt() in
+#. Translations.kt). The "many" form's trailing character isn't a typo â see
+#. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
-#| msgid "{} seconds"
 msgid "{} secondsâ£"
 msgstr "{} sekuntia"
 
 #: kt
-#| msgid "This document contains {} words."
 msgid "This document contains {} words.â£"
 msgstr "Asiakirjassa on {} sanaa."
 
+#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
+#. three forms is used depends on the target language's own plural rule, read
+#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+#. character isn't a typo â see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
-#| msgid "words"
 msgid "wordsâ£"
 msgstr "sanaa"
+
+#. TRANSLATORS: Closing note explaining the fallback if the user denies the permission
+#: kt
+msgid ""
+"If you deny this permission, you can still use the Android System File Picker "
+"to open your books by turning off the custom file browser setting."
+msgstr ""
+"Jos et salli tätä käyttöoikeutta, voit silti käyttää Androidin omaa "
+"tiedostonvalitsinta kirjojen avaamiseen poistamalla asetuksissa käytöstä "
+"sovelluksen sisäisen tiedostoselaimen."
+
+#. TRANSLATORS: Explanation of why the app requests the notifications permission
+#: kt
+msgid ""
+"Lets Paperback show playback controls in the notification shade while text-to-"
+"speech is reading, so you can pause, resume, and skip without reopening the "
+"app."
+msgstr ""
+"Mahdollistaa Paperbackin toistosäädinten näyttämisen ilmoituspaneelissa "
+"tekstistä puheeksi -toiminnolla luettaessa, jolloin voit pysäyttää ja jatkaa "
+"lukemista sekä siirtyä asiakirjassa eteen- tai taaksepäin sovellusta "
+"avaamatta."
+
+#. TRANSLATORS: Explanation of why the app requests the all files access permission
+#: kt
+msgid ""
+"Powers the optional in-app file browser, so you can open documents from "
+"anywhere on your device â including network drives â instantly, with full "
+"screen-reader support. You can skip this and use the system file picker "
+"instead."
+msgstr ""
+"Mahdollistaa sovelluksen sisäisen tiedostoselaimen käytön. Sen avulla avaat "
+"asiakirjat laitteeltasi tai verkkolevyiltä viiveettömästi ja täydellä "
+"ruudunlukijatuella. Voit halutessasi ohittaa tämän ja käyttää järjestelmän "
+"omaa tiedostonvalitsinta."
+
+#. TRANSLATORS: Announced by the screen reader when the in-app file browser opens
+#: kt
+#| msgid "File Missing"
+msgid "File Manager"
+msgstr "Tiedostoselain"
+
+#~ msgid ""
+#~ "Powers the optional in-app file browser, so you can open documents from "
+#~ "anywhere on your "
+#~ msgstr ""
+#~ "Mahdollistaa sovelluksen valinnaisen tiedostoselaimen käytön, jotta voit "
+#~ "avata asiakirjoja mistä tahansa laitteeltasi"
+
+#~| msgid "Go To…"
+#~ msgid "Go Toâ¦"
+#~ msgstr "Siirry…"
+
+#~| msgid "Search…"
+#~ msgid "Searchâ¦"
+#~ msgstr "Hae…"
 
 #~ msgid "&Locate…"
 #~ msgstr "Et&si…"
