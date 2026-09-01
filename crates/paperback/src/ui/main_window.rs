@@ -661,7 +661,7 @@ impl MainWindow {
 					}
 				}
 				menu_ids::GO_TO_LINE => {
-					menu_go::handle_go_to_line(&frame_copy, &dm, &config);
+					menu_go::handle_go_to_line(&frame_copy, &dm, &config, live_region_label);
 				}
 				menu_ids::GO_TO_PAGE => {
 					menu_go::handle_go_to_page(&frame_copy, &dm, &config, live_region_label);
