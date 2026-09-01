@@ -12,7 +12,7 @@ mod readme;
 
 use patois_build::po::{PoDocument, Translation};
 
-use crate::project_root;
+use crate::workspace::project_root;
 
 /// Regenerates `po/paperback.pot`, syncs every `po/<lang>.po` against it via `msgmerge`
 /// (adds blank entries for new strings, flags changed-but-similar entries `#, fuzzy`),
@@ -50,7 +50,7 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 	// the pre-run content when nothing but that timestamp moved (or always, for
 	// --dry-run, which must touch nothing on disk).
 	let original_pot = fs::read_to_string(&pot_path).ok();
-	crate::gen_pot()?;
+	crate::pot::gen_pot()?;
 	if let Some(original) = &original_pot {
 		if dry_run {
 			fs::write(&pot_path, original)?;

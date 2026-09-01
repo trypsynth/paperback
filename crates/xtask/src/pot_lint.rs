@@ -247,7 +247,7 @@ mod tests {
 	/// Every translatable source in the project, so a concatenated call cannot be merged.
 	#[test]
 	fn no_source_file_concatenates_a_translation_call() {
-		if let Err(report) = check_sources(&crate::project_root()) {
+		if let Err(report) = check_sources(&crate::workspace::project_root()) {
 			panic!("{report}");
 		}
 	}
