@@ -120,7 +120,13 @@ pub(super) fn handle_go_to_page(
 		navigation::announce_after_delay(frame, live_region_label, message);
 	}
 }
-pub(super) fn handle_go_to_percent(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
+
+pub(super) fn handle_go_to_percent(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+) {
 	let current_percent = {
 		let mut dm_guard = dm.lock().unwrap();
 		let current_percent = {
@@ -134,9 +140,9 @@ pub(super) fn handle_go_to_percent(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 		current_percent
 	};
 	if let Some(percent) = dialogs::show_go_to_percent_dialog(frame, current_percent) {
-		let update = {
+		let (message, update) = {
 			let mut dm_guard = dm.lock().unwrap();
-			let update = {
+			let (message, update) = {
 				let Some(tab) = dm_guard.active_tab_mut() else {
 					return;
 				};
@@ -144,11 +150,21 @@ pub(super) fn handle_go_to_percent(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 				// on. Everything else maps the percentage through the text as before.
 				let target_pos = navigation::seek_audio_to_percent(tab, percent)
 					.unwrap_or_else(|| tab.session.position_from_percent(percent));
-				navigation::move_to_offset_and_record_history(tab, target_pos)
+				// Announce the line the jump lands on, as Go to Line does; a percentage alone
+				// says nothing about where it points. Fall back to the percentage when that
+				// line is blank.
+				let content = tab.session.get_line_text(target_pos);
+				let message =
+					if content.trim().is_empty() { format!("{percent}%") } else { content.trim().to_string() };
+				let update = navigation::move_to_offset_and_record_history(tab, target_pos);
+				(message, update)
 			};
 			drop(dm_guard);
-			update
+			(message, update)
 		};
 		navigation::persist_navigation_history(config, Some(&update));
+		// Same interrupt as Find/Go to Line/Go to Page: raise the announcement ~30ms after the
+		// dialog closes so the focus-return chain is cut off.
+		navigation::announce_after_delay(frame, live_region_label, message);
 	}
 }
