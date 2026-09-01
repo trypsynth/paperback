@@ -1,8 +1,5 @@
 //! Putting a document's text into the reading control: loading the window around the caret,
 //! extending it, and rendering the bold, italic and underline runs the parser found.
-//!
-//! What is in the control, as against how it looks, which is `super::readability`, and as
-//! against which document is open, which is the document manager.
 
 use paperback_core::session::{DocumentSession, WindowSlice};
 use wxdragon::prelude::*;

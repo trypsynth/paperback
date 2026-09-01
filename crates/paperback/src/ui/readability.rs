@@ -1,9 +1,5 @@
 //! How a document's text looks in the reading area: the font, the colours, and the spacing and
 //! alignment that go with them.
-//!
-//! Separate from what the control holds and from which document is open. Three other modules
-//! reach for this while rebuilding a control's appearance, which is why it sits on its own
-//! rather than inside the document manager.
 
 #[cfg(target_os = "windows")]
 use std::ptr::addr_of_mut;

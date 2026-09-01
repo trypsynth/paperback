@@ -1,9 +1,8 @@
 //! The reading control: building it, and everything it does in response to a key or a click.
 //!
-//! Its handlers reach the document manager rather than the tab they belong to, because a
-//! closure installed on a control cannot borrow the tab that owns it. Almost every call is
-//! about the active tab, which is the one whose control has focus, so the indirection is
-//! correct even though it reads oddly.
+//! A closure installed on a control cannot borrow the tab that owns it, so the handlers go
+//! through the document manager to reach the active tab, which is the tab whose control has
+//! focus.
 
 use std::{rc::Rc, sync::Mutex};
 
