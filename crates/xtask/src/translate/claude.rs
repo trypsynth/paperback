@@ -580,10 +580,13 @@ fn code_spans(text: &str) -> Vec<(std::ops::Range<usize>, &str)> {
 	out
 }
 
-/// Splits Markdown into chunks of at most `limit` characters, breaking only at `##` headings so
-/// a chunk is always a whole number of sections and the model never sees a half-open construct.
-/// A single section longer than the limit is left whole rather than cut mid-paragraph.
-fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
+/// Splits Markdown at `##` headings, so every piece is a whole section.
+///
+/// The readme sync hashes and re-translates these, and [`split_markdown`] packs these into
+/// request-sized chunks. They have to be the same unit: a section whose text has not changed
+/// must hash the same as the one translated last time, which only holds if both are cut the
+/// same way.
+pub(super) fn split_sections(markdown: &str) -> Vec<String> {
 	let mut sections: Vec<String> = Vec::new();
 	let mut current = String::new();
 	for line in markdown.lines() {
@@ -597,6 +600,14 @@ fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
 	if !current.trim().is_empty() {
 		sections.push(current.trim_end().to_string());
 	}
+	sections
+}
+
+/// Splits Markdown into chunks of at most `limit` characters, breaking only at `##` headings so
+/// a chunk is always a whole number of sections and the model never sees a half-open construct.
+/// A single section longer than the limit is left whole rather than cut mid-paragraph.
+fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
+	let sections = split_sections(markdown);
 	let mut chunks: Vec<String> = Vec::new();
 	for section in sections {
 		match chunks.last_mut() {
