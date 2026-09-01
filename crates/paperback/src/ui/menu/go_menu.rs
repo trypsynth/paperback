@@ -2,7 +2,7 @@ use paperback_core::config::{ActionId, ConfigManager};
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::builder::{MenuEntry, append_menu_entries, build_menu, format_menu_label, item, item_with_help};
+use super::builder::{MenuEntry, append_menu_entries, build_menu, format_menu_label, item};
 use crate::ui::{commands, menu_ids};
 
 fn sections_entries(config: &ConfigManager) -> Vec<MenuEntry> {
@@ -45,18 +45,7 @@ fn lists_entries(config: &ConfigManager) -> Vec<MenuEntry> {
 }
 
 fn containers_entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
-	let container_start_label = format_menu_label(&t("Container &Start"), ActionId::ContainerStart, config);
-	// TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
-	let container_start_help = t("Go to the start of the current list or table");
-	// TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
-	let container_end_label = format_menu_label(&t("Past Container &End"), ActionId::ContainerEnd, config);
-	// TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
-	let container_end_help = t("Go past the end of the current list or table");
-	vec![
-		item_with_help(menu_ids::CONTAINER_START, container_start_label, container_start_help),
-		item_with_help(menu_ids::CONTAINER_END, container_end_label, container_end_help),
-	]
+	commands::menu_entries(&[ActionId::ContainerStart, ActionId::ContainerEnd], config)
 }
 
 fn headings_entries(config: &ConfigManager) -> Vec<MenuEntry> {
@@ -82,50 +71,21 @@ fn headings_entries(config: &ConfigManager) -> Vec<MenuEntry> {
 }
 
 fn bookmarks_entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
-	let prev_bookmark_label = format_menu_label(&t("&Previous Bookmark"), ActionId::PreviousBookmark, config);
-	// TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
-	let prev_bookmark_help = t("Go to previous bookmark");
-	// TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
-	let next_bookmark_label = format_menu_label(&t("&Next Bookmark"), ActionId::NextBookmark, config);
-	// TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
-	let next_bookmark_help = t("Go to next bookmark");
-	// TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
-	let prev_note_label = format_menu_label(&t("Previous &Note"), ActionId::PreviousNote, config);
-	// TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
-	let prev_note_help = t("Go to previous note");
-	// TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
-	let next_note_label = format_menu_label(&t("Next N&ote"), ActionId::NextNote, config);
-	// TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
-	let next_note_help = t("Go to next note");
-	// TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
-	let all_bookmarks_label = format_menu_label(&t("Jump to &All..."), ActionId::JumpToAllBookmarks, config);
-	// TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
-	let all_bookmarks_help = t("Show all bookmarks and notes");
-	// TRANSLATORS: Menu item in the Go menu to open a dialog listing only bookmarks.
-	let bookmarks_only_label =
-		format_menu_label(&t("Jump to &Bookmarks Only..."), ActionId::JumpToBookmarksOnly, config);
-	// TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
-	let bookmarks_only_help = t("Show bookmarks only");
-	// TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
-	let notes_only_label = format_menu_label(&t("Jump to Notes &Only..."), ActionId::JumpToNotesOnly, config);
-	// TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
-	let notes_only_help = t("Show notes only");
-	// TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
-	let view_note_label = format_menu_label(&t("&View Note Text"), ActionId::ViewNoteText, config);
-	// TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
-	let view_note_help = t("View the note at current position");
-	vec![
-		item_with_help(menu_ids::PREVIOUS_BOOKMARK, prev_bookmark_label, prev_bookmark_help),
-		item_with_help(menu_ids::NEXT_BOOKMARK, next_bookmark_label, next_bookmark_help),
-		item_with_help(menu_ids::PREVIOUS_NOTE, prev_note_label, prev_note_help),
-		item_with_help(menu_ids::NEXT_NOTE, next_note_label, next_note_help),
-		MenuEntry::Separator,
-		item_with_help(menu_ids::JUMP_TO_ALL_BOOKMARKS, all_bookmarks_label, all_bookmarks_help),
-		item_with_help(menu_ids::JUMP_TO_BOOKMARKS_ONLY, bookmarks_only_label, bookmarks_only_help),
-		item_with_help(menu_ids::JUMP_TO_NOTES_ONLY, notes_only_label, notes_only_help),
-		item_with_help(menu_ids::VIEW_NOTE_TEXT, view_note_label, view_note_help),
-	]
+	let mut entries = commands::menu_entries(
+		&[ActionId::PreviousBookmark, ActionId::NextBookmark, ActionId::PreviousNote, ActionId::NextNote],
+		config,
+	);
+	entries.push(MenuEntry::Separator);
+	entries.extend(commands::menu_entries(
+		&[
+			ActionId::JumpToAllBookmarks,
+			ActionId::JumpToBookmarksOnly,
+			ActionId::JumpToNotesOnly,
+			ActionId::ViewNoteText,
+		],
+		config,
+	));
+	entries
 }
 
 fn create_sections_submenu(config: &ConfigManager) -> Menu {
@@ -404,6 +364,16 @@ mod tests {
 			ActionId::NextHeading5,
 			ActionId::PreviousHeading6,
 			ActionId::NextHeading6,
+			ActionId::ContainerStart,
+			ActionId::ContainerEnd,
+			ActionId::PreviousBookmark,
+			ActionId::NextBookmark,
+			ActionId::PreviousNote,
+			ActionId::NextNote,
+			ActionId::JumpToAllBookmarks,
+			ActionId::JumpToBookmarksOnly,
+			ActionId::JumpToNotesOnly,
+			ActionId::ViewNoteText,
 		];
 		for action in actions {
 			assert!(commands::for_action(action).is_some(), "{action:?} is in the Go menu but not in COMMANDS");

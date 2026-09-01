@@ -7,7 +7,7 @@ use std::{
 #[cfg(target_os = "windows")]
 use std::{cell::RefCell, sync::atomic::AtomicIsize};
 
-use paperback_core::{config::ConfigManager, types::BookmarkFilterType};
+use paperback_core::config::ConfigManager;
 use patois::{nt, t};
 use wxdragon::{prelude::*, timer::Timer};
 
@@ -667,57 +667,6 @@ impl MainWindow {
 				menu_ids::GO_TO_PERCENT => {
 					menu_go::handle_go_to_percent(&frame_copy, &dm, &config);
 				}
-				menu_ids::GO_BACK => {
-					navigation::handle_history_navigation(&dm, &config, live_region_label, false);
-				}
-				menu_ids::GO_FORWARD => {
-					navigation::handle_history_navigation(&dm, &config, live_region_label, true);
-				}
-				menu_ids::PREVIOUS_BOOKMARK => {
-					navigation::handle_bookmark_navigation(&dm, &config, live_region_label, false, false);
-				}
-				menu_ids::NEXT_BOOKMARK => {
-					navigation::handle_bookmark_navigation(&dm, &config, live_region_label, true, false);
-				}
-				menu_ids::PREVIOUS_NOTE => {
-					navigation::handle_bookmark_navigation(&dm, &config, live_region_label, false, true);
-				}
-				menu_ids::NEXT_NOTE => {
-					navigation::handle_bookmark_navigation(&dm, &config, live_region_label, true, true);
-				}
-				menu_ids::JUMP_TO_ALL_BOOKMARKS => {
-					navigation::handle_bookmark_dialog(
-						&frame_copy,
-						&dm,
-						&config,
-						live_region_label,
-						BookmarkFilterType::All,
-					);
-				}
-				menu_ids::JUMP_TO_BOOKMARKS_ONLY => {
-					navigation::handle_bookmark_dialog(
-						&frame_copy,
-						&dm,
-						&config,
-						live_region_label,
-						BookmarkFilterType::BookmarksOnly,
-					);
-				}
-				menu_ids::JUMP_TO_NOTES_ONLY => {
-					navigation::handle_bookmark_dialog(
-						&frame_copy,
-						&dm,
-						&config,
-						live_region_label,
-						BookmarkFilterType::NotesOnly,
-					);
-				}
-				menu_ids::TOGGLE_BOOKMARK => {
-					navigation::handle_toggle_bookmark(&dm, &config, live_region_label);
-				}
-				menu_ids::BOOKMARK_WITH_NOTE => {
-					navigation::handle_bookmark_with_note(&frame_copy, &dm, &config, live_region_label);
-				}
 				menu_ids::TOGGLE_WORD_WRAP => {
 					let new_state = {
 						let cfg = config.lock().unwrap();
@@ -739,21 +688,6 @@ impl MainWindow {
 					live_region::announce(live_region_label, &msg);
 					dm.lock().unwrap().restore_focus();
 				}
-				menu_ids::PLAY_PAUSE_AUDIO => {
-					navigation::handle_toggle_play_pause_audio(&dm, live_region_label);
-				}
-				menu_ids::SEEK_AUDIO_FORWARD => {
-					navigation::handle_seek_audio(&dm, &config, live_region_label, true);
-				}
-				menu_ids::SEEK_AUDIO_BACKWARD => {
-					navigation::handle_seek_audio(&dm, &config, live_region_label, false);
-				}
-				menu_ids::INCREASE_AUDIO_SEEK_AMOUNT => {
-					navigation::handle_change_seek_amount(&config, live_region_label, true);
-				}
-				menu_ids::DECREASE_AUDIO_SEEK_AMOUNT => {
-					navigation::handle_change_seek_amount(&config, live_region_label, false);
-				}
 				menu_ids::TOGGLE_FULL_SCREEN => {
 					let new_state = !frame_copy.is_full_screen();
 					frame_copy.show_full_screen(new_state);
@@ -763,15 +697,6 @@ impl MainWindow {
 					// TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
 					let msg = if new_state { t("Full screen on.") } else { t("Full screen off.") };
 					live_region::announce(live_region_label, &msg);
-				}
-				menu_ids::VIEW_NOTE_TEXT => {
-					navigation::handle_view_note_text(&frame_copy, &dm, &config);
-				}
-				menu_ids::CONTAINER_START => {
-					navigation::handle_container_navigation(&dm, &config, live_region_label, false);
-				}
-				menu_ids::CONTAINER_END => {
-					navigation::handle_container_navigation(&dm, &config, live_region_label, true);
 				}
 				menu_ids::EXPORT_TO_PLAIN_TEXT => {
 					menu_tools::handle_export_to_plain_text(&frame_copy, &dm);
