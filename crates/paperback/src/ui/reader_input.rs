@@ -78,7 +78,7 @@ pub(super) fn build_text_ctrl(
 	text_ctrl.bind_internal(wxdragon::event::EventType::LEFT_UP, move |event| {
 		event.skip(true);
 		if let Ok(mut dm) = dm_for_mouse.try_lock() {
-			dm.preferred_column.set(None);
+			dm.set_preferred_column(None);
 			dm.compact_window_after_user_move();
 			dm.update_status_bar();
 			dm.save_position_throttled();
@@ -100,7 +100,7 @@ pub(super) fn build_text_ctrl(
 			if let Some(to_end) = document_edge_for_key(key, kbd.control_down(), kbd.shift_down(), kbd.alt_down()) {
 				kbd.event.skip(false);
 				if let Ok(mut dm) = dm_for_keys.try_lock() {
-					dm.preferred_column.set(None);
+					dm.set_preferred_column(None);
 					dm.jump_to_document_edge(to_end);
 				}
 				return;
@@ -110,7 +110,7 @@ pub(super) fn build_text_ctrl(
 				let going_down = key == WXK_DOWN;
 				let nav_result = dm_for_keys.try_lock().ok().and_then(|mut dm| {
 					let start_of_line = dm.config.lock().unwrap().get_app_bool("line_start_navigation", false);
-					let pref_col = dm.preferred_column.get();
+					let pref_col = dm.preferred_column();
 					dm.active_tab_mut()
 						.and_then(|tab| navigate_line_by_column(tab, going_down, pref_col, start_of_line))
 				});
@@ -119,7 +119,7 @@ pub(super) fn build_text_ctrl(
 					text_ctrl_for_menu.set_insertion_point(new_pos);
 					text_ctrl_for_menu.show_position(new_pos);
 					if let Ok(dm) = dm_for_keys.try_lock() {
-						dm.preferred_column.set(Some(new_col));
+						dm.set_preferred_column(Some(new_col));
 						dm.update_status_bar();
 					}
 				} else {
@@ -129,7 +129,7 @@ pub(super) fn build_text_ctrl(
 			}
 			#[cfg(target_os = "windows")]
 			if let Ok(dm) = dm_for_keys.try_lock() {
-				dm.preferred_column.set(None);
+				dm.set_preferred_column(None);
 			}
 			let action = {
 				if let Ok(dm) = dm_for_keys.try_lock() {

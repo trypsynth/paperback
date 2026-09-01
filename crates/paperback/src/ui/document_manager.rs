@@ -34,6 +34,10 @@ pub struct DocumentTab {
 	pub track: bool,
 	pub audio_player: Option<AudioPlayer>,
 	disk_fingerprint: Option<FileFingerprint>,
+	/// The column an unbroken run of Up/Down presses is aiming for, so passing through a short
+	/// line does not pull the caret left for good. Per tab: each document is read at its own
+	/// column, and switching tabs must not carry one document's column into another.
+	pub preferred_column: Cell<Option<i64>>,
 	/// The document-absolute bounds of whatever's currently loaded into `text_ctrl`. See
 	/// `ui::text_window` - for most documents this covers the whole thing, same as before
 	/// windowing existed; only huge documents actually get a partial window.
@@ -79,7 +83,6 @@ pub struct DocumentManager {
 	last_position_save: Cell<Option<Instant>>,
 	last_sound_position: Cell<Option<i64>>,
 	last_audio_seek_position: Cell<Option<i64>>,
-	pub(super) preferred_column: Cell<Option<i64>>,
 	last_focus_in_text: Cell<bool>,
 	recently_closed: Vec<PathBuf>,
 }
@@ -100,7 +103,6 @@ impl DocumentManager {
 			last_position_save: Cell::new(None),
 			last_sound_position: Cell::new(None),
 			last_audio_seek_position: Cell::new(None),
-			preferred_column: Cell::new(None),
 			last_focus_in_text: Cell::new(true),
 			recently_closed: Vec::new(),
 		}
@@ -269,6 +271,7 @@ impl DocumentManager {
 			track,
 			audio_player,
 			disk_fingerprint: read_fingerprint(path),
+			preferred_column: Cell::new(None),
 			window,
 		});
 		if !password.is_empty() {
@@ -407,6 +410,18 @@ impl DocumentManager {
 
 	pub fn active_tab(&self) -> Option<&DocumentTab> {
 		self.active_tab_index().and_then(|i| self.tabs.get(i))
+	}
+
+	/// The column vertical navigation is aiming for in the active document, if any.
+	pub fn preferred_column(&self) -> Option<i64> {
+		self.active_tab().and_then(|tab| tab.preferred_column.get())
+	}
+
+	/// Records the column vertical navigation should keep aiming for in the active document.
+	pub fn set_preferred_column(&self, column: Option<i64>) {
+		if let Some(tab) = self.active_tab() {
+			tab.preferred_column.set(column);
+		}
 	}
 
 	pub fn active_tab_mut(&mut self) -> Option<&mut DocumentTab> {
