@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-01 07:12-0600\n"
+"POT-Creation-Date: 2026-09-01 15:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -221,6 +221,142 @@ msgstr ""
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
 msgid "Next List I&tem"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
+msgid "Go &Back"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
+msgid "Go &Forward"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
+msgid "Container &Start"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
+msgid "Go to the start of the current list or table"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
+msgid "Past Container &End"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
+msgid "Go past the end of the current list or table"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+msgid "&Previous Bookmark"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
+msgid "Go to previous bookmark"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+msgid "&Next Bookmark"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
+msgid "Go to next bookmark"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
+msgid "Previous &Note"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
+msgid "Go to previous note"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+msgid "Next N&ote"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
+msgid "Go to next note"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+msgid "Jump to &All..."
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
+msgid "Show all bookmarks and notes"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only bookmarks.
+msgid "Jump to &Bookmarks Only..."
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
+msgid "Show bookmarks only"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
+msgid "Jump to Notes &Only..."
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
+msgid "Show notes only"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
+msgid "&View Note Text"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
+msgid "View the note at current position"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
+msgid "Toggle &Bookmark"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
+msgid "Bookmark with &Note"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
+msgid "&Play/Pause Audio"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
+msgid "Play or pause this document's audio narration"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
+msgid "Seek Audio &Forward"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
+msgid "Skip the audio narration forward"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
+msgid "Seek Audio &Backward"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
+msgid "Skip the audio narration backward"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
+msgid "&Increase Audio Seek Amount"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
+msgid "Increase how far seeking the audio narration moves"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
+msgid "&Decrease Audio Seek Amount"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
+msgid "Decrease how far seeking the audio narration moves"
 msgstr ""
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
@@ -1326,85 +1462,6 @@ msgstr ""
 msgid "Go to &Page"
 msgstr ""
 
-#. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
-msgid "Container &Start"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
-msgid "Go to the start of the current list or table"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
-msgid "Past Container &End"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
-msgid "Go past the end of the current list or table"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
-msgid "&Previous Bookmark"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
-msgid "Go to previous bookmark"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
-msgid "&Next Bookmark"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
-msgid "Go to next bookmark"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
-msgid "Previous &Note"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
-msgid "Go to previous note"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
-msgid "Next N&ote"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
-msgid "Go to next note"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
-msgid "Jump to &All..."
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
-msgid "Show all bookmarks and notes"
-msgstr ""
-
-msgid "Jump to &Bookmarks Only..."
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
-msgid "Show bookmarks only"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
-msgid "Jump to Notes &Only..."
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
-msgid "Show notes only"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
-msgid "&View Note Text"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
-msgid "View the note at current position"
-msgstr ""
-
 #. TRANSLATORS: Menu item in the Go menu to open the find dialog.
 msgid "&Find..."
 msgstr ""
@@ -1437,16 +1494,8 @@ msgstr ""
 msgid "Go to a percentage of the document"
 msgstr ""
 
-#. TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
-msgid "Go &Back"
-msgstr ""
-
 #. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
 msgid "Go back in history"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
-msgid "Go &Forward"
 msgstr ""
 
 #. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
@@ -1685,58 +1734,12 @@ msgstr ""
 msgid "Import and export options"
 msgstr ""
 
-#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
-msgid "Toggle &Bookmark"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
-msgid "Bookmark with &Note"
-msgstr ""
-
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
 msgstr ""
 
 #. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 msgid "Toggle word wrap"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
-msgid "&Play/Pause Audio"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
-msgid "Play or pause this document's audio narration"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
-msgid "Seek Audio &Forward"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
-msgid "Skip the audio narration forward"
-msgstr ""
-
-#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
-msgid "Seek Audio &Backward"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
-msgid "Skip the audio narration backward"
-msgstr ""
-
-msgid "&Increase Audio Seek Amount"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
-msgid "Increase how far seeking the audio narration moves"
-msgstr ""
-
-msgid "&Decrease Audio Seek Amount"
-msgstr ""
-
-#. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
-msgid "Decrease how far seeking the audio narration moves"
 msgstr ""
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
@@ -2749,7 +2752,7 @@ msgstr ""
 msgid "Switch to Text Mode"
 msgstr ""
 
-#. TRANSLATORS: Menu item to open the list of recently opened documents
+#. TRANSLATORS: Heading above the short list of recently opened documents shown when no document is open
 #: swift
 msgid "Recent Documents"
 msgstr ""
@@ -2999,12 +3002,12 @@ msgstr ""
 msgid "Scope"
 msgstr ""
 
-#. TRANSLATORS: Rule scope option: the rule matches within a single word
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 msgid "Word"
 msgstr ""
 
-#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 msgid "Paragraph"
 msgstr ""
@@ -3102,7 +3105,7 @@ msgstr ""
 msgid "Minutes"
 msgstr ""
 
-#. TRANSLATORS: Button that dismisses the keyboard after typing a custom sleep timer duration
+#. TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
 #: swift
 msgid "Done"
 msgstr ""
@@ -3371,7 +3374,7 @@ msgstr ""
 msgid "words"
 msgstr ""
 
-#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
+#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
 msgid "Close Search"
 msgstr ""
