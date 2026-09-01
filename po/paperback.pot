@@ -3454,3 +3454,7 @@ msgstr ""
 #: kt
 msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your device — including network drives — instantly, with full screen-reader support. You can skip this and use the system file picker instead."
 msgstr ""
+
+#: kt
+msgid "File Manager"
+msgstr ""

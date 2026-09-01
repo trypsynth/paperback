@@ -47,7 +47,7 @@ fun AllDocumentsScreen(
 	)
 
 	Surface(
-		modifier = Modifier.fillMaxSize().semantics { paneTitle = "Recent Documents" },
+		modifier = Modifier.fillMaxSize().semantics { paneTitle = t("Recent Documents") },
 		color = MaterialTheme.colorScheme.surface
 	) {
 		Column(modifier = Modifier.fillMaxSize()) {

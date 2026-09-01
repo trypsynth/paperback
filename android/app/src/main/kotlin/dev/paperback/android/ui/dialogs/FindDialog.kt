@@ -58,7 +58,7 @@ fun FindDialog(
 
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = "Find" },
+		modifier = Modifier.semantics { paneTitle = t("Find") },
 		// TRANSLATORS: Title of the Find dialog
 		title = { Text(t("Find")) },
 		text = {

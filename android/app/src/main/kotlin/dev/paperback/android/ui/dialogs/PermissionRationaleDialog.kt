@@ -39,7 +39,7 @@ fun PermissionRationaleDialog(
 ) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = "All Files Access Required" },
+		modifier = Modifier.semantics { paneTitle = t("All Files Access Required") },
 		icon = { Icon(Icons.Filled.FolderOpen, contentDescription = null) },
 		// TRANSLATORS: Title of the dialog explaining why the app wants the "All Files Access" permission
 		title = { Text(text = t("All Files Access Required")) },

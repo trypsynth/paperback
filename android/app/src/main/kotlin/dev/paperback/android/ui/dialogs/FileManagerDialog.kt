@@ -115,7 +115,8 @@ fun FileManagerDialog(
 		Surface(
 			modifier = Modifier
 				.fillMaxSize()
-				.semantics { paneTitle = "File Manager" }
+				// TRANSLATORS: Announced by the screen reader when the in-app file browser opens
+				.semantics { paneTitle = t("File Manager") }
 				.onKeyEvent { event ->
 					if (event.type == KeyEventType.KeyDown && event.key == Key.Backspace) {
 						if (virtualParent != null) {

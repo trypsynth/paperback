@@ -88,7 +88,7 @@ fun GoToDialog(
 	}
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = "Go To" },
+		modifier = Modifier.semantics { paneTitle = t("Go To") },
 		// TRANSLATORS: Title of the dialog for jumping to a specific line, page, or percentage through the document
 		title = { Text(t("Go To")) },
 		text = {

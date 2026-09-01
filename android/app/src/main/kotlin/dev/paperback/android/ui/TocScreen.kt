@@ -59,7 +59,7 @@ fun TocScreen(
 	}
 
 	Surface(
-		modifier = Modifier.fillMaxSize().semantics { paneTitle = "Table of Contents" },
+		modifier = Modifier.fillMaxSize().semantics { paneTitle = t("Table of Contents") },
 		color = MaterialTheme.colorScheme.surface
 	) {
 		Column(modifier = Modifier.fillMaxSize()) {

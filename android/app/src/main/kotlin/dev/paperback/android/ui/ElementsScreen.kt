@@ -49,7 +49,7 @@ fun ElementsScreen(
 	val tabs = listOf(t("Headings"), t("Links"))
 
 	Surface(
-		modifier = Modifier.fillMaxSize().semantics { paneTitle = "Elements" },
+		modifier = Modifier.fillMaxSize().semantics { paneTitle = t("Elements") },
 		color = MaterialTheme.colorScheme.background
 	) {
 		Column(modifier = Modifier.fillMaxSize()) {

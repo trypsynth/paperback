@@ -76,7 +76,7 @@ fun DocumentPromptDialogs(viewModel: MainScreenViewModel) {
 	if (importPromptPath != null) {
 		AlertDialog(
 			onDismissRequest = { viewModel.cancelImportSettings() },
-			modifier = Modifier.semantics { paneTitle = "Import document data" },
+			modifier = Modifier.semantics { paneTitle = t("Import document data") },
 			// TRANSLATORS: Title of the dialog offering to import a document's saved settings/bookmarks found alongside it
 			title = { Text(t("Import document data")) },
 			// TRANSLATORS: Body text of the dialog offering to import a found .paperback settings file for the current document
