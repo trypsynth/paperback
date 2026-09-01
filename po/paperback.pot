@@ -2736,10 +2736,6 @@ msgid "Switch to Text Mode"
 msgstr ""
 
 #: swift
-msgid "Go To…"
-msgstr ""
-
-#: swift
 msgid "Recent Documents"
 msgstr ""
 
@@ -2765,10 +2761,6 @@ msgstr ""
 
 #: swift
 msgid "Show All"
-msgstr ""
-
-#: swift
-msgid "Search…"
 msgstr ""
 
 #: swift
