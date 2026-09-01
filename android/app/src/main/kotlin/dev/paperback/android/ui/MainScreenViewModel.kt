@@ -1322,11 +1322,22 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun seekToPercent(percent: Int) {
-		val state = uiState.value as? MainScreenUiState.Success ?: return
-		val tab = state.activeTab ?: return
-		val pos = tab.session.positionFromPercent(percent)
-		updateTtsPosition(pos)
+	/**
+	 * Seeks the recording to `percent` of its running time, reporting whether it applied.
+	 *
+	 * False for a document with no audio, and for one whose file lengths are not all known, so
+	 * the caller maps the percentage through the text instead, as everything did before. A
+	 * percentage through the text of an audiobook counts blank lines, one per file, so it treats
+	 * a two minute file and an hour long one as equal shares of the book.
+	 *
+	 * The reading position follows on its own: the player reports the clip it lands in.
+	 */
+	fun seekAudioToPercent(percent: Int): Boolean {
+		val state = uiState.value as? MainScreenUiState.Success ?: return false
+		val tab = state.activeTab ?: return false
+		val targetMs = tab.session.audioElapsedForPercentFfi(percent)
+		if (targetMs < 0) return false
+		return daisyAudioPlayer.seekToMs(targetMs)
 	}
 
 	fun openWordCountDialog() {

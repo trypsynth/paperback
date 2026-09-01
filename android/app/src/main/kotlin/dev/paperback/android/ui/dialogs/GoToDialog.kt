@@ -46,7 +46,9 @@ fun GoToDialog(
 	docState: DocumentTabState,
 	onDismiss: () -> Unit,
 	onGoTo: (Int) -> Unit,
-	initialMode: String = GO_TO_LINE
+	initialMode: String = GO_TO_LINE,
+	/** Seeks the recording to a percentage of its running time; false when that does not apply. */
+	onSeekPercent: (Int) -> Boolean = { false }
 ) {
 	val maxLines = remember(docState.session) { docState.session.lineCount() }
 	val maxPages = remember(docState.session) { docState.session.pageCountFfi() }
@@ -68,18 +70,31 @@ fun GoToDialog(
 	var sliderPercent by remember { mutableIntStateOf(0) }
 	var dropdownExpanded by remember { mutableStateOf(false) }
 	val onSubmit = {
-		val targetPos = when (selectedMode) {
-			GO_TO_PERCENTAGE -> docState.session.positionFromPercent(sliderPercent)
-			else -> inputValue.toLongOrNull()?.let { value ->
-				when (selectedMode) {
-					GO_TO_LINE -> docState.session.positionFromLine(value.coerceIn(1L, maxLines))
-					GO_TO_PAGE ->
-						if (maxPages > 0) docState.session.pageOffset(value.toInt().coerceIn(1, maxPages)) else null
-					else -> null
+		// An audio document seeks its recording, where a percentage means running time rather
+		// than a share of the placeholder text the recording is anchored to.
+		val seeked = selectedMode == GO_TO_PERCENTAGE && onSeekPercent(sliderPercent)
+		val targetPos = if (seeked) {
+			null
+		} else {
+			when (selectedMode) {
+				GO_TO_PERCENTAGE -> docState.session.positionFromPercent(sliderPercent)
+				else -> inputValue.toLongOrNull()?.let { value ->
+					when (selectedMode) {
+						GO_TO_LINE -> docState.session.positionFromLine(value.coerceIn(1L, maxLines))
+						GO_TO_PAGE ->
+							if (maxPages > 0) {
+								docState.session.pageOffset(value.toInt().coerceIn(1, maxPages))
+							} else {
+								null
+							}
+						else -> null
+					}
 				}
 			}
 		}
-		if (targetPos != null) {
+		if (seeked) {
+			onDismiss()
+		} else if (targetPos != null) {
 			val targetLine = docState.session.lineFromPosition(targetPos)
 			val indexToScroll = (targetLine - 1).toInt().coerceAtLeast(0)
 			onGoTo(indexToScroll)

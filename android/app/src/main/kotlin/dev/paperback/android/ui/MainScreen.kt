@@ -523,7 +523,8 @@ fun MainScreen(
 									docState = docState,
 									onDismiss = { viewModel.closeGoToDialog() },
 									initialMode = goToInitialMode,
-									onGoTo = jumpToLine
+									onGoTo = jumpToLine,
+									onSeekPercent = { viewModel.seekAudioToPercent(it) }
 								)
 							}
 							if (findDialogOpen) {

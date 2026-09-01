@@ -168,6 +168,20 @@ impl DocumentSession {
 		Some((progress * 100.0) as i32)
 	}
 
+	/// `-1` where [`Self::audio_progress_percent`] has no answer, matching the sentinel the
+	/// other audio FFI methods use.
+	#[must_use]
+	pub fn audio_progress_percent_ffi(&self, elapsed_ms: i64) -> i32 {
+		let Ok(elapsed_ms) = u64::try_from(elapsed_ms) else { return -1 };
+		self.audio_progress_percent(elapsed_ms).unwrap_or(-1)
+	}
+
+	/// `-1` where [`Self::audio_elapsed_for_percent`] has no answer.
+	#[must_use]
+	pub fn audio_elapsed_for_percent_ffi(&self, percent: i32) -> i64 {
+		self.audio_elapsed_for_percent(percent).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
+	}
+
 	/// The elapsed time to seek to for `percent` of the recording, when that can be answered
 	/// honestly. `None` under the same conditions as [`Self::audio_progress_percent`].
 	#[must_use]
