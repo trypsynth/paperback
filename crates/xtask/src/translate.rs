@@ -7,7 +7,9 @@ use std::{
 	process::{self, Command},
 };
 
+mod checks;
 mod claude;
+mod markdown;
 mod readme;
 
 use patois_build::po::{PoDocument, Translation};
@@ -236,13 +238,13 @@ fn add_damaged_entries(
 				if already_plural.contains(&i) {
 					continue;
 				}
-				if entry.msgstr_plural.iter().any(|form| claude::is_damaged(plural, form)) {
+				if entry.msgstr_plural.iter().any(|form| checks::is_damaged(plural, form)) {
 					plurals.push((i, entry.msgid.clone(), plural.to_string()));
 					count += 1;
 				}
 			}
 			None => {
-				if !already.contains(&i) && claude::is_damaged(&entry.msgid, &entry.msgstr) {
+				if !already.contains(&i) && checks::is_damaged(&entry.msgid, &entry.msgstr) {
 					candidates.push((i, entry.msgid.clone()));
 					count += 1;
 				}

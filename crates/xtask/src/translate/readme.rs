@@ -6,7 +6,10 @@ use std::{
 	path::Path,
 };
 
-use super::claude::{ClaudeClient, language_name, split_sections};
+use super::{
+	claude::{ClaudeClient, language_name},
+	markdown::split_sections,
+};
 
 const MARKER_PREFIX: &str = "<!-- machine-translated from doc/readme.md (source-hash: ";
 const MARKER_SUFFIX: &str = "); please review and edit as needed -->";
