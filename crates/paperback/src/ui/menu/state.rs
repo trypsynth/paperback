@@ -1,10 +1,14 @@
 use wxdragon::prelude::*;
 
-use crate::ui::menu_ids;
+use crate::ui::{
+	commands::{self, Enable},
+	menu_ids,
+};
 
+/// Commands that need a document open and have not moved to the command table yet. The ones
+/// that have declare `Enable::HasDocument` instead, and are handled below through
+/// `commands::apply_enable`.
 const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
-	menu_ids::CLOSE,
-	menu_ids::CLOSE_ALL,
 	menu_ids::FIND,
 	menu_ids::FIND_NEXT,
 	menu_ids::FIND_PREVIOUS,
@@ -76,11 +80,9 @@ pub fn update_menu_item_states(frame: &Frame, has_document: bool) {
 	for &id in DOCUMENT_DEPENDENT_IDS {
 		menu_bar.enable_item(id, has_document);
 	}
+	commands::apply_enable(frame, Enable::HasDocument, has_document);
 }
 
 pub fn update_reopen_state(frame: &Frame, has_recently_closed: bool) {
-	let Some(menu_bar) = frame.get_menu_bar() else {
-		return;
-	};
-	menu_bar.enable_item(menu_ids::REOPEN_LAST_CLOSED, has_recently_closed);
+	commands::apply_enable(frame, Enable::HasRecentlyClosed, has_recently_closed);
 }

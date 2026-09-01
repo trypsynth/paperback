@@ -1,7 +1,6 @@
 use std::{
 	cell::Cell,
 	path::Path,
-	process,
 	rc::Rc,
 	sync::{
 		Mutex,
@@ -12,14 +11,14 @@ use std::{
 #[cfg(target_os = "windows")]
 use std::{cell::RefCell, sync::atomic::AtomicIsize};
 
-use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::BookmarkFilterType};
+use paperback_core::{config::ConfigManager, types::BookmarkFilterType};
 use patois::{nt, t};
 use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
 use super::tray;
 use super::{
-	dialogs,
+	commands, dialogs,
 	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
@@ -35,7 +34,7 @@ mod menu_file;
 mod menu_go;
 mod menu_tools;
 mod parser_ready;
-use parser_ready::ensure_parser_ready_for_path;
+pub(crate) use parser_ready::ensure_parser_ready_for_path;
 
 #[cfg(target_os = "windows")]
 mod hotkey;
@@ -611,36 +610,6 @@ impl MainWindow {
 		}
 	}
 
-	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
-		let wildcard = build_file_filter_string();
-		// TRANSLATORS: Title of the file picker dialog shown when opening a document
-		let dialog_title = t("Open Document");
-		let dialog = FileDialog::builder(frame)
-			.with_message(&dialog_title)
-			.with_wildcard(&wildcard)
-			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
-			.build();
-		if dialog.show_modal() == ID_OK
-			&& let Some(path) = dialog.get_path()
-		{
-			let path = Path::new(&path);
-			if !ensure_parser_ready_for_path(frame, path, config) {
-				return;
-			}
-			if doc_manager.lock().unwrap().open_file(doc_manager, path) {
-				let Ok(dm_ref) = doc_manager.try_lock() else {
-					return;
-				};
-				update_title_from_manager(frame, &dm_ref);
-				dm_ref.focus_document_text();
-				drop(dm_ref);
-				let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-				frame.set_menu_bar(menu_bar);
-				menu::update_menu_item_states(frame, true);
-			}
-		}
-	}
-
 	#[allow(clippy::too_many_lines)]
 	fn bind_menu_events(
 		frame: &Frame,
@@ -770,57 +739,15 @@ impl MainWindow {
 		let sleep_timer_duration_for_menu = Rc::clone(&sleep_timer_duration_minutes);
 		frame.on_menu(move |event| {
 			let id = event.get_id();
+			// Commands that have moved to the table handle themselves; the match below is the
+			// shrinking remainder, still keyed to menu ids by hand.
+			if commands::dispatch(
+				id,
+				&commands::Ctx { frame: &frame_copy, dm: &dm, config: &config, live_region_label },
+			) {
+				return;
+			}
 			match id {
-				menu_ids::OPEN => {
-					Self::handle_open(&frame_copy, &dm, &config);
-				}
-				menu_ids::CLOSE => {
-					let mut dm = dm.lock().unwrap();
-					close_active_document_announced(&mut dm, live_region_label);
-					update_title_from_manager(&frame_copy, &dm);
-					let has_docs = dm.tab_count() > 0;
-					if has_docs {
-						dm.restore_focus();
-					} else {
-						dm.notebook().set_focus();
-					}
-					drop(dm);
-					menu::update_menu_item_states(&frame_copy, has_docs);
-					menu::update_reopen_state(&frame_copy, true);
-				}
-				menu_ids::CLOSE_ALL => {
-					let mut dm = dm.lock().unwrap();
-					dm.close_all_documents();
-					update_title_from_manager(&frame_copy, &dm);
-					dm.notebook().set_focus();
-					drop(dm);
-					menu::update_menu_item_states(&frame_copy, false);
-					menu::update_reopen_state(&frame_copy, true);
-				}
-				menu_ids::REOPEN_LAST_CLOSED => {
-					let path = dm.lock().unwrap().pop_recently_closed();
-					if let Some(path) = path {
-						if !ensure_parser_ready_for_path(&frame_copy, &path, &config) {
-							dm.lock().unwrap().push_recently_closed(path);
-							return;
-						}
-						if dm.lock().unwrap().open_file(&dm, &path) {
-							let dm_ref = dm.lock().unwrap();
-							update_title_from_manager(&frame_copy, &dm_ref);
-							dm_ref.focus_document_text();
-							drop(dm_ref);
-							let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-							frame_copy.set_menu_bar(menu_bar);
-							menu::update_menu_item_states(&frame_copy, true);
-						}
-						let has_reopen = dm.lock().unwrap().has_recently_closed();
-						menu::update_reopen_state(&frame_copy, has_reopen);
-					}
-				}
-				menu_ids::EXIT => {
-					dm.lock().unwrap().save_all_positions();
-					process::exit(0);
-				}
 				menu_ids::FIND => {
 					find::show_find_dialog(&frame_copy, &dm, &config, &find_dialog, live_region_label);
 				}
@@ -1311,7 +1238,7 @@ impl MainWindow {
 /// caller holds the manager lock, so the generic switch announcement is suppressed
 /// and this function announces the new focus itself instead, before the focus change
 /// actually happens.
-fn close_active_document_announced(dm: &mut DocumentManager, live_region_label: StaticText) {
+pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_region_label: StaticText) {
 	let Some(index) = dm.active_tab_index() else {
 		return;
 	};
@@ -1322,7 +1249,7 @@ fn close_active_document_announced(dm: &mut DocumentManager, live_region_label: 
 	dm.close_document(index, true);
 }
 
-fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
+pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 	let sleep_start = SLEEP_TIMER_START_MS.load(Ordering::SeqCst);
 	let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
 	if dm.tab_count() == 0 {

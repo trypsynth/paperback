@@ -1,4 +1,5 @@
 mod app;
+mod commands;
 mod dialogs;
 mod document_manager;
 mod find;

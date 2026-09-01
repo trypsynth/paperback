@@ -11,6 +11,7 @@ mod help_menu;
 mod state;
 mod tools_menu;
 
+pub use builder::format_menu_label;
 pub use file_menu::recent_documents_for_menu;
 pub use state::{update_menu_item_states, update_reopen_state};
 
