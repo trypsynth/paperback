@@ -23,15 +23,14 @@ use wxdragon::{
 };
 
 #[cfg(target_os = "windows")]
-use super::sleep_timer;
+use super::rtf::{
+	stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl},
+	write::{self, RtfFontInfo},
+};
 use super::{
 	menu_ids,
 	navigation::{move_to_offset_and_record_history, persist_navigation_history},
-	rtf::{
-		stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl},
-		write::{self, RtfFontInfo},
-	},
-	shell, status,
+	shell, sleep_timer, status,
 	text_window::{self, TextWindow},
 };
 use crate::audio_player::AudioPlayer;

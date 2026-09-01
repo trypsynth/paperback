@@ -1,4 +1,5 @@
 mod app;
+mod background;
 mod commands;
 mod dialogs;
 mod document_manager;

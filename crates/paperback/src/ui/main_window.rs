@@ -14,7 +14,7 @@ use wxdragon::{prelude::*, timer::Timer};
 #[cfg(target_os = "windows")]
 use super::tray;
 use super::{
-	commands, dialogs,
+	background, commands, dialogs,
 	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
@@ -620,61 +620,9 @@ impl MainWindow {
 		// Taken before the menu closure captures the SleepTimer: the returned vec is what
 		// keeps the wx timer alive for the window's lifetime.
 		let sleep_timer_handle = Rc::clone(sleep_timer.timer());
-		let status_update_timer = Rc::new(Timer::new(frame));
-		let dm_for_status = Rc::clone(doc_manager);
-		let frame_for_status = *frame;
-		status_update_timer.on_tick(move |_| {
-			if !sleep_timer::is_running() {
-				return;
-			}
-			let Ok(dm) = dm_for_status.try_lock() else {
-				return;
-			};
-			status::update_status_bar_with_sleep_timer(
-				&frame_for_status,
-				&dm,
-				sleep_timer::start_ms(),
-				sleep_timer::duration_minutes(),
-			);
-		});
-		status_update_timer.start(1000, false);
-		let audio_sync_timer = Rc::new(Timer::new(frame));
-		let dm_for_audio_sync = Rc::clone(doc_manager);
-		audio_sync_timer.on_tick(move |_| {
-			if let Ok(mut dm) = dm_for_audio_sync.try_lock() {
-				dm.pump_audio();
-			}
-		});
-		audio_sync_timer.start(250, false);
-		let window_reload_timer = Rc::new(Timer::new(frame));
-		let dm_for_window_reload = Rc::clone(doc_manager);
-		window_reload_timer.on_tick(move |_| {
-			if let Ok(mut dm) = dm_for_window_reload.try_lock() {
-				dm.pump_window_extend();
-			}
-		});
-		window_reload_timer.start(250, false);
-		// A resize forces RichEdit to rewrap, whose cost scales with how much is loaded ahead of
-		// the caret. Give back any growth a long read accumulated before paying for that.
-		//
-		// Only when the frame actually changed shape. Compaction moves the loaded start, which
-		// silently invalidates the offsets a screen reader is reading from, so a size event that
-		// resizes nothing must not trigger it: those arrive from ordinary layout work, including
-		// while a Say-All is running, where the user has done nothing that would stop the read.
-		let dm_for_resize = Rc::clone(doc_manager);
-		let last_frame_size = Rc::new(Cell::new((0, 0)));
-		let frame_for_resize = *frame;
-		frame.on_size(move |event| {
-			event.skip(true);
-			let size = frame_for_resize.get_size();
-			let dimensions = (size.width, size.height);
-			if last_frame_size.replace(dimensions) == dimensions {
-				return;
-			}
-			if let Ok(mut dm) = dm_for_resize.try_lock() {
-				dm.compact_window_if_grown();
-			}
-		});
+		let mut timers = background::start_timers(frame, doc_manager);
+		timers.push(sleep_timer_handle);
+		background::bind_resize(frame, doc_manager);
 		frame.on_menu(move |event| {
 			let id = event.get_id();
 			// Commands that have moved to the table handle themselves; the match below is the
@@ -917,7 +865,7 @@ impl MainWindow {
 				}
 			}
 		});
-		vec![sleep_timer_handle, status_update_timer, audio_sync_timer, window_reload_timer]
+		timers
 	}
 }
 
