@@ -139,7 +139,7 @@ pub(super) fn handle_go_to_percent(
 		drop(dm_guard);
 		current_percent
 	};
-	if let Some(percent) = dialogs::show_go_to_percent_dialog(frame, current_percent) {
+	if let Some(percent) = dialogs::show_go_to_percent_dialog(frame, current_percent, live_region_label) {
 		let (message, update) = {
 			let mut dm_guard = dm.lock().unwrap();
 			let (message, update) = {
