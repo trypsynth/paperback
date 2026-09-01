@@ -20,6 +20,7 @@ pub mod daisy;
 pub mod epub;
 pub mod fb2;
 pub mod html;
+pub mod m4b;
 pub mod markdown;
 pub mod mobi;
 pub mod odp;
@@ -142,6 +143,7 @@ impl ParserRegistry {
 				HTML => html::HtmlParser,
 				PDF => pdf::PdfParser,
 				MARKDOWN => markdown::MarkdownParser,
+				M4B => m4b::M4bParser,
 				MOBI => mobi::MobiParser,
 				FODP => odp::FodpParser,
 				ODP => odp::OdpParser,
@@ -532,6 +534,9 @@ mod tests {
 	#[case("txt", true)]
 	#[case(".TXT", true)]
 	#[case("log", true)]
+	#[case("m4b", true)]
+	#[case(".M4B", true)]
+	#[case("m4a", false)]
 	#[case("", false)]
 	#[case(".", false)]
 	#[case("notarealextension", false)]
@@ -635,6 +640,15 @@ mod tests {
 	fn get_parser_flags_for_context_returns_none_for_unknown_extension() {
 		let context = ParserContext::new("doc.unknown_ext".to_string());
 		assert_eq!(get_parser_flags_for_context(&context), ParserFlags::NONE);
+	}
+
+	#[test]
+	fn m4b_parser_advertises_audio_book_navigation() {
+		let context = ParserContext::new("book.m4b".to_string());
+		assert_eq!(
+			get_parser_flags_for_context(&context),
+			ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_AUDIO
+		);
 	}
 
 	/// Guards against a format being declared in `paperback-formats` with no parser wired up

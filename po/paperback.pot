@@ -2433,6 +2433,10 @@ msgstr ""
 msgid "Failed to convert HTML to text: {}"
 msgstr ""
 
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+msgid "Chapter {}"
+msgstr ""
+
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 msgid "Failed to convert Markdown to text: {}"
 msgstr ""
