@@ -17,6 +17,7 @@ mod shell;
 mod sleep_timer;
 mod sounds;
 mod status;
+mod text_render;
 mod text_window;
 #[cfg(target_os = "windows")]
 mod tray;

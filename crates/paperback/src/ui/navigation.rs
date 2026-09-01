@@ -8,7 +8,8 @@ use wxdragon::prelude::*;
 
 use super::{
 	dialogs,
-	document_manager::{DocumentManager, DocumentTab, reload_window_around},
+	document_manager::{DocumentManager, DocumentTab},
+	text_render::reload_window_around,
 };
 use crate::audio_player::AudioPlayer;
 
