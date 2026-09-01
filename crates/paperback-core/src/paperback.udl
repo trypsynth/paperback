@@ -166,6 +166,8 @@ interface DocumentSession {
 	AudioCursorFfi audio_cursor_at_elapsed_ffi(i64 elapsed_ms);
 	AudioPointFfi audio_point_for_position_ffi(i64 position);
 	i64 audio_elapsed_for_source_position_ffi(i32 source, i64 raw_ms);
+	i32 audio_progress_percent_ffi(i64 elapsed_ms);
+	i64 audio_elapsed_for_percent_ffi(i32 percent);
 	i32 audio_next_source_after_ffi(i32 current_source);
 	i32 audio_previous_source_before_ffi(i32 current_source);
 

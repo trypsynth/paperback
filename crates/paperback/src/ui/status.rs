@@ -61,7 +61,8 @@ pub fn update_status_bar_with_sleep_timer(
 	}
 	if let Some(tab) = dm.active_tab() {
 		let position = navigation::doc_caret(tab);
-		let status_info = tab.session.get_status_info(position);
+		let mut status_info = tab.session.get_status_info(position);
+		status_info.percentage = navigation::reading_percent(tab, position);
 		let mut status_text = format_status_text(&status_info);
 		if sleep_timer_start_ms > 0 {
 			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);

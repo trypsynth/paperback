@@ -128,8 +128,17 @@ class MainScreenViewModel(
 	val sleepTimerDialog = DialogState()
 	val permissionRationaleDialog = DialogState()
 
-	private val elementsDialogState = DialogState()
-	val showElementsDialog: StateFlow<Boolean> = elementsDialogState.isOpen
+	val elementsRequest = ScreenRequest()
+
+	/**
+	 * A document offset the reader has asked to jump to from another screen.
+	 *
+	 * Getting there means switching to Text Mode and scrolling the list, both of which belong to
+	 * MainScreen, so a screen that is not MainScreen leaves the offset here and MainScreen acts
+	 * on it when it comes back to the front.
+	 */
+	private val _pendingJumpOffset = MutableStateFlow<Long?>(null)
+	val pendingJumpOffset: StateFlow<Long?> = _pendingJumpOffset.asStateFlow()
 
 	private val goToDialogState = DialogState()
 	val showGoToDialog: StateFlow<Boolean> = goToDialogState.isOpen
@@ -1313,11 +1322,22 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun seekToPercent(percent: Int) {
-		val state = uiState.value as? MainScreenUiState.Success ?: return
-		val tab = state.activeTab ?: return
-		val pos = tab.session.positionFromPercent(percent)
-		updateTtsPosition(pos)
+	/**
+	 * Seeks the recording to `percent` of its running time, reporting whether it applied.
+	 *
+	 * False for a document with no audio, and for one whose file lengths are not all known, so
+	 * the caller maps the percentage through the text instead, as everything did before. A
+	 * percentage through the text of an audiobook counts blank lines, one per file, so it treats
+	 * a two minute file and an hour long one as equal shares of the book.
+	 *
+	 * The reading position follows on its own: the player reports the clip it lands in.
+	 */
+	fun seekAudioToPercent(percent: Int): Boolean {
+		val state = uiState.value as? MainScreenUiState.Success ?: return false
+		val tab = state.activeTab ?: return false
+		val targetMs = tab.session.audioElapsedForPercentFfi(percent)
+		if (targetMs < 0) return false
+		return daisyAudioPlayer.seekToMs(targetMs)
 	}
 
 	fun openWordCountDialog() {
@@ -1328,11 +1348,11 @@ class MainScreenViewModel(
 		wordCountDialog.open()
 	}
 
-	fun openElementsDialog() {
+	fun openElements() {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
-		// An audio-only book has no text spine, so both tabs of the dialog would come up empty.
-		// The menu hides the entry for one; this keeps the F7 shortcut from opening it anyway.
+		// An audio-only book has no text spine, so both tabs would come up empty. The menu hides
+		// the entry for one; this keeps the F7 shortcut from opening it anyway.
 		if (tab.isAudioOnly) return
 		viewModelScope.launch(Dispatchers.IO) {
 			val pos = _ttsPosition.value
@@ -1341,15 +1361,25 @@ class MainScreenViewModel(
 			withContext(Dispatchers.Main) {
 				_currentHeadings.value = headings
 				_currentLinks.value = links
-				elementsDialogState.open()
+				// Requested once the lists are in hand, so the screen never appears empty and
+				// then fills in.
+				elementsRequest.request()
 			}
 		}
 	}
 
-	fun closeElementsDialog() {
-		elementsDialogState.close()
+	/** Drops the heading and link lists once the elements screen is gone. */
+	fun clearElements() {
 		_currentHeadings.value = null
 		_currentLinks.value = null
+	}
+
+	fun requestJumpToOffset(offset: Long) {
+		_pendingJumpOffset.value = offset
+	}
+
+	fun consumeJumpRequest() {
+		_pendingJumpOffset.value = null
 	}
 
 	private val _accessibilityAnnouncement = MutableSharedFlow<String>(extraBufferCapacity = 1)

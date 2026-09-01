@@ -98,7 +98,7 @@ fun SettingsScreen(
 	var voiceExpanded by remember { mutableStateOf(false) }
 
 	Surface(
-		modifier = Modifier.fillMaxSize().semantics { paneTitle = "Settings" },
+		modifier = Modifier.fillMaxSize().semantics { paneTitle = t("Settings") },
 		color = MaterialTheme.colorScheme.surface
 	) {
 		Column(modifier = Modifier.fillMaxSize()) {

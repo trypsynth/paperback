@@ -38,7 +38,7 @@ fun WordCountDialog(
 
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = "Word Count" },
+		modifier = Modifier.semantics { paneTitle = t("Word Count") },
 		icon = { Icon(Icons.AutoMirrored.Filled.Article, contentDescription = null) },
 		// TRANSLATORS: Title of the dialog showing the current document's word count
 		title = { Text(t("Word Count")) },

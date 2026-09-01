@@ -30,7 +30,7 @@ fun ExportDocumentDialog(
 ) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = "Export Document" },
+		modifier = Modifier.semantics { paneTitle = t("Export Document") },
 		// TRANSLATORS: Title of the dialog for exporting the current document to another file format
 		title = { Text(t("Export Document")) },
 		text = {

@@ -9,6 +9,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import dev.paperback.android.ui.AllDocumentsScreen
+import dev.paperback.android.ui.ElementsScreen
 import dev.paperback.android.ui.MainScreen
 import dev.paperback.android.ui.MainScreenViewModel
 import dev.paperback.android.ui.SettingsScreen
@@ -41,6 +42,16 @@ fun MainNavigation() {
 		}
 	}
 
+	val elementsRequested by viewModel.elementsRequest.isRequested.collectAsStateWithLifecycle()
+	LaunchedEffect(elementsRequested) {
+		if (elementsRequested) {
+			if (backStack.lastOrNull() != ElementsRoute) {
+				backStack.add(ElementsRoute)
+			}
+			viewModel.elementsRequest.consume()
+		}
+	}
+
 	NavDisplay(
 		backStack = backStack,
 		onBack = { backStack.removeLastOrNull() },
@@ -68,6 +79,12 @@ fun MainNavigation() {
 				}
 				entry<AllDocumentsRoute> {
 					AllDocumentsScreen(
+						viewModel = viewModel,
+						onDismiss = { backStack.removeLastOrNull() }
+					)
+				}
+				entry<ElementsRoute> {
+					ElementsScreen(
 						viewModel = viewModel,
 						onDismiss = { backStack.removeLastOrNull() }
 					)

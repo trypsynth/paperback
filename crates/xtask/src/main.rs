@@ -11,6 +11,7 @@ use walkdir::WalkDir;
 
 mod android;
 mod ios;
+mod pot_lint;
 mod release;
 mod translate;
 
@@ -64,6 +65,9 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 	if translatable_dirs.is_empty() {
 		return Err("no translatable crates found — check [package.metadata.patois] translatable = true".into());
 	}
+	// Before anything is written: a concatenated call would otherwise land in the pot as a
+	// fragment that no lookup can ever match.
+	pot_lint::check_sources(&root)?;
 	let version = crate_version(&root, "paperback")?;
 	patois_build::gen_pot_from_dirs(&translatable_dirs, &po_dir, "paperback", &version)?;
 	// Steps 2 and 3: layer the mobile front-ends' own strings on top. Both directories are

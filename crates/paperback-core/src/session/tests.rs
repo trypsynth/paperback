@@ -827,6 +827,73 @@ fn session_with_audio(timeline: AudioTimeline) -> DocumentSession {
 	}
 }
 
+/// Two files of very different lengths, the case a character-count percentage gets wrong: the
+/// text is one blank line each, so position says 50% at the boundary while the recording is
+/// only a quarter done.
+fn lopsided_timeline(second_duration_known: bool) -> AudioTimeline {
+	let mut builder = crate::audio::AudioTimelineBuilder::new();
+	let short = builder.add_source(AudioLocation::File("one.mp3".to_string()), Some(60_000));
+	let long = builder.add_source(
+		AudioLocation::File("two.mp3".to_string()),
+		if second_duration_known { Some(180_000) } else { None },
+	);
+	builder.add_clip(short, 0, 60_000, 0, 1);
+	builder.add_clip(long, 0, 180_000, 1, 2);
+	builder.build()
+}
+
+#[test]
+fn audio_progress_follows_the_recording_not_the_text() {
+	let session = session_with_audio(lopsided_timeline(true));
+	assert_eq!(session.audio_progress_percent(0), Some(0));
+	// The boundary between the two files: half the text, a quarter of the running time.
+	assert_eq!(session.audio_progress_percent(60_000), Some(25));
+	assert_eq!(session.audio_progress_percent(120_000), Some(50));
+	assert_eq!(session.audio_progress_percent(240_000), Some(100));
+}
+
+/// Truncating, so a book with time left to play never reports as finished.
+#[test]
+fn audio_progress_reaches_a_hundred_only_at_the_end() {
+	let session = session_with_audio(lopsided_timeline(true));
+	assert_eq!(session.audio_progress_percent(239_000), Some(99));
+}
+
+#[test]
+fn audio_elapsed_for_percent_is_the_inverse() {
+	let session = session_with_audio(lopsided_timeline(true));
+	assert_eq!(session.audio_elapsed_for_percent(0), Some(0));
+	assert_eq!(session.audio_elapsed_for_percent(25), Some(60_000));
+	assert_eq!(session.audio_elapsed_for_percent(100), Some(240_000));
+}
+
+#[test]
+fn audio_percent_clamps_out_of_range_input() {
+	let session = session_with_audio(lopsided_timeline(true));
+	assert_eq!(session.audio_elapsed_for_percent(-10), Some(0));
+	assert_eq!(session.audio_elapsed_for_percent(500), Some(240_000));
+}
+
+/// A file whose length was never established gets a placeholder far longer than any recording,
+/// so the total is nonsense and every proportion drawn from it would be too. Better to say
+/// nothing and let the caller keep the character-count percentage it had before.
+#[test]
+fn audio_percent_declines_when_a_duration_is_unknown() {
+	let session = session_with_audio(lopsided_timeline(false));
+	assert_eq!(session.audio_progress_percent(60_000), None);
+	assert_eq!(session.audio_elapsed_for_percent(50), None);
+}
+
+#[test]
+fn audio_percent_is_none_without_audio() {
+	let session = session_with_content(
+		"line1
+line2",
+	);
+	assert_eq!(session.audio_progress_percent(0), None);
+	assert_eq!(session.audio_elapsed_for_percent(50), None);
+}
+
 fn two_source_timeline() -> AudioTimeline {
 	let mut builder = crate::audio::AudioTimelineBuilder::new();
 	let source0 = builder.add_source(AudioLocation::File("chapter1.mp3".to_string()), Some(9000));

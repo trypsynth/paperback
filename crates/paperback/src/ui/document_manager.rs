@@ -29,7 +29,7 @@ use super::rtf::{
 };
 use super::{
 	menu_ids,
-	navigation::{move_to_offset_and_record_history, persist_navigation_history},
+	navigation::{self, move_to_offset_and_record_history, persist_navigation_history},
 	shell, sleep_timer, status,
 	text_window::{self, TextWindow},
 };
@@ -900,7 +900,8 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
-		let percent = tab.session.get_status_info(tab.window.to_doc(tab.text_ctrl.get_insertion_point())).percentage;
+		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let percent = navigation::reading_percent(tab, position);
 		live_region::announce(self.live_region_label, &format!("{percent}%"));
 	}
 

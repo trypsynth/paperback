@@ -96,8 +96,7 @@ pub(super) fn handle_go_to_percent(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 				return;
 			};
 			let current_pos = navigation::doc_caret(tab);
-			let status = tab.session.get_status_info(current_pos);
-			status.percentage.clamp(0, 100)
+			navigation::reading_percent(tab, current_pos)
 		};
 		drop(dm_guard);
 		current_percent
@@ -109,7 +108,10 @@ pub(super) fn handle_go_to_percent(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 				let Some(tab) = dm_guard.active_tab_mut() else {
 					return;
 				};
-				let target_pos = tab.session.position_from_percent(percent);
+				// An audio document seeks the recording; the caret follows the clip that lands
+				// on. Everything else maps the percentage through the text as before.
+				let target_pos = navigation::seek_audio_to_percent(tab, percent)
+					.unwrap_or_else(|| tab.session.position_from_percent(percent));
 				navigation::move_to_offset_and_record_history(tab, target_pos)
 			};
 			drop(dm_guard);
