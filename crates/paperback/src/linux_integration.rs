@@ -28,7 +28,7 @@ use crate::ui::{AssociationChoice, show_linux_setup_dialog};
 /// so it never shows more than once.
 const SETUP_DONE_KEY: &str = "linux_file_associations_setup_done";
 
-const DESKTOP_FILE_ID: &str = "dev.paperback.Paperback.desktop";
+const DESKTOP_FILE_ID: &str = "paperback.desktop";
 
 /// `.opf` has no freedesktop.org-registered media type, so Paperback supplies its own via a
 /// small supplementary shared-mime-info package installed alongside the desktop file. Extra
