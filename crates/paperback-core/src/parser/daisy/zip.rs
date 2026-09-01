@@ -207,7 +207,7 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	// AudioVault) are just a folder of narration files with no markup at all. Rather than
 	// refuse those, present each audio file as its own playable, textless section.
 	if let Some(document) =
-		build_plain_audio_zip_document(&archive, &context.file_path, title, author, context.password.as_deref())
+		build_plain_audio_zip_document(&mut archive, &context.file_path, title, author, context.password.as_deref())
 	{
 		tracing::debug!(path = %path.display(), "parsed zip archive as a plain audio-only bundle");
 		return Ok(document);

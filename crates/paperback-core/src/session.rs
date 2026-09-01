@@ -230,6 +230,8 @@ pub struct DocumentStatsFfi {
 	pub line_count: i64,
 	pub char_count: i64,
 	pub char_count_no_whitespace: i64,
+	pub audio_file_count: i64,
+	pub audio_total_duration_ms: i64,
 }
 
 #[derive(Debug, Clone)]

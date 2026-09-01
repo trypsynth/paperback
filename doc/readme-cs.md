@@ -1,4 +1,4 @@
-# Paperback - verze 0.8.5
+# Paperback - verze 0.9.2
 
 ## Představení
 

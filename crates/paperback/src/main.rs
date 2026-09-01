@@ -8,6 +8,8 @@ mod config_ext;
 mod ipc;
 mod legacy_config;
 mod logging;
+#[cfg(test)]
+mod test_locale;
 mod translation_manager;
 mod ui;
 

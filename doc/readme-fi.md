@@ -1,4 +1,4 @@
-# Paperback - versio 0.9.1
+# Paperback - versio 0.9.2
 
 ## Johdanto
 

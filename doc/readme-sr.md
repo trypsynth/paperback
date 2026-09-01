@@ -1,4 +1,4 @@
-# Paperback - verzija 0.9.0
+# Paperback - verzija 0.9.2
 
 ## Uvod
 
@@ -200,6 +200,38 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 
 ## Dnevnik promena
 
+### Verzija 0.9.2
+* Zvučne knjige više ne izazivaju da vaš čitač ekrana čita niz razmaka kada se fokusirate na tekstualno polje.
+* Zvučne knjige sada imenuju datoteke kada se pomerate kroz njih po odeljcima.
+* Zvučne knjige sada prijavljuju njihovo stvarno trajanje, umesto da prijavljuju da svaka datoteka u njima traje 24 sata.
+* Zatvaranje Web prikaza tasterom Escape više ne prikazuje upozorenje o ispravljanju greške nakon što ste pratili link u njemu.
+* Kopiranje nakon izbora celog teksta vam sada daje ceo dokument, umesto samo dela koji je trenutno učitan.
+* Pretraga sada odmah izgovara red koji je pronađen, umesto da čeka dok čitač ekrana ponovo pročita prozor kada se fokus vrati na knjigu.
+* Ispravljeni EPUBovi koji sadrže suvišan ZIP64 blok i odbijaju da se odvore uz grešku "neispravno lokalno zaglavlje datoteke".
+* ispravljeni duži dokumenti koji su vas vraćali na njihov početak dok ih je čitač ekrana neprekidno čitao.
+* Linkovi u Web prikazu vas sada prebacuju na odeljak ka kom vode, umesto da izbacuju grešku koja govori da "datoteka nije pronađena".
+* Automatski izgovor koji vas obaveštava da je "Dokument ponovo učitan" više ne prekida vaš čitač ekrana u sred rečenice, umesto toga sačekaće da završi ono što je govorio.
+* Opšta kartica dijaloga sa podešavanjima se sada tabom kreće po opcijama prema redosledu prikazivanja na ekranu, tako da će kanal ažuriranja biti odmah nakon opcije za proveru ažuriranja.
+* Windows će sada uvek prikazati "Paperback" u meniju za otvaranje, umesto celog opisa programa.
+* Broj reči i informacije o dokumentu sada prikazuju koliko zvučna knjiga ima datoteka, i koliko dugo ukupno traje.
+
+### Verzija 0.9.1
+* Zvukovi za knjižne oznake i napomene se sada reprodukuju na macOS-u.
+* DAISY knjige sada reprodukuju svoj zvuk na macOS-u, umesto da se otvore i prate vremenski tok u tišini.
+* Ispravljeni navodnici, em crtice i slični znakovi koji su nestajali iz RTF dokumenata, a reči koje su ih okruživale su se prikazivale zajedno kao jedna reč.
+* Ispravljene RTF slike koje su svoje podatke prikazivale u dokumentu kao besmislen tekst.
+* Ispravljen podmeni nedavnih dokumenata koji je zadržavao zastarele stavke dok se nešto drugo ne dogodi što bi ga ponovo osvežilo.
+* Tasterske prečice su se vratile u svim prevodima, tako da će ruski meniji ponovo imati tasterske prečice.
+* Veliki CHM dokumenti se sada otvaraju do sedam puta brže.
+* Otvoreni dokumenti su sada registrovani u Windowsu, tako da će se prikazati u programskoj traci kao i u listi nedavnih dokumenata start menija.
+* Opcije su preimenovane u podešavanja, što se podudara sa mobilnim aplikacijama, a na macOS-u, sa standardom platforme.
+* Paperback sada pamti poziciju svog prozora, veličinu i da li je uvećan tokom različitih pokretanja.
+* Oblici množina su sada prevedeni, tako da će se poruke koje broje stvari ispravno čitati na jezicima kojima je potrebno više od jednog oblika.
+* Izbor ncc.html-a DAISY knjige  sada otvara potpunu zvučnu knjigu umesto samo njen tekst.
+* Radnje dijaloga za prilagođavanje tasterskih prečica se sada mogu prevesti.
+* Naslov dokumenta je sada prvi u traci naslova, kako bi otvorene knjige mogle da se razlikuju u programskoj traci i kada se koristi Alt+Tab.
+* Dijalog za ažuriranje je sada preveden.
+
 ### Verzija 0.9.0
 
 #### Dodato
@@ -340,7 +372,7 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 ##### PDF dokumenti
 * Paperback se vraća na izvlačenje običnog teksta za PDF datoteke sa pogrešnim tagovima.
 * PDF dokumenti koji sadrže kontrolne znakove u naslovima i/ili knjižnim oznakama više neće rušiti Paperback pri otvaranju.
- 
+
 ### Verzija 0.8.5
 * Dodata podrška za stranice u epub knjige.
 * Dodata podrška za šifrovane  Microsoft Office dokumente. Trenutno su podržani zastareli word, moderni Word i moderni Powerpoint, a zastareli Powerpoint je planiran u budućnosti.

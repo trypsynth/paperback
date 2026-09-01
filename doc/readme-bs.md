@@ -1,4 +1,4 @@
-# Paperback - verzija 0.8.5
+# Paperback - verzija 0.9.2
 
 ## Uvod
 

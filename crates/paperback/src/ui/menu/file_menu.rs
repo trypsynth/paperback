@@ -1,3 +1,7 @@
+//! Assembles the File menu. Labels, shortcuts, help text and ids all come from the command
+//! table; this file only decides the order things appear in, and owns the Recent Documents
+//! submenu, whose items are generated from the recent list rather than being fixed commands.
+
 use std::path::Path;
 
 use paperback_core::config::{ActionId, ConfigManager};
@@ -5,31 +9,19 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::builder::format_menu_label;
-use crate::ui::menu_ids;
+use crate::ui::{commands, menu_ids};
+
+/// The File menu's fixed items, in order, above the Recent Documents submenu.
+const ITEMS: &[ActionId] = &[ActionId::Open, ActionId::Close, ActionId::CloseAll, ActionId::ReopenLastClosed];
+
+/// Shown only on Windows and Linux; macOS puts Quit in the application menu.
+const EXIT_ITEM: ActionId = ActionId::Exit;
 
 pub fn create_file_menu(config: &ConfigManager) -> Menu {
-	// TRANSLATORS: Menu item in the File menu to open a document.
-	let open_label = format_menu_label(&t("&Open..."), ActionId::Open, config);
-	// TRANSLATORS: Status-bar help text for the File > Open menu item.
-	let open_help = t("Open a document");
-	// TRANSLATORS: Menu item in the File menu to close the current document.
-	let close_label = format_menu_label(&t("&Close"), ActionId::Close, config);
-	// TRANSLATORS: Status-bar help text for the File > Close menu item.
-	let close_help = t("Close the current document");
-	// TRANSLATORS: Menu item in the File menu to close all open documents.
-	let close_all_label = format_menu_label(&t("Close &All"), ActionId::CloseAll, config);
-	// TRANSLATORS: Status-bar help text for the File > Close All menu item.
-	let close_all_help = t("Close all documents");
-	// TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
-	let reopen_label = format_menu_label(&t("Reopen &Last Closed"), ActionId::ReopenLastClosed, config);
-	// TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
-	let reopen_help = t("Reopen the last closed document");
-	let file_menu = Menu::builder()
-		.append_item(menu_ids::OPEN, &open_label, &open_help)
-		.append_item(menu_ids::CLOSE, &close_label, &close_help)
-		.append_item(menu_ids::CLOSE_ALL, &close_all_label, &close_all_help)
-		.append_item(menu_ids::REOPEN_LAST_CLOSED, &reopen_label, &reopen_help)
-		.build();
+	let file_menu = Menu::builder().build();
+	for &action in ITEMS {
+		commands::append_item(&file_menu, action, config);
+	}
 	let recent_menu = Menu::builder().build();
 	populate_recent_documents_menu(&recent_menu, config);
 	// TRANSLATORS: Label for the Recent Documents submenu in the File menu.
@@ -39,11 +31,7 @@ pub fn create_file_menu(config: &ConfigManager) -> Menu {
 	let _ = file_menu.append_submenu(recent_menu, &recent_label, &recent_help);
 	if !cfg!(target_os = "macos") {
 		file_menu.append_separator();
-		// TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
-		let exit_label = format_menu_label(&t("E&xit"), ActionId::Exit, config);
-		// TRANSLATORS: Status-bar help text for the File > Exit menu item.
-		let exit_help = t("Exit the application");
-		let _ = file_menu.append(menu_ids::EXIT, &exit_label, &exit_help, ItemKind::Normal);
+		commands::append_item(&file_menu, EXIT_ITEM, config);
 	}
 	file_menu
 }
@@ -80,4 +68,18 @@ pub fn recent_documents_for_menu(config: &ConfigManager) -> Vec<String> {
 		docs.truncate(limit);
 	}
 	docs
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	/// `commands::append_item` panics on an action that is not in the table, so an unported
+	/// entry here would crash the app while building its menu bar at startup.
+	#[test]
+	fn every_file_menu_item_is_a_known_command() {
+		for &action in ITEMS.iter().chain(std::iter::once(&EXIT_ITEM)) {
+			assert!(commands::for_action(action).is_some(), "{action:?} is in the File menu but not in COMMANDS");
+		}
+	}
 }

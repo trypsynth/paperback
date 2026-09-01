@@ -1,31 +1,24 @@
 use std::{
 	cell::Cell,
 	path::Path,
-	process,
 	rc::Rc,
-	sync::{
-		Mutex,
-		atomic::{AtomicI32, AtomicI64, Ordering},
-	},
-	time::{SystemTime, UNIX_EPOCH},
+	sync::{Mutex, atomic::Ordering},
 };
 #[cfg(target_os = "windows")]
 use std::{cell::RefCell, sync::atomic::AtomicIsize};
 
-use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::BookmarkFilterType};
+use paperback_core::{config::ConfigManager, types::BookmarkFilterType};
 use patois::{nt, t};
 use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
 use super::tray;
 use super::{
-	dialogs,
+	background, commands, dialogs,
 	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
-	icon, menu, menu_ids,
-	navigation::{self, MarkerNavTarget},
-	status, window_geometry,
+	icon, menu, menu_ids, navigation, sleep_timer, status, window_geometry,
 };
 use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -35,15 +28,12 @@ mod menu_file;
 mod menu_go;
 mod menu_tools;
 mod parser_ready;
-use parser_ready::ensure_parser_ready_for_path;
+pub(crate) use parser_ready::ensure_parser_ready_for_path;
 
 #[cfg(target_os = "windows")]
 mod hotkey;
 #[cfg(target_os = "windows")]
 use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
-
-pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
-pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
 
 #[derive(Default)]
 struct RestoreState {
@@ -611,36 +601,6 @@ impl MainWindow {
 		}
 	}
 
-	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
-		let wildcard = build_file_filter_string();
-		// TRANSLATORS: Title of the file picker dialog shown when opening a document
-		let dialog_title = t("Open Document");
-		let dialog = FileDialog::builder(frame)
-			.with_message(&dialog_title)
-			.with_wildcard(&wildcard)
-			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
-			.build();
-		if dialog.show_modal() == ID_OK
-			&& let Some(path) = dialog.get_path()
-		{
-			let path = Path::new(&path);
-			if !ensure_parser_ready_for_path(frame, path, config) {
-				return;
-			}
-			if doc_manager.lock().unwrap().open_file(doc_manager, path) {
-				let Ok(dm_ref) = doc_manager.try_lock() else {
-					return;
-				};
-				update_title_from_manager(frame, &dm_ref);
-				dm_ref.focus_document_text();
-				drop(dm_ref);
-				let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-				frame.set_menu_bar(menu_bar);
-				menu::update_menu_item_states(frame, true);
-			}
-		}
-	}
-
 	#[allow(clippy::too_many_lines)]
 	fn bind_menu_events(
 		frame: &Frame,
@@ -656,171 +616,24 @@ impl MainWindow {
 		let find_dialog = Rc::clone(find_dialog);
 		#[cfg(target_os = "windows")]
 		let hotkey_handle_for_options = Rc::clone(hotkey_handle);
-		let sleep_timer = Rc::new(Timer::new(frame));
-		let sleep_timer_running = Rc::new(Cell::new(false));
-		let sleep_timer_start_time = Rc::new(Cell::new(0i64));
-		let sleep_timer_duration_minutes = Rc::new(Cell::new(0i32));
-		let sleep_timer_for_tick = Rc::clone(&sleep_timer);
-		let sleep_timer_running_for_tick = Rc::clone(&sleep_timer_running);
-		let sleep_timer_start_for_tick = Rc::clone(&sleep_timer_start_time);
-		let sleep_timer_duration_for_tick = Rc::clone(&sleep_timer_duration_minutes);
-		let frame_for_timer = *frame;
-		let dm_for_timer = Rc::clone(doc_manager);
-		let config_for_timer = Rc::clone(&config);
-		sleep_timer.on_tick(move |_| {
-			// `Timer::on_tick` binds `EventType::TIMER` on the *owner*, not on the timer, and
-			// wxdragon gives its timers no distinguishing id, so every timer parented to this
-			// frame delivers its ticks to every handler bound here. This one shuts the app down,
-			// so it has to confirm the deadline really passed rather than trust that being
-			// called means its own timer fired.
-			if !sleep_timer_running_for_tick.get() {
-				return;
-			}
-			let now_ms = SystemTime::now()
-				.duration_since(UNIX_EPOCH)
-				.ok()
-				.and_then(|d| i64::try_from(d.as_millis()).ok())
-				.unwrap_or(0);
-			let deadline_ms = sleep_timer_start_for_tick
-				.get()
-				.saturating_add(i64::from(sleep_timer_duration_for_tick.get()) * 60_000);
-			if now_ms < deadline_ms {
-				return;
-			}
-			tracing::info!("sleep timer fired, closing application");
-			sleep_timer_running_for_tick.set(false);
-			sleep_timer_for_tick.stop();
-			SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
-			SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
-			{
-				let dm = dm_for_timer.lock().unwrap();
-				let cfg = config_for_timer.lock().unwrap();
-				for i in 0..dm.tab_count() {
-					if let Some(tab) = dm.get_tab(i) {
-						let current_pos = navigation::doc_caret(tab);
-						let path_str = tab.file_path.to_string_lossy();
-						cfg.set_document_position(&path_str, current_pos);
-					}
-				}
-				cfg.flush();
-			}
-			frame_for_timer.close(true);
-		});
-		let status_update_timer = Rc::new(Timer::new(frame));
-		let sleep_timer_running_for_status = Rc::clone(&sleep_timer_running);
-		let sleep_timer_start_for_status = Rc::clone(&sleep_timer_start_time);
-		let sleep_timer_duration_for_status = Rc::clone(&sleep_timer_duration_minutes);
-		let dm_for_status = Rc::clone(doc_manager);
-		let frame_for_status = *frame;
-		status_update_timer.on_tick(move |_| {
-			if !sleep_timer_running_for_status.get() {
-				return;
-			}
-			let Ok(dm) = dm_for_status.try_lock() else {
-				return;
-			};
-			status::update_status_bar_with_sleep_timer(
-				&frame_for_status,
-				&dm,
-				sleep_timer_start_for_status.get(),
-				sleep_timer_duration_for_status.get(),
-			);
-		});
-		status_update_timer.start(1000, false);
-		let audio_sync_timer = Rc::new(Timer::new(frame));
-		let dm_for_audio_sync = Rc::clone(doc_manager);
-		audio_sync_timer.on_tick(move |_| {
-			if let Ok(mut dm) = dm_for_audio_sync.try_lock() {
-				dm.pump_audio();
-			}
-		});
-		audio_sync_timer.start(250, false);
-		let window_reload_timer = Rc::new(Timer::new(frame));
-		let dm_for_window_reload = Rc::clone(doc_manager);
-		window_reload_timer.on_tick(move |_| {
-			if let Ok(mut dm) = dm_for_window_reload.try_lock() {
-				dm.pump_window_extend();
-			}
-		});
-		window_reload_timer.start(250, false);
-		// A resize forces RichEdit to rewrap, whose cost scales with how much is loaded ahead of
-		// the caret. Give back any growth a long read accumulated before paying for that.
-		//
-		// Only when the frame actually changed shape. Compaction moves the loaded start, which
-		// silently invalidates the offsets a screen reader is reading from, so a size event that
-		// resizes nothing must not trigger it: those arrive from ordinary layout work, including
-		// while a Say-All is running, where the user has done nothing that would stop the read.
-		let dm_for_resize = Rc::clone(doc_manager);
-		let last_frame_size = Rc::new(Cell::new((0, 0)));
-		let frame_for_resize = *frame;
-		frame.on_size(move |event| {
-			event.skip(true);
-			let size = frame_for_resize.get_size();
-			let dimensions = (size.width, size.height);
-			if last_frame_size.replace(dimensions) == dimensions {
-				return;
-			}
-			if let Ok(mut dm) = dm_for_resize.try_lock() {
-				dm.compact_window_if_grown();
-			}
-		});
-		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
-		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
-		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
-		let sleep_timer_duration_for_menu = Rc::clone(&sleep_timer_duration_minutes);
+		let sleep_timer = sleep_timer::SleepTimer::new(frame, doc_manager, &config);
+		// Taken before the menu closure captures the SleepTimer: the returned vec is what
+		// keeps the wx timer alive for the window's lifetime.
+		let sleep_timer_handle = Rc::clone(sleep_timer.timer());
+		let mut timers = background::start_timers(frame, doc_manager);
+		timers.push(sleep_timer_handle);
+		background::bind_resize(frame, doc_manager);
 		frame.on_menu(move |event| {
 			let id = event.get_id();
+			// Commands that have moved to the table handle themselves; the match below is the
+			// shrinking remainder, still keyed to menu ids by hand.
+			if commands::dispatch(
+				id,
+				&commands::Ctx { frame: &frame_copy, dm: &dm, config: &config, live_region_label },
+			) {
+				return;
+			}
 			match id {
-				menu_ids::OPEN => {
-					Self::handle_open(&frame_copy, &dm, &config);
-				}
-				menu_ids::CLOSE => {
-					let mut dm = dm.lock().unwrap();
-					close_active_document_announced(&mut dm, live_region_label);
-					update_title_from_manager(&frame_copy, &dm);
-					let has_docs = dm.tab_count() > 0;
-					if has_docs {
-						dm.restore_focus();
-					} else {
-						dm.notebook().set_focus();
-					}
-					drop(dm);
-					menu::update_menu_item_states(&frame_copy, has_docs);
-					menu::update_reopen_state(&frame_copy, true);
-				}
-				menu_ids::CLOSE_ALL => {
-					let mut dm = dm.lock().unwrap();
-					dm.close_all_documents();
-					update_title_from_manager(&frame_copy, &dm);
-					dm.notebook().set_focus();
-					drop(dm);
-					menu::update_menu_item_states(&frame_copy, false);
-					menu::update_reopen_state(&frame_copy, true);
-				}
-				menu_ids::REOPEN_LAST_CLOSED => {
-					let path = dm.lock().unwrap().pop_recently_closed();
-					if let Some(path) = path {
-						if !ensure_parser_ready_for_path(&frame_copy, &path, &config) {
-							dm.lock().unwrap().push_recently_closed(path);
-							return;
-						}
-						if dm.lock().unwrap().open_file(&dm, &path) {
-							let dm_ref = dm.lock().unwrap();
-							update_title_from_manager(&frame_copy, &dm_ref);
-							dm_ref.focus_document_text();
-							drop(dm_ref);
-							let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-							frame_copy.set_menu_bar(menu_bar);
-							menu::update_menu_item_states(&frame_copy, true);
-						}
-						let has_reopen = dm.lock().unwrap().has_recently_closed();
-						menu::update_reopen_state(&frame_copy, has_reopen);
-					}
-				}
-				menu_ids::EXIT => {
-					dm.lock().unwrap().save_all_positions();
-					process::exit(0);
-				}
 				menu_ids::FIND => {
 					find::show_find_dialog(&frame_copy, &dm, &config, &find_dialog, live_region_label);
 				}
@@ -859,156 +672,6 @@ impl MainWindow {
 				}
 				menu_ids::GO_FORWARD => {
 					navigation::handle_history_navigation(&dm, &config, live_region_label, true);
-				}
-				menu_ids::PREVIOUS_SECTION => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Section,
-						false,
-					);
-				}
-				menu_ids::NEXT_SECTION => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Section,
-						true,
-					);
-				}
-				menu_ids::PREVIOUS_HEADING => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(0),
-						false,
-					);
-				}
-				menu_ids::NEXT_HEADING => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(0),
-						true,
-					);
-				}
-				menu_ids::PREVIOUS_HEADING_1 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(1),
-						false,
-					);
-				}
-				menu_ids::NEXT_HEADING_1 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(1),
-						true,
-					);
-				}
-				menu_ids::PREVIOUS_HEADING_2 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(2),
-						false,
-					);
-				}
-				menu_ids::NEXT_HEADING_2 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(2),
-						true,
-					);
-				}
-				menu_ids::PREVIOUS_HEADING_3 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(3),
-						false,
-					);
-				}
-				menu_ids::NEXT_HEADING_3 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(3),
-						true,
-					);
-				}
-				menu_ids::PREVIOUS_HEADING_4 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(4),
-						false,
-					);
-				}
-				menu_ids::NEXT_HEADING_4 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(4),
-						true,
-					);
-				}
-				menu_ids::PREVIOUS_HEADING_5 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(5),
-						false,
-					);
-				}
-				menu_ids::NEXT_HEADING_5 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(5),
-						true,
-					);
-				}
-				menu_ids::PREVIOUS_HEADING_6 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(6),
-						false,
-					);
-				}
-				menu_ids::NEXT_HEADING_6 => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Heading(6),
-						true,
-					);
-				}
-				menu_ids::PREVIOUS_PAGE => {
-					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Page, false);
-				}
-				menu_ids::NEXT_PAGE => {
-					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Page, true);
 				}
 				menu_ids::PREVIOUS_BOOKMARK => {
 					navigation::handle_bookmark_navigation(&dm, &config, live_region_label, false, false);
@@ -1104,96 +767,6 @@ impl MainWindow {
 				menu_ids::VIEW_NOTE_TEXT => {
 					navigation::handle_view_note_text(&frame_copy, &dm, &config);
 				}
-				menu_ids::PREVIOUS_LINK => {
-					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Link, false);
-				}
-				menu_ids::NEXT_LINK => {
-					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Link, true);
-				}
-				menu_ids::PREVIOUS_IMAGE => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Image,
-						false,
-					);
-				}
-				menu_ids::NEXT_IMAGE => {
-					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Image, true);
-				}
-				menu_ids::PREVIOUS_FIGURE => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Figure,
-						false,
-					);
-				}
-				menu_ids::NEXT_FIGURE => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Figure,
-						true,
-					);
-				}
-				menu_ids::PREVIOUS_TABLE => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Table,
-						false,
-					);
-				}
-				menu_ids::NEXT_TABLE => {
-					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Table, true);
-				}
-				menu_ids::PREVIOUS_SEPARATOR => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Separator,
-						false,
-					);
-				}
-				menu_ids::NEXT_SEPARATOR => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::Separator,
-						true,
-					);
-				}
-				menu_ids::PREVIOUS_LIST => {
-					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::List, false);
-				}
-				menu_ids::NEXT_LIST => {
-					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::List, true);
-				}
-				menu_ids::PREVIOUS_LIST_ITEM => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::ListItem,
-						false,
-					);
-				}
-				menu_ids::NEXT_LIST_ITEM => {
-					navigation::handle_marker_navigation(
-						&dm,
-						&config,
-						live_region_label,
-						MarkerNavTarget::ListItem,
-						true,
-					);
-				}
 				menu_ids::CONTAINER_START => {
 					navigation::handle_container_navigation(&dm, &config, live_region_label, false);
 				}
@@ -1249,16 +822,7 @@ impl MainWindow {
 					menu_tools::handle_customize_shortcuts(&frame_copy, &dm, &config);
 				}
 				menu_ids::SLEEP_TIMER => {
-					menu_tools::handle_sleep_timer(
-						&frame_copy,
-						&dm,
-						&config,
-						live_region_label,
-						&sleep_timer_for_menu,
-						&sleep_timer_running_for_menu,
-						&sleep_timer_start_for_menu,
-						&sleep_timer_duration_for_menu,
-					);
+					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label);
 				}
 				menu_ids::ABOUT => {
 					dialogs::show_about_dialog(&frame_copy);
@@ -1301,7 +865,7 @@ impl MainWindow {
 				}
 			}
 		});
-		vec![sleep_timer, status_update_timer, audio_sync_timer, window_reload_timer]
+		timers
 	}
 }
 
@@ -1311,7 +875,7 @@ impl MainWindow {
 /// caller holds the manager lock, so the generic switch announcement is suppressed
 /// and this function announces the new focus itself instead, before the focus change
 /// actually happens.
-fn close_active_document_announced(dm: &mut DocumentManager, live_region_label: StaticText) {
+pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_region_label: StaticText) {
 	let Some(index) = dm.active_tab_index() else {
 		return;
 	};
@@ -1322,9 +886,9 @@ fn close_active_document_announced(dm: &mut DocumentManager, live_region_label: 
 	dm.close_document(index, true);
 }
 
-fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
-	let sleep_start = SLEEP_TIMER_START_MS.load(Ordering::SeqCst);
-	let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
+pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
+	let sleep_start = sleep_timer::start_ms();
+	let sleep_duration = sleep_timer::duration_minutes();
 	if dm.tab_count() == 0 {
 		// TRANSLATORS: Main window title when no document is open
 		frame.set_title(&t("Paperback"));

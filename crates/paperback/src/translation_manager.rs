@@ -101,14 +101,16 @@ mod tests {
 	#[test]
 	fn dependency_owned_strings_translate_through_the_app_catalog() {
 		patois::set_default_domain("paperback");
-		patois::set_locale("fr");
+		// Holds the locale lock for the body and puts the locale back on drop: this used to
+		// set fr and restore en at the end, which let every concurrent test see French, and
+		// stranded the whole run there if an assertion below failed.
+		let _locale = crate::test_locale::pinned_to("fr");
 		// "&Yes"/"&No" are also used by this crate's own confirmation dialog; "Downloading
 		// update..." exists only in ship-shape, so it fails if dependency strings stop being
 		// extracted into the pot even while the app's own strings keep working.
 		for msgid in ["&Yes", "&No", "Downloading update..."] {
 			assert_ne!(patois::t(msgid), msgid, "{msgid} is missing from the French catalog");
 		}
-		patois::set_locale("en");
 	}
 
 	/// Confirms `patois::embed_wx_translations!()` (invoked in `main.rs`) actually embedded

@@ -10,7 +10,7 @@ use wxdragon::prelude::*;
 
 use super::dialogs;
 
-pub(super) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
+pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
 	let extension = parser_extension_for_path(path);
 	if extension.is_empty() || parser_supports_extension(&extension) {
 		return true;

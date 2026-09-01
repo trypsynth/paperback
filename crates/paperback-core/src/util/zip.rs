@@ -48,7 +48,21 @@ pub fn read_zip_entry_by_name_with_password<R: Read + Seek>(
 /// Reads a zip entry's raw bytes, unlike `read_zip_entry_by_name` which assumes text and
 /// converts it to UTF-8. For binary payloads such as audio clips.
 pub fn read_zip_entry_bytes<R: Read + Seek>(archive: &mut ZipArchive<R>, name: &str) -> Result<Vec<u8>> {
-	let mut entry = archive.by_name(name).with_context(|| format!("Failed to get entry '{name}'"))?;
+	read_zip_entry_bytes_with_password(archive, name, None)
+}
+
+/// [`read_zip_entry_bytes`], but for an entry that may be AES-encrypted.
+pub fn read_zip_entry_bytes_with_password<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	name: &str,
+	password: Option<&str>,
+) -> Result<Vec<u8>> {
+	let mut entry = match password {
+		Some(pass) => {
+			archive.by_name_decrypt(name, pass.as_bytes()).with_context(|| format!("Failed to get entry '{name}'"))?
+		}
+		None => archive.by_name(name).with_context(|| format!("Failed to get entry '{name}'"))?,
+	};
 	let mut contents = Vec::new();
 	entry.read_to_end(&mut contents).with_context(|| format!("Failed to read entry '{name}'"))?;
 	Ok(contents)
@@ -244,5 +258,19 @@ mod tests {
 		let mut archive = build_test_archive();
 		let contents = read_zip_entry_by_name(&mut archive, "nested/bar.txt").expect("read nested entry");
 		assert_eq!(contents, "nested");
+	}
+
+	#[test]
+	fn read_zip_entry_bytes_with_password_decrypts_with_the_right_password() {
+		let mut archive = build_encrypted_test_archive();
+		let contents =
+			read_zip_entry_bytes_with_password(&mut archive, "secret.mp3", Some("hunter2")).expect("read entry");
+		assert_eq!(contents, b"secret-audio-bytes");
+	}
+
+	#[test]
+	fn read_zip_entry_bytes_with_password_rejects_the_wrong_password() {
+		let mut archive = build_encrypted_test_archive();
+		assert!(read_zip_entry_bytes_with_password(&mut archive, "secret.mp3", Some("wrong")).is_err());
 	}
 }

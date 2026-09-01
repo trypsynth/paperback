@@ -7,6 +7,12 @@ import java.util.Locale
 object Translations {
 	internal var map: HashMap<String, String> = HashMap()
 
+	/**
+	 * How [nt] picks a plural form for the loaded catalogue, from its own `Plural-Forms` header.
+	 * Null until a catalogue is loaded, and for one whose header can't be read.
+	 */
+	internal var pluralRule: PluralRule? = null
+
 	fun load(context: Context) {
 		val match = bestLocaleMatch(assetLocaleTags(context, "translations", "", ".json"), Locale.getDefault())
 			?: return
@@ -21,6 +27,9 @@ object Translations {
 				loaded[key] = obj.getString(key)
 			}
 			map = loaded
+			// The po header comes through as the entry with the empty msgid, the same as it does
+			// for desktop, so the target language's own rule ships with its translations.
+			pluralRule = PluralRule.parse(loaded[""])
 		} catch (_: Exception) {
 			// Asset unreadable or malformed — fall back to English
 		}
@@ -129,12 +138,226 @@ fun t(
 }
 
 /**
+ * A language's gettext plural rule: how many forms it has, and which one a count takes.
+ *
+ * Read from the catalogue's own `Plural-Forms` header rather than hardcoded, because the rule
+ * differs between languages that all want three forms: Bosnian, Serbian and Croatian give 21 and
+ * 31 the same form as 1, while Polish gives the singular to 1 alone, so a single hardcoded rule
+ * cannot serve both. Desktop gets this from patois at runtime; this is the mobile equivalent.
+ *
+ * Only the shapes gettext's own catalogues use are understood — a chain of `n`-comparisons and
+ * `?:` — which covers every language Paperback ships. Anything else parses to null and [nt]
+ * falls back to its previous behaviour rather than guessing.
+ */
+internal class PluralRule private constructor(
+	private val nplurals: Int,
+	private val expression: String
+) {
+	/** The 0-based form index for [count], or null when the expression doesn't evaluate. */
+	fun formIndex(count: Long): Int? {
+		val value = evalTernary(expression, count) ?: return null
+		return if (value in 0 until nplurals) value else null
+	}
+
+	val forms: Int
+		get() = nplurals
+
+	companion object {
+		/**
+		 * Parses the `Plural-Forms: nplurals=N; plural=EXPR;` line out of a po header, or null
+		 * when the header is missing, has no such line, or states a form count below one.
+		 */
+		fun parse(header: String?): PluralRule? {
+			val line = header
+				?.lineSequence()
+				?.firstOrNull { it.startsWith("Plural-Forms:") }
+				?: return null
+			val nplurals = line
+				.substringAfter("nplurals=", "")
+				.takeWhile { it.isDigit() }
+				.toIntOrNull()
+				?.takeIf { it > 0 }
+				?: return null
+			val expression = line
+				.substringAfter("plural=", "")
+				.substringBefore(';')
+				.trim()
+				.takeIf { it.isNotEmpty() }
+				?: return null
+			return PluralRule(nplurals, expression)
+		}
+
+		/**
+		 * Evaluates a gettext plural expression for [n], or null on anything unrecognized.
+		 *
+		 * Deliberately narrow: `?:`, `||`, `&&`, the comparisons, `%` and integer literals, which
+		 * is the whole of what gettext plural rules use. Returning null on the unexpected keeps a
+		 * malformed header from silently selecting form 0 for every count.
+		 */
+		private fun evalTernary(
+			expr: String,
+			n: Long
+		): Int? {
+			val text = expr.trim().removeSurroundingParens()
+			val question = text.indexOfTopLevel('?')
+			if (question == -1) {
+				return text.toIntOrNull() ?: evalBoolean(text, n)?.let { if (it) 1 else 0 }
+			}
+			val colon = text.indexOfTopLevel(':', from = question + 1).takeIf { it != -1 } ?: return null
+			val condition = evalBoolean(text.substring(0, question), n) ?: return null
+			val branch = if (condition) {
+				text.substring(question + 1, colon)
+			} else {
+				text.substring(colon + 1)
+			}
+			return evalTernary(branch, n)
+		}
+
+		private fun evalBoolean(
+			expr: String,
+			n: Long
+		): Boolean? {
+			val text = expr.trim().removeSurroundingParens()
+			text.splitTopLevel("||")?.let { (left, right) ->
+				val l = evalBoolean(left, n) ?: return null
+				if (l) {
+					return true
+				}
+				return evalBoolean(right, n)
+			}
+			text.splitTopLevel("&&")?.let { (left, right) ->
+				val l = evalBoolean(left, n) ?: return null
+				if (!l) {
+					return false
+				}
+				return evalBoolean(right, n)
+			}
+			for (op in listOf("==", "!=", ">=", "<=", ">", "<")) {
+				val at = text.indexOfTopLevel(op) ?: continue
+				val left = evalArithmetic(text.substring(0, at), n) ?: return null
+				val right = evalArithmetic(text.substring(at + op.length), n) ?: return null
+				return when (op) {
+					"==" -> left == right
+					"!=" -> left != right
+					">=" -> left >= right
+					"<=" -> left <= right
+					">" -> left > right
+					else -> left < right
+				}
+			}
+			return null
+		}
+
+		private fun evalArithmetic(
+			expr: String,
+			n: Long
+		): Long? {
+			val text = expr.trim().removeSurroundingParens()
+			val modulo = text.indexOfTopLevel('%')
+			if (modulo != -1) {
+				val left = evalArithmetic(text.substring(0, modulo), n) ?: return null
+				val right = evalArithmetic(text.substring(modulo + 1), n) ?: return null
+				if (right == 0L) {
+					return null
+				}
+				return left % right
+			}
+			if (text == "n") {
+				return n
+			}
+			return text.toLongOrNull()
+		}
+
+		private fun String.removeSurroundingParens(): String {
+			var text = trim()
+			while (text.length > 1 && text.startsWith("(") && text.endsWith(")") && text.outerParenSpansAll()) {
+				text = text.substring(1, text.length - 1).trim()
+			}
+			return text
+		}
+
+		/**
+		 * Whether the parenthesis opening this string is the one the final character closes, so
+		 * that stripping both keeps the expression intact. False for `(a) && (b)`, whose outer
+		 * parentheses look enclosing but are two separate groups.
+		 */
+		private fun String.outerParenSpansAll(): Boolean {
+			var depth = 0
+			for (i in indices) {
+				when (this[i]) {
+					'(' -> depth++
+					')' -> {
+						depth--
+						if (depth == 0) {
+							return i == length - 1
+						}
+					}
+				}
+			}
+			return false
+		}
+
+		/** The index of [char] outside any parentheses, or -1. */
+		private fun String.indexOfTopLevel(
+			char: Char,
+			from: Int = 0
+		): Int {
+			var depth = 0
+			for (i in from until length) {
+				val c = this[i]
+				if (c == char && depth == 0) {
+					return i
+				}
+				when (c) {
+					'(' -> depth++
+					')' -> depth--
+				}
+			}
+			return -1
+		}
+
+		private fun String.indexOfTopLevel(token: String): Int? {
+			var depth = 0
+			var i = 0
+			while (i <= length - token.length) {
+				when (this[i]) {
+					'(' -> depth++
+					')' -> depth--
+				}
+				if (depth == 0 && startsWith(token, i)) {
+					// "<" must not match inside "<=", nor "=" inside "==".
+					val nextIsEquals = token.length == 1 && i + 1 < length && this[i + 1] == '='
+					if (!nextIsEquals) {
+						return i
+					}
+				}
+				i++
+			}
+			return null
+		}
+
+		private fun String.splitTopLevel(token: String): Pair<String, String>? {
+			val at = indexOfTopLevel(token) ?: return null
+			return substring(0, at) to substring(at + token.length)
+		}
+	}
+}
+
+/**
  * Selects among three already-translated forms for languages (e.g. Bosnian, Serbian, Croatian)
  * whose grammar needs three: [one] for a count ending in 1, except one ending in 11 (1, 21, 31,
  * ...); [few] for a count ending in 2-4, except one ending in 12-14 (2, 3, 4, 22, 23, 24, ...);
  * and [many] for everything else (0, 5-20, 25-30, ...). Desktop gets this for free from the
- * target language's own `Plural-Forms` rule via patois; mobile has no such runtime, so this
- * hardcodes the one three-form rule Paperback ships a mobile translation for.
+ * target language's own `Plural-Forms` rule via patois; mobile has no such runtime, so the rule
+ * is read from the loaded catalogue's header, which ships alongside its translations.
+ *
+ * The hardcoded fallback below is that same Bosnian/Serbian rule, used only when no catalogue is
+ * loaded or its header couldn't be parsed. It is wrong for some languages — Polish gives the
+ * singular to 1 alone, so it would read "21 sekunda" where the language wants "21 sekund" — which
+ * is why the header is preferred whenever it is there.
+ *
+ * A two-form language selects [one] or [few], and a one-form language always [one], matching how
+ * `msgstr[0]` and `msgstr[1]` are filled in its catalogue.
  *
  * Callers translate each form themselves with [t] *before* calling this — `nt(t("1 book"),
  * t("{} books"), t("{} books"), count)`, never `nt("1 book", "{} books", "{} books", count)` —
@@ -147,6 +370,12 @@ fun nt(
 	many: String,
 	count: Long
 ): String {
+	val forms = listOf(one, few, many)
+	Translations.pluralRule?.let { rule ->
+		rule.formIndex(count)?.let { index ->
+			return forms[index.coerceAtMost(forms.size - 1)]
+		}
+	}
 	val mod10 = count % 10
 	val mod100 = count % 100
 	return when {

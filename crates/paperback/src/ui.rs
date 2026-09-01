@@ -1,4 +1,6 @@
 mod app;
+mod background;
+mod commands;
 mod dialogs;
 mod document_manager;
 mod find;
@@ -11,6 +13,7 @@ mod navigation;
 #[cfg(any(target_os = "windows", test))]
 mod rtf;
 mod shell;
+mod sleep_timer;
 mod sounds;
 mod status;
 mod text_window;

@@ -154,15 +154,18 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let restore_docs_check =
 		// TRANSLATORS: Option to restore documents that were open when the app was last closed
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
+	let auto_reload_check =
+		// TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+		CheckBox::builder(&general_panel).with_label(&t("&Automatically reload changed documents")).build();
+	// TRANSLATORS: Option to start the app maximized
+	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
+	// TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
 	// TRANSLATORS: Option to toggle word wrapping of text
 	let word_wrap_check = CheckBox::builder(&readability_panel).with_label(&t("&Word wrap")).build();
 	let render_tables_inline_check =
 		// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
-	// TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
-	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
-	// TRANSLATORS: Option to start the app maximized
-	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
 	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
 	// TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
@@ -215,9 +218,19 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let check_for_updates_check =
 		// TRANSLATORS: Option to check for app updates automatically on startup
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
-	let auto_reload_check =
-		// TRANSLATORS: Option to automatically reload an open document when its file changes on disk
-		CheckBox::builder(&general_panel).with_label(&t("&Automatically reload changed documents")).build();
+	// TRANSLATORS: Label for the update channel selection dropdown
+	let channel_label_text = t("Update Channel:");
+	let channel_label = StaticText::builder(&general_panel).with_label(&channel_label_text).build();
+	let update_channel_combo = Choice::builder(&general_panel).build();
+	// TRANSLATORS: Stable update channel option
+	update_channel_combo.append(&t("Stable"));
+	// TRANSLATORS: Developer/development update channel option
+	update_channel_combo.append(&t("Dev"));
+	#[cfg(target_os = "macos")]
+	update_channel_combo.set_accessibility_label(channel_label_text.replace('&', "").trim_end_matches(':').trim());
+	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	// Global window hotkeys are a Windows-only concept (see start_hotkey_listener in
 	// main_window.rs); macOS has no equivalent, so this button isn't built there.
 	#[cfg(not(target_os = "macos"))]
@@ -234,6 +247,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(target_os = "macos")]
 	minimize_to_tray_check.show(false);
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
+	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&shortcuts_button, 0, SizerFlag::All, option_padding);
@@ -274,20 +288,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	language_sizer.add(&language_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
-	// TRANSLATORS: Label for the update channel selection dropdown
-	let channel_label_text = t("Update Channel:");
-	let channel_label = StaticText::builder(&general_panel).with_label(&channel_label_text).build();
-	let update_channel_combo = Choice::builder(&general_panel).build();
-	// TRANSLATORS: Stable update channel option
-	update_channel_combo.append(&t("Stable"));
-	// TRANSLATORS: Developer/development update channel option
-	update_channel_combo.append(&t("Dev"));
-	#[cfg(target_os = "macos")]
-	update_channel_combo.set_accessibility_label(channel_label_text.replace('&', "").trim_end_matches(':').trim());
-	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
-	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
-	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
 	// TRANSLATORS: Label/header for the Font options section
 	let font_group_box = StaticBox::builder(&readability_panel).with_label(&t("Font")).build();
 	let font_group_sizer = StaticBoxSizerBuilder::new_with_box(&font_group_box, Orientation::Vertical).build();

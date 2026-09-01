@@ -128,6 +128,31 @@ mod tests {
 		buf
 	}
 
+	/// A minimal valid mono 8-bit PCM WAV file with `num_samples` samples at `sample_rate`, for
+	/// exercising real audio-duration probing without shipping a binary fixture. Its duration is
+	/// exactly `num_samples / sample_rate` seconds; the sample bytes themselves are silence.
+	fn make_wav(sample_rate: u32, num_samples: u32) -> Vec<u8> {
+		let block_align: u16 = 1; // mono, 8 bits per sample
+		let byte_rate = sample_rate * u32::from(block_align);
+		let data_size = num_samples * u32::from(block_align);
+		let mut wav = Vec::new();
+		wav.extend_from_slice(b"RIFF");
+		wav.extend_from_slice(&(36 + data_size).to_le_bytes());
+		wav.extend_from_slice(b"WAVE");
+		wav.extend_from_slice(b"fmt ");
+		wav.extend_from_slice(&16u32.to_le_bytes());
+		wav.extend_from_slice(&1u16.to_le_bytes()); // PCM
+		wav.extend_from_slice(&1u16.to_le_bytes()); // mono
+		wav.extend_from_slice(&sample_rate.to_le_bytes());
+		wav.extend_from_slice(&byte_rate.to_le_bytes());
+		wav.extend_from_slice(&block_align.to_le_bytes());
+		wav.extend_from_slice(&8u16.to_le_bytes()); // bits per sample
+		wav.extend_from_slice(b"data");
+		wav.extend_from_slice(&data_size.to_le_bytes());
+		wav.extend(std::iter::repeat_n(128u8, data_size as usize));
+		wav
+	}
+
 	/// A minimal two-section DAISY 3 "full text, full audio" book, exercising the multi-file
 	/// offset math and the SMIL-to-text-position audio linkage end to end.
 	#[test]
@@ -542,9 +567,10 @@ mod tests {
 			document.toc_items.iter().map(|item| item.name.as_str()).collect::<Vec<_>>(),
 			vec!["Track 1", "Track 2", "Track 10"]
 		);
-		assert!(
-			!document.buffer.content.chars().any(|c| c != ' '),
-			"the text field must show no real content for a plain audio bundle"
+		assert_eq!(
+			document.buffer.content, "\n\n\n",
+			"the reading area must show one blank line per file, not literal space characters \
+			 (a screen reader announces those character by character instead of treating them as blank)"
 		);
 		assert!(document.audio_only, "read-aloud UIs navigate this by elapsed time, not by text unit");
 		// Each section must carry a SectionBreak marker, or Previous/Next Section navigation
@@ -556,8 +582,8 @@ mod tests {
 			document.toc_items.iter().map(|item| item.offset).collect::<Vec<_>>()
 		);
 		// Each marker names its file, so stepping by section announces where the jump landed.
-		// The buffer is placeholder spaces with no newline, so a marker with no text of its own
-		// would make navigation fall back to the whole book and announce nothing but blanks.
+		// The buffer is nothing but blank lines, so a marker with no text of its own would leave
+		// every section announcing nothing.
 		assert_eq!(
 			section_markers.iter().map(|m| m.text.as_str()).collect::<Vec<_>>(),
 			vec!["Track 1", "Track 2", "Track 10"]
@@ -572,6 +598,39 @@ mod tests {
 		assert_eq!(audio.next_source_after(0), Some(1));
 		assert_eq!(audio.next_source_after(1), Some(2));
 		assert_eq!(audio.next_source_after(2), None);
+	}
+
+	/// A recognizable audio format's real duration is probed and used as the clip's length,
+	/// rather than the generous placeholder that stands in when probing isn't possible.
+	#[test]
+	fn plain_audio_zip_probes_real_duration_for_a_recognizable_audio_file() {
+		let wav_bytes = make_wav(8000, 16_000); // 16,000 samples at 8kHz = 2.000s
+		let zip_bytes = write_zip(&[("Track 1.wav", &wav_bytes)]);
+		let dir = TempDir::new("daisy_plain_audio_zip_duration");
+		let zip_path = dir.path().join("Some Audiobook.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("plain audio zip should parse");
+		let audio = document.audio.expect("audio timeline should be populated");
+		assert_eq!(audio.total_duration_ms(), 2000, "duration should come from the real WAV data, not a placeholder");
+	}
+
+	/// A file the probe can't parse as audio falls back to the placeholder duration instead of
+	/// failing the whole document over one bad entry.
+	#[test]
+	fn plain_audio_zip_falls_back_to_placeholder_duration_when_probing_fails() {
+		let zip_bytes = write_zip(&[("Track 1.mp3", b"not-really-an-mp3")]);
+		let dir = TempDir::new("daisy_plain_audio_zip_no_duration");
+		let zip_path = dir.path().join("Some Audiobook.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("plain audio zip should parse");
+		let audio = document.audio.expect("audio timeline should be populated");
+		assert_eq!(
+			audio.total_duration_ms(),
+			24 * 60 * 60 * 1000,
+			"unparseable audio should fall back to the 24h placeholder duration"
+		);
 	}
 
 	/// Regression test for <https://github.com/trypsynth/paperback/issues/672>: DAISY 2.02
