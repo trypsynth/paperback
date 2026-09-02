@@ -7,12 +7,15 @@ use std::{
 	process::{self, Command},
 };
 
+mod checks;
 mod claude;
+mod markdown;
+mod prompts;
 mod readme;
 
 use patois_build::po::{PoDocument, Translation};
 
-use crate::project_root;
+use crate::workspace::project_root;
 
 /// Regenerates `po/paperback.pot`, syncs every `po/<lang>.po` against it via `msgmerge`
 /// (adds blank entries for new strings, flags changed-but-similar entries `#, fuzzy`),
@@ -50,7 +53,7 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 	// the pre-run content when nothing but that timestamp moved (or always, for
 	// --dry-run, which must touch nothing on disk).
 	let original_pot = fs::read_to_string(&pot_path).ok();
-	crate::gen_pot()?;
+	crate::pot::gen_pot()?;
 	if let Some(original) = &original_pot {
 		if dry_run {
 			fs::write(&pot_path, original)?;
@@ -104,84 +107,22 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-/// Parses `#. TRANSLATORS:` comments out of a pot, keyed by the msgid each one sits above.
-///
-/// Comment lines accumulate until a `msgid` line claims them, which is how gettext associates
-/// them; a run of them belonging to one entry is joined into a single note.
-///
-/// The keys have to match what `PoDocument` reports as an entry's msgid, so they are unescaped
-/// and joined across continuation lines the same way it does. Keying on the raw quoted text
-/// instead would silently miss exactly the long or quote-containing strings that need a
-/// translator note most.
-fn translator_comments(pot: &str) -> HashMap<String, String> {
-	let mut out = HashMap::new();
-	let mut pending: Vec<String> = Vec::new();
-	let lines: Vec<&str> = pot.lines().map(str::trim).collect();
-	let mut i = 0;
-	while i < lines.len() {
-		let line = lines[i];
-		if let Some(rest) = line.strip_prefix("#.") {
-			let rest = rest.trim();
-			// "TRANSLATORS:" is a convention for whoever reads the pot; the note after it is
-			// what carries the meaning, so the marker itself is dropped.
-			pending.push(rest.strip_prefix("TRANSLATORS:").unwrap_or(rest).trim().to_string());
-			i += 1;
-			continue;
-		}
-		if let Some(rest) = line.strip_prefix("msgid ") {
-			let mut msgid = po_unquote(rest);
-			i += 1;
-			while i < lines.len() && lines[i].starts_with('"') {
-				msgid.push_str(&po_unquote(lines[i]));
-				i += 1;
-			}
-			if !pending.is_empty() && !msgid.is_empty() {
-				out.insert(msgid, pending.join(" "));
-			}
-			pending.clear();
-			continue;
-		}
-		// Any other line (a blank separator, a #, flag, a msgstr) ends the comment run: a
-		// note only ever belongs to the entry directly below it.
-		if !line.starts_with('#') {
-			pending.clear();
-		}
-		i += 1;
-	}
-	out
-}
-
-/// Decodes one quoted po/pot string, matching the unescaping `PoDocument` applies.
-fn po_unquote(s: &str) -> String {
-	let s = s.trim();
-	if s.len() < 2 || !s.starts_with('"') || !s.ends_with('"') {
-		return String::new();
-	}
-	let mut out = String::new();
-	let mut chars = s[1..s.len() - 1].chars();
-	while let Some(c) = chars.next() {
-		if c != '\\' {
-			out.push(c);
-			continue;
-		}
-		match chars.next() {
-			Some('n') => out.push('\n'),
-			Some('t') => out.push('\t'),
-			Some('"') => out.push('"'),
-			// An escaped backslash, and a stray one at the very end, both yield one backslash.
-			Some('\\') | None => out.push('\\'),
-			Some(other) => {
-				out.push('\\');
-				out.push(other);
-			}
-		}
-	}
-	out
-}
-
 /// Locale codes listed in `po/human-maintained-locales.txt`, one per line (`#` starts a
 /// comment; blank lines ignored). These are skipped entirely by both the po-string sync
 /// and the README sync. See that file for why.
+/// The `TRANSLATORS:` note for each msgid that has one, read from `pot`.
+///
+/// Every entry the model is asked about gets its note as context, which is the difference
+/// between translating "Open" as a verb and as an adjective.
+fn translator_comments(pot: &str) -> HashMap<String, String> {
+	patois_build::po::PoDocument::parse(pot)
+		.entries
+		.into_iter()
+		.filter_map(|entry| Some((entry.msgid, entry.comment?)))
+		.filter(|(msgid, _)| !msgid.is_empty())
+		.collect()
+}
+
 fn load_human_maintained_locales(root: &Path) -> Result<HashSet<String>, Box<dyn Error>> {
 	let path = root.join("po").join("human-maintained-locales.txt");
 	let Ok(content) = fs::read_to_string(&path) else {
@@ -298,13 +239,13 @@ fn add_damaged_entries(
 				if already_plural.contains(&i) {
 					continue;
 				}
-				if entry.msgstr_plural.iter().any(|form| claude::is_damaged(plural, form)) {
+				if entry.msgstr_plural.iter().any(|form| checks::is_damaged(plural, form)) {
 					plurals.push((i, entry.msgid.clone(), plural.to_string()));
 					count += 1;
 				}
 			}
 			None => {
-				if !already.contains(&i) && claude::is_damaged(&entry.msgid, &entry.msgstr) {
+				if !already.contains(&i) && checks::is_damaged(&entry.msgid, &entry.msgstr) {
 					candidates.push((i, entry.msgid.clone()));
 					count += 1;
 				}

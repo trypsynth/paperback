@@ -10,7 +10,7 @@ use std::{
 use flate2::read::GzDecoder;
 use tar::Archive;
 
-use crate::{print_help, project_root};
+use crate::{print_help, workspace::project_root};
 
 const PDFIUM_ANDROID_ARM64_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-android-arm64.tgz";

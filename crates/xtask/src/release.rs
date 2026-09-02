@@ -11,7 +11,7 @@ use walkdir::WalkDir;
 #[cfg(not(target_os = "macos"))]
 use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
 
-use crate::project_root;
+use crate::workspace::project_root;
 
 pub fn release() -> Result<(), Box<dyn Error>> {
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());

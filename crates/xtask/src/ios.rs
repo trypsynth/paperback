@@ -10,7 +10,7 @@ use std::{
 use flate2::read::GzDecoder;
 use tar::Archive;
 
-use crate::project_root;
+use crate::workspace::project_root;
 
 // Pinned instead of `releases/latest`: whatever `latest` currently resolves to
 // crashes on real iOS devices (not the Simulator) with
