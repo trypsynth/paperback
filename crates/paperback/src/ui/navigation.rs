@@ -323,14 +323,7 @@ fn format_nav_found_message(
 			format!("{wrap_prefix}{message}")
 		}
 		NavFoundFormat::PageFormat => {
-			let page_text = (context_index + 1).to_string();
-			let message = if context_text.is_empty() {
-				// TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-				t("Page %d").replacen("%d", &page_text, 1)
-			} else {
-				// TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-				t("Page %d: %s").replacen("%d", &page_text, 1).replacen("%s", context_text, 1)
-			};
+			let message = page_announcement(context_index + 1, context_text);
 			format!("{wrap_prefix}{message}")
 		}
 		NavFoundFormat::LinkFormat => {
@@ -342,6 +335,20 @@ fn format_nav_found_message(
 			let message = context_text.to_string();
 			format!("{wrap_prefix}{message}")
 		}
+	}
+}
+
+/// The announcement for landing on page `page`, whose first line of real content is
+/// `content` (empty for a blank or image-only page). Shared by page navigation and the
+/// Go to page dialog so both read the same.
+pub fn page_announcement(page: i32, content: &str) -> String {
+	let page_text = page.to_string();
+	if content.is_empty() {
+		// TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+		t("Page %d").replacen("%d", &page_text, 1)
+	} else {
+		// TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
+		t("Page %d: %s").replacen("%d", &page_text, 1).replacen("%s", content, 1)
 	}
 }
 
