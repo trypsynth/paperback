@@ -90,8 +90,12 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 				continue;
 			}
 			Token::IgnorableDestination => {
-				// {\* \keyword content} — skip the entire enclosing group.
-				skip_until_depth = Some(depth - 1);
+				// {\* \keyword content} — skip the entire enclosing group. A destination
+				// nested inside another skipped destination (e.g. \picprop inside \pict
+				// inside \shppict) must not shrink the skip window: keep the outermost
+				// (smallest) depth so skipping doesn't end early when the inner group closes.
+				let candidate = depth - 1;
+				skip_until_depth = Some(skip_until_depth.map_or(candidate, |sd| sd.min(candidate)));
 				continue;
 			}
 			_ => {}
@@ -184,6 +188,17 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							&mut buffer,
 						);
 					}
+					// rtf_parser 0.4.3 promoted these from `Unknown(name)` to their own dedicated
+					// variants; handled directly here since they no longer reach the `Unknown`
+					// arm below (kept for older/unrecognized spellings, but should be unreachable
+					// against the pinned rtf_parser version).
+					ControlWord::RightSingleQuote if !in_header => buffer.append("\u{2019}"),
+					ControlWord::LeftSingleQuote if !in_header => buffer.append("\u{2018}"),
+					ControlWord::RightDoubleQuote if !in_header => buffer.append("\u{201D}"),
+					ControlWord::LeftDoubleQuote if !in_header => buffer.append("\u{201C}"),
+					ControlWord::Emdash if !in_header => buffer.append("\u{2014}"),
+					ControlWord::Endash if !in_header => buffer.append("\u{2013}"),
+					ControlWord::Bullet if !in_header => buffer.append("\u{2022}"),
 					ControlWord::Unknown(name) if !in_header => match *name {
 						r"\page" => {
 							let ends_with_ws = buffer.content.chars().next_back().is_some_and(char::is_whitespace);
@@ -358,6 +373,20 @@ mod tests {
 	}
 
 	#[test]
+	fn extract_content_skips_nested_ignorable_destination_without_leaking_hex() {
+		// Word writes shapes as {\*\shppict{\pict{\*\picprop ...}\jpegblip <hex>}}: an
+		// ignorable destination (\shppict) wrapping a \pict group that itself contains
+		// another ignorable destination (\picprop). The inner \picprop group closing must
+		// not end the skip early and let the outer \jpegblip hex data leak as text.
+		let rtf = r"{\rtf1\ansi\pard before {\*\shppict{\pict{\*\picprop\shplid1{\sp{\sn shapeType}{\sv 75}}}\picscalex100\jpegblip abc123def456}} after}";
+		let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "before  after");
+		assert!(!buffer.content.contains("abc123def456"));
+	}
+
+	#[test]
 	fn extract_content_skips_ignorable_destination_groups() {
 		let tokens = vec![
 			Token::ControlSymbol((ControlWord::Pard, Property::None)),
@@ -423,12 +452,10 @@ mod tests {
 		];
 		let buffer = extract_content_from_tokens(&tokens);
 		assert_eq!(buffer.content, "bold more still-bold");
-
 		let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
 		assert_eq!(bold.len(), 1);
 		assert_eq!(bold[0].position, 0);
 		assert_eq!(bold[0].length, "bold more still-bold ".chars().count());
-
 		let italic: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Italic).collect();
 		assert_eq!(italic.len(), 1);
 		assert_eq!(italic[0].position, "bold ".chars().count());
@@ -470,7 +497,6 @@ mod tests {
 		];
 		let buffer = extract_content_from_tokens(&tokens);
 		assert_eq!(buffer.content, "before middle after");
-
 		let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
 		assert_eq!(bold.len(), 2, "expected two Bold spans, got {bold:?}");
 		// "before "
@@ -503,5 +529,23 @@ mod tests {
 		assert_eq!(bold.len(), 1);
 		assert_eq!(bold[0].position, "normal ".chars().count());
 		assert_eq!(bold[0].length, "bold".chars().count());
+	}
+
+	/// Round-trip through the real lexer (unlike
+	/// `extract_content_maps_quote_unknown_control_words_to_typographic_quotes` above, which
+	/// hand-builds `ControlWord::Unknown` tokens and so can't catch this): rtf_parser 0.4.3
+	/// promoted `\rquote`/`\lquote`/`\rdblquote`/`\ldblquote`/`\emdash`/`\endash`/`\bullet` from
+	/// `Unknown(name)` to their own dedicated `ControlWord` variants, which silently fell
+	/// through the `_ => {}` catch-all until dedicated match arms were added for them.
+	#[test]
+	fn extract_content_maps_special_char_control_words_from_real_rtf_string() {
+		let rtf = r"{\rtf1\ansi\pard Earth\rquote s \lquote quoted\rquote \ldblquote double\rdblquote em\emdash dash en\endash dash \bullet bullet}";
+		let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(
+			buffer.content,
+			"Earth\u{2019}s \u{2018}quoted\u{2019}\u{201C}double\u{201D}em\u{2014}dash en\u{2013}dash \u{2022}bullet"
+		);
 	}
 }

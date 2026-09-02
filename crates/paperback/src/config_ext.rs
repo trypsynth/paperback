@@ -7,6 +7,7 @@
 use std::{
 	env,
 	fmt::{self, Display, Formatter},
+	fs,
 	path::{Path, PathBuf},
 	str::FromStr,
 };
@@ -60,14 +61,14 @@ pub fn config_dir() -> PathBuf {
 	if is_app_bundle(&exe_dir) {
 		if let Some(home) = env::var_os("HOME") {
 			let dir = PathBuf::from(home).join("Library/Application Support/Paperback");
-			let _ = std::fs::create_dir_all(&dir);
+			let _ = fs::create_dir_all(&dir);
 			return dir;
 		}
 	}
 	let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
 	if is_installed && let Some(appdata) = env::var_os("APPDATA") {
 		let dir = PathBuf::from(appdata).join("Paperback");
-		let _ = std::fs::create_dir_all(&dir);
+		let _ = fs::create_dir_all(&dir);
 		return dir;
 	}
 	exe_dir

@@ -38,14 +38,11 @@ impl DocumentSession {
 		let doc_len = buf.total_display_len();
 		let raw_start = usize::try_from(raw_start.max(0)).unwrap_or(0).min(doc_len);
 		let raw_end = usize::try_from(raw_end.max(0)).unwrap_or(0).clamp(raw_start, doc_len);
-
 		let byte_start = snap_start_to_paragraph_boundary(&buf.content, buf.byte_index_for_display(raw_start));
 		let byte_end = snap_end_to_paragraph_boundary(&buf.content, buf.byte_index_for_display(raw_end));
-
 		let start = buf.display_index_for_byte(byte_start);
 		let end = buf.display_index_for_byte(byte_end);
 		let text = buf.content[byte_start..byte_end].to_string();
-
 		let markers = buf
 			.markers
 			.iter()
@@ -68,7 +65,6 @@ impl DocumentSession {
 				})
 			})
 			.collect();
-
 		WindowSlice { start: i64::try_from(start).unwrap_or(0), end: i64::try_from(end).unwrap_or(0), text, markers }
 	}
 }
@@ -148,13 +144,11 @@ mod tests {
 		assert_eq!(&content[marker_start..marker_start + marker_len], "ha\nbeta g");
 		let markers = [Marker::new(MarkerType::Bold, marker_start).with_length(marker_len)];
 		let session = session_with(content, &markers);
-
 		// A request landing inside "beta gamma" should snap to just that paragraph, not pull
 		// in "alpha" too.
 		let raw_start = content.find("beta").unwrap() as i64;
 		let slice = session.get_window(raw_start, raw_start + 2);
 		assert_eq!(slice.text, "beta gamma\n");
-
 		// The marker is clipped to only the portion that falls inside this window.
 		assert_eq!(slice.markers.len(), 1);
 		let m = &slice.markers[0];
@@ -182,5 +176,51 @@ mod tests {
 		let slice = session.get_window(0, session.document_len());
 		assert_eq!(slice.markers.len(), 1);
 		assert_eq!(slice.markers[0].mtype, MarkerType::Bold);
+	}
+	// The UI grows a document window forward by asking for the range starting at the one it
+	// already has loaded, and appending the result. That only works because an existing window's
+	// `end` is already on a paragraph boundary, so snapping it again as a `start` is a no-op. If
+	// that ever stopped holding, every extension would repeat or drop a paragraph and shift every
+	// offset the text control has already handed out.
+	#[test]
+	fn a_windows_end_is_a_boundary_that_the_next_window_starts_exactly_on() {
+		let content = "alpha paragraph
+beta paragraph
+gamma paragraph
+delta paragraph
+epsilon";
+		let session = session_with(content, &[]);
+		let len = session.document_len();
+		let first = session.get_window(0, 20);
+		assert!(first.end > 0 && first.end < len, "need a window that stops short of the end");
+		let second = session.get_window(first.end, len);
+		assert_eq!(second.start, first.end, "the next window must begin where the last one ended");
+		assert_eq!(
+			format!("{}{}", first.text, second.text),
+			session.get_window(0, len).text,
+			"appending the two must reconstruct the document exactly"
+		);
+	}
+
+	// Same property across several hops, which is what a long read actually does.
+	#[test]
+	fn repeated_extensions_reconstruct_the_document() {
+		let mut content = String::new();
+		for i in 0..50 {
+			use std::fmt::Write as _;
+			let _ = writeln!(content, "paragraph number {i} with some words in it");
+		}
+		let session = session_with(&content, &[]);
+		let len = session.document_len();
+		let mut assembled = String::new();
+		let mut cursor = 0;
+		while cursor < len {
+			let slice = session.get_window(cursor, cursor + 30);
+			assert_eq!(slice.start, cursor, "extension must abut the previous window");
+			assert!(slice.end > cursor, "extension must make progress");
+			assembled.push_str(&slice.text);
+			cursor = slice.end;
+		}
+		assert_eq!(assembled, content);
 	}
 }

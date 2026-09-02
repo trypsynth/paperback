@@ -20,6 +20,7 @@ pub mod daisy;
 pub mod epub;
 pub mod fb2;
 pub mod html;
+pub mod m4b;
 pub mod markdown;
 pub mod mobi;
 pub mod odp;
@@ -142,6 +143,7 @@ impl ParserRegistry {
 				HTML => html::HtmlParser,
 				PDF => pdf::PdfParser,
 				MARKDOWN => markdown::MarkdownParser,
+				M4B => m4b::M4bParser,
 				MOBI => mobi::MobiParser,
 				FODP => odp::FodpParser,
 				ODP => odp::OdpParser,
@@ -153,6 +155,17 @@ impl ParserRegistry {
 			}
 		})
 	}
+}
+
+/// The extension that selects a file's parser: ordinarily just `path`'s own extension, except a
+/// loose DAISY 2.02 book's master file is named `ncc.html`, which would otherwise route to the
+/// HTML parser since DAISY only claims `opf`/`zip` (an `.html` extension can't be reserved for
+/// DAISY without also capturing every ordinary HTML file).
+fn resolve_extension(path: &Path) -> Option<&str> {
+	if path.file_name().is_some_and(|n| n.eq_ignore_ascii_case("ncc.html")) {
+		return Some("opf");
+	}
+	path.extension().and_then(|e| e.to_str())
 }
 
 /// Parse a document from the given context.
@@ -167,7 +180,7 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 	let path = Path::new(&context.file_path);
 	let extension = context.forced_extension.as_ref().map_or_else(
 		|| {
-			path.extension().and_then(|e| e.to_str()).ok_or_else(|| {
+			resolve_extension(path).ok_or_else(|| {
 				// TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 				anyhow::anyhow!(t("No file extension found for: {}").replace("{}", &context.file_path))
 			})
@@ -207,10 +220,8 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 #[must_use]
 pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 	let path = Path::new(&context.file_path);
-	let extension = context
-		.forced_extension
-		.as_ref()
-		.map_or_else(|| path.extension().and_then(|e| e.to_str()).unwrap_or(""), |ext| ext.as_str());
+	let extension =
+		context.forced_extension.as_ref().map_or_else(|| resolve_extension(path).unwrap_or(""), |ext| ext.as_str());
 	ParserRegistry::global()
 		.get_parsers_for_extension(extension)
 		.iter()
@@ -407,7 +418,7 @@ pub fn is_external_url(url: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-	use std::iter;
+	use std::{iter, ptr};
 
 	use rstest::rstest;
 
@@ -523,6 +534,9 @@ mod tests {
 	#[case("txt", true)]
 	#[case(".TXT", true)]
 	#[case("log", true)]
+	#[case("m4b", true)]
+	#[case(".M4B", true)]
+	#[case("m4a", false)]
 	#[case("", false)]
 	#[case(".", false)]
 	#[case("notarealextension", false)]
@@ -596,6 +610,19 @@ mod tests {
 	}
 
 	#[test]
+	fn resolve_extension_routes_loose_ncc_html_to_opf() {
+		let book_directory = Path::new("books").join("daisy2");
+		assert_eq!(resolve_extension(&book_directory.join("ncc.html")), Some("opf"));
+		assert_eq!(resolve_extension(&book_directory.join("NCC.HTML")), Some("opf"));
+	}
+
+	#[test]
+	fn resolve_extension_leaves_other_html_files_alone() {
+		let chapter = Path::new("books").join("chapter1.html");
+		assert_eq!(resolve_extension(&chapter), Some("html"));
+	}
+
+	#[test]
 	fn parse_document_errors_when_missing_extension() {
 		let context = ParserContext::new("no_extension".to_string());
 		let err = parse_document(&context).expect_err("expected missing extension error");
@@ -615,6 +642,15 @@ mod tests {
 		assert_eq!(get_parser_flags_for_context(&context), ParserFlags::NONE);
 	}
 
+	#[test]
+	fn m4b_parser_advertises_audio_book_navigation() {
+		let context = ParserContext::new("book.m4b".to_string());
+		assert_eq!(
+			get_parser_flags_for_context(&context),
+			ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_AUDIO
+		);
+	}
+
 	/// Guards against a format being declared in `paperback-formats` with no parser wired up
 	/// in `parser_registry!` (it would show up in the installer and open dialog but fail to
 	/// open), and against a parser being registered twice.
@@ -623,7 +659,7 @@ mod tests {
 		let registered: Vec<&'static FormatMeta> =
 			ParserRegistry::global().all_parsers().iter().map(RegisteredParser::format).collect();
 		for format in paperback_formats::ALL {
-			let count = registered.iter().filter(|candidate| std::ptr::eq(**candidate, *format)).count();
+			let count = registered.iter().filter(|candidate| ptr::eq(**candidate, *format)).count();
 			assert_eq!(count, 1, "{} must have exactly one registered parser, found {count}", format.name);
 		}
 		assert_eq!(registered.len(), paperback_formats::ALL.len(), "a parser was registered for an unlisted format");
@@ -690,7 +726,6 @@ mod tests {
 		let mut buffer = DocumentBuffer::new();
 		let base_offset = 100usize;
 		add_converter_markers(&mut buffer, &converter, base_offset);
-
 		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 		assert_eq!(table_marker.position, base_offset + 10, "position = offset + table.offset");
 		assert_eq!(table_marker.length, 7, "marker length must equal table length, not byte length");

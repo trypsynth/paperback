@@ -161,6 +161,11 @@ jobs:
       uses: actions/checkout@v7
       with:
         fetch-depth: 0
+    # cargo xtask android shells out to pandoc for the bundled Help documents and only warns
+    # if it is missing, so without this the APK ships with no assets/readmes at all and Help
+    # fails at runtime for every user.
+    - name: Install Pandoc
+      run: sudo apt-get update && sudo apt-get install -y pandoc
     - name: Set up JDK 17
       uses: actions/setup-java@v6
       with:

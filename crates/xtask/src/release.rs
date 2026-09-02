@@ -1,5 +1,7 @@
 #[cfg(target_os = "macos")]
 use std::fs;
+#[cfg(target_os = "macos")]
+use std::os::unix::fs::symlink;
 use std::{env, error::Error, path::Path, process::Command};
 #[cfg(not(target_os = "macos"))]
 use std::{fs::File, io};
@@ -9,16 +11,24 @@ use walkdir::WalkDir;
 #[cfg(not(target_os = "macos"))]
 use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
 
-use crate::project_root;
+use crate::workspace::project_root;
 
 pub fn release() -> Result<(), Box<dyn Error>> {
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-	let status = Command::new(&cargo)
-		.current_dir(project_root())
-		.args(["build", "--release", "-p", "paperback", "-p", "pb"])
-		.status()?;
-	if !status.success() {
-		return Err("Cargo build failed".into());
+	// Built as two separate invocations rather than `-p paperback -p pb` in one: Cargo leaks
+	// wxdragon-sys's build-script native-library search paths (wxWidgets' own libs) into
+	// every binary linked in the same invocation when multiple root packages are requested
+	// together, even into pb, which doesn't depend on wxdragon at all. That pulled GUI DLL
+	// imports (comctl32's GetWindowSubclass and friends) into pb.exe, which then failed to
+	// launch on end-user machines with "entry point not found" since it never gets the
+	// comctl32-v6 manifest paperback.exe's build.rs embeds. Building one package per
+	// invocation keeps each link step's inputs isolated.
+	for package in ["paperback", "pb"] {
+		let status =
+			Command::new(&cargo).current_dir(project_root()).args(["build", "--release", "-p", package]).status()?;
+		if !status.success() {
+			return Err(format!("Cargo build failed for {package}").into());
+		}
 	}
 	let target_dir = project_root().join("target/release");
 	#[cfg(target_os = "macos")]
@@ -49,7 +59,6 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 	let resources_dir = bundle_dir.join("Contents/Resources");
 	fs::create_dir_all(&macos_dir)?;
 	fs::create_dir_all(&resources_dir)?;
-
 	// build.rs creates the bundle skeleton but only copies the binary if one already
 	// existed from a prior build.  Copy the freshly-linked binary now.
 	let exe = target_dir.join("paperback");
@@ -59,7 +68,6 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 	fs::copy(&exe, macos_dir.join("paperback"))?;
 	use std::os::unix::fs::PermissionsExt;
 	fs::set_permissions(macos_dir.join("paperback"), fs::Permissions::from_mode(0o755))?;
-
 	// Copy libpdfium.dylib into the bundle so it ships alongside the binary.
 	let dylib_src = target_dir.join("libpdfium.dylib");
 	if dylib_src.exists() {
@@ -67,19 +75,15 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 	} else {
 		println!("Warning: libpdfium.dylib not found in target directory; PDF support will be unavailable.");
 	}
-
 	println!("Built app: {}", bundle_dir.display());
-
 	sign_mac_bundle(&bundle_dir, &macos_dir)?;
-
 	// Build a DMG: staging folder contains the .app plus an /Applications symlink
 	// so users get the standard drag-to-install experience.
 	let staging = target_dir.join("dmg-staging");
 	let _ = fs::remove_dir_all(&staging);
 	fs::create_dir_all(&staging)?;
 	copy_dir_all(&bundle_dir, &staging.join("Paperback.app"))?;
-	std::os::unix::fs::symlink("/Applications", staging.join("Applications"))?;
-
+	symlink("/Applications", staging.join("Applications"))?;
 	let dmg_path = target_dir.join("paperback.dmg");
 	let status = Command::new("hdiutil")
 		.args([
@@ -113,7 +117,6 @@ fn sign_mac_bundle(bundle_dir: &Path, macos_dir: &Path) -> Result<(), Box<dyn Er
 		println!("MACOS_SIGN_IDENTITY not set; skipping code signing.");
 		return Ok(());
 	};
-
 	let dylib = macos_dir.join("libpdfium.dylib");
 	if dylib.exists() {
 		codesign(&dylib, &identity)?;

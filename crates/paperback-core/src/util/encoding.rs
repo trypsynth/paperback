@@ -65,7 +65,6 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 			return decoded.to_string();
 		}
 	}
-
 	// Windows-1252
 	let (decoded, _, _) = WINDOWS_1252.decode(input);
 	if decoded.chars().any(|c| !c.is_control() || c.is_whitespace()) {

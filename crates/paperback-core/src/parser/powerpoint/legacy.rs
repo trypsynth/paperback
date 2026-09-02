@@ -24,7 +24,6 @@ pub(super) fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 		File::open(&context.file_path).with_context(|| format!("Failed to open PPT file '{}'", context.file_path))?;
 	let mut compound =
 		CompoundFile::open(file).with_context(|| format!("Failed to parse OLE container '{}'", context.file_path))?;
-
 	// Encrypted PPT files have an EncryptionInfo stream. We can detect but not decrypt them.
 	if compound.entry("/EncryptionInfo").is_ok() {
 		tracing::warn!(path = %context.file_path, "legacy ppt file is encrypted, not supported");
@@ -33,7 +32,6 @@ pub(super) fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 			"Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
 		));
 	}
-
 	let ppt_document_stream = read_ppt_document_stream(&mut compound)
 		.inspect_err(
 			|e| tracing::warn!(path = %context.file_path, error = %e, "failed to read powerpoint document stream"),

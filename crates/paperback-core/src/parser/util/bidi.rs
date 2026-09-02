@@ -61,7 +61,6 @@ struct Cluster {
 #[must_use]
 pub fn reorder_line(chars: &[(char, f32)]) -> String {
 	let bidi = CodePointMapData::<BidiClass>::new();
-
 	// Fast path, covering both "nothing right-to-left" and "RTL present but already
 	// stored in logical order": return input verbatim, in a single scan. Many PDFs
 	// (and all faithfully-exported vocalized Hebrew) already store RTL text in
@@ -72,7 +71,6 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 	if !has_visual_rtl_run(chars, bidi) {
 		return chars.iter().map(|&(c, _)| c).collect();
 	}
-
 	// 1. Split into base clusters and combining marks. A mark attaches to the
 	//    nearest non-whitespace base by x origin (PDFs emit marks adjacent in x but
 	//    sometimes out of sequence, and occasionally in the wrong base's slot).
@@ -99,10 +97,8 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 			clusters[i].marks.push(mc);
 		}
 	}
-
 	// 2. Sort clusters by ascending x → true visual (left-to-right) order.
 	clusters.sort_by(|a, b| a.x.total_cmp(&b.x));
-
 	// 3. Determine the paragraph base direction from the strong-character majority,
 	//    overriding the Unicode Bidi Algorithm's own first-strong-character (P2/P3)
 	//    detection: a line that opens with punctuation or a short embedded word in
@@ -118,7 +114,6 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 	}
 	let base_rtl = rtl >= ltr && rtl > 0;
 	let base_level = if base_rtl { Level::rtl() } else { Level::ltr() };
-
 	// 4. Resolve per-character embedding levels (UBA rules N0-N3, L1), delegated to
 	//    `unicode_bidi`. The x-sorted cluster text is fed in as if it were logical
 	//    order: resolving levels and reordering (L2) a single-embedding paragraph is
@@ -129,7 +124,6 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 	let bidi_info = BidiInfo::new_with_data_source(&bidi, &base_text, Some(base_level));
 	let para = &bidi_info.paragraphs[0];
 	let char_levels = bidi_info.reordered_levels_per_char(para, para.range.clone());
-
 	// Mirror paired punctuation that sits at an odd (right-to-left) level.
 	let mirror = CodePointMapData::<BidiMirroringGlyph>::new();
 	for (cl, lvl) in clusters.iter_mut().zip(&char_levels) {
@@ -139,12 +133,10 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 			cl.ch = m;
 		}
 	}
-
 	// 5. Apply the Unicode Bidi rule L2 (reverse, from the highest level down to the
 	//    lowest odd level, every contiguous run whose level is at or above the
 	//    current level) to recover the logical order.
 	let order = BidiInfo::reorder_visual(&char_levels);
-
 	// 6. Emit clusters in final order: each base followed by its marks.
 	let mut out = String::with_capacity(chars.len());
 	for &idx in &order {

@@ -193,6 +193,18 @@ impl AudioTimeline {
 		nearest_preceding
 	}
 
+	/// Whether every source's real length is known.
+	///
+	/// A file the parser could not probe still gets a clip, with a placeholder length far
+	/// longer than any real recording, so playback keeps working. Elapsed time across such a
+	/// timeline is meaningless though: one unprobed file in a six-hour book puts the total in
+	/// the tens of hours and drags every proportion toward zero. Anything reporting progress as
+	/// a fraction of the whole has to ask this first.
+	#[must_use]
+	pub fn durations_are_known(&self) -> bool {
+		!self.sources.is_empty() && self.sources.iter().all(|source| source.duration_ms.is_some())
+	}
+
 	/// How far through the recording `point` is, in `0.0..=1.0`. Audio documents
 	/// should prefer this to a character-count percentage, which measures only
 	/// the text spine — a few chapter headings, for an audiobook.

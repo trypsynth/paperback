@@ -88,42 +88,40 @@ extension MagicTapWindow {
 		return k
 	}
 
-	// MARK: - Actions
+	@objc private func kbTogglePlayPause()  { onMain { $0.reading.togglePlayPause() } }
 
-	@objc private func kbTogglePlayPause()  { onMain { $0.togglePlayPause() } }
+	@objc private func kbNextSection()    { onMain { $0.reading.navigateByType(.section,  direction: .next) } }
+	@objc private func kbPrevSection()    { onMain { $0.reading.navigateByType(.section,  direction: .previous) } }
+	@objc private func kbNextHeading()    { onMain { $0.reading.navigateByType(.heading,  direction: .next) } }
+	@objc private func kbPrevHeading()    { onMain { $0.reading.navigateByType(.heading,  direction: .previous) } }
+	@objc private func kbNextPage()       { onMain { $0.reading.navigateByType(.page,     direction: .next) } }
+	@objc private func kbPrevPage()       { onMain { $0.reading.navigateByType(.page,     direction: .previous) } }
+	@objc private func kbNextImage()      { onMain { $0.reading.navigateByType(.image,    direction: .next) } }
+	@objc private func kbPrevImage()      { onMain { $0.reading.navigateByType(.image,    direction: .previous) } }
+	@objc private func kbNextFigure()     { onMain { $0.reading.navigateByType(.figure,   direction: .next) } }
+	@objc private func kbPrevFigure()     { onMain { $0.reading.navigateByType(.figure,   direction: .previous) } }
+	@objc private func kbNextLink()       { onMain { $0.reading.navigateByType(.link,     direction: .next) } }
+	@objc private func kbPrevLink()       { onMain { $0.reading.navigateByType(.link,     direction: .previous) } }
+	@objc private func kbNextTable()      { onMain { $0.reading.navigateByType(.table,    direction: .next) } }
+	@objc private func kbPrevTable()      { onMain { $0.reading.navigateByType(.table,    direction: .previous) } }
+	@objc private func kbNextSeparator()  { onMain { $0.reading.navigateByType(.separator,direction: .next) } }
+	@objc private func kbPrevSeparator()  { onMain { $0.reading.navigateByType(.separator,direction: .previous) } }
+	@objc private func kbNextList()       { onMain { $0.reading.navigateByType(.list,     direction: .next) } }
+	@objc private func kbPrevList()       { onMain { $0.reading.navigateByType(.list,     direction: .previous) } }
+	@objc private func kbNextListItem()   { onMain { $0.reading.navigateByType(.listItem, direction: .next) } }
+	@objc private func kbPrevListItem()   { onMain { $0.reading.navigateByType(.listItem, direction: .previous) } }
 
-	@objc private func kbNextSection()    { onMain { $0.navigateByType(.section,  direction: .next) } }
-	@objc private func kbPrevSection()    { onMain { $0.navigateByType(.section,  direction: .previous) } }
-	@objc private func kbNextHeading()    { onMain { $0.navigateByType(.heading,  direction: .next) } }
-	@objc private func kbPrevHeading()    { onMain { $0.navigateByType(.heading,  direction: .previous) } }
-	@objc private func kbNextPage()       { onMain { $0.navigateByType(.page,     direction: .next) } }
-	@objc private func kbPrevPage()       { onMain { $0.navigateByType(.page,     direction: .previous) } }
-	@objc private func kbNextImage()      { onMain { $0.navigateByType(.image,    direction: .next) } }
-	@objc private func kbPrevImage()      { onMain { $0.navigateByType(.image,    direction: .previous) } }
-	@objc private func kbNextFigure()     { onMain { $0.navigateByType(.figure,   direction: .next) } }
-	@objc private func kbPrevFigure()     { onMain { $0.navigateByType(.figure,   direction: .previous) } }
-	@objc private func kbNextLink()       { onMain { $0.navigateByType(.link,     direction: .next) } }
-	@objc private func kbPrevLink()       { onMain { $0.navigateByType(.link,     direction: .previous) } }
-	@objc private func kbNextTable()      { onMain { $0.navigateByType(.table,    direction: .next) } }
-	@objc private func kbPrevTable()      { onMain { $0.navigateByType(.table,    direction: .previous) } }
-	@objc private func kbNextSeparator()  { onMain { $0.navigateByType(.separator,direction: .next) } }
-	@objc private func kbPrevSeparator()  { onMain { $0.navigateByType(.separator,direction: .previous) } }
-	@objc private func kbNextList()       { onMain { $0.navigateByType(.list,     direction: .next) } }
-	@objc private func kbPrevList()       { onMain { $0.navigateByType(.list,     direction: .previous) } }
-	@objc private func kbNextListItem()   { onMain { $0.navigateByType(.listItem, direction: .next) } }
-	@objc private func kbPrevListItem()   { onMain { $0.navigateByType(.listItem, direction: .previous) } }
+	@objc private func kbFindNext()       { onMain { $0.reading.findNext() } }
+	@objc private func kbFindPrev()       { onMain { $0.reading.findPrev() } }
+	@objc private func kbElements()       { onMain { $0.navigation.showElements = true } }
 
-	@objc private func kbFindNext()       { onMain { $0.findNext() } }
-	@objc private func kbFindPrev()       { onMain { $0.findPrev() } }
-	@objc private func kbElements()       { onMain { $0.showElements = true } }
-
-	@objc private func kbOpenFind()       { onMain { $0.showFind = true } }
-	@objc private func kbOpenSettings()   { onMain { $0.showSettings = true } }
-	@objc private func kbOpenToc()        { onMain { $0.showToc = true } }
-	@objc private func kbOpenGoToPage()   { onMain { $0.goToInitialMode = .page;    $0.showGoTo = true } }
-	@objc private func kbOpenGoToLine()   { onMain { $0.goToInitialMode = .line;    $0.showGoTo = true } }
-	@objc private func kbOpenGoToPercent(){ onMain { $0.goToInitialMode = .percent; $0.showGoTo = true } }
-	@objc private func kbWordCount()      { onMain { $0.showWordCount = true } }
-	@objc private func kbDocumentInfo()   { onMain { $0.showDocumentInfo = true } }
-	@objc private func kbSleepTimer()     { onMain { $0.showSleepTimer = true } }
+	@objc private func kbOpenFind()       { onMain { $0.navigation.showFind = true } }
+	@objc private func kbOpenSettings()   { onMain { $0.navigation.showSettings = true } }
+	@objc private func kbOpenToc()        { onMain { $0.navigation.showToc = true } }
+	@objc private func kbOpenGoToPage()   { onMain { $0.navigation.goToInitialMode = .page;    $0.navigation.showGoTo = true } }
+	@objc private func kbOpenGoToLine()   { onMain { $0.navigation.goToInitialMode = .line;    $0.navigation.showGoTo = true } }
+	@objc private func kbOpenGoToPercent(){ onMain { $0.navigation.goToInitialMode = .percent; $0.navigation.showGoTo = true } }
+	@objc private func kbWordCount()      { onMain { $0.navigation.showWordCount = true } }
+	@objc private func kbDocumentInfo()   { onMain { $0.navigation.showDocumentInfo = true } }
+	@objc private func kbSleepTimer()     { onMain { $0.navigation.showSleepTimer = true } }
 }

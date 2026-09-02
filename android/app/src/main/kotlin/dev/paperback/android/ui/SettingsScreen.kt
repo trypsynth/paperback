@@ -16,15 +16,76 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.paperback.android.t
 
+private val MIN_SCALE = ReaderSettings.MIN_TEXT_SCALE_PERCENT.toFloat()
+
+private val MAX_SCALE = ReaderSettings.MAX_TEXT_SCALE_PERCENT.toFloat()
+
+/** Discrete slider positions between the bounds, one per [ReaderSettings.TEXT_SCALE_PERCENT_STEP]. */
+private const val SCALE_STEPS =
+	(ReaderSettings.MAX_TEXT_SCALE_PERCENT - ReaderSettings.MIN_TEXT_SCALE_PERCENT) /
+		ReaderSettings.TEXT_SCALE_PERCENT_STEP - 1
+
+/** Rounds a raw slider value so the text size only ever lands on a whole step. */
+private fun snapScale(value: Float): Int =
+	kotlin.math.round(value / ReaderSettings.TEXT_SCALE_PERCENT_STEP).toInt() *
+		ReaderSettings.TEXT_SCALE_PERCENT_STEP
+
+/**
+ * A labelled dropdown over a fixed list of options, where the stored value is the option's index.
+ * The readability choices all share the desktop's index meanings, so the index is the setting.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChoiceSetting(
+	label: String,
+	options: List<String>,
+	selectedIndex: Int,
+	onSelect: (Int) -> Unit
+) {
+	var expanded by remember { mutableStateOf(false) }
+	val selectedLabel = options.getOrElse(selectedIndex) { options.first() }
+	ExposedDropdownMenuBox(
+		expanded = expanded,
+		onExpandedChange = { expanded = it }
+	) {
+		OutlinedButton(
+			onClick = { expanded = true },
+			modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+		) {
+			Text("$label: $selectedLabel", modifier = Modifier.weight(1f))
+			ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+		}
+		ExposedDropdownMenu(
+			expanded = expanded,
+			onDismissRequest = { expanded = false }
+		) {
+			options.forEachIndexed { index, option ->
+				DropdownMenuItem(
+					text = { Text(option) },
+					onClick = {
+						onSelect(index)
+						expanded = false
+					}
+				)
+			}
+		}
+	}
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
 	viewModel: MainScreenViewModel = viewModel(),
 	onDismiss: () -> Unit
 ) {
-	val restorePreviousDocuments by viewModel.restorePreviousDocuments.collectAsStateWithLifecycle()
-	val useInAppFileBrowser by viewModel.useInAppFileBrowser.collectAsStateWithLifecycle()
-	val swipeUpMovesForward by viewModel.swipeUpMovesForward.collectAsStateWithLifecycle()
+	val settings = viewModel.settings
+	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
+	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()
+	val swipeUpMovesForward by settings.swipeUpMovesForward.state.collectAsStateWithLifecycle()
+	val textScalePercent by settings.textScalePercent.state.collectAsStateWithLifecycle()
+	val lineSpacing by settings.lineSpacing.state.collectAsStateWithLifecycle()
+	val paragraphSpacing by settings.paragraphSpacing.state.collectAsStateWithLifecycle()
+	val textAlignment by settings.textAlignment.state.collectAsStateWithLifecycle()
 	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
 	val currentPitch by viewModel.ttsManager.currentPitch.collectAsStateWithLifecycle()
 	val availableVoices by viewModel.ttsManager.availableVoices.collectAsStateWithLifecycle()
@@ -37,7 +98,7 @@ fun SettingsScreen(
 	var voiceExpanded by remember { mutableStateOf(false) }
 
 	Surface(
-		modifier = Modifier.fillMaxSize().semantics { paneTitle = "Settings" },
+		modifier = Modifier.fillMaxSize().semantics { paneTitle = t("Settings") },
 		color = MaterialTheme.colorScheme.surface
 	) {
 		Column(modifier = Modifier.fillMaxSize()) {
@@ -71,7 +132,7 @@ fun SettingsScreen(
 						.fillMaxWidth()
 						.toggleable(
 							value = restorePreviousDocuments,
-							onValueChange = { viewModel.setRestorePreviousDocuments(it) },
+							onValueChange = { settings.restorePreviousDocuments.set(it) },
 							role = Role.Switch
 						).padding(vertical = 8.dp),
 					verticalAlignment = Alignment.CenterVertically,
@@ -89,7 +150,7 @@ fun SettingsScreen(
 						.fillMaxWidth()
 						.toggleable(
 							value = useInAppFileBrowser,
-							onValueChange = { viewModel.setUseInAppFileBrowser(it) },
+							onValueChange = { settings.useInAppFileBrowser.set(it) },
 							role = Role.Switch
 						).padding(vertical = 8.dp),
 					verticalAlignment = Alignment.CenterVertically,
@@ -107,7 +168,7 @@ fun SettingsScreen(
 						.fillMaxWidth()
 						.toggleable(
 							value = swipeUpMovesForward,
-							onValueChange = { viewModel.setSwipeUpMovesForward(it) },
+							onValueChange = { settings.swipeUpMovesForward.set(it) },
 							role = Role.Switch
 						).padding(vertical = 8.dp),
 					verticalAlignment = Alignment.CenterVertically,
@@ -120,6 +181,86 @@ fun SettingsScreen(
 						onCheckedChange = null
 					)
 				}
+
+				Spacer(modifier = Modifier.height(24.dp))
+				// TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
+				Text(
+					t("Readability"),
+					style = MaterialTheme.typography.titleMedium,
+					modifier = Modifier.padding(bottom = 8.dp).semantics { heading() }
+				)
+
+				// TRANSLATORS: Row label for the control that scales the size of document text
+				val textSizeLabel = t("Text Size")
+				Column(
+					modifier = Modifier.clearAndSetSemantics {
+						contentDescription = textSizeLabel
+						stateDescription = "$textScalePercent percent"
+						progressBarRangeInfo = ProgressBarRangeInfo(
+							current = textScalePercent.toFloat(),
+							range = MIN_SCALE..MAX_SCALE,
+							steps = SCALE_STEPS
+						)
+						setProgress { targetValue ->
+							settings.textScalePercent.set(snapScale(targetValue))
+							true
+						}
+					}
+				) {
+					Text("$textSizeLabel: $textScalePercent%", style = MaterialTheme.typography.labelLarge)
+					Slider(
+						value = textScalePercent.toFloat(),
+						onValueChange = { settings.textScalePercent.set(snapScale(it)) },
+						valueRange = MIN_SCALE..MAX_SCALE,
+						steps = SCALE_STEPS
+					)
+				}
+				Spacer(modifier = Modifier.height(16.dp))
+				ChoiceSetting(
+					// TRANSLATORS: Label for the picker choosing how much space sits between lines of text
+					label = t("Line Spacing"),
+					options = listOf(
+						// TRANSLATORS: Default spacing option, shown in the line and paragraph spacing pickers
+						t("Normal"),
+						// TRANSLATORS: 1.5x line spacing option
+						t("1.5×"),
+						// TRANSLATORS: Double line spacing option
+						t("Double")
+					),
+					selectedIndex = lineSpacing,
+					onSelect = { settings.lineSpacing.set(it) }
+				)
+				Spacer(modifier = Modifier.height(16.dp))
+				ChoiceSetting(
+					// TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
+					label = t("Paragraph Spacing"),
+					options = listOf(
+						t("Normal"),
+						// TRANSLATORS: Relaxed paragraph spacing option
+						t("Relaxed"),
+						// TRANSLATORS: Wide paragraph spacing option
+						t("Wide")
+					),
+					selectedIndex = paragraphSpacing,
+					onSelect = { settings.paragraphSpacing.set(it) }
+				)
+				Spacer(modifier = Modifier.height(16.dp))
+				ChoiceSetting(
+					// TRANSLATORS: Label for the picker choosing how document text is aligned
+					label = t("Alignment"),
+					options = listOf(
+						// TRANSLATORS: Left text alignment option
+						t("Left"),
+						// TRANSLATORS: Center text alignment option
+						t("Center"),
+						// TRANSLATORS: Right text alignment option
+						t("Right"),
+						// TRANSLATORS: Justified text alignment option
+						t("Justify")
+					),
+					selectedIndex = textAlignment,
+					onSelect = { settings.textAlignment.set(it) }
+				)
 
 				Spacer(modifier = Modifier.height(24.dp))
 				// TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
@@ -137,8 +278,10 @@ fun SettingsScreen(
 						onClick = { engineExpanded = true },
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
 					) {
-						val selectedName = engines.find { it.name == currentEngine }?.label ?: currentEngine ?: "Default"
-						Text("Speech Engine: $selectedName", modifier = Modifier.weight(1f))
+						// TRANSLATORS: Value shown when a setting is following the system/engine default
+						val selectedName = engines.find { it.name == currentEngine }?.label ?: currentEngine ?: t("Default")
+						// TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
+						Text("${t("Speech Engine")}: $selectedName", modifier = Modifier.weight(1f))
 						ExposedDropdownMenuDefaults.TrailingIcon(expanded = engineExpanded)
 					}
 					ExposedDropdownMenu(
@@ -167,8 +310,9 @@ fun SettingsScreen(
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
 						enabled = !isSystemDefault
 					) {
-						val voiceName = currentVoice?.name ?: "Default"
-						Text("Voice: $voiceName", modifier = Modifier.weight(1f))
+						val voiceName = currentVoice?.name ?: t("Default")
+						// TRANSLATORS: Label for the dropdown choosing which text-to-speech voice to speak with
+						Text("${t("Voice")}: $voiceName", modifier = Modifier.weight(1f))
 						ExposedDropdownMenuDefaults.TrailingIcon(expanded = voiceExpanded)
 					}
 					ExposedDropdownMenu(
@@ -209,7 +353,11 @@ fun SettingsScreen(
 						}
 					}
 				) {
-					val rateText = if (isSystemDefault) "Speech Rate: System Default" else "Speech Rate: $currentSpeechRate%"
+					val rateText = if (isSystemDefault) {
+						"${t("Speech Rate")}: ${t("System Default")}"
+					} else {
+						"${t("Speech Rate")}: $currentSpeechRate%"
+					}
 					Text(rateText, style = MaterialTheme.typography.labelLarge)
 					Slider(
 						value = if (isSystemDefault) 50f else currentSpeechRate.toFloat(),
@@ -225,6 +373,7 @@ fun SettingsScreen(
 						// TRANSLATORS: TalkBack label for the speech pitch slider
 						contentDescription = t("Pitch")
 						if (isSystemDefault) {
+							// TRANSLATORS: TalkBack state description for a slider (pitch or speech rate) when it is following the system default instead of a custom value
 							stateDescription = t("System Default")
 							disabled()
 						} else {
@@ -241,7 +390,11 @@ fun SettingsScreen(
 						}
 					}
 				) {
-					val pitchText = if (isSystemDefault) "Pitch: System Default" else "Pitch: $currentPitch%"
+					val pitchText = if (isSystemDefault) {
+						"${t("Pitch")}: ${t("System Default")}"
+					} else {
+						"${t("Pitch")}: $currentPitch%"
+					}
 					Text(pitchText, style = MaterialTheme.typography.labelLarge)
 					Slider(
 						value = if (isSystemDefault) 50f else currentPitch.toFloat(),

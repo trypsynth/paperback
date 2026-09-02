@@ -115,7 +115,8 @@ fun FileManagerDialog(
 		Surface(
 			modifier = Modifier
 				.fillMaxSize()
-				.semantics { paneTitle = "File Manager" }
+				// TRANSLATORS: Announced by the screen reader when the in-app file browser opens
+				.semantics { paneTitle = t("File Manager") }
 				.onKeyEvent { event ->
 					if (event.type == KeyEventType.KeyDown && event.key == Key.Backspace) {
 						if (virtualParent != null) {
@@ -146,7 +147,8 @@ fun FileManagerDialog(
 					},
 					actions = {
 						TextButton(onClick = onDismiss) {
-							Text("Cancel")
+							// TRANSLATORS: Button dismissing the in-app file browser without opening anything
+							Text(t("Cancel"))
 						}
 					}
 				)
@@ -266,6 +268,7 @@ fun FileListItem(
 			modifier = Modifier.size(32.dp).padding(end = 16.dp)
 		)
 		Column {
+			// TRANSLATORS: Display name for the device's root storage folder in the in-app file browser
 			val displayName = if (file.absolutePath ==
 				Environment.getExternalStorageDirectory().absolutePath
 			) {

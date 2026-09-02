@@ -14,3 +14,4 @@ fi
 ja
 pl
 sr
+zh_CN

@@ -22,7 +22,7 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
 		.build();
 	page_ctrl.set_value(current);
-	bind_enter_confirms(dialog, page_ctrl);
+	bind_enter_confirms(&dialog, page_ctrl);
 	let label_for_update = label;
 	let label_template_for_update = label_template;
 	page_ctrl.on_value_changed(move |event| {
@@ -37,7 +37,7 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 	page_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	page_sizer.add(&page_ctrl, 1, SizerFlag::Expand, 0);
 	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
-	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("Go"));
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("Go"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&page_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);

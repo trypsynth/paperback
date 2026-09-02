@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -158,15 +159,22 @@ fun MainScreenTopBar(
 				}
 			}
 			if (state is MainScreenUiState.Success && state.tabs.isNotEmpty()) {
+				// An audio-only book (a zip of nothing but narration files) has no real text
+				// spine, so switching to Text Mode, listing elements, counting words or
+				// exporting doesn't make sense for it. Its buffer is one blank line per audio
+				// file, so an export would write a file of nothing.
+				val isAudioOnly = state.activeTab?.isAudioOnly == true
 				val menuActions = buildList {
-					add(
-						MenuAction(
-							// TRANSLATORS: Menu item / accessibility action toggling between the read-aloud view and the plain text view; label names the mode that tapping it switches TO
-							if (isTextMode) t("Switch to TTS Mode") else t("Switch to Text Mode"),
-							onToggleTextMode
+					if (!isAudioOnly) {
+						add(
+							MenuAction(
+								// TRANSLATORS: Menu item / accessibility action toggling between the read-aloud view and the plain text view; label names the mode that tapping it switches TO
+								if (isTextMode) t("Switch to TTS Mode") else t("Switch to Text Mode"),
+								onToggleTextMode
+							)
 						)
-					)
-					if (isTextMode) {
+					}
+					if (isTextMode && !isAudioOnly) {
 						add(
 							MenuAction(
 								// TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
@@ -183,22 +191,29 @@ fun MainScreenTopBar(
 								onTocOpen
 							)
 						)
-						add(MenuAction(t("Export As"), onExportDocumentOpen))
+						if (!isAudioOnly) {
+							// TRANSLATORS: Menu item / accessibility action to open the export document dialog
+							add(MenuAction(t("Export As"), onExportDocumentOpen))
+						}
 					}
-					add(
-						MenuAction(
-							// TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
-							t("Elements List"),
-							onElementsOpen
+					if (!isAudioOnly) {
+						add(
+							MenuAction(
+								// TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
+								t("Elements List"),
+								onElementsOpen
+							)
 						)
-					)
-					add(
-						MenuAction(
-							// TRANSLATORS: Menu item / accessibility action to open the find/search bar
-							t("Find"),
-							onFindOpen
+					}
+					if (!isAudioOnly) {
+						add(
+							MenuAction(
+								// TRANSLATORS: Menu item / accessibility action to open the find/search bar
+								t("Find"),
+								onFindOpen
+							)
 						)
-					)
+					}
 					add(
 						MenuAction(
 							// TRANSLATORS: Menu item / accessibility action to open the go-to dialog, for jumping to a page, line, or percentage
@@ -213,13 +228,15 @@ fun MainScreenTopBar(
 							onRecentsOpen
 						)
 					)
-					add(
-						MenuAction(
-							// TRANSLATORS: Menu item / accessibility action to show word/character/line count statistics for the current document
-							t("Word Count"),
-							onWordCountOpen
+					if (!isAudioOnly) {
+						add(
+							MenuAction(
+								// TRANSLATORS: Menu item / accessibility action to show word/character/line count statistics for the current document
+								t("Word Count"),
+								onWordCountOpen
+							)
 						)
-					)
+					}
 					add(
 						MenuAction(
 							// TRANSLATORS: Menu item / accessibility action to show metadata (title, author, etc.) about the current document
@@ -273,7 +290,9 @@ fun MainScreenTopBar(
 			} else {
 				var emptyMenuExpanded by remember { mutableStateOf(false) }
 				val emptyMenuActions = listOf(
+					// TRANSLATORS: Menu item / accessibility action to open the in-app help document, shown in the top bar menu when no document is open
 					MenuAction(t("Help"), onHelpOpen),
+					// TRANSLATORS: Menu item / accessibility action to open the app's settings, shown in the top bar menu when no document is open
 					MenuAction(t("Settings"), onSettingsOpen)
 				)
 				Box {
@@ -331,7 +350,11 @@ fun MainScreenTopBar(
 									onClick = { onTabClose(index) },
 									modifier = Modifier.size(24.dp).clearAndSetSemantics { }
 								) {
-									Text("X", fontWeight = FontWeight.Bold)
+									Icon(
+										Icons.Filled.Close,
+										contentDescription = null,
+										modifier = Modifier.size(16.dp)
+									)
 								}
 							}
 						}

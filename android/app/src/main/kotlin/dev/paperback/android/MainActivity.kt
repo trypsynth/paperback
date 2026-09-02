@@ -193,7 +193,7 @@ class MainActivity : ComponentActivity() {
 		if (currentFocus is EditText) return super.dispatchKeyEvent(event)
 		// F7: elements list (matches desktop)
 		if (event.keyCode == KeyEvent.KEYCODE_F7) {
-			vm.openElementsDialog()
+			vm.openElements()
 			return true
 		}
 		// Ctrl shortcuts: parity with desktop app
@@ -204,11 +204,11 @@ class MainActivity : ComponentActivity() {
 					true
 				}
 				KeyEvent.KEYCODE_COMMA -> {
-					vm.settingsDialog.open()
+					vm.settingsRequest.request()
 					true
 				}
 				KeyEvent.KEYCODE_T -> {
-					vm.tocDialog.open()
+					vm.tocRequest.request()
 					true
 				}
 				KeyEvent.KEYCODE_P -> {
@@ -224,7 +224,7 @@ class MainActivity : ComponentActivity() {
 					true
 				}
 				KeyEvent.KEYCODE_W -> {
-					vm.wordCountDialog.open()
+					vm.openWordCountDialog()
 					true
 				}
 				KeyEvent.KEYCODE_I -> {

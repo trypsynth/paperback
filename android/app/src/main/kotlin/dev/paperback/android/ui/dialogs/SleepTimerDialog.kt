@@ -42,7 +42,7 @@ fun SleepTimerDialog(
 
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = "Sleep Timer" },
+		modifier = Modifier.semantics { paneTitle = t("Sleep Timer") },
 		icon = { Icon(Icons.Filled.Timer, contentDescription = null) },
 		// TRANSLATORS: Dialog title, switches between the main sleep timer view and the custom-minutes entry view
 		title = { Text(if (showCustomInput) t("Custom Timer") else t("Sleep Timer")) },

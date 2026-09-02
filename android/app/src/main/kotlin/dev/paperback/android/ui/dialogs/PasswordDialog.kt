@@ -42,7 +42,7 @@ fun PasswordDialog(
 
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = "Document Password" },
+		modifier = Modifier.semantics { paneTitle = t("Document Password") },
 		icon = { Icon(Icons.Filled.Lock, contentDescription = null) },
 		// TRANSLATORS: Title of the dialog prompting for a password to open an encrypted document
 		title = { Text(t("Document Password")) },

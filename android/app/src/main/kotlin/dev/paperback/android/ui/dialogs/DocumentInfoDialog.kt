@@ -49,7 +49,7 @@ fun DocumentInfoDialog(
 ) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = "Document Information" },
+		modifier = Modifier.semantics { paneTitle = t("Document Information") },
 		// TRANSLATORS: Title of the dialog showing the current document's title, author, path, and word/line/character counts
 		title = { Text(t("Document Information")) },
 		text = {

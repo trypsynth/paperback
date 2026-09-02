@@ -1,4 +1,4 @@
-use std::{fmt::Write as _, fs, process};
+use std::{env, fmt::Write as _, fs, io, process};
 
 use anyhow::{Context, Result, bail};
 use clap::Parser;
@@ -84,8 +84,8 @@ fn main() -> Result<()> {
 /// `RUST_LOG` directly for finer-grained control (which always takes precedence).
 fn init_logging(verbose: bool) {
 	let default_filter = if verbose { "paperback_core=debug" } else { "off" };
-	let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| default_filter.to_string());
-	tracing_subscriber::fmt().with_env_filter(filter).with_writer(std::io::stderr).with_target(false).init();
+	let filter = env::var("RUST_LOG").unwrap_or_else(|_| default_filter.to_string());
+	tracing_subscriber::fmt().with_env_filter(filter).with_writer(io::stderr).with_target(false).init();
 }
 
 fn metadata(doc: &Document) -> String {

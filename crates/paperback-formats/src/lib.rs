@@ -138,6 +138,11 @@ formats! {
 		extensions: ["md", "markdown", "mdx", "mdown", "mdwn", "mkd", "mkdn", "mkdown", "ronn"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
 	},
+	M4B {
+		name: "M4B Audiobooks",
+		extensions: ["m4b"],
+		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_AUDIO,
+	},
 	MOBI {
 		name: "MOBI Books",
 		extensions: ["mobi", "azw", "azw3"],
@@ -209,6 +214,7 @@ mod tests {
 		assert_eq!(RTF.flags, ParserFlags::SUPPORTS_PAGES);
 		assert_eq!(TEXT.flags, ParserFlags::NONE);
 		assert!(HTML.flags.contains(ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS));
+		assert_eq!(M4B.flags, ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_AUDIO);
 		assert!(!HTML.flags.contains(ParserFlags::SUPPORTS_PAGES));
 		assert!(!TEXT.installer.default_checked, "unspecified installer settings default to OPT_IN");
 		assert!(EPUB.installer.default_checked && EPUB.installer.default_handler);

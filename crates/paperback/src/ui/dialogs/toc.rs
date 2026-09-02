@@ -9,7 +9,7 @@ use wxdragon::prelude::*;
 #[cfg(target_os = "windows")]
 const KEY_SPACE: i32 = 32;
 
-use crate::ui::dpi;
+use wx_utils::dpi;
 
 pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
 	#[cfg(not(target_os = "windows"))]
@@ -26,24 +26,18 @@ fn show_toc_dialog_dv(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_offset = Rc::new(Cell::new(-1i32));
-
 	let tree = DataViewTreeCtrl::builder(&dialog).with_size(dpi::scale_size(&dialog, Size::new(400, 500))).build();
-
 	let mut item_offsets: HashMap<usize, i32> = HashMap::new();
 	populate_toc_tree_dv(tree, &DataViewItem::default(), toc_items, &mut item_offsets);
-
 	if current_offset != -1 {
 		find_and_select_dv(tree, &DataViewItem::default(), current_offset, &item_offsets);
 	}
-
 	let item_offsets = Rc::new(item_offsets);
 	bind_toc_selection_dv(tree, Rc::clone(&item_offsets), Rc::clone(&selected_offset));
 	bind_toc_activation_dv(dialog, tree, Rc::clone(&item_offsets), Rc::clone(&selected_offset));
-
 	let (ok_button, cancel_button) = build_toc_buttons(dialog);
 	bind_toc_ok(dialog, ok_button, Rc::clone(&selected_offset));
 	bind_toc_layout_dv(dialog, tree, ok_button, cancel_button);
-
 	tree.set_focus();
 	if dialog.show_modal() == wxdragon::id::ID_OK {
 		let offset = selected_offset.get();
@@ -61,6 +55,7 @@ fn populate_toc_tree_dv(
 	item_offsets: &mut HashMap<usize, i32>,
 ) {
 	for item in items {
+		// TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
 		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
 		let node = if item.children.is_empty() {
@@ -267,6 +262,7 @@ fn bind_toc_layout(dialog: Dialog, tree: TreeCtrl, ok_button: Button, cancel_but
 #[cfg(target_os = "windows")]
 fn populate_toc_tree(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 	for item in items {
+		// TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
 		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
 		if let Some(id) = tree.append_item_with_data(parent, &display_text, offset, None, None)

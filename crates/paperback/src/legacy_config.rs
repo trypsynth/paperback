@@ -4,7 +4,7 @@
 /// and no TOML file exists yet, reads the INI via wxdragon's Config and writes a
 /// TOML file that the core's `ConfigManager` can load normally. This module is the
 /// only place in the binary that directly constructs `ConfigData`.
-use std::fs;
+use std::{fs, path::Path};
 
 use base64::{Engine, engine::general_purpose::STANDARD};
 use paperback_core::config::{ConfigData, DocumentConfig, StoredBookmark};
@@ -36,7 +36,7 @@ pub fn migrate_if_needed() {
 	}
 }
 
-fn read_ini(ini_path: &std::path::Path) -> ConfigData {
+fn read_ini(ini_path: &Path) -> ConfigData {
 	let config = Config::new(
 		"Paperback",
 		Some("Paperback"),

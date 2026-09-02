@@ -2,7 +2,7 @@
 //! hard-wrapped inter-word spaces, and rewriting `\'xx`/`\uN` escapes and literal tabs into
 //! forms the lexer tokenizes correctly (see [`normalize_escapes`] for the full rationale).
 
-use std::collections::HashMap;
+use std::{collections::HashMap, str};
 
 use encoding_rs::Encoding;
 
@@ -146,7 +146,6 @@ pub(super) fn normalize_escapes(
 	// RTF scopes \ucN to its group; tracking it flat is an approximation that can
 	// only leave a stray fallback character, never eat real text.
 	let mut uc_count = 1usize;
-
 	while i < len {
 		// A literal tab in the text stream carries the same meaning as \tab to every
 		// other reader, so promote it rather than let the lexer trim it away.
@@ -155,7 +154,6 @@ pub(super) fn normalize_escapes(
 			i += 1;
 			continue;
 		}
-
 		if bytes[i] == b'\\' && bytes.get(i + 1) == Some(&b'u') {
 			// \ucN declares how many fallback characters trail each \uN. Fall through
 			// afterwards so the control word still reaches the lexer.
@@ -172,7 +170,6 @@ pub(super) fn normalize_escapes(
 				continue;
 			}
 		}
-
 		// Track \fN font switches to use the right charset for subsequent \'xx escapes.
 		// \fcharset, \fbidi, \froman, etc. start with \f + non-digit so won't match.
 		if bytes[i] == b'\\' && i + 2 < len && bytes[i + 1] == b'f' && bytes[i + 2].is_ascii_digit() {
@@ -181,14 +178,13 @@ pub(super) fn normalize_escapes(
 			while num_end < len && bytes[num_end].is_ascii_digit() {
 				num_end += 1;
 			}
-			if let Ok(s) = std::str::from_utf8(&bytes[num_start..num_end])
+			if let Ok(s) = str::from_utf8(&bytes[num_start..num_end])
 				&& let Ok(font_num) = s.parse::<u32>()
 			{
 				current_encoding = font_table.get(&font_num).copied().unwrap_or(encoding);
 			}
 			// Fall through — emit the control word bytes as-is for the lexer.
 		}
-
 		if bytes[i] == b'\\' && i + 1 < len {
 			match bytes[i + 1] {
 				// RTF non-breaking space
@@ -206,7 +202,6 @@ pub(super) fn normalize_escapes(
 				_ => {}
 			}
 		}
-
 		if bytes[i] == b'\\' && i + 3 < len && bytes[i + 1] == b'\'' {
 			let h1 = bytes[i + 2];
 			let h2 = bytes[i + 3];

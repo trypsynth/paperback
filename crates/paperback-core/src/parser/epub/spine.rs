@@ -3,7 +3,7 @@
 //! stitched into one [`DocumentBuffer`] with section-break/link markers and id positions
 //! placed at their absolute offsets.
 
-use std::{collections::HashMap, fs::File, io::BufReader};
+use std::{collections::HashMap, fs::File, io::BufReader, mem};
 
 use anyhow::Result;
 use rayon::prelude::*;
@@ -118,7 +118,6 @@ pub(super) fn convert_spine_items(
 			},
 		)
 		.collect();
-
 	// Keep each spine item's original index (for the "Section N" label, which reflects spine
 	// position even across skipped items) alongside its manifest item and converted section.
 	let mut ok_entries: Vec<(usize, &ManifestItem, SectionContent)> = Vec::with_capacity(converted.len());
@@ -132,14 +131,12 @@ pub(super) fn convert_spine_items(
 			}
 		}
 	}
-
 	// `DocumentBuffer::from_parts` builds the buffer's content and per-char indices for every
 	// section in parallel, in one pass, instead of appending them one at a time; it hands back
 	// each section's `[start, end)` span so markers and id positions (below) can still be placed
 	// relative to where each section landed.
-	let texts: Vec<String> = ok_entries.iter_mut().map(|(_, _, section)| std::mem::take(&mut section.text)).collect();
+	let texts: Vec<String> = ok_entries.iter_mut().map(|(_, _, section)| mem::take(&mut section.text)).collect();
 	let (mut buffer, spans) = DocumentBuffer::from_parts(texts);
-
 	let mut id_positions = HashMap::new();
 	let mut sections = Vec::new();
 	for (entry, span) in ok_entries.iter().zip(&spans) {

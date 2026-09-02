@@ -78,8 +78,7 @@ fun PermissionsOnboardingScreen(
 					title = t("Notifications"),
 					// TRANSLATORS: Explanation of why the app requests the notifications permission
 					description = t(
-						"Lets Paperback show playback controls in the notification shade while text-to-speech is " +
-							"reading, so you can pause, resume, and skip without reopening the app."
+						"Lets Paperback show playback controls in the notification shade while text-to-speech is reading, so you can pause, resume, and skip without reopening the app."
 					),
 					granted = notificationsGranted,
 					// TRANSLATORS: Button to grant the notifications permission during onboarding
@@ -95,9 +94,7 @@ fun PermissionsOnboardingScreen(
 					title = t("All Files Access"),
 					// TRANSLATORS: Explanation of why the app requests the all files access permission
 					description = t(
-						"Powers the optional in-app file browser, so you can open documents from anywhere on your " +
-							"device — including network drives — instantly, with full screen-reader support. " +
-							"You can skip this and use the system file picker instead."
+						"Powers the optional in-app file browser, so you can open documents from anywhere on your device — including network drives — instantly, with full screen-reader support. You can skip this and use the system file picker instead."
 					),
 					granted = allFilesAccessGranted,
 					// TRANSLATORS: Button to open system settings for the all files access permission during onboarding

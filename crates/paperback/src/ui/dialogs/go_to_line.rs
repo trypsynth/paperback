@@ -17,12 +17,12 @@ pub fn show_go_to_line_dialog(parent: &Frame, current_line: i32, max_lines: i32)
 		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
 		.build();
 	line_ctrl.set_value(current_line);
-	bind_enter_confirms(dialog, line_ctrl);
+	bind_enter_confirms(&dialog, line_ctrl);
 	let line_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	line_sizer.add(&line_ctrl, 1, SizerFlag::Expand, 0);
 	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
-	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("Go"));
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("Go"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&line_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);

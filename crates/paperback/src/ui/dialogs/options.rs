@@ -7,6 +7,8 @@ use std::{
 
 use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont, ShortcutsConfig};
 use patois::{t, ui::populate_language_choice};
+#[cfg(not(target_os = "macos"))]
+use wx_utils::dpi;
 #[cfg(target_os = "windows")]
 use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
@@ -15,11 +17,10 @@ use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
 	translation_manager::TranslationManager,
-	ui::dpi,
 };
 
 /// Selectable audio seek amounts, in seconds, shown in the Options dialog and indexed by
-/// `audio_seek_amount_ctrl`'s selection. Also the step sequence `navigation::handle_change_seek_amount`
+/// `audio_seek_amount_ctrl`'s selection. Also the step sequence `audio::handle_change_seek_amount`
 /// walks when nudging the seek amount via keyboard shortcut, so the two stay in lockstep.
 pub(crate) const AUDIO_SEEK_AMOUNTS_SECONDS: [i32; 9] = [5, 10, 30, 60, 120, 300, 600, 1800, 3600];
 
@@ -141,8 +142,8 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 }
 
 fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDialogUi {
-	// TRANSLATORS: Title of the Options dialog
-	let dialog = Dialog::builder(parent, &t("Options")).build();
+	// TRANSLATORS: Title of the Settings dialog
+	let dialog = Dialog::builder(parent, &t("Settings")).build();
 	let notebook = Notebook::builder(&dialog).with_style(NotebookStyle::Top).build();
 	let general_panel = Panel::builder(&notebook).build();
 	let reading_panel = Panel::builder(&notebook).build();
@@ -153,15 +154,18 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let restore_docs_check =
 		// TRANSLATORS: Option to restore documents that were open when the app was last closed
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
+	let auto_reload_check =
+		// TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+		CheckBox::builder(&general_panel).with_label(&t("&Automatically reload changed documents")).build();
+	// TRANSLATORS: Option to start the app maximized
+	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
+	// TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
 	// TRANSLATORS: Option to toggle word wrapping of text
 	let word_wrap_check = CheckBox::builder(&readability_panel).with_label(&t("&Word wrap")).build();
 	let render_tables_inline_check =
 		// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
-	// TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
-	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
-	// TRANSLATORS: Option to start the app maximized
-	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
 	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
 	// TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
@@ -214,14 +218,25 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let check_for_updates_check =
 		// TRANSLATORS: Option to check for app updates automatically on startup
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
-	let auto_reload_check =
-		// TRANSLATORS: Option to automatically reload an open document when its file changes on disk
-		CheckBox::builder(&general_panel).with_label(&t("&Automatically reload changed documents")).build();
+	// TRANSLATORS: Label for the update channel selection dropdown
+	let channel_label_text = t("Update Channel:");
+	let channel_label = StaticText::builder(&general_panel).with_label(&channel_label_text).build();
+	let update_channel_combo = Choice::builder(&general_panel).build();
+	// TRANSLATORS: Stable update channel option
+	update_channel_combo.append(&t("Stable"));
+	// TRANSLATORS: Developer/development update channel option
+	update_channel_combo.append(&t("Dev"));
+	#[cfg(target_os = "macos")]
+	update_channel_combo.set_accessibility_label(channel_label_text.replace('&', "").trim_end_matches(':').trim());
+	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	// Global window hotkeys are a Windows-only concept (see start_hotkey_listener in
 	// main_window.rs); macOS has no equivalent, so this button isn't built there.
 	#[cfg(not(target_os = "macos"))]
 	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
+	// TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 	let shortcuts_button = Button::builder(&general_panel).with_label(&t("Customize &Keyboard Shortcuts...")).build();
 	let option_padding = 5;
 	general_sizer.add(&restore_docs_check, 0, SizerFlag::All, option_padding);
@@ -232,6 +247,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(target_os = "macos")]
 	minimize_to_tray_check.show(false);
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
+	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&shortcuts_button, 0, SizerFlag::All, option_padding);
@@ -268,26 +284,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let language_codes = populate_language_choice(&language_combo, &languages);
 	#[cfg(target_os = "macos")]
 	language_combo.set_accessibility_label(language_label_text.replace('&', "").trim_end_matches(':').trim());
-
 	let language_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	language_sizer.add(&language_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
-	// TRANSLATORS: Label for the update channel selection dropdown
-	let channel_label_text = t("Update Channel:");
-	let channel_label = StaticText::builder(&general_panel).with_label(&channel_label_text).build();
-	let update_channel_combo = Choice::builder(&general_panel).build();
-	// TRANSLATORS: Stable update channel option
-	update_channel_combo.append(&t("Stable"));
-	// TRANSLATORS: Developer/development update channel option
-	update_channel_combo.append(&t("Dev"));
-	#[cfg(target_os = "macos")]
-	update_channel_combo.set_accessibility_label(channel_label_text.replace('&', "").trim_end_matches(':').trim());
-
-	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
-	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
-	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
 	// TRANSLATORS: Label/header for the Font options section
 	let font_group_box = StaticBox::builder(&readability_panel).with_label(&t("Font")).build();
 	let font_group_sizer = StaticBoxSizerBuilder::new_with_box(&font_group_box, Orientation::Vertical).build();
@@ -324,7 +324,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	line_spacing_ctrl.append(&t("Double"));
 	#[cfg(target_os = "macos")]
 	line_spacing_ctrl.set_accessibility_label(line_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
-
 	let line_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	line_spacing_sizer.add(&line_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
@@ -342,7 +341,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(target_os = "macos")]
 	paragraph_spacing_ctrl
 		.set_accessibility_label(paragraph_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
-
 	let paragraph_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	paragraph_spacing_sizer.add(
 		&paragraph_spacing_label,
@@ -364,7 +362,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(target_os = "macos")]
 	letter_spacing_ctrl
 		.set_accessibility_label(letter_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
-
 	let letter_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	letter_spacing_sizer.add(
 		&letter_spacing_label,
@@ -388,7 +385,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(target_os = "macos")]
 	text_alignment_ctrl
 		.set_accessibility_label(text_alignment_label_text.replace('&', "").trim_end_matches(':').trim());
-
 	let text_alignment_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	text_alignment_sizer.add(
 		&text_alignment_label,
@@ -544,7 +540,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		bg_label_reset.set_label(&color_description(-1));
 	});
 	// TRANSLATORS: Label for the confirmation button
-	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog_ref, &t("OK"));
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog_ref, &t("OK"));
 	OptionsDialogUi {
 		dialog: dialog_ref,
 		notebook,
@@ -706,7 +702,6 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 		.build();
 	let panel = Panel::builder(&dialog).build();
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
-
 	// TRANSLATORS: Checkbox label for Control modifier key
 	let ctrl_cb = CheckBox::builder(&panel).with_label(&t("&Ctrl")).build();
 	ctrl_cb.set_value(initial.ctrl);
@@ -719,12 +714,10 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	// TRANSLATORS: Checkbox label for Windows modifier key
 	let win_cb = CheckBox::builder(&panel).with_label(&t("&Win")).build();
 	win_cb.set_value(initial.win);
-
 	main_sizer.add(&ctrl_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Top, 10);
 	main_sizer.add(&alt_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
 	main_sizer.add(&shift_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
 	main_sizer.add(&win_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
-
 	// TRANSLATORS: Label for the hotkey key selection input field
 	let key_label = StaticText::builder(&panel).with_label(&t("&Key:")).build();
 	let key_text = TextCtrl::builder(&panel).build();
@@ -733,7 +726,6 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	key_sizer.add(&key_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 8);
 	key_sizer.add(&key_text, 1, SizerFlag::Expand, 0);
 	main_sizer.add_sizer(&key_sizer, 0, SizerFlag::Expand | SizerFlag::All, 10);
-
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	// TRANSLATORS: Button label to clear the current hotkey selection
 	let clear_button = Button::builder(&panel).with_label(&t("Clear")).build();
@@ -742,7 +734,6 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	ok_button.set_default();
 	// TRANSLATORS: Label for the cancellation button
 	let cancel_button = Button::builder(&panel).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-
 	let key_text_clone = key_text;
 	let ctrl_cb_clone = ctrl_cb;
 	let alt_cb_clone = alt_cb;
@@ -755,13 +746,11 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 		shift_cb_clone.set_value(false);
 		win_cb_clone.set_value(false);
 	});
-
 	button_sizer.add(&clear_button, 0, SizerFlag::Right, 8);
 	button_sizer.add_stretch_spacer(1);
 	button_sizer.add(&ok_button, 0, SizerFlag::Right, 8);
 	button_sizer.add(&cancel_button, 0, SizerFlag::Right, 8);
 	main_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, 10);
-
 	panel.set_sizer(main_sizer, true);
 	let dialog_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	dialog_sizer.add(&panel, 1, SizerFlag::Expand, 0);
@@ -769,14 +758,11 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	dialog.set_affirmative_id(ID_OK);
 	dialog.set_escape_id(ID_CANCEL);
 	dialog.centre();
-
 	if dialog.show_modal() != ID_OK {
 		return None;
 	}
-
 	let key_value = key_text.get_value();
 	let key_char = if key_value.trim().is_empty() { '\0' } else { parse_hotkey_key(&key_value).unwrap_or(initial.key) };
-
 	Some(HotkeyConfig {
 		ctrl: ctrl_cb.is_checked(),
 		alt: alt_cb.is_checked(),

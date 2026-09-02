@@ -29,12 +29,14 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	let mut title = extract_title_from_path(&context.file_path);
 	let mut author = String::new();
 	let buffer;
-
 	let file = File::open(path).context("Failed to open zip file")?;
 	let mut archive = ZipArchive::new(BufReader::new(file)).context("Failed to read zip archive")?;
+	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
+	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
 	let opf_path = archive
 		.file_names()
-		.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("opf")))
+		.flatten()
+		.find(|n| Path::new(&**n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("opf")))
 		.map(String::from);
 	let opf_found = opf_path.is_some();
 	if let Some(opf_name) = opf_path {
@@ -103,7 +105,8 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 			let mut toc_items = None;
 			let ncx_path = archive
 				.file_names()
-				.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ncx")))
+				.flatten()
+				.find(|n| Path::new(&**n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ncx")))
 				.map(String::from);
 			if let Some(ncx_name) = ncx_path {
 				match read_zip_entry_by_name_with_password(&mut archive, &ncx_name, context.password.as_deref()) {
@@ -141,7 +144,8 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 		}
 		tracing::warn!(opf_name = %opf_name, "opf found but no dtbook manifest item, trying daisy 2.02");
 	}
-	let ncc_path = archive.file_names().find(|n| n.ends_with("ncc.html") || n.ends_with("NCC.html")).map(String::from);
+	let ncc_path =
+		archive.file_names().flatten().find(|n| n.ends_with("ncc.html") || n.ends_with("NCC.html")).map(String::from);
 	let ncc_found = ncc_path.is_some();
 	if let Some(ncc_name) = ncc_path {
 		let ncc_content = read_zip_entry_by_name_with_password(&mut archive, &ncc_name, context.password.as_deref())
@@ -203,7 +207,7 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	// AudioVault) are just a folder of narration files with no markup at all. Rather than
 	// refuse those, present each audio file as its own playable, textless section.
 	if let Some(document) =
-		build_plain_audio_zip_document(&archive, &context.file_path, title, author, context.password.as_deref())
+		build_plain_audio_zip_document(&mut archive, &context.file_path, title, author, context.password.as_deref())
 	{
 		tracing::debug!(path = %path.display(), "parsed zip archive as a plain audio-only bundle");
 		return Ok(document);

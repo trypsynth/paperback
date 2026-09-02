@@ -1,5 +1,6 @@
 package dev.paperback.android.ui
 
+import dev.paperback.android.nt
 import dev.paperback.android.t
 import uniffi.paperback.SegmentTypeFfi
 
@@ -23,6 +24,10 @@ sealed interface NavUnit {
 	data class Time(
 		val seconds: Int
 	) : NavUnit
+
+	/** Steps through matches of the active Find query instead of a structural unit or elapsed
+	 * time. Only offered while a search is active; see `MainScreen`'s nav-unit list building. */
+	data object Find : NavUnit
 }
 
 fun getSegmentTypeName(type: SegmentTypeFfi): String =
@@ -74,14 +79,20 @@ fun getSeekAmountName(seconds: Int): String =
 		1800 -> t("30 minutes")
 		// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
 		3600 -> t("1 hour")
-		// TRANSLATORS: Fallback audio seek amount label; {} is a number of seconds
-		else -> t("{} seconds").replace("{}", seconds.toString())
+		// TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
+		// above; {} is the number of seconds. Which of the three forms is used depends on the
+		// target language's own plural rule, read from its catalogue (see nt() in
+		// Translations.kt). The "many" form's trailing character isn't a typo — see
+		// PLURAL_MANY_MARKER in Translations.kt.
+		else -> nt(t("{} second"), t("{} seconds"), t("{} seconds⁣"), seconds.toLong()).replace("{}", seconds.toString())
 	}
 
 fun getNavUnitName(unit: NavUnit): String =
 	when (unit) {
 		is NavUnit.Segment -> getSegmentTypeName(unit.type)
 		is NavUnit.Time -> getSeekAmountName(unit.seconds)
+		// TRANSLATORS: Name of the "Find" navigation unit, which moves between search matches
+		is NavUnit.Find -> t("Find")
 	}
 
 /** "1:23" or "1:02:03": the shortest form that still reads unambiguously. */

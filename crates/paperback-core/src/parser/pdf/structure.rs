@@ -192,7 +192,6 @@ fn process_struct_element(
 		flush_block(current_block, buffer, page_display_text, current_lines_info);
 	}
 	let block_start_pos = buffer.current_position() + display_len(current_block);
-
 	let count = elem.count_children();
 	for i in 0..count {
 		if let Ok(child) = elem.child(i) {
@@ -362,12 +361,10 @@ mod tests {
 		let mut lines_info = Vec::new();
 		let mut page_text = String::new();
 		append_pdf_table_to_buffer(&mut buffer, html.clone(), pos, &mut lines_info, &mut page_text, false);
-
 		// Placeholder: first row with tabs->spaces.
 		assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
 		assert_eq!(lines_info.len(), 1, "placeholder is a single line");
 		assert!(lines_info[0].1.starts_with("[Table]: "));
-
 		// Table marker length equals the emitted display extent.
 		let placeholder_len = display_len("[Table]: Kop \u{1D11E}") + 1; // +1 for trailing newline
 		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
@@ -389,13 +386,11 @@ mod tests {
 		let mut lines_info = Vec::new();
 		let mut page_text = String::new();
 		append_pdf_table_to_buffer(&mut buffer, html, pos, &mut lines_info, &mut page_text, true);
-
 		// Two rows -> "Kop\t𝄞\na\tb\n".
 		assert_eq!(buffer.content, "Kop\t\u{1D11E}\na\tb\n");
 		assert_eq!(lines_info.len(), 2, "one line per table row");
 		assert_eq!(lines_info[0].1, "Kop\t\u{1D11E}");
 		assert_eq!(lines_info[1].1, "a\tb");
-
 		let expected_len = display_len("Kop\t\u{1D11E}\na\tb\n");
 		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
 		assert_eq!(table_marker.length, expected_len, "marker length spans all emitted rows");
@@ -411,7 +406,6 @@ mod tests {
 		let mut lines_info = Vec::new();
 		let mut page_text = String::new();
 		append_pdf_table_to_buffer(&mut buffer, html, pos, &mut lines_info, &mut page_text, true);
-
 		assert_eq!(buffer.content, "", "empty inline table appends nothing");
 		assert!(lines_info.is_empty(), "no lines recorded");
 		assert!(page_text.is_empty(), "no page display text");

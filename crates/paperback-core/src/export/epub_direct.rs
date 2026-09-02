@@ -23,29 +23,23 @@ use crate::util::{
 pub fn render(file_path: &str) -> Result<String> {
 	let file = File::open(file_path).with_context(|| format!("failed to open '{file_path}'"))?;
 	let mut archive = ZipArchive::new(BufReader::new(file)).context("failed to read EPUB as zip")?;
-
 	let opf_path = find_opf_path(&mut archive)?;
 	let opf_dir =
 		Path::new(&opf_path).parent().map(|d| d.to_string_lossy().into_owned().replace('\\', "/")).unwrap_or_default();
 	let opf_content = read_zip_entry_by_name(&mut archive, &opf_path)?;
 	let (manifest, spine, title) = parse_opf(&opf_content, &opf_dir)?;
-
 	// spine file path → <section> id
 	let spine_path_to_id: HashMap<String, String> =
 		spine.iter().filter_map(|id| manifest.get(id).map(|(path, _)| (path.clone(), path_to_id(path)))).collect();
-
 	let mut out = format!(
 		"<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>{}</title>\n</head>\n<body>\n",
 		escape_html(&title)
 	);
-
 	for idref in &spine {
 		let Some((path, _)) = manifest.get(idref) else { continue };
 		let Ok(content) = read_zip_entry_by_name(&mut archive, path) else { continue };
-
 		let section_id = path_to_id(path);
 		let _ = writeln!(out, "<section id=\"{}\">", escape_attr(&section_id));
-
 		let body = extract_body(&content);
 		let file_dir = Path::new(path.as_str())
 			.parent()
@@ -54,7 +48,6 @@ pub fn render(file_path: &str) -> Result<String> {
 		rewrite_hrefs_into(body, &file_dir, &spine_path_to_id, &mut out);
 		out.push_str("\n</section>\n");
 	}
-
 	out.push_str("</body>\n</html>\n");
 	Ok(out)
 }
@@ -80,11 +73,9 @@ type OpfContents = (OpfManifest, Vec<String>, String);
 fn parse_opf(content: &str, opf_dir: &str) -> Result<OpfContents> {
 	let doc = XmlDoc::parse_with_options(content, ParsingOptions { allow_dtd: true, ..Default::default() })
 		.context("failed to parse OPF")?;
-
 	let mut manifest: OpfManifest = HashMap::new();
 	let mut spine: Vec<String> = Vec::new();
 	let mut title = String::new();
-
 	for node in doc.descendants() {
 		if node.node_type() != NodeType::Element {
 			continue;
@@ -114,7 +105,6 @@ fn parse_opf(content: &str, opf_dir: &str) -> Result<OpfContents> {
 			_ => {}
 		}
 	}
-
 	if title.is_empty() {
 		title = "Document".to_string();
 	}

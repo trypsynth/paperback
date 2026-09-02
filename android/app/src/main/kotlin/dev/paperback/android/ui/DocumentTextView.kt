@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -39,6 +40,7 @@ import uniffi.paperback.SearchOptionsFfi
 fun DocumentTextView(
 	docState: DocumentTabState,
 	listState: LazyListState,
+	readability: ReadabilityStyle,
 	lineIndexToFocus: Int?,
 	onLineIndexChange: (Int?) -> Unit,
 	activeSearchQuery: String?,
@@ -68,7 +70,10 @@ fun DocumentTextView(
 						isTemporaryFocusTarget = true
 					}
 				}
-				var textModifier = Modifier.padding(vertical = 4.dp).semantics(mergeDescendants = true) {}
+				var textModifier = Modifier
+					.fillMaxWidth()
+					.padding(vertical = readability.paragraphSpacing)
+					.semantics(mergeDescendants = true) {}
 				var isHeading = false
 				var headingLevel = 0
 				val annotatedString = buildAnnotatedString {
@@ -205,9 +210,9 @@ fun DocumentTextView(
 					}
 				}
 				val textStyle = if (isHeading) {
-					MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+					readability.textStyle.copy(fontWeight = FontWeight.Bold)
 				} else {
-					MaterialTheme.typography.bodyLarge
+					readability.textStyle
 				}
 				Text(
 					text = annotatedString,

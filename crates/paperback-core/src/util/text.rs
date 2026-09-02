@@ -5,6 +5,34 @@ pub fn remove_soft_hyphens(input: &str) -> String {
 	input.replace("\u{00AD}", "")
 }
 
+/// Normalizes `\r\n` and bare `\r` line endings to `\n`, matching every other parser's output
+/// (RTF, HTML, XML, Markdown all only ever emit bare `\n`). A GUI text control's own line-ending
+/// handling doesn't necessarily count an embedded `\r` as a position the same way `DocumentBuffer`
+/// does, so leaving raw `\r`s in a document's content drifts its stored positions (markers, Find
+/// results, ...) out of sync with the control by roughly one unit per line - worse the further
+/// into the document you go. Plain text files are the one format whose source can contain `\r` at
+/// all, since every other parser builds its output text itself rather than passing source bytes
+/// through.
+#[must_use]
+pub fn normalize_line_endings(input: &str) -> String {
+	if !input.contains('\r') {
+		return input.to_string();
+	}
+	let mut result = String::with_capacity(input.len());
+	let mut chars = input.chars().peekable();
+	while let Some(ch) = chars.next() {
+		if ch == '\r' {
+			if chars.peek() == Some(&'\n') {
+				chars.next();
+			}
+			result.push('\n');
+		} else {
+			result.push(ch);
+		}
+	}
+	result
+}
+
 #[must_use]
 pub fn url_decode(input: &str) -> String {
 	percent_encoding::percent_decode_str(input).decode_utf8_lossy().into_owned()
@@ -102,6 +130,17 @@ mod tests {
 	#[case("mul\u{00AD}ti\u{00AD}ple", "multiple")]
 	fn test_remove_soft_hyphens(#[case] input: &str, #[case] expected: &str) {
 		assert_eq!(remove_soft_hyphens(input), expected);
+	}
+
+	#[rstest]
+	#[case("crlf\r\nline", "crlf\nline")]
+	#[case("bare cr\rline", "bare cr\nline")]
+	#[case("already lf\nline", "already lf\nline")]
+	#[case("mixed\r\nline\rother\nline", "mixed\nline\nother\nline")]
+	#[case("no newlines at all", "no newlines at all")]
+	#[case("", "")]
+	fn test_normalize_line_endings(#[case] input: &str, #[case] expected: &str) {
+		assert_eq!(normalize_line_endings(input), expected);
 	}
 
 	#[rstest]

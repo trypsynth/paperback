@@ -10,9 +10,14 @@ import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import dev.paperback.android.assetLocaleTags
+import dev.paperback.android.bestLocaleMatch
 import dev.paperback.android.t
 import dev.paperback.android.tts.DaisyAudioPlayer
 import dev.paperback.android.tts.TtsManager
+import dev.paperback.android.ui.dialogs.GO_TO_LINE
+import dev.paperback.android.ui.dialogs.GO_TO_PAGE
+import dev.paperback.android.ui.dialogs.GO_TO_PERCENTAGE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -91,6 +96,11 @@ class MainScreenViewModel(
 	private var currentActiveIndex = -1
 	private var recentDocumentsList = emptyList<RecentDocumentItem>()
 
+	// The active tab's document URI as of the last `updateTtsMetadata` call, so that function can
+	// tell a real tab switch (clear the active search) apart from a no-op call, e.g. closing a
+	// background tab that leaves the active one unchanged.
+	private var lastMetadataDocumentUri: String? = null
+
 	private fun emitTabsState() {
 		_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
 	}
@@ -102,23 +112,33 @@ class MainScreenViewModel(
 	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
 	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes.asStateFlow()
 
-	private val elementsDialogState = DialogState()
-	val showElementsDialog: StateFlow<Boolean> = elementsDialogState.isOpen
+	val settings = ReaderSettings(config)
+
+	// Every screen and dialog the reading UI can put on top of itself, in one place: a
+	// ScreenRequest for the two that are real navigation destinations, a DialogState for the
+	// rest. The ones whose state is private are opened through a function on this class that
+	// has work to do first (loading the element lists, choosing the Go To mode), so nothing
+	// outside can open them straight into an empty or stale state.
+	val settingsRequest = ScreenRequest()
+	val tocRequest = ScreenRequest()
 
 	val findDialog = DialogState()
+	val wordCountDialog = DialogState()
+	val documentInfoDialog = DialogState()
+	val sleepTimerDialog = DialogState()
+	val permissionRationaleDialog = DialogState()
 
-	val settingsDialog = DialogState()
+	val elementsRequest = ScreenRequest()
 
-	private val _restorePreviousDocuments = MutableStateFlow(config.getAppBool("restore_previous_documents", true))
-	val restorePreviousDocuments: StateFlow<Boolean> = _restorePreviousDocuments.asStateFlow()
-
-	private val _useInAppFileBrowser = MutableStateFlow(config.getAppBool("use_in_app_file_browser", false))
-	val useInAppFileBrowser: StateFlow<Boolean> = _useInAppFileBrowser.asStateFlow()
-
-	private val _swipeUpMovesForward = MutableStateFlow(config.getAppBool("swipe_up_moves_forward", true))
-	val swipeUpMovesForward: StateFlow<Boolean> = _swipeUpMovesForward.asStateFlow()
-
-	val tocDialog = DialogState()
+	/**
+	 * A document offset the reader has asked to jump to from another screen.
+	 *
+	 * Getting there means switching to Text Mode and scrolling the list, both of which belong to
+	 * MainScreen, so a screen that is not MainScreen leaves the offset here and MainScreen acts
+	 * on it when it comes back to the front.
+	 */
+	private val _pendingJumpOffset = MutableStateFlow<Long?>(null)
+	val pendingJumpOffset: StateFlow<Long?> = _pendingJumpOffset.asStateFlow()
 
 	private val goToDialogState = DialogState()
 	val showGoToDialog: StateFlow<Boolean> = goToDialogState.isOpen
@@ -126,9 +146,53 @@ class MainScreenViewModel(
 	private val _goToInitialMode = MutableStateFlow("Line")
 	val goToInitialMode: StateFlow<String> = _goToInitialMode.asStateFlow()
 
-	val wordCountDialog = DialogState()
+	private val _tocState = MutableStateFlow(TocUiState())
+	val tocState: StateFlow<TocUiState> = _tocState.asStateFlow()
 
-	val documentInfoDialog = DialogState()
+	fun toggleTocExpanded(index: Int) {
+		val expanded = _tocState.value.expandedIndices
+		_tocState.value = _tocState.value.copy(
+			expandedIndices = if (expanded.contains(index)) expanded - index else expanded + index
+		)
+	}
+
+	/**
+	 * Points the table of contents at wherever the reader currently is: the nearest entry at or
+	 * before the reading position becomes the active one, and its ancestors are expanded so it is
+	 * actually on screen when the list opens.
+	 */
+	fun prepareToc() {
+		val toc = (uiState.value as? MainScreenUiState.Success)?.activeTab?.toc.orEmpty()
+		if (toc.isEmpty()) {
+			_tocState.value = _tocState.value.copy(activeIndex = null)
+			return
+		}
+		var activeIndex = 0
+		var bestDistance = Long.MAX_VALUE
+		val currentPos = _ttsPosition.value
+		for (i in toc.indices) {
+			if (toc[i].position <= currentPos) {
+				val distance = currentPos - toc[i].position
+				if (distance < bestDistance) {
+					bestDistance = distance
+					activeIndex = i
+				}
+			}
+		}
+		val toExpand = mutableSetOf<Int>()
+		var currentLevel = toc[activeIndex].level
+		for (i in activeIndex - 1 downTo 0) {
+			if (toc[i].level < currentLevel) {
+				toExpand.add(i)
+				currentLevel = toc[i].level
+				if (currentLevel == 0) break
+			}
+		}
+		_tocState.value = TocUiState(
+			expandedIndices = _tocState.value.expandedIndices + toExpand,
+			activeIndex = activeIndex
+		)
+	}
 
 	private val _activeSearchQuery = MutableStateFlow<String?>(null)
 	val activeSearchQuery: StateFlow<String?> = _activeSearchQuery.asStateFlow()
@@ -160,8 +224,6 @@ class MainScreenViewModel(
 		_performSearchEvent.tryEmit(false)
 	}
 
-	val sleepTimerDialog = DialogState()
-
 	private val _currentHeadings = MutableStateFlow<HeadingTreeFfi?>(null)
 	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings.asStateFlow()
 
@@ -170,8 +232,6 @@ class MainScreenViewModel(
 
 	private val _passwordPromptUri = MutableStateFlow<Uri?>(null)
 	val passwordPromptUri = _passwordPromptUri.asStateFlow()
-
-	val permissionRationaleDialog = DialogState()
 
 	private val _importPromptPath = MutableStateFlow<String?>(null)
 	val importPromptPath: StateFlow<String?> = _importPromptPath.asStateFlow()
@@ -195,11 +255,19 @@ class MainScreenViewModel(
 	}
 
 	init {
+		// Continuous-reading auto-advance: once an utterance finishes, keep moving forward
+		// paragraph by paragraph on its own. That's the right behavior for ordinary reading, but
+		// wrong while browsing Find matches — landing on a match should just speak its context
+		// and then wait, not silently keep auto-advancing past it before the next button press.
 		ttsManager.onSegmentTransition = {
-			transitionToNextContinuousSegment()
+			if (_currentNavUnit.value !is NavUnit.Find) {
+				transitionToNextContinuousSegment()
+			}
 		}
 		ttsManager.onUtteranceCompleted = {
-			playNextContinuousSegment()
+			if (_currentNavUnit.value !is NavUnit.Find) {
+				playNextContinuousSegment()
+			}
 		}
 		ttsManager.onPlayCommand = { resumeTts() }
 		ttsManager.onPauseCommand = { pauseTts() }
@@ -213,11 +281,18 @@ class MainScreenViewModel(
 			announceAudioSeek(elapsedMs)
 		}
 		daisyAudioPlayer.onClipChanged = { position ->
-			_ttsPosition.value = position
-			refreshSegmentPreview()
-			saveTtsPositionToConfig(position)
-			// Unlike desktop's on-close save, Android can kill this process with no lifecycle
-			// callback at all, so persist on every clip change rather than only on pause/stop.
+			// Same reasoning as the TTS auto-advance callbacks above: natural playback tracking
+			// would otherwise keep dragging the tracked position forward (mid-clip, off the exact
+			// match) while browsing Find, racing with the next Find Previous/Next press. This
+			// doesn't extend to persistDaisyAudioPosition() below: unlike desktop's on-close save,
+			// Android can kill this process with no lifecycle callback at all, so the raw audio
+			// time still needs saving on every clip change (not just pause/stop) regardless of
+			// nav unit, or a kill mid-Find would resume from before the jump on relaunch.
+			if (_currentNavUnit.value !is NavUnit.Find) {
+				_ttsPosition.value = position
+				refreshSegmentPreview()
+				saveTtsPositionToConfig(position)
+			}
 			persistDaisyAudioPosition()
 		}
 		viewModelScope.launch(Dispatchers.IO) {
@@ -649,13 +724,17 @@ class MainScreenViewModel(
 	}
 
 	/** The navigation units `tab` can offer. A document whose text spine is only there to anchor
-	 * audio has nothing to step through but the recording itself, so it gets seek amounts alone;
-	 * a DAISY book with real prose gets both, seek amounts first. */
+	 * audio has nothing to step through but the recording itself, so it gets seek amounts plus
+	 * Section (each underlying audio file is its own section); a DAISY book with real prose gets
+	 * seek amounts and every supported segment type, seek amounts first. */
 	fun navUnitsFor(tab: DocumentTabState): List<NavUnit> {
 		val segments = tab.session.getSupportedSegmentTypesFfi().map { NavUnit.Segment(it) }
 		if (!tab.hasAudio) return segments
 		val times = AUDIO_SEEK_AMOUNTS_SECONDS.map { NavUnit.Time(it) }
-		return if (tab.isAudioOnly) times else times + segments
+		if (tab.isAudioOnly) {
+			return times + segments.filter { it.type == SegmentTypeFfi.SECTION }
+		}
+		return times + segments
 	}
 
 	/** Falls back to a unit the newly active document actually supports, preferring the saved
@@ -679,6 +758,55 @@ class MainScreenViewModel(
 		return true
 	}
 
+	/** Handles previous/next for a document being navigated by Find match instead of by text
+	 * unit or elapsed time. False when that isn't what's happening, leaving the ordinary text
+	 * path to run. Always returns true once "Find" is the active unit, even with no query or no
+	 * more matches, since there is nothing else for prev/next to fall back to in that case. */
+	private fun navigateByFind(
+		forward: Boolean,
+		speak: Boolean,
+		announce: Boolean
+	): Boolean {
+		if (_currentNavUnit.value !is NavUnit.Find) return false
+		val query = _activeSearchQuery.value
+		val options = _activeSearchOptions.value
+		val state = uiState.value as? MainScreenUiState.Success ?: return true
+		val tab = state.activeTab ?: return true
+		if (query == null || options == null) return true
+		// Forward search is inclusive of the start position, so searching from the current
+		// match's own start would just re-find it; nudge past it first. Backward search is
+		// already exclusive of the start position, so it needs no such adjustment.
+		val searchPos = if (forward) _ttsPosition.value + 1L else _ttsPosition.value
+		val res = tab.session.searchFfi(query, searchPos, options.copy(forward = forward))
+		if (!res.found) {
+			// TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+			_accessibilityAnnouncement.tryEmit(t("No more matches."))
+			return true
+		}
+		_ttsPosition.value = res.position
+		val segment = tab.session.getTextSegment(res.position, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		val text = displayTextFor(tab, segment)
+		_currentSegmentText.value = text
+		saveTtsPositionToConfig(res.position)
+		if (tab.hasAudio) {
+			daisyAudioPlayer.seekToPosition(res.position)
+			if (speak) {
+				daisyAudioPlayer.play()
+			} else if (announce) {
+				announceNavigationCue(text)
+			}
+		} else if (speak) {
+			ttsManager.stop()
+			ttsManager.speak(text)
+		} else if (announce) {
+			if (ttsManager.isPaused.value) {
+				ttsManager.stop()
+			}
+			announceNavigationCue(text)
+		}
+		return true
+	}
+
 	/** Speaks where an audio seek landed. An audiobook that is a bundle of narration files has
 	 * no meaningful document-wide elapsed time (its clips carry placeholder durations), so its
 	 * position reads as an offset into the file now playing, named whenever the file changes. */
@@ -691,10 +819,7 @@ class MainScreenViewModel(
 		val time = formatDuration(if (tab.isAudioOnly) cursor.seekMs else elapsedMs)
 		val fileChanged = lastAnnouncedAudioSource != clip.source
 		lastAnnouncedAudioSource = clip.source
-		val sectionTitle = tab.toc
-			.lastOrNull { it.position <= clip.start }
-			?.title
-			.orEmpty()
+		val sectionTitle = sectionTitleAt(tab, clip.start)
 		_accessibilityAnnouncement.tryEmit(
 			if (fileChanged && sectionTitle.isNotBlank()) "$sectionTitle, $time" else time
 		)
@@ -726,11 +851,19 @@ class MainScreenViewModel(
 	fun refreshSegmentPreview() {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
-		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
-		_currentSegmentText.value = if (segment.text.isNotBlank()) {
-			segment.text
-		} else {
-			tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT).text
+		// An audio-only book's buffer is one placeholder space per file with no newlines
+		// anywhere, so asking for the paragraph enclosing a position collapses to the whole
+		// buffer and reports it as starting at 0. Deriving the label from that would pin it to
+		// the first file's name for the life of the book, however far playback had moved; the
+		// section (that is, the file) holding the current position is the only label there is.
+		if (tab.isAudioOnly) {
+			_currentSegmentText.value = sectionTitleAt(tab, _ttsPosition.value)
+			return
+		}
+		val current = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		_currentSegmentText.value = displayTextFor(tab, current).ifBlank {
+			val next = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
+			displayTextFor(tab, next)
 		}
 	}
 
@@ -752,18 +885,82 @@ class MainScreenViewModel(
 		}
 	}
 
-	/** Seeks daisyAudioPlayer to `segment`'s start, then either resumes playback there or just
-	 * announces it, for a next/prev/type-directed navigation landing on an audio-backed tab. */
+	/** Seeks daisyAudioPlayer to `segment`'s start, resumes playback there when `speak` says
+	 * the reader was already going, and announces `announceText` where that is the only sign
+	 * anything moved. */
 	private fun navigateDaisyAudioToSegment(
 		segment: TextSegmentFfi,
+		announceText: String,
 		speak: Boolean,
 		announce: Boolean
 	) {
 		daisyAudioPlayer.seekToPosition(segment.startPos)
 		if (speak) {
 			daisyAudioPlayer.play()
-		} else if (announce) {
-			announceNavigationCue(segment.text)
+		}
+		// Stepping by section moves between whole narration files, so name where the jump
+		// landed the way a time seek names the file it crossed into: unconditionally, because
+		// with playback resuming there is otherwise no cue at all that anything moved, and in
+		// full rather than announceNavigationCue's five-word prefix, since here the name is the
+		// whole message rather than the opening of a paragraph being previewed.
+		val bySection = (_currentNavUnit.value as? NavUnit.Segment)?.type == SegmentTypeFfi.SECTION
+		if (bySection && announceText.isNotBlank()) {
+			_accessibilityAnnouncement.tryEmit(announceText)
+		} else if (!speak && announce) {
+			announceNavigationCue(announceText)
+		}
+	}
+
+	/** A segment's own text, falling back to its enclosing section's TOC title when blank — the
+	 * case for a plain-audio DAISY section, whose buffer content is just a placeholder space. */
+	private fun displayTextFor(
+		tab: DocumentTabState,
+		segment: TextSegmentFfi
+	): String {
+		if (segment.text.isNotBlank()) return segment.text
+		return sectionTitleAt(tab, segment.startPos)
+	}
+
+	/** The title of the TOC section `position` falls inside, empty when the document has no TOC.
+	 * In a book that is just a bundle of narration files, each file is its own section, so this
+	 * is the name of the file covering `position`. */
+	private fun sectionTitleAt(
+		tab: DocumentTabState,
+		position: Long
+	): String {
+		val section = tab.toc.lastOrNull { it.position <= position }
+		return section?.title.orEmpty()
+	}
+
+	/** Jumps straight to `pos` (a freshly found Find match) and, if `resume` says the reader was
+	 * already going, speaks/plays from exactly there. Deliberately does not go through
+	 * `updateTtsPosition`/`speakCurrentSegment`, which re-derive the *enclosing paragraph* of a
+	 * position and snap to its start — fine for ordinary navigation, but it would silently move
+	 * a Find jump off the match it just found and back to that paragraph's beginning. */
+	fun jumpToFoundPosition(
+		pos: Long,
+		resume: Boolean
+	) {
+		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab ?: return
+		_ttsPosition.value = pos
+		val segment = tab.session.getTextSegment(pos, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		val text = displayTextFor(tab, segment)
+		_currentSegmentText.value = text
+		saveTtsPositionToConfig(pos)
+		if (tab.hasAudio) {
+			daisyAudioPlayer.seekToPosition(pos)
+			if (resume) {
+				daisyAudioPlayer.play()
+			}
+			return
+		}
+		if (resume) {
+			ttsManager.stop()
+			ttsManager.speak(text)
+		} else if (ttsManager.isPaused.value) {
+			// Was paused mid-utterance elsewhere; clear that stale state so a later resume
+			// doesn't play the old paragraph's audio instead of the new position.
+			ttsManager.stop()
 		}
 	}
 
@@ -771,28 +968,30 @@ class MainScreenViewModel(
 		speak: Boolean = true,
 		announce: Boolean = false
 	) {
+		if (navigateByFind(forward = true, speak = speak, announce = announce)) return
 		if (seekAudioByNavUnit(forward = true)) return
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
 			val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.NEXT)
-			if (segment.text.isNotBlank()) {
+			if (segment.found) {
+				val text = displayTextFor(tab, segment)
 				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = segment.text
+				_currentSegmentText.value = text
 				saveTtsPositionToConfig(segment.startPos)
 				if (tab.hasAudio) {
-					navigateDaisyAudioToSegment(segment, speak, announce)
+					navigateDaisyAudioToSegment(segment, text, speak, announce)
 					return
 				}
 				if (speak) {
-					ttsManager.speak(segment.text)
+					ttsManager.speak(text)
 					precacheNextContinuousSegment()
 				} else {
 					if (ttsManager.isPaused.value) {
 						ttsManager.stop()
 					}
 					if (announce) {
-						announceNavigationCue(segment.text)
+						announceNavigationCue(text)
 					}
 				}
 			}
@@ -857,28 +1056,30 @@ class MainScreenViewModel(
 		speak: Boolean = true,
 		announce: Boolean = false
 	) {
+		if (navigateByFind(forward = false, speak = speak, announce = announce)) return
 		if (seekAudioByNavUnit(forward = false)) return
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
 			val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.PREVIOUS)
-			if (segment.text.isNotBlank()) {
+			if (segment.found) {
+				val text = displayTextFor(tab, segment)
 				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = segment.text
+				_currentSegmentText.value = text
 				saveTtsPositionToConfig(segment.startPos)
 				if (tab.hasAudio) {
-					navigateDaisyAudioToSegment(segment, speak, announce)
+					navigateDaisyAudioToSegment(segment, text, speak, announce)
 					return
 				}
 				if (speak) {
-					ttsManager.speak(segment.text)
+					ttsManager.speak(text)
 					precacheNextContinuousSegment()
 				} else {
 					if (ttsManager.isPaused.value) {
 						ttsManager.stop()
 					}
 					if (announce) {
-						announceNavigationCue(segment.text)
+						announceNavigationCue(text)
 					}
 				}
 			}
@@ -922,16 +1123,17 @@ class MainScreenViewModel(
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
 		val segment = tab.session.getTextSegment(_ttsPosition.value, type, direction)
-		if (segment.text.isNotBlank()) {
+		if (segment.found) {
+			val text = displayTextFor(tab, segment)
 			_ttsPosition.value = segment.startPos
-			_currentSegmentText.value = segment.text
+			_currentSegmentText.value = text
 			saveTtsPositionToConfig(segment.startPos)
 			if (tab.hasAudio) {
-				navigateDaisyAudioToSegment(segment, speak = true, announce = false)
+				navigateDaisyAudioToSegment(segment, text, speak = true, announce = false)
 				return
 			}
 			ttsManager.stop()
-			ttsManager.speak(segment.text)
+			ttsManager.speak(text)
 			precacheNextContinuousSegment()
 		}
 	}
@@ -1048,6 +1250,17 @@ class MainScreenViewModel(
 	}
 
 	private fun updateTtsMetadata() {
+		// A search's matches belong to the document it ran against; carrying it over to whatever
+		// tab becomes active next (including the Find nav unit it puts on the slider) is never
+		// correct, and is actively wrong for an audio-only tab, which has no real searchable text.
+		// This function also runs when closing a tab that wasn't the active one, though, which
+		// doesn't change what's active at all — guard on the active document's identity actually
+		// changing so that case doesn't wipe an in-progress search on the tab still being read.
+		val activeDocumentUri = currentTabs.getOrNull(currentActiveIndex)?.documentUri
+		if (activeDocumentUri != lastMetadataDocumentUri) {
+			lastMetadataDocumentUri = activeDocumentUri
+			clearSearch()
+		}
 		if (currentActiveIndex in currentTabs.indices) {
 			val tab = currentTabs[currentActiveIndex]
 			ttsManager.currentDocumentTitle = tab.title.ifBlank { tab.fileName }
@@ -1109,16 +1322,38 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun seekToPercent(percent: Int) {
-		val state = uiState.value as? MainScreenUiState.Success ?: return
-		val tab = state.activeTab ?: return
-		val pos = tab.session.positionFromPercent(percent)
-		updateTtsPosition(pos)
+	/**
+	 * Seeks the recording to `percent` of its running time, reporting whether it applied.
+	 *
+	 * False for a document with no audio, and for one whose file lengths are not all known, so
+	 * the caller maps the percentage through the text instead, as everything did before. A
+	 * percentage through the text of an audiobook counts blank lines, one per file, so it treats
+	 * a two minute file and an hour long one as equal shares of the book.
+	 *
+	 * The reading position follows on its own: the player reports the clip it lands in.
+	 */
+	fun seekAudioToPercent(percent: Int): Boolean {
+		val state = uiState.value as? MainScreenUiState.Success ?: return false
+		val tab = state.activeTab ?: return false
+		val targetMs = tab.session.audioElapsedForPercentFfi(percent)
+		if (targetMs < 0) return false
+		return daisyAudioPlayer.seekToMs(targetMs)
 	}
 
-	fun openElementsDialog() {
+	fun openWordCountDialog() {
+		// Nothing to count in an audio-only book. The menu hides the entry for one; this keeps
+		// the Ctrl+W shortcut from opening a dialog full of zeroes anyway.
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		if (state.activeTab?.isAudioOnly == true) return
+		wordCountDialog.open()
+	}
+
+	fun openElements() {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
+		// An audio-only book has no text spine, so both tabs would come up empty. The menu hides
+		// the entry for one; this keeps the F7 shortcut from opening it anyway.
+		if (tab.isAudioOnly) return
 		viewModelScope.launch(Dispatchers.IO) {
 			val pos = _ttsPosition.value
 			val headings = tab.session.getHeadingTreeFfi(pos)
@@ -1126,33 +1361,25 @@ class MainScreenViewModel(
 			withContext(Dispatchers.Main) {
 				_currentHeadings.value = headings
 				_currentLinks.value = links
-				elementsDialogState.open()
+				// Requested once the lists are in hand, so the screen never appears empty and
+				// then fills in.
+				elementsRequest.request()
 			}
 		}
 	}
 
-	fun closeElementsDialog() {
-		elementsDialogState.close()
+	/** Drops the heading and link lists once the elements screen is gone. */
+	fun clearElements() {
 		_currentHeadings.value = null
 		_currentLinks.value = null
 	}
 
-	fun setRestorePreviousDocuments(value: Boolean) {
-		_restorePreviousDocuments.value = value
-		config.setAppBool("restore_previous_documents", value)
-		config.flush()
+	fun requestJumpToOffset(offset: Long) {
+		_pendingJumpOffset.value = offset
 	}
 
-	fun setUseInAppFileBrowser(value: Boolean) {
-		_useInAppFileBrowser.value = value
-		config.setAppBool("use_in_app_file_browser", value)
-		config.flush()
-	}
-
-	fun setSwipeUpMovesForward(value: Boolean) {
-		_swipeUpMovesForward.value = value
-		config.setAppBool("swipe_up_moves_forward", value)
-		config.flush()
+	fun consumeJumpRequest() {
+		_pendingJumpOffset.value = null
 	}
 
 	private val _accessibilityAnnouncement = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -1162,16 +1389,21 @@ class MainScreenViewModel(
 		_accessibilityAnnouncement.tryEmit(message)
 	}
 
-	fun openGoToDialog(initialMode: String = "Line") {
+	fun openGoToDialog(initialMode: String = GO_TO_LINE) {
 		val state = uiState.value
+		var mode = initialMode
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab
-			if (tab != null && initialMode == "Page" && tab.session.pageCountFfi() == 0) {
+			// Line and page mean nothing in a book whose text is one blank line per audio file,
+			// so the shortcuts for them land on the one mode it does have.
+			if (tab != null && tab.isAudioOnly) {
+				mode = GO_TO_PERCENTAGE
+			} else if (tab != null && mode == GO_TO_PAGE && tab.session.pageCountFfi() == 0) {
 				announceForAccessibility("This document does not contain pages.")
 				return
 			}
 		}
-		_goToInitialMode.value = initialMode
+		_goToInitialMode.value = mode
 		goToDialogState.open()
 	}
 
@@ -1243,13 +1475,13 @@ class MainScreenViewModel(
 	}
 
 	fun openHelpDocument() {
-		val lang = Locale.getDefault().language
+		// Matched against the readmes actually shipped rather than a hardcoded language list,
+		// which drifts out of sync, and by the same rule as the string catalogue: the files are
+		// named for the po files ("readme-zh_CN.html"), not for the bare language code a device
+		// reports, so asking for readme-zh.html only ever found the English fallback.
+		val lang = bestLocaleMatch(assetLocaleTags(context, "readmes", "readme-", ".html"), Locale.getDefault())
 		viewModelScope.launch(Dispatchers.IO) {
 			try {
-				// Try the localized doc first, falling back to English rather than checking
-				// a hardcoded language list against a hand-maintained set of asset names --
-				// that list drifts out of sync with which readme-$lang.html files actually
-				// exist in assets/readmes/.
 				val assetStream = try {
 					context.assets.open("readmes/readme-$lang.html")
 				} catch (_: IOException) {

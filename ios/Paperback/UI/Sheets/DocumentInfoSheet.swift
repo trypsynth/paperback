@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct DocumentInfoSheet: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 
 	var body: some View {
@@ -43,8 +43,10 @@ struct DocumentInfoSheet: View {
 						// TRANSLATORS: Row label for the document's character count with whitespace excluded
 						infoRow(t("Characters (excluding spaces)"), value: stats.charCountNoWhitespace.formatted())
 					} else {
+						// TRANSLATORS: Row label for the document's title in the Document Info sheet, shown when no document is open
 						infoRow(t("Title"), value: viewModel.activeTab?.title ?? "—")
 						Divider().padding(.leading, 16)
+						// TRANSLATORS: Row label for the document's file name/path in the Document Info sheet, shown when no document is open
 						infoRow(t("File"), value: viewModel.activeTab?.url.lastPathComponent ?? "—")
 					}
 				}

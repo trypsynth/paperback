@@ -16,6 +16,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
+import dev.paperback.android.nt
 import dev.paperback.android.t
 import uniffi.paperback.DocumentStatsFfi
 
@@ -24,12 +25,20 @@ fun WordCountDialog(
 	stats: DocumentStatsFfi,
 	onDismiss: () -> Unit
 ) {
-	// TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is replaced with the number
-	val announcement = t("This document contains {} words.", "${stats.wordCount}")
+	// TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is
+	// replaced with the number. Which of the three forms is used depends on the target language's
+	// own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
+	// trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
+	val announcement = nt(
+		t("This document contains {} word."),
+		t("This document contains {} words."),
+		t("This document contains {} words.⁣"),
+		stats.wordCount
+	).replaceFirst("{}", "${stats.wordCount}")
 
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = "Word Count" },
+		modifier = Modifier.semantics { paneTitle = t("Word Count") },
 		icon = { Icon(Icons.AutoMirrored.Filled.Article, contentDescription = null) },
 		// TRANSLATORS: Title of the dialog showing the current document's word count
 		title = { Text(t("Word Count")) },
@@ -45,8 +54,11 @@ fun WordCountDialog(
 					style = MaterialTheme.typography.displaySmall
 				)
 				Text(
-					// TRANSLATORS: Unit label shown under the large word-count number
-					text = t("words"),
+					// TRANSLATORS: Unit label shown under the large word-count number. Which of the
+					// three forms is used depends on the target language's own plural rule, read
+					// from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+					// character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
+					text = nt(t("word"), t("words"), t("words⁣"), stats.wordCount),
 					style = MaterialTheme.typography.bodyMedium,
 					color = MaterialTheme.colorScheme.onSurfaceVariant
 				)

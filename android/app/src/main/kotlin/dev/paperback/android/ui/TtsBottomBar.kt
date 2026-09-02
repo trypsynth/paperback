@@ -53,20 +53,31 @@ fun TtsBottomBar(
 	val currentUnitIndex = navUnits.indexOf(currentUnit)
 	// A time unit means the prev/next controls seek the recording rather than stepping through
 	// text, so they read as "back"/"forward" by that amount instead of "previous"/"next" thing.
+	// Find reads as "Find Previous"/"Find Next", matching the old standalone find bar's buttons,
+	// rather than "Previous Find"/"Next Find".
 	val isTimeUnit = currentUnit is NavUnit.Time
-	val prevLabel = if (isTimeUnit) {
-		// TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
-		t("Back {}").replace("{}", unitName)
-	} else {
-		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button; {} is a unit name like "Paragraph"
-		t("Previous {}").replace("{}", unitName)
+	val isFindUnit = currentUnit is NavUnit.Find
+	val prevLabel = when {
+		isTimeUnit ->
+			// TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
+			t("Back {}").replace("{}", unitName)
+		isFindUnit ->
+			// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by Find matches
+			t("Find Previous")
+		else ->
+			// TRANSLATORS: TalkBack label for the read-aloud bar's previous button; {} is a unit name like "Paragraph"
+			t("Previous {}").replace("{}", unitName)
 	}
-	val nextLabel = if (isTimeUnit) {
-		// TRANSLATORS: TalkBack label for the read-aloud bar's forward button when navigating audio by time; {} is an amount like "30 seconds"
-		t("Forward {}").replace("{}", unitName)
-	} else {
-		// TRANSLATORS: TalkBack label for the read-aloud bar's next button; {} is a unit name like "Paragraph"
-		t("Next {}").replace("{}", unitName)
+	val nextLabel = when {
+		isTimeUnit ->
+			// TRANSLATORS: TalkBack label for the read-aloud bar's forward button when navigating audio by time; {} is an amount like "30 seconds"
+			t("Forward {}").replace("{}", unitName)
+		isFindUnit ->
+			// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by Find matches
+			t("Find Next")
+		else ->
+			// TRANSLATORS: TalkBack label for the read-aloud bar's next button; {} is a unit name like "Paragraph"
+			t("Next {}").replace("{}", unitName)
 	}
 
 	BottomAppBar(
@@ -126,6 +137,12 @@ fun TtsBottomBar(
 				}
 			}
 
+			// BottomAppBar start-aligns its actions and keeps the end for a floating action
+			// button, which this bar does not have, so without these the four controls crowd
+			// into the left edge against a wide empty gap. The weights centre back/play/forward
+			// and leave the unit selector where it is, at the start.
+			Spacer(Modifier.weight(1f))
+
 			IconButton(onClick = onPrevButton) {
 				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = prevLabel)
 			}
@@ -172,6 +189,8 @@ fun TtsBottomBar(
 			IconButton(onClick = onNextButton) {
 				Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = nextLabel)
 			}
+
+			Spacer(Modifier.weight(1f))
 		},
 	)
 }

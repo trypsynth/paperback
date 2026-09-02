@@ -30,15 +30,12 @@ pub(super) fn parse_ncx(
 	if ncx_index == 0xFFFFFFFF || ncx_index == 0 || ncx_index >= records.len() - 1 {
 		return Vec::new();
 	}
-
 	let indx_rec = &data[records[ncx_index]..records[ncx_index + 1]];
 	if indx_rec.len() < 192 || &indx_rec[0..4] != b"INDX" {
 		return Vec::new();
 	}
-
 	let count = u32::from_be_bytes(indx_rec[24..28].try_into().unwrap()) as usize;
 	let cncx_count = u32::from_be_bytes(indx_rec[52..56].try_into().unwrap()) as usize;
-
 	let cncx_start_rec = ncx_index + count + 1;
 	let mut cncx_data = Vec::new();
 	for i in 0..cncx_count {
@@ -49,15 +46,12 @@ pub(super) fn parse_ncx(
 		let rec = &data[records[rec_idx]..records[rec_idx + 1]];
 		cncx_data.extend_from_slice(rec);
 	}
-
 	let tagx_start = u32::from_be_bytes(indx_rec[4..8].try_into().unwrap()) as usize;
 	if tagx_start + 12 > indx_rec.len() || &indx_rec[tagx_start..tagx_start + 4] != b"TAGX" {
 		return Vec::new();
 	}
-
 	let tagx_len = u32::from_be_bytes(indx_rec[tagx_start + 4..tagx_start + 8].try_into().unwrap()) as usize;
 	let control_byte_count = u32::from_be_bytes(indx_rec[tagx_start + 8..tagx_start + 12].try_into().unwrap()) as usize;
-
 	let mut tags = Vec::new();
 	for i in (12..tagx_len).step_by(4) {
 		let p = tagx_start + i;
@@ -70,7 +64,6 @@ pub(super) fn parse_ncx(
 		let end = indx_rec[p + 3];
 		tags.push((tag, vpe, mask, end));
 	}
-
 	let mut idxt_start = 0;
 	for i in (0..indx_rec.len().saturating_sub(4)).rev() {
 		if &indx_rec[i..i + 4] == b"IDXT" {
@@ -81,7 +74,6 @@ pub(super) fn parse_ncx(
 	if idxt_start == 0 {
 		return Vec::new();
 	}
-
 	let mut entries = Vec::new();
 	for i in 0..=count {
 		let rec_idx = ncx_index + i;
@@ -89,7 +81,6 @@ pub(super) fn parse_ncx(
 			break;
 		}
 		let rec = &data[records[rec_idx]..records[rec_idx + 1]];
-
 		let mut idxt = 0;
 		for j in (0..rec.len().saturating_sub(4)).rev() {
 			if &rec[j..j + 4] == b"IDXT" {
@@ -107,30 +98,24 @@ pub(super) fn parse_ncx(
 				break;
 			}
 			let off = u16::from_be_bytes(rec[p..p + 2].try_into().unwrap()) as usize;
-
 			if off >= rec.len() {
 				continue;
 			}
-
 			let id_len = rec[off] as usize;
 			let data_start = off + 1 + id_len;
 			if data_start + control_byte_count > rec.len() {
 				continue;
 			}
-
 			let mut cbytes = Vec::new();
 			for k in 0..control_byte_count {
 				cbytes.push(rec[data_start + k]);
 			}
-
 			let mut title_offset: Option<usize> = None;
 			let mut pos: Option<usize> = None;
 			let mut fid: Option<usize> = None;
 			let mut lvl = 0;
-
 			let mut vwi_offset = data_start + control_byte_count;
 			let mut cbyte_idx = 0;
-
 			for &(tag, vpe, mask, end_flag) in &tags {
 				let cb = u32::from(cbytes.get(cbyte_idx).copied().unwrap_or(0));
 				if end_flag == 1 {
@@ -139,15 +124,12 @@ pub(super) fn parse_ncx(
 				if tag == 0 {
 					continue;
 				}
-
 				let val = cb & mask;
 				if val == 0 {
 					continue;
 				}
-
 				let mut value_count = 0;
 				let mut value_bytes = 0;
-
 				if val == mask {
 					if mask.count_ones() > 1 {
 						if vwi_offset < rec.len() {
@@ -167,7 +149,6 @@ pub(super) fn parse_ncx(
 					}
 					value_count = v as usize;
 				}
-
 				let mut vals = Vec::new();
 				if value_count > 0 {
 					for _ in 0..(value_count * vpe) {
@@ -186,7 +167,6 @@ pub(super) fn parse_ncx(
 						vwi_offset = next;
 					}
 				}
-
 				if !vals.is_empty() {
 					if tag == 1 {
 						pos = Some(vals[0]);
@@ -205,7 +185,6 @@ pub(super) fn parse_ncx(
 					}
 				}
 			}
-
 			if let (Some(toff), Some(p)) = (title_offset, pos)
 				&& toff < cncx_data.len()
 			{
@@ -216,13 +195,11 @@ pub(super) fn parse_ncx(
 					let f = fid.unwrap_or(0);
 					let filepos = frag_offsets.get(&f).copied().unwrap_or(0) + p;
 					let lvl = if lvl == 0 { 1 } else { lvl as u32 };
-
 					entries.push((title, lvl, format!("#fp{filepos:010}")));
 				}
 			}
 		}
 	}
-
 	let mut toc: Vec<TocItem> = Vec::new();
 	let mut stack: Vec<usize> = Vec::new();
 	let mut levels: Vec<u32> = Vec::new();

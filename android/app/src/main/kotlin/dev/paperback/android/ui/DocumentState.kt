@@ -28,6 +28,16 @@ data class RecentDocumentItem(
 	val isMissing: Boolean = false
 )
 
+/**
+ * The table of contents screen's own state: which rows are expanded, and which row the reader is
+ * currently inside. One object rather than two flows so a recomposition can never pair a fresh
+ * active row with a stale expansion set and scroll to the wrong place.
+ */
+data class TocUiState(
+	val expandedIndices: Set<Int> = emptySet(),
+	val activeIndex: Int? = null
+)
+
 sealed class MainScreenUiState {
 	object Idle : MainScreenUiState()
 

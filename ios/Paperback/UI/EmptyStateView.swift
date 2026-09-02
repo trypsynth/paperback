@@ -2,7 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct EmptyStateView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	let onOpenFile: () -> Void
 	@State private var locateTarget: RecentDocument? = nil
 
@@ -26,26 +26,12 @@ struct EmptyStateView: View {
 	}
 
 	@ViewBuilder private var emptyContent: some View {
-		if #available(iOS 17, *) {
-			ContentUnavailableView(
-				// TRANSLATORS: Shown in the main reading area when no document is currently open
-				t("No document open"),
-				systemImage: "book.closed"
-			)
-			.frame(maxWidth: .infinity, maxHeight: .infinity)
-		} else {
-			VStack(spacing: 16) {
-				Image(systemName: "book.closed")
-					.font(.system(size: 64))
-					.foregroundStyle(.secondary)
-					.accessibilityHidden(true)
-				// TRANSLATORS: Shown in the main reading area when no document is currently open (pre-iOS 17 fallback)
-				Text(t("No document open"))
-					.font(.title2)
-					.foregroundStyle(.secondary)
-			}
-			.frame(maxWidth: .infinity, maxHeight: .infinity)
-		}
+		ContentUnavailableView(
+			// TRANSLATORS: Shown in the main reading area when no document is currently open
+			t("No document open"),
+			systemImage: "book.closed"
+		)
+		.frame(maxWidth: .infinity, maxHeight: .infinity)
 	}
 
 	private var recentList: some View {
@@ -68,7 +54,7 @@ struct EmptyStateView: View {
 				Divider().padding(.leading)
 			}
 			// TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
-			Button(t("Show All")) { viewModel.showRecents = true }
+			Button(t("Show All")) { viewModel.navigation.showRecents = true }
 				.padding()
 		}
 	}

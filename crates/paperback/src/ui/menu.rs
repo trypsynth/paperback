@@ -11,6 +11,7 @@ mod help_menu;
 mod state;
 mod tools_menu;
 
+pub use builder::{MenuEntry, format_menu_label, item_with_help};
 pub use file_menu::recent_documents_for_menu;
 pub use state::{update_menu_item_states, update_reopen_state};
 
@@ -20,15 +21,19 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let go_menu = go_menu::create_go_menu(config, compact_go_menu);
 	let tools_menu = tools_menu::create_tools_menu(config);
 	let help_menu = help_menu::create_help_menu(config);
+	// TRANSLATORS: Top-level "File" menu label in the menu bar
 	let file_label = t("&File");
+	// TRANSLATORS: Top-level "Go" menu label in the menu bar
 	let go_label = t("&Go");
+	// TRANSLATORS: Top-level "Tools" menu label in the menu bar
 	let tools_label = t("&Tools");
+	// TRANSLATORS: Top-level "Help" menu label in the menu bar
 	let help_label = t("&Help");
 	#[allow(unused_mut)]
 	let mut builder = MenuBar::builder().append(file_menu, &file_label);
-
 	#[cfg(target_os = "macos")]
 	{
+		// TRANSLATORS: Top-level "Edit" menu label in the menu bar (macOS only)
 		let edit_label = t("&Edit");
 		builder = builder.append(edit_menu::create_edit_menu(config), &edit_label);
 	}

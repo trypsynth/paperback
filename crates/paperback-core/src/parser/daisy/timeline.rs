@@ -124,7 +124,6 @@ pub(super) fn build_daisy_document(
 	// points at. Keyed both bare and path-qualified, first occurrence winning.
 	let mut smil_anchors: HashMap<String, usize> = HashMap::new();
 	let mut converted_any = false;
-
 	for idref in &package.spine {
 		let Some(item) = package.item(idref) else { continue };
 		if is_dtbook_like_item(item) {
@@ -204,11 +203,9 @@ pub(super) fn build_daisy_document(
 			});
 		}
 	}
-
 	if !converted_any {
 		return None;
 	}
-
 	let mut toc_items = None;
 	if let Some((_, ncx_item)) = package.items.iter().find(|(_, item)| {
 		item.media_type == "application/x-dtbncx+xml" || item.href.to_ascii_lowercase().ends_with(".ncx")
@@ -220,7 +217,6 @@ pub(super) fn build_daisy_document(
 		toc_items = Some(ncx_toc);
 	}
 	let toc_items = toc_items.unwrap_or_else(|| build_toc_from_buffer(&buffer));
-
 	let resolved_clips = bound_open_ended_clips(&pending_clips);
 	let doc_end = buffer.current_position();
 	for index in 0..resolved_clips.len() {
@@ -229,7 +225,6 @@ pub(super) fn build_daisy_document(
 		audio_builder.add_clip(clip.source, clip.begin_ms, clip.end_ms, clip.start, end);
 	}
 	let audio = audio_builder.build();
-
 	Some(Document {
 		title,
 		author,

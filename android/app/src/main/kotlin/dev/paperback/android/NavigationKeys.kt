@@ -6,3 +6,9 @@ import kotlinx.serialization.Serializable
 @Serializable data object Main : NavKey
 
 @Serializable data object SettingsRoute : NavKey
+
+@Serializable data object TocRoute : NavKey
+
+@Serializable data object AllDocumentsRoute : NavKey
+
+@Serializable data object ElementsRoute : NavKey

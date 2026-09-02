@@ -1,4 +1,4 @@
-# Paperback - version 0.9.0
+# Paperback - version 0.9.2
 
 ## Introduction
 
@@ -41,6 +41,7 @@ Paperback supports the following formats and extensions:
 * HTML documents (`.htm`, `.html`, `.xhtml`)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word documents (`.docx`, `.docm`, `.doc`)
+* M4B audiobooks (`.m4b`)
 * MOBI/Kindle books (`.mobi`, `.azw`, `.azw3`)
 * OpenDocument presentations (`.odp`, `.fodp`)
 * OpenDocument text files (`.odt`, `.fodt`)
@@ -200,6 +201,38 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ## Changelog
 
+### Version 0.9.2
+* Audio books no longer make your screen reader read out a run of spaces when you focus the text field.
+* Audio books now name the file as you step through them by section.
+* Audio books now report their real length, rather than claiming every file in them runs for 24 hours.
+* Closing the Web View with Escape no longer throws up a debug alert after you have followed a link inside it.
+* Copying after Select All now gives you the whole document, instead of only the part of it currently loaded.
+* Find now cuts straight to the line it found, rather than making you sit through the screen reader reading out the window again as focus returns to the book.
+* Fixed EPUB's that carry a stray ZIP64 block refusing to open with "Invalid local file header".
+* Fixed long documents walking back to their start while a screen reader read continuously through them.
+* Links in the WebView now take you to the section they point at, rather than failing with "File not found".
+* The automatic "Document reloaded" announcement no longer cuts your screen reader off mid sentence, instead waiting for it to finish what it was saying.
+* The Settings dialog's General tab now tabs through its options in the order they appear on screen, with the update channel directly after the check for updates option.
+* Windows will now always show "Paperback" in the Open With menu, rather than the program's full tagline.
+* Word Count and Document Info now show how many files an audio book holds, and how long it runs in total.
+
+### Version 0.9.1
+* Bookmark and note sounds now play on macOS.
+* DAISY books now play their audio on macOS, rather than opening and tracking their timeline in silence.
+* Fixed curly quotes, em dashes and similar characters vanishing from RTF documents, running the surrounding words together as they went.
+* Fixed RTF pictures leaking their raw data into the document as garbled text.
+* Fixed the Recent Documents submenu keeping stale entries until something else happened to rebuild it.
+* Keyboard accelerators are back in every translation, so Russian's menus have keyboard access again.
+* Large CHM documents now open up to seven times faster.
+* Opened documents are now registered with Windows, so they show up in the taskbar jump list and the Start menu's recent list.
+* Options has been renamed to Settings, matching the mobile apps and, on macOS, the platform convention.
+* Paperback now remembers its window position, size, and maximized state between runs.
+* Plural forms are now translated, so messages that count things read properly in languages that need more than one form.
+* Selecting a DAISY book's ncc.html now opens the complete audio book instead of just its text.
+* The Customize Keyboard Shortcuts dialog's action names can now be translated.
+* The document title now comes first in the title bar, so open books can be told apart in the taskbar and Alt+Tab.
+* The update dialog is now translated.
+
 ### Version 0.9.0
 
 #### Added
@@ -344,15 +377,14 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 ### Version 0.8.5
 * Added page support to epub books.
 * Added support for encrypted Microsoft Office documents. Currently Legacy word, modern Word and modern Powerpoint are supported, with legacy Powerpoint planned for the future.
-* Added support for legacy Microsoft Word documents (*.doc)!
-* Added support for legacy Powerpoint presentations (*.ppt)!
+* Added support for legacy Microsoft Word documents!
+* Added support for legacy Powerpoint presentations!
 * Added support for mobi and AZW3 books!
 * Added support for tagged PDF files!
 * Added the ctrl+q shortcut to exit the app.
 * Added support for zipped books from Bookshare (both DAISY and Word)!
 * Alt text for embedded images should now be properly shown.
 * CHM documents now properly support internal link navigation.
-* Fixed bookmark sounds triggering at paragraph start instead of the bookmark's position.
 * Fixed go to page being off by 1.
 * Fixed the escape key not working to close the open as dialog.
 * Fixed the reader context menu not showing up on right-click or the Applications key.
@@ -397,7 +429,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed Markdown documents showing raw text instead of rendered HTML in the Web View.
 * Fixed tables not rendering properly in Markdown files.
 * Image only PDFs will now warn you of their existence when you attempt to load one.
-* It is now possible to check for new dev builds instead of stable releases when checking for updates.
 * Properly embed version information in the Paperback executable.
 * Split the options dialog into tabs for ease of use and navigation.
 * Switched to Hayro for parsing PDFs, leading to more reliability, speed, and fewer DLLs.
@@ -417,7 +448,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed TOC parsing in Epub 2 books.
 * Fixed navigating to the next item with the same letter in the table of contents.
 * Fixed the find dialog not hiding properly when using the next/previous buttons.
-* Fixed epub TOCs occasionally throwing you to the wrong item.
+* Fixed epub TOC's occasionally throwing you to the wrong item.
 * Fixed various whitespace handling issues in XML, HTML, and pre tags.
 * Fixed off-by-one error in link navigation.
 * Fixed some books having trailing whitespace on their lines.

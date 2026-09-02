@@ -1,7 +1,7 @@
 use std::{
-	cell::RefCell,
+	cell::{Ref, RefCell},
 	collections::hash_map::DefaultHasher,
-	fs,
+	env, fs,
 	hash::{Hash, Hasher},
 	io::BufReader,
 	path::{Path, PathBuf},
@@ -55,18 +55,14 @@ pub struct AudioPlayer {
 
 impl AudioPlayer {
 	pub fn new(parent: &Panel, timeline: AudioTimeline) -> Result<Self> {
-		let cache_dir = std::env::temp_dir().join("paperback-audio-cache");
+		let cache_dir = env::temp_dir().join("paperback-audio-cache");
 		fs::create_dir_all(&cache_dir).context("failed to create audio cache directory")?;
 		// Hidden and unfocusable so it never surfaces to a screen reader, but deliberately
 		// *not* zero-sized: some Windows backends build an internal renderer window sized to
 		// the control, and a 0x0 one can leave `Load()` in flight with no `Loaded` event.
-		//
-		// WMP10 is requested explicitly rather than letting wxMediaCtrl fall back to its
-		// default "AM" backend, which never fires `MEDIA_LOADED` for audio-only files on
-		// modern Windows and so wedges every load after the first.
 		let media = MediaCtrl::builder(parent)
 			.with_style(MediaCtrlStyle::NoAutoResize)
-			.with_backend_name("wxWMP10MediaBackend")
+			.with_backend_name(media_backend_name())
 			.build();
 		media.hide();
 		media.set_can_focus(false);
@@ -83,7 +79,6 @@ impl AudioPlayer {
 			last_seek_target: None,
 			cache_dir,
 		}));
-
 		let loaded_media = media;
 		let loaded_state = Rc::clone(&state);
 		media.on_loaded(move |_| {
@@ -111,7 +106,6 @@ impl AudioPlayer {
 				loaded_media.pause();
 			}
 		});
-
 		let finished_media = media;
 		let finished_state = Rc::clone(&state);
 		media.on_finished(move |_| {
@@ -127,13 +121,12 @@ impl AudioPlayer {
 				None => finished_state.borrow_mut().playing = false,
 			}
 		});
-
 		Ok(Self { media, state })
 	}
 
 	#[must_use]
-	pub fn timeline(&self) -> std::cell::Ref<'_, AudioTimeline> {
-		std::cell::Ref::map(self.state.borrow(), |state| &state.timeline)
+	pub fn timeline(&self) -> Ref<'_, AudioTimeline> {
+		Ref::map(self.state.borrow(), |state| &state.timeline)
 	}
 
 	/// Stops playback and releases the native media session, ahead of this player (and the
@@ -278,6 +271,33 @@ impl AudioPlayer {
 	}
 }
 
+/// The `wxMediaBackend` subclass to build `wxMediaCtrl` on, or `""` to let wxWidgets choose.
+///
+/// Naming a backend that isn't registered on the current platform is silently fatal, so this
+/// has to stay platform-accurate: `wxMediaCtrl::Create` looks the name up in the RTTI table
+/// and, on a miss, leaves its backend pointer null and returns `false`. The constructor form
+/// wxdragon calls throws that `false` away, so we get back a perfectly live control whose
+/// every `Load`/`Play`/`Seek` returns `false` with no error anywhere: a DAISY book that opens
+/// fine and simply never makes a sound.
+///
+/// Windows registers three backends and `wxMediaCtrl`'s own auto-selection settles on the
+/// "AM" (DirectShow) one, which never fires `MEDIA_LOADED` for audio-only files on modern
+/// Windows and so wedges every load after the first, so WMP10 is named explicitly there.
+#[cfg(target_os = "windows")]
+const fn media_backend_name() -> &'static str {
+	"wxWMP10MediaBackend"
+}
+
+/// Every non-Windows platform compiles in exactly one backend (`wxAVMediaBackend` on macOS,
+/// `wxGStreamerMediaBackend` on GTK), so auto-selection picks the right one and keeps picking
+/// it if upstream ever renames the class. Both fire the `MEDIA_LOADED` and `MEDIA_FINISHED`
+/// events this player is driven by, and neither carries the WMP10 seek bias compensated for
+/// in `native_seek_target_ms`.
+#[cfg(not(target_os = "windows"))]
+const fn media_backend_name() -> &'static str {
+	""
+}
+
 fn apply_seek(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: usize, seek_ms: u64, playing: bool) {
 	state.borrow_mut().last_seek_target = Some((source_index, seek_ms));
 	let native_seek_ms = native_seek_target_ms(&media, seek_ms);
@@ -291,7 +311,7 @@ fn apply_seek(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: 
 }
 
 /// `wxWMP10MediaBackend::SetPosition` (the only Windows backend that reliably plays
-/// audio-only DAISY sources, see `AudioPlayer::new`) subtracts a full video frame's
+/// audio-only DAISY sources, see `media_backend_name`) subtracts a full video frame's
 /// worth of time (`1000 / playback_rate` ms) from every seek target before applying it.
 /// It's a workaround upstream added so video controls redraw the correct frame after a
 /// seek (`src/msw/mediactrl_wmp10.cpp`, `SetPosition`), fired unconditionally even for
@@ -386,16 +406,16 @@ fn cache_file_name(archive: &str, entry: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-	use std::io::Write;
+	use std::io::{Cursor, Write};
+
+	use zip::{ZipWriter, write::FileOptions};
 
 	use super::*;
 
 	fn write_zip(name: &str, data: &[u8]) -> Vec<u8> {
-		use zip::{ZipWriter, write::FileOptions};
-
 		let mut buf = Vec::new();
 		{
-			let cursor = std::io::Cursor::new(&mut buf);
+			let cursor = Cursor::new(&mut buf);
 			let mut writer = ZipWriter::new(cursor);
 			writer.start_file(name, FileOptions::<()>::default()).unwrap();
 			writer.write_all(data).unwrap();
@@ -406,7 +426,7 @@ mod tests {
 
 	#[test]
 	fn resolves_a_plain_file_location_directly() {
-		let dir = std::env::temp_dir().join("paperback-audio-player-test");
+		let dir = env::temp_dir().join("paperback-audio-player-test");
 		fs::create_dir_all(&dir).unwrap();
 		let path = dir.join("clip.mp3");
 		fs::write(&path, b"fake-mp3-bytes").unwrap();
@@ -418,7 +438,7 @@ mod tests {
 
 	#[test]
 	fn extracts_and_caches_a_zip_entry() {
-		let dir = std::env::temp_dir().join("paperback-audio-player-test");
+		let dir = env::temp_dir().join("paperback-audio-player-test");
 		fs::create_dir_all(&dir).unwrap();
 		let zip_path = dir.join("book.zip");
 		fs::write(&zip_path, write_zip("chapter1.mp3", b"chapter-one-bytes")).unwrap();
@@ -437,7 +457,7 @@ mod tests {
 
 	#[test]
 	fn reports_a_missing_zip_entry() {
-		let dir = std::env::temp_dir().join("paperback-audio-player-test");
+		let dir = env::temp_dir().join("paperback-audio-player-test");
 		fs::create_dir_all(&dir).unwrap();
 		let zip_path = dir.join("book_missing.zip");
 		fs::write(&zip_path, write_zip("chapter1.mp3", b"data")).unwrap();

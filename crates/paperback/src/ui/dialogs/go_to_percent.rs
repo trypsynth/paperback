@@ -27,7 +27,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	input_ctrl.on_value_changed(move |event| {
 		percent_slider_for_spin.set_value(event.get_value());
 	});
-	bind_enter_confirms(dialog, input_ctrl);
+	bind_enter_confirms(&dialog, input_ctrl);
 	let dialog_for_slider_enter = dialog;
 	percent_slider.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);
@@ -68,7 +68,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	content_sizer.add(&input_label, 0, SizerFlag::Left, 5);
 	content_sizer.add(&input_ctrl, 0, SizerFlag::Expand, 0);
 	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
-	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("Go"));
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("Go"));
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	main_sizer.add_sizer(&content_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	add_ok_cancel_footer(main_sizer, ok_button, cancel_button);
