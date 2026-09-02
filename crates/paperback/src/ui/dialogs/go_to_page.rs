@@ -1,48 +1,32 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer, bind_enter_confirms, build_ok_cancel_buttons};
+use super::go_to::{NumberPrompt, show_number_dialog};
 
-pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) -> Option<i32> {
+pub fn show_go_to_page_dialog(
+	parent: &Frame,
+	current_page: i32,
+	max_page: i32,
+	live_region_label: StaticText,
+) -> Option<i32> {
 	let max_page = max_page.max(1);
 	// TRANSLATORS: Title of the Go to page dialog
-	let dialog_title = t("Go to page");
-	let dialog = Dialog::builder(parent, &dialog_title).build();
-	// TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
-	let label_template = t("Go to page (%d/%d):");
-	let label_text = label_template.replacen("%d", &current_page.clamp(1, max_page).to_string(), 1).replacen(
+	let title = t("Go to page");
+	// TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_page respectively.
+	let label = t("Go to page (%d/%d):").replacen("%d", &current_page.clamp(1, max_page).to_string(), 1).replacen(
 		"%d",
 		&max_page.to_string(),
 		1,
 	);
-	let label = StaticText::builder(&dialog).with_label(&label_text).build();
-	let current = current_page.clamp(1, max_page);
-	let page_ctrl = SpinCtrl::builder(&dialog)
-		.with_range(1, max_page)
-		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
-		.build();
-	page_ctrl.set_value(current);
-	bind_enter_confirms(&dialog, page_ctrl);
-	let label_for_update = label;
-	let label_template_for_update = label_template;
-	page_ctrl.on_value_changed(move |event| {
-		let text = label_template_for_update.replacen("%d", &event.get_value().to_string(), 1).replacen(
-			"%d",
-			&max_page.to_string(),
-			1,
-		);
-		label_for_update.set_label(&text);
-	});
-	let page_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	page_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
-	page_sizer.add(&page_ctrl, 1, SizerFlag::Expand, 0);
-	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
-	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("Go"));
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add_sizer(&page_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
-	dialog.set_sizer_and_fit(content_sizer, true);
-	dialog.centre();
-	page_ctrl.set_focus();
-	if dialog.show_modal() == ID_OK { Some(page_ctrl.value().clamp(1, max_page)) } else { None }
+	// TRANSLATORS: Announced when the entered page number is outside the document's range
+	let out_of_range = t("Page out of range.");
+	let prompt = NumberPrompt {
+		title: &title,
+		label: &label,
+		out_of_range: &out_of_range,
+		current: current_page,
+		min: 1,
+		max: max_page,
+	};
+	show_number_dialog(parent, &prompt, live_region_label)
 }

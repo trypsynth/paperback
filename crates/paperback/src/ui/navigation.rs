@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::Mutex};
+use std::{cell::RefCell, rc::Rc, sync::Mutex};
 
 use paperback_core::{config::ConfigManager, session::NavigationResult};
 use patois::t;
@@ -323,14 +323,7 @@ fn format_nav_found_message(
 			format!("{wrap_prefix}{message}")
 		}
 		NavFoundFormat::PageFormat => {
-			let page_text = (context_index + 1).to_string();
-			let message = if context_text.is_empty() {
-				// TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-				t("Page %d").replacen("%d", &page_text, 1)
-			} else {
-				// TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-				t("Page %d: %s").replacen("%d", &page_text, 1).replacen("%s", context_text, 1)
-			};
+			let message = page_announcement(context_index + 1, context_text);
 			format!("{wrap_prefix}{message}")
 		}
 		NavFoundFormat::LinkFormat => {
@@ -342,6 +335,20 @@ fn format_nav_found_message(
 			let message = context_text.to_string();
 			format!("{wrap_prefix}{message}")
 		}
+	}
+}
+
+/// The announcement for landing on page `page`, whose first line of real content is
+/// `content` (empty for a blank or image-only page). Shared by page navigation and the
+/// Go to page dialog so both read the same.
+pub fn page_announcement(page: i32, content: &str) -> String {
+	let page_text = page.to_string();
+	if content.is_empty() {
+		// TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+		t("Page %d").replacen("%d", &page_text, 1)
+	} else {
+		// TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
+		t("Page %d: %s").replacen("%d", &page_text, 1).replacen("%s", content, 1)
 	}
 }
 
@@ -512,4 +519,38 @@ pub fn selected_range(text_ctrl: TextCtrl) -> (i64, i64) {
 	} else {
 		(end, start)
 	}
+}
+
+/// How long after a jump the interrupting announcement is raised.
+///
+/// The interrupt must land after NVDA has started the focus-return chain — if it fires
+/// before, the chain reads over the announcement instead — but as close to the chain's
+/// start as possible, so as little of it escapes before the cut. NVDA's own find dialog
+/// uses 100ms; Paperback's chain starts quickly, and 30ms was chosen by binary search on
+/// the Find dialog (60ms left a barely-audible sliver of the chain, 10ms occasionally let
+/// the full chain through after the announcement, 0ms always did).
+const FOCUS_CHAIN_INTERRUPT_DELAY_MS: i32 = 30;
+
+/// Announces `message` shortly after a dialog closes, so it cuts off the focus-chain
+/// announcement the screen reader starts when focus returns to the book.
+///
+/// The one-shot `wxTimer` is kept alive through its single tick by the `Rc`/`RefCell` it
+/// hands its own callback: the tick clears the cell, which drops the timer and destroys
+/// the native timer. If the timer cannot be armed, fall back to announcing immediately
+/// rather than silently dropping the message.
+#[allow(clippy::needless_pass_by_value)]
+pub fn announce_after_delay(frame: &Frame, live_region_label: StaticText, message: String) {
+	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
+	let holder = Rc::clone(&timer_holder);
+	let timer = Timer::new(frame);
+	let announce = message.clone();
+	timer.on_tick(move |_event| {
+		live_region::announce(live_region_label, &announce);
+		*holder.borrow_mut() = None;
+	});
+	if !timer.start(FOCUS_CHAIN_INTERRUPT_DELAY_MS, true) {
+		live_region::announce(live_region_label, &message);
+		return;
+	}
+	*timer_holder.borrow_mut() = Some(timer);
 }

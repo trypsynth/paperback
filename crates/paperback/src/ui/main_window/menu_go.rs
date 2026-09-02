@@ -10,7 +10,12 @@ use wxdragon::prelude::*;
 
 use super::{DocumentManager, dialogs, navigation};
 
-pub(super) fn handle_go_to_line(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
+pub(super) fn handle_go_to_line(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+) {
 	let (current_line, max_lines) = {
 		let mut dm_guard = dm.lock().unwrap();
 		let (current_line, max_lines) = {
@@ -28,20 +33,42 @@ pub(super) fn handle_go_to_line(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, 
 		drop(dm_guard);
 		(current_line, max_lines)
 	};
-	if let Some(line) = dialogs::show_go_to_line_dialog(frame, current_line, max_lines) {
-		let update = {
+	if let Some(line) = dialogs::show_go_to_line_dialog(frame, current_line, max_lines, live_region_label) {
+		let (message, update) = {
 			let mut dm_guard = dm.lock().unwrap();
-			let update = {
+			let (message, update) = {
 				let Some(tab) = dm_guard.active_tab_mut() else {
 					return;
 				};
 				let target_pos = tab.session.position_from_line(i64::from(line));
-				navigation::move_to_offset_and_record_history(tab, target_pos)
+				// Capture the line's announcement while the document lock is held; it is
+				// spoken after focus has returned to the book, cutting off the focus chain.
+				let content = tab.session.get_line_text(target_pos);
+				let message = line_announcement(line, &content);
+				let update = navigation::move_to_offset_and_record_history(tab, target_pos);
+				(message, update)
 			};
 			drop(dm_guard);
-			update
+			(message, update)
 		};
 		navigation::persist_navigation_history(config, Some(&update));
+		navigation::announce_after_delay(frame, live_region_label, message);
+	}
+}
+
+/// The announcement for landing on line `line`, whose text is `content` (possibly blank).
+///
+/// Unlike Go to Page, the line number is not prefixed to the text: page numbers carry
+/// external meaning and there are few of them, but line numbers can be huge and say
+/// nothing on their own, so the user hears the line's text, as Find does. A blank line
+/// falls back to the bare line number so the jump is still confirmed.
+fn line_announcement(line: i32, content: &str) -> String {
+	let content = content.trim();
+	if content.is_empty() {
+		// TRANSLATORS: Announced when landing on a blank line; %d is the line number
+		t("Line %d").replacen("%d", &line.to_string(), 1)
+	} else {
+		content.to_string()
 	}
 }
 
@@ -71,24 +98,35 @@ pub(super) fn handle_go_to_page(
 		drop(dm_guard);
 		(current_page, max_page)
 	};
-	if let Some(page) = dialogs::show_go_to_page_dialog(frame, current_page, max_page) {
-		let update = {
+	if let Some(page) = dialogs::show_go_to_page_dialog(frame, current_page, max_page, live_region_label) {
+		let (message, update) = {
 			let mut dm_guard = dm.lock().unwrap();
-			let update = {
+			let (message, update) = {
 				let Some(tab) = dm_guard.active_tab_mut() else {
 					return;
 				};
 				let target_pos = tab.session.page_offset(page);
-				navigation::move_to_offset_and_record_history(tab, target_pos)
+				// Capture the page's announcement while the document lock is held; it is
+				// spoken after focus has returned to the book, cutting off the focus chain.
+				let content = tab.session.first_content_line_after(target_pos);
+				let message = navigation::page_announcement(page, &content);
+				let update = navigation::move_to_offset_and_record_history(tab, target_pos);
+				(message, update)
 			};
 			drop(dm_guard);
-			update
+			(message, update)
 		};
 		navigation::persist_navigation_history(config, Some(&update));
+		navigation::announce_after_delay(frame, live_region_label, message);
 	}
 }
 
-pub(super) fn handle_go_to_percent(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
+pub(super) fn handle_go_to_percent(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+) {
 	let current_percent = {
 		let mut dm_guard = dm.lock().unwrap();
 		let current_percent = {
@@ -101,10 +139,10 @@ pub(super) fn handle_go_to_percent(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 		drop(dm_guard);
 		current_percent
 	};
-	if let Some(percent) = dialogs::show_go_to_percent_dialog(frame, current_percent) {
-		let update = {
+	if let Some(percent) = dialogs::show_go_to_percent_dialog(frame, current_percent, live_region_label) {
+		let (message, update) = {
 			let mut dm_guard = dm.lock().unwrap();
-			let update = {
+			let (message, update) = {
 				let Some(tab) = dm_guard.active_tab_mut() else {
 					return;
 				};
@@ -112,11 +150,21 @@ pub(super) fn handle_go_to_percent(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 				// on. Everything else maps the percentage through the text as before.
 				let target_pos = navigation::seek_audio_to_percent(tab, percent)
 					.unwrap_or_else(|| tab.session.position_from_percent(percent));
-				navigation::move_to_offset_and_record_history(tab, target_pos)
+				// Announce the line the jump lands on, as Go to Line does; a percentage alone
+				// says nothing about where it points. Fall back to the percentage when that
+				// line is blank.
+				let content = tab.session.get_line_text(target_pos);
+				let message =
+					if content.trim().is_empty() { format!("{percent}%") } else { content.trim().to_string() };
+				let update = navigation::move_to_offset_and_record_history(tab, target_pos);
+				(message, update)
 			};
 			drop(dm_guard);
-			update
+			(message, update)
 		};
 		navigation::persist_navigation_history(config, Some(&update));
+		// Same interrupt as Find/Go to Line/Go to Page: raise the announcement ~30ms after the
+		// dialog closes so the focus-return chain is cut off.
+		navigation::announce_after_delay(frame, live_region_label, message);
 	}
 }
