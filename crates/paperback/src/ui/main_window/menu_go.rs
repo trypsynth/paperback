@@ -71,23 +71,28 @@ pub(super) fn handle_go_to_page(
 		drop(dm_guard);
 		(current_page, max_page)
 	};
-	if let Some(page) = dialogs::show_go_to_page_dialog(frame, current_page, max_page) {
-		let update = {
+	if let Some(page) = dialogs::show_go_to_page_dialog(frame, current_page, max_page, live_region_label) {
+		let (message, update) = {
 			let mut dm_guard = dm.lock().unwrap();
-			let update = {
+			let (message, update) = {
 				let Some(tab) = dm_guard.active_tab_mut() else {
 					return;
 				};
 				let target_pos = tab.session.page_offset(page);
-				navigation::move_to_offset_and_record_history(tab, target_pos)
+				// Capture the page's announcement while the document lock is held; it is
+				// spoken after focus has returned to the book, cutting off the focus chain.
+				let content = tab.session.first_content_line_after(target_pos);
+				let message = navigation::page_announcement(page, &content);
+				let update = navigation::move_to_offset_and_record_history(tab, target_pos);
+				(message, update)
 			};
 			drop(dm_guard);
-			update
+			(message, update)
 		};
 		navigation::persist_navigation_history(config, Some(&update));
+		navigation::announce_after_delay(frame, live_region_label, message);
 	}
 }
-
 pub(super) fn handle_go_to_percent(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 	let current_percent = {
 		let mut dm_guard = dm.lock().unwrap();
