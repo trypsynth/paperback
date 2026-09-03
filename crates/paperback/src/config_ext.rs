@@ -54,8 +54,20 @@ pub fn set_update_channel(config: &ConfigManager, channel: UpdateChannel) {
 ///
 /// On macOS app bundles: `~/Library/Application Support/Paperback/`.
 /// On Windows installer builds: `%APPDATA%\Paperback\`.
+/// On Linux, only when running from an AppImage (`$APPIMAGE` set — the same check
+/// `linux_integration.rs` uses): `$XDG_CONFIG_HOME/Paperback` (default `~/.config/Paperback`).
+/// An AppImage mounts itself read-only at a fresh temp path on every launch, so the
+/// exe-directory convention below is never writable and never persists between runs there;
+/// a portable Linux build (the plain extracted tar.gz binary, no `$APPIMAGE`) has no such
+/// problem and uses it like every other portable build.
 /// Otherwise: the directory containing the executable (portable convention).
 pub fn config_dir() -> PathBuf {
+	#[cfg(target_os = "linux")]
+	if env::var_os("APPIMAGE").is_some() {
+		let dir = xdg_config_home().join("Paperback");
+		let _ = fs::create_dir_all(&dir);
+		return dir;
+	}
 	let exe_dir = get_exe_directory();
 	#[cfg(target_os = "macos")]
 	if is_app_bundle(&exe_dir) {
@@ -65,13 +77,26 @@ pub fn config_dir() -> PathBuf {
 			return dir;
 		}
 	}
-	let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
-	if is_installed && let Some(appdata) = env::var_os("APPDATA") {
-		let dir = PathBuf::from(appdata).join("Paperback");
-		let _ = fs::create_dir_all(&dir);
-		return dir;
+	#[cfg(target_os = "windows")]
+	{
+		let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
+		if is_installed && let Some(appdata) = env::var_os("APPDATA") {
+			let dir = PathBuf::from(appdata).join("Paperback");
+			let _ = fs::create_dir_all(&dir);
+			return dir;
+		}
 	}
 	exe_dir
+}
+
+/// `$XDG_CONFIG_HOME`, falling back to `~/.config` per the XDG Base Directory spec.
+#[cfg(target_os = "linux")]
+fn xdg_config_home() -> PathBuf {
+	if let Some(dir) = env::var_os("XDG_CONFIG_HOME") {
+		return PathBuf::from(dir);
+	}
+	let home = env::var_os("HOME").unwrap_or_else(|| ".".into());
+	PathBuf::from(home).join(".config")
 }
 
 /// Returns the path to `Paperback.toml`.

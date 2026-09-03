@@ -22,26 +22,37 @@ const PDFIUM_MAC_X64_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-mac-x64.tgz";
 const PDFIUM_MAC_ARM64_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-mac-arm64.tgz";
+const PDFIUM_LINUX_X64_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-linux-x64.tgz";
+const PDFIUM_LINUX_ARM64_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-linux-arm64.tgz";
+
+pub fn copy_so() {
+	copy_prebuilt_lib("libpdfium.so", "PAPERBACK_PDFIUM_SO", pdfium_so_download_url_for_target);
+}
 
 pub fn copy_dylib() {
-	println!("cargo:rerun-if-env-changed=PAPERBACK_PDFIUM_DYLIB");
+	copy_prebuilt_lib("libpdfium.dylib", "PAPERBACK_PDFIUM_DYLIB", pdfium_dylib_download_url_for_target);
+}
+
+fn copy_prebuilt_lib(filename: &str, env_var: &str, url_for_target: fn() -> Option<&'static str>) {
+	println!("cargo:rerun-if-env-changed={env_var}");
 	println!("cargo:rerun-if-env-changed=PAPERBACK_SKIP_PDFIUM_DOWNLOAD");
 	println!("cargo:rerun-if-env-changed=PAPERBACK_REFRESH_PDFIUM");
-	let refresh =
-		env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
+	let refresh = pdfium_refresh_requested();
 	let Some(target_dir) = target_profile_dir() else {
-		println!("cargo:warning=Could not determine target output directory for libpdfium.dylib.");
+		println!("cargo:warning=Could not determine target output directory for {filename}.");
 		return;
 	};
-	let dest = target_dir.join("libpdfium.dylib");
-	if let Ok(path) = env::var("PAPERBACK_PDFIUM_DYLIB") {
+	let dest = target_dir.join(filename);
+	if let Ok(path) = env::var(env_var) {
 		let src = PathBuf::from(path);
 		if src.is_file() {
 			println!("cargo:rerun-if-changed={}", src.display());
 			if src != dest
 				&& let Err(err) = fs::copy(&src, &dest)
 			{
-				println!("cargo:warning=Failed to copy libpdfium.dylib from {}: {}", src.display(), err);
+				println!("cargo:warning=Failed to copy {filename} from {}: {}", src.display(), err);
 			}
 			return;
 		}
@@ -49,30 +60,41 @@ pub fn copy_dylib() {
 	if dest.exists() && !refresh {
 		return;
 	}
-	if let Err(err) = ensure_pdfium_dylib(&dest) {
+	if let Err(err) = ensure_prebuilt_lib(&dest, filename, url_for_target) {
 		println!(
-			"cargo:warning=libpdfium.dylib not found. Automatic download failed: {err}. Set PAPERBACK_PDFIUM_DYLIB or place libpdfium.dylib in the project root."
+			"cargo:warning={filename} not found. Automatic download failed: {err}. Set {env_var} or place {filename} in the project root."
 		);
 	} else if dest.exists() {
 		println!("cargo:rerun-if-changed={}", dest.display());
 	}
 }
 
-fn ensure_pdfium_dylib(dest: &Path) -> io::Result<()> {
+fn ensure_prebuilt_lib(dest: &Path, filename: &str, url_for_target: fn() -> Option<&'static str>) -> io::Result<()> {
 	let skip_download = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD")
 		.is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
 	if skip_download {
 		return Err(io::Error::other("download disabled by PAPERBACK_SKIP_PDFIUM_DOWNLOAD"));
 	}
-	let refresh =
-		env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
-	if dest.exists() && !refresh {
+	if dest.exists() && !pdfium_refresh_requested() {
 		return Ok(());
 	}
-	let Some(url) = pdfium_dylib_download_url_for_target() else {
-		return Err(io::Error::other("no PDFium URL configured for this macOS target architecture"));
+	let Some(url) = url_for_target() else {
+		return Err(io::Error::other("no PDFium URL configured for this target architecture"));
 	};
-	download_pdfium_dylib(url, dest)
+	download_and_extract_from_tgz(url, dest, filename)
+}
+
+fn pdfium_refresh_requested() -> bool {
+	env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+}
+
+fn pdfium_so_download_url_for_target() -> Option<&'static str> {
+	let arch = env::var("CARGO_CFG_TARGET_ARCH").ok()?;
+	match arch.as_str() {
+		"x86_64" => Some(PDFIUM_LINUX_X64_URL),
+		"aarch64" => Some(PDFIUM_LINUX_ARM64_URL),
+		_ => None,
+	}
 }
 
 fn pdfium_dylib_download_url_for_target() -> Option<&'static str> {
@@ -82,10 +104,6 @@ fn pdfium_dylib_download_url_for_target() -> Option<&'static str> {
 		"aarch64" => Some(PDFIUM_MAC_ARM64_URL),
 		_ => None,
 	}
-}
-
-fn download_pdfium_dylib(url: &str, dest_dylib: &Path) -> io::Result<()> {
-	download_and_extract_from_tgz(url, dest_dylib, "libpdfium.dylib")
 }
 
 /// Downloads a `.tgz` archive from `url` and unpacks the single entry named
