@@ -192,7 +192,9 @@ jobs:
         KEY_PATH="$RUNNER_TEMP/paperback.key"
         printf '%s' "$MINISIGN_KEY" > "$KEY_PATH"
         printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.tar.gz
-        printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.AppImage
+        if [ -f target/release/paperback.AppImage ]; then
+          printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.AppImage
+        fi
         rm -f "$KEY_PATH"
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
@@ -250,7 +252,9 @@ jobs:
         KEY_PATH="$RUNNER_TEMP/paperback.key"
         printf '%s' "$MINISIGN_KEY" > "$KEY_PATH"
         printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.tar.gz
-        printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.AppImage
+        if [ -f target/release/paperback.AppImage ]; then
+          printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.AppImage
+        fi
         rm -f "$KEY_PATH"
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
@@ -531,12 +535,12 @@ jobs:
         mv windows-arm64-build/paperback_setup.exe.minisig windows-arm64-build/paperback_setup-arm64.exe.minisig
         mv linux-build/paperback.tar.gz linux-build/paperback-x64.tar.gz
         mv linux-build/paperback.tar.gz.minisig linux-build/paperback-x64.tar.gz.minisig
-        mv linux-build/paperback.AppImage linux-build/paperback-x64.AppImage
-        mv linux-build/paperback.AppImage.minisig linux-build/paperback-x64.AppImage.minisig
+        [ -f linux-build/paperback.AppImage ] && mv linux-build/paperback.AppImage linux-build/paperback-x64.AppImage || true
+        [ -f linux-build/paperback.AppImage.minisig ] && mv linux-build/paperback.AppImage.minisig linux-build/paperback-x64.AppImage.minisig || true
         mv linux-arm64-build/paperback.tar.gz linux-arm64-build/paperback-arm64.tar.gz
         mv linux-arm64-build/paperback.tar.gz.minisig linux-arm64-build/paperback-arm64.tar.gz.minisig
-        mv linux-arm64-build/paperback.AppImage linux-arm64-build/paperback-arm64.AppImage
-        mv linux-arm64-build/paperback.AppImage.minisig linux-arm64-build/paperback-arm64.AppImage.minisig
+        [ -f linux-arm64-build/paperback.AppImage ] && mv linux-arm64-build/paperback.AppImage linux-arm64-build/paperback-arm64.AppImage || true
+        [ -f linux-arm64-build/paperback.AppImage.minisig ] && mv linux-arm64-build/paperback.AppImage.minisig linux-arm64-build/paperback-arm64.AppImage.minisig || true
     - name: Get latest tag reachable from HEAD
       id: get_tag
       shell: bash
