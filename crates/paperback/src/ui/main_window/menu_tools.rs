@@ -114,11 +114,16 @@ pub(super) fn handle_elements_list(
 	navigation::announce_after_delay(frame, live_region_label, message);
 }
 
-/// The announcement for landing on document offset `offset`: the text of the line the jump
-/// lands on, falling back to the bare line number when that line is blank. Mirrors how
-/// Go to Line announces its jumps, so a jump from the Elements list reads the same as one
-/// made by heading/link navigation.
+/// The announcement for landing on document offset `offset`. A jump to a page marker reads
+/// like page navigation ("Page N: <first content line>", skipping the page's fabricated
+/// "Page N" header); any other jump reads the line it lands on, falling back to the bare
+/// line number when that line is blank.
 fn elements_announcement(session: &DocumentSession, offset: i64) -> String {
+	let page_count = i32::try_from(session.page_count()).unwrap_or(0);
+	if let Some(page) = (1..=page_count).find(|&page| session.page_offset(page) == offset) {
+		let content = session.first_content_line_after(offset);
+		return navigation::page_announcement(page, &content);
+	}
 	let content = session.get_line_text(offset).trim().to_string();
 	if content.is_empty() {
 		// TRANSLATORS: Announced when landing on a blank line; %d is the line number
