@@ -7,7 +7,11 @@ use std::cell::RefCell;
 use std::{env, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{
-	config::ConfigManager, document::DocumentStats, export::ExportFormat, parser::is_external_url, session::SourceView,
+	config::ConfigManager,
+	document::DocumentStats,
+	export::ExportFormat,
+	parser::is_external_url,
+	session::{DocumentSession, SourceView},
 };
 use patois::t;
 use wxdragon::prelude::*;
@@ -61,23 +65,56 @@ pub(super) fn handle_table_of_contents(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 ) {
-	let mut dm_guard = dm.lock().unwrap();
-	if let Some(tab) = dm_guard.active_tab_mut() {
-		let toc_items = &tab.session.handle().document().toc_items;
-		if toc_items.is_empty() {
-			// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-			live_region::announce(live_region_label, &t("No table of contents."));
-			return;
-		}
-		let current_pos = navigation::doc_caret(tab);
-		let current_pos_usize = usize::try_from(current_pos).unwrap_or(0);
-		let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos_usize);
-		if let Some(offset) =
-			dialogs::show_toc_dialog(frame, toc_items, i32::try_from(current_toc_offset).unwrap_or(i32::MAX))
-		{
-			let update = navigation::move_to_offset_and_record_history(tab, i64::from(offset));
-			navigation::persist_navigation_history(config, Some(&update));
-		}
+	let (message, update) = {
+		let mut dm_guard = dm.lock().unwrap();
+		let (message, update) = {
+			let Some(tab) = dm_guard.active_tab_mut() else {
+				return;
+			};
+			let toc_items = &tab.session.handle().document().toc_items;
+			if toc_items.is_empty() {
+				// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+				live_region::announce(live_region_label, &t("No table of contents."));
+				return;
+			}
+			let current_pos = navigation::doc_caret(tab);
+			let current_pos_usize = usize::try_from(current_pos).unwrap_or(0);
+			let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos_usize);
+			let Some(offset) =
+				dialogs::show_toc_dialog(frame, toc_items, i32::try_from(current_toc_offset).unwrap_or(i32::MAX))
+			else {
+				return;
+			};
+			let offset = i64::from(offset);
+			let update = navigation::move_to_offset_and_record_history(tab, offset);
+			// Capture the entry's announcement while the document lock is held; it is spoken
+			// after focus has returned to the book, cutting off the focus chain.
+			let message = toc_announcement(&tab.session, offset);
+			(message, update)
+		};
+		drop(dm_guard);
+		(message, update)
+	};
+	navigation::persist_navigation_history(config, Some(&update));
+	navigation::announce_after_delay(frame, live_region_label, message);
+}
+
+/// The announcement for landing on document offset `offset` after picking a table of contents
+/// entry. Mirrors the Elements dialog: an entry that points at a page marker reads like page
+/// navigation ("Page N: <first content line>"); any other entry reads the line it lands on,
+/// falling back to the bare line number when that line is blank.
+fn toc_announcement(session: &DocumentSession, offset: i64) -> String {
+	let page_count = i32::try_from(session.page_count()).unwrap_or(0);
+	if let Some(page) = (1..=page_count).find(|&page| session.page_offset(page) == offset) {
+		let content = session.first_content_line_after(offset);
+		return navigation::page_announcement(page, &content);
+	}
+	let content = session.get_line_text(offset).trim().to_string();
+	if content.is_empty() {
+		// TRANSLATORS: Announced when landing on a blank line; %d is the line number
+		t("Line %d").replacen("%d", &session.line_from_position(offset).to_string(), 1)
+	} else {
+		content
 	}
 }
 
