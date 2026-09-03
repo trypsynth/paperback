@@ -23,7 +23,7 @@ mod document_info;
 pub use document_info::show_document_info_dialog;
 mod duration_format;
 mod elements;
-pub use elements::show_elements_dialog;
+pub use elements::{ElementsKind, show_elements_dialog};
 mod go_to;
 mod go_to_line;
 pub use go_to_line::show_go_to_line_dialog;
