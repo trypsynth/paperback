@@ -13,7 +13,32 @@ const VIEW_HEADINGS: u32 = 0;
 const VIEW_LINKS: u32 = 1;
 const VIEW_PAGES: u32 = 2;
 
-pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+/// Which view of the dialog a jump came from, so the caller can announce it appropriately: a
+/// page row announces like page navigation, while a heading or link reads the line it lands on.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ElementsKind {
+	Heading,
+	Link,
+	Page,
+}
+
+impl ElementsKind {
+	/// Maps a `VIEW_*` choice index to the kind of element it lists.
+	const fn from_view(selection: u32) -> Self {
+		match selection {
+			VIEW_HEADINGS => Self::Heading,
+			VIEW_PAGES => Self::Page,
+			// Any other flat content view reads as a link until it needs its own announcement.
+			_ => Self::Link,
+		}
+	}
+}
+
+pub fn show_elements_dialog(
+	parent: &Frame,
+	session: &DocumentSession,
+	current_pos: i64,
+) -> Option<(i64, ElementsKind)> {
 	#[cfg(not(target_os = "windows"))]
 	return show_elements_dialog_dv(parent, session, current_pos);
 	#[cfg(target_os = "windows")]
@@ -116,7 +141,7 @@ struct ElementsDialogUiDv {
 }
 
 #[cfg(not(target_os = "windows"))]
-fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<(i64, ElementsKind)> {
 	// TRANSLATORS: Title of the Elements dialog
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let ElementsDialogUiDv { content_sizer, view_choice, headings_tree, content_list } =
@@ -154,7 +179,8 @@ fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_po
 	headings_tree.set_focus();
 	if dialog.show_modal() == wxdragon::id::ID_OK {
 		let offset = selected_offset.get();
-		if offset >= 0 { Some(offset) } else { None }
+		let kind = ElementsKind::from_view(view_choice.get_selection().unwrap_or(VIEW_HEADINGS));
+		if offset >= 0 { Some((offset, kind)) } else { None }
 	} else {
 		None
 	}
@@ -377,7 +403,7 @@ struct ElementsDialogUi {
 }
 
 #[cfg(target_os = "windows")]
-fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<(i64, ElementsKind)> {
 	// TRANSLATORS: Title of the Elements dialog
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let ElementsDialogUi { content_sizer, view_choice, headings_tree, content_list } = build_elements_dialog_ui(dialog);
@@ -403,7 +429,8 @@ fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_po
 	headings_tree.set_focus();
 	if dialog.show_modal() == ID_OK {
 		let offset = selected_offset.get();
-		if offset >= 0 { Some(offset) } else { None }
+		let kind = ElementsKind::from_view(view_choice.get_selection().unwrap_or(VIEW_HEADINGS));
+		if offset >= 0 { Some((offset, kind)) } else { None }
 	} else {
 		None
 	}

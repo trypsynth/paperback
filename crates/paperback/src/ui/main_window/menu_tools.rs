@@ -98,13 +98,13 @@ pub(super) fn handle_elements_list(
 				return;
 			};
 			let current_pos = navigation::doc_caret(tab);
-			let Some(offset) = dialogs::show_elements_dialog(frame, &tab.session, current_pos) else {
+			let Some((offset, kind)) = dialogs::show_elements_dialog(frame, &tab.session, current_pos) else {
 				return;
 			};
 			let update = navigation::move_to_offset_and_record_history(tab, offset);
 			// Capture the line the jump lands on while the document lock is held; it is
 			// spoken after focus has returned to the book, cutting off the focus chain.
-			let message = elements_announcement(&tab.session, offset);
+			let message = elements_announcement(&tab.session, offset, kind);
 			(message, update)
 		};
 		drop(dm_guard);
@@ -114,15 +114,20 @@ pub(super) fn handle_elements_list(
 	navigation::announce_after_delay(frame, live_region_label, message);
 }
 
-/// The announcement for landing on document offset `offset`. A jump to a page marker reads
-/// like page navigation ("Page N: <first content line>", skipping the page's fabricated
-/// "Page N" header); any other jump reads the line it lands on, falling back to the bare
-/// line number when that line is blank.
-fn elements_announcement(session: &DocumentSession, offset: i64) -> String {
-	let page_count = i32::try_from(session.page_count()).unwrap_or(0);
-	if let Some(page) = (1..=page_count).find(|&page| session.page_offset(page) == offset) {
-		let content = session.first_content_line_after(offset);
-		return navigation::page_announcement(page, &content);
+/// The announcement for landing on document offset `offset` from the Elements view `kind`.
+/// Only a jump from the Pages view reads like page navigation ("Page N: <first content
+/// line>", skipping the page's fabricated "Page N" header), since a page row's target is a
+/// page marker; a heading or link reads the line it lands on, even when that element happens
+/// to begin at the top of a page (there its offset coincides with the page marker, and a
+/// "Page N:" prefix would be redundant). Falls back to the bare line number when the
+/// destination line is blank.
+fn elements_announcement(session: &DocumentSession, offset: i64, kind: dialogs::ElementsKind) -> String {
+	if kind == dialogs::ElementsKind::Page {
+		let page_count = i32::try_from(session.page_count()).unwrap_or(0);
+		if let Some(page) = (1..=page_count).find(|&page| session.page_offset(page) == offset) {
+			let content = session.first_content_line_after(offset);
+			return navigation::page_announcement(page, &content);
+		}
 	}
 	let content = session.get_line_text(offset).trim().to_string();
 	if content.is_empty() {
