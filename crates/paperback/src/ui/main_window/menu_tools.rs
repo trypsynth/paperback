@@ -7,7 +7,11 @@ use std::cell::RefCell;
 use std::{env, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{
-	config::ConfigManager, document::DocumentStats, export::ExportFormat, parser::is_external_url, session::SourceView,
+	config::ConfigManager,
+	document::DocumentStats,
+	export::ExportFormat,
+	parser::is_external_url,
+	session::{DocumentSession, SourceView},
 };
 use patois::t;
 use wxdragon::prelude::*;
@@ -81,14 +85,46 @@ pub(super) fn handle_table_of_contents(
 	}
 }
 
-pub(super) fn handle_elements_list(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
-	let mut dm_guard = dm.lock().unwrap();
-	if let Some(tab) = dm_guard.active_tab_mut() {
-		let current_pos = navigation::doc_caret(tab);
-		if let Some(offset) = dialogs::show_elements_dialog(frame, &tab.session, current_pos) {
+pub(super) fn handle_elements_list(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+) {
+	let (message, update) = {
+		let mut dm_guard = dm.lock().unwrap();
+		let (message, update) = {
+			let Some(tab) = dm_guard.active_tab_mut() else {
+				return;
+			};
+			let current_pos = navigation::doc_caret(tab);
+			let Some(offset) = dialogs::show_elements_dialog(frame, &tab.session, current_pos) else {
+				return;
+			};
 			let update = navigation::move_to_offset_and_record_history(tab, offset);
-			navigation::persist_navigation_history(config, Some(&update));
-		}
+			// Capture the line the jump lands on while the document lock is held; it is
+			// spoken after focus has returned to the book, cutting off the focus chain.
+			let message = elements_announcement(&tab.session, offset);
+			(message, update)
+		};
+		drop(dm_guard);
+		(message, update)
+	};
+	navigation::persist_navigation_history(config, Some(&update));
+	navigation::announce_after_delay(frame, live_region_label, message);
+}
+
+/// The announcement for landing on document offset `offset`: the text of the line the jump
+/// lands on, falling back to the bare line number when that line is blank. Mirrors how
+/// Go to Line announces its jumps, so a jump from the Elements list reads the same as one
+/// made by heading/link navigation.
+fn elements_announcement(session: &DocumentSession, offset: i64) -> String {
+	let content = session.get_line_text(offset).trim().to_string();
+	if content.is_empty() {
+		// TRANSLATORS: Announced when landing on a blank line; %d is the line number
+		t("Line %d").replacen("%d", &session.line_from_position(offset).to_string(), 1)
+	} else {
+		content
 	}
 }
 

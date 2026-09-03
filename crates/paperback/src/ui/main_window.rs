@@ -725,7 +725,7 @@ impl MainWindow {
 					menu_tools::handle_table_of_contents(&frame_copy, &dm, &config, live_region_label);
 				}
 				menu_ids::ELEMENTS_LIST => {
-					menu_tools::handle_elements_list(&frame_copy, &dm, &config);
+					menu_tools::handle_elements_list(&frame_copy, &dm, &config, live_region_label);
 				}
 				menu_ids::OPEN_IN_WEB_VIEW => {
 					menu_tools::handle_open_in_web_view(&frame_copy, &dm);
