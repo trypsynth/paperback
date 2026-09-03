@@ -171,14 +171,15 @@ fn bind_elements_view_toggle_dv(
 ) {
 	view_choice.on_selection_changed(move |_| {
 		let selection = view_choice.get_selection().unwrap_or(0);
+		// Switch which pane is shown. Focus is deliberately left where it is: the change
+		// comes from the user arrowing through the view choice, and throwing them into the
+		// newly shown pane with every arrow makes the dropdown impossible to browse.
 		if selection == 0 {
 			headings_tree.show(true);
 			links_list.show(false);
-			headings_tree.set_focus();
 		} else {
 			headings_tree.show(false);
 			links_list.show(true);
-			links_list.set_focus();
 		}
 		dialog.layout();
 	});
@@ -402,14 +403,15 @@ fn bind_elements_view_toggle(view_choice: Choice, headings_tree: TreeCtrl, links
 	let dialog_for_layout = dialog;
 	view_choice.on_selection_changed(move |_| {
 		let selection = view_choice.get_selection().unwrap_or(0);
+		// Switch which pane is shown. Focus is deliberately left where it is: the change
+		// comes from the user arrowing through the view choice, and throwing them into the
+		// newly shown pane with every arrow makes the dropdown impossible to browse.
 		if selection == 0 {
 			headings_tree_for_choice.show(true);
 			links_list_for_choice.show(false);
-			headings_tree_for_choice.set_focus();
 		} else {
 			headings_tree_for_choice.show(false);
 			links_list_for_choice.show(true);
-			links_list_for_choice.set_focus();
 		}
 		dialog_for_layout.layout();
 	});
