@@ -100,21 +100,17 @@ pub(super) fn handle_table_of_contents(
 }
 
 /// The announcement for landing on document offset `offset` after picking a table of contents
-/// entry. Mirrors the Elements dialog: an entry that points at a page marker reads like page
-/// navigation ("Page N: <first content line>"); any other entry reads the line it lands on,
-/// falling back to the bare line number when that line is blank.
+/// entry. Always reads the content line at the destination, never announcing it as a page jump:
+/// a section that begins at the top of a page shares its offset with the page marker, and a
+/// "Page N:" prefix there would be redundant. Falls back to the bare line number when the
+/// destination has no content line.
 fn toc_announcement(session: &DocumentSession, offset: i64) -> String {
-	let page_count = i32::try_from(session.page_count()).unwrap_or(0);
-	if let Some(page) = (1..=page_count).find(|&page| session.page_offset(page) == offset) {
-		let content = session.first_content_line_after(offset);
-		return navigation::page_announcement(page, &content);
-	}
-	let content = session.get_line_text(offset).trim().to_string();
-	if content.is_empty() {
+	let content = session.first_content_line_after(offset);
+	if content.trim().is_empty() {
 		// TRANSLATORS: Announced when landing on a blank line; %d is the line number
 		t("Line %d").replacen("%d", &session.line_from_position(offset).to_string(), 1)
 	} else {
-		content
+		content.trim().to_string()
 	}
 }
 
