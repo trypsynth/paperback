@@ -65,23 +65,52 @@ pub(super) fn handle_table_of_contents(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 ) {
-	let mut dm_guard = dm.lock().unwrap();
-	if let Some(tab) = dm_guard.active_tab_mut() {
-		let toc_items = &tab.session.handle().document().toc_items;
-		if toc_items.is_empty() {
-			// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-			live_region::announce(live_region_label, &t("No table of contents."));
-			return;
-		}
-		let current_pos = navigation::doc_caret(tab);
-		let current_pos_usize = usize::try_from(current_pos).unwrap_or(0);
-		let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos_usize);
-		if let Some(offset) =
-			dialogs::show_toc_dialog(frame, toc_items, i32::try_from(current_toc_offset).unwrap_or(i32::MAX))
-		{
-			let update = navigation::move_to_offset_and_record_history(tab, i64::from(offset));
-			navigation::persist_navigation_history(config, Some(&update));
-		}
+	let (message, update) = {
+		let mut dm_guard = dm.lock().unwrap();
+		let (message, update) = {
+			let Some(tab) = dm_guard.active_tab_mut() else {
+				return;
+			};
+			let toc_items = &tab.session.handle().document().toc_items;
+			if toc_items.is_empty() {
+				// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+				live_region::announce(live_region_label, &t("No table of contents."));
+				return;
+			}
+			let current_pos = navigation::doc_caret(tab);
+			let current_pos_usize = usize::try_from(current_pos).unwrap_or(0);
+			let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos_usize);
+			let Some(offset) =
+				dialogs::show_toc_dialog(frame, toc_items, i32::try_from(current_toc_offset).unwrap_or(i32::MAX))
+			else {
+				return;
+			};
+			let offset = i64::from(offset);
+			let update = navigation::move_to_offset_and_record_history(tab, offset);
+			// Capture the entry's announcement while the document lock is held; it is spoken
+			// after focus has returned to the book, cutting off the focus chain.
+			let message = toc_announcement(&tab.session, offset);
+			(message, update)
+		};
+		drop(dm_guard);
+		(message, update)
+	};
+	navigation::persist_navigation_history(config, Some(&update));
+	navigation::announce_after_delay(frame, live_region_label, message);
+}
+
+/// The announcement for landing on document offset `offset` after picking a table of contents
+/// entry. Always reads the content line at the destination, never announcing it as a page jump:
+/// a section that begins at the top of a page shares its offset with the page marker, and a
+/// "Page N:" prefix there would be redundant. Falls back to the bare line number when the
+/// destination has no content line.
+fn toc_announcement(session: &DocumentSession, offset: i64) -> String {
+	let content = session.first_content_line_after(offset);
+	if content.trim().is_empty() {
+		// TRANSLATORS: Announced when landing on a blank line; %d is the line number
+		t("Line %d").replacen("%d", &session.line_from_position(offset).to_string(), 1)
+	} else {
+		content.trim().to_string()
 	}
 }
 
