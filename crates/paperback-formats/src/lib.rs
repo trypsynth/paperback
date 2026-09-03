@@ -163,6 +163,7 @@ formats! {
 	M4B {
 		name: "M4B Audiobooks",
 		extensions: ["m4b"],
+		mime_types: ["audio/x-m4b"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_AUDIO,
 	},
 	MOBI {
