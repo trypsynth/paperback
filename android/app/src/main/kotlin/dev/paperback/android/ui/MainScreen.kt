@@ -498,9 +498,20 @@ fun MainScreen(
 									.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
 							}
 							if (!isTextMode) {
+								// An audio-only book's buffer is one blank line per narration file, so a
+								// share of its characters says nothing about how far in the reader is,
+								// and its recording is no better: a plain zip of narration files gives
+								// every clip the same placeholder duration, so a share of the running
+								// time is just as made up. It goes without a reading rather than with
+								// a wrong one.
+								val session = docState.session
+								val progressPercent = remember(session, docState.isAudioOnly, ttsPosition) {
+									if (docState.isAudioOnly) null else session.getStatusInfo(ttsPosition).percentage
+								}
 								ReadAloudPane(
 									segmentText = currentSegmentText,
 									textStyle = readability.textStyle,
+									progressPercent = progressPercent,
 									sleepTimerRemaining = sleepTimerRemaining,
 									onCancelSleepTimer = { viewModel.cancelSleepTimer() }
 								)

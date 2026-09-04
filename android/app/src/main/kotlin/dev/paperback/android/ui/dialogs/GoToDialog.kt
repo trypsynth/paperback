@@ -10,9 +10,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -150,16 +155,33 @@ fun GoToDialog(
 					Spacer(modifier = Modifier.height(16.dp))
 				}
 				if (selectedMode == GO_TO_PERCENTAGE) {
-					Text("$sliderPercent%", style = MaterialTheme.typography.labelLarge)
-					Slider(
-						value = sliderPercent.toFloat(),
-						onValueChange = { sliderPercent = kotlin.math.round(it).toInt() },
-						valueRange = 0f..100f,
-						steps = 99,
-						modifier = Modifier.fillMaxWidth().semantics {
+					// The track draws one tick per step, which at a hundred of them reads as a dotted
+					// line rather than a slider. Carrying the range info out here lets the visible
+					// slider drop its ticks while TalkBack still swipes a percent at a time.
+					Column(
+						modifier = Modifier.clearAndSetSemantics {
+							contentDescription = goToModeName(GO_TO_PERCENTAGE)
 							stateDescription = "$sliderPercent percent"
+							progressBarRangeInfo = ProgressBarRangeInfo(
+								current = sliderPercent.toFloat(),
+								range = 0f..100f,
+								steps = 99
+							)
+							setProgress { targetValue ->
+								sliderPercent = kotlin.math.round(targetValue).toInt()
+								true
+							}
 						}
-					)
+					) {
+						Text("$sliderPercent%", style = MaterialTheme.typography.labelLarge)
+						Slider(
+							value = sliderPercent.toFloat(),
+							onValueChange = { sliderPercent = kotlin.math.round(it).toInt() },
+							valueRange = 0f..100f,
+							steps = 0,
+							modifier = Modifier.fillMaxWidth()
+						)
+					}
 				} else {
 					TextField(
 						value = inputValue,

@@ -80,11 +80,14 @@ fun TtsBottomBar(
 			t("Next {}").replace("{}", unitName)
 	}
 
-	BottomAppBar(
-		modifier = modifier,
-		actions = {
+	BottomAppBar(modifier = modifier) {
+		// Weighted spacers on either side of the transport controls would only centre them in what
+		// is left over after the unit selector, which puts them half a selector's width right of
+		// the bar's own centre. Laying the two out over each other instead lets each align against
+		// the bar: the selector to its start, the transport to its middle.
+		Box(modifier = Modifier.fillMaxWidth()) {
 			// Unit selector: chip for sighted users (tap to open menu), swipe slider for TalkBack.
-			Box {
+			Box(modifier = Modifier.align(Alignment.CenterStart)) {
 				FilterChip(
 					selected = false,
 					onClick = { dropdownExpanded = true },
@@ -137,60 +140,57 @@ fun TtsBottomBar(
 				}
 			}
 
-			// BottomAppBar start-aligns its actions and keeps the end for a floating action
-			// button, which this bar does not have, so without these the four controls crowd
-			// into the left edge against a wide empty gap. The weights centre back/play/forward
-			// and leave the unit selector where it is, at the start.
-			Spacer(Modifier.weight(1f))
-
-			IconButton(onClick = onPrevButton) {
-				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = prevLabel)
-			}
-
-			// Play/pause: tap to play/pause, swipe up/down (TalkBack) to seek by the current unit.
-			Box(
-				modifier = Modifier
-					.size(48.dp)
-					.clip(CircleShape)
-					.combinedClickable(onClick = onPlayPause)
-					.clearAndSetSemantics {
-						role = Role.Button
-						// TRANSLATORS: TalkBack label for the central play/pause control in the read-aloud bar
-						contentDescription = if (isSpeaking) t("Pause") else t("Play")
-						stateDescription = ZWSP
-						progressBarRangeInfo = ProgressBarRangeInfo(
-							current = (SEEK_RANGE / 2).toFloat(),
-							range = 0f..SEEK_RANGE.toFloat(),
-							steps = SEEK_RANGE - 1,
-						)
-						setProgress { targetValue ->
-							val current = SEEK_RANGE / 2
-							val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
-							when {
-								newPos > current -> if (swipeUpMovesForward) onNext() else onPrev()
-								newPos < current -> if (swipeUpMovesForward) onPrev() else onNext()
-							}
-							true
-						}
-						onClick(label = "Activate") {
-							onPlayPause()
-							true
-						}
-					},
-				contentAlignment = Alignment.Center,
+			Row(
+				modifier = Modifier.align(Alignment.Center),
+				verticalAlignment = Alignment.CenterVertically
 			) {
-				if (isSpeaking) {
-					Icon(Icons.Filled.Pause, contentDescription = null)
-				} else {
-					Icon(Icons.Filled.PlayArrow, contentDescription = null)
+				IconButton(onClick = onPrevButton) {
+					Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = prevLabel)
+				}
+
+				// Play/pause: tap to play/pause, swipe up/down (TalkBack) to seek by the current unit.
+				Box(
+					modifier = Modifier
+						.size(48.dp)
+						.clip(CircleShape)
+						.combinedClickable(onClick = onPlayPause)
+						.clearAndSetSemantics {
+							role = Role.Button
+							// TRANSLATORS: TalkBack label for the central play/pause control in the read-aloud bar
+							contentDescription = if (isSpeaking) t("Pause") else t("Play")
+							stateDescription = ZWSP
+							progressBarRangeInfo = ProgressBarRangeInfo(
+								current = (SEEK_RANGE / 2).toFloat(),
+								range = 0f..SEEK_RANGE.toFloat(),
+								steps = SEEK_RANGE - 1,
+							)
+							setProgress { targetValue ->
+								val current = SEEK_RANGE / 2
+								val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
+								when {
+									newPos > current -> if (swipeUpMovesForward) onNext() else onPrev()
+									newPos < current -> if (swipeUpMovesForward) onPrev() else onNext()
+								}
+								true
+							}
+							onClick(label = "Activate") {
+								onPlayPause()
+								true
+							}
+						},
+					contentAlignment = Alignment.Center,
+				) {
+					if (isSpeaking) {
+						Icon(Icons.Filled.Pause, contentDescription = null)
+					} else {
+						Icon(Icons.Filled.PlayArrow, contentDescription = null)
+					}
+				}
+
+				IconButton(onClick = onNextButton) {
+					Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = nextLabel)
 				}
 			}
-
-			IconButton(onClick = onNextButton) {
-				Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = nextLabel)
-			}
-
-			Spacer(Modifier.weight(1f))
-		},
-	)
+		}
+	}
 }

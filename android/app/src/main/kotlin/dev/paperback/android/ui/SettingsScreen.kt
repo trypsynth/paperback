@@ -208,11 +208,15 @@ fun SettingsScreen(
 					}
 				) {
 					Text("$textSizeLabel: $textScalePercent%", style = MaterialTheme.typography.labelLarge)
+					// The track draws one tick per step, which at this many steps reads as a dotted
+					// line rather than a slider. snapScale already pins the value to whole steps, and
+					// the step count TalkBack swipes by lives in the semantics block above, so the
+					// visible slider gives up its ticks without either behaviour changing.
 					Slider(
 						value = textScalePercent.toFloat(),
 						onValueChange = { settings.textScalePercent.set(snapScale(it)) },
 						valueRange = MIN_SCALE..MAX_SCALE,
-						steps = SCALE_STEPS
+						steps = 0
 					)
 				}
 				Spacer(modifier = Modifier.height(16.dp))
@@ -363,7 +367,7 @@ fun SettingsScreen(
 						value = if (isSystemDefault) 50f else currentSpeechRate.toFloat(),
 						onValueChange = { viewModel.ttsManager.setSpeechRate(kotlin.math.round(it).toInt()) },
 						valueRange = 0f..100f,
-						steps = 99,
+						steps = 0,
 						enabled = !isSystemDefault
 					)
 				}
@@ -400,7 +404,7 @@ fun SettingsScreen(
 						value = if (isSystemDefault) 50f else currentPitch.toFloat(),
 						onValueChange = { viewModel.ttsManager.setPitch(kotlin.math.round(it).toInt()) },
 						valueRange = 0f..100f,
-						steps = 99,
+						steps = 0,
 						enabled = !isSystemDefault
 					)
 				}
