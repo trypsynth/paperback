@@ -3,9 +3,14 @@ package dev.paperback.android.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -83,7 +88,13 @@ fun ElementsScreen(
 					flattenVisibleTreeIndices(items.size, levelAt, expandedHeadingIndices)
 				}
 
-				LazyColumn(modifier = Modifier.fillMaxSize()) {
+				// The list runs to the bottom of the window and so under the navigation bar, which
+				// leaves its last row half covered without this. The top bar pads itself, so the
+				// bottom is the only side that belongs here.
+				LazyColumn(
+					modifier = Modifier.fillMaxSize(),
+					contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues()
+				) {
 					items(visibleHeadingIndices.size) { i ->
 						val originalIndex = visibleHeadingIndices[i]
 						val item = items[originalIndex]
@@ -124,7 +135,13 @@ fun ElementsScreen(
 					}
 				}
 			} else {
-				LazyColumn(modifier = Modifier.fillMaxSize()) {
+				// The list runs to the bottom of the window and so under the navigation bar, which
+				// leaves its last row half covered without this. The top bar pads itself, so the
+				// bottom is the only side that belongs here.
+				LazyColumn(
+					modifier = Modifier.fillMaxSize(),
+					contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues()
+				) {
 					links?.items?.let { items ->
 						items(items) { item ->
 							Row(

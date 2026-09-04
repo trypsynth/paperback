@@ -78,7 +78,10 @@ fun TocScreen(
 			LazyColumn(
 				state = listState,
 				modifier = Modifier.fillMaxSize(),
-				contentPadding = PaddingValues(bottom = 32.dp)
+				// The list runs to the bottom of the window and so under the navigation bar, which
+				// leaves its last row half covered without this. The top bar pads itself, so the
+				// bottom is the only side that belongs here.
+				contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues()
 			) {
 				items(visibleTocIndices.size) { i ->
 					val originalIndex = visibleTocIndices[i]

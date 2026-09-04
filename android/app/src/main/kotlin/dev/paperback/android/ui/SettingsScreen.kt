@@ -119,6 +119,9 @@ fun SettingsScreen(
 					.fillMaxSize()
 					.verticalScroll(rememberScrollState())
 					.padding(16.dp)
+					// Scrolled to the end, Play Sample otherwise sits under the navigation bar. The
+					// top bar pads itself, so the bottom is the only side that belongs here.
+					.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
 			) {
 				// TRANSLATORS: Section heading for general (non-speech) settings
 				Text(
