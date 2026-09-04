@@ -15,7 +15,7 @@ anyhow = "1.0.104"
 base64 = "0.23.1"
 bitflags = "2.13.1"
 rstest = "0.26.1"
-toml = "1.1.4"
+toml = "1.1.5"
 
 # Lint policy for every crate in the workspace; each member opts in with `[lints] workspace = true`.
 # `clippy::all` is denied so CI fails on it. The pedantic and nursery groups are warnings we're
