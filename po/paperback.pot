@@ -8,15 +8,27 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-03 01:48+0000\n"
+"POT-Creation-Date: 2026-09-03 19:23-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
+#. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
+#. from a shell. Mirrors the Windows installer's "Add Paperback directory to PATH" task.
+msgid "Add the pb command-line tool to PATH"
+msgstr ""
+
+#. TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
+#. multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
+#. than tied to one format, same as the Windows installer's "assoc_zip" task.
+msgid "ZIP Archives (.zip)"
+msgstr ""
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -717,6 +729,16 @@ msgid_plural "%d seconds"
 msgstr[0] ""
 msgstr[1] ""
 
+#. TRANSLATORS: A page in the Elements list with no readable first line; %d is the page number
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+msgid "Page %d"
+msgstr ""
+
+#. TRANSLATORS: A page in the Elements list; %d is the page number, %s is the page's first line of text
+#. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
+msgid "Page %d: %s"
+msgstr ""
+
 #. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr ""
@@ -731,6 +753,10 @@ msgstr ""
 
 #. TRANSLATORS: Choice option in the view dropdown to show links list
 msgid "Links"
+msgstr ""
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of pages
+msgid "Pages"
 msgstr ""
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
@@ -801,6 +827,18 @@ msgstr ""
 
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 msgid "Percent out of range."
+msgstr ""
+
+#. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
+msgid "Set Up Paperback"
+msgstr ""
+
+#. TRANSLATORS: Explains the checkbox list below in the Linux file-association setup dialog
+msgid "Choose which file types should open in Paperback:"
+msgstr ""
+
+#. TRANSLATORS: Confirms the file association choices in the Linux setup dialog and applies them
+msgid "Set Up"
 msgstr ""
 
 #. TRANSLATORS: Title of the Open As dialog
@@ -1946,14 +1984,6 @@ msgstr ""
 msgid " link"
 msgstr ""
 
-#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-msgid "Page %d"
-msgstr ""
-
-#. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-msgid "Page %d: %s"
-msgstr ""
-
 #. TRANSLATORS: Announced when moving forward/backward through the caret position history
 msgid "Navigated to next position."
 msgstr ""
@@ -2768,7 +2798,7 @@ msgstr ""
 msgid "Switch to Text Mode"
 msgstr ""
 
-#. TRANSLATORS: Heading above the short list of recently opened documents shown when no document is open
+#. TRANSLATORS: Menu item to open the list of recently opened documents
 #: swift
 msgid "Recent Documents"
 msgstr ""
@@ -3018,12 +3048,12 @@ msgstr ""
 msgid "Scope"
 msgstr ""
 
-#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
+#. TRANSLATORS: Rule scope option: the rule matches within a single word
 #: swift
 msgid "Word"
 msgstr ""
 
-#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
+#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
 #: swift
 msgid "Paragraph"
 msgstr ""
@@ -3121,7 +3151,7 @@ msgstr ""
 msgid "Minutes"
 msgstr ""
 
-#. TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
+#. TRANSLATORS: Button that dismisses the keyboard after typing a custom sleep timer duration
 #: swift
 msgid "Done"
 msgstr ""
@@ -3390,7 +3420,7 @@ msgstr ""
 msgid "words"
 msgstr ""
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr ""
