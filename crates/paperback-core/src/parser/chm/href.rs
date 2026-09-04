@@ -26,3 +26,6 @@ pub(super) fn resolve_chm_href(current_file: &str, href: &str) -> String {
 		_ => resolved_path,
 	}
 }
+
+#[cfg(test)]
+mod tests;
