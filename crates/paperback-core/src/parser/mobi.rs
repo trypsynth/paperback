@@ -216,16 +216,11 @@ impl Parser for MobiParser {
 		}
 		let mut extra_data_flags = 0u32;
 		let mobi_header = &rec0[mobi_header_offset..];
-		if mobi_header.len() >= 24 {
-			let mobi_version = u32::from_be_bytes([mobi_header[20], mobi_header[21], mobi_header[22], mobi_header[23]]);
-			if mobi_version == 8 && mobi_header.len() >= 244 {
-				tracing::debug!("using kf8 extra data flags offset");
-				extra_data_flags =
-					u32::from_be_bytes([mobi_header[224], mobi_header[225], mobi_header[226], mobi_header[227]]);
-			} else {
-				tracing::debug!("using legacy extra data flags offset");
-				extra_data_flags = u32::from(u16::from_be_bytes([mobi_header[242], mobi_header[243]]));
-			}
+		// The trailing-data flags live at absolute record-0 offset 0xF2 (242), a fixed 2-byte
+		// field regardless of MOBI version; that's 226 bytes into `mobi_header`, which starts
+		// at record-0 offset 16.
+		if mobi_header.len() >= 228 {
+			extra_data_flags = u32::from(u16::from_be_bytes([mobi_header[226], mobi_header[227]]));
 			if extra_data_flags == 0xFFFFFFFF {
 				extra_data_flags = 0;
 			}
