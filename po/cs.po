@@ -7,213 +7,873 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
-"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-06-03 18:57+0530\n"
-"PO-Revision-Date: 2026-06-12 00:53+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-03 19:23-0600\n"
+"PO-Revision-Date: 2026-09-04 10:38+0200\n"
 "Last-Translator: 4Sense Gaming <lukas@4sensegaming.cz>\n"
 "Language-Team: Lukáš Hosnedl <lukas@4sensegaming.cz>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);\n"
 "X-Generator: Poedit 3.8\n"
 
+#. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
+#. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
+#. from a shell. Mirrors the Windows installer's "Add Paperback directory to PATH" task.
+msgid "Add the pb command-line tool to PATH"
+msgstr "Přidat CLI nástroj pb do PATH"
+
+#. TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
+#. multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
+#. than tied to one format, same as the Windows installer's "assoc_zip" task.
+msgid "ZIP Archives (.zip)"
+msgstr "ZIP archivy (.zip)"
+
+#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "Nepodařilo se vytvořit IPC server"
 
+#. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
 msgstr "Varování"
 
+#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+#. TRANSLATORS: Announced when trying to seek audio on a document that has none
+msgid "This document has no audio."
+msgstr "Tento dokument nemá žádnou zvukovou stopu."
+
+#. TRANSLATORS: Announced when trying to seek audio before playback has established a position
+msgid "Audio hasn't started playing yet."
+msgstr "Ještě není spuštěno přehrávání zvukové stopy."
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "5 seconds"
+msgstr "5 sekund"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "10 seconds"
+msgstr "10 sekund"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "30 seconds"
+msgstr "30 sekund"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "1 minute"
+msgstr "Jedna minuta"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "2 minutes"
+msgstr "2 minuty"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "5 minutes"
+msgstr "5 minut"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "10 minutes"
+msgstr "10 minut"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "30 minutes"
+msgstr "30 minut"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+msgid "1 hour"
+msgstr "1 hodina"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+msgid "{} (maximum)"
+msgstr "{} (maximum)"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+msgid "{} (minimum)"
+msgstr "{} (minimum)"
+
+#. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
+msgid "Wrapping to start. "
+msgstr "Přecházím na začátek. "
+
+msgid "Wrapping to end. "
+msgstr "Přecházím na konec. "
+
+#. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
+msgid "%s - Bookmark %d"
+msgstr "%s - záložka %d"
+
+#. TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
+msgid "No notes."
+msgstr "Žádné poznámky."
+
+msgid "No bookmarks."
+msgstr "Žádné záložky."
+
+#. TRANSLATORS: Announced when there is no next bookmark/note from the current position
+msgid "No next note."
+msgstr "Žádná následující poznámka."
+
+msgid "No next bookmark."
+msgstr "Žádná následující záložka."
+
+#. TRANSLATORS: Announced when there is no previous note from the current position
+msgid "No previous note."
+msgstr "Žádná předchozí poznámka."
+
+#. TRANSLATORS: Announced when there is no previous bookmark from the current position
+msgid "No previous bookmark."
+msgstr "Žádná předchozí záložka."
+
+#. TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
+msgid "Bookmark."
+msgstr "Záložka."
+
+#. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
+msgid "Bookmark removed."
+msgstr "Záložka odstraněna."
+
+msgid "Bookmark added."
+msgstr "Záložka přidána."
+
+#. TRANSLATORS: Title of the dialog for adding or editing a bookmark note
+#. TRANSLATORS: Title of the Bookmark Note editor dialog
+msgid "Bookmark Note"
+msgstr "Poznámka k záložce"
+
+#. TRANSLATORS: Prompt label in the bookmark note dialog asking the user to type their note
+msgid "Enter bookmark note:"
+msgstr "Zadejte poznámku k záložce:"
+
+#. TRANSLATORS: Announced after saving a bookmark's note text
+msgid "Bookmark saved."
+msgstr "Záložka uložena."
+
+#. TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
+msgid "No note at the current position."
+msgstr "Žádná poznámka na aktuální pozici."
+
+#. TRANSLATORS: Title of the View Note dialog
+msgid "View Note"
+msgstr "Zobrazit poznámku"
+
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+msgid "Open Document"
+msgstr "Otevřít dokument"
+
+#. TRANSLATORS: Menu item in the File menu to open a document.
+#| msgid "&Open"
+msgid "&Open..."
+msgstr "&Otevřít..."
+
+#. TRANSLATORS: Status-bar help text for the File > Open menu item.
+msgid "Open a document"
+msgstr "Otevřít dokumentt"
+
+#. TRANSLATORS: Menu item in the File menu to close the current document.
+#| msgid "Close"
+msgid "&Close"
+msgstr "&Zavřít"
+
+#. TRANSLATORS: Status-bar help text for the File > Close menu item.
+msgid "Close the current document"
+msgstr "Zavřít aktuální dokument"
+
+#. TRANSLATORS: Menu item in the File menu to close all open documents.
+#| msgid "Close"
+msgid "Close &All"
+msgstr "Zavřít &Vše"
+
+#. TRANSLATORS: Status-bar help text for the File > Close All menu item.
+msgid "Close all documents"
+msgstr "Zavřít všechny dokumenty"
+
+#. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
+msgid "Reopen &Last Closed"
+msgstr "Znovu otevřít &naposledy zavřený"
+
+#. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
+msgid "Reopen the last closed document"
+msgstr "Znovu otevře naposledy zavřený dokument"
+
+#. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "&Ukončit"
+
+#. TRANSLATORS: Status-bar help text for the File > Exit menu item.
+msgid "Exit the application"
+msgstr "Ukončí aplikaci"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Section"
+msgstr "Předchozí oddíl"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
+msgid "Go to previous section"
+msgstr "Přejít na předchozí oddíl"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Section"
+msgstr "Následující oddíl"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
+msgid "Go to next section"
+msgstr "Přejde na následující oddíl"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
+msgid "&Previous Heading"
+msgstr "Předchozí &nadpis"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
+msgid "Go to previous heading"
+msgstr "Přejde na předchozí nadpis"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
+msgid "&Next Heading"
+msgstr "Následující &nadpis"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
+msgid "Go to next heading"
+msgstr "Přejde na následující nadpis"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
+msgid "Previous Heading Level &1"
+msgstr "Předchozí nadpis úrovně &1"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 1"
+msgstr "Následující nadpis úrovně 1"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
+msgid "Previous Heading Level &2"
+msgstr "Předchozí nadpis úrovně &2"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 2"
+msgstr "Následující nadpis úrovně 2"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
+msgid "Previous Heading Level &3"
+msgstr "Předchozí nadpis úrovně &3"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 3"
+msgstr "Následující nadpis úrovně 3"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
+msgid "Previous Heading Level &4"
+msgstr "Předchozí nadpis úrovně &4"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 4"
+msgstr "Následující nadpis úrovně 4"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
+msgid "Previous Heading Level &5"
+msgstr "Předchozí nadpis úrovně &5"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 5"
+msgstr "Následující nadpis úrovně 5"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
+msgid "Previous Heading Level &6"
+msgstr "Předchozí nadpis úrovně &6"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading Level 6"
+msgstr "Následující nadpis úrovně 6"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous page.
+msgid "Previous Pa&ge"
+msgstr "Předchozí &stránka"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next page.
+msgid "Next Pag&e"
+msgstr "Následující &stránka"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
+msgid "Previous Lin&k"
+msgstr "Předchozí &odkaz"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
+msgid "Next Lin&k"
+msgstr "Následující &odkaz"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
+msgid "Previous Ima&ge"
+msgstr "Předchozí &obrázek"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
+msgid "Next Ima&ge"
+msgstr "Následující &obrázek"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
+msgid "Previous Figu&re"
+msgstr "Předchozí &ilustrace"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
+msgid "Next Figu&re"
+msgstr "Následující &ilustrace"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
+msgid "Previous &Table"
+msgstr "Předchozí &tabulka"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
+msgid "Next &Table"
+msgstr "Následující &tabulka"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
+msgid "Previous Se&parator"
+msgstr "Předchozí &oddělovač"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
+msgid "Next Se&parator"
+msgstr "Následující &oddělovač"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
+msgid "Previous L&ist"
+msgstr "Předchozí &seznam"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
+msgid "Next L&ist"
+msgstr "Následující &seznam"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
+msgid "Previous List &Item"
+msgstr "Předchozí &položka seznamu"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
+msgid "Next List I&tem"
+msgstr "Následující &položka seznamu"
+
+#. TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
+msgid "Go &Back"
+msgstr "Přejít &Zpět"
+
+#. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
+msgid "Go &Forward"
+msgstr "Přejít &Vpřed"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
+msgid "Container &Start"
+msgstr "&Začátek kontejneru"
+
+#. TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
+msgid "Go to the start of the current list or table"
+msgstr "Přejde na začátek aktuálního seznamu nebo tabulky"
+
+#. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
+msgid "Past Container &End"
+msgstr "Za &konec kontejneru"
+
+#. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
+msgid "Go past the end of the current list or table"
+msgstr "Přejde za konec aktuálního seznamu nebo tabulky"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+msgid "&Previous Bookmark"
+msgstr "Předchozí &záložka"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
+msgid "Go to previous bookmark"
+msgstr "Přejde na předchozí záložku"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+msgid "&Next Bookmark"
+msgstr "Následující &záložka"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
+msgid "Go to next bookmark"
+msgstr "Přejde na následující záložku"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
+msgid "Previous &Note"
+msgstr "Předchozí &poznámka"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
+msgid "Go to previous note"
+msgstr "Přejde na předchozí poznámku"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+msgid "Next N&ote"
+msgstr "Následující &poznámka"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
+msgid "Go to next note"
+msgstr "Přejde na následující poznámku"
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+msgid "Jump to &All..."
+msgstr "Přejít na &vše..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
+msgid "Show all bookmarks and notes"
+msgstr "Zobrazí všechny záložky a poznámky"
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only bookmarks.
+msgid "Jump to &Bookmarks Only..."
+msgstr "Přejít pouze na &záložky..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
+msgid "Show bookmarks only"
+msgstr "Zobrazí pouze záložky"
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
+msgid "Jump to Notes &Only..."
+msgstr "Přejít pouze na &poznámky..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
+msgid "Show notes only"
+msgstr "Zobrazí pouze poznámky"
+
+#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
+msgid "&View Note Text"
+msgstr "&Zobrazit text poznámky"
+
+#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
+msgid "View the note at current position"
+msgstr "Zobrazí poznámku na aktuállní pozici"
+
+#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
+msgid "Toggle &Bookmark"
+msgstr "Přepnout &záložku"
+
+#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
+msgid "Bookmark with &Note"
+msgstr "Záložka s &poznámkou"
+
+#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
+msgid "&Play/Pause Audio"
+msgstr "&Přehrát/Pozastavit Audio"
+
+#. TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
+msgid "Play or pause this document's audio narration"
+msgstr "Přehraje nebo pozastaví zvukovou stopu tohoto dokumentu"
+
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
+msgid "Seek Audio &Forward"
+msgstr "Přetočit Audio &vpřed"
+
+#. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
+msgid "Skip the audio narration forward"
+msgstr "Posune zvukovou stopu dopředu"
+
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
+msgid "Seek Audio &Backward"
+msgstr "Přetočit Audio zpět"
+
+#. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
+msgid "Skip the audio narration backward"
+msgstr "Posune zvukovou stopu dozadu"
+
+#. TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
+msgid "&Increase Audio Seek Amount"
+msgstr "&Prodloužit interval přetáčení"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
+msgid "Increase how far seeking the audio narration moves"
+msgstr "Prodlouží úsek, o který přetáčení posouvá zvukovou stopu"
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
+msgid "&Decrease Audio Seek Amount"
+msgstr "&Zkrátit interval přetáčení"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
+msgid "Decrease how far seeking the audio narration moves"
+msgstr "Zkrátí úsek, o který přetáčení posouvá zvukovou stopu"
+
+#. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
-msgstr "Přístupná, nenáročná a rychlá čtečka e-knih a dokumentů"
+msgstr "Přístupná, úsporná a rychlá čtečka e-knih a dokumentů"
 
-msgid "expanded"
-msgstr "rozbaleno"
-
-msgid "collapsed"
-msgstr "sbaleno"
-
+#. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
 msgstr "Všechny dokumenty"
 
+#. TRANSLATORS: Label for the search input field in the All Documents dialog
 msgid "&search"
 msgstr "&Hledat"
 
-msgid "&Yes"
-msgstr "&Ano"
-
-msgid "&No"
-msgstr "&Ne"
-
+#. TRANSLATORS: Column header for the document filename in the All Documents list
 msgid "File Name"
 msgstr "Název souboru"
 
+#. TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
 msgid "Status"
 msgstr "Stav"
 
+#. TRANSLATORS: Column header for the file path in the All Documents list
 msgid "Path"
 msgstr "Cesta"
 
+#. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
+msgid "&Status:"
+msgstr "&Stav:"
+
+#. TRANSLATORS: Option in the All Documents status filter to show documents of every status
+#. TRANSLATORS: Option in the filter dropdown to show all entries
+msgid "All"
+msgstr "Vše"
+
+#. TRANSLATORS: Status of a document that is currently open in a tab
+msgid "Open"
+msgstr "Otevřít"
+
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
+msgid "Closed"
+msgstr "Zavřeno"
+
+#. TRANSLATORS: Status of a document whose file could not be found on disk
+#. TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the row's displayed status to decide whether the Open button is enabled.
+#. TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the selected row's displayed status to decide whether the Locate button is enabled.
+msgid "Missing"
+msgstr "Chybí"
+
+#. TRANSLATORS: Button label to open the selected document
 msgid "&Open"
 msgstr "&Otevřít"
 
+#. TRANSLATORS: Button label to locate a missing file on disk
+msgid "&Locate..."
+msgstr "&Najít..."
+
+#. TRANSLATORS: Button label to remove selected documents from the list
 msgid "&Remove"
 msgstr "&Odstranit"
 
+#. TRANSLATORS: Button label to clear all documents from the list
 msgid "&Clear All"
-msgstr "&Smazat vše"
+msgstr "&Smazat všechny"
 
+#. TRANSLATORS: Label for a button that closes a dialog
+#. TRANSLATORS: Label for a button that closes the Document Info dialog
+#. TRANSLATORS: Label for a button that closes the View Note dialog
+#. TRANSLATORS: Label for a button that closes the Web View dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Close"
 msgstr "Zavřít"
 
 msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
+"Are you sure you want to remove the selected document? This will also remove "
+"its reading position and bookmarks."
 msgstr ""
-"Chcete opravdu odstranit tento dokument ze seznamu? Přijdete tak i o místo, "
-"kde jste přestali číst."
+"Opravdu chcete vybraný dokument odstranit? Bude odstraněna také uložená "
+"pozice čtení a záložky."
 
 msgid ""
-"Are you sure you want to remove these {} documents from the list? This will "
-"also remove their reading positions."
+"Are you sure you want to remove the {} selected documents? This will also "
+"remove their reading positions and bookmarks."
 msgstr ""
-"Chcete opravdu odstranit tyto {} dokumenty ze seznamu? Přijdete tak i o "
-"místo, kde jste v každém dokumentu přestali číst."
+"Opravdu chcete odstranit {} vybraných dokumentů? Budou odstraněny také "
+"jejich uložené pozice čtení a záložky."
 
+#. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
 msgstr "Potvrdit"
 
+#. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
 msgid ""
 "Are you sure you want to remove all documents from the list? This will also "
 "remove all reading positions and bookmarks."
 msgstr ""
-"Chcete opravdu odstranit všechny dokumenty ze seznamu? Přijdete tak ve všech "
-"dokumentech i o místo, kde jste přestali číst, a o záložky."
+"Chcete opravdu odstranit všechny dokumenty ze seznamu? Přijdete tak i o "
+"všechny uložené pozice čtení a o záložky."
 
-msgid "Open"
-msgstr "Otevřít"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
+msgid "No documents."
+msgstr "Žádné dokumenty."
 
-msgid "Closed"
-msgstr "Zavřeno"
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count. Plural form is chosen by that count.
+#| msgid "document"
+msgid "%d document."
+msgid_plural "%d documents."
+msgstr[0] "%d dokument."
+msgstr[1] "%d dokumentů."
+msgstr[2] ""
 
-msgid "Missing"
-msgstr "Chybí"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the only document in the list is selected
+msgid "1 document selected."
+msgstr "1 dokument vybrán."
 
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
+#| msgid "All Documents"
+msgid "All %d document selected."
+msgid_plural "All %d documents selected."
+msgstr[0] "%d dokument vybrán."
+msgstr[1] "Všech %d dokumentů vybráno."
+msgstr[2] ""
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
+msgid "%d of %d document selected."
+msgid_plural "%d of %d documents selected."
+msgstr[0] "%d z %d dokumentů vybrán."
+msgstr[1] "%d z %d dokumentů vybráno."
+msgstr[2] ""
+
+#. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
+msgid "Locate Book"
+msgstr "Najít knihu"
+
+#. TRANSLATORS: Title of the Jump to Bookmark dialog
 msgid "Jump to Bookmark"
 msgstr "Přejít na záložku"
 
+#. TRANSLATORS: Label for the bookmark filter dropdown
 msgid "&Filter:"
 msgstr "&Filtrovat:"
 
-msgid "All"
-msgstr "Vše"
-
+#. TRANSLATORS: Option in the filter dropdown to show bookmarks only
 msgid "Bookmarks"
 msgstr "Záložky"
 
+#. TRANSLATORS: Option in the filter dropdown to show notes only
 msgid "Notes"
 msgstr "Poznámky"
 
+#. TRANSLATORS: Label for the bookmark/note list (used only as an accessibility label on macOS)
+msgid "&Bookmarks:"
+msgstr "&Záložky:"
+
+#. TRANSLATORS: Label for the button to edit a note
 msgid "&Edit Note"
 msgstr "&Upravit poznámku"
 
+#. TRANSLATORS: Label for the button to delete the selected bookmark/note
+#. TRANSLATORS: Menu item in the Edit menu to delete the current selection.
 msgid "&Delete"
 msgstr "&Smazat"
 
+#. TRANSLATORS: Label for the button to jump to the selected bookmark
 msgid "&Jump"
 msgstr "&Přejít"
 
+#. TRANSLATORS: Label for the button to cancel the action
 msgid "&Cancel"
 msgstr "&Zrušit"
 
+#. TRANSLATORS: Placeholder text shown in the bookmarks list when the bookmark text range is empty or blank
 msgid "blank"
 msgstr "prázdné"
 
+#. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
 msgstr "Prosím, vyberte záložku, na kterou chcete přejít."
 
+#. TRANSLATORS: Generic error dialog title
 msgid "Error"
 msgstr "Chyba"
 
-msgid "Bookmark Note"
-msgstr "Poznámka k záložce"
-
+#. TRANSLATORS: Label/prompt in the Note editor dialog
 msgid "Edit bookmark note:"
 msgstr "Upravit poznámku k záložce:"
 
+#. TRANSLATORS: Title of the Document Info dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "Informace o dokumentu"
 
+#. TRANSLATORS: Label for the document's file path
 msgid "Path:"
 msgstr "Cesta:"
 
+#. TRANSLATORS: Label for the document's title
 msgid "Title:"
 msgstr "Název:"
 
+#. TRANSLATORS: Label for the document's author
 msgid "Author:"
 msgstr "Autor:"
 
+#. TRANSLATORS: Label for the number of words in the document
 msgid "Words:"
-msgstr "Slova:"
+msgstr "Slov:"
 
+#. TRANSLATORS: Label for the number of lines in the document
 msgid "Lines:"
-msgstr "Řádky:"
+msgstr "Řádků:"
 
+#. TRANSLATORS: Label for the number of characters in the document
 msgid "Characters:"
-msgstr "Znaky:"
+msgstr "Znaků:"
 
+#. TRANSLATORS: Label for the number of characters in the document excluding space characters
 msgid "Characters (excluding spaces):"
-msgstr "Znaky bez mezer:"
+msgstr "Znaků (bez mezer):"
 
+#. TRANSLATORS: Label for the number of audio files in the document
+msgid "Number of files:"
+msgstr "Počet souborů:"
+
+#. TRANSLATORS: Label for the total playback duration across all of the document's audio files
+msgid "Total duration:"
+msgstr "Celková délka:"
+
+#. TRANSLATORS: Label for the average playback duration per audio file in the document
+msgid "Average duration:"
+msgstr "Průměrná délka:"
+
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#| msgid "1 hour"
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d hodina"
+msgstr[1] "%d hodin"
+msgstr[2] ""
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#| msgid "1 minute"
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minuta"
+msgstr[1] "%d minut"
+msgstr[2] ""
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#| msgid "1 second"
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d sekunda"
+msgstr[1] "%d sekund"
+msgstr[2] ""
+
+#. TRANSLATORS: A page in the Elements list with no readable first line; %d is the page number
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+msgid "Page %d"
+msgstr "Stránka %d"
+
+#. TRANSLATORS: A page in the Elements list; %d is the page number, %s is the page's first line of text
+#. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
+msgid "Page %d: %s"
+msgstr "Stránka %d: %s"
+
+#. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr "Prvky"
 
-msgid "OK"
-msgstr "OK"
-
-msgid "Cancel"
-msgstr "Zrušit"
-
-msgid "Headings"
-msgstr "Nadpisy"
-
-msgid "Links"
-msgstr "Odkazy"
-
-msgid "Untitled"
-msgstr "Bez názvu"
-
+#. TRANSLATORS: Label for the view selection dropdown in the Elements dialog
 msgid "&View:"
 msgstr "&Zobrazit:"
 
-msgid "Root"
-msgstr "Začátek"
+#. TRANSLATORS: Choice option in the view dropdown to show headings list
+msgid "Headings"
+msgstr "Nadpisy"
 
+#. TRANSLATORS: Choice option in the view dropdown to show links list
+msgid "Links"
+msgstr "Odkazy"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of pages
+msgid "Pages"
+msgstr "Stránky"
+
+#. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
+#. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
+#. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
+msgid "Untitled"
+msgstr "Bez názvu"
+
+#. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button that confirms the entered bookmark/note text
+#. TRANSLATORS: OK button that confirms the chosen file format in the Open As dialog
+#. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
+#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
+#. TRANSLATORS: OK button that confirms the entered sleep timer duration
+#. TRANSLATORS: Label for the confirmation button
+msgid "OK"
+msgstr "OK"
+
+#. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
+#. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Go"
+msgstr "Přejít"
+
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Zrušit"
+
+#. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr "Přejít na řádek"
 
-msgid "&Line number:"
-msgstr "Číslo &řádku:"
+#. TRANSLATORS: Label/prompt template for the line selection dialog. The %d placeholders represent current_line and max_lines respectively.
+msgid "Go to line (%d/%d):"
+msgstr "Přejít na řádek (%d/%d):"
 
+#. TRANSLATORS: Announced when the entered line number is outside the document's range
+msgid "Line out of range."
+msgstr "Řádek mimo rozsah."
+
+#. TRANSLATORS: Title of the Go to page dialog
 msgid "Go to page"
 msgstr "Přejít na stránku"
 
-#, c-format
+#. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_page respectively.
 msgid "Go to page (%d/%d):"
 msgstr "Přejít na stránku (%d/%d):"
 
+#. TRANSLATORS: Announced when the entered page number is outside the document's range
+msgid "Page out of range."
+msgstr "Stránka mimo rozsah."
+
+#. TRANSLATORS: Title of the Go to Percent dialog
 msgid "Go to Percent"
 msgstr "Přejít na procenta"
 
+#. TRANSLATORS: Label/prompt template for the percentage selection dialog. The %d placeholders represent current_percent and 100 respectively.
+msgid "Go to percent (%d/%d):"
+msgstr "Přejít na procenta (%d/%d):"
+
+#. TRANSLATORS: Label for the percentage selection slider
 msgid "&Percent"
 msgstr "&Procenta"
 
-msgid "P&ercent:"
-msgstr "&Procenta:"
+#. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
+msgid "Percent out of range."
+msgstr "Procento mimo rozsah."
 
+#. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
+#| msgid "{} - Paperback"
+msgid "Set Up Paperback"
+msgstr "Úvodní nastavení Paperbacku"
+
+#. TRANSLATORS: Explains the checkbox list below in the Linux file-association setup dialog
+msgid "Choose which file types should open in Paperback:"
+msgstr "Vyberte, které typy souborů se mají otevírat v Paperbacku:"
+
+#. TRANSLATORS: Confirms the file association choices in the Linux setup dialog and applies them
+msgid "Set Up"
+msgstr "Úvodní nastavení"
+
+#. TRANSLATORS: Title of the Open As dialog
 msgid "Open As"
 msgstr "Otevřít jako"
 
+#. TRANSLATORS: Prompt template informing the user that no parser was found for their file. The {} placeholder is replaced with the file path.
 msgid ""
 "No suitable parser was found for {}.\n"
 "How would you like to open this file?"
@@ -221,1104 +881,1879 @@ msgstr ""
 "Nebyl nalezen žádný vhodný parser pro {}.\n"
 "Jak chcete tento soubor otevřít?"
 
+#. TRANSLATORS: Label for the format selection dropdown
 msgid "Open &as:"
 msgstr "Otevřít &jako:"
 
+#. TRANSLATORS: Choice option to open a file as plain text
 msgid "Plain Text"
 msgstr "Prostý text"
 
+#. TRANSLATORS: Choice option to open a file as HTML
 msgid "HTML"
 msgstr "HTML"
 
+#. TRANSLATORS: Choice option to open a file as Markdown
 msgid "Markdown"
 msgstr "Markdown"
 
-msgid "Options"
-msgstr "Možnosti"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
+msgstr "Nastavení"
 
+#. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
 msgstr "Při spuštění &načíst naposledy otevřené dokumenty"
 
-msgid "&Word wrap"
-msgstr "Zalamovat &řádky"
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+msgid "&Automatically reload changed documents"
+msgstr "&Automaticky znovu načítat změněné dokumenty"
 
-msgid "&Minimize to system tray"
-msgstr "&Minimalizovat do systémové lišty"
-
+#. TRANSLATORS: Option to start the app maximized
 msgid "&Start maximized"
 msgstr "&Spouštět v maximalizovaném okně"
 
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+msgid "&Minimize to system tray"
+msgstr "&Minimalizovat do systémové lišty"
+
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr "Zalamovat &řádky"
+
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+msgid "Render tables &inline"
+msgstr "Vykreslovat tabulky v &toku textu"
+
+#. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr "Zobrazovat kompaktní nabídku &Přejít"
 
+#. TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
 msgid "&Wrap navigation"
 msgstr "&Cyklická rychlá navigace"
 
+#. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+msgid "Move to &start of line"
+msgstr "Přejít na &začátek řádku"
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr "Přehrávat &zvuky na záložkách a poznámkách"
 
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+msgid "&Sync caret to audio playback"
+msgstr "&Synchronizovat kurzor se zvukovou stopou"
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+msgid "&Audio seek amount:"
+msgstr "&Interval přetáčení:"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr "Přetočení &za konec kapitoly pokračuje do další"
+
+#. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr "Při spuštění kontrolovat &aktualizace"
 
-msgid "Customize &Window Hotkey..."
-msgstr "Upravit klávesovou zkratku &okna..."
-
-msgid "&Reading speed (words per minute):"
-msgstr "&Rychlost čtení (ve slovech za minutu):"
-
-msgid "Number of &recent documents to show:"
-msgstr "Počet &nedávných dokumentů k zobrazení:"
-
-msgid "&Language:"
-msgstr "&Jazyk:"
-
+#. TRANSLATORS: Label for the update channel selection dropdown
 msgid "Update Channel:"
 msgstr "Kanál aktualizací:"
 
+#. TRANSLATORS: Stable update channel option
 msgid "Stable"
 msgstr "Stabilní"
 
+#. TRANSLATORS: Developer/development update channel option
 msgid "Dev"
 msgstr "Vývojový"
 
+#. TRANSLATORS: Button label to open the hotkey customization dialog
+msgid "Customize &Window Hotkey..."
+msgstr "Nastavit klávesovou zkratku &okna..."
+
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
+#| msgid "Customize &Window Hotkey..."
+msgid "Customize &Keyboard Shortcuts..."
+msgstr "Nastavit &klávesové zkratky..."
+
+#. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
+msgid "&Reading speed (words per minute):"
+msgstr "&Rychlost čtení (ve slovech za minutu):"
+
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
+msgstr "Počet &nedávných dokumentů k zobrazení:"
+
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
+msgstr "&Jazyk:"
+
+#. TRANSLATORS: Label/header for the Font options section
 msgid "Font"
 msgstr "Font"
 
+#. TRANSLATORS: Button label to pick a font
 msgid "Choose &Font..."
 msgstr "Vybrat &font..."
 
+#. TRANSLATORS: Button label to restore font settings to default values
 msgid "&Reset to Default Font"
 msgstr "&Obnovit výchozí font"
 
+#. TRANSLATORS: Label/header for the Background Color options section
 msgid "Background Color"
 msgstr "Barva pozadí"
 
+#. TRANSLATORS: Button label to pick a background color
 msgid "Choose &Background Color..."
 msgstr "Vybrat barvu &pozadí..."
 
+#. TRANSLATORS: Button label to restore background color to default values
 msgid "Reset to &Default Background"
 msgstr "Obnovit výchozí barvu &pozadí"
 
+#. TRANSLATORS: Label for the line spacing dropdown
 msgid "&Line spacing:"
 msgstr "&Velikost řádkování:"
 
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 msgid "Normal"
 msgstr "Normální"
 
+#. TRANSLATORS: 1.5x line spacing option
 msgid "1.5\\u{00d7}"
 msgstr "1,5\\u{00d7}"
 
+#. TRANSLATORS: Double line spacing option
 msgid "Double"
 msgstr "Dvojnásobné"
 
+#. TRANSLATORS: Label for the paragraph spacing dropdown
 msgid "&Paragraph spacing:"
 msgstr "&Mezery mezi odstavci:"
 
+#. TRANSLATORS: Relaxed paragraph spacing option
 msgid "Relaxed"
 msgstr "Menší"
 
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
 msgid "Wide"
 msgstr "Větší"
 
+#. TRANSLATORS: Label for the letter spacing dropdown
 msgid "L&etter spacing:"
 msgstr "Mezery mezi &písmeny:"
 
+#. TRANSLATORS: Very Wide letter spacing option
 msgid "Very Wide"
 msgstr "Největší"
 
+#. TRANSLATORS: Label for the text alignment dropdown
 msgid "Text &alignment:"
 msgstr "&Zarovnání textu:"
 
+#. TRANSLATORS: Left text alignment option
 msgid "Left"
 msgstr "Doleva"
 
+#. TRANSLATORS: Center text alignment option
 msgid "Center"
 msgstr "Na střed"
 
+#. TRANSLATORS: Right text alignment option
 msgid "Right"
 msgstr "Doprava"
 
+#. TRANSLATORS: Justified text alignment option
 msgid "Justify"
 msgstr "Do bloku"
 
+#. TRANSLATORS: Tab label for the General options panel
 msgid "General"
 msgstr "Obecné"
 
+#. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Čtení"
 
+#. TRANSLATORS: Tab label for the Readability options panel
 msgid "Readability"
 msgstr "Čitelnost"
 
+#. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr "Pozadí: Výchozí"
 
+#. TRANSLATORS: Description text shown when the font is set to default
 msgid "Font: Default"
 msgstr "Font: Výchozí"
 
+#. TRANSLATORS: Fallback font name
 msgid "Default"
 msgstr "Výchozí"
 
+#. TRANSLATORS: Font description prefix; {} is the font face name
+msgid "Font: {}"
+msgstr "Font: {}"
+
+#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+msgid "{}pt"
+msgstr "{}pt"
+
+#. TRANSLATORS: Font weight attribute name
 msgid "Bold"
 msgstr "Tučné"
 
+#. TRANSLATORS: Font style attribute name
 msgid "Italic"
 msgstr "Kurzíva"
 
+#. TRANSLATORS: Font underline attribute name
 msgid "Underlined"
 msgstr "Podtržené"
 
+#. TRANSLATORS: Font strikethrough attribute name
 msgid "Strikethrough"
 msgstr "Přeškrtnuté"
 
+#. TRANSLATORS: Title of the hotkey customization dialog
 msgid "Window Hotkey"
 msgstr "Klávesová zkratka okna"
 
+#. TRANSLATORS: Checkbox label for Control modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
 msgid "&Ctrl"
 msgstr "&Ctrl"
 
+#. TRANSLATORS: Checkbox label for Alt modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
 msgid "&Alt"
 msgstr "&Alt"
 
+#. TRANSLATORS: Checkbox label for Shift modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
 msgid "&Shift"
 msgstr "&Shift"
 
+#. TRANSLATORS: Checkbox label for Windows modifier key
 msgid "&Win"
 msgstr "&Win"
 
+#. TRANSLATORS: Label for the hotkey key selection input field
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
 msgid "&Key:"
 msgstr "&Klávesa:"
 
+#. TRANSLATORS: Button label to clear the current hotkey selection
+msgid "Clear"
+msgstr "Odstranit"
+
+#. TRANSLATORS: Representation of the Spacebar key
 msgid "Space"
 msgstr "Mezerník"
 
+#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
+msgid "Customize Keyboard Shortcuts"
+msgstr "Nastavení klávesových zkratek"
+
+#. TRANSLATORS: Label above the list of shortcuts for a category in the Keyboard Shortcuts dialog.
+msgid "&Shortcuts:"
+msgstr "&Klávesové zkratky:"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
+msgid "&Set Shortcut..."
+msgstr "&Nastavit zkratku..."
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
+msgid "&Clear Shortcut"
+msgstr "&Odstranit zkratku"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
+msgid "&Reset to Default"
+msgstr "&Obnovit výchozí"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
+msgid "Reset &All to Defaults"
+msgstr "&Obnovit všechny výchozí zkratky"
+
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr "'{}' už má přiřazenou zkratku '{}'. Chcete ji změnit na '{}'?"
+
+#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
+msgid "Shortcut Conflict"
+msgstr "Konflikt zkratek"
+
+msgid "Reset all shortcuts to their default values?"
+msgstr "Obnovit všechny klávesové zkratky na výchozí hodnoty?"
+
+#. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
+msgid "Reset Shortcuts"
+msgstr "Resetovat klávesové zkratky"
+
+#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+msgid "Set Shortcut for {}"
+msgstr "Nastavit zkratku pro {}"
+
+#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+msgid "Configure shortcut for {}:"
+msgstr "Nastavte klávesovou zkratku pro {}:"
+
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr ""
+"Tip: klikněte do pole klávesa a stiskněte požadovanou kombinaci kláves."
+
+#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
+msgid "Detected: (none)"
+msgstr "Zjištěné klávesy: (žádné)"
+
+msgid "Detected: {}"
+msgstr "Zjištěné klávesy: {}"
+
+msgid "No key detected"
+msgstr "Nebyla zjištěna žádná klávesa"
+
+#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
+msgid "&Clear"
+msgstr "&Odstranit"
+
+#. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Časovač spánku"
 
+#. TRANSLATORS: Label for the input field where users enter the number of minutes for the sleep timer.
 msgid "&Minutes:"
 msgstr "&Minuty:"
 
+#. TRANSLATORS: Title of the Table of Contents dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "Obsah"
 
+#. TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 msgid "Please select a section from the table of contents."
 msgstr "Prosím, vyberte požadovaný oddíl z obsahu."
 
+#. TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 msgid "No Selection"
 msgstr "Žádný výběr"
 
-msgid "View Note"
-msgstr "Zobrazit poznámku"
-
-msgid "1 hour"
-msgstr "1 hodina"
-
-msgid "hours"
-msgstr "Hodin"
-
-msgid "1 minute"
-msgstr "Jedna minuta"
-
-msgid "minutes"
-msgstr "Minut"
-
-msgid "1 second"
-msgstr "Jedna vteřina"
-
-msgid "seconds"
-msgstr "Vteřin"
-
+#. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
 msgstr "Odhadovaná doba čtení: {}"
 
-msgid "This document contains {} words."
-msgstr "Tento dokument obsahuje {} slov."
-
+#. TRANSLATORS: Title of the Word Count dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Word Count"
 msgstr "Počet slov"
 
+msgid "This document contains %d audio file."
+msgid_plural "This document contains %d audio files."
+msgstr[0] "Tento dokument obsahuje %d zvukový soubor."
+msgstr[1] "Tento dokument obsahuje %d zvukových souborů."
+msgstr[2] ""
+
+#. TRANSLATORS: Prompt showing an audio-only document's total playback duration across all its files. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+msgid "Total duration: {}"
+msgstr "Celková délka: {}"
+
+#. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
+msgid "The selection contains %d word."
+msgid_plural "The selection contains %d words."
+msgstr[0] "Výběr obsahuje %d slovo."
+msgstr[1] "Výběr obsahuje %d slov."
+msgstr[2] ""
+
+#. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
+msgid "This document contains %d word."
+msgid_plural "This document contains %d words."
+msgstr[0] "Tento dokument obsahuje %d slovo."
+msgstr[1] "Tento dokument obsahuje %d slov."
+msgstr[2] ""
+
+#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "Soubor nenalezen: {}"
 
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
 msgid ""
 "A .paperback file was found for this document. Would you like to import it?"
 msgstr "Pro tento dokument existuje soubor .paperback. Chcete ho importovat?"
 
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
 msgid "Import document data"
 msgstr "Importovat data dokumentu"
 
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
 msgid "Password is required."
 msgstr "Je vyžadováno heslo."
 
+#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "Přesunuto na vnitřní odkaz."
 
-msgid "Table View"
-msgstr "Zobrazení tabulky"
-
+#. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
 msgstr "Připraveno"
 
+#. TRANSLATORS: Announced after setting a temporary bookmark at the current position
+#| msgid "No bookmarks."
+msgid "Temporary bookmark set."
+msgstr "Dočasná záložka nastavena."
+
+#. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
+msgid "No temporary bookmark."
+msgstr "Žádná dočasná záložka."
+
+#. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
+msgid "Temporary bookmark."
+msgstr "Dočasná záložka."
+
+#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr "&Heslo:"
 
 msgid "Document Password"
 msgstr "Heslo dokumentu"
 
+#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
 msgid "Failed to load document."
 msgstr "Dokument se nepodařilo načíst."
 
-msgid "Create &bookmark"
-msgstr "Vytvořit &záložku"
+#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+msgid "File: {}"
+msgstr "Soubor: {}"
 
-msgid "Create bookmark"
-msgstr "Vytvořit záložku"
+#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+msgid "Details: {}"
+msgstr "Podrobnosti: {}"
 
-msgid "Bookmark with &note"
-msgstr "Záložka s &poznámkou"
-
-msgid "Create bookmark with note"
-msgstr "Vytvořit záložku s poznámkou"
-
-msgid "&Find"
-msgstr "&Najít"
-
-msgid "Find text"
-msgstr "Najít text"
-
-msgid "Find &next"
-msgstr "Najít &další"
-
-msgid "Find next match"
-msgstr "Najít další shodu"
-
-msgid "Find &previous"
-msgstr "Najít &Předchozí"
-
-msgid "Find previous match"
-msgstr "Najít předchozí shodu"
-
-msgid "Go to &page"
-msgstr "Přejít na &stránku"
-
-msgid "Go to &line"
-msgstr "Přejít na &řádek"
-
-msgid "Go to line"
-msgstr "Přejít na řádek"
-
-msgid "Go to &percent"
-msgstr "Přejít na &procenta"
-
-msgid "Go to percent"
-msgstr "Přejít na procenta"
-
+#. TRANSLATORS: Title of the Find dialog
 msgid "Find"
 msgstr "Najít"
 
+#. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
 msgstr "&Co mám najít:"
 
+#. TRANSLATORS: Group box heading for the search options in the Find dialog
+msgid "Options"
+msgstr "Možnosti"
+
+#. TRANSLATORS: Checkbox to make the search case-sensitive
 msgid "&Match case"
 msgstr "Rozlišovat &velikost písmen"
 
+#. TRANSLATORS: Checkbox to only match whole words, not substrings
 msgid "Match &whole word"
 msgstr "Pouze &celá slova"
 
+#. TRANSLATORS: Checkbox to treat the search text as a regular expression
 msgid "Use &regular expressions"
 msgstr "Používat &regulární výrazy"
 
+#. TRANSLATORS: Button to search backward for the previous match
+#. TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
 msgid "Find &Previous"
 msgstr "Najít &předchozí"
 
+#. TRANSLATORS: Button to search forward for the next match
+#. TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
 msgid "Find &Next"
-msgstr "Najít &další"
+msgstr "Najít &následující"
 
+#. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Nenalezeno."
 
+#. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
 msgstr "Žádné další výsledky. Vyhledávám od začátku."
 
-msgid "Failed to open containing folder."
-msgstr "Nepodařilo se otevřít nadřazenou složku."
+#. TRANSLATORS: Error shown when the active document has no known file path to reveal
+#. TRANSLATORS: Error shown when the file manager could not be launched to reveal the active document's file
+msgid "Failed to reveal file in folder."
+msgstr "Nepodařilo se zobrazit soubor ve složce."
 
+#. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
 msgstr ""
 "Nebyl nalezen soubor readme.html. Prosím, ujistěte se, že aplikace je "
 "správně sestavená."
 
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
 msgstr "Nepodařilo se spustit výchozí prohlížeč."
 
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to open the donation page
 msgid "Failed to open donation page in browser."
 msgstr "Nepodařilo se otevřít stránku Přispět v prohlížeči."
 
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
 msgstr "Je vybrán nepodporovaný formát."
 
-msgid "Paperback"
-msgstr "Paperback"
-
-msgid "Paperback - {}"
-msgstr "Paperback - {}"
-
-msgid "{} chars"
-msgstr "{} znaků"
-
-msgid "Open Document"
-msgstr "Otevřít dokument"
-
-msgid "No pages."
-msgstr "Žádné stránky."
-
-msgid "document"
-msgstr "dokument"
-
-msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
-msgstr "Soubory v prostém textu (*.txt)|*.txt|Všechny soubory (*.*)|*.*"
-
-msgid "Export document to plain text"
-msgstr "Exportovat dokument do prostého textu"
-
-msgid "Failed to export document."
-msgstr "Export dokumentu selhal."
-
-msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
-msgstr "Soubory HTML (*.html)|*.html|Všechny soubory (*.*)|*.*"
-
-msgid "Export document to HTML"
-msgstr "Exportovat dokument do HTML"
-
-#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
-msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
-msgstr "Soubory Markdown (*.md)|*.md|Všechny soubory (*.*)|*.*"
-
-msgid "Export document to Markdown"
-msgstr "Exportovat dokument do Markdown"
-
-msgid "Paperback files (*.paperback)|*.paperback"
-msgstr "Soubory Paperbacku (*.paperback)|*.paperback"
-
-msgid "Export notes and bookmarks"
-msgstr "Exportovat poznámky a záložky"
-
-msgid "Notes and bookmarks exported successfully."
-msgstr "Poznnámky a záložky úspěšně exportovány."
-
-msgid "Export Successful"
-msgstr "Export úspěšný"
-
-msgid "Import notes and bookmarks"
-msgstr "Importovat poznámky a záložky"
-
-msgid "Notes and bookmarks imported successfully."
-msgstr "Poznámky a záložky úspěšně importovány."
-
-msgid "Import Successful"
-msgstr "Import úspěšný"
-
-msgid "No table of contents."
-msgstr "Žádný obsah."
-
-msgid "Web View"
-msgstr "Webové zobrazení"
-
-msgid "Could not determine content to display in Web View."
-msgstr "Nepodařilo se rozpoznat žádný obsah pro webové zobrazení."
-
-msgid "Sleep timer cancelled."
-msgstr "Časovač spánku zrušen."
-
-msgid "Sleep timer set for 1 minute."
-msgstr "Časovač spánku nastaven na jednu minutu."
-
-#, c-format
-msgid "Sleep timer set for %d minutes."
-msgstr "Časovač spánku nastaven na %d minut."
-
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
 msgstr "Žádné nedávné dokumenty."
 
-msgid "Previous Section\t["
-msgstr "Předchozí oddíl\t["
+#. TRANSLATORS: Announced when landing on a blank line; %d is the line number
+#| msgid "Line"
+msgid "Line %d"
+msgstr "Řádek %d"
+
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+msgid "No pages."
+msgstr "Žádné stránky."
+
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
+msgstr "Žádný obsah."
+
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+msgid "Web View"
+msgstr "Webové zobrazení"
+
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+msgid "Could not determine content to display in Web View."
+msgstr "Nepodařilo se rozpoznat žádný obsah pro webové zobrazení."
+
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "dokument"
+
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+msgid "Source:"
+msgstr "Zdroj:"
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+msgid "Source view is not available for this document format."
+msgstr ""
+"Pro tento formát dokumentu není k dispozici zobrazení zdrojového souboru."
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+msgid "Could not load the document source."
+msgstr "Nepodařilo se načíst zdrojový soubor dokumentu."
+
+#. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Soubory v prostém textu (*.txt)|*.txt|Všechny soubory (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
+msgid "Export document to plain text"
+msgstr "Exportovat dokument do prostého textu"
+
+#. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr "Soubory HTML (*.html)|*.html|Všechny soubory (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to HTML
+msgid "Export document to HTML"
+msgstr "Exportovat dokument do HTML"
+
+#. TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr "Soubory Markdown (*.md)|*.md|Všechny soubory (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
+msgid "Export document to Markdown"
+msgstr "Exportovat dokument do Markdown"
+
+#. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Soubory Paperbacku (*.paperback)|*.paperback"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+msgid "Export notes and bookmarks"
+msgstr "Exportovat poznámky a záložky"
+
+#. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
+msgid "Notes and bookmarks exported successfully."
+msgstr "Poznnámky a záložky úspěšně exportovány."
+
+#. TRANSLATORS: Title of the export-succeeded dialog
+msgid "Export Successful"
+msgstr "Export úspěšný"
+
+#. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
+msgid "Import notes and bookmarks"
+msgstr "Importovat poznámky a záložky"
+
+#. TRANSLATORS: Success message shown after importing a document's notes and bookmarks
+msgid "Notes and bookmarks imported successfully."
+msgstr "Poznámky a záložky úspěšně importovány."
+
+#. TRANSLATORS: Title of the import-succeeded dialog
+msgid "Import Successful"
+msgstr "Import úspěšný"
+
+#. TRANSLATORS: Main window title when no document is open
+msgid "Paperback"
+msgstr "Paperback"
+
+msgid "Document reloaded."
+msgstr "Dokument obnoven."
+
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr ""
+"Paperback nemůže provádět žádné akce, dokud je otevřeno webové zobrazení."
 
-msgid "Go to previous section"
-msgstr "Přejít na předchozí oddíl"
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
-msgid "Next Section\t]"
-msgstr "Další oddíl\t]"
+#| msgid "{} chars"
+msgid "%d char"
+msgid_plural "%d chars"
+msgstr[0] "%d znak"
+msgstr[1] "%d znaků"
+msgstr[2] ""
 
-msgid "Go to next section"
-msgstr "Přejít na další oddíl"
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Dokument se nepodařilo exportovat."
 
-msgid "Go to &Page\tCtrl+P"
-msgstr "Přejít na &stránku\tCtrl+P"
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+msgid "Word wrap on."
+msgstr "Zalamování řádků zapnuto."
 
-msgid "Previous Pa&ge\tShift+P"
-msgstr "P&ředchozí stránka\tShift+P"
+msgid "Word wrap off."
+msgstr "Zalamování řádků vypnuto."
 
-msgid "Next Pag&e\tP"
-msgstr "&Další stránka\tP"
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+msgid "Full screen on."
+msgstr "Režim na celou obrazovku zapnut."
 
-msgid "Previous Lin&k\tShift+K"
-msgstr "Předchozí &odkaz\tShift+K"
+msgid "Full screen off."
+msgstr "Režim na celou obrazovku vypnut."
 
-msgid "Next Lin&k\tK"
-msgstr "Další &odkaz\tK"
+#. TRANSLATORS: Menu item in the Edit menu to undo the last action.
+msgid "&Undo\tCtrl+Z"
+msgstr "&Zpět\tCtrl+Z"
 
-msgid "Previous Ima&ge\tShift+G"
-msgstr "Předchozí &obrázek\tShift+G"
+#. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr "&Znovu\tCtrl+Shift+Z"
 
-msgid "Next Ima&ge\tG"
-msgstr "Další &obrázek\tG"
+#. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
+msgid "Cu&t\tCtrl+X"
+msgstr "&Vyjmout\tCtrl+X"
 
-msgid "Previous Figu&re\tShift+F"
-msgstr "Předchozí &ilustrace\tShift+F"
+#. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
+msgid "&Copy\tCtrl+C"
+msgstr "&Kopírovat\tCtrl+C"
 
-msgid "Next Figu&re\tF"
-msgstr "Další &ilustrace\tF"
+#. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
+msgid "&Paste\tCtrl+V"
+msgstr "&Vložit\tCtrl+V"
 
-msgid "Previous &Table\tShift+T"
-msgstr "Předchozí &tabulka\tShift+T"
+#. TRANSLATORS: Menu item in the Edit menu to select all text.
+msgid "Select &All\tCtrl+A"
+msgstr "&Vybrat vše\tCtrl+A"
 
-msgid "Next &Table\tT"
-msgstr "Další &tabulka\tT"
-
-msgid "Previous Se&parator\tShift+S"
-msgstr "Předchozí &oddělovač\tShift+S"
-
-msgid "Next Se&parator\tS"
-msgstr "Další o&ddělovač\tS"
-
-msgid "Previous L&ist\tShift+L"
-msgstr "Předchozí &seznam\tShift+L"
-
-msgid "Next L&ist\tL"
-msgstr "Další s&eznam\tL"
-
-msgid "Previous List &Item\tShift+I"
-msgstr "Předchozí &položka seznamu\tShift+I"
-
-msgid "Next List I&tem\tI"
-msgstr "Další p&oložka seznamu\tI"
-
-msgid "Next Heading Level 1\t1"
-msgstr "Další nadpis úrovně 1\t1"
-
-msgid "Previous Heading Level &2\tShift+2"
-msgstr "Předchozí nadpis úrovně &2\tShift+2"
-
-msgid "Next Heading Level 2\t2"
-msgstr "Další nadpis úrovně 2\t2"
-
-msgid "Previous Heading Level &3\tShift+3"
-msgstr "Předchozí nadpis úrovně &3\tShift+3"
-
-msgid "Next Heading Level 3\t3"
-msgstr "Další nadpis úrovně 3\t3"
-
-msgid "Previous Heading Level &4\tShift+4"
-msgstr "Předchozí nadpis úrovně &4\tShift+4"
-
-msgid "Next Heading Level 4\t4"
-msgstr "Další nadpis úrovně 4\t4"
-
-msgid "Previous Heading Level &5\tShift+5"
-msgstr "Předchozí nadpis úrovně &5\tShift+5"
-
-msgid "Next Heading Level 5\t5"
-msgstr "Další nadpis úrovně 5\t5"
-
-msgid "Previous Heading Level &6\tShift+6"
-msgstr "Předchozí nadpis úrovně &6\tShift+6"
-
-msgid "Next Heading Level 6\t6"
-msgstr "Další nadpis úrovně 6\t6"
-
-msgid "&Previous Heading\tShift+H"
-msgstr "&Předchozí nadpis\tShift+H"
-
-msgid "Go to previous heading"
-msgstr "Přejít na předchozí nadpis"
-
-msgid "&Next Heading\tH"
-msgstr "&Další nadpis\tH"
-
-msgid "Go to next heading"
-msgstr "Přejít na další nadpis"
-
-msgid "Previous Heading Level &1\tShift+1"
-msgstr "Předchozí nadpis úrovně &1\tShift+1"
-
-msgid "&Previous Bookmark\tShift+B"
-msgstr "&Předchozí záložka\tShift+B"
-
-msgid "Go to previous bookmark"
-msgstr "Přejít na předchozí záložku"
-
-msgid "&Next Bookmark\tB"
-msgstr "&Další záložka\tB"
-
-msgid "Go to next bookmark"
-msgstr "Přejít na další záložku"
-
-msgid "Previous &Note\tShift+N"
-msgstr "Předchozí &poznámka\tShift+N"
-
-msgid "Go to previous note"
-msgstr "Přejít na předchozí poznámku"
-
-msgid "Next N&ote\tN"
-msgstr "Další po&známka\tN"
-
-msgid "Go to next note"
-msgstr "Přejít na další poznámku"
-
-msgid "Jump to &All...\tCtrl+B"
-msgstr "Přejít na &vše...\tCtrl+B"
-
-msgid "Show all bookmarks and notes"
-msgstr "Zobrazovat všechny záložky a poznámky"
-
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr "Přejít pouze na &záložky...\tCtrl+Alt+B"
-
-msgid "Show bookmarks only"
-msgstr "Zobrazovat pouze záložky"
-
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "Přejít pouze na po&známky...\tCtrl+Alt+M"
-
-msgid "Show notes only"
-msgstr "Zobrazovat pouze poznámky"
-
-msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "&Zobrazit text poznámky\tRawCtrl+Shift+W"
-
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "&Zobrazit text poznámky\tCtrl+Shift+W"
-
-msgid "View the note at current position"
-msgstr "Zobrazit poznámku na aktuállní pozici"
-
-msgid "&File"
-msgstr "&Soubor"
-
-msgid "&Go"
-msgstr "&Přejít"
-
-msgid "&Tools"
-msgstr "&Nástroje"
-
-msgid "&Help"
-msgstr "&Nápověda"
-
-msgid "&Open...\tCtrl+O"
-msgstr "&Otevřít...\tCtrl+O"
-
-msgid "Open a document"
-msgstr "Otevřít dokumentt"
-
-msgid "&Close\tCtrl+W"
-msgstr "&Zavřít\tCtrl+W"
-
-msgid "&Close\tCtrl+F4"
-msgstr "&Zavřít\tCtrl+F4"
-
-msgid "Close the current document"
-msgstr "Zavřít aktuální dokument"
-
-msgid "Close &All\tCtrl+Shift+W"
-msgstr "Zavřít &vše\tCtrl+Shift+W"
-
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "Zavřít &vše\tCtrl+Shift+F4"
-
-msgid "Close all documents"
-msgstr "Zavřít všechny dokumenty"
-
-msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "Znovu otevřít &naposledy zavřený\tCtrl+Shift+T"
-
-msgid "Reopen the last closed document"
-msgstr "Znovu otevřít naposledy zavřený dokument"
-
+#. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
 msgstr "&Nedávné dokumenty"
 
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 msgid "Open a recent document"
-msgstr "Otevřít nedávný dokument"
+msgstr "Otevře nedávný dokument"
 
-msgid "E&xit\tCtrl+Q"
-msgstr "&Ukončit\tCtrl+Q"
-
-msgid "Exit the application"
-msgstr "Ukončit aplikaci"
-
-msgid "&Find...\tCtrl+F"
-msgstr "&Najít...\tCtrl+F"
-
-msgid "Find text in the document"
-msgstr "Najít text v dokumentu"
-
-msgid "Find &Next\tF3"
-msgstr "Najít &další\tF3"
-
-msgid "Find next occurrence"
-msgstr "Najít další výskyt"
-
-msgid "Find &Previous\tShift+F3"
-msgstr "Najít &předchozí\tShift+F3"
-
-msgid "Find previous occurrence"
-msgstr "Najít předchozí výskyt"
-
-msgid "Go to &line...\tCtrl+G"
-msgstr "Přejít na &řádek...\tCtrl+G"
-
-msgid "Go to a specific line"
-msgstr "Přejít na konkrétní řádek"
-
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Přejít na &procenta...\tCtrl+Shift+G"
-
-msgid "Go to a percentage of the document"
-msgstr "Přejít na určité procento z délky dokumentu"
-
-msgid "Go &Back\tAlt+Left"
-msgstr "Přejít &zpět\tAlt+šipka doleva"
-
-msgid "Go back in history"
-msgstr "Přejít zpět v historii"
-
-msgid "Go &Forward\tAlt+Right"
-msgstr "Přejít &vpřed\tAlt+šipka doprava"
-
-msgid "Go forward in history"
-msgstr "Přejít vpřed v historii"
-
-msgid "&Sections"
-msgstr "&Oddíly"
-
-msgid "Navigate by sections"
-msgstr "Navigovat po oddílech"
-
-msgid "&Headings"
-msgstr "&Nadpisy"
-
-msgid "Navigate by headings"
-msgstr "Navigovat po nadpisech"
-
-msgid "&Pages"
-msgstr "&Stránky"
-
-msgid "Navigate by pages"
-msgstr "Navigovat po stránkách"
-
-msgid "&Bookmarks"
-msgstr "&Záložky"
-
-msgid "Navigate by bookmarks"
-msgstr "Navigovat po záložkách"
-
-msgid "&Links"
-msgstr "&Odkazy"
-
-msgid "Navigate by links"
-msgstr "Navigovat po odkazech"
-
-msgid "&Images"
-msgstr "&Obrázky"
-
-msgid "Navigate by images"
-msgstr "Navigovat po obrázcích"
-
-msgid "&Figures"
-msgstr "&Ilustrace"
-
-msgid "Navigate by figures"
-msgstr "Navigovat po ilustracích"
-
-msgid "&Tables"
-msgstr "&Tabulky"
-
-msgid "Navigate by tables"
-msgstr "Navigovat po tabulkách"
-
-msgid "&Separators"
-msgstr "&Oddělovače"
-
-msgid "Navigate by separators"
-msgstr "Navigovat po oddělovačích"
-
-msgid "&Lists"
-msgstr "&Seznamy"
-
-msgid "Navigate by lists"
-msgstr "Navigovat po seznamech"
-
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr "&Importovat data dokumentu...\tCtrl+Shift+I"
-
-msgid "Import bookmarks and position"
-msgstr "Importovat záložky a pozici"
-
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr "&Exportovat data dokumentu...\tCtrl+Shift+E"
-
-msgid "Export bookmarks and position"
-msgstr "Exportovat záložky a pozici"
-
-msgid "Export to &Plain Text...\tCtrl+E"
-msgstr "Exportovat do &prostého textu...\tCtrl+E"
-
-msgid "Export document as plain text"
-msgstr "Exportovat dokument jako prostý text"
-
-msgid "Export to &HTML..."
-msgstr "Exportovat do &HTML..."
-
-msgid "Export document as HTML"
-msgstr "Exportovat dokument jako HTML"
-
-msgid "Export to &Markdown..."
-msgstr "Exportovat do &Markdown..."
-
-msgid "Export document as Markdown"
-msgstr "Exportovat dokument jako Markdown"
-
-msgid "&Word Count\tRawCtrl+W"
-msgstr "&Počet slov\tRawCtrl+W"
-
-msgid "&Word Count\tCtrl+W"
-msgstr "&Počet slov\tCtrl+W"
-
-msgid "Show word count"
-msgstr "Zobrazit počet slov"
-
-msgid "Document &Info\tCtrl+I"
-msgstr "&Informace o dokumentu\tCtrl+I"
-
-msgid "Show document information"
-msgstr "Zobrazit informace o dokumentu"
-
-msgid "&Table of Contents\tCtrl+T"
-msgstr "&Obsah\tCtrl+T"
-
-msgid "Show table of contents"
-msgstr "Zobrazit obsah"
-
-msgid "&Elements List...\tF7"
-msgstr "Seznam &prvků...\tF7"
-
-msgid "Show elements list"
-msgstr "Zobrazit seznam prvků"
-
-msgid "Open &Containing Folder\tCtrl+Shift+C"
-msgstr "Otevřít &nadřazenou složku\tCtrl+Shift+C"
-
-msgid "Open folder containing the document"
-msgstr "Otevřít složku, kde je dokument uložený"
-
-msgid "Open in &Web View\tCtrl+Shift+V"
-msgstr "Otevřít ve &webovém zobrazení\tCtrl+Shift+V"
-
-msgid "Open document in web view"
-msgstr "Otevřít dokument ve webovém zobrazení"
-
-msgid "I&mport/Export"
-msgstr "I&mport/Export"
-
-msgid "Import and export options"
-msgstr "Možnosti importu a exportu"
-
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
-msgstr "Přepnout &záložku\tCtrl+Shift+B"
-
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "Záložka s &poznámkou\tCtrl+Shift+N"
-
-msgid "&Options\tCtrl+,"
-msgstr "&Možnosti\tCtrl+,"
-
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "Časovač &spánku...\tCtrl+Shift+S"
-
-msgid "&About Paperback\tCtrl+F1"
-msgstr "&O Paperbacku\tCtrl+F1"
-
-msgid "About this application"
-msgstr "O této aplikaci"
-
-msgid "View Help in &Browser\tF1"
-msgstr "Zobrazit nápovědu v &prohlížeči\tF1"
-
-msgid "View help in default browser"
-msgstr "Zobrazit nápovědu ve výchozím prohlížeči"
-
-msgid "View Help in &Paperback\tShift+F1"
-msgstr "Zobrazit nápovědu v &Paperbacku\tShift+F1"
-
-msgid "View help in Paperback"
-msgstr "Zobrazit nápovědu v Paperbacku"
-
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "Vyhledat &aktualizace\tCtrl+Shift+U"
-
-msgid "Check for updates"
-msgstr "Vyhledat aktualizace"
-
-msgid "&Donate\tCtrl+D"
-msgstr "&Přispět\tCtrl+D"
-
-msgid "Support Paperback development"
-msgstr "Podpořit vývoj Paperbacku"
-
+#. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
 msgstr "(Žádné nedávné dokumenty)"
 
-msgid "Show All...\tCtrl+R"
-msgstr "Zobrazit všechny...\tCtrl+R"
+#. TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
+msgid "Show All..."
+msgstr "Zobrazit všechny..."
 
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
+msgid "Go to &Page"
+msgstr "Přejít na &stránku"
+
+#. TRANSLATORS: Menu item in the Go menu to open the find dialog.
+msgid "&Find..."
+msgstr "&Najít..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Find menu item.
+msgid "Find text in the document"
+msgstr "Najde text v dokumentu"
+
+#. TRANSLATORS: Status-bar help text for the Go > Find Next menu item.
+msgid "Find next occurrence"
+msgstr "Najít následující výskyt"
+
+#. TRANSLATORS: Status-bar help text for the Go > Find Previous menu item.
+msgid "Find previous occurrence"
+msgstr "Najít předchozí výskyt"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
+msgid "Go to &line..."
+msgstr "Přejít na &řádek..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
+msgid "Go to a specific line"
+msgstr "Přejde na konkrétní řádek"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
+msgid "Go to &percent..."
+msgstr "Přejít na &procenta..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
+msgid "Go to a percentage of the document"
+msgstr "Přejde na určité procento délky dokumentu"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
+msgid "Go back in history"
+msgstr "Přejde zpět v historii"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
+msgid "Go forward in history"
+msgstr "Přejde vpřed v historii"
+
+#. TRANSLATORS: Label for the Sections submenu in the compact Go menu.
+msgid "&Sections"
+msgstr "&Oddíly"
+
+#. TRANSLATORS: Status-bar help text for the Go > Sections submenu.
+msgid "Navigate by sections"
+msgstr "Navigace po oddílech"
+
+#. TRANSLATORS: Label for the Headings submenu in the compact Go menu.
+msgid "&Headings"
+msgstr "&Nadpisy"
+
+#. TRANSLATORS: Status-bar help text for the Go > Headings submenu.
+msgid "Navigate by headings"
+msgstr "Navigace po nadpisech"
+
+#. TRANSLATORS: Label for the Pages submenu in the compact Go menu.
+msgid "&Pages"
+msgstr "&Stránky"
+
+#. TRANSLATORS: Status-bar help text for the Go > Pages submenu.
+msgid "Navigate by pages"
+msgstr "Navigace po stránkách"
+
+#. TRANSLATORS: Label for the Bookmarks submenu in the compact Go menu.
+msgid "&Bookmarks"
+msgstr "&Záložky"
+
+#. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
+msgid "Navigate by bookmarks"
+msgstr "Navigace po záložkách"
+
+#. TRANSLATORS: Label for the Links submenu in the compact Go menu.
+msgid "&Links"
+msgstr "&Odkazy"
+
+#. TRANSLATORS: Status-bar help text for the Go > Links submenu.
+msgid "Navigate by links"
+msgstr "Navigace po odkazech"
+
+#. TRANSLATORS: Label for the Images submenu in the compact Go menu.
+msgid "&Images"
+msgstr "&Obrázky"
+
+#. TRANSLATORS: Status-bar help text for the Go > Images submenu.
+msgid "Navigate by images"
+msgstr "Navigace po obrázcích"
+
+#. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
+msgid "&Figures"
+msgstr "&Ilustrace"
+
+#. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
+msgid "Navigate by figures"
+msgstr "Navigace po ilustracích"
+
+#. TRANSLATORS: Label for the Tables submenu in the compact Go menu.
+msgid "&Tables"
+msgstr "&Tabulky"
+
+#. TRANSLATORS: Status-bar help text for the Go > Tables submenu.
+msgid "Navigate by tables"
+msgstr "Navigace po tabulkách"
+
+#. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
+msgid "&Separators"
+msgstr "&Oddělovače"
+
+#. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
+msgid "Navigate by separators"
+msgstr "Navigace po oddělovačích"
+
+#. TRANSLATORS: Label for the Lists submenu in the compact Go menu.
+msgid "&Lists"
+msgstr "&Seznamy"
+
+#. TRANSLATORS: Status-bar help text for the Go > Lists submenu.
+msgid "Navigate by lists"
+msgstr "Navigace po seznamech"
+
+#. TRANSLATORS: Label for the Containers submenu in the compact Go menu.
+msgid "&Containers"
+msgstr "&Kontejnery"
+
+#. TRANSLATORS: Status-bar help text for the Go > Containers submenu.
+msgid "Navigate by containers"
+msgstr "Navigace po kontejnerech"
+
+#. TRANSLATORS: Menu item in the Help menu to show information about the application.
+msgid "&About Paperback"
+msgstr "&O Paperbacku"
+
+#. TRANSLATORS: Status-bar help text for the Help > About Paperback menu item.
+msgid "About this application"
+msgstr "O této aplikaci"
+
+#. TRANSLATORS: Menu item in the Help menu to open the help documentation in the user's web browser.
+msgid "View Help in &Browser"
+msgstr "Zobrazit nápovědu v &prohlížeči"
+
+#. TRANSLATORS: Status-bar help text for the Help > View Help in Browser menu item.
+msgid "View help in default browser"
+msgstr "Zobrazí nápovědu ve výchozím prohlížeči"
+
+#. TRANSLATORS: Menu item in the Help menu to open the help documentation inside Paperback itself.
+msgid "View Help in &Paperback"
+msgstr "Zobrazit nápovědu v &Paperbacku"
+
+#. TRANSLATORS: Status-bar help text for the Help > View Help in Paperback menu item.
+msgid "View help in Paperback"
+msgstr "Zobrazí nápovědu v Paperbacku"
+
+#. TRANSLATORS: Menu item in the Help menu to check for application updates.
+msgid "Check for &Updates"
+msgstr "Vyhledat &aktualizace"
+
+#. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
+msgid "Check for updates"
+msgstr "Zkontroluje dostupnost aktualizací"
+
+#. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
+msgid "&Donate"
+msgstr "&Přispět"
+
+#. TRANSLATORS: Status-bar help text for the Help > Donate menu item.
+msgid "Support Paperback development"
+msgstr "Podpořte vývoj Paperbacku"
+
+#. TRANSLATORS: Menu item in Tools > Import/Export to import bookmarks and reading position from a file.
+msgid "&Import Document Data..."
+msgstr "&Importovat data dokumentu..."
+
+#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
+msgid "Import bookmarks and position"
+msgstr "Importuje záložky a pozici"
+
+#. TRANSLATORS: Menu item in Tools > Import/Export to export bookmarks and reading position to a file.
+msgid "&Export Document Data..."
+msgstr "&Exportovat data dokumentu..."
+
+#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
+msgid "Export bookmarks and position"
+msgstr "Exportuje záložky a pozici"
+
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a plain text file.
+msgid "Export to &Plain Text..."
+msgstr "Exportovat do &prostého textu..."
+
+#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
+msgid "Export document as plain text"
+msgstr "Exportuje dokument do prostého textu"
+
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as an HTML file.
+msgid "Export to &HTML..."
+msgstr "Exportovat do &HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
+msgid "Export document as HTML"
+msgstr "Exportuje dokument do HTML"
+
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a Markdown file.
+msgid "Export to &Markdown..."
+msgstr "Exportovat do &Markdown..."
+
+#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
+msgid "Export document as Markdown"
+msgstr "Exportuje dokument do Markdown"
+
+#. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
+msgid "&Word Count"
+msgstr "Počet &slov"
+
+#. TRANSLATORS: Status-bar help text for the Word Count menu item.
+msgid "Show word count"
+msgstr "Zobrazí počet slov"
+
+#. TRANSLATORS: Menu item in the Tools menu to show information about the document.
+msgid "Document &Info"
+msgstr "&Informace o dokumentu"
+
+#. TRANSLATORS: Status-bar help text for the Document Info menu item.
+msgid "Show document information"
+msgstr "Zobrazí informace o dokumentu"
+
+#. TRANSLATORS: Menu item in the Tools menu to show the document's table of contents.
+msgid "&Table of Contents"
+msgstr "&Obsah"
+
+#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
+msgid "Show table of contents"
+msgstr "Zobrazí obsah (osnovu) dokumentu"
+
+#. TRANSLATORS: Menu item in the Tools menu to show a list of the document's structural elements.
+msgid "&Elements List..."
+msgstr "Seznam &prvků..."
+
+#. TRANSLATORS: Status-bar help text for the Elements List menu item.
+msgid "Show elements list"
+msgstr "Zobrazí seznam prvků"
+
+#. TRANSLATORS: Menu item in the Tools menu to reveal the document's file in the system file manager.
+msgid "Reveal &File in Folder"
+msgstr "Zobrazit &soubor ve složce"
+
+#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
+msgid "Reveal document in the file manager"
+msgstr "Zobrazí dokument ve správci souborů"
+
+#. TRANSLATORS: Menu item in the Tools menu to open the document in a web view.
+msgid "Open in &Web View"
+msgstr "Otevřít ve &webovém zobrazení"
+
+#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
+msgid "Open document in web view"
+msgstr "Otevře dokument ve webovém zobrazení"
+
+#. TRANSLATORS: Menu item in the Tools menu to open the document's underlying source markup in a new tab.
+msgid "View &Source"
+msgstr "Zobrazit &zdroj"
+
+#. TRANSLATORS: Status-bar help text for the View Source menu item.
+msgid "Open the document source in a new tab"
+msgstr "Otevře zdrojový soubor dokumentu v nové záložce"
+
+#. TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
+msgid "I&mport/Export"
+msgstr "I&mport/Export"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
+msgid "Import and export options"
+msgstr "Možnosti importu a exportu"
+
+#. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
+msgid "Word w&rap"
+msgstr "Zalamování &řádků"
+
+#. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
+msgid "Toggle word wrap"
+msgstr "Přepíná zalamování řádků"
+
+#. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
+msgid "&Full Screen"
+msgstr "Na &celou obrazovku"
+
+#. TRANSLATORS: Status-bar help text for the Full Screen menu item.
+msgid "Toggle full screen"
+msgstr "Přepíná režim na celou obrazovku"
+
+#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
+msgid "&Settings"
+msgstr "&Nastavení"
+
+#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
+msgid "&Sleep Timer..."
+msgstr "&Časovač spánku..."
+
+#. TRANSLATORS: Top-level "File" menu label in the menu bar
+msgid "&File"
+msgstr "&Soubor"
+
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
+msgid "&Go"
+msgstr "&Přejít"
+
+#. TRANSLATORS: Top-level "Tools" menu label in the menu bar
+msgid "&Tools"
+msgstr "&Nástroje"
+
+#. TRANSLATORS: Top-level "Help" menu label in the menu bar
+msgid "&Help"
+msgstr "&Nápověda"
+
+#. TRANSLATORS: Top-level "Edit" menu label in the menu bar (macOS only)
+msgid "&Edit"
+msgstr "&Úpravy"
+
+#. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
 msgstr "Žádné oddíly."
 
-msgid "No next section"
-msgstr "Žádný další oddíl"
+#. TRANSLATORS: Announced when there is no next section from the current position
+msgid "No next section."
+msgstr "Žádný následující oddíl."
 
-msgid "No previous section"
-msgstr "Žádný předchozí oddíl"
+#. TRANSLATORS: Announced when there is no previous section from the current position
+msgid "No previous section."
+msgstr "Žádný předchozí oddíl."
 
-#, c-format
+#. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
 msgid "No headings at level %d."
 msgstr "Žádné nadpisy úrovně %d."
 
-#, c-format
+#. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
 msgid "No next heading at level %d."
-msgstr "Žádný další nadpis úrovně %d."
+msgstr "Žádný následující nadpis úrovně %d."
 
-#, c-format
+#. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
 msgid "No previous heading at level %d."
 msgstr "Žádný předchozí nadpis úrovně %d."
 
+#. TRANSLATORS: Announced when the document has no headings at all (no level filter applied)
 msgid "No headings."
 msgstr "Žádné nadpisy."
 
+#. TRANSLATORS: Announced when there is no next heading (no level filter applied)
 msgid "No next heading."
-msgstr "Žádný další nadpis."
+msgstr "Žádný následující nadpis."
 
+#. TRANSLATORS: Announced when there is no previous heading (no level filter applied)
 msgid "No previous heading."
 msgstr "Žádný předchozí nadpis."
 
+#. TRANSLATORS: Announced when there is no next page from the current position
 msgid "No next page."
-msgstr "Žádná další stránka."
+msgstr "Žádná následující stránka."
 
+#. TRANSLATORS: Announced when there is no previous page from the current position
 msgid "No previous page."
 msgstr "Žádná předchozí stránka."
 
+#. TRANSLATORS: Announced when the document has no links to navigate
 msgid "No links."
 msgstr "Žádné odkazy."
 
+#. TRANSLATORS: Announced when there is no next link from the current position
 msgid "No next link."
-msgstr "Žádný další odkaz."
+msgstr "Žádný následující odkaz."
 
+#. TRANSLATORS: Announced when there is no previous link from the current position
 msgid "No previous link."
 msgstr "Žádný předchozí odkaz."
 
+#. TRANSLATORS: Announced when the document has no lists to navigate
 msgid "No lists."
 msgstr "Žádné seznamy."
 
+#. TRANSLATORS: Announced when there is no next list from the current position
 msgid "No next list."
-msgstr "Žádný další seznam."
+msgstr "Žádný následující seznam."
 
+#. TRANSLATORS: Announced when there is no previous list from the current position
 msgid "No previous list."
 msgstr "Žádný předchozí seznam."
 
+#. TRANSLATORS: Announced when the document has no list items to navigate
 msgid "No list items."
 msgstr "Žádné položky seznamu."
 
+#. TRANSLATORS: Announced when there is no next list item from the current position
 msgid "No next list item."
-msgstr "Žádná další položka seznamu."
+msgstr "Žádná následující položka seznamu."
 
+#. TRANSLATORS: Announced when there is no previous list item from the current position
 msgid "No previous list item."
 msgstr "Žádná předchozí položka seznamu."
 
+#. TRANSLATORS: Announced when the document has no tables to navigate
 msgid "No tables."
 msgstr "Žádné tabulky."
 
+#. TRANSLATORS: Announced when there is no next table from the current position
 msgid "No next table."
-msgstr "Žádná další tabulka."
+msgstr "Žádná následující tabulka."
 
+#. TRANSLATORS: Announced when there is no previous table from the current position
 msgid "No previous table."
 msgstr "Žádná předchozí tabulka."
 
+#. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr "Žádné oddělovače."
 
+#. TRANSLATORS: Announced when there is no next separator from the current position
 msgid "No next separator."
-msgstr "Žádný další oddělovač."
+msgstr "Žádný následující oddělovač."
 
+#. TRANSLATORS: Announced when there is no previous separator from the current position
 msgid "No previous separator."
 msgstr "Žádný předchozí oddělovač."
 
+#. TRANSLATORS: Announced when the document has no images to navigate
 msgid "No images."
 msgstr "Žádné obrázky."
 
+#. TRANSLATORS: Announced when there is no next image from the current position
 msgid "No next image."
-msgstr "Žádný další obrázek."
+msgstr "Žádný následující obrázek."
 
+#. TRANSLATORS: Announced when there is no previous image from the current position
 msgid "No previous image."
 msgstr "Žádný předchozí obrázek."
 
+#. TRANSLATORS: Announced when the document has no figures to navigate
 msgid "No figures."
 msgstr "Žádné ilustrace."
 
+#. TRANSLATORS: Announced when there is no next figure from the current position
 msgid "No next figure."
-msgstr "Žádná další ilustrace."
+msgstr "Žádná následující ilustrace."
 
+#. TRANSLATORS: Announced when there is no previous figure from the current position
 msgid "No previous figure."
 msgstr "Žádná předchozí ilustrace."
 
-msgid "Wrapping to start. "
-msgstr "Přecházím na začátek. "
-
-msgid "Wrapping to end. "
-msgstr "Přecházím na konec. "
-
-#, c-format
+#. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
 msgid "%s Heading level %d"
 msgstr "%s nadpis úrovně %d"
 
-#, c-format
-msgid "Page %d: %s"
-msgstr "Stránka %d: %s"
-
+#. TRANSLATORS: Suffix appended after a link's text when announcing navigation to a link; the leading space is significant
 msgid " link"
 msgstr " odkaz"
 
+#. TRANSLATORS: Announced when moving forward/backward through the caret position history
 msgid "Navigated to next position."
-msgstr "Přesunuto na další pozici."
+msgstr "Přesunuto na následující pozici."
 
 msgid "Navigated to previous position."
 msgstr "Přesunuto na předchozí pozici."
 
+#. TRANSLATORS: Announced when there is no next/previous position in the caret position history
 msgid "No next position."
-msgstr "Žádná další pozice."
+msgstr "Žádná následující pozice."
 
 msgid "No previous position."
 msgstr "Žádná předchozí pozice."
 
-#, c-format
-msgid "%s - Bookmark %d"
-msgstr "%s - záložka %d"
+#. TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
+msgid "No containers."
+msgstr "Žádné kontejnery."
 
-msgid "No notes."
-msgstr "Žádné poznámky."
+#. TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
+msgid "Not in a container."
+msgstr "Nejste v kontejneru."
 
-msgid "No bookmarks."
-msgstr "Žádné záložky."
+#. TRANSLATORS: Announced when jumping to the start/end of the container (list/table) the caret is inside, and the target line is blank
+msgid "Past end of container."
+msgstr "Za koncem kontejneru."
 
-msgid "No next note."
-msgstr "Žádná další poznámka."
+msgid "Start of container."
+msgstr "Začátek kontejneru."
 
-msgid "No next bookmark."
-msgstr "Žádná další záložka."
+#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+msgid "Table View"
+msgstr "Zobrazení tabulky"
 
-msgid "No previous note."
-msgstr "Žádná předchozí poznámka."
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
+msgid "Create &bookmark"
+msgstr "Vytvořit &záložku"
 
-msgid "No previous bookmark."
-msgstr "Žádná předchozí záložka."
+msgid "Create bookmark"
+msgstr "Vytvoří záložku"
 
-msgid "Bookmark."
-msgstr "Záložka."
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
+msgid "Bookmark with &note"
+msgstr "Záložka s &poznámkou"
 
-msgid "Bookmark removed."
-msgstr "Záložka odstraněna."
+msgid "Create bookmark with note"
+msgstr "Vytvoří záložku s poznámkou"
 
-msgid "Bookmark added."
-msgstr "Záložka přidána."
+#. TRANSLATORS: Right-click context menu item and status text to open the find dialog
+msgid "&Find"
+msgstr "&Najít"
 
-msgid "Enter bookmark note:"
-msgstr "Zadejte poznámku k záložce:"
+msgid "Find text"
+msgstr "Vyhledá text"
 
-msgid "Bookmark saved."
-msgstr "Záložka uložena."
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
+msgid "Find &next"
+msgstr "Najít &následující"
 
-msgid "No note at the current position."
-msgstr "Žádná poznámka na aktuální pozici."
+msgid "Find next match"
+msgstr "Najde další shodu"
 
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
+msgid "Find &previous"
+msgstr "Najít &Předchozí"
+
+msgid "Find previous match"
+msgstr "Najde předchozí shodu"
+
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
+msgid "Go to &page"
+msgstr "Přejít na &stránku"
+
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
+msgid "Go to &line"
+msgstr "Přejít na &řádek"
+
+msgid "Go to line"
+msgstr "Přejde na řádek"
+
+#. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
+msgid "Go to &percent"
+msgstr "Přejít na &procenta"
+
+msgid "Go to percent"
+msgstr "Přejde na procenta"
+
+#. TRANSLATORS: Announced when the user cancels a running sleep timer
+msgid "Sleep timer cancelled."
+msgstr "Časovač spánku zrušen."
+
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Časovač spánku nastaven na %d minutu."
+msgstr[1] "Časovač spánku nastaven na %d minut."
+msgstr[2] ""
+
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Line"
 msgstr "Řádek"
 
+#. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Znak"
 
+#. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
 msgstr "Časovač spánku"
 
+#. TRANSLATORS: System tray menu item to restore the main window from the tray
 msgid "&Restore"
 msgstr "&Obnovit"
 
+#. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
 msgid "Restore Paperback"
 msgstr "Obnovit Paperback"
 
-msgid "E&xit"
-msgstr "&Ukončit"
-
+#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 msgid "Exit Paperback"
 msgstr "Ukončit Paperback"
 
-#, c-format
-msgid "Update to %s"
-msgstr "Aktualizovat na verzi %s"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Open..."
+msgstr "Otevřít..."
 
-#, c-format
-msgid "A new version of %s is available. Here's what's new:"
-msgstr "Je k dispozici nová verze %s. Toto jsou novinky:"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Close All"
+msgstr "Zavřít vše"
 
-msgid "No release notes provided."
-msgstr "Nejsou uvedeny žádné poznámky k verzi."
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reopen Last Closed"
+msgstr "Znovu otevřít naposledy zavřený dokument"
 
-#, c-format
-msgid "%s Update"
-msgstr "%s aktualizace"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Show All Recent Documents..."
+msgstr "Zobrazit všechny nedávné dokumenty..."
 
-msgid "Downloading update..."
-msgstr "Stahuje se aktualizace..."
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Exit"
+msgstr "Ukončit"
 
-msgid "No updates available."
-msgstr "Žádné aktualizace nejsou dostupné."
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Find..."
+msgstr "Najít..."
 
-#, c-format
-msgid "No updates available. Latest version: %s"
-msgstr "Žádné aktualizace nejsou dostupné. Poslední verze: %s"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Find Next"
+msgstr "Najít následující"
 
-msgid "Info"
-msgstr "Informace"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Find Previous"
+msgstr "Najít předchozí"
 
-#, c-format
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Go to Line..."
+msgstr "Přejít na řádek..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Go to Percent..."
+msgstr "Přejít na procenta..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Go to Page..."
+msgstr "Přejít na stránku..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Go Back"
+msgstr "Přejít zpět"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Go Forward"
+msgstr "Přejít vpřed"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Announce Percentage"
+msgstr "Oznámit pozici v procentech"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Set Temporary Bookmark"
+msgstr "Nastavit dočasnou záložku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Jump to Temporary Bookmark"
+msgstr "Přejít na dočasnou záložku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Heading"
+msgstr "Předchozí nadpis"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Heading"
+msgstr "Následující nadpis"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Heading Level 1"
+msgstr "Předchozí nadpis úrovně 1"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Heading Level 2"
+msgstr "Předchozí nadpis úrovně 2"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Heading Level 3"
+msgstr "Předchozí nadpis úrovně 3"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Heading Level 4"
+msgstr "Předchozí nadpis úrovně 4"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Heading Level 5"
+msgstr "Předchozí nadpis úrovně 5"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Heading Level 6"
+msgstr "Předchozí nadpis úrovně 6"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Page"
+msgstr "Předchozí stránka"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Page"
+msgstr "Následující stránka"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Bookmark"
+msgstr "Předchozí záložka"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Bookmark"
+msgstr "Následující záložka"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Note"
+msgstr "Předchozí poznámka"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Note"
+msgstr "Následující poznámka"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Jump to All Bookmarks..."
+msgstr "Přejít na všechny záložky..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Jump to Bookmarks Only..."
+msgstr "Přejít pouze na záložky..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Jump to Notes Only..."
+msgstr "Přejít pouze na poznámky..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "View Note Text"
+msgstr "Zobrazit text poznámky"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Link"
+msgstr "Předchozí odkaz"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Link"
+msgstr "Následující odkaz"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Image"
+msgstr "Předchozí obrázek"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Image"
+msgstr "Následující obrázek"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Figure"
+msgstr "Předchozí ilustrace"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Figure"
+msgstr "Následující ilustrace"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Table"
+msgstr "Předchozí tabulka"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Table"
+msgstr "Následující tabulka"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous Separator"
+msgstr "Předchozí oddělovač"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next Separator"
+msgstr "Následující oddělovač"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous List"
+msgstr "Předchozí seznam"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next List"
+msgstr "Následující seznam"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Previous List Item"
+msgstr "Předchozí položka seznamu"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Next List Item"
+msgstr "Následující položka seznamu"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Container Start"
+msgstr "Začátek kontejneru"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Past Container End"
+msgstr "Za konec kontejneru"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Elements List..."
+msgstr "Seznam prvků..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reveal File in Folder"
+msgstr "Zobrazit soubor ve složce"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Open in Web View"
+msgstr "Otevřít ve webovém zobrazení"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "View Source"
+msgstr "Zobrazit zdroj"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Toggle Bookmark"
+msgstr "Přepnout záložku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Bookmark with Note"
+msgstr "Záložka s poznámkou"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Toggle Word Wrap"
+msgstr "Přepnout zalamování řádků"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Play/Pause Audio"
+msgstr "Přehrát/Pozastavit Audio"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Seek Audio Forward"
+msgstr "Přetočit audio dopředu"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Seek Audio Backward"
+msgstr "Přetočit audio dozadu"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Increase Audio Seek Amount"
+msgstr "Prodloužit interval přetáčení"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Decrease Audio Seek Amount"
+msgstr "Zkrátit interval přetáčení"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Full Screen"
+msgstr "Na celou obrazovku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Settings..."
+msgstr "Nastavení..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Sleep Timer..."
+msgstr "Časovač spánku..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Customize Keyboard Shortcuts..."
+msgstr "Nastavit klávesové zkratky..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Import Document Data..."
+msgstr "Importovat data dokumentu..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export Document Data..."
+msgstr "Exportovat data dokumentu..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export to Plain Text..."
+msgstr "Exportovat do prostého textu..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export to HTML..."
+msgstr "Exportovat do HTML..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export to Markdown..."
+msgstr "Exportovat do Markdown..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "About Paperback"
+msgstr "O Paperbacku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "View Help in Browser"
+msgstr "Zobrazit nápovědu v prohlížeči"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "View Help in Paperback"
+msgstr "Zobrazit nápovědu v Paperbacku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Check for Updates"
+msgstr "Vyhledat aktualizace"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Donate"
+msgstr "Přispět"
+
+#. TRANSLATORS: Name of the "File" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "File"
+msgstr "Soubor"
+
+#. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Tools"
+msgstr "Nástroje"
+
+#. TRANSLATORS: Name of the "Help" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Help"
+msgstr "Nápověda"
+
+#. TRANSLATORS: Shown in the Customize Keyboard Shortcuts list in place of a key combination when an action has no shortcut assigned
+msgid "None"
+msgstr "Žádná klávesa"
+
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+msgid "Figure"
+msgstr "Ilustrace"
+
+msgid "Image"
+msgstr "Obrázek"
+
+#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
 msgstr ""
-"Selhalo ověření bezpečnosti. Do této aktualizace možná zasáhl někdo "
-"nepovolaný.: %s"
+"Neplatný soubor DAISY .opf, nebo se v manifestu nepodařilo najít soubor "
+"DTBook XML"
 
-msgid "Security Error"
-msgstr "Chyba zabezpečení"
-
-msgid "Update failed"
-msgstr "Aktualizace selhala"
-
-#, c-format
-msgid ""
-"Update downloaded to: %s\n"
-"Please install it manually."
+#. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
+msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
 msgstr ""
-"Aktualizace stažena do: %s\n"
-"Nainstalujte ji prosím ručně."
+"Neplatný soubor DAISY 2.02 ncc.html, nebo se v něm nepodařilo najít stránky "
+"s obsahem"
+
+#. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
+msgid "Failed to convert DTBook XML to text"
+msgstr "Nepodařilo se převést DTBook XML na text"
+
+#. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
+msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
+msgstr ""
+"Zdá se, že archiv ZIP není platnou knihou ve formátu DAISY 3 nebo DAISY 2.02"
+
+#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+msgid "rootfile not found in container.xml"
+msgstr "V souboru container.xml nebyl nalezen rootfile"
+
+#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+msgid "unsupported content"
+msgstr "nepodporovaný obsah"
+
+#. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
+msgid "OPF package element missing"
+msgstr "Chybí prvek balíčku OPF"
+
+#. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
+msgid "no readable spine items"
+msgstr "žádné položky s čitelným hřbetem"
+
+#. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
+msgid "failed to convert spine items: {}"
+msgstr "Nepodařilo se převést položky hřbetu: {}"
+
+#. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
+msgid "EPUB has no readable content ({})"
+msgstr "Soubor EPUB neobsahuje žádný čitelný obsah ({})"
+
+#. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
+msgid "Failed to convert FB2 XML to text"
+msgstr "Nepodařilo se převést soubor FB2 XML na text"
+
+#. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
+msgid "HTML file is empty: {}"
+msgstr "Soubor HTML je prázdný: {}"
+
+#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
+msgid "Failed to convert HTML to text: {}"
+msgstr "Nepodařilo se převést HTML na text: {}"
+
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+msgid "Chapter {}"
+msgstr "Kapitola {}"
+
+#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
+msgid "Failed to convert Markdown to text: {}"
+msgstr "Nepodařilo se převést Markdown na text: {}"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
+msgid "Invalid HUFF record"
+msgstr "Neplatný záznam HUFF"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record has the wrong signature
+msgid "Invalid HUFF header"
+msgstr "Neplatná hlavička HUFF"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman cache table offset is out of bounds
+msgid "Invalid HUFF cache offset"
+msgstr "Neplatný offset mezipaměti HUFF"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is invalid
+msgid "Code len out of bounds"
+msgstr "Code len mimo povolený rozsah"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman table has an invalid terminal-code entry
+msgid "Bad term"
+msgstr "Nesprávný výraz"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman base table offset is out of bounds
+msgid "Invalid HUFF base offset"
+msgstr "Neplatný base offset HUFF"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary record has the wrong signature
+msgid "Invalid CDIC header"
+msgstr "Neplatná hlavička CDIC"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary offset table is out of bounds
+msgid "Invalid CDIC offsets"
+msgstr "Neplatné offsety CDIC"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase offset is out of bounds
+msgid "Invalid CDIC phrase offset"
+msgstr "Neplatný offset fráze CDIC"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase length is out of bounds
+msgid "Invalid CDIC phrase length"
+msgstr "Neplatná délka fráze CDIC"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is out of range; {} is the invalid length value
+msgid "Invalid code_len {}"
+msgstr "Neplatná hodnota code_len{}"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
+msgid "Decode stack overflow"
+msgstr "Přetečení zásobníku dekodéru"
+
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+msgid "File too short"
+msgstr "Soubor je příliš krátký"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+msgid "Invalid record offsets"
+msgstr "Neplatné offsety záznamů"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+msgid "No records found"
+msgstr "Nebyly nalezeny žádné záznamy"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+msgid "Invalid Record 0 offsets"
+msgstr "Neplatné offsety záznamu 0"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+msgid "Invalid Record 0"
+msgstr "Neplatný záznam 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+msgid "No MOBI header"
+msgstr "Chybí hlavička MOBI"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+msgid "Invalid MOBI identifier"
+msgstr "Neplatný identifikátor MOBI"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+msgid "Invalid content record range"
+msgstr "Neplatný rozsah záznamu obsahu"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+msgid "Invalid HUFF/CDIC records"
+msgstr "Neplatné záznamy HUFF/CDIC"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+msgid "Missing HUFF parameters in header"
+msgstr "V hlavičce chybí parametry HUFF"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+msgid "Unsupported compression mode ({})"
+msgstr "Nepodporovaný režim komprese ({})"
+
+#. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
+msgid "ODP file does not contain any pages"
+msgstr "Soubor ODP neobsahuje žádné stránky"
+
+#. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
+msgid "FODP file does not contain any pages"
+msgstr "Soubor FODP neobsahuje žádné stránky"
+
+#. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
+msgid "Password required or incorrect"
+msgstr "Je vyžadováno heslo, nebo je zadané heslo nesprávné"
+
+#. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
+msgid "Failed to open PDF document: {}"
+msgstr "Nepodařilo se otevřít dokument PDF: {}"
+
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+"Tento soubor PDF obsahuje pouze obrázky bez jakéhokoli extrahovatelného "
+"textu. Pro přečtení jeho obsahu bude zřejmě potřeba aplikovat na něj OCR."
+
+msgid ""
+"Password-protected PPT files are not currently supported. Try saving the "
+"file as PPTX and opening that instead."
+msgstr ""
+"Soubory PPT chráněné heslem nejsou momentálně podporovány. Zkuste místo toho "
+"soubor uložit ve formátu PPTX."
+
+#. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
+msgid "PPT file contains no slides"
+msgstr "Soubor PPT neobsahuje žádné snímky"
+
+#. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
+msgid "PowerPoint Document stream not found"
+msgstr "Nebyl nalezen PowerPoint Document stream"
+
+#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
+msgid "PPTX file contains no slides"
+msgstr "Soubor PPTX neobsahuje žádné snímky"
+
+#. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
+msgid "Failed to parse RTF document: {}"
+msgstr "Nepodařilo se parsovat RTF dokument: {}"
+
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+msgid "File is encrypted and requires a password"
+msgstr "Soubor je šifrován a vyžaduje heslo"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+msgid "Decryption failed (wrong password?): {}"
+msgstr "Dešifrování se nezdařilo (nesprávné heslo?): {}"
+
+#. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
+msgid "DOC file is missing required FIB fields"
+msgstr "V souboru DOC chybí povinná pole FIB"
+
+#. TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
+msgid "Not a valid DOC file (invalid FIB magic)"
+msgstr "Neplatný soubor DOC (neplatný identifikátor FIB)"
+
+#. TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
+msgid "DOC file is encrypted and requires a password"
+msgstr "Soubor DOC je šifrován a vyžaduje heslo"
+
+#. TRANSLATORS: Error detail shown when decrypting a legacy DOC file fails (the internal sentinel prefix before it is not translated); {} is the underlying error
+msgid "DOC decryption failed (wrong password?): {}"
+msgstr "Dešifrování souboru DOC se nezdařilo (nesprávné heslo?): {}"
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+msgid "File content does not look like plain text"
+msgstr "Obsah souboru nevypadá jako prostý text"
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+msgid "No readable text content found"
+msgstr "Nebyl nalezen žádný čitelný textový obsah"
+
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+msgid "No readable content found in the ZIP archive"
+msgstr "V archivu ZIP nebyl nalezen žádný čitelný obsah"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr ""
+"Selhalo parsování staršího formátu DOC: {}. Selhalo použití náhradního "
+"formátu OOXML: {}"
+
+#. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
+msgid "No file extension found for: {}"
+msgstr "Nebyla nalezena žádná přípona souboru pro: {}"
+
+#. TRANSLATORS: Error shown when no parser supports a file's extension; {} is the extension (without the leading dot)
+msgid "No parser found for extension: .{}"
+msgstr "Nebyl nalezen žádný parser pro příponu: . {}"
+
+#. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
+msgid "All parsers failed for extension: .{}"
+msgstr "Všechny parsery selhaly u přípony: .{}"
+
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+msgid "Password required"
+msgstr "Je vyžadováno heslo"
+
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+msgid "Password incorrect"
+msgstr "Heslo je nesprávné"
+
+msgid "Unknown update file format."
+msgstr "Neznámý formát souboru aktualizace."
+
+msgid "Failed to open disk image"
+msgstr "Nepodařilo se otevřít obraz disku"
+
+msgid ""
+"The update has been downloaded and its disk image opened. Quit %s and drag "
+"the new version into Applications to finish installing."
+msgstr ""
+"Aktualizace je stažena a její obraz disku otevřen. Pro dokončení instalace "
+"ukončete %s a přetáhněte novou verzi do složky Applications."
 
 msgid "Update Ready"
 msgstr "Aktualizace připravena"
@@ -1332,5 +2767,1066 @@ msgstr "Nepodařilo se spustit instalační skript"
 msgid "Failed to launch update script"
 msgstr "Nepodařilo se spustit aktualizační skript"
 
-msgid "Unknown update file format."
-msgstr "Neznámý formát souboru aktualizace."
+msgid "Update failed"
+msgstr "Aktualizace selhala"
+
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Aktualizace stažena do: %s\n"
+"Nainstalujte ji prosím ručně."
+
+msgid "Update to %s"
+msgstr "Aktualizace na verzi %s"
+
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "Je k dispozici nová verze %s. Toto jsou novinky:"
+
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
+msgid "&Yes"
+msgstr "&Ano"
+
+#. TRANSLATORS: Label for the confirmation dialog "No" button
+msgid "&No"
+msgstr "&Ne"
+
+msgid "No release notes provided."
+msgstr "Nejsou uvedeny žádné poznámky k verzi."
+
+msgid "%s Update"
+msgstr "%s aktualizace"
+
+msgid "Downloading update..."
+msgstr "Stahuje se aktualizace..."
+
+msgid "No updates available."
+msgstr "Žádné aktualizace nejsou dostupné."
+
+msgid "No updates available. Latest version: %s"
+msgstr "Žádné aktualizace nejsou dostupné. Nejnovější verze: %s"
+
+msgid "Info"
+msgstr "Informace"
+
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+"Selhalo ověření bezpečnosti. Do této aktualizace možná zasáhl někdo "
+"nepovolaný.: %s"
+
+msgid "Security Error"
+msgstr "Chyba zabezpečení"
+
+#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
+#: swift
+msgid "Export Document Data"
+msgstr "Exportovat data dokumentu"
+
+#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
+#: swift
+msgid "Import Document Data"
+msgstr "Importovat data dokumentu"
+
+#. TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
+#: swift
+msgid "Settings exported"
+msgstr "Nastavení exportována"
+
+#. TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
+#: swift
+msgid "Failed to export settings"
+msgstr "Nepodařilo se exportovat nastavení"
+
+#. TRANSLATORS: Confirmation shown after importing a document's settings and bookmarks from a .paperback file
+#: swift
+msgid "Settings imported"
+msgstr "Nastavení importována"
+
+#. TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
+#: swift
+msgid "Failed to import settings"
+msgstr "Nepodařilo se importovat nastavení"
+
+#. TRANSLATORS: Title of the alert reporting the result of importing/exporting a document's settings and bookmarks
+#: swift
+msgid "Document Data"
+msgstr "Data dokumentu"
+
+#. TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
+#: swift
+msgid "More options"
+msgstr "Další možnosti"
+
+#. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
+#: swift
+msgid "Switch to TTS Mode"
+msgstr "Přepnout do režimu TTS"
+
+#. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
+#: swift
+msgid "Switch to Text Mode"
+msgstr "Přepnout do textového režimu"
+
+#. TRANSLATORS: Menu item to open the list of recently opened documents
+#: swift
+msgid "Recent Documents"
+msgstr "Nedávné dokumenty"
+
+#. TRANSLATORS: Menu item to open the sleep timer; the "(active)" variant is shown while a timer is currently counting down
+#: swift
+msgid "Sleep Timer (active)"
+msgstr "Časovač spánku (aktivní)"
+
+#. TRANSLATORS: Label for the wheel picker choosing between the Headings and Links tabs
+#: swift
+msgid "Type"
+msgstr "Typ"
+
+#. TRANSLATORS: Title shown when a document has no headings or links to list in the Elements sheet
+#: swift
+msgid "No Elements"
+msgstr "Žádné prvky"
+
+#. TRANSLATORS: Description shown under the "No Elements" title explaining what would appear here
+#: swift
+msgid "Headings, images, and other elements will appear here."
+msgstr "Zde se zobrazí nadpisy, obrázky a další prvky."
+
+#. TRANSLATORS: Shown in the main reading area when no document is currently open
+#: swift
+msgid "No document open"
+msgstr "Není otevřen žádný dokument"
+
+#. TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
+#: swift
+msgid "Show All"
+msgstr "Zobrazit vše"
+
+#. TRANSLATORS: Toggle label; when on, search matching is case-sensitive
+#: swift
+msgid "Match Case"
+msgstr "Rozlišovat velikost písmen"
+
+#. TRANSLATORS: Toggle label; when on, search only matches whole words
+#: swift
+msgid "Whole Word"
+msgstr "Celá slova"
+
+#. TRANSLATORS: Toggle label; when on, the search query is treated as a regular expression
+#: swift
+msgid "Regular Expression"
+msgstr "Regulární výraz"
+
+#. TRANSLATORS: Title of the alert shown when a document fails to open
+#: swift
+msgid "Open Error"
+msgstr "Chyba při otevírání"
+
+#. TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
+#: swift
+msgid "Open Book"
+msgstr "Otevřít knihu"
+
+#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
+#: swift
+msgid "Locate"
+msgstr "Najít"
+
+#. TRANSLATORS: Button to remove a document from the recent documents list
+#: swift
+msgid "Remove"
+msgstr "Odstranit"
+
+#. TRANSLATORS: Status label for a recent document whose file can no longer be found
+#: swift
+msgid "File Missing"
+msgstr "Chybějící soubor"
+
+#. TRANSLATORS: Status label for a recent document that's currently open in a tab
+#: swift
+msgid "Currently Open"
+msgstr "Aktuálně otevřeno"
+
+#. TRANSLATORS: Title of the empty-state view shown when no documents have been opened yet
+#: swift
+msgid "No Recent Documents"
+msgstr "Žádné nedávné dokumenty"
+
+#. TRANSLATORS: Description text under the "No Recent Documents" empty-state title
+#: swift
+msgid "Documents you open will appear here."
+msgstr "Zde se zobrazí dokumenty, které otevřete."
+
+#. TRANSLATORS: Section header in Settings grouping text-to-speech voice/rate/pitch controls
+#: swift
+msgid "Text to Speech"
+msgstr "Text na řeč"
+
+#. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
+#: swift
+msgid "Voice"
+msgstr "Hlas"
+
+#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+#: swift
+msgid "Rate"
+msgstr "Rychlost"
+
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#: swift
+msgid "Speech Rate"
+msgstr "Rychlost řeči"
+
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
+#: swift
+msgid "Pitch"
+msgstr "Výška"
+
+#. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
+#: swift
+msgid "Speech Dictionary"
+msgstr "Slovník řeči"
+
+#. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
+#: swift
+msgid "Play Sample"
+msgstr "Přehrát ukázku"
+
+#. TRANSLATORS: Row label for the control that scales the size of document text
+#: swift
+msgid "Text Size"
+msgstr "Velikost textu"
+
+#. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
+#: swift
+msgid "Line Spacing"
+msgstr "Velikost řádkování"
+
+#. TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
+#: swift
+msgid "Paragraph Spacing"
+msgstr "Mezery mezi odstavci"
+
+#. TRANSLATORS: Label for the picker choosing how document text is aligned
+#: swift
+msgid "Alignment"
+msgstr "Zarovnání"
+
+#. TRANSLATORS: Section header in Settings grouping general app behavior toggles
+#: swift
+msgid "Behavior"
+msgstr "Chování"
+
+#. TRANSLATORS: Toggle to reopen previously open documents on next launch
+#: swift
+msgid "Restore last open documents"
+msgstr "Obnovit naposledy otevřené dokumenty"
+
+#. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
+#: swift
+msgid "Swipe up moves forward"
+msgstr "Pohybem prstu nahoru se posunete vpřed"
+
+#. TRANSLATORS: Row label for the document's title in the Document Info sheet
+#: swift
+msgid "Title"
+msgstr "Název"
+
+#. TRANSLATORS: Row label for the document's author in the Document Info sheet
+#: swift
+msgid "Author"
+msgstr "Autor"
+
+#. TRANSLATORS: Row label for the document's total word count
+#: swift
+msgid "Words"
+msgstr "Slova"
+
+#. TRANSLATORS: Row label for the document's total line count
+#: swift
+msgid "Lines"
+msgstr "Řádky"
+
+#. TRANSLATORS: Row label for the document's total character count (including spaces)
+#: swift
+msgid "Characters"
+msgstr "Znaky"
+
+#. TRANSLATORS: Row label for the document's character count with whitespace excluded
+#: swift
+msgid "Characters (excluding spaces)"
+msgstr "Znaky (bez mezer)"
+
+#. TRANSLATORS: Label for the wheel picker that chooses whether Go To navigates by line, page, or percent
+#: swift
+msgid "Mode"
+msgstr "Režim"
+
+#. TRANSLATORS: Go To mode option: navigate to a specific page number
+#: swift
+msgid "Page"
+msgstr "Stránka"
+
+#. TRANSLATORS: Go To mode option: navigate to a percentage through the document
+#: swift
+msgid "Percent"
+msgstr "Procent"
+
+#. TRANSLATORS: Placeholder for the line number input field in Go To
+#: swift
+msgid "Line number"
+msgstr "Číslo řádku"
+
+#. TRANSLATORS: Placeholder for the page number input field in Go To
+#: swift
+msgid "Page number"
+msgstr "Číslo stránky"
+
+#. TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
+#: swift
+msgid "Percentage"
+msgstr "Pozice v procentech"
+
+#. TRANSLATORS: Navigation title of the Go To sheet
+#: swift
+msgid "Go To"
+msgstr "Přejít na"
+
+#. TRANSLATORS: Placeholder text for the password entry field
+#: swift
+msgid "Password"
+msgstr "Heslo"
+
+#. TRANSLATORS: Footer text naming the file that needs a password; {} is the file name
+#: swift
+msgid "Enter password for {}"
+msgstr "Zadejte heslo pro {}"
+
+#. TRANSLATORS: Navigation title of the sheet prompting for a document's password
+#: swift
+msgid "Password Required"
+msgstr "Je vyžadováno heslo"
+
+#. TRANSLATORS: Section header grouping the scope picker for a text-substitution rule
+#: swift
+msgid "Rule"
+msgstr "Pravidlo"
+
+#. TRANSLATORS: Label for the picker choosing whether a rule applies to a whole word or a whole paragraph
+#: swift
+msgid "Scope"
+msgstr "Rozsah"
+
+#. TRANSLATORS: Rule scope option: the rule matches within a single word
+#: swift
+msgid "Word"
+msgstr "Slovo"
+
+#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
+#: swift
+msgid "Paragraph"
+msgstr "Odstavec"
+
+#. TRANSLATORS: Section header grouping the find/replace pattern fields for a text-substitution rule
+#: swift
+msgid "Pattern & Replacement"
+msgstr "&Nahrazení výrazu"
+
+#. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
+#: swift
+msgid "Pattern"
+msgstr "Výraz"
+
+#. TRANSLATORS: Placeholder for the text field where the user enters the replacement text
+#: swift
+msgid "Replacement"
+msgstr "Nahradit výrazem"
+
+#. TRANSLATORS: Toggle limiting a word-scope rule to whole-word matches only (no partial-word matches)
+#: swift
+msgid "Whole word only"
+msgstr "Pouze celá slova"
+
+#. TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
+#: swift
+msgid "Regular expression (\\1 = first capture group)"
+msgstr "Regulární výraz (\\1 = první zachycená skupina)"
+
+#. TRANSLATORS: Toggle for whether this text-substitution rule is currently active
+#: swift
+msgid "Enabled"
+msgstr "Povoleno"
+
+#. TRANSLATORS: Section header for choosing which TTS voices a rule applies to
+#: swift
+msgid "Apply to"
+msgstr "Použít na"
+
+#. TRANSLATORS: Row label leading to the voice-filter picker for this rule
+#: swift
+msgid "Voices"
+msgstr "Hlasy"
+
+#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
+#: swift
+msgid "New Rule"
+msgstr "Nové pravidlo"
+
+#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
+#: swift
+msgid "Edit Rule"
+msgstr "Upravit pravidlo"
+
+#. TRANSLATORS: Button to save the rule and dismiss the editor
+#: swift
+msgid "Save"
+msgstr "Uložit"
+
+#. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
+#: swift
+msgid "All voices"
+msgstr "Všechny hlasy"
+
+#. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
+#: swift
+msgid "Apply To"
+msgstr "Použít na"
+
+#: swift
+msgid "Sleep timer running, {} remaining"
+msgstr "Časovač spánku běží, zbývá {}"
+
+#. TRANSLATORS: Sleep timer duration option that reveals a field to type a custom number of
+#. minutes; {} is the number typed so far, e.g. "Custom: 45 minutes" — shown once non-empty
+#. so VoiceOver users don't need to swipe into the text field to hear the current value.
+#. Three forms picked by the count's last digits (see nt() in Translations.swift): one =
+#. counts ending in 1 except 11 (1, 21, 31, ...), few = counts ending in 2-4 except 12-14
+#. (2, 3, 4, 22, 23, 24, ...), many = everything else (0, 5-20, 25-30, ...). The "many" form's
+#. trailing character isn't a typo — see pluralManyMarker in Translations.swift.
+#: swift
+msgid "Custom"
+msgstr "Vlastní"
+
+#: swift
+msgid "Custom: {} minutes"
+msgstr "Vlastní: {} minut"
+
+#: swift
+msgid "Duration"
+msgstr "Délka"
+
+#. TRANSLATORS: Placeholder in the custom sleep timer duration field, asking for a number of minutes
+#: swift
+msgid "Minutes"
+msgstr "Minut"
+
+#. TRANSLATORS: Button that dismisses the keyboard after typing a custom sleep timer duration
+#: swift
+msgid "Done"
+msgstr "Hotovo"
+
+#. TRANSLATORS: Button that starts the sleep timer with the selected duration, or stops it if one is already running
+#: swift
+msgid "Stop Timer"
+msgstr "Zastavit časovač"
+
+#. TRANSLATORS: Button that starts the sleep timer with the selected duration, or stops it if one is already running
+#: swift
+msgid "Start Timer"
+msgstr "Spustit časovač"
+
+#. TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
+#: swift
+msgid "Edit"
+msgstr "Upravit"
+
+#. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
+#: swift
+msgid "Add Rule"
+msgstr "Přidat pravidlo"
+
+#. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
+#: swift
+msgid "No Rules"
+msgstr "Žádná pravidla"
+
+#. TRANSLATORS: Accessibility label for the horizontal strip of open document tabs
+#: swift
+msgid "Tabs"
+msgstr "Záložky"
+
+#. TRANSLATORS: Navigation title of the table of contents screen
+#: swift
+msgid "Contents"
+msgstr "Obsah"
+
+#. TRANSLATORS: Title shown when the current document has no table of contents
+#: swift
+msgid "No Table of Contents"
+msgstr "Žádný obsah"
+
+#. TRANSLATORS: Description shown below the "No Table of Contents" title
+#: swift
+msgid "This document has no table of contents."
+msgstr "Tento dokument nemá obsah (osnovu)."
+
+#. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
+#: swift
+msgid "Navigation unit"
+msgstr "Jednotka navigace"
+
+#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
+#: swift
+msgid "Previous {}"
+msgstr "Předchozí {}"
+
+#. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
+#: swift
+msgid "Pause"
+msgstr "Pozastavit"
+
+#. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
+#: swift
+msgid "Play"
+msgstr "Přehrát"
+
+#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
+#: swift
+msgid "End of document"
+msgstr "Konec dokumentu"
+
+#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
+#: swift
+msgid "Beginning of document"
+msgstr "Začátek dokumentu"
+
+#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
+#: swift
+msgid "Next {}"
+msgstr "Následující {}"
+
+#. TRANSLATORS: Placeholder shown in the read-aloud view before the user has started playback
+#: swift
+msgid "Press play to start listening."
+msgstr "Stiskněte přehrát a začněte poslouchat."
+
+#: kt
+msgid "Document Information"
+msgstr "Informace o dokumentu"
+
+#. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
+#: kt
+msgid "Untitled Link"
+msgstr "Odkaz bez názvu"
+
+#: kt
+msgid "Export Document"
+msgstr "Export dokumentu"
+
+#. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
+#: kt
+#| msgid "Close the current document"
+msgid "Select a format to export the current document:"
+msgstr "Vyberte formát, do kterého chcete aktuální dokument exportovat:"
+
+#. TRANSLATORS: Export format option to save the document as a plain text file
+#: kt
+msgid "Plain Text (.txt)"
+msgstr "Prostý text (.txt)"
+
+#. TRANSLATORS: Export format option to save the document as an HTML file
+#: kt
+msgid "HTML (.html)"
+msgstr "HTML (.html)"
+
+#. TRANSLATORS: Export format option to save the document as a Markdown file
+#: kt
+msgid "Markdown (.md)"
+msgstr "Markdown (.md)"
+
+#. TRANSLATORS: Shown in the in-app file browser when a folder has no openable documents or subfolders
+#: kt
+msgid "No supported books or folders found here."
+msgstr "Zde nebyly nalezeny žádné podporované knihy ani složky."
+
+#. TRANSLATORS: TalkBack description of a file browser entry's type, read as e.g. "myfile.epub, File, modified ..."
+#: kt
+msgid "Folder"
+msgstr "Složka"
+
+#. TRANSLATORS: Display name for the device's root storage folder in the in-app file browser
+#: kt
+msgid "Internal Storage"
+msgstr "Interní úložiště"
+
+#. TRANSLATORS: Label for the text field where the user types what to search for
+#: kt
+msgid "Search Term"
+msgstr "Hledaný výraz"
+
+#. TRANSLATORS: Button that opens a dropdown of previously used search terms
+#: kt
+msgid "Search History"
+msgstr "Historie vyhledávání"
+
+#. TRANSLATORS: Label for the password input field
+#: kt
+msgid "Password:"
+msgstr "Heslo:"
+
+#: kt
+msgid "All Files Access Required"
+msgstr "Je vyžadován přístup ke všem souborům"
+
+#. TRANSLATORS: Intro sentence explaining what the "All Files Access" permission is used for
+#: kt
+msgid ""
+"Paperback requires the 'All Files Access' permission to enable the custom in-"
+"app file browser."
+msgstr ""
+"Paperback potřebuje přístup ke všem souborům, aby bylo možné aktivovat "
+"vlastní vestavěný prohlížeč souborů."
+
+#. TRANSLATORS: Heading introducing the list of reasons the permission is needed
+#: kt
+msgid "Why we need this:"
+msgstr "Proč to potřebujeme:"
+
+#. TRANSLATORS: First reason for requesting the "All Files Access" permission
+#: kt
+msgid ""
+"To provide a fast, fully screen-reader accessible file manager inside the "
+"app."
+msgstr ""
+"Aby bylo možné používat rychlého správce souborů vestavěného v aplikaci, "
+"který je plně přístupný s odečítači."
+
+#. TRANSLATORS: Second reason for requesting the "All Files Access" permission
+#: kt
+msgid ""
+"To load large files instantly without needing to copy them into the app's "
+"cache."
+msgstr ""
+"Aby bylo možné okamžitě načítat velké soubory bez nutnosti jejich kopírování "
+"do mezipaměti aplikace."
+
+#. TRANSLATORS: Third reason for requesting the "All Files Access" permission
+#: kt
+msgid "To display the exact local file paths of your documents."
+msgstr "Aby bylo možné zobrazovat přesné lokální cesty k vašim dokumentům."
+
+#. TRANSLATORS: Button label to grant the requested permission
+#: kt
+msgid "Grant"
+msgstr "Udělit oprávnění"
+
+#. TRANSLATORS: Button label to dismiss the permission rationale dialog without granting it
+#: kt
+msgid "Not Now"
+msgstr "Teď ne"
+
+#. TRANSLATORS: Dialog title, switches between the main sleep timer view and the custom-minutes entry view
+#: kt
+msgid "Custom Timer"
+msgstr "Vlastní časovač"
+
+#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#: kt
+msgid "Back"
+msgstr "Zpět"
+
+#. TRANSLATORS: Button to confirm and start the sleep timer with the custom minutes entered
+#: kt
+msgid "Start"
+msgstr "Spustit"
+
+#. TRANSLATORS: Sentence announced to screen readers with the sleep timer's remaining time; {} is replaced with e.g. "3:45"
+#: kt
+msgid "Active: {} remaining"
+msgstr "Aktivní: Zbývá {}"
+
+#. TRANSLATORS: Unit label shown under the sleep timer's remaining time
+#: kt
+msgid "remaining"
+msgstr "zbývá"
+
+#. TRANSLATORS: Button to cancel the currently running sleep timer
+#: kt
+msgid "Cancel Timer"
+msgstr "Zrušit časovač"
+
+#. TRANSLATORS: Heading introducing the preset duration chips, shown while a sleep timer is already active
+#: kt
+msgid "Change to:"
+msgstr "Změnit na:"
+
+#. TRANSLATORS: Preset sleep timer duration chip; {} is replaced with the number of minutes
+#: kt
+#| msgid "minutes"
+msgid "{} minutes"
+msgstr "{} minut"
+
+#. TRANSLATORS: Chip to switch to the custom-minutes entry view for the sleep timer
+#: kt
+msgid "Custom time..."
+msgstr "Vlastní čas..."
+
+#. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
+#: kt
+msgid "Expanded"
+msgstr "Rozbaleno"
+
+#. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
+#: kt
+msgid "Collapsed"
+msgstr "Sbaleno"
+
+#. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
+#: kt
+msgid "Collapse"
+msgstr "Sbalit"
+
+#. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
+#: kt
+msgid "Expand"
+msgstr "Rozbalit"
+
+#: kt
+msgid "This document contains {} words."
+msgstr "Tento dokument obsahuje {} slov."
+
+#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
+#. three forms is used depends on the target language's own plural rule, read
+#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
+#: kt
+msgid "words"
+msgstr "slov"
+
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
+#: kt
+msgid "Close Search"
+msgstr "Zavřít vyhledávání"
+
+#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
+#: kt
+msgid "Document exported"
+msgstr "Dokument exportován"
+
+#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
+#: kt
+msgid "Failed to export document"
+msgstr "Nepodařilo se exportovat dokument"
+
+#. TRANSLATORS: Shown on the main screen before the app has finished loading any document state
+#: kt
+msgid "No document open. Please open a book."
+msgstr "Není otevřen žádný dokument. Otevřete prosím některou knihu."
+
+#. TRANSLATORS: Shown on the main screen when no document is open and there are no recent documents to list
+#: kt
+msgid "No Documents"
+msgstr "Žádné dokumenty"
+
+#. TRANSLATORS: Countdown shown while the reading sleep timer is active; {} is the remaining time as minutes:seconds
+#: kt
+msgid "Sleep timer: {}"
+msgstr "Časovač spánku: {}"
+
+#. TRANSLATORS: Accessibility action to cancel the active reading sleep timer
+#: kt
+msgid "Cancel sleep timer"
+msgstr "Zrušit časovač spánku"
+
+#. TRANSLATORS: Confirm button to proceed with importing the found document settings
+#: kt
+msgid "Import"
+msgstr "Importovat"
+
+#. TRANSLATORS: Accessibility label for the overflow icon button that opens the options menu
+#: kt
+msgid "More Options"
+msgstr "Další možnosti"
+
+#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
+#: kt
+msgid "Pause Read Aloud"
+msgstr "Pozastavit čtení nahlas"
+
+#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
+#: kt
+msgid "Read Aloud"
+msgstr "Číst nahlas"
+
+#. TRANSLATORS: Menu item / accessibility action to open the export document dialog
+#: kt
+msgid "Export As"
+msgstr "Exportovat jako"
+
+#. TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
+#: kt
+msgid "Elements List"
+msgstr "Seznam prvků"
+
+#. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+#: kt
+msgid "No more matches."
+msgstr "Žádné další shody."
+
+#. TRANSLATORS: Name of the "heading" reading/navigation unit
+#: kt
+msgid "Heading"
+msgstr "Nadpis"
+
+#. TRANSLATORS: Name of the "link" reading/navigation unit
+#: kt
+msgid "Link"
+msgstr "Odkaz"
+
+#. TRANSLATORS: Name of the "section" reading/navigation unit
+#: kt
+msgid "Section"
+msgstr "Oddíl"
+
+#. TRANSLATORS: Name of the "list" reading/navigation unit
+#: kt
+msgid "List"
+msgstr "Seznam"
+
+#. TRANSLATORS: Name of the "list item" reading/navigation unit
+#: kt
+msgid "List Item"
+msgstr "Položka seznamu"
+
+#. TRANSLATORS: Name of the "table" reading/navigation unit
+#: kt
+msgid "Table"
+msgstr "Tabulka"
+
+#. TRANSLATORS: Name of the "separator" reading/navigation unit
+#: kt
+msgid "Separator"
+msgstr "Oddělovač"
+
+#. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
+#. above; {} is the number of seconds. Which of the three forms is used depends on the
+#. target language's own plural rule, read from its catalogue (see nt() in
+#. Translations.kt). The "many" form's trailing character isn't a typo — see
+#. PLURAL_MANY_MARKER in Translations.kt.
+#: kt
+#| msgid "seconds"
+msgid "{} seconds"
+msgstr "{} sekund"
+
+#. TRANSLATORS: Shown next to a permission on the onboarding screen once it has been granted
+#: kt
+msgid "✓ Granted"
+msgstr "✓ Povoleno"
+
+#. TRANSLATORS: Heading shown on the first-run permissions onboarding screen
+#: kt
+msgid "Before You Start"
+msgstr "Než začnete"
+
+#. TRANSLATORS: Intro paragraph explaining that the following sections describe requested permissions
+#: kt
+msgid ""
+"Paperback works best with a couple of permissions. Here's what we ask for "
+"and why:"
+msgstr ""
+"Paperback funguje nejlépe, když povolíte několik oprávnění. Níže uvádíme, "
+"která oprávnění požadujeme a proč:"
+
+#. TRANSLATORS: Heading for the notifications permission section on the onboarding screen
+#: kt
+msgid "Notifications"
+msgstr "Oznámení"
+
+#. TRANSLATORS: Button to grant the notifications permission during onboarding
+#: kt
+msgid "Enable Notifications"
+msgstr "Povolte oznámení"
+
+#. TRANSLATORS: Heading for the all files access permission section on the onboarding screen
+#: kt
+msgid "All Files Access"
+msgstr "Přístup ke všem souborům"
+
+#. TRANSLATORS: Button to open system settings for the all files access permission during onboarding
+#: kt
+msgid "Enable File Access"
+msgstr "Povolte přístup k souborům"
+
+#. TRANSLATORS: Button to leave the onboarding screen and continue into the app, whether or not permissions were granted
+#: kt
+msgid "Continue"
+msgstr "Pokračovat"
+
+#. TRANSLATORS: Settings switch: reopen the last-read book automatically on launch
+#: kt
+msgid "Restore last open book"
+msgstr "Obnovit naposledy otevřenou knihu"
+
+#. TRANSLATORS: Settings switch: use the app's built-in file browser instead of the system document picker
+#: kt
+msgid "Use in-app file browser (requires All Files permission)"
+msgstr ""
+"Používat vestavěný prohlížeč souborů (vyžaduje přístup ke všem souborům)"
+
+#. TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
+#: kt
+msgid "Text-to-Speech"
+msgstr "Text na řeč"
+
+#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
+#: kt
+msgid "System Default"
+msgstr "Výchozí podle systému"
+
+#. TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
+#: kt
+msgid "Back {}"
+msgstr "Zpět {}"
+
+#. TRANSLATORS: TalkBack label for the read-aloud bar's forward button when navigating audio by time; {} is an amount like "30 seconds"
+#: kt
+msgid "Forward {}"
+msgstr "Vpřed {}"
+
+#. TRANSLATORS: Placeholder in the Go To dialog's number field; {} is the mode name ("Line", "Page", or "Percentage")
+#: kt
+msgid "Enter {}"
+msgstr "Zadat {}"
+
+#. TRANSLATORS: Shown in place of the document when it could not be opened; {} is the reason
+#: kt
+msgid "Error loading document: {}"
+msgstr "Chyba při načítání dokumentu: {}"
+
+#. TRANSLATORS: 1.5x line spacing option
+#: kt
+msgid "1.5×"
+msgstr "1.5×"
+
+#. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
+#: kt
+msgid "Speech Engine"
+msgstr "Engine syntézy řeči"
+
+#: swift
+msgid "1 book"
+msgstr "1 kniha"
+
+#: swift
+msgid "{} books"
+msgstr "{} knih"
+
+#: swift
+msgid "..."
+msgstr "..."
+
+#. TRANSLATORS: Menu item to jump to a specific page, line, or percentage in the document
+#: swift
+msgid "Go To..."
+msgstr "Přejít na..."
+
+#. TRANSLATORS: Placeholder text shown in the empty search field of the Find screen
+#: swift
+msgid "Search..."
+msgstr "Vyhledat..."
+
+#: swift
+msgid "Custom: {} minute"
+msgstr "Vlastní: {} minuta"
+
+#: swift
+msgid "Custom: {} minutes⁣"
+msgstr "Vlastní: {} minut"
+
+#. TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is
+#. replaced with the number. Which of the three forms is used depends on the target language's
+#. own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
+#. trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
+#: kt
+msgid "This document contains {} word."
+msgstr "Tento dokument obsahuje {} slovo."
+
+#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
+#. three forms is used depends on the target language's own plural rule, read
+#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
+#: kt
+msgid "word"
+msgstr "slovo"
+
+#. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
+#. above; {} is the number of seconds. Which of the three forms is used depends on the
+#. target language's own plural rule, read from its catalogue (see nt() in
+#. Translations.kt). The "many" form's trailing character isn't a typo — see
+#. PLURAL_MANY_MARKER in Translations.kt.
+#: kt
+#| msgid "1 second"
+msgid "{} second"
+msgstr "{} sekunda"
+
+#. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
+#. above; {} is the number of seconds. Which of the three forms is used depends on the
+#. target language's own plural rule, read from its catalogue (see nt() in
+#. Translations.kt). The "many" form's trailing character isn't a typo — see
+#. PLURAL_MANY_MARKER in Translations.kt.
+#: kt
+#| msgid "seconds"
+msgid "{} seconds⁣"
+msgstr "{} sekund⁣"
+
+#: kt
+msgid "This document contains {} words.⁣"
+msgstr "Tento dokument obsahuje {} slov.⁣"
+
+#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
+#. three forms is used depends on the target language's own plural rule, read
+#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
+#: kt
+msgid "words⁣"
+msgstr "slova⁣"
+
+#. TRANSLATORS: Closing note explaining the fallback if the user denies the permission
+#: kt
+msgid ""
+"If you deny this permission, you can still use the Android System File "
+"Picker to open your books by turning off the custom file browser setting."
+msgstr ""
+"Pokud toto oprávnění zamítnete, můžete stále otevírat knihy pomocí "
+"systémového dialogu pro výběr souborů – stačí vypnout nastavení vlastní "
+"prohlížeč souborů."
+
+#. TRANSLATORS: Explanation of why the app requests the notifications permission
+#: kt
+msgid ""
+"Lets Paperback show playback controls in the notification shade while text-"
+"to-speech is reading, so you can pause, resume, and skip without reopening "
+"the app."
+msgstr ""
+"Umožňuje Paperbacku zobrazovat ovládací prvky pro přehrávání v notifikační "
+"liště, zatímco syntéza řeči právě čte, takže můžete zapauzovat a obnovit "
+"přehrávání nebo přetáčet, aniž byste museli znovu otevírat aplikaci."
+
+#. TRANSLATORS: Explanation of why the app requests the all files access permission
+#: kt
+msgid ""
+"Powers the optional in-app file browser, so you can open documents from "
+"anywhere on your device — including network drives — instantly, with full "
+"screen-reader support. You can skip this and use the system file picker "
+"instead."
+msgstr ""
+"Umožňuje používat volitelný vestavěný prohlížeč souborů, takže můžete "
+"otevírat dokumenty odkudkoli — včetně síťových úložišť — okamžitě a s plnou "
+"podporou odečítačů. Tento krok můžete přeskočit a místo toho používat "
+"systémový dialog pro otevření souboru."
+
+#. TRANSLATORS: Announced by the screen reader when the in-app file browser opens
+#: kt
+msgid "File Manager"
+msgstr "Správce souborů"

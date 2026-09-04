@@ -3,11 +3,11 @@ use std::{cell::Cell, rc::Rc, sync::Mutex};
 use bitflags::bitflags;
 use paperback_core::{config::ConfigManager, reader_core, util::text::display_len};
 use patois::t;
+use wx_utils::dpi;
 use wxdragon::prelude::*;
 
-use super::document_manager::DocumentManager;
+use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigation};
 
-const DIALOG_PADDING: i32 = 10;
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 
 #[derive(Clone, Debug, Default)]
@@ -67,6 +67,7 @@ impl FindDialogState {
 		find_dialog: &Rc<Mutex<Option<Self>>>,
 		live_region_label: StaticText,
 	) -> Self {
+		// TRANSLATORS: Title of the Find dialog
 		let dialog = Dialog::builder(frame, &t("Find")).build();
 		let FindDialogWidgets {
 			find_combo,
@@ -176,23 +177,31 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	let combo_width = 250;
 	let option_padding = 2;
 	let button_spacing = 5;
+	// TRANSLATORS: Label for the text field where the user types what to search for
 	let find_label = StaticText::builder(&dialog).with_label(&t("Find &what:")).build();
 	let find_combo = ComboBox::builder(&dialog)
 		.with_style(ComboBoxStyle::ProcessEnter)
-		.with_size(Size::new(combo_width, -1))
+		.with_size(dpi::scale_size(&dialog, Size::new(combo_width, -1)))
 		.build();
+	// TRANSLATORS: Group box heading for the search options in the Find dialog
 	let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("Options")).build();
+	// TRANSLATORS: Checkbox to make the search case-sensitive
 	let match_case = CheckBox::builder(&dialog).with_label(&t("&Match case")).build();
+	// TRANSLATORS: Checkbox to only match whole words, not substrings
 	let whole_word = CheckBox::builder(&dialog).with_label(&t("Match &whole word")).build();
+	// TRANSLATORS: Checkbox to treat the search text as a regular expression
 	let use_regex = CheckBox::builder(&dialog).with_label(&t("Use &regular expressions")).build();
 	options_box.add(&match_case, 0, SizerFlag::All, option_padding);
 	options_box.add(&whole_word, 0, SizerFlag::All, option_padding);
 	options_box.add(&use_regex, 0, SizerFlag::All, option_padding);
+	// TRANSLATORS: Button to search backward for the previous match
 	let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
-	let find_next_btn = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Find &Next")).build();
-	let cancel_btn = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	// TRANSLATORS: Button to search forward for the next match
+	let find_next_btn = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Find &Next")).build();
+	// TRANSLATORS: Cancel button that closes the Find dialog
+	let cancel_btn = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
+	dialog.set_affirmative_id(ID_OK);
 	let find_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	find_sizer.add(&find_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	find_sizer.add(&find_combo, 1, SizerFlag::Expand, 0);
@@ -386,33 +395,17 @@ pub fn handle_find_action(
 		show_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
 		return;
 	}
-	do_find(forward, &state, doc_manager, config, live_region_label);
+	do_find(frame, forward, &state, doc_manager, config, live_region_label);
 }
 
 fn do_find(
+	frame: &Frame,
 	forward: bool,
 	state: &FindDialogState,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 ) {
-	let (text_ctrl, raw_text) = {
-		let dm = doc_manager.lock().unwrap();
-		match dm.active_tab() {
-			Some(tab) => (tab.text_ctrl, tab.session.content()),
-			None => return,
-		}
-	};
-	// On Windows the Rich Edit control normalizes line endings to \n, so
-	// positions from get_selection() / set_selection() are in \n-only space.
-	// session.content() may contain raw \r\n (e.g. Windows .txt files), which
-	// would cause search positions to drift by one per newline after the first
-	// match.  Normalize to \n so the haystack coordinate system matches the
-	// text control's coordinate system.
-	let text = if raw_text.contains('\r') { raw_text.replace("\r\n", "\n").replace('\r', "\n") } else { raw_text };
-	if !text_ctrl.is_valid() {
-		return;
-	}
 	let query = state.find_text();
 	if query.trim().is_empty() {
 		return;
@@ -435,31 +428,83 @@ fn do_find(
 	if state.use_regex.is_checked() {
 		options |= FindOptions::USE_REGEX;
 	}
-	let (sel_start, sel_end) = text_ctrl.get_selection();
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else {
+		return;
+	};
+	if !tab.text_ctrl.is_valid() {
+		return;
+	}
+	// Search the whole document (not just whatever window is currently loaded into
+	// text_ctrl) in the same document-absolute coordinate space `tab.window` uses, so a
+	// found match can be reached even when it falls outside the loaded window.
+	let text = tab.session.content();
+	let (sel_start, sel_end) = navigation::doc_selected_range(tab);
 	let start_pos = if forward { sel_end } else { sel_start };
 	let result = find_text_with_wrap(&text, &query, start_pos, options);
+	tracing::debug!(query = %query, forward, found = result.found, wrapped = result.wrapped, "find search");
 	if !result.found {
+		drop(dm);
+		// TRANSLATORS: Announced when a search finds no matches in the document
 		live_region::announce(live_region_label, &t("Not found."));
 		state.dialog.show(true);
 		state.dialog.raise();
 		state.focus_find_text();
 		return;
 	}
-	if result.wrapped {
+	// Whether the dialog was on screen matters: hiding a visible dialog makes NVDA
+	// start the focus-return chain, which the found line must interrupt; a closed
+	// dialog produces no chain to cut.
+	let dialog_was_shown = state.dialog.is_shown();
+	if result.wrapped && !dialog_was_shown {
+		// TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 		live_region::announce(live_region_label, &t("No more results. Wrapping search."));
 	}
 	if result.position < 0 {
 		return;
 	}
-	let len = i64::try_from(display_len(&query)).unwrap_or(i64::MAX);
-	let last_pos = text_ctrl.get_last_position();
-	if last_pos <= 0 {
+	let doc_len = tab.session.document_len();
+	if doc_len <= 0 {
 		return;
 	}
-	let start = result.position.clamp(0, last_pos);
-	let end = (start + len).min(last_pos);
-	text_ctrl.set_focus();
-	text_ctrl.set_selection(start, end);
-	text_ctrl.show_position(start);
+	let len = i64::try_from(display_len(&query)).unwrap_or(i64::MAX);
+	let start = result.position.clamp(0, doc_len);
+	let end = (start + len).min(doc_len);
+	// Capture the line containing the match while the document lock is held; it is
+	// announced after focus has returned to the book.
+	let found_line = tab.session.get_line_text(start);
+	navigation::select_doc_range(tab, start, end);
+	drop(dm);
 	state.dialog.show(false);
+	if dialog_was_shown {
+		// NVDA starts reading the "Paperback, tab control, ..." ancestor chain the
+		// moment focus returns to the book. Delay the found-line announcement so it
+		// cuts the chain right as it begins: live-region's High priority maps to UIA
+		// NotificationProcessing_ImportantMostRecent, which NVDA handles as
+		// cancelSpeech() + speak — the same interrupt NVDA itself uses for its own
+		// find dialog. (During a say-all NVDA speaks at Spri.NOW instead of
+		// cancelling, so continuous reading is not chopped up.)
+		// When the search wrapped, the wrap notice was deferred above so it can be
+		// folded into this same announcement and cannot be cut off by it.
+		let message = if result.wrapped {
+			let notice = t("No more results. Wrapping search.");
+			if found_line.trim().is_empty() { notice } else { format!("{notice} {}", found_line.trim()) }
+		} else {
+			found_line
+		};
+		if !message.trim().is_empty() {
+			navigation::announce_after_delay(frame, live_region_label, message);
+		}
+	} else if result.wrapped {
+		// Find-next / Find-previous with the dialog closed. There is no focus chain
+		// to cut, and the wrap notice was announced above, so announce at Medium to
+		// queue the found line behind it rather than cutting it off.
+		if !found_line.trim().is_empty() {
+			live_region::announce_with_priority(live_region_label, &found_line, live_region::Priority::Medium);
+		}
+	} else if !found_line.trim().is_empty() {
+		// Find-next / Find-previous with the dialog closed and no wrap: no chain, so
+		// announce the found line directly.
+		live_region::announce(live_region_label, &found_line);
+	}
 }

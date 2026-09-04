@@ -1,12 +1,16 @@
-use std::sync::Mutex;
+use std::{collections::HashSet, sync::Mutex};
 
-use crate::config::ConfigManager;
+use crate::{config::ConfigManager, parser::ParserRegistry};
 
-/// Thread-safe wrapper around ConfigManager for UniFFI exposure.
+/// Thread-safe wrapper around `ConfigManager` for `UniFFI` exposure.
 pub struct ConfigManagerFfi {
 	inner: Mutex<ConfigManager>,
 }
 
+// These take `String`/owned params instead of `&str` because their signatures are dictated by
+// paperback.udl: UniFFI's generated scaffolding calls them with owned values it has just lifted
+// from the FFI boundary, so a borrowed parameter here would fail to compile against that scaffolding.
+#[allow(clippy::needless_pass_by_value)]
 impl ConfigManagerFfi {
 	#[must_use]
 	pub fn new() -> Self {
@@ -37,6 +41,14 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().set_app_bool(&key, value);
 	}
 
+	pub fn get_app_int(&self, key: String, default_value: i32) -> i32 {
+		self.inner.lock().unwrap().get_app_int(&key, default_value)
+	}
+
+	pub fn set_app_int(&self, key: String, value: i32) {
+		self.inner.lock().unwrap().set_app_int(&key, value);
+	}
+
 	pub fn associate_uri_with_local_file(&self, uri: String, local_path: String) {
 		self.inner.lock().unwrap().associate_uri_with_local_file(&uri, &local_path);
 	}
@@ -47,6 +59,19 @@ impl ConfigManagerFfi {
 
 	pub fn get_document_position(&self, path: String) -> i64 {
 		self.inner.lock().unwrap().get_document_position(&path)
+	}
+
+	/// Persists the elapsed-audio-time resume point for a DAISY audiobook. `time_ms < 0`
+	/// leaves any stored value alone (see `ConfigManager::set_document_audio_time`), so a
+	/// document that hasn't started playing can't wipe a previously saved position.
+	pub fn set_document_audio_time_ffi(&self, path: String, time_ms: i64) {
+		let time_ms = u64::try_from(time_ms).ok();
+		self.inner.lock().unwrap().set_document_audio_time(&path, time_ms);
+	}
+
+	/// `-1` when no audio resume point has been stored for this document.
+	pub fn get_document_audio_time_ffi(&self, path: String) -> i64 {
+		self.inner.lock().unwrap().get_document_audio_time(&path).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
 	}
 
 	pub fn set_document_password(&self, path: String, password: String) {
@@ -85,11 +110,15 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().remove_document_history(&path);
 	}
 
+	pub fn rename_document_path(&self, old_path: String, new_path: String) {
+		self.inner.lock().unwrap().rename_document_path(&old_path, &new_path);
+	}
+
 	pub fn get_supported_extensions(&self) -> Vec<String> {
-		let mut exts = std::collections::HashSet::new();
-		for parser in crate::parser::ParserRegistry::global().all_parsers() {
-			for ext in parser.extensions {
-				exts.insert(ext);
+		let mut exts = HashSet::new();
+		for parser in ParserRegistry::global().all_parsers() {
+			for ext in parser.extensions() {
+				exts.insert((*ext).to_string());
 			}
 		}
 		exts.into_iter().collect()

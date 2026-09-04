@@ -26,6 +26,12 @@ pub struct HeadingInfo {
 }
 
 #[derive(Debug, Clone)]
+pub struct FormatInfo {
+	pub offset: usize,
+	pub length: usize,
+}
+
+#[derive(Debug, Clone)]
 pub struct LinkInfo {
 	pub offset: usize,
 	pub text: String,
@@ -42,6 +48,8 @@ pub struct ImageInfo {
 pub struct ListInfo {
 	pub offset: usize,
 	pub item_count: i32,
+	/// Display-unit span of the list, from its start offset to the end of its content.
+	pub length: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -56,6 +64,7 @@ pub struct TableInfo {
 	pub offset: usize,
 	pub text: String,
 	pub html_content: String,
+	/// Display-unit span of the emitted table text.
 	pub length: usize,
 }
 

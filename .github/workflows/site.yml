@@ -6,23 +6,30 @@ permissions:
   contents: write
 jobs:
   build:
+    if: github.repository == 'trypsynth/paperback'
     runs-on: ubuntu-latest
+    env:
+      # There is no published action for cobalt, so it is fetched by release URL and
+      # the version pinned here. Renovate picks this line up through the custom
+      # manager in renovate.json; keep the marker comment with it.
+      # renovate: datasource=github-releases depName=cobalt-org/cobalt.rs
+      COBALT_VERSION: 0.20.4
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install Cobalt
         run: |
-          wget https://github.com/cobalt-org/cobalt.rs/releases/download/v0.20.4/cobalt-v0.20.4-x86_64-unknown-linux-gnu.tar.gz
+          wget "https://github.com/cobalt-org/cobalt.rs/releases/download/v$COBALT_VERSION/cobalt-v$COBALT_VERSION-x86_64-unknown-linux-gnu.tar.gz"
           tar -xzf cobalt-*.tar.gz
           sudo mv cobalt /usr/local/bin/
       - name: Install Pandoc
         run: sudo apt-get update && sudo apt-get install -y pandoc
-      - name: Build README with Pandoc
-        run: pandoc --defaults=doc/pandoc.yaml doc/readme.md -o readme.html
       - name: Build Cobalt site
         run: cobalt build
         working-directory: web
-      - name: Copy README to site
-        run: cp readme.html web/_site/readme.html
+      # After cobalt, which regenerates _site: this writes the manual in every
+      # language into the built site, English at readme.html as before.
+      - name: Build the documentation in every language
+        run: bash web/build-docs.sh
       - name: Copy CNAME to site
         run: cp CNAME web/_site/CNAME
       - name: Deploy to GitHub Pages

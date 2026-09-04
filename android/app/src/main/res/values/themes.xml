@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.MyApplication" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+      Nothing of this theme is ever seen except the window background and the system bar colours:
+      the moment the activity is up, Compose draws its own surface over all of it. That window
+      background is the starting window, though, so leaving it the parent's fixed white made every
+      cold start in dark mode flash. @color/window_background follows -night instead.
+    -->
+    <style name="Theme.MyApplication" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+        <!-- enableEdgeToEdge() does this at runtime; setting it here covers the starting window too. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
 </resources>

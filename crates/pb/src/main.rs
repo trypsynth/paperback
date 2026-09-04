@@ -1,4 +1,4 @@
-use std::fs;
+use std::{env, fmt::Write as _, fs, io, process};
 
 use anyhow::{Context, Result, bail};
 use clap::Parser;
@@ -14,29 +14,34 @@ use cli::{Cli, Format};
 
 fn main() -> Result<()> {
 	let cli = Cli::parse();
+	init_logging(cli.verbose);
 	let ext = cli.input.extension().and_then(|e| e.to_str()).unwrap_or("");
 	if !parser::parser_supports_extension(ext) {
 		bail!("unsupported file format: .{ext}");
 	}
 	let file_path = cli.input.to_string_lossy().into_owned();
-
-	// Fast path: EPUB → HTML bypasses the text-buffer pipeline entirely.
 	if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" {
-		let html = paperback_core::export::epub_direct::render(&file_path)
+		let html = export::epub_direct::render(&file_path)
 			.with_context(|| format!("failed to convert {}", cli.input.display()))?;
-		return match cli.output {
-			Some(path) => fs::write(&path, &html).with_context(|| format!("failed to write {}", path.display())),
-			None => Ok(print!("{html}")),
+		// map_or_else reads worse here than the plain if/else.
+		#[allow(clippy::option_if_let_else)]
+		return if let Some(path) = cli.output {
+			fs::write(&path, &html).with_context(|| format!("failed to write {}", path.display()))
+		} else {
+			print!("{html}");
+			Ok(())
 		};
 	}
-
-	let mut context = ParserContext { file_path, password: cli.password, forced_extension: None };
+	let mut context = ParserContext::new(file_path).with_render_tables_inline(true);
+	if let Some(password) = cli.password {
+		context = context.with_password(password);
+	}
 	let doc = match parse_document(&context) {
 		Ok(doc) => doc,
 		Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
 			if cli.no_prompt {
 				eprintln!("pb: document requires a password; skipping (use -p to supply one)");
-				std::process::exit(2);
+				process::exit(2);
 			}
 			let password = rpassword::prompt_password("Password: ").context("failed to read password")?;
 			context.password = Some(password);
@@ -56,32 +61,43 @@ fn main() -> Result<()> {
 		};
 		export::render(&handle, format)
 	};
-	match cli.output {
-		Some(path) => {
-			if is_markdown {
-				// Prepend UTF-8 BOM so editors like EdSharp detect the encoding correctly
-				let mut bytes = vec![0xEF_u8, 0xBB, 0xBF];
-				bytes.extend_from_slice(result.as_bytes());
-				fs::write(&path, &bytes)
-			} else {
-				fs::write(&path, &result)
-			}
-			.with_context(|| format!("failed to write {}", path.display()))
+	// map_or_else reads worse here than the plain if/else.
+	#[allow(clippy::option_if_let_else)]
+	if let Some(path) = cli.output {
+		if is_markdown {
+			// Prepend UTF-8 BOM so editors like EdSharp detect the encoding correctly
+			let mut bytes = vec![0xEF_u8, 0xBB, 0xBF];
+			bytes.extend_from_slice(result.as_bytes());
+			fs::write(&path, &bytes)
+		} else {
+			fs::write(&path, &result)
 		}
-		None => Ok(print!("{result}")),
+		.with_context(|| format!("failed to write {}", path.display()))
+	} else {
+		print!("{result}");
+		Ok(())
 	}
+}
+
+/// Prints paperback-core's tracing output to stderr, off by default so normal conversions
+/// aren't flooded with parser debug logging. Pass `-v`/`--verbose` to turn it on, or set
+/// `RUST_LOG` directly for finer-grained control (which always takes precedence).
+fn init_logging(verbose: bool) {
+	let default_filter = if verbose { "paperback_core=debug" } else { "off" };
+	let filter = env::var("RUST_LOG").unwrap_or_else(|_| default_filter.to_string());
+	tracing_subscriber::fmt().with_env_filter(filter).with_writer(io::stderr).with_target(false).init();
 }
 
 fn metadata(doc: &Document) -> String {
 	let mut out = String::new();
 	if !doc.title.is_empty() {
-		out.push_str(&format!("Title: {}\n", doc.title));
+		let _ = writeln!(out, "Title: {}", doc.title);
 	}
 	if !doc.author.is_empty() {
-		out.push_str(&format!("Author: {}\n", doc.author));
+		let _ = writeln!(out, "Author: {}", doc.author);
 	}
-	out.push_str(&format!("Words: {}\n", doc.stats.word_count));
-	out.push_str(&format!("Characters: {}\n", doc.stats.char_count));
-	out.push_str(&format!("Lines: {}\n", doc.stats.line_count));
+	let _ = writeln!(out, "Words: {}", doc.stats.word_count);
+	let _ = writeln!(out, "Characters: {}", doc.stats.char_count);
+	let _ = writeln!(out, "Lines: {}", doc.stats.line_count);
 	out
 }

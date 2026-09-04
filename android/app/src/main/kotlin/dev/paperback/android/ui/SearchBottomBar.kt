@@ -1,0 +1,95 @@
+package dev.paperback.android.ui
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
+import dev.paperback.android.t
+import kotlinx.coroutines.launch
+import uniffi.paperback.SearchOptionsFfi
+
+@Composable
+fun SearchBottomBar(
+	docState: DocumentTabState,
+	listState: LazyListState,
+	activeSearchQuery: String,
+	activeSearchOptions: SearchOptionsFfi,
+	onClose: () -> Unit,
+	onNavigate: (Int) -> Unit
+) {
+	val scope = rememberCoroutineScope()
+	BottomAppBar(
+		modifier = Modifier.semantics { isTraversalGroup = true },
+		contentPadding = PaddingValues(horizontal = 16.dp)
+	) {
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.SpaceBetween,
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			IconButton(
+				onClick = onClose,
+				// TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+				modifier = Modifier.semantics { contentDescription = t("Close Search") }
+			) {
+				Icon(Icons.Filled.Close, contentDescription = null)
+			}
+			Row {
+				Button(
+					onClick = {
+						val currentIdx = listState.firstVisibleItemIndex
+						val pos = docState.session.positionFromLine((currentIdx + 1).toLong())
+						val res = docState.session.searchFfi(activeSearchQuery, pos, activeSearchOptions.copy(forward = false))
+						if (res.found) {
+							val targetIndex = (docState.session.lineFromPosition(res.position) - 1).toInt().coerceAtLeast(0)
+							scope.launch {
+								listState.scrollToItem(targetIndex)
+								onNavigate(targetIndex)
+							}
+						}
+					}
+				) {
+					// TRANSLATORS: Button in the in-document search bar to jump to the previous match
+					Text(t("Find Previous"))
+				}
+				Spacer(modifier = Modifier.width(8.dp))
+				Button(
+					onClick = {
+						val currentIdx = listState.firstVisibleItemIndex
+						val nextLine = (currentIdx + 2).toLong().coerceAtMost(docState.lineCount)
+						val pos = docState.session.positionFromLine(nextLine)
+						val res = docState.session.searchFfi(activeSearchQuery, pos, activeSearchOptions.copy(forward = true))
+						if (res.found) {
+							val targetIndex = (docState.session.lineFromPosition(res.position) - 1).toInt().coerceAtLeast(0)
+							scope.launch {
+								listState.scrollToItem(targetIndex)
+								onNavigate(targetIndex)
+							}
+						}
+					}
+				) {
+					// TRANSLATORS: Button in the in-document search bar to jump to the next match
+					Text(t("Find Next"))
+				}
+			}
+		}
+	}
+}

@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
 permissions:
   contents: write
@@ -11,7 +14,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: recursive
         fetch-depth: 0
@@ -24,6 +27,8 @@ jobs:
       with:
         toolchain: stable
         components: rustfmt, clippy
+    - name: Cache Rust build artifacts
+      uses: Swatinem/rust-cache@v2
     - name: Install CMake, Ninja, and Pandoc
       run: |
         choco install cmake ninja pandoc minisign -y
@@ -34,21 +39,19 @@ jobs:
         $libPath = Join-Path $pkg.FullName "build\native\x64"
         echo "LIB=$env:LIB;$libPath" >> $env:GITHUB_ENV
     - name: Install Gettext via MSYS2
+      id: msys2
       uses: msys2/setup-msys2@v2
       with:
         msystem: UCRT64
-        update: true
         install: >-
           gettext
           mingw-w64-ucrt-x86_64-gettext-tools
-    - name: Clone wxWidgets
-      run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
     - name: Build
       run: |
-        $env:WXWIDGETS_DIR = "${{ github.workspace }}\wxWidgets"
-        $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
+        $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
         cargo release
     - name: Sign artifacts
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       shell: pwsh
       env:
         MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
@@ -62,46 +65,229 @@ jobs:
         Get-Content $pwPath | minisign -S -s $keyPath -m target/release/paperback.zip
         Remove-Item $keyPath, $pwPath
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: paperback-windows
         path: |
           target/release/paperback.zip
-          target/release/paperback.zip.minisig
           target/release/paperback_setup.exe
+        retention-days: 30
+    - name: Upload signatures
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-windows-signatures
+        path: |
+          target/release/paperback.zip.minisig
           target/release/paperback_setup.exe.minisig
         retention-days: 30
 
-  build-linux-flatpak:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-49
-      options: --privileged
+  build-windows-arm64:
+    runs-on: windows-11-arm
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v7
       with:
         submodules: recursive
-    - name: Generate cargo sources for Flatpak
-      run: |
-        pip install aiohttp tomlkit
-        curl -sSL https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py -o flatpak-cargo-generator.py
-        python3 flatpak-cargo-generator.py Cargo.lock -o cargo-sources.json
-    - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        fetch-depth: 0
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
       with:
-        bundle: paperback.flatpak
-        manifest-path: dev.paperback.desktop.yaml
-        cache-key: flatpak-builder-${{ hashFiles('dev.paperback.desktop.yaml', 'Cargo.lock') }}
-        restore-keys: flatpak-builder-
+        arch: arm64
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+    - name: Cache Rust build artifacts
+      uses: Swatinem/rust-cache@v2
+    - name: Install CMake, Ninja, and Pandoc
+      run: |
+        choco install cmake ninja pandoc minisign -y
+    - name: Install WebView2 SDK
+      run: |
+        nuget install Microsoft.Web.WebView2 -OutputDirectory packages
+        $pkg = Get-ChildItem "packages" -Filter "Microsoft.Web.WebView2.*" -Directory | Select-Object -First 1
+        $libPath = Join-Path $pkg.FullName "build\native\arm64"
+        echo "LIB=$env:LIB;$libPath" >> $env:GITHUB_ENV
+    - name: Install Gettext via MSYS2
+      id: msys2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        install: >-
+          gettext
+          mingw-w64-ucrt-x86_64-gettext-tools
+    - name: Build
+      run: |
+        $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
+        cargo release
+    - name: Sign artifacts
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      shell: pwsh
+      env:
+        MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
+        MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+      run: |
+        $keyPath = Join-Path $env:RUNNER_TEMP "paperback.key"
+        [IO.File]::WriteAllText($keyPath, $env:MINISIGN_KEY)
+        $pwPath = Join-Path $env:RUNNER_TEMP "paperback.pw"
+        [IO.File]::WriteAllText($pwPath, $env:MINISIGN_PASSWORD)
+        Get-Content $pwPath | minisign -S -s $keyPath -m target/release/paperback_setup.exe
+        Get-Content $pwPath | minisign -S -s $keyPath -m target/release/paperback.zip
+        Remove-Item $keyPath, $pwPath
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-windows-arm64
+        path: |
+          target/release/paperback.zip
+          target/release/paperback_setup.exe
+        retention-days: 30
+    - name: Upload signatures
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-windows-arm64-signatures
+        path: |
+          target/release/paperback.zip.minisig
+          target/release/paperback_setup.exe.minisig
+        retention-days: 30
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+    - name: Cache Rust build artifacts
+      uses: Swatinem/rust-cache@v2
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build pandoc gettext minisign \
+          libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
+          libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
+          libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev \
+          libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+    - name: Install appimagetool
+      run: |
+        curl -L -o /usr/local/bin/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+        chmod +x /usr/local/bin/appimagetool
+    - name: Build
+      run: cargo release
+    - name: Sign artifacts
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      env:
+        MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
+        MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+      run: |
+        KEY_PATH="$RUNNER_TEMP/paperback.key"
+        printf '%s' "$MINISIGN_KEY" > "$KEY_PATH"
+        printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.tar.gz
+        if [ -f target/release/paperback.AppImage ]; then
+          printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.AppImage
+        fi
+        rm -f "$KEY_PATH"
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-linux
+        path: |
+          target/release/paperback.tar.gz
+          target/release/paperback.AppImage
+        retention-days: 30
+    - name: Upload signatures
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-linux-signatures
+        path: |
+          target/release/paperback.tar.gz.minisig
+          target/release/paperback.AppImage.minisig
+        retention-days: 30
+
+  build-linux-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+    - name: Cache Rust build artifacts
+      uses: Swatinem/rust-cache@v2
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build pandoc gettext minisign \
+          libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
+          libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
+          libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev \
+          libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+    - name: Install appimagetool
+      run: |
+        curl -L -o /usr/local/bin/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage
+        chmod +x /usr/local/bin/appimagetool
+    - name: Build
+      run: cargo release
+    - name: Sign artifacts
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      env:
+        MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
+        MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+      run: |
+        KEY_PATH="$RUNNER_TEMP/paperback.key"
+        printf '%s' "$MINISIGN_KEY" > "$KEY_PATH"
+        printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.tar.gz
+        if [ -f target/release/paperback.AppImage ]; then
+          printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.AppImage
+        fi
+        rm -f "$KEY_PATH"
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-linux-arm64
+        path: |
+          target/release/paperback.tar.gz
+          target/release/paperback.AppImage
+        retention-days: 30
+    - name: Upload signatures
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-linux-arm64-signatures
+        path: |
+          target/release/paperback.tar.gz.minisig
+          target/release/paperback.AppImage.minisig
+        retention-days: 30
 
   build-android:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
+    # cargo xtask android shells out to pandoc for the bundled Help documents and only warns
+    # if it is missing, so without this the APK ships with no assets/readmes at all and Help
+    # fails at runtime for every user.
+    - name: Install Pandoc
+      run: sudo apt-get update && sudo apt-get install -y pandoc
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v6
       with:
         java-version: '17'
         distribution: 'temurin'
@@ -117,7 +303,7 @@ jobs:
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
     - name: Cache Gradle packages
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: |
           ~/.gradle/caches
@@ -125,6 +311,7 @@ jobs:
         key: gradle-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties') }}
         restore-keys: gradle-
     - name: Set up Android signing keystore
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       env:
         ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -145,7 +332,7 @@ jobs:
         cp android/app/build/outputs/apk/release/app-arm64-v8a-release.apk paperback-android-arm64.apk
         cp android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk paperback-android-arm.apk
     - name: Upload APK artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: paperback-android
         path: |
@@ -157,13 +344,13 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: recursive
         fetch-depth: 0
     - name: Install dependencies
       run: |
-        brew install cmake ninja pandoc gettext
+        brew install cmake ninja pandoc gettext minisign
         echo "/opt/homebrew/opt/gettext/bin" >> $GITHUB_PATH
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
@@ -171,54 +358,189 @@ jobs:
       uses: Swatinem/rust-cache@v2
     - name: Cache wxWidgets source
       id: wxwidgets-cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: wxWidgets
         key: wxwidgets-${{ runner.os }}-${{ runner.arch }}-v1
     - name: Clone wxWidgets
       if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
       run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
+    - name: Import signing certificate
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      env:
+        MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+        MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        MACOS_KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+      run: |
+        CERT_PATH="$RUNNER_TEMP/paperback-signing.p12"
+        KEYCHAIN_PATH="$RUNNER_TEMP/paperback-signing.keychain-db"
+        echo "$MACOS_CERTIFICATE_P12_BASE64" | base64 -D -o "$CERT_PATH"
+        security create-keychain -p "$MACOS_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+        security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+        security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+        security import "$CERT_PATH" -P "$MACOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+        security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/"//g')
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+        IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep "Developer ID Application" | head -1 | sed -E 's/.*"(.*)"/\1/')
+        if [ -z "$IDENTITY" ]; then
+          echo "No Developer ID Application identity found in the imported certificate" >&2
+          exit 1
+        fi
+        echo "Found signing identity: $IDENTITY"
+        echo "MACOS_SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+        echo "MACOS_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+        rm -f "$CERT_PATH"
     - name: Build and package
       env:
         WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
         MACOSX_DEPLOYMENT_TARGET: "15.0"
       run: cargo release
+    - name: Notarize and staple DMG
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      env:
+        APPSTORE_API_KEY_BASE64: ${{ secrets.APPSTORE_API_KEY_BASE64 }}
+        APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+        APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+      run: |
+        # Secret values occasionally carry a trailing newline depending on how they were
+        # set (e.g. from a file via `gh secret set NAME < file.txt`); notarytool rejects
+        # --key-id/--issuer outright if so, so strip whitespace defensively.
+        KEY_ID=$(printf '%s' "$APPSTORE_API_KEY_ID" | tr -d '[:space:]')
+        ISSUER_ID=$(printf '%s' "$APPSTORE_API_ISSUER_ID" | tr -d '[:space:]')
+        KEY_PATH="$RUNNER_TEMP/AppStoreConnectAPIKey.p8"
+        echo "$APPSTORE_API_KEY_BASE64" | base64 -D -o "$KEY_PATH"
+        set +e
+        xcrun notarytool submit target/release/paperback.dmg \
+          --key "$KEY_PATH" --key-id "$KEY_ID" --issuer "$ISSUER_ID" \
+          --wait --output-format json | tee notarization-result.json
+        SUBMIT_STATUS=$?
+        set -e
+        SUBMISSION_ID=$(jq -r '.id // empty' notarization-result.json)
+        SUBMIT_RESULT_STATUS=$(jq -r '.status // empty' notarization-result.json)
+        if [ "$SUBMIT_STATUS" -ne 0 ] || [ "$SUBMIT_RESULT_STATUS" != "Accepted" ]; then
+          echo "Notarization failed (exit $SUBMIT_STATUS, status '$SUBMIT_RESULT_STATUS'); fetching full log..."
+          if [ -n "$SUBMISSION_ID" ]; then
+            xcrun notarytool log "$SUBMISSION_ID" \
+              --key "$KEY_PATH" --key-id "$KEY_ID" --issuer "$ISSUER_ID"
+          fi
+          rm -f "$KEY_PATH"
+          exit 1
+        fi
+        xcrun stapler staple target/release/paperback.dmg
+        rm -f "$KEY_PATH"
+    - name: Sign artifact
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      env:
+        MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
+        MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+      run: |
+        KEY_PATH="$RUNNER_TEMP/paperback.key"
+        printf '%s' "$MINISIGN_KEY" > "$KEY_PATH"
+        printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$KEY_PATH" -m target/release/paperback.dmg
+        rm -f "$KEY_PATH"
+    - name: Clean up signing keychain
+      if: always() && github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      run: |
+        if [ -n "$MACOS_KEYCHAIN_PATH" ] && [ -f "$MACOS_KEYCHAIN_PATH" ]; then
+          security delete-keychain "$MACOS_KEYCHAIN_PATH" || true
+        fi
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: paperback-macos
         path: target/release/paperback.dmg
         retention-days: 30
+    - name: Upload signature
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-macos-signature
+        path: target/release/paperback.dmg.minisig
+        retention-days: 30
 
   release:
-    needs: [build-windows, build-linux-flatpak, build-android, build-macos]
+    needs: [build-windows, build-windows-arm64, build-linux, build-linux-arm64, build-android, build-macos]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
     - name: Download Windows artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: paperback-windows
         path: windows-build
-    - name: Download Linux Flatpak
-      uses: actions/download-artifact@v4
+    - name: Download Windows signatures
+      uses: actions/download-artifact@v8
       with:
-        name: paperback-x86_64.flatpak
+        name: paperback-windows-signatures
+        path: windows-build
+    - name: Download Windows ARM64 artifacts
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-windows-arm64
+        path: windows-arm64-build
+    - name: Download Windows ARM64 signatures
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-windows-arm64-signatures
+        path: windows-arm64-build
+    - name: Download Linux artifacts
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-linux
         path: linux-build
+    - name: Download Linux signatures
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-linux-signatures
+        path: linux-build
+    - name: Download Linux ARM64 artifacts
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-linux-arm64
+        path: linux-arm64-build
+    - name: Download Linux ARM64 signatures
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-linux-arm64-signatures
+        path: linux-arm64-build
     - name: Download Android APK
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: paperback-android
         path: android-build
     - name: Download macOS artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: paperback-macos
         path: macos-build
+    - name: Download macOS signature
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-macos-signature
+        path: macos-build
+    - name: Rename artifacts for release
+      shell: bash
+      run: |
+        mv windows-build/paperback.zip windows-build/paperback-x64.zip
+        mv windows-build/paperback.zip.minisig windows-build/paperback-x64.zip.minisig
+        mv windows-build/paperback_setup.exe windows-build/paperback_setup-x64.exe
+        mv windows-build/paperback_setup.exe.minisig windows-build/paperback_setup-x64.exe.minisig
+        mv windows-arm64-build/paperback.zip windows-arm64-build/paperback-arm64.zip
+        mv windows-arm64-build/paperback.zip.minisig windows-arm64-build/paperback-arm64.zip.minisig
+        mv windows-arm64-build/paperback_setup.exe windows-arm64-build/paperback_setup-arm64.exe
+        mv windows-arm64-build/paperback_setup.exe.minisig windows-arm64-build/paperback_setup-arm64.exe.minisig
+        mv linux-build/paperback.tar.gz linux-build/paperback-x64.tar.gz
+        mv linux-build/paperback.tar.gz.minisig linux-build/paperback-x64.tar.gz.minisig
+        [ -f linux-build/paperback.AppImage ] && mv linux-build/paperback.AppImage linux-build/paperback-x64.AppImage || true
+        [ -f linux-build/paperback.AppImage.minisig ] && mv linux-build/paperback.AppImage.minisig linux-build/paperback-x64.AppImage.minisig || true
+        mv linux-arm64-build/paperback.tar.gz linux-arm64-build/paperback-arm64.tar.gz
+        mv linux-arm64-build/paperback.tar.gz.minisig linux-arm64-build/paperback-arm64.tar.gz.minisig
+        [ -f linux-arm64-build/paperback.AppImage ] && mv linux-arm64-build/paperback.AppImage linux-arm64-build/paperback-arm64.AppImage || true
+        [ -f linux-arm64-build/paperback.AppImage.minisig ] && mv linux-arm64-build/paperback.AppImage.minisig linux-arm64-build/paperback-arm64.AppImage.minisig || true
     - name: Get latest tag reachable from HEAD
       id: get_tag
       shell: bash
@@ -240,7 +562,7 @@ jobs:
         echo "$COMMITS" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
     - name: Create or update latest release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       with:
         tag_name: latest
         name: Development Build
@@ -248,14 +570,26 @@ jobs:
           ## Commits since last release
           ${{ steps.release_notes.outputs.commits }}
         files: |
-          windows-build/paperback.zip
-          windows-build/paperback.zip.minisig
-          windows-build/paperback_setup.exe
-          windows-build/paperback_setup.exe.minisig
-          linux-build/paperback.flatpak
+          windows-build/paperback-x64.zip
+          windows-build/paperback-x64.zip.minisig
+          windows-build/paperback_setup-x64.exe
+          windows-build/paperback_setup-x64.exe.minisig
+          windows-arm64-build/paperback-arm64.zip
+          windows-arm64-build/paperback-arm64.zip.minisig
+          windows-arm64-build/paperback_setup-arm64.exe
+          windows-arm64-build/paperback_setup-arm64.exe.minisig
+          linux-build/paperback-x64.tar.gz
+          linux-build/paperback-x64.tar.gz.minisig
+          linux-build/paperback-x64.AppImage
+          linux-build/paperback-x64.AppImage.minisig
+          linux-arm64-build/paperback-arm64.tar.gz
+          linux-arm64-build/paperback-arm64.tar.gz.minisig
+          linux-arm64-build/paperback-arm64.AppImage
+          linux-arm64-build/paperback-arm64.AppImage.minisig
           android-build/paperback-android-arm64.apk
           android-build/paperback-android-arm.apk
           macos-build/paperback.dmg
+          macos-build/paperback.dmg.minisig
         prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

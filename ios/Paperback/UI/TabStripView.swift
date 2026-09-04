@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TabStripView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 
 	var body: some View {
 		ScrollViewReader { proxy in
@@ -16,8 +16,9 @@ struct TabStripView: View {
 				.padding(.vertical, 6)
 			}
 			.accessibilityElement(children: .contain)
-			.accessibilityLabel("Tabs")
-			.onChange(of: viewModel.activeTabId) { id in
+			// TRANSLATORS: Accessibility label for the horizontal strip of open document tabs
+			.accessibilityLabel(t("Tabs"))
+			.onChange(of: viewModel.activeTabId) { _, id in
 				guard let id else { return }
 				withAnimation { proxy.scrollTo(id, anchor: .center) }
 			}
@@ -29,7 +30,7 @@ struct TabStripView: View {
 }
 
 private struct TabChip: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	let tab: DocumentTab
 
 	private var isActive: Bool { tab.id == viewModel.activeTabId }
@@ -44,12 +45,7 @@ private struct TabChip: View {
 					.padding(.leading, 10)
 					.padding(.trailing, 26)
 					.padding(.vertical, 5)
-					.background(
-						RoundedRectangle(cornerRadius: 7)
-							.fill(isActive
-								? Color(.systemBackground)
-								: Color(.secondarySystemFill))
-					)
+					.modifier(TabChipBackground(isActive: isActive))
 			}
 			.foregroundStyle(isActive ? .primary : .secondary)
 			.accessibilityLabel(tab.title)
@@ -64,6 +60,25 @@ private struct TabChip: View {
 					.padding(.vertical, 10)
 			}
 			.accessibilityHidden(true)
+		}
+	}
+}
+
+// The active tab gets a Liquid Glass background on iOS 26+ instead of a flat fill, matching
+// Safari's tab-chip look; earlier versions keep the plain filled pill.
+private struct TabChipBackground: ViewModifier {
+	let isActive: Bool
+
+	func body(content: Content) -> some View {
+		if #available(iOS 26, *), isActive {
+			content.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 14))
+		} else {
+			content.background(
+				RoundedRectangle(cornerRadius: 14)
+					.fill(isActive
+						? Color(.systemBackground)
+						: Color(.secondarySystemFill))
+			)
 		}
 	}
 }

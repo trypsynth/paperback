@@ -1,4 +1,4 @@
-# Paperback - version 0.8.5
+# Paperback - version 0.9.2
 
 ## Introduction
 
@@ -6,59 +6,76 @@ Paperback is a lightweight, fast, and accessible ebook and document reader for e
 
 ## System Requirements
 
-Paperback currently runs on Windows 10/11 and Linux. Support for macOS is in the pipeline.
+Paperback currently runs on Windows 10/11 and all the modern versions of ARM macOS. Native iOS and Android apps are in active development, with public test builds planned soon after the 0.9.0 desktop release, ahead of a unified 1.0 release covering all four platforms.
 
 ## Features
 
 * Completely standalone, not requiring any software to be installed on your computer to start reading.
 * Incredibly fast, even on old hardware.
 * Simple tabbed interface, allowing you to open as many documents as you want side-by-side.
-* Saves your cursor position across every document you open.
+* Saves your exact reading position across every document you open.
 * Optionally remembers what documents you had open when you closed the program, and restores them on next launch.
-* Designed by a screen reader user for screen reader users.
 * Includes navigation functionality similar to that found in the web browsing mode of many screen readers to quickly and easily navigate through documents.
 * Includes a robust find dialog, including features such as history and regular expression support.
 * Can be run entirely portably, or installed with file associations automatically set up.
+* Supports a massive array of common file formats.
+
+## Screen Reader Compatibility
+
+Paperback works well with all major screen readers. There is, however, one known issue for JAWS users.
+
+### JAWS and Braille Displays
+
+If you use JAWS with a Braille display, you may find that long paragraphs are truncated when panning forward with your display's navigation keys. The read current paragraph command is also affected. This is a bug in JAWS's handling of the RICHEDIT50W text control, not something in Paperback itself, and one that took quite a while to surface a fix for given Vispero's enthusiasm for responding to issues with open source software.
+
+The workaround, eventually surfaced through the JAWS discussion group after months of waiting, is to edit `paperback.jcf` and set "Braille Presentation and Panning" to "Always use DOM if available". You'll also want to enable "Pan Text by Paragraph", otherwise your display will stay on the active paragraph rather than advancing. With both settings in place, panning should work correctly.
 
 ## Currently supported file types
 
 Paperback supports the following formats and extensions:
 
 * CHM help files (`.chm`)
+* DAISY books (`.opf`, `.zip`)
 * EPUB books (`.epub`)
 * FB2 ebooks (`.fb2`)
 * HTML documents (`.htm`, `.html`, `.xhtml`)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Microsoft Word documents (`.docx`, `.docm`)
+* Microsoft Word documents (`.docx`, `.docm`, `.doc`)
+* M4B audiobooks (`.m4b`)
+* MOBI/Kindle books (`.mobi`, `.azw`, `.azw3`)
 * OpenDocument presentations (`.odp`, `.fodp`)
 * OpenDocument text files (`.odt`, `.fodt`)
 * PDF documents (`.pdf`)
-* PowerPoint presentations (`.pptx`, `.pptm`)
+* PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * RTF documents (`.rtf`)
 * Plain text and log files (`.txt`, `.log`)
-* XML documents (`.xml`)
 
 ## Keyboard shortcuts
 
-Paperback is designed for keyboard-first and screen reader-first use. Here are the current shortcuts.
+Paperback is designed for keyboard-first use. Here are the current shortcuts.
+
+Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in parentheses — mainly because Ctrl+G, Ctrl+W, and Alt+Left/Right are already claimed by other system or app conventions on that platform.
 
 ### File menu
 
 * `Ctrl+O`: Open a document.
-* `Ctrl+F4`: Close the current document.
-* `Ctrl+Shift+F4`: Close all open documents.
+* `Ctrl+F4` (macOS: `Cmd+W`): Close the current document.
+* `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Close all open documents.
+* `Ctrl+Shift+T`: Reopen the last closed document.
 * `Ctrl+R`: Show the "All Documents" dialog (from Recent Documents).
+* `Ctrl+Q`: Exit (Windows only; on macOS this is under the app menu instead).
 
 ### Go menu
 
 * `Ctrl+F`: Show the Find dialog.
-* `F3`: Find next.
-* `Shift+F3`: Find previous.
-* `Ctrl+G`: Go to line.
-* `Ctrl+Shift+G`: Go to percent.
+* `F3` (macOS: `Cmd+G`): Find next.
+* `Shift+F3` (macOS: `Cmd+Shift+G`): Find previous.
+* `Ctrl+G` (macOS: `Cmd+L`): Go to line.
+* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Go to percent.
 * `Ctrl+P`: Go to page (when supported by the current document).
-* `Alt+Left`: Go back in navigation history.
-* `Alt+Right`: Go forward in navigation history.
+* `=`: Announce your current reading percentage.
+* `Alt+Left` (macOS: `Cmd+[`): Go back in navigation history.
+* `Alt+Right` (macOS: `Cmd+]`): Go forward in navigation history.
 * `[`: Previous section.
 * `]`: Next section.
 * `Shift+H`: Previous heading.
@@ -69,14 +86,20 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `P`: Next page.
 * `Shift+B`: Previous bookmark.
 * `B`: Next bookmark.
+* `/`: Set your temporary bookmark.
+* `\`: Jump to your temporary bookmark.
 * `Shift+N`: Previous note.
 * `N`: Next note.
 * `Ctrl+B`: Jump to all bookmarks and notes.
 * `Ctrl+Alt+B`: Jump to bookmarks only.
 * `Ctrl+Alt+M`: Jump to notes only.
-* `Ctrl+Shift+W`: View note text at the current position.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, i.e. the physical Control key rather than Cmd): View note text at the current position.
 * `Shift+K`: Previous link.
 * `K`: Next link.
+* `Shift+G`: Previous image.
+* `G`: Next image.
+* `Shift+F`: Previous figure.
+* `F`: Next figure.
 * `Shift+T`: Previous table.
 * `T`: Next table.
 * `Shift+S`: Previous separator.
@@ -85,21 +108,31 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `L`: Next list.
 * `Shift+I`: Previous list item.
 * `I`: Next list item.
+* `Shift+,`: Go to the start of the current container (list or table).
+* `,`: Go past the end of the current container (list or table).
 
 ### Tools menu
 
-* `Ctrl+W`: Show word count for the current document.
+* `Ctrl+W` (macOS: `RawCtrl+W`, i.e. the physical Control key rather than Cmd): Show word count for the current document.
 * `Ctrl+I`: Show document info.
 * `Ctrl+T`: Show table of contents.
 * `F7`: Show elements list.
 * `Ctrl+Shift+C`: Open containing folder.
 * `Ctrl+Shift+V`: Open current content in Web View.
+* `Ctrl+U`: View the document source in a new tab.
 * `Ctrl+Shift+E`: Export document data (`.paperback`).
 * `Ctrl+Shift+I`: Import document data (`.paperback`).
 * `Ctrl+E`: Export the current document to plain text.
 * `Ctrl+Shift+B`: Toggle bookmark at the current selection/cursor.
 * `Ctrl+Shift+N`: Add or edit bookmark note at the current selection/cursor.
-* `Ctrl+,`: Open options.
+* `Ctrl+Alt+W`: Toggle word wrap.
+* `Ctrl+Space`: Play/pause audio narration.
+* `'`: Seek audio narration forward.
+* `;`: Seek audio narration backward.
+* `Ctrl+'`: Increase the audio seek amount.
+* `Ctrl+;`: Decrease the audio seek amount.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, i.e. Control+Command+F): Toggle full screen.
+* `Ctrl+,`: Open options (macOS: Preferences, under the app menu).
 * `Ctrl+Shift+S`: Toggle sleep timer.
 
 ### Help menu
@@ -113,8 +146,8 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 ### Additional document-view keys
 
 * `Delete` / `Numpad Delete` on the tab control: Close the selected document tab.
-* `Enter` in the document text: Activate link at cursor, or open a table view when on a table marker.
-* `Shift+F10` in the document text: Open the context menu.
+* `Enter` or `Space` in the document text: Activate link at cursor, or open a table view when on a table marker.
+* `Shift+F10` or the Menu/Application key in the document text: Open the context menu.
 
 ## Supported languages
 
@@ -159,6 +192,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Jonathan Rodriguez
 * Jonathan Schuster
 * Keao Wright
+* Michael Marshall
 * Pratik Patel
 * Roberto Perez
 * Sean Randall
@@ -167,18 +201,190 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ## Changelog
 
+### Version 0.9.2
+* Audio books no longer make your screen reader read out a run of spaces when you focus the text field.
+* Audio books now name the file as you step through them by section.
+* Audio books now report their real length, rather than claiming every file in them runs for 24 hours.
+* Closing the Web View with Escape no longer throws up a debug alert after you have followed a link inside it.
+* Copying after Select All now gives you the whole document, instead of only the part of it currently loaded.
+* Find now cuts straight to the line it found, rather than making you sit through the screen reader reading out the window again as focus returns to the book.
+* Fixed EPUB's that carry a stray ZIP64 block refusing to open with "Invalid local file header".
+* Fixed long documents walking back to their start while a screen reader read continuously through them.
+* Links in the WebView now take you to the section they point at, rather than failing with "File not found".
+* The automatic "Document reloaded" announcement no longer cuts your screen reader off mid sentence, instead waiting for it to finish what it was saying.
+* The Settings dialog's General tab now tabs through its options in the order they appear on screen, with the update channel directly after the check for updates option.
+* Windows will now always show "Paperback" in the Open With menu, rather than the program's full tagline.
+* Word Count and Document Info now show how many files an audio book holds, and how long it runs in total.
+
+### Version 0.9.1
+* Bookmark and note sounds now play on macOS.
+* DAISY books now play their audio on macOS, rather than opening and tracking their timeline in silence.
+* Fixed curly quotes, em dashes and similar characters vanishing from RTF documents, running the surrounding words together as they went.
+* Fixed RTF pictures leaking their raw data into the document as garbled text.
+* Fixed the Recent Documents submenu keeping stale entries until something else happened to rebuild it.
+* Keyboard accelerators are back in every translation, so Russian's menus have keyboard access again.
+* Large CHM documents now open up to seven times faster.
+* Opened documents are now registered with Windows, so they show up in the taskbar jump list and the Start menu's recent list.
+* Options has been renamed to Settings, matching the mobile apps and, on macOS, the platform convention.
+* Paperback now remembers its window position, size, and maximized state between runs.
+* Plural forms are now translated, so messages that count things read properly in languages that need more than one form.
+* Selecting a DAISY book's ncc.html now opens the complete audio book instead of just its text.
+* The Customize Keyboard Shortcuts dialog's action names can now be translated.
+* The document title now comes first in the title bar, so open books can be told apart in the taskbar and Alt+Tab.
+* The update dialog is now translated.
+
+### Version 0.9.0
+
+#### Added
+
+##### General
+* A CLI tool, called pb, to quickly convert any of Paperback's supported formats to HTML, Markdown, or plain text.
+* An option to reload documents that have been modified by other programs on disk.
+* A View Source option to open a document's source in a new tab, useful for editing Markdown for example.
+* Document text is now paginated, meaning you can load books with tens of millions of words in only a couple seconds now. Please report any weirdness found with this.
+
+##### Platform Support
+* ARM64 Windows support!
+* Native macOS support!
+* A full screen toggle.
+
+##### All Documents Dialog
+* A locate button to locate missing books that just changed their path.
+* A status filter and status bar, so you can filter by document status and see how many documents are shown and selected.
+* The `Ctrl+Shift+A` shortcut to deselect all documents.
+
+##### Options and Readability
+* A readability tab, with the following options:
+    * Word wrap (moved from general);
+    * Render tables inline (new in this release, see below);
+    * Font;
+    * Background color;
+    * Line spacing;
+    * Paragraph spacing;
+    * Letter spacing;
+    * Text alignment.
+* A word wrap menu item and subsequent hotkey.
+* A toggle to determine how you want tables displayed, and unified how tables are displayed across documents.
+
+##### Navigation
+* Support for navigating by container.
+* An option to automatically move the cursor to the start of the line when navigating between lines, similar to browse mode in screen readers.
+* The equals keyboard shortcut to announce your current percentage through a document.
+
+##### Bookmarks
+* Temporary bookmarks: you can have one per document, and they do persist. Use slash to set one and backslash to jump to it.
+
+##### Word Count
+* Estimated reading time in the word count dialog, as well as the ability to set your reading speed to make this metric actually useful.
+* If a selection is active when you open the word count dialog, how many words you have selected will now be shown.
+
+##### Keyboard Shortcuts
+* The ability to customize every keyboard shortcut in the app through a simple dialog.
+* A configurable keyboard shortcut to restore Paperback from the system tray.
+
+##### Languages
+* Dutch, Finnish, and Polish.
+
+##### Export
+* Expanded the export menu item to allow exporting to HTML and Markdown, in addition to plain text.
+
+##### Updater
+* A cancel button to the update-in-progress dialog.
+* The updater now validates the downloaded file hasn't been tampered with.
+
+##### Web View
+* The webview is now opened at your current reading position.
+
+##### DAISY Books
+* Support for DAISY 2.0 books.
+* Support for DAISY 2.02 audio playback.
+
+##### Audio Books
+* The ability to play audio books, currently supporting both DAISY audio (including DAISY audio + text) and zips of audio files.
+* Keyboard shortcuts and menu items to play/pause narration, seek forward and backward, and adjust the seek amount.
+* Options to sync the reading caret to audio playback, set the audio seek amount, and choose whether seeking past the end of a chapter continues into the next.
+
+##### CHM Documents
+* Support for lists, list items, figures, and images.
+
+##### PowerPoint
+* PowerPoint documents now support tables.
+
+#### Fixed
+
+##### General
+* Documents encoded in legacy CJK encodings, such as GBK, Big5, and Shift_JIS, will now render properly instead of as a bunch of mojibake.
+* "Reopen last closed" attempting to reopen the bundled readme.
+* Your selected tab not getting properly focused after restarting Paperback.
+* Paperback's handling of files on Windows network drives: pressing show file in folder now properly focuses the file on the network storage, and the paths no longer contain strange characters.
+* .paperback files will no longer be forcefully loaded on document restoration; instead, you'll be asked for confirmation when one is found.
+* Open containing folder now focuses the given file in explorer.
+* Opening the readme will now respect your selected language.
+* Paperback's user interface will now scale properly on high-DPI displays.
+* The menu now properly updates, and focus moves to the text control, when opening help in Paperback.
+* Switched to a much more secure method of IPC on Windows.
+* The active document title will now be read when switching between tabs.
+* Reduced memory usage on large documents by halving the size of the internal per-character index tables.
+
+##### All Documents Dialog
+* Escape not closing the Document Info and All Documents dialogs.
+* The title bar not updating after closing a document from the all documents dialog.
+* Readme.html will no longer be added to your all documents list when opened via Shift+F1.
+* Removing documents from the recents dialog will now also close their active tab.
+* Your search filter is now preserved after removing a document.
+
+##### Navigation
+* Page navigation announcing incorrect line text in some situations.
+* Go to Line, Go to Page, and Go to Percent placing your cursor at the wrong position in large documents.
+* Find and Find Next not respecting the loaded document window in large documents.
+
+##### Bookmarks
+* Bookmark/note sounds should now properly play exclusively when you navigate over a word containing one.
+
+##### Readability
+* Applying word wrap shooting you to the start of your document.
+
+##### Web View
+* The webview dialog not being resizable and popping up at a very small initial size.
+* Images should now properly display in the embedded webview.
+
+##### Updater
+* The updater now properly shows the content of markdown code tags in release notes.
+
+##### DAISY Books
+* DAISY books showing incorrect info in the status bar.
+* Loading DAISY books with bogus encoding declarations.
+
+##### RTF Documents
+* Parsing RTF documents with non-Latin characters in them.
+* RTF `\pict` groups so embedded image data no longer leaks into the document text.
+
+##### Mobi/AZW3 Books
+* Filepos anchors in Mobi books splitting HTML tags and putting garbage in the book text.
+* Links in legacy Mobi books.
+* Majorly improved AZW3 parsing.
+
+##### Word Documents
+* Word documents with locale-specific style names not rendering their headings properly.
+
+##### HTML/XHTML Documents
+* dl, dt, and dd elements not producing line breaks in XHTML documents.
+
+##### PDF Documents
+* Paperback now falls back to plain text extraction for falsely-tagged PDFs.
+* PDF documents containing control characters in their titles and/or bookmarks will no longer crash Paperback on open.
+
 ### Version 0.8.5
 * Added page support to epub books.
 * Added support for encrypted Microsoft Office documents. Currently Legacy word, modern Word and modern Powerpoint are supported, with legacy Powerpoint planned for the future.
-* Added support for legacy Microsoft Word documents (*.doc)!
-* Added support for legacy Powerpoint presentations (*.ppt)!
+* Added support for legacy Microsoft Word documents!
+* Added support for legacy Powerpoint presentations!
 * Added support for mobi and AZW3 books!
 * Added support for tagged PDF files!
 * Added the ctrl+q shortcut to exit the app.
 * Added support for zipped books from Bookshare (both DAISY and Word)!
 * Alt text for embedded images should now be properly shown.
 * CHM documents now properly support internal link navigation.
-* Fixed bookmark sounds triggering at paragraph start instead of the bookmark's position.
 * Fixed go to page being off by 1.
 * Fixed the escape key not working to close the open as dialog.
 * Fixed the reader context menu not showing up on right-click or the Applications key.
@@ -223,7 +429,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed Markdown documents showing raw text instead of rendered HTML in the Web View.
 * Fixed tables not rendering properly in Markdown files.
 * Image only PDFs will now warn you of their existence when you attempt to load one.
-* It is now possible to check for new dev builds instead of stable releases when checking for updates.
 * Properly embed version information in the Paperback executable.
 * Split the options dialog into tabs for ease of use and navigation.
 * Switched to Hayro for parsing PDFs, leading to more reliability, speed, and fewer DLLs.
@@ -243,7 +448,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed TOC parsing in Epub 2 books.
 * Fixed navigating to the next item with the same letter in the table of contents.
 * Fixed the find dialog not hiding properly when using the next/previous buttons.
-* Fixed epub TOCs occasionally throwing you to the wrong item.
+* Fixed epub TOC's occasionally throwing you to the wrong item.
 * Fixed various whitespace handling issues in XML, HTML, and pre tags.
 * Fixed off-by-one error in link navigation.
 * Fixed some books having trailing whitespace on their lines.

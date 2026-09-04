@@ -13,14 +13,15 @@ dictionary TocEntry {
 	i32 level;
 };
 
-enum MarkerTypeFfi {
+enum MarkerType {
 	"Heading1", "Heading2", "Heading3", "Heading4", "Heading5", "Heading6",
 	"PageBreak", "SectionBreak", "TocItem", "Link",
-	"List", "ListItem", "Table", "Separator", "Image", "Figure"
+	"List", "ListItem", "Table", "Separator", "Image", "Figure",
+	"Bold", "Italic", "Underline"
 };
 
 dictionary LineMarker {
-	MarkerTypeFfi mtype;
+	MarkerType mtype;
 	i64 position;
 	string text;
 	string reference;
@@ -54,6 +55,7 @@ dictionary TextSegmentFfi {
 	string text;
 	i64 start_pos;
 	i64 end_pos;
+	boolean found;
 };
 
 dictionary DocumentStatsFfi {
@@ -61,6 +63,8 @@ dictionary DocumentStatsFfi {
 	i64 line_count;
 	i64 char_count;
 	i64 char_count_no_whitespace;
+	i64 audio_file_count;
+	i64 audio_total_duration_ms;
 };
 
 dictionary SearchOptionsFfi {
@@ -74,6 +78,27 @@ dictionary SearchResultFfi {
 	boolean found;
 	boolean wrapped;
 	i64 position;
+};
+
+dictionary AudioClipFfi {
+	boolean found;
+	i32 source;
+	i64 clip_begin_ms;
+	i64 clip_end_ms;
+	i64 start;
+	i64 end;
+};
+
+dictionary AudioCursorFfi {
+	boolean found;
+	i32 clip_index;
+	i64 seek_ms;
+};
+
+dictionary AudioPointFfi {
+	boolean found;
+	i64 position;
+	i64 time_ms;
 };
 
 dictionary StatusInfo {
@@ -105,7 +130,7 @@ dictionary LinkListFfi {
 
 interface DocumentSession {
 	[Name=new_ffi, Throws=DocumentError]
-	constructor(string file_path, string password, string forced_extension);
+	constructor(string file_path, string password, string forced_extension, boolean render_tables_inline);
 
 	string title();
 	string author();
@@ -116,24 +141,49 @@ interface DocumentSession {
 	i64 position_from_line(i64 line);
 	i64 line_from_position(i64 position);
 	sequence<LineMarker> get_line_markers(i64 line);
-	LinkActivationResult activate_link_ffi(i64 position);
+	LinkActivationResult activate_link(i64 position);
 	TextSegmentFfi get_text_segment(i64 position, SegmentTypeFfi segment_type, SegmentDirectionFfi direction);
 
-	StatusInfo get_status_info_ffi(i64 position);
-	i64 position_from_percent_ffi(i32 percent);
-	i32 current_page_ffi(i64 position);
+	StatusInfo get_status_info(i64 position);
+	i64 position_from_percent(i32 percent);
+	i32 current_page(i64 position);
 	i32 page_count_ffi();
-	i64 page_offset_ffi(i32 page);
+	i64 page_offset(i32 page);
 
 	HeadingTreeFfi get_heading_tree_ffi(i64 position);
 	LinkListFfi get_link_list_ffi(i64 position);
 
 	sequence<TocEntry> get_toc();
 
+	boolean has_audio_ffi();
+	boolean is_audio_only_ffi();
+	i32 audio_source_count_ffi();
+	string audio_source_direct_path_ffi(i32 index);
+	boolean audio_extract_source_ffi(i32 index, string output_path);
+	i32 audio_clip_count_ffi();
+	AudioClipFfi audio_clip_ffi(i32 index);
+	i64 audio_total_duration_ms_ffi();
+	AudioCursorFfi audio_cursor_at_elapsed_ffi(i64 elapsed_ms);
+	AudioPointFfi audio_point_for_position_ffi(i64 position);
+	i64 audio_elapsed_for_source_position_ffi(i32 source, i64 raw_ms);
+	i32 audio_progress_percent_ffi(i64 elapsed_ms);
+	i64 audio_elapsed_for_percent_ffi(i32 percent);
+	i32 audio_next_source_after_ffi(i32 current_source);
+	i32 audio_previous_source_before_ffi(i32 current_source);
+
 	DocumentStatsFfi get_stats_ffi();
 	sequence<SegmentTypeFfi> get_supported_segment_types_ffi();
 
 	SearchResultFfi search_ffi(string query, i64 start_position, SearchOptionsFfi options);
+
+	sequence<ExportFormat> get_supported_export_formats_ffi();
+	string render_export_ffi(ExportFormat format);
+};
+
+enum ExportFormat {
+	"Text",
+	"Html",
+	"Markdown"
 };
 
 interface ConfigManagerFfi {
@@ -145,9 +195,13 @@ interface ConfigManagerFfi {
 	void set_app_string(string key, string value);
 	boolean get_app_bool(string key, boolean default_value);
 	void set_app_bool(string key, boolean value);
+	i32 get_app_int(string key, i32 default_value);
+	void set_app_int(string key, i32 value);
 	void associate_uri_with_local_file(string uri, string local_path);
 	void set_document_position(string path, i64 position);
 	i64 get_document_position(string path);
+	void set_document_audio_time_ffi(string path, i64 time_ms);
+	i64 get_document_audio_time_ffi(string path);
 	void set_document_password(string path, string password);
 	string get_document_password(string path);
 	void add_recent_document(string path);
@@ -157,6 +211,7 @@ interface ConfigManagerFfi {
 	void set_document_opened(string path, boolean opened);
 	sequence<string> get_opened_documents();
 	void remove_document_history(string path);
+	void rename_document_path(string old_path, string new_path);
 	sequence<string> get_supported_extensions();
 	sequence<string> get_find_history();
 	void add_find_history(string text, i32 max_len);

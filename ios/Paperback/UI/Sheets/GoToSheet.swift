@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct GoToSheet: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 	@State private var mode: GoToMode = .line
@@ -17,12 +17,16 @@ struct GoToSheet: View {
 		NavigationStack {
 			Form {
 				Section {
-					Picker("Mode", selection: $mode) {
-						Text("Line").tag(GoToMode.line)
+					// TRANSLATORS: Label for the wheel picker that chooses whether Go To navigates by line, page, or percent
+					Picker(t("Mode"), selection: $mode) {
+						// TRANSLATORS: Go To mode option: navigate to a specific line number
+						Text(t("Line")).tag(GoToMode.line)
 						if hasPages {
-							Text("Page").tag(GoToMode.page)
+							// TRANSLATORS: Go To mode option: navigate to a specific page number
+							Text(t("Page")).tag(GoToMode.page)
 						}
-						Text("Percent").tag(GoToMode.percent)
+						// TRANSLATORS: Go To mode option: navigate to a percentage through the document
+						Text(t("Percent")).tag(GoToMode.percent)
 					}
 					.pickerStyle(.wheel)
 					.labelsHidden()
@@ -31,17 +35,20 @@ struct GoToSheet: View {
 				Section {
 					switch mode {
 					case .line:
-						TextField("Line number", text: $lineValue)
+						// TRANSLATORS: Placeholder for the line number input field in Go To
+						TextField(t("Line number"), text: $lineValue)
 							.keyboardType(.numberPad)
 							.focused($fieldFocused)
 					case .page:
-						TextField("Page number", text: $pageValue)
+						// TRANSLATORS: Placeholder for the page number input field in Go To
+						TextField(t("Page number"), text: $pageValue)
 							.keyboardType(.numberPad)
 							.focused($fieldFocused)
 					case .percent:
 						HStack {
 							Slider(value: $percentValue, in: 0...100, step: 1)
-								.accessibilityLabel("Percentage")
+								// TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
+								.accessibilityLabel(t("Percentage"))
 								.accessibilityValue("\(Int(percentValue))%")
 							Text("\(Int(percentValue))%")
 								.monospacedDigit()
@@ -52,19 +59,22 @@ struct GoToSheet: View {
 					}
 				}
 			}
-			.navigationTitle("Go To")
+			// TRANSLATORS: Navigation title of the Go To sheet
+			.navigationTitle(t("Go To"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") { dismiss() }
+					// TRANSLATORS: Button that dismisses the Go To sheet without navigating
+					Button(t("Cancel")) { dismiss() }
 				}
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Go") { go() }
+					// TRANSLATORS: Button that performs the Go To navigation using the entered line/page/percent
+					Button(t("Go")) { go() }
 						.disabled(!canGo)
 				}
 			}
 			.onAppear { populate() }
-			.onChange(of: mode) { _ in viewModel.goToInitialMode = mode }
+			.onChange(of: mode) { viewModel.navigation.goToInitialMode = mode }
 		}
 		.sheetAccessibilityFocus(title: "Go To")
 	}
@@ -78,16 +88,16 @@ struct GoToSheet: View {
 	}
 
 	private func populate() {
-		let initialMode = viewModel.goToInitialMode
+		let initialMode = viewModel.navigation.goToInitialMode
 		mode = (initialMode == .page && !hasPages) ? .line : initialMode
 
 		guard let session else { return }
-		let pos = viewModel.ttsPosition
-		let status = session.getStatusInfoFfi(position: pos)
+		let pos = viewModel.reading.ttsPosition
+		let status = session.getStatusInfo(position: pos)
 		lineValue = "\(status.lineNumber)"
 		percentValue = Double(status.percentage)
 		if hasPages {
-			pageValue = "\(session.currentPageFfi(position: pos))"
+			pageValue = "\(session.currentPage(position: pos))"
 		}
 
 		if !voiceOverEnabled { fieldFocused = mode != .percent }
@@ -97,12 +107,12 @@ struct GoToSheet: View {
 		switch mode {
 		case .line:
 			guard let n = Int64(lineValue) else { dismiss(); return }
-			viewModel.goToLine(n)
+			viewModel.reading.goToLine(n)
 		case .page:
 			guard let n = Int64(pageValue) else { dismiss(); return }
-			viewModel.goToPage(Int32(n))
+			viewModel.reading.goToPage(Int32(n))
 		case .percent:
-			viewModel.goToPercent(Int32(percentValue))
+			viewModel.reading.goToPercent(Int32(percentValue))
 		}
 		dismiss()
 	}

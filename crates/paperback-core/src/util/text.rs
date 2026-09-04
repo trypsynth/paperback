@@ -1,29 +1,36 @@
-use pulldown_cmark::{Event, Parser, TagEnd};
 use roman::to;
-
-pub fn markdown_to_text(markdown: &str) -> String {
-	let mut text = String::new();
-	let parser = Parser::new(markdown);
-	for event in parser {
-		match event {
-			Event::Text(t) | Event::Code(t) => {
-				text.push_str(&t);
-			}
-			Event::End(TagEnd::Paragraph | TagEnd::Heading(_)) => {
-				text.push_str("\n\n");
-			}
-			Event::End(TagEnd::Item) => {
-				text.push('\n');
-			}
-			_ => {}
-		}
-	}
-	text.trim().to_string()
-}
 
 #[must_use]
 pub fn remove_soft_hyphens(input: &str) -> String {
 	input.replace("\u{00AD}", "")
+}
+
+/// Normalizes `\r\n` and bare `\r` line endings to `\n`, matching every other parser's output
+/// (RTF, HTML, XML, Markdown all only ever emit bare `\n`). A GUI text control's own line-ending
+/// handling doesn't necessarily count an embedded `\r` as a position the same way `DocumentBuffer`
+/// does, so leaving raw `\r`s in a document's content drifts its stored positions (markers, Find
+/// results, ...) out of sync with the control by roughly one unit per line - worse the further
+/// into the document you go. Plain text files are the one format whose source can contain `\r` at
+/// all, since every other parser builds its output text itself rather than passing source bytes
+/// through.
+#[must_use]
+pub fn normalize_line_endings(input: &str) -> String {
+	if !input.contains('\r') {
+		return input.to_string();
+	}
+	let mut result = String::with_capacity(input.len());
+	let mut chars = input.chars().peekable();
+	while let Some(ch) = chars.next() {
+		if ch == '\r' {
+			if chars.peek() == Some(&'\n') {
+				chars.next();
+			}
+			result.push('\n');
+		} else {
+			result.push(ch);
+		}
+	}
+	result
 }
 
 #[must_use]
@@ -66,35 +73,26 @@ pub fn trim_string(s: &str) -> String {
 	s.trim_matches(is_space_like).to_string()
 }
 
+/// Display units match the index space of the platform text control that the
+/// document text is loaded into: UTF-16 code units on Windows (Win32 edit
+/// control) and macOS (`NSTextView`'s `NSRange`, which wxWidgets passes through
+/// unconverted); Unicode characters on GTK (`GtkTextIter` offsets).
 #[must_use]
 pub fn display_len(s: &str) -> usize {
-	#[cfg(windows)]
-	{
-		s.encode_utf16().count()
-	}
-	#[cfg(not(windows))]
-	{
-		s.chars().count()
-	}
+	if cfg!(any(windows, target_os = "macos")) { s.encode_utf16().count() } else { s.chars().count() }
 }
 
 #[must_use]
 pub const fn ch_width(ch: char) -> usize {
-	#[cfg(windows)]
-	{
-		ch.len_utf16()
-	}
-	#[cfg(not(windows))]
-	{
-		let _ = ch;
-		1
-	}
+	if cfg!(any(windows, target_os = "macos")) { ch.len_utf16() } else { 1 }
 }
 
+#[must_use]
 pub const fn is_space_like(ch: char) -> bool {
 	ch.is_whitespace() || matches!(ch, '\u{00A0}' | '\u{200B}')
 }
 
+#[must_use]
 pub fn format_list_item(number: i32, list_type: &str) -> String {
 	match list_type {
 		"a" => to_alpha(number, false),
@@ -135,6 +133,17 @@ mod tests {
 	}
 
 	#[rstest]
+	#[case("crlf\r\nline", "crlf\nline")]
+	#[case("bare cr\rline", "bare cr\nline")]
+	#[case("already lf\nline", "already lf\nline")]
+	#[case("mixed\r\nline\rother\nline", "mixed\nline\nother\nline")]
+	#[case("no newlines at all", "no newlines at all")]
+	#[case("", "")]
+	fn test_normalize_line_endings(#[case] input: &str, #[case] expected: &str) {
+		assert_eq!(normalize_line_endings(input), expected);
+	}
+
+	#[rstest]
 	#[case("hello%20world", "hello world")]
 	#[case("test%2Fpath", "test/path")]
 	#[case("100%25", "100%")]
@@ -168,17 +177,17 @@ mod tests {
 		assert_eq!(trim_string(input), expected);
 	}
 
-	#[cfg(windows)]
+	#[cfg(any(windows, target_os = "macos"))]
 	#[test]
-	fn test_display_len_windows() {
+	fn test_display_len_utf16_platforms() {
 		assert_eq!(display_len("abc"), 3);
 		assert_eq!(display_len("💖"), 2);
 		assert_eq!(display_len("line\nwrap"), 9);
 	}
 
-	#[cfg(not(windows))]
+	#[cfg(not(any(windows, target_os = "macos")))]
 	#[test]
-	fn test_display_len_non_windows() {
+	fn test_display_len_char_platforms() {
 		assert_eq!(display_len("abc"), 3);
 		assert_eq!(display_len("💖"), 1);
 		assert_eq!(display_len("line\nwrap"), 9);
@@ -208,41 +217,6 @@ mod tests {
 	#[case(53, "A", "BA")]
 	fn test_format_list_item(#[case] number: i32, #[case] list_type: &str, #[case] expected: &str) {
 		assert_eq!(format_list_item(number, list_type), expected);
-	}
-
-	#[test]
-	fn test_markdown_to_text_paragraphs_and_lists() {
-		let md = "# Title\n\nFirst paragraph.\n\n- One\n- Two";
-		let text = markdown_to_text(md);
-		assert!(text.contains("Title"));
-		assert!(text.contains("First paragraph."));
-		assert!(text.contains("One\nTwo"));
-	}
-
-	#[test]
-	fn test_markdown_to_text_preserves_issue_references() {
-		let md = "Fixes #12, closes #7, and resolves #312.";
-		let text = markdown_to_text(md);
-		assert!(text.contains("#12"), "#12 was dropped");
-		assert!(text.contains("#7"), "#7 was dropped");
-		assert!(text.contains("#312"), "#312 was dropped");
-	}
-
-	#[test]
-	fn test_markdown_to_text_preserves_inline_code() {
-		let md = "Bumps `pdfium` from `969d3b7` to `42b6c95`.";
-		let text = markdown_to_text(md);
-		assert!(text.contains("969d3b7"), "commit hash before 'to' was dropped");
-		assert!(text.contains("42b6c95"), "commit hash after 'to' was dropped");
-	}
-
-	#[test]
-	fn test_markdown_to_text_preserves_hash_tokens() {
-		let md = "Topic #rust and issue #x1 and number #42";
-		let text = markdown_to_text(md);
-		assert!(text.contains("#rust"));
-		assert!(text.contains("#x1"));
-		assert!(text.contains("#42"));
 	}
 
 	#[rstest]

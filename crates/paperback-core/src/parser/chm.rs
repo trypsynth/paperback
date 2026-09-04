@@ -1,43 +1,36 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+	collections::{HashMap, HashSet},
+	mem,
+};
 
 use anyhow::{Context, Result};
-use libchm::{ChmFile, EntryCategory, EntrySel};
+use libchm::{ChmFile, Entry, EntryCategory, EntrySel};
+use rayon::prelude::*;
 use scraper::{ElementRef, Html, Selector};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
-		Parser, add_converter_markers_excluding_links,
-		html_to_text::{HtmlSourceMode, HtmlToText},
+		ConverterOutput, Parser, add_converter_markers_excluding_links,
+		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		is_external_url,
-		util::path::extract_title_from_path,
+		util::path::{extract_title_from_path, resolve_relative_path},
 	},
+	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	util::encoding::convert_to_utf8,
 };
 
 pub struct ChmParser;
 
 impl Parser for ChmParser {
-	fn name(&self) -> &'static str {
-		"Compiled HTML Help files"
-	}
-
-	fn extensions(&self) -> &[&str] {
-		&["chm"]
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
-			| ParserFlags::SUPPORTS_LISTS
-			| ParserFlags::SUPPORTS_SECTIONS
-			| ParserFlags::SUPPORTS_IMAGES
-			| ParserFlags::SUPPORTS_FIGURES
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing chm file");
 		let mut chm = ChmFile::open(&context.file_path)
 			.with_context(|| format!("Failed to open CHM file: {}", context.file_path))?;
 		let mut html_files = Vec::new();
+		// Keep the directory entry for each HTML file. Enumeration has already decoded it, so
+		// holding on to it saves a full directory B-tree descent per file when we read them below.
+		let mut entries_by_path: HashMap<String, Entry> = HashMap::new();
 		let mut hhc_file = String::new();
 		for entry in chm.entries(EntrySel::ALL)? {
 			let lower_path = entry.path.to_lowercase();
@@ -46,45 +39,67 @@ impl Parser for ChmParser {
 			}
 			if (lower_path.contains(".htm") || lower_path.contains(".html")) && entry.category != EntryCategory::Special
 			{
-				html_files.push(entry.path);
+				let path = entry.path.clone();
+				entries_by_path.insert(path.clone(), entry);
+				html_files.push(path);
 			}
 		}
 		html_files.sort();
-		let title = parse_system_file(&mut chm).unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		tracing::debug!(html_file_count = html_files.len(), hhc_found = !hhc_file.is_empty(), "chm structure detected");
+		let title = parse_system_file(&mut chm).unwrap_or_else(|| {
+			tracing::debug!(path = %context.file_path, "no title found in #SYSTEM record, falling back to filename");
+			extract_title_from_path(&context.file_path)
+		});
+		if hhc_file.is_empty() {
+			tracing::debug!(path = %context.file_path, "chm has no hhc file, table of contents will be empty");
+		}
 		let mut toc_items = if hhc_file.is_empty() { Vec::new() } else { parse_hhc_file(&mut chm, &hhc_file)? };
 		let ordered_files = build_ordered_file_list(&html_files, &toc_items);
-		let mut buffer = DocumentBuffer::new();
+		let converted =
+			convert_sections(&context.file_path, &ordered_files, &entries_by_path, context.render_tables_inline);
+		// Keep each file's original index so the "Section N" label still reflects its position in
+		// the document even when earlier files were skipped.
+		let mut sections: Vec<(usize, &String, SectionContent)> = Vec::with_capacity(converted.len());
+		for (idx, slot) in converted.into_iter().enumerate() {
+			match slot {
+				Ok(section) => sections.push((idx, &ordered_files[idx], section)),
+				Err(err) => {
+					tracing::warn!(error = %err, "skipping chm html entry that could not be read or converted");
+				}
+			}
+		}
+		// Sections are separated exactly as the one-at-a-time build separated them: a section that
+		// does not already end with a newline gets one appended. An empty section after the first
+		// adds nothing, because the text so far already ends with a newline.
+		let texts: Vec<String> = sections
+			.iter_mut()
+			.enumerate()
+			.map(|(pos, (_, _, section))| {
+				let text = mem::take(&mut section.text);
+				if text.ends_with('\n') || (text.is_empty() && pos > 0) { text } else { text + "\n" }
+			})
+			.collect();
+		// `from_parts` builds the content and its per-character indices for every section in one
+		// parallel pass, handing back where each section landed so markers can be placed after.
+		let (mut buffer, spans) = DocumentBuffer::from_parts(texts);
 		let mut id_positions = HashMap::new();
 		let mut file_positions = HashMap::new();
-		for (idx, file_path) in ordered_files.iter().enumerate() {
-			let section_start = buffer.current_position();
-			let Ok(content_bytes) = chm.find(file_path).and_then(|e| chm.read(&e)) else { continue };
-			if content_bytes.is_empty() {
-				continue;
-			}
-			let utf8_content = convert_to_utf8(&content_bytes);
-			let mut converter = HtmlToText::new();
-			if !converter.convert(&utf8_content, HtmlSourceMode::NativeHtml) {
-				continue;
-			}
-			let text = converter.get_text();
-			let section_id_positions = converter.get_id_positions();
+		for ((idx, file_path, section), span) in sections.iter().zip(&spans) {
+			let section_start = span.start;
 			let normalized_path = normalize_path(file_path);
 			file_positions.insert(normalized_path.clone(), section_start);
 			// Store file-level position so fragment-less internal links can be resolved.
 			id_positions.insert(normalized_path.clone(), section_start);
-			for (id, relative_pos) in section_id_positions {
-				let absolute_pos = section_start + relative_pos;
-				id_positions.insert(format!("{normalized_path}#{id}"), absolute_pos);
+			for (id, relative_pos) in &section.id_positions {
+				id_positions.insert(format!("{normalized_path}#{id}"), section_start + relative_pos);
 			}
-			buffer.append(&text);
 			buffer.add_marker(
 				Marker::new(MarkerType::SectionBreak, section_start)
 					.with_text(format!("Section {}", idx + 1))
-					.with_reference(file_path.clone()),
+					.with_reference((*file_path).clone()),
 			);
-			add_converter_markers_excluding_links(&mut buffer, &converter, section_start);
-			for link in converter.get_links() {
+			add_converter_markers_excluding_links(&mut buffer, section, section_start);
+			for link in &section.links {
 				let resolved_href = resolve_chm_href(file_path, &link.reference);
 				buffer.add_marker(
 					Marker::new(MarkerType::Link, section_start + link.offset)
@@ -92,17 +107,132 @@ impl Parser for ChmParser {
 						.with_reference(resolved_href),
 				);
 			}
-			if !buffer.content.ends_with('\n') {
-				buffer.append("\n");
-			}
 		}
 		calculate_toc_offsets(&mut toc_items, &file_positions, &id_positions);
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		document.toc_items = toc_items;
+		tracing::debug!(path = %context.file_path, "parsed chm file successfully");
 		Ok(document)
 	}
+}
+
+/// One converted HTML file: its text plus everything the converter recorded about it.
+///
+/// This is what crosses back from a rayon worker to the sequential assembly step, so it owns
+/// its data rather than borrowing the converter that produced it.
+struct SectionContent {
+	text: String,
+	headings: Vec<HeadingInfo>,
+	links: Vec<LinkInfo>,
+	images: Vec<ImageInfo>,
+	figures: Vec<ImageInfo>,
+	tables: Vec<TableInfo>,
+	separators: Vec<SeparatorInfo>,
+	lists: Vec<ListInfo>,
+	list_items: Vec<ListItemInfo>,
+	bolds: Vec<FormatInfo>,
+	italics: Vec<FormatInfo>,
+	underlines: Vec<FormatInfo>,
+	id_positions: HashMap<String, usize>,
+}
+
+impl ConverterOutput for SectionContent {
+	fn get_headings(&self) -> &[HeadingInfo] {
+		&self.headings
+	}
+	fn get_links(&self) -> &[LinkInfo] {
+		&self.links
+	}
+	fn get_images(&self) -> &[ImageInfo] {
+		&self.images
+	}
+	fn get_figures(&self) -> &[ImageInfo] {
+		&self.figures
+	}
+	fn get_tables(&self) -> &[TableInfo] {
+		&self.tables
+	}
+	fn get_separators(&self) -> &[SeparatorInfo] {
+		&self.separators
+	}
+	fn get_lists(&self) -> &[ListInfo] {
+		&self.lists
+	}
+	fn get_list_items(&self) -> &[ListItemInfo] {
+		&self.list_items
+	}
+	fn get_bolds(&self) -> &[FormatInfo] {
+		&self.bolds
+	}
+	fn get_italics(&self) -> &[FormatInfo] {
+		&self.italics
+	}
+	fn get_underlines(&self) -> &[FormatInfo] {
+		&self.underlines
+	}
+}
+
+/// Reads and converts every HTML file to text, returning one result per file in order.
+///
+/// Conversion dominates the cost of parsing a CHM (around 90% of the time on a large one) and
+/// each file is independent, so this runs across cores. Each rayon worker opens its own
+/// [`ChmFile`] via `map_init` (once per task rather than once per file), so the reads and the
+/// LZX decompression parallelise too instead of being serialised through one shared handle.
+/// Failures are returned rather than dropped, so the caller can log each one and carry on.
+fn convert_sections(
+	source_path: &str,
+	ordered_files: &[String],
+	entries_by_path: &HashMap<String, Entry>,
+	render_tables_inline: bool,
+) -> Vec<Result<SectionContent, String>> {
+	ordered_files
+		.par_iter()
+		.map_init(
+			|| ChmFile::open(source_path).map_err(|err| err.to_string()),
+			|chm_result, file_path| {
+				let chm = chm_result.as_mut().map_err(|err| format!("{file_path} ({err})"))?;
+				// Enumeration already handed us the entry; look it up again only if this path
+				// somehow was not one of the files we enumerated.
+				let content_bytes = match entries_by_path.get(file_path) {
+					Some(entry) => chm.read(entry),
+					None => chm.find(file_path).and_then(|entry| chm.read(&entry)),
+				}
+				.map_err(|err| format!("{file_path} ({err})"))?;
+				if content_bytes.is_empty() {
+					return Err(format!("{file_path} (entry is empty)"));
+				}
+				convert_section(&content_bytes, render_tables_inline)
+					.ok_or_else(|| format!("{file_path} (html conversion failed)"))
+			},
+		)
+		.collect()
+}
+
+/// Convert one file's raw bytes to text, transcoding to UTF-8 first.
+fn convert_section(content_bytes: &[u8], render_tables_inline: bool) -> Option<SectionContent> {
+	let utf8_content = convert_to_utf8(content_bytes);
+	let mut converter = HtmlToText::with_render_tables_inline(render_tables_inline);
+	// currently always true, HtmlToText::convert has no failure path today
+	if !converter.convert(&utf8_content, HtmlSourceMode::NativeHtml) {
+		return None;
+	}
+	Some(SectionContent {
+		text: converter.get_text(),
+		headings: converter.get_headings().to_vec(),
+		links: converter.get_links().to_vec(),
+		images: ConverterOutput::get_images(&converter).to_vec(),
+		figures: ConverterOutput::get_figures(&converter).to_vec(),
+		tables: converter.get_tables().to_vec(),
+		separators: converter.get_separators().to_vec(),
+		lists: converter.get_lists().to_vec(),
+		list_items: converter.get_list_items().to_vec(),
+		bolds: converter.get_bolds().to_vec(),
+		italics: converter.get_italics().to_vec(),
+		underlines: converter.get_underlines().to_vec(),
+		id_positions: converter.get_id_positions().clone(),
+	})
 }
 
 fn parse_system_file(chm: &mut ChmFile) -> Option<String> {
@@ -139,12 +269,14 @@ fn parse_hhc_file(chm: &mut ChmFile, hhc_path: &str) -> Result<Vec<TocItem>> {
 		.and_then(|e| chm.read(&e))
 		.with_context(|| format!("Failed to read .hhc file: {hhc_path}"))?;
 	if content_bytes.is_empty() {
+		tracing::debug!(path = %hhc_path, "hhc file is empty, table of contents will be empty");
 		return Ok(Vec::new());
 	}
 	let content = convert_to_utf8(&content_bytes);
 	let document = Html::parse_document(&content);
 	let body_selector = Selector::parse("body").unwrap();
 	let Some(body) = document.select(&body_selector).next() else {
+		tracing::debug!(path = %hhc_path, "hhc file has no body element, table of contents will be empty");
 		return Ok(Vec::new());
 	};
 	let mut toc_items = Vec::new();
@@ -174,18 +306,17 @@ fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 				let mut name = String::new();
 				let mut local = String::new();
 				for obj_child in child_ref.children() {
-					if let Some(obj_element) = obj_child.value().as_element() {
-						if obj_element.name() == "object" {
-							if let Some(object_ref) = ElementRef::wrap(obj_child) {
-								for param in object_ref.select(&param_selector) {
-									let param_name = param.value().attr("name").unwrap_or("").to_lowercase();
-									let param_value = param.value().attr("value").unwrap_or("");
-									match param_name.as_str() {
-										"name" => name = param_value.to_string(),
-										"local" => local = param_value.to_string(),
-										_ => {}
-									}
-								}
+					if let Some(obj_element) = obj_child.value().as_element()
+						&& obj_element.name() == "object"
+						&& let Some(object_ref) = ElementRef::wrap(obj_child)
+					{
+						for param in object_ref.select(&param_selector) {
+							let param_name = param.value().attr("name").unwrap_or("").to_lowercase();
+							let param_value = param.value().attr("value").unwrap_or("");
+							match param_name.as_str() {
+								"name" => name = param_value.to_string(),
+								"local" => local = param_value.to_string(),
+								_ => {}
 							}
 						}
 					}
@@ -195,13 +326,12 @@ fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 					let mut found_child_ul = false;
 					// PATTERN 1: Check for child UL (standard CHM pattern)
 					for nested_child in child_ref.children() {
-						if let Some(nested_element) = nested_child.value().as_element() {
-							if nested_element.name() == "ul" {
-								if let Some(nested_ref) = ElementRef::wrap(nested_child) {
-									parse_hhc_node(nested_ref, &mut item.children);
-									found_child_ul = true;
-								}
-							}
+						if let Some(nested_element) = nested_child.value().as_element()
+							&& nested_element.name() == "ul"
+							&& let Some(nested_ref) = ElementRef::wrap(nested_child)
+						{
+							parse_hhc_node(nested_ref, &mut item.children);
+							found_child_ul = true;
 						}
 					}
 					// PATTERN 2: Check for sibling UL elements, as seen in nvgt.chm.
@@ -217,11 +347,11 @@ fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 								}
 							}
 						}
-						if let Some((ul_index, sibling_node)) = next_element {
-							if let Some(sibling_ref) = ElementRef::wrap(sibling_node) {
-								parse_hhc_node(sibling_ref, &mut item.children);
-								consumed_indices.insert(ul_index); // Mark as consumed
-							}
+						if let Some((ul_index, sibling_node)) = next_element
+							&& let Some(sibling_ref) = ElementRef::wrap(sibling_node)
+						{
+							parse_hhc_node(sibling_ref, &mut item.children);
+							consumed_indices.insert(ul_index); // Mark as consumed
 						}
 					}
 					items.push(item);
@@ -247,10 +377,10 @@ fn build_ordered_file_list(html_files: &[String], toc_items: &[TocItem]) -> Vec<
 	collect_toc_files(toc_items, &mut toc_files);
 	for toc_file in toc_files {
 		let normalized = normalize_path(&toc_file);
-		if let Some(actual_path) = path_map.get(&normalized) {
-			if seen.insert(normalized) {
-				ordered.push(actual_path.clone());
-			}
+		if let Some(actual_path) = path_map.get(&normalized)
+			&& seen.insert(normalized)
+		{
+			ordered.push(actual_path.clone());
 		}
 	}
 	for file in html_files {
@@ -293,21 +423,7 @@ fn resolve_chm_href(current_file: &str, href: &str) -> String {
 		let current_normalized = normalize_path(current_file);
 		let current_dir = current_normalized.rfind('/').map_or("", |i| &current_normalized[..i]);
 		let path_normalized = path_part.replace('\\', "/");
-		let mut parts: Vec<&str> = if path_part.starts_with('/') {
-			Vec::new()
-		} else {
-			current_dir.split('/').filter(|s| !s.is_empty()).collect()
-		};
-		for part in path_normalized.split('/') {
-			match part {
-				".." => {
-					parts.pop();
-				}
-				"." | "" => {}
-				p => parts.push(p),
-			}
-		}
-		format!("/{}", parts.join("/")).to_lowercase()
+		format!("/{}", resolve_relative_path(current_dir, &path_normalized)).to_lowercase()
 	};
 	match fragment {
 		Some(frag) if !frag.is_empty() => format!("{resolved_path}#{frag}"),

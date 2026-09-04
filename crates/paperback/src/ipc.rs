@@ -3,11 +3,14 @@ use std::{
 	path::{Path, PathBuf},
 };
 
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
 pub const IPC_COMMAND_ACTIVATE: &str = "ACTIVATE";
 #[cfg(any(target_os = "linux", target_os = "windows", test))]
 pub const IPC_COMMAND_TOGGLE_VISIBILITY: &str = "TOGGLE";
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub const SINGLE_INSTANCE_NAME: &str = "paperback_running";
 
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
 #[derive(Debug, Clone)]
 pub enum IpcCommand {
 	Activate,
@@ -37,7 +40,7 @@ pub fn decode_execute_payload(data: &[u8]) -> Option<IpcCommand> {
 }
 
 pub fn normalize_cli_path(path: &Path) -> PathBuf {
-	if let Ok(normalized) = path.canonicalize() {
+	if let Ok(normalized) = dunce::canonicalize(path) {
 		return normalized;
 	}
 	if path.is_absolute() {
@@ -87,8 +90,11 @@ mod tests {
 
 	#[test]
 	fn normalize_cli_path_handles_absolute_and_relative() {
+		#[cfg(windows)]
 		let abs = Path::new("C:\\nonexistent_abs_path");
-		assert_eq!(normalize_cli_path(abs), PathBuf::from("C:\\nonexistent_abs_path"));
+		#[cfg(not(windows))]
+		let abs = Path::new("/nonexistent_abs_path");
+		assert_eq!(normalize_cli_path(abs), abs.to_path_buf());
 		let rel = Path::new("nonexistent_rel_path");
 		let expected = env::current_dir().unwrap().join(rel);
 		assert_eq!(normalize_cli_path(rel), expected);
@@ -132,14 +138,16 @@ mod tests {
 
 	#[test]
 	fn normalize_cli_path_canonicalizes_existing_path() {
-		let cwd = env::current_dir().expect("cwd").canonicalize().expect("canonical cwd");
+		let cwd = env::current_dir().expect("cwd");
+		let cwd = dunce::canonicalize(cwd).expect("canonical cwd");
 		let normalized = normalize_cli_path(Path::new("."));
 		assert_eq!(normalized, cwd);
 	}
 
 	#[test]
 	fn normalize_cli_path_preserves_existing_absolute_files() {
-		let abs = env::current_exe().expect("current exe").canonicalize().expect("canonical exe");
+		let abs = env::current_exe().expect("current exe");
+		let abs = dunce::canonicalize(abs).expect("canonical exe");
 		let normalized = normalize_cli_path(&abs);
 		assert_eq!(normalized, abs);
 	}

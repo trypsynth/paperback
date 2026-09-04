@@ -2,77 +2,63 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ReaderView: View {
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@State private var showFilePicker = false
-	@State private var isScreenDimmed = false
 
 	var body: some View {
-		ZStack {
+		@Bindable var navigation = viewModel.navigation
+		return ZStack {
 			mainContent
 				.navigationTitle(viewModel.activeTab?.title ?? "Paperback")
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar { readerToolbar }
 				.safeAreaInset(edge: .bottom) { bottomBar }
-			if isScreenDimmed {
-				Color.black
-					.ignoresSafeArea()
-					.onTapGesture { isScreenDimmed = false }
-					.accessibilityLabel("Screen dimmed by sleep timer. Tap to wake.")
-			}
 		}
 		.safeAreaInset(edge: .top, spacing: 0) {
 			if !viewModel.tabs.isEmpty {
-				TabStripView().environmentObject(viewModel)
+				TabStripView().environment(viewModel)
 			}
 		}
-		.onReceive(viewModel.$sleepTimerRemaining) { remaining in
-			if remaining == 0 { isScreenDimmed = true }
+		.navigationDestination(isPresented: $navigation.showToc) {
+			TocView().environment(viewModel)
 		}
-		.onChange(of: viewModel.isTextMode) { entering in
-			if entering {
-				viewModel.enterTextMode()
-			} else {
-				viewModel.exitTextMode()
-			}
+		.navigationDestination(isPresented: $navigation.showFind) {
+			FindView().environment(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showToc) {
-			TocSheet().environmentObject(viewModel)
+		.sheet(isPresented: $navigation.showGoTo) {
+			GoToSheet().environment(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showFind) {
-			FindSheet().environmentObject(viewModel)
+		.navigationDestination(isPresented: $navigation.showSettings) {
+			SettingsView().environment(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showGoTo) {
-			GoToSheet().environmentObject(viewModel)
+		.navigationDestination(isPresented: $navigation.showRecents) {
+			RecentDocumentsView().environment(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showSettings) {
-			SettingsSheet().environmentObject(viewModel)
-		}
-		.sheet(isPresented: $viewModel.showRecents) {
-			RecentDocumentsSheet().environmentObject(viewModel)
-		}
-		.alert("Word Count", isPresented: $viewModel.showWordCount) {
-			Button("OK", role: .cancel) { }
+		// TRANSLATORS: Title of the alert dialog showing the current document's word count
+		.alert(t("Word Count"), isPresented: $navigation.showWordCount) {
+			// TRANSLATORS: Button dismissing the word count alert
+			Button(t("OK"), role: .cancel) { }
 		} message: {
 			if let stats = viewModel.activeSession?.getStatsFfi() {
 				Text("This document contains \(stats.wordCount.formatted()) words.")
 			}
 		}
-		.sheet(isPresented: $viewModel.showDocumentInfo) {
-			DocumentInfoSheet().environmentObject(viewModel)
+		.sheet(isPresented: $navigation.showDocumentInfo) {
+			DocumentInfoSheet().environment(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showSleepTimer) {
-			SleepTimerSheet().environmentObject(viewModel)
+		.navigationDestination(isPresented: $navigation.showSleepTimer) {
+			SleepTimerView().environment(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showElements) {
-			ElementsSheet().environmentObject(viewModel)
+		.navigationDestination(isPresented: $navigation.showElements) {
+			ElementsView().environment(viewModel)
 		}
 		.sheet(
 			isPresented: Binding(
-				get: { viewModel.passwordPromptUrl != nil },
-				set: { if !$0 { viewModel.passwordPromptUrl = nil } }
+				get: { viewModel.navigation.passwordPromptUrl != nil },
+				set: { if !$0 { viewModel.navigation.passwordPromptUrl = nil } }
 			)
 		) {
-			PasswordSheet().environmentObject(viewModel)
+			PasswordSheet().environment(viewModel)
 		}
 		.fileImporter(
 			isPresented: $showFilePicker,
@@ -82,22 +68,22 @@ struct ReaderView: View {
 			guard case .success(let urls) = result, let url = urls.first else { return }
 			viewModel.openDocument(url: url)
 		}
-		.alert("Open Error", isPresented: Binding(
+		// TRANSLATORS: Title of the alert shown when a document fails to open
+		.alert(t("Open Error"), isPresented: Binding(
 			get: { viewModel.debugMessage != nil },
 			set: { if !$0 { viewModel.debugMessage = nil } }
 		)) {
-			Button("OK") { viewModel.debugMessage = nil }
+			// TRANSLATORS: Button dismissing the document-open-error alert
+			Button(t("OK")) { viewModel.debugMessage = nil }
 		} message: {
 			Text(viewModel.debugMessage ?? "")
 		}
 	}
 
-	// MARK: - Main content
-
 	@ViewBuilder
 	private var mainContent: some View {
 		if let tab = viewModel.activeTab {
-			if viewModel.isTextMode {
+			if viewModel.reading.isTextMode {
 				TextModeView(tab: tab)
 			} else {
 				TtsModeView()
@@ -107,22 +93,28 @@ struct ReaderView: View {
 		}
 	}
 
-	// MARK: - Bottom bar
-
 	@ViewBuilder
 	private var bottomBar: some View {
-		if !viewModel.isTextMode, viewModel.activeTab != nil {
-			TtsControlBar()
-				.environmentObject(viewModel)
-				.background {
-					Rectangle()
-						.fill(.bar)
-						.ignoresSafeArea(edges: .bottom)
-				}
+		if !viewModel.reading.isTextMode, viewModel.activeTab != nil {
+			if #available(iOS 26, *) {
+				// Floats as a Liquid Glass pill inset from the edges, matching Safari's bottom
+				// toolbar, instead of a flat bar spanning the full width.
+				TtsControlBar()
+					.environment(viewModel)
+					.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 26))
+					.padding(.horizontal, 12)
+					.padding(.bottom, 8)
+			} else {
+				TtsControlBar()
+					.environment(viewModel)
+					.background {
+						Rectangle()
+							.fill(.bar)
+							.ignoresSafeArea(edges: .bottom)
+					}
+			}
 		}
 	}
-
-	// MARK: - Toolbar
 
 	@ToolbarContentBuilder
 	private var readerToolbar: some ToolbarContent {
@@ -130,10 +122,10 @@ struct ReaderView: View {
 			Button { showFilePicker = true } label: {
 				Image(systemName: "folder")
 			}
-			.accessibilityLabel("Open document")
-			if viewModel.activeTab != nil {
-				DocumentMenu().environmentObject(viewModel)
-			}
+			// TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
+			.accessibilityLabel(t("Open Book"))
+			.documentDataTransferMenu()
+			DocumentMenu().environment(viewModel)
 		}
 	}
 }

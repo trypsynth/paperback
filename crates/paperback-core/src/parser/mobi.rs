@@ -1,38 +1,48 @@
-use std::{fs::File, io::Read};
+use std::{
+	collections::{BTreeSet, HashMap},
+	fs::File,
+	io::Read,
+	sync::LazyLock,
+};
 
 use anyhow::Result;
 use encoding_rs::WINDOWS_1252;
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, ParserContext, TocItem},
 	parser::{
 		Parser, add_converter_markers,
-		html_to_text::{HtmlSourceMode, HtmlToText},
+		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
+	t,
 };
+
+mod compression;
+mod html;
+mod huffman;
+mod links;
+mod toc;
+mod varint;
+
+use compression::{decompress_palmdoc, get_trailing_size};
+use html::rewrite_font_size_headings;
+use huffman::HuffmanDecoder;
+use links::{build_fragment_offsets, resolve_ncx_offsets, rewrite_internal_links};
+use toc::parse_ncx;
 
 pub struct MobiParser;
 
 impl Parser for MobiParser {
-	fn name(&self) -> &'static str {
-		"MOBI Books"
-	}
-
-	fn extensions(&self) -> &[&str] {
-		&["mobi"]
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing mobi file");
 		let mut file = File::open(&context.file_path)?;
 		let mut data = Vec::new();
 		file.read_to_end(&mut data)?;
 		if data.len() < 78 {
-			anyhow::bail!("File too short");
+			tracing::warn!(len = data.len(), "mobi file too short to contain a valid header");
+			// TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+			anyhow::bail!(t("File too short"));
 		}
 		let title_bytes = &data[0..32];
 		let num_records = u16::from_be_bytes([data[76], data[77]]) as usize;
@@ -40,30 +50,43 @@ impl Parser for MobiParser {
 		for i in 0..num_records {
 			let start = 78 + i * 8;
 			if start + 4 > data.len() {
-				anyhow::bail!("Invalid record offsets");
+				tracing::warn!(record_index = i, "mobi record offset table is truncated");
+				// TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+				anyhow::bail!(t("Invalid record offsets"));
 			}
 			let offset = u32::from_be_bytes([data[start], data[start + 1], data[start + 2], data[start + 3]]) as usize;
 			record_offsets.push(offset);
 		}
 		if record_offsets.is_empty() {
-			anyhow::bail!("No records found");
+			tracing::warn!("mobi file has no records");
+			// TRANSLATORS: Error shown when a MOBI file has no records
+			anyhow::bail!(t("No records found"));
 		}
 		let rec0_offset = record_offsets[0];
 		let rec1_offset = if record_offsets.len() > 1 { record_offsets[1] } else { data.len() };
 		if rec1_offset <= rec0_offset || rec1_offset > data.len() {
-			anyhow::bail!("Invalid Record 0 offsets");
+			tracing::warn!(rec0_offset, rec1_offset, "mobi record 0 has an invalid offset range");
+			// TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+			anyhow::bail!(t("Invalid Record 0 offsets"));
 		}
 		let rec0 = &data[rec0_offset..rec1_offset];
 		if rec0.len() < 16 {
-			anyhow::bail!("Invalid Record 0");
+			tracing::warn!(len = rec0.len(), "mobi record 0 is too small to be valid");
+			// TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+			anyhow::bail!(t("Invalid Record 0"));
 		}
 		let compression = u16::from_be_bytes([rec0[0], rec0[1]]);
+		tracing::debug!(compression, "detected mobi compression mode");
 		let mobi_header_offset = 16;
 		if mobi_header_offset + 8 > rec0.len() {
-			anyhow::bail!("No MOBI header");
+			tracing::warn!("mobi record 0 is missing the mobi header");
+			// TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+			anyhow::bail!(t("No MOBI header"));
 		}
 		if &rec0[mobi_header_offset..mobi_header_offset + 4] != b"MOBI" {
-			anyhow::bail!("Invalid MOBI identifier");
+			tracing::warn!("mobi header signature does not match the expected identifier");
+			// TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+			anyhow::bail!(t("Invalid MOBI identifier"));
 		}
 		let header_length = u32::from_be_bytes([
 			rec0[mobi_header_offset + 4],
@@ -102,15 +125,25 @@ impl Parser for MobiParser {
 			}
 		}
 		if last_content_record >= num_records || first_content_record > last_content_record {
-			anyhow::bail!("Invalid content record range");
+			tracing::warn!(
+				first_content_record,
+				last_content_record,
+				num_records,
+				"mobi content record range is invalid"
+			);
+			// TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+			anyhow::bail!(t("Invalid content record range"));
 		}
 		let mut document_title = if name_offset > 0 && name_length > 0 && name_offset + name_length <= rec0.len() {
+			tracing::debug!("using exth name offset for document title");
 			String::from_utf8_lossy(&rec0[name_offset..name_offset + name_length]).into_owned()
 		} else {
+			tracing::debug!("using raw header title field for document title");
 			String::from_utf8_lossy(title_bytes).into_owned()
 		};
 		document_title = document_title.replace('\0', "").trim().replace('_', " ");
 		let mut document_author = String::new();
+		let mut exth_map = HashMap::new();
 		let exth_offset = mobi_header_offset + header_length;
 		if exth_offset + 12 <= rec0.len() && &rec0[exth_offset..exth_offset + 4] == b"EXTH" {
 			let exth_num_records = u32::from_be_bytes([
@@ -129,6 +162,7 @@ impl Parser for MobiParser {
 				if p + rec_len > rec0.len() {
 					break;
 				}
+				exth_map.insert(rec_type, rec0[p + 8..p + rec_len].to_vec());
 				if rec_type == 100 {
 					let exth_author = String::from_utf8_lossy(&rec0[p + 8..p + rec_len]).into_owned();
 					if !exth_author.trim().is_empty() {
@@ -170,25 +204,53 @@ impl Parser for MobiParser {
 					}
 					huff_decoder = Some(HuffmanDecoder::init(&huffs)?);
 				} else {
-					anyhow::bail!("Invalid HUFF/CDIC records");
+					tracing::warn!("mobi huff/cdic records are invalid");
+					// TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+					anyhow::bail!(t("Invalid HUFF/CDIC records"));
 				}
 			} else {
-				anyhow::bail!("Missing HUFF parameters in header");
+				tracing::warn!("mobi header is missing huff compression parameters");
+				// TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+				anyhow::bail!(t("Missing HUFF parameters in header"));
 			}
 		}
 		let mut extra_data_flags = 0u32;
-		if header_length >= 244 && mobi_header_offset + 244 <= rec0.len() {
-			extra_data_flags = u32::from_be_bytes([
-				rec0[mobi_header_offset + 240],
-				rec0[mobi_header_offset + 241],
-				rec0[mobi_header_offset + 242],
-				rec0[mobi_header_offset + 243],
-			]);
+		let mobi_header = &rec0[mobi_header_offset..];
+		// The trailing-data flags live at absolute record-0 offset 0xF2 (242), a fixed 2-byte
+		// field regardless of MOBI version; that's 226 bytes into `mobi_header`, which starts
+		// at record-0 offset 16.
+		if mobi_header.len() >= 228 {
+			extra_data_flags = u32::from(u16::from_be_bytes([mobi_header[226], mobi_header[227]]));
 			if extra_data_flags == 0xFFFFFFFF {
 				extra_data_flags = 0;
 			}
 		}
+		let mut fdst_html_end = None;
+		if mobi_header.len() >= 180 {
+			let fdst_idx =
+				u32::from_be_bytes([mobi_header[176], mobi_header[177], mobi_header[178], mobi_header[179]]) as usize;
+			if fdst_idx != 0xFFFFFFFF && fdst_idx < num_records {
+				let start = record_offsets[fdst_idx];
+				let end = if fdst_idx + 1 < num_records { record_offsets[fdst_idx + 1] } else { data.len() };
+				if start < end && end <= data.len() {
+					let fdst_rec = &data[start..end];
+					if fdst_rec.starts_with(b"FDST") && fdst_rec.len() >= 20 {
+						let html_flow_end =
+							u32::from_be_bytes([fdst_rec[16], fdst_rec[17], fdst_rec[18], fdst_rec[19]]) as usize;
+						fdst_html_end = Some(html_flow_end);
+					} else {
+						tracing::debug!("fdst record does not start with fdst signature, skipping html end truncation");
+					}
+				} else {
+					tracing::debug!("fdst record offset is out of range, skipping html end truncation");
+				}
+			} else if fdst_idx != 0xFFFFFFFF {
+				tracing::debug!(fdst_idx, num_records, "fdst index is out of range, skipping html end truncation");
+			}
+		}
 		let mut content = Vec::new();
+		let mut trailing_entry_fallback_count = 0usize;
+		let mut huff_decoder_missing_count = 0usize;
 		for i in first_content_record..=last_content_record {
 			let start = record_offsets[i];
 			let end = if i + 1 < num_records { record_offsets[i + 1] } else { data.len() };
@@ -197,19 +259,30 @@ impl Parser for MobiParser {
 			}
 			let mut record_data = &data[start..end];
 			let trailing_entries = (extra_data_flags >> 1).count_ones();
+			let mut stripped_len = record_data.len();
 			if trailing_entries > 0 && !record_data.is_empty() {
-				let mut stripped_len = record_data.len();
+				let mut valid = true;
 				for _ in 0..trailing_entries {
 					if stripped_len == 0 {
 						break;
 					}
 					let size = get_trailing_size(&record_data[..stripped_len]);
-					stripped_len = stripped_len.saturating_sub(size);
+					if size > stripped_len {
+						valid = false;
+						break;
+					}
+					stripped_len -= size;
 				}
-				if extra_data_flags & 1 != 0 && stripped_len > 0 {
-					let overlap_size = (record_data[stripped_len - 1] & 0x07) as usize;
-					stripped_len = stripped_len.saturating_sub(overlap_size + 1);
+				if !valid {
+					stripped_len = record_data.len();
+					trailing_entry_fallback_count += 1;
 				}
+			}
+			if extra_data_flags & 1 != 0 && stripped_len > 0 {
+				let overlap_size = (record_data[stripped_len - 1] & 0x03) as usize;
+				stripped_len = stripped_len.saturating_sub(overlap_size + 1);
+			}
+			if stripped_len != record_data.len() {
 				record_data = &record_data[..stripped_len];
 			}
 			match compression {
@@ -217,37 +290,94 @@ impl Parser for MobiParser {
 				2 => content.extend_from_slice(&decompress_palmdoc(record_data)),
 				17480 => {
 					if let Some(ref mut decoder) = huff_decoder {
-						content.extend_from_slice(&decoder.decode(record_data)?);
+						let decoded = decoder.decode(record_data)?;
+						content.extend_from_slice(&decoded);
+					} else {
+						huff_decoder_missing_count += 1;
 					}
 				}
-				other => anyhow::bail!("Unsupported compression mode ({})", other),
+				other => {
+					tracing::warn!(mode = other, "unsupported mobi compression mode");
+					// TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+					anyhow::bail!(t("Unsupported compression mode ({})").replace("{}", &other.to_string()))
+				}
 			}
 		}
-		const MAX_MOBI_TEXT_BYTES: usize = 20 * 1024 * 1024;
-		if content.len() > MAX_MOBI_TEXT_BYTES {
-			content.truncate(MAX_MOBI_TEXT_BYTES);
+		if trailing_entry_fallback_count > 0 {
+			tracing::warn!(
+				count = trailing_entry_fallback_count,
+				"records fell back to untrimmed data due to invalid trailing entry sizes"
+			);
 		}
-		let mut text = if text_encoding == 65001 {
+		if huff_decoder_missing_count > 0 {
+			tracing::warn!(
+				count = huff_decoder_missing_count,
+				"huffman decoder unexpectedly missing, dropped record content"
+			);
+		}
+		if let Some(html_end) = fdst_html_end
+			&& html_end < content.len()
+		{
+			content.truncate(html_end);
+		}
+		let text = if text_encoding == 65001 {
+			tracing::debug!("decoding mobi content as utf-8");
 			String::from_utf8_lossy(&content).into_owned()
 		} else {
+			tracing::debug!(text_encoding, "decoding mobi content as windows-1252");
 			WINDOWS_1252.decode(&content).0.into_owned()
 		};
 		// Rewrite MOBI-style filepos links into standard href/id anchors before any
 		// content is stripped, since filepos values are byte offsets into the raw HTML.
-		text = rewrite_filepos_links(&text);
-		if let Ok(re) = regex::Regex::new(r"(?is)<title[^>]*>.*?</title>") {
-			text = re.replace_all(&text, "").into_owned();
+		let frag_offsets = build_fragment_offsets(&data, &record_offsets, mobi_header);
+		let is_kf8 = {
+			let mobi_version = if mobi_header.len() >= 24 {
+				u32::from_be_bytes([mobi_header[20], mobi_header[21], mobi_header[22], mobi_header[23]])
+			} else {
+				0
+			};
+			mobi_version == 8
+		};
+		tracing::debug!(is_kf8, "detected mobi format version");
+		let mut ncx_toc = parse_ncx(&data, &record_offsets, mobi_header, &exth_map, is_kf8, &frag_offsets);
+		fn extract_targets(items: &[TocItem], targets: &mut BTreeSet<usize>) {
+			let mut stack = vec![items];
+			while let Some(current_items) = stack.pop() {
+				for item in current_items {
+					if let Some(pos_str) = item.reference.strip_prefix("#fp")
+						&& let Ok(pos) = pos_str.parse::<usize>()
+					{
+						targets.insert(pos);
+					}
+					if !item.children.is_empty() {
+						stack.push(&item.children);
+					}
+				}
+			}
 		}
-		if let Ok(re) = regex::Regex::new(r"(?is)<style[^>]*>.*?</style>") {
-			text = re.replace_all(&text, "").into_owned();
-		}
-		if let Ok(re) = regex::Regex::new(r"(?is)@page\s*\{[^<]+") {
-			text = re.replace_all(&text, "").into_owned();
-		}
+		let mut extra_targets = BTreeSet::new();
+		extract_targets(&ncx_toc, &mut extra_targets);
+		let mut text = rewrite_internal_links(&text, &frag_offsets, &extra_targets);
+		static RE_AID: LazyLock<regex::Regex> =
+			LazyLock::new(|| regex::Regex::new(r#"(?i)\s[ac]id\s*=\s*["'][^"']*["']"#).unwrap());
+		text = RE_AID.replace_all(&text, "").into_owned();
+		// KF8 / AZW3 files concatenate the skeleton and fragments, often leaving
+		// `</body></html>` inside unclosed tags at insertion points. We strip these
+		// to allow `scraper` to parse the fragments cleanly.
+		static RE_BODY: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?is)</body>|</html>").unwrap());
+		text = RE_BODY.replace_all(&text, "").into_owned();
+		static RE_TITLE: LazyLock<regex::Regex> =
+			LazyLock::new(|| regex::Regex::new(r"(?is)<title[^>]*>.*?</title>").unwrap());
+		text = RE_TITLE.replace_all(&text, "").into_owned();
+		static RE_STYLE: LazyLock<regex::Regex> =
+			LazyLock::new(|| regex::Regex::new(r"(?is)<style[^>]*>.*?</style>").unwrap());
+		text = RE_STYLE.replace_all(&text, "").into_owned();
+		static RE_PAGE: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?is)@page\s*\{[^<]+").unwrap());
+		text = RE_PAGE.replace_all(&text, "").into_owned();
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
 		// Rewrite them so the heading-based TOC builder can pick them up.
 		text = rewrite_font_size_headings(&text);
-		let mut html_converter = HtmlToText::new();
+		let mut html_converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		html_converter.convert(&text, HtmlSourceMode::NativeHtml);
 		if document_title.trim().is_empty() {
 			document_title = extract_title_from_path(&context.file_path);
@@ -259,423 +389,28 @@ impl Parser for MobiParser {
 		add_converter_markers(&mut buffer, &html_converter, 0);
 		document.set_buffer(buffer);
 		document.id_positions = html_converter.get_id_positions().clone();
-		let toc_items = build_toc_from_headings(html_converter.get_headings());
-		document.toc_items = toc_items;
-		Ok(document)
-	}
-}
-
-// Old-style Mobipocket files use <font size="N"> for headings (size 7 = largest, 4-7 map to h1-h4).
-// Only activated when the document contains no semantic h1-h6 tags.
-fn rewrite_font_size_headings(html: &str) -> String {
-	if regex::Regex::new(r"(?i)<h[1-6]\b").map(|re| re.is_match(html)).unwrap_or(false) {
-		return html.to_string();
-	}
-	let mut result = html.to_string();
-	for (size, level) in [(7u8, 1u8), (6, 2), (5, 3), (4, 4)] {
-		let Ok(re) = regex::Regex::new(&format!(r#"(?is)<font\b[^>]*\bsize=["']?{size}["']?[^>]*>(.*?)</font>"#))
-		else {
-			continue;
-		};
-		result = re
-			.replace_all(&result, |caps: &regex::Captures<'_>| format!("<h{level}>{}</h{level}>", &caps[1]))
-			.into_owned();
-	}
-	result
-}
-
-fn snap_to_char_boundary(s: &str, pos: usize) -> usize {
-	let mut p = pos.min(s.len());
-	while p > 0 && !s.is_char_boundary(p) {
-		p -= 1;
-	}
-	p
-}
-
-// If pos falls inside an HTML tag (<...>), advance it to just after the closing '>'.
-// This prevents filepos anchors from being inserted in the middle of a tag and
-// corrupting it into a text fragment.
-fn snap_past_open_tag(html: &str, pos: usize) -> usize {
-	let pos = pos.min(html.len());
-	if let Some(tag_start) = html[..pos].rfind('<') {
-		if !html[tag_start..pos].contains('>') {
-			if let Some(rel) = html[pos..].find('>') {
-				return pos + rel + 1;
-			}
-		}
-	}
-	pos
-}
-
-fn rewrite_filepos_links(html: &str) -> String {
-	let Ok(re) = regex::Regex::new(r"(?i)<a\b[^>]*?filepos\s*=\s*(\d+)[^>]*>") else {
-		return html.to_string();
-	};
-	let mut links: Vec<(usize, usize, usize)> = Vec::new();
-	let mut targets = std::collections::BTreeSet::new();
-	for cap in re.captures_iter(html) {
-		let m = cap.get(0).unwrap();
-		if let Ok(filepos) = cap[1].parse::<usize>() {
-			if filepos < html.len() {
-				links.push((m.start(), m.end(), filepos));
-				targets.insert(filepos);
-			}
-		}
-	}
-	if links.is_empty() {
-		return html.to_string();
-	}
-	// Build a sorted event list: inserts (kind=0) at target positions, replaces (kind=1) at link sites.
-	// At equal positions inserts sort before replaces so the anchor lands before the link tag.
-	let mut events: Vec<(usize, u8, usize, usize)> = Vec::new();
-	for &target in &targets {
-		events.push((target, 0, target, target));
-	}
-	for (start, end, filepos) in &links {
-		events.push((*start, 1, *end, *filepos));
-	}
-	events.sort_unstable_by_key(|&(pos, kind, _, _)| (pos, kind));
-	let mut result = String::with_capacity(html.len() + targets.len() * 30);
-	let mut pos = 0usize;
-	for (event_pos, kind, end, filepos) in events {
-		let mut actual_pos = snap_to_char_boundary(html, event_pos);
-		if kind == 0 {
-			actual_pos = snap_past_open_tag(html, actual_pos);
-		}
-		if actual_pos < pos {
-			continue;
-		}
-		result.push_str(&html[pos..actual_pos]);
-		if kind == 0 {
-			result.push_str(&format!("<a id=\"fp{filepos:010}\"></a>"));
-			pos = actual_pos;
+		let mut toc_items = build_toc_from_headings(html_converter.get_headings());
+		let toc_source = if !toc_items.is_empty() {
+			"headings"
+		} else if !ncx_toc.is_empty() {
+			"ncx"
 		} else {
-			result.push_str(&format!("<a href=\"#fp{filepos:010}\">"));
-			pos = end;
-		}
-	}
-	result.push_str(&html[pos..]);
-	result
-}
-
-fn get_trailing_size(data: &[u8]) -> usize {
-	if data.is_empty() {
-		return 0;
-	}
-	// If the last byte doesn't have bit 7 set it's not a valid VLQ terminator —
-	// this happens when the trailing-entry count from extra_data_flags exceeds the
-	// entries actually present. Treat the entry as absent.
-	if data[data.len() - 1] & 0x80 == 0 {
-		return 0;
-	}
-	let mut size = 0usize;
-	let mut pos = data.len() - 1;
-	let mut shift = 0u32;
-	loop {
-		let b = data[pos];
-		if shift < 32 {
-			size |= ((b & 0x7f) as usize) << shift;
-		}
-		if b & 0x80 != 0 || pos == 0 {
-			break;
-		}
-		pos -= 1;
-		shift += 7;
-	}
-	size
-}
-
-fn decompress_palmdoc(data: &[u8]) -> Vec<u8> {
-	let mut pos: usize = 0;
-	let mut text: Vec<u8> = Vec::new();
-	let mut prev: Option<u8> = None;
-	while pos < data.len() {
-		let byte = data[pos];
-		pos += 1;
-		match byte {
-			new if prev.is_some() => {
-				let old = prev.take().unwrap();
-				let token = u16::from_be_bytes([old, new]) & 0x3fff;
-				let offset = (token >> 3) as usize;
-				let len = ((token & 0x0007) + 3) as usize;
-				if offset == 0 || offset > text.len() {
-					continue;
-				}
-				let start = text.len() - offset;
-				for j in 0..len {
-					let src = start + j;
-					if src >= text.len() {
-						break;
-					}
-					let b = text[src];
-					text.push(b);
-				}
-			}
-			0x00 | 0x09..=0x7f => text.push(byte),
-			0x01..=0x08 => {
-				let count = byte as usize;
-				if pos + count <= data.len() {
-					text.extend_from_slice(&data[pos..pos + count]);
-					pos += count;
-				}
-			}
-			0x80..=0xbf => {
-				if pos >= data.len() {
-					break;
-				}
-				prev = Some(byte);
-			}
-			_ => {
-				text.push(b' ');
-				text.push(byte ^ 0x80);
-			}
-		}
-	}
-	text
-}
-
-type HuffmanDictionary = Vec<Option<(Vec<u8>, bool)>>;
-type CodeDictionary = [(u8, bool, u32); 256];
-type MinCodesMapping = [u32; 33];
-type MaxCodesMapping = [u32; 33];
-
-struct HuffmanDecoder {
-	dictionary: HuffmanDictionary,
-	code_dict: CodeDictionary,
-	min_codes: MinCodesMapping,
-	max_codes: MaxCodesMapping,
-}
-
-impl Default for HuffmanDecoder {
-	fn default() -> Self {
-		Self { dictionary: vec![], code_dict: [(0, false, 0); 256], min_codes: [0; 33], max_codes: [u32::MAX; 33] }
-	}
-}
-
-struct DecodeFrame {
-	data: Vec<u8>,
-	pos: usize,
-	bits_left: usize,
-	x: u64,
-	n: i32,
-	out: Vec<u8>,
-	target_dict_index: Option<usize>,
-}
-
-impl HuffmanDecoder {
-	fn init(huffs: &[&[u8]]) -> Result<Self> {
-		let mut decoder = Self::default();
-		decoder.load_huff(huffs[0])?;
-		decoder.load_cdic_records(&huffs[1..])?;
-		for i in 0..decoder.dictionary.len() {
-			let (slice, flag) = decoder.dictionary[i].clone().unwrap();
-			if !flag {
-				decoder.dictionary[i] = None;
-				let decoded = decoder.decode(&slice).unwrap_or(slice);
-				decoder.dictionary[i] = Some((decoded, true));
-			}
-		}
-		Ok(decoder)
-	}
-
-	fn load_huff(&mut self, huff: &[u8]) -> Result<()> {
-		if huff.len() < 24 {
-			anyhow::bail!("Invalid HUFF record");
-		}
-		if &huff[0..4] != b"HUFF" {
-			anyhow::bail!("Invalid HUFF header");
-		}
-		let cache_offset = u32::from_be_bytes([huff[8], huff[9], huff[10], huff[11]]) as usize;
-		let base_offset = u32::from_be_bytes([huff[12], huff[13], huff[14], huff[15]]) as usize;
-		if cache_offset + 256 * 4 > huff.len() {
-			anyhow::bail!("Invalid HUFF cache offset");
-		}
-		for i in 0..256 {
-			let off = cache_offset + i * 4;
-			let v = u32::from_be_bytes([huff[off], huff[off + 1], huff[off + 2], huff[off + 3]]);
-			let code_len = (v & 0x1F) as u8;
-			let term = (v & 0x80) == 0x80;
-			let mut max_code = (v >> 8) as u64;
-			if code_len == 0 {
-				anyhow::bail!("Code len out of bounds");
-			}
-			if code_len <= 8 && !term {
-				anyhow::bail!("Bad term");
-			}
-			max_code = ((max_code + 1) << (32usize.saturating_sub(code_len as usize))).saturating_sub(1);
-			self.code_dict[i] = (code_len, term, max_code as u32);
-		}
-		// Base table has 64 interleaved entries: [min1, max1, min2, max2, ... min32, max32]
-		if base_offset + 64 * 4 > huff.len() {
-			anyhow::bail!("Invalid HUFF base offset");
-		}
-		for i in 1..=32usize {
-			let min_off = base_offset + (i - 1) * 8;
-			let max_off = base_offset + (i - 1) * 8 + 4;
-			let min_val = if min_off + 4 <= huff.len() {
-				u32::from_be_bytes([huff[min_off], huff[min_off + 1], huff[min_off + 2], huff[min_off + 3]]) as u64
-			} else {
-				0
-			};
-			let max_val = if max_off + 4 <= huff.len() {
-				u32::from_be_bytes([huff[max_off], huff[max_off + 1], huff[max_off + 2], huff[max_off + 3]]) as u64
-			} else {
-				0
-			};
-			self.min_codes[i] = (min_val << (32 - i)) as u32;
-			self.max_codes[i] = (((max_val + 1) << (32 - i)).saturating_sub(1)) as u32;
-		}
-		Ok(())
-	}
-
-	fn load_cdic_records(&mut self, records: &[&[u8]]) -> Result<()> {
-		for cdic in records {
-			if cdic.len() < 16 {
-				continue;
-			}
-			if &cdic[0..4] != b"CDIC" {
-				anyhow::bail!("Invalid CDIC header");
-			}
-			let num_phrases = u32::from_be_bytes([cdic[8], cdic[9], cdic[10], cdic[11]]);
-			let bits = u32::from_be_bytes([cdic[12], cdic[13], cdic[14], cdic[15]]);
-			let n = (1u32 << bits).min(num_phrases.saturating_sub(self.dictionary.len() as u32));
-			let mut offsets = Vec::with_capacity(n as usize);
-			for i in 0..n as usize {
-				let off = 16 + i * 2;
-				if off + 2 > cdic.len() {
-					anyhow::bail!("Invalid CDIC offsets");
-				}
-				offsets.push(u16::from_be_bytes([cdic[off], cdic[off + 1]]));
-			}
-			for offset in offsets {
-				let off = 16 + offset as usize;
-				if off + 2 > cdic.len() {
-					anyhow::bail!("Invalid CDIC phrase offset");
-				}
-				let num_bytes = u16::from_be_bytes([cdic[off], cdic[off + 1]]);
-				let len = (num_bytes & 0x7FFF) as usize;
-				if off + 2 + len > cdic.len() {
-					anyhow::bail!("Invalid CDIC phrase length");
-				}
-				let bytes = cdic[off + 2..off + 2 + len].to_vec();
-				self.dictionary.push(Some((bytes, (num_bytes & 0x8000) == 0x8000)));
-			}
-		}
-		Ok(())
-	}
-
-	fn decode(&mut self, data: &[u8]) -> Result<Vec<u8>> {
-		let mut stack: Vec<DecodeFrame> = Vec::with_capacity(32);
-		let mut current = {
-			let mut padded_data = Vec::with_capacity(data.len() + 8);
-			padded_data.extend_from_slice(data);
-			padded_data.extend_from_slice(&[0u8; 8]);
-			let mut x_bytes = [0u8; 8];
-			x_bytes.copy_from_slice(&padded_data[0..8]);
-			DecodeFrame {
-				data: padded_data,
-				pos: 0,
-				bits_left: data.len() * 8,
-				x: u64::from_be_bytes(x_bytes),
-				n: 32,
-				out: Vec::new(),
-				target_dict_index: None,
-			}
+			"none"
 		};
-		loop {
-			if current.n <= 0 {
-				current.pos += 4;
-				let mut x_bytes = [0u8; 8];
-				if current.pos + 8 <= current.data.len() {
-					x_bytes.copy_from_slice(&current.data[current.pos..current.pos + 8]);
-				} else {
-					// 1-3 remaining bytes: load zero-padded to 4 bytes
-					let rem = current.data.len() - current.pos;
-					x_bytes[..rem].copy_from_slice(&current.data[current.pos..]);
-				}
-				current.x = u64::from_be_bytes(x_bytes);
-				current.n += 32;
-			}
-			let code = (current.x >> current.n.clamp(0, 32) as u32) as u32;
-			let (code_len, term, mut max_code) = self.code_dict[(code >> 24) as usize];
-			let mut code_len = code_len as usize;
-			if !term {
-				while code_len < 33 && code < self.min_codes[code_len] {
-					code_len += 1;
-				}
-				if code_len < 33 {
-					max_code = self.max_codes[code_len];
-				}
-			}
-			if code_len == 0 || code_len > 32 {
-				anyhow::bail!("Invalid code_len {}", code_len);
-			}
-			current.n -= code_len as i32;
-			if current.bits_left < code_len {
-				break;
-			}
-			current.bits_left -= code_len;
-			if code > max_code {
-				break;
-			}
-			let index = ((max_code - code) >> (32 - code_len)) as usize;
-			if index >= self.dictionary.len() {
-				break;
-			}
-			let (slice, flag) = match self.dictionary[index].clone() {
-				Some(v) => v,
-				None => {
-					// Cycle detected: this entry is already being decoded up the stack.
-					// Break the cycle by emitting nothing for this reference.
-					break;
-				}
-			};
-			if flag {
-				current.out.extend_from_slice(&slice);
-			} else {
-				self.dictionary[index] = None;
-				stack.push(current);
-				if stack.len() > 1024 {
-					anyhow::bail!("Decode stack overflow");
-				}
-				current = {
-					let mut padded_data = Vec::with_capacity(slice.len() + 8);
-					padded_data.extend_from_slice(&slice);
-					padded_data.extend_from_slice(&[0u8; 8]);
-					let mut x_bytes = [0u8; 8];
-					x_bytes.copy_from_slice(&padded_data[0..8]);
-					DecodeFrame {
-						data: padded_data,
-						pos: 0,
-						bits_left: slice.len() * 8,
-						x: u64::from_be_bytes(x_bytes),
-						n: 32,
-						out: Vec::new(),
-						target_dict_index: Some(index),
-					}
-				};
-			}
-			while current.bits_left == 0 {
-				let finished_out = current.out;
-				if let Some(idx) = current.target_dict_index {
-					self.dictionary[idx] = Some((finished_out.clone(), true));
-				}
-				if let Some(mut parent) = stack.pop() {
-					parent.out.extend_from_slice(&finished_out);
-					current = parent;
-				} else {
-					return Ok(finished_out);
-				}
-			}
+		if toc_items.is_empty() && !ncx_toc.is_empty() {
+			resolve_ncx_offsets(&mut ncx_toc, &document.id_positions);
+			toc_items = ncx_toc;
 		}
-		while let Some(mut parent) = stack.pop() {
-			let finished_out = current.out;
-			if let Some(idx) = current.target_dict_index {
-				self.dictionary[idx] = Some((finished_out.clone(), true));
-			}
-			parent.out.extend_from_slice(&finished_out);
-			current = parent;
-		}
-		Ok(current.out)
+		document.toc_items = toc_items;
+		tracing::debug!(
+			path = %context.file_path,
+			compression,
+			is_kf8,
+			text_encoding,
+			num_records,
+			toc_source,
+			"parsed mobi file"
+		);
+		Ok(document)
 	}
 }

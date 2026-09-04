@@ -23,7 +23,7 @@
         android:windowSoftInputMode="adjustResize"
         android:theme="@style/Theme.MyApplication">
         <activity
-            android:name="dev.paperback.mobile.MainActivity"
+            android:name="dev.paperback.android.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             tools:ignore="Instantiatable">
@@ -90,23 +90,15 @@
                 <data android:pathPattern=".*\\.zip" />
             </intent-filter>
         </activity>
-        
+
         <service
             android:name=".tts.PlaybackService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="false">
             <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
+                <action android:name="androidx.media3.session.MediaSessionService" />
             </intent-filter>
         </service>
-
-        <receiver
-            android:name="androidx.media.session.MediaButtonReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>

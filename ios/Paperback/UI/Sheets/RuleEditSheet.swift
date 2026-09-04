@@ -5,7 +5,7 @@ struct RuleEditSheet: View {
 	let original: TtsRule?
 	let onSave: (TtsRule) -> Void
 
-	@EnvironmentObject var viewModel: AppViewModel
+	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
 	@State private var rule: TtsRule
 
@@ -18,21 +18,28 @@ struct RuleEditSheet: View {
 	var body: some View {
 		NavigationStack {
 			Form {
-				Section("Rule") {
-					Picker("Scope", selection: $rule.scope) {
-						Text("Word").tag(TtsRule.Scope.word)
-						Text("Paragraph").tag(TtsRule.Scope.paragraph)
+				// TRANSLATORS: Section header grouping the scope picker for a text-substitution rule
+				Section(t("Rule")) {
+					// TRANSLATORS: Label for the picker choosing whether a rule applies to a whole word or a whole paragraph
+					Picker(t("Scope"), selection: $rule.scope) {
+						// TRANSLATORS: Rule scope option: the rule matches within a single word
+						Text(t("Word")).tag(TtsRule.Scope.word)
+						// TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
+						Text(t("Paragraph")).tag(TtsRule.Scope.paragraph)
 					}
 					.pickerStyle(.wheel)
 				}
 
-				Section("Pattern & Replacement") {
-					TextField("Pattern", text: $rule.pattern)
+				// TRANSLATORS: Section header grouping the find/replace pattern fields for a text-substitution rule
+				Section(t("Pattern & Replacement")) {
+					// TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
+					TextField(t("Pattern"), text: $rule.pattern)
 						.autocorrectionDisabled()
 						.textInputAutocapitalization(.never)
 						.font(.system(.body, design: .monospaced))
 
-					TextField("Replacement", text: $rule.replacement)
+					// TRANSLATORS: Placeholder for the text field where the user enters the replacement text
+					TextField(t("Replacement"), text: $rule.replacement)
 						.autocorrectionDisabled()
 						.textInputAutocapitalization(.never)
 						.font(.system(.body, design: .monospaced))
@@ -40,21 +47,26 @@ struct RuleEditSheet: View {
 
 				Section {
 					if rule.scope == .word {
-						Toggle("Whole word only", isOn: $rule.wholeWord)
+						// TRANSLATORS: Toggle limiting a word-scope rule to whole-word matches only (no partial-word matches)
+						Toggle(t("Whole word only"), isOn: $rule.wholeWord)
 					}
 					if rule.scope == .paragraph {
-						Toggle("Regular expression (\\1 = first capture group)", isOn: Binding(
+						// TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
+						Toggle(t("Regular expression (\\1 = first capture group)"), isOn: Binding(
 							get: { rule.matchType == .regex },
 							set: { rule.matchType = $0 ? .regex : .literal }
 						))
 					}
-					Toggle("Enabled", isOn: $rule.isEnabled)
+					// TRANSLATORS: Toggle for whether this text-substitution rule is currently active
+					Toggle(t("Enabled"), isOn: $rule.isEnabled)
 				}
 
-				Section("Apply to") {
+				// TRANSLATORS: Section header for choosing which TTS voices a rule applies to
+				Section(t("Apply to")) {
 					NavigationLink(value: "voiceFilter") {
 						HStack {
-							Text("Voices")
+							// TRANSLATORS: Row label leading to the voice-filter picker for this rule
+							Text(t("Voices"))
 							Spacer()
 							Text(rule.voiceFilter.label)
 								.foregroundStyle(.secondary)
@@ -63,14 +75,17 @@ struct RuleEditSheet: View {
 					}
 				}
 			}
-			.navigationTitle(original == nil ? "New Rule" : "Edit Rule")
+			// TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
+			.navigationTitle(original == nil ? t("New Rule") : t("Edit Rule"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") { dismiss() }
+					// TRANSLATORS: Button to dismiss the rule editor without saving
+					Button(t("Cancel")) { dismiss() }
 				}
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Save") {
+					// TRANSLATORS: Button to save the rule and dismiss the editor
+					Button(t("Save")) {
 						onSave(rule)
 						dismiss()
 					}
@@ -80,7 +95,7 @@ struct RuleEditSheet: View {
 			.navigationDestination(for: String.self) { _ in
 				VoiceFilterPicker(
 					filter: $rule.voiceFilter,
-					voices: viewModel.ttsManager.availableVoices
+					voices: viewModel.reading.ttsManager.availableVoices
 				)
 			}
 		}
@@ -97,7 +112,8 @@ private struct VoiceFilterPicker: View {
 	var body: some View {
 		List {
 			Section {
-				filterRow(label: "All voices", isSelected: filter == .all) {
+				// TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
+				filterRow(label: t("All voices"), isSelected: filter == .all) {
 					filter = .all
 					dismiss()
 				}
@@ -122,7 +138,8 @@ private struct VoiceFilterPicker: View {
 				}
 			}
 		}
-		.navigationTitle("Apply To")
+		// TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
+		.navigationTitle(t("Apply To"))
 		.navigationBarTitleDisplayMode(.inline)
 	}
 

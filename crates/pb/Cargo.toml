@@ -9,6 +9,10 @@ repository.workspace = true
 
 [dependencies]
 anyhow = { workspace = true }
-clap = { version = "4.6.1", features = ["derive"] }
+clap = { version = "4.6.6", features = ["derive"] }
 paperback-core = { path = "../paperback-core" }
 rpassword = "7.5.4"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+
+[lints]
+workspace = true

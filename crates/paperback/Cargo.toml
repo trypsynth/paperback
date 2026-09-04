@@ -13,25 +13,40 @@ translatable = true
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bitflags = "2.12.1"
-live-region = "0.1.4"
+bitflags = { workspace = true }
+dunce = "1.0.5"
+# Decodes the embedded application icon in `ui::icon`; already in the tree via pdfium.
+image = { version = "0.25.10", default-features = false, features = ["png"] }
+live-region = "0.3.0"
 paperback-core = { path = "../paperback-core" }
-patois = "0.1.2"
-ship-shape = "0.1.4"
+paperback-formats = { path = "../paperback-formats" }
+patois = { version = "0.2.1", features = ["ui"] }
+tracing = "0.1.44"
+tracing-appender = "0.2.5"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+ship-shape = "0.2.0"
 toml = { workspace = true }
-wx-utils = "0.1.1"
-wxdragon = { version = "0.9.16", features = ["webview"] }
+wx-utils = "0.2.0"
+wxdragon = { version = "0.9.21", features = ["webview", "media-ctrl"] }
+zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading"] }
+windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Shell"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc = "0.2.7"
 
 [build-dependencies]
 embed-manifest = "1.5.0"
-flate2 = { version = "1.1.9", default-features = false }
-patois-build = "0.1.0"
+flate2 = { version = "1.1.10", default-features = false }
+paperback-formats = { path = "../paperback-formats" }
+patois-build = "0.1.9"
 tar = "0.4.46"
-ureq = { version = "3.3.0", default-features = false, features = ["rustls"] }
+ureq = { version = "3.4.0", default-features = false, features = ["rustls"] }
 winres = "0.1.12"
 
 [dev-dependencies]
 rstest = { workspace = true }
+
+[lints]
+workspace = true

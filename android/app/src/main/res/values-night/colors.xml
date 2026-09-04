@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3's default dark background. Without this the starting window is white. -->
+    <color name="window_background">#1C1B1F</color>
+</resources>

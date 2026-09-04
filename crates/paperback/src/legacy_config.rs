@@ -2,9 +2,9 @@
 ///
 /// Called at startup before `ConfigManager::initialize()`. If an INI file exists
 /// and no TOML file exists yet, reads the INI via wxdragon's Config and writes a
-/// TOML file that the core's ConfigManager can load normally. This module is the
+/// TOML file that the core's `ConfigManager` can load normally. This module is the
 /// only place in the binary that directly constructs `ConfigData`.
-use std::fs;
+use std::{fs, path::Path};
 
 use base64::{Engine, engine::general_purpose::STANDARD};
 use paperback_core::config::{ConfigData, DocumentConfig, StoredBookmark};
@@ -19,16 +19,24 @@ pub fn migrate_if_needed() {
 	if toml_path.exists() || !ini_path.exists() {
 		return;
 	}
+	tracing::info!(ini = %ini_path.display(), toml = %toml_path.display(), "migrating config from INI to TOML");
 	let data = read_ini(&ini_path);
-	if let Ok(serialized) = toml::to_string(&data) {
-		if let Some(parent) = toml_path.parent() {
-			let _ = fs::create_dir_all(parent);
+	match toml::to_string(&data) {
+		Ok(serialized) => {
+			if let Some(parent) = toml_path.parent() {
+				let _ = fs::create_dir_all(parent);
+			}
+			if let Err(e) = fs::write(&toml_path, &serialized) {
+				tracing::error!(path = %toml_path.display(), error = %e, "failed to write migrated config");
+			} else {
+				tracing::info!("config migration complete");
+			}
 		}
-		let _ = fs::write(&toml_path, serialized);
+		Err(e) => tracing::error!(error = %e, "failed to serialize migrated config"),
 	}
 }
 
-fn read_ini(ini_path: &std::path::Path) -> ConfigData {
+fn read_ini(ini_path: &Path) -> ConfigData {
 	let config = Config::new(
 		"Paperback",
 		Some("Paperback"),
@@ -121,12 +129,14 @@ fn read_ini(ini_path: &std::path::Path) -> ConfigData {
 			config.set_path("/");
 			continue;
 		}
-		let mut doc = DocumentConfig::default();
-		doc.path = path.clone();
-		doc.last_position = config.read_long("last_position", 0);
-		doc.opened = config.read_bool("opened", false);
-		doc.format = config.read_string("format", "");
-		doc.password = config.read_string("password", "");
+		let mut doc = DocumentConfig {
+			path: path.clone(),
+			last_position: config.read_long("last_position", 0),
+			opened: config.read_bool("opened", false),
+			format: config.read_string("format", ""),
+			password: config.read_string("password", ""),
+			..DocumentConfig::default()
+		};
 		let history_str = config.read_string("navigation_history", "");
 		if !history_str.is_empty() {
 			doc.navigation_history = history_str.split(',').filter_map(|t| t.trim().parse::<i64>().ok()).collect();
@@ -152,7 +162,7 @@ fn read_ini(ini_path: &std::path::Path) -> ConfigData {
 					doc.bookmarks.push(StoredBookmark { start: pos, end: pos, note: String::new() });
 				}
 			}
-			doc.bookmarks.sort_by(|a, b| a.start.cmp(&b.start));
+			doc.bookmarks.sort_by_key(|a| a.start);
 		}
 		data.documents.insert(group, doc);
 		config.set_path("/");

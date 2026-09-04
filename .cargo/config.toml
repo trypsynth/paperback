@@ -7,3 +7,5 @@ ios-release = "run -p xtask --release -- ios-release"
 gen-pot = "run -p xtask --release -- gen-pot"
 [target.x86_64-pc-windows-msvc]
 rustflags = ["-C", "target-feature=+crt-static"]
+[target.aarch64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

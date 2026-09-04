@@ -7,6 +7,9 @@ license.workspace = true
 repository.workspace = true
 description = "Core document parsing and reading logic for Paperback"
 
+[package.metadata.patois]
+translatable = true
+
 [lib]
 name = "paperback_core"
 path = "src/lib.rs"
@@ -15,29 +18,53 @@ crate-type = ["cdylib", "rlib", "staticlib"]
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bitflags = "2.12.1"
+bitflags = { workspace = true }
 cfb = "0.14.0"
+chardetng = "1.0.0"
 ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
-libchm = "0.2.0"
-office-crypto = "0.2.0"
+icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
+libchm = "0.3.0"
+lofty = "0.25.1"
+mp4ameta = "0.13.0"
+office-crypto = "0.3.0"
+paperback-formats = { path = "../paperback-formats" }
+patois = "0.2.1"
 pdfium = "0.10.4"
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.4", default-features = false, features = ["html"] }
-regex = "1.12.4"
-roman = "0.2"
+rayon = "1.12.0"
+regex = "1.13.1"
+roman = "0.2.1"
 roxmltree = "0.21.1"
-rtf-parser = "0.4.2"
+rtf-parser = "0.4.3"
 scraper = "0.27.0"
-serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
+serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 sha1 = "0.11.0"
-thiserror = "2.0.18"
+thiserror = "2.0.20"
 toml = { workspace = true }
-uniffi = { version = "0.31.1", features = ["cli"] }
-zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
+tracing = "0.1.44"
+unicode-bidi = "0.3.18"
+uniffi = { version = "0.32.0", features = ["cli"], optional = true }
+zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
-uniffi = { version = "0.31.1", features = ["build"] }
+uniffi = { version = "0.32.0", features = ["build"], optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
+# Only for constructing password-protected archives in tests; matches the main `zip`
+# dependency's default-features = false, adding just aes-crypto rather than the full
+# default bundle (bzip2, lzma, ppmd, zstd).
+zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate", "aes-crypto"] }
+
+[features]
+uniffi = ["dep:uniffi"]
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+required-features = ["uniffi"]
+
+[lints]
+workspace = true

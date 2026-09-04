@@ -1,7 +1,8 @@
 use patois::t;
+use wx_utils::dpi;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, KEY_RETURN};
+use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 
 pub fn show_note_entry_dialog(
 	parent: &dyn WxWidget,
@@ -14,32 +15,22 @@ pub fn show_note_entry_dialog(
 	let note_ctrl = TextCtrl::builder(&dialog)
 		.with_value(existing_note)
 		.with_style(TextCtrlStyle::MultiLine)
-		.with_size(Size::new(400, 200))
+		.with_size(dpi::scale_size(&dialog, Size::new(400, 200)))
 		.build();
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
-	let dialog_for_ok = dialog;
-	ok_button.on_click(move |_| {
-		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
-	});
-	let dialog_for_cancel = dialog;
-	cancel_button.on_click(move |_| {
-		dialog_for_cancel.end_modal(wxdragon::id::ID_CANCEL);
-	});
+	// TRANSLATORS: OK button that confirms the entered bookmark/note text
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));
 	let dialog_for_key = dialog;
 	note_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
-		if let Some(key) = event.get_key_code() {
-			if key == KEY_RETURN {
-				if event.shift_down() {
-					event.skip(true);
-				} else {
-					dialog_for_key.end_modal(wxdragon::id::ID_OK);
-					event.skip(false);
-				}
-				return;
+		if let Some(key) = event.get_key_code()
+			&& key == WXK_RETURN
+		{
+			if event.shift_down() {
+				event.skip(true);
+			} else {
+				dialog_for_key.end_modal(ID_OK);
+				event.skip(false);
 			}
+			return;
 		}
 		event.skip(true);
 	});
@@ -51,13 +42,9 @@ pub fn show_note_entry_dialog(
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
 		DIALOG_PADDING,
 	);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	note_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(note_ctrl.get_value()) } else { None }
+	if dialog.show_modal() == ID_OK { Some(note_ctrl.get_value()) } else { None }
 }

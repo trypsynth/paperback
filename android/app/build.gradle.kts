@@ -6,19 +6,21 @@ plugins {
 }
 
 android {
-	namespace = "dev.paperback.mobile"
-	compileSdk = 36
+	namespace = "dev.paperback.android"
+	compileSdk = 37
 	defaultConfig {
-		applicationId = "dev.paperback.mobile"
+		applicationId = "dev.paperback.android"
 		minSdk = 24
 		targetSdk = 36
-		versionCode = 1
-		versionName = "1.0"
+		versionCode = 5
+		versionName = "0.9.0"
 	}
 
 	splits {
 		abi {
-			isEnable = true
+			// Bundle builds (.aab) handle per-ABI delivery themselves; ABI splits
+			// only apply to standalone APK builds and conflict with bundleRelease.
+			isEnable = !gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }
 			reset()
 			include("armeabi-v7a", "arm64-v8a")
 			isUniversalApk = false
@@ -88,7 +90,7 @@ dependencies {
 	// Arch Components
 	implementation(libs.androidx.lifecycle.runtime.compose)
 	implementation(libs.androidx.lifecycle.viewmodel.compose)
-	implementation(libs.androidx.media)
+	implementation(libs.androidx.media3.session)
 	// Compose
 	implementation(libs.androidx.compose.ui)
 	implementation(libs.androidx.compose.ui.tooling.preview)
@@ -113,5 +115,5 @@ dependencies {
 	implementation(libs.androidx.navigation3.runtime)
 	implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 	// JNA for UniFFI
-	implementation("net.java.dev.jna:jna:5.13.0@aar")
+	implementation("net.java.dev.jna:jna:5.19.1@aar")
 }

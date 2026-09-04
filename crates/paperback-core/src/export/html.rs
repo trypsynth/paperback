@@ -1,15 +1,21 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+	collections::{HashMap, HashSet},
+	fmt::Write as _,
+};
 
 use crate::{
 	document::{DocumentHandle, MarkerType},
 	parser::is_external_url,
-	util::text::{ch_width, display_len},
+	util::{
+		html::{escape, escape_attr, push_escaped},
+		text::ch_width,
+	},
 };
 
+#[must_use]
 pub fn render(doc: &DocumentHandle) -> String {
 	let document = doc.document();
 	let content = &document.buffer.content;
-
 	// Precompute section boundaries once so link resolution is O(log S) per link
 	// instead of O(M) per link (where M = total marker count).
 	let section_break_positions: Vec<usize> =
@@ -111,14 +117,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</h6>") });
 			}
 			MarkerType::Link => {
-				// Link length is not stored; recover it from the link text written into
-				// the content (collapse_whitespace was applied when the text was stored).
-				let text: String = marker.text.split_whitespace().collect::<Vec<_>>().join(" ");
-				let implied_len = if marker.length > 0 { marker.length } else { display_len(&text) };
-				if implied_len == 0 {
-					continue;
-				}
-				let end = pos + implied_len;
+				let Some(end) = super::link_span_end(marker) else { continue };
 				let open = if marker.reference.is_empty() {
 					"<a>".to_string()
 				} else {
@@ -127,12 +126,13 @@ pub fn render(doc: &DocumentHandle) -> String {
 						format!("<a href=\"{}\">", escape_attr(href))
 					} else if let Some(fragment) = href.strip_prefix('#') {
 						let current_path = section_path_at(pos);
-						if let Some(off) = resolve_fragment(&document.id_positions, fragment, current_path) {
-							target_offsets.insert(off);
-							format!("<a href=\"#pos-{off}\">")
-						} else {
-							format!("<a href=\"{}\">", escape_attr(href))
-						}
+						resolve_fragment(&document.id_positions, fragment, current_path).map_or_else(
+							|| format!("<a href=\"{}\">", escape_attr(href)),
+							|off| {
+								target_offsets.insert(off);
+								format!("<a href=\"#pos-{off}\">")
+							},
+						)
 					} else {
 						let mut parts = href.splitn(2, '#');
 						let file_part = parts.next().unwrap_or_default();
@@ -150,24 +150,40 @@ pub fn render(doc: &DocumentHandle) -> String {
 						} else {
 							// CHM / fallback: try fragment, then bare file-path key
 							let current_path = section_path_at(pos);
-							let off = if !frag_part.is_empty() {
+							let off = if frag_part.is_empty() {
+								document.id_positions.get(file_part).copied()
+							} else {
 								resolve_fragment(&document.id_positions, frag_part, Some(file_part))
 									.or_else(|| document.id_positions.get(file_part).copied())
 									.or_else(|| resolve_fragment(&document.id_positions, frag_part, current_path))
-							} else {
-								document.id_positions.get(file_part).copied()
 							};
-							if let Some(off) = off {
-								target_offsets.insert(off);
-								format!("<a href=\"#pos-{off}\">")
-							} else {
-								format!("<a href=\"{}\">", escape_attr(href))
-							}
+							off.map_or_else(
+								|| format!("<a href=\"{}\">", escape_attr(href)),
+								|off| {
+									target_offsets.insert(off);
+									format!("<a href=\"#pos-{off}\">")
+								},
+							)
 						}
 					}
 				};
 				events.push(Ev { pos, kind: Ek::InlineOpen(open) });
 				events.push(Ev { pos: end, kind: Ek::InlineClose("</a>") });
+			}
+			MarkerType::Bold => {
+				let end = pos + marker.length;
+				events.push(Ev { pos, kind: Ek::InlineOpen("<b>".to_string()) });
+				events.push(Ev { pos: end, kind: Ek::InlineClose("</b>") });
+			}
+			MarkerType::Italic => {
+				let end = pos + marker.length;
+				events.push(Ev { pos, kind: Ek::InlineOpen("<i>".to_string()) });
+				events.push(Ev { pos: end, kind: Ek::InlineClose("</i>") });
+			}
+			MarkerType::Underline => {
+				let end = pos + marker.length;
+				events.push(Ev { pos, kind: Ek::InlineOpen("<u>".to_string()) });
+				events.push(Ev { pos: end, kind: Ek::InlineClose("</u>") });
 			}
 			MarkerType::List if marker.length > 0 => {
 				// Only emit a <ul> wrapper when an explicit length is available; without it
@@ -217,11 +233,10 @@ pub fn render(doc: &DocumentHandle) -> String {
 		// Fire events whose position has been reached
 		while event_idx < events.len() && events[event_idx].pos <= display_pos {
 			// Suppress events that fall inside an active replace range
-			if skip_until.is_some_and(|u| events[event_idx].pos < u) {
-				if !matches!(events[event_idx].kind, Ek::Anchor(_)) {
-					event_idx += 1;
-					continue;
-				}
+			if skip_until.is_some_and(|u| events[event_idx].pos < u) && !matches!(events[event_idx].kind, Ek::Anchor(_))
+			{
+				event_idx += 1;
+				continue;
 			}
 			match &events[event_idx].kind {
 				Ek::BlockOpen(tag) => {
@@ -281,7 +296,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 					pending_newlines = 0;
 				}
 				Ek::Anchor(offset) => {
-					html.push_str(&format!("<a id=\"pos-{offset}\"></a>"));
+					let _ = write!(html, "<a id=\"pos-{offset}\"></a>");
 				}
 			}
 			event_idx += 1;
@@ -334,7 +349,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 				html.push_str("<hr>\n");
 			}
 			Ek::Anchor(offset) => {
-				html.push_str(&format!("<a id=\"pos-{offset}\"></a>"));
+				let _ = write!(html, "<a id=\"pos-{offset}\"></a>");
 			}
 			_ => {}
 		}
@@ -361,23 +376,133 @@ fn resolve_fragment(id_positions: &HashMap<String, usize>, fragment: &str, scope
 	id_positions.get(fragment).copied()
 }
 
-fn push_escaped(ch: char, out: &mut String) {
-	match ch {
-		'&' => out.push_str("&amp;"),
-		'<' => out.push_str("&lt;"),
-		'>' => out.push_str("&gt;"),
-		c => out.push(c),
-	}
-}
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::document::{Document, DocumentBuffer, DocumentHandle, Marker, MarkerType};
 
-fn escape(s: &str) -> String {
-	let mut out = String::with_capacity(s.len());
-	for ch in s.chars() {
-		push_escaped(ch, &mut out);
+	fn simple_doc(content: &str, markers: Vec<Marker>) -> DocumentHandle {
+		let mut buffer = DocumentBuffer::with_content(content.to_string());
+		for marker in markers {
+			buffer.add_marker(marker);
+		}
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		DocumentHandle::new(doc)
 	}
-	out
-}
 
-fn escape_attr(s: &str) -> String {
-	s.replace('&', "&amp;").replace('"', "&quot;")
+	#[test]
+	fn test_bold_basic() {
+		let doc = simple_doc("bold text", vec![Marker::new(MarkerType::Bold, 0).with_length(4)]);
+		let html = render(&doc);
+		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {html}");
+	}
+
+	#[test]
+	fn test_italic_basic() {
+		let doc = simple_doc("italic text", vec![Marker::new(MarkerType::Italic, 0).with_length(6)]);
+		let html = render(&doc);
+		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {html}");
+	}
+
+	#[test]
+	fn test_underline_basic() {
+		let doc = simple_doc("underline text", vec![Marker::new(MarkerType::Underline, 0).with_length(9)]);
+		let html = render(&doc);
+		assert!(html.contains("<u>underline</u>"), "Expected <u>underline</u> in HTML: {html}");
+	}
+
+	#[test]
+	fn test_nested_bold_italic() {
+		// "bold italic" where 0-4 is bold, 5-11 is italic (nested/overlapping)
+		let doc = simple_doc(
+			"bold italic",
+			vec![Marker::new(MarkerType::Bold, 0).with_length(4), Marker::new(MarkerType::Italic, 5).with_length(6)],
+		);
+		let html = render(&doc);
+		// Both tags should be present and properly ordered
+		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {html}");
+		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {html}");
+	}
+
+	#[test]
+	fn test_nested_same_start_different_end() {
+		// "bold italic" where 0-11 is bold, 0-6 is italic (nested: italic entirely inside bold)
+		let doc = simple_doc(
+			"bold italic",
+			vec![Marker::new(MarkerType::Bold, 0).with_length(11), Marker::new(MarkerType::Italic, 0).with_length(6)],
+		);
+		let html = render(&doc);
+		// Check both are present
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {html}");
+	}
+
+	#[test]
+	fn test_coincident_end_edge_case() {
+		// "text" where both bold and italic end at position 4
+		// This tests the pre-existing characteristic where non-perfectly-nested
+		// tags can occur based on insertion order in buffer.markers
+		let doc = simple_doc(
+			"text",
+			vec![Marker::new(MarkerType::Bold, 0).with_length(4), Marker::new(MarkerType::Italic, 0).with_length(4)],
+		);
+		let html = render(&doc);
+		// Both opens and closes should be present
+		// The order of closes may vary based on insertion order (pre-existing behavior)
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {html}");
+		// Count tags to verify they're paired
+		let b_open = html.matches("<b>").count();
+		let b_close = html.matches("</b>").count();
+		let i_open = html.matches("<i>").count();
+		let i_close = html.matches("</i>").count();
+		assert_eq!(b_open, b_close, "Bold tags should be paired");
+		assert_eq!(i_open, i_close, "Italic tags should be paired");
+		// Note: the tag nesting order depends on marker iteration order.
+		// The output might be <b><i>text</i></b> or <i><b>text</b></i> or
+		// </b></i> before </i></b> depending on which marker is processed first.
+		// This is acceptable per the task brief.
+	}
+
+	#[test]
+	fn test_multiple_separate_bold_spans() {
+		// "bold text normal more bold"
+		// Bold at 0-4 and 22-26
+		let doc = simple_doc(
+			"bold text normal more bold",
+			vec![Marker::new(MarkerType::Bold, 0).with_length(4), Marker::new(MarkerType::Bold, 22).with_length(4)],
+		);
+		let html = render(&doc);
+		// Should have two bold pairs
+		let b_open = html.matches("<b>").count();
+		let b_close = html.matches("</b>").count();
+		assert_eq!(b_open, 2, "Expected 2 <b> opens");
+		assert_eq!(b_close, 2, "Expected 2 </b> closes");
+	}
+
+	#[test]
+	fn test_bold_italic_underline_combined() {
+		// "text" with all three marker types
+		let doc = simple_doc(
+			"text",
+			vec![
+				Marker::new(MarkerType::Bold, 0).with_length(4),
+				Marker::new(MarkerType::Italic, 1).with_length(2),
+				Marker::new(MarkerType::Underline, 2).with_length(2),
+			],
+		);
+		let html = render(&doc);
+		// All tags should be present
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {html}");
+		assert!(html.contains("<u>"), "Expected <u> in HTML: {html}");
+		assert!(html.contains("</u>"), "Expected </u> in HTML: {html}");
+	}
 }

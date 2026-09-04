@@ -5,9 +5,10 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
 	parser::{
 		Parser,
+		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},
@@ -20,19 +21,8 @@ use crate::{
 pub struct OdtParser;
 
 impl Parser for OdtParser {
-	fn name(&self) -> &'static str {
-		"OpenDocument Text Files"
-	}
-
-	fn extensions(&self) -> &[&str] {
-		&["odt"]
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing odt file");
 		let file = File::open(&context.file_path)
 			.with_context(|| format!("Failed to open ODT file '{}'", context.file_path))?;
 		let mut archive = ZipArchive::new(BufReader::new(file))
@@ -40,15 +30,17 @@ impl Parser for OdtParser {
 		let content_str = read_zip_entry_by_name(&mut archive, "content.xml")
 			.context("ODT file does not contain content.xml or it is empty")?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid ODT content.xml")?;
+		let format_style_map = build_odt_format_style_map(xml_doc.root());
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();
-		traverse(xml_doc.root(), &mut buffer, &mut id_positions);
+		traverse(xml_doc.root(), &mut buffer, &mut id_positions, context.render_tables_inline, &format_style_map);
 		let title = extract_title_from_path(&context.file_path);
 		let toc_items = build_toc_from_buffer(&buffer);
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		document.toc_items = toc_items;
+		tracing::debug!(path = %context.file_path, "parsed odt file successfully");
 		Ok(document)
 	}
 }
@@ -56,36 +48,66 @@ impl Parser for OdtParser {
 pub struct FodtParser;
 
 impl Parser for FodtParser {
-	fn name(&self) -> &'static str {
-		"Flat OpenDocument Text Files"
-	}
-
-	fn extensions(&self) -> &[&str] {
-		&["fodt"]
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing fodt file");
 		let content_str = fs::read_to_string(&context.file_path)
 			.with_context(|| format!("Failed to open FODT file '{}'", context.file_path))?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid FODT document")?;
+		let format_style_map = build_odt_format_style_map(xml_doc.root());
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();
-		traverse(xml_doc.root(), &mut buffer, &mut id_positions);
+		traverse(xml_doc.root(), &mut buffer, &mut id_positions, context.render_tables_inline, &format_style_map);
 		let title = extract_title_from_path(&context.file_path);
 		let toc_items = build_toc_from_buffer(&buffer);
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		document.toc_items = toc_items;
+		tracing::debug!(path = %context.file_path, "parsed fodt file successfully");
 		Ok(document)
 	}
 }
 
-fn traverse(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<String, usize>) {
+/// Builds a style-name → `(bold, italic, underline)` map from `<office:automatic-styles>` /
+/// `<style:style style:family="text">` entries, so that `<text:span text:style-name="...">`
+/// elements encountered during traversal can be resolved to direct character formatting.
+fn build_odt_format_style_map(root: Node) -> HashMap<String, (bool, bool, bool)> {
+	let mut map = HashMap::new();
+	let Some(automatic_styles) =
+		root.descendants().find(|n| n.is_element() && n.tag_name().name() == "automatic-styles")
+	else {
+		return map;
+	};
+	for style_node in automatic_styles.children() {
+		if !style_node.is_element() || style_node.tag_name().name() != "style" {
+			continue;
+		}
+		if style_node.attribute("family") != Some("text") {
+			continue;
+		}
+		let Some(name) = style_node.attribute("name") else { continue };
+		let Some(text_props) =
+			style_node.children().find(|n| n.is_element() && n.tag_name().name() == "text-properties")
+		else {
+			continue;
+		};
+		let bold = text_props.attribute("font-weight").is_some_and(|v| v == "bold");
+		let italic = text_props.attribute("font-style").is_some_and(|v| v == "italic");
+		let underline = text_props.attribute("text-underline-style").is_some_and(|v| v != "none");
+		if bold || italic || underline {
+			map.insert(name.to_string(), (bold, italic, underline));
+		}
+	}
+	map
+}
+
+fn traverse(
+	node: Node,
+	buffer: &mut DocumentBuffer,
+	id_positions: &mut HashMap<String, usize>,
+	render_tables_inline: bool,
+	format_style_map: &HashMap<String, (bool, bool, bool)>,
+) {
 	if node.node_type() == NodeType::Element {
 		let tag_name = node.tag_name().name();
 		if tag_name == "h" {
@@ -101,7 +123,7 @@ fn traverse(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<
 			return; // Don't traverse children, we already got the text
 		}
 		if tag_name == "p" {
-			traverse_children(node, buffer, id_positions);
+			traverse_children(node, buffer, id_positions, render_tables_inline, format_style_map);
 			buffer.append("\n");
 			return;
 		}
@@ -123,8 +145,23 @@ fn traverse(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<
 		if let Some(id) = node.attribute("id") {
 			id_positions.insert(id.to_string(), buffer.current_position());
 		}
+		if tag_name == "span"
+			&& let Some(style_name) = node.attribute("style-name")
+			&& let Some(&(bold, italic, underline)) = format_style_map.get(style_name)
+			&& (bold || italic || underline)
+		{
+			let start = buffer.current_position();
+			traverse_children(node, buffer, id_positions, render_tables_inline, format_style_map);
+			let end = buffer.current_position();
+			if end > start {
+				for kind in format_marker_types(bold, italic, underline) {
+					buffer.add_marker(Marker::new(kind, start).with_length(end - start));
+				}
+			}
+			return;
+		}
 		if tag_name == "table" {
-			process_table(node, buffer, id_positions);
+			process_table(node, buffer, id_positions, render_tables_inline);
 			return;
 		}
 	} else if node.node_type() == NodeType::Text {
@@ -133,59 +170,246 @@ fn traverse(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<
 		}
 		return;
 	}
-	traverse_children(node, buffer, id_positions);
+	traverse_children(node, buffer, id_positions, render_tables_inline, format_style_map);
 }
 
-fn traverse_children(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<String, usize>) {
+fn traverse_children(
+	node: Node,
+	buffer: &mut DocumentBuffer,
+	id_positions: &mut HashMap<String, usize>,
+	render_tables_inline: bool,
+	format_style_map: &HashMap<String, (bool, bool, bool)>,
+) {
 	for child in node.children() {
-		traverse(child, buffer, id_positions);
+		traverse(child, buffer, id_positions, render_tables_inline, format_style_map);
 	}
 }
 
-fn process_table(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<String, usize>) {
+fn process_table(
+	node: Node,
+	buffer: &mut DocumentBuffer,
+	id_positions: &mut HashMap<String, usize>,
+	render_tables_inline: bool,
+) {
 	let table_start = buffer.current_position();
-	let mut html_content = String::from("<table border=\"1\">");
-	let mut table_caption = String::new();
-	let mut found_first_row = false;
-	for child in node.children() {
-		if child.is_element() && child.tag_name().name() == "table-row" {
-			if !found_first_row {
-				for cell in child.children() {
-					if cell.is_element() && cell.tag_name().name() == "table-cell" {
-						let cell_text = collect_element_text(cell);
-						table_caption.push_str(&cell_text);
-						table_caption.push(' ');
-					}
-				}
-				found_first_row = true;
-			}
-			html_content.push_str("<tr>");
-			for cell in child.children() {
-				if cell.is_element() && cell.tag_name().name() == "table-cell" {
-					html_content.push_str("<td>");
-					let cell_start = buffer.current_position();
-					traverse_children(cell, buffer, id_positions);
-					let cell_end = buffer.current_position();
-					let cell_text = &buffer.content[cell_start..cell_end];
-					html_content.push_str(&cell_text.replace('\n', "<br/>"));
-					html_content.push_str("</td>");
-					buffer.append(" ");
-				}
-			}
-			html_content.push_str("</tr>");
-			buffer.append("\n");
+	// The table collapses to a placeholder/TSV, so cells have no individual display offset. Register
+	// every anchor `id` nested inside the table at the table's start position; internal links to a
+	// bookmark/footnote/cross-ref target inside a cell then navigate to the table.
+	for descendant in node.descendants() {
+		if descendant.is_element()
+			&& let Some(id) = descendant.attribute("id")
+		{
+			id_positions.insert(id.to_string(), table_start);
 		}
 	}
-	html_content.push_str("</table>");
-	let table_end = buffer.current_position();
-	let table_text = buffer.content[table_start..table_end].to_string();
-	if !table_text.trim().is_empty() {
-		let marker_text = if table_caption.trim().is_empty() { "table".to_string() } else { table_caption };
-		buffer.add_marker(
-			Marker::new(MarkerType::Table, table_start)
-				.with_text(marker_text)
-				.with_reference(html_content)
-				.with_length(table_text.len()),
+	let mut rows: Vec<Vec<String>> = Vec::new();
+	let mut has_content = false;
+	// Build the table grid from the XML nodes directly. Cell text is collected via
+	// `collect_element_text` (operating on the XML tree), NOT by slicing the display buffer — the
+	// display buffer is indexed in display units, so slicing it with those offsets as byte indices
+	// mis-sliced (and could panic) on non-ASCII cell content.
+	for child in node.children() {
+		if child.is_element() && child.tag_name().name() == "table-row" {
+			let mut cells: Vec<String> = Vec::new();
+			for cell in child.children() {
+				if cell.is_element() && cell.tag_name().name() == "table-cell" {
+					let cell_text = collect_element_text(cell);
+					if !cell_text.trim().is_empty() {
+						has_content = true;
+					}
+					cells.push(cell_text.trim().to_string());
+				}
+			}
+			rows.push(cells);
+		}
+	}
+	if !has_content {
+		tracing::debug!("dropped table with no non-blank cell content");
+		return;
+	}
+	let html_content = build_html_table_from_grid(&rows);
+	let marker_text = table_caption_from_html(&html_content).unwrap_or_else(|| "table".to_string());
+	let display_text = html_table_to_display(&html_content, render_tables_inline);
+	buffer.append(&display_text);
+	buffer.append("\n");
+	let display_len = buffer.current_position() - table_start;
+	buffer.add_marker(
+		Marker::new(MarkerType::Table, table_start)
+			.with_text(marker_text)
+			.with_reference(html_content)
+			.with_length(display_len),
+	);
+}
+
+#[cfg(test)]
+mod tests {
+	use std::collections::HashMap;
+
+	use roxmltree::Document as XmlDocument;
+
+	use super::{build_odt_format_style_map, traverse};
+	use crate::{
+		document::{DocumentBuffer, MarkerType},
+		util::text::display_len,
+	};
+
+	/// OFF mode: an ODT table emits a `"[Table]: <first row>"` placeholder. The second cell holds a
+	/// non-ASCII character (U+1D11E, G Clef, non-BMP) to prove the cell-text extraction no longer
+	/// mis-slices the display buffer with display-unit offsets as byte indices.
+	#[test]
+	fn odt_table_emits_placeholder_when_off() {
+		let xml = "<document><table><table-row><table-cell>Kop</table-cell><table-cell>\u{1D11E}</table-cell></table-row></table></document>";
+		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+		let mut buffer = DocumentBuffer::new();
+		let mut id_positions = HashMap::new();
+		let format_style_map = HashMap::new();
+		traverse(xml_doc.root(), &mut buffer, &mut id_positions, false, &format_style_map);
+		assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
+		assert_eq!(table_marker.position, 0, "marker starts at buffer start");
+		assert_eq!(table_marker.length, display_len("[Table]: Kop \u{1D11E}") + 1, "marker length in display units");
+		assert_eq!(table_marker.text, "Kop \u{1D11E}", "marker keeps the first-row caption");
+		assert!(table_marker.reference.contains("<table"), "marker reference is the table HTML");
+	}
+
+	/// An `id` attribute on an element nested inside a table cell must be registered in
+	/// `id_positions` at the table's start position, so internal links to that anchor navigate to
+	/// the table. Holds in both OFF and ON modes (registration happens before the cells collapse).
+	#[test]
+	fn odt_table_cell_id_registered_at_table_start() {
+		let xml = "<document><p>before</p><table><table-row><table-cell><span id=\"anchor1\">Kop</span></table-cell></table-row></table></document>";
+		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+		let format_style_map = HashMap::new();
+		for inline in [false, true] {
+			let mut buffer = DocumentBuffer::new();
+			let mut id_positions = HashMap::new();
+			traverse(xml_doc.root(), &mut buffer, &mut id_positions, inline, &format_style_map);
+			let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
+			assert_eq!(
+				id_positions.get("anchor1"),
+				Some(&table_marker.position),
+				"in-cell anchor id maps to the table start (inline={inline})"
+			);
+		}
+	}
+
+	/// ON mode: the same ODT table emits the full TSV instead of the placeholder.
+	#[test]
+	fn odt_table_emits_tsv_when_inline() {
+		let xml = "<document><table><table-row><table-cell>Kop</table-cell><table-cell>\u{1D11E}</table-cell></table-row></table></document>";
+		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+		let mut buffer = DocumentBuffer::new();
+		let mut id_positions = HashMap::new();
+		let format_style_map = HashMap::new();
+		traverse(xml_doc.root(), &mut buffer, &mut id_positions, true, &format_style_map);
+		assert_eq!(buffer.content, "Kop\t\u{1D11E}\n");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
+		assert_eq!(table_marker.length, display_len("Kop\t\u{1D11E}") + 1, "marker length spans the TSV");
+	}
+
+	/// Builds the standard test fixture: an `<automatic-styles>` block defining style `"T1"` with the
+	/// given text-properties attribute (name, value), wrapping a `<span style-name="T1">` around
+	/// `text`. Uses bare/local tag and attribute names — this file's roxmltree usage strips namespace
+	/// prefixes, so test XML omits them too, matching real ODT content.xml parsing.
+	fn span_fixture(prop_name: &str, prop_value: &str, text: &str) -> String {
+		format!(
+			"<document><automatic-styles><style family=\"text\" name=\"T1\"><text-properties {prop_name}=\"{prop_value}\"/></style></automatic-styles><p><span style-name=\"T1\">{text}</span></p></document>"
+		)
+	}
+
+	fn traverse_fixture(xml: &str) -> DocumentBuffer {
+		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+		let format_style_map = build_odt_format_style_map(xml_doc.root());
+		let mut buffer = DocumentBuffer::new();
+		let mut id_positions = HashMap::new();
+		traverse(xml_doc.root(), &mut buffer, &mut id_positions, false, &format_style_map);
+		buffer
+	}
+
+	#[test]
+	fn odt_span_bold_style_adds_bold_marker() {
+		let xml = span_fixture("font-weight", "bold", "bold text");
+		let buffer = traverse_fixture(&xml);
+		assert_eq!(buffer.content, "bold text\n");
+		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
+		assert_eq!(marker.position, 0);
+		assert_eq!(marker.length, display_len("bold text"));
+		assert!(buffer.markers.iter().all(|m| m.mtype != MarkerType::Italic && m.mtype != MarkerType::Underline));
+	}
+
+	#[test]
+	fn odt_span_italic_style_adds_italic_marker() {
+		let xml = span_fixture("font-style", "italic", "italic text");
+		let buffer = traverse_fixture(&xml);
+		assert_eq!(buffer.content, "italic text\n");
+		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Italic).expect("Italic marker");
+		assert_eq!(marker.position, 0);
+		assert_eq!(marker.length, display_len("italic text"));
+		assert!(buffer.markers.iter().all(|m| m.mtype != MarkerType::Bold && m.mtype != MarkerType::Underline));
+	}
+
+	#[test]
+	fn odt_span_underline_solid_style_adds_underline_marker() {
+		let xml = span_fixture("text-underline-style", "solid", "underlined text");
+		let buffer = traverse_fixture(&xml);
+		assert_eq!(buffer.content, "underlined text\n");
+		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Underline).expect("Underline marker");
+		assert_eq!(marker.position, 0);
+		assert_eq!(marker.length, display_len("underlined text"));
+		assert!(buffer.markers.iter().all(|m| m.mtype != MarkerType::Bold && m.mtype != MarkerType::Italic));
+	}
+
+	#[test]
+	fn odt_span_underline_none_style_adds_no_underline_marker() {
+		let xml = span_fixture("text-underline-style", "none", "plain text");
+		let buffer = traverse_fixture(&xml);
+		assert_eq!(buffer.content, "plain text\n");
+		assert!(
+			buffer.markers.iter().all(|m| m.mtype != MarkerType::Underline),
+			"text-underline-style=none must not be treated as underlined"
+		);
+	}
+
+	#[test]
+	fn odt_span_combined_bold_and_italic_style_adds_both_markers() {
+		let xml = "<document><automatic-styles><style family=\"text\" name=\"T1\"><text-properties font-weight=\"bold\" font-style=\"italic\"/></style></automatic-styles><p><span style-name=\"T1\">both</span></p></document>";
+		let buffer = traverse_fixture(xml);
+		assert_eq!(buffer.content, "both\n");
+		let bold = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
+		let italic = buffer.markers.iter().find(|m| m.mtype == MarkerType::Italic).expect("Italic marker");
+		assert_eq!(bold.position, 0);
+		assert_eq!(bold.length, display_len("both"));
+		assert_eq!(italic.position, 0);
+		assert_eq!(italic.length, display_len("both"));
+		assert!(buffer.markers.iter().all(|m| m.mtype != MarkerType::Underline));
+	}
+
+	/// A span with no matching/known style-name (or a style resolving to no formatting) falls through
+	/// to exactly today's behavior: text renders, but no bold/italic/underline marker is added.
+	#[test]
+	fn odt_span_with_unknown_style_falls_through_unformatted() {
+		let xml = "<document><automatic-styles><style family=\"text\" name=\"T1\"><text-properties font-weight=\"bold\"/></style></automatic-styles><p><span style-name=\"Unknown\">plain</span></p></document>";
+		let buffer = traverse_fixture(xml);
+		assert_eq!(buffer.content, "plain\n");
+		assert!(
+			buffer.markers.iter().all(|m| m.mtype != MarkerType::Bold
+				&& m.mtype != MarkerType::Italic
+				&& m.mtype != MarkerType::Underline),
+			"unknown style-name must not add any formatting marker"
+		);
+	}
+
+	/// A span with no `style-name` attribute at all also falls through unformatted.
+	#[test]
+	fn odt_span_without_style_name_falls_through_unformatted() {
+		let xml = "<document><p><span>plain</span></p></document>";
+		let buffer = traverse_fixture(xml);
+		assert_eq!(buffer.content, "plain\n");
+		assert!(
+			buffer.markers.iter().all(|m| m.mtype != MarkerType::Bold
+				&& m.mtype != MarkerType::Italic
+				&& m.mtype != MarkerType::Underline),
+			"span without style-name must not add any formatting marker"
 		);
 	}
 }

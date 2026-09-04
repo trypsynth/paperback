@@ -15,39 +15,29 @@
 	SolidCompression=yes
 	WizardStyle=modern
 	UninstallDisplayIcon={app}\paperback.exe
-	ArchitecturesInstallIn64BitMode=x64compatible
+	ArchitecturesAllowed=@ARCH_ALLOWED@
+	ArchitecturesInstallIn64BitMode=@ARCH_MODE@
 
 [Languages]
 	Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 	Source: "paperback.exe"; DestDir: "{app}"; Flags: ignoreversion
+	Source: "pb.exe"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "pdfium.dll"; DestDir: "{app}"; Flags: ignoreversion
-	Source: "readme.html"; DestDir: "{app}"; Flags: ignoreversion
-	Source: "sounds\*"; DestDir: "{app}\sounds"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [InstallDelete]
 	Type: files; Name: "{app}\nvdaControllerClient64.dll"
 	Type: files; Name: "{app}\SAAPI64.dll"
 	Type: filesandordirs; Name: "{app}\langs"
+	Type: files; Name: "{app}\readme.html"
+	Type: filesandordirs; Name: "{app}\sounds"
 
 [Tasks]
 	Name: "desktopicon"; Description: "Desktop Shortcut"
 	Name: "startmenuicon"; Description: "Start Menu Shortcut"; Flags: unchecked
-	Name: "assoc_chm"; Description: "Associate with Compiled HTML Help files (*.chm)"; Flags: unchecked
-	Name: "assoc_word"; Description: "Associate with Word Documents (*.doc, *.docx, *.docm)"; Flags: unchecked
-	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"
-	Name: "assoc_fb2"; Description: "Associate with FB2 Books (*.fb2)"; Flags: unchecked
-	Name: "assoc_html"; Description: "Associate with HTML Documents (*.htm, *.html, *.xhtml)"; Flags: unchecked
-	Name: "assoc_markdown"; Description: "Associate with Markdown Documents (*.md, *.markdown, *.mdx, *.mdown, *.mdwn, *.mkd, *.mkdn, *.mkdown, *.ronn)"; Flags: unchecked
-	Name: "assoc_mobi"; Description: "Associate with Kindle Books (*.mobi)"; Flags: unchecked
-	Name: "assoc_odp"; Description: "Associate with OpenDocument presentations (*.odp, *.fodp)"; Flags: unchecked
-	Name: "assoc_odt"; Description: "Associate with OpenDocument text files (*.odt, *.fodt)"; Flags: unchecked
-	Name: "assoc_pdf"; Description: "Associate with PDF Documents (*.pdf)"
-	Name: "assoc_powerpoint"; Description: "Associate with PowerPoint Presentations (*.pptx, *.pptm, *.ppt)"; Flags: unchecked
-	Name: "assoc_rtf"; Description: "Associate with RTF files (*.rtf)"
-	Name: "assoc_text"; Description: "Associate with Text Files (*.txt, *.log)"; Flags: unchecked
-	Name: "assoc_xml"; Description: "Associate with XML documents (*.xml)"; Flags: unchecked
+	Name: "addtopath"; Description: "Add Paperback directory to PATH"; Flags: unchecked
+@FORMAT_TASKS@
 	Name: "assoc_zip"; Description: "Associate with ZIP archives (*.zip)"; Flags: unchecked
 
 [Icons]
@@ -59,52 +49,54 @@
 	Root: HKCR; Subkey: "Paperback.Document"; ValueType: string; ValueName: ""; ValueData: "Paperback Document"; Flags: uninsdeletekey
 	Root: HKCR; Subkey: "Paperback.Document\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\paperback.exe,0"
 	Root: HKCR; Subkey: "Paperback.Document\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\paperback.exe"" ""%1"""
-	; Compiled HTML Help files.
-	Root: HKCR; Subkey: ".chm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_chm
-	; Word Documents.
-	Root: HKCR; Subkey: ".doc\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_word
-	Root: HKCR; Subkey: ".docx\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_word
-	Root: HKCR; Subkey: ".docm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_word
-	; Epub Books.
-	Root: HKCR; Subkey: ".epub"; ValueType: string; ValueName: ""; ValueData: "Paperback.Document"; Flags: uninsdeletevalue; Tasks: assoc_epub
-	; FB2 Books.
-	Root: HKCR; Subkey: ".fb2"; ValueType: string; ValueName: ""; ValueData: "Paperback.Document"; Flags: uninsdeletevalue; Tasks: assoc_fb2
-	; HTML Documents.
-	Root: HKCR; Subkey: ".htm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_html
-	Root: HKCR; Subkey: ".html\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_html
-	Root: HKCR; Subkey: ".xhtml\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_html
-	; Markdown Documents.
-	Root: HKCR; Subkey: ".markdown\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-	Root: HKCR; Subkey: ".md\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-	Root: HKCR; Subkey: ".mdown\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-	Root: HKCR; Subkey: ".mdwn\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-	Root: HKCR; Subkey: ".mdx\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-	Root: HKCR; Subkey: ".mkd\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-	Root: HKCR; Subkey: ".mkdn\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-	Root: HKCR; Subkey: ".mkdown\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-	Root: HKCR; Subkey: ".ronn\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-	; Kindle Books.
-	Root: HKCR; Subkey: ".mobi\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_mobi
-	; OpenDocument presentation files.
-	Root: HKCR; Subkey: ".odp\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_odp
-	Root: HKCR; Subkey: ".fodp\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_odp
-	; OpenDocument text files.
-	Root: HKCR; Subkey: ".odt\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_odt
-	Root: HKCR; Subkey: ".fodt\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_odt
-	; PDF Documents.
-	Root: HKCR; Subkey: ".pdf\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_pdf
-	; PowerPoint Presentations.
-	Root: HKCR; Subkey: ".pptx\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_powerpoint
-	Root: HKCR; Subkey: ".pptm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_powerpoint
-	Root: HKCR; Subkey: ".ppt\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_powerpoint
-	; RTF files.
-	Root: HKCR; Subkey: ".rtf\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_rtf
-	; Text Files.
-	Root: HKCR; Subkey: ".log\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_text
-	Root: HKCR; Subkey: ".txt\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_text
-	; ZIP archives.
+	; The name Explorer's "Open with" list shows. Without an explicit FriendlyAppName Windows falls
+	; back to the executable's FileDescription resource, which used to be the full tagline, and it
+	; keeps that first-seen name in MuiCache even after the resource is corrected.
+	Root: HKCR; Subkey: "Paperback.Document"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Paperback"
+	; The same entry for picking paperback.exe directly out of "More apps" or the file browser.
+	Root: HKCR; Subkey: "Applications\paperback.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Paperback"; Flags: uninsdeletekey
+	Root: HKCR; Subkey: "Applications\paperback.exe\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\paperback.exe,0"
+	Root: HKCR; Subkey: "Applications\paperback.exe\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\paperback.exe"" ""%1"""
+@FORMAT_REGISTRY@
+	; ZIP archives. Shared by multiple parsers (DAISY, Word-in-zip), so it is kept as its own opt-in task
+	; rather than tied to any single format's checkbox.
 	Root: HKCR; Subkey: ".zip\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_zip
+	; PATH. Appended only when not already present; removed cleanly on uninstall via [Code].
+	Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Flags: preservestringtype; Check: NeedsAddPath; Tasks: addtopath
+
+[Code]
+const
+	PathSubkey = 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment';
+
+function NeedsAddPath: Boolean;
+var
+	CurrentPath: string;
+begin
+	if not RegQueryStringValue(HKLM, PathSubkey, 'Path', CurrentPath) then CurrentPath := '';
+	Result := Pos(';' + ExpandConstant('{app}'), ';' + CurrentPath) = 0;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+	CurrentPath, AppDir, NewPath: string;
+	P: Integer;
+begin
+	if CurUninstallStep <> usPostUninstall then Exit;
+	if not RegQueryStringValue(HKLM, PathSubkey, 'Path', CurrentPath) then Exit;
+	AppDir := ExpandConstant('{app}');
+	P := Pos(';' + AppDir, CurrentPath);
+	if P > 0 then
+		NewPath := Copy(CurrentPath, 1, P - 1) + Copy(CurrentPath, P + 1 + Length(AppDir), MaxInt)
+	else
+	begin
+		P := Pos(AppDir + ';', CurrentPath);
+		if P > 0 then
+			NewPath := Copy(CurrentPath, 1, P - 1) + Copy(CurrentPath, P + Length(AppDir) + 1, MaxInt)
+		else
+			Exit;
+	end;
+	RegWriteExpandStringValue(HKLM, PathSubkey, 'Path', NewPath);
+end;
 
 [Run]
 	Filename: "{app}\paperback.exe"; Description: "Launch Paperback"; Flags: nowait postinstall skipifsilent
-	Filename: "{app}\readme.html"; Description: "View readme.html"; Flags: shellexec postinstall skipifsilent unchecked

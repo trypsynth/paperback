@@ -11,7 +11,7 @@ jobs:
     name: Format check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
@@ -20,11 +20,127 @@ jobs:
           components: rustfmt
       - name: Check formatting
         run: cargo +nightly fmt --check
+  android:
+    name: Android checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+      # The unit tests run on the host JVM and never call into the native library, but the code
+      # they cover is compiled against the uniffi types, so the bindings have to exist for the
+      # app module to compile at all. Generating them is a host build of paperback-core alone:
+      # no NDK or cargo-ndk, and none of the pdfium, translation, or pandoc assets that the APK
+      # build in build.yml needs on top. ktlint skips the generated file either way.
+      - name: Generate Kotlin bindings
+        run: >
+          cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --
+          generate crates/paperback-core/src/paperback.udl
+          --language kotlin --out-dir android/app/src/main/kotlin --no-format
+      - name: Cache Gradle packages
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-
+      - name: Check formatting and run unit tests
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew ktlintCheck testDebugUnitTest
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-test-report
+          path: android/app/build/reports/tests/
+          retention-days: 7
   test:
-    name: Tests and clippy
+    name: Tests
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Install CMake, Ninja, and Pandoc
+        run: choco install cmake ninja pandoc -y
+      - name: Install WebView2 SDK
+        run: |
+          nuget install Microsoft.Web.WebView2 -OutputDirectory packages
+          $pkg = Get-ChildItem "packages" -Filter "Microsoft.Web.WebView2.*" -Directory | Select-Object -First 1
+          $libPath = Join-Path $pkg.FullName "build\native\x64"
+          echo "LIB=$env:LIB;$libPath" >> $env:GITHUB_ENV
+      - name: Install Gettext via MSYS2
+        id: msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            gettext
+            mingw-w64-ucrt-x86_64-gettext-tools
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+      # msgfmt comes from MSYS2, which setup-msys2 leaves off this step's PATH, so the build
+      # scripts would silently skip every .po file. Appended rather than prepended: MSYS2's
+      # usr/bin has a coreutils link.exe that would otherwise shadow the MSVC linker.
+      - name: Run tests
+        run: |
+          $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
+          cargo test --workspace
+  test-macos:
+    name: Tests (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Install CMake, Ninja, Pandoc, and Gettext
+        run: |
+          brew install cmake ninja pandoc gettext
+          echo "/opt/homebrew/opt/gettext/bin" >> $GITHUB_PATH
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Cache wxWidgets source
+        id: wxwidgets-cache
+        uses: actions/cache@v6
+        with:
+          path: wxWidgets
+          key: wxwidgets-${{ runner.os }}-${{ runner.arch }}-v1
+      - name: Clone wxWidgets
+        if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
+        run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
+      - name: Run tests
+        env:
+          WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
+        run: cargo test --workspace
+  clippy:
+    name: Clippy
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
@@ -36,8 +152,8 @@ jobs:
         with:
           toolchain: stable
           components: clippy
-      - name: Install CMake and Ninja
-        run: choco install cmake ninja -y
+      - name: Install CMake, Ninja, and Pandoc
+        run: choco install cmake ninja pandoc -y
       - name: Install WebView2 SDK
         run: |
           nuget install Microsoft.Web.WebView2 -OutputDirectory packages
@@ -45,6 +161,7 @@ jobs:
           $libPath = Join-Path $pkg.FullName "build\native\x64"
           echo "LIB=$env:LIB;$libPath" >> $env:GITHUB_ENV
       - name: Install Gettext via MSYS2
+        id: msys2
         uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
@@ -54,13 +171,13 @@ jobs:
             mingw-w64-ucrt-x86_64-gettext-tools
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
-      - name: Clone wxWidgets
-        run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
-      - name: Run tests
-        run: |
-          $env:WXWIDGETS_DIR = "${{ github.workspace }}\wxWidgets"
-          cargo test
+      # `clippy::all` is denied through [workspace.lints] in Cargo.toml, so this fails the job on
+      # any of those lints. The pedantic and nursery groups stay warnings and are printed, not
+      # enforced -- see the comment on the lint table for why.
+      # msgfmt comes from MSYS2, which setup-msys2 leaves off this step's PATH, so the build
+      # scripts would silently skip every .po file. Appended rather than prepended: MSYS2's
+      # usr/bin has a coreutils link.exe that would otherwise shadow the MSVC linker.
       - name: Run clippy
         run: |
-          $env:WXWIDGETS_DIR = "${{ github.workspace }}\wxWidgets"
-          cargo clippy --release
+          $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
+          cargo clippy --workspace --all-targets --release

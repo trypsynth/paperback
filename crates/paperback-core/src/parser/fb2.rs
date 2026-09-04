@@ -4,12 +4,13 @@ use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
+		convert::xml_to_text::XmlToText,
 		util::xml::{collect_element_text, find_child_element},
-		xml_to_text::XmlToText,
 	},
+	t,
 };
 
 type Metadata = (String, String);
@@ -17,19 +18,8 @@ type Metadata = (String, String);
 pub struct Fb2Parser;
 
 impl Parser for Fb2Parser {
-	fn name(&self) -> &'static str {
-		"FictionBook Documents"
-	}
-
-	fn extensions(&self) -> &[&str] {
-		&["fb2"]
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_SECTIONS
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing fb2 file");
 		const CLOSING_TAG: &str = "</FictionBook>";
 		let mut xml_content = fs::read_to_string(&context.file_path)
 			.with_context(|| format!("Failed to read FB2 file '{}'", context.file_path))?;
@@ -37,12 +27,18 @@ impl Parser for Fb2Parser {
 			xml_content.truncate(pos + CLOSING_TAG.len());
 		}
 		let (xml_content, (title, author)) = clean_fb2(&xml_content).unwrap_or_else(|| {
+			tracing::warn!(
+				path = %context.file_path,
+				"roxmltree failed to parse fb2 xml, falling back to unstripped xml which may include base64 binary blobs"
+			);
 			let (title, author) = extract_metadata(&xml_content);
 			(xml_content, (title, author))
 		});
-		let mut converter = XmlToText::new();
+		let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&xml_content) {
-			anyhow::bail!("Failed to convert FB2 XML to text");
+			tracing::warn!(path = %context.file_path, "failed to convert fb2 xml to text");
+			// TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
+			anyhow::bail!(t("Failed to convert FB2 XML to text"));
 		}
 		let mut buffer = DocumentBuffer::new();
 		buffer.append(&converter.get_text());
@@ -54,6 +50,7 @@ impl Parser for Fb2Parser {
 		let mut document = Document::new().with_title(title).with_author(author);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
+		tracing::debug!(path = %context.file_path, "parsed fb2 file successfully");
 		Ok(document)
 	}
 }
@@ -140,8 +137,13 @@ fn escape_xml(s: &str) -> String {
 }
 
 fn extract_metadata(xml_content: &str) -> Metadata {
-	XmlDocument::parse(xml_content)
-		.map_or_else(|_| (String::new(), String::new()), |doc| extract_metadata_from_doc(&doc))
+	XmlDocument::parse(xml_content).map_or_else(
+		|e| {
+			tracing::warn!(error = %e, "failed to parse fb2 xml for metadata, title and author will be empty");
+			(String::new(), String::new())
+		},
+		|doc| extract_metadata_from_doc(&doc),
+	)
 }
 
 fn extract_metadata_from_doc(doc: &XmlDocument<'_>) -> Metadata {
@@ -188,4 +190,96 @@ fn find_element_by_path<'a, 'input>(node: Node<'a, 'input>, path: &[&str]) -> Op
 		}
 	}
 	None
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::{document::MarkerType, util::test_support::TempDir};
+
+	const BODY: &str = r"<body><section><title><p>Chapter One</p></title><p>Opening line.</p></section></body>";
+
+	fn fb2_document(description: &str, body: &str) -> String {
+		format!(
+			r#"<?xml version="1.0" encoding="UTF-8"?>
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"><description>{description}</description>{body}</FictionBook>"#
+		)
+	}
+
+	fn parse_fb2(contents: &str) -> Result<Document> {
+		let dir = TempDir::new("fb2-parser");
+		let path = dir.write_str("book.fb2", contents);
+		Fb2Parser.parse(&ParserContext::new(path))
+	}
+
+	fn parse_ok(contents: &str) -> Document {
+		parse_fb2(contents).expect("parse fb2 document")
+	}
+
+	#[test]
+	fn reads_title_and_author_from_the_description() {
+		let doc = parse_ok(&fb2_document(
+			"<title-info><book-title>A Fine Book</book-title><author><first-name>Ada</first-name><last-name>Lovelace</last-name></author></title-info>",
+			BODY,
+		));
+		assert_eq!(doc.title, "A Fine Book");
+		assert_eq!(doc.author, "Ada Lovelace");
+	}
+
+	#[test]
+	fn joins_a_partial_author_name_without_stray_spaces() {
+		let doc = parse_ok(&fb2_document(
+			"<title-info><book-title>T</book-title><author><last-name>Plato</last-name></author></title-info>",
+			BODY,
+		));
+		assert_eq!(doc.author, "Plato");
+	}
+
+	#[test]
+	fn extracts_body_text() {
+		let doc = parse_ok(&fb2_document("<title-info><book-title>T</book-title></title-info>", BODY));
+		assert!(doc.buffer.content.contains("Opening line."), "text: {:?}", doc.buffer.content);
+		assert!(!doc.buffer.content.contains('<'), "markup leaked into text: {:?}", doc.buffer.content);
+	}
+
+	#[test]
+	fn marks_each_section_with_a_section_break() {
+		let doc = parse_ok(&fb2_document(
+			"<title-info><book-title>T</book-title></title-info>",
+			"<body><section><p>One.</p></section><section><p>Two.</p></section></body>",
+		));
+		let breaks = doc.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::SectionBreak).count();
+		assert_eq!(breaks, 2);
+	}
+
+	/// Cover images arrive as base64 `<binary>` blobs. They must not be decoded into the text,
+	/// which is what `clean_fb2` strips them for.
+	#[test]
+	fn drops_base64_binary_payloads() {
+		let doc = parse_ok(&fb2_document(
+			"<title-info><book-title>T</book-title></title-info>",
+			r#"<body><section><p>Visible.</p></section></body><binary id="cover.jpg" content-type="image/jpeg">iVBORw0KGgoAAAANSUhEUg==</binary>"#,
+		));
+		assert!(doc.buffer.content.contains("Visible."));
+		assert!(!doc.buffer.content.contains("iVBORw0KGgo"), "binary payload leaked: {:?}", doc.buffer.content);
+	}
+
+	/// Some writers append junk after the closing tag; the parser truncates there rather than
+	/// failing, so the document still opens.
+	#[test]
+	fn ignores_trailing_junk_after_the_closing_tag() {
+		let doc = parse_ok(&format!(
+			"{}\u{0}garbage",
+			fb2_document("<title-info><book-title>Trailing</book-title></title-info>", BODY)
+		));
+		assert_eq!(doc.title, "Trailing");
+	}
+
+	#[test]
+	fn reports_the_path_when_the_file_is_missing() {
+		let dir = TempDir::new("fb2-parser");
+		let missing = dir.join_str("nope.fb2");
+		let err = Fb2Parser.parse(&ParserContext::new(missing.clone())).expect_err("missing file must fail");
+		assert!(err.to_string().contains(&missing), "error should name the file: {err}");
+	}
 }

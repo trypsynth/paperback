@@ -1,9 +1,9 @@
 [workspace]
-members = ["crates/paperback", "crates/paperback-core", "crates/pb", "crates/xtask"]
+members = ["crates/paperback", "crates/paperback-core", "crates/paperback-formats", "crates/pb", "crates/xtask"]
 resolver = "2"
 
 [workspace.package]
-version = "0.8.5"
+version = "0.9.2"
 edition = "2024"
 rust-version = "1.91.1"
 license = "MIT"
@@ -11,10 +11,39 @@ repository = "https://github.com/trypsynth/paperback"
 
 # Deps shared by two or more crates in this workspace.
 [workspace.dependencies]
-anyhow = "1.0.102"
-base64 = "0.22.1"
+anyhow = "1.0.104"
+base64 = "0.23.1"
+bitflags = "2.13.1"
 rstest = "0.26.1"
-toml = "1.1"
+toml = "1.1.4"
+
+# Lint policy for every crate in the workspace; each member opts in with `[lints] workspace = true`.
+# `clippy::all` is denied so CI fails on it. The pedantic and nursery groups are warnings we're
+# driving to zero so CI can gate on them too; the allows further down are the lints from those
+# groups we've decided not to enforce, each with its reason.
+[workspace.lints.rust]
+# `objc`'s `msg_send!` macro (used by the desktop crate on macOS) expands to a
+# `cfg(feature = "cargo-clippy")` check. No crate here defines that feature, so the compiler
+# would warn about it; macros from crates written before this check existed need it suppressed.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-clippy"))'] }
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+# Paperback ships as an application, not a published library, so there's no downstream caller to
+# write `# Panics`/`# Errors` sections for; they'd be write-only documentation.
+missing_panics_doc = "allow"
+missing_errors_doc = "allow"
+# Format parsers are long by nature. Splitting a header walk into arbitrary chunks to satisfy a
+# line count makes it harder to follow, not easier.
+too_many_lines = "allow"
+# Options and config structs legitimately carry a lot of independent flags.
+struct_excessive_bools = "allow"
+# Formatting preferences that fight how this code is already written, with no correctness angle.
+items_after_statements = "allow"
+too_long_first_doc_paragraph = "allow"
+similar_names = "allow"
 
 [profile.release]
 strip = true
@@ -23,5 +52,11 @@ lto = true
 panic = "abort"
 codegen-units = 1
 
+# zip reads a ZIP64 extended information extra field over an entry's own size and offset fields
+# whenever the block is 24 bytes or longer, without checking that any of those fields actually
+# holds the 0xFFFFFFFF sentinel asking for it. Some EPUB writers attach a malformed block that
+# no field asked for, and the bad offset that results fails the whole archive with "Invalid
+# local file header", even though unzip, Python and 7-Zip all read it fine.
+# Fix submitted upstream as zip-rs/zip2#962. Drop this once it reaches a release.
 [patch.crates-io]
-wxdragon = { git = "https://github.com/trypsynth/wxDragon", branch = "macos-accessibility-label" }
+zip = { git = "https://github.com/trypsynth/zip2.git", branch = "fix-zip64-extra-field-without-sentinel" }

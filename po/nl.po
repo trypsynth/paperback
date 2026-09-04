@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-08 17:48+0200\n"
+"POT-Creation-Date: 2026-08-31 20:57+0000\n"
 "PO-Revision-Date: 2026-06-08 22:23+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -15,207 +15,341 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.9\n"
 
+#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "IPC-server maken mislukt"
 
+#. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
 msgstr "Waarschuwing"
 
+#. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "Een toegankelijke, lichtgewicht, snelle e-book- en documentlezer"
 
-msgid "expanded"
-msgstr "uitgevouwen"
-
-msgid "collapsed"
-msgstr "samengevouwen"
-
+#. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
 msgstr "Alle documenten"
 
+#. TRANSLATORS: Label for the search input field in the All Documents dialog
 msgid "&search"
 msgstr "&zoeken"
 
-msgid "&Yes"
-msgstr "&Ja"
-
-msgid "&No"
-msgstr "&Nee"
-
+#. TRANSLATORS: Column header for the document filename in the All Documents list
 msgid "File Name"
 msgstr "Bestandsnaam"
 
+#. TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
 msgid "Status"
 msgstr "Status"
 
+#. TRANSLATORS: Column header for the file path in the All Documents list
 msgid "Path"
 msgstr "Pad"
 
-msgid "&Open"
-msgstr "&Openen"
+#. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
+#, fuzzy
+msgid "&Status:"
+msgstr "&Status:"
 
-msgid "&Remove"
-msgstr "&Verwijderen"
-
-msgid "&Clear All"
-msgstr "Alles &wissen"
-
-msgid "Close"
-msgstr "Sluiten"
-
-msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
-msgstr ""
-"Weet je zeker dat je dit document uit de lijst wilt verwijderen? Hiermee "
-"wordt ook de leespositie verwijderd."
-
-msgid ""
-"Are you sure you want to remove these {} documents from the list? This will "
-"also remove their reading positions."
-msgstr ""
-"Weet je zeker dat je deze {} documenten uit de lijst wilt verwijderen? "
-"Hiermee worden ook hun leesposities verwijderd."
-
-msgid "Confirm"
-msgstr "Bevestigen"
-
-msgid ""
-"Are you sure you want to remove all documents from the list? This will also "
-"remove all reading positions and bookmarks."
-msgstr ""
-"Weet je zeker dat je alle documenten uit de lijst wilt verwijderen? Hiermee "
-"worden ook alle leesposities en bladwijzers verwijderd."
-
-msgid "Open"
-msgstr "Open"
-
-msgid "Closed"
-msgstr "Gesloten"
-
-msgid "Missing"
-msgstr "Ontbreekt"
-
-msgid "Jump to Bookmark"
-msgstr "Naar bladwijzer springen"
-
-msgid "&Filter:"
-msgstr "&Filter:"
-
+#. TRANSLATORS: Option in the All Documents status filter to show documents of every status
+#. TRANSLATORS: Option in the filter dropdown to show all entries
 msgid "All"
 msgstr "Alle"
 
+#. TRANSLATORS: Status of a document that is currently open in a tab
+msgid "Open"
+msgstr "Open"
+
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
+msgid "Closed"
+msgstr "Gesloten"
+
+#. TRANSLATORS: Status of a document whose file could not be found on disk
+#. TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the row's displayed status to decide whether the Open button is enabled.
+#. TRANSLATORS: Status of a document whose file could not be found on disk. Compared against the selected row's displayed status to decide whether the Locate button is enabled.
+msgid "Missing"
+msgstr "Ontbreekt"
+
+#. TRANSLATORS: Button label to open the selected document
+msgid "&Open"
+msgstr "&Openen"
+
+#. TRANSLATORS: Button label to locate a missing file on disk
+#, fuzzy
+msgid "&Locate..."
+msgstr "&Zoeken..."
+
+#. TRANSLATORS: Button label to remove selected documents from the list
+msgid "&Remove"
+msgstr "&Verwijderen"
+
+#. TRANSLATORS: Button label to clear all documents from the list
+msgid "&Clear All"
+msgstr "Alles &wissen"
+
+#. TRANSLATORS: Label for a button that closes a dialog
+#. TRANSLATORS: Label for a button that closes the Document Info dialog
+#. TRANSLATORS: Label for a button that closes the View Note dialog
+#. TRANSLATORS: Label for a button that closes the Web View dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Close"
+msgstr "Sluiten"
+
+#, fuzzy
+msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
+msgstr "Weet je zeker dat je het geselecteerde document wilt verwijderen? Hierdoor worden ook de leespositie en de bladwijzers verwijderd."
+
+#, fuzzy
+msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
+msgstr "Weet je zeker dat je de geselecteerde documenten {} wilt verwijderen? Hiermee worden ook hun leesposities en bladwijzers verwijderd."
+
+#. TRANSLATORS: Title of the confirmation dialog
+msgid "Confirm"
+msgstr "Bevestigen"
+
+#. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
+msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
+msgstr "Weet je zeker dat je alle documenten uit de lijst wilt verwijderen? Hiermee worden ook alle leesposities en bladwijzers verwijderd."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
+#, fuzzy
+msgid "No documents."
+msgstr "Geen documenten"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count. Plural form is chosen by that count.
+#, fuzzy
+msgid "%d document."
+msgid_plural "%d documents."
+msgstr[0] "%d document."
+msgstr[1] "%d documenten."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the only document in the list is selected
+#, fuzzy
+msgid "1 document selected."
+msgstr "Het document is opnieuw geladen."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
+#, fuzzy
+msgid "All %d document selected."
+msgid_plural "All %d documents selected."
+msgstr[0] "Alle %d document geselecteerd."
+msgstr[1] "Alle %d documenten geselecteerd."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count. Plural form is chosen by the total count.
+#, fuzzy
+msgid "%d of %d document selected."
+msgid_plural "%d of %d documents selected."
+msgstr[0] "%d van %d document geselecteerd."
+msgstr[1] "%d van %d documenten geselecteerd."
+
+#. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
+#, fuzzy
+msgid "Locate Book"
+msgstr "Boek zoeken"
+
+#. TRANSLATORS: Title of the Jump to Bookmark dialog
+msgid "Jump to Bookmark"
+msgstr "Naar bladwijzer springen"
+
+#. TRANSLATORS: Label for the bookmark filter dropdown
+msgid "&Filter:"
+msgstr "&Filter:"
+
+#. TRANSLATORS: Option in the filter dropdown to show bookmarks only
 msgid "Bookmarks"
 msgstr "Bladwijzers"
 
+#. TRANSLATORS: Option in the filter dropdown to show notes only
 msgid "Notes"
 msgstr "Notities"
 
+#. TRANSLATORS: Label for the bookmark/note list (used only as an accessibility label on macOS)
+#, fuzzy
+msgid "&Bookmarks:"
+msgstr "&Bladwijzers:"
+
+#. TRANSLATORS: Label for the button to edit a note
 msgid "&Edit Note"
 msgstr "Notitie be&werken"
 
+#. TRANSLATORS: Label for the button to delete the selected bookmark/note
+#. TRANSLATORS: Menu item in the Edit menu to delete the current selection.
 msgid "&Delete"
 msgstr "Verwij&deren"
 
+#. TRANSLATORS: Label for the button to jump to the selected bookmark
 msgid "&Jump"
 msgstr "&Springen"
 
+#. TRANSLATORS: Label for the button to cancel the action
 msgid "&Cancel"
 msgstr "&Annuleren"
 
+#. TRANSLATORS: Placeholder text shown in the bookmarks list when the bookmark text range is empty or blank
 msgid "blank"
 msgstr "leeg"
 
+#. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
 msgstr "Selecteer een bladwijzer om naartoe te springen."
 
+#. TRANSLATORS: Generic error dialog title
 msgid "Error"
 msgstr "Fout"
 
+#. TRANSLATORS: Title of the Bookmark Note editor dialog
+#. TRANSLATORS: Title of the dialog for adding or editing a bookmark note
 msgid "Bookmark Note"
 msgstr "Bladwijzernotitie"
 
+#. TRANSLATORS: Label/prompt in the Note editor dialog
 msgid "Edit bookmark note:"
 msgstr "Bladwijzernotitie bewerken:"
 
+#. TRANSLATORS: Title of the Document Info dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "Documentinformatie"
 
+#. TRANSLATORS: Label for the document's file path
 msgid "Path:"
 msgstr "Pad:"
 
+#. TRANSLATORS: Label for the document's title
 msgid "Title:"
 msgstr "Titel:"
 
+#. TRANSLATORS: Label for the document's author
 msgid "Author:"
 msgstr "Auteur:"
 
+#. TRANSLATORS: Label for the number of words in the document
 msgid "Words:"
 msgstr "Woorden:"
 
+#. TRANSLATORS: Label for the number of lines in the document
 msgid "Lines:"
 msgstr "Regels:"
 
+#. TRANSLATORS: Label for the number of characters in the document
 msgid "Characters:"
 msgstr "Tekens:"
 
+#. TRANSLATORS: Label for the number of characters in the document excluding space characters
 msgid "Characters (excluding spaces):"
 msgstr "Tekens (exclusief spaties):"
 
+#. TRANSLATORS: Label for the number of audio files in the document
+#, fuzzy
+msgid "Number of files:"
+msgstr "Aantal bestanden:"
+
+#. TRANSLATORS: Label for the total playback duration across all of the document's audio files
+#, fuzzy
+msgid "Total duration:"
+msgstr "Duur"
+
+#. TRANSLATORS: Label for the average playback duration per audio file in the document
+#, fuzzy
+msgid "Average duration:"
+msgstr "Gemiddelde duur:"
+
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d hour"
+msgstr[1] "%d hours"
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minute"
+msgstr[1] "%d minutes"
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d second"
+msgstr[1] "%d seconds"
+
+#. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr "Elementen"
 
-msgid "OK"
-msgstr "OK"
-
-msgid "Cancel"
-msgstr "Annuleren"
-
-msgid "Headings"
-msgstr "Koppen"
-
-msgid "Links"
-msgstr "Links"
-
-msgid "Untitled"
-msgstr "Naamloos"
-
+#. TRANSLATORS: Label for the view selection dropdown in the Elements dialog
 msgid "&View:"
 msgstr "&Weergave:"
 
-msgid "Root"
-msgstr "Hoofdniveau"
+#. TRANSLATORS: Choice option in the view dropdown to show headings list
+msgid "Headings"
+msgstr "Koppen"
 
+#. TRANSLATORS: Choice option in the view dropdown to show links list
+msgid "Links"
+msgstr "Links"
+
+#. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
+#. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
+#. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
+msgid "Untitled"
+msgstr "Naamloos"
+
+#. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button that confirms the entered bookmark/note text
+#. TRANSLATORS: OK button that confirms the chosen file format in the Open As dialog
+#. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
+#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
+#. TRANSLATORS: OK button that confirms the entered sleep timer duration
+#. TRANSLATORS: Label for the confirmation button
+msgid "OK"
+msgstr "OK"
+
+#. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr "Ga naar regel"
 
+#. TRANSLATORS: Label for the input field where users enter the target line number.
 msgid "&Line number:"
 msgstr "&Regelnummer:"
 
+#. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
+#. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
 msgstr "Ga"
 
+#. TRANSLATORS: Title of the Go to page dialog
 msgid "Go to page"
 msgstr "Ga naar pagina"
 
-#, c-format
+#. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
 msgid "Go to page (%d/%d):"
 msgstr "Ga naar pagina (%d/%d):"
 
+#. TRANSLATORS: Title of the Go to Percent dialog
 msgid "Go to Percent"
 msgstr "Ga naar percentage"
 
+#. TRANSLATORS: Label for the percentage selection slider
 msgid "&Percent"
 msgstr "&Percentage"
 
+#. TRANSLATORS: Label for the numeric percentage entry field
 msgid "P&ercent:"
 msgstr "P&ercentage:"
 
+#. TRANSLATORS: Title of the Open As dialog
 msgid "Open As"
 msgstr "Openen als"
 
+#. TRANSLATORS: Prompt template informing the user that no parser was found for their file. The {} placeholder is replaced with the file path.
 msgid ""
 "No suitable parser was found for {}.\n"
 "How would you like to open this file?"
@@ -223,1114 +357,2599 @@ msgstr ""
 "Er is geen geschikte verwerker gevonden voor {}.\n"
 "Hoe wil je dit bestand openen?"
 
+#. TRANSLATORS: Label for the format selection dropdown
 msgid "Open &as:"
 msgstr "Openen &als:"
 
+#. TRANSLATORS: Choice option to open a file as plain text
 msgid "Plain Text"
 msgstr "Platte tekst"
 
+#. TRANSLATORS: Choice option to open a file as HTML
 msgid "HTML"
 msgstr "HTML"
 
+#. TRANSLATORS: Choice option to open a file as Markdown
 msgid "Markdown"
 msgstr "Markdown"
 
-msgid "Options"
-msgstr "Opties"
+#. TRANSLATORS: Title of the Settings dialog
+#, fuzzy
+msgid "Settings"
+msgstr "Instellingen"
 
+#. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
 msgstr "Eerder geopende documenten &herstellen bij opstarten"
 
-msgid "&Word wrap"
-msgstr "Automatische &terugloop"
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+#, fuzzy
+msgid "&Automatically reload changed documents"
+msgstr "&Gewijzigde documenten automatisch opnieuw laden"
 
-msgid "&Minimize to system tray"
-msgstr "&Minimaliseren naar systeemvak"
-
+#. TRANSLATORS: Option to start the app maximized
 msgid "&Start maximized"
 msgstr "Ge&maximaliseerd starten"
 
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+msgid "&Minimize to system tray"
+msgstr "&Minimaliseren naar systeemvak"
+
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr "Automatische &terugloop"
+
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+#, fuzzy
+msgid "Render tables &inline"
+msgstr "Tabellen &inline weergeven"
+
+#. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr "Compact &Ga-menu tonen"
 
+#. TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
 msgid "&Wrap navigation"
 msgstr "Navigatie laten &rondlopen"
 
+#. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+#, fuzzy
+msgid "Move to &start of line"
+msgstr "Ga naar &begin van de regel"
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr "&Geluiden afspelen bij bladwijzers en notities"
 
-msgid "Check for &updates on startup"
-msgstr "Controleren op &updates bij opstarten"
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+#, fuzzy
+msgid "&Sync caret to audio playback"
+msgstr "&Cursor synchroniseren met audioweergave"
 
-msgid "Customize &Window Hotkey..."
-msgstr "&Venstersneltoets aanpassen..."
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+#, fuzzy
+msgid "&Audio seek amount:"
+msgstr "&Audiozoekstap:"
 
-msgid "&Reading speed (words per minute):"
-msgstr "&Leessnelheid (woorden per minuut):"
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "5 seconds"
+msgstr "seconden"
 
-msgid "Number of &recent documents to show:"
-msgstr "Aantal te tonen &recente documenten:"
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "10 seconds"
+msgstr "1 seconde"
 
-msgid "&Language:"
-msgstr "&Taal:"
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "30 seconds"
+msgstr "seconden"
 
-msgid "Update Channel:"
-msgstr "Updatekanaal:"
-
-msgid "Stable"
-msgstr "Stabiel"
-
-msgid "Dev"
-msgstr "Ontwikkel"
-
-msgid "Font"
-msgstr "Lettertype"
-
-msgid "Choose &Font..."
-msgstr "&Lettertype kiezen..."
-
-msgid "&Reset to Default Font"
-msgstr "Standaardlettertype &herstellen"
-
-msgid "Background Color"
-msgstr "Achtergrondkleur"
-
-msgid "Choose &Background Color..."
-msgstr "&Achtergrondkleur kiezen..."
-
-msgid "Reset to &Default Background"
-msgstr "Stan&daardachtergrond herstellen"
-
-msgid "&Line spacing:"
-msgstr "&Regelafstand:"
-
-msgid "Normal"
-msgstr "Normaal"
-
-msgid "1.5\\u{00d7}"
-msgstr "1,5\\u{00d7}"
-
-msgid "Double"
-msgstr "Dubbel"
-
-msgid "&Paragraph spacing:"
-msgstr "&Alinea-afstand:"
-
-msgid "Relaxed"
-msgstr "Ontspannen"
-
-msgid "Wide"
-msgstr "Breed"
-
-msgid "L&etter spacing:"
-msgstr "T&ekenafstand:"
-
-msgid "Very Wide"
-msgstr "Zeer breed"
-
-msgid "Text &alignment:"
-msgstr "Tekst&uitlijning:"
-
-msgid "Left"
-msgstr "Links"
-
-msgid "Center"
-msgstr "Gecentreerd"
-
-msgid "Right"
-msgstr "Rechts"
-
-msgid "Justify"
-msgstr "Uitvullen"
-
-msgid "General"
-msgstr "Algemeen"
-
-msgid "Reading"
-msgstr "Lezen"
-
-msgid "Readability"
-msgstr "Leesbaarheid"
-
-msgid "Background: Default"
-msgstr "Achtergrond: standaard"
-
-msgid "Font: Default"
-msgstr "Lettertype: standaard"
-
-msgid "Default"
-msgstr "Standaard"
-
-msgid "Bold"
-msgstr "Vet"
-
-msgid "Italic"
-msgstr "Cursief"
-
-msgid "Underlined"
-msgstr "Onderstreept"
-
-msgid "Strikethrough"
-msgstr "Doorgehaald"
-
-msgid "Window Hotkey"
-msgstr "Venstersneltoets"
-
-msgid "&Ctrl"
-msgstr "&Ctrl"
-
-msgid "&Alt"
-msgstr "&Alt"
-
-msgid "&Shift"
-msgstr "&Shift"
-
-msgid "&Win"
-msgstr "&Win"
-
-msgid "&Key:"
-msgstr "&Toets:"
-
-msgid "Space"
-msgstr "Spatie"
-
-msgid "Sleep Timer"
-msgstr "Slaaptimer"
-
-msgid "&Minutes:"
-msgstr "&Minuten:"
-
-msgid "Table of Contents"
-msgstr "Inhoudsopgave"
-
-msgid "Please select a section from the table of contents."
-msgstr "Selecteer een sectie uit de inhoudsopgave."
-
-msgid "No Selection"
-msgstr "Geen selectie"
-
-msgid "View Note"
-msgstr "Notitie bekijken"
-
-msgid "1 hour"
-msgstr "1 uur"
-
-msgid "hours"
-msgstr "uur"
-
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 msgid "1 minute"
 msgstr "1 minuut"
 
-msgid "minutes"
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "2 minutes"
 msgstr "minuten"
 
-msgid "1 second"
-msgstr "1 seconde"
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "5 minutes"
+msgstr "minuten"
 
-msgid "seconds"
-msgstr "seconden"
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "10 minutes"
+msgstr "1 minuut"
 
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#, fuzzy
+msgid "30 minutes"
+msgstr "minuten"
+
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+msgid "1 hour"
+msgstr "1 uur"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+#, fuzzy
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr "Zoeken &voorbij het einde van een hoofdstuk gaat door naar het volgende"
+
+#. TRANSLATORS: Option to check for app updates automatically on startup
+msgid "Check for &updates on startup"
+msgstr "Controleren op &updates bij opstarten"
+
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "Updatekanaal:"
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "Stabiel"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "Ontwikkel"
+
+#. TRANSLATORS: Button label to open the hotkey customization dialog
+msgid "Customize &Window Hotkey..."
+msgstr "&Venstersneltoets aanpassen..."
+
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
+#, fuzzy
+msgid "Customize &Keyboard Shortcuts..."
+msgstr "&Venstersneltoets aanpassen..."
+
+#. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
+msgid "&Reading speed (words per minute):"
+msgstr "&Leessnelheid (woorden per minuut):"
+
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
+msgstr "Aantal te tonen &recente documenten:"
+
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
+msgstr "&Taal:"
+
+#. TRANSLATORS: Label/header for the Font options section
+msgid "Font"
+msgstr "Lettertype"
+
+#. TRANSLATORS: Button label to pick a font
+msgid "Choose &Font..."
+msgstr "&Lettertype kiezen..."
+
+#. TRANSLATORS: Button label to restore font settings to default values
+msgid "&Reset to Default Font"
+msgstr "Standaardlettertype &herstellen"
+
+#. TRANSLATORS: Label/header for the Background Color options section
+msgid "Background Color"
+msgstr "Achtergrondkleur"
+
+#. TRANSLATORS: Button label to pick a background color
+msgid "Choose &Background Color..."
+msgstr "&Achtergrondkleur kiezen..."
+
+#. TRANSLATORS: Button label to restore background color to default values
+msgid "Reset to &Default Background"
+msgstr "Stan&daardachtergrond herstellen"
+
+#. TRANSLATORS: Label for the line spacing dropdown
+msgid "&Line spacing:"
+msgstr "&Regelafstand:"
+
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
+msgid "Normal"
+msgstr "Normaal"
+
+#. TRANSLATORS: 1.5x line spacing option
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+#. TRANSLATORS: Double line spacing option
+msgid "Double"
+msgstr "Dubbel"
+
+#. TRANSLATORS: Label for the paragraph spacing dropdown
+msgid "&Paragraph spacing:"
+msgstr "&Alinea-afstand:"
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+msgid "Relaxed"
+msgstr "Ontspannen"
+
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
+msgid "Wide"
+msgstr "Breed"
+
+#. TRANSLATORS: Label for the letter spacing dropdown
+msgid "L&etter spacing:"
+msgstr "T&ekenafstand:"
+
+#. TRANSLATORS: Very Wide letter spacing option
+msgid "Very Wide"
+msgstr "Zeer breed"
+
+#. TRANSLATORS: Label for the text alignment dropdown
+msgid "Text &alignment:"
+msgstr "Tekst&uitlijning:"
+
+#. TRANSLATORS: Left text alignment option
+msgid "Left"
+msgstr "Links"
+
+#. TRANSLATORS: Center text alignment option
+msgid "Center"
+msgstr "Gecentreerd"
+
+#. TRANSLATORS: Right text alignment option
+msgid "Right"
+msgstr "Rechts"
+
+#. TRANSLATORS: Justified text alignment option
+msgid "Justify"
+msgstr "Uitvullen"
+
+#. TRANSLATORS: Tab label for the General options panel
+msgid "General"
+msgstr "Algemeen"
+
+#. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
+msgid "Reading"
+msgstr "Lezen"
+
+#. TRANSLATORS: Tab label for the Readability options panel
+msgid "Readability"
+msgstr "Leesbaarheid"
+
+#. TRANSLATORS: Description text shown when the background color is set to default
+msgid "Background: Default"
+msgstr "Achtergrond: standaard"
+
+#. TRANSLATORS: Description text shown when the font is set to default
+msgid "Font: Default"
+msgstr "Lettertype: standaard"
+
+#. TRANSLATORS: Fallback font name
+msgid "Default"
+msgstr "Standaard"
+
+#. TRANSLATORS: Font description prefix; {} is the font face name
+#, fuzzy
+msgid "Font: {}"
+msgstr "Bron: {}"
+
+#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+#, fuzzy
+msgid "{}pt"
+msgstr "{} pt"
+
+#. TRANSLATORS: Font weight attribute name
+msgid "Bold"
+msgstr "Vet"
+
+#. TRANSLATORS: Font style attribute name
+msgid "Italic"
+msgstr "Cursief"
+
+#. TRANSLATORS: Font underline attribute name
+msgid "Underlined"
+msgstr "Onderstreept"
+
+#. TRANSLATORS: Font strikethrough attribute name
+msgid "Strikethrough"
+msgstr "Doorgehaald"
+
+#. TRANSLATORS: Title of the hotkey customization dialog
+msgid "Window Hotkey"
+msgstr "Venstersneltoets"
+
+#. TRANSLATORS: Checkbox label for Control modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox label for Alt modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox label for Shift modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+msgid "&Shift"
+msgstr "&Shift"
+
+#. TRANSLATORS: Checkbox label for Windows modifier key
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label for the hotkey key selection input field
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+msgid "&Key:"
+msgstr "&Toets:"
+
+#. TRANSLATORS: Button label to clear the current hotkey selection
+msgid "Clear"
+msgstr "Wissen"
+
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Annuleren"
+
+#. TRANSLATORS: Representation of the Spacebar key
+msgid "Space"
+msgstr "Spatie"
+
+#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
+#, fuzzy
+msgid "Customize Keyboard Shortcuts"
+msgstr "Sneltoetsen aanpassen"
+
+#. TRANSLATORS: Label above the list of shortcuts for a category in the Keyboard Shortcuts dialog.
+#, fuzzy
+msgid "&Shortcuts:"
+msgstr "&Sneltoetsen:"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
+#, fuzzy
+msgid "&Set Shortcut..."
+msgstr "Sneltoets in&stellen..."
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
+#, fuzzy
+msgid "&Clear Shortcut"
+msgstr "Sneltoets &wissen"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
+#, fuzzy
+msgid "&Reset to Default"
+msgstr "Standaardlettertype &herstellen"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
+#, fuzzy
+msgid "Reset &All to Defaults"
+msgstr "Standaardlettertype &herstellen"
+
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+#, fuzzy
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr "'{}' is al toegewezen aan '{}'. Opnieuw toewijzen aan '{}'?"
+
+#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
+#, fuzzy
+msgid "Shortcut Conflict"
+msgstr "Sneltoetsconflict"
+
+#, fuzzy
+msgid "Reset all shortcuts to their default values?"
+msgstr "Alle sneltoetsen terugzetten naar hun standaardwaarden?"
+
+#. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
+#, fuzzy
+msgid "Reset Shortcuts"
+msgstr "Sneltoetsen herstellen"
+
+#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+#, fuzzy
+msgid "Set Shortcut for {}"
+msgstr "Sneltoets instellen voor {}"
+
+#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+#, fuzzy
+msgid "Configure shortcut for {}:"
+msgstr "Sneltoets configureren voor {}:"
+
+#, fuzzy
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr "Tip: klik in het toetsveld en druk op de gewenste toetsencombinatie."
+
+#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
+#, fuzzy
+msgid "Detected: (none)"
+msgstr "Gedetecteerd: (geen)"
+
+#, fuzzy
+msgid "Detected: {}"
+msgstr "Details: {}"
+
+#, fuzzy
+msgid "No key detected"
+msgstr "Geen toets gedetecteerd"
+
+#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
+#, fuzzy
+msgid "&Clear"
+msgstr "&Wissen"
+
+#. TRANSLATORS: Title of the Sleep Timer dialog
+msgid "Sleep Timer"
+msgstr "Slaaptimer"
+
+#. TRANSLATORS: Label for the input field where users enter the number of minutes for the sleep timer.
+msgid "&Minutes:"
+msgstr "&Minuten:"
+
+#. TRANSLATORS: Title of the Table of Contents dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Table of Contents"
+msgstr "Inhoudsopgave"
+
+#. TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
+msgid "Please select a section from the table of contents."
+msgstr "Selecteer een sectie uit de inhoudsopgave."
+
+#. TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
+msgid "No Selection"
+msgstr "Geen selectie"
+
+#. TRANSLATORS: Title of the View Note dialog
+msgid "View Note"
+msgstr "Notitie bekijken"
+
+#. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
 msgstr "Geschatte leestijd: {}"
 
-msgid "This document contains {} words."
-msgstr "Dit document bevat {} woorden."
-
+#. TRANSLATORS: Title of the Word Count dialog
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Word Count"
 msgstr "Woordenaantal"
 
+#, fuzzy
+msgid "This document contains %d audio file."
+msgid_plural "This document contains %d audio files."
+msgstr[0] "This document contains %d word."
+msgstr[1] "This document contains %d words."
+
+#. TRANSLATORS: Prompt showing an audio-only document's total playback duration across all its files. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+#, fuzzy
+msgid "Total duration: {}"
+msgstr "Totale duur: {}"
+
+#. TRANSLATORS: Message template for selection word count. The %d placeholder is replaced with the number of words.
+#, fuzzy
+msgid "The selection contains %d word."
+msgid_plural "The selection contains %d words."
+msgstr[0] "The selection contains %d word."
+msgstr[1] "The selection contains %d words."
+
+#. TRANSLATORS: Message template for document word count. The %d placeholder is replaced with the number of words.
+#, fuzzy
+msgid "This document contains %d word."
+msgid_plural "This document contains %d words."
+msgstr[0] "This document contains %d word."
+msgstr[1] "This document contains %d words."
+
+#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "Bestand niet gevonden: {}"
 
-msgid ""
-"A .paperback file was found for this document. Would you like to import it?"
-msgstr ""
-"Er is een .paperback-bestand gevonden voor dit document. Wil je het "
-"importeren?"
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
+msgid "A .paperback file was found for this document. Would you like to import it?"
+msgstr "Er is een .paperback-bestand gevonden voor dit document. Wil je het importeren?"
 
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
 msgid "Import document data"
 msgstr "Documentgegevens importeren"
 
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
 msgid "Password is required."
 msgstr "Wachtwoord is vereist."
 
+#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "Naar interne link genavigeerd."
 
-msgid "Table View"
-msgstr "Tabelweergave"
-
+#. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
 msgstr "Gereed"
 
+#. TRANSLATORS: Announced after setting a temporary bookmark at the current position
+#, fuzzy
+msgid "Temporary bookmark set."
+msgstr "Geen bladwijzers."
+
+#. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
+#, fuzzy
+msgid "No temporary bookmark."
+msgstr "Geen volgende bladwijzer."
+
+#. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
+#, fuzzy
+msgid "Temporary bookmark."
+msgstr "Geen bladwijzers."
+
+#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+msgid "Table View"
+msgstr "Tabelweergave"
+
+#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr "&Wachtwoord:"
 
 msgid "Document Password"
 msgstr "Documentwachtwoord"
 
+#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
 msgid "Failed to load document."
 msgstr "Document laden mislukt."
 
+#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+#, fuzzy
+msgid "File: {}"
+msgstr "Bestand: {}"
+
+#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+#, fuzzy
+msgid "Details: {}"
+msgstr "Details: {}"
+
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "&Bladwijzer maken"
 
 msgid "Create bookmark"
 msgstr "Bladwijzer maken"
 
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
 msgid "Bookmark with &note"
 msgstr "Bladwijzer met &notitie"
 
 msgid "Create bookmark with note"
 msgstr "Bladwijzer met notitie maken"
 
+#. TRANSLATORS: Right-click context menu item and status text to open the find dialog
 msgid "&Find"
 msgstr "&Zoeken"
 
 msgid "Find text"
 msgstr "Tekst zoeken"
 
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
 msgid "Find &next"
 msgstr "Volge&nde zoeken"
 
 msgid "Find next match"
 msgstr "Volgende overeenkomst zoeken"
 
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
 msgid "Find &previous"
 msgstr "Vo&rige zoeken"
 
 msgid "Find previous match"
 msgstr "Vorige overeenkomst zoeken"
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
 msgid "Go to &page"
 msgstr "Ga naar &pagina"
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
 msgid "Go to &line"
 msgstr "Ga naar &regel"
 
 msgid "Go to line"
 msgstr "Ga naar regel"
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
 msgid "Go to &percent"
 msgstr "Ga naar &percentage"
 
 msgid "Go to percent"
 msgstr "Ga naar percentage"
 
+#. TRANSLATORS: Title of the Find dialog
 msgid "Find"
 msgstr "Zoeken"
 
+#. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
 msgstr "Zoeken &naar:"
 
+#. TRANSLATORS: Group box heading for the search options in the Find dialog
+msgid "Options"
+msgstr "Opties"
+
+#. TRANSLATORS: Checkbox to make the search case-sensitive
 msgid "&Match case"
 msgstr "&Hoofdlettergevoelig"
 
+#. TRANSLATORS: Checkbox to only match whole words, not substrings
 msgid "Match &whole word"
 msgstr "Heel &woord"
 
+#. TRANSLATORS: Checkbox to treat the search text as a regular expression
 msgid "Use &regular expressions"
 msgstr "&Reguliere expressies gebruiken"
 
+#. TRANSLATORS: Button to search backward for the previous match
+#. TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
 msgid "Find &Previous"
 msgstr "Vo&rige zoeken"
 
+#. TRANSLATORS: Button to search forward for the next match
+#. TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
 msgid "Find &Next"
 msgstr "Volge&nde zoeken"
 
+#. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Niet gevonden."
 
+#. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
 msgstr "Geen resultaten meer. Verder zoeken vanaf het begin."
 
-msgid "Failed to open containing folder."
-msgstr "Bovenliggende map openen mislukt."
+#. TRANSLATORS: Error shown when the active document has no known file path to reveal
+#. TRANSLATORS: Error shown when the file manager could not be launched to reveal the active document's file
+#, fuzzy
+msgid "Failed to reveal file in folder."
+msgstr "Het is niet gelukt om het bestand in de map weer te geven."
 
-msgid ""
-"readme.html not found. Please ensure the application was built properly."
-msgstr ""
-"readme.html niet gevonden. Controleer of de applicatie correct is gebouwd."
+#. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
+msgid "readme.html not found. Please ensure the application was built properly."
+msgstr "readme.html niet gevonden. Controleer of de applicatie correct is gebouwd."
 
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
 msgstr "Standaardbrowser starten mislukt."
 
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to open the donation page
 msgid "Failed to open donation page in browser."
 msgstr "Donatiepagina openen in browser mislukt."
 
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
 msgstr "Niet-ondersteunde indeling geselecteerd."
 
-msgid "Paperback"
-msgstr "Paperback"
-
-msgid "Paperback - {}"
-msgstr "Paperback - {}"
-
-msgid "{} chars"
-msgstr "{} tekens"
-
-msgid "Open Document"
-msgstr "Document openen"
-
-msgid "No pages."
-msgstr "Geen pagina's."
-
-msgid "document"
-msgstr "document"
-
-msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
-msgstr "Platte-tekstbestanden (*.txt)|*.txt|Alle bestanden (*.*)|*.*"
-
-msgid "Export document to plain text"
-msgstr "Document exporteren naar platte tekst"
-
-msgid "Failed to export document."
-msgstr "Document exporteren mislukt."
-
-msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
-msgstr "HTML-bestanden (*.html)|*.html|Alle bestanden (*.*)|*.*"
-
-msgid "Export document to HTML"
-msgstr "Document exporteren naar HTML"
-
-msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
-msgstr "Markdown-bestanden (*.md)|*.md|Alle bestanden (*.*)|*.*"
-
-msgid "Export document to Markdown"
-msgstr "Document exporteren naar Markdown"
-
-msgid "Paperback files (*.paperback)|*.paperback"
-msgstr "Paperback-bestanden (*.paperback)|*.paperback"
-
-msgid "Export notes and bookmarks"
-msgstr "Notities en bladwijzers exporteren"
-
-msgid "Notes and bookmarks exported successfully."
-msgstr "Notities en bladwijzers succesvol geëxporteerd."
-
-msgid "Export Successful"
-msgstr "Exporteren geslaagd"
-
-msgid "Import notes and bookmarks"
-msgstr "Notities en bladwijzers importeren"
-
-msgid "Notes and bookmarks imported successfully."
-msgstr "Notities en bladwijzers succesvol geïmporteerd."
-
-msgid "Import Successful"
-msgstr "Importeren geslaagd"
-
-msgid "No table of contents."
-msgstr "Geen inhoudsopgave."
-
-msgid "Web View"
-msgstr "Webweergave"
-
-msgid "Could not determine content to display in Web View."
-msgstr "Kan niet bepalen welke inhoud in webweergave moet worden getoond."
-
-msgid "Sleep timer cancelled."
-msgstr "Slaaptimer geannuleerd."
-
-msgid "Sleep timer set for 1 minute."
-msgstr "Slaaptimer ingesteld op 1 minuut."
-
-#, c-format
-msgid "Sleep timer set for %d minutes."
-msgstr "Slaaptimer ingesteld op %d minuten."
-
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
 msgstr "Geen recente documenten."
 
-msgid "Previous Section\t["
-msgstr "Vorige sectie\t["
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+msgid "No pages."
+msgstr "Geen pagina's."
 
-msgid "Go to previous section"
-msgstr "Ga naar vorige sectie"
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
+msgstr "Geen inhoudsopgave."
 
-msgid "Next Section\t]"
-msgstr "Volgende sectie\t]"
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+msgid "Web View"
+msgstr "Webweergave"
 
-msgid "Go to next section"
-msgstr "Ga naar volgende sectie"
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+msgid "Could not determine content to display in Web View."
+msgstr "Kan niet bepalen welke inhoud in webweergave moet worden getoond."
 
-msgid "Go to &Page\tCtrl+P"
-msgstr "Ga naar &pagina\tCtrl+P"
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "document"
 
-msgid "Previous Pa&ge\tShift+P"
-msgstr "Vorige pa&gina\tShift+P"
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+msgid "Source:"
+msgstr "Bron:"
 
-msgid "Next Pag&e\tP"
-msgstr "Volgende pagin&a\tP"
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+msgid "Source view is not available for this document format."
+msgstr "Bronweergave is niet beschikbaar voor dit documentformaat."
 
-msgid "Previous Lin&k\tShift+K"
-msgstr "Vorige lin&k\tShift+K"
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+msgid "Could not load the document source."
+msgstr "Kan de documentbron niet laden."
 
-msgid "Next Lin&k\tK"
-msgstr "Volgende lin&k\tK"
+#. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Platte-tekstbestanden (*.txt)|*.txt|Alle bestanden (*.*)|*.*"
 
-msgid "Previous Ima&ge\tShift+G"
-msgstr "Vorige afbeeldin&g\tShift+G"
+#. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
+msgid "Export document to plain text"
+msgstr "Document exporteren naar platte tekst"
 
-msgid "Next Ima&ge\tG"
-msgstr "Volgende afbeeldin&g\tG"
+#. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr "HTML-bestanden (*.html)|*.html|Alle bestanden (*.*)|*.*"
 
-msgid "Previous Figu&re\tShift+F"
-msgstr "Vorige figuu&r\tShift+F"
+#. TRANSLATORS: Title of the file save dialog when exporting a document to HTML
+msgid "Export document to HTML"
+msgstr "Document exporteren naar HTML"
 
-msgid "Next Figu&re\tF"
-msgstr "Volgende figuu&r\tF"
+#. TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr "Markdown-bestanden (*.md)|*.md|Alle bestanden (*.*)|*.*"
 
-msgid "Previous &Table\tShift+T"
-msgstr "Vorige &tabel\tShift+T"
+#. TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
+msgid "Export document to Markdown"
+msgstr "Document exporteren naar Markdown"
 
-msgid "Next &Table\tT"
-msgstr "Volgende &tabel\tT"
+#. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Paperback-bestanden (*.paperback)|*.paperback"
 
-msgid "Previous Se&parator\tShift+S"
-msgstr "Vorige &scheiding\tShift+S"
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+msgid "Export notes and bookmarks"
+msgstr "Notities en bladwijzers exporteren"
 
-msgid "Next Se&parator\tS"
-msgstr "Volgende &scheiding\tS"
+#. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
+msgid "Notes and bookmarks exported successfully."
+msgstr "Notities en bladwijzers succesvol geëxporteerd."
 
-msgid "Previous L&ist\tShift+L"
-msgstr "Vorige lij&st\tShift+L"
+#. TRANSLATORS: Title of the export-succeeded dialog
+msgid "Export Successful"
+msgstr "Exporteren geslaagd"
 
-msgid "Next L&ist\tL"
-msgstr "Volgende lij&st\tL"
+#. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
+msgid "Import notes and bookmarks"
+msgstr "Notities en bladwijzers importeren"
 
-msgid "Previous List &Item\tShift+I"
-msgstr "Vorige lijst&item\tShift+I"
+#. TRANSLATORS: Success message shown after importing a document's notes and bookmarks
+msgid "Notes and bookmarks imported successfully."
+msgstr "Notities en bladwijzers succesvol geïmporteerd."
 
-msgid "Next List I&tem\tI"
-msgstr "Volgende lijsti&tem\tI"
+#. TRANSLATORS: Title of the import-succeeded dialog
+msgid "Import Successful"
+msgstr "Importeren geslaagd"
 
-msgid "Next Heading Level 1\t1"
-msgstr "Volgende kop niveau 1\t1"
+#. TRANSLATORS: Announced when the user cancels a running sleep timer
+msgid "Sleep timer cancelled."
+msgstr "Slaaptimer geannuleerd."
 
-msgid "Previous Heading Level &2\tShift+2"
-msgstr "Vorige kop niveau &2\tShift+2"
+#, fuzzy
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Slaaptimer ingesteld op %d minuten."
+msgstr[1] "Slaaptimer ingesteld op %d minuten."
 
-msgid "Next Heading Level 2\t2"
-msgstr "Volgende kop niveau 2\t2"
+#. TRANSLATORS: Main window title when no document is open
+msgid "Paperback"
+msgstr "Paperback"
 
-msgid "Previous Heading Level &3\tShift+3"
-msgstr "Vorige kop niveau &3\tShift+3"
+#, fuzzy
+msgid "Document reloaded."
+msgstr "Het document is opnieuw geladen."
 
-msgid "Next Heading Level 3\t3"
-msgstr "Volgende kop niveau 3\t3"
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback kan geen acties uitvoeren terwijl webweergave is geopend."
 
-msgid "Previous Heading Level &4\tShift+4"
-msgstr "Vorige kop niveau &4\tShift+4"
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
-msgid "Next Heading Level 4\t4"
-msgstr "Volgende kop niveau 4\t4"
+#, fuzzy
+msgid "%d char"
+msgid_plural "%d chars"
+msgstr[0] "%d char"
+msgstr[1] "%d chars"
 
-msgid "Previous Heading Level &5\tShift+5"
-msgstr "Vorige kop niveau &5\tShift+5"
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Document exporteren mislukt."
 
-msgid "Next Heading Level 5\t5"
-msgstr "Volgende kop niveau 5\t5"
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+msgid "Open Document"
+msgstr "Document openen"
 
-msgid "Previous Heading Level &6\tShift+6"
-msgstr "Vorige kop niveau &6\tShift+6"
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+msgid "Word wrap on."
+msgstr "Automatische terugloop aan."
 
-msgid "Next Heading Level 6\t6"
-msgstr "Volgende kop niveau 6\t6"
+msgid "Word wrap off."
+msgstr "Automatische terugloop uit."
 
-msgid "&Previous Heading\tShift+H"
-msgstr "&Vorige kop\tShift+H"
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "Volledig scherm aan."
 
-msgid "Go to previous heading"
-msgstr "Ga naar vorige kop"
+#, fuzzy
+msgid "Full screen off."
+msgstr "Volledig scherm uit."
 
-msgid "&Next Heading\tH"
-msgstr "V&olgende kop\tH"
+#. TRANSLATORS: Menu item in the Edit menu to undo the last action.
+#, fuzzy
+msgid "&Undo\tCtrl+Z"
+msgstr "&Ongedaan maken\tCtrl+Z"
 
-msgid "Go to next heading"
-msgstr "Ga naar volgende kop"
+#. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
+#, fuzzy
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr "&Opnieuw\tCtrl+Shift+Z"
 
-msgid "Previous Heading Level &1\tShift+1"
-msgstr "Vorige kop niveau &1\tShift+1"
+#. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
+#, fuzzy
+msgid "Cu&t\tCtrl+X"
+msgstr "Kni&ppen\tCtrl+X"
 
-msgid "&Previous Bookmark\tShift+B"
-msgstr "&Vorige bladwijzer\tShift+B"
+#. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
+#, fuzzy
+msgid "&Copy\tCtrl+C"
+msgstr "&Kopiëren\tCtrl+C"
 
-msgid "Go to previous bookmark"
-msgstr "Ga naar vorige bladwijzer"
+#. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
+#, fuzzy
+msgid "&Paste\tCtrl+V"
+msgstr "&Plakken\tCtrl+V"
 
-msgid "&Next Bookmark\tB"
-msgstr "V&olgende bladwijzer\tB"
+#. TRANSLATORS: Menu item in the Edit menu to select all text.
+#, fuzzy
+msgid "Select &All\tCtrl+A"
+msgstr "Alles &selecteren\tCtrl+A"
 
-msgid "Go to next bookmark"
-msgstr "Ga naar volgende bladwijzer"
+#. TRANSLATORS: Menu item in the File menu to open a document.
+#, fuzzy
+msgid "&Open..."
+msgstr "&Openen"
 
-msgid "Previous &Note\tShift+N"
-msgstr "Vorige &notitie\tShift+N"
-
-msgid "Go to previous note"
-msgstr "Ga naar vorige notitie"
-
-msgid "Next N&ote\tN"
-msgstr "Volgende n&otitie\tN"
-
-msgid "Go to next note"
-msgstr "Ga naar volgende notitie"
-
-msgid "Jump to &All...\tCtrl+B"
-msgstr "Naar &allen springen...\tCtrl+B"
-
-msgid "Show all bookmarks and notes"
-msgstr "Alle bladwijzers en notities tonen"
-
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr "Alleen naar &bladwijzers springen...\tCtrl+Alt+B"
-
-msgid "Show bookmarks only"
-msgstr "Alleen bladwijzers tonen"
-
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "Alleen naar n&otities springen...\tCtrl+Alt+M"
-
-msgid "Show notes only"
-msgstr "Alleen notities tonen"
-
-msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "Notitietekst &bekijken\tRawCtrl+Shift+W"
-
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "Notitietekst &bekijken\tCtrl+Shift+W"
-
-msgid "View the note at current position"
-msgstr "De notitie op de huidige positie bekijken"
-
-msgid "&File"
-msgstr "&Bestand"
-
-msgid "&Go"
-msgstr "&Ga"
-
-msgid "&Tools"
-msgstr "E&xtra"
-
-msgid "&Help"
-msgstr "&Help"
-
-msgid "&Open...\tCtrl+O"
-msgstr "&Openen...\tCtrl+O"
-
+#. TRANSLATORS: Status-bar help text for the File > Open menu item.
 msgid "Open a document"
 msgstr "Een document openen"
 
-msgid "&Close\tCtrl+W"
-msgstr "&Sluiten\tCtrl+W"
+#. TRANSLATORS: Menu item in the File menu to close the current document.
+#, fuzzy
+msgid "&Close"
+msgstr "&Sluiten"
 
-msgid "&Close\tCtrl+F4"
-msgstr "&Sluiten\tCtrl+F4"
-
+#. TRANSLATORS: Status-bar help text for the File > Close menu item.
 msgid "Close the current document"
 msgstr "Het huidige document sluiten"
 
-msgid "Close &All\tCtrl+Shift+W"
-msgstr "&Alles sluiten\tCtrl+Shift+W"
+#. TRANSLATORS: Menu item in the File menu to close all open documents.
+#, fuzzy
+msgid "Close &All"
+msgstr "Alles &sluiten"
 
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "&Alles sluiten\tCtrl+Shift+F4"
-
+#. TRANSLATORS: Status-bar help text for the File > Close All menu item.
 msgid "Close all documents"
 msgstr "Alle documenten sluiten"
 
-msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "&Laatst gesloten heropenen\tCtrl+Shift+T"
+#. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
+#, fuzzy
+msgid "Reopen &Last Closed"
+msgstr "&Laatst gesloten opnieuw openen"
 
+#. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Het laatst gesloten document heropenen"
 
+#. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
 msgstr "&Recente documenten"
 
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 msgid "Open a recent document"
 msgstr "Een recent document openen"
 
-msgid "E&xit\tCtrl+Q"
-msgstr "&Afsluiten\tCtrl+Q"
+#. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "&Afsluiten"
 
+#. TRANSLATORS: Status-bar help text for the File > Exit menu item.
 msgid "Exit the application"
 msgstr "De applicatie afsluiten"
 
-msgid "&Find...\tCtrl+F"
-msgstr "&Zoeken...\tCtrl+F"
-
-msgid "Find text in the document"
-msgstr "Tekst in het document zoeken"
-
-msgid "Find &Next\tCtrl+G"
-msgstr "Volge&nde zoeken\tCtrl+G"
-
-msgid "Find &Next\tF3"
-msgstr "Volge&nde zoeken\tF3"
-
-msgid "Find next occurrence"
-msgstr "Volgende overeenkomst zoeken"
-
-msgid "Find &Previous\tCtrl+Shift+G"
-msgstr "Vo&rige zoeken\tCtrl+Shift+G"
-
-msgid "Find &Previous\tShift+F3"
-msgstr "Vo&rige zoeken\tShift+F3"
-
-msgid "Find previous occurrence"
-msgstr "Vorige overeenkomst zoeken"
-
-msgid "Go to &line...\tCtrl+L"
-msgstr "Ga naar &regel...\tCtrl+L"
-
-msgid "Go to &line...\tCtrl+G"
-msgstr "Ga naar &regel...\tCtrl+G"
-
-msgid "Go to a specific line"
-msgstr "Ga naar een specifieke regel"
-
-msgid "Go to &percent...\tCtrl+Shift+L"
-msgstr "Ga naar &percentage...\tCtrl+Shift+L"
-
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Ga naar &percentage...\tCtrl+Shift+G"
-
-msgid "Go to a percentage of the document"
-msgstr "Ga naar een percentage van het document"
-
-msgid "Go &Back\tAlt+Left"
-msgstr "Ga &terug\tAlt+Left"
-
-msgid "Go back in history"
-msgstr "Terug in geschiedenis"
-
-msgid "Go &Forward\tAlt+Right"
-msgstr "Ga voor&uit\tAlt+Right"
-
-msgid "Go forward in history"
-msgstr "Vooruit in geschiedenis"
-
-msgid "&Sections"
-msgstr "&Secties"
-
-msgid "Navigate by sections"
-msgstr "Navigeren per sectie"
-
-msgid "&Headings"
-msgstr "&Koppen"
-
-msgid "Navigate by headings"
-msgstr "Navigeren per kop"
-
-msgid "&Pages"
-msgstr "&Pagina's"
-
-msgid "Navigate by pages"
-msgstr "Navigeren per pagina"
-
-msgid "&Bookmarks"
-msgstr "&Bladwijzers"
-
-msgid "Navigate by bookmarks"
-msgstr "Navigeren per bladwijzer"
-
-msgid "&Links"
-msgstr "&Links"
-
-msgid "Navigate by links"
-msgstr "Navigeren per link"
-
-msgid "&Images"
-msgstr "&Afbeeldingen"
-
-msgid "Navigate by images"
-msgstr "Navigeren per afbeelding"
-
-msgid "&Figures"
-msgstr "&Figuren"
-
-msgid "Navigate by figures"
-msgstr "Navigeren per figuur"
-
-msgid "&Tables"
-msgstr "&Tabellen"
-
-msgid "Navigate by tables"
-msgstr "Navigeren per tabel"
-
-msgid "&Separators"
-msgstr "&Scheidingen"
-
-msgid "Navigate by separators"
-msgstr "Navigeren per scheiding"
-
-msgid "&Lists"
-msgstr "&Lijsten"
-
-msgid "Navigate by lists"
-msgstr "Navigeren per lijst"
-
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr "Document&gegevens importeren...\tCtrl+Shift+I"
-
-msgid "Import bookmarks and position"
-msgstr "Bladwijzers en positie importeren"
-
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr "Documentg&egevens exporteren...\tCtrl+Shift+E"
-
-msgid "Export bookmarks and position"
-msgstr "Bladwijzers en positie exporteren"
-
-msgid "Export to &Plain Text...\tCtrl+E"
-msgstr "Exporteren naar &platte tekst...\tCtrl+E"
-
-msgid "Export document as plain text"
-msgstr "Document exporteren als platte tekst"
-
-msgid "Export to &HTML..."
-msgstr "Exporteren naar &HTML..."
-
-msgid "Export document as HTML"
-msgstr "Document exporteren als HTML"
-
-msgid "Export to &Markdown..."
-msgstr "Exporteren naar &Markdown..."
-
-msgid "Export document as Markdown"
-msgstr "Document exporteren als Markdown"
-
-msgid "&Word Count\tRawCtrl+W"
-msgstr "&Woordenaantal\tRawCtrl+W"
-
-msgid "&Word Count\tCtrl+W"
-msgstr "&Woordenaantal\tCtrl+W"
-
-msgid "Show word count"
-msgstr "Woordenaantal tonen"
-
-msgid "Document &Info\tCtrl+I"
-msgstr "Document&informatie\tCtrl+I"
-
-msgid "Show document information"
-msgstr "Documentinformatie tonen"
-
-msgid "&Table of Contents\tCtrl+T"
-msgstr "&Inhoudsopgave\tCtrl+T"
-
-msgid "Show table of contents"
-msgstr "Inhoudsopgave tonen"
-
-msgid "&Elements List...\tF7"
-msgstr "&Elementenlijst...\tF7"
-
-msgid "Show elements list"
-msgstr "Elementenlijst tonen"
-
-msgid "Open &Containing Folder\tCtrl+Shift+C"
-msgstr "&Bovenliggende map openen\tCtrl+Shift+C"
-
-msgid "Open folder containing the document"
-msgstr "De map met het document openen"
-
-msgid "Open in &Web View\tCtrl+Shift+V"
-msgstr "Openen in &webweergave\tCtrl+Shift+V"
-
-msgid "Open document in web view"
-msgstr "Document openen in webweergave"
-
-msgid "I&mport/Export"
-msgstr "I&mporteren/exporteren"
-
-msgid "Import and export options"
-msgstr "Import- en exportopties"
-
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
-msgstr "&Bladwijzer in-/uitschakelen\tCtrl+Shift+B"
-
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "Bladwijzer met &notitie\tCtrl+Shift+N"
-
-msgid "&Options\tCtrl+,"
-msgstr "&Opties\tCtrl+,"
-
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "&Slaaptimer...\tCtrl+Shift+S"
-
-msgid "&About Paperback\tCtrl+F1"
-msgstr "&Over Paperback\tCtrl+F1"
-
-msgid "About this application"
-msgstr "Over deze applicatie"
-
-msgid "View Help in &Browser\tF1"
-msgstr "Help bekijken in &browser\tF1"
-
-msgid "View help in default browser"
-msgstr "Help bekijken in standaardbrowser"
-
-msgid "View Help in &Paperback\tShift+F1"
-msgstr "Help bekijken in &Paperback\tShift+F1"
-
-msgid "View help in Paperback"
-msgstr "Help bekijken in Paperback"
-
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "Controleren op &updates\tCtrl+Shift+U"
-
-msgid "Check for updates"
-msgstr "Controleren op updates"
-
-msgid "&Donate\tCtrl+D"
-msgstr "&Doneren\tCtrl+D"
-
-msgid "Support Paperback development"
-msgstr "Ontwikkeling van Paperback steunen"
-
+#. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
 msgstr "(Geen recente documenten)"
 
-msgid "Show All...\tCtrl+R"
-msgstr "Alles tonen...\tCtrl+R"
+#. TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
+#, fuzzy
+msgid "Show All..."
+msgstr "Alles weergeven"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Section"
+msgstr "Vorige sectie"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
+msgid "Go to previous section"
+msgstr "Ga naar vorige sectie"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Section"
+msgstr "Volgende sectie"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
+msgid "Go to next section"
+msgstr "Ga naar volgende sectie"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
+#, fuzzy
+msgid "Go to &Page"
+msgstr "Ga naar &pagina"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous page.
+#, fuzzy
+msgid "Previous Pa&ge"
+msgstr "Vorige &pagina"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next page.
+#, fuzzy
+msgid "Next Pag&e"
+msgstr "Volgende &pagina"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
+#, fuzzy
+msgid "Previous Lin&k"
+msgstr "Vorige &koppeling"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
+#, fuzzy
+msgid "Next Lin&k"
+msgstr "Volgende &koppeling"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
+#, fuzzy
+msgid "Previous Ima&ge"
+msgstr "Vorige &afbeelding"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
+#, fuzzy
+msgid "Next Ima&ge"
+msgstr "Volgende &afbeelding"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
+#, fuzzy
+msgid "Previous Figu&re"
+msgstr "Vorige &figuur"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
+#, fuzzy
+msgid "Next Figu&re"
+msgstr "Volgende &figuur"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
+#, fuzzy
+msgid "Previous &Table"
+msgstr "Vorige &tabel"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
+#, fuzzy
+msgid "Next &Table"
+msgstr "Volgende &tabel"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
+#, fuzzy
+msgid "Previous Se&parator"
+msgstr "Vorige &scheidingsteken"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
+#, fuzzy
+msgid "Next Se&parator"
+msgstr "Volgende &scheidingsteken"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
+#, fuzzy
+msgid "Previous L&ist"
+msgstr "Vorige &lijst"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
+#, fuzzy
+msgid "Next L&ist"
+msgstr "Volgende &lijst"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
+#, fuzzy
+msgid "Previous List &Item"
+msgstr "Vorig &lijstitem"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
+#, fuzzy
+msgid "Next List I&tem"
+msgstr "Volgende &lijstitem"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
+#, fuzzy
+msgid "Container &Start"
+msgstr "Container&begin"
+
+#. TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
+msgid "Go to the start of the current list or table"
+msgstr "Ga naar het begin van de huidige lijst of tabel"
+
+#. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
+#, fuzzy
+msgid "Past Container &End"
+msgstr "Na container&einde"
+
+#. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
+msgid "Go past the end of the current list or table"
+msgstr "Ga voorbij het einde van de huidige lijst of tabel"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
+#, fuzzy
+msgid "&Previous Heading"
+msgstr "&Vorige kop"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
+msgid "Go to previous heading"
+msgstr "Ga naar vorige kop"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
+#, fuzzy
+msgid "&Next Heading"
+msgstr "&Volgende kop"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
+msgid "Go to next heading"
+msgstr "Ga naar volgende kop"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &1"
+msgstr "Vorige kop niveau &1"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 1"
+msgstr "Volgende kopniveau 1"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &2"
+msgstr "Vorige kop niveau &2"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 2"
+msgstr "Volgende kopniveau 2"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &3"
+msgstr "Vorige kop niveau &3"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 3"
+msgstr "Volgende kopniveau 3"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &4"
+msgstr "Vorige kop niveau &4"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 4"
+msgstr "Volgende kopniveau 4"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &5"
+msgstr "Vorige kop niveau &5"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 5"
+msgstr "Volgende kopniveau 5"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &6"
+msgstr "Vorige kop niveau &6"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 6"
+msgstr "Volgende kopniveau 6"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+#, fuzzy
+msgid "&Previous Bookmark"
+msgstr "Vorig &bladwijzer"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
+msgid "Go to previous bookmark"
+msgstr "Ga naar vorige bladwijzer"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+#, fuzzy
+msgid "&Next Bookmark"
+msgstr "Volgende &bladwijzer"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
+msgid "Go to next bookmark"
+msgstr "Ga naar volgende bladwijzer"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
+#, fuzzy
+msgid "Previous &Note"
+msgstr "Vorige &notitie"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
+msgid "Go to previous note"
+msgstr "Ga naar vorige notitie"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+#, fuzzy
+msgid "Next N&ote"
+msgstr "Volgende &notitie"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
+msgid "Go to next note"
+msgstr "Ga naar volgende notitie"
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+#, fuzzy
+msgid "Jump to &All..."
+msgstr "Naar &alles..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
+msgid "Show all bookmarks and notes"
+msgstr "Alle bladwijzers en notities tonen"
+
+#, fuzzy
+msgid "Jump to &Bookmarks Only..."
+msgstr "Naar &bladwijzers alleen..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
+msgid "Show bookmarks only"
+msgstr "Alleen bladwijzers tonen"
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
+#, fuzzy
+msgid "Jump to Notes &Only..."
+msgstr "Naar &notities alleen..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
+msgid "Show notes only"
+msgstr "Alleen notities tonen"
+
+#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
+#, fuzzy
+msgid "&View Note Text"
+msgstr "&Notitiestekst weergeven"
+
+#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
+msgid "View the note at current position"
+msgstr "De notitie op de huidige positie bekijken"
+
+#. TRANSLATORS: Menu item in the Go menu to open the find dialog.
+#, fuzzy
+msgid "&Find..."
+msgstr "&Zoeken"
+
+#. TRANSLATORS: Status-bar help text for the Go > Find menu item.
+msgid "Find text in the document"
+msgstr "Tekst in het document zoeken"
+
+#. TRANSLATORS: Status-bar help text for the Go > Find Next menu item.
+msgid "Find next occurrence"
+msgstr "Volgende overeenkomst zoeken"
+
+#. TRANSLATORS: Status-bar help text for the Go > Find Previous menu item.
+msgid "Find previous occurrence"
+msgstr "Vorige overeenkomst zoeken"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
+#, fuzzy
+msgid "Go to &line..."
+msgstr "Ga naar &regel"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
+msgid "Go to a specific line"
+msgstr "Ga naar een specifieke regel"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
+#, fuzzy
+msgid "Go to &percent..."
+msgstr "Ga naar &percentage"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
+msgid "Go to a percentage of the document"
+msgstr "Ga naar een percentage van het document"
+
+#. TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
+#, fuzzy
+msgid "Go &Back"
+msgstr "Ga naar &Terug    Ctrl+["
+
+#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
+msgid "Go back in history"
+msgstr "Terug in geschiedenis"
+
+#. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
+#, fuzzy
+msgid "Go &Forward"
+msgstr "Ga naar &Vooruit    Ctrl+]"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
+msgid "Go forward in history"
+msgstr "Vooruit in geschiedenis"
+
+#. TRANSLATORS: Label for the Sections submenu in the compact Go menu.
+msgid "&Sections"
+msgstr "&Secties"
+
+#. TRANSLATORS: Status-bar help text for the Go > Sections submenu.
+msgid "Navigate by sections"
+msgstr "Navigeren per sectie"
+
+#. TRANSLATORS: Label for the Headings submenu in the compact Go menu.
+msgid "&Headings"
+msgstr "&Koppen"
+
+#. TRANSLATORS: Status-bar help text for the Go > Headings submenu.
+msgid "Navigate by headings"
+msgstr "Navigeren per kop"
+
+#. TRANSLATORS: Label for the Pages submenu in the compact Go menu.
+msgid "&Pages"
+msgstr "&Pagina's"
+
+#. TRANSLATORS: Status-bar help text for the Go > Pages submenu.
+msgid "Navigate by pages"
+msgstr "Navigeren per pagina"
+
+#. TRANSLATORS: Label for the Bookmarks submenu in the compact Go menu.
+msgid "&Bookmarks"
+msgstr "&Bladwijzers"
+
+#. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
+msgid "Navigate by bookmarks"
+msgstr "Navigeren per bladwijzer"
+
+#. TRANSLATORS: Label for the Links submenu in the compact Go menu.
+msgid "&Links"
+msgstr "&Links"
+
+#. TRANSLATORS: Status-bar help text for the Go > Links submenu.
+msgid "Navigate by links"
+msgstr "Navigeren per link"
+
+#. TRANSLATORS: Label for the Images submenu in the compact Go menu.
+msgid "&Images"
+msgstr "&Afbeeldingen"
+
+#. TRANSLATORS: Status-bar help text for the Go > Images submenu.
+msgid "Navigate by images"
+msgstr "Navigeren per afbeelding"
+
+#. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
+msgid "&Figures"
+msgstr "&Figuren"
+
+#. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
+msgid "Navigate by figures"
+msgstr "Navigeren per figuur"
+
+#. TRANSLATORS: Label for the Tables submenu in the compact Go menu.
+msgid "&Tables"
+msgstr "&Tabellen"
+
+#. TRANSLATORS: Status-bar help text for the Go > Tables submenu.
+msgid "Navigate by tables"
+msgstr "Navigeren per tabel"
+
+#. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
+msgid "&Separators"
+msgstr "&Scheidingen"
+
+#. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
+msgid "Navigate by separators"
+msgstr "Navigeren per scheiding"
+
+#. TRANSLATORS: Label for the Lists submenu in the compact Go menu.
+msgid "&Lists"
+msgstr "&Lijsten"
+
+#. TRANSLATORS: Status-bar help text for the Go > Lists submenu.
+msgid "Navigate by lists"
+msgstr "Navigeren per lijst"
+
+#. TRANSLATORS: Label for the Containers submenu in the compact Go menu.
+msgid "&Containers"
+msgstr "&Containers"
+
+#. TRANSLATORS: Status-bar help text for the Go > Containers submenu.
+msgid "Navigate by containers"
+msgstr "Navigeren per container"
+
+#. TRANSLATORS: Menu item in the Help menu to show information about the application.
+#, fuzzy
+msgid "&About Paperback"
+msgstr "&Over Paperback"
+
+#. TRANSLATORS: Status-bar help text for the Help > About Paperback menu item.
+msgid "About this application"
+msgstr "Over deze applicatie"
+
+#. TRANSLATORS: Menu item in the Help menu to open the help documentation in the user's web browser.
+#, fuzzy
+msgid "View Help in &Browser"
+msgstr "Help in &browser weergeven"
+
+#. TRANSLATORS: Status-bar help text for the Help > View Help in Browser menu item.
+msgid "View help in default browser"
+msgstr "Help bekijken in standaardbrowser"
+
+#. TRANSLATORS: Menu item in the Help menu to open the help documentation inside Paperback itself.
+#, fuzzy
+msgid "View Help in &Paperback"
+msgstr "Help in &Paperback weergeven"
+
+#. TRANSLATORS: Status-bar help text for the Help > View Help in Paperback menu item.
+msgid "View help in Paperback"
+msgstr "Help bekijken in Paperback"
+
+#. TRANSLATORS: Menu item in the Help menu to check for application updates.
+#, fuzzy
+msgid "Check for &Updates"
+msgstr "Controleren op &updates"
+
+#. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
+msgid "Check for updates"
+msgstr "Controleren op updates"
+
+#. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
+#, fuzzy
+msgid "&Donate"
+msgstr "&Doneren"
+
+#. TRANSLATORS: Status-bar help text for the Help > Donate menu item.
+msgid "Support Paperback development"
+msgstr "Ontwikkeling van Paperback steunen"
+
+#. TRANSLATORS: Menu item in Tools > Import/Export to import bookmarks and reading position from a file.
+#, fuzzy
+msgid "&Import Document Data..."
+msgstr "&Documentgegevens importeren..."
+
+#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
+msgid "Import bookmarks and position"
+msgstr "Bladwijzers en positie importeren"
+
+#. TRANSLATORS: Menu item in Tools > Import/Export to export bookmarks and reading position to a file.
+#, fuzzy
+msgid "&Export Document Data..."
+msgstr "&Documentgegevens exporteren..."
+
+#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
+msgid "Export bookmarks and position"
+msgstr "Bladwijzers en positie exporteren"
+
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a plain text file.
+#, fuzzy
+msgid "Export to &Plain Text..."
+msgstr "Naar &platte tekst exporteren..."
+
+#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
+msgid "Export document as plain text"
+msgstr "Document exporteren als platte tekst"
+
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as an HTML file.
+msgid "Export to &HTML..."
+msgstr "Exporteren naar &HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
+msgid "Export document as HTML"
+msgstr "Document exporteren als HTML"
+
+#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a Markdown file.
+msgid "Export to &Markdown..."
+msgstr "Exporteren naar &Markdown..."
+
+#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
+msgid "Export document as Markdown"
+msgstr "Document exporteren als Markdown"
+
+#. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
+#, fuzzy
+msgid "&Word Count"
+msgstr "&Woordentelling"
+
+#. TRANSLATORS: Status-bar help text for the Word Count menu item.
+msgid "Show word count"
+msgstr "Woordenaantal tonen"
+
+#. TRANSLATORS: Menu item in the Tools menu to show information about the document.
+#, fuzzy
+msgid "Document &Info"
+msgstr "Document&info"
+
+#. TRANSLATORS: Status-bar help text for the Document Info menu item.
+msgid "Show document information"
+msgstr "Documentinformatie tonen"
+
+#. TRANSLATORS: Menu item in the Tools menu to show the document's table of contents.
+#, fuzzy
+msgid "&Table of Contents"
+msgstr "&Inhoudsopgave"
+
+#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
+msgid "Show table of contents"
+msgstr "Inhoudsopgave tonen"
+
+#. TRANSLATORS: Menu item in the Tools menu to show a list of the document's structural elements.
+#, fuzzy
+msgid "&Elements List..."
+msgstr "&Elementenlijst..."
+
+#. TRANSLATORS: Status-bar help text for the Elements List menu item.
+msgid "Show elements list"
+msgstr "Elementenlijst tonen"
+
+#. TRANSLATORS: Menu item in the Tools menu to reveal the document's file in the system file manager.
+#, fuzzy
+msgid "Reveal &File in Folder"
+msgstr "&Bestand in map weergeven"
+
+#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
+#, fuzzy
+msgid "Reveal document in the file manager"
+msgstr "Document weergeven in de bestandsbeheerder"
+
+#. TRANSLATORS: Menu item in the Tools menu to open the document in a web view.
+#, fuzzy
+msgid "Open in &Web View"
+msgstr "In &webweergave openen"
+
+#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
+msgid "Open document in web view"
+msgstr "Document openen in webweergave"
+
+#. TRANSLATORS: Menu item in the Tools menu to open the document's underlying source markup in a new tab.
+#, fuzzy
+msgid "View &Source"
+msgstr "&Bron weergeven"
+
+#. TRANSLATORS: Status-bar help text for the View Source menu item.
+msgid "Open the document source in a new tab"
+msgstr "Documentbron openen in een nieuw tabblad"
+
+#. TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
+msgid "I&mport/Export"
+msgstr "I&mporteren/exporteren"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
+msgid "Import and export options"
+msgstr "Import- en exportopties"
+
+#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
+#, fuzzy
+msgid "Toggle &Bookmark"
+msgstr "&Bladwijzer wisselen"
+
+#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
+#, fuzzy
+msgid "Bookmark with &Note"
+msgstr "Bladwijzer met &notitie"
+
+#. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
+#, fuzzy
+msgid "Word w&rap"
+msgstr "Automatische &terugloop"
+
+#. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
+msgid "Toggle word wrap"
+msgstr "Automatische terugloop in-/uitschakelen"
+
+#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
+#, fuzzy
+msgid "&Play/Pause Audio"
+msgstr "Audio afspelen/&pauzeren"
+
+#. TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
+#, fuzzy
+msgid "Play or pause this document's audio narration"
+msgstr "De audiovertelling van dit document afspelen of pauzeren"
+
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
+#, fuzzy
+msgid "Seek Audio &Forward"
+msgstr "Audio &vooruit spoelen"
+
+#. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
+#, fuzzy
+msgid "Skip the audio narration forward"
+msgstr "De audiovertelling vooruit spoelen"
+
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
+#, fuzzy
+msgid "Seek Audio &Backward"
+msgstr "Audio &terugspoelen"
+
+#. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
+#, fuzzy
+msgid "Skip the audio narration backward"
+msgstr "De audiovertelling terugspoelen"
+
+#, fuzzy
+msgid "&Increase Audio Seek Amount"
+msgstr "Audiozoekstap &vergroten"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
+#, fuzzy
+msgid "Increase how far seeking the audio narration moves"
+msgstr "Vergroot hoever het spoelen van de audiovertelling verspringt"
+
+#, fuzzy
+msgid "&Decrease Audio Seek Amount"
+msgstr "Audiozoekstap ver&kleinen"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
+#, fuzzy
+msgid "Decrease how far seeking the audio narration moves"
+msgstr "Verklein hoever het spoelen van de audiovertelling verspringt"
+
+#. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
+#, fuzzy
+msgid "&Full Screen"
+msgstr "&Volledig scherm"
+
+#. TRANSLATORS: Status-bar help text for the Full Screen menu item.
+#, fuzzy
+msgid "Toggle full screen"
+msgstr "Volledig scherm aan/uit"
+
+#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
+#, fuzzy
+msgid "&Settings"
+msgstr "&Instellingen"
+
+#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
+#, fuzzy
+msgid "&Sleep Timer..."
+msgstr "&Slaaptimer..."
+
+#. TRANSLATORS: Top-level "File" menu label in the menu bar
+msgid "&File"
+msgstr "&Bestand"
+
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
+msgid "&Go"
+msgstr "&Ga"
+
+#. TRANSLATORS: Top-level "Tools" menu label in the menu bar
+msgid "&Tools"
+msgstr "E&xtra"
+
+#. TRANSLATORS: Top-level "Help" menu label in the menu bar
+msgid "&Help"
+msgstr "&Help"
+
+#. TRANSLATORS: Top-level "Edit" menu label in the menu bar (macOS only)
+#, fuzzy
+msgid "&Edit"
+msgstr "&Bewerken"
+
+#. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
 msgstr "Geen secties."
 
-msgid "No next section"
-msgstr "Geen volgende sectie"
+#. TRANSLATORS: Announced when there is no next section from the current position
+#, fuzzy
+msgid "No next section."
+msgstr "Geen volgende sectie."
 
-msgid "No previous section"
-msgstr "Geen vorige sectie"
+#. TRANSLATORS: Announced when there is no previous section from the current position
+#, fuzzy
+msgid "No previous section."
+msgstr "Geen vorige sectie."
 
-#, c-format
+#. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
 msgid "No headings at level %d."
 msgstr "Geen koppen op niveau %d."
 
-#, c-format
+#. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
 msgid "No next heading at level %d."
 msgstr "Geen volgende kop op niveau %d."
 
-#, c-format
+#. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
 msgid "No previous heading at level %d."
 msgstr "Geen vorige kop op niveau %d."
 
+#. TRANSLATORS: Announced when the document has no headings at all (no level filter applied)
 msgid "No headings."
 msgstr "Geen koppen."
 
+#. TRANSLATORS: Announced when there is no next heading (no level filter applied)
 msgid "No next heading."
 msgstr "Geen volgende kop."
 
+#. TRANSLATORS: Announced when there is no previous heading (no level filter applied)
 msgid "No previous heading."
 msgstr "Geen vorige kop."
 
+#. TRANSLATORS: Announced when there is no next page from the current position
 msgid "No next page."
 msgstr "Geen volgende pagina."
 
+#. TRANSLATORS: Announced when there is no previous page from the current position
 msgid "No previous page."
 msgstr "Geen vorige pagina."
 
+#. TRANSLATORS: Announced when the document has no links to navigate
 msgid "No links."
 msgstr "Geen links."
 
+#. TRANSLATORS: Announced when there is no next link from the current position
 msgid "No next link."
 msgstr "Geen volgende link."
 
+#. TRANSLATORS: Announced when there is no previous link from the current position
 msgid "No previous link."
 msgstr "Geen vorige link."
 
+#. TRANSLATORS: Announced when the document has no lists to navigate
 msgid "No lists."
 msgstr "Geen lijsten."
 
+#. TRANSLATORS: Announced when there is no next list from the current position
 msgid "No next list."
 msgstr "Geen volgende lijst."
 
+#. TRANSLATORS: Announced when there is no previous list from the current position
 msgid "No previous list."
 msgstr "Geen vorige lijst."
 
+#. TRANSLATORS: Announced when the document has no list items to navigate
 msgid "No list items."
 msgstr "Geen lijstitems."
 
+#. TRANSLATORS: Announced when there is no next list item from the current position
 msgid "No next list item."
 msgstr "Geen volgend lijstitem."
 
+#. TRANSLATORS: Announced when there is no previous list item from the current position
 msgid "No previous list item."
 msgstr "Geen vorig lijstitem."
 
+#. TRANSLATORS: Announced when the document has no tables to navigate
 msgid "No tables."
 msgstr "Geen tabellen."
 
+#. TRANSLATORS: Announced when there is no next table from the current position
 msgid "No next table."
 msgstr "Geen volgende tabel."
 
+#. TRANSLATORS: Announced when there is no previous table from the current position
 msgid "No previous table."
 msgstr "Geen vorige tabel."
 
+#. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr "Geen scheidingen."
 
+#. TRANSLATORS: Announced when there is no next separator from the current position
 msgid "No next separator."
 msgstr "Geen volgende scheiding."
 
+#. TRANSLATORS: Announced when there is no previous separator from the current position
 msgid "No previous separator."
 msgstr "Geen vorige scheiding."
 
+#. TRANSLATORS: Announced when the document has no images to navigate
 msgid "No images."
 msgstr "Geen afbeeldingen."
 
+#. TRANSLATORS: Announced when there is no next image from the current position
 msgid "No next image."
 msgstr "Geen volgende afbeelding."
 
+#. TRANSLATORS: Announced when there is no previous image from the current position
 msgid "No previous image."
 msgstr "Geen vorige afbeelding."
 
+#. TRANSLATORS: Announced when the document has no figures to navigate
 msgid "No figures."
 msgstr "Geen figuren."
 
+#. TRANSLATORS: Announced when there is no next figure from the current position
 msgid "No next figure."
 msgstr "Geen volgende figuur."
 
+#. TRANSLATORS: Announced when there is no previous figure from the current position
 msgid "No previous figure."
 msgstr "Geen vorige figuur."
 
+#. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
 msgstr "Terug naar het begin. "
 
 msgid "Wrapping to end. "
 msgstr "Terug naar het einde. "
 
-#, c-format
+#. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
 msgid "%s Heading level %d"
 msgstr "%s Kop niveau %d"
 
-#, c-format
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+#, fuzzy
+msgid "Page %d"
+msgstr "Pagina %d"
+
+#. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 msgid "Page %d: %s"
 msgstr "Pagina %d: %s"
 
+#. TRANSLATORS: Suffix appended after a link's text when announcing navigation to a link; the leading space is significant
 msgid " link"
 msgstr " link"
 
+#. TRANSLATORS: Announced when moving forward/backward through the caret position history
 msgid "Navigated to next position."
 msgstr "Naar volgende positie genavigeerd."
 
 msgid "Navigated to previous position."
 msgstr "Naar vorige positie genavigeerd."
 
+#. TRANSLATORS: Announced when there is no next/previous position in the caret position history
 msgid "No next position."
 msgstr "Geen volgende positie."
 
 msgid "No previous position."
 msgstr "Geen vorige positie."
 
-#, c-format
+#. TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
+msgid "No containers."
+msgstr "Geen containers."
+
+#. TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
+msgid "Not in a container."
+msgstr "Niet in een container."
+
+#. TRANSLATORS: Announced when jumping to the start/end of the container (list/table) the caret is inside, and the target line is blank
+msgid "Past end of container."
+msgstr "Voorbij einde van container."
+
+msgid "Start of container."
+msgstr "Begin van container."
+
+#. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
 msgid "%s - Bookmark %d"
 msgstr "%s - Bladwijzer %d"
 
+#. TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
 msgid "No notes."
 msgstr "Geen notities."
 
 msgid "No bookmarks."
 msgstr "Geen bladwijzers."
 
+#. TRANSLATORS: Announced when there is no next bookmark/note from the current position
 msgid "No next note."
 msgstr "Geen volgende notitie."
 
 msgid "No next bookmark."
 msgstr "Geen volgende bladwijzer."
 
+#. TRANSLATORS: Announced when there is no previous note from the current position
 msgid "No previous note."
 msgstr "Geen vorige notitie."
 
+#. TRANSLATORS: Announced when there is no previous bookmark from the current position
 msgid "No previous bookmark."
 msgstr "Geen vorige bladwijzer."
 
+#. TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
 msgid "Bookmark."
 msgstr "Bladwijzer."
 
+#. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 msgid "Bookmark removed."
 msgstr "Bladwijzer verwijderd."
 
 msgid "Bookmark added."
 msgstr "Bladwijzer toegevoegd."
 
+#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+#. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#, fuzzy
+msgid "This document has no audio."
+msgstr "Dit document bevat geen inhoudsopgave."
+
+#. TRANSLATORS: Announced when trying to seek audio before playback has established a position
+#, fuzzy
+msgid "Audio hasn't started playing yet."
+msgstr "De audio is nog niet begonnen met afspelen."
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+#, fuzzy
+msgid "{} (maximum)"
+msgstr "{} (maximum)"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+#, fuzzy
+msgid "{} (minimum)"
+msgstr "{} (minimum)"
+
+#. TRANSLATORS: Prompt label in the bookmark note dialog asking the user to type their note
 msgid "Enter bookmark note:"
 msgstr "Voer bladwijzernotitie in:"
 
+#. TRANSLATORS: Announced after saving a bookmark's note text
 msgid "Bookmark saved."
 msgstr "Bladwijzer opgeslagen."
 
+#. TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
 msgid "No note at the current position."
 msgstr "Geen notitie op de huidige positie."
 
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Line"
 msgstr "Regel"
 
+#. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Teken"
 
+#. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
 msgstr "Slaaptimer"
 
+#. TRANSLATORS: System tray menu item to restore the main window from the tray
 msgid "&Restore"
 msgstr "&Herstellen"
 
+#. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
 msgid "Restore Paperback"
 msgstr "Paperback herstellen"
 
-msgid "E&xit"
-msgstr "&Afsluiten"
-
+#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 msgid "Exit Paperback"
 msgstr "Paperback afsluiten"
 
-#, c-format
-msgid "Update to %s"
-msgstr "Bijwerken naar %s"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Open..."
+msgstr "Open"
 
-#, c-format
-msgid "A new version of %s is available. Here's what's new:"
-msgstr "Er is een nieuwe versie van %s beschikbaar. Dit is er nieuw:"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Close All"
+msgstr "Alles sluiten"
 
-msgid "No release notes provided."
-msgstr "Geen release-opmerkingen beschikbaar."
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Reopen Last Closed"
+msgstr "Laatst gesloten opnieuw openen"
 
-#, c-format
-msgid "%s Update"
-msgstr "%s-update"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Show All Recent Documents..."
+msgstr "Geen recente documenten"
 
-msgid "Downloading update..."
-msgstr "Update downloaden..."
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Exit"
+msgstr "Afsluiten"
 
-msgid "No updates available."
-msgstr "Geen updates beschikbaar."
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Find..."
+msgstr "Zoeken"
 
-#, c-format
-msgid "No updates available. Latest version: %s"
-msgstr "Geen updates beschikbaar. Nieuwste versie: %s"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Find Next"
+msgstr "Volgende zoeken"
 
-msgid "Info"
-msgstr "Info"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Find Previous"
+msgstr "Vorige zoeken"
 
-#, c-format
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr "Veiligheidsverificatie mislukt. Mogelijk is met de update geknoeid: %s"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Go to Line..."
+msgstr "Ga naar regel"
 
-msgid "Security Error"
-msgstr "Veiligheidsfout"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Go to Percent..."
+msgstr "Ga naar percentage"
 
-msgid "Update failed"
-msgstr "Update mislukt"
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Go to Page..."
+msgstr "Ga naar pagina"
 
-#, c-format
-msgid ""
-"Update downloaded to: %s\n"
-"Please install it manually."
-msgstr ""
-"Update gedownload naar: %s\n"
-"Installeer deze handmatig."
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Go Back"
+msgstr "Terug"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Go Forward"
+msgstr "Vooruit gaan"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Announce Percentage"
+msgstr "Percentage"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Set Temporary Bookmark"
+msgstr "Naar bladwijzer springen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Jump to Temporary Bookmark"
+msgstr "Naar bladwijzer springen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Heading"
+msgstr "Vorige kop"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading"
+msgstr "Volgende kop"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Heading Level 1"
+msgstr "Vorige kop niveau 1"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Heading Level 2"
+msgstr "Vorige kop niveau 2"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Heading Level 3"
+msgstr "Vorige kop niveau 3"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Heading Level 4"
+msgstr "Vorige kop niveau 4"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Heading Level 5"
+msgstr "Vorige kop niveau 5"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Heading Level 6"
+msgstr "Vorige kop niveau 6"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Page"
+msgstr "Vorige pagina"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Page"
+msgstr "Volgende pagina"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Bookmark"
+msgstr "Vorige bladwijzer"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Bookmark"
+msgstr "Volgende bladwijzer"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Note"
+msgstr "Vorige notitie"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Note"
+msgstr "Volgende notitie"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Jump to All Bookmarks..."
+msgstr "Naar bladwijzer springen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Jump to Bookmarks Only..."
+msgstr "Naar bladwijzers springen..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Jump to Notes Only..."
+msgstr "Naar notities springen..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "View Note Text"
+msgstr "Notitie bekijken"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Link"
+msgstr "Vorige koppeling"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Link"
+msgstr "Volgende koppeling"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Image"
+msgstr "Vorige afbeelding"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Image"
+msgstr "Volgende afbeelding"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Figure"
+msgstr "Vorige figuur"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Figure"
+msgstr "Volgende figuur"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Table"
+msgstr "Vorige tabel"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Table"
+msgstr "Volgende tabel"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Separator"
+msgstr "Vorige scheidingsteken"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Separator"
+msgstr "Volgende scheidingsteken"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous List"
+msgstr "Vorige uitslag"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next List"
+msgstr "Volgende lijst"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous List Item"
+msgstr "Vorig lijstitem"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next List Item"
+msgstr "Volgende lijstitem"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Container Start"
+msgstr "Container Start"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Past Container End"
+msgstr "Voorbij containereinde"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Elements List..."
+msgstr "Lijst met elementen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Reveal File in Folder"
+msgstr "Weergeven en opslaan in map    Ctrl+Shift+C"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Open in Web View"
+msgstr "In webweergave openen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "View Source"
+msgstr "Bron weergeven"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Toggle Bookmark"
+msgstr "Bladwijzer wisselen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Bookmark with Note"
+msgstr "Bladwijzer met notitie"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Toggle Word Wrap"
+msgstr "Automatische terugloop in-/uitschakelen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Play/Pause Audio"
+msgstr "Audio afspelen/pauzeren"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Seek Audio Forward"
+msgstr "Naar boven vegen gaat een stap verder"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Seek Audio Backward"
+msgstr "Audio terugspoelen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Increase Audio Seek Amount"
+msgstr "Audiozoekstap vergroten"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Decrease Audio Seek Amount"
+msgstr "Audiozoekstap verkleinen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Full Screen"
+msgstr "Volledig scherm"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Settings..."
+msgstr "Instellingen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Sleep Timer..."
+msgstr "Slaaptimer"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Customize Keyboard Shortcuts..."
+msgstr "Sneltoetsen aanpassen..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Import Document Data..."
+msgstr "Documentgegevens importeren"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Export Document Data..."
+msgstr "Documentgegevens exporteren"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Export to Plain Text..."
+msgstr "Naar platte tekst exporteren..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Export to HTML..."
+msgstr "Naar HTML exporteren..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Export to Markdown..."
+msgstr "Naar Markdown exporteren..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "About Paperback"
+msgstr "Over Paperback"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "View Help in Browser"
+msgstr "Help in browser weergeven"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "View Help in Paperback"
+msgstr "Help bekijken in Paperback"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Check for Updates"
+msgstr "Controleren op updates"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Donate"
+msgstr "Donatie"
+
+#. TRANSLATORS: Name of the "File" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+#, fuzzy
+msgid "File"
+msgstr "Bestand"
+
+#. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+#, fuzzy
+msgid "Tools"
+msgstr "Gereedschappen"
+
+#. TRANSLATORS: Name of the "Help" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+#, fuzzy
+msgid "Help"
+msgstr "Hulp"
+
+#. TRANSLATORS: Shown in the Customize Keyboard Shortcuts list in place of a key combination when an action has no shortcut assigned
+#, fuzzy
+msgid "None"
+msgstr "Geen"
+
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+#, fuzzy
+msgid "Figure"
+msgstr "Figuur"
+
+#, fuzzy
+msgid "Image"
+msgstr "Afbeelding"
+
+#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+#, fuzzy
+msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
+msgstr "Ongeldig DAISY .opf-bestand of DTBook XML niet gevonden in het manifest"
+
+#. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
+#, fuzzy
+msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
+msgstr "Ongeldig DAISY .opf-bestand of DTBook XML niet gevonden in het manifest"
+
+#. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
+#, fuzzy
+msgid "Failed to convert DTBook XML to text"
+msgstr "Het is niet gelukt om DTBook XML naar tekst te converteren"
+
+#. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
+#, fuzzy
+msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
+msgstr "Het ZIP-archief lijkt geen geldig DAISY 3- of DAISY 2.02-boek te zijn"
+
+#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+#, fuzzy
+msgid "rootfile not found in container.xml"
+msgstr "rootfile niet gevonden in container.xml"
+
+#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+#, fuzzy
+msgid "unsupported content"
+msgstr "niet-ondersteunde inhoud"
+
+#. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
+#, fuzzy
+msgid "OPF package element missing"
+msgstr "OPF-pakketelement ontbreekt"
+
+#. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
+#, fuzzy
+msgid "no readable spine items"
+msgstr "geen items met leesbare rugtekst"
+
+#. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
+#, fuzzy
+msgid "failed to convert spine items: {}"
+msgstr "Het is niet gelukt om de items in de ruggengraat te converteren: {}"
+
+#. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
+#, fuzzy
+msgid "EPUB has no readable content ({})"
+msgstr "EPUB bevat geen leesbare inhoud ({})"
+
+#. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
+#, fuzzy
+msgid "Failed to convert FB2 XML to text"
+msgstr "Het is niet gelukt om FB2 XML naar tekst te converteren"
+
+#. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
+#, fuzzy
+msgid "HTML file is empty: {}"
+msgstr "Het HTML-bestand is leeg: {}"
+
+#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
+#, fuzzy
+msgid "Failed to convert HTML to text: {}"
+msgstr "Het is niet gelukt om HTML naar tekst te converteren: {}"
+
+#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
+#, fuzzy
+msgid "Failed to convert Markdown to text: {}"
+msgstr "Het is niet gelukt om Markdown naar tekst te converteren: {}"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
+#, fuzzy
+msgid "Invalid HUFF record"
+msgstr "Ongeldig HUFF-record"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record has the wrong signature
+#, fuzzy
+msgid "Invalid HUFF header"
+msgstr "Ongeldige HUFF-header"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman cache table offset is out of bounds
+#, fuzzy
+msgid "Invalid HUFF cache offset"
+msgstr "Ongeldige HUFF-cache-offset"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is invalid
+#, fuzzy
+msgid "Code len out of bounds"
+msgstr "Lengte van de code buiten het toegestane bereik"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman table has an invalid terminal-code entry
+#, fuzzy
+msgid "Bad term"
+msgstr "Ongepaste term"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman base table offset is out of bounds
+#, fuzzy
+msgid "Invalid HUFF base offset"
+msgstr "Ongeldige HUFF-basisverschuiving"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary record has the wrong signature
+#, fuzzy
+msgid "Invalid CDIC header"
+msgstr "Ongeldige CDIC-header"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary offset table is out of bounds
+#, fuzzy
+msgid "Invalid CDIC offsets"
+msgstr "Ongeldige CDIC-offsets"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase offset is out of bounds
+#, fuzzy
+msgid "Invalid CDIC phrase offset"
+msgstr "Ongeldige CDIC-frase-offset"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase length is out of bounds
+#, fuzzy
+msgid "Invalid CDIC phrase length"
+msgstr "Ongeldige lengte van de CDIC-zin"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is out of range; {} is the invalid length value
+#, fuzzy
+msgid "Invalid code_len {}"
+msgstr "Ongeldige code_len-{}"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
+#, fuzzy
+msgid "Decode stack overflow"
+msgstr "Stack overflow ontcijferen"
+
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+#, fuzzy
+msgid "File too short"
+msgstr "Bestand is te kort"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+#, fuzzy
+msgid "Invalid record offsets"
+msgstr "Ongeldige record-offsets"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+#, fuzzy
+msgid "No records found"
+msgstr "Er zijn geen resultaten gevonden"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+#, fuzzy
+msgid "Invalid Record 0 offsets"
+msgstr "Ongeldig record: 0 offsets"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+#, fuzzy
+msgid "Invalid Record 0"
+msgstr "Ongeldig record 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+#, fuzzy
+msgid "No MOBI header"
+msgstr "Geen MOBI-header"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+#, fuzzy
+msgid "Invalid MOBI identifier"
+msgstr "Ongeldige MOBI-identificatie"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+#, fuzzy
+msgid "Invalid content record range"
+msgstr "Ongeldig bereik van inhoudsrecords"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+#, fuzzy
+msgid "Invalid HUFF/CDIC records"
+msgstr "Ongeldige HUFF/CDIC-records"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+#, fuzzy
+msgid "Missing HUFF parameters in header"
+msgstr "Ontbrekende HUFF-parameters in de header"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+#, fuzzy
+msgid "Unsupported compression mode ({})"
+msgstr "Niet-ondersteunde compressiemodus ({})"
+
+#. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
+#, fuzzy
+msgid "ODP file does not contain any pages"
+msgstr "Het ODP-bestand bevat geen pagina's"
+
+#. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
+#, fuzzy
+msgid "FODP file does not contain any pages"
+msgstr "Het FODP-bestand bevat geen pagina's"
+
+#. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required or incorrect"
+msgstr "Wachtwoord vereist of onjuist"
+
+#. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
+#, fuzzy
+msgid "Failed to open PDF document: {}"
+msgstr "Het PDF-document kan niet worden geopend: {}"
+
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
+#, fuzzy
+msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+msgstr "Dit PDF-bestand bevat alleen afbeeldingen en geen tekst die kan worden geëxtraheerd. Mogelijk moet u het door OCR-software halen om de inhoud te kunnen lezen."
+
+#, fuzzy
+msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+msgstr "Met een wachtwoord beveiligde PPT-bestanden worden momenteel niet ondersteund. Probeer het bestand op te slaan als PPTX en open dat in plaats daarvan."
+
+#. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
+#, fuzzy
+msgid "PPT file contains no slides"
+msgstr "Het PPT-bestand bevat geen dia's"
+
+#. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
+#, fuzzy
+msgid "PowerPoint Document stream not found"
+msgstr "PowerPoint-documentstroom niet gevonden"
+
+#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
+#, fuzzy
+msgid "PPTX file contains no slides"
+msgstr "Het PPTX-bestand bevat geen dia's"
+
+#. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
+#, fuzzy
+msgid "Failed to parse RTF document: {}"
+msgstr "Het RTF-document kon niet worden geparseerd: {}"
+
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "File is encrypted and requires a password"
+msgstr "Het bestand is versleuteld en er is een wachtwoord voor nodig"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+#, fuzzy
+msgid "Decryption failed (wrong password?): {}"
+msgstr "Ontcijfering mislukt (verkeerd wachtwoord?): {}"
+
+#. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
+#, fuzzy
+msgid "DOC file is missing required FIB fields"
+msgstr "Het DOC-bestand mist de vereiste FIB-velden"
+
+#. TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
+#, fuzzy
+msgid "Not a valid DOC file (invalid FIB magic)"
+msgstr "Geen geldig DOC-bestand (ongeldige FIB-magic)"
+
+#. TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "DOC file is encrypted and requires a password"
+msgstr "Het DOC-bestand is versleuteld en er is een wachtwoord voor nodig"
+
+#. TRANSLATORS: Error detail shown when decrypting a legacy DOC file fails (the internal sentinel prefix before it is not translated); {} is the underlying error
+#, fuzzy
+msgid "DOC decryption failed (wrong password?): {}"
+msgstr "DOC-ontcijfering mislukt (verkeerd wachtwoord?): {}"
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+#, fuzzy
+msgid "File content does not look like plain text"
+msgstr "De inhoud van het bestand lijkt niet op platte tekst"
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+#, fuzzy
+msgid "No readable text content found"
+msgstr "Er is geen leesbare tekst gevonden"
+
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#, fuzzy
+msgid "No readable content found in the ZIP archive"
+msgstr "Er is geen leesbare inhoud gevonden in het ZIP-archief"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+#, fuzzy
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr "Het parseren van het Legacy DOC-bestand is mislukt: {}. De OOXML-fallback is mislukt: {}"
+
+#. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
+#, fuzzy
+msgid "No file extension found for: {}"
+msgstr "Er is geen bestandsextensie gevonden voor: {}"
+
+#. TRANSLATORS: Error shown when no parser supports a file's extension; {} is the extension (without the leading dot)
+#, fuzzy
+msgid "No parser found for extension: .{}"
+msgstr "Er is geen parser gevonden voor de extensie: .{}"
+
+#. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
+#, fuzzy
+msgid "All parsers failed for extension: .{}"
+msgstr "Alle parsers hebben gefaald voor de extensie: . {}"
+
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required"
+msgstr "Wachtwoord vereist"
+
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password incorrect"
+msgstr "Wachtwoord is onjuist"
+
+msgid "Unknown update file format."
+msgstr "Onbekende indeling van updatebestand."
+
+#, fuzzy
+msgid "Failed to open disk image"
+msgstr "Donatiepagina openen in browser mislukt."
+
+#, fuzzy
+msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
+msgstr "De update is gedownload en de schijfkopie is geopend. Sluit %s af en sleep de nieuwe versie naar Programma's om de installatie te voltooien."
 
 msgid "Update Ready"
 msgstr "Update gereed"
@@ -1344,5 +2963,1162 @@ msgstr "Installatiescript starten mislukt"
 msgid "Failed to launch update script"
 msgstr "Updatescript starten mislukt"
 
-msgid "Unknown update file format."
-msgstr "Onbekende indeling van updatebestand."
+msgid "Update failed"
+msgstr "Update mislukt"
+
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Update gedownload naar: %s\n"
+"Installeer deze handmatig."
+
+msgid "Update to %s"
+msgstr "Bijwerken naar %s"
+
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "Er is een nieuwe versie van %s beschikbaar. Dit is er nieuw:"
+
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
+msgid "&Yes"
+msgstr "&Ja"
+
+#. TRANSLATORS: Label for the confirmation dialog "No" button
+msgid "&No"
+msgstr "&Nee"
+
+msgid "No release notes provided."
+msgstr "Geen release-opmerkingen beschikbaar."
+
+msgid "%s Update"
+msgstr "%s-update"
+
+msgid "Downloading update..."
+msgstr "Update downloaden..."
+
+msgid "No updates available."
+msgstr "Geen updates beschikbaar."
+
+msgid "No updates available. Latest version: %s"
+msgstr "Geen updates beschikbaar. Nieuwste versie: %s"
+
+msgid "Info"
+msgstr "Info"
+
+msgid "Security verification failed. The update might have been tampered with: %s"
+msgstr "Veiligheidsverificatie mislukt. Mogelijk is met de update geknoeid: %s"
+
+msgid "Security Error"
+msgstr "Veiligheidsfout"
+
+#: swift
+#, fuzzy
+msgid "Export Document Data"
+msgstr "Documentgegevens exporteren"
+
+#: swift
+#, fuzzy
+msgid "Import Document Data"
+msgstr "Documentgegevens importeren"
+
+#: swift
+#, fuzzy
+msgid "Settings exported"
+msgstr "Instellingen geëxporteerd"
+
+#: swift
+#, fuzzy
+msgid "Failed to export settings"
+msgstr "Het exporteren van de instellingen is mislukt"
+
+#: swift
+#, fuzzy
+msgid "Settings imported"
+msgstr "Instellingen geïmporteerd"
+
+#: swift
+#, fuzzy
+msgid "Failed to import settings"
+msgstr "Het importeren van de instellingen is mislukt"
+
+#: swift
+#, fuzzy
+msgid "Document Data"
+msgstr "Documentgegevens"
+
+#: swift
+#, fuzzy
+msgid "More options"
+msgstr "Meer opties"
+
+#: swift
+#, fuzzy
+msgid "Switch to TTS Mode"
+msgstr "Overschakelen naar TTS-modus"
+
+#: swift
+#, fuzzy
+msgid "Switch to Text Mode"
+msgstr "Overschakelen naar tekstmodus"
+
+#: swift
+#, fuzzy
+msgid "Go To…"
+msgstr "Ga naar…"
+
+#: swift
+#, fuzzy
+msgid "Recent Documents"
+msgstr "Recente documenten"
+
+#: swift
+#, fuzzy
+msgid "Sleep Timer (active)"
+msgstr "Slaaptimer (actief)"
+
+#: swift
+#, fuzzy
+msgid "Type"
+msgstr "Type"
+
+#: swift
+#, fuzzy
+msgid "No Elements"
+msgstr "Geen elementen"
+
+#: swift
+#, fuzzy
+msgid "Headings, images, and other elements will appear here."
+msgstr "Hier verschijnen kopteksten, afbeeldingen en andere elementen."
+
+#: swift
+#, fuzzy
+msgid "No document open"
+msgstr "Er is geen document geopend"
+
+#: swift
+#, fuzzy
+msgid "Show All"
+msgstr "Alles weergeven"
+
+#: swift
+#, fuzzy
+msgid "Search…"
+msgstr "Zoeken…"
+
+#: swift
+#, fuzzy
+msgid "Match Case"
+msgstr "Match Case"
+
+#: swift
+#, fuzzy
+msgid "Whole Word"
+msgstr "Het hele woord"
+
+#: swift
+#, fuzzy
+msgid "Regular Expression"
+msgstr "Reguliere expressie"
+
+#: swift
+#, fuzzy
+msgid "Open Error"
+msgstr "Fout bij openen"
+
+#: swift
+#, fuzzy
+msgid "Open Book"
+msgstr "Open Boek"
+
+#: swift
+#, fuzzy
+msgid "Locate"
+msgstr "Zoeken"
+
+#: swift
+#, fuzzy
+msgid "Remove"
+msgstr "Verwijderen"
+
+#: swift
+#, fuzzy
+msgid "File Missing"
+msgstr "Bestand ontbreekt"
+
+#: swift
+#, fuzzy
+msgid "Currently Open"
+msgstr "Momenteel beschikbaar"
+
+#: swift
+#, fuzzy
+msgid "No Recent Documents"
+msgstr "Geen recente documenten"
+
+#: swift
+#, fuzzy
+msgid "Documents you open will appear here."
+msgstr "De documenten die u opent, verschijnen hier."
+
+#: swift
+#, fuzzy
+msgid "Text to Speech"
+msgstr "Tekst-naar-spraak"
+
+#: swift
+#, fuzzy
+msgid "Voice"
+msgstr "Stem"
+
+#: swift
+#, fuzzy
+msgid "Rate"
+msgstr "Tarief"
+
+#: swift
+#, fuzzy
+msgid "Speech Rate"
+msgstr "Spreeksnelheid"
+
+#: swift
+#, fuzzy
+msgid "Pitch"
+msgstr "Pitch"
+
+#: swift
+#, fuzzy
+msgid "Speech Dictionary"
+msgstr "Woordenboek voor spraakherkenning"
+
+#: swift
+#, fuzzy
+msgid "Play Sample"
+msgstr "Voorbeeld afspelen"
+
+#: swift
+#, fuzzy
+msgid "Text Size"
+msgstr "Tekst-naar-spraak"
+
+#: swift
+#, fuzzy
+msgid "Line Spacing"
+msgstr "Regelafstand"
+
+#: swift
+#, fuzzy
+msgid "Paragraph Spacing"
+msgstr "Alinea-afstand"
+
+#: swift
+#, fuzzy
+msgid "Alignment"
+msgstr "Uitlijning"
+
+#: swift
+#, fuzzy
+msgid "Behavior"
+msgstr "Gedrag"
+
+#: swift
+#, fuzzy
+msgid "Restore last open documents"
+msgstr "Laatst geopende documenten herstellen"
+
+#: swift
+#, fuzzy
+msgid "Swipe up moves forward"
+msgstr "Naar boven vegen gaat een stap verder"
+
+#: swift
+#, fuzzy
+msgid "Title"
+msgstr "Titel"
+
+#: swift
+#, fuzzy
+msgid "Author"
+msgstr "Auteur"
+
+#: swift
+#, fuzzy
+msgid "Words"
+msgstr "Woorden"
+
+#: swift
+#, fuzzy
+msgid "Lines"
+msgstr "Regels"
+
+#: swift
+#, fuzzy
+msgid "Characters"
+msgstr "Personages"
+
+#: swift
+#, fuzzy
+msgid "Characters (excluding spaces)"
+msgstr "Tekens (exclusief spaties)"
+
+#: swift
+#, fuzzy
+msgid "Mode"
+msgstr "Modus"
+
+#: swift
+#, fuzzy
+msgid "Page"
+msgstr "Pagina"
+
+#: swift
+#, fuzzy
+msgid "Percent"
+msgstr "Procent"
+
+#: swift
+#, fuzzy
+msgid "Line number"
+msgstr "Regelnummer"
+
+#: swift
+#, fuzzy
+msgid "Page number"
+msgstr "Paginanummer"
+
+#: swift
+#, fuzzy
+msgid "Percentage"
+msgstr "Percentage"
+
+#: swift
+#, fuzzy
+msgid "Go To"
+msgstr "Ga naar"
+
+#: swift
+#, fuzzy
+msgid "Password"
+msgstr "Wachtwoord"
+
+#: swift
+#, fuzzy
+msgid "Enter password for {}"
+msgstr "Voer het wachtwoord in voor {}"
+
+#: swift
+#, fuzzy
+msgid "Password Required"
+msgstr "Wachtwoord vereist"
+
+#: swift
+#, fuzzy
+msgid "Rule"
+msgstr "Regel"
+
+#: swift
+#, fuzzy
+msgid "Scope"
+msgstr "Toepassingsgebied"
+
+#: swift
+#, fuzzy
+msgid "Word"
+msgstr "Woord"
+
+#: swift
+#, fuzzy
+msgid "Paragraph"
+msgstr "Alinea"
+
+#: swift
+#, fuzzy
+msgid "Pattern & Replacement"
+msgstr "Patroon & Vervanging"
+
+#: swift
+#, fuzzy
+msgid "Pattern"
+msgstr "Patroon"
+
+#: swift
+#, fuzzy
+msgid "Replacement"
+msgstr "Vervanging"
+
+#: swift
+#, fuzzy
+msgid "Whole word only"
+msgstr "Alleen hele woorden"
+
+#: swift
+#, fuzzy
+msgid "Regular expression (\\1 = first capture group)"
+msgstr "Reguliere expressie (\\1 = eerste vangstgroep)"
+
+#: swift
+#, fuzzy
+msgid "Enabled"
+msgstr "Ingeschakeld"
+
+#: swift
+#, fuzzy
+msgid "Apply to"
+msgstr "Solliciteren bij"
+
+#: swift
+#, fuzzy
+msgid "Voices"
+msgstr "Stemmen"
+
+#: swift
+#, fuzzy
+msgid "New Rule"
+msgstr "Nieuwe regel"
+
+#: swift
+#, fuzzy
+msgid "Edit Rule"
+msgstr "Regel bewerken"
+
+#: swift
+#, fuzzy
+msgid "Save"
+msgstr "Opslaan"
+
+#: swift
+#, fuzzy
+msgid "All voices"
+msgstr "Alle stemmen"
+
+#: swift
+#, fuzzy
+msgid "Apply To"
+msgstr "Solliciteren bij"
+
+#: swift
+#, fuzzy
+msgid "Sleep timer running, {} remaining"
+msgstr "De slaaptimer is ingeschakeld, er zijn nog {}"
+
+#: swift
+#, fuzzy
+msgid "Custom"
+msgstr "Op maat"
+
+#: swift
+#, fuzzy
+msgid "Custom: {} minutes"
+msgstr "Aangepast: {} minuten"
+
+#: swift
+#, fuzzy
+msgid "Duration"
+msgstr "Duur"
+
+#: swift
+#, fuzzy
+msgid "Minutes"
+msgstr "Notulen"
+
+#: swift
+#, fuzzy
+msgid "Done"
+msgstr "Klaar"
+
+#: swift
+#, fuzzy
+msgid "Stop Timer"
+msgstr "Timer stoppen"
+
+#: swift
+#, fuzzy
+msgid "Start Timer"
+msgstr "Timer starten"
+
+#: swift
+#, fuzzy
+msgid "Edit"
+msgstr "Bewerken"
+
+#: swift
+#, fuzzy
+msgid "Add Rule"
+msgstr "Regel toevoegen"
+
+#: swift
+#, fuzzy
+msgid "No Rules"
+msgstr "Geen regels"
+
+#: swift
+#, fuzzy
+msgid "Tabs"
+msgstr "Tabbladen"
+
+#: swift
+#, fuzzy
+msgid "Contents"
+msgstr "Inhoudsopgave"
+
+#: swift
+#, fuzzy
+msgid "No Table of Contents"
+msgstr "Geen inhoudsopgave"
+
+#: swift
+#, fuzzy
+msgid "This document has no table of contents."
+msgstr "Dit document bevat geen inhoudsopgave."
+
+#: swift
+#, fuzzy
+msgid "Navigation unit"
+msgstr "Navigatiesysteem"
+
+#: swift
+#, fuzzy
+msgid "Previous {}"
+msgstr "Vorige {}"
+
+#: swift
+#, fuzzy
+msgid "Pause"
+msgstr "Pauze"
+
+#: swift
+#, fuzzy
+msgid "Play"
+msgstr "Afspelen"
+
+#: swift
+#, fuzzy
+msgid "End of document"
+msgstr "Einde van het document"
+
+#: swift
+#, fuzzy
+msgid "Beginning of document"
+msgstr "Begin van het document"
+
+#: swift
+#, fuzzy
+msgid "Next {}"
+msgstr "Volgende{}"
+
+#: swift
+#, fuzzy
+msgid "Press play to start listening."
+msgstr "Klik op 'Afspelen' om te beginnen met luisteren."
+
+#: kt
+#, fuzzy
+msgid "Document Information"
+msgstr "Documentgegevens"
+
+#: kt
+#, fuzzy
+msgid "Untitled Link"
+msgstr "Link zonder titel"
+
+#: kt
+#, fuzzy
+msgid "Export Document"
+msgstr "Documentgegevens exporteren"
+
+#: kt
+#, fuzzy
+msgid "Select a format to export the current document:"
+msgstr "Het huidige document sluiten"
+
+#: kt
+#, fuzzy
+msgid "Plain Text (.txt)"
+msgstr "Platte tekst"
+
+#: kt
+#, fuzzy
+msgid "HTML (.html)"
+msgstr "HTML (.html)"
+
+#: kt
+#, fuzzy
+msgid "Markdown (.md)"
+msgstr "Markdown"
+
+#: kt
+#, fuzzy
+msgid "No supported books or folders found here."
+msgstr "Hier zijn geen ondersteunde boeken of mappen gevonden."
+
+#: kt
+#, fuzzy
+msgid "Folder"
+msgstr "Map"
+
+#: kt
+#, fuzzy
+msgid "Internal Storage"
+msgstr "Interne opslag"
+
+#: kt
+#, fuzzy
+msgid "Search Term"
+msgstr "Zoekterm"
+
+#: kt
+#, fuzzy
+msgid "Search History"
+msgstr "Zoekgeschiedenis"
+
+#: kt
+#, fuzzy
+msgid "Password:"
+msgstr "Wachtwoord:"
+
+#: kt
+#, fuzzy
+msgid "All Files Access Required"
+msgstr "Toegang tot alle bestanden vereist"
+
+#: kt
+#, fuzzy
+msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgstr "Paperback heeft de machtiging 'Toegang tot alle bestanden' nodig om de aangepaste bestandsbrowser in de app te kunnen inschakelen."
+
+#: kt
+#, fuzzy
+msgid "Why we need this:"
+msgstr "Waarom we dit nodig hebben:"
+
+#: kt
+#, fuzzy
+msgid "To provide a fast, fully screen-reader accessible file manager inside the app."
+msgstr "• Een snelle, volledig voor schermlezers toegankelijke bestandsbeheerder binnen de app aanbieden."
+
+#: kt
+#, fuzzy
+msgid "To load large files instantly without needing to copy them into the app's cache."
+msgstr "• Om grote bestanden direct te laden zonder dat ze naar de cache van de app hoeven te worden gekopieerd."
+
+#: kt
+#, fuzzy
+msgid "To display the exact local file paths of your documents."
+msgstr "• Om de exacte lokale bestandspaden van uw documenten weer te geven."
+
+#: kt
+#, fuzzy
+msgid "If you deny this permission, you can still use the Android System File Picker to open your "
+msgstr "Als je deze toestemming weigert, kun je de Android-bestandskeuzer toch gebruiken om je boeken te openen door de instelling voor de aangepaste bestandsbrowser uit te schakelen."
+
+#: kt
+#, fuzzy
+msgid "Grant"
+msgstr "Subsidie"
+
+#: kt
+#, fuzzy
+msgid "Not Now"
+msgstr "Nu even niet"
+
+#: kt
+#, fuzzy
+msgid "Custom Timer"
+msgstr "Aangepaste timer"
+
+#: kt
+#, fuzzy
+msgid "Back"
+msgstr "Terug"
+
+#: kt
+#, fuzzy
+msgid "Start"
+msgstr "Start"
+
+#: kt
+#, fuzzy
+msgid "Active: {} remaining"
+msgstr "Actief: {} resterend"
+
+#: kt
+#, fuzzy
+msgid "remaining"
+msgstr "Resterende tijd"
+
+#: kt
+#, fuzzy
+msgid "Cancel Timer"
+msgstr "Timer annuleren"
+
+#: kt
+#, fuzzy
+msgid "Change to:"
+msgstr "Wijzig in:"
+
+#: kt
+#, fuzzy
+msgid "{} minutes"
+msgstr "{} minuten"
+
+#: kt
+#, fuzzy
+msgid "Custom time..."
+msgstr "Tijd op maat..."
+
+#: kt
+#, fuzzy
+msgid "Expanded"
+msgstr "Uitgebreid"
+
+#: kt
+#, fuzzy
+msgid "Collapsed"
+msgstr "Ingeklapt"
+
+#: kt
+#, fuzzy
+msgid "Collapse"
+msgstr "Samenvouwen"
+
+#: kt
+#, fuzzy
+msgid "Expand"
+msgstr "Uitvouwen"
+
+#: kt
+msgid "This document contains {} words."
+msgstr "Dit document bevat {} woorden."
+
+#: kt
+#, fuzzy
+msgid "words"
+msgstr "Woorden"
+
+#: kt
+#, fuzzy
+msgid "Close Search"
+msgstr "Zoekresultaten sluiten"
+
+#: kt
+#, fuzzy
+msgid "Document exported"
+msgstr "Het document is opnieuw geladen."
+
+#: kt
+#, fuzzy
+msgid "Failed to export document"
+msgstr "Document exporteren mislukt."
+
+#: kt
+#, fuzzy
+msgid "No document open. Please open a book."
+msgstr "Er is geen document geopend. Open alstublieft een boek."
+
+#: kt
+#, fuzzy
+msgid "No Documents"
+msgstr "Geen documenten"
+
+#: kt
+#, fuzzy
+msgid "Sleep timer: {}"
+msgstr "Slaaptimer: {}"
+
+#: kt
+#, fuzzy
+msgid "Cancel sleep timer"
+msgstr "Slaaptimer annuleren"
+
+#: kt
+#, fuzzy
+msgid "Import"
+msgstr "Importeren"
+
+#: kt
+#, fuzzy
+msgid "More Options"
+msgstr "Meer opties"
+
+#: kt
+#, fuzzy
+msgid "Pause Read Aloud"
+msgstr "Pauzeren Voorlezen"
+
+#: kt
+#, fuzzy
+msgid "Read Aloud"
+msgstr "Voorlezen"
+
+#: kt
+#, fuzzy
+msgid "Export As"
+msgstr "Exporteren geslaagd"
+
+#: kt
+#, fuzzy
+msgid "Elements List"
+msgstr "Lijst met elementen"
+
+#: kt
+#, fuzzy
+msgid "No more matches."
+msgstr "Geen resultaten meer."
+
+#: kt
+#, fuzzy
+msgid "Heading"
+msgstr "Koptekst"
+
+#: kt
+#, fuzzy
+msgid "Link"
+msgstr "Link"
+
+#: kt
+#, fuzzy
+msgid "Section"
+msgstr "Paragraaf"
+
+#: kt
+#, fuzzy
+msgid "List"
+msgstr "Lijst"
+
+#: kt
+#, fuzzy
+msgid "List Item"
+msgstr "Lijstitem"
+
+#: kt
+#, fuzzy
+msgid "Table"
+msgstr "Tabel"
+
+#: kt
+#, fuzzy
+msgid "Separator"
+msgstr "Scheidingsteken"
+
+#: kt
+#, fuzzy
+msgid "{} seconds"
+msgstr "{} seconden"
+
+#: kt
+#, fuzzy
+msgid "✓ Granted"
+msgstr "Subsidie"
+
+#: kt
+#, fuzzy
+msgid "Before You Start"
+msgstr "Voordat u begint"
+
+#: kt
+#, fuzzy
+msgid "Paperback works best with a couple of permissions. Here's what we ask for and why:"
+msgstr "Paperback werkt het best met een paar machtigingen. Dit vragen we en waarom:"
+
+#: kt
+#, fuzzy
+msgid "Notifications"
+msgstr "Geen secties."
+
+#: kt
+#, fuzzy
+msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is "
+msgstr "Hiermee kan Paperback weergaveknoppen in het meldingenpaneel weergeven terwijl tekst-naar-spraak "
+
+#: kt
+#, fuzzy
+msgid "Enable Notifications"
+msgstr "Meldingen inschakelen"
+
+#: kt
+#, fuzzy
+msgid "All Files Access"
+msgstr "Toegang tot alle bestanden vereist"
+
+#: kt
+#, fuzzy
+msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your "
+msgstr "Maakt de optionele ingebouwde bestandsbrowser mogelijk, zodat u documenten overal op uw "
+
+#: kt
+#, fuzzy
+msgid "Enable File Access"
+msgstr "Toegang tot alle bestanden vereist"
+
+#: kt
+#, fuzzy
+msgid "Continue"
+msgstr "Doorgaan"
+
+#: kt
+#, fuzzy
+msgid "Restore last open book"
+msgstr "Laatst geopend boek herstellen"
+
+#: kt
+#, fuzzy
+msgid "Use in-app file browser (requires All Files permission)"
+msgstr "Gebruik de bestandsbrowser in de app (hiervoor is de machtiging ‘Alle bestanden’ vereist)"
+
+#: kt
+#, fuzzy
+msgid "Text-to-Speech"
+msgstr "Tekst-naar-spraak"
+
+#: kt
+#, fuzzy
+msgid "System Default"
+msgstr "Systeemstandaard"
+
+#: kt
+#, fuzzy
+msgid "Back {}"
+msgstr "Terug {}"
+
+#: kt
+#, fuzzy
+msgid "Forward {}"
+msgstr "Vooruit {}"
+
+#: kt
+#, fuzzy
+msgid "Enter {}"
+msgstr "Enter {}"
+
+#: kt
+#, fuzzy
+msgid "Error loading document: {}"
+msgstr "Fout bij laden document: {}"
+
+#: kt
+#, fuzzy
+msgid "1.5×"
+msgstr "1,5×"
+
+#: kt
+#, fuzzy
+msgid "Speech Engine"
+msgstr "Spreeksnelheid"
+
+#: swift
+#, fuzzy
+msgid "1 book"
+msgstr "1 boek"
+
+#: swift
+#, fuzzy
+msgid "{} books"
+msgstr "{} boeken"
+
+#: swift
+#, fuzzy
+msgid "..."
+msgstr "Open"
+
+#: swift
+#, fuzzy
+msgid "Go To..."
+msgstr "Ga naar"
+
+#: swift
+#, fuzzy
+msgid "Search..."
+msgstr "Zoeken"
+
+#: swift
+#, fuzzy
+msgid "Custom: {} minute"
+msgstr "Aangepast: {} minuten"
+
+#: swift
+#, fuzzy
+msgid "Custom: {} minutes⁣"
+msgstr "Aangepast: {} minuten"
+
+#: kt
+#, fuzzy
+msgid "This document contains {} word."
+msgstr "Dit document bevat {} woord."
+
+#: kt
+#, fuzzy
+msgid "word"
+msgstr "Woorden"
+
+#: kt
+#, fuzzy
+msgid "{} second"
+msgstr "{} seconden"
+
+#: kt
+#, fuzzy
+msgid "{} seconds⁣"
+msgstr "{} seconden"
+
+#: kt
+#, fuzzy
+msgid "This document contains {} words.⁣"
+msgstr "Dit document bevat {} woorden.⁣"
+
+#: kt
+#, fuzzy
+msgid "words⁣"
+msgstr "Woorden"
+
+#, fuzzy
+#~ msgid "&Locate…"
+#~ msgstr "&Zoeken…"
+
+#~ msgid "hours"
+#~ msgstr "uur"
+
+#~ msgid "Sleep timer set for 1 minute."
+#~ msgstr "Slaaptimer ingesteld op 1 minuut."
+
+#~ msgid "Go to &Page\tCtrl+P"
+#~ msgstr "Ga naar &pagina\tCtrl+P"
+
+#~ msgid "&View Note Text\tRawCtrl+Shift+W"
+#~ msgstr "Notitietekst &bekijken\tRawCtrl+Shift+W"
+
+#~ msgid "&View Note Text\tCtrl+Shift+W"
+#~ msgstr "Notitietekst &bekijken\tCtrl+Shift+W"
+
+#~ msgid "&Open...\tCtrl+O"
+#~ msgstr "&Openen...\tCtrl+O"
+
+#~ msgid "&Close\tCtrl+W"
+#~ msgstr "&Sluiten\tCtrl+W"
+
+#~ msgid "&Close\tCtrl+F4"
+#~ msgstr "&Sluiten\tCtrl+F4"
+
+#~ msgid "Close &All\tCtrl+Shift+W"
+#~ msgstr "&Alles sluiten\tCtrl+Shift+W"
+
+#~ msgid "Close &All\tCtrl+Shift+F4"
+#~ msgstr "&Alles sluiten\tCtrl+Shift+F4"
+
+#~ msgid "E&xit\tCtrl+Q"
+#~ msgstr "&Afsluiten\tCtrl+Q"
+
+#~ msgid "&Find...\tCtrl+F"
+#~ msgstr "&Zoeken...\tCtrl+F"
+
+#~ msgid "Find &Next\tCtrl+G"
+#~ msgstr "Volge&nde zoeken\tCtrl+G"
+
+#~ msgid "Find &Next\tF3"
+#~ msgstr "Volge&nde zoeken\tF3"
+
+#~ msgid "Find &Previous\tCtrl+Shift+G"
+#~ msgstr "Vo&rige zoeken\tCtrl+Shift+G"
+
+#~ msgid "Find &Previous\tShift+F3"
+#~ msgstr "Vo&rige zoeken\tShift+F3"
+
+#~ msgid "Go to &line...\tCtrl+L"
+#~ msgstr "Ga naar &regel...\tCtrl+L"
+
+#~ msgid "Go to &line...\tCtrl+G"
+#~ msgstr "Ga naar &regel...\tCtrl+G"
+
+#~ msgid "Go to &percent...\tCtrl+Shift+L"
+#~ msgstr "Ga naar &percentage...\tCtrl+Shift+L"
+
+#~ msgid "Go to &percent...\tCtrl+Shift+G"
+#~ msgstr "Ga naar &percentage...\tCtrl+Shift+G"
+
+#~ msgid "Go &Back\tAlt+Left"
+#~ msgstr "Ga &terug\tAlt+Left"
+
+#~ msgid "Go &Forward\tAlt+Right"
+#~ msgstr "Ga voor&uit\tAlt+Right"
+
+#~ msgid "&Import Document Data...\tCtrl+Shift+I"
+#~ msgstr "Document&gegevens importeren...\tCtrl+Shift+I"
+
+#~ msgid "&Export Document Data...\tCtrl+Shift+E"
+#~ msgstr "Documentg&egevens exporteren...\tCtrl+Shift+E"
+
+#~ msgid "&Word Count\tRawCtrl+W"
+#~ msgstr "&Woordenaantal\tRawCtrl+W"
+
+#~ msgid "&Word Count\tCtrl+W"
+#~ msgstr "&Woordenaantal\tCtrl+W"
+
+#~ msgid "Document &Info\tCtrl+I"
+#~ msgstr "Document&informatie\tCtrl+I"
+
+#~ msgid "&Table of Contents\tCtrl+T"
+#~ msgstr "&Inhoudsopgave\tCtrl+T"
+
+#~ msgid "Bookmark with &Note\tCtrl+Shift+N"
+#~ msgstr "Bladwijzer met &notitie\tCtrl+Shift+N"
+
+#~ msgid "Word w&rap\tCtrl+Alt+W"
+#~ msgstr "Automatische te&rugloop\tCtrl+Alt+W"
+
+#~ msgid "&Options\tCtrl+,"
+#~ msgstr "&Opties\tCtrl+,"
+
+#~ msgid "&Sleep Timer...\tCtrl+Shift+S"
+#~ msgstr "&Slaaptimer...\tCtrl+Shift+S"
+
+#~ msgid "View Help in &Paperback\tShift+F1"
+#~ msgstr "Help bekijken in &Paperback\tShift+F1"
+
+#~ msgid "Check for &Updates\tCtrl+Shift+U"
+#~ msgstr "Controleren op &updates\tCtrl+Shift+U"
+
+#~ msgid "Show All...\tCtrl+R"
+#~ msgstr "Alles tonen...\tCtrl+R"
+
+#, fuzzy
+#~ msgid "Recent"
+#~ msgstr "Recent"
+
+#, fuzzy
+#~ msgid "Screen dimmed by sleep timer. Tap to wake."
+#~ msgstr "Het scherm is gedimd door de slaaptimer. Tik om het scherm weer te activeren."
+
+#, fuzzy
+#~ msgid "Open document"
+#~ msgstr "Document openen"
+
+#, fuzzy
+#~ msgid "Next result"
+#~ msgstr "Volgend resultaat"
+
+#, fuzzy
+#~ msgid "Active"
+#~ msgstr "Actief"
+
+#, fuzzy
+#~ msgid "Set timer"
+#~ msgstr "Stel de timer in"
+
+#, fuzzy
+#~ msgid "Show Document"
+#~ msgstr "Document weergeven"
+
+#, fuzzy
+#~ msgid "Show Text"
+#~ msgstr "Tekst weergeven"
+
+#~ msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
+#~ msgstr "Weet je zeker dat je dit document uit de lijst wilt verwijderen? Hiermee wordt ook de leespositie verwijderd."
+
+#~ msgid "Are you sure you want to remove these {} documents from the list? This will also remove their reading positions."
+#~ msgstr "Weet je zeker dat je deze {} documenten uit de lijst wilt verwijderen? Hiermee worden ook hun leesposities verwijderd."
+
+#~ msgid "Root"
+#~ msgstr "Hoofdniveau"
+
+#~ msgid "Open folder containing the document"
+#~ msgstr "De map met het document openen"

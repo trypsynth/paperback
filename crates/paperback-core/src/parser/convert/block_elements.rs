@@ -1,0 +1,56 @@
+//! The set of tag names [`super::xml_to_text::XmlToText`] and
+//! [`super::html_to_text::HtmlToText`] both treat as block-level (closing one finalizes the
+//! current line).
+
+const BLOCK_ELEMENT_TAGS: &[&str] = &[
+	"div",
+	"p",
+	"pre",
+	"h1",
+	"h2",
+	"h3",
+	"h4",
+	"h5",
+	"h6",
+	"blockquote",
+	"ul",
+	"ol",
+	"list",
+	"li",
+	"dl",
+	"dt",
+	"dd",
+	"section",
+	"article",
+	"header",
+	"footer",
+	"nav",
+	"aside",
+	"main",
+	"figure",
+	"figcaption",
+	"address",
+	"hr",
+	"table",
+	"thead",
+	"tbody",
+	"tfoot",
+	"tr",
+	"td",
+	"th",
+	"level1",
+	"level2",
+	"level3",
+	"level4",
+	"level5",
+	"level6",
+	"frontmatter",
+	"bodymatter",
+	"rearmatter",
+	"doctitle",
+	"docauthor",
+];
+
+pub(super) fn is_block_element(tag_name: &str) -> bool {
+	BLOCK_ELEMENT_TAGS.iter().any(|t| tag_name.eq_ignore_ascii_case(t))
+}
