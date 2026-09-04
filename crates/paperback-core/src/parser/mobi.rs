@@ -16,8 +16,10 @@ use crate::{
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
 	t,
+	types::HeadingInfo,
 };
 
+mod chunk;
 mod compression;
 mod html;
 mod huffman;
@@ -25,6 +27,7 @@ mod links;
 mod toc;
 mod varint;
 
+use chunk::split_html_chunks;
 use compression::{decompress_palmdoc, get_trailing_size};
 use html::rewrite_font_size_headings;
 use huffman::HuffmanDecoder;
@@ -377,19 +380,38 @@ impl Parser for MobiParser {
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
 		// Rewrite them so the heading-based TOC builder can pick them up.
 		text = rewrite_font_size_headings(&text);
-		let mut html_converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
-		html_converter.convert(&text, HtmlSourceMode::NativeHtml);
 		if document_title.trim().is_empty() {
 			document_title = extract_title_from_path(&context.file_path);
 		}
 		let mut document = Document::new().with_author(document_author);
 		document.title = document_title;
+		// Converted chunk by chunk rather than as one whole-book DOM parse: `HtmlToText::convert`
+		// builds a full `scraper`/`html5ever` tree for whatever it's handed, and a book-sized
+		// single tree is what ran huge MOBI/AZW3 files out of memory (#781). Each chunk lands on
+		// a block-element boundary (see `chunk::split_html_chunks`), so splitting costs nothing
+		// beyond that boundary already being a line break in the rendered output; appending each
+		// chunk's text in sequence (rather than via `DocumentBuffer::from_parts`, which inserts a
+		// separator between parts) keeps a single-chunk book's output byte-identical to before
+		// chunking existed.
 		let mut buffer = DocumentBuffer::new();
-		buffer.append(&html_converter.get_text());
-		add_converter_markers(&mut buffer, &html_converter, 0);
+		let mut id_positions = HashMap::new();
+		let mut headings: Vec<HeadingInfo> = Vec::new();
+		for piece in split_html_chunks(&text) {
+			let mut html_converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
+			html_converter.convert(piece, HtmlSourceMode::NativeHtml);
+			let offset = buffer.current_position();
+			buffer.append(&html_converter.get_text());
+			for (id, &relative) in html_converter.get_id_positions() {
+				id_positions.entry(id.clone()).or_insert(offset + relative);
+			}
+			for heading in html_converter.get_headings() {
+				headings.push(HeadingInfo { offset: offset + heading.offset, ..heading.clone() });
+			}
+			add_converter_markers(&mut buffer, &html_converter, offset);
+		}
 		document.set_buffer(buffer);
-		document.id_positions = html_converter.get_id_positions().clone();
-		let mut toc_items = build_toc_from_headings(html_converter.get_headings());
+		document.id_positions = id_positions;
+		let mut toc_items = build_toc_from_headings(&headings);
 		let toc_source = if !toc_items.is_empty() {
 			"headings"
 		} else if !ncx_toc.is_empty() {
