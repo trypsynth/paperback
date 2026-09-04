@@ -35,10 +35,8 @@ impl Parser for M4bParser {
 		if duration_ms == 0 {
 			bail!("M4B file has no positive audio duration");
 		}
-
 		let (title, author) = document_metadata(&tag, &context.file_path);
 		let chapters = normalize_chapters(tag.chapters(), duration_ms, &title);
-
 		Ok(build_document(&context.file_path, title, author, duration_ms, &chapters))
 	}
 }
@@ -65,7 +63,6 @@ fn normalize_chapters(chapters: &[Chapter], duration_ms: u64, document_title: &s
 	starts.sort_by_key(|(start_ms, _)| *start_ms);
 	let mut seen = HashSet::new();
 	starts.retain(|(start_ms, _)| seen.insert(*start_ms));
-
 	if starts.is_empty() {
 		return vec![NormalizedChapter { start_ms: 0, end_ms: duration_ms, title: document_title.to_string() }];
 	}
@@ -97,7 +94,6 @@ fn build_document(
 	let mut toc_items = Vec::with_capacity(chapters.len());
 	let mut audio_builder = AudioTimelineBuilder::new();
 	let source = audio_builder.add_source(AudioLocation::File(file_path.to_string()), Some(duration_ms));
-
 	for chapter in chapters {
 		let position = buffer.current_position();
 		buffer.append("\n");
@@ -139,11 +135,9 @@ mod tests {
 	fn document_metadata_uses_tag_priority_and_path_fallbacks() {
 		let mut tag = Tag::default();
 		assert_eq!(document_metadata(&tag, "/books/fallback.m4b"), ("fallback".to_string(), String::new()));
-
 		tag.set_album(" Album ");
 		tag.set_artist("Artist");
 		assert_eq!(document_metadata(&tag, "fallback.m4b"), ("Album".to_string(), "Artist".to_string()));
-
 		tag.set_title("Title");
 		tag.set_album_artist("Album Artist");
 		assert_eq!(document_metadata(&tag, "fallback.m4b"), ("Title".to_string(), "Album Artist".to_string()));
@@ -173,7 +167,6 @@ mod tests {
 		let mut tag = Tag::default();
 		tag.chapter_track_mut().extend([chapter(0, "Track One"), chapter(5000, "Track Two")]);
 		assert_eq!(normalize_chapters(tag.chapters(), 10_000, "Book")[0].title, "Track One");
-
 		tag.chapter_list_mut().extend([chapter(0, "List One"), chapter(4000, "List Two")]);
 		let chapters = normalize_chapters(tag.chapters(), 10_000, "Book");
 		assert_eq!(chapters[0].title, "List One");
