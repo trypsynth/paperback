@@ -325,15 +325,6 @@ impl Parser for MobiParser {
 		{
 			content.truncate(html_end);
 		}
-		const MAX_MOBI_TEXT_BYTES: usize = 20 * 1024 * 1024;
-		if content.len() > MAX_MOBI_TEXT_BYTES {
-			tracing::warn!(
-				original_len = content.len(),
-				cap = MAX_MOBI_TEXT_BYTES,
-				"mobi content exceeded max text size, truncating"
-			);
-			content.truncate(MAX_MOBI_TEXT_BYTES);
-		}
 		let text = if text_encoding == 65001 {
 			tracing::debug!("decoding mobi content as utf-8");
 			String::from_utf8_lossy(&content).into_owned()
