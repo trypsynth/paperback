@@ -862,9 +862,8 @@ msgstr "Liens"
 
 #. TRANSLATORS: Choice option in the view dropdown to show the list of pages
 #, fuzzy
-#| msgid "&Pages"
 msgid "Pages"
-msgstr "&Pages"
+msgstr "Pages"
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title

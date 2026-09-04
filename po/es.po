@@ -859,9 +859,8 @@ msgstr "Enlaces"
 
 #. TRANSLATORS: Choice option in the view dropdown to show the list of pages
 #, fuzzy
-#| msgid "&Pages"
 msgid "Pages"
-msgstr "&Páginas"
+msgstr "Páginas"
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
@@ -950,8 +949,9 @@ msgid "Choose which file types should open in Paperback:"
 msgstr "Elige qué tipos de archivo deben abrirse en Paperback:"
 
 #. TRANSLATORS: Confirms the file association choices in the Linux setup dialog and applies them
+#, fuzzy
 msgid "Set Up"
-msgstr ""
+msgstr "Configurar"
 
 #. TRANSLATORS: Title of the Open As dialog
 msgid "Open As"

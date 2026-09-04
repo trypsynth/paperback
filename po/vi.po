@@ -21,14 +21,16 @@ msgstr ""
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
 #. from a shell. Mirrors the Windows installer's "Add Paperback directory to PATH" task.
+#, fuzzy
 msgid "Add the pb command-line tool to PATH"
-msgstr ""
+msgstr "Thêm công cụ dòng lệnh pb vào PATH"
 
 #. TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
 #. multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
 #. than tied to one format, same as the Windows installer's "assoc_zip" task.
+#, fuzzy
 msgid "ZIP Archives (.zip)"
-msgstr ""
+msgstr "Kho lưu trữ ZIP (.zip)"
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -880,9 +882,8 @@ msgstr "Liên kết"
 
 #. TRANSLATORS: Choice option in the view dropdown to show the list of pages
 #, fuzzy
-#| msgid "&Pages"
 msgid "Pages"
-msgstr "&Trang"
+msgstr "Trang"
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
@@ -973,8 +974,9 @@ msgid "Choose which file types should open in Paperback:"
 msgstr "Chọn loại tệp nào sẽ mở trong Paperback:"
 
 #. TRANSLATORS: Confirms the file association choices in the Linux setup dialog and applies them
+#, fuzzy
 msgid "Set Up"
-msgstr ""
+msgstr "Thiết lập"
 
 #. TRANSLATORS: Title of the Open As dialog
 msgid "Open As"
