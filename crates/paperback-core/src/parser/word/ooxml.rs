@@ -124,7 +124,7 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	Ok(())
 }
 
-/// Reads `word/styles.xml` and returns a map of style ID → heading level (1–9).
+/// Reads `word/styles.xml` and returns a map of style ID → heading level (1-9).
 /// Detects headings via `<w:name w:val="heading N"/>` (the canonical semantic name
 /// Word assigns regardless of locale) or a fallback `<w:outlineLvl>` in the style's pPr.
 fn build_style_heading_map<R: Read + Seek>(archive: &mut ZipArchive<R>) -> HashMap<String, i32> {

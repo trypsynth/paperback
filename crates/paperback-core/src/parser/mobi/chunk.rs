@@ -2,7 +2,7 @@
 //!
 //! `HtmlToText::convert` builds a full DOM tree (`scraper`/`html5ever`) for whatever it's
 //! handed. MOBI decodes its *entire* book into one HTML string before converting, so a
-//! single `convert` call means a DOM proportional to the whole book — which runs the
+//! single `convert` call means a DOM proportional to the whole book, which runs the
 //! process out of memory on genuinely huge books (#781). Splitting into bounded chunks,
 //! each parsed and converted independently and then stitched back together (the way EPUB
 //! already does per spine item), keeps peak DOM size bounded by chunk size instead of book
@@ -27,14 +27,14 @@ pub(super) fn split_html_chunks(html: &str) -> Vec<&str> {
 
 /// Splits `html` into chunks of roughly `target_bytes` each, cutting only right after a
 /// block-level element's closing (or self-closing) tag at a nesting depth back to (at most) what
-/// it was at the start of the current chunk — i.e. a point that was already a line break in the
+/// it was at the start of the current chunk, i.e. a point that was already a line break in the
 /// rendered output, not partway through one. This keeps every chunk independently well-formed on
 /// its own (an element straddling a chunk boundary just loses its formatting at the seam, never
 /// its text) and keeps each `HtmlToText`'s fresh internal line-building state consistent with
 /// what a single, uninterrupted conversion would have done at that same point.
 ///
 /// Falls back to fewer, larger chunks (down to a single one covering all of `html`) whenever no
-/// safe split point is found before `target_bytes` is reached — content with no tags at all, or
+/// safe split point is found before `target_bytes` is reached: content with no tags at all, or
 /// one element wrapping everything, being the extreme cases. Chunking is a memory-bound
 /// optimization, not a correctness requirement, so there is never a wrong answer to fall back to.
 fn split_html_chunks_with_target(html: &str, target_bytes: usize) -> Vec<&str> {

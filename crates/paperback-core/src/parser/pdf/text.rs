@@ -36,8 +36,8 @@ fn char_x_origin(text_page: &PdfiumTextPage, i: i32) -> f32 {
 
 /// Assemble one run of `(char, pdfium index)` pairs into text, reordering
 /// visual→logical for RTL scripts. Fetches x origins (a per-char FFI call)
-/// only when the run actually contains an RTL character, so pure-LTR runs —
-/// the overwhelming majority — pay a single cheap classification scan instead.
+/// only when the run actually contains an RTL character, so pure-LTR runs
+/// (the overwhelming majority) pay a single cheap classification scan instead.
 pub(super) fn reorder_run(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> String {
 	if !bidi::contains_rtl(chars.iter().map(|&(c, _)| c)) {
 		return chars.iter().map(|&(c, _)| c).collect();

@@ -205,7 +205,7 @@ pub struct FormatSegment {
 /// This is required because wxMSW's `wxTextCtrl::SetStyle` rewrites the *entire*
 /// font for a range whenever any font attribute is present in the `wxTextAttr`
 /// (it masks `CFM_FACE | CFM_SIZE | ...` unconditionally and fills unset fields
-/// from a default font — Arial 10pt). Applying overlapping single-style markers
+/// from a default font, Arial 10pt). Applying overlapping single-style markers
 /// one at a time would therefore both reset the face/size and clobber each
 /// other's styles. Producing one combined style per non-overlapping segment
 /// avoids both problems and is correct on every platform.

@@ -37,7 +37,7 @@ pub struct InstallerMeta {
 }
 
 impl InstallerMeta {
-	/// Offered unchecked, and only ever added to "Open with" — the right default for
+	/// Offered unchecked, and only ever added to "Open with". The right default for
 	/// formats that other Windows apps already claim.
 	pub const OPT_IN: Self = Self { default_checked: false, default_handler: false };
 	/// Offered unchecked, but becomes the default handler when the user opts in.
@@ -247,8 +247,8 @@ mod tests {
 			for mime in format.mime_types {
 				assert!(mime.contains('/'), "{}: '{mime}' doesn't look like a MIME type", format.name);
 				// `application/zip` is shared by DAISY and Word-in-zip and gets its own
-				// standalone association entry on Linux instead — see the doc comment on
-				// `FormatMeta::mime_types`.
+				// standalone association entry on Linux instead (see the doc comment on
+				// `FormatMeta::mime_types`).
 				assert_ne!(
 					*mime, "application/zip",
 					"{}: application/zip belongs to the standalone zip task",

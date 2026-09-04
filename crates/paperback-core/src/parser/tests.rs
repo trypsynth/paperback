@@ -288,7 +288,7 @@ fn add_tables_separators_lists_sets_table_marker_length() {
 			offset: 10,
 			text: "T".to_string(),
 			html_content: "<table/>".to_string(),
-			length: 7, // display-unit field — must appear as marker length
+			length: 7, // display-unit field, must appear as marker length
 		}],
 		separators: vec![],
 		lists: vec![],

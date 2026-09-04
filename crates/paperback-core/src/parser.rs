@@ -45,7 +45,7 @@ pub trait Parser: Send + Sync {
 
 /// A parser paired with the format it was registered for.
 ///
-/// Every fact about a format — its name, extensions and supported navigation features — lives
+/// Every fact about a format (its name, extensions and supported navigation features) lives
 /// in `paperback-formats` and is attached here at registration time, so parsers themselves hold
 /// no metadata that could drift from that table.
 pub struct RegisteredParser {

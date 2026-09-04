@@ -1,9 +1,9 @@
 //! Extracting text from a PDF page via its tagged structure tree, when one is present and
 //! trustworthy: walking the tree's `P`/`H1`-`H6`/`L`/`Table`/etc. elements and resolving each
 //! leaf's marked-content id to the text pdfium associated with it. This is the preferred
-//! extraction path — it recovers real paragraph/heading/list/table structure that the
-//! plain-text fallback ([`super::text`]) can only guess at from font size and line shape —
-//! but some PDFs advertise a structure tree while leaving most of their text untagged, so
+//! extraction path: it recovers real paragraph/heading/list/table structure that the
+//! plain-text fallback ([`super::text`]) can only guess at from font size and line shape.
+//! Some PDFs advertise a structure tree while leaving most of their text untagged, though, so
 //! [`extract_tagged_page_text`] first checks how much of the page's text is actually covered
 //! by a marked-content id and bails out to the caller's plain-text fallback below
 //! [`MIN_MCID_COVERAGE`].

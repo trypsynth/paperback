@@ -90,7 +90,7 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 				continue;
 			}
 			Token::IgnorableDestination => {
-				// {\* \keyword content} — skip the entire enclosing group. A destination
+				// {\* \keyword content}: skip the entire enclosing group. A destination
 				// nested inside another skipped destination (e.g. \picprop inside \pict
 				// inside \shppict) must not shrink the skip window: keep the outermost
 				// (smallest) depth so skipping doesn't end early when the inner group closes.

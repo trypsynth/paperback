@@ -115,7 +115,7 @@ mod tests {
 
 	/// Confirms `patois::embed_wx_translations!()` (invoked in `main.rs`) actually embedded
 	/// real wxstd catalogs restricted to paperback's own shipped languages, without needing
-	/// a visible window — mirrors the `wxdragon`/`patois` upstream headless test pattern.
+	/// a visible window (mirrors the `wxdragon`/`patois` upstream headless test pattern).
 	/// Degrades gracefully (no-ops) if wxstd catalogs weren't available at build time, e.g.
 	/// CI without gettext.
 	#[test]

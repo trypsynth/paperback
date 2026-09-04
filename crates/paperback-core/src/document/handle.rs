@@ -1,4 +1,4 @@
-//! [`DocumentHandle`]: read-only navigation over a parsed [`super::Document`] — finding the
+//! [`DocumentHandle`]: read-only navigation over a parsed [`super::Document`]. Finding the
 //! next/previous/current marker of a given type, heading navigation with optional level
 //! filtering, the innermost list/table containing a position, and TOC/section/page lookups.
 //! Markers are sorted by position once at construction so every lookup below can rely on that

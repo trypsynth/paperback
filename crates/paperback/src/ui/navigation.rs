@@ -19,7 +19,7 @@ type HistoryUpdate = (String, Vec<i64>, usize);
 /// Snapshots `tab`'s current position history as a [`HistoryUpdate`], if `tab.track`
 /// is set. Use this when the caller has already updated the history itself (e.g. via
 /// `history_go_forward`/`history_go_back`, which navigate *within* existing history
-/// rather than recording a new entry) — for the common "record a new position, then
+/// rather than recording a new entry). For the common "record a new position, then
 /// snapshot" case, use [`record_history`] or [`move_to_offset_and_record_history`]
 /// instead.
 fn tracked_history_update(tab: &DocumentTab) -> Option<HistoryUpdate> {
@@ -138,7 +138,7 @@ pub fn select_doc_range(tab: &mut DocumentTab, start: i64, end: i64) {
 
 /// Moves the caret to `offset`, focuses the document, shows the position, and
 /// records the jump in the session's position history. Returns the resulting
-/// history snapshot unconditionally — gate on `tab.track` at the call site if the
+/// history snapshot unconditionally; gate on `tab.track` at the call site if the
 /// update should only be persisted when history tracking is enabled for this tab.
 pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> HistoryUpdate {
 	jump_to_doc_offset(tab, offset);
@@ -523,8 +523,8 @@ pub fn selected_range(text_ctrl: TextCtrl) -> (i64, i64) {
 
 /// How long after a jump the interrupting announcement is raised.
 ///
-/// The interrupt must land after NVDA has started the focus-return chain — if it fires
-/// before, the chain reads over the announcement instead — but as close to the chain's
+/// The interrupt must land after NVDA has started the focus-return chain (if it fires
+/// before, the chain reads over the announcement instead), but as close to the chain's
 /// start as possible, so as little of it escapes before the cut. NVDA's own find dialog
 /// uses 100ms; Paperback's chain starts quickly, and 30ms was chosen by binary search on
 /// the Find dialog (60ms left a barely-audible sliver of the chain, 10ms occasionally let

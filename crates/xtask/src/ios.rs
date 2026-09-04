@@ -60,8 +60,8 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	if release {
 		build_args.push("--release");
 	}
-	// Both slices: without the simulator one the app cannot be built for, let alone run in,
-	// the Simulator — xcodebuild fails with "no library for this platform was found".
+	// Both slices: without the simulator one the app cannot be built for, let alone run in
+	// the Simulator. xcodebuild fails with "no library for this platform was found".
 	for (target, label) in [("aarch64-apple-ios", "device"), ("aarch64-apple-ios-sim", "simulator")] {
 		println!("Building for {target} ({label})...");
 		let status = Command::new(&cargo).current_dir(&root).args(&build_args).args(["--target", target]).status()?;
@@ -233,7 +233,7 @@ fn download_pdfium_dylib(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
 }
 
 // Wraps libpdfium.dylib in a proper .framework bundle. iOS doesn't support standalone
-// third-party dylibs at all — only .framework bundles — regardless of whether the dylib is
+// third-party dylibs at all, only .framework bundles, regardless of whether the dylib is
 // wrapped in an XCFramework container; App Store Connect's upload validator rejects a
 // bare-dylib XCFramework with ITMS-90426 ("SwiftSupport folder is missing"), because it still
 // routes through the legacy validation path that a raw dylib triggers. A real .framework
@@ -247,7 +247,7 @@ fn download_pdfium_dylib(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
 //
 // The framework's binary keeps the "libpdfium.dylib" filename (not the usual extension-less
 // framework-binary convention) because the `pdfium` crate's dlopen call constructs exactly
-// that filename via `libloading::library_filename("pdfium")` — AppViewModel.swift points
+// that filename via `libloading::library_filename("pdfium")`. AppViewModel.swift points
 // setPdfiumLibraryPath at .../Frameworks/libpdfium.framework to match.
 fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>> {
 	let framework_dir = root.join("ios/libpdfium.framework");
@@ -266,7 +266,7 @@ fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>
 	}
 	// The prebuilt binary's LC_BUILD_VERSION load command declares a minos far above our own
 	// deployment target (observed: iOS 26.0, just whatever SDK the upstream release happened to
-	// be built with) — nothing in PDFium actually requires that OS version, but App Store
+	// be built with). Nothing in PDFium actually requires that OS version, but App Store
 	// Connect's validator takes the declaration at face value and rejects the bundle as
 	// unsupported on our (lower) deployment target. Rewrite it to match.
 	let status = Command::new("xcrun")

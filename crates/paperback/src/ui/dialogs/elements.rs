@@ -54,8 +54,8 @@ struct PageEntry {
 	label: String,
 }
 
-/// One entry per page, labelled "Page N: <first content line>" — the same line that page
-/// navigation (p / Shift+P) announces — or just "Page N" when the page has no readable line.
+/// One entry per page, labelled "Page N: <first content line>" (the same line that page
+/// navigation (p / Shift+P) announces), or just "Page N" when the page has no readable line.
 fn page_entries(session: &DocumentSession) -> Vec<PageEntry> {
 	(0..session.page_count())
 		.map(|index| {

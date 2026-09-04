@@ -205,7 +205,7 @@ fn process_table(
 	let mut rows: Vec<Vec<String>> = Vec::new();
 	let mut has_content = false;
 	// Build the table grid from the XML nodes directly. Cell text is collected via
-	// `collect_element_text` (operating on the XML tree), NOT by slicing the display buffer — the
+	// `collect_element_text` (operating on the XML tree), NOT by slicing the display buffer. The
 	// display buffer is indexed in display units, so slicing it with those offsets as byte indices
 	// mis-sliced (and could panic) on non-ASCII cell content.
 	for child in node.children() {

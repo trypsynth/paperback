@@ -39,8 +39,8 @@ unsafe extern "system" fn rtf_stream_read_callback(dwcookie: usize, pbbuff: *mut
 /// a round-trip mismatch where `GetValue()` returned the raw RTF source
 /// unchanged). `EM_STREAMIN` is the documented, explicit way to load RTF into
 /// a `RichEdit` control, and is why this needs a raw `SendMessageW` call rather
-/// than a wx-level API — the same pattern already used for letter-spacing
-/// (`EM_SETCHARFORMAT`) in `document_manager::apply_readability_format_to_ctrl`.
+/// than a wx-level API (the same pattern already used for letter-spacing,
+/// `EM_SETCHARFORMAT`, in `document_manager::apply_readability_format_to_ctrl`).
 ///
 /// Returns `false` if the control has no native handle yet or the stream
 /// didn't fully complete, in which case callers should fall back to the

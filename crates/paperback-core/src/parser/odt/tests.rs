@@ -64,8 +64,8 @@ fn odt_table_emits_tsv_when_inline() {
 
 /// Builds the standard test fixture: an `<automatic-styles>` block defining style `"T1"` with the
 /// given text-properties attribute (name, value), wrapping a `<span style-name="T1">` around
-/// `text`. Uses bare/local tag and attribute names — this file's roxmltree usage strips namespace
-/// prefixes, so test XML omits them too, matching real ODT content.xml parsing.
+/// `text`. Uses bare/local tag and attribute names, since this file's roxmltree usage strips
+/// namespace prefixes, so test XML omits them too, matching real ODT content.xml parsing.
 fn span_fixture(prop_name: &str, prop_value: &str, text: &str) -> String {
 	format!(
 		"<document><automatic-styles><style family=\"text\" name=\"T1\"><text-properties {prop_name}=\"{prop_value}\"/></style></automatic-styles><p><span style-name=\"T1\">{text}</span></p></document>"

@@ -54,7 +54,7 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 	// Only trust its guess when it picks a multi-byte encoding: those have real
 	// structural constraints, so a clean decode is a meaningful signal. Single-byte
 	// encodings decode almost any input "successfully", so a confident-looking guess on
-	// a short/ambiguous sample is more likely wrong than not — that case is left to the
+	// a short/ambiguous sample is more likely wrong than not. That case is left to the
 	// Windows-1252-or-give-up fallback below, unchanged.
 	let mut detector = EncodingDetector::new(Iso2022JpDetection::Allow);
 	detector.feed(input, true);
@@ -139,7 +139,7 @@ mod tests {
 		assert_eq!(convert_to_utf8(input), expected);
 	}
 
-	/// <https://github.com/trypsynth/paperback/issues/632> — GBK-encoded Chinese text
+	/// <https://github.com/trypsynth/paperback/issues/632>: GBK-encoded Chinese text
 	/// (no BOM, not valid UTF-8) was falling through to the Windows-1252 fallback and
 	/// coming out as mojibake instead of being detected.
 	#[test]

@@ -81,7 +81,7 @@ fn read_param_end(bytes: &[u8], start: usize) -> Option<usize> {
 /// document codepage, which a reader that understands `\uN` must discard. Only the
 /// two forms that actually appear in the wild are recognised: a `\'xx` hex escape
 /// (`LibreOffice`) and a literal `?` (Word and most ebook converters). Anything else
-/// is left where it is — writers that disagree with their own `\ucN` are commoner
+/// is left where it is, since writers that disagree with their own `\ucN` are commoner
 /// than exotic fallbacks, and swallowing real text is far worse than leaving a
 /// stray character behind.
 fn skip_unicode_fallback(bytes: &[u8], mut i: usize, uc: usize) -> usize {
@@ -183,7 +183,7 @@ pub(super) fn normalize_escapes(
 			{
 				current_encoding = font_table.get(&font_num).copied().unwrap_or(encoding);
 			}
-			// Fall through — emit the control word bytes as-is for the lexer.
+			// Fall through, emitting the control word bytes as-is for the lexer.
 		}
 		if bytes[i] == b'\\' && i + 1 < len {
 			match bytes[i + 1] {

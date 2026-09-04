@@ -14,7 +14,7 @@ use std::{
 
 /// A uniquely named directory under the system temp dir, deleted when the guard drops.
 ///
-/// Bind it to a variable for the lifetime of the test — `let _dir = TempDir::new(..)` drops
+/// Bind it to a variable for the lifetime of the test. `let _dir = TempDir::new(..)` drops
 /// immediately and takes the files with it.
 pub struct TempDir {
 	path: PathBuf,

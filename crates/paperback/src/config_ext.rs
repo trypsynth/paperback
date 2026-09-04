@@ -1,9 +1,9 @@
 /// Desktop-specific configuration helpers that do not belong in `paperback-core`.
 ///
 /// This module owns:
-/// - `UpdateChannel` — the desktop auto-update channel selector.
-/// - `config_toml_path()` — Windows/installer-aware path resolution for the TOML config file.
-/// - `get_update_channel` / `set_update_channel` — typed helpers wrapping the generic string API.
+/// - `UpdateChannel`, the desktop auto-update channel selector.
+/// - `config_toml_path()`, Windows/installer-aware path resolution for the TOML config file.
+/// - `get_update_channel` / `set_update_channel`, typed helpers wrapping the generic string API.
 use std::{
 	env,
 	fmt::{self, Display, Formatter},
@@ -54,7 +54,7 @@ pub fn set_update_channel(config: &ConfigManager, channel: UpdateChannel) {
 ///
 /// On macOS app bundles: `~/Library/Application Support/Paperback/`.
 /// On Windows installer builds: `%APPDATA%\Paperback\`.
-/// On Linux, only when running from an AppImage (`$APPIMAGE` set — the same check
+/// On Linux, only when running from an AppImage (`$APPIMAGE` set, the same check
 /// `linux_integration.rs` uses): `$XDG_CONFIG_HOME/Paperback` (default `~/.config/Paperback`).
 /// An AppImage mounts itself read-only at a fresh temp path on every launch, so the
 /// exe-directory convention below is never writable and never persists between runs there;

@@ -117,7 +117,7 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 /// Signs the bundle with the Developer ID Application identity named by the
 /// MACOS_SIGN_IDENTITY env var, so the shipped DMG can be notarized and doesn't trip
 /// Gatekeeper's "app is damaged" check. A no-op when that var isn't set (i.e. local dev
-/// builds from contributors without a signing certificate) — everything signs deepest
+/// builds from contributors without a signing certificate). Everything signs deepest
 /// first: the third-party dylib, then the executable, then the bundle as a whole, which
 /// is what Apple's docs recommend over a single `--deep` sign.
 #[cfg(target_os = "macos")]
@@ -241,7 +241,7 @@ fn build_targz_package(
 }
 
 /// Assembles an `AppDir` and hands it to `appimagetool`. Unlike [`build_targz_package`], a
-/// missing or failing `appimagetool` doesn't fail the release — the `AppImage` is a convenience
+/// missing or failing `appimagetool` doesn't fail the release: the `AppImage` is a convenience
 /// on top of the always-built portable tarball, the same way a missing ISCC.exe just skips the
 /// Windows installer in [`build_windows_installer`] rather than failing the whole build.
 #[cfg(not(target_os = "macos"))]

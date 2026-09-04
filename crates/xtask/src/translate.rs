@@ -266,7 +266,7 @@ fn translate_one(
 	let lang = po_path.file_stem().and_then(|s| s.to_str()).unwrap_or_default().to_string();
 	let original = fs::read_to_string(po_path)?;
 	// Work on a scratch copy so po_path is never touched unless there's a real change to
-	// write back (checked at the end) — true for --dry-run and for the "msgmerge only
+	// write back (checked at the end), true for --dry-run and for the "msgmerge only
 	// bumped a timestamp" case alike.
 	let tmp = env::temp_dir().join(format!("paperback-translate-{lang}-{}.po", process::id()));
 	fs::write(&tmp, &original)?;

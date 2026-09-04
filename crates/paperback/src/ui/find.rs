@@ -481,7 +481,7 @@ fn do_find(
 		// moment focus returns to the book. Delay the found-line announcement so it
 		// cuts the chain right as it begins: live-region's High priority maps to UIA
 		// NotificationProcessing_ImportantMostRecent, which NVDA handles as
-		// cancelSpeech() + speak — the same interrupt NVDA itself uses for its own
+		// cancelSpeech() + speak, the same interrupt NVDA itself uses for its own
 		// find dialog. (During a say-all NVDA speaks at Spri.NOW instead of
 		// cancelling, so continuous reading is not chopped up.)
 		// When the search wrapped, the wrap notice was deferred above so it can be

@@ -3,8 +3,8 @@
 //! this mimics one at first launch instead: the same checkbox list the Windows installer
 //! generates from `paperback_formats::ALL` (see `build/installer.rs`), applied via `xdg-mime`
 //! and a `.desktop` file in the user's local applications directory, since Linux associates by
-//! MIME type rather than by extension — plus one extra checkbox with no Windows-installer
-//! equivalent for symlinking the `pb` CLI onto `PATH`.
+//! MIME type rather than by extension. There's also one extra checkbox with no Windows-installer
+//! equivalent, for symlinking the `pb` CLI onto `PATH`.
 //!
 //! A no-op for a regular (non-AppImage) Linux install: there's no single executable path to
 //! point a `.desktop` file's `Exec=` line at, and anyone packaging Paperback as a `.deb`/`.rpm`
@@ -35,7 +35,7 @@ const DESKTOP_FILE_ID: &str = "paperback.desktop";
 
 /// `.opf` has no freedesktop.org-registered media type, so Paperback supplies its own via a
 /// small supplementary shared-mime-info package installed alongside the desktop file. Extra
-/// `<mime-type>` packages like this are additive by spec — this can't conflict with anything
+/// `<mime-type>` packages like this are additive by spec, so this can't conflict with anything
 /// else on the system that happens to also claim `application/x-daisy-opf`.
 const DAISY_OPF_MIME_INFO: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
@@ -48,7 +48,7 @@ const DAISY_OPF_MIME_INFO: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 
 /// Shows the setup dialog if Paperback is running from an AppImage and the user hasn't been
 /// through it before. Best-effort throughout: a missing `xdg-mime`/`update-desktop-database`,
-/// or a read-only home directory, just means the OS-level association doesn't stick — it
+/// or a read-only home directory, just means the OS-level association doesn't stick. It
 /// doesn't stop the app from starting.
 ///
 /// Cancel/Escape quits Paperback outright rather than dropping the user into a main window
@@ -70,12 +70,12 @@ pub fn maybe_run_first_run_setup(parent: &Frame, config: &Mutex<ConfigManager>) 
 }
 
 /// Builds the checkbox list from `paperback_formats::ALL`, plus a standalone ZIP entry shared
-/// by DAISY and Word-in-zip — mirrors which boxes `format_tasks_block()` in `build/installer.rs`
+/// by DAISY and Word-in-zip. This mirrors which boxes `format_tasks_block()` in `build/installer.rs`
 /// offers and pre-checks, whose per-format loop also skips `zip` in favor of one shared,
 /// unchecked task. Unlike Windows, this dialog doesn't distinguish "Open with" from "default
 /// handler" (`format.installer.default_handler` is ignored here): it's an explicit, one-time
 /// action the user walks through on purpose rather than a task list ticked mid-install, and its
-/// own copy says "should open in Paperback" — so every checked box becomes the default handler
+/// own copy says "should open in Paperback", so every checked box becomes the default handler
 /// for its MIME types.
 fn association_choices() -> Vec<AssociationChoice> {
 	let mut choices = vec![AssociationChoice {
@@ -141,8 +141,8 @@ fn apply_selections(appimage_path: &str, choices: &[AssociationChoice], selectio
 }
 
 /// Symlinks `pb` into `~/.local/bin`, the conventional per-user bin directory most desktop
-/// distros already put on `PATH` (e.g. via `~/.profile`) — the closest Linux equivalent of the
-/// Windows installer's "Add Paperback directory to PATH" task, without editing shell startup
+/// distros already put on `PATH` (e.g. via `~/.profile`). This is the closest Linux equivalent of
+/// the Windows installer's "Add Paperback directory to PATH" task, without editing shell startup
 /// files or `PATH` itself by hand.
 ///
 /// Points at the AppImage file (`$APPIMAGE`, stable across runs) rather than the `usr/bin/pb`

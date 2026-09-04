@@ -2,7 +2,7 @@
 //! bold/italic/underline spans, for the Windows RTF fast path in
 //! `document_manager`. See `apply_formatting_markers_to_ctrl` for why this
 //! exists: the native `RichEdit` control backing a `wxTE_RICH2` `TextCtrl`
-//! special-cases `WM_SETTEXT` — text starting with `{\rtf` is parsed as RTF in
+//! special-cases `WM_SETTEXT`. Text starting with `{\rtf` is parsed as RTF in
 //! one shot instead of literal text, which is far cheaper than issuing one
 //! `SetStyle` call per formatting span on documents with thousands of them.
 
@@ -74,7 +74,7 @@ struct ActiveStyle {
 }
 
 /// `segments` must be the already-merged, non-overlapping, start-sorted output of
-/// `merge_formatting_markers` — this walks it with a single forward cursor, so
+/// `merge_formatting_markers`. This walks it with a single forward cursor, so
 /// overlapping entries would silently shadow one another instead of combining.
 #[must_use]
 pub fn build_rtf(content: &str, segments: &[FormatSegment], font: &RtfFontInfo) -> String {

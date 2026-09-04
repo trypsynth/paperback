@@ -9,7 +9,7 @@ pub const PREFERENCES: i32 = wxdragon::ffi::WXD_ID_PREFERENCES as i32;
 
 // Standard wxWidgets IDs for the macOS Edit menu. They must be the real wxWidgets
 // IDs (not custom ones) so wxWidgets binds each item to its native macOS selector
-// — cut:, copy:, paste:, delete:, selectAll: — with a nil target. AppKit then
+// (cut:, copy:, paste:, delete:, selectAll:) with a nil target. AppKit then
 // routes the command through the responder chain to the focused control and, because
 // a `copy:` item is present, appends its own "Emoji & Symbols" and "Start Dictation"
 // items to the menu. Undo/Redo have no native selector mapping but are handled by

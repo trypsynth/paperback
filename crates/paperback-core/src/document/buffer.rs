@@ -1,6 +1,6 @@
 //! [`DocumentBuffer`]: the assembled document text plus its markers and the per-char index
 //! tables ([`char_to_byte_map`](DocumentBuffer), `display_len_at_char`) that translate between
-//! byte, char, and display-unit offsets — the three coordinate systems a caret position can be
+//! byte, char, and display-unit offsets, the three coordinate systems a caret position can be
 //! expressed in (see the fields' own docs for why all three are needed).
 
 use rayon::prelude::*;
@@ -15,16 +15,16 @@ pub struct DocumentBuffer {
 	content_display_len: usize,
 	content_char_count: usize,
 	newline_char_positions: Vec<usize>,
-	/// Byte offset of the `i`-th char, stored as `u32` rather than `usize` — halves this
+	/// Byte offset of the `i`-th char, stored as `u32` rather than `usize`. This halves the
 	/// table's footprint, which matters because it has one entry per char in the whole
 	/// document (a large book can have hundreds of millions of chars). A document whose byte
 	/// length exceeds `u32::MAX` (4 GiB of text) isn't supported; see `to_u32`.
 	char_to_byte_map: Vec<u32>,
 	/// `display_len_at_char[i]` is the display-unit offset (UTF-16 code units on
-	/// Windows/macOS, Unicode scalars on GTK — see `util::text::display_len`) of the `i`-th
+	/// Windows/macOS, Unicode scalars on GTK, see `util::text::display_len`) of the `i`-th
 	/// char, with a trailing end-boundary entry equal to `content_display_len`, mirroring
 	/// `char_to_byte_map`'s shape. Needed because `Marker.position`/the GUI caret use display
-	/// units while `char_to_byte_map`/`newline_char_positions` use char units — on Windows and
+	/// units while `char_to_byte_map`/`newline_char_positions` use char units. On Windows and
 	/// macOS these two diverge for any character outside the Basic Multilingual Plane. Stored
 	/// as `u32` for the same reason as `char_to_byte_map`; display length never exceeds byte
 	/// length so the same bound applies.
@@ -42,8 +42,8 @@ fn to_u32(value: usize) -> u32 {
 	value as u32
 }
 
-/// A part's `[start, end)` span in the assembled buffer's display units — the same units as
-/// `Marker::position` and `DocumentBuffer::current_position` — as returned by
+/// A part's `[start, end)` span in the assembled buffer's display units (the same units as
+/// `Marker::position` and `DocumentBuffer::current_position`), as returned by
 /// [`DocumentBuffer::from_parts`].
 #[derive(Debug, Clone, Copy)]
 pub struct PartSpan {
@@ -65,7 +65,7 @@ struct PartIndex {
 	byte_len: usize,
 	char_len: usize,
 	display_len: usize,
-	/// Whether `from_parts` needs to add a `\n` after this part — mirrors `append`'s callers that
+	/// Whether `from_parts` needs to add a `\n` after this part. Mirrors `append`'s callers that
 	/// append a separator when the just-appended text didn't already end with one.
 	trailing_newline: bool,
 }
@@ -190,7 +190,7 @@ impl DocumentBuffer {
 	/// non-empty part gets a trailing `\n` if it doesn't already end with one, exactly as `append`
 	/// callers that need a separator do today). Returns the buffer alongside each part's
 	/// display-unit `[start, end)` span, so callers that need per-part offsets (to place markers,
-	/// resolve id positions, etc. — the reason `append` couldn't already be called in parallel, since
+	/// resolve id positions, etc., the reason `append` couldn't already be called in parallel, since
 	/// those offsets come from the buffer's running position) don't need to re-derive them.
 	///
 	/// This trades `append`'s single incremental pass over the whole document for: a parallel pass
@@ -354,7 +354,7 @@ impl DocumentBuffer {
 	}
 
 	/// Total document length in display units (UTF-16 code units on Windows/macOS, Unicode
-	/// scalars on GTK) — the same unit the GUI caret and `Marker.position` use. An alias of
+	/// scalars on GTK), the same unit the GUI caret and `Marker.position` use. An alias of
 	/// [`Self::current_position`] under the name callers building a window/range API actually
 	/// want; `current_position` is kept for the parser-cursor callers already using that name.
 	#[must_use]
