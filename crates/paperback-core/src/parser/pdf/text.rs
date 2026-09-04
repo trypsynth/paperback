@@ -59,27 +59,29 @@ pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) ->
 	// Chars of the current visual line with their pdfium index, so each line can be
 	// reordered visual→logical (handles RTL scripts) before paragraph joining.
 	let mut current_chars: Vec<(char, i32)> = Vec::new();
-	let mut current_sizes: Vec<f64> = Vec::new();
+	// One `FPDFText_GetFontSize` FFI call per line rather than one per character: a real
+	// document's line is rendered in one consistent size, so the first character with a
+	// usable size stands in for the whole line. Per-character font-size calls (on top of the
+	// per-character unicode call every line already pays) were the dominant cost of PDF
+	// parsing on documents with many lines - see #747.
+	let mut current_size = 0.0f64;
 	for i in 0..char_count {
 		let unicode = text_page.get_unicode(i);
 		let Some(ch) = char::from_u32(unicode) else { continue };
 		if ch == '\n' || ch == '\r' {
-			let size = sorted_median(&mut current_sizes);
-			result.push((reorder_run(text_page, &mem::take(&mut current_chars)), size));
-			current_sizes.clear();
+			result.push((reorder_run(text_page, &mem::take(&mut current_chars)), current_size));
+			current_size = 0.0;
 		} else if (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			continue;
 		} else {
-			let size = text_page.get_font_size(i);
-			if size > 0.0 {
-				current_sizes.push(size);
+			if current_size == 0.0 {
+				current_size = text_page.get_font_size(i);
 			}
 			current_chars.push((ch, i));
 		}
 	}
 	if !current_chars.is_empty() {
-		let size = sorted_median(&mut current_sizes);
-		result.push((reorder_run(text_page, &current_chars), size));
+		result.push((reorder_run(text_page, &current_chars), current_size));
 	}
 	result
 }
