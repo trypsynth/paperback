@@ -916,17 +916,15 @@ impl DocumentManager {
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
 			let current_doc_pos = tab.window.to_doc(old_ctrl.get_insertion_point());
-			// TODO(windowing): still whole-document on every wrap toggle, see
-			// C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md Phase 2 - should re-slice just
-			// `tab.window`'s existing range instead of reloading the whole document.
-			let doc_len = tab.session.document_len();
-			let slice = tab.session.get_window(0, doc_len);
+			// Re-slice just the currently loaded window rather than the whole document: a wrap
+			// toggle doesn't change what range is loaded, only how it's laid out.
+			let slice = tab.session.get_window(tab.window.start(), tab.window.end());
 			let text_ctrl = reader_input::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame);
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
 			fill_text_ctrl_with_formatting(text_ctrl, &slice);
-			tab.window = TextWindow::whole(doc_len);
+			tab.window = TextWindow::new(slice.start, slice.end);
 			if let Some(font) = build_font_from_readability(&rf) {
 				text_ctrl.set_font(&font);
 			}
