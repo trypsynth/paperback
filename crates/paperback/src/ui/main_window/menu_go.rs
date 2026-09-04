@@ -87,7 +87,9 @@ pub(super) fn handle_go_to_page(
 			let page_count = tab.session.page_count();
 			if page_count == 0 {
 				// TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-				live_region::announce(live_region_label, &t("No pages."));
+				// A menu invocation returns focus to the book just like a closed dialog does,
+				// so the announcement needs the same delay to cut off NVDA's focus-chain read.
+				navigation::announce_after_delay(frame, live_region_label, t("No pages."));
 				return;
 			}
 			let current_pos = navigation::doc_caret(tab);

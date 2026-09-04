@@ -248,3 +248,6 @@ pub(super) fn convert_navpoint(
 	}
 	Some(item)
 }
+
+#[cfg(test)]
+mod tests;

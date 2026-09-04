@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 20:57+0000\n"
+"POT-Creation-Date: 2026-09-04 18:02+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -27,6 +27,20 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-2: web\n"
 "X-Poedit-SearchPathExcluded-3: po\n"
 
+#. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
+#. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
+#. from a shell. Mirrors the Windows installer's "Add Paperback directory to PATH" task.
+#, fuzzy
+msgid "Add the pb command-line tool to PATH"
+msgstr "Ajouter l'outil de ligne de commande pb au PATH"
+
+#. TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
+#. multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
+#. than tied to one format, same as the Windows installer's "assoc_zip" task.
+#, fuzzy
+msgid "ZIP Archives (.zip)"
+msgstr "Archives ZIP (.zip)"
+
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "Impossible de créer le serveur IPC"
@@ -34,6 +48,542 @@ msgstr "Impossible de créer le serveur IPC"
 #. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
 msgstr "Avertissement"
+
+#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+#. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#, fuzzy
+msgid "This document has no audio."
+msgstr "Ce document ne comporte pas de table des matières."
+
+#. TRANSLATORS: Announced when trying to seek audio before playback has established a position
+#, fuzzy
+msgid "Audio hasn't started playing yet."
+msgstr "La lecture audio n'a pas encore commencé."
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#, fuzzy
+msgid "5 seconds"
+msgstr "secondes"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#, fuzzy
+msgid "10 seconds"
+msgstr "1 seconde"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#, fuzzy
+msgid "30 seconds"
+msgstr "secondes"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#, fuzzy
+msgid "1 minute"
+msgstr "1 minute"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#, fuzzy
+msgid "2 minutes"
+msgstr "minutes"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#, fuzzy
+msgid "5 minutes"
+msgstr "minutes"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#, fuzzy
+msgid "10 minutes"
+msgstr "1 minute"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#, fuzzy
+msgid "30 minutes"
+msgstr "minutes"
+
+#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
+#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
+#, fuzzy
+msgid "1 hour"
+msgstr "1 heure"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+#, fuzzy
+msgid "{} (maximum)"
+msgstr "{} (maximum)"
+
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+#, fuzzy
+msgid "{} (minimum)"
+msgstr "{} (minimum)"
+
+#. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
+msgid "Wrapping to start. "
+msgstr "Retour au début. "
+
+msgid "Wrapping to end. "
+msgstr "Retour à la fin. "
+
+#. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
+msgid "%s - Bookmark %d"
+msgstr "%s - Signet %d"
+
+#. TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
+msgid "No notes."
+msgstr "Aucune note."
+
+msgid "No bookmarks."
+msgstr "Aucun signet."
+
+#. TRANSLATORS: Announced when there is no next bookmark/note from the current position
+msgid "No next note."
+msgstr "Aucune note suivante."
+
+msgid "No next bookmark."
+msgstr "Aucun signet suivant."
+
+#. TRANSLATORS: Announced when there is no previous note from the current position
+msgid "No previous note."
+msgstr "Aucune note précédente."
+
+#. TRANSLATORS: Announced when there is no previous bookmark from the current position
+msgid "No previous bookmark."
+msgstr "Aucun signet précédent."
+
+#. TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
+msgid "Bookmark."
+msgstr "Signet."
+
+#. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
+msgid "Bookmark removed."
+msgstr "Signet supprimé."
+
+msgid "Bookmark added."
+msgstr "Signet ajouté."
+
+#. TRANSLATORS: Title of the dialog for adding or editing a bookmark note
+#. TRANSLATORS: Title of the Bookmark Note editor dialog
+msgid "Bookmark Note"
+msgstr "Note de signet"
+
+#. TRANSLATORS: Prompt label in the bookmark note dialog asking the user to type their note
+msgid "Enter bookmark note:"
+msgstr "Saisir la note du signet :"
+
+#. TRANSLATORS: Announced after saving a bookmark's note text
+msgid "Bookmark saved."
+msgstr "Signet enregistré."
+
+#. TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
+msgid "No note at the current position."
+msgstr "Aucune note à la position actuelle."
+
+#. TRANSLATORS: Title of the View Note dialog
+msgid "View Note"
+msgstr "Afficher la note"
+
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+msgid "Open Document"
+msgstr "Ouvrir un document"
+
+#. TRANSLATORS: Menu item in the File menu to open a document.
+#, fuzzy
+msgid "&Open..."
+msgstr "&Ouvrir"
+
+#. TRANSLATORS: Status-bar help text for the File > Open menu item.
+msgid "Open a document"
+msgstr "Ouvrir un document"
+
+#. TRANSLATORS: Menu item in the File menu to close the current document.
+#, fuzzy
+msgid "&Close"
+msgstr "&Fermer"
+
+#. TRANSLATORS: Status-bar help text for the File > Close menu item.
+msgid "Close the current document"
+msgstr "Fermer le document actuel"
+
+#. TRANSLATORS: Menu item in the File menu to close all open documents.
+#, fuzzy
+msgid "Close &All"
+msgstr "Fermer &tout"
+
+#. TRANSLATORS: Status-bar help text for the File > Close All menu item.
+msgid "Close all documents"
+msgstr "Fermer tous les documents"
+
+#. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
+#, fuzzy
+msgid "Reopen &Last Closed"
+msgstr "Rouvrir le &dernier fermé"
+
+#. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
+#, fuzzy
+msgid "Reopen the last closed document"
+msgstr "Rouvrir le dernier document fermé"
+
+#. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "&Quitter"
+
+#. TRANSLATORS: Status-bar help text for the File > Exit menu item.
+msgid "Exit the application"
+msgstr "Quitter l'application"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Previous Section"
+msgstr "Section précédente"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
+msgid "Go to previous section"
+msgstr "Aller à la section précédente"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Section"
+msgstr "Section suivante"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
+msgid "Go to next section"
+msgstr "Aller à la section suivante"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
+#, fuzzy
+msgid "&Previous Heading"
+msgstr "&Titre précédent"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
+msgid "Go to previous heading"
+msgstr "Aller au titre précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
+#, fuzzy
+msgid "&Next Heading"
+msgstr "&Titre suivant"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
+msgid "Go to next heading"
+msgstr "Aller au titre suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &1"
+msgstr "Titre de niveau &1 précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 1"
+msgstr "Titre de niveau 1 suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &2"
+msgstr "Titre de niveau &2 précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 2"
+msgstr "Titre de niveau 2 suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &3"
+msgstr "Titre de niveau &3 précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 3"
+msgstr "Titre de niveau 3 suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &4"
+msgstr "Titre de niveau &4 précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 4"
+msgstr "Titre de niveau 4 suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &5"
+msgstr "Titre de niveau &5 précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 5"
+msgstr "Titre de niveau 5 suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
+#, fuzzy
+msgid "Previous Heading Level &6"
+msgstr "Titre de niveau &6 précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Next Heading Level 6"
+msgstr "Titre de niveau 6 suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous page.
+#, fuzzy
+msgid "Previous Pa&ge"
+msgstr "Pa&ge précédente"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next page.
+#, fuzzy
+msgid "Next Pag&e"
+msgstr "Pa&ge suivante"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
+#, fuzzy
+msgid "Previous Lin&k"
+msgstr "Lie&n précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
+#, fuzzy
+msgid "Next Lin&k"
+msgstr "Lie&n suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
+#, fuzzy
+msgid "Previous Ima&ge"
+msgstr "&Image précédente"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
+#, fuzzy
+msgid "Next Ima&ge"
+msgstr "&Image suivante"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
+#, fuzzy
+msgid "Previous Figu&re"
+msgstr "Figu&re précédente"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
+#, fuzzy
+msgid "Next Figu&re"
+msgstr "Figu&re suivante"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
+#, fuzzy
+msgid "Previous &Table"
+msgstr "&Tableau précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
+#, fuzzy
+msgid "Next &Table"
+msgstr "&Tableau suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
+#, fuzzy
+msgid "Previous Se&parator"
+msgstr "Sé&parateur précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
+#, fuzzy
+msgid "Next Se&parator"
+msgstr "Sé&parateur suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
+#, fuzzy
+msgid "Previous L&ist"
+msgstr "&Liste précédente"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
+#, fuzzy
+msgid "Next L&ist"
+msgstr "&Liste suivante"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
+#, fuzzy
+msgid "Previous List &Item"
+msgstr "Élément de &liste précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
+#, fuzzy
+msgid "Next List I&tem"
+msgstr "Élément de l&iste suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
+#, fuzzy
+msgid "Go &Back"
+msgstr "&Retour"
+
+#. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
+#, fuzzy
+msgid "Go &Forward"
+msgstr "Aller à &Suivant    Ctrl+]"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
+#, fuzzy
+msgid "Container &Start"
+msgstr "&Début du conteneur"
+
+#. TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
+#, fuzzy
+msgid "Go to the start of the current list or table"
+msgstr "Aller au début de la liste ou du tableau actuel"
+
+#. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
+#, fuzzy
+msgid "Past Container &End"
+msgstr "&Fin du conteneur"
+
+#. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
+#, fuzzy
+msgid "Go past the end of the current list or table"
+msgstr "Aller au-delà de la fin de la liste ou du tableau actuel"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+#, fuzzy
+msgid "&Previous Bookmark"
+msgstr "&Signet précédent"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
+msgid "Go to previous bookmark"
+msgstr "Aller au signet précédent"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+#, fuzzy
+msgid "&Next Bookmark"
+msgstr "&Signet suivant"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
+msgid "Go to next bookmark"
+msgstr "Aller au signet suivant"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
+#, fuzzy
+msgid "Previous &Note"
+msgstr "Note &précédente"
+
+#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
+msgid "Go to previous note"
+msgstr "Aller à la note précédente"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+#, fuzzy
+msgid "Next N&ote"
+msgstr "Note &suivante"
+
+#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
+msgid "Go to next note"
+msgstr "Aller à la note suivante"
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+#, fuzzy
+msgid "Jump to &All..."
+msgstr "Aller à &tout..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
+msgid "Show all bookmarks and notes"
+msgstr "Afficher tous les signets et les notes"
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only bookmarks.
+#, fuzzy
+msgid "Jump to &Bookmarks Only..."
+msgstr "Aller aux &signets uniquement..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
+msgid "Show bookmarks only"
+msgstr "Afficher les signets seulement"
+
+#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
+#, fuzzy
+msgid "Jump to Notes &Only..."
+msgstr "Aller aux &Notes uniquement..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
+msgid "Show notes only"
+msgstr "Afficher les notes seulement"
+
+#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
+#, fuzzy
+msgid "&View Note Text"
+msgstr "&Afficher le texte de la note"
+
+#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
+msgid "View the note at current position"
+msgstr "Afficher la note à la position actuelle"
+
+#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
+#, fuzzy
+msgid "Toggle &Bookmark"
+msgstr "Basculer le &Signet"
+
+#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
+#, fuzzy
+msgid "Bookmark with &Note"
+msgstr "Signet avec &note"
+
+#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
+#, fuzzy
+msgid "&Play/Pause Audio"
+msgstr "&Lecture/Pause audio"
+
+#. TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
+#, fuzzy
+msgid "Play or pause this document's audio narration"
+msgstr "Lancer ou mettre en pause la lecture audio de ce document"
+
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
+#, fuzzy
+msgid "Seek Audio &Forward"
+msgstr "Aller à &Suivant    Ctrl+]"
+
+#. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
+#, fuzzy
+msgid "Skip the audio narration forward"
+msgstr "Passer la narration audio"
+
+#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
+#, fuzzy
+msgid "Seek Audio &Backward"
+msgstr "Rembobiner l'audio &En arrière"
+
+#. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
+#, fuzzy
+msgid "Skip the audio narration backward"
+msgstr "Passer la narration audio en arrière"
+
+#. TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
+#, fuzzy
+msgid "&Increase Audio Seek Amount"
+msgstr "&Augmenter la valeur de recherche audio"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
+#, fuzzy
+msgid "Increase how far seeking the audio narration moves"
+msgstr "Augmenter la distance parcourue par la narration audio"
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
+#, fuzzy
+msgid "&Decrease Audio Seek Amount"
+msgstr "&Réduire la valeur de recherche audio"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
+#, fuzzy
+msgid "Decrease how far seeking the audio narration moves"
+msgstr "Réduire la distance parcourue par la narration audio"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
@@ -210,11 +760,6 @@ msgstr "Veuillez sélectionner un signet pour y accéder."
 msgid "Error"
 msgstr "Erreur"
 
-#. TRANSLATORS: Title of the Bookmark Note editor dialog
-#. TRANSLATORS: Title of the dialog for adding or editing a bookmark note
-msgid "Bookmark Note"
-msgstr "Note de signet"
-
 #. TRANSLATORS: Label/prompt in the Note editor dialog
 msgid "Edit bookmark note:"
 msgstr "Modifier la note du signet :"
@@ -288,6 +833,17 @@ msgid_plural "%d seconds"
 msgstr[0] "%d seconde"
 msgstr[1] "%d secondes"
 
+#. TRANSLATORS: A page in the Elements list with no readable first line; %d is the page number
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+#, fuzzy
+msgid "Page %d"
+msgstr "Page %d"
+
+#. TRANSLATORS: A page in the Elements list; %d is the page number, %s is the page's first line of text
+#. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
+msgid "Page %d: %s"
+msgstr "Page %d : %s"
+
 #. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr "Éléments"
@@ -303,6 +859,11 @@ msgstr "Titres"
 #. TRANSLATORS: Choice option in the view dropdown to show links list
 msgid "Links"
 msgstr "Liens"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of pages
+#, fuzzy
+msgid "Pages"
+msgstr "Pages"
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
@@ -321,39 +882,79 @@ msgstr "Sans titre"
 msgid "OK"
 msgstr "OK"
 
-#. TRANSLATORS: Title of the Go to Line dialog
-msgid "Go to Line"
-msgstr "Aller à la ligne"
-
-#. TRANSLATORS: Label for the input field where users enter the target line number.
-msgid "&Line number:"
-msgstr "&Numéro de ligne :"
-
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
 msgid "Go"
 msgstr "Aller"
 
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Annuler"
+
+#. TRANSLATORS: Title of the Go to Line dialog
+msgid "Go to Line"
+msgstr "Aller à la ligne"
+
+#. TRANSLATORS: Label/prompt template for the line selection dialog. The %d placeholders represent current_line and max_lines respectively.
+#, fuzzy
+msgid "Go to line (%d/%d):"
+msgstr "Aller à la ligne (%d/%d) :"
+
+#. TRANSLATORS: Announced when the entered line number is outside the document's range
+#, fuzzy
+msgid "Line out of range."
+msgstr "Ligne hors limites."
+
 #. TRANSLATORS: Title of the Go to page dialog
 msgid "Go to page"
 msgstr "Aller à la page"
 
-#. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
+#. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_page respectively.
 msgid "Go to page (%d/%d):"
 msgstr "Aller à la page (%d/%d) :"
+
+#. TRANSLATORS: Announced when the entered page number is outside the document's range
+#, fuzzy
+msgid "Page out of range."
+msgstr "Page hors limites."
 
 #. TRANSLATORS: Title of the Go to Percent dialog
 msgid "Go to Percent"
 msgstr "Aller au pourcentage"
 
+#. TRANSLATORS: Label/prompt template for the percentage selection dialog. The %d placeholders represent current_percent and 100 respectively.
+#, fuzzy
+msgid "Go to percent (%d/%d):"
+msgstr "Aller au pourcentage (%d/%d) :"
+
 #. TRANSLATORS: Label for the percentage selection slider
 msgid "&Percent"
 msgstr "&Pourcentage"
 
-#. TRANSLATORS: Label for the numeric percentage entry field
-msgid "P&ercent:"
-msgstr "P&ourcentage :"
+#. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
+#, fuzzy
+msgid "Percent out of range."
+msgstr "Pourcentage"
+
+#. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
+#, fuzzy
+msgid "Set Up Paperback"
+msgstr "Configuration de Paperback"
+
+#. TRANSLATORS: Explains the checkbox list below in the Linux file-association setup dialog
+#, fuzzy
+msgid "Choose which file types should open in Paperback:"
+msgstr "Choisissez les types de fichiers à ouvrir dans Paperback :"
+
+#. TRANSLATORS: Confirms the file association choices in the Linux setup dialog and applies them
+#, fuzzy
+msgid "Set Up"
+msgstr "Configurer"
 
 #. TRANSLATORS: Title of the Open As dialog
 msgid "Open As"
@@ -440,60 +1041,6 @@ msgstr "&Synchroniser le curseur avec la lecture audio"
 #, fuzzy
 msgid "&Audio seek amount:"
 msgstr "&Valeur de recherche audio :"
-
-#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
-msgid "5 seconds"
-msgstr "secondes"
-
-#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
-msgid "10 seconds"
-msgstr "1 seconde"
-
-#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
-msgid "30 seconds"
-msgstr "secondes"
-
-#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
-msgid "1 minute"
-msgstr "1 minute"
-
-#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
-msgid "2 minutes"
-msgstr "minutes"
-
-#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
-msgid "5 minutes"
-msgstr "minutes"
-
-#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
-msgid "10 minutes"
-msgstr "1 minute"
-
-#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
-msgid "30 minutes"
-msgstr "minutes"
-
-#. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-#. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
-#, fuzzy
-msgid "1 hour"
-msgstr "1 heure"
 
 #. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
 #, fuzzy
@@ -737,14 +1284,6 @@ msgstr "&Clé :"
 msgid "Clear"
 msgstr "Effacer"
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button that closes the Find dialog
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Annuler"
-
 #. TRANSLATORS: Representation of the Spacebar key
 #, fuzzy
 msgid "Space"
@@ -852,10 +1391,6 @@ msgstr "Veuillez sélectionner une section dans la table des matières."
 msgid "No Selection"
 msgstr "Aucune sélection"
 
-#. TRANSLATORS: Title of the View Note dialog
-msgid "View Note"
-msgstr "Afficher la note"
-
 #. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 #, fuzzy
 msgid "Estimated reading time: {}"
@@ -933,10 +1468,6 @@ msgstr "Aucun signet suivant."
 msgid "Temporary bookmark."
 msgstr "Aucun signet."
 
-#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
-msgid "Table View"
-msgstr "Vue tableau"
-
 #. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr "&Mot de passe :"
@@ -958,59 +1489,6 @@ msgstr "Fichier : {}"
 #, fuzzy
 msgid "Details: {}"
 msgstr "Plus d'informations : {}"
-
-#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
-msgid "Create &bookmark"
-msgstr "Créer un &signet"
-
-msgid "Create bookmark"
-msgstr "Créer un signet"
-
-#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
-msgid "Bookmark with &note"
-msgstr "Signet avec &note"
-
-msgid "Create bookmark with note"
-msgstr "Créer un signet avec une note"
-
-#. TRANSLATORS: Right-click context menu item and status text to open the find dialog
-msgid "&Find"
-msgstr "&Rechercher"
-
-msgid "Find text"
-msgstr "Rechercher du texte"
-
-#. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
-msgid "Find &next"
-msgstr "Rechercher le &suivant"
-
-msgid "Find next match"
-msgstr "Rechercher l'occurrence suivante"
-
-#. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
-msgid "Find &previous"
-msgstr "Rechercher le &précédent"
-
-msgid "Find previous match"
-msgstr "Rechercher l'occurrence précédente"
-
-#. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
-msgid "Go to &page"
-msgstr "Aller à la &page"
-
-#. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
-msgid "Go to &line"
-msgstr "Aller à la &ligne"
-
-msgid "Go to line"
-msgstr "Aller à la ligne"
-
-#. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
-msgid "Go to &percent"
-msgstr "Aller au &pourcentage"
-
-msgid "Go to percent"
-msgstr "Aller au pourcentage"
 
 #. TRANSLATORS: Title of the Find dialog
 msgid "Find"
@@ -1080,6 +1558,14 @@ msgstr "Format non pris en charge sélectionné."
 msgid "No recent documents."
 msgstr "Aucun document récent."
 
+#. TRANSLATORS: Announced when landing on a blank line; %d is the line number
+#, fuzzy
+msgid "Line %d"
+msgstr "Ligne %d"
+
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+#. A menu invocation returns focus to the book just like a closed dialog does,
+#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Aucune page."
@@ -1171,16 +1657,6 @@ msgstr "Notes et signets importés avec succès."
 msgid "Import Successful"
 msgstr "Importation réussie"
 
-#. TRANSLATORS: Announced when the user cancels a running sleep timer
-msgid "Sleep timer cancelled."
-msgstr "Minuterie de veille annulée."
-
-#, fuzzy
-msgid "Sleep timer set for %d minute."
-msgid_plural "Sleep timer set for %d minutes."
-msgstr[0] "Minuterie de veille réglée sur %d minutes."
-msgstr[1] "Minuterie de veille réglée sur %d minutes."
-
 #. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
 msgstr "Paperback"
@@ -1207,10 +1683,6 @@ msgstr[1] "%d caractères"
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Impossible d'exporter le document."
-
-#. TRANSLATORS: Title of the file picker dialog shown when opening a document
-msgid "Open Document"
-msgstr "Ouvrir un document"
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 #, fuzzy
@@ -1260,43 +1732,6 @@ msgstr "Co&ller\tCtrl+V"
 msgid "Select &All\tCtrl+A"
 msgstr "Sélectionner &tout\tCtrl+A"
 
-#. TRANSLATORS: Menu item in the File menu to open a document.
-#, fuzzy
-msgid "&Open..."
-msgstr "&Ouvrir"
-
-#. TRANSLATORS: Status-bar help text for the File > Open menu item.
-msgid "Open a document"
-msgstr "Ouvrir un document"
-
-#. TRANSLATORS: Menu item in the File menu to close the current document.
-#, fuzzy
-msgid "&Close"
-msgstr "&Fermer"
-
-#. TRANSLATORS: Status-bar help text for the File > Close menu item.
-msgid "Close the current document"
-msgstr "Fermer le document actuel"
-
-#. TRANSLATORS: Menu item in the File menu to close all open documents.
-#, fuzzy
-msgid "Close &All"
-msgstr "Fermer &tout"
-
-#. TRANSLATORS: Status-bar help text for the File > Close All menu item.
-msgid "Close all documents"
-msgstr "Fermer tous les documents"
-
-#. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
-#, fuzzy
-msgid "Reopen &Last Closed"
-msgstr "Rouvrir le &dernier fermé"
-
-#. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
-#, fuzzy
-msgid "Reopen the last closed document"
-msgstr "Rouvrir le dernier document fermé"
-
 #. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
 msgstr "Documents &récents"
@@ -1304,15 +1739,6 @@ msgstr "Documents &récents"
 #. TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 msgid "Open a recent document"
 msgstr "Ouvrir un document récent"
-
-#. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
-#. TRANSLATORS: System tray menu item to quit the application
-msgid "E&xit"
-msgstr "&Quitter"
-
-#. TRANSLATORS: Status-bar help text for the File > Exit menu item.
-msgid "Exit the application"
-msgstr "Quitter l'application"
 
 #. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
@@ -1323,285 +1749,10 @@ msgstr "(Aucun document récent)"
 msgid "Show All..."
 msgstr "Tout afficher"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
-msgid "Previous Section"
-msgstr "Section précédente"
-
-#. TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
-msgid "Go to previous section"
-msgstr "Aller à la section précédente"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
-msgid "Next Section"
-msgstr "Section suivante"
-
-#. TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
-msgid "Go to next section"
-msgstr "Aller à la section suivante"
-
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
 #, fuzzy
 msgid "Go to &Page"
 msgstr "Aller à la &page"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous page.
-#, fuzzy
-msgid "Previous Pa&ge"
-msgstr "Pa&ge précédente"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next page.
-#, fuzzy
-msgid "Next Pag&e"
-msgstr "Pa&ge suivante"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
-#, fuzzy
-msgid "Previous Lin&k"
-msgstr "Lie&n précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
-#, fuzzy
-msgid "Next Lin&k"
-msgstr "Lie&n suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
-#, fuzzy
-msgid "Previous Ima&ge"
-msgstr "&Image précédente"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
-#, fuzzy
-msgid "Next Ima&ge"
-msgstr "&Image suivante"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
-#, fuzzy
-msgid "Previous Figu&re"
-msgstr "Figu&re précédente"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
-#, fuzzy
-msgid "Next Figu&re"
-msgstr "Figu&re suivante"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
-#, fuzzy
-msgid "Previous &Table"
-msgstr "&Tableau précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
-#, fuzzy
-msgid "Next &Table"
-msgstr "&Tableau suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
-#, fuzzy
-msgid "Previous Se&parator"
-msgstr "Sé&parateur précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next separator (e.g. a horizontal rule) in the document.
-#, fuzzy
-msgid "Next Se&parator"
-msgstr "Sé&parateur suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous list in the document.
-#, fuzzy
-msgid "Previous L&ist"
-msgstr "&Liste précédente"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next list in the document.
-#, fuzzy
-msgid "Next L&ist"
-msgstr "&Liste suivante"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous item within the current list.
-#, fuzzy
-msgid "Previous List &Item"
-msgstr "Élément de &liste précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next item within the current list.
-#, fuzzy
-msgid "Next List I&tem"
-msgstr "Élément de l&iste suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
-#, fuzzy
-msgid "Container &Start"
-msgstr "&Début du conteneur"
-
-#. TRANSLATORS: Status-bar help text for the Go > Container Start menu item.
-#, fuzzy
-msgid "Go to the start of the current list or table"
-msgstr "Aller au début de la liste ou du tableau actuel"
-
-#. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
-#, fuzzy
-msgid "Past Container &End"
-msgstr "&Fin du conteneur"
-
-#. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
-#, fuzzy
-msgid "Go past the end of the current list or table"
-msgstr "Aller au-delà de la fin de la liste ou du tableau actuel"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
-#, fuzzy
-msgid "&Previous Heading"
-msgstr "&Titre précédent"
-
-#. TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
-msgid "Go to previous heading"
-msgstr "Aller au titre précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
-#, fuzzy
-msgid "&Next Heading"
-msgstr "&Titre suivant"
-
-#. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
-msgid "Go to next heading"
-msgstr "Aller au titre suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
-#, fuzzy
-msgid "Previous Heading Level &1"
-msgstr "Titre de niveau &1 précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
-msgid "Next Heading Level 1"
-msgstr "Titre de niveau 1 suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
-#, fuzzy
-msgid "Previous Heading Level &2"
-msgstr "Titre de niveau &2 précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
-msgid "Next Heading Level 2"
-msgstr "Titre de niveau 2 suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
-#, fuzzy
-msgid "Previous Heading Level &3"
-msgstr "Titre de niveau &3 précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
-msgid "Next Heading Level 3"
-msgstr "Titre de niveau 3 suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
-#, fuzzy
-msgid "Previous Heading Level &4"
-msgstr "Titre de niveau &4 précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
-msgid "Next Heading Level 4"
-msgstr "Titre de niveau 4 suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
-#, fuzzy
-msgid "Previous Heading Level &5"
-msgstr "Titre de niveau &5 précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
-msgid "Next Heading Level 5"
-msgstr "Titre de niveau 5 suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
-#, fuzzy
-msgid "Previous Heading Level &6"
-msgstr "Titre de niveau &6 précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
-msgid "Next Heading Level 6"
-msgstr "Titre de niveau 6 suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
-#, fuzzy
-msgid "&Previous Bookmark"
-msgstr "&Signet précédent"
-
-#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
-msgid "Go to previous bookmark"
-msgstr "Aller au signet précédent"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
-#, fuzzy
-msgid "&Next Bookmark"
-msgstr "&Signet suivant"
-
-#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
-msgid "Go to next bookmark"
-msgstr "Aller au signet suivant"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
-#, fuzzy
-msgid "Previous &Note"
-msgstr "Note &précédente"
-
-#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
-msgid "Go to previous note"
-msgstr "Aller à la note précédente"
-
-#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
-#, fuzzy
-msgid "Next N&ote"
-msgstr "Note &suivante"
-
-#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
-msgid "Go to next note"
-msgstr "Aller à la note suivante"
-
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
-#, fuzzy
-msgid "Jump to &All..."
-msgstr "Aller à &tout..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
-msgid "Show all bookmarks and notes"
-msgstr "Afficher tous les signets et les notes"
-
-#, fuzzy
-msgid "Jump to &Bookmarks Only..."
-msgstr "Aller aux &signets uniquement..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
-msgid "Show bookmarks only"
-msgstr "Afficher les signets seulement"
-
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
-#, fuzzy
-msgid "Jump to Notes &Only..."
-msgstr "Aller aux &Notes uniquement..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
-msgid "Show notes only"
-msgstr "Afficher les notes seulement"
-
-#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
-#, fuzzy
-msgid "&View Note Text"
-msgstr "&Afficher le texte de la note"
-
-#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
-msgid "View the note at current position"
-msgstr "Afficher la note à la position actuelle"
 
 #. TRANSLATORS: Menu item in the Go menu to open the find dialog.
 #, fuzzy
@@ -1638,19 +1789,9 @@ msgstr "Aller au &pourcentage"
 msgid "Go to a percentage of the document"
 msgstr "Aller à un pourcentage du document"
 
-#. TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
-#, fuzzy
-msgid "Go &Back"
-msgstr "&Retour"
-
 #. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
 msgid "Go back in history"
 msgstr "Reculer dans l'historique"
-
-#. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
-#, fuzzy
-msgid "Go &Forward"
-msgstr "Aller à &Suivant    Ctrl+]"
 
 #. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
 msgid "Go forward in history"
@@ -1915,16 +2056,6 @@ msgstr "I&mporter/Exporter"
 msgid "Import and export options"
 msgstr "Options d'importation et d'exportation"
 
-#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
-#, fuzzy
-msgid "Toggle &Bookmark"
-msgstr "Basculer le &Signet"
-
-#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
-#, fuzzy
-msgid "Bookmark with &Note"
-msgstr "Signet avec &note"
-
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 #, fuzzy
 msgid "Word w&rap"
@@ -1934,54 +2065,6 @@ msgstr "&Retour à la ligne automatique"
 #, fuzzy
 msgid "Toggle word wrap"
 msgstr "Activer/désactiver le retour à la ligne automatique"
-
-#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
-#, fuzzy
-msgid "&Play/Pause Audio"
-msgstr "&Lecture/Pause audio"
-
-#. TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
-#, fuzzy
-msgid "Play or pause this document's audio narration"
-msgstr "Lancer ou mettre en pause la lecture audio de ce document"
-
-#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
-#, fuzzy
-msgid "Seek Audio &Forward"
-msgstr "Aller à &Suivant    Ctrl+]"
-
-#. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
-#, fuzzy
-msgid "Skip the audio narration forward"
-msgstr "Passer la narration audio"
-
-#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
-#, fuzzy
-msgid "Seek Audio &Backward"
-msgstr "Rembobiner l'audio &En arrière"
-
-#. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
-#, fuzzy
-msgid "Skip the audio narration backward"
-msgstr "Passer la narration audio en arrière"
-
-#, fuzzy
-msgid "&Increase Audio Seek Amount"
-msgstr "&Augmenter la valeur de recherche audio"
-
-#. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
-#, fuzzy
-msgid "Increase how far seeking the audio narration moves"
-msgstr "Augmenter la distance parcourue par la narration audio"
-
-#, fuzzy
-msgid "&Decrease Audio Seek Amount"
-msgstr "&Réduire la valeur de recherche audio"
-
-#. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
-#, fuzzy
-msgid "Decrease how far seeking the audio narration moves"
-msgstr "Réduire la distance parcourue par la narration audio"
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
 #, fuzzy
@@ -2160,25 +2243,9 @@ msgstr "Il n'y a pas de figure suivante."
 msgid "No previous figure."
 msgstr "Aucun chiffre précédent."
 
-#. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
-msgid "Wrapping to start. "
-msgstr "Retour au début. "
-
-msgid "Wrapping to end. "
-msgstr "Retour à la fin. "
-
 #. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
 msgid "%s Heading level %d"
 msgstr "%s Titre niveau %d"
-
-#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-#, fuzzy
-msgid "Page %d"
-msgstr "Page %d"
-
-#. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-msgid "Page %d: %s"
-msgstr "Page %d : %s"
 
 #. TRANSLATORS: Suffix appended after a link's text when announcing navigation to a link; the leading space is significant
 msgid " link"
@@ -2217,75 +2284,72 @@ msgstr "Au-delà de l'extrémité du conteneur."
 msgid "Start of container."
 msgstr "Début du conteneur."
 
-#. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
-msgid "%s - Bookmark %d"
-msgstr "%s - Signet %d"
+#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+msgid "Table View"
+msgstr "Vue tableau"
 
-#. TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
-msgid "No notes."
-msgstr "Aucune note."
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
+msgid "Create &bookmark"
+msgstr "Créer un &signet"
 
-msgid "No bookmarks."
-msgstr "Aucun signet."
+msgid "Create bookmark"
+msgstr "Créer un signet"
 
-#. TRANSLATORS: Announced when there is no next bookmark/note from the current position
-msgid "No next note."
-msgstr "Aucune note suivante."
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
+msgid "Bookmark with &note"
+msgstr "Signet avec &note"
 
-msgid "No next bookmark."
-msgstr "Aucun signet suivant."
+msgid "Create bookmark with note"
+msgstr "Créer un signet avec une note"
 
-#. TRANSLATORS: Announced when there is no previous note from the current position
-msgid "No previous note."
-msgstr "Aucune note précédente."
+#. TRANSLATORS: Right-click context menu item and status text to open the find dialog
+msgid "&Find"
+msgstr "&Rechercher"
 
-#. TRANSLATORS: Announced when there is no previous bookmark from the current position
-msgid "No previous bookmark."
-msgstr "Aucun signet précédent."
+msgid "Find text"
+msgstr "Rechercher du texte"
 
-#. TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
-msgid "Bookmark."
-msgstr "Signet."
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
+msgid "Find &next"
+msgstr "Rechercher le &suivant"
 
-#. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
-msgid "Bookmark removed."
-msgstr "Signet supprimé."
+msgid "Find next match"
+msgstr "Rechercher l'occurrence suivante"
 
-msgid "Bookmark added."
-msgstr "Signet ajouté."
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
+msgid "Find &previous"
+msgstr "Rechercher le &précédent"
 
-#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
-#. TRANSLATORS: Announced when trying to seek audio on a document that has none
+msgid "Find previous match"
+msgstr "Rechercher l'occurrence précédente"
+
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
+msgid "Go to &page"
+msgstr "Aller à la &page"
+
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
+msgid "Go to &line"
+msgstr "Aller à la &ligne"
+
+msgid "Go to line"
+msgstr "Aller à la ligne"
+
+#. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
+msgid "Go to &percent"
+msgstr "Aller au &pourcentage"
+
+msgid "Go to percent"
+msgstr "Aller au pourcentage"
+
+#. TRANSLATORS: Announced when the user cancels a running sleep timer
+msgid "Sleep timer cancelled."
+msgstr "Minuterie de veille annulée."
+
 #, fuzzy
-msgid "This document has no audio."
-msgstr "Ce document ne comporte pas de table des matières."
-
-#. TRANSLATORS: Announced when trying to seek audio before playback has established a position
-#, fuzzy
-msgid "Audio hasn't started playing yet."
-msgstr "La lecture audio n'a pas encore commencé."
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-#, fuzzy
-msgid "{} (maximum)"
-msgstr "{} (maximum)"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-#, fuzzy
-msgid "{} (minimum)"
-msgstr "{} (minimum)"
-
-#. TRANSLATORS: Prompt label in the bookmark note dialog asking the user to type their note
-msgid "Enter bookmark note:"
-msgstr "Saisir la note du signet :"
-
-#. TRANSLATORS: Announced after saving a bookmark's note text
-msgid "Bookmark saved."
-msgstr "Signet enregistré."
-
-#. TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
-msgid "No note at the current position."
-msgstr "Aucune note à la position actuelle."
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Minuterie de veille réglée sur %d minutes."
+msgstr[1] "Minuterie de veille réglée sur %d minutes."
 
 #. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Line"
@@ -2785,10 +2849,65 @@ msgstr "Le fichier HTML est vide : {}"
 msgid "Failed to convert HTML to text: {}"
 msgstr "Échec de la conversion du code HTML en texte : {}"
 
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+#, fuzzy
+msgid "Chapter {}"
+msgstr "Entrer {}"
+
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 #, fuzzy
 msgid "Failed to convert Markdown to text: {}"
 msgstr "Échec de la conversion du Markdown en texte : {}"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+#, fuzzy
+msgid "Missing HUFF parameters in header"
+msgstr "Paramètres HUFF manquants dans l'en-tête"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+#, fuzzy
+msgid "Invalid HUFF/CDIC records"
+msgstr "Enregistrements HUFF/CDIC non valides"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+#, fuzzy
+msgid "Unsupported compression mode ({})"
+msgstr "Mode de compression non pris en charge ({})"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+#, fuzzy
+msgid "Invalid record offsets"
+msgstr "Décalages d'enregistrement non valides"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+#, fuzzy
+msgid "No records found"
+msgstr "Aucun résultat trouvé"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+#, fuzzy
+msgid "Invalid Record 0 offsets"
+msgstr "Enregistrement non valide : 0 décalage"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+#, fuzzy
+msgid "Invalid Record 0"
+msgstr "Enregistrement non valide n° 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+#, fuzzy
+msgid "No MOBI header"
+msgstr "Pas d'en-tête MOBI"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+#, fuzzy
+msgid "Invalid MOBI identifier"
+msgstr "Identifiant MOBI non valide"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+#, fuzzy
+msgid "Invalid content record range"
+msgstr "Plage d'enregistrements de contenu non valide"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
 #, fuzzy
@@ -2854,56 +2973,6 @@ msgstr "Décoder un débordement de pile"
 #, fuzzy
 msgid "File too short"
 msgstr "Fichier trop court"
-
-#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-#, fuzzy
-msgid "Invalid record offsets"
-msgstr "Décalages d'enregistrement non valides"
-
-#. TRANSLATORS: Error shown when a MOBI file has no records
-#, fuzzy
-msgid "No records found"
-msgstr "Aucun résultat trouvé"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-#, fuzzy
-msgid "Invalid Record 0 offsets"
-msgstr "Enregistrement non valide : 0 décalage"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-#, fuzzy
-msgid "Invalid Record 0"
-msgstr "Enregistrement non valide n° 0"
-
-#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-#, fuzzy
-msgid "No MOBI header"
-msgstr "Pas d'en-tête MOBI"
-
-#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-#, fuzzy
-msgid "Invalid MOBI identifier"
-msgstr "Identifiant MOBI non valide"
-
-#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-#, fuzzy
-msgid "Invalid content record range"
-msgstr "Plage d'enregistrements de contenu non valide"
-
-#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-#, fuzzy
-msgid "Invalid HUFF/CDIC records"
-msgstr "Enregistrements HUFF/CDIC non valides"
-
-#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-#, fuzzy
-msgid "Missing HUFF parameters in header"
-msgstr "Paramètres HUFF manquants dans l'en-tête"
-
-#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-#, fuzzy
-msgid "Unsupported compression mode ({})"
-msgstr "Mode de compression non pris en charge ({})"
 
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 #, fuzzy
@@ -3108,386 +3177,451 @@ msgstr "Échec de la vérification de sécurité. La mise à jour a peut-être �
 msgid "Security Error"
 msgstr "Erreur de sécurité"
 
+#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 #: swift
 #, fuzzy
 msgid "Export Document Data"
 msgstr "Exporter les données du document"
 
+#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
 #: swift
 #, fuzzy
 msgid "Import Document Data"
 msgstr "Importer les données d'un document"
 
+#. TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
 #: swift
 #, fuzzy
 msgid "Settings exported"
 msgstr "Paramètres exportés"
 
+#. TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
 #: swift
 #, fuzzy
 msgid "Failed to export settings"
 msgstr "Échec de l'exportation des paramètres"
 
+#. TRANSLATORS: Confirmation shown after importing a document's settings and bookmarks from a .paperback file
 #: swift
 #, fuzzy
 msgid "Settings imported"
 msgstr "Paramètres importés"
 
+#. TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
 #: swift
 #, fuzzy
 msgid "Failed to import settings"
 msgstr "Échec de l'importation des paramètres"
 
+#. TRANSLATORS: Title of the alert reporting the result of importing/exporting a document's settings and bookmarks
 #: swift
 #, fuzzy
 msgid "Document Data"
 msgstr "Données du document"
 
+#. TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
 #: swift
 #, fuzzy
 msgid "More options"
 msgstr "Plus d'options"
 
+#. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
 #: swift
 #, fuzzy
 msgid "Switch to TTS Mode"
 msgstr "Passer en mode TTS"
 
+#. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
 #: swift
 #, fuzzy
 msgid "Switch to Text Mode"
 msgstr "Passer en mode texte"
 
-#: swift
-#, fuzzy
-msgid "Go To…"
-msgstr "Aller à…"
-
+#. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
 #, fuzzy
 msgid "Recent Documents"
 msgstr "Documents récents"
 
+#. TRANSLATORS: Menu item to open the sleep timer; the "(active)" variant is shown while a timer is currently counting down
 #: swift
 #, fuzzy
 msgid "Sleep Timer (active)"
 msgstr "Minuterie de mise en veille (activée)"
 
+#. TRANSLATORS: Label for the wheel picker choosing between the Headings and Links tabs
 #: swift
 #, fuzzy
 msgid "Type"
 msgstr "Type"
 
+#. TRANSLATORS: Title shown when a document has no headings or links to list in the Elements sheet
 #: swift
 #, fuzzy
 msgid "No Elements"
 msgstr "Aucun élément"
 
+#. TRANSLATORS: Description shown under the "No Elements" title explaining what would appear here
 #: swift
 #, fuzzy
 msgid "Headings, images, and other elements will appear here."
 msgstr "Les titres, les images et les autres éléments s'afficheront ici."
 
+#. TRANSLATORS: Shown in the main reading area when no document is currently open
 #: swift
 #, fuzzy
 msgid "No document open"
 msgstr "Aucun document n'est ouvert"
 
+#. TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
 #: swift
 #, fuzzy
 msgid "Show All"
 msgstr "Tout afficher"
 
-#: swift
-#, fuzzy
-msgid "Search…"
-msgstr "Rechercher…"
-
+#. TRANSLATORS: Toggle label; when on, search matching is case-sensitive
 #: swift
 #, fuzzy
 msgid "Match Case"
 msgstr "Cas de correspondance"
 
+#. TRANSLATORS: Toggle label; when on, search only matches whole words
 #: swift
 #, fuzzy
 msgid "Whole Word"
 msgstr "Mot entier"
 
+#. TRANSLATORS: Toggle label; when on, the search query is treated as a regular expression
 #: swift
 #, fuzzy
 msgid "Regular Expression"
 msgstr "Expression régulière"
 
+#. TRANSLATORS: Title of the alert shown when a document fails to open
 #: swift
 #, fuzzy
 msgid "Open Error"
 msgstr "Erreur d'ouverture"
 
+#. TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
 #: swift
 #, fuzzy
 msgid "Open Book"
 msgstr "Livre ouvert"
 
+#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
 #: swift
 #, fuzzy
 msgid "Locate"
 msgstr "Localiser"
 
+#. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
 #, fuzzy
 msgid "Remove"
 msgstr "Supprimer"
 
+#. TRANSLATORS: Status label for a recent document whose file can no longer be found
 #: swift
 #, fuzzy
 msgid "File Missing"
 msgstr "Fichier manquant"
 
+#. TRANSLATORS: Status label for a recent document that's currently open in a tab
 #: swift
 #, fuzzy
 msgid "Currently Open"
 msgstr "Postes à pourvoir actuellement"
 
+#. TRANSLATORS: Title of the empty-state view shown when no documents have been opened yet
 #: swift
 #, fuzzy
 msgid "No Recent Documents"
 msgstr "Aucun document récent"
 
+#. TRANSLATORS: Description text under the "No Recent Documents" empty-state title
 #: swift
 #, fuzzy
 msgid "Documents you open will appear here."
 msgstr "Les documents que vous ouvrez s'afficheront ici."
 
+#. TRANSLATORS: Section header in Settings grouping text-to-speech voice/rate/pitch controls
 #: swift
 #, fuzzy
 msgid "Text to Speech"
 msgstr "Synthèse vocale"
 
+#. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: swift
 #, fuzzy
 msgid "Voice"
 msgstr "Voix"
 
+#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
 #: swift
 #, fuzzy
 msgid "Rate"
 msgstr "Taux"
 
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
 #: swift
 #, fuzzy
 msgid "Speech Rate"
 msgstr "Vitesse d'élocution"
 
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
 #: swift
 #, fuzzy
 msgid "Pitch"
 msgstr "Pitch"
 
+#. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
 #: swift
 #, fuzzy
 msgid "Speech Dictionary"
 msgstr "Dictionnaire de la parole"
 
+#. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
 #: swift
 #, fuzzy
 msgid "Play Sample"
 msgstr "Écouter un extrait"
 
+#. TRANSLATORS: Row label for the control that scales the size of document text
 #: swift
 #, fuzzy
 msgid "Text Size"
 msgstr "Synthèse vocale"
 
+#. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
 #: swift
 #, fuzzy
 msgid "Line Spacing"
 msgstr "Espacement des lignes"
 
+#. TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
 #: swift
 #, fuzzy
 msgid "Paragraph Spacing"
 msgstr "Espacement des paragraphes"
 
+#. TRANSLATORS: Label for the picker choosing how document text is aligned
 #: swift
 #, fuzzy
 msgid "Alignment"
 msgstr "Texte et alignement :"
 
+#. TRANSLATORS: Section header in Settings grouping general app behavior toggles
 #: swift
 #, fuzzy
 msgid "Behavior"
 msgstr "Comportement"
 
+#. TRANSLATORS: Toggle to reopen previously open documents on next launch
 #: swift
 #, fuzzy
 msgid "Restore last open documents"
 msgstr "Restaurer les derniers documents ouverts"
 
+#. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
 #: swift
 #, fuzzy
 msgid "Swipe up moves forward"
 msgstr "Glisser vers le haut permet d'avancer"
 
+#. TRANSLATORS: Row label for the document's title in the Document Info sheet
 #: swift
 #, fuzzy
 msgid "Title"
 msgstr "Titre"
 
+#. TRANSLATORS: Row label for the document's author in the Document Info sheet
 #: swift
 #, fuzzy
 msgid "Author"
 msgstr "Auteur"
 
+#. TRANSLATORS: Row label for the document's total word count
 #: swift
 #, fuzzy
 msgid "Words"
 msgstr "Mots"
 
+#. TRANSLATORS: Row label for the document's total line count
 #: swift
 #, fuzzy
 msgid "Lines"
 msgstr "Lignes"
 
+#. TRANSLATORS: Row label for the document's total character count (including spaces)
 #: swift
 #, fuzzy
 msgid "Characters"
 msgstr "Personnages"
 
+#. TRANSLATORS: Row label for the document's character count with whitespace excluded
 #: swift
 #, fuzzy
 msgid "Characters (excluding spaces)"
 msgstr "Caractères (espaces non compris)"
 
+#. TRANSLATORS: Label for the wheel picker that chooses whether Go To navigates by line, page, or percent
 #: swift
 #, fuzzy
 msgid "Mode"
 msgstr "Mode"
 
+#. TRANSLATORS: Go To mode option: navigate to a specific page number
 #: swift
 #, fuzzy
 msgid "Page"
 msgstr "Page"
 
+#. TRANSLATORS: Go To mode option: navigate to a percentage through the document
 #: swift
 #, fuzzy
 msgid "Percent"
 msgstr "Pourcentage"
 
+#. TRANSLATORS: Placeholder for the line number input field in Go To
 #: swift
 #, fuzzy
 msgid "Line number"
 msgstr "Numéro de ligne"
 
+#. TRANSLATORS: Placeholder for the page number input field in Go To
 #: swift
 #, fuzzy
 msgid "Page number"
 msgstr "Numéro de page"
 
+#. TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
 #: swift
 #, fuzzy
 msgid "Percentage"
 msgstr "Pourcentage"
 
+#. TRANSLATORS: Navigation title of the Go To sheet
 #: swift
 #, fuzzy
 msgid "Go To"
 msgstr "Aller à"
 
+#. TRANSLATORS: Placeholder text for the password entry field
 #: swift
 #, fuzzy
 msgid "Password"
 msgstr "Mot de passe"
 
+#. TRANSLATORS: Footer text naming the file that needs a password; {} is the file name
 #: swift
 #, fuzzy
 msgid "Enter password for {}"
 msgstr "Saisissez le mot de passe pour {}"
 
+#. TRANSLATORS: Navigation title of the sheet prompting for a document's password
 #: swift
 #, fuzzy
 msgid "Password Required"
 msgstr "Mot de passe requis"
 
+#. TRANSLATORS: Section header grouping the scope picker for a text-substitution rule
 #: swift
 #, fuzzy
 msgid "Rule"
 msgstr "Règle"
 
+#. TRANSLATORS: Label for the picker choosing whether a rule applies to a whole word or a whole paragraph
 #: swift
 #, fuzzy
 msgid "Scope"
 msgstr "Champ d'application"
 
+#. TRANSLATORS: Rule scope option: the rule matches within a single word
 #: swift
 #, fuzzy
 msgid "Word"
 msgstr "Mot"
 
+#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
 #: swift
 #, fuzzy
 msgid "Paragraph"
 msgstr "Paragraphe"
 
+#. TRANSLATORS: Section header grouping the find/replace pattern fields for a text-substitution rule
 #: swift
 #, fuzzy
 msgid "Pattern & Replacement"
 msgstr "Modèles et pièces de rechange"
 
+#. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
 #: swift
 #, fuzzy
 msgid "Pattern"
 msgstr "Motif"
 
+#. TRANSLATORS: Placeholder for the text field where the user enters the replacement text
 #: swift
 #, fuzzy
 msgid "Replacement"
 msgstr "Remplacement"
 
+#. TRANSLATORS: Toggle limiting a word-scope rule to whole-word matches only (no partial-word matches)
 #: swift
 #, fuzzy
 msgid "Whole word only"
 msgstr "Mot entier uniquement"
 
+#. TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
 #: swift
 #, fuzzy
 msgid "Regular expression (\\1 = first capture group)"
 msgstr "Expression régulière (\\1 = premier groupe de capture)"
 
+#. TRANSLATORS: Toggle for whether this text-substitution rule is currently active
 #: swift
 #, fuzzy
 msgid "Enabled"
 msgstr "Activé"
 
+#. TRANSLATORS: Section header for choosing which TTS voices a rule applies to
 #: swift
 #, fuzzy
 msgid "Apply to"
 msgstr "Postuler à"
 
+#. TRANSLATORS: Row label leading to the voice-filter picker for this rule
 #: swift
 #, fuzzy
 msgid "Voices"
 msgstr "Voix"
 
+#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
 #: swift
 #, fuzzy
 msgid "New Rule"
 msgstr "Nouvelle règle"
 
+#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
 #: swift
 #, fuzzy
 msgid "Edit Rule"
 msgstr "Modifier la règle"
 
+#. TRANSLATORS: Button to save the rule and dismiss the editor
 #: swift
 #, fuzzy
 msgid "Save"
 msgstr "Enregistrer"
 
+#. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
 #: swift
 #, fuzzy
 msgid "All voices"
 msgstr "Toutes les voix"
 
+#. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
 #: swift
 #, fuzzy
 msgid "Apply To"
@@ -3498,6 +3632,13 @@ msgstr "Postuler à"
 msgid "Sleep timer running, {} remaining"
 msgstr "Minuterie de mise en veille activée, il reste {}"
 
+#. TRANSLATORS: Sleep timer duration option that reveals a field to type a custom number of
+#. minutes; {} is the number typed so far, e.g. "Custom: 45 minutes" — shown once non-empty
+#. so VoiceOver users don't need to swipe into the text field to hear the current value.
+#. Three forms picked by the count's last digits (see nt() in Translations.swift): one =
+#. counts ending in 1 except 11 (1, 21, 31, ...), few = counts ending in 2-4 except 12-14
+#. (2, 3, 4, 22, 23, 24, ...), many = everything else (0, 5-20, 25-30, ...). The "many" form's
+#. trailing character isn't a typo — see pluralManyMarker in Translations.swift.
 #: swift
 #, fuzzy
 msgid "Custom"
@@ -3513,96 +3654,115 @@ msgstr "Personnalisé : « {} minutes »"
 msgid "Duration"
 msgstr "Durée"
 
+#. TRANSLATORS: Placeholder in the custom sleep timer duration field, asking for a number of minutes
 #: swift
 #, fuzzy
 msgid "Minutes"
 msgstr "Procès-verbal"
 
+#. TRANSLATORS: Button that dismisses the keyboard after typing a custom sleep timer duration
 #: swift
 #, fuzzy
 msgid "Done"
 msgstr "Terminé"
 
+#. TRANSLATORS: Button that starts the sleep timer with the selected duration, or stops it if one is already running
 #: swift
 #, fuzzy
 msgid "Stop Timer"
 msgstr "Arrêter le chronomètre"
 
+#. TRANSLATORS: Button that starts the sleep timer with the selected duration, or stops it if one is already running
 #: swift
 #, fuzzy
 msgid "Start Timer"
 msgstr "Lancer le chronomètre"
 
+#. TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
 #: swift
 #, fuzzy
 msgid "Edit"
 msgstr "Modifier"
 
+#. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
 #: swift
 #, fuzzy
 msgid "Add Rule"
 msgstr "Ajouter une règle"
 
+#. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
 #: swift
 #, fuzzy
 msgid "No Rules"
 msgstr "Pas de règles"
 
+#. TRANSLATORS: Accessibility label for the horizontal strip of open document tabs
 #: swift
 #, fuzzy
 msgid "Tabs"
 msgstr "Onglets"
 
+#. TRANSLATORS: Navigation title of the table of contents screen
 #: swift
 #, fuzzy
 msgid "Contents"
 msgstr "Sommaire"
 
+#. TRANSLATORS: Title shown when the current document has no table of contents
 #: swift
 #, fuzzy
 msgid "No Table of Contents"
 msgstr "Pas de table des matières"
 
+#. TRANSLATORS: Description shown below the "No Table of Contents" title
 #: swift
 #, fuzzy
 msgid "This document has no table of contents."
 msgstr "Ce document ne comporte pas de table des matières."
 
+#. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
 #: swift
 #, fuzzy
 msgid "Navigation unit"
 msgstr "Unité de navigation"
 
+#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
 #: swift
 #, fuzzy
 msgid "Previous {}"
 msgstr "Précédent {}"
 
+#. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
 #: swift
 #, fuzzy
 msgid "Pause"
 msgstr "Pause"
 
+#. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
 #: swift
 #, fuzzy
 msgid "Play"
 msgstr "Jouer"
 
+#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
 #, fuzzy
 msgid "End of document"
 msgstr "Fin du document"
 
+#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
 #, fuzzy
 msgid "Beginning of document"
 msgstr "Début du document"
 
+#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
 #: swift
 #, fuzzy
 msgid "Next {}"
 msgstr "Suivant {}"
 
+#. TRANSLATORS: Placeholder shown in the read-aloud view before the user has started playback
 #: swift
 #, fuzzy
 msgid "Press play to start listening."
@@ -3613,6 +3773,7 @@ msgstr "Cliquez sur « Lecture » pour commencer à écouter."
 msgid "Document Information"
 msgstr "Informations sur le document"
 
+#. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 #, fuzzy
 msgid "Untitled Link"
@@ -3623,51 +3784,61 @@ msgstr "Lien sans titre"
 msgid "Export Document"
 msgstr "Exporter les données du document"
 
+#. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
 #: kt
 #, fuzzy
 msgid "Select a format to export the current document:"
 msgstr "Fermer le document actuel"
 
+#. TRANSLATORS: Export format option to save the document as a plain text file
 #: kt
 #, fuzzy
 msgid "Plain Text (.txt)"
 msgstr "Texte brut"
 
+#. TRANSLATORS: Export format option to save the document as an HTML file
 #: kt
 #, fuzzy
 msgid "HTML (.html)"
 msgstr "HTML (.html)"
 
+#. TRANSLATORS: Export format option to save the document as a Markdown file
 #: kt
 #, fuzzy
 msgid "Markdown (.md)"
 msgstr "Markdown"
 
+#. TRANSLATORS: Shown in the in-app file browser when a folder has no openable documents or subfolders
 #: kt
 #, fuzzy
 msgid "No supported books or folders found here."
 msgstr "Aucun livre ni dossier pris en charge n'a été trouvé ici."
 
+#. TRANSLATORS: TalkBack description of a file browser entry's type, read as e.g. "myfile.epub, File, modified ..."
 #: kt
 #, fuzzy
 msgid "Folder"
 msgstr "Dossier"
 
+#. TRANSLATORS: Display name for the device's root storage folder in the in-app file browser
 #: kt
 #, fuzzy
 msgid "Internal Storage"
 msgstr "Mémoire interne"
 
+#. TRANSLATORS: Label for the text field where the user types what to search for
 #: kt
 #, fuzzy
 msgid "Search Term"
 msgstr "Terme de recherche"
 
+#. TRANSLATORS: Button that opens a dropdown of previously used search terms
 #: kt
 #, fuzzy
 msgid "Search History"
 msgstr "Historique des recherches"
 
+#. TRANSLATORS: Label for the password input field
 #: kt
 #, fuzzy
 msgid "Password:"
@@ -3678,106 +3849,121 @@ msgstr "Mot de passe :"
 msgid "All Files Access Required"
 msgstr "Accès à tous les fichiers requis"
 
+#. TRANSLATORS: Intro sentence explaining what the "All Files Access" permission is used for
 #: kt
 #, fuzzy
 msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
 msgstr "Paperback nécessite l'autorisation « Accès à tous les fichiers » pour activer le navigateur de fichiers personnalisé intégré à l'application."
 
+#. TRANSLATORS: Heading introducing the list of reasons the permission is needed
 #: kt
 #, fuzzy
 msgid "Why we need this:"
 msgstr "Pourquoi en avons-nous besoin ? :"
 
+#. TRANSLATORS: First reason for requesting the "All Files Access" permission
 #: kt
 #, fuzzy
 msgid "To provide a fast, fully screen-reader accessible file manager inside the app."
 msgstr "• Proposer, au sein de l'application, un gestionnaire de fichiers rapide et entièrement compatible avec les lecteurs d'écran."
 
+#. TRANSLATORS: Second reason for requesting the "All Files Access" permission
 #: kt
 #, fuzzy
 msgid "To load large files instantly without needing to copy them into the app's cache."
 msgstr "• Pour charger instantanément des fichiers volumineux sans avoir à les copier dans le cache de l'application."
 
+#. TRANSLATORS: Third reason for requesting the "All Files Access" permission
 #: kt
 #, fuzzy
 msgid "To display the exact local file paths of your documents."
 msgstr "• Pour afficher les chemins d'accès locaux exacts de vos documents."
 
-#: kt
-#, fuzzy
-msgid "If you deny this permission, you can still use the Android System File Picker to open your "
-msgstr "Si vous refusez cette autorisation, vous pourrez tout de même utiliser le sélecteur de fichiers du système Android pour ouvrir vos livres en désactivant le paramètre « Navigateur de fichiers personnalisé »."
-
+#. TRANSLATORS: Button label to grant the requested permission
 #: kt
 #, fuzzy
 msgid "Grant"
 msgstr "Subvention"
 
+#. TRANSLATORS: Button label to dismiss the permission rationale dialog without granting it
 #: kt
 #, fuzzy
 msgid "Not Now"
 msgstr "Pas maintenant"
 
+#. TRANSLATORS: Dialog title, switches between the main sleep timer view and the custom-minutes entry view
 #: kt
 #, fuzzy
 msgid "Custom Timer"
 msgstr "Minuterie personnalisée"
 
+#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
 #: kt
 #, fuzzy
 msgid "Back"
 msgstr "Retour"
 
+#. TRANSLATORS: Button to confirm and start the sleep timer with the custom minutes entered
 #: kt
 #, fuzzy
 msgid "Start"
 msgstr "Démarrer"
 
+#. TRANSLATORS: Sentence announced to screen readers with the sleep timer's remaining time; {} is replaced with e.g. "3:45"
 #: kt
 #, fuzzy
 msgid "Active: {} remaining"
 msgstr "Actif : {} restants"
 
+#. TRANSLATORS: Unit label shown under the sleep timer's remaining time
 #: kt
 #, fuzzy
 msgid "remaining"
 msgstr "Temps restant"
 
+#. TRANSLATORS: Button to cancel the currently running sleep timer
 #: kt
 #, fuzzy
 msgid "Cancel Timer"
 msgstr "Annuler le minuteur"
 
+#. TRANSLATORS: Heading introducing the preset duration chips, shown while a sleep timer is already active
 #: kt
 #, fuzzy
 msgid "Change to:"
 msgstr "Remplacer par :"
 
+#. TRANSLATORS: Preset sleep timer duration chip; {} is replaced with the number of minutes
 #: kt
 #, fuzzy
 msgid "{} minutes"
 msgstr "{} minutes"
 
+#. TRANSLATORS: Chip to switch to the custom-minutes entry view for the sleep timer
 #: kt
 #, fuzzy
 msgid "Custom time..."
 msgstr "L'heure personnalisée..."
 
+#. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
 #: kt
 #, fuzzy
 msgid "Expanded"
 msgstr "Développé"
 
+#. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
 #: kt
 #, fuzzy
 msgid "Collapsed"
 msgstr "Réduit"
 
+#. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
 #: kt
 #, fuzzy
 msgid "Collapse"
 msgstr "Réduire"
 
+#. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
 #: kt
 #, fuzzy
 msgid "Expand"
@@ -3788,216 +3974,254 @@ msgstr "Développer"
 msgid "This document contains {} words."
 msgstr "Ce document contient{}s de mots."
 
+#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
+#. three forms is used depends on the target language's own plural rule, read
+#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
 msgid "words"
 msgstr "Mots"
 
+#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
 #, fuzzy
 msgid "Close Search"
 msgstr "Fermer la recherche"
 
+#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 #, fuzzy
 msgid "Document exported"
 msgstr "Le document a été rechargé."
 
+#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 #, fuzzy
 msgid "Failed to export document"
 msgstr "Impossible d'exporter le document."
 
+#. TRANSLATORS: Shown on the main screen before the app has finished loading any document state
 #: kt
 #, fuzzy
 msgid "No document open. Please open a book."
 msgstr "Aucun document n'est ouvert. Veuillez ouvrir un livre."
 
+#. TRANSLATORS: Shown on the main screen when no document is open and there are no recent documents to list
 #: kt
 #, fuzzy
 msgid "No Documents"
 msgstr "Aucun document"
 
+#. TRANSLATORS: Countdown shown while the reading sleep timer is active; {} is the remaining time as minutes:seconds
 #: kt
 #, fuzzy
 msgid "Sleep timer: {}"
 msgstr "Minuterie de mise en veille : {}"
 
+#. TRANSLATORS: Accessibility action to cancel the active reading sleep timer
 #: kt
 #, fuzzy
 msgid "Cancel sleep timer"
 msgstr "Annuler la minuterie de mise en veille"
 
+#. TRANSLATORS: Confirm button to proceed with importing the found document settings
 #: kt
 #, fuzzy
 msgid "Import"
 msgstr "Importer"
 
+#. TRANSLATORS: Accessibility label for the overflow icon button that opens the options menu
 #: kt
 #, fuzzy
 msgid "More Options"
 msgstr "Plus d'options"
 
+#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
 #: kt
 #, fuzzy
 msgid "Pause Read Aloud"
 msgstr "Mettre en pause la lecture à voix haute"
 
+#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
 #: kt
 #, fuzzy
 msgid "Read Aloud"
 msgstr "Lecture à voix haute"
 
+#. TRANSLATORS: Menu item / accessibility action to open the export document dialog
 #: kt
 #, fuzzy
 msgid "Export As"
 msgstr "Exportation réussie"
 
+#. TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
 #: kt
 #, fuzzy
 msgid "Elements List"
 msgstr "Liste des éléments"
 
+#. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
 #: kt
 #, fuzzy
 msgid "No more matches."
 msgstr "Plus aucun résultat."
 
+#. TRANSLATORS: Name of the "heading" reading/navigation unit
 #: kt
 #, fuzzy
 msgid "Heading"
 msgstr "Titre"
 
+#. TRANSLATORS: Name of the "link" reading/navigation unit
 #: kt
 #, fuzzy
 msgid "Link"
 msgstr "Lien"
 
+#. TRANSLATORS: Name of the "section" reading/navigation unit
 #: kt
 #, fuzzy
 msgid "Section"
 msgstr "Section"
 
+#. TRANSLATORS: Name of the "list" reading/navigation unit
 #: kt
 #, fuzzy
 msgid "List"
 msgstr "Liste"
 
+#. TRANSLATORS: Name of the "list item" reading/navigation unit
 #: kt
 #, fuzzy
 msgid "List Item"
 msgstr "Élément de liste"
 
+#. TRANSLATORS: Name of the "table" reading/navigation unit
 #: kt
 #, fuzzy
 msgid "Table"
 msgstr "Tableau"
 
+#. TRANSLATORS: Name of the "separator" reading/navigation unit
 #: kt
 #, fuzzy
 msgid "Separator"
 msgstr "Séparateur"
 
+#. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
+#. above; {} is the number of seconds. Which of the three forms is used depends on the
+#. target language's own plural rule, read from its catalogue (see nt() in
+#. Translations.kt). The "many" form's trailing character isn't a typo — see
+#. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
 msgid "{} seconds"
 msgstr "{} secondes"
 
+#. TRANSLATORS: Shown next to a permission on the onboarding screen once it has been granted
 #: kt
 #, fuzzy
 msgid "✓ Granted"
 msgstr "Subvention"
 
+#. TRANSLATORS: Heading shown on the first-run permissions onboarding screen
 #: kt
 #, fuzzy
 msgid "Before You Start"
 msgstr "Avant de commencer"
 
+#. TRANSLATORS: Intro paragraph explaining that the following sections describe requested permissions
 #: kt
 #, fuzzy
 msgid "Paperback works best with a couple of permissions. Here's what we ask for and why:"
 msgstr "Paperback fonctionne mieux avec quelques autorisations. Voici ce que nous demandons et pourquoi :"
 
+#. TRANSLATORS: Heading for the notifications permission section on the onboarding screen
 #: kt
 #, fuzzy
 msgid "Notifications"
 msgstr "Aucune section."
 
-#: kt
-#, fuzzy
-msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is "
-msgstr "Permet à Paperback d'afficher les commandes de lecture dans le volet de notifications pendant que la synthèse vocale est "
-
+#. TRANSLATORS: Button to grant the notifications permission during onboarding
 #: kt
 #, fuzzy
 msgid "Enable Notifications"
 msgstr "Activer les notifications"
 
+#. TRANSLATORS: Heading for the all files access permission section on the onboarding screen
 #: kt
 #, fuzzy
 msgid "All Files Access"
 msgstr "Accès à tous les fichiers requis"
 
-#: kt
-#, fuzzy
-msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your "
-msgstr "Active l'explorateur de fichiers intégré facultatif, pour que vous puissiez ouvrir des documents depuis n'importe où sur votre "
-
+#. TRANSLATORS: Button to open system settings for the all files access permission during onboarding
 #: kt
 #, fuzzy
 msgid "Enable File Access"
 msgstr "Accès à tous les fichiers requis"
 
+#. TRANSLATORS: Button to leave the onboarding screen and continue into the app, whether or not permissions were granted
 #: kt
 #, fuzzy
 msgid "Continue"
 msgstr "Continuer"
 
+#. TRANSLATORS: Settings switch: reopen the last-read book automatically on launch
 #: kt
 #, fuzzy
 msgid "Restore last open book"
 msgstr "Récupérer le dernier livre ouvert"
 
+#. TRANSLATORS: Settings switch: use the app's built-in file browser instead of the system document picker
 #: kt
 #, fuzzy
 msgid "Use in-app file browser (requires All Files permission)"
 msgstr "Utiliser l'explorateur de fichiers intégré à l'application (nécessite l'autorisation « Tous les fichiers »)"
 
+#. TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
 #: kt
 #, fuzzy
 msgid "Text-to-Speech"
 msgstr "Synthèse vocale"
 
+#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 #, fuzzy
 msgid "System Default"
 msgstr "Paramètres par défaut du système"
 
+#. TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
 #: kt
 #, fuzzy
 msgid "Back {}"
 msgstr "Retour {}"
 
+#. TRANSLATORS: TalkBack label for the read-aloud bar's forward button when navigating audio by time; {} is an amount like "30 seconds"
 #: kt
 #, fuzzy
 msgid "Forward {}"
 msgstr "Avancer {}"
 
+#. TRANSLATORS: Placeholder in the Go To dialog's number field; {} is the mode name ("Line", "Page", or "Percentage")
 #: kt
 #, fuzzy
 msgid "Enter {}"
 msgstr "Entrer {}"
 
+#. TRANSLATORS: Shown in place of the document when it could not be opened; {} is the reason
 #: kt
 #, fuzzy
 msgid "Error loading document: {}"
 msgstr "Erreur au chargement du document : {}"
 
+#. TRANSLATORS: 1.5x line spacing option
 #: kt
 #, fuzzy
 msgid "1.5×"
 msgstr "1,5×"
 
+#. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
 #, fuzzy
 msgid "Speech Engine"
@@ -4018,11 +4242,13 @@ msgstr "{} livres"
 msgid "..."
 msgstr "Ouvrir..."
 
+#. TRANSLATORS: Menu item to jump to a specific page, line, or percentage in the document
 #: swift
 #, fuzzy
 msgid "Go To..."
 msgstr "Aller à"
 
+#. TRANSLATORS: Placeholder text shown in the empty search field of the Find screen
 #: swift
 #, fuzzy
 msgid "Search..."
@@ -4038,21 +4264,39 @@ msgstr "Personnalisé : « {} minutes »"
 msgid "Custom: {} minutes⁣"
 msgstr "Personnalisé : « {} minutes »"
 
+#. TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is
+#. replaced with the number. Which of the three forms is used depends on the target language's
+#. own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
+#. trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
 msgid "This document contains {} word."
 msgstr "Ce document contient{}s de mots."
 
+#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
+#. three forms is used depends on the target language's own plural rule, read
+#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
 msgid "word"
 msgstr "Mots"
 
+#. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
+#. above; {} is the number of seconds. Which of the three forms is used depends on the
+#. target language's own plural rule, read from its catalogue (see nt() in
+#. Translations.kt). The "many" form's trailing character isn't a typo — see
+#. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
 msgid "{} second"
 msgstr "{} secondes"
 
+#. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
+#. above; {} is the number of seconds. Which of the three forms is used depends on the
+#. target language's own plural rule, read from its catalogue (see nt() in
+#. Translations.kt). The "many" form's trailing character isn't a typo — see
+#. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
 msgid "{} seconds⁣"
@@ -4063,10 +4307,56 @@ msgstr "{} secondes"
 msgid "This document contains {} words.⁣"
 msgstr "Ce document contient{}s de mots."
 
+#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
+#. three forms is used depends on the target language's own plural rule, read
+#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
+#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
 msgid "words⁣"
 msgstr "Mots"
+
+#. TRANSLATORS: Closing note explaining the fallback if the user denies the permission
+#: kt
+#, fuzzy
+msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
+msgstr "Si vous refusez cette autorisation, vous pourrez tout de même utiliser le sélecteur de fichiers du système Android pour ouvrir vos livres en désactivant le paramètre « Navigateur de fichiers personnalisé »."
+
+#. TRANSLATORS: Explanation of why the app requests the notifications permission
+#: kt
+#, fuzzy
+msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is reading, so you can pause, resume, and skip without reopening the app."
+msgstr "Permet à Paperback d'afficher les commandes de lecture dans le volet de notifications pendant que la synthèse vocale est "
+
+#. TRANSLATORS: Explanation of why the app requests the all files access permission
+#: kt
+#, fuzzy
+msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your device — including network drives — instantly, with full screen-reader support. You can skip this and use the system file picker instead."
+msgstr "Active le navigateur de fichiers optionnel de l'application, vous permettant d'ouvrir des documents de n'importe où sur votre appareil — y compris les lecteurs réseau — instantanément, avec un support complet du lecteur d'écran. Vous pouvez ignorer cela et utiliser le sélecteur de fichiers système à la place."
+
+#. TRANSLATORS: Announced by the screen reader when the in-app file browser opens
+#: kt
+#, fuzzy
+msgid "File Manager"
+msgstr "Fichier manquant"
+
+#~ msgid "&Line number:"
+#~ msgstr "&Numéro de ligne :"
+
+#~ msgid "P&ercent:"
+#~ msgstr "P&ourcentage :"
+
+#, fuzzy
+#~ msgid "Go To…"
+#~ msgstr "Aller à…"
+
+#, fuzzy
+#~ msgid "Search…"
+#~ msgstr "Rechercher…"
+
+#, fuzzy
+#~ msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your "
+#~ msgstr "Active l'explorateur de fichiers intégré facultatif, pour que vous puissiez ouvrir des documents depuis n'importe où sur votre "
 
 #, fuzzy
 #~ msgid "&Locate…"

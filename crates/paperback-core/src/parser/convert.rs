@@ -3,7 +3,7 @@
 //! and `mobi`; [`xml_to_text`] backs `daisy`, `epub` and `fb2`; [`table_text`] backs both of
 //! those plus `odt`, `pdf`, `powerpoint` and `word`.
 
-mod block_elements;
+pub(crate) mod block_elements;
 mod format_spans;
 mod line_builder;
 mod list_style;

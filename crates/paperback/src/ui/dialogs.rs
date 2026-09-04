@@ -23,7 +23,7 @@ mod document_info;
 pub use document_info::show_document_info_dialog;
 mod duration_format;
 mod elements;
-pub use elements::show_elements_dialog;
+pub use elements::{ElementsKind, show_elements_dialog};
 mod go_to;
 mod go_to_line;
 pub use go_to_line::show_go_to_line_dialog;
@@ -31,6 +31,10 @@ mod go_to_page;
 pub use go_to_page::show_go_to_page_dialog;
 mod go_to_percent;
 pub use go_to_percent::show_go_to_percent_dialog;
+#[cfg(target_os = "linux")]
+mod linux_setup;
+#[cfg(target_os = "linux")]
+pub use linux_setup::{AssociationChoice, ChoiceAction, show_linux_setup_dialog};
 mod note_entry;
 pub use note_entry::show_note_entry_dialog;
 mod open_as;

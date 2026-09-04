@@ -4,8 +4,13 @@ use std::fs;
 use std::os::unix::fs::symlink;
 use std::{env, error::Error, path::Path, process::Command};
 #[cfg(not(target_os = "macos"))]
-use std::{fs::File, io};
+use std::{
+	fs::{self, File},
+	io,
+};
 
+#[cfg(not(target_os = "macos"))]
+use flate2::{Compression, write::GzEncoder};
 #[cfg(target_os = "macos")]
 use walkdir::WalkDir;
 #[cfg(not(target_os = "macos"))]
@@ -39,14 +44,18 @@ pub fn release() -> Result<(), Box<dyn Error>> {
 		let pb_exe_name = if cfg!(windows) { "pb.exe" } else { "pb" };
 		let exe_path = target_dir.join(exe_name);
 		let pb_exe_path = target_dir.join(pb_exe_name);
-		let pdfium_dll_path = target_dir.join("pdfium.dll");
 		if !exe_path.exists() {
 			return Err("Executable not found".into());
 		}
 		println!("Packaging binary...");
-		build_zip_package(&target_dir, &exe_path, &pb_exe_path, &pdfium_dll_path)?;
 		if cfg!(windows) {
+			let pdfium_dll_path = target_dir.join("pdfium.dll");
+			build_zip_package(&target_dir, &exe_path, &pb_exe_path, &pdfium_dll_path)?;
 			build_windows_installer(&target_dir)?;
+		} else {
+			let pdfium_so_path = target_dir.join("libpdfium.so");
+			build_targz_package(&target_dir, &exe_path, &pb_exe_path, &pdfium_so_path)?;
+			build_appimage(&target_dir, &exe_path, &pb_exe_path, &pdfium_so_path)?;
 		}
 		Ok(())
 	}
@@ -198,6 +207,110 @@ fn build_zip_package(
 		add_file_to_zip(&mut zip, options, pdfium_dll_path, "pdfium.dll")?;
 	}
 	println!("Created zip: {}", package_path.display());
+	Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn build_targz_package(
+	target_dir: &Path,
+	exe_path: &Path,
+	pb_exe_path: &Path,
+	pdfium_so_path: &Path,
+) -> Result<(), Box<dyn Error>> {
+	let package_path = target_dir.join("paperback.tar.gz");
+	let file = File::create(&package_path)?;
+	let encoder = GzEncoder::new(file, Compression::default());
+	let mut tar = tar::Builder::new(encoder);
+	let mut exe_file = File::open(exe_path)?;
+	tar.append_file(exe_path.file_name().unwrap(), &mut exe_file)?;
+	if pb_exe_path.exists() {
+		let mut pb_file = File::open(pb_exe_path)?;
+		tar.append_file(pb_exe_path.file_name().unwrap(), &mut pb_file)?;
+	} else {
+		println!("Warning: pb binary not found, skipping.");
+	}
+	if pdfium_so_path.exists() {
+		let mut pdfium_file = File::open(pdfium_so_path)?;
+		tar.append_file(pdfium_so_path.file_name().unwrap(), &mut pdfium_file)?;
+	} else {
+		println!("Warning: libpdfium.so not found in target directory; PDF support will be unavailable.");
+	}
+	tar.into_inner()?.finish()?;
+	println!("Created tar.gz: {}", package_path.display());
+	Ok(())
+}
+
+/// Assembles an `AppDir` and hands it to `appimagetool`. Unlike [`build_targz_package`], a
+/// missing or failing `appimagetool` doesn't fail the release — the `AppImage` is a convenience
+/// on top of the always-built portable tarball, the same way a missing ISCC.exe just skips the
+/// Windows installer in [`build_windows_installer`] rather than failing the whole build.
+#[cfg(not(target_os = "macos"))]
+fn build_appimage(
+	target_dir: &Path,
+	exe_path: &Path,
+	pb_exe_path: &Path,
+	pdfium_so_path: &Path,
+) -> Result<(), Box<dyn Error>> {
+	let app_dir = target_dir.join("Paperback.AppDir");
+	let _ = fs::remove_dir_all(&app_dir);
+	let bin_dir = app_dir.join("usr/bin");
+	fs::create_dir_all(&bin_dir)?;
+	fs::copy(exe_path, bin_dir.join(exe_path.file_name().unwrap()))?;
+	make_executable(&bin_dir.join(exe_path.file_name().unwrap()))?;
+	if pb_exe_path.exists() {
+		fs::copy(pb_exe_path, bin_dir.join(pb_exe_path.file_name().unwrap()))?;
+		make_executable(&bin_dir.join(pb_exe_path.file_name().unwrap()))?;
+	}
+	if pdfium_so_path.exists() {
+		fs::copy(pdfium_so_path, bin_dir.join("libpdfium.so"))?;
+	}
+	// The desktop file and icon double as the AppImage's required metadata and as what
+	// `linux_integration.rs` copies into the user's own applications/icons directories once
+	// they pick file associations, so both need to be right at the AppDir root.
+	fs::copy(project_root().join("paperback.desktop"), app_dir.join("paperback.desktop"))?;
+	let icon_path = project_root().join("crates/paperback/assets/paperback.png");
+	fs::copy(&icon_path, app_dir.join("paperback.png"))?;
+	fs::copy(&icon_path, app_dir.join(".DirIcon"))?;
+	let apprun_path = app_dir.join("AppRun");
+	fs::write(
+		&apprun_path,
+		// The AppImage runtime sets ARGV0 to the name this AppImage was invoked as when that
+		// differs from its own filename (e.g. through a symlink), so the ~/.local/bin/pb
+		// symlink linux_integration.rs's setup dialog can write dispatches into the pb CLI
+		// instead of the paperback GUI.
+		r#"#!/bin/sh
+HERE="$(dirname "$(readlink -f "${0}")")"
+case "$(basename "${ARGV0:-$0}")" in
+	pb) exec "${HERE}/usr/bin/pb" "$@" ;;
+	*) exec "${HERE}/usr/bin/paperback" "$@" ;;
+esac
+"#,
+	)?;
+	make_executable(&apprun_path)?;
+	let appimagetool = env::var("APPIMAGETOOL").unwrap_or_else(|_| "appimagetool".to_string());
+	let output_path = target_dir.join("paperback.AppImage");
+	// `--appimage-extract-and-run` avoids needing FUSE, which CI runners don't have set up.
+	match Command::new(&appimagetool).args(["--appimage-extract-and-run"]).arg(&app_dir).arg(&output_path).status() {
+		Ok(status) if status.success() => println!("Created AppImage: {}", output_path.display()),
+		Ok(status) => println!("Warning: appimagetool exited with {status}; skipping AppImage."),
+		Err(err) => println!("Warning: failed to run appimagetool ({err}). Is it in your PATH? Skipping AppImage."),
+	}
+	Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn make_executable(path: &Path) -> io::Result<()> {
+	#[cfg(unix)]
+	{
+		use std::os::unix::fs::PermissionsExt;
+		let mut permissions = fs::metadata(path)?.permissions();
+		permissions.set_mode(0o755);
+		fs::set_permissions(path, permissions)?;
+	}
+	#[cfg(not(unix))]
+	{
+		let _ = path;
+	}
 	Ok(())
 }
 

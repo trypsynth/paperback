@@ -67,6 +67,8 @@ impl PaperbackApp {
 		set_top_window(main_window.frame());
 		let pipe_server = start_pipe_server(&Rc::clone(&main_window));
 		main_window.show();
+		#[cfg(target_os = "linux")]
+		crate::linux_integration::maybe_run_first_run_setup(main_window.frame(), &config);
 		#[cfg(target_os = "macos")]
 		_app.on_should_terminate(|| {
 			tracing::debug!("allowing native macOS termination request");
