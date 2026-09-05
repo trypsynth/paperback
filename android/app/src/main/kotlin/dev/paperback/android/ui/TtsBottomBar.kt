@@ -129,13 +129,10 @@ fun TtsBottomBar(
 					onDismissRequest = { dropdownExpanded = false },
 				) {
 					navUnits.forEach { unit ->
-						DropdownMenuItem(
-							text = { Text(getNavUnitName(unit)) },
-							onClick = {
-								onNavUnitChange(unit)
-								dropdownExpanded = false
-							},
-						)
+						PickerMenuItem(label = getNavUnitName(unit), selected = unit == currentUnit) {
+							onNavUnitChange(unit)
+							dropdownExpanded = false
+						}
 					}
 				}
 			}

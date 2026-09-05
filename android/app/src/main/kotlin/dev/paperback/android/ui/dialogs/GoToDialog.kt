@@ -24,6 +24,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 import dev.paperback.android.ui.DocumentTabState
+import dev.paperback.android.ui.PickerMenuItem
+import dev.paperback.android.ui.pickerAnchorColors
 
 const val GO_TO_LINE = "Line"
 const val GO_TO_PAGE = "Page"
@@ -122,6 +124,7 @@ fun GoToDialog(
 					) {
 						OutlinedButton(
 							onClick = { dropdownExpanded = true },
+							colors = pickerAnchorColors(),
 							modifier = Modifier
 								.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
 								.fillMaxWidth()
@@ -142,13 +145,10 @@ fun GoToDialog(
 							onDismissRequest = { dropdownExpanded = false }
 						) {
 							modes.forEach { mode ->
-								DropdownMenuItem(
-									text = { Text(goToModeName(mode)) },
-									onClick = {
-										selectedMode = mode
-										dropdownExpanded = false
-									}
-								)
+								PickerMenuItem(label = goToModeName(mode), selected = mode == selectedMode) {
+									selectedMode = mode
+									dropdownExpanded = false
+								}
 							}
 						}
 					}

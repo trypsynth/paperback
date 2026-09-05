@@ -50,6 +50,7 @@ private fun ChoiceSetting(
 	) {
 		OutlinedButton(
 			onClick = { expanded = true },
+			colors = pickerAnchorColors(),
 			modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
 		) {
 			Text("$label: $selectedLabel", modifier = Modifier.weight(1f))
@@ -60,13 +61,10 @@ private fun ChoiceSetting(
 			onDismissRequest = { expanded = false }
 		) {
 			options.forEachIndexed { index, option ->
-				DropdownMenuItem(
-					text = { Text(option) },
-					onClick = {
-						onSelect(index)
-						expanded = false
-					}
-				)
+				PickerMenuItem(label = option, selected = index == selectedIndex) {
+					onSelect(index)
+					expanded = false
+				}
 			}
 		}
 	}
@@ -283,6 +281,7 @@ fun SettingsScreen(
 				) {
 					OutlinedButton(
 						onClick = { engineExpanded = true },
+						colors = pickerAnchorColors(),
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
 					) {
 						// TRANSLATORS: Value shown when a setting is following the system/engine default
@@ -296,13 +295,10 @@ fun SettingsScreen(
 						onDismissRequest = { engineExpanded = false }
 					) {
 						engines.forEach { engine ->
-							DropdownMenuItem(
-								text = { Text(engine.label) },
-								onClick = {
-									viewModel.ttsManager.setEngine(engine.name)
-									engineExpanded = false
-								}
-							)
+							PickerMenuItem(label = engine.label, selected = engine.name == currentEngine) {
+								viewModel.ttsManager.setEngine(engine.name)
+								engineExpanded = false
+							}
 						}
 					}
 				}
@@ -314,6 +310,7 @@ fun SettingsScreen(
 				) {
 					OutlinedButton(
 						onClick = { voiceExpanded = true },
+						colors = pickerAnchorColors(),
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
 						enabled = !isSystemDefault
 					) {
@@ -327,13 +324,10 @@ fun SettingsScreen(
 						onDismissRequest = { voiceExpanded = false }
 					) {
 						availableVoices.forEach { voice ->
-							DropdownMenuItem(
-								text = { Text(voice.name) },
-								onClick = {
-									viewModel.ttsManager.setVoice(voice)
-									voiceExpanded = false
-								}
-							)
+							PickerMenuItem(label = voice.name, selected = voice.name == currentVoice?.name) {
+								viewModel.ttsManager.setVoice(voice)
+								voiceExpanded = false
+							}
 						}
 					}
 				}
