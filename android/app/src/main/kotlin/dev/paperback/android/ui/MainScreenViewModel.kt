@@ -315,13 +315,22 @@ class MainScreenViewModel(
 				}
 				val initialRecents = getRecentDocumentsListIO()
 				withContext(Dispatchers.Main) {
-					currentTabs.addAll(restoredTabs)
+					// A VIEW intent opens its document as soon as the screen composes, which is while
+					// this restore is still parsing the saved set. That tab is therefore already here,
+					// and adding the saved set wholesale would list its document a second time and
+					// then pull the reader off it onto whichever document was last active.
+					val openedBeforeRestore = currentTabs.isNotEmpty()
+					for (restored in restoredTabs) {
+						if (currentTabs.none { it.docKey == restored.docKey }) {
+							currentTabs.add(restored)
+						}
+					}
 					recentDocumentsList = initialRecents
-					if (currentTabs.isNotEmpty()) {
+					if (currentTabs.isEmpty()) {
+						currentActiveIndex = -1
+					} else if (!openedBeforeRestore) {
 						val matchingIndex = currentTabs.indexOfFirst { it.docKey == activeDocKey }
 						currentActiveIndex = if (matchingIndex != -1) matchingIndex else 0
-					} else {
-						currentActiveIndex = -1
 					}
 					emitTabsState()
 					currentTabs.getOrNull(currentActiveIndex)?.let {
