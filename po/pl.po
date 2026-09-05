@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-03 19:23-0600\n"
+"POT-Creation-Date: 2026-09-04 18:02+0000\n"
 "PO-Revision-Date: 2026-06-08 13:45+0200\n"
 "Last-Translator: Michał Dziwisz <michal@dziwisz.net>\n"
 "Language-Team: Polish\n"
@@ -14,8 +14,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 "
-"|| n%100>14) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
@@ -568,31 +567,19 @@ msgstr "&Wyczyść wszystko"
 msgid "Close"
 msgstr "Zamknij"
 
-msgid ""
-"Are you sure you want to remove the selected document? This will also remove "
-"its reading position and bookmarks."
-msgstr ""
-"Czy na pewno chcesz usunąć zaznaczony dokument? Spowoduje to też usunięcie "
-"jego pozycji czytania i zakładek."
+msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
+msgstr "Czy na pewno chcesz usunąć zaznaczony dokument? Spowoduje to też usunięcie jego pozycji czytania i zakładek."
 
-msgid ""
-"Are you sure you want to remove the {} selected documents? This will also "
-"remove their reading positions and bookmarks."
-msgstr ""
-"Czy na pewno chcesz usunąć zaznaczone dokumenty ({})? Spowoduje to też "
-"usunięcie ich pozycji czytania i zakładek."
+msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
+msgstr "Czy na pewno chcesz usunąć zaznaczone dokumenty ({})? Spowoduje to też usunięcie ich pozycji czytania i zakładek."
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
 msgstr "Potwierdzenie"
 
 #. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
-msgid ""
-"Are you sure you want to remove all documents from the list? This will also "
-"remove all reading positions and bookmarks."
-msgstr ""
-"Czy na pewno chcesz usunąć wszystkie dokumenty z listy? Spowoduje to też "
-"usunięcie wszystkich pozycji czytania i zakładek."
+msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
+msgstr "Czy na pewno chcesz usunąć wszystkie dokumenty z listy? Spowoduje to też usunięcie wszystkich pozycji czytania i zakładek."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
 msgid "No documents."
@@ -1191,8 +1178,7 @@ msgid "Configure shortcut for {}:"
 msgstr "Skonfiguruj skrót dla {}:"
 
 msgid "Tip: click in the key field and press the key combination you want."
-msgstr ""
-"Wskazówka: przejdź do pola klawisza i naciśnij wybraną kombinację klawiszy."
+msgstr "Wskazówka: przejdź do pola klawisza i naciśnij wybraną kombinację klawiszy."
 
 #. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
 msgid "Detected: (none)"
@@ -1267,10 +1253,8 @@ msgid "File not found: {}"
 msgstr "Nie znaleziono pliku: {}"
 
 #. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
-msgid ""
-"A .paperback file was found for this document. Would you like to import it?"
-msgstr ""
-"Znaleziono plik .paperback dla tego dokumentu. Czy chcesz go zaimportować?"
+msgid "A .paperback file was found for this document. Would you like to import it?"
+msgstr "Znaleziono plik .paperback dla tego dokumentu. Czy chcesz go zaimportować?"
 
 #. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
 msgid "Import document data"
@@ -1368,11 +1352,8 @@ msgid "Failed to reveal file in folder."
 msgstr "Nie udało się pokazać pliku w folderze."
 
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
-msgid ""
-"readme.html not found. Please ensure the application was built properly."
-msgstr ""
-"Nie znaleziono readme.html. Upewnij się, że aplikacja została poprawnie "
-"zbudowana."
+msgid "readme.html not found. Please ensure the application was built properly."
+msgstr "Nie znaleziono readme.html. Upewnij się, że aplikacja została poprawnie zbudowana."
 
 #. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
@@ -1394,6 +1375,9 @@ msgstr "Brak ostatnich dokumentów."
 msgid "Line %d"
 msgstr "Wiersz %d"
 
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+#. A menu invocation returns focus to the book just like a closed dialog does,
+#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Brak stron."
@@ -1487,8 +1471,7 @@ msgstr "Dokument został przeładowany."
 
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
-msgstr ""
-"Paperback nie może wykonywać żadnych czynności, gdy otwarty jest Widok WWW."
+msgstr "Paperback nie może wykonywać żadnych czynności, gdy otwarty jest Widok WWW."
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
 msgid "{} - Paperback"
@@ -2463,15 +2446,11 @@ msgstr "Obraz"
 
 #. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr ""
-"Nieprawidłowy plik .opf formatu DAISY albo nie znaleziono pliku XML DTBook w "
-"manifeście"
+msgstr "Nieprawidłowy plik .opf formatu DAISY albo nie znaleziono pliku XML DTBook w manifeście"
 
 #. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
 msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
-msgstr ""
-"Nieprawidłowy plik ncc.html formatu DAISY 2.02 albo nie znaleziono jego "
-"stron z treścią"
+msgstr "Nieprawidłowy plik ncc.html formatu DAISY 2.02 albo nie znaleziono jego stron z treścią"
 
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 msgid "Failed to convert DTBook XML to text"
@@ -2479,9 +2458,7 @@ msgstr "Nie udało się przekonwertować pliku XML DTBook na tekst"
 
 #. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
 msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
-msgstr ""
-"Archiwum ZIP nie wygląda na prawidłową książkę w formacie DAISY 3 ani DAISY "
-"2.02"
+msgstr "Archiwum ZIP nie wygląda na prawidłową książkę w formacie DAISY 3 ani DAISY 2.02"
 
 #. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
 msgid "rootfile not found in container.xml"
@@ -2526,6 +2503,46 @@ msgstr "Rozdział {}"
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 msgid "Failed to convert Markdown to text: {}"
 msgstr "Nie udało się przekonwertować pliku Markdown na tekst: {}"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+msgid "Missing HUFF parameters in header"
+msgstr "Brak parametrów HUFF w nagłówku"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+msgid "Invalid HUFF/CDIC records"
+msgstr "Nieprawidłowe rekordy HUFF/CDIC"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+msgid "Unsupported compression mode ({})"
+msgstr "Nieobsługiwany tryb kompresji ({})"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+msgid "Invalid record offsets"
+msgstr "Nieprawidłowe przesunięcia rekordów"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+msgid "No records found"
+msgstr "Nie znaleziono żadnych rekordów"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+msgid "Invalid Record 0 offsets"
+msgstr "Nieprawidłowe przesunięcia rekordu 0"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+msgid "Invalid Record 0"
+msgstr "Nieprawidłowy rekord 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+msgid "No MOBI header"
+msgstr "Brak nagłówka MOBI"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+msgid "Invalid MOBI identifier"
+msgstr "Nieprawidłowy identyfikator MOBI"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+msgid "Invalid content record range"
+msgstr "Nieprawidłowy zakres rekordów treści"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
 msgid "Invalid HUFF record"
@@ -2579,46 +2596,6 @@ msgstr "Przepełnienie stosu podczas dekodowania"
 msgid "File too short"
 msgstr "Plik jest za krótki"
 
-#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-msgid "Invalid record offsets"
-msgstr "Nieprawidłowe przesunięcia rekordów"
-
-#. TRANSLATORS: Error shown when a MOBI file has no records
-msgid "No records found"
-msgstr "Nie znaleziono żadnych rekordów"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-msgid "Invalid Record 0 offsets"
-msgstr "Nieprawidłowe przesunięcia rekordu 0"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-msgid "Invalid Record 0"
-msgstr "Nieprawidłowy rekord 0"
-
-#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-msgid "No MOBI header"
-msgstr "Brak nagłówka MOBI"
-
-#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-msgid "Invalid MOBI identifier"
-msgstr "Nieprawidłowy identyfikator MOBI"
-
-#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-msgid "Invalid content record range"
-msgstr "Nieprawidłowy zakres rekordów treści"
-
-#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-msgid "Invalid HUFF/CDIC records"
-msgstr "Nieprawidłowe rekordy HUFF/CDIC"
-
-#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-msgid "Missing HUFF parameters in header"
-msgstr "Brak parametrów HUFF w nagłówku"
-
-#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-msgid "Unsupported compression mode ({})"
-msgstr "Nieobsługiwany tryb kompresji ({})"
-
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
 msgstr "Plik ODP nie zawiera żadnych stron"
@@ -2636,20 +2613,11 @@ msgid "Failed to open PDF document: {}"
 msgstr "Nie udało się otworzyć dokumentu PDF: {}"
 
 #. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"Ten plik PDF zawiera wyłącznie obrazy i nie ma w nim tekstu, który można "
-"wyodrębnić. Aby poznać jego treść, być może trzeba będzie przetworzyć go "
-"programem rozpoznającym tekst (OCR)."
+msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+msgstr "Ten plik PDF zawiera wyłącznie obrazy i nie ma w nim tekstu, który można wyodrębnić. Aby poznać jego treść, być może trzeba będzie przetworzyć go programem rozpoznającym tekst (OCR)."
 
-msgid ""
-"Password-protected PPT files are not currently supported. Try saving the "
-"file as PPTX and opening that instead."
-msgstr ""
-"Pliki PPT chronione hasłem nie są obecnie obsługiwane. Spróbuj zapisać plik "
-"w formacie PPTX i otworzyć tę wersję."
+msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+msgstr "Pliki PPT chronione hasłem nie są obecnie obsługiwane. Spróbuj zapisać plik w formacie PPTX i otworzyć tę wersję."
 
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 msgid "PPT file contains no slides"
@@ -2705,9 +2673,7 @@ msgstr "W archiwum ZIP nie znaleziono treści, którą można odczytać"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr ""
-"Nie udało się przetworzyć pliku w starym formacie DOC: {}. Zapasowe "
-"otwieranie przez OOXML również się nie powiodło: {}"
+msgstr "Nie udało się przetworzyć pliku w starym formacie DOC: {}. Zapasowe otwieranie przez OOXML również się nie powiodło: {}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 msgid "No file extension found for: {}"
@@ -2735,12 +2701,8 @@ msgstr "Nieznany format pliku aktualizacji."
 msgid "Failed to open disk image"
 msgstr "Nie udało się otworzyć obrazu dysku"
 
-msgid ""
-"The update has been downloaded and its disk image opened. Quit %s and drag "
-"the new version into Applications to finish installing."
-msgstr ""
-"Aktualizacja została pobrana, a jej obraz dysku otwarty. Zamknij %s i "
-"przeciągnij nową wersję do folderu Aplikacje, aby zakończyć instalację."
+msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
+msgstr "Aktualizacja została pobrana, a jej obraz dysku otwarty. Zamknij %s i przeciągnij nową wersję do folderu Aplikacje, aby zakończyć instalację."
 
 msgid "Update Ready"
 msgstr "Aktualizacja gotowa"
@@ -2796,11 +2758,8 @@ msgstr "Brak dostępnych aktualizacji. Najnowsza wersja: %s"
 msgid "Info"
 msgstr "Informacja"
 
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr ""
-"Weryfikacja bezpieczeństwa nie powiodła się. W aktualizację mógł ktoś "
-"ingerować: %s"
+msgid "Security verification failed. The update might have been tampered with: %s"
+msgstr "Weryfikacja bezpieczeństwa nie powiodła się. W aktualizację mógł ktoś ingerować: %s"
 
 msgid "Security Error"
 msgstr "Błąd bezpieczeństwa"
@@ -3367,12 +3326,8 @@ msgstr "Wymagany dostęp do wszystkich plików"
 
 #. TRANSLATORS: Intro sentence explaining what the "All Files Access" permission is used for
 #: kt
-msgid ""
-"Paperback requires the 'All Files Access' permission to enable the custom in-"
-"app file browser."
-msgstr ""
-"Paperback potrzebuje uprawnienia „Dostęp do wszystkich plików”, aby "
-"udostępnić własną przeglądarkę plików w aplikacji."
+msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgstr "Paperback potrzebuje uprawnienia „Dostęp do wszystkich plików”, aby udostępnić własną przeglądarkę plików w aplikacji."
 
 #. TRANSLATORS: Heading introducing the list of reasons the permission is needed
 #: kt
@@ -3381,21 +3336,13 @@ msgstr "Dlaczego jest potrzebne:"
 
 #. TRANSLATORS: First reason for requesting the "All Files Access" permission
 #: kt
-msgid ""
-"To provide a fast, fully screen-reader accessible file manager inside the "
-"app."
-msgstr ""
-"Aby zapewnić w aplikacji szybki menedżer plików, w pełni dostępny dla "
-"czytników ekranu."
+msgid "To provide a fast, fully screen-reader accessible file manager inside the app."
+msgstr "Aby zapewnić w aplikacji szybki menedżer plików, w pełni dostępny dla czytników ekranu."
 
 #. TRANSLATORS: Second reason for requesting the "All Files Access" permission
 #: kt
-msgid ""
-"To load large files instantly without needing to copy them into the app's "
-"cache."
-msgstr ""
-"Aby wczytywać duże pliki natychmiast, bez kopiowania ich do pamięci "
-"podręcznej aplikacji."
+msgid "To load large files instantly without needing to copy them into the app's cache."
+msgstr "Aby wczytywać duże pliki natychmiast, bez kopiowania ich do pamięci podręcznej aplikacji."
 
 #. TRANSLATORS: Third reason for requesting the "All Files Access" permission
 #: kt
@@ -3615,12 +3562,8 @@ msgstr "Zanim zaczniesz"
 
 #. TRANSLATORS: Intro paragraph explaining that the following sections describe requested permissions
 #: kt
-msgid ""
-"Paperback works best with a couple of permissions. Here's what we ask for "
-"and why:"
-msgstr ""
-"Paperback działa najlepiej z kilkoma uprawnieniami. Oto o co prosimy i "
-"dlaczego:"
+msgid "Paperback works best with a couple of permissions. Here's what we ask for and why:"
+msgstr "Paperback działa najlepiej z kilkoma uprawnieniami. Oto o co prosimy i dlaczego:"
 
 #. TRANSLATORS: Heading for the notifications permission section on the onboarding screen
 #: kt
@@ -3655,9 +3598,7 @@ msgstr "Przywracaj ostatnio otwartą książkę"
 #. TRANSLATORS: Settings switch: use the app's built-in file browser instead of the system document picker
 #: kt
 msgid "Use in-app file browser (requires All Files permission)"
-msgstr ""
-"Używaj przeglądarki plików w aplikacji (wymaga uprawnienia „Dostęp do "
-"wszystkich plików”)"
+msgstr "Używaj przeglądarki plików w aplikacji (wymaga uprawnienia „Dostęp do wszystkich plików”)"
 
 #. TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
 #: kt
@@ -3777,42 +3718,28 @@ msgstr "słów"
 
 #. TRANSLATORS: Closing note explaining the fallback if the user denies the permission
 #: kt
-msgid ""
-"If you deny this permission, you can still use the Android System File "
-"Picker to open your books by turning off the custom file browser setting."
-msgstr ""
-"Jeśli odmówisz tego uprawnienia, nadal możesz otwierać swoje książki przez "
-"systemowy selektor plików Androida — wystarczy wyłączyć ustawienie własnej "
-"przeglądarki plików."
+msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
+msgstr "Jeśli odmówisz tego uprawnienia, nadal możesz otwierać swoje książki przez systemowy selektor plików Androida — wystarczy wyłączyć ustawienie własnej przeglądarki plików."
 
 #. TRANSLATORS: Explanation of why the app requests the notifications permission
 #: kt
-msgid ""
-"Lets Paperback show playback controls in the notification shade while text-"
-"to-speech is reading, so you can pause, resume, and skip without reopening "
-"the app."
-msgstr ""
-"Pozwala Paperbackowi pokazywać sterowanie odtwarzaniem w obszarze "
-"powiadomień, gdy synteza mowy czyta tekst, dzięki czemu wstrzymasz, wznowisz "
-"i przeskoczysz dalej bez wracania do aplikacji."
+msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is reading, so you can pause, resume, and skip without reopening the app."
+msgstr "Pozwala Paperbackowi pokazywać sterowanie odtwarzaniem w obszarze powiadomień, gdy synteza mowy czyta tekst, dzięki czemu wstrzymasz, wznowisz i przeskoczysz dalej bez wracania do aplikacji."
 
 #. TRANSLATORS: Explanation of why the app requests the all files access permission
 #: kt
-msgid ""
-"Powers the optional in-app file browser, so you can open documents from "
-"anywhere on your device — including network drives — instantly, with full "
-"screen-reader support. You can skip this and use the system file picker "
-"instead."
-msgstr ""
-"Umożliwia działanie opcjonalnej przeglądarki plików w aplikacji, dzięki "
-"czemu otworzysz dokumenty z dowolnego miejsca na urządzeniu — także z dysków "
-"sieciowych — od razu i z pełną obsługą czytnika ekranu. Możesz to pominąć i "
-"korzystać z systemowego selektora plików."
+msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your device — including network drives — instantly, with full screen-reader support. You can skip this and use the system file picker instead."
+msgstr "Umożliwia działanie opcjonalnej przeglądarki plików w aplikacji, dzięki czemu otworzysz dokumenty z dowolnego miejsca na urządzeniu — także z dysków sieciowych — od razu i z pełną obsługą czytnika ekranu. Możesz to pominąć i korzystać z systemowego selektora plików."
 
 #. TRANSLATORS: Announced by the screen reader when the in-app file browser opens
 #: kt
 msgid "File Manager"
 msgstr "Menedżer plików"
+
+#. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+#: kt
+msgid "{}% through"
+msgstr "Przeczytano {}%"
 
 #~ msgid "&Line number:"
 #~ msgstr "Numer &wiersza:"
@@ -3826,24 +3753,14 @@ msgstr "Menedżer plików"
 #~ msgid "Search…"
 #~ msgstr "Szukaj…"
 
-#~ msgid ""
-#~ "If you deny this permission, you can still use the Android System File "
-#~ "Picker to open your "
+#~ msgid "If you deny this permission, you can still use the Android System File Picker to open your "
 #~ msgstr "Jeśli odmówisz tego uprawnienia, nadal możesz otwierać swoje "
 
-#~ msgid ""
-#~ "Lets Paperback show playback controls in the notification shade while "
-#~ "text-to-speech is "
-#~ msgstr ""
-#~ "Pozwala Paperbackowi pokazywać sterowanie odtwarzaniem w obszarze "
-#~ "powiadomień, gdy synteza mowy "
+#~ msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is "
+#~ msgstr "Pozwala Paperbackowi pokazywać sterowanie odtwarzaniem w obszarze powiadomień, gdy synteza mowy "
 
-#~ msgid ""
-#~ "Powers the optional in-app file browser, so you can open documents from "
-#~ "anywhere on your "
-#~ msgstr ""
-#~ "Umożliwia działanie opcjonalnej przeglądarki plików w aplikacji, dzięki "
-#~ "czemu otworzysz dokumenty z dowolnego miejsca "
+#~ msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your "
+#~ msgstr "Umożliwia działanie opcjonalnej przeglądarki plików w aplikacji, dzięki czemu otworzysz dokumenty z dowolnego miejsca "
 
 #~ msgid "&Locate…"
 #~ msgstr "&Zlokalizuj…"
@@ -3973,9 +3890,7 @@ msgstr "Menedżer plików"
 
 #, fuzzy
 #~ msgid "Screen dimmed by sleep timer. Tap to wake."
-#~ msgstr ""
-#~ "Ekran przyciemnił się z powodu wyłącznika czasowego. Dotknij, aby go "
-#~ "wybudzić."
+#~ msgstr "Ekran przyciemnił się z powodu wyłącznika czasowego. Dotknij, aby go wybudzić."
 
 #, fuzzy
 #~ msgid "Open document"
@@ -4005,19 +3920,11 @@ msgstr "Menedżer plików"
 #~ msgid "Show Text"
 #~ msgstr "Pokaż tekst"
 
-#~ msgid ""
-#~ "Are you sure you want to remove this document from the list? This will "
-#~ "also remove its reading position."
-#~ msgstr ""
-#~ "Czy na pewno chcesz usunąć ten dokument z listy? Spowoduje to też "
-#~ "usunięcie jego pozycji czytania."
+#~ msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
+#~ msgstr "Czy na pewno chcesz usunąć ten dokument z listy? Spowoduje to też usunięcie jego pozycji czytania."
 
-#~ msgid ""
-#~ "Are you sure you want to remove these {} documents from the list? This "
-#~ "will also remove their reading positions."
-#~ msgstr ""
-#~ "Czy na pewno chcesz usunąć te dokumenty ({}) z listy? Spowoduje to też "
-#~ "usunięcie ich pozycji czytania."
+#~ msgid "Are you sure you want to remove these {} documents from the list? This will also remove their reading positions."
+#~ msgstr "Czy na pewno chcesz usunąć te dokumenty ({}) z listy? Spowoduje to też usunięcie ich pozycji czytania."
 
 #~ msgid "Root"
 #~ msgstr "Początek"
