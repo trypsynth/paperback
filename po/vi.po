@@ -4448,6 +4448,12 @@ msgstr "Kích hoạt trình duyệt tệp tùy chọn trong ứng dụng, cho ph
 msgid "File Manager"
 msgstr "Tệp bị thiếu"
 
+#. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+#: kt
+#, fuzzy
+msgid "{}% through"
+msgstr "{}% tiến độ"
+
 #~ msgid "&Line number:"
 #~ msgstr "Số &dòng:"
 

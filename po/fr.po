@@ -4340,6 +4340,12 @@ msgstr "Active le navigateur de fichiers optionnel de l'application, vous permet
 msgid "File Manager"
 msgstr "Fichier manquant"
 
+#. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+#: kt
+#, fuzzy
+msgid "{}% through"
+msgstr "{}% parcouru"
+
 #~ msgid "&Line number:"
 #~ msgstr "&Numéro de ligne :"
 
