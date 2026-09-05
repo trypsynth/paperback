@@ -25,9 +25,11 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.paperback.android.t
@@ -35,6 +37,12 @@ import kotlinx.coroutines.launch
 import uniffi.paperback.LinkAction
 import uniffi.paperback.MarkerType
 import uniffi.paperback.SearchOptionsFfi
+
+/**
+ * How much bigger than body text each heading level draws, h1 through h6. Bold alone left a chapter
+ * title the same size as the prose under it, which flattens a book's structure on screen.
+ */
+private val HEADING_SCALES = floatArrayOf(1.6f, 1.45f, 1.3f, 1.18f, 1.08f, 1f)
 
 @Composable
 fun DocumentTextView(
@@ -76,6 +84,14 @@ fun DocumentTextView(
 					.semantics(mergeDescendants = true) {}
 				var isHeading = false
 				var headingLevel = 0
+				// A picture or a table the reader can't show comes through as a "[Image: ...]" or
+				// "[Table]: ..." placeholder, which set in the body face reads as markup that leaked
+				// into the prose. Drawn as an aside it reads as a note about the page instead. The
+				// wording stays as it is, since that is what a screen reader speaks.
+				val asideStyle = SpanStyle(
+					fontStyle = FontStyle.Italic,
+					color = MaterialTheme.colorScheme.onSurfaceVariant
+				)
 				val annotatedString = buildAnnotatedString {
 					var currentIdx = 0
 					val sortedMarkers = markers.sortedBy { it.position }
@@ -149,6 +165,22 @@ fun DocumentTextView(
 									currentIdx = linkEnd
 								}
 							}
+							MarkerType.IMAGE, MarkerType.FIGURE, MarkerType.TABLE -> {
+								val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
+								if (markerStartInLine > currentIdx) {
+									append(lineText.substring(currentIdx, markerStartInLine.coerceAtMost(lineText.length)))
+									currentIdx = markerStartInLine
+								}
+								if (currentIdx < lineText.length) {
+									// A table's span counts the newline that ends its line, so it can
+									// reach past the text this line actually holds.
+									val markerEnd = (currentIdx + marker.length.toInt()).coerceAtMost(lineText.length)
+									if (markerEnd > currentIdx) {
+										withStyle(asideStyle) { append(lineText.substring(currentIdx, markerEnd)) }
+										currentIdx = markerEnd
+									}
+								}
+							}
 							else -> {}
 						}
 					}
@@ -210,7 +242,14 @@ fun DocumentTextView(
 					}
 				}
 				val textStyle = if (isHeading) {
-					readability.textStyle.copy(fontWeight = FontWeight.Bold)
+					// Line height scales with the size so the leading stays in proportion; leaving it
+					// at the body value crowds the lines of a heading that wraps.
+					val scale = HEADING_SCALES[(headingLevel - 1).coerceIn(HEADING_SCALES.indices)]
+					readability.textStyle.copy(
+						fontWeight = FontWeight.Bold,
+						fontSize = readability.textStyle.fontSize * scale,
+						lineHeight = readability.textStyle.lineHeight * scale
+					)
 				} else {
 					readability.textStyle
 				}

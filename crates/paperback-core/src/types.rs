@@ -42,6 +42,8 @@ pub struct LinkInfo {
 pub struct ImageInfo {
 	pub offset: usize,
 	pub alt_text: String,
+	/// Display-unit span of the emitted placeholder, brackets and label included.
+	pub length: usize,
 }
 
 #[derive(Debug, Clone)]

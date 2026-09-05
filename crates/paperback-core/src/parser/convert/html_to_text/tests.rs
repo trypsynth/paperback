@@ -277,3 +277,23 @@ fn html_two_tables_offsets_are_cumulative() {
 		"second table offset must equal first offset + first display_length"
 	);
 }
+
+/// The Image marker spans the whole `"[Image: alt]"` placeholder, not just its first character, so
+/// a reader can style the placeholder apart from the prose it sits in. The fixture puts the image
+/// inside a paragraph, where the placeholder shares its line with real text.
+#[test]
+fn html_converter_gives_the_image_marker_the_placeholder_span() {
+	let html = "<html><body><p>Before <img alt=\"a cat\"> after</p></body></html>";
+	let mut converter = HtmlToText::new();
+	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+	assert_eq!(converter.get_text(), "Before [Image: a cat] after");
+	let images = converter.get_images();
+	assert_eq!(images.len(), 1);
+	assert_eq!(images[0].offset, display_len("Before "));
+	assert_eq!(images[0].length, display_len("[Image: a cat]"));
+	let mut buffer = DocumentBuffer::with_content(converter.get_text());
+	add_converter_markers(&mut buffer, &converter, 0);
+	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Image).expect("Image marker");
+	assert_eq!(marker.position, images[0].offset);
+	assert_eq!(marker.length, display_len("[Image: a cat]"));
+}

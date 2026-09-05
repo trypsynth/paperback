@@ -334,13 +334,21 @@ fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offse
 
 fn add_images(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	for image in converter.get_images() {
-		buffer.add_marker(Marker::new(MarkerType::Image, offset + image.offset).with_text(image.alt_text.clone()));
+		buffer.add_marker(
+			Marker::new(MarkerType::Image, offset + image.offset)
+				.with_text(image.alt_text.clone())
+				.with_length(image.length),
+		);
 	}
 }
 
 fn add_figures(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	for figure in converter.get_figures() {
-		buffer.add_marker(Marker::new(MarkerType::Figure, offset + figure.offset).with_text(figure.alt_text.clone()));
+		buffer.add_marker(
+			Marker::new(MarkerType::Figure, offset + figure.offset)
+				.with_text(figure.alt_text.clone())
+				.with_length(figure.length),
+		);
 	}
 }
 
