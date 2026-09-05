@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-03 19:23-0600\n"
-"PO-Revision-Date: 2026-09-04 10:38+0200\n"
+"PO-Revision-Date: 2026-09-05 17:54+0200\n"
 "Last-Translator: 4Sense Gaming <lukas@4sensegaming.cz>\n"
 "Language-Team: Lukáš Hosnedl <lukas@4sensegaming.cz>\n"
 "Language: cs\n"
@@ -492,7 +492,7 @@ msgstr "&Prodloužit interval přetáčení"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 msgid "Increase how far seeking the audio narration moves"
-msgstr "Prodlouží úsek, o který přetáčení posouvá zvukovou stopu"
+msgstr "Prodlouží interval, o který přetáčení posouvá zvukovou stopu"
 
 #. TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
 msgid "&Decrease Audio Seek Amount"
@@ -500,7 +500,7 @@ msgstr "&Zkrátit interval přetáčení"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 msgid "Decrease how far seeking the audio narration moves"
-msgstr "Zkrátí úsek, o který přetáčení posouvá zvukovou stopu"
+msgstr "Zkrátí interval, o který přetáčení posouvá zvukovou stopu"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
@@ -971,7 +971,7 @@ msgstr "Vývojový"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
-msgstr "Nastavit klávesovou zkratku &okna..."
+msgstr "Nastavit klávesovou zkratku pro obnovení &okna..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 #| msgid "Customize &Window Hotkey..."
@@ -1121,7 +1121,7 @@ msgstr "Přeškrtnuté"
 
 #. TRANSLATORS: Title of the hotkey customization dialog
 msgid "Window Hotkey"
-msgstr "Klávesová zkratka okna"
+msgstr "Klávesová zkratka pro obnovení okna"
 
 #. TRANSLATORS: Checkbox label for Control modifier key
 #. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
