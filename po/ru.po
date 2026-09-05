@@ -4363,6 +4363,12 @@ msgstr "Включает дополнительный встроенный об�
 msgid "File Manager"
 msgstr "Файл отсутствует"
 
+#. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+#: kt
+#, fuzzy
+msgid "{}% through"
+msgstr "{}% пройдено"
+
 #, fuzzy
 #~ msgid "&Line number:"
 #~ msgstr "&Номер строки:"

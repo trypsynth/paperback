@@ -4242,6 +4242,12 @@ msgstr "Voorziet in de optionele bestandsbrowser in de app, zodat u documenten v
 msgid "File Manager"
 msgstr "Bestand ontbreekt"
 
+#. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+#: kt
+#, fuzzy
+msgid "{}% through"
+msgstr "{}% afgelegd"
+
 #~ msgid "&Line number:"
 #~ msgstr "&Regelnummer:"
 
