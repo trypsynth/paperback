@@ -2,8 +2,7 @@ use std::{cell::Cell, rc::Rc};
 #[cfg(not(target_os = "windows"))]
 use std::{collections::HashMap, ffi::c_void};
 
-use paperback_core::document::MarkerType;
-use paperback_core::session::DocumentSession;
+use paperback_core::{document::MarkerType, session::DocumentSession};
 use patois::t;
 use wx_utils::dpi;
 use wxdragon::prelude::*;
