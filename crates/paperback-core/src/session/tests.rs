@@ -52,3 +52,16 @@ fn session_with_content(content: &str) -> DocumentSession {
 		last_stable_position: None,
 	}
 }
+
+fn session_from_buffer(buffer: DocumentBuffer) -> DocumentSession {
+	let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
+	doc.set_buffer(buffer);
+	DocumentSession {
+		handle: DocumentHandle::new(doc),
+		file_path: "book.epub".to_string(),
+		history: Vec::new(),
+		history_index: 0,
+		parser_flags: ParserFlags::empty(),
+		last_stable_position: None,
+	}
+}
