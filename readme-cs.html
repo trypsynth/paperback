@@ -211,6 +211,13 @@
 <li><a href="#systémové-požadavky"
 id="toc-systémové-požadavky">Systémové požadavky</a></li>
 <li><a href="#funkce" id="toc-funkce">Funkce</a></li>
+<li><a href="#kompatibilita-s-odečítači-obrazovky"
+id="toc-kompatibilita-s-odečítači-obrazovky">Kompatibilita s odečítači
+obrazovky</a>
+<ul>
+<li><a href="#jaws-a-braillské-řádky"
+id="toc-jaws-a-braillské-řádky">JAWS a braillské řádky</a></li>
+</ul></li>
 <li><a href="#aktuálně-podporované-typy-souborů"
 id="toc-aktuálně-podporované-typy-souborů">Aktuálně podporované typy
 souborů</a></li>
@@ -238,6 +245,13 @@ id="toc-podporované-jazyky">Podporované jazyky</a></li>
 </ul></li>
 <li><a href="#historie-změn" id="toc-historie-změn">Historie změn</a>
 <ul>
+<li><a href="#verze-0.9.2" id="toc-verze-0.9.2">Verze 0.9.2</a></li>
+<li><a href="#verze-0.9.1" id="toc-verze-0.9.1">Verze 0.9.1</a></li>
+<li><a href="#verze-0.9.0" id="toc-verze-0.9.0">Verze 0.9.0</a>
+<ul>
+<li><a href="#přidáno" id="toc-přidáno">Přidáno</a></li>
+<li><a href="#opraveno" id="toc-opraveno">Opraveno</a></li>
+</ul></li>
 <li><a href="#verze-0.8.5" id="toc-verze-0.8.5">Verze 0.8.5</a></li>
 <li><a href="#verze-0.8.2" id="toc-verze-0.8.2">Verze 0.8.2</a></li>
 <li><a href="#verze-0.8.1" id="toc-verze-0.8.1">Verze 0.8.1</a></li>
@@ -256,18 +270,20 @@ id="toc-podporované-jazyky">Podporované jazyky</a></li>
 </ul>
 </nav>
 <h1 id="představení">Představení</h1>
-<p>Paperback je nenáročná, rychlá a přístupná čtečka e-knih a dokumentů
+<p>Paperback je úsporná, rychlá a přístupná čtečka e-knih a dokumentů
 určená komukoli, od příležitostných čtenářů až po náročné pokročilé
 uživatele. Je navržen pro maximální podporu odečítačů obrazovky, rychlou
 odezvu a uživatelský zážitek bez rušivých prvků.</p>
 <h1 id="systémové-požadavky">Systémové požadavky</h1>
-<p>Paperback v současnosti funguje na Windows 10 a 11. Podpora macOS a
-Linuxu je v plánu.</p>
+<p>Paperback v současnosti funguje na Windows 10 a 11 a na všech
+moderních verzích ARM macOS. Nativní aplikace pro iOS a Android se
+aktivně vyvíjejí a veřejné testovací verze jsou plánovány brzy po vydání
+desktopové verze 0.9.0, před sjednoceným vydáním verze 1.0 pro všechny
+čtyři platformy.</p>
 <h1 id="funkce">Funkce</h1>
 <ul>
-<li>Kompletně soběstačný program, který nevyžaduje mít v počítači
-nainstalovaný žádný další software k tomu, abyste mohli prostě začít
-číst.</li>
+<li>Kompletně soběstačný program, který k tomu, abyste mohli prostě
+začít číst, nevyžaduje instalaci žádného dalšího softwaru.</li>
 <li>Neuvěřitelně rychlý, dokonce i na starém hardwaru.</li>
 <li>Jednoduché vícepanelové rozhraní, takže si můžete vedle sebe
 otevřít, kolik dokumentů chcete.</li>
@@ -275,19 +291,38 @@ otevřít, kolik dokumentů chcete.</li>
 otevřete.</li>
 <li>Volitelně si pamatuje, které dokumenty jste měli při zavření
 programu otevřené, a při příštím spuštění je znovu načte.</li>
-<li>Navržen uživatelem odečítače pro ostatní uživatele odečítačů.</li>
 <li>Obsahuje funkce rychlé navigace, podobné režimu procházení webu ve
 většině odečítačů, pro rychlý a snadný pohyb v dokumentech.</li>
 <li>Obsahuje robustní dialog pro vyhledávání, včetně funkcí, jako je
 historie nebo podpora regulárních výrazů.</li>
-<li>Lze spouštět v přenosné verzi nebo nainstalovat i s automatickým
+<li>Lze spouštět v přenosné verzi nebo nainstalovat, i s automatickým
 nastavením přidružených typů souborů.</li>
+<li>Podporuje obrovské množství běžných formátů souborů.</li>
 </ul>
+<h1 id="kompatibilita-s-odečítači-obrazovky">Kompatibilita s odečítači
+obrazovky</h1>
+<p>Paperback dobře funguje se všemi hlavními odečítači obrazovky.
+Existuje však jeden známý problém, který se týká uživatelů JAWSu.</p>
+<h2 id="jaws-a-braillské-řádky">JAWS a braillské řádky</h2>
+<p>Pokud používáte JAWS s braillským řádkem, může se stát, že se při
+posunu vpřed navigačními klávesami řádku oříznou dlouhé odstavce. Týká
+se to i příkazu pro přečtení aktuálního odstavce. Jde o chybu ve
+způsobu, jakým JAWS zachází s textovým prvkem RICHEDIT50W, nikoli o
+chybu v samotném Paperbacku, a vzhledem k nadšení, s jakým Vispero
+reaguje na hlášení problémů s open source softwarem, trvalo docela
+dlouho, než se řešení objevilo.</p>
+<p>Řešení, které se po měsících čekání nakonec objevilo v diskusní
+skupině o JAWSu, spočívá v úpravě souboru <code>paperback.jcf</code>,
+kde nastavíte “Braille Presentation and Panning” na “Always use DOM if
+available”. Kromě toho potřebujete zapnout i “Pan Text by Paragraph”,
+jinak řádek zůstane na aktivním odstavci, místo aby se posouval. S oběma
+těmito nastaveními by posun měl fungovat správně.</p>
 <h1 id="aktuálně-podporované-typy-souborů">Aktuálně podporované typy
 souborů</h1>
 <p>Paperback podporuje následující formáty a přípony:</p>
 <ul>
 <li>CHM soubory nápovědy (<code>.chm</code>)</li>
+<li>Knihy ve formátu DAISY (<code>.opf</code>, <code>.zip</code>)</li>
 <li>E-knihy ve formátu EPUB (<code>.epub</code>)</li>
 <li>E-knihy ve formátu FB2 (<code>.fb2</code>)</li>
 <li>HTML dokumenty (<code>.htm</code>, <code>.html</code>,
@@ -296,73 +331,105 @@ souborů</h1>
 <code>.markdown</code>, <code>.mdx</code>, <code>.mdown</code>,
 <code>.mdwn</code>, <code>.mkd</code>, <code>.mkdn</code>,
 <code>.mkdown</code>, <code>.ronn</code>)</li>
-<li>Dokumenty Microsoft Wordu (<code>.docx</code>,
-<code>.docm</code>)</li>
+<li>Dokumenty Microsoft Wordu (<code>.docx</code>, <code>.docm</code>,
+<code>.doc</code>)</li>
+<li>Audioknihy ve formátu M4B (<code>.m4b</code>)</li>
+<li>Knihy ve formátu MOBI/Kindle (<code>.mobi</code>, <code>.azw</code>,
+<code>.azw3</code>)</li>
 <li>OpenDocument prezentace (<code>.odp</code>, <code>.fodp</code>)</li>
 <li>OpenDocument textové soubory (<code>.odt</code>,
 <code>.fodt</code>)</li>
 <li>PDF dokumenty (<code>.pdf</code>)</li>
-<li>PowerPointové prezentace (<code>.pptx</code>,
-<code>.pptm</code>)</li>
+<li>PowerPointové prezentace (<code>.pptx</code>, <code>.pptm</code>,
+<code>.ppt</code>)</li>
 <li>RTF dokumenty (<code>.rtf</code>)</li>
 <li>Soubory v prostém textu a log soubory (<code>.txt</code>,
 <code>.log</code>)</li>
-<li>XML dokumenty (<code>.xml</code>)</li>
 </ul>
 <h1 id="klávesové-zkratky">Klávesové zkratky</h1>
-<p>Paperback je navržen především pro použití s klávesnicí a s
-odečítačem obrazovky. Toto jsou aktuální klávesové zkratky:</p>
+<p>Paperback je navržen především pro použití s klávesnicí. Toto jsou
+aktuální klávesové zkratky:</p>
+<p>Níže uvedené zkratky platí pro Windows. Tam, kde se macOS liší, je
+ekvivalent uveden v závorkách — hlavně proto, že Ctrl+G, Ctrl+W a
+Alt+šipka vlevo/vpravo jsou na této platformě už obsazené jinými
+systémovými nebo aplikačními konvencemi.</p>
 <h2 id="nabídka-soubor">Nabídka Soubor</h2>
 <ul>
 <li><code>Ctrl+O</code>: Otevření dokumentu.</li>
-<li><code>Ctrl+F4</code>: Zavření aktuálního dokumentu.</li>
-<li><code>Ctrl+Shift+F4</code>: Zavření všech otevřených dokumentů.</li>
+<li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Zavření aktuálního
+dokumentu.</li>
+<li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>):
+Zavření všech otevřených dokumentů.</li>
+<li><code>Ctrl+Shift+T</code>: Znovuotevření naposledy zavřeného
+dokumentu.</li>
 <li><code>Ctrl+R</code>: Zobrazení dialogu “Všechny dokumenty” (z
 nabídky Nedávné dokumenty).</li>
+<li><code>Ctrl+Q</code>: Ukončení aplikace (pouze ve Windows; na macOS
+je tato položka místo toho v nabídce aplikace).</li>
 </ul>
 <h2 id="nabídka-přejít">Nabídka Přejít</h2>
 <ul>
 <li><code>Ctrl+F</code>: Zobrazení dialogu Najít.</li>
-<li><code>F3</code>: Najít další.</li>
-<li><code>Shift+F3</code>: Najít předchozí.</li>
-<li><code>Ctrl+G</code>: Přejít na řádek.</li>
-<li><code>Ctrl+Shift+G</code>: Přejít na procenta.</li>
+<li><code>F3</code> (macOS: <code>Cmd+G</code>): Najít další.</li>
+<li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Najít
+předchozí.</li>
+<li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Přejít na
+řádek.</li>
+<li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Přejít
+na procenta.</li>
 <li><code>Ctrl+P</code>: Přejít na stránku (pokud je podporováno v
 aktuálním dokumentu).</li>
-<li><code>Alt+Left</code>: Posun zpět v historii navigace.</li>
-<li><code>Alt+Right</code>: Posun vpřed v historii navigace.</li>
+<li><code>=</code>: Oznámení aktuální pozice v dokumentu v
+procentech</li>
+<li><code>Alt+Left</code> (macOS: <code>Cmd+[</code>): Posun zpět v
+historii navigace.</li>
+<li><code>Alt+Right</code> (macOS: <code>Cmd+]</code>): Posun vpřed v
+historii navigace.</li>
 <li><code>[</code>: Předchozí oddíl.</li>
-<li><code>]</code>: Další oddíl.</li>
+<li><code>]</code>: Následující oddíl.</li>
 <li><code>Shift+H</code>: Předchozí nadpis.</li>
-<li><code>H</code>: Další nadpis.</li>
+<li><code>H</code>: Následující nadpis.</li>
 <li><code>Shift+1</code> až <code>Shift+6</code>: Předchozí nadpis
 úrovně 1 až 6.</li>
-<li><code>1</code> až <code>6</code>: Další nadpis úrovně 1 až 6.</li>
+<li><code>1</code> až <code>6</code>: Následující nadpis úrovně 1 až
+6.</li>
 <li><code>Shift+P</code>: Předchozí stránka.</li>
-<li><code>P</code>: Další stránka.</li>
+<li><code>P</code>: Následující stránka.</li>
 <li><code>Shift+B</code>: Předchozí záložka.</li>
-<li><code>B</code>: Další záložka.</li>
+<li><code>B</code>: Následující záložka.</li>
+<li><code>/</code>: Nastavení dočasné záložky.</li>
+<li><code>\</code>: Přechod na dočasnou záložku.</li>
 <li><code>Shift+N</code>: Předchozí poznámka.</li>
-<li><code>N</code>: Další poznámka.</li>
+<li><code>N</code>: Následující poznámka.</li>
 <li><code>Ctrl+B</code>: Zobrazení všech záložek a poznámek.</li>
 <li><code>Ctrl+Alt+B</code>: Zobrazení pouze záložek.</li>
 <li><code>Ctrl+Alt+M</code>: Zobrazení pouze poznámek.</li>
-<li><code>Ctrl+Shift+W</code>: Zobrazení textu poznámky na aktuální
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, tedy
+fyzická klávesa Control místo Cmd): Zobrazení textu poznámky na aktuální
 pozici.</li>
 <li><code>Shift+K</code>: Předchozí odkaz.</li>
-<li><code>K</code>: Další odkaz.</li>
+<li><code>K</code>: Následující odkaz.</li>
+<li><code>Shift+G</code>: Předchozí obrázek.</li>
+<li><code>G</code>: Následující obrázek.</li>
+<li><code>Shift+F</code>: Předchozí ilustrace.</li>
+<li><code>F</code>: Následující ilustrace.</li>
 <li><code>Shift+T</code>: Předchozí tabulka.</li>
-<li><code>T</code>: Další tabulka.</li>
+<li><code>T</code>: Následující tabulka.</li>
 <li><code>Shift+S</code>: Předchozí oddělovač.</li>
-<li><code>S</code>: Další oddělovač.</li>
+<li><code>S</code>: Následující oddělovač.</li>
 <li><code>Shift+L</code>: Předchozí seznam.</li>
-<li><code>L</code>: Další seznam.</li>
+<li><code>L</code>: Následující seznam.</li>
 <li><code>Shift+I</code>: Předchozí položka seznamu.</li>
-<li><code>I</code>: Další položka seznamu.</li>
+<li><code>I</code>: Následující položka seznamu.</li>
+<li><code>Shift+,</code>: Přechod na začátek aktuálního kontejneru
+(seznamu nebo tabulky).</li>
+<li><code>,</code>: Přechod za konec aktuálního kontejneru (seznamu nebo
+tabulky).</li>
 </ul>
 <h2 id="nabídka-nástroje">Nabídka Nástroje</h2>
 <ul>
-<li><code>Ctrl+W</code>: Zobrazení počtu slov v aktuálním
+<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, tedy fyzická
+klávesa Control místo Cmd): Zobrazení počtu slov v aktuálním
 dokumentu.</li>
 <li><code>Ctrl+I</code>: Zobrazení informací o dokumentu.</li>
 <li><code>Ctrl+T</code>: Zobrazení obsahu (osnovy) dokumentu.</li>
@@ -371,6 +438,8 @@ dokumentu.</li>
 aktuální dokument uložen).</li>
 <li><code>Ctrl+Shift+V</code>: Otevření aktuálního dokumentu ve webovém
 zobrazení.</li>
+<li><code>Ctrl+U</code>: Zobrazení zdroje dokumentu (původního souboru)
+na nové záložce.</li>
 <li><code>Ctrl+Shift+E</code>: Export dat dokumentu
 (<code>.paperback</code>).</li>
 <li><code>Ctrl+Shift+I</code>: Import dat dokumentu
@@ -381,7 +450,16 @@ textu.</li>
 aktuální pozici.</li>
 <li><code>Ctrl+Shift+N</code>: Přidání nebo úpravy poznámky k záložce v
 aktuálním výběru / na aktuální pozici.</li>
-<li><code>Ctrl+,</code>: Otevření dialogu Možnosti.</li>
+<li><code>Ctrl+Alt+W</code>: Přepnutí zalamování řádků.</li>
+<li><code>Ctrl+Space</code>: Přehrání/pozastavení zvukové stopy.</li>
+<li><code>'</code>: Přetočení zvukové stopy dopředu.</li>
+<li><code>;</code>: Přetočení zvukové stopy dozadu.</li>
+<li><code>Ctrl+'</code>: Prodloužení intervalu přetáčení.</li>
+<li><code>Ctrl+;</code>: Zkrácení intervalu přetáčení.</li>
+<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, tedy
+Control+Command+F): Přepnutí režimu na celou obrazovku.</li>
+<li><code>Ctrl+,</code>: Otevření dialogu Nastavení (na macOS Předvolby
+v nabídce aplikace).</li>
 <li><code>Ctrl+Shift+S</code>: Přepnutí časovače spánku.</li>
 </ul>
 <h2 id="nabídka-nápověda">Nabídka Nápověda</h2>
@@ -392,7 +470,7 @@ prohlížeči.</li>
 <li><code>Shift+F1</code>: Zobrazení této nápovědy přímo v
 Paperbacku.</li>
 <li><code>Ctrl+Shift+U</code>: Vyhledání aktualizací.</li>
-<li><code>Ctrl+D</code>: Otevření stránky podpory ve výchozím webovém
+<li><code>Ctrl+D</code>: Otevření stránky Přispět ve výchozím webovém
 prohlížeči.</li>
 </ul>
 <h2 id="další-zkratky-v-zobrazení-dokumentu">Další zkratky v zobrazení
@@ -400,21 +478,27 @@ dokumentu</h2>
 <ul>
 <li><code>Delete</code> / <code>Numpad Delete</code> na seznamu záložek:
 Zavření záložky (panelu) vybraného dokumentu.</li>
-<li><code>Enter</code> v textu dokumentu: Aktivuje odkaz pod kurzorem
-nebo otevře zobrazení tabulky, pokud se kurzor nachází na značce
-tabulky.</li>
-<li><code>Shift+F10</code> v textu dokumentu: Otevření kontextové
-nabídky.</li>
+<li><code>Enter</code> nebo <code>Mezerník</code> v textu dokumentu:
+Aktivuje odkaz pod kurzorem nebo otevře zobrazení tabulky, pokud se
+kurzor nachází na tagu tabulky.</li>
+<li><code>Shift+F10</code> nebo klávesa kontextového menu / aplikace v
+textu dokumentu: Otevření kontextové nabídky.</li>
 </ul>
 <h1 id="podporované-jazyky">Podporované jazyky</h1>
 <p>Paperback je přeložen do mnoha různých jazyků a další neustále
 přibývají. Následuje kompletní výčet:</p>
+<p>Pokud se chcete zapojit, přečtěte si prosím naši <a
+href="translating.md">příručku pro překladatele</a>.</p>
 <ul>
 <li>Bosenština</li>
 <li>Čeština</li>
+<li>Nizozemština</li>
+<li>Finština</li>
 <li>Francouzština</li>
 <li>Němčina</li>
 <li>Japonština</li>
+<li>Polština</li>
+<li>Brazilská portugalština</li>
 <li>Ruština</li>
 <li>Zjednodušená čínština</li>
 <li>Srbština</li>
@@ -447,6 +531,7 @@ určené ke zveřejnění.</p>
 <li>Jonathan Rodriguez</li>
 <li>Jonathan Schuster</li>
 <li>Keao Wright</li>
+<li>Michael Marshall</li>
 <li>Pratik Patel</li>
 <li>Roberto Perez</li>
 <li>Sean Randall</li>
@@ -454,32 +539,322 @@ určené ke zveřejnění.</p>
 <li>Tyler Rodick</li>
 </ul>
 <h1 id="historie-změn">Historie změn</h1>
+<h2 id="verze-0.9.2">Verze 0.9.2</h2>
+<ul>
+<li>Audioknihy už při přechodu na textové pole nenutí odečítač obrazovky
+číst řadu mezer.</li>
+<li>Audioknihy nyní při pohybu po oddílech oznamují název souboru.</li>
+<li>Audioknihy nyní uvádějí skutečnou délku, místo aby u každého souboru
+tvrdily, že trvá 24 hodin.</li>
+<li>Zavření webového zobrazení klávesou Escape už nevyvolá ladicí hlášku
+poté, co jste v něm otevřeli nějaký odkaz.</li>
+<li>Kopírování po výběru veškerého textu nyní zkopíruje celý dokument,
+ne jen jeho právě načtenou část.</li>
+<li>Hledání vás nyní přenese rovnou na nalezený řádek, místo aby vás
+nutilo poslouchat, jak odečítač obrazovky při návratu fokusu do knihy
+znovu přečte celé okno.</li>
+<li>Opravena chyba, kdy se EPUB soubory obsahující zbloudilý blok ZIP64
+odmítaly otevřít s hláškou „Invalid local file header“.</li>
+<li>Opravena chyba, kdy se dlouhé dokumenty při plynulém čtení
+odečítačem obrazovky vracely na začátek.</li>
+<li>Odkazy ve webovém zobrazení vás nyní přenesou do oddílu, na který
+míří, místo aby selhaly s hláškou „File not found“.</li>
+<li>Automatické oznámení „Dokument obnoven“ už nepřeruší odečítač
+obrazovky uprostřed věty, ale počká, až dokončí stávající promluvu.</li>
+<li>Na kartě Obecné v dialogu Nastavení se nyní tabulátorem prochází
+mezi volbami v pořadí, v jakém jsou na obrazovce, přičemž kanál
+aktualizací následuje hned za volbou pro vyhledávání aktualizací.</li>
+<li>Windows nyní v nabídce Otevřít v programu vždy zobrazí „Paperback“
+místo celého sloganu programu.</li>
+<li>Počet slov a Informace o dokumentu nyní ukazují, kolik souborů
+audiokniha obsahuje a jak dlouho celkem trvá.</li>
+</ul>
+<h2 id="verze-0.9.1">Verze 0.9.1</h2>
+<ul>
+<li>Zvuky záložek a poznámek se nyní přehrávají i na macOS.</li>
+<li>Knihy ve formátu DAISY nyní na macOS přehrávají zvuk, místo aby se
+jen otevřely a tiše pohybovaly po časové ose.</li>
+<li>Opravena chyba, kdy z RTF dokumentů mizely typografické uvozovky,
+dlouhé pomlčky a podobné znaky a slova kolem nich se slévala
+dohromady.</li>
+<li>Opravena chyba, kdy obrázky v RTF dokumentech propouštěly svá surová
+data do textu dokumentu v podobě nesmyslných znaků.</li>
+<li>Opravena chyba, kdy si podnabídka Nedávné dokumenty držela zastaralé
+položky, dokud ji něco jiného nesestavilo znovu.</li>
+<li>Klávesové akcelerátory se vrátily do všech překladů, takže nabídky v
+ruštině jsou opět přístupné z klávesnice.</li>
+<li>Velké dokumenty CHM se nyní otevírají až sedmkrát rychleji.</li>
+<li>Otevřené dokumenty se nyní registrují ve Windows, takže se objevují
+v seznamu odkazů na hlavním panelu a v seznamu nedávných položek v
+nabídce Start.</li>
+<li>Dialog Možnosti byl přejmenován na Nastavení, aby odpovídal mobilním
+aplikacím a na macOS i konvenci platformy.</li>
+<li>Paperback si nyní mezi spuštěními pamatuje pozici, velikost a
+maximalizaci svého okna.</li>
+<li>Nyní se překládají i množná čísla, takže zprávy, které něco
+počítají, zní správně i v jazycích, které potřebují víc než jeden
+tvar.</li>
+<li>Výběr souboru ncc.html u knihy ve formátu DAISY nyní otevře
+kompletní audioknihu místo pouhého textu.</li>
+<li>Názvy akcí v dialogu Nastavení klávesových zkratek je nyní možné
+přeložit.</li>
+<li>V záhlaví okna je nyní název dokumentu na prvním místě, takže
+otevřené knihy lze rozlišit na hlavním panelu a při přepínání zkratkou
+Alt+Tab.</li>
+<li>Dialog aktualizací nyní podporuje lokalizaci.</li>
+</ul>
+<h2 id="verze-0.9.0">Verze 0.9.0</h2>
+<h3 id="přidáno">Přidáno</h3>
+<h4 id="obecné">Obecné</h4>
+<ul>
+<li>Nástroj příkazové řádky s názvem pb, který rychle převede kterýkoli
+z formátů podporovaných Paperbackem do HTML, Markdownu nebo prostého
+textu.</li>
+<li>Možnost znovu načíst dokumenty, které na disku změnily jiné
+programy.</li>
+<li>Možnost Zobrazit zdroj, která otevře zdroj (původní soubor)
+dokumentu na nové záložce; hodí se například při úpravách
+Markdownu.</li>
+<li>Text dokumentu se nyní skutečně dělí na stránky, takže knihy s
+desítkami milionů slov se načtou během pár sekund. Prosím hlaste
+jakékoli podivnosti, na které v souvislosti s tím narazíte.</li>
+</ul>
+<h4 id="podpora-platforem">Podpora platforem</h4>
+<ul>
+<li>Podpora ARM64 Windows!</li>
+<li>Nativní podpora macOS!</li>
+<li>Přepínač režimu na celou obrazovku.</li>
+</ul>
+<h4 id="dialog-všechny-dokumenty">Dialog Všechny dokumenty</h4>
+<ul>
+<li>Tlačítko Najít pro dohledání chybějících knih, kterým se jen změnila
+cesta.</li>
+<li>Filtr stavu a stavový řádek, takže můžete filtrovat podle stavu
+dokumentu a vidět, kolik dokumentů je zobrazeno a vybráno.</li>
+<li>Klávesová zkratka <code>Ctrl+Shift+A</code> pro zrušení výběru všech
+dokumentů.</li>
+</ul>
+<h4 id="nastavení-a-čitelnost">Nastavení a čitelnost</h4>
+<ul>
+<li>Karta Čitelnost s následujícími volbami:
+<ul>
+<li>Zalamování řádků (přesunuto z karty Obecné);</li>
+<li>Vykreslování tabulek v toku textu (novinka v této verzi, viz
+níže);</li>
+<li>Font;</li>
+<li>Barva pozadí;</li>
+<li>Velikost řádkování;</li>
+<li>Mezery mezi odstavci;</li>
+<li>Mezery mezi písmeny;</li>
+<li>Zarovnání textu.</li>
+</ul></li>
+<li>Položka nabídky pro zalamování řádků a k ní příslušná klávesová
+zkratka.</li>
+<li>Přepínač, kterým určíte, jak se mají tabulky zobrazovat, a
+sjednocené zobrazování tabulek napříč dokumenty.</li>
+</ul>
+<h4 id="navigace">Navigace</h4>
+<ul>
+<li>Podpora navigace po kontejnerech.</li>
+<li>Možnost automaticky přesouvat kurzor na začátek řádku při pohybu
+mezi řádky, podobně jako v režimu procházení u odečítačů obrazovky.</li>
+<li>Klávesová zkratka rovná se pro oznámení aktuální pozice v dokumentu
+v procentech.</li>
+</ul>
+<h4 id="záložky">Záložky</h4>
+<ul>
+<li>Dočasné záložky: můžete mít jednu na každý dokument a zůstávají
+uložené. Lomítkem ji nastavíte, zpětným lomítkem na ni skočíte.</li>
+</ul>
+<h4 id="počet-slov">Počet slov</h4>
+<ul>
+<li>Odhadovaná doba čtení v dialogu Počet slov a k tomu možnost nastavit
+si rychlost čtení, aby byl tento údaj opravdu k něčemu.</li>
+<li>Pokud máte při otevření dialogu Počet slov aktivní výběr, zobrazí se
+nyní i to, kolik slov jste vybrali.</li>
+</ul>
+<h4 id="klávesové-zkratky-1">Klávesové zkratky</h4>
+<ul>
+<li>Možnost přizpůsobit si v jednoduchém dialogu každou klávesovou
+zkratku v aplikaci.</li>
+<li>Nastavitelná klávesová zkratka pro obnovení Paperbacku ze systémové
+lišty.</li>
+</ul>
+<h4 id="jazyky">Jazyky</h4>
+<ul>
+<li>Nizozemština, finština a polština.</li>
+</ul>
+<h4 id="export">Export</h4>
+<ul>
+<li>Rozšířena položka nabídky pro export, takže kromě prostého textu
+umožňuje exportovat i do HTML a Markdownu.</li>
+</ul>
+<h4 id="updater">Updater</h4>
+<ul>
+<li>Tlačítko Zrušit v dialogu probíhající aktualizace.</li>
+<li>Updater nyní ověřuje, že stažený soubor nebyl pozměněn.</li>
+</ul>
+<h4 id="webové-zobrazení">Webové zobrazení</h4>
+<ul>
+<li>Webové zobrazení se nyní otevírá na aktuální pozici čtecího
+kurzoru.</li>
+</ul>
+<h4 id="knihy-daisy">Knihy DAISY</h4>
+<ul>
+<li>Podpora knih ve formátu DAISY 2.0.</li>
+<li>Podpora přehrávání zvuku ve formátu DAISY 2.02.</li>
+</ul>
+<h4 id="audioknihy">Audioknihy</h4>
+<ul>
+<li>Možnost přehrávat audioknihy, aktuálně jak ve formátu DAISY audio
+(včetně DAISY audio + text), tak zazipovaných zvukových souborů.</li>
+<li>Klávesové zkratky a položky nabídky pro přehrání/pozastavení zvukové
+stopy, přetáčení dopředu a dozadu a nastavení intervalu přetáčení.</li>
+<li>Volby pro synchronizaci čtecího kurzoru s přehrávaným zvukem,
+nastavení intervalu přetáčení a pro určení, zda přetočení za konec
+kapitoly pokračuje do další.</li>
+</ul>
+<h4 id="dokumenty-chm">Dokumenty CHM</h4>
+<ul>
+<li>Podpora seznamů, položek seznamů, ilustrací a obrázků.</li>
+</ul>
+<h4 id="powerpoint">PowerPoint</h4>
+<ul>
+<li>Dokumenty PowerPointu nyní podporují tabulky.</li>
+</ul>
+<h3 id="opraveno">Opraveno</h3>
+<h4 id="obecné-1">Obecné</h4>
+<ul>
+<li>Dokumenty ve starých CJK kódováních, jako je GBK, Big5 nebo
+Shift_JIS, se nyní vykreslí správně místo změti nesmyslných znaků.</li>
+<li>Funkce „Znovu otevřít naposledy zavřený“ se pokoušela znovu otevřít
+přiložené readme.</li>
+<li>Vybraná záložka po restartu Paperbacku nezískávala fokus, jak
+měla.</li>
+<li>Zacházení Paperbacku se soubory na síťových discích Windows:
+zobrazení souboru ve složce nyní správně vybere soubor na síťovém
+úložišti a cesty už neobsahují podivné znaky.</li>
+<li>Soubory .paperback se už při obnovování dokumentů nenačítají
+natvrdo; místo toho budete při nalezení takového souboru požádáni o
+potvrzení.</li>
+<li>Otevření nadřazené složky nyní daný soubor v Průzkumníku
+vybere.</li>
+<li>Otevření readme nyní respektuje vámi zvolený jazyk.</li>
+<li>Uživatelské rozhraní Paperbacku se nyní správně škáluje na
+displejích s vysokým DPI.</li>
+<li>Při otevření nápovědy v Paperbacku se nyní správně aktualizuje
+nabídka a fokus se přesune na textové pole.</li>
+<li>Ve Windows jsem přešel na mnohem bezpečnější způsob meziprocesové
+komunikace.</li>
+<li>Při přepínání mezi záložkami se nyní přečte název aktivního
+dokumentu.</li>
+<li>Sníženo využití paměti u velkých dokumentů zmenšením interních
+indexových tabulek pro jednotlivé znaky na polovinu.</li>
+</ul>
+<h4 id="dialog-všechny-dokumenty-1">Dialog Všechny dokumenty</h4>
+<ul>
+<li>Klávesa Escape nezavírala dialogy Informace o dokumentu a Všechny
+dokumenty.</li>
+<li>Záhlaví okna se neaktualizovalo po zavření dokumentu z dialogu
+Všechny dokumenty.</li>
+<li>Readme.html se už při otevření pomocí Shift+F1 nepřidá do seznamu
+všech dokumentů.</li>
+<li>Odebrání dokumentů z dialogu nedávných dokumentů nyní zavře i jejich
+otevřenou záložku.</li>
+<li>Váš vyhledávací filtr nyní zůstane zachován i po odebrání
+dokumentu.</li>
+</ul>
+<h4 id="navigace-1">Navigace</h4>
+<ul>
+<li>Pohyb po stránkách v některých situacích oznamoval nesprávný text
+řádku.</li>
+<li>Dialogy Přejít na řádek, Přejít na stránku a Přejít na procenta
+umisťovaly ve velkých dokumentech kurzor na nesprávnou pozici.</li>
+<li>Dialogy Najít a Najít další nerespektovaly ve velkých dokumentech
+načtený úsek dokumentu.</li>
+</ul>
+<h4 id="záložky-1">Záložky</h4>
+<ul>
+<li>Zvuky záložek a poznámek by se nyní měly přehrát výhradně tehdy,
+když přejdete na slovo, které je obsahuje.</li>
+</ul>
+<h4 id="čitelnost">Čitelnost</h4>
+<ul>
+<li>Zapnutí zalamování řádků skákalo na začátek dokumentu.</li>
+</ul>
+<h4 id="webové-zobrazení-1">Webové zobrazení</h4>
+<ul>
+<li>Dialog webového zobrazení nešel zvětšit a otevíral se ve velmi malé
+počáteční velikosti.</li>
+<li>Obrázky by se nyní měly ve vestavěném webovém zobrazení zobrazovat
+správně.</li>
+</ul>
+<h4 id="updater-1">Updater</h4>
+<ul>
+<li>Updater nyní v poznámkách k vydání správně zobrazuje obsah tagů
+Markdownu.</li>
+</ul>
+<h4 id="knihy-daisy-1">Knihy DAISY</h4>
+<ul>
+<li>Knihy ve formátu DAISY zobrazovaly ve stavovém řádku nesprávné
+informace.</li>
+<li>Načítání knih ve formátu DAISY s nesmyslnými deklaracemi
+kódování.</li>
+</ul>
+<h4 id="dokumenty-rtf">Dokumenty RTF</h4>
+<ul>
+<li>Parsování RTF dokumentů obsahujících nelatinkové znaky.</li>
+<li>Skupiny <code>\pict</code> v RTF, takže se data vložených obrázků už
+nepropisují do textu dokumentu.</li>
+</ul>
+<h4 id="knihy-mobiazw3">Knihy Mobi/AZW3</h4>
+<ul>
+<li>Kotvy filepos v knihách Mobi rozdělovaly HTML značky a vkládaly do
+textu knihy nesmysly.</li>
+<li>Odkazy ve starých knihách Mobi.</li>
+<li>Výrazně vylepšeno parsování AZW3.</li>
+</ul>
+<h4 id="dokumenty-wordu">Dokumenty Wordu</h4>
+<ul>
+<li>Dokumenty Wordu s názvy stylů závislými na jazyce nevykreslovaly
+správně své nadpisy.</li>
+</ul>
+<h4 id="dokumenty-htmlxhtml">Dokumenty HTML/XHTML</h4>
+<ul>
+<li>Prvky dl, dt a dd nevytvářely v dokumentech XHTML zalomení
+řádku.</li>
+</ul>
+<h4 id="dokumenty-pdf">Dokumenty PDF</h4>
+<ul>
+<li>Paperback nyní u nesprávně tagovaných PDF přejde na extrakci
+prostého textu.</li>
+<li>PDF dokumenty obsahující řídicí znaky v názvu anebo v záložkách už
+při otevření Paperback neshodí.</li>
+</ul>
 <h2 id="verze-0.8.5">Verze 0.8.5</h2>
 <ul>
-<li>Přidána podpora tagovaných PDF souborů!</li>
 <li>Přidána podpora stránek pro knihy ve formátu epub.</li>
-<li>Přidána podpora PowerPointových prezentací ve starém formátu
-(*.ppt)!</li>
-<li>Přidána podpora starého formátu dokumentů Microsoft Wordu
-(*.doc)!</li>
-<li>Přidána podpora knih ve formátu mobi a AZW3!</li>
 <li>Přidána podpora šifrovaných dokumentů Microsoft Office. Aktuálně
 jsou podporovány formáty starého Wordu, moderního Wordu a moderního
 PowerPointu. Starý PowerPoint je plánován do budoucna.</li>
+<li>Přidána podpora starého formátu dokumentů Microsoft Wordu
+(*.doc)!</li>
+<li>Přidána podpora PowerPointových prezentací ve starém formátu
+(*.ppt)!</li>
+<li>Přidána podpora knih ve formátu mobi a AZW3!</li>
+<li>Přidána podpora tagovaných PDF souborů!</li>
 <li>Přidána klávesová zkratka ctrl+q pro ukončení aplikace.</li>
 <li>Přidána podpora zazipovaných knih z Bookshare (DAISY i Word)!</li>
 <li>U obrázků v dokumentech by se nyní měl správně zobrazovat alt
 text.</li>
 <li>Soubory CHM nyní správně podporují navigaci po vnitřních
 odkazech.</li>
-<li>Opravena chyba, kdy se zvuky záložek přehrávaly na začátku odstavce
-místo na skutečné pozici záložky.</li>
 <li>Opravena chyba, kdy přechod na konkrétní číslo stránky byl posunutý
 o 1.</li>
 <li>Opravena chyba, kdy se dialog Otevřít jako nedal zavřít klávesou
 escape.</li>
 <li>Opravena chyba, kdy se kontextové menu ve čtečce nezobrazovalo při
-kliknutí pravým tlačítkem myši nebo stisknutí shift+F10.</li>
+kliknutí pravým tlačítkem myši nebo stisknutí klávesy Aplikace.</li>
 <li>Opravena chyba, kdy se při otevírání dokumentů z příkazové řádky
 někdy fokusoval nesprávný dokument.</li>
 <li>PDF, která jsou pouze obrázková, jsou nyní znovu správně detekována
@@ -574,9 +949,6 @@ href="https://github.com/trypsynth/paperback/issues/303">#303</a>.</li>
 <li>PDF, která jsou pouze obrázková, vás na tuto skutečnost nyní
 upozorní, když se takový soubor pokusíte načíst. <a
 href="https://github.com/trypsynth/paperback/issues/89">#89</a>.</li>
-<li>Při kontrole aktualizací je nyní možné vyhledávat kromě stabilních
-verzí i vývojové verze. <a
-href="https://github.com/trypsynth/paperback/pull/333">#333</a>.</li>
 <li>Ve spustitelném souboru Paperbacku jsou správně uvedeny informace o
 verzi. <a
 href="https://github.com/trypsynth/paperback/issues/204">#204</a>.</li>
@@ -614,12 +986,6 @@ href="https://github.com/trypsynth/paperback/issues/217">#217</a>.</li>
 <li>Kontrola aktualizací nyní při dostupnosti nové verze zobrazuje
 poznámky k vydání. <a
 href="https://github.com/trypsynth/paperback/pull/210">#210</a>.</li>
-<li>Aktualizován srbský překlad. <a
-href="https://github.com/trypsynth/paperback/pull/219">#219</a>, <a
-href="https://github.com/trypsynth/paperback/pull/229">#229</a>.</li>
-<li>Aktualizován bosenský překlad. <a
-href="https://github.com/trypsynth/paperback/pull/218">#218</a>, <a
-href="https://github.com/trypsynth/paperback/pull/225">#225</a>.</li>
 <li>Opraveno obnovování okna ze systémové lišty. <a
 href="https://github.com/trypsynth/paperback/issues/284">#284</a>.</li>
 <li>Opraveny překlady tlačítek Ano/Ne v potvrzovacích dialozích. <a
@@ -643,11 +1009,9 @@ značkách pre.</li>
 bílé znaky.</li>
 <li>Opraveny různé problémy parseru. <a
 href="https://github.com/trypsynth/paperback/pull/208">#208</a>.</li>
-<li>Položky nabídky související se záložkami jsou nyní správně zakázány,
-když není otevřen žádný dokument. <a
-href="https://github.com/trypsynth/paperback/pull/196">#196</a>.</li>
-<li>Seznam prvků je nyní správně zakázán, když není otevřen žádný
-dokument. <a
+<li>Položky nabídky související se záložkami i seznam prvků jsou nyní
+správně zakázány, když není otevřen žádný dokument. <a
+href="https://github.com/trypsynth/paperback/pull/196">#196</a>, <a
 href="https://github.com/trypsynth/paperback/issues/194">#194</a>.</li>
 <li>Vylepšeno zpracování seznamů v různých formátech dokumentů. <a
 href="https://github.com/trypsynth/paperback/pull/213">#213</a>.</li>
