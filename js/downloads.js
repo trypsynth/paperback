@@ -37,9 +37,9 @@
         ${subtitle ? `<p>${subtitle}</p>` : ""}
         ${exes.sort((a, b) => archOrder(a.name) - archOrder(b.name)).map(exe => `<p><a href="${exe.browser_download_url}">Windows Installer${archLabel(exe.name)} (.exe)</a> - ${fmtCount(exe.download_count)}</p>`).join("")}
         ${winZips.sort((a, b) => archOrder(a.name) - archOrder(b.name)).map(zip => `<p><a href="${zip.browser_download_url}">Windows Portable${archLabel(zip.name)} (.zip)</a> - ${fmtCount(zip.download_count)}</p>`).join("")}
+        ${showMac && macDmg ? `<p><a href="${macDmg.browser_download_url}">macOS (.dmg)</a> - ${fmtCount(macDmg.download_count)}</p>` : ""}
         ${linuxAppImages.sort((a, b) => archOrder(a.name) - archOrder(b.name)).map(appImage => `<p><a href="${appImage.browser_download_url}">Linux Installer${archLabel(appImage.name)} (.AppImage)</a> - ${fmtCount(appImage.download_count)}</p>`).join("")}
         ${linuxTarballs.sort((a, b) => archOrder(a.name) - archOrder(b.name)).map(tarball => `<p><a href="${tarball.browser_download_url}">Linux Portable${archLabel(tarball.name)} (.tar.gz)</a> - ${fmtCount(tarball.download_count)}</p>`).join("")}
-        ${showMac && macDmg ? `<p><a href="${macDmg.browser_download_url}">macOS (.dmg)</a> - ${fmtCount(macDmg.download_count)}</p>` : ""}
         ${apks.map(a => {
           const apkLabel = a.name.includes("arm64") ? "Android APK (arm64-v8a)" : a.name.includes("arm") ? "Android APK (armeabi-v7a)" : "Android APK";
           return `<p><a href="${a.browser_download_url}">${apkLabel}</a> - ${fmtCount(a.download_count)}</p>`;
