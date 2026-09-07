@@ -18,6 +18,112 @@ pub(super) fn sanitize_pdf_text(input: &str) -> String {
 	input.chars().filter(|&ch| (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}').collect()
 }
 
+/// A character's box in PDF user units, as pdfium reports it.
+#[derive(Clone, Copy)]
+pub(super) struct CharBox {
+	pub left: f64,
+	pub right: f64,
+	pub bottom: f64,
+	pub top: f64,
+}
+
+/// Tolerance, in PDF user units, for calling two baselines or two box edges the same. pdfium
+/// reports characters set on one line with identical coordinates, so this only has to absorb
+/// rounding.
+const COORDINATE_EPSILON: f64 = 0.05;
+/// A space that carries less than this fraction of its own width in horizontal advance is not
+/// separating anything. Real spaces in a page measured for #808 all advance by at least 70% of
+/// their width; the spurious ones advance by 0-5%.
+const NO_ADVANCE_RATIO: f64 = 0.25;
+/// A space this much of whose width lies inside the box of the glyph before it is being drawn
+/// underneath that glyph rather than after it. The same page measured 58% at most for real
+/// spaces (an `f` overhangs the space after it) and 92% at least for the spurious ones.
+const SWALLOWED_RATIO: f64 = 0.8;
+
+/// Whether a U+0020 in the text layer renders as no space at all, judged from where pdfium puts
+/// it relative to its neighbours. Both shapes of this reach us as an ordinary space that pdfium
+/// does not mark as generated, so only the geometry tells them apart from a real one:
+///
+/// * A space with (almost) no horizontal advance: the character after it starts where the space
+///   itself starts, so nothing on the page moves for it. The PDF of #808 leaves these in the
+///   middle of words ("Pref ace") and in front of punctuation ("skills . The").
+/// * A space drawn inside the glyph before it, which is what an `fi`/`fl` ligature that pdfium
+///   has split back into its two code points leaves behind ("fi eld"): the ligature's advance
+///   covers the space, so the space sits on top of it.
+///
+/// `next_origin` and `prev_box` are the raw neighbouring characters, line breaks included; a
+/// neighbour on another line fails both the baseline and the containment check and so is
+/// ignored, which is what should happen for a space at either end of a line.
+pub(super) fn space_is_invisible(
+	space_origin: (f64, f64),
+	space_box: CharBox,
+	next_origin: Option<(f64, f64)>,
+	prev_box: Option<CharBox>,
+) -> bool {
+	let width = space_box.right - space_box.left;
+	if width <= 0.0 {
+		// A space whose own box is empty gives nothing to measure against. Fonts that give the
+		// space glyph no width of its own and position words by hand land here, and their spaces
+		// are the only word separator the page has.
+		return false;
+	}
+	if let Some((next_x, next_y)) = next_origin
+		&& (next_y - space_origin.1).abs() < COORDINATE_EPSILON
+		&& (next_x - space_origin.0).abs() < width * NO_ADVANCE_RATIO
+	{
+		return true;
+	}
+	if let Some(prev) = prev_box {
+		let on_the_same_line =
+			prev.bottom <= space_box.bottom + COORDINATE_EPSILON && prev.top >= space_box.top - COORDINATE_EPSILON;
+		let covered_width = prev.right - space_box.left;
+		if on_the_same_line && covered_width >= width * SWALLOWED_RATIO {
+			return true;
+		}
+	}
+	false
+}
+
+fn char_origin(text_page: &PdfiumTextPage, index: i32) -> Option<(f64, f64)> {
+	let (mut x, mut y) = (0.0, 0.0);
+	text_page.get_char_origin(index, &mut x, &mut y).ok()?;
+	Some((x, y))
+}
+
+fn char_box(text_page: &PdfiumTextPage, index: i32) -> Option<CharBox> {
+	let rect = text_page.get_char_box(index).ok()?;
+	Some(CharBox {
+		left: f64::from(rect.left),
+		right: f64::from(rect.right),
+		bottom: f64::from(rect.bottom),
+		top: f64::from(rect.top),
+	})
+}
+
+/// [`space_is_invisible`] for the space at `index` of `text_page`, fetching only the geometry
+/// each test actually needs. Costs three or four pdfium calls per space character and none at
+/// all for anything else, so a page pays for it in proportion to its spaces rather than its
+/// length - the per-character cost that #747 had to undo.
+pub(super) fn is_invisible_space(text_page: &PdfiumTextPage, index: i32, char_count: i32) -> bool {
+	let (Some(origin), Some(space_box)) = (char_origin(text_page, index), char_box(text_page, index)) else {
+		return false;
+	};
+	let next_origin = if index + 1 < char_count { char_origin(text_page, index + 1) } else { None };
+	if space_is_invisible(origin, space_box, next_origin, None) {
+		return true;
+	}
+	let prev_box = if index > 0 { char_box(text_page, index - 1) } else { None };
+	space_is_invisible(origin, space_box, None, prev_box)
+}
+
+/// Whether `ch` ends the current visual line. pdfium writes a line break as the pair `"\r\n"`,
+/// so counting both characters would end the line twice and leave an empty line between every
+/// pair of real ones - which [`join_paragraphs`] reads as a paragraph break, splitting every
+/// wrapped paragraph into one paragraph per line (#808).
+fn ends_line(ch: char, prev: Option<char>) -> bool {
+	ch == '\r' || (ch == '\n' && prev != Some('\r'))
+}
+
 fn is_cjk(c: char) -> bool {
 	let u = c as u32;
 	(0x4E00..=0x9FFF).contains(&u) || // CJK Unified Ideographs
@@ -65,20 +171,23 @@ pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) ->
 	// per-character unicode call every line already pays) were the dominant cost of PDF
 	// parsing on documents with many lines - see #747.
 	let mut current_size = 0.0f64;
+	let mut previous_char = None;
 	for i in 0..char_count {
 		let unicode = text_page.get_unicode(i);
 		let Some(ch) = char::from_u32(unicode) else { continue };
-		if ch == '\n' || ch == '\r' {
+		if ends_line(ch, previous_char) {
 			result.push((reorder_run(text_page, &mem::take(&mut current_chars)), current_size));
 			current_size = 0.0;
-		} else if (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
-			continue;
-		} else {
+		} else if ch == '\n' || (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
+			// The '\n' of a "\r\n" pair, and anything else with no text of its own: dropped, but
+			// still the previous character as far as the next `ends_line` is concerned.
+		} else if ch != ' ' || !is_invisible_space(text_page, i, char_count) {
 			if current_size == 0.0 {
 				current_size = text_page.get_font_size(i);
 			}
 			current_chars.push((ch, i));
 		}
+		previous_char = Some(ch);
 	}
 	if !current_chars.is_empty() {
 		result.push((reorder_run(text_page, &current_chars), current_size));
@@ -211,7 +320,87 @@ pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) 
 
 #[cfg(test)]
 mod tests {
-	use super::{join_paragraphs, sanitize_pdf_text};
+	use super::{CharBox, ends_line, join_paragraphs, sanitize_pdf_text, space_is_invisible};
+
+	/// The coordinates below come from what pdfium reports for the PDF attached to #808, so the
+	/// ratios each case turns on are the ones real pages produce.
+	fn char_box(left: f64, right: f64, bottom: f64, top: f64) -> CharBox {
+		CharBox { left, right, bottom, top }
+	}
+
+	#[test]
+	fn ends_line_treats_crlf_as_one_break() {
+		assert!(ends_line('\r', Some('e')));
+		assert!(!ends_line('\n', Some('\r')), "the '\\n' of a \"\\r\\n\" pair must not end a second line");
+		assert!(ends_line('\n', Some('e')), "a lone '\\n' still ends the line");
+		assert!(ends_line('\r', Some('\n')), "a following \"\\r\\n\" pair starts over");
+		assert!(!ends_line('e', Some('\r')));
+	}
+
+	/// "Pref ace": the 'a' starts exactly where the space does, so the space moves nothing.
+	#[test]
+	fn space_is_invisible_when_it_has_no_advance() {
+		assert!(space_is_invisible(
+			(82.88, 592.48),
+			char_box(82.88, 86.88, 592.48, 592.49),
+			Some((82.88, 592.48)),
+			None
+		));
+	}
+
+	/// "fi eld": the split `fi` ligature's box covers the space that follows it.
+	#[test]
+	fn space_is_invisible_when_swallowed_by_the_previous_glyph() {
+		let space = char_box(287.34, 289.84, 387.61, 387.62);
+		// The advance alone looks ordinary here, so only the ligature's box gives it away.
+		assert!(!space_is_invisible((287.34, 387.61), space, Some((290.12, 387.61)), None));
+		assert!(space_is_invisible((287.34, 387.61), space, None, Some(char_box(284.87, 289.77, 387.61, 394.44))));
+	}
+
+	/// "name of paper": an `f` overhangs the space after it by more than half its width, and that
+	/// space advances normally. It stays.
+	#[test]
+	fn space_after_an_overhanging_glyph_is_kept() {
+		assert!(!space_is_invisible(
+			(105.09, 387.61),
+			char_box(105.09, 107.59, 387.61, 387.62),
+			Some((107.59, 387.61)),
+			Some(char_box(102.50, 106.54, 387.61, 394.44))
+		));
+	}
+
+	/// A neighbour on another line decides nothing: a space at the end of a line keeps whatever
+	/// the line below happens to sit under.
+	#[test]
+	fn neighbours_on_another_line_are_ignored() {
+		let space = char_box(287.34, 289.84, 387.61, 387.62);
+		assert!(!space_is_invisible((287.34, 387.61), space, Some((287.34, 375.61)), None));
+		assert!(!space_is_invisible((287.34, 387.61), space, None, Some(char_box(284.87, 289.77, 375.61, 382.44))));
+	}
+
+	/// A font whose space glyph has no width of its own gives nothing to measure, and its spaces
+	/// may be the only word separators on the page.
+	#[test]
+	fn zero_width_space_glyph_is_kept() {
+		assert!(!space_is_invisible(
+			(82.88, 592.48),
+			char_box(82.88, 82.88, 592.48, 592.49),
+			Some((82.88, 592.48)),
+			None
+		));
+	}
+
+	/// A paragraph that pdfium hands back as wrapped lines is one paragraph, not one per line.
+	#[test]
+	fn join_paragraphs_merges_a_wrapped_list_item() {
+		let lines = vec![
+			("1) Look at your Inbox in your email account. Analyse 10-20 subject lines and".to_string(), 9.5),
+			("decide some criteria for judging how effective the subject lines are. Compare".to_string(), 9.5),
+			("your criteria with a colleague's.".to_string(), 9.5),
+		];
+		let result = join_paragraphs(&lines, 9.5);
+		assert_eq!(result.len(), 1, "got {result:?}");
+	}
 
 	#[test]
 	fn sanitize_pdf_text_strips_control_chars_and_soft_hyphens() {

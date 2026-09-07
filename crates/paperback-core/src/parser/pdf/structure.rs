@@ -13,7 +13,7 @@ use std::{collections::HashMap, fmt::Write as _};
 
 use pdfium::{PdfiumPage, PdfiumStructElement, PdfiumTextPage};
 
-use super::text::reorder_run;
+use super::text::{is_invisible_space, reorder_run};
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, TocItem},
 	parser::convert::table_text::{display_lines_and_length, html_table_to_display},
@@ -59,6 +59,11 @@ pub(super) fn extract_tagged_page_text(
 			let unicode = text_page.get_unicode(i);
 			if let Some(ch) = char::from_u32(unicode) {
 				if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t')) || ch == '\u{00AD}' {
+					continue;
+				}
+				// A space the page never renders (see `is_invisible_space`) would land in the
+				// middle of a word here just as it does in plain extraction.
+				if ch == ' ' && is_invisible_space(text_page, i, char_count) {
 					continue;
 				}
 				let is_generated = text_page.is_generated(i).unwrap_or(false);
