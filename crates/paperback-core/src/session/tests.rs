@@ -3,6 +3,7 @@ use crate::document::{Document, DocumentBuffer, Marker};
 
 mod accessors;
 mod audio;
+mod find_all;
 mod links;
 mod navigation;
 mod webview;

@@ -8,12 +8,14 @@ use crate::{
 
 mod audio;
 mod export;
+mod find_all;
 mod links;
 mod navigation;
 mod search;
 mod stats;
 mod window;
 
+pub use find_all::{FindAllLine, FindSpan};
 pub use window::WindowSlice;
 
 const MAX_HISTORY_LEN: usize = 10;
