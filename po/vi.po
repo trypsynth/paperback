@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 18:02+0000\n"
+"POT-Creation-Date: 2026-09-07 14:46+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -885,6 +885,16 @@ msgstr "Liên kết"
 msgid "Pages"
 msgstr "Trang"
 
+#. TRANSLATORS: Choice option in the view dropdown to show the list of tables
+#, fuzzy
+msgid "Tables"
+msgstr "Bảng"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of lists
+#, fuzzy
+msgid "Lists"
+msgstr "Danh sách"
+
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 #. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
@@ -1551,6 +1561,21 @@ msgstr "Tìm từ &trước"
 msgid "Find &Next"
 msgstr "Tìm từ &tiếp theo"
 
+#. TRANSLATORS: Button that finds and lists every occurrence of the search text
+#, fuzzy
+msgid "Find &All"
+msgstr "Tìm &Tất cả"
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+#, fuzzy
+msgid "Results"
+msgstr "Kết quả"
+
+#. TRANSLATORS: Button that jumps to the selected find result
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
+msgid "&Go"
+msgstr "&Điều hướng"
+
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Không tìm thấy."
@@ -2156,10 +2181,6 @@ msgstr "&Bộ hẹn giờ ngủ..."
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Tệp"
-
-#. TRANSLATORS: Top-level "Go" menu label in the menu bar
-msgid "&Go"
-msgstr "&Điều hướng"
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
