@@ -520,7 +520,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		} else {
 			None
 		};
-		let mut dlg = ColourDialog::builder(&dialog_for_bg);
+		// TRANSLATORS: Title of the system dialog for picking a background colour
+		let mut dlg = ColourDialog::builder(&dialog_for_bg).with_title(&t("Choose a colour"));
 		if let Some(c) = initial {
 			dlg = dlg.with_initial_colour(c);
 		}
@@ -671,7 +672,11 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 			font_data.set_initial_font(&font);
 		}
 	}
-	let dlg = FontDialog::builder(&parent).with_font_data(&font_data).build();
+	let dlg = FontDialog::builder(&parent)
+		// TRANSLATORS: Title of the system dialog for picking a font
+		.with_title(&t("Choose a font"))
+		.with_font_data(&font_data)
+		.build();
 	if dlg.show_modal() != ID_OK {
 		return None;
 	}
