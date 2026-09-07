@@ -157,6 +157,18 @@ pub struct LinkList {
 }
 
 #[derive(Debug, Clone)]
+pub struct ElementListItem {
+	pub offset: usize,
+	pub text: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ElementList {
+	pub items: Vec<ElementListItem>,
+	pub closest_index: i32,
+}
+
+#[derive(Debug, Clone)]
 pub struct HeadingTreeItem {
 	pub offset: usize,
 	pub text: String,

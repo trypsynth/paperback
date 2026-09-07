@@ -2,16 +2,18 @@ use std::{cell::Cell, rc::Rc};
 #[cfg(not(target_os = "windows"))]
 use std::{collections::HashMap, ffi::c_void};
 
-use paperback_core::session::DocumentSession;
+use paperback_core::{document::MarkerType, session::DocumentSession};
 use patois::t;
 use wx_utils::dpi;
 use wxdragon::prelude::*;
 
 /// The view choice indices for [`show_elements_dialog`]. Headings is a tree; every other
-/// view (Links, Pages, ...) is a flat list shown in the same list pane.
+/// view (Links, Pages, Tables, Lists, ...) is a flat list shown in the same list pane.
 const VIEW_HEADINGS: u32 = 0;
 const VIEW_LINKS: u32 = 1;
 const VIEW_PAGES: u32 = 2;
+const VIEW_TABLES: u32 = 3;
+const VIEW_LISTS: u32 = 4;
 
 /// Which view of the dialog a jump came from, so the caller can announce it appropriately: a
 /// page row announces like page navigation, while a heading or link reads the line it lands on.
@@ -80,19 +82,35 @@ fn page_label(page: i32, content: &str) -> String {
 }
 
 /// The rows for one flat (non-headings) view: what each row shows, the document offset it
-/// jumps to, and which row is nearest the current position. The Links and Pages views each
-/// have one; the shared list pane is repopulated from whichever is selected.
+/// jumps to, and which row is nearest the current position. The Links, Pages, Tables and Lists
+/// views each have one; the shared list pane is repopulated from whichever is selected.
 struct FlatView {
 	entries: Vec<(String, i64)>,
 	closest: Option<u32>,
 }
 
-fn link_flat_view(session: &DocumentSession, position: i64) -> FlatView {
-	let data = session.link_list(position);
+/// The rows of a document-marker element view (Links, Tables, Lists): each shows the same text
+/// reading navigation announces for that element, and the row nearest the current position is
+/// preselected. A marker with its own text (a table's caption, a link's label) uses it; a
+/// text-less marker (a list) reads the line it sits on.
+fn marker_flat_view(session: &DocumentSession, mtype: MarkerType, position: i64) -> FlatView {
+	let data = session.element_list(mtype, position);
 	let entries =
 		data.items.iter().map(|item| (item.text.clone(), i64::try_from(item.offset).unwrap_or(i64::MAX))).collect();
 	let closest = if data.closest_index >= 0 { u32::try_from(data.closest_index).ok() } else { None };
 	FlatView { entries, closest }
+}
+
+fn link_flat_view(session: &DocumentSession, position: i64) -> FlatView {
+	marker_flat_view(session, MarkerType::Link, position)
+}
+
+fn table_flat_view(session: &DocumentSession, position: i64) -> FlatView {
+	marker_flat_view(session, MarkerType::Table, position)
+}
+
+fn list_flat_view(session: &DocumentSession, position: i64) -> FlatView {
+	marker_flat_view(session, MarkerType::List, position)
 }
 
 fn page_flat_view(session: &DocumentSession, position: i64) -> FlatView {
@@ -102,6 +120,38 @@ fn page_flat_view(session: &DocumentSession, position: i64) -> FlatView {
 		if page >= 1 { u32::try_from(page - 1).ok() } else { None }
 	};
 	FlatView { entries, closest }
+}
+
+/// The flat (non-headings) views, keyed by their `VIEW_*` selection. Holding them together lets
+/// the toggle, double-click and OK handlers look up the active view without threading each view
+/// through as its own argument; a future flat view adds one field here and one arm of
+/// [`FlatViews::view`].
+struct FlatViews {
+	links: FlatView,
+	pages: FlatView,
+	tables: FlatView,
+	lists: FlatView,
+}
+
+impl FlatViews {
+	fn for_session(session: &DocumentSession, position: i64) -> Self {
+		Self {
+			links: link_flat_view(session, position),
+			pages: page_flat_view(session, position),
+			tables: table_flat_view(session, position),
+			lists: list_flat_view(session, position),
+		}
+	}
+
+	const fn view(&self, selection: u32) -> Option<&FlatView> {
+		match selection {
+			VIEW_LINKS => Some(&self.links),
+			VIEW_PAGES => Some(&self.pages),
+			VIEW_TABLES => Some(&self.tables),
+			VIEW_LISTS => Some(&self.lists),
+			_ => None,
+		}
+	}
 }
 
 /// Replaces `list`'s rows with `view`'s, selecting the row nearest the current position.
@@ -116,12 +166,8 @@ fn fill_flat_list(list: ListBox, view: &FlatView) {
 }
 
 /// The offset of the row selected in the flat list pane for `view`, if any.
-fn flat_selected_offset(view: u32, list: ListBox, links: &FlatView, pages: &FlatView) -> Option<i64> {
-	let entries = match view {
-		VIEW_LINKS => &links.entries,
-		VIEW_PAGES => &pages.entries,
-		_ => return None,
-	};
+fn flat_selected_offset(view: u32, list: ListBox, views: &FlatViews) -> Option<i64> {
+	let entries = &views.view(view)?.entries;
 	list.get_selection()
 		.and_then(|index| usize::try_from(index).ok())
 		.and_then(|index| entries.get(index))
@@ -148,17 +194,15 @@ fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_po
 		build_elements_dialog_ui_dv(dialog);
 	let (selected_offset, item_offsets) = populate_elements_dialog_dv(session, current_pos, headings_tree);
 	let item_offsets = Rc::new(item_offsets);
-	let links = Rc::new(link_flat_view(session, current_pos));
-	let pages = Rc::new(page_flat_view(session, current_pos));
-	bind_elements_view_toggle_dv(view_choice, headings_tree, content_list, dialog, &links, &pages);
+	let views = Rc::new(FlatViews::for_session(session, current_pos));
+	bind_elements_view_toggle_dv(view_choice, headings_tree, content_list, dialog, &views);
 	bind_elements_activation_dv(
 		dialog,
 		view_choice,
 		headings_tree,
 		content_list,
 		&item_offsets,
-		&links,
-		&pages,
+		&views,
 		&selected_offset,
 	);
 	let (ok_button, cancel_button) = build_elements_buttons(dialog);
@@ -168,8 +212,7 @@ fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_po
 		headings_tree,
 		content_list,
 		&item_offsets,
-		&links,
-		&pages,
+		&views,
 		&selected_offset,
 		ok_button,
 	);
@@ -200,6 +243,10 @@ fn build_elements_dialog_ui_dv(dialog: Dialog) -> ElementsDialogUiDv {
 	view_choice.append(&t("Links"));
 	// TRANSLATORS: Choice option in the view dropdown to show the list of pages
 	view_choice.append(&t("Pages"));
+	// TRANSLATORS: Choice option in the view dropdown to show the list of tables
+	view_choice.append(&t("Tables"));
+	// TRANSLATORS: Choice option in the view dropdown to show the list of lists
+	view_choice.append(&t("Lists"));
 	view_choice.set_selection(VIEW_HEADINGS);
 	#[cfg(target_os = "macos")]
 	view_choice.set_accessibility_label(choice_label_text.replace('&', "").trim_end_matches(':').trim());
@@ -283,14 +330,12 @@ fn bind_elements_view_toggle_dv(
 	headings_tree: DataViewTreeCtrl,
 	content_list: ListBox,
 	dialog: Dialog,
-	links: &Rc<FlatView>,
-	pages: &Rc<FlatView>,
+	views: &Rc<FlatViews>,
 ) {
 	let headings_tree_for_choice = headings_tree;
 	let content_list_for_choice = content_list;
 	let dialog_for_layout = dialog;
-	let links_for_choice = Rc::clone(links);
-	let pages_for_choice = Rc::clone(pages);
+	let views_for_choice = Rc::clone(views);
 	view_choice.on_selection_changed(move |_| {
 		let selection = view_choice.get_selection().unwrap_or(VIEW_HEADINGS);
 		// Switch which pane is shown, repopulating the shared flat list for a non-headings
@@ -303,8 +348,9 @@ fn bind_elements_view_toggle_dv(
 		} else {
 			headings_tree_for_choice.show(false);
 			content_list_for_choice.show(true);
-			let view = if selection == VIEW_LINKS { &links_for_choice } else { &pages_for_choice };
-			fill_flat_list(content_list_for_choice, view);
+			if let Some(view) = views_for_choice.view(selection) {
+				fill_flat_list(content_list_for_choice, view);
+			}
 		}
 		dialog_for_layout.layout();
 	});
@@ -317,8 +363,7 @@ fn bind_elements_activation_dv(
 	headings_tree: DataViewTreeCtrl,
 	content_list: ListBox,
 	item_offsets: &Rc<HashMap<usize, i64>>,
-	links: &Rc<FlatView>,
-	pages: &Rc<FlatView>,
+	views: &Rc<FlatViews>,
 	selected_offset: &Rc<Cell<i64>>,
 ) {
 	let offsets_for_tree = Rc::clone(item_offsets);
@@ -336,16 +381,14 @@ fn bind_elements_activation_dv(
 	});
 	let view_for_list = view_choice;
 	let list_for_click = content_list;
-	let links_for_click = Rc::clone(links);
-	let pages_for_click = Rc::clone(pages);
+	let views_for_click = Rc::clone(views);
 	let selected_for_list = Rc::clone(selected_offset);
 	let dialog_for_list = dialog;
 	content_list.on_item_double_clicked(move |_| {
 		if let Some(offset) = flat_selected_offset(
 			view_for_list.get_selection().unwrap_or(VIEW_HEADINGS),
 			list_for_click,
-			&links_for_click,
-			&pages_for_click,
+			&views_for_click,
 		) {
 			selected_for_list.set(offset);
 			dialog_for_list.end_modal(wxdragon::id::ID_OK);
@@ -360,8 +403,7 @@ fn bind_elements_ok_action_dv(
 	headings_tree: DataViewTreeCtrl,
 	content_list: ListBox,
 	item_offsets: &Rc<HashMap<usize, i64>>,
-	links: &Rc<FlatView>,
-	pages: &Rc<FlatView>,
+	views: &Rc<FlatViews>,
 	selected_offset: &Rc<Cell<i64>>,
 	ok_button: Button,
 ) {
@@ -370,8 +412,7 @@ fn bind_elements_ok_action_dv(
 	let dialog_for_ok = dialog;
 	let view_for_ok = view_choice;
 	let list_for_ok = content_list;
-	let links_for_ok = Rc::clone(links);
-	let pages_for_ok = Rc::clone(pages);
+	let views_for_ok = Rc::clone(views);
 	ok_button.on_click(move |_| {
 		let selection = view_for_ok.get_selection().unwrap_or(VIEW_HEADINGS);
 		if selection == VIEW_HEADINGS {
@@ -383,7 +424,7 @@ fn bind_elements_ok_action_dv(
 					}
 				}
 			}
-		} else if let Some(offset) = flat_selected_offset(selection, list_for_ok, &links_for_ok, &pages_for_ok) {
+		} else if let Some(offset) = flat_selected_offset(selection, list_for_ok, &views_for_ok) {
 			selected_for_ok.set(offset);
 			dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 		}
@@ -408,21 +449,11 @@ fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_po
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let ElementsDialogUi { content_sizer, view_choice, headings_tree, content_list } = build_elements_dialog_ui(dialog);
 	let selected_offset = populate_elements_dialog(session, current_pos, headings_tree);
-	let links = Rc::new(link_flat_view(session, current_pos));
-	let pages = Rc::new(page_flat_view(session, current_pos));
-	bind_elements_view_toggle(view_choice, headings_tree, content_list, dialog, &links, &pages);
-	bind_elements_activation(dialog, view_choice, headings_tree, content_list, &selected_offset, &links, &pages);
+	let views = Rc::new(FlatViews::for_session(session, current_pos));
+	bind_elements_view_toggle(view_choice, headings_tree, content_list, dialog, &views);
+	bind_elements_activation(dialog, view_choice, headings_tree, content_list, &selected_offset, &views);
 	let (ok_button, cancel_button) = build_elements_buttons(dialog);
-	bind_elements_ok_action(
-		dialog,
-		view_choice,
-		headings_tree,
-		content_list,
-		&selected_offset,
-		&links,
-		&pages,
-		ok_button,
-	);
+	bind_elements_ok_action(dialog, view_choice, headings_tree, content_list, &selected_offset, &views, ok_button);
 	finalize_elements_layout(dialog, content_sizer, ok_button, cancel_button);
 	// The dialog opens on Headings (the choice is set to index 0 when it is built), so the
 	// tree is the visible pane.
@@ -450,6 +481,10 @@ fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 	view_choice.append(&t("Links"));
 	// TRANSLATORS: Choice option in the view dropdown to show the list of pages
 	view_choice.append(&t("Pages"));
+	// TRANSLATORS: Choice option in the view dropdown to show the list of tables
+	view_choice.append(&t("Tables"));
+	// TRANSLATORS: Choice option in the view dropdown to show the list of lists
+	view_choice.append(&t("Lists"));
 	view_choice.set_selection(VIEW_HEADINGS);
 	#[cfg(target_os = "macos")]
 	view_choice.set_accessibility_label(choice_label_text.replace('&', "").trim_end_matches(':').trim());
@@ -529,14 +564,12 @@ fn bind_elements_view_toggle(
 	headings_tree: TreeCtrl,
 	content_list: ListBox,
 	dialog: Dialog,
-	links: &Rc<FlatView>,
-	pages: &Rc<FlatView>,
+	views: &Rc<FlatViews>,
 ) {
 	let headings_tree_for_choice = headings_tree;
 	let content_list_for_choice = content_list;
 	let dialog_for_layout = dialog;
-	let links_for_choice = Rc::clone(links);
-	let pages_for_choice = Rc::clone(pages);
+	let views_for_choice = Rc::clone(views);
 	view_choice.on_selection_changed(move |_| {
 		let selection = view_choice.get_selection().unwrap_or(VIEW_HEADINGS);
 		// Switch which pane is shown, repopulating the shared flat list for a non-headings
@@ -549,8 +582,9 @@ fn bind_elements_view_toggle(
 		} else {
 			headings_tree_for_choice.show(false);
 			content_list_for_choice.show(true);
-			let view = if selection == VIEW_LINKS { &links_for_choice } else { &pages_for_choice };
-			fill_flat_list(content_list_for_choice, view);
+			if let Some(view) = views_for_choice.view(selection) {
+				fill_flat_list(content_list_for_choice, view);
+			}
 		}
 		dialog_for_layout.layout();
 	});
@@ -563,8 +597,7 @@ fn bind_elements_activation(
 	headings_tree: TreeCtrl,
 	content_list: ListBox,
 	selected_offset: &Rc<Cell<i64>>,
-	links: &Rc<FlatView>,
-	pages: &Rc<FlatView>,
+	views: &Rc<FlatViews>,
 ) {
 	let selected_offset_for_tree = Rc::clone(selected_offset);
 	let tree_for_activate = headings_tree;
@@ -580,16 +613,14 @@ fn bind_elements_activation(
 	});
 	let view_for_list = view_choice;
 	let list_for_click = content_list;
-	let links_for_click = Rc::clone(links);
-	let pages_for_click = Rc::clone(pages);
+	let views_for_click = Rc::clone(views);
 	let selected_for_list = Rc::clone(selected_offset);
 	let dialog_for_list = dialog;
 	content_list.on_item_double_clicked(move |_| {
 		if let Some(offset) = flat_selected_offset(
 			view_for_list.get_selection().unwrap_or(VIEW_HEADINGS),
 			list_for_click,
-			&links_for_click,
-			&pages_for_click,
+			&views_for_click,
 		) {
 			selected_for_list.set(offset);
 			dialog_for_list.end_modal(ID_OK);
@@ -604,16 +635,14 @@ fn bind_elements_ok_action(
 	headings_tree: TreeCtrl,
 	content_list: ListBox,
 	selected_offset: &Rc<Cell<i64>>,
-	links: &Rc<FlatView>,
-	pages: &Rc<FlatView>,
+	views: &Rc<FlatViews>,
 	ok_button: Button,
 ) {
 	let selected_offset_for_ok = Rc::clone(selected_offset);
 	let dialog_for_ok = dialog;
 	let view_for_ok = view_choice;
 	let list_for_ok = content_list;
-	let links_for_ok = Rc::clone(links);
-	let pages_for_ok = Rc::clone(pages);
+	let views_for_ok = Rc::clone(views);
 	ok_button.on_click(move |_| {
 		let selection = view_for_ok.get_selection().unwrap_or(VIEW_HEADINGS);
 		if selection == VIEW_HEADINGS {
@@ -624,7 +653,7 @@ fn bind_elements_ok_action(
 				selected_offset_for_ok.set(*offset);
 				dialog_for_ok.end_modal(ID_OK);
 			}
-		} else if let Some(offset) = flat_selected_offset(selection, list_for_ok, &links_for_ok, &pages_for_ok) {
+		} else if let Some(offset) = flat_selected_offset(selection, list_for_ok, &views_for_ok) {
 			selected_offset_for_ok.set(offset);
 			dialog_for_ok.end_modal(ID_OK);
 		}

@@ -31,12 +31,17 @@ impl DocumentSession {
 		ffi::BookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
 	}
 
+	/// One row per marker of `mtype`, in document order, for the Elements dialog's flat views.
+	/// Each row shows the marker's own text (a table's caption) or, when the marker carries none,
+	/// the whole line the marker sits on (a list's first rendered item) — the same text reading
+	/// navigation announces for it. `closest_index` is the index of the last row whose marker is
+	/// at or before `position`.
 	#[must_use]
-	pub fn link_list(&self, position: i64) -> ffi::LinkList {
+	pub fn element_list(&self, mtype: MarkerType, position: i64) -> ffi::ElementList {
 		let pos = usize::try_from(position.max(0)).unwrap_or(0);
 		let mut closest_index = -1;
 		let mut items = Vec::new();
-		for marker in self.handle.document().buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::Link) {
+		for marker in self.handle.document().buffer.markers.iter().filter(|marker| marker.mtype == mtype) {
 			let text = if marker.text.is_empty() {
 				self.get_line_text(i64::try_from(marker.position).unwrap_or(0))
 			} else {
@@ -45,9 +50,22 @@ impl DocumentSession {
 			if marker.position <= pos {
 				closest_index = i32::try_from(items.len()).unwrap_or(-1);
 			}
-			items.push(ffi::LinkListItem { offset: marker.position, text });
+			items.push(ffi::ElementListItem { offset: marker.position, text });
 		}
-		ffi::LinkList { items, closest_index }
+		ffi::ElementList { items, closest_index }
+	}
+
+	#[must_use]
+	pub fn link_list(&self, position: i64) -> ffi::LinkList {
+		let list = self.element_list(MarkerType::Link, position);
+		ffi::LinkList {
+			items: list
+				.items
+				.iter()
+				.map(|item| ffi::LinkListItem { offset: item.offset, text: item.text.clone() })
+				.collect(),
+			closest_index: list.closest_index,
+		}
 	}
 
 	#[must_use]
