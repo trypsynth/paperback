@@ -27,11 +27,17 @@ pub(super) fn normalize_wrapped_space_lines(input: &str) -> String {
 					.get(k)
 					.copied()
 					.is_some_and(|b| !b.is_ascii_whitespace() && !matches!(b, b'\\' | b'{' | b'}'));
+				// Only a run that really does stand for an inter-word space is swallowed. Every
+				// other one is left as it was: a line break carries meaning of its own in RTF,
+				// and dropping the one after a lone backslash (how a Cocoa writer ends a
+				// paragraph) leaves that backslash against the next control word, where the two
+				// read as an escaped backslash and the control word lands in the text as
+				// literal \f0.
 				if left && right && !out.ends_with(' ') {
 					out.push(' ');
+					i = k;
+					continue;
 				}
-				i = k;
-				continue;
 			}
 		}
 		out.push(bytes[i] as char);
@@ -167,6 +173,12 @@ pub(super) fn normalize_escapes(
 				result.push_str(&rtf[i..digits_end]);
 				result.push(' ');
 				i = skip_unicode_fallback(bytes, digits_end, uc_count);
+				// One space after the digits ends the control word rather than standing for
+				// itself. With \uc0 there is no fallback to step over, so it is still sitting
+				// here, and leaving it is what turns "\u347 roda" into "ś roda".
+				if i == digits_end && bytes.get(i) == Some(&b' ') {
+					i += 1;
+				}
 				continue;
 			}
 		}
