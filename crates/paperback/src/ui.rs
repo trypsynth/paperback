@@ -12,6 +12,7 @@ mod main_window;
 mod menu;
 mod menu_ids;
 mod navigation;
+mod ocr;
 mod readability;
 mod reader_input;
 #[cfg(any(target_os = "windows", test))]

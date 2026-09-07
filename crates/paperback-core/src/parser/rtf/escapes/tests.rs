@@ -71,10 +71,11 @@ fn normalize_escapes_drops_question_mark_unicode_fallback() {
 
 #[test]
 fn normalize_escapes_keeps_question_mark_that_follows_a_delimiter() {
-	// Here the space already delimits the control word, so the `?` is real text.
+	// Here the space already delimits the control word, so the `?` is real text. The space goes
+	// with the control word it ends, which is why one space comes back rather than two.
 	let input = "vraiment\\u8230 ? Non";
 	let output = normalize_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
-	assert_eq!(output, "vraiment\\u8230  ? Non");
+	assert_eq!(output, "vraiment\\u8230 ? Non");
 }
 
 #[test]
@@ -101,6 +102,40 @@ fn normalize_escapes_promotes_literal_tabs_to_control_words() {
 fn normalize_wrapped_space_lines_preserves_inter_word_space_on_its_own_line() {
 	let input = "The older man was\r\n \r\nwordless";
 	assert_eq!(normalize_wrapped_space_lines(input), "The older man was wordless");
+}
+
+/// The case behind issue #799: a Cocoa writer ends a paragraph with a backslash and a line
+/// break, and follows it with a blank line. Dropping those breaks would put the backslash
+/// against the next control word, where the lexer reads the pair as an escaped backslash and
+/// puts `\f0` in the text for the reader to hear.
+#[test]
+fn normalize_wrapped_space_lines_keeps_a_break_that_carries_no_space() {
+	let input = "\\cf0 A\\\n\n\\f0\\b B";
+	assert_eq!(normalize_wrapped_space_lines(input), input);
+}
+
+/// A line break run around something that is not a word on both sides is left where it is.
+#[test]
+fn normalize_wrapped_space_lines_keeps_breaks_around_a_brace() {
+	let input = "was\r\n \r\n{wordless";
+	assert_eq!(normalize_wrapped_space_lines(input), input);
+}
+
+/// With `\uc0` no fallback character trails the escape, so the space that ends the control word
+/// is still in the source. This wrote the delimiter it emits and then that space as well, which
+/// is what read "środa" out as "ś roda" in issue #799. One space comes back, not two.
+#[test]
+fn normalize_escapes_drops_the_delimiter_after_a_unicode_escape() {
+	let output = normalize_escapes("\\uc0 26 (\\u347 roda)", encoding_rs::WINDOWS_1252, &HashMap::new());
+	assert_eq!(output, "\\uc0 26 (\\u347 roda)");
+}
+
+/// Only the one space that ends the control word belongs to it, so a second one is text and
+/// stays: two spaces in, two spaces out, where before there were three.
+#[test]
+fn normalize_escapes_keeps_a_second_space_after_a_unicode_escape() {
+	let output = normalize_escapes("\\uc0 a\\u347  b", encoding_rs::WINDOWS_1252, &HashMap::new());
+	assert_eq!(output, "\\uc0 a\\u347  b");
 }
 
 #[test]

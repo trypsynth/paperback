@@ -114,6 +114,40 @@ fn toc_announcement(session: &DocumentSession, offset: i64) -> String {
 	}
 }
 
+/// Opens the Batch OCR range dialog, or offers to stop the batch that is already running. One
+/// menu item covers both so there is nothing to enable and disable as a job starts and ends, and
+/// the answer to "how do I stop this" is the same item that started it.
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub(super) fn handle_batch_ocr(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+	let (max_page, running) = {
+		let dm_ref = dm.lock().unwrap();
+		let Some(tab) = dm_ref.active_tab() else {
+			// TRANSLATORS: Announced when Batch OCR is chosen with no document open
+			live_region::announce(live_region_label, &t("No document open."));
+			return;
+		};
+		(i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX), dm_ref.batch_ocr_running())
+	};
+	if running {
+		let confirm = MessageDialog::builder(
+			frame,
+			// TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
+			&t("Batch OCR is running. Stop it?"),
+			// TRANSLATORS: Title of the Batch OCR dialog
+			&t("Batch OCR"),
+		)
+		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion)
+		.build();
+		if confirm.show_modal() == ID_YES {
+			dm.lock().unwrap().cancel_ocr();
+		}
+		return;
+	}
+	if let Some((start, end)) = dialogs::show_batch_ocr_dialog(frame, max_page) {
+		dm.lock().unwrap().start_batch_ocr(start, end);
+	}
+}
+
 pub(super) fn handle_elements_list(
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 18:02+0000\n"
+"POT-Creation-Date: 2026-09-07 14:46+0000\n"
 "PO-Revision-Date: 2026-06-08 22:23+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -851,6 +851,16 @@ msgstr "Links"
 msgid "Pages"
 msgstr "Pagina's"
 
+#. TRANSLATORS: Choice option in the view dropdown to show the list of tables
+#, fuzzy
+msgid "Tables"
+msgstr "Tabellen"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of lists
+#, fuzzy
+msgid "Lists"
+msgstr "Lijsten"
+
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 #. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
@@ -1467,6 +1477,21 @@ msgstr "Vo&rige zoeken"
 msgid "Find &Next"
 msgstr "Volge&nde zoeken"
 
+#. TRANSLATORS: Button that finds and lists every occurrence of the search text
+#, fuzzy
+msgid "Find &All"
+msgstr "Alles &zoeken"
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+#, fuzzy
+msgid "Results"
+msgstr "Resultaten"
+
+#. TRANSLATORS: Button that jumps to the selected find result
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
+msgid "&Go"
+msgstr "&Ga"
+
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Niet gevonden."
@@ -2010,10 +2035,6 @@ msgstr "&Slaaptimer..."
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Bestand"
-
-#. TRANSLATORS: Top-level "Go" menu label in the menu bar
-msgid "&Go"
-msgstr "&Ga"
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
@@ -4241,6 +4262,12 @@ msgstr "Voorziet in de optionele bestandsbrowser in de app, zodat u documenten v
 #, fuzzy
 msgid "File Manager"
 msgstr "Bestand ontbreekt"
+
+#. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+#: kt
+#, fuzzy
+msgid "{}% through"
+msgstr "{}% voorbij"
 
 #~ msgid "&Line number:"
 #~ msgstr "&Regelnummer:"

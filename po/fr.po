@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 18:02+0000\n"
+"POT-Creation-Date: 2026-09-07 14:46+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -865,6 +865,16 @@ msgstr "Liens"
 msgid "Pages"
 msgstr "Pages"
 
+#. TRANSLATORS: Choice option in the view dropdown to show the list of tables
+#, fuzzy
+msgid "Tables"
+msgstr "Tableaux"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of lists
+#, fuzzy
+msgid "Lists"
+msgstr "Listes"
+
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 #. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
@@ -1524,6 +1534,21 @@ msgstr "Rechercher le &précédent"
 msgid "Find &Next"
 msgstr "Rechercher le &suivant"
 
+#. TRANSLATORS: Button that finds and lists every occurrence of the search text
+#, fuzzy
+msgid "Find &All"
+msgstr "Trouver &tout"
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+#, fuzzy
+msgid "Results"
+msgstr "Résultats"
+
+#. TRANSLATORS: Button that jumps to the selected find result
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
+msgid "&Go"
+msgstr "&Aller"
+
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Introuvable."
@@ -2089,10 +2114,6 @@ msgstr "&Minuteur de veille..."
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Fichier"
-
-#. TRANSLATORS: Top-level "Go" menu label in the menu bar
-msgid "&Go"
-msgstr "&Aller"
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
@@ -4339,6 +4360,12 @@ msgstr "Active le navigateur de fichiers optionnel de l'application, vous permet
 #, fuzzy
 msgid "File Manager"
 msgstr "Fichier manquant"
+
+#. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+#: kt
+#, fuzzy
+msgid "{}% through"
+msgstr "{}% parcouru"
 
 #~ msgid "&Line number:"
 #~ msgstr "&Numéro de ligne :"

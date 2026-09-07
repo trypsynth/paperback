@@ -15,6 +15,10 @@ pub(super) use wx_utils::{
 
 mod about;
 pub use about::show_about_dialog;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+mod batch_ocr;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub use batch_ocr::show_batch_ocr_dialog;
 mod all_documents;
 pub use all_documents::show_all_documents_dialog;
 mod bookmark;

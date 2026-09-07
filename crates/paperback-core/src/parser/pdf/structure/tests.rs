@@ -1,4 +1,4 @@
-use super::append_pdf_table_to_buffer;
+use super::{append_pdf_table_to_buffer, flush_block, normalize_list_label};
 use crate::document::{DocumentBuffer, MarkerType};
 
 /// OFF mode: the PDF table helper emits a single `"[Table]: <first row>"` placeholder line and
@@ -63,4 +63,42 @@ fn pdf_table_helper_empty_inline_emits_no_line() {
 	assert!(page_text.is_empty(), "no page display text");
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
 	assert_eq!(table_marker.length, 0, "zero-length marker for empty inline table");
+}
+
+/// The Symbol font's bullet reaches the text layer as U+F0B7, a private-use code point a screen
+/// reader reads as nothing. A label made only of those is a bullet, and is written as one.
+#[test]
+fn a_private_use_list_label_becomes_a_bullet() {
+	assert_eq!(normalize_list_label("\u{F0B7}"), "\u{2022}");
+	assert_eq!(normalize_list_label("\u{F0A7}"), "\u{2022}");
+}
+
+/// Labels that carry real characters are left exactly as the document wrote them.
+#[test]
+fn an_ordinary_list_label_is_left_alone() {
+	assert_eq!(normalize_list_label("1."), "1.");
+	assert_eq!(normalize_list_label("\u{2022}"), "\u{2022}");
+	assert_eq!(normalize_list_label("a)"), "a)");
+	assert_eq!(normalize_list_label("\u{F0B7} 1."), "\u{F0B7} 1.");
+}
+
+/// The case behind issue #797: a list item's label is held back until the paragraph inside its
+/// `LBody` arrives, then goes out on the front of that one line. The label on a line of its own is
+/// what made arrowing through a tagged list stop at silent rows.
+#[test]
+fn a_list_label_joins_the_line_that_follows_it() {
+	let mut buffer = DocumentBuffer::new();
+	let mut lines_info = Vec::new();
+	let mut page_text = String::new();
+	let mut label = "\u{2022}".to_string();
+	let mut block = String::new();
+	// The paragraph inside the LBody starts by flushing, with nothing yet collected.
+	flush_block(&mut label, &mut block, &mut buffer, &mut page_text, &mut lines_info);
+	assert_eq!(buffer.content, "", "an empty block emits nothing and keeps the label waiting");
+	assert_eq!(label, "\u{2022}");
+	block.push_str("ANTIPASTI PER DUE");
+	flush_block(&mut label, &mut block, &mut buffer, &mut page_text, &mut lines_info);
+	assert_eq!(buffer.content, "\u{2022} ANTIPASTI PER DUE\n");
+	assert_eq!(lines_info.len(), 1, "one line, not a label line and a text line");
+	assert!(label.is_empty(), "the label is spent once it is written");
 }

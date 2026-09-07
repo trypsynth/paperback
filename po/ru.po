@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 18:02+0000\n"
+"POT-Creation-Date: 2026-09-07 14:46+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -871,6 +871,16 @@ msgstr "Ссылки"
 msgid "Pages"
 msgstr "Страницы"
 
+#. TRANSLATORS: Choice option in the view dropdown to show the list of tables
+#, fuzzy
+msgid "Tables"
+msgstr "Таблицы"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of lists
+#, fuzzy
+msgid "Lists"
+msgstr "Списки"
+
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 #. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
@@ -1531,6 +1541,22 @@ msgstr "Найти &назад"
 msgid "Find &Next"
 msgstr "Найти &далее"
 
+#. TRANSLATORS: Button that finds and lists every occurrence of the search text
+#, fuzzy
+msgid "Find &All"
+msgstr "Найти &далее"
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+#, fuzzy
+msgid "Results"
+msgstr "Результаты"
+
+#. TRANSLATORS: Button that jumps to the selected find result
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
+#, fuzzy
+msgid "&Go"
+msgstr "&Переход"
+
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Не найдено."
@@ -2109,11 +2135,6 @@ msgstr "&Таймер сна..."
 #, fuzzy
 msgid "&File"
 msgstr "&Файл"
-
-#. TRANSLATORS: Top-level "Go" menu label in the menu bar
-#, fuzzy
-msgid "&Go"
-msgstr "&Переход"
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 #, fuzzy
@@ -4362,6 +4383,12 @@ msgstr "Включает дополнительный встроенный об�
 #, fuzzy
 msgid "File Manager"
 msgstr "Файл отсутствует"
+
+#. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+#: kt
+#, fuzzy
+msgid "{}% through"
+msgstr "{}% прочитано"
 
 #, fuzzy
 #~ msgid "&Line number:"
