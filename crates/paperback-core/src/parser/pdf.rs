@@ -7,7 +7,6 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, util::path::extract_title_from_path},
-	t,
 };
 
 mod links;

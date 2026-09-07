@@ -17,7 +17,7 @@ enum MarkerType {
 	"Heading1", "Heading2", "Heading3", "Heading4", "Heading5", "Heading6",
 	"PageBreak", "SectionBreak", "TocItem", "Link",
 	"List", "ListItem", "Table", "Separator", "Image", "Figure",
-	"Bold", "Italic", "Underline"
+	"Bold", "Italic", "Underline", "ImageOnlyPage"
 };
 
 dictionary LineMarker {

@@ -177,6 +177,12 @@ impl ConfigManager {
 	}
 }
 
+/// [`ReplaceOutcome::shift`] over the `i64` offsets the config stores.
+fn shift(outcome: &ReplaceOutcome, position: i64) -> i64 {
+	let shifted = outcome.shift(usize::try_from(position.max(0)).unwrap_or(0));
+	i64::try_from(shifted).unwrap_or(position)
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -218,10 +224,4 @@ mod tests {
 		config.set_document_audio_time(path, None);
 		assert_eq!(config.get_document_audio_time(path), Some(5_000));
 	}
-}
-
-/// [`ReplaceOutcome::shift`] over the `i64` offsets the config stores.
-fn shift(outcome: &ReplaceOutcome, position: i64) -> i64 {
-	let shifted = outcome.shift(usize::try_from(position.max(0)).unwrap_or(0));
-	i64::try_from(shifted).unwrap_or(position)
 }
