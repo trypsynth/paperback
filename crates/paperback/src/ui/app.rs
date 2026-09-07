@@ -67,6 +67,8 @@ impl PaperbackApp {
 		set_top_window(main_window.frame());
 		let pipe_server = start_pipe_server(&Rc::clone(&main_window));
 		main_window.show();
+		#[cfg(target_os = "linux")]
+		crate::linux_integration::maybe_run_first_run_setup(main_window.frame(), &config);
 		#[cfg(target_os = "macos")]
 		_app.on_should_terminate(|| {
 			tracing::debug!("allowing native macOS termination request");
@@ -231,7 +233,7 @@ mod pipe {
 }
 
 // Uses $XDG_RUNTIME_DIR which is owned by the user with mode 700, so only the
-// same user (and root) can connect — no libc / SO_PEERCRED needed.
+// same user (and root) can connect. No libc / SO_PEERCRED needed.
 // The socket name is also suffixed with the username as belt-and-suspenders.
 #[cfg(target_os = "linux")]
 mod pipe_unix {
@@ -283,7 +285,7 @@ mod pipe_unix {
 
 /// Opaque guard; the server thread runs for the lifetime of this value.
 pub struct PipeServer {
-	// Intentionally empty — the thread runs until the process exits.
+	// Intentionally empty. The thread runs until the process exits.
 	// Holding this type in PaperbackApp makes the intent explicit.
 }
 

@@ -119,6 +119,9 @@ struct TextModeView: View {
 			.onAppear {
 				proxy.scrollTo(tab.lineScrollIndex, anchor: .top)
 			}
+			// Keep the ScrollView's native accessibility scrolling so VoiceOver announces its
+			// page state, while asking it to turn that page automatically during read-all.
+			.accessibilityAddTraits(.causesPageTurn)
 			.environment(\.openURL, OpenURLAction { url in
 				guard let session = tab.session else { return .systemAction }
 				return activate(url, in: session, scrollingWith: proxy)

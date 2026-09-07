@@ -17,7 +17,7 @@ pub(crate) fn gen_pot() -> Result<(), Box<dyn Error>> {
 	// straight in.
 	let translatable_dirs = translatable_crate_src_dirs(&root)?;
 	if translatable_dirs.is_empty() {
-		return Err("no translatable crates found — check [package.metadata.patois] translatable = true".into());
+		return Err("no translatable crates found, check [package.metadata.patois] translatable = true".into());
 	}
 	// Before anything is written: a concatenated call would otherwise land in the pot as a
 	// fragment that no lookup can ever match.

@@ -172,7 +172,7 @@ impl XmlToText {
 				let image_text = format!("[{label}: {description}]");
 				let offset = self.text.get_current_text_position();
 				self.text.current_line.push_str(&image_text);
-				let info = ImageInfo { offset, alt_text: description };
+				let info = ImageInfo { offset, alt_text: description, length: display_len(&image_text) };
 				if is_figure {
 					self.figures.push(info);
 				} else {

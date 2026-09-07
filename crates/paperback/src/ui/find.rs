@@ -5,7 +5,7 @@ use std::{
 };
 
 use bitflags::bitflags;
-use paperback_core::{config::ConfigManager, reader_core, util::text::display_len};
+use paperback_core::{config::ConfigManager, reader_core, session::FindAllLine, util::text::display_len};
 use patois::t;
 use wx_utils::dpi;
 use wxdragon::prelude::*;
@@ -13,16 +13,6 @@ use wxdragon::prelude::*;
 use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigation};
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
-
-/// How long after the Find dialog closes the found line is announced.
-///
-/// The interrupt must land after NVDA has started the focus-return chain — if it fires
-/// before, the chain reads over the found line instead — but as close to the chain's
-/// start as possible, so as little of it escapes before the cut. NVDA's own find dialog
-/// uses 100ms; Paperback's chain starts quickly, and 30ms was chosen by binary search
-/// (60ms left a barely-audible sliver of the chain, 10ms occasionally let the full chain
-/// through after the found line, 0ms always did).
-const FIND_RESULT_INTERRUPT_DELAY_MS: i32 = 30;
 
 #[derive(Clone, Debug, Default)]
 pub struct SearchResult {
@@ -63,14 +53,33 @@ pub fn find_text_with_wrap(haystack: &str, needle: &str, start: i64, options: Fi
 	SearchResult { found: result.found, wrapped: result.wrapped, position: result.position }
 }
 
+/// Which of the dialog's two views is showing: the query (find-what, options, find buttons) or
+/// the Find All results list. Switching hides one view's windows and shows the other's, then
+/// refits the dialog, so Enter always triggers the visible primary button.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum FindView {
+	Query,
+	Results,
+}
+
 #[derive(Clone)]
 pub struct FindDialogState {
 	pub dialog: Dialog,
+	find_label: StaticText,
 	find_combo: ComboBox,
+	options_static_box: Option<StaticBox>,
 	match_case: CheckBox,
 	whole_word: CheckBox,
 	use_regex: CheckBox,
+	find_prev_btn: Button,
+	find_next_btn: Button,
+	find_all_btn: Button,
+	results_list: ListBox,
+	go_btn: Button,
 	in_progress: Rc<Cell<bool>>,
+	view: Rc<Cell<FindView>>,
+	origin: Rc<Cell<i64>>,
+	result_rows: Rc<RefCell<Vec<FindAllLine>>>,
 }
 
 impl FindDialogState {
@@ -84,13 +93,18 @@ impl FindDialogState {
 		// TRANSLATORS: Title of the Find dialog
 		let dialog = Dialog::builder(frame, &t("Find")).build();
 		let FindDialogWidgets {
+			find_label,
 			find_combo,
+			options_static_box,
 			match_case,
 			whole_word,
 			use_regex,
 			find_prev_btn,
 			find_next_btn,
+			find_all_btn,
 			cancel_btn,
+			results_list,
+			go_btn,
 		} = build_find_dialog_ui(dialog);
 		bind_find_dialog_actions(FindDialogActionParams {
 			frame: *frame,
@@ -98,14 +112,33 @@ impl FindDialogState {
 			find_combo,
 			find_prev_btn,
 			find_next_btn,
+			find_all_btn,
+			go_btn,
+			results_list,
 			cancel_btn,
 			config: Rc::clone(config),
 			doc_manager: Rc::clone(doc_manager),
 			find_dialog: Rc::clone(find_dialog),
 			live_region_label,
 		});
-		let state =
-			Self { dialog, find_combo, match_case, whole_word, use_regex, in_progress: Rc::new(Cell::new(false)) };
+		let state = Self {
+			dialog,
+			find_label,
+			find_combo,
+			options_static_box,
+			match_case,
+			whole_word,
+			use_regex,
+			find_prev_btn,
+			find_next_btn,
+			find_all_btn,
+			results_list,
+			go_btn,
+			in_progress: Rc::new(Cell::new(false)),
+			view: Rc::new(Cell::new(FindView::Query)),
+			origin: Rc::new(Cell::new(0)),
+			result_rows: Rc::new(RefCell::new(Vec::new())),
+		};
 		state.reload_history(config);
 		state.save_settings(config);
 		state
@@ -162,16 +195,74 @@ impl FindDialogState {
 		}
 		Some(FindInProgressGuard { flag: Rc::clone(&self.in_progress) })
 	}
+
+	/// Shows or hides every window that belongs to the query view. The Cancel button is shared by
+	/// both views, so it is not part of either set.
+	fn set_query_windows(&self, visible: bool) {
+		self.find_label.show(visible);
+		self.find_combo.show(visible);
+		if let Some(static_box) = &self.options_static_box {
+			static_box.show(visible);
+		}
+		self.match_case.show(visible);
+		self.whole_word.show(visible);
+		self.use_regex.show(visible);
+		self.find_prev_btn.show(visible);
+		self.find_next_btn.show(visible);
+		self.find_all_btn.show(visible);
+	}
+
+	/// Shows or hides every window that belongs to the Find All results view.
+	fn set_results_windows(&self, visible: bool) {
+		self.results_list.show(visible);
+		self.go_btn.show(visible);
+	}
+
+	/// Refits the dialog to whichever view is showing.
+	fn refit(&self) {
+		self.dialog.layout();
+		self.dialog.fit();
+		self.dialog.centre();
+	}
+
+	/// Shows the query view, hiding the results view if it is showing.
+	fn switch_to_query_view(&self) {
+		if self.view.get() == FindView::Query {
+			return;
+		}
+		self.set_query_windows(true);
+		self.set_results_windows(false);
+		self.view.set(FindView::Query);
+		self.find_next_btn.set_default();
+		self.refit();
+	}
+
+	/// Shows the Find All results view, hiding the query view if it is showing.
+	fn switch_to_results_view(&self) {
+		if self.view.get() == FindView::Results {
+			return;
+		}
+		self.set_query_windows(false);
+		self.set_results_windows(true);
+		self.view.set(FindView::Results);
+		self.go_btn.set_default();
+		self.refit();
+	}
 }
 
 struct FindDialogWidgets {
+	find_label: StaticText,
 	find_combo: ComboBox,
+	options_static_box: Option<StaticBox>,
 	match_case: CheckBox,
 	whole_word: CheckBox,
 	use_regex: CheckBox,
 	find_prev_btn: Button,
 	find_next_btn: Button,
+	find_all_btn: Button,
 	cancel_btn: Button,
+	results_list: ListBox,
+	go_btn: Button,
 }
 
 struct FindDialogActionParams {
@@ -180,6 +271,9 @@ struct FindDialogActionParams {
 	find_combo: ComboBox,
 	find_prev_btn: Button,
 	find_next_btn: Button,
+	find_all_btn: Button,
+	go_btn: Button,
+	results_list: ListBox,
 	cancel_btn: Button,
 	config: Rc<Mutex<ConfigManager>>,
 	doc_manager: Rc<Mutex<DocumentManager>>,
@@ -199,6 +293,7 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 		.build();
 	// TRANSLATORS: Group box heading for the search options in the Find dialog
 	let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("Options")).build();
+	let options_static_box = options_box.get_static_box();
 	// TRANSLATORS: Checkbox to make the search case-sensitive
 	let match_case = CheckBox::builder(&dialog).with_label(&t("&Match case")).build();
 	// TRANSLATORS: Checkbox to only match whole words, not substrings
@@ -212,6 +307,8 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
 	// TRANSLATORS: Button to search forward for the next match
 	let find_next_btn = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Find &Next")).build();
+	// TRANSLATORS: Button that finds and lists every occurrence of the search text
+	let find_all_btn = Button::builder(&dialog).with_label(&t("Find &All")).build();
 	// TRANSLATORS: Cancel button that closes the Find dialog
 	let cancel_btn = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(ID_CANCEL);
@@ -222,8 +319,28 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add(&find_prev_btn, 0, SizerFlag::Right, button_spacing);
 	button_sizer.add(&find_next_btn, 0, SizerFlag::Right, button_spacing);
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&cancel_btn, 0, SizerFlag::All, 0);
+	button_sizer.add(&find_all_btn, 0, SizerFlag::Right, button_spacing);
+	// The Find All results view, hidden until a search with matches switches to it.
+	let results_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	let results_list = ListBox::builder(&dialog).with_size(dpi::scale_size(&dialog, Size::new(400, 500))).build();
+	// TRANSLATORS: Accessible name of the list of Find All results
+	results_list.set_accessibility_label(&t("Results"));
+	results_sizer.add(&results_list, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	let results_button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	// TRANSLATORS: Button that jumps to the selected find result
+	let go_btn = Button::builder(&dialog).with_label(&t("&Go")).build();
+	results_button_sizer.add(&go_btn, 0, SizerFlag::Right, button_spacing);
+	results_sizer.add_sizer(
+		&results_button_sizer,
+		0,
+		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+		DIALOG_PADDING,
+	);
+	// A single Cancel is shared by both views and always visible, so Escape always maps to one
+	// available button.
+	let cancel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	cancel_sizer.add_stretch_spacer(1);
+	cancel_sizer.add(&cancel_btn, 0, SizerFlag::All, 0);
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	main_sizer.add_sizer(&find_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	main_sizer.add_sizer(
@@ -238,9 +355,56 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
 		DIALOG_PADDING,
 	);
+	main_sizer.add_sizer(
+		&results_sizer,
+		0,
+		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+		DIALOG_PADDING,
+	);
+	main_sizer.add_sizer(
+		&cancel_sizer,
+		0,
+		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+		DIALOG_PADDING,
+	);
+	// Open on the query view: hide the results windows before sizing so the dialog starts small.
+	results_list.show(false);
+	go_btn.show(false);
+	find_next_btn.set_default();
 	dialog.set_sizer_and_fit(main_sizer, true);
 	dialog.centre();
-	FindDialogWidgets { find_combo, match_case, whole_word, use_regex, find_prev_btn, find_next_btn, cancel_btn }
+	FindDialogWidgets {
+		find_label,
+		find_combo,
+		options_static_box,
+		match_case,
+		whole_word,
+		use_regex,
+		find_prev_btn,
+		find_next_btn,
+		find_all_btn,
+		cancel_btn,
+		results_list,
+		go_btn,
+	}
+}
+
+/// Binds a Cancel button to hide the dialog and save its settings.
+fn bind_cancel_button(
+	button: Button,
+	dialog: Dialog,
+	find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
+	config: &Rc<Mutex<ConfigManager>>,
+) {
+	let dialog_for_cancel = dialog;
+	let find_dialog_for_cancel = Rc::clone(find_dialog);
+	let config_for_cancel = Rc::clone(config);
+	button.on_click(move |_| {
+		if let Some(state) = find_dialog_for_cancel.lock().unwrap().as_ref() {
+			state.save_settings(&config_for_cancel);
+		}
+		dialog_for_cancel.show(false);
+	});
 }
 
 fn bind_find_dialog_actions(params: FindDialogActionParams) {
@@ -250,6 +414,9 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 		find_combo,
 		find_prev_btn,
 		find_next_btn,
+		find_all_btn,
+		go_btn,
+		results_list,
 		cancel_btn,
 		config,
 		doc_manager,
@@ -284,15 +451,15 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 			false,
 		);
 	});
-	let dialog_for_cancel = dialog;
-	let find_dialog_for_cancel = Rc::clone(&find_dialog);
-	let config_for_cancel = Rc::clone(&config);
-	cancel_btn.on_click(move |_| {
-		if let Some(state) = find_dialog_for_cancel.lock().unwrap().as_ref() {
-			state.save_settings(&config_for_cancel);
-			dialog_for_cancel.show(false);
+	let find_dialog_for_all = Rc::clone(&find_dialog);
+	let doc_manager_for_all = Rc::clone(&doc_manager);
+	let config_for_all = Rc::clone(&config);
+	find_all_btn.on_click(move |_| {
+		if let Some(state) = find_dialog_for_all.lock().unwrap().as_ref() {
+			do_find_all(state, &doc_manager_for_all, &config_for_all, live_region_label);
 		}
 	});
+	bind_cancel_button(cancel_btn, dialog, &find_dialog, &config);
 	let frame_for_enter = frame;
 	let find_dialog_for_enter = Rc::clone(&find_dialog);
 	let doc_manager_for_enter = Rc::clone(&doc_manager);
@@ -317,6 +484,22 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 		}
 		dialog_for_close.show(false);
 		event.skip(false);
+	});
+	let frame_for_go = frame;
+	let find_dialog_for_go = Rc::clone(&find_dialog);
+	let doc_manager_for_go = Rc::clone(&doc_manager);
+	go_btn.on_click(move |_| {
+		if let Some(state) = find_dialog_for_go.lock().unwrap().as_ref() {
+			handle_result_go(&frame_for_go, state, &doc_manager_for_go, live_region_label);
+		}
+	});
+	let frame_for_list = frame;
+	let find_dialog_for_list = Rc::clone(&find_dialog);
+	let doc_manager_for_list = Rc::clone(&doc_manager);
+	results_list.on_item_double_clicked(move |_| {
+		if let Some(state) = find_dialog_for_list.lock().unwrap().as_ref() {
+			handle_result_go(&frame_for_list, state, &doc_manager_for_list, live_region_label);
+		}
 	});
 }
 
@@ -360,6 +543,7 @@ pub fn show_find_dialog(
 	let Some(state) = state else {
 		return;
 	};
+	state.switch_to_query_view();
 	let text_ctrl = {
 		let dm = doc_manager.lock().unwrap();
 		dm.active_tab().map(|tab| tab.text_ctrl)
@@ -374,6 +558,26 @@ pub fn show_find_dialog(
 	state.dialog.show(true);
 	state.dialog.raise();
 	state.focus_find_text();
+}
+
+/// Makes sure the combo has a query, pulling the current document selection into it if it is
+/// empty. Returns whether a query is now present.
+fn ensure_query(state: &FindDialogState, doc_manager: &Rc<Mutex<DocumentManager>>) -> bool {
+	if !state.find_text().trim().is_empty() {
+		return true;
+	}
+	let text_ctrl = {
+		let dm = doc_manager.lock().unwrap();
+		dm.active_tab().map(|tab| tab.text_ctrl)
+	};
+	if let Some(text_ctrl) = text_ctrl {
+		let (start, end) = text_ctrl.get_selection();
+		if start != end {
+			let selection = text_ctrl.get_string_selection();
+			state.set_find_text(&selection);
+		}
+	}
+	!state.find_text().trim().is_empty()
 }
 
 pub fn handle_find_action(
@@ -392,24 +596,119 @@ pub fn handle_find_action(
 	let Some(state) = state else {
 		return;
 	};
-	if state.find_text().trim().is_empty() {
-		let text_ctrl = {
-			let dm = doc_manager.lock().unwrap();
-			dm.active_tab().map(|tab| tab.text_ctrl)
-		};
-		if let Some(text_ctrl) = text_ctrl {
-			let (start, end) = text_ctrl.get_selection();
-			if start != end {
-				let selection = text_ctrl.get_string_selection();
-				state.set_find_text(&selection);
-			}
-		}
-	}
-	if state.find_text().trim().is_empty() {
+	state.switch_to_query_view();
+	if !ensure_query(&state, doc_manager) {
 		show_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
 		return;
 	}
 	do_find(frame, forward, &state, doc_manager, config, live_region_label);
+}
+
+/// Lists every line holding a match for the current query under the dialog's options. With no
+/// matches it reports "Not found." exactly like [`do_find`]; with matches it switches the dialog
+/// to the results view, focused on the first line whose match follows the caret.
+fn do_find_all(
+	state: &FindDialogState,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+) {
+	let Some(_find_guard) = state.try_begin_find() else {
+		return;
+	};
+	if !ensure_query(state, doc_manager) {
+		state.dialog.show(true);
+		state.dialog.raise();
+		state.focus_find_text();
+		return;
+	}
+	let query = state.find_text();
+	state.save_settings(config);
+	state.add_to_history(config, &query);
+	let mut options = reader_core::SearchOptions::empty();
+	if state.match_case.is_checked() {
+		options |= reader_core::SearchOptions::MATCH_CASE;
+	}
+	if state.whole_word.is_checked() {
+		options |= reader_core::SearchOptions::WHOLE_WORD;
+	}
+	if state.use_regex.is_checked() {
+		options |= reader_core::SearchOptions::REGEX;
+	}
+	let (rows, origin) = {
+		let dm = doc_manager.lock().unwrap();
+		let Some(tab) = dm.active_tab() else {
+			return;
+		};
+		if !tab.text_ctrl.is_valid() {
+			return;
+		}
+		let (_, origin) = navigation::doc_selected_range(tab);
+		let rows = tab.session.find_all_lines(&query, options);
+		drop(dm);
+		(rows, origin)
+	};
+	tracing::debug!(query = %query, count = rows.len(), "find all search");
+	if rows.is_empty() {
+		live_region::announce(live_region_label, &t("Not found."));
+		state.switch_to_query_view();
+		state.dialog.show(true);
+		state.dialog.raise();
+		state.focus_find_text();
+		return;
+	}
+	let selected = rows.iter().position(|row| row.matches.iter().any(|m| m.start >= origin)).unwrap_or(0);
+	state.origin.set(origin);
+	*state.result_rows.borrow_mut() = rows;
+	state.results_list.clear();
+	{
+		let rows = state.result_rows.borrow();
+		for row in rows.iter() {
+			let label =
+				if row.page > 0 { navigation::page_announcement(row.page, &row.text) } else { row.text.clone() };
+			state.results_list.append(&label);
+		}
+	}
+	state.results_list.set_selection(u32::try_from(selected).unwrap_or(0), true);
+	state.switch_to_results_view();
+	state.results_list.set_focus();
+	state.results_list.ensure_visible(i32::try_from(selected).unwrap_or(0));
+}
+
+/// Jumps to the selected results row, landing on the match on that line that follows the caret
+/// origin (falling back to the line's first match), then behaves like a found Find: selects the
+/// range, hides the dialog, and announces the line after the focus chain is cut.
+fn handle_result_go(
+	frame: &Frame,
+	state: &FindDialogState,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+) {
+	let (start, end, announce) = {
+		let rows = state.result_rows.borrow();
+		let selected = state.results_list.get_selection().and_then(|index| usize::try_from(index).ok()).unwrap_or(0);
+		let Some(row) = rows.get(selected) else {
+			return;
+		};
+		let origin = state.origin.get();
+		let Some(span) = row.matches.iter().find(|m| m.start >= origin).or_else(|| row.matches.first()) else {
+			return;
+		};
+		(span.start, span.end, row.text.clone())
+	};
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else {
+		return;
+	};
+	if !tab.text_ctrl.is_valid() {
+		return;
+	}
+	navigation::select_doc_range(tab, start, end);
+	drop(dm);
+	state.dialog.show(false);
+	if !announce.trim().is_empty() {
+		navigation::announce_after_delay(frame, live_region_label, announce);
+	}
 }
 
 fn do_find(
@@ -461,6 +760,7 @@ fn do_find(
 		drop(dm);
 		// TRANSLATORS: Announced when a search finds no matches in the document
 		live_region::announce(live_region_label, &t("Not found."));
+		state.switch_to_query_view();
 		state.dialog.show(true);
 		state.dialog.raise();
 		state.focus_find_text();
@@ -495,7 +795,7 @@ fn do_find(
 		// moment focus returns to the book. Delay the found-line announcement so it
 		// cuts the chain right as it begins: live-region's High priority maps to UIA
 		// NotificationProcessing_ImportantMostRecent, which NVDA handles as
-		// cancelSpeech() + speak — the same interrupt NVDA itself uses for its own
+		// cancelSpeech() + speak, the same interrupt NVDA itself uses for its own
 		// find dialog. (During a say-all NVDA speaks at Spri.NOW instead of
 		// cancelling, so continuous reading is not chopped up.)
 		// When the search wrapped, the wrap notice was deferred above so it can be
@@ -507,7 +807,7 @@ fn do_find(
 			found_line
 		};
 		if !message.trim().is_empty() {
-			announce_found_line_after_delay(frame, live_region_label, message);
+			navigation::announce_after_delay(frame, live_region_label, message);
 		}
 	} else if result.wrapped {
 		// Find-next / Find-previous with the dialog closed. There is no focus chain
@@ -521,27 +821,4 @@ fn do_find(
 		// announce the found line directly.
 		live_region::announce(live_region_label, &found_line);
 	}
-}
-
-/// Announces `found_line` shortly after the Find dialog closes, so it cuts off the
-/// focus-chain announcement the screen reader starts when focus returns to the book.
-///
-/// The one-shot `wxTimer` is kept alive through its single tick by the `Rc`/`RefCell`
-/// it hands its own callback: the tick clears the cell, which drops the timer and
-/// destroys the native timer. If the timer cannot be armed, fall back to announcing
-/// immediately rather than silently dropping the result.
-fn announce_found_line_after_delay(frame: &Frame, live_region_label: StaticText, found_line: String) {
-	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
-	let holder = Rc::clone(&timer_holder);
-	let timer = Timer::new(frame);
-	let announce_found_line = found_line.clone();
-	timer.on_tick(move |_event| {
-		live_region::announce(live_region_label, &announce_found_line);
-		*holder.borrow_mut() = None;
-	});
-	if !timer.start(FIND_RESULT_INTERRUPT_DELAY_MS, true) {
-		live_region::announce(live_region_label, &found_line);
-		return;
-	}
-	*timer_holder.borrow_mut() = Some(timer);
 }

@@ -5,7 +5,7 @@ use icu_properties::{
 use unicode_bidi::{BidiInfo, Level};
 
 /// True when some maximal run of consecutive RTL-strong base characters is stored
-/// left-to-right (x increasing) — i.e. visual order that needs reversing. Combining
+/// left-to-right (x increasing), i.e. visual order that needs reversing. Combining
 /// marks are transparent; any non-RTL strong/neutral/space breaks the current run.
 /// Also covers the "no RTL character at all" case (the loop simply never enters the
 /// RTL branch), so callers need no separate "any RTL" pre-check.
@@ -35,7 +35,7 @@ fn has_visual_rtl_run(chars: &[(char, f32)], bidi: icu_properties::CodePointMapD
 
 /// Cheap presence check for whether `chars` contains any strong RTL character,
 /// with no x-origin needed. Callers use this to skip fetching origins entirely
-/// for runs that turn out to be pure LTR — the overwhelming majority of text.
+/// for runs that turn out to be pure LTR (the overwhelming majority of text).
 pub fn contains_rtl(mut chars: impl Iterator<Item = char>) -> bool {
 	let bidi = CodePointMapData::<BidiClass>::new();
 	chars.any(|c| matches!(bidi.get(c), BidiClass::RightToLeft | BidiClass::ArabicLetter))

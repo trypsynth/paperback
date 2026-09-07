@@ -207,6 +207,10 @@ class MainActivity : ComponentActivity() {
 					vm.settingsRequest.request()
 					true
 				}
+				KeyEvent.KEYCODE_O -> {
+					vm.openBookRequest.request()
+					true
+				}
 				KeyEvent.KEYCODE_T -> {
 					vm.tocRequest.request()
 					true
@@ -227,8 +231,24 @@ class MainActivity : ComponentActivity() {
 					vm.openWordCountDialog()
 					true
 				}
+				KeyEvent.KEYCODE_R -> {
+					vm.allDocumentsRequest.request()
+					true
+				}
+				KeyEvent.KEYCODE_E -> {
+					if (event.isShiftPressed) {
+						vm.exportSettingsRequest.request()
+					} else {
+						vm.openExportDocumentDialog()
+					}
+					true
+				}
 				KeyEvent.KEYCODE_I -> {
-					vm.documentInfoDialog.open()
+					if (event.isShiftPressed) {
+						vm.importSettingsRequest.request()
+					} else {
+						vm.documentInfoDialog.open()
+					}
 					true
 				}
 				KeyEvent.KEYCODE_S -> {

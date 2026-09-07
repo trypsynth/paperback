@@ -8,14 +8,12 @@ pub(super) fn get_trailing_size(data: &[u8]) -> usize {
 	let mut shift = 0u32;
 	loop {
 		let b = data[pos];
-		if shift < 32 {
-			size |= ((b & 0x7f) as usize) << shift;
-		}
-		if b & 0x80 != 0 || pos == 0 {
+		size |= ((b & 0x7f) as usize) << shift;
+		shift += 7;
+		if b & 0x80 != 0 || shift >= 28 || pos == 0 {
 			break;
 		}
 		pos -= 1;
-		shift += 7;
 	}
 	size
 }

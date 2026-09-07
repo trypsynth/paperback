@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -71,7 +70,10 @@ fun AllDocumentsScreen(
 			} else {
 				LazyColumn(
 					modifier = Modifier.fillMaxSize(),
-					contentPadding = PaddingValues(bottom = 32.dp)
+					// The list runs to the bottom of the window and so under the navigation bar,
+					// which leaves its last row half covered without this. The top bar pads itself,
+					// so the bottom is the only side that belongs here.
+					contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues()
 				) {
 					lazyItemsIndexed(recentDocuments) { index, recentDoc ->
 						RecentDocumentItemRow(

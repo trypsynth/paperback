@@ -42,6 +42,8 @@ pub struct LinkInfo {
 pub struct ImageInfo {
 	pub offset: usize,
 	pub alt_text: String,
+	/// Display-unit span of the emitted placeholder, brackets and label included.
+	pub length: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -151,6 +153,18 @@ pub struct LinkListItem {
 #[derive(Debug, Clone)]
 pub struct LinkList {
 	pub items: Vec<LinkListItem>,
+	pub closest_index: i32,
+}
+
+#[derive(Debug, Clone)]
+pub struct ElementListItem {
+	pub offset: usize,
+	pub text: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ElementList {
+	pub items: Vec<ElementListItem>,
 	pub closest_index: i32,
 }
 

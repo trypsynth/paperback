@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 
@@ -344,7 +345,12 @@ fun MainScreenTopBar(
 						},
 						text = {
 							Row(verticalAlignment = Alignment.CenterVertically) {
-								Text(tab.title, maxLines = 1, modifier = Modifier.widthIn(max = 150.dp))
+								Text(
+									tab.title,
+									maxLines = 1,
+									overflow = TextOverflow.Ellipsis,
+									modifier = Modifier.widthIn(max = 150.dp)
+								)
 								Spacer(modifier = Modifier.width(4.dp))
 								IconButton(
 									onClick = { onTabClose(index) },

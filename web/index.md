@@ -6,12 +6,13 @@ permalink: /
 
 # Paperback
 
-Paperback is a fully accessible, fast, and native ebook and document reader for Windows and macOS, with Android and iOS apps in development.
+Paperback is a fully accessible, fast, and native ebook and document reader for Windows, macOS, and Linux, with Android and iOS apps in development.
 
 ## Platforms
 
 - **Windows** &ndash; installer and portable builds, for x64 and ARM64
 - **macOS** &ndash; signed and notarized, so it just works with no security warnings
+- **Linux** &ndash; AppImage installer and portable builds, for x64 and ARM64
 - **Android** &ndash; in development, coming to Google Play, with read-aloud and background playback
 - **iOS** &ndash; in development, coming to the App Store
 

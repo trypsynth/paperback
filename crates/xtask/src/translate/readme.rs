@@ -83,7 +83,7 @@ pub fn sync_readmes(
 /// Whether `doc/readme-<lang>.md` needs (re)translating: yes if it doesn't exist yet, or
 /// exists without a marker comment (pre-dates this pipeline), or its marker's source hash
 /// doesn't match the current English source. No only when a marker is present and its
-/// hash matches — i.e. this exact English source was already translated into this file.
+/// hash matches, meaning this exact English source was already translated into this file.
 fn needs_translation(existing_content: Option<&str>, current_source_hash: &str) -> bool {
 	existing_content.and_then(existing_marker_hash).is_none_or(|existing_hash| existing_hash != current_source_hash)
 }

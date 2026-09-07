@@ -2,7 +2,7 @@
 //!
 //! An `AudioTimeline` is an overlay: it stores no text, duplicates no markers,
 //! and is rebuilt from the source document on every open, exactly like markers
-//! are. Nothing here is serialized — only `TimelinePoint` reaches disk.
+//! are. Nothing here is serialized, only `TimelinePoint` reaches disk.
 //!
 //! A point in an audio document has two coordinates, and each is authoritative
 //! for its own axis: `position` locates the text caret, `time_ms` locates the
@@ -144,7 +144,7 @@ impl AudioTimeline {
 		self.cursor_at_elapsed(point.time_ms)
 	}
 
-	/// The clip narrating `position`, or `None` where nothing does — gaps are
+	/// The clip narrating `position`, or `None` where nothing does. Gaps are
 	/// ordinary, since front matter and unrecorded sections are common. Where
 	/// several clips share a text anchor, this is the first of them.
 	#[must_use]
@@ -207,7 +207,7 @@ impl AudioTimeline {
 
 	/// How far through the recording `point` is, in `0.0..=1.0`. Audio documents
 	/// should prefer this to a character-count percentage, which measures only
-	/// the text spine — a few chapter headings, for an audiobook.
+	/// the text spine (a few chapter headings, for an audiobook).
 	#[must_use]
 	pub fn progress(&self, point: TimelinePoint) -> f64 {
 		if self.total_duration_ms == 0 {
@@ -280,8 +280,8 @@ impl AudioTimelineBuilder {
 
 	/// Binds `[clip_begin_ms, clip_end_ms)` of `source` to display units
 	/// `[start, end)`. Positions must be display units, from the same counting
-	/// as marker positions — see `util::text::display_len`, which is UTF-16 code
-	/// units on Windows and macOS.
+	/// as marker positions (see `util::text::display_len`, which is UTF-16 code
+	/// units on Windows and macOS).
 	pub fn add_clip(&mut self, source: usize, clip_begin_ms: u64, clip_end_ms: u64, start: usize, end: usize) {
 		self.clips.push(AudioClip { source, clip_begin_ms, clip_end_ms, start, end });
 	}

@@ -50,6 +50,7 @@ private fun ChoiceSetting(
 	) {
 		OutlinedButton(
 			onClick = { expanded = true },
+			colors = pickerAnchorColors(),
 			modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
 		) {
 			Text("$label: $selectedLabel", modifier = Modifier.weight(1f))
@@ -60,13 +61,10 @@ private fun ChoiceSetting(
 			onDismissRequest = { expanded = false }
 		) {
 			options.forEachIndexed { index, option ->
-				DropdownMenuItem(
-					text = { Text(option) },
-					onClick = {
-						onSelect(index)
-						expanded = false
-					}
-				)
+				PickerMenuItem(label = option, selected = index == selectedIndex) {
+					onSelect(index)
+					expanded = false
+				}
 			}
 		}
 	}
@@ -119,6 +117,9 @@ fun SettingsScreen(
 					.fillMaxSize()
 					.verticalScroll(rememberScrollState())
 					.padding(16.dp)
+					// Scrolled to the end, Play Sample otherwise sits under the navigation bar. The
+					// top bar pads itself, so the bottom is the only side that belongs here.
+					.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
 			) {
 				// TRANSLATORS: Section heading for general (non-speech) settings
 				Text(
@@ -208,11 +209,15 @@ fun SettingsScreen(
 					}
 				) {
 					Text("$textSizeLabel: $textScalePercent%", style = MaterialTheme.typography.labelLarge)
+					// The track draws one tick per step, which at this many steps reads as a dotted
+					// line rather than a slider. snapScale already pins the value to whole steps, and
+					// the step count TalkBack swipes by lives in the semantics block above, so the
+					// visible slider gives up its ticks without either behaviour changing.
 					Slider(
 						value = textScalePercent.toFloat(),
 						onValueChange = { settings.textScalePercent.set(snapScale(it)) },
 						valueRange = MIN_SCALE..MAX_SCALE,
-						steps = SCALE_STEPS
+						steps = 0
 					)
 				}
 				Spacer(modifier = Modifier.height(16.dp))
@@ -276,6 +281,7 @@ fun SettingsScreen(
 				) {
 					OutlinedButton(
 						onClick = { engineExpanded = true },
+						colors = pickerAnchorColors(),
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
 					) {
 						// TRANSLATORS: Value shown when a setting is following the system/engine default
@@ -289,13 +295,10 @@ fun SettingsScreen(
 						onDismissRequest = { engineExpanded = false }
 					) {
 						engines.forEach { engine ->
-							DropdownMenuItem(
-								text = { Text(engine.label) },
-								onClick = {
-									viewModel.ttsManager.setEngine(engine.name)
-									engineExpanded = false
-								}
-							)
+							PickerMenuItem(label = engine.label, selected = engine.name == currentEngine) {
+								viewModel.ttsManager.setEngine(engine.name)
+								engineExpanded = false
+							}
 						}
 					}
 				}
@@ -307,6 +310,7 @@ fun SettingsScreen(
 				) {
 					OutlinedButton(
 						onClick = { voiceExpanded = true },
+						colors = pickerAnchorColors(),
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
 						enabled = !isSystemDefault
 					) {
@@ -320,13 +324,10 @@ fun SettingsScreen(
 						onDismissRequest = { voiceExpanded = false }
 					) {
 						availableVoices.forEach { voice ->
-							DropdownMenuItem(
-								text = { Text(voice.name) },
-								onClick = {
-									viewModel.ttsManager.setVoice(voice)
-									voiceExpanded = false
-								}
-							)
+							PickerMenuItem(label = voice.name, selected = voice.name == currentVoice?.name) {
+								viewModel.ttsManager.setVoice(voice)
+								voiceExpanded = false
+							}
 						}
 					}
 				}
@@ -363,7 +364,7 @@ fun SettingsScreen(
 						value = if (isSystemDefault) 50f else currentSpeechRate.toFloat(),
 						onValueChange = { viewModel.ttsManager.setSpeechRate(kotlin.math.round(it).toInt()) },
 						valueRange = 0f..100f,
-						steps = 99,
+						steps = 0,
 						enabled = !isSystemDefault
 					)
 				}
@@ -400,7 +401,7 @@ fun SettingsScreen(
 						value = if (isSystemDefault) 50f else currentPitch.toFloat(),
 						onValueChange = { viewModel.ttsManager.setPitch(kotlin.math.round(it).toInt()) },
 						valueRange = 0f..100f,
-						steps = 99,
+						steps = 0,
 						enabled = !isSystemDefault
 					)
 				}

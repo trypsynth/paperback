@@ -19,7 +19,6 @@ pub fn add_recent_document(path: &Path) {
 	use std::{ffi::OsStr, iter, os::windows::ffi::OsStrExt as _};
 
 	use windows::Win32::UI::Shell::{SHARD_PATHW, SHAddToRecentDocs};
-
 	// SHAddToRecentDocs takes a bare pointer whose meaning is set by the flag; SHARD_PATHW says
 	// it is a null-terminated wide path. The vector has to outlive the call, so it is bound
 	// rather than built inline in the argument.

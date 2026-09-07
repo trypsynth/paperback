@@ -159,7 +159,7 @@ mod tests {
 		assert_eq!(rels.keys().collect::<Vec<_>>(), vec!["rId3"]);
 	}
 
-	/// A missing rels part is normal — a document with no hyperlinks has none — so it must read
+	/// A missing rels part is normal (a document with no hyperlinks has none), so it must read
 	/// as "no relationships" rather than failing the parse.
 	#[test]
 	fn returns_empty_when_the_rels_entry_is_absent() {

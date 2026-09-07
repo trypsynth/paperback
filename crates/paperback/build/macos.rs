@@ -70,7 +70,6 @@ pub fn generate_app_bundle() {
 		println!("cargo:warning=Failed to write Info.plist: {e}");
 		return;
 	}
-	// Copy the binary into the bundle if it exists (from a previous build)
 	let exe_path = target_dir.join("paperback");
 	let bundle_exe = macos_dir.join("paperback");
 	if exe_path.exists() {

@@ -1,7 +1,7 @@
 // `build_ok_cancel_buttons` translates its own "Cancel" label via patois, since
 // wx-utils is itself a `[package.metadata.patois] translatable = true` crate whose
 // `t()` calls patois-build folds into this app's own catalog at build time (see
-// `build_translations` in build.rs) — the same mechanism ship-shape uses. `ok_label`
+// `build()` in `build/translations.rs`), the same mechanism ship-shape uses. `ok_label`
 // is still supplied by each dialog, since it varies ("OK" vs. a verb like "Go").
 //
 // Not a fit for every dialog: `toc.rs` deliberately gives its OK button a non-stock
@@ -15,6 +15,10 @@ pub(super) use wx_utils::{
 
 mod about;
 pub use about::show_about_dialog;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+mod batch_ocr;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub use batch_ocr::show_batch_ocr_dialog;
 mod all_documents;
 pub use all_documents::show_all_documents_dialog;
 mod bookmark;
@@ -23,13 +27,18 @@ mod document_info;
 pub use document_info::show_document_info_dialog;
 mod duration_format;
 mod elements;
-pub use elements::show_elements_dialog;
+pub use elements::{ElementsKind, show_elements_dialog};
+mod go_to;
 mod go_to_line;
 pub use go_to_line::show_go_to_line_dialog;
 mod go_to_page;
 pub use go_to_page::show_go_to_page_dialog;
 mod go_to_percent;
 pub use go_to_percent::show_go_to_percent_dialog;
+#[cfg(target_os = "linux")]
+mod linux_setup;
+#[cfg(target_os = "linux")]
+pub use linux_setup::{AssociationChoice, ChoiceAction, show_linux_setup_dialog};
 mod note_entry;
 pub use note_entry::show_note_entry_dialog;
 mod open_as;

@@ -19,6 +19,7 @@ dunce = "1.0.5"
 image = { version = "0.25.10", default-features = false, features = ["png"] }
 live-region = "0.3.0"
 paperback-core = { path = "../paperback-core" }
+paperback-formats = { path = "../paperback-formats" }
 patois = { version = "0.2.1", features = ["ui"] }
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
@@ -30,7 +31,7 @@ wxdragon = { version = "0.9.21", features = ["webview", "media-ctrl"] }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Shell"] }
+windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Shell", "Win32_System_WinRT", "Foundation", "Media_Ocr", "Graphics_Imaging", "Globalization"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
@@ -39,9 +40,9 @@ objc = "0.2.7"
 embed-manifest = "1.5.0"
 flate2 = { version = "1.1.10", default-features = false }
 paperback-formats = { path = "../paperback-formats" }
-patois-build = "0.1.9"
+patois-build = "0.1.13"
 tar = "0.4.46"
-ureq = { version = "3.4.0", default-features = false, features = ["rustls"] }
+ureq = { version = "3.4.1", default-features = false, features = ["rustls"] }
 winres = "0.1.12"
 
 [dev-dependencies]

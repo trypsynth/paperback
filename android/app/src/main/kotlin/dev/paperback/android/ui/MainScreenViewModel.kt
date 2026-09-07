@@ -115,14 +115,20 @@ class MainScreenViewModel(
 	val settings = ReaderSettings(config)
 
 	// Every screen and dialog the reading UI can put on top of itself, in one place: a
-	// ScreenRequest for the two that are real navigation destinations, a DialogState for the
-	// rest. The ones whose state is private are opened through a function on this class that
-	// has work to do first (loading the element lists, choosing the Go To mode), so nothing
-	// outside can open them straight into an empty or stale state.
+	// ScreenRequest for the ones somewhere else has to carry out (a navigation destination for
+	// MainNavigation, a file picker for MainScreen), a DialogState for the rest. The ones whose
+	// state is private are opened through a function on this class that has work to do first
+	// (loading the element lists, choosing the Go To mode), so nothing outside can open them
+	// straight into an empty or stale state.
 	val settingsRequest = ScreenRequest()
 	val tocRequest = ScreenRequest()
+	val allDocumentsRequest = ScreenRequest()
+	val openBookRequest = ScreenRequest()
+	val exportSettingsRequest = ScreenRequest()
+	val importSettingsRequest = ScreenRequest()
 
 	val findDialog = DialogState()
+	val exportDocumentDialog = DialogState()
 	val wordCountDialog = DialogState()
 	val documentInfoDialog = DialogState()
 	val sleepTimerDialog = DialogState()
@@ -315,13 +321,22 @@ class MainScreenViewModel(
 				}
 				val initialRecents = getRecentDocumentsListIO()
 				withContext(Dispatchers.Main) {
-					currentTabs.addAll(restoredTabs)
+					// A VIEW intent opens its document as soon as the screen composes, which is while
+					// this restore is still parsing the saved set. That tab is therefore already here,
+					// and adding the saved set wholesale would list its document a second time and
+					// then pull the reader off it onto whichever document was last active.
+					val openedBeforeRestore = currentTabs.isNotEmpty()
+					for (restored in restoredTabs) {
+						if (currentTabs.none { it.docKey == restored.docKey }) {
+							currentTabs.add(restored)
+						}
+					}
 					recentDocumentsList = initialRecents
-					if (currentTabs.isNotEmpty()) {
+					if (currentTabs.isEmpty()) {
+						currentActiveIndex = -1
+					} else if (!openedBeforeRestore) {
 						val matchingIndex = currentTabs.indexOfFirst { it.docKey == activeDocKey }
 						currentActiveIndex = if (matchingIndex != -1) matchingIndex else 0
-					} else {
-						currentActiveIndex = -1
 					}
 					emitTabsState()
 					currentTabs.getOrNull(currentActiveIndex)?.let {
@@ -1338,6 +1353,15 @@ class MainScreenViewModel(
 		val targetMs = tab.session.audioElapsedForPercentFfi(percent)
 		if (targetMs < 0) return false
 		return daisyAudioPlayer.seekToMs(targetMs)
+	}
+
+	fun openExportDocumentDialog() {
+		// There is nothing to export with no document open. The menu hides the entry then; this
+		// keeps the Ctrl+E shortcut from arming a dialog that would appear over whatever document
+		// is opened next.
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		if (state.activeTab == null) return
+		exportDocumentDialog.open()
 	}
 
 	fun openWordCountDialog() {

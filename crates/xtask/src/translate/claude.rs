@@ -390,10 +390,9 @@ fn supports_effort(model: &str) -> bool {
 
 /// Maps a `po/<lang>.po` filename stem to the language name used in the prompt.
 ///
-/// A name rather than a code: the code is what a translation API's language parameter wanted,
-/// and there is no such parameter here. Unlike that list, this one does not have to be checked
-/// against a provider's supported-languages endpoint, which is what previously left `bs`, `sr`
-/// and `vi` at the mercy of whether the vendor had got to them yet.
+/// A name rather than a code, because the prompt is prose and there is no language parameter to
+/// satisfy. Nothing here has to be checked against a provider's supported-languages endpoint, so
+/// a language works as soon as it is added to this list.
 #[must_use]
 pub fn language_name(po_lang: &str) -> Option<&'static str> {
 	Some(match po_lang {

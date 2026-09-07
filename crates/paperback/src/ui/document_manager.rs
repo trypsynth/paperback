@@ -25,6 +25,7 @@ use super::{
 use crate::audio_player::AudioPlayer;
 
 mod audio;
+mod ocr;
 
 pub struct DocumentTab {
 	pub panel: Panel,
@@ -42,6 +43,8 @@ pub struct DocumentTab {
 	/// `ui::text_window` - for most documents this covers the whole thing, same as before
 	/// windowing existed; only huge documents actually get a partial window.
 	pub window: TextWindow,
+	/// The OCR job running for this tab, if one is. Written and read only on the UI thread.
+	ocr_job: Option<ocr::OcrJob>,
 }
 
 /// Change-detection stamp for an open document's file, compared on every frame activation and
@@ -273,6 +276,7 @@ impl DocumentManager {
 			disk_fingerprint: read_fingerprint(path),
 			preferred_column: Cell::new(None),
 			window,
+			ocr_job: None,
 		});
 		if !password.is_empty() {
 			config.set_document_password(&path_str, password);
@@ -554,6 +558,7 @@ impl DocumentManager {
 		})
 	}
 
+	/// Whether the caret is on an image-only PDF page's OCR placeholder line.
 	pub fn update_status_bar(&self) {
 		let sleep_start = sleep_timer::start_ms();
 		let sleep_duration = sleep_timer::duration_minutes();
@@ -595,7 +600,7 @@ impl DocumentManager {
 	///
 	/// Because it runs on a timer, it must never do anything a reader could notice. Appending
 	/// qualifies: every offset already handed out still points at the same character. Rebuilding
-	/// the window does not, and this used to do that.
+	/// the window does not.
 	///
 	/// The bug that motivated the split: NVDA's Say-All holds its own offsets into the control,
 	/// advances them itself rather than re-reading the caret, and has no handling for the text
@@ -916,17 +921,15 @@ impl DocumentManager {
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
 			let current_doc_pos = tab.window.to_doc(old_ctrl.get_insertion_point());
-			// TODO(windowing): still whole-document on every wrap toggle, see
-			// C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md Phase 2 - should re-slice just
-			// `tab.window`'s existing range instead of reloading the whole document.
-			let doc_len = tab.session.document_len();
-			let slice = tab.session.get_window(0, doc_len);
+			// Re-slice just the currently loaded window rather than the whole document: a wrap
+			// toggle doesn't change what range is loaded, only how it's laid out.
+			let slice = tab.session.get_window(tab.window.start(), tab.window.end());
 			let text_ctrl = reader_input::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame);
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
 			fill_text_ctrl_with_formatting(text_ctrl, &slice);
-			tab.window = TextWindow::whole(doc_len);
+			tab.window = TextWindow::new(slice.start, slice.end);
 			if let Some(font) = build_font_from_readability(&rf) {
 				text_ctrl.set_font(&font);
 			}

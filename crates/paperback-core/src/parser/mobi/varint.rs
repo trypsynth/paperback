@@ -22,3 +22,6 @@ pub(super) fn base32_decode(s: &str) -> usize {
 	}
 	val
 }
+
+#[cfg(test)]
+mod tests;

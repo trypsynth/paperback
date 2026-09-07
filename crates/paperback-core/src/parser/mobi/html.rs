@@ -23,3 +23,6 @@ pub(super) fn rewrite_font_size_headings(html: &str) -> String {
 	}
 	result
 }
+
+#[cfg(test)]
+mod tests;

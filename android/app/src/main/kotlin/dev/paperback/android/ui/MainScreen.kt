@@ -34,9 +34,6 @@ import dev.paperback.android.SettingsRoute
 import dev.paperback.android.t
 import dev.paperback.android.ui.dialogs.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -55,7 +52,7 @@ internal fun needsNotificationPermission(context: Context): Boolean =
 		ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
 		PackageManager.PERMISSION_GRANTED
 
-@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
 	modifier: Modifier = Modifier,
@@ -67,7 +64,7 @@ fun MainScreen(
 	val pendingJumpOffset by viewModel.pendingJumpOffset.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
-	var exportDocumentDialogOpen by remember { mutableStateOf(false) }
+	val exportDocumentDialogOpen by viewModel.exportDocumentDialog.isOpen.collectAsStateWithLifecycle()
 	var selectedExportFormat by remember { mutableStateOf<uniffi.paperback.ExportFormat?>(null) }
 	val goToDialogOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
 	val goToInitialMode by viewModel.goToInitialMode.collectAsStateWithLifecycle()
@@ -302,6 +299,51 @@ fun MainScreen(
 		}
 	)
 
+	// The three actions that pick a file. Which picker each one uses depends on a setting and on
+	// where the document came from, so the top bar's menu items and the keyboard shortcuts share
+	// these rather than each deciding for themselves.
+	val openBook: () -> Unit = {
+		if (useInAppFileBrowser) {
+			if (needsAllFilesAccessPermission()) {
+				viewModel.permissionRationaleDialog.open()
+			} else {
+				showFileManager = true
+			}
+		} else {
+			filePickerLauncher.launch(supportedMimeTypes)
+		}
+	}
+	val exportSettings: () -> Unit = {
+		val activeDocUri = (state as? MainScreenUiState.Success)?.activeTab?.documentUri
+		if (activeDocUri != null) {
+			if (activeDocUri.startsWith("content://")) {
+				exportSettingsLauncher.launch("document.paperback")
+			} else {
+				// TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
+				if (viewModel.exportCurrentSettings()) {
+					Toast.makeText(context, t("Settings exported"), Toast.LENGTH_SHORT).show()
+				} else {
+					Toast.makeText(context, t("Failed to export settings"), Toast.LENGTH_SHORT).show()
+				}
+			}
+		}
+	}
+	val importSettings: () -> Unit = {
+		if (useInAppFileBrowser) {
+			if (needsAllFilesAccessPermission()) {
+				viewModel.permissionRationaleDialog.open()
+			} else {
+				showFileManagerForImport = true
+			}
+		} else {
+			importSettingsLauncher.launch(arrayOf("*/*"))
+		}
+	}
+
+	OnScreenRequest(viewModel.openBookRequest, openBook)
+	OnScreenRequest(viewModel.exportSettingsRequest, exportSettings)
+	OnScreenRequest(viewModel.importSettingsRequest, importSettings)
+
 	Box(modifier = Modifier.fillMaxSize()) {
 		Scaffold(
 			// safeDrawing rather than the default systemBars so text keeps clear of a landscape
@@ -313,17 +355,7 @@ fun MainScreen(
 					state = state,
 					isTextMode = isTextMode,
 					isSpeaking = isSpeaking,
-					onOpenBook = {
-						if (useInAppFileBrowser) {
-							if (needsAllFilesAccessPermission()) {
-								viewModel.permissionRationaleDialog.open()
-							} else {
-								showFileManager = true
-							}
-						} else {
-							filePickerLauncher.launch(supportedMimeTypes)
-						}
-					},
+					onOpenBook = openBook,
 					onTocOpen = { viewModel.tocRequest.request() },
 					onTabSelect = { viewModel.setActiveTab(it) },
 					onTabClose = { viewModel.closeTab(it) },
@@ -337,33 +369,9 @@ fun MainScreen(
 					onSettingsOpen = { onItemClick(SettingsRoute) },
 					onSleepTimerOpen = { viewModel.sleepTimerDialog.open() },
 					onElementsOpen = { viewModel.openElements() },
-					onExportDocumentOpen = { exportDocumentDialogOpen = true },
-					onExportSettings = {
-						val activeDocUri = (state as? MainScreenUiState.Success)?.activeTab?.documentUri
-						if (activeDocUri != null) {
-							if (activeDocUri.startsWith("content://")) {
-								exportSettingsLauncher.launch("document.paperback")
-							} else {
-								// TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
-								if (viewModel.exportCurrentSettings()) {
-									Toast.makeText(context, t("Settings exported"), Toast.LENGTH_SHORT).show()
-								} else {
-									Toast.makeText(context, t("Failed to export settings"), Toast.LENGTH_SHORT).show()
-								}
-							}
-						}
-					},
-					onImportSettings = {
-						if (useInAppFileBrowser) {
-							if (needsAllFilesAccessPermission()) {
-								viewModel.permissionRationaleDialog.open()
-							} else {
-								showFileManagerForImport = true
-							}
-						} else {
-							importSettingsLauncher.launch(arrayOf("*/*"))
-						}
-					},
+					onExportDocumentOpen = { viewModel.openExportDocumentDialog() },
+					onExportSettings = exportSettings,
+					onImportSettings = importSettings,
 					onHelpOpen = {
 						viewModel.openHelpDocument()
 					}
@@ -493,14 +501,24 @@ fun MainScreen(
 							}
 							LaunchedEffect(docState.documentUri) {
 								snapshotFlow { listState.firstVisibleItemIndex }
-									.distinctUntilChanged()
-									.debounce(500)
+									.scrollsWorthSaving()
 									.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
 							}
 							if (!isTextMode) {
+								// An audio-only book's buffer is one blank line per narration file, so a
+								// share of its characters says nothing about how far in the reader is,
+								// and its recording is no better: a plain zip of narration files gives
+								// every clip the same placeholder duration, so a share of the running
+								// time is just as made up. It goes without a reading rather than with
+								// a wrong one.
+								val session = docState.session
+								val progressPercent = remember(session, docState.isAudioOnly, ttsPosition) {
+									if (docState.isAudioOnly) null else session.getStatusInfo(ttsPosition).percentage
+								}
 								ReadAloudPane(
 									segmentText = currentSegmentText,
 									textStyle = readability.textStyle,
+									progressPercent = progressPercent,
 									sleepTimerRemaining = sleepTimerRemaining,
 									onCancelSleepTimer = { viewModel.cancelSleepTimer() }
 								)
@@ -575,7 +593,7 @@ fun MainScreen(
 									supportedFormats = docState.session.getSupportedExportFormatsFfi(),
 									onFormatSelected = { format ->
 										selectedExportFormat = format
-										exportDocumentDialogOpen = false
+										viewModel.exportDocumentDialog.close()
 										val extension = when (format) {
 											uniffi.paperback.ExportFormat.TEXT -> "txt"
 											uniffi.paperback.ExportFormat.HTML -> "html"
@@ -584,10 +602,10 @@ fun MainScreen(
 										val baseName = docState.fileName.substringBeforeLast(".")
 										exportDocumentLauncher.launch("$baseName.$extension")
 									},
-									onDismiss = { exportDocumentDialogOpen = false }
+									onDismiss = { viewModel.exportDocumentDialog.close() }
 								)
 							} ?: run {
-								exportDocumentDialogOpen = false
+								viewModel.exportDocumentDialog.close()
 							}
 						}
 						DocumentToolDialogs(docState = docState, viewModel = viewModel)

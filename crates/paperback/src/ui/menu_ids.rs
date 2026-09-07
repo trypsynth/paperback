@@ -1,7 +1,6 @@
 use wx_utils::seq_ids;
 use wxdragon::id::{ID_ABOUT, ID_EXIT};
 
-// Re-export standard IDs
 pub const EXIT: i32 = ID_EXIT;
 pub const ABOUT: i32 = ID_ABOUT;
 #[allow(clippy::cast_possible_truncation)]
@@ -9,7 +8,7 @@ pub const PREFERENCES: i32 = wxdragon::ffi::WXD_ID_PREFERENCES as i32;
 
 // Standard wxWidgets IDs for the macOS Edit menu. They must be the real wxWidgets
 // IDs (not custom ones) so wxWidgets binds each item to its native macOS selector
-// — cut:, copy:, paste:, delete:, selectAll: — with a nil target. AppKit then
+// (cut:, copy:, paste:, delete:, selectAll:) with a nil target. AppKit then
 // routes the command through the responder chain to the focused control and, because
 // a `copy:` item is present, appends its own "Emoji & Symbols" and "Start Dictation"
 // items to the menu. Undo/Redo have no native selector mapping but are handled by
@@ -29,7 +28,6 @@ mod edit_ids {
 	pub const SELECT_ALL: i32 = ffi::WXD_ID_SELECTALL as i32;
 }
 
-// Base for custom IDs
 const BASE: i32 = 5000;
 
 // File menu (BASE + 0..99)
@@ -110,6 +108,9 @@ seq_ids!(BASE + 450 =>
 	PLAY_PAUSE_AUDIO, SEEK_AUDIO_FORWARD, SEEK_AUDIO_BACKWARD,
 	INCREASE_AUDIO_SEEK_AMOUNT, DECREASE_AUDIO_SEEK_AMOUNT,
 );
+
+// Tools menu: OCR (BASE + 460..469)
+seq_ids!(BASE + 460 => BATCH_OCR);
 
 // Help menu (BASE + 500..599)
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
@@ -197,6 +198,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::ToggleFullScreen => TOGGLE_FULL_SCREEN,
 		ActionId::Options => OPTIONS,
 		ActionId::SleepTimer => SLEEP_TIMER,
+		ActionId::BatchOcr => BATCH_OCR,
 		ActionId::CustomizeShortcuts => CUSTOMIZE_SHORTCUTS,
 		ActionId::ImportDocumentData => IMPORT_DOCUMENT_DATA,
 		ActionId::ExportDocumentData => EXPORT_DOCUMENT_DATA,

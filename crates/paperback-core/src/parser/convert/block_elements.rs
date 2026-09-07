@@ -51,6 +51,6 @@ const BLOCK_ELEMENT_TAGS: &[&str] = &[
 	"docauthor",
 ];
 
-pub(super) fn is_block_element(tag_name: &str) -> bool {
+pub(crate) fn is_block_element(tag_name: &str) -> bool {
 	BLOCK_ELEMENT_TAGS.iter().any(|t| tag_name.eq_ignore_ascii_case(t))
 }
