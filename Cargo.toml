@@ -14,7 +14,7 @@ repository = "https://github.com/trypsynth/paperback"
 anyhow = "1.0.104"
 base64 = "0.23.1"
 bitflags = "2.13.1"
-rstest = "0.26.1"
+rstest = "0.27.0"
 toml = "1.1.5"
 
 # Lint policy for every crate in the workspace; each member opts in with `[lints] workspace = true`.
