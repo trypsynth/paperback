@@ -42,6 +42,16 @@ fun MainNavigation() {
 		}
 	}
 
+	val allDocumentsRequested by viewModel.allDocumentsRequest.isRequested.collectAsStateWithLifecycle()
+	LaunchedEffect(allDocumentsRequested) {
+		if (allDocumentsRequested) {
+			if (backStack.lastOrNull() != AllDocumentsRoute) {
+				backStack.add(AllDocumentsRoute)
+			}
+			viewModel.allDocumentsRequest.consume()
+		}
+	}
+
 	val elementsRequested by viewModel.elementsRequest.isRequested.collectAsStateWithLifecycle()
 	LaunchedEffect(elementsRequested) {
 		if (elementsRequested) {

@@ -64,7 +64,7 @@ fun MainScreen(
 	val pendingJumpOffset by viewModel.pendingJumpOffset.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
-	var exportDocumentDialogOpen by remember { mutableStateOf(false) }
+	val exportDocumentDialogOpen by viewModel.exportDocumentDialog.isOpen.collectAsStateWithLifecycle()
 	var selectedExportFormat by remember { mutableStateOf<uniffi.paperback.ExportFormat?>(null) }
 	val goToDialogOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
 	val goToInitialMode by viewModel.goToInitialMode.collectAsStateWithLifecycle()
@@ -249,31 +249,6 @@ fun MainScreen(
 	var showFileManager by remember { mutableStateOf(false) }
 	var showFileManagerForImport by remember { mutableStateOf(false) }
 
-	// Which picker opening a book uses depends on a setting, so the top bar's Open Book item and
-	// Ctrl+O share the one lambda rather than each deciding for themselves.
-	val openBook: () -> Unit = {
-		if (useInAppFileBrowser) {
-			if (needsAllFilesAccessPermission()) {
-				viewModel.permissionRationaleDialog.open()
-			} else {
-				showFileManager = true
-			}
-		} else {
-			filePickerLauncher.launch(supportedMimeTypes)
-		}
-	}
-
-	// Ctrl+O is handled in MainActivity, which has no picker of its own to open, so it leaves the
-	// request here. Pressed while another screen is in front, it waits until this one is back,
-	// the same way a jump offset from the elements screen does.
-	val openBookRequested by viewModel.openBookRequest.isRequested.collectAsStateWithLifecycle()
-	LaunchedEffect(openBookRequested) {
-		if (openBookRequested) {
-			openBook()
-			viewModel.openBookRequest.consume()
-		}
-	}
-
 	val importSettingsLauncher = rememberLauncherForActivityResult(
 		contract = ActivityResultContracts.OpenDocument(),
 		onResult = { uri ->
@@ -324,6 +299,51 @@ fun MainScreen(
 		}
 	)
 
+	// The three actions that pick a file. Which picker each one uses depends on a setting and on
+	// where the document came from, so the top bar's menu items and the keyboard shortcuts share
+	// these rather than each deciding for themselves.
+	val openBook: () -> Unit = {
+		if (useInAppFileBrowser) {
+			if (needsAllFilesAccessPermission()) {
+				viewModel.permissionRationaleDialog.open()
+			} else {
+				showFileManager = true
+			}
+		} else {
+			filePickerLauncher.launch(supportedMimeTypes)
+		}
+	}
+	val exportSettings: () -> Unit = {
+		val activeDocUri = (state as? MainScreenUiState.Success)?.activeTab?.documentUri
+		if (activeDocUri != null) {
+			if (activeDocUri.startsWith("content://")) {
+				exportSettingsLauncher.launch("document.paperback")
+			} else {
+				// TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
+				if (viewModel.exportCurrentSettings()) {
+					Toast.makeText(context, t("Settings exported"), Toast.LENGTH_SHORT).show()
+				} else {
+					Toast.makeText(context, t("Failed to export settings"), Toast.LENGTH_SHORT).show()
+				}
+			}
+		}
+	}
+	val importSettings: () -> Unit = {
+		if (useInAppFileBrowser) {
+			if (needsAllFilesAccessPermission()) {
+				viewModel.permissionRationaleDialog.open()
+			} else {
+				showFileManagerForImport = true
+			}
+		} else {
+			importSettingsLauncher.launch(arrayOf("*/*"))
+		}
+	}
+
+	OnScreenRequest(viewModel.openBookRequest, openBook)
+	OnScreenRequest(viewModel.exportSettingsRequest, exportSettings)
+	OnScreenRequest(viewModel.importSettingsRequest, importSettings)
+
 	Box(modifier = Modifier.fillMaxSize()) {
 		Scaffold(
 			// safeDrawing rather than the default systemBars so text keeps clear of a landscape
@@ -349,33 +369,9 @@ fun MainScreen(
 					onSettingsOpen = { onItemClick(SettingsRoute) },
 					onSleepTimerOpen = { viewModel.sleepTimerDialog.open() },
 					onElementsOpen = { viewModel.openElements() },
-					onExportDocumentOpen = { exportDocumentDialogOpen = true },
-					onExportSettings = {
-						val activeDocUri = (state as? MainScreenUiState.Success)?.activeTab?.documentUri
-						if (activeDocUri != null) {
-							if (activeDocUri.startsWith("content://")) {
-								exportSettingsLauncher.launch("document.paperback")
-							} else {
-								// TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
-								if (viewModel.exportCurrentSettings()) {
-									Toast.makeText(context, t("Settings exported"), Toast.LENGTH_SHORT).show()
-								} else {
-									Toast.makeText(context, t("Failed to export settings"), Toast.LENGTH_SHORT).show()
-								}
-							}
-						}
-					},
-					onImportSettings = {
-						if (useInAppFileBrowser) {
-							if (needsAllFilesAccessPermission()) {
-								viewModel.permissionRationaleDialog.open()
-							} else {
-								showFileManagerForImport = true
-							}
-						} else {
-							importSettingsLauncher.launch(arrayOf("*/*"))
-						}
-					},
+					onExportDocumentOpen = { viewModel.openExportDocumentDialog() },
+					onExportSettings = exportSettings,
+					onImportSettings = importSettings,
 					onHelpOpen = {
 						viewModel.openHelpDocument()
 					}
@@ -597,7 +593,7 @@ fun MainScreen(
 									supportedFormats = docState.session.getSupportedExportFormatsFfi(),
 									onFormatSelected = { format ->
 										selectedExportFormat = format
-										exportDocumentDialogOpen = false
+										viewModel.exportDocumentDialog.close()
 										val extension = when (format) {
 											uniffi.paperback.ExportFormat.TEXT -> "txt"
 											uniffi.paperback.ExportFormat.HTML -> "html"
@@ -606,10 +602,10 @@ fun MainScreen(
 										val baseName = docState.fileName.substringBeforeLast(".")
 										exportDocumentLauncher.launch("$baseName.$extension")
 									},
-									onDismiss = { exportDocumentDialogOpen = false }
+									onDismiss = { viewModel.exportDocumentDialog.close() }
 								)
 							} ?: run {
-								exportDocumentDialogOpen = false
+								viewModel.exportDocumentDialog.close()
 							}
 						}
 						DocumentToolDialogs(docState = docState, viewModel = viewModel)
