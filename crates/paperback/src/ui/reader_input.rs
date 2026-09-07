@@ -32,6 +32,19 @@ pub(super) fn build_text_ctrl(
 	text_ctrl.on_char(move |event| {
 		if let WindowEventData::Keyboard(kbd) = event {
 			if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
+				// Enter on an image-only page runs OCR instead of the table/link activation
+				// below. Enter only; Space keeps its old behavior.
+				#[cfg(any(target_os = "windows", target_os = "macos"))]
+				if kbd.get_key_code() == Some(13) {
+					let on_placeholder = {
+						let dm = dm_for_enter.lock().unwrap();
+						dm.image_only_page_at_caret().is_some()
+					};
+					if on_placeholder {
+						dm_for_enter.lock().unwrap().start_ocr_for_current_page();
+						return;
+					}
+				}
 				let table_html = {
 					let dm = dm_for_enter.lock().unwrap();
 					dm.activate_current_table()

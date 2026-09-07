@@ -12,7 +12,7 @@ mod marker;
 mod stats;
 mod toc;
 
-pub use buffer::{DocumentBuffer, PartSpan};
+pub use buffer::{DocumentBuffer, Edit, PartSpan, ReplaceOutcome};
 pub use handle::DocumentHandle;
 pub(crate) use marker::format_marker_types;
 pub use marker::{ContainerSpan, Marker, MarkerType, is_container_marker, is_heading_marker};
