@@ -121,6 +121,7 @@ class MainScreenViewModel(
 	// outside can open them straight into an empty or stale state.
 	val settingsRequest = ScreenRequest()
 	val tocRequest = ScreenRequest()
+	val openBookRequest = ScreenRequest()
 
 	val findDialog = DialogState()
 	val wordCountDialog = DialogState()

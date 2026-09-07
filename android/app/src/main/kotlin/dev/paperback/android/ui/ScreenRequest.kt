@@ -5,12 +5,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * A pending request to push a screen onto the back stack, raised by something that can't reach the
- * back stack itself (a keyboard shortcut in MainActivity, a menu item deep inside MainScreen) and
- * consumed by MainNavigation once it has navigated.
+ * A pending request raised by something that can't carry it out itself (a keyboard shortcut in
+ * MainActivity, a menu item deep inside MainScreen), consumed by whichever composable can:
+ * MainNavigation for the screens that go on the back stack, MainScreen for the file picker Ctrl+O
+ * asks for.
  *
- * Distinct from [DialogState] on purpose: these destinations are screens, not dialogs, and nothing
- * reads the flag to decide whether one is currently showing — the back stack is what says that.
+ * Distinct from [DialogState] on purpose: nothing reads the flag to decide whether the thing it
+ * asked for is currently showing. The back stack is what says that.
  */
 class ScreenRequest {
 	private val _isRequested = MutableStateFlow(false)

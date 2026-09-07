@@ -249,6 +249,31 @@ fun MainScreen(
 	var showFileManager by remember { mutableStateOf(false) }
 	var showFileManagerForImport by remember { mutableStateOf(false) }
 
+	// Which picker opening a book uses depends on a setting, so the top bar's Open Book item and
+	// Ctrl+O share the one lambda rather than each deciding for themselves.
+	val openBook: () -> Unit = {
+		if (useInAppFileBrowser) {
+			if (needsAllFilesAccessPermission()) {
+				viewModel.permissionRationaleDialog.open()
+			} else {
+				showFileManager = true
+			}
+		} else {
+			filePickerLauncher.launch(supportedMimeTypes)
+		}
+	}
+
+	// Ctrl+O is handled in MainActivity, which has no picker of its own to open, so it leaves the
+	// request here. Pressed while another screen is in front, it waits until this one is back,
+	// the same way a jump offset from the elements screen does.
+	val openBookRequested by viewModel.openBookRequest.isRequested.collectAsStateWithLifecycle()
+	LaunchedEffect(openBookRequested) {
+		if (openBookRequested) {
+			openBook()
+			viewModel.openBookRequest.consume()
+		}
+	}
+
 	val importSettingsLauncher = rememberLauncherForActivityResult(
 		contract = ActivityResultContracts.OpenDocument(),
 		onResult = { uri ->
@@ -310,17 +335,7 @@ fun MainScreen(
 					state = state,
 					isTextMode = isTextMode,
 					isSpeaking = isSpeaking,
-					onOpenBook = {
-						if (useInAppFileBrowser) {
-							if (needsAllFilesAccessPermission()) {
-								viewModel.permissionRationaleDialog.open()
-							} else {
-								showFileManager = true
-							}
-						} else {
-							filePickerLauncher.launch(supportedMimeTypes)
-						}
-					},
+					onOpenBook = openBook,
 					onTocOpen = { viewModel.tocRequest.request() },
 					onTabSelect = { viewModel.setActiveTab(it) },
 					onTabClose = { viewModel.closeTab(it) },
