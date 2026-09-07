@@ -1,7 +1,6 @@
 use wx_utils::seq_ids;
 use wxdragon::id::{ID_ABOUT, ID_EXIT};
 
-// Re-export standard IDs
 pub const EXIT: i32 = ID_EXIT;
 pub const ABOUT: i32 = ID_ABOUT;
 #[allow(clippy::cast_possible_truncation)]
@@ -29,7 +28,6 @@ mod edit_ids {
 	pub const SELECT_ALL: i32 = ffi::WXD_ID_SELECTALL as i32;
 }
 
-// Base for custom IDs
 const BASE: i32 = 5000;
 
 // File menu (BASE + 0..99)

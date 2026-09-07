@@ -33,7 +33,7 @@ pub(super) fn build_text_ctrl(
 		if let WindowEventData::Keyboard(kbd) = event {
 			if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
 				// Enter on an image-only page runs OCR instead of the table/link activation
-				// below. Enter only; Space keeps its old behavior.
+				// below. Enter only; Space always falls through to that activation.
 				#[cfg(any(target_os = "windows", target_os = "macos"))]
 				if kbd.get_key_code() == Some(13) {
 					let on_placeholder = {

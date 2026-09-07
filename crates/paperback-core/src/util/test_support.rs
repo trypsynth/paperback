@@ -1,8 +1,8 @@
 //! Filesystem helpers shared by unit tests.
 //!
 //! Parsers take a path rather than bytes, so testing one means putting a real file on disk.
-//! Several test modules had grown their own `unique_temp_path` for that; this is the one
-//! implementation, and unlike those it removes what it created when the test ends.
+//! These helpers are the one implementation of that, and they remove what they create when the
+//! test ends.
 
 use std::{
 	env, fs,

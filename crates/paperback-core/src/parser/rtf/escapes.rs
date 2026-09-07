@@ -233,7 +233,6 @@ pub(super) fn normalize_escapes(
 	result
 }
 
-/// Parses two ASCII hex digit bytes into a `u8`.
 fn parse_hex_pair(h1: u8, h2: u8) -> Option<u8> {
 	let d1 = hex_digit(h1)?;
 	let d2 = hex_digit(h2)?;

@@ -600,7 +600,7 @@ impl DocumentManager {
 	///
 	/// Because it runs on a timer, it must never do anything a reader could notice. Appending
 	/// qualifies: every offset already handed out still points at the same character. Rebuilding
-	/// the window does not, and this used to do that.
+	/// the window does not.
 	///
 	/// The bug that motivated the split: NVDA's Say-All holds its own offsets into the control,
 	/// advances them itself rather than re-reading the caret, and has no handling for the text

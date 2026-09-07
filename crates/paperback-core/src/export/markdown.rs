@@ -186,10 +186,8 @@ mod tests {
 		let md = render(&doc);
 		// The text should still appear, but without any markdown syntax
 		assert!(md.contains("underline"), "Expected text 'underline' in markdown: {md}");
-		// No underline syntax should be present
 		assert!(!md.contains("__"), "Expected no __ syntax for underline");
 		assert!(!md.contains("_underline_"), "Expected no _underline_ italic-like syntax");
-		// No HTML-like underline either
 		assert!(!md.contains("<u>"), "Expected no <u> HTML in markdown output");
 	}
 
@@ -211,7 +209,6 @@ mod tests {
 		let doc = simple_doc("bold", vec![Marker::new(MarkerType::Bold, 0).with_length(4)]);
 		let md = render(&doc);
 		assert!(md.contains("**bold**"), "Expected **bold** in markdown with closing **: {md}");
-		// Count ** to verify both open and close are present
 		let count = md.matches("**").count();
 		assert_eq!(count, 2, "Expected exactly 2 occurrences of ** (open and close)");
 	}
@@ -222,7 +219,6 @@ mod tests {
 		let doc = simple_doc("italic", vec![Marker::new(MarkerType::Italic, 0).with_length(6)]);
 		let md = render(&doc);
 		assert!(md.contains("*italic*"), "Expected *italic* in markdown with closing *: {md}");
-		// Count * to verify both open and close are present (should be 2)
 		let count = md.matches('*').count();
 		assert_eq!(count, 2, "Expected exactly 2 occurrences of * (open and close)");
 	}

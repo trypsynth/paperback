@@ -101,9 +101,8 @@ mod tests {
 	#[test]
 	fn dependency_owned_strings_translate_through_the_app_catalog() {
 		patois::set_default_domain("paperback");
-		// Holds the locale lock for the body and puts the locale back on drop: this used to
-		// set fr and restore en at the end, which let every concurrent test see French, and
-		// stranded the whole run there if an assertion below failed.
+		// Holds the locale lock for the body and puts the locale back on drop, so no concurrent
+		// test sees French and a failing assertion below cannot strand the rest of the run in it.
 		let _locale = crate::test_locale::pinned_to("fr");
 		// "&Yes"/"&No" are also used by this crate's own confirmation dialog; "Downloading
 		// update..." exists only in ship-shape, so it fails if dependency strings stop being
@@ -132,8 +131,7 @@ mod tests {
 
 	/// End-to-end proof that wxWidgets actually loads and translates through the
 	/// macro-generated loader: sets German, loads the embedded catalog, and checks a known
-	/// wx string translates. Runs headless (no wxApp), like `WxStdCatalogLoader`'s own tests
-	/// used to (before this logic moved to `patois::embed_wx_translations!()`).
+	/// wx string translates. Runs headless, with no wxApp.
 	#[test]
 	fn wxwidgets_translates_via_embedded_german_catalog() {
 		use wxdragon::translations::Translations;
