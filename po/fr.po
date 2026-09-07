@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 14:46+0000\n"
+"POT-Creation-Date: 2026-09-07 11:10-0600\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -710,6 +710,26 @@ msgstr[1] "%d de %d documents sélectionnés."
 msgid "Locate Book"
 msgstr "Rechercher un livre"
 
+#. TRANSLATORS: Title of the Batch OCR dialog
+#, fuzzy
+msgid "Batch OCR"
+msgstr "Cas de correspondance"
+
+#. TRANSLATORS: Label for the starting page field of the Batch OCR range
+#, fuzzy
+msgid "&Start page:"
+msgstr "&Page de début :"
+
+#. TRANSLATORS: Label for the ending page field of the Batch OCR range
+#, fuzzy
+msgid "&End page:"
+msgstr "&Page de fin :"
+
+#. TRANSLATORS: Label for the button that starts the batch OCR
+#, fuzzy
+msgid "OCR"
+msgstr "OCR"
+
 #. TRANSLATORS: Title of the Jump to Bookmark dialog
 msgid "Jump to Bookmark"
 msgstr "Aller au signet"
@@ -1210,6 +1230,11 @@ msgstr "Lecture"
 msgid "Readability"
 msgstr "Lisibilité"
 
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+#, fuzzy
+msgid "Choose a colour"
+msgstr "Choisir une couleur"
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 #, fuzzy
 msgid "Background: Default"
@@ -1254,6 +1279,11 @@ msgstr "Souligné"
 #, fuzzy
 msgid "Strikethrough"
 msgstr "Barré"
+
+#. TRANSLATORS: Title of the system dialog for picking a font
+#, fuzzy
+msgid "Choose a font"
+msgstr "Choisir une police"
 
 #. TRANSLATORS: Title of the hotkey customization dialog
 #, fuzzy
@@ -1437,6 +1467,56 @@ msgid_plural "This document contains %d words."
 msgstr[0] "Ce document contient %d mot."
 msgstr[1] "Ce document contient %d mots."
 
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+#, fuzzy
+msgid "OCR in progress."
+msgstr "OCR en cours."
+
+#. TRANSLATORS: Announced when batch OCR is triggered with no document open
+#. TRANSLATORS: Announced when Batch OCR is chosen with no document open
+#, fuzzy
+msgid "No document open."
+msgstr "Aucun document n'est ouvert"
+
+#. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
+#, fuzzy
+msgid "OCR already in progress."
+msgstr "OCR déjà en cours."
+
+#. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
+#, fuzzy
+msgid "No image-only pages in the given range."
+msgstr "Aucune page contenant uniquement des images dans la plage donnée."
+
+#. TRANSLATORS: Batch OCR progress announcement; the two %d placeholders are the pages done and the total pages
+#, fuzzy
+msgid "OCR %d of %d."
+msgstr "OCR %d sur %d."
+
+#. TRANSLATORS: Announced after OCR replaces an image-only page with the recognized text
+#, fuzzy
+msgid "OCR complete."
+msgstr "OCR terminé."
+
+#. TRANSLATORS: Announced when OCR runs on a page but finds no recognizable text
+#, fuzzy
+msgid "No text found."
+msgstr "Aucun texte trouvé."
+
+#. TRANSLATORS: Announced when batch OCR is stopped early; %d is the number of pages recognized before it stopped
+#, fuzzy
+msgid "Batch OCR stopped. %d page recognized."
+msgid_plural "Batch OCR stopped. %d pages recognized."
+msgstr[0] "Reconnaissance OCR par lot arrêtée. %d page reconnue."
+msgstr[1] "Reconnaissance OCR par lot arrêtée. %d pages reconnues."
+
+#. TRANSLATORS: Announced after batch OCR finishes; %d is the number of pages recognized
+#, fuzzy
+msgid "Batch OCR complete. %d page recognized."
+msgid_plural "Batch OCR complete. %d pages recognized."
+msgstr[0] "Reconnaissance OCR par lot terminée. %d page reconnue."
+msgstr[1] "Reconnaissance OCR par lot terminée. %d pages reconnues."
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "Fichier introuvable : {}"
@@ -1598,6 +1678,11 @@ msgstr "Aucune page."
 #. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
 msgid "No table of contents."
 msgstr "Aucune table des matières."
+
+#. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
+#, fuzzy
+msgid "Batch OCR is running. Stop it?"
+msgstr "OCR par lot en cours. L'arrêter ?"
 
 #. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
 msgid "Web View"
@@ -2111,6 +2196,11 @@ msgstr "&Paramètres"
 msgid "&Sleep Timer..."
 msgstr "&Minuteur de veille..."
 
+#. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
+#, fuzzy
+msgid "&Batch OCR..."
+msgstr "&OCR par lot..."
+
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Fichier"
@@ -2304,6 +2394,21 @@ msgstr "Au-delà de l'extrémité du conteneur."
 #, fuzzy
 msgid "Start of container."
 msgstr "Début du conteneur."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#, fuzzy
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Aucune langue OCR n'est installée. Ajoutez-en une dans les paramètres linguistiques de votre système."
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+#, fuzzy
+msgid "OCR failed."
+msgstr "L'OCR a échoué."
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+#, fuzzy
+msgid "OCR is not available on this system."
+msgstr "L'affichage « Source » n'est pas disponible pour ce format de document."
 
 #. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
 msgid "Table View"
@@ -2723,6 +2828,11 @@ msgstr "Minuterie de veille"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
+msgid "Batch OCR..."
+msgstr "OCR par lot..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Customize Keyboard Shortcuts..."
 msgstr "Personnaliser le raccourci clavier de la fenêtre..."
 
@@ -2795,6 +2905,16 @@ msgstr "Aide"
 #, fuzzy
 msgid "None"
 msgstr "Aucun"
+
+#. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
+#, fuzzy
+msgid "[Image only. Press enter to OCR.]"
+msgstr "[Image uniquement. Appuyez sur Entrée pour l'OCR.]"
+
+#. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
+#, fuzzy
+msgid "[Image only. This page has no text to read.]"
+msgstr "[Image uniquement. Cette page n'a pas de texte à lire.]"
 
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 #, fuzzy
@@ -3014,10 +3134,6 @@ msgstr "Mot de passe requis ou incorrect"
 #, fuzzy
 msgid "Failed to open PDF document: {}"
 msgstr "Impossible d'ouvrir le document PDF : {}"
-
-#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
-msgstr "Ce PDF ne contient que des images, sans texte extractible. Vous devrez peut-être le traiter avec un logiciel OCR pour en lire le contenu."
 
 #, fuzzy
 msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
@@ -4366,6 +4482,9 @@ msgstr "Fichier manquant"
 #, fuzzy
 msgid "{}% through"
 msgstr "{}% parcouru"
+
+#~ msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+#~ msgstr "Ce PDF ne contient que des images, sans texte extractible. Vous devrez peut-être le traiter avec un logiciel OCR pour en lire le contenu."
 
 #~ msgid "&Line number:"
 #~ msgstr "&Numéro de ligne :"
