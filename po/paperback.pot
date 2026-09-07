@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 18:02+0000\n"
+"POT-Creation-Date: 2026-09-07 14:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -759,6 +759,14 @@ msgstr ""
 msgid "Pages"
 msgstr ""
 
+#. TRANSLATORS: Choice option in the view dropdown to show the list of tables
+msgid "Tables"
+msgstr ""
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of lists
+msgid "Lists"
+msgstr ""
+
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 #. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
@@ -1329,6 +1337,19 @@ msgstr ""
 msgid "Find &Next"
 msgstr ""
 
+#. TRANSLATORS: Button that finds and lists every occurrence of the search text
+msgid "Find &All"
+msgstr ""
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr ""
+
+#. TRANSLATORS: Button that jumps to the selected find result
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
+msgid "&Go"
+msgstr ""
+
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr ""
@@ -1833,10 +1854,6 @@ msgstr ""
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
-msgstr ""
-
-#. TRANSLATORS: Top-level "Go" menu label in the menu bar
-msgid "&Go"
 msgstr ""
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
