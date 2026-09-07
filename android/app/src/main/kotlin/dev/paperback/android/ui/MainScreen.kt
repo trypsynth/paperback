@@ -34,9 +34,6 @@ import dev.paperback.android.SettingsRoute
 import dev.paperback.android.t
 import dev.paperback.android.ui.dialogs.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -55,7 +52,7 @@ internal fun needsNotificationPermission(context: Context): Boolean =
 		ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
 		PackageManager.PERMISSION_GRANTED
 
-@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
 	modifier: Modifier = Modifier,
@@ -493,8 +490,7 @@ fun MainScreen(
 							}
 							LaunchedEffect(docState.documentUri) {
 								snapshotFlow { listState.firstVisibleItemIndex }
-									.distinctUntilChanged()
-									.debounce(500)
+									.scrollsWorthSaving()
 									.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
 							}
 							if (!isTextMode) {
