@@ -5,7 +5,7 @@
 //! chosen match span.
 
 use super::DocumentSession;
-use crate::reader_core::SearchOptions;
+use crate::{document::MarkerType, reader_core::SearchOptions};
 
 /// One match's extent, in the same display units (UTF-16 code units on Windows/macOS) as the
 /// GUI caret and page markers, so a caller can hand it straight to a range selector.
@@ -39,6 +39,14 @@ impl DocumentSession {
 		}
 		let newline_bytes: Vec<usize> = buffer.content.match_indices('\n').map(|(idx, _)| idx).collect();
 		let content_len = buffer.content.len();
+		// The page-break offsets once, so each result line's page is a binary search instead of
+		// recounting every marker per line (which would scale with lines x markers).
+		let pagebreak_offsets: Vec<i64> = buffer
+			.markers
+			.iter()
+			.filter(|marker| marker.mtype == MarkerType::PageBreak)
+			.map(|marker| i64::try_from(marker.position).unwrap_or(i64::MAX))
+			.collect();
 		let mut rows: Vec<FindAllLine> = Vec::new();
 		let mut open_line_start: Option<usize> = None;
 		for (start, end) in matches {
@@ -51,7 +59,13 @@ impl DocumentSession {
 				if text.is_empty() {
 					continue;
 				}
-				let page = if self.page_count() > 0 { self.current_page(start).max(1) } else { 0 };
+				// The page number is how many page-break markers sit at or before the line; a line
+				// before the first marker still belongs to page 1.
+				let page = if pagebreak_offsets.is_empty() {
+					0
+				} else {
+					i32::try_from(pagebreak_offsets.partition_point(|&offset| offset <= start)).unwrap_or(1).max(1)
+				};
 				rows.push(FindAllLine { text, page, matches: Vec::new() });
 				open_line_start = Some(line_start);
 			}
