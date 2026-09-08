@@ -11,15 +11,120 @@ use crate::{
 
 mod links;
 mod metadata;
+mod running;
 mod structure;
 mod text;
 mod toc;
 
-use links::{extract_annotation_links, extract_web_links};
+use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_value};
+use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
 use text::{extract_text_lines, join_paragraphs, median_line_font_size};
 use toc::{add_heading_markers, build_toc_tree, extract_toc};
+
+/// Everything one page contributes, as read from pdfium and before any of it is placed in the
+/// document. The whole document is read before the first page is assembled, because which lines
+/// are running headers is only known once every page's edges have been seen - and pdfium is
+/// asked for each page exactly once, since loading a page and its text is the bulk of what
+/// parsing a PDF costs.
+#[derive(Default)]
+struct PageContent {
+	/// A page with a trustworthy structure tree arrives already laid out, in a buffer of its
+	/// own whose positions are relative to the page.
+	tagged: Option<TaggedPage>,
+	/// A page without one arrives as visual lines, still to have its running headers taken out
+	/// and its wrapped lines joined into paragraphs.
+	lines: Vec<(String, f64)>,
+	/// Kept apart because each kind is placed by its own walk through the page's text: a link
+	/// annotation may sit before a bare URL that pdfium's scanner reported first.
+	web_links: Vec<PendingLink>,
+	annotation_links: Vec<PendingLink>,
+	has_image: bool,
+}
+
+/// A page laid out by [`extract_tagged_page_text`], in its own buffer.
+struct TaggedPage {
+	buffer: DocumentBuffer,
+	display_text: String,
+	lines_info: Vec<(usize, String)>,
+	toc_items: Vec<(u32, TocItem)>,
+}
+
+/// Read one page from pdfium: its text, its links, and whether it draws an image.
+fn read_page(document: &PdfiumDocument, page_index: i32, render_tables_inline: bool) -> PageContent {
+	let Ok(page) = document.page(page_index) else {
+		tracing::warn!(page_index, "failed to load pdf page, skipping its text");
+		return PageContent::default();
+	};
+	let Ok(text_page) = page.text() else {
+		tracing::warn!(page_index, "failed to load text for pdf page, skipping its text");
+		return PageContent::default();
+	};
+	let mut content = PageContent::default();
+	let mut tagged = TaggedPage {
+		buffer: DocumentBuffer::new(),
+		display_text: String::new(),
+		lines_info: Vec::new(),
+		toc_items: Vec::new(),
+	};
+	if extract_tagged_page_text(
+		&page,
+		&text_page,
+		page_index,
+		&mut tagged.buffer,
+		&mut tagged.display_text,
+		&mut tagged.lines_info,
+		&mut tagged.toc_items,
+		render_tables_inline,
+	) {
+		content.tagged = Some(tagged);
+	} else {
+		content.lines = extract_text_lines(&text_page, page_index);
+	}
+	content.web_links = collect_web_links(&text_page);
+	content.annotation_links = collect_annotation_links(&page, &text_page, document);
+	// This runs per page (rather than stopping at the first image anywhere) so an image-only
+	// page can still get its OCR placeholder when earlier pages contributed text.
+	let obj_count = lib().FPDFPage_CountObjects(&page);
+	for i in 0..obj_count {
+		if let Ok(obj) = lib().FPDFPage_GetObject(&page, i)
+			&& lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE
+		{
+			content.has_image = true;
+			break;
+		}
+	}
+	content
+}
+
+/// Splice a tagged page's own buffer into the document, moving everything it holds from
+/// page-relative positions to where the page landed.
+fn append_tagged_page(buffer: &mut DocumentBuffer, page: DocumentBuffer, page_start_offset: usize) {
+	buffer.append(&page.content);
+	for mut marker in page.markers {
+		marker.position += page_start_offset;
+		buffer.add_marker(marker);
+	}
+}
+
+/// Drop the running headers and footers from one page's lines. Only lines within
+/// [`EDGE_LINES`] of either edge are considered, so a body line that happens to read like a
+/// running head is never dropped, and a page whose every line matches (a part title repeating
+/// the book's name, say) keeps them: a page is never emptied by this.
+fn strip_running_text(lines: &mut Vec<(String, f64)>, running_text: &RunningText) {
+	let is_running = |index: usize, lines: &Vec<(String, f64)>| {
+		let at_an_edge = index < EDGE_LINES || index + EDGE_LINES >= lines.len();
+		at_an_edge && running_text.contains(&lines[index].0, lines[index].1)
+	};
+	let doomed: Vec<usize> = (0..lines.len()).filter(|index| is_running(*index, lines)).collect();
+	if doomed.len() == lines.iter().filter(|(line, _)| !line.trim().is_empty()).count() {
+		return;
+	}
+	for index in doomed.into_iter().rev() {
+		lines.remove(index);
+	}
+}
 
 pub struct PdfParser;
 
@@ -43,42 +148,49 @@ impl Parser for PdfParser {
 		let mut has_any_text = false;
 		let mut has_any_images = false;
 		let mut detected_heading_positions: Vec<(usize, String)> = Vec::new();
-		for page_index in 0..page_count {
+		let pages: Vec<PageContent> =
+			(0..page_count).map(|page_index| read_page(&document, page_index, render_tables_inline)).collect();
+		// Only an untagged page needs this: a tagged one's structure tree marks its running
+		// headers as artifacts and never hands them over as text in the first place.
+		let untagged = || pages.iter().filter(|page| page.tagged.is_none());
+		let edges: Vec<PageEdges> = untagged().map(|page| PageEdges::of(&page.lines)).collect();
+		// The body size is taken over the whole document rather than one page: a chapter opening
+		// is mostly heading, and the survey has to know a heading from a running head.
+		let body_font_size = median_line_font_size(&untagged().flat_map(|page| page.lines.clone()).collect::<Vec<_>>());
+		let running_text = running::detect(&edges, body_font_size);
+		tracing::debug!(
+			running_text_count = running_text.len(),
+			body_font_size,
+			"surveyed pages for running headers and footers"
+		);
+		for (page_index, page) in pages.into_iter().enumerate() {
 			let marker_position = buffer.current_position();
 			page_offsets.push(marker_position);
 			id_positions.insert(format!("page_{page_index}"), marker_position);
 			buffer.add_marker(
 				Marker::new(MarkerType::PageBreak, marker_position).with_text(format!("Page {}", page_index + 1)),
 			);
-			let Ok(page) = document.page(page_index) else {
-				tracing::warn!(page_index, "failed to load pdf page, skipping its text");
-				page_lines_info.push(Vec::new());
-				continue;
-			};
-			let Ok(text_page) = page.text() else {
-				tracing::warn!(page_index, "failed to load text for pdf page, skipping its text");
-				page_lines_info.push(Vec::new());
-				continue;
-			};
 			let page_start_offset = buffer.current_position();
 			let mut page_display_text = String::new();
 			let mut current_lines_info = Vec::new();
-			let tags_processed = extract_tagged_page_text(
-				&page,
-				&text_page,
-				page_index,
-				&mut buffer,
-				&mut page_display_text,
-				&mut current_lines_info,
-				&mut flat_toc_items,
-				render_tables_inline,
-			);
-			if tags_processed {
+			if let Some(tagged) = page.tagged {
 				any_tags_processed = true;
 				has_any_text = true;
+				append_tagged_page(&mut buffer, tagged.buffer, page_start_offset);
+				page_display_text = tagged.display_text;
+				current_lines_info =
+					tagged.lines_info.into_iter().map(|(pos, text)| (pos + page_start_offset, text)).collect();
+				flat_toc_items.extend(tagged.toc_items.into_iter().map(|(level, mut item)| {
+					item.offset += page_start_offset;
+					(level, item)
+				}));
 			} else {
-				let line_infos = extract_text_lines(&text_page, page_index);
+				let mut line_infos = page.lines;
+				// Measured before the running headers come out. They are set at or below the
+				// body's size, so dropping them pulls the median up, and a heading only just
+				// above it would stop counting as one.
 				let body_size = median_line_font_size(&line_infos);
+				strip_running_text(&mut line_infos, &running_text);
 				let paragraphs = join_paragraphs(&line_infos, body_size);
 				if !paragraphs.is_empty() {
 					has_any_text = true;
@@ -95,19 +207,7 @@ impl Parser for PdfParser {
 					page_display_text.push('\n');
 				}
 			}
-			// Check for image objects on this page. This runs per page (rather than stopping at
-			// the first image anywhere) so an image-only page can still get its OCR placeholder
-			// when earlier pages contributed text.
-			let mut page_has_image = false;
-			let obj_count = lib().FPDFPage_CountObjects(&page);
-			for i in 0..obj_count {
-				if let Ok(obj) = lib().FPDFPage_GetObject(&page, i)
-					&& lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE
-				{
-					page_has_image = true;
-					break;
-				}
-			}
+			let page_has_image = page.has_image;
 			if page_has_image {
 				has_any_images = true;
 			}
@@ -121,8 +221,8 @@ impl Parser for PdfParser {
 				buffer.append(&image_only_placeholder());
 				buffer.append("\n");
 			}
-			extract_web_links(&text_page, page_start_offset, &page_display_text, &mut buffer);
-			extract_annotation_links(&page, &text_page, &document, page_start_offset, &page_display_text, &mut buffer);
+			place_links(&page.web_links, page_start_offset, &page_display_text, &mut buffer);
+			place_links(&page.annotation_links, page_start_offset, &page_display_text, &mut buffer);
 			page_lines_info.push(current_lines_info);
 		}
 		let title = metadata_value(&document, "Title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
