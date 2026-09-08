@@ -61,6 +61,117 @@ enum FindView {
 	Results,
 }
 
+// The Find All results list. macOS does not expose wxListCtrl to VoiceOver (see the All
+// Documents dialog), so it uses a store-backed wxDataViewListCtrl there; everywhere else the
+// results are a *virtual* wxListCtrl, which asks the control for text only for the visible rows.
+// That means even hundreds of thousands of matches populate in O(1) instead of appending a
+// native row per match (the appending was what froze the dialog on large documents).
+#[cfg(target_os = "macos")]
+type ResultsList = DataViewListCtrl;
+#[cfg(not(target_os = "macos"))]
+type ResultsList = ListCtrl;
+
+/// The row label for one result line: "Page N: <text>" when the document is paginated, else the
+/// line text itself.
+fn result_row_label(row: &FindAllLine) -> String {
+	if row.page > 0 { navigation::page_announcement(row.page, &row.text) } else { row.text.clone() }
+}
+
+/// The fixed size of the results list. It is both the minimum and the maximum so the dialog's
+/// `fit()` never sizes itself to the list's item count (a 40,000-row virtual list has no business
+/// making the dialog tens of thousands of pixels tall).
+fn results_list_size(dialog: Dialog) -> Size {
+	dialog.from_dip(Size::new(600, 500))
+}
+
+#[cfg(not(target_os = "macos"))]
+fn build_results_list(dialog: Dialog, result_rows: Rc<RefCell<Vec<FindAllLine>>>) -> ResultsList {
+	let size = results_list_size(dialog);
+	let results_list = ListCtrl::builder(&dialog)
+		.with_style(ListCtrlStyle::Report | ListCtrlStyle::Virtual | ListCtrlStyle::SingleSel)
+		.with_size(size)
+		.build();
+	results_list.insert_column(0, "", ListColumnFormat::Left, dialog.from_dip_int(600));
+	results_list.set_min_size(size);
+	results_list.set_max_size(size);
+	// TRANSLATORS: Accessible name of the list of Find All results
+	results_list.set_accessibility_label(&t("Results"));
+	results_list.set_virtual_text_callback(move |index, _column| {
+		let rows = result_rows.borrow();
+		usize::try_from(index).ok().and_then(|index| rows.get(index)).map(result_row_label).unwrap_or_default()
+	});
+	results_list.set_item_count(0);
+	results_list
+}
+
+#[cfg(target_os = "macos")]
+fn build_results_list(dialog: Dialog, _result_rows: Rc<RefCell<Vec<FindAllLine>>>) -> ResultsList {
+	let size = results_list_size(dialog);
+	let results_list = DataViewListCtrl::builder(&dialog).with_style(DataViewStyle::RowLines).with_size(size).build();
+	results_list.append_text_column(
+		"",
+		0,
+		DataViewAlign::Left,
+		dialog.from_dip_int(600),
+		DataViewColumnFlags::Resizable,
+	);
+	results_list.set_min_size(size);
+	results_list.set_max_size(size);
+	// TRANSLATORS: Accessible name of the list of Find All results
+	results_list.set_accessibility_label(&t("Results"));
+	results_list
+}
+
+#[cfg(not(target_os = "macos"))]
+fn populate_results_list(list: ResultsList, rows: &Rc<RefCell<Vec<FindAllLine>>>) {
+	// Setting the count is enough: a virtual list only asks for text for the rows it shows, so
+	// there is nothing else to populate (and no need to refresh every row).
+	let count = i64::try_from(rows.borrow().len()).unwrap_or(0);
+	list.set_item_count(count);
+}
+
+#[cfg(target_os = "macos")]
+fn populate_results_list(list: ResultsList, rows: &Rc<RefCell<Vec<FindAllLine>>>) {
+	list.delete_all_items();
+	for row in rows.borrow().iter() {
+		list.append_item(&[Variant::from(result_row_label(row))]);
+	}
+}
+
+#[cfg(not(target_os = "macos"))]
+fn select_results_row(list: ResultsList, index: i32) {
+	if index < 0 {
+		return;
+	}
+	list.set_item_state(
+		i64::from(index),
+		ListItemState::Selected | ListItemState::Focused,
+		ListItemState::Selected | ListItemState::Focused,
+	);
+	list.ensure_visible(i64::from(index));
+}
+
+#[cfg(target_os = "macos")]
+fn select_results_row(list: ResultsList, index: i32) {
+	let Ok(index) = usize::try_from(index) else { return };
+	list.select_row(index);
+	if let Some(item) = list.row_to_item(index) {
+		list.set_current_item(&item);
+		list.ensure_visible(&item);
+	}
+}
+
+#[cfg(not(target_os = "macos"))]
+fn results_selected_index(list: ResultsList) -> Option<usize> {
+	let index = list.get_first_selected_item();
+	if index >= 0 { usize::try_from(index).ok() } else { None }
+}
+
+#[cfg(target_os = "macos")]
+fn results_selected_index(list: ResultsList) -> Option<usize> {
+	list.get_selected_row()
+}
+
 #[derive(Clone)]
 pub struct FindDialogState {
 	pub dialog: Dialog,
@@ -73,7 +184,7 @@ pub struct FindDialogState {
 	find_prev_btn: Button,
 	find_next_btn: Button,
 	find_all_btn: Button,
-	results_list: ListBox,
+	results_list: ResultsList,
 	go_btn: Button,
 	in_progress: Rc<Cell<bool>>,
 	view: Rc<Cell<FindView>>,
@@ -91,6 +202,7 @@ impl FindDialogState {
 	) -> Self {
 		// TRANSLATORS: Title of the Find dialog
 		let dialog = Dialog::builder(frame, &t("Find")).build();
+		let result_rows = Rc::new(RefCell::new(Vec::new()));
 		let FindDialogWidgets {
 			find_label,
 			find_combo,
@@ -104,7 +216,7 @@ impl FindDialogState {
 			cancel_btn,
 			results_list,
 			go_btn,
-		} = build_find_dialog_ui(dialog);
+		} = build_find_dialog_ui(dialog, Rc::clone(&result_rows));
 		bind_find_dialog_actions(FindDialogActionParams {
 			frame: *frame,
 			dialog,
@@ -136,7 +248,7 @@ impl FindDialogState {
 			in_progress: Rc::new(Cell::new(false)),
 			view: Rc::new(Cell::new(FindView::Query)),
 			origin: Rc::new(Cell::new(0)),
-			result_rows: Rc::new(RefCell::new(Vec::new())),
+			result_rows,
 		};
 		state.reload_history(config);
 		state.save_settings(config);
@@ -260,7 +372,7 @@ struct FindDialogWidgets {
 	find_next_btn: Button,
 	find_all_btn: Button,
 	cancel_btn: Button,
-	results_list: ListBox,
+	results_list: ResultsList,
 	go_btn: Button,
 }
 
@@ -272,7 +384,7 @@ struct FindDialogActionParams {
 	find_next_btn: Button,
 	find_all_btn: Button,
 	go_btn: Button,
-	results_list: ListBox,
+	results_list: ResultsList,
 	cancel_btn: Button,
 	config: Rc<Mutex<ConfigManager>>,
 	doc_manager: Rc<Mutex<DocumentManager>>,
@@ -280,7 +392,7 @@ struct FindDialogActionParams {
 	live_region_label: StaticText,
 }
 
-fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
+fn build_find_dialog_ui(dialog: Dialog, result_rows: Rc<RefCell<Vec<FindAllLine>>>) -> FindDialogWidgets {
 	let combo_width = 250;
 	let option_padding = 2;
 	let button_spacing = 5;
@@ -321,9 +433,7 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	button_sizer.add(&find_all_btn, 0, SizerFlag::Right, button_spacing);
 	// The Find All results view, hidden until a search with matches switches to it.
 	let results_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	let results_list = ListBox::builder(&dialog).with_size(dialog.from_dip(Size::new(400, 500))).build();
-	// TRANSLATORS: Accessible name of the list of Find All results
-	results_list.set_accessibility_label(&t("Results"));
+	let results_list = build_results_list(dialog, result_rows);
 	results_sizer.add(&results_list, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	let results_button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	// TRANSLATORS: Button that jumps to the selected find result
@@ -495,7 +605,7 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 	let frame_for_list = frame;
 	let find_dialog_for_list = Rc::clone(&find_dialog);
 	let doc_manager_for_list = Rc::clone(&doc_manager);
-	results_list.on_item_double_clicked(move |_| {
+	results_list.on_item_activated(move |_| {
 		if let Some(state) = find_dialog_for_list.lock().unwrap().as_ref() {
 			handle_result_go(&frame_for_list, state, &doc_manager_for_list, live_region_label);
 		}
@@ -647,7 +757,6 @@ fn do_find_all(
 		drop(dm);
 		(rows, origin)
 	};
-	tracing::debug!(query = %query, count = rows.len(), "find all search");
 	if rows.is_empty() {
 		live_region::announce(live_region_label, &t("Not found."));
 		state.switch_to_query_view();
@@ -659,22 +768,15 @@ fn do_find_all(
 	let selected = rows.iter().position(|row| row.matches.iter().any(|m| m.start >= origin)).unwrap_or(0);
 	state.origin.set(origin);
 	*state.result_rows.borrow_mut() = rows;
-	// Freeze while appending so a large result set is not repainted once per row.
-	state.results_list.freeze();
-	state.results_list.clear();
-	{
-		let rows = state.result_rows.borrow();
-		for row in rows.iter() {
-			let label =
-				if row.page > 0 { navigation::page_announcement(row.page, &row.text) } else { row.text.clone() };
-			state.results_list.append(&label);
-		}
-	}
-	state.results_list.thaw();
-	state.results_list.set_selection(u32::try_from(selected).unwrap_or(0), true);
+	// Show and focus the (still empty) results list first, so the screen reader latches onto the
+	// list before it grows to its full size - focusing a list that just appeared with tens of
+	// thousands of rows is unreliable, and populating one the reader has already focused is not.
 	state.switch_to_results_view();
 	state.results_list.set_focus();
-	state.results_list.ensure_visible(i32::try_from(selected).unwrap_or(0));
+	populate_results_list(state.results_list, &state.result_rows);
+	// Select the nearest following row and refocus so the reader announces it now that items exist.
+	select_results_row(state.results_list, i32::try_from(selected).unwrap_or(0));
+	state.results_list.set_focus();
 }
 
 /// Jumps to the selected results row, landing on the match on that line that follows the caret
@@ -688,7 +790,7 @@ fn handle_result_go(
 ) {
 	let (start, end, announce) = {
 		let rows = state.result_rows.borrow();
-		let selected = state.results_list.get_selection().and_then(|index| usize::try_from(index).ok()).unwrap_or(0);
+		let selected = results_selected_index(state.results_list).unwrap_or(0);
 		let Some(row) = rows.get(selected) else {
 			return;
 		};
