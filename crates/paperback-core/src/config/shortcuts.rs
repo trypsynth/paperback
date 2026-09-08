@@ -9,7 +9,6 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 mod action_id;
-mod key_chord;
 
 pub use action_id::ActionId;
 pub use key_chord::KeyChord;
@@ -122,24 +121,6 @@ impl ShortcutsConfig {
 #[cfg(test)]
 mod tests {
 	use super::*;
-
-	#[test]
-	fn key_chord_parse_and_to_string() {
-		let chord = KeyChord::parse("Ctrl+Shift+O").unwrap();
-		assert!(chord.ctrl);
-		assert!(chord.shift);
-		assert!(!chord.alt);
-		assert_eq!(chord.key, "O");
-		assert_eq!(chord.to_shortcut_string(), "Ctrl+Shift+O");
-		let single = KeyChord::parse("H").unwrap();
-		assert!(!single.ctrl);
-		assert!(!single.shift);
-		assert!(!single.alt);
-		assert_eq!(single.key, "H");
-		assert_eq!(single.to_shortcut_string(), "H");
-		assert_eq!(KeyChord::parse("none"), None);
-		assert_eq!(KeyChord::parse(""), None);
-	}
 
 	#[test]
 	fn shortcuts_config_set_reset_and_find() {

@@ -1345,6 +1345,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "key-chord"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51c77b35c5bcda790d6ee8c4734e9b762c4505717c09d5bc32bfee2594df0307"
+
+[[package]]
 name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1769,6 +1775,7 @@ dependencies = [
  "ego-tree",
  "encoding_rs",
  "icu_properties",
+ "key-chord",
  "libchm",
  "lofty",
  "mp4ameta",
@@ -3753,10 +3760,12 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "wx-utils"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c333d1cb5ae0ad1b27c44260bd789df253366ef59a81247578de6460df4148d"
+checksum = "ca4760f9d2087288df52b4c32c7ef0915d97ba7806937efff3715aee921d8522"
 dependencies = [
+ "key-chord",
+ "live-region",
  "patois",
  "wxdragon",
 ]

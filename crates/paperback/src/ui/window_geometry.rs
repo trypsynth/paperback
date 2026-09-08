@@ -7,14 +7,13 @@
 //! every single launch.
 //!
 //! Sizes here are in two different units and the distinction matters. The defaults and the
-//! minimum are written in device-independent pixels and passed through [`dpi`], because they are
-//! measurements chosen by us that have to mean the same thing at any scaling factor. The saved
-//! rect is in physical screen pixels, stored and restored verbatim, because it is not a
-//! measurement at all - it is the exact placement wx last reported, and converting it would move
-//! the window off the spot the user put it on.
+//! minimum are written in device-independent pixels and passed through [`WxWidget::from_dip`],
+//! because they are measurements chosen by us that have to mean the same thing at any scaling
+//! factor. The saved rect is in physical screen pixels, stored and restored verbatim, because it
+//! is not a measurement at all - it is the exact placement wx last reported, and converting it
+//! would move the window off the spot the user put it on.
 
 use paperback_core::config::ConfigManager;
-use wx_utils::dpi;
 use wxdragon::prelude::*;
 
 /// The size a first run opens at, in device-independent pixels.
@@ -51,8 +50,8 @@ pub fn apply_defaults(frame: &Frame) {
 	// Sized after building rather than through the builder: the size has to be scaled for the
 	// display the window actually lands on, and there is nothing to ask about that until the
 	// frame exists. It isn't shown until later, so there's no visible resize.
-	frame.set_min_size(dpi::scale_size(frame, Size::new(MIN_WIDTH, MIN_HEIGHT)));
-	frame.set_size(dpi::scale_size(frame, Size::new(DEFAULT_WIDTH, DEFAULT_HEIGHT)));
+	frame.set_min_size(frame.from_dip(Size::new(MIN_WIDTH, MIN_HEIGHT)));
+	frame.set_size(frame.from_dip(Size::new(DEFAULT_WIDTH, DEFAULT_HEIGHT)));
 }
 
 /// Places the window where it was left. Call this while the frame is still hidden, so the move

@@ -2,7 +2,7 @@ use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::DocumentListStatus};
 use patois::{nt, t};
-use wx_utils::{confirm, dpi};
+use wx_utils::confirm;
 use wxdragon::{ffi, prelude::*, timer::Timer, window::FromWindowWithClassName};
 
 use super::DIALOG_PADDING;
@@ -65,7 +65,7 @@ pub fn show_all_documents_dialog(
 	let paths_to_close: Rc<Mutex<Vec<String>>> = Rc::new(Mutex::new(Vec::new()));
 	// TRANSLATORS: Label for the search input field in the All Documents dialog
 	let search_label = StaticText::builder(&dialog).with_label(&t("&search")).build();
-	let search_ctrl = TextCtrl::builder(&dialog).with_size(dpi::scale_size(&dialog, Size::new(300, -1))).build();
+	let search_ctrl = TextCtrl::builder(&dialog).with_size(dialog.from_dip(Size::new(300, -1))).build();
 	let (status_label, status_choice) = build_all_documents_status_choice(dialog);
 	let list = build_all_documents_list(dialog);
 	let status_bar = build_all_documents_status_bar(dialog);
@@ -151,14 +151,14 @@ pub fn show_all_documents_dialog(
 fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 	let doc_list = ListCtrl::builder(&dialog)
 		.with_style(ListCtrlStyle::Report)
-		.with_size(dpi::scale_size(&dialog, Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT)))
+		.with_size(dialog.from_dip(Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT)))
 		.build();
 	// TRANSLATORS: Column header for the document filename in the All Documents list
-	doc_list.insert_column(0, &t("File Name"), ListColumnFormat::Left, dpi::scale(&dialog, RECENT_DOCS_FILENAME_WIDTH));
+	doc_list.insert_column(0, &t("File Name"), ListColumnFormat::Left, dialog.from_dip_int(RECENT_DOCS_FILENAME_WIDTH));
 	// TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
-	doc_list.insert_column(1, &t("Status"), ListColumnFormat::Left, dpi::scale(&dialog, RECENT_DOCS_STATUS_WIDTH));
+	doc_list.insert_column(1, &t("Status"), ListColumnFormat::Left, dialog.from_dip_int(RECENT_DOCS_STATUS_WIDTH));
 	// TRANSLATORS: Column header for the file path in the All Documents list
-	doc_list.insert_column(2, &t("Path"), ListColumnFormat::Left, dpi::scale(&dialog, RECENT_DOCS_PATH_WIDTH));
+	doc_list.insert_column(2, &t("Path"), ListColumnFormat::Left, dialog.from_dip_int(RECENT_DOCS_PATH_WIDTH));
 	doc_list
 }
 
@@ -166,7 +166,7 @@ fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 	let doc_list = DataViewListCtrl::builder(&dialog)
 		.with_style(DataViewStyle::Multiple | DataViewStyle::RowLines)
-		.with_size(dpi::scale_size(&dialog, Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT)))
+		.with_size(dialog.from_dip(Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT)))
 		.build();
 	let column_flags = DataViewColumnFlags::Resizable;
 	// TRANSLATORS: Column header for the document filename in the All Documents list
@@ -174,7 +174,7 @@ fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 		&t("File Name"),
 		0,
 		DataViewAlign::Left,
-		dpi::scale(&dialog, RECENT_DOCS_FILENAME_WIDTH),
+		dialog.from_dip_int(RECENT_DOCS_FILENAME_WIDTH),
 		column_flags,
 	);
 	// TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
@@ -182,7 +182,7 @@ fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 		&t("Status"),
 		1,
 		DataViewAlign::Left,
-		dpi::scale(&dialog, RECENT_DOCS_STATUS_WIDTH),
+		dialog.from_dip_int(RECENT_DOCS_STATUS_WIDTH),
 		column_flags,
 	);
 	// TRANSLATORS: Column header for the file path in the All Documents list
@@ -190,7 +190,7 @@ fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 		&t("Path"),
 		2,
 		DataViewAlign::Left,
-		dpi::scale(&dialog, RECENT_DOCS_PATH_WIDTH),
+		dialog.from_dip_int(RECENT_DOCS_PATH_WIDTH),
 		column_flags,
 	);
 	doc_list

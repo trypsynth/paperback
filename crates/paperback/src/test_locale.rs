@@ -2,9 +2,10 @@
 //!
 //! patois keeps the locale in a process-global registry, and cargo runs a crate's tests as
 //! threads in one process, so a test that switches locale changes what every other test sees
-//! while it runs. That is not hypothetical: `duration_format`'s tests assert English text and
-//! began failing on CI with `"2 heures"`, and with `"1 heure, 1 minute, 5 seconds"`, which is
-//! the locale flipping back to English between two `nt()` calls inside one call.
+//! while it runs. That is not hypothetical: a since-extracted duration formatter's tests
+//! asserted English text and began failing on CI with `"2 heures"`, and with `"1 heure, 1
+//! minute, 5 seconds"`, which is the locale flipping back to English between two `nt()` calls
+//! inside one call.
 //!
 //! Any test that reads or writes the locale must hold [`lock`] for as long as it cares about
 //! the answer. Reading tests should also pin the locale themselves via [`pinned_to`], since

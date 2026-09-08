@@ -25,7 +25,6 @@ mod bookmark;
 pub use bookmark::show_bookmark_dialog;
 mod document_info;
 pub use document_info::show_document_info_dialog;
-mod duration_format;
 mod elements;
 pub use elements::{ElementsKind, show_elements_dialog};
 mod go_to;
