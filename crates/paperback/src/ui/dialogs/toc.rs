@@ -90,12 +90,11 @@ fn bind_toc_selection_dv(
 	selected_offset: Rc<Cell<i32>>,
 ) {
 	tree.on_selection_changed(move |event| {
-		if let Some(item) = event.get_item() {
-			if let Some(id_ptr) = item.get_id::<c_void>() {
-				if let Some(&offset) = item_offsets.get(&(id_ptr as usize)) {
-					selected_offset.set(offset);
-				}
-			}
+		if let Some(item) = event.get_item()
+			&& let Some(id_ptr) = item.get_id::<c_void>()
+			&& let Some(&offset) = item_offsets.get(&(id_ptr as usize))
+		{
+			selected_offset.set(offset);
 		}
 	});
 }
@@ -109,13 +108,12 @@ fn bind_toc_activation_dv(
 ) {
 	let dialog_for_activate = dialog;
 	tree.on_item_activated(move |event| {
-		if let Some(item) = event.get_item() {
-			if let Some(id_ptr) = item.get_id::<c_void>() {
-				if let Some(&offset) = item_offsets.get(&(id_ptr as usize)) {
-					selected_offset.set(offset);
-					dialog_for_activate.end_modal(wxdragon::id::ID_OK);
-				}
-			}
+		if let Some(item) = event.get_item()
+			&& let Some(id_ptr) = item.get_id::<c_void>()
+			&& let Some(&offset) = item_offsets.get(&(id_ptr as usize))
+		{
+			selected_offset.set(offset);
+			dialog_for_activate.end_modal(wxdragon::id::ID_OK);
 		}
 	});
 }
@@ -158,12 +156,12 @@ fn find_and_select_dv(
 	let count = tree.get_child_count(parent);
 	for i in 0..count {
 		let child = tree.get_nth_child(parent, i);
-		if let Some(id_ptr) = child.get_id::<c_void>() {
-			if item_offsets.get(&(id_ptr as usize)) == Some(&offset) {
-				tree.select(&child);
-				tree.ensure_visible(&child);
-				return true;
-			}
+		if let Some(id_ptr) = child.get_id::<c_void>()
+			&& item_offsets.get(&(id_ptr as usize)) == Some(&offset)
+		{
+			tree.select(&child);
+			tree.ensure_visible(&child);
+			return true;
 		}
 		if find_and_select_dv(tree, &child, offset, item_offsets) {
 			return true;

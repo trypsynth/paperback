@@ -313,11 +313,11 @@ fn populate_elements_dialog_dv(
 	} else {
 		None
 	};
-	if let Some(idx) = select_idx {
-		if let Some(item) = item_ids.get(idx) {
-			headings_tree.select(item);
-			headings_tree.ensure_visible(item);
-		}
+	if let Some(idx) = select_idx
+		&& let Some(item) = item_ids.get(idx)
+	{
+		headings_tree.select(item);
+		headings_tree.ensure_visible(item);
 	}
 	(selected_offset, item_offsets)
 }
@@ -368,13 +368,12 @@ fn bind_elements_activation_dv(
 	let selected_for_tree = Rc::clone(selected_offset);
 	let dialog_for_tree = dialog;
 	headings_tree.on_item_activated(move |event| {
-		if let Some(item) = event.get_item() {
-			if let Some(id_ptr) = item.get_id::<c_void>() {
-				if let Some(&offset) = offsets_for_tree.get(&(id_ptr as usize)) {
-					selected_for_tree.set(offset);
-					dialog_for_tree.end_modal(wxdragon::id::ID_OK);
-				}
-			}
+		if let Some(item) = event.get_item()
+			&& let Some(id_ptr) = item.get_id::<c_void>()
+			&& let Some(&offset) = offsets_for_tree.get(&(id_ptr as usize))
+		{
+			selected_for_tree.set(offset);
+			dialog_for_tree.end_modal(wxdragon::id::ID_OK);
 		}
 	});
 	let view_for_list = view_choice;
@@ -414,13 +413,12 @@ fn bind_elements_ok_action_dv(
 	ok_button.on_click(move |_| {
 		let selection = view_for_ok.get_selection().unwrap_or(VIEW_HEADINGS);
 		if selection == VIEW_HEADINGS {
-			if let Some(item) = headings_tree.get_selection() {
-				if let Some(id_ptr) = item.get_id::<c_void>() {
-					if let Some(&offset) = offsets_for_ok.get(&(id_ptr as usize)) {
-						selected_for_ok.set(offset);
-						dialog_for_ok.end_modal(wxdragon::id::ID_OK);
-					}
-				}
+			if let Some(item) = headings_tree.get_selection()
+				&& let Some(id_ptr) = item.get_id::<c_void>()
+				&& let Some(&offset) = offsets_for_ok.get(&(id_ptr as usize))
+			{
+				selected_for_ok.set(offset);
+				dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 			}
 		} else if let Some(offset) = flat_selected_offset(selection, list_for_ok, &views_for_ok) {
 			selected_for_ok.set(offset);
