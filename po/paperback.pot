@@ -3840,10 +3840,10 @@ msgstr ""
 
 #. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
 #: swift
-msgid "With VoiceOver, swipe up on the play button to move forward through the book, and swipe down to move back. Turn off Swipe up moves forward to swap those directions."
+msgid "With VoiceOver, swipe up on the play button to move forward, or down to move back."
 msgstr ""
 
 #. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
 #: kt
-msgid "With TalkBack, swipe up on the play button to move forward through the book, and swipe down to move back. Turn this off to swap those directions."
+msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
 msgstr ""

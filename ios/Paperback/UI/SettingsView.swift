@@ -155,7 +155,7 @@ struct SettingsView: View {
 				Text(t("Behavior"))
 			} footer: {
 				// TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
-				Text(t("With VoiceOver, swipe up on the play button to move forward through the book, and swipe down to move back. Turn off Swipe up moves forward to swap those directions."))
+				Text(t("With VoiceOver, swipe up on the play button to move forward, or down to move back."))
 			}
 			ReadabilitySettingsSection(viewModel: viewModel)
 			TtsSettingsSection(

@@ -184,7 +184,7 @@ fun SettingsScreen(
 				}
 				// TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
 				Text(
-					t("With TalkBack, swipe up on the play button to move forward through the book, and swipe down to move back. Turn this off to swap those directions."),
+					t("With TalkBack, swipe up on the play button to move forward, or down to move back."),
 					style = MaterialTheme.typography.bodySmall,
 					color = MaterialTheme.colorScheme.onSurfaceVariant
 				)
