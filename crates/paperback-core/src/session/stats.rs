@@ -311,6 +311,21 @@ impl DocumentSession {
 		self.handle.count_markers_by_type(MarkerType::PageBreak)
 	}
 
+	/// The display-unit offset of every page-break marker in document order — one entry per page.
+	/// Collected in a single O(markers) pass; [`Self::page_offset`] is O(markers) per call, so
+	/// callers that want every page should use this once instead of calling it in a loop.
+	#[must_use]
+	pub fn page_offsets(&self) -> Vec<i64> {
+		self.handle
+			.document()
+			.buffer
+			.markers
+			.iter()
+			.filter(|marker| marker.mtype == MarkerType::PageBreak)
+			.map(|marker| i64::try_from(marker.position).unwrap_or(i64::MAX))
+			.collect()
+	}
+
 	#[must_use]
 	pub fn current_page(&self, position: i64) -> i32 {
 		let pos = usize::try_from(position.max(0)).unwrap_or(0);
