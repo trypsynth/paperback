@@ -319,19 +319,19 @@ pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) 
 				is_numbered = found_space;
 			}
 			// A heading set over several lines - a chapter title, most often - carries on rather
-			// than becoming one heading per line, as long as the size does not change. Every
-			// other heading boundary, and every list item, starts a new paragraph; otherwise the
-			// previous line does when it stopped short of the measure.
+			// than becoming one heading per line, as long as the size does not change. A line
+			// that opens with its own number is a heading of its own even so, which is what
+			// keeps a numbered outline from running its sections together. Every other heading
+			// boundary, and every list item, starts a new paragraph; otherwise the previous line
+			// does when it stopped short of the measure.
 			let continues_heading =
 				*is_heading_line && current_is_heading && (*size - current_heading_size).abs() < f64::EPSILON;
 			let previous_line_ended_paragraph = (last_line_ends_with_punctuation
 				&& last_line_len < ended_sentence_threshold)
 				|| (last_line_len < short_line_threshold && (starts_with_uppercase || !starts_with_alpha));
-			let break_paragraph = !continues_heading
-				&& (*is_heading_line
-					|| current_is_heading
-					|| is_list_item || is_numbered
-					|| previous_line_ended_paragraph);
+			let break_paragraph = is_list_item
+				|| is_numbered
+				|| (!continues_heading && (*is_heading_line || current_is_heading || previous_line_ended_paragraph));
 			if break_paragraph {
 				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
 				current_paragraph = line.clone();
@@ -502,6 +502,19 @@ mod tests {
 		);
 		assert!(result[1].1, "the chapter title is a heading");
 		assert!(!result[3].1, "the body paragraph is not");
+	}
+
+	/// A numbered outline sets every level in one size, so the sections must not run together
+	/// the way the lines of a single title do.
+	#[test]
+	fn join_paragraphs_keeps_numbered_headings_apart() {
+		let lines = vec![
+			("2.1.1 Piano Roll mode".to_string(), 14.0),
+			("2.1.1.1 Show / Hide Strings".to_string(), 14.0),
+			("2.1.1.2 Color Indicates String or Velocity".to_string(), 14.0),
+		];
+		let result = join_paragraphs(&lines, 10.0);
+		assert_eq!(result.len(), 3, "got {result:?}");
 	}
 
 	/// The chapter number is set in its own size, so it does not join the title below it.
