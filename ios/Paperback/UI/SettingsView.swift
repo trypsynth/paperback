@@ -139,8 +139,7 @@ struct SettingsView: View {
 
 	var body: some View {
 		Form {
-			// TRANSLATORS: Section header in Settings grouping general app behavior toggles
-			Section(t("Behavior")) {
+			Section {
 				// TRANSLATORS: Toggle to reopen previously open documents on next launch
 				Toggle(t("Restore last open documents"), isOn: Binding(
 					get: { viewModel.restorePreviousDocuments },
@@ -151,6 +150,12 @@ struct SettingsView: View {
 					get: { viewModel.swipeUpMovesForward },
 					set: { viewModel.swipeUpMovesForward = $0 }
 				))
+			} header: {
+				// TRANSLATORS: Section header in Settings grouping general app behavior toggles
+				Text(t("Behavior"))
+			} footer: {
+				// TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
+				Text(t("With VoiceOver, swipe up on the play button to move forward, or down to move back."))
 			}
 			ReadabilitySettingsSection(viewModel: viewModel)
 			TtsSettingsSection(

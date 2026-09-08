@@ -4,7 +4,6 @@ use std::{collections::HashMap, ffi::c_void};
 
 use paperback_core::{document::MarkerType, session::DocumentSession};
 use patois::t;
-use wx_utils::dpi;
 use wxdragon::prelude::*;
 
 /// The view choice indices for [`show_elements_dialog`]. Headings is a tree; every other
@@ -253,8 +252,7 @@ fn build_elements_dialog_ui_dv(dialog: Dialog) -> ElementsDialogUiDv {
 	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, super::DIALOG_PADDING);
 	choice_sizer.add(&view_choice, 1, SizerFlag::Expand, 0);
 	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
-	let headings_tree =
-		DataViewTreeCtrl::builder(&dialog).with_size(dpi::scale_size(&dialog, Size::new(400, 500))).build();
+	let headings_tree = DataViewTreeCtrl::builder(&dialog).with_size(dialog.from_dip(Size::new(400, 500))).build();
 	content_sizer.add(
 		&headings_tree,
 		1,
@@ -494,7 +492,7 @@ fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 	let headings_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let headings_tree = TreeCtrl::builder(&dialog)
 		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
-		.with_size(dpi::scale_size(&dialog, Size::new(400, 500)))
+		.with_size(dialog.from_dip(Size::new(400, 500)))
 		.build();
 	headings_sizer.add(&headings_tree, 1, SizerFlag::Expand, 0);
 	content_sizer.add_sizer(

@@ -2911,7 +2911,7 @@ msgstr ""
 msgid "Switch to Text Mode"
 msgstr ""
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
+#. TRANSLATORS: Menu item to open the list of recently opened documents
 #: swift
 msgid "Recent Documents"
 msgstr ""
@@ -2976,7 +2976,7 @@ msgstr ""
 msgid "Locate"
 msgstr ""
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
+#. TRANSLATORS: Button to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr ""
@@ -3533,7 +3533,7 @@ msgstr ""
 msgid "words"
 msgstr ""
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr ""
@@ -3836,4 +3836,14 @@ msgstr ""
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
 #: kt
 msgid "{}% through"
+msgstr ""
+
+#. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
+#: swift
+msgid "With VoiceOver, swipe up on the play button to move forward, or down to move back."
+msgstr ""
+
+#. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
+#: kt
+msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
 msgstr ""

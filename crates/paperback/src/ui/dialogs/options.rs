@@ -7,8 +7,6 @@ use std::{
 
 use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont, ShortcutsConfig};
 use patois::{t, ui::populate_language_choice};
-#[cfg(not(target_os = "macos"))]
-use wx_utils::dpi;
 #[cfg(target_os = "windows")]
 use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
@@ -703,7 +701,7 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<HotkeyConfig> {
 	// TRANSLATORS: Title of the hotkey customization dialog
 	let dialog = Dialog::builder(parent, &t("Window Hotkey"))
-		.with_size(dpi::scale(parent, 300), dpi::scale(parent, 230))
+		.with_size(parent.from_dip_int(300), parent.from_dip_int(230))
 		.build();
 	let panel = Panel::builder(&dialog).build();
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
