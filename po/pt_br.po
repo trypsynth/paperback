@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 11:10-0600\n"
+"POT-Creation-Date: 2026-09-08 05:01+0000\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -823,27 +823,6 @@ msgstr "Duração"
 msgid "Average duration:"
 msgstr "Duração média:"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d hora"
-msgstr[1] "%d horas"
-
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minuto"
-msgstr[1] "%d minutos"
-
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d segundo"
-msgstr[1] "%d segundos"
-
 #. TRANSLATORS: A page in the Elements list with no readable first line; %d is the page number
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
 #, fuzzy
@@ -896,10 +875,10 @@ msgstr "Sem Título"
 #. TRANSLATORS: OK button that confirms the entered bookmark/note text
 #. TRANSLATORS: OK button that confirms the chosen file format in the Open As dialog
 #. TRANSLATORS: Label for the confirmation button
-#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
-#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
 #. TRANSLATORS: OK button that confirms the entered sleep timer duration
 #. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
+#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
 msgid "OK"
 msgstr "OK"
 
@@ -909,8 +888,6 @@ msgstr "OK"
 msgid "Go"
 msgstr "Vá"
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
 #. TRANSLATORS: Label for the cancellation button
 #. TRANSLATORS: Cancel button that closes the Find dialog
 #. TRANSLATORS: Label for the cancellation button
@@ -1321,87 +1298,6 @@ msgstr "Limpar"
 #, fuzzy
 msgid "Space"
 msgstr "Espaço"
-
-#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
-#, fuzzy
-msgid "Customize Keyboard Shortcuts"
-msgstr "Personalizar atalhos de teclado"
-
-#. TRANSLATORS: Label above the list of shortcuts for a category in the Keyboard Shortcuts dialog.
-#, fuzzy
-msgid "&Shortcuts:"
-msgstr "&Atalhos:"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
-#, fuzzy
-msgid "&Set Shortcut..."
-msgstr "&Definir atalho..."
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
-#, fuzzy
-msgid "&Clear Shortcut"
-msgstr "&Limpar atalho"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
-#, fuzzy
-msgid "&Reset to Default"
-msgstr "&Redefinir para a fonte padrão"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
-#, fuzzy
-msgid "Reset &All to Defaults"
-msgstr "&Redefinir para a fonte padrão"
-
-#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
-#, fuzzy
-msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
-msgstr "'{}' já está atribuído a '{}'. Reatribuir para '{}'?"
-
-#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
-#, fuzzy
-msgid "Shortcut Conflict"
-msgstr "Conflito de atalhos"
-
-#, fuzzy
-msgid "Reset all shortcuts to their default values?"
-msgstr "Redefinir todos os atalhos para seus valores padrão?"
-
-#. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
-#, fuzzy
-msgid "Reset Shortcuts"
-msgstr "Redefinir atalhos"
-
-#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
-#, fuzzy
-msgid "Set Shortcut for {}"
-msgstr "Definir Atalho para {}"
-
-#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
-#, fuzzy
-msgid "Configure shortcut for {}:"
-msgstr "Configurar atalho para {}:"
-
-#, fuzzy
-msgid "Tip: click in the key field and press the key combination you want."
-msgstr "Dica: clique no campo de teclas e pressione a combinação de teclas desejada."
-
-#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
-#, fuzzy
-msgid "Detected: (none)"
-msgstr "Detectado: (nenhum)"
-
-#, fuzzy
-msgid "Detected: {}"
-msgstr "Detalhes: {}"
-
-#, fuzzy
-msgid "No key detected"
-msgstr "Nenhuma tecla detectada"
-
-#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
-#, fuzzy
-msgid "&Clear"
-msgstr "&Limpar"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -3311,6 +3207,114 @@ msgstr "Falha na verificação de segurança. A atualização pode ter sido adul
 msgid "Security Error"
 msgstr "Erro de segurança"
 
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d hora"
+msgstr[1] "%d horas"
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minuto"
+msgstr[1] "%d minutos"
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d segundo"
+msgstr[1] "%d segundos"
+
+#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+#, fuzzy
+msgid "Set Shortcut for {}"
+msgstr "Definir Atalho para {}"
+
+#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+#, fuzzy
+msgid "Configure shortcut for {}:"
+msgstr "Configurar atalho para {}:"
+
+#, fuzzy
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr "Dica: clique no campo de teclas e pressione a combinação de teclas desejada."
+
+#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
+#, fuzzy
+msgid "Detected: (none)"
+msgstr "Detectado: (nenhum)"
+
+#, fuzzy
+msgid "Detected: {}"
+msgstr "Detalhes: {}"
+
+#, fuzzy
+msgid "No key detected"
+msgstr "Nenhuma tecla detectada"
+
+#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
+#, fuzzy
+msgid "&Clear"
+msgstr "&Limpar"
+
+#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
+#, fuzzy
+msgid "Customize Keyboard Shortcuts"
+msgstr "Personalizar atalhos de teclado"
+
+#. TRANSLATORS: Label above the list of shortcuts for a tab in the Keyboard Shortcuts dialog.
+#, fuzzy
+msgid "&Shortcuts:"
+msgstr "&Atalhos:"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
+#, fuzzy
+msgid "&Set Shortcut..."
+msgstr "&Definir atalho..."
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
+#, fuzzy
+msgid "&Clear Shortcut"
+msgstr "&Limpar atalho"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
+#, fuzzy
+msgid "&Reset to Default"
+msgstr "&Redefinir para a fonte padrão"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
+#, fuzzy
+msgid "Reset &All to Defaults"
+msgstr "&Redefinir para a fonte padrão"
+
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+#, fuzzy
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr "'{}' já está atribuído a '{}'. Reatribuir para '{}'?"
+
+#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
+#, fuzzy
+msgid "Shortcut Conflict"
+msgstr "Conflito de atalhos"
+
+#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#, fuzzy
+msgid "Reset all shortcuts to their default values?"
+msgstr "Redefinir todos os atalhos para seus valores padrão?"
+
+#. TRANSLATORS: Confirmation prompt shown when resetting the current tab's keyboard shortcuts to their defaults.
+#, fuzzy
+msgid "Reset all shortcuts in this tab to their default values?"
+msgstr "Redefinir todos os atalhos para seus valores padrão?"
+
+#. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
+#, fuzzy
+msgid "Reset Shortcuts"
+msgstr "Redefinir atalhos"
+
 #. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 #: swift
 #, fuzzy
@@ -4479,6 +4483,18 @@ msgstr "Arquivo ausente"
 #, fuzzy
 msgid "{}% through"
 msgstr "{}% do caminho"
+
+#. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
+#: swift
+#, fuzzy
+msgid "With VoiceOver, swipe up on the play button to move forward, or down to move back."
+msgstr "Com VoiceOver, deslize para cima no botão de reprodução para avançar, ou para baixo para voltar."
+
+#. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
+#: kt
+#, fuzzy
+msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
+msgstr "Com TalkBack, deslize para cima no botão de reprodução para avançar, ou para baixo para voltar."
 
 #~ msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
 #~ msgstr "Este PDF contém apenas imagens, sem texto extraível. Pode ser necessário executá-lo por meio de um aplicativo de OCR para ler seu conteúdo."
