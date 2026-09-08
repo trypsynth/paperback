@@ -659,6 +659,8 @@ fn do_find_all(
 	let selected = rows.iter().position(|row| row.matches.iter().any(|m| m.start >= origin)).unwrap_or(0);
 	state.origin.set(origin);
 	*state.result_rows.borrow_mut() = rows;
+	// Freeze while appending so a large result set is not repainted once per row.
+	state.results_list.freeze();
 	state.results_list.clear();
 	{
 		let rows = state.result_rows.borrow();
@@ -668,6 +670,7 @@ fn do_find_all(
 			state.results_list.append(&label);
 		}
 	}
+	state.results_list.thaw();
 	state.results_list.set_selection(u32::try_from(selected).unwrap_or(0), true);
 	state.switch_to_results_view();
 	state.results_list.set_focus();
