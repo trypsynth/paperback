@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 18:02+0000\n"
+"POT-Creation-Date: 2026-09-07 11:10-0600\n"
 "PO-Revision-Date: 2026-06-08 13:45+0200\n"
 "Last-Translator: Michał Dziwisz <michal@dziwisz.net>\n"
 "Language-Team: Polish\n"
@@ -614,6 +614,22 @@ msgstr[2] "Zaznaczono %d z %d dokumentów."
 msgid "Locate Book"
 msgstr "Zlokalizuj książkę"
 
+#. TRANSLATORS: Title of the Batch OCR dialog
+msgid "Batch OCR"
+msgstr "Zbiorcze OCR"
+
+#. TRANSLATORS: Label for the starting page field of the Batch OCR range
+msgid "&Start page:"
+msgstr "Strona &początkowa:"
+
+#. TRANSLATORS: Label for the ending page field of the Batch OCR range
+msgid "&End page:"
+msgstr "Strona &końcowa:"
+
+#. TRANSLATORS: Label for the button that starts the batch OCR
+msgid "OCR"
+msgstr "Rozpoznaj tekst"
+
 #. TRANSLATORS: Title of the Jump to Bookmark dialog
 msgid "Jump to Bookmark"
 msgstr "Przejdź do zakładki"
@@ -762,6 +778,14 @@ msgstr "Odnośniki"
 #. TRANSLATORS: Choice option in the view dropdown to show the list of pages
 msgid "Pages"
 msgstr "Strony"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of tables
+msgid "Tables"
+msgstr "Tabele"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of lists
+msgid "Lists"
+msgstr "Listy"
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
@@ -1058,6 +1082,10 @@ msgstr "Czytanie"
 msgid "Readability"
 msgstr "Czytelność"
 
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+msgid "Choose a colour"
+msgstr "Wybierz kolor"
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr "Tło: domyślne"
@@ -1093,6 +1121,10 @@ msgstr "Podkreślenie"
 #. TRANSLATORS: Font strikethrough attribute name
 msgid "Strikethrough"
 msgstr "Przekreślenie"
+
+#. TRANSLATORS: Title of the system dialog for picking a font
+msgid "Choose a font"
+msgstr "Wybierz czcionkę"
 
 #. TRANSLATORS: Title of the hotkey customization dialog
 msgid "Window Hotkey"
@@ -1248,6 +1280,49 @@ msgstr[0] "Ten dokument zawiera %d słowo."
 msgstr[1] "Ten dokument zawiera %d słowa."
 msgstr[2] "Ten dokument zawiera %d słów."
 
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+msgid "OCR in progress."
+msgstr "Rozpoznawanie tekstu w toku."
+
+#. TRANSLATORS: Announced when batch OCR is triggered with no document open
+#. TRANSLATORS: Announced when Batch OCR is chosen with no document open
+msgid "No document open."
+msgstr "Nie otwarto żadnego dokumentu."
+
+#. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
+msgid "OCR already in progress."
+msgstr "Rozpoznawanie tekstu już trwa."
+
+#. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
+msgid "No image-only pages in the given range."
+msgstr "W podanym zakresie nie ma stron zawierających wyłącznie obraz."
+
+#. TRANSLATORS: Batch OCR progress announcement; the two %d placeholders are the pages done and the total pages
+msgid "OCR %d of %d."
+msgstr "Rozpoznawanie tekstu: strona %d z %d."
+
+#. TRANSLATORS: Announced after OCR replaces an image-only page with the recognized text
+msgid "OCR complete."
+msgstr "Rozpoznawanie tekstu zakończone."
+
+#. TRANSLATORS: Announced when OCR runs on a page but finds no recognizable text
+msgid "No text found."
+msgstr "Nie znaleziono tekstu."
+
+#. TRANSLATORS: Announced when batch OCR is stopped early; %d is the number of pages recognized before it stopped
+msgid "Batch OCR stopped. %d page recognized."
+msgid_plural "Batch OCR stopped. %d pages recognized."
+msgstr[0] "Zbiorcze OCR zatrzymane. Rozpoznano %d stronę."
+msgstr[1] "Zbiorcze OCR zatrzymane. Rozpoznano %d strony."
+msgstr[2] "Zbiorcze OCR zatrzymane. Rozpoznano %d stron."
+
+#. TRANSLATORS: Announced after batch OCR finishes; %d is the number of pages recognized
+msgid "Batch OCR complete. %d page recognized."
+msgid_plural "Batch OCR complete. %d pages recognized."
+msgstr[0] "Zbiorcze OCR zakończone. Rozpoznano %d stronę."
+msgstr[1] "Zbiorcze OCR zakończone. Rozpoznano %d strony."
+msgstr[2] "Zbiorcze OCR zakończone. Rozpoznano %d stron."
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "Nie znaleziono pliku: {}"
@@ -1338,6 +1413,19 @@ msgstr "Znajdź &poprzednie"
 msgid "Find &Next"
 msgstr "Znajdź &następne"
 
+#. TRANSLATORS: Button that finds and lists every occurrence of the search text
+msgid "Find &All"
+msgstr "Znajdź &wszystkie"
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr "Wyniki"
+
+#. TRANSLATORS: Button that jumps to the selected find result
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
+msgid "&Go"
+msgstr "&Przejdź"
+
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Nie znaleziono."
@@ -1385,6 +1473,10 @@ msgstr "Brak stron."
 #. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
 msgid "No table of contents."
 msgstr "Brak spisu treści."
+
+#. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
+msgid "Batch OCR is running. Stop it?"
+msgstr "Zbiorcze OCR jest w toku. Zatrzymać je?"
 
 #. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
 msgid "Web View"
@@ -1841,13 +1933,13 @@ msgstr "&Ustawienia"
 msgid "&Sleep Timer..."
 msgstr "&Wyłącznik czasowy..."
 
+#. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
+msgid "&Batch OCR..."
+msgstr "Z&biorcze OCR..."
+
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Plik"
-
-#. TRANSLATORS: Top-level "Go" menu label in the menu bar
-msgid "&Go"
-msgstr "&Przejdź"
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
@@ -2025,6 +2117,18 @@ msgstr "Za końcem kontenera."
 
 msgid "Start of container."
 msgstr "Początek kontenera."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Nie zainstalowano żadnego języka OCR. Dodaj go w systemowych ustawieniach języka."
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+msgid "OCR failed."
+msgstr "Rozpoznawanie tekstu nie udało się."
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+msgid "OCR is not available on this system."
+msgstr "OCR nie jest dostępne w tym systemie."
 
 #. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
 msgid "Table View"
@@ -2378,6 +2482,10 @@ msgid "Sleep Timer..."
 msgstr "Wyłącznik czasowy..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Batch OCR..."
+msgstr "Zbiorcze OCR..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Customize Keyboard Shortcuts..."
 msgstr "Dostosuj skróty klawiszowe..."
 
@@ -2436,6 +2544,14 @@ msgstr "Pomoc"
 #. TRANSLATORS: Shown in the Customize Keyboard Shortcuts list in place of a key combination when an action has no shortcut assigned
 msgid "None"
 msgstr "Brak"
+
+#. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
+msgid "[Image only. Press enter to OCR.]"
+msgstr "[Tylko obraz. Naciśnij Enter, aby rozpoznać tekst.]"
+
+#. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
+msgid "[Image only. This page has no text to read.]"
+msgstr "[Tylko obraz. Ta strona nie zawiera tekstu do przeczytania.]"
 
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
@@ -2611,10 +2727,6 @@ msgstr "Wymagane hasło albo hasło jest nieprawidłowe"
 #. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
 msgid "Failed to open PDF document: {}"
 msgstr "Nie udało się otworzyć dokumentu PDF: {}"
-
-#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
-msgstr "Ten plik PDF zawiera wyłącznie obrazy i nie ma w nim tekstu, który można wyodrębnić. Aby poznać jego treść, być może trzeba będzie przetworzyć go programem rozpoznającym tekst (OCR)."
 
 msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
 msgstr "Pliki PPT chronione hasłem nie są obecnie obsługiwane. Spróbuj zapisać plik w formacie PPTX i otworzyć tę wersję."
@@ -3740,6 +3852,19 @@ msgstr "Menedżer plików"
 #: kt
 msgid "{}% through"
 msgstr "Przeczytano {}%"
+
+#. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
+#: swift
+msgid "With VoiceOver, swipe up on the play button to move forward, or down to move back."
+msgstr "Przy włączonym VoiceOverze przesuń palcem w górę na przycisku odtwarzania, aby przejść do przodu, albo w dół, aby wrócić."
+
+#. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
+#: kt
+msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
+msgstr "Przy włączonym TalkBacku przesuń palcem w górę na przycisku odtwarzania, aby przejść do przodu, albo w dół, aby wrócić."
+
+#~ msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+#~ msgstr "Ten plik PDF zawiera wyłącznie obrazy i nie ma w nim tekstu, który można wyodrębnić. Aby poznać jego treść, być może trzeba będzie przetworzyć go programem rozpoznającym tekst (OCR)."
 
 #~ msgid "&Line number:"
 #~ msgstr "Numer &wiersza:"
