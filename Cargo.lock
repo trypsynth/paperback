@@ -3930,7 +3930,7 @@ dependencies = [
 [[package]]
 name = "zip"
 version = "9.0.0-pre3"
-source = "git+https://github.com/trypsynth/zip2.git?branch=fix-zip64-extra-field-without-sentinel#712916ac2d0bcc6eba542368f59bb7245a144341"
+source = "git+https://github.com/zip-rs/zip2.git?rev=96407e1332cb9ec8f39af88e6dac866ce83995b8#96407e1332cb9ec8f39af88e6dac866ce83995b8"
 dependencies = [
  "aes 0.9.3",
  "constant_time_eq",
