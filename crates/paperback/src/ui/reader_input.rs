@@ -28,7 +28,8 @@ pub(super) fn build_text_ctrl(
 		| TextCtrlStyle::Rich2
 		| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
 	let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
-	let dm_for_enter = Rc::clone(self_rc);
+	let dm_for_char = Rc::clone(self_rc);
+	let frame_for_char = frame;
 	text_ctrl.on_char(move |event| {
 		if let WindowEventData::Keyboard(kbd) = event {
 			if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
@@ -37,26 +38,31 @@ pub(super) fn build_text_ctrl(
 				#[cfg(any(target_os = "windows", target_os = "macos"))]
 				if kbd.get_key_code() == Some(13) {
 					let on_placeholder = {
-						let dm = dm_for_enter.lock().unwrap();
+						let dm = dm_for_char.lock().unwrap();
 						dm.image_only_page_at_caret().is_some()
 					};
 					if on_placeholder {
-						dm_for_enter.lock().unwrap().start_ocr_for_current_page();
+						dm_for_char.lock().unwrap().start_ocr_for_current_page();
 						return;
 					}
 				}
 				let table_html = {
-					let dm = dm_for_enter.lock().unwrap();
+					let dm = dm_for_char.lock().unwrap();
 					dm.activate_current_table()
 				};
 				if let Some(html) = table_html {
-					let frame = dm_for_enter.lock().unwrap().frame;
+					let frame = dm_for_char.lock().unwrap().frame;
 					// TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
 					super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
 				} else {
-					let mut dm = dm_for_enter.lock().unwrap();
+					let mut dm = dm_for_char.lock().unwrap();
 					dm.activate_current_link();
 				}
+			} else if let Some(action) =
+				injected_char_action(&dm_for_char, kbd.get_key_code(), kbd.control_down(), kbd.alt_down())
+			{
+				kbd.event.skip(false);
+				run_action(&dm_for_char, frame_for_char, action);
 			} else {
 				kbd.event.skip(true);
 			}
@@ -153,36 +159,15 @@ pub(super) fn build_text_ctrl(
 				}
 			};
 			if let Some(act) = action {
-				match act {
-					ActionId::AnnouncePercent => {
-						kbd.event.skip(false);
-						if let Ok(dm) = dm_for_keys.try_lock() {
-							dm.announce_current_percent();
-						}
-						return;
-					}
-					ActionId::SetTemporaryBookmark => {
-						kbd.event.skip(false);
-						if let Ok(dm) = dm_for_keys.try_lock() {
-							dm.set_temporary_bookmark();
-						}
-						return;
-					}
-					ActionId::JumpToTemporaryBookmark => {
-						kbd.event.skip(false);
-						if let Ok(mut dm) = dm_for_keys.try_lock() {
-							dm.jump_to_temporary_bookmark();
-						}
-						return;
-					}
-					_ => {
-						if !kbd.control_down() && !kbd.alt_down() || cfg!(target_os = "linux") {
-							let menu_id = menu_ids::action_to_menu_id(act);
-							kbd.event.skip(false);
-							frame_for_keys.process_menu_command(menu_id);
-							return;
-						}
-					}
+				// The three the reader runs itself are unconditional; everything else goes
+				// through the menu, which on Windows and macOS already has the accelerator, so
+				// dispatching a Ctrl/Alt chord here too would fire it twice.
+				let runs_here =
+					handled_without_menu(act) || !kbd.control_down() && !kbd.alt_down() || cfg!(target_os = "linux");
+				if runs_here {
+					kbd.event.skip(false);
+					run_action(&dm_for_keys, frame_for_keys, act);
+					return;
 				}
 			}
 		}
@@ -194,6 +179,115 @@ pub(super) fn build_text_ctrl(
 		show_reader_context_menu(text_ctrl_for_right_click);
 	});
 	text_ctrl
+}
+
+/// Whether the reader runs `action` itself rather than handing it to the menu, which is also
+/// what makes it safe to dispatch even when Ctrl or Alt is held: no menu accelerator claims it.
+const fn handled_without_menu(action: ActionId) -> bool {
+	matches!(action, ActionId::AnnouncePercent | ActionId::SetTemporaryBookmark | ActionId::JumpToTemporaryBookmark)
+}
+
+/// Runs a shortcut's action: the handful the reader implements directly, and everything else
+/// through the frame's menu handler, where the real implementation lives.
+fn run_action(dm: &Rc<Mutex<DocumentManager>>, frame: Frame, action: ActionId) {
+	match action {
+		ActionId::AnnouncePercent => {
+			if let Ok(dm) = dm.try_lock() {
+				dm.announce_current_percent();
+			}
+		}
+		ActionId::SetTemporaryBookmark => {
+			if let Ok(dm) = dm.try_lock() {
+				dm.set_temporary_bookmark();
+			}
+		}
+		ActionId::JumpToTemporaryBookmark => {
+			if let Ok(mut dm) = dm.try_lock() {
+				dm.jump_to_temporary_bookmark();
+			}
+		}
+		_ => {
+			frame.process_menu_command(menu_ids::action_to_menu_id(action));
+		}
+	}
+}
+
+/// The action a character event should trigger, for input the key-down handler never got a
+/// chance to see.
+///
+/// Screen readers type braille-keyboard input with `SendInput` and `KEYEVENTF_UNICODE`, which
+/// Windows reports as a `VK_PACKET` key down carrying no virtual key - wxWidgets turns that into
+/// `WXK_NONE` - followed by a `WM_CHAR` holding the actual character. So the key-down shortcut
+/// lookup never sees the "h" a braille display just sent, and the single-letter navigation keys
+/// do nothing for anyone reading on one. Matching the character instead picks them up. Injected
+/// input also carries no real modifier state, so the character's own case has to stand in for
+/// Shift: "h" is the next heading, "H" the previous one.
+///
+/// Nothing arrives here for a key the key-down handler already acted on - wx suppresses the char
+/// event after a handled key down - so this cannot double-fire a physical key press.
+fn injected_char_action(
+	dm: &Rc<Mutex<DocumentManager>>,
+	key_code: Option<i32>,
+	ctrl: bool,
+	alt: bool,
+) -> Option<ActionId> {
+	if ctrl || alt {
+		return None;
+	}
+	let ch = u8::try_from(key_code?).ok().map(char::from)?;
+	let (key, shift) = shortcut_key_for_char(ch)?;
+	let action = {
+		let manager = dm.try_lock().ok()?;
+		let config = manager.config.lock().ok()?;
+		config.get_shortcuts().find_action(key, false, false, shift)
+	};
+	if action.is_none() {
+		// Logged because it separates the two ways braille navigation can fail: characters
+		// arriving here but matching nothing, versus never reaching the app at all (a
+		// contracted input table holding cells back, or the screen reader eating the key).
+		tracing::debug!(character = %ch, key, shift, "reader character matched no shortcut");
+	}
+	action
+}
+
+/// The key code and Shift state a printable character stands for, in the terms key-down events
+/// report them: letters as their uppercase code, with the case supplying Shift, and the
+/// US-layout shifted punctuation mapped back onto the unshifted key it is typed with, so that
+/// "!" reaches the Shift+1 binding rather than looking like a key of its own.
+fn shortcut_key_for_char(ch: char) -> Option<(i32, bool)> {
+	if let Some(unshifted) = unshifted_ascii(ch) {
+		return Some((i32::from(unshifted), true));
+	}
+	let byte = u8::try_from(ch).ok().filter(u8::is_ascii_graphic)?;
+	Some((i32::from(byte.to_ascii_uppercase()), byte.is_ascii_uppercase()))
+}
+
+/// The unshifted US-layout key a shifted punctuation character is typed with.
+const fn unshifted_ascii(ch: char) -> Option<u8> {
+	Some(match ch {
+		'!' => b'1',
+		'@' => b'2',
+		'#' => b'3',
+		'$' => b'4',
+		'%' => b'5',
+		'^' => b'6',
+		'&' => b'7',
+		'*' => b'8',
+		'(' => b'9',
+		')' => b'0',
+		'_' => b'-',
+		'+' => b'=',
+		'{' => b'[',
+		'}' => b']',
+		'|' => b'\\',
+		':' => b';',
+		'"' => b'\'',
+		'<' => b',',
+		'>' => b'.',
+		'?' => b'/',
+		'~' => b'`',
+		_ => return None,
+	})
 }
 
 /// Which end of the document a key press names as a "jump to the very start/end" gesture, if
@@ -308,4 +402,49 @@ fn show_reader_context_menu(text_ctrl: TextCtrl) {
 		.append_item(menu_ids::GO_TO_PERCENT, &t("Go to &percent"), &t("Go to percent"))
 		.build();
 	text_ctrl.popup_menu(&mut menu, None);
+}
+
+#[cfg(test)]
+mod tests {
+	use paperback_core::config::ShortcutsConfig;
+
+	use super::*;
+
+	#[test]
+	fn char_case_stands_in_for_shift() {
+		assert_eq!(shortcut_key_for_char('h'), Some((i32::from(b'H'), false)));
+		assert_eq!(shortcut_key_for_char('H'), Some((i32::from(b'H'), true)));
+	}
+
+	#[test]
+	fn shifted_punctuation_maps_back_to_its_key() {
+		assert_eq!(shortcut_key_for_char('1'), Some((i32::from(b'1'), false)));
+		assert_eq!(shortcut_key_for_char('!'), Some((i32::from(b'1'), true)));
+		assert_eq!(shortcut_key_for_char('<'), Some((i32::from(b','), true)));
+		assert_eq!(shortcut_key_for_char('/'), Some((i32::from(b'/'), false)));
+	}
+
+	#[test]
+	fn non_printable_characters_are_not_shortcuts() {
+		assert_eq!(shortcut_key_for_char('\u{8}'), None);
+		assert_eq!(shortcut_key_for_char('\u{7f}'), None);
+		assert_eq!(shortcut_key_for_char('é'), None);
+	}
+
+	/// The braille-injected characters a reader actually navigates with have to reach the
+	/// default bindings, since that path is the whole point of matching on characters at all.
+	#[test]
+	fn injected_letters_reach_the_default_navigation_bindings() {
+		let shortcuts = ShortcutsConfig::default();
+		let action = |ch: char| {
+			let (key, shift) = shortcut_key_for_char(ch)?;
+			shortcuts.find_action(key, false, false, shift)
+		};
+		assert_eq!(action('h'), Some(ActionId::NextHeading));
+		assert_eq!(action('H'), Some(ActionId::PreviousHeading));
+		assert_eq!(action('1'), Some(ActionId::NextHeading1));
+		assert_eq!(action('!'), Some(ActionId::PreviousHeading1));
+		assert_eq!(action('k'), Some(ActionId::NextLink));
+		assert_eq!(action('t'), Some(ActionId::NextTable));
+	}
 }
