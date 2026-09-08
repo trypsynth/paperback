@@ -39,6 +39,29 @@ fn byte_to_utf16_index(s: &str, byte_idx: usize) -> usize {
 	utf16_count
 }
 
+/// The UTF-16 index of each byte offset in `sorted_byte_offsets` (which must be ascending),
+/// computed in a single forward pass so converting many offsets stays linear in the text length
+/// plus the number of offsets rather than quadratic.
+fn utf16_offsets_at(s: &str, sorted_byte_offsets: &[usize]) -> Vec<usize> {
+	let mut out = Vec::with_capacity(sorted_byte_offsets.len());
+	let mut chars = s.char_indices();
+	let mut byte_cursor = 0usize;
+	let mut utf16_cursor = 0usize;
+	for &target in sorted_byte_offsets {
+		while byte_cursor < target {
+			if let Some((byte, ch)) = chars.next() {
+				byte_cursor = byte + ch.len_utf8();
+				utf16_cursor += ch.len_utf16();
+			} else {
+				byte_cursor = s.len();
+				break;
+			}
+		}
+		out.push(utf16_cursor);
+	}
+	out
+}
+
 /// The matcher both `reader_search` and `reader_search_all` run, honouring `options`: the needle
 /// is escaped unless it is already a regex, wrapped in `\b…\b` for whole-word search, and matched
 /// case-insensitively unless `MATCH_CASE` is set. `None` for an invalid regex.
@@ -96,11 +119,30 @@ pub fn reader_search_all(haystack: &str, needle: &str, options: SearchOptions) -
 	let Some(re) = build_matcher(needle, options) else {
 		return Vec::new();
 	};
-	re.find_iter(haystack)
-		.filter(|m| m.start() != m.end())
-		.map(|m| {
-			let start = i64::try_from(byte_to_utf16_index(haystack, m.start())).unwrap_or(-1);
-			let end = i64::try_from(byte_to_utf16_index(haystack, m.end())).unwrap_or(-1);
+	// Collect raw byte ranges first (matches come back ordered and non-overlapping), then convert
+	// every boundary to UTF-16 in one forward pass - converting each one separately would rescan
+	// the whole text per match and be quadratic for documents with many occurrences.
+	let mut byte_ranges: Vec<(usize, usize)> = Vec::new();
+	for m in re.find_iter(haystack) {
+		if m.start() != m.end() {
+			byte_ranges.push((m.start(), m.end()));
+		}
+	}
+	if byte_ranges.is_empty() {
+		return Vec::new();
+	}
+	let mut targets: Vec<usize> = Vec::with_capacity(byte_ranges.len() * 2);
+	for (start, end) in &byte_ranges {
+		targets.push(*start);
+		targets.push(*end);
+	}
+	let utf16 = utf16_offsets_at(haystack, &targets);
+	byte_ranges
+		.into_iter()
+		.enumerate()
+		.map(|(index, _)| {
+			let start = i64::try_from(utf16[index * 2]).unwrap_or(-1);
+			let end = i64::try_from(utf16[index * 2 + 1]).unwrap_or(-1);
 			(start, end)
 		})
 		.collect()
