@@ -15,6 +15,3 @@ root = true
 	ktlint_standard_argument-list-wrapping = disabled
 	ktlint_standard_trailing-comma-on-call-site = disabled
 	ktlint_standard_trailing-comma-on-declaration-site = disabled
-
-	[**/uniffi/**.kt]
-	ktlint_disabled_rules = *

@@ -7,7 +7,6 @@ use std::{
 use bitflags::bitflags;
 use paperback_core::{config::ConfigManager, reader_core, session::FindAllLine, util::text::display_len};
 use patois::t;
-use wx_utils::dpi;
 use wxdragon::prelude::*;
 
 use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigation};
@@ -289,7 +288,7 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	let find_label = StaticText::builder(&dialog).with_label(&t("Find &what:")).build();
 	let find_combo = ComboBox::builder(&dialog)
 		.with_style(ComboBoxStyle::ProcessEnter)
-		.with_size(dpi::scale_size(&dialog, Size::new(combo_width, -1)))
+		.with_size(dialog.from_dip(Size::new(combo_width, -1)))
 		.build();
 	// TRANSLATORS: Group box heading for the search options in the Find dialog
 	let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("Options")).build();
@@ -322,7 +321,7 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	button_sizer.add(&find_all_btn, 0, SizerFlag::Right, button_spacing);
 	// The Find All results view, hidden until a search with matches switches to it.
 	let results_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	let results_list = ListBox::builder(&dialog).with_size(dpi::scale_size(&dialog, Size::new(400, 500))).build();
+	let results_list = ListBox::builder(&dialog).with_size(dialog.from_dip(Size::new(400, 500))).build();
 	// TRANSLATORS: Accessible name of the list of Find All results
 	results_list.set_accessibility_label(&t("Results"));
 	results_sizer.add(&results_list, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);

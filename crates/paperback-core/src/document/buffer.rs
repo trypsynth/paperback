@@ -573,10 +573,10 @@ mod tests {
 		}
 	}
 
-	/// Mirrors how `epub.rs::convert_spine_items` used to build a buffer one section at a time
-	/// with sequential `append` calls (a trailing `\n` added per non-empty part unless it already
-	/// ends with one), so `from_parts_matches_sequential_append_for_any_parts` can check the new
-	/// parallel path agrees with it exactly.
+	/// Builds the buffer one part at a time with sequential `append` calls (a trailing `\n` per
+	/// non-empty part unless it already ends with one), so
+	/// `from_parts_matches_sequential_append_for_any_parts` can check that the parallel
+	/// `from_parts` agrees with it exactly.
 	fn naive_buffer_from_parts(parts: &[&str]) -> (DocumentBuffer, Vec<PartSpan>) {
 		let mut buffer = DocumentBuffer::new();
 		let mut spans = Vec::with_capacity(parts.len());

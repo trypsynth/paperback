@@ -1,7 +1,7 @@
 // `build_ok_cancel_buttons` translates its own "Cancel" label via patois, since
 // wx-utils is itself a `[package.metadata.patois] translatable = true` crate whose
 // `t()` calls patois-build folds into this app's own catalog at build time (see
-// `build_translations` in build.rs), the same mechanism ship-shape uses. `ok_label`
+// `build()` in `build/translations.rs`), the same mechanism ship-shape uses. `ok_label`
 // is still supplied by each dialog, since it varies ("OK" vs. a verb like "Go").
 //
 // Not a fit for every dialog: `toc.rs` deliberately gives its OK button a non-stock
@@ -25,7 +25,6 @@ mod bookmark;
 pub use bookmark::show_bookmark_dialog;
 mod document_info;
 pub use document_info::show_document_info_dialog;
-mod duration_format;
 mod elements;
 pub use elements::{ElementsKind, show_elements_dialog};
 mod go_to;

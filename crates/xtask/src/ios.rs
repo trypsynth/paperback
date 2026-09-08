@@ -93,7 +93,6 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("xcodebuild -create-xcframework failed".into());
 	}
-	// Generate Localizable.strings for each translated language
 	let po_dir = root.join("po");
 	let ios_dir = root.join("ios/Paperback");
 	if po_dir.is_dir() {

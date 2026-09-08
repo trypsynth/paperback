@@ -7,8 +7,6 @@ use std::{
 
 use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont, ShortcutsConfig};
 use patois::{t, ui::populate_language_choice};
-#[cfg(not(target_os = "macos"))]
-use wx_utils::dpi;
 #[cfg(target_os = "windows")]
 use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
@@ -520,7 +518,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		} else {
 			None
 		};
-		let mut dlg = ColourDialog::builder(&dialog_for_bg);
+		// TRANSLATORS: Title of the system dialog for picking a background colour
+		let mut dlg = ColourDialog::builder(&dialog_for_bg).with_title(&t("Choose a colour"));
 		if let Some(c) = initial {
 			dlg = dlg.with_initial_colour(c);
 		}
@@ -671,7 +670,11 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 			font_data.set_initial_font(&font);
 		}
 	}
-	let dlg = FontDialog::builder(&parent).with_font_data(&font_data).build();
+	let dlg = FontDialog::builder(&parent)
+		// TRANSLATORS: Title of the system dialog for picking a font
+		.with_title(&t("Choose a font"))
+		.with_font_data(&font_data)
+		.build();
 	if dlg.show_modal() != ID_OK {
 		return None;
 	}
@@ -698,7 +701,7 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<HotkeyConfig> {
 	// TRANSLATORS: Title of the hotkey customization dialog
 	let dialog = Dialog::builder(parent, &t("Window Hotkey"))
-		.with_size(dpi::scale(parent, 300), dpi::scale(parent, 230))
+		.with_size(parent.from_dip_int(300), parent.from_dip_int(230))
 		.build();
 	let panel = Panel::builder(&dialog).build();
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();

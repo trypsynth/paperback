@@ -35,8 +35,6 @@ pub mod word;
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
 pub trait Parser: Send + Sync {
-	/// Parse a document from the given context.
-	///
 	/// # Errors
 	///
 	/// Returns an error if the file cannot be read or parsed.
@@ -74,8 +72,6 @@ impl RegisteredParser {
 		self.format.flags
 	}
 
-	/// Parse a document from the given context.
-	///
 	/// # Errors
 	///
 	/// Returns an error if the file cannot be read or parsed.
@@ -168,8 +164,6 @@ fn resolve_extension(path: &Path) -> Option<&str> {
 	path.extension().and_then(|e| e.to_str())
 }
 
-/// Parse a document from the given context.
-///
 /// # Errors
 ///
 /// Returns an error if:

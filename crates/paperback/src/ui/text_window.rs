@@ -336,8 +336,8 @@ mod tests {
 		let doc_len = 5_000_000;
 		let start = 1_750_000;
 		let mut window = TextWindow::new(start, start + TARGET_WINDOW_SIZE);
-		// Seeded just inside RELOAD_MARGIN of the start, which is what a compaction used to leave
-		// behind and what made the old loop run away rather than settle.
+		// Seeded just inside RELOAD_MARGIN of the loaded start, the position most likely to look
+		// like it needs a compaction and so the worst case for a pump that must not do one.
 		let mut reader_local = RELOAD_MARGIN - 25_000;
 		for _ in 0..500 {
 			let before = window.to_doc(reader_local);

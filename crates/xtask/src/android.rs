@@ -85,7 +85,6 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 		return Err("cargo ndk build failed".into());
 	}
 	println!("Android native build complete.");
-	// Generate translation JSON assets for each translated language
 	let po_dir = project_root().join("po");
 	let assets_dir = project_root().join("android/app/src/main/assets");
 	if po_dir.is_dir()

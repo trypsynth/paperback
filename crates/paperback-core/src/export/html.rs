@@ -21,7 +21,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 	let section_break_positions: Vec<usize> =
 		document.buffer.markers.iter().filter(|m| m.mtype == MarkerType::SectionBreak).map(|m| m.position).collect();
 	// Single O(N) scan: collect newline positions in display coordinates and total display length.
-	// Used to replace the O(N)-per-call line_end_pos() with an O(log lines) binary search.
+	// Turns each line-end lookup into an O(log lines) binary search instead of a fresh scan.
 	let (newline_display_positions, content_display_len): (Vec<usize>, usize) = {
 		let mut positions = Vec::new();
 		let mut dpos = 0usize;
@@ -433,7 +433,6 @@ mod tests {
 			vec![Marker::new(MarkerType::Bold, 0).with_length(11), Marker::new(MarkerType::Italic, 0).with_length(6)],
 		);
 		let html = render(&doc);
-		// Check both are present
 		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
 		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
 		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
@@ -450,13 +449,11 @@ mod tests {
 			vec![Marker::new(MarkerType::Bold, 0).with_length(4), Marker::new(MarkerType::Italic, 0).with_length(4)],
 		);
 		let html = render(&doc);
-		// Both opens and closes should be present
 		// The order of closes may vary based on insertion order (pre-existing behavior)
 		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
 		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
 		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
 		assert!(html.contains("</i>"), "Expected </i> in HTML: {html}");
-		// Count tags to verify they're paired
 		let b_open = html.matches("<b>").count();
 		let b_close = html.matches("</b>").count();
 		let i_open = html.matches("<i>").count();
@@ -478,7 +475,6 @@ mod tests {
 			vec![Marker::new(MarkerType::Bold, 0).with_length(4), Marker::new(MarkerType::Bold, 22).with_length(4)],
 		);
 		let html = render(&doc);
-		// Should have two bold pairs
 		let b_open = html.matches("<b>").count();
 		let b_close = html.matches("</b>").count();
 		assert_eq!(b_open, 2, "Expected 2 <b> opens");
@@ -497,7 +493,6 @@ mod tests {
 			],
 		);
 		let html = render(&doc);
-		// All tags should be present
 		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
 		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
 		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");

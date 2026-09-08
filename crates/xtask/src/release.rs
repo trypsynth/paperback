@@ -77,7 +77,6 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 	fs::copy(&exe, macos_dir.join("paperback"))?;
 	use std::os::unix::fs::PermissionsExt;
 	fs::set_permissions(macos_dir.join("paperback"), fs::Permissions::from_mode(0o755))?;
-	// Copy libpdfium.dylib into the bundle so it ships alongside the binary.
 	let dylib_src = target_dir.join("libpdfium.dylib");
 	if dylib_src.exists() {
 		fs::copy(&dylib_src, macos_dir.join("libpdfium.dylib"))?;

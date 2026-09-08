@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 09:44-0600\n"
+"POT-Creation-Date: 2026-09-07 11:10-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1076,6 +1076,10 @@ msgstr ""
 msgid "Readability"
 msgstr ""
 
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+msgid "Choose a colour"
+msgstr ""
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr ""
@@ -1110,6 +1114,10 @@ msgstr ""
 
 #. TRANSLATORS: Font strikethrough attribute name
 msgid "Strikethrough"
+msgstr ""
+
+#. TRANSLATORS: Title of the system dialog for picking a font
+msgid "Choose a font"
 msgstr ""
 
 #. TRANSLATORS: Title of the hotkey customization dialog
@@ -3828,4 +3836,14 @@ msgstr ""
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
 #: kt
 msgid "{}% through"
+msgstr ""
+
+#. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
+#: swift
+msgid "With VoiceOver, swipe up on the play button to move forward, or down to move back."
+msgstr ""
+
+#. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
+#: kt
+msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
 msgstr ""
