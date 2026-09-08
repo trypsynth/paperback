@@ -570,19 +570,28 @@ msgstr "すべて削除(&C)"
 msgid "Close"
 msgstr "閉じる"
 
-msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
-msgstr "選択した文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
+msgid ""
+"Are you sure you want to remove the selected document? This will also remove "
+"its reading position and bookmarks."
+msgstr ""
+"選択した文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
 
-msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
-msgstr "{}件の文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
+msgid ""
+"Are you sure you want to remove the {} selected documents? This will also "
+"remove their reading positions and bookmarks."
+msgstr ""
+"{}件の文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
 msgstr "確認"
 
 #. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
-msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
-msgstr "すべての文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"すべての文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
 msgid "No documents."
@@ -1201,7 +1210,9 @@ msgid "Configure shortcut for {}:"
 msgstr "「{}」に割り当てるショートカット:"
 
 msgid "Tip: click in the key field and press the key combination you want."
-msgstr "ヒント: キー入力欄をクリックして、割り当てたいキーの組み合わせを押してください。"
+msgstr ""
+"ヒント: キー入力欄をクリックして、割り当てたいキーの組み合わせを押してくださ"
+"い。"
 
 #. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
 msgid "Detected: (none)"
@@ -1309,7 +1320,8 @@ msgid "File not found: {}"
 msgstr "ファイルが見つかりません: {}"
 
 #. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
-msgid "A .paperback file was found for this document. Would you like to import it?"
+msgid ""
+"A .paperback file was found for this document. Would you like to import it?"
 msgstr "この文書用の.paperbackファイルが見つかりました。インポートしますか？"
 
 #. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
@@ -1421,8 +1433,11 @@ msgid "Failed to reveal file in folder."
 msgstr "ファイルの場所を開けません。"
 
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
-msgid "readme.html not found. Please ensure the application was built properly."
-msgstr "readme.htmlが見つかりません。アプリケーションが正しくビルドされていることをご確認ください。"
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr ""
+"readme.htmlが見つかりません。アプリケーションが正しくビルドされていることをご"
+"確認ください。"
 
 #. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
@@ -2099,7 +2114,9 @@ msgstr "コンテナーの先頭です。"
 
 #. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
 msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "OCR用の言語がインストールされていません。システムの言語設定から追加してください。"
+msgstr ""
+"OCR用の言語がインストールされていません。システムの言語設定から追加してくださ"
+"い。"
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -2539,7 +2556,8 @@ msgstr "画像"
 
 #. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr "DAISY .opfファイルが正しくないか、マニフェストにDTBook XMLが見つかりません"
+msgstr ""
+"DAISY .opfファイルが正しくないか、マニフェストにDTBook XMLが見つかりません"
 
 #. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
 msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
@@ -2705,8 +2723,12 @@ msgstr "パスワードが必要または間違っています"
 msgid "Failed to open PDF document: {}"
 msgstr "PDFファイルを開けません: {}"
 
-msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
-msgstr "パスワードで保護されたPPTファイルは現在サポートされていません。ファイルをPPTX形式で保存してそちらを開いてください。"
+msgid ""
+"Password-protected PPT files are not currently supported. Try saving the "
+"file as PPTX and opening that instead."
+msgstr ""
+"パスワードで保護されたPPTファイルは現在サポートされていません。ファイルをPPTX"
+"形式で保存してそちらを開いてください。"
 
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 msgid "PPT file contains no slides"
@@ -2762,7 +2784,9 @@ msgstr "ZIPアーカイブ内に読み取れる内容が見つかりません"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "旧形式DOCとしての解析に失敗しました: {}。OOXMLとしての再試行も失敗しました: {}"
+msgstr ""
+"旧形式DOCとしての解析に失敗しました: {}。OOXMLとしての再試行も失敗しました: "
+"{}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 msgid "No file extension found for: {}"
@@ -2790,8 +2814,13 @@ msgstr "更新ファイルが不明な形式です。"
 msgid "Failed to open disk image"
 msgstr "ディスクイメージを開けません"
 
-msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
-msgstr "更新をダウンロードし、ディスクイメージを開きました。%sを終了し、新しいバージョンをアプリケーションフォルダーにドラッグしてインストールを完了してください。"
+msgid ""
+"The update has been downloaded and its disk image opened. Quit %s and drag "
+"the new version into Applications to finish installing."
+msgstr ""
+"更新をダウンロードし、ディスクイメージを開きました。%sを終了し、新しいバー"
+"ジョンをアプリケーションフォルダーにドラッグしてインストールを完了してくださ"
+"い。"
 
 msgid "Update Ready"
 msgstr "更新準備完了"
@@ -2847,8 +2876,11 @@ msgstr "更新がありません。最新バージョン: %s"
 msgid "Info"
 msgstr "情報"
 
-msgid "Security verification failed. The update might have been tampered with: %s"
-msgstr "セキュリティ検証に失敗しました。更新ファイルが改ざんされている可能性があります: %s"
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+"セキュリティ検証に失敗しました。更新ファイルが改ざんされている可能性がありま"
+"す: %s"
 
 msgid "Security Error"
 msgstr "セキュリティエラー"
@@ -2903,7 +2935,7 @@ msgstr ""
 msgid "Switch to Text Mode"
 msgstr ""
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
+#. TRANSLATORS: Menu item to open the list of recently opened documents
 #: swift
 msgid "Recent Documents"
 msgstr ""
@@ -2968,7 +3000,7 @@ msgstr ""
 msgid "Locate"
 msgstr ""
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
+#. TRANSLATORS: Button to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr ""
@@ -3036,21 +3068,18 @@ msgstr ""
 #. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
 #: swift
 #, fuzzy
-#| msgid "&Line spacing:"
 msgid "Line Spacing"
 msgstr "行の間隔(&L):"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
 #: swift
 #, fuzzy
-#| msgid "&Paragraph spacing:"
 msgid "Paragraph Spacing"
 msgstr "段落の間隔(&P):"
 
 #. TRANSLATORS: Label for the picker choosing how document text is aligned
 #: swift
 #, fuzzy
-#| msgid "Text &alignment:"
 msgid "Alignment"
 msgstr "テキストの配置(&A):"
 
@@ -3363,21 +3392,18 @@ msgstr ""
 
 #: kt
 #, fuzzy
-#| msgid "&Export Document Data..."
 msgid "Export Document"
 msgstr "文書データのエクスポート(&E)..."
 
 #. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
 #: kt
 #, fuzzy
-#| msgid "Close the current document"
 msgid "Select a format to export the current document:"
 msgstr "現在の文書を閉じます"
 
 #. TRANSLATORS: Export format option to save the document as a plain text file
 #: kt
 #, fuzzy
-#| msgid "Plain Text"
 msgid "Plain Text (.txt)"
 msgstr "プレーンテキスト"
 
@@ -3389,7 +3415,6 @@ msgstr ""
 #. TRANSLATORS: Export format option to save the document as a Markdown file
 #: kt
 #, fuzzy
-#| msgid "Markdown"
 msgid "Markdown (.md)"
 msgstr "Markdown"
 
@@ -3429,7 +3454,9 @@ msgstr ""
 
 #. TRANSLATORS: Intro sentence explaining what the "All Files Access" permission is used for
 #: kt
-msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgid ""
+"Paperback requires the 'All Files Access' permission to enable the custom in-"
+"app file browser."
 msgstr ""
 
 #. TRANSLATORS: Heading introducing the list of reasons the permission is needed
@@ -3439,12 +3466,16 @@ msgstr ""
 
 #. TRANSLATORS: First reason for requesting the "All Files Access" permission
 #: kt
-msgid "To provide a fast, fully screen-reader accessible file manager inside the app."
+msgid ""
+"To provide a fast, fully screen-reader accessible file manager inside the "
+"app."
 msgstr ""
 
 #. TRANSLATORS: Second reason for requesting the "All Files Access" permission
 #: kt
-msgid "To load large files instantly without needing to copy them into the app's cache."
+msgid ""
+"To load large files instantly without needing to copy them into the app's "
+"cache."
 msgstr ""
 
 #. TRANSLATORS: Third reason for requesting the "All Files Access" permission
@@ -3485,7 +3516,6 @@ msgstr ""
 #. TRANSLATORS: Unit label shown under the sleep timer's remaining time
 #: kt
 #, fuzzy
-#| msgid "Warning"
 msgid "remaining"
 msgstr "警告"
 
@@ -3502,7 +3532,6 @@ msgstr ""
 #. TRANSLATORS: Preset sleep timer duration chip; {} is replaced with the number of minutes
 #: kt
 #, fuzzy
-#| msgid "2 minutes"
 msgid "{} minutes"
 msgstr "2分"
 
@@ -3541,11 +3570,10 @@ msgstr "この文書の単語数は{}です。"
 #. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
-#| msgid "Words:"
 msgid "words"
 msgstr "単語数:"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr ""
@@ -3553,14 +3581,12 @@ msgstr ""
 #. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 #, fuzzy
-#| msgid "Document reloaded."
 msgid "Document exported"
 msgstr "文書を再読み込みしました。"
 
 #. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 #, fuzzy
-#| msgid "Failed to export document."
 msgid "Failed to export document"
 msgstr "文書をエクスポートできません。"
 
@@ -3607,7 +3633,6 @@ msgstr ""
 #. TRANSLATORS: Menu item / accessibility action to open the export document dialog
 #: kt
 #, fuzzy
-#| msgid "Export Successful"
 msgid "Export As"
 msgstr "エクスポート完了"
 
@@ -3663,7 +3688,6 @@ msgstr ""
 #. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
-#| msgid "5 seconds"
 msgid "{} seconds"
 msgstr "5秒"
 
@@ -3679,13 +3703,14 @@ msgstr ""
 
 #. TRANSLATORS: Intro paragraph explaining that the following sections describe requested permissions
 #: kt
-msgid "Paperback works best with a couple of permissions. Here's what we ask for and why:"
+msgid ""
+"Paperback works best with a couple of permissions. Here's what we ask for "
+"and why:"
 msgstr ""
 
 #. TRANSLATORS: Heading for the notifications permission section on the onboarding screen
 #: kt
 #, fuzzy
-#| msgid "No sections."
 msgid "Notifications"
 msgstr "セクションがありません。"
 
@@ -3707,7 +3732,6 @@ msgstr ""
 #. TRANSLATORS: Button to leave the onboarding screen and continue into the app, whether or not permissions were granted
 #: kt
 #, fuzzy
-#| msgid "&Containers"
 msgid "Continue"
 msgstr "コンテナー(&C)"
 
@@ -3739,7 +3763,6 @@ msgstr ""
 #. TRANSLATORS: TalkBack label for the read-aloud bar's forward button when navigating audio by time; {} is an amount like "30 seconds"
 #: kt
 #, fuzzy
-#| msgid "Go &Forward"
 msgid "Forward {}"
 msgstr "進む(&F)"
 
@@ -3751,7 +3774,6 @@ msgstr ""
 #. TRANSLATORS: Shown in place of the document when it could not be opened; {} is the reason
 #: kt
 #, fuzzy
-#| msgid "Failed to load document."
 msgid "Error loading document: {}"
 msgstr "文書を読み込めません。"
 
@@ -3785,7 +3807,6 @@ msgstr ""
 #. TRANSLATORS: Placeholder text shown in the empty search field of the Find screen
 #: swift
 #, fuzzy
-#| msgid "&search"
 msgid "Search..."
 msgstr "検索(&S)"
 
@@ -3803,7 +3824,6 @@ msgstr ""
 #. trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
-#| msgid "This document contains {} words."
 msgid "This document contains {} word."
 msgstr "この文書の単語数は{}です。"
 
@@ -3822,7 +3842,6 @@ msgstr ""
 #. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
-#| msgid "1 second"
 msgid "{} second"
 msgstr "1秒"
 
@@ -3833,13 +3852,11 @@ msgstr "1秒"
 #. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 #, fuzzy
-#| msgid "5 seconds"
 msgid "{} seconds⁣"
 msgstr "5秒"
 
 #: kt
 #, fuzzy
-#| msgid "This document contains {} words."
 msgid "This document contains {} words.⁣"
 msgstr "この文書の単語数は{}です。"
 
@@ -3853,29 +3870,51 @@ msgstr ""
 
 #. TRANSLATORS: Closing note explaining the fallback if the user denies the permission
 #: kt
-msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
+msgid ""
+"If you deny this permission, you can still use the Android System File "
+"Picker to open your books by turning off the custom file browser setting."
 msgstr ""
 
 #. TRANSLATORS: Explanation of why the app requests the notifications permission
 #: kt
-msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is reading, so you can pause, resume, and skip without reopening the app."
+msgid ""
+"Lets Paperback show playback controls in the notification shade while text-"
+"to-speech is reading, so you can pause, resume, and skip without reopening "
+"the app."
 msgstr ""
 
 #. TRANSLATORS: Explanation of why the app requests the all files access permission
 #: kt
-msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your device — including network drives — instantly, with full screen-reader support. You can skip this and use the system file picker instead."
+msgid ""
+"Powers the optional in-app file browser, so you can open documents from "
+"anywhere on your device — including network drives — instantly, with full "
+"screen-reader support. You can skip this and use the system file picker "
+"instead."
 msgstr ""
 
 #. TRANSLATORS: Announced by the screen reader when the in-app file browser opens
 #: kt
 #, fuzzy
-#| msgid "File Name"
 msgid "File Manager"
 msgstr "ファイル名"
 
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
 #: kt
 msgid "{}% through"
+msgstr ""
+
+#. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
+#: swift
+msgid ""
+"With VoiceOver, swipe up on the play button to move forward, or down to move "
+"back."
+msgstr ""
+
+#. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
+#: kt
+msgid ""
+"With TalkBack, swipe up on the play button to move forward, or down to move "
+"back."
 msgstr ""
 
 #~ msgid "1 document."
@@ -3902,8 +3941,12 @@ msgstr ""
 #~ msgid "&Options"
 #~ msgstr "オプション(&O)"
 
-#~ msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
-#~ msgstr "このPDFには画像のみが含まれ、抽出可能なテキストがありません。内容を読むにはOCRソフトウェアが必要です。"
+#~ msgid ""
+#~ "This PDF contains images only, with no extractable text. You may need to "
+#~ "run it through OCR software to read its contents."
+#~ msgstr ""
+#~ "このPDFには画像のみが含まれ、抽出可能なテキストがありません。内容を読むに"
+#~ "はOCRソフトウェアが必要です。"
 
 #~ msgid "Previous Section\t["
 #~ msgstr "前のセクション\t["
@@ -4169,11 +4212,19 @@ msgstr ""
 #~ msgid "Show All...\tCtrl+R"
 #~ msgstr "すべて表示...\tCtrl+R"
 
-#~ msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
-#~ msgstr "リストからこの文書を削除しますか？これにより、文書の読み上げ位置の情報も削除されます。"
+#~ msgid ""
+#~ "Are you sure you want to remove this document from the list? This will "
+#~ "also remove its reading position."
+#~ msgstr ""
+#~ "リストからこの文書を削除しますか？これにより、文書の読み上げ位置の情報も削"
+#~ "除されます。"
 
-#~ msgid "Are you sure you want to remove these {} documents from the list? This will also remove their reading positions."
-#~ msgstr "リストから文書「{}」を削除しますか？これにより、文書の読み上げ位置の情報も削除されます。"
+#~ msgid ""
+#~ "Are you sure you want to remove these {} documents from the list? This "
+#~ "will also remove their reading positions."
+#~ msgstr ""
+#~ "リストから文書「{}」を削除しますか？これにより、文書の読み上げ位置の情報も"
+#~ "削除されます。"
 
 #~ msgid "Root"
 #~ msgstr "ルート"
