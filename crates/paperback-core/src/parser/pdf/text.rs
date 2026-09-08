@@ -7,7 +7,7 @@
 
 use std::{cmp::Ordering, mem};
 
-use pdfium::PdfiumTextPage;
+use pdfium::{PdfiumTextPage, pdfium_types::FS_MATRIX};
 
 use crate::{
 	parser::util::bidi,
@@ -165,34 +165,57 @@ pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) ->
 	// Chars of the current visual line with their pdfium index, so each line can be
 	// reordered visual→logical (handles RTL scripts) before paragraph joining.
 	let mut current_chars: Vec<(char, i32)> = Vec::new();
-	// One `FPDFText_GetFontSize` FFI call per line rather than one per character: a real
-	// document's line is rendered in one consistent size, so the first character with a
-	// usable size stands in for the whole line. Per-character font-size calls (on top of the
-	// per-character unicode call every line already pays) were the dominant cost of PDF
-	// parsing on documents with many lines - see #747.
-	let mut current_size = 0.0f64;
 	let mut previous_char = None;
 	for i in 0..char_count {
 		let unicode = text_page.get_unicode(i);
 		let Some(ch) = char::from_u32(unicode) else { continue };
 		if ends_line(ch, previous_char) {
-			result.push((reorder_run(text_page, &mem::take(&mut current_chars)), current_size));
-			current_size = 0.0;
+			let size = line_font_size(text_page, &current_chars);
+			result.push((reorder_run(text_page, &mem::take(&mut current_chars)), size));
 		} else if ch == '\n' || (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			// The '\n' of a "\r\n" pair, and anything else with no text of its own: dropped, but
 			// still the previous character as far as the next `ends_line` is concerned.
 		} else if ch != ' ' || !is_invisible_space(text_page, i, char_count) {
-			if current_size == 0.0 {
-				current_size = text_page.get_font_size(i);
-			}
 			current_chars.push((ch, i));
 		}
 		previous_char = Some(ch);
 	}
 	if !current_chars.is_empty() {
-		result.push((reorder_run(text_page, &current_chars), current_size));
+		let size = line_font_size(text_page, &current_chars);
+		result.push((reorder_run(text_page, &current_chars), size));
 	}
 	result
+}
+
+/// The point size one character is set in. pdfium reports the `Tf` size, which is 1.0 in every
+/// PDF that scales its text through the text matrix instead of through `Tf` - both the PDF of
+/// #808 and the one of #813 do, and every line of both came back as size 1.0, so no line was
+/// ever tall enough to be taken for a heading. The matrix's vertical scale is the rest of the
+/// size, so the two together are the size the reader sees.
+fn effective_font_size(text_page: &PdfiumTextPage, index: i32) -> f64 {
+	let size = text_page.get_font_size(index);
+	let mut matrix = FS_MATRIX { a: 1.0, b: 0.0, c: 0.0, d: 1.0, e: 0.0, f: 0.0 };
+	if text_page.get_matrix(index, &mut matrix).is_ok() { size * f64::from(matrix.b.hypot(matrix.d)) } else { size }
+}
+
+/// How many characters of a line to measure. Reading the size off the line's first character
+/// costs one call but believes a chapter opening's drop cap, which stands three times the size
+/// of the line it starts; the median of a handful of characters spread across the line does not.
+/// Still a per-line cost rather than a per-character one - the per-character font-size calls
+/// that #747 had to undo.
+const LINE_FONT_SIZE_SAMPLES: usize = 5;
+
+/// The point size of a visual line: the median of [`effective_font_size`] over a few of its
+/// characters, ignoring whitespace (which a font may set in a size of its own).
+fn line_font_size(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> f64 {
+	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+	if indices.is_empty() {
+		return 0.0;
+	}
+	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
+	let mut sizes: Vec<f64> =
+		indices.iter().step_by(step).map(|&i| effective_font_size(text_page, i)).filter(|size| *size > 0.0).collect();
+	sorted_median(&mut sizes)
 }
 
 fn sorted_median(values: &mut [f64]) -> f64 {
@@ -212,33 +235,53 @@ pub(super) fn median_line_font_size(line_infos: &[(String, f64)]) -> f64 {
 	sorted_median(&mut sizes)
 }
 
+/// Fraction of the lines on a page that must be at least as long as the length this returns.
+/// pdfium runs two visual lines together into one line of text often enough - a third of the
+/// lines on some pages of #813 - that the longest line on a page is routinely a doubled one.
+/// Measuring the page by that made every real line count as short, and a short line followed by
+/// one starting with a capital or a digit is where [`join_paragraphs`] breaks a paragraph, so
+/// wrapped paragraphs came apart line by line. The 75th percentile is past any run of doubled
+/// lines while still landing on a line that fills the measure.
+const FULL_LINE_PERCENTILE_NUMERATOR: usize = 3;
+const FULL_LINE_PERCENTILE_DENOMINATOR: usize = 4;
+
+/// The length of a line that fills the page's measure, in display units.
+fn full_line_len(lines: &[(String, bool, f64)]) -> usize {
+	let mut lengths: Vec<usize> = lines.iter().map(|(line, ..)| display_len(line)).filter(|len| *len > 0).collect();
+	if lengths.is_empty() {
+		return 0;
+	}
+	lengths.sort_unstable();
+	lengths[(lengths.len() - 1) * FULL_LINE_PERCENTILE_NUMERATOR / FULL_LINE_PERCENTILE_DENOMINATOR]
+}
+
 pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(String, bool)> {
 	const HEADING_FONT_RATIO: f64 = 1.2;
 	const HEADING_MAX_LEN: usize = 150;
 	let heading_threshold = if body_font_size > 0.0 { body_font_size * HEADING_FONT_RATIO } else { f64::INFINITY };
-	let lines: Vec<(String, bool)> = raw_lines
+	let lines: Vec<(String, bool, f64)> = raw_lines
 		.iter()
 		.map(|(text, size)| {
 			let trimmed = trim_string(&collapse_whitespace(text));
 			let len = display_len(&trimmed);
 			let is_heading_line = *size >= heading_threshold && len > 0 && len <= HEADING_MAX_LEN;
-			(trimmed, is_heading_line)
+			(trimmed, is_heading_line, *size)
 		})
 		.collect();
-	let mut max_len = 0usize;
-	for (line, _) in &lines {
-		let len = display_len(line);
-		if len > max_len {
-			max_len = len;
-		}
-	}
-	let short_line_threshold = (max_len as f32 * 0.75) as usize;
+	// Two ways a line can end a paragraph, needing different amounts of evidence. A line that
+	// ends a sentence and stops any way short of the measure has ended the paragraph with it. A
+	// line that ends mid-sentence has to fall well short before the next line starting like a
+	// fresh sentence counts for anything, since a capital there is as likely to open a name.
+	let full_line = full_line_len(&lines);
+	let ended_sentence_threshold = full_line * 19 / 20;
+	let short_line_threshold = full_line * 3 / 4;
 	let mut paragraphs: Vec<(String, bool)> = Vec::new();
 	let mut current_paragraph = String::new();
 	let mut current_is_heading = false;
+	let mut current_heading_size = 0.0f64;
 	let mut last_line_len = 0usize;
 	let mut last_line_ends_with_punctuation = false;
-	for (line, is_heading_line) in &lines {
+	for (line, is_heading_line, size) in &lines {
 		if line.is_empty() {
 			if !current_paragraph.is_empty() {
 				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
@@ -256,6 +299,7 @@ pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) 
 		if current_paragraph.is_empty() {
 			current_paragraph = line.clone();
 			current_is_heading = *is_heading_line;
+			current_heading_size = *size;
 		} else {
 			let mut is_numbered = false;
 			let mut chars = line.chars();
@@ -274,19 +318,25 @@ pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) 
 				}
 				is_numbered = found_space;
 			}
-			// A heading (either side of the boundary) or a list item always starts a new paragraph;
-			// otherwise a short previous line does, whether it ended on punctuation or the new line
-			// looks like a fresh sentence.
-			let break_paragraph = *is_heading_line
-				|| current_is_heading
-				|| is_list_item
-				|| is_numbered
-				|| (last_line_len < short_line_threshold
-					&& (last_line_ends_with_punctuation || starts_with_uppercase || !starts_with_alpha));
+			// A heading set over several lines - a chapter title, most often - carries on rather
+			// than becoming one heading per line, as long as the size does not change. Every
+			// other heading boundary, and every list item, starts a new paragraph; otherwise the
+			// previous line does when it stopped short of the measure.
+			let continues_heading =
+				*is_heading_line && current_is_heading && (*size - current_heading_size).abs() < f64::EPSILON;
+			let previous_line_ended_paragraph = (last_line_ends_with_punctuation
+				&& last_line_len < ended_sentence_threshold)
+				|| (last_line_len < short_line_threshold && (starts_with_uppercase || !starts_with_alpha));
+			let break_paragraph = !continues_heading
+				&& (*is_heading_line
+					|| current_is_heading
+					|| is_list_item || is_numbered
+					|| previous_line_ended_paragraph);
 			if break_paragraph {
 				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
 				current_paragraph = line.clone();
 				current_is_heading = *is_heading_line;
+				current_heading_size = *size;
 			} else {
 				let last_char = current_paragraph.chars().last().unwrap_or(' ');
 				if current_paragraph.ends_with('-') {
@@ -320,7 +370,7 @@ pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) 
 
 #[cfg(test)]
 mod tests {
-	use super::{CharBox, ends_line, join_paragraphs, sanitize_pdf_text, space_is_invisible};
+	use super::{CharBox, ends_line, full_line_len, join_paragraphs, sanitize_pdf_text, space_is_invisible};
 
 	/// The coordinates below come from what pdfium reports for the PDF attached to #808, so the
 	/// ratios each case turns on are the ones real pages produce.
@@ -388,6 +438,94 @@ mod tests {
 			Some((82.88, 592.48)),
 			None
 		));
+	}
+
+	/// The lines of page 67 of the PDF attached to #813, with the sizes and the doubled lines
+	/// pdfium reports for it: a chapter number, a four-line chapter title, an epigraph over two
+	/// lines, and a paragraph whose second line opens with a year.
+	fn issue_813_page() -> Vec<(String, f64)> {
+		[
+			("4", 17.0),
+			("INCONVENIENT OR", 24.0),
+			("NOT, THE TRUTH IS", 24.0),
+			("THAT CLIMATE CHANGE", 24.0),
+			("IS NOT THE ISSUE", 24.0),
+			("Let's quit debating global warming and manage", 12.0),
+			("gaseous wastes as we do other trash.", 12.0),
+			("On a hot, muggy August afternoon during the summer of", 11.0),
+			("1996, I was hard at work in a conference room of the", 11.0),
+			// One line of text, two visual lines: pdfium ran them together.
+			("Ministry of Aviation Industries of China (AVIC) in Beijing, discussing human resources for a potential joint venture between", 11.0),
+			("AlliedSignal, the company for which I was then international", 11.0),
+			("human resources vice president, and AVIC. When the meeting", 11.0),
+			("ended, one of my hosts from the ministry graciously accompanied me outside. As we waited for the car, he noticed that I was", 11.0),
+			("looking up and down the street and then skyward. Visibility was", 11.0),
+			("only about a hundred yards in any direction. I was shocked. The", 11.0),
+			("executive looked at me and said, \u{201C}My children do not know the", 11.0),
+			("sky is blue.\u{201D}", 11.0),
+		]
+		.into_iter()
+		.map(|(text, size)| (text.to_string(), size))
+		.collect()
+	}
+
+	/// The page's measure comes from a line that fills it, not from one of the doubled lines
+	/// pdfium produced, which are nearly twice as long.
+	#[test]
+	fn full_line_len_ignores_doubled_lines() {
+		let lines: Vec<(String, bool, f64)> =
+			issue_813_page().into_iter().map(|(text, size)| (text, false, size)).collect();
+		let full = full_line_len(&lines);
+		assert!((53..=64).contains(&full), "expected the length of a full line, got {full}");
+	}
+
+	/// #813: the body paragraph survives its second line opening with a year and its later lines
+	/// opening with capitals, and the chapter title is one heading rather than one per line.
+	#[test]
+	fn join_paragraphs_keeps_a_chapter_opening_whole() {
+		let result = join_paragraphs(&issue_813_page(), 11.0);
+		let texts: Vec<&str> = result.iter().map(|(text, _)| text.as_str()).collect();
+		assert_eq!(
+			texts,
+			vec![
+				"4",
+				"INCONVENIENT OR NOT, THE TRUTH IS THAT CLIMATE CHANGE IS NOT THE ISSUE",
+				"Let's quit debating global warming and manage gaseous wastes as we do other trash.",
+				"On a hot, muggy August afternoon during the summer of 1996, I was hard at work in a conference room of \
+				 the Ministry of Aviation Industries of China (AVIC) in Beijing, discussing human resources for a \
+				 potential joint venture between AlliedSignal, the company for which I was then international human \
+				 resources vice president, and AVIC. When the meeting ended, one of my hosts from the ministry \
+				 graciously accompanied me outside. As we waited for the car, he noticed that I was looking up and \
+				 down the street and then skyward. Visibility was only about a hundred yards in any direction. I was \
+				 shocked. The executive looked at me and said, \u{201C}My children do not know the sky is blue.\u{201D}",
+			]
+		);
+		assert!(result[1].1, "the chapter title is a heading");
+		assert!(!result[3].1, "the body paragraph is not");
+	}
+
+	/// The chapter number is set in its own size, so it does not join the title below it.
+	#[test]
+	fn join_paragraphs_keeps_headings_of_different_sizes_apart() {
+		let lines = vec![("PART ONE".to_string(), 30.0), ("Getting Started".to_string(), 20.0)];
+		let result = join_paragraphs(&lines, 11.0);
+		assert_eq!(result.len(), 2);
+	}
+
+	/// A line that ends a sentence ends the paragraph even when it reaches most of the way across
+	/// the measure - the case a single short-line threshold gets wrong.
+	#[test]
+	fn join_paragraphs_breaks_after_a_sentence_that_nearly_fills_the_line() {
+		let lines = vec![
+			("This book is part of the English for Research series of guides for non-native English".to_string(), 10.0),
+			("academics of all disciplines who work in an international field.".to_string(), 10.0),
+			("EAP trainers can use this book in conjunction with: English for Academic Research:".to_string(), 10.0),
+			("A Guide for Teachers.".to_string(), 10.0),
+		];
+		let result = join_paragraphs(&lines, 10.0);
+		assert_eq!(result.len(), 2, "got {result:?}");
+		assert!(result[0].0.ends_with("international field."));
+		assert!(result[1].0.starts_with("EAP trainers"));
 	}
 
 	/// A paragraph that pdfium hands back as wrapped lines is one paragraph, not one per line.
