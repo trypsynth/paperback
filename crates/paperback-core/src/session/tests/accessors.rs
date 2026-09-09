@@ -36,6 +36,35 @@ fn page_helpers_report_counts_and_offsets() {
 }
 
 #[test]
+fn page_offsets_returns_every_page_break_in_document_order() {
+	let session = sample_session(ParserFlags::NONE);
+	let offsets = session.page_offsets();
+	assert_eq!(offsets, vec![0, 8]);
+	assert_eq!(offsets.len(), session.page_count());
+	for (index, &offset) in offsets.iter().enumerate() {
+		let page = i32::try_from(index).unwrap_or(0) + 1;
+		assert_eq!(offset, session.page_offset(page), "page {page} offset must match page_offset");
+	}
+}
+
+#[test]
+fn page_offsets_is_empty_without_page_breaks() {
+	let session = session_with_content("no pages here\n");
+	assert!(session.page_offsets().is_empty());
+	assert_eq!(session.page_count(), 0);
+}
+
+#[test]
+fn page_offsets_are_in_document_order_even_for_unsorted_insertion() {
+	let mut buffer = DocumentBuffer::with_content("aaaaaaaaa\nbbbbbbbbb\n".to_string());
+	// Inserted out of order: the buffer sorts markers at DocumentHandle::new.
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 9));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0));
+	let session = session_from_buffer(buffer);
+	assert_eq!(session.page_offsets(), vec![0, 9]);
+}
+
+#[test]
 fn text_range_and_line_text_extract_expected_content() {
 	let session = sample_session(ParserFlags::NONE);
 	assert_eq!(session.get_text_range(0, 5), "line1");
