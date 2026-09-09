@@ -109,6 +109,8 @@ jobs:
   test-macos:
     name: Tests (macOS)
     runs-on: macos-latest
+    env:
+      WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
     steps:
       - uses: actions/checkout@v7
         with:
@@ -117,10 +119,11 @@ jobs:
       - name: Install CMake, Ninja, Pandoc, and Gettext
         run: |
           brew install cmake ninja pandoc gettext
-          echo "/opt/homebrew/opt/gettext/bin" >> $GITHUB_PATH
+          echo "/opt/homebrew/opt/gettext/bin" >> "$GITHUB_PATH"
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
+          components: clippy
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
       - name: Cache wxWidgets source
@@ -133,9 +136,10 @@ jobs:
         if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
         run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
       - name: Run tests
-        env:
-          WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
         run: cargo test --workspace
+      # The default profile shares the wxWidgets build with the workspace tests.
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets
   clippy:
     name: Clippy
     runs-on: windows-latest
