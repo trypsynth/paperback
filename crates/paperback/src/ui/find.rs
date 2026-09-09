@@ -12,6 +12,10 @@ use wxdragon::prelude::*;
 use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigation};
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
+/// How long to leave the empty results list focused before populating it. Long enough for the
+/// screen reader to settle on the (empty) list first; populating while NVDA is still deciding how
+/// to announce a freshly-shown control is what made it intermittently enumerate all 40k rows.
+const RESULT_POPULATE_DELAY_MS: i32 = 150;
 
 #[derive(Clone, Debug, Default)]
 pub struct SearchResult {
@@ -61,6 +65,148 @@ enum FindView {
 	Results,
 }
 
+// The Find All results list. macOS does not expose wxListCtrl to VoiceOver (see the All
+// Documents dialog), so it uses a store-backed wxDataViewListCtrl there; everywhere else the
+// results are a *virtual* wxListCtrl, which asks the control for text only for the visible rows.
+// That means even hundreds of thousands of matches populate in O(1) instead of appending a
+// native row per match (the appending was what froze the dialog on large documents).
+#[cfg(target_os = "macos")]
+type ResultsList = DataViewListCtrl;
+#[cfg(not(target_os = "macos"))]
+type ResultsList = ListCtrl;
+
+/// The row label for one result line: "Page N: <text>" when the document is paginated, else the
+/// line text itself.
+fn result_row_label(row: &FindAllLine) -> String {
+	if row.page > 0 { navigation::page_announcement(row.page, &row.text) } else { row.text.clone() }
+}
+
+/// The fixed size of the results list. It is both the minimum and the maximum so the dialog's
+/// `fit()` never sizes itself to the list's item count (a 40,000-row virtual list has no business
+/// making the dialog tens of thousands of pixels tall).
+fn results_list_size(dialog: Dialog) -> Size {
+	dialog.from_dip(Size::new(600, 500))
+}
+
+#[cfg(not(target_os = "macos"))]
+fn build_results_list(
+	dialog: Dialog,
+	_result_rows: Rc<RefCell<Vec<FindAllLine>>>,
+	result_labels: Rc<RefCell<Vec<String>>>,
+) -> ResultsList {
+	let size = results_list_size(dialog);
+	let results_list = ListCtrl::builder(&dialog)
+		.with_style(ListCtrlStyle::Report | ListCtrlStyle::Virtual | ListCtrlStyle::SingleSel)
+		.with_size(size)
+		.build();
+	results_list.insert_column(0, "", ListColumnFormat::Left, dialog.from_dip_int(600));
+	results_list.set_min_size(size);
+	results_list.set_max_size(size);
+	// TRANSLATORS: Accessible name of the list of Find All results
+	results_list.set_accessibility_label(&t("Results"));
+	// The virtual list asks for text on demand; hand back a prebuilt label so the request is a
+	// cheap clone rather than a per-row translation.
+	results_list.set_virtual_text_callback(move |index, _column| {
+		let labels = result_labels.borrow();
+		usize::try_from(index).ok().and_then(|index| labels.get(index)).cloned().unwrap_or_default()
+	});
+	results_list.set_item_count(0);
+	results_list
+}
+
+#[cfg(target_os = "macos")]
+fn build_results_list(
+	dialog: Dialog,
+	_result_rows: Rc<RefCell<Vec<FindAllLine>>>,
+	_result_labels: Rc<RefCell<Vec<String>>>,
+) -> ResultsList {
+	let size = results_list_size(dialog);
+	let results_list = DataViewListCtrl::builder(&dialog).with_style(DataViewStyle::RowLines).with_size(size).build();
+	results_list.append_text_column(
+		"",
+		0,
+		DataViewAlign::Left,
+		dialog.from_dip_int(600),
+		DataViewColumnFlags::Resizable,
+	);
+	results_list.set_min_size(size);
+	results_list.set_max_size(size);
+	// TRANSLATORS: Accessible name of the list of Find All results
+	results_list.set_accessibility_label(&t("Results"));
+	results_list
+}
+
+#[cfg(not(target_os = "macos"))]
+fn populate_results_list(list: ResultsList, rows: &Rc<RefCell<Vec<FindAllLine>>>, labels: &Rc<RefCell<Vec<String>>>) {
+	// Build each row's label once, then hand the virtual list its count - it only ever asks for
+	// text for the rows it shows, and the callback reads from the prebuilt labels.
+	let mut labels = labels.borrow_mut();
+	labels.clear();
+	{
+		let rows = rows.borrow();
+		labels.reserve(rows.len());
+		for row in rows.iter() {
+			labels.push(result_row_label(row));
+		}
+	}
+	list.set_item_count(i64::try_from(labels.len()).unwrap_or(0));
+}
+
+#[cfg(target_os = "macos")]
+fn populate_results_list(list: ResultsList, rows: &Rc<RefCell<Vec<FindAllLine>>>, _labels: &Rc<RefCell<Vec<String>>>) {
+	list.delete_all_items();
+	for row in rows.borrow().iter() {
+		list.append_item(&[Variant::from(result_row_label(row))]);
+	}
+}
+
+/// Empties the results list so a fresh Find All starts from the same empty, instantly-focusable
+/// state every time (leaving the previous run's rows in place made NVDA enumerate all of them the
+/// moment the list was shown and focused again).
+#[cfg(not(target_os = "macos"))]
+fn clear_results_list(list: ResultsList) {
+	list.set_item_count(0);
+}
+
+#[cfg(target_os = "macos")]
+fn clear_results_list(list: ResultsList) {
+	list.delete_all_items();
+}
+
+#[cfg(not(target_os = "macos"))]
+fn select_results_row(list: ResultsList, index: i32) {
+	if index < 0 {
+		return;
+	}
+	list.set_item_state(
+		i64::from(index),
+		ListItemState::Selected | ListItemState::Focused,
+		ListItemState::Selected | ListItemState::Focused,
+	);
+	list.ensure_visible(i64::from(index));
+}
+
+#[cfg(target_os = "macos")]
+fn select_results_row(list: ResultsList, index: i32) {
+	let Ok(index) = usize::try_from(index) else { return };
+	list.select_row(index);
+	if let Some(item) = list.row_to_item(index) {
+		list.set_current_item(&item);
+		list.ensure_visible(&item);
+	}
+}
+
+#[cfg(not(target_os = "macos"))]
+fn results_selected_index(list: ResultsList) -> Option<usize> {
+	let index = list.get_first_selected_item();
+	if index >= 0 { usize::try_from(index).ok() } else { None }
+}
+
+#[cfg(target_os = "macos")]
+fn results_selected_index(list: ResultsList) -> Option<usize> {
+	list.get_selected_row()
+}
+
 #[derive(Clone)]
 pub struct FindDialogState {
 	pub dialog: Dialog,
@@ -73,12 +219,13 @@ pub struct FindDialogState {
 	find_prev_btn: Button,
 	find_next_btn: Button,
 	find_all_btn: Button,
-	results_list: ListBox,
+	results_list: ResultsList,
 	go_btn: Button,
 	in_progress: Rc<Cell<bool>>,
 	view: Rc<Cell<FindView>>,
 	origin: Rc<Cell<i64>>,
 	result_rows: Rc<RefCell<Vec<FindAllLine>>>,
+	result_labels: Rc<RefCell<Vec<String>>>,
 }
 
 impl FindDialogState {
@@ -91,6 +238,8 @@ impl FindDialogState {
 	) -> Self {
 		// TRANSLATORS: Title of the Find dialog
 		let dialog = Dialog::builder(frame, &t("Find")).build();
+		let result_rows = Rc::new(RefCell::new(Vec::new()));
+		let result_labels = Rc::new(RefCell::new(Vec::new()));
 		let FindDialogWidgets {
 			find_label,
 			find_combo,
@@ -104,7 +253,7 @@ impl FindDialogState {
 			cancel_btn,
 			results_list,
 			go_btn,
-		} = build_find_dialog_ui(dialog);
+		} = build_find_dialog_ui(dialog, Rc::clone(&result_rows), Rc::clone(&result_labels));
 		bind_find_dialog_actions(FindDialogActionParams {
 			frame: *frame,
 			dialog,
@@ -136,7 +285,8 @@ impl FindDialogState {
 			in_progress: Rc::new(Cell::new(false)),
 			view: Rc::new(Cell::new(FindView::Query)),
 			origin: Rc::new(Cell::new(0)),
-			result_rows: Rc::new(RefCell::new(Vec::new())),
+			result_rows,
+			result_labels,
 		};
 		state.reload_history(config);
 		state.save_settings(config);
@@ -195,6 +345,13 @@ impl FindDialogState {
 		Some(FindInProgressGuard { flag: Rc::clone(&self.in_progress) })
 	}
 
+	/// Empties the results list and its cached labels, so leaving Find All does not leave tens of
+	/// thousands of rows behind (or hand NVDA a stale huge list the next time the dialog opens).
+	fn clear_results(&self) {
+		clear_results_list(self.results_list);
+		self.result_labels.borrow_mut().clear();
+	}
+
 	/// Shows or hides every window that belongs to the query view. The Cancel button is shared by
 	/// both views, so it is not part of either set.
 	fn set_query_windows(&self, visible: bool) {
@@ -226,6 +383,7 @@ impl FindDialogState {
 
 	/// Shows the query view, hiding the results view if it is showing.
 	fn switch_to_query_view(&self) {
+		self.clear_results();
 		if self.view.get() == FindView::Query {
 			return;
 		}
@@ -260,7 +418,7 @@ struct FindDialogWidgets {
 	find_next_btn: Button,
 	find_all_btn: Button,
 	cancel_btn: Button,
-	results_list: ListBox,
+	results_list: ResultsList,
 	go_btn: Button,
 }
 
@@ -272,7 +430,7 @@ struct FindDialogActionParams {
 	find_next_btn: Button,
 	find_all_btn: Button,
 	go_btn: Button,
-	results_list: ListBox,
+	results_list: ResultsList,
 	cancel_btn: Button,
 	config: Rc<Mutex<ConfigManager>>,
 	doc_manager: Rc<Mutex<DocumentManager>>,
@@ -280,7 +438,11 @@ struct FindDialogActionParams {
 	live_region_label: StaticText,
 }
 
-fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
+fn build_find_dialog_ui(
+	dialog: Dialog,
+	result_rows: Rc<RefCell<Vec<FindAllLine>>>,
+	result_labels: Rc<RefCell<Vec<String>>>,
+) -> FindDialogWidgets {
 	let combo_width = 250;
 	let option_padding = 2;
 	let button_spacing = 5;
@@ -321,9 +483,7 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	button_sizer.add(&find_all_btn, 0, SizerFlag::Right, button_spacing);
 	// The Find All results view, hidden until a search with matches switches to it.
 	let results_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	let results_list = ListBox::builder(&dialog).with_size(dialog.from_dip(Size::new(400, 500))).build();
-	// TRANSLATORS: Accessible name of the list of Find All results
-	results_list.set_accessibility_label(&t("Results"));
+	let results_list = build_results_list(dialog, result_rows, result_labels);
 	results_sizer.add(&results_list, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	let results_button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	// TRANSLATORS: Button that jumps to the selected find result
@@ -399,10 +559,16 @@ fn bind_cancel_button(
 	let find_dialog_for_cancel = Rc::clone(find_dialog);
 	let config_for_cancel = Rc::clone(config);
 	button.on_click(move |_| {
-		if let Some(state) = find_dialog_for_cancel.lock().unwrap().as_ref() {
-			state.save_settings(&config_for_cancel);
+		{
+			let guard = find_dialog_for_cancel.lock().unwrap();
+			if let Some(state) = guard.as_ref() {
+				state.save_settings(&config_for_cancel);
+			}
 		}
 		dialog_for_cancel.show(false);
+		if let Some(state) = find_dialog_for_cancel.lock().unwrap().as_ref() {
+			state.clear_results();
+		}
 	});
 }
 
@@ -450,12 +616,13 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 			false,
 		);
 	});
+	let frame_for_all = frame;
 	let find_dialog_for_all = Rc::clone(&find_dialog);
 	let doc_manager_for_all = Rc::clone(&doc_manager);
 	let config_for_all = Rc::clone(&config);
 	find_all_btn.on_click(move |_| {
 		if let Some(state) = find_dialog_for_all.lock().unwrap().as_ref() {
-			do_find_all(state, &doc_manager_for_all, &config_for_all, live_region_label);
+			do_find_all(&frame_for_all, state, &doc_manager_for_all, &config_for_all, live_region_label);
 		}
 	});
 	bind_cancel_button(cancel_btn, dialog, &find_dialog, &config);
@@ -478,10 +645,16 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 	let find_dialog_for_close = Rc::clone(&find_dialog);
 	let config_for_close = Rc::clone(&config);
 	dialog.on_close(move |event| {
-		if let Some(state) = find_dialog_for_close.lock().unwrap().as_ref() {
-			state.save_settings(&config_for_close);
+		{
+			let guard = find_dialog_for_close.lock().unwrap();
+			if let Some(state) = guard.as_ref() {
+				state.save_settings(&config_for_close);
+			}
 		}
 		dialog_for_close.show(false);
+		if let Some(state) = find_dialog_for_close.lock().unwrap().as_ref() {
+			state.clear_results();
+		}
 		event.skip(false);
 	});
 	let frame_for_go = frame;
@@ -495,7 +668,7 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 	let frame_for_list = frame;
 	let find_dialog_for_list = Rc::clone(&find_dialog);
 	let doc_manager_for_list = Rc::clone(&doc_manager);
-	results_list.on_item_double_clicked(move |_| {
+	results_list.on_item_activated(move |_| {
 		if let Some(state) = find_dialog_for_list.lock().unwrap().as_ref() {
 			handle_result_go(&frame_for_list, state, &doc_manager_for_list, live_region_label);
 		}
@@ -607,6 +780,7 @@ pub fn handle_find_action(
 /// matches it reports "Not found." exactly like [`do_find`]; with matches it switches the dialog
 /// to the results view, focused on the first line whose match follows the caret.
 fn do_find_all(
+	frame: &Frame,
 	state: &FindDialogState,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
@@ -647,7 +821,6 @@ fn do_find_all(
 		drop(dm);
 		(rows, origin)
 	};
-	tracing::debug!(query = %query, count = rows.len(), "find all search");
 	if rows.is_empty() {
 		live_region::announce(live_region_label, &t("Not found."));
 		state.switch_to_query_view();
@@ -659,22 +832,43 @@ fn do_find_all(
 	let selected = rows.iter().position(|row| row.matches.iter().any(|m| m.start >= origin)).unwrap_or(0);
 	state.origin.set(origin);
 	*state.result_rows.borrow_mut() = rows;
-	// Freeze while appending so a large result set is not repainted once per row.
-	state.results_list.freeze();
-	state.results_list.clear();
-	{
-		let rows = state.result_rows.borrow();
-		for row in rows.iter() {
-			let label =
-				if row.page > 0 { navigation::page_announcement(row.page, &row.text) } else { row.text.clone() };
-			state.results_list.append(&label);
-		}
-	}
-	state.results_list.thaw();
-	state.results_list.set_selection(u32::try_from(selected).unwrap_or(0), true);
+	// Show and focus the (still empty) results list first, so the screen reader latches onto the
+	// list before it grows to its full size, then populate on the next event-loop tick once the
+	// empty list has had a chance to paint and be announced.
+	clear_results_list(state.results_list);
 	state.switch_to_results_view();
 	state.results_list.set_focus();
-	state.results_list.ensure_visible(i32::try_from(selected).unwrap_or(0));
+	schedule_results_population(frame, state, i32::try_from(selected).unwrap_or(0));
+}
+
+/// Populates the results list one tick after the empty results view was shown and focused, so the
+/// screen reader settles on the list before it grows to tens of thousands of rows. Falls back to
+/// populating immediately if the timer cannot be armed.
+fn schedule_results_population(frame: &Frame, state: &FindDialogState, selected: i32) {
+	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
+	let holder = Rc::clone(&timer_holder);
+	let state_for_tick = state.clone();
+	let timer = Timer::new(frame);
+	timer.on_tick(move |_event| {
+		populate_find_results(&state_for_tick, selected);
+		*holder.borrow_mut() = None;
+	});
+	if !timer.start(RESULT_POPULATE_DELAY_MS, true) {
+		populate_find_results(state, selected);
+		return;
+	}
+	*timer_holder.borrow_mut() = Some(timer);
+}
+
+/// Fills the results list from the stored rows and selects/focuses the given row. A no-op once the
+/// dialog has left the results view (e.g. it was closed during the deferred populate).
+fn populate_find_results(state: &FindDialogState, selected: i32) {
+	if state.view.get() != FindView::Results {
+		return;
+	}
+	populate_results_list(state.results_list, &state.result_rows, &state.result_labels);
+	select_results_row(state.results_list, selected);
+	state.results_list.set_focus();
 }
 
 /// Jumps to the selected results row, landing on the match on that line that follows the caret
@@ -688,7 +882,7 @@ fn handle_result_go(
 ) {
 	let (start, end, announce) = {
 		let rows = state.result_rows.borrow();
-		let selected = state.results_list.get_selection().and_then(|index| usize::try_from(index).ok()).unwrap_or(0);
+		let selected = results_selected_index(state.results_list).unwrap_or(0);
 		let Some(row) = rows.get(selected) else {
 			return;
 		};
@@ -708,6 +902,7 @@ fn handle_result_go(
 	navigation::select_doc_range(tab, start, end);
 	drop(dm);
 	state.dialog.show(false);
+	state.clear_results();
 	if !announce.trim().is_empty() {
 		navigation::announce_after_delay(frame, live_region_label, announce);
 	}
