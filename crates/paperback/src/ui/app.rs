@@ -262,14 +262,12 @@ mod pipe_unix {
 
 	pub fn serve_loop(listener: UnixListener, on_data: impl Fn(Vec<u8>) + Send + 'static) {
 		thread::spawn(move || {
-			for conn in listener.incoming() {
-				if let Ok(mut stream) = conn {
-					let mut buf = vec![0u8; 4096];
-					if let Ok(n) = stream.read(&mut buf) {
-						if n > 0 {
-							on_data(buf[..n].to_vec());
-						}
-					}
+			for mut stream in listener.incoming().flatten() {
+				let mut buf = vec![0u8; 4096];
+				if let Ok(n) = stream.read(&mut buf)
+					&& n > 0
+				{
+					on_data(buf[..n].to_vec());
 				}
 			}
 		});
