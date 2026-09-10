@@ -89,6 +89,9 @@ impl DocumentSession {
 		if self.has_marker(MarkerType::Figure) {
 			supported.push(SegmentTypeFfi::Figure);
 		}
+		if self.has_marker(MarkerType::Formula) {
+			supported.push(SegmentTypeFfi::Formula);
+		}
 		supported
 	}
 
@@ -99,12 +102,20 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn get_table_at_position(&self, position: i64) -> Option<String> {
+		self.marker_reference_at(position, MarkerType::Table)
+	}
+
+	#[must_use]
+	pub fn get_formula_at_position(&self, position: i64) -> Option<String> {
+		self.marker_reference_at(position, MarkerType::Formula)
+	}
+
+	/// Reference of the marker whose half-open display extent contains `position`.
+	fn marker_reference_at(&self, position: i64, mtype: MarkerType) -> Option<String> {
 		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let table_index = self.handle.current_marker_index(pos_usize, MarkerType::Table)?;
-		let marker = self.handle.document().buffer.markers.get(table_index)?;
-		// `length` is the display extent (Tasks 2-3); valid range is the half-open `[position, end)`.
-		let table_end = marker.position + marker.length;
-		if pos_usize < marker.position || pos_usize >= table_end {
+		let index = self.handle.current_marker_index(pos_usize, mtype)?;
+		let marker = self.handle.document().buffer.markers.get(index)?;
+		if pos_usize < marker.position || pos_usize >= marker.position.saturating_add(marker.length) {
 			return None;
 		}
 		if marker.reference.is_empty() {
@@ -142,6 +153,7 @@ impl DocumentSession {
 			SegmentTypeFfi::Separator => Some(NavTarget::Separator),
 			SegmentTypeFfi::Image => Some(NavTarget::Image),
 			SegmentTypeFfi::Figure => Some(NavTarget::Figure),
+			SegmentTypeFfi::Formula => Some(NavTarget::Formula),
 			_ => None,
 		};
 		if let Some(target) = nav_target {

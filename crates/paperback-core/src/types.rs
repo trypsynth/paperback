@@ -16,6 +16,7 @@ pub enum NavTarget {
 	Separator,
 	Image,
 	Figure,
+	Formula,
 }
 
 #[derive(Debug, Clone)]
@@ -67,6 +68,17 @@ pub struct TableInfo {
 	pub text: String,
 	pub html_content: String,
 	/// Display-unit span of the emitted table text.
+	pub length: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct FormulaInfo {
+	pub offset: usize,
+	/// Text rendering emitted into the buffer (also the marker text).
+	pub text: String,
+	/// Original `MathML` markup, shown in the `WebView` on activation.
+	pub mathml: String,
+	/// Display-unit span of the emitted text (incl. trailing newline for block math).
 	pub length: usize,
 }
 

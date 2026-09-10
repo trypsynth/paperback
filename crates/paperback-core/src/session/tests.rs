@@ -4,6 +4,7 @@ use crate::document::{Document, DocumentBuffer, Marker};
 mod accessors;
 mod audio;
 mod find_all;
+mod formula;
 mod links;
 mod navigation;
 mod ocr;
