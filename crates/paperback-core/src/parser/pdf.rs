@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use pdfium::{PdfiumDocument, lib};
+use pdfium::PdfiumDocument;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
@@ -9,6 +9,7 @@ use crate::{
 	parser::{Parser, util::path::extract_title_from_path},
 };
 
+mod images;
 mod links;
 mod metadata;
 mod running;
@@ -16,6 +17,7 @@ mod structure;
 mod text;
 mod toc;
 
+use images::{append_images, images_before_each_paragraph, page_image_tops};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_value};
 use running::{EDGE_LINES, PageEdges, RunningText};
@@ -34,13 +36,15 @@ struct PageContent {
 	/// own whose positions are relative to the page.
 	tagged: Option<TaggedPage>,
 	/// A page without one arrives as visual lines, still to have its running headers taken out
-	/// and its wrapped lines joined into paragraphs.
-	lines: Vec<(String, f64)>,
+	/// and its wrapped lines joined into paragraphs. Each line carries its font size and the top
+	/// edge it was set at.
+	lines: Vec<(String, f64, f64)>,
 	/// Kept apart because each kind is placed by its own walk through the page's text: a link
 	/// annotation may sit before a bare URL that pdfium's scanner reported first.
 	web_links: Vec<PendingLink>,
 	annotation_links: Vec<PendingLink>,
-	has_image: bool,
+	/// The top edge of each image the page draws, ordered down the page.
+	image_tops: Vec<f64>,
 }
 
 /// A page laid out by [`extract_tagged_page_text`], in its own buffer.
@@ -51,7 +55,7 @@ struct TaggedPage {
 	toc_items: Vec<(u32, TocItem)>,
 }
 
-/// Read one page from pdfium: its text, its links, and whether it draws an image.
+/// Read one page from pdfium: its text, its links, and the images it draws.
 fn read_page(document: &PdfiumDocument, page_index: i32, render_tables_inline: bool) -> PageContent {
 	let Ok(page) = document.page(page_index) else {
 		tracing::warn!(page_index, "failed to load pdf page, skipping its text");
@@ -84,17 +88,10 @@ fn read_page(document: &PdfiumDocument, page_index: i32, render_tables_inline: b
 	}
 	content.web_links = collect_web_links(&text_page);
 	content.annotation_links = collect_annotation_links(&page, &text_page, document);
-	// This runs per page (rather than stopping at the first image anywhere) so an image-only
-	// page can still get its OCR placeholder when earlier pages contributed text.
-	let obj_count = lib().FPDFPage_CountObjects(&page);
-	for i in 0..obj_count {
-		if let Ok(obj) = lib().FPDFPage_GetObject(&page, i)
-			&& lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE
-		{
-			content.has_image = true;
-			break;
-		}
-	}
+	// Every page is scanned, rather than the document stopping at the first image it finds,
+	// because each page places its own images and because an image-only page still needs its OCR
+	// placeholder when earlier pages contributed text.
+	content.image_tops = page_image_tops(&page);
 	content
 }
 
@@ -112,13 +109,13 @@ fn append_tagged_page(buffer: &mut DocumentBuffer, page: DocumentBuffer, page_st
 /// [`EDGE_LINES`] of either edge are considered, so a body line that happens to read like a
 /// running head is never dropped, and a page whose every line matches (a part title repeating
 /// the book's name, say) keeps them: a page is never emptied by this.
-fn strip_running_text(lines: &mut Vec<(String, f64)>, running_text: &RunningText) {
-	let is_running = |index: usize, lines: &Vec<(String, f64)>| {
+fn strip_running_text(lines: &mut Vec<(String, f64, f64)>, running_text: &RunningText) {
+	let is_running = |index: usize, lines: &Vec<(String, f64, f64)>| {
 		let at_an_edge = index < EDGE_LINES || index + EDGE_LINES >= lines.len();
 		at_an_edge && running_text.contains(&lines[index].0, lines[index].1)
 	};
 	let doomed: Vec<usize> = (0..lines.len()).filter(|index| is_running(*index, lines)).collect();
-	if doomed.len() == lines.iter().filter(|(line, _)| !line.trim().is_empty()).count() {
+	if doomed.len() == lines.iter().filter(|(line, ..)| !line.trim().is_empty()).count() {
 		return;
 	}
 	for index in doomed.into_iter().rev() {
@@ -191,11 +188,23 @@ impl Parser for PdfParser {
 				// above it would stop counting as one.
 				let body_size = median_line_font_size(&line_infos);
 				strip_running_text(&mut line_infos, &running_text);
-				let paragraphs = join_paragraphs(&line_infos, body_size);
+				let line_tops: Vec<f64> = line_infos.iter().map(|(.., top)| *top).collect();
+				let lines: Vec<(String, f64)> = line_infos.into_iter().map(|(text, size, _)| (text, size)).collect();
+				let paragraphs = join_paragraphs(&lines, body_size);
 				if !paragraphs.is_empty() {
 					has_any_text = true;
 				}
-				for (text, is_heading) in &paragraphs {
+				// An untagged page says nothing about where its images belong in its text, so each
+				// one is placed by the height it was drawn at. A page with no text at all is left
+				// alone: the image-only placeholder below is more use on a scanned page than a
+				// line for each of the pieces it was scanned into.
+				let paragraph_tops: Vec<f64> = paragraphs
+					.iter()
+					.map(|(.., line_index)| line_tops.get(*line_index).copied().unwrap_or(f64::NEG_INFINITY))
+					.collect();
+				let image_counts = images_before_each_paragraph(&page.image_tops, &paragraph_tops);
+				for (index, (text, is_heading, _)) in paragraphs.iter().enumerate() {
+					append_images(image_counts[index], &mut buffer, &mut page_display_text, &mut current_lines_info);
 					let current_offset = buffer.current_position();
 					if *is_heading {
 						detected_heading_positions.push((current_offset, text.clone()));
@@ -206,8 +215,12 @@ impl Parser for PdfParser {
 					page_display_text.push_str(text);
 					page_display_text.push('\n');
 				}
+				if !paragraphs.is_empty() {
+					let trailing = image_counts[paragraphs.len()];
+					append_images(trailing, &mut buffer, &mut page_display_text, &mut current_lines_info);
+				}
 			}
-			let page_has_image = page.has_image;
+			let page_has_image = !page.image_tops.is_empty();
 			if page_has_image {
 				has_any_images = true;
 			}

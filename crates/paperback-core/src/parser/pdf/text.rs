@@ -152,16 +152,16 @@ pub(super) fn reorder_run(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> 
 	bidi::reorder_line(&with_origin)
 }
 
-pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) -> Vec<(String, f64)> {
+pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) -> Vec<(String, f64, f64)> {
 	let Ok(char_count) = text_page.char_count() else {
 		tracing::warn!(
 			page_index,
 			"page text char count unavailable, falling back to whole-page text blob, heading detection by font size will be degraded for this page"
 		);
 		let raw = sanitize_pdf_text(&text_page.full()).replace('\r', "");
-		return raw.lines().map(|l| (l.to_string(), 0.0)).collect();
+		return raw.lines().map(|l| (l.to_string(), 0.0, f64::NEG_INFINITY)).collect();
 	};
-	let mut result: Vec<(String, f64)> = Vec::new();
+	let mut result: Vec<(String, f64, f64)> = Vec::new();
 	// Chars of the current visual line with their pdfium index, so each line can be
 	// reordered visual→logical (handles RTL scripts) before paragraph joining.
 	let mut current_chars: Vec<(char, i32)> = Vec::new();
@@ -171,7 +171,8 @@ pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) ->
 		let Some(ch) = char::from_u32(unicode) else { continue };
 		if ends_line(ch, previous_char) {
 			let size = line_font_size(text_page, &current_chars);
-			result.push((reorder_run(text_page, &mem::take(&mut current_chars)), size));
+			let top = line_top(text_page, &current_chars);
+			result.push((reorder_run(text_page, &mem::take(&mut current_chars)), size, top));
 		} else if ch == '\n' || (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			// The '\n' of a "\r\n" pair, and anything else with no text of its own: dropped, but
 			// still the previous character as far as the next `ends_line` is concerned.
@@ -182,9 +183,22 @@ pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) ->
 	}
 	if !current_chars.is_empty() {
 		let size = line_font_size(text_page, &current_chars);
-		result.push((reorder_run(text_page, &current_chars), size));
+		let top = line_top(text_page, &current_chars);
+		result.push((reorder_run(text_page, &current_chars), size, top));
 	}
 	result
+}
+
+/// The top edge of a line, in PDF user units, taken from its first character. Y grows up the
+/// page, so the line nearest the top of it has the largest one.
+///
+/// This is all an untagged page gives to say where an image on it belongs, since the page draws
+/// its images and sets its text in the same coordinates and says nothing about the order of the
+/// two. The first character is measured rather than the tallest, because a couple of points
+/// either way decides nothing about which line an image falls between and every character
+/// measured costs another call into pdfium.
+fn line_top(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> f64 {
+	chars.first().and_then(|(_, index)| char_box(text_page, *index)).map_or(f64::NEG_INFINITY, |boxed| boxed.top)
 }
 
 /// The point size one character is set in. pdfium reports the `Tf` size, which is 1.0 in every
@@ -226,11 +240,11 @@ fn sorted_median(values: &mut [f64]) -> f64 {
 	values[values.len() / 2]
 }
 
-pub(super) fn median_line_font_size(line_infos: &[(String, f64)]) -> f64 {
+pub(super) fn median_line_font_size(line_infos: &[(String, f64, f64)]) -> f64 {
 	let mut sizes: Vec<f64> = line_infos
 		.iter()
-		.filter(|(text, size)| !text.trim().is_empty() && *size > 0.0)
-		.map(|(_, size)| *size)
+		.filter(|(text, size, _)| !text.trim().is_empty() && *size > 0.0)
+		.map(|(_, size, _)| *size)
 		.collect();
 	sorted_median(&mut sizes)
 }
@@ -255,7 +269,10 @@ fn full_line_len(lines: &[(String, bool, f64)]) -> usize {
 	lengths[(lengths.len() - 1) * FULL_LINE_PERCENTILE_NUMERATOR / FULL_LINE_PERCENTILE_DENOMINATOR]
 }
 
-pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(String, bool)> {
+/// The third field of each paragraph is the index, into `raw_lines`, of the line it starts
+/// with. An untagged page needs it to place its images: the paragraphs no longer say where on
+/// the page they were set, and that line does.
+pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(String, bool, usize)> {
 	const HEADING_FONT_RATIO: f64 = 1.2;
 	const HEADING_MAX_LEN: usize = 150;
 	let heading_threshold = if body_font_size > 0.0 { body_font_size * HEADING_FONT_RATIO } else { f64::INFINITY };
@@ -275,16 +292,17 @@ pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) 
 	let full_line = full_line_len(&lines);
 	let ended_sentence_threshold = full_line * 19 / 20;
 	let short_line_threshold = full_line * 3 / 4;
-	let mut paragraphs: Vec<(String, bool)> = Vec::new();
+	let mut paragraphs: Vec<(String, bool, usize)> = Vec::new();
 	let mut current_paragraph = String::new();
 	let mut current_is_heading = false;
 	let mut current_heading_size = 0.0f64;
+	let mut current_start_line = 0usize;
 	let mut last_line_len = 0usize;
 	let mut last_line_ends_with_punctuation = false;
-	for (line, is_heading_line, size) in &lines {
+	for (line_index, (line, is_heading_line, size)) in lines.iter().enumerate() {
 		if line.is_empty() {
 			if !current_paragraph.is_empty() {
-				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
+				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading, current_start_line));
 				current_is_heading = false;
 			}
 			last_line_len = 0;
@@ -300,6 +318,7 @@ pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) 
 			current_paragraph = line.clone();
 			current_is_heading = *is_heading_line;
 			current_heading_size = *size;
+			current_start_line = line_index;
 		} else {
 			let mut is_numbered = false;
 			let mut chars = line.chars();
@@ -333,10 +352,11 @@ pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) 
 				|| is_numbered
 				|| (!continues_heading && (*is_heading_line || current_is_heading || previous_line_ended_paragraph));
 			if break_paragraph {
-				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
+				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading, current_start_line));
 				current_paragraph = line.clone();
 				current_is_heading = *is_heading_line;
 				current_heading_size = *size;
+				current_start_line = line_index;
 			} else {
 				let last_char = current_paragraph.chars().last().unwrap_or(' ');
 				if current_paragraph.ends_with('-') {
@@ -363,7 +383,7 @@ pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) 
 			|| line.ends_with('：');
 	}
 	if !current_paragraph.is_empty() {
-		paragraphs.push((current_paragraph, current_is_heading));
+		paragraphs.push((current_paragraph, current_is_heading, current_start_line));
 	}
 	paragraphs
 }
@@ -484,7 +504,7 @@ mod tests {
 	#[test]
 	fn join_paragraphs_keeps_a_chapter_opening_whole() {
 		let result = join_paragraphs(&issue_813_page(), 11.0);
-		let texts: Vec<&str> = result.iter().map(|(text, _)| text.as_str()).collect();
+		let texts: Vec<&str> = result.iter().map(|(text, ..)| text.as_str()).collect();
 		assert_eq!(
 			texts,
 			vec![

@@ -151,7 +151,7 @@ formats! {
 		name: "PDF Documents",
 		extensions: ["pdf"],
 		mime_types: ["application/pdf"],
-		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS,
+		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 		installer: CHECKED,
 	},
 	MARKDOWN {
