@@ -84,6 +84,7 @@ seq_ids!(BASE + 300 => PREVIOUS_FIGURE, NEXT_FIGURE);
 seq_ids!(BASE + 305 => PREVIOUS_TABLE, NEXT_TABLE, PREVIOUS_SEPARATOR, NEXT_SEPARATOR);
 seq_ids!(BASE + 310 => PREVIOUS_LIST, NEXT_LIST, PREVIOUS_LIST_ITEM, NEXT_LIST_ITEM);
 seq_ids!(BASE + 314 => CONTAINER_START, CONTAINER_END);
+seq_ids!(BASE + 316 => PREVIOUS_FORMULA, NEXT_FORMULA);
 
 // Tools menu: Document info (BASE + 400..409)
 seq_ids!(BASE + 400 =>
@@ -172,6 +173,8 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::NextFigure => NEXT_FIGURE,
 		ActionId::PreviousTable => PREVIOUS_TABLE,
 		ActionId::NextTable => NEXT_TABLE,
+		ActionId::PreviousFormula => PREVIOUS_FORMULA,
+		ActionId::NextFormula => NEXT_FORMULA,
 		ActionId::PreviousSeparator => PREVIOUS_SEPARATOR,
 		ActionId::NextSeparator => NEXT_SEPARATOR,
 		ActionId::PreviousList => PREVIOUS_LIST,

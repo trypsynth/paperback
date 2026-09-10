@@ -57,6 +57,8 @@ pub enum ActionId {
 	NextFigure,
 	PreviousTable,
 	NextTable,
+	PreviousFormula,
+	NextFormula,
 	PreviousSeparator,
 	NextSeparator,
 	PreviousList,
@@ -151,6 +153,8 @@ impl ActionId {
 			Self::NextFigure,
 			Self::PreviousTable,
 			Self::NextTable,
+			Self::PreviousFormula,
+			Self::NextFormula,
 			Self::PreviousSeparator,
 			Self::NextSeparator,
 			Self::PreviousList,
@@ -245,6 +249,8 @@ impl ActionId {
 			| Self::NextFigure
 			| Self::PreviousTable
 			| Self::NextTable
+			| Self::PreviousFormula
+			| Self::NextFormula
 			| Self::PreviousSeparator
 			| Self::NextSeparator
 			| Self::PreviousList
@@ -388,6 +394,10 @@ impl ActionId {
 			Self::PreviousTable => crate::t("Previous Table"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::NextTable => crate::t("Next Table"),
+			// TRANSLATORS: Shortcut action to move to the previous formula
+			Self::PreviousFormula => crate::t("Previous Formula"),
+			// TRANSLATORS: Shortcut action to move to the next formula
+			Self::NextFormula => crate::t("Next Formula"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::PreviousSeparator => crate::t("Previous Separator"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -521,6 +531,8 @@ impl ActionId {
 			Self::NextFigure => Some(KeyChord::new(false, false, false, "F")),
 			Self::PreviousTable => Some(KeyChord::new(false, false, true, "T")),
 			Self::NextTable => Some(KeyChord::new(false, false, false, "T")),
+			Self::PreviousFormula => Some(KeyChord::new(false, false, true, "M")),
+			Self::NextFormula => Some(KeyChord::new(false, false, false, "M")),
 			Self::PreviousSeparator => Some(KeyChord::new(false, false, true, "S")),
 			Self::NextSeparator => Some(KeyChord::new(false, false, false, "S")),
 			Self::PreviousList => Some(KeyChord::new(false, false, true, "L")),
@@ -617,6 +629,8 @@ impl ActionId {
 			Self::NextFigure => Some(KeyChord::new(false, false, false, "F")),
 			Self::PreviousTable => Some(KeyChord::new(false, false, true, "T")),
 			Self::NextTable => Some(KeyChord::new(false, false, false, "T")),
+			Self::PreviousFormula => Some(KeyChord::new(false, false, true, "M")),
+			Self::NextFormula => Some(KeyChord::new(false, false, false, "M")),
 			Self::PreviousSeparator => Some(KeyChord::new(false, false, true, "S")),
 			Self::NextSeparator => Some(KeyChord::new(false, false, false, "S")),
 			Self::PreviousList => Some(KeyChord::new(false, false, true, "L")),
