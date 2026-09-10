@@ -78,7 +78,7 @@ pub struct FormulaInfo {
 	pub text: String,
 	/// Original `MathML` markup, shown in the `WebView` on activation.
 	pub mathml: String,
-	/// Display-unit span of the emitted text (incl. trailing newline for block math).
+	/// Display-unit span of the emitted formula text, excluding surrounding line breaks.
 	pub length: usize,
 }
 

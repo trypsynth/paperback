@@ -52,6 +52,7 @@ tracing = "0.1.44"
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.1", features = ["cli"], optional = true }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
+mathcat = { version = "0.7", features = ["include-zip"] }
 
 # Reads the RAR a .cbr is. The bindings are MIT/Apache; the C library they vendor keeps
 # RARLAB's unRAR licence, whose notice LICENSE.md carries. Not on Android, which its C++ does
