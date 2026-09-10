@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 11:10-0600\n"
+"POT-Creation-Date: 2026-09-08 05:01+0000\n"
 "PO-Revision-Date: 2026-06-08 22:23+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -818,27 +818,6 @@ msgstr "Duur"
 msgid "Average duration:"
 msgstr "Gemiddelde duur:"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d hour"
-msgstr[1] "%d hours"
-
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minute"
-msgstr[1] "%d minutes"
-
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-#, fuzzy
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d second"
-msgstr[1] "%d seconds"
-
 #. TRANSLATORS: A page in the Elements list with no readable first line; %d is the page number
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
 #, fuzzy
@@ -891,10 +870,10 @@ msgstr "Naamloos"
 #. TRANSLATORS: OK button that confirms the entered bookmark/note text
 #. TRANSLATORS: OK button that confirms the chosen file format in the Open As dialog
 #. TRANSLATORS: Label for the confirmation button
-#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
-#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
 #. TRANSLATORS: OK button that confirms the entered sleep timer duration
 #. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
+#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
 msgid "OK"
 msgstr "OK"
 
@@ -903,8 +882,6 @@ msgstr "OK"
 msgid "Go"
 msgstr "Ga"
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
 #. TRANSLATORS: Label for the cancellation button
 #. TRANSLATORS: Cancel button that closes the Find dialog
 #. TRANSLATORS: Label for the cancellation button
@@ -1275,87 +1252,6 @@ msgstr "Wissen"
 #. TRANSLATORS: Representation of the Spacebar key
 msgid "Space"
 msgstr "Spatie"
-
-#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
-#, fuzzy
-msgid "Customize Keyboard Shortcuts"
-msgstr "Sneltoetsen aanpassen"
-
-#. TRANSLATORS: Label above the list of shortcuts for a category in the Keyboard Shortcuts dialog.
-#, fuzzy
-msgid "&Shortcuts:"
-msgstr "&Sneltoetsen:"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
-#, fuzzy
-msgid "&Set Shortcut..."
-msgstr "Sneltoets in&stellen..."
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
-#, fuzzy
-msgid "&Clear Shortcut"
-msgstr "Sneltoets &wissen"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
-#, fuzzy
-msgid "&Reset to Default"
-msgstr "Standaardlettertype &herstellen"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
-#, fuzzy
-msgid "Reset &All to Defaults"
-msgstr "Standaardlettertype &herstellen"
-
-#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
-#, fuzzy
-msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
-msgstr "'{}' is al toegewezen aan '{}'. Opnieuw toewijzen aan '{}'?"
-
-#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
-#, fuzzy
-msgid "Shortcut Conflict"
-msgstr "Sneltoetsconflict"
-
-#, fuzzy
-msgid "Reset all shortcuts to their default values?"
-msgstr "Alle sneltoetsen terugzetten naar hun standaardwaarden?"
-
-#. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
-#, fuzzy
-msgid "Reset Shortcuts"
-msgstr "Sneltoetsen herstellen"
-
-#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
-#, fuzzy
-msgid "Set Shortcut for {}"
-msgstr "Sneltoets instellen voor {}"
-
-#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
-#, fuzzy
-msgid "Configure shortcut for {}:"
-msgstr "Sneltoets configureren voor {}:"
-
-#, fuzzy
-msgid "Tip: click in the key field and press the key combination you want."
-msgstr "Tip: klik in het toetsveld en druk op de gewenste toetsencombinatie."
-
-#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
-#, fuzzy
-msgid "Detected: (none)"
-msgstr "Gedetecteerd: (geen)"
-
-#, fuzzy
-msgid "Detected: {}"
-msgstr "Details: {}"
-
-#, fuzzy
-msgid "No key detected"
-msgstr "Geen toets gedetecteerd"
-
-#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
-#, fuzzy
-msgid "&Clear"
-msgstr "&Wissen"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -3216,6 +3112,114 @@ msgstr "Veiligheidsverificatie mislukt. Mogelijk is met de update geknoeid: %s"
 msgid "Security Error"
 msgstr "Veiligheidsfout"
 
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d hour"
+msgstr[1] "%d hours"
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minute"
+msgstr[1] "%d minutes"
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d second"
+msgstr[1] "%d seconds"
+
+#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+#, fuzzy
+msgid "Set Shortcut for {}"
+msgstr "Sneltoets instellen voor {}"
+
+#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+#, fuzzy
+msgid "Configure shortcut for {}:"
+msgstr "Sneltoets configureren voor {}:"
+
+#, fuzzy
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr "Tip: klik in het toetsveld en druk op de gewenste toetsencombinatie."
+
+#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
+#, fuzzy
+msgid "Detected: (none)"
+msgstr "Gedetecteerd: (geen)"
+
+#, fuzzy
+msgid "Detected: {}"
+msgstr "Details: {}"
+
+#, fuzzy
+msgid "No key detected"
+msgstr "Geen toets gedetecteerd"
+
+#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
+#, fuzzy
+msgid "&Clear"
+msgstr "&Wissen"
+
+#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
+#, fuzzy
+msgid "Customize Keyboard Shortcuts"
+msgstr "Sneltoetsen aanpassen"
+
+#. TRANSLATORS: Label above the list of shortcuts for a tab in the Keyboard Shortcuts dialog.
+#, fuzzy
+msgid "&Shortcuts:"
+msgstr "&Sneltoetsen:"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
+#, fuzzy
+msgid "&Set Shortcut..."
+msgstr "Sneltoets in&stellen..."
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
+#, fuzzy
+msgid "&Clear Shortcut"
+msgstr "Sneltoets &wissen"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
+#, fuzzy
+msgid "&Reset to Default"
+msgstr "Standaardlettertype &herstellen"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
+#, fuzzy
+msgid "Reset &All to Defaults"
+msgstr "Standaardlettertype &herstellen"
+
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+#, fuzzy
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr "'{}' is al toegewezen aan '{}'. Opnieuw toewijzen aan '{}'?"
+
+#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
+#, fuzzy
+msgid "Shortcut Conflict"
+msgstr "Sneltoetsconflict"
+
+#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#, fuzzy
+msgid "Reset all shortcuts to their default values?"
+msgstr "Alle sneltoetsen terugzetten naar hun standaardwaarden?"
+
+#. TRANSLATORS: Confirmation prompt shown when resetting the current tab's keyboard shortcuts to their defaults.
+#, fuzzy
+msgid "Reset all shortcuts in this tab to their default values?"
+msgstr "Alle sneltoetsen terugzetten naar hun standaardwaarden?"
+
+#. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
+#, fuzzy
+msgid "Reset Shortcuts"
+msgstr "Sneltoetsen herstellen"
+
 #. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 #: swift
 #, fuzzy
@@ -4383,6 +4387,18 @@ msgstr "Bestand ontbreekt"
 #, fuzzy
 msgid "{}% through"
 msgstr "{}% voorbij"
+
+#. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
+#: swift
+#, fuzzy
+msgid "With VoiceOver, swipe up on the play button to move forward, or down to move back."
+msgstr "Met VoiceOver kunt u omhoog vegen op de afspeelknop om vooruit te gaan, of omlaag om terug te gaan."
+
+#. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
+#: kt
+#, fuzzy
+msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
+msgstr "Met TalkBack kunt u omhoog vegen op de afspeelknop om vooruit te gaan, of omlaag om terug te gaan."
 
 #, fuzzy
 #~ msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."

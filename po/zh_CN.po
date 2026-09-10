@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-03 19:23-0600\n"
-"PO-Revision-Date: 2026-09-04 18:45+0800\n"
+"POT-Creation-Date: 2026-09-07 11:10-0600\n"
+"PO-Revision-Date: 2026-09-08 20:33+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -617,6 +617,22 @@ msgstr[0] "已选择 %d 个文档，共 %d 个。"
 msgid "Locate Book"
 msgstr "定位书籍"
 
+#. TRANSLATORS: Title of the Batch OCR dialog
+msgid "Batch OCR"
+msgstr "批量 ocr"
+
+#. TRANSLATORS: Label for the starting page field of the Batch OCR range
+msgid "&Start page:"
+msgstr "起始页(&S):"
+
+#. TRANSLATORS: Label for the ending page field of the Batch OCR range
+msgid "&End page:"
+msgstr "结束页(&E):"
+
+#. TRANSLATORS: Label for the button that starts the batch OCR
+msgid "OCR"
+msgstr "OCR"
+
 #. TRANSLATORS: Title of the Jump to Bookmark dialog
 msgid "Jump to Bookmark"
 msgstr "跳转到书签"
@@ -759,6 +775,14 @@ msgstr "链接"
 #. TRANSLATORS: Choice option in the view dropdown to show the list of pages
 msgid "Pages"
 msgstr "页面"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of tables
+msgid "Tables"
+msgstr "表格"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of lists
+msgid "Lists"
+msgstr "列表"
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
@@ -1055,6 +1079,10 @@ msgstr "阅读"
 msgid "Readability"
 msgstr "可读性"
 
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+msgid "Choose a colour"
+msgstr "选择颜色选择背景颜色(&B)..."
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr "背景: 默认"
@@ -1090,6 +1118,10 @@ msgstr "下划线"
 #. TRANSLATORS: Font strikethrough attribute name
 msgid "Strikethrough"
 msgstr "删除线"
+
+#. TRANSLATORS: Title of the system dialog for picking a font
+msgid "Choose a font"
+msgstr "选择字体"
 
 #. TRANSLATORS: Title of the hotkey customization dialog
 msgid "Window Hotkey"
@@ -1239,6 +1271,45 @@ msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "本文档包含 %d 个单词。"
 
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+msgid "OCR in progress."
+msgstr "OCR 正在进行。"
+
+#. TRANSLATORS: Announced when batch OCR is triggered with no document open
+#. TRANSLATORS: Announced when Batch OCR is chosen with no document open
+msgid "No document open."
+msgstr "未打开文档。"
+
+#. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
+msgid "OCR already in progress."
+msgstr "OCR 已在运行。"
+
+#. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
+msgid "No image-only pages in the given range."
+msgstr "给定范围内没有仅图片页面。"
+
+#. TRANSLATORS: Batch OCR progress announcement; the two %d placeholders are the pages done and the total pages
+msgid "OCR %d of %d."
+msgstr "OCR 进度 %d / %d。"
+
+#. TRANSLATORS: Announced after OCR replaces an image-only page with the recognized text
+msgid "OCR complete."
+msgstr "OCR 完成。"
+
+#. TRANSLATORS: Announced when OCR runs on a page but finds no recognizable text
+msgid "No text found."
+msgstr "未找到文本。"
+
+#. TRANSLATORS: Announced when batch OCR is stopped early; %d is the number of pages recognized before it stopped
+msgid "Batch OCR stopped. %d page recognized."
+msgid_plural "Batch OCR stopped. %d pages recognized."
+msgstr[0] "批量 OCR 已停止。已识别 %d 页。"
+
+#. TRANSLATORS: Announced after batch OCR finishes; %d is the number of pages recognized
+msgid "Batch OCR complete. %d page recognized."
+msgid_plural "Batch OCR complete. %d pages recognized."
+msgstr[0] "批量 OCR 已完成。已识别 %d 页。"
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "找不到文件: {}"
@@ -1330,6 +1401,19 @@ msgstr "查找上一个(&P)"
 msgid "Find &Next"
 msgstr "查找下一个(&N)"
 
+#. TRANSLATORS: Button that finds and lists every occurrence of the search text
+msgid "Find &All"
+msgstr "查找全部(&A)"
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr "结果"
+
+#. TRANSLATORS: Button that jumps to the selected find result
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
+msgid "&Go"
+msgstr "转到(&G)"
+
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "未找到。"
@@ -1369,12 +1453,19 @@ msgid "Line %d"
 msgstr "第 %d 行"
 
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+#. A menu invocation returns focus to the book just like a closed dialog does,
+#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "没有页面。"
 
 #. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
 msgid "No table of contents."
 msgstr "没有目录。"
+
+#. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
+msgid "Batch OCR is running. Stop it?"
+msgstr "批量 OCR 正在运行。是否停止？"
 
 #. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
 msgid "Web View"
@@ -1829,13 +1920,13 @@ msgstr "设置(&S)"
 msgid "&Sleep Timer..."
 msgstr "睡眠定时器(&S)..."
 
+#. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
+msgid "&Batch OCR..."
+msgstr "批量 OCR(&B)..."
+
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "文件(&F)"
-
-#. TRANSLATORS: Top-level "Go" menu label in the menu bar
-msgid "&Go"
-msgstr "转到(&G)"
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
@@ -2013,6 +2104,18 @@ msgstr "已越过容器末尾。"
 
 msgid "Start of container."
 msgstr "容器开头。"
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "未安装 OCR 语言。请在系统语言设置中添加。"
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+msgid "OCR failed."
+msgstr "OCR 失败。"
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+msgid "OCR is not available on this system."
+msgstr "此系统不支持 OCR."
 
 #. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
 msgid "Table View"
@@ -2364,6 +2467,10 @@ msgid "Sleep Timer..."
 msgstr "睡眠定时器..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Batch OCR..."
+msgstr "批量 OCR"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Customize Keyboard Shortcuts..."
 msgstr "自定义键盘快捷键..."
 
@@ -2422,6 +2529,14 @@ msgstr "帮助"
 #. TRANSLATORS: Shown in the Customize Keyboard Shortcuts list in place of a key combination when an action has no shortcut assigned
 msgid "None"
 msgstr "无"
+
+#. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
+msgid "[Image only. Press enter to OCR.]"
+msgstr "[仅图片。按回车进行 OCR。]"
+
+#. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
+msgid "[Image only. This page has no text to read.]"
+msgstr "[仅图片。此页没有可读文本。]"
 
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
@@ -2490,6 +2605,46 @@ msgstr "第 {} 章"
 msgid "Failed to convert Markdown to text: {}"
 msgstr "无法将 Markdown 转换为文本: {}"
 
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+msgid "Missing HUFF parameters in header"
+msgstr "头部缺少 HUFF 参数"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+msgid "Invalid HUFF/CDIC records"
+msgstr "无效的 HUFF/CDIC 记录"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+msgid "Unsupported compression mode ({})"
+msgstr "不支持的压缩模式（{}）"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+msgid "Invalid record offsets"
+msgstr "无效的记录偏移"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+msgid "No records found"
+msgstr "未找到记录"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+msgid "Invalid Record 0 offsets"
+msgstr "无效的记录 0 偏移"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+msgid "Invalid Record 0"
+msgstr "无效的记录 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+msgid "No MOBI header"
+msgstr "没有 MOBI 头"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+msgid "Invalid MOBI identifier"
+msgstr "无效的 MOBI 标识符"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+msgid "Invalid content record range"
+msgstr "无效的内容记录范围"
+
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
 msgid "Invalid HUFF record"
 msgstr "无效的 HUFF 记录"
@@ -2542,46 +2697,6 @@ msgstr "解码栈溢出"
 msgid "File too short"
 msgstr "文件太短"
 
-#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-msgid "Invalid record offsets"
-msgstr "无效的记录偏移"
-
-#. TRANSLATORS: Error shown when a MOBI file has no records
-msgid "No records found"
-msgstr "未找到记录"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-msgid "Invalid Record 0 offsets"
-msgstr "无效的记录 0 偏移"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-msgid "Invalid Record 0"
-msgstr "无效的记录 0"
-
-#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-msgid "No MOBI header"
-msgstr "没有 MOBI 头"
-
-#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-msgid "Invalid MOBI identifier"
-msgstr "无效的 MOBI 标识符"
-
-#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-msgid "Invalid content record range"
-msgstr "无效的内容记录范围"
-
-#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-msgid "Invalid HUFF/CDIC records"
-msgstr "无效的 HUFF/CDIC 记录"
-
-#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-msgid "Missing HUFF parameters in header"
-msgstr "头部缺少 HUFF 参数"
-
-#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-msgid "Unsupported compression mode ({})"
-msgstr "不支持的压缩模式（{}）"
-
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
 msgstr "ODP 文件不包含任何页面"
@@ -2597,14 +2712,6 @@ msgstr "需要密码或密码错误"
 #. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
 msgid "Failed to open PDF document: {}"
 msgstr "打开 PDF 文档失败: {}"
-
-#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"此 PDF 仅包含图片，没有可提取的文本。您可能需要通过 OCR 软件进行识别才能阅读"
-"其内容。"
 
 msgid ""
 "Password-protected PPT files are not currently supported. Try saving the "
@@ -3755,3 +3862,22 @@ msgstr ""
 #: kt
 msgid "File Manager"
 msgstr "文件管理器"
+
+#. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+#: kt
+msgid "{}% through"
+msgstr "已读 {}%"
+
+#. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
+#: swift
+msgid ""
+"With VoiceOver, swipe up on the play button to move forward, or down to move "
+"back."
+msgstr "使用 VoiceOver 时，在播放按钮上向上滑动可前进，向下滑动可后退。"
+
+#. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
+#: kt
+msgid ""
+"With TalkBack, swipe up on the play button to move forward, or down to move "
+"back."
+msgstr "使用 TalkBack 时，在播放按钮上向上滑动可前进，向下滑动可后退。"

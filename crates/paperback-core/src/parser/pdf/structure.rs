@@ -13,7 +13,10 @@ use std::{collections::HashMap, fmt::Write as _};
 
 use pdfium::{PdfiumPage, PdfiumStructElement, PdfiumTextPage};
 
-use super::text::{is_invisible_space, reorder_run};
+use super::{
+	images::append_image,
+	text::{is_invisible_space, reorder_run},
+};
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, TocItem},
 	parser::convert::table_text::{display_lines_and_length, html_table_to_display},
@@ -222,6 +225,22 @@ fn process_struct_element(
 		let pos = buffer.current_position();
 		append_pdf_table_to_buffer(buffer, html, pos, current_lines_info, page_display_text, render_tables_inline);
 		return;
+	}
+	if elem_type == "Figure" {
+		flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info);
+		let description = elem
+			.alt_text()
+			.or_else(|| elem.actual_text())
+			.map(|text| trim_string(&collapse_whitespace(&text)))
+			.unwrap_or_default();
+		append_image(buffer, MarkerType::Figure, &description, page_display_text, current_lines_info);
+		// The description goes in beside what the figure draws rather than in place of it, which
+		// is what a PDF reader following /Alt to the letter would do. A figure is not always only
+		// a picture: a travel guide measured for this wraps its page numbers, its offers and the
+		// addresses that go with them in figures whose /Alt describes the artwork behind the
+		// words, and letting the description stand in for them dropped 39 pieces of its own
+		// text, links included. Nothing is returned here, so the walk below reads the figure's
+		// content like any other container's.
 	}
 	let is_block = matches!(
 		elem_type.as_str(),
