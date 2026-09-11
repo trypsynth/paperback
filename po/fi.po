@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-08 05:01+0000\n"
-"PO-Revision-Date: 2026-09-11 01:14+0300\n"
+"PO-Revision-Date: 2026-09-11 03:40+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1333,7 +1333,7 @@ msgstr "Kä&ytä säännöllisiä lausekkeita"
 #. TRANSLATORS: Button to search backward for the previous match
 #. TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
 msgid "Find &Previous"
-msgstr "Etsi edell&inen"
+msgstr "Etsi ede&llinen"
 
 #. TRANSLATORS: Button to search forward for the next match
 #. TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
@@ -1342,7 +1342,7 @@ msgstr "Etsi se&uraava"
 
 #. TRANSLATORS: Button that finds and lists every occurrence of the search text
 msgid "Find &All"
-msgstr "Etsi ka&ikki"
+msgstr "Etsi &kaikki"
 
 #. TRANSLATORS: Accessible name of the list of Find All results
 msgid "Results"
