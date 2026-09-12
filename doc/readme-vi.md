@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: c5a741eb100e6fbc; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,55bac79e,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4ceb6ab5773c737f; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d9a31cb8,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
 
 # Paperback - phiên bản 0.9.2
 
@@ -32,9 +32,9 @@ Nếu bạn sử dụng JAWS với màn hình Braille, bạn có thể nhận th
 
 Cách khắc phục, cuối cùng được tiết lộ thông qua nhóm thảo luận JAWS sau khi chờ đợi hàng tháng, là chỉnh sửa `paperback.jcf` và đặt "Braille Presentation and Panning" thành "Always use DOM if available". Bạn cũng sẽ muốn bật "Pan Text by Paragraph", nếu không màn hình của bạn sẽ ở lại đoạn hiện hoạt động chứ không tiến tới. Với cả hai cài đặt này, quá trình di chuyển phải hoạt động đúng cách.
 
-## Các loại tệp được hỗ trợ hiện tại
+## Các định dạng tệp được hỗ trợ hiện tại
 
-Paperback hỗ trợ các định dạng và tiện ích mở rộng sau:
+Paperback hỗ trợ các định dạng và phần mở rộng sau:
 
 * Tệp trợ giúp CHM (`.chm`)
 * Sách DAISY (`.opf`, `.zip`)
@@ -43,13 +43,14 @@ Paperback hỗ trợ các định dạng và tiện ích mở rộng sau:
 * Tài liệu HTML (`.htm`, `.html`, `.xhtml`)
 * Tài liệu Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Tài liệu Microsoft Word (`.docx`, `.docm`, `.doc`)
-* Sách âm thanh M4B (`.m4b`)
+* Sách nói M4B (`.m4b`)
 * Sách MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
-* Bài thuyết trình OpenDocument (`.odp`, `.fodp`)
+* Bản trình bày OpenDocument (`.odp`, `.fodp`)
 * Tệp văn bản OpenDocument (`.odt`, `.fodt`)
 * Tài liệu PDF (`.pdf`)
-* Bài thuyết trình PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Bản trình bày PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Tài liệu RTF (`.rtf`)
+* Tệp WinHelp (`.hlp`)
 * Tệp văn bản thuần túy và tệp nhật ký (`.txt`, `.log`)
 
 ## Phím tắt bàn phím

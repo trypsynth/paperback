@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: c5a741eb100e6fbc; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,55bac79e,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4ceb6ab5773c737f; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d9a31cb8,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
 
 # Paperback - versión 0.9.2
 
@@ -32,7 +32,7 @@ Si utilizas JAWS con una pantalla Braille, es posible que encuentres que los pá
 
 La solución alternativa, finalmente surgida a través del grupo de discusión de JAWS después de meses de espera, es editar `paperback.jcf` y establecer "Braille Presentation and Panning" en "Always use DOM if available". También querrás habilitar "Pan Text by Paragraph", de lo contrario tu pantalla permanecerá en el párrafo activo en lugar de avanzar. Con ambas configuraciones en su lugar, el desplazamiento debería funcionar correctamente.
 
-## Tipos de archivo actualmente compatibles
+## Formatos de archivo actualmente compatibles
 
 Paperback admite los siguientes formatos y extensiones:
 
@@ -42,7 +42,7 @@ Paperback admite los siguientes formatos y extensiones:
 * Libros electrónicos FB2 (`.fb2`)
 * Documentos HTML (`.htm`, `.html`, `.xhtml`)
 * Documentos Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Documentos Microsoft Word (`.docx`, `.docm`, `.doc`)
+* Documentos de Microsoft Word (`.docx`, `.docm`, `.doc`)
 * Audiolibros M4B (`.m4b`)
 * Libros MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
 * Presentaciones OpenDocument (`.odp`, `.fodp`)
@@ -50,7 +50,8 @@ Paperback admite los siguientes formatos y extensiones:
 * Documentos PDF (`.pdf`)
 * Presentaciones PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Documentos RTF (`.rtf`)
-* Archivos de texto sin formato y registros (`.txt`, `.log`)
+* Archivos WinHelp (`.hlp`)
+* Archivos de texto sin formato y archivos de registro (`.txt`, `.log`)
 
 ## Atajos de teclado
 
