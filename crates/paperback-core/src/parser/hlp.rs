@@ -21,12 +21,18 @@ use crate::{
 	util::text::display_len,
 };
 
-/// Prefix for the [`Document::id_positions`] keys this parser invents.
+/// Prefix for the [`Document::id_positions`] key naming a topic by its offset.
 ///
-/// WinHelp has no file paths to key link targets by, so a topic's offset stands in. The
-/// prefix keeps those keys clear of anything else and stops a bare number reading as a
+/// WinHelp has no file paths to key link targets by, so a topic's own numbering stands in.
+/// The prefix keeps those keys clear of anything else and stops a bare number reading as a
 /// fragment when the reader resolves a link.
-const TOPIC_KEY: &str = "topic";
+const OFFSET_KEY: &str = "topic";
+
+/// Prefix for the key naming a topic by its number.
+///
+/// Every topic has a distinct number in both format generations, where topic offsets exist
+/// only in WinHelp 3.1 and later, so this is what the table of contents points at.
+const NUMBER_KEY: &str = "topicnum";
 
 pub struct HlpParser;
 
@@ -198,9 +204,14 @@ impl<'a> Builder<'a> {
 				// written now even though the target topic may not have been read yet. A
 				// target this file never defines leaves the reference empty, which the
 				// reader treats as a link that goes nowhere.
-				let reference = match link.target {
-					Target::Context(hash) => self.contexts.get(&hash).copied().map(topic_key),
-					_ => None,
+				let reference = match &link.target {
+					// WinHelp 3.1 names a target by the hash of its context string.
+					Target::Context(hash) => self.contexts.get(hash).copied().map(offset_key),
+					// WinHelp 3.0 names it by topic number instead.
+					Target::Number(number) => Some(number_key(*number)),
+					// A macro runs rather than going anywhere, and a jump into another help
+					// file has nothing in this document to land on.
+					Target::External { .. } | Target::Macro(_) => None,
 				}
 				.unwrap_or_default();
 				links.push(Marker::new(MarkerType::Link, position).with_text(text.clone()).with_reference(reference));
@@ -221,20 +232,26 @@ impl<'a> Builder<'a> {
 		let mut id_positions = HashMap::new();
 		let mut toc_items = Vec::new();
 		for (topic, &start) in topics.iter().zip(&self.starts) {
-			// Two topics sharing an offset would be a malformed file; the first wins, which
-			// is what a reader following a link to that offset would reach anyway.
-			id_positions.entry(topic_key(topic.offset)).or_insert(start);
+			id_positions.insert(number_key(topic.number), start);
+			// A WinHelp 3.0 file has no topic offsets, so every topic there reports zero.
+			// Only the first can claim the key, and nothing in such a file references it.
+			id_positions.entry(offset_key(topic.offset)).or_insert(start);
 			if !topic.title.is_empty() {
-				toc_items.push(TocItem::new(topic.title.clone(), topic_key(topic.offset), start));
+				toc_items.push(TocItem::new(topic.title.clone(), number_key(topic.number), start));
 			}
 		}
 		Built { buffer: self.buffer, id_positions, toc_items }
 	}
 }
 
-/// The key a topic's start position is stored under, and that a link to it references.
-fn topic_key(offset: u32) -> String {
-	format!("{TOPIC_KEY}{offset}")
+/// The key a WinHelp 3.1 hotspot's resolved target is stored under.
+fn offset_key(offset: u32) -> String {
+	format!("{OFFSET_KEY}{offset}")
+}
+
+/// The key naming a topic by its number, which every topic has in either format.
+fn number_key(number: u32) -> String {
+	format!("{NUMBER_KEY}{number}")
 }
 
 /// Whether the topic's own text already opens with its title.
@@ -378,6 +395,38 @@ mod tests {
 		assert_eq!(built.id_positions.get("topic55"), Some(&9));
 	}
 
+	// A WinHelp 3.0 hotspot names its target by topic number rather than by context hash,
+	// and the file has no context index at all for the other path to fall back on.
+	#[test]
+	fn a_30_hotspot_references_the_topic_number_it_names() {
+		let link = Link::jump(Target::Number(17));
+		let runs = vec![Run::Text { text: "go".into(), format: Format::default(), link: Some(link) }];
+		let topics = vec![
+			topic(16, 0, "Start", vec![paragraph(runs)]),
+			// A 3.0 file reports zero for every topic offset, so the number is the identity.
+			topic(17, 0, "Target", vec![paragraph(vec![text_run("Target")])]),
+		];
+		let built = build(&topics);
+		let links = markers(&built, MarkerType::Link);
+		assert_eq!(links[0].reference, "topicnum17");
+		assert_eq!(built.id_positions.get("topicnum17"), Some(&9));
+	}
+
+	// Every topic in a WinHelp 3.0 file reports offset zero, so keying only by offset would
+	// collapse the whole contents onto the first topic.
+	#[test]
+	fn topics_sharing_an_offset_stay_reachable_by_number() {
+		let topics = vec![
+			topic(16, 0, "First", vec![paragraph(vec![text_run("First")])]),
+			topic(17, 0, "Second", vec![paragraph(vec![text_run("Second")])]),
+		];
+		let built = build(&topics);
+		assert_eq!(built.id_positions.get("topicnum16"), Some(&0));
+		assert_eq!(built.id_positions.get("topicnum17"), Some(&6));
+		let offsets: Vec<&str> = built.toc_items.iter().map(|i| i.reference.as_str()).collect();
+		assert_eq!(offsets, ["topicnum16", "topicnum17"]);
+	}
+
 	// A hotspot whose context the file never defines is still a hotspot worth announcing,
 	// but activating it must not land somewhere arbitrary.
 	#[test]
@@ -444,7 +493,9 @@ mod tests {
 		let built = build(&topics);
 		let names: Vec<&str> = built.toc_items.iter().map(|i| i.name.as_str()).collect();
 		assert_eq!(names, ["First", "Third"]);
-		assert_eq!(built.toc_items[1].reference, "topic90");
+		// Topic numbers are unique in both format generations, where topic offsets exist
+		// only in WinHelp 3.1, so the contents points at the number.
+		assert_eq!(built.toc_items[1].reference, "topicnum18");
 	}
 
 	#[test]

@@ -1374,9 +1374,9 @@ dependencies = [
 
 [[package]]
 name = "libhlp"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95667589639c319e3550219170978154f84ab98a2647a29cc4e8a28cfc5f136b"
+checksum = "406209fb85f7fa21799fa90dbc548e7882aebc626d8a1c27e5afe67992769039"
 dependencies = [
  "thiserror",
 ]
