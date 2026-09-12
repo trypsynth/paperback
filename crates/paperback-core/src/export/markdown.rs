@@ -20,35 +20,39 @@ pub fn render(doc: &Document) -> String {
 	struct Ev {
 		pos: usize,
 		kind: Mk,
+		/// Which span this event belongs to, counting up in the order spans are opened.
+		/// Closing in the reverse of that order is what keeps two spans over the same text
+		/// nested inside one another rather than interleaved.
+		span: usize,
 	}
 	let mut events: Vec<Ev> = Vec::new();
-	for marker in &doc.buffer.markers {
+	for (span, marker) in doc.buffer.markers.iter().enumerate() {
 		let pos = marker.position;
 		match marker.mtype {
-			MarkerType::Heading1 => events.push(Ev { pos, kind: Mk::Prefix("# ") }),
-			MarkerType::Heading2 => events.push(Ev { pos, kind: Mk::Prefix("## ") }),
-			MarkerType::Heading3 => events.push(Ev { pos, kind: Mk::Prefix("### ") }),
-			MarkerType::Heading4 => events.push(Ev { pos, kind: Mk::Prefix("#### ") }),
-			MarkerType::Heading5 => events.push(Ev { pos, kind: Mk::Prefix("##### ") }),
-			MarkerType::Heading6 => events.push(Ev { pos, kind: Mk::Prefix("###### ") }),
+			MarkerType::Heading1 => events.push(Ev { pos, kind: Mk::Prefix("# "), span }),
+			MarkerType::Heading2 => events.push(Ev { pos, kind: Mk::Prefix("## "), span }),
+			MarkerType::Heading3 => events.push(Ev { pos, kind: Mk::Prefix("### "), span }),
+			MarkerType::Heading4 => events.push(Ev { pos, kind: Mk::Prefix("#### "), span }),
+			MarkerType::Heading5 => events.push(Ev { pos, kind: Mk::Prefix("##### "), span }),
+			MarkerType::Heading6 => events.push(Ev { pos, kind: Mk::Prefix("###### "), span }),
 			MarkerType::Link => {
 				let Some(end) = super::link_span_end(marker) else { continue };
-				events.push(Ev { pos, kind: Mk::LinkOpen });
-				events.push(Ev { pos: end, kind: Mk::LinkClose(marker.reference.clone()) });
+				events.push(Ev { pos, kind: Mk::LinkOpen, span });
+				events.push(Ev { pos: end, kind: Mk::LinkClose(marker.reference.clone()), span });
 			}
 			MarkerType::Bold => {
 				let end = pos + marker.length;
-				events.push(Ev { pos, kind: Mk::BoldOpen });
-				events.push(Ev { pos: end, kind: Mk::BoldClose });
+				events.push(Ev { pos, kind: Mk::BoldOpen, span });
+				events.push(Ev { pos: end, kind: Mk::BoldClose, span });
 			}
 			MarkerType::Italic => {
 				let end = pos + marker.length;
-				events.push(Ev { pos, kind: Mk::ItalicOpen });
-				events.push(Ev { pos: end, kind: Mk::ItalicClose });
+				events.push(Ev { pos, kind: Mk::ItalicOpen, span });
+				events.push(Ev { pos: end, kind: Mk::ItalicClose, span });
 			}
 			MarkerType::Separator => {
 				// Replace the dash line written into the content by html_to_text with "---"
-				events.push(Ev { pos, kind: Mk::Replace { until: pos + marker.length } });
+				events.push(Ev { pos, kind: Mk::Replace { until: pos + marker.length }, span });
 			}
 			// MarkerType::Underline intentionally has no arm: CommonMark has no native
 			// underline construct; falls through to the `_` arm below and is silently
@@ -56,17 +60,21 @@ pub fn render(doc: &Document) -> String {
 			_ => {}
 		}
 	}
-	// At equal positions: close before replace before prefix before open
+	// At equal positions: close before replace before prefix before open. Spans that start
+	// together open in the order their markers were recorded and close in the reverse of
+	// it, so a bold link comes out as `**[text](url)**` rather than `[**text](url)**`.
 	events.sort_by(|a, b| {
-		a.pos.cmp(&b.pos).then_with(|| {
-			let p = |k: &Mk| match k {
-				Mk::LinkClose(_) | Mk::BoldClose | Mk::ItalicClose => 0u8,
-				Mk::Replace { .. } => 1,
-				Mk::Prefix(_) => 2,
-				Mk::LinkOpen | Mk::BoldOpen | Mk::ItalicOpen => 3,
-			};
-			p(&a.kind).cmp(&p(&b.kind))
-		})
+		let class = |k: &Mk| match k {
+			Mk::LinkClose(_) | Mk::BoldClose | Mk::ItalicClose => 0u8,
+			Mk::Replace { .. } => 1,
+			Mk::Prefix(_) => 2,
+			Mk::LinkOpen | Mk::BoldOpen | Mk::ItalicOpen => 3,
+		};
+		let (ca, cb) = (class(&a.kind), class(&b.kind));
+		a.pos
+			.cmp(&b.pos)
+			.then_with(|| ca.cmp(&cb))
+			.then_with(|| if ca == 0 { b.span.cmp(&a.span) } else { a.span.cmp(&b.span) })
 	});
 	let mut md = String::with_capacity(content.len() + events.len() * 4);
 	let mut event_idx = 0usize;
@@ -201,6 +209,35 @@ mod tests {
 		let md = render(&doc);
 		assert!(md.contains("**bold**"), "Expected **bold** in markdown: {md}");
 		assert!(md.contains("*italic*"), "Expected *italic* in markdown: {md}");
+	}
+
+	// A hotspot whose text is also bold gives two spans over exactly the same characters.
+	// Closing them in the order they opened would interleave the two into `[**x](url)**`,
+	// which no markdown renderer reads as a bold link.
+	#[test]
+	fn a_bold_link_nests_rather_than_interleaving() {
+		let doc = simple_doc(
+			"define",
+			vec![
+				Marker::new(MarkerType::Bold, 0).with_length(6),
+				Marker::new(MarkerType::Link, 0).with_text("define".to_string()).with_reference("topic7".to_string()),
+			],
+		);
+		assert_eq!(render(&doc).trim(), "**[define](topic7)**");
+	}
+
+	// The markers can arrive the other way round, and the same rule has to hold: whichever
+	// span opened last is the one that closes first.
+	#[test]
+	fn a_linked_bold_run_nests_the_other_way_round() {
+		let doc = simple_doc(
+			"define",
+			vec![
+				Marker::new(MarkerType::Link, 0).with_text("define".to_string()).with_reference("topic7".to_string()),
+				Marker::new(MarkerType::Bold, 0).with_length(6),
+			],
+		);
+		assert_eq!(render(&doc).trim(), "[**define**](topic7)");
 	}
 
 	#[test]
