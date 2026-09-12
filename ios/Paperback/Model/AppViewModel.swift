@@ -322,11 +322,26 @@ enum SegmentType: String, CaseIterable {
 	case section = "Section"
 }
 
+// What the previous/next controls move by. Ordinarily a structural unit; while a Find query is
+// active, Find joins the list and steps between that query's matches instead.
+enum NavUnit: Hashable {
+	case segment(SegmentType)
+	case find
+
+	var name: String {
+		switch self {
+		case .segment(let type): return t(type.rawValue)
+		// TRANSLATORS: Name of the "Find" navigation unit, which moves between search matches
+		case .find: return t("Find")
+		}
+	}
+}
+
 enum GoToMode {
 	case line, page, percent
 }
 
-struct SearchOptions {
+struct SearchOptions: Equatable {
 	var matchCase: Bool = false
 	var wholeWord: Bool = false
 	var regex: Bool = false
