@@ -1373,6 +1373,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "libhlp"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95667589639c319e3550219170978154f84ab98a2647a29cc4e8a28cfc5f136b"
+dependencies = [
+ "thiserror",
+]
+
+[[package]]
 name = "libloading"
 version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1777,6 +1786,7 @@ dependencies = [
  "icu_properties",
  "key-chord",
  "libchm",
+ "libhlp",
  "lofty",
  "mp4ameta",
  "office-crypto",

@@ -48,6 +48,7 @@ Paperback supports the following formats and extensions:
 * PDF documents (`.pdf`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * RTF documents (`.rtf`)
+* WinHelp files (`.hlp`)
 * Plain text and log files (`.txt`, `.log`)
 
 ## Keyboard shortcuts

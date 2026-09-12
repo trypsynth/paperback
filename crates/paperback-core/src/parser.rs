@@ -19,6 +19,7 @@ pub mod convert;
 pub mod daisy;
 pub mod epub;
 pub mod fb2;
+pub mod hlp;
 pub mod html;
 pub mod m4b;
 pub mod markdown;
@@ -132,6 +133,7 @@ impl ParserRegistry {
 		REGISTRY.get_or_init(|| {
 			parser_registry! {
 				CHM => chm::ChmParser,
+				HLP => hlp::HlpParser,
 				DAISY => daisy::DaisyParser,
 				WORD => word::WordParser,
 				EPUB => epub::EpubParser,

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 05:01+0000\n"
+"POT-Creation-Date: 2026-09-12 10:21-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1284,6 +1284,10 @@ msgstr ""
 msgid "Details: {}"
 msgstr ""
 
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr ""
+
 #. TRANSLATORS: Title of the Find dialog
 msgid "Find"
 msgstr ""
@@ -1320,10 +1324,6 @@ msgstr ""
 
 #. TRANSLATORS: Button that finds and lists every occurrence of the search text
 msgid "Find &All"
-msgstr ""
-
-#. TRANSLATORS: Accessible name of the list of Find All results
-msgid "Results"
 msgstr ""
 
 #. TRANSLATORS: Button that jumps to the selected find result
@@ -2460,6 +2460,7 @@ msgstr ""
 msgid "Figure"
 msgstr ""
 
+#. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
 msgid "Image"
 msgstr ""
 
@@ -2505,6 +2506,14 @@ msgstr ""
 
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 msgid "Failed to convert FB2 XML to text"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
+msgid "Failed to parse WinHelp file: {}"
+msgstr ""
+
+#. TRANSLATORS: Name given to a WinHelp topic that carries no title of its own; {} is the topic's number
+msgid "Topic {}"
 msgstr ""
 
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
@@ -2914,7 +2923,7 @@ msgstr ""
 msgid "Switch to Text Mode"
 msgstr ""
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
+#. TRANSLATORS: Menu item to open the list of recently opened documents
 #: swift
 msgid "Recent Documents"
 msgstr ""
@@ -2979,7 +2988,7 @@ msgstr ""
 msgid "Locate"
 msgstr ""
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
+#. TRANSLATORS: Button to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr ""
@@ -3536,7 +3545,7 @@ msgstr ""
 msgid "words"
 msgstr ""
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr ""

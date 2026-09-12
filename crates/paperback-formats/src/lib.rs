@@ -108,6 +108,12 @@ formats! {
 		mime_types: ["application/x-chm"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_SECTIONS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 	},
+	HLP {
+		name: "WinHelp files",
+		extensions: ["hlp"],
+		mime_types: ["application/winhlp"],
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_IMAGES,
+	},
 	/// Declared ahead of [`WORD`] so that it gets first crack at the `.zip` both claim.
 	///
 	/// `application/x-daisy-opf` isn't a registered freedesktop.org media type (DAISY's `.opf`
