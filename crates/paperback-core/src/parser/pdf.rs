@@ -22,7 +22,7 @@ use links::{PendingLink, collect_annotation_links, collect_web_links, place_link
 use metadata::{map_load_error, metadata_value};
 use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
-use text::{extract_text_lines, join_paragraphs, median_line_font_size};
+use text::{Line, extract_text_lines, join_paragraphs, median_line_font_size};
 use toc::{add_heading_markers, build_toc_tree, extract_toc};
 
 /// Everything one page contributes, as read from pdfium and before any of it is placed in the
@@ -38,7 +38,7 @@ struct PageContent {
 	/// A page without one arrives as visual lines, still to have its running headers taken out
 	/// and its wrapped lines joined into paragraphs. Each line carries its font size and the top
 	/// edge it was set at.
-	lines: Vec<(String, f64, f64)>,
+	lines: Vec<Line>,
 	/// Kept apart because each kind is placed by its own walk through the page's text: a link
 	/// annotation may sit before a bare URL that pdfium's scanner reported first.
 	web_links: Vec<PendingLink>,
@@ -109,8 +109,8 @@ fn append_tagged_page(buffer: &mut DocumentBuffer, page: DocumentBuffer, page_st
 /// [`EDGE_LINES`] of either edge are considered, so a body line that happens to read like a
 /// running head is never dropped, and a page whose every line matches (a part title repeating
 /// the book's name, say) keeps them: a page is never emptied by this.
-fn strip_running_text(lines: &mut Vec<(String, f64, f64)>, running_text: &RunningText) {
-	let is_running = |index: usize, lines: &Vec<(String, f64, f64)>| {
+fn strip_running_text(lines: &mut Vec<Line>, running_text: &RunningText) {
+	let is_running = |index: usize, lines: &Vec<Line>| {
 		let at_an_edge = index < EDGE_LINES || index + EDGE_LINES >= lines.len();
 		at_an_edge && running_text.contains(&lines[index].0, lines[index].1)
 	};
@@ -188,9 +188,8 @@ impl Parser for PdfParser {
 				// above it would stop counting as one.
 				let body_size = median_line_font_size(&line_infos);
 				strip_running_text(&mut line_infos, &running_text);
-				let line_tops: Vec<f64> = line_infos.iter().map(|(.., top)| *top).collect();
-				let lines: Vec<(String, f64)> = line_infos.into_iter().map(|(text, size, _)| (text, size)).collect();
-				let paragraphs = join_paragraphs(&lines, body_size);
+				let line_tops: Vec<f64> = line_infos.iter().map(|(_, _, top, _)| *top).collect();
+				let paragraphs = join_paragraphs(&line_infos, body_size);
 				if !paragraphs.is_empty() {
 					has_any_text = true;
 				}

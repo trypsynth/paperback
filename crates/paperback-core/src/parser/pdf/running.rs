@@ -14,6 +14,8 @@
 
 use std::collections::{HashMap, HashSet};
 
+use super::text::Line;
+
 /// How many lines at each edge of a page can be running text. Two covers a page number on its
 /// own line above or below the running head itself.
 pub(super) const EDGE_LINES: usize = 2;
@@ -32,8 +34,8 @@ pub(super) struct PageEdges {
 }
 
 impl PageEdges {
-	pub(super) fn of(lines: &[(String, f64, f64)]) -> Self {
-		let text = |line: &(String, f64, f64)| line.0.clone();
+	pub(super) fn of(lines: &[Line]) -> Self {
+		let text = |line: &Line| line.0.clone();
 		Self {
 			first: lines.iter().take(EDGE_LINES).map(text).collect(),
 			last: lines.iter().rev().take(EDGE_LINES).map(text).collect(),
