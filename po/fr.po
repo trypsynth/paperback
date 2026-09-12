@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 05:01+0000\n"
+"POT-Creation-Date: 2026-09-12 10:21-0600\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1476,6 +1476,11 @@ msgstr "Fichier : {}"
 msgid "Details: {}"
 msgstr "Plus d'informations : {}"
 
+#. TRANSLATORS: Accessible name of the list of Find All results
+#, fuzzy
+msgid "Results"
+msgstr "Résultats"
+
 #. TRANSLATORS: Title of the Find dialog
 msgid "Find"
 msgstr "Rechercher"
@@ -1514,11 +1519,6 @@ msgstr "Rechercher le &suivant"
 #, fuzzy
 msgid "Find &All"
 msgstr "Trouver &tout"
-
-#. TRANSLATORS: Accessible name of the list of Find All results
-#, fuzzy
-msgid "Results"
-msgstr "Résultats"
 
 #. TRANSLATORS: Button that jumps to the selected find result
 #. TRANSLATORS: Top-level "Go" menu label in the menu bar
@@ -2817,6 +2817,7 @@ msgstr "[Image uniquement. Cette page n'a pas de texte à lire.]"
 msgid "Figure"
 msgstr "Figure"
 
+#. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
 #, fuzzy
 msgid "Image"
 msgstr "Image"
@@ -2875,6 +2876,16 @@ msgstr "Le fichier EPUB ne contient aucun contenu lisible ({})"
 #, fuzzy
 msgid "Failed to convert FB2 XML to text"
 msgstr "Échec de la conversion du fichier XML FB2 en texte"
+
+#. TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
+#, fuzzy
+msgid "Failed to parse WinHelp file: {}"
+msgstr "Échec de l'analyse du document RTF : {}"
+
+#. TRANSLATORS: Name given to a WinHelp topic that carries no title of its own; {} is the topic's number
+#, fuzzy
+msgid "Topic {}"
+msgstr "Rubrique {}"
 
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 #, fuzzy
