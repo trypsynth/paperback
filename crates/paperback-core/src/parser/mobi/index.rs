@@ -23,10 +23,24 @@ pub(super) struct IndexEntry {
 	pub tags: HashMap<u8, Vec<usize>>,
 }
 
-/// A parsed index.
+/// A parsed index, and the string blob its entries name their text in.
 #[derive(Debug, Default)]
 pub(super) struct Index {
 	pub entries: Vec<IndexEntry>,
+	/// The `CNCX` blob. A tag value naming a string is a byte offset into this.
+	cncx: Vec<u8>,
+}
+
+impl Index {
+	/// The string at `offset` in the `CNCX` blob, which stores each one length-prefixed.
+	pub fn string_at(&self, offset: usize) -> Option<String> {
+		if offset >= self.cncx.len() {
+			return None;
+		}
+		let (len, start) = decode_vwi(&self.cncx, offset);
+		let end = start.checked_add(len)?;
+		self.cncx.get(start..end).map(|bytes| String::from_utf8_lossy(bytes).into_owned())
+	}
 }
 
 /// Read the index whose `INDX` header sits in record `index_record`.
@@ -42,7 +56,19 @@ pub(super) fn read_index(data: &[u8], records: &[usize], index_record: usize) ->
 		return None;
 	}
 	let count = u32::from_be_bytes(header[24..28].try_into().ok()?) as usize;
+	let cncx_count = u32::from_be_bytes(header[52..56].try_into().ok()?) as usize;
 	let tags = parse_tagx(header)?;
+	// The CNCX records follow the index's own records, so the first sits that far along.
+	let mut cncx = Vec::new();
+	for i in 0..cncx_count {
+		let record = index_record + count + 1 + i;
+		if record + 1 >= records.len() {
+			break;
+		}
+		if let Some(bytes) = data.get(records[record]..records[record + 1]) {
+			cncx.extend_from_slice(bytes);
+		}
+	}
 	let mut entries = Vec::new();
 	for i in 1..=count {
 		let record = index_record + i;
@@ -52,7 +78,7 @@ pub(super) fn read_index(data: &[u8], records: &[usize], index_record: usize) ->
 		let Some(bytes) = data.get(records[record]..records[record + 1]) else { break };
 		read_record(bytes, &tags.tags, tags.control_bytes, &mut entries);
 	}
-	Some(Index { entries })
+	Some(Index { entries, cncx })
 }
 
 /// The `TAGX` table: which tags an entry can carry and how each is encoded.
@@ -294,6 +320,16 @@ mod tests {
 		let index = read_index(&data, &records, 1).expect("index");
 		let values: Vec<usize> = index.entries.iter().filter_map(|e| e.tags.get(&1)?.first().copied()).collect();
 		assert_eq!(values, [2, 4, 6]);
+	}
+
+	// CNCX strings are length-prefixed with the same variable-width integer the tag values
+	// use, so a string is only reachable through that prefix.
+	#[test]
+	fn a_cncx_string_is_read_through_its_length_prefix() {
+		let index = Index { entries: Vec::new(), cncx: vec![0x85, b'h', b'e', b'l', b'l', b'o', 0x82, b'h', b'i'] };
+		assert_eq!(index.string_at(0).as_deref(), Some("hello"));
+		assert_eq!(index.string_at(6).as_deref(), Some("hi"));
+		assert!(index.string_at(99).is_none());
 	}
 
 	#[test]
