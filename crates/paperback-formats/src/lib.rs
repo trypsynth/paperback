@@ -102,6 +102,12 @@ macro_rules! formats {
 }
 
 formats! {
+	CBZ {
+		name: "Comic book archives",
+		extensions: ["cbz"],
+		mime_types: ["application/vnd.comicbook+zip"],
+		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES,
+	},
 	CHM {
 		name: "Compiled HTML Help files",
 		extensions: ["chm"],

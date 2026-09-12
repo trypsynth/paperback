@@ -1,5 +1,5 @@
-//! Running the built-in OCR engine over image-only PDF pages, one page at a time or a range in
-//! bulk, and folding the recognized text back into the open document.
+//! Running the built-in OCR engine over pages that hold a picture and no text, one page at a
+//! time or a range in bulk, and folding the recognized text back into the open document.
 //!
 //! Everything that touches a `DocumentTab` runs on the UI thread. The worker thread holds only
 //! the file path and a list of page numbers: it renders and recognizes, then hands text back
@@ -249,13 +249,13 @@ fn refresh_after_ocr(tab: &mut DocumentTab, pages: &[(i64, String)], window: Tex
 	}
 }
 
-/// The worker thread: opens the PDF once, then renders and recognizes each page in turn, posting
-/// results back to the UI thread in flushes.
+/// The worker thread: opens the document once, then renders and recognizes each page in turn,
+/// posting results back to the UI thread in flushes.
 fn run_ocr(path_str: &str, password: Option<&str>, pages: &[i32], file_path: &Path, cancel: &AtomicBool, batch: bool) {
-	let renderer = match PageRenderer::open(path_str, password) {
+	let mut renderer = match PageRenderer::open(path_str, password) {
 		Ok(renderer) => renderer,
 		Err(err) => {
-			tracing::warn!(error = %err, "failed to open the pdf for ocr");
+			tracing::warn!(error = %err, "failed to open the document for ocr");
 			post_finish(file_path, false);
 			return;
 		}

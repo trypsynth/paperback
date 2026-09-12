@@ -14,6 +14,7 @@ use crate::{
 	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
 
+pub mod cbz;
 pub mod chm;
 pub mod convert;
 pub mod daisy;
@@ -132,6 +133,7 @@ impl ParserRegistry {
 		static REGISTRY: OnceLock<ParserRegistry> = OnceLock::new();
 		REGISTRY.get_or_init(|| {
 			parser_registry! {
+				CBZ => cbz::CbzParser,
 				CHM => chm::ChmParser,
 				HLP => hlp::HlpParser,
 				DAISY => daisy::DaisyParser,

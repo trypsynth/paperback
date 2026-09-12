@@ -34,6 +34,7 @@ The workaround, eventually surfaced through the JAWS discussion group after mont
 
 Paperback supports the following formats and extensions:
 
+* Comic book archives (`.cbz`)
 * CHM help files (`.chm`)
 * DAISY books (`.opf`, `.zip`)
 * EPUB books (`.epub`)

@@ -9,6 +9,7 @@
   - HTML documents (htm/html/xhtml)
   - EPUB books (epub)
   - FictionBook ebooks (fb2)
+  - Comic book archives (cbz)
   - CHM help files (chm)
   - DAISY books (opf/zip)
   - PDF documents (pdf)

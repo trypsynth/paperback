@@ -25,6 +25,8 @@ ego-tree = "0.11.0"
 key-chord = "0.1.0"
 encoding_rs = "0.8.35"
 icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
+# Only the codecs comic archives actually use; the default feature set pulls in a dozen more.
+image = { version = "0.25.8", default-features = false, features = ["jpeg", "png", "gif", "webp", "bmp"] }
 libchm = "0.3.0"
 libhlp = "0.2.0"
 lofty = "0.25.1"
