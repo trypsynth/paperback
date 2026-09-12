@@ -182,7 +182,9 @@ formats! {
 		name: "MOBI Books",
 		extensions: ["mobi", "azw", "azw3"],
 		mime_types: ["application/x-mobipocket-ebook", "application/vnd.amazon.ebook"],
-		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
+		// KF8 books carry the file boundaries of the EPUB they were compiled from; older
+		// Mobipocket ones do not, and simply produce no section markers.
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_SECTIONS,
 	},
 	FODP {
 		name: "Flat OpenDocument Presentations",
