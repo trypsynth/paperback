@@ -75,7 +75,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+G` (macOS: `Cmd+L`): Go to line.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Go to percent.
 * `Ctrl+P`: Go to page (when supported by the current document).
-* `=`: Announce your current reading percentage.
+* `=`: Announce your current reading percentage and page, e.g. "15%, page 30". The page is left out for documents that have no page numbers.
 * `Alt+Left` (macOS: `Cmd+[`): Go back in navigation history.
 * `Alt+Right` (macOS: `Cmd+]`): Go forward in navigation history.
 * `[`: Previous section.
@@ -213,6 +213,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed EPUB's that carry a stray ZIP64 block refusing to open with "Invalid local file header".
 * Fixed long documents walking back to their start while a screen reader read continuously through them.
 * Links in the WebView now take you to the section they point at, rather than failing with "File not found".
+* The `=` shortcut now announces the page as well as the percentage, e.g. "15%, page 30", and stays as it was for documents with no page numbers.
 * The automatic "Document reloaded" announcement no longer cuts your screen reader off mid sentence, instead waiting for it to finish what it was saying.
 * The Settings dialog's General tab now tabs through its options in the order they appear on screen, with the update channel directly after the check for updates option.
 * Windows will now always show "Paperback" in the Open With menu, rather than the program's full tagline.

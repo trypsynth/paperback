@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-12 18:19-0600\n"
+"POT-Creation-Date: 2026-09-13 01:37-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1266,6 +1266,10 @@ msgstr ""
 
 #. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
 msgid "Temporary bookmark."
+msgstr ""
+
+#. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
+msgid "%s, page %d"
 msgstr ""
 
 #. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
