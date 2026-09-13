@@ -391,7 +391,9 @@ previous.</li>
 percent.</li>
 <li><code>Ctrl+P</code>: Go to page (when supported by the current
 document).</li>
-<li><code>=</code>: Announce your current reading percentage.</li>
+<li><code>=</code>: Announce your current reading percentage and page,
+e.g. “15%, page 30”. The page is left out for documents that have no
+page numbers.</li>
 <li><code>Alt+Left</code> (macOS: <code>Cmd+[</code>): Go back in
 navigation history.</li>
 <li><code>Alt+Right</code> (macOS: <code>Cmd+]</code>): Go forward in
@@ -564,6 +566,9 @@ returns to the book.</li>
 reader read continuously through them.</li>
 <li>Links in the WebView now take you to the section they point at,
 rather than failing with “File not found”.</li>
+<li>The <code>=</code> shortcut now announces the page as well as the
+percentage, e.g. “15%, page 30”, and stays as it was for documents with
+no page numbers.</li>
 <li>The automatic “Document reloaded” announcement no longer cuts your
 screen reader off mid sentence, instead waiting for it to finish what it
 was saying.</li>
