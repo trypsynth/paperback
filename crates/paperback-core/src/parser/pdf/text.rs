@@ -5,7 +5,7 @@
 //! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by metadata and TOC
 //! extraction as well.
 
-use std::{cmp::Ordering, mem};
+use std::{cmp::Ordering, ffi::c_ulong, mem};
 
 use pdfium::{PdfiumTextPage, pdfium_types::FS_MATRIX};
 
@@ -309,7 +309,9 @@ fn looks_monospaced(font_name: &str) -> bool {
 fn char_is_monospaced(text_page: &PdfiumTextPage, index: i32) -> bool {
 	let mut buffer = [0u8; FONT_NAME_LIMIT];
 	let mut flags = 0i32;
-	let capacity = u32::try_from(buffer.len()).unwrap_or(u32::MAX);
+	// The length pdfium takes is a C unsigned long, which is 32 bits on Windows and 64 on
+	// everything else, so the width has to come from the type rather than be chosen here.
+	let capacity = c_ulong::try_from(buffer.len()).unwrap_or(c_ulong::MAX);
 	let written = text_page.get_font_info(index, Some(&mut buffer), capacity, &mut flags) as usize;
 	if flags & FIXED_PITCH_FLAG != 0 {
 		return true;
