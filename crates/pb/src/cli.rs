@@ -22,6 +22,10 @@ pub struct Cli {
 	/// Exit with code 2 instead of prompting for a password (useful for batch processing)
 	#[arg(long)]
 	pub no_prompt: bool,
+	/// Keep every line of an untagged PDF page separate instead of joining wrapped lines back
+	/// into paragraphs (for code listings, poetry and transcripts)
+	#[arg(long)]
+	pub no_join_paragraphs: bool,
 	/// Print paperback-core's parser log output to stderr (set RUST_LOG for finer control)
 	#[arg(short, long)]
 	pub verbose: bool,
@@ -68,6 +72,7 @@ mod tests {
 		assert!(cli.password.is_none());
 		assert!(!cli.metadata);
 		assert!(!cli.no_prompt);
+		assert!(!cli.no_join_paragraphs);
 		assert!(!cli.verbose);
 	}
 
@@ -98,6 +103,11 @@ mod tests {
 		assert_eq!(cli.password.as_deref(), Some("hunter2"));
 		assert!(cli.metadata);
 		assert!(cli.no_prompt);
+	}
+
+	#[test]
+	fn accepts_the_no_join_paragraphs_flag() {
+		assert!(parse(&["pb", "b.pdf", "--no-join-paragraphs"]).no_join_paragraphs);
 	}
 
 	/// Paths that start with a dash or contain spaces reach the parser intact rather than being

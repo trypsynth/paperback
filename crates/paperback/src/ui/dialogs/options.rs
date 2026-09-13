@@ -27,6 +27,7 @@ pub struct OptionsDialogResult {
 	pub restore_previous_documents: bool,
 	pub word_wrap: bool,
 	pub render_tables_inline: bool,
+	pub join_pdf_paragraphs: bool,
 	pub minimize_to_tray: bool,
 	pub start_maximized: bool,
 	pub compact_go_menu: bool,
@@ -58,6 +59,7 @@ struct OptionsDialogUi {
 	restore_docs_check: CheckBox,
 	word_wrap_check: CheckBox,
 	render_tables_inline_check: CheckBox,
+	join_pdf_paragraphs_check: CheckBox,
 	minimize_to_tray_check: CheckBox,
 	start_maximized_check: CheckBox,
 	compact_go_menu_check: CheckBox,
@@ -113,6 +115,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		restore_previous_documents: ui.restore_docs_check.is_checked(),
 		word_wrap: ui.word_wrap_check.is_checked(),
 		render_tables_inline: ui.render_tables_inline_check.is_checked(),
+		join_pdf_paragraphs: ui.join_pdf_paragraphs_check.is_checked(),
 		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
 		start_maximized: ui.start_maximized_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
@@ -164,6 +167,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let render_tables_inline_check =
 		// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
+	let join_pdf_paragraphs_check = CheckBox::builder(&readability_panel)
+		// TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+		.with_label(&t("&Join wrapped lines into paragraphs in PDFs"))
+		.build();
 	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
 	// TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
@@ -393,6 +400,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	text_alignment_sizer.add(&text_alignment_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
+	readability_sizer.add(&join_pdf_paragraphs_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&paragraph_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&letter_spacing_sizer, 0, SizerFlag::All, option_padding);
@@ -421,6 +429,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
+	join_pdf_paragraphs_check.set_value(config.get_app_bool("join_pdf_paragraphs", true));
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
@@ -546,6 +555,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		restore_docs_check,
 		word_wrap_check,
 		render_tables_inline_check,
+		join_pdf_paragraphs_check,
 		minimize_to_tray_check,
 		start_maximized_check,
 		compact_go_menu_check,

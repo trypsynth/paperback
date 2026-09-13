@@ -1,6 +1,6 @@
 use crate::{
 	audio::AudioTimeline,
-	document::{self, DocumentHandle, Edit, MarkerType, ParserContext, ParserFlags, ReplaceOutcome},
+	document::{self, DocumentHandle, Edit, MarkerType, ParseSettings, ParserContext, ParserFlags, ReplaceOutcome},
 	parser,
 	reader_core::record_history_position,
 	types::{self as ffi},
@@ -269,7 +269,7 @@ impl DocumentSession {
 		file_path: &str,
 		password: &str,
 		forced_extension: &str,
-		render_tables_inline: bool,
+		settings: ParseSettings,
 	) -> Result<Self, String> {
 		let mut context = ParserContext::new(file_path.to_string());
 		if !password.is_empty() {
@@ -278,7 +278,7 @@ impl DocumentSession {
 		if !forced_extension.is_empty() {
 			context = context.with_forced_extension(forced_extension.to_string());
 		}
-		context = context.with_render_tables_inline(render_tables_inline);
+		context = context.with_parse_settings(settings);
 		let parser_flags = parser::get_parser_flags_for_context(&context);
 		let doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
 		Ok(Self {
@@ -299,7 +299,10 @@ impl DocumentSession {
 		forced_extension: String,
 		render_tables_inline: bool,
 	) -> Result<Self, DocumentError> {
-		Self::new(&file_path, &password, &forced_extension, render_tables_inline).map_err(DocumentError::ParseError)
+		// The mobile front ends have no reader-facing switch for the PDF paragraph joining,
+		// so they take its default.
+		let settings = ParseSettings { render_tables_inline, ..ParseSettings::default() };
+		Self::new(&file_path, &password, &forced_extension, settings).map_err(DocumentError::ParseError)
 	}
 
 	/// The parsed document handle backing this session.

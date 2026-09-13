@@ -108,7 +108,8 @@ fn view_source_for_markdown_maps_caret_to_current_block() {
 	let src = dir.join("notes.md");
 	fs::write(&src, md.as_bytes()).unwrap();
 	// A real session populates id_positions with pb-block-N anchors.
-	let session = DocumentSession::new(&src.to_string_lossy(), "", "", false).expect("open markdown");
+	let session =
+		DocumentSession::new(&src.to_string_lossy(), "", "", ParseSettings::default()).expect("open markdown");
 	let rendered = session.content();
 	let pos = i64::try_from(rendered.find("Second").expect("second block rendered")).unwrap();
 	let view = session.view_source(pos, &dir.to_string_lossy()).expect("markdown source");
@@ -200,7 +201,8 @@ fn webview_target_path_extracts_sibling_image_resources() {
 		.join(format!("paperback_webview_test_{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
 	fs::create_dir_all(&temp_root).unwrap();
 	let epub_path = build_epub_with_relative_image(&temp_root);
-	let session = DocumentSession::new(&epub_path.to_string_lossy(), "", "", false).expect("parse test epub");
+	let session =
+		DocumentSession::new(&epub_path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test epub");
 	let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
 	let section_content = fs::read_to_string(&target.path).expect("read extracted section");
 	assert!(section_content.contains("Images/cover.jpg"));
@@ -278,7 +280,8 @@ fn webview_target_path_extracts_linked_sibling_sections() {
 		.join(format!("paperback_webview_toc_{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
 	fs::create_dir_all(&temp_root).unwrap();
 	let epub_path = build_epub_with_linked_sections(&temp_root);
-	let session = DocumentSession::new(&epub_path.to_string_lossy(), "", "", false).expect("parse test epub");
+	let session =
+		DocumentSession::new(&epub_path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test epub");
 	let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
 	let toc_content = fs::read_to_string(&target.path).expect("read extracted toc");
 	assert!(toc_content.contains("chapter1.xhtml"), "expected the toc to link to the chapter");

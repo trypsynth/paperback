@@ -7,7 +7,9 @@ use std::{
 	time::{Instant, SystemTime},
 };
 
-use paperback_core::{config::ConfigManager, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
+use paperback_core::{
+	config::ConfigManager, document::ParseSettings, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession,
+};
 use patois::t;
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
@@ -162,19 +164,19 @@ impl DocumentManager {
 				config.import_settings_from_file(&path.to_string_lossy(), import_path.to_str().unwrap());
 			}
 		}
-		let (password, forced_extension, render_tables_inline) = {
+		let (password, forced_extension, settings) = {
 			let config = self.config.lock().unwrap();
 			let path_str = path.to_string_lossy();
 			config.refresh_document_hash(&path_str);
 			let forced_extension = config.get_document_format(&path_str);
 			let password = config.get_document_password(&path_str);
-			let render_tables_inline = config.get_app_bool("render_tables_inline", true);
+			let settings = parse_settings(&config);
 			drop(config);
-			(password, forced_extension, render_tables_inline)
+			(password, forced_extension, settings)
 		};
 		let path_str = path.to_string_lossy().to_string();
 		tracing::info!(path = %path.display(), "opening document");
-		match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline) {
+		match DocumentSession::new(&path_str, &password, &forced_extension, settings) {
 			Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 			Err(err) => {
 				if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
@@ -187,7 +189,7 @@ impl DocumentManager {
 						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
 						return false;
 					};
-					match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline) {
+					match DocumentSession::new(&path_str, &password, &forced_extension, settings) {
 						Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 						Err(retry_error) => {
 							tracing::error!(path = %path.display(), error = %retry_error, "failed to open document");
@@ -952,11 +954,10 @@ impl DocumentManager {
 		}
 	}
 
-	/// Re-parses every open document with the new `render_tables_inline` setting and refills its
-	/// text control. Re-parsing (rather than transforming in place) keeps every format's table
-	/// rendering identical via the shared parse-time helper. A tab whose re-parse fails is left
-	/// unchanged.
-	pub fn apply_render_tables_inline(&mut self, render_tables_inline: bool) {
+	/// Re-parses every open document with the new parse settings and refills its text control.
+	/// Re-parsing (rather than transforming in place) keeps every format's table rendering
+	/// identical via the shared parse-time helper. A tab whose re-parse fails is left unchanged.
+	pub fn apply_parse_settings(&mut self, settings: ParseSettings) {
 		// Read readability settings and collect each tab's parse inputs (path, password, forced
 		// format) under a single config lock, so we don't re-lock per tab while mutating the tabs.
 		let (style, parse_inputs) = {
@@ -974,7 +975,7 @@ impl DocumentManager {
 			(readability_style(&cfg), parse_inputs)
 		};
 		for (tab, (path_str, password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
-			let _ = reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style);
+			let _ = reparse_tab_in_place(tab, &path_str, &password, &forced_extension, settings, &style);
 		}
 	}
 
@@ -1005,29 +1006,22 @@ impl DocumentManager {
 		}
 		let password = cfg.get_document_password(&path_str);
 		let forced_extension = cfg.get_document_format(&path_str);
-		let render_tables_inline = cfg.get_app_bool("render_tables_inline", true);
+		let settings = parse_settings(&cfg);
 		let style = readability_style(&cfg);
 		drop(cfg);
 		let tab = &mut self.tabs[index];
 		let (positions, history_index) = tab.session.get_history();
 		let positions = positions.to_vec();
-		let reloaded =
-			match reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style) {
-				Ok(()) => true,
-				Err(err) if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
-					// Recorded before the prompt so a re-entrant call during its modal
-					// event loop sees the file as unchanged and skips a second prompt.
-					tab.disk_fingerprint = Some(current);
-					self.reprompt_password_and_reparse(
-						index,
-						&path_str,
-						&forced_extension,
-						render_tables_inline,
-						&style,
-					)
-				}
-				Err(_) => false,
-			};
+		let reloaded = match reparse_tab_in_place(tab, &path_str, &password, &forced_extension, settings, &style) {
+			Ok(()) => true,
+			Err(err) if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+				// Recorded before the prompt so a re-entrant call during its modal
+				// event loop sees the file as unchanged and skips a second prompt.
+				tab.disk_fingerprint = Some(current);
+				self.reprompt_password_and_reparse(index, &path_str, &forced_extension, settings, &style)
+			}
+			Err(_) => false,
+		};
 		let tab = &mut self.tabs[index];
 		if reloaded {
 			tab.session.set_history(&positions, history_index);
@@ -1047,7 +1041,7 @@ impl DocumentManager {
 		index: usize,
 		path_str: &str,
 		forced_extension: &str,
-		render_tables_inline: bool,
+		settings: ParseSettings,
 		style: &ReadabilityStyle,
 	) -> bool {
 		if let Ok(cfg) = self.config.try_lock() {
@@ -1057,7 +1051,7 @@ impl DocumentManager {
 			return false;
 		};
 		let tab = &mut self.tabs[index];
-		match reparse_tab_in_place(tab, path_str, &password, forced_extension, render_tables_inline, style) {
+		match reparse_tab_in_place(tab, path_str, &password, forced_extension, settings, style) {
 			Ok(()) => {
 				if !password.is_empty()
 					&& let Ok(cfg) = self.config.try_lock()
@@ -1119,6 +1113,14 @@ fn build_document_load_error_message(path: &Path, error: &str) -> String {
 	format!("{}\n\n{file_line}\n{details_line}", t("Failed to load document."))
 }
 
+/// The parse-time toggles as the reader has them set.
+fn parse_settings(cfg: &ConfigManager) -> ParseSettings {
+	ParseSettings {
+		render_tables_inline: cfg.get_app_bool("render_tables_inline", true),
+		join_pdf_paragraphs: cfg.get_app_bool("join_pdf_paragraphs", true),
+	}
+}
+
 /// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
 /// position. Returns the parse error and leaves the tab unchanged if the re-parse fails.
 fn reparse_tab_in_place(
@@ -1126,7 +1128,7 @@ fn reparse_tab_in_place(
 	path_str: &str,
 	password: &str,
 	forced_extension: &str,
-	render_tables_inline: bool,
+	settings: ParseSettings,
 	style: &ReadabilityStyle,
 ) -> Result<(), String> {
 	let new_fingerprint = read_fingerprint(&tab.file_path);
@@ -1146,7 +1148,7 @@ fn reparse_tab_in_place(
 			.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
 	};
 	let fallback_percent = tab.session.get_status_info(current_pos).percentage;
-	let new_session = match DocumentSession::new(path_str, password, forced_extension, render_tables_inline) {
+	let new_session = match DocumentSession::new(path_str, password, forced_extension, settings) {
 		Ok(session) => session,
 		Err(err) => {
 			tracing::error!(path = %path_str, error = %err, "failed to re-parse document");

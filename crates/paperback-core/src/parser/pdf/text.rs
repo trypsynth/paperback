@@ -335,13 +335,42 @@ fn merge_drop_caps(raw_lines: &[Line], body_font_size: f64) -> Vec<Line> {
 	merged
 }
 
+const HEADING_FONT_RATIO: f64 = 1.2;
+const HEADING_MAX_LEN: usize = 150;
+
+/// The point size at which a line reads as a heading rather than as body text.
+fn heading_threshold(body_font_size: f64) -> f64 {
+	if body_font_size > 0.0 { body_font_size * HEADING_FONT_RATIO } else { f64::INFINITY }
+}
+
+/// Reads every line as a paragraph of its own, for a reader who has turned paragraph joining
+/// off.
+///
+/// Nothing in a PDF says whether five lines at the same left edge are five lines of code or
+/// one wrapped sentence, so a document whose line breaks are the content (a listing, a poem,
+/// a transcript) can only be read with the joining out of the way. Headings are still marked,
+/// because that is a question about size and not about where a paragraph ends.
+pub(super) fn split_lines(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
+	let heading_threshold = heading_threshold(body_font_size);
+	raw_lines
+		.iter()
+		.enumerate()
+		.filter_map(|(index, (text, size, ..))| {
+			let trimmed = trim_string(&collapse_whitespace(text));
+			let len = display_len(&trimmed);
+			if len == 0 {
+				return None;
+			}
+			Some((trimmed, *size >= heading_threshold && len <= HEADING_MAX_LEN, index))
+		})
+		.collect()
+}
+
 /// The third field of each paragraph is the index, into `raw_lines`, of the line it starts
 /// with. An untagged page needs it to place its images: the paragraphs no longer say where on
 /// the page they were set, and that line does.
 pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
-	const HEADING_FONT_RATIO: f64 = 1.2;
-	const HEADING_MAX_LEN: usize = 150;
-	let heading_threshold = if body_font_size > 0.0 { body_font_size * HEADING_FONT_RATIO } else { f64::INFINITY };
+	let heading_threshold = heading_threshold(body_font_size);
 	let raw_lines = merge_drop_caps(raw_lines, body_font_size);
 	let lines: Vec<(String, bool, f64, f64, f64)> = raw_lines
 		.iter()
@@ -471,7 +500,9 @@ pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(S
 
 #[cfg(test)]
 mod tests {
-	use super::{CharBox, Line, ends_line, full_line_len, join_paragraphs, sanitize_pdf_text, space_is_invisible};
+	use super::{
+		CharBox, Line, ends_line, full_line_len, join_paragraphs, sanitize_pdf_text, space_is_invisible, split_lines,
+	};
 
 	/// The coordinates below come from what pdfium reports for the PDF attached to #808, so the
 	/// ratios each case turns on are the ones real pages produce.
@@ -779,6 +810,63 @@ mod tests {
 		// Body-sized, so nothing to do with a drop cap however the next line starts.
 		let lines = tight(&[("A", 12.0), ("small letter follows.", 12.0)]);
 		assert_eq!(join_paragraphs(&lines, 12.0).len(), 1);
+	}
+
+	// #813: nothing in a PDF separates five lines of code from five wrapped lines of prose,
+	// so a reader whose document is a listing turns the joining off and gets the lines back.
+	#[test]
+	fn split_lines_keeps_every_line_apart() {
+		let lines = tight(&[
+			("Listing 1: Five lines of Python", 11.0),
+			("def greet(name):", 11.0),
+			("# say hello", 11.0),
+			("message = \"Hello, \" + name", 11.0),
+			("print(message)", 11.0),
+			("return message", 11.0),
+		]);
+		let result = split_lines(&lines, 11.0);
+		let texts: Vec<&str> = result.iter().map(|(text, ..)| text.as_str()).collect();
+		assert_eq!(
+			texts,
+			[
+				"Listing 1: Five lines of Python",
+				"def greet(name):",
+				"# say hello",
+				"message = \"Hello, \" + name",
+				"print(message)",
+				"return message"
+			]
+		);
+	}
+
+	// The same lines run together when the joining is on, which is the whole reason for the
+	// switch.
+	#[test]
+	fn join_paragraphs_runs_the_same_listing_together() {
+		let lines = tight(&[("def greet(name):", 11.0), ("# say hello", 11.0), ("return message", 11.0)]);
+		assert_eq!(join_paragraphs(&lines, 11.0).len(), 1);
+	}
+
+	// A heading is a question about size, not about where a paragraph ends, so it is still
+	// marked with the joining off. Navigating by heading has to keep working.
+	#[test]
+	fn split_lines_still_marks_headings() {
+		let lines = tight(&[("A Short Code Listing", 20.0), ("def greet(name):", 11.0)]);
+		let result = split_lines(&lines, 11.0);
+		assert_eq!(result.len(), 2);
+		assert!(result[0].1, "the large line is a heading");
+		assert!(!result[1].1, "the body line is not");
+	}
+
+	// Each paragraph reports the line it came from, which is what places the images of an
+	// untagged page. A blank line is dropped and must not shift the ones after it.
+	#[test]
+	fn split_lines_reports_the_line_each_paragraph_came_from() {
+		let lines = tight(&[("first", 11.0), ("   ", 11.0), ("third", 11.0)]);
+		let result = split_lines(&lines, 11.0);
+		assert_eq!(result.len(), 2);
+		assert_eq!(result[0].2, 0);
+		assert_eq!(result[1].2, 2);
 	}
 
 	#[test]

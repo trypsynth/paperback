@@ -22,7 +22,7 @@ use links::{PendingLink, collect_annotation_links, collect_web_links, place_link
 use metadata::{map_load_error, metadata_value};
 use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
-use text::{Line, extract_text_lines, join_paragraphs, median_line_font_size};
+use text::{Line, extract_text_lines, join_paragraphs, median_line_font_size, split_lines};
 use toc::{add_heading_markers, build_toc_tree, extract_toc};
 
 /// Everything one page contributes, as read from pdfium and before any of it is placed in the
@@ -189,7 +189,11 @@ impl Parser for PdfParser {
 				let body_size = median_line_font_size(&line_infos);
 				strip_running_text(&mut line_infos, &running_text);
 				let line_tops: Vec<f64> = line_infos.iter().map(|(_, _, top, _)| *top).collect();
-				let paragraphs = join_paragraphs(&line_infos, body_size);
+				let paragraphs = if context.join_pdf_paragraphs {
+					join_paragraphs(&line_infos, body_size)
+				} else {
+					split_lines(&line_infos, body_size)
+				};
 				if !paragraphs.is_empty() {
 					has_any_text = true;
 				}

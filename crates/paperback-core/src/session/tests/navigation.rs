@@ -243,7 +243,8 @@ fn navigate_section_names_each_file_of_a_real_plain_audio_zip() {
 		}
 		writer.finish().unwrap();
 	}
-	let session = DocumentSession::new(&zip_path.to_string_lossy(), "", "", false).expect("plain audio zip opens");
+	let session = DocumentSession::new(&zip_path.to_string_lossy(), "", "", ParseSettings::default())
+		.expect("plain audio zip opens");
 	let mut announced = Vec::new();
 	let mut position = -1;
 	for _ in 0..3 {

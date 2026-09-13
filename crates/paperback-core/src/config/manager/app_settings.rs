@@ -23,6 +23,7 @@ impl ConfigManager {
 			"restore_previous_documents" => data.app.restore_previous_documents,
 			"word_wrap" => data.app.word_wrap,
 			"render_tables_inline" => data.app.render_tables_inline,
+			"join_pdf_paragraphs" => data.app.join_pdf_paragraphs,
 			"navigation_wrap" => data.app.navigation_wrap,
 			"find_match_case" => data.app.find_match_case,
 			"find_whole_word" => data.app.find_whole_word,
@@ -78,6 +79,7 @@ impl ConfigManager {
 				"restore_previous_documents" => data.app.restore_previous_documents = value,
 				"word_wrap" => data.app.word_wrap = value,
 				"render_tables_inline" => data.app.render_tables_inline = value,
+				"join_pdf_paragraphs" => data.app.join_pdf_paragraphs = value,
 				"navigation_wrap" => data.app.navigation_wrap = value,
 				"find_match_case" => data.app.find_match_case = value,
 				"find_whole_word" => data.app.find_whole_word = value,
@@ -116,6 +118,15 @@ impl ConfigManager {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn join_pdf_paragraphs_round_trips() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		assert!(config.get_app_bool("join_pdf_paragraphs", true));
+		config.set_app_bool("join_pdf_paragraphs", false);
+		assert!(!config.get_app_bool("join_pdf_paragraphs", true));
+	}
 
 	#[test]
 	fn render_tables_inline_round_trips() {
