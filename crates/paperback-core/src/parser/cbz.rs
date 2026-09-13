@@ -5,7 +5,11 @@
 //! archives in reach of the reader at all: pressing Enter on a page runs it through the
 //! platform OCR engine exactly as it would a scan.
 
-use std::{cmp::Ordering, fs::File, io::BufReader};
+use std::{
+	cmp::Ordering,
+	fs::File,
+	io::{BufReader, Read},
+};
 
 use anyhow::{Context, Result};
 use zip::ZipArchive;
@@ -36,17 +40,35 @@ impl Parser for CbzParser {
 			anyhow::anyhow!(t("Failed to parse comic archive: {}").replace("{}", &e.to_string()))
 		})?;
 		let pages = page_names(&mut archive);
-		if pages.is_empty() {
-			// TRANSLATORS: Error shown when a comic book archive holds no page images at all
-			return Err(anyhow::anyhow!(t("This comic archive contains no pages.")));
-		}
 		tracing::debug!(path = %context.file_path, pages = pages.len(), "cbz structure read");
-		let buffer = build(&pages);
-		let mut document = Document::new().with_title(extract_title_from_path(&context.file_path));
-		document.set_buffer(buffer);
-		tracing::debug!(path = %context.file_path, "parsed cbz file successfully");
-		Ok(document)
+		comic_document(&pages, &context.file_path)
 	}
+}
+
+/// One comic's worth of placeholder pages, however the archive they came out of was packed.
+///
+/// # Errors
+///
+/// Returns an error if the archive holds no pages at all.
+pub(super) fn comic_document(pages: &[String], file_path: &str) -> Result<Document> {
+	if pages.is_empty() {
+		// TRANSLATORS: Error shown when a comic book archive holds no page images at all
+		return Err(anyhow::anyhow!(t("This comic archive contains no pages.")));
+	}
+	let mut document = Document::new().with_title(extract_title_from_path(file_path));
+	document.set_buffer(build(pages));
+	tracing::debug!(path = %file_path, "parsed comic archive successfully");
+	Ok(document)
+}
+
+/// Whether a file is a zip, whatever its name says.
+///
+/// Comic archives get renamed between .cbz and .cbr by people sorting their shelves, so the
+/// name is a hint and the first four bytes are the answer.
+pub(crate) fn is_zip(file_path: &str) -> bool {
+	let Ok(mut file) = File::open(file_path) else { return false };
+	let mut magic = [0u8; 4];
+	file.read_exact(&mut magic).is_ok() && magic == *b"PK"
 }
 
 /// The archive's page images, in reading order.
@@ -70,7 +92,7 @@ pub fn page_names<R: std::io::Read + std::io::Seek>(archive: &mut ZipArchive<R>)
 }
 
 /// Whether an archive entry is one of the page images rather than metadata.
-fn is_page(name: &str) -> bool {
+pub(super) fn is_page(name: &str) -> bool {
 	// A leading dot is a resource fork or a macOS metadata file, never artwork.
 	let file_name = name.rsplit(['/', '\\']).next().unwrap_or(name);
 	if file_name.starts_with('.') || name.contains("__MACOSX") {
@@ -101,7 +123,7 @@ fn build(pages: &[String]) -> DocumentBuffer {
 ///
 /// Comic archives number their pages without padding often enough that plain sorting puts
 /// page 10 in front of page 2, which shuffles the whole book.
-fn natural_cmp(a: &str, b: &str) -> Ordering {
+pub(super) fn natural_cmp(a: &str, b: &str) -> Ordering {
 	let (mut a, mut b) = (a.as_bytes(), b.as_bytes());
 	loop {
 		match (a.first(), b.first()) {

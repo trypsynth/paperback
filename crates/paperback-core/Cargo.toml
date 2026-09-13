@@ -52,6 +52,9 @@ thiserror = "2.0.20"
 toml = { workspace = true }
 tracing = "0.1.44"
 unicode-bidi = "0.3.18"
+# Reads the RAR a .cbr is. The bindings are MIT/Apache; the C library they vendor keeps
+# RARLAB's unRAR licence, whose notice LICENSE.md carries.
+unrar = "0.5.8"
 uniffi = { version = "0.32.0", features = ["cli"], optional = true }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 

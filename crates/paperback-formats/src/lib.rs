@@ -102,6 +102,15 @@ macro_rules! formats {
 }
 
 formats! {
+	/// Named apart from [`CBZ`] because the installer builds a task name out of it, and two
+	/// formats named the same would write the same task twice. Without brackets, because the
+	/// open dialog's filter puts the extensions in brackets after the name.
+	CBR {
+		name: "RAR comic book archives",
+		extensions: ["cbr"],
+		mime_types: ["application/vnd.comicbook-rar"],
+		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES,
+	},
 	CBZ {
 		name: "Comic book archives",
 		extensions: ["cbz"],
