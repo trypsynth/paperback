@@ -21,10 +21,55 @@ fn webview_target_path_returns_none_for_missing_markdown_file() {
 	assert!(session.webview_target_path(0, "C:\\temp").is_none());
 }
 
+// #774: every format that is not EPUB, HTML or Markdown used to report that its content
+// could not be determined. What such a format has is the parsed document, so that is what
+// the web view now gets.
 #[test]
-fn webview_target_path_returns_none_for_non_webview_extensions() {
-	let session = sample_session(ParserFlags::NONE);
-	assert!(session.webview_target_path(0, "C:\\temp").is_none());
+fn webview_target_path_renders_a_format_without_markup_as_html() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let session = session_with_path("book.mobi");
+	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	assert!(target.path.ends_with("document.html"), "{}", target.path);
+	let html = fs::read_to_string(&target.path).unwrap();
+	assert!(html.contains("<h1>"), "headings are rendered: {html}");
+	assert!(html.contains("line1"), "content is rendered: {html}");
+	let _ = fs::remove_dir_all(&dir);
+}
+
+// The rendering is all the web view has, so the reading position has to be an anchor in it.
+#[test]
+fn webview_target_path_anchors_the_reading_position_in_the_rendering() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let mut session = session_with_path("book.mobi");
+	let mut document = Document::new();
+	document.set_buffer(DocumentBuffer::with_content(
+		"first line
+second line
+"
+		.to_string(),
+	));
+	session.handle = DocumentHandle::new(document);
+	let second_line = i64::try_from(session.content().find("second").unwrap()).unwrap();
+	let target = session.webview_target_path(second_line, &dir.to_string_lossy()).expect("a web view target");
+	assert_eq!(target.fragment.as_deref(), Some("pos-11"));
+	let html = fs::read_to_string(&target.path).unwrap();
+	let anchor = html.find(r#"id="pos-11""#).unwrap_or_else(|| panic!("no anchor in {html}"));
+	let line = html.find("second line").unwrap_or_else(|| panic!("no second line in {html}"));
+	assert!(anchor < line, "the anchor opens the line it marks: {html}");
+	let _ = fs::remove_dir_all(&dir);
+}
+
+// An audio book has no text to render, and an empty page in a web view is worse than being
+// told there is nothing to show.
+#[test]
+fn webview_target_path_returns_none_for_a_document_with_no_text() {
+	let dir = unique_temp_dir();
+	let mut session = session_with_path("book.m4b");
+	session.handle = DocumentHandle::new(Document::new());
+	assert!(session.webview_target_path(0, &dir.to_string_lossy()).is_none());
+	assert!(!dir.exists(), "nothing is written for a document with no text");
 }
 
 #[test]

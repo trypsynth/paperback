@@ -12,8 +12,23 @@ use crate::{
 	},
 };
 
+/// The id of the anchor [`render_with_anchor`] writes at a reading position.
+#[must_use]
+pub fn anchor_id(offset: usize) -> String {
+	format!("pos-{offset}")
+}
+
 #[must_use]
 pub fn render(doc: &DocumentHandle) -> String {
+	render_with_anchor(doc, None)
+}
+
+/// Renders the document, with an anchor named by [`anchor_id`] at `anchor`.
+///
+/// A format that keeps no markup of its own has nothing for a web view to open but this
+/// rendering, so the reading position has to travel in the rendering itself.
+#[must_use]
+pub fn render_with_anchor(doc: &DocumentHandle, anchor: Option<usize>) -> String {
 	let document = doc.document();
 	let content = &document.buffer.content;
 	// Precompute section boundaries once so link resolution is O(log S) per link
@@ -77,6 +92,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 	}
 	let mut events: Vec<Ev> = Vec::new();
 	let mut target_offsets = HashSet::new();
+	target_offsets.extend(anchor);
 	for marker in &document.buffer.markers {
 		let pos = marker.position;
 		// Markers from html_to_text carry length=0 for headings, links, and list items

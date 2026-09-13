@@ -6,7 +6,7 @@
 use std::{
 	fs::{self, File},
 	io::{self, BufReader, Write},
-	path::Path,
+	path::{Path, PathBuf},
 };
 
 use base64::Engine;
@@ -16,7 +16,7 @@ use super::{DocumentSession, SourceView, WebviewTarget};
 use crate::{
 	config::compute_document_hash,
 	document::MarkerType,
-	export::{ExportFormat, render},
+	export::{ExportFormat, html as export_html, render},
 	parser,
 	reader_core::{encode_url_fragment, nearest_fragment_before},
 	util::{encoding::convert_to_utf8, zip as zip_utils},
@@ -27,10 +27,7 @@ impl DocumentSession {
 	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<WebviewTarget> {
 		let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty());
 		if let Some(section_path) = section_path {
-			let digest = compute_document_hash(&self.file_path);
-			let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
-			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
-			if fs::create_dir_all(&doc_temp_dir).is_ok() {
+			if let Some(doc_temp_dir) = self.document_temp_dir(temp_dir) {
 				// Extract every entry (sections, images, stylesheets, fonts, ...) once,
 				// preserving the epub's internal layout, so the section's relative
 				// references resolve on disk: both its resources (e.g.
@@ -51,10 +48,7 @@ impl DocumentSession {
 		match ext.as_deref() {
 			Some("html" | "htm" | "xhtml") => Some(WebviewTarget { path: self.file_path.clone(), fragment: None }),
 			Some("md" | "markdown") => {
-				let digest = compute_document_hash(&self.file_path);
-				let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
-				let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
-				if fs::create_dir_all(&doc_temp_dir).is_ok() {
+				if let Some(doc_temp_dir) = self.document_temp_dir(temp_dir) {
 					let html_path = doc_temp_dir.join("document.html");
 					if let Ok(bytes) = fs::read(&self.file_path) {
 						let markdown_text = convert_to_utf8(&bytes);
@@ -71,8 +65,35 @@ impl DocumentSession {
 				}
 				None
 			}
-			_ => None,
+			// Every other format keeps no markup of its own for a web view to open, so it gets
+			// the parsed document rendered as HTML. The reading position travels in that
+			// rendering as an anchor: there is no source file whose own ids could carry it.
+			_ => {
+				if self.handle.document().buffer.content.trim().is_empty() {
+					return None;
+				}
+				let doc_temp_dir = self.document_temp_dir(temp_dir)?;
+				let html_path = doc_temp_dir.join("document.html");
+				let offset = usize::try_from(position.max(0)).unwrap_or(0);
+				let html = export_html::render_with_anchor(&self.handle, Some(offset));
+				fs::write(&html_path, html.as_bytes()).ok()?;
+				Some(WebviewTarget {
+					path: html_path.to_string_lossy().to_string(),
+					fragment: Some(export_html::anchor_id(offset)),
+				})
+			}
 		}
+	}
+
+	/// The directory this document's web view and source view files are written to, created
+	/// if it is not there yet. Named from the document's hash so two documents never write
+	/// over each other.
+	fn document_temp_dir(&self, temp_dir: &str) -> Option<PathBuf> {
+		let digest = compute_document_hash(&self.file_path);
+		let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
+		let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
+		fs::create_dir_all(&doc_temp_dir).ok()?;
+		Some(doc_temp_dir)
 	}
 
 	/// Inserts an empty anchor element at the current reading position into the
@@ -123,10 +144,7 @@ impl DocumentSession {
 	#[must_use]
 	pub fn view_source(&self, position: i64, temp_dir: &str) -> Option<SourceView> {
 		let (content, caret, name) = self.source_content_for_position(position)?;
-		let digest = compute_document_hash(&self.file_path);
-		let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
-		let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
-		fs::create_dir_all(&doc_temp_dir).ok()?;
+		let doc_temp_dir = self.document_temp_dir(temp_dir)?;
 		let output_path = doc_temp_dir.join(format!("{name}.source.txt"));
 		fs::write(&output_path, content.as_bytes()).ok()?;
 		Some(SourceView { path: output_path.to_string_lossy().to_string(), caret: i64::try_from(caret).unwrap_or(0) })
