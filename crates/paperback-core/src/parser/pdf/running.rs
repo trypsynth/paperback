@@ -35,7 +35,7 @@ pub(super) struct PageEdges {
 
 impl PageEdges {
 	pub(super) fn of(lines: &[Line]) -> Self {
-		let text = |line: &Line| line.0.clone();
+		let text = |line: &Line| line.text.clone();
 		Self {
 			first: lines.iter().take(EDGE_LINES).map(text).collect(),
 			last: lines.iter().rev().take(EDGE_LINES).map(text).collect(),

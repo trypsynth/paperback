@@ -112,10 +112,10 @@ fn append_tagged_page(buffer: &mut DocumentBuffer, page: DocumentBuffer, page_st
 fn strip_running_text(lines: &mut Vec<Line>, running_text: &RunningText) {
 	let is_running = |index: usize, lines: &Vec<Line>| {
 		let at_an_edge = index < EDGE_LINES || index + EDGE_LINES >= lines.len();
-		at_an_edge && running_text.contains(&lines[index].0, lines[index].1)
+		at_an_edge && running_text.contains(&lines[index].text, lines[index].size)
 	};
 	let doomed: Vec<usize> = (0..lines.len()).filter(|index| is_running(*index, lines)).collect();
-	if doomed.len() == lines.iter().filter(|(line, ..)| !line.trim().is_empty()).count() {
+	if doomed.len() == lines.iter().filter(|line| !line.text.trim().is_empty()).count() {
 		return;
 	}
 	for index in doomed.into_iter().rev() {
@@ -188,7 +188,7 @@ impl Parser for PdfParser {
 				// above it would stop counting as one.
 				let body_size = median_line_font_size(&line_infos);
 				strip_running_text(&mut line_infos, &running_text);
-				let line_tops: Vec<f64> = line_infos.iter().map(|(_, _, top, _)| *top).collect();
+				let line_tops: Vec<f64> = line_infos.iter().map(|line| line.top).collect();
 				let paragraphs = if context.join_pdf_paragraphs {
 					join_paragraphs(&line_infos, body_size)
 				} else {
