@@ -798,14 +798,16 @@ impl DocumentManager {
 		persist_navigation_history(&self.config, track.then_some(&update));
 	}
 
-	/// Announces the current caret position as a percentage of the document via the live region.
+	/// Announces the current caret position as a percentage of the document, and the page it falls
+	/// on where the document has pages, via the live region.
 	pub fn announce_current_percent(&self) {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let percent = navigation::reading_percent(tab, position);
-		live_region::announce(self.live_region_label, &format!("{percent}%"));
+		let page = page_at(tab, position);
+		live_region::announce(self.live_region_label, &position_announcement(percent, page));
 	}
 
 	/// Sets the temporary bookmark at the current caret position and announces it.
@@ -1069,6 +1071,39 @@ impl DocumentManager {
 	}
 }
 
+/// The 1-based page `position` falls on, or `None` for a document that has no pages at all -
+/// meaning one with no page-break markers, which is every plain text and markdown document and any
+/// EPUB that carries no page list.
+///
+/// The `.max(1)` covers a hole in `current_page`, which answers 0 both for a document with no pages
+/// and for a position ahead of the first marker: the first is what the guard above has already
+/// turned into `None`, the second is not a page number to say out loud. Only a PDF escapes the
+/// second case, since its first page marker sits at offset 0. An RTF's and a DAISY book's first
+/// break lands mid-document, and an EPUB page list starts at the first *content* page, leaving the
+/// cover and title pages in front of every marker.
+///
+/// Every caller of `current_page` patches that 0 differently or not at all - Go to Page clamps it
+/// (`dialogs::show_go_to_page_dialog`), the Elements view reads it as "no closest page"
+/// (`dialogs::elements`), and iOS's Go To sheet shows it to the reader as a plain 0. This agrees
+/// with Go to Page, the one other place that speaks a page number; the fix that would stop it being
+/// forgotten belongs in `current_page` itself.
+fn page_at(tab: &DocumentTab, position: i64) -> Option<i32> {
+	if tab.session.page_count() == 0 {
+		return None;
+	}
+	Some(tab.session.current_page(position).max(1))
+}
+
+/// What the "announce percentage" shortcut says for `percent` through the document, on `page` where
+/// it has pages - "15%, page 30" - or the bare percentage where it has none.
+fn position_announcement(percent: i32, page: Option<i32>) -> String {
+	let Some(page) = page else {
+		return format!("{percent}%");
+	};
+	// TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
+	t("%s, page %d").replacen("%d", &page.to_string(), 1).replacen("%s", &format!("{percent}%"), 1)
+}
+
 fn normalized_path_key(path: &Path) -> String {
 	let normalized = dunce::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
 	let value = normalized.to_string_lossy().to_string();
@@ -1194,7 +1229,7 @@ fn reparse_tab_in_place(
 mod tests {
 	use std::{env, fs, path::PathBuf, process};
 
-	use super::read_fingerprint;
+	use super::{position_announcement, read_fingerprint};
 
 	struct TempFile {
 		path: PathBuf,
@@ -1218,6 +1253,27 @@ mod tests {
 	fn fingerprint_of_missing_path_is_none() {
 		let path = env::temp_dir().join(format!("paperback-fingerprint-{}-does-not-exist", process::id()));
 		assert_eq!(read_fingerprint(&path), None);
+	}
+
+	/// The percentage is reported on its own for a document with no pages at all, exactly as it was
+	/// before pages joined it - so a markdown or plain text reader hears the same "15%" they always
+	/// have, rather than a page they do not have.
+	#[test]
+	fn announcement_without_a_page_is_the_bare_percentage() {
+		assert_eq!(position_announcement(15, None), "15%");
+	}
+
+	#[test]
+	fn announcement_with_a_page_names_both() {
+		assert_eq!(position_announcement(15, Some(30)), "15%, page 30");
+	}
+
+	/// The percentage's own `%` must survive substitution: it rides in on the `%s` argument rather
+	/// than sitting in the msgid, because `t()` is a plain catalog lookup and does no printf-style
+	/// unescaping - a `%%` in the format string would reach the listener doubled.
+	#[test]
+	fn announcement_keeps_the_percentage_sign_intact() {
+		assert!(position_announcement(7, Some(412)).starts_with("7%,"));
 	}
 
 	#[test]
