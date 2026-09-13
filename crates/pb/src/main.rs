@@ -16,7 +16,7 @@ fn main() -> Result<()> {
 	let cli = Cli::parse();
 	init_logging(cli.verbose);
 	let ext = cli.input.extension().and_then(|e| e.to_str()).unwrap_or("");
-	if !parser::parser_supports_extension(ext) {
+	if !parser::parser_supports_path(&cli.input) {
 		bail!("unsupported file format: .{ext}");
 	}
 	let file_path = cli.input.to_string_lossy().into_owned();

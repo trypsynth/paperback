@@ -17,7 +17,7 @@ use std::{
 	thread,
 };
 
-use paperback_core::ocr::PageRenderer;
+use paperback_core::{ocr::PageRenderer, parser::pdf::join_wrapped_lines};
 use patois::{nt, t};
 use wxdragon::prelude::*;
 
@@ -48,6 +48,12 @@ pub(super) struct OcrJob {
 	batch: bool,
 	/// Pages whose text has made it into the document so far, for the closing announcement.
 	recognized: usize,
+}
+
+/// Whether a document is a PDF, which is what the paragraph joining setting is about. The
+/// other thing OCR runs on is a comic, whose lines are the balloons and belong apart.
+fn is_pdf(file_path: &Path) -> bool {
+	file_path.extension().is_some_and(|extension| extension.eq_ignore_ascii_case("pdf"))
 }
 
 /// One page's outcome, as the worker reports it.
@@ -156,6 +162,11 @@ impl DocumentManager {
 			return;
 		};
 		let is_active = self.active_tab_index() == Some(index);
+		// An OCR engine reads a page a printed line at a time, so its text arrives broken at
+		// every line end. The reader who asked for wrapped lines to be joined asked about the
+		// text of a page, not about where it was read from.
+		let join_paragraphs =
+			is_pdf(file_path) && self.config.lock().unwrap().get_app_bool("join_pdf_paragraphs", true);
 		let tab = &mut self.tabs[index];
 		// Placeholder offsets are resolved now, not when the worker captured the page: earlier
 		// applies in this same job have already moved everything after them.
@@ -175,6 +186,7 @@ impl DocumentManager {
 			if text.trim().is_empty() {
 				continue;
 			}
+			let text = if join_paragraphs { join_wrapped_lines(&text) } else { text };
 			if let Some((_, offset)) = offsets.iter().find(|(candidate, _)| *candidate == page) {
 				pages.push((*offset, text));
 			}

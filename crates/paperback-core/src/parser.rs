@@ -14,6 +14,7 @@ use crate::{
 	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
 
+pub mod cbr;
 pub mod cbz;
 pub mod chm;
 pub mod convert;
@@ -23,6 +24,7 @@ pub mod fb2;
 pub mod hlp;
 pub mod html;
 pub mod m4b;
+pub mod man;
 pub mod markdown;
 pub mod mobi;
 pub mod odp;
@@ -133,6 +135,7 @@ impl ParserRegistry {
 		static REGISTRY: OnceLock<ParserRegistry> = OnceLock::new();
 		REGISTRY.get_or_init(|| {
 			parser_registry! {
+				CBR => cbr::CbrParser,
 				CBZ => cbz::CbzParser,
 				CHM => chm::ChmParser,
 				HLP => hlp::HlpParser,
@@ -142,6 +145,7 @@ impl ParserRegistry {
 				FB2 => fb2::Fb2Parser,
 				HTML => html::HtmlParser,
 				PDF => pdf::PdfParser,
+				MAN => man::ManParser,
 				MARKDOWN => markdown::MarkdownParser,
 				M4B => m4b::M4bParser,
 				MOBI => mobi::MobiParser,
@@ -157,13 +161,23 @@ impl ParserRegistry {
 	}
 }
 
-/// The extension that selects a file's parser: ordinarily just `path`'s own extension, except a
-/// loose DAISY 2.02 book's master file is named `ncc.html`, which would otherwise route to the
-/// HTML parser since DAISY only claims `opf`/`zip` (an `.html` extension can't be reserved for
-/// DAISY without also capturing every ordinary HTML file).
+/// The extension that selects a file's parser: ordinarily just `path`'s own extension, with
+/// two exceptions.
+///
+/// A loose DAISY 2.02 book's master file is named `ncc.html`, which would otherwise route to
+/// the HTML parser since DAISY only claims `opf`/`zip` (an `.html` extension can't be reserved
+/// for DAISY without also capturing every ordinary HTML file).
+///
+/// A manual page is named for its section rather than its format, and an installed one is
+/// gzipped on top of that: `ls.1`, `Tcl_Init.3tcl`, `printf.3.gz`. The section names the
+/// format as surely as an extension would, so those route to the manual page parser, which
+/// unpacks the gzipped ones itself.
 fn resolve_extension(path: &Path) -> Option<&str> {
 	if path.file_name().is_some_and(|n| n.eq_ignore_ascii_case("ncc.html")) {
 		return Some("opf");
+	}
+	if man::is_manual_page_name(path) {
+		return Some("man");
 	}
 	path.extension().and_then(|e| e.to_str())
 }
@@ -224,6 +238,15 @@ pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 		.get_parsers_for_extension(extension)
 		.iter()
 		.fold(ParserFlags::NONE, |acc, p| acc | p.supported_flags())
+}
+
+/// Whether any parser can read the file at `path`, judged the same way [`parse_document`]
+/// picks one. Prefer this to [`parser_supports_extension`] wherever a path is at hand: a
+/// manual page is named for its section rather than for its format, which only the whole name
+/// can tell.
+#[must_use]
+pub fn parser_supports_path(path: &Path) -> bool {
+	resolve_extension(path).is_some_and(parser_supports_extension)
 }
 
 #[must_use]
