@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 13:04-0600\n"
+"POT-Creation-Date: 2026-09-13 13:31-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2462,6 +2462,10 @@ msgstr ""
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
 msgid "[Image only. This page has no text to read.]"
+msgstr ""
+
+#. TRANSLATORS: Error shown on Android when opening a comic book archive packed with RAR (.cbr), which that build cannot read
+msgid "Paperback cannot read RAR comic archives on this device. Repack it as a .cbz to read it here."
 msgstr ""
 
 #. TRANSLATORS: Error shown when a comic book archive (.cbr) cannot be opened; {} is the underlying error

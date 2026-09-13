@@ -5,6 +5,12 @@
 //! [`super::cbz`], so the two formats read the same book the same way. What is different is
 //! getting at the entries: a RAR is read from the front, one member at a time, rather than
 //! opened at any member the way a zip is.
+//!
+//! Not on Android, where the reader says so rather than opening the book. The RAR decoder is
+//! RARLAB's C++, and `unrar_sys` picks the sources it compiles from the operating system doing
+//! the compiling rather than the one being compiled for, so the Unix set is what an Android
+//! build gets and it calls `lutimes`, which bionic does not have. Fixing that is a change to
+//! `unrar_sys`, not to anything here.
 
 use anyhow::{Context, Result};
 
@@ -32,6 +38,13 @@ impl Parser for CbrParser {
 	}
 }
 
+/// What a reader on Android is told when they open one.
+#[cfg(target_os = "android")]
+fn unsupported() -> anyhow::Error {
+	// TRANSLATORS: Error shown on Android when opening a comic book archive packed with RAR (.cbr), which that build cannot read
+	anyhow::anyhow!(t("Paperback cannot read RAR comic archives on this device. Repack it as a .cbz to read it here."))
+}
+
 /// The archive's page images, in reading order.
 ///
 /// Shared with [`crate::ocr`], which reopens the archive to render a page and has to number
@@ -40,6 +53,12 @@ impl Parser for CbrParser {
 /// # Errors
 ///
 /// Returns an error if the archive cannot be opened or its entries cannot be listed.
+#[cfg(target_os = "android")]
+pub fn page_names(_file_path: &str) -> Result<Vec<String>> {
+	Err(unsupported())
+}
+
+#[cfg(not(target_os = "android"))]
 pub fn page_names(file_path: &str) -> Result<Vec<String>> {
 	let list = unrar::Archive::new(file_path).open_for_listing().map_err(|e| {
 		tracing::warn!(path = %file_path, error = %e, "failed to open comic archive");
@@ -70,6 +89,12 @@ pub fn page_names(file_path: &str) -> Result<Vec<String>> {
 ///
 /// Returns an error if the archive cannot be opened or read, or if it holds no member of that
 /// name.
+#[cfg(target_os = "android")]
+pub fn page_bytes(_file_path: &str, _name: &str) -> Result<Vec<u8>> {
+	Err(unsupported())
+}
+
+#[cfg(not(target_os = "android"))]
 pub fn page_bytes(file_path: &str, name: &str) -> Result<Vec<u8>> {
 	let mut archive = Some(
 		unrar::Archive::new(file_path)
@@ -89,7 +114,7 @@ pub fn page_bytes(file_path: &str, name: &str) -> Result<Vec<u8>> {
 	anyhow::bail!("comic archive '{file_path}' has no entry named '{name}'")
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(target_os = "android")))]
 mod tests {
 	use std::{fs, io::Write};
 
