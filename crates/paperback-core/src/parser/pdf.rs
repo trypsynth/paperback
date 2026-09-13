@@ -21,6 +21,7 @@ mod toc;
 use images::{append_images, images_before_each_paragraph, page_image_tops};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_value};
+pub use paragraphs::join_wrapped_lines;
 use paragraphs::{join_paragraphs, split_lines};
 use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;

@@ -110,6 +110,41 @@ pub(super) fn split_lines(raw_lines: &[Line], body_font_size: f64) -> Vec<(Strin
 		.collect()
 }
 
+/// The point size the lines of recognized text are treated as being set in. Nothing in OCR
+/// output says what size anything is, and only the ratios between the sizes matter to the
+/// joining, so one size for every line leaves the size-based rules with nothing to say and the
+/// length and punctuation rules to decide where the paragraphs are.
+const RECOGNIZED_TEXT_SIZE: f64 = 12.0;
+
+/// Joins the wrapped lines of recognized text back into paragraphs.
+///
+/// An OCR engine reads a page line by line and says nothing about which lines belong to the
+/// same paragraph, so the text arrives with a break at the end of every printed line. This puts
+/// it through the same rules as the text of an ordinary page, minus the ones that need to know
+/// where on the page a line sits: the lines are laid out one under another with no gap between
+/// any two, so what decides a paragraph is where a line falls short of the measure and what it
+/// ends with.
+#[must_use]
+pub fn join_wrapped_lines(text: &str) -> String {
+	let mut lines: Vec<Line> = Vec::new();
+	let mut top = 0.0;
+	for line in text.lines() {
+		lines.push(Line {
+			text: line.to_string(),
+			size: RECOGNIZED_TEXT_SIZE,
+			top,
+			bottom: top - RECOGNIZED_TEXT_SIZE,
+			monospaced: false,
+		});
+		top -= RECOGNIZED_TEXT_SIZE;
+	}
+	join_paragraphs(&lines, RECOGNIZED_TEXT_SIZE)
+		.into_iter()
+		.map(|(paragraph, ..)| paragraph)
+		.collect::<Vec<String>>()
+		.join("\n")
+}
+
 /// The third field of each paragraph is the index, into `raw_lines`, of the line it starts
 /// with. An untagged page needs it to place its images: the paragraphs no longer say where on
 /// the page they were set, and that line does.
@@ -254,7 +289,7 @@ pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(S
 
 #[cfg(test)]
 mod tests {
-	use super::{Line, full_line_len, join_paragraphs, split_lines};
+	use super::{Line, full_line_len, join_paragraphs, join_wrapped_lines, split_lines};
 
 	/// The lines of page 67 of the PDF attached to #813, with the sizes and the doubled lines
 	/// pdfium reports for it: a chapter number, a four-line chapter title, an epigraph over two
@@ -290,6 +325,53 @@ mod tests {
 
 	/// The page's measure comes from a line that fills it, not from one of the doubled lines
 	/// pdfium produced, which are nearly twice as long.
+	/// OCR reads a page one printed line at a time, so the text of a paragraph arrives broken at
+	/// every line end. Issue 822.
+	#[test]
+	fn join_wrapped_lines_joins_the_lines_of_a_recognized_paragraph() {
+		let recognized = concat!(
+			"The first thing to understand about the way a page is set is that a line ends
+",
+			"where the measure runs out and not where the sentence does, which is why a
+",
+			"paragraph read line by line is so hard to follow.
+",
+			"A second paragraph, set the same way, begins on a line of its own and runs on
+",
+			"until it too has said what it has to say."
+		);
+		assert_eq!(
+			join_wrapped_lines(recognized),
+			concat!(
+				"The first thing to understand about the way a page is set is that a line ends where the ",
+				"measure runs out and not where the sentence does, which is why a paragraph read line by ",
+				"line is so hard to follow.
+",
+				"A second paragraph, set the same way, begins on a line of its own and runs on until it ",
+				"too has said what it has to say."
+			)
+		);
+	}
+
+	/// A blank line between two blocks is the one thing OCR does say about the structure of a
+	/// page, and it keeps them apart whatever the line before it ended with.
+	#[test]
+	fn join_wrapped_lines_keeps_blocks_apart_at_a_blank_line() {
+		let recognized = "A line that stops short
+
+Another line that stops short";
+		assert_eq!(
+			join_wrapped_lines(recognized),
+			"A line that stops short
+Another line that stops short"
+		);
+	}
+
+	#[test]
+	fn join_wrapped_lines_leaves_empty_text_empty() {
+		assert_eq!(join_wrapped_lines(""), "");
+	}
+
 	#[test]
 	fn full_line_len_ignores_doubled_lines() {
 		let lines: Vec<(Line, bool)> = issue_813_page().into_iter().map(|line| (line, false)).collect();
