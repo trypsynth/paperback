@@ -12,6 +12,7 @@ use crate::{
 mod images;
 mod links;
 mod metadata;
+mod paragraphs;
 mod running;
 mod structure;
 mod text;
@@ -20,9 +21,10 @@ mod toc;
 use images::{append_images, images_before_each_paragraph, page_image_tops};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_value};
+use paragraphs::{join_paragraphs, split_lines};
 use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
-use text::{Line, extract_text_lines, join_paragraphs, median_line_font_size, split_lines};
+use text::{Line, extract_text_lines, median_line_font_size};
 use toc::{add_heading_markers, build_toc_tree, extract_toc};
 
 /// Everything one page contributes, as read from pdfium and before any of it is placed in the
