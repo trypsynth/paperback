@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 05:01+0000\n"
-"PO-Revision-Date: 2026-09-11 03:40+0300\n"
+"POT-Creation-Date: 2026-09-12 18:19-0600\n"
+"PO-Revision-Date: 2026-09-13 06:18+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -627,7 +627,6 @@ msgid "Locate Book"
 msgstr "Etsi kirja"
 
 #. TRANSLATORS: Title of the Batch OCR dialog
-#| msgid "Match Case"
 msgid "Batch OCR"
 msgstr "Usean sivun tekstintunnistus"
 
@@ -636,7 +635,6 @@ msgid "&Start page:"
 msgstr "E&nsimmäinen sivu:"
 
 #. TRANSLATORS: Label for the ending page field of the Batch OCR range
-#| msgid "&Language:"
 msgid "&End page:"
 msgstr "V&iimeinen sivu:"
 
@@ -916,6 +914,10 @@ msgstr "Rivit&ys"
 msgid "Render tables &inline"
 msgstr "Näytä taulukot tekst&in osana"
 
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+msgid "&Join wrapped lines into paragraphs in PDFs"
+msgstr "&Yhdistä PDF-tiedostojen rivitetyt tekstit kappaleiksi"
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr "Näytä tiivis &Siirry-valikko"
@@ -1076,7 +1078,6 @@ msgid "Readability"
 msgstr "Luettavuus"
 
 #. TRANSLATORS: Title of the system dialog for picking a background colour
-#| msgid "Choose &Background Color..."
 msgid "Choose a colour"
 msgstr "Valitse väri"
 
@@ -1117,7 +1118,6 @@ msgid "Strikethrough"
 msgstr "Yliviivattu"
 
 #. TRANSLATORS: Title of the system dialog for picking a font
-#| msgid "Choose &Font..."
 msgid "Choose a font"
 msgstr "Valitse fontti"
 
@@ -1306,6 +1306,10 @@ msgstr "Tiedosto: {}"
 msgid "Details: {}"
 msgstr "Tiedot: {}"
 
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr "Tulokset"
+
 #. TRANSLATORS: Title of the Find dialog
 msgid "Find"
 msgstr "Etsi"
@@ -1343,10 +1347,6 @@ msgstr "Etsi se&uraava"
 #. TRANSLATORS: Button that finds and lists every occurrence of the search text
 msgid "Find &All"
 msgstr "Etsi &kaikki"
-
-#. TRANSLATORS: Accessible name of the list of Find All results
-msgid "Results"
-msgstr "Tulokset"
 
 #. TRANSLATORS: Button that jumps to the selected find result
 #. TRANSLATORS: Top-level "Go" menu label in the menu bar
@@ -2483,10 +2483,20 @@ msgstr "[Sivulla on pelkkä kuva. Aloita tekstintunnistus painamalla Enter.]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Sivulla on pelkkä kuva. Luettavaa tekstiä ei ole.]"
 
+#. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
+#| msgid "Failed to parse RTF document: {}"
+msgid "Failed to parse comic archive: {}"
+msgstr "Sarjakuvapaketin jäsennys epäonnistui: {}"
+
+#. TRANSLATORS: Error shown when a comic book archive holds no page images at all
+msgid "This comic archive contains no pages."
+msgstr "Sarjakuvapaketissa ei ole sivuja."
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "Kuvio"
 
+#. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
 msgid "Image"
 msgstr "Kuva"
 
@@ -2537,6 +2547,15 @@ msgstr "EPUB-kirjassa ei ole luettavaa sisältöä ({})"
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 msgid "Failed to convert FB2 XML to text"
 msgstr "FB2 XML -tiedoston tekstimuunnos epäonnistui"
+
+#. TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
+#| msgid "Failed to parse RTF document: {}"
+msgid "Failed to parse WinHelp file: {}"
+msgstr "WinHelp-ohjetiedoston jäsennys epäonnistui: {}"
+
+#. TRANSLATORS: Name given to a WinHelp topic that carries no title of its own; {} is the topic's number
+msgid "Topic {}"
+msgstr "Aihe {}"
 
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
@@ -2905,7 +2924,6 @@ msgid "Reset all shortcuts to their default values?"
 msgstr "Palautetaanko kaikki oletuspikanäppäimet?"
 
 #. TRANSLATORS: Confirmation prompt shown when resetting the current tab's keyboard shortcuts to their defaults.
-#| msgid "Reset all shortcuts to their default values?"
 msgid "Reset all shortcuts in this tab to their default values?"
 msgstr "Palautetaanko kaikki tämän välilehden oletuspikanäppäimet?"
 
@@ -2963,7 +2981,7 @@ msgstr "Vaihda tekstistä puheeksi -tilaan"
 msgid "Switch to Text Mode"
 msgstr "Vaihda tekstitilaan"
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
+#. TRANSLATORS: Menu item to open the list of recently opened documents
 #: swift
 msgid "Recent Documents"
 msgstr "Viimeisimmät asiakirjat"
@@ -3028,7 +3046,7 @@ msgstr "Avaa kirja"
 msgid "Locate"
 msgstr "Etsi"
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
+#. TRANSLATORS: Button to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr "Poista"
@@ -3597,7 +3615,7 @@ msgstr "Asiakirjassa on {} sanaa."
 msgid "words"
 msgstr "sanaa"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr "Sulje haku"
