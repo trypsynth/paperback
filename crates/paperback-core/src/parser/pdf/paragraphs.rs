@@ -110,6 +110,28 @@ pub(super) fn split_lines(raw_lines: &[Line], body_font_size: f64) -> Vec<(Strin
 		.collect()
 }
 
+/// Whether a line opens with the label of a list item or of a numbered section, such as "3.",
+/// "3.1", "b)" or the "l." an OCR engine reads a 1 as.
+///
+/// A lettered label is one letter and then its punctuation and a space, which is what keeps
+/// "e.g. the rest of a sentence" out of it.
+fn opens_with_a_label(line: &str) -> bool {
+	let mut chars = line.chars();
+	let Some(first) = chars.next() else { return false };
+	if first.is_ascii_digit() {
+		for c in chars {
+			if c.is_ascii_digit() || c == '.' || c == ')' {
+				continue;
+			}
+			return c.is_whitespace();
+		}
+		return false;
+	}
+	first.is_ascii_alphabetic()
+		&& matches!(chars.next(), Some('.' | ')'))
+		&& chars.next().is_some_and(char::is_whitespace)
+}
+
 /// The point size the lines of recognized text are treated as being set in. Nothing in OCR
 /// output says what size anything is, and only the ratios between the sizes matter to the
 /// joining, so one size for every line leaves the size-based rules with nothing to say and the
@@ -203,23 +225,6 @@ pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(S
 			current_heading_size = *size;
 			current_start_line = line_index;
 		} else {
-			let mut is_numbered = false;
-			let mut chars = line.chars();
-			if let Some(first) = chars.next()
-				&& first.is_ascii_digit()
-			{
-				let mut found_space = false;
-				for c in chars {
-					if c.is_ascii_digit() || c == '.' || c == ')' {
-						continue;
-					} else if c.is_whitespace() {
-						found_space = true;
-						break;
-					}
-					break;
-				}
-				is_numbered = found_space;
-			}
 			// A heading set over several lines - a chapter title, most often - carries on rather
 			// than becoming one heading per line, as long as the size does not change. A line
 			// that opens with its own number is a heading of its own even so, which is what
@@ -244,7 +249,7 @@ pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(S
 			// same left edge and the same leading as the prose around it.
 			let set_apart_by_its_face = *monospaced || previous_was_monospaced;
 			let break_paragraph = is_list_item
-				|| is_numbered
+				|| opens_with_a_label(line)
 				|| opened_by_a_gap
 				|| set_apart_by_its_face
 				|| (!continues_heading && (*is_heading_line || current_is_heading || previous_line_ended_paragraph));
@@ -289,7 +294,7 @@ pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(S
 
 #[cfg(test)]
 mod tests {
-	use super::{Line, full_line_len, join_paragraphs, join_wrapped_lines, split_lines};
+	use super::{Line, full_line_len, join_paragraphs, join_wrapped_lines, opens_with_a_label, split_lines};
 
 	/// The lines of page 67 of the PDF attached to #813, with the sizes and the doubled lines
 	/// pdfium reports for it: a chapter number, a four-line chapter title, an epigraph over two
@@ -370,6 +375,44 @@ Another line that stops short"
 	#[test]
 	fn join_wrapped_lines_leaves_empty_text_empty() {
 		assert_eq!(join_wrapped_lines(""), "");
+	}
+
+	/// A lettered list runs its items together without this: OCR gives no bullet glyph and the
+	/// items are short lines that end in nothing, which is what a wrapped paragraph looks like.
+	#[test]
+	fn join_wrapped_lines_keeps_a_lettered_list_apart() {
+		let recognized = concat!(
+			"1. The most important difference between computers and other
+",
+			"machines is that computers
+",
+			"a. are faster
+",
+			"b. have a memory
+",
+			"c. can print words"
+		);
+		assert_eq!(
+			join_wrapped_lines(recognized),
+			concat!(
+				"1. The most important difference between computers and other machines is that computers
+",
+				"a. are faster
+b. have a memory
+c. can print words"
+			)
+		);
+	}
+
+	#[test]
+	fn opens_with_a_label_knows_a_label_from_a_sentence() {
+		assert!(opens_with_a_label("3. The third one"));
+		assert!(opens_with_a_label("3.1 A section"));
+		assert!(opens_with_a_label("b) The second one"));
+		assert!(opens_with_a_label("l. What OCR made of a 1"));
+		assert!(!opens_with_a_label("e.g. a sentence carrying on"));
+		assert!(!opens_with_a_label("A man walked in"));
+		assert!(!opens_with_a_label("and the rest of the sentence"));
 	}
 
 	#[test]
