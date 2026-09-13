@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4ceb6ab5773c737f; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d9a31cb8,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 76c8ca574c020eca; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,7325029e,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
 
 # Paperback - versão 0.9.2
 
@@ -36,6 +36,7 @@ A solução alternativa, eventualmente descoberta através do grupo de discussã
 
 O Paperback suporta os seguintes formatos e extensões:
 
+* Arquivos de histórias em quadrinhos (`.cbz`)
 * Arquivos de ajuda CHM (`.chm`)
 * Livros DAISY (`.opf`, `.zip`)
 * Livros EPUB (`.epub`)
@@ -51,7 +52,7 @@ O Paperback suporta os seguintes formatos e extensões:
 * Apresentações PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Documentos RTF (`.rtf`)
 * Arquivos WinHelp (`.hlp`)
-* Arquivos de texto simples e de log (`.txt`, `.log`)
+* Arquivos de texto simples e logs (`.txt`, `.log`)
 
 ## Atalhos de teclado
 

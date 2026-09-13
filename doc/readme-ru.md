@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4ceb6ab5773c737f; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d9a31cb8,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 76c8ca574c020eca; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,7325029e,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
 
 # Paperback - версия 0.9.2
 
@@ -32,17 +32,18 @@ Paperback хорошо работает со всеми основными пр�
 
 Обходной путь, в конце концов выявленный через группу обсуждения JAWS после месяцев ожидания, заключается в редактировании `paperback.jcf` и установке параметра «Braille Presentation and Panning» на «Always use DOM if available». Вы также захотите включить «Pan Text by Paragraph», иначе ваш дисплей будет оставаться на активном абзаце вместо продвижения вперед. При обоих включенных параметрах перелистывание должно работать правильно.
 
-## Поддерживаемые типы файлов
+## Поддерживаемые форматы файлов
 
 Paperback поддерживает следующие форматы и расширения:
 
+* Архивы комиксов (`.cbz`)
 * CHM справочные файлы (`.chm`)
 * DAISY книги (`.opf`, `.zip`)
 * EPUB книги (`.epub`)
 * FB2 электронные книги (`.fb2`)
 * HTML документы (`.htm`, `.html`, `.xhtml`)
 * Markdown документы (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Microsoft Word документы (`.docx`, `.docm`, `.doc`)
+* Документы Microsoft Word (`.docx`, `.docm`, `.doc`)
 * M4B аудиокниги (`.m4b`)
 * MOBI/Kindle книги (`.mobi`, `.azw`, `.azw3`)
 * OpenDocument презентации (`.odp`, `.fodp`)
@@ -51,7 +52,7 @@ Paperback поддерживает следующие форматы и расш
 * PowerPoint презентации (`.pptx`, `.pptm`, `.ppt`)
 * RTF документы (`.rtf`)
 * WinHelp файлы (`.hlp`)
-* Текстовые файлы и файлы логов (`.txt`, `.log`)
+* Простые текстовые файлы и логи (`.txt`, `.log`)
 
 ## Сочетания клавиш
 

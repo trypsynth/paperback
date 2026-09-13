@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4ceb6ab5773c737f; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d9a31cb8,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 76c8ca574c020eca; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,7325029e,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
 
 # Paperback - versión 0.9.2
 
@@ -32,10 +32,11 @@ Si utilizas JAWS con una pantalla Braille, es posible que encuentres que los pá
 
 La solución alternativa, finalmente surgida a través del grupo de discusión de JAWS después de meses de espera, es editar `paperback.jcf` y establecer "Braille Presentation and Panning" en "Always use DOM if available". También querrás habilitar "Pan Text by Paragraph", de lo contrario tu pantalla permanecerá en el párrafo activo en lugar de avanzar. Con ambas configuraciones en su lugar, el desplazamiento debería funcionar correctamente.
 
-## Formatos de archivo actualmente compatibles
+## Tipos de archivo actualmente compatibles
 
 Paperback admite los siguientes formatos y extensiones:
 
+* Archivos de cómics (`.cbz`)
 * Archivos de ayuda CHM (`.chm`)
 * Libros DAISY (`.opf`, `.zip`)
 * Libros EPUB (`.epub`)

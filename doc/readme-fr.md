@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4ceb6ab5773c737f; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d9a31cb8,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 76c8ca574c020eca; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,7325029e,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
 
 # Paperback - version 0.9.2
 
@@ -36,10 +36,11 @@ La solution de contournement, finalement révélée par le groupe de discussion 
 
 Paperback prend en charge les formats et extensions suivants :
 
+* Archives de bandes dessinées (`.cbz`)
 * Fichiers d'aide CHM (`.chm`)
 * Livres DAISY (`.opf`, `.zip`)
 * Livres EPUB (`.epub`)
-* Ebooks FB2 (`.fb2`)
+* Livres électroniques FB2 (`.fb2`)
 * Documents HTML (`.htm`, `.html`, `.xhtml`)
 * Documents Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Documents Microsoft Word (`.docx`, `.docm`, `.doc`)
@@ -51,7 +52,7 @@ Paperback prend en charge les formats et extensions suivants :
 * Présentations PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Documents RTF (`.rtf`)
 * Fichiers WinHelp (`.hlp`)
-* Fichiers texte brut et fichiers journaux (`.txt`, `.log`)
+* Fichiers texte brut et journaux (`.txt`, `.log`)
 
 ## Raccourcis clavier
 

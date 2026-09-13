@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-12 10:21-0600\n"
+"POT-Creation-Date: 2026-09-12 18:19-0600\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -1012,6 +1012,11 @@ msgstr "&Quebra de palavras"
 #, fuzzy
 msgid "Render tables &inline"
 msgstr "Renderizar tabelas &em linha"
+
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#, fuzzy
+msgid "&Join wrapped lines into paragraphs in PDFs"
+msgstr "&Juntar linhas quebradas em parágrafos em PDFs"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -2810,6 +2815,16 @@ msgstr "[Somente imagem. Pressione Enter para OCR.]"
 #, fuzzy
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Somente imagem. Esta página não tem texto para ler.]"
+
+#. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
+#, fuzzy
+msgid "Failed to parse comic archive: {}"
+msgstr "Falha ao analisar o documento RTF: {}"
+
+#. TRANSLATORS: Error shown when a comic book archive holds no page images at all
+#, fuzzy
+msgid "This comic archive contains no pages."
+msgstr "Este arquivo em quadrinhos não contém páginas."
 
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
