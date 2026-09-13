@@ -1,14 +1,15 @@
 use std::{env, fmt::Write as _, fs, io, process};
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, Result};
 use clap::Parser;
 use paperback_core::{
 	document::{Document, ParserContext},
 	export::{self, ExportFormat},
-	parser::{self, PASSWORD_REQUIRED_ERROR_PREFIX, parse_document},
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, parse_document},
 };
 
 mod cli;
+mod input;
 
 use cli::{Cli, Format};
 
@@ -16,9 +17,7 @@ fn main() -> Result<()> {
 	let cli = Cli::parse();
 	init_logging(cli.verbose);
 	let ext = cli.input.extension().and_then(|e| e.to_str()).unwrap_or("");
-	if !parser::parser_supports_path(&cli.input) {
-		bail!("unsupported file format: .{ext}");
-	}
+	input::check(&cli.input)?;
 	let file_path = cli.input.to_string_lossy().into_owned();
 	if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" {
 		let html = export::epub_direct::render(&file_path)
@@ -41,7 +40,7 @@ fn main() -> Result<()> {
 		Ok(doc) => doc,
 		Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
 			if cli.no_prompt {
-				eprintln!("pb: document requires a password; skipping (use -p to supply one)");
+				eprintln!("pb: {} needs a password; skipping (use -p to supply one)", cli.input.display());
 				process::exit(2);
 			}
 			let password = rpassword::prompt_password("Password: ").context("failed to read password")?;
