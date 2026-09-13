@@ -64,15 +64,53 @@ fn set_history_empty_resets_index_to_zero() {
 }
 
 #[test]
-fn check_and_record_history_records_only_after_threshold() {
+fn record_jump_keeps_only_jumps_worth_returning_from() {
 	let mut session = sample_session(ParserFlags::NONE);
-	session.check_and_record_history(100);
-	session.check_and_record_history(200);
-	session.check_and_record_history(450);
-	session.check_and_record_history(900);
+	// Far enough to be somewhere else, so where it came from is worth keeping.
+	session.record_jump(100, 450);
+	// Still inside the paragraph it started in, so it is not.
+	session.record_jump(450, 500);
+	session.record_jump(500, 900);
 	let (history, index) = session.get_history();
-	assert_eq!(history, &[100, 450]);
+	assert_eq!(history, &[100, 500]);
 	assert_eq!(index, 1);
+}
+
+// #835: following a link and pressing Alt+Left has to land on the line the link was on. It
+// used to land wherever the reader had last jumped from, which in a table of contents is the
+// top of the contents rather than the entry they chose.
+#[test]
+fn going_back_returns_to_the_line_the_jump_started_from() {
+	let mut session = sample_session(ParserFlags::NONE);
+	let contents_top = 1_000;
+	let entry = 1_600;
+	let introduction = 40_000;
+	// Reaching the contents, then reading down it to the entry.
+	session.record_jump(0, contents_top);
+	// Following the link from the entry.
+	session.record_jump(entry, introduction);
+	let back = session.history_go_back(introduction);
+	assert!(back.found);
+	assert_eq!(back.offset, entry, "back goes to the entry, not to {contents_top}");
+}
+
+// The other half of #835: jumping to the start of the document and back returns to the
+// paragraph that was being read, not to the start of its chapter.
+#[test]
+fn going_back_from_the_start_of_the_document_returns_to_the_paragraph_being_read() {
+	let mut session = sample_session(ParserFlags::NONE);
+	let chapter = 20_000;
+	let paragraph = 24_500;
+	session.record_jump(500, chapter);
+	// Ctrl+Home from the paragraph the reader had walked down to.
+	session.record_jump(paragraph, 0);
+	let back = session.history_go_back(0);
+	assert!(back.found);
+	assert_eq!(back.offset, paragraph);
+	// And forward again returns to where going back was pressed.
+	let forward = session.history_go_forward(paragraph);
+	assert!(forward.found);
+	assert_eq!(forward.offset, 0);
 }
 
 #[test]
@@ -194,7 +232,6 @@ fn navigate_section_in_an_audio_only_book_announces_the_file_name() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::SUPPORTS_SECTIONS,
-		last_stable_position: None,
 	};
 	let first = session.navigate_section(-1, false, true);
 	assert!(first.found);

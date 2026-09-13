@@ -115,13 +115,15 @@ fun ElementsScreen(
 						Row(
 							modifier = Modifier
 								.fillMaxWidth()
-								.clickable(onClickLabel = "go to heading") {
+								// TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
+								.clickable(onClickLabel = t("go to heading")) {
 									viewModel.requestJumpToOffset(item.offset)
 									onDismiss()
 								}.semantics(mergeDescendants = true) {
 									// The row's indentation shows the level on screen, so the
 									// number itself is spoken rather than drawn.
-									contentDescription = "$headingLabel, Level ${level + 1}"
+									// TRANSLATORS: TalkBack description of a heading in the elements list: its text, then how deep it sits
+									contentDescription = t("{}, Level {}", headingLabel, (level + 1).toString())
 									applyTreeExpandSemantics(hasChildren, isExpanded, toggleExpanded)
 								}.padding(start = paddingLeft, top = 8.dp, bottom = 8.dp, end = 16.dp),
 							verticalAlignment = Alignment.CenterVertically
@@ -147,7 +149,8 @@ fun ElementsScreen(
 							Row(
 								modifier = Modifier
 									.fillMaxWidth()
-									.clickable(onClickLabel = "go to link") {
+									// TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
+									.clickable(onClickLabel = t("go to link")) {
 										viewModel.requestJumpToOffset(item.offset)
 										onDismiss()
 									}.padding(16.dp)

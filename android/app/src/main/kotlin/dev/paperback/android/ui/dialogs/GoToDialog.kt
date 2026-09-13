@@ -161,7 +161,8 @@ fun GoToDialog(
 					Column(
 						modifier = Modifier.clearAndSetSemantics {
 							contentDescription = goToModeName(GO_TO_PERCENTAGE)
-							stateDescription = "$sliderPercent percent"
+							// TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
+							stateDescription = t("{} percent", sliderPercent.toString())
 							progressBarRangeInfo = ProgressBarRangeInfo(
 								current = sliderPercent.toFloat(),
 								range = 0f..100f,

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 05:01+0000\n"
+"POT-Creation-Date: 2026-09-12 18:19-0600\n"
 "PO-Revision-Date: 2026-06-08 13:45+0200\n"
 "Last-Translator: Michał Dziwisz <michal@dziwisz.net>\n"
 "Language-Team: Polish\n"
@@ -902,6 +902,10 @@ msgstr "&Zawijanie wierszy"
 msgid "Render tables &inline"
 msgstr "Wyświetlaj tabele w &treści"
 
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+msgid "&Join wrapped lines into paragraphs in PDFs"
+msgstr "&Scalaj zawinięte wiersze w akapity w plikach PDF"
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr "Pokaż kompaktowe menu &Przejdź"
@@ -1292,6 +1296,10 @@ msgstr "Plik: {}"
 msgid "Details: {}"
 msgstr "Szczegóły: {}"
 
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr "Wyniki"
+
 #. TRANSLATORS: Title of the Find dialog
 msgid "Find"
 msgstr "Znajdź"
@@ -1329,10 +1337,6 @@ msgstr "Znajdź &następne"
 #. TRANSLATORS: Button that finds and lists every occurrence of the search text
 msgid "Find &All"
 msgstr "Znajdź &wszystkie"
-
-#. TRANSLATORS: Accessible name of the list of Find All results
-msgid "Results"
-msgstr "Wyniki"
 
 #. TRANSLATORS: Button that jumps to the selected find result
 #. TRANSLATORS: Top-level "Go" menu label in the menu bar
@@ -2466,10 +2470,19 @@ msgstr "[Tylko obraz. Naciśnij Enter, aby rozpoznać tekst.]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Tylko obraz. Ta strona nie zawiera tekstu do przeczytania.]"
 
+#. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
+msgid "Failed to parse comic archive: {}"
+msgstr "Nie udało się przetworzyć archiwum komiksu: {}"
+
+#. TRANSLATORS: Error shown when a comic book archive holds no page images at all
+msgid "This comic archive contains no pages."
+msgstr "To archiwum komiksu nie zawiera żadnych stron."
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "Rysunek"
 
+#. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
 msgid "Image"
 msgstr "Obraz"
 
@@ -2516,6 +2529,14 @@ msgstr "Plik EPUB nie zawiera treści, którą można odczytać ({})"
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 msgid "Failed to convert FB2 XML to text"
 msgstr "Nie udało się przekonwertować pliku XML FB2 na tekst"
+
+#. TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
+msgid "Failed to parse WinHelp file: {}"
+msgstr "Nie udało się przetworzyć pliku WinHelp: {}"
+
+#. TRANSLATORS: Name given to a WinHelp topic that carries no title of its own; {} is the topic's number
+msgid "Topic {}"
+msgstr "Temat {}"
 
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
@@ -2929,7 +2950,7 @@ msgstr "Przełącz na tryb mowy"
 msgid "Switch to Text Mode"
 msgstr "Przełącz na tryb tekstowy"
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
+#. TRANSLATORS: Menu item to open the list of recently opened documents
 #: swift
 msgid "Recent Documents"
 msgstr "Ostatnie dokumenty"
@@ -2994,7 +3015,7 @@ msgstr "Otwórz książkę"
 msgid "Locate"
 msgstr "Zlokalizuj"
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
+#. TRANSLATORS: Button to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr "Usuń"
@@ -3551,7 +3572,7 @@ msgstr "Ten dokument zawiera {} słowa."
 msgid "words"
 msgstr "słowa"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr "Zamknij wyszukiwanie"

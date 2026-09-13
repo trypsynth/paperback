@@ -34,6 +34,7 @@ Kiertotienä ongelmaan on paperback.jcf-tiedoston muokkaaminen siten, että aset
 
 Paperback tukee seuraavia tiedostomuotoja:
 
+* Sarjakuvapaketit (`.cbz`)
 * CHM-ohjetiedostot (`.chm`)
 * DAISY-kirjat (`.opf`, `.zip`)
 * EPUB-kirjat (`.epub`)
@@ -48,6 +49,7 @@ Paperback tukee seuraavia tiedostomuotoja:
 * PDF-asiakirjat (`.pdf`)
 * PowerPoint-esitykset (`.pptx`, `.pptm`, `.ppt`)
 * RTF-asiakirjat (`.rtf`)
+* WinHelp-ohjetiedostot (`.hlp`)
 * Teksti- ja lokitiedostot (`.txt`, `.log`)
 
 ## Pikanäppäimet

@@ -14,7 +14,10 @@ use anyhow::{Context, Result};
 use pdfium::{PdfiumDocument, PdfiumRenderConfig};
 use zip::ZipArchive;
 
-use crate::{parser::cbz, t};
+use crate::{
+	parser::{cbr, cbz},
+	t,
+};
 
 /// The placeholder line the PDF parser inserts for a page that has an image but no extractable
 /// text. Purely what the reader sees: the OCR flow locates these pages by their
@@ -71,7 +74,16 @@ pub struct PageRenderer {
 /// page is already a picture and only needs decoding.
 enum Source {
 	Pdf(PdfiumDocument),
-	Comic { archive: ZipArchive<BufReader<File>>, pages: Vec<String> },
+	Comic {
+		archive: ZipArchive<BufReader<File>>,
+		pages: Vec<String>,
+	},
+	/// A RAR is read from the front rather than opened at any member, so the archive is not
+	/// held open between pages: the path is, and each page reopens it.
+	ComicRar {
+		file_path: String,
+		pages: Vec<String>,
+	},
 }
 
 impl PageRenderer {
@@ -82,8 +94,12 @@ impl PageRenderer {
 	/// Returns an error if the file cannot be opened, including a wrong or missing PDF
 	/// password, or if a comic archive holds no pages.
 	pub fn open(file_path: &str, password: Option<&str>) -> Result<Self> {
-		if Path::new(file_path).extension().is_some_and(|e| e.eq_ignore_ascii_case("cbz")) {
+		let extension = Path::new(file_path).extension();
+		if extension.is_some_and(|e| e.eq_ignore_ascii_case("cbz")) {
 			return Self::open_comic(file_path);
+		}
+		if extension.is_some_and(|e| e.eq_ignore_ascii_case("cbr")) {
+			return Self::open_comic_rar(file_path);
 		}
 		Ok(Self { source: Source::Pdf(PdfiumDocument::new_from_path(file_path, password)?) })
 	}
@@ -98,6 +114,19 @@ impl PageRenderer {
 			anyhow::bail!("comic archive '{file_path}' has no pages to render");
 		}
 		Ok(Self { source: Source::Comic { archive, pages } })
+	}
+
+	/// The RAR twin of [`Self::open_comic`], for the comics packed the other way. A .cbr that
+	/// is really a zip reads as one, the same as it does when the parser opens it.
+	fn open_comic_rar(file_path: &str) -> Result<Self> {
+		if cbz::is_zip(file_path) {
+			return Self::open_comic(file_path);
+		}
+		let pages = cbr::page_names(file_path)?;
+		if pages.is_empty() {
+			anyhow::bail!("comic archive '{file_path}' has no pages to render");
+		}
+		Ok(Self { source: Source::ComicRar { file_path: file_path.to_string(), pages } })
 	}
 
 	/// Renders page `page_index` (0-based) to an RGBA8 bitmap, scaled down to keep its longest
@@ -121,6 +150,12 @@ impl PageRenderer {
 					height: u32::try_from(height).unwrap_or(0),
 					rgba,
 				})
+			}
+			Source::ComicRar { file_path, pages } => {
+				let index = usize::try_from(page_index).unwrap_or(usize::MAX);
+				let name = pages.get(index).ok_or_else(|| anyhow::anyhow!("page {page_index} is out of range"))?;
+				let bytes = cbr::page_bytes(file_path, name)?;
+				decode_page(&bytes, max_dimension)
 			}
 			Source::Comic { archive, pages } => {
 				let index = usize::try_from(page_index).unwrap_or(usize::MAX);

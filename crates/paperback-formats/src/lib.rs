@@ -102,6 +102,15 @@ macro_rules! formats {
 }
 
 formats! {
+	/// Named apart from [`CBZ`] because the installer builds a task name out of it, and two
+	/// formats named the same would write the same task twice. Without brackets, because the
+	/// open dialog's filter puts the extensions in brackets after the name.
+	CBR {
+		name: "RAR comic book archives",
+		extensions: ["cbr"],
+		mime_types: ["application/vnd.comicbook-rar"],
+		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES,
+	},
 	CBZ {
 		name: "Comic book archives",
 		extensions: ["cbz"],
@@ -165,6 +174,16 @@ formats! {
 		mime_types: ["application/pdf"],
 		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 		installer: CHECKED,
+	},
+	/// An installed manual page is named for its section and gzipped on top of that, as
+	/// `printf.3.gz`, so `gz` is claimed here to have such a file offered in an open dialog
+	/// at all. The parser reads what is inside before accepting it, so a gzipped anything
+	/// else is turned away rather than read as a page.
+	MAN {
+		name: "Manual pages",
+		extensions: ["man", "roff", "gz", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+		mime_types: ["application/x-troff-man", "text/troff"],
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
 	},
 	MARKDOWN {
 		name: "Markdown Files",

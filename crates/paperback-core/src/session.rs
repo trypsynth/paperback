@@ -206,7 +206,6 @@ pub struct DocumentSession {
 	history: Vec<i64>,
 	history_index: usize,
 	parser_flags: ParserFlags,
-	last_stable_position: Option<i64>,
 }
 
 #[derive(Debug, Clone)]
@@ -287,7 +286,6 @@ impl DocumentSession {
 			history: Vec::new(),
 			history_index: 0,
 			parser_flags,
-			last_stable_position: None,
 		})
 	}
 
@@ -419,20 +417,16 @@ impl DocumentSession {
 		self.history_index = index.min(self.history.len().saturating_sub(1));
 	}
 
-	pub fn check_and_record_history(&mut self, new_position: i64) {
-		if let Some(last_pos) = self.last_stable_position {
-			let distance = (new_position - last_pos).abs();
-			if distance >= HISTORY_DISTANCE_THRESHOLD {
-				record_history_position(&mut self.history, &mut self.history_index, last_pos, MAX_HISTORY_LEN);
-				self.last_stable_position = Some(new_position);
-			}
-		} else {
-			self.last_stable_position = Some(new_position);
+	/// Records a jump from `from` to `to`, so that going back afterwards returns to `from`.
+	///
+	/// `from` is where the reader actually was when they jumped, which the caller reads off
+	/// the caret before moving it. A short jump records nothing: somewhere inside the
+	/// paragraph already being read is not a place to come back to, and a history filled with
+	/// those cannot reach anywhere worth returning to.
+	pub fn record_jump(&mut self, from: i64, to: i64) {
+		if (to - from).abs() >= HISTORY_DISTANCE_THRESHOLD {
+			record_history_position(&mut self.history, &mut self.history_index, from, MAX_HISTORY_LEN);
 		}
-	}
-
-	pub const fn set_stable_position(&mut self, position: i64) {
-		self.last_stable_position = Some(position);
 	}
 }
 

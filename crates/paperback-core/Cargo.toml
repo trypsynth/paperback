@@ -22,6 +22,7 @@ bitflags = { workspace = true }
 cfb = "0.14.0"
 chardetng = "1.0.0"
 ego-tree = "0.11.0"
+flate2 = "1.1.10"
 key-chord = "0.1.0"
 encoding_rs = "0.8.35"
 icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
@@ -31,7 +32,7 @@ libchm = "0.3.0"
 libhlp = "0.2.0"
 lofty = "0.25.1"
 mp4ameta = "0.13.0"
-office-crypto = "0.3.0"
+office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
 patois = "0.2.1"
 pdfium = "0.10.4"
@@ -49,6 +50,9 @@ thiserror = "2.0.20"
 toml = { workspace = true }
 tracing = "0.1.44"
 unicode-bidi = "0.3.18"
+# Reads the RAR a .cbr is. The bindings are MIT/Apache; the C library they vendor keeps
+# RARLAB's unRAR licence, whose notice LICENSE.md carries.
+unrar = "0.5.8"
 uniffi = { version = "0.32.0", features = ["cli"], optional = true }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 

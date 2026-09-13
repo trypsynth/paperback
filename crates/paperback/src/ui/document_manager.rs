@@ -290,7 +290,6 @@ impl DocumentManager {
 			tab.text_ctrl.set_insertion_point(local);
 			tab.text_ctrl.show_position(local);
 		}
-		self.tabs[tab_index].session.set_stable_position(initial_pos);
 		// Resume the narration from the time that was actually reached, not from the caret.
 		// Deriving it from the caret only lands on the start of whichever clip contains that
 		// position, so it loses however much of that clip had already played, and loses
@@ -528,30 +527,30 @@ impl DocumentManager {
 	}
 
 	pub fn activate_current_link(&mut self) {
-		if let Some(tab) = self.active_tab_mut() {
+		let history_update = {
+			let Some(tab) = self.active_tab_mut() else {
+				return;
+			};
 			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 			let result = tab.session.activate_link(pos);
-			if result.found {
-				match result.action {
-					paperback_core::session::LinkAction::Internal => {
-						if tab.window.needs_reload_for(result.offset, tab.session.document_len()) {
-							reload_window_around(tab, result.offset, "reparse");
-						}
-						let local = tab.window.to_local(result.offset);
-						tab.text_ctrl.set_focus();
-						tab.text_ctrl.set_insertion_point(local);
-						tab.text_ctrl.show_position(local);
-						tab.session.check_and_record_history(result.offset);
-						// TRANSLATORS: Announcement read by screen readers after following an internal link within the document
-						live_region::announce(self.live_region_label, &t("Navigated to internal link."));
-					}
-					paperback_core::session::LinkAction::External => {
-						launch_default_browser(&result.url, BrowserLaunchFlags::Default);
-					}
-					paperback_core::session::LinkAction::NotFound => {}
-				}
+			if !result.found {
+				return;
 			}
-		}
+			match result.action {
+				paperback_core::session::LinkAction::Internal => {
+					let update = move_to_offset_and_record_history(tab, result.offset);
+					tab.track.then_some(update)
+				}
+				paperback_core::session::LinkAction::External => {
+					launch_default_browser(&result.url, BrowserLaunchFlags::Default);
+					return;
+				}
+				paperback_core::session::LinkAction::NotFound => return,
+			}
+		};
+		// TRANSLATORS: Announcement read by screen readers after following an internal link within the document
+		live_region::announce(self.live_region_label, &t("Navigated to internal link."));
+		persist_navigation_history(&self.config, history_update.as_ref());
 	}
 	pub fn activate_current_table(&self) -> Option<String> {
 		self.active_tab().and_then(|tab| {
@@ -1222,7 +1221,6 @@ fn reparse_tab_in_place(
 	};
 	tab.text_ctrl.set_insertion_point(restored_pos);
 	tab.text_ctrl.show_position(restored_pos);
-	tab.session.set_stable_position(restored_pos);
 	tab.disk_fingerprint = new_fingerprint;
 	Ok(())
 }

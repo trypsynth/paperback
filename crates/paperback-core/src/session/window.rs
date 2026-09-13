@@ -99,7 +99,6 @@ mod tests {
 			history: Vec::new(),
 			history_index: 0,
 			parser_flags: ParserFlags::empty(),
-			last_stable_position: None,
 		}
 	}
 

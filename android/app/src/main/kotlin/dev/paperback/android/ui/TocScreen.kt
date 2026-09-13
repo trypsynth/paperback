@@ -94,13 +94,15 @@ fun TocScreen(
 						modifier = Modifier
 							.fillMaxWidth()
 							.then(if (isActive) Modifier.focusRequester(focusRequester) else Modifier)
-							.clickable(onClickLabel = "go to chapter") {
+							// TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
+							.clickable(onClickLabel = t("go to chapter")) {
 								viewModel.updateTtsPosition(item.position)
 								onDismiss()
 							}.semantics(mergeDescendants = true) {
 								// The row's indentation shows the level on screen, so the number
 								// itself is spoken rather than drawn.
-								contentDescription = "${item.title}, Level ${item.level + 1}"
+								// TRANSLATORS: TalkBack description of a table of contents entry: its title, then how deep it sits
+								contentDescription = t("{}, Level {}", item.title, (item.level + 1).toString())
 								if (isActive) {
 									selected = true
 								}

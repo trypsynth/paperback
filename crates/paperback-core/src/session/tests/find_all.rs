@@ -14,7 +14,6 @@ fn session_with_marks(content: &str, markers: Vec<Marker>) -> DocumentSession {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::empty(),
-		last_stable_position: None,
 	}
 }
 

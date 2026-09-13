@@ -30,11 +30,11 @@ fn tracked_history_update(tab: &DocumentTab) -> Option<HistoryUpdate> {
 	Some((tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index))
 }
 
-/// Records `offset` as a new entry in `tab`'s position history and returns the
-/// resulting snapshot unconditionally. Callers that should only persist it when
-/// `tab.track` is set (most callers) should gate with `tab.track.then_some(update)`.
-fn record_history(tab: &mut DocumentTab, offset: i64) -> HistoryUpdate {
-	tab.session.check_and_record_history(offset);
+/// Records a jump from `from` to `to` in `tab`'s position history and returns the resulting
+/// snapshot unconditionally. Callers that should only persist it when `tab.track` is set
+/// (most callers) should gate with `tab.track.then_some(update)`.
+fn record_history(tab: &mut DocumentTab, from: i64, to: i64) -> HistoryUpdate {
+	tab.session.record_jump(from, to);
 	let (history, history_index) = tab.session.get_history();
 	(tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index)
 }
@@ -136,13 +136,18 @@ pub fn select_doc_range(tab: &mut DocumentTab, start: i64, end: i64) {
 	seek_audio_to_position(tab, start);
 }
 
-/// Moves the caret to `offset`, focuses the document, shows the position, and
-/// records the jump in the session's position history. Returns the resulting
-/// history snapshot unconditionally; gate on `tab.track` at the call site if the
-/// update should only be persisted when history tracking is enabled for this tab.
+/// Moves the caret to `offset`, focuses the document, shows the position, and records the
+/// jump in the session's position history. Returns the resulting history snapshot
+/// unconditionally; gate on `tab.track` at the call site if the update should only be
+/// persisted when history tracking is enabled for this tab.
+///
+/// Where the caret was is read before it moves, because that is the position going back has
+/// to return to. #835: recording it from anywhere else lands the reader at the top of
+/// whatever section they had jumped into last, rather than at the line they left.
 pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> HistoryUpdate {
+	let from = doc_caret(tab);
 	jump_to_doc_offset(tab, offset);
-	record_history(tab, offset)
+	record_history(tab, from, offset)
 }
 
 /// Keeps a document's audio in step with the caret, called after every jump that moves the
@@ -415,7 +420,6 @@ pub fn handle_history_navigation(
 			// TRANSLATORS: Announced when moving forward/backward through the caret position history
 			let message = if forward { t("Navigated to next position.") } else { t("Navigated to previous position.") };
 			jump_to_doc_offset(tab, result.offset);
-			tab.session.set_stable_position(result.offset);
 			let history_update = tracked_history_update(tab);
 			(message, history_update)
 		} else {
@@ -457,7 +461,7 @@ pub fn handle_marker_navigation(
 		};
 		let target_offset = result.offset;
 		if apply_navigation_result(tab, &result, target, next, live_region_label) {
-			let update = record_history(tab, target_offset);
+			let update = record_history(tab, current_pos, target_offset);
 			tab.track.then_some(update)
 		} else {
 			None

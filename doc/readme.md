@@ -34,12 +34,13 @@ The workaround, eventually surfaced through the JAWS discussion group after mont
 
 Paperback supports the following formats and extensions:
 
-* Comic book archives (`.cbz`)
+* Comic book archives (`.cbz`, `.cbr`)
 * CHM help files (`.chm`)
 * DAISY books (`.opf`, `.zip`)
 * EPUB books (`.epub`)
 * FB2 ebooks (`.fb2`)
 * HTML documents (`.htm`, `.html`, `.xhtml`)
+* Manual pages, both `man` and BSD `mdoc` (`.1` to `.9`, `.man`, `.roff`, and the gzipped forms of each)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word documents (`.docx`, `.docm`, `.doc`)
 * M4B audiobooks (`.m4b`)
@@ -216,6 +217,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * The `=` shortcut now announces the page as well as the percentage, e.g. "15%, page 30", and stays as it was for documents with no page numbers.
 * The automatic "Document reloaded" announcement no longer cuts your screen reader off mid sentence, instead waiting for it to finish what it was saying.
 * The Settings dialog's General tab now tabs through its options in the order they appear on screen, with the update channel directly after the check for updates option.
+* Updating now brings the relaunched window to the front, instead of leaving it behind every other window in Alt+Tab.
 * Windows will now always show "Paperback" in the Open With menu, rather than the program's full tagline.
 * Word Count and Document Info now show how many files an audio book holds, and how long it runs in total.
 
