@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-12 10:21-0600\n"
+"POT-Creation-Date: 2026-09-12 18:19-0600\n"
 "PO-Revision-Date: 2026-06-08 22:23+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -1006,6 +1006,11 @@ msgstr "Automatische &terugloop"
 #, fuzzy
 msgid "Render tables &inline"
 msgstr "Tabellen &inline weergeven"
+
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#, fuzzy
+msgid "&Join wrapped lines into paragraphs in PDFs"
+msgstr "&Samengevoegde regels in PDF's samenvoegen tot alinea's"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -2722,6 +2727,16 @@ msgstr "[Alleen afbeelding. Druk op Enter om OCR uit te voeren.]"
 #, fuzzy
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Alleen afbeelding. Deze pagina heeft geen tekst om te lezen.]"
+
+#. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
+#, fuzzy
+msgid "Failed to parse comic archive: {}"
+msgstr "Het RTF-document kon niet worden geparseerd: {}"
+
+#. TRANSLATORS: Error shown when a comic book archive holds no page images at all
+#, fuzzy
+msgid "This comic archive contains no pages."
+msgstr "Dit stripalbum bevat geen pagina's."
 
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 #, fuzzy

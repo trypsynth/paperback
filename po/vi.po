@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-12 10:21-0600\n"
+"POT-Creation-Date: 2026-09-12 18:19-0600\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1047,6 +1047,11 @@ msgstr "&Tự động ngắt dòng"
 #, fuzzy
 msgid "Render tables &inline"
 msgstr "Hiển thị bảng &inline"
+
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#, fuzzy
+msgid "&Join wrapped lines into paragraphs in PDFs"
+msgstr "&Nối các dòng xuống dòng thành đoạn văn trong PDF"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -2911,6 +2916,16 @@ msgstr "[Chỉ hình ảnh. Nhấn Enter để OCR.]"
 #, fuzzy
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Chỉ hình ảnh. Trang này không có văn bản để đọc.]"
+
+#. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
+#, fuzzy
+msgid "Failed to parse comic archive: {}"
+msgstr "Không thể phân tích cú pháp tài liệu RTF: {}"
+
+#. TRANSLATORS: Error shown when a comic book archive holds no page images at all
+#, fuzzy
+msgid "This comic archive contains no pages."
+msgstr "Kho lưu trữ truyện tranh này không chứa trang nào."
 
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 #, fuzzy

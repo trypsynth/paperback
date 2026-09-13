@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4ceb6ab5773c737f; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d9a31cb8,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 76c8ca574c020eca; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,7325029e,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
 
 # Paperback - versie 0.9.2
 
@@ -32,14 +32,15 @@ Als u JAWS met een brailleweergave gebruikt, kan het voorkomen dat lange alinea'
 
 De workaround, uiteindelijk opgeleverd via de JAWS-discussiegroep na maanden wachten, is om `paperback.jcf` te bewerken en "Braille Presentation and Panning" in te stellen op "Always use DOM if available". U wilt ook "Pan Text by Paragraph" inschakelen, anders blijft uw weergave op de actieve alinea staan in plaats van deze op te schuiven. Met beide instellingen in plaats moeten de schuifbewegingen correct werken.
 
-## Ondersteunde bestandstypen
+## Momenteel ondersteunde bestandstypen
 
-Paperback ondersteunt de volgende indelingen en extensies:
+Paperback ondersteunt de volgende formaten en extensies:
 
+* Stripsalbums (`.cbz`)
 * CHM-helpbestanden (`.chm`)
 * DAISY-boeken (`.opf`, `.zip`)
 * EPUB-boeken (`.epub`)
-* FB2-e-boeken (`.fb2`)
+* FB2-eboeken (`.fb2`)
 * HTML-documenten (`.htm`, `.html`, `.xhtml`)
 * Markdown-documenten (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word-documenten (`.docx`, `.docm`, `.doc`)
@@ -51,7 +52,7 @@ Paperback ondersteunt de volgende indelingen en extensies:
 * PowerPoint-presentaties (`.pptx`, `.pptm`, `.ppt`)
 * RTF-documenten (`.rtf`)
 * WinHelp-bestanden (`.hlp`)
-* Gewone tekstbestanden en logbestanden (`.txt`, `.log`)
+* Platte-tekstbestanden en logboeken (`.txt`, `.log`)
 
 ## Sneltoetsen
 
