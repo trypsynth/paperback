@@ -3870,3 +3870,51 @@ msgstr ""
 #: kt
 msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
 msgstr ""
+
+#. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
+#: kt
+msgid "Current path: {}"
+msgstr ""
+
+#: kt
+msgid "{}, {}, modified {}{}"
+msgstr ""
+
+#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
+#: kt
+msgid "{} percent"
+msgstr ""
+
+#. TRANSLATORS: TalkBack state of a heading line in the document; {} is its level number
+#: kt
+msgid "Heading {}"
+msgstr ""
+
+#. TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
+#: kt
+msgid "go to heading"
+msgstr ""
+
+#: kt
+msgid "{}, Level {}"
+msgstr ""
+
+#. TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
+#: kt
+msgid "go to link"
+msgstr ""
+
+#. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
+#: kt
+msgid "show import and export options"
+msgstr ""
+
+#. TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
+#: kt
+msgid "open"
+msgstr ""
+
+#. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
+#: kt
+msgid "go to chapter"
+msgstr ""

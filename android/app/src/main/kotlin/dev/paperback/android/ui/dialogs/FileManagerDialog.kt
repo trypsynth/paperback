@@ -158,7 +158,8 @@ fun FileManagerDialog(
 					style = MaterialTheme.typography.bodySmall,
 					color = MaterialTheme.colorScheme.onSurfaceVariant,
 					modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp).semantics {
-						contentDescription = "Current path: ${currentDirectory.absolutePath}"
+						// TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
+						contentDescription = t("Current path: {}", currentDirectory.absolutePath)
 					}
 				)
 
@@ -257,7 +258,7 @@ fun FileListItem(
 				} else {
 					file.name
 				}
-				contentDescription = "$displayName, $typeStr, modified $dateString$sizeDesc"
+				contentDescription = t("{}, {}, modified {}{}", displayName, typeStr, dateString, sizeDesc)
 			},
 		verticalAlignment = Alignment.CenterVertically
 	) {

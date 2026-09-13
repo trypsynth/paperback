@@ -192,7 +192,8 @@ fun DocumentTextView(
 					textModifier = textModifier.semantics {
 						heading()
 						if (headingLevel > 0) {
-							stateDescription = "Heading $headingLevel"
+							// TRANSLATORS: TalkBack state of a heading line in the document; {} is its level number
+							stateDescription = t("Heading {}", headingLevel.toString())
 						}
 					}
 				}

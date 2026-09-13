@@ -202,7 +202,7 @@ fun SettingsScreen(
 				Column(
 					modifier = Modifier.clearAndSetSemantics {
 						contentDescription = textSizeLabel
-						stateDescription = "$textScalePercent percent"
+						stateDescription = t("{} percent", textScalePercent.toString())
 						progressBarRangeInfo = ProgressBarRangeInfo(
 							current = textScalePercent.toFloat(),
 							range = MIN_SCALE..MAX_SCALE,
@@ -347,7 +347,7 @@ fun SettingsScreen(
 							stateDescription = t("System Default")
 							disabled()
 						} else {
-							stateDescription = "$currentSpeechRate percent"
+							stateDescription = t("{} percent", currentSpeechRate.toString())
 							progressBarRangeInfo = ProgressBarRangeInfo(
 								current = currentSpeechRate.toFloat(),
 								range = 0f..100f,
@@ -384,7 +384,7 @@ fun SettingsScreen(
 							stateDescription = t("System Default")
 							disabled()
 						} else {
-							stateDescription = "$currentPitch percent"
+							stateDescription = t("{} percent", currentPitch.toString())
 							progressBarRangeInfo = ProgressBarRangeInfo(
 								current = currentPitch.toFloat(),
 								range = 0f..100f,

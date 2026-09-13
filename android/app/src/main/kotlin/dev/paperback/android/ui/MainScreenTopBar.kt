@@ -136,7 +136,8 @@ fun MainScreenTopBar(
 								role = Role.Button,
 								onClick = onOpenBook,
 								onLongClick = { openBookMenuExpanded = true },
-								onLongClickLabel = "show import and export options"
+								// TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
+								onLongClickLabel = t("show import and export options")
 							).semantics {
 								traversalIndex = 1f
 								customActions = bookMenuActions.toCustomActions()

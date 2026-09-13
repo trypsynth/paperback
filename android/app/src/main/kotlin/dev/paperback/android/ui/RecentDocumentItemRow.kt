@@ -44,7 +44,8 @@ fun RecentDocumentItemRow(
 	ListItem(
 		modifier = Modifier
 			.clickable(
-				onClickLabel = "open",
+				// TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
+				onClickLabel = t("open"),
 				role = Role.Button,
 				onClick = { if (!item.isMissing) onOpen() }
 			).semantics {
