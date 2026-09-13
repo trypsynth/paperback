@@ -26,22 +26,22 @@ impl DocumentSession {
 	#[must_use]
 	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<WebviewTarget> {
 		let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty());
-		if let Some(section_path) = section_path {
-			if let Some(doc_temp_dir) = self.document_temp_dir(temp_dir) {
-				// Extract every entry (sections, images, stylesheets, fonts, ...) once,
-				// preserving the epub's internal layout, so the section's relative
-				// references resolve on disk: both its resources (e.g.
-				// `<img src="../images/foo.jpg">`) and its links to other sections,
-				// which is what a table of contents is made of.
-				let _ = self.ensure_epub_resources_extracted(&doc_temp_dir);
-				// Re-extract the section itself fresh at its original relative path so
-				// the reading-position anchor below is injected into a clean copy.
-				let output_path = doc_temp_dir.join(&section_path);
-				let output_str = output_path.to_string_lossy().to_string();
-				if self.extract_resource(&section_path, &output_str).ok() == Some(true) {
-					let fragment = self.inject_reading_anchor(position, &output_str);
-					return Some(WebviewTarget { path: output_str, fragment });
-				}
+		if let Some(section_path) = section_path
+			&& let Some(doc_temp_dir) = self.document_temp_dir(temp_dir)
+		{
+			// Extract every entry (sections, images, stylesheets, fonts, ...) once,
+			// preserving the epub's internal layout, so the section's relative
+			// references resolve on disk: both its resources (e.g.
+			// `<img src="../images/foo.jpg">`) and its links to other sections,
+			// which is what a table of contents is made of.
+			let _ = self.ensure_epub_resources_extracted(&doc_temp_dir);
+			// Re-extract the section itself fresh at its original relative path so
+			// the reading-position anchor below is injected into a clean copy.
+			let output_path = doc_temp_dir.join(&section_path);
+			let output_str = output_path.to_string_lossy().to_string();
+			if self.extract_resource(&section_path, &output_str).ok() == Some(true) {
+				let fragment = self.inject_reading_anchor(position, &output_str);
+				return Some(WebviewTarget { path: output_str, fragment });
 			}
 		}
 		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
