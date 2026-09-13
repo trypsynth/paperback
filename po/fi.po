@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-12 18:19-0600\n"
-"PO-Revision-Date: 2026-09-13 06:18+0300\n"
+"PO-Revision-Date: 2026-09-13 06:42+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -908,7 +908,7 @@ msgstr "&Pienennä ilmaisinalueelle"
 
 #. TRANSLATORS: Option to toggle word wrapping of text
 msgid "&Word wrap"
-msgstr "Rivit&ys"
+msgstr "R&ivitys"
 
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
