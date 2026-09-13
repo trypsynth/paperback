@@ -36,6 +36,7 @@ Nazwy tych opcji podano po angielsku, bo w takiej postaci występują w pliku ko
 
 Paperback obsługuje następujące formaty i rozszerzenia:
 
+* Archiwa komiksów (`.cbz`)
 * Pliki pomocy CHM (`.chm`)
 * Książki DAISY (`.opf`, `.zip`)
 * Książki EPUB (`.epub`)
@@ -50,6 +51,7 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Dokumenty PDF (`.pdf`)
 * Prezentacje PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Dokumenty RTF (`.rtf`)
+* Pliki WinHelp (`.hlp`)
 * Pliki zwykłego tekstu i dzienników (`.txt`, `.log`)
 
 ## Skróty klawiszowe
