@@ -11,6 +11,7 @@ use anyhow::{Context, Result};
 use cfb::CompoundFile;
 use office_crypto::decrypt_from_file;
 
+use super::persist::Presentation;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, util::path::extract_title_from_path},
@@ -18,10 +19,20 @@ use crate::{
 };
 
 const PPT_RECORD_HEADER_SIZE: usize = 8;
+/// How much of a string has to be ordinary text before it is taken for text and not for the
+/// binary that happens to sit next to it.
+const PRINTABLE_SHARE_OF_A_STRING: f32 = 0.8;
+/// What the names of the tags PowerPoint keeps its own settings under begin with, such as
+/// "___PPT9" and "___PPT10". They are not text of the presentation.
+const PROG_TAG_NAME_PREFIX: &str = "___PPT";
 const PPT_REC_SLIDE: u16 = 1006;
 const PPT_REC_TEXT_CHARS_ATOM: u16 = 4000;
 const PPT_REC_TEXT_BYTES_ATOM: u16 = 4008;
 const PPT_REC_CSTRING: u16 = 4026;
+/// Names the slide whose text follows it in the document's list of slides.
+const PPT_REC_SLIDE_PERSIST_ATOM: u16 = 1011;
+/// The document's lists of text: the slides' own, then the masters', then the notes'.
+const PPT_REC_SLIDE_LIST_WITH_TEXT: u16 = 4080;
 
 pub(super) fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 	tracing::debug!(path = %context.file_path, "parsing legacy ppt file");
@@ -39,13 +50,16 @@ pub(super) fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 		),
 		None => None,
 	};
-	let ppt_document_stream = match decrypted_compound.as_mut() {
-		Some(compound) => read_ppt_document_stream(compound),
-		None => read_ppt_document_stream(&mut compound),
-	}
-	.inspect_err(|e| tracing::warn!(path = %context.file_path, error = %e, "failed to read powerpoint document stream"))
-	.with_context(|| format!("Failed to read PowerPoint Document stream from '{}'", context.file_path))?;
-	let slide_texts = collect_legacy_slide_texts(&ppt_document_stream);
+	let (ppt_document_stream, current_user) = match decrypted_compound.as_mut() {
+		Some(compound) => (read_ppt_document_stream(compound), read_current_user_stream(compound)),
+		None => (read_ppt_document_stream(&mut compound), read_current_user_stream(&mut compound)),
+	};
+	let ppt_document_stream = ppt_document_stream
+		.inspect_err(
+			|e| tracing::warn!(path = %context.file_path, error = %e, "failed to read powerpoint document stream"),
+		)
+		.with_context(|| format!("Failed to read PowerPoint Document stream from '{}'", context.file_path))?;
+	let slide_texts = collect_legacy_slide_texts(&ppt_document_stream, &current_user);
 	if slide_texts.is_empty() {
 		tracing::warn!(path = %context.file_path, "legacy ppt file has no slides");
 		// TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
@@ -113,6 +127,20 @@ fn decrypt_if_encrypted(compound: &mut CompoundFile<File>, context: &ParserConte
 	Ok(Some(decrypted))
 }
 
+/// The Current User stream, which points at the save that is the presentation. An empty
+/// result is not an error: a file without one is read as it lies.
+fn read_current_user_stream<F: Read + std::io::Seek>(compound: &mut CompoundFile<F>) -> Vec<u8> {
+	for stream_path in ["Current User", "/Current User", "PP97_DUALSTORAGE/Current User"] {
+		if let Ok(mut stream) = compound.open_stream(stream_path) {
+			let mut bytes = Vec::new();
+			if stream.read_to_end(&mut bytes).is_ok() && !bytes.is_empty() {
+				return bytes;
+			}
+		}
+	}
+	Vec::new()
+}
+
 fn read_ppt_document_stream<F: Read + std::io::Seek>(compound: &mut CompoundFile<F>) -> Result<Vec<u8>> {
 	for stream_path in [
 		"PowerPoint Document",
@@ -134,7 +162,36 @@ fn read_ppt_document_stream<F: Read + std::io::Seek>(compound: &mut CompoundFile
 	anyhow::bail!(t("PowerPoint Document stream not found"))
 }
 
-fn collect_legacy_slide_texts(stream_data: &[u8]) -> Vec<String> {
+/// The text of every slide, in the order the presentation lists them.
+///
+/// The text of a slide is not always kept in the slide. A presentation also carries a list of
+/// its slides in the document itself, the SlideListWithText, and that is where PowerPoint puts
+/// the outline text of a slide whose own record holds none. A file whose slides are all empty
+/// reads as a file of empty slides unless both places are looked at.
+fn collect_legacy_slide_texts(stream_data: &[u8], current_user: &[u8]) -> Vec<String> {
+	if let Some(presentation) = Presentation::read(stream_data, current_user) {
+		let outlines = presentation.document().map(slide_outline_texts).unwrap_or_default();
+		// The list in the document is the order the slides are shown in, which is not the order
+		// they were saved in. A presentation with no such list falls back to its slide objects,
+		// which are at least all of the slides and usually in the right order.
+		let listed: Vec<(u32, String)> =
+			outlines.into_iter().filter(|(id, _)| presentation.object(*id).is_some()).collect();
+		let slides: Vec<(u32, String)> = if listed.is_empty() {
+			presentation.objects_of_type(PPT_REC_SLIDE).into_iter().map(|(id, _)| (id, String::new())).collect()
+		} else {
+			listed
+		};
+		tracing::debug!(slides = slides.len(), "read the slides the presentation lists");
+		return slides
+			.into_iter()
+			.map(|(id, outline)| {
+				let own = presentation.object(id).map(extract_legacy_text).unwrap_or_default();
+				if own.is_empty() { outline } else { own }
+			})
+			.collect();
+	}
+	// A file that does not lead anywhere is read as it lies, which is what this always did.
+	tracing::debug!("no persist directory, reading the stream as it lies");
 	let mut slide_texts = Vec::new();
 	walk_ppt_records(stream_data, &mut |record_type, _header_flags, payload| {
 		if record_type == PPT_REC_SLIDE {
@@ -149,6 +206,68 @@ fn collect_legacy_slide_texts(stream_data: &[u8]) -> Vec<String> {
 		}
 	}
 	slide_texts
+}
+
+/// The outline text the document keeps for each slide, in the order the document lists them.
+///
+/// The list holds an atom naming a slide followed by that slide's text, then the next slide,
+/// and so on, so the atoms are read in order and each one belongs to the slide named most
+/// recently.
+/// <https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/1fc22d56-28f9-4818-bd45-67c2bf721ccf>
+fn slide_outline_texts(document: &[u8]) -> Vec<(u32, String)> {
+	let Some(list) = slide_list_with_text(document) else {
+		return Vec::new();
+	};
+	let mut slides: Vec<(u32, Vec<String>)> = Vec::new();
+	walk_ppt_records(list, &mut |record_type, _header_flags, payload| match record_type {
+		PPT_REC_SLIDE_PERSIST_ATOM => {
+			if let Some(bytes) = payload.get(..4) {
+				slides.push((u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]), Vec::new()));
+			}
+		}
+		PPT_REC_TEXT_CHARS_ATOM | PPT_REC_TEXT_BYTES_ATOM => {
+			let text = if record_type == PPT_REC_TEXT_CHARS_ATOM {
+				parse_text_chars_atom(payload)
+			} else {
+				parse_text_bytes_atom(payload)
+			};
+			if let (Some((_, parts)), Some(text)) = (slides.last_mut(), text) {
+				let trimmed = text.trim();
+				if !trimmed.is_empty() {
+					parts.push(trimmed.to_string());
+				}
+			}
+		}
+		_ => {}
+	});
+	slides.into_iter().map(|(id, parts)| (id, normalize_legacy_slide_text(&parts.join("\n")))).collect()
+}
+
+/// The document's list of slide text, which is the one whose instance is zero. The other two
+/// lists hold the text of the masters and of the notes.
+fn slide_list_with_text(document: &[u8]) -> Option<&[u8]> {
+	let mut offset = PPT_RECORD_HEADER_SIZE;
+	while offset + PPT_RECORD_HEADER_SIZE <= document.len() {
+		let header_flags = u16::from_le_bytes([document[offset], document[offset + 1]]);
+		let record_type = u16::from_le_bytes([document[offset + 2], document[offset + 3]]);
+		let record_len = usize::try_from(u32::from_le_bytes([
+			document[offset + 4],
+			document[offset + 5],
+			document[offset + 6],
+			document[offset + 7],
+		]))
+		.unwrap_or(0);
+		let payload_start = offset + PPT_RECORD_HEADER_SIZE;
+		let payload_end = (payload_start + record_len).min(document.len());
+		if record_type == PPT_REC_SLIDE_LIST_WITH_TEXT && (header_flags >> 4) == 0 {
+			return Some(&document[payload_start..payload_end]);
+		}
+		if payload_end <= offset {
+			break;
+		}
+		offset = payload_end;
+	}
+	None
 }
 
 fn walk_ppt_records(data: &[u8], visit: &mut impl FnMut(u16, u16, &[u8])) {
@@ -233,18 +352,14 @@ fn parse_text_bytes_atom(data: &[u8]) -> Option<String> {
 }
 
 fn parse_cstring(data: &[u8]) -> Option<String> {
-	let null_pos = data.iter().position(|&b| b == 0).unwrap_or(data.len());
-	let text = String::from_utf8_lossy(&data[..null_pos]).trim_end_matches('\r').trim().to_string();
-	if text.is_empty() || text == "___PPT10" || text == "Default Design" {
+	let text = parse_text_chars_atom(data)?.trim_end_matches('\r').trim().to_string();
+	if text.is_empty() || text.starts_with(PROG_TAG_NAME_PREFIX) || text == "Default Design" {
 		return None;
 	}
 	let total_chars = text.chars().count();
-	if total_chars == 0 {
-		return None;
-	}
 	let printable_chars =
 		text.chars().filter(|c| c.is_alphanumeric() || c.is_whitespace() || c.is_ascii_punctuation()).count();
-	(((printable_chars as f32) / (total_chars as f32)) >= 0.8).then_some(text)
+	(((printable_chars as f32) / (total_chars as f32)) >= PRINTABLE_SHARE_OF_A_STRING).then_some(text)
 }
 
 fn normalize_legacy_slide_text(text: &str) -> String {
@@ -260,14 +375,19 @@ mod tests {
 	use std::io::Write;
 
 	use super::{
-		HEADER_TOKEN_ENCRYPTED, extract_legacy_text, normalize_legacy_slide_text, parse_cstring, parse_text_bytes_atom,
-		parse_text_chars_atom,
+		HEADER_TOKEN_ENCRYPTED, PPT_REC_SLIDE, PPT_REC_SLIDE_LIST_WITH_TEXT, PPT_RECORD_HEADER_SIZE,
+		collect_legacy_slide_texts, extract_legacy_text, normalize_legacy_slide_text, parse_cstring,
+		parse_text_bytes_atom, parse_text_chars_atom,
 	};
 	use crate::{
 		document::ParserContext,
 		parser::{PASSWORD_REQUIRED_ERROR_PREFIX, powerpoint::legacy::parse_legacy_ppt},
 		util::test_support::TempDir,
 	};
+
+	fn utf16(text: &str) -> Vec<u8> {
+		text.encode_utf16().flat_map(u16::to_le_bytes).collect()
+	}
 
 	/// Writes a presentation carrying nothing but the CurrentUserAtom that says whether it is
 	/// encrypted, which is the only part of the file the check reads.
@@ -309,6 +429,104 @@ mod tests {
 		assert!(!error.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX), "{error}");
 	}
 
+	/// A record: its header, then whatever it holds.
+	fn record(version_and_instance: u16, record_type: u16, payload: &[u8]) -> Vec<u8> {
+		let mut bytes = Vec::with_capacity(PPT_RECORD_HEADER_SIZE + payload.len());
+		bytes.extend_from_slice(&version_and_instance.to_le_bytes());
+		bytes.extend_from_slice(&record_type.to_le_bytes());
+		bytes.extend_from_slice(&u32::try_from(payload.len()).expect("record fits").to_le_bytes());
+		bytes.extend_from_slice(payload);
+		bytes
+	}
+
+	/// A CurrentUserAtom naming the save at `offset_to_current_edit`.
+	fn current_user_stream(offset_to_current_edit: u32) -> Vec<u8> {
+		let mut payload = Vec::new();
+		payload.extend_from_slice(&0x0000_0014u32.to_le_bytes());
+		payload.extend_from_slice(&0xE391_C05Fu32.to_le_bytes());
+		payload.extend_from_slice(&offset_to_current_edit.to_le_bytes());
+		payload.extend_from_slice(&[0u8; 8]);
+		record(0, 0x0FF6, &payload)
+	}
+
+	/// A UserEditAtom naming its persist directory and the object the document is.
+	fn user_edit_atom(persist_directory_at: u32, document_id: u32) -> Vec<u8> {
+		let mut payload = Vec::new();
+		payload.extend_from_slice(&0u32.to_le_bytes());
+		payload.extend_from_slice(&0u32.to_le_bytes());
+		payload.extend_from_slice(&0u32.to_le_bytes());
+		payload.extend_from_slice(&persist_directory_at.to_le_bytes());
+		payload.extend_from_slice(&document_id.to_le_bytes());
+		payload.extend_from_slice(&[0u8; 8]);
+		record(0, 0x0FF5, &payload)
+	}
+
+	/// A PersistDirectoryAtom, one entry for each object.
+	fn persist_directory(entries: &[(u32, u32)]) -> Vec<u8> {
+		let mut payload = Vec::new();
+		for (id, offset) in entries {
+			payload.extend_from_slice(&((1u32 << 20) | *id).to_le_bytes());
+			payload.extend_from_slice(&offset.to_le_bytes());
+		}
+		record(0, 0x1772, &payload)
+	}
+
+	/// A slide of the document's list of slide text: the atom naming the slide, then its text.
+	fn listed_slide(slide_id: u32, text: &str) -> Vec<u8> {
+		let mut payload = Vec::new();
+		payload.extend_from_slice(&slide_id.to_le_bytes());
+		payload.extend_from_slice(&[0u8; 16]);
+		let mut bytes = record(0, 1011, &payload);
+		bytes.extend_from_slice(&record(0, 4008, text.as_bytes()));
+		bytes
+	}
+
+	/// The text of a slide is not always in the slide. Reading only the slide containers leaves
+	/// a presentation that keeps its text in the document's list looking empty, which is what
+	/// happened to the presentations in issue 839.
+	#[test]
+	fn slide_text_comes_from_the_document_list_when_the_slide_holds_none() {
+		let mut stream = Vec::new();
+		// An empty slide, and a second one, laid down before the document they belong to.
+		let first_slide_at = 0u32;
+		stream.extend_from_slice(&record(0x000F, PPT_REC_SLIDE, &[]));
+		let second_slide_at = u32::try_from(stream.len()).expect("offset fits");
+		stream.extend_from_slice(&record(0x000F, PPT_REC_SLIDE, &[]));
+		let document_at = u32::try_from(stream.len()).expect("offset fits");
+		let mut list = listed_slide(2, "The first slide");
+		list.extend_from_slice(&listed_slide(3, "The second slide"));
+		let document = record(0x000F, 1000, &record(0x0000, PPT_REC_SLIDE_LIST_WITH_TEXT, &list));
+		stream.extend_from_slice(&document);
+		let directory_at = u32::try_from(stream.len()).expect("offset fits");
+		stream.extend_from_slice(&persist_directory(&[(1, document_at), (2, first_slide_at), (3, second_slide_at)]));
+		let user_edit_at = u32::try_from(stream.len()).expect("offset fits");
+		stream.extend_from_slice(&user_edit_atom(directory_at, 1));
+		let current_user = current_user_stream(user_edit_at);
+		assert_eq!(
+			collect_legacy_slide_texts(&stream, &current_user),
+			vec!["The first slide".to_string(), "The second slide".to_string()]
+		);
+	}
+
+	/// A presentation says which objects are its own. Reading the stream from the front instead
+	/// picks up whatever else is left in it, which on these files is text from earlier saves.
+	#[test]
+	fn superseded_saves_are_left_out() {
+		let mut stream = Vec::new();
+		// An older save's slide, which the presentation no longer names.
+		stream.extend_from_slice(&record(0x000F, PPT_REC_SLIDE, &record(0, 4008, b"An older save")));
+		let slide_at = u32::try_from(stream.len()).expect("offset fits");
+		stream.extend_from_slice(&record(0x000F, PPT_REC_SLIDE, &record(0, 4008, b"The current save")));
+		let document_at = u32::try_from(stream.len()).expect("offset fits");
+		stream.extend_from_slice(&record(0x000F, 1000, &[]));
+		let directory_at = u32::try_from(stream.len()).expect("offset fits");
+		stream.extend_from_slice(&persist_directory(&[(1, document_at), (2, slide_at)]));
+		let user_edit_at = u32::try_from(stream.len()).expect("offset fits");
+		stream.extend_from_slice(&user_edit_atom(directory_at, 1));
+		let current_user = current_user_stream(user_edit_at);
+		assert_eq!(collect_legacy_slide_texts(&stream, &current_user), vec!["The current save".to_string()]);
+	}
+
 	#[test]
 	fn parse_text_chars_atom_decodes_utf16le() {
 		let atom_data = [0x48, 0x00, 0x69, 0x00, 0x00, 0x00];
@@ -322,9 +540,17 @@ mod tests {
 
 	#[test]
 	fn parse_cstring_filters_known_noise() {
-		assert_eq!(parse_cstring(b"___PPT10\0"), None);
-		assert_eq!(parse_cstring(b"Default Design\0"), None);
-		assert_eq!(parse_cstring(b"Agenda\0"), Some("Agenda".to_string()));
+		assert_eq!(parse_cstring(&utf16("___PPT9")), None);
+		assert_eq!(parse_cstring(&utf16("___PPT10")), None);
+		assert_eq!(parse_cstring(&utf16("Default Design")), None);
+		assert_eq!(parse_cstring(&utf16("Agenda")), Some("Agenda".to_string()));
+	}
+
+	/// A CString holds UTF-16. Reading one as bytes turns "___PPT10" into a lone underscore,
+	/// which then stands on the slide in place of the text the slide really has.
+	#[test]
+	fn parse_cstring_reads_utf16() {
+		assert_eq!(parse_cstring(&utf16("Agenda")), Some("Agenda".to_string()));
 	}
 
 	#[test]
