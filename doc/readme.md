@@ -216,6 +216,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Links in the WebView now take you to the section they point at, rather than failing with "File not found".
 * The automatic "Document reloaded" announcement no longer cuts your screen reader off mid sentence, instead waiting for it to finish what it was saying.
 * The Settings dialog's General tab now tabs through its options in the order they appear on screen, with the update channel directly after the check for updates option.
+* Updating now brings the relaunched window to the front, instead of leaving it behind every other window in Alt+Tab.
 * Windows will now always show "Paperback" in the Open With menu, rather than the program's full tagline.
 * Word Count and Document Info now show how many files an audio book holds, and how long it runs in total.
 
