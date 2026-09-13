@@ -32,9 +32,7 @@ libchm = "0.3.0"
 libhlp = "0.2.0"
 lofty = "0.25.1"
 mp4ameta = "0.13.0"
-# Until the PowerPoint 97-2003 support lands upstream (udbhav1/office-crypto#8), which is what
-# opens a password-protected .ppt.
-office-crypto = { git = "https://github.com/trypsynth/office-crypto", branch = "ppt97-decryption" }
+office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
 patois = "0.2.1"
 pdfium = "0.10.4"
