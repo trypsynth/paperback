@@ -1,14 +1,19 @@
 //! Legacy binary `.ppt` parsing: walks the OLE `PowerPoint Document` stream's record tree
 //! directly, since there is no XML to hand off to a library.
 
-use std::{collections::HashMap, fs::File, io::Read};
+use std::{
+	collections::HashMap,
+	fs::File,
+	io::{Cursor, Read},
+};
 
 use anyhow::{Context, Result};
 use cfb::CompoundFile;
+use office_crypto::decrypt_from_file;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
-	parser::util::path::extract_title_from_path,
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, util::path::extract_title_from_path},
 	t,
 };
 
@@ -24,19 +29,22 @@ pub(super) fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 		File::open(&context.file_path).with_context(|| format!("Failed to open PPT file '{}'", context.file_path))?;
 	let mut compound =
 		CompoundFile::open(file).with_context(|| format!("Failed to parse OLE container '{}'", context.file_path))?;
-	// Encrypted PPT files have an EncryptionInfo stream. We can detect but not decrypt them.
-	if compound.entry("/EncryptionInfo").is_ok() {
-		tracing::warn!(path = %context.file_path, "legacy ppt file is encrypted, not supported");
-		// TRANSLATORS: Error shown when a legacy PPT file is password-protected, which this parser cannot handle
-		anyhow::bail!(t(
-			"Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
-		));
+	// A password-protected presentation is decrypted first, and the records are read out of
+	// what comes back rather than off the disk.
+	let decrypted = decrypt_if_encrypted(&mut compound, context)?;
+	let mut decrypted_compound = match decrypted {
+		Some(bytes) => Some(
+			CompoundFile::open(Cursor::new(bytes))
+				.with_context(|| format!("Failed to parse decrypted PPT file '{}'", context.file_path))?,
+		),
+		None => None,
+	};
+	let ppt_document_stream = match decrypted_compound.as_mut() {
+		Some(compound) => read_ppt_document_stream(compound),
+		None => read_ppt_document_stream(&mut compound),
 	}
-	let ppt_document_stream = read_ppt_document_stream(&mut compound)
-		.inspect_err(
-			|e| tracing::warn!(path = %context.file_path, error = %e, "failed to read powerpoint document stream"),
-		)
-		.with_context(|| format!("Failed to read PowerPoint Document stream from '{}'", context.file_path))?;
+	.inspect_err(|e| tracing::warn!(path = %context.file_path, error = %e, "failed to read powerpoint document stream"))
+	.with_context(|| format!("Failed to read PowerPoint Document stream from '{}'", context.file_path))?;
 	let slide_texts = collect_legacy_slide_texts(&ppt_document_stream);
 	if slide_texts.is_empty() {
 		tracing::warn!(path = %context.file_path, "legacy ppt file has no slides");
@@ -69,7 +77,43 @@ pub(super) fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 	Ok(document)
 }
 
-fn read_ppt_document_stream(compound: &mut CompoundFile<File>) -> Result<Vec<u8>> {
+/// Offset of the CurrentUserAtom's headerToken, past the record header and the size field.
+const HEADER_TOKEN_OFFSET: usize = 12;
+
+/// The token a presentation carries when it is password-protected. A legacy file says so here
+/// rather than in a stream of its own, which is what an OOXML file does.
+/// <https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/940d5700-e4d7-4fc0-ab48-fed5dbc48bc1>
+const HEADER_TOKEN_ENCRYPTED: u32 = 0xF3D1_C4DF;
+
+/// Decrypts a password-protected presentation, or reports that there is nothing to decrypt.
+///
+/// Returns the whole file rather than the one stream, since decryption rewrites several of
+/// them and the caller reads the records out of the result.
+fn decrypt_if_encrypted(compound: &mut CompoundFile<File>, context: &ParserContext) -> Result<Option<Vec<u8>>> {
+	let Ok(mut stream) = compound.open_stream("Current User").or_else(|_| compound.open_stream("/Current User")) else {
+		return Ok(None);
+	};
+	let mut current_user = Vec::new();
+	stream.read_to_end(&mut current_user)?;
+	let Some(token) = current_user.get(HEADER_TOKEN_OFFSET..HEADER_TOKEN_OFFSET + 4) else {
+		return Ok(None);
+	};
+	if u32::from_le_bytes([token[0], token[1], token[2], token[3]]) != HEADER_TOKEN_ENCRYPTED {
+		return Ok(None);
+	}
+	let Some(password) = context.password.as_deref() else {
+		tracing::debug!(path = %context.file_path, "legacy ppt file is encrypted, asking for a password");
+		// TRANSLATORS: Error detail shown when an encrypted PowerPoint file needs a password (the internal sentinel prefix before it is not translated)
+		anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} {}", t("File is encrypted and requires a password"));
+	};
+	let decrypted = decrypt_from_file(&context.file_path, password)
+		// TRANSLATORS: Error shown when decrypting an encrypted Office file fails; {} is the underlying error
+		.map_err(|e| anyhow::anyhow!(t("Decryption failed (wrong password?): {}").replace("{}", &e.to_string())))?;
+	tracing::debug!(path = %context.file_path, bytes = decrypted.len(), "decrypted legacy ppt file");
+	Ok(Some(decrypted))
+}
+
+fn read_ppt_document_stream<F: Read + std::io::Seek>(compound: &mut CompoundFile<F>) -> Result<Vec<u8>> {
 	for stream_path in [
 		"PowerPoint Document",
 		"/PowerPoint Document",
@@ -213,9 +257,57 @@ fn first_non_empty_line(text: &str) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
+	use std::io::Write;
+
 	use super::{
-		extract_legacy_text, normalize_legacy_slide_text, parse_cstring, parse_text_bytes_atom, parse_text_chars_atom,
+		HEADER_TOKEN_ENCRYPTED, extract_legacy_text, normalize_legacy_slide_text, parse_cstring, parse_text_bytes_atom,
+		parse_text_chars_atom,
 	};
+	use crate::{
+		document::ParserContext,
+		parser::{PASSWORD_REQUIRED_ERROR_PREFIX, powerpoint::legacy::parse_legacy_ppt},
+		util::test_support::TempDir,
+	};
+
+	/// Writes a presentation carrying nothing but the CurrentUserAtom that says whether it is
+	/// encrypted, which is the only part of the file the check reads.
+	fn presentation_with_token(dir: &TempDir, name: &str, token: u32) -> String {
+		let mut current_user = Vec::new();
+		// A CurrentUserAtom: its record header, its size, the token, and the offset after it.
+		current_user.extend_from_slice(&0x0000u16.to_le_bytes());
+		current_user.extend_from_slice(&0x0FF6u16.to_le_bytes());
+		current_user.extend_from_slice(&0x0000_0014u32.to_le_bytes());
+		current_user.extend_from_slice(&0x0000_0014u32.to_le_bytes());
+		current_user.extend_from_slice(&token.to_le_bytes());
+		current_user.extend_from_slice(&0u32.to_le_bytes());
+		let path = dir.join_str(name);
+		let mut compound = cfb::create(&path).expect("create compound file");
+		compound.create_stream("/Current User").expect("stream").write_all(&current_user).expect("write");
+		compound.create_stream("/PowerPoint Document").expect("stream").write_all(&[0u8; 8]).expect("write");
+		compound.flush().expect("flush");
+		path
+	}
+
+	/// A legacy presentation says it is encrypted in its CurrentUserAtom, where an OOXML file
+	/// has a stream of its own for it. Opening one without a password has to ask for the
+	/// password rather than report a broken file.
+	#[test]
+	fn an_encrypted_presentation_asks_for_a_password() {
+		let dir = TempDir::new("ppt-encrypted");
+		let path = presentation_with_token(&dir, "protected.ppt", HEADER_TOKEN_ENCRYPTED);
+		let error = parse_legacy_ppt(&ParserContext::new(path)).expect_err("a password is needed");
+		assert!(error.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX), "{error}");
+	}
+
+	/// A presentation that is not encrypted is read as it stands, and fails later for having no
+	/// slides rather than for wanting a password.
+	#[test]
+	fn a_plain_presentation_is_not_taken_for_an_encrypted_one() {
+		let dir = TempDir::new("ppt-plain");
+		let path = presentation_with_token(&dir, "plain.ppt", 0xE391_C05F);
+		let error = parse_legacy_ppt(&ParserContext::new(path)).expect_err("no slides in it");
+		assert!(!error.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX), "{error}");
+	}
 
 	#[test]
 	fn parse_text_chars_atom_decodes_utf16le() {
