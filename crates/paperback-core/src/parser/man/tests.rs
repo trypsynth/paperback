@@ -269,17 +269,68 @@ fn a_section_number_names_a_manual_page() {
 	assert!(!is_manual_page_name(Path::new("page.man")));
 }
 
-/// A table is not reproduced as a table, but its rows are still the content of the page and
-/// have to survive. The lines describing the table's shape are not.
+/// A table is a table: the same grid every other format hands to the shared renderer, so a
+/// page's table can be stepped into and read a row at a time. The lines describing the shape
+/// of it are not content and do not survive.
 #[test]
-fn a_table_keeps_its_rows_and_drops_its_format() {
-	let text = text_of(&page(
-		".SH TABLE\n.TS\nallbox;\nlb lb\nl l.\nInterface\tValue\nT{\n.B printf\nT}\tsafe\n.TE\nAfter.\n",
+fn a_table_becomes_a_table() {
+	let document = parse_source(&page(
+		".SH TABLE
+.TS
+allbox;
+lb lb
+l l.
+Interface\tValue
+T{
+.B printf
+T}\tsafe
+.TE
+After.
+",
 	));
-	assert!(text.contains("Interface  Value"), "{text}");
-	assert!(text.contains("printf"), "{text}");
+	let tables = markers_of(&document, MarkerType::Table);
+	assert_eq!(tables.len(), 1, "{tables:?}");
+	assert_eq!(tables[0].1, "Interface Value", "the caption names the table by its first row");
+	let text = &document.buffer.content;
+	assert!(text.contains("Interface\tValue"), "{text}");
+	assert!(text.contains("printf\tsafe"), "{text}");
 	assert!(!text.contains("allbox"), "{text}");
 	assert!(!text.contains("T{"), "{text}");
-	assert!(!text.contains("T}"), "{text}");
 	assert!(text.contains("After."), "{text}");
+}
+
+/// With tables set to stand as placeholders, a page's table does too.
+#[test]
+fn a_table_can_stand_as_a_placeholder() {
+	let dir = TempDir::new("man-parser");
+	let path = dir.write_str(
+		"page.1",
+		page(
+			".SH TABLE
+.TS
+l l.
+One\tTwo
+.TE
+",
+		),
+	);
+	let context = ParserContext::new(path).with_render_tables_inline(false);
+	let document = ManParser.parse(&context).expect("parse manual page");
+	assert!(document.buffer.content.contains("[Table]"), "{}", document.buffer.content);
+	assert_eq!(markers_of(&document, MarkerType::Table).len(), 1);
+}
+
+/// A separator other than the tab is named in the options line.
+#[test]
+fn a_table_can_name_its_own_separator() {
+	let text = text_of(&page(
+		".SH TABLE
+.TS
+center tab(:);
+l l.
+One:Two
+.TE
+",
+	));
+	assert!(text.contains("One\tTwo"), "{text}");
 }

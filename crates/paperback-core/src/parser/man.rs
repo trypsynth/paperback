@@ -29,8 +29,12 @@ use crate::{
 };
 
 mod escape;
+mod mdoc;
 mod render;
+mod table;
 
+#[cfg(test)]
+mod mdoc_tests;
 #[cfg(test)]
 mod tests;
 
@@ -49,7 +53,14 @@ impl Parser for ManParser {
 		if !looks_like_roff(&source) {
 			anyhow::bail!("'{}' is not a manual page", context.file_path);
 		}
-		let page = Page::read(&source);
+		// The two macro packages share these file names, and the first macro of a page says
+		// which of them it is written in.
+		let page = if mdoc::is_mdoc(&source) {
+			let read = mdoc::read(&source, context.render_tables_inline);
+			Page { buffer: read.buffer, title: read.title, toc: read.toc }
+		} else {
+			Page::read(&source, context.render_tables_inline)
+		};
 		if page.buffer.content.trim().is_empty() {
 			anyhow::bail!("'{}' holds no manual page text", context.file_path);
 		}
@@ -140,10 +151,12 @@ struct Reader<'a> {
 	index: usize,
 	/// The sections read so far, with subsections nested under the section they fall in.
 	toc: Vec<TocItem>,
+	/// Whether a table is written out in full or stands as a placeholder.
+	render_tables_inline: bool,
 }
 
 impl Page {
-	fn read(source: &str) -> Self {
+	fn read(source: &str, render_tables_inline: bool) -> Self {
 		let mut reader = Reader {
 			renderer: Renderer::new(),
 			title: None,
@@ -151,6 +164,7 @@ impl Page {
 			lines: source.lines().collect(),
 			index: 0,
 			toc: Vec::new(),
+			render_tables_inline,
 		};
 		reader.run();
 		Self { buffer: reader.renderer.finish(), title: reader.title, toc: reader.toc }
@@ -316,50 +330,33 @@ impl Reader<'_> {
 		}
 	}
 
-	/// A `tbl` table, read as its rows rather than as a table.
+	/// A `tbl` table.
 	///
-	/// The lines after `.TS` describe the table's options and its column formats, and a cell
-	/// spanning several lines is wrapped in `T{` and `T}`. None of that is content. What is left
-	/// is the rows, whose cells are separated by tabs.
+	/// The grid it reads is handed to the same renderer every other format's tables go
+	/// through, so a page's table is a table the reader can step into, and honours the setting
+	/// for whether a table is written out in full or stands as a placeholder.
 	fn table(&mut self) {
 		self.renderer.end_paragraph();
-		let mut past_format = false;
+		let mut table = table::Table::new();
+		let mut rows: Vec<Vec<String>> = Vec::new();
 		while self.index < self.lines.len() {
 			let line = self.joined_line();
-			let trimmed = line.trim().to_string();
-			if trimmed == ".TE" {
-				break;
-			}
-			if is_comment(&line) {
-				continue;
-			}
-			if !past_format {
-				if trimmed.ends_with(';') {
-					continue;
-				}
-				if trimmed.ends_with('.') && !trimmed.starts_with('.') {
-					past_format = true;
-					continue;
-				}
-			}
-			if matches!(trimmed.as_str(), "_" | "=") {
-				continue;
-			}
-			// A cell running over several lines is wrapped in these, which are not content and can
-			// share a line with the cells beside them.
-			let row = line.replace("T{", "").replace("T}", "").replace('\t', "  ");
-			if row.trim().is_empty() {
-				continue;
-			}
-			if let Some((name, rest)) = control_line(&row) {
-				let (name, rest) = (name.to_string(), rest.to_string());
-				self.control(&name, &rest);
-			} else {
-				self.renderer.write_line(&escape::pieces(&row));
-				self.renderer.break_line();
+			// A cell left open at the end of a line carries on into the lines below it.
+			let mut index = self.index;
+			let lines = &self.lines;
+			let row = table.read_line(&line, || {
+				let next = lines.get(index).map(|line| (*line).to_string());
+				index += 1;
+				next
+			});
+			self.index = index;
+			match row {
+				table::Row::Cells(cells) => rows.push(cells),
+				table::Row::Nothing => {}
+				table::Row::End => break,
 			}
 		}
-		self.renderer.end_paragraph();
+		self.renderer.table(&rows, self.render_tables_inline);
 	}
 
 	/// Skips a macro definition, which runs to a line holding only `..`.
