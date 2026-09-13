@@ -1812,6 +1812,7 @@ dependencies = [
  "chardetng",
  "ego-tree",
  "encoding_rs",
+ "flate2",
  "icu_properties",
  "image",
  "key-chord",

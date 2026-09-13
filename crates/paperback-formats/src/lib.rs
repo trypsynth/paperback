@@ -166,6 +166,16 @@ formats! {
 		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 		installer: CHECKED,
 	},
+	/// An installed manual page is named for its section and gzipped on top of that, as
+	/// `printf.3.gz`, so `gz` is claimed here to have such a file offered in an open dialog
+	/// at all. The parser reads what is inside before accepting it, so a gzipped anything
+	/// else is turned away rather than read as a page.
+	MAN {
+		name: "Manual pages",
+		extensions: ["man", "roff", "gz", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+		mime_types: ["application/x-troff-man", "text/troff"],
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
+	},
 	MARKDOWN {
 		name: "Markdown Files",
 		extensions: ["md", "markdown", "mdx", "mdown", "mdwn", "mkd", "mkdn", "mkdown", "ronn"],

@@ -40,6 +40,7 @@ Paperback supports the following formats and extensions:
 * EPUB books (`.epub`)
 * FB2 ebooks (`.fb2`)
 * HTML documents (`.htm`, `.html`, `.xhtml`)
+* Manual pages (`.1` to `.9`, `.man`, `.roff`, and the gzipped forms of each)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word documents (`.docx`, `.docm`, `.doc`)
 * M4B audiobooks (`.m4b`)
