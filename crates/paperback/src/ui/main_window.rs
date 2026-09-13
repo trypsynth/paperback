@@ -62,6 +62,81 @@ pub struct MainWindow {
 #[cfg(target_os = "windows")]
 static HIDDEN_POPUP: AtomicIsize = AtomicIsize::new(0);
 
+/// Whether this process has one of its own dialogs on screen right now.
+///
+/// The updater's dialogs - the changelog, the progress bar - are all `wxDialog`s, which are the
+/// standard `#32770` class on Windows, while the frame is `wxWindowNR`. So this answers "is an
+/// update in progress" from the outside, without `ship-shape` having to report it.
+///
+/// `FindWindowExW` with a null parent looks like the obvious way to walk top-level windows and is
+/// not: `EnumWindows` is the API that actually enumerates them. Swapping one for the other is the
+/// kind of change that fails silently - a walk that matches nothing means `help.rs` never hands the
+/// foreground over, which looks exactly like the hand-off not working.
+#[cfg(target_os = "windows")]
+pub(super) fn own_dialog_is_up() -> bool {
+	use windows::{
+		Win32::{
+			Foundation::{HWND, LPARAM},
+			UI::WindowsAndMessaging::EnumWindows,
+		},
+		core::BOOL,
+	};
+
+	/// Set as the walk goes, so it can stop at the first match.
+	struct Found(bool);
+
+	unsafe extern "system" fn note_dialog(window: HWND, param: LPARAM) -> BOOL {
+		let found = unsafe { &mut *(param.0 as *mut Found) };
+		if window_pid(window) == std::process::id() && class_name(window) == DIALOG_CLASS {
+			found.0 = true;
+			// One is enough, and the update flow never has two of its dialogs up at once.
+			return BOOL(0);
+		}
+		BOOL(1)
+	}
+
+	let mut found = Found(false);
+	// The only way this fails is a bad callback, and there is nothing to do about it but carry on:
+	// a missed dialog costs the hand-off, not correctness.
+	let _ = unsafe { EnumWindows(Some(note_dialog), LPARAM(std::ptr::from_mut(&mut found) as isize)) };
+	found.0
+}
+
+/// Whether this app's frame is disabled, which wx does for the lifetime of any modal dialog it
+/// shows - every dialog in the update flow among them.
+///
+/// A second way to see the same thing, kept because the two fail differently: the class walk
+/// depends on the dialogs being ordinary top-level `#32770`s, this depends on wx disabling the
+/// parent. A missed dialog costs the whole hand-off, while a spurious one costs a few extra grants,
+/// so it is worth asking twice.
+#[cfg(target_os = "windows")]
+pub(super) fn frame_is_disabled(frame: windows::Win32::Foundation::HWND) -> bool {
+	use windows::Win32::UI::Input::KeyboardAndMouse::IsWindowEnabled;
+	!frame.0.is_null() && !unsafe { IsWindowEnabled(frame) }.as_bool()
+}
+
+/// The process that owns a window, so the walk can tell this app's own windows from another's.
+#[cfg(target_os = "windows")]
+fn window_pid(hwnd: windows::Win32::Foundation::HWND) -> u32 {
+	use windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId;
+	let mut pid = 0u32;
+	unsafe { GetWindowThreadProcessId(hwnd, Some(&raw mut pid)) };
+	pid
+}
+
+/// The window class, which is what says whether a handle is a dialog or a frame.
+#[cfg(target_os = "windows")]
+fn class_name(hwnd: windows::Win32::Foundation::HWND) -> String {
+	use windows::Win32::UI::WindowsAndMessaging::GetClassNameW;
+	let mut class = [0u16; 256];
+	let class_len = usize::try_from(unsafe { GetClassNameW(hwnd, &mut class) }).unwrap_or(0);
+	String::from_utf16_lossy(&class[..class_len])
+}
+
+/// The Win32 class of every dialog on Windows, `wxDialog` and `MessageBox` alike.
+#[cfg(target_os = "windows")]
+const DIALOG_CLASS: &str = "#32770";
+
 impl MainWindow {
 	/// Accessor for background callbacks (e.g. the OCR worker thread) that can't hold the app's
 	/// own `Rc<Mutex<DocumentManager>>` (an `Rc` is not `Send`); they reach the window via
