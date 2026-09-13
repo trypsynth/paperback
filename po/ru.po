@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-12 10:21-0600\n"
+"POT-Creation-Date: 2026-09-13 13:31-0600\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -1031,6 +1031,11 @@ msgstr "&Перенос строк"
 msgid "Render tables &inline"
 msgstr "Отображать таблицы &встроенно"
 
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#, fuzzy
+msgid "&Join wrapped lines into paragraphs in PDFs"
+msgstr "&Объединять перенесённые строки в абзацы в PDF"
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 #, fuzzy
 msgid "Show compact &go menu"
@@ -1452,6 +1457,11 @@ msgstr "Нет следующей закладки."
 #, fuzzy
 msgid "Temporary bookmark."
 msgstr "Нет закладок."
+
+#. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
+#, fuzzy
+msgid "%s, page %d"
+msgstr "%s, страница %d"
 
 #. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 #, fuzzy
@@ -2838,6 +2848,22 @@ msgstr "[Только изображение. Нажмите Enter для рас
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Только изображение. На этой странице нет текста для чтения.]"
 
+#. TRANSLATORS: Error shown on Android when opening a comic book archive packed with RAR (.cbr), which that build cannot read
+#, fuzzy
+msgid "Paperback cannot read RAR comic archives on this device. Repack it as a .cbz to read it here."
+msgstr "Paperback не может читать RAR-архивы комиксов на этом устройстве. Переупакуйте его как .cbz для чтения здесь."
+
+#. TRANSLATORS: Error shown when a comic book archive (.cbr) cannot be opened; {} is the underlying error
+#. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
+#, fuzzy
+msgid "Failed to parse comic archive: {}"
+msgstr "Не удалось проанализировать документ в формате RTF: {}"
+
+#. TRANSLATORS: Error shown when a comic book archive holds no page images at all
+#, fuzzy
+msgid "This comic archive contains no pages."
+msgstr "Этот архив комиксов не содержит страниц."
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "фигура"
@@ -3066,14 +3092,22 @@ msgstr "Требуется ввести пароль или введенный �
 msgid "Failed to open PDF document: {}"
 msgstr "Не удалось открыть PDF-документ: {}"
 
-#, fuzzy
-msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
-msgstr "В настоящее время файлы PPT, защищенные паролем, не поддерживаются. Попробуйте сохранить файл в формате PPTX и открыть его."
-
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 #, fuzzy
 msgid "PPT file contains no slides"
 msgstr "Файл PPT не содержит слайдов"
+
+#. TRANSLATORS: Error detail shown when an encrypted PowerPoint file needs a password (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "File is encrypted and requires a password"
+msgstr "Файл зашифрован и для его открытия требуется пароль"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office file fails; {} is the underlying error
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+#, fuzzy
+msgid "Decryption failed (wrong password?): {}"
+msgstr "Ошибка расшифровки (неверный пароль?): {}"
 
 #. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
 #, fuzzy
@@ -3089,16 +3123,6 @@ msgstr "Файл PPTX не содержит слайдов"
 #, fuzzy
 msgid "Failed to parse RTF document: {}"
 msgstr "Не удалось проанализировать документ в формате RTF: {}"
-
-#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "File is encrypted and requires a password"
-msgstr "Файл зашифрован и для его открытия требуется пароль"
-
-#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-#, fuzzy
-msgid "Decryption failed (wrong password?): {}"
-msgstr "Ошибка расшифровки (неверный пароль?): {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
@@ -4534,6 +4558,68 @@ msgstr "Через VoiceOver проводите пальцем вверх по �
 #, fuzzy
 msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
 msgstr "Через TalkBack проводите пальцем вверх по кнопке воспроизведения, чтобы перейти вперед, или вниз, чтобы вернуться назад."
+
+#. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
+#: kt
+#, fuzzy
+msgid "Current path: {}"
+msgstr "Текущий путь: {}"
+
+#: kt
+#, fuzzy
+msgid "{}, {}, modified {}{}"
+msgstr "{}, {}, изменено {}{}"
+
+#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
+#: kt
+#, fuzzy
+msgid "{} percent"
+msgstr "{} процентов"
+
+#. TRANSLATORS: TalkBack state of a heading line in the document; {} is its level number
+#: kt
+#, fuzzy
+msgid "Heading {}"
+msgstr "Заголовок {}"
+
+#. TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
+#: kt
+#, fuzzy
+msgid "go to heading"
+msgstr "Перейти на следующий заголовок"
+
+#: kt
+#, fuzzy
+msgid "{}, Level {}"
+msgstr "{}, Уровень {}"
+
+#. TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
+#: kt
+#, fuzzy
+msgid "go to link"
+msgstr "перейти по ссылке"
+
+#. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
+#: kt
+#, fuzzy
+msgid "show import and export options"
+msgstr "показать параметры импорта и экспорта"
+
+#. TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
+#: kt
+#, fuzzy
+msgid "open"
+msgstr "открыть"
+
+#. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
+#: kt
+#, fuzzy
+msgid "go to chapter"
+msgstr "перейти к главе"
+
+#, fuzzy
+#~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+#~ msgstr "В настоящее время файлы PPT, защищенные паролем, не поддерживаются. Попробуйте сохранить файл в формате PPTX и открыть его."
 
 #~ msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
 #~ msgstr "Этот PDF файл содержет только изображения, без извлекаемого текста. Возможно, вам потребуется пропустить его через программу OCR, чтобы прочитать его содержимое."

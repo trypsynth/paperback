@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-12 10:21-0600\n"
+"POT-Creation-Date: 2026-09-13 13:31-0600\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1048,6 +1048,11 @@ msgstr "&Tự động ngắt dòng"
 msgid "Render tables &inline"
 msgstr "Hiển thị bảng &inline"
 
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#, fuzzy
+msgid "&Join wrapped lines into paragraphs in PDFs"
+msgstr "&Nối các dòng được gói lại thành các đoạn trong PDF"
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr "Hiển thị menu &điều hướng thu gọn"
@@ -1480,6 +1485,11 @@ msgstr "Không có dấu trang tiếp theo."
 #, fuzzy
 msgid "Temporary bookmark."
 msgstr "Không có dấu trang nào."
+
+#. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
+#, fuzzy
+msgid "%s, page %d"
+msgstr "%s, trang %d"
 
 #. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 #, fuzzy
@@ -2912,6 +2922,22 @@ msgstr "[Chỉ hình ảnh. Nhấn Enter để OCR.]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Chỉ hình ảnh. Trang này không có văn bản để đọc.]"
 
+#. TRANSLATORS: Error shown on Android when opening a comic book archive packed with RAR (.cbr), which that build cannot read
+#, fuzzy
+msgid "Paperback cannot read RAR comic archives on this device. Repack it as a .cbz to read it here."
+msgstr "Paperback không thể đọc các kho lưu trữ truyện tranh RAR trên thiết bị này. Đóng gói lại thành .cbz để đọc tại đây."
+
+#. TRANSLATORS: Error shown when a comic book archive (.cbr) cannot be opened; {} is the underlying error
+#. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
+#, fuzzy
+msgid "Failed to parse comic archive: {}"
+msgstr "Không thể phân tích cú pháp tài liệu RTF: {}"
+
+#. TRANSLATORS: Error shown when a comic book archive holds no page images at all
+#, fuzzy
+msgid "This comic archive contains no pages."
+msgstr "Kho lưu trữ truyện tranh này không chứa trang nào."
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 #, fuzzy
 msgid "Figure"
@@ -3142,14 +3168,22 @@ msgstr "Yêu cầu nhập mật khẩu hoặc mật khẩu không chính xác"
 msgid "Failed to open PDF document: {}"
 msgstr "Không thể mở tài liệu PDF: {}"
 
-#, fuzzy
-msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
-msgstr "Hiện tại, hệ thống chưa hỗ trợ các tệp PPT được bảo vệ bằng mật khẩu. Hãy thử lưu tệp dưới định dạng PPTX và mở tệp đó thay thế."
-
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 #, fuzzy
 msgid "PPT file contains no slides"
 msgstr "Tệp PPT không chứa bất kỳ trang chiếu nào"
+
+#. TRANSLATORS: Error detail shown when an encrypted PowerPoint file needs a password (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "File is encrypted and requires a password"
+msgstr "Tệp đã được mã hóa và cần mật khẩu để mở"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office file fails; {} is the underlying error
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+#, fuzzy
+msgid "Decryption failed (wrong password?): {}"
+msgstr "Không thể giải mã (mật khẩu sai?): {}"
 
 #. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
 #, fuzzy
@@ -3165,16 +3199,6 @@ msgstr "Tệp PPTX không chứa bất kỳ trang chiếu nào"
 #, fuzzy
 msgid "Failed to parse RTF document: {}"
 msgstr "Không thể phân tích cú pháp tài liệu RTF: {}"
-
-#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "File is encrypted and requires a password"
-msgstr "Tệp đã được mã hóa và cần mật khẩu để mở"
-
-#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-#, fuzzy
-msgid "Decryption failed (wrong password?): {}"
-msgstr "Không thể giải mã (mật khẩu sai?): {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
@@ -4614,6 +4638,68 @@ msgstr "Với VoiceOver, vuốt lên trên nút phát để tiến lên, hoặc 
 #, fuzzy
 msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
 msgstr "Với TalkBack, vuốt lên trên nút phát để tiến lên, hoặc vuốt xuống để quay lại."
+
+#. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
+#: kt
+#, fuzzy
+msgid "Current path: {}"
+msgstr "Đường dẫn hiện tại: {}"
+
+#: kt
+#, fuzzy
+msgid "{}, {}, modified {}{}"
+msgstr "{}, {}, sửa đổi {}{}"
+
+#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
+#: kt
+#, fuzzy
+msgid "{} percent"
+msgstr "{} phần trăm"
+
+#. TRANSLATORS: TalkBack state of a heading line in the document; {} is its level number
+#: kt
+#, fuzzy
+msgid "Heading {}"
+msgstr "Tiêu đề {}"
+
+#. TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
+#: kt
+#, fuzzy
+msgid "go to heading"
+msgstr "Chuyển đến tiêu đề tiếp theo"
+
+#: kt
+#, fuzzy
+msgid "{}, Level {}"
+msgstr "{}, Cấp {}"
+
+#. TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
+#: kt
+#, fuzzy
+msgid "go to link"
+msgstr "Chuyển đến dòng"
+
+#. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
+#: kt
+#, fuzzy
+msgid "show import and export options"
+msgstr "Các tùy chọn nhập và xuất"
+
+#. TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
+#: kt
+#, fuzzy
+msgid "open"
+msgstr "mở"
+
+#. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
+#: kt
+#, fuzzy
+msgid "go to chapter"
+msgstr "Chuyển sang phần trăm"
+
+#, fuzzy
+#~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+#~ msgstr "Hiện tại, hệ thống chưa hỗ trợ các tệp PPT được bảo vệ bằng mật khẩu. Hãy thử lưu tệp dưới định dạng PPTX và mở tệp đó thay thế."
 
 #, fuzzy
 #~ msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
