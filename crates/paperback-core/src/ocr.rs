@@ -1,16 +1,20 @@
-//! Page rendering for OCR of image-only PDF pages.
+//! Page rendering for OCR of pages that carry a picture and no text.
 //!
 //! The PDF parser tags every page that has an image but no extractable text with a
 //! [`MarkerType::ImageOnlyPage`](crate::document::MarkerType::ImageOnlyPage) marker and an
-//! [`image_only_placeholder`] line. At runtime the desktop app renders those pages to RGBA
-//! bitmaps through [`PageRenderer`] and hands the pixels to the platform OCR engine
+//! [`image_only_placeholder`] line, and the comic archive parser tags every page that way,
+//! since none of them holds text at all. At runtime the desktop app renders those pages to
+//! RGBA bitmaps through [`PageRenderer`] and hands the pixels to the platform OCR engine
 //! (`Windows.Media.Ocr`, or Vision on macOS), which lives in the desktop crate so this one
 //! stays platform-neutral. The recognized text then replaces the placeholder in the buffer.
 
-use anyhow::Result;
-use pdfium::{PdfiumDocument, PdfiumRenderConfig};
+use std::{fs::File, io::BufReader, path::Path};
 
-use crate::t;
+use anyhow::{Context, Result};
+use pdfium::{PdfiumDocument, PdfiumRenderConfig};
+use zip::ZipArchive;
+
+use crate::{parser::cbz, t};
 
 /// The placeholder line the PDF parser inserts for a page that has an image but no extractable
 /// text. Purely what the reader sees: the OCR flow locates these pages by their
@@ -53,41 +57,96 @@ pub struct RenderedPage {
 	pub rgba: Vec<u8>,
 }
 
-/// A PDF held open for repeated page rendering.
+/// A document held open for repeated page rendering.
 ///
-/// Batch OCR renders many pages from one file, so the document is opened once here rather than
-/// per page. Not `Send`: pdfium's handles are tied to the thread that made them, so a renderer
-/// is created and used on the same thread. That thread need not be the UI thread, because every
+/// Batch OCR renders many pages from one file, so the file is opened once here rather than per
+/// page. Not `Send`: pdfium's handles are tied to the thread that made them, so a renderer is
+/// created and used on the same thread. That thread need not be the UI thread, because every
 /// call into pdfium takes the library's own global lock.
 pub struct PageRenderer {
-	document: PdfiumDocument,
+	source: Source,
+}
+
+/// What the renderer draws pages out of. A PDF page has to be rasterized; a comic archive's
+/// page is already a picture and only needs decoding.
+enum Source {
+	Pdf(PdfiumDocument),
+	Comic { archive: ZipArchive<BufReader<File>>, pages: Vec<String> },
 }
 
 impl PageRenderer {
-	/// Opens `file_path` for rendering.
+	/// Opens `file_path` for rendering, choosing the backend from its extension.
 	///
 	/// # Errors
 	///
-	/// Returns an error if pdfium cannot open the file, including a wrong or missing password.
+	/// Returns an error if the file cannot be opened, including a wrong or missing PDF
+	/// password, or if a comic archive holds no pages.
 	pub fn open(file_path: &str, password: Option<&str>) -> Result<Self> {
-		Ok(Self { document: PdfiumDocument::new_from_path(file_path, password)? })
+		if Path::new(file_path).extension().is_some_and(|e| e.eq_ignore_ascii_case("cbz")) {
+			return Self::open_comic(file_path);
+		}
+		Ok(Self { source: Source::Pdf(PdfiumDocument::new_from_path(file_path, password)?) })
 	}
 
-	/// Renders page `page_index` (0-based) to an RGBA8 bitmap at [`TARGET_DPI`], scaled down to
-	/// keep its longest side within `max_dimension` (engines silently downscale larger inputs
-	/// themselves, and doing it here keeps the buffer smaller).
+	fn open_comic(file_path: &str) -> Result<Self> {
+		let file = File::open(file_path).with_context(|| format!("Failed to open '{file_path}'"))?;
+		let mut archive = ZipArchive::new(BufReader::new(file))?;
+		// Numbered exactly as the parser numbered them, so page N here is the page the
+		// reader is sitting on.
+		let pages = cbz::page_names(&mut archive);
+		if pages.is_empty() {
+			anyhow::bail!("comic archive '{file_path}' has no pages to render");
+		}
+		Ok(Self { source: Source::Comic { archive, pages } })
+	}
+
+	/// Renders page `page_index` (0-based) to an RGBA8 bitmap, scaled down to keep its longest
+	/// side within `max_dimension` (engines silently downscale larger inputs themselves, and
+	/// doing it here keeps the buffer smaller). A PDF page is rasterized at [`TARGET_DPI`];
+	/// a comic archive's page is decoded at whatever resolution it was scanned.
 	///
 	/// # Errors
 	///
-	/// Returns an error if the page is out of range or pdfium fails to rasterize it.
-	pub fn render(&self, page_index: i32, max_dimension: u32) -> Result<RenderedPage> {
-		let page = self.document.page(page_index)?;
-		let width = pixel_width(page.width(), page.height(), max_dimension);
-		let bitmap = page.render(&PdfiumRenderConfig::new().with_width(width))?;
-		let (width, height) = (bitmap.width(), bitmap.height());
-		let rgba = bitmap.as_rgba_bytes()?;
-		Ok(RenderedPage { width: u32::try_from(width).unwrap_or(0), height: u32::try_from(height).unwrap_or(0), rgba })
+	/// Returns an error if the page is out of range, or cannot be rasterized or decoded.
+	pub fn render(&mut self, page_index: i32, max_dimension: u32) -> Result<RenderedPage> {
+		match &mut self.source {
+			Source::Pdf(document) => {
+				let page = document.page(page_index)?;
+				let width = pixel_width(page.width(), page.height(), max_dimension);
+				let bitmap = page.render(&PdfiumRenderConfig::new().with_width(width))?;
+				let (width, height) = (bitmap.width(), bitmap.height());
+				let rgba = bitmap.as_rgba_bytes()?;
+				Ok(RenderedPage {
+					width: u32::try_from(width).unwrap_or(0),
+					height: u32::try_from(height).unwrap_or(0),
+					rgba,
+				})
+			}
+			Source::Comic { archive, pages } => {
+				let index = usize::try_from(page_index).unwrap_or(usize::MAX);
+				let name = pages.get(index).ok_or_else(|| anyhow::anyhow!("page {page_index} is out of range"))?;
+				let mut entry = archive.by_name(name)?;
+				let mut bytes = Vec::new();
+				std::io::copy(&mut entry, &mut bytes)?;
+				decode_page(&bytes, max_dimension)
+			}
+		}
 	}
+}
+
+/// Decode one comic page and shrink it to fit `max_dimension`.
+fn decode_page(bytes: &[u8], max_dimension: u32) -> Result<RenderedPage> {
+	let image = image::load_from_memory(bytes).context("failed to decode a comic archive page")?;
+	// Scanned artwork is routinely bigger than the engines accept, and they downscale it
+	// themselves anyway, so shrinking here only saves carrying the pixels around.
+	let longest = image.width().max(image.height());
+	let image = if max_dimension > 0 && longest > max_dimension {
+		image.thumbnail(max_dimension, max_dimension)
+	} else {
+		image
+	};
+	let rgba = image.into_rgba8();
+	Ok(RenderedPage { width: rgba.width(), height: rgba.height(), rgba: rgba.into_raw() })
 }
 
 /// The pixel width to rasterize a page of `width_pt` by `height_pt` at [`TARGET_DPI`], reduced
@@ -105,7 +164,82 @@ fn pixel_width(width_pt: f32, height_pt: f32, max_dimension: u32) -> i32 {
 
 #[cfg(test)]
 mod tests {
+	use std::{env, fs, io::Write as _};
+
+	use zip::{ZipWriter, write::SimpleFileOptions};
+
 	use super::*;
+
+	/// A greyscale PNG of `width` by `height`, all white. Small but a real decodable image.
+	fn png(width: u32, height: u32) -> Vec<u8> {
+		let mut buffer = Vec::new();
+		let encoder = image::codecs::png::PngEncoder::new(&mut buffer);
+		let pixels = vec![255u8; (width * height) as usize];
+		image::ImageEncoder::write_image(encoder, &pixels, width, height, image::ExtendedColorType::L8).unwrap();
+		buffer
+	}
+
+	/// Write a comic archive holding `pages`, each `(name, width, height)`, and return its path.
+	fn comic(test_name: &str, pages: &[(&str, u32, u32)]) -> String {
+		let dir = env::temp_dir().join("paperback-cbz-render-tests");
+		fs::create_dir_all(&dir).unwrap();
+		let path = dir.join(format!("{test_name}.cbz"));
+		let file = fs::File::create(&path).unwrap();
+		let mut zip = ZipWriter::new(file);
+		for (name, width, height) in pages {
+			zip.start_file(*name, SimpleFileOptions::default()).unwrap();
+			zip.write_all(&png(*width, *height)).unwrap();
+		}
+		zip.finish().unwrap();
+		path.to_string_lossy().into_owned()
+	}
+
+	// The reader numbers comic pages in natural order, so the renderer has to agree or
+	// running OCR on page 2 recognizes some other page entirely.
+	#[test]
+	fn a_comic_page_renders_in_the_order_the_reader_numbers_them() {
+		let path = comic("order", &[("p10.png", 30, 10), ("p2.png", 20, 10), ("p1.png", 10, 10)]);
+		let mut renderer = PageRenderer::open(&path, None).unwrap();
+		assert_eq!(renderer.render(0, 4000).unwrap().width, 10);
+		assert_eq!(renderer.render(1, 4000).unwrap().width, 20);
+		assert_eq!(renderer.render(2, 4000).unwrap().width, 30);
+	}
+
+	#[test]
+	fn a_rendered_comic_page_comes_back_as_rgba() {
+		let path = comic("rgba", &[("001.png", 8, 4)]);
+		let mut renderer = PageRenderer::open(&path, None).unwrap();
+		let page = renderer.render(0, 4000).unwrap();
+		assert_eq!((page.width, page.height), (8, 4));
+		assert_eq!(page.rgba.len(), 8 * 4 * 4);
+	}
+
+	// Scanned artwork is routinely larger than the OCR engines accept, so an oversized page
+	// has to come back shrunk rather than as tens of megabytes of pixels.
+	#[test]
+	fn an_oversized_comic_page_is_shrunk_to_the_cap() {
+		let path = comic("cap", &[("001.png", 400, 200)]);
+		let mut renderer = PageRenderer::open(&path, None).unwrap();
+		let page = renderer.render(0, 100).unwrap();
+		assert_eq!(page.width, 100);
+		assert_eq!(page.height, 50);
+	}
+
+	#[test]
+	fn a_page_past_the_end_of_a_comic_is_an_error() {
+		let path = comic("range", &[("001.png", 8, 4)]);
+		let mut renderer = PageRenderer::open(&path, None).unwrap();
+		assert!(renderer.render(1, 4000).is_err());
+		assert!(renderer.render(-1, 4000).is_err());
+	}
+
+	// A zip with nothing but metadata in it has no pages to OCR, and saying so beats
+	// handing the engine an empty bitmap.
+	#[test]
+	fn a_comic_with_no_pages_will_not_open() {
+		let path = comic("empty", &[("ComicInfo.xml", 1, 1)]);
+		assert!(PageRenderer::open(&path, None).is_err());
+	}
 
 	#[test]
 	fn pixel_width_renders_letter_at_target_dpi() {

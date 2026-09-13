@@ -3,24 +3,42 @@ import SwiftUI
 struct TtsControlBar: View {
 	@Environment(AppViewModel.self) private var viewModel
 
+	// Find reads as "Find Previous"/"Find Next", matching the Find screen's own buttons, rather
+	// than "Previous Find"/"Next Find".
+	private var prevLabel: String {
+		if viewModel.reading.currentNavUnit == .find {
+			// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by Find matches
+			return t("Find Previous")
+		}
+		// TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
+		return t("Previous {}").replacingOccurrences(of: "{}", with: viewModel.reading.currentNavUnit.name)
+	}
+
+	private var nextLabel: String {
+		if viewModel.reading.currentNavUnit == .find {
+			// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by Find matches
+			return t("Find Next")
+		}
+		// TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
+		return t("Next {}").replacingOccurrences(of: "{}", with: viewModel.reading.currentNavUnit.name)
+	}
+
 	var body: some View {
 		HStack(spacing: 0) {
 			Menu {
-				ForEach(SegmentType.allCases, id: \.self) { type in
+				ForEach(viewModel.reading.availableNavUnits, id: \.self) { unit in
 					Button {
-						viewModel.reading.changeSegmentType(type)
+						viewModel.reading.changeNavUnit(unit)
 					} label: {
-						// TRANSLATORS: Name of a navigation/reading unit shown in the "jump by unit" picker (e.g. "Paragraph", "Line", "Heading", "Section")
-						if type == viewModel.reading.currentSegmentType {
-							Label(t(type.rawValue), systemImage: "checkmark")
+						if unit == viewModel.reading.currentNavUnit {
+							Label(unit.name, systemImage: "checkmark")
 						} else {
-							Text(t(type.rawValue))
+							Text(unit.name)
 						}
 					}
 				}
 			} label: {
-				// TRANSLATORS: Name of the currently selected navigation unit, shown as the label of the "jump by unit" menu button (e.g. "Paragraph", "Line", "Heading", "Section")
-				Text(t(viewModel.reading.currentSegmentType.rawValue))
+				Text(viewModel.reading.currentNavUnit.name)
 					.font(.caption)
 					.foregroundStyle(.secondary)
 					.frame(width: 72, alignment: .leading)
@@ -28,16 +46,16 @@ struct TtsControlBar: View {
 			// TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
 			.accessibilityLabel(t("Navigation unit"))
 			// TRANSLATORS: VoiceOver accessibility value announcing the currently selected navigation unit for the control above
-			.accessibilityValue(t(viewModel.reading.currentSegmentType.rawValue))
+			.accessibilityValue(viewModel.reading.currentNavUnit.name)
 			.accessibilityRemoveTraits(.isButton)
 			.accessibilityAdjustableAction { direction in
-				let types = SegmentType.allCases
-				guard let idx = types.firstIndex(of: viewModel.reading.currentSegmentType) else { return }
+				let units = viewModel.reading.availableNavUnits
+				guard let idx = units.firstIndex(of: viewModel.reading.currentNavUnit) else { return }
 				switch direction {
 				case .increment:
-					viewModel.reading.changeSegmentType(types[(idx + 1) % types.count])
+					viewModel.reading.changeNavUnit(units[(idx + 1) % units.count])
 				case .decrement:
-					viewModel.reading.changeSegmentType(types[(idx - 1 + types.count) % types.count])
+					viewModel.reading.changeNavUnit(units[(idx - 1 + units.count) % units.count])
 				@unknown default: break
 				}
 			}
@@ -46,8 +64,7 @@ struct TtsControlBar: View {
 			Button { viewModel.reading.playPrevSegment(speak: viewModel.reading.ttsManager.isSpeaking) } label: {
 				Image(systemName: "backward.fill").font(.title2)
 			}
-			// TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-			.accessibilityLabel(t("Previous {}").replacingOccurrences(of: "{}", with: t(viewModel.reading.currentSegmentType.rawValue)))
+			.accessibilityLabel(prevLabel)
 			.frame(maxWidth: .infinity, minHeight: 64)
 			.contentShape(Rectangle())
 
@@ -83,8 +100,7 @@ struct TtsControlBar: View {
 			Button { viewModel.reading.playNextSegment(speak: viewModel.reading.ttsManager.isSpeaking) } label: {
 				Image(systemName: "forward.fill").font(.title2)
 			}
-			// TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-			.accessibilityLabel(t("Next {}").replacingOccurrences(of: "{}", with: t(viewModel.reading.currentSegmentType.rawValue)))
+			.accessibilityLabel(nextLabel)
 			.frame(maxWidth: .infinity, minHeight: 64)
 			.contentShape(Rectangle())
 

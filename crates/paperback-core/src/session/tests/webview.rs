@@ -21,10 +21,55 @@ fn webview_target_path_returns_none_for_missing_markdown_file() {
 	assert!(session.webview_target_path(0, "C:\\temp").is_none());
 }
 
+// #774: every format that is not EPUB, HTML or Markdown used to report that its content
+// could not be determined. What such a format has is the parsed document, so that is what
+// the web view now gets.
 #[test]
-fn webview_target_path_returns_none_for_non_webview_extensions() {
-	let session = sample_session(ParserFlags::NONE);
-	assert!(session.webview_target_path(0, "C:\\temp").is_none());
+fn webview_target_path_renders_a_format_without_markup_as_html() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let session = session_with_path("book.mobi");
+	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	assert!(target.path.ends_with("document.html"), "{}", target.path);
+	let html = fs::read_to_string(&target.path).unwrap();
+	assert!(html.contains("<h1>"), "headings are rendered: {html}");
+	assert!(html.contains("line1"), "content is rendered: {html}");
+	let _ = fs::remove_dir_all(&dir);
+}
+
+// The rendering is all the web view has, so the reading position has to be an anchor in it.
+#[test]
+fn webview_target_path_anchors_the_reading_position_in_the_rendering() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let mut session = session_with_path("book.mobi");
+	let mut document = Document::new();
+	document.set_buffer(DocumentBuffer::with_content(
+		"first line
+second line
+"
+		.to_string(),
+	));
+	session.handle = DocumentHandle::new(document);
+	let second_line = i64::try_from(session.content().find("second").unwrap()).unwrap();
+	let target = session.webview_target_path(second_line, &dir.to_string_lossy()).expect("a web view target");
+	assert_eq!(target.fragment.as_deref(), Some("pos-11"));
+	let html = fs::read_to_string(&target.path).unwrap();
+	let anchor = html.find(r#"id="pos-11""#).unwrap_or_else(|| panic!("no anchor in {html}"));
+	let line = html.find("second line").unwrap_or_else(|| panic!("no second line in {html}"));
+	assert!(anchor < line, "the anchor opens the line it marks: {html}");
+	let _ = fs::remove_dir_all(&dir);
+}
+
+// An audio book has no text to render, and an empty page in a web view is worse than being
+// told there is nothing to show.
+#[test]
+fn webview_target_path_returns_none_for_a_document_with_no_text() {
+	let dir = unique_temp_dir();
+	let mut session = session_with_path("book.m4b");
+	session.handle = DocumentHandle::new(Document::new());
+	assert!(session.webview_target_path(0, &dir.to_string_lossy()).is_none());
+	assert!(!dir.exists(), "nothing is written for a document with no text");
 }
 
 #[test]
@@ -108,7 +153,8 @@ fn view_source_for_markdown_maps_caret_to_current_block() {
 	let src = dir.join("notes.md");
 	fs::write(&src, md.as_bytes()).unwrap();
 	// A real session populates id_positions with pb-block-N anchors.
-	let session = DocumentSession::new(&src.to_string_lossy(), "", "", false).expect("open markdown");
+	let session =
+		DocumentSession::new(&src.to_string_lossy(), "", "", ParseSettings::default()).expect("open markdown");
 	let rendered = session.content();
 	let pos = i64::try_from(rendered.find("Second").expect("second block rendered")).unwrap();
 	let view = session.view_source(pos, &dir.to_string_lossy()).expect("markdown source");
@@ -200,7 +246,8 @@ fn webview_target_path_extracts_sibling_image_resources() {
 		.join(format!("paperback_webview_test_{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
 	fs::create_dir_all(&temp_root).unwrap();
 	let epub_path = build_epub_with_relative_image(&temp_root);
-	let session = DocumentSession::new(&epub_path.to_string_lossy(), "", "", false).expect("parse test epub");
+	let session =
+		DocumentSession::new(&epub_path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test epub");
 	let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
 	let section_content = fs::read_to_string(&target.path).expect("read extracted section");
 	assert!(section_content.contains("Images/cover.jpg"));
@@ -278,7 +325,8 @@ fn webview_target_path_extracts_linked_sibling_sections() {
 		.join(format!("paperback_webview_toc_{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
 	fs::create_dir_all(&temp_root).unwrap();
 	let epub_path = build_epub_with_linked_sections(&temp_root);
-	let session = DocumentSession::new(&epub_path.to_string_lossy(), "", "", false).expect("parse test epub");
+	let session =
+		DocumentSession::new(&epub_path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test epub");
 	let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
 	let toc_content = fs::read_to_string(&target.path).expect("read extracted toc");
 	assert!(toc_content.contains("chapter1.xhtml"), "expected the toc to link to the chapter");

@@ -32,7 +32,8 @@ fn main() -> Result<()> {
 			Ok(())
 		};
 	}
-	let mut context = ParserContext::new(file_path).with_render_tables_inline(true);
+	let mut context =
+		ParserContext::new(file_path).with_render_tables_inline(true).with_join_pdf_paragraphs(!cli.no_join_paragraphs);
 	if let Some(password) = cli.password {
 		context = context.with_password(password);
 	}

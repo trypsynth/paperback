@@ -102,11 +102,23 @@ macro_rules! formats {
 }
 
 formats! {
+	CBZ {
+		name: "Comic book archives",
+		extensions: ["cbz"],
+		mime_types: ["application/vnd.comicbook+zip"],
+		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES,
+	},
 	CHM {
 		name: "Compiled HTML Help files",
 		extensions: ["chm"],
 		mime_types: ["application/x-chm"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_SECTIONS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
+	},
+	HLP {
+		name: "WinHelp files",
+		extensions: ["hlp"],
+		mime_types: ["application/winhlp"],
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_IMAGES,
 	},
 	/// Declared ahead of [`WORD`] so that it gets first crack at the `.zip` both claim.
 	///
@@ -170,7 +182,9 @@ formats! {
 		name: "MOBI Books",
 		extensions: ["mobi", "azw", "azw3"],
 		mime_types: ["application/x-mobipocket-ebook", "application/vnd.amazon.ebook"],
-		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
+		// KF8 books carry the file boundaries of the EPUB they were compiled from; older
+		// Mobipocket ones do not, and simply produce no section markers.
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_SECTIONS,
 	},
 	FODP {
 		name: "Flat OpenDocument Presentations",

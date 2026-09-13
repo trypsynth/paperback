@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: c5a741eb100e6fbc; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,55bac79e,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4ceb6ab5773c737f; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d9a31cb8,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
 
 # Paperback - version 0.9.2
 
@@ -39,18 +39,19 @@ Paperback prend en charge les formats et extensions suivants :
 * Fichiers d'aide CHM (`.chm`)
 * Livres DAISY (`.opf`, `.zip`)
 * Livres EPUB (`.epub`)
-* Livres électroniques FB2 (`.fb2`)
+* Ebooks FB2 (`.fb2`)
 * Documents HTML (`.htm`, `.html`, `.xhtml`)
 * Documents Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Documents Microsoft Word (`.docx`, `.docm`, `.doc`)
-* Audiolivres M4B (`.m4b`)
+* Livres audio M4B (`.m4b`)
 * Livres MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
 * Présentations OpenDocument (`.odp`, `.fodp`)
 * Fichiers texte OpenDocument (`.odt`, `.fodt`)
 * Documents PDF (`.pdf`)
 * Présentations PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Documents RTF (`.rtf`)
-* Fichiers texte brut et journaux (`.txt`, `.log`)
+* Fichiers WinHelp (`.hlp`)
+* Fichiers texte brut et fichiers journaux (`.txt`, `.log`)
 
 ## Raccourcis clavier
 

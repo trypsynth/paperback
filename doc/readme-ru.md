@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: c5a741eb100e6fbc; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,55bac79e,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4ceb6ab5773c737f; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d9a31cb8,a548b5d0,71df8e94,e9860ee8,c7735cbe); please review and edit as needed -->
 
 # Paperback - версия 0.9.2
 
@@ -36,21 +36,22 @@ Paperback хорошо работает со всеми основными пр�
 
 Paperback поддерживает следующие форматы и расширения:
 
-* Файлы справки CHM (`.chm`)
-* Книги DAISY (`.opf`, `.zip`)
-* Книги EPUB (`.epub`)
-* Электронные книги FB2 (`.fb2`)
-* Документы HTML (`.htm`, `.html`, `.xhtml`)
-* Документы Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Документы Microsoft Word (`.docx`, `.docm`, `.doc`)
-* Аудиокниги M4B (`.m4b`)
-* Книги MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
-* Презентации OpenDocument (`.odp`, `.fodp`)
-* Текстовые файлы OpenDocument (`.odt`, `.fodt`)
-* Документы PDF (`.pdf`)
-* Презентации PowerPoint (`.pptx`, `.pptm`, `.ppt`)
-* Документы RTF (`.rtf`)
-* Простые текстовые файлы и логи (`.txt`, `.log`)
+* CHM справочные файлы (`.chm`)
+* DAISY книги (`.opf`, `.zip`)
+* EPUB книги (`.epub`)
+* FB2 электронные книги (`.fb2`)
+* HTML документы (`.htm`, `.html`, `.xhtml`)
+* Markdown документы (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
+* Microsoft Word документы (`.docx`, `.docm`, `.doc`)
+* M4B аудиокниги (`.m4b`)
+* MOBI/Kindle книги (`.mobi`, `.azw`, `.azw3`)
+* OpenDocument презентации (`.odp`, `.fodp`)
+* OpenDocument текстовые файлы (`.odt`, `.fodt`)
+* PDF документы (`.pdf`)
+* PowerPoint презентации (`.pptx`, `.pptm`, `.ppt`)
+* RTF документы (`.rtf`)
+* WinHelp файлы (`.hlp`)
+* Текстовые файлы и файлы логов (`.txt`, `.log`)
 
 ## Сочетания клавиш
 

@@ -90,6 +90,19 @@ impl Default for Document {
 	}
 }
 
+/// The parse-time toggles a reader can change, gathered so a caller can pass them together.
+#[derive(Debug, Clone, Copy)]
+pub struct ParseSettings {
+	pub render_tables_inline: bool,
+	pub join_pdf_paragraphs: bool,
+}
+
+impl Default for ParseSettings {
+	fn default() -> Self {
+		Self { render_tables_inline: true, join_pdf_paragraphs: true }
+	}
+}
+
 #[derive(Debug, Clone)]
 pub struct ParserContext {
 	pub file_path: String,
@@ -98,12 +111,22 @@ pub struct ParserContext {
 	/// When `true`, parsers emit each table's full tab-separated rendering inline; when `false`,
 	/// they emit a `"[Table]: <first row>"` placeholder. Threaded into each parser at parse time.
 	pub render_tables_inline: bool,
+	/// When `true`, the PDF parser joins the lines of an untagged page back into the
+	/// paragraphs they were wrapped from; when `false`, every line stands on its own. Off is
+	/// for documents whose line breaks are the content, such as code listings and poetry.
+	pub join_pdf_paragraphs: bool,
 }
 
 impl ParserContext {
 	#[must_use]
 	pub const fn new(file_path: String) -> Self {
-		Self { file_path, password: None, forced_extension: None, render_tables_inline: true }
+		Self {
+			file_path,
+			password: None,
+			forced_extension: None,
+			render_tables_inline: true,
+			join_pdf_paragraphs: true,
+		}
 	}
 
 	#[must_use]
@@ -121,6 +144,19 @@ impl ParserContext {
 	#[must_use]
 	pub const fn with_render_tables_inline(mut self, value: bool) -> Self {
 		self.render_tables_inline = value;
+		self
+	}
+
+	#[must_use]
+	pub const fn with_join_pdf_paragraphs(mut self, value: bool) -> Self {
+		self.join_pdf_paragraphs = value;
+		self
+	}
+
+	#[must_use]
+	pub const fn with_parse_settings(mut self, settings: ParseSettings) -> Self {
+		self.render_tables_inline = settings.render_tables_inline;
+		self.join_pdf_paragraphs = settings.join_pdf_paragraphs;
 		self
 	}
 }

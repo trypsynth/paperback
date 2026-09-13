@@ -9,7 +9,7 @@ use anyhow::Result;
 use encoding_rs::WINDOWS_1252;
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		Parser, add_converter_markers,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
@@ -25,6 +25,8 @@ mod decompress;
 mod header;
 mod html;
 mod huffman;
+mod index;
+mod kf8;
 mod links;
 mod toc;
 mod varint;
@@ -64,6 +66,13 @@ impl Parser for MobiParser {
 			tracing::debug!(text_encoding = header.text_encoding, "decoding mobi content as windows-1252");
 			WINDOWS_1252.decode(&content).0.into_owned()
 		};
+		// A KF8 book was an EPUB before it was compiled, and its skeleton index still records
+		// where each of those files began. Those are the book's sections.
+		let section_starts = if header.is_kf8 {
+			kf8::section_starts(&data, &header.record_offsets, header.mobi_header()).unwrap_or_default()
+		} else {
+			Vec::new()
+		};
 		// Rewrite MOBI-style filepos links into standard href/id anchors before any
 		// content is stripped, since filepos values are byte offsets into the raw HTML.
 		let frag_offsets = build_fragment_offsets(&data, &header.record_offsets, header.mobi_header());
@@ -86,6 +95,11 @@ impl Parser for MobiParser {
 		}
 		let mut extra_targets = BTreeSet::new();
 		extract_targets(&ncx_toc, &mut extra_targets);
+		// Section starts ride along as link targets, which gets each one an anchor in the
+		// HTML and so an entry in `id_positions` once the text is converted. That is the only
+		// way to learn where a raw-text position ended up, since rewriting and cleaning move
+		// everything around before the converter ever sees it.
+		extra_targets.extend(section_starts.iter().copied());
 		let mut text = rewrite_internal_links(&text, &frag_offsets, &extra_targets);
 		static RE_AID: LazyLock<regex::Regex> =
 			LazyLock::new(|| regex::Regex::new(r#"(?i)\s[ac]id\s*=\s*["'][^"']*["']"#).unwrap());
@@ -136,6 +150,12 @@ impl Parser for MobiParser {
 			}
 			add_converter_markers(&mut buffer, &html_converter, offset);
 		}
+		for (index, start) in section_starts.iter().enumerate() {
+			let Some(&position) = id_positions.get(&format!("fp{start:010}")) else { continue };
+			buffer.add_marker(
+				Marker::new(MarkerType::SectionBreak, position).with_text(format!("Section {}", index + 1)),
+			);
+		}
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		let mut toc_items = build_toc_from_headings(&headings);
@@ -157,6 +177,7 @@ impl Parser for MobiParser {
 			is_kf8 = header.is_kf8,
 			text_encoding = header.text_encoding,
 			num_records = header.record_offsets.len(),
+			sections = section_starts.len(),
 			toc_source,
 			"parsed mobi file"
 		);

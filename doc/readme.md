@@ -34,6 +34,7 @@ The workaround, eventually surfaced through the JAWS discussion group after mont
 
 Paperback supports the following formats and extensions:
 
+* Comic book archives (`.cbz`)
 * CHM help files (`.chm`)
 * DAISY books (`.opf`, `.zip`)
 * EPUB books (`.epub`)
@@ -48,6 +49,7 @@ Paperback supports the following formats and extensions:
 * PDF documents (`.pdf`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * RTF documents (`.rtf`)
+* WinHelp files (`.hlp`)
 * Plain text and log files (`.txt`, `.log`)
 
 ## Keyboard shortcuts

@@ -106,6 +106,8 @@ pub struct AppSettings {
 	pub word_wrap: bool,
 	#[serde(default = "default_true")]
 	pub render_tables_inline: bool,
+	#[serde(default = "default_true")]
+	pub join_pdf_paragraphs: bool,
 	#[serde(default)]
 	pub navigation_wrap: bool,
 	#[serde(default)]
@@ -161,6 +163,7 @@ impl Default for AppSettings {
 			restore_previous_documents: true,
 			word_wrap: false,
 			render_tables_inline: true,
+			join_pdf_paragraphs: true,
 			navigation_wrap: false,
 			find_match_case: false,
 			find_whole_word: false,

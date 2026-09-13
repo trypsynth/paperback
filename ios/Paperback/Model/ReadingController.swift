@@ -46,7 +46,18 @@ final class ReadingController {
 	let ttsManager = TtsManager()
 	var ttsPosition: Int64 = 0
 	var currentSegmentText: String = ""
-	var currentSegmentType: SegmentType = .paragraph
+	var currentNavUnit: NavUnit = .segment(.paragraph)
+	// The structural unit the FFI is asked for. Find isn't one, so it reads as paragraph: that's
+	// what a match's surrounding context is spoken as.
+	var currentSegmentType: SegmentType {
+		if case .segment(let type) = currentNavUnit { return type }
+		return .paragraph
+	}
+	// Find only joins the list once there's a query to step through.
+	var availableNavUnits: [NavUnit] {
+		let segments = SegmentType.allCases.map { NavUnit.segment($0) }
+		return activeSearchQuery == nil ? segments : segments + [.find]
+	}
 	var ttsRules: [TtsRule] = [] {
 		didSet {
 			ttsManager.rules = ttsRules
@@ -81,6 +92,7 @@ final class ReadingController {
 
 	@discardableResult
 	func playNextSegment(speak: Bool = true, announce: Bool = false) -> Bool {
+		if navigateByFind(forward: true, speak: speak, announce: announce) { return true }
 		guard let session = activeSession else { return false }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
@@ -104,6 +116,7 @@ final class ReadingController {
 
 	@discardableResult
 	func playPrevSegment(speak: Bool = true, announce: Bool = false) -> Bool {
+		if navigateByFind(forward: false, speak: speak, announce: announce) { return true }
 		guard let session = activeSession else { return false }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
@@ -130,6 +143,9 @@ final class ReadingController {
 	// jumps that only return the marker's title text, so using them here would make continuous
 	// playback read a heading, then skip straight to the next one, forever.
 	private func advanceTtsAfterUtterance() {
+		// Landing on a Find match should speak its context and then wait for the next button
+		// press, not silently keep reading past it.
+		if currentNavUnit == .find { return }
 		guard let session = activeSession else { return }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
@@ -156,12 +172,15 @@ final class ReadingController {
 
 	private func announceNavigationCue(_ text: String) {
 		let words = text.split(whereSeparator: \.isWhitespace)
-		let cue = words.prefix(5).joined(separator: " ")
+		announce(words.prefix(5).joined(separator: " "))
+	}
+
+	private func announce(_ text: String) {
 		// Delay so SwiftUI's layout-changed accessibility notification fires first;
 		// otherwise it interrupts the announcement when triggered by a button tap.
 		Task { @MainActor in
 			try? await Task.sleep(for: .milliseconds(150))
-			UIAccessibility.post(notification: .announcement, argument: cue)
+			UIAccessibility.post(notification: .announcement, argument: text)
 		}
 	}
 
@@ -185,8 +204,8 @@ final class ReadingController {
 		}
 	}
 
-	func changeSegmentType(_ type: SegmentType) {
-		currentSegmentType = type
+	func changeNavUnit(_ unit: NavUnit) {
+		currentNavUnit = unit
 	}
 
 	func navigateByType(_ type: SegmentTypeFfi, direction: SegmentDirectionFfi) {
@@ -231,57 +250,75 @@ final class ReadingController {
 
 	// Starts (or re-runs) a search and immediately jumps to the first match in the given
 	// direction, matching desktop/Android: there's no separate "start search" step, pressing
-	// Find Previous/Next both sets the active query and jumps in one action.
+	// Find Previous/Next both sets the active query and jumps in one action. Selecting Find as
+	// the navigation unit afterwards is what lets the reading bar's previous/next controls walk
+	// the rest of the matches without reopening this screen.
 	func startSearch(query: String, options: SearchOptions, forward: Bool) {
+		// A fresh query searches from the reading position itself, so a match already under the
+		// cursor counts. Re-running the query that is already active is the user asking for the
+		// next one, so it steps past that match instead of landing on it again.
+		let repeated = query == activeSearchQuery && options == searchOptions
 		activeSearchQuery = query
 		searchOptions = options
-		if forward {
-			findNext(fromQuery: query, options: options)
+		// Text mode has no reading bar to select a unit in, and leaving it later shouldn't drop
+		// the reader into Find without them asking for it.
+		if !isTextMode { currentNavUnit = .find }
+		findMatch(forward: forward, skipCurrent: repeated)
+	}
+
+	func findNext() {
+		findMatch(forward: true, skipCurrent: true)
+	}
+
+	func findPrev() {
+		findMatch(forward: false, skipCurrent: true)
+	}
+
+	// Moves to the next match of the active query, if there is one. Forward search is inclusive
+	// of the start position, so stepping off a match we're sitting on has to nudge past it;
+	// backward search is already exclusive and needs no such adjustment.
+	@discardableResult
+	private func findMatch(forward: Bool, skipCurrent: Bool) -> Bool {
+		guard let session = activeSession, let query = activeSearchQuery else { return false }
+		let start = forward && skipCurrent ? ttsPosition + 1 : ttsPosition
+		let result = session.searchFfi(
+			query: query,
+			startPosition: start,
+			options: SearchOptionsFfi(
+				matchCase: searchOptions.matchCase,
+				wholeWord: searchOptions.wholeWord,
+				regex: searchOptions.regex,
+				forward: forward
+			)
+		)
+		guard result.found else { return false }
+		ttsPosition = result.position
+		context?.persistPosition(result.position)
+		refreshCurrentSegment()
+		return true
+	}
+
+	// Handles previous/next while Find is the chosen navigation unit, stepping between matches
+	// instead of structural units. False when Find isn't the chosen unit, leaving the ordinary
+	// segment path to run. Once it is, this always reports handled, even with no more matches:
+	// there is nothing else for previous/next to fall back to.
+	private func navigateByFind(forward: Bool, speak: Bool, announce shouldAnnounce: Bool) -> Bool {
+		guard currentNavUnit == .find else { return false }
+		guard activeSearchQuery != nil else { return true }
+		guard findMatch(forward: forward, skipCurrent: true) else {
+			// TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+			announce(t("No more matches."))
+			return true
+		}
+		if speak {
+			ttsManager.speak(currentSegmentText)
+			prefetchAdjacentSegments(around: ttsPosition)
 		} else {
-			findPrev(fromQuery: query, options: options)
+			// Discard any paused buffer so pressing play starts at the new position.
+			if ttsManager.isPaused { ttsManager.stop() }
+			if shouldAnnounce { announceNavigationCue(currentSegmentText) }
 		}
-	}
-
-	func findNext(fromQuery: String? = nil, options: SearchOptions? = nil) {
-		guard let session = activeSession else { return }
-		let q = fromQuery ?? activeSearchQuery ?? ""
-		let opts = options ?? searchOptions
-		let result = session.searchFfi(
-			query: q,
-			startPosition: ttsPosition,
-			options: SearchOptionsFfi(
-				matchCase: opts.matchCase,
-				wholeWord: opts.wholeWord,
-				regex: opts.regex,
-				forward: true
-			)
-		)
-		if result.found {
-			ttsPosition = result.position
-			context?.persistPosition(result.position)
-			refreshCurrentSegment()
-		}
-	}
-
-	func findPrev(fromQuery: String? = nil, options: SearchOptions? = nil) {
-		guard let session = activeSession else { return }
-		let q = fromQuery ?? activeSearchQuery ?? ""
-		let opts = options ?? searchOptions
-		let result = session.searchFfi(
-			query: q,
-			startPosition: ttsPosition,
-			options: SearchOptionsFfi(
-				matchCase: opts.matchCase,
-				wholeWord: opts.wholeWord,
-				regex: opts.regex,
-				forward: false
-			)
-		)
-		if result.found {
-			ttsPosition = result.position
-			context?.persistPosition(result.position)
-			refreshCurrentSegment()
-		}
+		return true
 	}
 
 	func goToLine(_ line: Int64) {
