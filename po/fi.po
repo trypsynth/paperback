@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-12 18:19-0600\n"
-"PO-Revision-Date: 2026-09-13 06:42+0300\n"
+"POT-Creation-Date: 2026-09-13 13:31-0600\n"
+"PO-Revision-Date: 2026-09-14 00:10+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1286,6 +1286,11 @@ msgstr "Ei tilapäistä kirjanmerkkiä."
 msgid "Temporary bookmark."
 msgstr "Tilapäinen kirjanmerkki."
 
+#. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
+#| msgid "Page %d"
+msgid "%s, page %d"
+msgstr "%s, sivu %d"
+
 #. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr "&Salasana:"
@@ -2483,8 +2488,16 @@ msgstr "[Sivulla on pelkkä kuva. Aloita tekstintunnistus painamalla Enter.]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Sivulla on pelkkä kuva. Luettavaa tekstiä ei ole.]"
 
+#. TRANSLATORS: Error shown on Android when opening a comic book archive packed with RAR (.cbr), which that build cannot read
+msgid ""
+"Paperback cannot read RAR comic archives on this device. Repack it as a .cbz "
+"to read it here."
+msgstr ""
+"Paperback ei tue tällä laitteella RAR-muodossa olevia sarjakuvapaketteja. "
+"Pakkaa tiedosto uudelleen .cbz-muotoon lukeaksesi sen."
+
+#. TRANSLATORS: Error shown when a comic book archive (.cbr) cannot be opened; {} is the underlying error
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
-#| msgid "Failed to parse RTF document: {}"
 msgid "Failed to parse comic archive: {}"
 msgstr "Sarjakuvapaketin jäsennys epäonnistui: {}"
 
@@ -2549,7 +2562,6 @@ msgid "Failed to convert FB2 XML to text"
 msgstr "FB2 XML -tiedoston tekstimuunnos epäonnistui"
 
 #. TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
-#| msgid "Failed to parse RTF document: {}"
 msgid "Failed to parse WinHelp file: {}"
 msgstr "WinHelp-ohjetiedoston jäsennys epäonnistui: {}"
 
@@ -2681,16 +2693,19 @@ msgstr "Tarvitaan salasana tai se on virheellinen"
 msgid "Failed to open PDF document: {}"
 msgstr "PDF-asiakirjan avaus epäonnistui: {}"
 
-msgid ""
-"Password-protected PPT files are not currently supported. Try saving the "
-"file as PPTX and opening that instead."
-msgstr ""
-"Salasanalla suojattuja PPT-tiedostoja ei tueta. Kokeile tallentaa tiedosto "
-"PPTX-muodossa."
-
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 msgid "PPT file contains no slides"
 msgstr "PPT-tiedostossa ei ole dioja"
+
+#. TRANSLATORS: Error detail shown when an encrypted PowerPoint file needs a password (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+msgid "File is encrypted and requires a password"
+msgstr "Tiedosto on salattu ja sen avaamiseen tarvitaan salasana"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office file fails; {} is the underlying error
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+msgid "Decryption failed (wrong password?): {}"
+msgstr "Virhe salausta purettaessa (tarkista salasana): {}"
 
 #. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
 msgid "PowerPoint Document stream not found"
@@ -2703,14 +2718,6 @@ msgstr "PPTX-tiedostossa ei ole dioja"
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 msgid "Failed to parse RTF document: {}"
 msgstr "RTF-asiakirjan jäsennys epäonnistui: {}"
-
-#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-msgid "File is encrypted and requires a password"
-msgstr "Tiedosto on salattu ja sen avaamiseen tarvitaan salasana"
-
-#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-msgid "Decryption failed (wrong password?): {}"
-msgstr "Virhe salausta purettaessa (tarkista salasana): {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -2981,7 +2988,7 @@ msgstr "Vaihda tekstistä puheeksi -tilaan"
 msgid "Switch to Text Mode"
 msgstr "Vaihda tekstitilaan"
 
-#. TRANSLATORS: Menu item to open the list of recently opened documents
+#. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
 msgid "Recent Documents"
 msgstr "Viimeisimmät asiakirjat"
@@ -3046,7 +3053,7 @@ msgstr "Avaa kirja"
 msgid "Locate"
 msgstr "Etsi"
 
-#. TRANSLATORS: Button to remove a document from the recent documents list
+#. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr "Poista"
@@ -3615,7 +3622,7 @@ msgstr "Asiakirjassa on {} sanaa."
 msgid "words"
 msgstr "sanaa"
 
-#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
+#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
 msgid "Close Search"
 msgstr "Sulje haku"
@@ -3961,3 +3968,58 @@ msgid ""
 msgstr ""
 "Siirry TalkBackia käytettäessä eteenpäin pyyhkäisemällä toistopainikkeen "
 "kohdalla ylöspäin tai taaksepäin pyyhkäisemällä alaspäin."
+
+#. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
+#: kt
+#| msgid "Currently Open"
+msgid "Current path: {}"
+msgstr "Nykyinen kansiopolku: {}"
+
+#: kt
+msgid "{}, {}, modified {}{}"
+msgstr "{}, {}, muokattu {}{}"
+
+#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
+#: kt
+#| msgid "Percent"
+msgid "{} percent"
+msgstr "{} prosenttia"
+
+#. TRANSLATORS: TalkBack state of a heading line in the document; {} is its level number
+#: kt
+#| msgid "Heading"
+msgid "Heading {}"
+msgstr "Otsikko {}"
+
+#. TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
+#: kt
+#| msgid "Go to next heading"
+msgid "go to heading"
+msgstr "siirtyäksesi otsikkoon"
+
+#: kt
+msgid "{}, Level {}"
+msgstr "{}, taso {}"
+
+#. TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
+#: kt
+#| msgid "Go to line"
+msgid "go to link"
+msgstr "siirtyäksesi linkkiin"
+
+#. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
+#: kt
+#| msgid "Import and export options"
+msgid "show import and export options"
+msgstr "näyttääksesi tuonnin ja viennin asetukset"
+
+#. TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
+#: kt
+msgid "open"
+msgstr "avataksesi"
+
+#. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
+#: kt
+#| msgid "Go to percent"
+msgid "go to chapter"
+msgstr "siirtyäksesi lukuun"

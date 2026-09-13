@@ -34,12 +34,13 @@ Kiertotienä ongelmaan on paperback.jcf-tiedoston muokkaaminen siten, että aset
 
 Paperback tukee seuraavia tiedostomuotoja:
 
-* Sarjakuvapaketit (`.cbz`)
+* Sarjakuvapaketit (`.cbz`, `.cbr`)
 * CHM-ohjetiedostot (`.chm`)
 * DAISY-kirjat (`.opf`, `.zip`)
 * EPUB-kirjat (`.epub`)
 * FB2-e-kirjat (`.fb2`)
 * HTML-asiakirjat (`.htm`, `.html`, `.xhtml`)
+* `Man`- ja BSD `mdoc` -muodoissa olevat man-sivut (`.1`–`.9`, `.man`, `.roff` sekä niiden gzip-pakatut versiot)
 * Markdown-asiakirjat (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word -asiakirjat (`.docx`, `.docm`, `.doc`)
 * M4B-äänikirjat (`.m4b`)
@@ -75,7 +76,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisi
 * `Ctrl+G` (macOS: `Cmd+L`): Siirry riville.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Siirry prosenttiin.
 * `Ctrl+P`: Siirry sivulle (jos asiakirja tukee sitä).
-* `=`: Ilmoittaa asiakirjan lukukohdan prosentteina.
+* `=`: Ilmoittaa asiakirjan lukukohdan prosentteina sekä sivunumeron (esim. "15 %, sivu 30"). Sivunumeroa ei ilmoiteta, jos asiakirjassa ei niitä ole.
 * `Alt+Vasen nuoli` (macOS: `Cmd+[`): Siirry taaksepäin navigointihistoriassa.
 * `Alt+Oikea nuoli` (macOS: `Cmd+]`): Siirry eteenpäin navigointihistoriassa.
 * `[`: Edellinen luku.
@@ -213,8 +214,10 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu ongelma, jonka vuoksi ylimääräisen ZIP64-lohkon sisältämät EPUB-tiedostot eivät avautuneet, vaan antoivat virheilmoituksen ”Invalid local file header”.
 * Pitkissä asiakirjoissa ei enää palata alkuun, kun niitä luetaan ruudunlukijan jatkuvalla luvulla.
 * Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.
+* =-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim. ”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole sivunumeroita.
 * Automaattinen ”Asiakirja päivitetty” -ilmoitus odottaa nyt ruudunlukijan puheen päättymistä eikä keskeytä sitä enää kesken lauseen.
 * Asetukset-ikkunan Yleiset-välilehden sarkainjärjestys noudattaa nyt näytön järjestystä, ja päivityskanava on heti päivitystarkistuksen jälkeen.
+* Päivityksen jälkeen uudelleen käynnistyvän sovelluksen ikkuna siirtyy nyt etualalle sen sijaan, että jäisi Alt+Sarkain-järjestyksessä viimeiseksi.
 * Avaa sovelluksessa -valikossa ei näytetä enää sovelluksen koko kuvausta vaan pelkkä "Paperback".
 * Sanamäärä- ja Asiakirjan tiedot -ikkunoissa näytetään nyt äänikirjan tiedostomäärä sekä kokonaiskesto.
 
