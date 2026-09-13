@@ -39,16 +39,12 @@ pub fn check(path: &Path) -> Result<()> {
 	}
 	let extension = path.extension().and_then(|extension| extension.to_str()).unwrap_or_default();
 	if extension.is_empty() {
-		bail!(
-			"{} has no file extension, so pb cannot tell which format it is\n{}",
-			path.display(),
-			readable_extensions_line()
-		);
+		bail!("{} has no file extension, so pb cannot tell which format it is\n{}", path.display(), LIST_HINT);
 	}
 	if let Some(nearest) = nearest_extension(extension) {
 		bail!("pb cannot read .{extension} files: {}\nDid you mean .{nearest}?", path.display());
 	}
-	bail!("pb cannot read .{extension} files: {}\n{}", path.display(), readable_extensions_line())
+	bail!("pb cannot read .{extension} files: {}\n{}", path.display(), LIST_HINT)
 }
 
 /// Every extension a parser is registered for, in alphabetical order and without repeats.
@@ -60,20 +56,9 @@ fn supported_extensions() -> Vec<&'static str> {
 	extensions
 }
 
-/// The extensions worth reading out, as one line.
-///
-/// A manual page is named for the section it is in, so nine of the registered extensions are
-/// the bare digits. At the head of an alphabetical list they read as noise, so they are named
-/// as what they are instead.
-fn readable_extensions_line() -> String {
-	let (sections, named): (Vec<&str>, Vec<&str>) =
-		supported_extensions().into_iter().partition(|extension| extension.chars().all(|c| c.is_ascii_digit()));
-	let mut line = format!("Readable extensions: {}", named.join(", "));
-	if !sections.is_empty() {
-		line.push_str(", and manual page sections 1 to 9");
-	}
-	line
-}
+/// Where to find the formats pb reads. Forty extensions under every error is a wall to read
+/// past, and the reader who wants them can ask.
+const LIST_HINT: &str = "Run pb --list-formats to see what it can read.";
 
 /// The one readable extension close enough to `extension` to be worth suggesting, or `None`
 /// where nothing is close or more than one thing is.
@@ -202,23 +187,23 @@ mod tests {
 	}
 
 	#[test]
-	fn a_file_with_no_extension_says_so_and_lists_what_it_could_be() {
+	fn a_file_with_no_extension_says_so_and_says_where_to_look() {
 		let dir = TempDir::new("pb-bare");
 		let path = dir.join_str("notes");
 		fs::write(&path, b"x").expect("write");
 		let message = message(Path::new(&path));
 		assert!(message.contains("no file extension"), "{message}");
-		assert!(message.contains("epub"), "{message}");
+		assert!(message.contains("--list-formats"), "{message}");
 	}
 
 	#[test]
-	fn an_unreadable_extension_lists_the_readable_ones() {
+	fn an_unreadable_extension_says_where_the_readable_ones_are() {
 		let dir = TempDir::new("pb-unknown");
 		let path = dir.join_str("thing.xyz");
 		fs::write(&path, b"x").expect("write");
 		let message = message(Path::new(&path));
 		assert!(message.contains("cannot read .xyz files"), "{message}");
-		assert!(message.contains("epub"), "{message}");
+		assert!(message.contains("--list-formats"), "{message}");
 	}
 
 	/// A near miss gets the near miss rather than the whole list, which is the answer the reader
@@ -231,7 +216,22 @@ mod tests {
 			fs::write(&path, b"x").expect("write");
 			let message = message(Path::new(&path));
 			assert!(message.contains(&format!("Did you mean {meant}?")), "{typed}: {message}");
-			assert!(!message.contains("Readable extensions"), "{typed}: {message}");
+			assert!(!message.contains("--list-formats"), "{typed}: {message}");
+		}
+	}
+
+	/// The list of forty extensions used to sit under every one of these, which is a wall to
+	/// read past for someone who mistyped a name.
+	#[test]
+	fn no_refusal_runs_past_two_lines() {
+		let dir = TempDir::new("pb-short");
+		let unreadable = dir.join_str("thing.xyz");
+		fs::write(&unreadable, b"x").expect("write");
+		let extensionless = dir.join_str("notes");
+		fs::write(&extensionless, b"x").expect("write");
+		for path in [&unreadable, &extensionless] {
+			let message = message(Path::new(path));
+			assert!(message.lines().count() <= 2, "{message}");
 		}
 	}
 
@@ -241,15 +241,6 @@ mod tests {
 		let path = dir.join_str("book.epub");
 		fs::write(&path, b"x").expect("write");
 		check(Path::new(&path)).expect("nothing in the way of trying");
-	}
-
-	/// A manual page is named `grep.1`, so the digits are real extensions; read out at the head
-	/// of the list they look like a mistake.
-	#[test]
-	fn the_manual_page_sections_are_named_rather_than_listed_as_digits() {
-		let line = readable_extensions_line();
-		assert!(line.starts_with("Readable extensions: azw"), "{line}");
-		assert!(line.ends_with("manual page sections 1 to 9"), "{line}");
 	}
 
 	#[test]

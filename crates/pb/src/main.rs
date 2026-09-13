@@ -9,6 +9,7 @@ use paperback_core::{
 };
 
 mod cli;
+mod formats;
 mod input;
 
 use cli::{Cli, Format};
@@ -16,12 +17,18 @@ use cli::{Cli, Format};
 fn main() -> Result<()> {
 	let cli = Cli::parse();
 	init_logging(cli.verbose);
-	let ext = cli.input.extension().and_then(|e| e.to_str()).unwrap_or("");
-	input::check(&cli.input)?;
-	let file_path = cli.input.to_string_lossy().into_owned();
+	if cli.list_formats {
+		print!("{}", formats::listing());
+		return Ok(());
+	}
+	// clap holds the input to being there unless the formats are all that was asked for.
+	let input = cli.input.expect("an input file");
+	let ext = input.extension().and_then(|e| e.to_str()).unwrap_or("");
+	input::check(&input)?;
+	let file_path = input.to_string_lossy().into_owned();
 	if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" {
 		let html = export::epub_direct::render(&file_path)
-			.with_context(|| format!("failed to convert {}", cli.input.display()))?;
+			.with_context(|| format!("failed to convert {}", input.display()))?;
 		// map_or_else reads worse here than the plain if/else.
 		#[allow(clippy::option_if_let_else)]
 		return if let Some(path) = cli.output {
@@ -40,14 +47,14 @@ fn main() -> Result<()> {
 		Ok(doc) => doc,
 		Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
 			if cli.no_prompt {
-				eprintln!("pb: {} needs a password; skipping (use -p to supply one)", cli.input.display());
+				eprintln!("pb: {} needs a password; skipping (use -p to supply one)", input.display());
 				process::exit(2);
 			}
 			let password = rpassword::prompt_password("Password: ").context("failed to read password")?;
 			context.password = Some(password);
-			parse_document(&context).with_context(|| format!("failed to parse {}", cli.input.display()))?
+			parse_document(&context).with_context(|| format!("failed to parse {}", input.display()))?
 		}
-		Err(e) => return Err(e.context(format!("failed to parse {}", cli.input.display()))),
+		Err(e) => return Err(e.context(format!("failed to parse {}", input.display()))),
 	};
 	let handle = paperback_core::document::DocumentHandle::new(doc);
 	let is_markdown = !cli.metadata && matches!(cli.format, Format::Markdown);
