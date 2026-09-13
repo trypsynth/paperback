@@ -1077,11 +1077,11 @@ impl DocumentManager {
 /// EPUB that carries no page list.
 ///
 /// The `.max(1)` covers a hole in `current_page`, which answers 0 both for a document with no pages
-/// - what the guard above has already turned into `None` - and for a position ahead of the first
-/// marker, where 0 is not a page number to say out loud. Only a PDF escapes that second case, since
-/// its first page marker sits at offset 0. An RTF's and a DAISY book's first break lands
-/// mid-document, and an EPUB page list starts at the first *content* page, leaving the cover and
-/// title pages in front of every marker.
+/// and for a position ahead of the first marker: the first is what the guard above has already
+/// turned into `None`, the second is not a page number to say out loud. Only a PDF escapes the
+/// second case, since its first page marker sits at offset 0. An RTF's and a DAISY book's first
+/// break lands mid-document, and an EPUB page list starts at the first *content* page, leaving the
+/// cover and title pages in front of every marker.
 ///
 /// Every caller of `current_page` patches that 0 differently or not at all - Go to Page clamps it
 /// (`dialogs::show_go_to_page_dialog`), the Elements view reads it as "no closest page"
