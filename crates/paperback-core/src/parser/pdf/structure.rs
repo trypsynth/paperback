@@ -7,11 +7,17 @@
 //! [`extract_tagged_page_text`] first checks how much of the page's text is actually covered
 //! by a marked-content id and bails out to the caller's plain-text fallback below
 //! [`MIN_MCID_COVERAGE`]. It bails out the same way when the tree it is handed leads to no text
-//! at all, which is what a PDF exported from Apple Pages gives pdfium.
+//! at all, which is what a file pdfium cannot read the structure of is left looking like once
+//! [`super::repair`] has had its chance at it.
 
-use std::{collections::HashMap, fmt::Write as _};
+use std::{
+	collections::{HashMap, HashSet},
+	ffi::CString,
+	fmt::Write as _,
+	os::raw::c_ulong,
+};
 
-use pdfium::{PdfiumPage, PdfiumStructElement, PdfiumTextPage};
+use pdfium::{PdfiumPage, PdfiumPageObject, PdfiumStructElement, PdfiumTextPage, lib};
 
 use super::{
 	images::append_image,
@@ -50,6 +56,13 @@ pub(super) fn extract_tagged_page_text(
 	if child_count == 0 {
 		return false;
 	}
+	let mut referenced_mcids: HashSet<i32> = HashSet::new();
+	for i in 0..child_count {
+		if let Ok(child) = struct_tree.child(i) {
+			collect_referenced_mcids(&child, &mut referenced_mcids);
+		}
+	}
+	let mcid_key = CString::new("MCID").expect("MCID holds no nul byte");
 	let mut mcid_to_text: HashMap<i32, String> = HashMap::new();
 	let mut real_char_count: usize = 0;
 	let mut mcid_char_count: usize = 0;
@@ -72,7 +85,7 @@ pub(super) fn extract_tagged_page_text(
 				let is_generated = text_page.is_generated(i).unwrap_or(false);
 				let mut char_mcid = -1;
 				if !is_generated && let Ok(obj) = text_page.get_text_object(i) {
-					char_mcid = obj.get_marked_content_id();
+					char_mcid = object_mcid(&obj, &referenced_mcids, &mcid_key);
 				}
 				if !is_generated && !ch.is_whitespace() {
 					real_char_count += 1;
@@ -106,10 +119,11 @@ pub(super) fn extract_tagged_page_text(
 		return false;
 	}
 	// pdfium hands back a null child for a top-level element it cannot load, so a page whose only
-	// element is one of those walks to nothing at all. A PDF exported from Apple Pages does just
-	// that: every glyph carries a marked-content id, the tree reports one child, and that child
-	// cannot be reached. Reporting the tagged path as used would hand the caller an empty page
-	// and stop plain extraction from ever running over text that is there.
+	// element is one of those walks to nothing at all. That is what a missing parent tree looks
+	// like: every glyph carries a marked-content id, the tree reports one child, and that child
+	// cannot be reached. [`super::repair`] gets such a file its tree back where it can; where it
+	// cannot, reporting the tagged path as used would hand the caller an empty page and stop
+	// plain extraction from ever running over text that is there.
 	if mcid_to_text.is_empty() || (0..child_count).all(|i| struct_tree.child(i).is_err()) {
 		tracing::warn!(page_index, "page structure tree leads to no text, falling back to plain extraction");
 		return false;
@@ -133,6 +147,45 @@ pub(super) fn extract_tagged_page_text(
 	}
 	flush_block(&mut pending_label, &mut current_block, buffer, page_display_text, current_lines_info);
 	true
+}
+
+/// Every marked-content id the tree points at, gathered before any text is read so that
+/// [`object_mcid`] knows which of an object's marks the tree is going to ask for.
+fn collect_referenced_mcids(elem: &PdfiumStructElement, out: &mut HashSet<i32>) {
+	let count = elem.count_children();
+	for i in 0..count {
+		if let Ok(child) = elem.child(i) {
+			collect_referenced_mcids(&child, out);
+		} else if let Some(mcid) = elem.child_marked_content_id(i) {
+			out.insert(mcid);
+		}
+	}
+}
+
+/// The marked-content id a text object's glyphs belong to.
+///
+/// pdfium reports the outermost mark carrying an id, which is the whole answer for the single
+/// mark a tagged PDF normally writes around a piece of text. A PDF exported from Apple Pages
+/// nests them: the list's mark wraps the item's, which wraps the label's, so every glyph in the
+/// list reports the list's id and the ids the structure tree actually points at are left holding
+/// nothing. Taking the innermost mark the tree refers to puts the text where the tree looks for
+/// it. An object with one mark, which is every object in a document written the usual way, skips
+/// all of this and keeps the id pdfium gives.
+fn object_mcid(obj: &PdfiumPageObject, referenced: &HashSet<i32>, mcid_key: &CString) -> i32 {
+	let outermost = obj.get_marked_content_id();
+	let count = obj.count_marks();
+	if count <= 1 {
+		return outermost;
+	}
+	let mut deepest = outermost;
+	for index in 0..count {
+		let Ok(mark) = obj.get_mark(index as c_ulong) else { continue };
+		let mut mcid = -1;
+		if lib().FPDFPageObjMark_GetParamIntValue(&mark, mcid_key, &mut mcid).is_ok() && referenced.contains(&mcid) {
+			deepest = mcid;
+		}
+	}
+	deepest
 }
 
 /// Replaces a list label made only of private-use characters with a plain bullet.
