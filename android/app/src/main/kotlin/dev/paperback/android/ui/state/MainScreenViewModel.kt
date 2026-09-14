@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
-import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
@@ -243,7 +242,7 @@ class MainScreenViewModel(
 			withContext(Dispatchers.Main) {
 				ttsManager.loadConfigAndInit()
 			}
-			_supportedMimeTypes.value = buildSupportedMimeTypes()
+			_supportedMimeTypes.value = mimeTypesFor(config.getSupportedExtensions())
 			val restorePrevious = settings.restorePreviousDocuments.state.value
 			val openedUris = if (restorePrevious) config.getOpenedDocuments() else emptyList()
 			val activeDocKey = config.getAppString(ACTIVE_DOCUMENT_KEY, "")
@@ -289,44 +288,6 @@ class MainScreenViewModel(
 				}
 			}
 		}
-	}
-
-	private fun buildSupportedMimeTypes(): Array<String> {
-		val extensions = config.getSupportedExtensions()
-		val mimeMap = MimeTypeMap.getSingleton()
-		val mimes = mutableSetOf<String>()
-		for (ext in extensions) {
-			val mime: String? = mimeMap.getMimeTypeFromExtension(ext)
-			if (mime != null) {
-				mimes.add(mime)
-			}
-			when (ext.lowercase()) {
-				"epub" -> mimes.add("application/epub+zip")
-				"fb2" -> mimes.add("application/x-fictionbook+xml")
-				"md" -> mimes.add("text/markdown")
-				"chm" -> mimes.add("application/vnd.ms-htmlhelp")
-				"opf" -> mimes.add("application/oebps-package+xml")
-				"fodp" -> mimes.add("application/vnd.oasis.opendocument.presentation")
-				"fodt" -> mimes.add("application/vnd.oasis.opendocument.text")
-				"zip" -> mimes.add("application/zip")
-				"rtf" -> mimes.add("application/rtf")
-				"pdf" -> mimes.add("application/pdf")
-				"txt" -> mimes.add("text/plain")
-				"xml" -> {
-					mimes.add("application/xml")
-					mimes.add("text/xml")
-				}
-				"html" -> mimes.add("text/html")
-				"doc" -> mimes.add("application/msword")
-				"docx" -> mimes.add("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-				"docm" -> mimes.add("application/vnd.ms-word.document.macroEnabled.12")
-				"odt" -> mimes.add("application/vnd.oasis.opendocument.text")
-				"odp" -> mimes.add("application/vnd.oasis.opendocument.presentation")
-				"pptx" -> mimes.add("application/vnd.openxmlformats-officedocument.presentationml.presentation")
-				"mobi" -> mimes.add("application/x-mobipocket-ebook")
-			}
-		}
-		return if (mimes.isEmpty()) arrayOf("*/*") else mimes.toTypedArray()
 	}
 
 	private suspend fun updateRecentDocuments() {
