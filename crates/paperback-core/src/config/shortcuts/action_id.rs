@@ -74,6 +74,8 @@ pub enum ActionId {
 	ViewSource,
 	ToggleBookmark,
 	BookmarkWithNote,
+	SetSelectionStart,
+	CopyFromSelectionStart,
 	ToggleWordWrap,
 	PlayPauseAudio,
 	SeekAudioForward,
@@ -168,6 +170,8 @@ impl ActionId {
 			Self::ViewSource,
 			Self::ToggleBookmark,
 			Self::BookmarkWithNote,
+			Self::SetSelectionStart,
+			Self::CopyFromSelectionStart,
 			Self::ToggleWordWrap,
 			Self::PlayPauseAudio,
 			Self::SeekAudioForward,
@@ -262,6 +266,8 @@ impl ActionId {
 			| Self::ViewSource
 			| Self::ToggleBookmark
 			| Self::BookmarkWithNote
+			| Self::SetSelectionStart
+			| Self::CopyFromSelectionStart
 			| Self::ToggleWordWrap
 			| Self::PlayPauseAudio
 			| Self::SeekAudioForward
@@ -423,6 +429,10 @@ impl ActionId {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::BookmarkWithNote => crate::t("Bookmark with Note"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::SetSelectionStart => crate::t("Set Selection Start"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::CopyFromSelectionStart => crate::t("Copy from Selection Start"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ToggleWordWrap => crate::t("Toggle Word Wrap"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::PlayPauseAudio => crate::t("Play/Pause Audio"),
@@ -538,6 +548,10 @@ impl ActionId {
 			Self::ViewSource => Some(KeyChord::new(true, false, false, "U")),
 			Self::ToggleBookmark => Some(KeyChord::new(true, false, true, "B")),
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
+			// Option+F9/F10 is a media key chord on an Apple keyboard, and the system eats it
+			// before wx sees it, so the Cmd forms are what actually reach the app here.
+			Self::SetSelectionStart => Some(KeyChord::new(true, false, false, "F9")),
+			Self::CopyFromSelectionStart => Some(KeyChord::new(true, false, false, "F10")),
 			Self::ToggleWordWrap => Some(KeyChord::new(true, true, false, "W")),
 			Self::PlayPauseAudio => Some(KeyChord::new_raw_ctrl(true, false, false, "Space")),
 			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),
@@ -634,6 +648,10 @@ impl ActionId {
 			Self::ViewSource => Some(KeyChord::new(true, false, false, "U")),
 			Self::ToggleBookmark => Some(KeyChord::new(true, false, true, "B")),
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
+			// Shift+F10 is the context menu (and Windows' context-menu key), so this pair is on
+			// Alt instead, which is free apart from Alt+Left/Right in the navigation history.
+			Self::SetSelectionStart => Some(KeyChord::new(false, true, false, "F9")),
+			Self::CopyFromSelectionStart => Some(KeyChord::new(false, true, false, "F10")),
 			Self::ToggleWordWrap => Some(KeyChord::new(true, true, false, "W")),
 			Self::PlayPauseAudio => Some(KeyChord::new(true, false, false, "Space")),
 			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),
