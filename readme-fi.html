@@ -320,13 +320,16 @@ asetuksilla vierityksen pitäisi toimia oikein.</p>
 <h1 id="tuettavat-tiedostomuodot">Tuettavat tiedostomuodot</h1>
 <p>Paperback tukee seuraavia tiedostomuotoja:</p>
 <ul>
-<li>Sarjakuvapaketit (<code>.cbz</code>)</li>
+<li>Sarjakuvapaketit (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>CHM-ohjetiedostot (<code>.chm</code>)</li>
 <li>DAISY-kirjat (<code>.opf</code>, <code>.zip</code>)</li>
 <li>EPUB-kirjat (<code>.epub</code>)</li>
 <li>FB2-e-kirjat (<code>.fb2</code>)</li>
 <li>HTML-asiakirjat (<code>.htm</code>, <code>.html</code>,
 <code>.xhtml</code>)</li>
+<li><code>Man</code>- ja BSD <code>mdoc</code> -muodoissa olevat
+man-sivut (<code>.1</code>–<code>.9</code>, <code>.man</code>,
+<code>.roff</code> sekä niiden gzip-pakatut versiot)</li>
 <li>Markdown-asiakirjat (<code>.md</code>, <code>.markdown</code>,
 <code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>,
 <code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>,
@@ -378,7 +381,9 @@ riville.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Siirry
 prosenttiin.</li>
 <li><code>Ctrl+P</code>: Siirry sivulle (jos asiakirja tukee sitä).</li>
-<li><code>=</code>: Ilmoittaa asiakirjan lukukohdan prosentteina.</li>
+<li><code>=</code>: Ilmoittaa asiakirjan lukukohdan prosentteina sekä
+sivunumeron (esim. “15 %, sivu 30”). Sivunumeroa ei ilmoiteta, jos
+asiakirjassa ei niitä ole.</li>
 <li><code>Alt+Vasen nuoli</code> (macOS: <code>Cmd+[</code>): Siirry
 taaksepäin navigointihistoriassa.</li>
 <li><code>Alt+Oikea nuoli</code> (macOS: <code>Cmd+]</code>): Siirry
@@ -555,12 +560,18 @@ local file header”.</li>
 ruudunlukijan jatkuvalla luvulla.</li>
 <li>Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä
 aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.</li>
+<li>=-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim.
+”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole
+sivunumeroita.</li>
 <li>Automaattinen ”Asiakirja päivitetty” -ilmoitus odottaa nyt
 ruudunlukijan puheen päättymistä eikä keskeytä sitä enää kesken
 lauseen.</li>
 <li>Asetukset-ikkunan Yleiset-välilehden sarkainjärjestys noudattaa nyt
 näytön järjestystä, ja päivityskanava on heti päivitystarkistuksen
 jälkeen.</li>
+<li>Päivityksen jälkeen uudelleen käynnistyvän sovelluksen ikkuna
+siirtyy nyt etualalle sen sijaan, että jäisi Alt+Sarkain-järjestyksessä
+viimeiseksi.</li>
 <li>Avaa sovelluksessa -valikossa ei näytetä enää sovelluksen koko
 kuvausta vaan pelkkä “Paperback”.</li>
 <li>Sanamäärä- ja Asiakirjan tiedot -ikkunoissa näytetään nyt äänikirjan
