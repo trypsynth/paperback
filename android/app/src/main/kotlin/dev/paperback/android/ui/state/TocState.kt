@@ -95,3 +95,17 @@ internal fun ancestorsOf(
 	}
 	return ancestors
 }
+
+/**
+ * The title of the section [position] falls in: the last entry starting at or before it, or an
+ * empty string when the document has no section that far back (front matter before the first
+ * heading, say). Entries are taken in the order the document gives them, which is reading order.
+ *
+ * Distinct from [activeEntryFor], which the contents screen uses: a screen that has to highlight
+ * a row falls back to the first one, while a spoken announcement is better off saying nothing
+ * than naming a section the reader is not in.
+ */
+fun sectionTitleAt(
+	toc: List<TocEntry>,
+	position: Long
+): String = toc.lastOrNull { it.position <= position }?.title.orEmpty()
