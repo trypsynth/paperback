@@ -5,13 +5,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import dev.paperback.android.ui.AllDocumentsScreen
-import dev.paperback.android.ui.ElementsScreen
-import dev.paperback.android.ui.MainScreen
-import dev.paperback.android.ui.MainScreenViewModel
-import dev.paperback.android.ui.OnScreenRequest
-import dev.paperback.android.ui.SettingsScreen
-import dev.paperback.android.ui.TocScreen
+import dev.paperback.android.ui.screens.AllDocumentsScreen
+import dev.paperback.android.ui.screens.ElementsScreen
+import dev.paperback.android.ui.screens.MainScreen
+import dev.paperback.android.ui.screens.SettingsScreen
+import dev.paperback.android.ui.screens.TocScreen
+import dev.paperback.android.ui.state.MainScreenViewModel
+import dev.paperback.android.ui.state.OnScreenRequest
 
 @Composable
 fun MainNavigation() {

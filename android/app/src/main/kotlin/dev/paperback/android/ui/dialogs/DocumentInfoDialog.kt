@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import dev.paperback.android.t
-import dev.paperback.android.ui.DocumentTabState
+import dev.paperback.android.ui.state.DocumentTabState
 import uniffi.paperback.DocumentStatsFfi
 
 @Composable

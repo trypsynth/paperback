@@ -23,9 +23,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
-import dev.paperback.android.ui.DocumentTabState
-import dev.paperback.android.ui.PickerMenuItem
-import dev.paperback.android.ui.pickerAnchorColors
+import dev.paperback.android.ui.components.PickerMenuItem
+import dev.paperback.android.ui.components.pickerAnchorColors
+import dev.paperback.android.ui.state.DocumentTabState
 
 const val GO_TO_LINE = "Line"
 const val GO_TO_PAGE = "Page"

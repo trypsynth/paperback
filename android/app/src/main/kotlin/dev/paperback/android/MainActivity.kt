@@ -24,7 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import dev.paperback.android.theme.MyApplicationTheme
-import dev.paperback.android.ui.MainScreenViewModel
+import dev.paperback.android.ui.state.MainScreenViewModel
 import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
 
