@@ -24,6 +24,7 @@ import dev.paperback.android.ui.dialogs.WordCountDialog
 import dev.paperback.android.ui.state.DocumentTabState
 import dev.paperback.android.ui.state.MainScreenViewModel
 import dev.paperback.android.ui.state.NavUnit
+import dev.paperback.android.ui.state.lineIndexFor
 import kotlinx.coroutines.launch
 import uniffi.paperback.ExportFormat
 
@@ -151,7 +152,7 @@ fun DocumentTextDialogs(
 				if (!res.found) return@FindDialog
 				if (isTextMode) {
 					val targetLine = docState.session.lineFromPosition(res.position)
-					val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+					val targetIndex = lineIndexFor(targetLine)
 					scope.launch {
 						listState.scrollToItem(targetIndex)
 						onFocusLine(targetIndex)

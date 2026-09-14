@@ -208,12 +208,14 @@ class TtsManager(
 				override fun onDone(utteranceId: String?) {
 					val isCurrentContent = utteranceId != null && utteranceId == currentContentUtteranceId
 					val isCurrentPrecache = utteranceId != null && utteranceId == currentPrecacheUtteranceId
-					if (isCurrentContent && currentTempFile != null) {
+					val contentFile = currentTempFile
+					val precacheFile = nextTempFile
+					if (isCurrentContent && contentFile != null) {
 						ttsScope.launch(Dispatchers.IO) {
 							try {
 								val player = MediaPlayer().apply {
 									setAudioAttributes(speechAudioAttributes())
-									setDataSource(currentTempFile!!.absolutePath)
+									setDataSource(contentFile.absolutePath)
 
 									setOnPreparedListener { mp ->
 										ttsScope.launch(Dispatchers.Main) {
@@ -246,12 +248,12 @@ class TtsManager(
 								e.printStackTrace()
 							}
 						}
-					} else if (isCurrentPrecache && nextTempFile != null) {
+					} else if (isCurrentPrecache && precacheFile != null) {
 						ttsScope.launch(Dispatchers.IO) {
 							try {
 								val nextPlayer = MediaPlayer().apply {
 									setAudioAttributes(speechAudioAttributes())
-									setDataSource(nextTempFile!!.absolutePath)
+									setDataSource(precacheFile.absolutePath)
 
 									setOnPreparedListener { nextMp ->
 										ttsScope.launch(Dispatchers.Main) {
@@ -318,11 +320,11 @@ class TtsManager(
 				_isInitialized.value = true
 				return
 			}
-			if (_currentEngineName.value == SYSTEM_DEFAULT) {
+			val engine = _currentEngineName.value
+			if (engine == null || engine == SYSTEM_DEFAULT) {
 				_availableVoices.value = emptyList()
 				_currentVoice.value = null
 			} else {
-				val engine = _currentEngineName.value!!
 				val savedRate = config.getAppString("${KEY_RATE}_$engine", "50").toIntOrNull() ?: 50
 				setSpeechRate(savedRate)
 				val savedPitch = config.getAppString("${KEY_PITCH}_$engine", "50").toIntOrNull() ?: 50

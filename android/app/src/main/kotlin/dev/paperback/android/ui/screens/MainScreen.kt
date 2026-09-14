@@ -43,6 +43,7 @@ import dev.paperback.android.ui.state.MainScreenViewModel
 import dev.paperback.android.ui.state.NavUnit
 import dev.paperback.android.ui.state.OnScreenRequest
 import dev.paperback.android.ui.state.activeTab
+import dev.paperback.android.ui.state.lineIndexFor
 import dev.paperback.android.ui.state.scrollsWorthSaving
 import dev.paperback.android.ui.state.shouldSyncPositionFromList
 import kotlinx.coroutines.Dispatchers
@@ -118,7 +119,7 @@ fun MainScreen(
 			val res = tab.session.searchFfi(query, searchPos, options.copy(forward = forward))
 			if (res.found) {
 				val line = tab.session.lineFromPosition(res.position)
-				val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
+				val indexToScroll = lineIndexFor(line)
 				listState?.scrollToItem(indexToScroll)
 			}
 		}
@@ -432,7 +433,7 @@ fun MainScreen(
 								val offset = pendingJumpOffset
 								if (offset != null) {
 									val line = docState.session.lineFromPosition(offset)
-									jumpToLine((line - 1).toInt().coerceAtLeast(0))
+									jumpToLine(lineIndexFor(line))
 									viewModel.consumeJumpRequest()
 								}
 							}
@@ -447,7 +448,7 @@ fun MainScreen(
 								previousTextMode = isTextMode
 								if (isTextMode) {
 									val line = docState.session.lineFromPosition(ttsPosition)
-									val index = (line - 1).toInt().coerceAtLeast(0)
+									val index = lineIndexFor(line)
 									listState.scrollToItem(index)
 									lineIndexToFocus = index
 								} else if (shouldSyncPositionFromList(previous, isTextMode)) {
@@ -458,7 +459,7 @@ fun MainScreen(
 							LaunchedEffect(ttsPosition) {
 								if (isTextMode) {
 									val line = docState.session.lineFromPosition(ttsPosition)
-									val index = (line - 1).toInt().coerceAtLeast(0)
+									val index = lineIndexFor(line)
 									listState.scrollToItem(index)
 									lineIndexToFocus = index
 								}

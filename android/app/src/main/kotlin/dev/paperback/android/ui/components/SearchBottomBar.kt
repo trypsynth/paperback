@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 import dev.paperback.android.ui.state.DocumentTabState
+import dev.paperback.android.ui.state.lineIndexFor
 import kotlinx.coroutines.launch
 import uniffi.paperback.SearchOptionsFfi
 
@@ -60,7 +61,7 @@ fun SearchBottomBar(
 						val pos = docState.session.positionFromLine((currentIdx + 1).toLong())
 						val res = docState.session.searchFfi(activeSearchQuery, pos, activeSearchOptions.copy(forward = false))
 						if (res.found) {
-							val targetIndex = (docState.session.lineFromPosition(res.position) - 1).toInt().coerceAtLeast(0)
+							val targetIndex = lineIndexFor(docState.session.lineFromPosition(res.position))
 							scope.launch {
 								listState.scrollToItem(targetIndex)
 								onNavigate(targetIndex)
@@ -79,7 +80,7 @@ fun SearchBottomBar(
 						val pos = docState.session.positionFromLine(nextLine)
 						val res = docState.session.searchFfi(activeSearchQuery, pos, activeSearchOptions.copy(forward = true))
 						if (res.found) {
-							val targetIndex = (docState.session.lineFromPosition(res.position) - 1).toInt().coerceAtLeast(0)
+							val targetIndex = lineIndexFor(docState.session.lineFromPosition(res.position))
 							scope.launch {
 								listState.scrollToItem(targetIndex)
 								onNavigate(targetIndex)
