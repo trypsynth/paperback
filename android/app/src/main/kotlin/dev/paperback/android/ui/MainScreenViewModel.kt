@@ -50,7 +50,13 @@ class MainScreenViewModel(
 ) : AndroidViewModel(application) {
 	private val context get() = getApplication<Application>()
 
-	private val config = ConfigManagerFfi()
+	// Loaded here rather than from the coroutine below, because every `ConfigManagerFfi` read
+	// before `initialize` returns the caller's default: `ReaderSettings` is built further down
+	// this same constructor, so a later load would leave it publishing defaults for the whole
+	// session and the reader's text size would come up wrong on every launch.
+	private val config = ConfigManagerFfi().apply {
+		initialize(application.filesDir.absolutePath + "/config.toml")
+	}
 	val configManager: ConfigManagerFfi get() = config
 
 	val ttsManager = TtsManager(application, config)
@@ -302,13 +308,12 @@ class MainScreenViewModel(
 			persistDaisyAudioPosition()
 		}
 		viewModelScope.launch(Dispatchers.IO) {
-			config.initialize(context.filesDir.absolutePath + "/config.toml")
 			purgeLegacyDocumentCache()
 			withContext(Dispatchers.Main) {
 				ttsManager.loadConfigAndInit()
 			}
 			_supportedMimeTypes.value = buildSupportedMimeTypes()
-			val restorePrevious = config.getAppBool("restore_previous_documents", true)
+			val restorePrevious = settings.restorePreviousDocuments.state.value
 			val openedUris = if (restorePrevious) config.getOpenedDocuments() else emptyList()
 			val activeDocKey = config.getAppString("active_document", "")
 			if (openedUris.isNotEmpty()) {
