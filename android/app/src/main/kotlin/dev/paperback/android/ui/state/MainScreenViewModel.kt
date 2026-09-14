@@ -39,7 +39,6 @@ import uniffi.paperback.TextSegmentFfi
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.security.MessageDigest
 import java.util.Locale
 
 private const val AUDIO_SEEK_AMOUNT_KEY = "audio_seek_amount_seconds"
@@ -61,6 +60,8 @@ class MainScreenViewModel(
 	val configManager: ConfigManagerFfi get() = config
 
 	val ttsManager = TtsManager(application, config)
+
+	private val documentCache = DocumentCache(application.cacheDir)
 
 	// Narrates DAISY audiobooks' recorded audio in place of synthesized TTS (see
 	// DocumentTabState.hasAudio). A single instance re-attached to whichever tab is active.
@@ -237,7 +238,7 @@ class MainScreenViewModel(
 			persistDaisyAudioPosition()
 		}
 		viewModelScope.launch(Dispatchers.IO) {
-			purgeLegacyDocumentCache()
+			documentCache.purgeLegacy()
 			withContext(Dispatchers.Main) {
 				ttsManager.loadConfigAndInit()
 			}
@@ -424,7 +425,7 @@ class MainScreenViewModel(
 				config.removeOpenedDocument(closedTab.documentUri)
 				config.setDocumentOpened(closedTab.documentUri, false)
 				config.flush()
-				documentCacheDir(closedTab.documentUri).deleteRecursively()
+				documentCache.directoryFor(closedTab.documentUri).deleteRecursively()
 				updateRecentDocuments()
 				withContext(Dispatchers.Main) {
 					currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
@@ -491,24 +492,6 @@ class MainScreenViewModel(
 	 * meant every pick -- and every tab restore at launch -- left behind another full copy of
 	 * the document, with nothing that ever deleted it.
 	 */
-	private fun documentCacheDir(uriString: String): File {
-		val digest = MessageDigest.getInstance("SHA-256").digest(uriString.toByteArray())
-		val name = digest.take(16).joinToString("") { "%02x".format(it) }
-		return File(context.cacheDir, "$DOCUMENT_CACHE_DIR/$name")
-	}
-
-	/** Clears extraction directories left by builds that named them with a raw UUID. */
-	private fun purgeLegacyDocumentCache() {
-		try {
-			context.cacheDir.listFiles()?.forEach {
-				if (it.isDirectory && UUID_DIR_REGEX.matches(it.name)) {
-					it.deleteRecursively()
-				}
-			}
-		} catch (_: Exception) {
-		}
-	}
-
 	private suspend fun prepareDocumentTabIO(
 		uri: Uri,
 		providedPassword: String? = null,
@@ -532,7 +515,7 @@ class MainScreenViewModel(
 					}
 					displayName = name
 					val ext = displayName.substringAfterLast('.', "epub").lowercase()
-					val tempDir = documentCacheDir(uriString)
+					val tempDir = documentCache.directoryFor(uriString)
 					tempDir.deleteRecursively()
 					tempDir.mkdirs()
 					val tempFile = File(tempDir, displayName.ifBlank { "document.$ext" })
@@ -1407,7 +1390,5 @@ class MainScreenViewModel(
 
 	companion object {
 		private val WHITESPACE_REGEX = "\\s+".toRegex()
-		private const val DOCUMENT_CACHE_DIR = "documents"
-		private val UUID_DIR_REGEX = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 	}
 }
