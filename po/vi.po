@@ -4178,7 +4178,7 @@ msgstr "Không phải bây giờ"
 msgid "Custom Timer"
 msgstr "Bộ hẹn giờ tùy chỉnh"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 #, fuzzy
 msgid "Back"
@@ -4276,7 +4276,6 @@ msgstr "Đóng tìm kiếm"
 msgid "Document exported"
 msgstr "Tài liệu đã được tải lại."
 
-#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 #, fuzzy
 msgid "Failed to export document"
@@ -4696,6 +4695,18 @@ msgstr "mở"
 #, fuzzy
 msgid "go to chapter"
 msgstr "Chuyển sang phần trăm"
+
+#. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+#: kt
+#, fuzzy
+msgid "This is a sample of the selected speech engine."
+msgstr "Đây là mẫu của công cụ đọc được chọn."
+
+#. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+#: kt
+#, fuzzy
+msgid "This document does not contain pages."
+msgstr "Tài liệu này không có mục lục."
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
