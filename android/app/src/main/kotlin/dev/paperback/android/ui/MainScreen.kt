@@ -1,12 +1,9 @@
 package dev.paperback.android.ui
 
-import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
@@ -22,11 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
@@ -40,23 +33,7 @@ import kotlinx.coroutines.withContext
 import uniffi.paperback.ExportFormat
 import java.io.File
 
-private const val AUTO_ENABLED_IN_APP_FILE_BROWSER_KEY = "auto_enabled_in_app_file_browser"
-private const val ONBOARDING_SHOWN_KEY = "permissions_onboarding_shown"
 private const val LAST_FILE_MANAGER_DIRECTORY_KEY = "last_file_manager_directory"
-
-/** True once Android enforces scoped storage (R+) and the app still lacks "All files access". */
-internal fun needsAllFilesAccessPermission(): Boolean =
-	Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()
-
-/** True only on R+ devices where "All files access" has already been granted. */
-internal fun hasAllFilesAccessOnR(): Boolean =
-	Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()
-
-/** True once Android requires a runtime prompt (Tiramisu+) and notifications aren't yet allowed. */
-internal fun needsNotificationPermission(context: Context): Boolean =
-	Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-		ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
-		PackageManager.PERMISSION_GRANTED
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,35 +53,7 @@ fun MainScreen(
 	val settings = viewModel.settings
 	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
 	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()
-	// Guards the one-time auto-switch to the in-app browser right after All Files
-	// Access is first granted, so it doesn't keep re-enabling itself on every later
-	// resume (e.g. after using the system picker) and fight the user's own toggle.
-	var hasAutoEnabledInAppFileBrowser by remember {
-		mutableStateOf(viewModel.configManager.getAppBool(AUTO_ENABLED_IN_APP_FILE_BROWSER_KEY, false))
-	}
 	val swipeUpMovesForward by settings.swipeUpMovesForward.state.collectAsStateWithLifecycle()
-	var onboardingCompleted by remember {
-		mutableStateOf(viewModel.configManager.getAppBool(ONBOARDING_SHOWN_KEY, false))
-	}
-	// Bumped whenever the activity resumes (e.g. returning from the All Files Access
-	// settings screen), so permission checks below re-read the live OS state instead
-	// of the value from whenever this composable last recomposed for another reason.
-	var permissionResumeTrigger by remember { mutableStateOf(0) }
-	var notificationRequested by remember { mutableStateOf(false) }
-	val notificationPermissionLauncher = rememberLauncherForActivityResult(
-		ActivityResultContracts.RequestPermission()
-	) { notificationRequested = true }
-	val notificationsSectionApplicable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-	val allFilesAccessSectionApplicable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-	val notificationsGranted = remember(permissionResumeTrigger, notificationRequested) {
-		!needsNotificationPermission(context)
-	}
-	val allFilesAccessGranted = remember(permissionResumeTrigger) { !needsAllFilesAccessPermission() }
-	val showOnboarding = !onboardingCompleted &&
-		(
-			(notificationsSectionApplicable && !notificationsGranted) ||
-				(allFilesAccessSectionApplicable && !allFilesAccessGranted)
-		)
 	val activeSearchQuery by viewModel.search.query.collectAsStateWithLifecycle()
 	val activeSearchOptions by viewModel.search.options.collectAsStateWithLifecycle()
 	var isTextMode by rememberSaveable { mutableStateOf(false) }
@@ -562,22 +511,6 @@ fun MainScreen(
 			}
 		}
 		DocumentPromptDialogs(viewModel)
-		val lifecycleOwner = LocalLifecycleOwner.current
-		DisposableEffect(lifecycleOwner) {
-			val observer = LifecycleEventObserver { _, event ->
-				if (event == Lifecycle.Event.ON_RESUME) {
-					permissionResumeTrigger++
-					if (hasAllFilesAccessOnR() && !useInAppFileBrowser && !hasAutoEnabledInAppFileBrowser) {
-						settings.useInAppFileBrowser.set(true)
-						hasAutoEnabledInAppFileBrowser = true
-						viewModel.configManager.setAppBool(AUTO_ENABLED_IN_APP_FILE_BROWSER_KEY, true)
-						viewModel.configManager.flush()
-					}
-				}
-			}
-			lifecycleOwner.lifecycle.addObserver(observer)
-			onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-		}
 		val showPermissionRationale by viewModel.permissionRationaleDialog.isOpen.collectAsStateWithLifecycle()
 		if (showPermissionRationale) {
 			PermissionRationaleDialog(
@@ -656,24 +589,6 @@ fun MainScreen(
 				onDismiss = { showFileManagerForImport = false }
 			)
 		}
-		if (showOnboarding) {
-			PermissionsOnboardingScreen(
-				showNotificationsSection = notificationsSectionApplicable,
-				notificationsGranted = notificationsGranted,
-				onEnableNotifications = { notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
-				showAllFilesAccessSection = allFilesAccessSectionApplicable,
-				allFilesAccessGranted = allFilesAccessGranted,
-				onEnableAllFilesAccess = {
-					val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-					intent.data = "package:${context.packageName}".toUri()
-					context.startActivity(intent)
-				},
-				onContinue = {
-					onboardingCompleted = true
-					viewModel.configManager.setAppBool(ONBOARDING_SHOWN_KEY, true)
-					viewModel.configManager.flush()
-				}
-			)
-		}
+		PermissionsGate(viewModel)
 	}
 }
