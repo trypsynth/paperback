@@ -76,6 +76,7 @@ pub enum ActionId {
 	BookmarkWithNote,
 	SetSelectionStart,
 	CopyFromSelectionStart,
+	JumpToSelectionStart,
 	ToggleWordWrap,
 	PlayPauseAudio,
 	SeekAudioForward,
@@ -172,6 +173,7 @@ impl ActionId {
 			Self::BookmarkWithNote,
 			Self::SetSelectionStart,
 			Self::CopyFromSelectionStart,
+			Self::JumpToSelectionStart,
 			Self::ToggleWordWrap,
 			Self::PlayPauseAudio,
 			Self::SeekAudioForward,
@@ -268,6 +270,7 @@ impl ActionId {
 			| Self::BookmarkWithNote
 			| Self::SetSelectionStart
 			| Self::CopyFromSelectionStart
+			| Self::JumpToSelectionStart
 			| Self::ToggleWordWrap
 			| Self::PlayPauseAudio
 			| Self::SeekAudioForward
@@ -433,6 +436,8 @@ impl ActionId {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::CopyFromSelectionStart => crate::t("Copy from Selection Start"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::JumpToSelectionStart => crate::t("Jump to Selection Start"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ToggleWordWrap => crate::t("Toggle Word Wrap"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::PlayPauseAudio => crate::t("Play/Pause Audio"),
@@ -552,6 +557,7 @@ impl ActionId {
 			// before wx sees it, so the Cmd forms are what actually reach the app here.
 			Self::SetSelectionStart => Some(KeyChord::new(true, false, false, "F9")),
 			Self::CopyFromSelectionStart => Some(KeyChord::new(true, false, false, "F10")),
+			Self::JumpToSelectionStart => Some(KeyChord::new(true, false, true, "F9")),
 			Self::ToggleWordWrap => Some(KeyChord::new(true, true, false, "W")),
 			Self::PlayPauseAudio => Some(KeyChord::new_raw_ctrl(true, false, false, "Space")),
 			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),
@@ -652,6 +658,7 @@ impl ActionId {
 			// Alt instead, which is free apart from Alt+Left/Right in the navigation history.
 			Self::SetSelectionStart => Some(KeyChord::new(false, true, false, "F9")),
 			Self::CopyFromSelectionStart => Some(KeyChord::new(false, true, false, "F10")),
+			Self::JumpToSelectionStart => Some(KeyChord::new(false, true, true, "F9")),
 			Self::ToggleWordWrap => Some(KeyChord::new(true, true, false, "W")),
 			Self::PlayPauseAudio => Some(KeyChord::new(true, false, false, "Space")),
 			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),

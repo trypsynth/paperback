@@ -11,3 +11,7 @@ pub fn set_start(ctx: &Ctx) {
 pub fn copy_from_start(ctx: &Ctx) {
 	selection::handle_copy_from_selection_start(ctx.dm, ctx.live_region_label);
 }
+
+pub fn jump_to_start(ctx: &Ctx) {
+	selection::handle_jump_to_selection_start(ctx.dm, ctx.config, ctx.live_region_label);
+}

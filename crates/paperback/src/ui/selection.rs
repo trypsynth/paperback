@@ -7,6 +7,7 @@
 
 use std::{rc::Rc, sync::Mutex};
 
+use paperback_core::config::ConfigManager;
 use patois::t;
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
@@ -99,6 +100,35 @@ pub fn handle_copy_from_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_re
 		}
 	};
 	live_region::announce(live_region_label, &message);
+}
+
+/// Moves the reader back to the marked beginning, leaving the mark in place so the copy and the
+/// jump can be used in either order, as often as they like.
+pub fn handle_jump_to_selection_start(
+	dm: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+) {
+	let (message, history_update) = {
+		let mut dm = dm.lock().unwrap();
+		let Some(tab) = dm.active_tab_mut() else {
+			return;
+		};
+		match tab.selection_mark.get() {
+			None => (
+				// TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
+				t("Cannot jump; set beginning of selection first."),
+				None,
+			),
+			Some(mark) => {
+				let update = navigation::move_to_offset_and_record_history(tab, mark);
+				// TRANSLATORS: Announced after jumping back to the marked beginning of the selection.
+				(t("Jumped to beginning of selection."), tab.track.then_some(update))
+			}
+		}
+	};
+	live_region::announce(live_region_label, &message);
+	navigation::persist_navigation_history(config, history_update.as_ref());
 }
 
 #[cfg(test)]

@@ -112,8 +112,8 @@ seq_ids!(BASE + 450 =>
 // Tools menu: OCR (BASE + 460..469)
 seq_ids!(BASE + 460 => BATCH_OCR);
 
-// Tools menu: Selection (BASE + 470..479)
-seq_ids!(BASE + 470 => SET_SELECTION_START, COPY_FROM_SELECTION_START);
+// Tools menu: Select and copy submenu (BASE + 470..479)
+seq_ids!(BASE + 470 => SET_SELECTION_START, COPY_FROM_SELECTION_START, JUMP_TO_SELECTION_START);
 
 // Help menu (BASE + 500..599)
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
@@ -194,6 +194,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::BookmarkWithNote => BOOKMARK_WITH_NOTE,
 		ActionId::SetSelectionStart => SET_SELECTION_START,
 		ActionId::CopyFromSelectionStart => COPY_FROM_SELECTION_START,
+		ActionId::JumpToSelectionStart => JUMP_TO_SELECTION_START,
 		ActionId::ToggleWordWrap => TOGGLE_WORD_WRAP,
 		ActionId::PlayPauseAudio => PLAY_PAUSE_AUDIO,
 		ActionId::SeekAudioForward => SEEK_AUDIO_FORWARD,

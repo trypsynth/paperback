@@ -150,15 +150,22 @@ mod tests {
 	/// `WXK_F9` and `WXK_F10` as wxdragon defines them.
 	#[cfg(not(target_os = "macos"))]
 	#[test]
-	fn selection_shortcuts_are_alt_f9_and_alt_f10() {
-		for (action, key_code, key_name) in
-			[(ActionId::SetSelectionStart, 348, "F9"), (ActionId::CopyFromSelectionStart, 349, "F10")]
-		{
-			let chord = action.default_chord().expect("both selection commands ship a default");
-			assert_eq!(chord, KeyChord::new(false, true, false, key_name), "{action:?} default chord");
-			assert!(chord.matches(key_code, false, true, false), "{action:?} must match Alt+{key_name}");
-			// Alt is doing the work: the bare key must not claim it, or F10 would collide with
-			// the menu bar and Shift+F10 with the reader's context menu.
+	fn selection_shortcuts_are_alt_f9_f10_and_alt_shift_f9() {
+		for (action, key_code, key_name, own_shift) in [
+			(ActionId::SetSelectionStart, 348, "F9", false),
+			(ActionId::CopyFromSelectionStart, 349, "F10", false),
+			(ActionId::JumpToSelectionStart, 348, "F9", true),
+		] {
+			let chord = action.default_chord().expect("every selection command ships a default");
+			assert_eq!(chord, KeyChord::new(false, true, own_shift, key_name), "{action:?} default chord");
+			assert!(chord.matches(key_code, false, true, own_shift), "{action:?} must match its own chord");
+			// The other Alt form on the same key belongs to a sibling command, not to this one.
+			assert!(
+				!chord.matches(key_code, false, true, !own_shift),
+				"{action:?} must not answer for the other Alt form"
+			);
+			// Alt is doing the work: the bare key must not claim it, or F10 alone would collide
+			// with the menu bar and Shift+F10 with the reader's context menu.
 			assert!(!chord.matches(key_code, false, false, false), "{action:?} must not match the bare key");
 			assert!(!chord.matches(key_code, false, false, true), "{action:?} must not match Shift+{key_name}");
 		}

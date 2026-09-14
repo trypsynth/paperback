@@ -139,6 +139,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+Shift+S`: Toggle sleep timer.
 * `Alt+F9` (macOS: `Cmd+F9`): Mark the beginning of a selection, so everything from here to wherever you get to can be copied in one go.
 * `Alt+F10` (macOS: `Cmd+F10`): Copy everything from the marked beginning of the selection to the current position.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Jump back to the marked beginning of the selection, leaving the mark in place.
 
 ### Help menu
 
@@ -216,7 +217,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed EPUB's that carry a stray ZIP64 block refusing to open with "Invalid local file header".
 * Fixed long documents walking back to their start while a screen reader read continuously through them.
 * Links in the WebView now take you to the section they point at, rather than failing with "File not found".
-* Mark the beginning of a selection with `Alt+F9` and copy everything from there to wherever you have got to with `Alt+F10`, for copying a long span of text without shift-arrowing through it.
+* Mark the beginning of a selection with `Alt+F9`, copy everything from there to wherever you have got to with `Alt+F10`, and go back to the mark with `Alt+Shift+F9`, for copying a long span of text without shift-arrowing through it. All three are under Tools > Select and copy.
 * The `=` shortcut now announces the page as well as the percentage, e.g. "15%, page 30", and stays as it was for documents with no page numbers.
 * The automatic "Document reloaded" announcement no longer cuts your screen reader off mid sentence, instead waiting for it to finish what it was saying.
 * The Settings dialog's General tab now tabs through its options in the order they appear on screen, with the update channel directly after the check for updates option.

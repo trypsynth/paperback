@@ -2,7 +2,7 @@ use paperback_core::config::{ActionId, ConfigManager};
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::builder::format_menu_label;
+use super::builder::{build_menu, format_menu_label};
 use crate::ui::{commands, menu_ids};
 
 pub fn create_tools_menu(config: &ConfigManager) -> Menu {
@@ -83,8 +83,15 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	commands::append_item(&menu, ActionId::ToggleBookmark, config);
 	commands::append_item(&menu, ActionId::BookmarkWithNote, config);
 	menu.append_separator();
-	commands::append_item(&menu, ActionId::SetSelectionStart, config);
-	commands::append_item(&menu, ActionId::CopyFromSelectionStart, config);
+	// TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
+	let select_copy_label = t("Select and &copy");
+	// TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
+	let select_copy_help = t("Mark a selection and copy from it");
+	let select_copy_menu = build_menu(&commands::menu_entries(
+		&[ActionId::SetSelectionStart, ActionId::CopyFromSelectionStart, ActionId::JumpToSelectionStart],
+		config,
+	));
+	menu.append_submenu(select_copy_menu, &select_copy_label, &select_copy_help);
 	menu.append_separator();
 	// TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 	let word_wrap_label = format_menu_label(&t("Word w&rap"), ActionId::ToggleWordWrap, config);
@@ -143,6 +150,7 @@ mod tests {
 			ActionId::BookmarkWithNote,
 			ActionId::SetSelectionStart,
 			ActionId::CopyFromSelectionStart,
+			ActionId::JumpToSelectionStart,
 			ActionId::PlayPauseAudio,
 			ActionId::SeekAudioForward,
 			ActionId::SeekAudioBackward,

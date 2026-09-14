@@ -556,6 +556,17 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Run(selection::copy_from_start),
 	},
 	Command {
+		action: ActionId::JumpToSelectionStart,
+		// TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+		label: || t("&Jump to Selection Start"),
+		// TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+		help: Some(|| t("Go back to the beginning of the selection")),
+		// Enabled for the same reason as the copy above: an unset mark has to be announced, not
+		// turned into a dead menu item.
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(selection::jump_to_start),
+	},
+	Command {
 		action: ActionId::PlayPauseAudio,
 		// TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 		label: || t("&Play/Pause Audio"),
