@@ -39,6 +39,23 @@ class DocumentSearch {
 		_options.value = options
 	}
 
+	/**
+	 * True when [query] and [options] describe the search that is already running. Direction is
+	 * deliberately not compared: stepping backward through the matches of the search just run is
+	 * still the same search, and treating it as a new one would re-find the match the reader is
+	 * already sitting on.
+	 */
+	fun isSameAs(
+		query: String,
+		options: SearchOptionsFfi
+	): Boolean {
+		val running = _options.value ?: return false
+		return _query.value == query &&
+			running.matchCase == options.matchCase &&
+			running.wholeWord == options.wholeWord &&
+			running.regex == options.regex
+	}
+
 	fun clear() {
 		_query.value = null
 		_options.value = null

@@ -70,11 +70,8 @@ fun MainScreen(
 	val pendingJumpOffset by viewModel.pendingJumpOffset.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
-	val exportDocumentDialogOpen by viewModel.exportDocumentDialog.isOpen.collectAsStateWithLifecycle()
 	var selectedExportFormat by remember { mutableStateOf<ExportFormat?>(null) }
-	val goToDialogOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
 	val goToInitialMode by viewModel.goToInitialMode.collectAsStateWithLifecycle()
-	val findDialogOpen by viewModel.findDialog.isOpen.collectAsStateWithLifecycle()
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	val settings = viewModel.settings
 	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
@@ -536,79 +533,24 @@ fun MainScreen(
 									}
 								)
 							}
-							if (goToDialogOpen) {
-								GoToDialog(
-									docState = docState,
-									onDismiss = { viewModel.closeGoToDialog() },
-									initialMode = goToInitialMode,
-									onGoTo = jumpToLine,
-									onSeekPercent = { viewModel.seekAudioToPercent(it) }
-								)
-							}
-							if (findDialogOpen) {
-								FindDialog(
-									configManager = viewModel.configManager,
-									initialQuery = activeSearchQuery ?: "",
-									onDismiss = { viewModel.findDialog.close() },
-									onSearch = { query, options ->
-										val wasSpeaking = viewModel.ttsManager.isSpeaking.value
-										if (wasSpeaking) {
-											viewModel.pauseTts()
-										}
-										val isSameQuery = activeSearchQuery == query &&
-											activeSearchOptions?.matchCase == options.matchCase &&
-											activeSearchOptions?.wholeWord == options.wholeWord &&
-											activeSearchOptions?.regex == options.regex
-										viewModel.search.start(query, options)
-										if (!isTextMode) {
-											viewModel.setNavUnit(NavUnit.Find)
-										}
-										val searchPos = if (isTextMode) {
-											val nextLineOffset = if (isSameQuery) 2 else 1
-											docState.session.positionFromLine((listState.firstVisibleItemIndex + nextLineOffset).toLong())
-										} else {
-											val currentPos = viewModel.ttsPosition.value
-											if (isSameQuery) currentPos + 1L else currentPos
-										}
-										val res = docState.session.searchFfi(query, searchPos, options)
-										if (res.found) {
-											if (isTextMode) {
-												val targetLine = docState.session.lineFromPosition(res.position)
-												val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-												scope.launch {
-													listState.scrollToItem(targetIndex)
-													lineIndexToFocus = targetIndex
-												}
-											} else {
-												viewModel.jumpToFoundPosition(res.position, resume = wasSpeaking)
-											}
-										}
-									}
-								)
-							}
+							DocumentTextDialogs(
+								docState = docState,
+								viewModel = viewModel,
+								isTextMode = isTextMode,
+								listState = listState,
+								goToInitialMode = goToInitialMode,
+								onGoToLine = jumpToLine,
+								onFocusLine = { lineIndexToFocus = it }
+							)
 						}
-						if (exportDocumentDialogOpen) {
-							state.activeTab?.let { docState ->
-								ExportDocumentDialog(
-									supportedFormats = docState.session.getSupportedExportFormatsFfi(),
-									onFormatSelected = { format ->
-										selectedExportFormat = format
-										viewModel.exportDocumentDialog.close()
-										val extension = when (format) {
-											ExportFormat.TEXT -> "txt"
-											ExportFormat.HTML -> "html"
-											ExportFormat.MARKDOWN -> "md"
-										}
-										val baseName = docState.fileName.substringBeforeLast(".")
-										exportDocumentLauncher.launch("$baseName.$extension")
-									},
-									onDismiss = { viewModel.exportDocumentDialog.close() }
-								)
-							} ?: run {
-								viewModel.exportDocumentDialog.close()
+						DocumentToolDialogs(
+							docState = docState,
+							viewModel = viewModel,
+							onExportFormatChosen = { format, fileName ->
+								selectedExportFormat = format
+								exportDocumentLauncher.launch(fileName)
 							}
-						}
-						DocumentToolDialogs(docState = docState, viewModel = viewModel)
+						)
 					}
 					is MainScreenUiState.Error -> {
 						Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

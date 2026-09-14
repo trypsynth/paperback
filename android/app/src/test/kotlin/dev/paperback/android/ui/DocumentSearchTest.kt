@@ -5,7 +5,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import uniffi.paperback.SearchOptionsFfi
 
@@ -45,6 +47,35 @@ class DocumentSearchTest {
 		search.clear()
 		assertNull(search.query.value)
 		assertNull(search.options.value)
+	}
+
+	@Test
+	fun `nothing matches the same search when none is running`() {
+		assertFalse(DocumentSearch().isSameAs("needle", options()))
+	}
+
+	@Test
+	fun `the running search matches itself`() {
+		val search = DocumentSearch()
+		search.start("needle", options())
+		assertTrue(search.isSameAs("needle", options()))
+	}
+
+	@Test
+	fun `a different query or option is not the same search`() {
+		val search = DocumentSearch()
+		search.start("needle", options())
+		assertFalse(search.isSameAs("haystack", options()))
+		assertFalse(search.isSameAs("needle", options(matchCase = true)))
+	}
+
+	// Find Previous runs the same search backward. Counting that as a new search would start it
+	// from the match the reader is on rather than stepping off it.
+	@Test
+	fun `searching the other way is still the same search`() {
+		val search = DocumentSearch()
+		search.start("needle", SearchOptionsFfi(false, false, false, true))
+		assertTrue(search.isSameAs("needle", SearchOptionsFfi(false, false, false, false)))
 	}
 
 	// One step is carried out before the next is asked for, which is also why the flow needs no
