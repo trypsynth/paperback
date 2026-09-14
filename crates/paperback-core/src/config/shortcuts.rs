@@ -145,6 +145,25 @@ mod tests {
 		assert_eq!(chord.key, "Space");
 	}
 
+	/// Pinned to the key codes the text control actually reports, so a typo in the key string
+	/// fails here rather than shipping a shortcut that silently never fires. 348 and 349 are
+	/// `WXK_F9` and `WXK_F10` as wxdragon defines them.
+	#[cfg(not(target_os = "macos"))]
+	#[test]
+	fn selection_shortcuts_are_alt_f9_and_alt_f10() {
+		for (action, key_code, key_name) in
+			[(ActionId::SetSelectionStart, 348, "F9"), (ActionId::CopyFromSelectionStart, 349, "F10")]
+		{
+			let chord = action.default_chord().expect("both selection commands ship a default");
+			assert_eq!(chord, KeyChord::new(false, true, false, key_name), "{action:?} default chord");
+			assert!(chord.matches(key_code, false, true, false), "{action:?} must match Alt+{key_name}");
+			// Alt is doing the work: the bare key must not claim it, or F10 would collide with
+			// the menu bar and Shift+F10 with the reader's context menu.
+			assert!(!chord.matches(key_code, false, false, false), "{action:?} must not match the bare key");
+			assert!(!chord.matches(key_code, false, false, true), "{action:?} must not match Shift+{key_name}");
+		}
+	}
+
 	#[test]
 	fn shortcut_category_actions_coverage() {
 		let mut total_actions = 0;

@@ -83,6 +83,9 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	commands::append_item(&menu, ActionId::ToggleBookmark, config);
 	commands::append_item(&menu, ActionId::BookmarkWithNote, config);
 	menu.append_separator();
+	commands::append_item(&menu, ActionId::SetSelectionStart, config);
+	commands::append_item(&menu, ActionId::CopyFromSelectionStart, config);
+	menu.append_separator();
 	// TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 	let word_wrap_label = format_menu_label(&t("Word w&rap"), ActionId::ToggleWordWrap, config);
 	// TRANSLATORS: Status-bar help text for the Word Wrap menu item.
@@ -138,6 +141,8 @@ mod tests {
 		let actions = [
 			ActionId::ToggleBookmark,
 			ActionId::BookmarkWithNote,
+			ActionId::SetSelectionStart,
+			ActionId::CopyFromSelectionStart,
 			ActionId::PlayPauseAudio,
 			ActionId::SeekAudioForward,
 			ActionId::SeekAudioBackward,
