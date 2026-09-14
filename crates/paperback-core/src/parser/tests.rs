@@ -11,6 +11,7 @@ struct MockConverter {
 	images: Vec<ImageInfo>,
 	figures: Vec<ImageInfo>,
 	tables: Vec<TableInfo>,
+	formulas: Vec<FormulaInfo>,
 	separators: Vec<SeparatorInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
@@ -38,6 +39,10 @@ impl ConverterOutput for MockConverter {
 
 	fn get_tables(&self) -> &[TableInfo] {
 		&self.tables
+	}
+
+	fn get_formulas(&self) -> &[FormulaInfo] {
+		&self.formulas
 	}
 
 	fn get_separators(&self) -> &[SeparatorInfo] {
@@ -71,6 +76,12 @@ fn sample_converter() -> MockConverter {
 		images: vec![],
 		figures: vec![],
 		tables: vec![TableInfo { offset: 3, text: "T".to_string(), html_content: "<table/>".to_string(), length: 11 }],
+		formulas: vec![FormulaInfo {
+			offset: 7,
+			text: "x".to_string(),
+			mathml: "<math><mi>x</mi></math>".to_string(),
+			length: 1,
+		}],
 		separators: vec![SeparatorInfo { offset: 4, length: 7 }],
 		lists: vec![ListInfo { offset: 5, item_count: 3, length: 4 }],
 		list_items: vec![ListItemInfo { offset: 6, level: 1, text: "Item".to_string() }],
@@ -138,7 +149,7 @@ fn add_converter_markers_transfers_all_marker_types_with_offset() {
 	let converter = sample_converter();
 	let mut buffer = DocumentBuffer::new();
 	add_converter_markers(&mut buffer, &converter, 100);
-	assert_eq!(buffer.markers.len(), 6);
+	assert_eq!(buffer.markers.len(), 7);
 	assert_eq!(buffer.markers[0].mtype, MarkerType::Heading2);
 	assert_eq!(buffer.markers[0].position, 101);
 	assert_eq!(buffer.markers[0].text, "Heading");
@@ -153,6 +164,11 @@ fn add_converter_markers_transfers_all_marker_types_with_offset() {
 	assert_eq!(buffer.markers[4].level, 3);
 	assert_eq!(buffer.markers[5].mtype, MarkerType::ListItem);
 	assert_eq!(buffer.markers[5].level, 1);
+	assert_eq!(buffer.markers[6].mtype, MarkerType::Formula);
+	assert_eq!(buffer.markers[6].position, 107);
+	assert_eq!(buffer.markers[6].text, "x");
+	assert_eq!(buffer.markers[6].reference, "<math><mi>x</mi></math>");
+	assert_eq!(buffer.markers[6].length, 1);
 }
 
 #[test]
@@ -160,8 +176,9 @@ fn add_converter_markers_excluding_links_skips_link_markers() {
 	let converter = sample_converter();
 	let mut buffer = DocumentBuffer::new();
 	add_converter_markers_excluding_links(&mut buffer, &converter, 10);
-	assert_eq!(buffer.markers.len(), 5);
+	assert_eq!(buffer.markers.len(), 6);
 	assert!(buffer.markers.iter().all(|marker| marker.mtype != MarkerType::Link));
+	assert!(buffer.markers.iter().any(|marker| marker.mtype == MarkerType::Formula && marker.position == 17));
 }
 
 #[test]
@@ -172,6 +189,7 @@ fn add_converter_markers_handles_empty_converter_output() {
 		images: vec![],
 		figures: vec![],
 		tables: vec![],
+		formulas: vec![],
 		separators: vec![],
 		lists: vec![],
 		list_items: vec![],
@@ -290,6 +308,7 @@ fn add_tables_separators_lists_sets_table_marker_length() {
 			html_content: "<table/>".to_string(),
 			length: 7, // display-unit field, must appear as marker length
 		}],
+		formulas: vec![],
 		separators: vec![],
 		lists: vec![],
 		list_items: vec![],

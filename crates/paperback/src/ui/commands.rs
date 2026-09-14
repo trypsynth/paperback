@@ -364,6 +364,22 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Navigate { target: MarkerNavTarget::Table, next: true },
 	},
 	Command {
+		action: ActionId::PreviousFormula,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous formula.
+		label: || t("Previous For&mula"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Formula, next: false },
+	},
+	Command {
+		action: ActionId::NextFormula,
+		// TRANSLATORS: Menu item in the Go menu to move to the next formula.
+		label: || t("Next For&mula"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Formula, next: true },
+	},
+	Command {
 		action: ActionId::PreviousSeparator,
 		// TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 		label: || t("Previous Se&parator"),

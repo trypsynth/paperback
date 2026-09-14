@@ -5,6 +5,7 @@
 
 pub(crate) mod block_elements;
 mod format_spans;
+mod formula;
 mod line_builder;
 mod list_style;
 
