@@ -262,7 +262,6 @@ class MainActivity : ComponentActivity() {
 				else -> super.dispatchKeyEvent(event)
 			}
 		}
-
 		if (event.keyCode == KeyEvent.KEYCODE_F3) {
 			if (event.isShiftPressed) {
 				vm.triggerFindPrevious()
@@ -271,7 +270,6 @@ class MainActivity : ComponentActivity() {
 			}
 			return true
 		}
-
 		val dir = if (event.isShiftPressed) SegmentDirectionFfi.PREVIOUS else SegmentDirectionFfi.NEXT
 		return when (event.keyCode) {
 			KeyEvent.KEYCODE_HEADSETHOOK -> {

@@ -21,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
@@ -36,7 +37,12 @@ import dev.paperback.android.ui.dialogs.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import uniffi.paperback.ExportFormat
 import java.io.File
+
+private const val AUTO_ENABLED_IN_APP_FILE_BROWSER_KEY = "auto_enabled_in_app_file_browser"
+private const val ONBOARDING_SHOWN_KEY = "permissions_onboarding_shown"
+private const val LAST_FILE_MANAGER_DIRECTORY_KEY = "last_file_manager_directory"
 
 /** True once Android enforces scoped storage (R+) and the app still lacks "All files access". */
 internal fun needsAllFilesAccessPermission(): Boolean =
@@ -65,7 +71,7 @@ fun MainScreen(
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
 	val exportDocumentDialogOpen by viewModel.exportDocumentDialog.isOpen.collectAsStateWithLifecycle()
-	var selectedExportFormat by remember { mutableStateOf<uniffi.paperback.ExportFormat?>(null) }
+	var selectedExportFormat by remember { mutableStateOf<ExportFormat?>(null) }
 	val goToDialogOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
 	val goToInitialMode by viewModel.goToInitialMode.collectAsStateWithLifecycle()
 	val findDialogOpen by viewModel.findDialog.isOpen.collectAsStateWithLifecycle()
@@ -77,11 +83,11 @@ fun MainScreen(
 	// Access is first granted, so it doesn't keep re-enabling itself on every later
 	// resume (e.g. after using the system picker) and fight the user's own toggle.
 	var hasAutoEnabledInAppFileBrowser by remember {
-		mutableStateOf(viewModel.configManager.getAppBool("auto_enabled_in_app_file_browser", false))
+		mutableStateOf(viewModel.configManager.getAppBool(AUTO_ENABLED_IN_APP_FILE_BROWSER_KEY, false))
 	}
 	val swipeUpMovesForward by settings.swipeUpMovesForward.state.collectAsStateWithLifecycle()
 	var onboardingCompleted by remember {
-		mutableStateOf(viewModel.configManager.getAppBool("permissions_onboarding_shown", false))
+		mutableStateOf(viewModel.configManager.getAppBool(ONBOARDING_SHOWN_KEY, false))
 	}
 	// Bumped whenever the activity resumes (e.g. returning from the All Files Access
 	// settings screen), so permission checks below re-read the live OS state instead
@@ -109,8 +115,8 @@ fun MainScreen(
 	// An audio-only tab has no real text spine to show in Text Mode (its top-bar toggle is
 	// hidden for the same reason), so switching to one from a Text Mode session falls back to
 	// Read-Aloud mode instead of stranding the user on a blank text view with no way back.
-	LaunchedEffect((state as? MainScreenUiState.Success)?.activeTab?.documentUri) {
-		if ((state as? MainScreenUiState.Success)?.activeTab?.isAudioOnly == true) {
+	LaunchedEffect(state.activeTab?.documentUri) {
+		if (state.activeTab?.isAudioOnly == true) {
 			isTextMode = false
 		}
 	}
@@ -135,26 +141,21 @@ fun MainScreen(
 				}
 				return@collect
 			}
-			if (activeSearchQuery != null && activeSearchOptions != null) {
-				val state = viewModel.uiState.value
-				if (state is MainScreenUiState.Success) {
-					val tab = state.activeTab
-					if (tab != null) {
-						val listState = listStates[tab.documentUri]
-						val searchPos = if (listState != null) {
-							val nextLine = (listState.firstVisibleItemIndex + if (forward) 2 else 1).toLong()
-							tab.session.positionFromLine(nextLine)
-						} else {
-							viewModel.ttsPosition.value
-						}
-						val res = tab.session.searchFfi(activeSearchQuery!!, searchPos, activeSearchOptions!!.copy(forward = forward))
-						if (res.found) {
-							val line = tab.session.lineFromPosition(res.position)
-							val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
-							listState?.scrollToItem(indexToScroll)
-						}
-					}
-				}
+			val query = activeSearchQuery ?: return@collect
+			val options = activeSearchOptions ?: return@collect
+			val tab = viewModel.uiState.value.activeTab ?: return@collect
+			val listState = listStates[tab.documentUri]
+			val searchPos = if (listState != null) {
+				val nextLine = (listState.firstVisibleItemIndex + if (forward) 2 else 1).toLong()
+				tab.session.positionFromLine(nextLine)
+			} else {
+				viewModel.ttsPosition.value
+			}
+			val res = tab.session.searchFfi(query, searchPos, options.copy(forward = forward))
+			if (res.found) {
+				val line = tab.session.lineFromPosition(res.position)
+				val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
+				listState?.scrollToItem(indexToScroll)
 			}
 		}
 	}
@@ -170,7 +171,7 @@ fun MainScreen(
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
 	val sleepTimerRemaining by viewModel.sleepTimerRemaining.collectAsStateWithLifecycle()
 
-	val view = androidx.compose.ui.platform.LocalView.current
+	val view = LocalView.current
 	LaunchedEffect(Unit) {
 		viewModel.accessibilityAnnouncement.collect { message ->
 			@Suppress("DEPRECATION")
@@ -314,7 +315,7 @@ fun MainScreen(
 		}
 	}
 	val exportSettings: () -> Unit = {
-		val activeDocUri = (state as? MainScreenUiState.Success)?.activeTab?.documentUri
+		val activeDocUri = state.activeTab?.documentUri
 		if (activeDocUri != null) {
 			if (activeDocUri.startsWith("content://")) {
 				exportSettingsLauncher.launch("document.paperback")
@@ -378,28 +379,27 @@ fun MainScreen(
 				)
 			},
 			bottomBar = {
+				val activeTab = state.activeTab
 				val searchDocState = if (
 					isTextMode && activeSearchQuery != null && activeSearchOptions != null && !isTouchExplorationEnabled
 				) {
-					(state as? MainScreenUiState.Success)?.activeTab
+					activeTab
 				} else {
 					null
 				}
 				val searchListState = searchDocState?.let { listStates[it.documentUri] }
-				if (searchDocState != null && searchListState != null) {
+				val searchQuery = activeSearchQuery
+				val searchOptions = activeSearchOptions
+				if (searchDocState != null && searchListState != null && searchQuery != null && searchOptions != null) {
 					SearchBottomBar(
 						docState = searchDocState,
 						listState = searchListState,
-						activeSearchQuery = activeSearchQuery!!,
-						activeSearchOptions = activeSearchOptions!!,
+						activeSearchQuery = searchQuery,
+						activeSearchOptions = searchOptions,
 						onClose = { viewModel.clearSearch() },
 						onNavigate = { lineIndexToFocus = it }
 					)
-				} else if (!isTextMode &&
-					state is MainScreenUiState.Success &&
-					(state as MainScreenUiState.Success).activeTab != null
-				) {
-					val activeTab = (state as MainScreenUiState.Success).activeTab!!
+				} else if (!isTextMode && activeTab != null) {
 					val baseNavUnits = remember(activeTab.session) { viewModel.navUnitsFor(activeTab) }
 					// Find is only offered as a nav unit once a search is active; it steps through
 					// that search's matches instead of opening a separate find bar.
@@ -588,16 +588,16 @@ fun MainScreen(
 							}
 						}
 						if (exportDocumentDialogOpen) {
-							(state as? MainScreenUiState.Success)?.activeTab?.let { docState ->
+							state.activeTab?.let { docState ->
 								ExportDocumentDialog(
 									supportedFormats = docState.session.getSupportedExportFormatsFfi(),
 									onFormatSelected = { format ->
 										selectedExportFormat = format
 										viewModel.exportDocumentDialog.close()
 										val extension = when (format) {
-											uniffi.paperback.ExportFormat.TEXT -> "txt"
-											uniffi.paperback.ExportFormat.HTML -> "html"
-											uniffi.paperback.ExportFormat.MARKDOWN -> "md"
+											ExportFormat.TEXT -> "txt"
+											ExportFormat.HTML -> "html"
+											ExportFormat.MARKDOWN -> "md"
 										}
 										val baseName = docState.fileName.substringBeforeLast(".")
 										exportDocumentLauncher.launch("$baseName.$extension")
@@ -628,7 +628,7 @@ fun MainScreen(
 					if (hasAllFilesAccessOnR() && !useInAppFileBrowser && !hasAutoEnabledInAppFileBrowser) {
 						settings.useInAppFileBrowser.set(true)
 						hasAutoEnabledInAppFileBrowser = true
-						viewModel.configManager.setAppBool("auto_enabled_in_app_file_browser", true)
+						viewModel.configManager.setAppBool(AUTO_ENABLED_IN_APP_FILE_BROWSER_KEY, true)
 						viewModel.configManager.flush()
 					}
 				}
@@ -653,7 +653,7 @@ fun MainScreen(
 		if (showFileManager) {
 			val extensions = remember(viewModel.configManager) { viewModel.configManager.getSupportedExtensions() }
 			val initialDirPath = remember {
-				val savedPath = viewModel.configManager.getAppString("last_file_manager_directory", "")
+				val savedPath = viewModel.configManager.getAppString(LAST_FILE_MANAGER_DIRECTORY_KEY, "")
 				if (savedPath.isNotEmpty()) {
 					savedPath
 				} else {
@@ -665,7 +665,7 @@ fun MainScreen(
 				initialDirectory = File(initialDirPath),
 				onDirectoryChanged = { dir ->
 					scope.launch(Dispatchers.IO) {
-						viewModel.configManager.setAppString("last_file_manager_directory", dir.absolutePath)
+						viewModel.configManager.setAppString(LAST_FILE_MANAGER_DIRECTORY_KEY, dir.absolutePath)
 						viewModel.configManager.flush()
 					}
 				},
@@ -679,7 +679,7 @@ fun MainScreen(
 		if (showFileManagerForImport) {
 			val extensions = listOf("paperback")
 			val initialDirPath = remember {
-				val savedPath = viewModel.configManager.getAppString("last_file_manager_directory", "")
+				val savedPath = viewModel.configManager.getAppString(LAST_FILE_MANAGER_DIRECTORY_KEY, "")
 				if (savedPath.isNotEmpty()) {
 					savedPath
 				} else {
@@ -691,7 +691,7 @@ fun MainScreen(
 				initialDirectory = File(initialDirPath),
 				onDirectoryChanged = { dir ->
 					scope.launch(Dispatchers.IO) {
-						viewModel.configManager.setAppString("last_file_manager_directory", dir.absolutePath)
+						viewModel.configManager.setAppString(LAST_FILE_MANAGER_DIRECTORY_KEY, dir.absolutePath)
 						viewModel.configManager.flush()
 					}
 				},
@@ -728,7 +728,7 @@ fun MainScreen(
 				},
 				onContinue = {
 					onboardingCompleted = true
-					viewModel.configManager.setAppBool("permissions_onboarding_shown", true)
+					viewModel.configManager.setAppBool(ONBOARDING_SHOWN_KEY, true)
 					viewModel.configManager.flush()
 				}
 			)

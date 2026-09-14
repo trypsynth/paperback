@@ -21,6 +21,10 @@ import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.SearchOptionsFfi
 
 @OptIn(ExperimentalMaterial3Api::class)
+private const val MATCH_CASE_KEY = "find_match_case"
+private const val WHOLE_WORD_KEY = "find_whole_word"
+private const val USE_REGEX_KEY = "find_use_regex"
+
 @Composable
 fun FindDialog(
 	configManager: ConfigManagerFfi,
@@ -30,17 +34,17 @@ fun FindDialog(
 ) {
 	var query by remember { mutableStateOf(initialQuery) }
 
-	var matchCase by remember { mutableStateOf(configManager.getAppBool("find_match_case", false)) }
-	var wholeWord by remember { mutableStateOf(configManager.getAppBool("find_whole_word", false)) }
-	var useRegex by remember { mutableStateOf(configManager.getAppBool("find_use_regex", false)) }
+	var matchCase by remember { mutableStateOf(configManager.getAppBool(MATCH_CASE_KEY, false)) }
+	var wholeWord by remember { mutableStateOf(configManager.getAppBool(WHOLE_WORD_KEY, false)) }
+	var useRegex by remember { mutableStateOf(configManager.getAppBool(USE_REGEX_KEY, false)) }
 
 	val searchHistory = remember { configManager.getFindHistory() }
 
 	val submitSearch = {
 		if (query.isNotBlank()) {
-			configManager.setAppBool("find_match_case", matchCase)
-			configManager.setAppBool("find_whole_word", wholeWord)
-			configManager.setAppBool("find_use_regex", useRegex)
+			configManager.setAppBool(MATCH_CASE_KEY, matchCase)
+			configManager.setAppBool(WHOLE_WORD_KEY, wholeWord)
+			configManager.setAppBool(USE_REGEX_KEY, useRegex)
 			configManager.addFindHistory(query, 10)
 
 			onSearch(

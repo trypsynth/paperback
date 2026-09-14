@@ -31,8 +31,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.DocumentSession
+import uniffi.paperback.ExportFormat
 import uniffi.paperback.HeadingTreeFfi
 import uniffi.paperback.LinkListFfi
+import uniffi.paperback.SearchOptionsFfi
 import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
 import uniffi.paperback.TextSegmentFfi
@@ -43,6 +45,7 @@ import java.security.MessageDigest
 import java.util.Locale
 
 private const val AUDIO_SEEK_AMOUNT_KEY = "audio_seek_amount_seconds"
+private const val ACTIVE_DOCUMENT_KEY = "active_document"
 private const val DEFAULT_AUDIO_SEEK_SECONDS = 10
 
 class MainScreenViewModel(
@@ -72,7 +75,7 @@ class MainScreenViewModel(
 	// Centralized so every dispatch site checks the exact same condition rather than each
 	// re-deriving "the active tab, if any, has audio" on its own.
 	private val activeTabHasAudio: Boolean
-		get() = (uiState.value as? MainScreenUiState.Success)?.activeTab?.hasAudio == true
+		get() = uiState.value.activeTab?.hasAudio == true
 
 	private val _currentNavUnit = MutableStateFlow<NavUnit>(NavUnit.Segment(SegmentTypeFfi.PARAGRAPH))
 	val currentNavUnit: StateFlow<NavUnit> = _currentNavUnit.asStateFlow()
@@ -112,7 +115,10 @@ class MainScreenViewModel(
 	}
 
 	private fun persistActiveDocument(docKey: String) {
-		viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", docKey) }
+		viewModelScope.launch(Dispatchers.IO) {
+			config.setAppString(ACTIVE_DOCUMENT_KEY, docKey)
+			config.flush()
+		}
 	}
 
 	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
@@ -174,7 +180,8 @@ class MainScreenViewModel(
 	 * actually on screen when the list opens.
 	 */
 	fun prepareToc() {
-		val toc = (uiState.value as? MainScreenUiState.Success)?.activeTab?.toc.orEmpty()
+		val tab = uiState.value.activeTab
+		val toc = tab?.toc.orEmpty()
 		if (toc.isEmpty()) {
 			_tocState.value = _tocState.value.copy(activeIndex = null)
 			return
@@ -209,15 +216,15 @@ class MainScreenViewModel(
 	private val _activeSearchQuery = MutableStateFlow<String?>(null)
 	val activeSearchQuery: StateFlow<String?> = _activeSearchQuery.asStateFlow()
 
-	private val _activeSearchOptions = MutableStateFlow<uniffi.paperback.SearchOptionsFfi?>(null)
-	val activeSearchOptions: StateFlow<uniffi.paperback.SearchOptionsFfi?> = _activeSearchOptions.asStateFlow()
+	private val _activeSearchOptions = MutableStateFlow<SearchOptionsFfi?>(null)
+	val activeSearchOptions: StateFlow<SearchOptionsFfi?> = _activeSearchOptions.asStateFlow()
 
 	private val _performSearchEvent = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
 	val performSearchEvent: SharedFlow<Boolean> = _performSearchEvent.asSharedFlow()
 
 	fun startSearch(
 		query: String,
-		options: uniffi.paperback.SearchOptionsFfi
+		options: SearchOptionsFfi
 	) {
 		_activeSearchQuery.value = query
 		_activeSearchOptions.value = options
@@ -251,9 +258,7 @@ class MainScreenViewModel(
 	fun confirmImportSettings() {
 		val path = _importPromptPath.value ?: return
 		config.importDocumentSettings(path)
-
-		val state = uiState.value as? MainScreenUiState.Success
-		val tab = state?.activeTab
+		val tab = uiState.value.activeTab
 		if (tab != null) {
 			val savedPosition = config.getDocumentPosition(tab.documentUri)
 			updateTtsPosition(savedPosition)
@@ -315,7 +320,7 @@ class MainScreenViewModel(
 			_supportedMimeTypes.value = buildSupportedMimeTypes()
 			val restorePrevious = settings.restorePreviousDocuments.state.value
 			val openedUris = if (restorePrevious) config.getOpenedDocuments() else emptyList()
-			val activeDocKey = config.getAppString("active_document", "")
+			val activeDocKey = config.getAppString(ACTIVE_DOCUMENT_KEY, "")
 			if (openedUris.isNotEmpty()) {
 				val restoredTabs = mutableListOf<DocumentTabState>()
 				for (uriString in openedUris) {
@@ -520,10 +525,7 @@ class MainScreenViewModel(
 	fun setActiveTab(index: Int) {
 		if (index in currentTabs.indices && index != currentActiveIndex) {
 			currentActiveIndex = index
-			viewModelScope.launch(Dispatchers.IO) {
-				config.setAppString("active_document", currentTabs[index].docKey)
-				config.flush()
-			}
+			persistActiveDocument(currentTabs[index].docKey)
 			emitTabsState()
 			_ttsPosition.value = currentTabs[index].savedPosition
 			updateTtsMetadata()
@@ -690,7 +692,7 @@ class MainScreenViewModel(
 			return@withContext
 		}
 		val recentDocsUpdated = getRecentDocumentsListIO()
-		val activeDocKey = config.getAppString("active_document", "")
+		val activeDocKey = config.getAppString(ACTIVE_DOCUMENT_KEY, "")
 		withContext(Dispatchers.Main) {
 			recentDocumentsList = recentDocsUpdated
 			val existingIndex = currentTabs.indexOfFirst { it.docKey == tabState.docKey }
@@ -790,8 +792,7 @@ class MainScreenViewModel(
 		if (_currentNavUnit.value !is NavUnit.Find) return false
 		val query = _activeSearchQuery.value
 		val options = _activeSearchOptions.value
-		val state = uiState.value as? MainScreenUiState.Success ?: return true
-		val tab = state.activeTab ?: return true
+		val tab = uiState.value.activeTab ?: return true
 		if (query == null || options == null) return true
 		// Forward search is inclusive of the start position, so searching from the current
 		// match's own start would just re-find it; nudge past it first. Backward search is
@@ -831,7 +832,7 @@ class MainScreenViewModel(
 	 * no meaningful document-wide elapsed time (its clips carry placeholder durations), so its
 	 * position reads as an offset into the file now playing, named whenever the file changes. */
 	private fun announceAudioSeek(elapsedMs: Long) {
-		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab ?: return
+		val tab = uiState.value.activeTab ?: return
 		val cursor = tab.session.audioCursorAtElapsedFfi(elapsedMs)
 		if (!cursor.found) return
 		val clip = tab.session.audioClipFfi(cursor.clipIndex)
@@ -860,8 +861,7 @@ class MainScreenViewModel(
 	}
 
 	private fun saveTtsPositionToConfig(pos: Long) {
-		val state = uiState.value as? MainScreenUiState.Success ?: return
-		val docUri = state.activeTab?.documentUri ?: return
+		val docUri = uiState.value.activeTab?.documentUri ?: return
 		viewModelScope.launch(Dispatchers.IO) {
 			config.setDocumentPosition(docUri, pos)
 			config.flush()
@@ -869,8 +869,7 @@ class MainScreenViewModel(
 	}
 
 	fun refreshSegmentPreview() {
-		val state = uiState.value as? MainScreenUiState.Success ?: return
-		val tab = state.activeTab ?: return
+		val tab = uiState.value.activeTab ?: return
 		// An audio-only book's buffer is one placeholder space per file with no newlines
 		// anywhere, so asking for the paragraph enclosing a position collapses to the whole
 		// buffer and reports it as starting at 0. Deriving the label from that would pin it to
@@ -888,20 +887,17 @@ class MainScreenViewModel(
 	}
 
 	private fun speakCurrentSegment() {
-		val state = uiState.value
-		if (state is MainScreenUiState.Success) {
-			val tab = state.activeTab ?: return
-			val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
-			if (segment.text.isNotBlank()) {
-				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = segment.text
-				saveTtsPositionToConfig(segment.startPos)
-				ttsManager.stop()
-				ttsManager.speak(segment.text)
-				precacheNextContinuousSegment()
-			} else {
-				playNextSegment()
-			}
+		val tab = uiState.value.activeTab ?: return
+		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		if (segment.text.isNotBlank()) {
+			_ttsPosition.value = segment.startPos
+			_currentSegmentText.value = segment.text
+			saveTtsPositionToConfig(segment.startPos)
+			ttsManager.stop()
+			ttsManager.speak(segment.text)
+			precacheNextContinuousSegment()
+		} else {
+			playNextSegment()
 		}
 	}
 
@@ -961,7 +957,7 @@ class MainScreenViewModel(
 		pos: Long,
 		resume: Boolean
 	) {
-		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab ?: return
+		val tab = uiState.value.activeTab ?: return
 		_ttsPosition.value = pos
 		val segment = tab.session.getTextSegment(pos, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
 		val text = displayTextFor(tab, segment)
@@ -990,29 +986,26 @@ class MainScreenViewModel(
 	) {
 		if (navigateByFind(forward = true, speak = speak, announce = announce)) return
 		if (seekAudioByNavUnit(forward = true)) return
-		val state = uiState.value
-		if (state is MainScreenUiState.Success) {
-			val tab = state.activeTab ?: return
-			val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.NEXT)
-			if (segment.found) {
-				val text = displayTextFor(tab, segment)
-				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = text
-				saveTtsPositionToConfig(segment.startPos)
-				if (tab.hasAudio) {
-					navigateDaisyAudioToSegment(segment, text, speak, announce)
-					return
+		val tab = uiState.value.activeTab ?: return
+		val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.NEXT)
+		if (segment.found) {
+			val text = displayTextFor(tab, segment)
+			_ttsPosition.value = segment.startPos
+			_currentSegmentText.value = text
+			saveTtsPositionToConfig(segment.startPos)
+			if (tab.hasAudio) {
+				navigateDaisyAudioToSegment(segment, text, speak, announce)
+				return
+			}
+			if (speak) {
+				ttsManager.speak(text)
+				precacheNextContinuousSegment()
+			} else {
+				if (ttsManager.isPaused.value) {
+					ttsManager.stop()
 				}
-				if (speak) {
-					ttsManager.speak(text)
-					precacheNextContinuousSegment()
-				} else {
-					if (ttsManager.isPaused.value) {
-						ttsManager.stop()
-					}
-					if (announce) {
-						announceNavigationCue(text)
-					}
+				if (announce) {
+					announceNavigationCue(text)
 				}
 			}
 		}
@@ -1028,47 +1021,38 @@ class MainScreenViewModel(
 	}
 
 	fun playNextContinuousSegment() {
-		val state = uiState.value
-		if (state is MainScreenUiState.Success) {
-			val tab = state.activeTab ?: return
-			val segment =
-				tab.session.getTextSegment(
-					_ttsPosition.value,
-					SegmentTypeFfi.PARAGRAPH,
-					SegmentDirectionFfi.NEXT
-				)
-			if (segment.text.isNotBlank()) {
-				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = segment.text
-				saveTtsPositionToConfig(segment.startPos)
-				ttsManager.speak(segment.text)
-				precacheNextContinuousSegment()
-			}
+		val tab = uiState.value.activeTab ?: return
+		val segment =
+			tab.session.getTextSegment(
+				_ttsPosition.value,
+				SegmentTypeFfi.PARAGRAPH,
+				SegmentDirectionFfi.NEXT
+			)
+		if (segment.text.isNotBlank()) {
+			_ttsPosition.value = segment.startPos
+			_currentSegmentText.value = segment.text
+			saveTtsPositionToConfig(segment.startPos)
+			ttsManager.speak(segment.text)
+			precacheNextContinuousSegment()
 		}
 	}
 
 	fun transitionToNextContinuousSegment() {
-		val state = uiState.value
-		if (state is MainScreenUiState.Success) {
-			val tab = state.activeTab ?: return
-			val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
-			if (segment.text.isNotBlank()) {
-				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = segment.text
-				saveTtsPositionToConfig(segment.startPos)
-				precacheNextContinuousSegment()
-			}
+		val tab = uiState.value.activeTab ?: return
+		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
+		if (segment.text.isNotBlank()) {
+			_ttsPosition.value = segment.startPos
+			_currentSegmentText.value = segment.text
+			saveTtsPositionToConfig(segment.startPos)
+			precacheNextContinuousSegment()
 		}
 	}
 
 	fun precacheNextContinuousSegment() {
-		val state = uiState.value
-		if (state is MainScreenUiState.Success) {
-			val tab = state.activeTab ?: return
-			val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
-			if (segment.text.isNotBlank()) {
-				ttsManager.precache(segment.text)
-			}
+		val tab = uiState.value.activeTab ?: return
+		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
+		if (segment.text.isNotBlank()) {
+			ttsManager.precache(segment.text)
 		}
 	}
 
@@ -1078,29 +1062,26 @@ class MainScreenViewModel(
 	) {
 		if (navigateByFind(forward = false, speak = speak, announce = announce)) return
 		if (seekAudioByNavUnit(forward = false)) return
-		val state = uiState.value
-		if (state is MainScreenUiState.Success) {
-			val tab = state.activeTab ?: return
-			val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.PREVIOUS)
-			if (segment.found) {
-				val text = displayTextFor(tab, segment)
-				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = text
-				saveTtsPositionToConfig(segment.startPos)
-				if (tab.hasAudio) {
-					navigateDaisyAudioToSegment(segment, text, speak, announce)
-					return
+		val tab = uiState.value.activeTab ?: return
+		val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.PREVIOUS)
+		if (segment.found) {
+			val text = displayTextFor(tab, segment)
+			_ttsPosition.value = segment.startPos
+			_currentSegmentText.value = text
+			saveTtsPositionToConfig(segment.startPos)
+			if (tab.hasAudio) {
+				navigateDaisyAudioToSegment(segment, text, speak, announce)
+				return
+			}
+			if (speak) {
+				ttsManager.speak(text)
+				precacheNextContinuousSegment()
+			} else {
+				if (ttsManager.isPaused.value) {
+					ttsManager.stop()
 				}
-				if (speak) {
-					ttsManager.speak(text)
-					precacheNextContinuousSegment()
-				} else {
-					if (ttsManager.isPaused.value) {
-						ttsManager.stop()
-					}
-					if (announce) {
-						announceNavigationCue(text)
-					}
+				if (announce) {
+					announceNavigationCue(text)
 				}
 			}
 		}
@@ -1140,8 +1121,7 @@ class MainScreenViewModel(
 		type: SegmentTypeFfi,
 		direction: SegmentDirectionFfi
 	) {
-		val state = uiState.value as? MainScreenUiState.Success ?: return
-		val tab = state.activeTab ?: return
+		val tab = uiState.value.activeTab ?: return
 		val segment = tab.session.getTextSegment(_ttsPosition.value, type, direction)
 		if (segment.found) {
 			val text = displayTextFor(tab, segment)
@@ -1171,8 +1151,7 @@ class MainScreenViewModel(
 	}
 
 	fun exportCurrentSettings(): Boolean {
-		val state = uiState.value as? MainScreenUiState.Success ?: return false
-		val tab = state.activeTab ?: return false
+		val tab = uiState.value.activeTab ?: return false
 		val docUri = tab.documentUri
 		if (docUri.startsWith("content://")) return false
 		val absolutePath = docUri.toUri().path ?: docUri
@@ -1191,8 +1170,7 @@ class MainScreenViewModel(
 		context: Context,
 		destUri: Uri
 	): Boolean {
-		val state = uiState.value as? MainScreenUiState.Success ?: return false
-		val tab = state.activeTab ?: return false
+		val tab = uiState.value.activeTab ?: return false
 		val docUri = tab.documentUri
 		val absolutePath = if (docUri.startsWith("content://")) {
 			docUri
@@ -1219,10 +1197,9 @@ class MainScreenViewModel(
 	fun exportDocumentToUri(
 		context: Context,
 		destUri: Uri,
-		format: uniffi.paperback.ExportFormat
+		format: ExportFormat
 	): Boolean {
-		val state = uiState.value as? MainScreenUiState.Success ?: return false
-		val tab = state.activeTab ?: return false
+		val tab = uiState.value.activeTab ?: return false
 
 		return try {
 			val content = tab.session.renderExportFfi(format)
@@ -1239,8 +1216,7 @@ class MainScreenViewModel(
 		context: Context,
 		sourceUri: Uri
 	): Boolean {
-		val state = uiState.value as? MainScreenUiState.Success ?: return false
-		val tab = state.activeTab ?: return false
+		val tab = uiState.value.activeTab ?: return false
 		val docUri = tab.documentUri
 		val absolutePath = if (docUri.startsWith("content://")) {
 			docUri
@@ -1353,8 +1329,7 @@ class MainScreenViewModel(
 	 * The reading position follows on its own: the player reports the clip it lands in.
 	 */
 	fun seekAudioToPercent(percent: Int): Boolean {
-		val state = uiState.value as? MainScreenUiState.Success ?: return false
-		val tab = state.activeTab ?: return false
+		val tab = uiState.value.activeTab ?: return false
 		val targetMs = tab.session.audioElapsedForPercentFfi(percent)
 		if (targetMs < 0) return false
 		return daisyAudioPlayer.seekToMs(targetMs)
@@ -1364,22 +1339,19 @@ class MainScreenViewModel(
 		// There is nothing to export with no document open. The menu hides the entry then; this
 		// keeps the Ctrl+E shortcut from arming a dialog that would appear over whatever document
 		// is opened next.
-		val state = uiState.value as? MainScreenUiState.Success ?: return
-		if (state.activeTab == null) return
+		if (uiState.value.activeTab == null) return
 		exportDocumentDialog.open()
 	}
 
 	fun openWordCountDialog() {
 		// Nothing to count in an audio-only book. The menu hides the entry for one; this keeps
 		// the Ctrl+W shortcut from opening a dialog full of zeroes anyway.
-		val state = uiState.value as? MainScreenUiState.Success ?: return
-		if (state.activeTab?.isAudioOnly == true) return
+		if (uiState.value.activeTab?.isAudioOnly == true) return
 		wordCountDialog.open()
 	}
 
 	fun openElements() {
-		val state = uiState.value as? MainScreenUiState.Success ?: return
-		val tab = state.activeTab ?: return
+		val tab = uiState.value.activeTab ?: return
 		// An audio-only book has no text spine, so both tabs would come up empty. The menu hides
 		// the entry for one; this keeps the F7 shortcut from opening it anyway.
 		if (tab.isAudioOnly) return
@@ -1419,18 +1391,16 @@ class MainScreenViewModel(
 	}
 
 	fun openGoToDialog(initialMode: String = GO_TO_LINE) {
-		val state = uiState.value
+		val tab = uiState.value.activeTab
 		var mode = initialMode
-		if (state is MainScreenUiState.Success) {
-			val tab = state.activeTab
-			// Line and page mean nothing in a book whose text is one blank line per audio file,
-			// so the shortcuts for them land on the one mode it does have.
-			if (tab != null && tab.isAudioOnly) {
-				mode = GO_TO_PERCENTAGE
-			} else if (tab != null && mode == GO_TO_PAGE && tab.session.pageCountFfi() == 0) {
-				announceForAccessibility("This document does not contain pages.")
-				return
-			}
+		// Line and page mean nothing in a book whose text is one blank line per audio file,
+		// so the shortcuts for them land on the one mode it does have.
+		if (tab != null && tab.isAudioOnly) {
+			mode = GO_TO_PERCENTAGE
+		} else if (tab != null && mode == GO_TO_PAGE && tab.session.pageCountFfi() == 0) {
+			// TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+			announceForAccessibility(t("This document does not contain pages."))
+			return
 		}
 		_goToInitialMode.value = mode
 		goToDialogState.open()
@@ -1458,7 +1428,7 @@ class MainScreenViewModel(
 				return@launch
 			}
 			val recentDocsUpdated = getRecentDocumentsListIO()
-			val activeDocKey = config.getAppString("active_document", "")
+			val activeDocKey = config.getAppString(ACTIVE_DOCUMENT_KEY, "")
 			withContext(Dispatchers.Main) {
 				recentDocumentsList = recentDocsUpdated
 				val existingIndex = currentTabs.indexOfFirst { it.docKey == tabState.docKey }
@@ -1489,7 +1459,6 @@ class MainScreenViewModel(
 	fun cancelPasswordPrompt() {
 		val uriStr = _passwordPromptUri.value?.toString()
 		_passwordPromptUri.value = null
-
 		viewModelScope.launch(Dispatchers.IO) {
 			if (uriStr != null) {
 				config.removeOpenedDocument(uriStr)

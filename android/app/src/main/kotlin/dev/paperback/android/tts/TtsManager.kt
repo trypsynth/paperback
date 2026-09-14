@@ -5,11 +5,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.media.AudioAttributes
-import android.media.AudioFocusRequest
-import android.media.AudioManager
 import android.media.MediaPlayer
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.speech.tts.TextToSpeech
@@ -26,6 +22,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import uniffi.paperback.ConfigManagerFfi
 import java.io.File
@@ -53,7 +50,6 @@ class TtsManager(
 	// next segment already started, causing TalkBack to briefly announce "Play" then "Pause".
 	private var currentContentUtteranceId: String? = null
 	private var currentPrecacheUtteranceId: String? = null
-	private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
 	var currentDocumentTitle: String = "Paperback"
 		set(value) {
@@ -65,66 +61,6 @@ class TtsManager(
 			field = value
 			updateMediaMetadata()
 		}
-	private var audioFocusRequest: AudioFocusRequest? = null
-	private var wasPlayingBeforeFocusLoss = false
-
-	private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
-		when (focusChange) {
-			AudioManager.AUDIOFOCUS_LOSS,
-			AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-				wasPlayingBeforeFocusLoss = _isSpeaking.value
-				if (_isSpeaking.value) {
-					onPauseCommand?.invoke()
-				}
-			}
-			AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-				// System handles ducking automatically on API 26+, or it just keeps playing on older APIs.
-			}
-			AudioManager.AUDIOFOCUS_GAIN -> {
-				if (wasPlayingBeforeFocusLoss) {
-					onPlayCommand?.invoke()
-					wasPlayingBeforeFocusLoss = false
-				}
-			}
-		}
-	}
-
-	// Speech playback always uses the same audio attributes; shared to avoid rebuilding
-	// an identical AudioAttributes instance at every call site.
-	private fun speechAudioAttributes(): AudioAttributes =
-		AudioAttributes
-			.Builder()
-			.setUsage(AudioAttributes.USAGE_MEDIA)
-			.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-			.build()
-
-	private fun requestAudioFocus() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			val request = AudioFocusRequest
-				.Builder(AudioManager.AUDIOFOCUS_GAIN)
-				.setAudioAttributes(speechAudioAttributes())
-				.setOnAudioFocusChangeListener(audioFocusChangeListener)
-				.build()
-			audioFocusRequest = request
-			audioManager.requestAudioFocus(request)
-		} else {
-			@Suppress("DEPRECATION")
-			audioManager.requestAudioFocus(
-				audioFocusChangeListener,
-				AudioManager.STREAM_MUSIC,
-				AudioManager.AUDIOFOCUS_GAIN
-			)
-		}
-	}
-
-	private fun abandonAudioFocus() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
-		} else {
-			@Suppress("DEPRECATION")
-			audioManager.abandonAudioFocus(audioFocusChangeListener)
-		}
-	}
 
 	companion object {
 		const val SYSTEM_DEFAULT = "system_default"
@@ -135,19 +71,19 @@ class TtsManager(
 	}
 
 	private val _currentEngineName = MutableStateFlow<String?>(null)
-	val currentEngineName: StateFlow<String?> = _currentEngineName
+	val currentEngineName: StateFlow<String?> = _currentEngineName.asStateFlow()
 
 	private val _isInitialized = MutableStateFlow(false)
-	val isInitialized: StateFlow<Boolean> = _isInitialized
+	val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
 	private val ttsScope = CoroutineScope(Dispatchers.Main)
 	private var stopSpeakingJob: Job? = null
 
 	private val _isSpeaking = MutableStateFlow(false)
-	val isSpeaking: StateFlow<Boolean> = _isSpeaking
+	val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
 
 	private val _isPaused = MutableStateFlow(false)
-	val isPaused: StateFlow<Boolean> = _isPaused
+	val isPaused: StateFlow<Boolean> = _isPaused.asStateFlow()
 
 	var onUtteranceCompleted: (() -> Unit)? = null
 	var onSegmentTransition: (() -> Unit)? = null
@@ -156,17 +92,25 @@ class TtsManager(
 	var onNextCommand: (() -> Unit)? = null
 	var onPrevCommand: (() -> Unit)? = null
 
+	private val audioFocus =
+		AudioFocusHolder(
+			context,
+			isPlaying = { _isSpeaking.value },
+			onPause = { onPauseCommand?.invoke() },
+			onResume = { onPlayCommand?.invoke() }
+		)
+
 	private val _currentSpeechRate = MutableStateFlow(50)
-	val currentSpeechRate: StateFlow<Int> = _currentSpeechRate
+	val currentSpeechRate: StateFlow<Int> = _currentSpeechRate.asStateFlow()
 
 	private val _currentPitch = MutableStateFlow(50)
-	val currentPitch: StateFlow<Int> = _currentPitch
+	val currentPitch: StateFlow<Int> = _currentPitch.asStateFlow()
 
 	private val _currentVoice = MutableStateFlow<Voice?>(null)
-	val currentVoice: StateFlow<Voice?> = _currentVoice
+	val currentVoice: StateFlow<Voice?> = _currentVoice.asStateFlow()
 
 	private val _availableVoices = MutableStateFlow<List<Voice>>(emptyList())
-	val availableVoices: StateFlow<List<Voice>> = _availableVoices
+	val availableVoices: StateFlow<List<Voice>> = _availableVoices.asStateFlow()
 
 	fun loadConfigAndInit() {
 		val savedEngine = config.getAppString(KEY_ENGINE, SYSTEM_DEFAULT)
@@ -182,7 +126,6 @@ class TtsManager(
 			onPrevCommand = { onPrevCommand?.invoke() }
 		)
 		ttsPlayer = player
-
 		val sessionActivityIntent = Intent(context, MainActivity::class.java)
 		val sessionActivityPendingIntent = PendingIntent.getActivity(
 			context,
@@ -190,15 +133,12 @@ class TtsManager(
 			sessionActivityIntent,
 			PendingIntent.FLAG_IMMUTABLE
 		)
-
 		mediaSession = MediaSession
 			.Builder(context, player)
 			.setSessionActivity(sessionActivityPendingIntent)
 			.build()
-
 		PlaybackService.activeMediaSession = mediaSession
 		updateMediaMetadata()
-
 		// Binding (rather than Context.startForegroundService()) keeps PlaybackService
 		// alive and its Media3 internals already observing the player before playback
 		// ever begins. Starting it with a plain Intent instead races the 5-second
@@ -236,7 +176,6 @@ class TtsManager(
 		currentPrecacheUtteranceId = precacheUtteranceId
 		nextTempFile = File(context.cacheDir, "paperback_tts_next_$fileCounter.wav")
 		nextTempFile?.takeIf { it.exists() }?.delete()
-
 		val params = Bundle()
 		tts?.synthesizeToFile(text, params, nextTempFile, precacheUtteranceId)
 	}
@@ -451,7 +390,7 @@ class TtsManager(
 	) {
 		if (text.isNotBlank()) {
 			if (!isSample) {
-				requestAudioFocus()
+				audioFocus.request()
 			}
 			stopSpeakingJob?.cancel()
 			fileCounter++
@@ -527,7 +466,6 @@ class TtsManager(
 		} catch (_: Exception) {
 		}
 		mediaPlayer = null
-
 		try {
 			nextMediaPlayer?.release()
 		} catch (_: Exception) {
@@ -535,10 +473,8 @@ class TtsManager(
 		nextMediaPlayer = null
 		isNextMediaPlayerPrepared = false
 		precachedText = null
-
 		currentTempFile = null
 		nextTempFile = null
-
 		try {
 			context.cacheDir.listFiles()?.forEach {
 				if (it.name.startsWith("paperback_tts_")) {
@@ -558,7 +494,7 @@ class TtsManager(
 		_isSpeaking.value = false
 		_isPaused.value = false
 		updatePlaybackState(false)
-		abandonAudioFocus()
+		audioFocus.abandon()
 	}
 
 	fun setSpeechRate(ratePercentage: Int) {
@@ -643,18 +579,15 @@ class TtsManager(
 	fun shutdown() {
 		stop()
 		tts?.shutdown()
-
 		mediaSession?.release()
 		mediaSession = null
 		ttsPlayer?.release()
 		ttsPlayer = null
 		PlaybackService.activeMediaSession = null
-
 		// Unbind rather than force-stopping the service — Media3's own lifecycle
 		// handling decides when it's actually safe for the service to go away.
 		serviceConnection?.let { context.unbindService(it) }
 		serviceConnection = null
-
 		// Last, so nothing torn down above can leave work queued: a late onDone callback
 		// would otherwise launch on this scope after shutdown and build a MediaPlayer for a
 		// temp file that no longer exists, with nothing left to release it.

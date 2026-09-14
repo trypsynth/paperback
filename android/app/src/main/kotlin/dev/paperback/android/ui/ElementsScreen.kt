@@ -30,6 +30,7 @@ import dev.paperback.android.ui.dialogs.TreeExpandChevron
 import dev.paperback.android.ui.dialogs.applyTreeExpandSemantics
 import dev.paperback.android.ui.dialogs.flattenVisibleTreeIndices
 import dev.paperback.android.ui.dialogs.hasTreeChildren
+import uniffi.paperback.HeadingTreeItemFfi
 
 /**
  * The document's headings and links, as a real destination rather than a dialog, so the lists get
@@ -167,7 +168,7 @@ fun ElementsScreen(
 }
 
 private fun calculateDepth(
-	items: List<uniffi.paperback.HeadingTreeItemFfi>,
+	items: List<HeadingTreeItemFfi>,
 	parentIndex: Int
 ): Int {
 	var depth = 0

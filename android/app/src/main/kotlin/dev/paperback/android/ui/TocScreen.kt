@@ -35,7 +35,7 @@ fun TocScreen(
 	val tocState by viewModel.tocState.collectAsStateWithLifecycle()
 	val expandedTocIndices = tocState.expandedIndices
 	val activeTocIndex = tocState.activeIndex
-	val toc = (state as? MainScreenUiState.Success)?.activeTab?.toc.orEmpty()
+	val toc = state.activeTab?.toc.orEmpty()
 	val listState = rememberLazyListState()
 	val focusRequester = remember { FocusRequester() }
 	val levelAt = remember(toc) { { index: Int -> toc[index].level } }

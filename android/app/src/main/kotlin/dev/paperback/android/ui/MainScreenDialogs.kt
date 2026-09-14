@@ -66,7 +66,6 @@ fun DocumentToolDialogs(
 fun DocumentPromptDialogs(viewModel: MainScreenViewModel) {
 	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()
 	val importPromptPath by viewModel.importPromptPath.collectAsStateWithLifecycle()
-
 	if (passwordPromptUri != null) {
 		PasswordDialog(
 			onConfirm = { viewModel.submitPassword(it) },

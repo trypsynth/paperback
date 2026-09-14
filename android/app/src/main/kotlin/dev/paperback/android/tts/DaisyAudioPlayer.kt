@@ -1,9 +1,6 @@
 package dev.paperback.android.tts
 
 import android.content.Context
-import android.media.AudioAttributes
-import android.media.AudioFocusRequest
-import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import kotlinx.coroutines.CoroutineScope
@@ -62,62 +59,8 @@ class DaisyAudioPlayer(
 	/** Set for the duration of one `seekRelativeMs`, so only that seek reports where it lands. */
 	private var reportNextSeek = false
 
-	private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-	private var audioFocusRequest: AudioFocusRequest? = null
-	private var wasPlayingBeforeFocusLoss = false
-
-	// Mirrors TtsManager's own focus handling.
-	private val audioFocusChangeListener =
-		AudioManager.OnAudioFocusChangeListener { focusChange ->
-			when (focusChange) {
-				AudioManager.AUDIOFOCUS_LOSS,
-				AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-					wasPlayingBeforeFocusLoss = playing
-					if (playing) pause()
-				}
-				AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-					// System handles ducking; nothing to do here.
-				}
-				AudioManager.AUDIOFOCUS_GAIN -> {
-					if (wasPlayingBeforeFocusLoss) {
-						wasPlayingBeforeFocusLoss = false
-						play()
-					}
-				}
-			}
-		}
-
-	private fun speechAudioAttributes(): AudioAttributes =
-		AudioAttributes
-			.Builder()
-			.setUsage(AudioAttributes.USAGE_MEDIA)
-			.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-			.build()
-
-	private fun requestAudioFocus() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			val request =
-				AudioFocusRequest
-					.Builder(AudioManager.AUDIOFOCUS_GAIN)
-					.setAudioAttributes(speechAudioAttributes())
-					.setOnAudioFocusChangeListener(audioFocusChangeListener)
-					.build()
-			audioFocusRequest = request
-			audioManager.requestAudioFocus(request)
-		} else {
-			@Suppress("DEPRECATION")
-			audioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-		}
-	}
-
-	private fun abandonAudioFocus() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
-		} else {
-			@Suppress("DEPRECATION")
-			audioManager.abandonAudioFocus(audioFocusChangeListener)
-		}
-	}
+	private val audioFocus =
+		AudioFocusHolder(context, isPlaying = { playing }, onPause = { pause() }, onResume = { play() })
 
 	/** Switches to narrating `session`, stopping whatever this player was previously doing.
 	 * `docKey` scopes the extracted-source cache so it doesn't collide with another document's. */
@@ -144,7 +87,7 @@ class DaisyAudioPlayer(
 
 	fun play() {
 		if (session == null) return
-		requestAudioFocus()
+		audioFocus.request()
 		playing = true
 		val pending = pendingTargetMs
 		pendingTargetMs = null
@@ -203,7 +146,7 @@ class DaisyAudioPlayer(
 		pendingTargetMs = null
 		lastSeekTarget = null
 		reportNextSeek = false
-		abandonAudioFocus()
+		audioFocus.abandon()
 		if (wasActive) onPlaybackStateChanged?.invoke(false)
 	}
 

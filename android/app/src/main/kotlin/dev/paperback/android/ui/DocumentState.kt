@@ -55,3 +55,10 @@ sealed class MainScreenUiState {
 		val message: String
 	) : MainScreenUiState()
 }
+
+/**
+ * The tab the reader is looking at, for the callers that hold the state in its sealed form:
+ * null until a document is open, and for every state but [MainScreenUiState.Success].
+ */
+val MainScreenUiState.activeTab: DocumentTabState?
+	get() = (this as? MainScreenUiState.Success)?.activeTab

@@ -1,6 +1,7 @@
 package dev.paperback.android.ui.dialogs
 
 import android.content.Context
+import android.os.Build
 import android.os.Environment
 import android.os.storage.StorageManager
 import android.text.format.DateFormat
@@ -60,7 +61,7 @@ fun FileManagerDialog(
 
 	val context = LocalContext.current
 	val storageRoots = remember(context) {
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 			val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 			sm.storageVolumes.mapNotNull { it.directory }
 		} else {
