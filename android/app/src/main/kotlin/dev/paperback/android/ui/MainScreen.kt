@@ -108,8 +108,8 @@ fun MainScreen(
 			(notificationsSectionApplicable && !notificationsGranted) ||
 				(allFilesAccessSectionApplicable && !allFilesAccessGranted)
 		)
-	val activeSearchQuery by viewModel.activeSearchQuery.collectAsStateWithLifecycle()
-	val activeSearchOptions by viewModel.activeSearchOptions.collectAsStateWithLifecycle()
+	val activeSearchQuery by viewModel.search.query.collectAsStateWithLifecycle()
+	val activeSearchOptions by viewModel.search.options.collectAsStateWithLifecycle()
 	var isTextMode by rememberSaveable { mutableStateOf(false) }
 
 	// An audio-only tab has no real text spine to show in Text Mode (its top-bar toggle is
@@ -125,7 +125,7 @@ fun MainScreen(
 	// just steps it the same way the nav-unit slider's Previous/Next buttons do; only Text mode
 	// (which has no nav-unit slider) still needs this handler's own search-and-scroll logic.
 	LaunchedEffect(Unit) {
-		viewModel.performSearchEvent.collect { forward ->
+		viewModel.search.stepRequests.collect { forward ->
 			if (!isTextMode) {
 				// No active search means Find isn't the nav unit, so there's nothing for F3 to
 				// step through here; without this guard it would fall through to whatever unit
@@ -169,7 +169,7 @@ fun MainScreen(
 	val textAlignment by settings.textAlignment.state.collectAsStateWithLifecycle()
 	val readability = rememberReadabilityStyle(textScalePercent, lineSpacing, paragraphSpacing, textAlignment)
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
-	val sleepTimerRemaining by viewModel.sleepTimerRemaining.collectAsStateWithLifecycle()
+	val sleepTimerRemaining by viewModel.sleepTimer.remaining.collectAsStateWithLifecycle()
 
 	val view = LocalView.current
 	LaunchedEffect(Unit) {
@@ -180,7 +180,7 @@ fun MainScreen(
 	}
 
 	LaunchedEffect(Unit) {
-		viewModel.sleepTimerExpired.collect {
+		viewModel.sleepTimer.expired.collect {
 			(context as? Activity)?.moveTaskToBack(true)
 		}
 	}
@@ -396,7 +396,7 @@ fun MainScreen(
 						listState = searchListState,
 						activeSearchQuery = searchQuery,
 						activeSearchOptions = searchOptions,
-						onClose = { viewModel.clearSearch() },
+						onClose = { viewModel.search.clear() },
 						onNavigate = { lineIndexToFocus = it }
 					)
 				} else if (!isTextMode && activeTab != null) {
@@ -520,7 +520,7 @@ fun MainScreen(
 									textStyle = readability.textStyle,
 									progressPercent = progressPercent,
 									sleepTimerRemaining = sleepTimerRemaining,
-									onCancelSleepTimer = { viewModel.cancelSleepTimer() }
+									onCancelSleepTimer = { viewModel.sleepTimer.cancel() }
 								)
 							} else {
 								DocumentTextView(
@@ -532,7 +532,7 @@ fun MainScreen(
 									activeSearchQuery = activeSearchQuery,
 									activeSearchOptions = activeSearchOptions,
 									onCloseSearch = {
-										viewModel.clearSearch()
+										viewModel.search.clear()
 									}
 								)
 							}
@@ -559,7 +559,7 @@ fun MainScreen(
 											activeSearchOptions?.matchCase == options.matchCase &&
 											activeSearchOptions?.wholeWord == options.wholeWord &&
 											activeSearchOptions?.regex == options.regex
-										viewModel.startSearch(query, options)
+										viewModel.search.start(query, options)
 										if (!isTextMode) {
 											viewModel.setNavUnit(NavUnit.Find)
 										}

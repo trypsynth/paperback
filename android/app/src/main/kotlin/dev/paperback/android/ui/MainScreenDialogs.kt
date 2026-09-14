@@ -30,7 +30,7 @@ fun DocumentToolDialogs(
 	val wordCountOpen by viewModel.wordCountDialog.isOpen.collectAsStateWithLifecycle()
 	val documentInfoOpen by viewModel.documentInfoDialog.isOpen.collectAsStateWithLifecycle()
 	val sleepTimerOpen by viewModel.sleepTimerDialog.isOpen.collectAsStateWithLifecycle()
-	val sleepTimerRemaining by viewModel.sleepTimerRemaining.collectAsStateWithLifecycle()
+	val sleepTimerRemaining by viewModel.sleepTimer.remaining.collectAsStateWithLifecycle()
 
 	if (wordCountOpen && docState != null) {
 		val stats = remember(docState.session) { docState.session.getStatsFfi() }
@@ -50,8 +50,8 @@ fun DocumentToolDialogs(
 	if (sleepTimerOpen) {
 		SleepTimerDialog(
 			remainingSeconds = sleepTimerRemaining,
-			onSetTimer = { viewModel.setSleepTimer(it) },
-			onCancelTimer = { viewModel.cancelSleepTimer() },
+			onSetTimer = { viewModel.sleepTimer.start(it) },
+			onCancelTimer = { viewModel.sleepTimer.cancel() },
 			onDismiss = { viewModel.sleepTimerDialog.close() }
 		)
 	}

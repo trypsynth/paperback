@@ -32,7 +32,7 @@ fun TocScreen(
 	onDismiss: () -> Unit
 ) {
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
-	val tocState by viewModel.tocState.collectAsStateWithLifecycle()
+	val tocState by viewModel.toc.state.collectAsStateWithLifecycle()
 	val expandedTocIndices = tocState.expandedIndices
 	val activeTocIndex = tocState.activeIndex
 	val toc = state.activeTab?.toc.orEmpty()
@@ -107,12 +107,12 @@ fun TocScreen(
 									selected = true
 								}
 								applyTreeExpandSemantics(hasChildren, isExpanded) {
-									viewModel.toggleTocExpanded(originalIndex)
+									viewModel.toc.toggleExpanded(originalIndex)
 								}
 							}.padding(start = paddingLeft, end = 16.dp, top = 8.dp, bottom = 8.dp),
 						verticalAlignment = Alignment.CenterVertically
 					) {
-						TreeExpandChevron(hasChildren, isExpanded) { viewModel.toggleTocExpanded(originalIndex) }
+						TreeExpandChevron(hasChildren, isExpanded) { viewModel.toc.toggleExpanded(originalIndex) }
 						Text(
 							text = item.title,
 							style = if (isActive) {

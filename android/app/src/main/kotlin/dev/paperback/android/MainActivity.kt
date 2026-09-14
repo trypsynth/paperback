@@ -264,9 +264,9 @@ class MainActivity : ComponentActivity() {
 		}
 		if (event.keyCode == KeyEvent.KEYCODE_F3) {
 			if (event.isShiftPressed) {
-				vm.triggerFindPrevious()
+				vm.search.findPrevious()
 			} else {
-				vm.triggerFindNext()
+				vm.search.findNext()
 			}
 			return true
 		}

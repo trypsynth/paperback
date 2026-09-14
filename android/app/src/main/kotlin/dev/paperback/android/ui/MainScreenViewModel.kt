@@ -19,8 +19,6 @@ import dev.paperback.android.ui.dialogs.GO_TO_LINE
 import dev.paperback.android.ui.dialogs.GO_TO_PAGE
 import dev.paperback.android.ui.dialogs.GO_TO_PERCENTAGE
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -34,7 +32,6 @@ import uniffi.paperback.DocumentSession
 import uniffi.paperback.ExportFormat
 import uniffi.paperback.HeadingTreeFfi
 import uniffi.paperback.LinkListFfi
-import uniffi.paperback.SearchOptionsFfi
 import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
 import uniffi.paperback.TextSegmentFfi
@@ -90,13 +87,7 @@ class MainScreenViewModel(
 	private val _currentSegmentText = MutableStateFlow("")
 	val currentSegmentText: StateFlow<String> = _currentSegmentText.asStateFlow()
 
-	private val _sleepTimerRemaining = MutableStateFlow<Int?>(null)
-	val sleepTimerRemaining: StateFlow<Int?> = _sleepTimerRemaining.asStateFlow()
-
-	private val _sleepTimerExpired = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-	val sleepTimerExpired: SharedFlow<Unit> = _sleepTimerExpired.asSharedFlow()
-
-	private var sleepTimerJob: Job? = null
+	val sleepTimer = SleepTimer(viewModelScope) { pauseTts() }
 
 	private val _uiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Idle)
 	val uiState: StateFlow<MainScreenUiState> = _uiState.asStateFlow()
@@ -164,84 +155,16 @@ class MainScreenViewModel(
 	private val _goToInitialMode = MutableStateFlow("Line")
 	val goToInitialMode: StateFlow<String> = _goToInitialMode.asStateFlow()
 
-	private val _tocState = MutableStateFlow(TocUiState())
-	val tocState: StateFlow<TocUiState> = _tocState.asStateFlow()
+	val toc = TocState()
 
-	fun toggleTocExpanded(index: Int) {
-		val expanded = _tocState.value.expandedIndices
-		_tocState.value = _tocState.value.copy(
-			expandedIndices = if (expanded.contains(index)) expanded - index else expanded + index
-		)
-	}
-
-	/**
-	 * Points the table of contents at wherever the reader currently is: the nearest entry at or
-	 * before the reading position becomes the active one, and its ancestors are expanded so it is
-	 * actually on screen when the list opens.
-	 */
+	/** Points the table of contents at wherever the reader currently is, for the screen that is
+	 * about to show it. */
 	fun prepareToc() {
 		val tab = uiState.value.activeTab
-		val toc = tab?.toc.orEmpty()
-		if (toc.isEmpty()) {
-			_tocState.value = _tocState.value.copy(activeIndex = null)
-			return
-		}
-		var activeIndex = 0
-		var bestDistance = Long.MAX_VALUE
-		val currentPos = _ttsPosition.value
-		for (i in toc.indices) {
-			if (toc[i].position <= currentPos) {
-				val distance = currentPos - toc[i].position
-				if (distance < bestDistance) {
-					bestDistance = distance
-					activeIndex = i
-				}
-			}
-		}
-		val toExpand = mutableSetOf<Int>()
-		var currentLevel = toc[activeIndex].level
-		for (i in activeIndex - 1 downTo 0) {
-			if (toc[i].level < currentLevel) {
-				toExpand.add(i)
-				currentLevel = toc[i].level
-				if (currentLevel == 0) break
-			}
-		}
-		_tocState.value = TocUiState(
-			expandedIndices = _tocState.value.expandedIndices + toExpand,
-			activeIndex = activeIndex
-		)
+		toc.pointAt(tab?.toc.orEmpty(), _ttsPosition.value)
 	}
 
-	private val _activeSearchQuery = MutableStateFlow<String?>(null)
-	val activeSearchQuery: StateFlow<String?> = _activeSearchQuery.asStateFlow()
-
-	private val _activeSearchOptions = MutableStateFlow<SearchOptionsFfi?>(null)
-	val activeSearchOptions: StateFlow<SearchOptionsFfi?> = _activeSearchOptions.asStateFlow()
-
-	private val _performSearchEvent = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
-	val performSearchEvent: SharedFlow<Boolean> = _performSearchEvent.asSharedFlow()
-
-	fun startSearch(
-		query: String,
-		options: SearchOptionsFfi
-	) {
-		_activeSearchQuery.value = query
-		_activeSearchOptions.value = options
-	}
-
-	fun clearSearch() {
-		_activeSearchQuery.value = null
-		_activeSearchOptions.value = null
-	}
-
-	fun triggerFindNext() {
-		_performSearchEvent.tryEmit(true)
-	}
-
-	fun triggerFindPrevious() {
-		_performSearchEvent.tryEmit(false)
-	}
+	val search = DocumentSearch()
 
 	private val _currentHeadings = MutableStateFlow<HeadingTreeFfi?>(null)
 	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings.asStateFlow()
@@ -790,8 +713,8 @@ class MainScreenViewModel(
 		announce: Boolean
 	): Boolean {
 		if (_currentNavUnit.value !is NavUnit.Find) return false
-		val query = _activeSearchQuery.value
-		val options = _activeSearchOptions.value
+		val query = search.query.value
+		val options = search.options.value
 		val tab = uiState.value.activeTab ?: return true
 		if (query == null || options == null) return true
 		// Forward search is inclusive of the start position, so searching from the current
@@ -1095,28 +1018,6 @@ class MainScreenViewModel(
 		ttsManager.pause()
 	}
 
-	fun setSleepTimer(minutes: Int) {
-		sleepTimerJob?.cancel()
-		sleepTimerJob = viewModelScope.launch {
-			var remaining = minutes * 60
-			_sleepTimerRemaining.value = remaining
-			while (remaining > 0) {
-				delay(1000)
-				remaining--
-				_sleepTimerRemaining.value = remaining
-			}
-			_sleepTimerRemaining.value = null
-			pauseTts()
-			_sleepTimerExpired.emit(Unit)
-		}
-	}
-
-	fun cancelSleepTimer() {
-		sleepTimerJob?.cancel()
-		sleepTimerJob = null
-		_sleepTimerRemaining.value = null
-	}
-
 	fun navigateByType(
 		type: SegmentTypeFfi,
 		direction: SegmentDirectionFfi
@@ -1255,7 +1156,7 @@ class MainScreenViewModel(
 		val activeDocumentUri = currentTabs.getOrNull(currentActiveIndex)?.documentUri
 		if (activeDocumentUri != lastMetadataDocumentUri) {
 			lastMetadataDocumentUri = activeDocumentUri
-			clearSearch()
+			search.clear()
 		}
 		if (currentActiveIndex in currentTabs.indices) {
 			val tab = currentTabs[currentActiveIndex]
