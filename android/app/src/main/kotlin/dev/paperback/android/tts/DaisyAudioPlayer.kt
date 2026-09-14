@@ -240,22 +240,20 @@ class DaisyAudioPlayer(
 		} catch (_: Exception) {
 			return false
 		}
-		if (lengthMs <= 0) return false
-		val naiveMs = rawMs + deltaMs
-		return when {
-			naiveMs > lengthMs -> {
+		return when (val spill = spillOf(rawMs, lengthMs, deltaMs)) {
+			is SeekSpill.PastEnd -> {
 				val next = session.audioNextSourceAfterFfi(source)
 				if (next < 0) return false
-				loadSource(next, SourceSeek.FromStart(naiveMs - lengthMs))
+				loadSource(next, SourceSeek.FromStart(spill.overflowMs))
 				true
 			}
-			naiveMs < 0 -> {
+			is SeekSpill.BeforeStart -> {
 				val previous = session.audioPreviousSourceBeforeFfi(source)
 				if (previous < 0) return false
-				loadSource(previous, SourceSeek.FromEnd(-naiveMs))
+				loadSource(previous, SourceSeek.FromEnd(spill.underflowMs))
 				true
 			}
-			else -> false
+			SeekSpill.WithinFile -> false
 		}
 	}
 
@@ -561,5 +559,44 @@ class DaisyAudioPlayer(
 		stop()
 		session = null
 		docKey = null
+	}
+}
+
+/** Where a relative seek lands relative to the file it starts in. */
+internal sealed interface SeekSpill {
+	/** The seek stays inside this file, so it is an ordinary seek. */
+	object WithinFile : SeekSpill
+
+	/** The seek runs off the end, [overflowMs] into whatever plays next. */
+	data class PastEnd(
+		val overflowMs: Long
+	) : SeekSpill
+
+	/** The seek runs off the front, [underflowMs] back from the end of whatever plays before. */
+	data class BeforeStart(
+		val underflowMs: Long
+	) : SeekSpill
+}
+
+/**
+ * Where seeking [deltaMs] from [rawMs] lands, in a file that really runs for [lengthMs].
+ *
+ * This works in the file's own time rather than the document's elapsed time on purpose: an
+ * audiobook that is only a bundle of narration files gives every clip the same placeholder
+ * duration, far longer than the recording it stands for, so elapsed-time arithmetic would resolve
+ * back into the same file past its end, where a seek can only clamp. A file whose length is not
+ * known yet ([lengthMs] of zero or less) can only be seeked within.
+ */
+internal fun spillOf(
+	rawMs: Long,
+	lengthMs: Long,
+	deltaMs: Long
+): SeekSpill {
+	if (lengthMs <= 0) return SeekSpill.WithinFile
+	val naiveMs = rawMs + deltaMs
+	return when {
+		naiveMs > lengthMs -> SeekSpill.PastEnd(naiveMs - lengthMs)
+		naiveMs < 0 -> SeekSpill.BeforeStart(-naiveMs)
+		else -> SeekSpill.WithinFile
 	}
 }

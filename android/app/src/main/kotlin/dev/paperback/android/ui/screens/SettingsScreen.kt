@@ -19,6 +19,7 @@ import dev.paperback.android.ui.components.PickerMenuItem
 import dev.paperback.android.ui.components.pickerAnchorColors
 import dev.paperback.android.ui.state.MainScreenViewModel
 import dev.paperback.android.ui.state.ReaderSettings
+import kotlin.math.roundToInt
 
 private val MIN_SCALE = ReaderSettings.MIN_TEXT_SCALE_PERCENT.toFloat()
 
@@ -358,7 +359,7 @@ fun SettingsScreen(
 								steps = 99
 							)
 							setProgress { targetValue ->
-								viewModel.ttsManager.setSpeechRate(kotlin.math.round(targetValue).toInt())
+								viewModel.ttsManager.setSpeechRate(targetValue.roundToInt())
 								true
 							}
 						}
@@ -372,7 +373,7 @@ fun SettingsScreen(
 					Text(rateText, style = MaterialTheme.typography.labelLarge)
 					Slider(
 						value = if (isSystemDefault) 50f else currentSpeechRate.toFloat(),
-						onValueChange = { viewModel.ttsManager.setSpeechRate(kotlin.math.round(it).toInt()) },
+						onValueChange = { viewModel.ttsManager.setSpeechRate(it.roundToInt()) },
 						valueRange = 0f..100f,
 						steps = 0,
 						enabled = !isSystemDefault
@@ -395,7 +396,7 @@ fun SettingsScreen(
 								steps = 99
 							)
 							setProgress { targetValue ->
-								viewModel.ttsManager.setPitch(kotlin.math.round(targetValue).toInt())
+								viewModel.ttsManager.setPitch(targetValue.roundToInt())
 								true
 							}
 						}
@@ -409,7 +410,7 @@ fun SettingsScreen(
 					Text(pitchText, style = MaterialTheme.typography.labelLarge)
 					Slider(
 						value = if (isSystemDefault) 50f else currentPitch.toFloat(),
-						onValueChange = { viewModel.ttsManager.setPitch(kotlin.math.round(it).toInt()) },
+						onValueChange = { viewModel.ttsManager.setPitch(it.roundToInt()) },
 						valueRange = 0f..100f,
 						steps = 0,
 						enabled = !isSystemDefault

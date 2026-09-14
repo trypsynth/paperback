@@ -498,24 +498,24 @@ class TtsManager(
 	}
 
 	fun setSpeechRate(ratePercentage: Int) {
-		_currentSpeechRate.value = ratePercentage
+		val percentage = ratePercentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)
+		_currentSpeechRate.value = percentage
 		val engine = _currentEngineName.value
 		if (engine != null && engine != SYSTEM_DEFAULT) {
-			config.setAppString("${KEY_RATE}_$engine", ratePercentage.toString())
+			config.setAppString("${KEY_RATE}_$engine", percentage.toString())
 			config.flush()
-			val mappedRate = 0.1f + (ratePercentage / 100f) * 2.9f
-			tts?.setSpeechRate(mappedRate)
+			tts?.setSpeechRate(speechRateFor(percentage))
 		}
 	}
 
 	fun setPitch(pitchPercentage: Int) {
-		_currentPitch.value = pitchPercentage
+		val percentage = pitchPercentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)
+		_currentPitch.value = percentage
 		val engine = _currentEngineName.value
 		if (engine != null && engine != SYSTEM_DEFAULT) {
-			config.setAppString("${KEY_PITCH}_$engine", pitchPercentage.toString())
+			config.setAppString("${KEY_PITCH}_$engine", percentage.toString())
 			config.flush()
-			val mappedPitch = 0.1f + (pitchPercentage / 100f) * 1.9f
-			tts?.setPitch(mappedPitch)
+			tts?.setPitch(pitchFor(percentage))
 		}
 	}
 
@@ -594,3 +594,21 @@ class TtsManager(
 		ttsScope.cancel()
 	}
 }
+
+/** The ends of the rate and pitch sliders, which every stored value is brought back inside: a
+ * config written by hand or by another version can hold anything at all. */
+internal const val MIN_SPEECH_PERCENTAGE = 0
+internal const val MAX_SPEECH_PERCENTAGE = 100
+
+/**
+ * The engine speech rate a slider percentage means. The slider runs 0 to 100 with 50 in the
+ * middle, and the engine takes a multiplier, so this spreads it over 0.1x to 3.0x: slow enough to
+ * follow an unfamiliar word, fast enough for a practised listener.
+ */
+internal fun speechRateFor(percentage: Int): Float =
+	0.1f + (percentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE) / 100f) * 2.9f
+
+/** The engine pitch a slider percentage means, over a narrower 0.1x to 2.0x: past that a voice
+ * stops being understandable rather than just sounding different. */
+internal fun pitchFor(percentage: Int): Float =
+	0.1f + (percentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE) / 100f) * 1.9f
