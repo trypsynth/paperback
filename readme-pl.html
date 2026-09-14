@@ -323,7 +323,7 @@ przetłumaczone, więc w okienku ustawień będą brzmiały inaczej.</p>
 plików</h1>
 <p>Paperback obsługuje następujące formaty i rozszerzenia:</p>
 <ul>
-<li>Archiwa komiksów (<code>.cbz</code>)</li>
+<li>Archiwa komiksów (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>Pliki pomocy CHM (<code>.chm</code>)</li>
 <li>Książki DAISY (<code>.opf</code>, <code>.zip</code>)</li>
 <li>Książki EPUB (<code>.epub</code>)</li>
@@ -336,6 +336,10 @@ plików</h1>
 <code>.ronn</code>)</li>
 <li>Dokumenty Microsoft Word (<code>.docx</code>, <code>.docm</code>,
 <code>.doc</code>)</li>
+<li>Strony podręcznika systemowego, zarówno <code>man</code>, jak i
+<code>mdoc</code> z BSD (<code>.1</code> do <code>.9</code>,
+<code>.man</code>, <code>.roff</code> oraz każdy z nich spakowany
+gzipem)</li>
 <li>Audiobooki M4B (<code>.m4b</code>)</li>
 <li>Książki MOBI/Kindle (<code>.mobi</code>, <code>.azw</code>,
 <code>.azw3</code>)</li>
@@ -561,12 +565,17 @@ które kończyło się komunikatem „Invalid local file header”.</li>
 ekranu czytał je ciągiem.</li>
 <li>Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast
 kończyć się komunikatem „Nie znaleziono pliku”.</li>
+<li>Skrót <code>=</code> podaje teraz oprócz procentu także numer
+strony, na przykład „15%, strona 30”, a w dokumentach bez stron działa
+jak dotychczas.</li>
 <li>Automatyczny komunikat o przeładowaniu dokumentu nie przerywa już
 czytnikowi ekranu w połowie zdania, a czeka, aż skończy wypowiedź.</li>
 <li>Na karcie Ogólne w oknie ustawień tabulator przechodzi teraz przez
 opcje w kolejności, w jakiej są widoczne na ekranie, a kanał
 aktualizacji następuje bezpośrednio po opcji sprawdzania
 aktualizacji.</li>
+<li>Po aktualizacji ponownie uruchomione okno pojawia się teraz na
+wierzchu, zamiast czekać za wszystkimi innymi oknami w Alt+Tab.</li>
 <li>Windows pokazuje teraz zawsze „Paperback” w menu Otwórz za pomocą, a
 nie pełne hasło programu.</li>
 <li>Licznik słów oraz informacje o dokumencie pokazują teraz, ile plików
