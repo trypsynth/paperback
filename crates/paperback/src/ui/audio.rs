@@ -36,17 +36,17 @@ pub fn handle_toggle_play_pause_audio(doc_manager: &Rc<Mutex<DocumentManager>>, 
 /// ordinary clamped-at-`total_duration_ms` target in every one of those cases.
 fn spilled_seek_target_ms(player: &AudioPlayer, amount_ms: u64) -> Option<u64> {
 	let (source, raw_ms, length_ms) = player.current_file_position_and_length_ms()?;
-	spill_overflow_into_next_source(&player.timeline(), source, raw_ms, length_ms, amount_ms)
+	spill_overflow_into_next_source(player.timeline(), source, raw_ms, length_ms, amount_ms)
 }
 
 /// The arithmetic behind `spilled_seek_target_ms`, split out so it's testable without a real
-/// native media control backing `AudioPlayer`.
+/// decoder backing `AudioPlayer`.
 ///
 /// This has to go through the *real* decoder-reported file length (`length_ms`) rather than the
 /// document's own declared clip duration, since a plain-audio-zip bundle's placeholder clip
 /// duration (see `build_plain_audio_zip_document`) is hours longer than the real file, so the
 /// ordinary elapsed-time-based target would just resolve back into the same file, past its real
-/// end, where the native seek call clamps it to the file's own last frame instead of advancing.
+/// end, where the seek is clamped to the file's own last frame instead of advancing.
 fn spill_overflow_into_next_source(
 	timeline: &AudioTimeline,
 	source: usize,
