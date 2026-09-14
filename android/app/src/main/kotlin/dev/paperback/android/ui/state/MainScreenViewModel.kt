@@ -62,6 +62,7 @@ class MainScreenViewModel(
 	val ttsManager = TtsManager(application, config)
 
 	private val documentCache = DocumentCache(application.cacheDir)
+	private val settingsTransfer = SettingsTransfer(config, application.cacheDir)
 
 	// Narrates DAISY audiobooks' recorded audio in place of synthesized TTS (see
 	// DocumentTabState.hasAudio). A single instance re-attached to whichever tab is active.
@@ -530,11 +531,7 @@ class MainScreenViewModel(
 					config.associateUriWithLocalFile(uriString, absolutePath)
 				}
 
-				val file = File(absolutePath)
-				val nameWithoutExtension = file.nameWithoutExtension
-				val paperbackPath = File(file.parentFile, "$nameWithoutExtension.paperback").absolutePath
-
-				if (!isRestore && File(paperbackPath).exists()) {
+				if (!isRestore && File(sidecarPathFor(absolutePath)).exists()) {
 					_importPromptPath.value = absolutePath
 				}
 
@@ -1037,18 +1034,7 @@ class MainScreenViewModel(
 
 	fun exportCurrentSettings(): Boolean {
 		val tab = uiState.value.activeTab ?: return false
-		val docUri = tab.documentUri
-		if (docUri.startsWith("content://")) return false
-		val absolutePath = docUri.toUri().path ?: docUri
-		val file = File(absolutePath)
-		val nameWithoutExtension = file.nameWithoutExtension
-		val paperbackPath = File(file.parentFile, "$nameWithoutExtension.paperback").absolutePath
-		return try {
-			config.exportDocumentSettings(absolutePath, paperbackPath)
-			true
-		} catch (_: Exception) {
-			false
-		}
+		return settingsTransfer.exportToSidecar(tab.documentUri)
 	}
 
 	fun exportSettingsToUri(
@@ -1056,27 +1042,7 @@ class MainScreenViewModel(
 		destUri: Uri
 	): Boolean {
 		val tab = uiState.value.activeTab ?: return false
-		val docUri = tab.documentUri
-		val absolutePath = if (docUri.startsWith("content://")) {
-			docUri
-		} else {
-			docUri.toUri().path ?: docUri
-		}
-
-		val tempFile = File(context.cacheDir, "temp_export.paperback")
-		return try {
-			config.exportDocumentSettings(absolutePath, tempFile.absolutePath)
-			context.contentResolver.openOutputStream(destUri)?.use { out ->
-				tempFile.inputStream().use { input ->
-					input.copyTo(out)
-				}
-			}
-			true
-		} catch (_: Exception) {
-			false
-		} finally {
-			if (tempFile.exists()) tempFile.delete()
-		}
+		return settingsTransfer.exportTo(context, tab.documentUri, destUri)
 	}
 
 	fun exportDocumentToUri(
@@ -1085,7 +1051,6 @@ class MainScreenViewModel(
 		format: ExportFormat
 	): Boolean {
 		val tab = uiState.value.activeTab ?: return false
-
 		return try {
 			val content = tab.session.renderExportFfi(format)
 			context.contentResolver.openOutputStream(destUri)?.use { out ->
@@ -1102,32 +1067,12 @@ class MainScreenViewModel(
 		sourceUri: Uri
 	): Boolean {
 		val tab = uiState.value.activeTab ?: return false
-		val docUri = tab.documentUri
-		val absolutePath = if (docUri.startsWith("content://")) {
-			docUri
-		} else {
-			docUri.toUri().path ?: docUri
+		if (!settingsTransfer.importFrom(context, tab.documentUri, sourceUri)) return false
+		val savedPosition = config.getDocumentPosition(tab.documentUri)
+		if (savedPosition > 0L) {
+			updateTtsPosition(savedPosition)
 		}
-
-		val tempFile = File(context.cacheDir, "temp_import.paperback")
-		return try {
-			context.contentResolver.openInputStream(sourceUri)?.use { input ->
-				tempFile.outputStream().use { out ->
-					input.copyTo(out)
-				}
-			}
-			config.importSettingsFromFile(absolutePath, tempFile.absolutePath)
-
-			val savedPosition = config.getDocumentPosition(docUri)
-			if (savedPosition > 0L) {
-				updateTtsPosition(savedPosition)
-			}
-			true
-		} catch (_: Exception) {
-			false
-		} finally {
-			if (tempFile.exists()) tempFile.delete()
-		}
+		return true
 	}
 
 	private fun updateTtsMetadata() {
