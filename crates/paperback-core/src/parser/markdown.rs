@@ -1,7 +1,8 @@
-use std::{fs, iter};
+use std::fs;
 
 use anyhow::{Context, Result};
-use pulldown_cmark::{Event, Options, Parser as MarkdownParserImpl, Tag, html::push_html};
+use math_core::{LatexToMathML, MathCoreConfig, MathDisplay};
+use pulldown_cmark::{Event, Options, Parser as MarkdownParserImpl, Tag, TagEnd, html::push_html};
 
 use crate::{
 	document::{Document, DocumentBuffer, ParserContext},
@@ -14,6 +15,9 @@ use crate::{
 	util::encoding::convert_to_utf8,
 };
 
+// Rendering and source lookup must use the same grammar to keep block anchors in sync.
+const MARKDOWN_OPTIONS: Options = Options::ENABLE_TABLES.union(Options::ENABLE_MATH);
+
 /// Converts Markdown to HTML with an empty `<span id="pb-block-N"></span>` before each block.
 ///
 /// The anchors produce no text but give every block a stable id, so a position
@@ -21,22 +25,71 @@ use crate::{
 /// is shown in a web view.
 #[must_use]
 pub fn markdown_to_html(markdown_text: &str) -> String {
-	let mut options = Options::empty();
-	options.insert(Options::ENABLE_TABLES);
-	let parser = MarkdownParserImpl::new_ext(markdown_text, options);
+	let parser = MarkdownParserImpl::new_ext(markdown_text, MARKDOWN_OPTIONS).into_offset_iter();
+	// Created per document so that equations and similar environments are numbered from (1) in each one.
+	let mut math = LatexToMathML::new(MathCoreConfig { xml_namespace: true, annotation: true, ..Default::default() })
+		.expect("math conversion configuration is valid");
+
 	let mut block_counter = 0usize;
-	let events = parser.flat_map(|event| {
-		let anchor = match &event {
+	let mut image_depth = 0usize;
+	let mut events = Vec::new();
+
+	for (event, range) in parser {
+		match &event {
 			Event::Start(Tag::Paragraph | Tag::Heading { .. } | Tag::Item | Tag::BlockQuote(_) | Tag::CodeBlock(_)) => {
 				block_counter += 1;
-				Some(Event::Html(format!("<span id=\"pb-block-{block_counter}\"></span>").into()))
+				events.push(Event::Html(format!("<span id=\"pb-block-{block_counter}\"></span>").into()));
 			}
-			_ => None,
+			Event::Start(Tag::Image { .. }) => image_depth += 1,
+			Event::End(TagEnd::Image) => image_depth -= 1,
+			_ => {}
+		}
+
+		let (latex, display, delimiter) = match &event {
+			// Inside an image, emitted text goes into its plain-text alt attribute, so math stays as TeX.
+			Event::InlineMath(latex) if image_depth == 0 => (latex, MathDisplay::Inline, "$"),
+			Event::DisplayMath(latex) if image_depth == 0 => (latex, MathDisplay::Block, "$$"),
+			_ => {
+				events.push(event);
+				continue;
+			}
 		};
-		anchor.into_iter().chain(iter::once(event))
-	});
+
+		// math-core turns blank TeX into an empty `<mrow>`, which MathCAT reads as a
+		// backslash.
+		if latex.trim().is_empty() {
+			continue;
+		}
+
+		// Rebuilt from the TeX rather than sliced from the source, because the source range of a
+		// multi-line formula includes container prefixes on its later lines, such as `> ` in a block quote.
+		let source_text = Event::Text(format!("{delimiter}{latex}{delimiter}").into());
+
+		// pulldown-cmark ends inline math at any `$` preceded by a non-space, so in
+		// "Tickets cost $10-$20 each." it interprets "$10-$" as math. Following Pandoc, we don't emit
+		// MathML when the closing `$` is followed by a digit. The span can't be re-parsed, so any
+		// Markdown formatting inside it (very unlikely) is shown literally.
+		//
+		// This still misreads a `$` that directly follows a non-space character and isn't followed by a
+		// digit, as in the shell's `$PATH:$HOME` or PHP's `$a.$b`. Markdown is ambiguous here: without
+		// knowing whether the writer uses dollars for math, there is no way to tell which reading is meant.
+		let closes_before_digit =
+			display == MathDisplay::Inline && markdown_text[range.end..].starts_with(|c: char| c.is_ascii_digit());
+		if closes_before_digit {
+			events.push(source_text);
+			continue;
+		}
+
+		match math.convert_with_global_state(latex, display) {
+			Ok(converted) => events.push(Event::InlineHtml(converted.mathml.into())),
+			Err(error) => {
+				tracing::debug!(%error, "could not convert Markdown formula; preserving its source");
+				events.push(source_text);
+			}
+		}
+	}
 	let mut html_content = String::new();
-	push_html(&mut html_content, events);
+	push_html(&mut html_content, events.into_iter());
 	html_content
 }
 
@@ -47,9 +100,7 @@ pub fn markdown_to_html(markdown_text: &str) -> String {
 /// location in the original Markdown source.
 #[must_use]
 pub fn block_source_offset(markdown_text: &str, block_index: usize) -> Option<usize> {
-	let mut options = Options::empty();
-	options.insert(Options::ENABLE_TABLES);
-	let parser = MarkdownParserImpl::new_ext(markdown_text, options).into_offset_iter();
+	let parser = MarkdownParserImpl::new_ext(markdown_text, MARKDOWN_OPTIONS).into_offset_iter();
 	let mut block_counter = 0usize;
 	for (event, range) in parser {
 		if matches!(
@@ -98,7 +149,114 @@ impl Parser for MarkdownParser {
 
 #[cfg(test)]
 mod tests {
+	use rstest::rstest;
+	use scraper::{Html, Selector};
+
 	use super::*;
+	use crate::{
+		document::MarkerType,
+		util::{test_support::TempDir, text::display_len},
+	};
+
+	fn parse_markdown(source: &str) -> Document {
+		let dir = TempDir::new("markdown-parser");
+		let path = dir.write_str("formulas.md", source);
+		MarkdownParser.parse(&ParserContext::new(path)).expect("parse Markdown document")
+	}
+
+	#[rstest]
+	#[case::inline("$x^2$", "😀 Before ", "x^2", " after.")]
+	#[case::display("$$x^2$$", "😀 Before\n", "x^2", "\nafter.")]
+	#[case::fraction(r"$\frac{a}{b}$", "😀 Before ", "a/b", " after.")]
+	fn math_reaches_the_reading_buffer_and_formula_markers(
+		#[case] source: &str,
+		#[case] prefix: &str,
+		#[case] formula_text: &str,
+		#[case] suffix: &str,
+	) {
+		let doc = parse_markdown(&format!("😀 Before {source} after."));
+		assert_eq!(doc.buffer.content, format!("{prefix}{formula_text}{suffix}"));
+		let formulas: Vec<_> = doc.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::Formula).collect();
+		assert_eq!(formulas.len(), 1);
+		let formula = formulas[0];
+		assert_eq!(formula.text, formula_text);
+		assert_eq!(formula.position, display_len(prefix));
+		assert_eq!(formula.length, display_len(formula_text));
+		let mathml = roxmltree::Document::parse(&formula.reference).expect("valid MathML reference");
+		assert_eq!(mathml.root_element().tag_name().namespace(), Some("http://www.w3.org/1998/Math/MathML"));
+	}
+
+	#[test]
+	fn preserves_tex_in_mathml_annotations() {
+		let html = Html::parse_fragment(&markdown_to_html(r"$x < y$ and $\sqrt{x}$"));
+		let selector = Selector::parse("math annotation[encoding='application/x-tex']").unwrap();
+		let annotations: Vec<_> = html.select(&selector).map(|node| node.text().collect::<String>()).collect();
+		assert_eq!(annotations, ["x < y", r"\sqrt{x}"]);
+	}
+
+	#[test]
+	fn numbered_environments_share_state_only_within_a_document() {
+		let source = "$$\\begin{equation}x=1\\end{equation}$$\n\n$$\\begin{align}y&=2\\end{align}$$";
+		let selector = Selector::parse("math mtext").unwrap();
+		for _ in 0..2 {
+			let html = Html::parse_fragment(&markdown_to_html(source));
+			let numbers: Vec<_> = html.select(&selector).map(|node| node.text().collect::<String>()).collect();
+			assert_eq!(numbers, ["(1)", "(2)"]);
+		}
+	}
+
+	#[rstest]
+	#[case::inline_code("`$x^2$`", "$x^2$")]
+	#[case::fenced_code("```tex\n$x^2$\n$$y^2$$\n```", "$x^2$\n$$y^2$$")]
+	#[case::escaped(r"\$x^2\$", "$x^2$")]
+	#[case::currency("Prices: $5.00 and $10.00.", "Prices: $5.00 and $10.00.")]
+	#[case::unclosed("Unclosed $x^2", "Unclosed $x^2")]
+	#[case::price_range("Tickets cost $10-$20 each.", "Tickets cost $10-$20 each.")]
+	#[case::price_alternatives("Prices: $5/$10 per unit.", "Prices: $5/$10 per unit.")]
+	#[case::image_alt("![Plot of $x^2$ curve](a.png)", "[Image: Plot of $x^2$ curve]")]
+	fn literal_dollars_remain_text(#[case] source: &str, #[case] expected: &str) {
+		let doc = parse_markdown(source);
+		assert_eq!(doc.buffer.content, expected);
+		assert!(!doc.buffer.markers.iter().any(|marker| marker.mtype == MarkerType::Formula));
+	}
+
+	#[rstest]
+	#[case::unsupported(r"$\unknown{x}$")]
+	#[case::malformed(r"$\frac{x}$")]
+	#[case::html_in_unsupported_formula(r"$\unknown{<img src=x>}$")]
+	fn failed_formulas_preserve_source_and_later_formulas(#[case] source: &str) {
+		let markdown = format!("Before {source} then $x^2$.");
+		let doc = parse_markdown(&markdown);
+		assert_eq!(doc.buffer.content, format!("Before {source} then x^2."));
+		let formulas: Vec<_> = doc.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::Formula).collect();
+		assert_eq!(formulas.len(), 1);
+		assert_eq!(formulas[0].text, "x^2");
+		assert_eq!(formulas[0].position, display_len(&format!("Before {source} then ")));
+		let html = markdown_to_html(&markdown);
+		assert!(!html.contains("<img"));
+	}
+
+	#[test]
+	fn failed_formulas_in_block_quotes_omit_quote_markers() {
+		let doc = parse_markdown("> $$\n> \\frac{x}\n> $$");
+		assert_eq!(doc.buffer.content, "$$ \\frac{x} $$");
+	}
+
+	#[test]
+	fn blank_display_math_produces_nothing() {
+		let doc = parse_markdown("Before\n\n$$\n$$\n\nAfter.");
+		assert_eq!(doc.buffer.content, "Before\nAfter.");
+		assert!(!doc.buffer.markers.iter().any(|marker| marker.mtype == MarkerType::Formula));
+	}
+
+	#[test]
+	fn source_anchors_point_past_multiline_math() {
+		let source = "$x^2$\n\n$$\n\\begin{aligned}\nx &= 1\\\\\ny &= 2\n\\end{aligned}\n$$\n\nAfter.";
+		let doc = parse_markdown(source);
+		assert_eq!(block_source_offset(source, 3), source.find("After."));
+		assert_eq!(doc.id_positions["pb-block-3"], doc.buffer.content.find("After.").unwrap());
+		assert_eq!(block_source_offset(source, 4), None);
+	}
 
 	#[test]
 	fn markdown_to_html_injects_block_anchors() {
