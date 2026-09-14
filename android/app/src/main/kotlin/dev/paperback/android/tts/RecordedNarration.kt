@@ -21,7 +21,7 @@ class RecordedNarration(
 	context: Context,
 	private val config: ConfigManagerFfi,
 	private val scope: CoroutineScope
-) {
+) : RecordedPlayer {
 	private val player = DaisyAudioPlayer(context)
 
 	/** The document the player is currently narrating, if any. */
@@ -92,13 +92,13 @@ class RecordedNarration(
 		}
 	}
 
-	fun isPlaying(): Boolean = player.isPlaying()
+	override fun isPlaying(): Boolean = player.isPlaying()
 
-	fun play() = player.play()
+	override fun play() = player.play()
 
-	fun pause() = player.pause()
+	override fun pause() = player.pause()
 
-	fun seekToPosition(position: Long): Boolean = player.seekToPosition(position)
+	override fun seekToPosition(position: Long): Boolean = player.seekToPosition(position)
 
 	fun seekToMs(elapsedMs: Long): Boolean = player.seekToMs(elapsedMs)
 

@@ -23,7 +23,7 @@ private const val POLL_INTERVAL_MS = 250L
  */
 class DaisyAudioPlayer(
 	private val context: Context
-) {
+) : RecordedPlayer {
 	private val scope = CoroutineScope(Dispatchers.Main)
 	private val cacheDir = File(context.cacheDir, "paperback_daisy_audio_cache")
 
@@ -83,9 +83,9 @@ class DaisyAudioPlayer(
 
 	val hasAudio: Boolean get() = session?.hasAudioFfi() == true
 
-	fun isPlaying(): Boolean = playing
+	override fun isPlaying(): Boolean = playing
 
-	fun play() {
+	override fun play() {
 		if (session == null) return
 		audioFocus.request()
 		playing = true
@@ -105,7 +105,7 @@ class DaisyAudioPlayer(
 		}
 	}
 
-	fun pause() {
+	override fun pause() {
 		playing = false
 		stopPolling()
 		mediaPlayer?.let {
@@ -152,7 +152,7 @@ class DaisyAudioPlayer(
 
 	/** Seeks playback to the point covering `position` in the text, if the timeline narrates
 	 * it. Leaves the transport running or paused as it already was. */
-	fun seekToPosition(position: Long): Boolean {
+	override fun seekToPosition(position: Long): Boolean {
 		val session = session ?: return false
 		val point = session.audioPointForPositionFfi(position)
 		if (!point.found) return false

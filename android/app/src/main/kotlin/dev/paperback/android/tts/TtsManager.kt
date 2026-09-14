@@ -31,7 +31,8 @@ import java.util.Locale
 class TtsManager(
 	private val context: Context,
 	private val config: ConfigManagerFfi
-) : TextToSpeech.OnInitListener {
+) : TextToSpeech.OnInitListener,
+	SpeechEngine {
 	private var tts: TextToSpeech? = null
 	private var mediaSession: MediaSession? = null
 	private var ttsPlayer: TtsPlayer? = null
@@ -80,10 +81,10 @@ class TtsManager(
 	private var stopSpeakingJob: Job? = null
 
 	private val _isSpeaking = MutableStateFlow(false)
-	val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
+	override val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
 
 	private val _isPaused = MutableStateFlow(false)
-	val isPaused: StateFlow<Boolean> = _isPaused.asStateFlow()
+	override val isPaused: StateFlow<Boolean> = _isPaused.asStateFlow()
 
 	var onUtteranceCompleted: (() -> Unit)? = null
 	var onSegmentTransition: (() -> Unit)? = null
@@ -417,7 +418,7 @@ class TtsManager(
 		}
 	}
 
-	fun pause() {
+	override fun pause() {
 		if (_isSpeaking.value && !_isPaused.value) {
 			_isPaused.value = true
 			_isSpeaking.value = false
@@ -446,7 +447,7 @@ class TtsManager(
 		updatePlaybackState(isPlaying)
 	}
 
-	fun resume() {
+	override fun resume() {
 		if (_isPaused.value) {
 			_isPaused.value = false
 			_isSpeaking.value = true
@@ -485,7 +486,7 @@ class TtsManager(
 		}
 	}
 
-	fun stop() {
+	override fun stop() {
 		tts?.stop()
 		cleanupPlayer()
 		stopSpeakingJob?.cancel()

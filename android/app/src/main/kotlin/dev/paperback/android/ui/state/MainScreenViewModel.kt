@@ -12,7 +12,10 @@ import androidx.lifecycle.viewModelScope
 import dev.paperback.android.assetLocaleTags
 import dev.paperback.android.bestLocaleMatch
 import dev.paperback.android.t
+import dev.paperback.android.tts.Narrator
 import dev.paperback.android.tts.RecordedNarration
+import dev.paperback.android.tts.RecordedNarrator
+import dev.paperback.android.tts.SpokenNarrator
 import dev.paperback.android.tts.TtsManager
 import dev.paperback.android.ui.dialogs.GO_TO_LINE
 import dev.paperback.android.ui.dialogs.GO_TO_PAGE
@@ -67,11 +70,16 @@ class MainScreenViewModel(
 	// DocumentTabState.hasAudio), re-attached to whichever tab is active.
 	private val narration = RecordedNarration(application, config, viewModelScope)
 
-	// Whether playback controls should route to the recorded narration instead of ttsManager.
-	// Centralized so every dispatch site checks the exact same condition rather than each
-	// re-deriving "the active tab, if any, has audio" on its own.
-	private val activeTabHasAudio: Boolean
-		get() = uiState.value.activeTab?.hasAudio == true
+	private val recordedNarrator = RecordedNarrator(narration)
+	private val spokenNarrator = SpokenNarrator(ttsManager) { speakCurrentSegment() }
+
+	/**
+	 * Whatever is reading the active document aloud: its own recording for a DAISY audiobook, the
+	 * synthesizer for everything else. Worked out per call rather than held, so switching tabs
+	 * needs no bookkeeping of its own.
+	 */
+	private val narrator: Narrator
+		get() = if (uiState.value.activeTab?.hasAudio == true) recordedNarrator else spokenNarrator
 
 	private val _currentNavUnit = MutableStateFlow<NavUnit>(NavUnit.Segment(SegmentTypeFfi.PARAGRAPH))
 	val currentNavUnit: StateFlow<NavUnit> = _currentNavUnit.asStateFlow()
@@ -631,7 +639,7 @@ class MainScreenViewModel(
 	 * unit. False when that isn't what's happening, leaving the ordinary text path to run. */
 	private fun seekAudioByNavUnit(forward: Boolean): Boolean {
 		val unit = _currentNavUnit.value
-		if (unit !is NavUnit.Time || !activeTabHasAudio) return false
+		if (unit !is NavUnit.Time || uiState.value.activeTab?.hasAudio != true) return false
 		val deltaMs = unit.seconds * 1000L
 		narration.seekRelativeMs(if (forward) deltaMs else -deltaMs)
 		return true
@@ -704,17 +712,7 @@ class MainScreenViewModel(
 	}
 
 	fun togglePlayPause() {
-		if (activeTabHasAudio) {
-			if (narration.isPlaying()) narration.pause() else narration.play()
-			return
-		}
-		if (ttsManager.isSpeaking.value) {
-			pauseTts()
-		} else if (ttsManager.isPaused.value) {
-			resumeTts()
-		} else {
-			speakCurrentSegment()
-		}
+		if (narrator.isPlaying()) narrator.pause() else narrator.play()
 	}
 
 	private fun saveTtsPositionToConfig(pos: Long) {
@@ -945,11 +943,7 @@ class MainScreenViewModel(
 	}
 
 	fun pauseTts() {
-		if (activeTabHasAudio) {
-			narration.pause()
-			return
-		}
-		ttsManager.pause()
+		narrator.pause()
 	}
 
 	fun navigateByType(
@@ -974,15 +968,7 @@ class MainScreenViewModel(
 	}
 
 	fun resumeTts() {
-		if (activeTabHasAudio) {
-			narration.play()
-			return
-		}
-		if (ttsManager.isPaused.value) {
-			ttsManager.resume()
-		} else {
-			speakCurrentSegment()
-		}
+		narrator.play()
 	}
 
 	fun exportCurrentSettings(): Boolean {
@@ -1056,15 +1042,7 @@ class MainScreenViewModel(
 		_ttsPosition.value = pos
 		refreshSegmentPreview()
 		saveTtsPositionToConfig(pos)
-		if (activeTabHasAudio) {
-			narration.seekToPosition(pos)
-			return
-		}
-		if (ttsManager.isSpeaking.value) {
-			speakCurrentSegment()
-		} else if (ttsManager.isPaused.value) {
-			ttsManager.stop()
-		}
+		narrator.moveTo(pos)
 	}
 
 	/**
