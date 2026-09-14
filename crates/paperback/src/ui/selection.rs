@@ -22,12 +22,13 @@ enum CopyOutcome {
 	Text(String),
 }
 
-/// Orders a mark and a caret into a range in document order.
+/// Orders the mark and the caret into document order.
 ///
 /// Marking a place, reading back past it and pressing the copy key there gets the text between
 /// the two rather than nothing: the two presses name a range, the same way dragging a selection
-/// upwards does.
-const fn selection_range(mark: i64, caret: i64) -> (i64, i64) {
+/// upwards does. Both of these are positions the reader is *on* rather than bounds - the caller
+/// turns them into a range that can be extracted.
+const fn ordered_ends(mark: i64, caret: i64) -> (i64, i64) {
 	if mark <= caret { (mark, caret) } else { (caret, mark) }
 }
 
@@ -67,8 +68,14 @@ pub fn handle_copy_from_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_re
 				// The gesture is spent either way, so a second press with no fresh mark says so
 				// rather than quietly copying again from a mark the reader has moved past.
 				dm.set_selection_mark(None);
-				let (start, end) = selection_range(mark, navigation::doc_caret(tab));
-				let text = tab.session.get_text_range_display(start, end);
+				let (from, to) = ordered_ends(mark, navigation::doc_caret(tab));
+				// Both ends are included, because both name a character the reader is on. A
+				// caret sits at the start of the character a screen reader is speaking, so
+				// ending the range there would drop the last character read - the one the
+				// reader deliberately stopped on. This reaches past it instead, spanning the
+				// whole character where one is an astral-plane pair.
+				let end = tab.session.display_pos_after_char_at(to);
+				let text = tab.session.get_text_range_display(from, end);
 				if text.is_empty() { CopyOutcome::Empty } else { CopyOutcome::Text(text) }
 			}
 		}
@@ -99,10 +106,10 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn selection_range_normalizes_to_document_order() {
-		assert_eq!(selection_range(5, 9), (5, 9));
-		assert_eq!(selection_range(9, 5), (5, 9));
-		assert_eq!(selection_range(4, 4), (4, 4));
+	fn ordered_ends_normalizes_to_document_order() {
+		assert_eq!(ordered_ends(5, 9), (5, 9));
+		assert_eq!(ordered_ends(9, 5), (5, 9));
+		assert_eq!(ordered_ends(4, 4), (4, 4));
 	}
 
 	#[test]
