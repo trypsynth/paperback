@@ -27,6 +27,7 @@ pub mod m4b;
 pub mod man;
 pub mod markdown;
 pub mod mobi;
+mod odf_crypto;
 pub mod odp;
 pub mod odt;
 pub mod pdf;

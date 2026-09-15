@@ -9,13 +9,13 @@ use crate::{
 	parser::{
 		Parser,
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
+		odf_crypto::read_odf_content,
 		util::{
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},
 			xml::{collect_element_text, read_xml_to_string},
 		},
 	},
-	util::zip::read_zip_entry_by_name,
 };
 
 pub struct OdtParser;
@@ -27,8 +27,9 @@ impl Parser for OdtParser {
 			.with_context(|| format!("Failed to open ODT file '{}'", context.file_path))?;
 		let mut archive = ZipArchive::new(BufReader::new(file))
 			.with_context(|| format!("Failed to read ODT as zip '{}'", context.file_path))?;
-		let content_str = read_zip_entry_by_name(&mut archive, "content.xml")
-			.context("ODT file does not contain content.xml or it is empty")?;
+		// No `.context()` here: it would wrap the `[password_required]` sentinel an encrypted
+		// file returns, and the layers above match on that sentinel at the top of the error.
+		let content_str = read_odf_content(&mut archive, "content.xml", context.password.as_deref())?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid ODT content.xml")?;
 		let format_style_map = build_odt_format_style_map(xml_doc.root());
 		let mut buffer = DocumentBuffer::new();

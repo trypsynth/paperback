@@ -8,6 +8,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		Parser,
+		odf_crypto::read_odf_content,
 		util::{
 			path::extract_title_from_path,
 			xml::{collect_element_text, read_xml_to_string},
@@ -15,7 +16,6 @@ use crate::{
 	},
 	t,
 	types::LinkInfo,
-	util::zip::read_zip_entry_by_name,
 };
 
 pub struct OdpParser;
@@ -27,8 +27,9 @@ impl Parser for OdpParser {
 			.with_context(|| format!("Failed to open ODP file '{}'", context.file_path))?;
 		let mut archive = ZipArchive::new(BufReader::new(file))
 			.with_context(|| format!("Failed to read ODP as zip '{}'", context.file_path))?;
-		let content_str = read_zip_entry_by_name(&mut archive, "content.xml")
-			.context("ODP file does not contain content.xml or it is empty")?;
+		// No `.context()` here: it would wrap the `[password_required]` sentinel an encrypted
+		// file returns, and the layers above match on that sentinel at the top of the error.
+		let content_str = read_odf_content(&mut archive, "content.xml", context.password.as_deref())?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid ODP content.xml")?;
 		let mut buffer = DocumentBuffer::new();
 		let id_positions = HashMap::new();
