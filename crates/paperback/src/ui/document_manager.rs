@@ -41,6 +41,12 @@ pub struct DocumentTab {
 	/// line does not pull the caret left for good. Per tab: each document is read at its own
 	/// column, and switching tabs must not carry one document's column into another.
 	pub preferred_column: Cell<Option<i64>>,
+	/// The document-absolute position marked as the beginning of a selection to copy from, or
+	/// `None`. Per tab: a mark names a position in one document, and carrying one document's mark
+	/// into another would have it name different text entirely. Document-absolute rather than a
+	/// `text_ctrl` position for the same reason [`Self::window`] exists - the loaded window can be
+	/// swapped out from under it between marking and copying.
+	pub selection_mark: Cell<Option<i64>>,
 	/// The document-absolute bounds of whatever's currently loaded into `text_ctrl`. See
 	/// `ui::text_window` - for most documents this covers the whole thing, same as before
 	/// windowing existed; only huge documents actually get a partial window.
@@ -277,6 +283,7 @@ impl DocumentManager {
 			audio_player,
 			disk_fingerprint: read_fingerprint(path),
 			preferred_column: Cell::new(None),
+			selection_mark: Cell::new(None),
 			window,
 			ocr_job: None,
 		});
@@ -426,6 +433,18 @@ impl DocumentManager {
 	pub fn set_preferred_column(&self, column: Option<i64>) {
 		if let Some(tab) = self.active_tab() {
 			tab.preferred_column.set(column);
+		}
+	}
+
+	/// The position marked as the beginning of a selection to copy from, if one is set.
+	pub fn selection_mark(&self) -> Option<i64> {
+		self.active_tab().and_then(|tab| tab.selection_mark.get())
+	}
+
+	/// Marks a position as the beginning of a selection to copy from, or clears the mark.
+	pub fn set_selection_mark(&self, position: Option<i64>) {
+		if let Some(tab) = self.active_tab() {
+			tab.selection_mark.set(position);
 		}
 	}
 
@@ -1222,6 +1241,11 @@ fn reparse_tab_in_place(
 	tab.text_ctrl.set_insertion_point(restored_pos);
 	tab.text_ctrl.show_position(restored_pos);
 	tab.disk_fingerprint = new_fingerprint;
+	// The buffer was rebuilt, and the caret above was re-derived from an anchor or a percentage
+	// rather than carried over, so there is nothing honest to map an old mark onto. Clearing it
+	// means the next copy says "set beginning of selection first" instead of copying whatever now
+	// happens to sit at the old offset.
+	tab.selection_mark.set(None);
 	Ok(())
 }
 
