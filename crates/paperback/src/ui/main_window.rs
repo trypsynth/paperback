@@ -102,17 +102,56 @@ pub(super) fn own_dialog_is_up() -> bool {
 	found.0
 }
 
+/// The frame's own Win32 handle, taken when the window is made and read from the beat thread in
+/// [`super::help`].
+///
+/// Kept apart from `help::MAIN_WINDOW_PTR`, which holds the wxWidgets object pointer that
+/// `ship-shape` wants for parenting its dialogs. The two are different numbers for the same
+/// window, and reading one as the other is what #853 was: every call below answered "disabled",
+/// because a pointer that is not a window handle is not an enabled window either.
+#[cfg(target_os = "windows")]
+static MAIN_FRAME_HWND: AtomicIsize = AtomicIsize::new(0);
+
+/// Remember the frame's Win32 handle. Called once, from the main thread, with the frame in hand.
+///
+/// The handle is logged because a zero here is the one way the check below can go quiet without
+/// anything else looking wrong: it would answer "no dialog" for the rest of the session, which
+/// costs the hand-off rather than leaking it.
+#[cfg(target_os = "windows")]
+pub(super) fn remember_frame_hwnd(frame: &Frame) {
+	let hwnd = frame.get_handle() as isize;
+	MAIN_FRAME_HWND.store(hwnd, Ordering::SeqCst);
+	tracing::debug!(hwnd, valid = is_disabled_check_possible(), "remembered the main frame's window handle");
+}
+
+/// Whether the handle taken above is one Windows knows, which is all the beat thread needs of it.
+#[cfg(target_os = "windows")]
+fn is_disabled_check_possible() -> bool {
+	use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::IsWindow};
+	unsafe { IsWindow(Some(HWND(MAIN_FRAME_HWND.load(Ordering::SeqCst) as *mut _))) }.as_bool()
+}
+
 /// Whether this app's frame is disabled, which wx does for the lifetime of any modal dialog it
 /// shows - every dialog in the update flow among them.
 ///
-/// A second way to see the same thing, kept because the two fail differently: the class walk
-/// depends on the dialogs being ordinary top-level `#32770`s, this depends on wx disabling the
-/// parent. A missed dialog costs the whole hand-off, while a spurious one costs a few extra grants,
-/// so it is worth asking twice.
+/// A second way to see the same thing as [`own_dialog_is_up`], kept because the two fail
+/// differently: the class walk depends on the dialogs being ordinary top-level `#32770`s, this
+/// depends on wx disabling the parent. A missed dialog costs the whole hand-off, while a spurious
+/// one costs a few extra grants, so it is worth asking twice.
 #[cfg(target_os = "windows")]
-pub(super) fn frame_is_disabled(frame: windows::Win32::Foundation::HWND) -> bool {
-	use windows::Win32::UI::Input::KeyboardAndMouse::IsWindowEnabled;
-	!frame.0.is_null() && !unsafe { IsWindowEnabled(frame) }.as_bool()
+pub(super) fn frame_is_disabled() -> bool {
+	is_disabled(windows::Win32::Foundation::HWND(MAIN_FRAME_HWND.load(Ordering::SeqCst) as *mut _))
+}
+
+/// The question [`frame_is_disabled`] asks, over a handle passed in so it can be tested.
+///
+/// Anything that is not a live window answers "not disabled". Windows reports a handle it does not
+/// know as a window that is not enabled, which reads as a dialog being up forever, so the handle
+/// has to be checked before the answer means anything.
+#[cfg(target_os = "windows")]
+fn is_disabled(frame: windows::Win32::Foundation::HWND) -> bool {
+	use windows::Win32::UI::{Input::KeyboardAndMouse::IsWindowEnabled, WindowsAndMessaging::IsWindow};
+	unsafe { IsWindow(Some(frame)) }.as_bool() && !unsafe { IsWindowEnabled(frame) }.as_bool()
 }
 
 /// The process that owns a window, so the walk can tell this app's own windows from another's.
@@ -151,6 +190,8 @@ impl MainWindow {
 		let frame = Frame::builder().with_title(&app_title).build();
 		window_geometry::apply_defaults(&frame);
 		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
+		#[cfg(target_os = "windows")]
+		remember_frame_hwnd(&frame);
 		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
 		// (embedded by build.rs) already covers the taskbar and the shell; this is what the
 		// window itself carries, and is the only icon at all on the other platforms.
@@ -937,5 +978,21 @@ pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 			}
 		}
 		frame.set_status_text(&status_text, 0);
+	}
+}
+
+#[cfg(all(test, target_os = "windows"))]
+mod tests {
+	use windows::Win32::Foundation::HWND;
+
+	use super::is_disabled;
+
+	/// The trap behind #853: `IsWindowEnabled` answers "not enabled" for a handle Windows does not
+	/// know, so a pointer that is not a window reads as a frame with a modal dialog over it, for
+	/// as long as the app runs. What was being passed in was the wxWidgets object pointer.
+	#[test]
+	fn a_pointer_that_is_not_a_window_is_not_a_disabled_frame() {
+		assert!(!is_disabled(HWND(0x1234_5678 as *mut _)), "a stray pointer must not read as disabled");
+		assert!(!is_disabled(HWND(std::ptr::null_mut())), "nor must a null one");
 	}
 }
