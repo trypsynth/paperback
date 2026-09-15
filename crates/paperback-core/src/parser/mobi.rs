@@ -9,9 +9,9 @@ use anyhow::Result;
 use encoding_rs::WINDOWS_1252;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem, is_heading_marker},
 	parser::{
-		Parser, add_converter_markers,
+		Parser, add_converter_markers, add_heading_markers_where,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
@@ -156,20 +156,34 @@ impl Parser for MobiParser {
 				Marker::new(MarkerType::SectionBreak, position).with_text(format!("Section {}", index + 1)),
 			);
 		}
-		document.set_buffer(buffer);
 		document.id_positions = id_positions;
+		let ncx_item_count = ncx_toc.len();
 		let mut toc_items = build_toc_from_headings(&headings);
-		let toc_source = if !toc_items.is_empty() {
-			"headings"
-		} else if !ncx_toc.is_empty() {
+		// Whichever of the two names more of the book. A novel whose text marks up its title and
+		// nothing else gives a one entry table of contents while its index quietly lists all forty
+		// chapters, and taking the longer list is what puts those chapters back. A single entry
+		// index is a stub rather than a table of contents and never wins.
+		let use_ncx = ncx_item_count > 1 && ncx_item_count > toc_items.len();
+		let toc_source = if use_ncx {
 			"ncx"
+		} else if toc_items.is_empty() {
+			if ncx_toc.is_empty() { "none" } else { "ncx" }
 		} else {
-			"none"
+			"headings"
 		};
-		if toc_items.is_empty() && !ncx_toc.is_empty() {
+		if use_ncx || toc_items.is_empty() {
 			resolve_ncx_offsets(&mut ncx_toc, &document.id_positions);
-			toc_items = ncx_toc;
+			if !ncx_toc.is_empty() {
+				toc_items = ncx_toc;
+			}
 		}
+		// The book may name every chapter in its index and mark up none of them in its text, which
+		// leaves the reader a table of contents and nothing to move between by heading. Asked one
+		// entry at a time so that a chapter which did write its own heading is not announced twice.
+		let headed = heading_positions(&buffer);
+		let spans = toc_spans(&toc_items);
+		add_heading_markers_where(&mut buffer, &toc_items, 1, &|offset| !span_has_heading(&spans, &headed, offset));
+		document.set_buffer(buffer);
 		document.toc_items = toc_items;
 		tracing::debug!(
 			path = %context.file_path,
@@ -178,9 +192,78 @@ impl Parser for MobiParser {
 			text_encoding = header.text_encoding,
 			num_records = header.record_offsets.len(),
 			sections = section_starts.len(),
+			heading_count = headings.len(),
+			ncx_count = ncx_item_count,
 			toc_source,
 			"parsed mobi file"
 		);
 		Ok(document)
+	}
+}
+
+/// Where the book's own text already carries a heading.
+fn heading_positions(buffer: &DocumentBuffer) -> Vec<usize> {
+	let mut positions: Vec<usize> =
+		buffer.markers.iter().filter(|marker| is_heading_marker(marker.mtype)).map(|marker| marker.position).collect();
+	positions.sort_unstable();
+	positions
+}
+
+/// Every table of contents entry's offset, in order, so that the stretch of the book an entry
+/// speaks for can be worked out from where the next one starts.
+fn toc_spans(items: &[TocItem]) -> Vec<usize> {
+	let mut offsets = Vec::new();
+	collect_offsets(items, &mut offsets);
+	offsets.sort_unstable();
+	offsets
+}
+
+fn collect_offsets(items: &[TocItem], out: &mut Vec<usize>) {
+	for item in items {
+		out.push(item.offset);
+		collect_offsets(&item.children, out);
+	}
+}
+
+/// Whether the stretch of the book starting at `offset` already carries a heading of its own.
+fn span_has_heading(spans: &[usize], headed: &[usize], offset: usize) -> bool {
+	let end = spans.iter().copied().find(|start| *start > offset).unwrap_or(usize::MAX);
+	headed.iter().any(|position| *position >= offset && *position < end)
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{span_has_heading, toc_spans};
+	use crate::document::TocItem;
+
+	fn item(offset: usize) -> TocItem {
+		TocItem::new(format!("at {offset}"), String::new(), offset)
+	}
+
+	/// The stretch an entry speaks for runs to wherever the next one starts, and the last entry's
+	/// runs to the end of the book.
+	#[test]
+	fn a_chapter_that_wrote_its_own_heading_is_recognised() {
+		let spans = toc_spans(&[item(0), item(100), item(200)]);
+		let headed = [150];
+		assert!(!span_has_heading(&spans, &headed, 0), "nothing between 0 and 100");
+		assert!(span_has_heading(&spans, &headed, 100), "the heading at 150 belongs to this one");
+		assert!(!span_has_heading(&spans, &headed, 200), "nothing at or after 200");
+	}
+
+	/// A heading past the last entry still belongs to it, since nothing follows to end its stretch.
+	#[test]
+	fn the_last_entry_runs_to_the_end_of_the_book() {
+		let spans = toc_spans(&[item(0), item(100)]);
+		assert!(span_has_heading(&spans, &[9_000], 100));
+	}
+
+	/// The spans are gathered from the whole tree, not only its top level, or a chapter's
+	/// subsections would all be measured against the chapter after it.
+	#[test]
+	fn spans_are_gathered_from_the_whole_tree() {
+		let mut parent = item(0);
+		parent.children = vec![item(50)];
+		assert_eq!(toc_spans(&[parent, item(100)]), vec![0, 50, 100]);
 	}
 }
