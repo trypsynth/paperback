@@ -9,7 +9,7 @@ use anyhow::Result;
 use paperback_formats::FormatMeta;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	t,
 	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
@@ -412,6 +412,45 @@ fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, 
 	}
 	for underline in converter.get_underlines() {
 		buffer.add_marker(Marker::new(MarkerType::Underline, offset + underline.offset).with_length(underline.length));
+	}
+}
+
+/// Writes a heading marker for every entry of a table of contents, so that a document whose own
+/// text carries no headings can still be moved through by heading.
+///
+/// Some documents name every one of their sections and mark up none of them. A PDF may carry a
+/// full bookmark outline over pages whose text is all one size; an old CHM names each of its
+/// topics in its `.hhc` and writes them as styled paragraphs rather than as `<h1>`. The reader of
+/// one of those gets a working table of contents and nothing at all to jump between, which on a
+/// 7,000 topic reference is the difference between a usable book and an unusable one.
+pub fn add_heading_markers(buffer: &mut DocumentBuffer, items: &[TocItem], level: i32) {
+	add_heading_markers_where(buffer, items, level, &|_| true);
+}
+
+/// [`add_heading_markers`], for a document that marks up some of its headings and not others.
+///
+/// `wanted` is asked about each entry's offset and says whether that entry still needs a marker.
+/// An entry it turns down is skipped and its children are still offered, because a section that
+/// wrote its own heading may sit above subsections that did not.
+pub fn add_heading_markers_where(
+	buffer: &mut DocumentBuffer,
+	items: &[TocItem],
+	level: i32,
+	wanted: &dyn Fn(usize) -> bool,
+) {
+	for item in items {
+		if wanted(item.offset) {
+			let marker_type = match level {
+				1 => MarkerType::Heading1,
+				2 => MarkerType::Heading2,
+				3 => MarkerType::Heading3,
+				4 => MarkerType::Heading4,
+				5 => MarkerType::Heading5,
+				_ => MarkerType::Heading6,
+			};
+			buffer.add_marker(Marker::new(marker_type, item.offset).with_text(item.name.clone()).with_level(level));
+		}
+		add_heading_markers_where(buffer, &item.children, level + 1, wanted);
 	}
 }
 

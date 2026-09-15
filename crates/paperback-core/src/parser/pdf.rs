@@ -6,7 +6,7 @@ use pdfium::PdfiumDocument;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
-	parser::{Parser, util::path::extract_title_from_path},
+	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
 };
 
 mod images;
@@ -29,7 +29,7 @@ use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
 use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
 use text::{Line, extract_text_lines, median_line_font_size};
-use toc::{add_heading_markers, build_toc_tree, extract_toc};
+use toc::{build_toc_tree, extract_toc};
 
 /// Everything one page contributes, as read from pdfium and before any of it is placed in the
 /// document. The whole document is read before the first page is assembled, because which lines

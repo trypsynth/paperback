@@ -9,24 +9,9 @@ use pdfium::PdfiumDocument;
 
 use super::text::sanitize_pdf_text;
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType, TocItem},
+	document::TocItem,
 	util::text::{collapse_whitespace, trim_string},
 };
-
-pub(super) fn add_heading_markers(buffer: &mut DocumentBuffer, items: &[TocItem], level: i32) {
-	for item in items {
-		let marker_type = match level {
-			1 => MarkerType::Heading1,
-			2 => MarkerType::Heading2,
-			3 => MarkerType::Heading3,
-			4 => MarkerType::Heading4,
-			5 => MarkerType::Heading5,
-			_ => MarkerType::Heading6,
-		};
-		buffer.add_marker(Marker::new(marker_type, item.offset).with_text(item.name.clone()).with_level(level));
-		add_heading_markers(buffer, &item.children, level + 1);
-	}
-}
 
 pub(super) fn extract_toc(
 	document: &PdfiumDocument,
