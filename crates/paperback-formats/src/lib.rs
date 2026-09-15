@@ -248,6 +248,16 @@ formats! {
 		mime_types: ["text/plain"],
 		flags: NONE,
 	},
+	/// Windows Write. Real `.wri` files in the wild are almost always RTF or plain text under a
+	/// `.wri` name; the parser sniffs the content and routes accordingly, and reads the genuine
+	/// Windows Write binary format too. Flags stay `NONE` because a routed file's real features
+	/// depend on what it turns out to be, and under-promising is safer than the reverse.
+	WRI {
+		name: "Windows Write Documents",
+		extensions: ["wri"],
+		mime_types: ["application/x-mswrite"],
+		flags: NONE,
+	},
 }
 
 #[cfg(test)]
