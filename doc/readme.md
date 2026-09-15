@@ -217,6 +217,8 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Links in the WebView now take you to the section they point at, rather than failing with "File not found".
 * PDFs that tag their page headers and footers as ordinary text no longer repeat the title and the page number between two paragraphs on every page.
 * PDFs that carry reading structure but tag none of their pictures now announce those pictures, rather than leaving them out of the book entirely.
+* FictionBook (.fb2) books written in windows-1251, which is most of them, now open instead of failing to read at all.
+* FictionBook books that use a namespace or an HTML entity they never declared now open, rather than being refused as broken.
 * The `=` shortcut now announces the page as well as the percentage, e.g. "15%, page 30", and stays as it was for documents with no page numbers.
 * The automatic "Document reloaded" announcement no longer cuts your screen reader off mid sentence, instead waiting for it to finish what it was saying.
 * The Settings dialog's General tab now tabs through its options in the order they appear on screen, with the update channel directly after the check for updates option.

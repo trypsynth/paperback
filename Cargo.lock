@@ -2240,6 +2240,7 @@ dependencies = [
  "unicode-bidi",
  "uniffi",
  "unrar",
+ "web_atoms",
  "zip",
 ]
 

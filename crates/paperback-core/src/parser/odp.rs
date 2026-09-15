@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs, fs::File, io::BufReader};
+use std::{collections::HashMap, fs::File, io::BufReader};
 
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
@@ -8,7 +8,10 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		Parser,
-		util::{path::extract_title_from_path, xml::collect_element_text},
+		util::{
+			path::extract_title_from_path,
+			xml::{collect_element_text, read_xml_to_string},
+		},
 	},
 	t,
 	types::LinkInfo,
@@ -70,7 +73,7 @@ pub struct FodpParser;
 impl Parser for FodpParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing fodp file");
-		let content_str = fs::read_to_string(&context.file_path)
+		let content_str = read_xml_to_string(&context.file_path)
 			.with_context(|| format!("Failed to open FODP file '{}'", context.file_path))?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid FODP document")?;
 		let mut buffer = DocumentBuffer::new();

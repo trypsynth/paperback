@@ -44,6 +44,9 @@ roman = "0.2.1"
 roxmltree = "0.21.1"
 rtf-parser = "0.4.3"
 scraper = "0.27.0"
+# The HTML5 named-entity table, for the FictionBook files that carry HTML entities an XML
+# parser has never heard of. Already in the tree under scraper.
+web_atoms = "0.2.6"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 sha1 = "0.11.0"
 thiserror = "2.0.20"
