@@ -206,14 +206,19 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 
 ### Versio 0.9.2
 * Ruudunlukija ei enää lue äänikirjoissa peräkkäisiä välilyöntejä kohdistuksen siirtyessä kirjan tekstinäkymään.
-* Äänikirjojen tiedostonimet  ilmoitetaan nyt luvuittain navigoitaessa.
+* Äänikirjoissa ilmoitetaan nyt kulloisenkin äänitiedoston nimi lukujen välillä siirryttäessä.
 * Sovellus ilmoittaa nyt äänikirjojen todellisen keston sen sijaan, että kaikkien väitettäisiin olevan 24 tunnin mittaisia
 * Kun selainnäkymässä on siirrytty linkin osoittamaan kohtaan, näkymän sulkeminen Esc-näppäimellä ei aiheuta enää vianmääritysilmoitusta.
 * Valitse kaikki -toiminnon jälkeinen kopiointi kattaa nyt koko asiakirjan eikä pelkkää näytettävää osaa.
 * Etsi-toiminto siirtää suoraan löytämälleen riville eikä ruudunlukija enää lue koko ikkunaa uudelleen kohdistuksen palatessa kirjaan.
 * Korjattu ongelma, jonka vuoksi ylimääräisen ZIP64-lohkon sisältämät EPUB-tiedostot eivät avautuneet, vaan antoivat virheilmoituksen ”Invalid local file header”.
 * Pitkissä asiakirjoissa ei enää palata alkuun, kun niitä luetaan ruudunlukijan jatkuvalla luvulla.
+* Korjattu ongelma, jonka vuoksi Apple Pages -sovelluksesta viedyt PDF-tiedostot luettiin pelkkänä tekstinä ilman niihin sisältyviä otsikoita ja luetteloita.
 * Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.
+* Otsikko ja sivunumero eivät enää toistu jokaisella sivulla kappaleiden välissä PDF-tiedostoissa, joissa ylä- ja alatunnisteet on merkitty tavalliseksi tekstiksi.
+* PDF-tiedostojen merkitsemättömät kuvat ilmoitetaan nyt, jos tiedostossa on lukemisjärjestys, eikä niitä enää jätetä kirjasta kokonaan pois.
+* Windows-1251-merkistökoodausta käyttävät FictionBook-kirjat (.fb2) avautuvat nyt oikein. Suurin osa FB2-kirjoista on tällaisia.
+* FictionBook-kirjat, joissa käytetään määrittelemätöntä nimiavaruutta tai HTML-entiteettiä, avautuvat nyt eikä niitä enää hylätä virheellisinä.
 * =-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim. ”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole sivunumeroita.
 * Automaattinen ”Asiakirja päivitetty” -ilmoitus odottaa nyt ruudunlukijan puheen päättymistä eikä keskeytä sitä enää kesken lauseen.
 * Asetukset-ikkunan Yleiset-välilehden sarkainjärjestys noudattaa nyt näytön järjestystä, ja päivityskanava on heti päivitystarkistuksen jälkeen.

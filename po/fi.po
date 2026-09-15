@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-13 13:31-0600\n"
-"PO-Revision-Date: 2026-09-14 00:10+0300\n"
+"PO-Revision-Date: 2026-09-15 12:40+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1287,7 +1287,6 @@ msgid "Temporary bookmark."
 msgstr "Tilapäinen kirjanmerkki."
 
 #. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
-#| msgid "Page %d"
 msgid "%s, page %d"
 msgstr "%s, sivu %d"
 
@@ -3550,7 +3549,7 @@ msgstr "Älä salli"
 msgid "Custom Timer"
 msgstr "Mukautettu ajastin"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 msgid "Back"
 msgstr "Takaisin"
@@ -3632,7 +3631,6 @@ msgstr "Sulje haku"
 msgid "Document exported"
 msgstr "Asiakirja viety"
 
-#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 msgid "Failed to export document"
 msgstr "Asiakirjan vienti epäonnistui"
@@ -3971,7 +3969,6 @@ msgstr ""
 
 #. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
 #: kt
-#| msgid "Currently Open"
 msgid "Current path: {}"
 msgstr "Nykyinen kansiopolku: {}"
 
@@ -3981,19 +3978,16 @@ msgstr "{}, {}, muokattu {}{}"
 
 #. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
 #: kt
-#| msgid "Percent"
 msgid "{} percent"
 msgstr "{} prosenttia"
 
 #. TRANSLATORS: TalkBack state of a heading line in the document; {} is its level number
 #: kt
-#| msgid "Heading"
 msgid "Heading {}"
 msgstr "Otsikko {}"
 
 #. TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
 #: kt
-#| msgid "Go to next heading"
 msgid "go to heading"
 msgstr "siirtyäksesi otsikkoon"
 
@@ -4003,13 +3997,11 @@ msgstr "{}, taso {}"
 
 #. TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
 #: kt
-#| msgid "Go to line"
 msgid "go to link"
 msgstr "siirtyäksesi linkkiin"
 
 #. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
 #: kt
-#| msgid "Import and export options"
 msgid "show import and export options"
 msgstr "näyttääksesi tuonnin ja viennin asetukset"
 
@@ -4020,6 +4012,16 @@ msgstr "avataksesi"
 
 #. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
 #: kt
-#| msgid "Go to percent"
 msgid "go to chapter"
 msgstr "siirtyäksesi lukuun"
+
+#. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+#: kt
+msgid "This is a sample of the selected speech engine."
+msgstr "Tämä on valitun puhemoottorin ääninäyte."
+
+#. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+#: kt
+#| msgid "This document has no table of contents."
+msgid "This document does not contain pages."
+msgstr "Asiakirjassa ei ole sivuja."
