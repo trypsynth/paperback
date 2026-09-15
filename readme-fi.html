@@ -543,8 +543,8 @@ perusteena.</p>
 <ul>
 <li>Ruudunlukija ei enää lue äänikirjoissa peräkkäisiä välilyöntejä
 kohdistuksen siirtyessä kirjan tekstinäkymään.</li>
-<li>Äänikirjojen tiedostonimet ilmoitetaan nyt luvuittain
-navigoitaessa.</li>
+<li>Äänikirjoissa ilmoitetaan nyt kulloisenkin äänitiedoston nimi
+lukujen välillä siirryttäessä.</li>
 <li>Sovellus ilmoittaa nyt äänikirjojen todellisen keston sen sijaan,
 että kaikkien väitettäisiin olevan 24 tunnin mittaisia</li>
 <li>Kun selainnäkymässä on siirrytty linkin osoittamaan kohtaan, näkymän
@@ -558,8 +558,22 @@ EPUB-tiedostot eivät avautuneet, vaan antoivat virheilmoituksen ”Invalid
 local file header”.</li>
 <li>Pitkissä asiakirjoissa ei enää palata alkuun, kun niitä luetaan
 ruudunlukijan jatkuvalla luvulla.</li>
+<li>Korjattu ongelma, jonka vuoksi Apple Pages -sovelluksesta viedyt
+PDF-tiedostot luettiin pelkkänä tekstinä ilman niihin sisältyviä
+otsikoita ja luetteloita.</li>
 <li>Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä
 aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.</li>
+<li>Otsikko ja sivunumero eivät enää toistu jokaisella sivulla
+kappaleiden välissä PDF-tiedostoissa, joissa ylä- ja alatunnisteet on
+merkitty tavalliseksi tekstiksi.</li>
+<li>PDF-tiedostojen merkitsemättömät kuvat ilmoitetaan nyt, jos
+tiedostossa on lukemisjärjestys, eikä niitä enää jätetä kirjasta
+kokonaan pois.</li>
+<li>Windows-1251-merkistökoodausta käyttävät FictionBook-kirjat (.fb2)
+avautuvat nyt oikein. Suurin osa FB2-kirjoista on tällaisia.</li>
+<li>FictionBook-kirjat, joissa käytetään määrittelemätöntä nimiavaruutta
+tai HTML-entiteettiä, avautuvat nyt eikä niitä enää hylätä
+virheellisinä.</li>
 <li>=-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim.
 ”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole
 sivunumeroita.</li>
