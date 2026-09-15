@@ -73,7 +73,11 @@ fn read_page(document: &PdfiumDocument, page_index: i32, render_tables_inline: b
 		tracing::warn!(page_index, "failed to load text for pdf page, skipping its text");
 		return PageContent::default();
 	};
-	let mut content = PageContent::default();
+	// Every page is scanned, rather than the document stopping at the first image it finds,
+	// because each page places its own images and because an image-only page still needs its OCR
+	// placeholder when earlier pages contributed text. Taken before the text so that a tagged
+	// page whose tree names no figure can place them among its blocks as it writes them.
+	let mut content = PageContent { image_tops: page_image_tops(&page), ..Default::default() };
 	let mut tagged = TaggedPage {
 		buffer: DocumentBuffer::new(),
 		display_text: String::new(),
@@ -89,6 +93,7 @@ fn read_page(document: &PdfiumDocument, page_index: i32, render_tables_inline: b
 		&mut tagged.lines_info,
 		&mut tagged.toc_items,
 		render_tables_inline,
+		&content.image_tops,
 	) {
 		content.tagged = Some(tagged);
 	} else {
@@ -96,10 +101,6 @@ fn read_page(document: &PdfiumDocument, page_index: i32, render_tables_inline: b
 	}
 	content.web_links = collect_web_links(&text_page);
 	content.annotation_links = collect_annotation_links(&page, &text_page, document);
-	// Every page is scanned, rather than the document stopping at the first image it finds,
-	// because each page places its own images and because an image-only page still needs its OCR
-	// placeholder when earlier pages contributed text.
-	content.image_tops = page_image_tops(&page);
 	content
 }
 

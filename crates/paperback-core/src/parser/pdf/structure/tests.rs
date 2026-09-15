@@ -1,4 +1,6 @@
-use super::{append_pdf_table_to_buffer, flush_block, normalize_list_label};
+use std::collections::HashMap;
+
+use super::{ImagePlacement, UnclaimedImages, append_pdf_table_to_buffer, flush_block, normalize_list_label};
 use crate::document::{DocumentBuffer, MarkerType};
 
 /// OFF mode: the PDF table helper emits a single `"[Table]: <first row>"` placeholder line and
@@ -92,12 +94,14 @@ fn a_list_label_joins_the_line_that_follows_it() {
 	let mut page_text = String::new();
 	let mut label = "\u{2022}".to_string();
 	let mut block = String::new();
+	let tops = HashMap::new();
+	let mut no_images = ImagePlacement { mcid_tops: &tops, unclaimed: UnclaimedImages::new(&[]), block_top: None };
 	// The paragraph inside the LBody starts by flushing, with nothing yet collected.
-	flush_block(&mut label, &mut block, &mut buffer, &mut page_text, &mut lines_info);
+	flush_block(&mut label, &mut block, &mut buffer, &mut page_text, &mut lines_info, &mut no_images);
 	assert_eq!(buffer.content, "", "an empty block emits nothing and keeps the label waiting");
 	assert_eq!(label, "\u{2022}");
 	block.push_str("ANTIPASTI PER DUE");
-	flush_block(&mut label, &mut block, &mut buffer, &mut page_text, &mut lines_info);
+	flush_block(&mut label, &mut block, &mut buffer, &mut page_text, &mut lines_info, &mut no_images);
 	assert_eq!(buffer.content, "\u{2022} ANTIPASTI PER DUE\n");
 	assert_eq!(lines_info.len(), 1, "one line, not a label line and a text line");
 	assert!(label.is_empty(), "the label is spent once it is written");
