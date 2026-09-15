@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 13:31-0600\n"
+"POT-Creation-Date: 2026-09-15 16:49+0000\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -3045,6 +3045,18 @@ msgstr "Decodificar estouro de pilha"
 msgid "File too short"
 msgstr "O arquivo é muito curto"
 
+#. TRANSLATORS: Error detail shown when an OpenDocument file is encrypted and no password was given (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required"
+msgstr "É necessária uma senha"
+
+#. TRANSLATORS: Error detail shown when the password for an OpenDocument file is wrong (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password incorrect"
+msgstr "Senha incorreta"
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 #, fuzzy
 msgid "ODP file does not contain any pages"
@@ -3151,16 +3163,6 @@ msgstr "Não foi encontrado nenhum analisador para a extensão: .{}"
 #, fuzzy
 msgid "All parsers failed for extension: .{}"
 msgstr "Todos os analisadores falharam para a extensão: .{}"
-
-#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "Password required"
-msgstr "É necessária uma senha"
-
-#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "Password incorrect"
-msgstr "Senha incorreta"
 
 msgid "Unknown update file format."
 msgstr "Formato desconhecido de arquivo."
