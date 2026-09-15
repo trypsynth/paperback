@@ -1,7 +1,4 @@
-use std::{
-	collections::{HashMap, HashSet},
-	io::Cursor,
-};
+use std::{collections::HashMap, io::Cursor};
 
 use anyhow::Result;
 use pdfium::PdfiumDocument;
@@ -10,7 +7,6 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, util::path::extract_title_from_path},
-	util::text::display_len,
 };
 
 mod images;
@@ -20,6 +16,7 @@ mod paragraphs;
 mod repair;
 mod running;
 mod structure;
+mod tagged;
 mod text;
 mod toc;
 
@@ -30,6 +27,7 @@ pub use paragraphs::join_wrapped_lines;
 use paragraphs::{join_paragraphs, split_lines};
 use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
+use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
 use text::{Line, extract_text_lines, median_line_font_size};
 use toc::{add_heading_markers, build_toc_tree, extract_toc};
 
@@ -53,14 +51,6 @@ struct PageContent {
 	annotation_links: Vec<PendingLink>,
 	/// The top edge of each image the page draws, ordered down the page.
 	image_tops: Vec<f64>,
-}
-
-/// A page laid out by [`extract_tagged_page_text`], in its own buffer.
-struct TaggedPage {
-	buffer: DocumentBuffer,
-	display_text: String,
-	lines_info: Vec<(usize, String)>,
-	toc_items: Vec<(u32, TocItem)>,
 }
 
 /// Read one page from pdfium: its text, its links, and the images it draws.
@@ -104,93 +94,93 @@ fn read_page(document: &PdfiumDocument, page_index: i32, render_tables_inline: b
 	content
 }
 
-/// Splice a tagged page's own buffer into the document, moving everything it holds from
-/// page-relative positions to where the page landed.
-fn append_tagged_page(buffer: &mut DocumentBuffer, page: DocumentBuffer, page_start_offset: usize) {
-	buffer.append(&page.content);
-	for mut marker in page.markers {
-		marker.position += page_start_offset;
-		buffer.add_marker(marker);
-	}
+/// One line an untagged page contributes, in the order the reader meets it.
+enum UntaggedLine {
+	/// A paragraph, and whether the size it was set in marked it out as a heading.
+	Text(String, bool),
+	/// An image the page drew here. An untagged page has no description to give for one.
+	Image,
 }
 
-/// Which of a tagged page's lines are running headers or footers, by their index among the
-/// page's lines.
+/// Work out what an untagged page contributes: its running headers dropped, its wrapped lines
+/// joined into paragraphs, and the images it draws placed among those by the height each was
+/// drawn at.
 ///
-/// Only the lines at the page's edges are looked at, and only a line the tags say nothing about
-/// at all. A running head is plain text by the time it reaches here; a line that carries a
-/// marker is a heading, a list item, a table or a figure, and a document that opens a dozen of
-/// its pages with a figure would otherwise lose every one of them. A page whose every line
-/// matches keeps them all, so a page is never emptied.
-fn tagged_running_lines(page: &TaggedPage, running_text: &RunningText) -> HashSet<usize> {
-	let count = page.lines_info.len();
-	let marked: HashSet<usize> = page.buffer.markers.iter().map(|marker| marker.position).collect();
-	let at_an_edge = |index: usize| index < EDGE_LINES || index + EDGE_LINES >= count;
-	let doomed: HashSet<usize> = (0..count)
-		.filter(|index| at_an_edge(*index))
-		.filter(|index| {
-			let (position, text) = &page.lines_info[*index];
-			// The untagged path keeps a heading safe by its size; here the tags say outright
-			// which lines are headings, so no size is asked for.
-			!marked.contains(position) && running_text.contains(text, 0.0)
-		})
+/// Kept apart from writing the lines out so that both kinds of page reach the document the same
+/// way, as finished lines: a tagged one from [`structure`], an untagged one from here.
+fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: bool) -> Vec<UntaggedLine> {
+	let mut line_infos = page.lines.clone();
+	// Measured before the running headers come out. They are set at or below the body's size, so
+	// dropping them pulls the median up, and a heading only just above it would stop counting as
+	// one.
+	let body_size = median_line_font_size(&line_infos);
+	strip_running_text(&mut line_infos, running_text);
+	let line_tops: Vec<f64> = line_infos.iter().map(|line| line.top).collect();
+	let paragraphs = if join { join_paragraphs(&line_infos, body_size) } else { split_lines(&line_infos, body_size) };
+	// A page with no text at all is left alone: the image-only placeholder the caller writes is
+	// more use on a scanned page than a line for each of the pieces it was scanned into.
+	if paragraphs.is_empty() {
+		return Vec::new();
+	}
+	// An untagged page says nothing about where its images belong in its text, so each one is
+	// placed by the height it was drawn at.
+	let paragraph_tops: Vec<f64> = paragraphs
+		.iter()
+		.map(|(.., line_index)| line_tops.get(*line_index).copied().unwrap_or(f64::NEG_INFINITY))
 		.collect();
-	if doomed.len() == count { HashSet::new() } else { doomed }
+	let image_counts = images_before_each_paragraph(&page.image_tops, &paragraph_tops);
+	let mut lines = Vec::with_capacity(paragraphs.len());
+	for (index, (text, is_heading, _)) in paragraphs.iter().enumerate() {
+		lines.extend((0..image_counts[index]).map(|_| UntaggedLine::Image));
+		lines.push(UntaggedLine::Text(text.clone(), *is_heading));
+	}
+	lines.extend((0..image_counts[paragraphs.len()]).map(|_| UntaggedLine::Image));
+	lines
 }
 
-/// Rebuild a tagged page without the lines named in `doomed`, moving everything that sat after
-/// one of them up by as much as it took. A marker inside a dropped line goes with it.
-fn without_lines(page: TaggedPage, doomed: &HashSet<usize>) -> TaggedPage {
-	if doomed.is_empty() {
-		return page;
-	}
-	let mut rebuilt = TaggedPage {
-		buffer: DocumentBuffer::new(),
-		display_text: String::new(),
-		lines_info: Vec::new(),
-		toc_items: Vec::new(),
-	};
-	// Where each of the old page's lines starts now, and how far it runs. A line that is not
-	// kept maps to nothing, and whatever pointed into it is dropped with it.
-	let mut moved: Vec<(usize, usize, Option<usize>)> = Vec::with_capacity(page.lines_info.len());
-	for (index, (position, text)) in page.lines_info.iter().enumerate() {
-		let length = display_len(text) + 1;
-		if doomed.contains(&index) {
-			moved.push((*position, length, None));
-			continue;
-		}
-		let start = rebuilt.buffer.current_position();
-		moved.push((*position, length, Some(start)));
-		rebuilt.lines_info.push((start, text.clone()));
-		rebuilt.buffer.append(text);
-		rebuilt.buffer.append("\n");
-		rebuilt.display_text.push_str(text);
-		rebuilt.display_text.push('\n');
-	}
-	// A position past the last line, which a marker placed at the end of a page holds, keeps
-	// standing at the end of it.
-	let end = rebuilt.buffer.current_position();
-	let move_position = |position: usize| {
-		moved
-			.iter()
-			.find(|(start, length, _)| position >= *start && position < start + length)
-			.map_or(Some(end), |(start, _, moved_to)| moved_to.map(|moved_to| moved_to + (position - start)))
-	};
-	for mut marker in page.buffer.markers {
-		if let Some(position) = move_position(marker.position) {
-			marker.position = position;
-			rebuilt.buffer.add_marker(marker);
-		}
-	}
-	rebuilt.toc_items = page
-		.toc_items
-		.into_iter()
-		.filter_map(|(level, mut item)| {
-			item.offset = move_position(item.offset)?;
-			Some((level, item))
+/// Survey every page for the lines it repeats as furniture, take those lines out of the pages
+/// that arrived finished, and hand back what the rest of the document is measured against.
+///
+/// The two kinds of page are surveyed apart because they are counted differently: an untagged
+/// page offers visual lines and is judged with the body's font size to hand, a tagged page offers
+/// whole blocks and is judged by how much of the document repeats them. See [`running`].
+fn strip_tagged_running_text(pages: &mut [PageContent]) -> RunningText {
+	let untagged = || pages.iter().filter(|page| page.tagged.is_none());
+	let edges: Vec<PageEdges> = untagged().map(|page| PageEdges::of(&page.lines)).collect();
+	// The body size is taken over the whole document rather than one page: a chapter opening is
+	// mostly heading, and the survey has to know a heading from a running head.
+	let body_font_size = median_line_font_size(&untagged().flat_map(|page| page.lines.clone()).collect::<Vec<_>>());
+	let running_text = running::detect(&edges, body_font_size);
+	tracing::debug!(
+		running_text_count = running_text.len(),
+		body_font_size,
+		"surveyed pages for running headers and footers"
+	);
+	// A tagged page gets a survey of its own. Most tagged PDFs mark their running headers as
+	// artifacts and never hand them over as text at all, but a maker that tags them as ordinary
+	// paragraphs would otherwise repeat the book's title and the page number between two
+	// paragraphs on every page of it.
+	let tagged_edges: Vec<PageEdges> = pages
+		.iter()
+		.filter_map(|page| page.tagged.as_ref())
+		.map(|tagged| {
+			let lines: Vec<String> = tagged.lines_info.iter().map(|(_, text)| text.clone()).collect();
+			PageEdges::of_texts(&lines)
 		})
 		.collect();
-	rebuilt
+	let tagged_running = running::detect_tagged(&tagged_edges);
+	tracing::debug!(
+		tagged_running_text_count = tagged_running.len(),
+		tagged_page_count = tagged_edges.len(),
+		"surveyed tagged pages for running headers and footers"
+	);
+	for page in pages.iter_mut() {
+		if let Some(tagged) = page.tagged.take() {
+			let doomed = tagged_running_lines(&tagged, &tagged_running);
+			page.tagged = Some(without_lines(tagged, &doomed));
+		}
+	}
+	running_text
 }
 
 /// Drop the running headers and footers from one page's lines. Only lines within
@@ -253,6 +243,37 @@ fn structure_tree_unreachable(document: &PdfiumDocument) -> bool {
 	false
 }
 
+/// Settle which of the three sources of headings the document ends up with, and make sure the
+/// buffer carries a marker for each one so heading navigation can stop on it.
+///
+/// A PDF can say what its headings are in three ways, and they do not agree. Its bookmarks are
+/// already in `toc_items` if it had any. Its structure tree's `H1`-`H6` elements arrive as
+/// `flat_toc_items`, already placed. Failing both, an untagged page's larger lines were guessed at
+/// and arrive as `detected`. Bookmarks win where they exist, because a person wrote them.
+fn resolve_headings(
+	buffer: &mut DocumentBuffer,
+	toc_items: &mut Vec<TocItem>,
+	flat_toc_items: Vec<(u32, TocItem)>,
+	detected: Vec<(usize, String)>,
+	any_tags_processed: bool,
+) {
+	if any_tags_processed {
+		if toc_items.is_empty() {
+			*toc_items = build_toc_tree(flat_toc_items);
+		} else if flat_toc_items.is_empty() {
+			// Bookmarks, from a tagged document whose tree named no heading of its own.
+			add_heading_markers(buffer, toc_items, 1);
+		}
+	} else if toc_items.is_empty() && !detected.is_empty() {
+		for (pos, text) in &detected {
+			buffer.add_marker(Marker::new(MarkerType::Heading1, *pos).with_text(text.clone()).with_level(1));
+		}
+		*toc_items = detected.into_iter().map(|(pos, text)| TocItem::new(text, String::new(), pos)).collect();
+	} else {
+		add_heading_markers(buffer, toc_items, 1);
+	}
+}
+
 pub struct PdfParser;
 
 impl Parser for PdfParser {
@@ -272,41 +293,7 @@ impl Parser for PdfParser {
 		let mut detected_heading_positions: Vec<(usize, String)> = Vec::new();
 		let mut pages: Vec<PageContent> =
 			(0..page_count).map(|page_index| read_page(&document, page_index, render_tables_inline)).collect();
-		let untagged = || pages.iter().filter(|page| page.tagged.is_none());
-		let edges: Vec<PageEdges> = untagged().map(|page| PageEdges::of(&page.lines)).collect();
-		// A tagged page gets a survey of its own. Most tagged PDFs mark their running headers as
-		// artifacts and never hand them over as text at all, but a maker that tags them as
-		// ordinary paragraphs would otherwise repeat the book's title and the page number between
-		// two paragraphs on every page of it.
-		let tagged_edges: Vec<PageEdges> = pages
-			.iter()
-			.filter_map(|page| page.tagged.as_ref())
-			.map(|tagged| {
-				let lines: Vec<String> = tagged.lines_info.iter().map(|(_, text)| text.clone()).collect();
-				PageEdges::of_texts(&lines)
-			})
-			.collect();
-		let tagged_running = running::detect_tagged(&tagged_edges);
-		// The body size is taken over the whole document rather than one page: a chapter opening
-		// is mostly heading, and the survey has to know a heading from a running head.
-		let body_font_size = median_line_font_size(&untagged().flat_map(|page| page.lines.clone()).collect::<Vec<_>>());
-		let running_text = running::detect(&edges, body_font_size);
-		tracing::debug!(
-			running_text_count = running_text.len(),
-			body_font_size,
-			"surveyed pages for running headers and footers"
-		);
-		tracing::debug!(
-			tagged_running_text_count = tagged_running.len(),
-			tagged_page_count = tagged_edges.len(),
-			"surveyed tagged pages for running headers and footers"
-		);
-		for page in &mut pages {
-			if let Some(tagged) = page.tagged.take() {
-				let doomed = tagged_running_lines(&tagged, &tagged_running);
-				page.tagged = Some(without_lines(tagged, &doomed));
-			}
-		}
+		let running_text = strip_tagged_running_text(&mut pages);
 		for (page_index, page) in pages.into_iter().enumerate() {
 			let marker_position = buffer.current_position();
 			page_offsets.push(marker_position);
@@ -329,45 +316,24 @@ impl Parser for PdfParser {
 					(level, item)
 				}));
 			} else {
-				let mut line_infos = page.lines;
-				// Measured before the running headers come out. They are set at or below the
-				// body's size, so dropping them pulls the median up, and a heading only just
-				// above it would stop counting as one.
-				let body_size = median_line_font_size(&line_infos);
-				strip_running_text(&mut line_infos, &running_text);
-				let line_tops: Vec<f64> = line_infos.iter().map(|line| line.top).collect();
-				let paragraphs = if context.join_pdf_paragraphs {
-					join_paragraphs(&line_infos, body_size)
-				} else {
-					split_lines(&line_infos, body_size)
-				};
-				if !paragraphs.is_empty() {
-					has_any_text = true;
-				}
-				// An untagged page says nothing about where its images belong in its text, so each
-				// one is placed by the height it was drawn at. A page with no text at all is left
-				// alone: the image-only placeholder below is more use on a scanned page than a
-				// line for each of the pieces it was scanned into.
-				let paragraph_tops: Vec<f64> = paragraphs
-					.iter()
-					.map(|(.., line_index)| line_tops.get(*line_index).copied().unwrap_or(f64::NEG_INFINITY))
-					.collect();
-				let image_counts = images_before_each_paragraph(&page.image_tops, &paragraph_tops);
-				for (index, (text, is_heading, _)) in paragraphs.iter().enumerate() {
-					append_images(image_counts[index], &mut buffer, &mut page_display_text, &mut current_lines_info);
-					let current_offset = buffer.current_position();
-					if *is_heading {
-						detected_heading_positions.push((current_offset, text.clone()));
+				for line in untagged_page_lines(&page, &running_text, context.join_pdf_paragraphs) {
+					match line {
+						UntaggedLine::Image => {
+							append_images(1, &mut buffer, &mut page_display_text, &mut current_lines_info);
+						}
+						UntaggedLine::Text(text, is_heading) => {
+							has_any_text = true;
+							let current_offset = buffer.current_position();
+							if is_heading {
+								detected_heading_positions.push((current_offset, text.clone()));
+							}
+							current_lines_info.push((current_offset, text.clone()));
+							buffer.append(&text);
+							buffer.append("\n");
+							page_display_text.push_str(&text);
+							page_display_text.push('\n');
+						}
 					}
-					current_lines_info.push((current_offset, text.clone()));
-					buffer.append(text);
-					buffer.append("\n");
-					page_display_text.push_str(text);
-					page_display_text.push('\n');
-				}
-				if !paragraphs.is_empty() {
-					let trailing = image_counts[paragraphs.len()];
-					append_images(trailing, &mut buffer, &mut page_display_text, &mut current_lines_info);
 				}
 			}
 			let page_has_image = !page.image_tops.is_empty();
@@ -400,23 +366,7 @@ impl Parser for PdfParser {
 		} else {
 			"none"
 		};
-		if any_tags_processed {
-			if toc_items.is_empty() {
-				toc_items = build_toc_tree(flat_toc_items);
-			} else if flat_toc_items.is_empty() {
-				add_heading_markers(&mut buffer, &toc_items, 1);
-			}
-		} else if toc_items.is_empty() && !detected_heading_positions.is_empty() {
-			for (pos, text) in &detected_heading_positions {
-				buffer.add_marker(Marker::new(MarkerType::Heading1, *pos).with_text(text.clone()).with_level(1));
-			}
-			toc_items = detected_heading_positions
-				.into_iter()
-				.map(|(pos, text)| TocItem::new(text, String::new(), pos))
-				.collect();
-		} else {
-			add_heading_markers(&mut buffer, &toc_items, 1);
-		}
+		resolve_headings(&mut buffer, &mut toc_items, flat_toc_items, detected_heading_positions, any_tags_processed);
 		tracing::debug!(toc_source, toc_item_count = toc_items.len(), "resolved pdf toc source");
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
@@ -433,115 +383,5 @@ impl Parser for PdfParser {
 			"finished parsing pdf document"
 		);
 		Ok(doc)
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use std::collections::HashSet;
-
-	use super::{TaggedPage, running, tagged_running_lines, without_lines};
-	use crate::document::{DocumentBuffer, Marker, MarkerType, TocItem};
-
-	/// A tagged page built from finished lines, with a marker on whichever of them is named.
-	fn tagged_page(lines: &[&str], marked: &[usize]) -> TaggedPage {
-		let mut page = TaggedPage {
-			buffer: DocumentBuffer::new(),
-			display_text: String::new(),
-			lines_info: Vec::new(),
-			toc_items: Vec::new(),
-		};
-		for (index, text) in lines.iter().enumerate() {
-			let position = page.buffer.current_position();
-			if marked.contains(&index) {
-				page.buffer.add_marker(Marker::new(MarkerType::Heading1, position).with_text((*text).to_string()));
-				page.toc_items.push((1, TocItem::new((*text).to_string(), String::new(), position)));
-			}
-			page.lines_info.push((position, (*text).to_string()));
-			page.buffer.append(text);
-			page.buffer.append("\n");
-			page.display_text.push_str(text);
-			page.display_text.push('\n');
-		}
-		page
-	}
-
-	/// Five pages that all open with the book's title and close with a page number, which is what
-	/// furniture on a tagged page looks like.
-	fn running_text() -> running::RunningText {
-		let bodies = ["Salt.", "Pepper.", "Thyme.", "Parsley.", "Sage."];
-		let edges: Vec<running::PageEdges> = (1..=5)
-			.map(|page| {
-				running::PageEdges::of_texts(&[
-					"The Book Of Tests".to_string(),
-					bodies[page - 1].to_string(),
-					format!("{page}"),
-				])
-			})
-			.collect();
-		running::detect_tagged(&edges)
-	}
-
-	#[test]
-	fn a_tagged_page_loses_its_running_head_and_page_number() {
-		let page = tagged_page(&["The Book Of Tests", "Body of page 6.", "6"], &[]);
-		let doomed = tagged_running_lines(&page, &running_text());
-		assert_eq!(doomed, HashSet::from([0, 2]));
-		let rebuilt = without_lines(page, &doomed);
-		assert_eq!(rebuilt.buffer.content, "Body of page 6.\n");
-		assert_eq!(rebuilt.lines_info, vec![(0, "Body of page 6.".to_string())]);
-		assert_eq!(rebuilt.display_text, "Body of page 6.\n");
-	}
-
-	#[test]
-	fn a_line_the_tags_speak_for_is_never_furniture() {
-		// The same repeated title, this time tagged as the page's heading.
-		let page = tagged_page(&["The Book Of Tests", "Rosemary.", "6"], &[0]);
-		assert_eq!(tagged_running_lines(&page, &running_text()), HashSet::from([2]));
-	}
-
-	#[test]
-	fn a_page_of_nothing_but_furniture_keeps_it() {
-		let page = tagged_page(&["The Book Of Tests", "6"], &[]);
-		assert!(tagged_running_lines(&page, &running_text()).is_empty(), "a page is never emptied");
-	}
-
-	#[test]
-	fn a_line_repeated_on_a_few_pages_only_is_not_furniture() {
-		// Four pages carry it, which is enough for an untagged page, out of twenty tagged ones.
-		// The signature blanks out digits, so each page is given a word of its own rather than a
-		// number, or every page would read as the same line.
-		let word = |page: usize| format!("{}", char::from(b'a' + u8::try_from(page).expect("a small page number")));
-		let edges: Vec<running::PageEdges> = (0..20)
-			.map(|page| {
-				let opening = if page < 4 {
-					"The following applies.".to_string()
-				} else {
-					format!("Opening {} here.", word(page))
-				};
-				running::PageEdges::of_texts(&[opening, format!("Closing {} here.", word(page))])
-			})
-			.collect();
-		let detected = running::detect_tagged(&edges);
-		let page = tagged_page(&["The following applies.", "Closing a here."], &[]);
-		assert!(tagged_running_lines(&page, &detected).is_empty());
-	}
-
-	#[test]
-	fn markers_and_toc_items_move_up_with_the_lines_they_sit_on() {
-		let page = tagged_page(&["Furniture", "Chapter One", "Body."], &[1]);
-		let rebuilt = without_lines(page, &HashSet::from([0]));
-		assert_eq!(rebuilt.buffer.content, "Chapter One\nBody.\n");
-		let heading = rebuilt.buffer.markers.iter().find(|marker| marker.mtype == MarkerType::Heading1);
-		assert_eq!(heading.expect("the heading survives").position, 0, "it moved up by the dropped line");
-		assert_eq!(rebuilt.toc_items[0].1.offset, 0);
-	}
-
-	#[test]
-	fn a_marker_inside_a_dropped_line_goes_with_it() {
-		let page = tagged_page(&["Furniture", "Body."], &[0]);
-		let rebuilt = without_lines(page, &HashSet::from([0]));
-		assert!(rebuilt.buffer.markers.is_empty(), "the dropped line's heading is dropped too");
-		assert!(rebuilt.toc_items.is_empty());
 	}
 }
