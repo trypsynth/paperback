@@ -104,6 +104,12 @@ fn char_origin(text_page: &PdfiumTextPage, index: i32) -> Option<(f64, f64)> {
 	Some((x, y))
 }
 
+/// The top edge of one character, which is what gives a tagged block the height the structure
+/// tree never records for it. See [`super::images::UnclaimedImages`].
+pub(super) fn char_top(text_page: &PdfiumTextPage, index: i32) -> Option<f64> {
+	char_box(text_page, index).map(|boxed| boxed.top)
+}
+
 fn char_box(text_page: &PdfiumTextPage, index: i32) -> Option<CharBox> {
 	let rect = text_page.get_char_box(index).ok()?;
 	Some(CharBox {

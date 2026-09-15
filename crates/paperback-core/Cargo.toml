@@ -24,13 +24,13 @@ chardetng = "1.0.0"
 ego-tree = "0.11.0"
 flate2 = "1.1.10"
 key-chord = "0.1.0"
-encoding_rs = "0.8.35"
+encoding_rs = "0.8.41"
 icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
 # Only the codecs comic archives actually use; the default feature set pulls in a dozen more.
-image = { version = "0.25.8", default-features = false, features = ["jpeg", "png", "gif", "webp", "bmp"] }
+image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "gif", "webp", "bmp"] }
 libchm = "0.3.0"
 libhlp = "0.2.0"
-lofty = "0.25.1"
+lofty = "0.25.2"
 mp4ameta = "0.13.0"
 office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
@@ -44,13 +44,16 @@ roman = "0.2.1"
 roxmltree = "0.21.1"
 rtf-parser = "0.4.3"
 scraper = "0.27.0"
+# The HTML5 named-entity table, for the FictionBook files that carry HTML entities an XML
+# parser has never heard of. Already in the tree under scraper.
+web_atoms = "0.2.6"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 sha1 = "0.11.0"
 thiserror = "2.0.20"
 toml = { workspace = true }
 tracing = "0.1.44"
 unicode-bidi = "0.3.18"
-uniffi = { version = "0.32.0", features = ["cli"], optional = true }
+uniffi = { version = "0.32.1", features = ["cli"], optional = true }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 
 # Reads the RAR a .cbr is. The bindings are MIT/Apache; the C library they vendor keeps
@@ -60,7 +63,7 @@ zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"]
 unrar = "0.5.8"
 
 [build-dependencies]
-uniffi = { version = "0.32.0", features = ["build"], optional = true }
+uniffi = { version = "0.32.1", features = ["build"], optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }

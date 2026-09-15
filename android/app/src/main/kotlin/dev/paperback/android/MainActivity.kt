@@ -6,17 +6,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
-import android.view.View
-import android.view.ViewGroup
-import android.view.accessibility.AccessibilityEvent
-import android.view.accessibility.AccessibilityNodeInfo
-import android.view.accessibility.AccessibilityNodeProvider
 import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -24,9 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import dev.paperback.android.theme.MyApplicationTheme
-import dev.paperback.android.ui.MainScreenViewModel
-import uniffi.paperback.SegmentDirectionFfi
-import uniffi.paperback.SegmentTypeFfi
+import dev.paperback.android.ui.state.MainScreenViewModel
 
 class MainActivity : ComponentActivity() {
 	private val vm: MainScreenViewModel by viewModels()
@@ -54,111 +46,6 @@ class MainActivity : ComponentActivity() {
 					MainNavigation()
 				}
 			}
-		}
-	}
-
-	/**
-	 * Wraps the root view's accessibility delegate so Compose Sliders, which TalkBack would
-	 * otherwise announce as seek bars, are described as buttons. Every other method here is a
-	 * straight pass-through to the delegate Compose installed.
-	 */
-	@RequiresApi(Build.VERSION_CODES.R)
-	private fun installSeekBarRoleDelegate(view: View) {
-		val originalDelegate = view.accessibilityDelegate
-		view.accessibilityDelegate = object : View.AccessibilityDelegate() {
-			override fun getAccessibilityNodeProvider(host: View): AccessibilityNodeProvider? {
-				val provider = originalDelegate?.getAccessibilityNodeProvider(host) ?: super.getAccessibilityNodeProvider(host)
-				if (provider == null) return null
-				return object : AccessibilityNodeProvider() {
-					override fun createAccessibilityNodeInfo(virtualViewId: Int): AccessibilityNodeInfo? {
-						val info = provider.createAccessibilityNodeInfo(virtualViewId)
-						if (info != null &&
-							info.className == "android.widget.SeekBar" &&
-							info.stateDescription?.toString() == "​"
-						) {
-							info.extras.putCharSequence("AccessibilityNodeInfo.roleDescription", "button")
-						}
-						return info
-					}
-
-					override fun performAction(
-						virtualViewId: Int,
-						action: Int,
-						arguments: Bundle?
-					): Boolean =
-						provider
-							.performAction(virtualViewId, action, arguments)
-
-					override fun findAccessibilityNodeInfosByText(
-						text: String,
-						virtualViewId: Int
-					): MutableList<AccessibilityNodeInfo>? =
-						provider
-							.findAccessibilityNodeInfosByText(text, virtualViewId)
-
-					override fun findFocus(focus: Int): AccessibilityNodeInfo? = provider.findFocus(focus)
-				}
-			}
-
-			override fun sendAccessibilityEvent(
-				host: View,
-				eventType: Int
-			) {
-				originalDelegate?.sendAccessibilityEvent(host, eventType) ?: super.sendAccessibilityEvent(host, eventType)
-			}
-
-			override fun sendAccessibilityEventUnchecked(
-				host: View,
-				event: AccessibilityEvent
-			) {
-				originalDelegate?.sendAccessibilityEventUnchecked(host, event)
-					?: super.sendAccessibilityEventUnchecked(host, event)
-			}
-
-			override fun dispatchPopulateAccessibilityEvent(
-				host: View,
-				event: AccessibilityEvent
-			): Boolean =
-				originalDelegate?.dispatchPopulateAccessibilityEvent(host, event)
-					?: super.dispatchPopulateAccessibilityEvent(host, event)
-
-			override fun onPopulateAccessibilityEvent(
-				host: View,
-				event: AccessibilityEvent
-			) {
-				originalDelegate?.onPopulateAccessibilityEvent(host, event) ?: super.onPopulateAccessibilityEvent(host, event)
-			}
-
-			override fun onInitializeAccessibilityEvent(
-				host: View,
-				event: AccessibilityEvent
-			) {
-				originalDelegate?.onInitializeAccessibilityEvent(host, event) ?: super.onInitializeAccessibilityEvent(host, event)
-			}
-
-			override fun onInitializeAccessibilityNodeInfo(
-				host: View,
-				info: AccessibilityNodeInfo
-			) {
-				originalDelegate?.onInitializeAccessibilityNodeInfo(host, info)
-					?: super.onInitializeAccessibilityNodeInfo(host, info)
-			}
-
-			override fun onRequestSendAccessibilityEvent(
-				host: ViewGroup,
-				child: View,
-				event: AccessibilityEvent
-			): Boolean =
-				originalDelegate?.onRequestSendAccessibilityEvent(host, child, event)
-					?: super.onRequestSendAccessibilityEvent(host, child, event)
-
-			override fun performAccessibilityAction(
-				host: View,
-				action: Int,
-				args: Bundle?
-			): Boolean =
-				originalDelegate?.performAccessibilityAction(host, action, args)
-					?: super.performAccessibilityAction(host, action, args)
 		}
 	}
 
@@ -191,178 +78,49 @@ class MainActivity : ComponentActivity() {
 		if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
 		// Don't intercept when a text field has focus (e.g. Find or Go-To dialogs).
 		if (currentFocus is EditText) return super.dispatchKeyEvent(event)
-		// F7: elements list (matches desktop)
-		if (event.keyCode == KeyEvent.KEYCODE_F7) {
-			vm.openElements()
-			return true
-		}
-		// Ctrl shortcuts: parity with desktop app
-		if (event.isCtrlPressed) {
-			return when (event.keyCode) {
-				KeyEvent.KEYCODE_F -> {
-					vm.findDialog.open()
-					true
-				}
-				KeyEvent.KEYCODE_COMMA -> {
-					vm.settingsRequest.request()
-					true
-				}
-				KeyEvent.KEYCODE_O -> {
-					vm.openBookRequest.request()
-					true
-				}
-				KeyEvent.KEYCODE_T -> {
-					vm.tocRequest.request()
-					true
-				}
-				KeyEvent.KEYCODE_P -> {
-					vm.openGoToDialog("Page")
-					true
-				}
-				KeyEvent.KEYCODE_G -> {
-					if (event.isShiftPressed) {
-						vm.openGoToDialog("Percentage")
-					} else {
-						vm.openGoToDialog("Line")
-					}
-					true
-				}
-				KeyEvent.KEYCODE_W -> {
-					vm.openWordCountDialog()
-					true
-				}
-				KeyEvent.KEYCODE_R -> {
-					vm.allDocumentsRequest.request()
-					true
-				}
-				KeyEvent.KEYCODE_E -> {
-					if (event.isShiftPressed) {
-						vm.exportSettingsRequest.request()
-					} else {
-						vm.openExportDocumentDialog()
-					}
-					true
-				}
-				KeyEvent.KEYCODE_I -> {
-					if (event.isShiftPressed) {
-						vm.importSettingsRequest.request()
-					} else {
-						vm.documentInfoDialog.open()
-					}
-					true
-				}
-				KeyEvent.KEYCODE_S -> {
-					if (event.isShiftPressed) {
-						vm.sleepTimerDialog.open()
-						true
-					} else {
-						super.dispatchKeyEvent(event)
-					}
-				}
-				else -> super.dispatchKeyEvent(event)
-			}
-		}
+		val shortcut = shortcutFor(event.keyCode, event.isCtrlPressed, event.isShiftPressed)
+			?: return super.dispatchKeyEvent(event)
+		perform(shortcut)
+		return true
+	}
 
-		if (event.keyCode == KeyEvent.KEYCODE_F3) {
-			if (event.isShiftPressed) {
-				vm.triggerFindPrevious()
-			} else {
-				vm.triggerFindNext()
-			}
-			return true
+	private fun perform(shortcut: ReaderShortcut) {
+		when (shortcut) {
+			ReaderShortcut.TogglePlayback -> vm.togglePlayPause()
+			ReaderShortcut.PlayOnly -> if (!vm.ttsManager.isSpeaking.value) vm.togglePlayPause()
+			ReaderShortcut.PauseOnly -> if (vm.ttsManager.isSpeaking.value) vm.togglePlayPause()
+			ReaderShortcut.HeadsetHook -> countHeadsetClick()
+			ReaderShortcut.NextSegment -> vm.playNextSegment()
+			ReaderShortcut.PreviousSegment -> vm.playPrevSegment()
+			ReaderShortcut.FindNext -> vm.search.findNext()
+			ReaderShortcut.FindPrevious -> vm.search.findPrevious()
+			ReaderShortcut.OpenFind -> vm.findDialog.open()
+			ReaderShortcut.OpenSettings -> vm.settingsRequest.request()
+			ReaderShortcut.OpenBook -> vm.openBookRequest.request()
+			ReaderShortcut.OpenToc -> vm.tocRequest.request()
+			ReaderShortcut.OpenElements -> vm.openElements()
+			ReaderShortcut.OpenWordCount -> vm.openWordCountDialog()
+			ReaderShortcut.OpenAllDocuments -> vm.allDocumentsRequest.request()
+			ReaderShortcut.OpenDocumentInfo -> vm.documentInfoDialog.open()
+			ReaderShortcut.OpenSleepTimer -> vm.sleepTimerDialog.open()
+			ReaderShortcut.ExportDocument -> vm.openExportDocumentDialog()
+			ReaderShortcut.ExportSettings -> vm.exportSettingsRequest.request()
+			ReaderShortcut.ImportSettings -> vm.importSettingsRequest.request()
+			is ReaderShortcut.OpenGoTo -> vm.openGoToDialog(shortcut.mode)
+			is ReaderShortcut.Navigate -> vm.navigateByType(shortcut.type, shortcut.direction)
 		}
+	}
 
-		val dir = if (event.isShiftPressed) SegmentDirectionFfi.PREVIOUS else SegmentDirectionFfi.NEXT
-		return when (event.keyCode) {
-			KeyEvent.KEYCODE_HEADSETHOOK -> {
-				headsethookClickCount++
-				headsethookHandler.removeCallbacks(headsethookRunnable)
-				headsethookHandler.postDelayed(headsethookRunnable, 300)
-				true
-			}
-			KeyEvent.KEYCODE_SPACE -> {
-				vm.togglePlayPause()
-				true
-			}
-			KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
-				vm.togglePlayPause()
-				true
-			}
-			KeyEvent.KEYCODE_MEDIA_PLAY -> {
-				if (!vm.ttsManager.isSpeaking.value) {
-					vm.togglePlayPause()
-				}
-				true
-			}
-			KeyEvent.KEYCODE_MEDIA_PAUSE -> {
-				if (vm.ttsManager.isSpeaking.value) {
-					vm.togglePlayPause()
-				}
-				true
-			}
-			KeyEvent.KEYCODE_MEDIA_NEXT -> {
-				vm.playNextSegment()
-				true
-			}
-			KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
-				vm.playPrevSegment()
-				true
-			}
-			// Sections: [ = previous, ] = next (no shift needed, matching desktop)
-			KeyEvent.KEYCODE_LEFT_BRACKET -> {
-				vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.PREVIOUS)
-				true
-			}
-			KeyEvent.KEYCODE_RIGHT_BRACKET -> {
-				vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.NEXT)
-				true
-			}
-			// Headings: H = next, Shift+H = previous
-			KeyEvent.KEYCODE_H -> {
-				vm.navigateByType(SegmentTypeFfi.HEADING, dir)
-				true
-			}
-			// Pages: P = next, Shift+P = previous
-			KeyEvent.KEYCODE_P -> {
-				vm.navigateByType(SegmentTypeFfi.PAGE, dir)
-				true
-			}
-			// Images: G = next, Shift+G = previous
-			KeyEvent.KEYCODE_G -> {
-				vm.navigateByType(SegmentTypeFfi.IMAGE, dir)
-				true
-			}
-			// Figures: F = next, Shift+F = previous
-			KeyEvent.KEYCODE_F -> {
-				vm.navigateByType(SegmentTypeFfi.FIGURE, dir)
-				true
-			}
-			// Links: K = next, Shift+K = previous
-			KeyEvent.KEYCODE_K -> {
-				vm.navigateByType(SegmentTypeFfi.LINK, dir)
-				true
-			}
-			// Tables: T = next, Shift+T = previous
-			KeyEvent.KEYCODE_T -> {
-				vm.navigateByType(SegmentTypeFfi.TABLE, dir)
-				true
-			}
-			// Separators: S = next, Shift+S = previous
-			KeyEvent.KEYCODE_S -> {
-				vm.navigateByType(SegmentTypeFfi.SEPARATOR, dir)
-				true
-			}
-			// Lists: L = next, Shift+L = previous
-			KeyEvent.KEYCODE_L -> {
-				vm.navigateByType(SegmentTypeFfi.LIST, dir)
-				true
-			}
-			// List items: I = next, Shift+I = previous
-			KeyEvent.KEYCODE_I -> {
-				vm.navigateByType(SegmentTypeFfi.LIST_ITEM, dir)
-				true
-			}
-			else -> super.dispatchKeyEvent(event)
-		}
+	/** A headset's one button counts clicks rather than acting on each: the second and third land
+	 * within [HEADSET_CLICK_WINDOW_MS] of the first, so acting straight away would play the book
+	 * every time the reader meant to skip. */
+	private fun countHeadsetClick() {
+		headsethookClickCount++
+		headsethookHandler.removeCallbacks(headsethookRunnable)
+		headsethookHandler.postDelayed(headsethookRunnable, HEADSET_CLICK_WINDOW_MS)
+	}
+
+	private companion object {
+		const val HEADSET_CLICK_WINDOW_MS = 300L
 	}
 }

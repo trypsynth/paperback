@@ -4070,7 +4070,7 @@ msgstr "Agora não"
 msgid "Custom Timer"
 msgstr "Temporizador personalizado"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 #, fuzzy
 msgid "Back"
@@ -4168,7 +4168,6 @@ msgstr "Fechar pesquisa"
 msgid "Document exported"
 msgstr "Documento recarregado."
 
-#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 #, fuzzy
 msgid "Failed to export document"
@@ -4588,6 +4587,18 @@ msgstr "abrir"
 #, fuzzy
 msgid "go to chapter"
 msgstr "ir para capítulo"
+
+#. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+#: kt
+#, fuzzy
+msgid "This is a sample of the selected speech engine."
+msgstr "Esta é uma amostra do mecanismo de fala selecionado."
+
+#. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+#: kt
+#, fuzzy
+msgid "This document does not contain pages."
+msgstr "Este documento não possui índice."
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."

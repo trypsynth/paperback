@@ -36,7 +36,7 @@ Nazwy tych opcji podano po angielsku, bo w takiej postaci występują w pliku ko
 
 Paperback obsługuje następujące formaty i rozszerzenia:
 
-* Archiwa komiksów (`.cbz`)
+* Archiwa komiksów (`.cbz`, `.cbr`)
 * Pliki pomocy CHM (`.chm`)
 * Książki DAISY (`.opf`, `.zip`)
 * Książki EPUB (`.epub`)
@@ -44,6 +44,7 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Dokumenty HTML (`.htm`, `.html`, `.xhtml`)
 * Dokumenty Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Dokumenty Microsoft Word (`.docx`, `.docm`, `.doc`)
+* Strony podręcznika systemowego, zarówno `man`, jak i `mdoc` z BSD (`.1` do `.9`, `.man`, `.roff` oraz każdy z nich spakowany gzipem)
 * Audiobooki M4B (`.m4b`)
 * Książki MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
 * Prezentacje OpenDocument (`.odp`, `.fodp`)
@@ -215,8 +216,10 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 * Naprawiono otwieranie plików EPUB z pozostawionym blokiem ZIP64, które kończyło się komunikatem „Invalid local file header".
 * Naprawiono wracanie długich dokumentów na początek, kiedy czytnik ekranu czytał je ciągiem.
 * Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast kończyć się komunikatem „Nie znaleziono pliku".
+* Skrót `=` podaje teraz oprócz procentu także numer strony, na przykład „15%, strona 30", a w dokumentach bez stron działa jak dotychczas.
 * Automatyczny komunikat o przeładowaniu dokumentu nie przerywa już czytnikowi ekranu w połowie zdania, a czeka, aż skończy wypowiedź.
 * Na karcie Ogólne w oknie ustawień tabulator przechodzi teraz przez opcje w kolejności, w jakiej są widoczne na ekranie, a kanał aktualizacji następuje bezpośrednio po opcji sprawdzania aktualizacji.
+* Po aktualizacji ponownie uruchomione okno pojawia się teraz na wierzchu, zamiast czekać za wszystkimi innymi oknami w Alt+Tab.
 * Windows pokazuje teraz zawsze „Paperback" w menu Otwórz za pomocą, a nie pełne hasło programu.
 * Licznik słów oraz informacje o dokumencie pokazują teraz, ile plików zawiera audiobook i jak długo trwa w całości.
 

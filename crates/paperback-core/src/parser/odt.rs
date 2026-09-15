@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs, fs::File, io::BufReader};
+use std::{collections::HashMap, fs::File, io::BufReader};
 
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
@@ -12,7 +12,7 @@ use crate::{
 		util::{
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},
-			xml::collect_element_text,
+			xml::{collect_element_text, read_xml_to_string},
 		},
 	},
 	util::zip::read_zip_entry_by_name,
@@ -50,7 +50,7 @@ pub struct FodtParser;
 impl Parser for FodtParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing fodt file");
-		let content_str = fs::read_to_string(&context.file_path)
+		let content_str = read_xml_to_string(&context.file_path)
 			.with_context(|| format!("Failed to open FODT file '{}'", context.file_path))?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid FODT document")?;
 		let format_style_map = build_odt_format_style_map(xml_doc.root());

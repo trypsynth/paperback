@@ -176,7 +176,7 @@ jobs:
           libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
           libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
           libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev \
-          libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+          libasound2-dev
     - name: Install appimagetool
       run: |
         curl -L -o /usr/local/bin/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
@@ -236,7 +236,7 @@ jobs:
           libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
           libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
           libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev \
-          libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+          libasound2-dev
     - name: Install appimagetool
       run: |
         curl -L -o /usr/local/bin/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage
@@ -462,6 +462,13 @@ jobs:
     needs: [build-windows, build-windows-arm64, build-linux, build-linux-arm64, build-android, build-macos]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+    # Every run publishes to the same `latest` release, so two of them uploading at once
+    # interleave their assets: the release ends up with one run's installer next to another
+    # run's signature for it, and the updater rejects the download it verifies. Queue them
+    # instead of cancelling, so each run publishes a complete, self-consistent set.
+    concurrency:
+      group: dev-release
+      cancel-in-progress: false
     steps:
     - name: Checkout repository
       uses: actions/checkout@v7
@@ -561,7 +568,23 @@ jobs:
         echo "commits<<EOF" >> $GITHUB_OUTPUT
         echo "$COMMITS" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
+    # A queued run whose commit has since been superseded would otherwise replace the newer
+    # build with its own older one.
+    - name: Check this is still the head of master
+      id: freshness
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        HEAD_SHA=$(gh api "repos/${{ github.repository }}/commits/master" --jq .sha)
+        if [ "$HEAD_SHA" = "${{ github.sha }}" ]; then
+          echo "current=true" >> $GITHUB_OUTPUT
+        else
+          echo "current=false" >> $GITHUB_OUTPUT
+          echo "::notice::master has moved on to $HEAD_SHA, leaving the release to that build"
+        fi
     - name: Create or update latest release
+      if: steps.freshness.outputs.current == 'true'
       uses: softprops/action-gh-release@v3
       with:
         tag_name: latest

@@ -3493,7 +3493,7 @@ msgstr ""
 msgid "Custom Timer"
 msgstr ""
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 msgid "Back"
 msgstr ""
@@ -3575,7 +3575,6 @@ msgstr ""
 msgid "Document exported"
 msgstr ""
 
-#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 msgid "Failed to export document"
 msgstr ""
@@ -3926,4 +3925,14 @@ msgstr ""
 #. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
 #: kt
 msgid "go to chapter"
+msgstr ""
+
+#. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+#: kt
+msgid "This is a sample of the selected speech engine."
+msgstr ""
+
+#. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+#: kt
+msgid "This document does not contain pages."
 msgstr ""

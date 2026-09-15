@@ -6,7 +6,11 @@ use clap::{Parser, ValueEnum};
 #[command(name = "pb", about = "Convert any document to text, HTML, or Markdown")]
 pub struct Cli {
 	/// Input document file
-	pub input: PathBuf,
+	#[arg(required_unless_present = "list_formats")]
+	pub input: Option<PathBuf>,
+	/// List the formats pb can read, and the extensions it knows them by
+	#[arg(long)]
+	pub list_formats: bool,
 	/// Output format
 	#[arg(short, long, default_value = "text")]
 	pub format: Format,
@@ -63,10 +67,18 @@ mod tests {
 		assert!(Cli::try_parse_from(["pb"]).is_err(), "input path must be required");
 	}
 
+	/// Asking what pb reads is a question about pb, not about a file, so it takes none.
+	#[test]
+	fn listing_the_formats_needs_no_input() {
+		let cli = parse(&["pb", "--list-formats"]);
+		assert!(cli.list_formats);
+		assert!(cli.input.is_none());
+	}
+
 	#[test]
 	fn defaults_to_text_output_on_stdout() {
 		let cli = parse(&["pb", "book.epub"]);
-		assert_eq!(cli.input, PathBuf::from("book.epub"));
+		assert_eq!(cli.input, Some(PathBuf::from("book.epub")));
 		assert!(matches!(cli.format, Format::Text));
 		assert!(cli.output.is_none());
 		assert!(cli.password.is_none());
@@ -115,6 +127,6 @@ mod tests {
 	#[test]
 	fn treats_awkward_paths_as_input() {
 		let cli = parse(&["pb", "--", "-weird name.txt"]);
-		assert_eq!(cli.input, PathBuf::from("-weird name.txt"));
+		assert_eq!(cli.input, Some(PathBuf::from("-weird name.txt")));
 	}
 }

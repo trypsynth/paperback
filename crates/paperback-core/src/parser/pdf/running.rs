@@ -11,6 +11,11 @@
 //! Before this, those lines were extracted as text: 396 of them in one 269-page book. They read
 //! as a paragraph of their own between two paragraphs, and once wrapped lines began joining into
 //! paragraphs properly they started landing inside one, mid-sentence.
+//!
+//! A tagged PDF usually marks its furniture as an artifact and never hands it over at all, but
+//! one that tags it as an ordinary paragraph needs the same treatment. Those pages are surveyed
+//! by [`detect_tagged`], which asks for more repetition than [`detect`] does; the reason is
+//! written out at [`MIN_TAGGED_SHARE`].
 
 use std::collections::{HashMap, HashSet};
 
@@ -39,6 +44,16 @@ impl PageEdges {
 		Self {
 			first: lines.iter().take(EDGE_LINES).map(text).collect(),
 			last: lines.iter().rev().take(EDGE_LINES).map(text).collect(),
+		}
+	}
+
+	/// The same edges taken from a page laid out by its structure tree, which arrives as finished
+	/// lines rather than as measured ones. Those pages are surveyed on their own, by
+	/// [`detect_tagged`].
+	pub(super) fn of_texts(lines: &[String]) -> Self {
+		Self {
+			first: lines.iter().take(EDGE_LINES).cloned().collect(),
+			last: lines.iter().rev().take(EDGE_LINES).cloned().collect(),
 		}
 	}
 }
@@ -99,10 +114,39 @@ impl RunningText {
 /// Survey every page's edges and return the signatures that recur. `body_font_size` is the size
 /// the document's text is mostly set in, which keeps a heading from being taken for furniture.
 pub(super) fn detect(pages: &[PageEdges], body_font_size: f64) -> RunningText {
+	let signatures =
+		edge_counts(pages).into_iter().filter(|(_, count)| *count >= MIN_PAGES).map(|(sig, _)| sig).collect();
+	RunningText { signatures, body_font_size }
+}
+
+/// How many of a document's tagged pages have to share a line before it is furniture there.
+///
+/// A tagged page hands over whole blocks rather than visual lines, so what sits at its edge is a
+/// paragraph, not the one line at the top of the sheet. Judged at [`MIN_PAGES`] a manual loses
+/// the sentence it opens seven of its sections with, and a book loses the figure placeholder that
+/// ends a dozen of its pages. Real furniture on a tagged page is on nearly every page of it, so
+/// that is what is asked for.
+const MIN_TAGGED_SHARE: f64 = 0.6;
+
+/// The same survey over the pages laid out by their structure tree, held to [`MIN_TAGGED_SHARE`].
+/// Tagged and untagged pages are surveyed apart because the two are counted differently.
+pub(super) fn detect_tagged(pages: &[PageEdges]) -> RunningText {
+	let needed = (pages.len() as f64 * MIN_TAGGED_SHARE).ceil() as usize;
+	let signatures = edge_counts(pages)
+		.into_iter()
+		.filter(|(_, count)| *count >= MIN_PAGES && *count >= needed)
+		.map(|(sig, _)| sig)
+		.collect();
+	// No size is known for a tagged line, and none is needed: what keeps a heading safe there is
+	// the tag that says it is one.
+	RunningText { signatures, body_font_size: 0.0 }
+}
+
+/// How many pages carry each signature at one of their edges. One page can only vote once for a
+/// signature, so a page repeating a line at both edges does not carry it on its own.
+fn edge_counts(pages: &[PageEdges]) -> HashMap<String, usize> {
 	let mut counts: HashMap<String, usize> = HashMap::new();
 	for page in pages {
-		// One page can only vote once for a signature, so a page repeating a line at both edges
-		// does not carry it on its own.
 		let mut seen = HashSet::new();
 		for line in page.first.iter().chain(page.last.iter()) {
 			let trimmed = line.trim();
@@ -115,8 +159,7 @@ pub(super) fn detect(pages: &[PageEdges], body_font_size: f64) -> RunningText {
 			}
 		}
 	}
-	let signatures = counts.into_iter().filter(|(_, count)| *count >= MIN_PAGES).map(|(sig, _)| sig).collect();
-	RunningText { signatures, body_font_size }
+	counts
 }
 
 #[cfg(test)]

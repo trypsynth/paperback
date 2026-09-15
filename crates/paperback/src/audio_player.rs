@@ -1,11 +1,12 @@
 use std::{
-	cell::{Ref, RefCell},
+	cell::RefCell,
 	collections::hash_map::DefaultHasher,
 	env, fs,
 	hash::{Hash, Hasher},
 	io::BufReader,
 	path::{Path, PathBuf},
-	rc::Rc,
+	rc::{Rc, Weak},
+	time::Duration,
 };
 
 use anyhow::{Context, Result};
@@ -13,152 +14,117 @@ use paperback_core::{
 	audio::{AudioLocation, AudioTimeline, TimelinePoint},
 	util::zip::extract_zip_entry_to_file_with_password,
 };
-#[cfg(target_os = "windows")]
-use wxdragon::accessible::AccRole;
-use wxdragon::{
-	prelude::*,
-	widgets::media_ctrl::{MediaCtrlStyle, SeekMode},
-};
+use rodio::{Decoder, DeviceSinkBuilder, MixerDeviceSink, Player, Source};
 use zip::ZipArchive;
 
-struct PlayerState {
+/// How far short of a source's end a seek past that end lands, leaving enough to play out
+/// before moving on to the next source.
+const END_MARGIN_MS: u64 = 100;
+
+/// A source decoded straight from its file, with the file's length handed to the decoder so a
+/// constant-bitrate MP3 carrying no duration header still reports a usable `total_duration()`.
+type FileDecoder = Decoder<BufReader<fs::File>>;
+
+thread_local! {
+	/// The one audio output device every open document plays through, opened on the first
+	/// document that has narration and closed again once the last of them goes away.
+	static AUDIO_DEVICE: RefCell<Weak<MixerDeviceSink>> = const { RefCell::new(Weak::new()) };
+}
+
+/// Plays a DAISY audiobook's narration against its `AudioTimeline` through rodio, decoding in
+/// process rather than through whatever the OS happens to have installed. `Decoder` needs a
+/// seekable file, so zip-embedded sources are extracted on use.
+///
+/// One rodio `Player` holds one source at a time. Switching source builds a fresh `Player`
+/// and drops the old one, which stops it without blocking the UI thread the way `clear()` and
+/// `stop()` both would.
+pub struct AudioPlayer {
+	/// Kept alive for as long as this player exists; dropping the last handle closes the
+	/// output device.
+	device: Rc<MixerDeviceSink>,
+	player: Option<Player>,
 	timeline: AudioTimeline,
 	current_source: Option<usize>,
+	/// The loaded source's own length as its decoder reports it, which a format that declares
+	/// no duration leaves as `None`.
+	current_length_ms: Option<u64>,
+	/// Added to what the player reports, to turn it into a position within the source's file.
+	/// A source is loaded by seeking its decoder before handing it over, and rodio counts from
+	/// zero from there, so this holds that head start. A seek through the player instead makes
+	/// rodio's own count absolute, and zeroes this.
+	position_base_ms: u64,
 	playing: bool,
-	/// Where to seek once the in-flight `Load()` finishes; `Load()` is asynchronous, so the
-	/// seek has to wait for `MediaCtrlEvent::Loaded`.
-	pending_seek_ms: Option<u64>,
-	/// Whether a `Load()` is in flight, waiting on its `Loaded` event. Overlapping `Load()`
-	/// calls race the backend, and the `Loaded` event can't be tied back to either call, so a
-	/// new source request queues in `pending_load_target` instead.
-	load_in_flight: bool,
-	/// The most recent source request that arrived mid-load, acted on once the in-flight
-	/// load resolves, so rapid-fire navigation converges on wherever the reader ended up.
-	pending_load_target: Option<(usize, u64)>,
 	/// A seek requested while paused, applied lazily on resume. Applying it eagerly would
-	/// drive a full backend load per keystroke while navigating with audio nobody is hearing.
+	/// decode a fresh source per keystroke while navigating with audio nobody is hearing.
 	pending_target_ms: Option<u64>,
-	/// `(source, seek_ms)` of the most recent seek issued to (or in flight toward) the
-	/// backend, so navigation resolving to the same pair doesn't restart correct audio.
+	/// `(source, seek_ms)` of the most recent seek, so navigation resolving to the same pair
+	/// doesn't restart correct audio.
 	last_seek_target: Option<(usize, u64)>,
 	/// Where extracted zip-embedded sources are cached, keyed by archive+entry.
 	cache_dir: PathBuf,
 }
 
-/// Plays a DAISY audiobook's narration against its `AudioTimeline` via a hidden
-/// `wxMediaCtrl`, so decoding and seeking go through the native OS media backend.
-/// `MediaCtrl` only plays real file paths, so zip-embedded sources are extracted on use.
-pub struct AudioPlayer {
-	media: MediaCtrl,
-	state: Rc<RefCell<PlayerState>>,
-}
-
 impl AudioPlayer {
-	pub fn new(parent: &Panel, timeline: AudioTimeline) -> Result<Self> {
+	pub fn new(timeline: AudioTimeline) -> Result<Self> {
 		let cache_dir = env::temp_dir().join("paperback-audio-cache");
 		fs::create_dir_all(&cache_dir).context("failed to create audio cache directory")?;
-		// Hidden and unfocusable so it never surfaces to a screen reader, but deliberately
-		// *not* zero-sized: some Windows backends build an internal renderer window sized to
-		// the control, and a 0x0 one can leave `Load()` in flight with no `Loaded` event.
-		let media = MediaCtrl::builder(parent)
-			.with_style(MediaCtrlStyle::NoAutoResize)
-			.with_backend_name(media_backend_name())
-			.build();
-		media.hide();
-		media.set_can_focus(false);
-		#[cfg(target_os = "windows")]
-		media.set_accessibility_role(AccRole::None);
-		let state = Rc::new(RefCell::new(PlayerState {
+		Ok(Self {
+			device: shared_device()?,
+			player: None,
 			timeline,
 			current_source: None,
+			current_length_ms: None,
+			position_base_ms: 0,
 			playing: false,
-			pending_seek_ms: None,
-			load_in_flight: false,
-			pending_load_target: None,
 			pending_target_ms: None,
 			last_seek_target: None,
 			cache_dir,
-		}));
-		let loaded_media = media;
-		let loaded_state = Rc::clone(&state);
-		media.on_loaded(move |_| {
-			let (seek_ms, playing, next_target, settled_source) = {
-				let mut state = loaded_state.borrow_mut();
-				state.load_in_flight = false;
-				(state.pending_seek_ms.take(), state.playing, state.pending_load_target.take(), state.current_source)
-			};
-			tracing::debug!(?seek_ms, playing, ?next_target, ?settled_source, "audio: on_loaded");
-			// A newer request arrived while this load was in flight: go straight to it
-			// instead of settling into the source that just happened to finish loading.
-			if let Some((source_index, seek_ms)) = next_target {
-				if Some(source_index) == settled_source {
-					apply_seek(loaded_media, &loaded_state, source_index, seek_ms, playing);
-				} else {
-					start_load(loaded_media, &loaded_state, source_index, seek_ms);
-				}
-				return;
-			}
-			if let (Some(seek_ms), Some(source_index)) = (seek_ms, settled_source) {
-				apply_seek(loaded_media, &loaded_state, source_index, seek_ms, playing);
-			} else if playing {
-				loaded_media.play();
-			} else {
-				loaded_media.pause();
-			}
-		});
-		let finished_media = media;
-		let finished_state = Rc::clone(&state);
-		media.on_finished(move |_| {
-			let next = {
-				let state = finished_state.borrow();
-				state.current_source.and_then(|current| state.timeline.next_source_after(current))
-			};
-			tracing::debug!(?next, "audio: on_finished");
-			match next {
-				Some(next) => {
-					request_source(finished_media, &finished_state, next, 0);
-				}
-				None => finished_state.borrow_mut().playing = false,
-			}
-		});
-		Ok(Self { media, state })
+		})
 	}
 
 	#[must_use]
-	pub fn timeline(&self) -> Ref<'_, AudioTimeline> {
-		Ref::map(self.state.borrow(), |state| &state.timeline)
+	pub const fn timeline(&self) -> &AudioTimeline {
+		&self.timeline
 	}
 
-	/// Stops playback and releases the native media session, ahead of this player (and the
-	/// window it's parented to) being torn down.
+	/// Stops playback and releases the decoder, ahead of this player being torn down.
 	pub fn stop(&mut self) {
-		self.state.borrow_mut().playing = false;
-		self.media.stop();
+		self.playing = false;
+		self.player = None;
+		self.current_source = None;
+		self.current_length_ms = None;
+		self.position_base_ms = 0;
+		self.last_seek_target = None;
 	}
 
 	#[must_use]
 	pub fn is_playing(&self) -> bool {
-		self.state.borrow().playing
+		self.playing
 	}
 
 	pub fn play(&mut self) {
-		let (pending_target, has_source) = {
-			let mut state = self.state.borrow_mut();
-			state.playing = true;
-			(state.pending_target_ms.take(), state.current_source.is_some())
-		};
-		if let Some(target) = pending_target {
+		self.playing = true;
+		if let Some(target) = self.pending_target_ms.take() {
 			self.seek_to_ms(target);
-		} else if has_source {
-			self.media.play();
-		} else {
-			self.seek_to_ms(0);
+			return;
 		}
+		if let Some(player) = self.player.as_ref()
+			&& !player.empty()
+		{
+			player.play();
+			return;
+		}
+		// Nothing loaded yet, or the last source played out: pick up from wherever the
+		// document was left.
+		let elapsed = self.elapsed_ms().unwrap_or(0);
+		self.seek_to_ms(elapsed);
 	}
 
 	pub fn pause(&mut self) {
-		self.state.borrow_mut().playing = false;
-		self.media.pause();
+		self.playing = false;
+		if let Some(player) = self.player.as_ref() {
+			player.pause();
+		}
 	}
 
 	pub fn toggle(&mut self) {
@@ -169,10 +135,36 @@ impl AudioPlayer {
 		}
 	}
 
+	/// Moves on to the next source once the current one has played out, and notices the end of
+	/// the last one. rodio has no "finished" callback, so this is driven by the same recurring
+	/// tick that syncs the caret.
+	pub fn pump(&mut self) {
+		if !self.playing {
+			return;
+		}
+		let Some(player) = self.player.as_ref() else {
+			return;
+		};
+		if !player.empty() {
+			return;
+		}
+		let Some(current) = self.current_source else {
+			return;
+		};
+		let next = self.timeline.next_source_after(current);
+		tracing::debug!(current, ?next, "audio: source finished");
+		match next {
+			Some(next) => {
+				self.load_source(next, 0);
+			}
+			None => self.playing = false,
+		}
+	}
+
 	/// Seeks playback to the point covering `position` in the text, if the timeline
 	/// narrates it. Leaves the transport running or paused as it already was.
 	pub fn seek_to_position(&mut self, position: usize) -> bool {
-		let target = self.state.borrow().timeline.point_for_position(position);
+		let target = self.timeline.point_for_position(position);
 		tracing::debug!(position, ?target, "audio: seek_to_position");
 		target.is_some_and(|point| self.seek_to_ms(point.time_ms))
 	}
@@ -180,62 +172,38 @@ impl AudioPlayer {
 	/// Seeks playback to `elapsed_ms` into the overall document timeline. While paused this
 	/// only records the target (see `pending_target_ms`), applying it lazily on resume.
 	pub fn seek_to_ms(&mut self, elapsed_ms: u64) -> bool {
-		if !self.is_playing() {
+		if !self.playing {
 			tracing::debug!(elapsed_ms, "audio: seek_to_ms while paused, deferring");
-			self.state.borrow_mut().pending_target_ms = Some(elapsed_ms);
+			self.pending_target_ms = Some(elapsed_ms);
 			return true;
 		}
-		let (source_index, seek_ms, current_source, load_in_flight, already_there) = {
-			let state = self.state.borrow();
-			let Some(cursor) = state.timeline.resolve(TimelinePoint::new(0, elapsed_ms)) else {
-				tracing::debug!(elapsed_ms, "audio: seek_to_ms found no cursor for this elapsed time");
-				return false;
-			};
-			let Some(clip) = state.timeline.clip(cursor.clip) else {
-				tracing::debug!(elapsed_ms, clip_index = cursor.clip, "audio: seek_to_ms cursor names a missing clip");
-				return false;
-			};
-			let already_there = state.last_seek_target == Some((clip.source, cursor.seek_ms));
-			(clip.source, cursor.seek_ms, state.current_source, state.load_in_flight, already_there)
+		let Some(cursor) = self.timeline.resolve(TimelinePoint::new(0, elapsed_ms)) else {
+			tracing::debug!(elapsed_ms, "audio: seek_to_ms found no cursor for this elapsed time");
+			return false;
 		};
-		tracing::debug!(
-			elapsed_ms,
-			source_index,
-			seek_ms,
-			?current_source,
-			load_in_flight,
-			already_there,
-			"audio: seek_to_ms while playing"
-		);
+		let Some(clip) = self.timeline.clip(cursor.clip) else {
+			tracing::debug!(elapsed_ms, clip_index = cursor.clip, "audio: seek_to_ms cursor names a missing clip");
+			return false;
+		};
+		let (source_index, seek_ms) = (clip.source, cursor.seek_ms);
+		tracing::debug!(elapsed_ms, source_index, seek_ms, current = ?self.current_source, "audio: seek_to_ms");
 		// Already playing (or headed to) the right spot: don't restart it.
-		if already_there {
+		if self.last_seek_target == Some((source_index, seek_ms)) {
 			return true;
 		}
-		// A load in flight means the control isn't ready for a `Seek()` even when the source
-		// matches, so fall through to `request_source` and let the `Loaded` handler apply it.
-		if current_source == Some(source_index) && !load_in_flight {
-			apply_seek(self.media, &self.state, source_index, seek_ms, self.is_playing());
-			true
-		} else {
-			request_source(self.media, &self.state, source_index, seek_ms)
+		if self.current_source == Some(source_index) && self.seek_loaded_source(seek_ms) {
+			self.last_seek_target = Some((source_index, seek_ms));
+			return true;
 		}
+		self.load_source(source_index, seek_ms)
 	}
 
 	/// The current playback position in the overall document timeline, if a source is
 	/// loaded and its position maps onto a known clip.
 	#[must_use]
 	pub fn elapsed_ms(&self) -> Option<u64> {
-		let state = self.state.borrow();
-		let source = state.current_source?;
-		// Mid-load, `current_source` is already the new source but the control isn't, so
-		// `tell()` still reports the previous source's stale position. Report where playback
-		// is headed instead; this matters at chapter boundaries, which are source switches.
-		let raw_ms = if state.load_in_flight {
-			state.pending_seek_ms.unwrap_or(0)
-		} else {
-			u64::try_from(self.media.tell().max(0)).unwrap_or(0)
-		};
-		state.timeline.elapsed_for_source_position(source, raw_ms)
+		let source = self.current_source?;
+		self.timeline.elapsed_for_source_position(source, self.position_ms()?)
 	}
 
 	/// Where playback would resume right now, for saving as this document's audio position.
@@ -245,137 +213,136 @@ impl AudioPlayer {
 	/// as "the start", since it would wipe a perfectly good stored position.
 	#[must_use]
 	pub fn resume_point_ms(&self) -> Option<u64> {
-		self.state.borrow().pending_target_ms.or_else(|| self.elapsed_ms())
+		self.pending_target_ms.or_else(|| self.elapsed_ms())
 	}
 
-	/// The native decoder's current position within the currently loaded source's own file,
-	/// and that file's real (decoder-reported) length. `None` with no source loaded yet, or
-	/// mid-load, when the native length isn't known yet. Distinct from the document's own
-	/// declared clip duration for that source, which a plain-audio-zip bundle's placeholder
-	/// (see `build_plain_audio_zip_document`) can put far past the file's real end, so
-	/// callers that need to know when a seek is about to run off the real end of the file
-	/// (e.g. "continue into the next file" seeking) can't get this from the timeline alone.
+	/// The decoder's current position within the currently loaded source's own file, and that
+	/// file's real (decoder-reported) length. `None` with no source loaded yet, or when the
+	/// format declares no duration. Distinct from the document's own declared clip duration
+	/// for that source, which a plain-audio-zip bundle's placeholder (see
+	/// `build_plain_audio_zip_document`) can put far past the file's real end, so callers that
+	/// need to know when a seek is about to run off the real end of the file (e.g. "continue
+	/// into the next file" seeking) can't get this from the timeline alone.
 	#[must_use]
 	pub fn current_file_position_and_length_ms(&self) -> Option<(usize, u64, u64)> {
-		let (source, load_in_flight) = {
-			let state = self.state.borrow();
-			(state.current_source, state.load_in_flight)
-		};
-		let source = source?;
-		if load_in_flight {
-			return None;
-		}
-		let raw_ms = u64::try_from(self.media.tell().max(0)).unwrap_or(0);
-		let length_ms = u64::try_from(self.media.length().max(0)).unwrap_or(0);
+		let source = self.current_source?;
+		let length_ms = self.current_length_ms?;
+		let raw_ms = self.position_ms()?;
 		(length_ms > 0).then_some((source, raw_ms, length_ms))
 	}
-}
 
-/// The `wxMediaBackend` subclass to build `wxMediaCtrl` on, or `""` to let wxWidgets choose.
-///
-/// Naming a backend that isn't registered on the current platform is silently fatal, so this
-/// has to stay platform-accurate: `wxMediaCtrl::Create` looks the name up in the RTTI table
-/// and, on a miss, leaves its backend pointer null and returns `false`. The constructor form
-/// wxdragon calls throws that `false` away, so we get back a perfectly live control whose
-/// every `Load`/`Play`/`Seek` returns `false` with no error anywhere: a DAISY book that opens
-/// fine and simply never makes a sound.
-///
-/// Windows registers three backends and `wxMediaCtrl`'s own auto-selection settles on the
-/// "AM" (DirectShow) one, which never fires `MEDIA_LOADED` for audio-only files on modern
-/// Windows and so wedges every load after the first, so WMP10 is named explicitly there.
-#[cfg(target_os = "windows")]
-const fn media_backend_name() -> &'static str {
-	"wxWMP10MediaBackend"
-}
-
-/// Every non-Windows platform compiles in exactly one backend (`wxAVMediaBackend` on macOS,
-/// `wxGStreamerMediaBackend` on GTK), so auto-selection picks the right one and keeps picking
-/// it if upstream ever renames the class. Both fire the `MEDIA_LOADED` and `MEDIA_FINISHED`
-/// events this player is driven by, and neither carries the WMP10 seek bias compensated for
-/// in `native_seek_target_ms`.
-#[cfg(not(target_os = "windows"))]
-const fn media_backend_name() -> &'static str {
-	""
-}
-
-fn apply_seek(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: usize, seek_ms: u64, playing: bool) {
-	state.borrow_mut().last_seek_target = Some((source_index, seek_ms));
-	let native_seek_ms = native_seek_target_ms(&media, seek_ms);
-	let seek_result = media.seek(i64::try_from(native_seek_ms).unwrap_or(0), SeekMode::FromStart);
-	tracing::debug!(seek_ms, native_seek_ms, playing, seek_result, "audio: apply_seek");
-	if playing {
-		media.play()
-	} else {
-		media.pause()
-	};
-}
-
-/// `wxWMP10MediaBackend::SetPosition` (the only Windows backend that reliably plays
-/// audio-only DAISY sources, see `media_backend_name`) subtracts a full video frame's
-/// worth of time (`1000 / playback_rate` ms) from every seek target before applying it.
-/// It's a workaround upstream added so video controls redraw the correct frame after a
-/// seek (`src/msw/mediactrl_wmp10.cpp`, `SetPosition`), fired unconditionally even for
-/// audio-only media. Left uncompensated, every jump lands about a second before the
-/// intended clip, audible as the tail of the *previous* line instead of the one just
-/// navigated to (e.g. hearing "...District Twelve" instead of "End of Book Two"). Adding
-/// the same amount back before handing the target to the backend cancels it out. Other
-/// platforms' backends don't carry this bug, so the compensation is Windows-only.
-#[cfg(target_os = "windows")]
-fn native_seek_target_ms(media: &MediaCtrl, seek_ms: u64) -> u64 {
-	let rate = media.get_playback_rate();
-	let bias_ms = if rate > 0.0 { (1000.0 / rate).round() as u64 } else { 1000 };
-	let compensated = seek_ms.saturating_add(bias_ms);
-	let length_ms = u64::try_from(media.length().max(0)).unwrap_or(0);
-	if length_ms > 0 { compensated.min(length_ms) } else { compensated }
-}
-
-#[cfg(not(target_os = "windows"))]
-fn native_seek_target_ms(_media: &MediaCtrl, seek_ms: u64) -> u64 {
-	seek_ms
-}
-
-/// Entry point for switching to `source_index`: starts loading it immediately, unless a
-/// load is already in flight, in which case this becomes the target picked up once that
-/// one's `Loaded` event fires; see `PlayerState::pending_load_target`.
-fn request_source(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: usize, seek_ms: u64) -> bool {
-	if state.borrow().load_in_flight {
-		tracing::debug!(source_index, seek_ms, "audio: request_source queued behind in-flight load");
-		state.borrow_mut().pending_load_target = Some((source_index, seek_ms));
-		return true;
+	/// Where the loaded source is playing, within its own file.
+	fn position_ms(&self) -> Option<u64> {
+		let player = self.player.as_ref()?;
+		Some(self.position_base_ms.saturating_add(duration_ms(player.get_pos())))
 	}
-	start_load(media, state, source_index, seek_ms)
-}
 
-fn start_load(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: usize, seek_ms: u64) -> bool {
-	let (location, cache_dir) = {
-		let state = state.borrow();
-		let Some(source) = state.timeline.source(source_index) else { return false };
-		(source.location.clone(), state.cache_dir.clone())
-	};
-	let path = match resolve_source_path(&location, &cache_dir) {
-		Ok(path) => path,
-		Err(err) => {
-			tracing::warn!(source_index, location = ?location, error = %err, "failed to prepare audio source");
+	/// Seeks the source that is already loaded, reporting whether that worked. A source that
+	/// has played out is past seeking, and a decoder can refuse a seek outright, both of which
+	/// leave the caller to load the source afresh instead.
+	fn seek_loaded_source(&mut self, seek_ms: u64) -> bool {
+		let Some(player) = self.player.as_ref() else {
+			return false;
+		};
+		if player.empty() {
 			return false;
 		}
-	};
-	// Some backends (Media Foundation especially) won't reliably accept a new `Load()`, and
-	// may never fire `Loaded`, while a previous source is still playing.
-	media.stop();
-	tracing::debug!(source_index, path = %path.display(), seek_ms, "audio: start_load calling media.load()");
-	if !media.load(&path.to_string_lossy()) {
-		tracing::warn!(source_index, path = %path.display(), "media control refused to load audio source");
-		return false;
+		if let Err(err) = player.try_seek(Duration::from_millis(seek_ms)) {
+			tracing::debug!(seek_ms, error = %err, "audio: in-place seek refused, reloading the source");
+			return false;
+		}
+		// rodio counts from the seek target now, so its position needs no head start added.
+		self.position_base_ms = 0;
+		if self.playing {
+			player.play();
+		}
+		true
 	}
-	let mut state = state.borrow_mut();
-	state.current_source = Some(source_index);
-	state.pending_seek_ms = Some(seek_ms);
-	state.load_in_flight = true;
-	state.last_seek_target = Some((source_index, seek_ms));
-	true
+
+	/// Loads `source_index` and starts it at `seek_ms` into its file.
+	fn load_source(&mut self, source_index: usize, seek_ms: u64) -> bool {
+		let Some(source) = self.timeline.source(source_index) else {
+			return false;
+		};
+		let location = source.location.clone();
+		let path = match resolve_source_path(&location, &self.cache_dir) {
+			Ok(path) => path,
+			Err(err) => {
+				tracing::warn!(source_index, ?location, error = %err, "failed to prepare audio source");
+				return false;
+			}
+		};
+		let mut decoder = match open_decoder(&path) {
+			Ok(decoder) => decoder,
+			Err(err) => {
+				tracing::warn!(source_index, path = %path.display(), error = %err, "failed to decode audio source");
+				return false;
+			}
+		};
+		let length_ms = decoder.total_duration().map(duration_ms);
+		// A target past the real end of the file is a document's declared duration overrunning
+		// its own audio (see `current_file_position_and_length_ms`). Land just short of the end
+		// instead, so playback moves on to the next source rather than replaying this one.
+		let target_ms = match length_ms {
+			Some(length_ms) if seek_ms >= length_ms => length_ms.saturating_sub(END_MARGIN_MS),
+			_ => seek_ms,
+		};
+		// Seeking the decoder before it reaches the player keeps the seek off the audio
+		// thread, which `Player::try_seek` waits on.
+		let applied_seek_ms = match decoder.try_seek(Duration::from_millis(target_ms)) {
+			Ok(()) => target_ms,
+			Err(err) => {
+				tracing::warn!(source_index, seek_ms, target_ms, error = %err, "audio: seek refused, starting from the top");
+				0
+			}
+		};
+		tracing::debug!(source_index, path = %path.display(), seek_ms, applied_seek_ms, ?length_ms, "audio: load_source");
+		let player = Player::connect_new(self.device.mixer());
+		player.append(decoder);
+		if self.playing {
+			player.play();
+		} else {
+			player.pause();
+		}
+		self.player = Some(player);
+		self.current_source = Some(source_index);
+		self.current_length_ms = length_ms;
+		self.position_base_ms = applied_seek_ms;
+		self.last_seek_target = Some((source_index, seek_ms));
+		true
+	}
 }
 
-/// Resolves an `AudioLocation` to a real file path `MediaCtrl` can load. Zip-embedded
+/// The output device, opened on demand and shared by every player. Held here by weak
+/// reference so the device closes once the last document with narration is gone.
+fn shared_device() -> Result<Rc<MixerDeviceSink>> {
+	AUDIO_DEVICE.with_borrow_mut(|slot| {
+		if let Some(device) = slot.upgrade() {
+			return Ok(device);
+		}
+		let device =
+			DeviceSinkBuilder::open_default_sink().context("failed to open the default audio output device")?;
+		let device = Rc::new(device);
+		*slot = Rc::downgrade(&device);
+		Ok(device)
+	})
+}
+
+fn open_decoder(path: &Path) -> Result<FileDecoder> {
+	let file = fs::File::open(path).with_context(|| format!("failed to open '{}'", path.display()))?;
+	let byte_len = file.metadata().with_context(|| format!("failed to measure '{}'", path.display()))?.len();
+	let mut builder = Decoder::builder().with_data(BufReader::new(file)).with_byte_len(byte_len).with_seekable(true);
+	if let Some(extension) = path.extension().and_then(|extension| extension.to_str()) {
+		builder = builder.with_hint(extension);
+	}
+	builder.build().with_context(|| format!("failed to decode '{}'", path.display()))
+}
+
+fn duration_ms(duration: Duration) -> u64 {
+	u64::try_from(duration.as_millis()).unwrap_or(u64::MAX)
+}
+
+/// Resolves an `AudioLocation` to a real file path the decoder can open. Zip-embedded
 /// sources are extracted to `cache_dir` once and reused on subsequent calls.
 fn resolve_source_path(location: &AudioLocation, cache_dir: &Path) -> Result<PathBuf> {
 	match location {
@@ -395,7 +362,7 @@ fn resolve_source_path(location: &AudioLocation, cache_dir: &Path) -> Result<Pat
 }
 
 /// A stable, filesystem-safe cache file name for an archive+entry pair, keeping the entry's
-/// own extension so the media backend can sniff its format from the file name.
+/// own extension so the decoder can sniff its format from the file name.
 fn cache_file_name(archive: &str, entry: &str) -> String {
 	let mut hasher = DefaultHasher::new();
 	archive.hash(&mut hasher);
@@ -406,8 +373,13 @@ fn cache_file_name(archive: &str, entry: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-	use std::io::{Cursor, Write};
+	use std::{
+		io::{Cursor, Write},
+		thread::sleep,
+		time::Instant,
+	};
 
+	use paperback_core::audio::AudioTimelineBuilder;
 	use zip::{ZipWriter, write::FileOptions};
 
 	use super::*;
@@ -422,6 +394,114 @@ mod tests {
 			writer.finish().unwrap();
 		}
 		buf
+	}
+
+	/// Writes `millis` of silent 16-bit mono PCM, which is enough for the decoder to report a
+	/// length, seek within, and play out.
+	fn write_wav(path: &Path, millis: u64) {
+		const SAMPLE_RATE: u32 = 44100;
+		let samples = u32::try_from(u64::from(SAMPLE_RATE) * millis / 1000).unwrap();
+		let data_len = samples * 2;
+		let mut out = Vec::with_capacity(44 + data_len as usize);
+		out.extend_from_slice(b"RIFF");
+		out.extend_from_slice(&(36 + data_len).to_le_bytes());
+		out.extend_from_slice(b"WAVEfmt ");
+		out.extend_from_slice(&16u32.to_le_bytes());
+		out.extend_from_slice(&1u16.to_le_bytes());
+		out.extend_from_slice(&1u16.to_le_bytes());
+		out.extend_from_slice(&SAMPLE_RATE.to_le_bytes());
+		out.extend_from_slice(&(SAMPLE_RATE * 2).to_le_bytes());
+		out.extend_from_slice(&2u16.to_le_bytes());
+		out.extend_from_slice(&16u16.to_le_bytes());
+		out.extend_from_slice(b"data");
+		out.extend_from_slice(&data_len.to_le_bytes());
+		out.resize(44 + data_len as usize, 0);
+		fs::write(path, out).unwrap();
+	}
+
+	/// Waits up to `timeout_ms` for `check` to pass, pumping the player as the app's timer
+	/// does. Reports whether it passed, so a test can say what it was waiting for.
+	fn wait_for(player: &mut AudioPlayer, timeout_ms: u64, check: impl Fn(&AudioPlayer) -> bool) -> bool {
+		let deadline = Instant::now() + Duration::from_millis(timeout_ms);
+		loop {
+			player.pump();
+			if check(player) {
+				return true;
+			}
+			if Instant::now() >= deadline {
+				return false;
+			}
+			sleep(Duration::from_millis(25));
+		}
+	}
+
+	/// Plays real audio through the real output device. Skipped where there isn't one, which
+	/// is most CI runners.
+	#[test]
+	fn plays_a_timeline_through_to_the_next_source() {
+		if shared_device().is_err() {
+			eprintln!("no audio output device: skipping");
+			return;
+		}
+		let dir = env::temp_dir().join("paperback-audio-playback-test");
+		fs::create_dir_all(&dir).unwrap();
+		let first = dir.join("one.wav");
+		let second = dir.join("two.wav");
+		write_wav(&first, 1000);
+		write_wav(&second, 1000);
+		let mut builder = AudioTimelineBuilder::new();
+		let one = builder.add_source(AudioLocation::File(first.to_string_lossy().to_string()), Some(1000));
+		let two = builder.add_source(AudioLocation::File(second.to_string_lossy().to_string()), Some(1000));
+		builder.add_clip(one, 0, 1000, 0, 1);
+		builder.add_clip(two, 0, 1000, 1, 2);
+		let mut player = AudioPlayer::new(builder.build()).unwrap();
+
+		player.play();
+		assert_eq!(player.current_source, Some(one), "playing from a standing start loads the first source");
+		assert!(
+			wait_for(&mut player, 2000, |player| player.elapsed_ms().is_some_and(|ms| ms >= 100)),
+			"position advances while playing"
+		);
+
+		player.seek_to_ms(700);
+		assert_eq!(player.current_source, Some(one), "a seek within the loaded source doesn't reload it");
+		let elapsed = player.elapsed_ms().unwrap();
+		assert!((700..1000).contains(&elapsed), "seeking lands where it was asked to, got {elapsed}");
+
+		assert!(
+			wait_for(&mut player, 3000, |player| player.current_source == Some(two)),
+			"the first source playing out moves on to the second"
+		);
+		assert!(player.is_playing(), "moving on to the next source keeps playing");
+
+		assert!(
+			wait_for(&mut player, 3000, |player| !player.is_playing()),
+			"the last source playing out stops playback"
+		);
+	}
+
+	/// The decoder reports a real length for a file, which is what "continue into the next
+	/// file" seeking needs and what a document's own declared duration can't be trusted for.
+	#[test]
+	fn reports_the_loaded_files_own_length() {
+		if shared_device().is_err() {
+			eprintln!("no audio output device: skipping");
+			return;
+		}
+		let dir = env::temp_dir().join("paperback-audio-length-test");
+		fs::create_dir_all(&dir).unwrap();
+		let path = dir.join("one.wav");
+		write_wav(&path, 1500);
+		let mut builder = AudioTimelineBuilder::new();
+		// A placeholder duration hours longer than the real file, as a plain audio zip has.
+		let source = builder.add_source(AudioLocation::File(path.to_string_lossy().to_string()), Some(86_400_000));
+		builder.add_clip(source, 0, 86_400_000, 0, 1);
+		let mut player = AudioPlayer::new(builder.build()).unwrap();
+		player.play();
+		let (reported_source, _, length_ms) = player.current_file_position_and_length_ms().unwrap();
+		assert_eq!(reported_source, source);
+		assert!((1400..1600).contains(&length_ms), "reported length should be the file's own, got {length_ms}");
+		player.stop();
 	}
 
 	#[test]

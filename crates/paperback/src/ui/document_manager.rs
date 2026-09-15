@@ -261,7 +261,7 @@ impl DocumentManager {
 		let config = self.config.lock().unwrap();
 		let nav_history = config.get_navigation_history(&path_str);
 		session.set_history(&nav_history.positions, nav_history.index);
-		let audio_player = session.audio().cloned().and_then(|timeline| match AudioPlayer::new(&panel, timeline) {
+		let audio_player = session.audio().cloned().and_then(|timeline| match AudioPlayer::new(timeline) {
 			Ok(player) => Some(player),
 			Err(err) => {
 				tracing::warn!(error = %err, "failed to initialize audio playback for this document");

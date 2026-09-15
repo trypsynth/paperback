@@ -4073,7 +4073,7 @@ msgstr "Pas maintenant"
 msgid "Custom Timer"
 msgstr "Minuterie personnalisée"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 #, fuzzy
 msgid "Back"
@@ -4171,7 +4171,6 @@ msgstr "Fermer la recherche"
 msgid "Document exported"
 msgstr "Le document a été rechargé."
 
-#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 #, fuzzy
 msgid "Failed to export document"
@@ -4591,6 +4590,18 @@ msgstr "ouvrir"
 #, fuzzy
 msgid "go to chapter"
 msgstr "aller au chapitre"
+
+#. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+#: kt
+#, fuzzy
+msgid "This is a sample of the selected speech engine."
+msgstr "Ceci est un exemple du moteur de synthèse sélectionné."
+
+#. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+#: kt
+#, fuzzy
+msgid "This document does not contain pages."
+msgstr "Ce document ne comporte pas de table des matières."
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
