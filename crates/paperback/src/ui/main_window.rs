@@ -512,14 +512,7 @@ impl MainWindow {
 	}
 
 	fn update_recent_documents_menu(&self) {
-		let menu_bar = menu::create_menu_bar(&self.config.lock().unwrap());
-		self.frame.set_menu_bar(menu_bar);
-		let dm_ref = self.doc_manager.lock().unwrap();
-		let has_docs = dm_ref.tab_count() > 0;
-		let has_reopen = dm_ref.has_recently_closed();
-		drop(dm_ref);
-		menu::update_menu_item_states(&self.frame, has_docs);
-		menu::update_reopen_state(&self.frame, has_reopen);
+		rebuild_menu_bar(&self.frame, &self.doc_manager, &self.config);
 	}
 
 	/// Prompts for a save path and exports `tab`'s document as `format`, showing a
@@ -575,6 +568,23 @@ pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_reg
 		live_region::announce(live_region_label, next);
 	}
 	dm.close_document(index, true);
+}
+
+/// Replaces `frame`'s menu bar with one built from `config`, then re-applies the item states
+/// that depend on the open documents and the reopen stack.
+pub(crate) fn rebuild_menu_bar(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+) {
+	let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+	frame.set_menu_bar(menu_bar);
+	let dm_ref = doc_manager.lock().unwrap();
+	let has_docs = dm_ref.tab_count() > 0;
+	let has_reopen = dm_ref.has_recently_closed();
+	drop(dm_ref);
+	menu::update_menu_item_states(frame, has_docs);
+	menu::update_reopen_state(frame, has_reopen);
 }
 
 pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {

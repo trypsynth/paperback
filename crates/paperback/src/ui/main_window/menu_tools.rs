@@ -508,7 +508,6 @@ pub(super) fn handle_options(
 	cfg.set_app_bool("audio_seek_continues_into_next_file", options.audio_seek_continues_into_next_file);
 	cfg.set_app_bool("auto_reload_documents", options.auto_reload_documents);
 	cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
-	cfg.trim_recent_documents();
 	cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 	cfg.set_app_string("language", &options.language);
 	set_update_channel(&cfg, options.update_channel);

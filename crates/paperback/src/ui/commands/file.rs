@@ -14,7 +14,9 @@ use wxdragon::prelude::*;
 
 use super::Ctx;
 use crate::ui::{
-	main_window::{close_active_document_announced, ensure_parser_ready_for_path, update_title_from_manager},
+	main_window::{
+		close_active_document_announced, ensure_parser_ready_for_path, rebuild_menu_bar, update_title_from_manager,
+	},
 	menu,
 };
 
@@ -104,7 +106,7 @@ pub fn reopen_last_closed(ctx: &Ctx) {
 pub fn clear_recent_documents(ctx: &Ctx) {
 	{
 		let cfg = ctx.config.lock().unwrap();
-		if cfg.get_recent_documents().is_empty() {
+		if !cfg.has_recent_documents() {
 			// TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 			live_region::announce(ctx.live_region_label, &t("No recent documents."));
 			return;
@@ -112,14 +114,7 @@ pub fn clear_recent_documents(ctx: &Ctx) {
 		cfg.clear_recent_documents();
 		cfg.flush();
 	}
-	let menu_bar = menu::create_menu_bar(&ctx.config.lock().unwrap());
-	ctx.frame.set_menu_bar(menu_bar);
-	let dm_ref = ctx.dm.lock().unwrap();
-	let has_docs = dm_ref.tab_count() > 0;
-	let has_reopen = dm_ref.has_recently_closed();
-	drop(dm_ref);
-	menu::update_menu_item_states(ctx.frame, has_docs);
-	menu::update_reopen_state(ctx.frame, has_reopen);
+	rebuild_menu_bar(ctx.frame, ctx.dm, ctx.config);
 	// TRANSLATORS: Announced after the Recent Documents list has been emptied
 	live_region::announce(ctx.live_region_label, &t("Recent documents cleared."));
 }

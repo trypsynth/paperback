@@ -41,6 +41,6 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	}
 	let menu_bar =
 		builder.append(go_menu, &go_label).append(tools_menu, &tools_label).append(help_menu, &help_label).build();
-	commands::apply_enable_to(&menu_bar, Enable::HasRecentDocuments, !config.get_recent_documents().is_empty());
+	commands::apply_enable_to(&menu_bar, Enable::HasRecentDocuments, config.has_recent_documents());
 	menu_bar
 }

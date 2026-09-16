@@ -17,6 +17,9 @@ const ITEMS: &[ActionId] = &[ActionId::Open, ActionId::Close, ActionId::CloseAll
 /// Shown only on Windows and Linux; macOS puts Quit in the application menu.
 const EXIT_ITEM: ActionId = ActionId::Exit;
 
+/// Last item of the Recent Documents submenu, below the generated entries and Show All.
+const CLEAR_RECENT_ITEM: ActionId = ActionId::ClearRecentDocuments;
+
 pub fn create_file_menu(config: &ConfigManager) -> Menu {
 	let file_menu = Menu::builder().build();
 	for &action in ITEMS {
@@ -59,15 +62,12 @@ fn populate_recent_documents_menu(menu: &Menu, config: &ConfigManager) {
 	// TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
 	let show_all_label = format_menu_label(&t("Show All..."), ActionId::ShowAllRecentDocuments, config);
 	let _ = menu.append(menu_ids::SHOW_ALL_DOCUMENTS, &show_all_label, "", ItemKind::Normal);
-	commands::append_item(menu, ActionId::ClearRecentDocuments, config);
+	commands::append_item(menu, CLEAR_RECENT_ITEM, config);
 }
 
 pub fn recent_documents_for_menu(config: &ConfigManager) -> Vec<String> {
-	let limit = usize::try_from(config.get_app_int("recent_documents_to_show", 25).max(0)).unwrap_or(0);
 	let mut docs = config.get_recent_documents();
-	if docs.len() > limit {
-		docs.truncate(limit);
-	}
+	docs.truncate(config.recent_documents_limit());
 	docs
 }
 
@@ -79,14 +79,8 @@ mod tests {
 	/// entry here would crash the app while building its menu bar at startup.
 	#[test]
 	fn every_file_menu_item_is_a_known_command() {
-		for &action in ITEMS.iter().chain(std::iter::once(&EXIT_ITEM)) {
+		for &action in ITEMS.iter().chain([&EXIT_ITEM, &CLEAR_RECENT_ITEM]) {
 			assert!(commands::for_action(action).is_some(), "{action:?} is in the File menu but not in COMMANDS");
 		}
-	}
-
-	/// The Recent Documents submenu appends this one outside `ITEMS`.
-	#[test]
-	fn clear_recent_documents_is_a_known_command() {
-		assert!(commands::for_action(ActionId::ClearRecentDocuments).is_some());
 	}
 }

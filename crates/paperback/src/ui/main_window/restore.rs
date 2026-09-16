@@ -6,7 +6,7 @@ use std::{path::Path, rc::Rc, sync::Mutex};
 use paperback_core::config::ConfigManager;
 use wxdragon::prelude::*;
 
-use super::{DocumentManager, ensure_parser_ready_for_path, menu, update_title_from_manager};
+use super::{DocumentManager, ensure_parser_ready_for_path, rebuild_menu_bar, update_title_from_manager};
 
 #[derive(Default)]
 struct RestoreState {
@@ -69,14 +69,9 @@ pub(super) fn schedule_restore_documents(
 		if let Some(idx) = target_idx {
 			doc_manager.lock().unwrap().notebook().set_selection(idx);
 		}
-		let dm_ref = doc_manager.lock().unwrap();
-		update_title_from_manager(&frame, &dm_ref);
-		let has_docs = dm_ref.tab_count() > 0;
-		let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-		frame.set_menu_bar(menu_bar);
-		menu::update_menu_item_states(&frame, has_docs);
-		menu::update_reopen_state(&frame, false);
-		dm_ref.restore_focus();
+		update_title_from_manager(&frame, &doc_manager.lock().unwrap());
+		rebuild_menu_bar(&frame, &doc_manager, &config);
+		doc_manager.lock().unwrap().restore_focus();
 	});
 }
 

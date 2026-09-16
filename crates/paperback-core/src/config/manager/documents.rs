@@ -26,13 +26,18 @@ impl ConfigManager {
 		self.trim_recent_documents();
 	}
 
-	/// Drops stored recent documents beyond the `recent_documents_to_show` setting.
-	pub fn trim_recent_documents(&self) {
+	/// The `recent_documents_to_show` setting clamped to `0..=MAX_RECENT_DOCUMENTS`.
+	pub fn recent_documents_limit(&self) -> usize {
+		usize::try_from(self.data.borrow().app.recent_documents_to_show).unwrap_or(0).min(MAX_RECENT_DOCUMENTS)
+	}
+
+	/// Drops stored recent documents beyond [`Self::recent_documents_limit`].
+	pub(super) fn trim_recent_documents(&self) {
 		if !self.initialized {
 			return;
 		}
+		let limit = self.recent_documents_limit();
 		let mut data = self.data.borrow_mut();
-		let limit = usize::try_from(data.app.recent_documents_to_show.max(0)).unwrap_or(0).min(MAX_RECENT_DOCUMENTS);
 		if data.recent_documents.len() > limit {
 			data.recent_documents.truncate(limit);
 			self.dirty.set(true);
@@ -44,6 +49,10 @@ impl ConfigManager {
 			return Vec::new();
 		}
 		self.data.borrow().recent_documents.clone()
+	}
+
+	pub fn has_recent_documents(&self) -> bool {
+		self.initialized && !self.data.borrow().recent_documents.is_empty()
 	}
 
 	/// Empties the recent list; per-document entries (positions, bookmarks) are kept.
@@ -92,8 +101,11 @@ impl ConfigManager {
 		if !self.initialized {
 			return;
 		}
-		self.data.borrow_mut().opened_documents.clear();
-		self.dirty.set(true);
+		let mut data = self.data.borrow_mut();
+		if !data.opened_documents.is_empty() {
+			data.opened_documents.clear();
+			self.dirty.set(true);
+		}
 	}
 
 	/// Sets the per-document opened flag. Prefer `add_opened_document`/`remove_opened_document`
@@ -187,14 +199,33 @@ mod tests {
 	}
 
 	#[test]
-	fn trim_recent_documents_shrinks_after_setting_lowered() {
+	fn lowering_recent_documents_to_show_trims_stored_list() {
 		let config = config_with_limit(25);
 		for path in ["a", "b", "c", "d", "e"] {
 			config.add_recent_document(path);
 		}
 		config.set_app_int("recent_documents_to_show", 3);
-		config.trim_recent_documents();
 		assert_eq!(config.get_recent_documents(), vec!["e", "d", "c"]);
+	}
+
+	#[test]
+	fn recent_documents_limit_caps_at_hard_maximum() {
+		assert_eq!(config_with_limit(500).recent_documents_limit(), 100);
+	}
+
+	#[test]
+	fn recent_documents_limit_is_zero_when_negative() {
+		assert_eq!(config_with_limit(-5).recent_documents_limit(), 0);
+	}
+
+	#[test]
+	fn has_recent_documents_reflects_list() {
+		let config = config_with_limit(25);
+		assert!(!config.has_recent_documents());
+		config.add_recent_document("a");
+		assert!(config.has_recent_documents());
+		config.clear_recent_documents();
+		assert!(!config.has_recent_documents());
 	}
 
 	#[test]
@@ -218,14 +249,6 @@ mod tests {
 	}
 
 	#[test]
-	fn remove_opened_document_matches_stored_string() {
-		let config = config_with_limit(25);
-		config.add_opened_document("a");
-		config.remove_opened_document("a");
-		assert!(config.get_opened_documents().is_empty());
-	}
-
-	#[test]
 	fn remove_opened_document_leaves_other_entries() {
 		let config = config_with_limit(25);
 		config.add_opened_document("a");
@@ -241,5 +264,13 @@ mod tests {
 		config.add_opened_document("b");
 		config.clear_opened_documents();
 		assert!(config.get_opened_documents().is_empty());
+	}
+
+	#[test]
+	fn clear_opened_documents_on_empty_list_does_not_dirty() {
+		let config = config_with_limit(25);
+		config.dirty.set(false);
+		config.clear_opened_documents();
+		assert!(!config.dirty.get());
 	}
 }
