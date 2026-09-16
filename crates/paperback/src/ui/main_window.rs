@@ -45,12 +45,6 @@ mod foreground;
 #[cfg(target_os = "windows")]
 pub(super) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
 
-#[derive(Default)]
-struct RestoreState {
-	restored: bool,
-	closing: bool,
-}
-
 pub struct MainWindow {
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
@@ -308,7 +302,7 @@ impl MainWindow {
 				}
 			});
 		}
-		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
+		restore::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
 		Self {
 			frame,
 			doc_manager,
@@ -526,72 +520,6 @@ impl MainWindow {
 		drop(dm_ref);
 		menu::update_menu_item_states(&self.frame, has_docs);
 		menu::update_reopen_state(&self.frame, has_reopen);
-	}
-
-	fn schedule_restore_documents(
-		frame: Frame,
-		doc_manager: Rc<Mutex<DocumentManager>>,
-		config: Rc<Mutex<ConfigManager>>,
-	) {
-		let restore = config.lock().unwrap().get_app_bool("restore_previous_documents", true);
-		if !restore {
-			return;
-		}
-		let state = Rc::new(Mutex::new(RestoreState::default()));
-		let state_for_close = Rc::clone(&state);
-		frame.on_close(move |_event| {
-			state_for_close.lock().unwrap().closing = true;
-		});
-		let state_for_destroy = Rc::clone(&state);
-		frame.on_destroy(move |_event| {
-			state_for_destroy.lock().unwrap().closing = true;
-		});
-		let state_for_idle = Rc::clone(&state);
-		frame.on_idle(move |_event| {
-			let mut state = state_for_idle.lock().unwrap();
-			if state.restored || state.closing {
-				return;
-			}
-			state.restored = true;
-			drop(state);
-			let pre_restore_active = doc_manager.lock().unwrap().active_tab_index();
-			let active_path = config.lock().unwrap().get_app_string("active_document", "");
-			let paths = config.lock().unwrap().get_opened_documents();
-			tracing::info!(count = paths.len(), "restoring previously open documents");
-			let failed = restore::restore_each(paths, |path_str| {
-				let path = Path::new(path_str);
-				if !path.exists() {
-					tracing::info!(path = %path.display(), "previously open document is missing; forgetting it");
-					return false;
-				}
-				if !ensure_parser_ready_for_path(&frame, path, &config) {
-					return false;
-				}
-				doc_manager.lock().unwrap().open_file_restore(&doc_manager, path)
-			});
-			{
-				let config = config.lock().unwrap();
-				for path in &failed {
-					config.remove_opened_document(path);
-				}
-				config.flush();
-			}
-			let mut target_idx = pre_restore_active;
-			if target_idx.is_none() && !active_path.is_empty() {
-				target_idx = doc_manager.lock().unwrap().find_tab_by_path(Path::new(&active_path));
-			}
-			if let Some(idx) = target_idx {
-				doc_manager.lock().unwrap().notebook().set_selection(idx);
-			}
-			let dm_ref = doc_manager.lock().unwrap();
-			update_title_from_manager(&frame, &dm_ref);
-			let has_docs = dm_ref.tab_count() > 0;
-			let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-			frame.set_menu_bar(menu_bar);
-			menu::update_menu_item_states(&frame, has_docs);
-			menu::update_reopen_state(&frame, false);
-			dm_ref.restore_focus();
-		});
 	}
 
 	/// Prompts for a save path and exports `tab`'s document as `format`, showing a
