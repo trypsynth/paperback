@@ -39,6 +39,8 @@ pub enum Enable {
 	HasDocument,
 	/// Needs something in the recently-closed stack.
 	HasRecentlyClosed,
+	/// Needs something in the recent-documents list.
+	HasRecentDocuments,
 }
 
 /// What a handler is allowed to touch.
@@ -148,7 +150,7 @@ pub static COMMANDS: &[Command] = &[
 		label: || t("Clea&r Recent Documents"),
 		// TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
 		help: Some(|| t("Remove all documents from the Recent Documents list")),
-		enable: Enable::Always,
+		enable: Enable::HasRecentDocuments,
 		behavior: Behavior::Run(file::clear_recent_documents),
 	},
 	Command {
@@ -644,6 +646,11 @@ pub fn apply_enable(frame: &Frame, enable: Enable, available: bool) {
 	let Some(menu_bar) = frame.get_menu_bar() else {
 		return;
 	};
+	apply_enable_to(&menu_bar, enable, available);
+}
+
+/// [`apply_enable`] for a menu bar that is not attached to a frame yet.
+pub fn apply_enable_to(menu_bar: &MenuBar, enable: Enable, available: bool) {
 	for command in COMMANDS.iter().filter(|command| command.enable == enable) {
 		menu_bar.enable_item(command.id(), available);
 	}
@@ -670,6 +677,12 @@ mod tests {
 		for command in COMMANDS {
 			assert!(find(command.id()).is_some(), "{:?} is not reachable by its own id", command.action);
 		}
+	}
+
+	#[test]
+	fn clear_recent_documents_needs_recent_documents() {
+		let command = for_action(ActionId::ClearRecentDocuments).unwrap();
+		assert_eq!(command.enable, Enable::HasRecentDocuments);
 	}
 
 	/// A command whose id came back as the fallback would collide with anything else that

@@ -2,6 +2,8 @@ use paperback_core::config::ConfigManager;
 use patois::t;
 use wxdragon::prelude::*;
 
+use crate::ui::commands::{self, Enable};
+
 mod builder;
 #[cfg(target_os = "macos")]
 mod edit_menu;
@@ -37,5 +39,8 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 		let edit_label = t("&Edit");
 		builder = builder.append(edit_menu::create_edit_menu(config), &edit_label);
 	}
-	builder.append(go_menu, &go_label).append(tools_menu, &tools_label).append(help_menu, &help_label).build()
+	let menu_bar =
+		builder.append(go_menu, &go_label).append(tools_menu, &tools_label).append(help_menu, &help_label).build();
+	commands::apply_enable_to(&menu_bar, Enable::HasRecentDocuments, !config.get_recent_documents().is_empty());
+	menu_bar
 }
