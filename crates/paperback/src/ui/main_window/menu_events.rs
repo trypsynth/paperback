@@ -13,7 +13,7 @@ use wxdragon::{prelude::*, timer::Timer};
 use super::HotkeyHandle;
 use super::{
 	DocumentManager, FindDialogState, MainWindow, background, commands, dialogs, find, get_update_channel, help, menu,
-	menu_file, menu_go, menu_ids, menu_tools, sleep_timer, update_title_from_manager,
+	menu_file, menu_go, menu_ids, menu_tools, sleep_timer, update, update_title_from_manager,
 };
 
 impl MainWindow {
@@ -191,7 +191,7 @@ impl MainWindow {
 				}
 				menu_ids::CHECK_FOR_UPDATES => {
 					let channel = get_update_channel(&config.lock().unwrap());
-					help::run_update_check(false, channel);
+					update::run_update_check(false, channel);
 				}
 				menu_ids::DONATE => {
 					help::handle_donate(&frame_copy);

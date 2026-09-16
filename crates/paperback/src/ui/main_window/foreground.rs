@@ -44,7 +44,7 @@ pub(crate) fn own_dialog_is_up() -> bool {
 /// The frame's own Win32 handle, taken when the window is made and read from the beat thread in
 /// [`super::super::help`].
 ///
-/// Kept apart from `help::MAIN_WINDOW_PTR`, which holds the wxWidgets object pointer that
+/// Kept apart from `update::MAIN_WINDOW_PTR`, which holds the wxWidgets object pointer that
 /// `ship-shape` wants for parenting its dialogs. The two are different numbers for the same
 /// window, and reading one as the other is what #853 was: every call below answered "disabled",
 /// because a pointer that is not a window handle is not an enabled window either.

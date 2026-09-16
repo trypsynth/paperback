@@ -17,10 +17,11 @@ use super::{
 	background, commands, dialogs,
 	document_manager::{DocumentManager, DocumentTab, display_title},
 	find::{self, FindDialogState},
-	help::{self, MAIN_WINDOW_PTR},
-	icon, menu, menu_ids, navigation,
+	help, icon, menu, menu_ids, navigation,
 	readability::build_font_from_readability,
-	sleep_timer, status, window_geometry,
+	sleep_timer, status,
+	update::{self, MAIN_WINDOW_PTR},
+	window_geometry,
 };
 use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -334,7 +335,7 @@ impl MainWindow {
 	}
 
 	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
-		help::run_update_check(silent, channel);
+		update::run_update_check(silent, channel);
 	}
 
 	pub fn open_file(&self, path: &Path) -> bool {
