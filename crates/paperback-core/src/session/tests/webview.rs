@@ -71,6 +71,44 @@ fn webview_target_path_returns_none_for_a_document_with_no_text() {
 	assert!(!dir.exists(), "nothing is written for a document with no text");
 }
 
+// #861: a book of tens of millions of characters rendered whole locks the machine up while the
+// web view lays it out, so a book past the window size gets the part around the reading position.
+#[test]
+fn webview_target_path_renders_only_a_window_of_a_very_long_document() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let mut session = session_with_path("book.mobi");
+	let mut content = String::new();
+	for i in 0..60_000 {
+		content.push_str(&format!("paragraph number {i} with a few words in it\n"));
+	}
+	let mut document = Document::new();
+	document.set_buffer(DocumentBuffer::with_content(content.clone()));
+	session.handle = DocumentHandle::new(document);
+	let doc_len = session.document_len();
+	assert!(doc_len > 1_000_000, "the test document has to be longer than one window");
+	let middle = doc_len / 2;
+	let target = session.webview_target_path(middle, &dir.to_string_lossy()).expect("a web view target");
+	let html = fs::read_to_string(&target.path).unwrap();
+	assert!(html.len() < content.len() / 2, "only a window is rendered: {} of {}", html.len(), content.len());
+	assert!(html.contains(&format!(r#"id="pos-{middle}""#)), "the reading position is anchored");
+	assert!(!html.contains("paragraph number 0 "), "the far start of the book is left out");
+	assert!(!html.contains("paragraph number 59999 "), "the far end of the book is left out");
+	let _ = fs::remove_dir_all(&dir);
+}
+
+// A book that fits is still rendered whole, so nothing changes for an ordinary one.
+#[test]
+fn webview_target_path_renders_a_short_document_whole() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let session = session_with_path("book.mobi");
+	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	let html = fs::read_to_string(&target.path).unwrap();
+	assert_eq!(html, crate::export::html::render_with_anchor(&session.handle, Some(0)));
+	let _ = fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn extract_resource_returns_false_for_non_epub_files() {
 	let session = DocumentSession {

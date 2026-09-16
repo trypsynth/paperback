@@ -6,13 +6,17 @@
 use std::{
 	fs::{self, File},
 	io::{self, BufReader, Write},
+	ops::Range,
 	path::{Path, PathBuf},
 };
 
 use base64::Engine;
 use zip::ZipArchive;
 
-use super::{DocumentSession, SourceView, WebviewTarget};
+use super::{
+	DocumentSession, SourceView, WebviewTarget,
+	window::{snap_end_to_paragraph_boundary, snap_start_to_paragraph_boundary},
+};
 use crate::{
 	config::compute_document_hash,
 	document::MarkerType,
@@ -21,6 +25,12 @@ use crate::{
 	reader_core::{encode_url_fragment, nearest_fragment_before},
 	util::{encoding::convert_to_utf8, zip as zip_utils},
 };
+
+/// How much of a document, in display units, a web view is handed at once. A web view lays out
+/// an ordinary book without trouble, but a book of tens of millions of characters locks the
+/// machine up while the engine works through all of it, so past this size it is given the part
+/// around the reading position instead. The same size the main text control's window uses.
+const MAX_WEBVIEW_DISPLAY_LEN: usize = 500_000;
 
 impl DocumentSession {
 	#[must_use]
@@ -75,7 +85,7 @@ impl DocumentSession {
 				let doc_temp_dir = self.document_temp_dir(temp_dir)?;
 				let html_path = doc_temp_dir.join("document.html");
 				let offset = usize::try_from(position.max(0)).unwrap_or(0);
-				let html = export_html::render_with_anchor(&self.handle, Some(offset));
+				let html = export_html::render_range(&self.handle, self.webview_range(offset), Some(offset));
 				fs::write(&html_path, html.as_bytes()).ok()?;
 				Some(WebviewTarget {
 					path: html_path.to_string_lossy().to_string(),
@@ -83,6 +93,24 @@ impl DocumentSession {
 				})
 			}
 		}
+	}
+
+	/// The display-unit span a web view is given for a document read at `position`: all of it when
+	/// it is short enough, and otherwise [`MAX_WEBVIEW_DISPLAY_LEN`] around the reading position,
+	/// snapped outward to paragraph boundaries so the slice never starts or ends mid-paragraph.
+	fn webview_range(&self, position: usize) -> Range<usize> {
+		let buffer = &self.handle.document().buffer;
+		let doc_len = buffer.total_display_len();
+		if doc_len <= MAX_WEBVIEW_DISPLAY_LEN {
+			return 0..doc_len;
+		}
+		// Stays a full window wide at either end of the book rather than running off it.
+		let position = position.min(doc_len);
+		let end = (position + MAX_WEBVIEW_DISPLAY_LEN / 2).min(doc_len).max(MAX_WEBVIEW_DISPLAY_LEN);
+		let start = end - MAX_WEBVIEW_DISPLAY_LEN;
+		let byte_start = snap_start_to_paragraph_boundary(&buffer.content, buffer.byte_index_for_display(start));
+		let byte_end = snap_end_to_paragraph_boundary(&buffer.content, buffer.byte_index_for_display(end));
+		buffer.display_index_for_byte(byte_start)..buffer.display_index_for_byte(byte_end)
 	}
 
 	/// The directory this document's web view and source view files are written to, created

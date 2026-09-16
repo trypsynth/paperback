@@ -7,6 +7,7 @@ use std::{
 
 use anyhow::Result;
 use encoding_rs::WINDOWS_1252;
+use rayon::prelude::*;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
@@ -101,22 +102,21 @@ impl Parser for MobiParser {
 		// everything around before the converter ever sees it.
 		extra_targets.extend(section_starts.iter().copied());
 		let mut text = rewrite_internal_links(&text, &frag_offsets, &extra_targets);
-		static RE_AID: LazyLock<regex::Regex> =
-			LazyLock::new(|| regex::Regex::new(r#"(?i)\s[ac]id\s*=\s*["'][^"']*["']"#).unwrap());
-		text = RE_AID.replace_all(&text, "").into_owned();
-		// KF8 / AZW3 files concatenate the skeleton and fragments, often leaving
-		// `</body></html>` inside unclosed tags at insertion points. We strip these
-		// to allow `scraper` to parse the fragments cleanly.
-		static RE_BODY: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?is)</body>|</html>").unwrap());
-		text = RE_BODY.replace_all(&text, "").into_owned();
-		static RE_TITLE: LazyLock<regex::Regex> =
-			LazyLock::new(|| regex::Regex::new(r"(?is)<title[^>]*>.*?</title>").unwrap());
-		text = RE_TITLE.replace_all(&text, "").into_owned();
-		static RE_STYLE: LazyLock<regex::Regex> =
-			LazyLock::new(|| regex::Regex::new(r"(?is)<style[^>]*>.*?</style>").unwrap());
-		text = RE_STYLE.replace_all(&text, "").into_owned();
-		static RE_PAGE: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?is)@page\s*\{[^<]+").unwrap());
-		text = RE_PAGE.replace_all(&text, "").into_owned();
+		// Everything the converter has no use for comes out in one pass rather than five: each one
+		// was a full scan and a full copy of a string that runs to a hundred megabytes on the
+		// largest books. A title or style element wins over an `aid`/`cid` attribute inside it,
+		// since the element starts first and the leftmost match is the one taken.
+		//
+		// KF8 / AZW3 files concatenate the skeleton and fragments, often leaving `</body></html>`
+		// inside unclosed tags at insertion points, which `scraper` cannot parse the fragments
+		// around, so those go too.
+		static RE_STRIP: LazyLock<regex::Regex> = LazyLock::new(|| {
+			regex::Regex::new(
+				r#"(?is)<title[^>]*>.*?</title>|<style[^>]*>.*?</style>|</body>|</html>|@page\s*\{[^<]+|\s[ac]id\s*=\s*["'][^"']*["']"#,
+			)
+			.unwrap()
+		});
+		text = RE_STRIP.replace_all(&text, "").into_owned();
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
 		// Rewrite them so the heading-based TOC builder can pick them up.
 		text = rewrite_font_size_headings(&text);
@@ -137,9 +137,17 @@ impl Parser for MobiParser {
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();
 		let mut headings: Vec<HeadingInfo> = Vec::new();
-		for piece in split_html_chunks(&text) {
-			let mut html_converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
-			html_converter.convert(piece, HtmlSourceMode::NativeHtml);
+		// The chunks are independent by construction, so they convert on every core at once. Only
+		// the stitching below has to stay in order, and it is a fraction of the work.
+		let converted: Vec<HtmlToText> = split_html_chunks(&text)
+			.par_iter()
+			.map(|piece| {
+				let mut html_converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
+				html_converter.convert(piece, HtmlSourceMode::NativeHtml);
+				html_converter
+			})
+			.collect();
+		for html_converter in converted {
 			let offset = buffer.current_position();
 			buffer.append(&html_converter.get_text());
 			for (id, &relative) in html_converter.get_id_positions() {

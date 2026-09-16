@@ -40,3 +40,12 @@ fn leaves_content_with_no_font_tags_untouched() {
 	let html = "<p>Just a paragraph.</p>";
 	assert_eq!(rewrite_font_size_headings(html), html);
 }
+
+// Old Mobipocket HTML leaves font tags unclosed, so a rewrite has to pick one of two broken
+// readings. Taking them in the order they open keeps the text that follows an unclosed tag
+// inside the heading it opened, rather than stranding it in a block of its own.
+#[test]
+fn an_unclosed_font_tag_is_taken_in_the_order_it_opens() {
+	let html = r#"<font size="4">outer<font size="7">inner</font>"#;
+	assert_eq!(rewrite_font_size_headings(html), r#"<h4>outer<font size="7">inner</h4>"#);
+}

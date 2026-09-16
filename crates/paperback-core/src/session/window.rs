@@ -71,13 +71,13 @@ impl DocumentSession {
 
 /// Extends `byte_idx` backward to the start of the paragraph it's in - the byte right after
 /// the nearest preceding `\n`, or 0 if there isn't one - so a window never starts mid-paragraph.
-fn snap_start_to_paragraph_boundary(content: &str, byte_idx: usize) -> usize {
+pub(super) fn snap_start_to_paragraph_boundary(content: &str, byte_idx: usize) -> usize {
 	content[..byte_idx].rfind('\n').map_or(0, |i| i + 1)
 }
 
 /// Extends `byte_idx` forward to the end of the paragraph it's in - one past the nearest
 /// following `\n`, or the end of the content if there isn't one.
-fn snap_end_to_paragraph_boundary(content: &str, byte_idx: usize) -> usize {
+pub(super) fn snap_end_to_paragraph_boundary(content: &str, byte_idx: usize) -> usize {
 	content[byte_idx..].find('\n').map_or(content.len(), |i| byte_idx + i + 1)
 }
 
