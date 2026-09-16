@@ -84,6 +84,52 @@ pub(super) fn page_image_tops(page: &PdfiumPage) -> Vec<f64> {
 	tops
 }
 
+/// The fraction of the page one single image covers at most, from 0.0 to 1.0.
+///
+/// A scanned page is one big image laid over the whole sheet, so a value near 1.0 is the mark of
+/// a page that is a picture rather than text. [`super`] uses it, together with how little text the
+/// page carries, to decide a page is really a scan wearing a stray page number and to offer it for
+/// OCR. The largest single image is what counts, not the images added together: a page tiled with
+/// small decorations is not a scan.
+pub(super) fn page_largest_image_coverage(page: &PdfiumPage) -> f64 {
+	let page_area = f64::from(page.width()) * f64::from(page.height());
+	if page_area <= 0.0 {
+		return 0.0;
+	}
+	let mut largest = 0.0_f64;
+	let object_count = lib().FPDFPage_CountObjects(page);
+	for i in 0..object_count {
+		let object = lib().FPDFPage_GetObject(page, i);
+		if let Ok(object) = object {
+			collect_largest_image_area(&object, 0, &mut largest);
+		}
+	}
+	(largest / page_area).min(1.0)
+}
+
+fn collect_largest_image_area(object: &PdfiumPageObject, depth: u32, largest: &mut f64) {
+	let object_type = lib().FPDFPageObj_GetType(object);
+	match object_type {
+		FPDF_PAGEOBJ_IMAGE => {
+			let (mut left, mut bottom, mut right, mut top) = (0.0, 0.0, 0.0, 0.0);
+			if lib().FPDFPageObj_GetBounds(object, &mut left, &mut bottom, &mut right, &mut top).is_ok() {
+				let area = f64::from((right - left).abs()) * f64::from((top - bottom).abs());
+				*largest = largest.max(area);
+			}
+		}
+		FPDF_PAGEOBJ_FORM if depth < MAX_FORM_DEPTH => {
+			let child_count = u32::try_from(lib().FPDFFormObj_CountObjects(object)).unwrap_or(0);
+			for i in 0..child_count {
+				let child = lib().FPDFFormObj_GetObject(object, c_ulong::from(i));
+				if let Ok(child) = child {
+					collect_largest_image_area(&child, depth + 1, largest);
+				}
+			}
+		}
+		_ => {}
+	}
+}
+
 fn collect_image_tops(object: &PdfiumPageObject, depth: u32, tops: &mut Vec<f64>) {
 	let object_type = lib().FPDFPageObj_GetType(object);
 	match object_type {

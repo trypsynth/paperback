@@ -11,7 +11,7 @@ use encoding_rs::WINDOWS_1252;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
-		Parser, add_converter_markers,
+		Parser, add_converter_markers, add_toc_heading_markers,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
@@ -156,20 +156,32 @@ impl Parser for MobiParser {
 				Marker::new(MarkerType::SectionBreak, position).with_text(format!("Section {}", index + 1)),
 			);
 		}
-		document.set_buffer(buffer);
 		document.id_positions = id_positions;
+		let ncx_item_count = ncx_toc.len();
 		let mut toc_items = build_toc_from_headings(&headings);
-		let toc_source = if !toc_items.is_empty() {
-			"headings"
-		} else if !ncx_toc.is_empty() {
+		// Whichever of the two names more of the book. A novel whose text marks up its title and
+		// nothing else gives a one entry table of contents while its index quietly lists all forty
+		// chapters, and taking the longer list is what puts those chapters back. A single entry
+		// index is a stub rather than a table of contents and never wins.
+		let use_ncx = ncx_item_count > 1 && ncx_item_count > toc_items.len();
+		let toc_source = if use_ncx {
 			"ncx"
+		} else if toc_items.is_empty() {
+			if ncx_toc.is_empty() { "none" } else { "ncx" }
 		} else {
-			"none"
+			"headings"
 		};
-		if toc_items.is_empty() && !ncx_toc.is_empty() {
+		if use_ncx || toc_items.is_empty() {
 			resolve_ncx_offsets(&mut ncx_toc, &document.id_positions);
-			toc_items = ncx_toc;
+			if !ncx_toc.is_empty() {
+				toc_items = ncx_toc;
+			}
 		}
+		// The book may name every chapter in its index and mark up none of them in its text, which
+		// leaves the reader a table of contents and nothing to move between by heading. Asked one
+		// entry at a time so that a chapter which did write its own heading is not announced twice.
+		add_toc_heading_markers(&mut buffer, &toc_items);
+		document.set_buffer(buffer);
 		document.toc_items = toc_items;
 		tracing::debug!(
 			path = %context.file_path,
@@ -178,6 +190,8 @@ impl Parser for MobiParser {
 			text_encoding = header.text_encoding,
 			num_records = header.record_offsets.len(),
 			sections = section_starts.len(),
+			heading_count = headings.len(),
+			ncx_count = ncx_item_count,
 			toc_source,
 			"parsed mobi file"
 		);

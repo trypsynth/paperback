@@ -3508,7 +3508,7 @@ msgstr "Nie teraz"
 msgid "Custom Timer"
 msgstr "Własny wyłącznik czasowy"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 msgid "Back"
 msgstr "Wstecz"
@@ -3590,7 +3590,6 @@ msgstr "Zamknij wyszukiwanie"
 msgid "Document exported"
 msgstr "Dokument wyeksportowany"
 
-#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 msgid "Failed to export document"
 msgstr "Nie udało się wyeksportować dokumentu"
@@ -3942,6 +3941,16 @@ msgstr "otworzyć"
 #: kt
 msgid "go to chapter"
 msgstr "przejść do rozdziału"
+
+#. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+#: kt
+msgid "This is a sample of the selected speech engine."
+msgstr "To próbka wybranego silnika mowy."
+
+#. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+#: kt
+msgid "This document does not contain pages."
+msgstr "Ten dokument nie zawiera stron."
 
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
 #~ msgstr "Pliki PPT chronione hasłem nie są obecnie obsługiwane. Spróbuj zapisać plik w formacie PPTX i otworzyć tę wersję."

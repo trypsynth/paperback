@@ -1,11 +1,16 @@
-use std::{collections::HashMap, mem};
+use std::{
+	collections::{HashMap, HashSet},
+	mem,
+};
 
 use anyhow::{Context, Result};
 use libchm::{ChmFile, Entry, EntryCategory, EntrySel};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
-	parser::{Parser, add_converter_markers_excluding_links, util::path::extract_title_from_path},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, is_heading_marker},
+	parser::{
+		Parser, add_converter_markers_excluding_links, add_heading_markers_where, util::path::extract_title_from_path,
+	},
 };
 
 mod convert;
@@ -105,6 +110,16 @@ impl Parser for ChmParser {
 			}
 		}
 		calculate_toc_offsets(&mut toc_items, &file_positions, &id_positions);
+		// An old CHM writes its topic titles as styled paragraphs rather than as `<h1>`, so the
+		// book arrives with a full table of contents and nothing to move between by heading. Its
+		// `.hhc` names every topic, so the headings are there for the taking. Asked one topic at a
+		// time rather than of the book as a whole: a reference that marks up two of its six
+		// hundred pages needs the other five hundred and ninety eight, and must not have those two
+		// announced twice.
+		let headed = sections_with_headings(&buffer, &file_positions);
+		add_heading_markers_where(&mut buffer, &toc_items, 1, &|offset| {
+			!headed.contains(&section_start(&file_positions, offset))
+		});
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
@@ -112,4 +127,20 @@ impl Parser for ChmParser {
 		tracing::debug!(path = %context.file_path, "parsed chm file successfully");
 		Ok(document)
 	}
+}
+
+/// The start of the section an offset falls in, which is how a heading already in the text is
+/// matched up with the table of contents entry that names the same topic.
+fn section_start(file_positions: &HashMap<String, usize>, offset: usize) -> usize {
+	file_positions.values().copied().filter(|start| *start <= offset).max().unwrap_or(0)
+}
+
+/// The sections whose own text already carries a heading, which need no other.
+fn sections_with_headings(buffer: &DocumentBuffer, file_positions: &HashMap<String, usize>) -> HashSet<usize> {
+	buffer
+		.markers
+		.iter()
+		.filter(|marker| is_heading_marker(marker.mtype))
+		.map(|marker| section_start(file_positions, marker.position))
+		.collect()
 }

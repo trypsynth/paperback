@@ -9,7 +9,7 @@ use anyhow::Result;
 use paperback_formats::FormatMeta;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem, is_heading_marker},
 	t,
 	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
@@ -27,6 +27,7 @@ pub mod m4b;
 pub mod man;
 pub mod markdown;
 pub mod mobi;
+mod odf_crypto;
 pub mod odp;
 pub mod odt;
 pub mod pdf;
@@ -35,6 +36,7 @@ pub mod rtf;
 pub mod text;
 pub mod util;
 pub mod word;
+pub mod wri;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
@@ -156,6 +158,7 @@ impl ParserRegistry {
 				POWERPOINT => powerpoint::PowerpointParser,
 				RTF => rtf::RtfParser,
 				TEXT => text::TextParser,
+				WRI => wri::WriParser,
 			}
 		})
 	}
@@ -413,6 +416,90 @@ fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, 
 	for underline in converter.get_underlines() {
 		buffer.add_marker(Marker::new(MarkerType::Underline, offset + underline.offset).with_length(underline.length));
 	}
+}
+
+/// Writes a heading marker for every entry of a table of contents, so that a document whose own
+/// text carries no headings can still be moved through by heading.
+///
+/// Some documents name every one of their sections and mark up none of them. A PDF may carry a
+/// full bookmark outline over pages whose text is all one size; an old CHM names each of its
+/// topics in its `.hhc` and writes them as styled paragraphs rather than as `<h1>`. The reader of
+/// one of those gets a working table of contents and nothing at all to jump between, which on a
+/// 7,000 topic reference is the difference between a usable book and an unusable one.
+pub fn add_heading_markers(buffer: &mut DocumentBuffer, items: &[TocItem], level: i32) {
+	add_heading_markers_where(buffer, items, level, &|_| true);
+}
+
+/// [`add_heading_markers`], for a document that marks up some of its headings and not others.
+///
+/// `wanted` is asked about each entry's offset and says whether that entry still needs a marker.
+/// An entry it turns down is skipped and its children are still offered, because a section that
+/// wrote its own heading may sit above subsections that did not.
+pub fn add_heading_markers_where(
+	buffer: &mut DocumentBuffer,
+	items: &[TocItem],
+	level: i32,
+	wanted: &dyn Fn(usize) -> bool,
+) {
+	for item in items {
+		if wanted(item.offset) {
+			let marker_type = match level {
+				1 => MarkerType::Heading1,
+				2 => MarkerType::Heading2,
+				3 => MarkerType::Heading3,
+				4 => MarkerType::Heading4,
+				5 => MarkerType::Heading5,
+				_ => MarkerType::Heading6,
+			};
+			buffer.add_marker(Marker::new(marker_type, item.offset).with_text(item.name.clone()).with_level(level));
+		}
+		add_heading_markers_where(buffer, &item.children, level + 1, wanted);
+	}
+}
+
+/// Gives a document heading navigation from its table of contents where its own text carries none.
+///
+/// A book that names every chapter in its table of contents but marks none of them up as a heading
+/// hands the reader a working Ctrl+T and nothing to move between with the heading key. This adds a
+/// heading marker for each table-of-contents entry, skipping any entry whose stretch of the book
+/// already holds a real heading, so a well-marked-up book is left alone and a poorly-marked one
+/// gains its chapters without anything being announced twice. Classic Gutenberg EPUBs and old CHMs
+/// and MOBIs all need this.
+pub fn add_toc_heading_markers(buffer: &mut DocumentBuffer, toc_items: &[TocItem]) {
+	let existing = heading_positions(buffer);
+	let spans = toc_entry_offsets(toc_items);
+	add_heading_markers_where(buffer, toc_items, 1, &|offset| !span_has_heading(&spans, &existing, offset));
+}
+
+/// Where the document's own text already carries a heading, sorted for the span check.
+fn heading_positions(buffer: &DocumentBuffer) -> Vec<usize> {
+	let mut positions: Vec<usize> =
+		buffer.markers.iter().filter(|marker| is_heading_marker(marker.mtype)).map(|marker| marker.position).collect();
+	positions.sort_unstable();
+	positions
+}
+
+/// Every table-of-contents entry offset in the tree, sorted, so the stretch one entry speaks for
+/// runs to wherever the next entry starts.
+fn toc_entry_offsets(items: &[TocItem]) -> Vec<usize> {
+	let mut offsets = Vec::new();
+	collect_toc_offsets(items, &mut offsets);
+	offsets.sort_unstable();
+	offsets
+}
+
+fn collect_toc_offsets(items: &[TocItem], out: &mut Vec<usize>) {
+	for item in items {
+		out.push(item.offset);
+		collect_toc_offsets(&item.children, out);
+	}
+}
+
+/// Whether the stretch of the book starting at `offset` and running to the next entry already holds
+/// a heading of its own.
+fn span_has_heading(spans: &[usize], existing: &[usize], offset: usize) -> bool {
+	let end = spans.iter().copied().find(|start| *start > offset).unwrap_or(usize::MAX);
+	existing.iter().any(|position| *position >= offset && *position < end)
 }
 
 /// Transfer all converter markers to a `DocumentBuffer`.

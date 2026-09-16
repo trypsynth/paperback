@@ -25,6 +25,7 @@ mod text_render;
 mod text_window;
 #[cfg(target_os = "windows")]
 mod tray;
+mod update;
 mod window_geometry;
 
 pub use app::PaperbackApp;

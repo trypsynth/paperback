@@ -6,7 +6,7 @@ use pdfium::PdfiumDocument;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
-	parser::{Parser, util::path::extract_title_from_path},
+	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
 };
 
 mod images;
@@ -20,7 +20,7 @@ mod tagged;
 mod text;
 mod toc;
 
-use images::{append_images, images_before_each_paragraph, page_image_tops};
+use images::{append_images, images_before_each_paragraph, page_image_tops, page_largest_image_coverage};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_value};
 pub use paragraphs::join_wrapped_lines;
@@ -29,7 +29,7 @@ use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
 use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
 use text::{Line, extract_text_lines, median_line_font_size};
-use toc::{add_heading_markers, build_toc_tree, extract_toc};
+use toc::{build_toc_tree, extract_toc};
 
 /// Everything one page contributes, as read from pdfium and before any of it is placed in the
 /// document. The whole document is read before the first page is assembled, because which lines
@@ -51,6 +51,8 @@ struct PageContent {
 	annotation_links: Vec<PendingLink>,
 	/// The top edge of each image the page draws, ordered down the page.
 	image_tops: Vec<f64>,
+	/// The fraction of the page the largest single image covers. Near 1.0 marks a scanned page.
+	largest_image_coverage: f64,
 }
 
 /// Read one page from pdfium: its text, its links, and the images it draws.
@@ -67,7 +69,11 @@ fn read_page(document: &PdfiumDocument, page_index: i32, render_tables_inline: b
 	// because each page places its own images and because an image-only page still needs its OCR
 	// placeholder when earlier pages contributed text. Taken before the text so that a tagged
 	// page whose tree names no figure can place them among its blocks as it writes them.
-	let mut content = PageContent { image_tops: page_image_tops(&page), ..Default::default() };
+	let mut content = PageContent {
+		image_tops: page_image_tops(&page),
+		largest_image_coverage: page_largest_image_coverage(&page),
+		..Default::default()
+	};
 	let mut tagged = TaggedPage {
 		buffer: DocumentBuffer::new(),
 		display_text: String::new(),
@@ -92,6 +98,51 @@ fn read_page(document: &PdfiumDocument, page_index: i32, render_tables_inline: b
 	content.web_links = collect_web_links(&text_page);
 	content.annotation_links = collect_annotation_links(&page, &text_page, document);
 	content
+}
+
+/// How much of a page one image must cover before the page is a candidate to be a scan rather
+/// than a page of text. A scanned sheet is a single image laid over the whole page; half is well
+/// clear of a figure sitting among paragraphs.
+const SCAN_IMAGE_COVERAGE: f64 = 0.5;
+
+/// The most text a scanned page's page number can run to. A real page of words runs far past
+/// this; a page number, even dressed up as "- 42 -", does not.
+const MAX_FURNITURE_CHARS: usize = 12;
+
+/// Whether a page is a scanned image carrying nothing but a page number, which is a scan to be
+/// offered for OCR rather than a page of text.
+///
+/// The two halves are both needed. A page can carry a page number and still be a page of text, so
+/// a large image is required; a page can be one big image and still be a figure with a caption, so
+/// the text is required to be nothing more than a page number. See [`looks_like_page_number`].
+fn is_scanned_with_only_furniture(page: &PageContent) -> bool {
+	if page.largest_image_coverage < SCAN_IMAGE_COVERAGE {
+		return false;
+	}
+	let text = match &page.tagged {
+		Some(tagged) => tagged.display_text.clone(),
+		None => page.lines.iter().map(|line| line.text.as_str()).collect::<Vec<_>>().join(" "),
+	};
+	looks_like_page_number(&text)
+}
+
+/// Whether a piece of text is nothing but a page number: short, and made only of digits, spaces
+/// and punctuation. Letters rule it out, so a caption or a heading is never taken for one, which
+/// is what keeps a figure-with-caption page from being mistaken for a scan.
+fn looks_like_page_number(text: &str) -> bool {
+	let trimmed = text.split_whitespace().collect::<Vec<_>>().join(" ");
+	if trimmed.is_empty() || trimmed.chars().count() > MAX_FURNITURE_CHARS {
+		return false;
+	}
+	let mut has_digit = false;
+	for ch in trimmed.chars() {
+		if ch.is_ascii_digit() {
+			has_digit = true;
+		} else if !ch.is_whitespace() && !ch.is_ascii_punctuation() {
+			return false;
+		}
+	}
+	has_digit
 }
 
 /// One line an untagged page contributes, in the order the reader meets it.
@@ -304,6 +355,20 @@ impl Parser for PdfParser {
 			let page_start_offset = buffer.current_position();
 			let mut page_display_text = String::new();
 			let mut current_lines_info = Vec::new();
+			// A page that is one big scanned image wearing nothing but a page number is a scan, not
+			// a page of text, and the page number is furniture over the top of it. Its text is
+			// dropped and the page is offered for OCR like any other image-only page. This is what
+			// makes a scanned book with burned-in page numbers readable at all: without it the
+			// reader meets "[Image]" and a bare number on every page and no way to reach the words.
+			if is_scanned_with_only_furniture(&page) {
+				let placeholder_position = buffer.current_position();
+				has_any_images = true;
+				buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, placeholder_position));
+				buffer.append(&image_only_placeholder());
+				buffer.append("\n");
+				page_lines_info.push(current_lines_info);
+				continue;
+			}
 			if let Some(tagged) = page.tagged {
 				any_tags_processed = true;
 				has_any_text = true;
@@ -383,5 +448,34 @@ impl Parser for PdfParser {
 			"finished parsing pdf document"
 		);
 		Ok(doc)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::looks_like_page_number;
+
+	/// A scanned page's page number is furniture, however it is dressed, so the page can be offered
+	/// for OCR rather than read as a bare number.
+	#[test]
+	fn a_page_number_is_recognised_as_furniture() {
+		assert!(looks_like_page_number("42"));
+		assert!(looks_like_page_number("  42  "));
+		assert!(looks_like_page_number("- 42 -"));
+		assert!(looks_like_page_number("[12]"));
+	}
+
+	/// Anything with a letter in it is real text, which is what keeps a caption or a heading from
+	/// being mistaken for a page number.
+	#[test]
+	fn text_with_letters_is_not_furniture() {
+		assert!(!looks_like_page_number("Page 3"));
+		assert!(!looks_like_page_number("Chapter One"));
+		assert!(!looks_like_page_number("iv"));
+		assert!(!looks_like_page_number(""));
+		// Punctuation with no digit is not a page number either.
+		assert!(!looks_like_page_number("- -"));
+		// Too long to be a page number, even all in digits.
+		assert!(!looks_like_page_number("1234567890123"));
 	}
 }

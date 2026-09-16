@@ -49,11 +49,17 @@ pub fn find_child_element<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Opt
 /// `<?xml version="1.0" encoding="windows-1251"?>` at the top. Reading one of those as UTF-8 fails
 /// outright, so the whole book is lost over a header Paperback could simply have read.
 ///
-/// A file that declares nothing, or names an encoding this does not know, is read as UTF-8. A
-/// byte order mark wins over the declaration, which is what the XML specification asks for.
+/// A file that names an encoding this does not know is read as UTF-8, and one that names none at
+/// all is guessed at the way a plain text file is. A byte order mark wins over the declaration,
+/// which is what the XML specification asks for.
 pub fn read_xml_to_string(path: &str) -> std::io::Result<String> {
 	let bytes = std::fs::read(path)?;
-	let encoding = declared_encoding(&bytes).unwrap_or(encoding_rs::UTF_8);
+	let Some(encoding) = declared_encoding(&bytes) else {
+		// A file that declares nothing is guessed at the way a plain text file is, byte order
+		// marks and all, rather than simply assumed to be UTF-8: a FictionBook written in
+		// windows-1251 and saved without a declaration is still a windows-1251 book.
+		return Ok(crate::util::encoding::convert_to_utf8(&bytes));
+	};
 	// `decode` sniffs for a byte order mark first and follows it where there is one, so a UTF-16
 	// file is read as UTF-16 whatever its declaration says.
 	let (text, _, _) = encoding.decode(&bytes);
@@ -192,6 +198,18 @@ mod tests {
 		let path = dir.write_str("utf16.xml", bytes);
 		let text = read_xml_to_string(&path).expect("read the file");
 		assert!(text.contains("<p>hi</p>"), "got {text:?}");
+	}
+
+	/// A file that declares nothing at all is guessed at rather than assumed to be UTF-8.
+	#[test]
+	fn a_file_with_no_declaration_is_detected() {
+		let dir = TempDir::new("xml-nodecl");
+		let mut bytes = b"<FictionBook><p>".to_vec();
+		bytes.extend_from_slice(&[0xC0, 0xED, 0xED, 0xE0]); // "Анна" in windows-1251
+		bytes.extend_from_slice(b"</p></FictionBook>");
+		let path = dir.write_str("nodecl.fb2", bytes);
+		let text = read_xml_to_string(&path).expect("read the file");
+		assert!(!text.contains('\u{fffd}'), "no replacement characters: {text:?}");
 	}
 
 	/// A declaration naming an encoding this build has never heard of is read as UTF-8 rather than

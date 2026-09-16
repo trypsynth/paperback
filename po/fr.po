@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 13:31-0600\n"
+"POT-Creation-Date: 2026-09-15 16:49+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -3048,6 +3048,18 @@ msgstr "Décoder un débordement de pile"
 msgid "File too short"
 msgstr "Fichier trop court"
 
+#. TRANSLATORS: Error detail shown when an OpenDocument file is encrypted and no password was given (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required"
+msgstr "Mot de passe requis"
+
+#. TRANSLATORS: Error detail shown when the password for an OpenDocument file is wrong (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password incorrect"
+msgstr "Mot de passe incorrect"
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 #, fuzzy
 msgid "ODP file does not contain any pages"
@@ -3154,16 +3166,6 @@ msgstr "Aucun analyseur syntaxique n'a été trouvé pour l'extension : .{}"
 #, fuzzy
 msgid "All parsers failed for extension: .{}"
 msgstr "Tous les analyseurs ont échoué pour l'extension : . {}"
-
-#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "Password required"
-msgstr "Mot de passe requis"
-
-#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "Password incorrect"
-msgstr "Mot de passe incorrect"
 
 msgid "Unknown update file format."
 msgstr "Format de fichier de mise à jour inconnu."
