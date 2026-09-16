@@ -32,6 +32,7 @@ mod menu_file;
 mod menu_go;
 mod menu_tools;
 mod parser_ready;
+mod restore;
 pub(crate) use parser_ready::ensure_parser_ready_for_path;
 
 #[cfg(target_os = "windows")]
@@ -555,14 +556,25 @@ impl MainWindow {
 			drop(state);
 			let pre_restore_active = doc_manager.lock().unwrap().active_tab_index();
 			let active_path = config.lock().unwrap().get_app_string("active_document", "");
-			let paths = config.lock().unwrap().get_opened_documents_existing();
+			let paths = config.lock().unwrap().get_opened_documents();
 			tracing::info!(count = paths.len(), "restoring previously open documents");
-			for path in paths {
-				let path = Path::new(&path);
-				if !ensure_parser_ready_for_path(&frame, path, &config) {
-					continue;
+			let failed = restore::restore_each(paths, |path_str| {
+				let path = Path::new(path_str);
+				if !path.exists() {
+					tracing::info!(path = %path.display(), "previously open document is missing; forgetting it");
+					return false;
 				}
-				let _ = doc_manager.lock().unwrap().open_file_restore(&doc_manager, path);
+				if !ensure_parser_ready_for_path(&frame, path, &config) {
+					return false;
+				}
+				doc_manager.lock().unwrap().open_file_restore(&doc_manager, path)
+			});
+			{
+				let config = config.lock().unwrap();
+				for path in &failed {
+					config.remove_opened_document(path);
+				}
+				config.flush();
 			}
 			let mut target_idx = pre_restore_active;
 			if target_idx.is_none() && !active_path.is_empty() {

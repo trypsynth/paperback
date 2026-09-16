@@ -11,6 +11,7 @@ pub enum ActionId {
 	CloseAll,
 	ReopenLastClosed,
 	ShowAllRecentDocuments,
+	ClearRecentDocuments,
 	Exit,
 	Find,
 	FindNext,
@@ -105,6 +106,7 @@ impl ActionId {
 			Self::CloseAll,
 			Self::ReopenLastClosed,
 			Self::ShowAllRecentDocuments,
+			Self::ClearRecentDocuments,
 			Self::Exit,
 			Self::Find,
 			Self::FindNext,
@@ -199,6 +201,7 @@ impl ActionId {
 			| Self::CloseAll
 			| Self::ReopenLastClosed
 			| Self::ShowAllRecentDocuments
+			| Self::ClearRecentDocuments
 			| Self::Exit => ShortcutCategory::File,
 			Self::Find
 			| Self::FindNext
@@ -296,6 +299,8 @@ impl ActionId {
 			Self::ReopenLastClosed => crate::t("Reopen Last Closed"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ShowAllRecentDocuments => crate::t("Show All Recent Documents..."),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::ClearRecentDocuments => crate::t("Clear Recent Documents"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::Exit => crate::t("Exit"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -475,6 +480,7 @@ impl ActionId {
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "W")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
 			Self::ShowAllRecentDocuments => Some(KeyChord::new(true, false, false, "R")),
+			Self::ClearRecentDocuments => None,
 			Self::Exit => None,
 			Self::Find => Some(KeyChord::new(true, false, false, "F")),
 			Self::FindNext => Some(KeyChord::new(true, false, false, "G")),
@@ -571,6 +577,7 @@ impl ActionId {
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "F4")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
 			Self::ShowAllRecentDocuments => Some(KeyChord::new(true, false, false, "R")),
+			Self::ClearRecentDocuments => None,
 			Self::Exit => Some(KeyChord::new(true, false, false, "Q")),
 			Self::Find => Some(KeyChord::new(true, false, false, "F")),
 			Self::FindNext => Some(KeyChord::new(false, false, false, "F3")),

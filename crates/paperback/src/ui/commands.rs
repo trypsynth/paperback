@@ -143,6 +143,15 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Run(file::reopen_last_closed),
 	},
 	Command {
+		action: ActionId::ClearRecentDocuments,
+		// TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
+		label: || t("Clea&r Recent Documents"),
+		// TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
+		help: Some(|| t("Remove all documents from the Recent Documents list")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(file::clear_recent_documents),
+	},
+	Command {
 		action: ActionId::Exit,
 		// TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 		label: || t("E&xit"),

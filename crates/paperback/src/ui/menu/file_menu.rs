@@ -59,6 +59,7 @@ fn populate_recent_documents_menu(menu: &Menu, config: &ConfigManager) {
 	// TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
 	let show_all_label = format_menu_label(&t("Show All..."), ActionId::ShowAllRecentDocuments, config);
 	let _ = menu.append(menu_ids::SHOW_ALL_DOCUMENTS, &show_all_label, "", ItemKind::Normal);
+	commands::append_item(menu, ActionId::ClearRecentDocuments, config);
 }
 
 pub fn recent_documents_for_menu(config: &ConfigManager) -> Vec<String> {
@@ -81,5 +82,11 @@ mod tests {
 		for &action in ITEMS.iter().chain(std::iter::once(&EXIT_ITEM)) {
 			assert!(commands::for_action(action).is_some(), "{action:?} is in the File menu but not in COMMANDS");
 		}
+	}
+
+	/// The Recent Documents submenu appends this one outside `ITEMS`.
+	#[test]
+	fn clear_recent_documents_is_a_known_command() {
+		assert!(commands::for_action(ActionId::ClearRecentDocuments).is_some());
 	}
 }
