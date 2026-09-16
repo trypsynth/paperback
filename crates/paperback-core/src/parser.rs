@@ -9,7 +9,7 @@ use anyhow::Result;
 use paperback_formats::FormatMeta;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem, is_heading_marker},
 	t,
 	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
@@ -455,6 +455,51 @@ pub fn add_heading_markers_where(
 		}
 		add_heading_markers_where(buffer, &item.children, level + 1, wanted);
 	}
+}
+
+/// Gives a document heading navigation from its table of contents where its own text carries none.
+///
+/// A book that names every chapter in its table of contents but marks none of them up as a heading
+/// hands the reader a working Ctrl+T and nothing to move between with the heading key. This adds a
+/// heading marker for each table-of-contents entry, skipping any entry whose stretch of the book
+/// already holds a real heading, so a well-marked-up book is left alone and a poorly-marked one
+/// gains its chapters without anything being announced twice. Classic Gutenberg EPUBs and old CHMs
+/// and MOBIs all need this.
+pub fn add_toc_heading_markers(buffer: &mut DocumentBuffer, toc_items: &[TocItem]) {
+	let existing = heading_positions(buffer);
+	let spans = toc_entry_offsets(toc_items);
+	add_heading_markers_where(buffer, toc_items, 1, &|offset| !span_has_heading(&spans, &existing, offset));
+}
+
+/// Where the document's own text already carries a heading, sorted for the span check.
+fn heading_positions(buffer: &DocumentBuffer) -> Vec<usize> {
+	let mut positions: Vec<usize> =
+		buffer.markers.iter().filter(|marker| is_heading_marker(marker.mtype)).map(|marker| marker.position).collect();
+	positions.sort_unstable();
+	positions
+}
+
+/// Every table-of-contents entry offset in the tree, sorted, so the stretch one entry speaks for
+/// runs to wherever the next entry starts.
+fn toc_entry_offsets(items: &[TocItem]) -> Vec<usize> {
+	let mut offsets = Vec::new();
+	collect_toc_offsets(items, &mut offsets);
+	offsets.sort_unstable();
+	offsets
+}
+
+fn collect_toc_offsets(items: &[TocItem], out: &mut Vec<usize>) {
+	for item in items {
+		out.push(item.offset);
+		collect_toc_offsets(&item.children, out);
+	}
+}
+
+/// Whether the stretch of the book starting at `offset` and running to the next entry already holds
+/// a heading of its own.
+fn span_has_heading(spans: &[usize], existing: &[usize], offset: usize) -> bool {
+	let end = spans.iter().copied().find(|start| *start > offset).unwrap_or(usize::MAX);
+	existing.iter().any(|position| *position >= offset && *position < end)
 }
 
 /// Transfer all converter markers to a `DocumentBuffer`.

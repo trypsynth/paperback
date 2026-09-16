@@ -374,3 +374,41 @@ fn with_children(mut item: TocItem, children: Vec<TocItem>) -> TocItem {
 	item.children = children;
 	item
 }
+
+/// A book that lists its chapters in the table of contents but marks none of them up as a heading
+/// gets a heading for each entry, so the heading key reaches every chapter.
+#[test]
+fn add_toc_heading_markers_fills_in_unmarked_chapters() {
+	let mut buffer = DocumentBuffer::new();
+	buffer.append("Chapter One text\nChapter Two text\nChapter Three text\n");
+	let toc = vec![
+		TocItem::new("Chapter One".to_string(), String::new(), 0),
+		TocItem::new("Chapter Two".to_string(), String::new(), 17),
+		TocItem::new("Chapter Three".to_string(), String::new(), 34),
+	];
+	add_toc_heading_markers(&mut buffer, &toc);
+	let headings: Vec<usize> =
+		buffer.markers.iter().filter(|m| is_heading_marker(m.mtype)).map(|m| m.position).collect();
+	assert_eq!(headings, vec![0, 17, 34], "one heading per table-of-contents entry");
+}
+
+/// A chapter that already carries its own heading is not given a second one, so a well-marked book
+/// keeps exactly the headings it wrote.
+#[test]
+fn add_toc_heading_markers_does_not_double_an_existing_heading() {
+	let mut buffer = DocumentBuffer::new();
+	buffer.append("Chapter One text\nChapter Two text\n");
+	// The second chapter already has a real heading in its span.
+	buffer.add_marker(Marker::new(MarkerType::Heading1, 17).with_text("Chapter Two".to_string()).with_level(1));
+	let toc = vec![
+		TocItem::new("Chapter One".to_string(), String::new(), 0),
+		TocItem::new("Chapter Two".to_string(), String::new(), 17),
+	];
+	add_toc_heading_markers(&mut buffer, &toc);
+	let heads_at_17 = buffer.markers.iter().filter(|m| is_heading_marker(m.mtype) && m.position == 17).count();
+	assert_eq!(heads_at_17, 1, "the marked-up chapter is not doubled");
+	assert!(
+		buffer.markers.iter().any(|m| is_heading_marker(m.mtype) && m.position == 0),
+		"the unmarked one is filled in"
+	);
+}
