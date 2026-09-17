@@ -215,12 +215,7 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 * Wyszukiwanie przenosi teraz od razu do znalezionego wiersza, bez wysłuchiwania, jak czytnik ekranu ponownie odczytuje całe okno przy powrocie do książki.
 * Naprawiono otwieranie plików EPUB z pozostawionym blokiem ZIP64, które kończyło się komunikatem „Invalid local file header".
 * Naprawiono wracanie długich dokumentów na początek, kiedy czytnik ekranu czytał je ciągiem.
-* Naprawiono pliki PDF wyeksportowane z programu Apple Pages, które czytały się jak zwykły tekst, bez nagłówków i list, z którymi zostały napisane.
 * Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast kończyć się komunikatem „Nie znaleziono pliku".
-* Pliki PDF, które oznaczają żywą paginację jako zwykły tekst, nie powtarzają już tytułu i numeru strony pomiędzy dwoma akapitami.
-* Pliki PDF, które mają strukturę czytania, ale nie oznaczają żadnego ze swoich obrazów, zapowiadają teraz te obrazy, zamiast pomijać je w treści.
-* Książki FictionBook (`.fb2`) zapisane w kodowaniu windows-1251, czyli większość z nich, otwierają się teraz, zamiast nie dać się odczytać wcale.
-* Książki FictionBook, które używają niezadeklarowanej przestrzeni nazw albo encji HTML, otwierają się teraz, zamiast zostać odrzucone jako uszkodzone.
 * Skrót `=` podaje teraz oprócz procentu także numer strony, na przykład „15%, strona 30", a w dokumentach bez stron działa jak dotychczas.
 * Automatyczny komunikat o przeładowaniu dokumentu nie przerywa już czytnikowi ekranu w połowie zdania, a czeka, aż skończy wypowiedź.
 * Na karcie Ogólne w oknie ustawień tabulator przechodzi teraz przez opcje w kolejności, w jakiej są widoczne na ekranie, a kanał aktualizacji następuje bezpośrednio po opcji sprawdzania aktualizacji.
