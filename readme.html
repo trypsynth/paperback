@@ -428,6 +428,8 @@ current position.</li>
 <li><code>F</code>: Next figure.</li>
 <li><code>Shift+T</code>: Previous table.</li>
 <li><code>T</code>: Next table.</li>
+<li><code>Shift+M</code>: Previous formula.</li>
+<li><code>M</code>: Next formula.</li>
 <li><code>Shift+S</code>: Previous separator.</li>
 <li><code>S</code>: Next separator.</li>
 <li><code>Shift+L</code>: Previous list.</li>
@@ -494,8 +496,7 @@ keys</h2>
 <li><code>Delete</code> / <code>Numpad Delete</code> on the tab control:
 Close the selected document tab.</li>
 <li><code>Enter</code> or <code>Space</code> in the document text:
-Activate link at cursor, or open a table view when on a table
-marker.</li>
+Follow a link or open a table or formula view at the cursor.</li>
 <li><code>Shift+F10</code> or the Menu/Application key in the document
 text: Open the context menu.</li>
 </ul>
@@ -674,6 +675,10 @@ tables are displayed across documents.</li>
 </ul>
 <h4 id="navigation">Navigation</h4>
 <ul>
+<li>MathML formulas in EPUB and HTML are rendered as AsciiMath using
+MathCAT. Use <code>M</code> or <code>Shift+M</code> to navigate
+formulas, then <code>Enter</code> or <code>Space</code> to open the
+original MathML in Formula View.</li>
 <li>Support for navigating by container.</li>
 <li>An option to automatically move the cursor to the start of the line
 when navigating between lines, similar to browse mode in screen
