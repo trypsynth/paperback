@@ -464,6 +464,13 @@ Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.</li>
 sovellusvalikosta).</li>
 <li><code>Ctrl+Shift+S</code>: Ota uniajastin käyttöön tai poista se
 käytöstä.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Merkitse valinnan
+alkukohta.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Kopioi valinnan
+merkityn alkukohdan ja kohdistimen nykyisen sijainnin välinen
+teksti.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Palaa
+valinnan alkukohtaan.</li>
 </ul>
 <h2 id="ohje-valikko">Ohje-valikko</h2>
 <ul>
@@ -554,26 +561,19 @@ asiakirjan eikä pelkkää näytettävää osaa.</li>
 <li>Etsi-toiminto siirtää suoraan löytämälleen riville eikä ruudunlukija
 enää lue koko ikkunaa uudelleen kohdistuksen palatessa kirjaan.</li>
 <li>Korjattu ongelma, jonka vuoksi ylimääräisen ZIP64-lohkon sisältämät
-EPUB-tiedostot eivät avautuneet, vaan antoivat virheilmoituksen ”Invalid
-local file header”.</li>
+EPUB-tiedostot aiheuttivat ”Invalid local file header” -virheilmoituksen
+sen sijaan, että olisivat avautuneet normaalisti.</li>
 <li>Pitkissä asiakirjoissa ei enää palata alkuun, kun niitä luetaan
 ruudunlukijan jatkuvalla luvulla.</li>
-<li>Korjattu ongelma, jonka vuoksi Apple Pages -sovelluksesta viedyt
-PDF-tiedostot luettiin pelkkänä tekstinä ilman niihin sisältyviä
-otsikoita ja luetteloita.</li>
 <li>Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä
 aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.</li>
-<li>Otsikko ja sivunumero eivät enää toistu jokaisella sivulla
-kappaleiden välissä PDF-tiedostoissa, joissa ylä- ja alatunnisteet on
-merkitty tavalliseksi tekstiksi.</li>
-<li>PDF-tiedostojen merkitsemättömät kuvat ilmoitetaan nyt, jos
-tiedostossa on lukemisjärjestys, eikä niitä enää jätetä kirjasta
-kokonaan pois.</li>
-<li>Windows-1251-merkistökoodausta käyttävät FictionBook-kirjat (.fb2)
-avautuvat nyt oikein. Suurin osa FB2-kirjoista on tällaisia.</li>
-<li>FictionBook-kirjat, joissa käytetään määrittelemätöntä nimiavaruutta
-tai HTML-entiteettiä, avautuvat nyt eikä niitä enää hylätä
-virheellisinä.</li>
+<li>Merkitse valinnan alkukohta näppäinyhdistelmällä
+<code>Alt+F9</code>, kopioi valinnan alkukohdan ja nykyisen sijainnin
+välinen teksti näppäinyhdistelmällä <code>Alt+F10</code> ja palaa
+valinnan alkukohtaan näppäinyhdistelmällä <code>Alt+Shift+F9</code>.
+Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Shift-
+ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon
+kohdasta Valitse ja kopioi.</li>
 <li>=-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim.
 ”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole
 sivunumeroita.</li>
