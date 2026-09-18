@@ -137,6 +137,9 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisi
 * `F11` (macOS: `RawCtrl+Ctrl+F` eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.
 * `Ctrl+,`: Avaa asetukset (löytyy macOS:ää käytettäessä sovellusvalikosta).
 * `Ctrl+Shift+S`: Ota uniajastin käyttöön tai poista se käytöstä.
+* `Alt+F9` (macOS: `Cmd+F9`): Merkitse valinnan alkukohta.
+* `Alt+F10` (macOS: `Cmd+F10`): Kopioi valinnan merkityn alkukohdan ja kohdistimen nykyisen sijainnin välinen teksti.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Palaa valinnan alkukohtaan.
 
 ### Ohje-valikko
 
@@ -214,6 +217,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu ongelma, jonka vuoksi ylimääräisen ZIP64-lohkon sisältämät EPUB-tiedostot aiheuttivat ”Invalid local file header” -virheilmoituksen sen sijaan, että olisivat avautuneet normaalisti.
 * Pitkissä asiakirjoissa ei enää palata alkuun, kun niitä luetaan ruudunlukijan jatkuvalla luvulla.
 * Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.
+* Merkitse valinnan alkukohta näppäinyhdistelmällä `Alt+F9`, kopioi valinnan alkukohdan ja nykyisen sijainnin välinen teksti näppäinyhdistelmällä `Alt+F10` ja palaa valinnan alkukohtaan näppäinyhdistelmällä `Alt+Shift+F9`. Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Shift- ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon kohdasta Valitse ja kopioi.
 * =-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim. ”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole sivunumeroita.
 * Automaattinen ”Asiakirja päivitetty” -ilmoitus odottaa nyt ruudunlukijan puheen päättymistä eikä keskeytä sitä enää kesken lauseen.
 * Asetukset-ikkunan Yleiset-välilehden sarkainjärjestys noudattaa nyt näytön järjestystä, ja päivityskanava on heti päivitystarkistuksen jälkeen.
