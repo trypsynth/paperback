@@ -32,6 +32,7 @@ mod menu_file;
 mod menu_go;
 mod menu_tools;
 mod parser_ready;
+mod restore;
 pub(crate) use parser_ready::ensure_parser_ready_for_path;
 
 #[cfg(target_os = "windows")]
@@ -43,12 +44,6 @@ use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
 mod foreground;
 #[cfg(target_os = "windows")]
 pub(super) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
-
-#[derive(Default)]
-struct RestoreState {
-	restored: bool,
-	closing: bool,
-}
 
 pub struct MainWindow {
 	frame: Frame,
@@ -307,7 +302,7 @@ impl MainWindow {
 				}
 			});
 		}
-		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
+		restore::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
 		Self {
 			frame,
 			doc_manager,
@@ -517,69 +512,7 @@ impl MainWindow {
 	}
 
 	fn update_recent_documents_menu(&self) {
-		let menu_bar = menu::create_menu_bar(&self.config.lock().unwrap());
-		self.frame.set_menu_bar(menu_bar);
-		let dm_ref = self.doc_manager.lock().unwrap();
-		let has_docs = dm_ref.tab_count() > 0;
-		let has_reopen = dm_ref.has_recently_closed();
-		drop(dm_ref);
-		menu::update_menu_item_states(&self.frame, has_docs);
-		menu::update_reopen_state(&self.frame, has_reopen);
-	}
-
-	fn schedule_restore_documents(
-		frame: Frame,
-		doc_manager: Rc<Mutex<DocumentManager>>,
-		config: Rc<Mutex<ConfigManager>>,
-	) {
-		let restore = config.lock().unwrap().get_app_bool("restore_previous_documents", true);
-		if !restore {
-			return;
-		}
-		let state = Rc::new(Mutex::new(RestoreState::default()));
-		let state_for_close = Rc::clone(&state);
-		frame.on_close(move |_event| {
-			state_for_close.lock().unwrap().closing = true;
-		});
-		let state_for_destroy = Rc::clone(&state);
-		frame.on_destroy(move |_event| {
-			state_for_destroy.lock().unwrap().closing = true;
-		});
-		let state_for_idle = Rc::clone(&state);
-		frame.on_idle(move |_event| {
-			let mut state = state_for_idle.lock().unwrap();
-			if state.restored || state.closing {
-				return;
-			}
-			state.restored = true;
-			drop(state);
-			let pre_restore_active = doc_manager.lock().unwrap().active_tab_index();
-			let active_path = config.lock().unwrap().get_app_string("active_document", "");
-			let paths = config.lock().unwrap().get_opened_documents_existing();
-			tracing::info!(count = paths.len(), "restoring previously open documents");
-			for path in paths {
-				let path = Path::new(&path);
-				if !ensure_parser_ready_for_path(&frame, path, &config) {
-					continue;
-				}
-				let _ = doc_manager.lock().unwrap().open_file_restore(&doc_manager, path);
-			}
-			let mut target_idx = pre_restore_active;
-			if target_idx.is_none() && !active_path.is_empty() {
-				target_idx = doc_manager.lock().unwrap().find_tab_by_path(Path::new(&active_path));
-			}
-			if let Some(idx) = target_idx {
-				doc_manager.lock().unwrap().notebook().set_selection(idx);
-			}
-			let dm_ref = doc_manager.lock().unwrap();
-			update_title_from_manager(&frame, &dm_ref);
-			let has_docs = dm_ref.tab_count() > 0;
-			let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-			frame.set_menu_bar(menu_bar);
-			menu::update_menu_item_states(&frame, has_docs);
-			menu::update_reopen_state(&frame, false);
-			dm_ref.restore_focus();
-		});
+		rebuild_menu_bar(&self.frame, &self.doc_manager, &self.config);
 	}
 
 	/// Prompts for a save path and exports `tab`'s document as `format`, showing a
@@ -635,6 +568,23 @@ pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_reg
 		live_region::announce(live_region_label, next);
 	}
 	dm.close_document(index, true);
+}
+
+/// Replaces `frame`'s menu bar with one built from `config`, then re-applies the item states
+/// that depend on the open documents and the reopen stack.
+pub(crate) fn rebuild_menu_bar(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+) {
+	let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+	frame.set_menu_bar(menu_bar);
+	let dm_ref = doc_manager.lock().unwrap();
+	let has_docs = dm_ref.tab_count() > 0;
+	let has_reopen = dm_ref.has_recently_closed();
+	drop(dm_ref);
+	menu::update_menu_item_states(frame, has_docs);
+	menu::update_reopen_state(frame, has_reopen);
 }
 
 pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {

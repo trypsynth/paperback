@@ -31,7 +31,7 @@ mod edit_ids {
 const BASE: i32 = 5000;
 
 // File menu (BASE + 0..99)
-seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED);
+seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS);
 
 // Recent documents - reserved range (BASE + 100..199)
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
@@ -130,6 +130,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::CloseAll => CLOSE_ALL,
 		ActionId::ReopenLastClosed => REOPEN_LAST_CLOSED,
 		ActionId::ShowAllRecentDocuments => SHOW_ALL_DOCUMENTS,
+		ActionId::ClearRecentDocuments => CLEAR_RECENT_DOCUMENTS,
 		ActionId::Exit => EXIT,
 		ActionId::Find => FIND,
 		ActionId::FindNext => FIND_NEXT,
@@ -219,5 +220,18 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::ViewHelpPaperback => VIEW_HELP_PAPERBACK,
 		ActionId::CheckForUpdates => CHECK_FOR_UPDATES,
 		ActionId::Donate => DONATE,
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn clear_recent_documents_has_a_file_menu_id() {
+		use paperback_core::config::ActionId;
+		let id = action_to_menu_id(ActionId::ClearRecentDocuments);
+		assert_eq!(id, CLEAR_RECENT_DOCUMENTS);
+		assert!(id < RECENT_DOCUMENT_BASE);
 	}
 }

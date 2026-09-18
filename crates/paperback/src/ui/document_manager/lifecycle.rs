@@ -284,6 +284,9 @@ impl DocumentManager {
 		while !self.tabs.is_empty() {
 			self.close_document(0, true);
 		}
+		let config = self.config.lock().unwrap();
+		config.clear_opened_documents();
+		config.flush();
 	}
 
 	pub fn save_all_positions(&self) {
