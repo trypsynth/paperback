@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 13:31-0600\n"
+"POT-Creation-Date: 2026-09-16 08:05-0600\n"
 "PO-Revision-Date: 2026-06-08 13:45+0200\n"
 "Last-Translator: Michał Dziwisz <michal@dziwisz.net>\n"
 "Language-Team: Polish\n"
@@ -874,6 +874,82 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
+#. TRANSLATORS: Description text shown when the background color is set to default
+msgid "Background: Default"
+msgstr "Tło: domyślne"
+
+#. TRANSLATORS: Description text shown when the font is set to default
+msgid "Font: Default"
+msgstr "Czcionka: domyślna"
+
+#. TRANSLATORS: Fallback font name
+msgid "Default"
+msgstr "Domyślne"
+
+#. TRANSLATORS: Font description prefix; {} is the font face name
+msgid "Font: {}"
+msgstr "Czcionka: {}"
+
+#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+msgid "{}pt"
+msgstr "{} pt"
+
+#. TRANSLATORS: Font weight attribute name
+msgid "Bold"
+msgstr "Pogrubienie"
+
+#. TRANSLATORS: Font style attribute name
+msgid "Italic"
+msgstr "Kursywa"
+
+#. TRANSLATORS: Font underline attribute name
+msgid "Underlined"
+msgstr "Podkreślenie"
+
+#. TRANSLATORS: Font strikethrough attribute name
+msgid "Strikethrough"
+msgstr "Przekreślenie"
+
+#. TRANSLATORS: Title of the system dialog for picking a font
+msgid "Choose a font"
+msgstr "Wybierz czcionkę"
+
+#. TRANSLATORS: Title of the hotkey customization dialog
+msgid "Window Hotkey"
+msgstr "Skrót okna"
+
+#. TRANSLATORS: Checkbox label for Control modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox label for Alt modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox label for Shift modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+msgid "&Shift"
+msgstr "&Shift"
+
+#. TRANSLATORS: Checkbox label for Windows modifier key
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label for the hotkey key selection input field
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+msgid "&Key:"
+msgstr "&Klawisz:"
+
+#. TRANSLATORS: Button label to clear the current hotkey selection
+msgid "Clear"
+msgstr "Wyczyść"
+
+#. TRANSLATORS: Representation of the Spacebar key
+msgid "Space"
+msgstr "Spacja"
+
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
 msgstr "Ustawienia"
@@ -1067,82 +1143,6 @@ msgstr "Czytelność"
 msgid "Choose a colour"
 msgstr "Wybierz kolor"
 
-#. TRANSLATORS: Description text shown when the background color is set to default
-msgid "Background: Default"
-msgstr "Tło: domyślne"
-
-#. TRANSLATORS: Description text shown when the font is set to default
-msgid "Font: Default"
-msgstr "Czcionka: domyślna"
-
-#. TRANSLATORS: Fallback font name
-msgid "Default"
-msgstr "Domyślne"
-
-#. TRANSLATORS: Font description prefix; {} is the font face name
-msgid "Font: {}"
-msgstr "Czcionka: {}"
-
-#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
-msgid "{}pt"
-msgstr "{} pt"
-
-#. TRANSLATORS: Font weight attribute name
-msgid "Bold"
-msgstr "Pogrubienie"
-
-#. TRANSLATORS: Font style attribute name
-msgid "Italic"
-msgstr "Kursywa"
-
-#. TRANSLATORS: Font underline attribute name
-msgid "Underlined"
-msgstr "Podkreślenie"
-
-#. TRANSLATORS: Font strikethrough attribute name
-msgid "Strikethrough"
-msgstr "Przekreślenie"
-
-#. TRANSLATORS: Title of the system dialog for picking a font
-msgid "Choose a font"
-msgstr "Wybierz czcionkę"
-
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "Skrót okna"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-msgid "&Ctrl"
-msgstr "&Ctrl"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-msgid "&Alt"
-msgstr "&Alt"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-msgid "&Shift"
-msgstr "&Shift"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-msgid "&Win"
-msgstr "&Win"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-msgid "&Key:"
-msgstr "&Klawisz:"
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-msgid "Clear"
-msgstr "Wyczyść"
-
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "Spacja"
-
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Wyłącznik czasowy"
@@ -1197,6 +1197,22 @@ msgstr[0] "Ten dokument zawiera %d słowo."
 msgstr[1] "Ten dokument zawiera %d słowa."
 msgstr[2] "Ten dokument zawiera %d słów."
 
+#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
+msgid "File not found: {}"
+msgstr "Nie znaleziono pliku: {}"
+
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
+msgid "A .paperback file was found for this document. Would you like to import it?"
+msgstr "Znaleziono plik .paperback dla tego dokumentu. Czy chcesz go zaimportować?"
+
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
+msgid "Import document data"
+msgstr "Importuj dane dokumentu"
+
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
+msgid "Password is required."
+msgstr "Hasło jest wymagane."
+
 #. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
 msgid "OCR in progress."
 msgstr "Rozpoznawanie tekstu w toku."
@@ -1239,22 +1255,6 @@ msgid_plural "Batch OCR complete. %d pages recognized."
 msgstr[0] "Zbiorcze OCR zakończone. Rozpoznano %d stronę."
 msgstr[1] "Zbiorcze OCR zakończone. Rozpoznano %d strony."
 msgstr[2] "Zbiorcze OCR zakończone. Rozpoznano %d stron."
-
-#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
-msgid "File not found: {}"
-msgstr "Nie znaleziono pliku: {}"
-
-#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
-msgid "A .paperback file was found for this document. Would you like to import it?"
-msgstr "Znaleziono plik .paperback dla tego dokumentu. Czy chcesz go zaimportować?"
-
-#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
-msgid "Import document data"
-msgstr "Importuj dane dokumentu"
-
-#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
-msgid "Password is required."
-msgstr "Hasło jest wymagane."
 
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
@@ -1372,9 +1372,19 @@ msgstr "Nie udało się uruchomić domyślnej przeglądarki."
 msgid "Failed to open donation page in browser."
 msgstr "Nie udało się otworzyć strony wsparcia w przeglądarce."
 
-#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
-msgid "Unsupported format selected."
-msgstr "Wybrano nieobsługiwany format."
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+msgid "Word wrap on."
+msgstr "Zawijanie wierszy włączone."
+
+msgid "Word wrap off."
+msgstr "Zawijanie wierszy wyłączone."
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+msgid "Full screen on."
+msgstr "Tryb pełnoekranowy włączony."
+
+msgid "Full screen off."
+msgstr "Tryb pełnoekranowy wyłączony."
 
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -1475,6 +1485,10 @@ msgstr "Zakładki i notatki zostały zaimportowane."
 msgid "Import Successful"
 msgstr "Import zakończony"
 
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
+msgid "Unsupported format selected."
+msgstr "Wybrano nieobsługiwany format."
+
 #. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
 msgstr "Paperback"
@@ -1499,20 +1513,6 @@ msgstr[2] "%d znaków"
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Nie udało się wyeksportować dokumentu."
-
-#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-msgid "Word wrap on."
-msgstr "Zawijanie wierszy włączone."
-
-msgid "Word wrap off."
-msgstr "Zawijanie wierszy wyłączone."
-
-#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-msgid "Full screen on."
-msgstr "Tryb pełnoekranowy włączony."
-
-msgid "Full screen off."
-msgstr "Tryb pełnoekranowy wyłączony."
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 msgid "&Undo\tCtrl+Z"
@@ -2466,6 +2466,10 @@ msgstr "Pomoc"
 msgid "None"
 msgstr "Brak"
 
+#. TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
+msgid "This view shows the part of the document you are reading."
+msgstr "Ten widok pokazuje tę część dokumentu, którą właśnie czytasz."
+
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
 msgstr "[Tylko obraz. Naciśnij Enter, aby rozpoznać tekst.]"
@@ -2655,6 +2659,16 @@ msgstr "Przepełnienie stosu podczas dekodowania"
 msgid "File too short"
 msgstr "Plik jest za krótki"
 
+#. TRANSLATORS: Error detail shown when an OpenDocument file is encrypted and no password was given (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+msgid "Password required"
+msgstr "Wymagane hasło"
+
+#. TRANSLATORS: Error detail shown when the password for an OpenDocument file is wrong (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+msgid "Password incorrect"
+msgstr "Nieprawidłowe hasło"
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
 msgstr "Plik ODP nie zawiera żadnych stron"
@@ -2740,14 +2754,6 @@ msgstr "Nie znaleziono parsera dla rozszerzenia: .{}"
 #. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
 msgid "All parsers failed for extension: .{}"
 msgstr "Wszystkie parsery zawiodły dla rozszerzenia: .{}"
-
-#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-msgid "Password required"
-msgstr "Wymagane hasło"
-
-#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
-msgid "Password incorrect"
-msgstr "Nieprawidłowe hasło"
 
 msgid "Unknown update file format."
 msgstr "Nieznany format pliku aktualizacji."
@@ -2958,7 +2964,7 @@ msgstr "Przełącz na tryb mowy"
 msgid "Switch to Text Mode"
 msgstr "Przełącz na tryb tekstowy"
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
+#. TRANSLATORS: Menu item to open the list of recently opened documents
 #: swift
 msgid "Recent Documents"
 msgstr "Ostatnie dokumenty"
@@ -3023,7 +3029,7 @@ msgstr "Otwórz książkę"
 msgid "Locate"
 msgstr "Zlokalizuj"
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
+#. TRANSLATORS: Button to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr "Usuń"
@@ -3401,6 +3407,7 @@ msgstr "Następny element: {}"
 msgid "Press play to start listening."
 msgstr "Naciśnij przycisk odtwarzania, aby rozpocząć słuchanie."
 
+#. TRANSLATORS: Menu item / accessibility action to show metadata (title, author, etc.) about the current document
 #: kt
 msgid "Document Information"
 msgstr "Informacje o dokumencie"
@@ -3580,7 +3587,7 @@ msgstr "Ten dokument zawiera {} słowa."
 msgid "words"
 msgstr "słowa"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr "Zamknij wyszukiwanie"
