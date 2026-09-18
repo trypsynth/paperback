@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.paperback.android.t
 import dev.paperback.android.ui.state.DocumentTabState
+import dev.paperback.android.ui.state.lineIndexFor
 import kotlinx.coroutines.launch
 import uniffi.paperback.LinkAction
 import uniffi.paperback.MarkerType
@@ -58,6 +59,15 @@ fun DocumentTextView(
 ) {
 	val context = LocalContext.current
 	val scope = rememberCoroutineScope()
+	// Reaching a position means scrolling its line into view and marking it as the line to focus,
+	// so a screen reader lands on it rather than wherever the list happened to stop.
+	val goToPosition: (Long) -> Unit = { position ->
+		val targetIndex = lineIndexFor(docState.session.lineFromPosition(position))
+		scope.launch {
+			listState.scrollToItem(targetIndex)
+			onLineIndexChange(targetIndex)
+		}
+	}
 	LazyColumn(
 		state = listState,
 		modifier = Modifier.fillMaxSize().semantics { isTraversalGroup = true },
@@ -97,31 +107,12 @@ fun DocumentTextView(
 					var currentIdx = 0
 					val sortedMarkers = markers.sortedBy { it.position }
 					sortedMarkers.forEach { marker ->
+						val markerHeadingLevel = headingLevelOf(marker.mtype)
+						if (markerHeadingLevel != null) {
+							isHeading = true
+							headingLevel = markerHeadingLevel
+						}
 						when (marker.mtype) {
-							MarkerType.HEADING1 -> {
-								isHeading = true
-								headingLevel = 1
-							}
-							MarkerType.HEADING2 -> {
-								isHeading = true
-								headingLevel = 2
-							}
-							MarkerType.HEADING3 -> {
-								isHeading = true
-								headingLevel = 3
-							}
-							MarkerType.HEADING4 -> {
-								isHeading = true
-								headingLevel = 4
-							}
-							MarkerType.HEADING5 -> {
-								isHeading = true
-								headingLevel = 5
-							}
-							MarkerType.HEADING6 -> {
-								isHeading = true
-								headingLevel = 6
-							}
 							MarkerType.LINK -> {
 								val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
 								val markerTextLength = marker.text.length
@@ -148,14 +139,7 @@ fun DocumentTextView(
 													val intent = Intent(Intent.ACTION_VIEW, result.url.toUri())
 													context.startActivity(intent)
 												}
-												LinkAction.INTERNAL -> {
-													val targetLine = docState.session.lineFromPosition(result.offset)
-													val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-													scope.launch {
-														listState.scrollToItem(targetIndex)
-														onLineIndexChange(targetIndex)
-													}
-												}
+												LinkAction.INTERNAL -> goToPosition(result.offset)
 												else -> {}
 											}
 										}
@@ -211,28 +195,14 @@ fun DocumentTextView(
 								val nextLine = (index + 2).toLong().coerceAtMost(docState.lineCount)
 								val searchPos = docState.session.positionFromLine(nextLine)
 								val res = docState.session.searchFfi(currentQuery, searchPos, currentOptions.copy(forward = true))
-								if (res.found) {
-									val targetLine = docState.session.lineFromPosition(res.position)
-									val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-									scope.launch {
-										listState.scrollToItem(targetIndex)
-										onLineIndexChange(targetIndex)
-									}
-								}
+								if (res.found) goToPosition(res.position)
 								true
 							},
 							// TRANSLATORS: Accessibility action on a text line to jump to the previous search match
 							CustomAccessibilityAction(t("Find Previous")) {
 								val searchPos = docState.session.positionFromLine((index + 1).toLong())
 								val res = docState.session.searchFfi(currentQuery, searchPos, currentOptions.copy(forward = false))
-								if (res.found) {
-									val targetLine = docState.session.lineFromPosition(res.position)
-									val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-									scope.launch {
-										listState.scrollToItem(targetIndex)
-										onLineIndexChange(targetIndex)
-									}
-								}
+								if (res.found) goToPosition(res.position)
 								true
 							},
 							// TRANSLATORS: Accessibility action on a text line to dismiss the in-document search

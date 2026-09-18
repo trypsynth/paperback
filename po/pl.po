@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-12 18:19-0600\n"
+"POT-Creation-Date: 2026-09-13 13:31-0600\n"
 "PO-Revision-Date: 2026-06-08 13:45+0200\n"
 "Last-Translator: Michał Dziwisz <michal@dziwisz.net>\n"
 "Language-Team: Polish\n"
@@ -1276,6 +1276,10 @@ msgstr "Brak zakładki tymczasowej."
 msgid "Temporary bookmark."
 msgstr "Zakładka tymczasowa."
 
+#. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
+msgid "%s, page %d"
+msgstr "%s, strona %d"
+
 #. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr "&Hasło:"
@@ -2470,6 +2474,11 @@ msgstr "[Tylko obraz. Naciśnij Enter, aby rozpoznać tekst.]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Tylko obraz. Ta strona nie zawiera tekstu do przeczytania.]"
 
+#. TRANSLATORS: Error shown on Android when opening a comic book archive packed with RAR (.cbr), which that build cannot read
+msgid "Paperback cannot read RAR comic archives on this device. Repack it as a .cbz to read it here."
+msgstr "Paperback nie odczyta na tym urządzeniu archiwów komiksów RAR. Przepakuj je do formatu .cbz, aby je tu przeczytać."
+
+#. TRANSLATORS: Error shown when a comic book archive (.cbr) cannot be opened; {} is the underlying error
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
 msgstr "Nie udało się przetworzyć archiwum komiksu: {}"
@@ -2662,12 +2671,19 @@ msgstr "Wymagane hasło albo hasło jest nieprawidłowe"
 msgid "Failed to open PDF document: {}"
 msgstr "Nie udało się otworzyć dokumentu PDF: {}"
 
-msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
-msgstr "Pliki PPT chronione hasłem nie są obecnie obsługiwane. Spróbuj zapisać plik w formacie PPTX i otworzyć tę wersję."
-
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 msgid "PPT file contains no slides"
 msgstr "Plik PPT nie zawiera żadnych slajdów"
+
+#. TRANSLATORS: Error detail shown when an encrypted PowerPoint file needs a password (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+msgid "File is encrypted and requires a password"
+msgstr "Plik jest zaszyfrowany i wymaga hasła"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office file fails; {} is the underlying error
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+msgid "Decryption failed (wrong password?): {}"
+msgstr "Nie udało się odszyfrować (błędne hasło?): {}"
 
 #. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
 msgid "PowerPoint Document stream not found"
@@ -2680,14 +2696,6 @@ msgstr "Plik PPTX nie zawiera żadnych slajdów"
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 msgid "Failed to parse RTF document: {}"
 msgstr "Nie udało się przetworzyć dokumentu RTF: {}"
-
-#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-msgid "File is encrypted and requires a password"
-msgstr "Plik jest zaszyfrowany i wymaga hasła"
-
-#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-msgid "Decryption failed (wrong password?): {}"
-msgstr "Nie udało się odszyfrować (błędne hasło?): {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -2950,7 +2958,7 @@ msgstr "Przełącz na tryb mowy"
 msgid "Switch to Text Mode"
 msgstr "Przełącz na tryb tekstowy"
 
-#. TRANSLATORS: Menu item to open the list of recently opened documents
+#. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
 msgid "Recent Documents"
 msgstr "Ostatnie dokumenty"
@@ -3015,7 +3023,7 @@ msgstr "Otwórz książkę"
 msgid "Locate"
 msgstr "Zlokalizuj"
 
-#. TRANSLATORS: Button to remove a document from the recent documents list
+#. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr "Usuń"
@@ -3500,7 +3508,7 @@ msgstr "Nie teraz"
 msgid "Custom Timer"
 msgstr "Własny wyłącznik czasowy"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 msgid "Back"
 msgstr "Wstecz"
@@ -3572,7 +3580,7 @@ msgstr "Ten dokument zawiera {} słowa."
 msgid "words"
 msgstr "słowa"
 
-#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
+#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
 msgid "Close Search"
 msgstr "Zamknij wyszukiwanie"
@@ -3582,7 +3590,6 @@ msgstr "Zamknij wyszukiwanie"
 msgid "Document exported"
 msgstr "Dokument wyeksportowany"
 
-#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 msgid "Failed to export document"
 msgstr "Nie udało się wyeksportować dokumentu"
@@ -3886,6 +3893,67 @@ msgstr "Przy włączonym VoiceOverze przesuń palcem w górę na przycisku odtwa
 #: kt
 msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
 msgstr "Przy włączonym TalkBacku przesuń palcem w górę na przycisku odtwarzania, aby przejść do przodu, albo w dół, aby wrócić."
+
+#. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
+#: kt
+msgid "Current path: {}"
+msgstr "Bieżąca ścieżka: {}"
+
+#: kt
+msgid "{}, {}, modified {}{}"
+msgstr "{}, {}, zmodyfikowano {}{}"
+
+#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
+#: kt
+msgid "{} percent"
+msgstr "{} procent"
+
+#. TRANSLATORS: TalkBack state of a heading line in the document; {} is its level number
+#: kt
+msgid "Heading {}"
+msgstr "Nagłówek {}"
+
+#. TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
+#: kt
+msgid "go to heading"
+msgstr "przejść do nagłówka"
+
+#: kt
+msgid "{}, Level {}"
+msgstr "{}, poziom {}"
+
+#. TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
+#: kt
+msgid "go to link"
+msgstr "przejść do odnośnika"
+
+#. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
+#: kt
+msgid "show import and export options"
+msgstr "pokazać opcje importu i eksportu"
+
+#. TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
+#: kt
+msgid "open"
+msgstr "otworzyć"
+
+#. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
+#: kt
+msgid "go to chapter"
+msgstr "przejść do rozdziału"
+
+#. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+#: kt
+msgid "This is a sample of the selected speech engine."
+msgstr "To próbka wybranego silnika mowy."
+
+#. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+#: kt
+msgid "This document does not contain pages."
+msgstr "Ten dokument nie zawiera stron."
+
+#~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+#~ msgstr "Pliki PPT chronione hasłem nie są obecnie obsługiwane. Spróbuj zapisać plik w formacie PPTX i otworzyć tę wersję."
 
 #~ msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
 #~ msgstr "Ten plik PDF zawiera wyłącznie obrazy i nie ma w nim tekstu, który można wyodrębnić. Aby poznać jego treść, być może trzeba będzie przetworzyć go programem rozpoznającym tekst (OCR)."

@@ -45,3 +45,31 @@ fn looks_like_text_content_detects_textual_data() {
 	assert!(looks_like_text_content("Manual Title\nLine 2\nLine 3"));
 	assert!(!looks_like_text_content("\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}"));
 }
+
+/// Word 6/95 keeps its text in the WordDocument stream between fcMin and fcMac. A Western document
+/// decodes cleanly through the shared detector.
+#[test]
+fn extract_word6_text_reads_the_fcmin_to_fcmac_run() {
+	use super::extract_word6_text;
+	let text = b"Harold Koplow, Gainesville FL.";
+	let fc_min = 0x300usize;
+	let mut wd = vec![0u8; fc_min + text.len()];
+	// nFib 101 (Word 6) and the magic are not read by this function, only fcMin/fcMac are.
+	wd[0x18..0x1C].copy_from_slice(&u32::try_from(fc_min).unwrap().to_le_bytes());
+	wd[0x1C..0x20].copy_from_slice(&u32::try_from(fc_min + text.len()).unwrap().to_le_bytes());
+	wd[fc_min..].copy_from_slice(text);
+	assert_eq!(extract_word6_text(&wd).trim(), "Harold Koplow, Gainesville FL.");
+}
+
+/// Bounds that make no sense (fcMac at or before fcMin, or past the stream) fall back to the
+/// simple scan rather than panicking on a bad slice.
+#[test]
+fn extract_word6_text_survives_nonsense_bounds() {
+	use super::extract_word6_text;
+	let mut wd = vec![0u8; 0x40];
+	// fcMac before fcMin.
+	wd[0x18..0x1C].copy_from_slice(&0x30u32.to_le_bytes());
+	wd[0x1C..0x20].copy_from_slice(&0x10u32.to_le_bytes());
+	// Must not panic; the run is empty so the fallback returns an empty string here.
+	let _ = extract_word6_text(&wd);
+}

@@ -705,7 +705,7 @@ class MainScreenViewModel(
 		val time = formatDuration(if (tab.isAudioOnly) cursor.seekMs else elapsedMs)
 		val fileChanged = lastAnnouncedAudioSource != clip.source
 		lastAnnouncedAudioSource = clip.source
-		val sectionTitle = sectionTitleAt(tab, clip.start)
+		val sectionTitle = sectionTitleAt(tab.toc, clip.start)
 		_accessibilityAnnouncement.tryEmit(
 			if (fileChanged && sectionTitle.isNotBlank()) "$sectionTitle, $time" else time
 		)
@@ -731,7 +731,7 @@ class MainScreenViewModel(
 		// the first file's name for the life of the book, however far playback had moved; the
 		// section (that is, the file) holding the current position is the only label there is.
 		if (tab.isAudioOnly) {
-			_currentSegmentText.value = sectionTitleAt(tab, _ttsPosition.value)
+			_currentSegmentText.value = sectionTitleAt(tab.toc, _ttsPosition.value)
 			return
 		}
 		val current = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
@@ -789,18 +789,7 @@ class MainScreenViewModel(
 		segment: TextSegmentFfi
 	): String {
 		if (segment.text.isNotBlank()) return segment.text
-		return sectionTitleAt(tab, segment.startPos)
-	}
-
-	/** The title of the TOC section `position` falls inside, empty when the document has no TOC.
-	 * In a book that is just a bundle of narration files, each file is its own section, so this
-	 * is the name of the file covering `position`. */
-	private fun sectionTitleAt(
-		tab: DocumentTabState,
-		position: Long
-	): String {
-		val section = tab.toc.lastOrNull { it.position <= position }
-		return section?.title.orEmpty()
+		return sectionTitleAt(tab.toc, segment.startPos)
 	}
 
 	/** Jumps straight to `pos` (a freshly found Find match) and, if `resume` says the reader was

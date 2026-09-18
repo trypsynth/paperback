@@ -41,6 +41,10 @@ struct SectionContent {
 	italics: Vec<FormatInfo>,
 	underlines: Vec<FormatInfo>,
 	id_positions: HashMap<String, usize>,
+	/// Whether the section's markup holds an image element at all, described or not. The converters
+	/// only record an image that carries a description, so this is the only sign that a page whose
+	/// whole body is one undescribed picture is a picture and not simply empty.
+	has_image_markup: bool,
 }
 
 impl ConverterOutput for SectionContent {
@@ -141,11 +145,38 @@ pub(super) fn convert_spine_items(
 	// section in parallel, in one pass, instead of appending them one at a time; it hands back
 	// each section's `[start, end)` span so markers and id positions (below) can still be placed
 	// relative to where each section landed.
-	let texts: Vec<String> = ok_entries.iter_mut().map(|(_, _, section)| mem::take(&mut section.text)).collect();
+	// A spine item that is a picture, or a wrapper page whose whole body is one image, converts to
+	// no text and would otherwise leave the reader a blank stretch of book with no sign a page is
+	// there. Each such section is given a one-line image placeholder so the book is navigable and
+	// the picture can be reached; see [`section_is_image`].
+	let image_sections: Vec<bool> =
+		ok_entries.iter().map(|(_, item, section)| section_is_image(item, section)).collect();
+	let image_placeholder = format!("[{}]", t("Image"));
+	// A section is replaced by the placeholder when it is a picture with no real text of its own.
+	// Its converter markers and id positions point into the text that was dropped, so they are not
+	// applied below.
+	let mut replaced = vec![false; ok_entries.len()];
+	let texts: Vec<String> = ok_entries
+		.iter_mut()
+		.zip(&image_sections)
+		.enumerate()
+		.map(|(index, ((_, item, section), is_image))| {
+			let text = mem::take(&mut section.text);
+			// A raster image read as a spine item comes through as the decode garbage of its own
+			// bytes, which is never real text, so it is always replaced. An SVG or a wrapper page
+			// keeps whatever real text it has and takes the placeholder only when it has none.
+			if is_binary_image(&item.media_type) || (*is_image && text.trim().is_empty()) {
+				replaced[index] = true;
+				image_placeholder.clone()
+			} else {
+				text
+			}
+		})
+		.collect();
 	let (mut buffer, spans) = DocumentBuffer::from_parts(texts);
 	let mut id_positions = HashMap::new();
 	let mut sections = Vec::new();
-	for (entry, span) in ok_entries.iter().zip(&spans) {
+	for (((entry, span), is_image), was_replaced) in ok_entries.iter().zip(&spans).zip(&image_sections).zip(&replaced) {
 		let (idx, item, section) = entry;
 		let section_start = span.start;
 		let section_label = format!("Section {}", idx + 1);
@@ -154,24 +185,62 @@ pub(super) fn convert_spine_items(
 				.with_text(section_label)
 				.with_reference(item.path.clone()),
 		);
-		for (id, relative) in &section.id_positions {
-			let absolute = section_start + relative;
-			// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
-			id_positions.entry(id.clone()).or_insert(absolute);
-			id_positions.insert(format!("{}#{id}", item.path), absolute);
+		// An image page gets an Image marker so it is announced and reachable with the image
+		// navigation key, the same as a picture inside a text page. The section's path rides along
+		// as the reference, as it does for a comic archive's pages.
+		if *is_image {
+			buffer.add_marker(Marker::new(MarkerType::Image, section_start).with_reference(item.path.clone()));
 		}
-		add_converter_markers_excluding_links(&mut buffer, section, section_start);
-		for link in &section.links {
-			let resolved = resolve_href(&item.path, &link.reference);
-			buffer.add_marker(
-				Marker::new(MarkerType::Link, section_start + link.offset)
-					.with_text(link.text.clone())
-					.with_reference(resolved),
-			);
+		// A section whose text was replaced by the placeholder has no content its markers or id
+		// positions still line up with, so only its section break and image marker are kept.
+		if !was_replaced {
+			for (id, relative) in &section.id_positions {
+				let absolute = section_start + relative;
+				// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
+				id_positions.entry(id.clone()).or_insert(absolute);
+				id_positions.insert(format!("{}#{id}", item.path), absolute);
+			}
+			add_converter_markers_excluding_links(&mut buffer, section, section_start);
+			for link in &section.links {
+				let resolved = resolve_href(&item.path, &link.reference);
+				buffer.add_marker(
+					Marker::new(MarkerType::Link, section_start + link.offset)
+						.with_text(link.text.clone())
+						.with_reference(resolved),
+				);
+			}
 		}
 		sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: span.end });
 	}
 	SpineConversionResult { buffer, id_positions, sections, conversion_errors }
+}
+
+/// Whether a spine item is a page the reader meets as a picture rather than as text.
+///
+/// Two shapes count. A spine item that is itself an image (`image/svg+xml`, `image/jpeg`, and the
+/// like) is a page-as-picture, which is how the fixed-layout books in the EPUB sample set are
+/// built. A wrapper page whose media type is XHTML but whose whole body came through as an image
+/// with no text of its own is the other, which is how a picture book puts one plate on each page.
+/// A page that has any text is not one of these, whatever else it also holds.
+fn section_is_image(item: &ManifestItem, section: &SectionContent) -> bool {
+	if item.media_type.starts_with("image/") {
+		return true;
+	}
+	section.has_image_markup && section.text.trim().is_empty()
+}
+
+/// Whether a section's markup contains an image element (`<img>`, SVG `<image>`, or a `<figure>`),
+/// described or not. A plain substring test is enough: it only decides whether a text-less page is
+/// a picture to announce, and a false positive there costs one image line on an already empty page.
+fn content_has_image_markup(content: &str) -> bool {
+	let lowered = content.to_ascii_lowercase();
+	lowered.contains("<img") || lowered.contains("<image") || lowered.contains("<figure")
+}
+
+/// Whether a spine item is a raster image, whose bytes are not text and decode to garbage when
+/// read as any. SVG is left out: it is real XML and may hold text worth keeping.
+fn is_binary_image(media_type: &str) -> bool {
+	media_type.starts_with("image/") && media_type != "image/svg+xml"
 }
 
 fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionContent> {
@@ -192,6 +261,7 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			italics: xml_converter.get_italics().to_vec(),
 			underlines: xml_converter.get_underlines().to_vec(),
 			id_positions: xml_converter.get_id_positions().clone(),
+			has_image_markup: content_has_image_markup(content),
 		});
 	}
 	tracing::warn!("epub section xml conversion failed, falling back to html converter");
@@ -212,10 +282,38 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			italics: html_converter.get_italics().to_vec(),
 			underlines: html_converter.get_underlines().to_vec(),
 			id_positions: html_converter.get_id_positions().clone(),
+			has_image_markup: content_has_image_markup(content),
 		});
 	}
 	// currently unreachable, HtmlToText::convert always returns true today
 	tracing::warn!("epub section content unsupported by both xml and html converters");
 	// TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
 	anyhow::bail!(t("unsupported content"))
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{content_has_image_markup, is_binary_image};
+
+	#[test]
+	fn image_markup_is_detected_however_it_is_written() {
+		assert!(content_has_image_markup("<body><img src='x.jpg'/></body>"));
+		assert!(content_has_image_markup("<svg><image href='x'/></svg>"));
+		assert!(content_has_image_markup("<figure><figcaption>x</figcaption></figure>"));
+		// Case does not matter.
+		assert!(content_has_image_markup("<BODY><IMG SRC='x'/></BODY>"));
+		// A page of plain prose is not an image page.
+		assert!(!content_has_image_markup("<body><p>Just words here.</p></body>"));
+	}
+
+	#[test]
+	fn a_raster_image_is_binary_but_an_svg_is_not() {
+		assert!(is_binary_image("image/jpeg"));
+		assert!(is_binary_image("image/png"));
+		assert!(is_binary_image("image/gif"));
+		// SVG is real XML and may carry text, so it is not treated as binary.
+		assert!(!is_binary_image("image/svg+xml"));
+		assert!(!is_binary_image("application/xhtml+xml"));
+		assert!(!is_binary_image("text/css"));
+	}
 }

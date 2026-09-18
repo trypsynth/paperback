@@ -17,6 +17,7 @@ mod readability;
 mod reader_input;
 #[cfg(any(target_os = "windows", test))]
 mod rtf;
+mod selection;
 mod shell;
 mod sleep_timer;
 mod sounds;
@@ -25,6 +26,7 @@ mod text_render;
 mod text_window;
 #[cfg(target_os = "windows")]
 mod tray;
+mod update;
 mod window_geometry;
 
 pub use app::PaperbackApp;

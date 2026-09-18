@@ -8,6 +8,11 @@
 //! An untagged PDF says neither. All it has is image objects with page coordinates, so
 //! [`page_image_tops`] collects those and the caller places each one among the page's text lines
 //! by how far down the page it sits.
+//!
+//! A tagged PDF that tags none of its images gets the same treatment through
+//! [`UnclaimedImages`]. A page like that draws pictures and claims not to have any, so trusting
+//! its tree would lose every one of them: the menu in #857 draws five and declares no figure at
+//! all.
 
 use std::ffi::c_ulong;
 
@@ -79,6 +84,52 @@ pub(super) fn page_image_tops(page: &PdfiumPage) -> Vec<f64> {
 	tops
 }
 
+/// The fraction of the page one single image covers at most, from 0.0 to 1.0.
+///
+/// A scanned page is one big image laid over the whole sheet, so a value near 1.0 is the mark of
+/// a page that is a picture rather than text. [`super`] uses it, together with how little text the
+/// page carries, to decide a page is really a scan wearing a stray page number and to offer it for
+/// OCR. The largest single image is what counts, not the images added together: a page tiled with
+/// small decorations is not a scan.
+pub(super) fn page_largest_image_coverage(page: &PdfiumPage) -> f64 {
+	let page_area = f64::from(page.width()) * f64::from(page.height());
+	if page_area <= 0.0 {
+		return 0.0;
+	}
+	let mut largest = 0.0_f64;
+	let object_count = lib().FPDFPage_CountObjects(page);
+	for i in 0..object_count {
+		let object = lib().FPDFPage_GetObject(page, i);
+		if let Ok(object) = object {
+			collect_largest_image_area(&object, 0, &mut largest);
+		}
+	}
+	(largest / page_area).min(1.0)
+}
+
+fn collect_largest_image_area(object: &PdfiumPageObject, depth: u32, largest: &mut f64) {
+	let object_type = lib().FPDFPageObj_GetType(object);
+	match object_type {
+		FPDF_PAGEOBJ_IMAGE => {
+			let (mut left, mut bottom, mut right, mut top) = (0.0, 0.0, 0.0, 0.0);
+			if lib().FPDFPageObj_GetBounds(object, &mut left, &mut bottom, &mut right, &mut top).is_ok() {
+				let area = f64::from((right - left).abs()) * f64::from((top - bottom).abs());
+				*largest = largest.max(area);
+			}
+		}
+		FPDF_PAGEOBJ_FORM if depth < MAX_FORM_DEPTH => {
+			let child_count = u32::try_from(lib().FPDFFormObj_CountObjects(object)).unwrap_or(0);
+			for i in 0..child_count {
+				let child = lib().FPDFFormObj_GetObject(object, c_ulong::from(i));
+				if let Ok(child) = child {
+					collect_largest_image_area(&child, depth + 1, largest);
+				}
+			}
+		}
+		_ => {}
+	}
+}
+
 fn collect_image_tops(object: &PdfiumPageObject, depth: u32, tops: &mut Vec<f64>) {
 	let object_type = lib().FPDFPageObj_GetType(object);
 	match object_type {
@@ -116,6 +167,45 @@ pub(super) fn append_images(
 	}
 }
 
+/// The images a page draws that its structure tree never claimed, waiting to go out among the
+/// page's blocks.
+///
+/// The tagged walk writes its blocks one at a time and knows the top edge of each, so the images
+/// are placed as it goes rather than counted up front the way [`images_before_each_paragraph`]
+/// does for an untagged page. The rule is the same one: an image belongs in front of the first
+/// block that starts below it.
+pub(super) struct UnclaimedImages {
+	/// Down the page, nearest the top first, and drained from the front as they are placed.
+	tops: std::collections::VecDeque<f64>,
+}
+
+impl UnclaimedImages {
+	/// The images to place. Empty for a page whose tree claims its figures, which is every tagged
+	/// page written the usual way, and the walk then does none of this.
+	pub(super) fn new(tops: &[f64]) -> Self {
+		Self { tops: tops.iter().copied().collect() }
+	}
+
+	pub(super) fn is_empty(&self) -> bool {
+		self.tops.is_empty()
+	}
+
+	/// Writes every image drawn above `top`. Called with the top edge of each block just before
+	/// that block goes out, so pass `f64::NEG_INFINITY` at the end of the page to place the rest.
+	pub(super) fn place_above(
+		&mut self,
+		top: f64,
+		buffer: &mut DocumentBuffer,
+		page_display_text: &mut String,
+		current_lines_info: &mut Vec<(usize, String)>,
+	) {
+		while self.tops.front().is_some_and(|image_top| *image_top > top) {
+			self.tops.pop_front();
+			append_image(buffer, MarkerType::Image, "", page_display_text, current_lines_info);
+		}
+	}
+}
+
 /// How many of `image_tops` belong in front of each paragraph on an untagged page, with one
 /// last count for the images that sit below every paragraph. Both arguments run down the page,
 /// and both are measured from the same page edge, so an image belongs in front of the first
@@ -139,7 +229,7 @@ pub(super) fn images_before_each_paragraph(image_tops: &[f64], paragraph_tops: &
 
 #[cfg(test)]
 mod tests {
-	use super::{append_image, images_before_each_paragraph};
+	use super::{UnclaimedImages, append_image, images_before_each_paragraph};
 	use crate::document::{DocumentBuffer, MarkerType};
 
 	/// A described figure reads as its description, and the marker spans the whole line so that
@@ -195,5 +285,45 @@ mod tests {
 	#[test]
 	fn a_page_with_no_paragraphs_holds_every_image_back() {
 		assert_eq!(images_before_each_paragraph(&[500.0], &[]), vec![1]);
+	}
+
+	/// Three images down a page, placed among the blocks they were drawn between. The last one
+	/// sits below every block and goes out when the page ends.
+	#[test]
+	fn unclaimed_images_go_in_front_of_the_first_block_below_each() {
+		let mut images = UnclaimedImages::new(&[700.0, 500.0, 100.0]);
+		let mut buffer = DocumentBuffer::new();
+		let mut page_text = String::new();
+		let mut lines_info = Vec::new();
+		let mut place = |top: f64, images: &mut UnclaimedImages, buffer: &mut DocumentBuffer| {
+			images.place_above(top, buffer, &mut page_text, &mut lines_info);
+		};
+		// A block at 600 has the one drawn at 700 above it, and nothing else yet.
+		place(600.0, &mut images, &mut buffer);
+		assert_eq!(buffer.content.matches("[Image]").count(), 1);
+		// A block at 300 picks up the one at 500.
+		place(300.0, &mut images, &mut buffer);
+		assert_eq!(buffer.content.matches("[Image]").count(), 2);
+		assert!(!images.is_empty(), "the one at 100 is below both blocks");
+		// The end of the page takes the rest.
+		place(f64::NEG_INFINITY, &mut images, &mut buffer);
+		assert_eq!(buffer.content.matches("[Image]").count(), 3);
+		assert!(images.is_empty());
+		assert_eq!(lines_info.len(), 3, "one line per image");
+		assert_eq!(buffer.markers.iter().filter(|m| m.mtype == MarkerType::Image).count(), 3);
+	}
+
+	/// A page whose tree claims its figures has nothing here to place, and the walk then never
+	/// writes an image line of its own.
+	#[test]
+	fn a_page_whose_tree_claims_its_figures_places_nothing() {
+		let mut images = UnclaimedImages::new(&[]);
+		let mut buffer = DocumentBuffer::new();
+		let mut page_text = String::new();
+		let mut lines_info = Vec::new();
+		assert!(images.is_empty());
+		images.place_above(f64::NEG_INFINITY, &mut buffer, &mut page_text, &mut lines_info);
+		assert_eq!(buffer.content, "");
+		assert!(lines_info.is_empty());
 	}
 }

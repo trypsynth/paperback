@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 13:31-0600\n"
+"POT-Creation-Date: 2026-09-15 16:49+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -3148,6 +3148,18 @@ msgstr "Giải mã lỗi tràn ngăn xếp"
 msgid "File too short"
 msgstr "Tệp quá ngắn"
 
+#. TRANSLATORS: Error detail shown when an OpenDocument file is encrypted and no password was given (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required"
+msgstr "Yêu cầu nhập mật khẩu"
+
+#. TRANSLATORS: Error detail shown when the password for an OpenDocument file is wrong (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password incorrect"
+msgstr "Mật khẩu không chính xác"
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 #, fuzzy
 msgid "ODP file does not contain any pages"
@@ -3254,16 +3266,6 @@ msgstr "Không tìm thấy trình phân tích cú pháp cho phần mở rộng: 
 #, fuzzy
 msgid "All parsers failed for extension: .{}"
 msgstr "Tất cả các trình phân tích cú pháp đều không thành công đối với phần mở rộng: . {}"
-
-#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "Password required"
-msgstr "Yêu cầu nhập mật khẩu"
-
-#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
-#, fuzzy
-msgid "Password incorrect"
-msgstr "Mật khẩu không chính xác"
 
 #, fuzzy
 msgid "Unknown update file format."
@@ -4178,7 +4180,7 @@ msgstr "Không phải bây giờ"
 msgid "Custom Timer"
 msgstr "Bộ hẹn giờ tùy chỉnh"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 #, fuzzy
 msgid "Back"
@@ -4276,7 +4278,6 @@ msgstr "Đóng tìm kiếm"
 msgid "Document exported"
 msgstr "Tài liệu đã được tải lại."
 
-#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 #, fuzzy
 msgid "Failed to export document"
@@ -4696,6 +4697,18 @@ msgstr "mở"
 #, fuzzy
 msgid "go to chapter"
 msgstr "Chuyển sang phần trăm"
+
+#. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+#: kt
+#, fuzzy
+msgid "This is a sample of the selected speech engine."
+msgstr "Đây là mẫu của công cụ đọc được chọn."
+
+#. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+#: kt
+#, fuzzy
+msgid "This document does not contain pages."
+msgstr "Tài liệu này không có mục lục."
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."

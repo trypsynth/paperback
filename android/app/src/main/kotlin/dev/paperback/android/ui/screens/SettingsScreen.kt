@@ -32,8 +32,14 @@ private const val SCALE_STEPS =
 
 /** Rounds a raw slider value so the text size only ever lands on a whole step. */
 private fun snapScale(value: Float): Int =
-	kotlin.math.round(value / ReaderSettings.TEXT_SCALE_PERCENT_STEP).toInt() *
+	(value / ReaderSettings.TEXT_SCALE_PERCENT_STEP).roundToInt() *
 		ReaderSettings.TEXT_SCALE_PERCENT_STEP
+
+private val PERCENT_RANGE = 0f..100f
+
+/** One step per whole percent, so TalkBack's swipe-to-adjust moves by one rather than jumping. */
+private const val PERCENT_ACCESSIBILITY_STEPS = 99
+private const val PERCENT_MIDPOINT = 50f
 
 /**
  * A labelled dropdown over a fixed list of options, where the stored value is the option's index.
@@ -72,6 +78,54 @@ private fun ChoiceSetting(
 				}
 			}
 		}
+	}
+}
+
+/**
+ * A speech setting on a 0 to 100 scale, with the slider semantics a screen reader needs to
+ * announce and change it: the label and the percentage are folded into the group so TalkBack
+ * reads one control rather than a heading and a slider separately.
+ *
+ * A setting following the engine's own default has nothing to show, so it reads as the system
+ * default and reports itself disabled rather than showing a figure the reader cannot change.
+ */
+@Composable
+private fun PercentSetting(
+	label: String,
+	percentage: Int,
+	isSystemDefault: Boolean,
+	onChange: (Int) -> Unit
+) {
+	Column(
+		modifier = Modifier.clearAndSetSemantics {
+			contentDescription = label
+			if (isSystemDefault) {
+				// TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
+				stateDescription = t("System Default")
+				disabled()
+			} else {
+				stateDescription = t("{} percent", percentage.toString())
+				progressBarRangeInfo = ProgressBarRangeInfo(
+					current = percentage.toFloat(),
+					range = PERCENT_RANGE,
+					steps = PERCENT_ACCESSIBILITY_STEPS
+				)
+				setProgress { targetValue ->
+					onChange(targetValue.roundToInt())
+					true
+				}
+			}
+		}
+	) {
+		val readout = if (isSystemDefault) t("System Default") else "$percentage%"
+		Text("$label: $readout", style = MaterialTheme.typography.labelLarge)
+		Slider(
+			value = if (isSystemDefault) PERCENT_MIDPOINT else percentage.toFloat(),
+			onValueChange = { onChange(it.roundToInt()) },
+			valueRange = PERCENT_RANGE,
+			steps = 0,
+			enabled = !isSystemDefault
+		)
 	}
 }
 
@@ -343,83 +397,26 @@ fun SettingsScreen(
 					}
 				}
 				Spacer(modifier = Modifier.height(16.dp))
-				Column(
-					modifier = Modifier.clearAndSetSemantics {
-						// TRANSLATORS: TalkBack label for the speech rate slider
-						contentDescription = t("Speech Rate")
-						if (isSystemDefault) {
-							// TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
-							stateDescription = t("System Default")
-							disabled()
-						} else {
-							stateDescription = t("{} percent", currentSpeechRate.toString())
-							progressBarRangeInfo = ProgressBarRangeInfo(
-								current = currentSpeechRate.toFloat(),
-								range = 0f..100f,
-								steps = 99
-							)
-							setProgress { targetValue ->
-								viewModel.ttsManager.setSpeechRate(targetValue.roundToInt())
-								true
-							}
-						}
-					}
-				) {
-					val rateText = if (isSystemDefault) {
-						"${t("Speech Rate")}: ${t("System Default")}"
-					} else {
-						"${t("Speech Rate")}: $currentSpeechRate%"
-					}
-					Text(rateText, style = MaterialTheme.typography.labelLarge)
-					Slider(
-						value = if (isSystemDefault) 50f else currentSpeechRate.toFloat(),
-						onValueChange = { viewModel.ttsManager.setSpeechRate(it.roundToInt()) },
-						valueRange = 0f..100f,
-						steps = 0,
-						enabled = !isSystemDefault
-					)
-				}
+				PercentSetting(
+					// TRANSLATORS: TalkBack label for the speech rate slider
+					label = t("Speech Rate"),
+					percentage = currentSpeechRate,
+					isSystemDefault = isSystemDefault,
+					onChange = { viewModel.ttsManager.setSpeechRate(it) }
+				)
 				Spacer(modifier = Modifier.height(16.dp))
-				Column(
-					modifier = Modifier.clearAndSetSemantics {
-						// TRANSLATORS: TalkBack label for the speech pitch slider
-						contentDescription = t("Pitch")
-						if (isSystemDefault) {
-							// TRANSLATORS: TalkBack state description for a slider (pitch or speech rate) when it is following the system default instead of a custom value
-							stateDescription = t("System Default")
-							disabled()
-						} else {
-							stateDescription = t("{} percent", currentPitch.toString())
-							progressBarRangeInfo = ProgressBarRangeInfo(
-								current = currentPitch.toFloat(),
-								range = 0f..100f,
-								steps = 99
-							)
-							setProgress { targetValue ->
-								viewModel.ttsManager.setPitch(targetValue.roundToInt())
-								true
-							}
-						}
-					}
-				) {
-					val pitchText = if (isSystemDefault) {
-						"${t("Pitch")}: ${t("System Default")}"
-					} else {
-						"${t("Pitch")}: $currentPitch%"
-					}
-					Text(pitchText, style = MaterialTheme.typography.labelLarge)
-					Slider(
-						value = if (isSystemDefault) 50f else currentPitch.toFloat(),
-						onValueChange = { viewModel.ttsManager.setPitch(it.roundToInt()) },
-						valueRange = 0f..100f,
-						steps = 0,
-						enabled = !isSystemDefault
-					)
-				}
+				PercentSetting(
+					// TRANSLATORS: TalkBack label for the speech pitch slider
+					label = t("Pitch"),
+					percentage = currentPitch,
+					isSystemDefault = isSystemDefault,
+					onChange = { viewModel.ttsManager.setPitch(it) }
+				)
 				Spacer(modifier = Modifier.height(16.dp))
 				Button(
 					onClick = {
-						viewModel.ttsManager.speak("This is a sample of the selected speech engine.", isSample = true)
+						// TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+						viewModel.ttsManager.speak(t("This is a sample of the selected speech engine."), isSample = true)
 					},
 					modifier = Modifier.fillMaxWidth()
 				) {

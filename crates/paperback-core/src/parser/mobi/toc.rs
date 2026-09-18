@@ -29,14 +29,17 @@ pub(super) fn parse_ncx(
 	records: &[usize],
 	mobi_header: &[u8],
 	exth: &HashMap<u32, Vec<u8>>,
-	is_kf8: bool,
+	_is_kf8: bool,
 	frag_offsets: &HashMap<usize, usize>,
 ) -> Vec<TocItem> {
+	// The NCX's index record number is the field at 0xF4 of record 0, which is 228 bytes into the
+	// MOBI header that follows record 0's first sixteen. It is the same field whether or not the
+	// book is KF8. Reading a different one for the older books cost them their chapters: a novel
+	// whose index record sat waiting at 228 came back with no table of contents at all, and one
+	// whose header stopped short of 248 was not even looked at.
 	let mut ncx_index = 0xFFFF_FFFF;
-	if is_kf8 && mobi_header.len() >= 232 {
+	if mobi_header.len() >= 232 {
 		ncx_index = u32::from_be_bytes(mobi_header[228..232].try_into().unwrap_or([0; 4])) as usize;
-	} else if !is_kf8 && mobi_header.len() >= 248 {
-		ncx_index = u32::from_be_bytes(mobi_header[244..248].try_into().unwrap_or([0; 4])) as usize;
 	}
 	if (ncx_index == 0xFFFF_FFFF || ncx_index == 0)
 		&& let Some(ext) = exth.get(&253)

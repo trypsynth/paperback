@@ -52,3 +52,10 @@ sealed class MainScreenUiState {
  */
 val MainScreenUiState.activeTab: DocumentTabState?
 	get() = (this as? MainScreenUiState.Success)?.activeTab
+
+/**
+ * The index in the list of the line numbered [line]. Line numbers count from one and list indices
+ * from zero, and a document position before the first line reports line zero, which would
+ * otherwise index off the front of the list.
+ */
+fun lineIndexFor(line: Long): Int = (line - 1).toInt().coerceAtLeast(0)

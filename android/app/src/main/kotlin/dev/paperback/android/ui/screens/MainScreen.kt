@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Environment
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
@@ -33,25 +32,24 @@ import dev.paperback.android.ui.components.ReadAloudPane
 import dev.paperback.android.ui.components.SearchBottomBar
 import dev.paperback.android.ui.components.TtsBottomBar
 import dev.paperback.android.ui.components.rememberReadabilityStyle
+import dev.paperback.android.ui.dialogs.BrowseForFileDialog
 import dev.paperback.android.ui.dialogs.DocumentPromptDialogs
 import dev.paperback.android.ui.dialogs.DocumentTextDialogs
 import dev.paperback.android.ui.dialogs.DocumentToolDialogs
-import dev.paperback.android.ui.dialogs.FileManagerDialog
 import dev.paperback.android.ui.dialogs.PermissionRationaleDialog
 import dev.paperback.android.ui.state.MainScreenUiState
 import dev.paperback.android.ui.state.MainScreenViewModel
 import dev.paperback.android.ui.state.NavUnit
 import dev.paperback.android.ui.state.OnScreenRequest
 import dev.paperback.android.ui.state.activeTab
+import dev.paperback.android.ui.state.lineIndexFor
 import dev.paperback.android.ui.state.scrollsWorthSaving
 import dev.paperback.android.ui.state.shouldSyncPositionFromList
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uniffi.paperback.ExportFormat
-import java.io.File
-
-private const val LAST_FILE_MANAGER_DIRECTORY_KEY = "last_file_manager_directory"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,7 +116,7 @@ fun MainScreen(
 			val res = tab.session.searchFfi(query, searchPos, options.copy(forward = forward))
 			if (res.found) {
 				val line = tab.session.lineFromPosition(res.position)
-				val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
+				val indexToScroll = lineIndexFor(line)
 				listState?.scrollToItem(indexToScroll)
 			}
 		}
@@ -218,14 +216,12 @@ fun MainScreen(
 		contract = ActivityResultContracts.OpenDocument(),
 		onResult = { uri ->
 			if (uri != null) {
-				scope.launch(Dispatchers.IO) {
-					val success = viewModel.importSettingsFromUri(context, uri)
+				scope.reportResult(
+					context = context,
 					// TRANSLATORS: Toast confirming a .paperback settings file was imported successfully, or the failure message if not
-					val message = if (success) t("Settings imported") else t("Failed to import settings")
-					withContext(Dispatchers.Main) {
-						Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-					}
-				}
+					succeeded = t("Settings imported"),
+					failed = t("Failed to import settings")
+				) { viewModel.importSettingsFromUri(context, uri) }
 			}
 		}
 	)
@@ -234,14 +230,12 @@ fun MainScreen(
 		contract = ActivityResultContracts.CreateDocument("*/*"),
 		onResult = { uri ->
 			if (uri != null) {
-				scope.launch(Dispatchers.IO) {
-					val success = viewModel.exportSettingsToUri(context, uri)
+				scope.reportResult(
+					context = context,
 					// TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
-					val message = if (success) t("Settings exported") else t("Failed to export settings")
-					withContext(Dispatchers.Main) {
-						Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-					}
-				}
+					succeeded = t("Settings exported"),
+					failed = t("Failed to export settings")
+				) { viewModel.exportSettingsToUri(context, uri) }
 			}
 		}
 	)
@@ -251,14 +245,12 @@ fun MainScreen(
 		onResult = { uri ->
 			if (uri != null) {
 				selectedExportFormat?.let { format ->
-					scope.launch(Dispatchers.IO) {
-						val success = viewModel.exportDocumentToUri(context, uri, format)
+					scope.reportResult(
+						context = context,
 						// TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
-						val message = if (success) t("Document exported") else t("Failed to export document")
-						withContext(Dispatchers.Main) {
-							Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-						}
-					}
+						succeeded = t("Document exported"),
+						failed = t("Failed to export document")
+					) { viewModel.exportDocumentToUri(context, uri, format) }
 				}
 			}
 		}
@@ -432,7 +424,7 @@ fun MainScreen(
 								val offset = pendingJumpOffset
 								if (offset != null) {
 									val line = docState.session.lineFromPosition(offset)
-									jumpToLine((line - 1).toInt().coerceAtLeast(0))
+									jumpToLine(lineIndexFor(line))
 									viewModel.consumeJumpRequest()
 								}
 							}
@@ -447,7 +439,7 @@ fun MainScreen(
 								previousTextMode = isTextMode
 								if (isTextMode) {
 									val line = docState.session.lineFromPosition(ttsPosition)
-									val index = (line - 1).toInt().coerceAtLeast(0)
+									val index = lineIndexFor(line)
 									listState.scrollToItem(index)
 									lineIndexToFocus = index
 								} else if (shouldSyncPositionFromList(previous, isTextMode)) {
@@ -458,7 +450,7 @@ fun MainScreen(
 							LaunchedEffect(ttsPosition) {
 								if (isTextMode) {
 									val line = docState.session.lineFromPosition(ttsPosition)
-									val index = (line - 1).toInt().coerceAtLeast(0)
+									val index = lineIndexFor(line)
 									listState.scrollToItem(index)
 									lineIndexToFocus = index
 								}
@@ -545,23 +537,10 @@ fun MainScreen(
 		}
 		if (showFileManager) {
 			val extensions = remember(viewModel.configManager) { viewModel.configManager.getSupportedExtensions() }
-			val initialDirPath = remember {
-				val savedPath = viewModel.configManager.getAppString(LAST_FILE_MANAGER_DIRECTORY_KEY, "")
-				if (savedPath.isNotEmpty()) {
-					savedPath
-				} else {
-					Environment.getExternalStorageDirectory().absolutePath
-				}
-			}
-			FileManagerDialog(
+			BrowseForFileDialog(
+				configManager = viewModel.configManager,
 				supportedExtensions = extensions.toList(),
-				initialDirectory = File(initialDirPath),
-				onDirectoryChanged = { dir ->
-					scope.launch(Dispatchers.IO) {
-						viewModel.configManager.setAppString(LAST_FILE_MANAGER_DIRECTORY_KEY, dir.absolutePath)
-						viewModel.configManager.flush()
-					}
-				},
+				scope = scope,
 				onFileSelected = { file ->
 					showFileManager = false
 					viewModel.openDocument(Uri.fromFile(file))
@@ -570,43 +549,41 @@ fun MainScreen(
 			)
 		}
 		if (showFileManagerForImport) {
-			val extensions = listOf("paperback")
-			val initialDirPath = remember {
-				val savedPath = viewModel.configManager.getAppString(LAST_FILE_MANAGER_DIRECTORY_KEY, "")
-				if (savedPath.isNotEmpty()) {
-					savedPath
-				} else {
-					Environment.getExternalStorageDirectory().absolutePath
-				}
-			}
-			FileManagerDialog(
-				supportedExtensions = extensions,
-				initialDirectory = File(initialDirPath),
-				onDirectoryChanged = { dir ->
-					scope.launch(Dispatchers.IO) {
-						viewModel.configManager.setAppString(LAST_FILE_MANAGER_DIRECTORY_KEY, dir.absolutePath)
-						viewModel.configManager.flush()
-					}
-				},
+			BrowseForFileDialog(
+				configManager = viewModel.configManager,
+				supportedExtensions = listOf("paperback"),
+				scope = scope,
 				onFileSelected = { file ->
 					showFileManagerForImport = false
-					val uri = Uri.fromFile(file)
-					scope.launch(Dispatchers.IO) {
+					scope.reportResult(
+						context = context,
 						// TRANSLATORS: Toast confirming a .paperback settings file was imported successfully, or the failure message if not
-						if (viewModel.importSettingsFromUri(context, uri)) {
-							launch(Dispatchers.Main) {
-								Toast.makeText(context, t("Settings imported"), Toast.LENGTH_SHORT).show()
-							}
-						} else {
-							launch(Dispatchers.Main) {
-								Toast.makeText(context, t("Failed to import settings"), Toast.LENGTH_SHORT).show()
-							}
-						}
-					}
+						succeeded = t("Settings imported"),
+						failed = t("Failed to import settings")
+					) { viewModel.importSettingsFromUri(context, Uri.fromFile(file)) }
 				},
 				onDismiss = { showFileManagerForImport = false }
 			)
 		}
 		PermissionsGate(viewModel)
+	}
+}
+
+/**
+ * Runs [work] off the UI thread and tells the reader how it went. Every transfer to or from a
+ * file is slow enough to belong off the main thread and quiet enough to need saying, since the
+ * result is a file somewhere the reader cannot see from here.
+ */
+private fun CoroutineScope.reportResult(
+	context: Context,
+	succeeded: String,
+	failed: String,
+	work: () -> Boolean
+) {
+	launch(Dispatchers.IO) {
+		val message = if (work()) succeeded else failed
+		withContext(Dispatchers.Main) {
+			Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+		}
 	}
 }

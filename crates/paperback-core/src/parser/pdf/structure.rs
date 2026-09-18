@@ -3,37 +3,42 @@
 //! leaf's marked-content id to the text pdfium associated with it. This is the preferred
 //! extraction path: it recovers real paragraph/heading/list/table structure that the
 //! plain-text fallback ([`super::text`]) can only guess at from font size and line shape.
+//!
+//! This module is the walk. Reading the page's glyphs into the ids the tree names them by is
+//! [`marked_content`], and turning a `Table` element into something the reader can open is
+//! [`tables`].
+//!
 //! Some PDFs advertise a structure tree while leaving most of their text untagged, though, so
 //! [`extract_tagged_page_text`] first checks how much of the page's text is actually covered
 //! by a marked-content id and bails out to the caller's plain-text fallback below
 //! [`MIN_MCID_COVERAGE`]. It bails out the same way when the tree it is handed leads to no text
-//! at all, which is what a PDF exported from Apple Pages gives pdfium.
+//! at all, which is what a file pdfium cannot read the structure of is left looking like once
+//! [`super::repair`] has had its chance at it.
 
-use std::{collections::HashMap, fmt::Write as _};
+use std::collections::HashMap;
 
 use pdfium::{PdfiumPage, PdfiumStructElement, PdfiumTextPage};
 
-use super::{
-	images::append_image,
-	text::{is_invisible_space, reorder_run},
+use self::{
+	marked_content::{MIN_MCID_COVERAGE, TreeFacts, collect_text, first_marked_content_id},
+	tables::{append_pdf_table_to_buffer, build_html_table},
 };
+use super::images::{UnclaimedImages, append_image};
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, TocItem},
-	parser::convert::table_text::{display_lines_and_length, html_table_to_display},
 	util::text::{collapse_whitespace, display_len, trim_string},
 };
 
-/// Minimum fraction of visible text glyphs that must be associated with a
-/// marked-content ID for the tagged-extraction path to be trusted. Some PDFs
-/// advertise a structure tree while leaving their text essentially untagged
-/// (no MCIDs, or wrapped only in `/Artifact` marks); below this threshold the
-/// structure tree is treated as unreliable and plain extraction is used instead.
-const MIN_MCID_COVERAGE: f64 = 0.5;
+mod marked_content;
+mod tables;
 
 /// Attempts tagged extraction for one page: builds the marked-content-id → text map, checks
 /// its coverage against [`MIN_MCID_COVERAGE`], and if trusted walks the structure tree into
 /// `buffer`/`page_display_text`/`current_lines_info`/`flat_toc_items`. Returns whether tagged
 /// extraction was actually used; the caller falls back to plain-text extraction when it isn't.
+///
+/// `image_tops` is where the page draws its images, used only when the tree claims none of them;
+/// see [`UnclaimedImages`].
 #[allow(clippy::too_many_arguments)]
 pub(super) fn extract_tagged_page_text(
 	page: &PdfiumPage,
@@ -44,57 +49,20 @@ pub(super) fn extract_tagged_page_text(
 	current_lines_info: &mut Vec<(usize, String)>,
 	flat_toc_items: &mut Vec<(u32, TocItem)>,
 	render_tables_inline: bool,
+	image_tops: &[f64],
 ) -> bool {
 	let Some(struct_tree) = page.struct_tree() else { return false };
 	let child_count = struct_tree.count_children();
 	if child_count == 0 {
 		return false;
 	}
-	let mut mcid_to_text: HashMap<i32, String> = HashMap::new();
-	let mut real_char_count: usize = 0;
-	let mut mcid_char_count: usize = 0;
-	if let Ok(char_count) = text_page.char_count() {
-		let mut current_mcid = -1;
-		// Chars of the current marked-content run with their pdfium index, so RTL
-		// runs can be reordered visual→logical per run.
-		let mut current_chars: Vec<(char, i32)> = Vec::new();
-		for i in 0..char_count {
-			let unicode = text_page.get_unicode(i);
-			if let Some(ch) = char::from_u32(unicode) {
-				if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t')) || ch == '\u{00AD}' {
-					continue;
-				}
-				// A space the page never renders (see `is_invisible_space`) would land in the
-				// middle of a word here just as it does in plain extraction.
-				if ch == ' ' && is_invisible_space(text_page, i, char_count) {
-					continue;
-				}
-				let is_generated = text_page.is_generated(i).unwrap_or(false);
-				let mut char_mcid = -1;
-				if !is_generated && let Ok(obj) = text_page.get_text_object(i) {
-					char_mcid = obj.get_marked_content_id();
-				}
-				if !is_generated && !ch.is_whitespace() {
-					real_char_count += 1;
-					if char_mcid >= 0 {
-						mcid_char_count += 1;
-					}
-				}
-				if char_mcid >= 0 && char_mcid != current_mcid {
-					if current_mcid >= 0 && !current_chars.is_empty() {
-						mcid_to_text.entry(current_mcid).or_default().push_str(&reorder_run(text_page, &current_chars));
-					}
-					current_chars.clear();
-					current_mcid = char_mcid;
-				}
-				current_chars.push((ch, i));
-			}
-		}
-		if current_mcid >= 0 && !current_chars.is_empty() {
-			mcid_to_text.entry(current_mcid).or_default().push_str(&reorder_run(text_page, &current_chars));
-		}
-	}
-	let coverage = if real_char_count > 0 { mcid_char_count as f64 / real_char_count as f64 } else { 1.0 };
+	let facts = TreeFacts::of(&struct_tree);
+	// A tree that names its figures is trusted with them, and the page's own image objects are
+	// then left alone: a `Figure` is not always one drawn image, so counting both would announce
+	// some of them twice.
+	let unclaimed = UnclaimedImages::new(if facts.claims_figures { &[] } else { image_tops });
+	let content = marked_content::read(text_page, &facts, !unclaimed.is_empty());
+	let coverage = content.coverage;
 	let tagged_trusted = coverage >= MIN_MCID_COVERAGE;
 	tracing::debug!(page_index, coverage, tagged_trusted, "computed mcid coverage for page structure tree");
 	if !tagged_trusted {
@@ -106,21 +74,23 @@ pub(super) fn extract_tagged_page_text(
 		return false;
 	}
 	// pdfium hands back a null child for a top-level element it cannot load, so a page whose only
-	// element is one of those walks to nothing at all. A PDF exported from Apple Pages does just
-	// that: every glyph carries a marked-content id, the tree reports one child, and that child
-	// cannot be reached. Reporting the tagged path as used would hand the caller an empty page
-	// and stop plain extraction from ever running over text that is there.
-	if mcid_to_text.is_empty() || (0..child_count).all(|i| struct_tree.child(i).is_err()) {
+	// element is one of those walks to nothing at all. That is what a missing parent tree looks
+	// like: every glyph carries a marked-content id, the tree reports one child, and that child
+	// cannot be reached. [`super::repair`] gets such a file its tree back where it can; where it
+	// cannot, reporting the tagged path as used would hand the caller an empty page and stop
+	// plain extraction from ever running over text that is there.
+	if content.text.is_empty() || (0..child_count).all(|i| struct_tree.child(i).is_err()) {
 		tracing::warn!(page_index, "page structure tree leads to no text, falling back to plain extraction");
 		return false;
 	}
 	let mut current_block = String::new();
 	let mut pending_label = String::new();
+	let mut images = ImagePlacement { mcid_tops: &content.tops, unclaimed, block_top: None };
 	for i in 0..child_count {
 		if let Ok(child) = struct_tree.child(i) {
 			process_struct_element(
 				&child,
-				&mcid_to_text,
+				&content.text,
 				buffer,
 				page_display_text,
 				&mut current_block,
@@ -128,11 +98,74 @@ pub(super) fn extract_tagged_page_text(
 				current_lines_info,
 				flat_toc_items,
 				render_tables_inline,
+				&mut images,
 			);
 		}
 	}
-	flush_block(&mut pending_label, &mut current_block, buffer, page_display_text, current_lines_info);
+	flush_block(&mut pending_label, &mut current_block, buffer, page_display_text, current_lines_info, &mut images);
+	images.after_page(buffer, page_display_text, current_lines_info);
 	true
+}
+
+/// Where a page's own images go when its structure tree claims none of them.
+///
+/// The walk writes one block at a time and each block's height comes from the first piece of text
+/// in it, so [`Self::note`] is called as text joins a block and [`Self::before_line`] just before
+/// the block goes out. For a page whose tree does claim its figures there is nothing here to do
+/// and every call returns at once.
+struct ImagePlacement<'a> {
+	mcid_tops: &'a HashMap<i32, f64>,
+	unclaimed: UnclaimedImages,
+	/// The top edge of the block being built, from the first piece of text in it.
+	block_top: Option<f64>,
+}
+
+impl ImagePlacement<'_> {
+	/// Note a piece of text joining the block being built. The first one sets the block's height;
+	/// everything after it is lower down the same block.
+	fn note(&mut self, mcid: i32) {
+		if self.block_top.is_none() {
+			self.block_top = self.mcid_tops.get(&mcid).copied();
+		}
+	}
+
+	/// Note the height of a whole element, which is where its own first piece of text sits. Unlike
+	/// [`Self::note`] this speaks for the element that is about to be written rather than for text
+	/// joining a block already under way, so it sets the height rather than deferring to one
+	/// already held.
+	fn note_element(&mut self, elem: &PdfiumStructElement) {
+		if self.unclaimed.is_empty() {
+			return;
+		}
+		if let Some(mcid) = first_marked_content_id(elem) {
+			self.block_top = self.mcid_tops.get(&mcid).copied();
+		}
+	}
+
+	/// Write every image drawn above the line that is about to go out, and forget the height ready
+	/// for the next block.
+	fn before_line(
+		&mut self,
+		buffer: &mut DocumentBuffer,
+		page_display_text: &mut String,
+		current_lines_info: &mut Vec<(usize, String)>,
+	) {
+		if self.unclaimed.is_empty() {
+			return;
+		}
+		let top = self.block_top.take().unwrap_or(f64::NEG_INFINITY);
+		self.unclaimed.place_above(top, buffer, page_display_text, current_lines_info);
+	}
+
+	/// Write the images left below everything the page wrote.
+	fn after_page(
+		&mut self,
+		buffer: &mut DocumentBuffer,
+		page_display_text: &mut String,
+		current_lines_info: &mut Vec<(usize, String)>,
+	) {
+		self.unclaimed.place_above(f64::NEG_INFINITY, buffer, page_display_text, current_lines_info);
+	}
 }
 
 /// Replaces a list label made only of private-use characters with a plain bullet.
@@ -152,6 +185,7 @@ fn flush_block(
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
 	current_lines_info: &mut Vec<(usize, String)>,
+	images: &mut ImagePlacement,
 ) {
 	let trimmed = trim_string(&collapse_whitespace(current_block));
 	current_block.clear();
@@ -162,6 +196,7 @@ fn flush_block(
 	}
 	let line = if pending_label.is_empty() { trimmed } else { format!("{pending_label} {trimmed}") };
 	pending_label.clear();
+	images.before_line(buffer, page_display_text, current_lines_info);
 	let offset = buffer.current_position();
 	current_lines_info.push((offset, line.clone()));
 	buffer.append(&line);
@@ -177,12 +212,14 @@ fn flush_block_lines(
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
 	current_lines_info: &mut Vec<(usize, String)>,
+	images: &mut ImagePlacement,
 ) {
 	let text = current_block.clone();
 	current_block.clear();
 	for line in text.split('\n') {
 		let trimmed = trim_string(&collapse_whitespace(line));
 		if !trimmed.is_empty() {
+			images.before_line(buffer, page_display_text, current_lines_info);
 			let offset = buffer.current_position();
 			current_lines_info.push((offset, trimmed.clone()));
 			buffer.append(&trimmed);
@@ -204,6 +241,7 @@ fn process_struct_element(
 	current_lines_info: &mut Vec<(usize, String)>,
 	toc_items: &mut Vec<(u32, TocItem)>,
 	render_tables_inline: bool,
+	images: &mut ImagePlacement,
 ) {
 	let elem_type = elem.element_type().unwrap_or_default();
 	if elem_type == "Lbl" {
@@ -215,24 +253,29 @@ fn process_struct_element(
 		collect_text(elem, mcid_to_text, &mut label);
 		let label = trim_string(&collapse_whitespace(&label));
 		if !label.is_empty() {
+			images.note_element(elem);
 			*pending_label = normalize_list_label(&label);
 		}
 		return;
 	}
 	if elem_type == "Table" {
-		flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info);
+		flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info, images);
 		let html = build_html_table(elem, mcid_to_text);
+		images.note_element(elem);
+		images.before_line(buffer, page_display_text, current_lines_info);
 		let pos = buffer.current_position();
 		append_pdf_table_to_buffer(buffer, html, pos, current_lines_info, page_display_text, render_tables_inline);
 		return;
 	}
 	if elem_type == "Figure" {
-		flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info);
+		flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info, images);
 		let description = elem
 			.alt_text()
 			.or_else(|| elem.actual_text())
 			.map(|text| trim_string(&collapse_whitespace(&text)))
 			.unwrap_or_default();
+		images.note_element(elem);
+		images.before_line(buffer, page_display_text, current_lines_info);
 		append_image(buffer, MarkerType::Figure, &description, page_display_text, current_lines_info);
 		// The description goes in beside what the figure draws rather than in place of it, which
 		// is what a PDF reader following /Alt to the letter would do. A figure is not always only
@@ -256,7 +299,12 @@ fn process_struct_element(
 	);
 	let preserve_lines = elem_type == "Code";
 	if is_block {
-		flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info);
+		flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info, images);
+		// Whatever the page drew above this element goes in before its position is taken, or the
+		// heading, list and table markers below would point at an image line instead of at the
+		// text they name.
+		images.note_element(elem);
+		images.before_line(buffer, page_display_text, current_lines_info);
 	}
 	let block_start_pos = buffer.current_position() + display_len(current_block);
 	let count = elem.count_children();
@@ -272,18 +320,20 @@ fn process_struct_element(
 				current_lines_info,
 				toc_items,
 				render_tables_inline,
+				images,
 			);
 		} else if let Some(mcid) = elem.child_marked_content_id(i)
 			&& let Some(text) = mcid_to_text.get(&mcid)
 		{
+			images.note(mcid);
 			current_block.push_str(text);
 		}
 	}
 	if is_block {
 		if preserve_lines {
-			flush_block_lines(current_block, buffer, page_display_text, current_lines_info);
+			flush_block_lines(current_block, buffer, page_display_text, current_lines_info, images);
 		} else {
-			flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info);
+			flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info, images);
 		}
 		// An item with a label and no text of its own: the label is all there is to show, so it
 		// goes out on its own here rather than onto the front of whatever comes next. Writing it
@@ -292,7 +342,7 @@ fn process_struct_element(
 		if !pending_label.is_empty() {
 			current_block.push_str(pending_label);
 			pending_label.clear();
-			flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info);
+			flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info, images);
 		}
 		let heading_level = match elem_type.as_str() {
 			"H1" | "H" => Some(1), // "H" is a fallback generic heading, treated as H1
@@ -331,94 +381,6 @@ fn process_struct_element(
 			buffer.add_marker(Marker::new(MarkerType::ListItem, block_start_pos).with_text(li_text));
 		}
 	}
-}
-
-fn build_html_table(elem: &PdfiumStructElement, mcid_to_text: &HashMap<i32, String>) -> String {
-	let elem_type = elem.element_type().unwrap_or_default();
-	if elem_type == "Table" {
-		let mut html = String::from("<table border=\"1\">\n");
-		let count = elem.count_children();
-		for i in 0..count {
-			if let Ok(child) = elem.child(i) {
-				html.push_str(&build_html_table(&child, mcid_to_text));
-			}
-		}
-		html.push_str("</table>\n");
-		html
-	} else if elem_type == "TR" {
-		let mut html = String::from("<tr>\n");
-		let count = elem.count_children();
-		for i in 0..count {
-			if let Ok(child) = elem.child(i) {
-				html.push_str(&build_html_table(&child, mcid_to_text));
-			}
-		}
-		html.push_str("</tr>\n");
-		html
-	} else if elem_type == "TH" || elem_type == "TD" {
-		let mut html = format!("<{}>", elem_type.to_lowercase());
-		let mut cell_text = String::new();
-		collect_text(elem, mcid_to_text, &mut cell_text);
-		html.push_str(&html_escape(&trim_string(&collapse_whitespace(&cell_text))));
-		let _ = writeln!(html, "</{}>", elem_type.to_lowercase());
-		html
-	} else {
-		let mut html = String::new();
-		let count = elem.count_children();
-		for i in 0..count {
-			if let Ok(child) = elem.child(i) {
-				html.push_str(&build_html_table(&child, mcid_to_text));
-			}
-		}
-		html
-	}
-}
-
-fn collect_text(elem: &PdfiumStructElement, mcid_to_text: &HashMap<i32, String>, out: &mut String) {
-	let count = elem.count_children();
-	for i in 0..count {
-		if let Ok(child) = elem.child(i) {
-			collect_text(&child, mcid_to_text, out);
-		} else if let Some(mcid) = elem.child_marked_content_id(i)
-			&& let Some(text) = mcid_to_text.get(&mcid)
-		{
-			out.push_str(text);
-		}
-	}
-}
-
-fn html_escape(s: &str) -> String {
-	s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
-}
-
-/// Append a PDF table's on-screen text to the buffer and add the Table marker. The text is produced
-/// by [`crate::parser::convert::table_text::html_table_to_display`]: the full tab-separated rendering when
-/// `render_tables_inline` is set, otherwise a `"[Table]: <first row>"` placeholder. The helper
-/// output may span multiple lines (one per table row); each line is recorded as its own
-/// `current_lines_info` / `page_display_text` line, mirroring the rest of the PDF line tracking.
-/// Extracted from `process_struct_element` so the logic is unit-testable without live pdfium objects.
-pub(super) fn append_pdf_table_to_buffer(
-	buffer: &mut DocumentBuffer,
-	html: String,
-	pos: usize,
-	current_lines_info: &mut Vec<(usize, String)>,
-	page_display_text: &mut String,
-	render_tables_inline: bool,
-) {
-	let display_text = html_table_to_display(&html, render_tables_inline);
-	// `display_lines_and_length` guards the empty case (an empty inline table) by returning no
-	// lines, where a raw `split('\n')` would yield one `""` and emit a spurious blank line.
-	let (lines, _) = display_lines_and_length(&display_text);
-	for line in lines {
-		let line_pos = buffer.current_position();
-		current_lines_info.push((line_pos, line.clone()));
-		buffer.append(&line);
-		buffer.append("\n");
-		page_display_text.push_str(&line);
-		page_display_text.push('\n');
-	}
-	let display_len = buffer.current_position() - pos;
-	buffer.add_marker(Marker::new(MarkerType::Table, pos).with_reference(html).with_length(display_len));
 }
 
 #[cfg(test)]

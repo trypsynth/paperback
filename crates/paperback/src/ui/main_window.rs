@@ -17,15 +17,17 @@ use super::{
 	background, commands, dialogs,
 	document_manager::{DocumentManager, DocumentTab, display_title},
 	find::{self, FindDialogState},
-	help::{self, MAIN_WINDOW_PTR},
-	icon, menu, menu_ids, navigation,
+	help, icon, menu, menu_ids, navigation,
 	readability::build_font_from_readability,
-	sleep_timer, status, window_geometry,
+	sleep_timer, status,
+	update::{self, MAIN_WINDOW_PTR},
+	window_geometry,
 };
 use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IpcCommand;
 
+mod menu_events;
 mod menu_file;
 mod menu_go;
 mod menu_tools;
@@ -36,6 +38,11 @@ pub(crate) use parser_ready::ensure_parser_ready_for_path;
 mod hotkey;
 #[cfg(target_os = "windows")]
 use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
+
+#[cfg(target_os = "windows")]
+mod foreground;
+#[cfg(target_os = "windows")]
+pub(super) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
 
 #[derive(Default)]
 struct RestoreState {
@@ -62,81 +69,6 @@ pub struct MainWindow {
 #[cfg(target_os = "windows")]
 static HIDDEN_POPUP: AtomicIsize = AtomicIsize::new(0);
 
-/// Whether this process has one of its own dialogs on screen right now.
-///
-/// The updater's dialogs - the changelog, the progress bar - are all `wxDialog`s, which are the
-/// standard `#32770` class on Windows, while the frame is `wxWindowNR`. So this answers "is an
-/// update in progress" from the outside, without `ship-shape` having to report it.
-///
-/// `FindWindowExW` with a null parent looks like the obvious way to walk top-level windows and is
-/// not: `EnumWindows` is the API that actually enumerates them. Swapping one for the other is the
-/// kind of change that fails silently - a walk that matches nothing means `help.rs` never hands the
-/// foreground over, which looks exactly like the hand-off not working.
-#[cfg(target_os = "windows")]
-pub(super) fn own_dialog_is_up() -> bool {
-	use windows::{
-		Win32::{
-			Foundation::{HWND, LPARAM},
-			UI::WindowsAndMessaging::EnumWindows,
-		},
-		core::BOOL,
-	};
-
-	/// Set as the walk goes, so it can stop at the first match.
-	struct Found(bool);
-
-	unsafe extern "system" fn note_dialog(window: HWND, param: LPARAM) -> BOOL {
-		let found = unsafe { &mut *(param.0 as *mut Found) };
-		if window_pid(window) == std::process::id() && class_name(window) == DIALOG_CLASS {
-			found.0 = true;
-			// One is enough, and the update flow never has two of its dialogs up at once.
-			return BOOL(0);
-		}
-		BOOL(1)
-	}
-
-	let mut found = Found(false);
-	// The only way this fails is a bad callback, and there is nothing to do about it but carry on:
-	// a missed dialog costs the hand-off, not correctness.
-	let _ = unsafe { EnumWindows(Some(note_dialog), LPARAM(std::ptr::from_mut(&mut found) as isize)) };
-	found.0
-}
-
-/// Whether this app's frame is disabled, which wx does for the lifetime of any modal dialog it
-/// shows - every dialog in the update flow among them.
-///
-/// A second way to see the same thing, kept because the two fail differently: the class walk
-/// depends on the dialogs being ordinary top-level `#32770`s, this depends on wx disabling the
-/// parent. A missed dialog costs the whole hand-off, while a spurious one costs a few extra grants,
-/// so it is worth asking twice.
-#[cfg(target_os = "windows")]
-pub(super) fn frame_is_disabled(frame: windows::Win32::Foundation::HWND) -> bool {
-	use windows::Win32::UI::Input::KeyboardAndMouse::IsWindowEnabled;
-	!frame.0.is_null() && !unsafe { IsWindowEnabled(frame) }.as_bool()
-}
-
-/// The process that owns a window, so the walk can tell this app's own windows from another's.
-#[cfg(target_os = "windows")]
-fn window_pid(hwnd: windows::Win32::Foundation::HWND) -> u32 {
-	use windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId;
-	let mut pid = 0u32;
-	unsafe { GetWindowThreadProcessId(hwnd, Some(&raw mut pid)) };
-	pid
-}
-
-/// The window class, which is what says whether a handle is a dialog or a frame.
-#[cfg(target_os = "windows")]
-fn class_name(hwnd: windows::Win32::Foundation::HWND) -> String {
-	use windows::Win32::UI::WindowsAndMessaging::GetClassNameW;
-	let mut class = [0u16; 256];
-	let class_len = usize::try_from(unsafe { GetClassNameW(hwnd, &mut class) }).unwrap_or(0);
-	String::from_utf16_lossy(&class[..class_len])
-}
-
-/// The Win32 class of every dialog on Windows, `wxDialog` and `MessageBox` alike.
-#[cfg(target_os = "windows")]
-const DIALOG_CLASS: &str = "#32770";
-
 impl MainWindow {
 	/// Accessor for background callbacks (e.g. the OCR worker thread) that can't hold the app's
 	/// own `Rc<Mutex<DocumentManager>>` (an `Rc` is not `Send`); they reach the window via
@@ -151,6 +83,8 @@ impl MainWindow {
 		let frame = Frame::builder().with_title(&app_title).build();
 		window_geometry::apply_defaults(&frame);
 		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
+		#[cfg(target_os = "windows")]
+		remember_frame_hwnd(&frame);
 		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
 		// (embedded by build.rs) already covers the taskbar and the shell; this is what the
 		// window itself carries, and is the only icon at all on the other platforms.
@@ -401,7 +335,7 @@ impl MainWindow {
 	}
 
 	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
-		help::run_update_check(silent, channel);
+		update::run_update_check(silent, channel);
 	}
 
 	pub fn open_file(&self, path: &Path) -> bool {
@@ -683,202 +617,6 @@ impl MainWindow {
 					.build();
 			dialog.show_modal();
 		}
-	}
-
-	#[allow(clippy::too_many_lines)]
-	fn bind_menu_events(
-		frame: &Frame,
-		doc_manager: &Rc<Mutex<DocumentManager>>,
-		config: &Rc<Mutex<ConfigManager>>,
-		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
-		live_region_label: StaticText,
-		#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
-	) -> Vec<Rc<Timer<Frame>>> {
-		let frame_copy = *frame;
-		let dm = Rc::clone(doc_manager);
-		let config = Rc::clone(config);
-		let find_dialog = Rc::clone(find_dialog);
-		#[cfg(target_os = "windows")]
-		let hotkey_handle_for_options = Rc::clone(hotkey_handle);
-		let sleep_timer = sleep_timer::SleepTimer::new(frame, doc_manager, &config);
-		// Taken before the menu closure captures the SleepTimer: the returned vec is what
-		// keeps the wx timer alive for the window's lifetime.
-		let sleep_timer_handle = Rc::clone(sleep_timer.timer());
-		let mut timers = background::start_timers(frame, doc_manager);
-		timers.push(sleep_timer_handle);
-		background::bind_resize(frame, doc_manager);
-		frame.on_menu(move |event| {
-			let id = event.get_id();
-			// Commands that have moved to the table handle themselves; the match below is the
-			// shrinking remainder, still keyed to menu ids by hand.
-			if commands::dispatch(
-				id,
-				&commands::Ctx { frame: &frame_copy, dm: &dm, config: &config, live_region_label },
-			) {
-				return;
-			}
-			match id {
-				menu_ids::FIND => {
-					find::show_find_dialog(&frame_copy, &dm, &config, &find_dialog, live_region_label);
-				}
-				menu_ids::FIND_NEXT => {
-					find::handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, true);
-				}
-				menu_ids::FIND_PREVIOUS => {
-					find::handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, false);
-				}
-				menu_ids::ANNOUNCE_PERCENT => {
-					if let Ok(dm_ref) = dm.try_lock() {
-						dm_ref.announce_current_percent();
-					}
-				}
-				menu_ids::SET_TEMPORARY_BOOKMARK => {
-					if let Ok(dm_ref) = dm.try_lock() {
-						dm_ref.set_temporary_bookmark();
-					}
-				}
-				menu_ids::JUMP_TO_TEMPORARY_BOOKMARK => {
-					if let Ok(mut dm_ref) = dm.try_lock() {
-						dm_ref.jump_to_temporary_bookmark();
-					}
-				}
-				menu_ids::GO_TO_LINE => {
-					menu_go::handle_go_to_line(&frame_copy, &dm, &config, live_region_label);
-				}
-				menu_ids::GO_TO_PAGE => {
-					menu_go::handle_go_to_page(&frame_copy, &dm, &config, live_region_label);
-				}
-				menu_ids::GO_TO_PERCENT => {
-					menu_go::handle_go_to_percent(&frame_copy, &dm, &config, live_region_label);
-				}
-				menu_ids::TOGGLE_WORD_WRAP => {
-					let new_state = {
-						let cfg = config.lock().unwrap();
-						let v = !cfg.get_app_bool("word_wrap", false);
-						cfg.set_app_bool("word_wrap", v);
-						cfg.flush();
-						v
-					};
-					{
-						let dm_for_wrap = Rc::clone(&dm);
-						let mut dm_ref = dm.lock().unwrap();
-						dm_ref.apply_word_wrap(&dm_for_wrap, new_state);
-					}
-					if let Some(menu_bar) = frame_copy.get_menu_bar() {
-						menu_bar.check_item(menu_ids::TOGGLE_WORD_WRAP, new_state);
-					}
-					// TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-					let msg = if new_state { t("Word wrap on.") } else { t("Word wrap off.") };
-					live_region::announce(live_region_label, &msg);
-					dm.lock().unwrap().restore_focus();
-				}
-				menu_ids::TOGGLE_FULL_SCREEN => {
-					let new_state = !frame_copy.is_full_screen();
-					frame_copy.show_full_screen(new_state);
-					if let Some(menu_bar) = frame_copy.get_menu_bar() {
-						menu_bar.check_item(menu_ids::TOGGLE_FULL_SCREEN, new_state);
-					}
-					// TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-					let msg = if new_state { t("Full screen on.") } else { t("Full screen off.") };
-					live_region::announce(live_region_label, &msg);
-				}
-				menu_ids::EXPORT_TO_PLAIN_TEXT => {
-					menu_tools::handle_export_to_plain_text(&frame_copy, &dm);
-				}
-				menu_ids::EXPORT_TO_HTML => {
-					menu_tools::handle_export_to_html(&frame_copy, &dm);
-				}
-				menu_ids::EXPORT_TO_MARKDOWN => {
-					menu_tools::handle_export_to_markdown(&frame_copy, &dm);
-				}
-				menu_ids::EXPORT_DOCUMENT_DATA => {
-					menu_tools::handle_export_document_data(&frame_copy, &dm, &config);
-				}
-				menu_ids::IMPORT_DOCUMENT_DATA => {
-					menu_tools::handle_import_document_data(&frame_copy, &dm, &config);
-				}
-				menu_ids::WORD_COUNT => {
-					menu_tools::handle_word_count(&frame_copy, &dm, &config);
-				}
-				menu_ids::DOCUMENT_INFO => {
-					menu_tools::handle_document_info(&frame_copy, &dm);
-				}
-				menu_ids::TABLE_OF_CONTENTS => {
-					menu_tools::handle_table_of_contents(&frame_copy, &dm, &config, live_region_label);
-				}
-				menu_ids::ELEMENTS_LIST => {
-					menu_tools::handle_elements_list(&frame_copy, &dm, &config, live_region_label);
-				}
-				menu_ids::OPEN_IN_WEB_VIEW => {
-					menu_tools::handle_open_in_web_view(&frame_copy, &dm);
-				}
-				menu_ids::REVEAL_FILE_IN_FOLDER => {
-					help::handle_reveal_file_in_folder(&frame_copy, &dm);
-				}
-				menu_ids::VIEW_SOURCE => {
-					menu_tools::handle_view_source(&frame_copy, &dm);
-				}
-				menu_ids::OPTIONS | menu_ids::PREFERENCES => {
-					menu_tools::handle_options(
-						&frame_copy,
-						&dm,
-						&config,
-						#[cfg(target_os = "windows")]
-						&hotkey_handle_for_options,
-					);
-				}
-				menu_ids::CUSTOMIZE_SHORTCUTS => {
-					menu_tools::handle_customize_shortcuts(&frame_copy, &dm, &config);
-				}
-				menu_ids::SLEEP_TIMER => {
-					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label);
-				}
-				#[cfg(any(target_os = "windows", target_os = "macos"))]
-				menu_ids::BATCH_OCR => {
-					menu_tools::handle_batch_ocr(&frame_copy, &dm, live_region_label);
-				}
-				menu_ids::ABOUT => {
-					dialogs::show_about_dialog(&frame_copy);
-				}
-				menu_ids::VIEW_HELP_BROWSER => {
-					help::handle_view_help_browser(&frame_copy);
-				}
-				menu_ids::VIEW_HELP_PAPERBACK => {
-					if help::handle_view_help_paperback(&frame_copy, &dm, &config) {
-						{
-							let dm_ref = dm.lock().unwrap();
-							update_title_from_manager(&frame_copy, &dm_ref);
-							dm_ref.restore_focus();
-						}
-						let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-						frame_copy.set_menu_bar(menu_bar);
-						menu::update_menu_item_states(&frame_copy, true);
-						let has_reopen = dm.lock().unwrap().has_recently_closed();
-						menu::update_reopen_state(&frame_copy, has_reopen);
-					}
-				}
-				menu_ids::CHECK_FOR_UPDATES => {
-					let channel = get_update_channel(&config.lock().unwrap());
-					help::run_update_check(false, channel);
-				}
-				menu_ids::DONATE => {
-					help::handle_donate(&frame_copy);
-				}
-				#[cfg(target_os = "macos")]
-				menu_ids::COPY => {
-					// Only macOS builds an Edit menu, so only macOS sees Copy as a menu event; every
-					// other platform intercepts the key in `build_text_ctrl`.
-					let widened = dm.lock().unwrap().copy_whole_document_if_all_selected();
-					if !widened {
-						event.skip(true);
-					}
-				}
-				_ => {
-					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);
-				}
-			}
-		});
-		timers
 	}
 }
 

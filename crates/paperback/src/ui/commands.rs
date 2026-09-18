@@ -26,6 +26,7 @@ pub mod audio;
 pub mod bookmarks;
 pub mod file;
 pub mod navigation;
+pub mod selection;
 
 /// What has to be true for a command to be usable.
 ///
@@ -548,6 +549,38 @@ pub static COMMANDS: &[Command] = &[
 		help: None,
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::with_note),
+	},
+	Command {
+		action: ActionId::SetSelectionStart,
+		// TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+		label: || t("Set Selection St&art"),
+		// TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+		help: Some(|| t("Mark the beginning of a selection to copy from")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(selection::set_start),
+	},
+	Command {
+		action: ActionId::CopyFromSelectionStart,
+		// TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+		label: || t("&Copy from Selection Start"),
+		// TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+		help: Some(|| t("Copy from the beginning of the selection to here")),
+		// Deliberately not gated on a mark being set: the command has to stay enabled so pressing
+		// it with nothing marked can say so. Gating it here would leave a disabled menu item and
+		// a shortcut that does nothing at all, with no way to find out why.
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(selection::copy_from_start),
+	},
+	Command {
+		action: ActionId::JumpToSelectionStart,
+		// TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+		label: || t("&Jump to Selection Start"),
+		// TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+		help: Some(|| t("Go back to the beginning of the selection")),
+		// Enabled for the same reason as the copy above: an unset mark has to be announced, not
+		// turned into a dead menu item.
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(selection::jump_to_start),
 	},
 	Command {
 		action: ActionId::PlayPauseAudio,

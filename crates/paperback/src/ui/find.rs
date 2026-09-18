@@ -4,57 +4,26 @@ use std::{
 	sync::Mutex,
 };
 
-use bitflags::bitflags;
 use paperback_core::{config::ConfigManager, reader_core, session::FindAllLine, util::text::display_len};
 use patois::t;
 use wxdragon::prelude::*;
 
 use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigation};
 
+mod results_list;
+mod search;
+
+use results_list::{
+	ResultsList, build_results_list, clear_results_list, populate_results_list, results_selected_index,
+	select_results_row,
+};
+use search::{FindOptions, find_text_with_wrap};
+
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 /// How long to leave the empty results list focused before populating it. Long enough for the
 /// screen reader to settle on the (empty) list first; populating while NVDA is still deciding how
 /// to announce a freshly-shown control is what made it intermittently enumerate all 40k rows.
 const RESULT_POPULATE_DELAY_MS: i32 = 150;
-
-#[derive(Clone, Debug, Default)]
-pub struct SearchResult {
-	pub found: bool,
-	pub wrapped: bool,
-	pub position: i64,
-}
-
-bitflags! {
-	#[derive(Copy, Clone, Default)]
-	pub struct FindOptions: u8 {
-		const NONE = 0;
-		const FORWARD = 1 << 0;
-		const MATCH_CASE = 1 << 1;
-		const MATCH_WHOLE_WORD = 1 << 2;
-		const USE_REGEX = 1 << 3;
-	}
-}
-
-pub fn find_text_with_wrap(haystack: &str, needle: &str, start: i64, options: FindOptions) -> SearchResult {
-	if needle.is_empty() {
-		return SearchResult::default();
-	}
-	let mut search_options = reader_core::SearchOptions::empty();
-	if options.contains(FindOptions::FORWARD) {
-		search_options |= reader_core::SearchOptions::FORWARD;
-	}
-	if options.contains(FindOptions::MATCH_CASE) {
-		search_options |= reader_core::SearchOptions::MATCH_CASE;
-	}
-	if options.contains(FindOptions::MATCH_WHOLE_WORD) {
-		search_options |= reader_core::SearchOptions::WHOLE_WORD;
-	}
-	if options.contains(FindOptions::USE_REGEX) {
-		search_options |= reader_core::SearchOptions::REGEX;
-	}
-	let result = reader_core::reader_search_with_wrap(haystack, needle, start, search_options);
-	SearchResult { found: result.found, wrapped: result.wrapped, position: result.position }
-}
 
 /// Which of the dialog's two views is showing: the query (find-what, options, find buttons) or
 /// the Find All results list. Switching hides one view's windows and shows the other's, then
@@ -63,148 +32,6 @@ pub fn find_text_with_wrap(haystack: &str, needle: &str, start: i64, options: Fi
 enum FindView {
 	Query,
 	Results,
-}
-
-// The Find All results list. macOS does not expose wxListCtrl to VoiceOver (see the All
-// Documents dialog), so it uses a store-backed wxDataViewListCtrl there; everywhere else the
-// results are a *virtual* wxListCtrl, which asks the control for text only for the visible rows.
-// That means even hundreds of thousands of matches populate in O(1) instead of appending a
-// native row per match (the appending was what froze the dialog on large documents).
-#[cfg(target_os = "macos")]
-type ResultsList = DataViewListCtrl;
-#[cfg(not(target_os = "macos"))]
-type ResultsList = ListCtrl;
-
-/// The row label for one result line: "Page N: <text>" when the document is paginated, else the
-/// line text itself.
-fn result_row_label(row: &FindAllLine) -> String {
-	if row.page > 0 { navigation::page_announcement(row.page, &row.text) } else { row.text.clone() }
-}
-
-/// The fixed size of the results list. It is both the minimum and the maximum so the dialog's
-/// `fit()` never sizes itself to the list's item count (a 40,000-row virtual list has no business
-/// making the dialog tens of thousands of pixels tall).
-fn results_list_size(dialog: Dialog) -> Size {
-	dialog.from_dip(Size::new(600, 500))
-}
-
-#[cfg(not(target_os = "macos"))]
-fn build_results_list(
-	dialog: Dialog,
-	_result_rows: Rc<RefCell<Vec<FindAllLine>>>,
-	result_labels: Rc<RefCell<Vec<String>>>,
-) -> ResultsList {
-	let size = results_list_size(dialog);
-	let results_list = ListCtrl::builder(&dialog)
-		.with_style(ListCtrlStyle::Report | ListCtrlStyle::Virtual | ListCtrlStyle::SingleSel)
-		.with_size(size)
-		.build();
-	results_list.insert_column(0, "", ListColumnFormat::Left, dialog.from_dip_int(600));
-	results_list.set_min_size(size);
-	results_list.set_max_size(size);
-	// TRANSLATORS: Accessible name of the list of Find All results
-	results_list.set_accessibility_label(&t("Results"));
-	// The virtual list asks for text on demand; hand back a prebuilt label so the request is a
-	// cheap clone rather than a per-row translation.
-	results_list.set_virtual_text_callback(move |index, _column| {
-		let labels = result_labels.borrow();
-		usize::try_from(index).ok().and_then(|index| labels.get(index)).cloned().unwrap_or_default()
-	});
-	results_list.set_item_count(0);
-	results_list
-}
-
-#[cfg(target_os = "macos")]
-fn build_results_list(
-	dialog: Dialog,
-	_result_rows: Rc<RefCell<Vec<FindAllLine>>>,
-	_result_labels: Rc<RefCell<Vec<String>>>,
-) -> ResultsList {
-	let size = results_list_size(dialog);
-	let results_list = DataViewListCtrl::builder(&dialog).with_style(DataViewStyle::RowLines).with_size(size).build();
-	results_list.append_text_column(
-		"",
-		0,
-		DataViewAlign::Left,
-		dialog.from_dip_int(600),
-		DataViewColumnFlags::Resizable,
-	);
-	results_list.set_min_size(size);
-	results_list.set_max_size(size);
-	// TRANSLATORS: Accessible name of the list of Find All results
-	results_list.set_accessibility_label(&t("Results"));
-	results_list
-}
-
-#[cfg(not(target_os = "macos"))]
-fn populate_results_list(list: ResultsList, rows: &Rc<RefCell<Vec<FindAllLine>>>, labels: &Rc<RefCell<Vec<String>>>) {
-	// Build each row's label once, then hand the virtual list its count - it only ever asks for
-	// text for the rows it shows, and the callback reads from the prebuilt labels.
-	let mut labels = labels.borrow_mut();
-	labels.clear();
-	{
-		let rows = rows.borrow();
-		labels.reserve(rows.len());
-		for row in rows.iter() {
-			labels.push(result_row_label(row));
-		}
-	}
-	list.set_item_count(i64::try_from(labels.len()).unwrap_or(0));
-}
-
-#[cfg(target_os = "macos")]
-fn populate_results_list(list: ResultsList, rows: &Rc<RefCell<Vec<FindAllLine>>>, _labels: &Rc<RefCell<Vec<String>>>) {
-	list.delete_all_items();
-	for row in rows.borrow().iter() {
-		list.append_item(&[Variant::from(result_row_label(row))]);
-	}
-}
-
-/// Empties the results list so a fresh Find All starts from the same empty, instantly-focusable
-/// state every time (leaving the previous run's rows in place made NVDA enumerate all of them the
-/// moment the list was shown and focused again).
-#[cfg(not(target_os = "macos"))]
-fn clear_results_list(list: ResultsList) {
-	list.set_item_count(0);
-}
-
-#[cfg(target_os = "macos")]
-fn clear_results_list(list: ResultsList) {
-	list.delete_all_items();
-}
-
-#[cfg(not(target_os = "macos"))]
-fn select_results_row(list: ResultsList, index: i32) {
-	if index < 0 {
-		return;
-	}
-	list.set_item_state(
-		i64::from(index),
-		ListItemState::Selected | ListItemState::Focused,
-		ListItemState::Selected | ListItemState::Focused,
-	);
-	list.ensure_visible(i64::from(index));
-}
-
-#[cfg(target_os = "macos")]
-fn select_results_row(list: ResultsList, index: i32) {
-	let Ok(index) = usize::try_from(index) else { return };
-	list.select_row(index);
-	if let Some(item) = list.row_to_item(index) {
-		list.set_current_item(&item);
-		list.ensure_visible(&item);
-	}
-}
-
-#[cfg(not(target_os = "macos"))]
-fn results_selected_index(list: ResultsList) -> Option<usize> {
-	let index = list.get_first_selected_item();
-	if index >= 0 { usize::try_from(index).ok() } else { None }
-}
-
-#[cfg(target_os = "macos")]
-fn results_selected_index(list: ResultsList) -> Option<usize> {
-	list.get_selected_row()
 }
 
 #[derive(Clone)]

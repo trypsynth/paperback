@@ -184,7 +184,20 @@ pub(super) fn build_text_ctrl(
 						return;
 					}
 					_ => {
-						if !kbd.control_down() && !kbd.alt_down() || cfg!(target_os = "linux") {
+						// Alt chords are normally left to wxWidgets to resolve as menu
+						// accelerators, which is how Alt+Left gets to the navigation history.
+						// The selection commands are dispatched here as well because F10 means
+						// "activate the menu bar" to Windows, so whether Alt+F10 ever reaches the
+						// accelerator table on every platform is not something to bet a shortcut
+						// on. The two routes cannot both run: a keystroke the accelerator consumed
+						// never arrives here at all.
+						let alt_dispatched = matches!(
+							act,
+							ActionId::SetSelectionStart
+								| ActionId::CopyFromSelectionStart
+								| ActionId::JumpToSelectionStart
+						);
+						if !kbd.control_down() && !kbd.alt_down() || alt_dispatched || cfg!(target_os = "linux") {
 							let menu_id = menu_ids::action_to_menu_id(act);
 							kbd.event.skip(false);
 							frame_for_keys.process_menu_command(menu_id);
