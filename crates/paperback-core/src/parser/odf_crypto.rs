@@ -17,7 +17,7 @@ use std::io::{Read, Seek};
 use aes::Aes256;
 use anyhow::{Context, Result};
 use base64::{Engine, engine::general_purpose::STANDARD};
-use cbc::cipher::{BlockDecryptMut, KeyIvInit, block_padding::NoPadding};
+use cbc::cipher::{BlockModeDecrypt, KeyIvInit, block_padding::NoPadding};
 use roxmltree::Document as XmlDocument;
 use sha2::{Digest, Sha256};
 use zip::ZipArchive;
@@ -146,7 +146,7 @@ fn decrypt(encryption: &Encryption, ciphertext: &[u8], password: &str) -> Option
 	// The entry is padded to the block size with bytes that are not PKCS#7, so the padding is left
 	// on: raw DEFLATE stops at its own end marker and never reads into it.
 	let mut buffer = ciphertext.to_vec();
-	let plain = cipher.decrypt_padded_mut::<NoPadding>(&mut buffer).ok()?;
+	let plain = cipher.decrypt_padded::<NoPadding>(&mut buffer).ok()?;
 	let inflated = inflate(plain)?;
 	// The checksum confirms the password where the manifest carries one this build knows. It is
 	// taken over the first kilobyte of the compressed-but-decrypted data, so it can only be
