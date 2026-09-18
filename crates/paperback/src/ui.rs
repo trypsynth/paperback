@@ -17,6 +17,7 @@ mod readability;
 mod reader_input;
 #[cfg(any(target_os = "windows", test))]
 mod rtf;
+mod selection;
 mod shell;
 mod sleep_timer;
 mod sounds;
