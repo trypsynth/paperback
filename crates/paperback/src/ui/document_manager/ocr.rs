@@ -201,6 +201,12 @@ impl DocumentManager {
 			job.recognized += pages.len();
 		}
 		let caret = i64::try_from(outcome.shift(usize::try_from(caret.max(0)).unwrap_or(0))).unwrap_or(caret);
+		// The mark is a document-absolute offset like the caret's, so the insertions above moved
+		// it the same way. Left where it was it would name different text once OCR had finished.
+		if let Some(mark) = tab.selection_mark.get() {
+			let shifted = outcome.shift(usize::try_from(mark.max(0)).unwrap_or(0));
+			tab.selection_mark.set(Some(i64::try_from(shifted).unwrap_or(mark)));
+		}
 		refresh_after_ocr(tab, &pages, window, caret, is_active);
 		// The config stores document-absolute offsets (reading position, navigation history,
 		// bookmarks), every one of which the edits above just moved.

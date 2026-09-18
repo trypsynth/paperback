@@ -28,6 +28,51 @@ impl DocumentSession {
 		i64::try_from(self.handle.document().buffer.total_display_len()).unwrap_or(i64::MAX)
 	}
 
+	/// The text between two display-unit positions, `start` inclusive and `end` exclusive - the
+	/// same unit [`Self::document_len`], the GUI caret and `Marker.position` all use.
+	///
+	/// Use this, not [`Self::get_text_range`], for any range a caret or a marker produced.
+	/// `get_text_range` treats its arguments as *char* indices, so for an interior range in a
+	/// document holding an astral-plane character (one char, two display units on Windows and
+	/// macOS) it returns text shifted by however many such characters precede the range. This
+	/// converts through [`crate::document::DocumentBuffer::byte_index_for_display`] instead.
+	/// Nothing is snapped to a paragraph boundary: a bound landing mid-word cuts the word, which
+	/// is the point when the caller is naming two caret positions.
+	///
+	/// Both bounds are clamped to the document; an empty or reversed range is an empty string.
+	#[must_use]
+	pub fn get_text_range_display(&self, start: i64, end: i64) -> String {
+		let buf = &self.handle.document().buffer;
+		let doc_len = buf.total_display_len();
+		let start_display = usize::try_from(start.max(0)).unwrap_or(0).min(doc_len);
+		let end_display = usize::try_from(end.max(0)).unwrap_or(0).min(doc_len);
+		if start_display >= end_display {
+			return String::new();
+		}
+		// Slicing on `char_to_byte_map` entries, so both bounds are char boundaries.
+		let start_byte = buf.byte_index_for_display(start_display);
+		let end_byte = buf.byte_index_for_display(end_display);
+		buf.content[start_byte..end_byte].to_string()
+	}
+
+	/// The display-unit position just past the character at `display_pos`, so that
+	/// `get_text_range_display(x, session.display_pos_after_char_at(y))` covers every character
+	/// from `x` through the one a caret at `y` is sitting on.
+	///
+	/// A caret sits at the *start* of the character it names - which is the character a screen
+	/// reader is speaking - so an exclusive end bound drops it. This spans the whole character,
+	/// an astral-plane pair included, rather than the single display unit its start sits on.
+	/// Past the last character it is the document length, so "the character at the caret" at the
+	/// very end of a document stays clamped instead of running off it.
+	#[must_use]
+	pub fn display_pos_after_char_at(&self, display_pos: i64) -> i64 {
+		let buf = &self.handle.document().buffer;
+		let total = buf.total_display_len();
+		let pos = usize::try_from(display_pos.max(0)).unwrap_or(0).min(total);
+		let char_index = buf.char_index_for_display(pos);
+		i64::try_from(buf.display_index_for_char(char_index + 1)).unwrap_or(i64::MAX)
+	}
+
 	/// Slices `[raw_start, raw_end)` (display units, clamped to the document) out of the
 	/// content, snapping both edges outward to the nearest paragraph boundary so a window
 	/// never starts or ends mid-paragraph, then collects the Bold/Italic/Underline markers
@@ -221,5 +266,80 @@ epsilon";
 			cursor = slice.end;
 		}
 		assert_eq!(assembled, content);
+	}
+
+	#[test]
+	fn get_text_range_display_round_trips_the_whole_document() {
+		let content = "first paragraph\nsecond paragraph\nthird paragraph";
+		let session = session_with(content, &[]);
+		assert_eq!(session.get_text_range_display(0, session.document_len()), content);
+	}
+
+	/// The property that separates this from `get_window`: what was asked for is what comes back,
+	/// even when it starts and ends mid-word.
+	#[test]
+	fn get_text_range_display_extracts_an_interior_range_without_snapping() {
+		let content = "first paragraph\nsecond paragraph\nthird paragraph";
+		let session = session_with(content, &[]);
+		let start = content.find("second").unwrap() as i64 + 3;
+		let end = content.find("second paragraph").unwrap() as i64 + 10;
+		assert_eq!(session.get_text_range_display(start, end), "ond par");
+		// The window call on the same bounds swallows both paragraphs whole.
+		assert_eq!(session.get_window(start, end).text, "second paragraph\n");
+	}
+
+	#[test]
+	fn get_text_range_display_clamps_and_handles_empty_or_reversed_ranges() {
+		let session = session_with("hello world", &[]);
+		let len = session.document_len();
+		assert_eq!(session.get_text_range_display(-100, 100_000), "hello world");
+		assert_eq!(session.get_text_range_display(0, len), "hello world");
+		assert_eq!(session.get_text_range_display(3, 3), "");
+		assert_eq!(session.get_text_range_display(7, 2), "");
+		assert_eq!(session.get_text_range_display(len + 5, len + 9), "");
+	}
+
+	/// The inclusive end bound: a caret names the character it sits on, so a range ending at the
+	/// caret has to reach past that character rather than up to its start.
+	#[test]
+	fn display_pos_after_char_at_covers_the_character_the_caret_is_on() {
+		let session = session_with("hello world", &[]);
+		let end = |pos| session.display_pos_after_char_at(pos);
+		assert_eq!(session.get_text_range_display(0, end(0)), "h");
+		assert_eq!(session.get_text_range_display(0, end(6)), "hello w");
+		// Past the last character it is the document length, never one beyond it.
+		assert_eq!(end(session.document_len()), session.document_len());
+		assert_eq!(end(10_000), session.document_len());
+	}
+
+	/// An astral-plane character is one character the reader hears and two display units, so the
+	/// end bound has to clear the whole pair rather than land inside it.
+	#[cfg(any(windows, target_os = "macos"))]
+	#[test]
+	fn display_pos_after_char_at_spans_a_whole_astral_pair() {
+		let session = session_with("a\u{1F600}bc", &[]);
+		let end = |pos| session.display_pos_after_char_at(pos);
+		assert_eq!(session.get_text_range_display(0, end(0)), "a");
+		assert_eq!(session.get_text_range_display(1, end(1)), "\u{1F600}");
+		assert_eq!(session.get_text_range_display(3, end(3)), "b");
+		assert_eq!(session.get_text_range_display(0, end(4)), "a\u{1F600}bc");
+	}
+
+	/// The reason this method exists at all. An astral-plane character is one char but two
+	/// display units on Windows and macOS, so a range read off the caret only survives the
+	/// char-indexed sibling by accident. Gated to the platforms where the two units differ - on
+	/// GTK a display unit *is* a scalar and `get_text_range` would agree.
+	#[cfg(any(windows, target_os = "macos"))]
+	#[test]
+	fn get_text_range_display_agrees_with_the_buffer_on_astral_characters() {
+		let session = session_with("a\u{1F600}bc", &[]);
+		// Display units: 'a' at 0, the emoji across 1..3, 'b' at 3, 'c' at 4.
+		assert_eq!(session.document_len(), 5);
+		assert_eq!(session.get_text_range_display(0, 5), "a\u{1F600}bc");
+		assert_eq!(session.get_text_range_display(1, 3), "\u{1F600}");
+		assert_eq!(session.get_text_range_display(3, 5), "bc");
+		// The same numbers through the char-indexed sibling land somewhere else entirely, which
+		// is what a copy built on `get_text_range` would have put on the clipboard.
+		assert_eq!(session.get_text_range(1, 3), "\u{1F600}b");
 	}
 }

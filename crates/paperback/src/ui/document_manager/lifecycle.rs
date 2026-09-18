@@ -190,6 +190,7 @@ impl DocumentManager {
 			audio_player,
 			disk_fingerprint: read_fingerprint(path),
 			preferred_column: Cell::new(None),
+			selection_mark: Cell::new(None),
 			window,
 			ocr_job: None,
 		});
