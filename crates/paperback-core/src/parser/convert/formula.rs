@@ -47,6 +47,10 @@ fn init() -> bool {
 	// `rules` is embedded in the zip vfs in the binary; it does not represent an on-disk directory.
 	// It is nevertheless required for MathCat initialization.
 	let result = libmathcat::set_rules_dir("Rules".to_string())
+		// Without this, MathCAT re-reads its preference files on every get_braille call, which
+		// resets BrailleCode to its shipped default (Nemeth) and discards the ASCIIMath set below,
+		// so the reader hears Nemeth braille cells instead of AsciiMath.
+		.and_then(|()| libmathcat::set_preference("CheckRuleFiles".to_string(), "None".to_string()))
 		.and_then(|()| libmathcat::set_preference("Language".to_string(), "en".to_string()))
 		// ASCIIMath is a text notation, despite being exposed through MathCAT's braille API.
 		.and_then(|()| libmathcat::set_preference("BrailleCode".to_string(), "ASCIIMath".to_string()));
