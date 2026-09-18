@@ -226,12 +226,12 @@ fichiers actuellement pris en charge</a></li>
 clavier</a>
 <ul>
 <li><a href="#menu-fichier" id="toc-menu-fichier">Menu Fichier</a></li>
-<li><a href="#menu-aller-à" id="toc-menu-aller-à">Menu Aller à</a></li>
+<li><a href="#menu-aller" id="toc-menu-aller">Menu Aller</a></li>
 <li><a href="#menu-outils" id="toc-menu-outils">Menu Outils</a></li>
 <li><a href="#menu-aide" id="toc-menu-aide">Menu Aide</a></li>
-<li><a href="#touches-supplémentaires-pour-la-vue-document"
-id="toc-touches-supplémentaires-pour-la-vue-document">Touches
-supplémentaires pour la vue document</a></li>
+<li><a href="#touches-supplémentaires-de-la-vue-du-document"
+id="toc-touches-supplémentaires-de-la-vue-du-document">Touches
+supplémentaires de la vue du document</a></li>
 </ul></li>
 <li><a href="#langues-supportées" id="toc-langues-supportées">Langues
 supportées</a></li>
@@ -241,8 +241,8 @@ supportées</a></li>
 id="toc-développement">Développement</a></li>
 <li><a href="#donations" id="toc-donations">Donations</a></li>
 </ul></li>
-<li><a href="#journal-des-modifications"
-id="toc-journal-des-modifications">Journal des modifications</a>
+<li><a href="#historique-des-versions"
+id="toc-historique-des-versions">Historique des versions</a>
 <ul>
 <li><a href="#version-0.9.2" id="toc-version-0.9.2">Version
 0.9.2</a></li>
@@ -250,8 +250,8 @@ id="toc-journal-des-modifications">Journal des modifications</a>
 0.9.1</a></li>
 <li><a href="#version-0.9.0" id="toc-version-0.9.0">Version 0.9.0</a>
 <ul>
-<li><a href="#ajouts" id="toc-ajouts">Ajouts</a></li>
-<li><a href="#corrections" id="toc-corrections">Corrections</a></li>
+<li><a href="#ajouté" id="toc-ajouté">Ajouté</a></li>
+<li><a href="#correction" id="toc-correction">Correction</a></li>
 </ul></li>
 <li><a href="#version-0.8.5" id="toc-version-0.8.5">Version
 0.8.5</a></li>
@@ -284,7 +284,7 @@ id="toc-journal-des-modifications">Journal des modifications</a>
 </ul></li>
 </ul>
 </nav>
-<!-- machine-translated from doc/readme.md (source-hash: d583a89d8ac391f5; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,a028b7f6,af36028a,71df8e94,e9860ee8,93dd8dd6); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 11f05688d690d71a; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,a028b7f6,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
 <p>Paperback - version 0.9.2</p>
 <h1 id="introduction">Introduction</h1>
 <p>Paperback est un lecteur léger, rapide et accessible de livres
@@ -376,12 +376,13 @@ fichiers actuellement pris en charge</h1>
 <code>.log</code>)</li>
 </ul>
 <h1 id="raccourcis-clavier">Raccourcis clavier</h1>
-<p>Paperback est conçu pour une utilisation en priorité au clavier.
+<p>Paperback est conçu pour une utilisation orientée vers le clavier.
 Voici les raccourcis actuels.</p>
 <p>Les raccourcis ci-dessous sont pour Windows. Lorsque macOS diffère,
 l’équivalent est noté entre parenthèses — principalement parce que
-Ctrl+G, Ctrl+W, et Alt+Left/Right sont déjà utilisés par d’autres
-conventions système ou d’application sur cette plateforme.</p>
+<code>Ctrl+G</code>, <code>Ctrl+W</code> et <code>Alt+Left/Right</code>
+sont déjà utilisés par d’autres conventions système ou d’application sur
+cette plateforme.</p>
 <h2 id="menu-fichier">Menu Fichier</h2>
 <ul>
 <li><code>Ctrl+O</code> : Ouvrir un document.</li>
@@ -391,50 +392,51 @@ document actuel.</li>
 Fermer tous les documents ouverts.</li>
 <li><code>Ctrl+Shift+T</code> : Rouvrir le dernier document fermé.</li>
 <li><code>Ctrl+R</code> : Afficher la boîte de dialogue « Tous les
-documents » (à partir des Documents récents).</li>
-<li><code>Ctrl+Q</code> : Quitter (Windows uniquement ; sur macOS, cela
-se trouve dans le menu de l’application).</li>
+documents » (depuis les documents récents).</li>
+<li><code>Ctrl+Q</code> : Quitter (Windows uniquement ; sur macOS, c’est
+dans le menu de l’application).</li>
 </ul>
-<h2 id="menu-aller-à">Menu Aller à</h2>
+<h2 id="menu-aller">Menu Aller</h2>
 <ul>
 <li><code>Ctrl+F</code> : Afficher la boîte de dialogue Rechercher.</li>
 <li><code>F3</code> (macOS : <code>Cmd+G</code>) : Rechercher
 suivant.</li>
 <li><code>Shift+F3</code> (macOS : <code>Cmd+Shift+G</code>) :
 Rechercher précédent.</li>
-<li><code>Ctrl+G</code> (macOS : <code>Cmd+L</code>) : Aller à une
+<li><code>Ctrl+G</code> (macOS : <code>Cmd+L</code>) : Aller à la
 ligne.</li>
 <li><code>Ctrl+Shift+G</code> (macOS : <code>Cmd+Shift+L</code>) : Aller
-à un pourcentage.</li>
-<li><code>Ctrl+P</code> : Aller à une page (si supporté par le document
-actuel).</li>
+au pourcentage.</li>
+<li><code>Ctrl+P</code> : Aller à la page (lorsque pris en charge par le
+document actuel).</li>
 <li><code>=</code> : Annoncer votre pourcentage de lecture actuel et
-votre page, par ex. « 15%, page 30 ». La page est omise pour les
+votre page, par exemple « 15%, page 30 ». La page est omise pour les
 documents qui n’ont pas de numéros de page.</li>
-<li><code>Alt+Left</code> (macOS : <code>Cmd+[</code>) : Retour dans
+<li><code>Alt+Left</code> (macOS : <code>Cmd+[</code>) : Retourner dans
 l’historique de navigation.</li>
 <li><code>Alt+Right</code> (macOS : <code>Cmd+]</code>) : Avancer dans
 l’historique de navigation.</li>
 <li><code>[</code> : Section précédente.</li>
 <li><code>]</code> : Section suivante.</li>
-<li><code>Shift+H</code> : Titre précédent.</li>
-<li><code>H</code> : Titre suivant.</li>
-<li><code>Shift+1</code> à <code>Shift+6</code> : Titre précédent de
+<li><code>Shift+H</code> : En-tête précédent.</li>
+<li><code>H</code> : En-tête suivant.</li>
+<li><code>Shift+1</code> à <code>Shift+6</code> : En-tête précédent au
 niveau 1-6.</li>
-<li><code>1</code> à <code>6</code> : Titre suivant de niveau 1-6.</li>
+<li><code>1</code> à <code>6</code> : En-tête suivant au niveau
+1-6.</li>
 <li><code>Shift+P</code> : Page précédente.</li>
 <li><code>P</code> : Page suivante.</li>
 <li><code>Shift+B</code> : Signet précédent.</li>
 <li><code>B</code> : Signet suivant.</li>
 <li><code>/</code> : Définir votre signet temporaire.</li>
-<li><code>\</code> : Aller à votre signet temporaire.</li>
+<li><code>\</code> : Sauter à votre signet temporaire.</li>
 <li><code>Shift+N</code> : Note précédente.</li>
 <li><code>N</code> : Note suivante.</li>
-<li><code>Ctrl+B</code> : Aller à tous les signets et notes.</li>
-<li><code>Ctrl+Alt+B</code> : Aller aux signets uniquement.</li>
-<li><code>Ctrl+Alt+M</code> : Aller aux notes uniquement.</li>
+<li><code>Ctrl+B</code> : Sauter à tous les signets et notes.</li>
+<li><code>Ctrl+Alt+B</code> : Sauter aux signets uniquement.</li>
+<li><code>Ctrl+Alt+M</code> : Sauter aux notes uniquement.</li>
 <li><code>Ctrl+Shift+W</code> (macOS : <code>RawCtrl+Shift+W</code>,
-c’est-à-dire la touche Contrôle physique plutôt que Cmd) : Afficher le
+c’est-à-dire la touche Control physique plutôt que Cmd) : Afficher le
 texte de la note à la position actuelle.</li>
 <li><code>Shift+K</code> : Lien précédent.</li>
 <li><code>K</code> : Lien suivant.</li>
@@ -444,6 +446,8 @@ texte de la note à la position actuelle.</li>
 <li><code>F</code> : Figure suivante.</li>
 <li><code>Shift+T</code> : Tableau précédent.</li>
 <li><code>T</code> : Tableau suivant.</li>
+<li><code>Shift+M</code> : Formule précédente.</li>
+<li><code>M</code> : Formule suivante.</li>
 <li><code>Shift+S</code> : Séparateur précédent.</li>
 <li><code>S</code> : Séparateur suivant.</li>
 <li><code>Shift+L</code> : Liste précédente.</li>
@@ -458,14 +462,14 @@ ou tableau).</li>
 <h2 id="menu-outils">Menu Outils</h2>
 <ul>
 <li><code>Ctrl+W</code> (macOS : <code>RawCtrl+W</code>, c’est-à-dire la
-touche Contrôle physique plutôt que Cmd) : Afficher le nombre de mots
-pour le document actuel.</li>
+touche Control physique plutôt que Cmd) : Afficher le nombre de mots du
+document actuel.</li>
 <li><code>Ctrl+I</code> : Afficher les informations du document.</li>
 <li><code>Ctrl+T</code> : Afficher la table des matières.</li>
 <li><code>F7</code> : Afficher la liste des éléments.</li>
 <li><code>Ctrl+Shift+C</code> : Ouvrir le dossier contenant.</li>
-<li><code>Ctrl+Shift+V</code> : Ouvrir le contenu actuel dans Web
-View.</li>
+<li><code>Ctrl+Shift+V</code> : Ouvrir le contenu actuel dans la vue
+web.</li>
 <li><code>Ctrl+U</code> : Afficher la source du document dans un nouvel
 onglet.</li>
 <li><code>Ctrl+Shift+E</code> : Exporter les données du document
@@ -476,19 +480,27 @@ onglet.</li>
 brut.</li>
 <li><code>Ctrl+Shift+B</code> : Basculer le signet à la
 sélection/curseur actuel.</li>
-<li><code>Ctrl+Shift+N</code> : Ajouter ou modifier la note du signet à
+<li><code>Ctrl+Shift+N</code> : Ajouter ou modifier une note de signet à
 la sélection/curseur actuel.</li>
-<li><code>Ctrl+Alt+W</code> : Basculer le retour à la ligne.</li>
-<li><code>Ctrl+Space</code> : Lire/Pause la narration audio.</li>
-<li><code>'</code> : Avancer la narration audio.</li>
-<li><code>;</code> : Reculer la narration audio.</li>
+<li><code>Ctrl+Alt+W</code> : Basculer l’habillage du texte.</li>
+<li><code>Ctrl+Space</code> : Lecture/pause de la narration audio.</li>
+<li><code>'</code> : Avancer dans la narration audio.</li>
+<li><code>;</code> : Reculer dans la narration audio.</li>
 <li><code>Ctrl+'</code> : Augmenter la quantité de recherche audio.</li>
 <li><code>Ctrl+;</code> : Diminuer la quantité de recherche audio.</li>
 <li><code>F11</code> (macOS : <code>RawCtrl+Ctrl+F</code>, c’est-à-dire
-Contrôle+Commande+F) : Basculer le plein écran.</li>
-<li><code>Ctrl+,</code> : Ouvrir les options (macOS : Préférences, sous
+Control+Command+F) : Basculer le mode plein écran.</li>
+<li><code>Ctrl+,</code> : Ouvrir les options (macOS : Préférences, dans
 le menu de l’application).</li>
-<li><code>Ctrl+Shift+S</code> : Basculer la minuterie de veille.</li>
+<li><code>Ctrl+Shift+S</code> : Basculer la minuterie de sommeil.</li>
+<li><code>Alt+F9</code> (macOS : <code>Cmd+F9</code>) : Marquer le début
+d’une sélection, afin que tout ce qui se trouve entre ce point et
+l’endroit où vous vous rendez puisse être copié en une seule fois.</li>
+<li><code>Alt+F10</code> (macOS : <code>Cmd+F10</code>) : Copier tout ce
+qui va du début marqué de la sélection à la position actuelle.</li>
+<li><code>Alt+Shift+F9</code> (macOS : <code>Cmd+Shift+F9</code>) :
+Retourner au début marqué de la sélection, en gardant la marque en
+place.</li>
 </ul>
 <h2 id="menu-aide">Menu Aide</h2>
 <ul>
@@ -500,14 +512,14 @@ défaut.</li>
 <li><code>Ctrl+D</code> : Ouvrir la page de donation dans votre
 navigateur par défaut.</li>
 </ul>
-<h2 id="touches-supplémentaires-pour-la-vue-document">Touches
-supplémentaires pour la vue document</h2>
+<h2 id="touches-supplémentaires-de-la-vue-du-document">Touches
+supplémentaires de la vue du document</h2>
 <ul>
 <li><code>Delete</code> / <code>Numpad Delete</code> sur le contrôle
-d’onglet : Fermer l’onglet du document sélectionné.</li>
+d’onglet : Fermer l’onglet de document sélectionné.</li>
 <li><code>Enter</code> ou <code>Space</code> dans le texte du document :
-Activer le lien au curseur, ou ouvrir une vue de tableau lorsque vous
-êtes sur un marqueur de tableau.</li>
+Suivre un lien ou ouvrir une vue de tableau ou de formule au
+curseur.</li>
 <li><code>Shift+F10</code> ou la touche Menu/Application dans le texte
 du document : Ouvrir le menu contextuel.</li>
 </ul>
@@ -566,163 +578,170 @@ d’inclusion automatique dans cette liste.</p>
 <li>Timothy Wynn</li>
 <li>Tyler Rodick</li>
 </ul>
-<h1 id="journal-des-modifications">Journal des modifications</h1>
+<h1 id="historique-des-versions">Historique des versions</h1>
 <h2 id="version-0.9.2">Version 0.9.2</h2>
 <ul>
-<li>Les audiolivres ne font plus lire à votre lecteur d’écran une suite
+<li>Les livres audio ne font plus lire à votre lecteur d’écran une suite
 d’espaces lorsque vous focalisez le champ de texte.</li>
-<li>Les audiolivres nomment désormais le fichier au fur et à mesure que
-vous les parcourez par section.</li>
-<li>Les audiolivres rapportent désormais leur vraie longueur, au lieu de
+<li>Les livres audio nomment maintenant le fichier au fur et à mesure
+que vous le parcourez par section.</li>
+<li>Les livres audio rapportent maintenant leur vraie durée, au lieu de
 prétendre que chaque fichier dure 24 heures.</li>
-<li>Fermer la Web View avec Échap ne lève plus une alerte de débogage
-après avoir suivi un lien à l’intérieur.</li>
-<li>Copier après Sélectionner tout vous donne désormais le document
-complet, au lieu de seulement la partie actuellement chargée.</li>
-<li>Find va maintenant droit à la ligne trouvée, au lieu de vous faire
-traverser le lecteur d’écran relisant la fenêtre tandis que le focus
-revient au livre.</li>
-<li>Correction des EPUB contenant un bloc ZIP64 isolé qui refusaient de
-s’ouvrir avec « Invalid local file header ».</li>
-<li>Correction des longs documents revenant à leur début pendant qu’un
+<li>La fermeture de la Vue Web avec Échap ne déclenche plus d’alerte de
+débogage après avoir suivi un lien à l’intérieur.</li>
+<li>Copier après Sélectionner tout donne maintenant tout le document, au
+lieu de seulement la partie actuellement chargée.</li>
+<li>Rechercher va maintenant directement à la ligne trouvée, au lieu de
+vous faire subir la lecture du lecteur d’écran de la fenêtre à nouveau à
+mesure que le focus revient au livre.</li>
+<li>Correction des EPUBs portant un bloc ZIP64 errant refusant de
+s’ouvrir avec « En-tête de fichier local invalide ».</li>
+<li>Correction des documents longs revenant au début pendant qu’un
 lecteur d’écran les lisait continuellement.</li>
-<li>Les liens dans la WebView vous mènent désormais à la section vers
-laquelle ils pointent, au lieu d’échouer avec « File not found ».</li>
-<li>Le raccourci <code>=</code> annonce maintenant la page ainsi que le
-pourcentage, par exemple « 15%, page 30 », et reste comme avant pour les
-documents sans numéro de page.</li>
-<li>L’annonce automatique « Document reloaded » ne coupe plus votre
-lecteur d’écran en pleine phrase, attendant à la place qu’il finisse ce
-qu’il disait.</li>
-<li>L’onglet General de la boîte de dialogue Settings parcourt
-maintenant ses options dans l’ordre où elles apparaissent à l’écran, le
-canal de mise à jour venant directement après l’option de vérification
-des mises à jour.</li>
-<li>La mise à jour apporte désormais la fenêtre relancée à l’avant, au
-lieu de la laisser derrière toutes les autres fenêtres dans
-<code>Alt+Tab</code>.</li>
-<li>Windows affichera désormais toujours « Paperback » dans le menu
-Ouvrir avec, au lieu du tagline complet du programme.</li>
-<li>Word Count et Document Info affichent maintenant combien de fichiers
-un audiolivre contient, et combien de temps il dure au total.</li>
+<li>Les liens dans la Vue Web vous amènent maintenant à la section vers
+laquelle ils pointent, au lieu d’échouer avec « Fichier introuvable
+».</li>
+<li>Marquez le début d’une sélection avec <code>Alt+F9</code>, copiez
+tout de là jusqu’où vous êtes arrivé avec <code>Alt+F10</code>, et
+retournez à la marque avec <code>Alt+Shift+F9</code>, pour copier une
+longue étendue de texte sans parcourir avec la touche Maj. Tous les
+trois sont dans Outils &gt; Sélectionner et copier.</li>
+<li>Le raccourci <code>=</code> annonce maintenant aussi la page en plus
+du pourcentage, par exemple « 15 %, page 30 », et reste comme avant pour
+les documents sans numéros de page.</li>
+<li>L’annonce automatique « Document rechargé » n’interrompt plus votre
+lecteur d’écran en pleine phrase, attendant plutôt qu’il finisse ce
+qu’il était en train de dire.</li>
+<li>L’onglet Général du dialogue Paramètres parcourt maintenant ses
+options dans l’ordre qu’elles apparaissent à l’écran, avec le canal de
+mise à jour directement après l’option vérifier les mises à jour.</li>
+<li>La mise à jour amène maintenant la fenêtre relancée au premier plan,
+au lieu de la laisser derrière toutes les autres fenêtres dans
+Alt+Tab.</li>
+<li>Windows affichera maintenant toujours « Paperback » dans le menu
+Ouvrir avec, plutôt que le slogan complet du programme.</li>
+<li>Le Nombre de mots et les Infos du document montrent maintenant
+combien de fichiers contient un livre audio et sa durée totale.</li>
 </ul>
 <h2 id="version-0.9.1">Version 0.9.1</h2>
 <ul>
-<li>Les sons de signet et de note jouent maintenant sur macOS.</li>
+<li>Les sons de signets et de notes jouent maintenant sur macOS.</li>
 <li>Les livres DAISY jouent maintenant leur audio sur macOS, au lieu de
 s’ouvrir et de suivre leur chronologie en silence.</li>
-<li>Correction des guillemets courbés, tirets demi-cadratin et
-caractères similaires disparaissant des documents RTF, les mots
-environnants fusionnant au passage.</li>
-<li>Correction des images RTF fuyant leurs données brutes dans le
+<li>Correction des guillemets bouclés, tirets em et caractères
+similaires disparaissant des documents RTF, fusionnant les mots
+environnants.</li>
+<li>Correction des images RTF laissant fuir leurs données brutes dans le
 document sous forme de texte brouillé.</li>
 <li>Correction du sous-menu Documents récents conservant des entrées
 obsolètes jusqu’à ce que quelque chose d’autre le reconstruise.</li>
-<li>Les accélérateurs de clavier sont de retour dans chaque traduction,
-donc les menus du russe ont à nouveau accès au clavier.</li>
+<li>Les accélérateurs clavier sont de retour dans chaque traduction, le
+menu russe a donc à nouveau accès au clavier.</li>
 <li>Les grands documents CHM s’ouvrent maintenant jusqu’à sept fois plus
-rapidement.</li>
-<li>Les documents ouverts sont maintenant enregistrés auprès de Windows,
-donc ils apparaissent dans la liste de saut de la barre des tâches et
-dans la liste récente du menu Démarrer.</li>
-<li>Options a été renommé en Settings, correspondant aux applications
+vite.</li>
+<li>Les documents ouverts sont maintenant enregistrés avec Windows, ils
+apparaissent donc dans la liste de sauts de la barre des tâches et la
+liste récente du menu Démarrer.</li>
+<li>Options a été renommé en Paramètres, correspondant aux applications
 mobiles et, sur macOS, à la convention de la plateforme.</li>
-<li>Paperback se souvient maintenant de la position, de la taille et de
-l’état maximisé de sa fenêtre entre les exécutions.</li>
-<li>Les formes plurielles sont maintenant traduites, donc les messages
-qui comptent les choses se lisent correctement dans les langues qui ont
+<li>Paperback se souvient maintenant de sa position de fenêtre, de sa
+taille et de son état maximisé entre les exécutions.</li>
+<li>Les formes plurielles sont maintenant traduites, les messages qui
+comptent les choses se lisent correctement dans les langues qui ont
 besoin de plus d’une forme.</li>
-<li>Sélectionner le ncc.html d’un livre DAISY ouvre maintenant
-l’audiolivre complet au lieu de seulement son texte.</li>
-<li>Les noms d’actions de la boîte de dialogue Customize Keyboard
-Shortcuts peuvent maintenant être traduits.</li>
-<li>Le titre du document vient maintenant en premier dans la barre de
-titre, donc les livres ouverts peuvent être distingués dans la barre des
-tâches et <code>Alt+Tab</code>.</li>
-<li>La boîte de dialogue de mise à jour est maintenant traduite.</li>
+<li>Sélectionner le ncc.html d’un livre DAISY ouvre maintenant le livre
+audio complet au lieu de juste son texte.</li>
+<li>Les noms d’action du dialogue Personnaliser les raccourcis clavier
+peuvent maintenant être traduits.</li>
+<li>Le titre du document apparaît maintenant en premier dans la barre de
+titre, les livres ouverts peuvent être distingués dans la barre des
+tâches et Alt+Tab.</li>
+<li>Le dialogue de mise à jour est maintenant traduit.</li>
 </ul>
 <h2 id="version-0.9.0">Version 0.9.0</h2>
-<h3 id="ajouts">Ajouts</h3>
+<h3 id="ajouté">Ajouté</h3>
 <h4 id="général">Général</h4>
 <ul>
-<li>Un outil CLI, appelé pb, pour convertir rapidement n’importe lequel
-des formats supportés par Paperback en HTML, Markdown ou texte
-brut.</li>
-<li>Une option pour recharger les documents qui ont été modifiés par
-d’autres programmes sur le disque.</li>
-<li>Une option View Source pour ouvrir la source d’un document dans un
-nouvel onglet, utile par exemple pour éditer du Markdown.</li>
+<li>Un outil CLI, appelé pb, pour convertir rapidement l’un des formats
+pris en charge par Paperback en HTML, Markdown ou texte brut.</li>
+<li>Une option pour recharger les documents modifiés par d’autres
+programmes sur le disque.</li>
+<li>Une option Afficher la source pour ouvrir la source d’un document
+dans un nouvel onglet, utile pour éditer Markdown par exemple.</li>
 <li>Le texte du document est maintenant paginé, ce qui signifie que vous
-pouvez charger des livres avec des dizaines de millions de mots en
-seulement quelques secondes. Veuillez signaler toute bizarrerie trouvée
-avec ceci.</li>
+pouvez charger des livres de dizaines de millions de mots en seulement
+quelques secondes. Veuillez signaler toute bizarrerie trouvée avec
+cela.</li>
 </ul>
-<h4 id="support-de-plateforme">Support de plateforme</h4>
+<h4 id="support-des-plateformes">Support des plateformes</h4>
 <ul>
-<li>Support ARM64 Windows !</li>
-<li>Support natif macOS !</li>
-<li>Un bouton pour basculer le plein écran.</li>
+<li>Support d’ARM64 Windows !</li>
+<li>Support macOS natif !</li>
+<li>Un bouton bascule plein écran.</li>
 </ul>
-<h4 id="boîte-de-dialogue-tous-les-documents">Boîte de dialogue Tous les
-documents</h4>
+<h4 id="dialogue-tous-les-documents">Dialogue Tous les documents</h4>
 <ul>
 <li>Un bouton localiser pour localiser les livres manquants qui viennent
 de changer de chemin.</li>
-<li>Un filtre d’état et une barre d’état, vous permettant de filtrer par
-statut de document et de voir combien de documents sont affichés et
-sélectionnés.</li>
+<li>Un filtre de statut et une barre de statut, afin que vous puissiez
+filtrer par statut du document et voir combien de documents sont
+affichés et sélectionnés.</li>
 <li>Le raccourci <code>Ctrl+Shift+A</code> pour désélectionner tous les
 documents.</li>
 </ul>
 <h4 id="options-et-lisibilité">Options et lisibilité</h4>
 <ul>
-<li>Un onglet de lisibilité, avec les options suivantes :
+<li>Un onglet lisibilité, avec les options suivantes :
 <ul>
-<li>Retour à la ligne automatique (déplacé de la section générale)
-;</li>
+<li>Retour à la ligne automatique (déplacé de général) ;</li>
 <li>Rendre les tableaux en ligne (nouveau dans cette version, voir
 ci-dessous) ;</li>
 <li>Police ;</li>
-<li>Couleur de fond ;</li>
-<li>Interligne ;</li>
+<li>Couleur d’arrière-plan ;</li>
+<li>Espacement des lignes ;</li>
 <li>Espacement des paragraphes ;</li>
 <li>Espacement des lettres ;</li>
 <li>Alignement du texte.</li>
 </ul></li>
-<li>Un élément de menu Retour à la ligne automatique et touches de
-raccourci ultérieures.</li>
-<li>Un bouton pour déterminer comment vous voulez que les tableaux
-soient affichés, et unification de la façon dont les tableaux sont
-affichés dans les documents.</li>
+<li>Un élément de menu de retour à la ligne automatique et un raccourci
+clavier ultérieur.</li>
+<li>Un bouton bascule pour déterminer comment vous voulez afficher les
+tableaux, et uniformiser l’affichage des tableaux dans les
+documents.</li>
 </ul>
 <h4 id="navigation">Navigation</h4>
 <ul>
-<li>Support de la navigation par conteneur.</li>
+<li>Les formules MathML dans EPUB et HTML sont rendues sous forme
+d’AsciiMath en utilisant MathCAT. Utilisez <code>M</code> ou
+<code>Shift+M</code> pour naviguer dans les formules, puis
+<code>Enter</code> ou <code>Space</code> pour ouvrir le MathML original
+dans la Vue de formule.</li>
+<li>Support pour naviguer par conteneur.</li>
 <li>Une option pour déplacer automatiquement le curseur au début de la
-ligne lors de la navigation entre les lignes, similaire au mode de
-navigation des lecteurs d’écran.</li>
+ligne lors de la navigation entre les lignes, similaire au mode
+consultation dans les lecteurs d’écran.</li>
 <li>Le raccourci clavier égal pour annoncer votre pourcentage actuel
 dans un document.</li>
 </ul>
 <h4 id="signets">Signets</h4>
 <ul>
 <li>Signets temporaires : vous pouvez en avoir un par document, et ils
-persisten. Utilisez la barre oblique pour en définir un et la barre
-oblique inverse pour y accéder.</li>
+persistent. Utilisez la barre oblique pour en définir un et la barre
+oblique inverse pour sauter vers lui.</li>
 </ul>
 <h4 id="nombre-de-mots">Nombre de mots</h4>
 <ul>
-<li>Temps de lecture estimé dans la boîte de dialogue du nombre de mots,
-ainsi que la possibilité de définir votre vitesse de lecture pour rendre
-cette métrique réellement utile.</li>
-<li>Si une sélection est active lorsque vous ouvrez la boîte de dialogue
-du nombre de mots, le nombre de mots sélectionnés s’affichera
-maintenant.</li>
+<li>Temps de lecture estimé dans le dialogue de nombre de mots, ainsi
+que la possibilité de définir votre vitesse de lecture pour rendre cette
+métrique réellement utile.</li>
+<li>Si une sélection est active lorsque vous ouvrez le dialogue de
+nombre de mots, le nombre de mots sélectionnés sera maintenant
+affiché.</li>
 </ul>
 <h4 id="raccourcis-clavier-1">Raccourcis clavier</h4>
 <ul>
-<li>La possibilité de personnaliser chaque raccourci clavier de
-l’application via une simple boîte de dialogue.</li>
+<li>La capacité de personnaliser chaque raccourci clavier de
+l’application via un dialogue simple.</li>
 <li>Un raccourci clavier configurable pour restaurer Paperback depuis le
 plateau système.</li>
 </ul>
@@ -730,21 +749,20 @@ plateau système.</li>
 <ul>
 <li>Néerlandais, finnois et polonais.</li>
 </ul>
-<h4 id="export">Export</h4>
+<h4 id="exportation">Exportation</h4>
 <ul>
-<li>Extension de l’élément de menu d’export pour permettre l’export en
-HTML et Markdown, en plus du texte brut.</li>
+<li>L’élément du menu d’exportation a été étendu pour permettre
+l’exportation en HTML et Markdown, en plus du texte brut.</li>
 </ul>
-<h4 id="mises-à-jour">Mises à jour</h4>
+<h4 id="mise-à-jour">Mise à jour</h4>
 <ul>
-<li>Un bouton Annuler pour la boîte de dialogue de mise à jour en
-cours.</li>
+<li>Un bouton Annuler au dialogue de mise à jour en cours.</li>
 <li>La mise à jour valide maintenant que le fichier téléchargé n’a pas
 été altéré.</li>
 </ul>
-<h4 id="web-view">Web View</h4>
+<h4 id="vue-web">Vue Web</h4>
 <ul>
-<li>La webview est maintenant ouverte à votre position de lecture
+<li>La vue web est maintenant ouverte à votre position de lecture
 actuelle.</li>
 </ul>
 <h4 id="livres-daisy">Livres DAISY</h4>
@@ -752,16 +770,17 @@ actuelle.</li>
 <li>Support des livres DAISY 2.0.</li>
 <li>Support de la lecture audio DAISY 2.02.</li>
 </ul>
-<h4 id="audiolivres">Audiolivres</h4>
+<h4 id="livres-audio">Livres audio</h4>
 <ul>
-<li>La capacité de lire des audiolivres, supportant actuellement à la
-fois l’audio DAISY (y compris audio DAISY + texte) et les archives de
+<li>La capacité de lire des livres audio, supportant actuellement à la
+fois l’audio DAISY (y compris l’audio DAISY + texte) et les zips de
 fichiers audio.</li>
 <li>Raccourcis clavier et éléments de menu pour lire/mettre en pause la
-narration, avancer et reculer, et ajuster la quantité de recherche.</li>
-<li>Options pour synchroniser le curseur de lecture à la lecture audio,
-définir la quantité de recherche audio et choisir si la recherche
-au-delà de la fin d’un chapitre continue dans le suivant.</li>
+narration, chercher en avant et en arrière, et ajuster la quantité de
+recherche.</li>
+<li>Options pour synchroniser le curseur de lecture avec la lecture
+audio, définir la quantité de recherche audio et choisir si la recherche
+au-delà de la fin d’un chapitre continue au suivant.</li>
 </ul>
 <h4 id="documents-chm">Documents CHM</h4>
 <ul>
@@ -771,108 +790,108 @@ au-delà de la fin d’un chapitre continue dans le suivant.</li>
 <ul>
 <li>Les documents PowerPoint supportent maintenant les tableaux.</li>
 </ul>
-<h3 id="corrections">Corrections</h3>
+<h3 id="correction">Correction</h3>
 <h4 id="général-1">Général</h4>
 <ul>
 <li>Les documents codés dans les encodages CJK hérités, tels que GBK,
-Big5 et Shift_JIS, s’affichent maintenant correctement au lieu de
-s’afficher comme un tas de mojibake.</li>
+Big5 et Shift_JIS, s’affichent maintenant correctement au lieu d’un lot
+de mojibake.</li>
 <li>« Rouvrir le dernier fermé » tentant de rouvrir le fichier readme
-fourni.</li>
-<li>Votre onglet sélectionné ne recevant pas correctement le focus après
-le redémarrage de Paperback.</li>
-<li>Gestion par Paperback des fichiers sur les lecteurs réseau Windows :
-appuyer sur show file in folder focalise maintenant correctement le
-fichier sur le stockage réseau, et les chemins ne contiennent plus de
-caractères étranges.</li>
-<li>Les fichiers .paperback ne seront plus forcément chargés lors de la
-restauration des documents ; à la place, vous serez invité à confirmer
-lorsqu’un est trouvé.</li>
-<li>Open containing folder focalise maintenant le fichier donné dans
-l’explorateur.</li>
-<li>L’ouverture du fichier readme respecte maintenant votre langue
+inclus.</li>
+<li>Votre onglet sélectionné ne étant pas correctement focalisé après le
+redémarrage de Paperback.</li>
+<li>La gestion des fichiers sur les lecteurs réseau Windows de Paperback
+: appuyer sur afficher le fichier dans le dossier focalise maintenant
+correctement le fichier sur le stockage réseau, et les chemins ne
+contiennent plus de caractères étranges.</li>
+<li>Les fichiers .paperback ne seront plus chargés de force lors de la
+restauration du document ; à la place, vous serez invité à confirmer
+quand on en trouve un.</li>
+<li>Ouvrir le dossier contenant focalise maintenant le fichier donné
+dans l’explorateur.</li>
+<li>Ouvrir le fichier readme respectera maintenant votre langue
 sélectionnée.</li>
-<li>L’interface utilisateur de Paperback s’adapte maintenant
-correctement aux écrans haute résolution.</li>
-<li>Le menu se met maintenant à jour correctement, et le focus passe au
-contrôle de texte, lors de l’ouverture de l’aide dans Paperback.</li>
+<li>L’interface utilisateur de Paperback s’adaptera maintenant
+correctement sur les écrans haute résolution.</li>
+<li>Le menu se met à jour maintenant correctement, et le focus se
+déplace vers le contrôle de texte, lors de l’ouverture de l’aide dans
+Paperback.</li>
 <li>Passage à une méthode beaucoup plus sécurisée de l’IPC sur
 Windows.</li>
-<li>Le titre du document actif sera maintenant lu lors du changement
+<li>Le titre du document actif sera maintenant lu lors du basculement
 entre les onglets.</li>
-<li>Réduction de l’utilisation de la mémoire sur les grands documents en
-réduisant de moitié la taille des tableaux d’index par caractère
-interne.</li>
+<li>Utilisation réduite de la mémoire sur les grands documents en
+réduisant de moitié la taille des tables d’index internes par
+caractère.</li>
 </ul>
-<h4 id="boîte-de-dialogue-tous-les-documents-1">Boîte de dialogue Tous
-les documents</h4>
+<h4 id="dialogue-tous-les-documents-1">Dialogue Tous les documents</h4>
 <ul>
-<li>Échap ne fermant pas les boîtes de dialogue Document Info et All
-Documents.</li>
+<li>Échap ne fermant pas les dialogues Infos sur le document et Tous les
+documents.</li>
 <li>La barre de titre ne se mettant pas à jour après la fermeture d’un
-document à partir de la boîte de dialogue de tous les documents.</li>
+document à partir du dialogue tous les documents.</li>
 <li>Readme.html ne sera plus ajouté à votre liste de tous les documents
-lorsqu’il est ouvert via <code>Shift+F1</code>.</li>
-<li>La suppression de documents de la boîte de dialogue recents fermera
-maintenant aussi leur onglet actif.</li>
+quand ouvert via Maj+F1.</li>
+<li>La suppression de documents du dialogue récents fermera maintenant
+aussi leurs onglets actifs.</li>
 <li>Votre filtre de recherche est maintenant conservé après la
 suppression d’un document.</li>
 </ul>
 <h4 id="navigation-1">Navigation</h4>
 <ul>
-<li>La navigation par page annonçant un texte de ligne incorrect dans
-certaines situations.</li>
-<li>Go to Line, Go to Page et Go to Percent plaçant votre curseur à la
-mauvaise position dans les grands documents.</li>
-<li>Find et Find Next ne respectant pas la fenêtre du document chargé
-dans les grands documents.</li>
+<li>La navigation sur les pages annonçant un texte de ligne incorrect
+dans certaines situations.</li>
+<li>Aller à la ligne, Aller à la page et Aller au pourcentage plaçant
+votre curseur à la mauvaise position dans les grands documents.</li>
+<li>Rechercher et Rechercher suivant ne respectant pas la fenêtre du
+document chargé dans les grands documents.</li>
 </ul>
 <h4 id="signets-1">Signets</h4>
 <ul>
-<li>Les sons de signet/note devraient maintenant se lire correctement
-exclusivement lorsque vous naviguez sur un mot en contenant un.</li>
+<li>Les sons de signet/note devraient maintenant jouer correctement de
+manière exclusive lorsque vous naviguez sur un mot contenant un.</li>
 </ul>
 <h4 id="lisibilité">Lisibilité</h4>
 <ul>
-<li>Appliquer le retour à la ligne automatique vous envoyant au début de
-votre document.</li>
+<li>L’application du retour à la ligne automatique vous projetant au
+début de votre document.</li>
 </ul>
-<h4 id="web-view-1">Web View</h4>
+<h4 id="vue-web-1">Vue Web</h4>
 <ul>
-<li>La boîte de dialogue webview n’étant pas redimensionnable et
-s’affichant à une très petite taille initiale.</li>
-<li>Les images devraient maintenant s’afficher correctement dans la
-webview intégrée.</li>
+<li>Le dialogue de la vue web n’étant pas redimensionnable et
+apparaissant à une taille initiale très petite.</li>
+<li>Les images devraient maintenant s’afficher correctement dans la vue
+web intégrée.</li>
 </ul>
-<h4 id="mises-à-jour-1">Mises à jour</h4>
+<h4 id="mise-à-jour-1">Mise à jour</h4>
 <ul>
 <li>La mise à jour affiche maintenant correctement le contenu des
 balises de code markdown dans les notes de version.</li>
 </ul>
 <h4 id="livres-daisy-1">Livres DAISY</h4>
 <ul>
-<li>Les livres DAISY affichant des informations incorrectes dans la
-barre d’état.</li>
-<li>Chargement de livres DAISY avec des déclarations d’encodage
-bogues.</li>
+<li>Les livres DAISY affichant des infos incorrectes dans la barre de
+statut.</li>
+<li>Chargement des livres DAISY avec des déclarations d’encodage
+bidons.</li>
 </ul>
 <h4 id="documents-rtf">Documents RTF</h4>
 <ul>
 <li>Analyse des documents RTF contenant des caractères non-latins.</li>
-<li>Les groupes RTF <code>\pict</code> afin que les données d’image
-intégrées ne s’échappent plus dans le texte du document.</li>
+<li>Les groupes RTF <code>\pict</code> afin que les données d’images
+intégrées ne s’écoulent plus dans le texte du document.</li>
 </ul>
 <h4 id="livres-mobiazw3">Livres Mobi/AZW3</h4>
 <ul>
 <li>Les ancres filepos dans les livres Mobi divisant les balises HTML et
-mettant les ordures dans le texte du livre.</li>
-<li>Liens dans les livres Mobi hérités.</li>
+mettant des ordures dans le texte du livre.</li>
+<li>Les liens dans les livres Mobi hérités.</li>
 <li>Analyse AZW3 considérablement améliorée.</li>
 </ul>
 <h4 id="documents-word">Documents Word</h4>
 <ul>
 <li>Les documents Word avec des noms de style spécifiques aux paramètres
-régionaux ne rendant pas correctement leurs en-têtes.</li>
+régionaux ne rendaient pas correctement leurs titres.</li>
 </ul>
 <h4 id="documents-htmlxhtml">Documents HTML/XHTML</h4>
 <ul>
@@ -881,298 +900,291 @@ les documents XHTML.</li>
 </ul>
 <h4 id="documents-pdf">Documents PDF</h4>
 <ul>
-<li>Paperback se rabat maintenant sur l’extraction de texte brut pour
-les PDF incorrectement balisés.</li>
+<li>Paperback revient maintenant à l’extraction de texte brut pour les
+PDF mal balisés.</li>
 <li>Les documents PDF contenant des caractères de contrôle dans leurs
-titres et/ou signets ne feront plus planter Paperback à
-l’ouverture.</li>
+titres et/ou signets ne planteront plus Paperback à l’ouverture.</li>
 </ul>
 <h2 id="version-0.8.5">Version 0.8.5</h2>
 <ul>
 <li>Ajout du support des pages aux livres epub.</li>
 <li>Ajout du support des documents Microsoft Office chiffrés.
-Actuellement, Word hérité, Word moderne et Powerpoint moderne sont
-supportés, avec Powerpoint hérité prévu pour l’avenir.</li>
+Actuellement, Word hérité, Word moderne et Powerpoint moderne sont pris
+en charge, avec Powerpoint hérité prévu pour l’avenir.</li>
 <li>Ajout du support des documents Microsoft Word hérités !</li>
-<li>Ajout du support des présentations Powerpoint héritées !</li>
+<li>Ajout du support des présentations Powerpoint hérités !</li>
 <li>Ajout du support des livres mobi et AZW3 !</li>
 <li>Ajout du support des fichiers PDF balisés !</li>
-<li>Ajout du raccourci <code>Ctrl+Q</code> pour quitter
-l’application.</li>
-<li>Ajout du support des livres compressés de Bookshare (à la fois DAISY
-et Word) !</li>
-<li>Le texte alternatif pour les images intégrées devrait maintenant
-être correctement affiché.</li>
+<li>Ajout du raccourci ctrl+q pour quitter l’application.</li>
+<li>Ajout du support des livres zippés de Bookshare (DAISY et Word)
+!</li>
+<li>Le texte alt des images intégrées devrait maintenant être affiché
+correctement.</li>
 <li>Les documents CHM supportent maintenant correctement la navigation
 des liens internes.</li>
-<li>Correction de go to page étant décalé de 1.</li>
-<li>Correction de la touche Échap ne fonctionnant pas pour fermer la
-boîte de dialogue ouvrir sous.</li>
+<li>Correction de aller à la page étant décalé de 1.</li>
+<li>Correction de la touche Échap ne fonctionnant pas pour fermer le
+dialogue ouvrir en tant que.</li>
 <li>Correction du menu contextuel du lecteur ne s’affichant pas au clic
-droit ou à la touche Applications.</li>
+droit ou sur la touche Applications.</li>
 <li>Correction du mauvais document étant parfois focalisé lors de
 l’ouverture de documents à partir de la ligne de commande.</li>
-<li>Les PDF images uniquement sont à nouveau détectés et vous alertent
-de leur existence.</li>
-<li>Il est maintenant possible de naviguer dans les images et figures
-avec g/<code>Shift+G</code> et f/<code>Shift+F</code>,
-respectivement.</li>
-<li>Paperback respecte maintenant votre paramètre de mode sombre de
-l’application.</li>
-<li>Suppression du support DAISY XML, car ce n’est plus nécessaire.</li>
-<li>Passage à la première lettre de navigation Win32 native dans
+<li>Les PDF contenant uniquement des images sont à nouveau détectés et
+vous avertissent de leur existence.</li>
+<li>Il est maintenant possible de naviguer dans les images et les
+figures avec g/maj+g et f/maj+f, respectivement.</li>
+<li>Paperback respectera maintenant votre paramètre de mode sombre
+d’application.</li>
+<li>Suppression du support XML DAISY, car il n’est plus nécessaire.</li>
+<li>Retour à la première navigation de lettre Win32 native dans
 l’arborescence de la table des matières.</li>
-<li>La boîte de dialogue d’erreur de chargement affiche maintenant des
-messages d’erreur plus détaillés.</li>
-<li>La webview s’ouvre maintenant beaucoup plus rapidement et en
+<li>Le dialogue de chargement d’erreur affiche maintenant des messages
+d’erreur plus détaillés.</li>
+<li>La vue web s’ouvrira maintenant beaucoup plus rapidement et en
 douceur.</li>
 </ul>
 <h2 id="version-0.8.2">Version 0.8.2</h2>
 <ul>
 <li>Ajout du support des pages aux documents RTF !</li>
-<li>Correction d’un bogue où l’ouverture de la webview dans les epub
+<li>Correction d’un bug où l’ouverture de la vue web dans les epubs
 contenant des liens externes les activerait automatiquement.</li>
-<li>Correction d’un bogue où l’analyseur RTF ne mettrait pas d’espace
-entre les mots dans les rares cas.</li>
-<li>Correction des paragraphes étant divisés en plusieurs lignes courtes
+<li>Correction d’un bug où l’analyseur RTF ne mettrait pas d’espace
+entre les mots dans les cas rares.</li>
+<li>Correction des paragraphes se divisant en plusieurs lignes courtes
 dans certains documents PDF.</li>
-<li>Les documents PDF ont maintenant un support basique de navigation
-par lien et en-tête !</li>
-<li>Les onglets RTF et les sauts de ligne sont maintenant rendus
+<li>Les documents PDF ont maintenant un support de navigation de lien et
+d’en-tête basique !</li>
+<li>Les onglets RTF et les retours à la ligne sont maintenant rendus
 exactement comme ils apparaissent dans le document.</li>
-<li>Passage à la bibliothèque pdfium éprouvée pour l’analyse des PDF,
-rendant l’analyse PDF beaucoup plus fiable à nouveau.</li>
+<li>Retour à la bibliothèque pdfium éprouvée pour l’analyse des PDF,
+rendant le rendu PDF beaucoup plus fiable à nouveau.</li>
 </ul>
 <h2 id="version-0.8.1">Version 0.8.1</h2>
 <ul>
-<li>Ajout de <code>Ctrl+Shift+T</code> pour rouvrir le dernier document
-fermé.</li>
-<li>La boîte de dialogue All Documents supporte maintenant la sélection
-de plusieurs documents à ouvrir à la fois.</li>
-<li>Correction de quelques bogues avec l’analyseur RTF.</li>
+<li>Ajout de Ctrl+Maj+T pour rouvrir le dernier document fermé.</li>
+<li>Le dialogue Tous les documents supportent maintenant la sélection de
+plusieurs documents à ouvrir à la fois.</li>
+<li>Correction de quelques bugs avec l’analyseur RTF.</li>
 <li>Correction des chemins de fichiers contenant des caractères
-non-ASCII (tels que le serbe š, č, ć, ž) devenant corrompus lors de
+non-ASCII (comme le bosniaque š, č, ć, ž) devenant corrompus lors de
 l’ouverture d’un fichier via une deuxième instance de Paperback.</li>
-<li>Correction du texte PDF étant lu dans le mauvais ordre, et un
+<li>Correction du texte PDF étant lu dans le mauvais ordre et d’un
 espacement incorrect autour des mots en majuscules.</li>
-<li>Correction du chargement lent des documents lors de l’ouverture de
-gros fichiers.</li>
-<li>Correction de la localisation des boutons Oui/Non dans les boîtes de
-dialogue de confirmation.</li>
+<li>Correction d’un chargement lent du document lors de l’ouverture de
+fichiers volumineux.</li>
+<li>Correction de la localisation des boutons Oui/Non dans les dialogues
+de confirmation.</li>
 </ul>
 <h2 id="version-0.8.0">Version 0.8.0</h2>
 <ul>
-<li>Ajout des traductions japonaise, chinoise simplifiée et vietnamienne
+<li>Ajout de traductions en japonais, chinois simplifié et vietnamien
 !</li>
 <li>Ajout d’une mise à jour automatique qui remplacera maintenant votre
 version actuellement installée de Paperback au lieu de simplement
 télécharger la nouvelle version !</li>
-<li>Ajout d’une rétroaction sonore optionnelle pour atteindre un signet
-ou une note, merci Andre Louis pour les sons !</li>
+<li>Ajout d’une rétroaction sonore facultative pour atteindre un signet
+ou une note, merci à Andre Louis pour les sons !</li>
 <li>Ajout du support des documents RTF !</li>
-<li>Ajout du support des documents DAISY XML.</li>
-<li>Ajout du support des fichiers Flat Open Document Text !</li>
-<li>Ajout du support des présentations Flat Open Document !</li>
-<li>Ajout du support des séparateurs avec s et
-<code>Shift+S</code>.</li>
-<li>Tout mouvement supérieur à 300 caractères ajoutera maintenant
-automatiquement à votre historique de navigation.</li>
+<li>Ajout du support des documents XML DAISY.</li>
+<li>Ajout du support des fichiers de texte OpenDocument aplati !</li>
+<li>Ajout du support des présentations OpenDocument aplaties !</li>
+<li>Ajout du support des séparateurs avec s et maj+s.</li>
+<li>Tout mouvement supérieur à 300 caractères ajoutera automatiquement à
+votre historique de navigation.</li>
 <li>Correction de la restauration de la fenêtre de Paperback depuis le
 plateau système.</li>
-<li>Correction des documents Markdown affichant du texte brut au lieu du
-HTML rendu dans la Web View.</li>
+<li>Correction des documents Markdown affichant le texte brut au lieu du
+HTML rendu dans la Vue Web.</li>
 <li>Correction des tableaux ne se rendant pas correctement dans les
 fichiers Markdown.</li>
-<li>Les PDF images uniquement vous avertissent maintenant de leur
-existence lorsque vous tentez d’en charger un.</li>
-<li>Incorporer correctement les informations de version dans
-l’exécutable Paperback.</li>
-<li>Division de la boîte de dialogue des options en onglets pour
-faciliter l’utilisation et la navigation.</li>
+<li>Les PDF contenant uniquement des images vous avertissent maintenant
+de leur existence lorsque vous tentez d’en charger un.</li>
+<li>Intégration correcte des informations de version dans l’exécutable
+Paperback.</li>
+<li>Scission du dialogue des options en onglets pour faciliter
+l’utilisation et la navigation.</li>
 <li>Passage à Hayro pour l’analyse des PDF, conduisant à plus de
-fiabilité, de vitesse et moins de DLL.</li>
+fiabilité, de rapidité et de moins de DLL.</li>
 <li>Réécriture de l’application entière en Rust. La nouvelle base de
 code est plus sûre, charge les documents plus rapidement et est plus
 facile à maintenir et à étendre.</li>
-<li>Le menu contextuel du contrôle de texte inclura maintenant des
+<li>Le menu contextuel du contrôle de texte incluera maintenant des
 actions spécifiques au lecteur au lieu d’éléments génériques tels que
 couper et coller.</li>
 </ul>
 <h2 id="version-0.7.0">Version 0.7.0</h2>
 <ul>
 <li>Ajout du support des tableaux pour les documents basés sur HTML et
-XHTML ! Naviguez entre les tableaux en utilisant T et
-<code>Shift+T</code>, et appuyez sur Entrée pour en afficher un dans une
-webview.</li>
-<li>Ajout d’une fonction de rendu web basique ! Appuyez sur
-<code>Ctrl+Shift+V</code> pour ouvrir la section actuelle de votre
-document dans un moteur de rendu web, utile pour les contenus comme le
+XHTML ! Naviguez entre les tableaux en utilisant T et Maj+T, et appuyez
+sur Entrée pour en afficher un dans une vue web.</li>
+<li>Ajout d’une fonctionnalité de rendu web basique ! Appuyez sur
+Ctrl+Maj+V pour ouvrir la section actuelle de votre document dans un
+moteur de rendu basé sur le web, utile pour du contenu comme le
 formatage complexe ou les exemples de code.</li>
 <li>Ajout d’une traduction russe, merci Ruslan Gulmagomedov !</li>
-<li>Ajout d’un bouton Clear All à la boîte de dialogue All
-Documents.</li>
+<li>Ajout d’un bouton Effacer tout au dialogue Tous les documents.</li>
 <li>Le vérificateur de mise à jour affiche maintenant les notes de
-version lorsqu’une nouvelle version est disponible.</li>
+version quand une nouvelle version est disponible.</li>
 <li>Correction de la restauration de la fenêtre depuis le plateau
 système.</li>
-<li>Correction de la traduction des boutons Oui/Non dans les boîtes de
-dialogue de confirmation.</li>
-<li>Correction du chargement des configs lors de l’exécution en tant
-qu’administrateur.</li>
+<li>Correction de la traduction des boutons Oui/Non dans les dialogues
+de confirmation.</li>
+<li>Correction du chargement des configurations lors de l’exécution en
+tant qu’administrateur.</li>
 <li>Correction de la gestion des commentaires dans les documents XML et
 HTML.</li>
 <li>Correction de l’analyse de la table des matières dans les livres
 Epub 2.</li>
 <li>Correction de la navigation vers l’élément suivant avec la même
 lettre dans la table des matières.</li>
-<li>Correction de la boîte de dialogue find ne se cachant pas
-correctement lors de l’utilisation des boutons suivant/précédent.</li>
-<li>Correction de la table des matières epub vous envoyant
+<li>Correction du dialogue de recherche ne se cachant pas correctement
+lors de l’utilisation des boutons suivant/précédent.</li>
+<li>Correction des tables des matières epub vous jetant
 occasionnellement au mauvais élément.</li>
-<li>Correction de diverses problèmes de gestion de l’espace blanc dans
+<li>Correction de divers problèmes de gestion des espaces blancs dans
 les balises XML, HTML et pre.</li>
-<li>Correction de l’erreur off-by-one dans la navigation des liens.</li>
-<li>Correction de certains livres ayant des espaces blancs à la fin de
+<li>Correction d’une erreur de décalage d’un dans la navigation des
+liens.</li>
+<li>Correction de certains livres ayant des espaces blancs de fin sur
 leurs lignes.</li>
-<li>Correction de diverses problèmes d’analyseur.</li>
-<li>Les éléments de menu liés aux signets ainsi que la liste des
-éléments sont maintenant correctement désactivés lorsqu’aucun document
+<li>Correction de divers problèmes d’analyseur.</li>
+<li>Les éléments du menu relatifs aux signets ainsi que la liste des
+éléments sont maintenant correctement désactivés quand aucun document
 n’est ouvert.</li>
 <li>Amélioration de la gestion des listes dans divers formats de
-documents.</li>
+document.</li>
 <li>Amélioration du flux de travail de traduction pour les
 contributeurs.</li>
-<li>De nombreux refactorisations internes, déplaçant la majorité de la
-logique métier de l’application de C++ vers Rust pour améliorer les
+<li>Nombreuses refactorisations internes, déplaçant la majorité de la
+logique métier de l’application de C++ à Rust pour améliorer les
 performances et la maintenabilité.</li>
 </ul>
 <h2 id="version-0.6.1">Version 0.6.1</h2>
 <ul>
 <li>Ajout du support des PDF protégés par mot de passe !</li>
-<li>Ajout d’une fonction très basique go to previous/next position. Si
-vous appuyez sur Entrée sur un lien interne et que cela déplace votre
-curseur, cette position sera maintenant mémorisée, et peut être naviguée
-avec les flèches gauche/droite
-<code>Alt+Left</code>/<code>Alt+Right</code>.</li>
-<li>Ajout d’une liste d’éléments ! Actuellement, elle affiche seulement
-une arborescence de tous les en-têtes de votre document ou une liste de
-liens, mais il y a des plans pour l’étendre à l’avenir.</li>
+<li>Ajout d’une fonctionnalité très basique d’accès à la position
+précédente/suivante. Si vous appuyez sur Entrée sur un lien interne et
+qu’il déplace votre curseur, cette position sera maintenant mémorisée,
+et peut être navigable avec les flèches alt+gauche/droite.</li>
+<li>Ajout d’une liste d’éléments ! Actuellement elle ne montre qu’une
+arborescence de tous les titres dans votre document ou une liste de
+liens, mais il y a des plans pour l’étendre dans le futur.</li>
 <li>Ajout d’une option pour démarrer Paperback en mode maximisé par
 défaut.</li>
 <li>Correction des liens dans certains documents Epub ne fonctionnant
 pas correctement.</li>
 <li>Correction de l’analyse des tables des matières Epub contenant des
 chemins relatifs.</li>
-<li>Correction de certains documents epub n’affichant pas de titre ou
+<li>Correction de certains documents epub ne montrant pas de titre ou
 d’auteur.</li>
 <li>Correction des titres de certains chapitres epub ne s’affichant pas
-correctement dans la boîte de dialogue de la table des matières.</li>
-<li>Correction du fait que vous ne pouviez pas utiliser la barre
-d’espace pour activer les boutons OK/annuler dans la boîte de dialogue
-de la table des matières.</li>
-<li>Amélioration de la gestion des en-têtes dans les documents
-Word.</li>
+correctement dans le dialogue de la table des matières.</li>
+<li>Correction du fait de ne pas pouvoir utiliser la barre d’espace pour
+activer les boutons OK/annuler dans le dialogue de la table des
+matières.</li>
+<li>Amélioration de la gestion des titres dans les documents Word.</li>
 <li>Vous recevrez maintenant une rétroaction parlée si la liste des
-documents récents est vide lorsque vous essayez d’afficher la boîte de
+documents récents est vide quand vous essayez d’afficher le
 dialogue.</li>
 </ul>
 <h2 id="version-0.6.0">Version 0.6.0</h2>
 <ul>
-<li>Une nouvelle option pour afficher le menu go sous une forme beaucoup
-plus compacte a été ajoutée à la boîte de dialogue des options, cochée
-par défaut.</li>
+<li>Une nouvelle option pour afficher le menu Aller sous une forme
+beaucoup plus compacte a été ajoutée au dialogue des options, cochée par
+défaut.</li>
 <li>Ajout d’une option pour que la navigation par éléments structurels
 s’enroule.</li>
-<li>Ajout d’une option au menu tools pour ouvrir le dossier contenant du
-document actuellement focalisé.</li>
+<li>Ajout d’une option au menu Outils pour ouvrir le dossier contenant
+du document actuellement focalisé.</li>
 <li>Ajout d’un système de mise à jour assez simple, mais très
 efficace.</li>
-<li>Ajout d’une fonction de minuteur de sommeil basique, accessible avec
-<code>Ctrl+Shift+S</code>.</li>
-<li>Ajout du support de l’analyse des livres FB2 !</li>
+<li>Ajout d’une fonctionnalité de minuteur de sommeil basique,
+accessible avec Ctrl+Maj+S.</li>
+<li>Ajout du support de l’analyse des ebooks FB2 !</li>
 <li>Ajout du support de l’analyse des présentations OpenDocument !</li>
-<li>Ajout du support de l’analyse des fichiers Texte OpenDocument !</li>
-<li>Les signets peuvent maintenant être définis pour marquer une ligne
-entière ou pour ne marquer que du texte spécifié. Si vous n’avez pas de
-sélection active lors du placement d’un signet, le comportement est
-comme avant 0.6, et il marquera la ligne entière. Cependant, si vous
+<li>Ajout du support de l’analyse des fichiers de texte OpenDocument
+!</li>
+<li>Les signets peuvent maintenant être créés pour marquer une ligne
+entière, ou pour ne marquer que du texte spécifié. Si vous n’avez aucune
+sélection active lors de la création d’un signet, le comportement est
+comme pré-0.6, et il marquera la ligne entière. Cependant, si vous
 sélectionnez du texte, seul ce texte sera inclus dans le signet.</li>
 <li>Les signets peuvent maintenant avoir des notes de texte optionnelles
-attachées !</li>
-<li>Naviguez entre les signets contenant des notes avec N et
-<code>Shift+N</code>, ou ouvrez la boîte de dialogue des signets avec
-tous les signets, seulement les notes ou seulement les non-notes
-sélectionnées avec des touches d’accès spécifiques.</li>
-<li>Les signets dans la boîte de dialogue des signets n’auront plus le
-préfixe ennuyeux « bookmark x ».</li>
-<li>Les livres Epub contenant du contenu HTML prétendant être XML seront
-maintenant gérés correctement.</li>
+attachées ! Naviguez entre les signets contenant des notes avec N et
+Maj+N, ou affichez le dialogue des signets avec tous les signets,
+uniquement les notes ou uniquement les non-notes sélectionnés avec des
+raccourcis spécifiques.</li>
+<li>Les signets dans le dialogue des signets n’auront plus de préfixe
+ennuyeux « signet x ».</li>
+<li>Les livres Epub contenant du contenu HTML prétendant être du XML
+sont maintenant gérés correctement.</li>
 <li>Correction du chargement de grands documents Markdown.</li>
-<li>Correction de l’appui sur l’espace dans l’arborescence de la vue de
-la table des matières activant le bouton OK.</li>
-<li>Correction de la gestion de l’espace blanc au début des balises pre
+<li>Correction de l’appui sur l’espace dans l’arborescence de la table
+des matières activant le bouton OK.</li>
+<li>Correction de la gestion des espaces blancs au début des balises pre
 dans les documents HTML et XHTML.</li>
-<li>Correction du contrôle de texte ne récupérant pas correctement le
-focus parfois lors du retour à la fenêtre de Paperback.</li>
-<li>Correction du champ de texte dans la boîte de dialogue go to percent
+<li>Correction du champ de texte ne regagnant pas le focus parfois lors
+du retour à la fenêtre de Paperback.</li>
+<li>Correction du champ de texte dans le dialogue aller au pourcentage
 ne mettant pas à jour la valeur du curseur.</li>
 <li>Correction du rendu des ID HTML personnalisés dans les documents
 Markdown.</li>
-<li>Le HTML à l’intérieur des blocs de code Markdown s’affiche
-maintenant correctement.</li>
-<li>Si vous chargez un livre avec un paramètre de ligne de commande
-tandis qu’une instance Paperback existante est en cours d’exécution,
-vous ne recevrez plus d’erreur si le chargement de votre document prend
-plus de 5 secondes.</li>
-<li>Si vous exécutez Paperback en tant qu’administrateur, la
-configuration sera maintenant correctement chargée et sauvegardée.</li>
-<li>Il est maintenant possible de supprimer un signet directement à
-partir de la boîte de dialogue des signets.</li>
+<li>Le HTML à l’intérieur des blocs de code Markdown sera maintenant
+rendu correctement.</li>
+<li>Si le chargement d’un livre avec un paramètre de ligne de commande
+alors qu’une instance Paperback existante est en cours d’exécution, vous
+n’obtiendrez plus d’erreur si le chargement de votre document prend plus
+de 5 secondes.</li>
+<li>Si Paperback est exécuté en tant qu’administrateur, la configuration
+sera maintenant correctement chargée et enregistrée.</li>
+<li>Il est maintenant possible de supprimer un signet directement depuis
+le dialogue des signets.</li>
 <li>Il est maintenant possible d’importer et d’exporter vos signets et
 votre position de lecture pour un document particulier. Le fichier
 généré est nommé d’après le fichier avec une extension .paperback. Si un
 tel fichier est trouvé dans le même répertoire qu’un fichier lors de son
 chargement, il sera automatiquement chargé. Sinon, vous pouvez les
-importer manuellement en utilisant un élément du menu tools.</li>
+importer manuellement en utilisant un élément dans le menu Outils.</li>
 <li>Les liens à l’intérieur des documents sont maintenant entièrement
-supportés ! Utilisez k et <code>Shift+K</code> pour vous déplacer en
-avant et en arrière à travers eux, et appuyez sur Entrée pour en
-ouvrir/activer un.</li>
+pris en charge ! Utilisez k et maj+k pour avancer et reculer dans les
+liens, et appuyez sur Entrée pour ouvrir/activer un.</li>
 <li>De nombreuses refactorisations internes, rendant l’application plus
 rapide et le binaire plus petit.</li>
 <li>Le contenu Markdown est maintenant prétraité pour être conforme à
 CommonMark avant le rendu.</li>
 <li>La navigation par listes et leurs éléments est maintenant
-entièrement supportée ! Utilisez L et <code>Shift+L</code> pour aller
-par les listes elles-mêmes, et I et <code>Shift+I</code> pour parcourir
-les éléments de liste.</li>
-<li>La touche Supprimer du clavier numérique fonctionne maintenant pour
-supprimer les documents de la barre des onglets en plus de la touche
-Supprimer normale.</li>
-<li>Paperback peut maintenant éventuellement se minimiser dans votre
+entièrement prise en charge ! Utilisez L et Maj+L pour aller par les
+listes elles-mêmes, et I et Maj+I pour parcourir les éléments de
+liste.</li>
+<li>Supprimer sur le pavé numérique fonctionne maintenant pour supprimer
+des documents de la barre d’onglets en plus de la suppression
+normale.</li>
+<li>Paperback peut maintenant optionnellement être réduit à votre
 plateau système ! Cette option est désactivée par défaut, mais
-l’activation la fera mettre Paperback dans votre plateau, pouvant être
-restaurée en cliquant sur l’icône générée.</li>
+l’activation rendra l’option de réduction dans le menu système à placer
+Paperback dans votre plateau, pouvant être restauré en cliquant sur
+l’icône générée.</li>
 <li>Paperback est maintenant entièrement traduisible ! La liste des
 langues qu’il supporte est actuellement assez petite, mais elle grandit
 constamment !</li>
-<li>Paperback a maintenant un site web officiel, à <a
+<li>Paperback a maintenant un site officiel, à <a
 href="https://paperback.dev">paperback.dev</a> !</li>
 <li>Les documents PPTX affichent maintenant une table des matières
 basique, contenant toutes les diapositives.</li>
-<li>Le chemin complet du document ouvert s’affichera maintenant dans la
-boîte de dialogue document info.</li>
-<li>L’installateur inclut maintenant une option pour afficher le fichier
-readme dans votre navigateur après l’installation.</li>
-<li>La liste des documents récents a été considérablement agrandie ! Au
-lieu de simplement afficher les 10 derniers documents que vous avez
-ouverts, elle affichera un nombre personnalisable, les autres documents
-que vous avez jamais ouverts étant accessibles via une petite boîte de
-dialogue.</li>
-<li>Diverses petites améliorations aux analyseurs dans tous les
-domaines, y compris la mise d’une ligne vierge entre les diapositives
-dans les présentations PPTX, la correction de la gestion des nouvelles
-lignes à l’intérieur des paragraphes dans les documents word et l’ajout
+<li>Le chemin complet du document ouvert sera maintenant affiché dans le
+dialogue des infos sur le document.</li>
+<li>Le programme d’installation inclut maintenant une option pour
+afficher le fichier readme dans votre navigateur après
+l’installation.</li>
+<li>La liste des documents récents a été considérablement étendue ! Au
+lieu de simplement vous montrer les 10 derniers documents que vous avez
+ouverts, elle vous affichera maintenant un nombre personnalisable, les
+documents restants que vous avez jamais ouverts étant accessibles via un
+petit dialogue.</li>
+<li>Diverses petites améliorations des analyseurs dans tous les
+domaines, y compris l’insertion d’une ligne vide entre les diapositives
+dans les présentations PPTX, la correction de la gestion des sauts de
+ligne à l’intérieur des paragraphes dans les documents Word, et l’ajout
 de puces aux éléments de liste.</li>
 </ul>
 <h2 id="version-0.5.0">Version 0.5.0</h2>
@@ -1181,48 +1193,46 @@ de puces aux éléments de liste.</li>
 <li>Ajout du support des présentations PowerPoint !</li>
 <li>Correction de certains éléments de menu n’étant pas désactivés sans
 documents ouverts.</li>
-<li>Correction de l’orientation du curseur go to percent.</li>
-<li>Correction de la table des matières dans les livres Epub avec
-chemins de fichiers encodés en URL et/ou ID de fragments.</li>
-<li>Correction de l’espace blanc étant supprimé des en-têtes XHTML de
-façons bizarres.</li>
-<li>Correction de la gestion de l’espace blanc à l’intérieur des balises
-pre imbriquées dans les documents HTML.</li>
-<li>Les documents HTML et Markdown supportent maintenant la fonction de
-table des matières ! Lorsque vous chargez un document HTML/Markdown,
-Paperback construit sa propre table des matières à partir de la
-structure des en-têtes de votre document, et il vous l’affiche dans la
-boîte de dialogue <code>Ctrl+T</code>.</li>
+<li>Correction de l’orientation du curseur du dialogue aller au
+pourcentage.</li>
+<li>Correction de la table des matières dans les livres Epub contenant
+des chemins de fichiers codés en URL et/ou des ID de fragments.</li>
+<li>Correction des espaces blancs étant supprimés des titres XHTML de
+manière étrange.</li>
+<li>Correction de la gestion des espaces blancs à l’intérieur des
+balises pre imbriquées dans les documents HTML.</li>
+<li>Les documents HTML et Markdown supportent maintenant la
+fonctionnalité de table des matières ! Quand vous chargez un document
+HTML/Markdown, Paperback construira sa propre table des matières à
+partir de la structure des titres dans votre document, et il vous
+l’affichera dans le dialogue ctrl+t.</li>
 <li>Les documents HTML auront maintenant le titre tel que défini dans la
-balise titre, s’il existe. Sinon, ils continueront à utiliser le nom de
-fichier sans l’extension.</li>
-<li>Passage de UniversalSpeech à l’utilisation d’une région active pour
-rapporter la parole. Cela signifie qu’aucune DLL de lecteur d’écran
-n’est expédiée avec le programme, et plus de lecteurs d’écran seront
-maintenant supportés, comme Microsoft Narrator.</li>
-<li>Passage des bibliothèques zip pour permettre l’ouverture d’un large
-éventail de livres epub.</li>
-<li>La boîte de dialogue vous demandant si vous voulez ouvrir votre
-document en tant que texte brut a été complètement refaite, et elle vous
-permet maintenant d’ouvrir votre document en tant que texte brut, HTML
-ou Markdown.</li>
-<li>La boîte de dialogue go to percent inclut maintenant un champ de
-texte vous permettant d’entrer manuellement un pourcentage pour y
-accéder.</li>
-<li>L’analyseur HTML reconnaît maintenant dd, dt et dl comme des
+balise de titre, s’il existe. Sinon, ils continueront à utiliser le nom
+de fichier sans l’extension.</li>
+<li>Passage de UniversalSpeech à l’utilisation d’une région en direct
+pour signaler la parole. Cela signifie qu’aucune DLL de lecteur d’écran
+n’est fournie avec le programme, et plus de lecteurs d’écran seront
+maintenant pris en charge, comme Microsoft Narrator.</li>
+<li>Changement de bibliothèques zip pour permettre l’ouverture d’un plus
+grand nombre de livres epub.</li>
+<li>Le dialogue vous demandant si vous voulez ouvrir votre document en
+texte brut a été complètement refait, et il vous permet maintenant
+d’ouvrir votre document en texte brut, HTML ou Markdown.</li>
+<li>Le dialogue aller au pourcentage inclut maintenant un champ de texte
+vous permettant d’entrer manuellement un pourcentage pour sauter.</li>
+<li>L’analyseur HTML reconnaîtra maintenant dd, dt et dl comme des
 éléments de liste.</li>
 <li>La table des matières dans les livres Epub sera à nouveau préservée
 exactement.</li>
-<li>L’espace insécable unicode est maintenant considéré lors de la
-suppression des lignes vierges.</li>
-<li>Vous ne serez plus demandé comment vous voulez ouvrir un fichier non
-reconnu à chaque fois que vous le chargez, seulement la première
-fois.</li>
+<li>L’espace insécable unicode est maintenant pris en compte lors de la
+suppression des lignes vides.</li>
+<li>Vous ne serez plus demandé comment ouvrir un fichier non reconnu à
+chaque fois que vous le charger, seulement la première fois.</li>
 </ul>
 <h2 id="version-0.4.1">Version 0.4.1</h2>
 <ul>
-<li>Ajout d’une icône de menu Démarrer optionnelle à
-l’installateur.</li>
+<li>Ajout d’une icône de menu Démarrer optionnelle au programme
+d’installation.</li>
 <li>La table des matières devrait maintenant être plus propre dans
 quelques cas, par exemple si vous avez un élément enfant et parent avec
 le même texte à la même position, vous ne verrez maintenant que
@@ -1239,113 +1249,110 @@ défini dans le fichier de métadonnées.</li>
 <li>Ajout du support des fichiers CHM !</li>
 <li>Ajout du support des signets ! Vous pouvez avoir autant de signets
 que vous le souhaitez dans autant de documents que vous le souhaitez.
-Vous pouvez naviguer en avant et en arrière à travers eux avec b et
-<code>Shift+B</code>, en définir un avec <code>Ctrl+Shift+B</code>, et
-ouvrir une boîte de dialogue pour accéder à un signet spécifique avec
-<code>Ctrl+B</code>.</li>
-<li>Ajout d’un installateur à côté du fichier zip portable !
-L’installateur installera Paperback dans votre répertoire Program Files
-et configurera automatiquement les associations de fichiers pour
-vous.</li>
+Vous pouvez sauter avant et arrière à travers eux avec b et maj+b, en
+définir un avec contrôle+maj+b, et afficher un dialogue pour sauter à un
+signet spécifique avec contrôle+b.</li>
+<li>Ajout d’un programme d’installation à côté du fichier zip portable !
+Le programme d’installation installera Paperback dans votre répertoire
+Program Files et configurera automatiquement les associations de
+fichiers pour vous.</li>
 <li>Les fichiers texte avec BOM devraient maintenant être décodés
-correctement, et le BOM ne s’affichera plus au début du texte non
+correctement, et le BOM ne sera plus affiché au début du texte non
 plus.</li>
-<li>Ajout de bien plus d’informations à la barre d’état. Elle affichera
-maintenant votre ligne actuelle, caractère et pourcentage de
+<li>Ajout de beaucoup plus d’informations à la barre de statut. Il
+affichera maintenant votre ligne actuelle, caractère et pourcentage de
 lecture.</li>
 <li>Les commentaires HTML, ainsi que le contenu des balises script et
-style, ne s’afficheront plus dans la sortie texte.</li>
-<li>Si vous passez un chemin relatif à Paperback sur la ligne de
+style, ne seront plus affichés dans la sortie de texte.</li>
+<li>Si vous transmettez un chemin relatif à Paperback sur la ligne de
 commande, il le résoudra maintenant correctement.</li>
-<li>Le mouvement en pourcentage est maintenant géré par sa propre boîte
-de dialogue basée sur un curseur, accessible avec
-<code>Ctrl+Shift+G</code>.</li>
-<li>Les documents sans titres ou auteurs connus auront maintenant un
+<li>Le mouvement en pourcentage est maintenant géré par son propre
+dialogue basé sur le curseur, accessible avec contrôle+maj+g.</li>
+<li>Les documents sans titres ou auteurs connus auront maintenant un par
 défaut.</li>
 <li>La logique de sauvegarde de position est maintenant beaucoup plus
-intelligente et devrait seulement écrire sur le disque en cas d’absolue
+intelligente et devrait écrire sur le disque seulement en cas d’absolue
 nécessité.</li>
-<li>Le document auquel vous aviez accès lorsque vous avez fermé
-Paperback est maintenant mémorisé lors de redémarrages
-d’applications.</li>
-<li>L’entrée dans les boîtes de dialogue go to line et go to page
-devrait maintenant être plus strictement désinfectée.</li>
-<li>Correction de la navigation de la table des matières dans les livres
-epub 3 avec des chemins relatifs dans leurs manifestes.</li>
+<li>Le document que vous aviez focalisé quand vous avez fermé Paperback
+est maintenant mémorisé entre les redémarrages d’application.</li>
+<li>L’entrée dans les dialogues aller à la ligne et aller à la page
+devrait maintenant être désinfectée plus strictement.</li>
+<li>Correction de la table des matières dans les livres epub 3 avec des
+chemins relatifs dans leurs manifestes.</li>
 </ul>
 <h2 id="version-0.3.0">Version 0.3.0</h2>
 <ul>
-<li>Correction de la table des matières dans les livres epub avec des
-manifestes codés en URL.</li>
-<li>Correction de la navigation des en-têtes dans les documents HTML
+<li>Correction de la table des matières dans les livres epub contenant
+des manifestes codés en URL.</li>
+<li>Correction de la navigation des titres dans les documents HTML
 contenant des caractères Unicode multi-octets.</li>
-<li>Correction de l’utilisation élevée du CPU dans les documents avec de
-longs titres en raison d’une régression dans wxWidgets.</li>
+<li>Correction d’une utilisation élevée du CPU dans les documents avec
+de longs titres en raison d’une régression dans wxWidgets.</li>
 <li>Correction du chargement des fichiers texte UTF-8.</li>
-<li>Correction des éléments de table des matières imbriqués dans les
-livres Epub mettant votre curseur à la mauvaise position.</li>
+<li>Correction des éléments de la table des matières imbriquée dans les
+livres Epub plaçant votre curseur à la mauvaise position.</li>
 <li>Correction d’un plantage à la sortie de l’application dans certains
 cas.</li>
-<li>Ajout d’une case à cocher dans la boîte de dialogue des options pour
-activer ou désactiver le retour à la ligne automatique !</li>
+<li>Ajout d’une case à cocher dans le dialogue des options pour activer
+ou désactiver le retour à la ligne automatique !</li>
 <li>Il est maintenant possible de faire un don au développement de
-Paperback, soit via le nouvel élément donate du menu help, soit via le
-lien sponsor this project en bas de la page principale du référentiel
-GitHub.</li>
+Paperback, soit via le nouvel élément de don dans le menu Aide, soit via
+le lien de parrainage de ce projet en bas de la page principale du
+référentiel GitHub.</li>
 <li>Les documents Markdown auront maintenant toujours un titre, et
 Paperback devrait maintenant pouvoir charger pratiquement n’importe quel
 fichier Markdown.</li>
 <li>Les documents PDF auront maintenant toujours un titre, même si les
-métadonnées sont manquantes.</li>
+métadonnées manquent.</li>
 <li>Passage aux bibliothèques PDF utilisées dans Chromium, conduisant à
 une analyse PDF beaucoup plus fiable dans tous les domaines.</li>
 <li>Vous ne pouvez maintenant avoir qu’une seule instance de Paperback
 en cours d’exécution à la fois. L’exécution de paperback.exe avec un nom
-de fichier tandis qu’elle est déjà en cours d’exécution ouvrira ce
-document dans l’instance déjà en cours d’exécution.</li>
-<li>Vous pouvez maintenant appuyer sur Supprimer sur un document dans le
-contrôle de tabulation pour le fermer.</li>
+de fichier alors qu’il est déjà en cours d’exécution ouvrira ce document
+dans l’instance déjà en cours d’exécution.</li>
+<li>Vous pouvez maintenant appuyer sur la suppression sur un document
+dans le contrôle d’onglet pour le fermer.</li>
 </ul>
 <h2 id="version-0.2.1">Version 0.2.1</h2>
 <ul>
-<li>Ajout du nombre total de pages à l’étiquette de page dans la boîte
-de dialogue go to page.</li>
-<li>Autoriser le passage de l’onglet du contenu du document à votre
-liste de documents ouverts.</li>
-<li>Correction des appuis clavier sur les en-têtes ouvrant parfois des
+<li>Ajout du nombre total de pages à l’étiquette de page dans le
+dialogue aller à la page.</li>
+<li>Permettre la tabulation du contenu du document à votre liste de
+documents ouverts.</li>
+<li>Correction de quelques frappes de titre ouvrant parfois les
 documents récents si vous en aviez assez.</li>
 <li>Paperback supprimera maintenant les traits d’union souples inutiles
-de la sortie texte.</li>
-<li>Correction de la navigation des en-têtes vous mettant parfois sur le
+du texte brut.</li>
+<li>Correction de la navigation des titres vous plaçant parfois sur le
 mauvais caractère.</li>
 </ul>
 <h2 id="version-0.2.0">Version 0.2.0</h2>
 <ul>
 <li>Ajout du support des documents Markdown !</li>
-<li>Ajout du support des documents PDF, y compris la possibilité de
+<li>Ajout du support des documents PDF, y compris la capacité de
 naviguer entre les pages !</li>
-<li>Ajout de raccourcis clavier pour naviguer par des en-têtes dans le
+<li>Ajout de frappes clavier pour naviguer par les titres dans le
 contenu HTML, y compris les livres epub et les documents Markdown. Ces
-raccourcis ont été conçus pour fonctionner de manière similaire à un
+frappes ont été conçues pour fonctionner de manière similaire à un
 lecteur d’écran.</li>
-<li>Correction du chargement des epubs avec des noms de fichiers codés
-en URL dans leurs manifestes.</li>
-<li>Correction du chargement des livres epub 3 avec du XHTML intégré à
-l’intérieur.</li>
-<li>Un message est maintenant prononcé si le document ne supporte pas
-une table des matières ou des sections, au lieu que les éléments de menu
+<li>Correction du chargement des epubs contenant des noms de fichier
+codés en URL dans leurs manifestes.</li>
+<li>Correction du chargement des livres epub 3 contenant du XHTML
+intégré à l’intérieur.</li>
+<li>Un message est maintenant parlé si le document ne supporte pas une
+table des matières ou des sections, au lieu que les éléments du menu
 soient désactivés.</li>
-<li>Ajout d’un menu de documents récents ! Il stocke actuellement vos 10
-derniers documents ouverts, et appuyer sur Entrée sur l’un d’eux
-l’ouvrira pour la lecture.</li>
-<li>Réécriture complète de la boîte de dialogue Find, la rendant
-beaucoup plus simple à utiliser, tout en ajoutant un historique de vos
-25 dernières recherches et le support des expressions régulières !</li>
-<li>Les documents ouverts auparavant sont maintenant mémorisés lors de
-redémarrages d’applications. Ceci est configurable via le nouvel élément
-options du menu tools.</li>
-<li>Ajout de <code>Shift+F1</code> pour ouvrir le fichier readme
-directement dans Paperback lui-même.</li>
+<li>Ajout d’un menu des documents récents ! Il stocke actuellement vos
+10 derniers documents ouverts, et appuyer sur Entrée sur un l’ouvrira
+pour la lecture.</li>
+<li>Réécriture complète du dialogue Rechercher, le rendant beaucoup plus
+simple à utiliser, tout en ajoutant un historique de vos 25 dernières
+recherches et le support des expressions régulières !</li>
+<li>Les documents précédemment ouverts sont maintenant mémorisés entre
+les redémarrages d’application. C’est configurable via le nouvel élément
+options dans le menu Outils.</li>
+<li>Ajout de maj+f1 pour ouvrir le fichier readme directement dans
+Paperback lui-même.</li>
 </ul>
 <h2 id="version-0.1.0">Version 0.1.0</h2>
 <ul>
