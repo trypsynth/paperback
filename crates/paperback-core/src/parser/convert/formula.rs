@@ -45,7 +45,7 @@ thread_local! {
 fn init() -> bool {
 	// TODO: make the output code configurable when math preferences are implemented.
 	// `rules` is embedded in the zip vfs in the binary; it does not represent an on-disk directory.
-	// It is nevertheless required for MathCat initialization.
+	// It is nevertheless required for MathCAT initialization.
 	let result = libmathcat::set_rules_dir("Rules".to_string())
 		// Without this, MathCAT re-reads its preference files on every get_braille call, which
 		// resets BrailleCode to its shipped default (Nemeth) and discards the ASCIIMath set below,
@@ -111,7 +111,7 @@ fn asciimath(mathml: &str) -> Option<String> {
 }
 
 /// MathML expressions may use XML namespace prefixes declared on an ancestor element. These may
-/// need to be stripped for MathCat (as its prefix handling is incomplete), and must be stripped for formula view.
+/// need to be stripped for MathCAT (as its prefix handling is incomplete), and must be stripped for formula view.
 ///
 /// Therefore, we can't pass the source MathML verbatim and must re-serialize it instead. Because Roxmltree
 /// doesn't implement its own serializer, we implement just enough of one ourselves to do the job.
