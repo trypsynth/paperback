@@ -137,6 +137,9 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisi
 * `F11` (macOS: `RawCtrl+Ctrl+F` eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.
 * `Ctrl+,`: Avaa asetukset (löytyy macOS:ää käytettäessä sovellusvalikosta).
 * `Ctrl+Shift+S`: Ota uniajastin käyttöön tai poista se käytöstä.
+* `Alt+F9` (macOS: `Cmd+F9`): Merkitse valinnan alkukohta.
+* `Alt+F10` (macOS: `Cmd+F10`): Kopioi valinnan merkityn alkukohdan ja kohdistimen nykyisen sijainnin välinen teksti.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Palaa valinnan alkukohtaan.
 
 ### Ohje-valikko
 
@@ -211,14 +214,10 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Kun selainnäkymässä on siirrytty linkin osoittamaan kohtaan, näkymän sulkeminen Esc-näppäimellä ei aiheuta enää vianmääritysilmoitusta.
 * Valitse kaikki -toiminnon jälkeinen kopiointi kattaa nyt koko asiakirjan eikä pelkkää näytettävää osaa.
 * Etsi-toiminto siirtää suoraan löytämälleen riville eikä ruudunlukija enää lue koko ikkunaa uudelleen kohdistuksen palatessa kirjaan.
-* Korjattu ongelma, jonka vuoksi ylimääräisen ZIP64-lohkon sisältämät EPUB-tiedostot eivät avautuneet, vaan antoivat virheilmoituksen ”Invalid local file header”.
+* Korjattu ongelma, jonka vuoksi ylimääräisen ZIP64-lohkon sisältämät EPUB-tiedostot aiheuttivat ”Invalid local file header” -virheilmoituksen sen sijaan, että olisivat avautuneet normaalisti.
 * Pitkissä asiakirjoissa ei enää palata alkuun, kun niitä luetaan ruudunlukijan jatkuvalla luvulla.
-* Korjattu ongelma, jonka vuoksi Apple Pages -sovelluksesta viedyt PDF-tiedostot luettiin pelkkänä tekstinä ilman niihin sisältyviä otsikoita ja luetteloita.
 * Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.
-* Otsikko ja sivunumero eivät enää toistu jokaisella sivulla kappaleiden välissä PDF-tiedostoissa, joissa ylä- ja alatunnisteet on merkitty tavalliseksi tekstiksi.
-* PDF-tiedostojen merkitsemättömät kuvat ilmoitetaan nyt, jos tiedostossa on lukemisjärjestys, eikä niitä enää jätetä kirjasta kokonaan pois.
-* Windows-1251-merkistökoodausta käyttävät FictionBook-kirjat (.fb2) avautuvat nyt oikein. Suurin osa FB2-kirjoista on tällaisia.
-* FictionBook-kirjat, joissa käytetään määrittelemätöntä nimiavaruutta tai HTML-entiteettiä, avautuvat nyt eikä niitä enää hylätä virheellisinä.
+* Merkitse valinnan alkukohta näppäinyhdistelmällä `Alt+F9`, kopioi valinnan alkukohdan ja nykyisen sijainnin välinen teksti näppäinyhdistelmällä `Alt+F10` ja palaa valinnan alkukohtaan näppäinyhdistelmällä `Alt+Shift+F9`. Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Shift- ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon kohdasta Valitse ja kopioi.
 * =-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim. ”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole sivunumeroita.
 * Automaattinen ”Asiakirja päivitetty” -ilmoitus odottaa nyt ruudunlukijan puheen päättymistä eikä keskeytä sitä enää kesken lauseen.
 * Asetukset-ikkunan Yleiset-välilehden sarkainjärjestys noudattaa nyt näytön järjestystä, ja päivityskanava on heti päivitystarkistuksen jälkeen.
