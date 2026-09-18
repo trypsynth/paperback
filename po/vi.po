@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-15 16:49+0000\n"
+"POT-Creation-Date: 2026-09-18 20:00+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -193,6 +193,16 @@ msgstr "Xem ghi chú"
 msgid "Open Document"
 msgstr "Mở tài liệu"
 
+#. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "Không có tài liệu gần đây."
+
+#. TRANSLATORS: Announced after the Recent Documents list has been emptied
+#, fuzzy
+msgid "Recent documents cleared."
+msgstr "Các tài liệu gần đây"
+
 #. TRANSLATORS: Menu item in the File menu to open a document.
 #, fuzzy
 msgid "&Open..."
@@ -232,6 +242,16 @@ msgstr "Mở lại &lần cuối cùng"
 #, fuzzy
 msgid "Reopen the last closed document"
 msgstr "Mở lại tài liệu vừa đóng"
+
+#. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
+#, fuzzy
+msgid "Clea&r Recent Documents"
+msgstr "Xóa &Tài Liệu Gần Đây"
+
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
+#, fuzzy
+msgid "Remove all documents from the Recent Documents list"
+msgstr "Xóa tất cả tài liệu khỏi danh sách Tài Liệu Gần Đây"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
@@ -401,6 +421,16 @@ msgstr "Bảng &trước"
 msgid "Next &Table"
 msgstr "Tiếp theo &Bảng    T"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
+#, fuzzy
+msgid "Previous For&mula"
+msgstr "Công Thức &Trước"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next formula.
+#, fuzzy
+msgid "Next For&mula"
+msgstr "Công Thức &Tiếp Theo"
+
 #. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 #, fuzzy
 msgid "Previous Se&parator"
@@ -550,6 +580,36 @@ msgstr "Bật tắt &dấu trang"
 #, fuzzy
 msgid "Bookmark with &Note"
 msgstr "Dấu trang có &ghi chú"
+
+#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+#, fuzzy
+msgid "Set Selection St&art"
+msgstr "Đặt Đầu &Vùng Chọn"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+#, fuzzy
+msgid "Mark the beginning of a selection to copy from"
+msgstr "Đánh dấu phần đầu của vùng chọn để sao chép"
+
+#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+#, fuzzy
+msgid "&Copy from Selection Start"
+msgstr "&Sao chép từ Đầu Vùng Chọn"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+#, fuzzy
+msgid "Copy from the beginning of the selection to here"
+msgstr "Sao chép từ phần đầu của vùng chọn đến đây"
+
+#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+#, fuzzy
+msgid "&Jump to Selection Start"
+msgstr "&Nhảy đến Đầu Vùng Chọn"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+#, fuzzy
+msgid "Go back to the beginning of the selection"
+msgstr "Quay lại phần đầu của vùng chọn"
 
 #. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 #, fuzzy
@@ -1017,6 +1077,100 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
+#. TRANSLATORS: Description text shown when the background color is set to default
+#, fuzzy
+msgid "Background: Default"
+msgstr "Bối cảnh: Mặc định"
+
+#. TRANSLATORS: Description text shown when the font is set to default
+#, fuzzy
+msgid "Font: Default"
+msgstr "Phông chữ: Mặc định"
+
+#. TRANSLATORS: Fallback font name
+#, fuzzy
+msgid "Default"
+msgstr "Mặc định"
+
+#. TRANSLATORS: Font description prefix; {} is the font face name
+#, fuzzy
+msgid "Font: {}"
+msgstr "Phông chữ: {}"
+
+#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+#, fuzzy
+msgid "{}pt"
+msgstr "{} pt"
+
+#. TRANSLATORS: Font weight attribute name
+#, fuzzy
+msgid "Bold"
+msgstr "In đậm"
+
+#. TRANSLATORS: Font style attribute name
+#, fuzzy
+msgid "Italic"
+msgstr "Chữ nghiêng"
+
+#. TRANSLATORS: Font underline attribute name
+#, fuzzy
+msgid "Underlined"
+msgstr "Được gạch chân"
+
+#. TRANSLATORS: Font strikethrough attribute name
+#, fuzzy
+msgid "Strikethrough"
+msgstr "Gạch ngang"
+
+#. TRANSLATORS: Title of the system dialog for picking a font
+#, fuzzy
+msgid "Choose a font"
+msgstr "Chọn một phông chữ"
+
+#. TRANSLATORS: Title of the hotkey customization dialog
+#, fuzzy
+msgid "Window Hotkey"
+msgstr "Phím tắt cho cửa sổ"
+
+#. TRANSLATORS: Checkbox label for Control modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+#, fuzzy
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox label for Alt modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+#, fuzzy
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox label for Shift modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+#, fuzzy
+msgid "&Shift"
+msgstr "&Shift"
+
+#. TRANSLATORS: Checkbox label for Windows modifier key
+#, fuzzy
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label for the hotkey key selection input field
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+#, fuzzy
+msgid "&Key:"
+msgstr "&Khóa:"
+
+#. TRANSLATORS: Button label to clear the current hotkey selection
+#, fuzzy
+msgid "Clear"
+msgstr "Xóa"
+
+#. TRANSLATORS: Representation of the Spacebar key
+#, fuzzy
+msgid "Space"
+msgstr "Không gian"
+
 #. TRANSLATORS: Title of the Settings dialog
 #, fuzzy
 msgid "Settings"
@@ -1248,100 +1402,6 @@ msgstr "Khả năng đọc"
 msgid "Choose a colour"
 msgstr "Chọn một màu"
 
-#. TRANSLATORS: Description text shown when the background color is set to default
-#, fuzzy
-msgid "Background: Default"
-msgstr "Bối cảnh: Mặc định"
-
-#. TRANSLATORS: Description text shown when the font is set to default
-#, fuzzy
-msgid "Font: Default"
-msgstr "Phông chữ: Mặc định"
-
-#. TRANSLATORS: Fallback font name
-#, fuzzy
-msgid "Default"
-msgstr "Mặc định"
-
-#. TRANSLATORS: Font description prefix; {} is the font face name
-#, fuzzy
-msgid "Font: {}"
-msgstr "Phông chữ: {}"
-
-#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
-#, fuzzy
-msgid "{}pt"
-msgstr "{} pt"
-
-#. TRANSLATORS: Font weight attribute name
-#, fuzzy
-msgid "Bold"
-msgstr "In đậm"
-
-#. TRANSLATORS: Font style attribute name
-#, fuzzy
-msgid "Italic"
-msgstr "Chữ nghiêng"
-
-#. TRANSLATORS: Font underline attribute name
-#, fuzzy
-msgid "Underlined"
-msgstr "Được gạch chân"
-
-#. TRANSLATORS: Font strikethrough attribute name
-#, fuzzy
-msgid "Strikethrough"
-msgstr "Gạch ngang"
-
-#. TRANSLATORS: Title of the system dialog for picking a font
-#, fuzzy
-msgid "Choose a font"
-msgstr "Chọn một phông chữ"
-
-#. TRANSLATORS: Title of the hotkey customization dialog
-#, fuzzy
-msgid "Window Hotkey"
-msgstr "Phím tắt cho cửa sổ"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-#, fuzzy
-msgid "&Ctrl"
-msgstr "&Ctrl"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-#, fuzzy
-msgid "&Alt"
-msgstr "&Alt"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-#, fuzzy
-msgid "&Shift"
-msgstr "&Shift"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-#, fuzzy
-msgid "&Win"
-msgstr "&Win"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-#, fuzzy
-msgid "&Key:"
-msgstr "&Khóa:"
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-#, fuzzy
-msgid "Clear"
-msgstr "Xóa"
-
-#. TRANSLATORS: Representation of the Spacebar key
-#, fuzzy
-msgid "Space"
-msgstr "Không gian"
-
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Hẹn giờ ngủ"
@@ -1396,6 +1456,25 @@ msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "Tài liệu này chứa %d từ."
 
+#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
+#, fuzzy
+msgid "File not found: {}"
+msgstr "Không tìm thấy tệp: {}"
+
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
+#, fuzzy
+msgid "A .paperback file was found for this document. Would you like to import it?"
+msgstr "Đã tìm thấy một tệp định dạng .paperback cho tài liệu này. Bạn có muốn nhập tệp này không?"
+
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
+#, fuzzy
+msgid "Import document data"
+msgstr "Nhập dữ liệu tài liệu"
+
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
+msgid "Password is required."
+msgstr "Yêu cầu mật khẩu."
+
 #. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
 #, fuzzy
 msgid "OCR in progress."
@@ -1443,25 +1522,6 @@ msgstr[0] "Batch OCR dừng lại. %d trang được nhận dạng."
 msgid "Batch OCR complete. %d page recognized."
 msgid_plural "Batch OCR complete. %d pages recognized."
 msgstr[0] "Batch OCR hoàn tất. %d trang được nhận dạng."
-
-#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
-#, fuzzy
-msgid "File not found: {}"
-msgstr "Không tìm thấy tệp: {}"
-
-#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
-#, fuzzy
-msgid "A .paperback file was found for this document. Would you like to import it?"
-msgstr "Đã tìm thấy một tệp định dạng .paperback cho tài liệu này. Bạn có muốn nhập tệp này không?"
-
-#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
-#, fuzzy
-msgid "Import document data"
-msgstr "Nhập dữ liệu tài liệu"
-
-#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
-msgid "Password is required."
-msgstr "Yêu cầu mật khẩu."
 
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
@@ -1589,14 +1649,23 @@ msgstr "Không thể khởi chạy trình duyệt mặc định."
 msgid "Failed to open donation page in browser."
 msgstr "Không thể mở trang ủng hộ trên trình duyệt."
 
-#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 #, fuzzy
-msgid "Unsupported format selected."
-msgstr "Đã chọn định dạng không được hỗ trợ."
+msgid "Word wrap on."
+msgstr "Bật tính năng tự động xuống dòng."
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
-msgstr "Không có tài liệu gần đây."
+#, fuzzy
+msgid "Word wrap off."
+msgstr "Tắt tính năng tự động xuống dòng."
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "Bật chế độ toàn màn hình."
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "Tắt chế độ toàn màn hình."
 
 #. TRANSLATORS: Announced when landing on a blank line; %d is the line number
 #, fuzzy
@@ -1707,6 +1776,11 @@ msgstr "Đã nhập ghi chú và dấu trang thành công."
 msgid "Import Successful"
 msgstr "Nhập thành công"
 
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
+#, fuzzy
+msgid "Unsupported format selected."
+msgstr "Đã chọn định dạng không được hỗ trợ."
+
 #. TRANSLATORS: Main window title when no document is open
 #, fuzzy
 msgid "Paperback"
@@ -1734,24 +1808,6 @@ msgstr[0] "%d ký tự"
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Xuất tài liệu thất bại."
-
-#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-#, fuzzy
-msgid "Word wrap on."
-msgstr "Bật tính năng tự động xuống dòng."
-
-#, fuzzy
-msgid "Word wrap off."
-msgstr "Tắt tính năng tự động xuống dòng."
-
-#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-#, fuzzy
-msgid "Full screen on."
-msgstr "Bật chế độ toàn màn hình."
-
-#, fuzzy
-msgid "Full screen off."
-msgstr "Tắt chế độ toàn màn hình."
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 #, fuzzy
@@ -1930,6 +1986,16 @@ msgstr "&Bảng"
 #, fuzzy
 msgid "Navigate by tables"
 msgstr "Điều hướng theo bảng"
+
+#. TRANSLATORS: Label for the Formulas submenu in the compact Go menu.
+#, fuzzy
+msgid "For&mulas"
+msgstr "Công &Thức"
+
+#. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
+#, fuzzy
+msgid "Navigate by formulas"
+msgstr "Điều hướng bằng hình ảnh"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 #, fuzzy
@@ -2140,6 +2206,16 @@ msgstr "&Nhập/Xuất"
 msgid "Import and export options"
 msgstr "Các tùy chọn nhập và xuất"
 
+#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
+#, fuzzy
+msgid "Select and &copy"
+msgstr "Chọn và &Sao chép"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
+#, fuzzy
+msgid "Mark a selection and copy from it"
+msgstr "Đánh dấu vùng chọn và sao chép từ đó"
+
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 #, fuzzy
 msgid "Word w&rap"
@@ -2294,6 +2370,21 @@ msgstr "Không có bảng tiếp theo."
 msgid "No previous table."
 msgstr "Không có bảng trước đó."
 
+#. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
+#, fuzzy
+msgid "No formulas."
+msgstr "Không có số liệu."
+
+#. TRANSLATORS: Announcement when there is no next formula to navigate to
+#, fuzzy
+msgid "No next formula."
+msgstr "Không có hình ảnh tiếp theo."
+
+#. TRANSLATORS: Announcement when there is no previous formula to navigate to
+#, fuzzy
+msgid "No previous formula."
+msgstr "Không có hình ảnh trước đó."
+
 #. TRANSLATORS: Announced when the document has no separators to navigate
 #, fuzzy
 msgid "No separators."
@@ -2395,7 +2486,12 @@ msgstr "OCR không thành công."
 msgid "OCR is not available on this system."
 msgstr "Chế độ xem nguồn không khả dụng đối với định dạng tài liệu này."
 
-#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+#. TRANSLATORS: Title of the dialog displaying a formula as MathML
+#, fuzzy
+msgid "Formula View"
+msgstr "Chế độ xem Công thức"
+
+#. TRANSLATORS: Title of the dialog showing a table activated in the document
 #, fuzzy
 msgid "Table View"
 msgstr "Chế độ xem bảng"
@@ -2468,6 +2564,41 @@ msgstr "Truy cập &percent"
 msgid "Go to percent"
 msgstr "Chuyển sang phần trăm"
 
+#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
+#, fuzzy
+msgid "Copied (%d chars)."
+msgstr "Đã sao chép (%d ký tự)."
+
+#. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
+#, fuzzy
+msgid "Beginning of selection set."
+msgstr "Đầu tài liệu"
+
+#. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
+#, fuzzy
+msgid "Cannot copy; set beginning of selection first."
+msgstr "Không thể sao chép; hãy đặt phần đầu của vùng chọn trước."
+
+#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
+#, fuzzy
+msgid "Nothing to copy."
+msgstr "Không có gì để sao chép."
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+#, fuzzy
+msgid "Could not copy to the clipboard."
+msgstr "Không thể sao chép vào bảng nhớ tạm."
+
+#. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
+#, fuzzy
+msgid "Cannot jump; set beginning of selection first."
+msgstr "Không thể nhảy; hãy đặt phần đầu của vùng chọn trước."
+
+#. TRANSLATORS: Announced after jumping back to the marked beginning of the selection.
+#, fuzzy
+msgid "Jumped to beginning of selection."
+msgstr "Đã nhảy đến phần đầu của vùng chọn."
+
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 #, fuzzy
 msgid "Sleep timer cancelled."
@@ -2526,6 +2657,11 @@ msgstr "Mở lại & Lần đóng gần nhất    Ctrl+Shift+T"
 #, fuzzy
 msgid "Show All Recent Documents..."
 msgstr "Không có tài liệu gần đây"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Clear Recent Documents"
+msgstr "Các tài liệu gần đây"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2717,6 +2853,16 @@ msgstr "Trước đó & Bảng    Shift+T"
 msgid "Next Table"
 msgstr "Bảng Tiếp Theo"
 
+#. TRANSLATORS: Shortcut action to move to the previous formula
+#, fuzzy
+msgid "Previous Formula"
+msgstr "Kết quả trước đó"
+
+#. TRANSLATORS: Shortcut action to move to the next formula
+#, fuzzy
+msgid "Next Formula"
+msgstr "Kết quả tiếp theo"
+
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Separator"
@@ -2786,6 +2932,21 @@ msgstr "Chuyển đổi & Đánh dấu trang    Ctrl+Shift+B"
 #, fuzzy
 msgid "Bookmark with Note"
 msgstr "Đánh dấu trang kèm ghi chú"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Set Selection Start"
+msgstr "Đặt Đầu Vùng Chọn"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Copy from Selection Start"
+msgstr "Sao chép từ Đầu Vùng Chọn"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Jump to Selection Start"
+msgstr "Nhảy đến Đầu Vùng Chọn"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2911,6 +3072,11 @@ msgstr "Trợ giúp"
 #, fuzzy
 msgid "None"
 msgstr "Không có"
+
+#. TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
+#, fuzzy
+msgid "This view shows the part of the document you are reading."
+msgstr "Chế độ xem này hiển thị phần tài liệu bạn đang đọc."
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 #, fuzzy
@@ -4710,6 +4876,12 @@ msgstr "Đây là mẫu của công cụ đọc được chọn."
 msgid "This document does not contain pages."
 msgstr "Tài liệu này không có mục lục."
 
+#. TRANSLATORS: Name of the "formula" reading/navigation unit
+#: kt
+#, fuzzy
+msgid "Formula"
+msgstr "Công thức"
+
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
 #~ msgstr "Hiện tại, hệ thống chưa hỗ trợ các tệp PPT được bảo vệ bằng mật khẩu. Hãy thử lưu tệp dưới định dạng PPTX và mở tệp đó thay thế."
@@ -5114,14 +5286,6 @@ msgstr "Tài liệu này không có mục lục."
 #, fuzzy
 #~ msgid "Open document"
 #~ msgstr "Mở tài liệu"
-
-#, fuzzy
-#~ msgid "Previous result"
-#~ msgstr "Kết quả trước đó"
-
-#, fuzzy
-#~ msgid "Next result"
-#~ msgstr "Kết quả tiếp theo"
 
 #, fuzzy
 #~ msgid "Active"
