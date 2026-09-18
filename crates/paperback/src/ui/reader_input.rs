@@ -45,14 +45,22 @@ pub(super) fn build_text_ctrl(
 						return;
 					}
 				}
-				let table_html = {
+				// Drop the manager lock before opening the modal dialog, whose handlers may lock it again.
+				let dialog = {
 					let dm = dm_for_enter.lock().unwrap();
-					dm.activate_current_table()
+					dm.activate_current_formula()
+						.map(|html| {
+							// TRANSLATORS: Title of the dialog displaying a formula as MathML
+							(t("Formula View"), html)
+						})
+						.or_else(|| {
+							// TRANSLATORS: Title of the dialog showing a table activated in the document
+							dm.activate_current_table().map(|html| (t("Table View"), html))
+						})
+						.map(|(title, html)| (dm.frame, title, html))
 				};
-				if let Some(html) = table_html {
-					let frame = dm_for_enter.lock().unwrap().frame;
-					// TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
-					super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
+				if let Some((frame, title, html)) = dialog {
+					super::dialogs::show_web_view_dialog(&frame, &title, &html, false, None);
 				} else {
 					let mut dm = dm_for_enter.lock().unwrap();
 					dm.activate_current_link();

@@ -284,6 +284,17 @@ impl DocumentManager {
 		})
 	}
 
+	pub fn activate_current_formula(&self) -> Option<String> {
+		self.active_tab().and_then(|tab| {
+			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+			tab.session.get_formula_at_position(pos).map(|mathml| {
+				format!(
+					"<style>math {{ font-size: 2.5em; }} body {{ display: flex; justify-content: center; margin-top: 2em; }}</style>{mathml}"
+				)
+			})
+		})
+	}
+
 	/// Whether the caret is on an image-only PDF page's OCR placeholder line.
 	pub fn update_status_bar(&self) {
 		let sleep_start = sleep_timer::start_ms();

@@ -184,4 +184,19 @@ mod tests {
 		}
 		assert_eq!(total_actions, ActionId::all().len());
 	}
+
+	#[test]
+	fn formula_shortcuts_are_discoverable_and_customizable() {
+		let mut config = ShortcutsConfig::default();
+		assert_eq!(config.find_action(i32::from(b'M'), false, false, false), Some(ActionId::NextFormula));
+		assert_eq!(config.find_action(i32::from(b'M'), false, false, true), Some(ActionId::PreviousFormula));
+		assert_eq!(ActionId::NextFormula.category(), ShortcutCategory::Go);
+		config.set_chord(ActionId::NextFormula, Some(KeyChord::new(true, true, true, "M")));
+		assert_eq!(config.find_action(i32::from(b'M'), false, false, false), None);
+		assert_eq!(config.find_action(i32::from(b'M'), true, true, true), Some(ActionId::NextFormula));
+		let serialized = toml::to_string(&config).unwrap();
+		assert!(serialized.contains("next_formula"));
+		let restored: ShortcutsConfig = toml::from_str(&serialized).unwrap();
+		assert_eq!(restored.get_chord(ActionId::NextFormula), config.get_chord(ActionId::NextFormula));
+	}
 }

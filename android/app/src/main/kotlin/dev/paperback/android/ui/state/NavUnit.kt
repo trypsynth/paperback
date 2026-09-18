@@ -50,6 +50,8 @@ fun getSegmentTypeName(type: SegmentTypeFfi): String =
 		SegmentTypeFfi.LIST_ITEM -> t("List Item")
 		// TRANSLATORS: Name of the "table" reading/navigation unit
 		SegmentTypeFfi.TABLE -> t("Table")
+		// TRANSLATORS: Name of the "formula" reading/navigation unit
+		SegmentTypeFfi.FORMULA -> t("Formula")
 		// TRANSLATORS: Name of the "separator" reading/navigation unit
 		SegmentTypeFfi.SEPARATOR -> t("Separator")
 		// TRANSLATORS: Name of the "image" reading/navigation unit

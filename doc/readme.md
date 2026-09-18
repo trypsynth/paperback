@@ -105,6 +105,8 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `F`: Next figure.
 * `Shift+T`: Previous table.
 * `T`: Next table.
+* `Shift+M`: Previous formula.
+* `M`: Next formula.
 * `Shift+S`: Previous separator.
 * `S`: Next separator.
 * `Shift+L`: Previous list.
@@ -152,7 +154,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 ### Additional document-view keys
 
 * `Delete` / `Numpad Delete` on the tab control: Close the selected document tab.
-* `Enter` or `Space` in the document text: Activate link at cursor, or open a table view when on a table marker.
+* `Enter` or `Space` in the document text: Follow a link or open a table or formula view at the cursor.
 * `Shift+F10` or the Menu/Application key in the document text: Open the context menu.
 
 ## Supported languages
@@ -276,6 +278,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * A toggle to determine how you want tables displayed, and unified how tables are displayed across documents.
 
 ##### Navigation
+* MathML formulas in EPUB and HTML are rendered as AsciiMath using MathCAT. Use `M` or `Shift+M` to navigate formulas, then `Enter` or `Space` to open the original MathML in Formula View.
 * Support for navigating by container.
 * An option to automatically move the cursor to the start of the line when navigating between lines, similar to browse mode in screen readers.
 * The equals keyboard shortcut to announce your current percentage through a document.

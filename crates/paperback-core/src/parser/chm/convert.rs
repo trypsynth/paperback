@@ -8,7 +8,9 @@ use crate::{
 		ConverterOutput,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 	},
-	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{
+		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
+	},
 	util::encoding::convert_to_utf8,
 };
 
@@ -23,6 +25,7 @@ pub(super) struct SectionContent {
 	images: Vec<ImageInfo>,
 	figures: Vec<ImageInfo>,
 	tables: Vec<TableInfo>,
+	formulas: Vec<FormulaInfo>,
 	separators: Vec<SeparatorInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
@@ -47,6 +50,9 @@ impl ConverterOutput for SectionContent {
 	}
 	fn get_tables(&self) -> &[TableInfo] {
 		&self.tables
+	}
+	fn get_formulas(&self) -> &[FormulaInfo] {
+		&self.formulas
 	}
 	fn get_separators(&self) -> &[SeparatorInfo] {
 		&self.separators
@@ -119,6 +125,7 @@ fn convert_section(content_bytes: &[u8], render_tables_inline: bool) -> Option<S
 		images: ConverterOutput::get_images(&converter).to_vec(),
 		figures: ConverterOutput::get_figures(&converter).to_vec(),
 		tables: converter.get_tables().to_vec(),
+		formulas: converter.get_formulas().to_vec(),
 		separators: converter.get_separators().to_vec(),
 		lists: converter.get_lists().to_vec(),
 		list_items: converter.get_list_items().to_vec(),
