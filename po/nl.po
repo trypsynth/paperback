@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-15 16:49+0000\n"
+"POT-Creation-Date: 2026-09-18 20:00+0000\n"
 "PO-Revision-Date: 2026-06-08 22:23+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -182,6 +182,16 @@ msgstr "Notitie bekijken"
 msgid "Open Document"
 msgstr "Document openen"
 
+#. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "Geen recente documenten."
+
+#. TRANSLATORS: Announced after the Recent Documents list has been emptied
+#, fuzzy
+msgid "Recent documents cleared."
+msgstr "Recente documenten"
+
 #. TRANSLATORS: Menu item in the File menu to open a document.
 #, fuzzy
 msgid "&Open..."
@@ -217,6 +227,16 @@ msgstr "&Laatst gesloten opnieuw openen"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Het laatst gesloten document heropenen"
+
+#. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
+#, fuzzy
+msgid "Clea&r Recent Documents"
+msgstr "Recente documenten wis&sen"
+
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
+#, fuzzy
+msgid "Remove all documents from the Recent Documents list"
+msgstr "Alle documenten uit de lijst met recente documenten verwijderen"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
@@ -381,6 +401,16 @@ msgstr "Vorige &tabel"
 msgid "Next &Table"
 msgstr "Volgende &tabel"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
+#, fuzzy
+msgid "Previous For&mula"
+msgstr "Vorige for&mule"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next formula.
+#, fuzzy
+msgid "Next For&mula"
+msgstr "Volgende for&mule"
+
 #. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 #, fuzzy
 msgid "Previous Se&parator"
@@ -520,6 +550,36 @@ msgstr "&Bladwijzer wisselen"
 #, fuzzy
 msgid "Bookmark with &Note"
 msgstr "Bladwijzer met &notitie"
+
+#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+#, fuzzy
+msgid "Set Selection St&art"
+msgstr "Selectie-begin instel&len"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+#, fuzzy
+msgid "Mark the beginning of a selection to copy from"
+msgstr "Het begin van een selectie markeren om later uit te kopieëren"
+
+#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+#, fuzzy
+msgid "&Copy from Selection Start"
+msgstr "&Kopieëren vanaf selectie-begin"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+#, fuzzy
+msgid "Copy from the beginning of the selection to here"
+msgstr "Kopieëren vanaf het begin van de selectie tot hier"
+
+#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+#, fuzzy
+msgid "&Jump to Selection Start"
+msgstr "&Naar selectie-begin springen"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+#, fuzzy
+msgid "Go back to the beginning of the selection"
+msgstr "Teruggaan naar het begin van de selectie"
 
 #. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 #, fuzzy
@@ -976,6 +1036,85 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
+#. TRANSLATORS: Description text shown when the background color is set to default
+msgid "Background: Default"
+msgstr "Achtergrond: standaard"
+
+#. TRANSLATORS: Description text shown when the font is set to default
+msgid "Font: Default"
+msgstr "Lettertype: standaard"
+
+#. TRANSLATORS: Fallback font name
+msgid "Default"
+msgstr "Standaard"
+
+#. TRANSLATORS: Font description prefix; {} is the font face name
+#, fuzzy
+msgid "Font: {}"
+msgstr "Bron: {}"
+
+#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+#, fuzzy
+msgid "{}pt"
+msgstr "{} pt"
+
+#. TRANSLATORS: Font weight attribute name
+msgid "Bold"
+msgstr "Vet"
+
+#. TRANSLATORS: Font style attribute name
+msgid "Italic"
+msgstr "Cursief"
+
+#. TRANSLATORS: Font underline attribute name
+msgid "Underlined"
+msgstr "Onderstreept"
+
+#. TRANSLATORS: Font strikethrough attribute name
+msgid "Strikethrough"
+msgstr "Doorgehaald"
+
+#. TRANSLATORS: Title of the system dialog for picking a font
+#, fuzzy
+msgid "Choose a font"
+msgstr "Kies een lettertype"
+
+#. TRANSLATORS: Title of the hotkey customization dialog
+msgid "Window Hotkey"
+msgstr "Venstersneltoets"
+
+#. TRANSLATORS: Checkbox label for Control modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox label for Alt modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox label for Shift modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+msgid "&Shift"
+msgstr "&Shift"
+
+#. TRANSLATORS: Checkbox label for Windows modifier key
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label for the hotkey key selection input field
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+msgid "&Key:"
+msgstr "&Toets:"
+
+#. TRANSLATORS: Button label to clear the current hotkey selection
+msgid "Clear"
+msgstr "Wissen"
+
+#. TRANSLATORS: Representation of the Spacebar key
+msgid "Space"
+msgstr "Spatie"
+
 #. TRANSLATORS: Title of the Settings dialog
 #, fuzzy
 msgid "Settings"
@@ -1179,85 +1318,6 @@ msgstr "Leesbaarheid"
 msgid "Choose a colour"
 msgstr "Kies een kleur"
 
-#. TRANSLATORS: Description text shown when the background color is set to default
-msgid "Background: Default"
-msgstr "Achtergrond: standaard"
-
-#. TRANSLATORS: Description text shown when the font is set to default
-msgid "Font: Default"
-msgstr "Lettertype: standaard"
-
-#. TRANSLATORS: Fallback font name
-msgid "Default"
-msgstr "Standaard"
-
-#. TRANSLATORS: Font description prefix; {} is the font face name
-#, fuzzy
-msgid "Font: {}"
-msgstr "Bron: {}"
-
-#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
-#, fuzzy
-msgid "{}pt"
-msgstr "{} pt"
-
-#. TRANSLATORS: Font weight attribute name
-msgid "Bold"
-msgstr "Vet"
-
-#. TRANSLATORS: Font style attribute name
-msgid "Italic"
-msgstr "Cursief"
-
-#. TRANSLATORS: Font underline attribute name
-msgid "Underlined"
-msgstr "Onderstreept"
-
-#. TRANSLATORS: Font strikethrough attribute name
-msgid "Strikethrough"
-msgstr "Doorgehaald"
-
-#. TRANSLATORS: Title of the system dialog for picking a font
-#, fuzzy
-msgid "Choose a font"
-msgstr "Kies een lettertype"
-
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "Venstersneltoets"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-msgid "&Ctrl"
-msgstr "&Ctrl"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-msgid "&Alt"
-msgstr "&Alt"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-msgid "&Shift"
-msgstr "&Shift"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-msgid "&Win"
-msgstr "&Win"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-msgid "&Key:"
-msgstr "&Toets:"
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-msgid "Clear"
-msgstr "Wissen"
-
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "Spatie"
-
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Slaaptimer"
@@ -1313,6 +1373,22 @@ msgid_plural "This document contains %d words."
 msgstr[0] "This document contains %d word."
 msgstr[1] "This document contains %d words."
 
+#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
+msgid "File not found: {}"
+msgstr "Bestand niet gevonden: {}"
+
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
+msgid "A .paperback file was found for this document. Would you like to import it?"
+msgstr "Er is een .paperback-bestand gevonden voor dit document. Wil je het importeren?"
+
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
+msgid "Import document data"
+msgstr "Documentgegevens importeren"
+
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
+msgid "Password is required."
+msgstr "Wachtwoord is vereist."
+
 #. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
 #, fuzzy
 msgid "OCR in progress."
@@ -1362,22 +1438,6 @@ msgid "Batch OCR complete. %d page recognized."
 msgid_plural "Batch OCR complete. %d pages recognized."
 msgstr[0] "Batch OCR voltooid. %d pagina herkend."
 msgstr[1] "Batch OCR voltooid. %d pagina's herkend."
-
-#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
-msgid "File not found: {}"
-msgstr "Bestand niet gevonden: {}"
-
-#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
-msgid "A .paperback file was found for this document. Would you like to import it?"
-msgstr "Er is een .paperback-bestand gevonden voor dit document. Wil je het importeren?"
-
-#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
-msgid "Import document data"
-msgstr "Documentgegevens importeren"
-
-#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
-msgid "Password is required."
-msgstr "Wachtwoord is vereist."
 
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
@@ -1504,13 +1564,21 @@ msgstr "Standaardbrowser starten mislukt."
 msgid "Failed to open donation page in browser."
 msgstr "Donatiepagina openen in browser mislukt."
 
-#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
-msgid "Unsupported format selected."
-msgstr "Niet-ondersteunde indeling geselecteerd."
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+msgid "Word wrap on."
+msgstr "Automatische terugloop aan."
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
-msgstr "Geen recente documenten."
+msgid "Word wrap off."
+msgstr "Automatische terugloop uit."
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "Volledig scherm aan."
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "Volledig scherm uit."
 
 #. TRANSLATORS: Announced when landing on a blank line; %d is the line number
 #, fuzzy
@@ -1609,6 +1677,10 @@ msgstr "Notities en bladwijzers succesvol geïmporteerd."
 msgid "Import Successful"
 msgstr "Importeren geslaagd"
 
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
+msgid "Unsupported format selected."
+msgstr "Niet-ondersteunde indeling geselecteerd."
+
 #. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
 msgstr "Paperback"
@@ -1634,22 +1706,6 @@ msgstr[1] "%d chars"
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Document exporteren mislukt."
-
-#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-msgid "Word wrap on."
-msgstr "Automatische terugloop aan."
-
-msgid "Word wrap off."
-msgstr "Automatische terugloop uit."
-
-#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-#, fuzzy
-msgid "Full screen on."
-msgstr "Volledig scherm aan."
-
-#, fuzzy
-msgid "Full screen off."
-msgstr "Volledig scherm uit."
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 #, fuzzy
@@ -1809,6 +1865,16 @@ msgstr "&Tabellen"
 #. TRANSLATORS: Status-bar help text for the Go > Tables submenu.
 msgid "Navigate by tables"
 msgstr "Navigeren per tabel"
+
+#. TRANSLATORS: Label for the Formulas submenu in the compact Go menu.
+#, fuzzy
+msgid "For&mulas"
+msgstr "For&mules"
+
+#. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
+#, fuzzy
+msgid "Navigate by formulas"
+msgstr "Navigeren via formules"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
@@ -1994,6 +2060,16 @@ msgstr "I&mporteren/exporteren"
 msgid "Import and export options"
 msgstr "Import- en exportopties"
 
+#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
+#, fuzzy
+msgid "Select and &copy"
+msgstr "Selecteren en &kopieëren"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
+#, fuzzy
+msgid "Mark a selection and copy from it"
+msgstr "Een selectie markeren en ervan kopieëren"
+
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 #, fuzzy
 msgid "Word w&rap"
@@ -2139,6 +2215,21 @@ msgstr "Geen volgende tabel."
 msgid "No previous table."
 msgstr "Geen vorige tabel."
 
+#. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
+#, fuzzy
+msgid "No formulas."
+msgstr "Geen formules."
+
+#. TRANSLATORS: Announcement when there is no next formula to navigate to
+#, fuzzy
+msgid "No next formula."
+msgstr "Geen volgende formule."
+
+#. TRANSLATORS: Announcement when there is no previous formula to navigate to
+#, fuzzy
+msgid "No previous formula."
+msgstr "Geen vorige formule."
+
 #. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr "Geen scheidingen."
@@ -2227,7 +2318,12 @@ msgstr "OCR mislukt."
 msgid "OCR is not available on this system."
 msgstr "OCR is niet beschikbaar op dit systeem."
 
-#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+#. TRANSLATORS: Title of the dialog displaying a formula as MathML
+#, fuzzy
+msgid "Formula View"
+msgstr "Formuleweergave"
+
+#. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr "Tabelweergave"
 
@@ -2284,6 +2380,41 @@ msgstr "Ga naar &percentage"
 msgid "Go to percent"
 msgstr "Ga naar percentage"
 
+#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
+#, fuzzy
+msgid "Copied (%d chars)."
+msgstr "Gekopieerd (%d tekens)."
+
+#. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
+#, fuzzy
+msgid "Beginning of selection set."
+msgstr "Begin van het document"
+
+#. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
+#, fuzzy
+msgid "Cannot copy; set beginning of selection first."
+msgstr "Kan niet kopieëren; stel eerst het begin van de selectie in."
+
+#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
+#, fuzzy
+msgid "Nothing to copy."
+msgstr "Niets om te kopieëren."
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+#, fuzzy
+msgid "Could not copy to the clipboard."
+msgstr "Kan niet naar het klembord kopieëren."
+
+#. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
+#, fuzzy
+msgid "Cannot jump; set beginning of selection first."
+msgstr "Kan niet springen; stel eerst het begin van de selectie in."
+
+#. TRANSLATORS: Announced after jumping back to the marked beginning of the selection.
+#, fuzzy
+msgid "Jumped to beginning of selection."
+msgstr "Naar selectie-begin gesprongen."
+
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "Slaaptimer geannuleerd."
@@ -2337,6 +2468,11 @@ msgstr "Laatst gesloten opnieuw openen"
 #, fuzzy
 msgid "Show All Recent Documents..."
 msgstr "Geen recente documenten"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Clear Recent Documents"
+msgstr "Recente documenten"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2528,6 +2664,16 @@ msgstr "Vorige tabel"
 msgid "Next Table"
 msgstr "Volgende tabel"
 
+#. TRANSLATORS: Shortcut action to move to the previous formula
+#, fuzzy
+msgid "Previous Formula"
+msgstr "Vorige afbeelding"
+
+#. TRANSLATORS: Shortcut action to move to the next formula
+#, fuzzy
+msgid "Next Formula"
+msgstr "Volgend resultaat"
+
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Previous Separator"
@@ -2597,6 +2743,21 @@ msgstr "Bladwijzer wisselen"
 #, fuzzy
 msgid "Bookmark with Note"
 msgstr "Bladwijzer met notitie"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Set Selection Start"
+msgstr "Selectie-begin instellen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Copy from Selection Start"
+msgstr "Kopieëren vanaf selectie-begin"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Jump to Selection Start"
+msgstr "Naar selectie-begin springen"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2722,6 +2883,11 @@ msgstr "Hulp"
 #, fuzzy
 msgid "None"
 msgstr "Geen"
+
+#. TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
+#, fuzzy
+msgid "This view shows the part of the document you are reading."
+msgstr "Deze weergave toont het deel van het document dat u leest."
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 #, fuzzy
@@ -4506,6 +4672,12 @@ msgstr "Dit is een voorbeeld van de geselecteerde spraakengine."
 msgid "This document does not contain pages."
 msgstr "Dit document bevat geen inhoudsopgave."
 
+#. TRANSLATORS: Name of the "formula" reading/navigation unit
+#: kt
+#, fuzzy
+msgid "Formula"
+msgstr "Formule"
+
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
 #~ msgstr "Met een wachtwoord beveiligde PPT-bestanden worden momenteel niet ondersteund. Probeer het bestand op te slaan als PPTX en open dat in plaats daarvan."
@@ -4652,10 +4824,6 @@ msgstr "Dit document bevat geen inhoudsopgave."
 #, fuzzy
 #~ msgid "Open document"
 #~ msgstr "Document openen"
-
-#, fuzzy
-#~ msgid "Next result"
-#~ msgstr "Volgend resultaat"
 
 #, fuzzy
 #~ msgid "Active"

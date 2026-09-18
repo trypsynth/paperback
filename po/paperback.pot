@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-16 19:04+0200\n"
+"POT-Creation-Date: 2026-09-18 20:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -355,6 +355,14 @@ msgstr ""
 msgid "Next &Table"
 msgstr ""
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
+msgid "Previous For&mula"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next formula.
+msgid "Next For&mula"
+msgstr ""
+
 #. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 msgid "Previous Se&parator"
 msgstr ""
@@ -473,6 +481,30 @@ msgstr ""
 
 #. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
 msgid "Bookmark with &Note"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+msgid "Set Selection St&art"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+msgid "Mark the beginning of a selection to copy from"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+msgid "&Copy from Selection Start"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+msgid "Copy from the beginning of the selection to here"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+msgid "&Jump to Selection Start"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+msgid "Go back to the beginning of the selection"
 msgstr ""
 
 #. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
@@ -1666,6 +1698,14 @@ msgstr ""
 msgid "Navigate by tables"
 msgstr ""
 
+#. TRANSLATORS: Label for the Formulas submenu in the compact Go menu.
+msgid "For&mulas"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
+msgid "Navigate by formulas"
+msgstr ""
+
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
 msgstr ""
@@ -1834,6 +1874,14 @@ msgstr ""
 msgid "Import and export options"
 msgstr ""
 
+#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
+msgid "Select and &copy"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
+msgid "Mark a selection and copy from it"
+msgstr ""
+
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
 msgstr ""
@@ -1970,6 +2018,18 @@ msgstr ""
 msgid "No previous table."
 msgstr ""
 
+#. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
+msgid "No formulas."
+msgstr ""
+
+#. TRANSLATORS: Announcement when there is no next formula to navigate to
+msgid "No next formula."
+msgstr ""
+
+#. TRANSLATORS: Announcement when there is no previous formula to navigate to
+msgid "No previous formula."
+msgstr ""
+
 #. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr ""
@@ -2055,7 +2115,11 @@ msgstr ""
 msgid "OCR is not available on this system."
 msgstr ""
 
-#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+#. TRANSLATORS: Title of the dialog displaying a formula as MathML
+msgid "Formula View"
+msgstr ""
+
+#. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr ""
 
@@ -2110,6 +2174,34 @@ msgid "Go to &percent"
 msgstr ""
 
 msgid "Go to percent"
+msgstr ""
+
+#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
+msgid "Copied (%d chars)."
+msgstr ""
+
+#. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
+msgid "Beginning of selection set."
+msgstr ""
+
+#. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
+msgid "Cannot copy; set beginning of selection first."
+msgstr ""
+
+#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
+msgid "Nothing to copy."
+msgstr ""
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr ""
+
+#. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
+msgid "Cannot jump; set beginning of selection first."
+msgstr ""
+
+#. TRANSLATORS: Announced after jumping back to the marked beginning of the selection.
+msgid "Jumped to beginning of selection."
 msgstr ""
 
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
@@ -2317,6 +2409,14 @@ msgstr ""
 msgid "Next Table"
 msgstr ""
 
+#. TRANSLATORS: Shortcut action to move to the previous formula
+msgid "Previous Formula"
+msgstr ""
+
+#. TRANSLATORS: Shortcut action to move to the next formula
+msgid "Next Formula"
+msgstr ""
+
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Separator"
 msgstr ""
@@ -2371,6 +2471,18 @@ msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Bookmark with Note"
+msgstr ""
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Set Selection Start"
+msgstr ""
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Copy from Selection Start"
+msgstr ""
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Jump to Selection Start"
 msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -2966,7 +3078,7 @@ msgstr ""
 msgid "Switch to Text Mode"
 msgstr ""
 
-#. TRANSLATORS: Menu item to open the list of recently opened documents
+#. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
 msgid "Recent Documents"
 msgstr ""
@@ -3031,7 +3143,7 @@ msgstr ""
 msgid "Locate"
 msgstr ""
 
-#. TRANSLATORS: Button to remove a document from the recent documents list
+#. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr ""
@@ -3409,7 +3521,6 @@ msgstr ""
 msgid "Press play to start listening."
 msgstr ""
 
-#. TRANSLATORS: Menu item / accessibility action to show metadata (title, author, etc.) about the current document
 #: kt
 msgid "Document Information"
 msgstr ""
@@ -3589,7 +3700,7 @@ msgstr ""
 msgid "words"
 msgstr ""
 
-#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
+#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
 msgid "Close Search"
 msgstr ""
@@ -3959,4 +4070,9 @@ msgstr ""
 #. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
 #: kt
 msgid "This document does not contain pages."
+msgstr ""
+
+#. TRANSLATORS: Name of the "formula" reading/navigation unit
+#: kt
+msgid "Formula"
 msgstr ""
