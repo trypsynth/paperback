@@ -65,6 +65,61 @@ jobs:
           name: android-test-report
           path: android/app/build/reports/tests/
           retention-days: 7
+
+  android-instrumented:
+    name: Android instrumented tests
+    # Split from the unit test job because booting an emulator costs minutes that the rest of
+    # the Android checks should not wait on.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+      # Same reasoning as the unit test job: the app module only compiles once the uniffi types
+      # exist, and generating them is a host build of paperback-core with no NDK involved.
+      - name: Generate Kotlin bindings
+        run: >
+          cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --
+          generate crates/paperback-core/src/paperback.udl
+          --language kotlin --out-dir android/app/src/main/kotlin --no-format
+      - name: Cache Gradle packages
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-
+      - name: Enable KVM for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      # The reading bar's semantics are what TalkBack reads out, and they only exist once the
+      # bar is composed, so this is the only place that behaviour can be checked automatically.
+      - name: Run instrumented tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: cd android && chmod +x gradlew && ./gradlew connectedDebugAndroidTest
+      - name: Upload instrumented test report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-instrumented-report
+          path: android/app/build/reports/androidTests/
+          retention-days: 7
   ios:
     name: iOS checks
     runs-on: macos-latest
