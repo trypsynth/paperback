@@ -388,17 +388,41 @@ fun SettingsScreen(
 				}
 				Spacer(modifier = Modifier.height(16.dp))
 				val isSystemDefault = currentEngine == dev.paperback.android.tts.TtsManager.SYSTEM_DEFAULT
+				// An engine that reports no voices of its own, which Code Factory's Vocalizer
+				// does, used to leave this tappable and open a menu with nothing in it. One
+				// voice is no choice either: the menu would offer only what is already spoken.
+				val canChooseVoice = !isSystemDefault && availableVoices.size > 1
 				ExposedDropdownMenuBox(
 					expanded = voiceExpanded,
-					onExpandedChange = { if (!isSystemDefault) voiceExpanded = it }
+					onExpandedChange = { if (canChooseVoice) voiceExpanded = it }
 				) {
+					// With nothing to choose from, name what the engine is actually using rather
+					// than leaving the row blank.
+					val voiceName = currentVoice?.name ?: availableVoices.singleOrNull()?.name ?: t("Default")
 					OutlinedButton(
-						onClick = { voiceExpanded = true },
+						onClick = { if (canChooseVoice) voiceExpanded = true },
 						colors = pickerAnchorColors(),
-						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-						enabled = !isSystemDefault
+						modifier = Modifier
+							.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+							.fillMaxWidth()
+							.then(
+								if (canChooseVoice) {
+									Modifier
+								} else {
+									// Say why it cannot be opened, the same way the sliders do
+									// when they are following the engine's own settings.
+									Modifier.semantics {
+										stateDescription = if (isSystemDefault) {
+											t("System Default")
+										} else {
+											// TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
+											t("No other voices")
+										}
+									}
+								}
+							),
+						enabled = canChooseVoice
 					) {
-						val voiceName = currentVoice?.name ?: t("Default")
 						// TRANSLATORS: Label for the dropdown choosing which text-to-speech voice to speak with
 						Text("${t("Voice")}: $voiceName", modifier = Modifier.weight(1f))
 						ExposedDropdownMenuDefaults.TrailingIcon(expanded = voiceExpanded)
