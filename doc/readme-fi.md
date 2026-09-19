@@ -34,7 +34,7 @@ Kiertotienä ongelmaan on paperback.jcf-tiedoston muokkaaminen siten, että aset
 
 Paperback tukee seuraavia tiedostomuotoja:
 
-* Sarjakuvapaketit (`.cbz`, `.cbr`)
+* Sarjakuvapaketit (`.cbz`)
 * CHM-ohjetiedostot (`.chm`)
 * DAISY-kirjat (`.opf`, `.zip`)
 * EPUB-kirjat (`.epub`)

@@ -36,7 +36,7 @@ La solución alternativa, finalmente surgida a través del grupo de discusión d
 
 Paperback admite los siguientes formatos y extensiones:
 
-* Archivos de cómics (`.cbz`, `.cbr`)
+* Archivos de cómics (`.cbz`)
 * Archivos de ayuda CHM (`.chm`)
 * Libros DAISY (`.opf`, `.zip`)
 * Libros EPUB (`.epub`)

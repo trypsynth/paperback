@@ -36,7 +36,7 @@ La solution de contournement, finalement révélée par le groupe de discussion 
 
 Paperback prend en charge les formats et extensions suivants :
 
-* Archives de bandes dessinées (`.cbz`, `.cbr`)
+* Archives de bandes dessinées (`.cbz`)
 * Fichiers d'aide CHM (`.chm`)
 * Livres DAISY (`.opf`, `.zip`)
 * Livres EPUB (`.epub`)

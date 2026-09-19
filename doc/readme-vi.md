@@ -36,7 +36,7 @@ Cách khắc phục, cuối cùng được tiết lộ thông qua nhóm thảo l
 
 Paperback hỗ trợ các định dạng và phần mở rộng sau:
 
-* Các kho lưu trữ sách truyện tranh (`.cbz`, `.cbr`)
+* Các kho lưu trữ sách truyện tranh (`.cbz`)
 * Các tệp trợ giúp CHM (`.chm`)
 * Sách DAISY (`.opf`, `.zip`)
 * Sách EPUB (`.epub`)

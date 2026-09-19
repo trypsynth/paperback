@@ -36,7 +36,7 @@ Nazwy tych opcji podano po angielsku, bo w takiej postaci występują w pliku ko
 
 Paperback obsługuje następujące formaty i rozszerzenia:
 
-* Archiwa komiksów (`.cbz`, `.cbr`)
+* Archiwa komiksów (`.cbz`)
 * Pliki pomocy CHM (`.chm`)
 * Książki DAISY (`.opf`, `.zip`)
 * Książki EPUB (`.epub`)

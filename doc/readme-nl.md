@@ -36,7 +36,7 @@ De workaround, uiteindelijk opgeleverd via de JAWS-discussiegroep na maanden wac
 
 Paperback ondersteunt de volgende formaten en extensies:
 
-* Comic book archives (`.cbz`, `.cbr`)
+* Comic book archives (`.cbz`)
 * CHM help files (`.chm`)
 * DAISY books (`.opf`, `.zip`)
 * EPUB books (`.epub`)
