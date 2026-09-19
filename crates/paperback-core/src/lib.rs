@@ -19,6 +19,7 @@ pub use crate::{
 		AudioClipFfi, AudioCursorFfi, AudioPointFfi, DocumentError, DocumentSession, DocumentStatsFfi, HeadingTreeFfi,
 		HeadingTreeItemFfi, LineMarker, LinkAction, LinkActivationResult, LinkListFfi, LinkListItemFfi,
 		SearchOptionsFfi, SearchResultFfi, SegmentDirectionFfi, SegmentTypeFfi, StatusInfo, TextSegmentFfi, TocEntry,
+		WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN,
 	},
 };
 

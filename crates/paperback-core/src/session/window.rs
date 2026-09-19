@@ -5,6 +5,21 @@
 use super::{DocumentSession, LineMarker};
 use crate::document::MarkerType;
 
+/// How much of a document, in display units, is shown at once when it is too long to show
+/// whole: the width of the reader's loaded window, and of the slice the web view is handed.
+pub const WINDOW_DISPLAY_LEN: i64 = 500_000;
+
+/// The document length up to which the whole thing is shown rather than a window around the
+/// reading position. One extension chunk above [`WINDOW_DISPLAY_LEN`], so a document a little
+/// over a window's width is still shown whole rather than windowed from the outset.
+///
+/// Shared between the reader and the web view deliberately. They used to decide separately,
+/// the reader against this and the web view against [`WINDOW_DISPLAY_LEN`], so a document
+/// between the two was loaded whole by one and sliced by the other: the web view dropped the
+/// text past its slice, dropped any link whose target lay outside it, and announced itself as
+/// a partial view of a document the reader was showing in full.
+pub const WHOLE_DOCUMENT_DISPLAY_LEN: i64 = WINDOW_DISPLAY_LEN + WINDOW_DISPLAY_LEN / 2;
+
 /// A contiguous slice of a document's text, in display units, plus the Bold/Italic/Underline
 /// markers that fall within it, rebased to window-local display-unit positions.
 #[derive(Debug, Clone)]

@@ -16,7 +16,7 @@ mod stats;
 mod window;
 
 pub use find_all::{FindAllLine, FindSpan};
-pub use window::WindowSlice;
+pub use window::{WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, WindowSlice};
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: i64 = 300;
