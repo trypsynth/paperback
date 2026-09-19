@@ -77,12 +77,14 @@ pub(crate) fn crate_version(root: &Path, package_name: &str) -> Result<String, B
 pub fn build_host_ffi_library(cargo: &str) -> Result<PathBuf, Box<dyn Error>> {
 	let status = Command::new(cargo)
 		.current_dir(project_root())
-		.args(["build", "-p", "paperback-core", "--features", "uniffi", "--lib", "--release"])
+		// Debug, not release: uniffi reads the interface out of the library's symbols, and the
+		// release profile strips them. This build exists only to be read, never to be shipped.
+		.args(["build", "-p", "paperback-core", "--features", "uniffi", "--lib"])
 		.status()?;
 	if !status.success() {
 		return Err("building paperback-core for the host failed".into());
 	}
-	let dir = project_root().join("target/release");
+	let dir = project_root().join("target/debug");
 	for name in ["paperback_core.dll", "libpaperback_core.dylib", "libpaperback_core.so"] {
 		let candidate = dir.join(name);
 		if candidate.exists() {
