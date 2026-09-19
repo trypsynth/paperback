@@ -70,6 +70,7 @@ fun MainScreen(
 	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
 	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()
 	val swipeUpMovesForward by settings.swipeUpMovesForward.state.collectAsStateWithLifecycle()
+	val speechRatePercent by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
 	val activeSearchQuery by viewModel.search.query.collectAsStateWithLifecycle()
 	val activeSearchOptions by viewModel.search.options.collectAsStateWithLifecycle()
 	var isTextMode by rememberSaveable { mutableStateOf(false) }
@@ -373,6 +374,8 @@ fun MainScreen(
 						currentUnit = currentNavUnit,
 						navUnits = navUnits,
 						onNavUnitChange = { viewModel.setNavUnit(it) },
+						speechRatePercent = speechRatePercent,
+						onSpeechRateChange = { viewModel.ttsManager.setSpeechRate(it) },
 						swipeUpMovesForward = swipeUpMovesForward
 					)
 				}
