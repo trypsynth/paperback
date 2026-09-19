@@ -214,6 +214,11 @@ class MainScreenViewModel(
 		ttsManager.onUtteranceCompleted = {
 			if (_currentNavUnit.value !is NavUnit.Find) {
 				playNextContinuousSegment()
+			} else {
+				// The cursor stays on the match, so remember that its paragraph was read right
+				// through. Without this, play would find the same paragraph under the cursor and
+				// speak it again, for ever.
+				spokenThroughPosition = _ttsPosition.value
 			}
 		}
 		ttsManager.onPlayCommand = { resumeTts() }
@@ -741,7 +746,17 @@ class MainScreenViewModel(
 		}
 	}
 
+	/** The position whose paragraph playback already read to the end while Find was the unit.
+	 * Comparing against the live position rather than clearing a flag means a move of any kind
+	 * invalidates it on its own. */
+	private var spokenThroughPosition: Long? = null
+
 	private fun speakCurrentSegment() {
+		// Already heard this one through, so play means carry on rather than repeat it.
+		if (spokenThroughPosition == _ttsPosition.value) {
+			playNextContinuousSegment()
+			return
+		}
 		val tab = uiState.value.activeTab ?: return
 		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
 		if (segment.text.isNotBlank()) {
