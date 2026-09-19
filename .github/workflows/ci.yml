@@ -65,6 +65,32 @@ jobs:
           name: android-test-report
           path: android/app/build/reports/tests/
           retention-days: 7
+  ios:
+    name: iOS checks
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+      # The XCFramework and the Swift bindings both have to exist before xcodebuild runs: the
+      # app imports the generated paperback.swift, and the project links the framework. This is
+      # the same task the release build uses, so a break in either shows up here.
+      - name: Build the XCFramework and Swift bindings
+        run: cargo xtask ios --release
+      # No signing: CI has no certificate, and an unsigned build still compiles and links every
+      # Swift file, which is what this job is for. Producing an .ipa needs the release flow.
+      - name: Build the app
+        run: >
+          xcodebuild -project ios/Paperback.xcodeproj -scheme Paperback
+          -configuration Release -destination 'generic/platform=iOS'
+          CODE_SIGNING_ALLOWED=NO build
+
   test:
     name: Tests
     runs-on: windows-latest
