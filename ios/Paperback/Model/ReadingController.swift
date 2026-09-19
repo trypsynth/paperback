@@ -49,14 +49,25 @@ final class ReadingController {
 	var currentNavUnit: NavUnit = .segment(.paragraph)
 	// The structural unit the FFI is asked for. Find isn't one, so it reads as paragraph: that's
 	// what a match's surrounding context is spoken as.
-	var currentSegmentType: SegmentType {
+	var currentSegmentType: SegmentTypeFfi {
 		if case .segment(let type) = currentNavUnit { return type }
 		return .paragraph
 	}
-	// Find only joins the list once there's a query to step through.
+	// The units this document actually offers: a plain text file has no headings or tables to
+	// step through, so the core decides per document. Find only joins the list once there's a
+	// query to step through.
 	var availableNavUnits: [NavUnit] {
-		let segments = SegmentType.allCases.map { NavUnit.segment($0) }
+		let supported = activeSession?.getSupportedSegmentTypesFfi() ?? [.paragraph, .line]
+		let segments = supported.map { NavUnit.segment($0) }
 		return activeSearchQuery == nil ? segments : segments + [.find]
+	}
+	// Keeps the selected unit on something the newly active document supports. Switching from an
+	// EPUB navigated by heading to a plain text file would otherwise leave Heading selected and
+	// every previous/next press doing nothing.
+	func ensureNavUnitSupported() {
+		let units = availableNavUnits
+		guard !units.isEmpty, !units.contains(currentNavUnit) else { return }
+		currentNavUnit = units[0]
 	}
 	var ttsRules: [TtsRule] = [] {
 		didSet {
@@ -96,7 +107,7 @@ final class ReadingController {
 		guard let session = activeSession else { return false }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
-			segmentType: ffiSegmentType(currentSegmentType),
+			segmentType: currentSegmentType,
 			direction: .next
 		)
 		if seg.text.isEmpty { return false }
@@ -120,7 +131,7 @@ final class ReadingController {
 		guard let session = activeSession else { return false }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
-			segmentType: ffiSegmentType(currentSegmentType),
+			segmentType: currentSegmentType,
 			direction: .previous
 		)
 		if seg.text.isEmpty || seg.startPos == ttsPosition { return false }
@@ -161,12 +172,12 @@ final class ReadingController {
 	}
 
 	// The segment type continuous TTS playback should walk by, regardless of the user's chosen
-	// navigation unit. Paragraph/line are real sequential content; heading/section are marker
-	// jumps and must fall back to paragraph so playback doesn't skip the body between markers.
+	// navigation unit. Paragraph/line are real sequential content; every other unit is a marker
+	// jump and must fall back to paragraph so playback doesn't skip the body between markers.
 	private func continuousPlaybackSegmentType() -> SegmentTypeFfi {
 		switch currentSegmentType {
-		case .paragraph, .line: return ffiSegmentType(currentSegmentType)
-		case .heading, .section: return .paragraph
+		case .paragraph, .line: return currentSegmentType
+		default: return .paragraph
 		}
 	}
 
@@ -353,10 +364,11 @@ final class ReadingController {
 
 	func loadSegment(for tab: DocumentTab) {
 		guard let session = tab.session else { return }
+		ensureNavUnitSupported()
 		ttsPosition = tab.currentPosition
 		let seg = session.getTextSegment(
 			position: ttsPosition,
-			segmentType: ffiSegmentType(currentSegmentType),
+			segmentType: currentSegmentType,
 			direction: .current
 		)
 		currentSegmentText = seg.text
@@ -366,7 +378,7 @@ final class ReadingController {
 		guard let session = activeSession else { return }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
-			segmentType: ffiSegmentType(currentSegmentType),
+			segmentType: currentSegmentType,
 			direction: .current
 		)
 		currentSegmentText = seg.text
@@ -466,14 +478,5 @@ final class ReadingController {
 		}
 		info[MPMediaItemPropertyArtist] = "Paperback"
 		MPNowPlayingInfoCenter.default().nowPlayingInfo = info
-	}
-
-	private func ffiSegmentType(_ type: SegmentType) -> SegmentTypeFfi {
-		switch type {
-		case .paragraph: return .paragraph
-		case .line: return .line
-		case .heading: return .heading
-		case .section: return .section
-		}
 	}
 }

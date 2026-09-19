@@ -315,25 +315,49 @@ extension AppViewModel: ReadingContext {
 	}
 }
 
-enum SegmentType: String, CaseIterable {
-	case paragraph = "Paragraph"
-	case line = "Line"
-	case heading = "Heading"
-	case section = "Section"
-}
-
 // What the previous/next controls move by. Ordinarily a structural unit; while a Find query is
 // active, Find joins the list and steps between that query's matches instead.
 enum NavUnit: Hashable {
-	case segment(SegmentType)
+	case segment(SegmentTypeFfi)
 	case find
 
 	var name: String {
 		switch self {
-		case .segment(let type): return t(type.rawValue)
+		case .segment(let type): return segmentTypeName(type)
 		// TRANSLATORS: Name of the "Find" navigation unit, which moves between search matches
 		case .find: return t("Find")
 		}
+	}
+}
+
+func segmentTypeName(_ type: SegmentTypeFfi) -> String {
+	switch type {
+	// TRANSLATORS: Name of the "paragraph" reading/navigation unit
+	case .paragraph: return t("Paragraph")
+	// TRANSLATORS: Name of the "line" reading/navigation unit
+	case .line: return t("Line")
+	// TRANSLATORS: Name of the "heading" reading/navigation unit
+	case .heading: return t("Heading")
+	// TRANSLATORS: Name of the "link" reading/navigation unit
+	case .link: return t("Link")
+	// TRANSLATORS: Name of the "section" reading/navigation unit
+	case .section: return t("Section")
+	// TRANSLATORS: Name of the "page" reading/navigation unit
+	case .page: return t("Page")
+	// TRANSLATORS: Name of the "list" reading/navigation unit
+	case .list: return t("List")
+	// TRANSLATORS: Name of the "list item" reading/navigation unit
+	case .listItem: return t("List Item")
+	// TRANSLATORS: Name of the "table" reading/navigation unit
+	case .table: return t("Table")
+	// TRANSLATORS: Name of the "separator" reading/navigation unit
+	case .separator: return t("Separator")
+	// TRANSLATORS: Name of the "image" reading/navigation unit
+	case .image: return t("Image")
+	// TRANSLATORS: Name of the "figure" reading/navigation unit
+	case .figure: return t("Figure")
+	// TRANSLATORS: Name of the "formula" reading/navigation unit
+	case .formula: return t("Formula")
 	}
 }
 
