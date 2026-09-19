@@ -11,6 +11,7 @@ import android.os.IBinder
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
@@ -27,6 +28,8 @@ import kotlinx.coroutines.launch
 import uniffi.paperback.ConfigManagerFfi
 import java.io.File
 import java.util.Locale
+
+private const val TAG = "PaperbackTts"
 
 class TtsManager(
 	private val context: Context,
@@ -76,6 +79,15 @@ class TtsManager(
 
 	private val _isInitialized = MutableStateFlow(false)
 	val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+
+	/** Text asked for before the engine finished starting, spoken once it has.
+	 *
+	 * An engine reports itself ready through `onInit`, and every call made before that fails
+	 * and returns ERROR. Engines differ by a lot in how long they take: a device's built-in one
+	 * is usually up before the reader can press play, while a third-party engine that loads
+	 * dictionaries of its own may not be, so the press landed on nothing at all. Only the most
+	 * recent request is kept; an earlier one is no longer what the reader is waiting for. */
+	private var pendingSpeak: Pair<String, Boolean>? = null
 
 	private val ttsScope = CoroutineScope(Dispatchers.Main)
 	private var stopSpeakingJob: Job? = null
@@ -195,6 +207,15 @@ class TtsManager(
 	}
 
 	override fun onInit(status: Int) {
+		if (status != TextToSpeech.SUCCESS) {
+			// Nothing will ever speak through this engine. Say so rather than leaving the
+			// reader pressing play against an engine that never answers.
+			Log.e(TAG, "TTS engine ${_currentEngineName.value ?: SYSTEM_DEFAULT} failed to start (status $status)")
+			pendingSpeak = null
+			_isSpeaking.value = false
+			updatePlaybackState(false)
+			return
+		}
 		if (status == TextToSpeech.SUCCESS) {
 			tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
 				override fun onStart(utteranceId: String?) {
@@ -343,7 +364,15 @@ class TtsManager(
 				}
 			}
 			_isInitialized.value = true
+			speakPending()
 		}
+	}
+
+	/** Speaks whatever was asked for while the engine was still starting. */
+	private fun speakPending() {
+		val (text, isSample) = pendingSpeak ?: return
+		pendingSpeak = null
+		speak(text, isSample)
 	}
 
 	private fun setupCompletionListener(
@@ -392,6 +421,12 @@ class TtsManager(
 		isSample: Boolean = false
 	) {
 		if (text.isNotBlank()) {
+			// Every call before the engine reports itself ready fails and returns ERROR, so
+			// hold the text instead of handing it over to be dropped.
+			if (!_isInitialized.value) {
+				pendingSpeak = text to isSample
+				return
+			}
 			if (!isSample) {
 				audioFocus.request()
 			}
@@ -411,7 +446,16 @@ class TtsManager(
 				updatePlaybackState(true)
 
 				val params = Bundle()
-				tts?.synthesizeToFile(text, params, currentTempFile, utteranceId)
+				// The return value is the only report of failure here: synthesizeToFile does
+				// not throw for a refused request, so ignoring it leaves the reader looking at
+				// a bar that says it is playing while nothing was ever synthesized.
+				val queued = tts?.synthesizeToFile(text, params, currentTempFile, utteranceId)
+				if (queued != TextToSpeech.SUCCESS) {
+					Log.e(TAG, "TTS engine refused to synthesize (result $queued)")
+					cleanupPlayer()
+					_isSpeaking.value = false
+					updatePlaybackState(false)
+				}
 			} catch (e: Exception) {
 				e.printStackTrace()
 				cleanupPlayer()
