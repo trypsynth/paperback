@@ -139,6 +139,7 @@ fun SettingsScreen(
 	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
 	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()
 	val swipeUpMovesForward by settings.swipeUpMovesForward.state.collectAsStateWithLifecycle()
+	val hidePrevNextButtons by settings.hidePrevNextButtons.state.collectAsStateWithLifecycle()
 	val textScalePercent by settings.textScalePercent.state.collectAsStateWithLifecycle()
 	val lineSpacing by settings.lineSpacing.state.collectAsStateWithLifecycle()
 	val paragraphSpacing by settings.paragraphSpacing.state.collectAsStateWithLifecycle()
@@ -238,6 +239,24 @@ fun SettingsScreen(
 					Text(t("Swipe up moves forward"), modifier = Modifier.weight(1f))
 					Switch(
 						checked = swipeUpMovesForward,
+						onCheckedChange = null
+					)
+				}
+				Row(
+					modifier = Modifier
+						.fillMaxWidth()
+						.toggleable(
+							value = hidePrevNextButtons,
+							onValueChange = { settings.hidePrevNextButtons.set(it) },
+							role = Role.Switch
+						).padding(vertical = 8.dp),
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.SpaceBetween
+				) {
+					// TRANSLATORS: Settings switch that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
+					Text(t("Hide previous and next buttons"), modifier = Modifier.weight(1f))
+					Switch(
+						checked = hidePrevNextButtons,
 						onCheckedChange = null
 					)
 				}

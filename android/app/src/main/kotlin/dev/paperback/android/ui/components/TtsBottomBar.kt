@@ -54,7 +54,8 @@ fun TtsBottomBar(
 	speechRatePercent: Int,
 	onSpeechRateChange: (Int) -> Unit,
 	modifier: Modifier = Modifier,
-	swipeUpMovesForward: Boolean = true
+	swipeUpMovesForward: Boolean = true,
+	hidePrevNextButtons: Boolean = false
 ) {
 	var dropdownExpanded by remember { mutableStateOf(false) }
 	var rateMenuExpanded by remember { mutableStateOf(false) }
@@ -150,7 +151,10 @@ fun TtsBottomBar(
 				modifier = Modifier.align(Alignment.Center),
 				verticalAlignment = Alignment.CenterVertically
 			) {
-				IconButton(onClick = onPrevButton) {
+				IconButton(
+					onClick = onPrevButton,
+					modifier = if (hidePrevNextButtons) Modifier.clearAndSetSemantics { } else Modifier
+				) {
 					Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = prevLabel)
 				}
 
@@ -193,7 +197,10 @@ fun TtsBottomBar(
 					}
 				}
 
-				IconButton(onClick = onNextButton) {
+				IconButton(
+					onClick = onNextButton,
+					modifier = if (hidePrevNextButtons) Modifier.clearAndSetSemantics { } else Modifier
+				) {
 					Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = nextLabel)
 				}
 			}

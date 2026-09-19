@@ -52,6 +52,13 @@ final class AppViewModel {
 	}
 	/// 0 follows the system, 1 forces light, 2 forces dark. Readers often want the page dark
 	/// while the rest of the phone stays light, which following the system alone cannot do.
+	/// Drops the previous and next buttons from the reading bar's screen reader order. They
+	/// duplicate the swipe up and down actions already on the play button, so hiding them makes
+	/// the bar three stops instead of five. Off by default: the swipe is not discoverable on its
+	/// own, so nobody should lose the buttons without having chosen to.
+	var hidePrevNextButtons: Bool = false {
+		didSet { configManager.setAppBool(key: "hide_prev_next_buttons", value: hidePrevNextButtons) }
+	}
 	var appearanceChoice: Int = 0 {
 		didSet { configManager.setAppInt(key: "appearance", value: Int32(appearanceChoice)) }
 	}
@@ -78,6 +85,7 @@ final class AppViewModel {
 		lineSpacingChoice = Int(configManager.getAppInt(key: "line_spacing", defaultValue: 0))
 		paragraphSpacingChoice = Int(configManager.getAppInt(key: "paragraph_spacing", defaultValue: 0))
 		textAlignmentChoice = Int(configManager.getAppInt(key: "text_alignment", defaultValue: 0))
+		hidePrevNextButtons = configManager.getAppBool(key: "hide_prev_next_buttons", defaultValue: false)
 		appearanceChoice = Int(configManager.getAppInt(key: "appearance", defaultValue: 0))
 		highContrastText = configManager.getAppBool(key: "high_contrast_text", defaultValue: false)
 

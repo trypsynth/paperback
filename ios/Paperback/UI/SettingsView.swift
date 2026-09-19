@@ -158,6 +158,11 @@ struct SettingsView: View {
 					get: { viewModel.swipeUpMovesForward },
 					set: { viewModel.swipeUpMovesForward = $0 }
 				))
+				// TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
+				Toggle(t("Hide previous and next buttons"), isOn: Binding(
+					get: { viewModel.hidePrevNextButtons },
+					set: { viewModel.hidePrevNextButtons = $0 }
+				))
 			} header: {
 				// TRANSLATORS: Section header in Settings grouping general app behavior toggles
 				Text(t("Behavior"))

@@ -71,6 +71,7 @@ struct TtsControlBar: View {
 			.accessibilityLabel(prevLabel)
 			.frame(maxWidth: .infinity, minHeight: 64)
 			.contentShape(Rectangle())
+			.accessibilityHidden(viewModel.hidePrevNextButtons)
 
 			Button { viewModel.reading.togglePlayPause() } label: {
 				Image(systemName: viewModel.reading.isPlayingNow ? "pause.fill" : "play.fill").font(.title)
@@ -107,6 +108,7 @@ struct TtsControlBar: View {
 			.accessibilityLabel(nextLabel)
 			.frame(maxWidth: .infinity, minHeight: 64)
 			.contentShape(Rectangle())
+			.accessibilityHidden(viewModel.hidePrevNextButtons)
 
 			// Speech rate sits opposite the navigation unit and is built the same way: a menu
 			// of presets to tap, and an adjustable value so a screen reader changes it with a

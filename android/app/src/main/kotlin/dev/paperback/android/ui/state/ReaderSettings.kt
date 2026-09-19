@@ -47,6 +47,12 @@ class ReaderSettings(
 
 	val swipeUpMovesForward = boolSetting("swipe_up_moves_forward", true)
 
+	// Drops the previous and next buttons from the reading bar's TalkBack order. They duplicate
+	// the swipe up and down actions already on the play button, so hiding them makes the bar
+	// three stops instead of five. Off by default: the swipe is not discoverable on its own, so
+	// nobody should lose the buttons without having chosen to.
+	val hidePrevNextButtons = boolSetting("hide_prev_next_buttons", false)
+
 	val textScalePercent = intSetting("text_scale_percent", 100) {
 		it.coerceIn(MIN_TEXT_SCALE_PERCENT, MAX_TEXT_SCALE_PERCENT)
 	}
