@@ -246,6 +246,7 @@ impl MainWindow {
 		{
 			let dm_for_close = Rc::clone(&doc_manager);
 			let config_for_close = Rc::clone(&config);
+			let timers_for_close = timers.clone();
 			#[cfg(target_os = "windows")]
 			let tray_for_close = Rc::clone(&tray_state);
 			#[cfg(target_os = "windows")]
@@ -289,6 +290,15 @@ impl MainWindow {
 							let _ = PostThreadMessageW(handle.thread_id, WM_QUIT, WPARAM(0), LPARAM(0));
 						}
 					}
+				}
+				// Last, and only once the close is really going ahead: macOS hides the window
+				// and vetoes instead of exiting, and a timer stopped on that path would stay
+				// stopped when the window came back. These tick every 250ms against the frame,
+				// so one landing while it tears its children down is delivered to an event
+				// handler that no longer exists, which is an access violation rather than a
+				// panic. Stopping them here makes that impossible rather than unlikely.
+				for timer in &timers_for_close {
+					timer.stop();
 				}
 				event.skip(true);
 			});
