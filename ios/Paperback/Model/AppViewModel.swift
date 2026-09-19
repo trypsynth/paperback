@@ -318,6 +318,13 @@ final class AppViewModel {
 		loadRecentsFromConfig()
 	}
 
+	/// Empties the recent documents list. Open tabs are left alone: a document being read is
+	/// not a document the reader is finished with.
+	func clearRecentDocuments() {
+		configManager.clearRecentDocuments()
+		recentDocuments.removeAll()
+	}
+
 	func removeRecentDocument(url: URL) {
 		configManager.removeDocumentHistory(path: url.path(percentEncoded: false))
 		recentDocuments.removeAll { $0.url == url }

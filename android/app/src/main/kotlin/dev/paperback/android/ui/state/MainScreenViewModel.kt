@@ -336,6 +336,18 @@ class MainScreenViewModel(
 			}
 		}
 
+	/** Empties the recent documents list. The open tabs are left alone: a document being read
+	 * is not a document the reader is finished with. */
+	fun clearRecentDocuments() {
+		viewModelScope.launch(Dispatchers.IO) {
+			config.clearRecentDocuments()
+			updateRecentDocuments()
+			withContext(Dispatchers.Main) {
+				emitTabsState()
+			}
+		}
+	}
+
 	fun removeRecentDocument(uriString: String) {
 		viewModelScope.launch(Dispatchers.IO) {
 			config.removeDocumentHistory(uriString)

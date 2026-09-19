@@ -206,6 +206,8 @@ interface ConfigManagerFfi {
 	string get_document_password(string path);
 	void add_recent_document(string path);
 	sequence<string> get_recent_documents();
+	void clear_recent_documents();
+	boolean has_recent_documents();
 	void add_opened_document(string path);
 	void remove_opened_document(string path);
 	void set_document_opened(string path, boolean opened);

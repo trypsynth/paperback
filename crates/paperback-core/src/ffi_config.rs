@@ -90,6 +90,19 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().get_recent_documents()
 	}
 
+	/// Empties the recent documents list. Desktop has had this on its File menu; the mobile
+	/// apps could only remove them one at a time, which is a lot of work once a list has
+	/// filled up with books already finished.
+	pub fn clear_recent_documents(&self) {
+		let inner = self.inner.lock().unwrap();
+		inner.clear_recent_documents();
+		inner.flush();
+	}
+
+	pub fn has_recent_documents(&self) -> bool {
+		self.inner.lock().unwrap().has_recent_documents()
+	}
+
 	pub fn add_opened_document(&self, path: String) {
 		self.inner.lock().unwrap().add_opened_document(&path);
 	}
