@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-16 08:05-0600\n"
-"PO-Revision-Date: 2026-09-17 19:02+0800\n"
+"POT-Creation-Date: 2026-09-18 19:33-0600\n"
+"PO-Revision-Date: 2026-09-19 17:54+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -170,6 +170,15 @@ msgstr "查看笔记"
 msgid "Open Document"
 msgstr "打开文档"
 
+#. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "没有最近文档。"
+
+#. TRANSLATORS: Announced after the Recent Documents list has been emptied
+msgid "Recent documents cleared."
+msgstr "最近文档已清除。"
+
 #. TRANSLATORS: Menu item in the File menu to open a document.
 msgid "&Open..."
 msgstr "打开(&O)..."
@@ -201,6 +210,14 @@ msgstr "重新打开上次关闭的文档(&L)"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "重新打开上次关闭的文档"
+
+#. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
+msgid "Clea&r Recent Documents"
+msgstr "清除最近文档(&R)"
+
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
+msgid "Remove all documents from the Recent Documents list"
+msgstr "从最近文档列表中移除所有文档"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
@@ -339,6 +356,14 @@ msgstr "上一个表格(&T)"
 msgid "Next &Table"
 msgstr "下一个表格(&T)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
+msgid "Previous For&mula"
+msgstr "上一个公式(&M)"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next formula.
+msgid "Next For&mula"
+msgstr "下一个公式(&M)"
+
 #. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 msgid "Previous Se&parator"
 msgstr "上一个分隔符(&P)"
@@ -458,6 +483,30 @@ msgstr "切换书签(&B)"
 #. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
 msgid "Bookmark with &Note"
 msgstr "带笔记的书签(&N)"
+
+#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+msgid "Set Selection St&art"
+msgstr "设置选区起点(&A)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+msgid "Mark the beginning of a selection to copy from"
+msgstr "标记要复制内容的选区起点"
+
+#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+msgid "&Copy from Selection Start"
+msgstr "从选区起点复制(&C)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+msgid "Copy from the beginning of the selection to here"
+msgstr "从选区起点复制到此处"
+
+#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+msgid "&Jump to Selection Start"
+msgstr "跳转到选区起点(&J)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+msgid "Go back to the beginning of the selection"
+msgstr "返回到选区起点"
 
 #. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
@@ -1381,10 +1430,6 @@ msgstr "全屏已开启。"
 msgid "Full screen off."
 msgstr "全屏已关闭。"
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
-msgstr "没有最近文档。"
-
 #. TRANSLATORS: Announced when landing on a blank line; %d is the line number
 msgid "Line %d"
 msgstr "第 %d 行"
@@ -1655,6 +1700,14 @@ msgstr "表格(&T)"
 msgid "Navigate by tables"
 msgstr "按表格导航"
 
+#. TRANSLATORS: Label for the Formulas submenu in the compact Go menu.
+msgid "For&mulas"
+msgstr "公式(&M)"
+
+#. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
+msgid "Navigate by formulas"
+msgstr "按公式导航"
+
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
 msgstr "分隔符(&S)"
@@ -1823,6 +1876,14 @@ msgstr "导入/导出(&M)"
 msgid "Import and export options"
 msgstr "导入和导出选项"
 
+#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
+msgid "Select and &copy"
+msgstr "选择并复制(&C)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
+msgid "Mark a selection and copy from it"
+msgstr "标记选区并从中复制"
+
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
 msgstr "自动换行(&R)"
@@ -1959,6 +2020,18 @@ msgstr "没有下一个表格。"
 msgid "No previous table."
 msgstr "没有上一个表格。"
 
+#. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
+msgid "No formulas."
+msgstr "没有公式。"
+
+#. TRANSLATORS: Announcement when there is no next formula to navigate to
+msgid "No next formula."
+msgstr "没有下一个公式。"
+
+#. TRANSLATORS: Announcement when there is no previous formula to navigate to
+msgid "No previous formula."
+msgstr "没有上一个公式。"
+
 #. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr "没有分隔符。"
@@ -2044,7 +2117,11 @@ msgstr "OCR 失败。"
 msgid "OCR is not available on this system."
 msgstr "此系统不支持 OCR."
 
-#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+#. TRANSLATORS: Title of the dialog displaying a formula as MathML
+msgid "Formula View"
+msgstr "公式视图"
+
+#. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr "表格视图"
 
@@ -2101,6 +2178,34 @@ msgstr "转到百分比(&P)"
 msgid "Go to percent"
 msgstr "转到百分比"
 
+#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
+msgid "Copied (%d chars)."
+msgstr "已复制（%d 个字符）。"
+
+#. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
+msgid "Beginning of selection set."
+msgstr "已设置选区起点。"
+
+#. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
+msgid "Cannot copy; set beginning of selection first."
+msgstr "无法复制；请先设置选区起点。"
+
+#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
+msgid "Nothing to copy."
+msgstr "没有可复制的内容。"
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr "无法复制到剪贴板。"
+
+#. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
+msgid "Cannot jump; set beginning of selection first."
+msgstr "无法跳转；请先设置选区起点。"
+
+#. TRANSLATORS: Announced after jumping back to the marked beginning of the selection.
+msgid "Jumped to beginning of selection."
+msgstr "已跳转到选区起点。"
+
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "睡眠定时器已取消。"
@@ -2148,6 +2253,10 @@ msgstr "重新打开上次关闭的文档"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "显示所有最近文档..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Clear Recent Documents"
+msgstr "清除最近文档"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Exit"
@@ -2301,6 +2410,14 @@ msgstr "上一个表格"
 msgid "Next Table"
 msgstr "下一个表格"
 
+#. TRANSLATORS: Shortcut action to move to the previous formula
+msgid "Previous Formula"
+msgstr "上一个公式"
+
+#. TRANSLATORS: Shortcut action to move to the next formula
+msgid "Next Formula"
+msgstr "下一个公式"
+
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Separator"
 msgstr "上一个分隔符"
@@ -2356,6 +2473,18 @@ msgstr "切换书签"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Bookmark with Note"
 msgstr "带笔记的书签"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Set Selection Start"
+msgstr "设置选区起点"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Copy from Selection Start"
+msgstr "从选区起点复制"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Jump to Selection Start"
+msgstr "跳转到选区起点"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Word Wrap"
@@ -2469,15 +2598,13 @@ msgstr "[仅图片。按回车进行 OCR。]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[仅图片。此页没有可读文本。]"
 
-#. TRANSLATORS: Error shown on Android when opening a comic book archive packed with RAR (.cbr), which that build cannot read
+#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
 msgid ""
-"Paperback cannot read RAR comic archives on this device. Repack it as a .cbz "
-"to read it here."
+"Paperback cannot read RAR comic archives. Repack it as a .cbz to read it "
+"here."
 msgstr ""
-"此设备上的 Paperback 无法读取 RAR 漫画压缩包。请将其重新打包为 .cbz 后再在此"
-"处阅读。"
+"Paperback 无法读取 RAR 漫画压缩包。请将其重新打包为 .cbz 后再在此处阅读。"
 
-#. TRANSLATORS: Error shown when a comic book archive (.cbr) cannot be opened; {} is the underlying error
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
 msgstr "解析漫画压缩包失败: {}"
@@ -3152,7 +3279,7 @@ msgstr "字符数（不含空格）"
 msgid "Mode"
 msgstr "模式"
 
-#. TRANSLATORS: Go To mode option: navigate to a specific page number
+#. TRANSLATORS: Name of the "page" reading/navigation unit
 #: swift
 msgid "Page"
 msgstr "页面"
@@ -3212,7 +3339,7 @@ msgstr "范围"
 msgid "Word"
 msgstr "单词"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
+#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
 #: swift
 msgid "Paragraph"
 msgstr "段落"
@@ -3979,3 +4106,8 @@ msgstr "→  这是所选语音引擎的示例。"
 #: kt
 msgid "This document does not contain pages."
 msgstr "→  此文档不包含页面。"
+
+#. TRANSLATORS: Name of the "formula" reading/navigation unit
+#: kt
+msgid "Formula"
+msgstr "公式"
