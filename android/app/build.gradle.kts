@@ -53,6 +53,12 @@ android {
 		release {
 			isMinifyEnabled = true
 			isShrinkResources = true
+			ndk {
+				// Without this a native crash or ANR arrives as raw addresses. SYMBOL_TABLE
+				// gives Play the function names to resolve them against; FULL would add line
+				// numbers as well, at several times the upload size.
+				debugSymbolLevel = "SYMBOL_TABLE"
+			}
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 			signingConfig = if (keystorePath != null) {
 				signingConfigs.getByName("release")
