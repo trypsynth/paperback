@@ -16,6 +16,11 @@ struct ContentView: View {
 			if let scene = UIApplication.shared.connectedScenes.first,
 			   let sd = scene.delegate as? SceneDelegate {
 				sd.appViewModel = viewModel
+				// A launch straight from another app's "Open in" left the book here, because
+				// the scene connected before this view model existed.
+				if let pending = sd.takePendingDocument() {
+					viewModel.openDocument(url: pending)
+				}
 			}
 		}
 	}
