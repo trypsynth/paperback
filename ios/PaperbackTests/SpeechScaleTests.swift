@@ -18,16 +18,16 @@ final class SpeechScaleTests: XCTestCase {
 	/// The reading bar and the settings slider both show this number, so a rate that does not
 	/// survive the round trip would make one of them disagree with the other.
 	func testEverySliderPositionSurvivesTheRoundTrip() {
-		for percent in stride(from: 0, through: 100, by: 5) {
+		for percent in 0...100 {
 			XCTAssertEqual(percent, percentForSpeechRate(speechRateForPercent(percent)), "at \(percent)%")
 		}
 	}
 
-	/// The reading bar steps by 5 and clamps at the ends, so holding the swipe at an end must
+	/// The reading bar steps by 1 and clamps at the ends, so holding the swipe at an end must
 	/// settle rather than wrap around to the other one.
 	func testSteppingPastAnEndSettlesThereRatherThanWrapping() {
-		XCTAssertEqual(0, percentForSpeechRate(speechRateForPercent(-5)))
-		XCTAssertEqual(100, percentForSpeechRate(speechRateForPercent(105)))
+		XCTAssertEqual(0, percentForSpeechRate(speechRateForPercent(-1)))
+		XCTAssertEqual(100, percentForSpeechRate(speechRateForPercent(101)))
 	}
 }
 

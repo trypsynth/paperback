@@ -144,6 +144,7 @@ final class ReadingController {
 	func playNextSegment(speak: Bool = true, announce: Bool = false) -> Bool {
 		if seekAudioByNavUnit(forward: true) { return true }
 		if navigateByFind(forward: true, speak: speak, announce: announce) { return true }
+		if hasAudio { return navigateRecordedSegment(currentSegmentType, direction: .next) }
 		guard let session = activeSession else { return false }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
@@ -169,6 +170,7 @@ final class ReadingController {
 	func playPrevSegment(speak: Bool = true, announce: Bool = false) -> Bool {
 		if seekAudioByNavUnit(forward: false) { return true }
 		if navigateByFind(forward: false, speak: speak, announce: announce) { return true }
+		if hasAudio { return navigateRecordedSegment(currentSegmentType, direction: .previous) }
 		guard let session = activeSession else { return false }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
@@ -273,6 +275,10 @@ final class ReadingController {
 	}
 
 	func navigateByType(_ type: SegmentTypeFfi, direction: SegmentDirectionFfi) {
+		if hasAudio {
+			navigateRecordedSegment(type, direction: direction)
+			return
+		}
 		guard let session = activeSession else { return }
 		let seg = session.getTextSegment(position: ttsPosition, segmentType: type, direction: direction)
 		if seg.text.isEmpty { return }
@@ -287,6 +293,23 @@ final class ReadingController {
 			if ttsManager.isPaused { ttsManager.stop() }
 			announceNavigationCue(seg.text)
 		}
+	}
+
+	/// Structural audio navigation uses the core's markers (chapters, files, or DAISY
+	/// sections), while the recording retains its current play/pause state.
+	@discardableResult
+	private func navigateRecordedSegment(_ type: SegmentTypeFfi, direction: SegmentDirectionFfi) -> Bool {
+		guard let session = activeSession, let narration else { return false }
+		let seg = session.getTextSegment(position: ttsPosition, segmentType: type, direction: direction)
+		guard seg.found, seg.startPos != ttsPosition else { return false }
+		guard narration.seekToPosition(seg.startPos) else { return false }
+		ttsPosition = seg.startPos
+		currentSegmentText = seg.text
+		context?.persistPosition(seg.startPos)
+		// Section titles can exceed the five-word cue used for ordinary text navigation.
+		let title = seg.text.isEmpty ? sectionTitle(at: seg.startPos) : seg.text
+		if !title.isEmpty { announce(title) }
+		return true
 	}
 
 	func setSleepTimer(seconds: Int) {

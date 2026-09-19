@@ -5,7 +5,7 @@ struct TtsControlBar: View {
 
 	/// Whole percentages of the rate range, matching what the settings slider reports.
 	private static let ratePresets = [25, 50, 75, 100]
-	private static let rateStep = 5
+	private static let rateStep = 1
 
 	// Find reads as "Find Previous"/"Find Next", matching the Find screen's own buttons, rather
 	// than "Previous Find"/"Next Find".

@@ -34,7 +34,7 @@ private enum SourceSeek {
 	case fromEnd(ms: Int64)
 }
 
-/// Plays a DAISY audiobook's recorded narration against its timeline, the iOS counterpart to
+/// Plays a book's recorded narration (including DAISY and M4B) against its timeline, like
 /// Android's `DaisyAudioPlayer`. `onClipChanged` fires unconditionally, so the caller keeps the
 /// currently-spoken-text display in step with playback without a sync toggle.
 @MainActor
@@ -49,8 +49,6 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 
 	/// A seek requested while paused, applied lazily on resume (see `play()`).
 	private var pendingTargetMs: Int64?
-	/// Most recent seek target, so a jump resolving to the same spot doesn't restart audio.
-	private var lastSeekTarget: (source: Int32, ms: Int64)?
 	private var lastReportedClip: Int32?
 	private var pollTimer: Timer?
 	/// Set for the duration of one `seekRelativeMs`, so only that seek reports where it lands.
@@ -78,7 +76,6 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		stop()
 		session = newSession
 		docKey = newDocKey
-		lastSeekTarget = nil
 		lastReportedClip = nil
 	}
 
@@ -91,14 +88,14 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	func play() {
 		guard session != nil else { return }
 		playing = true
+		onPlaybackStateChanged?(true)
 		let pending = pendingTargetMs
-		pendingTargetMs = nil
 		if let pending {
-			seekToMs(pending)
+			if !seekToMs(pending) { resetAfterLoadFailure() }
 		} else if currentSource != nil {
 			resumeLoadedPlayer()
 		} else {
-			seekToMs(0)
+			if !seekToMs(0) { resetAfterLoadFailure() }
 		}
 	}
 
@@ -127,7 +124,6 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		player = nil
 		currentSource = nil
 		pendingTargetMs = nil
-		lastSeekTarget = nil
 		reportNextSeek = false
 		deactivateAudioSession()
 		if wasActive { onPlaybackStateChanged?(false) }
@@ -156,6 +152,8 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		let clip = session.audioClipFfi(index: cursor.clipIndex)
 		guard clip.found else { return false }
 		if !playing, currentSource != clip.source || player == nil {
+			// A new paused destination supersedes any source still loading in the background.
+			loadGeneration += 1
 			pendingTargetMs = elapsedMs
 			reportClip(cursor.clipIndex)
 			if reportNextSeek {
@@ -164,16 +162,19 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 			}
 			return true
 		}
-		pendingTargetMs = nil
+		// Clip callbacks persist the destination before a different decoder has loaded.
+		pendingTargetMs = elapsedMs
 		reportClip(cursor.clipIndex)
-		if let last = lastSeekTarget, last.source == clip.source, last.ms == cursor.seekMs {
-			// Same spot: don't restart the audio, but a play() routed through here still has to
-			// get the transport moving.
-			if playing { resumeLoadedPlayer() }
+		if currentSource == clip.source, let player, Int64(player.currentTime * 1000) == cursor.seekMs {
+			// Compare with the decoder's actual position: it may have moved since the last
+			// seek, even when the requested destination hasn't changed.
+			if playing, !resumeLoadedPlayer() { return false }
+			pendingTargetMs = nil
 			return true
 		}
 		if currentSource == clip.source, player != nil {
-			applySeek(source: clip.source, seekMs: cursor.seekMs)
+			guard applySeek(source: clip.source, seekMs: cursor.seekMs) else { return false }
+			pendingTargetMs = nil
 		} else {
 			loadSource(clip.source, seek: .fromStart(ms: cursor.seekMs))
 		}
@@ -225,33 +226,37 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	/// Where playback would resume right now. Nil means no position has been established yet;
 	/// callers must not treat that as the start, since it would overwrite a stored position.
 	func resumePointMs() -> Int64? {
+		if let pendingTargetMs { return pendingTargetMs }
 		if let session, let source = currentSource, let player {
 			let rawMs = Int64(player.currentTime * 1000)
 			let elapsed = session.audioElapsedForSourcePositionFfi(source: source, rawMs: rawMs)
 			if elapsed >= 0 { return elapsed }
 		}
-		return pendingTargetMs
+		return nil
 	}
 
-	private func resumeLoadedPlayer() {
+	@discardableResult
+	private func resumeLoadedPlayer() -> Bool {
 		activateAudioSession()
-		player?.play()
+		guard player?.play() == true else {
+			resetAfterLoadFailure()
+			return false
+		}
 		onPlaybackStateChanged?(true)
 		startPolling()
+		return true
 	}
 
-	private func applySeek(source: Int32, seekMs: Int64) {
-		guard let player else { return }
+	private func applySeek(source: Int32, seekMs: Int64) -> Bool {
+		guard let player else { return false }
 		let landedMs = seekWithinPlayer(player, seekMs: seekMs)
-		lastSeekTarget = (source, landedMs)
 		if playing {
-			activateAudioSession()
-			player.play()
-			startPolling()
+			guard resumeLoadedPlayer() else { return false }
 		} else {
 			player.pause()
 		}
 		reportSeeked(source: source, rawMs: landedMs)
+		return true
 	}
 
 	/// Seeks `player` to `seekMs`, clamped to the file's real length, and reports where it
@@ -273,7 +278,6 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 
 	private func loadSource(_ sourceIndex: Int32, seek: SourceSeek) {
 		guard let session else { return }
-		lastSeekTarget = nil
 		currentSource = sourceIndex
 		// Where we are between here and the decoder being ready, so a second seek arriving in
 		// that window still has something to measure from. A distance back from the end has no
@@ -296,9 +300,13 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		// thread; the generation check on return discards a superseded load.
 		Task.detached(priority: .userInitiated) {
 			let path = Self.resolveSourcePath(session: session, index: sourceIndex, docKey: key, cacheDir: cacheDir)
-			guard let path else { return }
 			await MainActor.run { [weak self] in
-				self?.startPlayer(path: path, sourceIndex: sourceIndex, seek: seek, generation: myGeneration)
+				guard let self, myGeneration == self.loadGeneration else { return }
+				guard let path else {
+					self.resetAfterLoadFailure()
+					return
+				}
+				self.startPlayer(path: path, sourceIndex: sourceIndex, seek: seek, generation: myGeneration)
 			}
 		}
 	}
@@ -342,12 +350,8 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 			requestedMs = Int64(loaded.duration * 1000) - ms
 		}
 		let landedMs = seekWithinPlayer(loaded, seekMs: requestedMs)
-		lastSeekTarget = (sourceIndex, landedMs)
 		if playing {
-			activateAudioSession()
-			loaded.play()
-			onPlaybackStateChanged?(true)
-			startPolling()
+			guard resumeLoadedPlayer() else { return }
 		}
 		// The decoder is now sitting where it was asked to, so it is the authority on the
 		// resume point again (see `resumePointMs`).
@@ -356,14 +360,16 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		reportSeeked(source: sourceIndex, rawMs: landedMs)
 	}
 
-	/// Clears load and seek state after a source fails to load. Leaving `currentSource` and
-	/// `lastSeekTarget` pointing at the failed clip would make a retry to that same position a
-	/// no-op under the same-spot check in `seekToMs`, so playback could never recover.
+	/// Releases a failed decoder while retaining the destination for a later retry.
 	private func resetAfterLoadFailure() {
+		pendingTargetMs = resumePointMs()
+		player?.stop()
+		player = nil
 		currentSource = nil
-		lastSeekTarget = nil
+		reportNextSeek = false
 		playing = false
 		stopPolling()
+		deactivateAudioSession()
 		onPlaybackStateChanged?(false)
 	}
 
