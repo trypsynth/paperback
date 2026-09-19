@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 11f05688d690d71a; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,a028b7f6,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 73a0b4f33ccffbf1; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d4622ac1,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
 
 # Paperback - phiên bản 0.9.2
 
@@ -32,28 +32,28 @@ Nếu bạn sử dụng JAWS với màn hình Braille, bạn có thể nhận th
 
 Cách khắc phục, cuối cùng được tiết lộ thông qua nhóm thảo luận JAWS sau khi chờ đợi hàng tháng, là chỉnh sửa `paperback.jcf` và đặt "Braille Presentation and Panning" thành "Always use DOM if available". Bạn cũng sẽ muốn bật "Pan Text by Paragraph", nếu không màn hình của bạn sẽ ở lại đoạn hiện hoạt động chứ không tiến tới. Với cả hai cài đặt này, quá trình di chuyển phải hoạt động đúng cách.
 
-## Các loại tệp được hỗ trợ hiện tại
+## Các kiểu tệp được hỗ trợ hiện tại
 
 Paperback hỗ trợ các định dạng và phần mở rộng sau:
 
-* Các kho lưu trữ sách truyện tranh (`.cbz`)
-* Các tệp trợ giúp CHM (`.chm`)
+* Kho lưu trữ truyện tranh (`.cbz`)
+* Tệp trợ giúp CHM (`.chm`)
 * Sách DAISY (`.opf`, `.zip`)
 * Sách EPUB (`.epub`)
 * Sách điện tử FB2 (`.fb2`)
 * Tài liệu HTML (`.htm`, `.html`, `.xhtml`)
-* Các trang hướng dẫn, cả `man` và BSD `mdoc` (`.1` đến `.9`, `.man`, `.roff`, và các dạng nén gzip của mỗi cái)
+* Trang hướng dẫn, cả `man` và BSD `mdoc` (`.1` đến `.9`, `.man`, `.roff`, và các dạng nén gzip của mỗi loại)
 * Tài liệu Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Tài liệu Microsoft Word (`.docx`, `.docm`, `.doc`)
 * Sách nói M4B (`.m4b`)
 * Sách MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
-* Bài thuyết trình OpenDocument (`.odp`, `.fodp`)
+* Bản trình bày OpenDocument (`.odp`, `.fodp`)
 * Tệp văn bản OpenDocument (`.odt`, `.fodt`)
 * Tài liệu PDF (`.pdf`)
-* Bài thuyết trình PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Bản trình bày PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Tài liệu RTF (`.rtf`)
 * Tệp WinHelp (`.hlp`)
-* Tệp văn bản thuần túy và tệp nhật ký (`.txt`, `.log`)
+* Tệp văn bản thuần túy và nhật ký (`.txt`, `.log`)
 
 ## Phím tắt bàn phím
 

@@ -3077,7 +3077,7 @@ msgstr ""
 msgid "Switch to Text Mode"
 msgstr ""
 
-#. TRANSLATORS: Menu item to open the list of recently opened documents
+#. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
 msgid "Recent Documents"
 msgstr ""
@@ -3142,7 +3142,7 @@ msgstr ""
 msgid "Locate"
 msgstr ""
 
-#. TRANSLATORS: Button to remove a document from the recent documents list
+#. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr ""
@@ -3182,7 +3182,7 @@ msgstr ""
 msgid "Rate"
 msgstr ""
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
 #: swift
 msgid "Speech Rate"
 msgstr ""
@@ -3520,7 +3520,6 @@ msgstr ""
 msgid "Press play to start listening."
 msgstr ""
 
-#. TRANSLATORS: Menu item / accessibility action to show metadata (title, author, etc.) about the current document
 #: kt
 msgid "Document Information"
 msgstr ""
@@ -3700,7 +3699,7 @@ msgstr ""
 msgid "words"
 msgstr ""
 
-#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
+#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
 msgid "Close Search"
 msgstr ""
@@ -4075,4 +4074,39 @@ msgstr ""
 #. TRANSLATORS: Name of the "formula" reading/navigation unit
 #: kt
 msgid "Formula"
+msgstr ""
+
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+#: swift
+msgid "No matches."
+msgstr ""
+
+#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
+#: swift
+msgid "Appearance"
+msgstr ""
+
+#. TRANSLATORS: Appearance option following the phone's own light/dark setting
+#: swift
+msgid "System"
+msgstr ""
+
+#. TRANSLATORS: Appearance option pinning the app to its light colours
+#: swift
+msgid "Light"
+msgstr ""
+
+#. TRANSLATORS: Appearance option pinning the app to its dark colours
+#: swift
+msgid "Dark"
+msgstr ""
+
+#. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
+#: swift
+msgid "High Contrast Text"
+msgstr ""
+
+#. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
+#: swift
+msgid "Hide previous and next buttons"
 msgstr ""

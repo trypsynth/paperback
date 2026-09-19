@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 11f05688d690d71a; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,a028b7f6,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 73a0b4f33ccffbf1; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d4622ac1,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
 
 # Paperback - versión 0.9.2
 
@@ -32,7 +32,7 @@ Si utilizas JAWS con una pantalla Braille, es posible que encuentres que los pá
 
 La solución alternativa, finalmente surgida a través del grupo de discusión de JAWS después de meses de espera, es editar `paperback.jcf` y establecer "Braille Presentation and Panning" en "Always use DOM if available". También querrás habilitar "Pan Text by Paragraph", de lo contrario tu pantalla permanecerá en el párrafo activo en lugar de avanzar. Con ambas configuraciones en su lugar, el desplazamiento debería funcionar correctamente.
 
-## Formatos de archivo actualmente admitidos
+## Formatos de archivo actualmente compatibles
 
 Paperback admite los siguientes formatos y extensiones:
 
@@ -42,7 +42,7 @@ Paperback admite los siguientes formatos y extensiones:
 * Libros EPUB (`.epub`)
 * Libros electrónicos FB2 (`.fb2`)
 * Documentos HTML (`.htm`, `.html`, `.xhtml`)
-* Páginas de manual, tanto `man` como BSD `mdoc` (`.1` a `.9`, `.man`, `.roff` y las versiones comprimidas de cada uno)
+* Páginas de manual, tanto `man` como `mdoc` de BSD (`.1` a `.9`, `.man`, `.roff` y las formas comprimidas de cada uno)
 * Documentos Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Documentos de Microsoft Word (`.docx`, `.docm`, `.doc`)
 * Audiolibros M4B (`.m4b`)
@@ -53,7 +53,7 @@ Paperback admite los siguientes formatos y extensiones:
 * Presentaciones PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Documentos RTF (`.rtf`)
 * Archivos WinHelp (`.hlp`)
-* Archivos de texto sin formato y archivos de registro (`.txt`, `.log`)
+* Archivos de texto sin formato y de registro (`.txt`, `.log`)
 
 ## Atajos de teclado
 

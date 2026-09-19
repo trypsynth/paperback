@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 11f05688d690d71a; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,a028b7f6,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 73a0b4f33ccffbf1; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d4622ac1,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
 
 # Paperback - versie 0.9.2
 
@@ -32,28 +32,28 @@ Als u JAWS met een brailleweergave gebruikt, kan het voorkomen dat lange alinea'
 
 De workaround, uiteindelijk opgeleverd via de JAWS-discussiegroep na maanden wachten, is om `paperback.jcf` te bewerken en "Braille Presentation and Panning" in te stellen op "Always use DOM if available". U wilt ook "Pan Text by Paragraph" inschakelen, anders blijft uw weergave op de actieve alinea staan in plaats van deze op te schuiven. Met beide instellingen in plaats moeten de schuifbewegingen correct werken.
 
-## Ondersteunde bestandstypes
+## Ondersteunde bestandstypen
 
 Paperback ondersteunt de volgende formaten en extensies:
 
-* Comic book archives (`.cbz`)
-* CHM help files (`.chm`)
-* DAISY books (`.opf`, `.zip`)
-* EPUB books (`.epub`)
-* FB2 ebooks (`.fb2`)
-* HTML documents (`.htm`, `.html`, `.xhtml`)
-* Manual pages, both `man` and BSD `mdoc` (`.1` to `.9`, `.man`, `.roff`, and the gzipped forms of each)
-* Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Microsoft Word documents (`.docx`, `.docm`, `.doc`)
-* M4B audiobooks (`.m4b`)
-* MOBI/Kindle books (`.mobi`, `.azw`, `.azw3`)
-* OpenDocument presentations (`.odp`, `.fodp`)
-* OpenDocument text files (`.odt`, `.fodt`)
-* PDF documents (`.pdf`)
-* PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
-* RTF documents (`.rtf`)
-* WinHelp files (`.hlp`)
-* Plain text and log files (`.txt`, `.log`)
+* Stripboekarchieven (`.cbz`)
+* CHM-helpbestanden (`.chm`)
+* DAISY-boeken (`.opf`, `.zip`)
+* EPUB-boeken (`.epub`)
+* FB2-e-boeken (`.fb2`)
+* HTML-documenten (`.htm`, `.html`, `.xhtml`)
+* Handmatige pagina's, zowel `man` als BSD `mdoc` (`.1` tot `.9`, `.man`, `.roff`, en de gecomprimeerde vormen van elk)
+* Markdown-documenten (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
+* Microsoft Word-documenten (`.docx`, `.docm`, `.doc`)
+* M4B-audioboeken (`.m4b`)
+* MOBI/Kindle-boeken (`.mobi`, `.azw`, `.azw3`)
+* OpenDocument-presentaties (`.odp`, `.fodp`)
+* OpenDocument-tekstbestanden (`.odt`, `.fodt`)
+* PDF-documenten (`.pdf`)
+* PowerPoint-presentaties (`.pptx`, `.pptm`, `.ppt`)
+* RTF-documenten (`.rtf`)
+* WinHelp-bestanden (`.hlp`)
+* Gewone tekstbestanden en logbestanden (`.txt`, `.log`)
 
 ## Sneltoetsen
 
