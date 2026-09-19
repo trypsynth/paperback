@@ -109,6 +109,11 @@ struct DocumentMenu: View {
 			// TRANSLATORS: Menu item to show document metadata (title, author, format, etc.)
 			Label(t("Document Info"), systemImage: "info.circle")
 		}
+		Button { viewModel.navigation.showExportDocument = true } label: {
+			// TRANSLATORS: Menu item to save the current document in another file format
+			Label(t("Export Document"), systemImage: "square.and.arrow.up")
+		}
+		.disabled(viewModel.supportedExportFormats.isEmpty)
 	}
 
 	private var modeToggleItem: some View {

@@ -46,6 +46,9 @@ struct ReaderView: View {
 		.sheet(isPresented: $navigation.showDocumentInfo) {
 			DocumentInfoSheet().environment(viewModel)
 		}
+		.navigationDestination(isPresented: $navigation.showExportDocument) {
+			ExportDocumentSheet().environment(viewModel)
+		}
 		.navigationDestination(isPresented: $navigation.showSleepTimer) {
 			SleepTimerView().environment(viewModel)
 		}

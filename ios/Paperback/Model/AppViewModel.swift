@@ -183,6 +183,29 @@ final class AppViewModel {
 		return FileManager.default.fileExists(atPath: tempURL.path) ? tempURL : nil
 	}
 
+	/// The export formats the open document can be rendered as, which the core decides per
+	/// document rather than per app.
+	var supportedExportFormats: [ExportFormat] {
+		activeSession?.getSupportedExportFormatsFfi() ?? []
+	}
+
+	/// Renders the open document in `format` to a temporary file named after the book, ready to
+	/// hand to the file mover. Nil when there is nothing open or the write failed.
+	func exportActiveDocument(as format: ExportFormat) -> URL? {
+		guard let tab = activeTab, let session = tab.session else { return nil }
+		let name = tab.url.deletingPathExtension().lastPathComponent
+		let tempURL = FileManager.default.temporaryDirectory
+			.appendingPathComponent(name)
+			.appendingPathExtension(format.fileExtension)
+		try? FileManager.default.removeItem(at: tempURL)
+		do {
+			try session.renderExportFfi(format: format).write(to: tempURL, atomically: true, encoding: .utf8)
+		} catch {
+			return nil
+		}
+		return tempURL
+	}
+
 	// Applies a .paperback file's bookmarks/position to the active document.
 	@discardableResult
 	func importActiveDocumentSettings(from url: URL) -> Bool {
