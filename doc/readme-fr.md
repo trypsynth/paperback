@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 11f05688d690d71a; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,a028b7f6,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 73a0b4f33ccffbf1; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d4622ac1,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
 
 # Paperback - version 0.9.2
 
@@ -40,12 +40,12 @@ Paperback prend en charge les formats et extensions suivants :
 * Fichiers d'aide CHM (`.chm`)
 * Livres DAISY (`.opf`, `.zip`)
 * Livres EPUB (`.epub`)
-* Livres électroniques FB2 (`.fb2`)
+* Ebooks FB2 (`.fb2`)
 * Documents HTML (`.htm`, `.html`, `.xhtml`)
-* Pages de manuel, tant `man` que BSD `mdoc` (`.1` à `.9`, `.man`, `.roff`, et les formes compressées de chacun)
+* Pages de manuel, tant `man` que BSD `mdoc` (`.1` à `.9`, `.man`, `.roff`, et les variantes compressées avec gzip de chacun)
 * Documents Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Documents Microsoft Word (`.docx`, `.docm`, `.doc`)
-* Livres audio M4B (`.m4b`)
+* Audiobooks M4B (`.m4b`)
 * Livres MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
 * Présentations OpenDocument (`.odp`, `.fodp`)
 * Fichiers texte OpenDocument (`.odt`, `.fodt`)

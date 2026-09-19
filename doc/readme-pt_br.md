@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 11f05688d690d71a; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,a028b7f6,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 73a0b4f33ccffbf1; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d4622ac1,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
 
 # Paperback - versão 0.9.2
 
@@ -32,17 +32,17 @@ Se você usar JAWS com uma linha braille, pode descobrir que parágrafos longos 
 
 A solução alternativa, eventualmente descoberta através do grupo de discussão do JAWS após meses de espera, é editar `paperback.jcf` e definir "Braille Presentation and Panning" para "Always use DOM if available". Você também vai querer habilitar "Pan Text by Paragraph", caso contrário sua linha permanecerá no parágrafo ativo em vez de avançar. Com ambas as configurações em vigor, o panning deve funcionar corretamente.
 
-## Formatos de arquivo atualmente suportados
+## Tipos de arquivo suportados no momento
 
-Paperback suporta os seguintes formatos e extensões:
+O Paperback suporta os seguintes formatos e extensões:
 
-* Arquivos de histórias em quadrinhos (`.cbz`)
+* Arquivos de quadrinhos (`.cbz`)
 * Arquivos de ajuda CHM (`.chm`)
 * Livros DAISY (`.opf`, `.zip`)
 * Livros EPUB (`.epub`)
 * Ebooks FB2 (`.fb2`)
 * Documentos HTML (`.htm`, `.html`, `.xhtml`)
-* Páginas de manual, tanto `man` quanto BSD `mdoc` (`.1` a `.9`, `.man`, `.roff` e as formas compactadas com gzip de cada)
+* Páginas de manual, tanto `man` quanto BSD `mdoc` (`.1` a `.9`, `.man`, `.roff` e as formas compactadas com gzip de cada uma)
 * Documentos Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Documentos Microsoft Word (`.docx`, `.docm`, `.doc`)
 * Audiolivros M4B (`.m4b`)

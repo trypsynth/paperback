@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 11f05688d690d71a; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,a028b7f6,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 73a0b4f33ccffbf1; sections: f48ce952,d4d8160f,a02f4421,a4ffb7f7,91be3b41,d4622ac1,2fb18876,71df8e94,e9860ee8,a7ac6234); please review and edit as needed -->
 
 # Paperback - версия 0.9.2
 
@@ -37,22 +37,22 @@ Paperback хорошо работает со всеми основными пр�
 Paperback поддерживает следующие форматы и расширения:
 
 * Архивы комиксов (`.cbz`)
-* CHM файлы справки (`.chm`)
-* DAISY книги (`.opf`, `.zip`)
-* EPUB книги (`.epub`)
-* FB2 электронные книги (`.fb2`)
-* HTML документы (`.htm`, `.html`, `.xhtml`)
-* Справочные страницы, как `man`, так и BSD `mdoc` (`.1` по `.9`, `.man`, `.roff` и сжатые версии каждого)
-* Markdown документы (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
+* Файлы справки CHM (`.chm`)
+* Книги DAISY (`.opf`, `.zip`)
+* Книги EPUB (`.epub`)
+* Электронные книги FB2 (`.fb2`)
+* HTML-документы (`.htm`, `.html`, `.xhtml`)
+* Справочные страницы, как `man`, так и BSD `mdoc` (`.1`–`.9`, `.man`, `.roff` и их архивированные формы)
+* Документы Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Документы Microsoft Word (`.docx`, `.docm`, `.doc`)
-* M4B аудиокниги (`.m4b`)
-* MOBI/Kindle книги (`.mobi`, `.azw`, `.azw3`)
-* OpenDocument презентации (`.odp`, `.fodp`)
-* OpenDocument текстовые файлы (`.odt`, `.fodt`)
-* PDF документы (`.pdf`)
-* PowerPoint презентации (`.pptx`, `.pptm`, `.ppt`)
-* RTF документы (`.rtf`)
-* WinHelp файлы (`.hlp`)
+* Аудиокниги M4B (`.m4b`)
+* Книги MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
+* Презентации OpenDocument (`.odp`, `.fodp`)
+* Текстовые файлы OpenDocument (`.odt`, `.fodt`)
+* Документы PDF (`.pdf`)
+* Презентации PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Документы RTF (`.rtf`)
+* Файлы WinHelp (`.hlp`)
 * Простые текстовые файлы и логи (`.txt`, `.log`)
 
 ## Сочетания клавиш

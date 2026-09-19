@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-18 20:00+0000\n"
+"POT-Creation-Date: 2026-09-18 19:33-0600\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -3088,12 +3088,11 @@ msgstr "[Chỉ hình ảnh. Nhấn Enter để OCR.]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Chỉ hình ảnh. Trang này không có văn bản để đọc.]"
 
-#. TRANSLATORS: Error shown on Android when opening a comic book archive packed with RAR (.cbr), which that build cannot read
+#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
 #, fuzzy
-msgid "Paperback cannot read RAR comic archives on this device. Repack it as a .cbz to read it here."
+msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
 msgstr "Paperback không thể đọc các kho lưu trữ truyện tranh RAR trên thiết bị này. Đóng gói lại thành .cbz để đọc tại đây."
 
-#. TRANSLATORS: Error shown when a comic book archive (.cbr) cannot be opened; {} is the underlying error
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 #, fuzzy
 msgid "Failed to parse comic archive: {}"
@@ -3812,7 +3811,7 @@ msgstr "Giọng nói"
 msgid "Rate"
 msgstr "Tỷ lệ"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
 #: swift
 #, fuzzy
 msgid "Speech Rate"
@@ -3920,7 +3919,7 @@ msgstr "Số ký tự (không tính khoảng trắng)"
 msgid "Mode"
 msgstr "Chế độ"
 
-#. TRANSLATORS: Go To mode option: navigate to a specific page number
+#. TRANSLATORS: Name of the "page" reading/navigation unit
 #: swift
 #, fuzzy
 msgid "Page"
@@ -3992,7 +3991,7 @@ msgstr "Phạm vi"
 msgid "Word"
 msgstr "Word"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
+#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
 #: swift
 #, fuzzy
 msgid "Paragraph"
@@ -4881,6 +4880,48 @@ msgstr "Tài liệu này không có mục lục."
 #, fuzzy
 msgid "Formula"
 msgstr "Công thức"
+
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+#: swift
+#, fuzzy
+msgid "No matches."
+msgstr "Không còn kết quả nào."
+
+#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
+#: swift
+#, fuzzy
+msgid "Appearance"
+msgstr "Giao diện"
+
+#. TRANSLATORS: Appearance option following the phone's own light/dark setting
+#: swift
+#, fuzzy
+msgid "System"
+msgstr "Cài đặt mặc định của hệ thống"
+
+#. TRANSLATORS: Appearance option pinning the app to its light colours
+#: swift
+#, fuzzy
+msgid "Light"
+msgstr "Phải"
+
+#. TRANSLATORS: Appearance option pinning the app to its dark colours
+#: swift
+#, fuzzy
+msgid "Dark"
+msgstr "Tối"
+
+#. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
+#: swift
+#, fuzzy
+msgid "High Contrast Text"
+msgstr "Văn bản độ tương phản cao"
+
+#. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
+#: swift
+#, fuzzy
+msgid "Hide previous and next buttons"
+msgstr "Ẩn nút trước và tiếp theo"
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
