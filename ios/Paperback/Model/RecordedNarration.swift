@@ -1,6 +1,7 @@
 import Foundation
+import Observation
 
-/// A DAISY audiobook's own recorded narration, moved from tab to tab as the reader switches
+/// An audiobook's own recorded narration, moved from tab to tab as the reader switches
 /// documents. One player serves every open document: only one of them can be narrating at a
 /// time, and holding a decoder open per tab would keep a file handle and a chunk of memory per
 /// book.
@@ -9,8 +10,9 @@ import Foundation
 /// pause rather than at some later checkpoint, because a book resumed from the wrong place is a
 /// book the reader has to find their way back through.
 @MainActor
+@Observable
 final class RecordedNarration {
-	private let player = DaisyAudioPlayer()
+	private let player: DaisyAudioPlayer
 	private let config: ConfigManagerFfi
 
 	/// The document the player is currently narrating, if any.
@@ -26,9 +28,12 @@ final class RecordedNarration {
 	/// about this one can forget it.
 	var onDetached: (() -> Void)?
 
-	init(config: ConfigManagerFfi) {
+	init(config: ConfigManagerFfi, player: DaisyAudioPlayer? = nil) {
 		self.config = config
+		let player = player ?? DaisyAudioPlayer()
+		self.player = player
 		player.onPlaybackStateChanged = { [weak self] playing in
+			self?.isPlaying = playing
 			self?.onPlayingChanged?(playing)
 			if !playing { self?.persistPosition() }
 		}
@@ -41,7 +46,7 @@ final class RecordedNarration {
 		}
 	}
 
-	var isPlaying: Bool { player.isPlaying }
+	private(set) var isPlaying = false
 
 	/// Switches to narrating `tab`, picking up from its saved audio position, or from its saved
 	/// reading position when it has never been listened to. Does nothing for a tab with no
@@ -84,7 +89,11 @@ final class RecordedNarration {
 	func pause() { player.pause() }
 
 	@discardableResult
-	func seekToPosition(_ position: Int64) -> Bool { player.seekToPosition(position) }
+	func seekToPosition(_ position: Int64) -> Bool {
+		let moved = player.seekToPosition(position)
+		if moved { persistPosition() }
+		return moved
+	}
 
 	@discardableResult
 	func seekToMs(_ elapsedMs: Int64) -> Bool { player.seekToMs(elapsedMs) }
