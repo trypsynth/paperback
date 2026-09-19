@@ -110,9 +110,9 @@ struct GoToSheet: View {
 			viewModel.reading.goToLine(n)
 		case .page:
 			guard let n = Int64(pageValue) else { dismiss(); return }
-			viewModel.reading.goToPage(Int32(n))
+			viewModel.reading.goToPage(Int32(n), announce: true)
 		case .percent:
-			viewModel.reading.goToPercent(Int32(percentValue))
+			viewModel.reading.goToPercent(Int32(percentValue), announce: true)
 		}
 		dismiss()
 	}

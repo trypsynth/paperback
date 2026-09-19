@@ -16,7 +16,7 @@ struct TocView: View {
 						List(entries, id: \.position) { entry in
 							let isActive = entry.position == activePos
 							Button {
-								viewModel.reading.goToPosition(entry.position)
+								viewModel.reading.goToPosition(entry.position, announce: true)
 								dismiss()
 							} label: {
 								HStack {

@@ -274,7 +274,17 @@ final class ReadingController {
 		// Text mode has no reading bar to select a unit in, and leaving it later shouldn't drop
 		// the reader into Find without them asking for it.
 		if !isTextMode { currentNavUnit = .find }
-		findMatch(forward: forward, skipCurrent: repeated)
+		// The Find screen stays up and VoiceOver focus stays in it, so the announcement is the
+		// only sign the reading position moved at all.
+		if findMatch(forward: forward, skipCurrent: repeated) {
+			announceNavigationCue(currentSegmentText)
+		} else if repeated {
+			// TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+			announce(t("No more matches."))
+		} else {
+			// TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+			announce(t("No matches."))
+		}
 	}
 
 	func findNext() {
@@ -340,26 +350,39 @@ final class ReadingController {
 		refreshCurrentSegment()
 	}
 
-	func goToPosition(_ position: Int64) {
+	/// `announce` is for a jump the reader asked for, as opposed to restoring a saved position
+	/// when a document opens, which nobody wants read out.
+	func goToPosition(_ position: Int64, announce shouldAnnounce: Bool = false) {
+		jump(to: position, announce: shouldAnnounce)
+	}
+
+	func goToPage(_ page: Int32, announce shouldAnnounce: Bool = false) {
+		guard let session = activeSession else { return }
+		jump(to: session.pageOffset(page: page), announce: shouldAnnounce)
+	}
+
+	func goToPercent(_ percent: Int32, announce shouldAnnounce: Bool = false) {
+		guard let session = activeSession else { return }
+		jump(to: session.positionFromPercent(percent: percent), announce: shouldAnnounce)
+	}
+
+	// Lands the reader somewhere else in the document, the way navigateByType() does for a
+	// structural step: carry on reading aloud from the new spot if the reader was already going,
+	// and otherwise say where they arrived, since the sheet they picked from is dismissing and
+	// nothing else reports the move. A paused buffer still holds the old spot's audio, so play
+	// would resume where they left rather than where they just went; drop it.
+	private func jump(to position: Int64, announce shouldAnnounce: Bool) {
 		ttsPosition = position
 		context?.persistPosition(position)
 		refreshCurrentSegment()
-	}
-
-	func goToPage(_ page: Int32) {
-		guard let session = activeSession else { return }
-		let pos = session.pageOffset(page: page)
-		ttsPosition = pos
-		context?.persistPosition(pos)
-		refreshCurrentSegment()
-	}
-
-	func goToPercent(_ percent: Int32) {
-		guard let session = activeSession else { return }
-		let pos = session.positionFromPercent(percent: percent)
-		ttsPosition = pos
-		context?.persistPosition(pos)
-		refreshCurrentSegment()
+		guard shouldAnnounce else { return }
+		if ttsManager.isSpeaking {
+			ttsManager.speak(currentSegmentText)
+			prefetchAdjacentSegments(around: position)
+		} else {
+			if ttsManager.isPaused { ttsManager.stop() }
+			announceNavigationCue(currentSegmentText)
+		}
 	}
 
 	func loadSegment(for tab: DocumentTab) {
