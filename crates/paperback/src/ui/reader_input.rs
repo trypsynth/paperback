@@ -87,12 +87,17 @@ pub(super) fn build_text_ctrl(
 	let dm_for_key_up = Rc::clone(self_rc);
 	text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
 		event.skip(true);
+		let moved_over_text = event.get_key_code().is_some_and(moves_through_text);
 		if let Ok(mut dm) = dm_for_key_up.try_lock() {
 			// Before the status bar reads the position, so it reports the compacted window.
 			dm.compact_window_after_user_move();
 			dm.update_status_bar();
 			dm.save_position_throttled();
-			dm.check_bookmark_sounds();
+			if moved_over_text {
+				dm.check_bookmark_sounds();
+			} else {
+				dm.forget_bookmark_sound_position();
+			}
 		}
 	});
 	let dm_for_mouse = Rc::clone(self_rc);
@@ -103,6 +108,10 @@ pub(super) fn build_text_ctrl(
 			dm.compact_window_after_user_move();
 			dm.update_status_bar();
 			dm.save_position_throttled();
+			// Clicking straight onto a bookmark is deliberate enough to deserve the sound,
+			// and lands inside it, so the same enter-the-range test says so. It reads the
+			// position the arrow keys left behind, which is why jumps keep that up to date
+			// rather than leaving it stale.
 			dm.check_bookmark_sounds();
 		}
 	});
@@ -215,6 +224,18 @@ pub(super) fn build_text_ctrl(
 		show_reader_context_menu(text_ctrl_for_right_click);
 	});
 	text_ctrl
+}
+
+/// Whether a key moves the caret through the text one piece at a time, rather than jumping it
+/// somewhere else.
+///
+/// Only these play a bookmark's sound. Landing on a line that happens to hold a bookmark used
+/// to sound exactly like moving onto the bookmark itself, so a bookmark attached to a word in
+/// the middle of a paragraph announced itself from the start of that paragraph, which is not
+/// where it is. Stepping by character or by word passes over the bookmark's own position, so
+/// there the sound means what it says.
+const fn moves_through_text(key: i32) -> bool {
+	matches!(key, WXK_LEFT | WXK_RIGHT)
 }
 
 /// Which end of the document a key press names as a "jump to the very start/end" gesture, if

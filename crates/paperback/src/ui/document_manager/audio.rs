@@ -15,6 +15,19 @@ impl DocumentManager {
 		}
 	}
 
+	/// Takes note of where the caret is without sounding anything, after a move that jumps
+	/// rather than steps.
+	///
+	/// [`Self::check_bookmark_sounds`] decides by comparing against where the caret was last
+	/// seen. Leaving that stale across a jump would measure the next step from wherever the
+	/// reader used to be, so a step that never crosses a bookmark could sound as though it had.
+	pub(crate) fn forget_bookmark_sound_position(&self) {
+		let Some(tab) = self.active_tab() else {
+			return;
+		};
+		self.last_sound_position.set(Some(tab.window.to_doc(tab.text_ctrl.get_insertion_point())));
+	}
+
 	pub(crate) fn check_bookmark_sounds(&self) {
 		let config = self.config.lock().unwrap();
 		if !config.get_app_bool("bookmark_sounds", true) {
