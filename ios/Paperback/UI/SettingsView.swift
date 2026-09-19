@@ -121,6 +121,17 @@ private struct ReadabilitySettingsSection: View {
 				// TRANSLATORS: Wide paragraph spacing option
 				Text(t("Wide")).tag(2)
 			}
+			// TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
+			Picker(t("Appearance"), selection: $viewModel.appearanceChoice) {
+				// TRANSLATORS: Appearance option following the phone's own light/dark setting
+				Text(t("System")).tag(0)
+				// TRANSLATORS: Appearance option pinning the app to its light colours
+				Text(t("Light")).tag(1)
+				// TRANSLATORS: Appearance option pinning the app to its dark colours
+				Text(t("Dark")).tag(2)
+			}
+			// TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
+			Toggle(t("High Contrast Text"), isOn: $viewModel.highContrastText)
 			// TRANSLATORS: Label for the picker choosing how document text is aligned
 			Picker(t("Alignment"), selection: $viewModel.textAlignmentChoice) {
 				// TRANSLATORS: Left text alignment option

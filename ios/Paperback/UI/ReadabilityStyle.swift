@@ -10,6 +10,12 @@ struct ReadabilityStyle: ViewModifier {
 	let lineSpacingChoice: Int
 	let paragraphSpacingChoice: Int
 	let alignmentChoice: Int
+	let highContrast: Bool
+
+	@Environment(\.colorScheme) private var colorScheme
+	/// True when the reader has asked for stronger contrast in iOS Settings, which counts as
+	/// asking for it here as well.
+	@Environment(\.colorSchemeContrast) private var systemContrast
 
 	@ScaledMetric(relativeTo: .body) private var baseSize: CGFloat = 17
 
@@ -49,6 +55,13 @@ struct ReadabilityStyle: ViewModifier {
 		}
 	}
 
+	/// Black on white, or white on black, rather than the softer system label colour. Nil
+	/// leaves the system's own colours alone, which already adapt to light and dark.
+	private var textColor: Color? {
+		guard highContrast || systemContrast == .increased else { return nil }
+		return colorScheme == .dark ? .white : .black
+	}
+
 	func body(content: Content) -> some View {
 		content
 			.font(.system(size: fontSize))
@@ -56,6 +69,24 @@ struct ReadabilityStyle: ViewModifier {
 			.multilineTextAlignment(alignment)
 			.padding(.vertical, paragraphPadding)
 			.frame(maxWidth: .infinity, alignment: frameAlignment)
+			.foregroundStyle(textColor ?? .primary)
+	}
+}
+
+/// The page behind the text, which has to move with the text colour or high contrast would put
+/// pure white on the system's off-white background.
+struct ReadingBackground: ViewModifier {
+	let highContrast: Bool
+
+	@Environment(\.colorScheme) private var colorScheme
+	@Environment(\.colorSchemeContrast) private var systemContrast
+
+	func body(content: Content) -> some View {
+		if highContrast || systemContrast == .increased {
+			content.background(colorScheme == .dark ? Color.black : Color.white)
+		} else {
+			content
+		}
 	}
 }
 
@@ -66,8 +97,24 @@ extension View {
 				scalePercent: viewModel.textScalePercent,
 				lineSpacingChoice: viewModel.lineSpacingChoice,
 				paragraphSpacingChoice: viewModel.paragraphSpacingChoice,
-				alignmentChoice: viewModel.textAlignmentChoice
+				alignmentChoice: viewModel.textAlignmentChoice,
+				highContrast: viewModel.highContrastText
 			)
 		)
+	}
+
+	func readingBackground(_ viewModel: AppViewModel) -> some View {
+		modifier(ReadingBackground(highContrast: viewModel.highContrastText))
+	}
+}
+
+extension Int {
+	/// The scheme an appearance choice forces, or nil to follow the system.
+	var preferredColorSchemeChoice: ColorScheme? {
+		switch self {
+		case 1: return .light
+		case 2: return .dark
+		default: return nil
+		}
 	}
 }

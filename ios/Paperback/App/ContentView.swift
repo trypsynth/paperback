@@ -14,5 +14,6 @@ struct ContentView: View {
 			ReaderView()
 		}
 		.environment(viewModel)
+		.preferredColorScheme(viewModel.appearanceChoice.preferredColorSchemeChoice)
 	}
 }

@@ -50,6 +50,17 @@ final class AppViewModel {
 	var textAlignmentChoice: Int = 0 {
 		didSet { configManager.setAppInt(key: "text_alignment", value: Int32(textAlignmentChoice)) }
 	}
+	/// 0 follows the system, 1 forces light, 2 forces dark. Readers often want the page dark
+	/// while the rest of the phone stays light, which following the system alone cannot do.
+	var appearanceChoice: Int = 0 {
+		didSet { configManager.setAppInt(key: "appearance", value: Int32(appearanceChoice)) }
+	}
+	/// Pure black on white, or white on black, for document text. The system's own Increase
+	/// Contrast setting turns this on too, so a reader who has already asked for it everywhere
+	/// does not have to ask again here.
+	var highContrastText: Bool = false {
+		didSet { configManager.setAppBool(key: "high_contrast_text", value: highContrastText) }
+	}
 
 	var recentDocuments: [RecentDocument] = []
 
@@ -67,6 +78,8 @@ final class AppViewModel {
 		lineSpacingChoice = Int(configManager.getAppInt(key: "line_spacing", defaultValue: 0))
 		paragraphSpacingChoice = Int(configManager.getAppInt(key: "paragraph_spacing", defaultValue: 0))
 		textAlignmentChoice = Int(configManager.getAppInt(key: "text_alignment", defaultValue: 0))
+		appearanceChoice = Int(configManager.getAppInt(key: "appearance", defaultValue: 0))
+		highContrastText = configManager.getAppBool(key: "high_contrast_text", defaultValue: false)
 
 		reading.context = self
 
