@@ -255,10 +255,17 @@ impl MainWindow {
 				let mut dm = dm_for_close.lock().unwrap();
 				{
 					let cfg = config_for_close.lock().unwrap();
+					// Geometry has to be read while the window is still on screen, so this
+					// comes before it goes.
 					window_geometry::save(&frame, &cfg);
 					if let Some(tab) = dm.active_tab() {
 						cfg.set_app_string("active_document", &tab.file_path.to_string_lossy());
 					}
+					// Off the screen now. Everything below is bookkeeping: writing the config,
+					// saving each document's position, winding audio down. None of it is slow,
+					// but all of it happens after the key press, and a window that is still
+					// there while it runs is a window that feels slow to close.
+					frame.show(false);
 					cfg.flush();
 				}
 				dm.save_all_positions();
