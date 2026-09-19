@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-16 08:05-0600\n"
+"POT-Creation-Date: 2026-09-18 19:33-0600\n"
 "PO-Revision-Date: 2026-06-08 13:45+0200\n"
 "Last-Translator: Michał Dziwisz <michal@dziwisz.net>\n"
 "Language-Team: Polish\n"
@@ -167,6 +167,16 @@ msgstr "Wyświetl notatkę"
 msgid "Open Document"
 msgstr "Otwórz dokument"
 
+#. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "Brak ostatnich dokumentów."
+
+#. TRANSLATORS: Announced after the Recent Documents list has been emptied
+#| msgid "Recent Documents"
+msgid "Recent documents cleared."
+msgstr "Wyczyszczono listę ostatnich dokumentów."
+
 #. TRANSLATORS: Menu item in the File menu to open a document.
 msgid "&Open..."
 msgstr "&Otwórz..."
@@ -198,6 +208,15 @@ msgstr "Otwórz ponownie &ostatnio zamknięty"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Otwórz ponownie ostatnio zamknięty dokument"
+
+#. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
+#| msgid "&Recent Documents"
+msgid "Clea&r Recent Documents"
+msgstr "&Wyczyść listę ostatnich dokumentów"
+
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
+msgid "Remove all documents from the Recent Documents list"
+msgstr "Usuń wszystkie pozycje z listy ostatnich dokumentów"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
@@ -336,6 +355,15 @@ msgstr "Poprzednia &tabela"
 msgid "Next &Table"
 msgstr "Następna &tabela"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
+#| msgid "Previous Image"
+msgid "Previous For&mula"
+msgstr "Poprze&dni wzór"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next formula.
+msgid "Next For&mula"
+msgstr "N&astępny wzór"
+
 #. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 msgid "Previous Se&parator"
 msgstr "Poprzedni se&parator"
@@ -455,6 +483,32 @@ msgstr "Przełącz &zakładkę"
 #. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
 msgid "Bookmark with &Note"
 msgstr "Zakładka z &notatką"
+
+#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+#| msgid "No Selection"
+msgid "Set Selection St&art"
+msgstr "&Ustaw początek zaznaczenia"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+msgid "Mark the beginning of a selection to copy from"
+msgstr "Oznacz początek zaznaczenia, od którego chcesz kopiować tekst"
+
+#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+msgid "&Copy from Selection Start"
+msgstr "&Kopiuj od początku zaznaczenia"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+msgid "Copy from the beginning of the selection to here"
+msgstr "Kopiuj tekst od początku zaznaczenia do bieżącej pozycji"
+
+#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+#| msgid "No Selection"
+msgid "&Jump to Selection Start"
+msgstr "&Przejdź do początku zaznaczenia"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+msgid "Go back to the beginning of the selection"
+msgstr "Wróć do początku zaznaczenia"
 
 #. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
@@ -1386,10 +1440,6 @@ msgstr "Tryb pełnoekranowy włączony."
 msgid "Full screen off."
 msgstr "Tryb pełnoekranowy wyłączony."
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
-msgstr "Brak ostatnich dokumentów."
-
 #. TRANSLATORS: Announced when landing on a blank line; %d is the line number
 msgid "Line %d"
 msgstr "Wiersz %d"
@@ -1662,6 +1712,15 @@ msgstr "&Tabele"
 msgid "Navigate by tables"
 msgstr "Nawiguj po tabelach"
 
+#. TRANSLATORS: Label for the Formulas submenu in the compact Go menu.
+msgid "For&mulas"
+msgstr "Wzor&y"
+
+#. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
+#| msgid "Navigate by images"
+msgid "Navigate by formulas"
+msgstr "Nawiguj po wzorach"
+
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
 msgstr "Se&paratory"
@@ -1830,6 +1889,14 @@ msgstr "I&mport/eksport"
 msgid "Import and export options"
 msgstr "Opcje importu i eksportu"
 
+#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
+msgid "Select and &copy"
+msgstr "Zaznacz i &kopiuj"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
+msgid "Mark a selection and copy from it"
+msgstr "Ustaw początek zaznaczenia i skopiuj od niego tekst"
+
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
 msgstr "Zawijanie wie&rszy"
@@ -1966,6 +2033,21 @@ msgstr "Brak następnej tabeli."
 msgid "No previous table."
 msgstr "Brak poprzedniej tabeli."
 
+#. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
+#| msgid "No figures."
+msgid "No formulas."
+msgstr "Brak wzorów."
+
+#. TRANSLATORS: Announcement when there is no next formula to navigate to
+#| msgid "No next image."
+msgid "No next formula."
+msgstr "Brak następnego wzoru."
+
+#. TRANSLATORS: Announcement when there is no previous formula to navigate to
+#| msgid "No previous image."
+msgid "No previous formula."
+msgstr "Brak poprzedniego wzoru."
+
 #. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr "Brak separatorów."
@@ -2051,7 +2133,11 @@ msgstr "Rozpoznawanie tekstu nie udało się."
 msgid "OCR is not available on this system."
 msgstr "OCR nie jest dostępne w tym systemie."
 
-#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+#. TRANSLATORS: Title of the dialog displaying a formula as MathML
+msgid "Formula View"
+msgstr "Widok wzoru"
+
+#. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr "Widok tabeli"
 
@@ -2108,6 +2194,35 @@ msgstr "Przejdź do &procentu"
 msgid "Go to percent"
 msgstr "Przejdź do procentu"
 
+#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
+msgid "Copied (%d chars)."
+msgstr "Skopiowano (liczba znaków: %d)."
+
+#. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
+#| msgid "Beginning of document"
+msgid "Beginning of selection set."
+msgstr "Ustawiono początek zaznaczenia."
+
+#. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
+msgid "Cannot copy; set beginning of selection first."
+msgstr "Nie można skopiować tekstu. Najpierw ustaw początek zaznaczenia."
+
+#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
+msgid "Nothing to copy."
+msgstr "Nie ma nic do skopiowania."
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr "Nie udało się skopiować tekstu do schowka."
+
+#. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
+msgid "Cannot jump; set beginning of selection first."
+msgstr "Nie można przejść do początku zaznaczenia. Najpierw ustaw początek zaznaczenia."
+
+#. TRANSLATORS: Announced after jumping back to the marked beginning of the selection.
+msgid "Jumped to beginning of selection."
+msgstr "Przeniesiono do początku zaznaczenia."
+
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "Wyłącznik czasowy anulowany."
@@ -2157,6 +2272,11 @@ msgstr "Otwórz ponownie ostatnio zamknięty"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "Pokaż wszystkie ostatnie dokumenty..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Recent Documents"
+msgid "Clear Recent Documents"
+msgstr "Wyczyść listę ostatnich dokumentów"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Exit"
@@ -2310,6 +2430,15 @@ msgstr "Poprzednia tabela"
 msgid "Next Table"
 msgstr "Następna tabela"
 
+#. TRANSLATORS: Shortcut action to move to the previous formula
+#| msgid "Previous Image"
+msgid "Previous Formula"
+msgstr "Poprzedni wzór"
+
+#. TRANSLATORS: Shortcut action to move to the next formula
+msgid "Next Formula"
+msgstr "Następny wzór"
+
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Separator"
 msgstr "Poprzedni separator"
@@ -2365,6 +2494,20 @@ msgstr "Przełącz zakładkę"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Bookmark with Note"
 msgstr "Zakładka z notatką"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "No Selection"
+msgid "Set Selection Start"
+msgstr "Ustaw początek zaznaczenia"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Copy from Selection Start"
+msgstr "Kopiuj od początku zaznaczenia"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "No Selection"
+msgid "Jump to Selection Start"
+msgstr "Przejdź do początku zaznaczenia"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Word Wrap"
@@ -2478,11 +2621,11 @@ msgstr "[Tylko obraz. Naciśnij Enter, aby rozpoznać tekst.]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Tylko obraz. Ta strona nie zawiera tekstu do przeczytania.]"
 
-#. TRANSLATORS: Error shown on Android when opening a comic book archive packed with RAR (.cbr), which that build cannot read
-msgid "Paperback cannot read RAR comic archives on this device. Repack it as a .cbz to read it here."
-msgstr "Paperback nie odczyta na tym urządzeniu archiwów komiksów RAR. Przepakuj je do formatu .cbz, aby je tu przeczytać."
+#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
+#| msgid "Paperback cannot read RAR comic archives on this device. Repack it as a .cbz to read it here."
+msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
+msgstr "Paperback nie odczytuje archiwów komiksów RAR. Przepakuj je do formatu .cbz, aby je tu przeczytać."
 
-#. TRANSLATORS: Error shown when a comic book archive (.cbr) cannot be opened; {} is the underlying error
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
 msgstr "Nie udało się przetworzyć archiwum komiksu: {}"
@@ -3159,7 +3302,7 @@ msgstr "Znaki (bez spacji)"
 msgid "Mode"
 msgstr "Tryb"
 
-#. TRANSLATORS: Go To mode option: navigate to a specific page number
+#. TRANSLATORS: Name of the "page" reading/navigation unit
 #: swift
 msgid "Page"
 msgstr "Strona"
@@ -3219,7 +3362,7 @@ msgstr "Zakres"
 msgid "Word"
 msgstr "Słowo"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
+#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
 #: swift
 msgid "Paragraph"
 msgstr "Akapit"
@@ -3959,6 +4102,11 @@ msgstr "To próbka wybranego silnika mowy."
 msgid "This document does not contain pages."
 msgstr "Ten dokument nie zawiera stron."
 
+#. TRANSLATORS: Name of the "formula" reading/navigation unit
+#: kt
+msgid "Formula"
+msgstr "Wzór"
+
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
 #~ msgstr "Pliki PPT chronione hasłem nie są obecnie obsługiwane. Spróbuj zapisać plik w formacie PPTX i otworzyć tę wersję."
 
@@ -4119,10 +4267,6 @@ msgstr "Ten dokument nie zawiera stron."
 #, fuzzy
 #~ msgid "Open document"
 #~ msgstr "Otwórz dokument"
-
-#, fuzzy
-#~ msgid "Next result"
-#~ msgstr "Kolejny wynik"
 
 #, fuzzy
 #~ msgid "Search"
