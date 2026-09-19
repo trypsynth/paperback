@@ -8,25 +8,29 @@ plugins {
 android {
 	namespace = "dev.paperback.android"
 	compileSdk = 37
+	// Bundle builds deliver per-ABI themselves; APK builds split by ABI instead. Gradle refuses
+	// to configure both at once, so each build picks exactly one of them below.
+	val isBundleBuild = gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }
 	defaultConfig {
 		applicationId = "dev.paperback.android"
 		minSdk = 24
 		targetSdk = 36
 		versionCode = 6
 		versionName = "0.9.2"
-		ndk {
-			// Bundle builds package every ABI present in jniLibs and in dependency AARs. JNA and
-			// AndroidX ship x86/x86_64 slices we have no libpaperback_core.so for, so without this
-			// Play would build an x86 split that installs and then crashes on the missing library.
-			abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+		if (isBundleBuild) {
+			ndk {
+				// A bundle packages every ABI present in jniLibs and in dependency AARs. JNA and
+				// AndroidX ship x86/x86_64 slices we have no libpaperback_core.so for, so without
+				// this Play would build an x86 split that installs and then crashes on the
+				// missing library. The splits block below does the same job for APK builds.
+				abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+			}
 		}
 	}
 
 	splits {
 		abi {
-			// Bundle builds (.aab) handle per-ABI delivery themselves; ABI splits
-			// only apply to standalone APK builds and conflict with bundleRelease.
-			isEnable = !gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }
+			isEnable = !isBundleBuild
 			reset()
 			include("armeabi-v7a", "arm64-v8a")
 			isUniversalApk = false
