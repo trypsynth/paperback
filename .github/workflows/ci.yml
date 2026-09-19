@@ -40,11 +40,13 @@ jobs:
       # app module to compile at all. Generating them is a host build of paperback-core alone:
       # no NDK or cargo-ndk, and none of the pdfium, translation, or pandoc assets that the APK
       # build in build.yml needs on top. ktlint skips the generated file either way.
+      # The interface lives in the Rust now rather than in a .udl, so uniffi reads it from the
+      # compiled library's own metadata. That means building the library first.
       - name: Generate Kotlin bindings
-        run: >
-          cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --
-          generate crates/paperback-core/src/paperback.udl
-          --language kotlin --out-dir android/app/src/main/kotlin --no-format
+        run: |
+          cargo build -p paperback-core --features uniffi --lib --release
+          LIB=$(ls target/release/libpaperback_core.so target/release/libpaperback_core.dylib target/release/paperback_core.dll 2>/dev/null | head -1)
+          cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --             generate --library "$LIB"             --language kotlin --out-dir android/app/src/main/kotlin --no-format
       - name: Cache Gradle packages
         uses: actions/cache@v6
         with:
@@ -85,11 +87,13 @@ jobs:
         uses: Swatinem/rust-cache@v2
       # Same reasoning as the unit test job: the app module only compiles once the uniffi types
       # exist, and generating them is a host build of paperback-core with no NDK involved.
+      # The interface lives in the Rust now rather than in a .udl, so uniffi reads it from the
+      # compiled library's own metadata. That means building the library first.
       - name: Generate Kotlin bindings
-        run: >
-          cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --
-          generate crates/paperback-core/src/paperback.udl
-          --language kotlin --out-dir android/app/src/main/kotlin --no-format
+        run: |
+          cargo build -p paperback-core --features uniffi --lib --release
+          LIB=$(ls target/release/libpaperback_core.so target/release/libpaperback_core.dylib target/release/paperback_core.dll 2>/dev/null | head -1)
+          cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --             generate --library "$LIB"             --language kotlin --out-dir android/app/src/main/kotlin --no-format
       - name: Cache Gradle packages
         uses: actions/cache@v6
         with:

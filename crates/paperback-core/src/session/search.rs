@@ -6,7 +6,7 @@ use crate::reader_core::{SearchOptions, reader_search_with_wrap};
 
 #[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DocumentSession {
-	// `query: String` (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
+	// `query: String` (not `&str`) because that is the signature UniFFI generates for.
 	#[must_use]
 	#[allow(clippy::needless_pass_by_value)]
 	pub fn search_ffi(&self, query: String, start_position: i64, options: SearchOptionsFfi) -> SearchResultFfi {

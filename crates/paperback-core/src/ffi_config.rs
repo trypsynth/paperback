@@ -9,7 +9,7 @@ pub struct ConfigManagerFfi {
 }
 
 // These take `String`/owned params instead of `&str` because their signatures are dictated by
-// paperback.udl: UniFFI's generated scaffolding calls them with owned values it has just lifted
+// UniFFI's generated scaffolding calls them with owned values it has just lifted
 // from the FFI boundary, so a borrowed parameter here would fail to compile against that scaffolding.
 // `new` stays outside the exported block so it exists whether or not the FFI is built; the
 // constructor below is what the bindings call, and it has to carry a literal
