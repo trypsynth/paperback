@@ -4821,24 +4821,26 @@ msgstr "Настройки по умолчанию системы"
 #. TRANSLATORS: Appearance option pinning the app to its light colours
 #: swift
 #, fuzzy
-#| msgid "Right"
 msgid "Light"
-msgstr "Справа"
+msgstr "Светлая тема"
 
 #. TRANSLATORS: Appearance option pinning the app to its dark colours
 #: swift
+#, fuzzy
 msgid "Dark"
-msgstr ""
+msgstr "Тёмная тема"
 
 #. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
 #: swift
+#, fuzzy
 msgid "High Contrast Text"
-msgstr ""
+msgstr "Высокий контраст текста"
 
 #. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
 #: swift
+#, fuzzy
 msgid "Hide previous and next buttons"
-msgstr ""
+msgstr "Скрыть кнопки предыдущего и следующего"
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
