@@ -44,7 +44,12 @@ final class ReadingController {
 	var textModeFirstLine: Int = 0
 
 	let ttsManager = TtsManager()
-	var ttsPosition: Int64 = 0
+	var ttsPosition: Int64 = 0 {
+		didSet { spokeCurrentSegment = false }
+	}
+	// Set once an utterance finishes with the cursor left where it was, which is what browsing
+	// Find matches does. Pressing play then means "carry on from here", not "read that again".
+	private var spokeCurrentSegment = false
 	var currentSegmentText: String = ""
 	var currentNavUnit: NavUnit = .segment(.paragraph)
 	// The structural unit the FFI is asked for. Find isn't one, so it reads as paragraph: that's
@@ -89,6 +94,8 @@ final class ReadingController {
 			ttsManager.pause()
 		} else if ttsManager.isPaused {
 			ttsManager.resume()
+		} else if spokeCurrentSegment {
+			speakNextContinuousSegment(isAutoAdvance: false)
 		} else {
 			playCurrentSegment()
 		}
@@ -155,8 +162,20 @@ final class ReadingController {
 	// playback read a heading, then skip straight to the next one, forever.
 	private func advanceTtsAfterUtterance() {
 		// Landing on a Find match should speak its context and then wait for the next button
-		// press, not silently keep reading past it.
-		if currentNavUnit == .find { return }
+		// press, not silently keep reading past it. Remember that it was read, so that pressing
+		// play carries on from here rather than repeating the paragraph for ever.
+		if currentNavUnit == .find {
+			spokeCurrentSegment = true
+			return
+		}
+		speakNextContinuousSegment(isAutoAdvance: true)
+	}
+
+	// Reads on from the cursor by actual content, whatever navigation unit is selected.
+	// `isAutoAdvance` is only ever true from the utterance-finished callback: it hands playback
+	// the buffer already queued behind the last one, and speak() treats it as audio that is
+	// playing already. Passing it for a press of play would no-op into silence.
+	private func speakNextContinuousSegment(isAutoAdvance: Bool) {
 		guard let session = activeSession else { return }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
@@ -167,7 +186,7 @@ final class ReadingController {
 		ttsPosition = seg.startPos
 		currentSegmentText = seg.text
 		context?.persistPosition(seg.startPos)
-		ttsManager.speak(seg.text, isAutoAdvance: true)
+		ttsManager.speak(seg.text, isAutoAdvance: isAutoAdvance)
 		prefetchAdjacentSegments(around: seg.startPos)
 	}
 
