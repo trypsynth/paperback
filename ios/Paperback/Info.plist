@@ -48,8 +48,11 @@
 	<string>UIApplication</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
+		<!-- One window. Each scene builds its own AppViewModel, so a second window would open
+		     its own set of tabs, its own speech and its own audio player competing for the one
+		     audio session, and would write the same config file from two places. -->
 		<key>UIApplicationSupportsMultipleScenes</key>
-		<true/>
+		<false/>
 		<key>UISceneConfigurations</key>
 		<dict/>
 	</dict>

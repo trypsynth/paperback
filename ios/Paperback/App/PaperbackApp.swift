@@ -35,19 +35,18 @@ class MagicTapWindow: UIWindow {
 	}
 }
 
+@MainActor
 class SceneDelegate: NSObject, UIWindowSceneDelegate {
 	var window: UIWindow?
-	weak var appViewModel: AppViewModel?
-
-	/// A book handed to the app before there was anything to open it with. A cold launch from
-	/// another app's "Open in" arrives here before ContentView has built its view model, so the
-	/// URL waits until the view model reports for duty (see `takePendingDocument`).
-	private var pendingDocumentURL: URL?
+	/// Owned here rather than by the view, so the keyboard shortcut handlers and the incoming
+	/// document handler above reach the same one this scene is showing, without going looking
+	/// through UIApplication for a scene that might not be this one.
+	let appViewModel = AppViewModel()
 
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options: UIScene.ConnectionOptions) {
 		guard let windowScene = scene as? UIWindowScene else { return }
 		let window = MagicTapWindow(windowScene: windowScene)
-		window.rootViewController = UIHostingController(rootView: ContentView())
+		window.rootViewController = UIHostingController(rootView: ContentView(viewModel: appViewModel))
 		self.window = window
 		window.makeKeyAndVisible()
 		open(options.urlContexts)
@@ -59,17 +58,7 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
 
 	private func open(_ contexts: Set<UIOpenURLContext>) {
 		guard let url = contexts.first?.url else { return }
-		if let appViewModel {
-			appViewModel.openDocument(url: url)
-		} else {
-			pendingDocumentURL = url
-		}
-	}
-
-	/// Hands over whatever arrived before the view model existed, exactly once.
-	func takePendingDocument() -> URL? {
-		defer { pendingDocumentURL = nil }
-		return pendingDocumentURL
+		appViewModel.openDocument(url: url)
 	}
 }
 
