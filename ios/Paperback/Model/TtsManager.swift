@@ -3,6 +3,23 @@ import OSLog
 
 private let ttsLog = Logger(subsystem: "dev.paperback.ios", category: "tts")
 
+/// Rewrites `text` through the reader's speech dictionary.
+///
+/// Paragraph rules run first and word rules second, which is the order that lets a paragraph
+/// rule set up text for a word rule to refine. Running them the other way round would let a
+/// paragraph rule overwrite what a word rule had just produced.
+func applyRules(_ rules: [TtsRule], to text: String, voiceId: String?) -> String {
+	guard !rules.isEmpty else { return text }
+	var result = text
+	for rule in rules where rule.scope == .paragraph {
+		result = rule.apply(to: result, voiceId: voiceId)
+	}
+	for rule in rules where rule.scope == .word {
+		result = rule.apply(to: result, voiceId: voiceId)
+	}
+	return result
+}
+
 /// The engine rate a whole-number slider percentage stands for. A stored value from outside the
 /// slider's own range is brought back inside it rather than handed to the engine as-is.
 func speechRateForPercent(_ percent: Int) -> Float {
@@ -117,15 +134,7 @@ final class TtsManager: NSObject {
 	}
 
 	func preprocessText(_ text: String) -> String {
-		guard !rules.isEmpty else { return text }
-		var result = text
-		for rule in rules where rule.scope == .paragraph {
-			result = rule.apply(to: result, voiceId: selectedVoiceIdentifier)
-		}
-		for rule in rules where rule.scope == .word {
-			result = rule.apply(to: result, voiceId: selectedVoiceIdentifier)
-		}
-		return result
+		applyRules(rules, to: text, voiceId: selectedVoiceIdentifier)
 	}
 
 	override init() {

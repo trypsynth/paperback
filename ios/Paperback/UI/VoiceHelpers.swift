@@ -13,7 +13,14 @@ struct VoiceItem: Identifiable {
 }
 
 func voiceBaseName(_ voice: AVSpeechSynthesisVoice) -> String {
-	let name = voice.name
+	voiceBaseName(ofName: voice.name)
+}
+
+/// The voice's name without the quality in brackets that the system appends, so the picker can
+/// group one voice's qualities together instead of listing them as separate voices. Only the
+/// last bracketed part is a quality marker: a voice whose own name carries one, like
+/// "Alice (US)", keeps it.
+func voiceBaseName(ofName name: String) -> String {
 	guard name.hasSuffix(")"), let range = name.range(of: " (", options: .backwards) else {
 		return name
 	}
