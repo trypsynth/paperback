@@ -424,6 +424,8 @@ bieżącej pozycji.</li>
 <li><code>F</code>: Następny rysunek.</li>
 <li><code>Shift+T</code>: Poprzednia tabela.</li>
 <li><code>T</code>: Następna tabela.</li>
+<li><code>Shift+M</code>: Poprzedni wzór.</li>
+<li><code>M</code>: Następny wzór.</li>
 <li><code>Shift+S</code>: Poprzedni separator.</li>
 <li><code>S</code>: Następny separator.</li>
 <li><code>Shift+L</code>: Poprzednia lista.</li>
@@ -468,6 +470,13 @@ Control+Command+F): Przełącz tryb pełnoekranowy.</li>
 <li><code>Ctrl+,</code>: Otwórz Opcje (w systemie macOS: Preferencje, w
 menu aplikacji).</li>
 <li><code>Ctrl+Shift+S</code>: Przełącz Wyłącznik czasowy.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Ustaw początek
+zaznaczenia, aby później skopiować za jednym razem tekst od tego miejsca
+do pozycji, do której przejdziesz.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Skopiuj tekst od
+ustawionego początku zaznaczenia do bieżącej pozycji.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Wróć
+do początku zaznaczenia, nie usuwając jego znacznika.</li>
 </ul>
 <h2 id="menu-pomoc">Menu Pomoc</h2>
 <ul>
@@ -484,8 +493,7 @@ widoku dokumentu</h2>
 <li><code>Delete</code> / <code>Delete na klawiaturze numerycznej</code>
 na kontrolce kart: zamknij kartę wybranego dokumentu.</li>
 <li><code>Enter</code> albo <code>Spacja</code> w tekście dokumentu:
-aktywuj odnośnik pod kursorem albo otwórz Widok tabeli, jeśli kursor
-znajduje się na znaczniku tabeli.</li>
+otwórz odnośnik, Widok tabeli lub Widok wzoru pod kursorem.</li>
 <li><code>Shift+F10</code> albo klawisz Menu/Aplikacje w tekście
 dokumentu: otwórz menu kontekstowe.</li>
 </ul>
@@ -565,6 +573,12 @@ które kończyło się komunikatem „Invalid local file header”.</li>
 ekranu czytał je ciągiem.</li>
 <li>Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast
 kończyć się komunikatem „Nie znaleziono pliku”.</li>
+<li>Skrót <code>Alt+F9</code> ustawia początek zaznaczenia,
+<code>Alt+F10</code> kopiuje tekst od tego miejsca do bieżącej pozycji,
+a <code>Alt+Shift+F9</code> przenosi z powrotem do znacznika. Pozwala to
+kopiować długie fragmenty bez zaznaczania ich strzałkami z Shiftem.
+Wszystkie trzy polecenia znajdują się w menu Narzędzia &gt; Zaznacz i
+kopiuj.</li>
 <li>Skrót <code>=</code> podaje teraz oprócz procentu także numer
 strony, na przykład „15%, strona 30”, a w dokumentach bez stron działa
 jak dotychczas.</li>
@@ -669,6 +683,11 @@ tabel we wszystkich dokumentach.</li>
 </ul>
 <h4 id="nawigacja">Nawigacja</h4>
 <ul>
+<li>Wzory MathML w dokumentach EPUB i HTML są przedstawiane w zapisie
+AsciiMath przy użyciu MathCAT. Klawisze <code>M</code> i
+<code>Shift+M</code> służą do przechodzenia między wzorami, a
+<code>Enter</code> lub <code>Spacja</code> otwiera oryginalny MathML w
+Widoku wzoru.</li>
 <li>Obsługę nawigacji po kontenerach.</li>
 <li>Opcję automatycznego przenoszenia kursora na początek wiersza przy
 przechodzeniu między wierszami, podobnie jak w trybie przeglądania w
