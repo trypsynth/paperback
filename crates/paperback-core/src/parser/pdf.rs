@@ -22,7 +22,7 @@ mod toc;
 
 use images::{append_images, images_before_each_paragraph, page_image_tops, page_largest_image_coverage};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
-use metadata::{map_load_error, metadata_value};
+use metadata::{map_load_error, metadata_title, metadata_value};
 pub use paragraphs::join_wrapped_lines;
 use paragraphs::{join_paragraphs, split_lines};
 use running::{EDGE_LINES, PageEdges, RunningText};
@@ -419,7 +419,7 @@ impl Parser for PdfParser {
 			place_links(&page.annotation_links, page_start_offset, &page_display_text, &mut buffer);
 			page_lines_info.push(current_lines_info);
 		}
-		let title = metadata_value(&document, "Title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		let title = metadata_title(&document).unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let author = metadata_value(&document, "Author").unwrap_or_default();
 		let mut toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
 		let toc_source = if !toc_items.is_empty() {
