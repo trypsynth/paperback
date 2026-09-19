@@ -1,4 +1,7 @@
 import AVFoundation
+import OSLog
+
+private let ttsLog = Logger(subsystem: "dev.paperback.ios", category: "tts")
 
 // Lets an armed buffer's completion handler validate against a generation assigned later, at
 // consume time, rather than one captured when the closure was created (see armNextBuffer).
@@ -490,12 +493,41 @@ final class TtsManager: NSObject {
 		armedText = text
 		player.scheduleBuffer(pcm) { [weak self] in
 			DispatchQueue.main.async { [weak self] in
-				guard let self, let gen = box.gen, self.speechGeneration == gen else { return }
+				guard let self else { return }
+				// No generation means speak() never claimed this buffer, so the paragraph
+				// before it never reported finishing. Nothing is queued behind this and
+				// nothing else will restart the chain.
+				guard let gen = box.gen else {
+					self.recoverFromUnclaimedArmedBuffer(box)
+					return
+				}
+				guard self.speechGeneration == gen else { return }
 				self.isSpeaking = false
 				self.isPaused = false
 				self.onUtteranceFinished?()
 			}
 		}
+	}
+
+	/// Keeps playback going when an armed buffer finishes without `speak()` ever claiming it.
+	///
+	/// That happens when the completion for the paragraph before it is late enough that this
+	/// one plays all the way through first, which background throttling while the screen is
+	/// locked can cause. Left alone it stops the book with the app still reporting that it is
+	/// speaking, recoverable only by a remote command.
+	///
+	/// Bumping the generation is the part that makes this safe: it drops the earlier
+	/// completion if it does turn up late, which would otherwise advance a second time and
+	/// skip a paragraph. Trading a rare stall for a rare skip would be no improvement.
+	private func recoverFromUnclaimedArmedBuffer(_ box: GenBox) {
+		guard armedBox === box else { return }
+		armedBox = nil
+		armedText = nil
+		speechGeneration += 1
+		isSpeaking = false
+		isPaused = false
+		ttsLog.error("Armed buffer finished before speak() claimed it; continuing from it (#761)")
+		onUtteranceFinished?()
 	}
 
 	private func invalidatePrefetch() {
