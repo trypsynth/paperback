@@ -437,6 +437,22 @@ final class ReadingController {
 		jump(to: session.pageOffset(page: page), announce: shouldAnnounce)
 	}
 
+	/// Seeks the recording to `percent` of its running time, reporting whether it applied.
+	///
+	/// False for a document with no recording, and for one whose file lengths are not all
+	/// known, so the caller maps the percentage through the text instead. A percentage through
+	/// the text of an audiobook counts blank lines, one per file, so it treats a two minute
+	/// file and an hour long one as equal shares of the book.
+	///
+	/// The reading position follows on its own: the player reports the clip it lands in.
+	@discardableResult
+	func seekAudioToPercent(_ percent: Int32) -> Bool {
+		guard hasAudio, let session = activeSession, let narration else { return false }
+		let targetMs = session.audioElapsedForPercentFfi(percent: percent)
+		guard targetMs >= 0 else { return false }
+		return narration.seekToMs(targetMs)
+	}
+
 	func goToPercent(_ percent: Int32, announce shouldAnnounce: Bool = false) {
 		guard let session = activeSession else { return }
 		jump(to: session.positionFromPercent(percent: percent), announce: shouldAnnounce)

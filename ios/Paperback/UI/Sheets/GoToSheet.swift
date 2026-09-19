@@ -12,6 +12,9 @@ struct GoToSheet: View {
 
 	private var session: DocumentSession? { viewModel.activeSession }
 	private var hasPages: Bool { (session?.pageCountFfi() ?? 0) > 0 }
+	/// An audio-only book's text is one blank line per audio file, so a line or page number
+	/// means nothing in it. A percentage still places the reader in the recording.
+	private var isAudioOnly: Bool { viewModel.reading.isAudioOnly }
 
 	var body: some View {
 		NavigationStack {
@@ -19,9 +22,11 @@ struct GoToSheet: View {
 				Section {
 					// TRANSLATORS: Label for the wheel picker that chooses whether Go To navigates by line, page, or percent
 					Picker(t("Mode"), selection: $mode) {
-						// TRANSLATORS: Go To mode option: navigate to a specific line number
-						Text(t("Line")).tag(GoToMode.line)
-						if hasPages {
+						if !isAudioOnly {
+							// TRANSLATORS: Go To mode option: navigate to a specific line number
+							Text(t("Line")).tag(GoToMode.line)
+						}
+						if hasPages && !isAudioOnly {
 							// TRANSLATORS: Go To mode option: navigate to a specific page number
 							Text(t("Page")).tag(GoToMode.page)
 						}
@@ -89,7 +94,15 @@ struct GoToSheet: View {
 
 	private func populate() {
 		let initialMode = viewModel.navigation.goToInitialMode
-		mode = (initialMode == .page && !hasPages) ? .line : initialMode
+		// The picker only offers what the document can answer, and a selection it does not
+		// offer would leave it showing nothing.
+		mode = if isAudioOnly {
+			.percent
+		} else if initialMode == .page && !hasPages {
+			.line
+		} else {
+			initialMode
+		}
 
 		guard let session else { return }
 		let pos = viewModel.reading.ttsPosition
@@ -112,7 +125,11 @@ struct GoToSheet: View {
 			guard let n = Int64(pageValue) else { dismiss(); return }
 			viewModel.reading.goToPage(Int32(n), announce: true)
 		case .percent:
-			viewModel.reading.goToPercent(Int32(percentValue), announce: true)
+			// A recording seeks by running time, where a percentage means something. Falling
+			// back to the text covers a book whose file lengths are not all known.
+			if !viewModel.reading.seekAudioToPercent(Int32(percentValue)) {
+				viewModel.reading.goToPercent(Int32(percentValue), announce: true)
+			}
 		}
 		dismiss()
 	}
