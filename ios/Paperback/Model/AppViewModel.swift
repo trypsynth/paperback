@@ -70,6 +70,23 @@ final class AppViewModel {
 
 		reading.context = self
 
+		let narration = RecordedNarration(config: configManager)
+		narration.onClipChanged = { [weak self] position in
+			// The recording is the authority on where the reader is while it plays, so the
+			// caret and the displayed text follow it rather than the other way round.
+			guard let self else { return }
+			self.reading.ttsPosition = position
+			self.reading.refreshSegmentForAudio()
+			self.updateTabPosition(position)
+		}
+		narration.onPlayingChanged = { [weak self] _ in
+			self?.reading.updateNowPlaying()
+		}
+		narration.onSeekLanded = { [weak self] elapsedMs in
+			self?.reading.announceAudioSeekLanded(elapsedMs)
+		}
+		reading.narration = narration
+
 		let ttsManager = reading.ttsManager
 		let savedRate = configManager.getAppString(key: "tts_speech_rate", defaultValue: "")
 		if let r = Float(savedRate) { ttsManager.speechRate = r }
@@ -342,14 +359,50 @@ extension AppViewModel: ReadingContext {
 // active, Find joins the list and steps between that query's matches instead.
 enum NavUnit: Hashable {
 	case segment(SegmentTypeFfi)
+	/// An amount of elapsed recording to skip, for a book with its own narration. Stepping by
+	/// paragraph means nothing in a bundle of audio files with no real text to walk.
+	case time(seconds: Int)
 	case find
 
 	var name: String {
 		switch self {
 		case .segment(let type): return segmentTypeName(type)
+		case .time(let seconds): return seekAmountName(seconds)
 		// TRANSLATORS: Name of the "Find" navigation unit, which moves between search matches
 		case .find: return t("Find")
 		}
+	}
+}
+
+/// Renders a duration the way the reading bar reports one: minutes and seconds, with hours only
+/// once there are any.
+func formatDuration(_ ms: Int64) -> String {
+	let totalSeconds = (max(ms, 0) + 500) / 1000
+	let hours = totalSeconds / 3600
+	let minutes = (totalSeconds % 3600) / 60
+	let seconds = totalSeconds % 60
+	return hours > 0
+		? String(format: "%d:%02d:%02d", hours, minutes, seconds)
+		: String(format: "%d:%02d", minutes, seconds)
+}
+
+/// The seek amounts a recorded book offers, matching the presets desktop shows in its Options.
+let audioSeekAmountsSeconds = [5, 10, 30, 60, 120]
+
+/// Matches the labels desktop shows for the same presets in its Options dialog.
+func seekAmountName(_ seconds: Int) -> String {
+	switch seconds {
+	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
+	case 5: return t("5 seconds")
+	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
+	case 10: return t("10 seconds")
+	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
+	case 30: return t("30 seconds")
+	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
+	case 60: return t("1 minute")
+	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
+	case 120: return t("2 minutes")
+	default: return "\(seconds)"
 	}
 }
 

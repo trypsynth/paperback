@@ -61,7 +61,7 @@ struct TtsControlBar: View {
 			}
 			.padding(.leading, 16)
 
-			Button { viewModel.reading.playPrevSegment(speak: viewModel.reading.ttsManager.isSpeaking) } label: {
+			Button { viewModel.reading.playPrevSegment(speak: viewModel.reading.isPlayingNow) } label: {
 				Image(systemName: "backward.fill").font(.title2)
 			}
 			.accessibilityLabel(prevLabel)
@@ -69,12 +69,12 @@ struct TtsControlBar: View {
 			.contentShape(Rectangle())
 
 			Button { viewModel.reading.togglePlayPause() } label: {
-				Image(systemName: viewModel.reading.ttsManager.isSpeaking ? "pause.fill" : "play.fill").font(.title)
+				Image(systemName: viewModel.reading.isPlayingNow ? "pause.fill" : "play.fill").font(.title)
 			}
 			// TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-			.accessibilityLabel(viewModel.reading.ttsManager.isSpeaking ? t("Pause") : t("Play"))
+			.accessibilityLabel(viewModel.reading.isPlayingNow ? t("Pause") : t("Play"))
 			.accessibilityAdjustableAction { direction in
-				let wasPlaying = viewModel.reading.ttsManager.isSpeaking
+				let wasPlaying = viewModel.reading.isPlayingNow
 				let forward = viewModel.swipeUpMovesForward
 				let tryingNext: Bool
 				switch direction {
@@ -97,7 +97,7 @@ struct TtsControlBar: View {
 			.frame(maxWidth: .infinity, minHeight: 64)
 			.contentShape(Rectangle())
 
-			Button { viewModel.reading.playNextSegment(speak: viewModel.reading.ttsManager.isSpeaking) } label: {
+			Button { viewModel.reading.playNextSegment(speak: viewModel.reading.isPlayingNow) } label: {
 				Image(systemName: "forward.fill").font(.title2)
 			}
 			.accessibilityLabel(nextLabel)

@@ -44,6 +44,18 @@ final class ReadingController {
 	var textModeFirstLine: Int = 0
 
 	let ttsManager = TtsManager()
+	/// A recorded book's own narration, when the open document has one. Set by AppViewModel,
+	/// which owns the config it persists playback position to.
+	var narration: RecordedNarration?
+	/// Whether the open document carries its own recording, in which case playback is that
+	/// rather than speech.
+	var hasAudio: Bool { activeSession?.hasAudioFfi() == true }
+	/// A document whose text is only there to anchor the audio has nothing to step through but
+	/// the recording itself.
+	var isAudioOnly: Bool { activeSession?.isAudioOnlyFfi() == true }
+	/// Whether the book is being read aloud right now, by its own recording or by speech.
+	/// The lock screen and the remote commands both need this rather than either one alone.
+	var isPlayingNow: Bool { hasAudio ? narration?.isPlaying == true : ttsManager.isSpeaking }
 	var ttsPosition: Int64 = 0 {
 		didSet { spokeCurrentSegment = false }
 	}
@@ -63,7 +75,13 @@ final class ReadingController {
 	// query to step through.
 	var availableNavUnits: [NavUnit] {
 		let supported = activeSession?.getSupportedSegmentTypesFfi() ?? [.paragraph, .line]
-		let segments = supported.map { NavUnit.segment($0) }
+		var segments = supported.map { NavUnit.segment($0) }
+		if hasAudio {
+			// A book that is only a bundle of narration files has no prose to step through, so
+			// each underlying audio file being its own section is all the structure there is.
+			if isAudioOnly { segments = segments.filter { $0 == .segment(.section) } }
+			segments = audioSeekAmountsSeconds.map { NavUnit.time(seconds: $0) } + segments
+		}
 		return activeSearchQuery == nil ? segments : segments + [.find]
 	}
 	// Keeps the selected unit on something the newly active document supports. Switching from an
@@ -90,6 +108,11 @@ final class ReadingController {
 	private var sleepTimerTask: Task<Void, Never>? = nil
 
 	func togglePlayPause() {
+		if let narration, hasAudio {
+			if narration.isPlaying { narration.pause() } else { narration.play() }
+			updateNowPlaying()
+			return
+		}
 		if ttsManager.isSpeaking {
 			ttsManager.pause()
 		} else if ttsManager.isPaused {
@@ -108,8 +131,18 @@ final class ReadingController {
 		prefetchAdjacentSegments(around: ttsPosition)
 	}
 
+	/// Handles previous/next for a document being navigated by elapsed time rather than by text
+	/// unit. False when that isn't what's happening, leaving the ordinary text path to run.
+	private func seekAudioByNavUnit(forward: Bool) -> Bool {
+		guard case .time(let seconds) = currentNavUnit, hasAudio, let narration else { return false }
+		let deltaMs = Int64(seconds) * 1000
+		narration.seekRelativeMs(forward ? deltaMs : -deltaMs)
+		return true
+	}
+
 	@discardableResult
 	func playNextSegment(speak: Bool = true, announce: Bool = false) -> Bool {
+		if seekAudioByNavUnit(forward: true) { return true }
 		if navigateByFind(forward: true, speak: speak, announce: announce) { return true }
 		guard let session = activeSession else { return false }
 		let seg = session.getTextSegment(
@@ -134,6 +167,7 @@ final class ReadingController {
 
 	@discardableResult
 	func playPrevSegment(speak: Bool = true, announce: Bool = false) -> Bool {
+		if seekAudioByNavUnit(forward: false) { return true }
 		if navigateByFind(forward: false, speak: speak, announce: announce) { return true }
 		guard let session = activeSession else { return false }
 		let seg = session.getTextSegment(
@@ -394,6 +428,13 @@ final class ReadingController {
 		ttsPosition = position
 		context?.persistPosition(position)
 		refreshCurrentSegment()
+		if hasAudio, let narration {
+			// The recording is the playback, so moving the caret without moving it would leave
+			// the reader listening to where they used to be.
+			narration.seekToPosition(position)
+			if shouldAnnounce { announceNavigationCue(currentSegmentText) }
+			return
+		}
 		guard shouldAnnounce else { return }
 		if ttsManager.isSpeaking {
 			ttsManager.speak(currentSegmentText)
@@ -406,6 +447,7 @@ final class ReadingController {
 
 	func loadSegment(for tab: DocumentTab) {
 		guard let session = tab.session else { return }
+		narration?.attach(to: tab)
 		ensureNavUnitSupported()
 		ttsPosition = tab.currentPosition
 		let seg = session.getTextSegment(
@@ -414,6 +456,48 @@ final class ReadingController {
 			direction: .current
 		)
 		currentSegmentText = seg.text
+	}
+
+	/// The file whose name was last announced after a seek, so a seek staying inside the same
+	/// file doesn't repeat it.
+	private var lastAnnouncedAudioSource: Int32?
+
+	/// Keeps the displayed text in step with the recording.
+	///
+	/// An audio-only book's buffer is one placeholder space per file with no newlines anywhere,
+	/// so asking for the paragraph enclosing a position collapses to the whole buffer and
+	/// reports it as starting at 0. Deriving the label from that would pin it to the first
+	/// file's name for the life of the book, however far playback had moved; the section (that
+	/// is, the file) holding the current position is the only label there is.
+	func refreshSegmentForAudio() {
+		if isAudioOnly {
+			currentSegmentText = sectionTitle(at: ttsPosition)
+			return
+		}
+		refreshCurrentSegment()
+	}
+
+	/// Speaks where a relative seek landed. An audiobook that is a bundle of narration files has
+	/// no meaningful document-wide elapsed time (its clips carry placeholder durations), so its
+	/// position reads as an offset into the file now playing, named whenever the file changes.
+	func announceAudioSeekLanded(_ elapsedMs: Int64) {
+		guard let session = activeSession else { return }
+		let cursor = session.audioCursorAtElapsedFfi(elapsedMs: elapsedMs)
+		guard cursor.found else { return }
+		let clip = session.audioClipFfi(index: cursor.clipIndex)
+		guard clip.found else { return }
+		let time = formatDuration(isAudioOnly ? cursor.seekMs : elapsedMs)
+		let fileChanged = lastAnnouncedAudioSource != clip.source
+		lastAnnouncedAudioSource = clip.source
+		let title = sectionTitle(at: clip.start)
+		announce(fileChanged && !title.isEmpty ? "\(title), \(time)" : time)
+	}
+
+	/// The last table-of-contents entry at or before `position`, which for a recorded book names
+	/// the file now playing.
+	private func sectionTitle(at position: Int64) -> String {
+		guard let session = activeSession else { return "" }
+		return session.getToc().last { $0.position <= position }?.title ?? ""
 	}
 
 	private func refreshCurrentSegment() {
@@ -464,14 +548,19 @@ final class ReadingController {
 
 		center.playCommand.addTarget { [weak self] _ in
 			guard let self, !ttsManager.suppressExternalPlay else { return .success }
-			if ttsManager.isPaused { ttsManager.resume() }
-			else if !ttsManager.isSpeaking { playCurrentSegment() }
+			if hasAudio {
+				narration?.play()
+			} else if ttsManager.isPaused {
+				ttsManager.resume()
+			} else if !ttsManager.isSpeaking {
+				playCurrentSegment()
+			}
 			updateNowPlaying()
 			return .success
 		}
 		center.pauseCommand.addTarget { [weak self] _ in
 			guard let self else { return .commandFailed }
-			ttsManager.pause()
+			if hasAudio { narration?.pause() } else { ttsManager.pause() }
 			updateNowPlaying()
 			return .success
 		}
@@ -483,20 +572,20 @@ final class ReadingController {
 		}
 		center.nextTrackCommand.addTarget { [weak self] _ in
 			guard let self else { return .commandFailed }
-			playNextSegment(speak: ttsManager.isSpeaking)
+			playNextSegment(speak: isPlayingNow)
 			updateNowPlaying()
 			return .success
 		}
 		center.previousTrackCommand.addTarget { [weak self] _ in
 			guard let self else { return .commandFailed }
-			playPrevSegment(speak: ttsManager.isSpeaking)
+			playPrevSegment(speak: isPlayingNow)
 			updateNowPlaying()
 			return .success
 		}
 
 		center.stopCommand.addTarget { [weak self] _ in
 			guard let self else { return .commandFailed }
-			ttsManager.stop()
+			if hasAudio { narration?.pause() } else { ttsManager.stop() }
 			updateNowPlaying()
 			return .success
 		}
@@ -512,7 +601,7 @@ final class ReadingController {
 	func updateNowPlaying() {
 		var info: [String: Any] = [
 			MPMediaItemPropertyMediaType: MPMediaType.audioBook.rawValue,
-			MPNowPlayingInfoPropertyPlaybackRate: ttsManager.isSpeaking ? 1.0 : 0.0,
+			MPNowPlayingInfoPropertyPlaybackRate: isPlayingNow ? 1.0 : 0.0,
 			MPNowPlayingInfoPropertyDefaultPlaybackRate: 1.0,
 		]
 		if let title = context?.activeTitle {

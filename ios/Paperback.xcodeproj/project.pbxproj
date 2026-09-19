@@ -12,6 +12,8 @@
 		C2C2C2C2C2C2C2C2C2C20001 /* KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C2C2C2C2C2C2C2C2C20002 /* KeyboardShortcuts.swift */; };
 		C1C1C1C1C1C1C1C1C1C10002 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C1C1C1C1C1C1C1C1C10001 /* NavigationRouter.swift */; };
 		C1C1C1C1C1C1C1C1C1C10004 /* ReadingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C1C1C1C1C1C1C1C1C10003 /* ReadingController.swift */; };
+		C1C1C1C1C1C1C1C1C1C10008 /* DaisyAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C1C1C1C1C1C1C1C1C10007 /* DaisyAudioPlayer.swift */; };
+		C1C1C1C1C1C1C1C1C1C1000A /* RecordedNarration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C1C1C1C1C1C1C1C1C10009 /* RecordedNarration.swift */; };
 		C1C1C1C1C1C1C1C1C1C10006 /* ReadabilityStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C1C1C1C1C1C1C1C1C10005 /* ReadabilityStyle.swift */; };
 		E3E3E3E3E3E3E3E3E3E30001 /* TtsRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E3E3E3E3E3E3E3E3E30002 /* TtsRule.swift */; };
 		E3E3E3E3E3E3E3E3E3E30003 /* VoiceHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E3E3E3E3E3E3E3E3E30004 /* VoiceHelpers.swift */; };
@@ -56,6 +58,8 @@
 		C2C2C2C2C2C2C2C2C2C20002 /* KeyboardShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcuts.swift; sourceTree = "<group>"; };
 		C1C1C1C1C1C1C1C1C1C10001 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
 		C1C1C1C1C1C1C1C1C1C10003 /* ReadingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingController.swift; sourceTree = "<group>"; };
+		C1C1C1C1C1C1C1C1C1C10007 /* DaisyAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaisyAudioPlayer.swift; sourceTree = "<group>"; };
+		C1C1C1C1C1C1C1C1C1C10009 /* RecordedNarration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordedNarration.swift; sourceTree = "<group>"; };
 		C1C1C1C1C1C1C1C1C1C10005 /* ReadabilityStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadabilityStyle.swift; sourceTree = "<group>"; };
 		E3E3E3E3E3E3E3E3E3E30002 /* TtsRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TtsRule.swift; sourceTree = "<group>"; };
 		E3E3E3E3E3E3E3E3E3E30004 /* VoiceHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceHelpers.swift; sourceTree = "<group>"; };
@@ -197,6 +201,8 @@
 				A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */,
 				E3E3E3E3E3E3E3E3E3E30002 /* TtsRule.swift */,
 				C1C1C1C1C1C1C1C1C1C10003 /* ReadingController.swift */,
+				C1C1C1C1C1C1C1C1C1C10007 /* DaisyAudioPlayer.swift */,
+				C1C1C1C1C1C1C1C1C1C10009 /* RecordedNarration.swift */,
 				C1C1C1C1C1C1C1C1C1C10001 /* NavigationRouter.swift */,
 			);
 			path = Model;
@@ -381,6 +387,8 @@
 				E3E3E3E3E3E3E3E3E3E30001 /* TtsRule.swift in Sources */,
 				C1C1C1C1C1C1C1C1C1C10006 /* ReadabilityStyle.swift in Sources */,
 				C1C1C1C1C1C1C1C1C1C10004 /* ReadingController.swift in Sources */,
+				C1C1C1C1C1C1C1C1C1C10008 /* DaisyAudioPlayer.swift in Sources */,
+				C1C1C1C1C1C1C1C1C1C1000A /* RecordedNarration.swift in Sources */,
 				C1C1C1C1C1C1C1C1C1C10002 /* NavigationRouter.swift in Sources */,
 				E3E3E3E3E3E3E3E3E3E30003 /* VoiceHelpers.swift in Sources */,
 				E3E3E3E3E3E3E3E3E3E30005 /* SpeechDictionaryView.swift in Sources */,
