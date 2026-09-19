@@ -12,8 +12,14 @@ android {
 		applicationId = "dev.paperback.android"
 		minSdk = 24
 		targetSdk = 36
-		versionCode = 5
-		versionName = "0.9.0"
+		versionCode = 6
+		versionName = "0.9.2"
+		ndk {
+			// Bundle builds package every ABI present in jniLibs and in dependency AARs. JNA and
+			// AndroidX ship x86/x86_64 slices we have no libpaperback_core.so for, so without this
+			// Play would build an x86 split that installs and then crashes on the missing library.
+			abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+		}
 	}
 
 	splits {
