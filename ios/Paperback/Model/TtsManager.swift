@@ -3,6 +3,20 @@ import OSLog
 
 private let ttsLog = Logger(subsystem: "dev.paperback.ios", category: "tts")
 
+/// The engine rate a whole-number slider percentage stands for. A stored value from outside the
+/// slider's own range is brought back inside it rather than handed to the engine as-is.
+func speechRateForPercent(_ percent: Int) -> Float {
+	let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
+	let clamped = Float(min(max(percent, 0), 100)) / 100
+	return AVSpeechUtteranceMinimumSpeechRate + clamped * range
+}
+
+/// The slider percentage an engine rate reads as, the inverse of `speechRateForPercent`.
+func percentForSpeechRate(_ rate: Float) -> Int {
+	let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
+	return Int((((rate - AVSpeechUtteranceMinimumSpeechRate) / range) * 100).rounded())
+}
+
 // Lets an armed buffer's completion handler validate against a generation assigned later, at
 // consume time, rather than one captured when the closure was created (see armNextBuffer).
 private final class GenBox {
@@ -70,15 +84,8 @@ final class TtsManager: NSObject {
 	/// The rate as the whole-number percentage of its range that the settings slider and the
 	/// reading bar both show, so the two can never disagree about what a given number means.
 	var speechRatePercent: Int {
-		get {
-			let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
-			return Int((((speechRate - AVSpeechUtteranceMinimumSpeechRate) / range) * 100).rounded())
-		}
-		set {
-			let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
-			let clamped = Float(min(max(newValue, 0), 100)) / 100
-			speechRate = AVSpeechUtteranceMinimumSpeechRate + clamped * range
-		}
+		get { percentForSpeechRate(speechRate) }
+		set { speechRate = speechRateForPercent(newValue) }
 	}
 
 	var pitch: Float = 1.0 {
