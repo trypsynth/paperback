@@ -67,3 +67,27 @@ pub(crate) fn crate_version(root: &Path, package_name: &str) -> Result<String, B
 		.map(str::to_string)
 		.ok_or_else(|| format!("cargo metadata: package {package_name} not found").into())
 }
+
+/// Builds paperback-core for the host and returns the shared library uniffi reads its interface
+/// from.
+///
+/// The bindings used to be generated from a `.udl` file. They now come from the compiled
+/// library, which carries the interface as metadata, so there is one description of the FFI
+/// rather than a Rust one and an IDL one kept in step by hand.
+pub fn build_host_ffi_library(cargo: &str) -> Result<PathBuf, Box<dyn Error>> {
+	let status = Command::new(cargo)
+		.current_dir(project_root())
+		.args(["build", "-p", "paperback-core", "--features", "uniffi", "--lib", "--release"])
+		.status()?;
+	if !status.success() {
+		return Err("building paperback-core for the host failed".into());
+	}
+	let dir = project_root().join("target/release");
+	for name in ["paperback_core.dll", "libpaperback_core.dylib", "libpaperback_core.so"] {
+		let candidate = dir.join(name);
+		if candidate.exists() {
+			return Ok(candidate);
+		}
+	}
+	Err(format!("no host library for paperback-core under {}", dir.display()).into())
+}

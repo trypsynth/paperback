@@ -296,7 +296,10 @@ impl DocumentSession {
 				|| self.handle.count_markers_by_type(MarkerType::Heading6) > 0
 		}
 	}
+}
 
+#[cfg_attr(feature = "uniffi", uniffi::export)]
+impl DocumentSession {
 	#[must_use]
 	pub fn get_toc(&self) -> Vec<TocEntry> {
 		let mut flat = Vec::new();

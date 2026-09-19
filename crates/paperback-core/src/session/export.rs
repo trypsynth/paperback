@@ -40,6 +40,19 @@ const MAX_WEBVIEW_DISPLAY_LEN: usize = WINDOW_DISPLAY_LEN as usize;
 /// document is being shown whole.
 const WHOLE_WEBVIEW_DISPLAY_LEN: usize = WHOLE_DOCUMENT_DISPLAY_LEN as usize;
 
+#[cfg_attr(feature = "uniffi", uniffi::export)]
+impl DocumentSession {
+	#[must_use]
+	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormat> {
+		vec![ExportFormat::Text, ExportFormat::Html, ExportFormat::Markdown]
+	}
+
+	#[must_use]
+	pub fn render_export_ffi(&self, format: ExportFormat) -> String {
+		render(&self.handle, format)
+	}
+}
+
 impl DocumentSession {
 	#[must_use]
 	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<WebviewTarget> {
@@ -283,15 +296,5 @@ impl DocumentSession {
 		file.write_all(content.as_bytes())?;
 		file.flush()?;
 		Ok(())
-	}
-
-	#[must_use]
-	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormat> {
-		vec![ExportFormat::Text, ExportFormat::Html, ExportFormat::Markdown]
-	}
-
-	#[must_use]
-	pub fn render_export_ffi(&self, format: ExportFormat) -> String {
-		render(&self.handle, format)
 	}
 }

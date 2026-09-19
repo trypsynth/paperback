@@ -7,6 +7,7 @@ use crate::{
 	util::text::display_len,
 };
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExportFormat {
 	Text,

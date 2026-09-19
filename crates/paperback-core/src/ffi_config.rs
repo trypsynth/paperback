@@ -3,6 +3,7 @@ use std::{collections::HashSet, sync::Mutex};
 use crate::{config::ConfigManager, parser::ParserRegistry};
 
 /// Thread-safe wrapper around `ConfigManager` for `UniFFI` exposure.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct ConfigManagerFfi {
 	inner: Mutex<ConfigManager>,
 }
@@ -10,13 +11,28 @@ pub struct ConfigManagerFfi {
 // These take `String`/owned params instead of `&str` because their signatures are dictated by
 // paperback.udl: UniFFI's generated scaffolding calls them with owned values it has just lifted
 // from the FFI boundary, so a borrowed parameter here would fail to compile against that scaffolding.
-#[allow(clippy::needless_pass_by_value)]
+// `new` stays outside the exported block so it exists whether or not the FFI is built; the
+// constructor below is what the bindings call, and it has to carry a literal
+// `uniffi::constructor` because uniffi::export reads that attribute without expanding cfg_attr.
 impl ConfigManagerFfi {
 	#[must_use]
 	pub fn new() -> Self {
 		Self { inner: Mutex::new(ConfigManager::new()) }
 	}
+}
 
+#[cfg(feature = "uniffi")]
+#[uniffi::export]
+impl ConfigManagerFfi {
+	#[uniffi::constructor(name = "new")]
+	fn uniffi_new() -> Self {
+		Self::new()
+	}
+}
+
+#[allow(clippy::needless_pass_by_value)]
+#[cfg_attr(feature = "uniffi", uniffi::export)]
+impl ConfigManagerFfi {
 	pub fn initialize(&self, config_path: String) -> bool {
 		self.inner.lock().unwrap().initialize(config_path.into())
 	}

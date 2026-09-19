@@ -16,6 +16,7 @@ use crate::{
 	util::zip as zip_utils,
 };
 
+#[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DocumentSession {
 	#[must_use]
 	pub fn has_audio_ffi(&self) -> bool {
@@ -60,12 +61,6 @@ impl DocumentSession {
 				Self::extract_zip_audio_entry(archive, entry, password.as_deref(), &output_path)
 			}
 		}
-	}
-
-	fn extract_zip_audio_entry(archive: &str, entry: &str, password: Option<&str>, output_path: &str) -> bool {
-		let Ok(file) = File::open(archive) else { return false };
-		let Ok(mut zip) = ZipArchive::new(BufReader::new(file)) else { return false };
-		zip_utils::extract_zip_entry_to_file_with_password(&mut zip, entry, Path::new(output_path), password).is_ok()
 	}
 
 	#[must_use]
@@ -145,6 +140,28 @@ impl DocumentSession {
 		timeline.previous_source_before(current_source).and_then(|source| i32::try_from(source).ok()).unwrap_or(-1)
 	}
 
+	/// `-1` where [`Self::audio_progress_percent`] has no answer, matching the sentinel the
+	/// other audio FFI methods use.
+	#[must_use]
+	pub fn audio_progress_percent_ffi(&self, elapsed_ms: i64) -> i32 {
+		let Ok(elapsed_ms) = u64::try_from(elapsed_ms) else { return -1 };
+		self.audio_progress_percent(elapsed_ms).unwrap_or(-1)
+	}
+
+	/// `-1` where [`Self::audio_elapsed_for_percent`] has no answer.
+	#[must_use]
+	pub fn audio_elapsed_for_percent_ffi(&self, percent: i32) -> i64 {
+		self.audio_elapsed_for_percent(percent).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
+	}
+}
+
+impl DocumentSession {
+	fn extract_zip_audio_entry(archive: &str, entry: &str, password: Option<&str>, output_path: &str) -> bool {
+		let Ok(file) = File::open(archive) else { return false };
+		let Ok(mut zip) = ZipArchive::new(BufReader::new(file)) else { return false };
+		zip_utils::extract_zip_entry_to_file_with_password(&mut zip, entry, Path::new(output_path), password).is_ok()
+	}
+
 	/// How far through the recording `elapsed_ms` is, as a whole percent, when that can be
 	/// answered honestly.
 	///
@@ -166,20 +183,6 @@ impl DocumentSession {
 		// Truncating rather than rounding keeps 100% for the end alone: a book is not "100%"
 		// with half a minute left to play.
 		Some((progress * 100.0) as i32)
-	}
-
-	/// `-1` where [`Self::audio_progress_percent`] has no answer, matching the sentinel the
-	/// other audio FFI methods use.
-	#[must_use]
-	pub fn audio_progress_percent_ffi(&self, elapsed_ms: i64) -> i32 {
-		let Ok(elapsed_ms) = u64::try_from(elapsed_ms) else { return -1 };
-		self.audio_progress_percent(elapsed_ms).unwrap_or(-1)
-	}
-
-	/// `-1` where [`Self::audio_elapsed_for_percent`] has no answer.
-	#[must_use]
-	pub fn audio_elapsed_for_percent_ffi(&self, percent: i32) -> i64 {
-		self.audio_elapsed_for_percent(percent).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
 	}
 
 	/// The elapsed time to seek to for `percent` of the recording, when that can be answered

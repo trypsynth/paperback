@@ -3,6 +3,7 @@
 //! structure, plus the small helpers ([`is_heading_marker`], [`is_container_marker`],
 //! [`ContainerSpan`]) that classify them.
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(i32)]
 pub enum MarkerType {

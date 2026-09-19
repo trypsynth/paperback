@@ -12,6 +12,75 @@ use crate::{
 	types::{self as ffi},
 };
 
+#[cfg_attr(feature = "uniffi", uniffi::export)]
+impl DocumentSession {
+	#[must_use]
+	pub fn get_heading_tree_ffi(&self, position: i64) -> HeadingTreeFfi {
+		let tree = self.heading_tree(position);
+		HeadingTreeFfi {
+			items: tree
+				.items
+				.into_iter()
+				.map(|i| HeadingTreeItemFfi {
+					offset: i64::try_from(i.offset).unwrap_or(i64::MAX),
+					text: i.text,
+					parent_index: i.parent_index,
+				})
+				.collect(),
+			closest_index: tree.closest_index,
+		}
+	}
+
+	#[must_use]
+	pub fn get_link_list_ffi(&self, position: i64) -> LinkListFfi {
+		let list = self.link_list(position);
+		LinkListFfi {
+			items: list
+				.items
+				.into_iter()
+				.map(|i| LinkListItemFfi { offset: i64::try_from(i.offset).unwrap_or(i64::MAX), text: i.text })
+				.collect(),
+			closest_index: list.closest_index,
+		}
+	}
+
+	#[must_use]
+	pub fn activate_link(&self, position: i64) -> LinkActivationResult {
+		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
+		let href = {
+			let link_index = self.handle.current_marker_index(pos_usize, MarkerType::Link);
+			let Some(link_index) = link_index else {
+				return LinkActivationResult::not_found();
+			};
+			let Some(marker) = self.handle.document().buffer.markers.get(link_index) else {
+				return LinkActivationResult::not_found();
+			};
+			let link_end = marker.position + marker.text.chars().count();
+			if pos_usize < marker.position || pos_usize > link_end {
+				return LinkActivationResult::not_found();
+			}
+			if marker.reference.is_empty() {
+				return LinkActivationResult::not_found();
+			}
+			// Clone the href so we can drop the borrow on self.handle.
+			marker.reference.clone()
+		};
+		let resolution = resolve_link(&self.handle, &href, position);
+		if !resolution.found {
+			LinkActivationResult::not_found()
+		} else if resolution.is_external {
+			LinkActivationResult { found: true, action: LinkAction::External, offset: 0, url: resolution.url }
+		} else {
+			LinkActivationResult {
+				found: true,
+				action: LinkAction::Internal,
+				offset: i64::try_from(resolution.offset).unwrap_or(0),
+				url: String::new(),
+			}
+		}
+	}
+}
+
 impl DocumentSession {
 	#[must_use]
 	pub fn bookmark_display_at_position(
@@ -102,71 +171,5 @@ impl DocumentSession {
 			}
 		}
 		ffi::HeadingTree { items, closest_index }
-	}
-
-	#[must_use]
-	pub fn get_heading_tree_ffi(&self, position: i64) -> HeadingTreeFfi {
-		let tree = self.heading_tree(position);
-		HeadingTreeFfi {
-			items: tree
-				.items
-				.into_iter()
-				.map(|i| HeadingTreeItemFfi {
-					offset: i64::try_from(i.offset).unwrap_or(i64::MAX),
-					text: i.text,
-					parent_index: i.parent_index,
-				})
-				.collect(),
-			closest_index: tree.closest_index,
-		}
-	}
-
-	#[must_use]
-	pub fn get_link_list_ffi(&self, position: i64) -> LinkListFfi {
-		let list = self.link_list(position);
-		LinkListFfi {
-			items: list
-				.items
-				.into_iter()
-				.map(|i| LinkListItemFfi { offset: i64::try_from(i.offset).unwrap_or(i64::MAX), text: i.text })
-				.collect(),
-			closest_index: list.closest_index,
-		}
-	}
-
-	#[must_use]
-	pub fn activate_link(&self, position: i64) -> LinkActivationResult {
-		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let href = {
-			let link_index = self.handle.current_marker_index(pos_usize, MarkerType::Link);
-			let Some(link_index) = link_index else {
-				return LinkActivationResult::not_found();
-			};
-			let Some(marker) = self.handle.document().buffer.markers.get(link_index) else {
-				return LinkActivationResult::not_found();
-			};
-			let link_end = marker.position + marker.text.chars().count();
-			if pos_usize < marker.position || pos_usize > link_end {
-				return LinkActivationResult::not_found();
-			}
-			if marker.reference.is_empty() {
-				return LinkActivationResult::not_found();
-			}
-			// Clone the href so we can drop the borrow on self.handle.
-			marker.reference.clone()
-		};
-		let resolution = resolve_link(&self.handle, &href, position);
-		if !resolution.found {
-			LinkActivationResult::not_found()
-		} else if resolution.is_external {
-			LinkActivationResult { found: true, action: LinkAction::External, offset: 0, url: resolution.url }
-		} else {
-			LinkActivationResult {
-				found: true,
-				action: LinkAction::Internal,
-				offset: i64::try_from(resolution.offset).unwrap_or(0),
-				url: String::new(),
-			}
-		}
 	}
 }

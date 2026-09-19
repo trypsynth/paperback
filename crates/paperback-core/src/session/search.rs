@@ -4,6 +4,7 @@
 use super::{DocumentSession, SearchOptionsFfi, SearchResultFfi};
 use crate::reader_core::{SearchOptions, reader_search_with_wrap};
 
+#[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DocumentSession {
 	// `query: String` (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
 	#[must_use]

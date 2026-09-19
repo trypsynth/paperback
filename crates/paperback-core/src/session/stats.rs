@@ -12,26 +12,8 @@ use crate::{
 	types::{self as ffi, NavDirection, NavTarget},
 };
 
+#[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DocumentSession {
-	#[must_use]
-	pub fn get_formatting_markers(&self) -> Vec<LineMarker> {
-		self.handle
-			.document()
-			.buffer
-			.markers
-			.iter()
-			.filter(|m| matches!(m.mtype, MarkerType::Bold | MarkerType::Italic | MarkerType::Underline))
-			.map(|m| LineMarker {
-				mtype: m.mtype,
-				position: i64::try_from(m.position).unwrap_or(0),
-				text: String::new(),
-				reference: String::new(),
-				level: 0,
-				length: i64::try_from(m.length).unwrap_or(0),
-			})
-			.collect()
-	}
-
 	#[must_use]
 	pub fn get_stats_ffi(&self) -> DocumentStatsFfi {
 		let s = self.stats();
@@ -98,41 +80,6 @@ impl DocumentSession {
 	#[must_use]
 	pub fn page_count_ffi(&self) -> i32 {
 		i32::try_from(self.page_count()).unwrap_or(0)
-	}
-
-	#[must_use]
-	pub fn get_table_at_position(&self, position: i64) -> Option<String> {
-		self.marker_reference_at(position, MarkerType::Table)
-	}
-
-	#[must_use]
-	pub fn get_formula_at_position(&self, position: i64) -> Option<String> {
-		self.marker_reference_at(position, MarkerType::Formula)
-	}
-
-	/// Reference of the marker whose half-open display extent contains `position`.
-	fn marker_reference_at(&self, position: i64, mtype: MarkerType) -> Option<String> {
-		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let index = self.handle.current_marker_index(pos_usize, mtype)?;
-		let marker = self.handle.document().buffer.markers.get(index)?;
-		if pos_usize < marker.position || pos_usize >= marker.position.saturating_add(marker.length) {
-			return None;
-		}
-		if marker.reference.is_empty() {
-			return None;
-		}
-		Some(marker.reference.clone())
-	}
-
-	#[must_use]
-	pub fn get_current_section_path(&self, position: i64) -> Option<String> {
-		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let section_index = self.handle.current_marker_index(pos_usize, MarkerType::SectionBreak)?;
-		let marker = self.handle.document().buffer.markers.get(section_index)?;
-		if marker.reference.is_empty() {
-			return None;
-		}
-		Some(marker.reference.clone())
 	}
 
 	#[must_use]
@@ -222,45 +169,6 @@ impl DocumentSession {
 		}
 	}
 
-	fn find_paragraph_boundaries(
-		&self,
-		content: &str,
-		byte_idx: usize,
-		direction: SegmentDirectionFfi,
-	) -> (usize, usize) {
-		let mut start = byte_idx;
-		if matches!(direction, SegmentDirectionFfi::Previous) {
-			let mut search_end = byte_idx;
-			while search_end > 0
-				&& (content.as_bytes()[search_end - 1] == b'\n' || content.as_bytes()[search_end - 1] == b'\r')
-			{
-				search_end -= 1;
-			}
-			start = content[..search_end].rfind('\n').map_or(0, |i| i + 1);
-		} else if matches!(direction, SegmentDirectionFfi::Next) {
-			if let Some(next) = content[byte_idx..].find('\n') {
-				start = byte_idx + next;
-				while start < content.len()
-					&& (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r')
-				{
-					start += 1;
-				}
-			} else {
-				start = content.len();
-			}
-		} else {
-			// Current: byte_idx may land anywhere inside the enclosing paragraph (e.g. a link
-			// marker mid-sentence), not just at its start, so search backward for the nearest
-			// preceding newline rather than only trimming forward from byte_idx.
-			while start < content.len() && (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r') {
-				start += 1;
-			}
-			start = content[..start].rfind('\n').map_or(0, |i| i + 1);
-		}
-		let end = content[start..].find('\n').map_or(content.len(), |i| start + i);
-		(start, end)
-	}
-
 	#[must_use]
 	pub fn get_status_info(&self, position: i64) -> StatusInfo {
 		let buf = &self.handle.document().buffer;
@@ -319,6 +227,158 @@ impl DocumentSession {
 	}
 
 	#[must_use]
+	pub fn current_page(&self, position: i64) -> i32 {
+		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		self.handle.page_index(pos).map_or(0, |idx| idx + 1)
+	}
+
+	#[must_use]
+	pub fn page_offset(&self, page: i32) -> i64 {
+		let index = page - 1;
+		if index < 0 {
+			return -1;
+		}
+		self.handle
+			.get_marker_position_by_index(MarkerType::PageBreak, index)
+			.map_or(-1, |offset| i64::try_from(offset).unwrap_or(-1))
+	}
+
+	#[must_use]
+	pub fn get_line_text(&self, position: i64) -> String {
+		let buf = &self.handle.document().buffer;
+		let total_chars = buf.char_count();
+		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let newlines = buf.newline_positions();
+		let line_start = match newlines.partition_point(|&p| p < pos) {
+			0 => 0,
+			idx => newlines[idx - 1] + 1,
+		};
+		let start_byte = buf.byte_index_for_char(line_start);
+		let line_end_byte = buf.content[start_byte..].find('\n').map_or(buf.content.len(), |i| start_byte + i);
+		buf.content[start_byte..line_end_byte].to_string()
+	}
+
+	#[must_use]
+	pub fn get_line_markers(&self, line: i64) -> Vec<LineMarker> {
+		let start_pos = self.position_from_line(line);
+		let end_pos = self.position_from_line(line + 1);
+		let start_usize = usize::try_from(start_pos.max(0)).unwrap_or(0);
+		// If line + 1 overflows or is the end, end_pos might be equal to start_pos
+		let end_usize = if start_pos == end_pos { usize::MAX } else { usize::try_from(end_pos.max(0)).unwrap_or(0) };
+		let mut res = Vec::new();
+		for marker in &self.handle.document().buffer.markers {
+			if marker.position >= start_usize && marker.position < end_usize {
+				res.push(LineMarker {
+					mtype: marker.mtype,
+					position: i64::try_from(marker.position).unwrap_or(0),
+					text: marker.text.clone(),
+					reference: marker.reference.clone(),
+					level: marker.level,
+					length: i64::try_from(marker.length).unwrap_or(0),
+				});
+			} else if marker.position > end_usize {
+				break;
+			}
+		}
+		res
+	}
+}
+
+impl DocumentSession {
+	#[must_use]
+	pub fn get_formatting_markers(&self) -> Vec<LineMarker> {
+		self.handle
+			.document()
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| matches!(m.mtype, MarkerType::Bold | MarkerType::Italic | MarkerType::Underline))
+			.map(|m| LineMarker {
+				mtype: m.mtype,
+				position: i64::try_from(m.position).unwrap_or(0),
+				text: String::new(),
+				reference: String::new(),
+				level: 0,
+				length: i64::try_from(m.length).unwrap_or(0),
+			})
+			.collect()
+	}
+
+	#[must_use]
+	pub fn get_table_at_position(&self, position: i64) -> Option<String> {
+		self.marker_reference_at(position, MarkerType::Table)
+	}
+
+	#[must_use]
+	pub fn get_formula_at_position(&self, position: i64) -> Option<String> {
+		self.marker_reference_at(position, MarkerType::Formula)
+	}
+
+	/// Reference of the marker whose half-open display extent contains `position`.
+	fn marker_reference_at(&self, position: i64, mtype: MarkerType) -> Option<String> {
+		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
+		let index = self.handle.current_marker_index(pos_usize, mtype)?;
+		let marker = self.handle.document().buffer.markers.get(index)?;
+		if pos_usize < marker.position || pos_usize >= marker.position.saturating_add(marker.length) {
+			return None;
+		}
+		if marker.reference.is_empty() {
+			return None;
+		}
+		Some(marker.reference.clone())
+	}
+
+	#[must_use]
+	pub fn get_current_section_path(&self, position: i64) -> Option<String> {
+		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
+		let section_index = self.handle.current_marker_index(pos_usize, MarkerType::SectionBreak)?;
+		let marker = self.handle.document().buffer.markers.get(section_index)?;
+		if marker.reference.is_empty() {
+			return None;
+		}
+		Some(marker.reference.clone())
+	}
+
+	fn find_paragraph_boundaries(
+		&self,
+		content: &str,
+		byte_idx: usize,
+		direction: SegmentDirectionFfi,
+	) -> (usize, usize) {
+		let mut start = byte_idx;
+		if matches!(direction, SegmentDirectionFfi::Previous) {
+			let mut search_end = byte_idx;
+			while search_end > 0
+				&& (content.as_bytes()[search_end - 1] == b'\n' || content.as_bytes()[search_end - 1] == b'\r')
+			{
+				search_end -= 1;
+			}
+			start = content[..search_end].rfind('\n').map_or(0, |i| i + 1);
+		} else if matches!(direction, SegmentDirectionFfi::Next) {
+			if let Some(next) = content[byte_idx..].find('\n') {
+				start = byte_idx + next;
+				while start < content.len()
+					&& (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r')
+				{
+					start += 1;
+				}
+			} else {
+				start = content.len();
+			}
+		} else {
+			// Current: byte_idx may land anywhere inside the enclosing paragraph (e.g. a link
+			// marker mid-sentence), not just at its start, so search backward for the nearest
+			// preceding newline rather than only trimming forward from byte_idx.
+			while start < content.len() && (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r') {
+				start += 1;
+			}
+			start = content[..start].rfind('\n').map_or(0, |i| i + 1);
+		}
+		let end = content[start..].find('\n').map_or(content.len(), |i| start + i);
+		(start, end)
+	}
+
+	#[must_use]
 	pub fn page_count(&self) -> usize {
 		self.handle.count_markers_by_type(MarkerType::PageBreak)
 	}
@@ -338,23 +398,6 @@ impl DocumentSession {
 			.collect()
 	}
 
-	#[must_use]
-	pub fn current_page(&self, position: i64) -> i32 {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
-		self.handle.page_index(pos).map_or(0, |idx| idx + 1)
-	}
-
-	#[must_use]
-	pub fn page_offset(&self, page_number: i32) -> i64 {
-		let index = page_number - 1;
-		if index < 0 {
-			return -1;
-		}
-		self.handle
-			.get_marker_position_by_index(MarkerType::PageBreak, index)
-			.map_or(-1, |offset| i64::try_from(offset).unwrap_or(-1))
-	}
-
 	/// Returns the text between two positions (start inclusive, end exclusive).
 	#[must_use]
 	pub fn get_text_range(&self, start: i64, end: i64) -> String {
@@ -367,21 +410,6 @@ impl DocumentSession {
 		let start_byte = self.handle.document().buffer.byte_index_for_char(start_pos);
 		let end_byte = self.handle.document().buffer.byte_index_for_char(end_pos);
 		self.handle.document().buffer.content[start_byte..end_byte].to_string()
-	}
-
-	#[must_use]
-	pub fn get_line_text(&self, position: i64) -> String {
-		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let newlines = buf.newline_positions();
-		let line_start = match newlines.partition_point(|&p| p < pos) {
-			0 => 0,
-			idx => newlines[idx - 1] + 1,
-		};
-		let start_byte = buf.byte_index_for_char(line_start);
-		let line_end_byte = buf.content[start_byte..].find('\n').map_or(buf.content.len(), |i| start_byte + i);
-		buf.content[start_byte..line_end_byte].to_string()
 	}
 
 	/// The display-unit `[start, end)` span of the line containing `position` (display units),
@@ -446,31 +474,6 @@ impl DocumentSession {
 			}
 			pos = line_end + 1;
 		}
-	}
-
-	#[must_use]
-	pub fn get_line_markers(&self, line: i64) -> Vec<LineMarker> {
-		let start_pos = self.position_from_line(line);
-		let end_pos = self.position_from_line(line + 1);
-		let start_usize = usize::try_from(start_pos.max(0)).unwrap_or(0);
-		// If line + 1 overflows or is the end, end_pos might be equal to start_pos
-		let end_usize = if start_pos == end_pos { usize::MAX } else { usize::try_from(end_pos.max(0)).unwrap_or(0) };
-		let mut res = Vec::new();
-		for marker in &self.handle.document().buffer.markers {
-			if marker.position >= start_usize && marker.position < end_usize {
-				res.push(LineMarker {
-					mtype: marker.mtype,
-					position: i64::try_from(marker.position).unwrap_or(0),
-					text: marker.text.clone(),
-					reference: marker.reference.clone(),
-					level: marker.level,
-					length: i64::try_from(marker.length).unwrap_or(0),
-				});
-			} else if marker.position > end_usize {
-				break;
-			}
-		}
-		res
 	}
 }
 

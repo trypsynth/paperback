@@ -10,7 +10,7 @@ use std::{
 use flate2::read::GzDecoder;
 use tar::Archive;
 
-use crate::workspace::project_root;
+use crate::workspace::{build_host_ffi_library, project_root};
 
 // Pinned instead of `releases/latest`: whatever `latest` currently resolves to
 // crashes on real iOS devices (not the Simulator) with
@@ -32,6 +32,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	download_pdfium_dylib(PDFIUM_IOS_ARM64_URL, &pdfium_dest)?;
 	wrap_pdfium_framework(&root, &pdfium_dest)?;
 	println!("Generating Swift bindings via uniffi-bindgen...");
+	let ffi_library = build_host_ffi_library(&cargo)?.to_string_lossy().into_owned();
 	let status = Command::new(&cargo)
 		.current_dir(&root)
 		.args([
@@ -44,7 +45,8 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 			"uniffi-bindgen",
 			"--",
 			"generate",
-			"crates/paperback-core/src/paperback.udl",
+			"--library",
+			&ffi_library,
 			"--language",
 			"swift",
 			"--out-dir",
