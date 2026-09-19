@@ -67,6 +67,20 @@ final class TtsManager: NSObject {
 			onSpeechRateChanged?(speechRate)
 		}
 	}
+	/// The rate as the whole-number percentage of its range that the settings slider and the
+	/// reading bar both show, so the two can never disagree about what a given number means.
+	var speechRatePercent: Int {
+		get {
+			let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
+			return Int((((speechRate - AVSpeechUtteranceMinimumSpeechRate) / range) * 100).rounded())
+		}
+		set {
+			let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
+			let clamped = Float(min(max(newValue, 0), 100)) / 100
+			speechRate = AVSpeechUtteranceMinimumSpeechRate + clamped * range
+		}
+	}
+
 	var pitch: Float = 1.0 {
 		didSet {
 			guard oldValue != pitch else { return }

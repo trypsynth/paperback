@@ -15,10 +15,7 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 		return voice.name
 	}
 
-	private var ratePercent: Int {
-		let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
-		return Int(((ttsManager.speechRate - AVSpeechUtteranceMinimumSpeechRate) / range * 100).rounded())
-	}
+	private var ratePercent: Int { ttsManager.speechRatePercent }
 
 	private var pitchPercent: Int {
 		Int(((ttsManager.pitch - 0.5) / 1.5 * 100).rounded())
