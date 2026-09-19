@@ -50,6 +50,8 @@
 		D8D8D8D8D8D8D8D8D8D80002 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D8D8D8D8D8D8D8D8D8D80001 /* Localizable.strings */; };
 		E5E5E5E5E5E5E5E5E5E50002 /* DocumentDataTransferMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E5E5E5E5E5E5E5E5E50001 /* DocumentDataTransferMenu.swift */; };
 		F1F1F1F1F1F1F1F1F1F10002 /* RecentDocumentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F1F1F1F1F1F1F1F1F10001 /* RecentDocumentRow.swift */; };
+		T1T1T1T1T1T1T1T1T1T1000D /* SeekSpillTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T1T1T1T1T1T1T1T1T1T1000C /* SeekSpillTests.swift */; };
+		T1T1T1T1T1T1T1T1T1T1000F /* FormatDurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T1T1T1T1T1T1T1T1T1T1000E /* FormatDurationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -111,6 +113,9 @@
 		D8D8D8D8D8D8D8D8D8D8100E /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		E5E5E5E5E5E5E5E5E5E50001 /* DocumentDataTransferMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentDataTransferMenu.swift; sourceTree = "<group>"; };
 		F1F1F1F1F1F1F1F1F1F10001 /* RecentDocumentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentDocumentRow.swift; sourceTree = "<group>"; };
+		T1T1T1T1T1T1T1T1T1T10002 /* PaperbackTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaperbackTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		T1T1T1T1T1T1T1T1T1T1000C /* SeekSpillTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeekSpillTests.swift; sourceTree = "<group>"; };
+		T1T1T1T1T1T1T1T1T1T1000E /* FormatDurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatDurationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXVariantGroup section */
@@ -146,6 +151,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		T1T1T1T1T1T1T1T1T1T10004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -153,6 +165,7 @@
 			isa = PBXGroup;
 			children = (
 				A1A1A1A1A1A1A1A1A1A10013 /* Paperback */,
+				T1T1T1T1T1T1T1T1T1T10009 /* PaperbackTests */,
 				A4A4A4A4A4A4A4A4A4A40001 /* paperbackFFI.xcframework */,
 				A6A6A6A6A6A6A6A6A6A60001 /* libpdfium.framework */,
 				A1A1A1A1A1A1A1A1A1A10003 /* Products */,
@@ -163,6 +176,7 @@
 			isa = PBXGroup;
 			children = (
 				A1A1A1A1A1A1A1A1A1A1000E /* Paperback.app */,
+				T1T1T1T1T1T1T1T1T1T10002 /* PaperbackTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -256,6 +270,15 @@
 			path = Generated;
 			sourceTree = "<group>";
 		};
+		T1T1T1T1T1T1T1T1T1T10009 /* PaperbackTests */ = {
+			isa = PBXGroup;
+			children = (
+				T1T1T1T1T1T1T1T1T1T1000C /* SeekSpillTests.swift */,
+				T1T1T1T1T1T1T1T1T1T1000E /* FormatDurationTests.swift */,
+			);
+			path = PaperbackTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -277,7 +300,43 @@
 			productReference = A1A1A1A1A1A1A1A1A1A1000E /* Paperback.app */;
 			productType = "com.apple.product-type.application";
 		};
+		T1T1T1T1T1T1T1T1T1T10001 /* PaperbackTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = T1T1T1T1T1T1T1T1T1T10006 /* Build configuration list for PBXNativeTarget "PaperbackTests" */;
+			buildPhases = (
+				T1T1T1T1T1T1T1T1T1T10003 /* Sources */,
+				T1T1T1T1T1T1T1T1T1T10004 /* Frameworks */,
+				T1T1T1T1T1T1T1T1T1T10005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				T1T1T1T1T1T1T1T1T1T1000A /* PBXTargetDependency */,
+			);
+			name = PaperbackTests;
+			productName = PaperbackTests;
+			productReference = T1T1T1T1T1T1T1T1T1T10002 /* PaperbackTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		T1T1T1T1T1T1T1T1T1T1000B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1A1A1A1A1A1A1A1A1A10001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1A1A1A1A1A1A1A1A1A10004;
+			remoteInfo = Paperback;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		T1T1T1T1T1T1T1T1T1T1000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1A1A1A1A1A1A1A1A1A10004 /* Paperback */;
+			targetProxy = T1T1T1T1T1T1T1T1T1T1000B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXProject section */
 		A1A1A1A1A1A1A1A1A1A10001 /* Project object */ = {
@@ -289,6 +348,10 @@
 				TargetAttributes = {
 					A1A1A1A1A1A1A1A1A1A10004 = {
 						CreatedOnToolsVersion = 16.2;
+					};
+					T1T1T1T1T1T1T1T1T1T10001 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = A1A1A1A1A1A1A1A1A1A10004;
 					};
 				};
 			};
@@ -320,6 +383,7 @@
 			projectRoot = "";
 			targets = (
 				A1A1A1A1A1A1A1A1A1A10004 /* Paperback */,
+				T1T1T1T1T1T1T1T1T1T10001 /* PaperbackTests */,
 			);
 		};
 /* End PBXProject section */
@@ -332,6 +396,13 @@
 				A1A1A1A1A1A1A1A1A1A10017 /* Assets.xcassets in Resources */,
 				C9C9C9C9C9C9C9C9C9C90002 /* Readmes in Resources */,
 				D8D8D8D8D8D8D8D8D8D80002 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		T1T1T1T1T1T1T1T1T1T10005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -394,6 +465,15 @@
 				E3E3E3E3E3E3E3E3E3E30005 /* SpeechDictionaryView.swift in Sources */,
 				E3E3E3E3E3E3E3E3E3E30007 /* RuleEditSheet.swift in Sources */,
 				F7F7F7F7F7F7F7F7F7F70002 /* Translations.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		T1T1T1T1T1T1T1T1T1T10003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				T1T1T1T1T1T1T1T1T1T1000D /* SeekSpillTests.swift in Sources */,
+				T1T1T1T1T1T1T1T1T1T1000F /* FormatDurationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -584,6 +664,44 @@
 			};
 			name = Release;
 		};
+		T1T1T1T1T1T1T1T1T1T10007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 63Z3C555W6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.paperback.ios.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Paperback.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Paperback";
+			};
+			name = Debug;
+		};
+		T1T1T1T1T1T1T1T1T1T10008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 63Z3C555W6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.paperback.ios.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Paperback.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Paperback";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -601,6 +719,15 @@
 			buildConfigurations = (
 				A1A1A1A1A1A1A1A1A1A1000C /* Debug */,
 				A1A1A1A1A1A1A1A1A1A1000D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		T1T1T1T1T1T1T1T1T1T10006 /* Build configuration list for PBXNativeTarget "PaperbackTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				T1T1T1T1T1T1T1T1T1T10007 /* Debug */,
+				T1T1T1T1T1T1T1T1T1T10008 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

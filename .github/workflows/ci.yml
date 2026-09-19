@@ -90,6 +90,14 @@ jobs:
           xcodebuild -project ios/Paperback.xcodeproj -scheme Paperback
           -configuration Release -destination 'generic/platform=iOS'
           CODE_SIGNING_ALLOWED=NO build
+      # The unit tests are hosted by the app, so they need a simulator to run in. Picking the
+      # first available iPhone by udid rather than naming a model keeps this working when the
+      # runner image changes which devices it ships.
+      - name: Run the unit tests
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for rt in d for x in d[rt] if 'iPhone' in x['name']))")
+          echo "Testing on simulator $UDID"
+          xcodebuild -project ios/Paperback.xcodeproj -scheme Paperback             -destination "id=$UDID" CODE_SIGNING_ALLOWED=NO test
 
   test:
     name: Tests
