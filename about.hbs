@@ -6,49 +6,29 @@ permalink: /licenses
 {% raw %}
 # Licenses
 
-Paperback itself is under the [MIT license](https://github.com/trypsynth/paperback/blob/master/LICENSE.md). It is built on a great deal of other people's work, and this page credits all of it.
+Paperback is built on a great deal of work that other people gave away for free. This page credits all of it.
 
-Everything listed here is under a permissive license. Nothing Paperback ships places conditions on what you may do with it.
+Paperback itself is under the [MIT license](https://github.com/trypsynth/paperback/blob/master/LICENSE.md), and everything it ships alongside is permissively licensed too, so nothing here restricts what you can do with the program.
 
-## Native libraries
+## PDFium and wxWidgets
 
-These are not Rust crates. They are compiled libraries that ship alongside the application, so no tool can find them in the source tree and they are recorded here by hand.
+Paperback reads PDFs with [PDFium](https://pdfium.googlesource.com/pdfium/), the same engine Chrome uses, which is under the BSD 3-Clause license. The prebuilt copies it ships come from [bblanchon/pdfium-binaries](https://github.com/bblanchon/pdfium-binaries).
 
-<table>
-<thead>
-<tr><th>Library</th><th>Used for</th><th>License</th></tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="https://pdfium.googlesource.com/pdfium/">PDFium</a></td>
-<td>Reading PDFs, including the tag tree that makes a tagged PDF readable</td>
-<td>BSD-3-Clause</td>
-</tr>
-<tr>
-<td><a href="https://www.wxwidgets.org/">wxWidgets</a></td>
-<td>The desktop interface</td>
-<td>wxWindows Library Licence</td>
-</tr>
-</tbody>
-</table>
-
-The prebuilt PDFium binaries come from [bblanchon/pdfium-binaries](https://github.com/bblanchon/pdfium-binaries).
+The desktop interface is [wxWidgets](https://www.wxwidgets.org/), under the wxWindows Library Licence.
 
 ## Rust libraries
 
-Paperback depends on these licenses:
+Everything below is grouped by license. Each entry names the crates that use it and carries the full text.
 
-<ul>
 {{#each overview}}
-<li>{{name}}: {{count}}</li>
-{{/each}}
-</ul>
+<h3>{{name}}</h3>
 
-Each one below lists the crates that use it, followed by its full text.
+<p>{{count}} crates.</p>
 
-{{#each licenses}}
+{{#each indices}}
+{{#with (lookup ../../licenses this)}}
 <details>
-<summary>{{name}}: {{#each used_by}}{{#unless @first}}, {{/unless}}{{crate.name}}{{/each}}</summary>
+<summary><h4>{{#each used_by}}{{#unless @first}}, {{/unless}}{{crate.name}}{{/each}}</h4></summary>
 
 <ul>
 {{#each used_by}}
@@ -59,5 +39,7 @@ Each one below lists the crates that use it, followed by its full text.
 <pre>{{text}}</pre>
 </details>
 
+{{/with}}
+{{/each}}
 {{/each}}
 {% endraw %}
