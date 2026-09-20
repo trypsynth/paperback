@@ -1,13 +1,4 @@
-use super::{is_rtf, write_binary_text};
-
-#[test]
-fn rtf_is_recognised_past_a_bom_or_whitespace() {
-	assert!(is_rtf(br"{\rtf1\ansi hello}"));
-	assert!(is_rtf(b"\xEF\xBB\xBF{\\rtf1 x}"), "a byte order mark before the brace");
-	assert!(is_rtf(b"  \r\n{\\rtf1 x}"), "leading whitespace");
-	assert!(!is_rtf(b"Just plain text."));
-	assert!(!is_rtf(b"\x31\xBE\x00\x00"), "the write binary magic is not rtf");
-}
+use super::write_binary_text;
 
 /// A genuine Windows Write binary file: the magic, `fcMac` at offset 14 pointing past the text,
 /// and the text starting at byte 128.

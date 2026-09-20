@@ -10,10 +10,18 @@ mod legacy_config;
 #[cfg(target_os = "linux")]
 mod linux_integration;
 mod logging;
+mod ocr;
+#[cfg(any(target_os = "windows", test))]
+mod rtf;
+mod search;
+mod shell;
 #[cfg(test)]
 mod test_locale;
+mod text_format;
+mod text_window;
 mod translation_manager;
 mod ui;
+mod updater;
 
 use std::{env, fs, io};
 

@@ -11,7 +11,9 @@ use paperback_formats::FormatMeta;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem, is_heading_marker},
 	t,
-	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{
+		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
+	},
 };
 
 pub mod cbr;
@@ -329,6 +331,7 @@ pub trait ConverterOutput {
 	fn get_images(&self) -> &[ImageInfo];
 	fn get_figures(&self) -> &[ImageInfo];
 	fn get_tables(&self) -> &[TableInfo];
+	fn get_formulas(&self) -> &[FormulaInfo];
 	fn get_separators(&self) -> &[SeparatorInfo];
 	fn get_lists(&self) -> &[ListInfo];
 	fn get_list_items(&self) -> &[ListItemInfo];
@@ -402,6 +405,17 @@ fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn Conv
 			Marker::new(MarkerType::ListItem, offset + list_item.offset)
 				.with_text(list_item.text.clone())
 				.with_level(list_item.level),
+		);
+	}
+}
+
+fn add_formulas(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	for formula in converter.get_formulas() {
+		buffer.add_marker(
+			Marker::new(MarkerType::Formula, offset + formula.offset)
+				.with_text(formula.text.clone())
+				.with_reference(formula.mathml.clone())
+				.with_length(formula.length),
 		);
 	}
 }
@@ -510,6 +524,7 @@ pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn Conver
 	add_images(buffer, converter, offset);
 	add_figures(buffer, converter, offset);
 	add_tables_separators_lists(buffer, converter, offset);
+	add_formulas(buffer, converter, offset);
 	add_formatting(buffer, converter, offset);
 }
 
@@ -523,6 +538,7 @@ pub fn add_converter_markers_excluding_links(
 	add_images(buffer, converter, offset);
 	add_figures(buffer, converter, offset);
 	add_tables_separators_lists(buffer, converter, offset);
+	add_formulas(buffer, converter, offset);
 	add_formatting(buffer, converter, offset);
 }
 

@@ -50,6 +50,24 @@ final class AppViewModel {
 	var textAlignmentChoice: Int = 0 {
 		didSet { configManager.setAppInt(key: "text_alignment", value: Int32(textAlignmentChoice)) }
 	}
+	/// 0 follows the system, 1 forces light, 2 forces dark. Readers often want the page dark
+	/// while the rest of the phone stays light, which following the system alone cannot do.
+	/// Drops the previous and next buttons from the reading bar's screen reader order. They
+	/// duplicate the swipe up and down actions already on the play button, so hiding them makes
+	/// the bar three stops instead of five. Off by default: the swipe is not discoverable on its
+	/// own, so nobody should lose the buttons without having chosen to.
+	var hidePrevNextButtons: Bool = false {
+		didSet { configManager.setAppBool(key: "hide_prev_next_buttons", value: hidePrevNextButtons) }
+	}
+	var appearanceChoice: Int = 0 {
+		didSet { configManager.setAppInt(key: "appearance", value: Int32(appearanceChoice)) }
+	}
+	/// Pure black on white, or white on black, for document text. The system's own Increase
+	/// Contrast setting turns this on too, so a reader who has already asked for it everywhere
+	/// does not have to ask again here.
+	var highContrastText: Bool = false {
+		didSet { configManager.setAppBool(key: "high_contrast_text", value: highContrastText) }
+	}
 
 	var recentDocuments: [RecentDocument] = []
 
@@ -67,8 +85,28 @@ final class AppViewModel {
 		lineSpacingChoice = Int(configManager.getAppInt(key: "line_spacing", defaultValue: 0))
 		paragraphSpacingChoice = Int(configManager.getAppInt(key: "paragraph_spacing", defaultValue: 0))
 		textAlignmentChoice = Int(configManager.getAppInt(key: "text_alignment", defaultValue: 0))
+		hidePrevNextButtons = configManager.getAppBool(key: "hide_prev_next_buttons", defaultValue: false)
+		appearanceChoice = Int(configManager.getAppInt(key: "appearance", defaultValue: 0))
+		highContrastText = configManager.getAppBool(key: "high_contrast_text", defaultValue: false)
 
 		reading.context = self
+
+		let narration = RecordedNarration(config: configManager)
+		narration.onClipChanged = { [weak self] position in
+			// The recording is the authority on where the reader is while it plays, so the
+			// caret and the displayed text follow it rather than the other way round.
+			guard let self else { return }
+			self.reading.ttsPosition = position
+			self.reading.refreshSegmentForAudio()
+			self.updateTabPosition(position)
+		}
+		narration.onPlayingChanged = { [weak self] _ in
+			self?.reading.updateNowPlaying()
+		}
+		narration.onSeekLanded = { [weak self] elapsedMs in
+			self?.reading.announceAudioSeekLanded(elapsedMs)
+		}
+		reading.narration = narration
 
 		let ttsManager = reading.ttsManager
 		let savedRate = configManager.getAppString(key: "tts_speech_rate", defaultValue: "")
@@ -183,6 +221,29 @@ final class AppViewModel {
 		return FileManager.default.fileExists(atPath: tempURL.path) ? tempURL : nil
 	}
 
+	/// The export formats the open document can be rendered as, which the core decides per
+	/// document rather than per app.
+	var supportedExportFormats: [ExportFormat] {
+		activeSession?.getSupportedExportFormatsFfi() ?? []
+	}
+
+	/// Renders the open document in `format` to a temporary file named after the book, ready to
+	/// hand to the file mover. Nil when there is nothing open or the write failed.
+	func exportActiveDocument(as format: ExportFormat) -> URL? {
+		guard let tab = activeTab, let session = tab.session else { return nil }
+		let name = tab.url.deletingPathExtension().lastPathComponent
+		let tempURL = FileManager.default.temporaryDirectory
+			.appendingPathComponent(name)
+			.appendingPathExtension(format.fileExtension)
+		try? FileManager.default.removeItem(at: tempURL)
+		do {
+			try session.renderExportFfi(format: format).write(to: tempURL, atomically: true, encoding: .utf8)
+		} catch {
+			return nil
+		}
+		return tempURL
+	}
+
 	// Applies a .paperback file's bookmarks/position to the active document.
 	@discardableResult
 	func importActiveDocumentSettings(from url: URL) -> Bool {
@@ -257,6 +318,13 @@ final class AppViewModel {
 		loadRecentsFromConfig()
 	}
 
+	/// Empties the recent documents list. Open tabs are left alone: a document being read is
+	/// not a document the reader is finished with.
+	func clearRecentDocuments() {
+		configManager.clearRecentDocuments()
+		recentDocuments.removeAll()
+	}
+
 	func removeRecentDocument(url: URL) {
 		configManager.removeDocumentHistory(path: url.path(percentEncoded: false))
 		recentDocuments.removeAll { $0.url == url }
@@ -315,25 +383,85 @@ extension AppViewModel: ReadingContext {
 	}
 }
 
-enum SegmentType: String, CaseIterable {
-	case paragraph = "Paragraph"
-	case line = "Line"
-	case heading = "Heading"
-	case section = "Section"
-}
-
 // What the previous/next controls move by. Ordinarily a structural unit; while a Find query is
 // active, Find joins the list and steps between that query's matches instead.
 enum NavUnit: Hashable {
-	case segment(SegmentType)
+	case segment(SegmentTypeFfi)
+	/// An amount of elapsed recording to skip, for a book with its own narration. Stepping by
+	/// paragraph means nothing in a bundle of audio files with no real text to walk.
+	case time(seconds: Int)
 	case find
 
 	var name: String {
 		switch self {
-		case .segment(let type): return t(type.rawValue)
+		case .segment(let type): return segmentTypeName(type)
+		case .time(let seconds): return seekAmountName(seconds)
 		// TRANSLATORS: Name of the "Find" navigation unit, which moves between search matches
 		case .find: return t("Find")
 		}
+	}
+}
+
+/// Renders a duration the way the reading bar reports one: minutes and seconds, with hours only
+/// once there are any.
+func formatDuration(_ ms: Int64) -> String {
+	let totalSeconds = (max(ms, 0) + 500) / 1000
+	let hours = totalSeconds / 3600
+	let minutes = (totalSeconds % 3600) / 60
+	let seconds = totalSeconds % 60
+	return hours > 0
+		? String(format: "%d:%02d:%02d", hours, minutes, seconds)
+		: String(format: "%d:%02d", minutes, seconds)
+}
+
+/// The seek amounts a recorded book offers, matching the presets desktop shows in its Options.
+let audioSeekAmountsSeconds = [5, 10, 30, 60, 120]
+
+/// Matches the labels desktop shows for the same presets in its Options dialog.
+func seekAmountName(_ seconds: Int) -> String {
+	switch seconds {
+	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
+	case 5: return t("5 seconds")
+	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
+	case 10: return t("10 seconds")
+	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
+	case 30: return t("30 seconds")
+	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
+	case 60: return t("1 minute")
+	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar
+	case 120: return t("2 minutes")
+	default: return "\(seconds)"
+	}
+}
+
+func segmentTypeName(_ type: SegmentTypeFfi) -> String {
+	switch type {
+	// TRANSLATORS: Name of the "paragraph" reading/navigation unit
+	case .paragraph: return t("Paragraph")
+	// TRANSLATORS: Name of the "line" reading/navigation unit
+	case .line: return t("Line")
+	// TRANSLATORS: Name of the "heading" reading/navigation unit
+	case .heading: return t("Heading")
+	// TRANSLATORS: Name of the "link" reading/navigation unit
+	case .link: return t("Link")
+	// TRANSLATORS: Name of the "section" reading/navigation unit
+	case .section: return t("Section")
+	// TRANSLATORS: Name of the "page" reading/navigation unit
+	case .page: return t("Page")
+	// TRANSLATORS: Name of the "list" reading/navigation unit
+	case .list: return t("List")
+	// TRANSLATORS: Name of the "list item" reading/navigation unit
+	case .listItem: return t("List Item")
+	// TRANSLATORS: Name of the "table" reading/navigation unit
+	case .table: return t("Table")
+	// TRANSLATORS: Name of the "separator" reading/navigation unit
+	case .separator: return t("Separator")
+	// TRANSLATORS: Name of the "image" reading/navigation unit
+	case .image: return t("Image")
+	// TRANSLATORS: Name of the "figure" reading/navigation unit
+	case .figure: return t("Figure")
+	// TRANSLATORS: Name of the "formula" reading/navigation unit
+	case .formula: return t("Formula")
 	}
 }
 

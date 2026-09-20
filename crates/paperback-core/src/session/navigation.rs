@@ -198,6 +198,15 @@ impl DocumentSession {
 		)
 	}
 
+	#[must_use]
+	pub fn navigate_formula(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Formula, level_filter: 0 },
+			self.has_marker(MarkerType::Formula),
+			|s, result| s.fill_marker_text_if_empty(result),
+		)
+	}
+
 	fn navigate_bookmark_inner(
 		&self,
 		config: &ConfigManager,
@@ -287,7 +296,10 @@ impl DocumentSession {
 				|| self.handle.count_markers_by_type(MarkerType::Heading6) > 0
 		}
 	}
+}
 
+#[cfg_attr(feature = "uniffi", uniffi::export)]
+impl DocumentSession {
 	#[must_use]
 	pub fn get_toc(&self) -> Vec<TocEntry> {
 		let mut flat = Vec::new();

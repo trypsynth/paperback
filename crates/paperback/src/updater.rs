@@ -78,7 +78,7 @@ fn beat_foreground_grant() {
 		let mut quiet = 0u32;
 		loop {
 			std::thread::sleep(BEAT);
-			if super::main_window::own_dialog_is_up() || super::main_window::frame_is_disabled() {
+			if crate::ui::own_dialog_is_up() || crate::ui::frame_is_disabled() {
 				in_update = true;
 				quiet = 0;
 			} else if in_update {

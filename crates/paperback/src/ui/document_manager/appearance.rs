@@ -7,15 +7,17 @@ use std::{rc::Rc, sync::Mutex};
 use wxdragon::prelude::*;
 
 use super::DocumentManager;
-use crate::ui::{
-	readability::{
-		apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_letter_spacing_to_ctrl,
-		apply_line_spacing_to_ctrl, apply_paragraph_spacing_to_ctrl, apply_readability_format_to_ctrl,
-		apply_text_alignment_to_ctrl, build_font_from_readability,
-	},
-	reader_input,
-	text_render::fill_text_ctrl_with_formatting,
+use crate::{
 	text_window::TextWindow,
+	ui::{
+		readability::{
+			apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_letter_spacing_to_ctrl,
+			apply_line_spacing_to_ctrl, apply_paragraph_spacing_to_ctrl, apply_readability_format_to_ctrl,
+			apply_text_alignment_to_ctrl, build_font_from_readability,
+		},
+		reader_input,
+		text_render::fill_text_ctrl_with_formatting,
+	},
 };
 
 impl DocumentManager {

@@ -34,7 +34,7 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.2.0"
 toml = { workspace = true }
 wx-utils = { version = "0.3.0", features = ["shortcuts"] }
-wxdragon = { version = "0.9.21", features = ["webview"] }
+wxdragon = { version = "0.9.22", features = ["webview"] }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
@@ -44,7 +44,7 @@ windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_Sys
 objc = "0.2.7"
 
 [build-dependencies]
-embed-manifest = "1.5.0"
+embed-manifest = "1.5.1"
 flate2 = { version = "1.1.10", default-features = false }
 paperback-formats = { path = "../paperback-formats" }
 patois-build = "0.1.13"

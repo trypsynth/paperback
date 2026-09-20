@@ -368,3 +368,55 @@ fn webview_target_path_extracts_linked_sibling_sections() {
 	assert!(linked.exists(), "expected linked section extracted at {}", linked.display());
 	fs::remove_dir_all(&temp_root).ok();
 }
+
+/// <https://github.com/trypsynth/paperback/issues/873>: the reader shows a document whole up to
+/// one window plus an extension chunk, but the web view used to start slicing as soon as a
+/// single window's width was passed. A document between the two was held whole by the reader
+/// and rendered as a slice, so its last pages were missing, links pointing past the slice were
+/// dropped, and it announced itself as a partial view of a document being shown in full.
+#[test]
+fn a_document_the_reader_shows_whole_is_not_sliced_by_the_web_view() {
+	let paragraph = "The quick brown fox jumps over the lazy dog and keeps on running.\n";
+	let repeats = usize::try_from(WHOLE_DOCUMENT_DISPLAY_LEN).unwrap() / paragraph.len() - 200;
+	let mut content = paragraph.repeat(repeats);
+	content.push_str("THE VERY LAST PARAGRAPH OF THE BOOK\n");
+	let len = i64::try_from(content.chars().count()).unwrap();
+	assert!(
+		len > WINDOW_DISPLAY_LEN && len <= WHOLE_DOCUMENT_DISPLAY_LEN,
+		"the fixture has to sit in the band the reader shows whole, got {len}"
+	);
+
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let mut session = session_with_content(&content);
+	session.file_path = "book.mobi".to_string();
+	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	let html = fs::read_to_string(&target.path).unwrap();
+
+	assert!(html.contains("THE VERY LAST PARAGRAPH OF THE BOOK"), "the end of the book is rendered");
+	assert!(
+		!html.contains("This view shows the part of the document you are reading."),
+		"a whole document must not announce itself as partial"
+	);
+	let _ = fs::remove_dir_all(&dir);
+}
+
+/// Past the threshold the web view does still slice, which is the behaviour the cap exists for.
+#[test]
+fn a_document_past_the_threshold_is_still_sliced() {
+	let paragraph = "The quick brown fox jumps over the lazy dog and keeps on running.\n";
+	let repeats = usize::try_from(WHOLE_DOCUMENT_DISPLAY_LEN).unwrap() / paragraph.len() * 2;
+	let content = paragraph.repeat(repeats);
+	let len = i64::try_from(content.chars().count()).unwrap();
+	assert!(len > WHOLE_DOCUMENT_DISPLAY_LEN, "the fixture has to outrun the threshold, got {len}");
+
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let mut session = session_with_content(&content);
+	session.file_path = "book.mobi".to_string();
+	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	let html = fs::read_to_string(&target.path).unwrap();
+
+	assert!(html.contains("This view shows the part of the document you are reading."), "a sliced document says so");
+	let _ = fs::remove_dir_all(&dir);
+}

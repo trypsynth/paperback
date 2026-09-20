@@ -116,6 +116,7 @@ struct TextModeView: View {
 					}
 				}
 			}
+			.readingBackground(viewModel)
 			.onAppear {
 				proxy.scrollTo(tab.lineScrollIndex, anchor: .top)
 			}

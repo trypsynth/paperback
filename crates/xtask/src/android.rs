@@ -10,7 +10,10 @@ use std::{
 use flate2::read::GzDecoder;
 use tar::Archive;
 
-use crate::{print_help, workspace::project_root};
+use crate::{
+	print_help,
+	workspace::{build_host_ffi_library, project_root},
+};
 
 const PDFIUM_ANDROID_ARM64_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-android-arm64.tgz";
@@ -39,6 +42,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	download_pdfium_so(PDFIUM_ANDROID_ARM64_URL, &jni_libs.join("arm64-v8a/libpdfium.so"))?;
 	download_pdfium_so(PDFIUM_ANDROID_ARM_URL, &jni_libs.join("armeabi-v7a/libpdfium.so"))?;
 	println!("Generating Kotlin bindings via uniffi-bindgen...");
+	let ffi_library = build_host_ffi_library(&cargo)?.to_string_lossy().into_owned();
 	let status = Command::new(&cargo)
 		.current_dir(project_root())
 		.args([
@@ -51,7 +55,8 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			"uniffi-bindgen",
 			"--",
 			"generate",
-			"crates/paperback-core/src/paperback.udl",
+			"--library",
+			&ffi_library,
 			"--language",
 			"kotlin",
 			"--out-dir",

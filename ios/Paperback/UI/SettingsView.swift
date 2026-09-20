@@ -15,10 +15,7 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 		return voice.name
 	}
 
-	private var ratePercent: Int {
-		let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
-		return Int(((ttsManager.speechRate - AVSpeechUtteranceMinimumSpeechRate) / range * 100).rounded())
-	}
+	private var ratePercent: Int { ttsManager.speechRatePercent }
 
 	private var pitchPercent: Int {
 		Int(((ttsManager.pitch - 0.5) / 1.5 * 100).rounded())
@@ -121,6 +118,17 @@ private struct ReadabilitySettingsSection: View {
 				// TRANSLATORS: Wide paragraph spacing option
 				Text(t("Wide")).tag(2)
 			}
+			// TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
+			Picker(t("Appearance"), selection: $viewModel.appearanceChoice) {
+				// TRANSLATORS: Appearance option following the phone's own light/dark setting
+				Text(t("System")).tag(0)
+				// TRANSLATORS: Appearance option pinning the app to its light colours
+				Text(t("Light")).tag(1)
+				// TRANSLATORS: Appearance option pinning the app to its dark colours
+				Text(t("Dark")).tag(2)
+			}
+			// TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
+			Toggle(t("High Contrast Text"), isOn: $viewModel.highContrastText)
 			// TRANSLATORS: Label for the picker choosing how document text is aligned
 			Picker(t("Alignment"), selection: $viewModel.textAlignmentChoice) {
 				// TRANSLATORS: Left text alignment option
@@ -149,6 +157,11 @@ struct SettingsView: View {
 				Toggle(t("Swipe up moves forward"), isOn: Binding(
 					get: { viewModel.swipeUpMovesForward },
 					set: { viewModel.swipeUpMovesForward = $0 }
+				))
+				// TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
+				Toggle(t("Hide previous and next buttons"), isOn: Binding(
+					get: { viewModel.hidePrevNextButtons },
+					set: { viewModel.hidePrevNextButtons = $0 }
 				))
 			} header: {
 				// TRANSLATORS: Section header in Settings grouping general app behavior toggles

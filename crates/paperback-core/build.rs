@@ -15,11 +15,4 @@ fn main() {
 	println!("cargo:rustc-env=PAPERBACK_SHORT_HASH={short_hash}");
 	println!("cargo:rustc-env=PAPERBACK_IS_DEV={}", if is_dev { "1" } else { "0" });
 	println!("cargo:rerun-if-changed=.git/HEAD");
-	// The vendored unrar reads the registry to find its own data directory, and unrar_sys
-	// does not ask for the library that lives in.
-	if std::env::var("CARGO_CFG_WINDOWS").is_ok() {
-		println!("cargo:rustc-link-lib=advapi32");
-	}
-	#[cfg(feature = "uniffi")]
-	uniffi::generate_scaffolding("src/paperback.udl").expect("Building the UDL file failed");
 }

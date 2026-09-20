@@ -1,4 +1,4 @@
-//! Feeds a `write::build_rtf` blob into the native `RichEdit` control behind a
+//! Feeds a `rtf::build_rtf` blob into the native `RichEdit` control behind a
 //! `wxTE_RICH2` `TextCtrl`, via the Win32 `EM_STREAMIN` message. See
 //! `text_render::fill_text_ctrl_with_formatting` for the round-trip check
 //! that decides whether callers trust this path or fall back to plain text.

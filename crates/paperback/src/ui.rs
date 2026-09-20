@@ -12,24 +12,22 @@ mod main_window;
 mod menu;
 mod menu_ids;
 mod navigation;
-mod ocr;
 mod readability;
 mod reader_input;
-#[cfg(any(target_os = "windows", test))]
-mod rtf;
+#[cfg(target_os = "windows")]
+mod rtf_stream;
 mod selection;
-mod shell;
 mod sleep_timer;
 mod sounds;
 mod status;
 mod text_render;
-mod text_window;
 #[cfg(target_os = "windows")]
 mod tray;
-mod update;
 mod window_geometry;
 
 pub use app::PaperbackApp;
 #[cfg(target_os = "linux")]
 pub use dialogs::{AssociationChoice, ChoiceAction, show_linux_setup_dialog};
 pub use main_window::MainWindow;
+#[cfg(target_os = "windows")]
+pub(crate) use main_window::{frame_is_disabled, own_dialog_is_up};

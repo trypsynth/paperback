@@ -3,86 +3,22 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1A1A1A1A1A1A1A1A1A10015 /* PaperbackApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A1A1A1A1A1A1A1A1A1000F /* PaperbackApp.swift */; };
-		A1A1A1A1A1A1A1A1A1A10016 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */; };
-		C2C2C2C2C2C2C2C2C2C20001 /* KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C2C2C2C2C2C2C2C2C20002 /* KeyboardShortcuts.swift */; };
-		C1C1C1C1C1C1C1C1C1C10002 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C1C1C1C1C1C1C1C1C10001 /* NavigationRouter.swift */; };
-		C1C1C1C1C1C1C1C1C1C10004 /* ReadingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C1C1C1C1C1C1C1C1C10003 /* ReadingController.swift */; };
-		C1C1C1C1C1C1C1C1C1C10006 /* ReadabilityStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C1C1C1C1C1C1C1C1C10005 /* ReadabilityStyle.swift */; };
-		E3E3E3E3E3E3E3E3E3E30001 /* TtsRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E3E3E3E3E3E3E3E3E30002 /* TtsRule.swift */; };
-		E3E3E3E3E3E3E3E3E3E30003 /* VoiceHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E3E3E3E3E3E3E3E3E30004 /* VoiceHelpers.swift */; };
-		E3E3E3E3E3E3E3E3E3E30005 /* SpeechDictionaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E3E3E3E3E3E3E3E3E30006 /* SpeechDictionaryView.swift */; };
-		E3E3E3E3E3E3E3E3E3E30007 /* RuleEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E3E3E3E3E3E3E3E3E30008 /* RuleEditSheet.swift */; };
 		A1A1A1A1A1A1A1A1A1A10017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */; };
-		A3A3A3A3A3A3A3A3A3A30001 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */; };
-		A3A3A3A3A3A3A3A3A3A30002 /* DocumentTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */; };
-		A3A3A3A3A3A3A3A3A3A30003 /* TtsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */; };
-		A3A3A3A3A3A3A3A3A3A30004 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20004 /* ReaderView.swift */; };
-		A3A3A3A3A3A3A3A3A3A30005 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20005 /* EmptyStateView.swift */; };
-		A3A3A3A3A3A3A3A3A3A30006 /* TtsModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20006 /* TtsModeView.swift */; };
-		A3A3A3A3A3A3A3A3A3A30007 /* TextModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20007 /* TextModeView.swift */; };
-		A3A3A3A3A3A3A3A3A3A30008 /* TtsControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20008 /* TtsControlBar.swift */; };
-		A3A3A3A3A3A3A3A3A3A3000B /* DocumentMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000B /* DocumentMenu.swift */; };
-		A3A3A3A3A3A3A3A3A3A3000C /* TocView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000C /* TocView.swift */; };
-		A3A3A3A3A3A3A3A3A3A3000D /* FindView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000D /* FindView.swift */; };
-		A3A3A3A3A3A3A3A3A3A3000E /* GoToSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */; };
-		A3A3A3A3A3A3A3A3A3A3000F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000F /* SettingsView.swift */; };
-		A3A3A3A3A3A3A3A3A3A30010 /* RecentDocumentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsView.swift */; };
-		A3A3A3A3A3A3A3A3A3A30012 /* DocumentInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */; };
-		A3A3A3A3A3A3A3A3A3A30013 /* SleepTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerView.swift */; };
-		A3A3A3A3A3A3A3A3A3A30014 /* ElementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20014 /* ElementsView.swift */; };
-		A3A3A3A3A3A3A3A3A3A30015 /* PasswordSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20015 /* PasswordSheet.swift */; };
-		A3A3A3A3A3A3A3A3A3A30016 /* VoicePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20016 /* VoicePickerView.swift */; };
-		A3A3A3A3A3A3A3A3A3A30017 /* AccessibilityHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20017 /* AccessibilityHelpers.swift */; };
-		A3A3A3A3A3A3A3A3A3A30019 /* TabStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20019 /* TabStripView.swift */; };
 		A4A4A4A4A4A4A4A4A4A40002 /* paperbackFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4A4A4A4A4A4A4A4A4A40001 /* paperbackFFI.xcframework */; };
 		A4A4A4A4A4A4A4A4A4A40004 /* paperback.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4A4A4A4A4A4A4A4A4A40003 /* paperback.swift */; };
 		A6A6A6A6A6A6A6A6A6A60002 /* libpdfium.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A6A6A6A6A6A6A6A6A6A60001 /* libpdfium.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		F7F7F7F7F7F7F7F7F7F70002 /* Translations.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7F7F7F7F7F7F7F7F7F70001 /* Translations.swift */; };
 		C9C9C9C9C9C9C9C9C9C90002 /* Readmes in Resources */ = {isa = PBXBuildFile; fileRef = C9C9C9C9C9C9C9C9C9C90001 /* Readmes */; };
 		D8D8D8D8D8D8D8D8D8D80002 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D8D8D8D8D8D8D8D8D8D80001 /* Localizable.strings */; };
-		E5E5E5E5E5E5E5E5E5E50002 /* DocumentDataTransferMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E5E5E5E5E5E5E5E5E50001 /* DocumentDataTransferMenu.swift */; };
-		F1F1F1F1F1F1F1F1F1F10002 /* RecentDocumentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F1F1F1F1F1F1F1F1F10001 /* RecentDocumentRow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A1A1A1A1A1A1A1A1A1A1000E /* Paperback.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Paperback.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1A1A1A1A1A1A1A1A1A1000F /* PaperbackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperbackApp.swift; sourceTree = "<group>"; };
-		C2C2C2C2C2C2C2C2C2C20002 /* KeyboardShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcuts.swift; sourceTree = "<group>"; };
-		C1C1C1C1C1C1C1C1C1C10001 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
-		C1C1C1C1C1C1C1C1C1C10003 /* ReadingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingController.swift; sourceTree = "<group>"; };
-		C1C1C1C1C1C1C1C1C1C10005 /* ReadabilityStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadabilityStyle.swift; sourceTree = "<group>"; };
-		E3E3E3E3E3E3E3E3E3E30002 /* TtsRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TtsRule.swift; sourceTree = "<group>"; };
-		E3E3E3E3E3E3E3E3E3E30004 /* VoiceHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceHelpers.swift; sourceTree = "<group>"; };
-		E3E3E3E3E3E3E3E3E3E30006 /* SpeechDictionaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechDictionaryView.swift; sourceTree = "<group>"; };
-		E3E3E3E3E3E3E3E3E3E30008 /* RuleEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleEditSheet.swift; sourceTree = "<group>"; };
-		A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModel.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentTab.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TtsManager.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20004 /* ReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20005 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20006 /* TtsModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TtsModeView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20007 /* TextModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextModeView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20008 /* TtsControlBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TtsControlBar.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A2000B /* DocumentMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentMenu.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A2000C /* TocView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TocView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A2000D /* FindView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoToSheet.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A2000F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentDocumentsView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentInfoSheet.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20014 /* ElementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementsView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20015 /* PasswordSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordSheet.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20016 /* VoicePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoicePickerView.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20017 /* AccessibilityHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityHelpers.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20019 /* TabStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabStripView.swift; sourceTree = "<group>"; };
 		A4A4A4A4A4A4A4A4A4A40001 /* paperbackFFI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = paperbackFFI.xcframework; sourceTree = "<group>"; };
 		A4A4A4A4A4A4A4A4A4A40003 /* paperback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = paperback.swift; sourceTree = "<group>"; };
 		A5A5A5A5A5A5A5A5A5A50001 /* PaperbackBridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PaperbackBridgingHeader.h; sourceTree = "<group>"; };
@@ -103,8 +39,7 @@
 		D8D8D8D8D8D8D8D8D8D8100C /* sr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sr; path = "sr.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		D8D8D8D8D8D8D8D8D8D8100D /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = "vi.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		D8D8D8D8D8D8D8D8D8D8100E /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
-		E5E5E5E5E5E5E5E5E5E50001 /* DocumentDataTransferMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentDataTransferMenu.swift; sourceTree = "<group>"; };
-		F1F1F1F1F1F1F1F1F1F10001 /* RecentDocumentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentDocumentRow.swift; sourceTree = "<group>"; };
+		T1T1T1T1T1T1T1T1T1T10002 /* PaperbackTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaperbackTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXVariantGroup section */
@@ -140,13 +75,44 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		T1T1T1T1T1T1T1T1T1T10004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		5F5F5F5F5F5F5F5F5F5F0001 /* App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = App;
+			sourceTree = "<group>";
+		};
+		5F5F5F5F5F5F5F5F5F5F0002 /* Model */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Model;
+			sourceTree = "<group>";
+		};
+		5F5F5F5F5F5F5F5F5F5F0003 /* UI */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = UI;
+			sourceTree = "<group>";
+		};
+		5F5F5F5F5F5F5F5F5F5F0004 /* PaperbackTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PaperbackTests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXGroup section */
 		A1A1A1A1A1A1A1A1A1A10002 = {
 			isa = PBXGroup;
 			children = (
 				A1A1A1A1A1A1A1A1A1A10013 /* Paperback */,
+				5F5F5F5F5F5F5F5F5F5F0004 /* PaperbackTests */,
 				A4A4A4A4A4A4A4A4A4A40001 /* paperbackFFI.xcframework */,
 				A6A6A6A6A6A6A6A6A6A60001 /* libpdfium.framework */,
 				A1A1A1A1A1A1A1A1A1A10003 /* Products */,
@@ -157,6 +123,7 @@
 			isa = PBXGroup;
 			children = (
 				A1A1A1A1A1A1A1A1A1A1000E /* Paperback.app */,
+				T1T1T1T1T1T1T1T1T1T10002 /* PaperbackTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -164,9 +131,9 @@
 		A1A1A1A1A1A1A1A1A1A10013 /* Paperback */ = {
 			isa = PBXGroup;
 			children = (
-				D4D4D4D4D4D4D4D4D4D40001 /* App */,
-				D4D4D4D4D4D4D4D4D4D40002 /* Model */,
-				D4D4D4D4D4D4D4D4D4D40003 /* UI */,
+				5F5F5F5F5F5F5F5F5F5F0001 /* App */,
+				5F5F5F5F5F5F5F5F5F5F0002 /* Model */,
+				5F5F5F5F5F5F5F5F5F5F0003 /* UI */,
 				A5A5A5A5A5A5A5A5A5A50001 /* PaperbackBridgingHeader.h */,
 				A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */,
 				F7F7F7F7F7F7F7F7F7F70001 /* Translations.swift */,
@@ -175,68 +142,6 @@
 				A4A4A4A4A4A4A4A4A4A40005 /* Generated */,
 			);
 			path = Paperback;
-			sourceTree = "<group>";
-		};
-		D4D4D4D4D4D4D4D4D4D40001 /* App */ = {
-			isa = PBXGroup;
-			children = (
-				A1A1A1A1A1A1A1A1A1A1000F /* PaperbackApp.swift */,
-				A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */,
-				C2C2C2C2C2C2C2C2C2C20002 /* KeyboardShortcuts.swift */,
-			);
-			path = App;
-			sourceTree = "<group>";
-		};
-		D4D4D4D4D4D4D4D4D4D40002 /* Model */ = {
-			isa = PBXGroup;
-			children = (
-				A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */,
-				A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */,
-				A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */,
-				E3E3E3E3E3E3E3E3E3E30002 /* TtsRule.swift */,
-				C1C1C1C1C1C1C1C1C1C10003 /* ReadingController.swift */,
-				C1C1C1C1C1C1C1C1C1C10001 /* NavigationRouter.swift */,
-			);
-			path = Model;
-			sourceTree = "<group>";
-		};
-		D4D4D4D4D4D4D4D4D4D40003 /* UI */ = {
-			isa = PBXGroup;
-			children = (
-				A2A2A2A2A2A2A2A2A2A20004 /* ReaderView.swift */,
-				A2A2A2A2A2A2A2A2A2A20005 /* EmptyStateView.swift */,
-				A2A2A2A2A2A2A2A2A2A20007 /* TextModeView.swift */,
-				A2A2A2A2A2A2A2A2A2A2000B /* DocumentMenu.swift */,
-				E5E5E5E5E5E5E5E5E5E50001 /* DocumentDataTransferMenu.swift */,
-				F1F1F1F1F1F1F1F1F1F10001 /* RecentDocumentRow.swift */,
-				A2A2A2A2A2A2A2A2A2A20019 /* TabStripView.swift */,
-				A2A2A2A2A2A2A2A2A2A20017 /* AccessibilityHelpers.swift */,
-				C1C1C1C1C1C1C1C1C1C10005 /* ReadabilityStyle.swift */,
-				A2A2A2A2A2A2A2A2A2A20006 /* TtsModeView.swift */,
-				A2A2A2A2A2A2A2A2A2A20008 /* TtsControlBar.swift */,
-				E3E3E3E3E3E3E3E3E3E30004 /* VoiceHelpers.swift */,
-				A2A2A2A2A2A2A2A2A2A20014 /* ElementsView.swift */,
-				A2A2A2A2A2A2A2A2A2A2000C /* TocView.swift */,
-				A2A2A2A2A2A2A2A2A2A2000D /* FindView.swift */,
-				A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerView.swift */,
-				A2A2A2A2A2A2A2A2A2A2000F /* SettingsView.swift */,
-				A2A2A2A2A2A2A2A2A2A20016 /* VoicePickerView.swift */,
-				E3E3E3E3E3E3E3E3E3E30006 /* SpeechDictionaryView.swift */,
-				A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsView.swift */,
-				B1B1B1B1B1B1B1B1B1B10001 /* Sheets */,
-			);
-			path = UI;
-			sourceTree = "<group>";
-		};
-		B1B1B1B1B1B1B1B1B1B10001 /* Sheets */ = {
-			isa = PBXGroup;
-			children = (
-				A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */,
-				A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */,
-				A2A2A2A2A2A2A2A2A2A20015 /* PasswordSheet.swift */,
-				E3E3E3E3E3E3E3E3E3E30008 /* RuleEditSheet.swift */,
-			);
-			path = Sheets;
 			sourceTree = "<group>";
 		};
 		A4A4A4A4A4A4A4A4A4A40005 /* Generated */ = {
@@ -263,12 +168,56 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				5F5F5F5F5F5F5F5F5F5F0001 /* App */,
+				5F5F5F5F5F5F5F5F5F5F0002 /* Model */,
+				5F5F5F5F5F5F5F5F5F5F0003 /* UI */,
+			);
 			name = Paperback;
 			productName = Paperback;
 			productReference = A1A1A1A1A1A1A1A1A1A1000E /* Paperback.app */;
 			productType = "com.apple.product-type.application";
 		};
+		T1T1T1T1T1T1T1T1T1T10001 /* PaperbackTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = T1T1T1T1T1T1T1T1T1T10006 /* Build configuration list for PBXNativeTarget "PaperbackTests" */;
+			buildPhases = (
+				T1T1T1T1T1T1T1T1T1T10003 /* Sources */,
+				T1T1T1T1T1T1T1T1T1T10004 /* Frameworks */,
+				T1T1T1T1T1T1T1T1T1T10005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				T1T1T1T1T1T1T1T1T1T1000A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5F5F5F5F5F5F5F5F5F5F0004 /* PaperbackTests */,
+			);
+			name = PaperbackTests;
+			productName = PaperbackTests;
+			productReference = T1T1T1T1T1T1T1T1T1T10002 /* PaperbackTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		T1T1T1T1T1T1T1T1T1T1000B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1A1A1A1A1A1A1A1A1A10001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1A1A1A1A1A1A1A1A1A10004;
+			remoteInfo = Paperback;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		T1T1T1T1T1T1T1T1T1T1000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1A1A1A1A1A1A1A1A1A10004 /* Paperback */;
+			targetProxy = T1T1T1T1T1T1T1T1T1T1000B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXProject section */
 		A1A1A1A1A1A1A1A1A1A10001 /* Project object */ = {
@@ -280,6 +229,10 @@
 				TargetAttributes = {
 					A1A1A1A1A1A1A1A1A1A10004 = {
 						CreatedOnToolsVersion = 16.2;
+					};
+					T1T1T1T1T1T1T1T1T1T10001 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = A1A1A1A1A1A1A1A1A1A10004;
 					};
 				};
 			};
@@ -311,6 +264,7 @@
 			projectRoot = "";
 			targets = (
 				A1A1A1A1A1A1A1A1A1A10004 /* Paperback */,
+				T1T1T1T1T1T1T1T1T1T10001 /* PaperbackTests */,
 			);
 		};
 /* End PBXProject section */
@@ -323,6 +277,13 @@
 				A1A1A1A1A1A1A1A1A1A10017 /* Assets.xcassets in Resources */,
 				C9C9C9C9C9C9C9C9C9C90002 /* Readmes in Resources */,
 				D8D8D8D8D8D8D8D8D8D80002 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		T1T1T1T1T1T1T1T1T1T10005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -347,41 +308,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1A1A1A1A1A1A1A1A1A10016 /* ContentView.swift in Sources */,
-				A1A1A1A1A1A1A1A1A1A10015 /* PaperbackApp.swift in Sources */,
-				C2C2C2C2C2C2C2C2C2C20001 /* KeyboardShortcuts.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30001 /* AppViewModel.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30002 /* DocumentTab.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30003 /* TtsManager.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30004 /* ReaderView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30005 /* EmptyStateView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30006 /* TtsModeView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30007 /* TextModeView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30008 /* TtsControlBar.swift in Sources */,
-					A3A3A3A3A3A3A3A3A3A3000B /* DocumentMenu.swift in Sources */,
-				E5E5E5E5E5E5E5E5E5E50002 /* DocumentDataTransferMenu.swift in Sources */,
-				F1F1F1F1F1F1F1F1F1F10002 /* RecentDocumentRow.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A3000C /* TocView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A3000D /* FindView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A3000E /* GoToSheet.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A3000F /* SettingsView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30010 /* RecentDocumentsView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30012 /* DocumentInfoSheet.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30013 /* SleepTimerView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30014 /* ElementsView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30015 /* PasswordSheet.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30016 /* VoicePickerView.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30017 /* AccessibilityHelpers.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30019 /* TabStripView.swift in Sources */,
 				A4A4A4A4A4A4A4A4A4A40004 /* paperback.swift in Sources */,
-				E3E3E3E3E3E3E3E3E3E30001 /* TtsRule.swift in Sources */,
-				C1C1C1C1C1C1C1C1C1C10006 /* ReadabilityStyle.swift in Sources */,
-				C1C1C1C1C1C1C1C1C1C10004 /* ReadingController.swift in Sources */,
-				C1C1C1C1C1C1C1C1C1C10002 /* NavigationRouter.swift in Sources */,
-				E3E3E3E3E3E3E3E3E3E30003 /* VoiceHelpers.swift in Sources */,
-				E3E3E3E3E3E3E3E3E3E30005 /* SpeechDictionaryView.swift in Sources */,
-				E3E3E3E3E3E3E3E3E3E30007 /* RuleEditSheet.swift in Sources */,
 				F7F7F7F7F7F7F7F7F7F70002 /* Translations.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		T1T1T1T1T1T1T1T1T1T10003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -510,7 +445,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 63Z3C555W6;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Paperback/Info.plist;
@@ -544,7 +479,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 63Z3C555W6;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Paperback/Info.plist;
@@ -572,6 +507,44 @@
 			};
 			name = Release;
 		};
+		T1T1T1T1T1T1T1T1T1T10007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = 63Z3C555W6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.paperback.ios.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Paperback.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Paperback";
+			};
+			name = Debug;
+		};
+		T1T1T1T1T1T1T1T1T1T10008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = 63Z3C555W6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.paperback.ios.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Paperback.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Paperback";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -589,6 +562,15 @@
 			buildConfigurations = (
 				A1A1A1A1A1A1A1A1A1A1000C /* Debug */,
 				A1A1A1A1A1A1A1A1A1A1000D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		T1T1T1T1T1T1T1T1T1T10006 /* Build configuration list for PBXNativeTarget "PaperbackTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				T1T1T1T1T1T1T1T1T1T10007 /* Debug */,
+				T1T1T1T1T1T1T1T1T1T10008 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

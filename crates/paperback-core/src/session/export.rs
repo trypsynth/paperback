@@ -15,7 +15,10 @@ use zip::ZipArchive;
 
 use super::{
 	DocumentSession, SourceView, WebviewTarget,
-	window::{snap_end_to_paragraph_boundary, snap_start_to_paragraph_boundary},
+	window::{
+		WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, snap_end_to_paragraph_boundary,
+		snap_start_to_paragraph_boundary,
+	},
 };
 use crate::{
 	config::compute_document_hash,
@@ -29,8 +32,26 @@ use crate::{
 /// How much of a document, in display units, a web view is handed at once. A web view lays out
 /// an ordinary book without trouble, but a book of tens of millions of characters locks the
 /// machine up while the engine works through all of it, so past this size it is given the part
-/// around the reading position instead. The same size the main text control's window uses.
-const MAX_WEBVIEW_DISPLAY_LEN: usize = 500_000;
+/// around the reading position instead.
+const MAX_WEBVIEW_DISPLAY_LEN: usize = WINDOW_DISPLAY_LEN as usize;
+
+/// Up to here the web view gets the whole document. Shares the reader's threshold rather than
+/// slicing as soon as one window's worth is exceeded, so the two always agree about whether a
+/// document is being shown whole.
+const WHOLE_WEBVIEW_DISPLAY_LEN: usize = WHOLE_DOCUMENT_DISPLAY_LEN as usize;
+
+#[cfg_attr(feature = "uniffi", uniffi::export)]
+impl DocumentSession {
+	#[must_use]
+	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormat> {
+		vec![ExportFormat::Text, ExportFormat::Html, ExportFormat::Markdown]
+	}
+
+	#[must_use]
+	pub fn render_export_ffi(&self, format: ExportFormat) -> String {
+		render(&self.handle, format)
+	}
+}
 
 impl DocumentSession {
 	#[must_use]
@@ -101,7 +122,7 @@ impl DocumentSession {
 	fn webview_range(&self, position: usize) -> Range<usize> {
 		let buffer = &self.handle.document().buffer;
 		let doc_len = buffer.total_display_len();
-		if doc_len <= MAX_WEBVIEW_DISPLAY_LEN {
+		if doc_len <= WHOLE_WEBVIEW_DISPLAY_LEN {
 			return 0..doc_len;
 		}
 		// Stays a full window wide at either end of the book rather than running off it.
@@ -275,15 +296,5 @@ impl DocumentSession {
 		file.write_all(content.as_bytes())?;
 		file.flush()?;
 		Ok(())
-	}
-
-	#[must_use]
-	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormat> {
-		vec![ExportFormat::Text, ExportFormat::Html, ExportFormat::Markdown]
-	}
-
-	#[must_use]
-	pub fn render_export_ffi(&self, format: ExportFormat) -> String {
-		render(&self.handle, format)
 	}
 }

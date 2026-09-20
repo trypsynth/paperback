@@ -17,6 +17,7 @@ struct TtsModeView: View {
 				.padding(.horizontal, 24)
 			}
 			.frame(maxHeight: 400)
+			.readingBackground(viewModel)
 			if let session = viewModel.activeSession {
 				let lineText = session.getLineText(position: viewModel.reading.ttsPosition)
 					.trimmingCharacters(in: .whitespacesAndNewlines)

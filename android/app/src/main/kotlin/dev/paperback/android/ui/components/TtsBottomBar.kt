@@ -31,6 +31,10 @@ import kotlin.math.roundToInt
 
 private const val SEEK_RANGE = 10000
 
+// Whole percentages of the rate range, matching what the settings slider reports.
+private val RATE_PRESETS = listOf(25, 50, 75, 100)
+private const val RATE_STEP = 5
+
 // Zero-width space: satisfies TalkBack's non-null stateDescription check so it doesn't
 // fall back to announcing the raw slider value, while reading aloud as nothing.
 private const val ZWSP = "​"
@@ -47,10 +51,14 @@ fun TtsBottomBar(
 	currentUnit: NavUnit,
 	navUnits: List<NavUnit>,
 	onNavUnitChange: (NavUnit) -> Unit,
+	speechRatePercent: Int,
+	onSpeechRateChange: (Int) -> Unit,
 	modifier: Modifier = Modifier,
-	swipeUpMovesForward: Boolean = true
+	swipeUpMovesForward: Boolean = true,
+	hidePrevNextButtons: Boolean = false
 ) {
 	var dropdownExpanded by remember { mutableStateOf(false) }
+	var rateMenuExpanded by remember { mutableStateOf(false) }
 	val unitName = getNavUnitName(currentUnit)
 	val currentUnitIndex = navUnits.indexOf(currentUnit)
 	// A time unit means the prev/next controls seek the recording rather than stepping through
@@ -143,7 +151,10 @@ fun TtsBottomBar(
 				modifier = Modifier.align(Alignment.Center),
 				verticalAlignment = Alignment.CenterVertically
 			) {
-				IconButton(onClick = onPrevButton) {
+				IconButton(
+					onClick = onPrevButton,
+					modifier = if (hidePrevNextButtons) Modifier.clearAndSetSemantics { } else Modifier
+				) {
 					Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = prevLabel)
 				}
 
@@ -186,8 +197,56 @@ fun TtsBottomBar(
 					}
 				}
 
-				IconButton(onClick = onNextButton) {
+				IconButton(
+					onClick = onNextButton,
+					modifier = if (hidePrevNextButtons) Modifier.clearAndSetSemantics { } else Modifier
+				) {
 					Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = nextLabel)
+				}
+			}
+
+			// Speech rate sits opposite the unit selector and works the same way: a chip to tap
+			// for presets, a swipe slider for TalkBack, so changing speed mid-book does not mean
+			// a trip into Settings.
+			Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+				FilterChip(
+					selected = false,
+					onClick = { rateMenuExpanded = true },
+					label = { Text("$speechRatePercent%") },
+					modifier = Modifier.clearAndSetSemantics {
+						// TRANSLATORS: TalkBack label for the read-aloud bar's speech rate control
+						contentDescription = t("Speech Rate")
+						stateDescription = "$speechRatePercent%"
+						progressBarRangeInfo = ProgressBarRangeInfo(
+							current = (SEEK_RANGE / 2).toFloat(),
+							range = 0f..SEEK_RANGE.toFloat(),
+							steps = SEEK_RANGE - 1,
+						)
+						setProgress { targetValue ->
+							val current = SEEK_RANGE / 2
+							val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
+							when {
+								newPos > current -> onSpeechRateChange(speechRatePercent + RATE_STEP)
+								newPos < current -> onSpeechRateChange(speechRatePercent - RATE_STEP)
+							}
+							true
+						}
+						onClick(label = "Select speech rate") {
+							rateMenuExpanded = true
+							true
+						}
+					}
+				)
+				DropdownMenu(
+					expanded = rateMenuExpanded,
+					onDismissRequest = { rateMenuExpanded = false },
+				) {
+					RATE_PRESETS.forEach { percent ->
+						PickerMenuItem(label = "$percent%", selected = percent == speechRatePercent) {
+							onSpeechRateChange(percent)
+							rateMenuExpanded = false
+						}
+					}
 				}
 			}
 		}

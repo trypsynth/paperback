@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,6 +38,7 @@ fun AllDocumentsScreen(
 	val supportedMimeTypes by viewModel.supportedMimeTypes.collectAsStateWithLifecycle()
 
 	var locateTargetUri by remember { mutableStateOf<String?>(null) }
+	var showClearConfirmation by remember { mutableStateOf(false) }
 	val locateFilePickerLauncher = rememberLauncherForActivityResult(
 		contract = ActivityResultContracts.OpenDocument(),
 		onResult = { uri ->
@@ -47,6 +49,31 @@ fun AllDocumentsScreen(
 			locateTargetUri = null
 		}
 	)
+
+	if (showClearConfirmation) {
+		AlertDialog(
+			onDismissRequest = { showClearConfirmation = false },
+			// TRANSLATORS: Title of the dialog confirming that the recent documents list should be emptied
+			title = { Text(t("Clear Recent Documents")) },
+			// TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
+			text = { Text(t("This empties the list. The documents themselves are not deleted.")) },
+			confirmButton = {
+				TextButton(onClick = {
+					viewModel.clearRecentDocuments()
+					showClearConfirmation = false
+				}) {
+					// TRANSLATORS: Button that empties the recent documents list
+					Text(t("Clear"))
+				}
+			},
+			dismissButton = {
+				TextButton(onClick = { showClearConfirmation = false }) {
+					// TRANSLATORS: Button to close the clear-recent-documents dialog without clearing
+					Text(t("Cancel"))
+				}
+			}
+		)
+	}
 
 	Surface(
 		modifier = Modifier.fillMaxSize().semantics { paneTitle = t("Recent Documents") },
@@ -62,6 +89,14 @@ fun AllDocumentsScreen(
 					IconButton(onClick = onDismiss) {
 						// TRANSLATORS: Accessibility label for the back button that leaves the settings screen
 						Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("Back"))
+					}
+				},
+				actions = {
+					if (recentDocuments.isNotEmpty()) {
+						IconButton(onClick = { showClearConfirmation = true }) {
+							// TRANSLATORS: Accessibility label for the button that empties the recent documents list
+							Icon(Icons.Filled.DeleteSweep, contentDescription = t("Clear Recent Documents"))
+						}
 					}
 				}
 			)

@@ -14,7 +14,7 @@ const PLAINTEXT: &str = "<office:body><office:text><text:p>The hidden paragraph.
 /// describes it alongside the ciphertext. This is the file the reader has to be able to open.
 fn encrypted_entry(plaintext: &str, password: &str) -> (String, Vec<u8>) {
 	use aes::Aes256;
-	use cbc::cipher::{BlockEncryptMut, KeyIvInit, block_padding::NoPadding};
+	use cbc::cipher::{BlockModeEncrypt, KeyIvInit, block_padding::NoPadding};
 
 	let mut encoder = DeflateEncoder::new(Vec::new(), Compression::best());
 	encoder.write_all(plaintext.as_bytes()).unwrap();
@@ -33,7 +33,7 @@ fn encrypted_entry(plaintext: &str, password: &str) -> (String, Vec<u8>) {
 	let block_count = padded.len();
 	let ciphertext = cbc::Encryptor::<Aes256>::new_from_slices(&key, &iv)
 		.unwrap()
-		.encrypt_padded_mut::<NoPadding>(&mut padded, block_count)
+		.encrypt_padded::<NoPadding>(&mut padded, block_count)
 		.unwrap()
 		.to_vec();
 

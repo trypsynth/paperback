@@ -112,6 +112,9 @@ impl ConfigManager {
 			}
 		}
 		self.dirty.set(true);
+		if key == "recent_documents_to_show" {
+			self.trim_recent_documents();
+		}
 	}
 }
 

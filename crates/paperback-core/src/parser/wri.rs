@@ -16,7 +16,12 @@ use std::fs;
 
 use anyhow::{Context, Result};
 
-use super::{Parser, rtf::RtfParser, text::TextParser, util::path::extract_title_from_path};
+use super::{
+	Parser,
+	rtf::{RtfParser, looks_like_rtf},
+	text::TextParser,
+	util::path::extract_title_from_path,
+};
 use crate::{
 	document::{Document, DocumentBuffer, ParserContext},
 	util::encoding::convert_to_utf8,
@@ -38,7 +43,7 @@ impl Parser for WriParser {
 		tracing::debug!(path = %context.file_path, "parsing wri file");
 		let bytes =
 			fs::read(&context.file_path).with_context(|| format!("Failed to open WRI file '{}'", context.file_path))?;
-		if is_rtf(&bytes) {
+		if looks_like_rtf(&bytes) {
 			tracing::debug!(path = %context.file_path, "wri file is really rtf, routing to the rtf parser");
 			return RtfParser.parse(context);
 		}
@@ -52,14 +57,6 @@ impl Parser for WriParser {
 		tracing::debug!(path = %context.file_path, "wri file is plain text, routing to the text parser");
 		TextParser.parse(context)
 	}
-}
-
-/// Whether the bytes are Rich Text Format: `{\rtf` at the start, past a byte order mark or leading
-/// whitespace, which is how a real RTF-in-`.wri` opens.
-fn is_rtf(bytes: &[u8]) -> bool {
-	let bytes = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]).unwrap_or(bytes);
-	let start = bytes.iter().position(|b| !b.is_ascii_whitespace()).unwrap_or(bytes.len());
-	bytes[start..].starts_with(br"{\rtf")
 }
 
 /// The text of a genuine Windows Write binary document, or `None` when the bytes are not one.

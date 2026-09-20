@@ -18,11 +18,11 @@ crate-type = ["cdylib", "rlib", "staticlib"]
 [dependencies]
 # AES-CBC for the OpenDocument encryption scheme (see parser::odf_crypto). cipher-0.4 based, the
 # same aes the zip crate's aes-crypto already pulls in.
-aes = "0.8"
+aes = "0.9.3"
 anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
-cbc = "0.1"
+cbc = "0.2.1"
 cfb = "0.14.0"
 chardetng = "1.0.0"
 ego-tree = "0.11.0"
@@ -50,7 +50,7 @@ rtf-parser = "0.4.3"
 scraper = "0.27.0"
 # The HTML5 named-entity table, for the FictionBook files that carry HTML entities an XML
 # parser has never heard of. Already in the tree under scraper.
-web_atoms = "0.2.6"
+web_atoms = "0.3.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 pbkdf2 = { version = "0.13", default-features = false, features = ["hmac"] }
 sha1 = "0.11.0"
@@ -61,12 +61,7 @@ tracing = "0.1.44"
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.1", features = ["cli"], optional = true }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
-
-# Reads the RAR a .cbr is. The bindings are MIT/Apache; the C library they vendor keeps
-# RARLAB's unRAR licence, whose notice LICENSE.md carries. Not on Android, which its C++ does
-# not build for: see the note at the top of parser/cbr.rs.
-[target.'cfg(not(target_os = "android"))'.dependencies]
-unrar = "0.5.8"
+mathcat = { version = "0.7.5", features = ["include-zip"] }
 
 [build-dependencies]
 uniffi = { version = "0.32.1", features = ["build"], optional = true }

@@ -114,7 +114,8 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 		| NavTarget::Table
 		| NavTarget::Separator
 		| NavTarget::Image
-		| NavTarget::Figure => {
+		| NavTarget::Figure
+		| NavTarget::Formula => {
 			let kind = match req.target {
 				NavTarget::List => MarkerType::List,
 				NavTarget::ListItem => MarkerType::ListItem,
@@ -123,8 +124,9 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 				NavTarget::Separator => MarkerType::Separator,
 				NavTarget::Image => MarkerType::Image,
 				NavTarget::Figure => MarkerType::Figure,
+				NavTarget::Formula => MarkerType::Formula,
 				_ => unreachable!(
-					"NavTarget should only be List, ListItem, Link, Table, Separator, Image, or Figure in this branch"
+					"NavTarget should only be List, ListItem, Link, Table, Separator, Image, Figure, or Formula in this branch"
 				),
 			};
 			let (idx_opt, wrapped) = select_marker_index(doc, req.position, req.wrap, req.direction, kind);

@@ -2,15 +2,17 @@
 //! document ahead of a forward read, compacting it when the caret runs out of text behind it or
 //! the layout changes, copying the whole document when a windowed Select All only reached a slice,
 //! and jumping to the true document edges rather than the loaded window's. Split out of the main
-//! `DocumentManager` impl; see [`super`] for the windowing model in `ui::text_window`.
+//! `DocumentManager` impl; see [`super`] for the windowing model in `text_window`.
 
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
 use super::{DocumentManager, DocumentTab};
-use crate::ui::{
-	navigation::{move_to_offset_and_record_history, persist_navigation_history},
-	text_render::{append_slice_to_ctrl, reload_window_around},
+use crate::{
 	text_window,
+	ui::{
+		navigation::{move_to_offset_and_record_history, persist_navigation_history},
+		text_render::{append_slice_to_ctrl, reload_window_around},
+	},
 };
 
 impl DocumentManager {
@@ -192,7 +194,7 @@ impl DocumentManager {
 		);
 		// The control and the window have to agree on how much is loaded, give or take the single
 		// display unit RichEdit does not store for a wholly-trailing paragraph mark (see
-		// `write::stored_display_len`). Drift past that would offset every translation from here on.
+		// `rtf::stored_display_len`). Drift past that would offset every translation from here on.
 		let drift = tab.text_ctrl.get_last_position() - tab.window.loaded_len();
 		if !(-1..=0).contains(&drift) {
 			tracing::warn!(drift, "window extension left the control and the window disagreeing");
@@ -202,7 +204,7 @@ impl DocumentManager {
 	}
 
 	/// Jumps the caret to the very first or very last character of the *document*, reloading the
-	/// text control's window at that edge (see `ui::text_window`).
+	/// text control's window at that edge (see `text_window`).
 	///
 	/// `text_ctrl`'s own Ctrl+Home/Ctrl+End can only ever reach the ends of whatever window is
 	/// currently loaded, which on a huge document is an arbitrary spot mid-book rather than the

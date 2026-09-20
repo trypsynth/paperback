@@ -3,6 +3,10 @@ import SwiftUI
 struct TtsControlBar: View {
 	@Environment(AppViewModel.self) private var viewModel
 
+	/// Whole percentages of the rate range, matching what the settings slider reports.
+	private static let ratePresets = [25, 50, 75, 100]
+	private static let rateStep = 1
+
 	// Find reads as "Find Previous"/"Find Next", matching the Find screen's own buttons, rather
 	// than "Previous Find"/"Next Find".
 	private var prevLabel: String {
@@ -61,20 +65,21 @@ struct TtsControlBar: View {
 			}
 			.padding(.leading, 16)
 
-			Button { viewModel.reading.playPrevSegment(speak: viewModel.reading.ttsManager.isSpeaking) } label: {
+			Button { viewModel.reading.playPrevSegment(speak: viewModel.reading.isPlayingNow) } label: {
 				Image(systemName: "backward.fill").font(.title2)
 			}
 			.accessibilityLabel(prevLabel)
 			.frame(maxWidth: .infinity, minHeight: 64)
 			.contentShape(Rectangle())
+			.accessibilityHidden(viewModel.hidePrevNextButtons)
 
 			Button { viewModel.reading.togglePlayPause() } label: {
-				Image(systemName: viewModel.reading.ttsManager.isSpeaking ? "pause.fill" : "play.fill").font(.title)
+				Image(systemName: viewModel.reading.isPlayingNow ? "pause.fill" : "play.fill").font(.title)
 			}
 			// TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-			.accessibilityLabel(viewModel.reading.ttsManager.isSpeaking ? t("Pause") : t("Play"))
+			.accessibilityLabel(viewModel.reading.isPlayingNow ? t("Pause") : t("Play"))
 			.accessibilityAdjustableAction { direction in
-				let wasPlaying = viewModel.reading.ttsManager.isSpeaking
+				let wasPlaying = viewModel.reading.isPlayingNow
 				let forward = viewModel.swipeUpMovesForward
 				let tryingNext: Bool
 				switch direction {
@@ -97,16 +102,49 @@ struct TtsControlBar: View {
 			.frame(maxWidth: .infinity, minHeight: 64)
 			.contentShape(Rectangle())
 
-			Button { viewModel.reading.playNextSegment(speak: viewModel.reading.ttsManager.isSpeaking) } label: {
+			Button { viewModel.reading.playNextSegment(speak: viewModel.reading.isPlayingNow) } label: {
 				Image(systemName: "forward.fill").font(.title2)
 			}
 			.accessibilityLabel(nextLabel)
 			.frame(maxWidth: .infinity, minHeight: 64)
 			.contentShape(Rectangle())
+			.accessibilityHidden(viewModel.hidePrevNextButtons)
 
-			// Balance the segment picker on the left
-			Color.clear.frame(width: 72)
-				.padding(.trailing, 16)
+			// Speech rate sits opposite the navigation unit and is built the same way: a menu
+			// of presets to tap, and an adjustable value so a screen reader changes it with a
+			// swipe rather than a trip into Settings.
+			Menu {
+				ForEach(Self.ratePresets, id: \.self) { percent in
+					Button {
+						viewModel.reading.ttsManager.speechRatePercent = percent
+					} label: {
+						if percent == viewModel.reading.ttsManager.speechRatePercent {
+							Label("\(percent)%", systemImage: "checkmark")
+						} else {
+							Text("\(percent)%")
+						}
+					}
+				}
+			} label: {
+				Text("\(viewModel.reading.ttsManager.speechRatePercent)%")
+					.font(.caption)
+					.foregroundStyle(.secondary)
+					.monospacedDigit()
+					.frame(width: 72, alignment: .trailing)
+			}
+			// TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+			.accessibilityLabel(t("Speech Rate"))
+			.accessibilityValue("\(viewModel.reading.ttsManager.speechRatePercent)%")
+			.accessibilityRemoveTraits(.isButton)
+			.accessibilityAdjustableAction { direction in
+				let manager = viewModel.reading.ttsManager
+				switch direction {
+				case .increment: manager.speechRatePercent += Self.rateStep
+				case .decrement: manager.speechRatePercent -= Self.rateStep
+				@unknown default: break
+				}
+			}
+			.padding(.trailing, 16)
 		}
 		.padding(.vertical, 4)
 	}

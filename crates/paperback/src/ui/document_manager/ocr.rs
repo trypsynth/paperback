@@ -22,10 +22,10 @@ use patois::{nt, t};
 use wxdragon::prelude::*;
 
 use super::{DocumentManager, DocumentTab};
-use crate::ui::{
+use crate::{
 	ocr::{self, OcrError},
-	text_render::reload_window_around,
 	text_window::TextWindow,
+	ui::text_render::reload_window_around,
 };
 
 /// How many pages between spoken progress announcements during a batch OCR job.

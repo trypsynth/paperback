@@ -1,4 +1,38 @@
 import AVFoundation
+import OSLog
+
+private let ttsLog = Logger(subsystem: "dev.paperback.ios", category: "tts")
+
+/// Rewrites `text` through the reader's speech dictionary.
+///
+/// Paragraph rules run first and word rules second, which is the order that lets a paragraph
+/// rule set up text for a word rule to refine. Running them the other way round would let a
+/// paragraph rule overwrite what a word rule had just produced.
+func applyRules(_ rules: [TtsRule], to text: String, voiceId: String?) -> String {
+	guard !rules.isEmpty else { return text }
+	var result = text
+	for rule in rules where rule.scope == .paragraph {
+		result = rule.apply(to: result, voiceId: voiceId)
+	}
+	for rule in rules where rule.scope == .word {
+		result = rule.apply(to: result, voiceId: voiceId)
+	}
+	return result
+}
+
+/// The engine rate a whole-number slider percentage stands for. A stored value from outside the
+/// slider's own range is brought back inside it rather than handed to the engine as-is.
+func speechRateForPercent(_ percent: Int) -> Float {
+	let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
+	let clamped = Float(min(max(percent, 0), 100)) / 100
+	return AVSpeechUtteranceMinimumSpeechRate + clamped * range
+}
+
+/// The slider percentage an engine rate reads as, the inverse of `speechRateForPercent`.
+func percentForSpeechRate(_ rate: Float) -> Int {
+	let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
+	return Int((((rate - AVSpeechUtteranceMinimumSpeechRate) / range) * 100).rounded())
+}
 
 // Lets an armed buffer's completion handler validate against a generation assigned later, at
 // consume time, rather than one captured when the closure was created (see armNextBuffer).
@@ -64,6 +98,13 @@ final class TtsManager: NSObject {
 			onSpeechRateChanged?(speechRate)
 		}
 	}
+	/// The rate as the whole-number percentage of its range that the settings slider and the
+	/// reading bar both show, so the two can never disagree about what a given number means.
+	var speechRatePercent: Int {
+		get { percentForSpeechRate(speechRate) }
+		set { speechRate = speechRateForPercent(newValue) }
+	}
+
 	var pitch: Float = 1.0 {
 		didSet {
 			guard oldValue != pitch else { return }
@@ -93,15 +134,7 @@ final class TtsManager: NSObject {
 	}
 
 	func preprocessText(_ text: String) -> String {
-		guard !rules.isEmpty else { return text }
-		var result = text
-		for rule in rules where rule.scope == .paragraph {
-			result = rule.apply(to: result, voiceId: selectedVoiceIdentifier)
-		}
-		for rule in rules where rule.scope == .word {
-			result = rule.apply(to: result, voiceId: selectedVoiceIdentifier)
-		}
-		return result
+		applyRules(rules, to: text, voiceId: selectedVoiceIdentifier)
 	}
 
 	override init() {
@@ -490,12 +523,41 @@ final class TtsManager: NSObject {
 		armedText = text
 		player.scheduleBuffer(pcm) { [weak self] in
 			DispatchQueue.main.async { [weak self] in
-				guard let self, let gen = box.gen, self.speechGeneration == gen else { return }
+				guard let self else { return }
+				// No generation means speak() never claimed this buffer, so the paragraph
+				// before it never reported finishing. Nothing is queued behind this and
+				// nothing else will restart the chain.
+				guard let gen = box.gen else {
+					self.recoverFromUnclaimedArmedBuffer(box)
+					return
+				}
+				guard self.speechGeneration == gen else { return }
 				self.isSpeaking = false
 				self.isPaused = false
 				self.onUtteranceFinished?()
 			}
 		}
+	}
+
+	/// Keeps playback going when an armed buffer finishes without `speak()` ever claiming it.
+	///
+	/// That happens when the completion for the paragraph before it is late enough that this
+	/// one plays all the way through first, which background throttling while the screen is
+	/// locked can cause. Left alone it stops the book with the app still reporting that it is
+	/// speaking, recoverable only by a remote command.
+	///
+	/// Bumping the generation is the part that makes this safe: it drops the earlier
+	/// completion if it does turn up late, which would otherwise advance a second time and
+	/// skip a paragraph. Trading a rare stall for a rare skip would be no improvement.
+	private func recoverFromUnclaimedArmedBuffer(_ box: GenBox) {
+		guard armedBox === box else { return }
+		armedBox = nil
+		armedText = nil
+		speechGeneration += 1
+		isSpeaking = false
+		isPaused = false
+		ttsLog.error("Armed buffer finished before speak() claimed it; continuing from it (#761)")
+		onUtteranceFinished?()
 	}
 
 	private func invalidatePrefetch() {

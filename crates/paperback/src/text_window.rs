@@ -13,7 +13,7 @@
 /// (30-90ms at the very start of a 16.5M-char document, 13s at 50% in, 27s at the end), so a
 /// 500K window's worst case should land in the tens-of-ms range. Re-tune against a real
 /// maximize/restore benchmark once this is in use.
-const TARGET_WINDOW_SIZE: i64 = 500_000;
+const TARGET_WINDOW_SIZE: i64 = paperback_core::WINDOW_DISPLAY_LEN;
 
 /// How close to a loaded edge the caret has to get before a reload is triggered. A quarter of
 /// the window size, so a single caret-right press at the boundary doesn't cause a reload on
@@ -27,8 +27,9 @@ const EXTEND_CHUNK: i64 = TARGET_WINDOW_SIZE / 2;
 
 /// Below this document length, just load the whole thing as one window - identical to the
 /// app's behavior before windowing existed, so ordinary documents are completely unaffected by
-/// this feature (new-path risk is isolated to documents that actually need it).
-const WHOLE_DOCUMENT_THRESHOLD: i64 = TARGET_WINDOW_SIZE + TARGET_WINDOW_SIZE / 2;
+/// this feature (new-path risk is isolated to documents that actually need it). Shared with
+/// the web view, which has to agree about what counts as a whole document.
+const WHOLE_DOCUMENT_THRESHOLD: i64 = paperback_core::WHOLE_DOCUMENT_DISPLAY_LEN;
 
 /// The document-absolute bounds of whatever's currently loaded into a tab's `text_ctrl`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

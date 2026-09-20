@@ -16,11 +16,12 @@ mod stats;
 mod window;
 
 pub use find_all::{FindAllLine, FindSpan};
-pub use window::WindowSlice;
+pub use window::{WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, WindowSlice};
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: i64 = 300;
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct SearchOptionsFfi {
 	pub match_case: bool,
@@ -29,6 +30,7 @@ pub struct SearchOptionsFfi {
 	pub forward: bool,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct SearchResultFfi {
 	pub found: bool,
@@ -48,6 +50,7 @@ pub struct SourceView {
 	pub caret: i64,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct StatusInfo {
 	pub line_number: i64,
@@ -104,6 +107,7 @@ impl NavigationResult {
 	}
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct LinkActivationResult {
 	pub found: bool,
@@ -112,6 +116,7 @@ pub struct LinkActivationResult {
 	pub url: String,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LinkAction {
 	Internal,
@@ -120,6 +125,7 @@ pub enum LinkAction {
 	NotFound,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy)]
 pub enum SegmentTypeFfi {
 	Paragraph,
@@ -134,8 +140,10 @@ pub enum SegmentTypeFfi {
 	Separator,
 	Image,
 	Figure,
+	Formula,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy)]
 pub enum SegmentDirectionFfi {
 	Current,
@@ -146,6 +154,7 @@ pub enum SegmentDirectionFfi {
 /// `found` is independent of `text`: a segment can be found but have no text of its own (e.g. a
 /// plain-audio DAISY section marker, whose buffer content is just a placeholder space), so
 /// callers must check `found` rather than treating blank `text` as "not found".
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct TextSegmentFfi {
 	pub text: String,
@@ -156,6 +165,7 @@ pub struct TextSegmentFfi {
 
 /// `found` is `false` (other fields zeroed) when the lookup misses, e.g. an out-of-range clip
 /// index. Mirrors `AudioClip` from `AudioTimeline` for platforms driving their own player.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AudioClipFfi {
 	pub found: bool,
@@ -167,6 +177,7 @@ pub struct AudioClipFfi {
 }
 
 /// See `AudioTimeline::cursor_at_elapsed`.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AudioCursorFfi {
 	pub found: bool,
@@ -175,6 +186,7 @@ pub struct AudioCursorFfi {
 }
 
 /// See `AudioTimeline::point_for_position`.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AudioPointFfi {
 	pub found: bool,
@@ -182,6 +194,7 @@ pub struct AudioPointFfi {
 	pub time_ms: i64,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Error), uniffi(flat_error))]
 #[derive(Debug, thiserror::Error)]
 pub enum DocumentError {
 	#[error("Parse error: {0}")]
@@ -200,6 +213,7 @@ impl LinkActivationResult {
 	}
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct DocumentSession {
 	handle: DocumentHandle,
 	file_path: String,
@@ -208,6 +222,7 @@ pub struct DocumentSession {
 	parser_flags: ParserFlags,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct TocEntry {
 	pub title: String,
@@ -215,6 +230,7 @@ pub struct TocEntry {
 	pub level: i32,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct LineMarker {
 	pub mtype: MarkerType,
@@ -225,6 +241,7 @@ pub struct LineMarker {
 	pub length: i64,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct DocumentStatsFfi {
 	pub word_count: i64,
@@ -235,6 +252,7 @@ pub struct DocumentStatsFfi {
 	pub audio_total_duration_ms: i64,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct HeadingTreeItemFfi {
 	pub offset: i64,
@@ -242,22 +260,65 @@ pub struct HeadingTreeItemFfi {
 	pub parent_index: i32,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct HeadingTreeFfi {
 	pub items: Vec<HeadingTreeItemFfi>,
 	pub closest_index: i32,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct LinkListItemFfi {
 	pub offset: i64,
 	pub text: String,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct LinkListFfi {
 	pub items: Vec<LinkListItemFfi>,
 	pub closest_index: i32,
+}
+
+// Only the mobile front ends construct a session this way, so the whole block is behind the
+// feature: uniffi::export reads the attributes below literally and does not see through a
+// cfg_attr, so `uniffi::constructor` cannot be written conditionally.
+#[cfg(feature = "uniffi")]
+#[uniffi::export]
+impl DocumentSession {
+	// Owned `String` params (not `&str`) because that is the signature UniFFI generates for.
+	#[uniffi::constructor(name = "new_ffi")]
+	#[allow(clippy::needless_pass_by_value)]
+	pub fn new_ffi(
+		file_path: String,
+		password: String,
+		forced_extension: String,
+		render_tables_inline: bool,
+	) -> Result<Self, DocumentError> {
+		// The mobile front ends have no reader-facing switch for the PDF paragraph joining,
+		// so they take its default.
+		let settings = ParseSettings { render_tables_inline, ..ParseSettings::default() };
+		Self::new(&file_path, &password, &forced_extension, settings).map_err(DocumentError::ParseError)
+	}
+}
+
+#[cfg_attr(feature = "uniffi", uniffi::export)]
+impl DocumentSession {
+	#[must_use]
+	pub fn title(&self) -> String {
+		self.handle.document().title.clone()
+	}
+
+	#[must_use]
+	pub fn author(&self) -> String {
+		self.handle.document().author.clone()
+	}
+
+	#[must_use]
+	pub fn content(&self) -> String {
+		self.handle.document().buffer.content.clone()
+	}
 }
 
 impl DocumentSession {
@@ -287,20 +348,6 @@ impl DocumentSession {
 			history_index: 0,
 			parser_flags,
 		})
-	}
-
-	// Owned `String` params (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
-	#[allow(clippy::needless_pass_by_value)]
-	pub fn new_ffi(
-		file_path: String,
-		password: String,
-		forced_extension: String,
-		render_tables_inline: bool,
-	) -> Result<Self, DocumentError> {
-		// The mobile front ends have no reader-facing switch for the PDF paragraph joining,
-		// so they take its default.
-		let settings = ParseSettings { render_tables_inline, ..ParseSettings::default() };
-		Self::new(&file_path, &password, &forced_extension, settings).map_err(DocumentError::ParseError)
 	}
 
 	/// The parsed document handle backing this session.
@@ -385,21 +432,6 @@ impl DocumentSession {
 	#[must_use]
 	pub fn file_path(&self) -> &str {
 		&self.file_path
-	}
-
-	#[must_use]
-	pub fn title(&self) -> String {
-		self.handle.document().title.clone()
-	}
-
-	#[must_use]
-	pub fn author(&self) -> String {
-		self.handle.document().author.clone()
-	}
-
-	#[must_use]
-	pub fn content(&self) -> String {
-		self.handle.document().buffer.content.clone()
 	}
 
 	#[must_use]

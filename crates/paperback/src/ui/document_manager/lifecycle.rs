@@ -15,12 +15,13 @@ use super::{
 };
 use crate::{
 	audio_player::AudioPlayer,
+	shell,
 	ui::{
 		readability::{
 			apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_readability_format_to_ctrl,
 			build_font_from_readability,
 		},
-		reader_input, shell,
+		reader_input,
 		text_render::load_window_into_ctrl,
 	},
 };
@@ -284,6 +285,9 @@ impl DocumentManager {
 		while !self.tabs.is_empty() {
 			self.close_document(0, true);
 		}
+		let config = self.config.lock().unwrap();
+		config.clear_opened_documents();
+		config.flush();
 	}
 
 	pub fn save_all_positions(&self) {

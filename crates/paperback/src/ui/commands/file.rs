@@ -14,7 +14,9 @@ use wxdragon::prelude::*;
 
 use super::Ctx;
 use crate::ui::{
-	main_window::{close_active_document_announced, ensure_parser_ready_for_path, update_title_from_manager},
+	main_window::{
+		close_active_document_announced, ensure_parser_ready_for_path, rebuild_menu_bar, update_title_from_manager,
+	},
 	menu,
 };
 
@@ -99,6 +101,22 @@ pub fn reopen_last_closed(ctx: &Ctx) {
 		let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
 		menu::update_reopen_state(ctx.frame, has_reopen);
 	}
+}
+
+pub fn clear_recent_documents(ctx: &Ctx) {
+	{
+		let cfg = ctx.config.lock().unwrap();
+		if !cfg.has_recent_documents() {
+			// TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
+			live_region::announce(ctx.live_region_label, &t("No recent documents."));
+			return;
+		}
+		cfg.clear_recent_documents();
+		cfg.flush();
+	}
+	rebuild_menu_bar(ctx.frame, ctx.dm, ctx.config);
+	// TRANSLATORS: Announced after the Recent Documents list has been emptied
+	live_region::announce(ctx.live_region_label, &t("Recent documents cleared."));
 }
 
 pub fn exit(ctx: &Ctx) {
