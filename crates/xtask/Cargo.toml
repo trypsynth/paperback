@@ -2,6 +2,8 @@
 name = "xtask"
 version = "0.1.0"
 edition = "2024"
+license.workspace = true
+publish = false
 
 [dependencies]
 flate2 = "1.1.10"

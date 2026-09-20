@@ -1,0 +1,63 @@
+---
+layout: default.liquid
+title: Licenses
+permalink: /licenses
+---
+{% raw %}
+# Licenses
+
+Paperback itself is under the [MIT license](https://github.com/trypsynth/paperback/blob/master/LICENSE.md). It is built on a great deal of other people's work, and this page credits all of it.
+
+Everything listed here is under a permissive license. Nothing Paperback ships places conditions on what you may do with it.
+
+## Native libraries
+
+These are not Rust crates. They are compiled libraries that ship alongside the application, so no tool can find them in the source tree and they are recorded here by hand.
+
+<table>
+<thead>
+<tr><th>Library</th><th>Used for</th><th>License</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://pdfium.googlesource.com/pdfium/">PDFium</a></td>
+<td>Reading PDFs, including the tag tree that makes a tagged PDF readable</td>
+<td>BSD-3-Clause</td>
+</tr>
+<tr>
+<td><a href="https://www.wxwidgets.org/">wxWidgets</a></td>
+<td>The desktop interface</td>
+<td>wxWindows Library Licence</td>
+</tr>
+</tbody>
+</table>
+
+The prebuilt PDFium binaries come from [bblanchon/pdfium-binaries](https://github.com/bblanchon/pdfium-binaries).
+
+## Rust libraries
+
+Paperback depends on these licenses:
+
+<ul>
+{{#each overview}}
+<li>{{name}}: {{count}}</li>
+{{/each}}
+</ul>
+
+Each one below lists the crates that use it, followed by its full text.
+
+{{#each licenses}}
+<details>
+<summary>{{name}}: {{#each used_by}}{{#unless @first}}, {{/unless}}{{crate.name}}{{/each}}</summary>
+
+<ul>
+{{#each used_by}}
+<li><a href="{{#if crate.repository}}{{crate.repository}}{{else}}https://crates.io/crates/{{crate.name}}{{/if}}">{{crate.name}} {{crate.version}}</a></li>
+{{/each}}
+</ul>
+
+<pre>{{text}}</pre>
+</details>
+
+{{/each}}
+{% endraw %}

@@ -113,4 +113,4 @@ Contributions are welcome! Whether through issues, pull requests, or discussions
 
 This project is licensed under the [MIT license](LICENSE.md).
 
-Paperback is built on other people's work. [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) records what that work is and what it is licensed under, including the PDFium and wxWidgets libraries that ship alongside the application.
+Paperback is built on other people's work. The libraries it uses, and their licenses, are credited at [paperback.dev/licenses](https://paperback.dev/licenses).

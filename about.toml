@@ -1,0 +1,45 @@
+# Credits every library Paperback is built on, for the page at paperback.dev/licenses.
+#
+# Run through `cargo about generate`, which reads the licenses out of the dependency tree so
+# nothing here has to be kept in step by hand. The site workflow does this on every push; there
+# is no generated file in the repository, because one would be wrong the first time anyone
+# changed a dependency.
+
+# The targets Paperback is actually built for. Without this, `cargo about` walks every platform's
+# dependencies and credits crates that never reach a user, such as the Windows-only and WASM-only
+# ones a Linux build never links.
+targets = [
+	"x86_64-pc-windows-msvc",
+	"aarch64-pc-windows-msvc",
+	"x86_64-unknown-linux-gnu",
+	"aarch64-unknown-linux-gnu",
+	"x86_64-apple-darwin",
+	"aarch64-apple-darwin",
+	"aarch64-linux-android",
+	"aarch64-apple-ios",
+]
+
+# Build scripts and test-only crates are not distributed, so they are not credited.
+ignore-build-dependencies = true
+ignore-dev-dependencies = true
+
+# A license that turns up in the tree and is not listed here fails the build. That is the point:
+# it is the check that a copyleft dependency cannot arrive unnoticed, which is worth more than
+# the page it produces.
+accepted = [
+	"0BSD",
+	"Apache-2.0",
+	"Apache-2.0 WITH LLVM-exception",
+	"BSD-2-Clause",
+	"BSD-3-Clause",
+	"bzip2-1.0.6",
+	"CC0-1.0",
+	"CDLA-Permissive-2.0",
+	"ISC",
+	"MIT",
+	"MIT-0",
+	"MPL-2.0",
+	"Unicode-3.0",
+	"Unlicense",
+	"Zlib",
+]

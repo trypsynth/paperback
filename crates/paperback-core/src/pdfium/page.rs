@@ -4,7 +4,7 @@
 use std::ffi::{c_ulong, c_void};
 
 use pdfium_render::prelude::{
-	FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE, FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJECT,
+	FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_DWORD, FPDF_PAGE, FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJECT,
 	FPDF_PAGEOBJECTMARK, FS_RECTF,
 };
 
@@ -19,7 +19,11 @@ const ANNOT_SUBTYPE_LINK: i32 = 2;
 const BITMAP_BGRA: i32 = 4;
 /// White, as the background a page is drawn onto. OCR does far better on white than on the
 /// transparent black an uninitialized bitmap would otherwise leave behind the glyphs.
-const WHITE: u32 = 0xFFFF_FFFF;
+///
+/// Typed as `FPDF_DWORD` rather than as a fixed width on purpose: it is a C `unsigned long`,
+/// which is 32 bits on Windows and 64 everywhere else, so writing either one here compiles on
+/// one half of the platforms and fails on the other.
+const WHITE: FPDF_DWORD = 0xFFFF_FFFF;
 
 /// A page, borrowed from the document it belongs to.
 pub struct PdfPage<'doc> {
