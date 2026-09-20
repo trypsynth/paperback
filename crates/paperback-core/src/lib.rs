@@ -5,6 +5,7 @@ pub mod export;
 pub mod ffi_config;
 pub mod ocr;
 pub mod parser;
+mod pdfium;
 pub mod reader_core;
 pub mod session;
 pub mod types;
@@ -30,7 +31,7 @@ uniffi::setup_scaffolding!("paperback");
 #[cfg_attr(feature = "uniffi", uniffi::export)]
 #[allow(clippy::needless_pass_by_value)]
 pub fn set_pdfium_library_path(path: String) {
-	pdfium::set_library_location(&path);
+	pdfium::set_library_path(&path);
 }
 
 /// Translates library-internal strings (e.g. document content labels, parser error messages).

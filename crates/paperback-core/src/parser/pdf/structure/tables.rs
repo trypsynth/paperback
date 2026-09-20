@@ -8,20 +8,19 @@
 
 use std::{collections::HashMap, fmt::Write as _};
 
-use pdfium::PdfiumStructElement;
-
 use super::marked_content::collect_text;
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType},
 	parser::convert::table_text::{display_lines_and_length, html_table_to_display},
+	pdfium::Tag,
 	util::text::{collapse_whitespace, trim_string},
 };
 
 /// Walks a `Table` element into HTML. Anything between the table and its rows that is not a row
 /// itself (a `THead`, a `Div` some producer put in) is walked through rather than written, so a
 /// table keeps its shape whatever it is wrapped in.
-pub(super) fn build_html_table(elem: &PdfiumStructElement, mcid_to_text: &HashMap<i32, String>) -> String {
-	let elem_type = elem.element_type().unwrap_or_default();
+pub(super) fn build_html_table(elem: &Tag, mcid_to_text: &HashMap<i32, String>) -> String {
+	let elem_type = elem.kind().unwrap_or_default();
 	match elem_type.as_str() {
 		"Table" => wrap("table border=\"1\"", "table", elem, mcid_to_text),
 		"TR" => wrap("tr", "tr", elem, mcid_to_text),
@@ -39,17 +38,17 @@ pub(super) fn build_html_table(elem: &PdfiumStructElement, mcid_to_text: &HashMa
 }
 
 /// One element's HTML: an opening tag, whatever its children come to, and a closing tag.
-fn wrap(open: &str, close: &str, elem: &PdfiumStructElement, mcid_to_text: &HashMap<i32, String>) -> String {
+fn wrap(open: &str, close: &str, elem: &Tag, mcid_to_text: &HashMap<i32, String>) -> String {
 	let mut html = format!("<{open}>\n");
 	html.push_str(&children(elem, mcid_to_text));
 	let _ = writeln!(html, "</{close}>");
 	html
 }
 
-fn children(elem: &PdfiumStructElement, mcid_to_text: &HashMap<i32, String>) -> String {
+fn children(elem: &Tag, mcid_to_text: &HashMap<i32, String>) -> String {
 	let mut html = String::new();
-	for i in 0..elem.count_children() {
-		if let Ok(child) = elem.child(i) {
+	for i in 0..elem.child_count() {
+		if let Some(child) = elem.child(i) {
 			html.push_str(&build_html_table(&child, mcid_to_text));
 		}
 	}

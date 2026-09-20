@@ -39,7 +39,7 @@ mp4ameta = "0.13.0"
 office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
 patois = "0.2.1"
-pdfium = "0.10.4"
+pdfium-render = { version = "0.8.36", default-features = false, features = ["pdfium_latest", "sync"] }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.4", default-features = false, features = ["html"] }
 rayon = "1.12.0"

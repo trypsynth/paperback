@@ -2,14 +2,18 @@
 //! metadata fields (title/author) off an opened document.
 
 use anyhow::anyhow;
-use pdfium::{PdfiumDocument, PdfiumError};
 
 use super::text::sanitize_pdf_text;
-use crate::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, t, util::text::trim_string};
+use crate::{
+	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
+	pdfium::{PdfDocument, PdfError},
+	t,
+	util::text::trim_string,
+};
 
-pub(super) fn map_load_error(err: PdfiumError) -> anyhow::Error {
+pub(super) fn map_load_error(err: PdfError) -> anyhow::Error {
 	match err {
-		PdfiumError::PasswordError => {
+		PdfError::PasswordRequired => {
 			// TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 			anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password required or incorrect"))
 		}
@@ -18,12 +22,8 @@ pub(super) fn map_load_error(err: PdfiumError) -> anyhow::Error {
 	}
 }
 
-pub(super) fn metadata_value(document: &PdfiumDocument, key: &str) -> Option<String> {
-	document
-		.metadata_value(key)
-		.ok()
-		.map(|value| trim_string(&sanitize_pdf_text(&value)))
-		.filter(|value| !value.is_empty())
+pub(super) fn metadata_value(document: &PdfDocument, key: &str) -> Option<String> {
+	document.metadata(key).map(|value| trim_string(&sanitize_pdf_text(&value))).filter(|value| !value.is_empty())
 }
 
 /// The extensions a `/Title` carries when it is really the name of the file the PDF was made
@@ -42,7 +42,7 @@ const PLACEHOLDER_TITLES: [&str; 5] = ["untitled", "untitled document", "unnamed
 /// routinely put their own source filename in: the reported case was a book whose metadata
 /// title was `i-xx_Phobias-fm.indd`. The name of the file on disk is a better answer than
 /// that, so returning nothing here lets the caller fall back to it.
-pub(super) fn metadata_title(document: &PdfiumDocument) -> Option<String> {
+pub(super) fn metadata_title(document: &PdfDocument) -> Option<String> {
 	metadata_value(document, "Title").filter(|title| !is_not_really_a_title(title))
 }
 

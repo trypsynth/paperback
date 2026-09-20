@@ -6,6 +6,7 @@ use paperback_core::{
 	document::{Document, ParserContext},
 	export::{self, ExportFormat},
 	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, parse_document},
+	set_pdfium_library_path,
 };
 
 mod cli;
@@ -17,6 +18,7 @@ use cli::{Cli, Format};
 fn main() -> Result<()> {
 	let cli = Cli::parse();
 	init_logging(cli.verbose);
+	point_at_pdfium();
 	if cli.list_formats {
 		print!("{}", formats::listing());
 		return Ok(());
@@ -83,6 +85,17 @@ fn main() -> Result<()> {
 	} else {
 		print!("{result}");
 		Ok(())
+	}
+}
+
+/// Points the PDF reader at the Pdfium library shipped beside this executable, the same way the
+/// desktop app does. Without this the loader falls back to the operating system's own search,
+/// which finds the library next to the binary on some platforms and not others.
+fn point_at_pdfium() {
+	if let Ok(exe) = env::current_exe()
+		&& let Some(dir) = exe.parent()
+	{
+		set_pdfium_library_path(dir.to_string_lossy().into_owned());
 	}
 }
 

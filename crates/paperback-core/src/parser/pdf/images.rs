@@ -14,15 +14,9 @@
 //! its tree would lose every one of them: the menu in #857 draws five and declares no figure at
 //! all.
 
-use std::ffi::c_ulong;
-
-use pdfium::{
-	PdfiumPage, PdfiumPageObject, lib,
-	pdfium_constants::{FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE},
-};
-
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType},
+	pdfium::{ObjectKind, PageObject, PdfPage},
 	t,
 	util::text::display_len,
 };
@@ -68,14 +62,10 @@ pub(super) fn append_image(
 /// Images reached through a form `XObject` count. A page whose content is wrapped in one form (a
 /// scanner's output and a placed-artwork export both look like this) draws no image object of its
 /// own, so stopping at the top level would find nothing on it at all.
-pub(super) fn page_image_tops(page: &PdfiumPage) -> Vec<f64> {
+pub(super) fn page_image_tops(page: &PdfPage) -> Vec<f64> {
 	let mut tops = Vec::new();
-	let object_count = lib().FPDFPage_CountObjects(page);
-	for i in 0..object_count {
-		// Bound before the `if let` so that the library handle `lib()` returns is dropped with
-		// this statement rather than held for the body.
-		let object = lib().FPDFPage_GetObject(page, i);
-		if let Ok(object) = object {
+	for i in 0..page.object_count() {
+		if let Some(object) = page.object(i) {
 			collect_image_tops(&object, 0, &mut tops);
 		}
 	}
@@ -91,37 +81,32 @@ pub(super) fn page_image_tops(page: &PdfiumPage) -> Vec<f64> {
 /// page carries, to decide a page is really a scan wearing a stray page number and to offer it for
 /// OCR. The largest single image is what counts, not the images added together: a page tiled with
 /// small decorations is not a scan.
-pub(super) fn page_largest_image_coverage(page: &PdfiumPage) -> f64 {
+pub(super) fn page_largest_image_coverage(page: &PdfPage) -> f64 {
 	let page_area = f64::from(page.width()) * f64::from(page.height());
 	if page_area <= 0.0 {
 		return 0.0;
 	}
 	let mut largest = 0.0_f64;
-	let object_count = lib().FPDFPage_CountObjects(page);
-	for i in 0..object_count {
-		let object = lib().FPDFPage_GetObject(page, i);
-		if let Ok(object) = object {
+	for i in 0..page.object_count() {
+		if let Some(object) = page.object(i) {
 			collect_largest_image_area(&object, 0, &mut largest);
 		}
 	}
 	(largest / page_area).min(1.0)
 }
 
-fn collect_largest_image_area(object: &PdfiumPageObject, depth: u32, largest: &mut f64) {
-	let object_type = lib().FPDFPageObj_GetType(object);
-	match object_type {
-		FPDF_PAGEOBJ_IMAGE => {
-			let (mut left, mut bottom, mut right, mut top) = (0.0, 0.0, 0.0, 0.0);
-			if lib().FPDFPageObj_GetBounds(object, &mut left, &mut bottom, &mut right, &mut top).is_ok() {
-				let area = f64::from((right - left).abs()) * f64::from((top - bottom).abs());
+fn collect_largest_image_area(object: &PageObject, depth: u32, largest: &mut f64) {
+	match object.kind() {
+		ObjectKind::Image => {
+			if let Some(bounds) = object.bounds() {
+				let area =
+					f64::from((bounds.right - bounds.left).abs()) * f64::from((bounds.top - bounds.bottom).abs());
 				*largest = largest.max(area);
 			}
 		}
-		FPDF_PAGEOBJ_FORM if depth < MAX_FORM_DEPTH => {
-			let child_count = u32::try_from(lib().FPDFFormObj_CountObjects(object)).unwrap_or(0);
-			for i in 0..child_count {
-				let child = lib().FPDFFormObj_GetObject(object, c_ulong::from(i));
-				if let Ok(child) = child {
+		ObjectKind::Form if depth < MAX_FORM_DEPTH => {
+			for i in 0..object.form_object_count() {
+				if let Some(child) = object.form_object(i) {
 					collect_largest_image_area(&child, depth + 1, largest);
 				}
 			}
@@ -130,23 +115,19 @@ fn collect_largest_image_area(object: &PdfiumPageObject, depth: u32, largest: &m
 	}
 }
 
-fn collect_image_tops(object: &PdfiumPageObject, depth: u32, tops: &mut Vec<f64>) {
-	let object_type = lib().FPDFPageObj_GetType(object);
-	match object_type {
-		FPDF_PAGEOBJ_IMAGE => {
-			let (mut left, mut bottom, mut right, mut top) = (0.0, 0.0, 0.0, 0.0);
-			if lib().FPDFPageObj_GetBounds(object, &mut left, &mut bottom, &mut right, &mut top).is_ok()
-				&& (right - left).abs() >= MIN_IMAGE_SIDE
-				&& (top - bottom).abs() >= MIN_IMAGE_SIDE
+fn collect_image_tops(object: &PageObject, depth: u32, tops: &mut Vec<f64>) {
+	match object.kind() {
+		ObjectKind::Image => {
+			if let Some(bounds) = object.bounds()
+				&& (bounds.right - bounds.left).abs() >= MIN_IMAGE_SIDE
+				&& (bounds.top - bounds.bottom).abs() >= MIN_IMAGE_SIDE
 			{
-				tops.push(f64::from(top));
+				tops.push(f64::from(bounds.top));
 			}
 		}
-		FPDF_PAGEOBJ_FORM if depth < MAX_FORM_DEPTH => {
-			let child_count = u32::try_from(lib().FPDFFormObj_CountObjects(object)).unwrap_or(0);
-			for i in 0..child_count {
-				let child = lib().FPDFFormObj_GetObject(object, c_ulong::from(i));
-				if let Ok(child) = child {
+		ObjectKind::Form if depth < MAX_FORM_DEPTH => {
+			for i in 0..object.form_object_count() {
+				if let Some(child) = object.form_object(i) {
 					collect_image_tops(&child, depth + 1, tops);
 				}
 			}

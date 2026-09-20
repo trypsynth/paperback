@@ -6,15 +6,13 @@
 //! [`PageMarkedContent`] is that gathering, and [`TreeFacts`] is the one pass over the tree it
 //! needs first.
 
-use std::{
-	collections::{HashMap, HashSet},
-	ffi::CString,
-	os::raw::c_ulong,
-};
-
-use pdfium::{PdfiumPageObject, PdfiumStructElement, PdfiumStructTree, PdfiumTextPage, lib};
+use std::collections::{HashMap, HashSet};
 
 use super::super::text::{char_top, is_invisible_space, reorder_run};
+use crate::pdfium::{PageObject, PdfTextPage, Tag, TagTree};
+
+/// The mark parameter a tagged page stamps its glyphs with, and the one the tree points at.
+const MCID_KEY: &str = "MCID";
 
 /// Minimum fraction of visible text glyphs that must be associated with a marked-content id for
 /// the tagged-extraction path to be trusted. Some PDFs advertise a structure tree while leaving
@@ -35,25 +33,25 @@ pub(super) struct TreeFacts {
 }
 
 impl TreeFacts {
-	pub(super) fn of(struct_tree: &PdfiumStructTree) -> Self {
+	pub(super) fn of(struct_tree: &TagTree) -> Self {
 		let mut facts = Self::default();
-		for i in 0..struct_tree.count_children() {
-			if let Ok(child) = struct_tree.child(i) {
+		for i in 0..struct_tree.child_count() {
+			if let Some(child) = struct_tree.child(i) {
 				facts.gather(&child);
 			}
 		}
 		facts
 	}
 
-	fn gather(&mut self, elem: &PdfiumStructElement) {
-		if elem.element_type().unwrap_or_default() == "Figure" {
+	fn gather(&mut self, elem: &Tag) {
+		if elem.kind().unwrap_or_default() == "Figure" {
 			self.claims_figures = true;
 		}
-		let count = elem.count_children();
+		let count = elem.child_count();
 		for i in 0..count {
-			if let Ok(child) = elem.child(i) {
+			if let Some(child) = elem.child(i) {
 				self.gather(&child);
-			} else if let Some(mcid) = elem.child_marked_content_id(i) {
+			} else if let Some(mcid) = elem.child_mcid(i) {
 				self.referenced.insert(mcid);
 			}
 		}
@@ -76,18 +74,17 @@ pub(super) struct PageMarkedContent {
 ///
 /// `want_tops` asks for each id's height as well, which costs one pdfium call per id. Only a page
 /// placing images by height needs it, so a page whose tree names its figures does not pay for it.
-pub(super) fn read(text_page: &PdfiumTextPage, facts: &TreeFacts, want_tops: bool) -> PageMarkedContent {
-	let mcid_key = CString::new("MCID").expect("MCID holds no nul byte");
+pub(super) fn read(text_page: &PdfTextPage, facts: &TreeFacts, want_tops: bool) -> PageMarkedContent {
 	let mut content = PageMarkedContent { text: HashMap::new(), tops: HashMap::new(), coverage: 1.0 };
 	let mut real_char_count: usize = 0;
 	let mut mcid_char_count: usize = 0;
-	if let Ok(char_count) = text_page.char_count() {
+	if let Some(char_count) = text_page.char_count() {
 		let mut current_mcid = -1;
 		// Chars of the current marked-content run with their pdfium index, so RTL
 		// runs can be reordered visual→logical per run.
 		let mut current_chars: Vec<(char, i32)> = Vec::new();
 		for i in 0..char_count {
-			let unicode = text_page.get_unicode(i);
+			let unicode = text_page.unicode_at(i);
 			if let Some(ch) = char::from_u32(unicode) {
 				if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t')) || ch == '\u{00AD}' {
 					continue;
@@ -97,10 +94,10 @@ pub(super) fn read(text_page: &PdfiumTextPage, facts: &TreeFacts, want_tops: boo
 				if ch == ' ' && is_invisible_space(text_page, i, char_count) {
 					continue;
 				}
-				let is_generated = text_page.is_generated(i).unwrap_or(false);
+				let is_generated = text_page.is_generated(i);
 				let mut char_mcid = -1;
-				if !is_generated && let Ok(obj) = text_page.get_text_object(i) {
-					char_mcid = object_mcid(&obj, &facts.referenced, &mcid_key);
+				if !is_generated && let Some(obj) = text_page.text_object(i) {
+					char_mcid = object_mcid(&obj, &facts.referenced);
 				}
 				if !is_generated && !ch.is_whitespace() {
 					real_char_count += 1;
@@ -143,17 +140,18 @@ pub(super) fn read(text_page: &PdfiumTextPage, facts: &TreeFacts, want_tops: boo
 /// nothing. Taking the innermost mark the tree refers to puts the text where the tree looks for
 /// it. An object with one mark, which is every object in a document written the usual way, skips
 /// all of this and keeps the id pdfium gives.
-fn object_mcid(obj: &PdfiumPageObject, referenced: &HashSet<i32>, mcid_key: &CString) -> i32 {
-	let outermost = obj.get_marked_content_id();
-	let count = obj.count_marks();
+fn object_mcid(obj: &PageObject, referenced: &HashSet<i32>) -> i32 {
+	let outermost = obj.marked_content_id().unwrap_or(-1);
+	let count = obj.mark_count();
 	if count <= 1 {
 		return outermost;
 	}
 	let mut deepest = outermost;
 	for index in 0..count {
-		let Ok(mark) = obj.get_mark(index as c_ulong) else { continue };
-		let mut mcid = -1;
-		if lib().FPDFPageObjMark_GetParamIntValue(&mark, mcid_key, &mut mcid).is_ok() && referenced.contains(&mcid) {
+		let Some(mark) = obj.mark(index) else { continue };
+		if let Some(mcid) = mark.param_int(MCID_KEY)
+			&& referenced.contains(&mcid)
+		{
 			deepest = mcid;
 		}
 	}
@@ -162,14 +160,14 @@ fn object_mcid(obj: &PdfiumPageObject, referenced: &HashSet<i32>, mcid_key: &CSt
 
 /// The first marked-content id anywhere under an element, which is where its text starts on the
 /// page.
-pub(super) fn first_marked_content_id(elem: &PdfiumStructElement) -> Option<i32> {
-	let count = elem.count_children();
+pub(super) fn first_marked_content_id(elem: &Tag) -> Option<i32> {
+	let count = elem.child_count();
 	for i in 0..count {
-		if let Ok(child) = elem.child(i) {
+		if let Some(child) = elem.child(i) {
 			if let Some(mcid) = first_marked_content_id(&child) {
 				return Some(mcid);
 			}
-		} else if let Some(mcid) = elem.child_marked_content_id(i) {
+		} else if let Some(mcid) = elem.child_mcid(i) {
 			return Some(mcid);
 		}
 	}
@@ -178,12 +176,12 @@ pub(super) fn first_marked_content_id(elem: &PdfiumStructElement) -> Option<i32>
 
 /// All the text under an element, ids resolved and run together, for the places that want an
 /// element's words rather than its layout: a heading's title, a list item's label, a table cell.
-pub(super) fn collect_text(elem: &PdfiumStructElement, mcid_to_text: &HashMap<i32, String>, out: &mut String) {
-	let count = elem.count_children();
+pub(super) fn collect_text(elem: &Tag, mcid_to_text: &HashMap<i32, String>, out: &mut String) {
+	let count = elem.child_count();
 	for i in 0..count {
-		if let Ok(child) = elem.child(i) {
+		if let Some(child) = elem.child(i) {
 			collect_text(&child, mcid_to_text, out);
-		} else if let Some(mcid) = elem.child_marked_content_id(i)
+		} else if let Some(mcid) = elem.child_mcid(i)
 			&& let Some(text) = mcid_to_text.get(&mcid)
 		{
 			out.push_str(text);

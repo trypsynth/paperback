@@ -17,8 +17,6 @@
 
 use std::collections::HashMap;
 
-use pdfium::{PdfiumPage, PdfiumStructElement, PdfiumTextPage};
-
 use self::{
 	marked_content::{MIN_MCID_COVERAGE, TreeFacts, collect_text, first_marked_content_id},
 	tables::{append_pdf_table_to_buffer, build_html_table},
@@ -26,6 +24,7 @@ use self::{
 use super::images::{UnclaimedImages, append_image};
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, TocItem},
+	pdfium::{PdfPage, PdfTextPage, Tag},
 	util::text::{collapse_whitespace, display_len, trim_string},
 };
 
@@ -41,8 +40,8 @@ mod tables;
 /// see [`UnclaimedImages`].
 #[allow(clippy::too_many_arguments)]
 pub(super) fn extract_tagged_page_text(
-	page: &PdfiumPage,
-	text_page: &PdfiumTextPage,
+	page: &PdfPage,
+	text_page: &PdfTextPage,
 	page_index: i32,
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
@@ -51,8 +50,8 @@ pub(super) fn extract_tagged_page_text(
 	render_tables_inline: bool,
 	image_tops: &[f64],
 ) -> bool {
-	let Some(struct_tree) = page.struct_tree() else { return false };
-	let child_count = struct_tree.count_children();
+	let Some(struct_tree) = page.tags() else { return false };
+	let child_count = struct_tree.child_count();
 	if child_count == 0 {
 		return false;
 	}
@@ -79,7 +78,7 @@ pub(super) fn extract_tagged_page_text(
 	// cannot be reached. [`super::repair`] gets such a file its tree back where it can; where it
 	// cannot, reporting the tagged path as used would hand the caller an empty page and stop
 	// plain extraction from ever running over text that is there.
-	if content.text.is_empty() || (0..child_count).all(|i| struct_tree.child(i).is_err()) {
+	if content.text.is_empty() || (0..child_count).all(|i| struct_tree.child(i).is_none()) {
 		tracing::warn!(page_index, "page structure tree leads to no text, falling back to plain extraction");
 		return false;
 	}
@@ -87,7 +86,7 @@ pub(super) fn extract_tagged_page_text(
 	let mut pending_label = String::new();
 	let mut images = ImagePlacement { mcid_tops: &content.tops, unclaimed, block_top: None };
 	for i in 0..child_count {
-		if let Ok(child) = struct_tree.child(i) {
+		if let Some(child) = struct_tree.child(i) {
 			process_struct_element(
 				&child,
 				&content.text,
@@ -133,7 +132,7 @@ impl ImagePlacement<'_> {
 	/// [`Self::note`] this speaks for the element that is about to be written rather than for text
 	/// joining a block already under way, so it sets the height rather than deferring to one
 	/// already held.
-	fn note_element(&mut self, elem: &PdfiumStructElement) {
+	fn note_element(&mut self, elem: &Tag) {
 		if self.unclaimed.is_empty() {
 			return;
 		}
@@ -232,7 +231,7 @@ fn flush_block_lines(
 
 #[allow(clippy::too_many_arguments)]
 fn process_struct_element(
-	elem: &PdfiumStructElement,
+	elem: &Tag,
 	mcid_to_text: &HashMap<i32, String>,
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
@@ -243,7 +242,7 @@ fn process_struct_element(
 	render_tables_inline: bool,
 	images: &mut ImagePlacement,
 ) {
-	let elem_type = elem.element_type().unwrap_or_default();
+	let elem_type = elem.kind().unwrap_or_default();
 	if elem_type == "Lbl" {
 		// A list item's bullet or number. It is held back rather than added to the block being
 		// built, because the paragraph inside the LBody beside it starts by flushing that block:
@@ -307,9 +306,9 @@ fn process_struct_element(
 		images.before_line(buffer, page_display_text, current_lines_info);
 	}
 	let block_start_pos = buffer.current_position() + display_len(current_block);
-	let count = elem.count_children();
+	let count = elem.child_count();
 	for i in 0..count {
-		if let Ok(child) = elem.child(i) {
+		if let Some(child) = elem.child(i) {
 			process_struct_element(
 				&child,
 				mcid_to_text,
@@ -322,7 +321,7 @@ fn process_struct_element(
 				render_tables_inline,
 				images,
 			);
-		} else if let Some(mcid) = elem.child_marked_content_id(i)
+		} else if let Some(mcid) = elem.child_mcid(i)
 			&& let Some(text) = mcid_to_text.get(&mcid)
 		{
 			images.note(mcid);
@@ -371,7 +370,7 @@ fn process_struct_element(
 			}
 		}
 		if elem_type == "L" || elem_type == "TOC" {
-			let child_count = elem.count_children();
+			let child_count = elem.child_count();
 			buffer.add_marker(Marker::new(MarkerType::List, block_start_pos).with_level(child_count));
 		}
 		if elem_type == "LI" || elem_type == "TOCI" {
