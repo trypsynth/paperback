@@ -20,6 +20,11 @@ func applyRules(_ rules: [TtsRule], to text: String, voiceId: String?) -> String
 	return result
 }
 
+/// How long a silence to leave between paragraphs, on top of whatever tail the voice itself
+/// leaves. A starting value rather than a measured one: it wants to read as clearly longer than
+/// the stop at the end of a sentence, without becoming dead air to somebody reading fast.
+let paragraphPauseSeconds = 0.4
+
 /// The engine rate a whole-number slider percentage stands for. A stored value from outside the
 /// slider's own range is brought back inside it rather than handed to the engine as-is.
 func speechRateForPercent(_ percent: Int) -> Float {
@@ -639,6 +644,39 @@ final class TtsManager: NSObject {
 
 	// Concatenate synthesis chunks then convert to the hardware output format in one pass.
 	private func convertToOutput(_ buffers: [AVAudioPCMBuffer]) -> AVAudioPCMBuffer? {
+		joinAndConvert(buffers).flatMap(withParagraphPause)
+	}
+
+	/// Appends [`paragraphPauseSeconds`] of silence to a finished paragraph.
+	///
+	/// Paragraphs are synthesized one at a time and played back to back, so on their own they
+	/// run together: whatever small tail the voice leaves is all that separates them, which
+	/// lands somewhere between a comma and a full stop and is far too short for a paragraph
+	/// break. Adding the silence here rather than asking for it through `postUtteranceDelay`
+	/// keeps it the same length whichever voice is speaking, and keeps it inside the buffer so
+	/// it survives the gapless hand-off to the next paragraph.
+	private func withParagraphPause(_ buffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
+		let format = buffer.format
+		let silenceFrames = AVAudioFrameCount(format.sampleRate * paragraphPauseSeconds)
+		guard silenceFrames > 0,
+			let padded = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: buffer.frameLength + silenceFrames),
+			let source = buffer.floatChannelData,
+			let destination = padded.floatChannelData
+		else {
+			return buffer
+		}
+		let frames = Int(buffer.frameLength)
+		for channel in 0..<Int(format.channelCount) {
+			memcpy(destination[channel], source[channel], frames * MemoryLayout<Float>.size)
+			// `AVAudioPCMBuffer` does not promise zeroed storage, so the silence is written
+			// rather than assumed; whatever was in that memory would otherwise be audible.
+			memset(destination[channel].advanced(by: frames), 0, Int(silenceFrames) * MemoryLayout<Float>.size)
+		}
+		padded.frameLength = buffer.frameLength + silenceFrames
+		return padded
+	}
+
+	private func joinAndConvert(_ buffers: [AVAudioPCMBuffer]) -> AVAudioPCMBuffer? {
 		guard let synthFormat = buffers.first?.format else { return nil }
 
 		let totalFrames = buffers.reduce(AVAudioFrameCount(0)) { $0 + $1.frameLength }
