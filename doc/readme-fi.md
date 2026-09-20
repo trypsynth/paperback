@@ -65,7 +65,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisi
 * `Ctrl+F4` (macOS: `Cmd+W`): Sulje nykyinen asiakirja.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Sulje kaikki avoimet asiakirjat.
 * `Ctrl+Shift+T`: Avaa viimeksi suljetun asiakirjan uudelleen.
-* `Ctrl+R`: Näytä "Kaikki asiakirjat" -valintaikkuna (Viimeisimmät asiakirjat -valikosta).
+* `Ctrl+R`: Näytä "Kaikki asiakirjat" -valintaikkuna (Viimeksi avatut -valikosta).
 * `Ctrl+Q`: Lopeta (vain Windowsissa; macOS:ää käytettäessä tämä komento löytyy sovellusvalikosta).
 
 ### Siirry-valikko
@@ -105,6 +105,8 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisi
 * `F`: Seuraava kuvitus.
 * `Shift+T`: Edellinen taulukko.
 * `T`: Seuraava taulukko.
+* `Shift+M`: Edellinen matemaattinen kaava.
+* `M`: Seuraava matemaattinen kaava.
 * `Shift+S`: Edellinen erotin.
 * `S`: Seuraava erotin.
 * `Shift+L`: Edellinen luettelo.
@@ -151,8 +153,8 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisi
 
 ### Asiakirjanäkymän lisänäppäimet
 
-* `Delete` / `Laskinnäppäimistön Delete` välilehtisäätimessä: Sulje valittu asiakirjan välilehti.
-* `Enter` tai `Väli` asiakirjan tekstissä: Aktivoi kohdistimen kohdalla oleva linkki tai avaa taulukkonäkymä, kun kohdistin on taulukossa.
+* `Delete` / `Laskinnäppäimistön Delete` välilehtien ohjausobjektissa: Sulje valittu asiakirjan välilehti.
+* `Enter` tai `Välilyönti` asiakirjan tekstissä: Avaa kohdistimen kohdalla oleva linkki tai näytä taulukko tai kaava omassa näkymässään.
 * `Shift+F10` tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko.
 
 ## Tuettavat kielet
@@ -230,10 +232,10 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * DAISY-kirjojen ääni kuuluu nyt macOS:ssä, eikä niiden aikajanaa seurata äänettömästi.
 * Korjattu ongelma, jonka vuoksi kaarevat lainausmerkit, ajatusviivat ja vastaavat merkit katosivat RTF-asiakirjoista yhdistäen samalla ympäröivät sanat toisiinsa.
 * Korjattu ongelma, jonka vuoksi RTF-kuvien raakadata vuoti asiakirjaan tekstisotkuna.
-* Korjattu ongelma, jonka vuoksi Viimeisimmät asiakirjat -alivalikossa säilyi vanhentuneita merkintöjä, kunnes valikon sisältö muodostettiin uudelleen.
+* Korjattu ongelma, jonka vuoksi Viimeksi avatut -alivalikossa säilyi vanhentuneita merkintöjä, kunnes valikon sisältö muodostettiin uudelleen.
 * Valikkojen pikanäppäimet ovat palanneet kaikkiin käännöksiin, joten esimerkiksi venäjänkielistä käyttöliittymää käytettäessä valikkokohteita on taas mahdollista avata korostetuilla näppäimillä.
 * Suuret CHM-asiakirjat avautuvat nyt jopa seitsemän kertaa nopeammin.
-* Avatut asiakirjat rekisteröidään Windowsiin, joten ne näkyvät nyt tehtäväpalkin pikavalikossa ja Käynnistä-valikon viimeisimpien tiedostojen luettelossa.
+* Avatut asiakirjat rekisteröidään Windowsiin, joten ne näkyvät nyt tehtäväpalkin pikavalikossa ja Käynnistä-valikon viimeksi avattujen tiedostojen luettelossa.
 * Asetukset-valikon englanninkielinen nimi (Options) on muutettu muotoon Settings, mikä vastaa mobiilisovelluksia sekä macOS-käyttöjärjestelmän käytäntöä.
 * Paperback muistaa nyt ikkunan sijainnin, koon ja suurennetun tilan käynnistysten välillä.
 * Monikkomuodot on nyt käännetty, joten lukumääriä sisältävät viestit toimivat oikein kielissä, joissa tarvitaan yhtä useampaa monikkomuotoa.
@@ -276,6 +278,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Asetus taulukoiden näyttötavan määrittämiseksi sekä yhtenäistetty taulukoiden esitystapa kaikille asiakirjoille.
 
 ##### Navigointi
+* EPUB- ja HTML-tiedostojen MathML-kaavat muunnetaan MathCATin avulla AsciiMath-muotoon. Siirry kaavojen välillä näppäimillä M ja Shift+M ja avaa sitten alkuperäinen MathML-kaava Kaavanäkymässä painamalla `Enter`- tai `Välilyöntinäppäintä`.
 * Lisätty tuki säilöittäin navigoimiselle.
 * Asetus, joka siirtää kohdistimen navigoitaessa rivin alkuun, kuten ruudunlukijoiden selaustilassa.
 * Kohdistimen sijainnin kirjassa prosentteina ilmoittava =-pikanäppäin.
@@ -339,7 +342,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Asiakirjan tiedot- ja Kaikki asiakirjat -valintaikkunat eivät sulkeutuneet Esc-näppäimellä.
 * Otsikkopalkki ei päivittynyt, kun asiakirja suljettiin Kaikki asiakirjat -valintaikkunasta.
 * Readme.html-tiedostoa ei enää lisätä Kaikki asiakirjat -luetteloon, kun se avataan Shift+F1-pikanäppäimellä.
-* Asiakirjojen poistaminen Viimeisimmät asiakirjat -valintaikkunasta sulkee nyt myös niiden aktiiviset välilehdet.
+* Asiakirjojen poistaminen Viimeksi avatut asiakirjat -valintaikkunasta sulkee nyt myös niiden aktiiviset välilehdet.
 * Hakusuodatin säilytetään nyt myös asiakirjan poistamisen jälkeen.
 
 ##### Navigointi
@@ -464,95 +467,95 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu useita jäsentimen ongelmia.
 * Kirjanmerkkeihin liittyvät valikkokohdat sekä elementtilista poistetaan nyt käytöstä asianmukaisesti, kun yhtään asiakirjaa ei ole avoinna.
 * Parannettu luetteloiden käsittelyä useissa asiakirjamuodoissa.
-* Kääntäjien työnkulkua parannettu. [#270](https://github.com/trypsynth/paperback/issues/270).
+* Kääntäjien työnkulkua parannettu.
 * Useita sisäisiä uudelleenjärjestelyjä, joissa suurin osa sovelluslogiikasta siirrettiin C++:sta Rustiin suorituskyvyn ja ylläpidettävyyden vuoksi.
 
 ### Versio 0.6.1
-* Lisätty tuki salasanalla suojatuille PDF-tiedostoille! [#169](https://github.com/trypsynth/paperback/issues/169).
-* Lisätty hyvin yksinkertainen toiminto edelliseen ja seuraavaan sijaintiin siirtymistä varten. Kun painat Enteriä sisäisen linkin kohdalla ja kohdistin siirtyy, kyseinen sijainti tallennetaan, ja siihen voi palata komennolla Alt+vasen/oikea nuolinäppäin. [#115](https://github.com/trypsynth/paperback/issues/115),
-* Elementtilista lisätty. Tällä hetkellä se näyttää vain kaikkien asiakirjan otsikoiden puunäkymän tai linkkiluettelon, mutta sitä on tarkoitus laajentaa tulevaisuudessa. [#173](https://github.com/trypsynth/paperback/issues/173),
-* Lisätty asetus, jolla Paperback käynnistyy oletusarvoisesti suurennettuna. [#164](https://github.com/trypsynth/paperback/issues/164),
-* Korjattu joidenkin EPUB-asiakirjojen virheellisesti toimineet linkit. [#167](https://github.com/trypsynth/paperback/issues/167), [#171](https://github.com/trypsynth/paperback/pull/171), [#178](https://github.com/trypsynth/paperback/issues/178),
-* Korjattu suhteellisia polkuja sisältävien EPUB-kirjojen sisällysluetteloiden jäsennys. [#187](https://github.com/trypsynth/paperback/issues/187).
+* Lisätty tuki salasanalla suojatuille PDF-tiedostoille.
+* Lisätty hyvin yksinkertainen toiminto edelliseen ja seuraavaan sijaintiin siirtymistä varten. Kun painat Enteriä sisäisen linkin kohdalla ja kohdistin siirtyy, kyseinen sijainti tallennetaan, ja siihen voi palata komennolla Alt+vasen/oikea nuolinäppäin.
+* Elementtilista lisätty. Tällä hetkellä se näyttää vain kaikkien asiakirjan otsikoiden puunäkymän tai linkkiluettelon, mutta sitä on tarkoitus laajentaa tulevaisuudessa.
+* Lisätty asetus, jolla Paperback käynnistyy oletusarvoisesti suurennettuna.
+* Korjattu joidenkin EPUB-asiakirjojen virheellisesti toimineet linkit.
+* Korjattu suhteellisia polkuja sisältävien EPUB-kirjojen sisällysluetteloiden jäsennys.
 * Korjattu virhe, jossa nimeä tai tekijää ei näytetty joissakin EPUB-asiakirjoissa.
 * Korjattu virhe, jossa joidenkin EPUB-asiakirjojen lukujen nimet eivät näkyneet oikein sisällysluettelovalintaikkunassa.
-* Korjattu virhe, jossa sisällysluettelovalintaikkunan OK- tai Peruuta-painikkeita ei voinut painaa Väli-näppäimellä. [#170](https://github.com/trypsynth/paperback/issues/170).
+* Korjattu virhe, jossa sisällysluettelovalintaikkunan OK- tai Peruuta-painikkeita ei voinut painaa välilyöntinäppäimellä.
 * Otsikoiden käsittelyä parannettu Word-asiakirjoissa.
-* Paperback antaa nyt äänipalautteen yritettäessä avata "Viimeisimmät asiakirjat" -valintaikkunaa, kun luettelo on tyhjä. [#185](https://github.com/trypsynth/paperback/issues/185).
+* Paperback antaa nyt äänipalautteen yritettäessä avata "Viimeksi avatut asiakirjat" -valintaikkunaa, kun luettelo on tyhjä.
 
 ### Versio 0.6.0
 * Asetukset-valintaikkunaan lisätty uusi asetus, jolla Siirry-valikko voidaan näyttää huomattavasti tiiviimmässä muodossa. Se on oletusarvoisesti käytössä.
 * Lisätty asetus, jolla rakenteisten elementtien perusteella tapahtuva navigointi palaa asiakirjan lopussa takaisin alkuun.
 * Työkalut-valikkoon lisätty vaihtoehto, jolla voidaan avata nykyisen asiakirjan sisältävä kansio.
-* Lisätty melko yksinkertainen mutta erittäin tehokas päivitysjärjestelmä. [#28](https://github.com/trypsynth/paperback/issues/28).
-* Lisätty perustason uniajastin, jonka voi avata Ctrl+Shift+S-näppäinkomennolla. [#117](https://github.com/trypsynth/paperback/issues/117),
-* Lisätty FB2-e-kirjojen jäsennystuki! [#30](https://github.com/trypsynth/paperback/issues/30),
-* Lisätty OpenDocument-esitysten jäsennystuki! [#105](https://github.com/trypsynth/paperback/issues/105),
-* Lisätty OpenDocument-tekstitiedostojen jäsennystuki! [#29](https://github.com/trypsynth/paperback/issues/29),
-* Kirjanmerkit voivat nyt kohdistua koko riville tai pelkästään valittuun tekstiin. Jos tekstiä ei ole valittuna kirjanmerkkiä luotaessa, toiminnallisuus on sama kuin ennen versiota 0.6, ja koko rivi merkitään. Mikäli tekstiä on valittuna, kirjanmerkki kohdistuu vain kyseiseen tekstiin. [#99](https://github.com/trypsynth/paperback/issues/99).
-* Kirjanmerkeissä voi nyt olla valinnaisia muistiinpanoja. Siirry muistiinpanoja sisältävien kirjanmerkkien välillä N:llä ja Shift+N:llä, tai avaa kirjanmerkkien valintaikkuna, jossa kaikki kirjanmerkit, vain muistiinpanot tai vain ilman muistiinpanoja olevat kirjanmerkit voidaan valita tietyillä pikanäppäimillä. [#68](https://github.com/trypsynth/paperback/issues/68), [#128](https://github.com/trypsynth/paperback/issues/128), [#156](https://github.com/trypsynth/paperback/issues/156), [#157](https://github.com/trypsynth/paperback/issues/157), [#158](https://github.com/trypsynth/paperback/pull/158), [#159](https://github.com/trypsynth/paperback/issues/159),
-* Kirjanmerkeissä ei enää ole ärsyttävää "bookmark x" -etuliitettä kirjanmerkkien valintaikkunassa. [#86](https://github.com/trypsynth/paperback/issues/86).
-* XML:ltä näyttävää HTML-koodia sisältävät EPUB-kirjat käsitellään nyt oikein. [#96](https://github.com/trypsynth/paperback/issues/96).
-* Suurten Markdown-asiakirjojen lataaminen korjattu. [#97](https://github.com/trypsynth/paperback/issues/97).
-* Väli-näppäimen painaminen sisällysluettelon puurakenteessa ei enää paina OK-painiketta. [#121](https://github.com/trypsynth/paperback/issues/121),
+* Lisätty melko yksinkertainen mutta erittäin tehokas päivitysjärjestelmä.
+* Lisätty perustason uniajastin, jonka voi avata Ctrl+Shift+S-näppäinkomennolla.
+* Lisätty FB2-e-kirjojen jäsennystuki.
+* Lisätty OpenDocument-esitysten jäsennystuki.
+* Lisätty OpenDocument-tekstitiedostojen jäsennystuki.
+* Kirjanmerkit voivat nyt kohdistua koko riville tai pelkästään valittuun tekstiin. Jos tekstiä ei ole valittuna kirjanmerkkiä luotaessa, toiminnallisuus on sama kuin ennen versiota 0.6, ja koko rivi merkitään. Mikäli tekstiä on valittuna, kirjanmerkki kohdistuu vain kyseiseen tekstiin.
+* Kirjanmerkeissä voi nyt olla valinnaisia muistiinpanoja. Siirry muistiinpanoja sisältävien kirjanmerkkien välillä N:llä ja Shift+N:llä, tai avaa kirjanmerkkien valintaikkuna, jossa kaikki kirjanmerkit, vain muistiinpanot tai vain ilman muistiinpanoja olevat kirjanmerkit voidaan valita tietyillä pikanäppäimillä.
+* Kirjanmerkeissä ei enää ole ärsyttävää "bookmark x" -etuliitettä kirjanmerkkien valintaikkunassa.
+* XML:ltä näyttävää HTML-koodia sisältävät EPUB-kirjat käsitellään nyt oikein.
+* Suurten Markdown-asiakirjojen lataaminen korjattu.
+* Välilyöntinäppäimen painaminen sisällysluettelon puurakenteessa ei enää paina OK-painiketta.
 * Välilyöntien käsittely korjattu pre-tagien alussa sekä HTML- että XHTML-asiakirjoissa.
 * Korjattu virhe, jossa kohdistus ei siirtynyt takaisin tekstikenttään Paperbackin ikkunaan palattaessa.
 * "Siirry prosenttiin" -valintaikkunan tekstikenttä päivittää nyt oikein liukusäätimen arvon.
-* Mukautettujen HTML ID -tunnisteiden renderöinti korjattu Markdown-asiakirjoissa. [#113](https://github.com/trypsynth/paperback/issues/113).
-* Markdown-koodilohkojen sisällä oleva HTML renderöidään nyt oikein. [#79](https://github.com/trypsynth/paperback/issues/79).
+* Mukautettujen HTML ID -tunnisteiden renderöinti korjattu Markdown-asiakirjoissa.
+* Markdown-koodilohkojen sisällä oleva HTML renderöidään nyt oikein.
 * Kun kirja ladataan komentoriviparametrilla jo käynnissä olevaan Paperback-kopioon, virheilmoitusta ei enää näytetä, vaikka dokumentin lataus kestäisi yli 5 sekuntia.
-* Asetukset ladataan ja tallennetaan nyt asianmukaisesti, kun Paperback on käynnissä järjestelmänvalvojana. [#148](https://github.com/trypsynth/paperback/issues/148),
-* Kirjanmerkki voidaan nyt poistaa suoraan kirjanmerkkien valintaikkunasta. [#100](https://github.com/trypsynth/paperback/issues/100),
-* Asiakirjan kirjanmerkkien ja lukukohdan tuonti ja vienti on nyt mahdollista. Luotu tiedosto nimetään asiakirjan tiedostonimen perusteella ja sen tunniste on .paperback. Mikäli tällainen tiedosto löytyy ladattaessa asiakirjan kansiosta, se ladataan automaattisesti. Muussa tapauksessa voit tuoda sen manuaalisesti Työkalut-valikon toiminnolla. [#146](https://github.com/trypsynth/paperback/issues/146),
-* Asiakirjojen sisäiset linkit ovat nyt täysin tuettuja. Siirry niiden välillä eteen- ja taaksepäin K- ja Shift+K-näppäimillä ja avaa tai aktivoi linkki Enterillä. [#74](https://github.com/trypsynth/paperback/issues/74), [#87](https://github.com/trypsynth/paperback/pull/87), [#126](https://github.com/trypsynth/paperback/issues/126), [#129](https://github.com/trypsynth/paperback/issues/129), [#130](https://github.com/trypsynth/paperback/issues/130).
+* Asetukset ladataan ja tallennetaan nyt asianmukaisesti, kun Paperback on käynnissä järjestelmänvalvojana.
+* Kirjanmerkki voidaan nyt poistaa suoraan kirjanmerkkien valintaikkunasta.
+* Asiakirjan kirjanmerkkien ja lukukohdan tuonti ja vienti on nyt mahdollista. Luotu tiedosto nimetään asiakirjan tiedostonimen perusteella ja sen tunniste on .paperback. Mikäli tällainen tiedosto löytyy ladattaessa asiakirjan kansiosta, se ladataan automaattisesti. Muussa tapauksessa voit tuoda sen manuaalisesti Työkalut-valikon toiminnolla.
+* Asiakirjojen sisäiset linkit ovat nyt täysin tuettuja. Siirry niiden välillä eteen- ja taaksepäin K- ja Shift+K-näppäimillä ja avaa linkki tai siirry sen kohdalle Enterillä.
 * Tehty useita sisäisiä uudelleenjärjestelyjä, jotka nopeuttavat ohjelmaa ja pienentävät binääriä.
 * Markdown-sisältö esikäsitellään nyt CommonMark-yhteensopivaksi ennen renderöintiä.
-* Luetteloiden ja niiden kohteiden välillä navigointia tuetaan nyt täysin. Voit siirtyä luetteloiden välillä L- ja Shift+L-näppäimillä ja luettelokohteiden välillä I- ja Shift+I-näppäimillä. [#119](https://github.com/trypsynth/paperback/issues/119),
+* Luetteloiden ja niiden kohteiden välillä navigointia tuetaan nyt täysin. Voit siirtyä luetteloiden välillä L- ja Shift+L-näppäimillä ja luettelokohteiden välillä I- ja Shift+I-näppäimillä.
 * Tavallisen Delete-näppäimen lisäksi myös numeronäppäimistön Deleteä voi  nyt käyttää asiakirjojen poistamiseen välilehtipalkista.
-* Paperback voidaan nyt haluttaessa pienentää ilmaisinalueelle. Tämä asetus on oletusarvoisesti poissa käytöstä, mutta kun se otetaan käyttöön, Paperbackin järjestelmävalikon pienennystoiminto siirtää sovelluksen ilmaisinalueelle, josta se voidaan palauttaa napsauttamalla Paperbackin kuvaketta. [#49](https://github.com/trypsynth/paperback/issues/49),
-* Paperback on nyt käännettävissä eri kielille. Sen tukemien kielten luettelo on toistaiseksi melko pieni, mutta se kasvaa jatkuvasti. [#75](https://github.com/trypsynth/paperback/issues/75), [#92](https://github.com/trypsynth/paperback/pull/92), [#95](https://github.com/trypsynth/paperback/pull/95), [#134](https://github.com/trypsynth/paperback/pull/134), [#137](https://github.com/trypsynth/paperback/pull/137), [#141](https://github.com/trypsynth/paperback/pull/141),
+* Paperback voidaan nyt haluttaessa pienentää ilmaisinalueelle. Tämä asetus on oletusarvoisesti poissa käytöstä, mutta kun se otetaan käyttöön, Paperbackin järjestelmävalikon pienennystoiminto siirtää sovelluksen ilmaisinalueelle, josta se voidaan palauttaa napsauttamalla Paperbackin kuvaketta.
+* Paperback on nyt käännettävissä eri kielille. Sen tukemien kielten luettelo on toistaiseksi melko pieni, mutta se kasvaa jatkuvasti.
 * Paperbackilla on nyt virallinen verkkosivusto osoitteessa [paperback.dev](https://paperback.dev).
-* PPTX-asiakirjoissa olevat diat näytetään nyt yksinkertaisessa sisällysluettelossa. [#122](https://github.com/trypsynth/paperback/issues/122).
-* Asiakirjan tiedot -valintaikkunassa näytetään nyt avoimen asiakirjan koko polku. [#139](https://github.com/trypsynth/paperback/issues/139),
+* PPTX-asiakirjoissa olevat diat näytetään nyt yksinkertaisessa sisällysluettelossa.
+* Asiakirjan tiedot -valintaikkunassa näytetään nyt avoimen asiakirjan koko polku.
 * Asennusohjelma sisältää nyt vaihtoehdon, jolla readme-tiedosto voidaan avata selaimessa asennuksen jälkeen.
-* Viimeisimpien asiakirjojen luetteloa on laajennettu huomattavasti. Sen sijaan, että se näyttäisi vain 10 viimeksi avattua asiakirjaa, näytettävä määrä on nyt mahdollista määrittää itse, ja muut aiemmin avatut asiakirjat ovat käytettävissä erillisen valintaikkunan kautta. [#78](https://github.com/trypsynth/paperback/issues/78), [#80](https://github.com/trypsynth/paperback/pull/80), [#84](https://github.com/trypsynth/paperback/pull/84),
+* Viimeksi avattujen asiakirjojen luetteloa on laajennettu huomattavasti. Sen sijaan, että se näyttäisi vain 10 viimeksi avattua asiakirjaa, näytettävä määrä on nyt mahdollista määrittää itse, ja muut aiemmin avatut asiakirjat ovat käytettävissä erillisen valintaikkunan kautta.
 * Useita pieniä parannuksia jäsentimiin kautta linjan, kuten tyhjän rivin lisääminen diojen väliin PPTX-esityksissä, rivinvaihtojen käsittelyn korjaaminen Word-asiakirjojen kappaleissa ja luettelokohtamerkkien lisääminen.
 
 ### Versio 0.5.0
-* Lisätty Microsoft Word -asiakirjojen tuki. [#27](https://github.com/trypsynth/paperback/issues/27).
-* Lisätty PowerPoint-esityksien tuki. [#25](https://github.com/trypsynth/paperback/issues/25).
+* Lisätty Microsoft Word -asiakirjojen tuki.
+* Lisätty PowerPoint-esityksien tuki.
 * Korjattu virhe, jossa tietyt valikkokohteet eivät poistuneet käytöstä, kun yhtään asiakirjaa ei ollut avoinna.
-* Korjattu "siirry prosenttiin" -liukusäätimen suunta. [#70](https://github.com/trypsynth/paperback/issues/70).
+* Korjattu "siirry prosenttiin" -liukusäätimen suunta.
 * Korjattu EPUB-kirjojen sisällysluettelot, joissa oli URL-koodattuja tiedostopolkuja ja/tai fragmenttitunnuksia.
 * Korjattu ongelma, jossa XHTML-otsikoissa olevat välilyönnit poistettiin oudosti.
 * Korjattu HTML-asiakirjojen sisäkkäisten pre-tagien sisällä olevien välilyöntien käsittely.
 * HTML- ja Markdown-asiakirjat tukevat nyt sisällysluetteloa. Kun HTML- tai Markdown-asiakirja ladataan, Paperback muodostaa sisällysluettelon asiakirjan otsikkorakenteesta ja näyttää sen Ctrl+T-näppäinkomennolla avattavassa valintaikkunassa.
 * HTML-asiakirjoissa käytetään nyt title-tagin mukaista otsikkoa, mikäli sellainen on määritetty. Muutoin käytetään edelleen tiedoston nimeä ilman tunnistetta.
 * Puhumiseen käytetään UniversalSpeech-kirjaston sijaan aktiivista aluetta. Tämä tarkoittaa, ettei ohjelman mukana enää toimiteta ruudunlukijoiden DLL-tiedostoja, ja nyt tuetaan useampia ruudunlukijoita, kuten Microsoft Narratoria.
-* ZIP-kirjastoja on vaihdettu, jotta voidaan avata laajempi valikoima EPUB-kirjoja. [#73](https://github.com/trypsynth/paperback/issues/73).
+* ZIP-kirjastoja on vaihdettu, jotta voidaan avata laajempi valikoima EPUB-kirjoja.
 * Valintaikkuna, joka kysyy asiakirjan avaamista pelkkänä tekstinä, on uudistettu kokonaan ja se mahdollistaa nyt asiakirjan avaamisen pelkkänä tekstinä, HTML:nä tai Markdownina.
-* "Siirry prosenttiin" -valintaikkuna sisältää nyt tekstikentän, johon voit syöttää prosenttiluvun manuaalisesti. [#66](https://github.com/trypsynth/paperback/issues/66).
+* "Siirry prosenttiin" -valintaikkuna sisältää nyt tekstikentän, johon voit syöttää prosenttiluvun manuaalisesti.
 * HTML-jäsennin tunnistaa nyt dd-, dt- ja dl-elementit luetteloelementeiksi.
 * EPUB-kirjojen sisällysluettelot säilytetään jälleen täsmälleen sellaisina kuin ne ovat.
-* Unicode-merkistöön sisältyvä ei-sitova välilyönti käsitellään nyt tyhjiä rivejä poistettaessa. [#71](https://github.com/trypsynth/paperback/issues/71).
+* Unicode-merkistöön sisältyvä ei-sitova välilyönti käsitellään nyt tyhjiä rivejä poistettaessa.
 * Sovellus kysyy tuntemattoman tiedoston avaustapaa vain ensimmäisellä kerralla, ei enää joka avauksella.
 
 ### Versio 0.4.1
 * Lisätty asennusohjelmaan valinnainen Käynnistä-valikon kuvakkeen luonti.
 * Sisällysluettelon pitäisi nyt olla joissakin tapauksissa siistimpi. Esimerkiksi jos ala- ja ylätason kohde sisältävät saman tekstin samassa kohdassa, nyt näytetään vain ylätason kohde.
 * Korjattu tiettyjen CHM-asiakirjojen sisällysluettelot.
-* Korjattu absoluuttisia tiedostopolkuja sisältävien EPUB 3 -kirjojen sisällysluettelot. [#67](https://github.com/trypsynth/paperback/issues/67).
+* Korjattu absoluuttisia tiedostopolkuja sisältävien EPUB 3 -kirjojen sisällysluettelot.
 * CHM-asiakirjojen nimien pitäisi nyt näkyä sellaisina, kuin ne on metatiedoissa määritetty.
 
 ### Versio 0.4.0
-* Lisätty CHM-tiedostojen tuki! [#23](https://github.com/trypsynth/paperback/issues/23).
-* Lisätty kirjanmerkkien tuki. Voit lisätä niitä asiakirjoihin rajattomasti. Siirry niiden välillä eteen- ja taaksepäin B- ja Shift+B-näppäimillä, lisää kirjanmerkki näppäinkomennolla Ctrl+Shift+B ja avaa tiettyyn kirjanmerkkiin siirtävä valintaikkuna näppäinkomennolla Ctrl+B. [#13](https://github.com/trypsynth/paperback/issues/13).
-* Massamuistiversion ZIP-paketin lisäksi on nyt saatavilla asennusohjelma. Se asentaa Paperbackin Program Files -hakemistoon ja määrittää tiedostoliitokset automaattisesti. [#33](https://github.com/trypsynth/paperback/issues/33).
+* Lisätty CHM-tiedostojen tuki.
+* Lisätty kirjanmerkkien tuki. Voit lisätä niitä asiakirjoihin rajattomasti. Siirry niiden välillä eteen- ja taaksepäin B- ja Shift+B-näppäimillä, lisää kirjanmerkki näppäinkomennolla Ctrl+Shift+B ja avaa tiettyyn kirjanmerkkiin siirtävä valintaikkuna näppäinkomennolla Ctrl+B.
+* Massamuistiversion ZIP-paketin lisäksi on nyt saatavilla asennusohjelma. Se asentaa Paperbackin Program Files -hakemistoon ja määrittää tiedostoliitokset automaattisesti.
 * BOM-merkkejä sisältävät tekstitiedostot dekoodataan nyt oikein, eikä BOM enää näy tekstin alussa.
-* Tilariville lisätty paljon uutta tietoa. Se näyttää nyt nykyisen rivin, merkin ja luetun osuuden prosentteina. [#51](https://github.com/trypsynth/paperback/issues/51).
+* Tilariville lisätty paljon uutta tietoa. Se näyttää nyt nykyisen rivin, merkin ja luetun osuuden prosentteina.
 * HTML-kommentteja tai script- ja style-tagien sisältöä ei enää näytetä tekstitulosteessa.
 * Jos komentorivillä annetaan suhteellinen polku, Paperback tulkitsee sen oikein.
-* Prosenttisiirtymää käsitellään nyt omassa liukusäätimeen perustuvassa valintaikkunassaan, joka voidaan avata näppäinkomennolla Ctrl+Shift+G. [#57](https://github.com/trypsynth/paperback/issues/57).
+* Prosenttisiirtymää käsitellään nyt omassa liukusäätimeen perustuvassa valintaikkunassaan, joka voidaan avata näppäinkomennolla Ctrl+Shift+G.
 * Asiakirjoille, joilla ei ole nimeä tai tekijää, asetetaan nyt aina niiden oletusarvot.
 * Sijainnin tallennuslogiikka on nyt paljon älykkäämpi ja kirjoittaa levylle vain silloin, kun se on ehdottoman välttämätöntä.
 * Asiakirja, joka oli aktiivisena Paperbackin sulkemishetkellä, avataan nyt uudelleen sovelluksen käynnistyessä.
@@ -560,37 +563,37 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu EPUB 3 -kirjojen sisällysluettelonavigointi, kun manifestissa on suhteellisia polkuja.
 
 ### Versio 0.3.0
-* URL-koodattuja manifesteja sisältävien EPUB-kirjojen sisällysluettelot korjattu. [#34](https://github.com/trypsynth/paperback/issues/34).
-* Otsikkonavigointi korjattu monitavuisia Unicode-merkkejä sisältävissä HTML-asiakirjoissa. [#42](https://github.com/trypsynth/paperback/issues/42), [#59](https://github.com/trypsynth/paperback/issues/59), [#61](https://github.com/trypsynth/paperback/issues/61).
-* Korjattu wxWidgetsin regressiosta johtuva korkea suorittimen käyttöaste asiakirjoissa, joilla on pitkät nimet. [#60](https://github.com/trypsynth/paperback/issues/60).
+* URL-koodattuja manifesteja sisältävien EPUB-kirjojen sisällysluettelot on korjattu.
+* Otsikkonavigointi korjattu monitavuisia Unicode-merkkejä sisältävissä HTML-asiakirjoissa.
+* Korjattu wxWidgetsin regressiosta johtuva korkea suorittimen käyttöaste asiakirjoissa, joilla on pitkät nimet.
 * UTF-8-koodattujen tekstitiedostojen lataus korjattu.
 * Korjattu EPUB-kirjojen sisäkkäiset sisällysluettelokohdat, jotka siirtävät kohdistimen väärään kohtaan.
-* Korjattu joissakin tilanteissa ilmenevä kaatuminen sovellusta lopetettaessa. [#45](https://github.com/trypsynth/paperback/issues/45).
+* Korjattu joissakin tilanteissa ilmenevä kaatuminen sovellusta lopetettaessa.
 * Lisätty asetusvalintaikkunaan asetus, jolla otetaan rivitys käyttöön tai poistetaan se käytöstä.
 * Paperbackin kehitystä varten lahjoittaminen on nyt mahdollista joko ohje-valikon uudella Lahjoita-vaihtoehdolla tai GitHub-koodivaraston pääsivun alalaidassa olevan "Sponsor this project" -linkin kautta.
-* Markdown-asiakirjoilla on nyt aina nimi, ja Paperbackin pitäisi nyt pystyä lataamaan käytännössä mikä tahansa Markdown-tiedosto. [#52](https://github.com/trypsynth/paperback/issues/52).
-* PDF-asiakirjoilla on nyt aina nimi, vaikka metatiedot puuttuisivat. [#56](https://github.com/trypsynth/paperback/issues/56).
-* Otettu käyttöön Chromiumin käyttämä PDF-kirjasto, joka parantaa merkittävästi PDF-tiedostojen jäsennyksen luotettavuutta koko sovelluksessa. [#41](https://github.com/trypsynth/paperback/issues/41).
+* Markdown-asiakirjoilla on nyt aina nimi, ja Paperbackin pitäisi nyt pystyä lataamaan käytännössä mikä tahansa Markdown-tiedosto.
+* PDF-asiakirjoilla on nyt aina nimi, vaikka metatiedot puuttuisivat.
+* Otettu käyttöön Chromiumin käyttämä PDF-kirjasto, joka parantaa merkittävästi PDF-tiedostojen jäsennyksen luotettavuutta koko sovelluksessa.
 * Samanaikaisesti voi nyt olla käynnissä vain yksi Paperback-kopio. Jos käynnistät paperback.exe:n tiedostonimellä ohjelman jo ollessa käynnissä, kyseinen asiakirja avataan jo käynnissä olevaan kopioon.
 * Voit nyt sulkea välilehtisäätimessä näkyvän asiakirjan painamalla sen kohdalla Delete-näppäintä.
 
 ### Versio 0.2.1
-* "Siirry sivulle" -valintaikkunan sivunumerokentän selitteessä näytetään nyt sivujen kokonaismäärä. [#46](https://github.com/trypsynth/paperback/issues/46).
-* Asiakirjan sisällöstä voidaan nyt siirtyä Sarkain-näppäimellä avoimien asiakirjojen luetteloon. [#19](https://github.com/trypsynth/paperback/issues/19).
-* Korjattu virhe, jossa otsikkonavigointinäppäimet saattoivat toisinaan avata viimeisimpiä asiakirjoja, jos niitä oli tarpeeksi. [#47](https://github.com/trypsynth/paperback/issues/47).
+* "Siirry sivulle" -valintaikkunan sivunumerokentän selitteessä näytetään nyt sivujen kokonaismäärä.
+* Asiakirjan sisällöstä voidaan nyt siirtyä Sarkain-näppäimellä avoimien asiakirjojen luetteloon.
+* Korjattu virhe, jonka vuoksi otsikkonavigointinäppäimet saattoivat toisinaan avata viimeksi avattuja asiakirjoja, jos niitä oli tarpeeksi.
 * Paperback poistaa nyt tarpeettomat pehmeät tavuviivat tekstitulosteesta.
 * Korjattu otsikkonavigointi, joka siirsi toisinaan väärän merkin kohdalle.
 
 ### Versio 0.2.0
-* Lisätty tuki markdown-asiakirjoille. [#22](https://github.com/trypsynth/paperback/issues/22).
-* Lisätty tuki PDF-asiakirjoille. Siihen sisältyy myös mahdollisuus sivujen välillä siirtymiseen. [#12](https://github.com/trypsynth/paperback/issues/12), [#37](https://github.com/trypsynth/paperback/issues/37).
-* Lisätty otsikkonavigoinnin pikanäppäimet HTML-sisällölle, kuten EPUB-kirjoille ja Markdown-asiakirjoille. Nämä pikanäppäimet on suunniteltu toimimaan samalla tavalla kuin ruudunlukijoissa. [#3](https://github.com/trypsynth/paperback/issues/3).
-* Korjattu EPUB-tiedostojen lataus, kun manifesteissa on URL-koodattuja tiedostonimiä. [#20](https://github.com/trypsynth/paperback/issues/20).
-* Upotettua XHTML:ää sisältävien EPUB 3 -kirjojen avaaminen on korjattu. [#35](https://github.com/trypsynth/paperback/issues/35).
-* Jos asiakirjassa ei ole sisällysluetteloa tai lukuja, vastaavia valikkokohteita ei enää vain poisteta käytöstä, vaan sen sijaan puhutaan asianmukainen ilmoitus. [#39](https://github.com/trypsynth/paperback/issues/39).
-* Lisätty viimeisimpien asiakirjojen valikko. Se tallentaa tällä hetkellä 10 viimeksi avattua asiakirjaa, ja Enter-näppäimen painaminen jonkin kohteen kohdalla avaa kyseisen asiakirjan luettavaksi. [#32](https://github.com/trypsynth/paperback/issues/32).
-* Etsi-valintaikkuna on kirjoitettu kokonaan uudelleen, joten sitä on nyt paljon helpompi käyttää. Siihen on lisätty myös viimeisimpien 25 haun historia sekä sääntölausekkeiden tuki. [#21](https://github.com/trypsynth/paperback/issues/21).
-* Aiemmin avatut asiakirjat muistetaan nyt myös sovelluksen uudelleenkäynnistyksen jälkeen. Tämä toiminto voidaan määrittää Työkalut-valikon uudesta Asetukset-kohdasta. [#18](https://github.com/trypsynth/paperback/issues/18).
+* Lisätty tuki markdown-asiakirjoille.
+* Lisätty tuki PDF-asiakirjoille. Siihen sisältyy myös mahdollisuus sivujen välillä siirtymiseen.
+* Lisätty otsikkonavigoinnin pikanäppäimet HTML-sisällölle, kuten EPUB-kirjoille ja Markdown-asiakirjoille. Nämä pikanäppäimet on suunniteltu toimimaan samalla tavalla kuin ruudunlukijoissa.
+* Korjattu EPUB-tiedostojen lataus, kun manifesteissa on URL-koodattuja tiedostonimiä.
+* Upotettua XHTML:ää sisältävien EPUB 3 -kirjojen avaaminen on korjattu.
+* Jos asiakirjassa ei ole sisällysluetteloa tai lukuja, vastaavia valikkokohteita ei enää vain poisteta käytöstä, vaan sen sijaan puhutaan asianmukainen ilmoitus.
+* Lisätty viimeksi avattujen asiakirjojen valikko. Siihen tallennetaan tällä hetkellä 10 viimeksi avattua asiakirjaa, ja Enter-näppäimen painaminen jonkin kohteen kohdalla avaa kyseisen asiakirjan luettavaksi.
+* Etsi-valintaikkuna on kirjoitettu kokonaan uudelleen, joten sitä on nyt paljon helpompi käyttää. Siihen on lisätty myös viimeisimmän 25 haun historia sekä sääntölausekkeiden tuki.
+* Aiemmin avatut asiakirjat muistetaan nyt myös sovelluksen uudelleenkäynnistyksen jälkeen. Tämä toiminto voidaan määrittää Työkalut-valikon uudesta Asetukset-kohdasta.
 * Lisätty näppäinkomento Shift+F1, joka avaa readme-tiedoston suoraan Paperbackissa.
 
 ### Versio 0.1.0
