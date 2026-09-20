@@ -66,6 +66,10 @@ final class TtsManager: NSObject {
 	// completion handler as "stale", permanently desyncing playback from position tracking.
 	private var armedBox: GenBox? = nil
 	private var armedText: String? = nil
+	// Set when the rate, pitch, voice or rules change while a buffer is already armed. That
+	// buffer was synthesized under the old settings, and once handed to the player node it
+	// cannot be taken back, so it is dropped at the paragraph boundary instead (see `speak`).
+	private var armedIsStale = false
 
 	private struct PrefetchEntry {
 		let text: String
@@ -244,6 +248,7 @@ final class TtsManager: NSObject {
 			isPaused = false
 			armedBox = nil
 			armedText = nil
+			armedIsStale = false
 			engine.detach(player)
 			engine.attach(player)
 			let hwRate = AVAudioSession.sharedInstance().sampleRate
@@ -303,6 +308,7 @@ final class TtsManager: NSObject {
 			isPaused = false
 			armedBox = nil
 			armedText = nil
+			armedIsStale = false
 			wasInterruptedWhilePlaying = false
 			speechGeneration += 1
 			invalidatePrefetch()
@@ -334,9 +340,17 @@ final class TtsManager: NSObject {
 		// Already handed to the player node while the previous utterance was still playing
 		// (see armNextBuffer) — it's already audibly playing (or about to be). Just assign it
 		// the generation it's now logically current under; no re-scheduling needed.
-		if isAutoAdvance, text == armedText, let box = armedBox {
+		//
+		// Unless it is stale, meaning the rate, pitch, voice or rules changed after it was
+		// synthesized. Then it is deliberately not claimed: falling through stops the node,
+		// which drops it a few milliseconds in, and the paragraph is taken instead from the
+		// queue that was re-synthesized under the new settings. That trades a blip at one
+		// paragraph boundary for the change being heard on the next paragraph rather than the
+		// one after it.
+		if isAutoAdvance, !armedIsStale, text == armedText, let box = armedBox {
 			armedBox = nil
 			armedText = nil
+			armedIsStale = false
 			speechGeneration += 1
 			let gen = speechGeneration
 			box.gen = gen
@@ -501,6 +515,7 @@ final class TtsManager: NSObject {
 		// player.stop() cancels anything already queued on the node, including an armed buffer.
 		armedBox = nil
 		armedText = nil
+		armedIsStale = false
 	}
 
 	// Arms the front of prefetchQueue onto the player node if it's ready and it's currently
@@ -526,6 +541,7 @@ final class TtsManager: NSObject {
 		let box = GenBox()
 		armedBox = box
 		armedText = text
+		armedIsStale = false
 		player.scheduleBuffer(pcm) { [weak self] in
 			DispatchQueue.main.async { [weak self] in
 				guard let self else { return }
@@ -558,6 +574,7 @@ final class TtsManager: NSObject {
 		guard armedBox === box else { return }
 		armedBox = nil
 		armedText = nil
+		armedIsStale = false
 		speechGeneration += 1
 		isSpeaking = false
 		isPaused = false
@@ -566,6 +583,9 @@ final class TtsManager: NSObject {
 	}
 
 	private func invalidatePrefetch() {
+		// Whatever is armed was synthesized under the settings being replaced. Leaving it alone
+		// is what made a rate change take two paragraphs to be heard rather than one.
+		armedIsStale = armedBox != nil
 		prefetchGeneration += 1
 		prefetchSynthesizer.stopSpeaking(at: .immediate)
 		prefetchQueue = []
