@@ -4111,3 +4111,38 @@ msgstr "→  此文档不包含页面。"
 #: kt
 msgid "Formula"
 msgstr "公式"
+
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+#: swift
+msgid "No matches."
+msgstr "没有匹配项。"
+
+#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
+#: swift
+msgid "Appearance"
+msgstr "外观"
+
+#. TRANSLATORS: Appearance option following the phone's own light/dark setting
+#: swift
+msgid "System"
+msgstr "系统"
+
+#. TRANSLATORS: Appearance option pinning the app to its light colours
+#: swift
+msgid "Light"
+msgstr "浅色"
+
+#. TRANSLATORS: Appearance option pinning the app to its dark colours
+#: swift
+msgid "Dark"
+msgstr "深色"
+
+#. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
+#: swift
+msgid "High Contrast Text"
+msgstr "高对比度文本"
+
+#. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
+#: swift
+msgid "Hide previous and next buttons"
+msgstr "隐藏上一个和下一个按钮"
