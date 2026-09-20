@@ -21,9 +21,8 @@ use super::{
 	},
 	sleep_timer, status,
 	text_render::fill_text_ctrl_with_formatting,
-	text_window::TextWindow,
 };
-use crate::audio_player::AudioPlayer;
+use crate::{audio_player::AudioPlayer, text_window::TextWindow};
 
 mod appearance;
 mod audio;
@@ -50,7 +49,7 @@ pub struct DocumentTab {
 	/// swapped out from under it between marking and copying.
 	pub selection_mark: Cell<Option<i64>>,
 	/// The document-absolute bounds of whatever's currently loaded into `text_ctrl`. See
-	/// `ui::text_window` - for most documents this covers the whole thing, same as before
+	/// `text_window` - for most documents this covers the whole thing, same as before
 	/// windowing existed; only huge documents actually get a partial window.
 	pub window: TextWindow,
 	/// The OCR job running for this tab, if one is. Written and read only on the UI thread.

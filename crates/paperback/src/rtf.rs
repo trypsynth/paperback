@@ -10,14 +10,14 @@ use std::{borrow::Cow, fmt::Write as _};
 
 use paperback_core::util::text::ch_width;
 
-use crate::ui::text_render::FormatSegment;
+use crate::text_format::FormatSegment;
 
 /// Replaces every character `RichEdit` silently discards instead of storing with a space, so
 /// its buffer holds exactly one display unit per display unit of `content`. Borrows unchanged
 /// when there is nothing to replace, which is the overwhelmingly common case.
 ///
 /// Every position the app hands the control is an offset into that buffer - the caret, a
-/// bookmark, a heading jump, the document-absolute translation in `ui::text_window` - so a
+/// bookmark, a heading jump, the document-absolute translation in `text_window` - so a
 /// character that vanishes on the way in shifts everything after it by one and quietly breaks
 /// all of them. Sweeping the entire BMP through [`build_rtf`] + `EM_STREAMIN` and comparing
 /// `RichEdit`'s own reported buffer length found exactly one discarded range, the tail of the

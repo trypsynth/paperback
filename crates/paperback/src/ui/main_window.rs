@@ -19,13 +19,14 @@ use super::{
 	find::{self, FindDialogState},
 	help, icon, menu, menu_ids, navigation,
 	readability::build_font_from_readability,
-	sleep_timer, status,
-	update::{self, MAIN_WINDOW_PTR},
-	window_geometry,
+	sleep_timer, status, window_geometry,
 };
-use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IpcCommand;
+use crate::{
+	config_ext::{UpdateChannel, get_update_channel},
+	updater::{self, MAIN_WINDOW_PTR},
+};
 
 mod menu_events;
 mod menu_file;
@@ -43,7 +44,7 @@ use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
 #[cfg(target_os = "windows")]
 mod foreground;
 #[cfg(target_os = "windows")]
-pub(super) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
+pub(crate) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
 
 pub struct MainWindow {
 	frame: Frame,
@@ -347,7 +348,7 @@ impl MainWindow {
 	}
 
 	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
-		update::run_update_check(silent, channel);
+		updater::run_update_check(silent, channel);
 	}
 
 	pub fn open_file(&self, path: &Path) -> bool {

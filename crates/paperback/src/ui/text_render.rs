@@ -4,13 +4,13 @@
 use paperback_core::session::{DocumentSession, WindowSlice};
 use wxdragon::prelude::*;
 
+use super::document_manager::DocumentTab;
 #[cfg(target_os = "windows")]
-use super::rtf::{
-	stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl},
-	write::{self, RtfFontInfo},
-};
-use super::{
-	document_manager::DocumentTab,
+use super::rtf_stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl};
+#[cfg(target_os = "windows")]
+use crate::rtf::{RtfFontInfo, build_rtf, sanitize_for_rich_edit, stored_display_len};
+use crate::{
+	text_format::{FormatSegment, merge_formatting_markers},
 	text_window::{self, TextWindow},
 };
 
@@ -90,8 +90,8 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: TextCtrl, slice: &WindowSlice) -> 
 	if !segments.is_empty()
 		&& let Some(font) = text_ctrl.get_font()
 	{
-		let expected = write::sanitize_for_rich_edit(content);
-		let rtf = write::build_rtf(
+		let expected = sanitize_for_rich_edit(content);
+		let rtf = build_rtf(
 			&expected,
 			&segments,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
@@ -116,11 +116,11 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: TextCtrl, slice: &WindowSlice) -> 
 }
 
 /// Fills `text_ctrl` with `slice`'s text and bold/italic/underline markers. `slice` may be a
-/// window into a much larger document (see `ui::text_window`) rather than its full content;
+/// window into a much larger document (see `text_window`) rather than its full content;
 /// this function has no notion of "the whole document" and just fills whatever it's handed.
 ///
 /// On Windows this streams a single RTF blob into the native `RichEdit` control
-/// via `EM_STREAMIN` (see `rtf::stream::stream_rtf_into_ctrl`) instead of issuing
+/// via `EM_STREAMIN` (see `rtf_stream::stream_rtf_into_ctrl`) instead of issuing
 /// one `SetStyle` call per formatting span, which is far cheaper on documents
 /// with thousands of spans. `wxTextCtrl::SetValue` can't be used for this, since it
 /// does not forward to the native `WM_SETTEXT` handler that auto-detects a
@@ -135,10 +135,10 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 		&& let Some(font) = text_ctrl.get_font()
 	{
 		// What RichEdit will actually end up holding, which is not always what it is handed -
-		// see `write::sanitize_for_rich_edit`. Everything below compares against this rather
+		// see `sanitize_for_rich_edit`. Everything below compares against this rather
 		// than against `content`.
-		let expected = write::sanitize_for_rich_edit(content);
-		let rtf = write::build_rtf(
+		let expected = sanitize_for_rich_edit(content);
+		let rtf = build_rtf(
 			&expected,
 			&segments,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
@@ -163,14 +163,14 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 			}
 			// Not identical, but harmless as long as it cost no display units: every position
 			// the app hands the control is an offset into this buffer, so a length change
-			// breaks the caret, bookmarks and `ui::text_window`'s translation alike, whereas a
+			// breaks the caret, bookmarks and `text_window`'s translation alike, whereas a
 			// same-width substitution is only cosmetic. RichEdit does make a few of those on
 			// its own - U+2028 comes back as a vertical tab, U+FDD0..=U+FDEF as spaces - and
 			// falling back over those would cost seconds per window load to fix nothing. A
 			// length check is still decisive against the failure this guards: unparsed RTF
 			// stored as literal text would be tens of thousands of display units longer than
 			// the content it encodes.
-			let expected_len = write::stored_display_len(&expected);
+			let expected_len = stored_display_len(&expected);
 			let stored_len = text_ctrl.get_last_position();
 			if stored_len == expected_len {
 				tracing::debug!(expected_len, "RTF round-trip was substituted but not resized; keeping it");
@@ -185,92 +185,6 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 	}
 	fill_text_ctrl(text_ctrl, content);
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments);
-}
-
-/// A non-overlapping run of text with the union of bold/italic/underline
-/// styles active over it.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct FormatSegment {
-	pub start: i64,
-	pub end: i64,
-	pub bold: bool,
-	pub italic: bool,
-	pub underline: bool,
-}
-
-/// Merges bold/italic/underline markers (which may overlap, e.g. a bold word
-/// inside an italic sentence) into a sequence of non-overlapping segments, each
-/// carrying the union of the styles active over that range.
-///
-/// This is required because wxMSW's `wxTextCtrl::SetStyle` rewrites the *entire*
-/// font for a range whenever any font attribute is present in the `wxTextAttr`
-/// (it masks `CFM_FACE | CFM_SIZE | ...` unconditionally and fills unset fields
-/// from a default font, Arial 10pt). Applying overlapping single-style markers
-/// one at a time would therefore both reset the face/size and clobber each
-/// other's styles. Producing one combined style per non-overlapping segment
-/// avoids both problems and is correct on every platform.
-///
-/// Implemented as a sweep over +1/-1 events per style so it's O(n log n) instead
-/// of the naive O(n^2) "rescan every marker at every boundary" approach, which
-/// took several seconds on books with tens of thousands of formatting spans.
-pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker]) -> Vec<FormatSegment> {
-	use paperback_core::document::MarkerType;
-	#[derive(Clone, Copy)]
-	struct Event {
-		position: i64,
-		delta: i32,
-		style_idx: usize,
-	}
-	let mut events: Vec<Event> = Vec::new();
-	for m in markers {
-		if m.length <= 0 {
-			continue;
-		}
-		let style_idx = match m.mtype {
-			MarkerType::Bold => 0,
-			MarkerType::Italic => 1,
-			MarkerType::Underline => 2,
-			_ => continue,
-		};
-		events.push(Event { position: m.position, delta: 1, style_idx });
-		events.push(Event { position: m.position + m.length, delta: -1, style_idx });
-	}
-	events.sort_unstable_by_key(|e| e.position);
-	let mut active = [0i32; 3];
-	let mut segments: Vec<FormatSegment> = Vec::new();
-	// The segment currently being extended, if the active style set is non-empty.
-	let mut open: Option<FormatSegment> = None;
-	let mut idx = 0;
-	while idx < events.len() {
-		let position = events[idx].position;
-		while idx < events.len() && events[idx].position == position {
-			active[events[idx].style_idx] += events[idx].delta;
-			idx += 1;
-		}
-		let (bold, italic, underline) = (active[0] > 0, active[1] > 0, active[2] > 0);
-		let same_style = open.is_some_and(|seg| seg.bold == bold && seg.italic == italic && seg.underline == underline);
-		if same_style {
-			// Style unchanged across this boundary: keep extending the open segment
-			// instead of splitting it into an adjacent duplicate.
-			open.as_mut().expect("same_style implies open is Some").end = position;
-		} else {
-			if let Some(mut seg) = open.take() {
-				seg.end = position;
-				if seg.bold || seg.italic || seg.underline {
-					segments.push(seg);
-				}
-			}
-			if bold || italic || underline {
-				open = Some(FormatSegment { start: position, end: position, bold, italic, underline });
-			}
-		}
-	}
-	if let Some(seg) = open
-		&& (seg.bold || seg.italic || seg.underline)
-	{
-		segments.push(seg);
-	}
-	segments
 }
 
 fn apply_formatting_markers_to_ctrl_from_segments(text_ctrl: TextCtrl, segments: &[FormatSegment]) {
@@ -317,74 +231,4 @@ fn apply_formatting_markers_to_ctrl_from_segments(text_ctrl: TextCtrl, segments:
 		text_ctrl.set_style(seg.start, seg.end, &attr);
 	}
 	text_ctrl.thaw();
-}
-
-#[cfg(test)]
-mod tests {
-	use paperback_core::{document::MarkerType, session::LineMarker};
-
-	use super::{FormatSegment, merge_formatting_markers};
-
-	fn marker(mtype: MarkerType, position: i64, length: i64) -> LineMarker {
-		LineMarker { mtype, position, text: String::new(), reference: String::new(), level: 0, length }
-	}
-
-	#[test]
-	fn no_markers_yields_no_segments() {
-		assert_eq!(merge_formatting_markers(&[]), Vec::new());
-	}
-
-	#[test]
-	fn zero_length_markers_are_ignored() {
-		let markers = [marker(MarkerType::Bold, 5, 0)];
-		assert_eq!(merge_formatting_markers(&markers), Vec::new());
-	}
-
-	#[test]
-	fn non_format_markers_are_ignored() {
-		let markers = [marker(MarkerType::Heading1, 0, 10), marker(MarkerType::Link, 2, 3)];
-		assert_eq!(merge_formatting_markers(&markers), Vec::new());
-	}
-
-	#[test]
-	fn single_bold_marker_produces_one_segment() {
-		let markers = [marker(MarkerType::Bold, 0, 4)];
-		assert_eq!(
-			merge_formatting_markers(&markers),
-			vec![FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false }]
-		);
-	}
-
-	#[test]
-	fn overlapping_bold_and_italic_keep_both_on_the_intersection() {
-		// Bold over [0,10), italic over [4,7): the middle run must carry both.
-		let markers = [marker(MarkerType::Bold, 0, 10), marker(MarkerType::Italic, 4, 3)];
-		assert_eq!(
-			merge_formatting_markers(&markers),
-			vec![
-				FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false },
-				FormatSegment { start: 4, end: 7, bold: true, italic: true, underline: false },
-				FormatSegment { start: 7, end: 10, bold: true, italic: false, underline: false },
-			]
-		);
-	}
-
-	#[test]
-	fn adjacent_identical_segments_are_coalesced() {
-		let markers = [marker(MarkerType::Bold, 0, 4), marker(MarkerType::Bold, 4, 4)];
-		assert_eq!(
-			merge_formatting_markers(&markers),
-			vec![FormatSegment { start: 0, end: 8, bold: true, italic: false, underline: false }]
-		);
-	}
-
-	#[test]
-	fn all_three_styles_can_stack() {
-		let markers =
-			[marker(MarkerType::Bold, 0, 6), marker(MarkerType::Italic, 0, 6), marker(MarkerType::Underline, 0, 6)];
-		assert_eq!(
-			merge_formatting_markers(&markers),
-			vec![FormatSegment { start: 0, end: 6, bold: true, italic: true, underline: true }]
-		);
-	}
 }

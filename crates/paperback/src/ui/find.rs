@@ -9,15 +9,14 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{dialogs::DIALOG_PADDING, document_manager::DocumentManager, navigation};
+use crate::search::{FindOptions, find_text_with_wrap};
 
 mod results_list;
-mod search;
 
 use results_list::{
 	ResultsList, build_results_list, clear_results_list, populate_results_list, results_selected_index,
 	select_results_row,
 };
-use search::{FindOptions, find_text_with_wrap};
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 /// How long to leave the empty results list focused before populating it. Long enough for the
