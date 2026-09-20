@@ -31,6 +31,39 @@ final class SpeechScaleTests: XCTestCase {
 	}
 }
 
+/// The silence between paragraphs, which has to stay in proportion to how fast the speech is.
+final class ParagraphPauseTests: XCTestCase {
+	func testTheDefaultRateGetsTheBasePause() {
+		XCTAssertEqual(paragraphPauseSeconds, paragraphPause(atRate: AVSpeechUtteranceDefaultSpeechRate), accuracy: 0.001)
+	}
+
+	/// The whole point of scaling: the same silence that reads as a paragraph break at the
+	/// default rate is dead air at twice that, and barely a breath at half.
+	func testReadingFasterShortensThePauseAndReadingSlowerLengthensIt() {
+		let base = paragraphPause(atRate: AVSpeechUtteranceDefaultSpeechRate)
+		let faster = paragraphPause(atRate: AVSpeechUtteranceDefaultSpeechRate * 1.5)
+		let slower = paragraphPause(atRate: AVSpeechUtteranceDefaultSpeechRate * 0.75)
+		XCTAssertLessThan(faster, base)
+		XCTAssertGreaterThan(slower, base)
+	}
+
+	/// Both ends of the slider have to stay usable, so the scaling is clamped rather than
+	/// running off to no gap at all or to a silence you would wonder about.
+	func testThePauseStaysInsideItsRangeAtBothEndsOfTheSlider() {
+		for percent in 0...100 {
+			let pause = paragraphPause(atRate: speechRateForPercent(percent))
+			XCTAssertGreaterThanOrEqual(pause, paragraphPauseRange.lowerBound, "at \(percent)%")
+			XCTAssertLessThanOrEqual(pause, paragraphPauseRange.upperBound, "at \(percent)%")
+		}
+	}
+
+	/// The minimum rate is zero, which would divide by it.
+	func testTheSlowestRateDoesNotDivideByZero() {
+		let pause = paragraphPause(atRate: AVSpeechUtteranceMinimumSpeechRate)
+		XCTAssertEqual(paragraphPauseRange.upperBound, pause, accuracy: 0.001)
+	}
+}
+
 final class PluralFormTests: XCTestCase {
 	private func form(_ count: Int) -> String {
 		nt("one", "few", "many", count)

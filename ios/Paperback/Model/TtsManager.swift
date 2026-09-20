@@ -20,10 +20,23 @@ func applyRules(_ rules: [TtsRule], to text: String, voiceId: String?) -> String
 	return result
 }
 
-/// How long a silence to leave between paragraphs, on top of whatever tail the voice itself
-/// leaves. A starting value rather than a measured one: it wants to read as clearly longer than
-/// the stop at the end of a sentence, without becoming dead air to somebody reading fast.
+/// How long a silence to leave between paragraphs at the default speech rate.
 let paragraphPauseSeconds = 0.4
+/// The shortest and longest that pause is allowed to become once scaled by the rate, so the ends
+/// of the slider stay usable: no gap at all at the top, and a silence long enough to wonder about
+/// at the bottom.
+let paragraphPauseRange = 0.12...0.9
+
+/// The paragraph pause at `rate`, scaled so it stays in proportion to the speech.
+///
+/// A fixed silence does not work across the whole range. Four hundred milliseconds reads as a
+/// paragraph break at the default rate, as dead air to somebody reading at twice that, and as
+/// barely a breath to somebody reading at half.
+func paragraphPause(atRate rate: Float) -> Double {
+	let speed = Double(rate / AVSpeechUtteranceDefaultSpeechRate)
+	guard speed > 0 else { return paragraphPauseRange.upperBound }
+	return min(max(paragraphPauseSeconds / speed, paragraphPauseRange.lowerBound), paragraphPauseRange.upperBound)
+}
 
 /// The engine rate a whole-number slider percentage stands for. A stored value from outside the
 /// slider's own range is brought back inside it rather than handed to the engine as-is.
@@ -667,7 +680,7 @@ final class TtsManager: NSObject {
 		joinAndConvert(buffers).flatMap(withParagraphPause)
 	}
 
-	/// Appends [`paragraphPauseSeconds`] of silence to a finished paragraph.
+	/// Appends a paragraph's worth of silence to a finished paragraph.
 	///
 	/// Paragraphs are synthesized one at a time and played back to back, so on their own they
 	/// run together: whatever small tail the voice leaves is all that separates them, which
@@ -675,9 +688,13 @@ final class TtsManager: NSObject {
 	/// break. Adding the silence here rather than asking for it through `postUtteranceDelay`
 	/// keeps it the same length whichever voice is speaking, and keeps it inside the buffer so
 	/// it survives the gapless hand-off to the next paragraph.
+	///
+	/// The length is taken from the rate this paragraph was synthesized at, which is the rate it
+	/// will be read at: a change to the rate re-synthesizes everything queued behind it, so the
+	/// pause is always the one that belongs to the speech it follows.
 	private func withParagraphPause(_ buffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
 		let format = buffer.format
-		let silenceFrames = AVAudioFrameCount(format.sampleRate * paragraphPauseSeconds)
+		let silenceFrames = AVAudioFrameCount(format.sampleRate * paragraphPause(atRate: speechRate))
 		guard silenceFrames > 0,
 			let padded = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: buffer.frameLength + silenceFrames),
 			let source = buffer.floatChannelData,
