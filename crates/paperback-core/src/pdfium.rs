@@ -315,7 +315,9 @@ mod tests {
 	#[test]
 	fn a_utf16_out_param_is_read_in_two_calls_without_its_terminator() {
 		let text: Vec<u8> = "Heading\0".encode_utf16().flat_map(u16::to_le_bytes).collect();
-		let len = u32::try_from(text.len()).unwrap();
+		// `c_ulong`, not a fixed width: pdfium's lengths are C unsigned longs, which are 32 bits
+		// on Windows and 64 everywhere else.
+		let len = c_ulong::try_from(text.len()).unwrap();
 		let read = utf16_out_param(|buffer, size| {
 			if buffer.is_null() {
 				return len;
