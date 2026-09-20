@@ -180,6 +180,32 @@ class TtsManager(
 		ttsPlayer?.updateMetadata(currentDocumentTitle, currentDocumentAuthor)
 	}
 
+	/**
+	 * Throws away the paragraph synthesized ahead and synthesizes it again at the current
+	 * settings.
+	 *
+	 * The next paragraph is rendered to a file and wired up as the media player's next player
+	 * while the current one is still talking, so without this a rate or pitch change is not
+	 * heard until that already-rendered paragraph has played, one paragraph later than expected.
+	 * Unwiring it before it starts costs nothing audible, and re-synthesizing straight away
+	 * keeps the hand-off between paragraphs gapless.
+	 */
+	private fun resynthesizePrecache() {
+		val text = precachedText ?: return
+		try {
+			mediaPlayer?.setNextMediaPlayer(null)
+		} catch (_: Exception) {
+		}
+		try {
+			nextMediaPlayer?.release()
+		} catch (_: Exception) {
+		}
+		nextMediaPlayer = null
+		isNextMediaPlayerPrepared = false
+		precachedText = null
+		precache(text)
+	}
+
 	fun precache(text: String) {
 		if (text.isBlank() || text == precachedText) return
 		fileCounter++
@@ -552,6 +578,7 @@ class TtsManager(
 			config.setAppString("${KEY_RATE}_$engine", percentage.toString())
 			config.flush()
 			tts?.setSpeechRate(speechRateFor(percentage))
+			resynthesizePrecache()
 		}
 	}
 
@@ -563,6 +590,7 @@ class TtsManager(
 			config.setAppString("${KEY_PITCH}_$engine", percentage.toString())
 			config.flush()
 			tts?.setPitch(pitchFor(percentage))
+			resynthesizePrecache()
 		}
 	}
 
