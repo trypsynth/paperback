@@ -61,6 +61,20 @@
 	<main>
 		<div id="content-anchor"></div>
 
+<style>
+/* The heading inside each summary is what you navigate by, so the disclosure marker next to it
+   is just noise. Dropping it leaves the heading sitting where a heading should. */
+summary {
+	list-style: none;
+	cursor: pointer;
+}
+summary::-webkit-details-marker {
+	display: none;
+}
+summary h4 {
+	display: inline;
+}
+</style>
 <h1>Licenses</h1>
 <p>Paperback is built on a great deal of work that other people gave away for free. This page credits all of it.</p>
 <p>Paperback itself is under the <a href="https://github.com/trypsynth/paperback/blob/master/LICENSE.md">MIT license</a>, and everything it ships alongside is permissively licensed too, so nothing here restricts what you can do with the program.</p>
@@ -7198,7 +7212,7 @@ SOFTWARE.
 <li><a href="https://github.com/trypsynth/key-chord">key-chord 0.1.0</a></li>
 <li><a href="https://github.com/trypsynth/libhlp">libhlp 0.2.0</a></li>
 <li><a href="https://github.com/trypsynth/ship-shape">ship-shape 0.2.0</a></li>
-<li><a href="https://github.com/trypsynth/wx-utils">wx-utils 0.3.0</a></li>
+<li><a href="https://github.com/trypsynth/wx-utils">wx-utils 0.3.1</a></li>
 </ul>
 <pre>MIT License
 
