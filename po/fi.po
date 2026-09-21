@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-16 08:05-0600\n"
-"PO-Revision-Date: 2026-09-16 20:49+0300\n"
+"POT-Creation-Date: 2026-09-18 19:33-0600\n"
+"PO-Revision-Date: 2026-09-20 13:11+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -170,6 +170,15 @@ msgstr "Näytä muistiinpano"
 msgid "Open Document"
 msgstr "Asiakirjan avaaminen"
 
+#. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "Viimeksi avattuja asiakirjoja ei ole."
+
+#. TRANSLATORS: Announced after the Recent Documents list has been emptied
+msgid "Recent documents cleared."
+msgstr "Viimeksi avattujen luettelo tyhjennetty"
+
 #. TRANSLATORS: Menu item in the File menu to open a document.
 msgid "&Open..."
 msgstr "&Avaa..."
@@ -201,6 +210,15 @@ msgstr "Avaa &viimeksi suljettu"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Avaa viimeksi suljettu asiakirja"
+
+#. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
+#| msgid "&Recent Documents"
+msgid "Clea&r Recent Documents"
+msgstr "T&yhjennä viimeksi avattujen luettelo"
+
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
+msgid "Remove all documents from the Recent Documents list"
+msgstr "Tyhjennä viimeksi avattujen asiakirjojen luettelo"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
@@ -339,6 +357,16 @@ msgstr "Edellinen t&aulukko"
 msgid "Next &Table"
 msgstr "Seuraava ta&ulukko"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
+#| msgid "Previous Image"
+msgid "Previous For&mula"
+msgstr "Edellinen k&aava"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next formula.
+#| msgid "Next Bookmark"
+msgid "Next For&mula"
+msgstr "Seuraava kaa&va"
+
 #. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 msgid "Previous Se&parator"
 msgstr "Edellinen e&rotin"
@@ -458,6 +486,32 @@ msgstr "Lisää tai poista &kirjanmerkki"
 #. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
 msgid "Bookmark with &Note"
 msgstr "Kirjanmerkki muistiinpan&olla"
+
+#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+#| msgid "No Selection"
+msgid "Set Selection St&art"
+msgstr "Merkitse valinnan &alkukohta"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+msgid "Mark the beginning of a selection to copy from"
+msgstr "Merkitse kopioitavan valinnan alkukohta"
+
+#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+msgid "&Copy from Selection Start"
+msgstr "&Kopioi valinnan alkukohdasta"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+msgid "Copy from the beginning of the selection to here"
+msgstr "Kopioi nykyiseen sijaintiin asti valinnan alkukohdasta"
+
+#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+#| msgid "No Selection"
+msgid "&Jump to Selection Start"
+msgstr "&Siirry valinnan alkukohtaan"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+msgid "Go back to the beginning of the selection"
+msgstr "Siirry valinnan alkukohtaan"
 
 #. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
@@ -1054,7 +1108,7 @@ msgstr "&Lukunopeus (sanaa minuutissa):"
 
 #. TRANSLATORS: Label for the number of recently opened documents to keep in history
 msgid "Number of &recent documents to show:"
-msgstr "V&iimeisimpien asiakirjojen määrä:"
+msgstr "V&iimeksi avattujen asiakirjojen määrä:"
 
 #. TRANSLATORS: Label for the language selection dropdown
 msgid "&Language:"
@@ -1399,10 +1453,6 @@ msgstr "Koko näyttö käytössä."
 msgid "Full screen off."
 msgstr "Koko näyttö pois."
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
-msgstr "Ei viimeisimpiä asiakirjoja."
-
 #. TRANSLATORS: Announced when landing on a blank line; %d is the line number
 msgid "Line %d"
 msgstr "Rivi %d"
@@ -1552,7 +1602,7 @@ msgstr "Valitse k&aikki\tCtrl+A"
 
 #. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
-msgstr "&Viimeisimmät asiakirjat"
+msgstr "&Viimeksi avatut"
 
 #. TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 msgid "Open a recent document"
@@ -1560,7 +1610,7 @@ msgstr "Avaa viimeksi avattu asiakirja"
 
 #. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
-msgstr "(Ei viimeisimpiä asiakirjoja)"
+msgstr "(Viimeksi avattuja asiakirjoja ei ole)"
 
 #. TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
 msgid "Show All..."
@@ -1673,6 +1723,14 @@ msgstr "T&aulukot"
 #. TRANSLATORS: Status-bar help text for the Go > Tables submenu.
 msgid "Navigate by tables"
 msgstr "Siirry taulukoittain"
+
+#. TRANSLATORS: Label for the Formulas submenu in the compact Go menu.
+msgid "For&mulas"
+msgstr "K&aavat"
+
+#. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
+msgid "Navigate by formulas"
+msgstr "Siirry kaavoittain"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
@@ -1842,6 +1900,16 @@ msgstr "T&uo ja vie"
 msgid "Import and export options"
 msgstr "Tuonnin ja viennin asetukset"
 
+#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
+msgid "Select and &copy"
+msgstr "Valitse ja &kopioi"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
+msgid "Mark a selection and copy from it"
+msgstr ""
+"Merkitse valinnan alkukohta ja kopioi sen ja nykyisen sijainnin välinen "
+"teksti"
+
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
 msgstr "Rivit&ys"
@@ -1978,6 +2046,19 @@ msgstr "Ei seuraavaa taulukkoa."
 msgid "No previous table."
 msgstr "Ei edellistä taulukkoa."
 
+#. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
+#| msgid "No figures."
+msgid "No formulas."
+msgstr "Ei kaavoja."
+
+#. TRANSLATORS: Announcement when there is no next formula to navigate to
+msgid "No next formula."
+msgstr "Ei seuraavaa kaavaa."
+
+#. TRANSLATORS: Announcement when there is no previous formula to navigate to
+msgid "No previous formula."
+msgstr "Ei edellistä kaavaa."
+
 #. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr "Ei erottimia."
@@ -2065,7 +2146,11 @@ msgstr "Tekstintunnistus epäonnistui."
 msgid "OCR is not available on this system."
 msgstr "Tekstintunnistus ei ole käytettävissä tässä järjestelmässä."
 
-#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+#. TRANSLATORS: Title of the dialog displaying a formula as MathML
+msgid "Formula View"
+msgstr "Kaavanäkymä"
+
+#. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr "Taulukkonäkymä"
 
@@ -2122,6 +2207,35 @@ msgstr "Siirry &prosenttiin"
 msgid "Go to percent"
 msgstr "Siirry prosenttiin"
 
+#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
+msgid "Copied (%d chars)."
+msgstr "Kopioitu (%d merkkiä)."
+
+#. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
+#| msgid "Beginning of document"
+msgid "Beginning of selection set."
+msgstr "Valinnan alkukohta merkitty."
+
+#. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
+msgid "Cannot copy; set beginning of selection first."
+msgstr "Ei voi kopioida. Merkitse ensin valinnan alkukohta."
+
+#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
+msgid "Nothing to copy."
+msgstr "Kopioitavaa tekstiä ei ole."
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr "Leikepöydälle ei voi kopioida."
+
+#. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
+msgid "Cannot jump; set beginning of selection first."
+msgstr "Ei voi siirtyä. Merkitse ensin valinnan alkukohta."
+
+#. TRANSLATORS: Announced after jumping back to the marked beginning of the selection.
+msgid "Jumped to beginning of selection."
+msgstr "Siirrytty valinnan alkukohtaan."
+
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "Uniajastin peruutettu."
@@ -2170,6 +2284,11 @@ msgstr "Avaa viimeksi suljettu"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "Näytä viimeksi avatut asiakirjat..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Recent Documents"
+msgid "Clear Recent Documents"
+msgstr "Tyhjennä viimeksi avattujen luettelo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Exit"
@@ -2323,6 +2442,14 @@ msgstr "Edellinen taulukko"
 msgid "Next Table"
 msgstr "Seuraava taulukko"
 
+#. TRANSLATORS: Shortcut action to move to the previous formula
+msgid "Previous Formula"
+msgstr "Edellinen kaava"
+
+#. TRANSLATORS: Shortcut action to move to the next formula
+msgid "Next Formula"
+msgstr "Seuraava kaava"
+
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Separator"
 msgstr "Edellinen erotin"
@@ -2378,6 +2505,20 @@ msgstr "Lisää tai poista kirjanmerkki"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Bookmark with Note"
 msgstr "Kirjanmerkki muistiinpanolla"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "No Selection"
+msgid "Set Selection Start"
+msgstr "Merkitse valinnan alkukohta"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Copy from Selection Start"
+msgstr "Kopioi valinnan alkukohdasta"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "No Selection"
+msgid "Jump to Selection Start"
+msgstr "Siirry valinnan alkukohtaan"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Word Wrap"
@@ -2491,15 +2632,14 @@ msgstr "[Sivulla on pelkkä kuva. Aloita tekstintunnistus painamalla Enter.]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Sivulla on pelkkä kuva. Luettavaa tekstiä ei ole.]"
 
-#. TRANSLATORS: Error shown on Android when opening a comic book archive packed with RAR (.cbr), which that build cannot read
+#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
 msgid ""
-"Paperback cannot read RAR comic archives on this device. Repack it as a .cbz "
-"to read it here."
+"Paperback cannot read RAR comic archives. Repack it as a .cbz to read it "
+"here."
 msgstr ""
-"Paperback ei tue tällä laitteella RAR-muodossa olevia sarjakuvapaketteja. "
-"Pakkaa tiedosto uudelleen .cbz-muotoon lukeaksesi sen."
+"Paperback ei tue RAR-muodossa olevia sarjakuvapaketteja. Pakkaa tiedosto "
+"uudelleen .cbz-muotoon lukeaksesi sen."
 
-#. TRANSLATORS: Error shown when a comic book archive (.cbr) cannot be opened; {} is the underlying error
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
 msgstr "Sarjakuvapaketin jäsennys epäonnistui: {}"
@@ -2993,10 +3133,10 @@ msgstr "Vaihda tekstistä puheeksi -tilaan"
 msgid "Switch to Text Mode"
 msgstr "Vaihda tekstitilaan"
 
-#. TRANSLATORS: Menu item to open the list of recently opened documents
+#. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
 msgid "Recent Documents"
-msgstr "Viimeisimmät asiakirjat"
+msgstr "Viimeksi avatut asiakirjat"
 
 #. TRANSLATORS: Menu item to open the sleep timer; the "(active)" variant is shown while a timer is currently counting down
 #: swift
@@ -3058,7 +3198,7 @@ msgstr "Avaa kirja"
 msgid "Locate"
 msgstr "Etsi"
 
-#. TRANSLATORS: Button to remove a document from the recent documents list
+#. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr "Poista"
@@ -3076,7 +3216,7 @@ msgstr "Avoinna tällä hetkellä"
 #. TRANSLATORS: Title of the empty-state view shown when no documents have been opened yet
 #: swift
 msgid "No Recent Documents"
-msgstr "Ei viimeisimpiä asiakirjoja"
+msgstr "Viimeksi avattuja asiakirjoja ei ole"
 
 #. TRANSLATORS: Description text under the "No Recent Documents" empty-state title
 #: swift
@@ -3098,7 +3238,7 @@ msgstr "Puheääni"
 msgid "Rate"
 msgstr "Nopeus"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
 #: swift
 msgid "Speech Rate"
 msgstr "Puhenopeus"
@@ -3188,7 +3328,7 @@ msgstr "Merkkien määrä (ilman välilyöntejä)"
 msgid "Mode"
 msgstr "Tila"
 
-#. TRANSLATORS: Go To mode option: navigate to a specific page number
+#. TRANSLATORS: Name of the "page" reading/navigation unit
 #: swift
 msgid "Page"
 msgstr "Sivu"
@@ -3248,7 +3388,7 @@ msgstr "Laajuus"
 msgid "Word"
 msgstr "Sana"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
+#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
 #: swift
 msgid "Paragraph"
 msgstr "Kappale"
@@ -3436,7 +3576,6 @@ msgstr "Seuraava {}"
 msgid "Press play to start listening."
 msgstr "Aloita kuuntelu painamalla Toista."
 
-#. TRANSLATORS: Menu item / accessibility action to show metadata (title, author, etc.) about the current document
 #: kt
 msgid "Document Information"
 msgstr "Asiakirjan tiedot"
@@ -3628,7 +3767,7 @@ msgstr "Asiakirjassa on {} sanaa."
 msgid "words"
 msgstr "sanaa"
 
-#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
+#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
 msgid "Close Search"
 msgstr "Sulje haku"
@@ -4031,3 +4170,46 @@ msgstr "Tämä on valitun puhemoottorin ääninäyte."
 #: kt
 msgid "This document does not contain pages."
 msgstr "Asiakirjassa ei ole sivuja."
+
+#. TRANSLATORS: Name of the "formula" reading/navigation unit
+#: kt
+msgid "Formula"
+msgstr "Kaava"
+
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+#: swift
+#| msgid "No more matches."
+msgid "No matches."
+msgstr "Ei tuloksia."
+
+#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
+#: swift
+msgid "Appearance"
+msgstr "Ulkoasu"
+
+#. TRANSLATORS: Appearance option following the phone's own light/dark setting
+#: swift
+#| msgid "System Default"
+msgid "System"
+msgstr "Järjestelmän asetus"
+
+#. TRANSLATORS: Appearance option pinning the app to its light colours
+#: swift
+#| msgid "Right"
+msgid "Light"
+msgstr "Vaalea"
+
+#. TRANSLATORS: Appearance option pinning the app to its dark colours
+#: swift
+msgid "Dark"
+msgstr "Tumma"
+
+#. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
+#: swift
+msgid "High Contrast Text"
+msgstr "Suuren kontrastin teksti"
+
+#. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
+#: swift
+msgid "Hide previous and next buttons"
+msgstr "Piilota Edellinen- ja Seuraava-painikkeet"
