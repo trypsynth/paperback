@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-18 19:33-0600\n"
-"PO-Revision-Date: 2026-09-20 13:11+0300\n"
+"POT-Creation-Date: 2026-09-21 02:50+0000\n"
+"PO-Revision-Date: 2026-09-21 17:25+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -31,6 +31,20 @@ msgstr "Lisää pb-komentorivityökalu PATH-ympäristömuuttujaan"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-paketit (.zip)"
 
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr ""
+"Tekstintunnistuskieltä ei ole asennettuna. Lisää kieli järjestelmän "
+"kieliasetuksissa."
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+msgid "OCR failed."
+msgstr "Tekstintunnistus epäonnistui."
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+msgid "OCR is not available on this system."
+msgstr "Tekstintunnistus ei ole käytettävissä tässä järjestelmässä."
+
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "IPC-palvelimen luonti epäonnistui"
@@ -41,12 +55,23 @@ msgstr "Varoitus"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 msgid "This document has no audio."
 msgstr "Asiakirjassa ei ole äänitettä."
 
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 msgid "Audio hasn't started playing yet."
 msgstr "Äänitteen toisto ei ole käynnissä."
+
+#. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+msgid "{} (maximum)"
+msgstr "{} (enimmäisaika)"
+
+#. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+msgid "{} (minimum)"
+msgstr "{} (vähimmäisaika)"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -92,14 +117,6 @@ msgstr "30 minuuttia"
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 msgid "1 hour"
 msgstr "1 tunti"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-msgid "{} (maximum)"
-msgstr "{} (enimmäisaika)"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-msgid "{} (minimum)"
-msgstr "{} (vähimmäisaika)"
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
@@ -212,7 +229,6 @@ msgid "Reopen the last closed document"
 msgstr "Avaa viimeksi suljettu asiakirja"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
-#| msgid "&Recent Documents"
 msgid "Clea&r Recent Documents"
 msgstr "T&yhjennä viimeksi avattujen luettelo"
 
@@ -358,12 +374,10 @@ msgid "Next &Table"
 msgstr "Seuraava ta&ulukko"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
-#| msgid "Previous Image"
 msgid "Previous For&mula"
 msgstr "Edellinen k&aava"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next formula.
-#| msgid "Next Bookmark"
 msgid "Next For&mula"
 msgstr "Seuraava kaa&va"
 
@@ -488,7 +502,6 @@ msgid "Bookmark with &Note"
 msgstr "Kirjanmerkki muistiinpan&olla"
 
 #. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
-#| msgid "No Selection"
 msgid "Set Selection St&art"
 msgstr "Merkitse valinnan &alkukohta"
 
@@ -505,7 +518,6 @@ msgid "Copy from the beginning of the selection to here"
 msgstr "Kopioi nykyiseen sijaintiin asti valinnan alkukohdasta"
 
 #. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
-#| msgid "No Selection"
 msgid "&Jump to Selection Start"
 msgstr "&Siirry valinnan alkukohtaan"
 
@@ -553,9 +565,34 @@ msgstr "&Lyhennä kelauksen aikasiirtymää"
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Lyhennä aikaa, jonka verran äänitettä kelataan eteen- tai taaksepäin"
 
+#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+#| msgid "&Increase Audio Seek Amount"
+msgid "&Increase Audio Speed"
+msgstr "&Nopeuta äänitteen toistoa"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
+msgid "Increase how fast the audio narration plays"
+msgstr "Nopeuttaa äänitteen toistoa"
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+#| msgid "&Decrease Audio Seek Amount"
+msgid "&Decrease Audio Speed"
+msgstr "&Hidasta äänitteen toistoa"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
+msgid "Decrease how fast the audio narration plays"
+msgstr "Hidastaa äänitteen toistoa"
+
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "Kevyt ja saavutettava e- ja asiakirjojen lukija"
+
+msgid ""
+"Paperback is built on other people's work. The libraries it uses, and their "
+"licenses, are credited at {}."
+msgstr ""
+"Paperback hyödyntää muiden kehittämiä ohjelmistokirjastoja. Niiden tiedot ja "
+"lisenssit löytyvät osoitteesta {}."
 
 #. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
@@ -2047,7 +2084,6 @@ msgid "No previous table."
 msgstr "Ei edellistä taulukkoa."
 
 #. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
-#| msgid "No figures."
 msgid "No formulas."
 msgstr "Ei kaavoja."
 
@@ -2132,20 +2168,6 @@ msgstr "Säilön jälkeinen kohta."
 msgid "Start of container."
 msgstr "Säilön alku."
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr ""
-"Tekstintunnistuskieltä ei ole asennettuna. Lisää kieli järjestelmän "
-"kieliasetuksissa."
-
-#. TRANSLATORS: Announced when the OCR engine fails on a page
-msgid "OCR failed."
-msgstr "Tekstintunnistus epäonnistui."
-
-#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
-msgid "OCR is not available on this system."
-msgstr "Tekstintunnistus ei ole käytettävissä tässä järjestelmässä."
-
 #. TRANSLATORS: Title of the dialog displaying a formula as MathML
 msgid "Formula View"
 msgstr "Kaavanäkymä"
@@ -2212,7 +2234,6 @@ msgid "Copied (%d chars)."
 msgstr "Kopioitu (%d merkkiä)."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
-#| msgid "Beginning of document"
 msgid "Beginning of selection set."
 msgstr "Valinnan alkukohta merkitty."
 
@@ -2286,7 +2307,6 @@ msgid "Show All Recent Documents..."
 msgstr "Näytä viimeksi avatut asiakirjat..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#| msgid "Recent Documents"
 msgid "Clear Recent Documents"
 msgstr "Tyhjennä viimeksi avattujen luettelo"
 
@@ -2507,7 +2527,6 @@ msgid "Bookmark with Note"
 msgstr "Kirjanmerkki muistiinpanolla"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#| msgid "No Selection"
 msgid "Set Selection Start"
 msgstr "Merkitse valinnan alkukohta"
 
@@ -2516,7 +2535,6 @@ msgid "Copy from Selection Start"
 msgstr "Kopioi valinnan alkukohdasta"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#| msgid "No Selection"
 msgid "Jump to Selection Start"
 msgstr "Siirry valinnan alkukohtaan"
 
@@ -2543,6 +2561,14 @@ msgstr "Pidennä kelauksen aikasiirtymää"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Decrease Audio Seek Amount"
 msgstr "Lyhennä kelauksen aikasiirtymää"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Increase Audio Speed"
+msgstr "Nopeuta äänitteen toistoa"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Decrease Audio Speed"
+msgstr "Hidasta äänitteen toistoa"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
@@ -2720,10 +2746,6 @@ msgstr "HTML-tiedosto on tyhjä: {}"
 msgid "Failed to convert HTML to text: {}"
 msgstr "HTML-tiedoston tekstimuunnos epäonnistui: {}"
 
-#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
-msgid "Chapter {}"
-msgstr "Luku {}"
-
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 msgid "Failed to convert Markdown to text: {}"
 msgstr "Markdown-tiedoston tekstimuunnos epäonnistui: {}"
@@ -2871,6 +2893,10 @@ msgstr "PPTX-tiedostossa ei ole dioja"
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 msgid "Failed to parse RTF document: {}"
 msgstr "RTF-asiakirjan jäsennys epäonnistui: {}"
+
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+msgid "Chapter {}"
+msgstr "Luku {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -4178,7 +4204,6 @@ msgstr "Kaava"
 
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
 #: swift
-#| msgid "No more matches."
 msgid "No matches."
 msgstr "Ei tuloksia."
 
@@ -4189,13 +4214,11 @@ msgstr "Ulkoasu"
 
 #. TRANSLATORS: Appearance option following the phone's own light/dark setting
 #: swift
-#| msgid "System Default"
 msgid "System"
 msgstr "Järjestelmän asetus"
 
 #. TRANSLATORS: Appearance option pinning the app to its light colours
 #: swift
-#| msgid "Right"
 msgid "Light"
 msgstr "Vaalea"
 
@@ -4213,3 +4236,25 @@ msgstr "Suuren kontrastin teksti"
 #: swift
 msgid "Hide previous and next buttons"
 msgstr "Piilota Edellinen- ja Seuraava-painikkeet"
+
+#. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
+#: swift
+msgid "This empties the list. The documents themselves are not deleted."
+msgstr "Tämä tyhjentää luettelon, mutta varsinaisia asiakirjoja ei poisteta."
+
+#. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
+#: swift
+#| msgid "{} minutes"
+msgid "{} ms"
+msgstr "{} ms"
+
+#. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
+#: swift
+#| msgid "Paragraph"
+msgid "Paragraph Pause"
+msgstr "Kappaleiden välinen tauko"
+
+#. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
+#: kt
+msgid "No other voices"
+msgstr "Muita ääniä ei ole"
