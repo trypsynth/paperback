@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Paperback - version 0.9.2</title>
+  <title>Paperback - version 1.0</title>
   <style>
     html {
       color: #1a1a1a;
@@ -205,7 +205,7 @@
 </ul>
 </nav>
 <header id="title-block-header">
-<h1 class="title">Paperback - version 0.9.2</h1>
+<h1 class="title">Paperback - version 1.0</h1>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -233,6 +233,19 @@ shortcuts</a>
 id="toc-additional-document-view-keys">Additional document-view
 keys</a></li>
 </ul></li>
+<li><a href="#ios-and-android" id="toc-ios-and-android">iOS and
+Android</a>
+<ul>
+<li><a href="#opening-documents" id="toc-opening-documents">Opening
+documents</a></li>
+<li><a href="#reading-and-listening"
+id="toc-reading-and-listening">Reading and listening</a></li>
+<li><a href="#the-reading-bar" id="toc-the-reading-bar">The reading
+bar</a></li>
+<li><a href="#more-options" id="toc-more-options">More options</a></li>
+<li><a href="#keyboards-and-headsets"
+id="toc-keyboards-and-headsets">Keyboards and headsets</a></li>
+</ul></li>
 <li><a href="#supported-languages"
 id="toc-supported-languages">Supported languages</a></li>
 <li><a href="#credits" id="toc-credits">Credits</a>
@@ -246,7 +259,7 @@ id="toc-supported-languages">Supported languages</a></li>
 <ul>
 <li><a href="#added" id="toc-added">Added</a></li>
 <li><a href="#fixed" id="toc-fixed">Fixed</a></li>
-<li><a href="#ios-and-android" id="toc-ios-and-android">iOS and
+<li><a href="#ios-and-android-1" id="toc-ios-and-android-1">iOS and
 Android</a></li>
 </ul></li>
 <li><a href="#version-0.9.2" id="toc-version-0.9.2">Version
@@ -290,10 +303,10 @@ Android</a></li>
 </ul>
 </nav>
 <h1 id="introduction">Introduction</h1>
-<p>Paperback is a lightweight, fast, and accessible ebook and document
-reader for everyone, from casual readers to heavy power users. It’s
-designed for screen reader accessibility, fast speeds, and a bloat-free
-experience.</p>
+<p>Paperback is a lightweight, fast, and accessible reader for ebooks,
+documents, and audio books, for everyone, from casual readers to heavy
+power users. It’s designed for screen reader accessibility, fast speeds,
+and a bloat-free experience.</p>
 <h1 id="system-requirements">System Requirements</h1>
 <p>Paperback runs on Windows 10/11, all the modern versions of ARM
 macOS, Linux, iOS 17 and later, and Android 7 and later. The iOS and
@@ -317,6 +330,15 @@ and regular expression support.</li>
 <li>Can be run entirely portably, or installed with file associations
 automatically set up.</li>
 <li>Supports a massive array of common file formats.</li>
+<li>Plays audio books, with adjustable speed and bookmarks that remember
+the exact time.</li>
+<li>Reads scanned PDF pages with the OCR built into Windows and
+macOS.</li>
+<li>Bookmarks and notes, so you can mark your place and come back to
+it.</li>
+<li>Every keyboard shortcut can be changed.</li>
+<li>Comes with <code>pb</code>, a command line tool that converts any
+supported document to HTML, Markdown, or plain text.</li>
 </ul>
 <h1 id="screen-reader-compatibility">Screen Reader Compatibility</h1>
 <p>Paperback works well with all major screen readers. There is,
@@ -472,16 +494,21 @@ selection/cursor.</li>
 <li><code>Ctrl+Shift+N</code>: Add or edit bookmark note at the current
 selection/cursor.</li>
 <li><code>Ctrl+Alt+W</code>: Toggle word wrap.</li>
-<li><code>Ctrl+Space</code>: Play/pause audio narration.</li>
+<li><code>Ctrl+Space</code> (macOS: <code>RawCtrl+Space</code>, i.e. the
+physical Control key, since Cmd+Space opens Spotlight): Play/pause audio
+narration.</li>
 <li><code>'</code>: Seek audio narration forward.</li>
 <li><code>;</code>: Seek audio narration backward.</li>
-<li><code>Ctrl+'</code>: Increase the audio seek amount.</li>
-<li><code>Ctrl+;</code>: Decrease the audio seek amount.</li>
+<li><code>Shift+'</code>: Increase the audio seek amount.</li>
+<li><code>Shift+;</code>: Decrease the audio seek amount.</li>
+<li><code>Ctrl+Shift+.</code>: Speed up audio narration.</li>
+<li><code>Ctrl+Shift+,</code>: Slow down audio narration.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>,
 i.e. Control+Command+F): Toggle full screen.</li>
-<li><code>Ctrl+,</code>: Open options (macOS: Preferences, under the app
-menu).</li>
+<li><code>Ctrl+,</code>: Open Settings (macOS: under the app menu).</li>
 <li><code>Ctrl+Shift+S</code>: Toggle sleep timer.</li>
+<li><code>Ctrl+Shift+O</code>: Recognize a range of scanned PDF pages
+with OCR.</li>
 <li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Mark the beginning
 of a selection, so everything from here to wherever you get to can be
 copied in one go.</li>
@@ -507,9 +534,62 @@ keys</h2>
 Close the selected document tab.</li>
 <li><code>Enter</code> or <code>Space</code> in the document text:
 Follow a link or open a table or formula view at the cursor.</li>
+<li><code>Enter</code> on a scanned PDF page: Recognize the page with
+OCR.</li>
 <li><code>Shift+F10</code> or the Menu/Application key in the document
 text: Open the context menu.</li>
 </ul>
+<h1 id="ios-and-android">iOS and Android</h1>
+<p>The iOS and Android apps use the same reading engine as the desktop,
+so they open the same formats and remember your place the same way. They
+are built to be used with VoiceOver on iOS and TalkBack on Android.</p>
+<h2 id="opening-documents">Opening documents</h2>
+<ul>
+<li>Use the Open Book button, or open a document from the Files app or
+another app and choose Paperback.</li>
+<li>On Android, you can turn on the in-app file browser in Settings
+instead. It needs the All Files Access permission, and opens large files
+straight away instead of copying them first.</li>
+<li>Long-press the Open Book button to import or export a document’s
+data (<code>.paperback</code>), the same files the desktop app
+uses.</li>
+</ul>
+<h2 id="reading-and-listening">Reading and listening</h2>
+<p>Each app has two ways to read a document. In text mode, you read the
+text with your screen reader. In read aloud mode, Paperback reads the
+text to you with the voice you pick in Settings, and keeps going in the
+background and from the lock screen. Switch between them from the More
+Options menu.</p>
+<p>Audio books, like DAISY, M4B, and MP3 books, play their own recording
+instead.</p>
+<h2 id="the-reading-bar">The reading bar</h2>
+<p>The bar at the bottom of the screen has, from left to right:</p>
+<ul>
+<li>The navigation unit, such as paragraph, heading, page, or link.
+Swipe up or down on it to change it.</li>
+<li>Previous, play, and next buttons. Previous and next move by the
+navigation unit.</li>
+<li>The speech rate. Swipe up or down on it to change how fast Paperback
+reads.</li>
+</ul>
+<p>You can also swipe up or down on the play button to move by the
+navigation unit, without reaching for the previous and next buttons. If
+that is all you use, the Hide previous and next buttons setting takes
+them out of your screen reader’s way. The Swipe up moves forward setting
+picks which way a swipe goes.</p>
+<h2 id="more-options">More options</h2>
+<p>The More Options menu has the table of contents, the elements list,
+Find, Go To, recent documents, word count, document info, export, the
+sleep timer, help, and settings. On iOS, the speech dictionary is in
+Settings.</p>
+<h2 id="keyboards-and-headsets">Keyboards and headsets</h2>
+<p>On Android with a keyboard, the desktop shortcuts for opening books,
+Find, Go To, the table of contents, word count, document info, export,
+and the sleep timer all work, and so do the single-letter keys for
+moving by heading, page, link, and the rest. <code>Space</code> plays
+and pauses.</p>
+<p>On Android, a headset button plays and pauses with one press, moves
+forward with two, and goes back with three.</p>
 <h1 id="supported-languages">Supported languages</h1>
 <p>Paperback is translated into many different languages, with more
 being added all the time. A complete list follows below.</p>
@@ -529,6 +609,7 @@ href="translating.md">Translation Guide</a>.</p>
 <li>Simplified Chinese</li>
 <li>Serbian</li>
 <li>Spanish</li>
+<li>Ukrainian</li>
 <li>Vietnamese</li>
 </ul>
 <h1 id="credits">Credits</h1>
@@ -756,7 +837,7 @@ PowerPoint slides no longer lose their text.</li>
 as text, rather than failing with an error.</li>
 <li>RTF control words no longer show up as text.</li>
 </ul>
-<h3 id="ios-and-android">iOS and Android</h3>
+<h3 id="ios-and-android-1">iOS and Android</h3>
 <p>The iOS and Android apps open every format the desktop does, and
 include:</p>
 <ul>
