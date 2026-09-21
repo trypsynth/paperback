@@ -63,6 +63,8 @@ class ReaderSettings(
 
 	val textAlignment = intSetting("text_alignment", 0)
 
+	val highContrastText = boolSetting("high_contrast_text", false)
+
 	private fun boolSetting(
 		key: String,
 		default: Boolean

@@ -81,7 +81,7 @@ struct FindView: View {
 			history = config.getFindHistory()
 			queryFocused = true
 		}
-		.sheetAccessibilityFocus(title: "Find")
+		.sheetAccessibilityFocus(title: t("Find"))
 	}
 
 	private func find(forward: Bool) {

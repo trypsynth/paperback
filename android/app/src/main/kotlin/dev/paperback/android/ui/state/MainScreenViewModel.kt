@@ -882,6 +882,13 @@ class MainScreenViewModel(
 		}
 	}
 
+	/** Says where a Find match landed, for a reader whose focus is still in the Find dialog. */
+	fun announceFoundMatch(pos: Long) {
+		val tab = uiState.value.activeTab ?: return
+		val segment = tab.session.getTextSegment(pos, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		announceNavigationCue(displayTextFor(tab, segment))
+	}
+
 	private fun announceNavigationCue(text: String) {
 		val cue = text
 			.trim()

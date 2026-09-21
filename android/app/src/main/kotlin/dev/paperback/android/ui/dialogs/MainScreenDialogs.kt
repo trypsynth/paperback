@@ -7,8 +7,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
@@ -124,11 +126,18 @@ fun DocumentTextDialogs(
 			onSeekPercent = { viewModel.seekAudioToPercent(it) }
 		)
 	}
+	// Focus stays in the Find dialog while it is open, so the line the last match landed on only
+	// takes screen reader focus once the dialog closes.
+	var lastMatchLine by remember { mutableStateOf<Int?>(null) }
 	if (findOpen) {
 		FindDialog(
 			configManager = viewModel.configManager,
 			initialQuery = activeQuery ?: "",
-			onDismiss = { viewModel.findDialog.close() },
+			onDismiss = {
+				viewModel.findDialog.close()
+				lastMatchLine?.let(onFocusLine)
+				lastMatchLine = null
+			},
 			onSearch = { query, options ->
 				val wasSpeaking = viewModel.ttsManager.isSpeaking.value
 				if (wasSpeaking) {
@@ -149,16 +158,22 @@ fun DocumentTextDialogs(
 					if (isSameQuery) currentPos + 1L else currentPos
 				}
 				val res = docState.session.searchFfi(query, searchPos, options)
-				if (!res.found) return@FindDialog
+				if (!res.found) {
+					// TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+					// TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+					viewModel.announceForAccessibility(if (isSameQuery) t("No more matches.") else t("No matches."))
+					return@FindDialog
+				}
 				if (isTextMode) {
 					val targetLine = docState.session.lineFromPosition(res.position)
 					val targetIndex = lineIndexFor(targetLine)
-					scope.launch {
-						listState.scrollToItem(targetIndex)
-						onFocusLine(targetIndex)
-					}
+					lastMatchLine = targetIndex
+					scope.launch { listState.scrollToItem(targetIndex) }
 				} else {
 					viewModel.jumpToFoundPosition(res.position, resume = wasSpeaking)
+				}
+				if (isTextMode || !wasSpeaking) {
+					viewModel.announceFoundMatch(res.position)
 				}
 			}
 		)

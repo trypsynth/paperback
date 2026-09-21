@@ -18,13 +18,13 @@ struct RecentDocumentRow: View {
 	var body: some View {
 		if doc.isMissing, let onLocate {
 			content
-				.accessibilityAction(named: "Locate", onLocate)
-				.accessibilityAction(named: "Remove", onRemove)
+				.accessibilityAction(named: t("Locate"), onLocate)
+				.accessibilityAction(named: t("Remove"), onRemove)
 		} else {
 			content
 				.accessibilityAddTraits(.isButton)
 				.accessibilityAction(.default, onOpen)
-				.accessibilityAction(named: "Remove", onRemove)
+				.accessibilityAction(named: t("Remove"), onRemove)
 		}
 	}
 

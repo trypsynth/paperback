@@ -73,7 +73,7 @@ struct ExportDocumentSheet: View {
 			// TRANSLATORS: Message shown when exporting the document to another file format fails
 			Text(t("Failed to export document"))
 		}
-		.sheetAccessibilityFocus(title: "Export Document")
+		.sheetAccessibilityFocus(title: t("Export Document"))
 	}
 
 	private func export(_ format: ExportFormat) {

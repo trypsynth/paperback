@@ -50,7 +50,7 @@ private struct TabChip: View {
 			.foregroundStyle(isActive ? .primary : .secondary)
 			.accessibilityLabel(tab.title)
 			.accessibilityAddTraits(isActive ? .isSelected : [])
-			.accessibilityAction(named: "Close") { viewModel.closeTab(tab) }
+			.accessibilityAction(named: t("Close")) { viewModel.closeTab(tab) }
 
 			Button { viewModel.closeTab(tab) } label: {
 				Image(systemName: "xmark")

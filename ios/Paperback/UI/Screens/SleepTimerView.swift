@@ -113,6 +113,6 @@ struct SleepTimerView: View {
 		.onChange(of: choice) { _, newValue in
 			if newValue == .custom { customFieldFocused = true }
 		}
-		.sheetAccessibilityFocus(title: "Sleep Timer")
+		.sheetAccessibilityFocus(title: t("Sleep Timer"))
 	}
 }
