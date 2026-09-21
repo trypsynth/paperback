@@ -282,16 +282,34 @@ fn bind_toc_layout(dialog: Dialog, tree: TreeCtrl, ok_button: Button, cancel_but
 
 #[cfg(target_os = "windows")]
 fn populate_toc_tree(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
+	if items.len() > super::MAX_TREE_SIBLINGS {
+		for group in items.chunks(super::MAX_TREE_SIBLINGS) {
+			let label = super::tree_group_label(&toc_label(&group[0]), &toc_label(&group[group.len() - 1]));
+			if let Some(id) = tree.append_item(parent, &label, None, None) {
+				append_toc_items(tree, &id, group);
+			}
+		}
+	} else {
+		append_toc_items(tree, parent, items);
+	}
+}
+
+#[cfg(target_os = "windows")]
+fn append_toc_items(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 	for item in items {
-		// TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
-		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
 		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
-		if let Some(id) = tree.append_item_with_data(parent, &display_text, offset, None, None)
+		if let Some(id) = tree.append_item_with_data(parent, &toc_label(item), offset, None, None)
 			&& !item.children.is_empty()
 		{
 			populate_toc_tree(tree, &id, &item.children);
 		}
 	}
+}
+
+#[cfg(target_os = "windows")]
+fn toc_label(item: &TocItem) -> String {
+	// TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
+	if item.name.is_empty() { t("Untitled") } else { item.name.clone() }
 }
 
 #[cfg(target_os = "windows")]

@@ -82,9 +82,6 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 	add_go_cancel_footer(dialog, content_sizer, entry.ctrl, move || submit());
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
-	// Focus the numeric entry so a screen-reader user can type a percentage directly.
-	// Tab order is untouched (it follows widget creation order), so the slider remains the
-	// first tab stop, matching the order the controls appear on screen.
-	entry.focus();
+	percent_slider.set_focus();
 	if dialog.show_modal() == ID_OK { entry.result() } else { None }
 }

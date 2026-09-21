@@ -1,11 +1,19 @@
 import SwiftUI
 
+// The same keys and history length Android's Find dialog uses, so the options and the history
+// mean the same thing on both apps.
+private let matchCaseKey = "find_match_case"
+private let wholeWordKey = "find_whole_word"
+private let useRegexKey = "find_use_regex"
+private let historyLength: Int32 = 10
+
 struct FindView: View {
 	@Environment(AppViewModel.self) private var viewModel
 	@State private var query = ""
 	@State private var matchCase = false
 	@State private var wholeWord = false
 	@State private var useRegex = false
+	@State private var history: [String] = []
 	@FocusState private var queryFocused: Bool
 
 	var body: some View {
@@ -20,6 +28,16 @@ struct FindView: View {
 					// what the field's submit action actually does.
 					.submitLabel(.search)
 					.onSubmit { find(forward: true) }
+				if !history.isEmpty {
+					Menu {
+						ForEach(history, id: \.self) { term in
+							Button(term) { query = term }
+						}
+					} label: {
+						// TRANSLATORS: Button that opens a dropdown of previously used search terms
+						Text(t("Search History"))
+					}
+				}
 			}
 			Section {
 				// TRANSLATORS: Toggle label; when on, search matching is case-sensitive
@@ -55,10 +73,12 @@ struct FindView: View {
 		.navigationTitle(t("Find"))
 		.navigationBarTitleDisplayMode(.inline)
 		.onAppear {
+			let config = viewModel.configManager
 			query = viewModel.reading.activeSearchQuery ?? ""
-			matchCase = viewModel.reading.searchOptions.matchCase
-			wholeWord = viewModel.reading.searchOptions.wholeWord
-			useRegex = viewModel.reading.searchOptions.regex
+			matchCase = config.getAppBool(key: matchCaseKey, defaultValue: false)
+			wholeWord = config.getAppBool(key: wholeWordKey, defaultValue: false)
+			useRegex = config.getAppBool(key: useRegexKey, defaultValue: false)
+			history = config.getFindHistory()
 			queryFocused = true
 		}
 		.sheetAccessibilityFocus(title: "Find")
@@ -67,6 +87,12 @@ struct FindView: View {
 	private func find(forward: Bool) {
 		let trimmed = query.trimmingCharacters(in: .whitespaces)
 		guard !trimmed.isEmpty else { return }
+		let config = viewModel.configManager
+		config.setAppBool(key: matchCaseKey, value: matchCase)
+		config.setAppBool(key: wholeWordKey, value: wholeWord)
+		config.setAppBool(key: useRegexKey, value: useRegex)
+		config.addFindHistory(text: trimmed, maxLen: historyLength)
+		history = config.getFindHistory()
 		viewModel.reading.startSearch(
 			query: trimmed,
 			options: SearchOptions(matchCase: matchCase, wholeWord: wholeWord, regex: useRegex),

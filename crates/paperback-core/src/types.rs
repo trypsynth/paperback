@@ -141,6 +141,8 @@ pub struct BookmarkDisplayItem {
 	pub end: i64,
 	pub note: String,
 	pub is_whole_line: bool,
+	/// See [`BookmarkDisplayEntry::audio_ms`].
+	pub audio_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone)]
@@ -197,6 +199,8 @@ pub struct HeadingTree {
 pub struct BookmarkDisplayEntry {
 	pub start: i64,
 	pub end: i64,
+	/// The playback time of an audio bookmark, which is what tells two in one chapter apart.
+	pub audio_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

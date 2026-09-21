@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-18 19:33-0600\n"
+"POT-Creation-Date: 2026-09-21 02:50+0000\n"
 "PO-Revision-Date: 2026-06-08 13:45+0200\n"
 "Last-Translator: Michał Dziwisz <michal@dziwisz.net>\n"
 "Language-Team: Polish\n"
@@ -28,6 +28,18 @@ msgstr "Dodaj narzędzie wiersza poleceń pb do zmiennej PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "Archiwa ZIP (.zip)"
 
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Nie zainstalowano żadnego języka OCR. Dodaj go w systemowych ustawieniach języka."
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+msgid "OCR failed."
+msgstr "Rozpoznawanie tekstu nie udało się."
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+msgid "OCR is not available on this system."
+msgstr "OCR nie jest dostępne w tym systemie."
+
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "Nie udało się utworzyć serwera IPC"
@@ -38,12 +50,23 @@ msgstr "Ostrzeżenie"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 msgid "This document has no audio."
 msgstr "Ten dokument nie zawiera dźwięku."
 
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 msgid "Audio hasn't started playing yet."
 msgstr "Odtwarzanie dźwięku jeszcze się nie rozpoczęło."
+
+#. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+msgid "{} (maximum)"
+msgstr "{} (maksimum)"
+
+#. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+msgid "{} (minimum)"
+msgstr "{} (minimum)"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -89,14 +112,6 @@ msgstr "30 minut"
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 msgid "1 hour"
 msgstr "1 godzina"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-msgid "{} (maximum)"
-msgstr "{} (maksimum)"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-msgid "{} (minimum)"
-msgstr "{} (minimum)"
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
@@ -545,9 +560,32 @@ msgstr "Z&mniejsz skok przewijania dźwięku"
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Zmniejsz skok przewijania narracji dźwiękowej"
 
+#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+#| msgid "&Increase Audio Seek Amount"
+msgid "&Increase Audio Speed"
+msgstr "Zwiększ sz&ybkość odtwarzania dźwięku"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
+#| msgid "Increase how far seeking the audio narration moves"
+msgid "Increase how fast the audio narration plays"
+msgstr "Zwiększ szybkość odtwarzania narracji dźwiękowej"
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+#| msgid "&Decrease Audio Seek Amount"
+msgid "&Decrease Audio Speed"
+msgstr "Zmniejsz szybkość odtwarzania &dźwięku"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
+#| msgid "Decrease how far seeking the audio narration moves"
+msgid "Decrease how fast the audio narration plays"
+msgstr "Zmniejsz szybkość odtwarzania narracji dźwiękowej"
+
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "Dostępny, lekki i szybki czytnik e-booków i dokumentów"
+
+msgid "Paperback is built on other people's work. The libraries it uses, and their licenses, are credited at {}."
+msgstr "Paperback korzysta z pracy innych twórców. Wykaz używanych bibliotek i ich licencji znajduje się pod adresem {}."
 
 #. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
@@ -2112,18 +2150,6 @@ msgstr "Za końcem kontenera."
 msgid "Start of container."
 msgstr "Początek kontenera."
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Nie zainstalowano żadnego języka OCR. Dodaj go w systemowych ustawieniach języka."
-
-#. TRANSLATORS: Announced when the OCR engine fails on a page
-msgid "OCR failed."
-msgstr "Rozpoznawanie tekstu nie udało się."
-
-#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
-msgid "OCR is not available on this system."
-msgstr "OCR nie jest dostępne w tym systemie."
-
 #. TRANSLATORS: Title of the dialog displaying a formula as MathML
 msgid "Formula View"
 msgstr "Widok wzoru"
@@ -2520,6 +2546,16 @@ msgid "Decrease Audio Seek Amount"
 msgstr "Zmniejsz skok przewijania dźwięku"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Increase Audio Seek Amount"
+msgid "Increase Audio Speed"
+msgstr "Zwiększ szybkość odtwarzania dźwięku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Decrease Audio Seek Amount"
+msgid "Decrease Audio Speed"
+msgstr "Zmniejsz szybkość odtwarzania dźwięku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
 msgstr "Tryb pełnoekranowy"
 
@@ -2687,10 +2723,6 @@ msgstr "Plik HTML jest pusty: {}"
 msgid "Failed to convert HTML to text: {}"
 msgstr "Nie udało się przekonwertować kodu HTML na tekst: {}"
 
-#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
-msgid "Chapter {}"
-msgstr "Rozdział {}"
-
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 msgid "Failed to convert Markdown to text: {}"
 msgstr "Nie udało się przekonwertować pliku Markdown na tekst: {}"
@@ -2838,6 +2870,10 @@ msgstr "Plik PPTX nie zawiera żadnych slajdów"
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 msgid "Failed to parse RTF document: {}"
 msgstr "Nie udało się przetworzyć dokumentu RTF: {}"
+
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+msgid "Chapter {}"
+msgstr "Rozdział {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -4093,7 +4129,6 @@ msgstr "Wzór"
 
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
 #: swift
-#| msgid "No more matches."
 msgid "No matches."
 msgstr "Brak dopasowań."
 
@@ -4104,13 +4139,11 @@ msgstr "Wygląd"
 
 #. TRANSLATORS: Appearance option following the phone's own light/dark setting
 #: swift
-#| msgid "System Default"
 msgid "System"
 msgstr "Zgodnie z systemem"
 
 #. TRANSLATORS: Appearance option pinning the app to its light colours
 #: swift
-#| msgid "Right"
 msgid "Light"
 msgstr "Jasny"
 
@@ -4128,6 +4161,28 @@ msgstr "Wysoki kontrast tekstu"
 #: swift
 msgid "Hide previous and next buttons"
 msgstr "Ukryj przyciski nawigacji przed czytnikiem ekranu"
+
+#. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
+#: swift
+msgid "This empties the list. The documents themselves are not deleted."
+msgstr "Lista zostanie wyczyszczona. Same dokumenty nie zostaną usunięte."
+
+#. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
+#: swift
+#| msgid "{} minutes"
+msgid "{} ms"
+msgstr "{} ms"
+
+#. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
+#: swift
+#| msgid "Paragraph"
+msgid "Paragraph Pause"
+msgstr "Przerwa między akapitami"
+
+#. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
+#: kt
+msgid "No other voices"
+msgstr "Brak innych głosów"
 
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
 #~ msgstr "Pliki PPT chronione hasłem nie są obecnie obsługiwane. Spróbuj zapisać plik w formacie PPTX i otworzyć tę wersję."

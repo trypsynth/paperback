@@ -72,6 +72,7 @@ class TtsManager(
 		const val KEY_VOICE = "tts_voice"
 		const val KEY_RATE = "tts_rate"
 		const val KEY_PITCH = "tts_pitch"
+		const val KEY_PARAGRAPH_PAUSE = "tts_paragraph_pause_ms"
 	}
 
 	private val _currentEngineName = MutableStateFlow<String?>(null)
@@ -119,6 +120,9 @@ class TtsManager(
 	private val _currentPitch = MutableStateFlow(50)
 	val currentPitch: StateFlow<Int> = _currentPitch.asStateFlow()
 
+	private val _paragraphPauseMs = MutableStateFlow(MIN_PARAGRAPH_PAUSE_MS)
+	val paragraphPauseMs: StateFlow<Int> = _paragraphPauseMs.asStateFlow()
+
 	private val _currentVoice = MutableStateFlow<Voice?>(null)
 	val currentVoice: StateFlow<Voice?> = _currentVoice.asStateFlow()
 
@@ -127,6 +131,7 @@ class TtsManager(
 
 	fun loadConfigAndInit() {
 		val savedEngine = config.getAppString(KEY_ENGINE, SYSTEM_DEFAULT)
+		config.getAppString(KEY_PARAGRAPH_PAUSE, "").toIntOrNull()?.let { _paragraphPauseMs.value = paragraphPauseFor(it) }
 		initTts(savedEngine)
 		initMediaSession()
 	}
@@ -260,6 +265,7 @@ class TtsManager(
 					if (isCurrentContent && contentFile != null) {
 						ttsScope.launch(Dispatchers.IO) {
 							try {
+								appendSilence(contentFile, _paragraphPauseMs.value)
 								val player = MediaPlayer().apply {
 									setAudioAttributes(speechAudioAttributes())
 									setDataSource(contentFile.absolutePath)
@@ -298,6 +304,7 @@ class TtsManager(
 					} else if (isCurrentPrecache && precacheFile != null) {
 						ttsScope.launch(Dispatchers.IO) {
 							try {
+								appendSilence(precacheFile, _paragraphPauseMs.value)
 								val nextPlayer = MediaPlayer().apply {
 									setAudioAttributes(speechAudioAttributes())
 									setDataSource(precacheFile.absolutePath)
@@ -592,6 +599,15 @@ class TtsManager(
 			tts?.setPitch(pitchFor(percentage))
 			resynthesizePrecache()
 		}
+	}
+
+	fun setParagraphPause(ms: Int) {
+		val pause = paragraphPauseFor(ms)
+		if (pause == _paragraphPauseMs.value) return
+		_paragraphPauseMs.value = pause
+		config.setAppString(KEY_PARAGRAPH_PAUSE, pause.toString())
+		config.flush()
+		resynthesizePrecache()
 	}
 
 	fun getAvailableEngines(): List<TextToSpeech.EngineInfo> {

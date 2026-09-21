@@ -1,12 +1,12 @@
-# Paperback - version 0.9.2
+# Paperback - version 1.0
 
 ## Introduction
 
-Paperback is a lightweight, fast, and accessible ebook and document reader for everyone, from casual readers to heavy power users. It's designed for screen reader accessibility, fast speeds, and a bloat-free experience.
+Paperback is a lightweight, fast, and accessible reader for ebooks, documents, and audio books, for everyone, from casual readers to heavy power users. It's designed for screen reader accessibility, fast speeds, and a bloat-free experience.
 
 ## System Requirements
 
-Paperback currently runs on Windows 10/11 and all the modern versions of ARM macOS. Native iOS and Android apps are in active development, with public test builds planned soon after the 0.9.0 desktop release, ahead of a unified 1.0 release covering all four platforms.
+Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iOS 17 and later, and Android 7 and later. The iOS and Android apps are on the App Store and Google Play.
 
 ## Features
 
@@ -19,6 +19,11 @@ Paperback currently runs on Windows 10/11 and all the modern versions of ARM mac
 * Includes a robust find dialog, including features such as history and regular expression support.
 * Can be run entirely portably, or installed with file associations automatically set up.
 * Supports a massive array of common file formats.
+* Plays audio books, with adjustable speed and bookmarks that remember the exact time.
+* Reads scanned PDF pages with the OCR built into Windows and macOS.
+* Bookmarks and notes, so you can mark your place and come back to it.
+* Every keyboard shortcut can be changed.
+* Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text.
 
 ## Screen Reader Compatibility
 
@@ -45,11 +50,13 @@ Paperback supports the following formats and extensions:
 * Microsoft Word documents (`.docx`, `.docm`, `.doc`)
 * M4B audiobooks (`.m4b`)
 * MOBI/Kindle books (`.mobi`, `.azw`, `.azw3`)
+* MP3 audiobooks (`.mp3`)
 * OpenDocument presentations (`.odp`, `.fodp`)
 * OpenDocument text files (`.odt`, `.fodt`)
 * PDF documents (`.pdf`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * RTF documents (`.rtf`)
+* Windows Write documents (`.wri`)
 * WinHelp files (`.hlp`)
 * Plain text and log files (`.txt`, `.log`)
 
@@ -131,14 +138,17 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+Shift+B`: Toggle bookmark at the current selection/cursor.
 * `Ctrl+Shift+N`: Add or edit bookmark note at the current selection/cursor.
 * `Ctrl+Alt+W`: Toggle word wrap.
-* `Ctrl+Space`: Play/pause audio narration.
+* `Ctrl+Space` (macOS: `RawCtrl+Space`, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.
 * `'`: Seek audio narration forward.
 * `;`: Seek audio narration backward.
-* `Ctrl+'`: Increase the audio seek amount.
-* `Ctrl+;`: Decrease the audio seek amount.
+* `Shift+'`: Increase the audio seek amount.
+* `Shift+;`: Decrease the audio seek amount.
+* `Ctrl+Shift+.`: Speed up audio narration.
+* `Ctrl+Shift+,`: Slow down audio narration.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, i.e. Control+Command+F): Toggle full screen.
-* `Ctrl+,`: Open options (macOS: Preferences, under the app menu).
+* `Ctrl+,`: Open Settings (macOS: under the app menu).
 * `Ctrl+Shift+S`: Toggle sleep timer.
+* `Ctrl+Shift+O`: Recognize a range of scanned PDF pages with OCR.
 * `Alt+F9` (macOS: `Cmd+F9`): Mark the beginning of a selection, so everything from here to wherever you get to can be copied in one go.
 * `Alt+F10` (macOS: `Cmd+F10`): Copy everything from the marked beginning of the selection to the current position.
 * `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Jump back to the marked beginning of the selection, leaving the mark in place.
@@ -155,7 +165,60 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 
 * `Delete` / `Numpad Delete` on the tab control: Close the selected document tab.
 * `Enter` or `Space` in the document text: Follow a link or open a table or formula view at the cursor.
+* `Enter` on a scanned PDF page: Recognize the page with OCR.
 * `Shift+F10` or the Menu/Application key in the document text: Open the context menu.
+
+## iOS and Android
+
+The iOS and Android apps use the same reading engine as the desktop, so they open the same formats and remember your place the same way. They are built to be used with VoiceOver on iOS and TalkBack on Android.
+
+### Opening documents
+
+* Use the Open Book button, or open a document from the Files app or another app and choose Paperback.
+* On Android, you can turn on the in-app file browser in Settings instead. It needs the All Files Access permission, and opens large files straight away instead of copying them first.
+* Long-press the Open Book button to import or export a document's data (`.paperback`), the same files the desktop app uses.
+
+### Reading and listening
+
+Each app has two ways to read a document. In text mode, you read the text with your screen reader. In read aloud mode, Paperback reads the text to you with the voice you pick in Settings, and keeps going in the background and from the lock screen. Switch between them from the More Options menu.
+
+Audio books, like DAISY, M4B, and MP3 books, play their own recording instead.
+
+### The reading bar
+
+The bar at the bottom of the screen has, from left to right:
+
+* The navigation unit, such as paragraph, heading, page, or link. Swipe up or down on it to change it.
+* Previous, play, and next buttons. Previous and next move by the navigation unit.
+* The speech rate. Swipe up or down on it to change how fast Paperback reads.
+
+You can also swipe up or down on the play button to move by the navigation unit, without reaching for the previous and next buttons. If that is all you use, the Hide previous and next buttons setting takes them out of your screen reader's way. The Swipe up moves forward setting picks which way a swipe goes.
+
+### More options
+
+The More Options menu is where everything else lives. Some items work a little differently on each app.
+
+* **Switch to TTS Mode or Switch to Text Mode:** moves between read aloud mode and text mode, described above. Android also has a Read Aloud item that starts and pauses reading aloud.
+* **Table of Contents:** the book's chapters. Pick one to go straight to it. On Android, entries with chapters under them can be expanded and collapsed, using the screen reader's actions. On iOS, the whole list is shown at once.
+* **Elements:** a list of the document's headings or links. Switch between the two with the Type picker on iOS, or the tabs on Android, then pick one to go to it.
+* **Find:** type what to look for, and choose whether to match case, match whole words only, or use a regular expression. On Android, a bar with Find Previous and Find Next stays at the bottom of the screen until you close it, and earlier searches are under Search History. On iOS, the Find Previous and Find Next buttons are on the Find screen, and Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there.
+* **Go To:** jump to a line, a page, or a percentage through the document. Pick which with the Mode picker.
+* **Recent Documents:** every document you've opened, each marked as currently open, closed, or file missing. Each one has two screen reader actions: Remove takes it off the list, and Locate lets you find a document whose file has moved. Clear Recent Documents empties the list without deleting any documents.
+* **Word Count:** the number of words in the document.
+* **Document Info:** the title, the author, the file name, and on iOS the line and character counts too.
+* **Export:** saves the document as plain text, HTML, or Markdown.
+* **Sleep Timer:** stops reading after 5, 10, 15, 30, 45, or 60 minutes, or a time of your own. Open it again while it's running to see how long is left, or to cancel it.
+* **Help:** opens this readme.
+* **Settings:**
+    * **Text to speech:** the voice, speech rate, and pitch, a Play Sample button to hear them, and the pause between paragraphs. Android also lets you pick the speech engine. On iOS, this is also where the speech dictionary is: rules that change how words are spoken, for every voice or just some.
+    * **Readability:** text size, line spacing, paragraph spacing, and alignment. iOS also has light and dark appearance, and high contrast text.
+    * **Behavior:** whether to reopen your documents when the app starts, which way a swipe on the play button moves, and whether to hide the previous and next buttons. Android also has the in-app file browser here.
+
+### Keyboards and headsets
+
+With a keyboard, the desktop shortcuts for opening books, recent documents, Find, Go To, the table of contents, word count, document info, export, and the sleep timer all work, using `Cmd` in place of `Ctrl` on iOS. So do the single-letter keys for moving by heading, page, link, and the rest, and `Space` plays and pauses. On iOS, the single-letter keys only reach Paperback while VoiceOver's single-letter Quick Nav is off.
+
+On Android, a headset button plays and pauses with one press, moves forward with two, and goes back with three.
 
 ## Supported languages
 
@@ -176,6 +239,7 @@ To learn how to contribute, please read our [Translation Guide](translating.md).
 * Simplified Chinese
 * Serbian
 * Spanish
+* Ukrainian
 * Vietnamese
 
 ## Credits
@@ -209,6 +273,130 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ## Changelog
 
+### Version 1.0
+
+1.0 is the first release on all five platforms: Windows, macOS, Linux, iOS and Android, with the iOS and Android apps in the App Store and Google Play.
+
+#### Added
+
+##### General
+* Linux support, as an AppImage or a tar.gz, with desktop integration so documents open from your file manager.
+* Mark the beginning of a selection with `Alt+F9`, copy everything from there to wherever you have got to with `Alt+F10`, and go back to the mark with `Alt+Shift+F9`, for copying a long span of text without shift-arrowing through it. All three are under Tools > Select and copy.
+* The `=` shortcut now announces the page as well as the percentage, e.g. "15%, page 30", and stays as it was for documents with no page numbers.
+* The About box now shows Paperback's license and every translator.
+* A Ukrainian translation.
+
+##### New Formats
+* Comic book archives (`.cbz`).
+* M4B audiobooks, split into their chapters.
+* Manual pages, both `man` and BSD `mdoc`, gzipped or not.
+* MP3 audiobooks, split into chapters when the file has them.
+* Windows Write (`.wri`) files.
+* WinHelp (`.hlp`) files.
+* Word 6 and Word 95 documents.
+
+##### OCR
+* Scanned PDF pages can now be recognized with the OCR built into Windows and macOS. Press `Enter` on a scanned page to recognize it, or use Batch OCR (`Ctrl+Shift+O`) for a range of pages.
+
+##### Navigation
+* MathML formulas in EPUB and HTML are rendered as AsciiMath using MathCAT. Use `M` or `Shift+M` to navigate formulas, then `Enter` or `Space` to open the original MathML in Formula View.
+* A Find All button in the Find dialog, listing every line with a match so you can jump straight to the one you want.
+* Tables, Lists and Pages views in the elements list (`F7`).
+* Go to Line, Go to Page and Go to Percent now take `+n` and `-n` to move relative to where you are.
+* EPUB, MOBI and CHM books with no headings of their own now get heading navigation from their table of contents.
+* KF8 (AZW3) books now support section navigation.
+* EPUB pages that are only a picture now show a line for it, so you can land on them instead of skipping straight past.
+
+##### Audio Books
+* Playback speed controls, from half speed to three times as fast. Use `Ctrl+Shift+.` and `Ctrl+Shift+,`, or the Tools menu.
+* Bookmarks and notes in audio-only books now remember the exact time you set them at.
+* Next and previous position (`Alt+Left` and `Alt+Right`) now work in audio books.
+* Progress through an audio book is now measured by its recording, so Go to Percent and the status bar match how far through it you really are.
+
+##### Recent Documents
+* A Clear Recent Documents item in the Recent Documents submenu.
+
+##### PDF Documents
+* A setting to keep every line of a PDF separate, rather than joining them into paragraphs.
+* Images and figures in PDFs are now announced.
+* PDFs that carry reading structure but tag none of their pictures now announce those pictures, rather than leaving them out of the book entirely.
+
+##### Web View
+* Any document can now be opened in the web view, not only EPUB, HTML and Markdown.
+
+##### Readability
+* Headings are now drawn at a size that matches their level, and images and tables are set apart from the text around them.
+
+##### pb
+* `pb --list-formats` lists every format pb can read.
+* pb now says which file it could not read, and why.
+
+#### Fixed
+
+##### General
+* Fixed a crash when closing Paperback.
+* Closing Paperback now hides the window straight away, rather than leaving it on screen while it saves.
+* Opening a document no longer leaves Reopen Last Closed enabled when there is nothing to reopen.
+* Paperback no longer keeps retrying documents in your recent list that have gone missing, and caps how many recent documents it stores.
+* The old INI settings file is now deleted once it has been moved over to the new format.
+* The font and color dialogs' titles, and the Export As menu in Vietnamese, are now translated.
+* Updating now brings the relaunched window to the front, instead of leaving it behind every other window in Alt+Tab.
+* Word wrap now applies straight away on large documents, rather than reloading the whole thing.
+
+##### Navigation
+* `Alt+Left` now goes back to where you jumped from, rather than to an older position.
+* Bookmark sounds now only play when you move over a bookmark, not when you land on the line it is on.
+* Closing the table of contents, the elements list and the Go dialogs now takes you straight to the line you land on, rather than making you sit through the screen reader reading out the window again.
+* Go to Line, Go to Page and Go to Percent now refuse numbers outside the document instead of quietly going somewhere else.
+* NVDA no longer cuts off the announcement when a document has no pages.
+* Pressing OK in the table of contents without moving now goes to the entry that was already selected.
+* The table of contents, the elements list and the bookmarks list no longer lag or freeze on books with thousands of entries.
+* Up and Down arrow now remember their column per document, instead of carrying it over when you switch tabs.
+
+##### Audio Books
+* Audio playback now uses `Control+Space` on macOS, since `Command+Space` belongs to Spotlight.
+
+##### PDF Documents
+* Fixed PDFs exported from Apple Pages reading as plain text, with none of the headings and lists they were written with.
+* Fixed PDF paragraphs and headings splitting at every line, and words splitting apart at spaces.
+* Fixed numbered PDF headings running together into one heading.
+* Fixed PDFs whose structure tree leads to no text opening empty.
+* Page headers and footers are no longer read out on every page of untagged PDFs.
+* PDFs that tag their page headers and footers as ordinary text no longer repeat the title and the page number between two paragraphs on every page.
+* PDFs now show their real title, rather than their file name.
+* Lines set in a monospaced font, like code, are no longer joined into paragraphs.
+
+##### MOBI/AZW3 Books
+* Large MOBI books no longer run out of memory, and are no longer cut off after 20 MB.
+* MOBI and AZW3 books now open much faster.
+* Fixed MOBI books losing their chapter list.
+* Fixed garbled text where MOBI books cross from one record to the next.
+
+##### Web View
+* The web view no longer loads the whole of a huge book at once.
+* The web view now shows documents whole when the reader shows them whole, rather than only a slice of them.
+
+##### Other Formats
+* FictionBook (.fb2) books written in windows-1251, which is most of them, now open instead of failing to read at all.
+* FictionBook books that use a namespace or an HTML entity they never declared now open, rather than being refused as broken.
+* Books in legacy encodings now open much faster.
+* Fixed some Chinese text files opening as garbled text.
+* Password-protected OpenDocument files now ask for their password, rather than being reported as broken.
+* Password-protected legacy PowerPoint files now open, and legacy PowerPoint slides no longer lose their text.
+* Plain text files saved with an `.rtf` extension now open as text, rather than failing with an error.
+* RTF control words no longer show up as text.
+
+#### iOS and Android
+
+The iOS and Android apps open every format the desktop does, and include:
+
+* Read aloud, with your choice of voice, rate and pitch, a speech rate control right on the reading bar, and an optional pause between paragraphs.
+* Playback of DAISY, M4B and MP3 audio books, which keeps going in the background and from the lock screen.
+* Navigation by headings, pages, links, tables, lists and more from the reading bar, plus the table of contents and Find.
+* A sleep timer, word count, and document export, plus a speech dictionary on iOS.
+* Text size and spacing options, plus high contrast text on iOS.
+* Keyboard shortcuts that match the desktop.
+
 ### Version 0.9.2
 * Audio books no longer make your screen reader read out a run of spaces when you focus the text field.
 * Audio books now name the file as you step through them by section.
@@ -219,11 +407,8 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed EPUB's that carry a stray ZIP64 block refusing to open with "Invalid local file header".
 * Fixed long documents walking back to their start while a screen reader read continuously through them.
 * Links in the WebView now take you to the section they point at, rather than failing with "File not found".
-* Mark the beginning of a selection with `Alt+F9`, copy everything from there to wherever you have got to with `Alt+F10`, and go back to the mark with `Alt+Shift+F9`, for copying a long span of text without shift-arrowing through it. All three are under Tools > Select and copy.
-* The `=` shortcut now announces the page as well as the percentage, e.g. "15%, page 30", and stays as it was for documents with no page numbers.
 * The automatic "Document reloaded" announcement no longer cuts your screen reader off mid sentence, instead waiting for it to finish what it was saying.
 * The Settings dialog's General tab now tabs through its options in the order they appear on screen, with the update channel directly after the check for updates option.
-* Updating now brings the relaunched window to the front, instead of leaving it behind every other window in Alt+Tab.
 * Windows will now always show "Paperback" in the Open With menu, rather than the program's full tagline.
 * Word Count and Document Info now show how many files an audio book holds, and how long it runs in total.
 
@@ -278,7 +463,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * A toggle to determine how you want tables displayed, and unified how tables are displayed across documents.
 
 ##### Navigation
-* MathML formulas in EPUB and HTML are rendered as AsciiMath using MathCAT. Use `M` or `Shift+M` to navigate formulas, then `Enter` or `Space` to open the original MathML in Formula View.
 * Support for navigating by container.
 * An option to automatically move the cursor to the start of the line when navigating between lines, similar to browse mode in screen readers.
 * The equals keyboard shortcut to announce your current percentage through a document.

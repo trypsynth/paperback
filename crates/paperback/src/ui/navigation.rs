@@ -14,7 +14,7 @@ use crate::audio_player::AudioPlayer;
 /// [`persist_navigation_history`]. Kept as an owned tuple (rather than borrowing
 /// from the tab) so it can outlive the `DocumentManager` lock: callers build it
 /// while a tab is borrowed, drop the lock, then persist it against `config`.
-type HistoryUpdate = (String, Vec<i64>, usize);
+pub(super) type HistoryUpdate = (String, Vec<i64>, usize);
 
 /// Snapshots `tab`'s current position history as a [`HistoryUpdate`], if `tab.track`
 /// is set. Use this when the caller has already updated the history itself (e.g. via

@@ -408,6 +408,7 @@ pub fn language_name(po_lang: &str) -> Option<&'static str> {
 		"pt_br" => "Brazilian Portuguese",
 		"ru" => "Russian",
 		"sr" => "Serbian",
+		"uk" => "Ukrainian",
 		"vi" => "Vietnamese",
 		"zh_CN" => "Simplified Chinese",
 		_ => return None,
@@ -420,7 +421,7 @@ mod tests {
 
 	#[test]
 	fn every_shipped_locale_resolves_to_a_language_name() {
-		for lang in ["bs", "cs", "de", "es", "fi", "fr", "ja", "nl", "pl", "pt_br", "ru", "sr", "vi", "zh_CN"] {
+		for lang in ["bs", "cs", "de", "es", "fi", "fr", "ja", "nl", "pl", "pt_br", "ru", "sr", "uk", "vi", "zh_CN"] {
 			assert!(language_name(lang).is_some(), "{lang} has no language name");
 		}
 		assert_eq!(language_name("xx"), None);

@@ -426,8 +426,18 @@ fn populate_elements_dialog(session: &DocumentSession, current_pos: i64, heading
 	if !tree_data.items.is_empty() {
 		item_ids.reserve(tree_data.items.len());
 	}
-	for item in &tree_data.items {
-		let parent_id = if item.parent_index >= 0 {
+	// TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
+	let label = |text: &str| if text.is_empty() { t("Untitled") } else { text.to_string() };
+	let mut siblings: std::collections::HashMap<i32, Vec<usize>> = std::collections::HashMap::new();
+	let mut positions = Vec::with_capacity(tree_data.items.len());
+	for (index, item) in tree_data.items.iter().enumerate() {
+		let group = siblings.entry(item.parent_index).or_default();
+		positions.push(group.len());
+		group.push(index);
+	}
+	let mut open_groups: std::collections::HashMap<i32, TreeItemId> = std::collections::HashMap::new();
+	for (index, item) in tree_data.items.iter().enumerate() {
+		let mut parent_id = if item.parent_index >= 0 {
 			usize::try_from(item.parent_index)
 				.ok()
 				.and_then(|idx| item_ids.get(idx).cloned())
@@ -435,8 +445,21 @@ fn populate_elements_dialog(session: &DocumentSession, current_pos: i64, heading
 		} else {
 			root.clone()
 		};
-		// TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
-		let display_text = if item.text.is_empty() { t("Untitled") } else { item.text.clone() };
+		let group = &siblings[&item.parent_index];
+		if group.len() > super::MAX_TREE_SIBLINGS {
+			let position = positions[index];
+			if position % super::MAX_TREE_SIBLINGS == 0 {
+				let last = group[(position + super::MAX_TREE_SIBLINGS - 1).min(group.len() - 1)];
+				let group_label = super::tree_group_label(&label(&item.text), &label(&tree_data.items[last].text));
+				if let Some(id) = headings_tree.append_item(&parent_id, &group_label, None, None) {
+					open_groups.insert(item.parent_index, id);
+				}
+			}
+			if let Some(id) = open_groups.get(&item.parent_index) {
+				parent_id = id.clone();
+			}
+		}
+		let display_text = label(&item.text);
 		let offset = i64::try_from(item.offset).unwrap_or(i64::MAX);
 		if let Some(id) = headings_tree.append_item_with_data(&parent_id, &display_text, offset, None, None) {
 			item_ids.push(id);
