@@ -638,6 +638,24 @@ pub static COMMANDS: &[Command] = &[
 		enable: Enable::Always,
 		behavior: Behavior::Run(audio::decrease_seek_amount),
 	},
+	Command {
+		action: ActionId::IncreaseAudioSpeed,
+		// TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+		label: || t("&Increase Audio Speed"),
+		// TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
+		help: Some(|| t("Increase how fast the audio narration plays")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(audio::increase_speed),
+	},
+	Command {
+		action: ActionId::DecreaseAudioSpeed,
+		// TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+		label: || t("&Decrease Audio Speed"),
+		// TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
+		help: Some(|| t("Decrease how fast the audio narration plays")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(audio::decrease_speed),
+	},
 ];
 
 /// Looks up a ported command by its action.

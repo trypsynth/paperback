@@ -106,6 +106,8 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 		ActionId::SeekAudioBackward,
 		ActionId::IncreaseAudioSeekAmount,
 		ActionId::DecreaseAudioSeekAmount,
+		ActionId::IncreaseAudioSpeed,
+		ActionId::DecreaseAudioSpeed,
 	] {
 		commands::append_item(&menu, action, config);
 	}
@@ -156,6 +158,8 @@ mod tests {
 			ActionId::SeekAudioBackward,
 			ActionId::IncreaseAudioSeekAmount,
 			ActionId::DecreaseAudioSeekAmount,
+			ActionId::IncreaseAudioSpeed,
+			ActionId::DecreaseAudioSpeed,
 		];
 		for action in actions {
 			assert!(commands::for_action(action).is_some(), "{action:?} is in the Tools menu but not in COMMANDS");

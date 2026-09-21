@@ -86,6 +86,8 @@ pub enum ActionId {
 	SeekAudioBackward,
 	IncreaseAudioSeekAmount,
 	DecreaseAudioSeekAmount,
+	IncreaseAudioSpeed,
+	DecreaseAudioSpeed,
 	ToggleFullScreen,
 	Options,
 	SleepTimer,
@@ -186,6 +188,8 @@ impl ActionId {
 			Self::SeekAudioBackward,
 			Self::IncreaseAudioSeekAmount,
 			Self::DecreaseAudioSeekAmount,
+			Self::IncreaseAudioSpeed,
+			Self::DecreaseAudioSpeed,
 			Self::ToggleFullScreen,
 			Self::Options,
 			Self::SleepTimer,
@@ -286,6 +290,8 @@ impl ActionId {
 			| Self::SeekAudioBackward
 			| Self::IncreaseAudioSeekAmount
 			| Self::DecreaseAudioSeekAmount
+			| Self::IncreaseAudioSpeed
+			| Self::DecreaseAudioSpeed
 			| Self::ToggleFullScreen
 			| Self::Options
 			| Self::SleepTimer
@@ -465,6 +471,10 @@ impl ActionId {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::DecreaseAudioSeekAmount => crate::t("Decrease Audio Seek Amount"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::IncreaseAudioSpeed => crate::t("Increase Audio Speed"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::DecreaseAudioSpeed => crate::t("Decrease Audio Speed"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ToggleFullScreen => crate::t("Full Screen"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::Options => crate::t("Settings..."),
@@ -582,6 +592,10 @@ impl ActionId {
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),
 			Self::DecreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, ";")),
+			// Plain Shift+,/. (< and >) are already Container Start/End, so speed takes the
+			// same pair with Ctrl added.
+			Self::IncreaseAudioSpeed => Some(KeyChord::new(true, false, true, ".")),
+			Self::DecreaseAudioSpeed => Some(KeyChord::new(true, false, true, ",")),
 			// The conventional shortcut is Control+Command+F; RawCtrl forces the
 			// physical Control key while plain Ctrl auto-translates to Command on mac.
 			Self::ToggleFullScreen => {
@@ -686,6 +700,10 @@ impl ActionId {
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),
 			Self::DecreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, ";")),
+			// Plain Shift+,/. (< and >) are already Container Start/End, so speed takes the
+			// same pair with Ctrl added.
+			Self::IncreaseAudioSpeed => Some(KeyChord::new(true, false, true, ".")),
+			Self::DecreaseAudioSpeed => Some(KeyChord::new(true, false, true, ",")),
 			Self::ToggleFullScreen => Some(KeyChord::new(false, false, false, "F11")),
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),

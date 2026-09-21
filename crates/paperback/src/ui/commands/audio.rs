@@ -22,3 +22,11 @@ pub fn increase_seek_amount(ctx: &Ctx) {
 pub fn decrease_seek_amount(ctx: &Ctx) {
 	audio::handle_change_seek_amount(ctx.config, ctx.live_region_label, false);
 }
+
+pub fn increase_speed(ctx: &Ctx) {
+	audio::handle_change_audio_speed(ctx.dm, ctx.live_region_label, true);
+}
+
+pub fn decrease_speed(ctx: &Ctx) {
+	audio::handle_change_audio_speed(ctx.dm, ctx.live_region_label, false);
+}

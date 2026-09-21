@@ -29,6 +29,7 @@ pub mod m4b;
 pub mod man;
 pub mod markdown;
 pub mod mobi;
+pub mod mp3;
 mod odf_crypto;
 pub mod odp;
 pub mod odt;
@@ -152,6 +153,7 @@ impl ParserRegistry {
 				MAN => man::ManParser,
 				MARKDOWN => markdown::MarkdownParser,
 				M4B => m4b::M4bParser,
+				MP3 => mp3::Mp3Parser,
 				MOBI => mobi::MobiParser,
 				FODP => odp::FodpParser,
 				ODP => odp::OdpParser,

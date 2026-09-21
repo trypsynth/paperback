@@ -123,6 +123,7 @@ fn is_external_url_classifies_schemes(#[case] url: &str, #[case] expected: bool)
 #[case("m4b", true)]
 #[case(".M4B", true)]
 #[case("m4a", false)]
+#[case("mp3", true)]
 #[case("", false)]
 #[case(".", false)]
 #[case("notarealextension", false)]

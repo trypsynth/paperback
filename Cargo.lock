@@ -2520,6 +2520,7 @@ dependencies = [
  "patois",
  "patois-build",
  "rodio",
+ "rodio-wsola",
  "rstest",
  "ship-shape",
  "tar",
@@ -3133,6 +3134,15 @@ dependencies = [
  "symphonia",
  "thiserror 2.0.20",
  "tracing",
+]
+
+[[package]]
+name = "rodio-wsola"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7a9846f28f3dec5c369fa0bf68bfa35bff5017d71bcd52fd7f864df948ded73"
+dependencies = [
+ "rodio",
 ]
 
 [[package]]

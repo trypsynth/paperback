@@ -117,6 +117,51 @@ pub fn handle_seek_audio(
 	}
 }
 
+/// Nudges the active document's audio playback speed up or down by one step, and announces the
+/// new speed. Unlike the seek amount (a global setting), speed lives on the `AudioPlayer`
+/// itself, so this needs an active document with audio, like `handle_toggle_play_pause_audio`.
+pub fn handle_change_audio_speed(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+	increase: bool,
+) {
+	let mut dm = doc_manager.lock().unwrap();
+	let result = dm.active_tab_mut().and_then(|tab| tab.audio_player.as_mut()).map(|player| {
+		let before = player.speed();
+		let after = if increase { player.increase_speed() } else { player.decrease_speed() };
+		(after, (after - before).abs() < f32::EPSILON)
+	});
+	drop(dm);
+	let Some((speed, at_limit)) = result else {
+		// TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
+		live_region::announce(live_region_label, &t("This document has no audio."));
+		return;
+	};
+	let label = speed_label(speed);
+	let message = if at_limit && increase {
+		// TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+		t("{} (maximum)").replace("{}", &label)
+	} else if at_limit {
+		// TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+		t("{} (minimum)").replace("{}", &label)
+	} else {
+		label
+	};
+	live_region::announce(live_region_label, &message);
+}
+
+/// A human-readable label for a playback speed multiplier, e.g. `1.5x`, `1x`, `0.75x`.
+fn speed_label(speed: f32) -> String {
+	let mut label = format!("{speed:.2}");
+	while label.ends_with('0') {
+		label.pop();
+	}
+	if label.ends_with('.') {
+		label.pop();
+	}
+	format!("{label}x")
+}
+
 /// A human-readable label for one of `dialogs::AUDIO_SEEK_AMOUNTS_SECONDS`, matching the text
 /// shown for it in the Options dialog's seek-amount dropdown, for the live-region announcement
 /// made when the amount changes via keyboard shortcut.
