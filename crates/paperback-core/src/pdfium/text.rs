@@ -48,7 +48,7 @@ pub struct PdfTextPage<'page> {
 
 impl<'page> PdfTextPage<'page> {
 	pub(super) fn of(page: &'page PdfPage<'page>) -> Option<Self> {
-		let handle = bindings().FPDFText_LoadPage(page.handle());
+		let handle = unsafe { bindings().FPDFText_LoadPage(page.handle()) };
 		if handle.is_null() {
 			return None;
 		}
@@ -61,7 +61,7 @@ impl<'page> PdfTextPage<'page> {
 	/// page of pure picture really has no characters, while a count pdfium refuses means the
 	/// per-character reading is not available and the whole page has to be taken as one blob.
 	pub fn char_count(&self) -> Option<i32> {
-		let count = bindings().FPDFText_CountChars(self.handle);
+		let count = unsafe { bindings().FPDFText_CountChars(self.handle) };
 		(count >= 0).then_some(count)
 	}
 
@@ -77,7 +77,7 @@ impl<'page> PdfTextPage<'page> {
 		}
 		// One extra for the terminator pdfium always writes.
 		let mut buffer = vec![0u16; count as usize + 1];
-		let written = bindings().FPDFText_GetText(self.handle, start, count, buffer.as_mut_ptr());
+		let written = unsafe { bindings().FPDFText_GetText(self.handle, start, count, buffer.as_mut_ptr()) };
 		if written <= 0 {
 			return String::new();
 		}
@@ -86,30 +86,31 @@ impl<'page> PdfTextPage<'page> {
 	}
 
 	pub fn unicode_at(&self, index: i32) -> u32 {
-		bindings().FPDFText_GetUnicode(self.handle, index)
+		unsafe { bindings().FPDFText_GetUnicode(self.handle, index) }
 	}
 
 	/// Where the glyph at `index` sits, as the point its baseline starts from.
 	pub fn char_origin(&self, index: i32) -> Option<(f64, f64)> {
 		let mut x = 0.0;
 		let mut y = 0.0;
-		let ok = bindings().FPDFText_GetCharOrigin(self.handle, index, &mut x, &mut y);
+		let ok = unsafe { bindings().FPDFText_GetCharOrigin(self.handle, index, &mut x, &mut y) };
 		(ok != 0).then_some((x, y))
 	}
 
 	pub fn char_box(&self, index: i32) -> Option<CharBox> {
 		let (mut left, mut right, mut bottom, mut top) = (0.0, 0.0, 0.0, 0.0);
-		let ok = bindings().FPDFText_GetCharBox(self.handle, index, &mut left, &mut right, &mut bottom, &mut top);
+		let ok =
+			unsafe { bindings().FPDFText_GetCharBox(self.handle, index, &mut left, &mut right, &mut bottom, &mut top) };
 		(ok != 0).then_some(CharBox { left, right, bottom, top })
 	}
 
 	pub fn font_size(&self, index: i32) -> f64 {
-		bindings().FPDFText_GetFontSize(self.handle, index)
+		unsafe { bindings().FPDFText_GetFontSize(self.handle, index) }
 	}
 
 	pub fn text_matrix(&self, index: i32) -> Option<TextMatrix> {
 		let mut matrix = FS_MATRIX { a: 0.0, b: 0.0, c: 0.0, d: 0.0, e: 0.0, f: 0.0 };
-		let ok = bindings().FPDFText_GetMatrix(self.handle, index, &mut matrix);
+		let ok = unsafe { bindings().FPDFText_GetMatrix(self.handle, index, &mut matrix) };
 		(ok != 0).then_some(TextMatrix { a: matrix.a, b: matrix.b, c: matrix.c, d: matrix.d, e: matrix.e, f: matrix.f })
 	}
 
@@ -123,13 +124,15 @@ impl<'page> PdfTextPage<'page> {
 		let mut buffer = [0u8; NAME_LIMIT];
 		let mut flags: c_int = 0;
 		let capacity = c_ulong::try_from(buffer.len()).unwrap_or(c_ulong::MAX);
-		let written = bindings().FPDFText_GetFontInfo(
-			self.handle,
-			index,
-			buffer.as_mut_ptr().cast::<c_void>(),
-			capacity,
-			&mut flags,
-		) as usize;
+		let written = unsafe {
+			bindings().FPDFText_GetFontInfo(
+				self.handle,
+				index,
+				buffer.as_mut_ptr().cast::<c_void>(),
+				capacity,
+				&mut flags,
+			)
+		} as usize;
 		let end = written.saturating_sub(1);
 		if end == 0 || end > buffer.len() {
 			// No name, or one too long to have been written; the flags are still worth having.
@@ -141,24 +144,27 @@ impl<'page> PdfTextPage<'page> {
 	/// Whether pdfium invented this character rather than finding it in the content stream, as
 	/// it does for the spaces it infers between words that are merely far apart.
 	pub fn is_generated(&self, index: i32) -> bool {
-		bindings().FPDFText_IsGenerated(self.handle, index) == 1
+		(unsafe { bindings().FPDFText_IsGenerated(self.handle, index) }) == 1
 	}
 
 	/// The content-stream object that drew the glyph at `index`, which is what carries the
 	/// marked-content id linking it back to the tag tree.
 	pub fn text_object(&self, index: i32) -> Option<PageObject<'_>> {
-		PageObject::of(bindings().FPDFText_GetTextObject(self.handle, index))
+		PageObject::of(unsafe { bindings().FPDFText_GetTextObject(self.handle, index) })
 	}
 
 	/// The text inside a rectangle on the page, which is how a link annotation's words are read.
 	pub fn bounded_text(&self, left: f64, top: f64, right: f64, bottom: f64) -> String {
-		let needed = bindings().FPDFText_GetBoundedText(self.handle, left, top, right, bottom, std::ptr::null_mut(), 0);
+		let needed = unsafe {
+			bindings().FPDFText_GetBoundedText(self.handle, left, top, right, bottom, std::ptr::null_mut(), 0)
+		};
 		if needed <= 0 {
 			return String::new();
 		}
 		let mut buffer = vec![0u16; needed as usize];
-		let written =
-			bindings().FPDFText_GetBoundedText(self.handle, left, top, right, bottom, buffer.as_mut_ptr(), needed);
+		let written = unsafe {
+			bindings().FPDFText_GetBoundedText(self.handle, left, top, right, bottom, buffer.as_mut_ptr(), needed)
+		};
 		if written <= 0 {
 			return String::new();
 		}
@@ -169,21 +175,21 @@ impl<'page> PdfTextPage<'page> {
 
 	/// The URLs pdfium can find in the page's text, with the character range each covers.
 	pub fn web_links(&self) -> Vec<(i32, i32, String)> {
-		let handle = bindings().FPDFLink_LoadWebLinks(self.handle);
+		let handle = unsafe { bindings().FPDFLink_LoadWebLinks(self.handle) };
 		if handle.is_null() {
 			return Vec::new();
 		}
 		let links = WebLinks { handle };
-		let count = bindings().FPDFLink_CountWebLinks(links.handle);
+		let count = unsafe { bindings().FPDFLink_CountWebLinks(links.handle) };
 		let mut found = Vec::new();
 		for index in 0..count {
 			let mut start = 0;
 			let mut char_count = 0;
-			if bindings().FPDFLink_GetTextRange(links.handle, index, &mut start, &mut char_count) == 0 {
+			if unsafe { bindings().FPDFLink_GetTextRange(links.handle, index, &mut start, &mut char_count) } == 0 {
 				continue;
 			}
 			let mut url = vec![0u16; 2048];
-			let len = bindings().FPDFLink_GetURL(links.handle, index, url.as_mut_ptr(), 2048);
+			let len = unsafe { bindings().FPDFLink_GetURL(links.handle, index, url.as_mut_ptr(), 2048) };
 			if len <= 0 {
 				continue;
 			}
@@ -196,7 +202,7 @@ impl<'page> PdfTextPage<'page> {
 
 impl Drop for PdfTextPage<'_> {
 	fn drop(&mut self) {
-		bindings().FPDFText_ClosePage(self.handle);
+		unsafe { bindings().FPDFText_ClosePage(self.handle) };
 	}
 }
 
@@ -207,6 +213,6 @@ pub struct WebLinks {
 
 impl Drop for WebLinks {
 	fn drop(&mut self) {
-		bindings().FPDFLink_CloseWebLinks(self.handle);
+		unsafe { bindings().FPDFLink_CloseWebLinks(self.handle) };
 	}
 }

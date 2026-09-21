@@ -35,7 +35,7 @@ pub struct PdfPage<'doc> {
 
 impl<'doc> PdfPage<'doc> {
 	pub(super) fn load(document: &'doc PdfDocument, index: i32) -> Result<Self, PdfError> {
-		let handle = bindings().FPDF_LoadPage(document.handle(), index);
+		let handle = unsafe { bindings().FPDF_LoadPage(document.handle(), index) };
 		if handle.is_null() {
 			return Err(PdfError::Failed);
 		}
@@ -43,11 +43,11 @@ impl<'doc> PdfPage<'doc> {
 	}
 
 	pub fn width(&self) -> f32 {
-		bindings().FPDF_GetPageWidthF(self.handle)
+		unsafe { bindings().FPDF_GetPageWidthF(self.handle) }
 	}
 
 	pub fn height(&self) -> f32 {
-		bindings().FPDF_GetPageHeightF(self.handle)
+		unsafe { bindings().FPDF_GetPageHeightF(self.handle) }
 	}
 
 	/// The page's text layer, or `None` for a page that carries no text at all.
@@ -61,11 +61,11 @@ impl<'doc> PdfPage<'doc> {
 	}
 
 	pub fn object_count(&self) -> i32 {
-		bindings().FPDFPage_CountObjects(self.handle)
+		unsafe { bindings().FPDFPage_CountObjects(self.handle) }
 	}
 
 	pub fn object(&self, index: i32) -> Option<PageObject<'_>> {
-		PageObject::of(bindings().FPDFPage_GetObject(self.handle, index))
+		PageObject::of(unsafe { bindings().FPDFPage_GetObject(self.handle, index) })
 	}
 
 	/// Rasterizes the page `width` pixels across, keeping its aspect ratio, as RGBA8.
@@ -80,17 +80,16 @@ impl<'doc> PdfPage<'doc> {
 		}
 		let height = ((f64::from(width) * page_height) / page_width).round().max(1.0);
 		let (width, height) = (i32::try_from(width).ok()?, height as i32);
-
-		let bitmap = bindings().FPDFBitmap_CreateEx(width, height, BITMAP_BGRA, std::ptr::null_mut(), 0);
+		let bitmap = unsafe { bindings().FPDFBitmap_CreateEx(width, height, BITMAP_BGRA, std::ptr::null_mut(), 0) };
 		if bitmap.is_null() {
 			return None;
 		}
-		bindings().FPDFBitmap_FillRect(bitmap, 0, 0, width, height, WHITE);
-		bindings().FPDF_RenderPageBitmap(bitmap, self.handle, 0, 0, width, height, 0, 0);
-		let stride = bindings().FPDFBitmap_GetStride(bitmap);
-		let buffer = bindings().FPDFBitmap_GetBuffer(bitmap);
+		unsafe { bindings().FPDFBitmap_FillRect(bitmap, 0, 0, width, height, WHITE) };
+		unsafe { bindings().FPDF_RenderPageBitmap(bitmap, self.handle, 0, 0, width, height, 0, 0) };
+		let stride = unsafe { bindings().FPDFBitmap_GetStride(bitmap) };
+		let buffer = unsafe { bindings().FPDFBitmap_GetBuffer(bitmap) };
 		let rgba = bgra_to_rgba(buffer, width, height, stride);
-		bindings().FPDFBitmap_Destroy(bitmap);
+		unsafe { bindings().FPDFBitmap_Destroy(bitmap) };
 		let rgba = rgba?;
 		Some(PageBitmap { width: u32::try_from(width).ok()?, height: u32::try_from(height).ok()?, rgba })
 	}
@@ -103,17 +102,17 @@ impl<'doc> PdfPage<'doc> {
 	pub fn annotation_links(&self) -> Vec<AnnotationLink> {
 		let bindings = bindings();
 		let mut links = Vec::new();
-		for index in 0..bindings.FPDFPage_GetAnnotCount(self.handle) {
-			let annotation = bindings.FPDFPage_GetAnnot(self.handle, index);
+		for index in 0..unsafe { bindings.FPDFPage_GetAnnotCount(self.handle) } {
+			let annotation = unsafe { bindings.FPDFPage_GetAnnot(self.handle, index) };
 			if annotation.is_null() {
 				continue;
 			}
-			if bindings.FPDFAnnot_GetSubtype(annotation) == ANNOT_SUBTYPE_LINK
+			if unsafe { bindings.FPDFAnnot_GetSubtype(annotation) } == ANNOT_SUBTYPE_LINK
 				&& let Some(link) = self.link_of(annotation)
 			{
 				links.push(link);
 			}
-			bindings.FPDFPage_CloseAnnot(annotation);
+			unsafe { bindings.FPDFPage_CloseAnnot(annotation) };
 		}
 		links
 	}
@@ -121,29 +120,31 @@ impl<'doc> PdfPage<'doc> {
 	fn link_of(&self, annotation: FPDF_ANNOTATION) -> Option<AnnotationLink> {
 		let bindings = bindings();
 		let mut rect = FS_RECTF { left: 0.0, top: 0.0, right: 0.0, bottom: 0.0 };
-		if bindings.FPDFAnnot_GetRect(annotation, &raw mut rect) == 0 {
+		if unsafe { bindings.FPDFAnnot_GetRect(annotation, &raw mut rect) } == 0 {
 			return None;
 		}
-		let link = bindings.FPDFAnnot_GetLink(annotation);
+		let link = unsafe { bindings.FPDFAnnot_GetLink(annotation) };
 		if link.is_null() {
 			return None;
 		}
-		let action = bindings.FPDFLink_GetAction(link);
-		let target = if !action.is_null() && bindings.FPDFAction_GetType(action) == ACTION_URI {
-			utf8_out_param(|buffer, len| bindings.FPDFAction_GetURIPath(self.handle_document(), action, buffer, len))
-				.map(LinkTarget::Url)
+		let action = unsafe { bindings.FPDFLink_GetAction(link) };
+		let target = if !action.is_null() && unsafe { bindings.FPDFAction_GetType(action) } == ACTION_URI {
+			utf8_out_param(|buffer, len| unsafe {
+				bindings.FPDFAction_GetURIPath(self.handle_document(), action, buffer, len)
+			})
+			.map(LinkTarget::Url)
 		} else {
 			None
 		};
 		let target = target.or_else(|| {
-			let mut destination = bindings.FPDFLink_GetDest(self.handle_document(), link);
+			let mut destination = unsafe { bindings.FPDFLink_GetDest(self.handle_document(), link) };
 			if destination.is_null() && !action.is_null() {
-				destination = bindings.FPDFAction_GetDest(self.handle_document(), action);
+				destination = unsafe { bindings.FPDFAction_GetDest(self.handle_document(), action) };
 			}
 			if destination.is_null() {
 				return None;
 			}
-			let page = bindings.FPDFDest_GetDestPageIndex(self.handle_document(), destination);
+			let page = unsafe { bindings.FPDFDest_GetDestPageIndex(self.handle_document(), destination) };
 			(page >= 0).then_some(LinkTarget::Page(page))
 		})?;
 		Some(AnnotationLink {
@@ -178,7 +179,7 @@ pub struct AnnotationLink {
 
 impl Drop for PdfPage<'_> {
 	fn drop(&mut self) {
-		bindings().FPDF_ClosePage(self.handle);
+		unsafe { bindings().FPDF_ClosePage(self.handle) };
 	}
 }
 
@@ -249,7 +250,7 @@ impl PageObject<'_> {
 	}
 
 	pub fn kind(&self) -> ObjectKind {
-		let kind = bindings().FPDFPageObj_GetType(self.handle);
+		let kind = unsafe { bindings().FPDFPageObj_GetType(self.handle) };
 		if kind == FPDF_PAGEOBJ_IMAGE as i32 {
 			ObjectKind::Image
 		} else if kind == FPDF_PAGEOBJ_FORM as i32 {
@@ -261,32 +262,32 @@ impl PageObject<'_> {
 
 	pub fn bounds(&self) -> Option<Bounds> {
 		let (mut left, mut bottom, mut right, mut top) = (0.0, 0.0, 0.0, 0.0);
-		let ok = bindings().FPDFPageObj_GetBounds(self.handle, &mut left, &mut bottom, &mut right, &mut top);
+		let ok = unsafe { bindings().FPDFPageObj_GetBounds(self.handle, &mut left, &mut bottom, &mut right, &mut top) };
 		(ok != 0).then_some(Bounds { left, bottom, right, top })
 	}
 
 	/// How many objects a form XObject groups. Zero for anything else.
 	pub fn form_object_count(&self) -> i32 {
-		bindings().FPDFFormObj_CountObjects(self.handle)
+		unsafe { bindings().FPDFFormObj_CountObjects(self.handle) }
 	}
 
 	pub fn form_object(&self, index: i32) -> Option<PageObject<'_>> {
-		PageObject::of(bindings().FPDFFormObj_GetObject(self.handle, c_ulong::try_from(index).ok()?))
+		PageObject::of(unsafe { bindings().FPDFFormObj_GetObject(self.handle, c_ulong::try_from(index).ok()?) })
 	}
 
 	/// The marked-content id pdfium reports for this object, which is the outermost mark that
 	/// carries one.
 	pub fn marked_content_id(&self) -> Option<i32> {
-		let id = bindings().FPDFPageObj_GetMarkedContentID(self.handle);
+		let id = unsafe { bindings().FPDFPageObj_GetMarkedContentID(self.handle) };
 		(id >= 0).then_some(id)
 	}
 
 	pub fn mark_count(&self) -> i32 {
-		bindings().FPDFPageObj_CountMarks(self.handle)
+		unsafe { bindings().FPDFPageObj_CountMarks(self.handle) }
 	}
 
 	pub fn mark(&self, index: i32) -> Option<ObjectMark<'_>> {
-		let handle = bindings().FPDFPageObj_GetMark(self.handle, c_ulong::try_from(index).ok()?);
+		let handle = unsafe { bindings().FPDFPageObj_GetMark(self.handle, c_ulong::try_from(index).ok()?) };
 		if handle.is_null() {
 			return None;
 		}
@@ -305,7 +306,7 @@ impl ObjectMark<'_> {
 	/// An integer parameter on this mark, such as `MCID`.
 	pub fn param_int(&self, key: &str) -> Option<i32> {
 		let mut value = 0;
-		let ok = bindings().FPDFPageObjMark_GetParamIntValue(self.handle, key, &mut value);
+		let ok = unsafe { bindings().FPDFPageObjMark_GetParamIntValue(self.handle, key, &mut value) };
 		(ok != 0).then_some(value)
 	}
 }

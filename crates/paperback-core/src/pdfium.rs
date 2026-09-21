@@ -48,7 +48,20 @@ const FPDF_ERR_PASSWORD: c_ulong = 4;
 /// it in a framework, so the path is never known at compile time.
 static LIBRARY_PATH: Mutex<Option<String>> = Mutex::new(None);
 /// The loaded library. Binding runs once, on whichever call needs Pdfium first.
-static PDFIUM: OnceLock<Option<Pdfium>> = OnceLock::new();
+static PDFIUM: OnceLock<Option<Library>> = OnceLock::new();
+
+/// The bindings to the loaded library, held here rather than handed to `pdfium_render::Pdfium`.
+///
+/// This module talks to the raw bindings and never uses `Pdfium` itself. Handing the bindings to
+/// `Pdfium::new` would move them into a global that crate keeps private, with no way to get them
+/// back out.
+struct Library(Box<dyn PdfiumLibraryBindings>);
+
+// SAFETY: built with pdfium-render's `thread_safe` feature, which wraps the bindings so that
+// every call is serialized through one process-wide mutex. That is what makes it sound to share
+// them between the UI thread and the worker batch OCR renders on.
+unsafe impl Send for Library {}
+unsafe impl Sync for Library {}
 
 /// Points Pdfium at the library file to load, which must be called before anything opens a PDF.
 ///
@@ -65,10 +78,10 @@ pub fn set_library_path(path: &str) {
 /// Callers treat a failure here the same way they treat a corrupt file, so a reader without the
 /// library installed gets "this document could not be opened" rather than a crash.
 fn library() -> Option<&'static dyn PdfiumLibraryBindings> {
-	PDFIUM.get_or_init(bind_library).as_ref().map(Pdfium::bindings)
+	PDFIUM.get_or_init(bind_library).as_ref().map(|library| library.0.as_ref())
 }
 
-fn bind_library() -> Option<Pdfium> {
+fn bind_library() -> Option<Library> {
 	let configured = LIBRARY_PATH.lock().ok().and_then(|guard| guard.clone());
 	let bindings = match configured {
 		Some(path) => {
@@ -81,7 +94,12 @@ fn bind_library() -> Option<Pdfium> {
 		None => Pdfium::bind_to_system_library(),
 	};
 	match bindings {
-		Ok(bindings) => Some(Pdfium::new(bindings)),
+		Ok(bindings) => {
+			// Once, before any other call, as the library requires. Nothing in pdfium-render does
+			// this unless `Pdfium::new` is called, and it never is here.
+			unsafe { bindings.FPDF_InitLibrary() };
+			Some(Library(bindings))
+		}
 		Err(error) => {
 			tracing::error!(%error, "pdfium could not be loaded; pdf support is unavailable");
 			None
@@ -152,11 +170,11 @@ impl PdfDocument {
 	/// for a file that is not readable as a PDF.
 	pub fn open(path: &str, password: Option<&str>) -> Result<Self, PdfError> {
 		let Some(bindings) = library() else { return Err(PdfError::LibraryUnavailable) };
-		let handle = bindings.FPDF_LoadDocument(path, password);
+		let handle = unsafe { bindings.FPDF_LoadDocument(path, password) };
 		if !handle.is_null() {
 			return Ok(Self { handle, _bytes: None });
 		}
-		if bindings.FPDF_GetLastError() == FPDF_ERR_PASSWORD {
+		if unsafe { bindings.FPDF_GetLastError() } == FPDF_ERR_PASSWORD {
 			Err(PdfError::PasswordRequired)
 		} else {
 			Err(PdfError::CouldNotOpen)
@@ -174,9 +192,9 @@ impl PdfDocument {
 	/// The same failures as [`PdfDocument::open`].
 	pub fn from_bytes(bytes: Vec<u8>, password: Option<&str>) -> Result<Self, PdfError> {
 		let Some(bindings) = library() else { return Err(PdfError::LibraryUnavailable) };
-		let handle = bindings.FPDF_LoadMemDocument64(&bytes, password);
+		let handle = unsafe { bindings.FPDF_LoadMemDocument64(&bytes, password) };
 		if handle.is_null() {
-			return if bindings.FPDF_GetLastError() == FPDF_ERR_PASSWORD {
+			return if unsafe { bindings.FPDF_GetLastError() } == FPDF_ERR_PASSWORD {
 				Err(PdfError::PasswordRequired)
 			} else {
 				Err(PdfError::CouldNotOpen)
@@ -186,7 +204,7 @@ impl PdfDocument {
 	}
 
 	pub fn page_count(&self) -> i32 {
-		bindings().FPDF_GetPageCount(self.handle)
+		unsafe { bindings().FPDF_GetPageCount(self.handle) }
 	}
 
 	/// Loads one page, which stays borrowed from this document so it cannot outlive it.
@@ -201,7 +219,7 @@ impl PdfDocument {
 
 	/// One of the document's metadata fields, such as `Title` or `Author`.
 	pub fn metadata(&self, key: &str) -> Option<String> {
-		utf16_out_param(|buffer, len| bindings().FPDF_GetMetaText(self.handle, key, buffer, len))
+		utf16_out_param(|buffer, len| unsafe { bindings().FPDF_GetMetaText(self.handle, key, buffer, len) })
 	}
 
 	/// The bookmark outline, flattened depth-first with the nesting recorded as a level.
@@ -226,15 +244,18 @@ impl PdfDocument {
 		entries: &mut Vec<OutlineEntry>,
 	) {
 		let bindings = bindings();
-		let mut bookmark = bindings.FPDFBookmark_GetFirstChild(self.handle, parent);
+		let mut bookmark = unsafe { bindings.FPDFBookmark_GetFirstChild(self.handle, parent) };
 		while !bookmark.is_null() {
 			if !seen.insert(bookmark as usize) {
 				return;
 			}
-			let title = utf16_out_param(|buffer, len| bindings.FPDFBookmark_GetTitle(bookmark, buffer, len));
-			let destination = bindings.FPDFBookmark_GetDest(self.handle, bookmark);
-			let page =
-				if destination.is_null() { -1 } else { bindings.FPDFDest_GetDestPageIndex(self.handle, destination) };
+			let title = utf16_out_param(|buffer, len| unsafe { bindings.FPDFBookmark_GetTitle(bookmark, buffer, len) });
+			let destination = unsafe { bindings.FPDFBookmark_GetDest(self.handle, bookmark) };
+			let page = if destination.is_null() {
+				-1
+			} else {
+				unsafe { bindings.FPDFDest_GetDestPageIndex(self.handle, destination) }
+			};
 			if let Some(title) = title
 				&& page >= 0
 			{
@@ -243,7 +264,7 @@ impl PdfDocument {
 			if level + 1 < max_depth {
 				self.walk_outline(bookmark, level + 1, max_depth, seen, entries);
 			}
-			bookmark = bindings.FPDFBookmark_GetNextSibling(self.handle, bookmark);
+			bookmark = unsafe { bindings.FPDFBookmark_GetNextSibling(self.handle, bookmark) };
 		}
 	}
 
@@ -265,7 +286,7 @@ pub struct OutlineEntry {
 
 impl Drop for PdfDocument {
 	fn drop(&mut self) {
-		bindings().FPDF_CloseDocument(self.handle);
+		unsafe { bindings().FPDF_CloseDocument(self.handle) };
 	}
 }
 
