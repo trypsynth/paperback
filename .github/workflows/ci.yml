@@ -202,9 +202,7 @@ jobs:
       - name: Run tests
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
-          $env:RUST_BACKTRACE = "1"
-          Get-CimInstance Win32_SoundDevice | Format-Table Name, Status
-          cargo test -p paperback -- --test-threads=1 --nocapture
+          cargo test --workspace
   test-macos:
     name: Tests (macOS)
     runs-on: macos-latest
