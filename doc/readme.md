@@ -196,7 +196,23 @@ You can also swipe up or down on the play button to move by the navigation unit,
 
 ### More options
 
-The More Options menu has the table of contents, the elements list, Find, Go To, recent documents, word count, document info, export, the sleep timer, help, and settings. On iOS, the speech dictionary is in Settings.
+The More Options menu is where everything else lives. Some items work a little differently on each app.
+
+* **Switch to TTS Mode or Switch to Text Mode:** moves between read aloud mode and text mode, described above. Android also has a Read Aloud item that starts and pauses reading aloud.
+* **Table of Contents:** the book's chapters. Pick one to go straight to it. On Android, entries with chapters under them can be expanded and collapsed, using the screen reader's actions. On iOS, the whole list is shown at once.
+* **Elements:** a list of the document's headings or links. Switch between the two with the Type picker on iOS, or the tabs on Android, then pick one to go to it.
+* **Find:** type what to look for, and choose whether to match case, match whole words only, or use a regular expression. On Android, a bar with Find Previous and Find Next stays at the bottom of the screen until you close it, and earlier searches are under Search History. On iOS, the Find Previous and Find Next buttons are on the Find screen, and Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there.
+* **Go To:** jump to a line, a page, or a percentage through the document. Pick which with the Mode picker.
+* **Recent Documents:** every document you've opened, each marked as currently open, closed, or file missing. Each one has two screen reader actions: Remove takes it off the list, and Locate lets you find a document whose file has moved. Clear Recent Documents empties the list without deleting any documents.
+* **Word Count:** the number of words in the document.
+* **Document Info:** the title, the author, the file name, and on iOS the line and character counts too.
+* **Export:** saves the document as plain text, HTML, or Markdown.
+* **Sleep Timer:** stops reading after 5, 10, 15, 30, 45, or 60 minutes, or a time of your own. Open it again while it's running to see how long is left, or to cancel it.
+* **Help:** opens this readme.
+* **Settings:**
+    * **Text to speech:** the voice, speech rate, and pitch, a Play Sample button to hear them, and the pause between paragraphs. Android also lets you pick the speech engine. On iOS, this is also where the speech dictionary is: rules that change how words are spoken, for every voice or just some.
+    * **Readability:** text size, line spacing, paragraph spacing, and alignment. iOS also has light and dark appearance, and high contrast text.
+    * **Behavior:** whether to reopen your documents when the app starts, which way a swipe on the play button moves, and whether to hide the previous and next buttons. Android also has the in-app file browser here.
 
 ### Keyboards and headsets
 
