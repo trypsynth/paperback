@@ -39,11 +39,26 @@ fn main() {
 	// This needs to be called before WX initializes to properly take effect.
 	#[cfg(target_os = "macos")]
 	promote_unbundled_to_regular_app();
+	#[cfg(target_os = "windows")]
+	pin_rich_edit();
 	let _ = wxdragon::main(|app| {
 		let _ = set_appearance(Appearance::System);
 		let app_state = PaperbackApp::new(app);
 		let _ = Box::leak(Box::new(app_state));
 	});
+}
+
+/// Keeps the rich edit library loaded until the process ends.
+///
+/// At exit wxWidgets frees the rich edit library before it shuts COM down. A screen reader still holds
+/// accessibility objects that live in that library, so COM's shutdown then calls into unloaded
+/// code and the process crashes. Holding a reference of our own means wx's free never unloads it.
+#[cfg(target_os = "windows")]
+fn pin_rich_edit() {
+	use windows::{Win32::System::LibraryLoader::LoadLibraryW, core::w};
+	if let Err(e) = unsafe { LoadLibraryW(w!("msftedit.dll")) } {
+		tracing::warn!(error = %e, "could not pin msftedit.dll");
+	}
 }
 
 #[cfg(target_os = "macos")]
