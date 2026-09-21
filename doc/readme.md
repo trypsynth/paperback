@@ -1,8 +1,8 @@
-# Paperback - version 0.9.2
+# Paperback - version 1.0
 
 ## Introduction
 
-Paperback is a lightweight, fast, and accessible ebook and document reader for everyone, from casual readers to heavy power users. It's designed for screen reader accessibility, fast speeds, and a bloat-free experience.
+Paperback is a lightweight, fast, and accessible reader for ebooks, documents, and audio books, for everyone, from casual readers to heavy power users. It's designed for screen reader accessibility, fast speeds, and a bloat-free experience.
 
 ## System Requirements
 
@@ -19,6 +19,11 @@ Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iO
 * Includes a robust find dialog, including features such as history and regular expression support.
 * Can be run entirely portably, or installed with file associations automatically set up.
 * Supports a massive array of common file formats.
+* Plays audio books, with adjustable speed and bookmarks that remember the exact time.
+* Reads scanned PDF pages with the OCR built into Windows and macOS.
+* Bookmarks and notes, so you can mark your place and come back to it.
+* Every keyboard shortcut can be changed.
+* Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text.
 
 ## Screen Reader Compatibility
 
@@ -133,14 +138,17 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+Shift+B`: Toggle bookmark at the current selection/cursor.
 * `Ctrl+Shift+N`: Add or edit bookmark note at the current selection/cursor.
 * `Ctrl+Alt+W`: Toggle word wrap.
-* `Ctrl+Space`: Play/pause audio narration.
+* `Ctrl+Space` (macOS: `RawCtrl+Space`, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.
 * `'`: Seek audio narration forward.
 * `;`: Seek audio narration backward.
-* `Ctrl+'`: Increase the audio seek amount.
-* `Ctrl+;`: Decrease the audio seek amount.
+* `Shift+'`: Increase the audio seek amount.
+* `Shift+;`: Decrease the audio seek amount.
+* `Ctrl+Shift+.`: Speed up audio narration.
+* `Ctrl+Shift+,`: Slow down audio narration.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, i.e. Control+Command+F): Toggle full screen.
-* `Ctrl+,`: Open options (macOS: Preferences, under the app menu).
+* `Ctrl+,`: Open Settings (macOS: under the app menu).
 * `Ctrl+Shift+S`: Toggle sleep timer.
+* `Ctrl+Shift+O`: Recognize a range of scanned PDF pages with OCR.
 * `Alt+F9` (macOS: `Cmd+F9`): Mark the beginning of a selection, so everything from here to wherever you get to can be copied in one go.
 * `Alt+F10` (macOS: `Cmd+F10`): Copy everything from the marked beginning of the selection to the current position.
 * `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Jump back to the marked beginning of the selection, leaving the mark in place.
@@ -157,7 +165,44 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 
 * `Delete` / `Numpad Delete` on the tab control: Close the selected document tab.
 * `Enter` or `Space` in the document text: Follow a link or open a table or formula view at the cursor.
+* `Enter` on a scanned PDF page: Recognize the page with OCR.
 * `Shift+F10` or the Menu/Application key in the document text: Open the context menu.
+
+## iOS and Android
+
+The iOS and Android apps use the same reading engine as the desktop, so they open the same formats and remember your place the same way. They are built to be used with VoiceOver on iOS and TalkBack on Android.
+
+### Opening documents
+
+* Use the Open Book button, or open a document from the Files app or another app and choose Paperback.
+* On Android, you can turn on the in-app file browser in Settings instead. It needs the All Files Access permission, and opens large files straight away instead of copying them first.
+* Long-press the Open Book button to import or export a document's data (`.paperback`), the same files the desktop app uses.
+
+### Reading and listening
+
+Each app has two ways to read a document. In text mode, you read the text with your screen reader. In read aloud mode, Paperback reads the text to you with the voice you pick in Settings, and keeps going in the background and from the lock screen. Switch between them from the More Options menu.
+
+Audio books, like DAISY, M4B, and MP3 books, play their own recording instead.
+
+### The reading bar
+
+The bar at the bottom of the screen has, from left to right:
+
+* The navigation unit, such as paragraph, heading, page, or link. Swipe up or down on it to change it.
+* Previous, play, and next buttons. Previous and next move by the navigation unit.
+* The speech rate. Swipe up or down on it to change how fast Paperback reads.
+
+You can also swipe up or down on the play button to move by the navigation unit, without reaching for the previous and next buttons. If that is all you use, the Hide previous and next buttons setting takes them out of your screen reader's way. The Swipe up moves forward setting picks which way a swipe goes.
+
+### More options
+
+The More Options menu has the table of contents, the elements list, Find, Go To, recent documents, word count, document info, export, the sleep timer, help, and settings. On iOS, the speech dictionary is in Settings.
+
+### Keyboards and headsets
+
+On Android with a keyboard, the desktop shortcuts for opening books, Find, Go To, the table of contents, word count, document info, export, and the sleep timer all work, and so do the single-letter keys for moving by heading, page, link, and the rest. `Space` plays and pauses.
+
+On Android, a headset button plays and pauses with one press, moves forward with two, and goes back with three.
 
 ## Supported languages
 
@@ -178,6 +223,7 @@ To learn how to contribute, please read our [Translation Guide](translating.md).
 * Simplified Chinese
 * Serbian
 * Spanish
+* Ukrainian
 * Vietnamese
 
 ## Credits
