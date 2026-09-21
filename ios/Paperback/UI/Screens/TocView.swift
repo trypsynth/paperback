@@ -76,6 +76,10 @@ private struct TocTree: View {
 		let isExpanded = expanded.contains(index)
 		// TRANSLATORS: VoiceOver value of a table of contents entry, saying whether its children are shown
 		let expansionState = isParent ? (isExpanded ? t("Expanded") : t("Collapsed")) : ""
+		// TRANSLATORS: VoiceOver description of a table of contents entry: its title, then how deep it sits
+		let template = t("{}, Level {}")
+		let withTitle = template.range(of: "{}").map { template.replacingCharacters(in: $0, with: entry.title) } ?? template
+		let spokenLabel = withTitle.replacingOccurrences(of: "{}", with: "\(entry.level + 1)")
 		return HStack(spacing: 8) {
 			if isParent {
 				Button {
@@ -104,6 +108,8 @@ private struct TocTree: View {
 				.contentShape(Rectangle())
 			}
 			.buttonStyle(.plain)
+			// The row's indentation shows the level on screen, so the number itself is spoken rather than drawn.
+			.accessibilityLabel(spokenLabel)
 			.accessibilityAddTraits(isActive ? .isSelected : [])
 			.accessibilityValue(expansionState)
 			.accessibilityActions {
