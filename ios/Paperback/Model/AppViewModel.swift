@@ -115,6 +115,11 @@ final class AppViewModel {
 		let savedPitch = configManager.getAppString(key: "tts_pitch", defaultValue: "")
 		if let p = Float(savedPitch) { ttsManager.pitch = p }
 
+		let savedPause = configManager.getAppString(key: "tts_paragraph_pause_ms", defaultValue: "")
+		if let ms = Int(savedPause) {
+			ttsManager.paragraphPauseMs = min(max(ms, paragraphPauseRangeMs.lowerBound), paragraphPauseRangeMs.upperBound)
+		}
+
 		let savedVoice = configManager.getAppString(key: "tts_voice_identifier", defaultValue: "")
 		if !savedVoice.isEmpty { ttsManager.selectedVoiceIdentifier = savedVoice }
 
@@ -125,6 +130,9 @@ final class AppViewModel {
 		}
 		ttsManager.onPitchChanged = { [weak self] pitch in
 			self?.configManager.setAppString(key: "tts_pitch", value: "\(pitch)")
+		}
+		ttsManager.onParagraphPauseChanged = { [weak self] ms in
+			self?.configManager.setAppString(key: "tts_paragraph_pause_ms", value: "\(ms)")
 		}
 		ttsManager.onVoiceChanged = { [weak self] identifier in
 			self?.configManager.setAppString(key: "tts_voice_identifier", value: identifier ?? "")

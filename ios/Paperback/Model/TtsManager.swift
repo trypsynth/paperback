@@ -20,23 +20,10 @@ func applyRules(_ rules: [TtsRule], to text: String, voiceId: String?) -> String
 	return result
 }
 
-/// How long a silence to leave between paragraphs at the default speech rate.
-let paragraphPauseSeconds = 0.4
-/// The shortest and longest that pause is allowed to become once scaled by the rate, so the ends
-/// of the slider stay usable: no gap at all at the top, and a silence long enough to wonder about
-/// at the bottom.
-let paragraphPauseRange = 0.12...0.9
-
-/// The paragraph pause at `rate`, scaled so it stays in proportion to the speech.
-///
-/// A fixed silence does not work across the whole range. Four hundred milliseconds reads as a
-/// paragraph break at the default rate, as dead air to somebody reading at twice that, and as
-/// barely a breath to somebody reading at half.
-func paragraphPause(atRate rate: Float) -> Double {
-	let speed = Double(rate / AVSpeechUtteranceDefaultSpeechRate)
-	guard speed > 0 else { return paragraphPauseRange.upperBound }
-	return min(max(paragraphPauseSeconds / speed, paragraphPauseRange.lowerBound), paragraphPauseRange.upperBound)
-}
+/// The silence the reader can add between paragraphs, in milliseconds, and how far one press of
+/// the setting moves it.
+let paragraphPauseRangeMs = 0...2000
+let paragraphPauseStepMs = 50
 
 /// The engine rate a whole-number slider percentage stands for. A stored value from outside the
 /// slider's own range is brought back inside it rather than handed to the engine as-is.
@@ -79,7 +66,8 @@ final class TtsManager: NSObject {
 	// completion handler as "stale", permanently desyncing playback from position tracking.
 	private var armedBox: GenBox? = nil
 	private var armedText: String? = nil
-	// Set when the rate, pitch, voice or rules change while a buffer is already armed. That
+	// Set when a speech setting (rate, pitch, voice, paragraph pause or rules) changes while a
+	// buffer is already armed. That
 	// buffer was synthesized under the old settings, and once handed to the player node it
 	// cannot be taken back, so it is dropped at the paragraph boundary instead (see `speak`).
 	private var armedIsStale = false
@@ -134,6 +122,19 @@ final class TtsManager: NSObject {
 			onPitchChanged?(pitch)
 		}
 	}
+	/// Extra silence after each paragraph, in milliseconds. Zero, the default, adds none.
+	///
+	/// Paragraphs are synthesized one at a time and played back to back, so the only gap between
+	/// them is whatever tail the voice leaves. How long that is depends entirely on the voice:
+	/// Eloquence leaves a clear break and wants nothing added, while the Vocalizer voices leave
+	/// barely more than a comma's worth. No single value suits both, so it is left to the reader.
+	var paragraphPauseMs: Int = 0 {
+		didSet {
+			guard oldValue != paragraphPauseMs else { return }
+			invalidatePrefetch()
+			onParagraphPauseChanged?(paragraphPauseMs)
+		}
+	}
 	var selectedVoiceIdentifier: String? = nil {
 		didSet {
 			guard oldValue != selectedVoiceIdentifier else { return }
@@ -151,6 +152,7 @@ final class TtsManager: NSObject {
 	@ObservationIgnored var onSpeechRateChanged: ((Float) -> Void)?
 	@ObservationIgnored var onPitchChanged: ((Float) -> Void)?
 	@ObservationIgnored var onVoiceChanged: ((String?) -> Void)?
+	@ObservationIgnored var onParagraphPauseChanged: ((Int) -> Void)?
 	@ObservationIgnored var rules: [TtsRule] = [] {
 		didSet { invalidatePrefetch() }
 	}
@@ -354,8 +356,7 @@ final class TtsManager: NSObject {
 		// (see armNextBuffer) — it's already audibly playing (or about to be). Just assign it
 		// the generation it's now logically current under; no re-scheduling needed.
 		//
-		// Unless it is stale, meaning the rate, pitch, voice or rules changed after it was
-		// synthesized. Then it is deliberately not claimed: falling through stops the node,
+		// Unless it is stale, meaning a speech setting changed after it was synthesized. Then it is deliberately not claimed: falling through stops the node,
 		// which drops it a few milliseconds in, and the paragraph is taken instead from the
 		// queue that was re-synthesized under the new settings. That trades a blip at one
 		// paragraph boundary for the change being heard on the next paragraph rather than the
@@ -680,21 +681,15 @@ final class TtsManager: NSObject {
 		joinAndConvert(buffers).flatMap(withParagraphPause)
 	}
 
-	/// Appends a paragraph's worth of silence to a finished paragraph.
+	/// Appends the reader's paragraph pause to a finished paragraph, or returns it untouched when
+	/// the pause is zero.
 	///
-	/// Paragraphs are synthesized one at a time and played back to back, so on their own they
-	/// run together: whatever small tail the voice leaves is all that separates them, which
-	/// lands somewhere between a comma and a full stop and is far too short for a paragraph
-	/// break. Adding the silence here rather than asking for it through `postUtteranceDelay`
-	/// keeps it the same length whichever voice is speaking, and keeps it inside the buffer so
-	/// it survives the gapless hand-off to the next paragraph.
-	///
-	/// The length is taken from the rate this paragraph was synthesized at, which is the rate it
-	/// will be read at: a change to the rate re-synthesizes everything queued behind it, so the
-	/// pause is always the one that belongs to the speech it follows.
+	/// Done inside the buffer rather than through `postUtteranceDelay` so the silence survives
+	/// the gapless hand-off to the next paragraph. A change to the setting re-synthesizes
+	/// everything queued, so every paragraph carries the pause that was set when it was read.
 	private func withParagraphPause(_ buffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
 		let format = buffer.format
-		let silenceFrames = AVAudioFrameCount(format.sampleRate * paragraphPause(atRate: speechRate))
+		let silenceFrames = AVAudioFrameCount(format.sampleRate * Double(paragraphPauseMs) / 1000)
 		guard silenceFrames > 0,
 			let padded = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: buffer.frameLength + silenceFrames),
 			let source = buffer.floatChannelData,
