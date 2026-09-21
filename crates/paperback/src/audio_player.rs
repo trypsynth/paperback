@@ -495,6 +495,20 @@ mod tests {
 
 	use super::*;
 
+	/// Held by every test that opens the audio device, so they take turns with it.
+	///
+	/// The device is kept per thread (see `AUDIO_DEVICE`), which suits the app, where only the UI
+	/// thread plays audio. The test harness runs each test on a thread of its own, so without this
+	/// every audio test opens its own output stream at the same moment, and on the Windows CI
+	/// runner that crashes the whole test binary with an access violation rather than failing.
+	static DEVICE: Mutex<()> = Mutex::new(());
+
+	fn take_the_device() -> std::sync::MutexGuard<'static, ()> {
+		// A test that panics while holding this poisons it. The next test still wants the device,
+		// and nothing the lock guards can be left half-changed, so the poison is ignored.
+		DEVICE.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+	}
+
 	fn write_zip(name: &str, data: &[u8]) -> Vec<u8> {
 		let mut buf = Vec::new();
 		{
@@ -550,6 +564,7 @@ mod tests {
 	/// is most CI runners.
 	#[test]
 	fn plays_a_timeline_through_to_the_next_source() {
+		let _device = take_the_device();
 		if shared_device().is_err() {
 			eprintln!("no audio output device: skipping");
 			return;
@@ -598,6 +613,7 @@ mod tests {
 	/// already in development (position jumped instead of staying put).
 	#[test]
 	fn changing_speed_mid_playback_does_not_jump_the_position() {
+		let _device = take_the_device();
 		if shared_device().is_err() {
 			eprintln!("no audio output device: skipping");
 			return;
@@ -636,6 +652,7 @@ mod tests {
 	/// file" seeking needs and what a document's own declared duration can't be trusted for.
 	#[test]
 	fn reports_the_loaded_files_own_length() {
+		let _device = take_the_device();
 		if shared_device().is_err() {
 			eprintln!("no audio output device: skipping");
 			return;
@@ -658,6 +675,7 @@ mod tests {
 
 	#[test]
 	fn speed_steps_and_clamps_at_both_ends() {
+		let _device = take_the_device();
 		if shared_device().is_err() {
 			eprintln!("no audio output device: skipping");
 			return;
