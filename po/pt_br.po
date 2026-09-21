@@ -3726,7 +3726,7 @@ msgstr "Os documentos que você abrir aparecerão aqui."
 #: swift
 #, fuzzy
 msgid "Text to Speech"
-msgstr "Sintetização de Fala"
+msgstr "Síntese de Fala"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: swift
@@ -4559,7 +4559,7 @@ msgstr "Usar o navegador de arquivos do aplicativo (requer a permissão “Todos
 #: kt
 #, fuzzy
 msgid "Text-to-Speech"
-msgstr "Sintetização de Fala"
+msgstr "Síntese de Fala"
 
 #. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
