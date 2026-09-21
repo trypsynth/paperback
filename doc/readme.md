@@ -331,8 +331,8 @@ The iOS and Android apps open every format the desktop does, and include:
 * Read aloud, with your choice of voice, rate and pitch, a speech rate control right on the reading bar, and an optional pause between paragraphs.
 * Playback of DAISY, M4B and MP3 audio books, which keeps going in the background and from the lock screen.
 * Navigation by headings, pages, links, tables, lists and more from the reading bar, plus the table of contents and Find.
-* A speech dictionary, a sleep timer, word count, and document export.
-* Appearance options for text size, spacing and contrast.
+* A sleep timer, word count, and document export, plus a speech dictionary on iOS.
+* Text size and spacing options, plus high contrast text on iOS.
 * Keyboard shortcuts on Android that match the desktop.
 
 ### Version 0.9.2
