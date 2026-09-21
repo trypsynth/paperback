@@ -4537,7 +4537,7 @@ msgstr "Đọc to"
 #: kt
 #, fuzzy
 msgid "Export As"
-msgstr "Xuất As"
+msgstr "Xuất dưới dạng"
 
 #. TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
 #: kt
