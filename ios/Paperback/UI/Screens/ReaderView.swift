@@ -39,7 +39,14 @@ struct ReaderView: View {
 			Button(t("OK"), role: .cancel) { }
 		} message: {
 			if let stats = viewModel.activeSession?.getStatsFfi() {
-				Text("This document contains \(stats.wordCount.formatted()) words.")
+				// TRANSLATORS: The document's word count; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+				let sentence = nt(
+					t("This document contains {} word."),
+					t("This document contains {} words."),
+					t("This document contains {} words.⁣"),
+					Int(stats.wordCount)
+				)
+				Text(sentence.replacingOccurrences(of: "{}", with: stats.wordCount.formatted()))
 			}
 		}
 		.sheet(isPresented: $navigation.showDocumentInfo) {

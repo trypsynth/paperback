@@ -243,7 +243,7 @@ fun MainScreenTopBar(
 					add(
 						MenuAction(
 							// TRANSLATORS: Menu item / accessibility action to show metadata (title, author, etc.) about the current document
-							t("Document Information"),
+							t("Document Info"),
 							onDocumentInfoOpen
 						)
 					)

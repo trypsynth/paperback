@@ -28,8 +28,8 @@ struct DocumentInfoSheet: View {
 							infoRow(t("Author"), value: author)
 						}
 						Divider().padding(.leading, 16)
-						// TRANSLATORS: Row label for the document's file name/path in the Document Info sheet
-						infoRow(t("File"), value: viewModel.activeTab?.url.lastPathComponent ?? "—")
+						// TRANSLATORS: Label for the document's file name in the Document Information dialog
+						infoRow(t("File Name"), value: viewModel.activeTab?.url.lastPathComponent ?? "—")
 						Divider().padding(.leading, 16)
 						// TRANSLATORS: Row label for the document's total word count
 						infoRow(t("Words"), value: stats.wordCount.formatted())
@@ -46,8 +46,8 @@ struct DocumentInfoSheet: View {
 						// TRANSLATORS: Row label for the document's title in the Document Info sheet, shown when no document is open
 						infoRow(t("Title"), value: viewModel.activeTab?.title ?? "—")
 						Divider().padding(.leading, 16)
-						// TRANSLATORS: Row label for the document's file name/path in the Document Info sheet, shown when no document is open
-						infoRow(t("File"), value: viewModel.activeTab?.url.lastPathComponent ?? "—")
+						// TRANSLATORS: Label for the document's file name in the Document Information dialog
+						infoRow(t("File Name"), value: viewModel.activeTab?.url.lastPathComponent ?? "—")
 					}
 				}
 				.background(Color(.secondarySystemBackground))
