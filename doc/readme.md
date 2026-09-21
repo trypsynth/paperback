@@ -200,7 +200,7 @@ The More Options menu has the table of contents, the elements list, Find, Go To,
 
 ### Keyboards and headsets
 
-On Android with a keyboard, the desktop shortcuts for opening books, Find, Go To, the table of contents, word count, document info, export, and the sleep timer all work, and so do the single-letter keys for moving by heading, page, link, and the rest. `Space` plays and pauses.
+With a keyboard, the desktop shortcuts for opening books, recent documents, Find, Go To, the table of contents, word count, document info, export, and the sleep timer all work, using `Cmd` in place of `Ctrl` on iOS. So do the single-letter keys for moving by heading, page, link, and the rest, and `Space` plays and pauses. On iOS, the single-letter keys only reach Paperback while VoiceOver's single-letter Quick Nav is off.
 
 On Android, a headset button plays and pauses with one press, moves forward with two, and goes back with three.
 
@@ -309,7 +309,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Any document can now be opened in the web view, not only EPUB, HTML and Markdown.
 
 ##### Readability
-* Headings are now drawn larger the higher their level, and images and tables are set apart from the text around them.
+* Headings are now drawn at a size that matches their level, and images and tables are set apart from the text around them.
 
 ##### pb
 * `pb --list-formats` lists every format pb can read.
@@ -379,7 +379,7 @@ The iOS and Android apps open every format the desktop does, and include:
 * Navigation by headings, pages, links, tables, lists and more from the reading bar, plus the table of contents and Find.
 * A sleep timer, word count, and document export, plus a speech dictionary on iOS.
 * Text size and spacing options, plus high contrast text on iOS.
-* Keyboard shortcuts on Android that match the desktop.
+* Keyboard shortcuts that match the desktop.
 
 ### Version 0.9.2
 * Audio books no longer make your screen reader read out a run of spaces when you focus the text field.
