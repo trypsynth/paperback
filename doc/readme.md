@@ -199,9 +199,9 @@ You can also swipe up or down on the play button to move by the navigation unit,
 The More Options menu is where everything else lives. Some items work a little differently on each app.
 
 * **Switch to TTS Mode or Switch to Text Mode:** moves between read aloud mode and text mode, described above. Android also has a Read Aloud item that starts and pauses reading aloud.
-* **Table of Contents:** the book's chapters. Pick one to go straight to it. On Android, entries with chapters under them can be expanded and collapsed, using the screen reader's actions. On iOS, the whole list is shown at once.
+* **Table of Contents:** the book's chapters, opened at the one you're reading. Pick one to go straight to it. Entries with chapters under them can be expanded and collapsed with the screen reader's actions.
 * **Elements:** a list of the document's headings or links. Switch between the two with the Type picker on iOS, or the tabs on Android, then pick one to go to it.
-* **Find:** type what to look for, and choose whether to match case, match whole words only, or use a regular expression. On Android, a bar with Find Previous and Find Next stays at the bottom of the screen until you close it, and earlier searches are under Search History. On iOS, the Find Previous and Find Next buttons are on the Find screen, and Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there.
+* **Find:** type what to look for, or pick an earlier search from Search History, and choose whether to match case, match whole words only, or use a regular expression. Find Previous and Find Next jump to a match and say where it landed, and Find stays open so you can keep going. In read aloud mode, Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there too.
 * **Go To:** jump to a line, a page, or a percentage through the document. Pick which with the Mode picker.
 * **Recent Documents:** every document you've opened, each marked as currently open, closed, or file missing. Each one has two screen reader actions: Remove takes it off the list, and Locate lets you find a document whose file has moved. Clear Recent Documents empties the list without deleting any documents.
 * **Word Count:** the number of words in the document.
@@ -211,7 +211,7 @@ The More Options menu is where everything else lives. Some items work a little d
 * **Help:** opens this readme.
 * **Settings:**
     * **Text to speech:** the voice, speech rate, and pitch, a Play Sample button to hear them, and the pause between paragraphs. Android also lets you pick the speech engine. On iOS, this is also where the speech dictionary is: rules that change how words are spoken, for every voice or just some.
-    * **Readability:** text size, line spacing, paragraph spacing, and alignment. iOS also has light and dark appearance, and high contrast text.
+    * **Readability:** text size, line spacing, paragraph spacing, alignment, and high contrast text. iOS also has light and dark appearance.
     * **Behavior:** whether to reopen your documents when the app starts, which way a swipe on the play button moves, and whether to hide the previous and next buttons. Android also has the in-app file browser here.
 
 ### Keyboards and headsets
@@ -394,7 +394,7 @@ The iOS and Android apps open every format the desktop does, and include:
 * Playback of DAISY, M4B and MP3 audio books, which keeps going in the background and from the lock screen.
 * Navigation by headings, pages, links, tables, lists and more from the reading bar, plus the table of contents and Find.
 * A sleep timer, word count, and document export, plus a speech dictionary on iOS.
-* Text size and spacing options, plus high contrast text on iOS.
+* Text size, spacing, and high contrast text options.
 * Keyboard shortcuts that match the desktop.
 
 ### Version 0.9.2
