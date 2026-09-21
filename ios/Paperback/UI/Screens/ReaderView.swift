@@ -3,7 +3,6 @@ import UniformTypeIdentifiers
 
 struct ReaderView: View {
 	@Environment(AppViewModel.self) private var viewModel
-	@State private var showFilePicker = false
 
 	var body: some View {
 		@Bindable var navigation = viewModel.navigation
@@ -64,7 +63,7 @@ struct ReaderView: View {
 			PasswordSheet().environment(viewModel)
 		}
 		.fileImporter(
-			isPresented: $showFilePicker,
+			isPresented: $navigation.showFilePicker,
 			allowedContentTypes: [.item],
 			allowsMultipleSelection: false
 		) { result in
@@ -92,7 +91,7 @@ struct ReaderView: View {
 				TtsModeView()
 			}
 		} else {
-			EmptyStateView(onOpenFile: { showFilePicker = true })
+			EmptyStateView(onOpenFile: { viewModel.navigation.showFilePicker = true })
 		}
 	}
 
@@ -122,7 +121,7 @@ struct ReaderView: View {
 	@ToolbarContentBuilder
 	private var readerToolbar: some ToolbarContent {
 		ToolbarItemGroup(placement: .topBarTrailing) {
-			Button { showFilePicker = true } label: {
+			Button { viewModel.navigation.showFilePicker = true } label: {
 				Image(systemName: "folder")
 			}
 			// TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document

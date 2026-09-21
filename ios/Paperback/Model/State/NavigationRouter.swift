@@ -18,5 +18,6 @@ final class NavigationRouter {
 	var showExportDocument = false
 	var showSleepTimer = false
 	var showElements = false
+	var showFilePicker = false
 	var passwordPromptUrl: URL? = nil
 }
