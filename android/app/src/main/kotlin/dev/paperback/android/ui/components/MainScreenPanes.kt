@@ -12,12 +12,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 import dev.paperback.android.ui.state.RecentDocumentItem
@@ -91,7 +91,7 @@ fun NoDocumentPane(
 @Composable
 fun ReadAloudPane(
 	segmentText: String,
-	textStyle: TextStyle,
+	readability: ReadabilityStyle,
 	progressPercent: Int?,
 	sleepTimerRemaining: Int?,
 	onCancelSleepTimer: () -> Unit
@@ -107,12 +107,12 @@ fun ReadAloudPane(
 		Surface(
 			modifier = Modifier.fillMaxWidth().weight(1f, fill = false),
 			shape = MaterialTheme.shapes.large,
-			color = MaterialTheme.colorScheme.surfaceContainerHigh,
+			color = readability.background.takeOrElse { MaterialTheme.colorScheme.surfaceContainerHigh },
 			contentColor = MaterialTheme.colorScheme.onSurface
 		) {
 			Text(
 				text = segmentText,
-				style = textStyle,
+				style = readability.textStyle,
 				modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp)
 			)
 		}

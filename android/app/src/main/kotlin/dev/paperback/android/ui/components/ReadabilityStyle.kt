@@ -1,9 +1,11 @@
 package dev.paperback.android.ui.components
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -12,13 +14,32 @@ import androidx.compose.ui.unit.dp
 
 /**
  * The reader's readability preferences, resolved into the values a text view needs: a [TextStyle]
- * carrying size, line height and alignment, and the padding to put above and below each paragraph.
+ * carrying size, line height, alignment and colour, the padding to put above and below each
+ * paragraph, and the page colour behind the text.
+ *
+ * [background] is [Color.Unspecified] unless high contrast is on, which leaves the theme's own
+ * surface showing through.
  */
 @Immutable
 data class ReadabilityStyle(
 	val textStyle: TextStyle,
-	val paragraphSpacing: Dp
+	val paragraphSpacing: Dp,
+	val background: Color = Color.Unspecified
 )
+
+/** The text and page colours of high contrast: black on white, or white on black in the dark theme. */
+@Immutable
+data class HighContrastColors(
+	val text: Color,
+	val background: Color
+)
+
+fun highContrastColors(darkTheme: Boolean): HighContrastColors =
+	if (darkTheme) {
+		HighContrastColors(text = Color.White, background = Color.Black)
+	} else {
+		HighContrastColors(text = Color.Black, background = Color.White)
+	}
 
 /**
  * Builds the [ReadabilityStyle] for the reader's current preferences.
@@ -32,11 +53,23 @@ fun rememberReadabilityStyle(
 	scalePercent: Int,
 	lineSpacingChoice: Int,
 	paragraphSpacingChoice: Int,
-	alignmentChoice: Int
+	alignmentChoice: Int,
+	highContrast: Boolean
 ): ReadabilityStyle {
 	val base = MaterialTheme.typography.bodyLarge
 	val density = LocalDensity.current
-	return remember(base, density, scalePercent, lineSpacingChoice, paragraphSpacingChoice, alignmentChoice) {
+	// The app theme follows the system dark setting, so this matches whichever theme is showing.
+	val darkTheme = isSystemInDarkTheme()
+	return remember(
+		base,
+		density,
+		scalePercent,
+		lineSpacingChoice,
+		paragraphSpacingChoice,
+		alignmentChoice,
+		highContrast,
+		darkTheme
+	) {
 		val fontSize = base.fontSize * (scalePercent / 100f)
 		// The body style's own line height is what "Normal" means, so the wider choices add to it
 		// instead of replacing it. Dropping to a bare multiple of the font size would make Normal
@@ -59,13 +92,16 @@ fun rememberReadabilityStyle(
 			3 -> TextAlign.Justify
 			else -> TextAlign.Start
 		}
+		val contrast = if (highContrast) highContrastColors(darkTheme) else null
 		ReadabilityStyle(
 			textStyle = base.copy(
 				fontSize = fontSize,
 				lineHeight = fontSize * (base.lineHeight.value / base.fontSize.value + extraLineSpacing),
-				textAlign = alignment
+				textAlign = alignment,
+				color = contrast?.text ?: base.color
 			),
-			paragraphSpacing = paragraphSpacing
+			paragraphSpacing = paragraphSpacing,
+			background = contrast?.background ?: Color.Unspecified
 		)
 	}
 }

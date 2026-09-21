@@ -131,7 +131,14 @@ fun MainScreen(
 	val lineSpacing by settings.lineSpacing.state.collectAsStateWithLifecycle()
 	val paragraphSpacing by settings.paragraphSpacing.state.collectAsStateWithLifecycle()
 	val textAlignment by settings.textAlignment.state.collectAsStateWithLifecycle()
-	val readability = rememberReadabilityStyle(textScalePercent, lineSpacing, paragraphSpacing, textAlignment)
+	val highContrastText by settings.highContrastText.state.collectAsStateWithLifecycle()
+	val readability = rememberReadabilityStyle(
+		textScalePercent,
+		lineSpacing,
+		paragraphSpacing,
+		textAlignment,
+		highContrastText
+	)
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
 	val sleepTimerRemaining by viewModel.sleepTimer.remaining.collectAsStateWithLifecycle()
 
@@ -478,7 +485,7 @@ fun MainScreen(
 								}
 								ReadAloudPane(
 									segmentText = currentSegmentText,
-									textStyle = readability.textStyle,
+									readability = readability,
 									progressPercent = progressPercent,
 									sleepTimerRemaining = sleepTimerRemaining,
 									onCancelSleepTimer = { viewModel.sleepTimer.cancel() }

@@ -152,6 +152,7 @@ fun SettingsScreen(
 	val lineSpacing by settings.lineSpacing.state.collectAsStateWithLifecycle()
 	val paragraphSpacing by settings.paragraphSpacing.state.collectAsStateWithLifecycle()
 	val textAlignment by settings.textAlignment.state.collectAsStateWithLifecycle()
+	val highContrastText by settings.highContrastText.state.collectAsStateWithLifecycle()
 	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
 	val currentPitch by viewModel.ttsManager.currentPitch.collectAsStateWithLifecycle()
 	val paragraphPauseMs by viewModel.ttsManager.paragraphPauseMs.collectAsStateWithLifecycle()
@@ -359,6 +360,25 @@ fun SettingsScreen(
 					selectedIndex = textAlignment,
 					onSelect = { settings.textAlignment.set(it) }
 				)
+				Spacer(modifier = Modifier.height(8.dp))
+				Row(
+					modifier = Modifier
+						.fillMaxWidth()
+						.toggleable(
+							value = highContrastText,
+							onValueChange = { settings.highContrastText.set(it) },
+							role = Role.Switch
+						).padding(vertical = 8.dp),
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.SpaceBetween
+				) {
+					// TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
+					Text(t("High Contrast Text"), modifier = Modifier.weight(1f))
+					Switch(
+						checked = highContrastText,
+						onCheckedChange = null
+					)
+				}
 
 				Spacer(modifier = Modifier.height(24.dp))
 				// TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
