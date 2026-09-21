@@ -21,9 +21,11 @@ func applyRules(_ rules: [TtsRule], to text: String, voiceId: String?) -> String
 }
 
 /// The silence the reader can add between paragraphs, in milliseconds, and how far one press of
-/// the setting moves it.
-let paragraphPauseRangeMs = 0...2000
-let paragraphPauseStepMs = 50
+/// the setting moves it. The step is small because the difference between a pause that sounds
+/// right and one that drags is a few tens of milliseconds; the range stops at a second, past
+/// which it is no longer a pause between paragraphs.
+let paragraphPauseRangeMs = 0...1000
+let paragraphPauseStepMs = 10
 
 /// The engine rate a whole-number slider percentage stands for. A stored value from outside the
 /// slider's own range is brought back inside it rather than handed to the engine as-is.
