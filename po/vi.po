@@ -3798,7 +3798,7 @@ msgstr "Sách mở"
 #: swift
 #, fuzzy
 msgid "Locate"
-msgstr "Tìm"
+msgstr "Định vị"
 
 #. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
@@ -4256,7 +4256,7 @@ msgstr "Nhấn nút phát để bắt đầu nghe."
 #: kt
 #, fuzzy
 msgid "Document Information"
-msgstr "Thông tin tài liệu"
+msgstr "Thông tin Tài liệu"
 
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
@@ -4537,7 +4537,7 @@ msgstr "Đọc to"
 #: kt
 #, fuzzy
 msgid "Export As"
-msgstr "Xuất thành công"
+msgstr "Xuất As"
 
 #. TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
 #: kt

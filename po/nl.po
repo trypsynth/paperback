@@ -3631,7 +3631,7 @@ msgstr "De documenten die u opent, verschijnen hier."
 #: swift
 #, fuzzy
 msgid "Text to Speech"
-msgstr "Tekst naar sprake"
+msgstr "Tekst naar spraak"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: swift
@@ -4463,7 +4463,7 @@ msgstr "Gebruik de bestandsbrowser in de app (hiervoor is de machtiging ‘Alle 
 #: kt
 #, fuzzy
 msgid "Text-to-Speech"
-msgstr "Tekst naar sprake"
+msgstr "Tekst-naar-spraak"
 
 #. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
