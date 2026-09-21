@@ -434,7 +434,7 @@ fn wsola_speed_source(
 	decoder: FileDecoder,
 	initial_speed: f32,
 	shared_speed: &Arc<Mutex<f32>>,
-) -> impl Iterator<Item = f32> + Source + Send + 'static {
+) -> impl Source<Item = f32> + Send + 'static {
 	let shared_speed = Arc::clone(shared_speed);
 	let mut applied_speed = initial_speed;
 	decoder.wsola(initial_speed).periodic_access(SPEED_POLL_PERIOD, move |wsola| {
