@@ -175,6 +175,7 @@
   <link rel="alternate" hreflang="pt-br" href="https://paperback.dev/readme-pt_br.html">
   <link rel="alternate" hreflang="ru" href="https://paperback.dev/readme-ru.html">
   <link rel="alternate" hreflang="sr" href="https://paperback.dev/readme-sr.html">
+  <link rel="alternate" hreflang="uk" href="https://paperback.dev/readme-uk.html">
   <link rel="alternate" hreflang="vi" href="https://paperback.dev/readme-vi.html">
   <link rel="alternate" hreflang="zh-CN" href="https://paperback.dev/readme-zh_CN.html">
   <link rel="alternate" hreflang="x-default" href="https://paperback.dev/readme.html">
@@ -198,6 +199,7 @@
 <li><a href="/readme-pt_br.html" lang="pt-br" hreflang="pt-br">Português (Brasil)</a></li>
 <li><a href="/readme-ru.html" lang="ru" hreflang="ru">Русский</a></li>
 <li><a href="/readme-sr.html" lang="sr" hreflang="sr">Српски</a></li>
+<li><a href="/readme-uk.html" lang="uk" hreflang="uk">uk</a></li>
 <li><a href="/readme-vi.html" lang="vi" hreflang="vi">Tiếng Việt</a></li>
 <li><a href="/readme-zh_CN.html" lang="zh-CN" hreflang="zh-CN">中文（简体）</a></li>
 </ul>
@@ -240,14 +242,21 @@ id="toc-supported-languages">Supported languages</a></li>
 </ul></li>
 <li><a href="#changelog" id="toc-changelog">Changelog</a>
 <ul>
+<li><a href="#version-1.0" id="toc-version-1.0">Version 1.0</a>
+<ul>
+<li><a href="#added" id="toc-added">Added</a></li>
+<li><a href="#fixed" id="toc-fixed">Fixed</a></li>
+<li><a href="#ios-and-android" id="toc-ios-and-android">iOS and
+Android</a></li>
+</ul></li>
 <li><a href="#version-0.9.2" id="toc-version-0.9.2">Version
 0.9.2</a></li>
 <li><a href="#version-0.9.1" id="toc-version-0.9.1">Version
 0.9.1</a></li>
 <li><a href="#version-0.9.0" id="toc-version-0.9.0">Version 0.9.0</a>
 <ul>
-<li><a href="#added" id="toc-added">Added</a></li>
-<li><a href="#fixed" id="toc-fixed">Fixed</a></li>
+<li><a href="#added-1" id="toc-added-1">Added</a></li>
+<li><a href="#fixed-1" id="toc-fixed-1">Fixed</a></li>
 </ul></li>
 <li><a href="#version-0.8.5" id="toc-version-0.8.5">Version
 0.8.5</a></li>
@@ -286,10 +295,9 @@ reader for everyone, from casual readers to heavy power users. It’s
 designed for screen reader accessibility, fast speeds, and a bloat-free
 experience.</p>
 <h1 id="system-requirements">System Requirements</h1>
-<p>Paperback currently runs on Windows 10/11 and all the modern versions
-of ARM macOS. Native iOS and Android apps are in active development,
-with public test builds planned soon after the 0.9.0 desktop release,
-ahead of a unified 1.0 release covering all four platforms.</p>
+<p>Paperback runs on Windows 10/11, all the modern versions of ARM
+macOS, Linux, iOS 17 and later, and Android 7 and later. The iOS and
+Android apps are on the App Store and Google Play.</p>
 <h1 id="features">Features</h1>
 <ul>
 <li>Completely standalone, not requiring any software to be installed on
@@ -350,6 +358,7 @@ types</h1>
 <li>M4B audiobooks (<code>.m4b</code>)</li>
 <li>MOBI/Kindle books (<code>.mobi</code>, <code>.azw</code>,
 <code>.azw3</code>)</li>
+<li>MP3 audiobooks (<code>.mp3</code>)</li>
 <li>OpenDocument presentations (<code>.odp</code>,
 <code>.fodp</code>)</li>
 <li>OpenDocument text files (<code>.odt</code>, <code>.fodt</code>)</li>
@@ -357,6 +366,7 @@ types</h1>
 <li>PowerPoint presentations (<code>.pptx</code>, <code>.pptm</code>,
 <code>.ppt</code>)</li>
 <li>RTF documents (<code>.rtf</code>)</li>
+<li>Windows Write documents (<code>.wri</code>)</li>
 <li>WinHelp files (<code>.hlp</code>)</li>
 <li>Plain text and log files (<code>.txt</code>, <code>.log</code>)</li>
 </ul>
@@ -554,6 +564,214 @@ inclusion in this list.</p>
 <li>Tyler Rodick</li>
 </ul>
 <h1 id="changelog">Changelog</h1>
+<h2 id="version-1.0">Version 1.0</h2>
+<p>1.0 is the first release on all five platforms: Windows, macOS,
+Linux, iOS and Android, with the iOS and Android apps in the App Store
+and Google Play.</p>
+<h3 id="added">Added</h3>
+<h4 id="general">General</h4>
+<ul>
+<li>Linux support, as an AppImage or a tar.gz, with desktop integration
+so documents open from your file manager.</li>
+<li>Mark the beginning of a selection with <code>Alt+F9</code>, copy
+everything from there to wherever you have got to with
+<code>Alt+F10</code>, and go back to the mark with
+<code>Alt+Shift+F9</code>, for copying a long span of text without
+shift-arrowing through it. All three are under Tools &gt; Select and
+copy.</li>
+<li>The <code>=</code> shortcut now announces the page as well as the
+percentage, e.g. “15%, page 30”, and stays as it was for documents with
+no page numbers.</li>
+<li>The About box now shows Paperback’s license and every
+translator.</li>
+<li>A Ukrainian translation.</li>
+</ul>
+<h4 id="new-formats">New Formats</h4>
+<ul>
+<li>Comic book archives (<code>.cbz</code>).</li>
+<li>M4B audiobooks, split into their chapters.</li>
+<li>Manual pages, both <code>man</code> and BSD <code>mdoc</code>,
+gzipped or not.</li>
+<li>MP3 audiobooks, split into chapters when the file has them.</li>
+<li>Windows Write (<code>.wri</code>) files.</li>
+<li>WinHelp (<code>.hlp</code>) files.</li>
+<li>Word 6 and Word 95 documents.</li>
+</ul>
+<h4 id="ocr">OCR</h4>
+<ul>
+<li>Scanned PDF pages can now be recognized with the OCR built into
+Windows and macOS. Press <code>Enter</code> on a scanned page to
+recognize it, or use Batch OCR (<code>Ctrl+Shift+O</code>) for a range
+of pages.</li>
+</ul>
+<h4 id="navigation">Navigation</h4>
+<ul>
+<li>MathML formulas in EPUB and HTML are rendered as AsciiMath using
+MathCAT. Use <code>M</code> or <code>Shift+M</code> to navigate
+formulas, then <code>Enter</code> or <code>Space</code> to open the
+original MathML in Formula View.</li>
+<li>A Find All button in the Find dialog, listing every line with a
+match so you can jump straight to the one you want.</li>
+<li>Tables, Lists and Pages views in the elements list
+(<code>F7</code>).</li>
+<li>Go to Line, Go to Page and Go to Percent now take <code>+n</code>
+and <code>-n</code> to move relative to where you are.</li>
+<li>EPUB, MOBI and CHM books with no headings of their own now get
+heading navigation from their table of contents.</li>
+<li>KF8 (AZW3) books now support section navigation.</li>
+<li>EPUB pages that are only a picture now show a line for it, so you
+can land on them instead of skipping straight past.</li>
+</ul>
+<h4 id="audio-books">Audio Books</h4>
+<ul>
+<li>Playback speed controls, from half speed to three times as fast. Use
+<code>Ctrl+Shift+.</code> and <code>Ctrl+Shift+,</code>, or the Tools
+menu.</li>
+<li>Bookmarks and notes in audio-only books now remember the exact time
+you set them at.</li>
+<li>Next and previous position (<code>Alt+Left</code> and
+<code>Alt+Right</code>) now work in audio books.</li>
+<li>Progress through an audio book is now measured by its recording, so
+Go to Percent and the status bar match how far through it you really
+are.</li>
+</ul>
+<h4 id="recent-documents">Recent Documents</h4>
+<ul>
+<li>A Clear Recent Documents item in the Recent Documents submenu.</li>
+</ul>
+<h4 id="pdf-documents">PDF Documents</h4>
+<ul>
+<li>A setting to keep every line of a PDF separate, rather than joining
+them into paragraphs.</li>
+<li>Images and figures in PDFs are now announced.</li>
+<li>PDFs that carry reading structure but tag none of their pictures now
+announce those pictures, rather than leaving them out of the book
+entirely.</li>
+</ul>
+<h4 id="web-view">Web View</h4>
+<ul>
+<li>Any document can now be opened in the web view, not only EPUB, HTML
+and Markdown.</li>
+</ul>
+<h4 id="readability">Readability</h4>
+<ul>
+<li>Headings are now drawn larger the higher their level, and images and
+tables are set apart from the text around them.</li>
+</ul>
+<h4 id="pb">pb</h4>
+<ul>
+<li><code>pb --list-formats</code> lists every format pb can read.</li>
+<li>pb now says which file it could not read, and why.</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<h4 id="general-1">General</h4>
+<ul>
+<li>Fixed a crash when closing Paperback.</li>
+<li>Closing Paperback now hides the window straight away, rather than
+leaving it on screen while it saves.</li>
+<li>Opening a document no longer leaves Reopen Last Closed enabled when
+there is nothing to reopen.</li>
+<li>Paperback no longer keeps retrying documents in your recent list
+that have gone missing, and caps how many recent documents it
+stores.</li>
+<li>The old INI settings file is now deleted once it has been moved over
+to the new format.</li>
+<li>The font and color dialogs’ titles, and the Export As menu in
+Vietnamese, are now translated.</li>
+<li>Updating now brings the relaunched window to the front, instead of
+leaving it behind every other window in Alt+Tab.</li>
+<li>Word wrap now applies straight away on large documents, rather than
+reloading the whole thing.</li>
+</ul>
+<h4 id="navigation-1">Navigation</h4>
+<ul>
+<li><code>Alt+Left</code> now goes back to where you jumped from, rather
+than to an older position.</li>
+<li>Bookmark sounds now only play when you move over a bookmark, not
+when you land on the line it is on.</li>
+<li>Closing the table of contents, the elements list and the Go dialogs
+now takes you straight to the line you land on, rather than making you
+sit through the screen reader reading out the window again.</li>
+<li>Go to Line, Go to Page and Go to Percent now refuse numbers outside
+the document instead of quietly going somewhere else.</li>
+<li>NVDA no longer cuts off the announcement when a document has no
+pages.</li>
+<li>Pressing OK in the table of contents without moving now goes to the
+entry that was already selected.</li>
+<li>The table of contents, the elements list and the bookmarks list no
+longer lag or freeze on books with thousands of entries.</li>
+<li>Up and Down arrow now remember their column per document, instead of
+carrying it over when you switch tabs.</li>
+</ul>
+<h4 id="audio-books-1">Audio Books</h4>
+<ul>
+<li>Audio playback now uses <code>Control+Space</code> on macOS, since
+<code>Command+Space</code> belongs to Spotlight.</li>
+</ul>
+<h4 id="pdf-documents-1">PDF Documents</h4>
+<ul>
+<li>Fixed PDFs exported from Apple Pages reading as plain text, with
+none of the headings and lists they were written with.</li>
+<li>Fixed PDF paragraphs and headings splitting at every line, and words
+splitting apart at spaces.</li>
+<li>Fixed numbered PDF headings running together into one heading.</li>
+<li>Fixed PDFs whose structure tree leads to no text opening empty.</li>
+<li>Page headers and footers are no longer read out on every page of
+untagged PDFs.</li>
+<li>PDFs that tag their page headers and footers as ordinary text no
+longer repeat the title and the page number between two paragraphs on
+every page.</li>
+<li>PDFs now show their real title, rather than their file name.</li>
+<li>Lines set in a monospaced font, like code, are no longer joined into
+paragraphs.</li>
+</ul>
+<h4 id="mobiazw3-books">MOBI/AZW3 Books</h4>
+<ul>
+<li>Large MOBI books no longer run out of memory, and are no longer cut
+off after 20 MB.</li>
+<li>MOBI and AZW3 books now open much faster.</li>
+<li>Fixed MOBI books losing their chapter list.</li>
+<li>Fixed garbled text where MOBI books cross from one record to the
+next.</li>
+</ul>
+<h4 id="web-view-1">Web View</h4>
+<ul>
+<li>The web view no longer loads the whole of a huge book at once.</li>
+<li>The web view now shows documents whole when the reader shows them
+whole, rather than only a slice of them.</li>
+</ul>
+<h4 id="other-formats">Other Formats</h4>
+<ul>
+<li>FictionBook (.fb2) books written in windows-1251, which is most of
+them, now open instead of failing to read at all.</li>
+<li>FictionBook books that use a namespace or an HTML entity they never
+declared now open, rather than being refused as broken.</li>
+<li>Books in legacy encodings now open much faster.</li>
+<li>Fixed some Chinese text files opening as garbled text.</li>
+<li>Password-protected OpenDocument files now ask for their password,
+rather than being reported as broken.</li>
+<li>Password-protected legacy PowerPoint files now open, and legacy
+PowerPoint slides no longer lose their text.</li>
+<li>Plain text files saved with an <code>.rtf</code> extension now open
+as text, rather than failing with an error.</li>
+<li>RTF control words no longer show up as text.</li>
+</ul>
+<h3 id="ios-and-android">iOS and Android</h3>
+<p>The iOS and Android apps open every format the desktop does, and
+include:</p>
+<ul>
+<li>Read aloud, with your choice of voice, rate and pitch, a speech rate
+control right on the reading bar, and an optional pause between
+paragraphs.</li>
+<li>Playback of DAISY, M4B and MP3 audio books, which keeps going in the
+background and from the lock screen.</li>
+<li>Navigation by headings, pages, links, tables, lists and more from
+the reading bar, plus the table of contents and Find.</li>
+<li>A speech dictionary, a sleep timer, word count, and document
+export.</li>
+<li>Appearance options for text size, spacing and contrast.</li>
+<li>Keyboard shortcuts on Android that match the desktop.</li>
+</ul>
 <h2 id="version-0.9.2">Version 0.9.2</h2>
 <ul>
 <li>Audio books no longer make your screen reader read out a run of
@@ -575,23 +793,12 @@ returns to the book.</li>
 reader read continuously through them.</li>
 <li>Links in the WebView now take you to the section they point at,
 rather than failing with “File not found”.</li>
-<li>Mark the beginning of a selection with <code>Alt+F9</code>, copy
-everything from there to wherever you have got to with
-<code>Alt+F10</code>, and go back to the mark with
-<code>Alt+Shift+F9</code>, for copying a long span of text without
-shift-arrowing through it. All three are under Tools &gt; Select and
-copy.</li>
-<li>The <code>=</code> shortcut now announces the page as well as the
-percentage, e.g. “15%, page 30”, and stays as it was for documents with
-no page numbers.</li>
 <li>The automatic “Document reloaded” announcement no longer cuts your
 screen reader off mid sentence, instead waiting for it to finish what it
 was saying.</li>
 <li>The Settings dialog’s General tab now tabs through its options in
 the order they appear on screen, with the update channel directly after
 the check for updates option.</li>
-<li>Updating now brings the relaunched window to the front, instead of
-leaving it behind every other window in Alt+Tab.</li>
 <li>Windows will now always show “Paperback” in the Open With menu,
 rather than the program’s full tagline.</li>
 <li>Word Count and Document Info now show how many files an audio book
@@ -628,8 +835,8 @@ can be told apart in the taskbar and Alt+Tab.</li>
 <li>The update dialog is now translated.</li>
 </ul>
 <h2 id="version-0.9.0">Version 0.9.0</h2>
-<h3 id="added">Added</h3>
-<h4 id="general">General</h4>
+<h3 id="added-1">Added</h3>
+<h4 id="general-2">General</h4>
 <ul>
 <li>A CLI tool, called pb, to quickly convert any of Paperback’s
 supported formats to HTML, Markdown, or plain text.</li>
@@ -673,12 +880,8 @@ documents.</li>
 <li>A toggle to determine how you want tables displayed, and unified how
 tables are displayed across documents.</li>
 </ul>
-<h4 id="navigation">Navigation</h4>
+<h4 id="navigation-2">Navigation</h4>
 <ul>
-<li>MathML formulas in EPUB and HTML are rendered as AsciiMath using
-MathCAT. Use <code>M</code> or <code>Shift+M</code> to navigate
-formulas, then <code>Enter</code> or <code>Space</code> to open the
-original MathML in Formula View.</li>
 <li>Support for navigating by container.</li>
 <li>An option to automatically move the cursor to the start of the line
 when navigating between lines, similar to browse mode in screen
@@ -721,7 +924,7 @@ Markdown, in addition to plain text.</li>
 <li>The updater now validates the downloaded file hasn’t been tampered
 with.</li>
 </ul>
-<h4 id="web-view">Web View</h4>
+<h4 id="web-view-2">Web View</h4>
 <ul>
 <li>The webview is now opened at your current reading position.</li>
 </ul>
@@ -730,7 +933,7 @@ with.</li>
 <li>Support for DAISY 2.0 books.</li>
 <li>Support for DAISY 2.02 audio playback.</li>
 </ul>
-<h4 id="audio-books">Audio Books</h4>
+<h4 id="audio-books-2">Audio Books</h4>
 <ul>
 <li>The ability to play audio books, currently supporting both DAISY
 audio (including DAISY audio + text) and zips of audio files.</li>
@@ -748,8 +951,8 @@ continues into the next.</li>
 <ul>
 <li>PowerPoint documents now support tables.</li>
 </ul>
-<h3 id="fixed">Fixed</h3>
-<h4 id="general-1">General</h4>
+<h3 id="fixed-1">Fixed</h3>
+<h4 id="general-3">General</h4>
 <ul>
 <li>Documents encoded in legacy CJK encodings, such as GBK, Big5, and
 Shift_JIS, will now render properly instead of as a bunch of
@@ -786,7 +989,7 @@ opened via Shift+F1.</li>
 active tab.</li>
 <li>Your search filter is now preserved after removing a document.</li>
 </ul>
-<h4 id="navigation-1">Navigation</h4>
+<h4 id="navigation-3">Navigation</h4>
 <ul>
 <li>Page navigation announcing incorrect line text in some
 situations.</li>
@@ -800,11 +1003,11 @@ large documents.</li>
 <li>Bookmark/note sounds should now properly play exclusively when you
 navigate over a word containing one.</li>
 </ul>
-<h4 id="readability">Readability</h4>
+<h4 id="readability-1">Readability</h4>
 <ul>
 <li>Applying word wrap shooting you to the start of your document.</li>
 </ul>
-<h4 id="web-view-1">Web View</h4>
+<h4 id="web-view-3">Web View</h4>
 <ul>
 <li>The webview dialog not being resizable and popping up at a very
 small initial size.</li>
@@ -826,7 +1029,7 @@ release notes.</li>
 <li>RTF <code>\pict</code> groups so embedded image data no longer leaks
 into the document text.</li>
 </ul>
-<h4 id="mobiazw3-books">Mobi/AZW3 Books</h4>
+<h4 id="mobiazw3-books-1">Mobi/AZW3 Books</h4>
 <ul>
 <li>Filepos anchors in Mobi books splitting HTML tags and putting
 garbage in the book text.</li>
@@ -843,7 +1046,7 @@ headings properly.</li>
 <li>dl, dt, and dd elements not producing line breaks in XHTML
 documents.</li>
 </ul>
-<h4 id="pdf-documents">PDF Documents</h4>
+<h4 id="pdf-documents-2">PDF Documents</h4>
 <ul>
 <li>Paperback now falls back to plain text extraction for falsely-tagged
 PDFs.</li>
