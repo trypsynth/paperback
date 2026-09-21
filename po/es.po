@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-18 19:33-0600\n"
+"POT-Creation-Date: 2026-09-21 02:44+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -38,6 +38,21 @@ msgstr "Añadir la herramienta de línea de comandos pb a PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "Archivos ZIP (.zip)"
 
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#, fuzzy
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "No hay idioma OCR instalado. Agregue uno en la configuración de idioma del sistema."
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+#, fuzzy
+msgid "OCR failed."
+msgstr "OCR falló."
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+#, fuzzy
+msgid "OCR is not available on this system."
+msgstr "La vista «Fuente» no está disponible para este formato de documento."
+
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "No se pudo crear el servidor IPC"
@@ -48,6 +63,7 @@ msgstr "Advertencia"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 #, fuzzy
 msgid "This document has no audio."
 msgstr "Este documento no tiene índice."
@@ -56,6 +72,18 @@ msgstr "Este documento no tiene índice."
 #, fuzzy
 msgid "Audio hasn't started playing yet."
 msgstr "El audio aún no ha empezado a reproducirse."
+
+#. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+#, fuzzy
+msgid "{} (maximum)"
+msgstr "{} (máximo)"
+
+#. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+#, fuzzy
+msgid "{} (minimum)"
+msgstr "{} (mínimo)"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -110,16 +138,6 @@ msgstr "minutos"
 #, fuzzy
 msgid "1 hour"
 msgstr "1 hora"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-#, fuzzy
-msgid "{} (maximum)"
-msgstr "{} (máximo)"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-#, fuzzy
-msgid "{} (minimum)"
-msgstr "{} (mínimo)"
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
@@ -642,9 +660,33 @@ msgstr "&Reducir la cantidad de búsqueda de audio"
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Reducir la distancia a la que se desplaza la narración de audio"
 
+#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+#, fuzzy
+msgid "&Increase Audio Speed"
+msgstr "&Aumentar el intervalo de búsqueda de audio"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
+#, fuzzy
+msgid "Increase how fast the audio narration plays"
+msgstr "Aumenta la distancia a la que se desplaza la narración de audio"
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+#, fuzzy
+msgid "&Decrease Audio Speed"
+msgstr "&Reducir la cantidad de búsqueda de audio"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
+#, fuzzy
+msgid "Decrease how fast the audio narration plays"
+msgstr "Reducir la distancia a la que se desplaza la narración de audio"
+
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "Un lector de libros electrónicos y documentos accesible, ligero y rápido"
+
+#, fuzzy
+msgid "Paperback is built on other people's work. The libraries it uses, and their licenses, are credited at {}."
+msgstr "Paperback está construido sobre el trabajo de otros. Las librerías que utiliza y sus licencias se reconocen en {}."
 
 #. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
@@ -2389,21 +2431,6 @@ msgstr "Más allá del extremo del contenedor."
 msgid "Start of container."
 msgstr "Inicio del contenedor."
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-#, fuzzy
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "No hay idioma OCR instalado. Agregue uno en la configuración de idioma del sistema."
-
-#. TRANSLATORS: Announced when the OCR engine fails on a page
-#, fuzzy
-msgid "OCR failed."
-msgstr "OCR falló."
-
-#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
-#, fuzzy
-msgid "OCR is not available on this system."
-msgstr "La vista «Fuente» no está disponible para este formato de documento."
-
 #. TRANSLATORS: Title of the dialog displaying a formula as MathML
 #, fuzzy
 msgid "Formula View"
@@ -2877,6 +2904,16 @@ msgstr "Disminuir cantidad de búsqueda de audio"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
+msgid "Increase Audio Speed"
+msgstr "Aumentar cantidad de búsqueda de audio"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Decrease Audio Speed"
+msgstr "Disminuir cantidad de búsqueda de audio"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Full Screen"
 msgstr "Pantalla completa"
 
@@ -3085,11 +3122,6 @@ msgstr "El archivo HTML está vacío: {}"
 msgid "Failed to convert HTML to text: {}"
 msgstr "No se ha podido convertir el HTML a texto: {}"
 
-#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
-#, fuzzy
-msgid "Chapter {}"
-msgstr "Ingresar {}"
-
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 #, fuzzy
 msgid "Failed to convert Markdown to text: {}"
@@ -3273,6 +3305,11 @@ msgstr "El archivo PPTX no contiene diapositivas"
 #, fuzzy
 msgid "Failed to parse RTF document: {}"
 msgstr "No se ha podido analizar el documento RTF: {}"
+
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+#, fuzzy
+msgid "Chapter {}"
+msgstr "Ingresar {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
@@ -4814,6 +4851,30 @@ msgstr "Texto de alto contraste"
 #, fuzzy
 msgid "Hide previous and next buttons"
 msgstr "Ocultar botones anterior y siguiente"
+
+#. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
+#: swift
+#, fuzzy
+msgid "This empties the list. The documents themselves are not deleted."
+msgstr "Esto vacía la lista. Los documentos no se eliminan."
+
+#. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
+#: swift
+#, fuzzy
+msgid "{} ms"
+msgstr "{} minutos"
+
+#. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
+#: swift
+#, fuzzy
+msgid "Paragraph Pause"
+msgstr "Párrafo"
+
+#. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
+#: kt
+#, fuzzy
+msgid "No other voices"
+msgstr "Sin otras voces"
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
