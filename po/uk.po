@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-21 02:50+0000\n"
-"PO-Revision-Date: 2026-09-21 16:51+0300\n"
+"PO-Revision-Date: 2026-09-21 19:30+0300\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -535,7 +535,7 @@ msgstr "Відтворити або призупинити аудіосупро�
 
 #. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
-msgstr "Перемотати вперед"
+msgstr "Перемотати &вперед"
 
 #. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
 msgid "Skip the audio narration forward"
@@ -543,7 +543,7 @@ msgstr "Перемотати аудіо вперед"
 
 #. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
 msgid "Seek Audio &Backward"
-msgstr "Перемотати назад"
+msgstr "Перемотати &назад"
 
 #. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
 msgid "Skip the audio narration backward"
@@ -1102,7 +1102,7 @@ msgstr "Переходити до &початку рядка"
 
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
-msgstr "Відтворювати звуки для закладок і нотаток"
+msgstr "Відтворювати &звуки для закладок і нотаток"
 
 #. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
 msgid "&Sync caret to audio playback"
@@ -1707,7 +1707,7 @@ msgstr "Перейти до наступного елемента в істор�
 
 #. TRANSLATORS: Label for the Sections submenu in the compact Go menu.
 msgid "&Sections"
-msgstr "Розділи"
+msgstr "&Розділи"
 
 #. TRANSLATORS: Status-bar help text for the Go > Sections submenu.
 msgid "Navigate by sections"
@@ -1731,7 +1731,7 @@ msgstr "Навігація за сторінками"
 
 #. TRANSLATORS: Label for the Bookmarks submenu in the compact Go menu.
 msgid "&Bookmarks"
-msgstr "Закладки"
+msgstr "&Закладки"
 
 #. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
 msgid "Navigate by bookmarks"
@@ -3088,11 +3088,11 @@ msgstr "&Видалити комбінацію клавіш"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
 msgid "&Reset to Default"
-msgstr "Скинути до початкового налаштування"
+msgstr "Скинути до &початкового налаштування"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
 msgid "Reset &All to Defaults"
-msgstr "Скинути усі до початкових налаштувань"
+msgstr "Скинути &усі до початкових налаштувань"
 
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
