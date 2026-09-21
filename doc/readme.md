@@ -198,7 +198,7 @@ You can also swipe up or down on the play button to move by the navigation unit,
 
 The More Options menu is where everything else lives. Some items work a little differently on each app.
 
-* **Switch to TTS Mode or Switch to Text Mode:** moves between read aloud mode and text mode, described above. Android also has a Read Aloud item that starts and pauses reading aloud.
+* **Switch to TTS Mode or Switch to Text Mode:** moves between read aloud mode and text mode, described above. In text mode, a Read Aloud item starts and pauses reading aloud without leaving text mode.
 * **Table of Contents:** the book's chapters, opened at the one you're reading. Pick one to go straight to it. Entries with chapters under them can be expanded and collapsed with the screen reader's actions.
 * **Elements:** a list of the document's headings or links. Switch between the two with the Type picker on iOS, or the tabs on Android, then pick one to go to it.
 * **Find:** type what to look for, or pick an earlier search from Search History, and choose whether to match case, match whole words only, or use a regular expression. Find Previous and Find Next jump to a match and say where it landed, and Find stays open so you can keep going. In read aloud mode, Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there too.

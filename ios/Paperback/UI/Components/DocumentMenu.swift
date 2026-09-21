@@ -33,6 +33,21 @@ struct DocumentMenu: View {
 			.accessibilityAction(named: toggleModeActionName) {
 				viewModel.reading.toggleTextMode()
 			}
+			.accessibilityActions {
+				if showsReadAloud {
+					Button(readAloudTitle) { viewModel.reading.togglePlayPause() }
+				}
+			}
+	}
+
+	// Text mode has no reading bar, so this is the way to start reading aloud without leaving it.
+	private var showsReadAloud: Bool {
+		viewModel.reading.isTextMode && !viewModel.reading.isAudioOnly
+	}
+
+	// TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
+	private var readAloudTitle: String {
+		viewModel.reading.isPlayingNow ? t("Pause Read Aloud") : t("Read Aloud")
 	}
 
 	private var emptyMenu: some View {
@@ -52,6 +67,11 @@ struct DocumentMenu: View {
 	private var fullMenuButton: some View {
 		Menu {
 			modeToggleItem
+			if showsReadAloud {
+				Button { viewModel.reading.togglePlayPause() } label: {
+					Label(readAloudTitle, systemImage: viewModel.reading.isPlayingNow ? "pause" : "play")
+				}
+			}
 			Divider()
 			navigationItems
 			Divider()
