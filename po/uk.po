@@ -2954,13 +2954,17 @@ msgstr "Усі парсери повернули помилку для розш�
 msgid "Unknown update file format."
 msgstr "Невідомий формат файлу оновлення."
 
+#, fuzzy
 msgid "Failed to open disk image"
-msgstr ""
+msgstr "Не вдалося відкрити образ диска"
 
+#, fuzzy
 msgid ""
 "The update has been downloaded and its disk image opened. Quit %s and drag "
 "the new version into Applications to finish installing."
 msgstr ""
+"Оновлення завантажено, а його образ диска відкрито. Закрийте %s і "
+"перетягніть нову версію до теки «Програми», щоб завершити встановлення."
 
 msgid "Update Ready"
 msgstr "Оновлення готове"
@@ -3151,18 +3155,21 @@ msgstr "Дані документа"
 
 #. TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
 #: swift
+#, fuzzy
 msgid "More options"
-msgstr ""
+msgstr "Інші параметри"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
 #: swift
+#, fuzzy
 msgid "Switch to TTS Mode"
-msgstr ""
+msgstr "Перейти до режиму читання вголос"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
 #: swift
+#, fuzzy
 msgid "Switch to Text Mode"
-msgstr ""
+msgstr "Перейти до текстового режиму"
 
 #. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
@@ -3256,8 +3263,9 @@ msgstr "Тут з’являтимуться документи, які ви в�
 
 #. TRANSLATORS: Section header in Settings grouping text-to-speech voice/rate/pitch controls
 #: swift
+#, fuzzy
 msgid "Text to Speech"
-msgstr ""
+msgstr "Синтез мовлення"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: swift
@@ -3281,8 +3289,9 @@ msgstr "Висота"
 
 #. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
 #: swift
+#, fuzzy
 msgid "Speech Dictionary"
-msgstr ""
+msgstr "Словник вимови"
 
 #. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
 #: swift
@@ -3321,8 +3330,9 @@ msgstr "Відновити останні відкриті документи"
 
 #. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
 #: swift
+#, fuzzy
 msgid "Swipe up moves forward"
-msgstr ""
+msgstr "Змах угору переходить уперед"
 
 #. TRANSLATORS: Row label for the document's title in the Document Info sheet
 #: swift
@@ -3446,8 +3456,9 @@ msgstr "Тільки ціле слово"
 
 #. TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
 #: swift
+#, fuzzy
 msgid "Regular expression (\\1 = first capture group)"
-msgstr ""
+msgstr "Регулярний вираз (\\1 = перша група захоплення)"
 
 #. TRANSLATORS: Toggle for whether this text-substitution rule is currently active
 #: swift
@@ -3501,12 +3512,14 @@ msgstr "Таймер сну працює, залишилося {}"
 #. (2, 3, 4, 22, 23, 24, ...), many = everything else (0, 5-20, 25-30, ...). The "many" form's
 #. trailing character isn't a typo — see pluralManyMarker in Translations.swift.
 #: swift
+#, fuzzy
 msgid "Custom"
-msgstr ""
+msgstr "Власний"
 
 #: swift
+#, fuzzy
 msgid "Custom: {} minutes"
-msgstr ""
+msgstr "Власний: {} хв"
 
 #: swift
 msgid "Duration"
@@ -3569,13 +3582,15 @@ msgstr "Цей документ не містить змісту."
 
 #. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
 #: swift
+#, fuzzy
 msgid "Navigation unit"
-msgstr ""
+msgstr "Одиниця навігації"
 
 #. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
 #: swift
+#, fuzzy
 msgid "Previous {}"
-msgstr ""
+msgstr "Попередній: {}"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
 #: swift
@@ -3599,8 +3614,9 @@ msgstr "Початок документа"
 
 #. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
 #: swift
+#, fuzzy
 msgid "Next {}"
-msgstr ""
+msgstr "Наступний: {}"
 
 #. TRANSLATORS: Placeholder shown in the read-aloud view before the user has started playback
 #: swift
@@ -4195,8 +4211,9 @@ msgstr "перейти до розділу"
 
 #. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
 #: kt
+#, fuzzy
 msgid "This is a sample of the selected speech engine."
-msgstr ""
+msgstr "Це зразок вибраного голосового рушія."
 
 #. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
 #: kt
@@ -4240,8 +4257,9 @@ msgstr "Висококонтрастний текст"
 
 #. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
 #: swift
+#, fuzzy
 msgid "Hide previous and next buttons"
-msgstr ""
+msgstr "Приховати кнопки «Попередній» і «Наступний»"
 
 #. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
 #: swift
