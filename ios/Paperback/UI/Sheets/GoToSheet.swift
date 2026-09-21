@@ -81,7 +81,7 @@ struct GoToSheet: View {
 			.onAppear { populate() }
 			.onChange(of: mode) { viewModel.navigation.goToInitialMode = mode }
 		}
-		.sheetAccessibilityFocus(title: "Go To")
+		.sheetAccessibilityFocus(title: t("Go To"))
 	}
 
 	private var canGo: Bool {

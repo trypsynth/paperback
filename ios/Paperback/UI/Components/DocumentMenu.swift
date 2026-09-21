@@ -16,20 +16,20 @@ struct DocumentMenu: View {
 			// TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
 			.accessibilityLabel(t("More options"))
 			.accessibilityRemoveTraits(.isButton)
-			.accessibilityAction(named: "Settings") { viewModel.navigation.showSettings = true }
-			.accessibilityAction(named: "Help") { viewModel.openHelpDocument() }
-			.accessibilityAction(named: "Sleep Timer") { viewModel.navigation.showSleepTimer = true }
-			.accessibilityAction(named: "Document Info") { viewModel.navigation.showDocumentInfo = true }
-			.accessibilityAction(named: "Word Count") { viewModel.navigation.showWordCount = true }
+			.accessibilityAction(named: t("Settings")) { viewModel.navigation.showSettings = true }
+			.accessibilityAction(named: t("Help")) { viewModel.openHelpDocument() }
+			.accessibilityAction(named: t("Sleep Timer")) { viewModel.navigation.showSleepTimer = true }
+			.accessibilityAction(named: t("Document Info")) { viewModel.navigation.showDocumentInfo = true }
+			.accessibilityAction(named: t("Word Count")) { viewModel.navigation.showWordCount = true }
 	}
 
 	private var fullMenu: some View {
 		fullMenuAccessibilityBase
-			.accessibilityAction(named: "Recent Documents") { viewModel.navigation.showRecents = true }
-			.accessibilityAction(named: "Go To") { viewModel.navigation.showGoTo = true }
-			.accessibilityAction(named: "Find") { viewModel.navigation.showFind = true }
-			.accessibilityAction(named: "Elements") { viewModel.navigation.showElements = true }
-			.accessibilityAction(named: "Table of Contents") { viewModel.navigation.showToc = true }
+			.accessibilityAction(named: t("Recent Documents")) { viewModel.navigation.showRecents = true }
+			.accessibilityAction(named: t("Go To")) { viewModel.navigation.showGoTo = true }
+			.accessibilityAction(named: t("Find")) { viewModel.navigation.showFind = true }
+			.accessibilityAction(named: t("Elements")) { viewModel.navigation.showElements = true }
+			.accessibilityAction(named: t("Table of Contents")) { viewModel.navigation.showToc = true }
 			.accessibilityAction(named: toggleModeActionName) {
 				viewModel.reading.toggleTextMode()
 			}
@@ -55,8 +55,8 @@ struct DocumentMenu: View {
 			// TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
 			.accessibilityLabel(t("More options"))
 			.accessibilityRemoveTraits(.isButton)
-			.accessibilityAction(named: "Settings") { viewModel.navigation.showSettings = true }
-			.accessibilityAction(named: "Help") { viewModel.openHelpDocument() }
+			.accessibilityAction(named: t("Settings")) { viewModel.navigation.showSettings = true }
+			.accessibilityAction(named: t("Help")) { viewModel.openHelpDocument() }
 	}
 
 	// TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above

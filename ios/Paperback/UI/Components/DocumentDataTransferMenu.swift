@@ -17,8 +17,8 @@ struct DocumentDataTransferMenu: ViewModifier {
 	func body(content: Content) -> some View {
 		if viewModel.activeTab != nil {
 			withPickersAndFeedback(content)
-				.accessibilityAction(named: "Import Document Data") { showImportPicker = true }
-				.accessibilityAction(named: "Export Document Data") { beginExport() }
+				.accessibilityAction(named: t("Import Document Data")) { showImportPicker = true }
+				.accessibilityAction(named: t("Export Document Data")) { beginExport() }
 		} else {
 			withPickersAndFeedback(content)
 		}

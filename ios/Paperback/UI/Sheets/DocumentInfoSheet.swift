@@ -60,7 +60,7 @@ struct DocumentInfoSheet: View {
 				.padding()
 		}
 		.presentationDetents([.medium, .large])
-		.sheetAccessibilityFocus(title: "Document Info")
+		.sheetAccessibilityFocus(title: t("Document Info"))
 	}
 
 	private func infoRow(_ label: String, value: String) -> some View {

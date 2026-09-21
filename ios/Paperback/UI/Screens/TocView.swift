@@ -34,7 +34,7 @@ struct TocView: View {
 			// TRANSLATORS: Description shown below the "No Table of Contents" title
 			description: Text(t("This document has no table of contents."))
 		)
-		.sheetAccessibilityFocus(title: "Contents")
+		.sheetAccessibilityFocus(title: t("Contents"))
 	}
 }
 
