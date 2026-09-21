@@ -37,6 +37,7 @@
 		D8D8D8D8D8D8D8D8D8D8100A /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		D8D8D8D8D8D8D8D8D8D8100B /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = "ru.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		D8D8D8D8D8D8D8D8D8D8100C /* sr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sr; path = "sr.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		D8D8D8D8D8D8D8D8D8D8100F /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = "uk.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		D8D8D8D8D8D8D8D8D8D8100D /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = "vi.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		D8D8D8D8D8D8D8D8D8D8100E /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		T1T1T1T1T1T1T1T1T1T10002 /* PaperbackTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaperbackTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -58,6 +59,7 @@
 				D8D8D8D8D8D8D8D8D8D8100A /* pt-BR */,
 				D8D8D8D8D8D8D8D8D8D8100B /* ru */,
 				D8D8D8D8D8D8D8D8D8D8100C /* sr */,
+				D8D8D8D8D8D8D8D8D8D8100F /* uk */,
 				D8D8D8D8D8D8D8D8D8D8100D /* vi */,
 				D8D8D8D8D8D8D8D8D8D8100E /* zh-Hans */,
 			);
@@ -255,6 +257,7 @@
 				"pt-BR",
 				ru,
 				sr,
+				uk,
 				vi,
 				"zh-Hans",
 			);
