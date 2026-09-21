@@ -38,25 +38,27 @@ fun FindDialog(
 	var wholeWord by remember { mutableStateOf(configManager.getAppBool(WHOLE_WORD_KEY, false)) }
 	var useRegex by remember { mutableStateOf(configManager.getAppBool(USE_REGEX_KEY, false)) }
 
-	val searchHistory = remember { configManager.getFindHistory() }
+	var searchHistory by remember { mutableStateOf(configManager.getFindHistory()) }
 
-	val submitSearch = {
+	// The dialog stays open after a search, as it does on iOS, so the reader can keep stepping
+	// through the matches from here. With a screen reader in text mode there is no other way to
+	// reach the next one without a keyboard.
+	val submitSearch = { forward: Boolean ->
 		if (query.isNotBlank()) {
 			configManager.setAppBool(MATCH_CASE_KEY, matchCase)
 			configManager.setAppBool(WHOLE_WORD_KEY, wholeWord)
 			configManager.setAppBool(USE_REGEX_KEY, useRegex)
 			configManager.addFindHistory(query, 10)
-
+			searchHistory = configManager.getFindHistory()
 			onSearch(
 				query,
 				SearchOptionsFfi(
 					matchCase = matchCase,
 					wholeWord = wholeWord,
 					regex = useRegex,
-					forward = true
+					forward = forward
 				)
 			)
-			onDismiss()
 		}
 	}
 
@@ -74,13 +76,13 @@ fun FindDialog(
 					// TRANSLATORS: Label for the text field where the user types what to search for
 					label = { Text(t("Search Term")) },
 					keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-					keyboardActions = KeyboardActions(onSearch = { submitSearch() }),
+					keyboardActions = KeyboardActions(onSearch = { submitSearch(true) }),
 					singleLine = true,
 					modifier = Modifier
 						.fillMaxWidth()
 						.onKeyEvent { event ->
 							if (event.type == KeyEventType.KeyUp && (event.key == Key.Enter || event.key == Key.NumPadEnter)) {
-								submitSearch()
+								submitSearch(true)
 								true
 							} else {
 								false
@@ -180,15 +182,21 @@ fun FindDialog(
 			}
 		},
 		confirmButton = {
-			TextButton(onClick = submitSearch) {
-				// TRANSLATORS: Button to run the search and jump to the next match
-				Text(t("Find Next"))
+			Row {
+				TextButton(onClick = { submitSearch(false) }) {
+					// TRANSLATORS: Button to run the search and jump to the previous match
+					Text(t("Find Previous"))
+				}
+				TextButton(onClick = { submitSearch(true) }) {
+					// TRANSLATORS: Button to run the search and jump to the next match
+					Text(t("Find Next"))
+				}
 			}
 		},
 		dismissButton = {
 			TextButton(onClick = onDismiss) {
-				// TRANSLATORS: Button to close the Find dialog without searching
-				Text(t("Cancel"))
+				// TRANSLATORS: Button to close the Find dialog
+				Text(t("Close"))
 			}
 		}
 	)
