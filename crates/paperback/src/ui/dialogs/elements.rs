@@ -6,12 +6,16 @@ use std::{
 use std::{collections::HashMap, ffi::c_void};
 
 use paperback_core::session::DocumentSession;
+#[cfg(target_os = "windows")]
+use paperback_core::types::HeadingTree;
 use patois::t;
 use wxdragon::prelude::*;
 
-mod flat;
+pub(super) mod flat;
 
 use flat::{FlatList, FlatViews, build_flat_list, clear_flat_list, flat_selected_offset, schedule_flat_fill};
+#[cfg(target_os = "windows")]
+use flat::{fill_flat_view, headings_as_list};
 
 /// The view choice indices for [`show_elements_dialog`]. Headings is a tree; every other
 /// view (Links, Pages, Tables, Lists, ...) is a flat list shown in the same list pane.
@@ -79,7 +83,7 @@ fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_po
 		build_elements_dialog_ui_dv(dialog, Rc::clone(&flat_labels));
 	let (selected_offset, item_offsets) = populate_elements_dialog_dv(session, current_pos, headings_tree);
 	let item_offsets = Rc::new(item_offsets);
-	let views = Rc::new(FlatViews::for_session(session, current_pos));
+	let views = Rc::new(FlatViews::for_session(session, current_pos, None));
 	bind_elements_view_toggle_dv(*parent, view_choice, headings_tree, content_list, dialog, &views, &flat_labels);
 	bind_elements_activation_dv(
 		dialog,
@@ -349,16 +353,26 @@ fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_po
 	let flat_labels = Rc::new(RefCell::new(Vec::new()));
 	let ElementsDialogUi { content_sizer, view_choice, headings_tree, content_list } =
 		build_elements_dialog_ui(dialog, Rc::clone(&flat_labels));
-	let selected_offset = populate_elements_dialog(session, current_pos, headings_tree);
-	let views = Rc::new(FlatViews::for_session(session, current_pos));
+	let tree_data = session.heading_tree(current_pos);
+	let views = Rc::new(FlatViews::for_session(session, current_pos, headings_as_list(&tree_data)));
+	let selected_offset = Rc::new(Cell::new(-1i64));
+	if !views.headings_are_flat() {
+		populate_elements_dialog(&tree_data, headings_tree);
+	}
 	bind_elements_view_toggle(*parent, view_choice, headings_tree, content_list, dialog, &views, &flat_labels);
 	bind_elements_activation(dialog, view_choice, headings_tree, content_list, &selected_offset, &views);
 	let (ok_button, cancel_button) = build_elements_buttons(dialog);
 	bind_elements_ok_action(dialog, view_choice, headings_tree, content_list, &selected_offset, &views, ok_button);
 	finalize_elements_layout(dialog, content_sizer, ok_button, cancel_button);
-	// The dialog opens on Headings (the choice is set to index 0 when it is built), so the
-	// tree is the visible pane.
-	headings_tree.set_focus();
+	// The dialog opens on Headings (the choice is set to index 0 when it is built).
+	if views.headings_are_flat() {
+		headings_tree.show(false);
+		fill_flat_view(content_list, &flat_labels, &views, view_choice, VIEW_HEADINGS);
+		dialog.layout();
+		content_list.set_focus();
+	} else {
+		headings_tree.set_focus();
+	}
 	if dialog.show_modal() == ID_OK {
 		let offset = selected_offset.get();
 		let kind = ElementsKind::from_view(view_choice.get_selection().unwrap_or(VIEW_HEADINGS));
@@ -418,10 +432,8 @@ fn build_elements_dialog_ui(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String>>
 }
 
 #[cfg(target_os = "windows")]
-fn populate_elements_dialog(session: &DocumentSession, current_pos: i64, headings_tree: TreeCtrl) -> Rc<Cell<i64>> {
-	let selected_offset = Rc::new(Cell::new(-1i64));
+fn populate_elements_dialog(tree_data: &HeadingTree, headings_tree: TreeCtrl) {
 	let root = headings_tree.add_root("Root", None, None).unwrap();
-	let tree_data = session.heading_tree(current_pos);
 	let mut item_ids: Vec<TreeItemId> = Vec::new();
 	if !tree_data.items.is_empty() {
 		item_ids.reserve(tree_data.items.len());
@@ -456,7 +468,6 @@ fn populate_elements_dialog(session: &DocumentSession, current_pos: i64, heading
 		headings_tree.select_item(&first_child);
 		headings_tree.ensure_visible(&first_child);
 	}
-	selected_offset
 }
 
 #[cfg(target_os = "windows")]
@@ -479,7 +490,7 @@ fn bind_elements_view_toggle(
 		// Switch which pane is shown. Focus is deliberately left in the view choice (the change
 		// comes from the user arrowing through it, and throwing them into the newly shown pane
 		// with every arrow makes the dropdown impossible to browse).
-		if selection == VIEW_HEADINGS {
+		if selection == VIEW_HEADINGS && !views_for_choice.headings_are_flat() {
 			headings_tree_for_choice.show(true);
 			content_list_for_choice.show(false);
 		} else {
@@ -558,7 +569,7 @@ fn bind_elements_ok_action(
 	let views_for_ok = Rc::clone(views);
 	ok_button.on_click(move |_| {
 		let selection = view_for_ok.get_selection().unwrap_or(VIEW_HEADINGS);
-		if selection == VIEW_HEADINGS {
+		if selection == VIEW_HEADINGS && !views_for_ok.headings_are_flat() {
 			if let Some(item) = headings_tree.get_selection()
 				&& let Some(data) = headings_tree.get_custom_data(&item)
 				&& let Some(offset) = data.downcast_ref::<i64>()

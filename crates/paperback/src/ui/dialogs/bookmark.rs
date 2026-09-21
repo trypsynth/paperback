@@ -1,11 +1,12 @@
 use std::{
 	cell::{Cell, RefCell},
+	collections::HashMap,
 	rc::Rc,
 	sync::Mutex,
 };
 
 use paperback_core::{
-	config::ConfigManager,
+	config::{Bookmark, ConfigManager},
 	reader_core,
 	session::DocumentSession,
 	types::{BookmarkDisplayEntry, BookmarkFilterType},
@@ -30,7 +31,7 @@ pub fn show_bookmark_dialog(
 	initial_filter: BookmarkFilterType,
 ) -> Option<BookmarkDialogResult> {
 	let file_path = session.file_path().to_string();
-	let content = Rc::new(session.content());
+	let snippets = Rc::new(text_snippets(session, &config.lock().unwrap().get_bookmarks(&file_path)));
 	// TRANSLATORS: Title of the Jump to Bookmark dialog
 	let dialog = Dialog::builder(parent, &t("Jump to Bookmark")).build();
 	let BookmarkDialogUi {
@@ -47,7 +48,7 @@ pub fn show_bookmark_dialog(
 		list: bookmark_list,
 		config: Rc::clone(config),
 		file_path: file_path.clone(),
-		content: Rc::clone(&content),
+		snippets: Rc::clone(&snippets),
 		entries: Rc::clone(&state.entries),
 		selected_start: Rc::clone(&state.selected_start),
 		selected_end: Rc::clone(&state.selected_end),
@@ -118,7 +119,7 @@ struct BookmarkRepopulateParams {
 	list: ListBox,
 	config: Rc<Mutex<ConfigManager>>,
 	file_path: String,
-	content: Rc<String>,
+	snippets: Rc<HashMap<(i64, i64), String>>,
 	entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>>,
 	selected_start: Rc<Cell<i64>>,
 	selected_end: Rc<Cell<i64>>,
@@ -201,6 +202,24 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 	}
 }
 
+/// The text each text bookmark quotes, keyed by its span: the whole line for a line bookmark,
+/// else the marked range. Worked out once when the dialog opens, since every change of filter
+/// refills the list.
+fn text_snippets(session: &DocumentSession, bookmarks: &[Bookmark]) -> HashMap<(i64, i64), String> {
+	bookmarks
+		.iter()
+		.filter(|bm| bm.audio_ms.is_none())
+		.map(|bm| {
+			let text = if bm.start == bm.end {
+				session.get_line_text(bm.start)
+			} else {
+				session.get_text_range(bm.start, bm.end)
+			};
+			((bm.start, bm.end), text)
+		})
+		.collect()
+}
+
 fn build_bookmark_dialog_state(jump_button: Button, delete_button: Button, edit_button: Button) -> BookmarkDialogState {
 	let entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>> = Rc::new(RefCell::new(Vec::new()));
 	let selected_start = Rc::new(Cell::new(-1i64));
@@ -223,7 +242,7 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 		list,
 		config,
 		file_path,
-		content,
+		snippets,
 		entries,
 		selected_start,
 		selected_end,
@@ -238,28 +257,6 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 			2 => BookmarkFilterType::NotesOnly,
 			_ => BookmarkFilterType::All,
 		};
-		let content_for_snippet = Rc::clone(&content);
-		let get_text_range = move |start: i64, end: i64| -> String {
-			let content = content_for_snippet.as_str();
-			let total_chars = content.chars().count();
-			let start_pos = usize::try_from(start.max(0)).unwrap_or(0).min(total_chars);
-			let end_pos = usize::try_from(end.max(0)).unwrap_or(0).min(total_chars);
-			if start_pos >= end_pos {
-				return String::new();
-			}
-			content.chars().skip(start_pos).take(end_pos - start_pos).collect()
-		};
-		let content_for_line = Rc::clone(&content);
-		let get_line_text = move |position: i64| -> String {
-			let content = content_for_line.as_str();
-			let total_chars = content.chars().count();
-			let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-			let line_start =
-				content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
-			let chars_after_start: String = content.chars().skip(line_start).collect();
-			let line_end = chars_after_start.find('\n').unwrap_or(chars_after_start.len());
-			chars_after_start.chars().take(line_end).collect()
-		};
 		let previous_selected = selected_start.get();
 		let previous_audio = selected_audio.get();
 		list.clear();
@@ -271,8 +268,7 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 		for item in filtered.items {
 			let snippet = match item.audio_ms {
 				Some(ms) => format_duration_ms(ms),
-				None if item.is_whole_line => get_line_text(item.start),
-				None => get_text_range(item.start, item.end),
+				None => snippets.get(&(item.start, item.end)).cloned().unwrap_or_default(),
 			};
 			let mut snippet = snippet.trim().to_string();
 			if snippet.trim().is_empty() {
