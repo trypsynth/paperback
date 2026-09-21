@@ -20,6 +20,13 @@ func applyRules(_ rules: [TtsRule], to text: String, voiceId: String?) -> String
 	return result
 }
 
+/// The silence the reader can add between paragraphs, in milliseconds, and how far one press of
+/// the setting moves it. The step is small because the difference between a pause that sounds
+/// right and one that drags is a few tens of milliseconds; the range stops at a second, past
+/// which it is no longer a pause between paragraphs.
+let paragraphPauseRangeMs = 0...1000
+let paragraphPauseStepMs = 10
+
 /// The engine rate a whole-number slider percentage stands for. A stored value from outside the
 /// slider's own range is brought back inside it rather than handed to the engine as-is.
 func speechRateForPercent(_ percent: Int) -> Float {
@@ -61,6 +68,11 @@ final class TtsManager: NSObject {
 	// completion handler as "stale", permanently desyncing playback from position tracking.
 	private var armedBox: GenBox? = nil
 	private var armedText: String? = nil
+	// Set when a speech setting (rate, pitch, voice, paragraph pause or rules) changes while a
+	// buffer is already armed. That
+	// buffer was synthesized under the old settings, and once handed to the player node it
+	// cannot be taken back, so it is dropped at the paragraph boundary instead (see `speak`).
+	private var armedIsStale = false
 
 	private struct PrefetchEntry {
 		let text: String
@@ -112,6 +124,19 @@ final class TtsManager: NSObject {
 			onPitchChanged?(pitch)
 		}
 	}
+	/// Extra silence after each paragraph, in milliseconds. Zero, the default, adds none.
+	///
+	/// Paragraphs are synthesized one at a time and played back to back, so the only gap between
+	/// them is whatever tail the voice leaves. How long that is depends entirely on the voice:
+	/// Eloquence leaves a clear break and wants nothing added, while the Vocalizer voices leave
+	/// barely more than a comma's worth. No single value suits both, so it is left to the reader.
+	var paragraphPauseMs: Int = 0 {
+		didSet {
+			guard oldValue != paragraphPauseMs else { return }
+			invalidatePrefetch()
+			onParagraphPauseChanged?(paragraphPauseMs)
+		}
+	}
 	var selectedVoiceIdentifier: String? = nil {
 		didSet {
 			guard oldValue != selectedVoiceIdentifier else { return }
@@ -129,6 +154,7 @@ final class TtsManager: NSObject {
 	@ObservationIgnored var onSpeechRateChanged: ((Float) -> Void)?
 	@ObservationIgnored var onPitchChanged: ((Float) -> Void)?
 	@ObservationIgnored var onVoiceChanged: ((String?) -> Void)?
+	@ObservationIgnored var onParagraphPauseChanged: ((Int) -> Void)?
 	@ObservationIgnored var rules: [TtsRule] = [] {
 		didSet { invalidatePrefetch() }
 	}
@@ -239,6 +265,7 @@ final class TtsManager: NSObject {
 			isPaused = false
 			armedBox = nil
 			armedText = nil
+			armedIsStale = false
 			engine.detach(player)
 			engine.attach(player)
 			let hwRate = AVAudioSession.sharedInstance().sampleRate
@@ -298,6 +325,7 @@ final class TtsManager: NSObject {
 			isPaused = false
 			armedBox = nil
 			armedText = nil
+			armedIsStale = false
 			wasInterruptedWhilePlaying = false
 			speechGeneration += 1
 			invalidatePrefetch()
@@ -329,9 +357,16 @@ final class TtsManager: NSObject {
 		// Already handed to the player node while the previous utterance was still playing
 		// (see armNextBuffer) — it's already audibly playing (or about to be). Just assign it
 		// the generation it's now logically current under; no re-scheduling needed.
-		if isAutoAdvance, text == armedText, let box = armedBox {
+		//
+		// Unless it is stale, meaning a speech setting changed after it was synthesized. Then it is deliberately not claimed: falling through stops the node,
+		// which drops it a few milliseconds in, and the paragraph is taken instead from the
+		// queue that was re-synthesized under the new settings. That trades a blip at one
+		// paragraph boundary for the change being heard on the next paragraph rather than the
+		// one after it.
+		if isAutoAdvance, !armedIsStale, text == armedText, let box = armedBox {
 			armedBox = nil
 			armedText = nil
+			armedIsStale = false
 			speechGeneration += 1
 			let gen = speechGeneration
 			box.gen = gen
@@ -496,6 +531,7 @@ final class TtsManager: NSObject {
 		// player.stop() cancels anything already queued on the node, including an armed buffer.
 		armedBox = nil
 		armedText = nil
+		armedIsStale = false
 	}
 
 	// Arms the front of prefetchQueue onto the player node if it's ready and it's currently
@@ -521,6 +557,7 @@ final class TtsManager: NSObject {
 		let box = GenBox()
 		armedBox = box
 		armedText = text
+		armedIsStale = false
 		player.scheduleBuffer(pcm) { [weak self] in
 			DispatchQueue.main.async { [weak self] in
 				guard let self else { return }
@@ -553,6 +590,7 @@ final class TtsManager: NSObject {
 		guard armedBox === box else { return }
 		armedBox = nil
 		armedText = nil
+		armedIsStale = false
 		speechGeneration += 1
 		isSpeaking = false
 		isPaused = false
@@ -561,6 +599,9 @@ final class TtsManager: NSObject {
 	}
 
 	private func invalidatePrefetch() {
+		// Whatever is armed was synthesized under the settings being replaced. Leaving it alone
+		// is what made a rate change take two paragraphs to be heard rather than one.
+		armedIsStale = armedBox != nil
 		prefetchGeneration += 1
 		prefetchSynthesizer.stopSpeaking(at: .immediate)
 		prefetchQueue = []
@@ -639,6 +680,37 @@ final class TtsManager: NSObject {
 
 	// Concatenate synthesis chunks then convert to the hardware output format in one pass.
 	private func convertToOutput(_ buffers: [AVAudioPCMBuffer]) -> AVAudioPCMBuffer? {
+		joinAndConvert(buffers).flatMap(withParagraphPause)
+	}
+
+	/// Appends the reader's paragraph pause to a finished paragraph, or returns it untouched when
+	/// the pause is zero.
+	///
+	/// Done inside the buffer rather than through `postUtteranceDelay` so the silence survives
+	/// the gapless hand-off to the next paragraph. A change to the setting re-synthesizes
+	/// everything queued, so every paragraph carries the pause that was set when it was read.
+	private func withParagraphPause(_ buffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
+		let format = buffer.format
+		let silenceFrames = AVAudioFrameCount(format.sampleRate * Double(paragraphPauseMs) / 1000)
+		guard silenceFrames > 0,
+			let padded = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: buffer.frameLength + silenceFrames),
+			let source = buffer.floatChannelData,
+			let destination = padded.floatChannelData
+		else {
+			return buffer
+		}
+		let frames = Int(buffer.frameLength)
+		for channel in 0..<Int(format.channelCount) {
+			memcpy(destination[channel], source[channel], frames * MemoryLayout<Float>.size)
+			// `AVAudioPCMBuffer` does not promise zeroed storage, so the silence is written
+			// rather than assumed; whatever was in that memory would otherwise be audible.
+			memset(destination[channel].advanced(by: frames), 0, Int(silenceFrames) * MemoryLayout<Float>.size)
+		}
+		padded.frameLength = buffer.frameLength + silenceFrames
+		return padded
+	}
+
+	private func joinAndConvert(_ buffers: [AVAudioPCMBuffer]) -> AVAudioPCMBuffer? {
 		guard let synthFormat = buffers.first?.format else { return nil }
 
 		let totalFrames = buffers.reduce(AVAudioFrameCount(0)) { $0 + $1.frameLength }

@@ -1,23 +1,19 @@
-use std::collections::HashSet;
-
 use anyhow::{Context, Result, bail};
 use mp4ameta::{Chapter, ChplTimescale, ReadConfig, Tag};
 
 use crate::{
 	audio::{AudioLocation, AudioTimelineBuilder},
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
-	parser::{Parser, util::path::extract_title_from_path},
-	t,
+	parser::{
+		Parser,
+		util::{
+			chapters::{NormalizedChapter, RawChapter, normalize_chapters},
+			path::extract_title_from_path,
+		},
+	},
 };
 
 pub struct M4bParser;
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct NormalizedChapter {
-	start_ms: u64,
-	end_ms: u64,
-	title: String,
-}
 
 impl Parser for M4bParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
@@ -36,7 +32,7 @@ impl Parser for M4bParser {
 			bail!("M4B file has no positive audio duration");
 		}
 		let (title, author) = document_metadata(&tag, &context.file_path);
-		let chapters = normalize_chapters(tag.chapters(), duration_ms, &title);
+		let chapters = normalize_chapters(&m4b_chapters_to_raw(tag.chapters()), duration_ms, &title);
 		Ok(build_document(&context.file_path, title, author, duration_ms, &chapters))
 	}
 }
@@ -52,33 +48,12 @@ fn document_metadata(tag: &Tag, file_path: &str) -> (String, String) {
 	(title, author)
 }
 
-fn normalize_chapters(chapters: &[Chapter], duration_ms: u64, document_title: &str) -> Vec<NormalizedChapter> {
-	let mut starts: Vec<(u64, String)> = chapters
+fn m4b_chapters_to_raw(chapters: &[Chapter]) -> Vec<RawChapter> {
+	chapters
 		.iter()
 		.filter_map(|chapter| {
 			let start_ms = u64::try_from(chapter.start.as_millis()).ok()?;
-			(start_ms < duration_ms).then(|| (start_ms, chapter.title.trim().to_string()))
-		})
-		.collect();
-	starts.sort_by_key(|(start_ms, _)| *start_ms);
-	let mut seen = HashSet::new();
-	starts.retain(|(start_ms, _)| seen.insert(*start_ms));
-	if starts.is_empty() {
-		return vec![NormalizedChapter { start_ms: 0, end_ms: duration_ms, title: document_title.to_string() }];
-	}
-	starts[0].0 = 0;
-	starts
-		.iter()
-		.enumerate()
-		.map(|(index, (start_ms, title))| {
-			let title = if title.is_empty() {
-				// TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
-				t("Chapter {}").replace("{}", &(index + 1).to_string())
-			} else {
-				title.clone()
-			};
-			let end_ms = starts.get(index + 1).map_or(duration_ms, |(next_start_ms, _)| *next_start_ms);
-			NormalizedChapter { start_ms: *start_ms, end_ms, title }
+			Some(RawChapter { start_ms, title: chapter.title.clone() })
 		})
 		.collect()
 }
@@ -144,41 +119,14 @@ mod tests {
 	}
 
 	#[test]
-	fn normalizes_chapters_into_sorted_contiguous_clips() {
-		let chapters = vec![
-			chapter(5000, "Second"),
-			chapter(1000, " First "),
-			chapter(5000, "Duplicate"),
-			chapter(9000, ""),
-			chapter(12_000, "Past end"),
-		];
-		assert_eq!(
-			normalize_chapters(&chapters, 10_000, "Book"),
-			vec![
-				NormalizedChapter { start_ms: 0, end_ms: 5000, title: "First".to_string() },
-				NormalizedChapter { start_ms: 5000, end_ms: 9000, title: "Second".to_string() },
-				NormalizedChapter { start_ms: 9000, end_ms: 10_000, title: "Chapter 3".to_string() },
-			]
-		);
-	}
-
-	#[test]
 	fn accepts_chapter_tracks_and_prefers_chapter_lists_when_both_exist() {
 		let mut tag = Tag::default();
 		tag.chapter_track_mut().extend([chapter(0, "Track One"), chapter(5000, "Track Two")]);
-		assert_eq!(normalize_chapters(tag.chapters(), 10_000, "Book")[0].title, "Track One");
+		assert_eq!(normalize_chapters(&m4b_chapters_to_raw(tag.chapters()), 10_000, "Book")[0].title, "Track One");
 		tag.chapter_list_mut().extend([chapter(0, "List One"), chapter(4000, "List Two")]);
-		let chapters = normalize_chapters(tag.chapters(), 10_000, "Book");
+		let chapters = normalize_chapters(&m4b_chapters_to_raw(tag.chapters()), 10_000, "Book");
 		assert_eq!(chapters[0].title, "List One");
 		assert_eq!(chapters[0].end_ms, 4000);
-	}
-
-	#[test]
-	fn chapterless_book_becomes_one_full_length_section() {
-		assert_eq!(
-			normalize_chapters(&[], 10_000, "Book"),
-			vec![NormalizedChapter { start_ms: 0, end_ms: 10_000, title: "Book".to_string() }]
-		);
 	}
 
 	#[test]

@@ -245,3 +245,37 @@ fn audio_extract_source_ffi_extracts_a_password_protected_zip_entry_source() {
 	assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
 	assert_eq!(fs::read(&output_path).unwrap(), b"zipped-chapter-bytes");
 }
+
+/// A plain audio bundle's text is one placeholder character per file (see
+/// `navigate_section_in_an_audio_only_book_announces_the_file_name`), so two adjacent tracks
+/// sit a single character apart no matter how long either recording runs.
+fn adjacent_tracks_timeline() -> AudioTimeline {
+	let mut builder = crate::audio::AudioTimelineBuilder::new();
+	let one = builder.add_source(AudioLocation::File("one.mp3".to_string()), Some(60_000));
+	let two = builder.add_source(AudioLocation::File("two.mp3".to_string()), Some(60_000));
+	builder.add_clip(one, 0, 60_000, 0, 1);
+	builder.add_clip(two, 0, 60_000, 1, 2);
+	builder.build()
+}
+
+// #890: character distance alone can't tell a real jump from a step to the next line in a
+// plain audio bundle, so a jump between tracks minutes apart has to be recorded even though it
+// only moves the caret by a single placeholder character.
+#[test]
+fn record_jump_uses_audio_distance_when_text_distance_is_too_sparse_to_tell() {
+	let mut session = session_with_audio(adjacent_tracks_timeline());
+	session.record_jump(0, 1);
+	let (history, index) = session.get_history();
+	assert_eq!(history, &[0]);
+	assert_eq!(index, 0);
+}
+
+/// The counterpart: a short seek within the same track (or one shorter than the audio
+/// threshold) still records nothing, just like a short jump in plain text.
+#[test]
+fn record_jump_still_ignores_a_short_audio_seek() {
+	let mut session = session_with_audio(adjacent_tracks_timeline());
+	session.record_jump(0, 0);
+	let (history, _) = session.get_history();
+	assert!(history.is_empty());
+}

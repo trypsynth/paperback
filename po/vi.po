@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-18 19:33-0600\n"
+"POT-Creation-Date: 2026-09-21 02:50+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -32,6 +32,21 @@ msgstr "Thêm công cụ dòng lệnh pb vào PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "Kho lưu trữ ZIP (.zip)"
 
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#, fuzzy
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Không có ngôn ngữ OCR nào được cài đặt. Thêm một ngôn ngữ trong cài đặt ngôn ngữ hệ thống của bạn."
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+#, fuzzy
+msgid "OCR failed."
+msgstr "OCR không thành công."
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+#, fuzzy
+msgid "OCR is not available on this system."
+msgstr "OCR không có sẵn trên hệ thống này."
+
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "Không thể tạo máy chủ IPC"
@@ -42,20 +57,33 @@ msgstr "Cảnh báo"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 #, fuzzy
 msgid "This document has no audio."
-msgstr "Tài liệu này không có mục lục."
+msgstr "Tài liệu này không có âm thanh."
 
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 #, fuzzy
 msgid "Audio hasn't started playing yet."
 msgstr "Âm thanh vẫn chưa bắt đầu phát."
 
+#. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+#, fuzzy
+msgid "{} (maximum)"
+msgstr "{} (tối đa)"
+
+#. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+#, fuzzy
+msgid "{} (minimum)"
+msgstr "{} (tối thiểu)"
+
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "5 seconds"
-msgstr "giây"
+msgstr "5 giây"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -67,7 +95,7 @@ msgstr "1 giây"
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "30 seconds"
-msgstr "giây"
+msgstr "30 giây"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -79,41 +107,31 @@ msgstr "1 phút"
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "2 minutes"
-msgstr "phút"
+msgstr "2 phút"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "5 minutes"
-msgstr "phút"
+msgstr "5 phút"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "10 minutes"
-msgstr "1 phút"
+msgstr "10 phút"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "30 minutes"
-msgstr "phút"
+msgstr "30 phút"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "1 hour"
 msgstr "1 giờ"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-#, fuzzy
-msgid "{} (maximum)"
-msgstr "{} (tối đa)"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-#, fuzzy
-msgid "{} (minimum)"
-msgstr "{} (tối thiểu)"
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
@@ -201,7 +219,7 @@ msgstr "Không có tài liệu gần đây."
 #. TRANSLATORS: Announced after the Recent Documents list has been emptied
 #, fuzzy
 msgid "Recent documents cleared."
-msgstr "Các tài liệu gần đây"
+msgstr "Các tài liệu gần đây đã bị xóa."
 
 #. TRANSLATORS: Menu item in the File menu to open a document.
 #, fuzzy
@@ -303,7 +321,7 @@ msgstr "&Tiêu đề tiếp theo    H"
 #. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
 #, fuzzy
 msgid "Go to next heading"
-msgstr "Chuyển đến tiêu đề tiếp theo"
+msgstr "Đi tới tiêu đề tiếp theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
 #, fuzzy
@@ -469,7 +487,7 @@ msgstr "Go &Back    Ctrl+["
 #. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
 #, fuzzy
 msgid "Go &Forward"
-msgstr "Go &Forward    Ctrl+]"
+msgstr "Đi &Tiến"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
 #, fuzzy
@@ -624,7 +642,7 @@ msgstr "Phát hoặc tạm dừng phần đọc lời bình bằng âm thanh c�
 #. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
 #, fuzzy
 msgid "Seek Audio &Forward"
-msgstr "Go &Forward    Ctrl+]"
+msgstr "Tua Âm thanh &Tiến"
 
 #. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
 #, fuzzy
@@ -661,10 +679,34 @@ msgstr "&Giảm độ dịch chuyển âm thanh"
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Giảm khoảng cách di chuyển khi tìm kiếm phần tường thuật bằng âm thanh"
 
+#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+#, fuzzy
+msgid "&Increase Audio Speed"
+msgstr "&Tăng Tốc độ Âm thanh"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
+#, fuzzy
+msgid "Increase how fast the audio narration plays"
+msgstr "Tăng tốc độ phát của lời nói"
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+#, fuzzy
+msgid "&Decrease Audio Speed"
+msgstr "&Giảm Tốc độ Âm thanh"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
+#, fuzzy
+msgid "Decrease how fast the audio narration plays"
+msgstr "Giảm tốc độ phát của lời nói"
+
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 #, fuzzy
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "Một trình đọc sách điện tử và tài liệu dễ sử dụng, nhẹ và nhanh"
+
+#, fuzzy
+msgid "Paperback is built on other people's work. The libraries it uses, and their licenses, are credited at {}."
+msgstr "Paperback được xây dựng dựa trên công việc của những người khác. Các thư viện mà nó sử dụng và các giấy phép của chúng được ghi nhận tại {}."
 
 #. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
@@ -767,7 +809,7 @@ msgstr[0] "%d tài liệu."
 #. TRANSLATORS: Status bar text in the All Documents dialog when the only document in the list is selected
 #, fuzzy
 msgid "1 document selected."
-msgstr "Tài liệu đã được tải lại."
+msgstr "1 tài liệu được chọn."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
 #, fuzzy
@@ -789,7 +831,7 @@ msgstr "Tìm sách"
 #. TRANSLATORS: Title of the Batch OCR dialog
 #, fuzzy
 msgid "Batch OCR"
-msgstr "So sánh chữ hoa và chữ thường"
+msgstr "Hàng loạt OCR"
 
 #. TRANSLATORS: Label for the starting page field of the Batch OCR range
 #, fuzzy
@@ -908,7 +950,7 @@ msgstr "Số lượng tệp:"
 #. TRANSLATORS: Label for the total playback duration across all of the document's audio files
 #, fuzzy
 msgid "Total duration:"
-msgstr "Thời lượng"
+msgstr "Thời lượng tổng cộng:"
 
 #. TRANSLATORS: Label for the average playback duration per audio file in the document
 #, fuzzy
@@ -979,7 +1021,7 @@ msgstr "Được rồi"
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
 msgid "Go"
-msgstr "Bắt đầu"
+msgstr "Đi"
 
 #. TRANSLATORS: Label for the cancellation button
 #. TRANSLATORS: Cancel button that closes the Find dialog
@@ -994,7 +1036,7 @@ msgstr "Đi đến dòng"
 #. TRANSLATORS: Label/prompt template for the line selection dialog. The %d placeholders represent current_line and max_lines respectively.
 #, fuzzy
 msgid "Go to line (%d/%d):"
-msgstr "Truy cập trang (%d / %d):"
+msgstr "Đi tới dòng (%d/%d):"
 
 #. TRANSLATORS: Announced when the entered line number is outside the document's range
 #, fuzzy
@@ -1008,7 +1050,7 @@ msgstr "Đi đến trang"
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_page respectively.
 #, fuzzy
 msgid "Go to page (%d/%d):"
-msgstr "Truy cập trang (%d / %d):"
+msgstr "Đi tới trang (%d/%d):"
 
 #. TRANSLATORS: Announced when the entered page number is outside the document's range
 #, fuzzy
@@ -1022,7 +1064,7 @@ msgstr "Đi đến phần trăm"
 #. TRANSLATORS: Label/prompt template for the percentage selection dialog. The %d placeholders represent current_percent and 100 respectively.
 #, fuzzy
 msgid "Go to percent (%d/%d):"
-msgstr "Truy cập trang (%d / %d):"
+msgstr "Đi tới phần trăm (%d/%d):"
 
 #. TRANSLATORS: Label for the percentage selection slider
 msgid "&Percent"
@@ -1031,7 +1073,7 @@ msgstr "&Phần trăm"
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 #, fuzzy
 msgid "Percent out of range."
-msgstr "Tỷ lệ phần trăm"
+msgstr "Phần trăm ngoài phạm vi."
 
 #. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 #, fuzzy
@@ -1295,7 +1337,7 @@ msgstr "Chọn &Font..."
 #. TRANSLATORS: Button label to restore font settings to default values
 #, fuzzy
 msgid "&Reset to Default Font"
-msgstr "&Đặt lại về phông chữ mặc định"
+msgstr "&Đặt lại Font mặc định"
 
 #. TRANSLATORS: Label/header for the Background Color options section
 #, fuzzy
@@ -1534,17 +1576,17 @@ msgstr "Sẵn sàng"
 #. TRANSLATORS: Announced after setting a temporary bookmark at the current position
 #, fuzzy
 msgid "Temporary bookmark set."
-msgstr "Không có dấu trang nào."
+msgstr "Đã đặt dấu trang tạm thời."
 
 #. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
 #, fuzzy
 msgid "No temporary bookmark."
-msgstr "Không có dấu trang tiếp theo."
+msgstr "Không có dấu trang tạm thời."
 
 #. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
 #, fuzzy
 msgid "Temporary bookmark."
-msgstr "Không có dấu trang nào."
+msgstr "Dấu trang tạm thời."
 
 #. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
 #, fuzzy
@@ -1711,7 +1753,7 @@ msgstr "Nguồn:"
 #. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
 #, fuzzy
 msgid "Source view is not available for this document format."
-msgstr "Chế độ xem nguồn không khả dụng đối với định dạng tài liệu này."
+msgstr "Chế độ xem nguồn không có sẵn cho định dạng tài liệu này."
 
 #. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 #, fuzzy
@@ -1788,7 +1830,7 @@ msgstr "Bìa mềm"
 
 #, fuzzy
 msgid "Document reloaded."
-msgstr "Tài liệu đã được tải lại."
+msgstr "Đã tải lại tài liệu."
 
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 #, fuzzy
@@ -1965,7 +2007,7 @@ msgstr "&Hình ảnh"
 #. TRANSLATORS: Status-bar help text for the Go > Images submenu.
 #, fuzzy
 msgid "Navigate by images"
-msgstr "Điều hướng bằng hình ảnh"
+msgstr "Điều hướng theo hình ảnh"
 
 #. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
 #, fuzzy
@@ -1995,7 +2037,7 @@ msgstr "Công &Thức"
 #. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
 #, fuzzy
 msgid "Navigate by formulas"
-msgstr "Điều hướng bằng hình ảnh"
+msgstr "Điều hướng theo công thức"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 #, fuzzy
@@ -2373,17 +2415,17 @@ msgstr "Không có bảng trước đó."
 #. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
 #, fuzzy
 msgid "No formulas."
-msgstr "Không có số liệu."
+msgstr "Không có công thức."
 
 #. TRANSLATORS: Announcement when there is no next formula to navigate to
 #, fuzzy
 msgid "No next formula."
-msgstr "Không có hình ảnh tiếp theo."
+msgstr "Không có công thức tiếp theo."
 
 #. TRANSLATORS: Announcement when there is no previous formula to navigate to
 #, fuzzy
 msgid "No previous formula."
-msgstr "Không có hình ảnh trước đó."
+msgstr "Không có công thức trước đó."
 
 #. TRANSLATORS: Announced when the document has no separators to navigate
 #, fuzzy
@@ -2418,7 +2460,7 @@ msgstr "Không có hình ảnh trước đó."
 #. TRANSLATORS: Announced when the document has no figures to navigate
 #, fuzzy
 msgid "No figures."
-msgstr "Không có số liệu."
+msgstr "Không có hình vẽ."
 
 #. TRANSLATORS: Announced when there is no next figure from the current position
 #, fuzzy
@@ -2470,21 +2512,6 @@ msgstr "Vượt quá mép cuối của thùng chứa."
 #, fuzzy
 msgid "Start of container."
 msgstr "Đầu container."
-
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-#, fuzzy
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Không có ngôn ngữ OCR nào được cài đặt. Thêm một ngôn ngữ trong cài đặt ngôn ngữ hệ thống của bạn."
-
-#. TRANSLATORS: Announced when the OCR engine fails on a page
-#, fuzzy
-msgid "OCR failed."
-msgstr "OCR không thành công."
-
-#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
-#, fuzzy
-msgid "OCR is not available on this system."
-msgstr "Chế độ xem nguồn không khả dụng đối với định dạng tài liệu này."
 
 #. TRANSLATORS: Title of the dialog displaying a formula as MathML
 #, fuzzy
@@ -2553,7 +2580,7 @@ msgstr "Truy cập &line"
 
 #, fuzzy
 msgid "Go to line"
-msgstr "Chuyển đến dòng"
+msgstr "Đi tới dòng"
 
 #. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
 #, fuzzy
@@ -2562,7 +2589,7 @@ msgstr "Truy cập &percent"
 
 #, fuzzy
 msgid "Go to percent"
-msgstr "Chuyển sang phần trăm"
+msgstr "Đi tới phần trăm"
 
 #. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
 #, fuzzy
@@ -2572,7 +2599,7 @@ msgstr "Đã sao chép (%d ký tự)."
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 #, fuzzy
 msgid "Beginning of selection set."
-msgstr "Đầu tài liệu"
+msgstr "Đã đặt đầu vùng chọn."
 
 #. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
 #, fuzzy
@@ -2617,7 +2644,7 @@ msgstr "Dòng"
 #. TRANSLATORS: Status bar label for the current character offset within the line
 #, fuzzy
 msgid "Character"
-msgstr "Nhân vật"
+msgstr "Ký tự"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 #, fuzzy
@@ -2646,7 +2673,7 @@ msgstr "Mở..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Close All"
-msgstr "Đóng"
+msgstr "Đóng tất cả"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2656,12 +2683,12 @@ msgstr "Mở lại & Lần đóng gần nhất    Ctrl+Shift+T"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Show All Recent Documents..."
-msgstr "Không có tài liệu gần đây"
+msgstr "Hiển thị tất cả tài liệu gần đây..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Clear Recent Documents"
-msgstr "Các tài liệu gần đây"
+msgstr "Xóa tài liệu gần đây"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2711,17 +2738,17 @@ msgstr "Tiến Tới"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Announce Percentage"
-msgstr "Tỷ lệ phần trăm"
+msgstr "Thông báo phần trăm"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Set Temporary Bookmark"
-msgstr "Không có dấu trang nào."
+msgstr "Đặt dấu trang tạm thời"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Jump to Temporary Bookmark"
-msgstr "Nhảy đến dấu trang"
+msgstr "Chuyển đến dấu trang tạm thời"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2796,7 +2823,7 @@ msgstr "Ghi Chú Tiếp Theo"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Jump to All Bookmarks..."
-msgstr "Nhảy đến dấu trang"
+msgstr "Chuyển đến tất cả dấu trang..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2811,7 +2838,7 @@ msgstr "Chuyển đến phần “Ghi chú & Chỉ...”    Ctrl+Alt+M"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "View Note Text"
-msgstr "Xem ghi chú"
+msgstr "Xem nội dung ghi chú"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2980,6 +3007,16 @@ msgstr "Giảm Mức Tua Âm Thanh"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
+msgid "Increase Audio Speed"
+msgstr "Tăng Tốc độ Âm thanh"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Decrease Audio Speed"
+msgstr "Giảm Tốc độ Âm thanh"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Full Screen"
 msgstr "Toàn Màn Hình"
 
@@ -3011,7 +3048,7 @@ msgstr "Nhập dữ liệu tài liệu"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Export Document Data..."
-msgstr "Xuất dữ liệu tài liệu"
+msgstr "Xuất dữ liệu tài liệu..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -3096,7 +3133,7 @@ msgstr "Paperback không thể đọc các kho lưu trữ truyện tranh RAR tr�
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 #, fuzzy
 msgid "Failed to parse comic archive: {}"
-msgstr "Không thể phân tích cú pháp tài liệu RTF: {}"
+msgstr "Không thể phân tích kho lưu trữ truyện tranh: {}"
 
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 #, fuzzy
@@ -3116,12 +3153,12 @@ msgstr "Hình ảnh"
 #. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
 #, fuzzy
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr "Tệp .opf DAISY không hợp lệ hoặc không tìm thấy tệp XML DTBook trong tệp manifest"
+msgstr "Tệp DAISY .opf không hợp lệ hoặc không tìm thấy DTBook XML trong bộ kê khai"
 
 #. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
 #, fuzzy
 msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
-msgstr "Tệp .opf DAISY không hợp lệ hoặc không tìm thấy tệp XML DTBook trong tệp manifest"
+msgstr "Tệp DAISY 2.02 ncc.html không hợp lệ hoặc không tìm thấy các trang nội dung"
 
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
@@ -3171,7 +3208,7 @@ msgstr "Không thể chuyển đổi tệp XML định dạng FB2 sang văn bả
 #. TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
 #, fuzzy
 msgid "Failed to parse WinHelp file: {}"
-msgstr "Không thể phân tích cú pháp tài liệu RTF: {}"
+msgstr "Không thể phân tích tệp WinHelp: {}"
 
 #. TRANSLATORS: Name given to a WinHelp topic that carries no title of its own; {} is the topic's number
 #, fuzzy
@@ -3187,11 +3224,6 @@ msgstr "Tệp HTML trống: {}"
 #, fuzzy
 msgid "Failed to convert HTML to text: {}"
 msgstr "Không thể chuyển đổi HTML sang văn bản: {}"
-
-#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
-#, fuzzy
-msgid "Chapter {}"
-msgstr "Nhập {}"
 
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 #, fuzzy
@@ -3375,7 +3407,12 @@ msgstr "Tệp PPTX không chứa bất kỳ trang chiếu nào"
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 #, fuzzy
 msgid "Failed to parse RTF document: {}"
-msgstr "Không thể phân tích cú pháp tài liệu RTF: {}"
+msgstr "Không thể phân tích tài liệu RTF: {}"
+
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+#, fuzzy
+msgid "Chapter {}"
+msgstr "Chương {}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
@@ -3559,7 +3596,7 @@ msgstr "Phát hiện: (không có)"
 
 #, fuzzy
 msgid "Detected: {}"
-msgstr "Chi tiết: {}"
+msgstr "Đã phát hiện: {}"
 
 #, fuzzy
 msgid "No key detected"
@@ -3593,12 +3630,12 @@ msgstr "&Xóa lối tắt"
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
 #, fuzzy
 msgid "&Reset to Default"
-msgstr "&Đặt lại về phông chữ mặc định"
+msgstr "&Đặt lại về mặc định"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
 #, fuzzy
 msgid "Reset &All to Defaults"
-msgstr "&Đặt lại về phông chữ mặc định"
+msgstr "Đặt lại &tất cả về mặc định"
 
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 #, fuzzy
@@ -3613,12 +3650,12 @@ msgstr "Xung đột phím tắt"
 #. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
 #, fuzzy
 msgid "Reset all shortcuts to their default values?"
-msgstr "Đặt lại tất cả các phím tắt về giá trị mặc định?"
+msgstr "Đặt lại tất cả phím tắt về giá trị mặc định?"
 
 #. TRANSLATORS: Confirmation prompt shown when resetting the current tab's keyboard shortcuts to their defaults.
 #, fuzzy
 msgid "Reset all shortcuts in this tab to their default values?"
-msgstr "Đặt lại tất cả các phím tắt về giá trị mặc định?"
+msgstr "Đặt lại tất cả phím tắt trong tab này về giá trị mặc định?"
 
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 #, fuzzy
@@ -3689,7 +3726,7 @@ msgstr "Chuyển sang chế độ văn bản"
 #: swift
 #, fuzzy
 msgid "Recent Documents"
-msgstr "Các tài liệu gần đây"
+msgstr "Tài liệu gần đây"
 
 #. TRANSLATORS: Menu item to open the sleep timer; the "(active)" variant is shown while a timer is currently counting down
 #: swift
@@ -3731,7 +3768,7 @@ msgstr "Hiển thị tất cả"
 #: swift
 #, fuzzy
 msgid "Match Case"
-msgstr "So sánh chữ hoa và chữ thường"
+msgstr "Phân biệt chữ hoa/thường"
 
 #. TRANSLATORS: Toggle label; when on, search only matches whole words
 #: swift
@@ -3761,7 +3798,7 @@ msgstr "Sách mở"
 #: swift
 #, fuzzy
 msgid "Locate"
-msgstr "Tìm"
+msgstr "Định vị"
 
 #. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
@@ -3797,7 +3834,7 @@ msgstr "Các tài liệu bạn mở sẽ hiển thị tại đây."
 #: swift
 #, fuzzy
 msgid "Text to Speech"
-msgstr "Chuyển văn bản thành giọng nói"
+msgstr "Chuyển văn bản thành lời nói"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: swift
@@ -3815,7 +3852,7 @@ msgstr "Tỷ lệ"
 #: swift
 #, fuzzy
 msgid "Speech Rate"
-msgstr "Tốc độ nói"
+msgstr "Tốc độ lời nói"
 
 #. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
 #: swift
@@ -3839,7 +3876,7 @@ msgstr "Nghe bản mẫu"
 #: swift
 #, fuzzy
 msgid "Text Size"
-msgstr "Chuyển văn bản thành giọng nói"
+msgstr "Kích thước văn bản"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
 #: swift
@@ -3905,7 +3942,7 @@ msgstr "Các dòng"
 #: swift
 #, fuzzy
 msgid "Characters"
-msgstr "Nhân vật"
+msgstr "Ký tự"
 
 #. TRANSLATORS: Row label for the document's character count with whitespace excluded
 #: swift
@@ -3947,7 +3984,7 @@ msgstr "Số trang"
 #: swift
 #, fuzzy
 msgid "Percentage"
-msgstr "Tỷ lệ phần trăm"
+msgstr "Phần trăm"
 
 #. TRANSLATORS: Navigation title of the Go To sheet
 #: swift
@@ -4154,7 +4191,7 @@ msgstr "Thẻ"
 #: swift
 #, fuzzy
 msgid "Contents"
-msgstr "Mục lục"
+msgstr "Nội dung"
 
 #. TRANSLATORS: Title shown when the current document has no table of contents
 #: swift
@@ -4219,7 +4256,7 @@ msgstr "Nhấn nút phát để bắt đầu nghe."
 #: kt
 #, fuzzy
 msgid "Document Information"
-msgstr "Thông tin tài liệu"
+msgstr "Thông tin Tài liệu"
 
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
@@ -4230,19 +4267,19 @@ msgstr "Liên kết không có tiêu đề"
 #: kt
 #, fuzzy
 msgid "Export Document"
-msgstr "Xuất dữ liệu tài liệu"
+msgstr "Xuất tài liệu"
 
 #. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
 #: kt
 #, fuzzy
 msgid "Select a format to export the current document:"
-msgstr "Đóng tài liệu hiện tại"
+msgstr "Chọn định dạng để xuất tài liệu hiện tại:"
 
 #. TRANSLATORS: Export format option to save the document as a plain text file
 #: kt
 #, fuzzy
 msgid "Plain Text (.txt)"
-msgstr "Văn bản thuần"
+msgstr "Văn bản thuần túy (.txt)"
 
 #. TRANSLATORS: Export format option to save the document as an HTML file
 #: kt
@@ -4254,7 +4291,7 @@ msgstr "HTML (.html)"
 #: kt
 #, fuzzy
 msgid "Markdown (.md)"
-msgstr "Markdown"
+msgstr "Markdown (.md)"
 
 #. TRANSLATORS: Shown in the in-app file browser when a folder has no openable documents or subfolders
 #: kt
@@ -4295,7 +4332,7 @@ msgstr "Mật khẩu:"
 #: kt
 #, fuzzy
 msgid "All Files Access Required"
-msgstr "Yêu cầu quyền truy cập vào tất cả các tệp"
+msgstr "Cần có quyền truy cập tất cả tệp"
 
 #. TRANSLATORS: Intro sentence explaining what the "All Files Access" permission is used for
 #: kt
@@ -4397,7 +4434,7 @@ msgstr "Thời gian tùy chỉnh..."
 #: kt
 #, fuzzy
 msgid "Expanded"
-msgstr "Mở rộng"
+msgstr "Đã mở rộng"
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
 #: kt
@@ -4420,7 +4457,7 @@ msgstr "Mở rộng"
 #: kt
 #, fuzzy
 msgid "This document contains {} words."
-msgstr "Tài liệu này có{} từ."
+msgstr "Tài liệu này chứa {} từ."
 
 #. TRANSLATORS: Unit label shown under the large word-count number. Which of the
 #. three forms is used depends on the target language's own plural rule, read
@@ -4429,7 +4466,7 @@ msgstr "Tài liệu này có{} từ."
 #: kt
 #, fuzzy
 msgid "words"
-msgstr "Từ"
+msgstr "từ"
 
 #. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
@@ -4441,7 +4478,7 @@ msgstr "Đóng tìm kiếm"
 #: kt
 #, fuzzy
 msgid "Document exported"
-msgstr "Tài liệu đã được tải lại."
+msgstr "Tài liệu đã xuất"
 
 #: kt
 #, fuzzy
@@ -4500,7 +4537,7 @@ msgstr "Đọc to"
 #: kt
 #, fuzzy
 msgid "Export As"
-msgstr "Xuất thành công"
+msgstr "Xuất dưới dạng"
 
 #. TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
 #: kt
@@ -4512,7 +4549,7 @@ msgstr "Danh sách các phần tử"
 #: kt
 #, fuzzy
 msgid "No more matches."
-msgstr "Không còn kết quả nào."
+msgstr "Không còn trận đấu nào."
 
 #. TRANSLATORS: Name of the "heading" reading/navigation unit
 #: kt
@@ -4570,7 +4607,7 @@ msgstr "{} giây"
 #: kt
 #, fuzzy
 msgid "✓ Granted"
-msgstr "Grant"
+msgstr "✓ Được cấp phép"
 
 #. TRANSLATORS: Heading shown on the first-run permissions onboarding screen
 #: kt
@@ -4588,7 +4625,7 @@ msgstr "Paperback hoạt động tốt nhất với một vài quyền. Đây l�
 #: kt
 #, fuzzy
 msgid "Notifications"
-msgstr "Không có phần nào."
+msgstr "Thông báo"
 
 #. TRANSLATORS: Button to grant the notifications permission during onboarding
 #: kt
@@ -4600,13 +4637,13 @@ msgstr "Bật thông báo"
 #: kt
 #, fuzzy
 msgid "All Files Access"
-msgstr "Yêu cầu quyền truy cập vào tất cả các tệp"
+msgstr "Quyền truy cập tất cả tệp"
 
 #. TRANSLATORS: Button to open system settings for the all files access permission during onboarding
 #: kt
 #, fuzzy
 msgid "Enable File Access"
-msgstr "Yêu cầu quyền truy cập vào tất cả các tệp"
+msgstr "Bật quyền truy cập tệp"
 
 #. TRANSLATORS: Button to leave the onboarding screen and continue into the app, whether or not permissions were granted
 #: kt
@@ -4630,13 +4667,13 @@ msgstr "Sử dụng trình duyệt tệp trong ứng dụng (yêu cầu quyền 
 #: kt
 #, fuzzy
 msgid "Text-to-Speech"
-msgstr "Chuyển văn bản thành giọng nói"
+msgstr "Chuyển đổi văn bản thành tiếng nói"
 
 #. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 #, fuzzy
 msgid "System Default"
-msgstr "Cài đặt mặc định của hệ thống"
+msgstr "Mặc định của hệ thống"
 
 #. TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
 #: kt
@@ -4672,7 +4709,7 @@ msgstr "1.5×"
 #: kt
 #, fuzzy
 msgid "Speech Engine"
-msgstr "Tốc độ nói"
+msgstr "Động cơ nói"
 
 #: swift
 #, fuzzy
@@ -4687,7 +4724,7 @@ msgstr "{} cuốn sách"
 #: swift
 #, fuzzy
 msgid "..."
-msgstr "Mở..."
+msgstr "..."
 
 #. TRANSLATORS: Menu item to jump to a specific page, line, or percentage in the document
 #: swift
@@ -4709,7 +4746,7 @@ msgstr "Tùy chỉnh: {} phút"
 #: swift
 #, fuzzy
 msgid "Custom: {} minutes⁣"
-msgstr "Tùy chỉnh: {} phút"
+msgstr "Tùy chỉnh: {} phút⁣"
 
 #. TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is
 #. replaced with the number. Which of the three forms is used depends on the target language's
@@ -4718,7 +4755,7 @@ msgstr "Tùy chỉnh: {} phút"
 #: kt
 #, fuzzy
 msgid "This document contains {} word."
-msgstr "Tài liệu này có{} từ."
+msgstr "Tài liệu này chứa {} từ."
 
 #. TRANSLATORS: Unit label shown under the large word-count number. Which of the
 #. three forms is used depends on the target language's own plural rule, read
@@ -4727,7 +4764,7 @@ msgstr "Tài liệu này có{} từ."
 #: kt
 #, fuzzy
 msgid "word"
-msgstr "Từ"
+msgstr "từ"
 
 #. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
 #. above; {} is the number of seconds. Which of the three forms is used depends on the
@@ -4747,12 +4784,12 @@ msgstr "{} giây"
 #: kt
 #, fuzzy
 msgid "{} seconds⁣"
-msgstr "{} giây"
+msgstr "{} giây⁣"
 
 #: kt
 #, fuzzy
 msgid "This document contains {} words.⁣"
-msgstr "Tài liệu này có{} từ."
+msgstr "Tài liệu này chứa {} từ.⁣"
 
 #. TRANSLATORS: Unit label shown under the large word-count number. Which of the
 #. three forms is used depends on the target language's own plural rule, read
@@ -4761,7 +4798,7 @@ msgstr "Tài liệu này có{} từ."
 #: kt
 #, fuzzy
 msgid "words⁣"
-msgstr "Từ"
+msgstr "từ⁣"
 
 #. TRANSLATORS: Closing note explaining the fallback if the user denies the permission
 #: kt
@@ -4785,7 +4822,7 @@ msgstr "Kích hoạt trình duyệt tệp tùy chọn trong ứng dụng, cho ph
 #: kt
 #, fuzzy
 msgid "File Manager"
-msgstr "Tệp bị thiếu"
+msgstr "Trình quản lý tệp"
 
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
 #: kt
@@ -4832,7 +4869,7 @@ msgstr "Tiêu đề {}"
 #: kt
 #, fuzzy
 msgid "go to heading"
-msgstr "Chuyển đến tiêu đề tiếp theo"
+msgstr "đi đến tiêu đề"
 
 #: kt
 #, fuzzy
@@ -4843,13 +4880,13 @@ msgstr "{}, Cấp {}"
 #: kt
 #, fuzzy
 msgid "go to link"
-msgstr "Chuyển đến dòng"
+msgstr "đi đến liên kết"
 
 #. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
 #: kt
 #, fuzzy
 msgid "show import and export options"
-msgstr "Các tùy chọn nhập và xuất"
+msgstr "hiển thị tùy chọn nhập và xuất"
 
 #. TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
 #: kt
@@ -4861,7 +4898,7 @@ msgstr "mở"
 #: kt
 #, fuzzy
 msgid "go to chapter"
-msgstr "Chuyển sang phần trăm"
+msgstr "đi đến chương"
 
 #. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
 #: kt
@@ -4873,7 +4910,7 @@ msgstr "Đây là mẫu của công cụ đọc được chọn."
 #: kt
 #, fuzzy
 msgid "This document does not contain pages."
-msgstr "Tài liệu này không có mục lục."
+msgstr "Tài liệu này không chứa các trang."
 
 #. TRANSLATORS: Name of the "formula" reading/navigation unit
 #: kt
@@ -4885,7 +4922,7 @@ msgstr "Công thức"
 #: swift
 #, fuzzy
 msgid "No matches."
-msgstr "Không còn kết quả nào."
+msgstr "Không có kết quả khớp."
 
 #. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
 #: swift
@@ -4897,13 +4934,13 @@ msgstr "Giao diện"
 #: swift
 #, fuzzy
 msgid "System"
-msgstr "Cài đặt mặc định của hệ thống"
+msgstr "Hệ thống"
 
 #. TRANSLATORS: Appearance option pinning the app to its light colours
 #: swift
 #, fuzzy
 msgid "Light"
-msgstr "Phải"
+msgstr "Sáng"
 
 #. TRANSLATORS: Appearance option pinning the app to its dark colours
 #: swift
@@ -4922,6 +4959,30 @@ msgstr "Văn bản độ tương phản cao"
 #, fuzzy
 msgid "Hide previous and next buttons"
 msgstr "Ẩn nút trước và tiếp theo"
+
+#. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
+#: swift
+#, fuzzy
+msgid "This empties the list. The documents themselves are not deleted."
+msgstr "Điều này làm trống danh sách. Các tài liệu chính nó không bị xóa."
+
+#. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
+#: swift
+#, fuzzy
+msgid "{} ms"
+msgstr "{} ms"
+
+#. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
+#: swift
+#, fuzzy
+msgid "Paragraph Pause"
+msgstr "Tạm dừng Đoạn văn"
+
+#. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
+#: kt
+#, fuzzy
+msgid "No other voices"
+msgstr "Không có giọng nói khác"
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."

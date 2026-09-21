@@ -33,7 +33,11 @@ private const val SEEK_RANGE = 10000
 
 // Whole percentages of the rate range, matching what the settings slider reports.
 private val RATE_PRESETS = listOf(25, 50, 75, 100)
-private const val RATE_STEP = 5
+
+// One percent per swipe, the same as iOS. Bigger steps get where you are going in fewer
+// gestures but overshoot the rate you actually wanted, and the rate is a setting people tune
+// once and live with rather than sweep through.
+private const val RATE_STEP = 1
 
 // Zero-width space: satisfies TalkBack's non-null stateDescription check so it doesn't
 // fall back to announcing the raw slider value, while reading aloud as nothing.

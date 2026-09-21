@@ -197,6 +197,16 @@ formats! {
 		mime_types: ["audio/x-m4b"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_AUDIO,
 	},
+	/// A chapterless MP3 becomes one full-length section, same as a chapterless M4B; a chaptered
+	/// one splits into sections via its ID3v2 `CHAP`/`CTOC` frames (see `parser::mp3`), the
+	/// standard mechanism podcast apps use, which is why this gets the same
+	/// `SUPPORTS_SECTIONS | SUPPORTS_TOC` as M4B despite not every MP3 using it.
+	MP3 {
+		name: "MP3 Audiobooks",
+		extensions: ["mp3"],
+		mime_types: ["audio/mpeg"],
+		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_AUDIO,
+	},
 	MOBI {
 		name: "MOBI Books",
 		extensions: ["mobi", "azw", "azw3"],

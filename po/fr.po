@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-18 19:33-0600\n"
+"POT-Creation-Date: 2026-09-21 02:50+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -41,6 +41,21 @@ msgstr "Ajouter l'outil de ligne de commande pb au PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "Archives ZIP (.zip)"
 
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#, fuzzy
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Aucune langue OCR n'est installée. Ajoutez-en une dans les paramètres linguistiques de votre système."
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+#, fuzzy
+msgid "OCR failed."
+msgstr "L'OCR a échoué."
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+#, fuzzy
+msgid "OCR is not available on this system."
+msgstr "La reconnaissance optique de caractères n'est pas disponible sur ce système."
+
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "Impossible de créer le serveur IPC"
@@ -51,20 +66,33 @@ msgstr "Avertissement"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 #, fuzzy
 msgid "This document has no audio."
-msgstr "Ce document ne comporte pas de table des matières."
+msgstr "Ce document n'a pas d'audio."
 
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 #, fuzzy
 msgid "Audio hasn't started playing yet."
 msgstr "La lecture audio n'a pas encore commencé."
 
+#. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+#, fuzzy
+msgid "{} (maximum)"
+msgstr "{} (maximum)"
+
+#. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+#, fuzzy
+msgid "{} (minimum)"
+msgstr "{} (minimum)"
+
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "5 seconds"
-msgstr "secondes"
+msgstr "5 secondes"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -76,7 +104,7 @@ msgstr "1 seconde"
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "30 seconds"
-msgstr "secondes"
+msgstr "30 secondes"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -88,41 +116,31 @@ msgstr "1 minute"
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "2 minutes"
-msgstr "minutes"
+msgstr "2 minutes"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "5 minutes"
-msgstr "minutes"
+msgstr "5 minutes"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "10 minutes"
-msgstr "1 minute"
+msgstr "10 minutes"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "30 minutes"
-msgstr "minutes"
+msgstr "30 minutes"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 #, fuzzy
 msgid "1 hour"
 msgstr "1 heure"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-#, fuzzy
-msgid "{} (maximum)"
-msgstr "{} (maximum)"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-#, fuzzy
-msgid "{} (minimum)"
-msgstr "{} (minimum)"
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
@@ -201,7 +219,7 @@ msgstr "Aucun document récent."
 #. TRANSLATORS: Announced after the Recent Documents list has been emptied
 #, fuzzy
 msgid "Recent documents cleared."
-msgstr "Documents récents"
+msgstr "Documents récents effacés."
 
 #. TRANSLATORS: Menu item in the File menu to open a document.
 #, fuzzy
@@ -461,7 +479,7 @@ msgstr "&Retour"
 #. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
 #, fuzzy
 msgid "Go &Forward"
-msgstr "Aller à &Suivant    Ctrl+]"
+msgstr "Aller à &l'avant"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the start of the current list or table.
 #, fuzzy
@@ -645,9 +663,33 @@ msgstr "&Réduire la valeur de recherche audio"
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Réduire la distance parcourue par la narration audio"
 
+#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+#, fuzzy
+msgid "&Increase Audio Speed"
+msgstr "&Augmenter la vitesse audio"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
+#, fuzzy
+msgid "Increase how fast the audio narration plays"
+msgstr "Augmenter la vitesse de lecture de la narration audio"
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+#, fuzzy
+msgid "&Decrease Audio Speed"
+msgstr "&Diminuer la vitesse audio"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
+#, fuzzy
+msgid "Decrease how fast the audio narration plays"
+msgstr "Diminuer la vitesse de lecture de la narration audio"
+
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "Un lecteur d'ebooks et de documents accessible, léger et rapide"
+
+#, fuzzy
+msgid "Paperback is built on other people's work. The libraries it uses, and their licenses, are credited at {}."
+msgstr "Paperback repose sur le travail d'autres personnes. Les bibliothèques qu'il utilise et leurs licences sont créditées à {}."
 
 #. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
@@ -749,7 +791,7 @@ msgstr[1] "Tous les %d documents."
 #. TRANSLATORS: Status bar text in the All Documents dialog when the only document in the list is selected
 #, fuzzy
 msgid "1 document selected."
-msgstr "Le document a été rechargé."
+msgstr "1 document sélectionné."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
 #, fuzzy
@@ -773,7 +815,7 @@ msgstr "Rechercher un livre"
 #. TRANSLATORS: Title of the Batch OCR dialog
 #, fuzzy
 msgid "Batch OCR"
-msgstr "Cas de correspondance"
+msgstr "Reconnaissance optique par lots"
 
 #. TRANSLATORS: Label for the starting page field of the Batch OCR range
 #, fuzzy
@@ -885,7 +927,7 @@ msgstr "Nombre de fichiers :"
 #. TRANSLATORS: Label for the total playback duration across all of the document's audio files
 #, fuzzy
 msgid "Total duration:"
-msgstr "Durée"
+msgstr "Durée totale :"
 
 #. TRANSLATORS: Label for the average playback duration per audio file in the document
 #, fuzzy
@@ -1006,7 +1048,7 @@ msgstr "&Pourcentage"
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 #, fuzzy
 msgid "Percent out of range."
-msgstr "Pourcentage"
+msgstr "Pourcentage hors limites."
 
 #. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 #, fuzzy
@@ -1265,7 +1307,7 @@ msgstr "Sélectionnez « &Font... »"
 #. TRANSLATORS: Button label to restore font settings to default values
 #, fuzzy
 msgid "&Reset to Default Font"
-msgstr "&Rétablir la police par défaut"
+msgstr "&Réinitialiser la police par défaut"
 
 #. TRANSLATORS: Label/header for the Background Color options section
 #, fuzzy
@@ -1345,7 +1387,7 @@ msgstr "Centre"
 #. TRANSLATORS: Right text alignment option
 #, fuzzy
 msgid "Right"
-msgstr "D'accord"
+msgstr "Droite"
 
 #. TRANSLATORS: Justified text alignment option
 #, fuzzy
@@ -1507,17 +1549,17 @@ msgstr "Prêt"
 #. TRANSLATORS: Announced after setting a temporary bookmark at the current position
 #, fuzzy
 msgid "Temporary bookmark set."
-msgstr "Aucun signet."
+msgstr "Signet temporaire défini."
 
 #. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
 #, fuzzy
 msgid "No temporary bookmark."
-msgstr "Aucun signet suivant."
+msgstr "Aucun signet temporaire."
 
 #. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
 #, fuzzy
 msgid "Temporary bookmark."
-msgstr "Aucun signet."
+msgstr "Signet temporaire."
 
 #. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
 #, fuzzy
@@ -1544,7 +1586,7 @@ msgstr "Fichier : {}"
 #. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
 #, fuzzy
 msgid "Details: {}"
-msgstr "Plus d'informations : {}"
+msgstr "Détails : {}"
 
 #. TRANSLATORS: Accessible name of the list of Find All results
 #, fuzzy
@@ -1680,7 +1722,7 @@ msgstr "Source :"
 #. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
 #, fuzzy
 msgid "Source view is not available for this document format."
-msgstr "L'affichage « Source » n'est pas disponible pour ce format de document."
+msgstr "L'affichage de la source n'est pas disponible pour ce format de document."
 
 #. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 #, fuzzy
@@ -1703,7 +1745,7 @@ msgstr "Fichiers HTML (*.html)|*.html|Tous les fichiers (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to HTML
 #, fuzzy
 msgid "Export document to HTML"
-msgstr "Exporter le document au format HTML"
+msgstr "Exporter le document en HTML"
 
 #. TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
 #, fuzzy
@@ -1713,7 +1755,7 @@ msgstr "Fichiers Markdown (*.md)|*.md|Tous les fichiers (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
 #, fuzzy
 msgid "Export document to Markdown"
-msgstr "Exporter le document au format Markdown"
+msgstr "Exporter le document en Markdown"
 
 #. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 msgid "Paperback files (*.paperback)|*.paperback"
@@ -1753,7 +1795,7 @@ msgstr "Paperback"
 
 #, fuzzy
 msgid "Document reloaded."
-msgstr "Le document a été rechargé."
+msgstr "Document rechargé."
 
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 #, fuzzy
@@ -1829,7 +1871,7 @@ msgstr "Aller à la &page"
 #. TRANSLATORS: Menu item in the Go menu to open the find dialog.
 #, fuzzy
 msgid "&Find..."
-msgstr "&Rechercher"
+msgstr "&Rechercher..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Find menu item.
 msgid "Find text in the document"
@@ -1917,7 +1959,7 @@ msgstr "&Images"
 #. TRANSLATORS: Status-bar help text for the Go > Images submenu.
 #, fuzzy
 msgid "Navigate by images"
-msgstr "Navigation par images"
+msgstr "Naviguer par images"
 
 #. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
 #, fuzzy
@@ -1945,7 +1987,7 @@ msgstr "For&mules"
 #. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
 #, fuzzy
 msgid "Navigate by formulas"
-msgstr "Navigation par images"
+msgstr "Naviguer par formules"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
@@ -2053,7 +2095,7 @@ msgstr "Exporter en &HTML..."
 #. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
 #, fuzzy
 msgid "Export document as HTML"
-msgstr "Exporter le document au format HTML"
+msgstr "Exporter le document en HTML"
 
 #. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a Markdown file.
 #, fuzzy
@@ -2063,7 +2105,7 @@ msgstr "Exporter vers &Markdown..."
 #. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
 #, fuzzy
 msgid "Export document as Markdown"
-msgstr "Exporter le document au format Markdown"
+msgstr "Exporter le document en Markdown"
 
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
 #, fuzzy
@@ -2297,17 +2339,17 @@ msgstr "Aucun tableau précédent."
 #. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
 #, fuzzy
 msgid "No formulas."
-msgstr "Pas de chiffres."
+msgstr "Aucune formule."
 
 #. TRANSLATORS: Announcement when there is no next formula to navigate to
 #, fuzzy
 msgid "No next formula."
-msgstr "Il n'y a pas d'image suivante."
+msgstr "Aucune formule suivante."
 
 #. TRANSLATORS: Announcement when there is no previous formula to navigate to
 #, fuzzy
 msgid "No previous formula."
-msgstr "Aucune image précédente."
+msgstr "Aucune formule précédente."
 
 #. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
@@ -2329,7 +2371,7 @@ msgstr "Pas d'images."
 #. TRANSLATORS: Announced when there is no next image from the current position
 #, fuzzy
 msgid "No next image."
-msgstr "Il n'y a pas d'image suivante."
+msgstr "Aucune image suivante."
 
 #. TRANSLATORS: Announced when there is no previous image from the current position
 #, fuzzy
@@ -2339,7 +2381,7 @@ msgstr "Aucune image précédente."
 #. TRANSLATORS: Announced when the document has no figures to navigate
 #, fuzzy
 msgid "No figures."
-msgstr "Pas de chiffres."
+msgstr "Aucune figure."
 
 #. TRANSLATORS: Announced when there is no next figure from the current position
 #, fuzzy
@@ -2391,21 +2433,6 @@ msgstr "Au-delà de l'extrémité du conteneur."
 #, fuzzy
 msgid "Start of container."
 msgstr "Début du conteneur."
-
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-#, fuzzy
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Aucune langue OCR n'est installée. Ajoutez-en une dans les paramètres linguistiques de votre système."
-
-#. TRANSLATORS: Announced when the OCR engine fails on a page
-#, fuzzy
-msgid "OCR failed."
-msgstr "L'OCR a échoué."
-
-#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
-#, fuzzy
-msgid "OCR is not available on this system."
-msgstr "L'affichage « Source » n'est pas disponible pour ce format de document."
 
 #. TRANSLATORS: Title of the dialog displaying a formula as MathML
 #, fuzzy
@@ -2477,7 +2504,7 @@ msgstr "Copié (%d caractères)."
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 #, fuzzy
 msgid "Beginning of selection set."
-msgstr "Début du document"
+msgstr "Début de la sélection défini."
 
 #. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
 #, fuzzy
@@ -2546,7 +2573,7 @@ msgstr "Ouvrir..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Close All"
-msgstr "Fermer"
+msgstr "Fermer tout"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2556,12 +2583,12 @@ msgstr "Rouvrir & Dernière fermeture    Ctrl+Maj+T"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Show All Recent Documents..."
-msgstr "Aucun document récent"
+msgstr "Afficher tous les documents récents..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Clear Recent Documents"
-msgstr "Documents récents"
+msgstr "Effacer les documents récents"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2611,17 +2638,17 @@ msgstr "Aller en avant"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Announce Percentage"
-msgstr "Pourcentage"
+msgstr "Annoncer le pourcentage"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Set Temporary Bookmark"
-msgstr "Aucun signet."
+msgstr "Définir un signet temporaire"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Jump to Temporary Bookmark"
-msgstr "Aller au signet"
+msgstr "Aller au signet temporaire"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2696,7 +2723,7 @@ msgstr "Note suivante"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Jump to All Bookmarks..."
-msgstr "Aller au signet"
+msgstr "Aller à tous les signets..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2711,7 +2738,7 @@ msgstr "Aller aux notes uniquement..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "View Note Text"
-msgstr "Afficher la note"
+msgstr "Afficher le texte de la note"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2880,6 +2907,16 @@ msgstr "Diminuer le saut audio"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
+msgid "Increase Audio Speed"
+msgstr "Augmenter la vitesse audio"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Decrease Audio Speed"
+msgstr "Diminuer la vitesse audio"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Full Screen"
 msgstr "Plein écran"
 
@@ -2911,7 +2948,7 @@ msgstr "Importer les données d'un document"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Export Document Data..."
-msgstr "Exporter les données du document"
+msgstr "Exporter les données du document..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2996,7 +3033,7 @@ msgstr "Paperback ne peut pas lire les archives de bandes dessinées RAR sur cet
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 #, fuzzy
 msgid "Failed to parse comic archive: {}"
-msgstr "Échec de l'analyse du document RTF : {}"
+msgstr "Échec de l'analyse de l'archive de bande dessinée : {}"
 
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 #, fuzzy
@@ -3016,12 +3053,12 @@ msgstr "Image"
 #. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
 #, fuzzy
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr "Fichier .opf DAISY non valide ou impossibilité de trouver le fichier XML DTBook dans le manifeste"
+msgstr "Fichier DAISY .opf invalide ou XML DTBook introuvable dans le manifeste"
 
 #. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
 #, fuzzy
 msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
-msgstr "Fichier .opf DAISY non valide ou impossibilité de trouver le fichier XML DTBook dans le manifeste"
+msgstr "Fichier DAISY 2.02 ncc.html invalide ou pages de contenu introuvables"
 
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
@@ -3071,7 +3108,7 @@ msgstr "Échec de la conversion du fichier XML FB2 en texte"
 #. TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
 #, fuzzy
 msgid "Failed to parse WinHelp file: {}"
-msgstr "Échec de l'analyse du document RTF : {}"
+msgstr "Échec de l'analyse du fichier WinHelp : {}"
 
 #. TRANSLATORS: Name given to a WinHelp topic that carries no title of its own; {} is the topic's number
 #, fuzzy
@@ -3087,11 +3124,6 @@ msgstr "Le fichier HTML est vide : {}"
 #, fuzzy
 msgid "Failed to convert HTML to text: {}"
 msgstr "Échec de la conversion du code HTML en texte : {}"
-
-#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
-#, fuzzy
-msgid "Chapter {}"
-msgstr "Entrer {}"
 
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 #, fuzzy
@@ -3277,6 +3309,11 @@ msgstr "Le fichier PPTX ne contient aucune diapositive"
 msgid "Failed to parse RTF document: {}"
 msgstr "Échec de l'analyse du document RTF : {}"
 
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+#, fuzzy
+msgid "Chapter {}"
+msgstr "Chapitre {}"
+
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
 msgid "DOC file is missing required FIB fields"
@@ -3337,7 +3374,7 @@ msgstr "Format de fichier de mise à jour inconnu."
 
 #, fuzzy
 msgid "Failed to open disk image"
-msgstr "Impossible d'ouvrir la page de don dans le navigateur."
+msgstr "Impossible d'ouvrir l'image disque"
 
 #, fuzzy
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
@@ -3454,7 +3491,7 @@ msgstr "Détecté : (aucun)"
 
 #, fuzzy
 msgid "Detected: {}"
-msgstr "Plus d'informations : {}"
+msgstr "Détecté : {}"
 
 #, fuzzy
 msgid "No key detected"
@@ -3488,12 +3525,12 @@ msgstr "&Effacer le raccourci"
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
 #, fuzzy
 msgid "&Reset to Default"
-msgstr "&Rétablir la police par défaut"
+msgstr "&Réinitialiser par défaut"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
 #, fuzzy
 msgid "Reset &All to Defaults"
-msgstr "&Rétablir la police par défaut"
+msgstr "Réinitialiser &tous par défaut"
 
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 #, fuzzy
@@ -3513,7 +3550,7 @@ msgstr "Réinitialiser tous les raccourcis à leurs valeurs par défaut ?"
 #. TRANSLATORS: Confirmation prompt shown when resetting the current tab's keyboard shortcuts to their defaults.
 #, fuzzy
 msgid "Reset all shortcuts in this tab to their default values?"
-msgstr "Réinitialiser tous les raccourcis à leurs valeurs par défaut ?"
+msgstr "Réinitialiser tous les raccourcis de cet onglet à leurs valeurs par défaut ?"
 
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 #, fuzzy
@@ -3626,7 +3663,7 @@ msgstr "Tout afficher"
 #: swift
 #, fuzzy
 msgid "Match Case"
-msgstr "Cas de correspondance"
+msgstr "Respecter la casse"
 
 #. TRANSLATORS: Toggle label; when on, search only matches whole words
 #: swift
@@ -3710,7 +3747,7 @@ msgstr "Taux"
 #: swift
 #, fuzzy
 msgid "Speech Rate"
-msgstr "Vitesse d'élocution"
+msgstr "Débit de parole"
 
 #. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
 #: swift
@@ -3734,7 +3771,7 @@ msgstr "Écouter un extrait"
 #: swift
 #, fuzzy
 msgid "Text Size"
-msgstr "Synthèse vocale"
+msgstr "Taille du texte"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
 #: swift
@@ -3990,7 +4027,7 @@ msgstr "Personnalisé"
 #: swift
 #, fuzzy
 msgid "Custom: {} minutes"
-msgstr "Personnalisé : « {} minutes »"
+msgstr "Personnalisé : {} minutes"
 
 #: swift
 #, fuzzy
@@ -4061,7 +4098,7 @@ msgstr "Pas de table des matières"
 #: swift
 #, fuzzy
 msgid "This document has no table of contents."
-msgstr "Ce document ne comporte pas de table des matières."
+msgstr "Ce document n'a pas de table des matières."
 
 #. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
 #: swift
@@ -4114,7 +4151,7 @@ msgstr "Cliquez sur « Lecture » pour commencer à écouter."
 #: kt
 #, fuzzy
 msgid "Document Information"
-msgstr "Informations sur le document"
+msgstr "Informations du document"
 
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
@@ -4125,19 +4162,19 @@ msgstr "Lien sans titre"
 #: kt
 #, fuzzy
 msgid "Export Document"
-msgstr "Exporter les données du document"
+msgstr "Exporter le document"
 
 #. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
 #: kt
 #, fuzzy
 msgid "Select a format to export the current document:"
-msgstr "Fermer le document actuel"
+msgstr "Sélectionnez un format pour exporter le document actuel :"
 
 #. TRANSLATORS: Export format option to save the document as a plain text file
 #: kt
 #, fuzzy
 msgid "Plain Text (.txt)"
-msgstr "Texte brut"
+msgstr "Texte brut (.txt)"
 
 #. TRANSLATORS: Export format option to save the document as an HTML file
 #: kt
@@ -4149,7 +4186,7 @@ msgstr "HTML (.html)"
 #: kt
 #, fuzzy
 msgid "Markdown (.md)"
-msgstr "Markdown"
+msgstr "Markdown (.md)"
 
 #. TRANSLATORS: Shown in the in-app file browser when a folder has no openable documents or subfolders
 #: kt
@@ -4226,7 +4263,7 @@ msgstr "• Pour afficher les chemins d'accès locaux exacts de vos documents."
 #: kt
 #, fuzzy
 msgid "Grant"
-msgstr "Subvention"
+msgstr "Accorder"
 
 #. TRANSLATORS: Button label to dismiss the permission rationale dialog without granting it
 #: kt
@@ -4315,7 +4352,7 @@ msgstr "Développer"
 #: kt
 #, fuzzy
 msgid "This document contains {} words."
-msgstr "Ce document contient{}s de mots."
+msgstr "Ce document contient {} mots."
 
 #. TRANSLATORS: Unit label shown under the large word-count number. Which of the
 #. three forms is used depends on the target language's own plural rule, read
@@ -4324,7 +4361,7 @@ msgstr "Ce document contient{}s de mots."
 #: kt
 #, fuzzy
 msgid "words"
-msgstr "Mots"
+msgstr "mots"
 
 #. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
@@ -4336,7 +4373,7 @@ msgstr "Fermer la recherche"
 #: kt
 #, fuzzy
 msgid "Document exported"
-msgstr "Le document a été rechargé."
+msgstr "Document exporté"
 
 #: kt
 #, fuzzy
@@ -4395,7 +4432,7 @@ msgstr "Lecture à voix haute"
 #: kt
 #, fuzzy
 msgid "Export As"
-msgstr "Exportation réussie"
+msgstr "Exporter sous"
 
 #. TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
 #: kt
@@ -4407,7 +4444,7 @@ msgstr "Liste des éléments"
 #: kt
 #, fuzzy
 msgid "No more matches."
-msgstr "Plus aucun résultat."
+msgstr "Aucune autre correspondance."
 
 #. TRANSLATORS: Name of the "heading" reading/navigation unit
 #: kt
@@ -4465,7 +4502,7 @@ msgstr "{} secondes"
 #: kt
 #, fuzzy
 msgid "✓ Granted"
-msgstr "Subvention"
+msgstr "✓ Accordé"
 
 #. TRANSLATORS: Heading shown on the first-run permissions onboarding screen
 #: kt
@@ -4483,7 +4520,7 @@ msgstr "Paperback fonctionne mieux avec quelques autorisations. Voici ce que nou
 #: kt
 #, fuzzy
 msgid "Notifications"
-msgstr "Aucune section."
+msgstr "Notifications"
 
 #. TRANSLATORS: Button to grant the notifications permission during onboarding
 #: kt
@@ -4495,13 +4532,13 @@ msgstr "Activer les notifications"
 #: kt
 #, fuzzy
 msgid "All Files Access"
-msgstr "Accès à tous les fichiers requis"
+msgstr "Accès à tous les fichiers"
 
 #. TRANSLATORS: Button to open system settings for the all files access permission during onboarding
 #: kt
 #, fuzzy
 msgid "Enable File Access"
-msgstr "Accès à tous les fichiers requis"
+msgstr "Activer l'accès aux fichiers"
 
 #. TRANSLATORS: Button to leave the onboarding screen and continue into the app, whether or not permissions were granted
 #: kt
@@ -4531,7 +4568,7 @@ msgstr "Synthèse vocale"
 #: kt
 #, fuzzy
 msgid "System Default"
-msgstr "Paramètres par défaut du système"
+msgstr "Paramètre système"
 
 #. TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
 #: kt
@@ -4549,7 +4586,7 @@ msgstr "Avancer {}"
 #: kt
 #, fuzzy
 msgid "Enter {}"
-msgstr "Entrer {}"
+msgstr "Entrez {}"
 
 #. TRANSLATORS: Shown in place of the document when it could not be opened; {} is the reason
 #: kt
@@ -4567,7 +4604,7 @@ msgstr "1,5×"
 #: kt
 #, fuzzy
 msgid "Speech Engine"
-msgstr "Vitesse d'élocution"
+msgstr "Moteur de synthèse"
 
 #: swift
 #, fuzzy
@@ -4582,7 +4619,7 @@ msgstr "{} livres"
 #: swift
 #, fuzzy
 msgid "..."
-msgstr "Ouvrir..."
+msgstr "..."
 
 #. TRANSLATORS: Menu item to jump to a specific page, line, or percentage in the document
 #: swift
@@ -4594,17 +4631,17 @@ msgstr "Aller à"
 #: swift
 #, fuzzy
 msgid "Search..."
-msgstr "Rechercher"
+msgstr "Rechercher..."
 
 #: swift
 #, fuzzy
 msgid "Custom: {} minute"
-msgstr "Personnalisé : « {} minutes »"
+msgstr "Personnalisé : {} minute"
 
 #: swift
 #, fuzzy
 msgid "Custom: {} minutes⁣"
-msgstr "Personnalisé : « {} minutes »"
+msgstr "Personnalisé : {} minutes⁣"
 
 #. TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is
 #. replaced with the number. Which of the three forms is used depends on the target language's
@@ -4613,7 +4650,7 @@ msgstr "Personnalisé : « {} minutes »"
 #: kt
 #, fuzzy
 msgid "This document contains {} word."
-msgstr "Ce document contient{}s de mots."
+msgstr "Ce document contient {} mot."
 
 #. TRANSLATORS: Unit label shown under the large word-count number. Which of the
 #. three forms is used depends on the target language's own plural rule, read
@@ -4622,7 +4659,7 @@ msgstr "Ce document contient{}s de mots."
 #: kt
 #, fuzzy
 msgid "word"
-msgstr "Mots"
+msgstr "mot"
 
 #. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
 #. above; {} is the number of seconds. Which of the three forms is used depends on the
@@ -4632,7 +4669,7 @@ msgstr "Mots"
 #: kt
 #, fuzzy
 msgid "{} second"
-msgstr "{} secondes"
+msgstr "{} seconde"
 
 #. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
 #. above; {} is the number of seconds. Which of the three forms is used depends on the
@@ -4642,12 +4679,12 @@ msgstr "{} secondes"
 #: kt
 #, fuzzy
 msgid "{} seconds⁣"
-msgstr "{} secondes"
+msgstr "{} secondes⁣"
 
 #: kt
 #, fuzzy
 msgid "This document contains {} words.⁣"
-msgstr "Ce document contient{}s de mots."
+msgstr "Ce document contient {} mots.⁣"
 
 #. TRANSLATORS: Unit label shown under the large word-count number. Which of the
 #. three forms is used depends on the target language's own plural rule, read
@@ -4656,7 +4693,7 @@ msgstr "Ce document contient{}s de mots."
 #: kt
 #, fuzzy
 msgid "words⁣"
-msgstr "Mots"
+msgstr "mots⁣"
 
 #. TRANSLATORS: Closing note explaining the fallback if the user denies the permission
 #: kt
@@ -4680,7 +4717,7 @@ msgstr "Active le navigateur de fichiers optionnel de l'application, vous permet
 #: kt
 #, fuzzy
 msgid "File Manager"
-msgstr "Fichier manquant"
+msgstr "Gestionnaire de fichiers"
 
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
 #: kt
@@ -4768,7 +4805,7 @@ msgstr "Ceci est un exemple du moteur de synthèse sélectionné."
 #: kt
 #, fuzzy
 msgid "This document does not contain pages."
-msgstr "Ce document ne comporte pas de table des matières."
+msgstr "Ce document ne contient pas de pages."
 
 #. TRANSLATORS: Name of the "formula" reading/navigation unit
 #: kt
@@ -4780,7 +4817,7 @@ msgstr "Formule"
 #: swift
 #, fuzzy
 msgid "No matches."
-msgstr "Plus aucun résultat."
+msgstr "Aucune correspondance."
 
 #. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
 #: swift
@@ -4792,7 +4829,7 @@ msgstr "Apparence"
 #: swift
 #, fuzzy
 msgid "System"
-msgstr "Paramètres par défaut du système"
+msgstr "Système"
 
 #. TRANSLATORS: Appearance option pinning the app to its light colours
 #: swift
@@ -4817,6 +4854,30 @@ msgstr "Texte à contraste élevé"
 #, fuzzy
 msgid "Hide previous and next buttons"
 msgstr "Masquer les boutons précédent et suivant"
+
+#. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
+#: swift
+#, fuzzy
+msgid "This empties the list. The documents themselves are not deleted."
+msgstr "Cela vide la liste. Les documents eux-mêmes ne sont pas supprimés."
+
+#. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
+#: swift
+#, fuzzy
+msgid "{} ms"
+msgstr "{} ms"
+
+#. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
+#: swift
+#, fuzzy
+msgid "Paragraph Pause"
+msgstr "Pause entre paragraphes"
+
+#. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
+#: kt
+#, fuzzy
+msgid "No other voices"
+msgstr "Aucune autre voix"
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."

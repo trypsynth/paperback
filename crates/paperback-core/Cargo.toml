@@ -23,7 +23,7 @@ anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
 cbc = "0.2.1"
-cfb = "0.14.0"
+cfb = "0.15.0"
 chardetng = "1.0.0"
 ego-tree = "0.11.0"
 flate2 = "1.1.10"
@@ -34,12 +34,12 @@ icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
 image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "gif", "webp", "bmp"] }
 libchm = "0.3.0"
 libhlp = "0.2.0"
-lofty = "0.25.2"
+lofty = "0.25.4"
 mp4ameta = "0.13.0"
 office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
 patois = "0.2.1"
-pdfium = "0.10.4"
+pdfium-render = { version = "0.9.4", default-features = false, features = ["pdfium_latest", "thread_safe"] }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.4", default-features = false, features = ["html"] }
 rayon = "1.12.0"

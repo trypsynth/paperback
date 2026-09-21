@@ -17,6 +17,11 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 
 	private var ratePercent: Int { ttsManager.speechRatePercent }
 
+	private var paragraphPauseLabel: String {
+		// TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
+		t("{} ms").replacingOccurrences(of: "{}", with: "\(ttsManager.paragraphPauseMs)")
+	}
+
 	private var pitchPercent: Int {
 		Int(((ttsManager.pitch - 0.5) / 1.5 * 100).rounded())
 	}
@@ -70,6 +75,21 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 					.accessibilityLabel(t("Pitch"))
 					.accessibilityValue("\(pitchPercent)%")
 			}
+			Stepper(
+				value: $ttsManager.paragraphPauseMs,
+				in: paragraphPauseRangeMs,
+				step: paragraphPauseStepMs
+			) {
+				HStack {
+					// TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
+					Text(t("Paragraph Pause"))
+					Spacer()
+					Text(paragraphPauseLabel)
+						.foregroundStyle(.secondary)
+						.monospacedDigit()
+				}
+			}
+			.accessibilityValue(paragraphPauseLabel)
 			NavigationLink {
 				SpeechDictionaryView()
 			} label: {

@@ -6,6 +6,7 @@ use std::{
 	io::BufReader,
 	path::{Path, PathBuf},
 	rc::{Rc, Weak},
+	sync::{Arc, Mutex},
 	time::Duration,
 };
 
@@ -15,11 +16,22 @@ use paperback_core::{
 	util::zip::extract_zip_entry_to_file_with_password,
 };
 use rodio::{Decoder, DeviceSinkBuilder, MixerDeviceSink, Player, Source};
+use rodio_wsola::WsolaSourceExt;
 use zip::ZipArchive;
 
 /// How far short of a source's end a seek past that end lands, leaving enough to play out
 /// before moving on to the next source.
 const END_MARGIN_MS: u64 = 100;
+
+/// The slowest and fastest playback speed multipliers `increase_speed`/`decrease_speed` will
+/// step to, and the size of each step.
+const MIN_SPEED: f32 = 0.5;
+const MAX_SPEED: f32 = 3.0;
+const SPEED_STEP: f32 = 0.1;
+
+/// How often the live source checks `shared_speed` for a change made while it's already
+/// playing (see `AudioPlayer::speed`'s doc comment).
+const SPEED_POLL_PERIOD: Duration = Duration::from_millis(20);
 
 /// A source decoded straight from its file, with the file's length handed to the decoder so a
 /// constant-bitrate MP3 carrying no duration header still reports a usable `total_duration()`.
@@ -62,6 +74,18 @@ pub struct AudioPlayer {
 	last_seek_target: Option<(usize, u64)>,
 	/// Where extracted zip-embedded sources are cached, keyed by archive+entry.
 	cache_dir: PathBuf,
+	/// The playback speed multiplier (1.0 = normal), applied to the loaded source and to
+	/// whatever loads next. Reset to 1.0 only by creating a new `AudioPlayer`.
+	///
+	/// Speeding up plays the source through a WSOLA time-stretcher (`rodio_wsola::Wsola`)
+	/// rather than through rodio's own `Player::set_speed`, which just plays samples faster
+	/// (raising their pitch, the "chipmunk effect") rather than actually stretching time.
+	/// `shared_speed` is the live channel into that already-running stretcher: `load_source`
+	/// wraps each freshly loaded decoder in a `Wsola` that polls it every `SPEED_POLL_PERIOD`
+	/// (`Wsola::set_speed` takes `&mut self`, and the wrapped source lives on rodio's own
+	/// mixer thread once appended, out of this struct's reach otherwise).
+	speed: f32,
+	shared_speed: Arc<Mutex<f32>>,
 }
 
 impl AudioPlayer {
@@ -79,6 +103,8 @@ impl AudioPlayer {
 			pending_target_ms: None,
 			last_seek_target: None,
 			cache_dir,
+			speed: 1.0,
+			shared_speed: Arc::new(Mutex::new(1.0)),
 		})
 	}
 
@@ -133,6 +159,52 @@ impl AudioPlayer {
 		} else {
 			self.play();
 		}
+	}
+
+	/// The current playback speed multiplier (1.0 = normal).
+	#[must_use]
+	pub const fn speed(&self) -> f32 {
+		self.speed
+	}
+
+	/// Sets the playback speed multiplier, clamped to `MIN_SPEED..=MAX_SPEED`, applying it to
+	/// the currently loaded source (if any) as well as whatever loads next. Returns the speed
+	/// actually applied, after clamping.
+	///
+	/// `position_ms` (and everything built on it: `elapsed_ms`, seeking, "is this the same
+	/// spot" checks) reads the loaded source's position as `position_base_ms` plus however much
+	/// wall-clock time the player reports played back, scaled by `speed` — see its own doc
+	/// comment. That scaling is only correct for time played *at the current speed*, so a speed
+	/// change re-seeks the live source to where it already was, which re-bases
+	/// `position_base_ms`/`position_ms` against the new speed before anything is scaled by it.
+	pub fn set_speed(&mut self, speed: f32) -> f32 {
+		let new_speed = round_speed(speed.clamp(MIN_SPEED, MAX_SPEED));
+		if (new_speed - self.speed).abs() < f32::EPSILON {
+			return self.speed;
+		}
+		let resume_content_ms = self.position_ms();
+		self.speed = new_speed;
+		*self.shared_speed.lock().unwrap() = new_speed;
+		if let (Some(player), Some(content_ms)) = (self.player.as_ref(), resume_content_ms) {
+			let apparent = Duration::from_millis(content_ms).div_f32(new_speed);
+			if player.try_seek(apparent).is_ok() {
+				self.position_base_ms = 0;
+			} else {
+				tracing::debug!(content_ms, new_speed, "audio: re-seek after a speed change was refused");
+			}
+		}
+		self.speed
+	}
+
+	/// Steps the playback speed up by `SPEED_STEP`, clamped at `MAX_SPEED`. Returns the new
+	/// speed, which callers compare against the speed before the call to notice a clamp.
+	pub fn increase_speed(&mut self) -> f32 {
+		self.set_speed(self.speed + SPEED_STEP)
+	}
+
+	/// Steps the playback speed down by `SPEED_STEP`, clamped at `MIN_SPEED`.
+	pub fn decrease_speed(&mut self) -> f32 {
+		self.set_speed(self.speed - SPEED_STEP)
 	}
 
 	/// Moves on to the next source once the current one has played out, and notices the end of
@@ -232,9 +304,18 @@ impl AudioPlayer {
 	}
 
 	/// Where the loaded source is playing, within its own file.
+	///
+	/// `player.get_pos()` reports how much wall-clock time has actually played since the last
+	/// seek (through the WSOLA-wrapped source, at whatever `speed` is now), not how far that
+	/// covers into the source's own content — at 2x speed, one played-back second covers two
+	/// content seconds. Scaling it by `speed` converts back to a content position, which is
+	/// only correct as long as `speed` hasn't changed since the last seek; `set_speed` re-seeks
+	/// specifically to keep that true.
 	fn position_ms(&self) -> Option<u64> {
 		let player = self.player.as_ref()?;
-		Some(self.position_base_ms.saturating_add(duration_ms(player.get_pos())))
+		let played_ms = duration_ms(player.get_pos());
+		let content_elapsed_ms = (played_ms as f64 * f64::from(self.speed)) as u64;
+		Some(self.position_base_ms.saturating_add(content_elapsed_ms))
 	}
 
 	/// Seeks the source that is already loaded, reporting whether that worked. A source that
@@ -247,7 +328,10 @@ impl AudioPlayer {
 		if player.empty() {
 			return false;
 		}
-		if let Err(err) = player.try_seek(Duration::from_millis(seek_ms)) {
+		// `seek_ms` is a content position; the live source expects wall-clock ("apparent")
+		// position, which is content position divided by speed (see `position_ms`).
+		let apparent = Duration::from_millis(seek_ms).div_f32(self.speed);
+		if let Err(err) = player.try_seek(apparent) {
 			tracing::debug!(seek_ms, error = %err, "audio: in-place seek refused, reloading the source");
 			return false;
 		}
@@ -298,7 +382,7 @@ impl AudioPlayer {
 		};
 		tracing::debug!(source_index, path = %path.display(), seek_ms, applied_seek_ms, ?length_ms, "audio: load_source");
 		let player = Player::connect_new(self.device.mixer());
-		player.append(decoder);
+		player.append(wsola_speed_source(decoder, self.speed, &self.shared_speed));
 		if self.playing {
 			player.play();
 		} else {
@@ -342,6 +426,33 @@ fn duration_ms(duration: Duration) -> u64 {
 	u64::try_from(duration.as_millis()).unwrap_or(u64::MAX)
 }
 
+/// Wraps `decoder` in a WSOLA time-stretcher started at `initial_speed`, which keeps polling
+/// `shared_speed` for the rest of its life so a later `AudioPlayer::set_speed` (changing that
+/// shared value) reaches it — `Wsola::set_speed` takes `&mut self`, and once this is handed to
+/// `Player::append` it runs on rodio's own mixer thread, out of `AudioPlayer`'s direct reach.
+fn wsola_speed_source(
+	decoder: FileDecoder,
+	initial_speed: f32,
+	shared_speed: &Arc<Mutex<f32>>,
+) -> impl Source<Item = f32> + Send + 'static {
+	let shared_speed = Arc::clone(shared_speed);
+	let mut applied_speed = initial_speed;
+	decoder.wsola(initial_speed).periodic_access(SPEED_POLL_PERIOD, move |wsola| {
+		let target_speed = *shared_speed.lock().unwrap();
+		if (target_speed - applied_speed).abs() > f32::EPSILON {
+			wsola.set_speed(target_speed);
+			applied_speed = target_speed;
+		}
+	})
+}
+
+/// Rounds a speed multiplier to the nearest hundredth, so repeated `increase_speed`/
+/// `decrease_speed` steps land on clean values (`1.0`, `1.1`, ...) instead of drifting from
+/// `f32` addition error.
+fn round_speed(speed: f32) -> f32 {
+	(speed * 100.0).round() / 100.0
+}
+
 /// Resolves an `AudioLocation` to a real file path the decoder can open. Zip-embedded
 /// sources are extracted to `cache_dir` once and reused on subsequent calls.
 fn resolve_source_path(location: &AudioLocation, cache_dir: &Path) -> Result<PathBuf> {
@@ -383,6 +494,20 @@ mod tests {
 	use zip::{ZipWriter, write::FileOptions};
 
 	use super::*;
+
+	/// Held by every test that opens the audio device, so they take turns with it.
+	///
+	/// The device is kept per thread (see `AUDIO_DEVICE`), which suits the app, where only the UI
+	/// thread plays audio. The test harness runs each test on a thread of its own, so without this
+	/// every audio test opens its own output stream at the same moment, and on the Windows CI
+	/// runner that crashes the whole test binary with an access violation rather than failing.
+	static DEVICE: Mutex<()> = Mutex::new(());
+
+	fn take_the_device() -> std::sync::MutexGuard<'static, ()> {
+		// A test that panics while holding this poisons it. The next test still wants the device,
+		// and nothing the lock guards can be left half-changed, so the poison is ignored.
+		DEVICE.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+	}
 
 	fn write_zip(name: &str, data: &[u8]) -> Vec<u8> {
 		let mut buf = Vec::new();
@@ -439,6 +564,7 @@ mod tests {
 	/// is most CI runners.
 	#[test]
 	fn plays_a_timeline_through_to_the_next_source() {
+		let _device = take_the_device();
 		if shared_device().is_err() {
 			eprintln!("no audio output device: skipping");
 			return;
@@ -480,10 +606,53 @@ mod tests {
 		);
 	}
 
+	/// A speed change mid-playback must not make `elapsed_ms` jump: `position_ms` scales
+	/// however much wall-clock time the player reports by the *current* speed (see its doc
+	/// comment), which is only correct for time played at that speed, so `set_speed` has to
+	/// re-seek to re-base it. Written after that re-seek arithmetic came out backwards once
+	/// already in development (position jumped instead of staying put).
+	#[test]
+	fn changing_speed_mid_playback_does_not_jump_the_position() {
+		let _device = take_the_device();
+		if shared_device().is_err() {
+			eprintln!("no audio output device: skipping");
+			return;
+		}
+		let dir = env::temp_dir().join("paperback-audio-speed-test");
+		fs::create_dir_all(&dir).unwrap();
+		let path = dir.join("long.wav");
+		write_wav(&path, 5000);
+		let mut builder = AudioTimelineBuilder::new();
+		let source = builder.add_source(AudioLocation::File(path.to_string_lossy().to_string()), Some(5000));
+		builder.add_clip(source, 0, 5000, 0, 1);
+		let mut player = AudioPlayer::new(builder.build()).unwrap();
+
+		player.play();
+		assert!(
+			wait_for(&mut player, 2000, |player| player.elapsed_ms().is_some_and(|ms| ms >= 300)),
+			"position advances while playing at normal speed"
+		);
+		let before = player.elapsed_ms().unwrap();
+
+		assert!((player.increase_speed() - 1.1).abs() < 1e-6, "steps up to 1.1x");
+		let after = player.elapsed_ms().unwrap();
+		assert!(
+			after.abs_diff(before) < 100,
+			"a speed change alone should not move the position, went from {before}ms to {after}ms"
+		);
+
+		// At 1.1x, real playback time should now cover more content than it would have at 1.0x.
+		assert!(
+			wait_for(&mut player, 3000, |player| player.elapsed_ms().is_some_and(|ms| ms >= after + 500)),
+			"position keeps advancing after the speed change"
+		);
+	}
+
 	/// The decoder reports a real length for a file, which is what "continue into the next
 	/// file" seeking needs and what a document's own declared duration can't be trusted for.
 	#[test]
 	fn reports_the_loaded_files_own_length() {
+		let _device = take_the_device();
 		if shared_device().is_err() {
 			eprintln!("no audio output device: skipping");
 			return;
@@ -502,6 +671,30 @@ mod tests {
 		assert_eq!(reported_source, source);
 		assert!((1400..1600).contains(&length_ms), "reported length should be the file's own, got {length_ms}");
 		player.stop();
+	}
+
+	#[test]
+	fn speed_steps_and_clamps_at_both_ends() {
+		let _device = take_the_device();
+		if shared_device().is_err() {
+			eprintln!("no audio output device: skipping");
+			return;
+		}
+		let mut player = AudioPlayer::new(AudioTimelineBuilder::new().build()).unwrap();
+		assert!((player.speed() - 1.0).abs() < f32::EPSILON, "starts at normal speed");
+
+		assert!((player.increase_speed() - 1.1).abs() < 1e-6, "one step up from 1.0 is 1.1");
+		assert!((player.decrease_speed() - 1.0).abs() < 1e-6, "one step back down is 1.0 again");
+
+		player.set_speed(MAX_SPEED - 0.05);
+		let at_max = player.increase_speed();
+		assert!((at_max - MAX_SPEED).abs() < f32::EPSILON, "clamps at the maximum, got {at_max}");
+		assert!((player.increase_speed() - MAX_SPEED).abs() < f32::EPSILON, "stays at the maximum");
+
+		player.set_speed(MIN_SPEED + 0.05);
+		let at_min = player.decrease_speed();
+		assert!((at_min - MIN_SPEED).abs() < f32::EPSILON, "clamps at the minimum, got {at_min}");
+		assert!((player.decrease_speed() - MIN_SPEED).abs() < f32::EPSILON, "stays at the minimum");
 	}
 
 	#[test]

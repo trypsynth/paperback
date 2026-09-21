@@ -20,6 +20,12 @@ pub use window::{WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, WindowSlice};
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: i64 = 300;
+/// The audio-time counterpart to [`HISTORY_DISTANCE_THRESHOLD`], for documents (plain audio
+/// bundles in particular) whose text spine is too sparse for a character count to tell a real
+/// jump from a step to the next line. 30 seconds is comfortably past a single seek keypress
+/// (`audio_seek_amount_seconds` defaults to 10) but short enough to catch a jump to the next
+/// track of an audiobook.
+const AUDIO_HISTORY_DISTANCE_THRESHOLD_MS: u64 = 30_000;
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
@@ -455,10 +461,29 @@ impl DocumentSession {
 	/// the caret before moving it. A short jump records nothing: somewhere inside the
 	/// paragraph already being read is not a place to come back to, and a history filled with
 	/// those cannot reach anywhere worth returning to.
+	///
+	/// Text position alone cannot tell "short" from "long" for a plain audio bundle: its buffer
+	/// is one placeholder character per file (see the `audio_only` doc comment), so jumping
+	/// between tracks moves the caret by a handful of characters regardless of how much
+	/// recording separates them. Falling back to the audio distance between `from` and `to`
+	/// when it is available catches those jumps too - covering large distances and following
+	/// links should record a returnable position in an audiobook exactly as they do in text.
 	pub fn record_jump(&mut self, from: i64, to: i64) {
-		if (to - from).abs() >= HISTORY_DISTANCE_THRESHOLD {
+		let text_distance_worth_recording = (to - from).abs() >= HISTORY_DISTANCE_THRESHOLD;
+		let audio_distance_worth_recording =
+			self.audio_distance_ms(from, to).is_some_and(|ms| ms >= AUDIO_HISTORY_DISTANCE_THRESHOLD_MS);
+		if text_distance_worth_recording || audio_distance_worth_recording {
 			record_history_position(&mut self.history, &mut self.history_index, from, MAX_HISTORY_LEN);
 		}
+	}
+
+	/// The elapsed-time distance between `from` and `to`, for documents with a timeline. `None`
+	/// without audio, or where either offset falls outside every clip.
+	fn audio_distance_ms(&self, from: i64, to: i64) -> Option<u64> {
+		let audio = self.audio()?;
+		let from_ms = audio.point_for_position(usize::try_from(from).ok()?)?.time_ms;
+		let to_ms = audio.point_for_position(usize::try_from(to).ok()?)?.time_ms;
+		Some(from_ms.abs_diff(to_ms))
 	}
 }
 

@@ -7,11 +7,12 @@
 //! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by the metadata and
 //! table of contents readers as well.
 
-use std::{cmp::Ordering, ffi::c_ulong};
+use std::cmp::Ordering;
 
-use pdfium::{PdfiumTextPage, pdfium_types::FS_MATRIX};
-
-use crate::parser::util::bidi;
+use crate::{
+	parser::util::bidi,
+	pdfium::{CharBox, PdfTextPage},
+};
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
 	input.chars().filter(|&ch| (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}').collect()
@@ -30,15 +31,6 @@ pub(super) struct Line {
 	/// Whether it is set in a monospaced face, which marks it as something whose own line
 	/// breaks are the content: code, or anything else laid out by column.
 	pub monospaced: bool,
-}
-
-/// A character's box in PDF user units, as pdfium reports it.
-#[derive(Clone, Copy)]
-pub(super) struct CharBox {
-	pub left: f64,
-	pub right: f64,
-	pub bottom: f64,
-	pub top: f64,
 }
 
 /// Tolerance, in PDF user units, for calling two baselines or two box edges the same. pdfium
@@ -98,41 +90,25 @@ pub(super) fn space_is_invisible(
 	false
 }
 
-fn char_origin(text_page: &PdfiumTextPage, index: i32) -> Option<(f64, f64)> {
-	let (mut x, mut y) = (0.0, 0.0);
-	text_page.get_char_origin(index, &mut x, &mut y).ok()?;
-	Some((x, y))
-}
-
 /// The top edge of one character, which is what gives a tagged block the height the structure
 /// tree never records for it. See [`super::images::UnclaimedImages`].
-pub(super) fn char_top(text_page: &PdfiumTextPage, index: i32) -> Option<f64> {
-	char_box(text_page, index).map(|boxed| boxed.top)
-}
-
-fn char_box(text_page: &PdfiumTextPage, index: i32) -> Option<CharBox> {
-	let rect = text_page.get_char_box(index).ok()?;
-	Some(CharBox {
-		left: f64::from(rect.left),
-		right: f64::from(rect.right),
-		bottom: f64::from(rect.bottom),
-		top: f64::from(rect.top),
-	})
+pub(super) fn char_top(text_page: &PdfTextPage, index: i32) -> Option<f64> {
+	text_page.char_box(index).map(|boxed| boxed.top)
 }
 
 /// [`space_is_invisible`] for the space at `index` of `text_page`, fetching only the geometry
 /// each test actually needs. Costs three or four pdfium calls per space character and none at
 /// all for anything else, so a page pays for it in proportion to its spaces rather than its
 /// length - the per-character cost that #747 had to undo.
-pub(super) fn is_invisible_space(text_page: &PdfiumTextPage, index: i32, char_count: i32) -> bool {
-	let (Some(origin), Some(space_box)) = (char_origin(text_page, index), char_box(text_page, index)) else {
+pub(super) fn is_invisible_space(text_page: &PdfTextPage, index: i32, char_count: i32) -> bool {
+	let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
 		return false;
 	};
-	let next_origin = if index + 1 < char_count { char_origin(text_page, index + 1) } else { None };
+	let next_origin = if index + 1 < char_count { text_page.char_origin(index + 1) } else { None };
 	if space_is_invisible(origin, space_box, next_origin, None) {
 		return true;
 	}
-	let prev_box = if index > 0 { char_box(text_page, index - 1) } else { None };
+	let prev_box = if index > 0 { text_page.char_box(index - 1) } else { None };
 	space_is_invisible(origin, space_box, None, prev_box)
 }
 
@@ -154,17 +130,15 @@ pub(super) fn is_cjk(c: char) -> bool {
 	(0xAC00..=0xD7AF).contains(&u) // Hangul
 }
 
-fn char_x_origin(text_page: &PdfiumTextPage, i: i32) -> f32 {
-	let (mut x, mut y) = (0.0, 0.0);
-	let _ = text_page.get_char_origin(i, &mut x, &mut y);
-	x as f32
+fn char_x_origin(text_page: &PdfTextPage, i: i32) -> f32 {
+	text_page.char_origin(i).map_or(0.0, |(x, _)| x as f32)
 }
 
 /// Assemble one run of `(char, pdfium index)` pairs into text, reordering
 /// visual→logical for RTL scripts. Fetches x origins (a per-char FFI call)
 /// only when the run actually contains an RTL character, so pure-LTR runs
 /// (the overwhelming majority) pay a single cheap classification scan instead.
-pub(super) fn reorder_run(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> String {
+pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, i32)]) -> String {
 	if !bidi::contains_rtl(chars.iter().map(|&(c, _)| c)) {
 		return chars.iter().map(|&(c, _)| c).collect();
 	}
@@ -173,7 +147,7 @@ pub(super) fn reorder_run(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> 
 }
 
 /// Reads one visual line: its text in logical order, and everything measured about it.
-fn measure_line(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> Line {
+fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	let (top, bottom) = line_edges(text_page, chars);
 	Line {
 		size: line_font_size(text_page, chars),
@@ -184,13 +158,13 @@ fn measure_line(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> Line {
 	}
 }
 
-pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) -> Vec<Line> {
-	let Ok(char_count) = text_page.char_count() else {
+pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Vec<Line> {
+	let Some(char_count) = text_page.char_count() else {
 		tracing::warn!(
 			page_index,
 			"page text char count unavailable, falling back to whole-page text blob, heading detection by font size will be degraded for this page"
 		);
-		let raw = sanitize_pdf_text(&text_page.full()).replace('\r', "");
+		let raw = sanitize_pdf_text(&text_page.text()).replace('\r', "");
 		return raw
 			.lines()
 			.map(|line| Line {
@@ -208,7 +182,7 @@ pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) ->
 	let mut current_chars: Vec<(char, i32)> = Vec::new();
 	let mut previous_char = None;
 	for i in 0..char_count {
-		let unicode = text_page.get_unicode(i);
+		let unicode = text_page.unicode_at(i);
 		let Some(ch) = char::from_u32(unicode) else { continue };
 		if ends_line(ch, previous_char) {
 			let line = measure_line(text_page, &current_chars);
@@ -243,11 +217,11 @@ pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) ->
 /// characters, and that one has to be exact: it is what the whitespace before the next line
 /// is measured from, and pdfium runs two visual lines together often enough that a line's
 /// box regularly reaches a whole line lower than its first character does.
-fn line_edges(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> (f64, f64) {
-	let top = chars.first().and_then(|(_, index)| char_box(text_page, *index)).map_or(f64::NEG_INFINITY, |b| b.top);
+fn line_edges(text_page: &PdfTextPage, chars: &[(char, i32)]) -> (f64, f64) {
+	let top = chars.first().and_then(|(_, index)| text_page.char_box(*index)).map_or(f64::NEG_INFINITY, |b| b.top);
 	let mut bottom = f64::INFINITY;
 	for (_, index) in chars {
-		if let Some(boxed) = char_box(text_page, *index) {
+		if let Some(boxed) = text_page.char_box(*index) {
 			bottom = bottom.min(boxed.bottom);
 		}
 	}
@@ -259,10 +233,9 @@ fn line_edges(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> (f64, f64) {
 /// #808 and the one of #813 do, and every line of both came back as size 1.0, so no line was
 /// ever tall enough to be taken for a heading. The matrix's vertical scale is the rest of the
 /// size, so the two together are the size the reader sees.
-fn effective_font_size(text_page: &PdfiumTextPage, index: i32) -> f64 {
-	let size = text_page.get_font_size(index);
-	let mut matrix = FS_MATRIX { a: 1.0, b: 0.0, c: 0.0, d: 1.0, e: 0.0, f: 0.0 };
-	if text_page.get_matrix(index, &mut matrix).is_ok() { size * f64::from(matrix.b.hypot(matrix.d)) } else { size }
+fn effective_font_size(text_page: &PdfTextPage, index: i32) -> f64 {
+	let size = text_page.font_size(index);
+	text_page.text_matrix(index).map_or(size, |matrix| size * f64::from(matrix.b.hypot(matrix.d)))
 }
 
 /// How many characters of a line to measure. Reading the size off the line's first character
@@ -274,7 +247,7 @@ const LINE_FONT_SIZE_SAMPLES: usize = 5;
 
 /// The point size of a visual line: the median of [`effective_font_size`] over a few of its
 /// characters, ignoring whitespace (which a font may set in a size of its own).
-fn line_font_size(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> f64 {
+fn line_font_size(text_page: &PdfTextPage, chars: &[(char, i32)]) -> f64 {
 	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return 0.0;
@@ -289,9 +262,6 @@ fn line_font_size(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> f64 {
 /// same width. Reliable when it is set and worth nothing when it is not: the Computer Modern
 /// typewriter faces LaTeX sets code in leave it clear.
 const FIXED_PITCH_FLAG: i32 = 1;
-
-/// How long a font name can be before it is certainly not one we know.
-const FONT_NAME_LIMIT: usize = 128;
 
 /// Whether a font name belongs to a monospaced face.
 ///
@@ -311,29 +281,18 @@ fn looks_monospaced(font_name: &str) -> bool {
 
 /// Whether one character is set in a monospaced face, by the font's descriptor flags first and
 /// its name second.
-fn char_is_monospaced(text_page: &PdfiumTextPage, index: i32) -> bool {
-	let mut buffer = [0u8; FONT_NAME_LIMIT];
-	let mut flags = 0i32;
-	// The length pdfium takes is a C unsigned long, which is 32 bits on Windows and 64 on
-	// everything else, so the width has to come from the type rather than be chosen here.
-	let capacity = c_ulong::try_from(buffer.len()).unwrap_or(c_ulong::MAX);
-	let written = text_page.get_font_info(index, Some(&mut buffer), capacity, &mut flags) as usize;
-	if flags & FIXED_PITCH_FLAG != 0 {
+fn char_is_monospaced(text_page: &PdfTextPage, index: i32) -> bool {
+	let Some(font) = text_page.font(index) else { return false };
+	if font.flags & FIXED_PITCH_FLAG != 0 {
 		return true;
 	}
-	// The returned length counts the trailing NUL, and is what the name would need rather
-	// than what was written, so a longer name comes back truncated and is left alone.
-	let end = written.saturating_sub(1);
-	if end == 0 || end > buffer.len() {
-		return false;
-	}
-	looks_monospaced(&String::from_utf8_lossy(&buffer[..end]))
+	looks_monospaced(&font.name)
 }
 
 /// Whether a line is set in a monospaced face, over the same handful of characters the size is
 /// measured across. Most of them have to agree: one word of code quoted in a sentence of prose
 /// does not make the sentence a listing.
-fn line_is_monospaced(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> bool {
+fn line_is_monospaced(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
 	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return false;

@@ -132,7 +132,10 @@ class TtsBottomBarTest {
 			.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "65%"))
 	}
 
-	/** Swiping the rate steps it rather than jumping to wherever the gesture landed. */
+	/**
+	 * Swiping the rate steps it by one rather than jumping to wherever the gesture landed, so
+	 * the rate can be settled on exactly instead of swept past.
+	 */
 	@Test
 	fun swipingTheSpeechRateStepsItUpAndDown() {
 		val asked = mutableListOf<Int>()
@@ -141,7 +144,7 @@ class TtsBottomBarTest {
 		val rate = compose.onNodeWithContentDescription("Speech Rate")
 		rate.performSemanticsAction(SemanticsActions.SetProgress) { it(10000f) }
 		rate.performSemanticsAction(SemanticsActions.SetProgress) { it(0f) }
-		assertEquals(listOf(55, 45), asked)
+		assertEquals(listOf(51, 49), asked)
 	}
 
 	/**

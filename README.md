@@ -112,3 +112,5 @@ Contributions are welcome! Whether through issues, pull requests, or discussions
 ## License
 
 This project is licensed under the [MIT license](LICENSE.md).
+
+Paperback is built on other people's work. The libraries it uses, and their licenses, are credited at [paperback.dev/licenses](https://paperback.dev/licenses).

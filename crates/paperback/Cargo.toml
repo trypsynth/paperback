@@ -28,12 +28,15 @@ rodio = { version = "0.22.2", default-features = false, features = [
 	"playback", "tracing", "flac", "mp3", "mp4", "vorbis", "wav",
 	"symphonia-adpcm", "symphonia-aiff", "symphonia-alac", "symphonia-mp2",
 ] }
+# WSOLA time-stretching, so changing playback speed doesn't shift pitch the way naively
+# resampling (rodio's own `Player::set_speed`) does.
+rodio-wsola = "0.2.0"
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.2.0"
 toml = { workspace = true }
-wx-utils = { version = "0.3.0", features = ["shortcuts"] }
+wx-utils = { version = "0.3.1", features = ["shortcuts"] }
 wxdragon = { version = "0.9.22", features = ["webview"] }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 

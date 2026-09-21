@@ -11,11 +11,11 @@
 use std::{fs::File, io::BufReader, path::Path};
 
 use anyhow::{Context, Result};
-use pdfium::{PdfiumDocument, PdfiumRenderConfig};
 use zip::ZipArchive;
 
 use crate::{
 	parser::{cbr, cbz},
+	pdfium::PdfDocument,
 	t,
 };
 
@@ -73,7 +73,7 @@ pub struct PageRenderer {
 /// What the renderer draws pages out of. A PDF page has to be rasterized; a comic archive's
 /// page is already a picture and only needs decoding.
 enum Source {
-	Pdf(PdfiumDocument),
+	Pdf(PdfDocument),
 	Comic {
 		archive: ZipArchive<BufReader<File>>,
 		pages: Vec<String>,
@@ -101,7 +101,7 @@ impl PageRenderer {
 		if extension.is_some_and(|e| e.eq_ignore_ascii_case("cbr")) {
 			return Self::open_comic_rar(file_path);
 		}
-		Ok(Self { source: Source::Pdf(PdfiumDocument::new_from_path(file_path, password)?) })
+		Ok(Self { source: Source::Pdf(PdfDocument::open(file_path, password)?) })
 	}
 
 	fn open_comic(file_path: &str) -> Result<Self> {
@@ -141,15 +141,10 @@ impl PageRenderer {
 		match &mut self.source {
 			Source::Pdf(document) => {
 				let page = document.page(page_index)?;
-				let width = pixel_width(page.width(), page.height(), max_dimension);
-				let bitmap = page.render(&PdfiumRenderConfig::new().with_width(width))?;
-				let (width, height) = (bitmap.width(), bitmap.height());
-				let rgba = bitmap.as_rgba_bytes()?;
-				Ok(RenderedPage {
-					width: u32::try_from(width).unwrap_or(0),
-					height: u32::try_from(height).unwrap_or(0),
-					rgba,
-				})
+				let width = u32::try_from(pixel_width(page.width(), page.height(), max_dimension)).unwrap_or(1);
+				let bitmap =
+					page.render(width).ok_or_else(|| anyhow::anyhow!("page {page_index} could not be rasterized"))?;
+				Ok(RenderedPage { width: bitmap.width, height: bitmap.height, rgba: bitmap.rgba })
 			}
 			Source::ComicRar { file_path, pages } => {
 				let index = usize::try_from(page_index).unwrap_or(usize::MAX);

@@ -108,6 +108,7 @@ seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP, TOGGLE_FULL_SCREEN);
 seq_ids!(BASE + 450 =>
 	PLAY_PAUSE_AUDIO, SEEK_AUDIO_FORWARD, SEEK_AUDIO_BACKWARD,
 	INCREASE_AUDIO_SEEK_AMOUNT, DECREASE_AUDIO_SEEK_AMOUNT,
+	INCREASE_AUDIO_SPEED, DECREASE_AUDIO_SPEED,
 );
 
 // Tools menu: OCR (BASE + 460..469)
@@ -205,6 +206,8 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::SeekAudioBackward => SEEK_AUDIO_BACKWARD,
 		ActionId::IncreaseAudioSeekAmount => INCREASE_AUDIO_SEEK_AMOUNT,
 		ActionId::DecreaseAudioSeekAmount => DECREASE_AUDIO_SEEK_AMOUNT,
+		ActionId::IncreaseAudioSpeed => INCREASE_AUDIO_SPEED,
+		ActionId::DecreaseAudioSpeed => DECREASE_AUDIO_SPEED,
 		ActionId::ToggleFullScreen => TOGGLE_FULL_SCREEN,
 		ActionId::Options => OPTIONS,
 		ActionId::SleepTimer => SLEEP_TIMER,

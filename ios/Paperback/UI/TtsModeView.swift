@@ -18,16 +18,15 @@ struct TtsModeView: View {
 			}
 			.frame(maxHeight: 400)
 			.readingBackground(viewModel)
-			if let session = viewModel.activeSession {
-				let lineText = session.getLineText(position: viewModel.reading.ttsPosition)
-					.trimmingCharacters(in: .whitespacesAndNewlines)
-				if !lineText.isEmpty {
-					Text(lineText)
-						.font(.caption)
-						.foregroundStyle(.secondary)
-						.lineLimit(1)
-						.padding(.horizontal, 24)
-				}
+			if let lineText = positionLine {
+				Text(lineText)
+					.font(.caption)
+					.foregroundStyle(.secondary)
+					.lineLimit(1)
+					.padding(.horizontal, 24)
+					// The text above is the real content. This only says where in the document
+					// it sits, so VoiceOver reading both would say the same words twice.
+					.accessibilityHidden(true)
 			}
 			if let remaining = viewModel.reading.sleepTimerRemaining {
 				Text(String(format: "Sleep timer: %d:%02d", remaining / 60, remaining % 60))
@@ -36,5 +35,20 @@ struct TtsModeView: View {
 			}
 			Spacer()
 		}
+	}
+
+	/// The line under the caret, shown small beneath the spoken text as a place marker.
+	///
+	/// Left out when the spoken text already contains it, which is what happens whenever a
+	/// paragraph is one line long: the same words would otherwise appear twice on screen, once
+	/// full size and once again underneath.
+	private var positionLine: String? {
+		guard let session = viewModel.activeSession else { return nil }
+		let line = session.getLineText(position: viewModel.reading.ttsPosition)
+			.trimmingCharacters(in: .whitespacesAndNewlines)
+		if line.isEmpty || viewModel.reading.currentSegmentText.contains(line) {
+			return nil
+		}
+		return line
 	}
 }
