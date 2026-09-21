@@ -1,17 +1,13 @@
 //! The flat (non-headings) element views shared by both platform implementations: the view model
 //! (Links, Pages, Tables, Lists) and the virtual list widget that shows whichever view is chosen.
 
-#[cfg(target_os = "windows")]
-use std::collections::HashMap;
 use std::{cell::RefCell, rc::Rc};
 
-#[cfg(target_os = "windows")]
-use paperback_core::types::HeadingTree;
 use paperback_core::{document::MarkerType, session::DocumentSession};
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{FLAT_POPULATE_DELAY_MS, VIEW_HEADINGS, VIEW_LINKS, VIEW_LISTS, VIEW_PAGES, VIEW_TABLES};
+use super::{FLAT_POPULATE_DELAY_MS, VIEW_LINKS, VIEW_LISTS, VIEW_PAGES, VIEW_TABLES};
 
 /// A page entry for the Pages view: the page's marker offset (where a jump lands) and the
 /// label to show, mirroring what page navigation announces for the page.
@@ -50,7 +46,7 @@ fn page_label(page: i32, content: &str) -> String {
 /// The rows for one flat (non-headings) view: what each row shows, the document offset it
 /// jumps to, and which row is nearest the current position. The Links, Pages, Tables and Lists
 /// views each have one; the shared list pane is repopulated from whichever is selected.
-pub(super) struct FlatView {
+struct FlatView {
 	entries: Vec<(String, i64)>,
 	closest: Option<u32>,
 }
@@ -88,37 +84,11 @@ fn page_flat_view(session: &DocumentSession, position: i64) -> FlatView {
 	FlatView { entries, closest }
 }
 
-/// The Headings view as a list in reading order, for a heading tree with more than
-/// [`super::super::MAX_TREE_SIBLINGS`] headings under one parent (see that constant for why).
-#[cfg(target_os = "windows")]
-pub(super) fn headings_as_list(tree: &HeadingTree) -> Option<FlatView> {
-	let mut siblings: HashMap<i32, usize> = HashMap::new();
-	for item in &tree.items {
-		*siblings.entry(item.parent_index).or_default() += 1;
-	}
-	if siblings.values().all(|&count| count <= super::super::MAX_TREE_SIBLINGS) {
-		return None;
-	}
-	let entries = tree
-		.items
-		.iter()
-		.map(|item| {
-			// TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
-			let label = if item.text.is_empty() { t("Untitled") } else { item.text.clone() };
-			(label, i64::try_from(item.offset).unwrap_or(i64::MAX))
-		})
-		.collect();
-	let closest = if tree.closest_index >= 0 { u32::try_from(tree.closest_index).ok() } else { Some(0) };
-	Some(FlatView { entries, closest })
-}
-
 /// The flat (non-headings) views, keyed by their `VIEW_*` selection. Holding them together lets
 /// the toggle, double-click and OK handlers look up the active view without threading each view
 /// through as its own argument; a future flat view adds one field here and one arm of
 /// [`FlatViews::view`].
 pub(super) struct FlatViews {
-	/// Set only when the headings are shown as a list instead of a tree.
-	headings: Option<FlatView>,
 	links: FlatView,
 	pages: FlatView,
 	tables: FlatView,
@@ -126,9 +96,8 @@ pub(super) struct FlatViews {
 }
 
 impl FlatViews {
-	pub(super) fn for_session(session: &DocumentSession, position: i64, headings: Option<FlatView>) -> Self {
+	pub(super) fn for_session(session: &DocumentSession, position: i64) -> Self {
 		Self {
-			headings,
 			links: link_flat_view(session, position),
 			pages: page_flat_view(session, position),
 			tables: table_flat_view(session, position),
@@ -136,14 +105,8 @@ impl FlatViews {
 		}
 	}
 
-	#[cfg(target_os = "windows")]
-	pub(super) const fn headings_are_flat(&self) -> bool {
-		self.headings.is_some()
-	}
-
 	const fn view(&self, selection: u32) -> Option<&FlatView> {
 		match selection {
-			VIEW_HEADINGS => self.headings.as_ref(),
 			VIEW_LINKS => Some(&self.links),
 			VIEW_PAGES => Some(&self.pages),
 			VIEW_TABLES => Some(&self.tables),
@@ -169,7 +132,7 @@ fn flat_list_size(dialog: Dialog) -> Size {
 }
 
 #[cfg(not(target_os = "macos"))]
-pub(in crate::ui::dialogs) fn build_flat_list(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String>>>) -> FlatList {
+pub(super) fn build_flat_list(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String>>>) -> FlatList {
 	let size = flat_list_size(dialog);
 	let list = ListCtrl::builder(&dialog)
 		.with_style(ListCtrlStyle::Report | ListCtrlStyle::Virtual | ListCtrlStyle::SingleSel)
@@ -232,7 +195,7 @@ fn populate_flat_list(list: FlatList, _flat_labels: &Rc<RefCell<Vec<String>>>, v
 }
 
 #[cfg(not(target_os = "macos"))]
-pub(in crate::ui::dialogs) fn select_flat_row(list: FlatList, index: i32) {
+fn select_flat_row(list: FlatList, index: i32) {
 	if index < 0 {
 		return;
 	}
@@ -255,7 +218,7 @@ fn select_flat_row(list: FlatList, index: i32) {
 }
 
 #[cfg(not(target_os = "macos"))]
-pub(in crate::ui::dialogs) fn flat_list_selected_index(list: FlatList) -> Option<usize> {
+fn flat_list_selected_index(list: FlatList) -> Option<usize> {
 	let index = list.get_first_selected_item();
 	if index >= 0 { usize::try_from(index).ok() } else { None }
 }
@@ -311,7 +274,7 @@ pub(super) fn schedule_flat_fill(
 }
 
 /// Fills the list with `views.view(selection)`'s rows while it is hidden, then shows it.
-pub(super) fn fill_flat_view(
+fn fill_flat_view(
 	list: FlatList,
 	flat_labels: &Rc<RefCell<Vec<String>>>,
 	views: &Rc<FlatViews>,

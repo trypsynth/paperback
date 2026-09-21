@@ -13,13 +13,19 @@ pub(super) use wx_utils::{
 	DIALOG_PADDING, add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons,
 };
 
-/// When more entries than this share one parent, a table of contents or heading tree is shown on
-/// Windows as a virtual list in reading order rather than as a tree. On every move in a tree,
-/// NVDA counts the focused item's siblings with one cross-process message each (about 50 µs
-/// apiece), so thousands of chapters under one parent lag on each arrow key. A virtual list
-/// reports its size in one message.
+/// The most entries a table of contents or heading tree shows under one parent on Windows. More
+/// than that are split into groups under it. On every move in a tree, NVDA counts the focused
+/// item's siblings with one cross-process message each, so thousands of chapters under one parent
+/// lag on each arrow key.
 #[cfg(target_os = "windows")]
 const MAX_TREE_SIBLINGS: usize = 500;
+
+/// The label of a group of tree entries, named after its first and last entry.
+#[cfg(target_os = "windows")]
+fn tree_group_label(first: &str, last: &str) -> String {
+	// TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
+	patois::t("{} to {}").replacen("{}", first, 1).replacen("{}", last, 1)
+}
 
 mod about;
 pub use about::show_about_dialog;
