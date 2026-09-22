@@ -30,7 +30,8 @@ use crate::workspace::project_root;
 ///
 /// Locales listed in `po/human-maintained-locales.txt` are skipped entirely, for both the
 /// po-string sync and the README sync. See that file and
-/// <https://github.com/trypsynth/paperback/issues/638>.
+/// <https://github.com/trypsynth/paperback/issues/638>. A locale that has `po/style/<lang>.md`
+/// gets that file appended to the model's instructions (see `load_style_note`).
 pub fn translate() -> Result<(), Box<dyn Error>> {
 	let mut dry_run = false;
 	let mut repair = false;

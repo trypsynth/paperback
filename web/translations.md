@@ -78,6 +78,12 @@ msgmerge -U po/da.po po/paperback.pot
 
 5. Remove fuzzy markers once reviewed, then compile and test (same as steps 6 and 7 above).
 
+## Machine-translated languages
+
+Languages not listed in `po/human-maintained-locales.txt` are kept up to date automatically: after every change to the source, `cargo xtask translate` fills in the new strings and readme sections with the Claude API and marks them `fuzzy` for review.
+
+You can tell the machine translator how your language should read by adding `po/style/<lang>.md` (for example `po/style/nl.md`). Write it in English, since the model reads it: the register (formal or informal), rules about articles, word order and capitalisation, and a glossary of the terms you want used consistently. The file is appended to the translator's instructions whenever your language is translated, and its conventions take precedence over the general rules. If the file is missing, nothing changes. Running `cargo xtask translate --dry-run` shows `with po/style/<lang>.md` on your language's line once the note is picked up.
+
 ## Translating the README
 
 If you want to translate the user-facing documentation as well, create a `doc/readme-<lang>.md` file (for example `doc/readme-da.md`) using the English `doc/readme.md` as your starting point. The build system picks it up automatically and embeds the rendered HTML into the binary alongside the UI strings. Submit it in the same pull request as your `.po` file.
