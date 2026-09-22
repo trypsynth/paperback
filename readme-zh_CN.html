@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Paperback - 版本 0.9.2</title>
+  <title>Paperback - 版本 1.0</title>
   <style>
     html {
       color: #1a1a1a;
@@ -205,7 +205,7 @@
 </ul>
 </nav>
 <header id="title-block-header">
-<h1 class="title">Paperback - 版本 0.9.2</h1>
+<h1 class="title">Paperback - 版本 1.0</h1>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -229,6 +229,14 @@ id="toc-当前支持的文件类型">当前支持的文件类型</a></li>
 <li><a href="#文档视图附加按键"
 id="toc-文档视图附加按键">文档视图附加按键</a></li>
 </ul></li>
+<li><a href="#ios-和-android" id="toc-ios-和-android">iOS 和 Android</a>
+<ul>
+<li><a href="#打开文档" id="toc-打开文档">打开文档</a></li>
+<li><a href="#阅读和收听" id="toc-阅读和收听">阅读和收听</a></li>
+<li><a href="#阅读栏" id="toc-阅读栏">阅读栏</a></li>
+<li><a href="#更多选项" id="toc-更多选项">更多选项</a></li>
+<li><a href="#键盘和耳机" id="toc-键盘和耳机">键盘和耳机</a></li>
+</ul></li>
 <li><a href="#支持的语言" id="toc-支持的语言">支持的语言</a></li>
 <li><a href="#鸣谢" id="toc-鸣谢">鸣谢</a>
 <ul>
@@ -237,11 +245,19 @@ id="toc-文档视图附加按键">文档视图附加按键</a></li>
 </ul></li>
 <li><a href="#更新日志" id="toc-更新日志">更新日志</a>
 <ul>
-<li><a href="#版本-0.9.1" id="toc-版本-0.9.1">版本 0.9.1</a></li>
-<li><a href="#版本-0.9.0" id="toc-版本-0.9.0">版本 0.9.0</a>
+<li><a href="#版本-1.0" id="toc-版本-1.0">版本 1.0</a>
 <ul>
 <li><a href="#新增" id="toc-新增">新增</a></li>
 <li><a href="#修复" id="toc-修复">修复</a></li>
+<li><a href="#ios-和-android-1" id="toc-ios-和-android-1">iOS 和
+Android</a></li>
+</ul></li>
+<li><a href="#版本-0.9.2" id="toc-版本-0.9.2">版本 0.9.2</a></li>
+<li><a href="#版本-0.9.1" id="toc-版本-0.9.1">版本 0.9.1</a></li>
+<li><a href="#版本-0.9.0" id="toc-版本-0.9.0">版本 0.9.0</a>
+<ul>
+<li><a href="#新增-1" id="toc-新增-1">新增</a></li>
+<li><a href="#修复-1" id="toc-修复-1">修复</a></li>
 </ul></li>
 <li><a href="#版本-0.8.5" id="toc-版本-0.8.5">版本 0.8.5</a></li>
 <li><a href="#版本-0.8.2" id="toc-版本-0.8.2">版本 0.8.2</a></li>
@@ -262,11 +278,11 @@ id="toc-文档视图附加按键">文档视图附加按键</a></li>
 </nav>
 <h1 id="简介">简介</h1>
 <p>Paperback
-是一款轻量、快速且无障碍的电子书和文档阅读器，适合从普通读者到重度高级用户的各类人群。它专为屏幕阅读器无障碍访问、高速运行以及无臃肿体验而设计。</p>
+是一款轻量、快速且无障碍的电子书、文档和有声书阅读器，适合从普通读者到重度高级用户的各类人群。它专为屏幕阅读器无障碍访问、高速运行以及无臃肿体验而设计。</p>
 <h1 id="系统要求">系统要求</h1>
-<p>Paperback 目前可在 Windows 10/11 以及所有现代版本的 ARM macOS
-上运行。原生 iOS 和 Android 应用正在积极开发中，公共测试版本计划在 0.9.0
-桌面版发布后不久推出，最终将实现覆盖四个平台的统一 1.0 版本。</p>
+<p>Paperback 可在 Windows 10/11、所有现代版本的 ARM macOS、Linux、iOS 17
+及更高版本，以及 Android 7 及更高版本上运行。iOS 和 Android 应用已在 App
+Store 和 Google Play 上架。</p>
 <h1 id="功能">功能</h1>
 <ul>
 <li>完全独立运行，无需在计算机上安装任何其他软件即可开始阅读。</li>
@@ -278,6 +294,12 @@ id="toc-文档视图附加按键">文档视图附加按键</a></li>
 <li>包含强大的查找对话框，支持历史记录和正则表达式等功能。</li>
 <li>既可以完全便携运行，也可以安装并自动设置文件关联。</li>
 <li>支持大量常见文件格式。</li>
+<li>可播放有声书，支持可调速度，以及能记住精确时间的书签。</li>
+<li>使用 Windows 和 macOS 内置的 OCR 读取扫描版 PDF 页面。</li>
+<li>书签和笔记，让您可以标记位置并随时返回。</li>
+<li>每个键盘快捷键都可以更改。</li>
+<li>附带 <code>pb</code>，一个命令行工具，可将任何支持的文档转换为
+HTML、Markdown 或纯文本。</li>
 </ul>
 <h1 id="屏幕阅读器兼容性">屏幕阅读器兼容性</h1>
 <p>Paperback 可与所有主流屏幕阅读器良好配合。不过，对于 JAWS
@@ -294,24 +316,33 @@ DOM”。您还需要启用“按段落平移文本”，否则显示器会停�
 <h1 id="当前支持的文件类型">当前支持的文件类型</h1>
 <p>Paperback 支持以下格式和扩展名：</p>
 <ul>
+<li>漫画压缩包（<code>.cbz</code>）</li>
 <li>CHM 帮助文件（<code>.chm</code>）</li>
 <li>DAISY 图书（<code>.opf</code>、<code>.zip</code>）</li>
 <li>EPUB 图书（<code>.epub</code>）</li>
 <li>FB2 电子书（<code>.fb2</code>）</li>
 <li>HTML
 文档（<code>.htm</code>、<code>.html</code>、<code>.xhtml</code>）</li>
+<li>手册页，包括 <code>man</code> 和 BSD
+<code>mdoc</code>（<code>.1</code> 到
+<code>.9</code>、<code>.man</code>、<code>.roff</code>，以及各自的 gzip
+压缩形式）</li>
 <li>Markdown
 文档（<code>.md</code>、<code>.markdown</code>、<code>.mdx</code>、<code>.mdown</code>、<code>.mdwn</code>、<code>.mkd</code>、<code>.mkdn</code>、<code>.mkdown</code>、<code>.ronn</code>）</li>
 <li>Microsoft Word
 文档（<code>.docx</code>、<code>.docm</code>、<code>.doc</code>）</li>
+<li>M4B 有声书（<code>.m4b</code>）</li>
 <li>MOBI/Kindle
 图书（<code>.mobi</code>、<code>.azw</code>、<code>.azw3</code>）</li>
+<li>MP3 有声书（<code>.mp3</code>）</li>
 <li>OpenDocument 演示文稿（<code>.odp</code>、<code>.fodp</code>）</li>
 <li>OpenDocument 文本文件（<code>.odt</code>、<code>.fodt</code>）</li>
 <li>PDF 文档（<code>.pdf</code>）</li>
 <li>PowerPoint
 演示文稿（<code>.pptx</code>、<code>.pptm</code>、<code>.ppt</code>）</li>
 <li>RTF 文档（<code>.rtf</code>）</li>
+<li>Windows Write 文档（<code>.wri</code>）</li>
+<li>WinHelp 文件（<code>.hlp</code>）</li>
 <li>纯文本和日志文件（<code>.txt</code>、<code>.log</code>）</li>
 </ul>
 <h1 id="键盘快捷键">键盘快捷键</h1>
@@ -337,7 +368,8 @@ DOM”。您还需要启用“按段落平移文本”，否则显示器会停�
 <li><code>Ctrl+G</code>（macOS：<code>Cmd+L</code>）：转到行。</li>
 <li><code>Ctrl+Shift+G</code>（macOS：<code>Cmd+Shift+L</code>）：转到百分比。</li>
 <li><code>Ctrl+P</code>：转到页（当当前文档支持时）。</li>
-<li><code>=</code>：朗读当前阅读百分比。</li>
+<li><code>=</code>：朗读当前阅读百分比和页码，例如“15%，第 30
+页”。对于没有页码的文档，将省略页码。</li>
 <li><code>Alt+Left</code>（macOS：<code>Cmd+[</code>）：后退导航历史。</li>
 <li><code>Alt+Right</code>（macOS：<code>Cmd+]</code>）：前进导航历史。</li>
 <li><code>[</code>：上一章节。</li>
@@ -368,6 +400,8 @@ Control 键而非 Cmd）：查看当前位置的笔记文本。</li>
 <li><code>F</code>：下一个图形。</li>
 <li><code>Shift+T</code>：上一个表格。</li>
 <li><code>T</code>：下一个表格。</li>
+<li><code>Shift+M</code>：上一个公式。</li>
+<li><code>M</code>：下一个公式。</li>
 <li><code>Shift+S</code>：上一个分隔符。</li>
 <li><code>S</code>：下一个分隔符。</li>
 <li><code>Shift+L</code>：上一个列表。</li>
@@ -393,15 +427,22 @@ Control 键而非 Cmd）：查看当前位置的笔记文本。</li>
 <li><code>Ctrl+Shift+B</code>：在当前选择/光标处切换书签。</li>
 <li><code>Ctrl+Shift+N</code>：在当前选择/光标处添加或编辑书签笔记。</li>
 <li><code>Ctrl+Alt+W</code>：切换自动换行。</li>
-<li><code>Ctrl+Space</code>：播放/暂停音频朗读。</li>
+<li><code>Ctrl+Space</code>（macOS：<code>RawCtrl+Space</code>，即物理
+Control 键，因为 Cmd+Space 会打开 Spotlight）：播放/暂停音频朗读。</li>
 <li><code>'</code>：音频朗读向前跳转。</li>
 <li><code>;</code>：音频朗读向后跳转。</li>
-<li><code>Ctrl+'</code>：增大音频跳转步长。</li>
-<li><code>Ctrl+;</code>：减小音频跳转步长。</li>
+<li><code>Shift+'</code>：增大音频跳转步长。</li>
+<li><code>Shift+;</code>：减小音频跳转步长。</li>
+<li><code>Ctrl+Shift+.</code>：加快音频朗读速度。</li>
+<li><code>Ctrl+Shift+,</code>：减慢音频朗读速度。</li>
 <li><code>F11</code>（macOS：<code>RawCtrl+Ctrl+F</code>，即
 Control+Command+F）：切换全屏。</li>
-<li><code>Ctrl+,</code>：打开设置（macOS：偏好设置，位于应用菜单下）。</li>
+<li><code>Ctrl+,</code>：打开设置（macOS：位于应用菜单下）。</li>
 <li><code>Ctrl+Shift+S</code>：切换睡眠定时器。</li>
+<li><code>Ctrl+Shift+O</code>：使用 OCR 识别扫描版 PDF 的页面范围。</li>
+<li><code>Alt+F9</code>（macOS：<code>Cmd+F9</code>）：标记选区起点，这样从这里到您到达的任何位置之间的所有内容都可以一次性复制。</li>
+<li><code>Alt+F10</code>（macOS：<code>Cmd+F10</code>）：将从标记的选区起点到当前位置的所有内容复制到剪贴板。</li>
+<li><code>Alt+Shift+F9</code>（macOS：<code>Cmd+Shift+F9</code>）：跳回标记的选区起点，并保留标记。</li>
 </ul>
 <h2 id="帮助菜单">帮助菜单</h2>
 <ul>
@@ -416,10 +457,80 @@ Control+Command+F）：切换全屏。</li>
 <li>选项卡控件上的 <code>Delete</code> /
 <code>数字键盘 Delete</code>：关闭选中的文档选项卡。</li>
 <li>文档文本中的 <code>Enter</code> 或
-<code>Space</code>：激活光标处的链接，或在表格标记处打开表格视图。</li>
+<code>Space</code>：跟随光标处的链接，或打开表格或公式视图。</li>
+<li>扫描版 PDF 页面上的 <code>Enter</code>：使用 OCR 识别该页。</li>
 <li>文档文本中的 <code>Shift+F10</code>
 或菜单/应用程序键：打开上下文菜单。</li>
 </ul>
+<h1 id="ios-和-android">iOS 和 Android</h1>
+<p>iOS 和 Android
+应用使用与桌面版相同的阅读引擎，因此它们打开相同的格式，并以相同的方式记住您的位置。它们专为在
+iOS 上配合 VoiceOver、在 Android 上配合 TalkBack 使用而构建。</p>
+<h2 id="打开文档">打开文档</h2>
+<ul>
+<li>使用“打开图书”按钮，或从“文件”应用或其他应用打开文档并选择
+Paperback。</li>
+<li>在 Android
+上，您可以在“设置”中改为开启应用内文件浏览器。它需要“所有文件访问”权限，并且会直接打开大文件，而不是先复制它们。</li>
+<li>长按“打开图书”按钮可导入或导出文档数据（<code>.paperback</code>），与桌面应用使用的文件相同。</li>
+</ul>
+<h2 id="阅读和收听">阅读和收听</h2>
+<p>每个应用都有两种阅读文档的方式。在文本模式下，您使用屏幕阅读器阅读文本。在朗读模式下，Paperback
+使用您在“设置”中选择的语音为您朗读文本，并在后台和锁屏界面继续播放。通过“更多选项”菜单在两者之间切换。</p>
+<p>有声书，如 DAISY、M4B 和 MP3 图书，则播放它们自己的录音。</p>
+<h2 id="阅读栏">阅读栏</h2>
+<p>屏幕底部的栏从左到右依次为：</p>
+<ul>
+<li>导航单位，例如段落、标题、页面或链接。在其上向上或向下滑动可更改。</li>
+<li>上一个、播放和下一个按钮。上一个和下一个按导航单位移动。</li>
+<li>语音速率。在其上向上或向下滑动可更改 Paperback 的朗读速度。</li>
+</ul>
+<p>您也可以在播放按钮上向上或向下滑动，以按导航单位移动，而无需去按上一个和下一个按钮。如果您只用这种方式，设置中的“隐藏上一个和下一个按钮”会将它们从屏幕阅读器的路径中移除。“向上滑动向前移动”设置决定滑动方向。</p>
+<h2 id="更多选项">更多选项</h2>
+<p>“更多选项”菜单包含其他所有功能。某些项目在每个应用上的工作方式略有不同。</p>
+<ul>
+<li><strong>切换到 TTS 模式或切换到文本模式：</strong>
+在朗读模式和文本模式之间切换，如上所述。在文本模式下，“朗读”项目可在不离开文本模式的情况下开始和暂停朗读。</li>
+<li><strong>目录：</strong>
+图书的章节，打开时位于您正在阅读的章节。选择一个可直接跳转到该章节。带有子章节的条目可以使用屏幕阅读器的操作展开和折叠。</li>
+<li><strong>元素：</strong> 文档标题或链接的列表。在 iOS
+上使用“类型”选择器，在 Android
+上使用选项卡，在两者之间切换，然后选择一个跳转到它。</li>
+<li><strong>查找：</strong>
+输入要查找的内容，或从搜索历史中选择较早的搜索，并选择是否区分大小写、仅匹配全字或使用正则表达式。查找上一个和查找下一个会跳转到匹配项并朗读其位置，查找对话框保持打开，以便您可以继续。在朗读模式下，查找也会作为阅读栏上的导航单位显示，因此您也可以从那里逐步浏览匹配项。</li>
+<li><strong>转到：</strong>
+跳转到文档中的某一行、某一页或某个百分比。使用“模式”选择器选择。</li>
+<li><strong>最近文档：</strong>
+您打开过的每个文档，每个都标记为当前已打开、已关闭或文件缺失。每个都有两个屏幕阅读器操作：“移除”将其从列表中删除，“定位”让您找到文件已移动的文档。“清除最近文档”会清空列表而不删除任何文档。</li>
+<li><strong>字数统计：</strong> 文档中的单词数。</li>
+<li><strong>文档信息：</strong> 标题、作者、文件名，在 iOS
+上还包括行数和字符数。</li>
+<li><strong>导出：</strong> 将文档保存为纯文本、HTML 或 Markdown。</li>
+<li><strong>睡眠定时器：</strong> 在 5、10、15、30、45 或 60
+分钟后停止阅读，或使用您自己的时间。运行时再次打开可查看剩余时间或取消。</li>
+<li><strong>帮助：</strong> 打开此 readme。</li>
+<li><strong>设置：</strong>
+<ul>
+<li><strong>文字转语音：</strong>
+语音、语音速率和音高，一个“播放示例”按钮用于试听，以及段落之间的暂停。Android
+还允许您选择语音引擎。在 iOS
+上，这里也是语音词典的位置：改变单词发音方式的规则，可应用于所有语音或部分语音。</li>
+<li><strong>可读性：</strong>
+文本大小、行距、段落间距、对齐方式和高对比度文本。iOS
+还有浅色和深色外观。</li>
+<li><strong>行为：</strong>
+应用启动时是否重新打开文档，播放按钮上的滑动方向，以及是否隐藏上一个和下一个按钮。Android
+这里还有应用内文件浏览器。</li>
+</ul></li>
+</ul>
+<h2 id="键盘和耳机">键盘和耳机</h2>
+<p>使用键盘时，桌面版的打开图书、最近文档、查找、转到、目录、字数统计、文档信息、导出和睡眠定时器的快捷键都可用，在
+iOS 上使用 <code>Cmd</code> 代替
+<code>Ctrl</code>。用于按标题、页面、链接等移动的单字母键也一样，<code>Space</code>
+可播放和暂停。在 iOS 上，只有当 VoiceOver
+的单字母快速导航关闭时，单字母键才会到达 Paperback。</p>
+<p>在 Android
+上，耳机按钮按一次播放/暂停，按两次向前移动，按三次向后移动。</p>
 <h1 id="支持的语言">支持的语言</h1>
 <p>Paperback 已被翻译成多种语言，并且数量在不断增加。完整列表如下。</p>
 <p>要了解如何贡献翻译，请阅读我们的<a
@@ -438,6 +549,7 @@ href="translating.md">翻译指南</a>。</p>
 <li>简体中文</li>
 <li>塞尔维亚语</li>
 <li>西班牙语</li>
+<li>乌克兰语</li>
 <li>越南语</li>
 </ul>
 <h1 id="鸣谢">鸣谢</h1>
@@ -471,6 +583,198 @@ href="translating.md">翻译指南</a>。</p>
 <li>Tyler Rodick</li>
 </ul>
 <h1 id="更新日志">更新日志</h1>
+<h2 id="版本-1.0">版本 1.0</h2>
+<p>1.0 是首个在全部五个平台——Windows、macOS、Linux、iOS 和
+Android——上发布的版本，其中 iOS 和 Android 应用已在 App Store 和 Google
+Play 上架。</p>
+<h3 id="新增">新增</h3>
+<h4 id="常规">常规</h4>
+<ul>
+<li>Linux 支持，以 AppImage 或 tar.gz
+形式提供，并具有桌面集成，因此文档可以从文件管理器中打开。</li>
+<li>使用 <code>Alt+F9</code> 标记选区起点，使用 <code>Alt+F10</code>
+将从那里到您到达位置的所有内容复制，使用 <code>Alt+Shift+F9</code>
+跳回标记处，从而无需用 Shift+方向键选取即可复制长段文本。这三项都在“工具
+&gt; 选择并复制”下。</li>
+<li><code>=</code> 快捷键现在除了百分比还会朗读页码，例如“15%，第 30
+页”，对于没有页码的文档保持不变。</li>
+<li>关于对话框现在显示 Paperback 的许可证和所有翻译者。</li>
+<li>乌克兰语翻译。</li>
+</ul>
+<h4 id="新格式">新格式</h4>
+<ul>
+<li>漫画压缩包（<code>.cbz</code>）。</li>
+<li>M4B 有声书，按章节分割。</li>
+<li>手册页，包括 <code>man</code> 和 BSD <code>mdoc</code>，无论是否
+gzip 压缩。</li>
+<li>MP3 有声书，当文件包含章节时按章节分割。</li>
+<li>Windows Write（<code>.wri</code>）文件。</li>
+<li>WinHelp（<code>.hlp</code>）文件。</li>
+<li>Word 6 和 Word 95 文档。</li>
+</ul>
+<h4 id="ocr">OCR</h4>
+<ul>
+<li>扫描版 PDF 页面现在可以使用 Windows 和 macOS 内置的 OCR
+进行识别。在扫描页面上按 <code>Enter</code> 即可识别，或使用批量
+OCR（<code>Ctrl+Shift+O</code>）识别页面范围。</li>
+</ul>
+<h4 id="导航">导航</h4>
+<ul>
+<li>EPUB 和 HTML 中的 MathML 公式现在使用 MathCAT 渲染为 AsciiMath。使用
+<code>M</code> 或 <code>Shift+M</code> 导航公式，然后按
+<code>Enter</code> 或 <code>Space</code> 在公式视图中打开原始
+MathML。</li>
+<li>查找对话框中的“查找全部”按钮，列出包含匹配项的每一行，以便您直接跳转到想要的那一行。</li>
+<li>元素列表（<code>F7</code>）中的表格、列表和页面视图。</li>
+<li>转到行、转到页和转到百分比现在接受 <code>+n</code> 和
+<code>-n</code>，以相对于当前位置移动。</li>
+<li>没有自身标题的 EPUB、MOBI 和 CHM
+图书现在从它们的目录获得标题导航。</li>
+<li>KF8（AZW3）图书现在支持章节导航。</li>
+<li>仅包含图片的 EPUB
+页面现在会为其显示一行，因此您可以定位到它们，而不是直接跳过。</li>
+</ul>
+<h4 id="有声书">有声书</h4>
+<ul>
+<li>播放速度控制，从半速到三倍速。使用 <code>Ctrl+Shift+.</code> 和
+<code>Ctrl+Shift+,</code>，或工具菜单。</li>
+<li>纯音频图书中的书签和笔记现在会记住您设置它们的确切时间。</li>
+<li>下一个和上一个位置（<code>Alt+Left</code> 和
+<code>Alt+Right</code>）现在在有声书中可用。</li>
+<li>有声书的进度现在按其录音来衡量，因此转到百分比和状态栏与您实际听到的位置一致。</li>
+</ul>
+<h4 id="最近文档">最近文档</h4>
+<ul>
+<li>“最近文档”子菜单中的“清除最近文档”项目。</li>
+</ul>
+<h4 id="pdf-文档">PDF 文档</h4>
+<ul>
+<li>一个设置，用于保持 PDF 的每一行独立，而不是将它们合并为段落。</li>
+<li>PDF 中的图片和图形现在会被朗读。</li>
+<li>带有阅读结构但未标记任何图片的 PDF
+现在会朗读这些图片，而不是将它们完全排除在图书之外。</li>
+</ul>
+<h4 id="web-视图">Web 视图</h4>
+<ul>
+<li>任何文档现在都可以在 Web 视图中打开，而不仅仅是 EPUB、HTML 和
+Markdown。</li>
+</ul>
+<h4 id="可读性">可读性</h4>
+<ul>
+<li>标题现在按其级别以相应大小绘制，图片和表格与周围文本分开。</li>
+</ul>
+<h4 id="pb">pb</h4>
+<ul>
+<li><code>pb --list-formats</code> 列出 pb 可以读取的所有格式。</li>
+<li>pb 现在会说明它无法读取哪个文件以及原因。</li>
+</ul>
+<h3 id="修复">修复</h3>
+<h4 id="常规-1">常规</h4>
+<ul>
+<li>修复了关闭 Paperback 时崩溃的问题。</li>
+<li>关闭 Paperback
+现在会立即隐藏窗口，而不是在保存时将其留在屏幕上。</li>
+<li>打开文档时，如果没有可重新打开的文档，“重新打开上次关闭的文档”不再保持启用状态。</li>
+<li>Paperback
+不再反复重试最近列表中已丢失的文档，并限制了存储的最近文档数量。</li>
+<li>旧的 INI 设置文件在转换为新格式后现在会被删除。</li>
+<li>字体和颜色对话框的标题，以及越南语中的“导出为”菜单，现在已翻译。</li>
+<li>更新后重新启动的窗口现在会置于前台，而不是留在 Alt+Tab
+中其他窗口的后面。</li>
+<li>自动换行现在会立即应用于大型文档，而不是重新加载整个文档。</li>
+</ul>
+<h4 id="导航-1">导航</h4>
+<ul>
+<li><code>Alt+Left</code>
+现在会回到您跳转来的位置，而不是更早的位置。</li>
+<li>书签声音现在只在您移动到书签上时播放，而不是在您落在书签所在行时播放。</li>
+<li>关闭目录、元素列表和转到对话框现在会直接带您到落点所在行，而不是让您坐着听屏幕阅读器再次朗读窗口。</li>
+<li>转到行、转到页和转到百分比现在会拒绝超出文档范围的数字，而不是悄悄跳到其他地方。</li>
+<li>当文档没有页面时，NVDA 不再截断朗读。</li>
+<li>在目录中未移动就按确定，现在会转到已经选中的条目。</li>
+<li>目录、元素列表和书签列表在有数千个条目的书籍上不再卡顿或冻结。</li>
+<li>上箭头和下箭头现在会按文档记住其列位置，而不是在切换选项卡时延续。</li>
+</ul>
+<h4 id="有声书-1">有声书</h4>
+<ul>
+<li>音频播放在 macOS 上现在使用 <code>Control+Space</code>，因为
+<code>Command+Space</code> 属于 Spotlight。</li>
+</ul>
+<h4 id="pdf-文档-1">PDF 文档</h4>
+<ul>
+<li>修复了从 Apple Pages 导出的 PDF
+被读取为纯文本，丢失其编写时的标题和列表的问题。</li>
+<li>修复了 PDF
+段落和标题在每一行处断开，以及单词在空格处断开的问题。</li>
+<li>修复了编号 PDF 标题合并为一个标题的问题。</li>
+<li>修复了结构树指向无文本的 PDF 打开为空的问题。</li>
+<li>未标记的 PDF 不再在每一页朗读页眉和页脚。</li>
+<li>将页眉和页脚标记为普通文本的 PDF
+不再在每一页的两个段落之间重复标题和页码。</li>
+<li>PDF 现在显示其真实标题，而不是文件名。</li>
+<li>以等宽字体设置的行，如代码，不再被合并为段落。</li>
+</ul>
+<h4 id="mobiazw3-图书">MOBI/AZW3 图书</h4>
+<ul>
+<li>大型 MOBI 图书不再耗尽内存，也不再在 20 MB 后被截断。</li>
+<li>MOBI 和 AZW3 图书现在打开速度大大加快。</li>
+<li>修复了 MOBI 图书丢失章节列表的问题。</li>
+<li>修复了 MOBI
+图书在从一个记录跨到下一个记录时出现乱码文本的问题。</li>
+</ul>
+<h4 id="web-视图-1">Web 视图</h4>
+<ul>
+<li>Web 视图不再一次性加载整本巨大的书。</li>
+<li>当阅读器完整显示文档时，Web
+视图现在也会完整显示，而不是只显示其中一部分。</li>
+</ul>
+<h4 id="其他格式">其他格式</h4>
+<ul>
+<li>以 windows-1251 编写的
+FictionBook（.fb2）图书，占大多数，现在可以打开，而不是完全无法读取。</li>
+<li>使用未声明命名空间或 HTML 实体的 FictionBook
+图书现在可以打开，而不是被当作损坏文件拒绝。</li>
+<li>使用旧版编码的图书现在打开速度大大加快。</li>
+<li>修复了某些中文文本文件打开为乱码的问题。</li>
+<li>受密码保护的 OpenDocument
+文件现在会要求输入密码，而不是被报告为损坏。</li>
+<li>受密码保护的旧版 PowerPoint 文件现在可以打开，旧版 PowerPoint
+幻灯片不再丢失文本。</li>
+<li>以 <code>.rtf</code>
+扩展名保存的纯文本文件现在作为文本打开，而不是因错误而失败。</li>
+<li>RTF 控制字不再显示为文本。</li>
+</ul>
+<h3 id="ios-和-android-1">iOS 和 Android</h3>
+<p>iOS 和 Android 应用可打开桌面版支持的所有格式，并包括：</p>
+<ul>
+<li>朗读，可选择语音、速率和音高，阅读栏上直接有语音速率控制，以及可选的段落间暂停。</li>
+<li>播放 DAISY、M4B 和 MP3 有声书，可在后台和锁屏界面继续播放。</li>
+<li>从阅读栏按标题、页面、链接、表格、列表等导航，以及目录和查找。</li>
+<li>睡眠定时器、字数统计和文档导出，iOS 上还有语音词典。</li>
+<li>文本大小、间距和高对比度文本选项。</li>
+<li>与桌面版匹配的键盘快捷键。</li>
+</ul>
+<h2 id="版本-0.9.2">版本 0.9.2</h2>
+<ul>
+<li>有声书不再在您聚焦文本字段时让屏幕阅读器朗读一连串空格。</li>
+<li>有声书现在在按章节浏览时朗读文件名。</li>
+<li>有声书现在报告其真实长度，而不是声称其中每个文件都运行 24
+小时。</li>
+<li>在 Web 视图中跟随链接后，使用 Escape 关闭 Web
+视图不再弹出调试警报。</li>
+<li>全选后复制现在会给出整个文档，而不仅仅是当前加载的部分。</li>
+<li>查找现在会直接跳到找到的行，而不是在焦点返回图书时让您坐着听屏幕阅读器再次朗读窗口。</li>
+<li>修复了带有游离 ZIP64 块的 EPUB
+以“无效的本地文件头”拒绝打开的问题。</li>
+<li>修复了长文档在屏幕阅读器连续朗读时回到开头的问题。</li>
+<li>WebView
+中的链接现在会带您到它们指向的章节，而不是以“找不到文件”失败。</li>
+<li>自动的“文档已重新加载”朗读不再在句子中间打断屏幕阅读器，而是等待它说完。</li>
+<li>设置对话框的常规选项卡现在按屏幕上出现的顺序切换选项，更新通道紧接在检查更新选项之后。</li>
+<li>Windows
+现在将始终在“打开方式”菜单中显示“Paperback”，而不是程序的完整标语。</li>
+<li>字数统计和文档信息现在显示有声书包含多少个文件，以及总运行时间。</li>
+</ul>
 <h2 id="版本-0.9.1">版本 0.9.1</h2>
 <ul>
 <li>书签和笔记声音现在可在 macOS 上播放。</li>
@@ -496,8 +800,8 @@ href="translating.md">翻译指南</a>。</p>
 <li>更新对话框现已翻译。</li>
 </ul>
 <h2 id="版本-0.9.0">版本 0.9.0</h2>
-<h3 id="新增">新增</h3>
-<h4 id="常规">常规</h4>
+<h3 id="新增-1">新增</h3>
+<h4 id="常规-2">常规</h4>
 <ul>
 <li>一个名为 pb 的命令行工具，可快速将 Paperback 支持的任何格式转换为
 HTML、Markdown 或纯文本。</li>
@@ -534,7 +838,7 @@ HTML、Markdown 或纯文本。</li>
 <li>自动换行菜单项及其热键。</li>
 <li>一个用于决定表格显示方式的开关，并统一了跨文档的表格显示方式。</li>
 </ul>
-<h4 id="导航">导航</h4>
+<h4 id="导航-2">导航</h4>
 <ul>
 <li>支持按容器导航。</li>
 <li>一个选项，可在行间导航时自动将光标移至行首，类似于屏幕阅读器的浏览模式。</li>
@@ -567,7 +871,7 @@ HTML、Markdown 或纯文本。</li>
 <li>为更新进行中对话框添加了取消按钮。</li>
 <li>更新器现在会验证下载的文件未被篡改。</li>
 </ul>
-<h4 id="web-视图">Web 视图</h4>
+<h4 id="web-视图-2">Web 视图</h4>
 <ul>
 <li>Web 视图现在会在您当前的阅读位置打开。</li>
 </ul>
@@ -576,7 +880,7 @@ HTML、Markdown 或纯文本。</li>
 <li>支持 DAISY 2.0 图书。</li>
 <li>支持 DAISY 2.02 音频播放。</li>
 </ul>
-<h4 id="有声书">有声书</h4>
+<h4 id="有声书-2">有声书</h4>
 <ul>
 <li>能够播放有声书，目前支持 DAISY 音频（包括 DAISY
 音频+文本）和音频文件压缩包。</li>
@@ -591,8 +895,8 @@ HTML、Markdown 或纯文本。</li>
 <ul>
 <li>PowerPoint 文档现在支持表格。</li>
 </ul>
-<h3 id="修复">修复</h3>
-<h4 id="常规-1">常规</h4>
+<h3 id="修复-1">修复</h3>
+<h4 id="常规-3">常规</h4>
 <ul>
 <li>使用旧版 CJK 编码（如 GBK、Big5 和
 Shift_JIS）的文档现在可以正确渲染，而不会显示为一堆乱码。</li>
@@ -620,7 +924,7 @@ Shift_JIS）的文档现在可以正确渲染，而不会显示为一堆乱码�
 <li>从最近文档对话框中移除文档现在也会关闭其活动选项卡。</li>
 <li>移除文档后，搜索筛选器现在会被保留。</li>
 </ul>
-<h4 id="导航-1">导航</h4>
+<h4 id="导航-3">导航</h4>
 <ul>
 <li>页面导航在某些情况下朗读错误的行文本。</li>
 <li>转到行、转到页和转到百分比在大型文档中将光标置于错误位置。</li>
@@ -630,11 +934,11 @@ Shift_JIS）的文档现在可以正确渲染，而不会显示为一堆乱码�
 <ul>
 <li>书签/笔记声音现在应当仅在您导航到包含它们的单词时才正确播放。</li>
 </ul>
-<h4 id="可读性">可读性</h4>
+<h4 id="可读性-1">可读性</h4>
 <ul>
 <li>应用自动换行会将您弹到文档开头。</li>
 </ul>
-<h4 id="web-视图-1">Web 视图</h4>
+<h4 id="web-视图-3">Web 视图</h4>
 <ul>
 <li>Web 视图对话框不可调整大小，并且初始弹出尺寸非常小。</li>
 <li>图片现在应能在嵌入式 Web 视图中正确显示。</li>
@@ -653,7 +957,7 @@ Shift_JIS）的文档现在可以正确渲染，而不会显示为一堆乱码�
 <li>解析包含非拉丁字符的 RTF 文档。</li>
 <li>RTF <code>\pict</code> 组，嵌入式图片数据不再泄漏到文档文本中。</li>
 </ul>
-<h4 id="mobiazw3-图书">Mobi/AZW3 图书</h4>
+<h4 id="mobiazw3-图书-1">Mobi/AZW3 图书</h4>
 <ul>
 <li>Mobi 图书中的 Filepos 锚点会拆分 HTML
 标签并在图书文本中产生垃圾内容。</li>
@@ -668,7 +972,7 @@ Shift_JIS）的文档现在可以正确渲染，而不会显示为一堆乱码�
 <ul>
 <li>dl、dt 和 dd 元素在 XHTML 文档中不产生换行符。</li>
 </ul>
-<h4 id="pdf-文档">PDF 文档</h4>
+<h4 id="pdf-文档-2">PDF 文档</h4>
 <ul>
 <li>对于标记错误的 PDF，Paperback 现在会回退到纯文本提取。</li>
 <li>标题和/或书签中包含控制字符的 PDF 文档在打开时不再导致 Paperback
@@ -679,15 +983,14 @@ Shift_JIS）的文档现在可以正确渲染，而不会显示为一堆乱码�
 <li>为 epub 图书添加了页面支持。</li>
 <li>添加了对加密 Microsoft Office 文档的支持。目前支持旧版 Word、新版
 Word 和新版 PowerPoint，旧版 PowerPoint 计划在未来支持。</li>
-<li>添加了对旧版 Microsoft Word 文档（*.doc）的支持！</li>
-<li>添加了对旧版 PowerPoint 演示文稿（*.ppt）的支持！</li>
+<li>添加了对旧版 Microsoft Word 文档的支持！</li>
+<li>添加了对旧版 PowerPoint 演示文稿的支持！</li>
 <li>添加了对 mobi 和 AZW3 图书的支持！</li>
 <li>添加了对带标签的 PDF 文件的支持！</li>
 <li>添加了 Ctrl+Q 快捷键退出应用。</li>
 <li>添加了对 Bookshare 压缩图书（DAISY 和 Word）的支持！</li>
 <li>嵌入式图片的替代文本现在应能正确显示。</li>
 <li>CHM 文档现在正确支持内部链接导航。</li>
-<li>修复了书签声音在段落开头而非书签位置触发的问题。</li>
 <li>修复了转到页相差 1 的问题。</li>
 <li>修复了 Esc 键无法关闭“打开方式”对话框的问题。</li>
 <li>修复了右键或应用程序键无法弹出阅读器上下文菜单的问题。</li>
@@ -741,7 +1044,6 @@ Word 和新版 PowerPoint，旧版 PowerPoint 计划在未来支持。</li>
 的问题。</li>
 <li>修复了 Markdown 文件中表格渲染不正确的问题。</li>
 <li>仅包含图片的 PDF 现在会在您尝试加载时警告其存在。</li>
-<li>现在可以在检查更新时检查新的开发版而非稳定版。</li>
 <li>在 Paperback 可执行文件中正确嵌入版本信息。</li>
 <li>将选项对话框拆分为选项卡，以便使用和导航。</li>
 <li>切换到 Hayro 解析 PDF，带来更高的可靠性、速度，并减少 DLL

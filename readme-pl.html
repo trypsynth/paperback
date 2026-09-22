@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Paperback - wersja 0.9.2</title>
+  <title>Paperback - wersja 1.0</title>
   <style>
     html {
       color: #1a1a1a;
@@ -205,7 +205,7 @@
 </ul>
 </nav>
 <header id="title-block-header">
-<h1 class="title">Paperback - wersja 0.9.2</h1>
+<h1 class="title">Paperback - wersja 1.0</h1>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -234,6 +234,19 @@ Narzędzia</a></li>
 id="toc-dodatkowe-klawisze-w-widoku-dokumentu">Dodatkowe klawisze w
 widoku dokumentu</a></li>
 </ul></li>
+<li><a href="#ios-i-android" id="toc-ios-i-android">iOS i Android</a>
+<ul>
+<li><a href="#otwieranie-dokumentów"
+id="toc-otwieranie-dokumentów">Otwieranie dokumentów</a></li>
+<li><a href="#czytanie-i-słuchanie"
+id="toc-czytanie-i-słuchanie">Czytanie i słuchanie</a></li>
+<li><a href="#pasek-czytania" id="toc-pasek-czytania">Pasek
+czytania</a></li>
+<li><a href="#więcej-opcji" id="toc-więcej-opcji">Więcej opcji</a></li>
+<li><a href="#klawiatury-i-zestawy-słuchawkowe"
+id="toc-klawiatury-i-zestawy-słuchawkowe">Klawiatury i zestawy
+słuchawkowe</a></li>
+</ul></li>
 <li><a href="#obsługiwane-języki"
 id="toc-obsługiwane-języki">Obsługiwane języki</a></li>
 <li><a href="#podziękowania" id="toc-podziękowania">Podziękowania</a>
@@ -244,12 +257,19 @@ programu</a></li>
 </ul></li>
 <li><a href="#lista-zmian" id="toc-lista-zmian">Lista zmian</a>
 <ul>
+<li><a href="#wersja-1.0" id="toc-wersja-1.0">Wersja 1.0</a>
+<ul>
+<li><a href="#dodano" id="toc-dodano">Dodano</a></li>
+<li><a href="#naprawiono" id="toc-naprawiono">Naprawiono</a></li>
+<li><a href="#ios-i-android-1" id="toc-ios-i-android-1">iOS i
+Android</a></li>
+</ul></li>
 <li><a href="#wersja-0.9.2" id="toc-wersja-0.9.2">Wersja 0.9.2</a></li>
 <li><a href="#wersja-0.9.1" id="toc-wersja-0.9.1">Wersja 0.9.1</a></li>
 <li><a href="#wersja-0.9.0" id="toc-wersja-0.9.0">Wersja 0.9.0</a>
 <ul>
-<li><a href="#dodano" id="toc-dodano">Dodano</a></li>
-<li><a href="#naprawiono" id="toc-naprawiono">Naprawiono</a></li>
+<li><a href="#dodano-1" id="toc-dodano-1">Dodano</a></li>
+<li><a href="#naprawiono-1" id="toc-naprawiono-1">Naprawiono</a></li>
 </ul></li>
 <li><a href="#wersja-0.8.5" id="toc-wersja-0.8.5">Wersja 0.8.5</a></li>
 <li><a href="#wersja-0.8.2" id="toc-wersja-0.8.2">Wersja 0.8.2</a></li>
@@ -269,17 +289,16 @@ programu</a></li>
 </ul>
 </nav>
 <h1 id="wprowadzenie">Wprowadzenie</h1>
-<p>Paperback to lekki, szybki i dostępny czytnik e-booków i dokumentów
-dla wszystkich: od osób czytających okazjonalnie po zaawansowanych
-użytkowników. Został zaprojektowany z myślą o dostępności dla czytników
-ekranu, dużej szybkości działania i wygodzie bez zbędnych dodatków.</p>
+<p>Paperback to lekki, szybki i dostępny czytnik e-booków, dokumentów i
+audiobooków dla wszystkich: od osób czytających okazjonalnie po
+zaawansowanych użytkowników. Został zaprojektowany z myślą o dostępności
+dla czytników ekranu, dużej szybkości działania i wygodzie bez zbędnych
+dodatków.</p>
 <h1 id="wymagania-systemowe">Wymagania systemowe</h1>
-<p>Paperback działa obecnie w systemach Windows 10/11 oraz we wszystkich
-nowoczesnych wersjach macOS na procesorach ARM. Trwają intensywne prace
-nad natywnymi aplikacjami dla systemów iOS i Android. Publiczne wersje
-testowe są planowane niedługo po wydaniu wersji 0.9.0 na komputery.
-Nastąpi to przed wspólnym wydaniem 1.0, które obejmie wszystkie cztery
-platformy.</p>
+<p>Paperback działa w systemach Windows 10/11, we wszystkich
+nowoczesnych wersjach macOS na procesorach ARM, w Linuksie, w iOS 17 i
+nowszych oraz w Androidzie 7 i nowszych. Aplikacje na iOS i Androida są
+dostępne w App Store i Google Play.</p>
 <h1 id="funkcje">Funkcje</h1>
 <ul>
 <li>Całkowicie samodzielna aplikacja, która nie wymaga instalowania
@@ -299,6 +318,16 @@ obsługą wyrażeń regularnych.</li>
 <li>Może działać w pełni przenośnie albo zostać zainstalowany z
 automatycznym skojarzeniem typów plików.</li>
 <li>Obsługuje ogromną liczbę popularnych formatów plików.</li>
+<li>Odtwarza audiobooki z regulacją szybkości i zakładkami
+zapamiętującymi dokładną pozycję w nagraniu.</li>
+<li>Odczytuje zeskanowane strony PDF za pomocą OCR wbudowanego w Windows
+i macOS.</li>
+<li>Pozwala dodawać zakładki i notatki, aby zaznaczać miejsca i do nich
+wracać.</li>
+<li>Umożliwia zmianę każdego skrótu klawiszowego.</li>
+<li>Zawiera <code>pb</code>, narzędzie wiersza poleceń, które
+przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły
+tekst.</li>
 </ul>
 <h1 id="zgodność-z-czytnikami-ekranu">Zgodność z czytnikami ekranu</h1>
 <p>Paperback dobrze współpracuje ze wszystkimi głównymi czytnikami
@@ -345,6 +374,7 @@ gzipem)</li>
 <li>Audiobooki M4B (<code>.m4b</code>)</li>
 <li>Książki MOBI/Kindle (<code>.mobi</code>, <code>.azw</code>,
 <code>.azw3</code>)</li>
+<li>Audiobooki MP3 (<code>.mp3</code>)</li>
 <li>Prezentacje OpenDocument (<code>.odp</code>,
 <code>.fodp</code>)</li>
 <li>Pliki tekstowe OpenDocument (<code>.odt</code>,
@@ -353,6 +383,7 @@ gzipem)</li>
 <li>Prezentacje PowerPoint (<code>.pptx</code>, <code>.pptm</code>,
 <code>.ppt</code>)</li>
 <li>Dokumenty RTF (<code>.rtf</code>)</li>
+<li>Dokumenty Windows Write (<code>.wri</code>)</li>
 <li>Pliki WinHelp (<code>.hlp</code>)</li>
 <li>Pliki zwykłego tekstu i dzienników (<code>.txt</code>,
 <code>.log</code>)</li>
@@ -390,8 +421,9 @@ wiersza.</li>
 do procentu.</li>
 <li><code>Ctrl+P</code>: Przejdź do strony (gdy jest obsługiwana przez
 bieżący dokument).</li>
-<li><code>=</code>: Odczytaj bieżącą pozycję procentową w
-dokumencie.</li>
+<li><code>=</code>: Odczytaj bieżącą pozycję procentową i numer strony,
+na przykład „15%, strona 30”. W dokumentach bez numerów stron numer
+strony jest pomijany.</li>
 <li><code>Alt+Strzałka w lewo</code> (macOS: <code>Cmd+[</code>):
 Przejdź wstecz w historii nawigacji.</li>
 <li><code>Alt+Strzałka w prawo</code> (macOS: <code>Cmd+]</code>):
@@ -461,17 +493,24 @@ zaznaczeniu lub kursorze.</li>
 <li><code>Ctrl+Shift+N</code>: Dodaj lub edytuj notatkę do zakładki przy
 bieżącym zaznaczeniu lub kursorze.</li>
 <li><code>Ctrl+Alt+W</code>: Przełącz zawijanie wierszy.</li>
-<li><code>Ctrl+Spacja</code>: Odtwórz lub wstrzymaj narrację
-dźwiękową.</li>
+<li><code>Ctrl+Spacja</code> (macOS: <code>RawCtrl+Spacja</code>, czyli
+fizyczny klawisz Control, ponieważ Cmd+Spacja otwiera Spotlight):
+Odtwórz lub wstrzymaj narrację dźwiękową.</li>
 <li><code>'</code>: Przewiń narrację dźwiękową w przód.</li>
 <li><code>;</code>: Przewiń narrację dźwiękową w tył.</li>
-<li><code>Ctrl+'</code>: Zwiększ skok przewijania dźwięku.</li>
-<li><code>Ctrl+;</code>: Zmniejsz skok przewijania dźwięku.</li>
+<li><code>Shift+'</code>: Zwiększ skok przewijania dźwięku.</li>
+<li><code>Shift+;</code>: Zmniejsz skok przewijania dźwięku.</li>
+<li><code>Ctrl+Shift+.</code>: Zwiększ szybkość odtwarzania narracji
+dźwiękowej.</li>
+<li><code>Ctrl+Shift+,</code>: Zmniejsz szybkość odtwarzania narracji
+dźwiękowej.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, czyli
 Control+Command+F): Przełącz tryb pełnoekranowy.</li>
-<li><code>Ctrl+,</code>: Otwórz Opcje (w systemie macOS: Preferencje, w
-menu aplikacji).</li>
+<li><code>Ctrl+,</code>: Otwórz Ustawienia (w systemie macOS: w menu
+aplikacji).</li>
 <li><code>Ctrl+Shift+S</code>: Przełącz Wyłącznik czasowy.</li>
+<li><code>Ctrl+Shift+O</code>: Rozpoznaj tekst na wybranym zakresie
+zeskanowanych stron PDF za pomocą OCR.</li>
 <li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Ustaw początek
 zaznaczenia, aby później skopiować za jednym razem tekst od tego miejsca
 do pozycji, do której przejdziesz.</li>
@@ -496,9 +535,125 @@ widoku dokumentu</h2>
 na kontrolce kart: zamknij kartę wybranego dokumentu.</li>
 <li><code>Enter</code> albo <code>Spacja</code> w tekście dokumentu:
 otwórz odnośnik, Widok tabeli lub Widok wzoru pod kursorem.</li>
+<li><code>Enter</code> na zeskanowanej stronie PDF: rozpoznaj tekst na
+stronie za pomocą OCR.</li>
 <li><code>Shift+F10</code> albo klawisz Menu/Aplikacje w tekście
 dokumentu: otwórz menu kontekstowe.</li>
 </ul>
+<h1 id="ios-i-android">iOS i Android</h1>
+<p>Aplikacje na iOS i Androida korzystają z tego samego silnika odczytu
+co wersja komputerowa, więc otwierają te same formaty i tak samo
+zapamiętują pozycję czytania. Zaprojektowano je do pracy z VoiceOver w
+iOS i TalkBackiem w Androidzie.</p>
+<h2 id="otwieranie-dokumentów">Otwieranie dokumentów</h2>
+<ul>
+<li>Użyj przycisku Otwórz książkę albo otwórz dokument w aplikacji Pliki
+lub innej aplikacji i wybierz Paperback.</li>
+<li>W Androidzie możesz zamiast tego włączyć w Ustawieniach wbudowaną
+przeglądarkę plików. Wymaga ona uprawnienia do dostępu do wszystkich
+plików i otwiera duże pliki od razu, bez wcześniejszego kopiowania.</li>
+<li>Przytrzymaj przycisk Otwórz książkę, aby zaimportować lub
+wyeksportować dane dokumentu (<code>.paperback</code>). Są to te same
+pliki, których używa wersja komputerowa.</li>
+</ul>
+<h2 id="czytanie-i-słuchanie">Czytanie i słuchanie</h2>
+<p>W obu aplikacjach dokument można czytać na dwa sposoby. W trybie
+tekstowym czytasz tekst za pomocą czytnika ekranu. W trybie mowy
+Paperback czyta tekst głosem wybranym w Ustawieniach. Odczyt działa
+również w tle i z ekranu blokady. Tryby przełącza się w menu Więcej
+opcji.</p>
+<p>Audiobooki, na przykład w formatach DAISY, M4B i MP3, zamiast syntezy
+mowy odtwarzają własne nagranie.</p>
+<h2 id="pasek-czytania">Pasek czytania</h2>
+<p>Na pasku u dołu ekranu znajdują się, od lewej do prawej:</p>
+<ul>
+<li>Jednostka nawigacji, na przykład akapit, nagłówek, strona lub
+odnośnik. Zmienisz ją, przesuwając po niej palcem w górę lub w dół.</li>
+<li>Przyciski przejścia wstecz, odtwarzania i przejścia dalej. Przyciski
+wstecz i dalej przenoszą o wybraną jednostkę.</li>
+<li>Tempo mowy. Przesunięcie po tym elemencie palcem w górę lub w dół
+zmienia szybkość, z jaką Paperback czyta tekst.</li>
+</ul>
+<p>Możesz też przesuwać palcem w górę lub w dół po przycisku
+odtwarzania, aby poruszać się o wybraną jednostkę, bez sięgania do
+przycisków nawigacji. Jeśli korzystasz tylko z tych gestów, ustawienie
+Ukryj przyciski nawigacji przed czytnikiem ekranu sprawia, że czytnik
+ekranu pomija te przyciski. Ustawienie Przesunięcie w górę przenosi do
+przodu określa kierunek działania gestu.</p>
+<h2 id="więcej-opcji">Więcej opcji</h2>
+<p>Menu Więcej opcji zawiera pozostałe funkcje. Niektóre działają nieco
+inaczej w każdej z aplikacji.</p>
+<ul>
+<li><strong>Przełącz na tryb mowy lub Przełącz na tryb
+tekstowy:</strong> przełącza między opisanymi wyżej sposobami czytania.
+W Androidzie jest też polecenie Czytaj na głos, które uruchamia i
+wstrzymuje odczyt.</li>
+<li><strong>Spis treści:</strong> lista rozdziałów książki, otwierana na
+aktualnie czytanym rozdziale. Wybierz rozdział, aby od razu do niego
+przejść. Pozycje z podrozdziałami można rozwijać i zwijać za pomocą
+akcji czytnika ekranu.</li>
+<li><strong>Elementy:</strong> lista nagłówków lub odnośników w
+dokumencie. W iOS wybierz rodzaj elementów w polu Typ, a w Androidzie
+przełącz kartę. Następnie wybierz element, aby do niego przejść.</li>
+<li><strong>Znajdź:</strong> wpisz szukany tekst albo wybierz
+wcześniejsze wyszukiwanie z Historii wyszukiwania. Określ, czy
+uwzględniać wielkość liter, czy szukać tylko całych słów i czy używać
+wyrażenia regularnego. Przyciski Znajdź poprzednie i Znajdź następne
+przenoszą do dopasowania i podają jego położenie. Ekran Znajdź pozostaje
+otwarty, aby można było kontynuować wyszukiwanie. W trybie mowy Znajdź
+pojawia się też jako jednostka nawigacji na pasku czytania, co pozwala
+przechodzić między dopasowaniami także z tego paska.</li>
+<li><strong>Przejdź do:</strong> przenosi do wybranego wiersza, strony
+lub pozycji wyrażonej procentowo. Rodzaj pozycji wybiera się w polu
+Tryb.</li>
+<li><strong>Ostatnie dokumenty:</strong> lista wszystkich otwieranych
+dokumentów. Przy każdym podany jest stan: obecnie otwarty, zamknięty lub
+brak pliku. Każdy dokument ma dwie akcje czytnika ekranu: Usuń usuwa go
+z listy, a Zlokalizuj pozwala wskazać plik po jego przeniesieniu.
+Polecenie Wyczyść listę ostatnich dokumentów opróżnia listę, ale nie
+usuwa samych dokumentów.</li>
+<li><strong>Liczba słów:</strong> liczba słów w dokumencie.</li>
+<li><strong>Informacje o dokumencie:</strong> tytuł, autor i nazwa
+pliku, a w iOS także liczba wierszy i znaków.</li>
+<li><strong>Eksport (Eksport dokumentu w iOS, Eksportuj jako w
+Androidzie):</strong> zapisuje dokument jako zwykły tekst, HTML lub
+Markdown.</li>
+<li><strong>Wyłącznik czasowy:</strong> zatrzymuje czytanie po 5, 10,
+15, 30, 45 lub 60 minutach albo po podanym przez Ciebie czasie. Otwórz
+go ponownie, gdy jest włączony, aby sprawdzić pozostały czas lub go
+anulować.</li>
+<li><strong>Pomoc:</strong> otwiera ten dokument.</li>
+<li><strong>Ustawienia:</strong>
+<ul>
+<li><strong>Synteza mowy:</strong> głos, tempo mowy i wysokość głosu,
+przycisk Odtwórz próbkę do ich odsłuchania oraz przerwa między
+akapitami. W Androidzie można też wybrać silnik syntezy mowy. W iOS
+znajduje się tu również Słownik mowy: reguły zmieniające wymowę słów dla
+wszystkich lub wybranych głosów.</li>
+<li><strong>Czytelność:</strong> rozmiar tekstu, odstępy między
+wierszami i akapitami, wyrównanie oraz wysoki kontrast tekstu. W iOS
+dostępne są także jasny i ciemny wygląd.</li>
+<li><strong>Zachowanie:</strong> ponowne otwieranie dokumentów przy
+uruchamianiu aplikacji, kierunek nawigacji po przesunięciu palcem po
+przycisku odtwarzania oraz ukrywanie przycisków nawigacji przed
+czytnikiem ekranu. W Androidzie znajduje się tu również ustawienie
+wbudowanej przeglądarki plików.</li>
+</ul></li>
+</ul>
+<h2 id="klawiatury-i-zestawy-słuchawkowe">Klawiatury i zestawy
+słuchawkowe</h2>
+<p>Po podłączeniu klawiatury działają skróty z wersji komputerowej do
+otwierania książek, ostatnich dokumentów, wyszukiwania, przechodzenia do
+wskazanej pozycji, spisu treści, liczby słów, informacji o dokumencie,
+eksportu i wyłącznika czasowego. W iOS używa się <code>Cmd</code>
+zamiast <code>Ctrl</code>. Działają też pojedyncze litery do
+przechodzenia między nagłówkami, stronami, odnośnikami i pozostałymi
+elementami, a <code>Spacja</code> uruchamia i wstrzymuje odtwarzanie. W
+iOS pojedyncze litery docierają do Paperbacka tylko wtedy, gdy nawigacja
+pojedynczymi literami VoiceOver (Quick Nav) jest wyłączona.</p>
+<p>W Androidzie jedno naciśnięcie przycisku zestawu słuchawkowego
+uruchamia lub wstrzymuje odtwarzanie, dwa przenoszą do przodu, a trzy do
+tyłu.</p>
 <h1 id="obsługiwane-języki">Obsługiwane języki</h1>
 <p>Paperback jest tłumaczony na wiele języków, a kolejne są stale
 dodawane. Pełna lista znajduje się poniżej.</p>
@@ -518,6 +673,7 @@ href="translating.md">Przewodnik po tłumaczeniach</a>.</p>
 <li>Portugalski (Brazylia)</li>
 <li>Rosyjski</li>
 <li>Serbski</li>
+<li>Ukraiński</li>
 <li>Wietnamski</li>
 </ul>
 <h1 id="podziękowania">Podziękowania</h1>
@@ -554,6 +710,235 @@ automatycznego dodania do tej listy.</p>
 <li>Tyler Rodick</li>
 </ul>
 <h1 id="lista-zmian">Lista zmian</h1>
+<h2 id="wersja-1.0">Wersja 1.0</h2>
+<p>Wersja 1.0 to pierwsze wydanie na wszystkich pięciu platformach:
+Windows, macOS, Linux, iOS i Android, a aplikacje na iOS i Androida są
+dostępne w App Store i Google Play.</p>
+<h3 id="dodano">Dodano</h3>
+<h4 id="ogólne">Ogólne</h4>
+<ul>
+<li>Obsługę systemu Linux w postaci pliku AppImage albo archiwum tar.gz,
+wraz z integracją ze środowiskiem graficznym, dzięki której dokumenty
+otwierają się z menedżera plików.</li>
+<li>Skrót <code>Alt+F9</code> ustawia początek zaznaczenia,
+<code>Alt+F10</code> kopiuje tekst od tego miejsca do bieżącej pozycji,
+a <code>Alt+Shift+F9</code> przenosi z powrotem do znacznika. Pozwala to
+kopiować długie fragmenty bez zaznaczania ich strzałkami z Shiftem.
+Wszystkie trzy polecenia znajdują się w menu Narzędzia &gt; Zaznacz i
+kopiuj.</li>
+<li>Skrót <code>=</code> podaje teraz oprócz procentu także numer
+strony, na przykład „15%, strona 30”, a w dokumentach bez numerów stron
+działa jak dotychczas.</li>
+<li>Okno O programie pokazuje teraz licencję Paperbacka oraz wszystkich
+tłumaczy.</li>
+<li>Tłumaczenie ukraińskie.</li>
+</ul>
+<h4 id="nowe-formaty">Nowe formaty</h4>
+<ul>
+<li>Archiwa komiksów (<code>.cbz</code>).</li>
+<li>Audiobooki M4B, podzielone na rozdziały.</li>
+<li>Strony podręcznika systemowego, zarówno <code>man</code>, jak i
+<code>mdoc</code> z BSD, spakowane gzipem lub nie.</li>
+<li>Audiobooki MP3, dzielone na rozdziały, jeśli plik je zawiera.</li>
+<li>Pliki Windows Write (<code>.wri</code>).</li>
+<li>Pliki WinHelp (<code>.hlp</code>).</li>
+<li>Dokumenty Word 6 i Word 95.</li>
+</ul>
+<h4 id="ocr">OCR</h4>
+<ul>
+<li>Zeskanowane strony plików PDF można teraz rozpoznać mechanizmem OCR
+wbudowanym w systemy Windows i macOS. Naciśnij <code>Enter</code> na
+zeskanowanej stronie, aby ją rozpoznać, albo użyj funkcji Zbiorcze OCR
+(<code>Ctrl+Shift+O</code>) dla zakresu stron.</li>
+</ul>
+<h4 id="nawigacja">Nawigacja</h4>
+<ul>
+<li>Wzory MathML w dokumentach EPUB i HTML są przedstawiane w zapisie
+AsciiMath przy użyciu MathCAT. Klawisze <code>M</code> i
+<code>Shift+M</code> służą do przechodzenia między wzorami, a
+<code>Enter</code> lub <code>Spacja</code> otwiera oryginalny MathML w
+Widoku wzoru.</li>
+<li>Przycisk Znajdź wszystkie w oknie dialogowym Znajdź. Wyświetla listę
+wszystkich wierszy z dopasowaniem, z której można przejść prosto do
+wybranego wiersza.</li>
+<li>Widoki Tabele, Listy i Strony na Liście elementów
+(<code>F7</code>).</li>
+<li>Polecenia Przejdź do wiersza, Przejdź do strony i Przejdź do
+procentu przyjmują teraz zapis <code>+n</code> i <code>-n</code>, który
+przenosi względem bieżącej pozycji.</li>
+<li>Książki EPUB, MOBI i CHM bez własnych nagłówków pozwalają teraz
+nawigować po nagłówkach na podstawie swojego spisu treści.</li>
+<li>Książki KF8 (AZW3) obsługują teraz nawigację po sekcjach.</li>
+<li>Strony plików EPUB zawierające tylko obraz pokazują teraz wiersz z
+tym obrazem, więc można się na nich zatrzymać, zamiast przeskakiwać je
+od razu.</li>
+</ul>
+<h4 id="audiobooki">Audiobooki</h4>
+<ul>
+<li>Regulację szybkości odtwarzania w zakresie od połowy do
+trzykrotności tempa oryginalnego nagrania. Służą do tego skróty
+<code>Ctrl+Shift+.</code> i <code>Ctrl+Shift+,</code> oraz menu
+Narzędzia.</li>
+<li>Zakładki i notatki w książkach zawierających tylko dźwięk
+zapamiętują teraz dokładną pozycję czasową w nagraniu.</li>
+<li>Przechodzenie między poprzednimi i następnymi pozycjami
+(<code>Alt+Strzałka w lewo</code> i <code>Alt+Strzałka w prawo</code>)
+działa teraz w audiobookach.</li>
+<li>Postęp w audiobooku jest teraz mierzony na podstawie nagrania, więc
+polecenie Przejdź do procentu i pasek stanu pokazują rzeczywisty postęp
+odtwarzania.</li>
+</ul>
+<h4 id="ostatnie-dokumenty">Ostatnie dokumenty</h4>
+<ul>
+<li>Pozycję Wyczyść listę ostatnich dokumentów w podmenu Ostatnie
+dokumenty.</li>
+</ul>
+<h4 id="dokumenty-pdf">Dokumenty PDF</h4>
+<ul>
+<li>Ustawienie, które zachowuje każdy wiersz pliku PDF osobno, zamiast
+łączyć je w akapity.</li>
+<li>Paperback informuje teraz o obrazach i rysunkach w plikach PDF.</li>
+<li>W plikach PDF zawierających strukturę odczytu, lecz bez tagów dla
+obrazów, Paperback informuje teraz także o tych obrazach, zamiast
+całkowicie pomijać je w książce.</li>
+</ul>
+<h4 id="widok-www">Widok WWW</h4>
+<ul>
+<li>W Widoku WWW można teraz otworzyć każdy dokument, nie tylko EPUB,
+HTML i Markdown.</li>
+</ul>
+<h4 id="czytelność">Czytelność</h4>
+<ul>
+<li>Nagłówki są teraz wyświetlane w rozmiarze odpowiadającym ich
+poziomowi, a obrazy i tabele są wyraźnie oddzielone od otaczającego
+tekstu.</li>
+</ul>
+<h4 id="pb">pb</h4>
+<ul>
+<li>Polecenie <code>pb --list-formats</code> wypisuje każdy format,
+który pb potrafi odczytać.</li>
+<li>pb podaje teraz, którego pliku nie udało się odczytać i
+dlaczego.</li>
+</ul>
+<h3 id="naprawiono">Naprawiono</h3>
+<h4 id="ogólne-1">Ogólne</h4>
+<ul>
+<li>Naprawiono awarię przy zamykaniu Paperbacka.</li>
+<li>Zamknięcie Paperbacka od razu ukrywa teraz okno, zamiast zostawiać
+je na ekranie na czas zapisywania.</li>
+<li>Otwarcie dokumentu nie zostawia już włączonej pozycji Otwórz
+ponownie ostatnio zamknięty, kiedy nie ma czego otwierać ponownie.</li>
+<li>Paperback nie ponawia już prób otwarcia brakujących dokumentów z
+listy ostatnich i ogranicza liczbę przechowywanych ostatnich
+dokumentów.</li>
+<li>Stary plik ustawień INI jest teraz usuwany po przeniesieniu
+zapisanych w nim ustawień do nowego formatu.</li>
+<li>Przetłumaczono tytuły okien dialogowych czcionki i koloru, a w
+wersji wietnamskiej także menu Eksportuj jako.</li>
+<li>Po aktualizacji ponownie uruchomione okno pojawia się teraz na
+wierzchu, zamiast czekać za wszystkimi innymi oknami w Alt+Tab.</li>
+<li>Zawijanie wierszy działa teraz od razu w dużych dokumentach, bez
+ponownego wczytywania całości.</li>
+</ul>
+<h4 id="nawigacja-1">Nawigacja</h4>
+<ul>
+<li>Skrót <code>Alt+Strzałka w lewo</code> wraca teraz do miejsca, z
+którego nastąpił skok, a nie do starszej pozycji.</li>
+<li>Dźwięki zakładek odtwarzają się teraz tylko przy przejściu przez
+zakładkę, a nie przy wejściu na wiersz, w którym się ona znajduje.</li>
+<li>Zamknięcie Spisu treści, Listy elementów i okien dialogowych Przejdź
+przenosi teraz od razu do docelowego wiersza, bez wysłuchiwania, jak
+czytnik ekranu ponownie odczytuje całe okno.</li>
+<li>Polecenia Przejdź do wiersza, Przejdź do strony i Przejdź do
+procentu odrzucają teraz liczby wychodzące poza dokument, zamiast po
+cichu przenosić w inne miejsce.</li>
+<li>NVDA nie przerywa już komunikatu, gdy dokument nie zawiera
+stron.</li>
+<li>Naciśnięcie OK w Spisie treści bez zmiany zaznaczenia przenosi teraz
+do pozycji, która była już zaznaczona.</li>
+<li>Spis treści, Lista elementów i lista zakładek nie zwalniają już ani
+nie zawieszają się w książkach z tysiącami pozycji.</li>
+<li>Strzałki w górę i w dół pamiętają teraz kolumnę osobno dla każdego
+dokumentu, zamiast przenosić ją przy zmianie karty.</li>
+</ul>
+<h4 id="audiobooki-1">Audiobooki</h4>
+<ul>
+<li>Odtwarzanie dźwięku używa teraz w systemie macOS skrótu
+<code>Control+Spacja</code>, ponieważ <code>Command+Spacja</code> należy
+do Spotlighta.</li>
+</ul>
+<h4 id="dokumenty-pdf-1">Dokumenty PDF</h4>
+<ul>
+<li>Naprawiono odczytywanie plików PDF wyeksportowanych z Apple Pages
+jako zwykłego tekstu, bez nagłówków i list, z którymi zostały
+zapisane.</li>
+<li>Naprawiono błąd, przez który akapity i nagłówki PDF były dzielone na
+końcu każdego wiersza, a słowa rozdzielane przy spacjach.</li>
+<li>Naprawiono zlepianie numerowanych nagłówków PDF w jeden
+nagłówek.</li>
+<li>Naprawiono błąd, przez który pliki PDF otwierały się jako puste, gdy
+ich drzewo struktury nie prowadziło do żadnego tekstu.</li>
+<li>Nagłówki i stopki stron nie są już odczytywane na każdej stronie
+nieotagowanych plików PDF.</li>
+<li>Pliki PDF, które tagują nagłówki i stopki stron jako zwykły tekst,
+nie powtarzają już tytułu i numeru strony między dwoma akapitami na
+każdej stronie.</li>
+<li>Pliki PDF pokazują teraz swój prawdziwy tytuł, a nie nazwę
+pliku.</li>
+<li>Wiersze złożone czcionką o stałej szerokości znaku, na przykład kod,
+nie są już łączone w akapity.</li>
+</ul>
+<h4 id="książki-mobiazw3">Książki MOBI/AZW3</h4>
+<ul>
+<li>Duże książki MOBI nie wyczerpują już pamięci i nie są już obcinane
+po 20 MB.</li>
+<li>Książki MOBI i AZW3 otwierają się teraz znacznie szybciej.</li>
+<li>Naprawiono utratę listy rozdziałów w książkach MOBI.</li>
+<li>Naprawiono nieczytelny tekst w miejscach, w których książki MOBI
+przechodzą z jednego rekordu do następnego.</li>
+</ul>
+<h4 id="widok-www-1">Widok WWW</h4>
+<ul>
+<li>Widok WWW nie wczytuje już naraz całej ogromnej książki.</li>
+<li>Widok WWW pokazuje teraz dokumenty w całości, kiedy czytnik pokazuje
+je w całości, a nie tylko ich fragment.</li>
+</ul>
+<h4 id="inne-formaty">Inne formaty</h4>
+<ul>
+<li>Książki FictionBook (.fb2) zapisane w kodowaniu windows-1251, czyli
+większość z nich, otwierają się teraz, a nie kończą się błędem
+odczytu.</li>
+<li>Książki FictionBook używające przestrzeni nazw albo encji HTML,
+których nigdy nie zadeklarowały, otwierają się teraz, a nie są odrzucane
+jako uszkodzone.</li>
+<li>Książki w starszych kodowaniach otwierają się teraz znacznie
+szybciej.</li>
+<li>Naprawiono błąd, przez który niektóre chińskie pliki tekstowe
+otwierały się jako nieczytelny tekst.</li>
+<li>Pliki OpenDocument chronione hasłem pytają teraz o hasło, a nie są
+zgłaszane jako uszkodzone.</li>
+<li>Starsze pliki PowerPoint chronione hasłem otwierają się teraz, a
+slajdy starszych prezentacji PowerPoint nie tracą już tekstu.</li>
+<li>Pliki zwykłego tekstu zapisane z rozszerzeniem <code>.rtf</code>
+otwierają się teraz jako tekst, a nie kończą się błędem.</li>
+<li>Słowa sterujące RTF nie pojawiają się już jako tekst.</li>
+</ul>
+<h3 id="ios-i-android-1">iOS i Android</h3>
+<p>Aplikacje na iOS i Androida otwierają każdy format, który obsługuje
+wersja na komputery, a poza tym mają:</p>
+<ul>
+<li>Czytanie na głos z wyborem głosu, tempa i wysokości głosu, regulacją
+tempa mowy wprost na pasku czytania oraz opcjonalną przerwą między
+akapitami.</li>
+<li>Odtwarzanie audiobooków DAISY, M4B i MP3, które działa dalej w tle i
+z ekranu blokady.</li>
+<li>Nawigację po nagłówkach, stronach, odnośnikach, tabelach, listach i
+innych elementach z paska czytania, a także Spis treści i Znajdź.</li>
+<li>Wyłącznik czasowy, liczbę słów i eksport dokumentu, a na iOS także
+słownik mowy.</li>
+<li>Opcje rozmiaru tekstu, odstępów i wysokiego kontrastu tekstu.</li>
+<li>Skróty klawiszowe zgodne z wersją na komputery.</li>
+</ul>
 <h2 id="wersja-0.9.2">Wersja 0.9.2</h2>
 <ul>
 <li>Audiobooki nie każą już czytnikowi ekranu odczytywać ciągu spacji,
@@ -575,23 +960,12 @@ które kończyło się komunikatem „Invalid local file header”.</li>
 ekranu czytał je ciągiem.</li>
 <li>Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast
 kończyć się komunikatem „Nie znaleziono pliku”.</li>
-<li>Skrót <code>Alt+F9</code> ustawia początek zaznaczenia,
-<code>Alt+F10</code> kopiuje tekst od tego miejsca do bieżącej pozycji,
-a <code>Alt+Shift+F9</code> przenosi z powrotem do znacznika. Pozwala to
-kopiować długie fragmenty bez zaznaczania ich strzałkami z Shiftem.
-Wszystkie trzy polecenia znajdują się w menu Narzędzia &gt; Zaznacz i
-kopiuj.</li>
-<li>Skrót <code>=</code> podaje teraz oprócz procentu także numer
-strony, na przykład „15%, strona 30”, a w dokumentach bez stron działa
-jak dotychczas.</li>
 <li>Automatyczny komunikat o przeładowaniu dokumentu nie przerywa już
 czytnikowi ekranu w połowie zdania, a czeka, aż skończy wypowiedź.</li>
 <li>Na karcie Ogólne w oknie ustawień tabulator przechodzi teraz przez
 opcje w kolejności, w jakiej są widoczne na ekranie, a kanał
 aktualizacji następuje bezpośrednio po opcji sprawdzania
 aktualizacji.</li>
-<li>Po aktualizacji ponownie uruchomione okno pojawia się teraz na
-wierzchu, zamiast czekać za wszystkimi innymi oknami w Alt+Tab.</li>
 <li>Windows pokazuje teraz zawsze „Paperback” w menu Otwórz za pomocą, a
 nie pełne hasło programu.</li>
 <li>Licznik słów oraz informacje o dokumencie pokazują teraz, ile plików
@@ -634,8 +1008,8 @@ książki da się rozróżnić na pasku zadań i w oknie Alt+Tab.</li>
 <li>Dialog aktualizacji jest teraz przetłumaczony.</li>
 </ul>
 <h2 id="wersja-0.9.0">Wersja 0.9.0</h2>
-<h3 id="dodano">Dodano</h3>
-<h4 id="ogólne">Ogólne</h4>
+<h3 id="dodano-1">Dodano</h3>
+<h4 id="ogólne-2">Ogólne</h4>
 <ul>
 <li>Narzędzie wiersza poleceń o nazwie pb, które szybko przekształca
 dowolny format obsługiwany przez Paperbacka na HTML, Markdown albo
@@ -683,13 +1057,8 @@ klawiszowy.</li>
 <li>Przełącznik sposobu wyświetlania tabel oraz ujednolicony wygląd
 tabel we wszystkich dokumentach.</li>
 </ul>
-<h4 id="nawigacja">Nawigacja</h4>
+<h4 id="nawigacja-2">Nawigacja</h4>
 <ul>
-<li>Wzory MathML w dokumentach EPUB i HTML są przedstawiane w zapisie
-AsciiMath przy użyciu MathCAT. Klawisze <code>M</code> i
-<code>Shift+M</code> służą do przechodzenia między wzorami, a
-<code>Enter</code> lub <code>Spacja</code> otwiera oryginalny MathML w
-Widoku wzoru.</li>
 <li>Obsługę nawigacji po kontenerach.</li>
 <li>Opcję automatycznego przenoszenia kursora na początek wiersza przy
 przechodzeniu między wierszami, podobnie jak w trybie przeglądania w
@@ -733,7 +1102,7 @@ Markdown, obok zwykłego tekstu.</li>
 <li>Aktualizator sprawdza teraz, czy w pobrany plik nikt nie
 ingerował.</li>
 </ul>
-<h4 id="widok-www">Widok WWW</h4>
+<h4 id="widok-www-2">Widok WWW</h4>
 <ul>
 <li>Widok WWW otwiera się teraz na bieżącej pozycji czytania.</li>
 </ul>
@@ -742,7 +1111,7 @@ ingerował.</li>
 <li>Obsługę książek DAISY 2.0.</li>
 <li>Obsługę odtwarzania dźwięku w formacie DAISY 2.02.</li>
 </ul>
-<h4 id="audiobooki">Audiobooki</h4>
+<h4 id="audiobooki-2">Audiobooki</h4>
 <ul>
 <li>Możliwość odtwarzania audiobooków. Obsługiwane są audiobooki DAISY,
 również z tekstem, oraz archiwa ZIP z plikami dźwiękowymi.</li>
@@ -761,8 +1130,8 @@ rozdziału przenosi do następnego.</li>
 <ul>
 <li>Dokumenty PowerPoint obsługują teraz tabele.</li>
 </ul>
-<h3 id="naprawiono">Naprawiono</h3>
-<h4 id="ogólne-1">Ogólne</h4>
+<h3 id="naprawiono-1">Naprawiono</h3>
+<h4 id="ogólne-3">Ogólne</h4>
 <ul>
 <li>Dokumenty zapisane w starszych kodowaniach chińskich, japońskich i
 koreańskich, takich jak GBK, Big5 i Shift_JIS, wyświetlają się teraz
@@ -804,7 +1173,7 @@ również jego aktywną kartę.</li>
 <li>Filtr wyszukiwania jest teraz zachowywany po usunięciu
 dokumentu.</li>
 </ul>
-<h4 id="nawigacja-1">Nawigacja</h4>
+<h4 id="nawigacja-3">Nawigacja</h4>
 <ul>
 <li>Odczytywanie nieprawidłowego tekstu wiersza przy nawigacji po
 stronach w niektórych sytuacjach.</li>
@@ -819,12 +1188,12 @@ Znajdź i Znajdź następne w dużych dokumentach.</li>
 <li>Dźwięki zakładek i notatek odtwarzają się teraz wyłącznie przy
 przejściu przez słowo, które je zawiera.</li>
 </ul>
-<h4 id="czytelność">Czytelność</h4>
+<h4 id="czytelność-1">Czytelność</h4>
 <ul>
 <li>Przeskok na początek dokumentu przy włączaniu zawijania
 wierszy.</li>
 </ul>
-<h4 id="widok-www-1">Widok WWW</h4>
+<h4 id="widok-www-3">Widok WWW</h4>
 <ul>
 <li>Okna Widoku WWW nie dało się rozciągnąć, a otwierało się w bardzo
 małym rozmiarze.</li>
@@ -847,7 +1216,7 @@ informacjach o wydaniu.</li>
 <li>Grupy <code>\pict</code> w RTF, dzięki czemu dane osadzonych obrazów
 nie trafiają już do tekstu dokumentu.</li>
 </ul>
-<h4 id="książki-mobiazw3">Książki Mobi/AZW3</h4>
+<h4 id="książki-mobiazw3-1">Książki Mobi/AZW3</h4>
 <ul>
 <li>Kotwice pozycji w pliku (filepos) w książkach Mobi, które rozrywały
 znaczniki HTML i wstawiały śmieci do tekstu książki.</li>
@@ -864,7 +1233,7 @@ nagłówki nie wyświetlały się poprawnie.</li>
 <li>Elementy HTML o nazwach dl, dt i dd, które nie powodowały podziału
 wiersza w dokumentach XHTML.</li>
 </ul>
-<h4 id="dokumenty-pdf">Dokumenty PDF</h4>
+<h4 id="dokumenty-pdf-2">Dokumenty PDF</h4>
 <ul>
 <li>Paperback wraca teraz do zwykłego wyodrębniania tekstu w przypadku
 błędnie otagowanych plików PDF.</li>
