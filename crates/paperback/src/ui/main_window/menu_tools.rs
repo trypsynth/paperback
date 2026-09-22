@@ -21,7 +21,7 @@ use super::{
 };
 #[cfg(target_os = "windows")]
 use super::{HotkeyHandle, re_register_hotkey};
-use crate::{config_ext::set_update_channel, translation_manager::TranslationManager};
+use crate::{config_ext::set_update_channel, translation_manager::TranslationManager, ui::navigation::announce};
 
 pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 	let Ok(dm_ref) = dm.try_lock() else {
@@ -74,7 +74,7 @@ pub(super) fn handle_table_of_contents(
 			let toc_items = &tab.session.handle().document().toc_items;
 			if toc_items.is_empty() {
 				// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-				live_region::announce(live_region_label, &t("No table of contents."));
+				announce(live_region_label, t("No table of contents."));
 				return;
 			}
 			let current_pos = navigation::doc_caret(tab);
@@ -96,7 +96,7 @@ pub(super) fn handle_table_of_contents(
 		(message, update)
 	};
 	navigation::persist_navigation_history(config, Some(&update));
-	navigation::announce_after_delay(frame, live_region_label, message);
+	announce(live_region_label, message);
 }
 
 /// The announcement for landing on document offset `offset` after picking a table of contents
@@ -123,7 +123,7 @@ pub(super) fn handle_batch_ocr(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, l
 		let dm_ref = dm.lock().unwrap();
 		let Some(tab) = dm_ref.active_tab() else {
 			// TRANSLATORS: Announced when Batch OCR is chosen with no document open
-			live_region::announce(live_region_label, &t("No document open."));
+			announce(live_region_label, t("No document open."));
 			return;
 		};
 		(i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX), dm_ref.batch_ocr_running())
@@ -174,7 +174,7 @@ pub(super) fn handle_elements_list(
 		(message, update)
 	};
 	navigation::persist_navigation_history(config, Some(&update));
-	navigation::announce_after_delay(frame, live_region_label, message);
+	announce(live_region_label, message);
 }
 
 /// The announcement for landing on document offset `offset` from the Elements view `kind`.

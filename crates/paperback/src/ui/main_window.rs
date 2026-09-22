@@ -46,6 +46,8 @@ mod foreground;
 #[cfg(target_os = "windows")]
 pub(crate) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
 
+use crate::ui::navigation::announce;
+
 pub struct MainWindow {
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
@@ -130,7 +132,7 @@ impl MainWindow {
 				&& let Ok(new_index) = usize::try_from(new_index)
 				&& let Some(tab) = dm_ref.get_tab(new_index)
 			{
-				live_region::announce(live_region_label, &display_title(tab));
+				announce(live_region_label, display_title(tab));
 			}
 		});
 		let reload_guard = Rc::new(Cell::new(false));
@@ -583,7 +585,7 @@ pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_reg
 	};
 	let next = dm.active_index_after_closing(index).and_then(|i| dm.get_tab(i)).map(display_title);
 	if let Some(next) = &next {
-		live_region::announce(live_region_label, next);
+		announce(live_region_label, next);
 	}
 	dm.close_document(index, true);
 }

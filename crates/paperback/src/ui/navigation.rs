@@ -547,25 +547,31 @@ pub fn selected_range(text_ctrl: TextCtrl) -> (i64, i64) {
 /// the full chain through after the announcement, 0ms always did).
 const FOCUS_CHAIN_INTERRUPT_DELAY_MS: i32 = 30;
 
-/// Announces `message` shortly after a dialog closes, so it cuts off the focus-chain
-/// announcement the screen reader starts when focus returns to the book.
+/// Announces `message` shortly after whatever the reader just did, so it cuts off the
+/// focus-chain announcement the screen reader starts when focus returns to the book.
 ///
-/// The one-shot `wxTimer` is kept alive through its single tick by the `Rc`/`RefCell` it
-/// hands its own callback: the tick clears the cell, which drops the timer and destroys
-/// the native timer. If the timer cannot be armed, fall back to announcing immediately
-/// rather than silently dropping the message.
-#[allow(clippy::needless_pass_by_value)]
-pub fn announce_after_delay(frame: &Frame, live_region_label: StaticText, message: String) {
-	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
+/// Every announcement goes through this. A message raised the moment a command runs is spoken
+/// before the screen reader has noticed the focus change that closing a menu or a dialog causes,
+/// and the chain that follows reads straight over it: that is why choosing Play from the menu
+/// read the book's title instead of "This document has no audio".
+///
+/// The timer hangs off the live region itself rather than the frame, so a handler that never
+/// sees the window can still announce. The one-shot `wxTimer` is kept alive through its single
+/// tick by the `Rc`/`RefCell` it hands its own callback: the tick clears the cell, which drops
+/// the timer and destroys the native timer. If the timer cannot be armed, fall back to
+/// announcing immediately rather than silently dropping the message.
+pub fn announce(live_region_label: StaticText, message: impl AsRef<str>) {
+	let message = message.as_ref();
+	let timer_holder: Rc<RefCell<Option<Timer<StaticText>>>> = Rc::new(RefCell::new(None));
 	let holder = Rc::clone(&timer_holder);
-	let timer = Timer::new(frame);
-	let announce = message.clone();
+	let timer = Timer::new(&live_region_label);
+	let announce = message.to_string();
 	timer.on_tick(move |_event| {
 		live_region::announce(live_region_label, &announce);
 		*holder.borrow_mut() = None;
 	});
 	if !timer.start(FOCUS_CHAIN_INTERRUPT_DELAY_MS, true) {
-		live_region::announce(live_region_label, &message);
+		live_region::announce(live_region_label, message);
 		return;
 	}
 	*timer_holder.borrow_mut() = Some(timer);

@@ -19,6 +19,7 @@ use super::{
 		HistoryUpdate, doc_caret, doc_selected_range, move_to_offset_and_record_history, persist_navigation_history,
 	},
 };
+use crate::ui::navigation::announce;
 
 /// How close to the playback time a bookmark has to be for toggling to treat it as the one here.
 /// Playback moves on between one press and the next, so an exact match would never happen and the
@@ -162,7 +163,7 @@ pub fn handle_bookmark_navigation(
 		None => navigate_text_bookmark(tab, config, wrap, next, notes_only),
 	};
 	drop(dm);
-	live_region::announce(live_region_label, &message);
+	announce(live_region_label, message);
 	persist_navigation_history(config, history_update.as_ref());
 }
 
@@ -209,7 +210,7 @@ pub fn handle_bookmark_dialog(
 		(message, tab.track.then_some(update))
 	};
 	drop(dm);
-	live_region::announce(live_region_label, &message);
+	announce(live_region_label, message);
 	persist_navigation_history(config, history_update.as_ref());
 }
 
@@ -247,7 +248,7 @@ pub fn handle_toggle_bookmark(
 	drop(cfg);
 	// TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 	let message = if existed { t("Bookmark removed.") } else { t("Bookmark added.") };
-	live_region::announce(live_region_label, &message);
+	announce(live_region_label, message);
 }
 
 pub fn handle_bookmark_with_note(
@@ -289,7 +290,7 @@ pub fn handle_bookmark_with_note(
 	cfg.flush();
 	drop(cfg);
 	// TRANSLATORS: Announced after saving a bookmark's note text
-	live_region::announce(live_region_label, &t("Bookmark saved."));
+	announce(live_region_label, t("Bookmark saved."));
 }
 
 pub fn handle_view_note_text(
