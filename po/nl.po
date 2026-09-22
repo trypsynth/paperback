@@ -21,9 +21,8 @@ msgstr ""
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
 #. from a shell. Mirrors the Windows installer's "Add Paperback directory to PATH" task.
-#, fuzzy
 msgid "Add the pb command-line tool to PATH"
-msgstr "Voeg het pb-opdrachtregelprogramma aan PATH toe"
+msgstr "Het opdrachtregelprogramma pb toevoegen aan PATH"
 
 #. TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
 #. multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
@@ -33,9 +32,8 @@ msgid "ZIP Archives (.zip)"
 msgstr "ZIP-archieven (.zip)"
 
 #. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-#, fuzzy
 msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Geen OCR-taal is geïnstalleerd. Voeg een taal toe in uw systeeminstellingen."
+msgstr "Er is geen OCR-taal geïnstalleerd. Voeg er een toe in de taalinstellingen van je systeem."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 #, fuzzy
@@ -635,9 +633,8 @@ msgid "&Increase Audio Seek Amount"
 msgstr "Audiozoekstap &vergroten"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
-#, fuzzy
 msgid "Increase how far seeking the audio narration moves"
-msgstr "Vergroot hoever het spoelen van de audiovertelling verspringt"
+msgstr "In grotere stappen door de audio spoelen"
 
 #. TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
 #, fuzzy
@@ -645,9 +642,8 @@ msgid "&Decrease Audio Seek Amount"
 msgstr "Audiozoekstap ver&kleinen"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
-#, fuzzy
 msgid "Decrease how far seeking the audio narration moves"
-msgstr "Verklein hoever het spoelen van de audiovertelling verspringt"
+msgstr "In kleinere stappen door de audio spoelen"
 
 #. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
 #, fuzzy
@@ -655,9 +651,8 @@ msgid "&Increase Audio Speed"
 msgstr "&Audiosnelheid verhogen"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
-#, fuzzy
 msgid "Increase how fast the audio narration plays"
-msgstr "Verhoog de afspeelsnelheid van de audiovertelling"
+msgstr "De afspeelsnelheid van de audio verhogen"
 
 #. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
 #, fuzzy
@@ -665,9 +660,8 @@ msgid "&Decrease Audio Speed"
 msgstr "&Audiosnelheid verlagen"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
-#, fuzzy
 msgid "Decrease how fast the audio narration plays"
-msgstr "Verlaag de afspeelsnelheid van de audiovertelling"
+msgstr "De afspeelsnelheid van de audio verlagen"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
@@ -1117,9 +1111,8 @@ msgid "Strikethrough"
 msgstr "Doorgehaald"
 
 #. TRANSLATORS: Title of the system dialog for picking a font
-#, fuzzy
 msgid "Choose a font"
-msgstr "Kies een lettertype"
+msgstr "Lettertype kiezen"
 
 #. TRANSLATORS: Title of the hotkey customization dialog
 msgid "Window Hotkey"
@@ -1202,9 +1195,8 @@ msgid "&Wrap navigation"
 msgstr "Navigatie laten &rondlopen"
 
 #. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
-#, fuzzy
 msgid "Move to &start of line"
-msgstr "Ga naar &begin van de regel"
+msgstr "Naar het &begin van de regel gaan"
 
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
@@ -1356,9 +1348,8 @@ msgid "Readability"
 msgstr "Leesbaarheid"
 
 #. TRANSLATORS: Title of the system dialog for picking a background colour
-#, fuzzy
 msgid "Choose a colour"
-msgstr "Kies een kleur"
+msgstr "Kleur kiezen"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -2927,9 +2918,8 @@ msgid "None"
 msgstr "Geen"
 
 #. TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
-#, fuzzy
 msgid "This view shows the part of the document you are reading."
-msgstr "Deze weergave toont het deel van het document dat u leest."
+msgstr "Deze weergave toont het deel van het document dat je leest."
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 #, fuzzy
@@ -3625,9 +3615,8 @@ msgstr "Geen recente documenten"
 
 #. TRANSLATORS: Description text under the "No Recent Documents" empty-state title
 #: swift
-#, fuzzy
 msgid "Documents you open will appear here."
-msgstr "De documenten die u opent, verschijnen hier."
+msgstr "Documenten die je opent, verschijnen hier."
 
 #. TRANSLATORS: Section header in Settings grouping text-to-speech voice/rate/pitch controls
 #: swift
@@ -3835,9 +3824,8 @@ msgstr "Alinea"
 
 #. TRANSLATORS: Section header grouping the find/replace pattern fields for a text-substitution rule
 #: swift
-#, fuzzy
 msgid "Pattern & Replacement"
-msgstr "Patroon & Vervanging"
+msgstr "Patroon en vervanging"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
 #: swift
@@ -4154,9 +4142,8 @@ msgstr "• Om grote bestanden direct te laden zonder dat ze naar de cache van d
 
 #. TRANSLATORS: Third reason for requesting the "All Files Access" permission
 #: kt
-#, fuzzy
 msgid "To display the exact local file paths of your documents."
-msgstr "• Om de exacte lokale bestandspaden van uw documenten weer te geven."
+msgstr "Om de exacte lokale bestandspaden van je documenten weer te geven."
 
 #. TRANSLATORS: Button label to grant the requested permission
 #: kt
@@ -4184,9 +4171,8 @@ msgstr "Terug"
 
 #. TRANSLATORS: Button to confirm and start the sleep timer with the custom minutes entered
 #: kt
-#, fuzzy
 msgid "Start"
-msgstr "Start"
+msgstr "Starten"
 
 #. TRANSLATORS: Sentence announced to screen readers with the sleep timer's remaining time; {} is replaced with e.g. "3:45"
 #: kt
@@ -4208,9 +4194,8 @@ msgstr "Timer annuleren"
 
 #. TRANSLATORS: Heading introducing the preset duration chips, shown while a sleep timer is already active
 #: kt
-#, fuzzy
 msgid "Change to:"
-msgstr "Wijzig in:"
+msgstr "Wijzigen in:"
 
 #. TRANSLATORS: Preset sleep timer duration chip; {} is replaced with the number of minutes
 #: kt
@@ -4280,9 +4265,8 @@ msgstr "Document exporteren mislukt."
 
 #. TRANSLATORS: Shown on the main screen before the app has finished loading any document state
 #: kt
-#, fuzzy
 msgid "No document open. Please open a book."
-msgstr "Er is geen document geopend. Open alstublieft een boek."
+msgstr "Geen document geopend. Open een boek."
 
 #. TRANSLATORS: Shown on the main screen when no document is open and there are no recent documents to list
 #: kt
@@ -4405,9 +4389,8 @@ msgstr "✓ Verleend"
 
 #. TRANSLATORS: Heading shown on the first-run permissions onboarding screen
 #: kt
-#, fuzzy
 msgid "Before You Start"
-msgstr "Voordat u begint"
+msgstr "Voordat je begint"
 
 #. TRANSLATORS: Intro paragraph explaining that the following sections describe requested permissions
 #: kt
@@ -4453,9 +4436,8 @@ msgstr "Laatst geopend boek herstellen"
 
 #. TRANSLATORS: Settings switch: use the app's built-in file browser instead of the system document picker
 #: kt
-#, fuzzy
 msgid "Use in-app file browser (requires All Files permission)"
-msgstr "Gebruik de bestandsbrowser in de app (hiervoor is de machtiging ‘Alle bestanden’ vereist)"
+msgstr "Bestandsbrowser in de app gebruiken (vereist de toestemming 'Toegang tot alle bestanden')"
 
 #. TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
 #: kt
@@ -4608,9 +4590,8 @@ msgstr "Hiermee kan Paperback weergaveknoppen in het meldingenpaneel weergeven t
 
 #. TRANSLATORS: Explanation of why the app requests the all files access permission
 #: kt
-#, fuzzy
 msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your device — including network drives — instantly, with full screen-reader support. You can skip this and use the system file picker instead."
-msgstr "Voorziet in de optionele bestandsbrowser in de app, zodat u documenten van overal op uw apparaat kunt openen — inclusief netwerkstations — direct, met volledige ondersteuning voor schermlezers. U kunt dit overslaan en in plaats daarvan de systeembestandskiezer gebruiken."
+msgstr "Maakt de optionele bestandsbrowser in de app mogelijk, zodat je documenten van overal op je apparaat — ook op netwerkstations — direct kunt openen, met volledige ondersteuning voor schermlezers. Je kunt dit overslaan en in plaats daarvan de systeembestandskiezer gebruiken."
 
 #. TRANSLATORS: Announced by the screen reader when the in-app file browser opens
 #: kt
@@ -4626,15 +4607,13 @@ msgstr "{}% voorbij"
 
 #. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
 #: swift
-#, fuzzy
 msgid "With VoiceOver, swipe up on the play button to move forward, or down to move back."
-msgstr "Met VoiceOver kunt u omhoog vegen op de afspeelknop om vooruit te gaan, of omlaag om terug te gaan."
+msgstr "Met VoiceOver veeg je omhoog op de afspeelknop om vooruit te gaan, of omlaag om terug te gaan."
 
 #. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
 #: kt
-#, fuzzy
 msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
-msgstr "Met TalkBack kunt u omhoog vegen op de afspeelknop om vooruit te gaan, of omlaag om terug te gaan."
+msgstr "Met TalkBack veeg je omhoog op de afspeelknop om vooruit te gaan, of omlaag om terug te gaan."
 
 #. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
 #: kt
