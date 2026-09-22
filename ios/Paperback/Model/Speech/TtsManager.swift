@@ -178,7 +178,8 @@ final class TtsManager: NSObject {
 		}
 	}
 
-	var availableVoices: [AVSpeechSynthesisVoice] { AVSpeechSynthesisVoice.speechVoices() }
+	@ObservationIgnored private let voiceCatalog = VoiceCatalog { AVSpeechSynthesisVoice.speechVoices() }
+	var availableVoices: [AVSpeechSynthesisVoice] { voiceCatalog.voices }
 	@ObservationIgnored var onUtteranceFinished: (() -> Void)?
 	// Observation replaces the old Combine forwarding for redraws; these carry the side effects
 	// that used to ride those sinks — refreshing Now Playing and persisting settings. One per
@@ -224,6 +225,12 @@ final class TtsManager: NSObject {
 		)
 		NotificationCenter.default.addObserver(
 			self,
+			selector: #selector(handleAvailableVoicesChanged(_:)),
+			name: AVSpeechSynthesizer.availableVoicesDidChangeNotification,
+			object: nil
+		)
+		NotificationCenter.default.addObserver(
+			self,
 			selector: #selector(handleEngineConfigurationChange),
 			name: .AVAudioEngineConfigurationChange,
 			object: engine
@@ -256,6 +263,12 @@ final class TtsManager: NSObject {
 					self.scheduleConverted(buffers, gen: gen, suppress: true)
 				}
 			}
+		}
+	}
+
+	@objc private func handleAvailableVoicesChanged(_ notification: Notification) {
+		Task { @MainActor [weak self] in
+			self?.voiceCatalog.invalidate()
 		}
 	}
 
