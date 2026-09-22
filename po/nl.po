@@ -4071,7 +4071,7 @@ msgstr "Kop {}"
 #. TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
 #: kt
 msgid "go to heading"
-msgstr "ga naar kop"
+msgstr "gaan naar kop"
 
 #: kt
 msgid "{}, Level {}"
@@ -4080,7 +4080,7 @@ msgstr "{}, niveau {}"
 #. TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
 #: kt
 msgid "go to link"
-msgstr "ga naar link"
+msgstr "gaan naar link"
 
 #. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
 #: kt
@@ -4095,7 +4095,7 @@ msgstr "openen"
 #. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
 #: kt
 msgid "go to chapter"
-msgstr "ga naar hoofdstuk"
+msgstr "gaan naar hoofdstuk"
 
 #. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
 #: kt
