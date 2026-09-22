@@ -3464,13 +3464,11 @@ msgstr "Alle sneltoetsen in dit tabblad naar standaardwaarden terugzetten?"
 msgid "Reset Shortcuts"
 msgstr "Sneltoetsen herstellen"
 
-#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 #: swift
 #, fuzzy
 msgid "Export Document Data"
 msgstr "Documentgegevens exporteren"
 
-#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
 #: swift
 #, fuzzy
 msgid "Import Document Data"
@@ -3596,7 +3594,6 @@ msgstr "Fout bij openen"
 msgid "Open Book"
 msgstr "Open Boek"
 
-#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
 #: swift
 #, fuzzy
 msgid "Locate"
@@ -4055,11 +4052,6 @@ msgstr "Volgende{}"
 msgid "Press play to start listening."
 msgstr "Klik op 'Afspelen' om te beginnen met luisteren."
 
-#: kt
-#, fuzzy
-msgid "Document Information"
-msgstr "Documentinformatie"
-
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 #, fuzzy
@@ -4347,6 +4339,7 @@ msgid "Elements List"
 msgstr "Lijst met elementen"
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
 #: kt
 #, fuzzy
 msgid "No more matches."
@@ -4784,6 +4777,10 @@ msgstr "Alineapauze"
 #, fuzzy
 msgid "No other voices"
 msgstr "Geen andere stemmen"
+
+#, fuzzy
+#~ msgid "Document Information"
+#~ msgstr "Documentinformatie"
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
