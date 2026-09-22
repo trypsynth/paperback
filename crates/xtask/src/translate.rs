@@ -160,7 +160,7 @@ type Applied = Vec<(usize, Translation)>;
 /// Translates the ordinary entries, returning what to apply and how many carried a note.
 fn translate_singulars(
 	client: &claude::ClaudeClient,
-	language: &str,
+	target: &claude::Target,
 	candidates: &[(usize, String)],
 	context: &HashMap<String, String>,
 ) -> Result<(Applied, usize), Box<dyn Error>> {
@@ -172,7 +172,7 @@ fn translate_singulars(
 		.map(|(_, text)| claude::Phrase { source: text.clone(), context: context.get(text).cloned() })
 		.collect();
 	let annotated = phrases.iter().filter(|p| p.context.is_some()).count();
-	let results = client.translate_phrases(&phrases, language)?;
+	let results = client.translate_phrases(&phrases, target)?;
 	let applied = candidates
 		.iter()
 		.map(|(i, _)| *i)
@@ -185,7 +185,7 @@ fn translate_singulars(
 /// Translates the plural entries, asking for `nplurals` forms of each.
 fn translate_plurals(
 	client: &claude::ClaudeClient,
-	language: &str,
+	target: &claude::Target,
 	candidates: &[(usize, String, String)],
 	context: &HashMap<String, String>,
 	nplurals: usize,
@@ -204,7 +204,7 @@ fn translate_plurals(
 			context: context.get(singular).cloned(),
 		})
 		.collect();
-	let results = client.translate_plurals(&phrases, language, nplurals, rule)?;
+	let results = client.translate_plurals(&phrases, target, nplurals, rule)?;
 	Ok(candidates
 		.iter()
 		.map(|(i, _, _)| *i)
@@ -375,7 +375,8 @@ fn translate_one(
 				merged
 			}
 			Some(language) => {
-				let (mut applied, annotated) = translate_singulars(client, language, &candidates, context)?;
+				let target = claude::Target { language, style: None };
+				let (mut applied, annotated) = translate_singulars(client, &target, &candidates, context)?;
 				let plural_done = match plural_forms(&merged) {
 					// Without a usable Plural-Forms header there is no way to know how many
 					// forms to ask for, and guessing at two would write a Russian file that is
@@ -386,7 +387,7 @@ fn translate_one(
 					}
 					None => 0,
 					Some((nplurals, rule)) => {
-						let translated = translate_plurals(client, language, &plurals, context, nplurals, &rule)?;
+						let translated = translate_plurals(client, &target, &plurals, context, nplurals, &rule)?;
 						let done = translated.len();
 						applied.extend(translated);
 						done

@@ -7,7 +7,7 @@ use std::{
 };
 
 use super::{
-	claude::{ClaudeClient, language_name},
+	claude::{ClaudeClient, Target, language_name},
 	markdown::split_sections,
 };
 
@@ -61,18 +61,19 @@ pub fn sync_readmes(
 		let Some(language) = language_name(lang) else {
 			continue;
 		};
+		let target = Target { language, style: None };
 		let translated_md = match reusable {
 			Some(reusable) => {
 				let mut out: Vec<String> = Vec::with_capacity(sections.len());
 				for (section, existing_section) in sections.iter().zip(reusable) {
 					match existing_section {
 						Some(kept) => out.push(kept),
-						None => out.push(client.translate_markdown(section, language)?),
+						None => out.push(client.translate_markdown(section, &target)?),
 					}
 				}
 				out.join("\n\n")
 			}
-			None => client.translate_markdown(&source_md, language)?,
+			None => client.translate_markdown(&source_md, &target)?,
 		};
 		fs::write(&target_path, format!("{}\n\n{}\n", marker_line(&hash, &hashes), translated_md.trim_end()))?;
 		println!("readme-{lang}.md ({language}): translated {to_translate} of {} sections", sections.len());

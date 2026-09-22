@@ -77,6 +77,13 @@ pub struct PluralPhrase {
 	pub context: Option<String>,
 }
 
+/// The language a batch is translated into, and the conventions its translators wrote for the
+/// model, when they wrote any (see `po/style/<lang>.md`).
+pub struct Target<'a> {
+	pub language: &'a str,
+	pub style: Option<&'a str>,
+}
+
 pub struct ClaudeClient {
 	api_key: String,
 	model: String,
@@ -109,12 +116,16 @@ impl ClaudeClient {
 		config
 	}
 
-	/// Translates `phrases` into `language`, in batches. Returns one result per input, in
-	/// order, with `None` where the result failed a check (see [`check`]).
-	pub fn translate_phrases(&self, phrases: &[Phrase], language: &str) -> Result<Vec<Option<String>>, Box<dyn Error>> {
+	/// Translates `phrases` into `target`'s language, in batches. Returns one result per input,
+	/// in order, with `None` where the result failed a check (see [`check`]).
+	pub fn translate_phrases(
+		&self,
+		phrases: &[Phrase],
+		target: &Target,
+	) -> Result<Vec<Option<String>>, Box<dyn Error>> {
 		let mut out = Vec::with_capacity(phrases.len());
 		for chunk in phrases.chunks(BATCH_LIMIT) {
-			out.extend(self.translate_chunk(chunk, language)?);
+			out.extend(self.translate_chunk(chunk, target)?);
 		}
 		Ok(out)
 	}
@@ -123,7 +134,7 @@ impl ClaudeClient {
 	/// asserted in a test: a request that is subtly wrong (a misplaced `format`, a missing
 	/// `id`) otherwise only shows up as a 400 from a live call, which the test suite never
 	/// makes.
-	fn phrase_request(&self, phrases: &[Phrase], language: &str) -> Result<Value, Box<dyn Error>> {
+	fn phrase_request(&self, phrases: &[Phrase], target: &Target) -> Result<Value, Box<dyn Error>> {
 		let items: Vec<Value> = phrases
 			.iter()
 			.enumerate()
@@ -138,25 +149,26 @@ impl ClaudeClient {
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
 			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": translations_schema() })),
-			// The rules are identical for every batch and every language, so they sit in a
+			// The rules are identical for every batch of one language, so they sit in a
 			// cacheable system block rather than being repeated in each user message.
 			"system": [{
 				"type": "text",
-				"text": phrase_system_prompt(None),
+				"text": phrase_system_prompt(target.style),
 				"cache_control": { "type": "ephemeral" }
 			}],
 			"messages": [{
 				"role": "user",
 				"content": format!(
-					"Target language: {language}\n\nTranslate every entry:\n{}",
+					"Target language: {}\n\nTranslate every entry:\n{}",
+					target.language,
 					serde_json::to_string_pretty(&items)?
 				)
 			}]
 		}))
 	}
 
-	fn translate_chunk(&self, phrases: &[Phrase], language: &str) -> Result<Vec<Option<String>>, Box<dyn Error>> {
-		let request = self.phrase_request(phrases, language)?;
+	fn translate_chunk(&self, phrases: &[Phrase], target: &Target) -> Result<Vec<Option<String>>, Box<dyn Error>> {
+		let request = self.phrase_request(phrases, target)?;
 		let text = self.send(&request)?;
 		#[derive(Deserialize)]
 		struct Item {
@@ -190,13 +202,13 @@ impl ClaudeClient {
 	pub fn translate_plurals(
 		&self,
 		phrases: &[PluralPhrase],
-		language: &str,
+		target: &Target,
 		nplurals: usize,
 		plural_rule: &str,
 	) -> Result<Vec<Option<Vec<String>>>, Box<dyn Error>> {
 		let mut out = Vec::with_capacity(phrases.len());
 		for chunk in phrases.chunks(PLURAL_BATCH_LIMIT) {
-			out.extend(self.translate_plural_chunk(chunk, language, nplurals, plural_rule)?);
+			out.extend(self.translate_plural_chunk(chunk, target, nplurals, plural_rule)?);
 		}
 		Ok(out)
 	}
@@ -204,10 +216,11 @@ impl ClaudeClient {
 	fn translate_plural_chunk(
 		&self,
 		phrases: &[PluralPhrase],
-		language: &str,
+		target: &Target,
 		nplurals: usize,
 		plural_rule: &str,
 	) -> Result<Vec<Option<Vec<String>>>, Box<dyn Error>> {
+		let language = target.language;
 		let items: Vec<Value> = phrases
 			.iter()
 			.enumerate()
@@ -225,7 +238,7 @@ impl ClaudeClient {
 			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": plural_schema() })),
 			"system": [{
 				"type": "text",
-				"text": plural_system_prompt(None),
+				"text": plural_system_prompt(target.style),
 				"cache_control": { "type": "ephemeral" }
 			}],
 			"messages": [{
@@ -265,28 +278,28 @@ impl ClaudeClient {
 	/// through `pandoc` into HTML, translate that, and convert it back, because its API had no
 	/// other way to protect code spans and fenced blocks from being translated; that round trip
 	/// is now just an instruction.
-	pub fn translate_markdown(&self, markdown: &str, language: &str) -> Result<String, Box<dyn Error>> {
+	pub fn translate_markdown(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
 		let mut translated: Vec<String> = Vec::new();
 		for chunk in split_markdown(markdown, README_CHUNK_CHARS) {
-			translated.push(self.translate_markdown_chunk(&chunk, language)?);
+			translated.push(self.translate_markdown_chunk(&chunk, target)?);
 		}
 		let joined = translated.join("\n\n");
 		Ok(restore_code_spans(markdown, &joined))
 	}
 
-	fn translate_markdown_chunk(&self, markdown: &str, language: &str) -> Result<String, Box<dyn Error>> {
+	fn translate_markdown_chunk(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
 		let request = json!({
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
 			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": markdown_schema() })),
 			"system": [{
 				"type": "text",
-				"text": markdown_system_prompt(None),
+				"text": markdown_system_prompt(target.style),
 				"cache_control": { "type": "ephemeral" }
 			}],
 			"messages": [{
 				"role": "user",
-				"content": format!("Target language: {language}\n\n<document>\n{markdown}\n</document>")
+				"content": format!("Target language: {}\n\n<document>\n{markdown}\n</document>", target.language)
 			}]
 		});
 		let text = self.send(&request)?;
@@ -450,7 +463,8 @@ mod tests {
 			Phrase { source: "&Settings".to_string(), context: Some("Menu item".to_string()) },
 			Phrase { source: "Ready".to_string(), context: None },
 		];
-		let request = client.phrase_request(&phrases, "Russian").unwrap();
+		let target = Target { language: "Russian", style: Some("Use the informal register.") };
+		let request = client.phrase_request(&phrases, &target).unwrap();
 		assert_eq!(request["model"], "test-model", "the configured model has to reach the request");
 		assert_eq!(request["output_config"]["effort"], "low", "a model that accepts effort gets it");
 		// `format` nests inside output_config; as a top-level `output_format` it is the
@@ -459,6 +473,8 @@ mod tests {
 		assert!(request["output_config"]["format"]["schema"].is_object());
 		// The system prompt is a block list so it can carry cache_control, not a bare string.
 		assert_eq!(request["system"][0]["cache_control"]["type"], "ephemeral");
+		let system = request["system"][0]["text"].as_str().unwrap();
+		assert!(system.ends_with("## Conventions for this language\n\nUse the informal register."), "got: {system}");
 		assert_eq!(request["messages"][0]["role"], "user");
 		let content = request["messages"][0]["content"].as_str().unwrap();
 		assert!(content.contains("Target language: Russian"));
@@ -480,7 +496,7 @@ mod tests {
 	fn the_opus_request_still_carries_effort() {
 		let client = ClaudeClient { api_key: "test".to_string(), model: "claude-opus-5".to_string() };
 		let phrases = vec![Phrase { source: "Ready".to_string(), context: None }];
-		let request = client.phrase_request(&phrases, "French").unwrap();
+		let request = client.phrase_request(&phrases, &Target { language: "French", style: None }).unwrap();
 		assert_eq!(request["output_config"]["effort"], "low");
 		assert_eq!(request["output_config"]["format"]["type"], "json_schema");
 	}
@@ -495,8 +511,17 @@ mod tests {
 	fn a_phrase_without_a_note_carries_no_context_field() {
 		let client = ClaudeClient { api_key: "test".to_string(), model: "test-model".to_string() };
 		let phrases = vec![Phrase { source: "Ready".to_string(), context: None }];
-		let request = client.phrase_request(&phrases, "French").unwrap();
+		let request = client.phrase_request(&phrases, &Target { language: "French", style: None }).unwrap();
 		let content = request["messages"][0]["content"].as_str().unwrap();
 		assert!(!content.contains("context"), "an absent note should be absent, not empty");
+	}
+
+	#[test]
+	fn a_target_without_a_note_gets_only_the_base_prompt() {
+		let client = ClaudeClient { api_key: "test".to_string(), model: "test-model".to_string() };
+		let phrases = vec![Phrase { source: "Ready".to_string(), context: None }];
+		let request = client.phrase_request(&phrases, &Target { language: "French", style: None }).unwrap();
+		let system = request["system"][0]["text"].as_str().unwrap();
+		assert!(!system.contains("## Conventions for this language"), "got: {system}");
 	}
 }
