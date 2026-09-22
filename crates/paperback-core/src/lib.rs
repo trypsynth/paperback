@@ -5,6 +5,7 @@ pub mod export;
 pub mod ffi_config;
 pub mod ocr;
 pub mod parser;
+mod pdfium;
 pub mod reader_core;
 pub mod session;
 pub mod types;
@@ -19,16 +20,18 @@ pub use crate::{
 		AudioClipFfi, AudioCursorFfi, AudioPointFfi, DocumentError, DocumentSession, DocumentStatsFfi, HeadingTreeFfi,
 		HeadingTreeItemFfi, LineMarker, LinkAction, LinkActivationResult, LinkListFfi, LinkListItemFfi,
 		SearchOptionsFfi, SearchResultFfi, SegmentDirectionFfi, SegmentTypeFfi, StatusInfo, TextSegmentFfi, TocEntry,
+		WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN,
 	},
 };
 
 #[cfg(feature = "uniffi")]
-uniffi::include_scaffolding!("paperback");
+uniffi::setup_scaffolding!("paperback");
 
-// `path: String` (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
+// `path: String` (not `&str`) because that is the signature UniFFI generates for.
+#[cfg_attr(feature = "uniffi", uniffi::export)]
 #[allow(clippy::needless_pass_by_value)]
 pub fn set_pdfium_library_path(path: String) {
-	pdfium::set_library_location(&path);
+	pdfium::set_library_path(&path);
 }
 
 /// Translates library-internal strings (e.g. document content labels, parser error messages).

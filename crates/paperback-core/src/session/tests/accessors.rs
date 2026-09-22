@@ -36,6 +36,35 @@ fn page_helpers_report_counts_and_offsets() {
 }
 
 #[test]
+fn page_offsets_returns_every_page_break_in_document_order() {
+	let session = sample_session(ParserFlags::NONE);
+	let offsets = session.page_offsets();
+	assert_eq!(offsets, vec![0, 8]);
+	assert_eq!(offsets.len(), session.page_count());
+	for (index, &offset) in offsets.iter().enumerate() {
+		let page = i32::try_from(index).unwrap_or(0) + 1;
+		assert_eq!(offset, session.page_offset(page), "page {page} offset must match page_offset");
+	}
+}
+
+#[test]
+fn page_offsets_is_empty_without_page_breaks() {
+	let session = session_with_content("no pages here\n");
+	assert!(session.page_offsets().is_empty());
+	assert_eq!(session.page_count(), 0);
+}
+
+#[test]
+fn page_offsets_are_in_document_order_even_for_unsorted_insertion() {
+	let mut buffer = DocumentBuffer::with_content("aaaaaaaaa\nbbbbbbbbb\n".to_string());
+	// Inserted out of order: the buffer sorts markers at DocumentHandle::new.
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 9));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0));
+	let session = session_from_buffer(buffer);
+	assert_eq!(session.page_offsets(), vec![0, 9]);
+}
+
+#[test]
 fn text_range_and_line_text_extract_expected_content() {
 	let session = sample_session(ParserFlags::NONE);
 	assert_eq!(session.get_text_range(0, 5), "line1");
@@ -69,7 +98,6 @@ fn get_formatting_markers_returns_only_bold_italic_underline_markers() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
-		last_stable_position: None,
 	};
 	let markers = session.get_formatting_markers();
 	assert_eq!(markers.len(), 3);
@@ -118,7 +146,6 @@ fn heading_tree_builds_parent_links_and_closest_index() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
-		last_stable_position: None,
 	};
 	let tree = session.heading_tree(3);
 	assert_eq!(tree.items.len(), 3);
@@ -140,7 +167,6 @@ fn get_current_section_path_returns_none_when_reference_empty() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
-		last_stable_position: None,
 	};
 	assert!(session.get_current_section_path(0).is_none());
 }
@@ -164,7 +190,6 @@ fn table_session() -> DocumentSession {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
-		last_stable_position: None,
 	}
 }
 
@@ -201,7 +226,6 @@ fn get_table_at_position_handles_multibyte_extent() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
-		last_stable_position: None,
 	};
 	// Position 5 is within [0, 6) by display length but would be outside [0, 1) by char count.
 	assert_eq!(session.get_table_at_position(5).as_deref(), Some("<table/>"));

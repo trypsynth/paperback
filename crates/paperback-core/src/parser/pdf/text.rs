@@ -1,30 +1,36 @@
-//! Plain-text extraction from a PDF page: reading pdfium's per-character stream into
-//! visual lines (with RTL reordering per line), then joining those lines into paragraphs
-//! and flagging large-font lines as headings by comparing against the page's median body
-//! font size. Used as the fallback path for pages with no trustworthy structure tree (see
-//! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by metadata and TOC
-//! extraction as well.
+//! Reading the text off a PDF page: pdfium's per-character stream assembled into visual
+//! lines, each reordered visual to logical so a right-to-left script comes out in reading
+//! order, and each measured for the size and the face it is set in.
+//!
+//! What those lines mean is [`super::paragraphs`]. This module only reports what is on the
+//! page. It is the fallback path for a page with no trustworthy structure tree (see
+//! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by the metadata and
+//! table of contents readers as well.
 
-use std::{cmp::Ordering, mem};
-
-use pdfium::PdfiumTextPage;
+use std::cmp::Ordering;
 
 use crate::{
 	parser::util::bidi,
-	util::text::{collapse_whitespace, display_len, trim_string},
+	pdfium::{CharBox, PdfTextPage},
 };
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
 	input.chars().filter(|&ch| (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}').collect()
 }
 
-/// A character's box in PDF user units, as pdfium reports it.
-#[derive(Clone, Copy)]
-pub(super) struct CharBox {
-	pub left: f64,
-	pub right: f64,
-	pub bottom: f64,
+/// One visual line of an untagged page.
+#[derive(Clone, Debug)]
+pub(super) struct Line {
+	pub text: String,
+	/// The point size it is set in.
+	pub size: f64,
+	/// The upper edge of its first glyph.
 	pub top: f64,
+	/// The lower edge of its lowest glyph.
+	pub bottom: f64,
+	/// Whether it is set in a monospaced face, which marks it as something whose own line
+	/// breaks are the content: code, or anything else laid out by column.
+	pub monospaced: bool,
 }
 
 /// Tolerance, in PDF user units, for calling two baselines or two box edges the same. pdfium
@@ -84,35 +90,25 @@ pub(super) fn space_is_invisible(
 	false
 }
 
-fn char_origin(text_page: &PdfiumTextPage, index: i32) -> Option<(f64, f64)> {
-	let (mut x, mut y) = (0.0, 0.0);
-	text_page.get_char_origin(index, &mut x, &mut y).ok()?;
-	Some((x, y))
-}
-
-fn char_box(text_page: &PdfiumTextPage, index: i32) -> Option<CharBox> {
-	let rect = text_page.get_char_box(index).ok()?;
-	Some(CharBox {
-		left: f64::from(rect.left),
-		right: f64::from(rect.right),
-		bottom: f64::from(rect.bottom),
-		top: f64::from(rect.top),
-	})
+/// The top edge of one character, which is what gives a tagged block the height the structure
+/// tree never records for it. See [`super::images::UnclaimedImages`].
+pub(super) fn char_top(text_page: &PdfTextPage, index: i32) -> Option<f64> {
+	text_page.char_box(index).map(|boxed| boxed.top)
 }
 
 /// [`space_is_invisible`] for the space at `index` of `text_page`, fetching only the geometry
 /// each test actually needs. Costs three or four pdfium calls per space character and none at
 /// all for anything else, so a page pays for it in proportion to its spaces rather than its
 /// length - the per-character cost that #747 had to undo.
-pub(super) fn is_invisible_space(text_page: &PdfiumTextPage, index: i32, char_count: i32) -> bool {
-	let (Some(origin), Some(space_box)) = (char_origin(text_page, index), char_box(text_page, index)) else {
+pub(super) fn is_invisible_space(text_page: &PdfTextPage, index: i32, char_count: i32) -> bool {
+	let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
 		return false;
 	};
-	let next_origin = if index + 1 < char_count { char_origin(text_page, index + 1) } else { None };
+	let next_origin = if index + 1 < char_count { text_page.char_origin(index + 1) } else { None };
 	if space_is_invisible(origin, space_box, next_origin, None) {
 		return true;
 	}
-	let prev_box = if index > 0 { char_box(text_page, index - 1) } else { None };
+	let prev_box = if index > 0 { text_page.char_box(index - 1) } else { None };
 	space_is_invisible(origin, space_box, None, prev_box)
 }
 
@@ -124,7 +120,7 @@ fn ends_line(ch: char, prev: Option<char>) -> bool {
 	ch == '\r' || (ch == '\n' && prev != Some('\r'))
 }
 
-fn is_cjk(c: char) -> bool {
+pub(super) fn is_cjk(c: char) -> bool {
 	let u = c as u32;
 	(0x4E00..=0x9FFF).contains(&u) || // CJK Unified Ideographs
 	(0x3400..=0x4DBF).contains(&u) || // CJK Extension A
@@ -134,17 +130,15 @@ fn is_cjk(c: char) -> bool {
 	(0xAC00..=0xD7AF).contains(&u) // Hangul
 }
 
-fn char_x_origin(text_page: &PdfiumTextPage, i: i32) -> f32 {
-	let (mut x, mut y) = (0.0, 0.0);
-	let _ = text_page.get_char_origin(i, &mut x, &mut y);
-	x as f32
+fn char_x_origin(text_page: &PdfTextPage, i: i32) -> f32 {
+	text_page.char_origin(i).map_or(0.0, |(x, _)| x as f32)
 }
 
 /// Assemble one run of `(char, pdfium index)` pairs into text, reordering
 /// visual→logical for RTL scripts. Fetches x origins (a per-char FFI call)
 /// only when the run actually contains an RTL character, so pure-LTR runs
 /// (the overwhelming majority) pay a single cheap classification scan instead.
-pub(super) fn reorder_run(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> String {
+pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, i32)]) -> String {
 	if !bidi::contains_rtl(chars.iter().map(|&(c, _)| c)) {
 		return chars.iter().map(|&(c, _)| c).collect();
 	}
@@ -152,47 +146,161 @@ pub(super) fn reorder_run(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> 
 	bidi::reorder_line(&with_origin)
 }
 
-pub(super) fn extract_text_lines(text_page: &PdfiumTextPage, page_index: i32) -> Vec<(String, f64)> {
-	let Ok(char_count) = text_page.char_count() else {
+/// Reads one visual line: its text in logical order, and everything measured about it.
+fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
+	let (top, bottom) = line_edges(text_page, chars);
+	Line {
+		size: line_font_size(text_page, chars),
+		monospaced: line_is_monospaced(text_page, chars),
+		text: reorder_run(text_page, chars),
+		top,
+		bottom,
+	}
+}
+
+pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Vec<Line> {
+	let Some(char_count) = text_page.char_count() else {
 		tracing::warn!(
 			page_index,
 			"page text char count unavailable, falling back to whole-page text blob, heading detection by font size will be degraded for this page"
 		);
-		let raw = sanitize_pdf_text(&text_page.full()).replace('\r', "");
-		return raw.lines().map(|l| (l.to_string(), 0.0)).collect();
+		let raw = sanitize_pdf_text(&text_page.text()).replace('\r', "");
+		return raw
+			.lines()
+			.map(|line| Line {
+				text: line.to_string(),
+				size: 0.0,
+				top: f64::NEG_INFINITY,
+				bottom: f64::NEG_INFINITY,
+				monospaced: false,
+			})
+			.collect();
 	};
-	let mut result: Vec<(String, f64)> = Vec::new();
+	let mut result: Vec<Line> = Vec::new();
 	// Chars of the current visual line with their pdfium index, so each line can be
 	// reordered visual→logical (handles RTL scripts) before paragraph joining.
 	let mut current_chars: Vec<(char, i32)> = Vec::new();
-	// One `FPDFText_GetFontSize` FFI call per line rather than one per character: a real
-	// document's line is rendered in one consistent size, so the first character with a
-	// usable size stands in for the whole line. Per-character font-size calls (on top of the
-	// per-character unicode call every line already pays) were the dominant cost of PDF
-	// parsing on documents with many lines - see #747.
-	let mut current_size = 0.0f64;
 	let mut previous_char = None;
 	for i in 0..char_count {
-		let unicode = text_page.get_unicode(i);
+		let unicode = text_page.unicode_at(i);
 		let Some(ch) = char::from_u32(unicode) else { continue };
 		if ends_line(ch, previous_char) {
-			result.push((reorder_run(text_page, &mem::take(&mut current_chars)), current_size));
-			current_size = 0.0;
+			let line = measure_line(text_page, &current_chars);
+			current_chars.clear();
+			result.push(line);
 		} else if ch == '\n' || (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			// The '\n' of a "\r\n" pair, and anything else with no text of its own: dropped, but
 			// still the previous character as far as the next `ends_line` is concerned.
 		} else if ch != ' ' || !is_invisible_space(text_page, i, char_count) {
-			if current_size == 0.0 {
-				current_size = text_page.get_font_size(i);
-			}
 			current_chars.push((ch, i));
 		}
 		previous_char = Some(ch);
 	}
 	if !current_chars.is_empty() {
-		result.push((reorder_run(text_page, &current_chars), current_size));
+		result.push(measure_line(text_page, &current_chars));
 	}
 	result
+}
+
+/// The top edge of a line, in PDF user units, taken from its first character. Y grows up the
+/// page, so the line nearest the top of it has the largest one.
+///
+/// This is all an untagged page gives to say where an image on it belongs, since the page draws
+/// its images and sets its text in the same coordinates and says nothing about the order of the
+/// two. The first character is measured rather than the tallest, because a couple of points
+/// either way decides nothing about which line an image falls between and every character
+/// measured costs another call into pdfium.
+/// The top and bottom edges of a line.
+///
+/// The top comes from the first character, because a couple of points either way decides
+/// nothing about which line an image falls between. The bottom is the lowest of the line's
+/// characters, and that one has to be exact: it is what the whitespace before the next line
+/// is measured from, and pdfium runs two visual lines together often enough that a line's
+/// box regularly reaches a whole line lower than its first character does.
+fn line_edges(text_page: &PdfTextPage, chars: &[(char, i32)]) -> (f64, f64) {
+	let top = chars.first().and_then(|(_, index)| text_page.char_box(*index)).map_or(f64::NEG_INFINITY, |b| b.top);
+	let mut bottom = f64::INFINITY;
+	for (_, index) in chars {
+		if let Some(boxed) = text_page.char_box(*index) {
+			bottom = bottom.min(boxed.bottom);
+		}
+	}
+	(top, bottom)
+}
+
+/// The point size one character is set in. pdfium reports the `Tf` size, which is 1.0 in every
+/// PDF that scales its text through the text matrix instead of through `Tf` - both the PDF of
+/// #808 and the one of #813 do, and every line of both came back as size 1.0, so no line was
+/// ever tall enough to be taken for a heading. The matrix's vertical scale is the rest of the
+/// size, so the two together are the size the reader sees.
+fn effective_font_size(text_page: &PdfTextPage, index: i32) -> f64 {
+	let size = text_page.font_size(index);
+	text_page.text_matrix(index).map_or(size, |matrix| size * f64::from(matrix.b.hypot(matrix.d)))
+}
+
+/// How many characters of a line to measure. Reading the size off the line's first character
+/// costs one call but believes a chapter opening's drop cap, which stands three times the size
+/// of the line it starts; the median of a handful of characters spread across the line does not.
+/// Still a per-line cost rather than a per-character one - the per-character font-size calls
+/// that #747 had to undo.
+const LINE_FONT_SIZE_SAMPLES: usize = 5;
+
+/// The point size of a visual line: the median of [`effective_font_size`] over a few of its
+/// characters, ignoring whitespace (which a font may set in a size of its own).
+fn line_font_size(text_page: &PdfTextPage, chars: &[(char, i32)]) -> f64 {
+	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+	if indices.is_empty() {
+		return 0.0;
+	}
+	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
+	let mut sizes: Vec<f64> =
+		indices.iter().step_by(step).map(|&i| effective_font_size(text_page, i)).filter(|size| *size > 0.0).collect();
+	sorted_median(&mut sizes)
+}
+
+/// Bit 1 of a PDF font descriptor's flags, which a font sets when all its glyphs are the
+/// same width. Reliable when it is set and worth nothing when it is not: the Computer Modern
+/// typewriter faces LaTeX sets code in leave it clear.
+const FIXED_PITCH_FLAG: i32 = 1;
+
+/// Whether a font name belongs to a monospaced face.
+///
+/// Names come subset-tagged as `ABCDEF+Consolas`, so the tag comes off first. `monotype` is
+/// removed before looking for `mono` because it is a foundry name that says nothing about the
+/// widths: Monotype Corsiva is a script face.
+fn looks_monospaced(font_name: &str) -> bool {
+	const HINTS: [&str; 6] = ["mono", "courier", "consol", "menlo", "typewriter", "inconsolata"];
+	let name = font_name.rsplit('+').next().unwrap_or(font_name).to_ascii_lowercase();
+	let name = name.replace("monotype", "");
+	HINTS.iter().any(|hint| name.contains(hint))
+		// Computer Modern, which is what a LaTeX document sets a listing in, names its
+		// typewriter faces cmtt, cmitt, cmsltt and cmvtt. No other face in the family has a
+		// double t in its name.
+		|| (name.starts_with("cm") && name.contains("tt"))
+}
+
+/// Whether one character is set in a monospaced face, by the font's descriptor flags first and
+/// its name second.
+fn char_is_monospaced(text_page: &PdfTextPage, index: i32) -> bool {
+	let Some(font) = text_page.font(index) else { return false };
+	if font.flags & FIXED_PITCH_FLAG != 0 {
+		return true;
+	}
+	looks_monospaced(&font.name)
+}
+
+/// Whether a line is set in a monospaced face, over the same handful of characters the size is
+/// measured across. Most of them have to agree: one word of code quoted in a sentence of prose
+/// does not make the sentence a listing.
+fn line_is_monospaced(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
+	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+	if indices.is_empty() {
+		return false;
+	}
+	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
+	let sampled: Vec<i32> = indices.iter().step_by(step).copied().collect();
+	let monospaced = sampled.iter().filter(|&&i| char_is_monospaced(text_page, i)).count();
+	monospaced * 2 > sampled.len()
 }
 
 fn sorted_median(values: &mut [f64]) -> f64 {
@@ -203,124 +311,18 @@ fn sorted_median(values: &mut [f64]) -> f64 {
 	values[values.len() / 2]
 }
 
-pub(super) fn median_line_font_size(line_infos: &[(String, f64)]) -> f64 {
+pub(super) fn median_line_font_size(line_infos: &[Line]) -> f64 {
 	let mut sizes: Vec<f64> = line_infos
 		.iter()
-		.filter(|(text, size)| !text.trim().is_empty() && *size > 0.0)
-		.map(|(_, size)| *size)
+		.filter(|line| !line.text.trim().is_empty() && line.size > 0.0)
+		.map(|line| line.size)
 		.collect();
 	sorted_median(&mut sizes)
 }
 
-pub(super) fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(String, bool)> {
-	const HEADING_FONT_RATIO: f64 = 1.2;
-	const HEADING_MAX_LEN: usize = 150;
-	let heading_threshold = if body_font_size > 0.0 { body_font_size * HEADING_FONT_RATIO } else { f64::INFINITY };
-	let lines: Vec<(String, bool)> = raw_lines
-		.iter()
-		.map(|(text, size)| {
-			let trimmed = trim_string(&collapse_whitespace(text));
-			let len = display_len(&trimmed);
-			let is_heading_line = *size >= heading_threshold && len > 0 && len <= HEADING_MAX_LEN;
-			(trimmed, is_heading_line)
-		})
-		.collect();
-	let mut max_len = 0usize;
-	for (line, _) in &lines {
-		let len = display_len(line);
-		if len > max_len {
-			max_len = len;
-		}
-	}
-	let short_line_threshold = (max_len as f32 * 0.75) as usize;
-	let mut paragraphs: Vec<(String, bool)> = Vec::new();
-	let mut current_paragraph = String::new();
-	let mut current_is_heading = false;
-	let mut last_line_len = 0usize;
-	let mut last_line_ends_with_punctuation = false;
-	for (line, is_heading_line) in &lines {
-		if line.is_empty() {
-			if !current_paragraph.is_empty() {
-				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
-				current_is_heading = false;
-			}
-			last_line_len = 0;
-			last_line_ends_with_punctuation = false;
-			continue;
-		}
-		let is_list_item = line.starts_with("- ") || line.starts_with("* ") || line.starts_with("• ");
-		let first_char = line.chars().next();
-		let starts_with_uppercase = first_char.is_some_and(char::is_uppercase);
-		let starts_with_alpha = first_char.is_some_and(char::is_alphabetic);
-		let len = display_len(line);
-		if current_paragraph.is_empty() {
-			current_paragraph = line.clone();
-			current_is_heading = *is_heading_line;
-		} else {
-			let mut is_numbered = false;
-			let mut chars = line.chars();
-			if let Some(first) = chars.next()
-				&& first.is_ascii_digit()
-			{
-				let mut found_space = false;
-				for c in chars {
-					if c.is_ascii_digit() || c == '.' || c == ')' {
-						continue;
-					} else if c.is_whitespace() {
-						found_space = true;
-						break;
-					}
-					break;
-				}
-				is_numbered = found_space;
-			}
-			// A heading (either side of the boundary) or a list item always starts a new paragraph;
-			// otherwise a short previous line does, whether it ended on punctuation or the new line
-			// looks like a fresh sentence.
-			let break_paragraph = *is_heading_line
-				|| current_is_heading
-				|| is_list_item
-				|| is_numbered
-				|| (last_line_len < short_line_threshold
-					&& (last_line_ends_with_punctuation || starts_with_uppercase || !starts_with_alpha));
-			if break_paragraph {
-				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
-				current_paragraph = line.clone();
-				current_is_heading = *is_heading_line;
-			} else {
-				let last_char = current_paragraph.chars().last().unwrap_or(' ');
-				if current_paragraph.ends_with('-') {
-					current_paragraph.pop();
-					current_paragraph.push_str(line);
-				} else if is_cjk(last_char) && line.chars().next().is_some_and(is_cjk) {
-					current_paragraph.push_str(line);
-				} else {
-					current_paragraph.push(' ');
-					current_paragraph.push_str(line);
-				}
-			}
-		}
-		last_line_len = len;
-		last_line_ends_with_punctuation = line.ends_with('.')
-			|| line.ends_with('?')
-			|| line.ends_with('!')
-			|| line.ends_with(':')
-			|| line.ends_with('"')
-			|| line.ends_with('\u{201D}')
-			|| line.ends_with('。')
-			|| line.ends_with('？')
-			|| line.ends_with('！')
-			|| line.ends_with('：');
-	}
-	if !current_paragraph.is_empty() {
-		paragraphs.push((current_paragraph, current_is_heading));
-	}
-	paragraphs
-}
-
 #[cfg(test)]
 mod tests {
-	use super::{CharBox, ends_line, join_paragraphs, sanitize_pdf_text, space_is_invisible};
+	use super::{CharBox, ends_line, looks_monospaced, sanitize_pdf_text, space_is_invisible};
 
 	/// The coordinates below come from what pdfium reports for the PDF attached to #808, so the
 	/// ratios each case turns on are the ones real pages produce.
@@ -390,18 +392,6 @@ mod tests {
 		));
 	}
 
-	/// A paragraph that pdfium hands back as wrapped lines is one paragraph, not one per line.
-	#[test]
-	fn join_paragraphs_merges_a_wrapped_list_item() {
-		let lines = vec![
-			("1) Look at your Inbox in your email account. Analyse 10-20 subject lines and".to_string(), 9.5),
-			("decide some criteria for judging how effective the subject lines are. Compare".to_string(), 9.5),
-			("your criteria with a colleague's.".to_string(), 9.5),
-		];
-		let result = join_paragraphs(&lines, 9.5);
-		assert_eq!(result.len(), 1, "got {result:?}");
-	}
-
 	#[test]
 	fn sanitize_pdf_text_strips_control_chars_and_soft_hyphens() {
 		assert_eq!(sanitize_pdf_text("sugges\u{0002}tion\tline\r\nnext"), "suggestion\tline\r\nnext");
@@ -409,23 +399,43 @@ mod tests {
 	}
 
 	#[test]
-	fn join_paragraphs_merges_continuation_lines() {
-		let lines = vec![("The suggestion appears here.".to_string(), 12.0), ("And here.".to_string(), 12.0)];
-		let result = join_paragraphs(&lines, 12.0);
-		assert_eq!(result.len(), 1);
-		assert_eq!(result[0].0, "The suggestion appears here. And here.");
-		assert!(!result[0].1);
+	fn monospaced_faces_are_known_by_name() {
+		// What LaTeX sets a listing in, subset tag and all.
+		assert!(looks_monospaced("CMTT9"));
+		assert!(looks_monospaced("CMITT10"));
+		assert!(looks_monospaced("ABCDEF+CMSLTT10"));
+		assert!(looks_monospaced("Courier"));
+		assert!(looks_monospaced("AAAAAA+Consolas-Bold"));
+		assert!(looks_monospaced("DejaVuSansMono"));
+		assert!(looks_monospaced("Menlo-Regular"));
 	}
 
 	#[test]
-	fn join_paragraphs_flags_large_font_lines_as_headings() {
-		let lines =
-			vec![("Chapter One".to_string(), 18.0), ("This is the body text of the document.".to_string(), 12.0)];
-		let result = join_paragraphs(&lines, 12.0);
-		assert_eq!(result.len(), 2);
-		assert_eq!(result[0].0, "Chapter One");
-		assert!(result[0].1);
-		assert_eq!(result[1].0, "This is the body text of the document.");
-		assert!(!result[1].1);
+	fn body_faces_are_not_mistaken_for_monospaced_ones() {
+		// Every face the three prose books of #813 and #826 are set in.
+		for name in [
+			"BaskOldFace",
+			"AMDJKP+TimesNewRomanPSMT",
+			"TimesNewRomanPS-BoldMT",
+			"MVBoli",
+			"ASJHEV+SymbolMT",
+			"SabonLTStd-Roman",
+			"UniversLTStd-Bold",
+			"Helvetica",
+			"ElectraLTStd-BoldCursive",
+			"TradeGothicLTStd-BdCn20Obl",
+			"ZapfDingbatsStd",
+			"AlternateGothicNo2BT-Regular",
+			"GrotesqueMT",
+			"MetaNormalLF-Roman",
+			// Monotype is a foundry, not a width. Corsiva is a script face.
+			"MonotypeCorsiva",
+			// Computer Modern roman, bold extended and sans, which are not the typewriter.
+			"CMR10",
+			"CMBX12",
+			"CMSS10",
+		] {
+			assert!(!looks_monospaced(name), "{name} is not a monospaced face");
+		}
 	}
 }

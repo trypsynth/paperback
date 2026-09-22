@@ -2,7 +2,9 @@ import SwiftUI
 import UIKit
 
 struct ContentView: View {
-	@State private var viewModel = AppViewModel()
+	// Handed in by the scene that owns it, rather than created here: the scene delegate needs
+	// the same instance to route keyboard shortcuts and documents opened from other apps.
+	let viewModel: AppViewModel
 
 	var body: some View {
 		// The environment object goes on the stack, not on ReaderView: content pushed via
@@ -12,11 +14,6 @@ struct ContentView: View {
 			ReaderView()
 		}
 		.environment(viewModel)
-		.onAppear {
-			if let scene = UIApplication.shared.connectedScenes.first,
-			   let sd = scene.delegate as? SceneDelegate {
-				sd.appViewModel = viewModel
-			}
-		}
+		.preferredColorScheme(viewModel.appearanceChoice.preferredColorSchemeChoice)
 	}
 }

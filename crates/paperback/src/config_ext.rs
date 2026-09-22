@@ -70,12 +70,12 @@ pub fn config_dir() -> PathBuf {
 	}
 	let exe_dir = get_exe_directory();
 	#[cfg(target_os = "macos")]
-	if is_app_bundle(&exe_dir) {
-		if let Some(home) = env::var_os("HOME") {
-			let dir = PathBuf::from(home).join("Library/Application Support/Paperback");
-			let _ = fs::create_dir_all(&dir);
-			return dir;
-		}
+	if is_app_bundle(&exe_dir)
+		&& let Some(home) = env::var_os("HOME")
+	{
+		let dir = PathBuf::from(home).join("Library/Application Support/Paperback");
+		let _ = fs::create_dir_all(&dir);
+		return dir;
 	}
 	#[cfg(target_os = "windows")]
 	{

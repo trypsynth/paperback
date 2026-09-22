@@ -10,12 +10,13 @@ use crate::{
 	parser::convert::{
 		block_elements::is_block_element,
 		format_spans::FormatKind,
+		formula::{formula_text, is_dom_formula},
 		line_builder::LineBuilder,
 		list_style::ListStyle,
 		table_text::{collect_dom_text, table_render_bundle},
 	},
 	t,
-	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
 
@@ -33,6 +34,12 @@ impl HtmlToText {
 		match node.value() {
 			Node::Element(element) => {
 				let tag_name = element.name();
+				if is_dom_formula(element) {
+					if self.flags.contains(ProcessingFlags::IN_BODY) {
+						self.handle_formula(node);
+					}
+					return;
+				}
 				if tag_name == "table" {
 					if self.flags.contains(ProcessingFlags::IN_BODY)
 						&& let Some(id) = element.attr("id").or_else(|| element.attr("name"))
@@ -62,6 +69,38 @@ impl HtmlToText {
 				}
 			}
 		}
+	}
+
+	fn handle_formula(&mut self, node: NodeRef<'_, Node>) {
+		let Some(element) = ElementRef::wrap(node) else { return };
+		let mathml = element.html();
+		let Some(rendered) = formula_text(&mathml, element.attr("alttext"), || element.text().collect()) else {
+			return;
+		};
+		if self.flags.contains(ProcessingFlags::IN_LINK) {
+			// Link text is buffered separately. Formula markers await shared inline position tracking.
+			self.current_link_text.push_str(&rendered);
+			return;
+		}
+		let block = element.attr("display") == Some("block");
+		if block {
+			self.text.finalize_current_line();
+		}
+		let offset = self.text.get_current_text_position();
+		// Descendant ids also need an anchor because this subtree is not traversed again.
+		for descendant in node.descendants() {
+			if let Node::Element(element) = descendant.value()
+				&& let Some(id) = element.attr("id").or_else(|| element.attr("name"))
+			{
+				self.id_positions.insert(id.to_string(), offset);
+			}
+		}
+		let length = display_len(&rendered);
+		self.text.current_line.push_str(&rendered);
+		if block {
+			self.text.finalize_current_line();
+		}
+		self.formulas.push(FormulaInfo { offset, text: rendered, mathml, length });
 	}
 
 	fn handle_table(&mut self, node: NodeRef<'_, Node>, document: &Html) {

@@ -23,9 +23,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
-import dev.paperback.android.ui.DocumentTabState
-import dev.paperback.android.ui.PickerMenuItem
-import dev.paperback.android.ui.pickerAnchorColors
+import dev.paperback.android.ui.components.PickerMenuItem
+import dev.paperback.android.ui.components.pickerAnchorColors
+import dev.paperback.android.ui.state.DocumentTabState
+import dev.paperback.android.ui.state.lineIndexFor
 
 const val GO_TO_LINE = "Line"
 const val GO_TO_PAGE = "Page"
@@ -103,7 +104,7 @@ fun GoToDialog(
 			onDismiss()
 		} else if (targetPos != null) {
 			val targetLine = docState.session.lineFromPosition(targetPos)
-			val indexToScroll = (targetLine - 1).toInt().coerceAtLeast(0)
+			val indexToScroll = lineIndexFor(targetLine)
 			onGoTo(indexToScroll)
 			onDismiss()
 		}
@@ -161,7 +162,8 @@ fun GoToDialog(
 					Column(
 						modifier = Modifier.clearAndSetSemantics {
 							contentDescription = goToModeName(GO_TO_PERCENTAGE)
-							stateDescription = "$sliderPercent percent"
+							// TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
+							stateDescription = t("{} percent", sliderPercent.toString())
 							progressBarRangeInfo = ProgressBarRangeInfo(
 								current = sliderPercent.toFloat(),
 								range = 0f..100f,

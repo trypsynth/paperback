@@ -18,7 +18,7 @@ use patois_build::po::{PoDocument, Translation};
 use crate::workspace::project_root;
 
 /// Regenerates `po/paperback.pot`, syncs every `po/<lang>.po` against it via `msgmerge`
-/// (adds blank entries for new strings, flags changed-but-similar entries `#, fuzzy`),
+/// (adds a blank entry for every new or changed string),
 /// then fills any blank/fuzzy entry via the Claude API (see `claude`), passing each string's
 /// `#. TRANSLATORS:` note along with it.
 /// Writes back only when something genuinely changed: `msgmerge` regenerates the
@@ -34,10 +34,12 @@ use crate::workspace::project_root;
 pub fn translate() -> Result<(), Box<dyn Error>> {
 	let mut dry_run = false;
 	let mut repair = false;
+	let mut repair_copies = false;
 	for arg in env::args().skip(2) {
 		match arg.as_str() {
 			"--dry-run" => dry_run = true,
 			"--repair" => repair = true,
+			"--repair-copies" => repair_copies = true,
 			_ => {
 				crate::print_help();
 				return Err(format!("Unknown argument for translate: {arg}").into());
@@ -100,7 +102,7 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 			println!("{lang}: human-maintained, skipping");
 			continue;
 		}
-		translate_one(po_path, &pot_path, dry_run, repair, client.as_ref(), &context)?;
+		translate_one(po_path, &pot_path, dry_run, repair, repair_copies, client.as_ref(), &context)?;
 	}
 	let auto_langs: Vec<String> = langs.into_iter().filter(|l| !human_maintained.contains(l.as_str())).collect();
 	readme::sync_readmes(&root, &auto_langs, client.as_ref(), dry_run)?;
@@ -213,11 +215,8 @@ fn plural_forms(content: &str) -> Option<(usize, String)> {
 /// Adds entries whose existing translation is provably damaged to `candidates`, returning how
 /// many were added.
 ///
-/// Needed because `--previous` only helps from here on. `msgmerge` writes the `#| msgid` line
-/// that marks an entry for re-translation at the moment it fuzzy-matches, so entries stranded
-/// before the flag was added are already `#, fuzzy` with no `#|`, their msgids still match the
-/// pot exactly, and no future merge will ever touch them again. Nothing in the normal flow can
-/// reach them; this is what does.
+/// Reaches entries whose damage no merge will ever surface again: their msgid matches the pot
+/// exactly and they are already fuzzy, so nothing in the normal flow selects them.
 ///
 /// Only entries that fail a mechanical check are added - a dropped placeholder, accelerator or
 /// shortcut suffix. A translation that merely looks doubtful is left alone: re-translating on
@@ -255,11 +254,53 @@ fn add_damaged_entries(
 	count
 }
 
+/// Adds machine-translated entries that are probably a msgmerge copy of some other string's
+/// translation, returning how many were added.
+///
+/// A one-off repair, not something to leave switched on. It finds translations msgmerge copied
+/// from a look-alike string (see the `--no-fuzzy-matching` note in `translate_one`), which are
+/// recognisable by being shared with an entry whose English says something different. Some pairs share a translation legitimately ("Document Info" and
+/// "Document Information"); re-translating those costs a call and changes nothing, which is
+/// why this is safe to run once but would be wasteful to run on every push.
+///
+/// Only fuzzy entries are touched. A non-fuzzy entry was put there by a person, and a shared
+/// translation is not evidence enough to overwrite their work.
+fn add_copied_entries(doc: &PoDocument, candidates: &mut Vec<(usize, String)>) -> usize {
+	let already: HashSet<usize> = candidates.iter().map(|(i, _)| *i).collect();
+	let mut sources: HashMap<&str, HashSet<String>> = HashMap::new();
+	for entry in &doc.entries {
+		if entry.msgid_plural.is_none() && !entry.msgid.is_empty() && !entry.msgstr.is_empty() {
+			sources.entry(entry.msgstr.as_str()).or_default().insert(same_meaning_key(&entry.msgid));
+		}
+	}
+	let mut count = 0;
+	for (i, entry) in doc.entries.iter().enumerate() {
+		let shared = sources.get(entry.msgstr.as_str()).is_some_and(|keys| keys.len() > 1);
+		if entry.is_fuzzy && entry.msgid_plural.is_none() && shared && !already.contains(&i) {
+			candidates.push((i, entry.msgid.clone()));
+			count += 1;
+		}
+	}
+	count
+}
+
+/// What two English strings have to agree on to count as saying the same thing: the words,
+/// ignoring the accelerator, case, spacing and trailing punctuation. `&Close` and `Close`, or
+/// `Open...` and `Open`, sharing a translation is expected; `Batch OCR` and `Match Case` is not.
+fn same_meaning_key(msgid: &str) -> String {
+	msgid
+		.chars()
+		.filter(|c| !matches!(c, '&' | '.' | ':' | '…' | '!' | '?') && !c.is_whitespace())
+		.flat_map(char::to_lowercase)
+		.collect()
+}
+
 fn translate_one(
 	po_path: &Path,
 	pot_path: &Path,
 	dry_run: bool,
 	repair: bool,
+	repair_copies: bool,
 	client: Option<&claude::ClaudeClient>,
 	context: &HashMap<String, String>,
 ) -> Result<(), Box<dyn Error>> {
@@ -270,20 +311,18 @@ fn translate_one(
 	// bumped a timestamp" case alike.
 	let tmp = env::temp_dir().join(format!("paperback-translate-{lang}-{}.po", process::id()));
 	fs::write(&tmp, &original)?;
-	// `--previous` is load-bearing, not cosmetic. When msgmerge fuzzy-matches a changed string
-	// against a similar old one, it copies that old translation across and marks the entry
-	// `#, fuzzy`; only `--previous` also records the string it matched against, as a `#| msgid`
-	// line. That line is the sole thing distinguishing "msgmerge just guessed at this, it needs
-	// translating" from "already machine-translated, flagged for a human, leave it alone", and
-	// `PoDocument::needs_translation` selects on exactly that.
+	// `--no-fuzzy-matching` is load-bearing. Left to itself, msgmerge fills a new or changed
+	// string with the translation of whichever old string it looks most like and flags it
+	// `#, fuzzy`. Fuzzy entries are compiled in here (machine translations stay fuzzy on
+	// purpose, see `patois_build`), so that guess would be what the reader sees: `{} ms` as
+	// "{} minutes", `Batch OCR` as "Match Case". Nothing marks the guess reliably afterwards,
+	// either: `--previous` only records the copied-from string when that string's own entry was
+	// not fuzzy, which in a machine-translated catalog it almost never is.
 	//
-	// Without the flag every fuzzy entry looked like the second kind, so a changed string
-	// silently kept whatever translation msgmerge had guessed and was never offered for
-	// translation again. That is how `&Settings` ended up showing the old translation of
-	// `Settings` and `&Close` the old translation of `Close`: same words, accelerator quietly
-	// gone, and nothing would ever have revisited them.
+	// With matching off, a new or changed string arrives blank and is always translated, and a
+	// failed call leaves English until the next run rather than a wrong string.
 	let msgmerge_ok = Command::new("msgmerge")
-		.args(["--update", "--backup=none", "--no-wrap", "--previous"])
+		.args(["--update", "--backup=none", "--no-wrap", "--no-fuzzy-matching"])
 		.arg(&tmp)
 		.arg(pot_path)
 		.status()
@@ -299,7 +338,10 @@ fn translate_one(
 	let mut candidates: Vec<(usize, String)> = doc.needs_translation().map(|(i, m)| (i, m.to_string())).collect();
 	let mut plurals: Vec<(usize, String, String)> =
 		doc.needs_plural_translation().map(|(i, s, p)| (i, s.to_string(), p.to_string())).collect();
-	let repaired = if repair { add_damaged_entries(&doc, &mut candidates, &mut plurals) } else { 0 };
+	let mut repaired = if repair { add_damaged_entries(&doc, &mut candidates, &mut plurals) } else { 0 };
+	if repair_copies {
+		repaired += add_copied_entries(&doc, &mut candidates);
+	}
 	let total = candidates.len() + plurals.len();
 	if dry_run {
 		if total == 0 {
@@ -486,5 +528,57 @@ mod tests {
 	fn the_header_entry_never_takes_a_note() {
 		let pot = "#. TRANSLATORS: stray\nmsgid \"\"\nmsgstr \"\"\n\nmsgid \"Ready\"\nmsgstr \"\"\n";
 		assert!(translator_comments(pot).is_empty());
+	}
+
+	/// A catalog of `(msgid, msgstr, fuzzy)` entries, as msgmerge leaves them: no `#|` lines.
+	fn catalog(entries: &[(&str, &str, bool)]) -> PoDocument {
+		let mut text = String::from("msgid \"\"\nmsgstr \"Content-Type: text/plain; charset=UTF-8\\n\"\n");
+		for (msgid, msgstr, fuzzy) in entries {
+			text.push('\n');
+			if *fuzzy {
+				text.push_str("#, fuzzy\n");
+			}
+			text.push_str(&format!("msgid \"{msgid}\"\nmsgstr \"{msgstr}\"\n"));
+		}
+		PoDocument::parse(&text)
+	}
+
+	fn copied(doc: &PoDocument) -> Vec<String> {
+		let mut candidates = Vec::new();
+		add_copied_entries(doc, &mut candidates);
+		candidates.into_iter().map(|(_, msgid)| msgid).collect()
+	}
+
+	/// The case that shipped: a sleep timer preset given another preset's translation.
+	#[test]
+	fn a_translation_shared_by_strings_that_say_different_things_is_a_copy() {
+		let doc = catalog(&[("1 minute", "1 minuto", true), ("10 minutes", "1 minuto", true)]);
+		assert_eq!(vec!["1 minute", "10 minutes"], copied(&doc));
+	}
+
+	/// An accelerator, case or trailing punctuation is not a different meaning.
+	#[test]
+	fn the_same_words_sharing_a_translation_are_not_a_copy() {
+		let doc = catalog(&[
+			("&Close", "Cerrar", true),
+			("Close", "Cerrar", true),
+			("Open...", "Abrir", true),
+			("Open", "Abrir", true),
+		]);
+		assert!(copied(&doc).is_empty());
+	}
+
+	/// A person put a non-fuzzy translation there, and a shared translation is not reason enough
+	/// to overwrite it. Its fuzzy partner is still retranslated.
+	#[test]
+	fn a_human_translation_is_never_selected() {
+		let doc = catalog(&[("Match Case", "Mayusculas", false), ("Batch OCR", "Mayusculas", true)]);
+		assert_eq!(vec!["Batch OCR"], copied(&doc));
+	}
+
+	#[test]
+	fn a_translation_no_other_string_shares_is_left_alone() {
+		let doc = catalog(&[("Batch OCR", "OCR por lotes", true), ("Match Case", "Mayusculas", true)]);
+		assert!(copied(&doc).is_empty());
 	}
 }

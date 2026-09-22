@@ -21,28 +21,38 @@ live-region = "0.3.0"
 paperback-core = { path = "../paperback-core" }
 paperback-formats = { path = "../paperback-formats" }
 patois = { version = "0.2.1", features = ["ui"] }
+# Decodes and plays DAISY narration in process. Recording and dithering are off: neither is
+# used, and both pull dependencies of their own. The symphonia extras cover the formats a
+# DAISY book can name that rodio's defaults leave out.
+rodio = { version = "0.22.2", default-features = false, features = [
+	"playback", "tracing", "flac", "mp3", "mp4", "vorbis", "wav",
+	"symphonia-adpcm", "symphonia-aiff", "symphonia-alac", "symphonia-mp2",
+] }
+# WSOLA time-stretching, so changing playback speed doesn't shift pitch the way naively
+# resampling (rodio's own `Player::set_speed`) does.
+rodio-wsola = "0.2.0"
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.2.0"
 toml = { workspace = true }
-wx-utils = { version = "0.3.0", features = ["shortcuts"] }
-wxdragon = { version = "0.9.21", features = ["webview", "media-ctrl"] }
+wx-utils = { version = "0.3.1", features = ["shortcuts"] }
+wxdragon = { version = "0.9.22", features = ["webview"] }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Shell", "Win32_System_WinRT", "Foundation", "Media_Ocr", "Graphics_Imaging", "Globalization"] }
+windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Shell", "Win32_System_WinRT", "Foundation", "Media_Ocr", "Graphics_Imaging", "Globalization"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
 
 [build-dependencies]
-embed-manifest = "1.5.0"
+embed-manifest = "1.5.1"
 flate2 = { version = "1.1.10", default-features = false }
 paperback-formats = { path = "../paperback-formats" }
 patois-build = "0.1.13"
 tar = "0.4.46"
-ureq = { version = "3.4.1", default-features = false, features = ["rustls"] }
+ureq = { version = "3.4.2", default-features = false, features = ["rustls"] }
 winres = "0.1.12"
 
 [dev-dependencies]

@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.semantics
 import dev.paperback.android.nt
 import dev.paperback.android.t
 import uniffi.paperback.DocumentStatsFfi
+import java.text.NumberFormat
 
 @Composable
 fun WordCountDialog(
@@ -34,7 +35,7 @@ fun WordCountDialog(
 		t("This document contains {} words."),
 		t("This document contains {} words.⁣"),
 		stats.wordCount
-	).replaceFirst("{}", "${stats.wordCount}")
+	).replaceFirst("{}", NumberFormat.getIntegerInstance().format(stats.wordCount))
 
 	AlertDialog(
 		onDismissRequest = onDismiss,
@@ -50,7 +51,7 @@ fun WordCountDialog(
 					.clearAndSetSemantics { contentDescription = announcement }
 			) {
 				Text(
-					text = "${stats.wordCount}",
+					text = NumberFormat.getIntegerInstance().format(stats.wordCount),
 					style = MaterialTheme.typography.displaySmall
 				)
 				Text(

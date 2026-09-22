@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-03 19:23-0600\n"
-"PO-Revision-Date: 2026-09-04 18:45+0800\n"
+"POT-Creation-Date: 2026-09-21 02:50+0000\n"
+"PO-Revision-Date: 2026-09-21 17:47+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -31,6 +31,18 @@ msgstr "将 pb 命令行工具添加到 PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP 压缩包 (.zip)"
 
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "未安装 OCR 语言。请在系统语言设置中添加。"
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+msgid "OCR failed."
+msgstr "OCR 失败。"
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+msgid "OCR is not available on this system."
+msgstr "此系统不支持 OCR."
+
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "创建 IPC 服务器失败"
@@ -41,12 +53,23 @@ msgstr "警告"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 msgid "This document has no audio."
 msgstr "此文档没有音频。"
 
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 msgid "Audio hasn't started playing yet."
 msgstr "音频尚未开始播放。"
+
+#. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+msgid "{} (maximum)"
+msgstr "{}（最大值）"
+
+#. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+msgid "{} (minimum)"
+msgstr "{}（最小值）"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -92,14 +115,6 @@ msgstr "30 分钟"
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 msgid "1 hour"
 msgstr "1 小时"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-msgid "{} (maximum)"
-msgstr "{}（最大值）"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-msgid "{} (minimum)"
-msgstr "{}（最小值）"
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
@@ -170,6 +185,15 @@ msgstr "查看笔记"
 msgid "Open Document"
 msgstr "打开文档"
 
+#. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "没有最近文档。"
+
+#. TRANSLATORS: Announced after the Recent Documents list has been emptied
+msgid "Recent documents cleared."
+msgstr "最近文档已清除。"
+
 #. TRANSLATORS: Menu item in the File menu to open a document.
 msgid "&Open..."
 msgstr "打开(&O)..."
@@ -201,6 +225,14 @@ msgstr "重新打开上次关闭的文档(&L)"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "重新打开上次关闭的文档"
+
+#. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
+msgid "Clea&r Recent Documents"
+msgstr "清除最近文档(&R)"
+
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
+msgid "Remove all documents from the Recent Documents list"
+msgstr "从最近文档列表中移除所有文档"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
@@ -339,6 +371,14 @@ msgstr "上一个表格(&T)"
 msgid "Next &Table"
 msgstr "下一个表格(&T)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
+msgid "Previous For&mula"
+msgstr "上一个公式(&M)"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next formula.
+msgid "Next For&mula"
+msgstr "下一个公式(&M)"
+
 #. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 msgid "Previous Se&parator"
 msgstr "上一个分隔符(&P)"
@@ -459,6 +499,30 @@ msgstr "切换书签(&B)"
 msgid "Bookmark with &Note"
 msgstr "带笔记的书签(&N)"
 
+#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+msgid "Set Selection St&art"
+msgstr "设置选区起点(&A)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+msgid "Mark the beginning of a selection to copy from"
+msgstr "标记要复制内容的选区起点"
+
+#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+msgid "&Copy from Selection Start"
+msgstr "从选区起点复制(&C)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+msgid "Copy from the beginning of the selection to here"
+msgstr "从选区起点复制到此处"
+
+#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+msgid "&Jump to Selection Start"
+msgstr "跳转到选区起点(&J)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+msgid "Go back to the beginning of the selection"
+msgstr "返回到选区起点"
+
 #. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
 msgstr "播放/暂停音频(&P)"
@@ -499,9 +563,30 @@ msgstr "减小音频跳转步长(&D)"
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "减小音频朗读跳转的距离"
 
+#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+msgid "&Increase Audio Speed"
+msgstr "提高音频速度(&I)"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
+msgid "Increase how fast the audio narration plays"
+msgstr "提高音频朗读的播放速度"
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+msgid "&Decrease Audio Speed"
+msgstr "降低音频速度(&D)"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
+msgid "Decrease how fast the audio narration plays"
+msgstr "降低音频朗读的播放速度"
+
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "一款无障碍、轻量、快速的电子书和文档阅读器"
+
+msgid ""
+"Paperback is built on other people's work. The libraries it uses, and their "
+"licenses, are credited at {}."
+msgstr "Paperback 构建在他人的工作之上。它所使用的库及其许可证在 {} 中注明。"
 
 #. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
@@ -617,6 +702,22 @@ msgstr[0] "已选择 %d 个文档，共 %d 个。"
 msgid "Locate Book"
 msgstr "定位书籍"
 
+#. TRANSLATORS: Title of the Batch OCR dialog
+msgid "Batch OCR"
+msgstr "批量 ocr"
+
+#. TRANSLATORS: Label for the starting page field of the Batch OCR range
+msgid "&Start page:"
+msgstr "起始页(&S):"
+
+#. TRANSLATORS: Label for the ending page field of the Batch OCR range
+msgid "&End page:"
+msgstr "结束页(&E):"
+
+#. TRANSLATORS: Label for the button that starts the batch OCR
+msgid "OCR"
+msgstr "OCR"
+
 #. TRANSLATORS: Title of the Jump to Bookmark dialog
 msgid "Jump to Bookmark"
 msgstr "跳转到书签"
@@ -715,21 +816,6 @@ msgstr "总时长:"
 msgid "Average duration:"
 msgstr "平均时长:"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d 小时"
-
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d 分钟"
-
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d 秒"
-
 #. TRANSLATORS: A page in the Elements list with no readable first line; %d is the page number
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
 msgid "Page %d"
@@ -760,6 +846,14 @@ msgstr "链接"
 msgid "Pages"
 msgstr "页面"
 
+#. TRANSLATORS: Choice option in the view dropdown to show the list of tables
+msgid "Tables"
+msgstr "表格"
+
+#. TRANSLATORS: Choice option in the view dropdown to show the list of lists
+msgid "Lists"
+msgstr "列表"
+
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 #. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
@@ -770,10 +864,10 @@ msgstr "无标题"
 #. TRANSLATORS: OK button that confirms the entered bookmark/note text
 #. TRANSLATORS: OK button that confirms the chosen file format in the Open As dialog
 #. TRANSLATORS: Label for the confirmation button
-#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
-#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
 #. TRANSLATORS: OK button that confirms the entered sleep timer duration
 #. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
+#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
 msgid "OK"
 msgstr "确定"
 
@@ -782,8 +876,6 @@ msgstr "确定"
 msgid "Go"
 msgstr "转到"
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
 #. TRANSLATORS: Label for the cancellation button
 #. TRANSLATORS: Cancel button that closes the Find dialog
 #. TRANSLATORS: Label for the cancellation button
@@ -870,6 +962,82 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
+#. TRANSLATORS: Description text shown when the background color is set to default
+msgid "Background: Default"
+msgstr "背景: 默认"
+
+#. TRANSLATORS: Description text shown when the font is set to default
+msgid "Font: Default"
+msgstr "字体: 默认"
+
+#. TRANSLATORS: Fallback font name
+msgid "Default"
+msgstr "默认"
+
+#. TRANSLATORS: Font description prefix; {} is the font face name
+msgid "Font: {}"
+msgstr "字体: {}"
+
+#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+msgid "{}pt"
+msgstr "{}磅"
+
+#. TRANSLATORS: Font weight attribute name
+msgid "Bold"
+msgstr "粗体"
+
+#. TRANSLATORS: Font style attribute name
+msgid "Italic"
+msgstr "斜体"
+
+#. TRANSLATORS: Font underline attribute name
+msgid "Underlined"
+msgstr "下划线"
+
+#. TRANSLATORS: Font strikethrough attribute name
+msgid "Strikethrough"
+msgstr "删除线"
+
+#. TRANSLATORS: Title of the system dialog for picking a font
+msgid "Choose a font"
+msgstr "选择字体"
+
+#. TRANSLATORS: Title of the hotkey customization dialog
+msgid "Window Hotkey"
+msgstr "窗口热键"
+
+#. TRANSLATORS: Checkbox label for Control modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+msgid "&Ctrl"
+msgstr "Ctrl(&C)"
+
+#. TRANSLATORS: Checkbox label for Alt modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+msgid "&Alt"
+msgstr "Alt(&A)"
+
+#. TRANSLATORS: Checkbox label for Shift modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+msgid "&Shift"
+msgstr "Shift(&S)"
+
+#. TRANSLATORS: Checkbox label for Windows modifier key
+msgid "&Win"
+msgstr "Win(&W)"
+
+#. TRANSLATORS: Label for the hotkey key selection input field
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+msgid "&Key:"
+msgstr "键(&K):"
+
+#. TRANSLATORS: Button label to clear the current hotkey selection
+msgid "Clear"
+msgstr "清除"
+
+#. TRANSLATORS: Representation of the Spacebar key
+msgid "Space"
+msgstr "空格"
+
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
 msgstr "设置"
@@ -897,6 +1065,10 @@ msgstr "自动换行(&W)"
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
 msgstr "内联渲染表格(&I)"
+
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+msgid "&Join wrapped lines into paragraphs in PDFs"
+msgstr "在 PDF 中将换行合并为段落(&J)"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1055,141 +1227,9 @@ msgstr "阅读"
 msgid "Readability"
 msgstr "可读性"
 
-#. TRANSLATORS: Description text shown when the background color is set to default
-msgid "Background: Default"
-msgstr "背景: 默认"
-
-#. TRANSLATORS: Description text shown when the font is set to default
-msgid "Font: Default"
-msgstr "字体: 默认"
-
-#. TRANSLATORS: Fallback font name
-msgid "Default"
-msgstr "默认"
-
-#. TRANSLATORS: Font description prefix; {} is the font face name
-msgid "Font: {}"
-msgstr "字体: {}"
-
-#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
-msgid "{}pt"
-msgstr "{}磅"
-
-#. TRANSLATORS: Font weight attribute name
-msgid "Bold"
-msgstr "粗体"
-
-#. TRANSLATORS: Font style attribute name
-msgid "Italic"
-msgstr "斜体"
-
-#. TRANSLATORS: Font underline attribute name
-msgid "Underlined"
-msgstr "下划线"
-
-#. TRANSLATORS: Font strikethrough attribute name
-msgid "Strikethrough"
-msgstr "删除线"
-
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "窗口热键"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-msgid "&Ctrl"
-msgstr "Ctrl(&C)"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-msgid "&Alt"
-msgstr "Alt(&A)"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-msgid "&Shift"
-msgstr "Shift(&S)"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-msgid "&Win"
-msgstr "Win(&W)"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-msgid "&Key:"
-msgstr "键(&K):"
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-msgid "Clear"
-msgstr "清除"
-
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "空格"
-
-#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
-msgid "Customize Keyboard Shortcuts"
-msgstr "自定义键盘快捷键"
-
-#. TRANSLATORS: Label above the list of shortcuts for a category in the Keyboard Shortcuts dialog.
-msgid "&Shortcuts:"
-msgstr "快捷键(&S):"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
-msgid "&Set Shortcut..."
-msgstr "设置快捷键(&S)..."
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
-msgid "&Clear Shortcut"
-msgstr "清除快捷键(&C)"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
-msgid "&Reset to Default"
-msgstr "重置为默认(&R)"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
-msgid "Reset &All to Defaults"
-msgstr "全部重置为默认(&A)"
-
-#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
-msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
-msgstr "“{}”已分配给“{}”。是否将其重新分配给“{}”？"
-
-#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
-msgid "Shortcut Conflict"
-msgstr "快捷键冲突"
-
-msgid "Reset all shortcuts to their default values?"
-msgstr "将所有快捷键重置为默认值？"
-
-#. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
-msgid "Reset Shortcuts"
-msgstr "重置快捷键"
-
-#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
-msgid "Set Shortcut for {}"
-msgstr "为 {} 设置快捷键"
-
-#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
-msgid "Configure shortcut for {}:"
-msgstr "配置 {} 的快捷键:"
-
-msgid "Tip: click in the key field and press the key combination you want."
-msgstr "提示: 单击按键字段，然后按下所需的组合键。"
-
-#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
-msgid "Detected: (none)"
-msgstr "检测到:（无）"
-
-msgid "Detected: {}"
-msgstr "检测到: {}"
-
-msgid "No key detected"
-msgstr "未检测到按键"
-
-#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
-msgid "&Clear"
-msgstr "清除(&C)"
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+msgid "Choose a colour"
+msgstr "选择颜色选择背景颜色(&B)..."
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -1256,6 +1296,45 @@ msgstr "导入文档数据"
 msgid "Password is required."
 msgstr "需要密码。"
 
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+msgid "OCR in progress."
+msgstr "OCR 正在进行。"
+
+#. TRANSLATORS: Announced when batch OCR is triggered with no document open
+#. TRANSLATORS: Announced when Batch OCR is chosen with no document open
+msgid "No document open."
+msgstr "未打开文档。"
+
+#. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
+msgid "OCR already in progress."
+msgstr "OCR 已在运行。"
+
+#. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
+msgid "No image-only pages in the given range."
+msgstr "给定范围内没有仅图片页面。"
+
+#. TRANSLATORS: Batch OCR progress announcement; the two %d placeholders are the pages done and the total pages
+msgid "OCR %d of %d."
+msgstr "OCR 进度 %d / %d。"
+
+#. TRANSLATORS: Announced after OCR replaces an image-only page with the recognized text
+msgid "OCR complete."
+msgstr "OCR 完成。"
+
+#. TRANSLATORS: Announced when OCR runs on a page but finds no recognizable text
+msgid "No text found."
+msgstr "未找到文本。"
+
+#. TRANSLATORS: Announced when batch OCR is stopped early; %d is the number of pages recognized before it stopped
+msgid "Batch OCR stopped. %d page recognized."
+msgid_plural "Batch OCR stopped. %d pages recognized."
+msgstr[0] "批量 OCR 已停止。已识别 %d 页。"
+
+#. TRANSLATORS: Announced after batch OCR finishes; %d is the number of pages recognized
+msgid "Batch OCR complete. %d page recognized."
+msgid_plural "Batch OCR complete. %d pages recognized."
+msgstr[0] "批量 OCR 已完成。已识别 %d 页。"
+
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "已导航到内部链接。"
@@ -1276,6 +1355,10 @@ msgstr "没有临时书签。"
 msgid "Temporary bookmark."
 msgstr "临时书签。"
 
+#. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
+msgid "%s, page %d"
+msgstr "%s，第 %d 页"
+
 #. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr "密码(&P):"
@@ -1295,6 +1378,10 @@ msgstr "文件: {}"
 #. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
 msgid "Details: {}"
 msgstr "详细信息: {}"
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr "结果"
 
 #. TRANSLATORS: Title of the Find dialog
 msgid "Find"
@@ -1330,6 +1417,15 @@ msgstr "查找上一个(&P)"
 msgid "Find &Next"
 msgstr "查找下一个(&N)"
 
+#. TRANSLATORS: Button that finds and lists every occurrence of the search text
+msgid "Find &All"
+msgstr "查找全部(&A)"
+
+#. TRANSLATORS: Button that jumps to the selected find result
+#. TRANSLATORS: Top-level "Go" menu label in the menu bar
+msgid "&Go"
+msgstr "转到(&G)"
+
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "未找到。"
@@ -1356,18 +1452,27 @@ msgstr "无法启动默认浏览器。"
 msgid "Failed to open donation page in browser."
 msgstr "无法在浏览器中打开捐赠页面。"
 
-#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
-msgid "Unsupported format selected."
-msgstr "选择了不支持的格式。"
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+msgid "Word wrap on."
+msgstr "自动换行已开启。"
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
-msgstr "没有最近文档。"
+msgid "Word wrap off."
+msgstr "自动换行已关闭。"
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+msgid "Full screen on."
+msgstr "全屏已开启。"
+
+msgid "Full screen off."
+msgstr "全屏已关闭。"
 
 #. TRANSLATORS: Announced when landing on a blank line; %d is the line number
 msgid "Line %d"
 msgstr "第 %d 行"
 
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+#. A menu invocation returns focus to the book just like a closed dialog does,
+#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "没有页面。"
@@ -1375,6 +1480,10 @@ msgstr "没有页面。"
 #. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
 msgid "No table of contents."
 msgstr "没有目录。"
+
+#. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
+msgid "Batch OCR is running. Stop it?"
+msgstr "批量 OCR 正在运行。是否停止？"
 
 #. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
 msgid "Web View"
@@ -1452,6 +1561,10 @@ msgstr "笔记和书签已成功导入。"
 msgid "Import Successful"
 msgstr "导入成功"
 
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
+msgid "Unsupported format selected."
+msgstr "选择了不支持的格式。"
+
 #. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
 msgstr "Paperback"
@@ -1474,20 +1587,6 @@ msgstr[0] "%d 字符"
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "导出文档失败。"
-
-#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-msgid "Word wrap on."
-msgstr "自动换行已开启。"
-
-msgid "Word wrap off."
-msgstr "自动换行已关闭。"
-
-#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-msgid "Full screen on."
-msgstr "全屏已开启。"
-
-msgid "Full screen off."
-msgstr "全屏已关闭。"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 msgid "&Undo\tCtrl+Z"
@@ -1636,6 +1735,14 @@ msgstr "表格(&T)"
 #. TRANSLATORS: Status-bar help text for the Go > Tables submenu.
 msgid "Navigate by tables"
 msgstr "按表格导航"
+
+#. TRANSLATORS: Label for the Formulas submenu in the compact Go menu.
+msgid "For&mulas"
+msgstr "公式(&M)"
+
+#. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
+msgid "Navigate by formulas"
+msgstr "按公式导航"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
@@ -1805,6 +1912,14 @@ msgstr "导入/导出(&M)"
 msgid "Import and export options"
 msgstr "导入和导出选项"
 
+#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
+msgid "Select and &copy"
+msgstr "选择并复制(&C)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
+msgid "Mark a selection and copy from it"
+msgstr "标记选区并从中复制"
+
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
 msgstr "自动换行(&R)"
@@ -1829,13 +1944,13 @@ msgstr "设置(&S)"
 msgid "&Sleep Timer..."
 msgstr "睡眠定时器(&S)..."
 
+#. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
+msgid "&Batch OCR..."
+msgstr "批量 OCR(&B)..."
+
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "文件(&F)"
-
-#. TRANSLATORS: Top-level "Go" menu label in the menu bar
-msgid "&Go"
-msgstr "转到(&G)"
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
@@ -1941,6 +2056,18 @@ msgstr "没有下一个表格。"
 msgid "No previous table."
 msgstr "没有上一个表格。"
 
+#. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
+msgid "No formulas."
+msgstr "没有公式。"
+
+#. TRANSLATORS: Announcement when there is no next formula to navigate to
+msgid "No next formula."
+msgstr "没有下一个公式。"
+
+#. TRANSLATORS: Announcement when there is no previous formula to navigate to
+msgid "No previous formula."
+msgstr "没有上一个公式。"
+
 #. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr "没有分隔符。"
@@ -2014,7 +2141,11 @@ msgstr "已越过容器末尾。"
 msgid "Start of container."
 msgstr "容器开头。"
 
-#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+#. TRANSLATORS: Title of the dialog displaying a formula as MathML
+msgid "Formula View"
+msgstr "公式视图"
+
+#. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr "表格视图"
 
@@ -2071,6 +2202,34 @@ msgstr "转到百分比(&P)"
 msgid "Go to percent"
 msgstr "转到百分比"
 
+#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
+msgid "Copied (%d chars)."
+msgstr "已复制（%d 个字符）。"
+
+#. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
+msgid "Beginning of selection set."
+msgstr "已设置选区起点。"
+
+#. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
+msgid "Cannot copy; set beginning of selection first."
+msgstr "无法复制；请先设置选区起点。"
+
+#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
+msgid "Nothing to copy."
+msgstr "没有可复制的内容。"
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr "无法复制到剪贴板。"
+
+#. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
+msgid "Cannot jump; set beginning of selection first."
+msgstr "无法跳转；请先设置选区起点。"
+
+#. TRANSLATORS: Announced after jumping back to the marked beginning of the selection.
+msgid "Jumped to beginning of selection."
+msgstr "已跳转到选区起点。"
+
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "睡眠定时器已取消。"
@@ -2118,6 +2277,10 @@ msgstr "重新打开上次关闭的文档"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "显示所有最近文档..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Clear Recent Documents"
+msgstr "清除最近文档"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Exit"
@@ -2271,6 +2434,14 @@ msgstr "上一个表格"
 msgid "Next Table"
 msgstr "下一个表格"
 
+#. TRANSLATORS: Shortcut action to move to the previous formula
+msgid "Previous Formula"
+msgstr "上一个公式"
+
+#. TRANSLATORS: Shortcut action to move to the next formula
+msgid "Next Formula"
+msgstr "下一个公式"
+
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Separator"
 msgstr "上一个分隔符"
@@ -2328,6 +2499,18 @@ msgid "Bookmark with Note"
 msgstr "带笔记的书签"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Set Selection Start"
+msgstr "设置选区起点"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Copy from Selection Start"
+msgstr "从选区起点复制"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Jump to Selection Start"
+msgstr "跳转到选区起点"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Word Wrap"
 msgstr "切换自动换行"
 
@@ -2352,6 +2535,14 @@ msgid "Decrease Audio Seek Amount"
 msgstr "减小音频跳转步长"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Increase Audio Speed"
+msgstr "提高音频速度"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Decrease Audio Speed"
+msgstr "降低音频速度"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
 msgstr "全屏"
 
@@ -2362,6 +2553,10 @@ msgstr "设置..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Sleep Timer..."
 msgstr "睡眠定时器..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Batch OCR..."
+msgstr "批量 OCR"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Customize Keyboard Shortcuts..."
@@ -2423,10 +2618,38 @@ msgstr "帮助"
 msgid "None"
 msgstr "无"
 
+#. TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
+msgid "This view shows the part of the document you are reading."
+msgstr "→  此视图显示您正在阅读的文档部分。"
+
+#. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
+msgid "[Image only. Press enter to OCR.]"
+msgstr "[仅图片。按回车进行 OCR。]"
+
+#. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
+msgid "[Image only. This page has no text to read.]"
+msgstr "[仅图片。此页没有可读文本。]"
+
+#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
+msgid ""
+"Paperback cannot read RAR comic archives. Repack it as a .cbz to read it "
+"here."
+msgstr ""
+"Paperback 无法读取 RAR 漫画压缩包。请将其重新打包为 .cbz 后再在此处阅读。"
+
+#. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
+msgid "Failed to parse comic archive: {}"
+msgstr "解析漫画压缩包失败: {}"
+
+#. TRANSLATORS: Error shown when a comic book archive holds no page images at all
+msgid "This comic archive contains no pages."
+msgstr "此漫画压缩包不包含任何页面。"
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "图形"
 
+#. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
 msgid "Image"
 msgstr "图片"
 
@@ -2474,6 +2697,14 @@ msgstr "EPUB 没有可读内容（{}）"
 msgid "Failed to convert FB2 XML to text"
 msgstr "无法将 FB2 XML 转换为文本"
 
+#. TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
+msgid "Failed to parse WinHelp file: {}"
+msgstr "解析 WinHelp 文件失败: {}"
+
+#. TRANSLATORS: Name given to a WinHelp topic that carries no title of its own; {} is the topic's number
+msgid "Topic {}"
+msgstr "主题 {}"
+
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "HTML 文件为空: {}"
@@ -2482,13 +2713,49 @@ msgstr "HTML 文件为空: {}"
 msgid "Failed to convert HTML to text: {}"
 msgstr "无法将 HTML 转换为文本: {}"
 
-#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
-msgid "Chapter {}"
-msgstr "第 {} 章"
-
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 msgid "Failed to convert Markdown to text: {}"
 msgstr "无法将 Markdown 转换为文本: {}"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+msgid "Missing HUFF parameters in header"
+msgstr "头部缺少 HUFF 参数"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+msgid "Invalid HUFF/CDIC records"
+msgstr "无效的 HUFF/CDIC 记录"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+msgid "Unsupported compression mode ({})"
+msgstr "不支持的压缩模式（{}）"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+msgid "Invalid record offsets"
+msgstr "无效的记录偏移"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+msgid "No records found"
+msgstr "未找到记录"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+msgid "Invalid Record 0 offsets"
+msgstr "无效的记录 0 偏移"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+msgid "Invalid Record 0"
+msgstr "无效的记录 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+msgid "No MOBI header"
+msgstr "没有 MOBI 头"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+msgid "Invalid MOBI identifier"
+msgstr "无效的 MOBI 标识符"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+msgid "Invalid content record range"
+msgstr "无效的内容记录范围"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
 msgid "Invalid HUFF record"
@@ -2542,45 +2809,15 @@ msgstr "解码栈溢出"
 msgid "File too short"
 msgstr "文件太短"
 
-#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
-msgid "Invalid record offsets"
-msgstr "无效的记录偏移"
+#. TRANSLATORS: Error detail shown when an OpenDocument file is encrypted and no password was given (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+msgid "Password required"
+msgstr "需要密码"
 
-#. TRANSLATORS: Error shown when a MOBI file has no records
-msgid "No records found"
-msgstr "未找到记录"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
-msgid "Invalid Record 0 offsets"
-msgstr "无效的记录 0 偏移"
-
-#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
-msgid "Invalid Record 0"
-msgstr "无效的记录 0"
-
-#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
-msgid "No MOBI header"
-msgstr "没有 MOBI 头"
-
-#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
-msgid "Invalid MOBI identifier"
-msgstr "无效的 MOBI 标识符"
-
-#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
-msgid "Invalid content record range"
-msgstr "无效的内容记录范围"
-
-#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
-msgid "Invalid HUFF/CDIC records"
-msgstr "无效的 HUFF/CDIC 记录"
-
-#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
-msgid "Missing HUFF parameters in header"
-msgstr "头部缺少 HUFF 参数"
-
-#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-msgid "Unsupported compression mode ({})"
-msgstr "不支持的压缩模式（{}）"
+#. TRANSLATORS: Error detail shown when the password for an OpenDocument file is wrong (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+msgid "Password incorrect"
+msgstr "密码错误"
 
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
@@ -2598,22 +2835,19 @@ msgstr "需要密码或密码错误"
 msgid "Failed to open PDF document: {}"
 msgstr "打开 PDF 文档失败: {}"
 
-#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"此 PDF 仅包含图片，没有可提取的文本。您可能需要通过 OCR 软件进行识别才能阅读"
-"其内容。"
-
-msgid ""
-"Password-protected PPT files are not currently supported. Try saving the "
-"file as PPTX and opening that instead."
-msgstr "目前不支持受密码保护的 PPT 文件。请尝试将文件另存为 PPTX 后再打开。"
-
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 msgid "PPT file contains no slides"
 msgstr "PPT 文件不包含幻灯片"
+
+#. TRANSLATORS: Error detail shown when an encrypted PowerPoint file needs a password (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+msgid "File is encrypted and requires a password"
+msgstr "文件已加密，需要密码"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office file fails; {} is the underlying error
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+msgid "Decryption failed (wrong password?): {}"
+msgstr "解密失败（密码错误？）: {}"
 
 #. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
 msgid "PowerPoint Document stream not found"
@@ -2627,13 +2861,9 @@ msgstr "PPTX 文件不包含幻灯片"
 msgid "Failed to parse RTF document: {}"
 msgstr "解析 RTF 文档失败: {}"
 
-#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-msgid "File is encrypted and requires a password"
-msgstr "文件已加密，需要密码"
-
-#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-msgid "Decryption failed (wrong password?): {}"
-msgstr "解密失败（密码错误？）: {}"
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+msgid "Chapter {}"
+msgstr "第 {} 章"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -2678,14 +2908,6 @@ msgstr "未找到支持扩展名 .{} 的解析器"
 #. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
 msgid "All parsers failed for extension: .{}"
 msgstr "扩展名 .{} 的所有解析器均失败"
-
-#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-msgid "Password required"
-msgstr "需要密码"
-
-#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
-msgid "Password incorrect"
-msgstr "密码错误"
 
 msgid "Unknown update file format."
 msgstr "未知的更新文件格式。"
@@ -2760,6 +2982,90 @@ msgstr "安全验证失败。更新可能已被篡改: %s"
 msgid "Security Error"
 msgstr "安全错误"
 
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d 小时"
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d 分钟"
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d 秒"
+
+#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+msgid "Set Shortcut for {}"
+msgstr "为 {} 设置快捷键"
+
+#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+msgid "Configure shortcut for {}:"
+msgstr "配置 {} 的快捷键:"
+
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr "提示: 单击按键字段，然后按下所需的组合键。"
+
+#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
+msgid "Detected: (none)"
+msgstr "检测到:（无）"
+
+msgid "Detected: {}"
+msgstr "检测到: {}"
+
+msgid "No key detected"
+msgstr "未检测到按键"
+
+#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
+msgid "&Clear"
+msgstr "清除(&C)"
+
+#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
+msgid "Customize Keyboard Shortcuts"
+msgstr "自定义键盘快捷键"
+
+#. TRANSLATORS: Label above the list of shortcuts for a tab in the Keyboard Shortcuts dialog.
+msgid "&Shortcuts:"
+msgstr "快捷键(&S):"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
+msgid "&Set Shortcut..."
+msgstr "设置快捷键(&S)..."
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
+msgid "&Clear Shortcut"
+msgstr "清除快捷键(&C)"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
+msgid "&Reset to Default"
+msgstr "重置为默认(&R)"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
+msgid "Reset &All to Defaults"
+msgstr "全部重置为默认(&A)"
+
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr "“{}”已分配给“{}”。是否将其重新分配给“{}”？"
+
+#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
+msgid "Shortcut Conflict"
+msgstr "快捷键冲突"
+
+#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+msgid "Reset all shortcuts to their default values?"
+msgstr "将所有快捷键重置为默认值？"
+
+#. TRANSLATORS: Confirmation prompt shown when resetting the current tab's keyboard shortcuts to their defaults.
+msgid "Reset all shortcuts in this tab to their default values?"
+msgstr "将此选项卡中的所有快捷键重置为默认值？"
+
+#. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
+msgid "Reset Shortcuts"
+msgstr "重置快捷键"
+
 #. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 #: swift
 msgid "Export Document Data"
@@ -2810,7 +3116,7 @@ msgstr "切换到 TTS 模式"
 msgid "Switch to Text Mode"
 msgstr "切换到文本模式"
 
-#. TRANSLATORS: Menu item to open the list of recently opened documents
+#. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
 msgid "Recent Documents"
 msgstr "最近文档"
@@ -2875,7 +3181,7 @@ msgstr "打开图书"
 msgid "Locate"
 msgstr "定位"
 
-#. TRANSLATORS: Button to remove a document from the recent documents list
+#. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr "移除"
@@ -2915,7 +3221,7 @@ msgstr "语音"
 msgid "Rate"
 msgstr "速率"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
 #: swift
 msgid "Speech Rate"
 msgstr "语音速率"
@@ -3005,7 +3311,7 @@ msgstr "字符数（不含空格）"
 msgid "Mode"
 msgstr "模式"
 
-#. TRANSLATORS: Go To mode option: navigate to a specific page number
+#. TRANSLATORS: Name of the "page" reading/navigation unit
 #: swift
 msgid "Page"
 msgstr "页面"
@@ -3065,7 +3371,7 @@ msgstr "范围"
 msgid "Word"
 msgstr "单词"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
+#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
 #: swift
 msgid "Paragraph"
 msgstr "段落"
@@ -3366,7 +3672,7 @@ msgstr "暂不"
 msgid "Custom Timer"
 msgstr "自定义定时器"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 msgid "Back"
 msgstr "返回"
@@ -3438,7 +3744,7 @@ msgstr "本文档包含 {} 个单词。"
 msgid "words"
 msgstr "单词"
 
-#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
+#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
 msgid "Close Search"
 msgstr "关闭搜索"
@@ -3448,7 +3754,6 @@ msgstr "关闭搜索"
 msgid "Document exported"
 msgstr "文档已导出"
 
-#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
 msgid "Failed to export document"
 msgstr "导出文档失败"
@@ -3755,3 +4060,140 @@ msgstr ""
 #: kt
 msgid "File Manager"
 msgstr "文件管理器"
+
+#. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+#: kt
+msgid "{}% through"
+msgstr "已读 {}%"
+
+#. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
+#: swift
+msgid ""
+"With VoiceOver, swipe up on the play button to move forward, or down to move "
+"back."
+msgstr "使用 VoiceOver 时，在播放按钮上向上滑动可前进，向下滑动可后退。"
+
+#. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
+#: kt
+msgid ""
+"With TalkBack, swipe up on the play button to move forward, or down to move "
+"back."
+msgstr "使用 TalkBack 时，在播放按钮上向上滑动可前进，向下滑动可后退。"
+
+#. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
+#: kt
+msgid "Current path: {}"
+msgstr "当前路径: {}"
+
+#: kt
+msgid "{}, {}, modified {}{}"
+msgstr "{}，{}，修改于 {}{}"
+
+#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
+#: kt
+msgid "{} percent"
+msgstr "{} 百分比"
+
+#. TRANSLATORS: TalkBack state of a heading line in the document; {} is its level number
+#: kt
+msgid "Heading {}"
+msgstr "标题 {}"
+
+#. TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
+#: kt
+msgid "go to heading"
+msgstr "转到标题"
+
+#: kt
+msgid "{}, Level {}"
+msgstr "{}，级别 {}"
+
+#. TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
+#: kt
+msgid "go to link"
+msgstr "转到链接"
+
+#. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
+#: kt
+msgid "show import and export options"
+msgstr "显示导入和导出选项"
+
+#. TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
+#: kt
+msgid "open"
+msgstr "打开"
+
+#. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
+#: kt
+msgid "go to chapter"
+msgstr "转到章节"
+
+#. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+#: kt
+msgid "This is a sample of the selected speech engine."
+msgstr "→  这是所选语音引擎的示例。"
+
+#. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+#: kt
+msgid "This document does not contain pages."
+msgstr "→  此文档不包含页面。"
+
+#. TRANSLATORS: Name of the "formula" reading/navigation unit
+#: kt
+msgid "Formula"
+msgstr "公式"
+
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+#: swift
+msgid "No matches."
+msgstr "没有匹配项。"
+
+#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
+#: swift
+msgid "Appearance"
+msgstr "外观"
+
+#. TRANSLATORS: Appearance option following the phone's own light/dark setting
+#: swift
+msgid "System"
+msgstr "系统"
+
+#. TRANSLATORS: Appearance option pinning the app to its light colours
+#: swift
+msgid "Light"
+msgstr "浅色"
+
+#. TRANSLATORS: Appearance option pinning the app to its dark colours
+#: swift
+msgid "Dark"
+msgstr "深色"
+
+#. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
+#: swift
+msgid "High Contrast Text"
+msgstr "高对比度文本"
+
+#. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
+#: swift
+msgid "Hide previous and next buttons"
+msgstr "隐藏上一个和下一个按钮"
+
+#. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
+#: swift
+msgid "This empties the list. The documents themselves are not deleted."
+msgstr "这会清空列表。文档本身不会被删除。"
+
+#. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
+#: swift
+msgid "{} ms"
+msgstr "{} 毫秒"
+
+#. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
+#: swift
+msgid "Paragraph Pause"
+msgstr "段落暂停"
+
+#. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
+#: kt
+msgid "No other voices"
+msgstr "没有其他语音"

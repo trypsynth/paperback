@@ -35,16 +35,30 @@ class MagicTapWindow: UIWindow {
 	}
 }
 
+@MainActor
 class SceneDelegate: NSObject, UIWindowSceneDelegate {
 	var window: UIWindow?
-	weak var appViewModel: AppViewModel?
+	/// Owned here rather than by the view, so the keyboard shortcut handlers and the incoming
+	/// document handler above reach the same one this scene is showing, without going looking
+	/// through UIApplication for a scene that might not be this one.
+	let appViewModel = AppViewModel()
 
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options: UIScene.ConnectionOptions) {
 		guard let windowScene = scene as? UIWindowScene else { return }
 		let window = MagicTapWindow(windowScene: windowScene)
-		window.rootViewController = UIHostingController(rootView: ContentView())
+		window.rootViewController = UIHostingController(rootView: ContentView(viewModel: appViewModel))
 		self.window = window
 		window.makeKeyAndVisible()
+		open(options.urlContexts)
+	}
+
+	func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+		open(URLContexts)
+	}
+
+	private func open(_ contexts: Set<UIOpenURLContext>) {
+		guard let url = contexts.first?.url else { return }
+		appViewModel.openDocument(url: url)
 	}
 }
 

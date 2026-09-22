@@ -3,6 +3,14 @@ use std::str;
 use chardetng::{EncodingDetector, Iso2022JpDetection, Utf8Detection};
 use encoding_rs::{UTF_16BE, UTF_16LE, WINDOWS_1252};
 
+/// How much of the input the two heuristics below look at.
+///
+/// Both are sampling problems: a file does not change encoding part-way through, so a prefix
+/// answers as well as the whole thing does. Running them over an entire book instead costs two
+/// extra passes over it, which is what made a 60 MB GB18030 text file take several times longer
+/// to open than the same book in UTF-8, where `str::from_utf8` answers and returns immediately.
+const DETECTION_SAMPLE_BYTES: usize = 64 * 1024;
+
 #[must_use]
 pub fn convert_to_utf8(input: &[u8]) -> String {
 	if input.len() >= 4 {
@@ -38,7 +46,7 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 		return s.to_string();
 	}
 	// UTF-16 without BOM (only if data looks like UTF-16)
-	if looks_like_utf16(input) {
+	if looks_like_utf16(sample_of(input)) {
 		let (decoded, encoding, had_errors) = UTF_16LE.decode(input);
 		if !had_errors && encoding == UTF_16LE {
 			return decoded.to_string();
@@ -57,7 +65,8 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 	// a short/ambiguous sample is more likely wrong than not. That case is left to the
 	// Windows-1252-or-give-up fallback below, unchanged.
 	let mut detector = EncodingDetector::new(Iso2022JpDetection::Allow);
-	detector.feed(input, true);
+	let sample = sample_of(input);
+	detector.feed(sample, sample.len() == input.len());
 	let detected = detector.guess(None, Utf8Detection::Allow);
 	if !detected.is_single_byte() {
 		let (decoded, _, had_errors) = detected.decode(input);
@@ -96,6 +105,13 @@ fn decode_utf32_be(input: &[u8]) -> String {
 			char::from_u32(code_point)
 		})
 		.collect()
+}
+
+/// The leading bytes the heuristics run over. A sample can end part-way through a multi-byte
+/// character, so the detector must not be told a cut sample is the end of the input: it would
+/// read the cut character as malformed and rule out the right encoding over it.
+fn sample_of(input: &[u8]) -> &[u8] {
+	&input[..input.len().min(DETECTION_SAMPLE_BYTES)]
 }
 
 fn looks_like_utf16(input: &[u8]) -> bool {
@@ -137,6 +153,34 @@ mod tests {
 	#[case(b"", "")]
 	fn test_convert_to_utf8_known_inputs(#[case] input: &[u8], #[case] expected: &str) {
 		assert_eq!(convert_to_utf8(input), expected);
+	}
+
+	/// <https://github.com/trypsynth/paperback/issues/886>: the statistical detector and the
+	/// UTF-16 shape test used to run over the whole file, which made a large book in a legacy
+	/// encoding take an order of magnitude longer to open than the same book in UTF-8. They now
+	/// read a prefix, so a book far longer than that prefix still has to come out whole and
+	/// correct, including the text past where detection stopped looking.
+	#[test]
+	fn a_book_longer_than_the_detection_sample_still_decodes_whole() {
+		let paragraph = "这是一本很长的中文电子书，用来确认取样检测之后的文字仍然正确。
+";
+		let repeats = (DETECTION_SAMPLE_BYTES / paragraph.len()) * 4;
+		let text: String = paragraph.repeat(repeats);
+		let (encoded, _, had_errors) = encoding_rs::GB18030.encode(&text);
+		assert!(!had_errors, "the fixture itself must be representable in GB18030");
+		assert!(encoded.len() > DETECTION_SAMPLE_BYTES * 2, "the fixture must outrun the sample");
+		assert_eq!(convert_to_utf8(&encoded), text);
+	}
+
+	/// <https://github.com/trypsynth/paperback/issues/907>: a sample cut through the middle of a
+	/// character made the detector rule GBK out and fall back to Windows-1252.
+	#[test]
+	fn a_sample_ending_mid_character_still_detects_gbk() {
+		let text = format!("a{}", "这是一本很长的中文电子书用来确认取样检测".repeat(DETECTION_SAMPLE_BYTES / 20));
+		let (encoded, _, had_errors) = encoding_rs::GBK.encode(&text);
+		assert!(!had_errors, "the fixture itself must be representable in GBK");
+		assert!(encoded[DETECTION_SAMPLE_BYTES - 1] >= 0x81, "the sample must end on a lead byte");
+		assert_eq!(convert_to_utf8(&encoded), text);
 	}
 
 	/// <https://github.com/trypsynth/paperback/issues/632>: GBK-encoded Chinese text

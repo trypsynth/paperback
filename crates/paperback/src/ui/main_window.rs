@@ -17,19 +17,23 @@ use super::{
 	background, commands, dialogs,
 	document_manager::{DocumentManager, DocumentTab, display_title},
 	find::{self, FindDialogState},
-	help::{self, MAIN_WINDOW_PTR},
-	icon, menu, menu_ids, navigation,
+	help, icon, menu, menu_ids, navigation,
 	readability::build_font_from_readability,
 	sleep_timer, status, window_geometry,
 };
-use crate::config_ext::{UpdateChannel, get_update_channel};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IpcCommand;
+use crate::{
+	config_ext::{UpdateChannel, get_update_channel},
+	updater::{self, MAIN_WINDOW_PTR},
+};
 
+mod menu_events;
 mod menu_file;
 mod menu_go;
 mod menu_tools;
 mod parser_ready;
+mod restore;
 pub(crate) use parser_ready::ensure_parser_ready_for_path;
 
 #[cfg(target_os = "windows")]
@@ -37,11 +41,10 @@ mod hotkey;
 #[cfg(target_os = "windows")]
 use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
 
-#[derive(Default)]
-struct RestoreState {
-	restored: bool,
-	closing: bool,
-}
+#[cfg(target_os = "windows")]
+mod foreground;
+#[cfg(target_os = "windows")]
+pub(crate) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
 
 pub struct MainWindow {
 	frame: Frame,
@@ -76,6 +79,8 @@ impl MainWindow {
 		let frame = Frame::builder().with_title(&app_title).build();
 		window_geometry::apply_defaults(&frame);
 		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
+		#[cfg(target_os = "windows")]
+		remember_frame_hwnd(&frame);
 		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
 		// (embedded by build.rs) already covers the taskbar and the shell; this is what the
 		// window itself carries, and is the only icon at all on the other platforms.
@@ -242,6 +247,7 @@ impl MainWindow {
 		{
 			let dm_for_close = Rc::clone(&doc_manager);
 			let config_for_close = Rc::clone(&config);
+			let timers_for_close = timers.clone();
 			#[cfg(target_os = "windows")]
 			let tray_for_close = Rc::clone(&tray_state);
 			#[cfg(target_os = "windows")]
@@ -250,10 +256,17 @@ impl MainWindow {
 				let mut dm = dm_for_close.lock().unwrap();
 				{
 					let cfg = config_for_close.lock().unwrap();
+					// Geometry has to be read while the window is still on screen, so this
+					// comes before it goes.
 					window_geometry::save(&frame, &cfg);
 					if let Some(tab) = dm.active_tab() {
 						cfg.set_app_string("active_document", &tab.file_path.to_string_lossy());
 					}
+					// Off the screen now. Everything below is bookkeeping: writing the config,
+					// saving each document's position, winding audio down. None of it is slow,
+					// but all of it happens after the key press, and a window that is still
+					// there while it runs is a window that feels slow to close.
+					frame.show(false);
 					cfg.flush();
 				}
 				dm.save_all_positions();
@@ -286,6 +299,15 @@ impl MainWindow {
 						}
 					}
 				}
+				// Last, and only once the close is really going ahead: macOS hides the window
+				// and vetoes instead of exiting, and a timer stopped on that path would stay
+				// stopped when the window came back. These tick every 250ms against the frame,
+				// so one landing while it tears its children down is delivered to an event
+				// handler that no longer exists, which is an access violation rather than a
+				// panic. Stopping them here makes that impossible rather than unlikely.
+				for timer in &timers_for_close {
+					timer.stop();
+				}
 				event.skip(true);
 			});
 		}
@@ -298,7 +320,7 @@ impl MainWindow {
 				}
 			});
 		}
-		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
+		restore::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
 		Self {
 			frame,
 			doc_manager,
@@ -326,7 +348,7 @@ impl MainWindow {
 	}
 
 	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
-		help::run_update_check(silent, channel);
+		updater::run_update_check(silent, channel);
 	}
 
 	pub fn open_file(&self, path: &Path) -> bool {
@@ -508,69 +530,7 @@ impl MainWindow {
 	}
 
 	fn update_recent_documents_menu(&self) {
-		let menu_bar = menu::create_menu_bar(&self.config.lock().unwrap());
-		self.frame.set_menu_bar(menu_bar);
-		let dm_ref = self.doc_manager.lock().unwrap();
-		let has_docs = dm_ref.tab_count() > 0;
-		let has_reopen = dm_ref.has_recently_closed();
-		drop(dm_ref);
-		menu::update_menu_item_states(&self.frame, has_docs);
-		menu::update_reopen_state(&self.frame, has_reopen);
-	}
-
-	fn schedule_restore_documents(
-		frame: Frame,
-		doc_manager: Rc<Mutex<DocumentManager>>,
-		config: Rc<Mutex<ConfigManager>>,
-	) {
-		let restore = config.lock().unwrap().get_app_bool("restore_previous_documents", true);
-		if !restore {
-			return;
-		}
-		let state = Rc::new(Mutex::new(RestoreState::default()));
-		let state_for_close = Rc::clone(&state);
-		frame.on_close(move |_event| {
-			state_for_close.lock().unwrap().closing = true;
-		});
-		let state_for_destroy = Rc::clone(&state);
-		frame.on_destroy(move |_event| {
-			state_for_destroy.lock().unwrap().closing = true;
-		});
-		let state_for_idle = Rc::clone(&state);
-		frame.on_idle(move |_event| {
-			let mut state = state_for_idle.lock().unwrap();
-			if state.restored || state.closing {
-				return;
-			}
-			state.restored = true;
-			drop(state);
-			let pre_restore_active = doc_manager.lock().unwrap().active_tab_index();
-			let active_path = config.lock().unwrap().get_app_string("active_document", "");
-			let paths = config.lock().unwrap().get_opened_documents_existing();
-			tracing::info!(count = paths.len(), "restoring previously open documents");
-			for path in paths {
-				let path = Path::new(&path);
-				if !ensure_parser_ready_for_path(&frame, path, &config) {
-					continue;
-				}
-				let _ = doc_manager.lock().unwrap().open_file_restore(&doc_manager, path);
-			}
-			let mut target_idx = pre_restore_active;
-			if target_idx.is_none() && !active_path.is_empty() {
-				target_idx = doc_manager.lock().unwrap().find_tab_by_path(Path::new(&active_path));
-			}
-			if let Some(idx) = target_idx {
-				doc_manager.lock().unwrap().notebook().set_selection(idx);
-			}
-			let dm_ref = doc_manager.lock().unwrap();
-			update_title_from_manager(&frame, &dm_ref);
-			let has_docs = dm_ref.tab_count() > 0;
-			let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-			frame.set_menu_bar(menu_bar);
-			menu::update_menu_item_states(&frame, has_docs);
-			menu::update_reopen_state(&frame, false);
-			dm_ref.restore_focus();
-		});
+		rebuild_menu_bar(&self.frame, &self.doc_manager, &self.config);
 	}
 
 	/// Prompts for a save path and exports `tab`'s document as `format`, showing a
@@ -609,202 +569,6 @@ impl MainWindow {
 			dialog.show_modal();
 		}
 	}
-
-	#[allow(clippy::too_many_lines)]
-	fn bind_menu_events(
-		frame: &Frame,
-		doc_manager: &Rc<Mutex<DocumentManager>>,
-		config: &Rc<Mutex<ConfigManager>>,
-		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
-		live_region_label: StaticText,
-		#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
-	) -> Vec<Rc<Timer<Frame>>> {
-		let frame_copy = *frame;
-		let dm = Rc::clone(doc_manager);
-		let config = Rc::clone(config);
-		let find_dialog = Rc::clone(find_dialog);
-		#[cfg(target_os = "windows")]
-		let hotkey_handle_for_options = Rc::clone(hotkey_handle);
-		let sleep_timer = sleep_timer::SleepTimer::new(frame, doc_manager, &config);
-		// Taken before the menu closure captures the SleepTimer: the returned vec is what
-		// keeps the wx timer alive for the window's lifetime.
-		let sleep_timer_handle = Rc::clone(sleep_timer.timer());
-		let mut timers = background::start_timers(frame, doc_manager);
-		timers.push(sleep_timer_handle);
-		background::bind_resize(frame, doc_manager);
-		frame.on_menu(move |event| {
-			let id = event.get_id();
-			// Commands that have moved to the table handle themselves; the match below is the
-			// shrinking remainder, still keyed to menu ids by hand.
-			if commands::dispatch(
-				id,
-				&commands::Ctx { frame: &frame_copy, dm: &dm, config: &config, live_region_label },
-			) {
-				return;
-			}
-			match id {
-				menu_ids::FIND => {
-					find::show_find_dialog(&frame_copy, &dm, &config, &find_dialog, live_region_label);
-				}
-				menu_ids::FIND_NEXT => {
-					find::handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, true);
-				}
-				menu_ids::FIND_PREVIOUS => {
-					find::handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, false);
-				}
-				menu_ids::ANNOUNCE_PERCENT => {
-					if let Ok(dm_ref) = dm.try_lock() {
-						dm_ref.announce_current_percent();
-					}
-				}
-				menu_ids::SET_TEMPORARY_BOOKMARK => {
-					if let Ok(dm_ref) = dm.try_lock() {
-						dm_ref.set_temporary_bookmark();
-					}
-				}
-				menu_ids::JUMP_TO_TEMPORARY_BOOKMARK => {
-					if let Ok(mut dm_ref) = dm.try_lock() {
-						dm_ref.jump_to_temporary_bookmark();
-					}
-				}
-				menu_ids::GO_TO_LINE => {
-					menu_go::handle_go_to_line(&frame_copy, &dm, &config, live_region_label);
-				}
-				menu_ids::GO_TO_PAGE => {
-					menu_go::handle_go_to_page(&frame_copy, &dm, &config, live_region_label);
-				}
-				menu_ids::GO_TO_PERCENT => {
-					menu_go::handle_go_to_percent(&frame_copy, &dm, &config, live_region_label);
-				}
-				menu_ids::TOGGLE_WORD_WRAP => {
-					let new_state = {
-						let cfg = config.lock().unwrap();
-						let v = !cfg.get_app_bool("word_wrap", false);
-						cfg.set_app_bool("word_wrap", v);
-						cfg.flush();
-						v
-					};
-					{
-						let dm_for_wrap = Rc::clone(&dm);
-						let mut dm_ref = dm.lock().unwrap();
-						dm_ref.apply_word_wrap(&dm_for_wrap, new_state);
-					}
-					if let Some(menu_bar) = frame_copy.get_menu_bar() {
-						menu_bar.check_item(menu_ids::TOGGLE_WORD_WRAP, new_state);
-					}
-					// TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-					let msg = if new_state { t("Word wrap on.") } else { t("Word wrap off.") };
-					live_region::announce(live_region_label, &msg);
-					dm.lock().unwrap().restore_focus();
-				}
-				menu_ids::TOGGLE_FULL_SCREEN => {
-					let new_state = !frame_copy.is_full_screen();
-					frame_copy.show_full_screen(new_state);
-					if let Some(menu_bar) = frame_copy.get_menu_bar() {
-						menu_bar.check_item(menu_ids::TOGGLE_FULL_SCREEN, new_state);
-					}
-					// TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-					let msg = if new_state { t("Full screen on.") } else { t("Full screen off.") };
-					live_region::announce(live_region_label, &msg);
-				}
-				menu_ids::EXPORT_TO_PLAIN_TEXT => {
-					menu_tools::handle_export_to_plain_text(&frame_copy, &dm);
-				}
-				menu_ids::EXPORT_TO_HTML => {
-					menu_tools::handle_export_to_html(&frame_copy, &dm);
-				}
-				menu_ids::EXPORT_TO_MARKDOWN => {
-					menu_tools::handle_export_to_markdown(&frame_copy, &dm);
-				}
-				menu_ids::EXPORT_DOCUMENT_DATA => {
-					menu_tools::handle_export_document_data(&frame_copy, &dm, &config);
-				}
-				menu_ids::IMPORT_DOCUMENT_DATA => {
-					menu_tools::handle_import_document_data(&frame_copy, &dm, &config);
-				}
-				menu_ids::WORD_COUNT => {
-					menu_tools::handle_word_count(&frame_copy, &dm, &config);
-				}
-				menu_ids::DOCUMENT_INFO => {
-					menu_tools::handle_document_info(&frame_copy, &dm);
-				}
-				menu_ids::TABLE_OF_CONTENTS => {
-					menu_tools::handle_table_of_contents(&frame_copy, &dm, &config, live_region_label);
-				}
-				menu_ids::ELEMENTS_LIST => {
-					menu_tools::handle_elements_list(&frame_copy, &dm, &config, live_region_label);
-				}
-				menu_ids::OPEN_IN_WEB_VIEW => {
-					menu_tools::handle_open_in_web_view(&frame_copy, &dm);
-				}
-				menu_ids::REVEAL_FILE_IN_FOLDER => {
-					help::handle_reveal_file_in_folder(&frame_copy, &dm);
-				}
-				menu_ids::VIEW_SOURCE => {
-					menu_tools::handle_view_source(&frame_copy, &dm);
-				}
-				menu_ids::OPTIONS | menu_ids::PREFERENCES => {
-					menu_tools::handle_options(
-						&frame_copy,
-						&dm,
-						&config,
-						#[cfg(target_os = "windows")]
-						&hotkey_handle_for_options,
-					);
-				}
-				menu_ids::CUSTOMIZE_SHORTCUTS => {
-					menu_tools::handle_customize_shortcuts(&frame_copy, &dm, &config);
-				}
-				menu_ids::SLEEP_TIMER => {
-					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label);
-				}
-				#[cfg(any(target_os = "windows", target_os = "macos"))]
-				menu_ids::BATCH_OCR => {
-					menu_tools::handle_batch_ocr(&frame_copy, &dm, live_region_label);
-				}
-				menu_ids::ABOUT => {
-					dialogs::show_about_dialog(&frame_copy);
-				}
-				menu_ids::VIEW_HELP_BROWSER => {
-					help::handle_view_help_browser(&frame_copy);
-				}
-				menu_ids::VIEW_HELP_PAPERBACK => {
-					if help::handle_view_help_paperback(&frame_copy, &dm, &config) {
-						{
-							let dm_ref = dm.lock().unwrap();
-							update_title_from_manager(&frame_copy, &dm_ref);
-							dm_ref.restore_focus();
-						}
-						let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-						frame_copy.set_menu_bar(menu_bar);
-						menu::update_menu_item_states(&frame_copy, true);
-						let has_reopen = dm.lock().unwrap().has_recently_closed();
-						menu::update_reopen_state(&frame_copy, has_reopen);
-					}
-				}
-				menu_ids::CHECK_FOR_UPDATES => {
-					let channel = get_update_channel(&config.lock().unwrap());
-					help::run_update_check(false, channel);
-				}
-				menu_ids::DONATE => {
-					help::handle_donate(&frame_copy);
-				}
-				#[cfg(target_os = "macos")]
-				menu_ids::COPY => {
-					// Only macOS builds an Edit menu, so only macOS sees Copy as a menu event; every
-					// other platform intercepts the key in `build_text_ctrl`.
-					let widened = dm.lock().unwrap().copy_whole_document_if_all_selected();
-					if !widened {
-						event.skip(true);
-					}
-				}
-				_ => {
-					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);
-				}
-			}
-		});
-		timers
-	}
 }
 
 /// Close the active document, announcing the newly focused document for screen readers.
@@ -822,6 +586,23 @@ pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_reg
 		live_region::announce(live_region_label, next);
 	}
 	dm.close_document(index, true);
+}
+
+/// Replaces `frame`'s menu bar with one built from `config`, then re-applies the item states
+/// that depend on the open documents and the reopen stack.
+pub(crate) fn rebuild_menu_bar(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+) {
+	let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+	frame.set_menu_bar(menu_bar);
+	let dm_ref = doc_manager.lock().unwrap();
+	let has_docs = dm_ref.tab_count() > 0;
+	let has_reopen = dm_ref.has_recently_closed();
+	drop(dm_ref);
+	menu::update_menu_item_states(frame, has_docs);
+	menu::update_reopen_state(frame, has_reopen);
 }
 
 pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {

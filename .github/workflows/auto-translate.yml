@@ -14,6 +14,12 @@ on:
       - 'po/**/*.po'
       - 'doc/readme.md'
   workflow_dispatch:
+    inputs:
+      repair_copies:
+        # A one-off, not a switch to leave on: see `add_copied_entries` in xtask's translate.rs.
+        description: Re-translate machine translations that share their text with a different string
+        type: boolean
+        default: false
 permissions:
   contents: write
   pull-requests: write
@@ -43,7 +49,7 @@ jobs:
         # placeholder, an accelerator or a shortcut suffix. Self-limiting: once an entry passes
         # the checks it stops being flagged, so this only ever costs anything while there is
         # real damage to undo.
-        run: cargo run -p xtask --release -- translate --repair
+        run: cargo run -p xtask --release -- translate --repair ${{ inputs.repair_copies && '--repair-copies' || '' }}
       - name: Open or update translation PR
         uses: peter-evans/create-pull-request@v8
         with:

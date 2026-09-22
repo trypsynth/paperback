@@ -31,7 +31,7 @@ mod edit_ids {
 const BASE: i32 = 5000;
 
 // File menu (BASE + 0..99)
-seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED);
+seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS);
 
 // Recent documents - reserved range (BASE + 100..199)
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
@@ -84,6 +84,7 @@ seq_ids!(BASE + 300 => PREVIOUS_FIGURE, NEXT_FIGURE);
 seq_ids!(BASE + 305 => PREVIOUS_TABLE, NEXT_TABLE, PREVIOUS_SEPARATOR, NEXT_SEPARATOR);
 seq_ids!(BASE + 310 => PREVIOUS_LIST, NEXT_LIST, PREVIOUS_LIST_ITEM, NEXT_LIST_ITEM);
 seq_ids!(BASE + 314 => CONTAINER_START, CONTAINER_END);
+seq_ids!(BASE + 316 => PREVIOUS_FORMULA, NEXT_FORMULA);
 
 // Tools menu: Document info (BASE + 400..409)
 seq_ids!(BASE + 400 =>
@@ -107,10 +108,14 @@ seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP, TOGGLE_FULL_SCREEN);
 seq_ids!(BASE + 450 =>
 	PLAY_PAUSE_AUDIO, SEEK_AUDIO_FORWARD, SEEK_AUDIO_BACKWARD,
 	INCREASE_AUDIO_SEEK_AMOUNT, DECREASE_AUDIO_SEEK_AMOUNT,
+	INCREASE_AUDIO_SPEED, DECREASE_AUDIO_SPEED,
 );
 
 // Tools menu: OCR (BASE + 460..469)
 seq_ids!(BASE + 460 => BATCH_OCR);
+
+// Tools menu: Select and copy submenu (BASE + 470..479)
+seq_ids!(BASE + 470 => SET_SELECTION_START, COPY_FROM_SELECTION_START, JUMP_TO_SELECTION_START);
 
 // Help menu (BASE + 500..599)
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
@@ -126,6 +131,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::CloseAll => CLOSE_ALL,
 		ActionId::ReopenLastClosed => REOPEN_LAST_CLOSED,
 		ActionId::ShowAllRecentDocuments => SHOW_ALL_DOCUMENTS,
+		ActionId::ClearRecentDocuments => CLEAR_RECENT_DOCUMENTS,
 		ActionId::Exit => EXIT,
 		ActionId::Find => FIND,
 		ActionId::FindNext => FIND_NEXT,
@@ -172,6 +178,8 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::NextFigure => NEXT_FIGURE,
 		ActionId::PreviousTable => PREVIOUS_TABLE,
 		ActionId::NextTable => NEXT_TABLE,
+		ActionId::PreviousFormula => PREVIOUS_FORMULA,
+		ActionId::NextFormula => NEXT_FORMULA,
 		ActionId::PreviousSeparator => PREVIOUS_SEPARATOR,
 		ActionId::NextSeparator => NEXT_SEPARATOR,
 		ActionId::PreviousList => PREVIOUS_LIST,
@@ -189,12 +197,17 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::ViewSource => VIEW_SOURCE,
 		ActionId::ToggleBookmark => TOGGLE_BOOKMARK,
 		ActionId::BookmarkWithNote => BOOKMARK_WITH_NOTE,
+		ActionId::SetSelectionStart => SET_SELECTION_START,
+		ActionId::CopyFromSelectionStart => COPY_FROM_SELECTION_START,
+		ActionId::JumpToSelectionStart => JUMP_TO_SELECTION_START,
 		ActionId::ToggleWordWrap => TOGGLE_WORD_WRAP,
 		ActionId::PlayPauseAudio => PLAY_PAUSE_AUDIO,
 		ActionId::SeekAudioForward => SEEK_AUDIO_FORWARD,
 		ActionId::SeekAudioBackward => SEEK_AUDIO_BACKWARD,
 		ActionId::IncreaseAudioSeekAmount => INCREASE_AUDIO_SEEK_AMOUNT,
 		ActionId::DecreaseAudioSeekAmount => DECREASE_AUDIO_SEEK_AMOUNT,
+		ActionId::IncreaseAudioSpeed => INCREASE_AUDIO_SPEED,
+		ActionId::DecreaseAudioSpeed => DECREASE_AUDIO_SPEED,
 		ActionId::ToggleFullScreen => TOGGLE_FULL_SCREEN,
 		ActionId::Options => OPTIONS,
 		ActionId::SleepTimer => SLEEP_TIMER,
@@ -210,5 +223,18 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::ViewHelpPaperback => VIEW_HELP_PAPERBACK,
 		ActionId::CheckForUpdates => CHECK_FOR_UPDATES,
 		ActionId::Donate => DONATE,
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn clear_recent_documents_has_a_file_menu_id() {
+		use paperback_core::config::ActionId;
+		let id = action_to_menu_id(ActionId::ClearRecentDocuments);
+		assert_eq!(id, CLEAR_RECENT_DOCUMENTS);
+		assert!(id < RECENT_DOCUMENT_BASE);
 	}
 }

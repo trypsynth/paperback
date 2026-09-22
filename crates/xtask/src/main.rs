@@ -41,4 +41,5 @@ pub(crate) fn print_help() {
 	println!("	  --dry-run          Report what would change; no API calls, no writes");
 	println!("	  --repair           Also re-translate entries whose existing translation dropped");
 	println!("	                     a placeholder, an accelerator or a shortcut suffix");
+	println!("	  --repair-copies    One-off: re-translate machine translations shared with a different string");
 }

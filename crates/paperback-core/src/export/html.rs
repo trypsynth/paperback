@@ -1,41 +1,84 @@
 use std::{
 	collections::{HashMap, HashSet},
 	fmt::Write as _,
+	ops::Range,
 };
 
 use crate::{
 	document::{DocumentHandle, MarkerType},
 	parser::is_external_url,
+	t,
 	util::{
 		html::{escape, escape_attr, push_escaped},
 		text::ch_width,
 	},
 };
 
+/// The id of the anchor [`render_with_anchor`] writes at a reading position.
+#[must_use]
+pub fn anchor_id(offset: usize) -> String {
+	format!("pos-{offset}")
+}
+
 #[must_use]
 pub fn render(doc: &DocumentHandle) -> String {
+	render_with_anchor(doc, None)
+}
+
+/// Renders the document, with an anchor named by [`anchor_id`] at `anchor`.
+///
+/// A format that keeps no markup of its own has nothing for a web view to open but this
+/// rendering, so the reading position has to travel in the rendering itself.
+#[must_use]
+pub fn render_with_anchor(doc: &DocumentHandle, anchor: Option<usize>) -> String {
+	let total = doc.document().buffer.total_display_len();
+	render_range(doc, 0..total, anchor)
+}
+
+/// Renders the display-unit span `range` of the document, with an anchor named by
+/// [`anchor_id`] at `anchor`.
+///
+/// Both ends of `range` must already sit on a line boundary; [`render_with_anchor`]'s
+/// whole-document range trivially does, and every other caller snaps first. A marker whose
+/// own span lies wholly outside `range` is skipped, so rendering a window of a huge book
+/// costs the window rather than the book. A range short of the whole document opens the
+/// body with a line saying so, since a reader given a slice with no such line has no way to
+/// tell it apart from a book that ends there.
+#[must_use]
+pub fn render_range(doc: &DocumentHandle, range: Range<usize>, anchor: Option<usize>) -> String {
 	let document = doc.document();
 	let content = &document.buffer.content;
+	let doc_display_len = document.buffer.total_display_len();
+	let range_start = range.start.min(doc_display_len);
+	let range_end = range.end.clamp(range_start, doc_display_len);
+	let is_partial = range_start > 0 || range_end < doc_display_len;
+	let content = {
+		let byte_start = document.buffer.byte_index_for_display(range_start);
+		let byte_end = document.buffer.byte_index_for_display(range_end);
+		&content[byte_start..byte_end]
+	};
 	// Precompute section boundaries once so link resolution is O(log S) per link
 	// instead of O(M) per link (where M = total marker count).
 	let section_break_positions: Vec<usize> =
 		document.buffer.markers.iter().filter(|m| m.mtype == MarkerType::SectionBreak).map(|m| m.position).collect();
-	// Single O(N) scan: collect newline positions in display coordinates and total display length.
+	// Single scan of the rendered range: collect newline positions in display coordinates.
 	// Turns each line-end lookup into an O(log lines) binary search instead of a fresh scan.
-	let (newline_display_positions, content_display_len): (Vec<usize>, usize) = {
+	let newline_display_positions: Vec<usize> = {
 		let mut positions = Vec::new();
-		let mut dpos = 0usize;
+		let mut dpos = range_start;
 		for ch in content.chars() {
 			if ch == '\n' {
 				positions.push(dpos);
 			}
 			dpos += ch_width(ch);
 		}
-		(positions, dpos)
+		positions
 	};
+	// A line running past the end of the range ends there, which is a line boundary of the
+	// rendered slice even when it is not one of the document.
 	let newline_from = |start: usize| -> usize {
 		let idx = newline_display_positions.partition_point(|&p| p < start);
-		newline_display_positions.get(idx).copied().unwrap_or(content_display_len)
+		newline_display_positions.get(idx).copied().unwrap_or(range_end)
 	};
 	// path → (section_start, section_end)
 	let path_to_bounds: HashMap<&str, (usize, usize)> = document
@@ -45,7 +88,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 		.filter_map(|(i, manifest_id)| {
 			let path = document.manifest_items.get(manifest_id)?;
 			let start = section_break_positions.get(i).copied().unwrap_or(0);
-			let end = section_break_positions.get(i + 1).copied().unwrap_or(content_display_len);
+			let end = section_break_positions.get(i + 1).copied().unwrap_or(doc_display_len);
 			Some((path.as_str(), (start, end)))
 		})
 		.collect();
@@ -62,6 +105,10 @@ pub fn render(doc: &DocumentHandle) -> String {
 		"<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>{}</title>\n</head>\n<body>\n",
 		escape(&document.title)
 	);
+	if is_partial {
+		// TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
+		let _ = writeln!(html, "<p>{}</p>", escape(&t("This view shows the part of the document you are reading.")));
+	}
 	enum Ek {
 		BlockOpen(&'static str),
 		BlockClose(&'static str),
@@ -77,8 +124,16 @@ pub fn render(doc: &DocumentHandle) -> String {
 	}
 	let mut events: Vec<Ev> = Vec::new();
 	let mut target_offsets = HashSet::new();
+	target_offsets.extend(anchor);
 	for marker in &document.buffer.markers {
 		let pos = marker.position;
+		// Outside the rendered range this marker has nothing to open or close, and resolving
+		// its link target would cost the whole book's worth of lookups for nothing. A length of
+		// zero means the span runs to the end of its line, which cannot reach a range that
+		// starts on a line boundary of its own.
+		if pos >= range_end || pos.saturating_add(marker.length.max(1)) <= range_start {
+			continue;
+		}
 		// Markers from html_to_text carry length=0 for headings, links, and list items
 		// because those types store their span only implicitly in the content.
 		// Recover the span: for block elements scan to the next '\n'; for inline links
@@ -207,7 +262,9 @@ pub fn render(doc: &DocumentHandle) -> String {
 			_ => {}
 		}
 	}
-	for offset in target_offsets {
+	// An anchor outside the range has no text to sit next to, and the tail flush below would
+	// otherwise pile every one of them up at the end of the page.
+	for offset in target_offsets.into_iter().filter(|&off| off >= range_start && off <= range_end) {
 		events.push(Ev { pos: offset, kind: Ek::Anchor(offset) });
 	}
 	// Closes before opens at the same position to avoid empty elements
@@ -227,7 +284,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 	let mut block_depth: usize = 0;
 	let mut in_para = false;
 	let mut pending_newlines: usize = 0;
-	let mut display_pos: usize = 0;
+	let mut display_pos: usize = range_start;
 	let mut skip_until: Option<usize> = None;
 	for ch in content.chars() {
 		// Fire events whose position has been reached
@@ -389,6 +446,37 @@ mod tests {
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		DocumentHandle::new(doc)
+	}
+
+	// A range covering the whole document is what `render` itself asks for, so the two must not
+	// be able to drift apart.
+	#[test]
+	fn render_range_over_the_whole_document_matches_render() {
+		let doc = simple_doc(
+			"alpha\nbeta\ngamma",
+			vec![Marker::new(MarkerType::Heading1, 0).with_length(5), Marker::new(MarkerType::Bold, 6).with_length(4)],
+		);
+		let total = doc.document().buffer.total_display_len();
+		assert_eq!(render_range(&doc, 0..total, None), render(&doc));
+	}
+
+	#[test]
+	fn render_range_renders_only_the_range_and_says_it_is_partial() {
+		let doc = simple_doc("alpha\nbeta\ngamma\n", vec![]);
+		let html = render_range(&doc, 6..11, None);
+		assert!(html.contains("beta"), "{html}");
+		assert!(!html.contains("alpha"), "{html}");
+		assert!(!html.contains("gamma"), "{html}");
+		assert!(html.contains("part of the document"), "a partial view says so: {html}");
+	}
+
+	// An anchor for a link target outside the range used to be flushed out at the end of the page,
+	// which on a book with a link per paragraph meant every anchor in the book.
+	#[test]
+	fn render_range_leaves_out_anchors_for_targets_outside_the_range() {
+		let doc = simple_doc("alpha\nbeta\ngamma\n", vec![Marker::new(MarkerType::Bold, 0).with_length(5)]);
+		let html = render_range(&doc, 6..11, Some(6));
+		assert_eq!(html.matches(r#"<a id=""#).count(), 1, "only the reading position is anchored: {html}");
 	}
 
 	#[test]

@@ -12,67 +12,47 @@ extension MagicTapWindow {
 
 	override var keyCommands: [UIKeyCommand]? {
 		var cmds = super.keyCommands ?? []
+		// The titles are the desktop's menu names, so VoiceOver's Cmd-hold list reads them in the
+		// reader's language without asking translators for a second copy of each.
 		cmds += [
-			// Play / pause
 			cmd(" ", [], #selector(kbTogglePlayPause)),
-
-			// Section navigation (no shift modifier needed, matching desktop/Android)
-			cmd("[", [], #selector(kbPrevSection)),
-			cmd("]", [], #selector(kbNextSection)),
-
-			// Heading: H / Shift+H
-			cmd("h", [], #selector(kbNextHeading), "Next heading"),
-			cmd("h", .shift, #selector(kbPrevHeading), "Previous heading"),
-
-			// Page: P / Shift+P
-			cmd("p", [], #selector(kbNextPage), "Next page"),
-			cmd("p", .shift, #selector(kbPrevPage), "Previous page"),
-
-			// Image: G / Shift+G
-			cmd("g", [], #selector(kbNextImage), "Next image"),
-			cmd("g", .shift, #selector(kbPrevImage), "Previous image"),
-
-			// Figure: F / Shift+F
-			cmd("f", [], #selector(kbNextFigure), "Next figure"),
-			cmd("f", .shift, #selector(kbPrevFigure), "Previous figure"),
-
-			// Link: K / Shift+K
-			cmd("k", [], #selector(kbNextLink), "Next link"),
-			cmd("k", .shift, #selector(kbPrevLink), "Previous link"),
-
-			// Table: T / Shift+T
-			cmd("t", [], #selector(kbNextTable), "Next table"),
-			cmd("t", .shift, #selector(kbPrevTable), "Previous table"),
-
-			// Separator: S / Shift+S
-			cmd("s", [], #selector(kbNextSeparator), "Next separator"),
-			cmd("s", .shift, #selector(kbPrevSeparator), "Previous separator"),
-
-			// List: L / Shift+L
-			cmd("l", [], #selector(kbNextList), "Next list"),
-			cmd("l", .shift, #selector(kbPrevList), "Previous list"),
-
-			// List item: I / Shift+I
-			cmd("i", [], #selector(kbNextListItem), "Next list item"),
-			cmd("i", .shift, #selector(kbPrevListItem), "Previous list item"),
-
-			// Find next/prev via F3
-			cmd(UIKeyCommand.f3, [], #selector(kbFindNext)),
-			cmd(UIKeyCommand.f3, .shift, #selector(kbFindPrev)),
-
-			// Elements list via F7
-			cmd(UIKeyCommand.f7, [], #selector(kbElements)),
-
-			// Cmd shortcuts (parity with desktop)
-			cmd("f", .command, #selector(kbOpenFind), "Find…"),
-			cmd(",", .command, #selector(kbOpenSettings), "Settings…"),
-			cmd("t", .command, #selector(kbOpenToc), "Table of Contents"),
-			cmd("p", .command, #selector(kbOpenGoToPage), "Go to Page…"),
-			cmd("g", .command, #selector(kbOpenGoToLine), "Go to Line…"),
-			cmd("g", [.command, .shift], #selector(kbOpenGoToPercent), "Go to Percent…"),
-			cmd("w", .command, #selector(kbWordCount), "Word Count"),
-			cmd("i", .command, #selector(kbDocumentInfo), "Document Info"),
-			cmd("s", [.command, .shift], #selector(kbSleepTimer), "Sleep Timer…"),
+			cmd("[", [], #selector(kbPrevSection), t("Previous Section")),
+			cmd("]", [], #selector(kbNextSection), t("Next Section")),
+			cmd("h", [], #selector(kbNextHeading), t("Next Heading")),
+			cmd("h", .shift, #selector(kbPrevHeading), t("Previous Heading")),
+			cmd("p", [], #selector(kbNextPage), t("Next Page")),
+			cmd("p", .shift, #selector(kbPrevPage), t("Previous Page")),
+			cmd("g", [], #selector(kbNextImage), t("Next Image")),
+			cmd("g", .shift, #selector(kbPrevImage), t("Previous Image")),
+			cmd("f", [], #selector(kbNextFigure), t("Next Figure")),
+			cmd("f", .shift, #selector(kbPrevFigure), t("Previous Figure")),
+			cmd("k", [], #selector(kbNextLink), t("Next Link")),
+			cmd("k", .shift, #selector(kbPrevLink), t("Previous Link")),
+			cmd("t", [], #selector(kbNextTable), t("Next Table")),
+			cmd("t", .shift, #selector(kbPrevTable), t("Previous Table")),
+			cmd("m", [], #selector(kbNextFormula), t("Next Formula")),
+			cmd("m", .shift, #selector(kbPrevFormula), t("Previous Formula")),
+			cmd("s", [], #selector(kbNextSeparator), t("Next Separator")),
+			cmd("s", .shift, #selector(kbPrevSeparator), t("Previous Separator")),
+			cmd("l", [], #selector(kbNextList), t("Next List")),
+			cmd("l", .shift, #selector(kbPrevList), t("Previous List")),
+			cmd("i", [], #selector(kbNextListItem), t("Next List Item")),
+			cmd("i", .shift, #selector(kbPrevListItem), t("Previous List Item")),
+			cmd(UIKeyCommand.f3, [], #selector(kbFindNext), t("Find Next")),
+			cmd(UIKeyCommand.f3, .shift, #selector(kbFindPrev), t("Find Previous")),
+			cmd(UIKeyCommand.f7, [], #selector(kbElements), t("Elements List...")),
+			cmd("o", .command, #selector(kbOpenBook), t("Open...")),
+			cmd("r", .command, #selector(kbRecents), t("Show All Recent Documents...")),
+			cmd("f", .command, #selector(kbOpenFind), t("Find...")),
+			cmd(",", .command, #selector(kbOpenSettings), t("Settings...")),
+			cmd("t", .command, #selector(kbOpenToc), t("Table of Contents")),
+			cmd("p", .command, #selector(kbOpenGoToPage), t("Go to Page...")),
+			cmd("g", .command, #selector(kbOpenGoToLine), t("Go to Line...")),
+			cmd("g", [.command, .shift], #selector(kbOpenGoToPercent), t("Go to Percent...")),
+			cmd("w", .command, #selector(kbWordCount), t("Word Count")),
+			cmd("i", .command, #selector(kbDocumentInfo), t("Document Info")),
+			cmd("e", .command, #selector(kbExport), t("Export Document")),
+			cmd("s", [.command, .shift], #selector(kbSleepTimer), t("Sleep Timer...")),
 		]
 		return cmds
 	}
@@ -104,6 +84,8 @@ extension MagicTapWindow {
 	@objc private func kbPrevLink()       { onMain { $0.reading.navigateByType(.link,     direction: .previous) } }
 	@objc private func kbNextTable()      { onMain { $0.reading.navigateByType(.table,    direction: .next) } }
 	@objc private func kbPrevTable()      { onMain { $0.reading.navigateByType(.table,    direction: .previous) } }
+	@objc private func kbNextFormula()    { onMain { $0.reading.navigateByType(.formula,  direction: .next) } }
+	@objc private func kbPrevFormula()    { onMain { $0.reading.navigateByType(.formula,  direction: .previous) } }
 	@objc private func kbNextSeparator()  { onMain { $0.reading.navigateByType(.separator,direction: .next) } }
 	@objc private func kbPrevSeparator()  { onMain { $0.reading.navigateByType(.separator,direction: .previous) } }
 	@objc private func kbNextList()       { onMain { $0.reading.navigateByType(.list,     direction: .next) } }
@@ -115,6 +97,9 @@ extension MagicTapWindow {
 	@objc private func kbFindPrev()       { onMain { $0.reading.findPrev() } }
 	@objc private func kbElements()       { onMain { $0.navigation.showElements = true } }
 
+	@objc private func kbOpenBook()       { onMain { $0.navigation.showFilePicker = true } }
+	@objc private func kbRecents()        { onMain { $0.navigation.showRecents = true } }
+	@objc private func kbExport()         { onMain { $0.navigation.showExportDocument = true } }
 	@objc private func kbOpenFind()       { onMain { $0.navigation.showFind = true } }
 	@objc private func kbOpenSettings()   { onMain { $0.navigation.showSettings = true } }
 	@objc private func kbOpenToc()        { onMain { $0.navigation.showToc = true } }

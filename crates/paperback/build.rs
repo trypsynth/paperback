@@ -1,6 +1,8 @@
 //! Build script for the Paperback desktop app. Everything it actually does lives in the
 //! modules under `build/`; this file only decides what runs, and in what order.
 
+#[path = "build/credits.rs"]
+mod credits;
 #[path = "build/docs.rs"]
 mod docs;
 #[path = "build/installer.rs"]
@@ -23,6 +25,7 @@ use std::env;
 fn main() {
 	paths::track_packaging_inputs();
 	translations::build();
+	credits::build();
 	pdfium::copy_dll();
 	docs::build();
 	installer::configure();

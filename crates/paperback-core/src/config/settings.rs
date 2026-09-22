@@ -19,6 +19,9 @@ pub struct Bookmark {
 	pub start: i64,
 	pub end: i64,
 	pub note: String,
+	/// Where in the recording the bookmark was set, for a document that is only audio. See
+	/// [`StoredBookmark::audio_ms`].
+	pub audio_ms: Option<u64>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -77,6 +80,14 @@ pub struct StoredBookmark {
 	pub end: i64,
 	#[serde(default)]
 	pub note: String,
+	/// Where in the recording the bookmark was set, for a document that is only audio.
+	///
+	/// An audiobook's text is one blank line per chapter, so a text position can only say which
+	/// chapter a bookmark is in: every bookmark in a chapterless MP3 lands on the same spot. The
+	/// playback time is what tells two of them apart. `start` and `end` still hold the chapter's
+	/// position, so everything that lists bookmarks by position keeps working.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub audio_ms: Option<u64>,
 }
 
 const fn default_true() -> bool {
@@ -106,6 +117,8 @@ pub struct AppSettings {
 	pub word_wrap: bool,
 	#[serde(default = "default_true")]
 	pub render_tables_inline: bool,
+	#[serde(default = "default_true")]
+	pub join_pdf_paragraphs: bool,
 	#[serde(default)]
 	pub navigation_wrap: bool,
 	#[serde(default)]
@@ -161,6 +174,7 @@ impl Default for AppSettings {
 			restore_previous_documents: true,
 			word_wrap: false,
 			render_tables_inline: true,
+			join_pdf_paragraphs: true,
 			navigation_wrap: false,
 			find_match_case: false,
 			find_whole_word: false,

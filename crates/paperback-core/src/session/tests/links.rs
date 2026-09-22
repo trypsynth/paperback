@@ -104,7 +104,6 @@ fn activate_link_returns_not_found_when_reference_missing() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
-		last_stable_position: None,
 	};
 	let result = session.activate_link(7);
 	assert!(!result.found);

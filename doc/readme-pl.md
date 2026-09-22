@@ -36,6 +36,7 @@ Nazwy tych opcji podano po angielsku, bo w takiej postaci występują w pliku ko
 
 Paperback obsługuje następujące formaty i rozszerzenia:
 
+* Archiwa komiksów (`.cbz`)
 * Pliki pomocy CHM (`.chm`)
 * Książki DAISY (`.opf`, `.zip`)
 * Książki EPUB (`.epub`)
@@ -43,6 +44,7 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Dokumenty HTML (`.htm`, `.html`, `.xhtml`)
 * Dokumenty Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Dokumenty Microsoft Word (`.docx`, `.docm`, `.doc`)
+* Strony podręcznika systemowego, zarówno `man`, jak i `mdoc` z BSD (`.1` do `.9`, `.man`, `.roff` oraz każdy z nich spakowany gzipem)
 * Audiobooki M4B (`.m4b`)
 * Książki MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
 * Prezentacje OpenDocument (`.odp`, `.fodp`)
@@ -50,6 +52,7 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Dokumenty PDF (`.pdf`)
 * Prezentacje PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Dokumenty RTF (`.rtf`)
+* Pliki WinHelp (`.hlp`)
 * Pliki zwykłego tekstu i dzienników (`.txt`, `.log`)
 
 ## Skróty klawiszowe
@@ -104,6 +107,8 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `F`: Następny rysunek.
 * `Shift+T`: Poprzednia tabela.
 * `T`: Następna tabela.
+* `Shift+M`: Poprzedni wzór.
+* `M`: Następny wzór.
 * `Shift+S`: Poprzedni separator.
 * `S`: Następny separator.
 * `Shift+L`: Poprzednia lista.
@@ -136,6 +141,9 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `F11` (macOS: `RawCtrl+Ctrl+F`, czyli Control+Command+F): Przełącz tryb pełnoekranowy.
 * `Ctrl+,`: Otwórz Opcje (w systemie macOS: Preferencje, w menu aplikacji).
 * `Ctrl+Shift+S`: Przełącz Wyłącznik czasowy.
+* `Alt+F9` (macOS: `Cmd+F9`): Ustaw początek zaznaczenia, aby później skopiować za jednym razem tekst od tego miejsca do pozycji, do której przejdziesz.
+* `Alt+F10` (macOS: `Cmd+F10`): Skopiuj tekst od ustawionego początku zaznaczenia do bieżącej pozycji.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Wróć do początku zaznaczenia, nie usuwając jego znacznika.
 
 ### Menu Pomoc
 
@@ -148,7 +156,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 ### Dodatkowe klawisze w widoku dokumentu
 
 * `Delete` / `Delete na klawiaturze numerycznej` na kontrolce kart: zamknij kartę wybranego dokumentu.
-* `Enter` albo `Spacja` w tekście dokumentu: aktywuj odnośnik pod kursorem albo otwórz Widok tabeli, jeśli kursor znajduje się na znaczniku tabeli.
+* `Enter` albo `Spacja` w tekście dokumentu: otwórz odnośnik, Widok tabeli lub Widok wzoru pod kursorem.
 * `Shift+F10` albo klawisz Menu/Aplikacje w tekście dokumentu: otwórz menu kontekstowe.
 
 ## Obsługiwane języki
@@ -213,8 +221,11 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 * Naprawiono otwieranie plików EPUB z pozostawionym blokiem ZIP64, które kończyło się komunikatem „Invalid local file header".
 * Naprawiono wracanie długich dokumentów na początek, kiedy czytnik ekranu czytał je ciągiem.
 * Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast kończyć się komunikatem „Nie znaleziono pliku".
+* Skrót `Alt+F9` ustawia początek zaznaczenia, `Alt+F10` kopiuje tekst od tego miejsca do bieżącej pozycji, a `Alt+Shift+F9` przenosi z powrotem do znacznika. Pozwala to kopiować długie fragmenty bez zaznaczania ich strzałkami z Shiftem. Wszystkie trzy polecenia znajdują się w menu Narzędzia > Zaznacz i kopiuj.
+* Skrót `=` podaje teraz oprócz procentu także numer strony, na przykład „15%, strona 30", a w dokumentach bez stron działa jak dotychczas.
 * Automatyczny komunikat o przeładowaniu dokumentu nie przerywa już czytnikowi ekranu w połowie zdania, a czeka, aż skończy wypowiedź.
 * Na karcie Ogólne w oknie ustawień tabulator przechodzi teraz przez opcje w kolejności, w jakiej są widoczne na ekranie, a kanał aktualizacji następuje bezpośrednio po opcji sprawdzania aktualizacji.
+* Po aktualizacji ponownie uruchomione okno pojawia się teraz na wierzchu, zamiast czekać za wszystkimi innymi oknami w Alt+Tab.
 * Windows pokazuje teraz zawsze „Paperback" w menu Otwórz za pomocą, a nie pełne hasło programu.
 * Licznik słów oraz informacje o dokumencie pokazują teraz, ile plików zawiera audiobook i jak długo trwa w całości.
 
@@ -269,6 +280,7 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 * Przełącznik sposobu wyświetlania tabel oraz ujednolicony wygląd tabel we wszystkich dokumentach.
 
 ##### Nawigacja
+* Wzory MathML w dokumentach EPUB i HTML są przedstawiane w zapisie AsciiMath przy użyciu MathCAT. Klawisze `M` i `Shift+M` służą do przechodzenia między wzorami, a `Enter` lub `Spacja` otwiera oryginalny MathML w Widoku wzoru.
 * Obsługę nawigacji po kontenerach.
 * Opcję automatycznego przenoszenia kursora na początek wiersza przy przechodzeniu między wierszami, podobnie jak w trybie przeglądania w czytnikach ekranu.
 * Skrót klawiszowy ze znakiem równości, który odczytuje bieżącą pozycję procentową w dokumencie.

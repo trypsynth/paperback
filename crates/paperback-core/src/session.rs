@@ -1,6 +1,6 @@
 use crate::{
 	audio::AudioTimeline,
-	document::{self, DocumentHandle, Edit, MarkerType, ParserContext, ParserFlags, ReplaceOutcome},
+	document::{self, DocumentHandle, Edit, MarkerType, ParseSettings, ParserContext, ParserFlags, ReplaceOutcome},
 	parser,
 	reader_core::record_history_position,
 	types::{self as ffi},
@@ -16,11 +16,18 @@ mod stats;
 mod window;
 
 pub use find_all::{FindAllLine, FindSpan};
-pub use window::WindowSlice;
+pub use window::{WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, WindowSlice};
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: i64 = 300;
+/// The audio-time counterpart to [`HISTORY_DISTANCE_THRESHOLD`], for documents (plain audio
+/// bundles in particular) whose text spine is too sparse for a character count to tell a real
+/// jump from a step to the next line. 30 seconds is comfortably past a single seek keypress
+/// (`audio_seek_amount_seconds` defaults to 10) but short enough to catch a jump to the next
+/// track of an audiobook.
+const AUDIO_HISTORY_DISTANCE_THRESHOLD_MS: u64 = 30_000;
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct SearchOptionsFfi {
 	pub match_case: bool,
@@ -29,6 +36,7 @@ pub struct SearchOptionsFfi {
 	pub forward: bool,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct SearchResultFfi {
 	pub found: bool,
@@ -48,6 +56,7 @@ pub struct SourceView {
 	pub caret: i64,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct StatusInfo {
 	pub line_number: i64,
@@ -104,6 +113,7 @@ impl NavigationResult {
 	}
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct LinkActivationResult {
 	pub found: bool,
@@ -112,6 +122,7 @@ pub struct LinkActivationResult {
 	pub url: String,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LinkAction {
 	Internal,
@@ -120,6 +131,7 @@ pub enum LinkAction {
 	NotFound,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy)]
 pub enum SegmentTypeFfi {
 	Paragraph,
@@ -134,8 +146,10 @@ pub enum SegmentTypeFfi {
 	Separator,
 	Image,
 	Figure,
+	Formula,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy)]
 pub enum SegmentDirectionFfi {
 	Current,
@@ -146,6 +160,7 @@ pub enum SegmentDirectionFfi {
 /// `found` is independent of `text`: a segment can be found but have no text of its own (e.g. a
 /// plain-audio DAISY section marker, whose buffer content is just a placeholder space), so
 /// callers must check `found` rather than treating blank `text` as "not found".
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct TextSegmentFfi {
 	pub text: String,
@@ -156,6 +171,7 @@ pub struct TextSegmentFfi {
 
 /// `found` is `false` (other fields zeroed) when the lookup misses, e.g. an out-of-range clip
 /// index. Mirrors `AudioClip` from `AudioTimeline` for platforms driving their own player.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AudioClipFfi {
 	pub found: bool,
@@ -167,6 +183,7 @@ pub struct AudioClipFfi {
 }
 
 /// See `AudioTimeline::cursor_at_elapsed`.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AudioCursorFfi {
 	pub found: bool,
@@ -175,6 +192,7 @@ pub struct AudioCursorFfi {
 }
 
 /// See `AudioTimeline::point_for_position`.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AudioPointFfi {
 	pub found: bool,
@@ -182,6 +200,7 @@ pub struct AudioPointFfi {
 	pub time_ms: i64,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Error), uniffi(flat_error))]
 #[derive(Debug, thiserror::Error)]
 pub enum DocumentError {
 	#[error("Parse error: {0}")]
@@ -200,15 +219,16 @@ impl LinkActivationResult {
 	}
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct DocumentSession {
 	handle: DocumentHandle,
 	file_path: String,
 	history: Vec<i64>,
 	history_index: usize,
 	parser_flags: ParserFlags,
-	last_stable_position: Option<i64>,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct TocEntry {
 	pub title: String,
@@ -216,6 +236,7 @@ pub struct TocEntry {
 	pub level: i32,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct LineMarker {
 	pub mtype: MarkerType,
@@ -226,6 +247,7 @@ pub struct LineMarker {
 	pub length: i64,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct DocumentStatsFfi {
 	pub word_count: i64,
@@ -236,6 +258,7 @@ pub struct DocumentStatsFfi {
 	pub audio_total_duration_ms: i64,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct HeadingTreeItemFfi {
 	pub offset: i64,
@@ -243,22 +266,65 @@ pub struct HeadingTreeItemFfi {
 	pub parent_index: i32,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct HeadingTreeFfi {
 	pub items: Vec<HeadingTreeItemFfi>,
 	pub closest_index: i32,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct LinkListItemFfi {
 	pub offset: i64,
 	pub text: String,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct LinkListFfi {
 	pub items: Vec<LinkListItemFfi>,
 	pub closest_index: i32,
+}
+
+// Only the mobile front ends construct a session this way, so the whole block is behind the
+// feature: uniffi::export reads the attributes below literally and does not see through a
+// cfg_attr, so `uniffi::constructor` cannot be written conditionally.
+#[cfg(feature = "uniffi")]
+#[uniffi::export]
+impl DocumentSession {
+	// Owned `String` params (not `&str`) because that is the signature UniFFI generates for.
+	#[uniffi::constructor(name = "new_ffi")]
+	#[allow(clippy::needless_pass_by_value)]
+	pub fn new_ffi(
+		file_path: String,
+		password: String,
+		forced_extension: String,
+		render_tables_inline: bool,
+	) -> Result<Self, DocumentError> {
+		// The mobile front ends have no reader-facing switch for the PDF paragraph joining,
+		// so they take its default.
+		let settings = ParseSettings { render_tables_inline, ..ParseSettings::default() };
+		Self::new(&file_path, &password, &forced_extension, settings).map_err(DocumentError::ParseError)
+	}
+}
+
+#[cfg_attr(feature = "uniffi", uniffi::export)]
+impl DocumentSession {
+	#[must_use]
+	pub fn title(&self) -> String {
+		self.handle.document().title.clone()
+	}
+
+	#[must_use]
+	pub fn author(&self) -> String {
+		self.handle.document().author.clone()
+	}
+
+	#[must_use]
+	pub fn content(&self) -> String {
+		self.handle.document().buffer.content.clone()
+	}
 }
 
 impl DocumentSession {
@@ -269,7 +335,7 @@ impl DocumentSession {
 		file_path: &str,
 		password: &str,
 		forced_extension: &str,
-		render_tables_inline: bool,
+		settings: ParseSettings,
 	) -> Result<Self, String> {
 		let mut context = ParserContext::new(file_path.to_string());
 		if !password.is_empty() {
@@ -278,7 +344,7 @@ impl DocumentSession {
 		if !forced_extension.is_empty() {
 			context = context.with_forced_extension(forced_extension.to_string());
 		}
-		context = context.with_render_tables_inline(render_tables_inline);
+		context = context.with_parse_settings(settings);
 		let parser_flags = parser::get_parser_flags_for_context(&context);
 		let doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
 		Ok(Self {
@@ -287,19 +353,7 @@ impl DocumentSession {
 			history: Vec::new(),
 			history_index: 0,
 			parser_flags,
-			last_stable_position: None,
 		})
-	}
-
-	// Owned `String` params (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
-	#[allow(clippy::needless_pass_by_value)]
-	pub fn new_ffi(
-		file_path: String,
-		password: String,
-		forced_extension: String,
-		render_tables_inline: bool,
-	) -> Result<Self, DocumentError> {
-		Self::new(&file_path, &password, &forced_extension, render_tables_inline).map_err(DocumentError::ParseError)
 	}
 
 	/// The parsed document handle backing this session.
@@ -387,21 +441,6 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn title(&self) -> String {
-		self.handle.document().title.clone()
-	}
-
-	#[must_use]
-	pub fn author(&self) -> String {
-		self.handle.document().author.clone()
-	}
-
-	#[must_use]
-	pub fn content(&self) -> String {
-		self.handle.document().buffer.content.clone()
-	}
-
-	#[must_use]
 	pub const fn stats(&self) -> &document::DocumentStats {
 		&self.handle.document().stats
 	}
@@ -416,20 +455,35 @@ impl DocumentSession {
 		self.history_index = index.min(self.history.len().saturating_sub(1));
 	}
 
-	pub fn check_and_record_history(&mut self, new_position: i64) {
-		if let Some(last_pos) = self.last_stable_position {
-			let distance = (new_position - last_pos).abs();
-			if distance >= HISTORY_DISTANCE_THRESHOLD {
-				record_history_position(&mut self.history, &mut self.history_index, last_pos, MAX_HISTORY_LEN);
-				self.last_stable_position = Some(new_position);
-			}
-		} else {
-			self.last_stable_position = Some(new_position);
+	/// Records a jump from `from` to `to`, so that going back afterwards returns to `from`.
+	///
+	/// `from` is where the reader actually was when they jumped, which the caller reads off
+	/// the caret before moving it. A short jump records nothing: somewhere inside the
+	/// paragraph already being read is not a place to come back to, and a history filled with
+	/// those cannot reach anywhere worth returning to.
+	///
+	/// Text position alone cannot tell "short" from "long" for a plain audio bundle: its buffer
+	/// is one placeholder character per file (see the `audio_only` doc comment), so jumping
+	/// between tracks moves the caret by a handful of characters regardless of how much
+	/// recording separates them. Falling back to the audio distance between `from` and `to`
+	/// when it is available catches those jumps too - covering large distances and following
+	/// links should record a returnable position in an audiobook exactly as they do in text.
+	pub fn record_jump(&mut self, from: i64, to: i64) {
+		let text_distance_worth_recording = (to - from).abs() >= HISTORY_DISTANCE_THRESHOLD;
+		let audio_distance_worth_recording =
+			self.audio_distance_ms(from, to).is_some_and(|ms| ms >= AUDIO_HISTORY_DISTANCE_THRESHOLD_MS);
+		if text_distance_worth_recording || audio_distance_worth_recording {
+			record_history_position(&mut self.history, &mut self.history_index, from, MAX_HISTORY_LEN);
 		}
 	}
 
-	pub const fn set_stable_position(&mut self, position: i64) {
-		self.last_stable_position = Some(position);
+	/// The elapsed-time distance between `from` and `to`, for documents with a timeline. `None`
+	/// without audio, or where either offset falls outside every clip.
+	fn audio_distance_ms(&self, from: i64, to: i64) -> Option<u64> {
+		let audio = self.audio()?;
+		let from_ms = audio.point_for_position(usize::try_from(from).ok()?)?.time_ms;
+		let to_ms = audio.point_for_position(usize::try_from(to).ok()?)?.time_ms;
+		Some(from_ms.abs_diff(to_ms))
 	}
 }
 

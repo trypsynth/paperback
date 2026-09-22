@@ -102,11 +102,32 @@ macro_rules! formats {
 }
 
 formats! {
+	/// Named apart from [`CBZ`] because the installer builds a task name out of it, and two
+	/// formats named the same would write the same task twice. Without brackets, because the
+	/// open dialog's filter puts the extensions in brackets after the name.
+	CBR {
+		name: "RAR comic book archives",
+		extensions: ["cbr"],
+		mime_types: ["application/vnd.comicbook-rar"],
+		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES,
+	},
+	CBZ {
+		name: "Comic book archives",
+		extensions: ["cbz"],
+		mime_types: ["application/vnd.comicbook+zip"],
+		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES,
+	},
 	CHM {
 		name: "Compiled HTML Help files",
 		extensions: ["chm"],
 		mime_types: ["application/x-chm"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_SECTIONS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
+	},
+	HLP {
+		name: "WinHelp files",
+		extensions: ["hlp"],
+		mime_types: ["application/winhlp"],
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_IMAGES,
 	},
 	/// Declared ahead of [`WORD`] so that it gets first crack at the `.zip` both claim.
 	///
@@ -151,8 +172,18 @@ formats! {
 		name: "PDF Documents",
 		extensions: ["pdf"],
 		mime_types: ["application/pdf"],
-		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS,
+		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 		installer: CHECKED,
+	},
+	/// An installed manual page is named for its section and gzipped on top of that, as
+	/// `printf.3.gz`, so `gz` is claimed here to have such a file offered in an open dialog
+	/// at all. The parser reads what is inside before accepting it, so a gzipped anything
+	/// else is turned away rather than read as a page.
+	MAN {
+		name: "Manual pages",
+		extensions: ["man", "roff", "gz", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+		mime_types: ["application/x-troff-man", "text/troff"],
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
 	},
 	MARKDOWN {
 		name: "Markdown Files",
@@ -166,11 +197,23 @@ formats! {
 		mime_types: ["audio/x-m4b"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_AUDIO,
 	},
+	/// A chapterless MP3 becomes one full-length section, same as a chapterless M4B; a chaptered
+	/// one splits into sections via its ID3v2 `CHAP`/`CTOC` frames (see `parser::mp3`), the
+	/// standard mechanism podcast apps use, which is why this gets the same
+	/// `SUPPORTS_SECTIONS | SUPPORTS_TOC` as M4B despite not every MP3 using it.
+	MP3 {
+		name: "MP3 Audiobooks",
+		extensions: ["mp3"],
+		mime_types: ["audio/mpeg"],
+		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_AUDIO,
+	},
 	MOBI {
 		name: "MOBI Books",
 		extensions: ["mobi", "azw", "azw3"],
 		mime_types: ["application/x-mobipocket-ebook", "application/vnd.amazon.ebook"],
-		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
+		// KF8 books carry the file boundaries of the EPUB they were compiled from; older
+		// Mobipocket ones do not, and simply produce no section markers.
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_SECTIONS,
 	},
 	FODP {
 		name: "Flat OpenDocument Presentations",
@@ -213,6 +256,16 @@ formats! {
 		name: "Text Files",
 		extensions: ["txt", "log"],
 		mime_types: ["text/plain"],
+		flags: NONE,
+	},
+	/// Windows Write. Real `.wri` files in the wild are almost always RTF or plain text under a
+	/// `.wri` name; the parser sniffs the content and routes accordingly, and reads the genuine
+	/// Windows Write binary format too. Flags stay `NONE` because a routed file's real features
+	/// depend on what it turns out to be, and under-promising is safer than the reverse.
+	WRI {
+		name: "Windows Write Documents",
+		extensions: ["wri"],
+		mime_types: ["application/x-mswrite"],
 		flags: NONE,
 	},
 }

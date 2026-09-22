@@ -3,20 +3,36 @@ use std::{collections::HashSet, sync::Mutex};
 use crate::{config::ConfigManager, parser::ParserRegistry};
 
 /// Thread-safe wrapper around `ConfigManager` for `UniFFI` exposure.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct ConfigManagerFfi {
 	inner: Mutex<ConfigManager>,
 }
 
 // These take `String`/owned params instead of `&str` because their signatures are dictated by
-// paperback.udl: UniFFI's generated scaffolding calls them with owned values it has just lifted
+// UniFFI's generated scaffolding calls them with owned values it has just lifted
 // from the FFI boundary, so a borrowed parameter here would fail to compile against that scaffolding.
-#[allow(clippy::needless_pass_by_value)]
+// `new` stays outside the exported block so it exists whether or not the FFI is built; the
+// constructor below is what the bindings call, and it has to carry a literal
+// `uniffi::constructor` because uniffi::export reads that attribute without expanding cfg_attr.
 impl ConfigManagerFfi {
 	#[must_use]
 	pub fn new() -> Self {
 		Self { inner: Mutex::new(ConfigManager::new()) }
 	}
+}
 
+#[cfg(feature = "uniffi")]
+#[uniffi::export]
+impl ConfigManagerFfi {
+	#[uniffi::constructor(name = "new")]
+	fn uniffi_new() -> Self {
+		Self::new()
+	}
+}
+
+#[allow(clippy::needless_pass_by_value)]
+#[cfg_attr(feature = "uniffi", uniffi::export)]
+impl ConfigManagerFfi {
 	pub fn initialize(&self, config_path: String) -> bool {
 		self.inner.lock().unwrap().initialize(config_path.into())
 	}
@@ -88,6 +104,19 @@ impl ConfigManagerFfi {
 
 	pub fn get_recent_documents(&self) -> Vec<String> {
 		self.inner.lock().unwrap().get_recent_documents()
+	}
+
+	/// Empties the recent documents list. Desktop has had this on its File menu; the mobile
+	/// apps could only remove them one at a time, which is a lot of work once a list has
+	/// filled up with books already finished.
+	pub fn clear_recent_documents(&self) {
+		let inner = self.inner.lock().unwrap();
+		inner.clear_recent_documents();
+		inner.flush();
+	}
+
+	pub fn has_recent_documents(&self) -> bool {
+		self.inner.lock().unwrap().has_recent_documents()
 	}
 
 	pub fn add_opened_document(&self, path: String) {

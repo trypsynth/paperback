@@ -1,7 +1,5 @@
 use std::{
 	cell::{Cell, RefCell},
-	fmt::Write,
-	mem,
 	rc::Rc,
 };
 
@@ -17,6 +15,14 @@ use crate::{
 	translation_manager::TranslationManager,
 };
 
+mod font;
+#[cfg(not(target_os = "macos"))]
+mod hotkey;
+
+use font::{color_description, font_description, show_font_picker};
+#[cfg(not(target_os = "macos"))]
+use hotkey::prompt_for_hotkey;
+
 /// Selectable audio seek amounts, in seconds, shown in the Options dialog and indexed by
 /// `audio_seek_amount_ctrl`'s selection. Also the step sequence `audio::handle_change_seek_amount`
 /// walks when nudging the seek amount via keyboard shortcut, so the two stay in lockstep.
@@ -27,6 +33,7 @@ pub struct OptionsDialogResult {
 	pub restore_previous_documents: bool,
 	pub word_wrap: bool,
 	pub render_tables_inline: bool,
+	pub join_pdf_paragraphs: bool,
 	pub minimize_to_tray: bool,
 	pub start_maximized: bool,
 	pub compact_go_menu: bool,
@@ -58,6 +65,7 @@ struct OptionsDialogUi {
 	restore_docs_check: CheckBox,
 	word_wrap_check: CheckBox,
 	render_tables_inline_check: CheckBox,
+	join_pdf_paragraphs_check: CheckBox,
 	minimize_to_tray_check: CheckBox,
 	start_maximized_check: CheckBox,
 	compact_go_menu_check: CheckBox,
@@ -113,6 +121,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		restore_previous_documents: ui.restore_docs_check.is_checked(),
 		word_wrap: ui.word_wrap_check.is_checked(),
 		render_tables_inline: ui.render_tables_inline_check.is_checked(),
+		join_pdf_paragraphs: ui.join_pdf_paragraphs_check.is_checked(),
 		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
 		start_maximized: ui.start_maximized_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
@@ -164,6 +173,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let render_tables_inline_check =
 		// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
+	let join_pdf_paragraphs_check = CheckBox::builder(&readability_panel)
+		// TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+		.with_label(&t("&Join wrapped lines into paragraphs in PDFs"))
+		.build();
 	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
 	// TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
@@ -393,6 +406,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	text_alignment_sizer.add(&text_alignment_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
+	readability_sizer.add(&join_pdf_paragraphs_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&paragraph_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&letter_spacing_sizer, 0, SizerFlag::All, option_padding);
@@ -421,6 +435,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
+	join_pdf_paragraphs_check.set_value(config.get_app_bool("join_pdf_paragraphs", true));
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
@@ -546,6 +561,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		restore_docs_check,
 		word_wrap_check,
 		render_tables_inline_check,
+		join_pdf_paragraphs_check,
 		minimize_to_tray_check,
 		start_maximized_check,
 		compact_go_menu_check,
@@ -587,215 +603,4 @@ fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
 fn resolve_options_language(ui: &OptionsDialogUi) -> String {
 	patois::ui::resolve_language_choice(&ui.language_combo, &ui.language_codes)
 		.unwrap_or_else(|| ui.current_language.clone())
-}
-
-fn color_description(color: i32) -> String {
-	if color < 0 {
-		// TRANSLATORS: Description text shown when the background color is set to default
-		t("Background: Default")
-	} else {
-		let r = ((color >> 16) & 0xFF) as u8;
-		let g = ((color >> 8) & 0xFF) as u8;
-		let b = (color & 0xFF) as u8;
-		format!("#{r:02X}{g:02X}{b:02X}")
-	}
-}
-
-fn font_description(rf: &ReadabilityFont) -> String {
-	if rf.is_default() {
-		// TRANSLATORS: Description text shown when the font is set to default
-		return t("Font: Default");
-	}
-	// TRANSLATORS: Fallback font name
-	let face = if rf.face_name.is_empty() { t("Default") } else { rf.face_name.clone() };
-	// TRANSLATORS: Font description prefix; {} is the font face name
-	let mut desc = t("Font: {}").replace("{}", &face);
-	if rf.point_size > 0 {
-		// TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
-		let size_desc = t("{}pt").replace("{}", &rf.point_size.to_string());
-		let _ = write!(desc, ", {size_desc}");
-	}
-	if rf.weight >= FontWeight::Bold as i32 {
-		// TRANSLATORS: Font weight attribute name
-		let _ = write!(desc, ", {}", t("Bold"));
-	}
-	if rf.style == FontStyle::Italic as i32 || rf.style == FontStyle::Slant as i32 {
-		// TRANSLATORS: Font style attribute name
-		let _ = write!(desc, ", {}", t("Italic"));
-	}
-	if rf.underlined {
-		// TRANSLATORS: Font underline attribute name
-		let _ = write!(desc, ", {}", t("Underlined"));
-	}
-	if rf.strikethrough {
-		// TRANSLATORS: Font strikethrough attribute name
-		let _ = write!(desc, ", {}", t("Strikethrough"));
-	}
-	desc
-}
-
-fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<ReadabilityFont> {
-	let mut font_data = FontData::new();
-	if current.color >= 0 {
-		let r = ((current.color >> 16) & 0xFF) as u8;
-		let g = ((current.color >> 8) & 0xFF) as u8;
-		let b = (current.color & 0xFF) as u8;
-		font_data.set_colour(&Colour::rgb(r, g, b));
-	}
-	if !current.is_default() {
-		let style = match current.style {
-			s if s == FontStyle::Italic as i32 => FontStyle::Italic,
-			s if s == FontStyle::Slant as i32 => FontStyle::Slant,
-			_ => FontStyle::Normal,
-		};
-		let weight = match current.weight {
-			w if w == FontWeight::Bold as i32 => FontWeight::Bold,
-			w if w == FontWeight::Light as i32 => FontWeight::Light,
-			w if w == FontWeight::ExtraBold as i32 => FontWeight::ExtraBold,
-			_ => FontWeight::Normal,
-		};
-		let point_size = if current.point_size > 0 { current.point_size } else { 10 };
-		if let Some(mut font) = Font::builder()
-			.with_face_name(&current.face_name)
-			.with_point_size(point_size)
-			.with_style(style)
-			.with_weight(weight)
-			.with_underline(current.underlined)
-			.with_strikethrough(current.strikethrough)
-			.build()
-		{
-			if current.encoding != 0 {
-				font.set_encoding(current.encoding);
-			}
-			font_data.set_initial_font(&font);
-		}
-	}
-	let dlg = FontDialog::builder(&parent)
-		// TRANSLATORS: Title of the system dialog for picking a font
-		.with_title(&t("Choose a font"))
-		.with_font_data(&font_data)
-		.build();
-	if dlg.show_modal() != ID_OK {
-		return None;
-	}
-	let font = dlg.get_font()?;
-	let chosen_color = dlg.get_font_data().map_or(-1, |fd| {
-		let c = fd.get_chosen_colour();
-		// Prevent double-free: this FontData pointer is owned by the dialog, not by us
-		mem::forget(fd);
-		c.map_or(-1, |col| (i32::from(col.r) << 16) | (i32::from(col.g) << 8) | i32::from(col.b))
-	});
-	Some(ReadabilityFont {
-		face_name: font.get_face_name(),
-		point_size: font.get_point_size(),
-		style: font.get_style() as i32,
-		weight: font.get_weight() as i32,
-		underlined: font.is_underlined(),
-		strikethrough: font.is_strikethrough(),
-		color: chosen_color,
-		encoding: font.get_encoding(),
-	})
-}
-
-#[cfg(not(target_os = "macos"))]
-fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<HotkeyConfig> {
-	// TRANSLATORS: Title of the hotkey customization dialog
-	let dialog = Dialog::builder(parent, &t("Window Hotkey"))
-		.with_size(parent.from_dip_int(300), parent.from_dip_int(230))
-		.build();
-	let panel = Panel::builder(&dialog).build();
-	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	// TRANSLATORS: Checkbox label for Control modifier key
-	let ctrl_cb = CheckBox::builder(&panel).with_label(&t("&Ctrl")).build();
-	ctrl_cb.set_value(initial.ctrl);
-	// TRANSLATORS: Checkbox label for Alt modifier key
-	let alt_cb = CheckBox::builder(&panel).with_label(&t("&Alt")).build();
-	alt_cb.set_value(initial.alt);
-	// TRANSLATORS: Checkbox label for Shift modifier key
-	let shift_cb = CheckBox::builder(&panel).with_label(&t("&Shift")).build();
-	shift_cb.set_value(initial.shift);
-	// TRANSLATORS: Checkbox label for Windows modifier key
-	let win_cb = CheckBox::builder(&panel).with_label(&t("&Win")).build();
-	win_cb.set_value(initial.win);
-	main_sizer.add(&ctrl_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Top, 10);
-	main_sizer.add(&alt_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
-	main_sizer.add(&shift_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
-	main_sizer.add(&win_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
-	// TRANSLATORS: Label for the hotkey key selection input field
-	let key_label = StaticText::builder(&panel).with_label(&t("&Key:")).build();
-	let key_text = TextCtrl::builder(&panel).build();
-	key_text.set_value(&hotkey_key_display_name(initial.key));
-	let key_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	key_sizer.add(&key_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 8);
-	key_sizer.add(&key_text, 1, SizerFlag::Expand, 0);
-	main_sizer.add_sizer(&key_sizer, 0, SizerFlag::Expand | SizerFlag::All, 10);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	// TRANSLATORS: Button label to clear the current hotkey selection
-	let clear_button = Button::builder(&panel).with_label(&t("Clear")).build();
-	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&panel).with_id(ID_OK).with_label(&t("OK")).build();
-	ok_button.set_default();
-	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&panel).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	let key_text_clone = key_text;
-	let ctrl_cb_clone = ctrl_cb;
-	let alt_cb_clone = alt_cb;
-	let shift_cb_clone = shift_cb;
-	let win_cb_clone = win_cb;
-	clear_button.on_click(move |_| {
-		key_text_clone.set_value("");
-		ctrl_cb_clone.set_value(false);
-		alt_cb_clone.set_value(false);
-		shift_cb_clone.set_value(false);
-		win_cb_clone.set_value(false);
-	});
-	button_sizer.add(&clear_button, 0, SizerFlag::Right, 8);
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::Right, 8);
-	button_sizer.add(&cancel_button, 0, SizerFlag::Right, 8);
-	main_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, 10);
-	panel.set_sizer(main_sizer, true);
-	let dialog_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	dialog_sizer.add(&panel, 1, SizerFlag::Expand, 0);
-	dialog.set_sizer(dialog_sizer, true);
-	dialog.set_affirmative_id(ID_OK);
-	dialog.set_escape_id(ID_CANCEL);
-	dialog.centre();
-	if dialog.show_modal() != ID_OK {
-		return None;
-	}
-	let key_value = key_text.get_value();
-	let key_char = if key_value.trim().is_empty() { '\0' } else { parse_hotkey_key(&key_value).unwrap_or(initial.key) };
-	Some(HotkeyConfig {
-		ctrl: ctrl_cb.is_checked(),
-		alt: alt_cb.is_checked(),
-		shift: shift_cb.is_checked(),
-		win: win_cb.is_checked(),
-		key: key_char,
-	})
-}
-
-#[cfg(not(target_os = "macos"))]
-fn hotkey_key_display_name(key: char) -> String {
-	match key {
-		'\0' => String::new(),
-		// TRANSLATORS: Representation of the Spacebar key
-		' ' => t("Space"),
-		c if c.is_ascii_alphanumeric() => c.to_ascii_uppercase().to_string(),
-		c => c.to_string(),
-	}
-}
-
-#[cfg(not(target_os = "macos"))]
-fn parse_hotkey_key(input: &str) -> Option<char> {
-	let trimmed = input.trim();
-	if trimmed.eq_ignore_ascii_case("space") {
-		return Some(' ');
-	}
-	let ch = if trimmed.is_empty() { return None } else { trimmed.chars().last()? };
-	if ch.is_ascii_alphanumeric() || ch.is_ascii_punctuation() || ch == ' ' {
-		Some(ch.to_ascii_uppercase())
-	} else {
-		None
-	}
 }

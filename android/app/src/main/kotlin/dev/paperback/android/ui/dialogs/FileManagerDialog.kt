@@ -1,6 +1,7 @@
 package dev.paperback.android.ui.dialogs
 
 import android.content.Context
+import android.os.Build
 import android.os.Environment
 import android.os.storage.StorageManager
 import android.text.format.DateFormat
@@ -30,8 +31,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import dev.paperback.android.t
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import uniffi.paperback.ConfigManagerFfi
 import java.io.File
 import java.util.Date
 
@@ -60,7 +64,7 @@ fun FileManagerDialog(
 
 	val context = LocalContext.current
 	val storageRoots = remember(context) {
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 			val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 			sm.storageVolumes.mapNotNull { it.directory }
 		} else {
@@ -158,7 +162,8 @@ fun FileManagerDialog(
 					style = MaterialTheme.typography.bodySmall,
 					color = MaterialTheme.colorScheme.onSurfaceVariant,
 					modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp).semantics {
-						contentDescription = "Current path: ${currentDirectory.absolutePath}"
+						// TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
+						contentDescription = t("Current path: {}", currentDirectory.absolutePath)
 					}
 				)
 
@@ -257,7 +262,7 @@ fun FileListItem(
 				} else {
 					file.name
 				}
-				contentDescription = "$displayName, $typeStr, modified $dateString$sizeDesc"
+				contentDescription = t("{}, {}, modified {}{}", displayName, typeStr, dateString, sizeDesc)
 			},
 		verticalAlignment = Alignment.CenterVertically
 	) {
@@ -299,3 +304,37 @@ fun FileListItem(
 		}
 	}
 }
+
+/**
+ * The in-app file browser, opened where it was last left. Which directory that is lives in the
+ * config rather than in the composition, so it survives the app being killed between openings,
+ * and it is shared by every use of the browser: a reader who found their books once should not
+ * have to walk the same path again to import a settings file next to them.
+ */
+@Composable
+fun BrowseForFileDialog(
+	configManager: ConfigManagerFfi,
+	supportedExtensions: List<String>,
+	scope: CoroutineScope,
+	onFileSelected: (File) -> Unit,
+	onDismiss: () -> Unit
+) {
+	val initialDirectory = remember {
+		val savedPath = configManager.getAppString(LAST_DIRECTORY_KEY, "")
+		if (savedPath.isNotEmpty()) File(savedPath) else Environment.getExternalStorageDirectory()
+	}
+	FileManagerDialog(
+		supportedExtensions = supportedExtensions,
+		initialDirectory = initialDirectory,
+		onDirectoryChanged = { directory ->
+			scope.launch(Dispatchers.IO) {
+				configManager.setAppString(LAST_DIRECTORY_KEY, directory.absolutePath)
+				configManager.flush()
+			}
+		},
+		onFileSelected = onFileSelected,
+		onDismiss = onDismiss
+	)
+}
+
+private const val LAST_DIRECTORY_KEY = "last_file_manager_directory"

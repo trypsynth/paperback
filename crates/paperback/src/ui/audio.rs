@@ -36,17 +36,17 @@ pub fn handle_toggle_play_pause_audio(doc_manager: &Rc<Mutex<DocumentManager>>, 
 /// ordinary clamped-at-`total_duration_ms` target in every one of those cases.
 fn spilled_seek_target_ms(player: &AudioPlayer, amount_ms: u64) -> Option<u64> {
 	let (source, raw_ms, length_ms) = player.current_file_position_and_length_ms()?;
-	spill_overflow_into_next_source(&player.timeline(), source, raw_ms, length_ms, amount_ms)
+	spill_overflow_into_next_source(player.timeline(), source, raw_ms, length_ms, amount_ms)
 }
 
 /// The arithmetic behind `spilled_seek_target_ms`, split out so it's testable without a real
-/// native media control backing `AudioPlayer`.
+/// decoder backing `AudioPlayer`.
 ///
 /// This has to go through the *real* decoder-reported file length (`length_ms`) rather than the
 /// document's own declared clip duration, since a plain-audio-zip bundle's placeholder clip
 /// duration (see `build_plain_audio_zip_document`) is hours longer than the real file, so the
 /// ordinary elapsed-time-based target would just resolve back into the same file, past its real
-/// end, where the native seek call clamps it to the file's own last frame instead of advancing.
+/// end, where the seek is clamped to the file's own last frame instead of advancing.
 fn spill_overflow_into_next_source(
 	timeline: &AudioTimeline,
 	source: usize,
@@ -115,6 +115,51 @@ pub fn handle_seek_audio(
 	if let Some(position) = sync_position {
 		set_caret_to_doc_offset(tab, position);
 	}
+}
+
+/// Nudges the active document's audio playback speed up or down by one step, and announces the
+/// new speed. Unlike the seek amount (a global setting), speed lives on the `AudioPlayer`
+/// itself, so this needs an active document with audio, like `handle_toggle_play_pause_audio`.
+pub fn handle_change_audio_speed(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+	increase: bool,
+) {
+	let mut dm = doc_manager.lock().unwrap();
+	let result = dm.active_tab_mut().and_then(|tab| tab.audio_player.as_mut()).map(|player| {
+		let before = player.speed();
+		let after = if increase { player.increase_speed() } else { player.decrease_speed() };
+		(after, (after - before).abs() < f32::EPSILON)
+	});
+	drop(dm);
+	let Some((speed, at_limit)) = result else {
+		// TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
+		live_region::announce(live_region_label, &t("This document has no audio."));
+		return;
+	};
+	let label = speed_label(speed);
+	let message = if at_limit && increase {
+		// TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+		t("{} (maximum)").replace("{}", &label)
+	} else if at_limit {
+		// TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+		t("{} (minimum)").replace("{}", &label)
+	} else {
+		label
+	};
+	live_region::announce(live_region_label, &message);
+}
+
+/// A human-readable label for a playback speed multiplier, e.g. `1.5x`, `1x`, `0.75x`.
+fn speed_label(speed: f32) -> String {
+	let mut label = format!("{speed:.2}");
+	while label.ends_with('0') {
+		label.pop();
+	}
+	if label.ends_with('.') {
+		label.pop();
+	}
+	format!("{label}x")
 }
 
 /// A human-readable label for one of `dialogs::AUDIO_SEEK_AMOUNTS_SECONDS`, matching the text

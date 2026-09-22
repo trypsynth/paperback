@@ -24,8 +24,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import dev.paperback.android.t
-import dev.paperback.android.ui.DocumentTabState
+import dev.paperback.android.ui.state.DocumentTabState
 import uniffi.paperback.DocumentStatsFfi
+import java.text.NumberFormat
 
 @Composable
 private fun InfoRow(
@@ -49,10 +50,11 @@ fun DocumentInfoDialog(
 ) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		modifier = Modifier.semantics { paneTitle = t("Document Information") },
+		modifier = Modifier.semantics { paneTitle = t("Document Info") },
 		// TRANSLATORS: Title of the dialog showing the current document's title, author, path, and word/line/character counts
-		title = { Text(t("Document Information")) },
+		title = { Text(t("Document Info")) },
 		text = {
+			val numbers = NumberFormat.getIntegerInstance()
 			Column(modifier = Modifier.fillMaxWidth()) {
 				if (docState.title.isNotBlank()) {
 					// TRANSLATORS: Label for the document's title in the Document Information dialog
@@ -72,16 +74,16 @@ fun DocumentInfoDialog(
 					}
 				}
 				// TRANSLATORS: Label for the document's word count in the Document Information dialog
-				InfoRow(Icons.AutoMirrored.Filled.Article, t("Words"), "${stats.wordCount}")
+				InfoRow(Icons.AutoMirrored.Filled.Article, t("Words"), numbers.format(stats.wordCount))
 				// TRANSLATORS: Label for the document's line count in the Document Information dialog
-				InfoRow(Icons.AutoMirrored.Filled.List, t("Lines"), "${stats.lineCount}")
+				InfoRow(Icons.AutoMirrored.Filled.List, t("Lines"), numbers.format(stats.lineCount))
 				// TRANSLATORS: Label for the document's character count in the Document Information dialog
-				InfoRow(Icons.Filled.TextFields, t("Characters"), "${stats.charCount}")
+				InfoRow(Icons.Filled.TextFields, t("Characters"), numbers.format(stats.charCount))
 				InfoRow(
 					Icons.Filled.SpaceBar,
 					// TRANSLATORS: Label for the document's character count excluding whitespace in the Document Information dialog
 					t("Characters (excluding spaces)"),
-					"${stats.charCountNoWhitespace}"
+					numbers.format(stats.charCountNoWhitespace)
 				)
 			}
 		},

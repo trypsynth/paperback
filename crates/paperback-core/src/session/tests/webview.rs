@@ -16,15 +16,97 @@ fn webview_target_path_returns_none_for_missing_markdown_file() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
-		last_stable_position: None,
 	};
 	assert!(session.webview_target_path(0, "C:\\temp").is_none());
 }
 
+// #774: every format that is not EPUB, HTML or Markdown used to report that its content
+// could not be determined. What such a format has is the parsed document, so that is what
+// the web view now gets.
 #[test]
-fn webview_target_path_returns_none_for_non_webview_extensions() {
-	let session = sample_session(ParserFlags::NONE);
-	assert!(session.webview_target_path(0, "C:\\temp").is_none());
+fn webview_target_path_renders_a_format_without_markup_as_html() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let session = session_with_path("book.mobi");
+	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	assert!(target.path.ends_with("document.html"), "{}", target.path);
+	let html = fs::read_to_string(&target.path).unwrap();
+	assert!(html.contains("<h1>"), "headings are rendered: {html}");
+	assert!(html.contains("line1"), "content is rendered: {html}");
+	let _ = fs::remove_dir_all(&dir);
+}
+
+// The rendering is all the web view has, so the reading position has to be an anchor in it.
+#[test]
+fn webview_target_path_anchors_the_reading_position_in_the_rendering() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let mut session = session_with_path("book.mobi");
+	let mut document = Document::new();
+	document.set_buffer(DocumentBuffer::with_content(
+		"first line
+second line
+"
+		.to_string(),
+	));
+	session.handle = DocumentHandle::new(document);
+	let second_line = i64::try_from(session.content().find("second").unwrap()).unwrap();
+	let target = session.webview_target_path(second_line, &dir.to_string_lossy()).expect("a web view target");
+	assert_eq!(target.fragment.as_deref(), Some("pos-11"));
+	let html = fs::read_to_string(&target.path).unwrap();
+	let anchor = html.find(r#"id="pos-11""#).unwrap_or_else(|| panic!("no anchor in {html}"));
+	let line = html.find("second line").unwrap_or_else(|| panic!("no second line in {html}"));
+	assert!(anchor < line, "the anchor opens the line it marks: {html}");
+	let _ = fs::remove_dir_all(&dir);
+}
+
+// An audio book has no text to render, and an empty page in a web view is worse than being
+// told there is nothing to show.
+#[test]
+fn webview_target_path_returns_none_for_a_document_with_no_text() {
+	let dir = unique_temp_dir();
+	let mut session = session_with_path("book.m4b");
+	session.handle = DocumentHandle::new(Document::new());
+	assert!(session.webview_target_path(0, &dir.to_string_lossy()).is_none());
+	assert!(!dir.exists(), "nothing is written for a document with no text");
+}
+
+// #861: a book of tens of millions of characters rendered whole locks the machine up while the
+// web view lays it out, so a book past the window size gets the part around the reading position.
+#[test]
+fn webview_target_path_renders_only_a_window_of_a_very_long_document() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let mut session = session_with_path("book.mobi");
+	let mut content = String::new();
+	for i in 0..60_000 {
+		content.push_str(&format!("paragraph number {i} with a few words in it\n"));
+	}
+	let mut document = Document::new();
+	document.set_buffer(DocumentBuffer::with_content(content.clone()));
+	session.handle = DocumentHandle::new(document);
+	let doc_len = session.document_len();
+	assert!(doc_len > 1_000_000, "the test document has to be longer than one window");
+	let middle = doc_len / 2;
+	let target = session.webview_target_path(middle, &dir.to_string_lossy()).expect("a web view target");
+	let html = fs::read_to_string(&target.path).unwrap();
+	assert!(html.len() < content.len() / 2, "only a window is rendered: {} of {}", html.len(), content.len());
+	assert!(html.contains(&format!(r#"id="pos-{middle}""#)), "the reading position is anchored");
+	assert!(!html.contains("paragraph number 0 "), "the far start of the book is left out");
+	assert!(!html.contains("paragraph number 59999 "), "the far end of the book is left out");
+	let _ = fs::remove_dir_all(&dir);
+}
+
+// A book that fits is still rendered whole, so nothing changes for an ordinary one.
+#[test]
+fn webview_target_path_renders_a_short_document_whole() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let session = session_with_path("book.mobi");
+	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	let html = fs::read_to_string(&target.path).unwrap();
+	assert_eq!(html, crate::export::html::render_with_anchor(&session.handle, Some(0)));
+	let _ = fs::remove_dir_all(&dir);
 }
 
 #[test]
@@ -35,7 +117,6 @@ fn extract_resource_returns_false_for_non_epub_files() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
-		last_stable_position: None,
 	};
 	assert_eq!(session.extract_resource("anything", "out.file").ok(), Some(false));
 }
@@ -47,7 +128,6 @@ fn session_with_path(file_path: &str) -> DocumentSession {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
-		last_stable_position: None,
 	}
 }
 
@@ -108,7 +188,8 @@ fn view_source_for_markdown_maps_caret_to_current_block() {
 	let src = dir.join("notes.md");
 	fs::write(&src, md.as_bytes()).unwrap();
 	// A real session populates id_positions with pb-block-N anchors.
-	let session = DocumentSession::new(&src.to_string_lossy(), "", "", false).expect("open markdown");
+	let session =
+		DocumentSession::new(&src.to_string_lossy(), "", "", ParseSettings::default()).expect("open markdown");
 	let rendered = session.content();
 	let pos = i64::try_from(rendered.find("Second").expect("second block rendered")).unwrap();
 	let view = session.view_source(pos, &dir.to_string_lossy()).expect("markdown source");
@@ -128,7 +209,6 @@ fn extract_resource_for_missing_epub_returns_error() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
-		last_stable_position: None,
 	};
 	assert!(session.extract_resource("x", "y").is_err());
 }
@@ -200,7 +280,8 @@ fn webview_target_path_extracts_sibling_image_resources() {
 		.join(format!("paperback_webview_test_{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
 	fs::create_dir_all(&temp_root).unwrap();
 	let epub_path = build_epub_with_relative_image(&temp_root);
-	let session = DocumentSession::new(&epub_path.to_string_lossy(), "", "", false).expect("parse test epub");
+	let session =
+		DocumentSession::new(&epub_path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test epub");
 	let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
 	let section_content = fs::read_to_string(&target.path).expect("read extracted section");
 	assert!(section_content.contains("Images/cover.jpg"));
@@ -278,11 +359,64 @@ fn webview_target_path_extracts_linked_sibling_sections() {
 		.join(format!("paperback_webview_toc_{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
 	fs::create_dir_all(&temp_root).unwrap();
 	let epub_path = build_epub_with_linked_sections(&temp_root);
-	let session = DocumentSession::new(&epub_path.to_string_lossy(), "", "", false).expect("parse test epub");
+	let session =
+		DocumentSession::new(&epub_path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test epub");
 	let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
 	let toc_content = fs::read_to_string(&target.path).expect("read extracted toc");
 	assert!(toc_content.contains("chapter1.xhtml"), "expected the toc to link to the chapter");
 	let linked = Path::new(&target.path).parent().unwrap().join("chapter1.xhtml");
 	assert!(linked.exists(), "expected linked section extracted at {}", linked.display());
 	fs::remove_dir_all(&temp_root).ok();
+}
+
+/// <https://github.com/trypsynth/paperback/issues/873>: the reader shows a document whole up to
+/// one window plus an extension chunk, but the web view used to start slicing as soon as a
+/// single window's width was passed. A document between the two was held whole by the reader
+/// and rendered as a slice, so its last pages were missing, links pointing past the slice were
+/// dropped, and it announced itself as a partial view of a document being shown in full.
+#[test]
+fn a_document_the_reader_shows_whole_is_not_sliced_by_the_web_view() {
+	let paragraph = "The quick brown fox jumps over the lazy dog and keeps on running.\n";
+	let repeats = usize::try_from(WHOLE_DOCUMENT_DISPLAY_LEN).unwrap() / paragraph.len() - 200;
+	let mut content = paragraph.repeat(repeats);
+	content.push_str("THE VERY LAST PARAGRAPH OF THE BOOK\n");
+	let len = i64::try_from(content.chars().count()).unwrap();
+	assert!(
+		len > WINDOW_DISPLAY_LEN && len <= WHOLE_DOCUMENT_DISPLAY_LEN,
+		"the fixture has to sit in the band the reader shows whole, got {len}"
+	);
+
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let mut session = session_with_content(&content);
+	session.file_path = "book.mobi".to_string();
+	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	let html = fs::read_to_string(&target.path).unwrap();
+
+	assert!(html.contains("THE VERY LAST PARAGRAPH OF THE BOOK"), "the end of the book is rendered");
+	assert!(
+		!html.contains("This view shows the part of the document you are reading."),
+		"a whole document must not announce itself as partial"
+	);
+	let _ = fs::remove_dir_all(&dir);
+}
+
+/// Past the threshold the web view does still slice, which is the behaviour the cap exists for.
+#[test]
+fn a_document_past_the_threshold_is_still_sliced() {
+	let paragraph = "The quick brown fox jumps over the lazy dog and keeps on running.\n";
+	let repeats = usize::try_from(WHOLE_DOCUMENT_DISPLAY_LEN).unwrap() / paragraph.len() * 2;
+	let content = paragraph.repeat(repeats);
+	let len = i64::try_from(content.chars().count()).unwrap();
+	assert!(len > WHOLE_DOCUMENT_DISPLAY_LEN, "the fixture has to outrun the threshold, got {len}");
+
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	let mut session = session_with_content(&content);
+	session.file_path = "book.mobi".to_string();
+	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	let html = fs::read_to_string(&target.path).unwrap();
+
+	assert!(html.contains("This view shows the part of the document you are reading."), "a sliced document says so");
+	let _ = fs::remove_dir_all(&dir);
 }

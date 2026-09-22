@@ -5,16 +5,13 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.media.AudioAttributes
-import android.media.AudioFocusRequest
-import android.media.AudioManager
 import android.media.MediaPlayer
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
@@ -26,15 +23,19 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import uniffi.paperback.ConfigManagerFfi
 import java.io.File
 import java.util.Locale
 
+private const val TAG = "PaperbackTts"
+
 class TtsManager(
 	private val context: Context,
 	private val config: ConfigManagerFfi
-) : TextToSpeech.OnInitListener {
+) : TextToSpeech.OnInitListener,
+	SpeechEngine {
 	private var tts: TextToSpeech? = null
 	private var mediaSession: MediaSession? = null
 	private var ttsPlayer: TtsPlayer? = null
@@ -53,7 +54,6 @@ class TtsManager(
 	// next segment already started, causing TalkBack to briefly announce "Play" then "Pause".
 	private var currentContentUtteranceId: String? = null
 	private var currentPrecacheUtteranceId: String? = null
-	private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
 	var currentDocumentTitle: String = "Paperback"
 		set(value) {
@@ -65,66 +65,6 @@ class TtsManager(
 			field = value
 			updateMediaMetadata()
 		}
-	private var audioFocusRequest: AudioFocusRequest? = null
-	private var wasPlayingBeforeFocusLoss = false
-
-	private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
-		when (focusChange) {
-			AudioManager.AUDIOFOCUS_LOSS,
-			AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-				wasPlayingBeforeFocusLoss = _isSpeaking.value
-				if (_isSpeaking.value) {
-					onPauseCommand?.invoke()
-				}
-			}
-			AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-				// System handles ducking automatically on API 26+, or it just keeps playing on older APIs.
-			}
-			AudioManager.AUDIOFOCUS_GAIN -> {
-				if (wasPlayingBeforeFocusLoss) {
-					onPlayCommand?.invoke()
-					wasPlayingBeforeFocusLoss = false
-				}
-			}
-		}
-	}
-
-	// Speech playback always uses the same audio attributes; shared to avoid rebuilding
-	// an identical AudioAttributes instance at every call site.
-	private fun speechAudioAttributes(): AudioAttributes =
-		AudioAttributes
-			.Builder()
-			.setUsage(AudioAttributes.USAGE_MEDIA)
-			.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-			.build()
-
-	private fun requestAudioFocus() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			val request = AudioFocusRequest
-				.Builder(AudioManager.AUDIOFOCUS_GAIN)
-				.setAudioAttributes(speechAudioAttributes())
-				.setOnAudioFocusChangeListener(audioFocusChangeListener)
-				.build()
-			audioFocusRequest = request
-			audioManager.requestAudioFocus(request)
-		} else {
-			@Suppress("DEPRECATION")
-			audioManager.requestAudioFocus(
-				audioFocusChangeListener,
-				AudioManager.STREAM_MUSIC,
-				AudioManager.AUDIOFOCUS_GAIN
-			)
-		}
-	}
-
-	private fun abandonAudioFocus() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
-		} else {
-			@Suppress("DEPRECATION")
-			audioManager.abandonAudioFocus(audioFocusChangeListener)
-		}
-	}
 
 	companion object {
 		const val SYSTEM_DEFAULT = "system_default"
@@ -132,22 +72,32 @@ class TtsManager(
 		const val KEY_VOICE = "tts_voice"
 		const val KEY_RATE = "tts_rate"
 		const val KEY_PITCH = "tts_pitch"
+		const val KEY_PARAGRAPH_PAUSE = "tts_paragraph_pause_ms"
 	}
 
 	private val _currentEngineName = MutableStateFlow<String?>(null)
-	val currentEngineName: StateFlow<String?> = _currentEngineName
+	val currentEngineName: StateFlow<String?> = _currentEngineName.asStateFlow()
 
 	private val _isInitialized = MutableStateFlow(false)
-	val isInitialized: StateFlow<Boolean> = _isInitialized
+	val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+
+	/** Text asked for before the engine finished starting, spoken once it has.
+	 *
+	 * An engine reports itself ready through `onInit`, and every call made before that fails
+	 * and returns ERROR. Engines differ by a lot in how long they take: a device's built-in one
+	 * is usually up before the reader can press play, while a third-party engine that loads
+	 * dictionaries of its own may not be, so the press landed on nothing at all. Only the most
+	 * recent request is kept; an earlier one is no longer what the reader is waiting for. */
+	private var pendingSpeak: Pair<String, Boolean>? = null
 
 	private val ttsScope = CoroutineScope(Dispatchers.Main)
 	private var stopSpeakingJob: Job? = null
 
 	private val _isSpeaking = MutableStateFlow(false)
-	val isSpeaking: StateFlow<Boolean> = _isSpeaking
+	override val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
 
 	private val _isPaused = MutableStateFlow(false)
-	val isPaused: StateFlow<Boolean> = _isPaused
+	override val isPaused: StateFlow<Boolean> = _isPaused.asStateFlow()
 
 	var onUtteranceCompleted: (() -> Unit)? = null
 	var onSegmentTransition: (() -> Unit)? = null
@@ -156,20 +106,32 @@ class TtsManager(
 	var onNextCommand: (() -> Unit)? = null
 	var onPrevCommand: (() -> Unit)? = null
 
+	private val audioFocus =
+		AudioFocusHolder(
+			context,
+			isPlaying = { _isSpeaking.value },
+			onPause = { onPauseCommand?.invoke() },
+			onResume = { onPlayCommand?.invoke() }
+		)
+
 	private val _currentSpeechRate = MutableStateFlow(50)
-	val currentSpeechRate: StateFlow<Int> = _currentSpeechRate
+	val currentSpeechRate: StateFlow<Int> = _currentSpeechRate.asStateFlow()
 
 	private val _currentPitch = MutableStateFlow(50)
-	val currentPitch: StateFlow<Int> = _currentPitch
+	val currentPitch: StateFlow<Int> = _currentPitch.asStateFlow()
+
+	private val _paragraphPauseMs = MutableStateFlow(MIN_PARAGRAPH_PAUSE_MS)
+	val paragraphPauseMs: StateFlow<Int> = _paragraphPauseMs.asStateFlow()
 
 	private val _currentVoice = MutableStateFlow<Voice?>(null)
-	val currentVoice: StateFlow<Voice?> = _currentVoice
+	val currentVoice: StateFlow<Voice?> = _currentVoice.asStateFlow()
 
 	private val _availableVoices = MutableStateFlow<List<Voice>>(emptyList())
-	val availableVoices: StateFlow<List<Voice>> = _availableVoices
+	val availableVoices: StateFlow<List<Voice>> = _availableVoices.asStateFlow()
 
 	fun loadConfigAndInit() {
 		val savedEngine = config.getAppString(KEY_ENGINE, SYSTEM_DEFAULT)
+		config.getAppString(KEY_PARAGRAPH_PAUSE, "").toIntOrNull()?.let { _paragraphPauseMs.value = paragraphPauseFor(it) }
 		initTts(savedEngine)
 		initMediaSession()
 	}
@@ -182,7 +144,6 @@ class TtsManager(
 			onPrevCommand = { onPrevCommand?.invoke() }
 		)
 		ttsPlayer = player
-
 		val sessionActivityIntent = Intent(context, MainActivity::class.java)
 		val sessionActivityPendingIntent = PendingIntent.getActivity(
 			context,
@@ -190,15 +151,12 @@ class TtsManager(
 			sessionActivityIntent,
 			PendingIntent.FLAG_IMMUTABLE
 		)
-
 		mediaSession = MediaSession
 			.Builder(context, player)
 			.setSessionActivity(sessionActivityPendingIntent)
 			.build()
-
 		PlaybackService.activeMediaSession = mediaSession
 		updateMediaMetadata()
-
 		// Binding (rather than Context.startForegroundService()) keeps PlaybackService
 		// alive and its Media3 internals already observing the player before playback
 		// ever begins. Starting it with a plain Intent instead races the 5-second
@@ -227,6 +185,32 @@ class TtsManager(
 		ttsPlayer?.updateMetadata(currentDocumentTitle, currentDocumentAuthor)
 	}
 
+	/**
+	 * Throws away the paragraph synthesized ahead and synthesizes it again at the current
+	 * settings.
+	 *
+	 * The next paragraph is rendered to a file and wired up as the media player's next player
+	 * while the current one is still talking, so without this a rate or pitch change is not
+	 * heard until that already-rendered paragraph has played, one paragraph later than expected.
+	 * Unwiring it before it starts costs nothing audible, and re-synthesizing straight away
+	 * keeps the hand-off between paragraphs gapless.
+	 */
+	private fun resynthesizePrecache() {
+		val text = precachedText ?: return
+		try {
+			mediaPlayer?.setNextMediaPlayer(null)
+		} catch (_: Exception) {
+		}
+		try {
+			nextMediaPlayer?.release()
+		} catch (_: Exception) {
+		}
+		nextMediaPlayer = null
+		isNextMediaPlayerPrepared = false
+		precachedText = null
+		precache(text)
+	}
+
 	fun precache(text: String) {
 		if (text.isBlank() || text == precachedText) return
 		fileCounter++
@@ -236,7 +220,6 @@ class TtsManager(
 		currentPrecacheUtteranceId = precacheUtteranceId
 		nextTempFile = File(context.cacheDir, "paperback_tts_next_$fileCounter.wav")
 		nextTempFile?.takeIf { it.exists() }?.delete()
-
 		val params = Bundle()
 		tts?.synthesizeToFile(text, params, nextTempFile, precacheUtteranceId)
 	}
@@ -255,6 +238,15 @@ class TtsManager(
 	}
 
 	override fun onInit(status: Int) {
+		if (status != TextToSpeech.SUCCESS) {
+			// Nothing will ever speak through this engine. Say so rather than leaving the
+			// reader pressing play against an engine that never answers.
+			Log.e(TAG, "TTS engine ${_currentEngineName.value ?: SYSTEM_DEFAULT} failed to start (status $status)")
+			pendingSpeak = null
+			_isSpeaking.value = false
+			updatePlaybackState(false)
+			return
+		}
 		if (status == TextToSpeech.SUCCESS) {
 			tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
 				override fun onStart(utteranceId: String?) {
@@ -268,12 +260,15 @@ class TtsManager(
 				override fun onDone(utteranceId: String?) {
 					val isCurrentContent = utteranceId != null && utteranceId == currentContentUtteranceId
 					val isCurrentPrecache = utteranceId != null && utteranceId == currentPrecacheUtteranceId
-					if (isCurrentContent && currentTempFile != null) {
+					val contentFile = currentTempFile
+					val precacheFile = nextTempFile
+					if (isCurrentContent && contentFile != null) {
 						ttsScope.launch(Dispatchers.IO) {
 							try {
+								appendSilence(contentFile, _paragraphPauseMs.value)
 								val player = MediaPlayer().apply {
 									setAudioAttributes(speechAudioAttributes())
-									setDataSource(currentTempFile!!.absolutePath)
+									setDataSource(contentFile.absolutePath)
 
 									setOnPreparedListener { mp ->
 										ttsScope.launch(Dispatchers.Main) {
@@ -306,12 +301,13 @@ class TtsManager(
 								e.printStackTrace()
 							}
 						}
-					} else if (isCurrentPrecache && nextTempFile != null) {
+					} else if (isCurrentPrecache && precacheFile != null) {
 						ttsScope.launch(Dispatchers.IO) {
 							try {
+								appendSilence(precacheFile, _paragraphPauseMs.value)
 								val nextPlayer = MediaPlayer().apply {
 									setAudioAttributes(speechAudioAttributes())
-									setDataSource(nextTempFile!!.absolutePath)
+									setDataSource(precacheFile.absolutePath)
 
 									setOnPreparedListener { nextMp ->
 										ttsScope.launch(Dispatchers.Main) {
@@ -378,11 +374,11 @@ class TtsManager(
 				_isInitialized.value = true
 				return
 			}
-			if (_currentEngineName.value == SYSTEM_DEFAULT) {
+			val engine = _currentEngineName.value
+			if (engine == null || engine == SYSTEM_DEFAULT) {
 				_availableVoices.value = emptyList()
 				_currentVoice.value = null
 			} else {
-				val engine = _currentEngineName.value!!
 				val savedRate = config.getAppString("${KEY_RATE}_$engine", "50").toIntOrNull() ?: 50
 				setSpeechRate(savedRate)
 				val savedPitch = config.getAppString("${KEY_PITCH}_$engine", "50").toIntOrNull() ?: 50
@@ -401,7 +397,15 @@ class TtsManager(
 				}
 			}
 			_isInitialized.value = true
+			speakPending()
 		}
+	}
+
+	/** Speaks whatever was asked for while the engine was still starting. */
+	private fun speakPending() {
+		val (text, isSample) = pendingSpeak ?: return
+		pendingSpeak = null
+		speak(text, isSample)
 	}
 
 	private fun setupCompletionListener(
@@ -450,8 +454,14 @@ class TtsManager(
 		isSample: Boolean = false
 	) {
 		if (text.isNotBlank()) {
+			// Every call before the engine reports itself ready fails and returns ERROR, so
+			// hold the text instead of handing it over to be dropped.
+			if (!_isInitialized.value) {
+				pendingSpeak = text to isSample
+				return
+			}
 			if (!isSample) {
-				requestAudioFocus()
+				audioFocus.request()
 			}
 			stopSpeakingJob?.cancel()
 			fileCounter++
@@ -469,7 +479,16 @@ class TtsManager(
 				updatePlaybackState(true)
 
 				val params = Bundle()
-				tts?.synthesizeToFile(text, params, currentTempFile, utteranceId)
+				// The return value is the only report of failure here: synthesizeToFile does
+				// not throw for a refused request, so ignoring it leaves the reader looking at
+				// a bar that says it is playing while nothing was ever synthesized.
+				val queued = tts?.synthesizeToFile(text, params, currentTempFile, utteranceId)
+				if (queued != TextToSpeech.SUCCESS) {
+					Log.e(TAG, "TTS engine refused to synthesize (result $queued)")
+					cleanupPlayer()
+					_isSpeaking.value = false
+					updatePlaybackState(false)
+				}
 			} catch (e: Exception) {
 				e.printStackTrace()
 				cleanupPlayer()
@@ -478,7 +497,7 @@ class TtsManager(
 		}
 	}
 
-	fun pause() {
+	override fun pause() {
 		if (_isSpeaking.value && !_isPaused.value) {
 			_isPaused.value = true
 			_isSpeaking.value = false
@@ -507,7 +526,7 @@ class TtsManager(
 		updatePlaybackState(isPlaying)
 	}
 
-	fun resume() {
+	override fun resume() {
 		if (_isPaused.value) {
 			_isPaused.value = false
 			_isSpeaking.value = true
@@ -527,7 +546,6 @@ class TtsManager(
 		} catch (_: Exception) {
 		}
 		mediaPlayer = null
-
 		try {
 			nextMediaPlayer?.release()
 		} catch (_: Exception) {
@@ -535,10 +553,8 @@ class TtsManager(
 		nextMediaPlayer = null
 		isNextMediaPlayerPrepared = false
 		precachedText = null
-
 		currentTempFile = null
 		nextTempFile = null
-
 		try {
 			context.cacheDir.listFiles()?.forEach {
 				if (it.name.startsWith("paperback_tts_")) {
@@ -549,7 +565,7 @@ class TtsManager(
 		}
 	}
 
-	fun stop() {
+	override fun stop() {
 		tts?.stop()
 		cleanupPlayer()
 		stopSpeakingJob?.cancel()
@@ -558,29 +574,40 @@ class TtsManager(
 		_isSpeaking.value = false
 		_isPaused.value = false
 		updatePlaybackState(false)
-		abandonAudioFocus()
+		audioFocus.abandon()
 	}
 
 	fun setSpeechRate(ratePercentage: Int) {
-		_currentSpeechRate.value = ratePercentage
+		val percentage = ratePercentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)
+		_currentSpeechRate.value = percentage
 		val engine = _currentEngineName.value
 		if (engine != null && engine != SYSTEM_DEFAULT) {
-			config.setAppString("${KEY_RATE}_$engine", ratePercentage.toString())
+			config.setAppString("${KEY_RATE}_$engine", percentage.toString())
 			config.flush()
-			val mappedRate = 0.1f + (ratePercentage / 100f) * 2.9f
-			tts?.setSpeechRate(mappedRate)
+			tts?.setSpeechRate(speechRateFor(percentage))
+			resynthesizePrecache()
 		}
 	}
 
 	fun setPitch(pitchPercentage: Int) {
-		_currentPitch.value = pitchPercentage
+		val percentage = pitchPercentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)
+		_currentPitch.value = percentage
 		val engine = _currentEngineName.value
 		if (engine != null && engine != SYSTEM_DEFAULT) {
-			config.setAppString("${KEY_PITCH}_$engine", pitchPercentage.toString())
+			config.setAppString("${KEY_PITCH}_$engine", percentage.toString())
 			config.flush()
-			val mappedPitch = 0.1f + (pitchPercentage / 100f) * 1.9f
-			tts?.setPitch(mappedPitch)
+			tts?.setPitch(pitchFor(percentage))
+			resynthesizePrecache()
 		}
+	}
+
+	fun setParagraphPause(ms: Int) {
+		val pause = paragraphPauseFor(ms)
+		if (pause == _paragraphPauseMs.value) return
+		_paragraphPauseMs.value = pause
+		config.setAppString(KEY_PARAGRAPH_PAUSE, pause.toString())
+		config.flush()
+		resynthesizePrecache()
 	}
 
 	fun getAvailableEngines(): List<TextToSpeech.EngineInfo> {
@@ -643,21 +670,36 @@ class TtsManager(
 	fun shutdown() {
 		stop()
 		tts?.shutdown()
-
 		mediaSession?.release()
 		mediaSession = null
 		ttsPlayer?.release()
 		ttsPlayer = null
 		PlaybackService.activeMediaSession = null
-
 		// Unbind rather than force-stopping the service — Media3's own lifecycle
 		// handling decides when it's actually safe for the service to go away.
 		serviceConnection?.let { context.unbindService(it) }
 		serviceConnection = null
-
 		// Last, so nothing torn down above can leave work queued: a late onDone callback
 		// would otherwise launch on this scope after shutdown and build a MediaPlayer for a
 		// temp file that no longer exists, with nothing left to release it.
 		ttsScope.cancel()
 	}
 }
+
+/** The ends of the rate and pitch sliders, which every stored value is brought back inside: a
+ * config written by hand or by another version can hold anything at all. */
+internal const val MIN_SPEECH_PERCENTAGE = 0
+internal const val MAX_SPEECH_PERCENTAGE = 100
+
+/**
+ * The engine speech rate a slider percentage means. The slider runs 0 to 100 with 50 in the
+ * middle, and the engine takes a multiplier, so this spreads it over 0.1x to 3.0x: slow enough to
+ * follow an unfamiliar word, fast enough for a practised listener.
+ */
+internal fun speechRateFor(percentage: Int): Float =
+	0.1f + (percentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE) / 100f) * 2.9f
+
+/** The engine pitch a slider percentage means, over a narrower 0.1x to 2.0x: past that a voice
+ * stops being understandable rather than just sounding different. */
+internal fun pitchFor(percentage: Int): Float =
+	0.1f + (percentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE) / 100f) * 1.9f

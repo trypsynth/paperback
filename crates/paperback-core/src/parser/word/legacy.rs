@@ -21,11 +21,18 @@ use crate::{
 
 const FIB_MAGIC_DOC: u16 = 0xA5EC;
 const FIB_MAGIC_DOC_OLD: u16 = 0xA5DC;
+const FIB_NFIB_OFFSET: usize = 0x02;
 const FIB_FLAGS_OFFSET: usize = 0x0A;
+const FIB_FCMIN_OFFSET: usize = 0x18;
+const FIB_FCMAC_OFFSET: usize = 0x1C;
 const FIB_FCCLX_OFFSET: usize = 0x1A2;
 const FIB_LCBCLX_OFFSET: usize = 0x1A6;
 const FIB_FLAG_ENCRYPTED: u16 = 0x0100;
 const FIB_FLAG_USE_1_TABLE: u16 = 0x0200;
+/// `nFib` values below this are Word 6.0 and Word 95, which predate the Word 97 file format. They
+/// keep their text in the `WordDocument` stream itself and write no `0Table`/`1Table`, so the
+/// Word 97 path below cannot read them. Word 97 is `nFib` 0x00C1 and up.
+const FIB_NFIB_WORD97: u16 = 0x00C1;
 
 pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 	let file =
@@ -87,6 +94,13 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
 		return Ok(document);
+	}
+	// Word 6.0 and Word 95 keep their text in the WordDocument stream and write no table stream, so
+	// the Word 97 path below would fail at the very first step. Their text is the run between fcMin
+	// and fcMac; read it straight out rather than turning a thirty-year-old file into an error.
+	let nfib = read_u16_le(&word_document, FIB_NFIB_OFFSET);
+	if nfib < FIB_NFIB_WORD97 {
+		return finish_doc(extract_word6_text(&word_document), &context.file_path);
 	}
 	let table_stream_name = if (fib_flags & FIB_FLAG_USE_1_TABLE) != 0 { "1Table" } else { "0Table" };
 	let table_stream = read_stream(&mut compound, table_stream_name)
@@ -212,6 +226,40 @@ fn parse_doc_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<Str
 		}
 	}
 	Some(text)
+}
+
+/// The main text of a Word 6.0 / Word 95 document, which is the byte run between `fcMin` and
+/// `fcMac` in the WordDocument stream. Those bytes are 8-bit codepage text, not the UTF-16 Word 97
+/// switched to, so they are decoded with the same detector the plain-text and HTML parsers use,
+/// which recovers a Cyrillic or Central European document rather than turning it into question
+/// marks. A fast-saved file's edits may sit outside this run, so the order can be imperfect, but
+/// the words are there, which is the whole point against a hard error.
+fn extract_word6_text(word_document: &[u8]) -> String {
+	let fc_min = usize::try_from(read_u32_le(word_document, FIB_FCMIN_OFFSET)).unwrap_or(0);
+	let fc_mac = usize::try_from(read_u32_le(word_document, FIB_FCMAC_OFFSET)).unwrap_or(0);
+	if fc_mac <= fc_min || fc_min >= word_document.len() {
+		// A file whose bounds make no sense still has the simple scan from 0x200 to fall back on.
+		return extract_doc_text_simple(word_document);
+	}
+	let end = fc_mac.min(word_document.len());
+	convert_to_utf8(&word_document[fc_min..end])
+}
+
+/// Builds the finished document from extracted DOC text: normalize field codes, drop it into a
+/// buffer with a trailing newline, and title it from the path. Shared by the extraction paths.
+fn finish_doc(text: String, file_path: &str) -> Result<Document> {
+	let normalized = normalize_doc_text(&text);
+	let mut buffer = DocumentBuffer::new();
+	if !normalized.is_empty() {
+		buffer.append(&normalized);
+		if !buffer.content.ends_with('\n') {
+			buffer.append("\n");
+		}
+	}
+	let title = extract_title_from_path(file_path);
+	let mut document = Document::new().with_title(title);
+	document.set_buffer(buffer);
+	Ok(document)
 }
 
 fn extract_doc_text_simple(word_document: &[u8]) -> String {
