@@ -142,7 +142,7 @@ impl ClaudeClient {
 			// cacheable system block rather than being repeated in each user message.
 			"system": [{
 				"type": "text",
-				"text": phrase_system_prompt(),
+				"text": phrase_system_prompt(None),
 				"cache_control": { "type": "ephemeral" }
 			}],
 			"messages": [{
@@ -225,7 +225,7 @@ impl ClaudeClient {
 			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": plural_schema() })),
 			"system": [{
 				"type": "text",
-				"text": plural_system_prompt(),
+				"text": plural_system_prompt(None),
 				"cache_control": { "type": "ephemeral" }
 			}],
 			"messages": [{
@@ -281,7 +281,7 @@ impl ClaudeClient {
 			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": markdown_schema() })),
 			"system": [{
 				"type": "text",
-				"text": markdown_system_prompt(),
+				"text": markdown_system_prompt(None),
 				"cache_control": { "type": "ephemeral" }
 			}],
 			"messages": [{
