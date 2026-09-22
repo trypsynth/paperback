@@ -138,6 +138,9 @@
 <p>Remove fuzzy markers once reviewed, then compile and test (same as steps 6 and 7 above).</p>
 </li>
 </ol>
+<h2>Machine-translated languages</h2>
+<p>Languages not listed in <code>po/human-maintained-locales.txt</code> are kept up to date automatically: after every change to the source, <code>cargo xtask translate</code> fills in the new strings and readme sections with the Claude API and marks them <code>fuzzy</code> for review.</p>
+<p>You can tell the machine translator how your language should read by adding <code>po/style/&lt;lang&gt;.md</code> (for example <code>po/style/nl.md</code>). Write it in English, since the model reads it: the register (formal or informal), rules about articles, word order and capitalisation, and a glossary of the terms you want used consistently. The file is appended to the translator's instructions whenever your language is translated, and its conventions take precedence over the general rules. If the file is missing, nothing changes. Running <code>cargo xtask translate --dry-run</code> shows <code>with po/style/&lt;lang&gt;.md</code> on your language's line once the note is picked up.</p>
 <h2>Translating the README</h2>
 <p>If you want to translate the user-facing documentation as well, create a <code>doc/readme-&lt;lang&gt;.md</code> file (for example <code>doc/readme-da.md</code>) using the English <code>doc/readme.md</code> as your starting point. The build system picks it up automatically and embeds the rendered HTML into the binary alongside the UI strings. Submit it in the same pull request as your <code>.po</code> file.</p>
 <h2>Submitting Your Translation</h2>
