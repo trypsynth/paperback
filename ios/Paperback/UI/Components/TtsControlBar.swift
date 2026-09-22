@@ -3,10 +3,6 @@ import SwiftUI
 struct TtsControlBar: View {
 	@Environment(AppViewModel.self) private var viewModel
 
-	/// Whole percentages of the rate range, matching what the settings slider reports.
-	private static let ratePresets = [25, 50, 75, 100]
-	private static let rateStep = 1
-
 	// Find reads as "Find Previous"/"Find Next", matching the Find screen's own buttons, rather
 	// than "Previous Find"/"Next Find".
 	private var prevLabel: String {
@@ -28,6 +24,7 @@ struct TtsControlBar: View {
 	}
 
 	var body: some View {
+		@Bindable var ttsManager = viewModel.reading.ttsManager
 		HStack(spacing: 0) {
 			Menu {
 				ForEach(viewModel.reading.availableNavUnits, id: \.self) { unit in
@@ -113,36 +110,17 @@ struct TtsControlBar: View {
 			// Speech rate sits opposite the navigation unit and is built the same way: a menu
 			// of presets to tap, and an adjustable value so a screen reader changes it with a
 			// swipe rather than a trip into Settings.
-			Menu {
-				ForEach(Self.ratePresets, id: \.self) { percent in
-					Button {
-						viewModel.reading.ttsManager.speechRatePercent = percent
-					} label: {
-						if percent == viewModel.reading.ttsManager.speechRatePercent {
-							Label("\(percent)%", systemImage: "checkmark")
-						} else {
-							Text("\(percent)%")
-						}
-					}
-				}
-			} label: {
-				Text("\(viewModel.reading.ttsManager.speechRatePercent)%")
+			SpeechPercentMenu(
+				// TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+				accessibilityLabel: t("Speech Rate"),
+				percent: $ttsManager.speechRatePercent,
+				presets: speechRatePresets
+			) {
+				Text("\(ttsManager.speechRatePercent)%")
 					.font(.caption)
 					.foregroundStyle(.secondary)
 					.monospacedDigit()
 					.frame(width: 72, alignment: .trailing)
-			}
-			// TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
-			.accessibilityLabel(t("Speech Rate"))
-			.accessibilityValue("\(viewModel.reading.ttsManager.speechRatePercent)%")
-			.accessibilityRemoveTraits(.isButton)
-			.accessibilityAdjustableAction { direction in
-				let manager = viewModel.reading.ttsManager
-				switch direction {
-				case .increment: manager.speechRatePercent += Self.rateStep
-				case .decrement: manager.speechRatePercent -= Self.rateStep
-				@unknown default: break
-				}
 			}
 			.padding(.trailing, 16)
 		}
