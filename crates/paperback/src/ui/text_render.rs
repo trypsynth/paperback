@@ -127,11 +127,23 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: TextCtrl, slice: &WindowSlice) -> 
 /// `{\rtf` prefix, so it would just store the markup as literal text. If
 /// streaming doesn't round-trip back to the original content, this falls back
 /// to the plain-text + per-segment path used on every other platform.
+/// The number of formatted spans at which streaming the whole window as RTF starts to be worth
+/// it, rather than setting the text plainly and styling each span afterwards.
+///
+/// Both paths end up in the same place, but they cost differently. Measured on a 443,000
+/// character Chinese book: streaming costs around 3.5 seconds however little formatting the
+/// markup carries, plain text around 2, and each span another 10 milliseconds to style. So the
+/// RTF only pays for itself past a hundred spans or so. Below that it is pure loss, and a book
+/// whose only formatting was one bold word waited seconds for a five megabyte RTF that existed
+/// to embolden four characters (<https://github.com/trypsynth/paperback/issues/920>).
+#[cfg(target_os = "windows")]
+const RTF_STREAM_MIN_SEGMENTS: usize = 128;
+
 pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &WindowSlice) {
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]
-	if !segments.is_empty()
+	if segments.len() >= RTF_STREAM_MIN_SEGMENTS
 		&& let Some(font) = text_ctrl.get_font()
 	{
 		// What RichEdit will actually end up holding, which is not always what it is handed -
