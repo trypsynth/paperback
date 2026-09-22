@@ -109,21 +109,47 @@ const SCAN_IMAGE_COVERAGE: f64 = 0.5;
 /// this; a page number, even dressed up as "- 42 -", does not.
 const MAX_FURNITURE_CHARS: usize = 12;
 
-/// Whether a page is a scanned image carrying nothing but a page number, which is a scan to be
-/// offered for OCR rather than a page of text.
+/// Whether a page is a scanned image carrying nothing but furniture, which is a scan to be offered
+/// for OCR rather than a page of text.
 ///
 /// The two halves are both needed. A page can carry a page number and still be a page of text, so
 /// a large image is required; a page can be one big image and still be a figure with a caption, so
-/// the text is required to be nothing more than a page number. See [`looks_like_page_number`].
-fn is_scanned_with_only_furniture(page: &PageContent) -> bool {
+/// the text is required to be nothing but furniture. Furniture is a page number (see
+/// [`looks_like_page_number`]), or a line at the page's edge that the whole document repeats, which
+/// is how a scanned magazine's watermark or a scanned book's running title shows up. A caption does
+/// not repeat from page to page, so it still counts as text.
+fn is_scanned_with_only_furniture(page: &PageContent, running: &RunningText) -> bool {
 	if page.largest_image_coverage < SCAN_IMAGE_COVERAGE {
 		return false;
 	}
 	let text = match &page.tagged {
 		Some(tagged) => tagged.display_text.clone(),
-		None => page.lines.iter().map(|line| line.text.as_str()).collect::<Vec<_>>().join(" "),
+		None => {
+			let body = text_without_running_lines(&page.lines, running);
+			if body.trim().is_empty() && !page.lines.is_empty() {
+				return true;
+			}
+			body
+		}
 	};
 	looks_like_page_number(&text)
+}
+
+/// A page's text with the edge lines the whole document repeats left out. Only lines within
+/// [`running::EDGE_LINES`] of the top or bottom are candidates, which is where running text sits
+/// and the only place [`RunningText::contains`] is meant to be asked about.
+fn text_without_running_lines(lines: &[Line], running: &RunningText) -> String {
+	let bottom_edge = lines.len().saturating_sub(running::EDGE_LINES);
+	lines
+		.iter()
+		.enumerate()
+		.filter(|(index, line)| {
+			let at_edge = *index < running::EDGE_LINES || *index >= bottom_edge;
+			!(at_edge && running.contains(&line.text, line.size))
+		})
+		.map(|(_, line)| line.text.as_str())
+		.collect::<Vec<_>>()
+		.join(" ")
 }
 
 /// Whether a piece of text is nothing but a page number: short, and made only of digits, spaces
@@ -360,7 +386,7 @@ impl Parser for PdfParser {
 			// dropped and the page is offered for OCR like any other image-only page. This is what
 			// makes a scanned book with burned-in page numbers readable at all: without it the
 			// reader meets "[Image]" and a bare number on every page and no way to reach the words.
-			if is_scanned_with_only_furniture(&page) {
+			if is_scanned_with_only_furniture(&page, &running_text) {
 				let placeholder_position = buffer.current_position();
 				has_any_images = true;
 				buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, placeholder_position));
@@ -453,7 +479,54 @@ impl Parser for PdfParser {
 
 #[cfg(test)]
 mod tests {
-	use super::looks_like_page_number;
+	use super::{
+		Line, PageContent, PageEdges, is_scanned_with_only_furniture, looks_like_page_number, running::detect,
+	};
+
+	const BODY: f64 = 10.0;
+
+	fn line(text: &str) -> Line {
+		Line { text: text.to_string(), size: BODY, top: 0.0, bottom: 0.0, monospaced: false }
+	}
+
+	fn page(coverage: f64, lines: &[&str]) -> PageContent {
+		PageContent {
+			largest_image_coverage: coverage,
+			lines: lines.iter().map(|text| line(text)).collect(),
+			..Default::default()
+		}
+	}
+
+	/// The running text a document of `pages` would be surveyed for.
+	fn running(pages: &[PageContent]) -> super::RunningText {
+		let edges: Vec<PageEdges> = pages.iter().map(|page| PageEdges::of(&page.lines)).collect();
+		detect(&edges, BODY)
+	}
+
+	/// The reported case: a scanned magazine with the same advert stamped on every page. The
+	/// advert is text, but it is furniture, and the page underneath is a scan to offer for OCR.
+	#[test]
+	fn a_scan_whose_only_text_repeats_on_every_page_is_a_scan() {
+		let pages: Vec<_> = (0..6).map(|_| page(0.95, &["Crowdfunded 190+ magazines, WeChat jiage8117"])).collect();
+		assert!(is_scanned_with_only_furniture(&pages[0], &running(&pages)));
+	}
+
+	/// A full-page figure with a caption of its own is a figure, not a scan. The caption does not
+	/// repeat, so it still counts as text and the page is read as it always was.
+	#[test]
+	fn a_full_page_figure_with_its_own_caption_is_not_a_scan() {
+		let mut pages: Vec<_> = (0..6).map(|_| page(0.95, &["Crowdfunded 190+ magazines, WeChat jiage8117"])).collect();
+		pages[0] = page(0.95, &["Figure 3. The river delta at dawn.", "Crowdfunded 190+ magazines, WeChat jiage8117"]);
+		assert!(!is_scanned_with_only_furniture(&pages[0], &running(&pages)));
+	}
+
+	/// Repeated furniture on an ordinary page of text changes nothing: without a large image the
+	/// page is never a candidate.
+	#[test]
+	fn repeated_text_on_a_page_without_a_large_image_is_not_a_scan() {
+		let pages: Vec<_> = (0..6).map(|_| page(0.1, &["Crowdfunded 190+ magazines, WeChat jiage8117"])).collect();
+		assert!(!is_scanned_with_only_furniture(&pages[0], &running(&pages)));
+	}
 
 	/// A scanned page's page number is furniture, however it is dressed, so the page can be offered
 	/// for OCR rather than read as a bare number.

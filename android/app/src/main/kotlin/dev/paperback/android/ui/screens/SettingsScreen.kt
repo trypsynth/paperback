@@ -15,6 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.paperback.android.t
+import dev.paperback.android.tts.MAX_PARAGRAPH_PAUSE_MS
+import dev.paperback.android.tts.MIN_PARAGRAPH_PAUSE_MS
+import dev.paperback.android.tts.PARAGRAPH_PAUSE_STEP_MS
 import dev.paperback.android.ui.components.PickerMenuItem
 import dev.paperback.android.ui.components.pickerAnchorColors
 import dev.paperback.android.ui.state.MainScreenViewModel
@@ -40,6 +43,11 @@ private val PERCENT_RANGE = 0f..100f
 /** One step per whole percent, so TalkBack's swipe-to-adjust moves by one rather than jumping. */
 private const val PERCENT_ACCESSIBILITY_STEPS = 99
 private const val PERCENT_MIDPOINT = 50f
+
+private val PAUSE_RANGE = MIN_PARAGRAPH_PAUSE_MS.toFloat()..MAX_PARAGRAPH_PAUSE_MS.toFloat()
+
+/** Discrete slider positions between the bounds, one per [PARAGRAPH_PAUSE_STEP_MS]. */
+private const val PAUSE_STEPS = (MAX_PARAGRAPH_PAUSE_MS - MIN_PARAGRAPH_PAUSE_MS) / PARAGRAPH_PAUSE_STEP_MS - 1
 
 /**
  * A labelled dropdown over a fixed list of options, where the stored value is the option's index.
@@ -144,8 +152,10 @@ fun SettingsScreen(
 	val lineSpacing by settings.lineSpacing.state.collectAsStateWithLifecycle()
 	val paragraphSpacing by settings.paragraphSpacing.state.collectAsStateWithLifecycle()
 	val textAlignment by settings.textAlignment.state.collectAsStateWithLifecycle()
+	val highContrastText by settings.highContrastText.state.collectAsStateWithLifecycle()
 	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
 	val currentPitch by viewModel.ttsManager.currentPitch.collectAsStateWithLifecycle()
+	val paragraphPauseMs by viewModel.ttsManager.paragraphPauseMs.collectAsStateWithLifecycle()
 	val availableVoices by viewModel.ttsManager.availableVoices.collectAsStateWithLifecycle()
 	val currentVoice by viewModel.ttsManager.currentVoice.collectAsStateWithLifecycle()
 	val currentEngineName by viewModel.ttsManager.currentEngineName.collectAsStateWithLifecycle()
@@ -350,6 +360,25 @@ fun SettingsScreen(
 					selectedIndex = textAlignment,
 					onSelect = { settings.textAlignment.set(it) }
 				)
+				Spacer(modifier = Modifier.height(8.dp))
+				Row(
+					modifier = Modifier
+						.fillMaxWidth()
+						.toggleable(
+							value = highContrastText,
+							onValueChange = { settings.highContrastText.set(it) },
+							role = Role.Switch
+						).padding(vertical = 8.dp),
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.SpaceBetween
+				) {
+					// TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
+					Text(t("High Contrast Text"), modifier = Modifier.weight(1f))
+					Switch(
+						checked = highContrastText,
+						onCheckedChange = null
+					)
+				}
 
 				Spacer(modifier = Modifier.height(24.dp))
 				// TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
@@ -455,6 +484,34 @@ fun SettingsScreen(
 					isSystemDefault = isSystemDefault,
 					onChange = { viewModel.ttsManager.setPitch(it) }
 				)
+				Spacer(modifier = Modifier.height(16.dp))
+				// TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
+				val paragraphPauseLabel = t("Paragraph Pause")
+				// TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
+				val paragraphPauseValue = t("{} ms", paragraphPauseMs.toString())
+				Column(
+					modifier = Modifier.clearAndSetSemantics {
+						contentDescription = paragraphPauseLabel
+						stateDescription = paragraphPauseValue
+						progressBarRangeInfo = ProgressBarRangeInfo(
+							current = paragraphPauseMs.toFloat(),
+							range = PAUSE_RANGE,
+							steps = PAUSE_STEPS
+						)
+						setProgress { targetValue ->
+							viewModel.ttsManager.setParagraphPause(targetValue.roundToInt())
+							true
+						}
+					}
+				) {
+					Text("$paragraphPauseLabel: $paragraphPauseValue", style = MaterialTheme.typography.labelLarge)
+					Slider(
+						value = paragraphPauseMs.toFloat(),
+						onValueChange = { viewModel.ttsManager.setParagraphPause(it.roundToInt()) },
+						valueRange = PAUSE_RANGE,
+						steps = 0
+					)
+				}
 				Spacer(modifier = Modifier.height(16.dp))
 				Button(
 					onClick = {

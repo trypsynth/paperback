@@ -184,10 +184,10 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 					let end_str = parts.next().unwrap_or_default();
 					let note_str = parts.next().unwrap_or_default();
 					if let (Ok(start), Ok(end)) = (start_str.parse::<i64>(), end_str.parse::<i64>()) {
-						doc.bookmarks.push(StoredBookmark { start, end, note: decode_note(note_str) });
+						doc.bookmarks.push(StoredBookmark { start, end, note: decode_note(note_str), audio_ms: None });
 					}
 				} else if let Ok(pos) = trimmed.parse::<i64>() {
-					doc.bookmarks.push(StoredBookmark { start: pos, end: pos, note: String::new() });
+					doc.bookmarks.push(StoredBookmark { start: pos, end: pos, note: String::new(), audio_ms: None });
 				}
 			}
 			doc.bookmarks.sort_by_key(|a| a.start);

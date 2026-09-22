@@ -52,7 +52,7 @@ struct ElementsView: View {
 		// TRANSLATORS: Navigation title of the Elements screen (lists the document's headings and links)
 		.navigationTitle(t("Elements"))
 		.navigationBarTitleDisplayMode(.inline)
-		.sheetAccessibilityFocus(title: "Elements")
+		.sheetAccessibilityFocus(title: t("Elements"))
 	}
 
 	@ViewBuilder private var emptyView: some View {

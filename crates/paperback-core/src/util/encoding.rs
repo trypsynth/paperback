@@ -65,7 +65,8 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 	// a short/ambiguous sample is more likely wrong than not. That case is left to the
 	// Windows-1252-or-give-up fallback below, unchanged.
 	let mut detector = EncodingDetector::new(Iso2022JpDetection::Allow);
-	detector.feed(sample_of(input), true);
+	let sample = sample_of(input);
+	detector.feed(sample, sample.len() == input.len());
 	let detected = detector.guess(None, Utf8Detection::Allow);
 	if !detected.is_single_byte() {
 		let (decoded, _, had_errors) = detected.decode(input);
@@ -107,8 +108,8 @@ fn decode_utf32_be(input: &[u8]) -> String {
 }
 
 /// The leading bytes the heuristics run over. A sample can end part-way through a multi-byte
-/// character, which the statistical detector sees as one malformed sequence in 64 KB and shrugs
-/// off; the alternative of finding a boundary would mean already knowing the encoding.
+/// character, so the detector must not be told a cut sample is the end of the input: it would
+/// read the cut character as malformed and rule out the right encoding over it.
 fn sample_of(input: &[u8]) -> &[u8] {
 	&input[..input.len().min(DETECTION_SAMPLE_BYTES)]
 }
@@ -168,6 +169,17 @@ mod tests {
 		let (encoded, _, had_errors) = encoding_rs::GB18030.encode(&text);
 		assert!(!had_errors, "the fixture itself must be representable in GB18030");
 		assert!(encoded.len() > DETECTION_SAMPLE_BYTES * 2, "the fixture must outrun the sample");
+		assert_eq!(convert_to_utf8(&encoded), text);
+	}
+
+	/// <https://github.com/trypsynth/paperback/issues/907>: a sample cut through the middle of a
+	/// character made the detector rule GBK out and fall back to Windows-1252.
+	#[test]
+	fn a_sample_ending_mid_character_still_detects_gbk() {
+		let text = format!("a{}", "这是一本很长的中文电子书用来确认取样检测".repeat(DETECTION_SAMPLE_BYTES / 20));
+		let (encoded, _, had_errors) = encoding_rs::GBK.encode(&text);
+		assert!(!had_errors, "the fixture itself must be representable in GBK");
+		assert!(encoded[DETECTION_SAMPLE_BYTES - 1] >= 0x81, "the sample must end on a lead byte");
 		assert_eq!(convert_to_utf8(&encoded), text);
 	}
 

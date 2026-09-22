@@ -1,6 +1,7 @@
 package dev.paperback.android.ui.components
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
@@ -68,9 +71,13 @@ fun DocumentTextView(
 			onLineIndexChange(targetIndex)
 		}
 	}
+	var listModifier = Modifier.fillMaxSize().semantics { isTraversalGroup = true }
+	if (readability.background.isSpecified) {
+		listModifier = listModifier.background(readability.background)
+	}
 	LazyColumn(
 		state = listState,
-		modifier = Modifier.fillMaxSize().semantics { isTraversalGroup = true },
+		modifier = listModifier,
 		contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp)
 	) {
 		items(
@@ -98,10 +105,11 @@ fun DocumentTextView(
 				// A picture or a table the reader can't show comes through as a "[Image: ...]" or
 				// "[Table]: ..." placeholder, which set in the body face reads as markup that leaked
 				// into the prose. Drawn as an aside it reads as a note about the page instead. The
-				// wording stays as it is, since that is what a screen reader speaks.
+				// wording stays as it is, since that is what a screen reader speaks. High contrast
+				// keeps the italics but not the dimmer colour.
 				val asideStyle = SpanStyle(
 					fontStyle = FontStyle.Italic,
-					color = MaterialTheme.colorScheme.onSurfaceVariant
+					color = readability.textStyle.color.takeOrElse { MaterialTheme.colorScheme.onSurfaceVariant }
 				)
 				val annotatedString = buildAnnotatedString {
 					var currentIdx = 0

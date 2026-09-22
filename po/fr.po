@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 02:50+0000\n"
+"POT-Creation-Date: 2026-09-21 19:11+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1469,6 +1469,11 @@ msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "Ce document contient %d mot."
 msgstr[1] "Ce document contient %d mots."
+
+#. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
+#, fuzzy
+msgid "{} to {}"
+msgstr "{} à {}"
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
@@ -3743,7 +3748,7 @@ msgstr "Voix"
 msgid "Rate"
 msgstr "Taux"
 
-#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
 #: swift
 #, fuzzy
 msgid "Speech Rate"
@@ -3917,7 +3922,7 @@ msgstr "Règle"
 msgid "Scope"
 msgstr "Champ d'application"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a single word
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 #, fuzzy
 msgid "Word"

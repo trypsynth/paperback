@@ -1,22 +1,26 @@
 use std::{
 	cell::{Cell, RefCell},
+	collections::HashMap,
 	rc::Rc,
 	sync::Mutex,
 };
 
 use paperback_core::{
-	config::ConfigManager,
+	config::{Bookmark, ConfigManager},
 	reader_core,
 	session::DocumentSession,
 	types::{BookmarkDisplayEntry, BookmarkFilterType},
 };
 use patois::t;
+use wx_utils::format_duration_ms;
 use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, show_note_entry_dialog};
 
 pub struct BookmarkDialogResult {
 	pub start: i64,
+	/// Set for an audio bookmark, which the caller has to seek the recording to.
+	pub audio_ms: Option<u64>,
 }
 
 pub fn show_bookmark_dialog(
@@ -27,7 +31,7 @@ pub fn show_bookmark_dialog(
 	initial_filter: BookmarkFilterType,
 ) -> Option<BookmarkDialogResult> {
 	let file_path = session.file_path().to_string();
-	let content = Rc::new(session.content());
+	let snippets = Rc::new(text_snippets(session, &config.lock().unwrap().get_bookmarks(&file_path)));
 	// TRANSLATORS: Title of the Jump to Bookmark dialog
 	let dialog = Dialog::builder(parent, &t("Jump to Bookmark")).build();
 	let BookmarkDialogUi {
@@ -44,10 +48,11 @@ pub fn show_bookmark_dialog(
 		list: bookmark_list,
 		config: Rc::clone(config),
 		file_path: file_path.clone(),
-		content: Rc::clone(&content),
+		snippets: Rc::clone(&snippets),
 		entries: Rc::clone(&state.entries),
 		selected_start: Rc::clone(&state.selected_start),
 		selected_end: Rc::clone(&state.selected_end),
+		selected_audio: Rc::clone(&state.selected_audio),
 		filter_choice,
 		set_buttons_enabled: Rc::clone(&state.set_buttons_enabled),
 	});
@@ -57,6 +62,7 @@ pub fn show_bookmark_dialog(
 		entries: Rc::clone(&state.entries),
 		selected_start: Rc::clone(&state.selected_start),
 		selected_end: Rc::clone(&state.selected_end),
+		selected_audio: Rc::clone(&state.selected_audio),
 		set_buttons_enabled: Rc::clone(&state.set_buttons_enabled),
 	});
 	bind_bookmark_jump(dialog, jump_button, &state.selected_start);
@@ -70,6 +76,7 @@ pub fn show_bookmark_dialog(
 		repopulate: Rc::clone(&repopulate),
 		selected_start: Rc::clone(&state.selected_start),
 		selected_end: Rc::clone(&state.selected_end),
+		selected_audio: Rc::clone(&state.selected_audio),
 		config: Rc::clone(config),
 		file_path,
 		current_pos,
@@ -87,7 +94,7 @@ pub fn show_bookmark_dialog(
 		return None;
 	}
 	let start = state.selected_start.get();
-	if start >= 0 { Some(BookmarkDialogResult { start }) } else { None }
+	if start >= 0 { Some(BookmarkDialogResult { start, audio_ms: state.selected_audio.get() }) } else { None }
 }
 
 struct BookmarkDialogUi {
@@ -104,6 +111,7 @@ struct BookmarkDialogState {
 	entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>>,
 	selected_start: Rc<Cell<i64>>,
 	selected_end: Rc<Cell<i64>>,
+	selected_audio: Rc<Cell<Option<u64>>>,
 	set_buttons_enabled: Rc<dyn Fn(bool)>,
 }
 
@@ -111,10 +119,11 @@ struct BookmarkRepopulateParams {
 	list: ListBox,
 	config: Rc<Mutex<ConfigManager>>,
 	file_path: String,
-	content: Rc<String>,
+	snippets: Rc<HashMap<(i64, i64), String>>,
 	entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>>,
 	selected_start: Rc<Cell<i64>>,
 	selected_end: Rc<Cell<i64>>,
+	selected_audio: Rc<Cell<Option<u64>>>,
 	filter_choice: Choice,
 	set_buttons_enabled: Rc<dyn Fn(bool)>,
 }
@@ -124,6 +133,7 @@ struct BookmarkSelectionParams {
 	entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>>,
 	selected_start: Rc<Cell<i64>>,
 	selected_end: Rc<Cell<i64>>,
+	selected_audio: Rc<Cell<Option<u64>>>,
 	set_buttons_enabled: Rc<dyn Fn(bool)>,
 }
 
@@ -137,6 +147,7 @@ struct BookmarkDialogActions {
 	repopulate: Rc<dyn Fn(i64)>,
 	selected_start: Rc<Cell<i64>>,
 	selected_end: Rc<Cell<i64>>,
+	selected_audio: Rc<Cell<Option<u64>>>,
 	config: Rc<Mutex<ConfigManager>>,
 	file_path: String,
 	current_pos: i64,
@@ -191,10 +202,29 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 	}
 }
 
+/// The text each text bookmark quotes, keyed by its span: the whole line for a line bookmark,
+/// else the marked range. Worked out once when the dialog opens, since every change of filter
+/// refills the list.
+fn text_snippets(session: &DocumentSession, bookmarks: &[Bookmark]) -> HashMap<(i64, i64), String> {
+	bookmarks
+		.iter()
+		.filter(|bm| bm.audio_ms.is_none())
+		.map(|bm| {
+			let text = if bm.start == bm.end {
+				session.get_line_text(bm.start)
+			} else {
+				session.get_text_range(bm.start, bm.end)
+			};
+			((bm.start, bm.end), text)
+		})
+		.collect()
+}
+
 fn build_bookmark_dialog_state(jump_button: Button, delete_button: Button, edit_button: Button) -> BookmarkDialogState {
 	let entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>> = Rc::new(RefCell::new(Vec::new()));
 	let selected_start = Rc::new(Cell::new(-1i64));
 	let selected_end = Rc::new(Cell::new(-1i64));
+	let selected_audio = Rc::new(Cell::new(None));
 	let jump_button_for_state = jump_button;
 	let delete_button_for_state = delete_button;
 	let edit_button_for_state = edit_button;
@@ -204,7 +234,7 @@ fn build_bookmark_dialog_state(jump_button: Button, delete_button: Button, edit_
 		edit_button_for_state.enable(enabled);
 	});
 	set_buttons_enabled(false);
-	BookmarkDialogState { entries, selected_start, selected_end, set_buttons_enabled }
+	BookmarkDialogState { entries, selected_start, selected_end, selected_audio, set_buttons_enabled }
 }
 
 fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)> {
@@ -212,10 +242,11 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 		list,
 		config,
 		file_path,
-		content,
+		snippets,
 		entries,
 		selected_start,
 		selected_end,
+		selected_audio,
 		filter_choice,
 		set_buttons_enabled,
 	} = params;
@@ -226,29 +257,8 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 			2 => BookmarkFilterType::NotesOnly,
 			_ => BookmarkFilterType::All,
 		};
-		let content_for_snippet = Rc::clone(&content);
-		let get_text_range = move |start: i64, end: i64| -> String {
-			let content = content_for_snippet.as_str();
-			let total_chars = content.chars().count();
-			let start_pos = usize::try_from(start.max(0)).unwrap_or(0).min(total_chars);
-			let end_pos = usize::try_from(end.max(0)).unwrap_or(0).min(total_chars);
-			if start_pos >= end_pos {
-				return String::new();
-			}
-			content.chars().skip(start_pos).take(end_pos - start_pos).collect()
-		};
-		let content_for_line = Rc::clone(&content);
-		let get_line_text = move |position: i64| -> String {
-			let content = content_for_line.as_str();
-			let total_chars = content.chars().count();
-			let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-			let line_start =
-				content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
-			let chars_after_start: String = content.chars().skip(line_start).collect();
-			let line_end = chars_after_start.find('\n').unwrap_or(chars_after_start.len());
-			chars_after_start.chars().take(line_end).collect()
-		};
 		let previous_selected = selected_start.get();
+		let previous_audio = selected_audio.get();
 		list.clear();
 		entries.borrow_mut().clear();
 		let filtered = {
@@ -256,30 +266,40 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 			reader_core::get_filtered_bookmarks(&cfg, &file_path, pos, filter)
 		};
 		for item in filtered.items {
-			let snippet =
-				if item.is_whole_line { get_line_text(item.start) } else { get_text_range(item.start, item.end) };
+			let snippet = match item.audio_ms {
+				Some(ms) => format_duration_ms(ms),
+				None => snippets.get(&(item.start, item.end)).cloned().unwrap_or_default(),
+			};
 			let mut snippet = snippet.trim().to_string();
 			if snippet.trim().is_empty() {
 				// TRANSLATORS: Placeholder text shown in the bookmarks list when the bookmark text range is empty or blank
 				snippet = t("blank");
 			}
 			let display = if item.note.is_empty() { snippet.clone() } else { format!("{} - {}", item.note, snippet) };
-			entries.borrow_mut().push(BookmarkDisplayEntry { start: item.start, end: item.end });
+			entries.borrow_mut().push(BookmarkDisplayEntry {
+				start: item.start,
+				end: item.end,
+				audio_ms: item.audio_ms,
+			});
 			list.append(&display);
 		}
 		selected_start.set(-1);
 		selected_end.set(-1);
+		selected_audio.set(None);
 		set_buttons_enabled(false);
 		let entries_ref = entries.borrow();
 		if previous_selected >= 0
-			&& let Some((idx, entry)) =
-				entries_ref.iter().enumerate().find(|(_, entry)| entry.start == previous_selected)
+			&& let Some((idx, entry)) = entries_ref
+				.iter()
+				.enumerate()
+				.find(|(_, entry)| entry.start == previous_selected && entry.audio_ms == previous_audio)
 		{
 			if let Ok(idx_u32) = u32::try_from(idx) {
 				list.set_selection(idx_u32, true);
 			}
 			selected_start.set(entry.start);
 			selected_end.set(entry.end);
+			selected_audio.set(entry.audio_ms);
 			set_buttons_enabled(true);
 			return;
 		}
@@ -292,13 +312,15 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 			}
 			selected_start.set(entry.start);
 			selected_end.set(entry.end);
+			selected_audio.set(entry.audio_ms);
 			set_buttons_enabled(true);
 		}
 	})
 }
 
 fn bind_bookmark_selection(params: BookmarkSelectionParams) {
-	let BookmarkSelectionParams { list, entries, selected_start, selected_end, set_buttons_enabled } = params;
+	let BookmarkSelectionParams { list, entries, selected_start, selected_end, selected_audio, set_buttons_enabled } =
+		params;
 	list.on_selection_changed(move |event| {
 		let selection = event.get_selection().unwrap_or(-1);
 		if selection >= 0 {
@@ -308,12 +330,14 @@ fn bind_bookmark_selection(params: BookmarkSelectionParams) {
 			{
 				selected_start.set(entry.start);
 				selected_end.set(entry.end);
+				selected_audio.set(entry.audio_ms);
 				set_buttons_enabled(true);
 				return;
 			}
 		}
 		selected_start.set(-1);
 		selected_end.set(-1);
+		selected_audio.set(None);
 		set_buttons_enabled(false);
 	});
 }
@@ -350,6 +374,7 @@ fn bind_bookmark_actions(actions: BookmarkDialogActions) {
 		repopulate,
 		selected_start,
 		selected_end,
+		selected_audio,
 		config,
 		file_path,
 		current_pos,
@@ -361,6 +386,7 @@ fn bind_bookmark_actions(actions: BookmarkDialogActions) {
 		Rc::clone(&repopulate),
 		Rc::clone(&selected_start),
 		Rc::clone(&selected_end),
+		Rc::clone(&selected_audio),
 		Rc::clone(&config),
 		file_path.clone(),
 		current_pos,
@@ -371,6 +397,7 @@ fn bind_bookmark_actions(actions: BookmarkDialogActions) {
 		repopulate: Rc::clone(&repopulate),
 		selected_start: Rc::clone(&selected_start),
 		selected_end: Rc::clone(&selected_end),
+		selected_audio: Rc::clone(&selected_audio),
 		config: Rc::clone(&config),
 		file_path: file_path.clone(),
 		current_pos,
@@ -380,6 +407,7 @@ fn bind_bookmark_actions(actions: BookmarkDialogActions) {
 		Rc::clone(&repopulate),
 		Rc::clone(&selected_start),
 		Rc::clone(&selected_end),
+		Rc::clone(&selected_audio),
 		Rc::clone(&config),
 		file_path,
 		current_pos,
@@ -404,6 +432,7 @@ fn bind_bookmark_delete(
 	repopulate: Rc<dyn Fn(i64)>,
 	selected_start: Rc<Cell<i64>>,
 	selected_end: Rc<Cell<i64>>,
+	selected_audio: Rc<Cell<Option<u64>>>,
 	config: Rc<Mutex<ConfigManager>>,
 	file_path: String,
 	current_pos: i64,
@@ -416,7 +445,7 @@ fn bind_bookmark_delete(
 		}
 		{
 			let cfg = config.lock().unwrap();
-			cfg.remove_bookmark(&file_path, start, end);
+			remove_bookmark(&cfg, &file_path, start, end, selected_audio.get());
 			cfg.flush();
 		}
 		repopulate(current_pos);
@@ -429,6 +458,7 @@ struct BookmarkEditParams {
 	repopulate: Rc<dyn Fn(i64)>,
 	selected_start: Rc<Cell<i64>>,
 	selected_end: Rc<Cell<i64>>,
+	selected_audio: Rc<Cell<Option<u64>>>,
 	config: Rc<Mutex<ConfigManager>>,
 	file_path: String,
 	current_pos: i64,
@@ -441,6 +471,7 @@ fn bind_bookmark_edit(params: BookmarkEditParams) {
 		repopulate,
 		selected_start,
 		selected_end,
+		selected_audio,
 		config,
 		file_path,
 		current_pos,
@@ -453,9 +484,10 @@ fn bind_bookmark_edit(params: BookmarkEditParams) {
 		}
 		let existing_note = {
 			let cfg = config.lock().unwrap();
+			let audio_ms = selected_audio.get();
 			cfg.get_bookmarks(&file_path)
 				.into_iter()
-				.find(|bm| bm.start == start && bm.end == end)
+				.find(|bm| bm.start == start && bm.end == end && bm.audio_ms == audio_ms)
 				.map(|bm| bm.note)
 				.unwrap_or_default()
 		};
@@ -471,7 +503,10 @@ fn bind_bookmark_edit(params: BookmarkEditParams) {
 		};
 		{
 			let cfg = config.lock().unwrap();
-			cfg.update_bookmark_note(&file_path, start, end, &note);
+			match selected_audio.get() {
+				Some(ms) => cfg.update_audio_bookmark_note(&file_path, ms, &note),
+				None => cfg.update_bookmark_note(&file_path, start, end, &note),
+			}
 			cfg.flush();
 		}
 		repopulate(current_pos);
@@ -483,6 +518,7 @@ fn bind_bookmark_key_actions(
 	repopulate: Rc<dyn Fn(i64)>,
 	selected_start: Rc<Cell<i64>>,
 	selected_end: Rc<Cell<i64>>,
+	selected_audio: Rc<Cell<Option<u64>>>,
 	config: Rc<Mutex<ConfigManager>>,
 	file_path: String,
 	current_pos: i64,
@@ -495,7 +531,7 @@ fn bind_bookmark_key_actions(
 			if start >= 0 {
 				{
 					let cfg = config.lock().unwrap();
-					cfg.remove_bookmark(&file_path, start, end);
+					remove_bookmark(&cfg, &file_path, start, end, selected_audio.get());
 					cfg.flush();
 				}
 				repopulate(current_pos);
@@ -551,4 +587,13 @@ fn finalize_bookmark_dialog_layout(
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	bookmark_list.set_focus();
+}
+
+/// Removes the selected bookmark: by its playback time for an audio bookmark, whose range it
+/// shares with everything else in its chapter, and by its range otherwise.
+fn remove_bookmark(config: &ConfigManager, path: &str, start: i64, end: i64, audio_ms: Option<u64>) {
+	match audio_ms {
+		Some(ms) => config.remove_audio_bookmark(path, ms),
+		None => config.remove_bookmark(path, start, end),
+	}
 }

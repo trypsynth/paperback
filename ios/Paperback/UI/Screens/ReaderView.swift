@@ -3,7 +3,6 @@ import UniformTypeIdentifiers
 
 struct ReaderView: View {
 	@Environment(AppViewModel.self) private var viewModel
-	@State private var showFilePicker = false
 
 	var body: some View {
 		@Bindable var navigation = viewModel.navigation
@@ -40,7 +39,14 @@ struct ReaderView: View {
 			Button(t("OK"), role: .cancel) { }
 		} message: {
 			if let stats = viewModel.activeSession?.getStatsFfi() {
-				Text("This document contains \(stats.wordCount.formatted()) words.")
+				// TRANSLATORS: The document's word count; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+				let sentence = nt(
+					t("This document contains {} word."),
+					t("This document contains {} words."),
+					t("This document contains {} words.⁣"),
+					Int(stats.wordCount)
+				)
+				Text(sentence.replacingOccurrences(of: "{}", with: stats.wordCount.formatted()))
 			}
 		}
 		.sheet(isPresented: $navigation.showDocumentInfo) {
@@ -64,7 +70,7 @@ struct ReaderView: View {
 			PasswordSheet().environment(viewModel)
 		}
 		.fileImporter(
-			isPresented: $showFilePicker,
+			isPresented: $navigation.showFilePicker,
 			allowedContentTypes: [.item],
 			allowsMultipleSelection: false
 		) { result in
@@ -92,7 +98,7 @@ struct ReaderView: View {
 				TtsModeView()
 			}
 		} else {
-			EmptyStateView(onOpenFile: { showFilePicker = true })
+			EmptyStateView(onOpenFile: { viewModel.navigation.showFilePicker = true })
 		}
 	}
 
@@ -122,7 +128,7 @@ struct ReaderView: View {
 	@ToolbarContentBuilder
 	private var readerToolbar: some ToolbarContent {
 		ToolbarItemGroup(placement: .topBarTrailing) {
-			Button { showFilePicker = true } label: {
+			Button { viewModel.navigation.showFilePicker = true } label: {
 				Image(systemName: "folder")
 			}
 			// TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document

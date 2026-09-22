@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-18 19:33-0600\n"
-"PO-Revision-Date: 2026-09-19 17:54+0800\n"
+"POT-Creation-Date: 2026-09-21 02:50+0000\n"
+"PO-Revision-Date: 2026-09-21 17:47+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -31,6 +31,18 @@ msgstr "将 pb 命令行工具添加到 PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP 压缩包 (.zip)"
 
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "未安装 OCR 语言。请在系统语言设置中添加。"
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+msgid "OCR failed."
+msgstr "OCR 失败。"
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+msgid "OCR is not available on this system."
+msgstr "此系统不支持 OCR."
+
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "创建 IPC 服务器失败"
@@ -41,12 +53,23 @@ msgstr "警告"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 msgid "This document has no audio."
 msgstr "此文档没有音频。"
 
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 msgid "Audio hasn't started playing yet."
 msgstr "音频尚未开始播放。"
+
+#. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+msgid "{} (maximum)"
+msgstr "{}（最大值）"
+
+#. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+msgid "{} (minimum)"
+msgstr "{}（最小值）"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -92,14 +115,6 @@ msgstr "30 分钟"
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 msgid "1 hour"
 msgstr "1 小时"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-msgid "{} (maximum)"
-msgstr "{}（最大值）"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-msgid "{} (minimum)"
-msgstr "{}（最小值）"
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
@@ -548,9 +563,30 @@ msgstr "减小音频跳转步长(&D)"
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "减小音频朗读跳转的距离"
 
+#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+msgid "&Increase Audio Speed"
+msgstr "提高音频速度(&I)"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
+msgid "Increase how fast the audio narration plays"
+msgstr "提高音频朗读的播放速度"
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+msgid "&Decrease Audio Speed"
+msgstr "降低音频速度(&D)"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
+msgid "Decrease how fast the audio narration plays"
+msgstr "降低音频朗读的播放速度"
+
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "一款无障碍、轻量、快速的电子书和文档阅读器"
+
+msgid ""
+"Paperback is built on other people's work. The libraries it uses, and their "
+"licenses, are credited at {}."
+msgstr "Paperback 构建在他人的工作之上。它所使用的库及其许可证在 {} 中注明。"
 
 #. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
@@ -2105,18 +2141,6 @@ msgstr "已越过容器末尾。"
 msgid "Start of container."
 msgstr "容器开头。"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "未安装 OCR 语言。请在系统语言设置中添加。"
-
-#. TRANSLATORS: Announced when the OCR engine fails on a page
-msgid "OCR failed."
-msgstr "OCR 失败。"
-
-#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
-msgid "OCR is not available on this system."
-msgstr "此系统不支持 OCR."
-
 #. TRANSLATORS: Title of the dialog displaying a formula as MathML
 msgid "Formula View"
 msgstr "公式视图"
@@ -2511,6 +2535,14 @@ msgid "Decrease Audio Seek Amount"
 msgstr "减小音频跳转步长"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Increase Audio Speed"
+msgstr "提高音频速度"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Decrease Audio Speed"
+msgstr "降低音频速度"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
 msgstr "全屏"
 
@@ -2681,10 +2713,6 @@ msgstr "HTML 文件为空: {}"
 msgid "Failed to convert HTML to text: {}"
 msgstr "无法将 HTML 转换为文本: {}"
 
-#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
-msgid "Chapter {}"
-msgstr "第 {} 章"
-
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 msgid "Failed to convert Markdown to text: {}"
 msgstr "无法将 Markdown 转换为文本: {}"
@@ -2832,6 +2860,10 @@ msgstr "PPTX 文件不包含幻灯片"
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 msgid "Failed to parse RTF document: {}"
 msgstr "解析 RTF 文档失败: {}"
+
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+msgid "Chapter {}"
+msgstr "第 {} 章"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -3084,7 +3116,7 @@ msgstr "切换到 TTS 模式"
 msgid "Switch to Text Mode"
 msgstr "切换到文本模式"
 
-#. TRANSLATORS: Menu item to open the list of recently opened documents
+#. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
 msgid "Recent Documents"
 msgstr "最近文档"
@@ -3149,7 +3181,7 @@ msgstr "打开图书"
 msgid "Locate"
 msgstr "定位"
 
-#. TRANSLATORS: Button to remove a document from the recent documents list
+#. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr "移除"
@@ -3189,7 +3221,7 @@ msgstr "语音"
 msgid "Rate"
 msgstr "速率"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
 #: swift
 msgid "Speech Rate"
 msgstr "语音速率"
@@ -3527,7 +3559,6 @@ msgstr "下一个 {}"
 msgid "Press play to start listening."
 msgstr "按播放开始收听。"
 
-#. TRANSLATORS: Menu item / accessibility action to show metadata (title, author, etc.) about the current document
 #: kt
 msgid "Document Information"
 msgstr "文档信息"
@@ -3713,7 +3744,7 @@ msgstr "本文档包含 {} 个单词。"
 msgid "words"
 msgstr "单词"
 
-#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
+#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 #: kt
 msgid "Close Search"
 msgstr "关闭搜索"
@@ -4146,3 +4177,23 @@ msgstr "高对比度文本"
 #: swift
 msgid "Hide previous and next buttons"
 msgstr "隐藏上一个和下一个按钮"
+
+#. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
+#: swift
+msgid "This empties the list. The documents themselves are not deleted."
+msgstr "这会清空列表。文档本身不会被删除。"
+
+#. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
+#: swift
+msgid "{} ms"
+msgstr "{} 毫秒"
+
+#. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
+#: swift
+msgid "Paragraph Pause"
+msgstr "段落暂停"
+
+#. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
+#: kt
+msgid "No other voices"
+msgstr "没有其他语音"

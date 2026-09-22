@@ -64,27 +64,46 @@ fn code_spans(text: &str) -> Vec<(std::ops::Range<usize>, &str)> {
 /// must hash the same as the one translated last time, which only holds if both are cut the
 /// same way.
 pub(super) fn split_sections(markdown: &str) -> Vec<String> {
-	let mut sections: Vec<String> = Vec::new();
+	split_at_headings(markdown, 2)
+}
+
+/// Splits Markdown at the headings of one level, each piece starting at one of them.
+fn split_at_headings(markdown: &str, level: usize) -> Vec<String> {
+	let marker = format!("{} ", "#".repeat(level));
+	let mut pieces: Vec<String> = Vec::new();
 	let mut current = String::new();
 	for line in markdown.lines() {
-		if line.starts_with("## ") && !current.trim().is_empty() {
-			sections.push(current.trim_end().to_string());
+		if line.starts_with(&marker) && !current.trim().is_empty() {
+			pieces.push(current.trim_end().to_string());
 			current = String::new();
 		}
 		current.push_str(line);
 		current.push('\n');
 	}
 	if !current.trim().is_empty() {
-		sections.push(current.trim_end().to_string());
+		pieces.push(current.trim_end().to_string());
 	}
-	sections
+	pieces
 }
 
-/// Splits Markdown into chunks of at most `limit` characters, breaking only at `##` headings so
-/// a chunk is always a whole number of sections and the model never sees a half-open construct.
-/// A single section longer than the limit is left whole rather than cut mid-paragraph.
+/// The deepest heading level Markdown has.
+const MAX_HEADING_LEVEL: usize = 6;
+
+/// A section cut at ever deeper headings until each piece fits in `limit`, or there are no
+/// deeper headings left to cut at.
+fn split_oversized(section: String, limit: usize, level: usize) -> Vec<String> {
+	if section.len() <= limit || level > MAX_HEADING_LEVEL {
+		return vec![section];
+	}
+	split_at_headings(&section, level).into_iter().flat_map(|piece| split_oversized(piece, limit, level + 1)).collect()
+}
+
+/// Splits Markdown into chunks of at most `limit` characters, breaking only at headings so the
+/// model never sees a half-open construct. A section longer than the limit is cut at its deeper
+/// headings: the changelog is one `##` section, and whole it is more than one response can hold.
+/// A piece with no heading left to cut at is left whole rather than cut mid-paragraph.
 pub(super) fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
-	let sections = split_sections(markdown);
+	let sections = split_sections(markdown).into_iter().flat_map(|section| split_oversized(section, limit, 3));
 	let mut chunks: Vec<String> = Vec::new();
 	for section in sections {
 		match chunks.last_mut() {
@@ -117,6 +136,19 @@ mod tests {
 		let chunks = split_markdown(doc, 10_000);
 		assert_eq!(chunks.len(), 1, "the whole document fits in one chunk");
 		assert_eq!(chunks[0].trim(), doc.trim());
+	}
+
+	#[test]
+	fn an_oversized_section_is_cut_at_its_deeper_headings() {
+		let doc = "## Changelog\n\n### Version 2\n\n* Two.\n\n### Version 1\n\n#### Added\n\n* One.\n\n#### Fixed\n\n* Won.\n";
+		let chunks = split_markdown(doc, 30);
+		assert_eq!(chunks.len(), 5, "got {chunks:?}");
+		assert!(chunks[0].starts_with("## Changelog"));
+		assert!(chunks[1].starts_with("### Version 2"));
+		assert!(chunks[2].starts_with("### Version 1"));
+		assert!(chunks[3].starts_with("#### Added"));
+		assert!(chunks[4].starts_with("#### Fixed"));
+		assert_eq!(chunks.join("\n\n"), doc.trim_end());
 	}
 
 	// The real case: French came back with `Alt+Gauche` where the source said `Alt+Left`.
