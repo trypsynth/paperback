@@ -142,6 +142,18 @@ fn parse_human_maintained_locales(content: &str) -> HashSet<String> {
 		.collect()
 }
 
+/// The conventions a locale's translators wrote for the model in `po/style/<lang>.md`, or
+/// `None` when there is no such file or it is blank.
+pub(crate) fn load_style_note(root: &Path, lang: &str) -> Option<String> {
+	let path = root.join("po").join("style").join(format!("{lang}.md"));
+	parse_style_note(&fs::read_to_string(path).ok()?)
+}
+
+fn parse_style_note(content: &str) -> Option<String> {
+	let note = content.trim();
+	(!note.is_empty()).then(|| note.to_string())
+}
+
 /// What to splice into a document: the entry index and its translated result.
 type Applied = Vec<(usize, Translation)>;
 
@@ -458,6 +470,17 @@ mod tests {
 	fn human_maintained_locales_empty_when_only_comments() {
 		let content = "# nothing here yet\n";
 		assert!(parse_human_maintained_locales(content).is_empty());
+	}
+
+	#[test]
+	fn a_style_note_is_trimmed() {
+		let content = "\n\n# Dutch\n\nAddress the reader as \"je\".\n\n\n";
+		assert_eq!(parse_style_note(content), Some("# Dutch\n\nAddress the reader as \"je\".".to_string()));
+	}
+
+	#[test]
+	fn a_blank_style_note_counts_as_absent() {
+		assert_eq!(parse_style_note("  \n\n"), None);
 	}
 
 	#[test]
