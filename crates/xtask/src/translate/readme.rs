@@ -8,7 +8,9 @@ use std::{
 
 use super::{
 	claude::{ClaudeClient, Target, language_name},
+	load_style_note,
 	markdown::split_sections,
+	style_note_suffix,
 };
 
 const MARKER_PREFIX: &str = "<!-- machine-translated from doc/readme.md (source-hash: ";
@@ -50,10 +52,15 @@ pub fn sync_readmes(
 		}
 		let reusable = existing.as_deref().and_then(|content| reusable_sections(content, &hashes));
 		let to_translate = reusable.as_ref().map_or(sections.len(), |r| r.iter().filter(|s| s.is_none()).count());
+		let style = load_style_note(root, lang);
 		if dry_run {
+			let style_note = style_note_suffix(lang, style.is_some());
 			match &reusable {
-				Some(_) => println!("readme-{lang}.md: would translate {to_translate} of {} sections", sections.len()),
-				None => println!("readme-{lang}.md: would be translated in full"),
+				Some(_) => println!(
+					"readme-{lang}.md: would translate {to_translate} of {} sections{style_note}",
+					sections.len()
+				),
+				None => println!("readme-{lang}.md: would be translated in full{style_note}"),
 			}
 			continue;
 		}
@@ -61,7 +68,7 @@ pub fn sync_readmes(
 		let Some(language) = language_name(lang) else {
 			continue;
 		};
-		let target = Target { language, style: None };
+		let target = Target { language, style: style.as_deref() };
 		let translated_md = match reusable {
 			Some(reusable) => {
 				let mut out: Vec<String> = Vec::with_capacity(sections.len());
