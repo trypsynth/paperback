@@ -1927,9 +1927,9 @@ checksum = "11d3d7f243d5c5a8b9bb5d6dd2b1602c0cb0b9db1621bafc7ed66e35ff9fe092"
 
 [[package]]
 name = "live-region"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a746bf76be52eaed2bdea84043a565e1c494c798477cdc28ae6833c48b66e03"
+checksum = "ba86f91257e984e1cbf6c1257d6dad467c2dc915e117949c2bd51445e2d740ac"
 dependencies = [
  "objc",
  "pkg-config",
