@@ -1,5 +1,5 @@
-//! The global window hotkey picker, shown from the Options dialog on the platforms that support a
-//! global hotkey (everywhere except macOS).
+//! The global window hotkey picker, shown from the Options dialog only on Windows, the only
+//! platform with a global hotkey listener (see start_hotkey_listener in main_window.rs).
 
 use paperback_core::config::HotkeyConfig;
 use patois::t;
