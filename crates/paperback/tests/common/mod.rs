@@ -6,8 +6,10 @@
 pub mod fixture;
 
 use std::{
+	cell::Cell,
 	path::{Path, PathBuf},
 	process::{Child, Command},
+	sync::{Arc, Mutex},
 	time::{Duration, Instant},
 };
 
@@ -16,10 +18,19 @@ use uiautomation::{UIAutomation, controls::ControlType, core::UIElement};
 use windows::{
 	Win32::{
 		Foundation::CloseHandle,
-		System::Threading::{OpenMutexW, SYNCHRONIZATION_SYNCHRONIZE},
-		UI::Input::KeyboardAndMouse::{
-			INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
-			MAPVK_VK_TO_VSC, MapVirtualKeyW, SendInput, VIRTUAL_KEY, VK_DOWN, VK_F4, VK_MENU, VK_SHIFT,
+		System::{
+			Com::{CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED, CoCreateInstance, CoInitializeEx},
+			Threading::{OpenMutexW, SYNCHRONIZATION_SYNCHRONIZE},
+		},
+		UI::{
+			Accessibility::{
+				CUIAutomation8, IUIAutomation5, IUIAutomationElement, IUIAutomationNotificationEventHandler,
+				NotificationProcessing, TreeScope_Subtree, UIA_ProcessIdPropertyId,
+			},
+			Input::KeyboardAndMouse::{
+				INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
+				MAPVK_VK_TO_VSC, MapVirtualKeyW, SendInput, VIRTUAL_KEY, VK_DOWN, VK_F4, VK_MENU, VK_SHIFT,
+			},
 		},
 	},
 	core::w,
@@ -299,6 +310,102 @@ fn key_input(key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS) -> INPUT {
 	INPUT {
 		r#type: INPUT_KEYBOARD,
 		Anonymous: INPUT_0 { ki: KEYBDINPUT { wVk: key, wScan: scan, dwFlags: flags, time: 0, dwExtraInfo: 0 } },
+	}
+}
+
+type Received = Arc<Mutex<Vec<(String, NotificationProcessing)>>>;
+
+/// Records the UI Automation notification events `pid` raises, from `listen` until drop,
+/// through `IUIAutomation5`: what screen readers hear.
+pub struct Notifications {
+	automation: IUIAutomation5,
+	root: IUIAutomationElement,
+	handler: IUIAutomationNotificationEventHandler,
+	received: Received,
+	/// How many notifications earlier `wait_for` calls have used up.
+	consumed: Cell<usize>,
+}
+
+impl Notifications {
+	pub fn listen(pid: u32) -> Self {
+		unsafe {
+			let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
+			let automation: IUIAutomation5 =
+				CoCreateInstance(&CUIAutomation8, None, CLSCTX_INPROC_SERVER).expect("IUIAutomation5 unavailable");
+			let root = automation.GetRootElement().expect("desktop root");
+			// The handler reads the sender's process ID from this cache.
+			let cache = automation.CreateCacheRequest().expect("cache request");
+			cache.AddProperty(UIA_ProcessIdPropertyId).expect("cache the process ID");
+			let received = Received::default();
+			let handler: IUIAutomationNotificationEventHandler =
+				collector::Collector { pid: i32::try_from(pid).expect("pid"), received: Arc::clone(&received) }.into();
+			automation
+				.AddNotificationEventHandler(&root, TreeScope_Subtree, &cache, &handler)
+				.expect("register the notification handler");
+			Self { automation, root, handler, received, consumed: Cell::new(0) }
+		}
+	}
+
+	/// Polls until a notification reading `text` with `processing` arrives after the one the
+	/// previous call matched; panics on timeout.
+	pub fn wait_for(&self, text: &str, processing: NotificationProcessing) {
+		let deadline = Instant::now() + Duration::from_secs(10);
+		loop {
+			let received = self.received.lock().expect("notification log").clone();
+			let unread = &received[self.consumed.get()..];
+			if let Some(index) = unread.iter().position(|(t, p)| t == text && *p == processing) {
+				self.consumed.set(self.consumed.get() + index + 1);
+				return;
+			}
+			assert!(Instant::now() < deadline, "no notification {text:?} with {processing:?}; unread: {unread:?}");
+			std::thread::sleep(Duration::from_millis(100));
+		}
+	}
+}
+
+impl Drop for Notifications {
+	fn drop(&mut self) {
+		unsafe {
+			let _ = self.automation.RemoveNotificationEventHandler(&self.root, &self.handler);
+		}
+	}
+}
+
+mod collector {
+	#![allow(clippy::pedantic)]
+
+	use windows::{
+		Win32::UI::Accessibility::{
+			IUIAutomationElement, IUIAutomationNotificationEventHandler, IUIAutomationNotificationEventHandler_Impl,
+			NotificationKind, NotificationProcessing,
+		},
+		core::{BSTR, Ref, implement},
+	};
+
+	use super::Received;
+
+	#[implement(IUIAutomationNotificationEventHandler)]
+	pub(super) struct Collector {
+		pub(super) pid: i32,
+		pub(super) received: Received,
+	}
+
+	impl IUIAutomationNotificationEventHandler_Impl for Collector_Impl {
+		fn HandleNotificationEvent(
+			&self,
+			sender: Ref<IUIAutomationElement>,
+			_kind: NotificationKind,
+			processing: NotificationProcessing,
+			display: &BSTR,
+			_activity: &BSTR,
+		) -> windows::core::Result<()> {
+			let from_app =
+				sender.as_ref().is_some_and(|sender| unsafe { sender.CachedProcessId() }.is_ok_and(|p| p == self.pid));
+			if from_app {
+				self.received.lock().expect("notification log").push((display.to_string(), processing));
+			}
+			Ok(())
+		}
 	}
 }
 
