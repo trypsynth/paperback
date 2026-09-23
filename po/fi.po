@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 02:50+0000\n"
-"PO-Revision-Date: 2026-09-21 17:25+0300\n"
+"POT-Creation-Date: 2026-09-21 19:11+0000\n"
+"PO-Revision-Date: 2026-09-22 21:31+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -566,7 +566,6 @@ msgid "Decrease how far seeking the audio narration moves"
 msgstr "Lyhennä aikaa, jonka verran äänitettä kelataan eteen- tai taaksepäin"
 
 #. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
-#| msgid "&Increase Audio Seek Amount"
 msgid "&Increase Audio Speed"
 msgstr "&Nopeuta äänitteen toistoa"
 
@@ -575,7 +574,6 @@ msgid "Increase how fast the audio narration plays"
 msgstr "Nopeuttaa äänitteen toistoa"
 
 #. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
-#| msgid "&Decrease Audio Seek Amount"
 msgid "&Decrease Audio Speed"
 msgstr "&Hidasta äänitteen toistoa"
 
@@ -1298,6 +1296,10 @@ msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "Asiakirjassa on %d sana."
 msgstr[1] "Asiakirjassa on %d sanaa."
+
+#. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
+msgid "{} to {}"
+msgstr "{} / {}"
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
@@ -3147,7 +3149,7 @@ msgstr "Asiakirjan tiedot"
 #. TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
 #: swift
 msgid "More options"
-msgstr "Lisää asetuksia"
+msgstr "Lisää vaihtoehtoja"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
 #: swift
@@ -3257,17 +3259,17 @@ msgstr "Tekstistä puheeksi"
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: swift
 msgid "Voice"
-msgstr "Puheääni"
+msgstr "Ääni"
 
 #. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
 #: swift
 msgid "Rate"
 msgstr "Nopeus"
 
-#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
 #: swift
 msgid "Speech Rate"
-msgstr "Puhenopeus"
+msgstr "Nopeus"
 
 #. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
 #: swift
@@ -3317,7 +3319,7 @@ msgstr "Palauta viimeksi avatut asiakirjat"
 #. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
 #: swift
 msgid "Swipe up moves forward"
-msgstr "Pitkä pyyhkäisy siirtää eteenpäin"
+msgstr "Ylöspäin pyyhkäisy siirtää eteenpäin"
 
 #. TRANSLATORS: Row label for the document's title in the Document Info sheet
 #: swift
@@ -3409,7 +3411,7 @@ msgstr "Sääntö"
 msgid "Scope"
 msgstr "Laajuus"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a single word
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 msgid "Word"
 msgstr "Sana"
@@ -3835,7 +3837,7 @@ msgstr "Tuo"
 #. TRANSLATORS: Accessibility label for the overflow icon button that opens the options menu
 #: kt
 msgid "More Options"
-msgstr "Lisää asetuksia"
+msgstr "Lisää vaihtoehtoja"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
 #: kt
@@ -4244,13 +4246,11 @@ msgstr "Tämä tyhjentää luettelon, mutta varsinaisia asiakirjoja ei poisteta.
 
 #. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
 #: swift
-#| msgid "{} minutes"
 msgid "{} ms"
 msgstr "{} ms"
 
 #. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
 #: swift
-#| msgid "Paragraph"
 msgid "Paragraph Pause"
 msgstr "Kappaleiden välinen tauko"
 
