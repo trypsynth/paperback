@@ -210,6 +210,9 @@ impl Converter {
 		if let Some(result) = self.try_transition(i, end) {
 			return result;
 		}
+		if let Some(result) = self.try_table(i, end, indent) {
+			return result;
+		}
 		if let Some(result) = self.try_directive_or_target_or_comment(i, end, indent) {
 			return result;
 		}
@@ -279,6 +282,23 @@ impl Converter {
 		let before_blank = i == 0 || self.line(i - 1).trim().is_empty();
 		let after_blank = i + 1 >= end || self.line(i + 1).trim().is_empty();
 		(before_blank && after_blank).then(|| ("<hr>".to_string(), i + 1))
+	}
+
+	/// A grid table (`+---+---+`) or simple table (`===  ===`) border line, and everything else
+	/// through the end of the block. Full parsing into `<table>` rows/columns isn't attempted, but
+	/// preserving the source's own line breaks in a literal block is enough to keep a table
+	/// readable (and, for a screen reader, keeps it from being read as one run-on line of dashes
+	/// and pipes).
+	fn try_table(&self, i: usize, end: usize, indent: usize) -> Option<(String, usize)> {
+		let line = self.line(i);
+		if line_indent(line) != indent || !is_table_border(line) {
+			return None;
+		}
+		let mut j = i + 1;
+		while j < end && !self.line(j).trim().is_empty() {
+			j += 1;
+		}
+		Some((format!("<pre><code>{}</code></pre>", escape_html(&self.literal_text(i, j))), j))
 	}
 
 	fn try_directive_or_target_or_comment(&mut self, i: usize, end: usize, indent: usize) -> Option<(String, usize)> {
@@ -446,24 +466,14 @@ impl Converter {
 		if line_indent(line) != indent {
 			return None;
 		}
-		let trimmed = line.trim_start();
-		let rest = trimmed.strip_prefix(':')?;
-		let close = rest.find(':')?;
-		// A field name can't be empty: otherwise a lone `::` (the literal-block marker) would be
-		// misread as a field list of one nameless field instead of falling through to a paragraph.
-		if rest[..close].trim().is_empty() {
-			return None;
-		}
+		field_marker_close(line)?;
 		let mut items = String::new();
 		let mut j = i;
 		loop {
 			let line = self.line(j);
 			let trimmed = line.trim_start();
-			let Some(rest) = trimmed.strip_prefix(':') else { break };
-			let Some(close) = rest.find(':') else { break };
-			if rest[..close].trim().is_empty() {
-				break;
-			}
+			let Some(close) = field_marker_close(line) else { break };
+			let rest = &trimmed[1..];
 			let field = rest[..close].to_string();
 			let value_start = rest[close + 1..].trim().to_string();
 			let body_end = self.indented_or_blank_run_end(j + 1, end, indent);
@@ -669,7 +679,7 @@ impl Converter {
 			|| bullet_marker(line).is_some()
 			|| enum_item_start(line).is_some()
 			|| line.trim_start().starts_with("..")
-			|| (line.trim_start().starts_with(':') && line.trim_start()[1..].contains(':'))
+			|| field_marker_close(line).is_some()
 	}
 
 	/// The end of a run of lines all indented at least `min_indent`, stopping at end-of-range, a
@@ -743,6 +753,41 @@ fn split_once_colon(s: &str) -> (String, String) {
 
 fn normalize_label(label: &str) -> String {
 	label.trim().trim_matches('`').trim().to_ascii_lowercase().replace(['_', ' '], "-")
+}
+
+/// The byte offset (within `line.trim_start()`, after the leading `:`) of a field-list marker's
+/// closing `:` (`:name: value`), or `None` if `line` isn't one.
+///
+/// Distinguishes a field marker from an interpreted-text role like `:func:` starting a wrapped
+/// paragraph line - `` See :func:`sorted`, and\n:func:`min`, ... `` is a real Sphinx idiom, and
+/// its second line must stay part of the paragraph rather than being read as a one-field list. A
+/// role's second colon is always immediately followed by the backtick that opens its interpreted
+/// text; a field marker's is followed by whitespace, another field, or nothing.
+fn field_marker_close(line: &str) -> Option<usize> {
+	let rest = line.trim_start().strip_prefix(':')?;
+	let close = rest.find(':')?;
+	if rest[..close].trim().is_empty() || rest[close + 1..].starts_with('`') {
+		return None;
+	}
+	Some(close)
+}
+
+/// Whether `line` opens a grid table (`+------+------+` or `+======+======+`) or a simple table
+/// (`=====  =====`, two or more `=` runs separated by whitespace). A single `=====` run alone is
+/// deliberately not matched here: it's indistinguishable from a section title's underline without
+/// looking at what follows, and titles are far more common.
+fn is_table_border(line: &str) -> bool {
+	let trimmed = line.trim();
+	if trimmed.len() >= 3
+		&& trimmed.starts_with('+')
+		&& trimmed.ends_with('+')
+		&& trimmed.chars().all(|c| matches!(c, '+' | '-' | '='))
+		&& trimmed.contains(['-', '='])
+	{
+		return true;
+	}
+	let groups: Vec<&str> = trimmed.split_whitespace().collect();
+	groups.len() >= 2 && groups.iter().all(|g| !g.is_empty() && g.chars().all(|c| c == '='))
 }
 
 /// The repeated punctuation character a section-title or transition line is made of, or `None`.

@@ -95,6 +95,29 @@ fn transition_becomes_a_horizontal_rule() {
 	assert_eq!(html, "<p>First.</p><hr><p>Second.</p>");
 }
 
+/// A real bug from code review: a grid table's rows were being joined into one run-on paragraph,
+/// losing the line breaks a screen reader (or anyone else) needs to make sense of it.
+#[test]
+fn grid_table_preserves_its_line_breaks() {
+	let html = rst_to_html("+------+------+\n| a    | b    |\n+======+======+\n| 1    | 2    |\n+------+------+\n");
+	assert_eq!(
+		html,
+		"<pre><code>+------+------+\n| a    | b    |\n+======+======+\n| 1    | 2    |\n+------+------+</code></pre>"
+	);
+}
+
+#[test]
+fn simple_table_preserves_its_line_breaks() {
+	let html = rst_to_html("=====  =====\n  a      b\n=====  =====\n  1      2\n=====  =====\n");
+	assert_eq!(html, "<pre><code>=====  =====\n  a      b\n=====  =====\n  1      2\n=====  =====</code></pre>");
+}
+
+#[test]
+fn table_ends_at_the_blank_line() {
+	let html = rst_to_html("+---+\n| a |\n+---+\n\nAfter.\n");
+	assert_eq!(html, "<pre><code>+---+\n| a |\n+---+</code></pre><p>After.</p>");
+}
+
 #[test]
 fn definition_list_pairs_terms_with_their_indented_body() {
 	let html = rst_to_html("term one\n    definition one\nterm two\n    definition two\n");
@@ -108,6 +131,22 @@ fn definition_list_pairs_terms_with_their_indented_body() {
 fn field_list_becomes_a_definition_list() {
 	let html = rst_to_html(":Author: Jane Doe\n:Version: 1.0\n");
 	assert_eq!(html, "<dl><dt>Author</dt><dd>Jane Doe</dd><dt>Version</dt><dd>1.0</dd></dl>");
+}
+
+/// A real bug from code review: a role wrapped onto the start of a paragraph's continuation line
+/// (extremely common in Sphinx docs, since roles wrap constantly) was misread as a one-field
+/// field list, splitting the role name out as a field name and leaving its content in backticks.
+#[test]
+fn role_wrapped_onto_a_paragraph_continuation_line_is_not_a_field_list() {
+	let html = rst_to_html("See the :func:`sorted` builtin, and\n:func:`min`, which is smaller.\n");
+	assert_eq!(html, "<p>See the sorted builtin, and min, which is smaller.</p>");
+}
+
+/// A genuine field list starting with something that could pass for a role name must still work.
+#[test]
+fn field_list_is_still_recognized_when_its_name_could_look_like_a_role() {
+	let html = rst_to_html(":func: not a role, a field value\n");
+	assert_eq!(html, "<dl><dt>func</dt><dd>not a role, a field value</dd></dl>");
 }
 
 #[test]
