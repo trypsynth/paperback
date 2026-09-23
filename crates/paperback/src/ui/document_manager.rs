@@ -22,7 +22,7 @@ use super::{
 	sleep_timer, status,
 	text_render::fill_text_ctrl_with_formatting,
 };
-use crate::{audio_player::AudioPlayer, text_window::TextWindow};
+use crate::{audio_player::AudioPlayer, text_window::TextWindow, ui::navigation::announce};
 
 mod appearance;
 mod audio;
@@ -273,7 +273,7 @@ impl DocumentManager {
 			}
 		};
 		// TRANSLATORS: Announcement read by screen readers after following an internal link within the document
-		live_region::announce(self.live_region_label, &t("Navigated to internal link."));
+		announce(self.live_region_label, t("Navigated to internal link."));
 		persist_navigation_history(&self.config, history_update.as_ref());
 	}
 	pub fn activate_current_table(&self) -> Option<String> {
@@ -333,7 +333,7 @@ impl DocumentManager {
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let percent = navigation::reading_percent(tab, position);
 		let page = page_at(tab, position);
-		live_region::announce(self.live_region_label, &position_announcement(percent, page));
+		announce(self.live_region_label, position_announcement(percent, page));
 	}
 
 	/// Sets the temporary bookmark at the current caret position and announces it.
@@ -348,7 +348,7 @@ impl DocumentManager {
 		config.flush();
 		drop(config);
 		// TRANSLATORS: Announced after setting a temporary bookmark at the current position
-		live_region::announce(self.live_region_label, &t("Temporary bookmark set."));
+		announce(self.live_region_label, t("Temporary bookmark set."));
 	}
 
 	/// Jumps to the temporary bookmark, announcing the line text there, or "No temporary bookmark."
@@ -366,7 +366,7 @@ impl DocumentManager {
 		};
 		let Some(position) = position else {
 			// TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
-			live_region::announce(self.live_region_label, &t("No temporary bookmark."));
+			announce(self.live_region_label, t("No temporary bookmark."));
 			return;
 		};
 		let (message, track, update) = {
@@ -382,7 +382,7 @@ impl DocumentManager {
 			let update = move_to_offset_and_record_history(tab, position);
 			(message, tab.track, update)
 		};
-		live_region::announce(self.live_region_label, &message);
+		announce(self.live_region_label, message);
 		persist_navigation_history(&self.config, track.then_some(&update));
 	}
 

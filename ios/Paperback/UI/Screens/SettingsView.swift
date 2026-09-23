@@ -15,15 +15,19 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 		return voice.name
 	}
 
-	private var ratePercent: Int { ttsManager.speechRatePercent }
-
 	private var paragraphPauseLabel: String {
 		// TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
 		t("{} ms").replacingOccurrences(of: "{}", with: "\(ttsManager.paragraphPauseMs)")
 	}
 
-	private var pitchPercent: Int {
-		Int(((ttsManager.pitch - 0.5) / 1.5 * 100).rounded())
+	/// The percent readout at the trailing edge of a slider row, which doubles as the
+	/// presets menu and the screen reader's adjustable value for that row.
+	private func percentMenu(_ label: String, percent: Binding<Int>, presets: [Int]) -> some View {
+		SpeechPercentMenu(accessibilityLabel: label, percent: percent, presets: presets) {
+			Text("\(percent.wrappedValue)%")
+				.foregroundStyle(.secondary)
+				.monospacedDigit()
+		}
 	}
 
 	var body: some View {
@@ -41,39 +45,46 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 						.lineLimit(1)
 				}
 			}
+			// The sliders are for touch. A screen reader gets the percent menu next to each label
+			// instead: one swipe per percent and the presets behind a double-tap, the same control
+			// as on the read-aloud bar.
 			VStack(alignment: .leading, spacing: 4) {
 				HStack {
-					// TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+					// TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
 					Text(t("Rate")).accessibilityHidden(true)
 					Spacer()
-					Text("\(ratePercent)%")
-						.foregroundStyle(.secondary)
-						.monospacedDigit()
-						.accessibilityHidden(true)
+					percentMenu(
+						// TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
+						t("Speech Rate"),
+						percent: $ttsManager.speechRatePercent,
+						presets: speechRatePresets
+					)
 				}
 				Slider(
 					value: $ttsManager.speechRate,
 					in: AVSpeechUtteranceMinimumSpeechRate...AVSpeechUtteranceMaximumSpeechRate,
 					step: (AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate) / 100
 				)
-				// TRANSLATORS: VoiceOver accessibility label for the speech rate slider
-				.accessibilityLabel(t("Speech Rate"))
-				.accessibilityValue("\(ratePercent)%")
+				.accessibilityHidden(true)
 			}
 			VStack(alignment: .leading, spacing: 4) {
 				HStack {
-					// TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
+					// TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
 					Text(t("Pitch")).accessibilityHidden(true)
 					Spacer()
-					Text("\(pitchPercent)%")
-						.foregroundStyle(.secondary)
-						.monospacedDigit()
-						.accessibilityHidden(true)
+					percentMenu(
+						// TRANSLATORS: VoiceOver accessibility label for the pitch control in Settings
+						t("Pitch"),
+						percent: $ttsManager.pitchPercent,
+						presets: pitchPresets
+					)
 				}
-				Slider(value: $ttsManager.pitch, in: 0.5...2.0, step: 0.015)
-					// TRANSLATORS: VoiceOver accessibility label for the pitch slider
-					.accessibilityLabel(t("Pitch"))
-					.accessibilityValue("\(pitchPercent)%")
+				Slider(
+					value: $ttsManager.pitch,
+					in: pitchRange,
+					step: (pitchRange.upperBound - pitchRange.lowerBound) / 100
+				)
+				.accessibilityHidden(true)
 			}
 			Stepper(
 				value: $ttsManager.paragraphPauseMs,

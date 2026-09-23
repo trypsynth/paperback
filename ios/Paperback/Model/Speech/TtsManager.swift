@@ -41,6 +41,34 @@ func percentForSpeechRate(_ rate: Float) -> Int {
 	return Int((((rate - AVSpeechUtteranceMinimumSpeechRate) / range) * 100).rounded())
 }
 
+/// The engine pitch multipliers the reader can choose between, 0% to 100% of which is what the
+/// settings show.
+let pitchRange: ClosedRange<Float> = 0.5...2.0
+
+/// The engine pitch a whole-number percentage of `pitchRange` stands for, clamped like
+/// `speechRateForPercent`.
+func pitchForPercent(_ percent: Int) -> Float {
+	let range = pitchRange.upperBound - pitchRange.lowerBound
+	let clamped = Float(min(max(percent, 0), 100)) / 100
+	return pitchRange.lowerBound + clamped * range
+}
+
+/// The percentage an engine pitch reads as, the inverse of `pitchForPercent`.
+func percentForPitch(_ pitch: Float) -> Int {
+	let range = pitchRange.upperBound - pitchRange.lowerBound
+	return Int((((pitch - pitchRange.lowerBound) / range) * 100).rounded())
+}
+
+/// How far one screen reader swipe moves a speech percentage.
+let speechPercentStep = 1
+
+/// Whole percentages of the rate range offered as presets, the same list on the reading bar and
+/// in Settings.
+let speechRatePresets = [25, 50, 75, 100]
+
+/// Pitch presets: the engine's 0.5 to 2.0 in steps of 0.25, as percentages of `pitchRange`.
+let pitchPresets = [0, 16, 33, 50, 67, 83, 100]
+
 // Lets an armed buffer's completion handler validate against a generation assigned later, at
 // consume time, rather than one captured when the closure was created (see armNextBuffer).
 private final class GenBox {
@@ -124,6 +152,11 @@ final class TtsManager: NSObject {
 			onPitchChanged?(pitch)
 		}
 	}
+	/// The pitch as the whole-number percentage of `pitchRange` that Settings shows.
+	var pitchPercent: Int {
+		get { percentForPitch(pitch) }
+		set { pitch = pitchForPercent(newValue) }
+	}
 	/// Extra silence after each paragraph, in milliseconds. Zero, the default, adds none.
 	///
 	/// Paragraphs are synthesized one at a time and played back to back, so the only gap between
@@ -145,7 +178,8 @@ final class TtsManager: NSObject {
 		}
 	}
 
-	var availableVoices: [AVSpeechSynthesisVoice] { AVSpeechSynthesisVoice.speechVoices() }
+	@ObservationIgnored private let voiceCatalog = VoiceCatalog { AVSpeechSynthesisVoice.speechVoices() }
+	var availableVoices: [AVSpeechSynthesisVoice] { voiceCatalog.voices }
 	@ObservationIgnored var onUtteranceFinished: (() -> Void)?
 	// Observation replaces the old Combine forwarding for redraws; these carry the side effects
 	// that used to ride those sinks — refreshing Now Playing and persisting settings. One per
@@ -191,6 +225,12 @@ final class TtsManager: NSObject {
 		)
 		NotificationCenter.default.addObserver(
 			self,
+			selector: #selector(handleAvailableVoicesChanged(_:)),
+			name: AVSpeechSynthesizer.availableVoicesDidChangeNotification,
+			object: nil
+		)
+		NotificationCenter.default.addObserver(
+			self,
 			selector: #selector(handleEngineConfigurationChange),
 			name: .AVAudioEngineConfigurationChange,
 			object: engine
@@ -223,6 +263,12 @@ final class TtsManager: NSObject {
 					self.scheduleConverted(buffers, gen: gen, suppress: true)
 				}
 			}
+		}
+	}
+
+	@objc private func handleAvailableVoicesChanged(_ notification: Notification) {
+		Task { @MainActor [weak self] in
+			self?.voiceCatalog.invalidate()
 		}
 	}
 

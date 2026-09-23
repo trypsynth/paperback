@@ -15,6 +15,7 @@ use super::{
 	DocumentManager, FindDialogState, MainWindow, background, commands, dialogs, find, get_update_channel, help, menu,
 	menu_file, menu_go, menu_ids, menu_tools, sleep_timer, update_title_from_manager, updater,
 };
+use crate::ui::navigation::announce;
 
 impl MainWindow {
 	#[allow(clippy::too_many_lines)]
@@ -101,7 +102,7 @@ impl MainWindow {
 					}
 					// TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 					let msg = if new_state { t("Word wrap on.") } else { t("Word wrap off.") };
-					live_region::announce(live_region_label, &msg);
+					announce(live_region_label, msg);
 					dm.lock().unwrap().restore_focus();
 				}
 				menu_ids::TOGGLE_FULL_SCREEN => {
@@ -112,7 +113,7 @@ impl MainWindow {
 					}
 					// TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
 					let msg = if new_state { t("Full screen on.") } else { t("Full screen off.") };
-					live_region::announce(live_region_label, &msg);
+					announce(live_region_label, msg);
 				}
 				menu_ids::EXPORT_TO_PLAIN_TEXT => {
 					menu_tools::handle_export_to_plain_text(&frame_copy, &dm);
