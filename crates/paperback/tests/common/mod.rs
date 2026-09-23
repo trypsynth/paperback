@@ -17,6 +17,10 @@ use windows::{
 	Win32::{
 		Foundation::CloseHandle,
 		System::Threading::{OpenMutexW, SYNCHRONIZATION_SYNCHRONIZE},
+		UI::Input::KeyboardAndMouse::{
+			INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
+			MAPVK_VK_TO_VSC, MapVirtualKeyW, SendInput, VIRTUAL_KEY, VK_DOWN, VK_F4, VK_MENU, VK_SHIFT,
+		},
 	},
 	core::w,
 };
@@ -191,6 +195,98 @@ pub fn wait_for_title(pid: u32, expected: &str) {
 		}
 		assert!(Instant::now() < deadline, "title stayed at {title:?}, expected {expected:?}");
 		std::thread::sleep(Duration::from_millis(250));
+	}
+}
+
+/// The status bar's text: the name of its first pane.
+pub fn status_text(pid: u32) -> String {
+	let automation = automation();
+	let status_bar = automation
+		.create_matcher()
+		.from(main_window(pid))
+		.depth(3)
+		.control_type(ControlType::StatusBar)
+		.timeout(10_000)
+		.find_first()
+		.expect("status bar");
+	automation
+		.create_matcher()
+		.from(status_bar)
+		.depth(2)
+		.control_type(ControlType::Text)
+		.timeout(5_000)
+		.find_first()
+		.expect("status bar pane")
+		.get_name()
+		.unwrap_or_default()
+}
+
+/// Polls the status bar until its text starts with `prefix`; returns that text.
+pub fn wait_for_status_prefix(pid: u32, prefix: &str) -> String {
+	let deadline = Instant::now() + Duration::from_secs(10);
+	loop {
+		let text = status_text(pid);
+		if text.starts_with(prefix) {
+			return text;
+		}
+		assert!(Instant::now() < deadline, "status bar stayed at {text:?}, expected it to start with {prefix:?}");
+		std::thread::sleep(Duration::from_millis(250));
+	}
+}
+
+pub fn arrow_down() {
+	send_key(VK_DOWN, KEYEVENTF_EXTENDEDKEY);
+}
+
+/// Presses and releases a letter or digit key, e.g. `press('H')`.
+pub fn press(key: char) {
+	send_key(letter(key), KEYBD_EVENT_FLAGS(0));
+}
+
+/// Presses and releases a letter or digit key with Shift held.
+pub fn press_shifted(key: char) {
+	let inputs = [
+		key_input(VK_SHIFT, KEYBD_EVENT_FLAGS(0)),
+		key_input(letter(key), KEYBD_EVENT_FLAGS(0)),
+		key_input(letter(key), KEYEVENTF_KEYUP),
+		key_input(VK_SHIFT, KEYEVENTF_KEYUP),
+	];
+	send_inputs(&inputs);
+}
+
+/// Presses and releases F4 with Alt held, closing the focused window.
+pub fn alt_f4() {
+	let inputs = [
+		key_input(VK_MENU, KEYBD_EVENT_FLAGS(0)),
+		key_input(VK_F4, KEYBD_EVENT_FLAGS(0)),
+		key_input(VK_F4, KEYEVENTF_KEYUP),
+		key_input(VK_MENU, KEYEVENTF_KEYUP),
+	];
+	send_inputs(&inputs);
+}
+
+/// Letters and digits are their own virtual-key codes.
+fn letter(key: char) -> VIRTUAL_KEY {
+	assert!(key.is_ascii_uppercase() || key.is_ascii_digit(), "not a letter or digit key: {key:?}");
+	VIRTUAL_KEY(key as u16)
+}
+
+/// Presses and releases `key` as a virtual key with its real scan code.
+fn send_key(key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS) {
+	send_inputs(&[key_input(key, flags), key_input(key, flags | KEYEVENTF_KEYUP)]);
+}
+
+fn send_inputs(inputs: &[INPUT]) {
+	let size = i32::try_from(std::mem::size_of::<INPUT>()).expect("INPUT size");
+	let sent = unsafe { SendInput(inputs, size) };
+	assert_eq!(sent as usize, inputs.len(), "SendInput rejected the key events");
+}
+
+fn key_input(key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS) -> INPUT {
+	let scan = u16::try_from(unsafe { MapVirtualKeyW(u32::from(key.0), MAPVK_VK_TO_VSC) }).expect("scan code");
+	INPUT {
+		r#type: INPUT_KEYBOARD,
+		Anonymous: INPUT_0 { ki: KEYBDINPUT { wVk: key, wScan: scan, dwFlags: flags, time: 0, dwExtraInfo: 0 } },
 	}
 }
 
