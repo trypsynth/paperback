@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 651d0b411879a6d8; sections: 84030068,db723a70,df2f4c18,14335443,91be3b41,6c87c514,94527a25,ce87a64f,a9eba369,e9860ee8,007c0542); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 6564745fd3218b1a; sections: 84030068,db723a70,df2f4c18,14335443,91be3b41,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -172,55 +172,55 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 
 ## iOS et Android
 
-Les applications iOS et Android utilisent le même moteur de lecture que la version de bureau, elles ouvrent donc les mêmes formats et mémorisent votre position de la même façon. Elles sont conçues pour être utilisées avec VoiceOver sur iOS et TalkBack sur Android.
+Les applications iOS et Android utilisent le même moteur de lecture que le bureau, ils ouvrent donc les mêmes formats et se souviennent de votre place de la même manière. Elles sont conçues pour être utilisées avec VoiceOver sur iOS et TalkBack sur Android.
 
 ### Ouverture de documents
 
-* Utilisez le bouton Ouvrir un livre, ou ouvrez un document depuis l'application Fichiers ou une autre application et choisissez Paperback.
-* Sur Android, vous pouvez activer le navigateur de fichiers intégré dans les Paramètres. Il nécessite l'autorisation Accès à tous les fichiers, et ouvre les fichiers volumineux directement au lieu de les copier d'abord.
-* Maintenez le bouton Ouvrir un livre enfoncé pour importer ou exporter les données d'un document (`.paperback`), les mêmes fichiers que ceux utilisés par l'application de bureau.
+* Utilisez le bouton Open Book, ou ouvrez un document depuis l'application Files ou une autre application et choisissez Paperback.
+* Sur Android, vous pouvez activer le navigateur de fichiers intégré dans les Paramètres à la place. Il a besoin de la permission d'accès à tous les fichiers, et ouvre les gros fichiers directement au lieu de les copier d'abord.
+* Appuyez longuement sur le bouton Open Book pour importer ou exporter les données d'un document (`.paperback`), les mêmes fichiers que l'application de bureau utilise.
 
 ### Lecture et écoute
 
-Chaque application a deux façons de lire un document. En mode texte, vous lisez le texte avec votre lecteur d'écran. En mode lecture à haute voix, Paperback lit le texte pour vous avec la voix que vous choisissez dans les Paramètres, et continue en arrière-plan et depuis l'écran verrouillé. Basculez entre les deux à partir du menu Plus d'options.
+Chaque application a deux façons de lire un document. En mode texte, vous lisez le texte avec votre lecteur d'écran. En mode lecture à haute voix, Paperback lit le texte pour vous avec la voix que vous choisissez dans les Paramètres, et continue en arrière-plan et depuis l'écran de verrouillage. Basculez entre les deux depuis le menu Plus d'options.
 
-Les livres audio, comme DAISY, M4B et les livres MP3, jouent leur propre enregistrement à la place.
+Les livres audio, comme DAISY, M4B et les livres MP3, lisent leur propre enregistrement à la place.
 
 ### La barre de lecture
 
-La barre en bas de l'écran contient, de gauche à droite :
+La barre en bas de l'écran a, de gauche à droite :
 
-* L'unité de navigation, comme un paragraphe, un titre, une page ou un lien. Balayez vers le haut ou vers le bas pour la modifier.
-* Les boutons précédent, lecture et suivant. Précédent et suivant se déplacent selon l'unité de navigation.
-* La vitesse de lecture. Balayez vers le haut ou vers le bas pour modifier la vitesse de lecture de Paperback.
+* L'unité de navigation, comme paragraphe, titre, page ou lien. Balayez vers le haut ou vers le bas pour la changer.
+* Les boutons Précédent, Lecture et Suivant. Précédent et Suivant se déplacent par l'unité de navigation.
+* La vitesse de parole. Balayez vers le haut ou vers le bas pour changer la vitesse de lecture de Paperback.
 
-Vous pouvez également balayer vers le haut ou vers le bas sur le bouton de lecture pour vous déplacer selon l'unité de navigation, sans avoir à atteindre les boutons précédent et suivant. Si c'est tout ce que vous utilisez, le paramètre Masquer les boutons précédent et suivant les enlève du chemin de votre lecteur d'écran. Le paramètre Le balayage vers le haut avance sélectionne la direction du balayage.
+Vous pouvez également balayer vers le haut ou vers le bas sur le bouton de lecture pour vous déplacer par l'unité de navigation, sans avoir besoin d'atteindre les boutons Précédent et Suivant. Si c'est tout ce que vous utilisez, le paramètre Masquer les boutons Précédent et Suivant les retire du chemin de votre lecteur d'écran. Le paramètre Balayage vers le haut avance choisit la direction dans laquelle va un balayage.
 
 ### Plus d'options
 
 Le menu Plus d'options est l'endroit où tout le reste se trouve. Certains éléments fonctionnent un peu différemment sur chaque application.
 
-* **Passer au mode TTS ou Passer au mode Texte :** bascule entre le mode lecture à haute voix et le mode texte, décrits ci-dessus. Android a aussi un élément Lecture à haute voix qui démarre et met en pause la lecture à haute voix.
-* **Table des matières :** les chapitres du livre. Choisissez-en un pour y aller directement. Sur Android, les entrées avec des chapitres sous elles peuvent être développées et réduites, en utilisant les actions du lecteur d'écran. Sur iOS, la liste entière s'affiche à la fois.
+* **Passer au mode TTS ou Passer au mode Texte :** bascule entre le mode lecture à haute voix et le mode texte, décrit ci-dessus. En mode texte, un élément Lire à haute voix lance et met en pause la lecture à haute voix sans quitter le mode texte.
+* **Table des matières :** les chapitres du livre, ouverts à celui que vous lisez. Choisissez-en un pour y aller directement. Les entrées ayant des chapitres sous elles peuvent être développées et réduites avec les actions du lecteur d'écran.
 * **Éléments :** une liste des titres ou des liens du document. Basculez entre les deux avec le sélecteur Type sur iOS, ou les onglets sur Android, puis choisissez-en un pour y aller.
-* **Rechercher :** tapez ce que vous cherchez, et choisissez si vous voulez respecter la casse, chercher des mots entiers seulement, ou utiliser une expression régulière. Sur Android, une barre avec Rechercher précédent et Rechercher suivant reste en bas de l'écran jusqu'à ce que vous la fermiez, et les recherches antérieures se trouvent sous Historique de recherche. Sur iOS, les boutons Rechercher précédent et Rechercher suivant se trouvent sur l'écran de recherche, et Rechercher apparaît aussi comme une unité de navigation sur la barre de lecture, pour que vous puissiez parcourir les résultats à partir de là.
-* **Aller à :** sauter à une ligne, une page, ou un pourcentage du document. Choisissez lequel avec le sélecteur Mode.
-* **Documents récents :** tous les documents que vous avez ouverts, chacun marqué comme actuellement ouvert, fermé, ou fichier manquant. Chacun a deux actions du lecteur d'écran : Supprimer l'enlève de la liste, et Localiser vous permet de trouver un document dont le fichier a été déplacé. Effacer les documents récents vide la liste sans supprimer aucun document.
-* **Nombre de mots :** le nombre de mots dans le document.
-* **Infos du document :** le titre, l'auteur, le nom du fichier, et sur iOS aussi les nombres de lignes et de caractères.
+* **Rechercher :** tapez ce que vous cherchez, ou choisissez une recherche antérieure dans l'Historique de recherche, et choisissez s'il faut respecter la casse, faire correspondre des mots entiers seulement, ou utiliser une expression régulière. Rechercher le précédent et Rechercher le suivant sautent à une correspondance et indiquent où c'est tombé, et Rechercher reste ouvert pour que vous puissiez continuer. En mode lecture à haute voix, Rechercher s'affiche également comme une unité de navigation sur la barre de lecture, ce qui vous permet de parcourir les correspondances à partir de là aussi.
+* **Aller à :** sautez à une ligne, une page, ou un pourcentage du document. Choisissez lequel avec le sélecteur Mode.
+* **Documents récents :** tous les documents que vous avez ouverts, chacun marqué comme actuellement ouvert, fermé ou fichier manquant. Chacun a deux actions du lecteur d'écran : Supprimer l'enlève de la liste, et Localiser vous permet de trouver un document dont le fichier a été déplacé. Effacer les documents récents vide la liste sans supprimer de documents.
+* **Nombre de mots :** le nombre de mots du document.
+* **Informations sur le document :** le titre, l'auteur, le nom du fichier, et sur iOS aussi le nombre de lignes et de caractères.
 * **Exporter :** enregistre le document en texte brut, HTML ou Markdown.
-* **Minuteur de veille :** arrête la lecture après 5, 10, 15, 30, 45 ou 60 minutes, ou une durée personnalisée. Ouvrez-le à nouveau pendant qu'il fonctionne pour voir combien de temps il reste, ou pour l'annuler.
-* **Aide :** ouvre ce readme.
+* **Minuteur de sommeil :** arrête la lecture après 5, 10, 15, 30, 45 ou 60 minutes, ou une durée de votre choix. Ouvrez-le à nouveau pendant qu'il fonctionne pour voir combien de temps il reste, ou pour l'annuler.
+* **Aide :** ouvre ce fichier readme.
 * **Paramètres :**
-    * **Synthèse vocale :** la voix, la vitesse de lecture et la hauteur, un bouton Lire un exemple pour les entendre, et la pause entre les paragraphes. Android vous permet aussi de choisir le moteur de synthèse vocale. Sur iOS, c'est aussi l'endroit où se trouve le dictionnaire de synthèse vocale : des règles qui changent la façon dont les mots sont prononcés, pour chaque voix ou seulement certaines.
-    * **Lisibilité :** taille du texte, interligne, espacement des paragraphes et alignement. iOS a aussi l'apparence claire et sombre, et le texte à contraste élevé.
-    * **Comportement :** si rouvrir vos documents au démarrage de l'application, la direction qu'un balayage sur le bouton de lecture prend, et s'il faut masquer les boutons précédent et suivant. Android a aussi le navigateur de fichiers intégré ici.
+    * **Synthèse vocale :** la voix, la vitesse de parole et la hauteur, un bouton Lire un exemple pour les entendre, et la pause entre les paragraphes. Android vous permet également de choisir le moteur de synthèse vocale. Sur iOS, c'est aussi là que se trouve le dictionnaire de parole : des règles qui modifient la façon dont les mots sont prononcés, pour toutes les voix ou juste certaines.
+    * **Lisibilité :** taille du texte, interligne, espacement des paragraphes, alignement et texte à contraste élevé. iOS a aussi une apparence claire et sombre.
+    * **Comportement :** s'il faut rouvrir vos documents au démarrage de l'application, la direction dans laquelle un balayage sur le bouton de lecture se déplace, et s'il faut masquer les boutons Précédent et Suivant. Android a aussi le navigateur de fichiers intégré ici.
 
 ### Claviers et casques
 
-Avec un clavier, les raccourcis de bureau pour ouvrir des livres, les documents récents, Rechercher, Aller à, la table des matières, le nombre de mots, les infos du document, l'export et la minuterie de veille fonctionnent tous, en utilisant `Cmd` à la place de `Ctrl` sur iOS. Il en est de même pour les touches avec lettres uniques pour se déplacer par titre, page, lien, et le reste, et `Space` joue et met en pause. Sur iOS, les touches avec lettres uniques ne touchent Paperback que lorsque la Navigation rapide avec lettres uniques de VoiceOver est désactivée.
+Avec un clavier, les raccourcis de bureau pour ouvrir des livres, les documents récents, Rechercher, Aller à, la table des matières, le nombre de mots, les informations sur le document, l'exportation et la minuterie de sommeil fonctionnent tous, en utilisant `Cmd` à la place de `Ctrl` sur iOS. Tout comme les touches à une seule lettre pour se déplacer par titre, page, lien et le reste, et `Space` pour jouer et mettre en pause. Sur iOS, les touches à une seule lettre ne touchent Paperback que lorsque la navigation rapide à une lettre VoiceOver est désactivée.
 
-Sur Android, un bouton de casque joue et met en pause avec une pression, avance avec deux, et revient en arrière avec trois.
+Sur Android, un bouton de casque joue et met en pause avec une pression, avance avec deux, et revient avec trois.
 
 ## Langues supportées
 
@@ -277,158 +277,158 @@ Remarque : je considère un parrain GitHub public comme un motif d'inclusion aut
 
 ### Version 1.0
 
-La version 1.0 est la première version sur les cinq plateformes : Windows, macOS, Linux, iOS et Android, avec les applications iOS et Android dans l'App Store et Google Play.
+1.0 est la première version sur les cinq plates-formes : Windows, macOS, Linux, iOS et Android, avec les applications iOS et Android dans l'App Store et Google Play.
 
-#### Ajouts
+#### Ajouté
 
 ##### Général
-* Prise en charge de Linux, sous forme d'AppImage ou de tar.gz, avec intégration bureautique pour que les documents s'ouvrent à partir de votre gestionnaire de fichiers.
-* Marquez le début d'une sélection avec `Alt+F9`, copiez tout de là où vous êtes avec `Alt+F10`, et retournez à la marque avec `Alt+Shift+F9`, pour copier une longue étendue de texte sans parcourir avec Maj. Les trois se trouvent sous Outils > Sélectionner et copier.
-* Le raccourci `=` annonce maintenant la page ainsi que le pourcentage, par exemple « 15 %, page 30 », et reste tel qu'il était pour les documents sans numéros de page.
-* La boîte À propos affiche maintenant la licence de Paperback et chaque traducteur.
-* Une traduction ukrainienne.
+* Support de Linux, sous forme d'AppImage ou de tar.gz, avec intégration de bureau pour que les documents s'ouvrent depuis votre gestionnaire de fichiers.
+* Marquez le début d'une sélection avec `Alt+F9`, copiez tout de là jusqu'où vous êtes arrivé avec `Alt+F10`, et revenez à la marque avec `Alt+Shift+F9`, pour copier une longue portion de texte sans la parcourir avec Maj. Ces trois options sont sous Outils > Sélectionner et copier.
+* Le raccourci `=` annonce maintenant la page ainsi que le pourcentage, par exemple « 15 %, page 30 », et reste comme avant pour les documents sans numéros de page.
+* La boîte À propos affiche maintenant la licence de Paperback et tous les traducteurs.
+* Une traduction en ukrainien.
 
 ##### Nouveaux formats
 * Archives de bandes dessinées (`.cbz`).
 * Audiolivres M4B, divisés en chapitres.
 * Pages de manuel, à la fois `man` et BSD `mdoc`, compressées ou non.
-* Audiolivres MP3, divisés en chapitres quand le fichier les contient.
+* Audiolivres MP3, divisés en chapitres lorsque le fichier en contient.
 * Fichiers Windows Write (`.wri`).
 * Fichiers WinHelp (`.hlp`).
 * Documents Word 6 et Word 95.
 
-##### OCR
-* Les pages PDF numérisées peuvent maintenant être reconnues avec l'OCR intégré à Windows et macOS. Appuyez sur `Entrée` sur une page numérisée pour la reconnaître, ou utilisez Batch OCR (`Ctrl+Shift+O`) pour une plage de pages.
+##### ROC
+* Les pages PDF numérisées peuvent maintenant être reconnues avec la ROC intégrée à Windows et macOS. Appuyez sur `Enter` sur une page numérisée pour la reconnaître, ou utilisez la ROC par lot (`Ctrl+Shift+O`) pour une plage de pages.
 
 ##### Navigation
-* Les formules MathML dans EPUB et HTML sont rendues en tant qu'AsciiMath en utilisant MathCAT. Utilisez `M` ou `Shift+M` pour naviguer dans les formules, puis `Entrée` ou `Espace` pour ouvrir le MathML original en Vue des formules.
-* Un bouton Rechercher tout dans la boîte de dialogue Rechercher, listant chaque ligne avec une correspondance afin que vous puissiez accéder directement à celle que vous souhaitez.
-* Vues Tableaux, Listes et Pages dans la liste des éléments (`F7`).
-* Aller à la ligne, Aller à la page et Aller au pourcentage acceptent maintenant `+n` et `-n` pour vous déplacer par rapport à votre position actuelle.
+* Les formules MathML dans EPUB et HTML sont rendues sous forme d'AsciiMath en utilisant MathCAT. Utilisez `M` ou `Shift+M` pour naviguer dans les formules, puis `Enter` ou `Space` pour ouvrir le MathML original dans la vue Formule.
+* Un bouton Trouver tout dans la boîte de dialogue Rechercher, listant chaque ligne avec une correspondance pour que vous puissiez accéder directement à celle que vous voulez.
+* Les vues Tableaux, Listes et Pages dans la liste des éléments (`F7`).
+* Aller à la ligne, Aller à la page et Aller au pourcentage acceptent maintenant `+n` et `-n` pour se déplacer relativement à votre position actuelle.
 * Les livres EPUB, MOBI et CHM sans titres propres obtiennent maintenant la navigation par titres à partir de leur table des matières.
-* Les livres KF8 (AZW3) supportent maintenant la navigation par sections.
-* Les pages EPUB qui ne sont qu'une image affichent maintenant une ligne pour celle-ci, afin que vous puissiez y accéder au lieu de la sauter directement.
+* Les livres KF8 (AZW3) supportent maintenant la navigation par section.
+* Les pages EPUB qui ne sont qu'une image affichent maintenant une ligne pour cela, afin que vous puissiez vous y positionner au lieu de les sauter.
 
-##### Livres audio
+##### Audiolivres
 * Contrôles de vitesse de lecture, de demi-vitesse à trois fois plus rapide. Utilisez `Ctrl+Shift+.` et `Ctrl+Shift+,`, ou le menu Outils.
-* Les signets et les notes dans les livres audio seuls mémorisent maintenant l'heure exacte à laquelle vous les avez définis.
-* Position suivante et précédente (`Alt+Left` et `Alt+Right`) fonctionnent maintenant dans les livres audio.
-* La progression dans un livre audio est maintenant mesurée par son enregistrement, afin que Aller au pourcentage et la barre d'état correspondent à votre progression réelle.
+* Les signets et les notes dans les livres audio seuls se souviennent maintenant du moment exact où vous les avez placés.
+* Position suivante et précédente (`Alt+Left` et `Alt+Right`) fonctionnent maintenant dans les audiolivres.
+* La progression dans un audiolivre est maintenant mesurée par son enregistrement, donc Aller au pourcentage et la barre d'état correspondent à la distance réelle parcourue.
 
 ##### Documents récents
 * Un élément Effacer les documents récents dans le sous-menu Documents récents.
 
 ##### Documents PDF
-* Un paramètre pour garder chaque ligne d'un PDF séparée, plutôt que de les joindre en paragraphes.
-* Les images et figures dans les PDF sont maintenant annoncées.
-* Les PDF qui portent une structure de lecture mais ne balisent aucune de leurs images annoncent maintenant ces images, plutôt que de les laisser entièrement en dehors du livre.
+* Un paramètre pour garder chaque ligne d'un PDF séparée, au lieu de les joindre en paragraphes.
+* Les images et les figures dans les PDF sont maintenant annoncées.
+* Les PDF qui contiennent une structure de lecture mais ne balisent aucune de leurs images annoncent maintenant ces images, au lieu de les exclure entièrement du livre.
 
-##### Vue web
+##### Vue Web
 * N'importe quel document peut maintenant être ouvert dans la vue web, pas seulement EPUB, HTML et Markdown.
 
 ##### Lisibilité
-* Les titres sont maintenant dessinés à une taille qui correspond à leur niveau, et les images et tableaux sont séparés du texte environnant.
+* Les titres sont maintenant dessinés à une taille qui correspond à leur niveau, et les images et les tableaux sont séparés du texte qui les entoure.
 
 ##### pb
-* `pb --list-formats` énumère tous les formats que pb peut lire.
-* pb dit maintenant quel fichier il n'a pas pu lire et pourquoi.
+* `pb --list-formats` liste tous les formats que pb peut lire.
+* pb indique maintenant quel fichier il n'a pas pu lire et pourquoi.
 
 #### Corrigé
 
 ##### Général
 * Correction d'un plantage lors de la fermeture de Paperback.
-* La fermeture de Paperback masque maintenant la fenêtre immédiatement, au lieu de la laisser à l'écran pendant qu'elle enregistre.
-* L'ouverture d'un document n'active plus l'option Rouvrir le dernier fermé s'il n'y a rien à rouvrir.
-* Paperback n'essaie plus de réouvrir les documents manquants de votre liste récente et limite le nombre de documents récents stockés.
-* L'ancien fichier de paramètres INI est maintenant supprimé une fois qu'il a été transféré au nouveau format.
-* Les titres des boîtes de dialogue Police et Couleur, ainsi que le menu Exporter sous en vietnamien, sont maintenant traduits.
-* La mise à jour amène maintenant la fenêtre relancée au premier plan, au lieu de la laisser derrière toutes les autres fenêtres dans Alt+Tab.
-* L'habillage du texte s'applique maintenant immédiatement sur les documents volumineux, au lieu de recharger l'ensemble du document.
+* La fermeture de Paperback masque maintenant la fenêtre immédiatement, au lieu de la laisser à l'écran pendant qu'elle s'enregistre.
+* L'ouverture d'un document ne laisse plus la fonction Rouvrir le dernier fermé activée quand il n'y a rien à rouvrir.
+* Paperback ne réessaie plus indéfiniment d'accéder aux documents de votre liste récente qui ont disparu, et limite le nombre de documents récents qu'il conserve.
+* L'ancien fichier de paramètres INI est maintenant supprimé une fois qu'il a été converti au nouveau format.
+* Les titres des boîtes de dialogue police et couleur, ainsi que le menu Exporter sous en vietnamien, sont maintenant traduits.
+* La mise à jour amène désormais la fenêtre relancée au premier plan, au lieu de la laisser derrière toutes les autres fenêtres dans `Alt+Tab`.
+* L'habillage du texte s'applique maintenant immédiatement sur les gros documents, au lieu de recharger tout le document.
 
 ##### Navigation
-* `Alt+Left` revient maintenant à l'endroit d'où vous avez sauté, plutôt qu'à une position plus ancienne.
-* Les sons des signets ne se jouent maintenant que lorsque vous passez sur un signet, pas lorsque vous atterrissez sur la ligne où il se trouve.
-* La fermeture de la table des matières, de la liste des éléments et des boîtes de dialogue Aller à vous amène maintenant directement à la ligne sur laquelle vous atterrissez, au lieu de vous faire écouter le lecteur d'écran lire à nouveau la fenêtre.
-* Aller à la ligne, Aller à la page et Aller au pourcentage refusent maintenant les nombres en dehors du document au lieu d'aller discrètement ailleurs.
-* NVDA ne coupe plus l'annonce lorsqu'un document n'a pas de pages.
+* `Alt+Left` revient maintenant à l'endroit d'où vous aviez sauté, plutôt qu'à une position plus ancienne.
+* Les sons des signets ne se jouent maintenant que lorsque vous vous déplacez sur un signet, pas quand vous arrivez sur la ligne où il se trouve.
+* La fermeture de la table des matières, de la liste des éléments et des boîtes de dialogue Aller à vous amène maintenant directement à la ligne sur laquelle vous arrivez, au lieu de vous obliger à écouter le lecteur d'écran relire la fenêtre.
+* Aller à la ligne, Aller à la page et Aller au pourcentage refusent maintenant les nombres en dehors du document au lieu d'aller silencieusement ailleurs.
+* NVDA ne coupe plus l'annonce quand un document n'a pas de pages.
 * Appuyer sur OK dans la table des matières sans bouger va maintenant à l'entrée qui était déjà sélectionnée.
-* La table des matières, la liste des éléments et la liste des signets ne ralentissent plus ni ne gèlent sur les livres avec des milliers d'entrées.
-* Les flèches Haut et Bas se souviennent maintenant de leur colonne par document, au lieu de la transporter quand vous changez d'onglet.
+* La table des matières, la liste des éléments et la liste des signets ne ralentissent plus et ne figent plus sur les livres avec des milliers d'entrées.
+* Les flèches Haut et Bas se souviennent maintenant de leur colonne par document, au lieu de la conserver quand vous changez d'onglet.
 
 ##### Livres audio
-* La lecture audio utilise maintenant `Control+Space` sur macOS, car `Command+Space` appartient à Spotlight.
+* La lecture audio utilise maintenant `Control+Space` sur macOS, puisque `Command+Space` appartient à Spotlight.
 
 ##### Documents PDF
-* Correction des PDF exportés depuis Apple Pages qui se lisaient en tant que texte brut, sans les titres et listes avec lesquels ils ont été écrits.
-* Correction des paragraphes et titres PDF se divisant à chaque ligne, et des mots se séparant à chaque espace.
-* Correction des titres PDF numérotés s'exécutant ensemble en un seul titre.
-* Correction des PDF dont l'arborescence de structure ne mène à aucun texte s'ouvrant vide.
-* Les en-têtes et pieds de page ne sont plus lus sur chaque page des PDF non balisés.
-* Les PDF qui balisent leurs en-têtes et pieds de page en tant que texte ordinaire ne répètent plus le titre et le numéro de page entre deux paragraphes sur chaque page.
-* Les PDF affichent maintenant leur vrai titre, plutôt que leur nom de fichier.
-* Les lignes définies dans une police à espacement fixe, comme du code, ne sont plus jointes dans des paragraphes.
+* Correction des PDF exportés à partir d'Apple Pages qui s'affichaient en tant que texte brut, sans aucun des titres et listes avec lesquels ils ont été rédigés.
+* Correction des paragraphes et titres PDF se divisant à chaque ligne, et des mots se divisant aux espaces.
+* Correction des titres PDF numérotés se regroupant en un seul titre.
+* Correction des PDF dont l'arborescence des structures ne mène à aucun texte s'ouvrant vide.
+* Les en-têtes et pieds de page ne sont plus énoncés sur chaque page des PDF non balisés.
+* Les PDF qui balisent leurs en-têtes et pieds de page comme du texte ordinaire ne répètent plus le titre et le numéro de page entre deux paragraphes sur chaque page.
+* Les PDF affichent maintenant leur vrai titre, au lieu de leur nom de fichier.
+* Les lignes définies dans une police à espacement fixe, comme le code, ne sont plus regroupées en paragraphes.
 
 ##### Livres MOBI/AZW3
-* Les gros livres MOBI ne manquent plus de mémoire et ne sont plus coupés après 20 Mo.
+* Les gros livres MOBI ne manquent plus de mémoire et ne sont plus tronqués après 20 Mo.
 * Les livres MOBI et AZW3 s'ouvrent maintenant beaucoup plus rapidement.
 * Correction des livres MOBI perdant leur liste de chapitres.
-* Correction du texte brouillé où les livres MOBI passent d'un enregistrement à l'autre.
+* Correction du texte brouillé quand les livres MOBI passent d'un enregistrement à l'autre.
 
-##### Vue web
-* La vue web ne charge plus l'ensemble d'un énorme livre à la fois.
-* La vue web affiche maintenant les documents en entier lorsque le lecteur les affiche en entier, plutôt que seulement une tranche de ceux-ci.
+##### Vue Web
+* La vue Web ne charge plus l'intégralité d'un énorme livre d'un coup.
+* La vue Web affiche maintenant les documents entiers quand le lecteur les affiche entiers, au lieu de n'en montrer qu'une portion.
 
 ##### Autres formats
-* Les livres FictionBook (.fb2) écrits en windows-1251, ce qui est le cas pour la plupart d'entre eux, s'ouvrent maintenant au lieu d'échouer complètement à la lecture.
-* Les livres FictionBook qui utilisent un espace de noms ou une entité HTML qu'ils n'ont jamais déclarés s'ouvrent maintenant, au lieu d'être refusés comme corrompus.
+* Les livres FictionBook (.fb2) écrits en windows-1251, ce qui est le cas pour la plupart, s'ouvrent maintenant au lieu de ne pas se lire du tout.
+* Les livres FictionBook qui utilisent un espace de noms ou une entité HTML qu'ils n'ont jamais déclarés s'ouvrent maintenant, au lieu d'être refusés comme cassés.
 * Les livres dans les anciens encodages s'ouvrent maintenant beaucoup plus rapidement.
-* Correction de certains fichiers texte en chinois qui s'ouvraient en tant que texte brouillé.
-* Les fichiers OpenDocument protégés par mot de passe demandent maintenant leur mot de passe, au lieu d'être signalés comme corrompus.
-* Les fichiers PowerPoint hérités protégés par mot de passe s'ouvrent maintenant, et les diapositives PowerPoint hérités ne perdent plus leur texte.
+* Correction de certains fichiers texte en chinois s'ouvrant en tant que texte brouillé.
+* Les fichiers OpenDocument protégés par mot de passe demandent maintenant leur mot de passe, au lieu d'être signalés comme cassés.
+* Les fichiers PowerPoint hérités protégés par mot de passe s'ouvrent maintenant, et les diapositives PowerPoint héritées ne perdent plus leur texte.
 * Les fichiers texte brut enregistrés avec une extension `.rtf` s'ouvrent maintenant en tant que texte, au lieu d'échouer avec une erreur.
-* Les mots-clés de contrôle RTF n'apparaissent plus en tant que texte.
+* Les mots-clés RTF ne s'affichent plus en tant que texte.
 
 #### iOS et Android
 
-Les applications iOS et Android ouvrent tous les formats que le bureau supporte, et incluent :
+Les applications iOS et Android ouvrent tous les formats que fait le bureau, et incluent :
 
-* Lecture à voix haute, avec votre choix de voix, de débit et de hauteur, un contrôle de débit de parole directement dans la barre de lecture, et une pause optionnelle entre les paragraphes.
+* Lecture à haute voix, avec votre choix de voix, de débit et de hauteur, un contrôle de débit de parole directement sur la barre de lecture, et une pause facultative entre les paragraphes.
 * Lecture des livres audio DAISY, M4B et MP3, qui continue en arrière-plan et depuis l'écran de verrouillage.
-* Navigation par titres, pages, liens, tableaux, listes et bien d'autres à partir de la barre de lecture, ainsi que la table des matières et Rechercher.
-* Une minuterie de sommeil, un compte de mots et une exportation de documents, plus un dictionnaire de parole sur iOS.
-* Options de taille et d'espacement du texte, ainsi que du texte à contraste élevé sur iOS.
-* Les raccourcis clavier correspondant au bureau.
+* Navigation par titres, pages, liens, tableaux, listes et plus à partir de la barre de lecture, plus la table des matières et Rechercher.
+* Un minuteur de mise en veille, un comptage de mots et une export de documents, plus un dictionnaire de parole sur iOS.
+* Options de taille de texte, d'espacement et de texte à contraste élevé.
+* Les raccourcis clavier qui correspondent au bureau.
 
 ### Version 0.9.2
-* Les livres audio ne font plus lire à votre lecteur d'écran une suite d'espaces lorsque vous donnez le focus au champ texte.
+* Les livres audio ne font plus lire à votre lecteur d'écran une série d'espaces quand vous concentrez le champ de texte.
 * Les livres audio nomment maintenant le fichier au fur et à mesure que vous les parcourez par section.
-* Les livres audio signalent maintenant leur durée réelle, au lieu de prétendre que chaque fichier qu'ils contiennent dure 24 heures.
-* La fermeture de la Web View avec Échap n'affiche plus d'alerte de débogage après que vous ayez suivi un lien à l'intérieur.
-* La copie après Sélectionner tout vous donne maintenant l'intégralité du document, au lieu de seulement la partie actuellement chargée.
-* Rechercher va maintenant directement à la ligne trouvée, au lieu de vous faire écouter le lecteur d'écran relire la fenêtre à mesure que le focus revient au livre.
-* Correction des EPUB contenant un bloc ZIP64 égaré qui refusaient de s'ouvrir avec « Invalid local file header ».
-* Correction des documents longs qui revenaient à leur début tandis qu'un lecteur d'écran les lisait continuellement.
-* Les liens dans la WebView vous mènent maintenant à la section vers laquelle ils pointent, au lieu d'échouer avec « File not found ».
-* L'annonce automatique « Document reloaded » ne coupe plus votre lecteur d'écran en pleine phrase, mais attend qu'il finisse ce qu'il était en train de dire.
-* L'onglet Général de la boîte de dialogue Paramètres parcourt maintenant ses options dans l'ordre où elles apparaissent à l'écran, le canal de mise à jour étant directement après l'option de vérification des mises à jour.
-* Windows affichera maintenant toujours « Paperback » dans le menu Ouvrir avec, au lieu de la ligne de signature complète du programme.
-* Nombre de mots et Informations sur le document affichent maintenant le nombre de fichiers qu'un livre audio contient, et sa durée totale.
+* Les livres audio signalent maintenant leur vraie longueur, au lieu de prétendre que chaque fichier qu'ils contiennent dure 24 heures.
+* La fermeture de la vue Web avec Échap ne lève plus une alerte de débogage après avoir suivi un lien à l'intérieur.
+* La copie après Sélectionner tout vous donne maintenant le document entier, au lieu de seulement la partie actuellement chargée.
+* Rechercher va maintenant directement à la ligne qu'elle a trouvée, au lieu de vous obliger à écouter le lecteur d'écran relire la fenêtre à nouveau alors que le focus revient au livre.
+* Correction des EPUB qui portent un bloc ZIP64 égaré refusant de s'ouvrir avec « En-tête de fichier local invalide ».
+* Correction des longs documents revenant à leur début tandis qu'un lecteur d'écran les lisait continuellement.
+* Les liens dans la WebView vous amènent maintenant à la section vers laquelle ils pointent, au lieu d'échouer avec « Fichier non trouvé ».
+* L'annonce automatique « Document rechargé » ne coupe plus votre lecteur d'écran au milieu d'une phrase, attendant plutôt qu'il finisse ce qu'il disait.
+* L'onglet Général de la boîte de dialogue Paramètres parcourt maintenant ses options dans l'ordre dans lequel elles apparaissent à l'écran, avec le canal de mise à jour directement après l'option de vérification des mises à jour.
+* Windows affichera maintenant toujours « Paperback » dans le menu Ouvrir avec, au lieu du slogan complet du programme.
+* Le comptage des mots et les informations sur les documents affichent maintenant le nombre de fichiers qu'un livre audio contient et la durée totale qu'il occupe.
 
 ### Version 0.9.1
-* Les sons de signet et de note jouent maintenant sur macOS.
+* Les sons des signets et des notes se jouent maintenant sur macOS.
 * Les livres DAISY jouent maintenant leur audio sur macOS, au lieu de s'ouvrir et de suivre leur chronologie en silence.
-* Correction des guillemets courbes, tirets cadratins et caractères similaires qui disparaissaient des documents RTF, en joignant les mots environnants à mesure qu'ils disparaissaient.
+* Correction des guillemets courbes, tirets cadratin et caractères similaires disparaissant des documents RTF, fusionnant les mots environnants au passage.
 * Correction des images RTF qui fuyaient leurs données brutes dans le document sous forme de texte garbled.
-* Correction du sous-menu Documents récents qui conservait les entrées obsolètes jusqu'à ce que quelque chose d'autre le reconstruise.
-* Les accélérateurs clavier sont de retour dans chaque traduction, de sorte que les menus russes ont à nouveau accès au clavier.
+* Correction du sous-menu Documents récents qui conservait les entrées obsolètes jusqu'à ce qu'autre chose le reconstruise.
+* Les accélérateurs clavier sont de retour dans chaque traduction, de sorte que les menus russes ont à nouveau un accès clavier.
 * Les grands documents CHM s'ouvrent maintenant jusqu'à sept fois plus rapidement.
-* Les documents ouverts sont maintenant enregistrés auprès de Windows, de sorte qu'ils apparaissent dans la liste de raccourcis de la barre des tâches et la liste récente du menu Démarrer.
-* Options a été renommé en Paramètres, ce qui correspond aux applications mobiles et, sur macOS, à la convention de la plateforme.
-* Paperback mémorise maintenant la position, la taille et l'état maximisé de sa fenêtre entre les exécutions.
+* Les documents ouverts sont maintenant enregistrés avec Windows, de sorte qu'ils apparaissent dans la liste de saut de la barre des tâches et dans la liste récente du menu Démarrer.
+* Options a été renommé en Paramètres, correspondant aux applications mobiles et, sur macOS, à la convention de la plateforme.
+* Paperback se souvient maintenant de la position, de la taille et de l'état maximisé de sa fenêtre entre les exécutions.
 * Les formes plurielles sont maintenant traduites, de sorte que les messages qui comptent les choses se lisent correctement dans les langues qui nécessitent plus d'une forme.
-* La sélection du fichier ncc.html d'un livre DAISY ouvre maintenant le livre audio complet au lieu de seulement son texte.
+* La sélection du ncc.html d'un livre DAISY ouvre maintenant le livre audio complet au lieu de seulement son texte.
 * Les noms d'actions de la boîte de dialogue Personnaliser les raccourcis clavier peuvent maintenant être traduits.
-* Le titre du document apparaît maintenant en premier dans la barre de titre, de sorte que les livres ouverts peuvent être distingués dans la barre des tâches et Alt+Tab.
+* Le titre du document vient maintenant en premier dans la barre de titre, de sorte que les livres ouverts peuvent être distingués dans la barre des tâches et `Alt+Tab`.
 * La boîte de dialogue de mise à jour est maintenant traduite.
 
 ### Version 0.9.0
@@ -436,74 +436,74 @@ Les applications iOS et Android ouvrent tous les formats que le bureau supporte,
 #### Ajouté
 
 ##### Général
-* Un outil CLI, appelé pb, pour convertir rapidement n'importe quel format pris en charge par Paperback en HTML, Markdown ou texte brut.
+* Un outil CLI, appelé pb, pour convertir rapidement n'importe quel format supporté par Paperback en HTML, Markdown ou texte brut.
 * Une option pour recharger les documents qui ont été modifiés par d'autres programmes sur le disque.
-* Une option Afficher la source pour ouvrir la source d'un document dans un nouvel onglet, utile par exemple pour éditer du Markdown.
-* Le texte des documents est maintenant paginé, ce qui signifie que vous pouvez charger des livres contenant des dizaines de millions de mots en seulement quelques secondes. Veuillez signaler toute anomalie trouvée avec ceci.
+* Une option Afficher la source pour ouvrir la source d'un document dans un nouvel onglet, utile pour éditer du Markdown par exemple.
+* Le texte du document est maintenant paginé, ce qui signifie que vous pouvez charger des livres avec des dizaines de millions de mots en seulement quelques secondes. Veuillez signaler toute bizarrerie trouvée avec ceci.
 
-##### Support des plates-formes
+##### Support de plateforme
 * Support ARM64 Windows !
 * Support natif macOS !
-* Un bouton de basculement en plein écran.
+* Un bouton de basculement plein écran.
 
 ##### Boîte de dialogue Tous les documents
-* Un bouton localiser pour localiser les livres manquants dont le chemin vient de changer.
-* Un filtre de statut et une barre de statut, afin que vous puissiez filtrer par statut de document et voir combien de documents sont affichés et sélectionnés.
+* Un bouton localiser pour localiser les livres manquants qui viennent de changer de chemin.
+* Un filtre de statut et une barre de statut, de sorte que vous pouvez filtrer par statut du document et voir combien de documents sont affichés et sélectionnés.
 * Le raccourci `Ctrl+Shift+A` pour désélectionner tous les documents.
 
 ##### Options et lisibilité
 * Un onglet lisibilité, avec les options suivantes :
     * Retour à la ligne automatique (déplacé à partir de général) ;
-    * Afficher les tableaux en ligne (nouveau dans cette version, voir ci-dessous) ;
+    * Rendre les tableaux en ligne (nouveau dans cette version, voir ci-dessous) ;
     * Police ;
     * Couleur de fond ;
     * Interligne ;
     * Espacement des paragraphes ;
     * Espacement des lettres ;
     * Alignement du texte.
-* Un élément de menu retour à la ligne automatique et la touche associée.
-* Un bouton pour déterminer comment vous souhaitez que les tableaux s'affichent, et unification de l'affichage des tableaux dans les documents.
+* Un élément de menu retour à la ligne automatique et touche d'accès rapide suivante.
+* Un bouton de basculement pour déterminer comment vous souhaitez afficher les tableaux, et unification de la façon dont les tableaux sont affichés dans tous les documents.
 
 ##### Navigation
-* Support de la navigation par conteneur.
-* Une option pour déplacer automatiquement le curseur au début de la ligne lors de la navigation entre les lignes, similaire au mode de navigation dans les lecteurs d'écran.
+* Support pour naviguer par conteneur.
+* Une option pour déplacer automatiquement le curseur au début de la ligne lors de la navigation entre les lignes, similaire au mode parcourir dans les lecteurs d'écran.
 * Le raccourci clavier égal pour annoncer votre pourcentage actuel dans un document.
 
 ##### Signets
-* Signets temporaires : vous pouvez en avoir un par document, et ils persistent. Utilisez la barre oblique pour en définir un et la barre oblique inverse pour y accéder.
+* Signets temporaires : vous pouvez en avoir un par document, et ils persistent. Utilisez la barre oblique pour en définir un et la barre oblique inversée pour sauter vers celui-ci.
 
-##### Compteur de mots
-* Temps de lecture estimé dans la boîte de dialogue du compteur de mots, ainsi que la possibilité de définir votre vitesse de lecture pour rendre cette métrique vraiment utile.
-* Si une sélection est active lorsque vous ouvrez la boîte de dialogue du compteur de mots, le nombre de mots que vous avez sélectionnés s'affichera maintenant.
+##### Comptage des mots
+* Temps de lecture estimé dans la boîte de dialogue comptage des mots, ainsi que la capacité de définir votre vitesse de lecture pour rendre cette métrique réellement utile.
+* Si une sélection est active lorsque vous ouvrez la boîte de dialogue comptage des mots, le nombre de mots que vous avez sélectionnés sera maintenant affiché.
 
 ##### Raccourcis clavier
-* La possibilité de personnaliser chaque raccourci clavier de l'application via une boîte de dialogue simple.
-* Un raccourci clavier configurable pour restaurer Paperback à partir de la barre d'état système.
+* La capacité de personnaliser chaque raccourci clavier de l'application via une simple boîte de dialogue.
+* Un raccourci clavier configurable pour restaurer Paperback à partir du plateau système.
 
 ##### Langues
 * Néerlandais, finnois et polonais.
 
-##### Exporter
-* Expansion de l'élément du menu exporter pour permettre l'exportation en HTML et Markdown, en plus du texte brut.
+##### Export
+* Expansion de l'élément de menu export pour permettre l'export en HTML et Markdown, en plus du texte brut.
 
-##### Mise à jour
-* Un bouton d'annulation à la boîte de dialogue de mise à jour en cours.
-* Le programme de mise à jour valide maintenant que le fichier téléchargé n'a pas été modifié.
+##### Mises à jour
+* Un bouton d'annulation à la boîte de dialogue mise à jour en cours.
+* Le programme de mise à jour valide maintenant que le fichier téléchargé n'a pas été falsifié.
 
-##### Affichage Web
-* L'affichage web s'ouvre maintenant à votre position de lecture actuelle.
+##### Vue Web
+* La vue web s'ouvre maintenant à votre position de lecture actuelle.
 
 ##### Livres DAISY
 * Support des livres DAISY 2.0.
 * Support de la lecture audio DAISY 2.02.
 
 ##### Livres audio
-* La possibilité de lire des livres audio, actuellement en support à la fois pour l'audio DAISY (y compris l'audio DAISY + texte) et les zips de fichiers audio.
-* Des raccourcis clavier et des éléments de menu pour lire/mettre en pause la narration, avancer et reculer, et ajuster la quantité de recherche.
-* Options pour synchroniser le curseur de lecture à la lecture audio, définir la quantité de recherche audio et choisir si la recherche au-delà de la fin d'un chapitre continue dans le suivant.
+* La capacité de lire des livres audio, supportant actuellement à la fois l'audio DAISY (y compris audio DAISY + texte) et les fichiers audio zippés.
+* Raccourcis clavier et éléments de menu pour lire/mettre en pause la narration, chercher en avant et en arrière, et ajuster le montant de la recherche.
+* Options pour synchroniser le curseur de lecture à la lecture audio, définir le montant de la recherche audio et choisir si la recherche au-delà de la fin d'un chapitre continue dans le suivant.
 
 ##### Documents CHM
-* Support des listes, éléments de liste, figures et images.
+* Support pour les listes, les éléments de liste, les figures et les images.
 
 ##### PowerPoint
 * Les documents PowerPoint supportent maintenant les tableaux.
@@ -511,275 +511,276 @@ Les applications iOS et Android ouvrent tous les formats que le bureau supporte,
 #### Corrigé
 
 ##### Général
-* Les documents codés dans les encodages CJK hérités, tels que GBK, Big5 et Shift_JIS, s'affichent désormais correctement au lieu de s'afficher en caractères mal encodés.
-* « Réouvrir le dernier fermé » tentant de rouvrir le readme fourni.
-* Votre onglet sélectionné ne recevant pas correctement la mise au point après le redémarrage de Paperback.
-* La gestion par Paperback des fichiers sur les lecteurs réseau Windows : appuyer sur « Afficher le fichier dans le dossier » met désormais correctement en avant le fichier sur le stockage réseau, et les chemins ne contiennent plus de caractères étranges.
-* Les fichiers .paperback ne seront plus forcément chargés lors de la restauration du document ; vous serez plutôt invité à confirmer si l'un d'eux est trouvé.
-* « Ouvrir le dossier contenant » met désormais l'accent sur le fichier donné dans l'explorateur.
+* Les documents encodés en CJK legacy, comme GBK, Big5 et Shift_JIS, s'affichent désormais correctement au lieu de s'afficher en caractères corrompus.
+* « Rouvrir le dernier fermé » tentant de rouvrir le readme fourni.
+* Votre onglet sélectionné ne recevant pas correctement le focus après le redémarrage de Paperback.
+* Gestion des fichiers sur les lecteurs réseau Windows par Paperback : appuyer sur afficher le fichier dans le dossier place désormais correctement le focus sur le fichier du stockage réseau, et les chemins ne contiennent plus de caractères étranges.
+* Les fichiers .paperback ne seront plus chargés de force lors de la restauration du document ; au lieu de cela, vous serez invité à confirmer lorsqu'un est trouvé.
+* Ouvrir le dossier contenant place désormais correctement le focus sur le fichier donné dans l'explorateur.
 * L'ouverture du readme respecte désormais votre langue sélectionnée.
-* L'interface utilisateur de Paperback s'adaptera désormais correctement sur les écrans haute résolution.
+* L'interface utilisateur de Paperback s'ajuste désormais correctement sur les écrans haute résolution.
 * Le menu se met désormais à jour correctement et le focus se déplace vers le contrôle de texte lors de l'ouverture de l'aide dans Paperback.
-* Passage à une méthode beaucoup plus sécurisée d'IPC sous Windows.
-* Le titre du document actif sera désormais lu lors du basculement entre les onglets.
-* Réduction de l'utilisation mémoire sur les grands documents en réduisant de moitié la taille des tables d'index interne par caractère.
+* Passage à une méthode beaucoup plus sécurisée de communication interprocessus (IPC) sur Windows.
+* Le titre du document actif sera désormais lu lors du changement d'onglet.
+* Réduction de l'utilisation de la mémoire sur les documents volumineux en réduisant de moitié la taille des tables d'index par caractère interne.
 
 ##### Dialogue Tous les documents
-* Échap ne fermant pas les dialogues Document Info et Tous les documents.
-* La barre de titre ne se mettant pas à jour après la fermeture d'un document à partir du dialogue de tous les documents.
-* Readme.html ne sera plus ajouté à votre liste de tous les documents lors de l'ouverture via `Shift+F1`.
-* La suppression de documents du dialogue récents fermera désormais également leur onglet actif.
+* Échap ne fermant pas les dialogues Infos document et Tous les documents.
+* La barre de titre ne se mettant pas à jour après fermeture d'un document à partir du dialogue de tous les documents.
+* Readme.html ne sera plus ajouté à votre liste de tous les documents lorsqu'il est ouvert via `Shift+F1`.
+* La suppression de documents du dialogue des récents fermera désormais aussi leur onglet actif.
 * Votre filtre de recherche est désormais conservé après la suppression d'un document.
 
 ##### Navigation
-* La navigation de page annonçant un texte de ligne incorrect dans certaines situations.
-* « Aller à la ligne », « Aller à la page » et « Aller au pourcentage » plaçant votre curseur à la mauvaise position dans les grands documents.
-* « Rechercher » et « Rechercher suivant » ne respectant pas la fenêtre du document chargé dans les grands documents.
+* La navigation entre pages annonçant un texte de ligne incorrect dans certaines situations.
+* Aller à la ligne, Aller à la page et Aller au pourcentage plaçant votre curseur à la mauvaise position dans les documents volumineux.
+* Rechercher et Rechercher suivant ne respectant pas la fenêtre du document chargé dans les documents volumineux.
 
 ##### Signets
-* Les sons des signets/notes doivent désormais être lus exclusivement lorsque vous naviguez sur un mot contenant l'un d'eux.
+* Les sons de signet/note doivent désormais se reproduire correctement uniquement lorsque vous naviguez sur un mot en contenant.
 
 ##### Lisibilité
 * L'application du retour à la ligne vous envoyant au début de votre document.
 
-##### Web View
-* Le dialogue webview ne pouvait pas être redimensionné et s'affichait à une taille initiale très petite.
-* Les images doivent désormais s'afficher correctement dans le webview intégré.
+##### Affichage Web
+* Le dialogue de webview n'étant pas redimensionnable et s'ouvrant à une très petite taille initiale.
+* Les images doivent désormais s'afficher correctement dans la webview intégrée.
 
-##### Mises à jour
-* La mise à jour affiche désormais correctement le contenu des balises de code markdown dans les notes de version.
+##### Mise à jour
+* La mise à jour affiche désormais correctement le contenu des balises de code markdown dans les notes de publication.
 
 ##### Livres DAISY
 * Les livres DAISY affichant des informations incorrectes dans la barre d'état.
-* Chargement de livres DAISY avec des déclarations d'encodage incorrectes.
+* Chargement de livres DAISY avec des déclarations d'encodage frauduleuses.
 
 ##### Documents RTF
-* Analyse des documents RTF contenant des caractères non-latins.
+* Analyse des documents RTF contenant des caractères non-Latin.
 * Les groupes RTF `\pict` afin que les données d'image intégrées ne s'écoulent plus dans le texte du document.
 
 ##### Livres Mobi/AZW3
-* Les ancrages filepos dans les livres Mobi divisant les balises HTML et mettant des données parasites dans le texte du livre.
-* Les liens dans les livres Mobi hérités.
-* Analyse AZW3 considérablement améliorée.
+* Les ancres filepos dans les livres Mobi scindant les balises HTML et mettant du contenu indésirable dans le texte du livre.
+* Liens dans les livres Mobi legacy.
+* Amélioration majeure de l'analyse AZW3.
 
 ##### Documents Word
-* Les documents Word avec des noms de style spécifiques aux paramètres régionaux ne rendant pas correctement leurs en-têtes.
+* Documents Word avec noms de style spécifiques aux paramètres régionaux ne rendant pas correctement leurs en-têtes.
 
 ##### Documents HTML/XHTML
-* Les éléments dl, dt et dd ne produisant pas de sauts de ligne dans les documents XHTML.
+* Éléments dl, dt et dd ne produisant pas de sauts de ligne dans les documents XHTML.
 
 ##### Documents PDF
-* Paperback revient désormais à l'extraction de texte brut pour les PDF mal étiquetés.
-* Les documents PDF contenant des caractères de contrôle dans leurs titres et/ou signets ne bloqueront plus Paperback à l'ouverture.
+* Paperback bascule désormais vers l'extraction en texte brut pour les PDF incorrectement étiquetés.
+* Les documents PDF contenant des caractères de contrôle dans leurs titres et/ou signets ne planteront plus Paperback à l'ouverture.
 
 ### Version 0.8.5
-* Ajout de la prise en charge des pages pour les livres epub.
-* Ajout de la prise en charge des documents Microsoft Office chiffrés. Actuellement, les Word hérités, les Word modernes et les Powerpoint modernes sont pris en charge, avec Powerpoint hérité prévu pour l'avenir.
-* Ajout de la prise en charge des documents Microsoft Word hérités !
-* Ajout de la prise en charge des présentations Powerpoint hérités !
+* Ajout de la prise en charge des pages aux livres epub.
+* Ajout de la prise en charge des documents Microsoft Office chiffrés. Actuellement, Word legacy, Word moderne et Powerpoint moderne sont pris en charge, avec Powerpoint legacy prévu pour l'avenir.
+* Ajout de la prise en charge des documents Microsoft Word legacy !
+* Ajout de la prise en charge des présentations Powerpoint legacy !
 * Ajout de la prise en charge des livres mobi et AZW3 !
 * Ajout de la prise en charge des fichiers PDF étiquetés !
 * Ajout du raccourci `ctrl+q` pour quitter l'application.
-* Ajout de la prise en charge des livres zippés de Bookshare (DAISY et Word) !
-* Le texte alternatif pour les images intégrées doit désormais être correctement affiché.
+* Ajout de la prise en charge des livres compressés de Bookshare (DAISY et Word) !
+* Le texte alternatif des images intégrées doit désormais s'afficher correctement.
 * Les documents CHM prennent désormais correctement en charge la navigation par lien interne.
-* Correction d'une erreur de décalage de 1 pour l'option d'accès à la page.
-* Correction du fait que la touche Échap ne fonctionne pas pour fermer le dialogue Ouvrir comme.
-* Correction du menu contextuel du lecteur qui ne s'affichait pas au clic droit ou à la touche Applications.
-* Correction du mauvais document parfois mises au point lors de l'ouverture de documents à partir de la ligne de commande.
+* Correction de l'erreur de décalage de 1 pour aller à la page.
+* Correction de la touche Échap ne fonctionnant pas pour fermer le dialogue d'ouverture.
+* Correction du menu contextuel du lecteur ne s'affichant pas lors d'un clic droit ou de la touche Applications.
+* Correction du mauvais document recevant parfois le focus lors de l'ouverture de documents à partir de la ligne de commande.
 * Les PDF contenant uniquement des images sont à nouveau détectés et vous alertent de leur existence.
 * Il est désormais possible de naviguer dans les images et les figures avec `g`/`shift+g` et `f`/`shift+f`, respectivement.
-* Paperback respecte désormais votre paramètre de mode sombre de l'application.
+* Paperback respecte désormais votre paramètre de mode sombre d'application.
 * Suppression de la prise en charge DAISY XML, car elle n'est plus nécessaire.
-* Passage à la navigation native Win32 en première lettre dans l'arborescence de la table des matières.
+* Retour à la navigation Win32 native des premières lettres dans l'arbre de la table des matières.
 * Le dialogue de chargement d'erreur affiche désormais des messages d'erreur plus détaillés.
-* Le webview s'ouvrira désormais beaucoup plus rapidement et en douceur.
+* La webview s'ouvrira désormais beaucoup plus rapidement et en douceur.
 
 ### Version 0.8.2
-* Ajout de la prise en charge des pages pour les documents RTF !
-* Correction d'un bogue où l'ouverture du webview dans les épubs contenant des liens externes les activait automatiquement.
-* Correction d'un bogue où l'analyseur RTF ne mettait pas d'espace entre les mots dans de rares cas.
-* Correction de la division des paragraphes en plusieurs lignes courtes dans certains documents PDF.
-* Les documents PDF ont désormais une prise en charge basique de la navigation par lien et en-tête !
-* Les onglets RTF et les sauts de ligne sont désormais rendus exactement comme ils apparaissent dans le document.
+* Ajout de la prise en charge des pages aux documents RTF !
+* Correction d'un bogue où l'ouverture de la webview dans les epubs contenant des liens externes les activait automatiquement.
+* Correction d'un bogue où l'analyseur RTF n'insérait pas d'espace entre les mots dans de rares cas.
+* Correction des paragraphes divisés en plusieurs lignes courtes dans certains documents PDF.
+* Les documents PDF bénéficient désormais d'une prise en charge basique de la navigation par lien et en-tête !
+* Les onglets et sauts de ligne RTF sont désormais rendus exactement comme ils apparaissent dans le document.
 * Retour à la bibliothèque pdfium éprouvée pour l'analyse des PDF, rendant le rendu PDF beaucoup plus fiable à nouveau.
 
 ### Version 0.8.1
 * Ajout de `Ctrl+Shift+T` pour rouvrir le dernier document fermé.
 * Le dialogue Tous les documents prend désormais en charge la sélection de plusieurs documents à ouvrir à la fois.
-* Correction de quelques bugs du parseur RTF.
-* Correction des chemins de fichiers contenant des caractères non-ASCII (comme le bosniaque š, č, ć, ž) devenant corrompus lors de l'ouverture d'un fichier via une deuxième instance de Paperback.
-* Correction du texte PDF étant lu dans le mauvais ordre et d'un espacement incorrect autour des mots en majuscules.
+* Correction de quelques bogues avec l'analyseur RTF.
+* Correction des chemins de fichiers contenant des caractères non-ASCII (comme le š, č, ć, ž bosniaque) devenant corrompus lors de l'ouverture d'un fichier via une deuxième instance Paperback.
+* Correction du texte PDF étant lu dans le mauvais ordre et de l'espacement incorrect autour des mots en majuscules.
 * Correction du chargement lent des documents lors de l'ouverture de fichiers volumineux.
 * Correction de la localisation des boutons Oui/Non dans les dialogues de confirmation.
 
 ### Version 0.8.0
 * Ajout de traductions en japonais, chinois simplifié et vietnamien !
-* Ajout d'un système de mise à jour automatique qui remplace désormais votre version actuellement installée de Paperback au lieu de simplement télécharger la nouvelle version !
-* Ajout d'un retour sonore optionnel lorsque vous atteignez un signet ou une note, merci à Andre Louis pour les sons !
+* Ajout d'un programme de mise à jour automatique qui remplace désormais votre version actuellement installée de Paperback au lieu de simplement télécharger la nouvelle version !
+* Ajout de commentaires sonores optionnels pour atteindre un signet ou une note, merci à Andre Louis pour les sons !
 * Ajout de la prise en charge des documents RTF !
 * Ajout de la prise en charge des documents DAISY XML.
 * Ajout de la prise en charge des fichiers Open Document Text plats !
 * Ajout de la prise en charge des présentations Open Document plats !
 * Ajout de la prise en charge des séparateurs avec s et shift+s.
-* Tout déplacement supérieur à 300 caractères sera désormais automatiquement ajouté à votre historique de navigation.
+* Tout mouvement supérieur à 300 caractères s'ajoutera désormais automatiquement à votre historique de navigation.
 * Correction de la restauration de la fenêtre de Paperback depuis la barre d'état système.
-* Correction des documents Markdown affichant du texte brut au lieu du HTML rendu dans la Web View.
-* Correction du rendu inadéquat des tableaux dans les fichiers Markdown.
+* Correction des documents Markdown affichant du texte brut au lieu du HTML rendu dans Web View.
+* Correction du rendu incorrect des tableaux dans les fichiers Markdown.
 * Les PDF contenant uniquement des images vous avertissent désormais de leur existence lorsque vous tentez d'en charger un.
 * Intégration correcte des informations de version dans l'exécutable Paperback.
 * Division de la boîte de dialogue des options en onglets pour faciliter l'utilisation et la navigation.
-* Passage à Hayro pour l'analyse des PDF, offrant plus de fiabilité, de vitesse et moins de DLL.
-* Réécriture de l'application entière en Rust. La nouvelle base de code est plus sûre, charge les documents plus rapidement et est plus facile à maintenir et à étendre.
+* Passage à Hayro pour l'analyse des PDF, conduisant à plus de fiabilité, de vitesse et à moins de DLL.
+* Réécriture de l'ensemble de l'application en Rust. La nouvelle base de code est plus sûre, charge les documents plus rapidement et est plus facile à maintenir et à étendre.
 * Le menu contextuel du contrôle de texte inclura désormais des actions spécifiques au lecteur au lieu d'éléments génériques tels que couper et coller.
 
 ### Version 0.7.0
-* Ajout de la prise en charge des tableaux pour les documents basés sur HTML et XHTML ! Naviguez entre les tableaux en utilisant T et Shift+T, et appuyez sur Entrée pour en afficher un dans une webview.
-* Ajout d'une fonctionnalité de rendu web basique ! Appuyez sur Ctrl+Shift+V pour ouvrir la section actuelle de votre document dans un rendu basé sur le web, utile pour des contenus tels que des formatages complexes ou des exemples de code.
+* Ajout de la prise en charge des tableaux pour les documents HTML et XHTML !
+Naviguez entre les tableaux à l'aide de T et shift+t, et appuyez sur Entrée pour en afficher un dans un rendu web.
+* Ajout d'une fonction de rendu web basique ! Appuyez sur Ctrl+Shift+V pour ouvrir la section actuelle de votre document dans un rendu basé sur le web, utile pour du contenu comme les formats complexes ou les exemples de code.
 * Ajout d'une traduction russe, merci à Ruslan Gulmagomedov !
-* Ajout d'un bouton Effacer tout à la boîte de dialogue Tous les documents.
+* Ajout d'un bouton Tout effacer à la boîte de dialogue Tous les documents.
 * Le vérificateur de mise à jour affiche désormais les notes de version lorsqu'une nouvelle version est disponible.
 * Correction de la restauration de la fenêtre depuis la barre d'état système.
 * Correction des traductions des boutons Oui/Non dans les boîtes de dialogue de confirmation.
 * Correction du chargement des configurations lors de l'exécution en tant qu'administrateur.
 * Correction de la gestion des commentaires dans les documents XML et HTML.
-* Correction de l'analyse du TOC dans les livres Epub 2.
+* Correction de l'analyse TOC dans les livres Epub 2.
 * Correction de la navigation vers l'élément suivant avec la même lettre dans la table des matières.
-* Correction de la boîte de dialogue de recherche ne se cachant pas correctement lors de l'utilisation des boutons suivant/précédent.
-* Correction du TOC epub vous envoyant occasionnellement au mauvais élément.
-* Correction de divers problèmes de gestion des espaces blancs dans les balises XML, HTML et pre.
-* Correction d'une erreur de décalage d'une unité dans la navigation des liens.
-* Correction de certains livres ayant des espaces inutiles à la fin de leurs lignes.
-* Correction de divers problèmes d'analyseur.
-* Les éléments de menu liés aux signets ainsi que la liste des éléments sont maintenant correctement désactivés lorsqu'aucun document n'est ouvert.
+* Correction de la boîte de dialogue Rechercher qui ne se fermait pas correctement lors de l'utilisation des boutons suivant/précédent.
+* Correction de la TOC d'Epub vous redirigeant occasionnellement vers le mauvais élément.
+* Correction de divers problèmes de gestion des espaces blancs dans XML, HTML et les balises pre.
+* Correction d'une erreur d'un élément hors de portée dans la navigation des liens.
+* Correction de certains livres ayant des espaces blancs de fin sur leurs lignes.
+* Correction de divers problèmes d'analyse.
+* Les éléments de menu liés aux signets ainsi que la liste des éléments sont désormais correctement désactivés lorsqu'aucun document n'est ouvert.
 * Amélioration de la gestion des listes dans divers formats de documents.
-* Amélioration du flux de traduction pour les contributeurs.
+* Amélioration du flux de travail de traduction pour les contributeurs.
 * De nombreuses refactorisations internes, déplaçant la majorité de la logique métier de l'application de C++ vers Rust pour améliorer les performances et la maintenabilité.
 
 ### Version 0.6.1
 * Ajout de la prise en charge des PDF protégés par mot de passe !
-* Ajout d'une fonctionnalité très basique d'accès à la position précédente/suivante. Si vous appuyez sur Entrée sur un lien interne et qu'il déplace votre curseur, cette position sera désormais mémorisée et peut être navigable avec les flèches alt+left/right.
-* Ajout d'une liste d'éléments ! Actuellement, elle n'affiche qu'une arborescence de tous les en-têtes de votre document ou une liste de liens, mais il y a des plans pour l'étendre à l'avenir.
+* Ajout d'une fonction très basique pour aller à la position précédente/suivante. Si vous appuyez sur Entrée sur un lien interne et que cela déplace votre curseur, cette position sera désormais mémorisée et pourra être navigée avec les flèches alt+left/right.
+* Ajout d'une liste d'éléments ! Actuellement, elle affiche uniquement un arbre de tous les titres de votre document ou une liste de liens, mais il est prévu de l'étendre à l'avenir.
 * Ajout d'une option pour démarrer Paperback en mode maximisé par défaut.
 * Correction des liens dans certains documents Epub ne fonctionnant pas correctement.
 * Correction de l'analyse des TOC Epub contenant des chemins relatifs.
-* Correction de certains documents epub n'affichant pas de titre ou d'auteur.
-* Correction des titres de certains chapitres epub ne s'affichant pas correctement dans la boîte de dialogue TOC.
-* Correction de l'impossibilité d'utiliser la barre d'espace pour activer les boutons OK/Annuler dans la boîte de dialogue TOC.
-* Amélioration de la gestion des en-têtes dans les documents Word.
-* Vous recevrez désormais un retour parlé si la liste des documents récents est vide lorsque vous tentez d'afficher la boîte de dialogue.
+* Correction de certains documents Epub n'affichant pas de titre ou d'auteur.
+* Correction des titres de certains chapitres Epub ne s'affichant pas correctement dans la boîte de dialogue TOC.
+* Correction de l'impossibilité d'utiliser la barre d'espacement pour activer les boutons OK/annuler dans la boîte de dialogue TOC.
+* Amélioration de la gestion des titres dans les documents Word.
+* Vous recevrez désormais un retour parlé si la liste des documents récents est vide lorsque vous essayez d'ouvrir la boîte de dialogue.
 
 ### Version 0.6.0
-* Une nouvelle option pour afficher le menu de navigation sous une forme bien plus compacte a été ajoutée à la boîte de dialogue des options, activée par défaut.
-* Ajout d'une option pour que la navigation par éléments structurels soit cyclique.
-* Ajout d'une option au menu outils pour ouvrir le dossier contenant le document actuellement actif.
+* Une nouvelle option pour afficher le menu de navigation sous une forme beaucoup plus compacte a été ajoutée à la boîte de dialogue des options, activée par défaut.
+* Ajout d'une option pour que la navigation par éléments structurels soit bouclante.
+* Ajout d'une option au menu outils pour ouvrir le dossier contenant le document actuellement ciblé.
 * Ajout d'un système de mise à jour assez simple, mais très efficace.
-* Ajout d'une fonction basique de minuteur de sommeil, accessible avec Ctrl+Shift+S.
-* Ajout du support pour l'analyse des ebooks FB2 !
-* Ajout du support pour l'analyse des présentations OpenDocument !
-* Ajout du support pour l'analyse des fichiers OpenDocument Text !
-* Les signets peuvent désormais marquer une ligne entière, ou seulement du texte spécifié. Si vous n'avez pas de sélection active lorsque vous placez un signet, le comportement est comme pré-0.6, et il marquera la ligne entière. Cependant, si vous sélectionnez du texte, seul ce texte sera inclus dans le signet.
-* Les signets peuvent désormais avoir des notes de texte facultatives attachées ! Naviguez entre les signets contenant des notes avec N et Shift+N, ou ouvrez la boîte de dialogue des signets avec tous les signets, seulement les notes, ou seulement les non-notes sélectionnés avec des raccourcis clavier spécifiques.
-* Les signets dans la boîte de dialogue des signets n'auront plus le préfixe ennuyeux « signet x ».
-* Les livres Epub contenant du contenu HTML prétendant être du XML seront désormais traités correctement.
+* Ajout d'une fonction de minuterie de sommeil basique, accessible avec Ctrl+Shift+S.
+* Ajout de la prise en charge de l'analyse des livres électroniques FB2!
+* Ajout de la prise en charge de l'analyse des présentations OpenDocument!
+* Ajout de la prise en charge de l'analyse des fichiers OpenDocument Text!
+* Les signets peuvent désormais marquer une ligne entière, ou marquer uniquement du texte spécifié. Si aucune sélection n'est active lors du placement d'un signet, le comportement est similaire à la version antérieure à 0.6, et il marquera la ligne entière. Cependant, si vous sélectionnez du texte, seul ce texte sera inclus dans le signet.
+* Les signets peuvent désormais avoir des notes textuelles optionnelles attachées! Naviguez entre les signets contenant des notes avec N et Shift+N, ou ouvrez la boîte de dialogue des signets avec tous les signets, uniquement les notes, ou uniquement les signets sans notes sélectionnés avec des touches de raccourci spécifiques.
+* Les signets dans la boîte de dialogue des signets n'auront plus de préfixe ennuyeux « signet x ».
+* Les livres EPUB contenant du contenu HTML prétendant être du XML seront désormais gérés correctement.
 * Correction du chargement de grands documents Markdown.
-* Correction de l'appui sur l'espace dans l'arborescence de la table des matières activant le bouton OK.
+* Correction de l'activation du bouton OK en appuyant sur la barre d'espace dans l'arborescence de la table des matières.
 * Correction de la gestion des espaces au début des balises pre dans les documents HTML et XHTML.
-* Correction du contrôle de texte ne regagnant pas le focus parfois lors du retour à la fenêtre de Paperback.
-* Correction du champ de texte dans la boîte de dialogue aller au pourcentage ne mettant pas à jour la valeur du curseur.
-* Correction du rendu des identifiants HTML personnalisés dans les documents Markdown.
-* Le HTML dans les blocs de code Markdown sera désormais rendu correctement.
-* Si vous chargez un livre avec un paramètre de ligne de commande alors qu'une instance Paperback existante est en cours d'exécution, vous n'obtiendrez plus d'erreur si le chargement de votre document prend plus de 5 secondes.
-* Si vous exécutez Paperback en tant qu'administrateur, la configuration sera désormais correctement chargée et enregistrée.
-* Il est désormais possible de supprimer un signet directement à partir de la boîte de dialogue des signets.
-* Il est désormais possible d'importer et d'exporter vos signets et votre position de lecture pour un document particulier. Le fichier généré est nommé d'après le fichier avec une extension `.paperback`. Si un tel fichier est trouvé dans le même répertoire qu'un fichier lors de son chargement, il sera chargé automatiquement. Sinon, vous pouvez les importer manuellement à l'aide d'un élément du menu outils.
-* Les liens à l'intérieur des documents sont désormais entièrement pris en charge ! Utilisez k et shift+k pour avancer et reculer à travers eux, et appuyez sur Entrée pour ouvrir/activer un lien.
-* De nombreuses refactorisations internes, rendant l'application plus rapide et le binaire plus petit.
-* Le contenu Markdown est désormais prétraité pour être conforme à CommonMark avant le rendu.
-* La navigation par listes et leurs éléments est désormais entièrement prise en charge ! Utilisez L et Shift+L pour naviguer par les listes elles-mêmes, et I et Shift+I pour naviguer dans les éléments de liste.
-* La suppression du pavé numérique fonctionne désormais pour supprimer les documents de la barre d'onglets en plus de la suppression normale.
-* Paperback peut désormais optionnellement se réduire dans votre plateau système ! Cette option est désactivée par défaut, mais son activation fera en sorte que l'option de réduction dans le menu système place Paperback dans votre plateau, pouvant être restauré en cliquant sur l'icône créée.
-* Paperback est désormais entièrement traduisible ! La liste des langues qu'il supporte est actuellement assez réduite, mais elle s'agrandit constamment !
-* Paperback possède désormais un site officiel, à [paperback.dev](https://paperback.dev) !
-* Les documents PPTX affichent désormais une table des matières basique, contenant toutes les diapositives.
-* Le chemin complet vers le document ouvert sera désormais affiché dans la boîte de dialogue des informations du document.
-* L'installateur inclut désormais une option pour afficher le fichier lisezmoi dans votre navigateur après l'installation.
-* La liste des documents récents a été considérablement étendue ! Au lieu de simplement vous montrer les 10 derniers documents que vous avez ouverts, elle affichera désormais un nombre personnalisable, les autres documents que vous avez jamais ouverts étant accessibles via une petite boîte de dialogue.
-* Diverses petites améliorations apportées aux analyseurs, notamment l'ajout d'une ligne vide entre les diapositives dans les présentations PPTX, la correction de la gestion des sauts de ligne à l'intérieur des paragraphes dans les documents Word, et l'ajout de puces aux éléments de liste.
+* Correction du contrôle de texte ne reprenant pas parfois le focus lors du retour à la fenêtre de Paperback.
+* Correction du champ de texte dans la boîte de dialogue d'accès au pourcentage qui ne mettait pas à jour la valeur du curseur.
+* Correction du rendu des ID HTML personnalisés dans les documents Markdown.
+* Le code HTML à l'intérieur des blocs de code Markdown sera désormais rendu correctement.
+* Si le chargement d'un livre avec un paramètre de ligne de commande prend plus de 5 secondes alors qu'une instance Paperback existante est en cours d'exécution, vous n'obtiendrez plus d'erreur.
+* Si vous exécutez Paperback en tant qu'administrateur, la configuration sera désormais chargée et enregistrée correctement.
+* Il est maintenant possible de supprimer un signet directement à partir de la boîte de dialogue des signets.
+* Il est maintenant possible d'importer et d'exporter vos signets et votre position de lecture pour un document particulier. Le fichier généré porte le même nom que le fichier avec une extension `.paperback`. Si un tel fichier est trouvé dans le même répertoire qu'un fichier lors de son chargement, il sera automatiquement chargé. Sinon, vous pouvez les importer manuellement à l'aide d'un élément du menu outils.
+* Les liens à l'intérieur des documents sont maintenant entièrement pris en charge! Utilisez k et Shift+K pour vous déplacer d'avant en arrière, et appuyez sur Entrée pour ouvrir/activer un lien.
+* De nombreuses refactorisations internes, rendant l'application plus rapide et le fichier binaire plus petit.
+* Le contenu Markdown est maintenant prétraité pour être conforme à CommonMark avant le rendu.
+* La navigation par listes et leurs éléments est maintenant entièrement prise en charge! Utilisez L et Shift+L pour naviguer entre les listes elles-mêmes, et I et Shift+I pour parcourir les éléments de liste.
+* Le bouton Supprimer du pavé numérique fonctionne désormais pour supprimer des documents de la barre d'onglets en plus du bouton Supprimer normal.
+* Paperback peut désormais se minimiser optionnellement dans votre plateau système! Cette option est désactivée par défaut, mais l'activer fera en sorte que l'option de minimisation dans le menu système place Paperback dans votre plateau, pouvant être restauré en cliquant sur l'icône générée.
+* Paperback est maintenant entièrement traduisible! La liste des langues qu'il prend en charge est actuellement assez réduite, mais elle s'agrandit constamment!
+* Paperback dispose désormais d'un site Web officiel, à [paperback.dev](https://paperback.dev)!
+* Les documents PPTX affichent désormais une table des matières basique contenant toutes les diapositives.
+* Le chemin d'accès complet au document ouvert s'affichera désormais dans la boîte de dialogue d'informations sur le document.
+* Le programme d'installation inclut désormais une option pour afficher le fichier readme dans votre navigateur après l'installation.
+* La liste des documents récents a été considérablement développée! Au lieu de simplement afficher les 10 derniers documents que vous avez ouverts, elle affichera désormais un nombre personnalisable, les autres documents que vous avez jamais ouverts étant accessibles via une petite boîte de dialogue.
+* Diverses petites améliorations aux analyseurs dans l'ensemble, notamment l'ajout d'une ligne vierge entre les diapositives dans les présentations PPTX, la correction de la gestion des nouvelles lignes à l'intérieur des paragraphes dans les documents Word, et l'ajout de puces aux éléments de liste.
 
 ### Version 0.5.0
-* Ajout de la prise en charge des documents Microsoft Word !
-* Ajout de la prise en charge des présentations PowerPoint !
-* Correction de certains éléments de menu qui n'étaient pas désactivés lorsqu'aucun document n'était ouvert.
-* Correction de l'orientation du curseur de pourcentage.
-* Correction de la table des matières dans les livres Epub avec des chemins de fichier codés en URL et/ou des identifiants de fragment.
-* Correction de l'espacement blanc supprimé des en-têtes XHTML de manière étrange.
-* Correction de la gestion des espaces blancs à l'intérieur des balises pre imbriquées dans les documents HTML.
-* Les documents HTML et Markdown prennent maintenant en charge la fonction table des matières ! Lorsque vous chargez un document HTML/Markdown, Paperback créera sa propre table des matières à partir de la structure des en-têtes de votre document, et la montrera dans la boîte de dialogue `ctrl+t`.
-* Les documents HTML auront maintenant le titre défini dans la balise title, s'il existe. Sinon, ils continueront à utiliser le nom de fichier sans l'extension.
-* Passage de UniversalSpeech à l'utilisation d'une région active pour signaler la parole. Cela signifie qu'aucune DLL de lecteur d'écran n'est plus expédiée avec le programme, et davantage de lecteurs d'écran seront pris en charge, comme Microsoft Narrator.
-* Passage à des bibliothèques zip pour permettre l'ouverture d'un plus grand nombre de livres epub.
-* La boîte de dialogue vous demandant si vous souhaitez ouvrir votre document en texte brut a été complètement refaite, et elle vous permet maintenant d'ouvrir votre document en texte brut, HTML ou Markdown.
-* La boîte de dialogue aller au pourcentage inclut désormais un champ de texte vous permettant d'entrer manuellement un pourcentage pour aller à.
-* L'analyseur HTML reconnaîtra maintenant `dd`, `dt` et `dl` comme éléments de liste.
-* La table des matières des livres Epub sera de nouveau préservée exactement.
-* L'espace insécable unicode est maintenant considéré lors de la suppression des lignes vides.
-* Vous ne serez plus interrogé sur la façon dont vous souhaitez ouvrir un fichier non reconnu à chaque fois que vous le chargez, seulement la première fois.
+* Prise en charge des documents Microsoft Word ajoutée !
+* Prise en charge des présentations PowerPoint ajoutée !
+* Certains éléments de menu ne sont plus désactivés lorsqu'aucun document n'est ouvert.
+* L'orientation du curseur de pourcentage de navigation a été corrigée.
+* La table des matières dans les livres Epub avec des chemins de fichiers codés en URL et/ou des identifiants de fragment a été corrigée.
+* Les espaces supprimés des en-têtes XHTML de manière étrange ont été corrigés.
+* La gestion des espaces à l'intérieur des balises pre imbriquées dans les documents HTML a été corrigée.
+* Les documents HTML et Markdown prennent désormais en charge la fonction de table des matières ! Lorsque vous chargez un document HTML/Markdown, Paperback construira sa propre table des matières à partir de la structure des en-têtes de votre document, et l'affichera dans la boîte de dialogue `ctrl+t`.
+* Les documents HTML auront désormais le titre défini dans la balise title, s'il existe. Sinon, ils continueront à utiliser le nom de fichier sans l'extension.
+* Passage de UniversalSpeech à l'utilisation d'une région active pour signaler la parole. Cela signifie qu'aucune DLL de lecteur d'écran n'est plus livrée avec le programme, et plus de lecteurs d'écran seront désormais pris en charge, comme Microsoft Narrator.
+* Passage à des bibliothèques zip pour permettre l'ouverture d'une plus large gamme de livres epub.
+* La boîte de dialogue vous demandant si vous souhaitez ouvrir votre document en tant que texte brut a été complètement refaite, et elle vous permet désormais d'ouvrir votre document en tant que texte brut, HTML ou Markdown.
+* La boîte de dialogue de navigation à un pourcentage inclut désormais un champ de texte vous permettant d'entrer manuellement un pourcentage auquel accéder.
+* L'analyseur HTML reconnaîtra désormais dd, dt et dl comme éléments de liste.
+* La table des matières dans les livres Epub sera à nouveau préservée exactement.
+* L'espace insécable Unicode est désormais pris en compte lors de la suppression des lignes vides.
+* Vous ne serez plus demandé comment vous souhaitez ouvrir un fichier non reconnu à chaque fois que vous le chargez, seulement la première fois.
 
 ### Version 0.4.1
-* Ajout d'une icône facultative du menu Démarrer au programme d'installation.
-* La table des matières devrait être plus claire dans quelques cas, par exemple si vous avez un élément enfant et parent avec le même texte à la même position, vous ne verrez maintenant que l'élément parent.
-* Correction de la table des matières dans certains documents CHM.
-* Correction de la table des matières dans les livres Epub 3 avec des chemins absolus.
-* Les documents CHM devraient maintenant afficher leur titre tel qu'il est défini dans le fichier de métadonnées.
+* Une icône de menu Démarrer optionnelle a été ajoutée au programme d'installation.
+* La table des matières devrait être plus propre dans quelques cas, par exemple si vous avez un élément enfant et parent avec le même texte à la même position, vous ne verrez désormais que l'élément parent.
+* La table des matières dans certains documents CHM a été corrigée.
+* La table des matières dans les livres Epub 3 avec des chemins absolus a été corrigée.
+* Les documents CHM devraient maintenant afficher leur titre tel que défini dans le fichier de métadonnées.
 
 ### Version 0.4.0
-* Ajout de la prise en charge des fichiers CHM !
-* Ajout de la prise en charge des signets ! Vous pouvez avoir autant de signets que vous le souhaitez dans autant de documents que vous le souhaitez. Vous pouvez sauter en avant et en arrière en utilisant `b` et `shift+b`, en définir un avec `control+shift+b`, et afficher une boîte de dialogue pour accéder à un signet spécifique avec `control+b`.
-* Ajout d'un programme d'installation à côté du fichier zip portable ! Le programme d'installation installera Paperback dans votre répertoire Program Files et configurera automatiquement les associations de fichiers pour vous.
-* Les fichiers texte avec des nomenclatures doivent maintenant être décodés correctement, et la nomenclature ne s'affichera plus au début du texte.
-* Ajout de beaucoup plus d'informations à la barre d'état. Elle affichera désormais votre ligne actuelle, caractère et pourcentage de lecture.
-* Les commentaires HTML, ainsi que le contenu des balises script et style, ne s'afficheront plus dans la sortie textuelle.
-* Si vous transmettez un chemin relatif à Paperback sur la ligne de commande, il le résoudra correctement.
+* Prise en charge des fichiers CHM ajoutée !
+* Prise en charge des signets ajoutée ! Vous pouvez avoir autant de signets que vous le souhaitez dans autant de documents que vous le souhaitez. Vous pouvez naviguer vers l'avant et vers l'arrière avec `b` et `shift+b`, en définir un avec `control+shift+b`, et afficher une boîte de dialogue pour accéder à un signet spécifique avec `control+b`.
+* Un programme d'installation a été ajouté aux côtés du fichier zip portable ! Le programme d'installation installera Paperback dans votre répertoire Program Files et configurera automatiquement les associations de fichiers pour vous.
+* Les fichiers texte avec des BOM devraient désormais être décodés correctement, et le BOM ne s'affichera plus au début du texte.
+* Beaucoup plus d'informations ont été ajoutées à la barre d'état. Elle affichera désormais votre ligne actuelle, votre caractère et votre pourcentage de lecture.
+* Les commentaires HTML, ainsi que le contenu des balises script et style, ne seront plus affichés dans la sortie de texte.
+* Si vous passez un chemin relatif à Paperback sur la ligne de commande, il sera désormais résolu correctement.
 * Le mouvement en pourcentage est désormais géré par sa propre boîte de dialogue basée sur un curseur, accessible avec `control+shift+g`.
-* Les documents sans titres ou auteurs connus auront désormais toujours un défaut.
-* La logique de sauvegarde de position est désormais beaucoup plus intelligente et ne devrait écrire sur le disque que si c'est absolument nécessaire.
-* Le document sur lequel vous vous trouviez lorsque vous avez fermé Paperback est maintenant mémorisé lors des redémarrages de l'application.
-* L'entrée dans les boîtes de dialogue aller à la ligne et aller à la page devrait désormais être assainie plus strictement.
-* Correction de la navigation dans la table des matières des livres epub 3 avec des chemins relatifs dans leurs manifestes.
+* Les documents sans titres ou auteurs connus auront désormais toujours une valeur par défaut.
+* La logique de sauvegarde de position est désormais beaucoup plus intelligente et ne devrait écrire sur le disque que lorsque c'est absolument nécessaire.
+* Le document sur lequel vous aviez le focus lorsque vous avez fermé Paperback est désormais mémorisé entre les redémarrages de l'application.
+* L'entrée dans les boîtes de dialogue d'accès à la ligne et d'accès à la page devrait désormais être purgée de manière plus stricte.
+* La navigation dans la table des matières des livres epub 3 avec des chemins relatifs dans leurs manifestes a été corrigée.
 
 ### Version 0.3.0
-* Correction de la table des matières dans les livres epub avec des manifestes codés en URL.
-* Correction de la navigation par en-tête dans les documents HTML contenant des caractères Unicode multi-octets.
-* Correction de la consommation élevée du CPU dans les documents avec de longs titres en raison d'une régression dans wxWidgets.
-* Correction du chargement des fichiers texte UTF-8.
-* Correction des éléments TOC imbriqués dans les livres Epub plaçant votre curseur à la mauvaise position.
-* Correction d'un plantage à la fermeture de l'application dans certains cas.
-* Ajout d'une case à cocher dans la boîte de dialogue des options pour activer ou désactiver le retour à la ligne !
-* Il est maintenant possible de faire un don au développement de Paperback, soit par le nouvel élément de don dans le menu d'aide, soit par le lien de parrainage du projet en bas de la page principale du référentiel GitHub.
-* Les documents Markdown auront maintenant toujours un titre, et Paperback devrait pouvoir charger pratiquement n'importe quel fichier Markdown.
-* Les documents PDF auront maintenant toujours un titre, même si les métadonnées sont manquantes.
-* Passage à des bibliothèques PDF utilisées dans Chromium, entraînant une analyse PDF beaucoup plus fiable dans l'ensemble.
-* Vous ne pouvez maintenant avoir qu'une seule instance de Paperback en cours d'exécution à la fois. L'exécution de `paperback.exe` avec un nom de fichier alors qu'il est déjà en cours d'exécution ouvrira ce document dans l'instance déjà en cours d'exécution.
-* Vous pouvez maintenant appuyer sur `delete` sur un document dans le contrôle d'onglet pour le fermer.
+* La table des matières dans les livres epub avec des manifestes codés en URL a été corrigée.
+* La navigation des en-têtes dans les documents HTML contenant des caractères Unicode multibytes a été corrigée.
+* L'utilisation élevée du processeur dans les documents avec de longs titres due à une régression dans wxWidgets a été corrigée.
+* Le chargement des fichiers texte UTF-8 a été corrigé.
+* Les éléments de table des matières imbriqués dans les livres Epub plaçant votre curseur à la mauvaise position ont été corrigés.
+* Un plantage à la fermeture de l'application dans certains cas a été corrigé.
+* Une case à cocher a été ajoutée à la boîte de dialogue d'options pour activer ou désactiver le retour à la ligne automatique !
+* Il est désormais possible de faire un don au développement de Paperback, soit via le nouvel élément donate du menu d'aide, soit via le lien sponsor this project en bas de la page principale du référentiel GitHub.
+* Les documents Markdown auront désormais toujours un titre, et Paperback devrait désormais être capable de charger pratiquement n'importe quel fichier Markdown.
+* Les documents PDF auront désormais toujours un titre, même si les métadonnées sont manquantes.
+* Passage à des bibliothèques PDF utilisées dans Chromium, conduisant à une analyse PDF beaucoup plus fiable dans l'ensemble.
+* Vous ne pouvez désormais avoir qu'une seule instance de Paperback en cours d'exécution à la fois. L'exécution de paperback.exe avec un nom de fichier alors qu'il est déjà en cours d'exécution ouvrira ce document dans l'instance déjà en cours d'exécution.
+* Vous pouvez désormais appuyer sur delete sur un document dans le contrôle d'onglet pour le fermer.
 
 ### Version 0.2.1
-* Ajout du nombre total de pages à l'étiquette de page dans la boîte de dialogue aller à la page.
-* Autoriser la tabulation du contenu du document à votre liste de documents ouverts.
-* Correction des touches de navigation par en-tête ouvrant parfois des documents récents si vous en aviez assez.
-* Paperback supprimera désormais les traits d'union souples inutiles de la sortie textuelle.
-* Correction de la navigation par en-tête qui vous mettait parfois sur le mauvais caractère.
+* Le nombre total de pages a été ajouté à l'étiquette de page dans la boîte de dialogue d'accès à la page.
+* Permet de passer d'un onglet du contenu du document à votre liste de documents ouverts.
+* Les raccourcis clavier d'en-tête ouvrant parfois des documents récents si vous en aviez assez ont été corrigés.
+* Paperback supprimera désormais les tirets conditionnels inutiles de la sortie de texte.
+* La navigation des en-têtes vous plaçant parfois au mauvais caractère a été corrigée.
 
 ### Version 0.2.0
-* Ajout du support des documents markdown !
-* Ajout du support des documents PDF, y compris la possibilité de naviguer entre les pages !
+* Ajout de la prise en charge des documents markdown !
+* Ajout de la prise en charge des documents PDF, y compris la possibilité de naviguer entre les pages !
 * Ajout de raccourcis clavier pour naviguer par titres dans le contenu HTML, y compris les livres epub et les documents markdown. Ces raccourcis ont été conçus pour fonctionner de manière similaire à un lecteur d'écran.
-* Correction du chargement des epub avec des noms de fichiers encodés en URL dans leurs manifestes.
-* Correction du chargement des livres epub 3 avec XHTML intégré à l'intérieur.
-* Un message est maintenant énoncé si le document ne supporte pas de table des matières ou de sections, au lieu que les éléments de menu soient désactivés.
-* Ajout d'un menu des documents récents ! Il stocke actuellement vos 10 derniers documents ouverts, et en appuyant sur Entrée sur l'un d'eux, il s'ouvrira pour la lecture.
-* Réécriture complète de la boîte de dialogue Rechercher, ce qui la rend beaucoup plus simple à utiliser, tout en ajoutant un historique de vos 25 dernières recherches et le support des expressions régulières !
-* Les documents précédemment ouverts sont maintenant mémorisés lors des redémarrages de l'application. Ceci est configurable via le nouvel élément options du menu outils.
+* Correction du chargement des epub avec des noms de fichiers codés en URL dans leurs manifestes.
+* Correction du chargement des livres epub 3 avec du XHTML intégré dedans.
+* Un message est maintenant prononcé si le document ne prend pas en charge une table des matières ou des sections, au lieu que les éléments de menu soient désactivés.
+* Ajout d'un menu de documents récents ! Il stocke actuellement vos 10 derniers documents ouverts, et appuyer sur Entrée sur l'un d'eux l'ouvrira pour la lecture.
+* Réécriture complète de la boîte de dialogue Rechercher, la rendant beaucoup plus simple à utiliser, tout en ajoutant un historique de vos 25 dernières recherches et la prise en charge des expressions régulières !
+* Les documents précédemment ouverts sont maintenant mémorisés lors des redémarrages de l'application. Ceci est configurable via le nouvel élément options du menu Outils.
 * Ajout de `Shift+F1` pour ouvrir le fichier readme directement dans Paperback.
 
 ### Version 0.1.0

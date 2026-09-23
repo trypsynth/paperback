@@ -770,10 +770,6 @@ msgstr "Bladwijzernotitie bewerken:"
 msgid "Document Info"
 msgstr "Documentinformatie"
 
-#: kt
-msgid "Document Information"
-msgstr "Documentinformatie"
-
 #. TRANSLATORS: Label for the document's file path
 msgid "Path:"
 msgstr "Pad:"
@@ -3216,17 +3212,17 @@ msgstr "Tekst-naar-spraak"
 msgid "Voice"
 msgstr "Stem"
 
-#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 msgid "Rate"
 msgstr "Snelheid"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
 #: swift
 msgid "Speech Rate"
 msgstr "Spreeksnelheid"
 
-#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 msgid "Pitch"
 msgstr "Toonhoogte"
@@ -3311,7 +3307,7 @@ msgstr "Tekens (exclusief spaties)"
 msgid "Mode"
 msgstr "Modus"
 
-#. TRANSLATORS: Name of the "page" reading/navigation unit
+#. TRANSLATORS: Go To mode option: navigate to a specific page number
 #: swift
 msgid "Page"
 msgstr "Pagina"
@@ -3336,7 +3332,6 @@ msgstr "Paginanummer"
 msgid "Percentage"
 msgstr "Percentage"
 
-#. TRANSLATORS: Navigation title of the Go To sheet
 #: swift
 msgid "Go To"
 msgstr "Ga naar"
@@ -3371,7 +3366,7 @@ msgstr "Bereik"
 msgid "Word"
 msgstr "Woord"
 
-#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 msgid "Paragraph"
 msgstr "Alinea"
@@ -3662,7 +3657,7 @@ msgstr "Niet nu"
 msgid "Custom Timer"
 msgstr "Aangepaste timer"
 
-#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
+#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
 #: kt
 msgid "Back"
 msgstr "Terug"
@@ -3734,7 +3729,7 @@ msgstr "Dit document bevat {} woorden."
 msgid "words"
 msgstr "woorden"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr "Zoeken sluiten"
@@ -4058,7 +4053,6 @@ msgstr "Huidig pad: {}"
 msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, gewijzigd {}{}"
 
-#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
 #: kt
 msgid "{} percent"
 msgstr "{} procent"
@@ -4166,3 +4160,6 @@ msgstr "Alineapauze"
 #: kt
 msgid "No other voices"
 msgstr "Geen andere stemmen"
+
+#~ msgid "Document Information"
+#~ msgstr "Documentinformatie"

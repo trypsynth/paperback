@@ -3667,13 +3667,11 @@ msgstr "Đặt lại tất cả phím tắt trong tab này về giá trị mặc
 msgid "Reset Shortcuts"
 msgstr "Đặt lại các phím tắt"
 
-#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 #: swift
 #, fuzzy
 msgid "Export Document Data"
 msgstr "Xuất dữ liệu tài liệu"
 
-#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
 #: swift
 #, fuzzy
 msgid "Import Document Data"
@@ -3799,7 +3797,6 @@ msgstr "Lỗi mở"
 msgid "Open Book"
 msgstr "Sách mở"
 
-#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
 #: swift
 #, fuzzy
 msgid "Locate"
@@ -3847,19 +3844,19 @@ msgstr "Chuyển văn bản thành lời nói"
 msgid "Voice"
 msgstr "Giọng nói"
 
-#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 #, fuzzy
 msgid "Rate"
 msgstr "Tỷ lệ"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
 #: swift
 #, fuzzy
 msgid "Speech Rate"
 msgstr "Tốc độ lời nói"
 
-#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 #, fuzzy
 msgid "Pitch"
@@ -3961,7 +3958,7 @@ msgstr "Số ký tự (không tính khoảng trắng)"
 msgid "Mode"
 msgstr "Chế độ"
 
-#. TRANSLATORS: Name of the "page" reading/navigation unit
+#. TRANSLATORS: Go To mode option: navigate to a specific page number
 #: swift
 #, fuzzy
 msgid "Page"
@@ -3991,7 +3988,6 @@ msgstr "Số trang"
 msgid "Percentage"
 msgstr "Phần trăm"
 
-#. TRANSLATORS: Navigation title of the Go To sheet
 #: swift
 #, fuzzy
 msgid "Go To"
@@ -4033,7 +4029,7 @@ msgstr "Phạm vi"
 msgid "Word"
 msgstr "Word"
 
-#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 #, fuzzy
 msgid "Paragraph"
@@ -4258,11 +4254,6 @@ msgstr "Tiếp theo{}"
 msgid "Press play to start listening."
 msgstr "Nhấn nút phát để bắt đầu nghe."
 
-#: kt
-#, fuzzy
-msgid "Document Information"
-msgstr "Thông tin Tài liệu"
-
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 #, fuzzy
@@ -4387,7 +4378,7 @@ msgstr "Không phải bây giờ"
 msgid "Custom Timer"
 msgstr "Bộ hẹn giờ tùy chỉnh"
 
-#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
+#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
 #: kt
 #, fuzzy
 msgid "Back"
@@ -4473,7 +4464,7 @@ msgstr "Tài liệu này chứa {} từ."
 msgid "words"
 msgstr "từ"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 #, fuzzy
 msgid "Close Search"
@@ -4551,6 +4542,7 @@ msgid "Elements List"
 msgstr "Danh sách các phần tử"
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
 #: kt
 #, fuzzy
 msgid "No more matches."
@@ -4858,7 +4850,6 @@ msgstr "Đường dẫn hiện tại: {}"
 msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, sửa đổi {}{}"
 
-#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
 #: kt
 #, fuzzy
 msgid "{} percent"
@@ -4988,6 +4979,10 @@ msgstr "Tạm dừng Đoạn văn"
 #, fuzzy
 msgid "No other voices"
 msgstr "Không có giọng nói khác"
+
+#, fuzzy
+#~ msgid "Document Information"
+#~ msgstr "Thông tin Tài liệu"
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."

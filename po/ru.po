@@ -3588,13 +3588,11 @@ msgstr "Сбросить все сочетания клавиш на этой в
 msgid "Reset Shortcuts"
 msgstr "Сброс сочетаний клавиш"
 
-#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 #: swift
 #, fuzzy
 msgid "Export Document Data"
 msgstr "Экспортировать данные документа"
 
-#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
 #: swift
 #, fuzzy
 msgid "Import Document Data"
@@ -3720,7 +3718,6 @@ msgstr "Открытая ошибка"
 msgid "Open Book"
 msgstr "«Открытая книга»"
 
-#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
 #: swift
 #, fuzzy
 msgid "Locate"
@@ -3768,19 +3765,19 @@ msgstr "Синтез речи"
 msgid "Voice"
 msgstr "Голос"
 
-#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 #, fuzzy
 msgid "Rate"
 msgstr "Оценить"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
 #: swift
 #, fuzzy
 msgid "Speech Rate"
 msgstr "Скорость речи"
 
-#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 #, fuzzy
 msgid "Pitch"
@@ -3882,7 +3879,7 @@ msgstr "Символы (без учета пробелов)"
 msgid "Mode"
 msgstr "Режим"
 
-#. TRANSLATORS: Name of the "page" reading/navigation unit
+#. TRANSLATORS: Go To mode option: navigate to a specific page number
 #: swift
 #, fuzzy
 msgid "Page"
@@ -3912,7 +3909,6 @@ msgstr "Номер страницы"
 msgid "Percentage"
 msgstr "Процент"
 
-#. TRANSLATORS: Navigation title of the Go To sheet
 #: swift
 #, fuzzy
 msgid "Go To"
@@ -3954,7 +3950,7 @@ msgstr "Область применения"
 msgid "Word"
 msgstr "Слово"
 
-#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 #, fuzzy
 msgid "Paragraph"
@@ -4179,11 +4175,6 @@ msgstr "Далее {}"
 msgid "Press play to start listening."
 msgstr "Нажмите кнопку «Воспроизвести», чтобы начать прослушивание."
 
-#: kt
-#, fuzzy
-msgid "Document Information"
-msgstr "Сведения о документе"
-
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 #, fuzzy
@@ -4308,7 +4299,7 @@ msgstr "Не сейчас"
 msgid "Custom Timer"
 msgstr "Пользовательский таймер"
 
-#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
+#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
 #: kt
 #, fuzzy
 msgid "Back"
@@ -4393,7 +4384,7 @@ msgstr "Этот документ содержет {} слов."
 msgid "words"
 msgstr "слов"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 #, fuzzy
 msgid "Close Search"
@@ -4471,6 +4462,7 @@ msgid "Elements List"
 msgstr "Список элементов"
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
 #: kt
 #, fuzzy
 msgid "No more matches."
@@ -4778,7 +4770,6 @@ msgstr "Текущий путь: {}"
 msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, изменено {}{}"
 
-#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
 #: kt
 #, fuzzy
 msgid "{} percent"
@@ -4908,6 +4899,10 @@ msgstr "Пауза между абзацами"
 #, fuzzy
 msgid "No other voices"
 msgstr "Нет других голосов"
+
+#, fuzzy
+#~ msgid "Document Information"
+#~ msgstr "Сведения о документе"
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
