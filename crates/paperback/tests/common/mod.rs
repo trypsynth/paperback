@@ -12,6 +12,7 @@ use std::{
 };
 
 use paperback_core::config::ConfigData;
+use uiautomation::{UIAutomation, controls::ControlType, core::UIElement};
 use windows::{
 	Win32::{
 		Foundation::CloseHandle,
@@ -116,6 +117,81 @@ fn assert_no_running_instance() {
 		let _ = CloseHandle(mutex);
 	}
 	panic!("close Paperback before running the UI tests");
+}
+
+fn automation() -> UIAutomation {
+	UIAutomation::new().expect("UI Automation unavailable")
+}
+
+/// The app's focused element type and name, or None while another process has focus or the
+/// window is not up yet.
+pub fn focused(pid: u32) -> Option<(ControlType, String)> {
+	let element = automation().get_focused_element().ok()?;
+	if element.get_process_id().ok()? != pid {
+		return None;
+	}
+	Some((element.get_control_type().ok()?, element.get_name().ok()?))
+}
+
+/// The reading text control, the multi-line read-only text control of each tab.
+pub fn is_reader(control_type: ControlType, _name: &str) -> bool {
+	control_type == ControlType::Document
+}
+
+/// Polls the focused element until `expected` matches it; panics on timeout.
+pub fn wait_for_focus(
+	pid: u32,
+	timeout: Duration,
+	expected: impl Fn(ControlType, &str) -> bool,
+) -> (ControlType, String) {
+	let deadline = Instant::now() + timeout;
+	let mut last = focused(pid);
+	loop {
+		if let Some((control_type, name)) = last.as_ref()
+			&& expected(*control_type, name)
+		{
+			return (*control_type, name.clone());
+		}
+		assert!(Instant::now() < deadline, "expected focus not reached within {timeout:?}; focused element: {last:?}");
+		std::thread::sleep(Duration::from_millis(250));
+		last = focused(pid);
+	}
+}
+
+/// Waits until the reading control has focus and still has it a second later.
+pub fn wait_for_reader_focus(pid: u32) {
+	wait_for_focus(pid, Duration::from_secs(30), is_reader);
+	std::thread::sleep(Duration::from_secs(1));
+	wait_for_focus(pid, Duration::from_secs(10), is_reader);
+}
+
+/// The app's top-level frame.
+pub fn main_window(pid: u32) -> UIElement {
+	let automation = automation();
+	let root = automation.get_root_element().expect("desktop root");
+	automation
+		.create_matcher()
+		.from(root)
+		.depth(2)
+		.filter_fn(Box::new(move |e: &UIElement| Ok(e.get_process_id()? == pid)))
+		.control_type(ControlType::Window)
+		.timeout(10_000)
+		.find_first()
+		.expect("app window")
+}
+
+/// Polls the main window's title until it reads `expected`; panics on timeout.
+pub fn wait_for_title(pid: u32, expected: &str) {
+	let window = main_window(pid);
+	let deadline = Instant::now() + Duration::from_secs(10);
+	loop {
+		let title = window.get_name().unwrap_or_default();
+		if title == expected {
+			return;
+		}
+		assert!(Instant::now() < deadline, "title stayed at {title:?}, expected {expected:?}");
+		std::thread::sleep(Duration::from_millis(250));
+	}
 }
 
 /// Polls `condition` until it holds; panics with `describe()` on timeout.
