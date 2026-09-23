@@ -47,6 +47,16 @@ impl App {
 		std::fs::read_to_string(self.config_dir().join("paperback.log")).unwrap_or_default()
 	}
 
+	/// Starts the app again without a document, on the same config dir, once this run has
+	/// exited. The returned `App` takes over the temp dir.
+	pub fn relaunch(mut self) -> Self {
+		assert!(self.child.try_wait().expect("try_wait").is_some(), "relaunch while the app is still running");
+		let base = std::mem::take(&mut self.base);
+		let child = spawn(&base.join("config"), None);
+		let pid = child.id();
+		Self { child, pid, base }
+	}
+
 	/// Polls until the app exits; returns its exit status.
 	pub fn wait_exit(&mut self, timeout: Duration) -> std::process::ExitStatus {
 		let deadline = Instant::now() + timeout;
@@ -64,7 +74,9 @@ impl Drop for App {
 	fn drop(&mut self) {
 		let _ = self.child.kill();
 		let _ = self.child.wait();
-		let _ = std::fs::remove_dir_all(&self.base);
+		if !self.base.as_os_str().is_empty() {
+			let _ = std::fs::remove_dir_all(&self.base);
+		}
 	}
 }
 
