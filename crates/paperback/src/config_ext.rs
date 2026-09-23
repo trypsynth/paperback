@@ -52,6 +52,7 @@ pub fn set_update_channel(config: &ConfigManager, channel: UpdateChannel) {
 
 /// Returns the directory where Paperback stores its config and log files.
 ///
+/// `$PAPERBACK_CONFIG_DIR`, when set, overrides every rule below.
 /// On macOS app bundles: `~/Library/Application Support/Paperback/`.
 /// On Windows installer builds: `%APPDATA%\Paperback\`.
 /// On Linux, only when running from an AppImage (`$APPIMAGE` set, the same check
@@ -62,6 +63,11 @@ pub fn set_update_channel(config: &ConfigManager, channel: UpdateChannel) {
 /// problem and uses it like every other portable build.
 /// Otherwise: the directory containing the executable (portable convention).
 pub fn config_dir() -> PathBuf {
+	if let Some(dir) = env::var_os("PAPERBACK_CONFIG_DIR") {
+		let dir = PathBuf::from(dir);
+		let _ = fs::create_dir_all(&dir);
+		return dir;
+	}
 	#[cfg(target_os = "linux")]
 	if env::var_os("APPIMAGE").is_some() {
 		let dir = xdg_config_home().join("Paperback");
