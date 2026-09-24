@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Paperback - versio 0.9.2</title>
+  <title>Paperback - versio 1.0</title>
   <style>
     html {
       color: #1a1a1a;
@@ -205,7 +205,7 @@
 </ul>
 </nav>
 <header id="title-block-header">
-<h1 class="title">Paperback - versio 0.9.2</h1>
+<h1 class="title">Paperback - versio 1.0</h1>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -235,6 +235,18 @@ id="toc-työkalut-valikko">Työkalut-valikko</a></li>
 id="toc-asiakirjanäkymän-lisänäppäimet">Asiakirjanäkymän
 lisänäppäimet</a></li>
 </ul></li>
+<li><a href="#ios-ja-android" id="toc-ios-ja-android">iOS ja Android</a>
+<ul>
+<li><a href="#asiakirjojen-avaaminen"
+id="toc-asiakirjojen-avaaminen">Asiakirjojen avaaminen</a></li>
+<li><a href="#reading-and-listening"
+id="toc-reading-and-listening">Reading and listening</a></li>
+<li><a href="#lukupalkki" id="toc-lukupalkki">Lukupalkki</a></li>
+<li><a href="#lisää-vaihtoehtoja" id="toc-lisää-vaihtoehtoja">Lisää
+vaihtoehtoja</a></li>
+<li><a href="#näppäimistöt-ja-kuulokkeet"
+id="toc-näppäimistöt-ja-kuulokkeet">Näppäimistöt ja kuulokkeet</a></li>
+</ul></li>
 <li><a href="#tuettavat-kielet" id="toc-tuettavat-kielet">Tuettavat
 kielet</a></li>
 <li><a href="#tekijät" id="toc-tekijät">Tekijät</a>
@@ -242,14 +254,21 @@ kielet</a></li>
 <li><a href="#kehitys" id="toc-kehitys">Kehitys</a></li>
 <li><a href="#lahjoitukset" id="toc-lahjoitukset">Lahjoitukset</a></li>
 </ul></li>
-<li><a href="#muutosloki" id="toc-muutosloki">Muutosloki</a>
+<li><a href="#versiohistoria" id="toc-versiohistoria">Versiohistoria</a>
 <ul>
+<li><a href="#versio-1.0" id="toc-versio-1.0">Versio 1.0</a>
+<ul>
+<li><a href="#lisätty" id="toc-lisätty">Lisätty</a></li>
+<li><a href="#korjattu" id="toc-korjattu">Korjattu</a></li>
+<li><a href="#ios-ja-android-1" id="toc-ios-ja-android-1">iOS ja
+Android</a></li>
+</ul></li>
 <li><a href="#versio-0.9.2" id="toc-versio-0.9.2">Versio 0.9.2</a></li>
 <li><a href="#versio-0.9.1" id="toc-versio-0.9.1">Versio 0.9.1</a></li>
 <li><a href="#versio-0.9.0" id="toc-versio-0.9.0">Versio 0.9.0</a>
 <ul>
-<li><a href="#lisätty" id="toc-lisätty">Lisätty</a></li>
-<li><a href="#korjattu" id="toc-korjattu">Korjattu</a></li>
+<li><a href="#lisätty-1" id="toc-lisätty-1">Lisätty</a></li>
+<li><a href="#korjattu-1" id="toc-korjattu-1">Korjattu</a></li>
 </ul></li>
 <li><a href="#versio-0.8.5" id="toc-versio-0.8.5">Versio 0.8.5</a></li>
 <li><a href="#versio-0.8.2" id="toc-versio-0.8.2">Versio 0.8.2</a></li>
@@ -269,16 +288,16 @@ kielet</a></li>
 </ul>
 </nav>
 <h1 id="johdanto">Johdanto</h1>
-<p>Paperback on kevyt ja saavutettava e- ja asiakirjojen lukusovellus
-kaikille satunnaisista lukijoista vaativiin tehokäyttäjiin. Se on
-suunniteltu ruudunlukijaystävällisyyttä, suorituskykyä ja turhista
-ominaisuuksista riisuttua käyttökokemusta ajatellen.</p>
+<p>Paperback on kevyt ja saavutettava e- ja asiakirjojen luku- ja
+äänikirjojen kuuntelusovellus kaikille satunnaisista lukijoista
+vaativiin tehokäyttäjiin. Se on suunniteltu ruudunlukijaystävällisyyttä,
+suorituskykyä ja turhista ominaisuuksista riisuttua käyttökokemusta
+ajatellen.</p>
 <h1 id="järjestelmävaatimukset">Järjestelmävaatimukset</h1>
-<p>Paperback toimii Windows 10:ssä ja 11:ssä sekä kaikissa uudemmissa
-ARM-pohjaisissa macOS:n versioissa. Myös iOS- ja Android-sovellukset
-ovat kehitteillä. Niistä on määrä julkaista testiversiot pian
-työpöytäversio 0.9.0:n jälkeen ennen kaikkia neljää käyttöjärjestelmää
-kattavaa 1.0-versiota.</p>
+<p>Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa nykyaikaisissa
+ARM-pohjaisissa macOS:n versioissa, Linuxissa, iOS 17:ssä ja sitä
+uudemmissa sekä Android 7:ssä ja sitä uudemmissa versioissa. iOS- ja
+Android-sovellukset ovat saatavilla App Storesta ja Google Playsta.</p>
 <h1 id="ominaisuudet">Ominaisuudet</h1>
 <ul>
 <li>Toimii täysin itsenäisesti ilman kolmannen osapuolen ohjelmistojen
@@ -290,14 +309,23 @@ rajattoman määrän asiakirjoja.</li>
 asiakirjassa.</li>
 <li>Muistaa valinnaisesti, mitkä asiakirjat olivat avoinna ohjelmaa
 suljettaessa, ja avaa ne seuraavalla käynnistyskerralla.</li>
-<li>Sisältää ruudunlukijoista tuttua verkkoselaustilaa muistuttavan
-navigointitoiminnon, jonka avulla voit liikkua asiakirjoissa nopeasti ja
+<li>Ruudunlukijoista tuttu verkkoselaustilaa muistuttava
+navigointitoiminto, jonka avulla voit liikkua asiakirjoissa nopeasti ja
 vaivattomasti.</li>
-<li>Sisältää tehokkaan etsintäikkunan, jossa on muun muassa historia ja
-sääntölausekkeiden tuki.</li>
+<li>Tehokas tekstin etsimisen valintaikkuna, joka tukee hakuhistoriaa ja
+säännöllisiä lausekkeita.</li>
 <li>Voidaan käyttää massamuistiversiona tai asentaa siten, että
-tiedostokytkennät määritetään automaattisesti. Tukee erittäin kattavasti
-yleisiä tiedostomuotoja.</li>
+tiedostokytkennät määritetään automaattisesti.</li>
+<li>Tukee erittäin kattavasti yleisiä tiedostomuotoja.</li>
+<li>Toistaa äänikirjoja ja tukee niiden toistonopeuden muuttamista sekä
+tarkan kohdan muistavia kirjanmerkkejä.</li>
+<li>Mahdollistaa skannattujen PDF-asiakirjojen lukemisen Windowsin ja
+macOS:n tekstintunnistusominaisuuden avulla.</li>
+<li>Kirjanmerkit ja muistiinpanot lukukohdan merkitsemistä ja siihen
+palaamista varten.</li>
+<li>Kaikkia pikanäppäimiä on mahdollista muokata.</li>
+<li>Mukana tulee <code>pb</code>-komentorivityökalu, jolla voi muuntaa
+minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon.</li>
 </ul>
 <h1 id="ruudunlukijoiden-yhteensopivuus">Ruudunlukijoiden
 yhteensopivuus</h1>
@@ -341,6 +369,7 @@ man-sivut (<code>.1</code>–<code>.9</code>, <code>.man</code>,
 <li>M4B-äänikirjat (<code>.m4b</code>)</li>
 <li>MOBI- ja Kindle-kirjat (<code>.mobi</code>, <code>.azw</code>,
 <code>.azw3</code>)</li>
+<li>MP3-äänikirjat (<code>.mp3</code>)</li>
 <li>OpenDocument-esitykset (<code>.odp</code>, <code>.fodp</code>)</li>
 <li>OpenDocument-tekstiasiakirjat (<code>.odt</code>,
 <code>.fodt</code>)</li>
@@ -348,14 +377,15 @@ man-sivut (<code>.1</code>–<code>.9</code>, <code>.man</code>,
 <li>PowerPoint-esitykset (<code>.pptx</code>, <code>.pptm</code>,
 <code>.ppt</code>)</li>
 <li>RTF-asiakirjat (<code>.rtf</code>)</li>
+<li>Windows Write -asiakirjat (<code>.wri</code>)</li>
 <li>WinHelp-ohjetiedostot (<code>.hlp</code>)</li>
 <li>Teksti- ja lokitiedostot (<code>.txt</code>, <code>.log</code>)</li>
 </ul>
 <h1 id="pikanäppäimet">Pikanäppäimet</h1>
 <p>Paperback on suunniteltu ensisijaisesti näppäimistöllä käytettäväksi.
-Alla on luettelo nykyisistä pikanäppäimistä.</p>
-<p>Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty
-sulkeisiin. Erot johtuvat siitä, että näppäinyhdistelmät Ctrl+G, Ctrl+W
+Alla on luettelo kaikista pikanäppäimistä.</p>
+<p>Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan
+sulkeissa. Erot johtuvat siitä, että näppäinyhdistelmät Ctrl+G, Ctrl+W
 sekä Alt + vasen/oikea nuoli on varattu macOS-alustalla järjestelmän tai
 muiden sovellusten käyttöön.</p>
 <h2 id="tiedosto-valikko">Tiedosto-valikko</h2>
@@ -457,17 +487,25 @@ kohdalle tai kohdistimen sijaintiin tai poista se.</li>
 valinnan tai kohdistimen kohdalle tai muokkaa sitä.</li>
 <li><code>Ctrl+Alt+W</code>: Ota rivitys käyttöön tai poista se
 käytöstä.</li>
-<li><code>Ctrl+Väli</code>: Toista äänite tai pysäytä sen toisto.</li>
+<li><code>Ctrl+Välilyönti</code> (macOS: <code>RawCtrl+Välilyönti</code>
+eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun):
+Aloita tai pysäytä äänitteen toisto.</li>
 <li><code>'</code>: Kelaa äänitettä eteenpäin.</li>
 <li><code>;</code>: Kelaa äänitettä taaksepäin.</li>
-<li><code>Ctrl+'</code>: Pidennä äänitteen kelauksen aikasiirtymää.</li>
-<li><code>Ctrl+;</code>: Lyhennä äänitteen kelauksen aikasiirtymää.</li>
+<li><code>Shift+'</code>: Pidennä äänitteen kelauksen
+aikasiirtymää.</li>
+<li><code>Shift+;</code>: Lyhennä äänitteen kelauksen
+aikasiirtymää.</li>
+<li><code>Ctrl+Shift+.</code>: Nopeuta äänitteen toistoa.</li>
+<li><code>Ctrl+Shift+,</code>: Hidasta äänitteen toistoa.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code> eli
 Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.</li>
 <li><code>Ctrl+,</code>: Avaa asetukset (löytyy macOS:ää käytettäessä
 sovellusvalikosta).</li>
 <li><code>Ctrl+Shift+S</code>: Ota uniajastin käyttöön tai poista se
 käytöstä.</li>
+<li><code>Ctrl+Shift+O</code>: Suorita tekstintunnistus skannatun
+PDF-asiakirjan valituille sivuille.</li>
 <li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Merkitse valinnan
 alkukohta.</li>
 <li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Kopioi valinnan
@@ -492,9 +530,129 @@ välilehtien ohjausobjektissa: Sulje valittu asiakirjan välilehti.</li>
 <li><code>Enter</code> tai <code>Välilyönti</code> asiakirjan tekstissä:
 Avaa kohdistimen kohdalla oleva linkki tai näytä taulukko tai kaava
 omassa näkymässään.</li>
+<li><code>Enter</code> skannatun PDF-asiakirjan sivulla: Suorita sivun
+tekstintunnistus.</li>
 <li><code>Shift+F10</code> tai sovellusnäppäin asiakirjan tekstissä:
 Avaa pikavalikko.</li>
 </ul>
+<h1 id="ios-ja-android">iOS ja Android</h1>
+<p>iOS- ja Android-sovellukset käyttävät samaa lukumoottoria kuin
+työpöytäversio, joten ne avaavat samoja tiedostomuotoja ja muistavat
+lukukohdan samalla tavalla. Ne on suunniteltu käytettäviksi iOS:n
+VoiceOver- ja Androidin TalkBack-ruudunlukijan kanssa.</p>
+<h2 id="asiakirjojen-avaaminen">Asiakirjojen avaaminen</h2>
+<ul>
+<li>Käytä Avaa kirja -painiketta tai avaa asiakirja Tiedostot- tai
+muusta sovelluksesta ja valitse Paperback.</li>
+<li>Androidissa voit ottaa asetuksista käyttöön sovelluksen sisäisen
+tiedostoselaimen. Se tarvitsee kaikkien tiedostojen käyttöoikeuden,
+minkä jälkeen suuret tiedostot voidaan avata suoraan kopioimatta niitä
+ensin.</li>
+<li>Tuo tai vie asiakirjan tiedot (<code>.paperback</code>) painamalla
+pitkään Avaa kirja -painiketta. Samoja tiedostoja käytetään myös
+työpöytäsovelluksessa.</li>
+</ul>
+<h2 id="reading-and-listening">Reading and listening</h2>
+<p>Asiakirjoja voi lukea sovelluksissa kahdella tavalla. Tekstitilassa
+teksti luetaan ruudunlukijalla. Tekstistä puheeksi -tilassa Paperback
+lukee tekstin asetuksista valitulla äänellä. Lukeminen jatkuu myös
+taustalla ja lukitusnäytössä. Tilaa voi vaihtaa Lisää vaihtoehtoja
+-valikosta.</p>
+<p>DAISY-, M4B- ja MP3-äänikirjoissa toistetaan niiden omaa
+äänitallennetta.</p>
+<h2 id="lukupalkki">Lukupalkki</h2>
+<p>Näytön alareunassa olevassa palkissa ovat vasemmalta oikealle:</p>
+<ul>
+<li>Siirtymistapa, kuten kappale, otsikko, sivu tai linkki. Vaihda sitä
+pyyhkäisemällä ylös- tai alaspäin.</li>
+<li>Edellinen-, Toista- ja Seuraava-painikkeet. Edellinen- ja
+Seuraava-painikkeilla siirrytään valitun siirtymistavan mukaisesti.</li>
+<li>Puhenopeus. Muuta Paperbackin lukunopeutta pyyhkäisemällä ylös- tai
+alaspäin.</li>
+</ul>
+<p>Voit siirtyä valitun siirtymistavan mukaisesti myös pyyhkäisemällä
+Toista-painikkeen kohdalla ylös- tai alaspäin, jolloin Edellinen- ja
+Seuraava-painikkeita ei tarvitse käyttää. Jos käytät vain tätä tapaa,
+voit piilottaa painikkeet ruudunlukijalta Piilota Edellinen- ja
+Seuraava-painikkeet -asetuksella. Ylöspäin pyyhkäisy siirtää eteenpäin
+-asetuksella valitaan, kumpaan suuntaan pyyhkäisyllä siirrytään.</p>
+<h2 id="lisää-vaihtoehtoja">Lisää vaihtoehtoja</h2>
+<p>Muut toiminnot löytyvät Lisää vaihtoehtoja -valikosta. Osa niistä
+toimii sovelluksesta riippuen hieman eri tavalla.</p>
+<ul>
+<li><strong>Vaihda tekstistä puheeksi -tilaan tai Vaihda
+tekstitilaan:</strong> vaihtaa edellä kuvatun tekstistä puheeksi
+-lukutilan ja tekstitilan välillä. Tekstitilassa “Lue tekstistä puheeksi
+-toiminnolla” -vaihtoehto aloittaa ja pysäyttää ääneenluvun poistumatta
+tekstitilasta.</li>
+<li><strong>Sisällysluettelo:</strong> näyttää kirjan luvut avattuna
+parhaillaan luettavan luvun kohdalta. Valitse luku siirtyäksesi sen
+kohdalle. Alalukuja sisältävät kohdat voidaan laajentaa ja supistaa
+ruudunlukijan toiminnoilla.</li>
+<li><strong>Elementit:</strong> näyttää asiakirjan otsikot ja linkit
+erillisissä luetteloissa. iOS:ssa luetteloa vaihdetaan
+Tyyppi-valitsimella ja Androidissa välilehdillä. Valitse haluamasi kohde
+siirtyäksesi siihen.</li>
+<li><strong>Etsi:</strong> kirjoita etsittävä teksti tai valitse
+hakuhistoriasta aiempi haku ja valitse, otetaanko kirjainkoko huomioon,
+etsitäänkö vain kokonaisia sanoja vai käytetäänkö säännöllistä
+lauseketta. Etsi edellinen- ja Etsi seuraava -painikkeet siirtävät
+hakutuloksen kohdalle samalla kun sen sijainti ilmoitetaan. Etsi-ikkuna
+pysyy avoinna haun jatkamista varten. Tekstistä puheeksi -lukutilassa
+Etsi-toiminto näkyy myös lukupalkissa navigointiyksikkönä, joten
+hakutuloksia voi selata myös sitä kautta.</li>
+<li><strong>Siirry:</strong> siirry asiakirjassa haluamallesi riville,
+sivulle tai tiettyyn prosenttikohtaan. Valitse haluamasi siirtymätapa
+Tila-valitsimella.</li>
+<li><strong>Viimeksi avatut:</strong> näyttää kaikki avaamasi asiakirjat
+ja ilmoittaa kunkin kohdalla, onko se parhaillaan avoinna, suljettu tai
+jos sen tiedostoa ei löydy. Asiakirjoille on kaksi ruudunlukijan
+toimintoa: “Poista” poistaa asiakirjan luettelosta ja “Etsi”-toiminnolla
+voit etsiä asiakirjan tiedoston, jos se on siirretty toiseen
+hakemistoon. “Tyhjennä viimeksi avattujen luettelo” tyhjentää luettelon
+poistamatta varsinaisia asiakirjoja.</li>
+<li><strong>Sanamäärä:</strong> näyttää asiakirjan sanojen määrän.</li>
+<li><strong>Asiakirjan tiedot:</strong> näyttää asiakirjan otsikon,
+tekijän, tiedostonimen ja iOS:ssä myös rivien ja merkkien määrän.</li>
+<li><strong>Vie:</strong> tallentaa asiakirjan teksti-, HTML- tai
+Markdown-muodossa.</li>
+<li><strong>Uniajastin:</strong> pysäyttää lukemisen 5, 10, 15, 30, 45
+tai 60 minuutin kuluttua tai itse valitsemanasi ajankohtana. Avaa se
+uudelleen ajastuksen ollessa käynnissä nähdäksesi jäljellä olevan ajan
+tai peruuttaaksesi sen.</li>
+<li><strong>Ohje:</strong> avaa tämän lueminut-tiedoston.</li>
+<li><strong>Asetukset:</strong>
+<ul>
+<li><strong>Tekstistä puheeksi:</strong> ääni, nopeus ja korkeus, Toista
+näyte -painike arvojen vaikutuksen kuuntelemiseksi sekä kappaleiden
+välinen tauko. Androidissa voit valita myös puhemoottorin. iOS:ssa
+täältä löytyy myös käyttäjän sanasto, johon lisättävillä säännöillä on
+mahdollista muuttaa sanojen ääntämistä kaikilla tai vain tietyillä
+äänillä.</li>
+<li><strong>Luettavuus:</strong> tekstin koko, rivi- ja kappaleväli,
+tasaus sekä suurikontrastinen teksti. iOS:ssa on myös vaalea ja tumma
+ulkoasu.</li>
+<li><strong>Toiminta:</strong> avataanko asiakirjat uudelleen
+sovelluksen käynnistyessä, mihin suuntaan toistopainikkeen pyyhkäisy
+siirtää ja piilotetaanko Edellinen- ja Seuraava-painikkeet.
+Android-versiossa täällä on myös sovelluksen sisäinen
+tiedostoselain.</li>
+</ul></li>
+</ul>
+<h2 id="näppäimistöt-ja-kuulokkeet">Näppäimistöt ja kuulokkeet</h2>
+<p>Näppäimistöä käytettäessä työpöytäsovelluksen pikanäppäimillä voi
+avata kirjoja ja viimeksi avattuja asiakirjoja, käyttää Etsi- ja
+Siirry-toimintoja, avata sisällysluettelon, tarkistaa sanamäärän ja
+tarkastella asiakirjan tietoja, viedä asiakirjan eri tiedostomuotoihin
+sekä käyttää uniajastinta. iOS:ssa käytetään <code>Ctrl</code>-näppäimen
+sijasta <code>Cmd</code>-näppäintä. Myös otsikoiden, sivujen, linkkien
+ja muiden kohteiden välillä siirtymiseen tarkoitetut navigointikomennot
+toimivat, ja <code>Välilyönti</code> aloittaa ja pysäyttää toiston.
+iOS:ssa navigointikomennot toimivat Paperbackissa vain, kun VoiceOverin
+pikanavigointinäppäimet on poistettu käytöstä.</p>
+<p>Android-laitteissa kuulokkeiden painikkeen yksi painallus aloittaa
+tai pysäyttää toiston, kaksi painallusta siirtää eteenpäin ja kolme
+painallusta taaksepäin.</p>
 <h1 id="tuettavat-kielet">Tuettavat kielet</h1>
 <p>Paperback on käännetty useille eri kielille, ja uusia lisätään
 jatkuvasti. Täydellinen luettelo on alla.</p>
@@ -512,6 +670,7 @@ href="translating.md">käännösoppaasta</a>.</p>
 <li>serbia</li>
 <li>suomi</li>
 <li>tšekki</li>
+<li>ukraina</li>
 <li>venäjä</li>
 <li>vietnam</li>
 <li>yksinkertaistettu kiina</li>
@@ -549,7 +708,239 @@ perusteena.</p>
 <li>Timothy Wynn</li>
 <li>Tyler Rodick</li>
 </ul>
-<h1 id="muutosloki">Muutosloki</h1>
+<h1 id="versiohistoria">Versiohistoria</h1>
+<h2 id="versio-1.0">Versio 1.0</h2>
+<p>Tämä on ensimmäinen julkaisu kaikille viidelle alustalle:
+Windowsille, macOS:lle, Linuxille, iOS:lle ja Androidille. iOS- ja
+Android-sovellukset ovat saatavilla App Storesta ja Google Playsta.</p>
+<h3 id="lisätty">Lisätty</h3>
+<h4 id="yleistä">Yleistä</h4>
+<ul>
+<li>Linux-tuki AppImage- ja tar.gz-paketteina sekä
+työpöytäintegraatiolla, jonka ansiosta asiakirjat avautuvat suoraan
+tiedostonhallinnasta.</li>
+<li>Valinnan alkukohdan merkitseminen näppäinyhdistelmällä
+<code>Alt+F9</code>, valinnan alkukohdan ja nykyisen sijainnin välisen
+tekstin kopiointi näppäinyhdistelmällä <code>Alt+F10</code> ja valinnan
+alkukohtaan siirtyminen näppäinyhdistelmällä <code>Alt+Shift+F9</code>.
+Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Shift-
+ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon
+kohdasta Valitse ja kopioi.</li>
+<li>=-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim.
+”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole
+sivunumeroita.</li>
+<li>Tietoja-ikkunassa näkyvät nyt Paperbackin lisenssi ja kaikki
+kääntäjät.</li>
+<li>Ukrainankielinen käännös.</li>
+</ul>
+<h4 id="uudet-tiedostomuodot">Uudet tiedostomuodot</h4>
+<ul>
+<li>Sarjakuvapaketit (<code>.cbz</code>).</li>
+<li>Lukuihin jaetut M4B-äänikirjat.</li>
+<li>Gzip-pakatut tai pakkaamattomat <code>man</code>- ja BSD
+<code>mdoc</code> -muodossa olevat man-sivut.</li>
+<li>Tavalliset ja lukuihin jaetut MP3-äänikirjat.</li>
+<li>Windows Write -tiedostot (<code>.wri</code>).</li>
+<li>WinHelp-ohjetiedostot (<code>.hlp</code>).</li>
+<li>Word 6- ja 95-asiakirjat.</li>
+</ul>
+<h4 id="tekstintunnistus">Tekstintunnistus</h4>
+<ul>
+<li>Skannatuille PDF-asiakirjojen sivuille voidaan nyt suorittaa
+tekstintunnistus Windowsin ja macOS:n omalla
+tekstintunnistustoiminnolla. Suorita tunnistus skannatulle sivulle
+painamalla <code>Enter</code> sen kohdalla tai käytä tietylle
+sivualueelle usean sivun tunnistusta (<code>Ctrl+Shift+O</code>).</li>
+</ul>
+<h4 id="navigointi">Navigointi</h4>
+<ul>
+<li>EPUB- ja HTML-tiedostojen MathML-kaavat näytetään AsciiMath-muodossa
+MathCATia käyttäen. Navigoi kaavojen välillä painamalla <code>M</code>
+tai <code>Shift+M</code> ja avaa alkuperäinen MathML kaavanäkymässä
+painamalla <code>Enter</code> tai <code>Välilyönti</code>.</li>
+<li>Etsi-valintaikkunassa on uusi Etsi kaikki -painike, joka näyttää
+kaikki hakusanan sisältävät rivit, mikä mahdollistaa siirtymisen suoraan
+halutulle riville.</li>
+<li>Elementtilista (<code>F7</code>) näyttää nyt asiakirjan taulukot,
+luettelot ja sivut.</li>
+<li>Siirry riville-, Siirry sivulle- ja Siirry prosenttiin -toiminnot
+tukevat nyt merkintöjä <code>+n</code> ja <code>-n</code>, joilla voit
+siirtyä suhteessa nykyiseen sijaintiisi.</li>
+<li>EPUB- ja MOBI-kirjat sekä CHM-ohjetiedostot, joissa ei ole omia
+otsikoita, saavat nyt otsikkonavigoinnin sisällysluettelostaan.</li>
+<li>KF8- eli AZW3-kirjat tukevat nyt luvuittain navigointia.</li>
+<li>Pelkän kuvan sisältävillä EPUB-kirjan sivuilla näytetään nyt kuvasta
+ilmoittava rivi, jotta niille on mahdollista siirtyä, eikä niitä enää
+ohiteta.</li>
+</ul>
+<h4 id="äänikirjat">Äänikirjat</h4>
+<ul>
+<li>Toistonopeuden muuttaminen puolikkaasta kolminkertaiseen. Käytä
+näppäinyhdistelmiä <code>Ctrl+Shift+.</code> ja
+<code>Ctrl+Shift+,</code> tai Työkalut-valikkoa.</li>
+<li>Äänikirjojen kirjanmerkit ja muistiinpanot muistavat nyt tarkan
+kohdan, johon ne lisättiin.</li>
+<li>Seuraava ja edellinen sijainti (<code>Alt+Vasen nuoli</code> ja
+<code>Alt+Oikea nuoli</code>) toimivat nyt äänikirjoissa.</li>
+<li>Äänikirjan kuuntelun edistymistä mitataan nyt tallenteen keston
+perusteella, joten Siirry prosenttiin -komento ja tilarivi näyttävät
+kirjan todellisen kohdan.</li>
+</ul>
+<h4 id="viimeksi-avatut-asiakirjat">Viimeksi avatut asiakirjat</h4>
+<ul>
+<li>Viimeksi avatut -alivalikkoon Tyhjennä viimeksi avattujen luettelo
+-toiminto.</li>
+</ul>
+<h4 id="pdf-asiakirjat">PDF-asiakirjat</h4>
+<ul>
+<li>Asetus, joka pitää PDF-tiedoston kaikki rivit erillisinä sen sijaan,
+että ne yhdistettäisiin kappaleiksi.</li>
+<li>PDF-tiedostojen kuvat ja kuvitukset ilmoitetaan.</li>
+<li>PDF-tiedostojen merkitsemättömät kuvat ilmoitetaan nyt, jos
+tiedostossa on lukemisjärjestys, eikä niitä enää jätetä kirjasta
+kokonaan pois.</li>
+</ul>
+<h4 id="selainnäkymä">Selainnäkymä</h4>
+<ul>
+<li>Selainnäkymässä voidaan nyt avata mikä tahansa asiakirja , eikä
+pelkästään EPUB-, HTML- ja Markdown-tiedostoja.</li>
+</ul>
+<h4 id="luettavuus">Luettavuus</h4>
+<ul>
+<li>Otsikot näytetään nyt niiden tasoa vastaavassa koossa, ja kuvat sekä
+taulukot erotetaan selkeästi ympäröivästä tekstistä.</li>
+</ul>
+<h4 id="pb-komentorivityökalu">Pb-komentorivityökalu</h4>
+<ul>
+<li>Komento <code>pb --list-formats</code> näyttää luettelon kaikista
+tiedostomuodoista, joita pb pystyy lukemaan.</li>
+<li>Työkalu ilmoittaa nyt, mitä tiedostoa se ei voinut lukea ja
+miksi.</li>
+</ul>
+<h3 id="korjattu">Korjattu</h3>
+<h4 id="yleiset">Yleiset</h4>
+<ul>
+<li>Kaatuminen Paperbackia suljettaessa.</li>
+<li>Ikkuna piilotetaan nyt heti Paperbackia suljettaessa sen sijaan,
+että se jäisi näkyviin tallennuksen ajaksi.</li>
+<li>Avaa viimeksi suljettu -toiminto ei ole enää käytettävissä
+asiakirjan avaamisen jälkeen, jos uudelleen avattavia tiedostoja ei
+ole.</li>
+<li>Paperback ei enää yritä toistuvasti avata viimeksi avattujen
+asiakirjojen luettelosta hävinneitä asiakirjoja, ja luetteloon
+tallennettavien asiakirjojen määrää on myös rajoitettu.</li>
+<li>Vanha INI-asetustiedosto poistetaan sen jälkeen, kun se on siirretty
+uuteen muotoon.</li>
+<li>Fontin- ja värinmääritysikkunoiden otsikot sekä Vie muodossa
+-valikko on nyt käännetty vietnamiksi.</li>
+<li>Päivityksen jälkeen uudelleen käynnistyvän sovelluksen ikkuna
+siirtyy nyt etualalle sen sijaan, että jäisi Alt+Sarkain-järjestyksessä
+viimeiseksi.</li>
+<li>Rivitys otetaan nyt käyttöön suurissa asiakirjoissa heti sen sijaan,
+että koko tiedosto avattaisiin uudelleen.</li>
+</ul>
+<h4 id="navigointi-1">Navigointi</h4>
+<ul>
+<li><code>Alt+Vasen nuoli</code> -näppäinkomennolla palataan nyt
+vanhemman sijainnin asemesta edelliseen kohtaan.</li>
+<li>Kirjanmerkin merkkiääni ei enää kuulu heti samalle riville tultaessa
+vaan pelkästään kirjanmerkin kohdalle siirryttäessä.</li>
+<li>Sisällysluettelon, elementtilistan tai Siirry-ikkunan sulkeminen
+siirtää kohdistimen heti halutulle riville ilman, että ruudunlukija
+lukee koko ikkunaa uudelleen.</li>
+<li>Siirry riville-, Siirry sivulle- ja Siirry prosenttiin -toiminnot
+hylkäävät nyt asiakirjan ulkopuoliset numerot sen sijaan, että
+siirtäisivät muualle.</li>
+<li>NVDA ei enää keskeytä ilmoitusta, joka kertoo, ettei asiakirjassa
+ole sivuja.</li>
+<li>Kohdistuksen paikka ei muutu, kun sisällysluettelossa painetaan
+OK-painiketta siirtämättä kohdistinta senhetkisestä sijainnista.</li>
+<li>Sisällysluettelo, elementtilista ja kirjanmerkkiluettelo eivät enää
+hidastele tai jumiudu kirjoissa, joissa on tuhansia kohteita.</li>
+<li>Ylä- ja alanuolinäppäimillä vaihdettu sarake on nyt
+asiakirjakohtainen sen sijaan, että se olisi sama kaikilla
+välilehdillä.</li>
+</ul>
+<h4 id="äänikirjat-1">Äänikirjat</h4>
+<ul>
+<li>Äänitteen toiston pikanäppäin on nyt macOS:ssä
+<code>Ctrl+Välilyönti</code>, koska <code>Cmd+Välilyönti</code> on
+varattu Spotlight-haulle.</li>
+</ul>
+<h4 id="pdf-asiakirjat-1">PDF-asiakirjat</h4>
+<ul>
+<li>Ongelma, jonka vuoksi Apple Pages -sovelluksesta viedyt
+PDF-tiedostot luettiin pelkkänä tekstinä ilman niihin sisältyviä
+otsikoita ja luetteloita.</li>
+<li>Ongelma, jonka vuoksi PDF-tiedostojen kappaleet ja otsikot
+katkesivat jokaiselta riviltä ja sanat jakautuivat välilyöntien
+kohdalta.</li>
+<li>Ongelma, jonka vuoksi PDF-tiedostojen numeroidut otsikot yhdistyivät
+yhdeksi otsikoksi.</li>
+<li>Ongelma, jonka vuoksi PDF-tiedostot avautuivat tyhjinä, jos niiden
+rakennepuu ei sisältänyt tekstiä.</li>
+<li>Ylä- ja alatunnisteita ei enää lueta jokaisella merkitsemättömien
+PDF-tiedostojen sivulla.</li>
+<li>Otsikko ja sivunumero eivät enää toistu jokaisella sivulla
+kappaleiden välissä PDF-tiedostoissa, joissa ylä- ja alatunnisteet on
+merkitty tavalliseksi tekstiksi.</li>
+<li>PDF-tiedostoissa näytetään nyt niiden oikea otsikko tiedostonimen
+sijasta.</li>
+<li>Tasalevyisellä fontilla näytettäviä rivejä, kuten koodia, ei enää
+yhdistetä kappaleiksi.</li>
+</ul>
+<h4 id="mobi--ja-azw3-kirjat">MOBI- ja AZW3-kirjat</h4>
+<ul>
+<li>Suuret MOBI-kirjat eivät enää aiheuta muistin loppumista, eikä niitä
+enää katkaista 20 megatavun kohdalla.</li>
+<li>MOBI- ja AZW3-kirjat avautuvat nyt huomattavasti nopeammin.</li>
+<li>MOBI-kirjojen sisällysluettelon katoaminen.</li>
+<li>Ongelma, jonka vuoksi MOBI-kirjojen teksti muuttui lukukelvottomaksi
+tietueiden vaihtumiskohdassa.</li>
+</ul>
+<h4 id="selainnäkymä-1">Selainnäkymä</h4>
+<ul>
+<li>Suuren kirjan koko sisältöä ei käsitellä kerralla
+selainnäkymässä.</li>
+<li>Selainnäkymä näyttää nyt asiakirjan kokonaan lukutilan mukaisesti,
+eikä vain pientä osaa siitä.</li>
+</ul>
+<h4 id="muut-tiedostomuodot">Muut tiedostomuodot</h4>
+<ul>
+<li>Windows-1251-merkistökoodausta käyttävät FictionBook-kirjat (.fb2)
+avautuvat nyt oikein. Suurin osa FB2-kirjoista on tällaisia.</li>
+<li>FictionBook-kirjat, joissa käytetään määrittelemätöntä nimiavaruutta
+tai HTML-entiteettiä, avautuvat nyt eikä niitä enää hylätä
+virheellisinä.</li>
+<li>Vanhoja merkistökoodauksia käyttävät kirjat avautuvat nyt
+huomattavasti nopeammin.</li>
+<li>Joidenkin kiinankielisten tekstitiedostojen avautuminen
+lukukelvottomina.</li>
+<li>Salasanalla suojattuja OpenDocument-tiedostoja ei enää väitetä
+virheellisiksi, vaan sovellus pyytää salasanaa niitä avattaessa.</li>
+<li>Salasanalla suojatut vanhat PowerPoint-esitykset avautuvat nyt, eikä
+niiden dioista enää katoa tekstiä.</li>
+<li>RTF-päätteellä tallennetut tekstitiedostot avautuvat nyt sen sijaan,
+että niistä annettaisiin virheilmoitus.</li>
+<li>RTF-tiedostojen muotoilukoodit eivät näy enää tekstinä.</li>
+</ul>
+<h3 id="ios-ja-android-1">iOS ja Android</h3>
+<p>iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin
+työpöytäversio, ja niissä on lisäksi seuraavat ominaisuudet:</p>
+<ul>
+<li>Tekstistä puheeksi -toiminnolla lukeminen valitsemallasi äänellä,
+nopeudella ja äänenkorkeudella, puhenopeuden säätö suoraan lukupalkissa
+sekä valinnainen tauko kappaleiden välissä.</li>
+<li>DAISY-, M4B- ja MP3-äänikirjojen toisto, joka jatkuu taustalla ja
+lukitusnäytöllä.</li>
+<li>Navigointi lukupalkista otsikoiden, sivujen, linkkien, taulukoiden,
+luetteloiden ja muiden elementtien perusteella, minkä lisäksi käytössä
+ovat sisällysluettelo ja Etsi-toiminto.</li>
+<li>Uniajastin, sanamäärä ja asiakirjan vienti sekä iOS:ssa käyttäjän
+sanasto.</li>
+<li>Tekstikoon, rivivälin ja suurikontrastisen tekstin asetukset.</li>
+<li>Samat pikanäppäimet kuin työpöytäversiossa.</li>
+</ul>
 <h2 id="versio-0.9.2">Versio 0.9.2</h2>
 <ul>
 <li>Ruudunlukija ei enää lue äänikirjoissa peräkkäisiä välilyöntejä
@@ -571,25 +962,12 @@ sen sijaan, että olisivat avautuneet normaalisti.</li>
 ruudunlukijan jatkuvalla luvulla.</li>
 <li>Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä
 aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.</li>
-<li>Merkitse valinnan alkukohta näppäinyhdistelmällä
-<code>Alt+F9</code>, kopioi valinnan alkukohdan ja nykyisen sijainnin
-välinen teksti näppäinyhdistelmällä <code>Alt+F10</code> ja palaa
-valinnan alkukohtaan näppäinyhdistelmällä <code>Alt+Shift+F9</code>.
-Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Shift-
-ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon
-kohdasta Valitse ja kopioi.</li>
-<li>=-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim.
-”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole
-sivunumeroita.</li>
 <li>Automaattinen ”Asiakirja päivitetty” -ilmoitus odottaa nyt
 ruudunlukijan puheen päättymistä eikä keskeytä sitä enää kesken
 lauseen.</li>
 <li>Asetukset-ikkunan Yleiset-välilehden sarkainjärjestys noudattaa nyt
 näytön järjestystä, ja päivityskanava on heti päivitystarkistuksen
 jälkeen.</li>
-<li>Päivityksen jälkeen uudelleen käynnistyvän sovelluksen ikkuna
-siirtyy nyt etualalle sen sijaan, että jäisi Alt+Sarkain-järjestyksessä
-viimeiseksi.</li>
 <li>Avaa sovelluksessa -valikossa ei näytetä enää sovelluksen koko
 kuvausta vaan pelkkä “Paperback”.</li>
 <li>Sanamäärä- ja Asiakirjan tiedot -ikkunoissa näytetään nyt äänikirjan
@@ -635,8 +1013,8 @@ Alt+Sarkain-näppäimiä käytettäessä.</li>
 <li>Päivitysikkuna on nyt käännetty eri kielille.</li>
 </ul>
 <h2 id="versio-0.9.0">Versio 0.9.0</h2>
-<h3 id="lisätty">Lisätty</h3>
-<h4 id="yleiset">Yleiset</h4>
+<h3 id="lisätty-1">Lisätty</h3>
+<h4 id="yleiset-1">Yleiset</h4>
 <ul>
 <li>Pb-niminen komentorivityökalu, jolla voi muuntaa nopeasti minkä
 tahansa Paperbackin tukeman tiedostomuodon HTML:ksi, Markdowniksi tai
@@ -686,12 +1064,8 @@ jäljempää)</li>
 <li>Asetus taulukoiden näyttötavan määrittämiseksi sekä yhtenäistetty
 taulukoiden esitystapa kaikille asiakirjoille.</li>
 </ul>
-<h4 id="navigointi">Navigointi</h4>
+<h4 id="navigointi-2">Navigointi</h4>
 <ul>
-<li>EPUB- ja HTML-tiedostojen MathML-kaavat muunnetaan MathCATin avulla
-AsciiMath-muotoon. Siirry kaavojen välillä näppäimillä M ja Shift+M ja
-avaa sitten alkuperäinen MathML-kaava Kaavanäkymässä painamalla
-<code>Enter</code>- tai <code>Välilyöntinäppäintä</code>.</li>
 <li>Lisätty tuki säilöittäin navigoimiselle.</li>
 <li>Asetus, joka siirtää kohdistimen navigoitaessa rivin alkuun, kuten
 ruudunlukijoiden selaustilassa.</li>
@@ -734,7 +1108,7 @@ pelkän tekstin lisäksi myös HTML- ja Markdown-muotoihin.</li>
 <li>Päivittäjä varmistaa nyt, ettei ladattua tiedostoa ole
 peukaloitu.</li>
 </ul>
-<h4 id="selainnäkymä">Selainnäkymä</h4>
+<h4 id="selainnäkymä-2">Selainnäkymä</h4>
 <ul>
 <li>Selainnäkymä avautuu nyt nykyisessä lukukohdassa.</li>
 </ul>
@@ -743,7 +1117,7 @@ peukaloitu.</li>
 <li>DAISY 2.0 -kirjojen tuki.</li>
 <li>DAISY 2.02 -äänikirjojen tuki.</li>
 </ul>
-<h4 id="äänikirjat">Äänikirjat</h4>
+<h4 id="äänikirjat-2">Äänikirjat</h4>
 <ul>
 <li>Mahdollisuus äänikirjojen kuunteluun. Sovellus tukee
 ZIP-tiedostoiksi pakattuja tai niistä purettuja pelkkää ääntä tai sekä
@@ -764,8 +1138,8 @@ kelattaessa.</li>
 <ul>
 <li>PowerPoint-esitykset tukevat nyt taulukoita.</li>
 </ul>
-<h3 id="korjattu">Korjattu</h3>
-<h4 id="yleiset-1">Yleiset</h4>
+<h3 id="korjattu-1">Korjattu</h3>
+<h4 id="yleiset-2">Yleiset</h4>
 <ul>
 <li>Vanhoja CJK-merkistöjä, kuten GBK, Big5 ja Shift_JIS, käyttäviä
 asiakirjoja ei näytetä enää pelkkänä merkkisotkuna.</li>
@@ -809,7 +1183,7 @@ kun se avataan Shift+F1-pikanäppäimellä.</li>
 <li>Hakusuodatin säilytetään nyt myös asiakirjan poistamisen
 jälkeen.</li>
 </ul>
-<h4 id="navigointi-1">Navigointi</h4>
+<h4 id="navigointi-3">Navigointi</h4>
 <ul>
 <li>Ruudunlukija puhui joissakin tilanteissa väärän rivin asiakirjassa
 liikuttaessa.</li>
@@ -823,11 +1197,11 @@ asiakirjojen näkyvissä olevaa osaa.</li>
 <li>Merkkiääni toistetaan nyt vain sellaisten sanojen kohdalla, joihin
 on lisätty kirjanmerkki tai muistiinpano.</li>
 </ul>
-<h4 id="luettavuus">Luettavuus</h4>
+<h4 id="luettavuus-1">Luettavuus</h4>
 <ul>
 <li>Rivityksen käyttöönotto siirsi kohdistuksen asiakirjan alkuun.</li>
 </ul>
-<h4 id="selainnäkymä-1">Selainnäkymä</h4>
+<h4 id="selainnäkymä-3">Selainnäkymä</h4>
 <ul>
 <li>Selainnäkymäikkunan kokoa voi nyt muuttaa, eikä se avaudu enää liian
 pienenä.</li>
@@ -851,7 +1225,7 @@ jäsennys.</li>
 <li>RTF-tiedostojen <code>\pict</code>-ryhmien käsittely, jotta
 upotettujen kuvien tiedot eivät enää päädy asiakirjan tekstiin.</li>
 </ul>
-<h4 id="mobi--ja-azw3-kirjat">Mobi- ja AZW3-kirjat</h4>
+<h4 id="mobi--ja-azw3-kirjat-1">Mobi- ja AZW3-kirjat</h4>
 <ul>
 <li>Mobi-kirjojen filepos-ankkurit rikkoivat HTML-elementtejä ja
 aiheuttivat merkkisotkua kirjan tekstiin.</li>
@@ -868,7 +1242,7 @@ näytetty oikein.</li>
 <li>XHTML-asiakirjojen dl-, dt- ja dd-elementit eivät tehneet
 rivinvaihtoja.</li>
 </ul>
-<h4 id="pdf-asiakirjat">PDF-asiakirjat</h4>
+<h4 id="pdf-asiakirjat-2">PDF-asiakirjat</h4>
 <ul>
 <li>Paperback käyttää nyt virheellisesti merkityille PDF-tiedostoille
 varavaihtoehtona pelkän tekstin poimimista.</li>
@@ -1007,12 +1381,12 @@ järjestelmänvalvojana.</li>
 kirjaimella alkavaan kohteeseen.</li>
 <li>Korjattu Etsi-valintaikkuna, jota ei aina piilotettu oikein
 Seuraava/Edellinen-painikkeita käytettäessä.</li>
-<li>Korjattu virhe, jossa EPUB-kirjojen sisällysluettelot siirsivät
-toisinaan väärään kohtaan.</li>
+<li>Korjattu virhe, jonka vuoksi EPUB-kirjojen sisällysluettelot
+siirsivät toisinaan väärään kohtaan.</li>
 <li>Korjattu useita välilyöntien käsittelyyn liittyviä ongelmia XML-,
 HTML- ja pre-tageissa.</li>
-<li>Korjattu virhe, jossa linkkien välillä siirtyminen oli yhden kohdan
-verran pielessä.</li>
+<li>Korjattu virhe, jonka vuoksi linkkien välillä siirtyminen oli yhden
+kohdan verran pielessä.</li>
 <li>Korjattu joissakin kirjoissa esiintynyt rivien loppuun jäävä
 ylimääräinen välilyönti.</li>
 <li>Korjattu useita jäsentimen ongelmia.</li>
@@ -1041,11 +1415,11 @@ suurennettuna.</li>
 linkit.</li>
 <li>Korjattu suhteellisia polkuja sisältävien EPUB-kirjojen
 sisällysluetteloiden jäsennys.</li>
-<li>Korjattu virhe, jossa nimeä tai tekijää ei näytetty joissakin
+<li>Korjattu virhe, jonka vuoksi nimeä tai tekijää ei näytetty joissakin
 EPUB-asiakirjoissa.</li>
-<li>Korjattu virhe, jossa joidenkin EPUB-asiakirjojen lukujen nimet
-eivät näkyneet oikein sisällysluettelovalintaikkunassa.</li>
-<li>Korjattu virhe, jossa sisällysluettelovalintaikkunan OK- tai
+<li>Korjattu virhe, jonka vuoksi joidenkin EPUB-asiakirjojen lukujen
+nimet eivät näkyneet oikein sisällysluetteloikkunassa.</li>
+<li>Korjattu virhe, jonka vuoksi sisällysluetteloikkunan OK- tai
 Peruuta-painikkeita ei voinut painaa välilyöntinäppäimellä.</li>
 <li>Otsikoiden käsittelyä parannettu Word-asiakirjoissa.</li>
 <li>Paperback antaa nyt äänipalautteen yritettäessä avata “Viimeksi
@@ -1086,8 +1460,8 @@ oikein.</li>
 enää paina OK-painiketta.</li>
 <li>Välilyöntien käsittely korjattu pre-tagien alussa sekä HTML- että
 XHTML-asiakirjoissa.</li>
-<li>Korjattu virhe, jossa kohdistus ei siirtynyt takaisin tekstikenttään
-Paperbackin ikkunaan palattaessa.</li>
+<li>Korjattu virhe, jonka vuoksi kohdistus ei siirtynyt takaisin
+tekstikenttään Paperbackin ikkunaan palattaessa.</li>
 <li>“Siirry prosenttiin” -valintaikkunan tekstikenttä päivittää nyt
 oikein liukusäätimen arvon.</li>
 <li>Mukautettujen HTML ID -tunnisteiden renderöinti korjattu
@@ -1148,12 +1522,12 @@ luettelokohtamerkkien lisääminen.</li>
 <ul>
 <li>Lisätty Microsoft Word -asiakirjojen tuki.</li>
 <li>Lisätty PowerPoint-esityksien tuki.</li>
-<li>Korjattu virhe, jossa tietyt valikkokohteet eivät poistuneet
+<li>Korjattu virhe, jonka vuoksi tietyt valikkokohteet eivät poistuneet
 käytöstä, kun yhtään asiakirjaa ei ollut avoinna.</li>
 <li>Korjattu “siirry prosenttiin” -liukusäätimen suunta.</li>
 <li>Korjattu EPUB-kirjojen sisällysluettelot, joissa oli URL-koodattuja
 tiedostopolkuja ja/tai fragmenttitunnuksia.</li>
-<li>Korjattu ongelma, jossa XHTML-otsikoissa olevat välilyönnit
+<li>Korjattu ongelma, jonka vuoksi XHTML-otsikoissa olevat välilyönnit
 poistettiin oudosti.</li>
 <li>Korjattu HTML-asiakirjojen sisäkkäisten pre-tagien sisällä olevien
 välilyöntien käsittely.</li>
