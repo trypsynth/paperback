@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-24 08:33-0600\n"
-"PO-Revision-Date: 2026-09-24 21:42+0300\n"
+"PO-Revision-Date: 2026-09-24 21:59+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -519,11 +519,11 @@ msgstr "Kopioi nykyiseen sijaintiin asti valinnan alkukohdasta"
 
 #. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
 msgid "&Jump to Selection Start"
-msgstr "&Siirry valinnan alkukohtaan"
+msgstr "&Palaa valinnan alkukohtaan"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
 msgid "Go back to the beginning of the selection"
-msgstr "Siirry valinnan alkukohtaan"
+msgstr "Palaa valinnan alkukohtaan"
 
 #. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
@@ -531,7 +531,7 @@ msgstr "&Toista/pysäytä äänite"
 
 #. TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
 msgid "Play or pause this document's audio narration"
-msgstr "Toista tai pysäytä asiakirjan äänite"
+msgstr "Aloita tai pysäytä asiakirjan äänitteen toisto"
 
 #. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
@@ -2248,11 +2248,11 @@ msgstr "Leikepöydälle ei voi kopioida."
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 msgid "Cannot jump; set beginning of selection first."
-msgstr "Ei voi siirtyä. Merkitse ensin valinnan alkukohta."
+msgstr "Valinnan alkukohtaa ei ole merkitty."
 
 #. TRANSLATORS: Announced after jumping back to the marked beginning of the selection.
 msgid "Jumped to beginning of selection."
-msgstr "Siirrytty valinnan alkukohtaan."
+msgstr "Palattu valinnan alkukohtaan."
 
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."

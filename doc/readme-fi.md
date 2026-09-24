@@ -288,7 +288,7 @@ Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:
 
 ##### Yleistä
 * Linux-tuki AppImage- ja tar.gz-paketteina sekä työpöytäintegraatiolla, jonka ansiosta asiakirjat avautuvat suoraan tiedostonhallinnasta.
-* Valinnan alkukohdan merkitseminen näppäinyhdistelmällä `Alt+F9`, valinnan alkukohdan ja nykyisen sijainnin välisen tekstin kopiointi näppäinyhdistelmällä `Alt+F10` ja valinnan alkukohtaan siirtyminen näppäinyhdistelmällä `Alt+Shift+F9`. Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Shift- ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon kohdasta Valitse ja kopioi.
+* Valinnan alkukohdan merkitseminen näppäinyhdistelmällä `Alt+F9`, valinnan alkukohdan ja nykyisen sijainnin välisen tekstin kopiointi näppäinyhdistelmällä `Alt+F10` ja valinnan alkukohtaan palaaminen näppäinyhdistelmällä `Alt+Shift+F9`. Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Shift- ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon kohdasta Valitse ja kopioi.
 * =-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim. ”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole sivunumeroita.
 * Tietoja-ikkunassa näkyvät nyt Paperbackin lisenssi ja kaikki kääntäjät.
 * Ukrainankielinen käännös.
