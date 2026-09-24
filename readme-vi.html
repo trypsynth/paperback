@@ -213,12 +213,15 @@
 <li><a href="#yêu-cầu-hệ-thống" id="toc-yêu-cầu-hệ-thống">Yêu cầu hệ
 thống</a></li>
 <li><a href="#tính-năng" id="toc-tính-năng">Tính năng</a></li>
-<li><a href="#tương-thích-trình-đọc-màn-hình"
-id="toc-tương-thích-trình-đọc-màn-hình">Tương thích trình đọc màn
-hình</a>
+<li><a href="#khả-năng-tương-thích-với-trình-đọc-màn-hình"
+id="toc-khả-năng-tương-thích-với-trình-đọc-màn-hình">Khả năng tương
+thích với Trình đọc màn hình</a>
 <ul>
 <li><a href="#jaws-và-màn-hình-braille"
 id="toc-jaws-và-màn-hình-braille">JAWS và Màn hình Braille</a></li>
+<li><a href="#jaws-và-các-thông-báo-của-paperback"
+id="toc-jaws-và-các-thông-báo-của-paperback">JAWS và các thông báo của
+Paperback</a></li>
 </ul></li>
 <li><a href="#các-loại-tệp-hiện-được-hỗ-trợ"
 id="toc-các-loại-tệp-hiện-được-hỗ-trợ">Các loại tệp hiện được hỗ
@@ -304,7 +307,7 @@ vào</a></li>
 </ul></li>
 </ul>
 </nav>
-<!-- machine-translated from doc/readme.md (source-hash: 6564745fd3218b1a; sections: 84030068,db723a70,df2f4c18,14335443,91be3b41,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2afffa4b3f966e85; sections: 84030068,db723a70,df2f4c18,14335443,d44bf4c8,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
 <p>Paperback - phiên bản 1.0</p>
 <h1 id="giới-thiệu">Giới thiệu</h1>
 <p>Paperback là một trình đọc nhẹ, nhanh và dễ tiếp cận cho sách điện
@@ -345,24 +348,37 @@ lại nó.</li>
 tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần
 túy.</li>
 </ul>
-<h1 id="tương-thích-trình-đọc-màn-hình">Tương thích trình đọc màn
-hình</h1>
+<h1 id="khả-năng-tương-thích-với-trình-đọc-màn-hình">Khả năng tương
+thích với Trình đọc màn hình</h1>
 <p>Paperback hoạt động tốt với tất cả các trình đọc màn hình chính. Tuy
-nhiên, có một vấn đề đã biết cho người dùng JAWS.</p>
+nhiên, có một vấn đề đã biết đối với người dùng JAWS.</p>
 <h2 id="jaws-và-màn-hình-braille">JAWS và Màn hình Braille</h2>
 <p>Nếu bạn sử dụng JAWS với màn hình Braille, bạn có thể thấy rằng các
-đoạn văn dài bị cắt ngắn khi xoay tiến với các phím điều hướng của màn
-hình của bạn. Lệnh đọc đoạn hiện tại cũng bị ảnh hưởng. Đây là một lỗi
-trong cách xử lý điều khiển văn bản RICHEDIT50W của JAWS, không phải là
-điều gì trong chính Paperback, và một lỗi mất khá lâu để tìm ra một bản
-sửa chữa cho nó do sự nhiệt tình của Vispero trong việc phản ứng với các
-vấn đề liên quan đến phần mềm mã nguồn mở.</p>
-<p>Giải pháp, cuối cùng được tìm ra thông qua nhóm thảo luận JAWS sau
-nhiều tháng chờ đợi, là chỉnh sửa <code>paperback.jcf</code> và đặt
+đoạn văn dài bị cắt ngắn khi di chuyển tiến với các phím điều hướng của
+màn hình của bạn. Lệnh đọc đoạn hiện tại cũng bị ảnh hưởng. Đây là một
+lỗi trong cách JAWS xử lý điều khiển văn bản RICHEDIT50W, không phải
+điều gì trong chính Paperback, và lỗi này đã mất khá lâu để tìm ra cách
+sửa chữa do sự nhiệt tình của Vispero trong việc phản hồi các vấn đề với
+phần mềm mã nguồn mở.</p>
+<p>Cách khắc phục, cuối cùng được tìm thấy thông qua nhóm thảo luận JAWS
+sau nhiều tháng chờ đợi, là chỉnh sửa <code>paperback.jcf</code> và đặt
 “Braille Presentation and Panning” thành “Always use DOM if available”.
-Bạn cũng sẽ muốn bật “Pan Text by Paragraph”, nếu không màn hình của bạn
-sẽ ở lại đoạn hoạt động thay vì tiến lên. Với cả hai cài đặt này, xoay
-tiến sẽ hoạt động chính xác.</p>
+Bạn cũng muốn bật “Pan Text by Paragraph”, nếu không màn hình của bạn sẽ
+ở lại đoạn văn đang hoạt động thay vì tiến lên. Với cả hai cài đặt được
+thiết lập, di chuyển pan sẽ hoạt động bình thường.</p>
+<h2 id="jaws-và-các-thông-báo-của-paperback">JAWS và các thông báo của
+Paperback</h2>
+<p>Paperback nói những điều như “No pages.” hoặc “This document has no
+audio.” như các thông báo về khả năng tiếp cận, đó là điều cho phép
+trình đọc màn hình phát âm chúng trên bất kỳ những gì nó đang nói. JAWS
+chỉ hoạt động trên những thông báo đó khi “Enable accessible
+notification events” được bật cho ứng dụng, và trên một số máy tính nó
+không phải vậy.</p>
+<p>Nếu JAWS không nói gì khi bạn nhấn một phím mà nó nên báo cáo điều
+gì, hãy mở Settings Center với Paperback ở trước
+(<code>Insert+6</code>), tìm kiếm “notification”, và đánh dấu “Enable
+accessible notification events”. Điều đó ghi cài đặt vào
+<code>paperback.jcf</code>, vì vậy nó chỉ áp dụng cho Paperback.</p>
 <h1 id="các-loại-tệp-hiện-được-hỗ-trợ">Các loại tệp hiện được hỗ
 trợ</h1>
 <p>Paperback hỗ trợ các định dạng và phần mở rộng sau:</p>

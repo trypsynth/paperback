@@ -216,10 +216,13 @@ id="toc-requisitos-del-sistema">Requisitos del Sistema</a></li>
 id="toc-características">Características</a></li>
 <li><a href="#compatibilidad-con-lectores-de-pantalla"
 id="toc-compatibilidad-con-lectores-de-pantalla">Compatibilidad con
-Lectores de Pantalla</a>
+lectores de pantalla</a>
 <ul>
 <li><a href="#jaws-y-pantallas-braille"
-id="toc-jaws-y-pantallas-braille">JAWS y Pantallas Braille</a></li>
+id="toc-jaws-y-pantallas-braille">JAWS y pantallas braille</a></li>
+<li><a href="#jaws-y-los-mensajes-de-paperback"
+id="toc-jaws-y-los-mensajes-de-paperback">JAWS y los mensajes de
+Paperback</a></li>
 </ul></li>
 <li><a href="#tipos-de-archivo-actualmente-compatibles"
 id="toc-tipos-de-archivo-actualmente-compatibles">Tipos de archivo
@@ -305,7 +308,7 @@ Android</a></li>
 </ul></li>
 </ul>
 </nav>
-<!-- machine-translated from doc/readme.md (source-hash: 6564745fd3218b1a; sections: 84030068,db723a70,df2f4c18,14335443,91be3b41,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2afffa4b3f966e85; sections: 84030068,db723a70,df2f4c18,14335443,d44bf4c8,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
 <p>Paperback - versión 1.0</p>
 <h1 id="introducción">Introducción</h1>
 <p>Paperback es un lector ligero, rápido y accesible para libros
@@ -349,26 +352,37 @@ convierte cualquier documento compatible a HTML, Markdown o texto
 plano.</li>
 </ul>
 <h1 id="compatibilidad-con-lectores-de-pantalla">Compatibilidad con
-Lectores de Pantalla</h1>
+lectores de pantalla</h1>
 <p>Paperback funciona bien con todos los lectores de pantalla
-principales. Sin embargo, hay un problema conocido para los usuarios de
-JAWS.</p>
-<h2 id="jaws-y-pantallas-braille">JAWS y Pantallas Braille</h2>
-<p>Si usas JAWS con una pantalla braille, es posible que encuentres que
-los párrafos largos se truncan cuando se desplazan hacia adelante con
-las teclas de navegación de tu pantalla. El comando de lectura del
-párrafo actual también se ve afectado. Este es un error en el manejo de
-JAWS del control de texto RICHEDIT50W, no algo en Paperback en sí, y uno
-que tardó bastante tiempo en salir a la luz una solución dada el
-entusiasmo de Vispero por responder a problemas con software de código
-abierto.</p>
-<p>La solución alternativa, finalmente encontrada a través del grupo de
+principales. Sin embargo, existe un problema conocido para los usuarios
+de JAWS.</p>
+<h2 id="jaws-y-pantallas-braille">JAWS y pantallas braille</h2>
+<p>Si utiliza JAWS con una pantalla braille, es posible que descubra que
+los párrafos largos se truncan al desplazarse hacia adelante con las
+teclas de navegación de su pantalla. El comando de lectura del párrafo
+actual también se ve afectado. Este es un error en el manejo de JAWS del
+control de texto RICHEDIT50W, no algo en Paperback en sí, y uno que
+tardó bastante tiempo en encontrarse una solución dada la entusiasmo de
+Vispero en responder a problemas con software de código abierto.</p>
+<p>La solución alternativa, que finalmente surgió a través del grupo de
 discusión de JAWS después de meses de espera, es editar
 <code>paperback.jcf</code> y establecer “Braille Presentation and
-Panning” en “Always use DOM if available”. También querrás habilitar
-“Pan Text by Paragraph”, de lo contrario tu pantalla se mantendrá en el
-párrafo activo en lugar de avanzar. Con ambas configuraciones en su
-lugar, el desplazamiento debería funcionar correctamente.</p>
+Panning” en “Always use DOM if available”. También deseará habilitar
+“Pan Text by Paragraph”, de lo contrario su pantalla permanecerá en el
+párrafo activo en lugar de avanzar. Con ambas configuraciones en lugar,
+el desplazamiento debería funcionar correctamente.</p>
+<h2 id="jaws-y-los-mensajes-de-paperback">JAWS y los mensajes de
+Paperback</h2>
+<p>Paperback dice cosas como “No pages.” o “This document has no audio.”
+como notificaciones de accesibilidad, lo que permite que un lector de
+pantalla las hable sobre lo que sea que esté diciendo. JAWS solo actúa
+sobre ellas cuando “Enable accessible notification events” está activado
+para la aplicación, y en algunas máquinas no lo está.</p>
+<p>Si JAWS no dice nada cuando presiona una tecla que debería informar
+algo, abra el Centro de Configuración con Paperback en primer plano
+(<code>Insert+6</code>), busque “notification” y marque “Enable
+accessible notification events”. Esto escribe la configuración en
+<code>paperback.jcf</code>, por lo que se aplica solo a Paperback.</p>
 <h1 id="tipos-de-archivo-actualmente-compatibles">Tipos de archivo
 actualmente compatibles</h1>
 <p>Paperback admite los siguientes formatos y extensiones:</p>
