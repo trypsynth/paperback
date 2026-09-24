@@ -39,6 +39,7 @@ English → Dutch. Use these consistently.
 - legacy (file format) → klassiek; legacy (encoding) → verouderd
 - link → link
 - locate (a missing file) → terugvinden
+- monospaced font → monospacelettertype
 - page → pagina; line → regel; character → teken; word count → woordenaantal
 - parse, parser → verwerken, verwerker
 - permission → toestemming; grant → toestaan
@@ -52,6 +53,7 @@ English → Dutch. Use these consistently.
 - section → sectie; separator → scheiding
 - selection start → begin van selectie
 - settings → instellingen; option → optie
+- share sheet (iOS) → deelmenu
 - show → tonen; view (a note) → bekijken; view source → bron weergeven
 - sleep timer → slaaptimer
 - speech engine → spraakengine; speech dictionary → uitspraakwoordenboek; speech rate → spreeksnelheid; pitch → toonhoogte; text to speech → tekst-naar-spraak
