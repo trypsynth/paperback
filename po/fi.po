@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 19:11+0000\n"
-"PO-Revision-Date: 2026-09-24 11:46+0300\n"
+"POT-Creation-Date: 2026-09-24 08:33-0600\n"
+"PO-Revision-Date: 2026-09-24 21:42+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1131,7 +1131,7 @@ msgstr "Kehitys"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
-msgstr "Va&ihda ikkunan pikanäppäintä..."
+msgstr "Muokkaa &ikkunan pikanäppäintä..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
@@ -1602,18 +1602,13 @@ msgstr "Asiakirja päivitetty."
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
 
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "{} - Paperback"
-msgstr "{} - Paperback"
-
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d merkki"
-msgstr[1] "%d merkkiä"
-
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Asiakirjan vienti epäonnistui."
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 msgid "&Undo\tCtrl+Z"
