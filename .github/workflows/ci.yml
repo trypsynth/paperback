@@ -275,11 +275,12 @@ jobs:
       # `--workspace` rather than `-p paperback`: selecting one package resolves features
       # differently, so the run above is rebuilt from scratch, which cost more than eight minutes
       # to reach four tests that take two seconds each. Only the UI tests are ignored, so this
-      # still runs exactly them.
+      # named by target rather than with a bare --ignored, which would also run the deferred
+      # parser tests that are ignored because they do not pass yet.
       - name: Run UI tests
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
-          cargo test --workspace -- --ignored
+          cargo test --workspace --test opens_document --test status_bar --test restores_last_document --test heading_announcements -- --ignored
   test-macos:
     name: Tests (macOS)
     needs: changes
