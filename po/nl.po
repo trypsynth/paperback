@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 19:11+0000\n"
+"POT-Creation-Date: 2026-09-24 14:16+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -1577,18 +1577,13 @@ msgstr "Document opnieuw geladen."
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback kan geen acties uitvoeren terwijl webweergave is geopend."
 
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "{} - Paperback"
-msgstr "{} - Paperback"
-
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d teken"
-msgstr[1] "%d tekens"
-
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Document exporteren mislukt."
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 msgid "&Undo\tCtrl+Z"
@@ -4165,6 +4160,11 @@ msgstr "Origineel bestand"
 #: kt
 msgid "Settings exported"
 msgstr "Instellingen geëxporteerd"
+
+#~ msgid "%d char"
+#~ msgid_plural "%d chars"
+#~ msgstr[0] "%d teken"
+#~ msgstr[1] "%d tekens"
 
 #~ msgid "Document Information"
 #~ msgstr "Documentinformatie"
