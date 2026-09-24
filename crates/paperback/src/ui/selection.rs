@@ -12,7 +12,7 @@ use patois::t;
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
 use super::{document_manager::DocumentManager, navigation};
-use crate::ui::navigation::announce;
+use crate::ui::navigation::announce_for_command;
 
 /// What the copy shortcut found when it went to copy.
 enum CopyOutcome {
@@ -41,7 +41,7 @@ fn copied_announcement(count: usize) -> String {
 }
 
 /// Marks the reader's current position as the beginning of a selection to copy from later.
-pub fn handle_set_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+pub fn handle_set_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
 	{
 		let dm = dm.lock().unwrap();
 		let Some(position) = dm.active_tab().map(navigation::doc_caret) else {
@@ -50,11 +50,15 @@ pub fn handle_set_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_l
 		dm.set_selection_mark(Some(position));
 	}
 	// TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
-	announce(live_region_label, t("Beginning of selection set."));
+	announce_for_command(live_region_label, from_keyboard, t("Beginning of selection set."));
 }
 
 /// Copies everything between the marked beginning and the reader's current position.
-pub fn handle_copy_from_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+pub fn handle_copy_from_selection_start(
+	dm: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+	from_keyboard: bool,
+) {
 	// Everything that touches the document happens under the lock; the clipboard write and the
 	// announcement deliberately do not. `Clipboard::set_text` goes through OLE on Windows, which
 	// can pump messages, and the document manager's mutex is not reentrant - holding it across a
@@ -100,7 +104,7 @@ pub fn handle_copy_from_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_re
 			}
 		}
 	};
-	announce(live_region_label, message);
+	announce_for_command(live_region_label, from_keyboard, message);
 }
 
 /// Moves the reader back to the marked beginning, leaving the mark in place so the copy and the
@@ -109,6 +113,7 @@ pub fn handle_jump_to_selection_start(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) {
 	let (message, history_update) = {
 		let mut dm = dm.lock().unwrap();
@@ -128,7 +133,7 @@ pub fn handle_jump_to_selection_start(
 			}
 		}
 	};
-	announce(live_region_label, message);
+	announce_for_command(live_region_label, from_keyboard, message);
 	navigation::persist_navigation_history(config, history_update.as_ref());
 }
 

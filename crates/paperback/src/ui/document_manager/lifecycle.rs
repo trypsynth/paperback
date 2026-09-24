@@ -142,7 +142,8 @@ impl DocumentManager {
 		let config = self.config.lock().unwrap();
 		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
-		let text_ctrl = reader_input::build_text_ctrl(panel, word_wrap, self_rc, self.frame);
+		let text_ctrl =
+			reader_input::build_text_ctrl(panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());
 		let rf = config.get_readability_font();
 		if let Some(font) = build_font_from_readability(&rf) {
 			text_ctrl.set_font(&font);

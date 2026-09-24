@@ -97,6 +97,10 @@ pub struct DocumentManager {
 	last_audio_seek_position: Cell<Option<i64>>,
 	last_focus_in_text: Cell<bool>,
 	recently_closed: Vec<PathBuf>,
+	/// Set by the frame's char hook when a shortcut key is seen, and consumed by the menu
+	/// dispatcher. See `menu_events::bind_key_source` for why the book's own key handler
+	/// cannot do this.
+	pub(super) from_keyboard: Rc<Cell<bool>>,
 }
 
 impl DocumentManager {
@@ -105,6 +109,7 @@ impl DocumentManager {
 		notebook: Notebook,
 		config: Rc<Mutex<ConfigManager>>,
 		live_region_label: StaticText,
+		from_keyboard: Rc<Cell<bool>>,
 	) -> Self {
 		Self {
 			frame,
@@ -117,6 +122,7 @@ impl DocumentManager {
 			last_audio_seek_position: Cell::new(None),
 			last_focus_in_text: Cell::new(true),
 			recently_closed: Vec::new(),
+			from_keyboard,
 		}
 	}
 
