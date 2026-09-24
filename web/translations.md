@@ -2,6 +2,7 @@
 layout: default.liquid
 title: Translations
 permalink: /translations
+description: How to translate Paperback into your language, from starting a new .po file to opening the pull request.
 ---
 
 # Translation Guide

@@ -1,0 +1,473 @@
+/* paperback.dev
+ *
+ * One stylesheet for the whole site, including the manual pages pandoc builds, which link it
+ * after pandoc's own styles so the rules here win.
+ *
+ * Nothing on the page depends on colour or position to make sense: the markup is plain headings,
+ * lists and links, and every interactive part carries its own state. Contrast is at least 4.5:1
+ * for body text and 3:1 for large text and borders, in both schemes.
+ */
+
+:root {
+	--bg: #fbf9f6;
+	--surface: #ffffff;
+	--surface-alt: #f3efe9;
+	--border: #ded7cd;
+	--text: #1f2328;
+	--muted: #55606d;
+	--accent: #0b5ed7;
+	--accent-text: #ffffff;
+	--focus: #0b5ed7;
+	--radius: 10px;
+	--measure: 42rem;
+	--gutter: 1.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: #12161c;
+		--surface: #1a2028;
+		--surface-alt: #222a34;
+		--border: #333d4a;
+		--text: #e6e9ee;
+		--muted: #a7b1bf;
+		--accent: #7fb2ff;
+		--accent-text: #0b1220;
+		--focus: #7fb2ff;
+	}
+}
+
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--text);
+	font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-size: 1.0625rem;
+	line-height: 1.65;
+	/* Pandoc's stock template sets these three on body; the site layout wants them off. */
+	max-width: none;
+	padding: 0;
+	hyphens: none;
+}
+
+/* Out of the way until it has focus. Never display:none, which would take it out of the tab
+ * order along with the pixels. */
+.skip-link {
+	position: absolute;
+	left: -9999px;
+	top: 0;
+	z-index: 10;
+	padding: 0.6rem 1rem;
+	background: var(--accent);
+	color: var(--accent-text);
+	border-radius: 0 0 var(--radius) 0;
+}
+
+.skip-link:focus {
+	left: 0;
+}
+
+a {
+	color: var(--accent);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.15em;
+}
+
+a:hover {
+	text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+	outline: 3px solid var(--focus);
+	outline-offset: 2px;
+	border-radius: 3px;
+}
+
+.site-header {
+	background: var(--surface);
+	border-bottom: 1px solid var(--border);
+}
+
+.site-header .wrap {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 1.5rem;
+	padding: 0.9rem var(--gutter);
+	max-width: 68rem;
+	margin: 0 auto;
+}
+
+.brand {
+	font-size: 1.2rem;
+	font-weight: 700;
+	color: var(--text);
+	text-decoration: none;
+	letter-spacing: -0.01em;
+}
+
+.brand:hover {
+	color: var(--accent);
+}
+
+.site-nav ul {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 1rem;
+	margin: 0;
+	padding: 0;
+}
+
+.site-nav a {
+	display: inline-block;
+	padding: 0.2rem 0;
+	color: var(--muted);
+	text-decoration: none;
+	border-bottom: 2px solid transparent;
+}
+
+.site-nav a:hover {
+	color: var(--accent);
+	border-bottom-color: var(--accent);
+}
+
+.site-nav [aria-current="page"] {
+	color: var(--text);
+	font-weight: 600;
+	border-bottom-color: var(--accent);
+}
+
+main {
+	display: block;
+	max-width: 68rem;
+	margin: 0 auto;
+	padding: 2rem var(--gutter) 3rem;
+}
+
+main > * {
+	max-width: var(--measure);
+}
+
+h1, h2, h3, h4, h5, h6 {
+	line-height: 1.25;
+	letter-spacing: -0.015em;
+	margin: 2rem 0 0.6rem;
+}
+
+h1 {
+	font-size: clamp(2rem, 5vw, 2.7rem);
+	margin-top: 0.5rem;
+}
+
+h2 {
+	font-size: 1.6rem;
+	margin-top: 2.6rem;
+	padding-bottom: 0.35rem;
+	border-bottom: 1px solid var(--border);
+}
+
+h3 {
+	font-size: 1.25rem;
+}
+
+h4 {
+	font-size: 1.05rem;
+}
+
+p, ul, ol, dl, blockquote, table {
+	margin: 0 0 1rem;
+}
+
+ul, ol {
+	padding-left: 1.4rem;
+}
+
+li + li {
+	margin-top: 0.25rem;
+}
+
+strong {
+	font-weight: 650;
+}
+
+blockquote {
+	margin-left: 0;
+	padding: 0.2rem 0 0.2rem 1rem;
+	border-left: 4px solid var(--border);
+	color: var(--muted);
+}
+
+hr {
+	border: 0;
+	border-top: 1px solid var(--border);
+	margin: 2.5rem 0;
+}
+
+code, pre, kbd, samp {
+	font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+	font-size: 0.9em;
+}
+
+code {
+	background: var(--surface-alt);
+	border-radius: 4px;
+	padding: 0.1em 0.35em;
+}
+
+pre {
+	background: var(--surface-alt);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 0.9rem 1rem;
+	overflow-x: auto;
+	line-height: 1.5;
+}
+
+pre code {
+	background: none;
+	padding: 0;
+}
+
+kbd {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-bottom-width: 2px;
+	border-radius: 4px;
+	padding: 0.05em 0.4em;
+}
+
+table {
+	border-collapse: collapse;
+	width: 100%;
+}
+
+th, td {
+	text-align: left;
+	padding: 0.5rem 0.7rem;
+	border-bottom: 1px solid var(--border);
+}
+
+th {
+	background: var(--surface-alt);
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+}
+
+.hero {
+	max-width: none;
+	padding: 2.5rem 0 1rem;
+}
+
+.hero h1 {
+	margin-bottom: 0.5rem;
+}
+
+.lede {
+	font-size: 1.2rem;
+	color: var(--muted);
+	max-width: var(--measure);
+}
+
+.cta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	margin: 1.5rem 0 0;
+	padding: 0;
+	list-style: none;
+	max-width: none;
+}
+
+.cta a {
+	display: inline-block;
+	padding: 0.6rem 1.2rem;
+	border-radius: var(--radius);
+	border: 1px solid var(--accent);
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.cta li:first-child a {
+	background: var(--accent);
+	color: var(--accent-text);
+}
+
+.cta li:first-child a:hover {
+	filter: brightness(1.1);
+}
+
+.cta li + li a {
+	color: var(--accent);
+	background: var(--surface);
+}
+
+.cta li + li a:hover {
+	background: var(--surface-alt);
+}
+
+/* A grid of cards, each one a heading and a paragraph. It is still a run of headings to a screen
+ * reader; the grid is only where the boxes sit. */
+.cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+	gap: 1rem;
+	max-width: none;
+	margin: 1.25rem 0 1rem;
+}
+
+.card {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 1.1rem 1.2rem 1.2rem;
+}
+
+.card h3 {
+	margin-top: 0;
+	font-size: 1.1rem;
+}
+
+.card p:last-child, .card ul:last-child {
+	margin-bottom: 0;
+}
+
+/* Long flat lists of short items, such as formats and languages. */
+.columns {
+	max-width: none;
+	columns: 13rem;
+	column-gap: 2rem;
+}
+
+.columns li {
+	break-inside: avoid;
+}
+
+.release {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 1.1rem 1.25rem 1.25rem;
+	margin: 0 0 1.25rem;
+	max-width: var(--measure);
+}
+
+.release h3 {
+	margin-top: 0;
+}
+
+.release .subtitle {
+	color: var(--muted);
+	margin-top: -0.35rem;
+}
+
+.release ul {
+	list-style: none;
+	padding: 0;
+	margin: 0.75rem 0 0;
+}
+
+.release li {
+	padding: 0.35rem 0;
+	border-top: 1px solid var(--border);
+	margin-top: 0;
+}
+
+.release .count {
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.disclosure {
+	font: inherit;
+	color: var(--accent);
+	background: none;
+	border: 0;
+	padding: 0.1rem 0;
+	text-align: left;
+	cursor: pointer;
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+.license {
+	max-width: none;
+	margin-bottom: 0.4rem;
+}
+
+.license-name {
+	margin: 0.6rem 0 0.2rem;
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.license-body pre {
+	max-height: 26rem;
+	white-space: pre-wrap;
+}
+
+details > summary {
+	cursor: pointer;
+	font-weight: 600;
+	padding: 0.3rem 0;
+}
+
+.site-footer {
+	border-top: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--muted);
+	font-size: 0.95rem;
+}
+
+.site-footer .wrap {
+	max-width: 68rem;
+	margin: 0 auto;
+	padding: 1.5rem var(--gutter) 2.5rem;
+}
+
+.site-footer p {
+	margin: 0 0 0.4rem;
+}
+
+#TOC {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 1rem 1.25rem;
+	margin-bottom: 2rem;
+}
+
+#TOC ul:last-child {
+	margin-bottom: 0;
+}
+
+.language-bar ul {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 1.5rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1rem;
+}
+
+.language-bar [aria-current] {
+	font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}

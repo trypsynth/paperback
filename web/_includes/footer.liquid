@@ -1,6 +1,25 @@
 	</main>
-	<footer>
-		Copyright &copy; 2025-2026 Quin Gillespie. All rights reserved.
+	<footer class="site-footer">
+		<div class="wrap">
+			<nav class="site-nav" aria-label="More">
+				<ul>
+					{% comment %}cobalt hands the permalink back with no leading slash, and empty for
+					the home page, so comparing it to the nav link straight off matched nothing and no
+					page ever carried aria-current.{% endcomment %}
+					{% capture here %}/{{ page.permalink }}{% endcapture %}
+					{% for item in site.data.footer_nav %}
+						{% assign link = item[1] %}
+						{% if here == link %}
+							<li><a href="{{ link }}" aria-current="page">{{ item[0] }}</a></li>
+						{% else %}
+							<li><a href="{{ link }}">{{ item[0] }}</a></li>
+						{% endif %}
+					{% endfor %}
+				</ul>
+			</nav>
+			<p>Paperback is free software under the MIT license.</p>
+			<p>Copyright &copy; 2025-2026 Quin Gillespie. All rights reserved.</p>
+		</div>
 	</footer>
 </body>
 </html>
