@@ -8,9 +8,9 @@
 - "Failed to X" is `X mislukt`: `Document laden mislukt.`, `Bestandslocatie openen mislukt.`
 - Drop "Please": "Please select a bookmark" is `Selecteer een bladwijzer`.
 - Sentence-style capitalisation: only the first word of a label or title is capitalised. Product and format names keep their own capitalisation.
-- Compounds are one word or hyphenated, never two words: `bladwijzernotitie`, `documentinformatie`, `PDF-document`, `HTML-bestand`, `comic-archief`.
+- Compounds follow the Taalunie rules and are never two words. They are one word, also when a part is English: `bladwijzernotitie`, `documentinformatie`, `comicarchief`, `releaseopmerkingen`. They take a hyphen only after an abbreviation, a proper name or a number (`PDF-document`, `HTML-bestand`, `Markdown-document`, `EPUB 3-boek`) or where two vowels would clash (`menu-item`).
 - Keep the ampersand in a title when the English has one: "Pattern & Replacement" is `Patroon & vervanging`.
-- Format and product names stay English: EPUB, PDF, DAISY, MOBI, comic (as in `comic-archief`), manual pages, Markdown, VoiceOver, TalkBack, JAWS, NVDA.
+- Format and product names stay English: EPUB, PDF, DAISY, MOBI, comic (as in `comicarchief`), manual pages, Markdown, VoiceOver, TalkBack, JAWS, NVDA.
 - TalkBack action labels (Android "onClickLabel" strings such as "go to heading") start with the bare infinitive, because TalkBack speaks them as "Dubbeltik om te ...": `gaan naar kop`, `openen`.
 
 ## Glossary
@@ -26,7 +26,7 @@ English → Dutch. Use these consistently.
 - bookmark → bladwijzer; note → notitie; bookmark note → bladwijzernotitie
 - braille display → brailleleesregel
 - command line, command-line tool → terminal, terminalprogramma
-- comic archive → comic-archief
+- comic archive → comicarchief
 - container → container; list → lijst; list item → lijstitem; table → tabel; figure → figuur; image → afbeelding
 - document info → documentinformatie; document data (.paperback file) → documentgegevens
 - duration → tijdsduur
