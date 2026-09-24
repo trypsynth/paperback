@@ -217,6 +217,8 @@ id="toc-屏幕阅读器兼容性">屏幕阅读器兼容性</a>
 <ul>
 <li><a href="#jaws-与盲文显示器" id="toc-jaws-与盲文显示器">JAWS
 与盲文显示器</a></li>
+<li><a href="#jaws-与-paperback-的消息"
+id="toc-jaws-与-paperback-的消息">JAWS 与 Paperback 的消息</a></li>
 </ul></li>
 <li><a href="#当前支持的文件类型"
 id="toc-当前支持的文件类型">当前支持的文件类型</a></li>
@@ -303,7 +305,7 @@ HTML、Markdown 或纯文本。</li>
 </ul>
 <h1 id="屏幕阅读器兼容性">屏幕阅读器兼容性</h1>
 <p>Paperback 可与所有主流屏幕阅读器良好配合。不过，对于 JAWS
-用户存在一个已知问题。</p>
+用户存在两个已知问题。</p>
 <h2 id="jaws-与盲文显示器">JAWS 与盲文显示器</h2>
 <p>如果您将 JAWS
 与盲文显示器配合使用，可能会发现使用显示器的导航键向前平移时长段落被截断。“朗读当前段落”命令也受到影响。这是
@@ -313,6 +315,13 @@ JAWS 处理 RICHEDIT50W 文本控件时的一个错误，并非 Paperback
 <p>经过数月的等待，最终通过 JAWS 讨论组找到了解决办法：编辑
 <code>paperback.jcf</code>，将“盲文显示与平移”设置为“可用时始终使用
 DOM”。您还需要启用“按段落平移文本”，否则显示器会停留在当前活动段落而不会前进。完成这两项设置后，平移应该就能正常工作了。</p>
+<h2 id="jaws-与-paperback-的消息">JAWS 与 Paperback 的消息</h2>
+<p>Paperback
+会说诸如“没有页面。”或“此文档没有音频。”之类的内容，作为无障碍通知，这正是让屏幕阅读器在它正在朗读的内容之上朗读这些内容的方式。JAWS
+只有在为应用程序开启“启用无障碍通知事件”时才会对这些做出反应，而在某些机器上它并未开启。</p>
+<p>如果 JAWS 在您按下本应报告某些内容的按键时什么也不说，请在 Paperback
+位于前台时打开设置中心（<code>Insert+6</code>），搜索“notification”，然后勾选“启用无障碍通知事件”。这会将设置写入
+<code>paperback.jcf</code>，因此它只对 Paperback 生效。</p>
 <h1 id="当前支持的文件类型">当前支持的文件类型</h1>
 <p>Paperback 支持以下格式和扩展名：</p>
 <ul>
@@ -340,6 +349,7 @@ DOM”。您还需要启用“按段落平移文本”，否则显示器会停�
 <li>PDF 文档（<code>.pdf</code>）</li>
 <li>PowerPoint
 演示文稿（<code>.pptx</code>、<code>.pptm</code>、<code>.ppt</code>）</li>
+<li>reStructuredText 文档（<code>.rst</code>、<code>.rest</code>）</li>
 <li>RTF 文档（<code>.rtf</code>）</li>
 <li>Windows Write 文档（<code>.wri</code>）</li>
 <li>WinHelp 文件（<code>.hlp</code>）</li>
@@ -608,6 +618,7 @@ Play 上架。</p>
 <li>手册页，包括 <code>man</code> 和 BSD <code>mdoc</code>，无论是否
 gzip 压缩。</li>
 <li>MP3 有声书，当文件包含章节时按章节分割。</li>
+<li>reStructuredText 文档。</li>
 <li>Windows Write（<code>.wri</code>）文件。</li>
 <li>WinHelp（<code>.hlp</code>）文件。</li>
 <li>Word 6 和 Word 95 文档。</li>
@@ -671,9 +682,13 @@ Markdown。</li>
 <h3 id="修复">修复</h3>
 <h4 id="常规-1">常规</h4>
 <ul>
+<li>启动时重新打开的图书现在会立即朗读，而不是保持沉默直到关闭并再次打开。</li>
+<li>文件已丢失的文档现在可以从“所有文档”中移除，而不是无论您确认多少次都留在列表中。</li>
 <li>修复了关闭 Paperback 时崩溃的问题。</li>
 <li>关闭 Paperback
 现在会立即隐藏窗口，而不是在保存时将其留在屏幕上。</li>
+<li>格式很少的大型书籍现在打开时间约为原来的一半。</li>
+<li>从菜单中选择的消息，例如“此文档没有音频”，不再在您听到之前被屏幕阅读器截断。</li>
 <li>打开文档时，如果没有可重新打开的文档，“重新打开上次关闭的文档”不再保持启用状态。</li>
 <li>Paperback
 不再反复重试最近列表中已丢失的文档，并限制了存储的最近文档数量。</li>
@@ -708,11 +723,11 @@ Markdown。</li>
 段落和标题在每一行处断开，以及单词在空格处断开的问题。</li>
 <li>修复了编号 PDF 标题合并为一个标题的问题。</li>
 <li>修复了结构树指向无文本的 PDF 打开为空的问题。</li>
+<li>以等宽字体设置的行，如代码，不再被合并为段落。</li>
 <li>未标记的 PDF 不再在每一页朗读页眉和页脚。</li>
 <li>将页眉和页脚标记为普通文本的 PDF
 不再在每一页的两个段落之间重复标题和页码。</li>
 <li>PDF 现在显示其真实标题，而不是文件名。</li>
-<li>以等宽字体设置的行，如代码，不再被合并为段落。</li>
 </ul>
 <h4 id="mobiazw3-图书">MOBI/AZW3 图书</h4>
 <ul>
@@ -750,7 +765,8 @@ FictionBook（.fb2）图书，占大多数，现在可以打开，而不是完�
 <li>朗读，可选择语音、速率和音高，阅读栏上直接有语音速率控制，以及可选的段落间暂停。</li>
 <li>播放 DAISY、M4B 和 MP3 有声书，可在后台和锁屏界面继续播放。</li>
 <li>从阅读栏按标题、页面、链接、表格、列表等导航，以及目录和查找。</li>
-<li>睡眠定时器、字数统计和文档导出，iOS 上还有语音词典。</li>
+<li>睡眠定时器、字数统计和文档导出，iOS 上还有语音词典。在 iOS
+上，导出通过共享表单进行，因此图书可以以其他格式或完全按原样发送到另一个应用或“文件”。</li>
 <li>文本大小、间距和高对比度文本选项。</li>
 <li>与桌面版匹配的键盘快捷键。</li>
 </ul>
