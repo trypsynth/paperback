@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 19:11+0000\n"
+"POT-Creation-Date: 2026-09-24 14:16+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -484,7 +484,7 @@ msgstr "Перейти к началу текущего списка или та
 #. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
 #, fuzzy
 msgid "Past Container &End"
-msgstr "Пропустить «Container &End»    ,"
+msgstr "За концом &контейнера"
 
 #. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
 #, fuzzy
@@ -1815,20 +1815,13 @@ msgstr "Документ перезагружен."
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Приложение Paperback не может выполнять никаких действий, пока открыт Web View."
 
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "{} - Paperback"
-msgstr "{} - Paperback"
-
-#, fuzzy
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d символ"
-msgstr[1] "%d символа"
-msgstr[2] "%d символов"
-
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Не удалось экспортировать документ."
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 #, fuzzy
@@ -2227,7 +2220,7 @@ msgstr "Включить/выключить перенос слов"
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
 #, fuzzy
 msgid "&Full Screen"
-msgstr "&Полноэкранный режим    F11"
+msgstr "&Полный экран"
 
 #. TRANSLATORS: Status-bar help text for the Full Screen menu item.
 #, fuzzy
@@ -2659,7 +2652,7 @@ msgstr "Перейти к странице"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Go Back"
-msgstr "Вперед и Назад    Ctrl+["
+msgstr "Вернуться"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2854,7 +2847,7 @@ msgstr "Следующий элемент списка"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Container Start"
-msgstr "Контейнер и запуск    Shift+,"
+msgstr "Начало контейнера"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2869,7 +2862,7 @@ msgstr "Список элементов..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Reveal File in Folder"
-msgstr "Показать и сохранить в папке    Ctrl+Shift+C"
+msgstr "Показать файл в папке"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2879,7 +2872,7 @@ msgstr "Открыть в веб-просмотре"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "View Source"
-msgstr "Просмотр и исходный код    Ctrl+U"
+msgstr "Просмотр исходного кода"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -3588,38 +3581,30 @@ msgstr "Сбросить все сочетания клавиш на этой в
 msgid "Reset Shortcuts"
 msgstr "Сброс сочетаний клавиш"
 
-#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Export Document Data"
 msgstr "Экспортировать данные документа"
 
-#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Import Document Data"
 msgstr "Импорт данных из документа"
 
-#. TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
-#: swift
-#, fuzzy
-msgid "Settings exported"
-msgstr "Настройки экспортированы"
-
 #. TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Failed to export settings"
 msgstr "Не удалось экспортировать настройки"
 
 #. TRANSLATORS: Confirmation shown after importing a document's settings and bookmarks from a .paperback file
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Settings imported"
 msgstr "Настройки импортированы"
 
 #. TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Failed to import settings"
 msgstr "Не удалось импортировать настройки"
@@ -3637,19 +3622,18 @@ msgid "More options"
 msgstr "Дополнительные параметры"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Switch to TTS Mode"
 msgstr "Переключиться в режим TTS"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Switch to Text Mode"
 msgstr "Перейти в текстовый режим"
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Recent Documents"
 msgstr "Недавние документы"
@@ -3685,25 +3669,25 @@ msgid "No document open"
 msgstr "Документы не открыты"
 
 #. TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Show All"
 msgstr "Показать всё"
 
 #. TRANSLATORS: Toggle label; when on, search matching is case-sensitive
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Match Case"
 msgstr "Учитывать регистр"
 
 #. TRANSLATORS: Toggle label; when on, search only matches whole words
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Whole Word"
 msgstr "Целое слово"
 
 #. TRANSLATORS: Toggle label; when on, the search query is treated as a regular expression
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Regular Expression"
 msgstr "Регулярное выражение"
@@ -3715,31 +3699,29 @@ msgid "Open Error"
 msgstr "Открытая ошибка"
 
 #. TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Open Book"
 msgstr "«Открытая книга»"
 
-#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Locate"
 msgstr "Найти"
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Remove"
 msgstr "Удалить"
 
 #. TRANSLATORS: Status label for a recent document whose file can no longer be found
-#: swift
+#: kt swift
 #, fuzzy
 msgid "File Missing"
 msgstr "Файл не найден"
 
 #. TRANSLATORS: Status label for a recent document that's currently open in a tab
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Currently Open"
 msgstr "В настоящее время открыто"
@@ -3763,25 +3745,25 @@ msgid "Text to Speech"
 msgstr "Синтез речи"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Voice"
 msgstr "Голос"
 
-#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 #, fuzzy
 msgid "Rate"
 msgstr "Оценить"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
-#: swift
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+#: kt swift
 #, fuzzy
 msgid "Speech Rate"
 msgstr "Скорость речи"
 
-#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
-#: swift
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
+#: kt swift
 #, fuzzy
 msgid "Pitch"
 msgstr "Тон"
@@ -3793,31 +3775,31 @@ msgid "Speech Dictionary"
 msgstr "Словарь речи"
 
 #. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Play Sample"
 msgstr "Прослушать фрагмент"
 
 #. TRANSLATORS: Row label for the control that scales the size of document text
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Text Size"
 msgstr "Размер текста"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Line Spacing"
 msgstr "Интервал между строками:"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Paragraph Spacing"
 msgstr "Интервал между абзацами:"
 
 #. TRANSLATORS: Label for the picker choosing how document text is aligned
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Alignment"
 msgstr "Выравнивание текста:"
@@ -3835,43 +3817,43 @@ msgid "Restore last open documents"
 msgstr "Восстановить последние открытые документы"
 
 #. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Swipe up moves forward"
 msgstr "Пролистывание вверх — переход вперед"
 
 #. TRANSLATORS: Row label for the document's title in the Document Info sheet
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Title"
 msgstr "Название"
 
 #. TRANSLATORS: Row label for the document's author in the Document Info sheet
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Author"
 msgstr "Автор"
 
 #. TRANSLATORS: Row label for the document's total word count
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Words"
 msgstr "Слова"
 
 #. TRANSLATORS: Row label for the document's total line count
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Lines"
 msgstr "Строки"
 
 #. TRANSLATORS: Row label for the document's total character count (including spaces)
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Characters"
 msgstr "Персонажи"
 
 #. TRANSLATORS: Row label for the document's character count with whitespace excluded
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Characters (excluding spaces)"
 msgstr "Символы (без учета пробелов)"
@@ -3883,7 +3865,7 @@ msgid "Mode"
 msgstr "Режим"
 
 #. TRANSLATORS: Name of the "page" reading/navigation unit
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Page"
 msgstr "Страница"
@@ -3907,13 +3889,12 @@ msgid "Page number"
 msgstr "Номер страницы"
 
 #. TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Percentage"
 msgstr "Процент"
 
-#. TRANSLATORS: Navigation title of the Go To sheet
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Go To"
 msgstr "Перейти к"
@@ -3955,7 +3936,7 @@ msgid "Word"
 msgstr "Слово"
 
 #. TRANSLATORS: Name of the "paragraph" reading/navigation unit
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Paragraph"
 msgstr "Абзац"
@@ -4066,7 +4047,7 @@ msgid "Duration"
 msgstr "Длительность"
 
 #. TRANSLATORS: Placeholder in the custom sleep timer duration field, asking for a number of minutes
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Minutes"
 msgstr "Протокол"
@@ -4132,25 +4113,25 @@ msgid "This document has no table of contents."
 msgstr "В этом документе нет оглавления."
 
 #. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Navigation unit"
 msgstr "Навигационный блок"
 
 #. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Previous {}"
 msgstr "Предыдущая статья «{}»"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Pause"
 msgstr "Пауза"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Play"
 msgstr "Играть"
@@ -4168,7 +4149,7 @@ msgid "Beginning of document"
 msgstr "Начало документа"
 
 #. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Next {}"
 msgstr "Далее {}"
@@ -4179,42 +4160,37 @@ msgstr "Далее {}"
 msgid "Press play to start listening."
 msgstr "Нажмите кнопку «Воспроизвести», чтобы начать прослушивание."
 
-#: kt
-#, fuzzy
-msgid "Document Information"
-msgstr "Сведения о документе"
-
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 #, fuzzy
 msgid "Untitled Link"
 msgstr "Ссылка без названия"
 
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Export Document"
 msgstr "Экспортировать документ"
 
 #. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Select a format to export the current document:"
 msgstr "Выберите формат для экспорта текущего документа:"
 
 #. TRANSLATORS: Export format option to save the document as a plain text file
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Plain Text (.txt)"
 msgstr "Простой текст (.txt)"
 
 #. TRANSLATORS: Export format option to save the document as an HTML file
-#: kt
+#: swift kt
 #, fuzzy
 msgid "HTML (.html)"
 msgstr "HTML (.html)"
 
 #. TRANSLATORS: Export format option to save the document as a Markdown file
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Markdown (.md)"
 msgstr "Markdown (.md)"
@@ -4244,7 +4220,7 @@ msgid "Search Term"
 msgstr "Поисковый запрос"
 
 #. TRANSLATORS: Button that opens a dropdown of previously used search terms
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Search History"
 msgstr "История поиска"
@@ -4357,30 +4333,30 @@ msgid "Custom time..."
 msgstr "Время настраивать..."
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Expanded"
 msgstr "Развернуто"
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Collapsed"
 msgstr "Свернуто"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Collapse"
 msgstr "Свернуть"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Expand"
 msgstr "Развернуть"
 
-#: kt
+#: swift kt
 msgid "This document contains {} words."
 msgstr "Этот документ содержет {} слов."
 
@@ -4393,7 +4369,7 @@ msgstr "Этот документ содержет {} слов."
 msgid "words"
 msgstr "слов"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 #, fuzzy
 msgid "Close Search"
@@ -4405,7 +4381,7 @@ msgstr "Закрыть поиск"
 msgid "Document exported"
 msgstr "Документ экспортирован"
 
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Failed to export document"
 msgstr "Не удалось экспортировать документ."
@@ -4447,13 +4423,13 @@ msgid "More Options"
 msgstr "Дополнительные параметры"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Pause Read Aloud"
 msgstr "Приостановить чтение вслух"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Read Aloud"
 msgstr "Читать вслух"
@@ -4471,49 +4447,50 @@ msgid "Elements List"
 msgstr "Список элементов"
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
-#: kt
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+#: swift kt
 #, fuzzy
 msgid "No more matches."
 msgstr "Больше совпадений нет."
 
 #. TRANSLATORS: Name of the "heading" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Heading"
 msgstr "Заголовок"
 
 #. TRANSLATORS: Name of the "link" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Link"
 msgstr "Ссылка"
 
 #. TRANSLATORS: Name of the "section" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Section"
 msgstr "Раздел"
 
 #. TRANSLATORS: Name of the "list" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "List"
 msgstr "Список"
 
 #. TRANSLATORS: Name of the "list item" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "List Item"
 msgstr "Элемент списка"
 
 #. TRANSLATORS: Name of the "table" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Table"
 msgstr "Таблица"
 
 #. TRANSLATORS: Name of the "separator" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Separator"
 msgstr "Разделитель"
@@ -4636,17 +4613,17 @@ msgstr "1,5×"
 msgid "Speech Engine"
 msgstr "Речевой движок"
 
-#: swift
+#: kt swift
 #, fuzzy
 msgid "1 book"
 msgstr "1 книга"
 
-#: swift
+#: kt swift
 #, fuzzy
 msgid "{} books"
 msgstr "{} книг"
 
-#: swift
+#: kt swift
 #, fuzzy
 msgid "..."
 msgstr "..."
@@ -4677,7 +4654,7 @@ msgstr "Пользовательский: {} минут⁣"
 #. replaced with the number. Which of the three forms is used depends on the target language's
 #. own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
 #. trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
+#: swift kt
 #, fuzzy
 msgid "This document contains {} word."
 msgstr "Этот документ содержит {} слово."
@@ -4711,7 +4688,7 @@ msgstr "{} секунда"
 msgid "{} seconds⁣"
 msgstr "{} секунд⁣"
 
-#: kt
+#: swift kt
 #, fuzzy
 msgid "This document contains {} words.⁣"
 msgstr "Этот документ содержит {} слов.⁣"
@@ -4796,7 +4773,7 @@ msgstr "Заголовок {}"
 msgid "go to heading"
 msgstr "перейти к заголовку"
 
-#: kt
+#: swift kt
 #, fuzzy
 msgid "{}, Level {}"
 msgstr "{}, Уровень {}"
@@ -4838,13 +4815,13 @@ msgid "This document does not contain pages."
 msgstr "Этот документ не содержит страниц."
 
 #. TRANSLATORS: Name of the "formula" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Formula"
 msgstr "Формула"
 
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
-#: swift
+#: kt swift
 #, fuzzy
 msgid "No matches."
 msgstr "Совпадений не найдено."
@@ -4874,31 +4851,31 @@ msgid "Dark"
 msgstr "Тёмный"
 
 #. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
-#: swift
+#: kt swift
 #, fuzzy
 msgid "High Contrast Text"
 msgstr "Высокий контраст текста"
 
 #. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Hide previous and next buttons"
 msgstr "Скрыть кнопки предыдущего и следующего"
 
 #. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
-#: swift
+#: kt swift
 #, fuzzy
 msgid "This empties the list. The documents themselves are not deleted."
 msgstr "Это очищает список. Сами документы не удаляются."
 
 #. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
-#: swift
+#: kt swift
 #, fuzzy
 msgid "{} ms"
 msgstr "{} мс"
 
 #. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Paragraph Pause"
 msgstr "Пауза между абзацами"
@@ -4908,6 +4885,29 @@ msgstr "Пауза между абзацами"
 #, fuzzy
 msgid "No other voices"
 msgstr "Нет других голосов"
+
+#. TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
+#: swift
+#, fuzzy
+msgid "Original file"
+msgstr "Исходный файл"
+
+#. TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
+#: kt
+#, fuzzy
+msgid "Settings exported"
+msgstr "Настройки экспортированы"
+
+#, fuzzy
+#~ msgid "%d char"
+#~ msgid_plural "%d chars"
+#~ msgstr[0] "%d символ"
+#~ msgstr[1] "%d символа"
+#~ msgstr[2] "%d символов"
+
+#, fuzzy
+#~ msgid "Document Information"
+#~ msgstr "Сведения о документе"
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."

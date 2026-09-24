@@ -1,7 +1,7 @@
 //! Reopening the documents that were open when the app last exited, and forgetting the ones
 //! that can no longer be reopened.
 
-use std::{path::Path, rc::Rc, sync::Mutex};
+use std::{cell::RefCell, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::config::ConfigManager;
 use wxdragon::prelude::*;
@@ -72,7 +72,37 @@ pub(super) fn schedule_restore_documents(
 		update_title_from_manager(&frame, &doc_manager.lock().unwrap());
 		rebuild_menu_bar(&frame, &doc_manager, &config);
 		doc_manager.lock().unwrap().restore_focus();
+		// A large book keeps the window busy for seconds after this, and a screen reader that
+		// was told about the focus during that stretch has nothing to read: the reader is left
+		// on a document where no key says anything until it is closed and opened again
+		// (<https://github.com/trypsynth/paperback/issues/920>). Saying it again once the queue
+		// has drained costs nothing when the first one did arrive, since focus does not move.
+		focus_again_once_settled(&frame, &doc_manager);
 	});
+}
+
+/// How long after the restore to say where focus is a second time. Long enough for the window
+/// to have finished laying out a large book, short enough that a reader who starts pressing keys
+/// straight away is not moved from under their own first keystroke.
+const FOCUS_SETTLE_DELAY_MS: i32 = 250;
+
+/// Focuses the restored document again once the window has stopped working, so a screen reader
+/// that missed the first focus while the text was still loading hears this one.
+///
+/// The one-shot `wxTimer` keeps itself alive through its single tick by the `Rc`/`RefCell` it
+/// hands its own callback, the same way delayed announcements do.
+fn focus_again_once_settled(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
+	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
+	let holder = Rc::clone(&timer_holder);
+	let doc_manager = Rc::clone(doc_manager);
+	let timer = Timer::new(frame);
+	timer.on_tick(move |_event| {
+		doc_manager.lock().unwrap().restore_focus();
+		*holder.borrow_mut() = None;
+	});
+	if timer.start(FOCUS_SETTLE_DELAY_MS, true) {
+		*timer_holder.borrow_mut() = Some(timer);
+	}
 }
 
 /// Runs `open` on every stored path in order and returns the ones it could not reopen.

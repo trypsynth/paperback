@@ -18,6 +18,8 @@ use results_list::{
 	select_results_row,
 };
 
+use crate::ui::navigation::announce;
+
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 /// How long to leave the empty results list focused before populating it. Long enough for the
 /// screen reader to settle on the (empty) list first; populating while NVDA is still deciding how
@@ -648,7 +650,7 @@ fn do_find_all(
 		(rows, origin)
 	};
 	if rows.is_empty() {
-		live_region::announce(live_region_label, &t("Not found."));
+		announce(live_region_label, t("Not found."));
 		state.switch_to_query_view();
 		state.dialog.show(true);
 		state.dialog.raise();
@@ -706,7 +708,7 @@ fn handle_result_go(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	live_region_label: StaticText,
 ) {
-	let (start, end, announce) = {
+	let (start, end, line_text) = {
 		let rows = state.result_rows.borrow();
 		let selected = results_selected_index(state.results_list).unwrap_or(0);
 		let Some(row) = rows.get(selected) else {
@@ -729,8 +731,8 @@ fn handle_result_go(
 	drop(dm);
 	state.dialog.show(false);
 	state.clear_results();
-	if !announce.trim().is_empty() {
-		navigation::announce_after_delay(frame, live_region_label, announce);
+	if !line_text.trim().is_empty() {
+		announce(live_region_label, line_text);
 	}
 }
 
@@ -782,7 +784,7 @@ fn do_find(
 	if !result.found {
 		drop(dm);
 		// TRANSLATORS: Announced when a search finds no matches in the document
-		live_region::announce(live_region_label, &t("Not found."));
+		announce(live_region_label, t("Not found."));
 		state.switch_to_query_view();
 		state.dialog.show(true);
 		state.dialog.raise();
@@ -795,7 +797,7 @@ fn do_find(
 	let dialog_was_shown = state.dialog.is_shown();
 	if result.wrapped && !dialog_was_shown {
 		// TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
-		live_region::announce(live_region_label, &t("No more results. Wrapping search."));
+		announce(live_region_label, t("No more results. Wrapping search."));
 	}
 	if result.position < 0 {
 		return;
@@ -830,7 +832,7 @@ fn do_find(
 			found_line
 		};
 		if !message.trim().is_empty() {
-			navigation::announce_after_delay(frame, live_region_label, message);
+			announce(live_region_label, message);
 		}
 	} else if result.wrapped {
 		// Find-next / Find-previous with the dialog closed. There is no focus chain
@@ -842,6 +844,6 @@ fn do_find(
 	} else if !found_line.trim().is_empty() {
 		// Find-next / Find-previous with the dialog closed and no wrap: no chain, so
 		// announce the found line directly.
-		live_region::announce(live_region_label, &found_line);
+		announce(live_region_label, found_line);
 	}
 }

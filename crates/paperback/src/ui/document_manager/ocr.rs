@@ -25,7 +25,7 @@ use super::{DocumentManager, DocumentTab};
 use crate::{
 	ocr::{self, OcrError},
 	text_window::TextWindow,
-	ui::text_render::reload_window_around,
+	ui::{navigation::announce, text_render::reload_window_around},
 };
 
 /// How many pages between spoken progress announcements during a batch OCR job.
@@ -91,7 +91,7 @@ impl DocumentManager {
 		};
 		if tab.ocr_job.is_some() {
 			// TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
-			live_region::announce(label, &t("OCR in progress."));
+			announce(label, t("OCR in progress."));
 			return;
 		}
 		let page = tab.session.current_page(offset);
@@ -103,12 +103,12 @@ impl DocumentManager {
 		let label = self.live_region_label;
 		let Some(tab) = self.active_tab() else {
 			// TRANSLATORS: Announced when batch OCR is triggered with no document open
-			live_region::announce(label, &t("No document open."));
+			announce(label, t("No document open."));
 			return;
 		};
 		if tab.ocr_job.is_some() {
 			// TRANSLATORS: Announced when batch OCR is started while another OCR job is running
-			live_region::announce(label, &t("OCR already in progress."));
+			announce(label, t("OCR already in progress."));
 			return;
 		}
 		let (start, end) = if start <= end { (start, end) } else { (end, start) };
@@ -120,7 +120,7 @@ impl DocumentManager {
 			.collect();
 		if pages.is_empty() {
 			// TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
-			live_region::announce(label, &t("No image-only pages in the given range."));
+			announce(label, t("No image-only pages in the given range."));
 			return;
 		}
 		self.spawn_ocr(pages, true);
@@ -149,7 +149,7 @@ impl DocumentManager {
 			}
 			Err(err) => {
 				tracing::warn!(error = %err, "failed to spawn the ocr worker thread");
-				live_region::announce(label, &OcrError::Failed(err.to_string()).message());
+				announce(label, OcrError::Failed(err.to_string()).message());
 			}
 		}
 	}
@@ -178,7 +178,7 @@ impl DocumentManager {
 				Err(err) => {
 					tracing::warn!(page, error = %err, "ocr failed on page");
 					if matches!(err, OcrError::NoLanguage) {
-						live_region::announce(label, &err.message());
+						announce(label, err.message());
 					}
 					continue;
 				}
@@ -217,7 +217,7 @@ impl DocumentManager {
 	pub(crate) fn announce_ocr_progress(&self, done: usize, total: usize) {
 		// TRANSLATORS: Batch OCR progress announcement; the two %d placeholders are the pages done and the total pages
 		let message = t("OCR %d of %d.").replacen("%d", &done.to_string(), 1).replacen("%d", &total.to_string(), 1);
-		live_region::announce(self.live_region_label, &message);
+		announce(self.live_region_label, message);
 	}
 
 	/// Clears the job and announces the outcome. Called on the UI thread when the worker ends.
@@ -237,7 +237,7 @@ impl DocumentManager {
 				// TRANSLATORS: Announced when OCR runs on a page but finds no recognizable text
 				t("No text found.")
 			};
-			live_region::announce(label, &message);
+			announce(label, message);
 			return;
 		}
 		let count = u64::try_from(job.recognized).unwrap_or(0);
@@ -248,7 +248,7 @@ impl DocumentManager {
 			// TRANSLATORS: Announced after batch OCR finishes; %d is the number of pages recognized
 			nt("Batch OCR complete. %d page recognized.", "Batch OCR complete. %d pages recognized.", count)
 		};
-		live_region::announce(label, &message.replacen("%d", &job.recognized.to_string(), 1));
+		announce(label, message.replacen("%d", &job.recognized.to_string(), 1));
 	}
 }
 

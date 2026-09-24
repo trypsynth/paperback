@@ -122,6 +122,14 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
+	/// Forgets everything stored about `path`: its place in the recent list, its reading
+	/// position, its bookmarks, and the hash it is filed under.
+	///
+	/// The record is dropped by path as well as by key, because the two can disagree. A key is a
+	/// hash of the file's contents, and a document whose file has since gone missing hashes to
+	/// its path instead, which is not the key it was stored under back when it could be read.
+	/// Removing only by key left such a document sitting in the All Documents list, surviving
+	/// every attempt to remove it (<https://github.com/trypsynth/paperback/issues/932>).
 	pub fn remove_document_history(&self, path: &str) {
 		if !self.initialized {
 			return;
@@ -133,6 +141,8 @@ impl ConfigManager {
 				data.recent_documents.remove(idx);
 			}
 			data.documents.remove(&key);
+			data.documents.retain(|_, doc| doc.path != path);
+			data.path_hashes.remove(path);
 		}
 		self.dirty.set(true);
 	}
@@ -178,6 +188,28 @@ mod tests {
 		config.initialized = true;
 		config.set_app_int("recent_documents_to_show", limit);
 		config
+	}
+
+	/// <https://github.com/trypsynth/paperback/issues/932>: a document whose file has gone
+	/// missing could not be removed from the All Documents list. Its key is a hash of the file's
+	/// contents, so with the file gone the key computed at removal time no longer matched the
+	/// one it was stored under, and nothing was removed.
+	#[test]
+	fn a_document_whose_file_is_gone_can_still_be_removed() {
+		use crate::util::test_support::TempDir;
+		let dir = TempDir::new("remove-missing-document");
+		let path = dir.write_str("gone.txt", "content");
+		let config = config_with_limit(10);
+		config.add_recent_document(&path);
+		config.set_document_position(&path, 42);
+		assert_eq!(config.get_all_documents(), vec![path.clone()]);
+		std::fs::remove_file(&path).expect("remove the document's file");
+		// The mapping from path to key is what would otherwise paper over the mismatch, and it
+		// is gone in the case reported: the file was hashed again while it was already missing.
+		config.data.borrow_mut().path_hashes.clear();
+		config.remove_document_history(&path);
+		assert!(config.get_all_documents().is_empty(), "the missing document should be gone from the list");
+		assert!(config.get_recent_documents().is_empty(), "and from the recent list");
 	}
 
 	#[test]

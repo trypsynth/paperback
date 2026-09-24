@@ -252,6 +252,24 @@ final class AppViewModel {
 		return tempURL
 	}
 
+	/// Copies the open document's own file, untouched, to a temporary file to be shared.
+	///
+	/// A copy rather than the file itself: the original may live behind a security-scoped URL the
+	/// share sheet cannot read once this returns.
+	func copyActiveDocumentForSharing() -> URL? {
+		guard let tab = activeTab else { return nil }
+		let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(tab.url.lastPathComponent)
+		let scopeStarted = tab.url.startAccessingSecurityScopedResource()
+		defer { if scopeStarted { tab.url.stopAccessingSecurityScopedResource() } }
+		try? FileManager.default.removeItem(at: tempURL)
+		do {
+			try FileManager.default.copyItem(at: tab.url, to: tempURL)
+		} catch {
+			return nil
+		}
+		return tempURL
+	}
+
 	// Applies a .paperback file's bookmarks/position to the active document.
 	@discardableResult
 	func importActiveDocumentSettings(from url: URL) -> Bool {

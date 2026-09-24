@@ -41,6 +41,10 @@ struct ExportDocumentSheet: View {
 	var body: some View {
 		List {
 			Section {
+				Button { shareOriginal() } label: {
+					// TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
+					Label(t("Original file"), systemImage: "doc")
+				}
 				ForEach(viewModel.supportedExportFormats, id: \.self) { format in
 					Button { export(format) } label: {
 						Label(format.menuLabel, systemImage: format.systemImage)
@@ -54,17 +58,7 @@ struct ExportDocumentSheet: View {
 		// TRANSLATORS: Navigation title of the screen for exporting the current document to another file format
 		.navigationTitle(t("Export Document"))
 		.navigationBarTitleDisplayMode(.inline)
-		.fileMover(
-			isPresented: Binding(get: { exportURL != nil }, set: { if !$0 { exportURL = nil } }),
-			file: exportURL
-		) { result in
-			exportURL = nil
-			if case .failure = result {
-				failed = true
-			} else {
-				dismiss()
-			}
-		}
+		.shareSheet(for: $exportURL) { dismiss() }
 		// TRANSLATORS: Title of the alert shown when exporting the document to another file format fails
 		.alert(t("Export Document"), isPresented: $failed) {
 			// TRANSLATORS: OK button dismissing the failed document export alert
@@ -78,6 +72,14 @@ struct ExportDocumentSheet: View {
 
 	private func export(_ format: ExportFormat) {
 		guard let url = viewModel.exportActiveDocument(as: format) else {
+			failed = true
+			return
+		}
+		exportURL = url
+	}
+
+	private func shareOriginal() {
+		guard let url = viewModel.copyActiveDocumentForSharing() else {
 			failed = true
 			return
 		}

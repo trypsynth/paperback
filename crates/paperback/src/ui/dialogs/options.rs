@@ -16,11 +16,11 @@ use crate::{
 };
 
 mod font;
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "windows")]
 mod hotkey;
 
 use font::{color_description, font_description, show_font_picker};
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "windows")]
 use hotkey::prompt_for_hotkey;
 
 /// Selectable audio seek amounts, in seconds, shown in the Options dialog and indexed by
@@ -243,8 +243,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	// Global window hotkeys are a Windows-only concept (see start_hotkey_listener in
-	// main_window.rs); macOS has no equivalent, so this button isn't built there.
-	#[cfg(not(target_os = "macos"))]
+	// main_window.rs); macOS and Linux have no equivalent, so this button isn't built there.
+	#[cfg(target_os = "windows")]
 	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
 	// TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
@@ -253,13 +253,13 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	general_sizer.add(&restore_docs_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&auto_reload_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&start_maximized_check, 0, SizerFlag::All, option_padding);
-	#[cfg(not(target_os = "macos"))]
+	#[cfg(target_os = "windows")]
 	general_sizer.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
-	#[cfg(target_os = "macos")]
+	#[cfg(not(target_os = "windows"))]
 	minimize_to_tray_check.show(false);
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
-	#[cfg(not(target_os = "macos"))]
+	#[cfg(target_os = "windows")]
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&shortcuts_button, 0, SizerFlag::All, option_padding);
 	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
@@ -472,7 +472,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	};
 	update_channel_combo.set_selection(channel_index);
 	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
-	#[cfg(not(target_os = "macos"))]
+	#[cfg(target_os = "windows")]
 	{
 		let hotkey_state = Rc::clone(&current_hotkey);
 		let hotkey_dialog_parent = dialog;

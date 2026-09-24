@@ -8,7 +8,7 @@ use std::{
 use std::{cell::RefCell, sync::atomic::AtomicIsize};
 
 use paperback_core::config::ConfigManager;
-use patois::{nt, t};
+use patois::t;
 use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
@@ -45,6 +45,8 @@ use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
 mod foreground;
 #[cfg(target_os = "windows")]
 pub(crate) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
+
+use crate::ui::navigation::announce;
 
 pub struct MainWindow {
 	frame: Frame,
@@ -130,7 +132,7 @@ impl MainWindow {
 				&& let Ok(new_index) = usize::try_from(new_index)
 				&& let Some(tab) = dm_ref.get_tab(new_index)
 			{
-				live_region::announce(live_region_label, &display_title(tab));
+				announce(live_region_label, display_title(tab));
 			}
 		});
 		let reload_guard = Rc::new(Cell::new(false));
@@ -495,28 +497,8 @@ impl MainWindow {
 	}
 
 	fn update_title(&self) {
-		let Ok(dm) = self.doc_manager.try_lock() else {
-			return;
-		};
-		if dm.tab_count() == 0 {
-			// TRANSLATORS: Main window title when no document is open
-			self.frame.set_title(&t("Paperback"));
-			#[cfg(target_os = "macos")]
-			self.frame.set_represented_filename("");
-			// TRANSLATORS: Default status bar text when no document is open
-			self.frame.set_status_text(&t("Ready"), 0);
-			return;
-		}
-		if let Some(tab) = dm.active_tab() {
-			// TRANSLATORS: Window title when a document is open; {} is the document title
-			let template = t("{} - Paperback");
-			self.frame.set_title(&template.replace("{}", &display_title(tab)));
-			#[cfg(target_os = "macos")]
-			self.frame.set_represented_filename(&tab.file_path.to_string_lossy());
-			// TRANSLATORS: Status bar character count. The %d placeholder is replaced with the number of characters.
-			let char_count = tab.session.content().len();
-			let chars_label = nt("%d char", "%d chars", char_count as u64).replacen("%d", &char_count.to_string(), 1);
-			self.frame.set_status_text(&chars_label, 0);
+		if let Ok(dm) = self.doc_manager.try_lock() {
+			update_title_from_manager(&self.frame, &dm);
 		}
 	}
 
@@ -583,7 +565,7 @@ pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_reg
 	};
 	let next = dm.active_index_after_closing(index).and_then(|i| dm.get_tab(i)).map(display_title);
 	if let Some(next) = &next {
-		live_region::announce(live_region_label, next);
+		announce(live_region_label, next);
 	}
 	dm.close_document(index, true);
 }
