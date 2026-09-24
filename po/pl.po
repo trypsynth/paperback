@@ -3575,9 +3575,13 @@ msgstr "Następny element: {}"
 msgid "Press play to start listening."
 msgstr "Naciśnij przycisk odtwarzania, aby rozpocząć słuchanie."
 
-#: kt
-msgid "Document Information"
-msgstr "Informacje o dokumencie"
+#. TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
+#: swift
+msgid "Original file"
+msgstr "Oryginalny plik"
+
+#~ msgid "Document Information"
+#~ msgstr "Informacje o dokumencie"
 
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
