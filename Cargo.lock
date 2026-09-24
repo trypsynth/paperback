@@ -2643,9 +2643,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "patois"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d737b1aaacfdc4aac90e572d964429ea85bbf31ad865652b4f7a646d4e08d3a"
+checksum = "2d8a7a8ed1b780906a3ee4cfb797cf467c0a758176701c10fd783ca0f2d39938"
 dependencies = [
  "inventory",
  "patois-macros",

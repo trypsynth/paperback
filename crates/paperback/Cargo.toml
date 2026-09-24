@@ -20,7 +20,7 @@ image = { version = "0.25.10", default-features = false, features = ["png"] }
 live-region = "0.3.2"
 paperback-core = { path = "../paperback-core" }
 paperback-formats = { path = "../paperback-formats" }
-patois = { version = "0.2.1", features = ["ui"] }
+patois = { version = "0.2.2", features = ["ui"] }
 # Decodes and plays DAISY narration in process. Recording and dithering are off: neither is
 # used, and both pull dependencies of their own. The symphonia extras cover the formats a
 # DAISY book can name that rodio's defaults leave out.
