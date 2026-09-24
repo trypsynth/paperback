@@ -644,9 +644,9 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Korjattu sisällysluettelon jäsennys EPUB 2 -kirjoissa.
 * Korjattu siirtyminen sisällysluettelon seuraavaan samalla kirjaimella alkavaan kohteeseen.
 * Korjattu Etsi-valintaikkuna, jota ei aina piilotettu oikein Seuraava/Edellinen-painikkeita käytettäessä.
-* Korjattu virhe, jossa EPUB-kirjojen sisällysluettelot siirsivät toisinaan väärään kohtaan.
+* Korjattu virhe, jonka vuoksi EPUB-kirjojen sisällysluettelot siirsivät toisinaan väärään kohtaan.
 * Korjattu useita välilyöntien käsittelyyn liittyviä ongelmia XML-, HTML- ja pre-tageissa.
-* Korjattu virhe, jossa linkkien välillä siirtyminen oli yhden kohdan verran pielessä.
+* Korjattu virhe, jonka vuoksi linkkien välillä siirtyminen oli yhden kohdan verran pielessä.
 * Korjattu joissakin kirjoissa esiintynyt rivien loppuun jäävä ylimääräinen välilyönti.
 * Korjattu useita jäsentimen ongelmia.
 * Kirjanmerkkeihin liittyvät valikkokohdat sekä elementtilista poistetaan nyt käytöstä asianmukaisesti, kun yhtään asiakirjaa ei ole avoinna.
@@ -661,9 +661,9 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Lisätty asetus, jolla Paperback käynnistyy oletusarvoisesti suurennettuna.
 * Korjattu joidenkin EPUB-asiakirjojen virheellisesti toimineet linkit.
 * Korjattu suhteellisia polkuja sisältävien EPUB-kirjojen sisällysluetteloiden jäsennys.
-* Korjattu virhe, jossa nimeä tai tekijää ei näytetty joissakin EPUB-asiakirjoissa.
-* Korjattu virhe, jossa joidenkin EPUB-asiakirjojen lukujen nimet eivät näkyneet oikein sisällysluettelovalintaikkunassa.
-* Korjattu virhe, jossa sisällysluettelovalintaikkunan OK- tai Peruuta-painikkeita ei voinut painaa välilyöntinäppäimellä.
+* Korjattu virhe, jonka vuoksi nimeä tai tekijää ei näytetty joissakin EPUB-asiakirjoissa.
+* Korjattu virhe, jonka vuoksi joidenkin EPUB-asiakirjojen lukujen nimet eivät näkyneet oikein sisällysluetteloikkunassa.
+* Korjattu virhe, jonka vuoksi sisällysluetteloikkunan OK- tai Peruuta-painikkeita ei voinut painaa välilyöntinäppäimellä.
 * Otsikoiden käsittelyä parannettu Word-asiakirjoissa.
 * Paperback antaa nyt äänipalautteen yritettäessä avata "Viimeksi avatut asiakirjat" -valintaikkunaa, kun luettelo on tyhjä.
 
@@ -683,7 +683,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Suurten Markdown-asiakirjojen lataaminen korjattu.
 * Välilyöntinäppäimen painaminen sisällysluettelon puurakenteessa ei enää paina OK-painiketta.
 * Välilyöntien käsittely korjattu pre-tagien alussa sekä HTML- että XHTML-asiakirjoissa.
-* Korjattu virhe, jossa kohdistus ei siirtynyt takaisin tekstikenttään Paperbackin ikkunaan palattaessa.
+* Korjattu virhe, jonka vuoksi kohdistus ei siirtynyt takaisin tekstikenttään Paperbackin ikkunaan palattaessa.
 * "Siirry prosenttiin" -valintaikkunan tekstikenttä päivittää nyt oikein liukusäätimen arvon.
 * Mukautettujen HTML ID -tunnisteiden renderöinti korjattu Markdown-asiakirjoissa.
 * Markdown-koodilohkojen sisällä oleva HTML renderöidään nyt oikein.
@@ -708,10 +708,10 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 ### Versio 0.5.0
 * Lisätty Microsoft Word -asiakirjojen tuki.
 * Lisätty PowerPoint-esityksien tuki.
-* Korjattu virhe, jossa tietyt valikkokohteet eivät poistuneet käytöstä, kun yhtään asiakirjaa ei ollut avoinna.
+* Korjattu virhe, jonka vuoksi tietyt valikkokohteet eivät poistuneet käytöstä, kun yhtään asiakirjaa ei ollut avoinna.
 * Korjattu "siirry prosenttiin" -liukusäätimen suunta.
 * Korjattu EPUB-kirjojen sisällysluettelot, joissa oli URL-koodattuja tiedostopolkuja ja/tai fragmenttitunnuksia.
-* Korjattu ongelma, jossa XHTML-otsikoissa olevat välilyönnit poistettiin oudosti.
+* Korjattu ongelma, jonka vuoksi XHTML-otsikoissa olevat välilyönnit poistettiin oudosti.
 * Korjattu HTML-asiakirjojen sisäkkäisten pre-tagien sisällä olevien välilyöntien käsittely.
 * HTML- ja Markdown-asiakirjat tukevat nyt sisällysluetteloa. Kun HTML- tai Markdown-asiakirja ladataan, Paperback muodostaa sisällysluettelon asiakirjan otsikkorakenteesta ja näyttää sen Ctrl+T-näppäinkomennolla avattavassa valintaikkunassa.
 * HTML-asiakirjoissa käytetään nyt title-tagin mukaista otsikkoa, mikäli sellainen on määritetty. Muutoin käytetään edelleen tiedoston nimeä ilman tunnistetta.
