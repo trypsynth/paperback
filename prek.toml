@@ -16,8 +16,8 @@ repo = "local"
 hooks = [
 	{
 		id = "cargo-fmt",
-		name = "cargo fmt",
-		entry = "cargo +nightly fmt --",
+		name = "cargo fmt (pinned nightly)",
+		entry = "cargo +nightly-2026-09-22 fmt --",
 		language = "system",
 		types = ["rust"],
 		pass_filenames = false,

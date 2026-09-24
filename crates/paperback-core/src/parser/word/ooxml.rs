@@ -153,8 +153,7 @@ fn build_style_heading_map<R: Read + Seek>(archive: &mut ZipArchive<R>) -> HashM
 						let lower = val.to_lowercase();
 						if lower.starts_with("heading")
 							&& let Some(n) = extract_number_from_string(val)
-							&& n > 0
-							&& n <= 9
+							&& n > 0 && n <= 9
 						{
 							heading_level = Some(n);
 						}

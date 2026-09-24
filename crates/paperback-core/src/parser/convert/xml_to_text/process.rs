@@ -31,8 +31,7 @@ impl XmlToText {
 					return;
 				}
 				if let Some(target) = self.position_watch
-					&& self.in_body
-					&& self.text.get_current_text_position() <= target
+					&& self.in_body && self.text.get_current_text_position() <= target
 				{
 					self.watched_byte_offset = Some(node.range().start);
 				}
