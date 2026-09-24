@@ -3562,13 +3562,11 @@ msgstr "Réinitialiser tous les raccourcis de cet onglet à leurs valeurs par d�
 msgid "Reset Shortcuts"
 msgstr "Réinitialiser les raccourcis"
 
-#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 #: swift
 #, fuzzy
 msgid "Export Document Data"
 msgstr "Exporter les données du document"
 
-#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
 #: swift
 #, fuzzy
 msgid "Import Document Data"
@@ -3694,7 +3692,6 @@ msgstr "Erreur d'ouverture"
 msgid "Open Book"
 msgstr "Livre ouvert"
 
-#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
 #: swift
 #, fuzzy
 msgid "Locate"
@@ -3742,19 +3739,19 @@ msgstr "Synthèse vocale"
 msgid "Voice"
 msgstr "Voix"
 
-#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 #, fuzzy
 msgid "Rate"
 msgstr "Taux"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
 #: swift
 #, fuzzy
 msgid "Speech Rate"
 msgstr "Débit de parole"
 
-#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 #, fuzzy
 msgid "Pitch"
@@ -3856,7 +3853,7 @@ msgstr "Caractères (espaces non compris)"
 msgid "Mode"
 msgstr "Mode"
 
-#. TRANSLATORS: Name of the "page" reading/navigation unit
+#. TRANSLATORS: Go To mode option: navigate to a specific page number
 #: swift
 #, fuzzy
 msgid "Page"
@@ -3886,7 +3883,6 @@ msgstr "Numéro de page"
 msgid "Percentage"
 msgstr "Pourcentage"
 
-#. TRANSLATORS: Navigation title of the Go To sheet
 #: swift
 #, fuzzy
 msgid "Go To"
@@ -3928,7 +3924,7 @@ msgstr "Champ d'application"
 msgid "Word"
 msgstr "Mot"
 
-#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 #, fuzzy
 msgid "Paragraph"
@@ -4153,11 +4149,6 @@ msgstr "Suivant {}"
 msgid "Press play to start listening."
 msgstr "Cliquez sur « Lecture » pour commencer à écouter."
 
-#: kt
-#, fuzzy
-msgid "Document Information"
-msgstr "Informations du document"
-
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 #, fuzzy
@@ -4282,7 +4273,7 @@ msgstr "Pas maintenant"
 msgid "Custom Timer"
 msgstr "Minuterie personnalisée"
 
-#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
+#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
 #: kt
 #, fuzzy
 msgid "Back"
@@ -4368,7 +4359,7 @@ msgstr "Ce document contient {} mots."
 msgid "words"
 msgstr "mots"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 #, fuzzy
 msgid "Close Search"
@@ -4446,6 +4437,7 @@ msgid "Elements List"
 msgstr "Liste des éléments"
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
 #: kt
 #, fuzzy
 msgid "No more matches."
@@ -4753,7 +4745,6 @@ msgstr "Chemin actuel : {}"
 msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, modifié {}{}"
 
-#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
 #: kt
 #, fuzzy
 msgid "{} percent"
@@ -4883,6 +4874,10 @@ msgstr "Pause entre paragraphes"
 #, fuzzy
 msgid "No other voices"
 msgstr "Aucune autre voix"
+
+#, fuzzy
+#~ msgid "Document Information"
+#~ msgstr "Informations du document"
 
 #, fuzzy
 #~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."

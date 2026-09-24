@@ -3061,12 +3061,10 @@ msgstr ""
 msgid "Reset Shortcuts"
 msgstr ""
 
-#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 #: swift
 msgid "Export Document Data"
 msgstr ""
 
-#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
 #: swift
 msgid "Import Document Data"
 msgstr ""
@@ -3171,7 +3169,6 @@ msgstr ""
 msgid "Open Book"
 msgstr ""
 
-#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
 #: swift
 msgid "Locate"
 msgstr ""
@@ -3211,17 +3208,17 @@ msgstr ""
 msgid "Voice"
 msgstr ""
 
-#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 msgid "Rate"
 msgstr ""
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
 #: swift
 msgid "Speech Rate"
 msgstr ""
 
-#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 msgid "Pitch"
 msgstr ""
@@ -3306,7 +3303,7 @@ msgstr ""
 msgid "Mode"
 msgstr ""
 
-#. TRANSLATORS: Name of the "page" reading/navigation unit
+#. TRANSLATORS: Go To mode option: navigate to a specific page number
 #: swift
 msgid "Page"
 msgstr ""
@@ -3331,7 +3328,6 @@ msgstr ""
 msgid "Percentage"
 msgstr ""
 
-#. TRANSLATORS: Navigation title of the Go To sheet
 #: swift
 msgid "Go To"
 msgstr ""
@@ -3366,7 +3362,7 @@ msgstr ""
 msgid "Word"
 msgstr ""
 
-#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 msgid "Paragraph"
 msgstr ""
@@ -3554,10 +3550,6 @@ msgstr ""
 msgid "Press play to start listening."
 msgstr ""
 
-#: kt
-msgid "Document Information"
-msgstr ""
-
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 msgid "Untitled Link"
@@ -3661,7 +3653,7 @@ msgstr ""
 msgid "Custom Timer"
 msgstr ""
 
-#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
+#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
 #: kt
 msgid "Back"
 msgstr ""
@@ -3733,7 +3725,7 @@ msgstr ""
 msgid "words"
 msgstr ""
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr ""
@@ -3798,6 +3790,7 @@ msgid "Elements List"
 msgstr ""
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
 #: kt
 msgid "No more matches."
 msgstr ""
@@ -4056,7 +4049,6 @@ msgstr ""
 msgid "{}, {}, modified {}{}"
 msgstr ""
 
-#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
 #: kt
 msgid "{} percent"
 msgstr ""
