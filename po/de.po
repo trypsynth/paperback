@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 19:11+0000\n"
-"PO-Revision-Date: 2026-09-24 20:35+0200\n"
+"POT-Creation-Date: 2026-09-24 08:33-0600\n"
+"PO-Revision-Date: 2026-09-24 20:59+0200\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language: de\n"
@@ -510,7 +510,6 @@ msgid "Bookmark with &Note"
 msgstr "Lesezeichen mit &Notiz"
 
 #. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
-#| msgid "No Selection"
 msgid "Set Selection St&art"
 msgstr "Auswahl&anfang festlegen"
 
@@ -710,7 +709,6 @@ msgid "1 document selected."
 msgstr "1 Dokument ausgewählt."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count. Plural form is chosen by that count.
-#| msgid "All Documents"
 msgid "All %d document selected."
 msgid_plural "All %d documents selected."
 msgstr[0] "Alle %d Dokument ausgewählt."
@@ -731,7 +729,6 @@ msgid "Batch OCR"
 msgstr "Texterkennung (Stapelverarbeitung)"
 
 #. TRANSLATORS: Label for the starting page field of the Batch OCR range
-#| msgid "&Start maximized"
 msgid "&Start page:"
 msgstr "&Erste Seite:"
 
@@ -1506,7 +1503,6 @@ msgid "Full screen off."
 msgstr "Vollbild ausgeschaltet."
 
 #. TRANSLATORS: Announced when landing on a blank line; %d is the line number
-#| msgid "Line"
 msgid "Line %d"
 msgstr "Zeile %d"
 
@@ -1617,18 +1613,13 @@ msgid "Paperback cannot perform any actions while Web View is open."
 msgstr ""
 "Paperback kann keine Aktionen ausführen, während Web-View geöffnet ist."
 
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "{} - Paperback"
-msgstr "{} - Paperback"
-
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d Zeichen"
-msgstr[1] "%d chars"
-
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Das Dokument konnte nicht exportiert werden."
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 msgid "&Undo\tCtrl+Z"
@@ -3044,14 +3035,12 @@ msgstr[0] "%d Stunde"
 msgstr[1] "%d Stunden"
 
 #. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-#| msgid "1 minute"
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d Minute"
 msgstr[1] "%d Minuten"
 
 #. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-#| msgid "1 second"
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d Sekunde"
@@ -3637,7 +3626,6 @@ msgstr "HTML (.html)"
 
 #. TRANSLATORS: Export format option to save the document as a Markdown file
 #: swift kt
-#| msgid "Markdown"
 msgid "Markdown (.md)"
 msgstr "Markdown (.md)"
 
@@ -3915,7 +3903,6 @@ msgstr "{} Sekunden"
 
 #. TRANSLATORS: Shown next to a permission on the onboarding screen once it has been granted
 #: kt
-#| msgid "Grant"
 msgid "✓ Granted"
 msgstr "✓ Zugelassen"
 
@@ -4071,7 +4058,6 @@ msgstr "{} Sekunde"
 #. Translations.kt). The "many" form's trailing character isn't a typo — see
 #. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
-#| msgid "seconds"
 msgid "{} seconds⁣"
 msgstr "{} Sekunden⁣"
 
@@ -4153,7 +4139,6 @@ msgstr ""
 
 #. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
 #: kt
-#| msgid "Currently Open"
 msgid "Current path: {}"
 msgstr "Aktueller Pfad: {}"
 
@@ -4280,6 +4265,11 @@ msgstr "Originaldatei"
 #: kt
 msgid "Settings exported"
 msgstr "Einstellungen exportiert"
+
+#~ msgid "%d char"
+#~ msgid_plural "%d chars"
+#~ msgstr[0] "%d Zeichen"
+#~ msgstr[1] "%d chars"
 
 #~ msgid "&Locate…"
 #~ msgstr "&Finden…"
