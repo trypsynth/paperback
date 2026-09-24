@@ -6,7 +6,19 @@ on:
   pull_request:
     branches:
       - master
+    # A pull request that only moves translations or documentation does not change any of these
+    # packages, and building all eight of them is the most expensive thing this repository does.
+    paths-ignore:
+      - 'po/**'
+      - 'doc/**'
+      - 'web/**'
+      - 'README.md'
   workflow_dispatch:
+# One run per branch at a time. The release job below keeps its own queue, so a cancelled run
+# cannot leave a half-published set of assets behind.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
