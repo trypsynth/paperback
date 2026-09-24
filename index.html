@@ -2,107 +2,122 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Home &ndash; Paperback</title>
+	<meta name="description" content="Paperback is a fast, fully accessible ebook and document reader for Windows, macOS, Linux, iOS and Android. Free, open source, and no telemetry." />
+	<meta name="color-scheme" content="light dark" />
+	<link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
-	<header>
-		<a href="#content-anchor">Skip to main content</a>
-		<nav>
-			<ul style="list-style-type:none;">
-				
+	<a class="skip-link" href="#content-anchor">Skip to main content</a>
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="/">Paperback</a>
+			<nav class="site-nav" aria-label="Main">
+				<ul>
 					
 					
-						<li><a href="/">Home</a></li>
 					
-				
+						
+						
+							<li><a href="/" aria-current="page">Home</a></li>
+						
 					
+						
+						
+							<li><a href="/downloads">Downloads</a></li>
+						
 					
-						<li><a href="/downloads">Downloads</a></li>
+						
+						
+							<li><a href="/readme.html">Documentation</a></li>
+						
 					
-				
+						
+						
+							<li><a href="/translations">Translations</a></li>
+						
 					
-					
-						<li><a href="/readme.html">Documentation</a></li>
-					
-				
-					
-					
-						<li><a href="/translations">Translations</a></li>
-					
-				
-					
-					
-						<li><a href="/privacy">Privacy Policy</a></li>
-					
-				
-					
-					
-						<li><a href="/licenses">Licenses</a></li>
-					
-				
-					
-					
-						<li><a href="https://github.com/trypsynth/paperback">Source code</a></li>
-					
-				
-					
-					
-						<li><a href="https://github.com/sponsors/trypsynth">Sponsor on GitHub</a></li>
-					
-				
-					
-					
-						<li><a href="https://paypal.me/tygillespie05">Donate with PayPal</a></li>
-					
-				
-			</ul>
-		</nav>
+				</ul>
+			</nav>
+		</div>
 	</header>
 	<main>
 		<div id="content-anchor"></div>
 
-<h1>Paperback</h1>
-<p>Paperback is a fully accessible, fast, and native ebook and document reader for Windows, macOS, and Linux, with Android and iOS apps in development.</p>
+<div class="hero">
+<h1>Read anything, on anything</h1>
+<p class="lede">Paperback is a fast, fully accessible reader for ebooks, documents and audio books. It runs on Windows, macOS, Linux, iOS and Android, speaks fifteen languages, and opens over twenty formats. Free, open source, and it collects nothing.</p>
+<ul class="cta">
+<li><a href="/downloads">Download Paperback</a></li>
+<li><a href="/readme.html">Read the manual</a></li>
+</ul>
+</div>
+<h2>Why Paperback</h2>
+<div class="cards">
+<div class="card">
+<h3>Built for screen readers</h3>
+<p>Not retrofitted. Every list, dialog and reading control was designed against NVDA, JAWS, VoiceOver and TalkBack, and the whole program works from the keyboard.</p>
+</div>
+<div class="card">
+<h3>Fast on old hardware</h3>
+<p>Books open in a moment, even the large ones. There is no web view, no framework and no splash screen to sit through.</p>
+</div>
+<div class="card">
+<h3>Navigate like a browser</h3>
+<p>Move by heading, link, page, table, list or formula with single keys, the same way your screen reader moves through a web page.</p>
+</div>
+<div class="card">
+<h3>Read aloud</h3>
+<p>Your own voice, rate and pitch, a sleep timer, and bookmarks that come back to the exact place. Audio books play their own recording instead.</p>
+</div>
+<div class="card">
+<h3>Private by default</h3>
+<p>No account, no analytics, no advertising. Your library, your place in it and your bookmarks stay on your device.</p>
+</div>
+<div class="card">
+<h3>Yours to change</h3>
+<p>MIT licensed, with the source, the issue tracker and the translations all in the open.</p>
+</div>
+</div>
 <h2>Platforms</h2>
 <ul>
-<li><strong>Windows</strong> – installer and portable builds, for x64 and ARM64</li>
-<li><strong>macOS</strong> – signed and notarized, so it just works with no security warnings</li>
-<li><strong>Linux</strong> – AppImage installer and portable builds, for x64 and ARM64</li>
-<li><strong>Android</strong> – in development, coming to Google Play, with read-aloud and background playback</li>
-<li><strong>iOS</strong> – in development, coming to the App Store</li>
+<li><strong>Windows</strong> – installer and portable builds, for x64 and ARM64. Windows 10 and later.</li>
+<li><strong>macOS</strong> – signed and notarized, so it opens with no security warnings.</li>
+<li><strong>Linux</strong> – AppImage or tar.gz, for x64 and ARM64, with desktop integration so documents open from your file manager.</li>
+<li><strong>iOS</strong> – on the App Store, for iPhone and iPad, iOS 17 and later.</li>
+<li><strong>Android</strong> – on Google Play, Android 7 and later, with read-aloud that keeps playing in the background.</li>
 </ul>
-<h2>Supported formats</h2>
-<ul>
-<li>CHM (Compiled HTML Help)</li>
-<li>DAISY</li>
-<li>DOCX and DOC (Microsoft Word)</li>
+<h2>Formats</h2>
+<ul class="columns">
+<li>Comic book archives (.cbz)</li>
+<li>CHM help files</li>
+<li>DAISY books</li>
 <li>EPUB</li>
 <li>FB2</li>
 <li>HTML</li>
-<li>M4B audiobooks</li>
+<li>Manual pages (man and mdoc)</li>
 <li>Markdown</li>
-<li>MOBI, AZW, and AZW3 (Kindle)</li>
-<li>ODP and FODP (OpenDocument Presentations)</li>
-<li>ODT and FODT (OpenDocument Text)</li>
-<li>PDF</li>
-<li>PPTX and PPT (PowerPoint)</li>
+<li>Microsoft Word (.docx, .doc, and Word 6 and 95)</li>
+<li>M4B audio books</li>
+<li>MOBI, AZW and AZW3 (Kindle)</li>
+<li>MP3 audio books</li>
+<li>OpenDocument text and presentations</li>
+<li>PDF, including scanned PDFs through OCR</li>
+<li>PowerPoint (.pptx, .ppt)</li>
+<li>reStructuredText</li>
 <li>RTF</li>
-<li>Plain text</li>
+<li>Windows Write (.wri)</li>
+<li>WinHelp (.hlp)</li>
+<li>Plain text and log files</li>
 </ul>
-<h2>Features</h2>
-<h3>Accessible by design</h3>
-<p>Built from the ground up for accessibility: full screen reader support and clear keyboard navigation across the entire application.</p>
-<h3>Fast and lightweight</h3>
-<p>Opens instantly and runs smoothly even on older hardware. Optimized for performance and battery life.</p>
-<h3>Open source and private</h3>
-<p>Paperback is open source under the MIT license and collects no telemetry. Your library stays on your device.</p>
-<h3>Multilingual</h3>
-<p>Paperback is translated into multiple languages by contributors around the world:</p>
-<ul>
+<h2>Languages</h2>
+<ul class="columns">
 <li>Bosnian</li>
 <li>Chinese (Simplified)</li>
 <li>Czech</li>
 <li>Dutch</li>
+<li>English</li>
 <li>Finnish</li>
 <li>French</li>
 <li>German</li>
@@ -112,13 +127,49 @@
 <li>Russian</li>
 <li>Serbian</li>
 <li>Spanish</li>
+<li>Ukrainian</li>
 <li>Vietnamese</li>
 </ul>
-<p>Want to add your language? See the <a href="/translations">translation guide</a>.</p>
+<p>Want to add your language? Read the <a href="/translations">translation guide</a>.</p>
 
 	</main>
-	<footer>
-		Copyright &copy; 2025-2026 Quin Gillespie. All rights reserved.
+	<footer class="site-footer">
+		<div class="wrap">
+			<nav class="site-nav" aria-label="More">
+				<ul>
+					
+					
+					
+						
+						
+							<li><a href="https://github.com/trypsynth/paperback">Source code</a></li>
+						
+					
+						
+						
+							<li><a href="https://github.com/sponsors/trypsynth">Sponsor on GitHub</a></li>
+						
+					
+						
+						
+							<li><a href="https://paypal.me/tygillespie05">Donate with PayPal</a></li>
+						
+					
+						
+						
+							<li><a href="/privacy">Privacy Policy</a></li>
+						
+					
+						
+						
+							<li><a href="/licenses">Licenses</a></li>
+						
+					
+				</ul>
+			</nav>
+			<p>Paperback is free software under the MIT license.</p>
+			<p>Copyright &copy; 2025-2026 Quin Gillespie. All rights reserved.</p>
+		</div>
 	</footer>
 </body>
 </html>
