@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 6564745fd3218b1a; sections: 84030068,db723a70,df2f4c18,14335443,91be3b41,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2afffa4b3f966e85; sections: 84030068,db723a70,df2f4c18,14335443,d44bf4c8,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
 
 # Paperback - versão 1.0
 
@@ -29,13 +29,19 @@ Paperback funciona no Windows 10/11, em todas as versões modernas de ARM macOS,
 
 ## Compatibilidade com Leitores de Tela
 
-Paperback funciona bem com todos os leitores de tela principais. Há, porém, um problema conhecido para usuários de JAWS.
+O Paperback funciona bem com todos os principais leitores de tela. Porém, há um problema conhecido para usuários do JAWS.
 
 ### JAWS e Displays Braille
 
-Se você usar JAWS com um display Braille, pode descobrir que parágrafos longos são truncados ao fazer panorâmica para frente com as teclas de navegação do seu display. O comando de leitura do parágrafo atual também é afetado. Este é um bug no tratamento do JAWS do controle de texto RICHEDIT50W, não algo no próprio Paperback, e um que levou bastante tempo para deixar uma correção aparecer, dado o entusiasmo da Vispero em responder a problemas com software de código aberto.
+Se você usar JAWS com um display Braille, pode descobrir que parágrafos longos são truncados ao navegar para frente com as teclas de navegação do seu display. O comando de leitura do parágrafo atual também é afetado. Este é um bug no tratamento do controle de texto RICHEDIT50W pelo JAWS, não algo no próprio Paperback, e um que demorou bastante para que uma correção viesse à tona, dada a falta de entusiasmo da Vispero em responder a problemas de software de código aberto.
 
-A solução alternativa, eventualmente encontrada através do grupo de discussão do JAWS após meses de espera, é editar `paperback.jcf` e definir "Braille Presentation and Panning" como "Always use DOM if available". Você também vai querer ativar "Pan Text by Paragraph", caso contrário seu display permanecerá no parágrafo ativo em vez de avançar. Com ambas as configurações em vigor, a panorâmica deve funcionar corretamente.
+A solução alternativa, eventualmente descoberta através do grupo de discussão do JAWS após meses de espera, é editar `paperback.jcf` e definir "Braille Presentation and Panning" como "Always use DOM if available". Você também vai querer ativar "Pan Text by Paragraph", caso contrário seu display permanecerá no parágrafo ativo em vez de avançar. Com ambas as configurações em vigor, a navegação deve funcionar corretamente.
+
+### JAWS e as mensagens do Paperback
+
+O Paperback diz coisas como "No pages." ou "This document has no audio." como notificações de acessibilidade, o que permite que um leitor de tela as fale sobre qualquer outra coisa que esteja dizendo. O JAWS só age sobre elas quando "Enable accessible notification events" está ativado para a aplicação, e em algumas máquinas não está.
+
+Se o JAWS não disser nada quando você pressionar uma tecla que deveria informar algo, abra o Settings Center com o Paperback em primeiro plano (`Insert+6`), procure por "notification", e marque "Enable accessible notification events". Isso escreve a configuração em `paperback.jcf`, então se aplica apenas ao Paperback.
 
 ## Tipos de arquivo atualmente suportados
 

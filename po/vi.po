@@ -283,8 +283,9 @@ msgstr "Thoát khỏi ứng dụng"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous section of the document.
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Previous Section"
-msgstr ""
+msgstr "Phần Trước"
 
 #. TRANSLATORS: Status-bar help text for the Go > Previous Section menu item.
 #, fuzzy
@@ -293,8 +294,9 @@ msgstr "Chuyển đến phần trước"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next section of the document.
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Section"
-msgstr ""
+msgstr "Phần Tiếp Theo"
 
 #. TRANSLATORS: Status-bar help text for the Go > Next Section menu item.
 #, fuzzy
@@ -302,8 +304,9 @@ msgid "Go to next section"
 msgstr "Chuyển sang phần tiếp theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous heading of any level in the document.
+#, fuzzy
 msgid "&Previous Heading"
-msgstr ""
+msgstr "&Tiêu Đề Trước"
 
 #. TRANSLATORS: Status-bar help text for the Go > Previous Heading menu item.
 #, fuzzy
@@ -311,8 +314,9 @@ msgid "Go to previous heading"
 msgstr "Chuyển đến tiêu đề trước đó"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next heading of any level in the document.
+#, fuzzy
 msgid "&Next Heading"
-msgstr ""
+msgstr "&Tiêu Đề Tiếp Theo"
 
 #. TRANSLATORS: Status-bar help text for the Go > Next Heading menu item.
 #, fuzzy
@@ -320,58 +324,70 @@ msgid "Go to next heading"
 msgstr "Đi tới tiêu đề tiếp theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous level-1 heading in the document.
+#, fuzzy
 msgid "Previous Heading Level &1"
-msgstr ""
+msgstr "Tiêu Đề Cấp &1 Trước"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next level-1 heading in the document.
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Heading Level 1"
-msgstr ""
+msgstr "Tiêu Đề Cấp 1 Tiếp Theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous level-2 heading in the document.
+#, fuzzy
 msgid "Previous Heading Level &2"
-msgstr ""
+msgstr "Tiêu Đề Cấp &2 Trước"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next level-2 heading in the document.
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Heading Level 2"
-msgstr ""
+msgstr "Tiêu Đề Cấp 2 Tiếp Theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous level-3 heading in the document.
+#, fuzzy
 msgid "Previous Heading Level &3"
-msgstr ""
+msgstr "Tiêu Đề Cấp &3 Trước"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next level-3 heading in the document.
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Heading Level 3"
-msgstr ""
+msgstr "Tiêu Đề Cấp 3 Tiếp Theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous level-4 heading in the document.
+#, fuzzy
 msgid "Previous Heading Level &4"
-msgstr ""
+msgstr "Tiêu Đề Cấp &4 Trước"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next level-4 heading in the document.
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Heading Level 4"
-msgstr ""
+msgstr "Tiêu Đề Cấp 4 Tiếp Theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous level-5 heading in the document.
+#, fuzzy
 msgid "Previous Heading Level &5"
-msgstr ""
+msgstr "Tiêu Đề Cấp &5 Trước"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next level-5 heading in the document.
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Heading Level 5"
-msgstr ""
+msgstr "Tiêu Đề Cấp 5 Tiếp Theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous level-6 heading in the document.
+#, fuzzy
 msgid "Previous Heading Level &6"
-msgstr ""
+msgstr "Tiêu Đề Cấp &6 Trước"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next level-6 heading in the document.
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Heading Level 6"
-msgstr ""
+msgstr "Tiêu Đề Cấp 6 Tiếp Theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous page.
 #, fuzzy
@@ -384,12 +400,14 @@ msgid "Next Pag&e"
 msgstr "Trang &tiếp theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous link in the document.
+#, fuzzy
 msgid "Previous Lin&k"
-msgstr ""
+msgstr "Liên &Kết Trước"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next link in the document.
+#, fuzzy
 msgid "Next Lin&k"
-msgstr ""
+msgstr "Liên &Kết Tiếp Theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous image in the document.
 #, fuzzy
@@ -417,8 +435,9 @@ msgid "Previous &Table"
 msgstr "Bảng &trước"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next table in the document.
+#, fuzzy
 msgid "Next &Table"
-msgstr ""
+msgstr "Bảng Tiếp &Theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
 #, fuzzy
@@ -461,8 +480,9 @@ msgid "Next List I&tem"
 msgstr "Mục &danh sách tiếp theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move back to the previous position in navigation history.
+#, fuzzy
 msgid "Go &Back"
-msgstr ""
+msgstr "Quay &Lại"
 
 #. TRANSLATORS: Menu item in the Go menu to move forward to the next position in navigation history.
 #, fuzzy
@@ -480,8 +500,9 @@ msgid "Go to the start of the current list or table"
 msgstr "Chuyển đến đầu danh sách hoặc bảng hiện tại"
 
 #. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
+#, fuzzy
 msgid "Past Container &End"
-msgstr ""
+msgstr "&Cuối Vùng Chứa"
 
 #. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
 #, fuzzy
@@ -489,8 +510,9 @@ msgid "Go past the end of the current list or table"
 msgstr "Di chuyển qua phần cuối của danh sách hoặc bảng hiện tại"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+#, fuzzy
 msgid "&Previous Bookmark"
-msgstr ""
+msgstr "&Dấu Trang Trước"
 
 #. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
 #, fuzzy
@@ -498,8 +520,9 @@ msgid "Go to previous bookmark"
 msgstr "Chuyển đến dấu trang trước đó"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+#, fuzzy
 msgid "&Next Bookmark"
-msgstr ""
+msgstr "&Dấu Trang Tiếp Theo"
 
 #. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
 #, fuzzy
@@ -507,8 +530,9 @@ msgid "Go to next bookmark"
 msgstr "Chuyển đến dấu trang tiếp theo"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
+#, fuzzy
 msgid "Previous &Note"
-msgstr ""
+msgstr "Ghi &Chú Trước"
 
 #. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
 #, fuzzy
@@ -516,8 +540,9 @@ msgid "Go to previous note"
 msgstr "Quay lại ghi chú trước đó"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+#, fuzzy
 msgid "Next N&ote"
-msgstr ""
+msgstr "Ghi Chú Tiếp &Theo"
 
 #. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
 #, fuzzy
@@ -525,8 +550,9 @@ msgid "Go to next note"
 msgstr "Chuyển sang ghi chú tiếp theo"
 
 #. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+#, fuzzy
 msgid "Jump to &All..."
-msgstr ""
+msgstr "Nhảy &Tới Tất Cả..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
 #, fuzzy
@@ -2048,8 +2074,9 @@ msgid "Navigate by containers"
 msgstr "Điều hướng theo container"
 
 #. TRANSLATORS: Menu item in the Help menu to show information about the application.
+#, fuzzy
 msgid "&About Paperback"
-msgstr ""
+msgstr "&Về Paperback"
 
 #. TRANSLATORS: Status-bar help text for the Help > About Paperback menu item.
 #, fuzzy
@@ -2057,8 +2084,9 @@ msgid "About this application"
 msgstr "Giới thiệu về ứng dụng này"
 
 #. TRANSLATORS: Menu item in the Help menu to open the help documentation in the user's web browser.
+#, fuzzy
 msgid "View Help in &Browser"
-msgstr ""
+msgstr "Xem Trợ Giúp trong &Trình Duyệt"
 
 #. TRANSLATORS: Status-bar help text for the Help > View Help in Browser menu item.
 #, fuzzy
@@ -2196,8 +2224,9 @@ msgid "Reveal document in the file manager"
 msgstr "Hiển thị tài liệu trong trình quản lý tệp"
 
 #. TRANSLATORS: Menu item in the Tools menu to open the document in a web view.
+#, fuzzy
 msgid "Open in &Web View"
-msgstr ""
+msgstr "Mở trong &Chế Độ Web"
 
 #. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
 #, fuzzy
@@ -2245,8 +2274,9 @@ msgid "Toggle word wrap"
 msgstr "Bật/tắt tính năng tự động xuống dòng"
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
+#, fuzzy
 msgid "&Full Screen"
-msgstr ""
+msgstr "&Toàn Màn Hình"
 
 #. TRANSLATORS: Status-bar help text for the Full Screen menu item.
 #, fuzzy
@@ -2651,8 +2681,9 @@ msgid "Close All"
 msgstr "Đóng tất cả"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Reopen Last Closed"
-msgstr ""
+msgstr "Mở Lại Cuối Cùng Đã Đóng"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2765,12 +2796,14 @@ msgid "Previous Heading Level 6"
 msgstr "Tiêu Đề Cấp 6 Trước"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Previous Page"
-msgstr ""
+msgstr "Trang Trước"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Page"
-msgstr ""
+msgstr "Trang Tiếp Theo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2798,12 +2831,14 @@ msgid "Jump to All Bookmarks..."
 msgstr "Chuyển đến tất cả dấu trang..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Jump to Bookmarks Only..."
-msgstr ""
+msgstr "Nhảy Tới Dấu Trang Chỉ..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Jump to Notes Only..."
-msgstr ""
+msgstr "Nhảy Tới Ghi Chú Chỉ..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2821,24 +2856,29 @@ msgid "Next Link"
 msgstr "Liên Kết Tiếp Theo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Previous Image"
-msgstr ""
+msgstr "Hình Ảnh Trước"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Image"
-msgstr ""
+msgstr "Hình Ảnh Tiếp Theo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Previous Figure"
-msgstr ""
+msgstr "Hình Trước"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Figure"
-msgstr ""
+msgstr "Hình Tiếp Theo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Previous Table"
-msgstr ""
+msgstr "Bảng Trước"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2856,32 +2896,39 @@ msgid "Next Formula"
 msgstr "Kết quả tiếp theo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Previous Separator"
-msgstr ""
+msgstr "Dấu Phân Cách Trước"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next Separator"
-msgstr ""
+msgstr "Dấu Phân Cách Tiếp Theo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Previous List"
-msgstr ""
+msgstr "Danh Sách Trước"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next List"
-msgstr ""
+msgstr "Danh Sách Tiếp Theo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Previous List Item"
-msgstr ""
+msgstr "Mục Danh Sách Trước"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Next List Item"
-msgstr ""
+msgstr "Mục Danh Sách Tiếp Theo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Container Start"
-msgstr ""
+msgstr "Đầu Vùng Chứa"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2894,8 +2941,9 @@ msgid "Elements List..."
 msgstr "Danh Sách Phần Tử..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Reveal File in Folder"
-msgstr ""
+msgstr "Hiển Thị Tệp trong Thư Mục"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2903,12 +2951,14 @@ msgid "Open in Web View"
 msgstr "Mở trong Chế Độ Web"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "View Source"
-msgstr ""
+msgstr "Xem Mã Nguồn"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Toggle Bookmark"
-msgstr ""
+msgstr "Bật/Tắt Dấu Trang"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -3006,8 +3056,9 @@ msgid "Export Document Data..."
 msgstr "Xuất dữ liệu tài liệu..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Export to Plain Text..."
-msgstr ""
+msgstr "Xuất sang Văn Bản Thuần..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -3616,36 +3667,30 @@ msgstr "Đặt lại tất cả phím tắt trong tab này về giá trị mặc
 msgid "Reset Shortcuts"
 msgstr "Đặt lại các phím tắt"
 
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Export Document Data"
 msgstr "Xuất dữ liệu tài liệu"
 
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Import Document Data"
 msgstr "Nhập dữ liệu tài liệu"
 
-#. TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
-#: swift
-#, fuzzy
-msgid "Settings exported"
-msgstr "Các cài đặt đã được xuất"
-
 #. TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Failed to export settings"
 msgstr "Không thể xuất cài đặt"
 
 #. TRANSLATORS: Confirmation shown after importing a document's settings and bookmarks from a .paperback file
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Settings imported"
 msgstr "Đã nhập cài đặt"
 
 #. TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Failed to import settings"
 msgstr "Không thể nhập cài đặt"
@@ -3663,19 +3708,18 @@ msgid "More options"
 msgstr "Các tùy chọn khác"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Switch to TTS Mode"
 msgstr "Chuyển sang chế độ TTS"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Switch to Text Mode"
 msgstr "Chuyển sang chế độ văn bản"
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Recent Documents"
 msgstr "Tài liệu gần đây"
@@ -3711,25 +3755,25 @@ msgid "No document open"
 msgstr "Không có tài liệu nào đang mở"
 
 #. TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Show All"
 msgstr "Hiển thị tất cả"
 
 #. TRANSLATORS: Toggle label; when on, search matching is case-sensitive
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Match Case"
 msgstr "Phân biệt chữ hoa/thường"
 
 #. TRANSLATORS: Toggle label; when on, search only matches whole words
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Whole Word"
 msgstr "Toàn bộ từ"
 
 #. TRANSLATORS: Toggle label; when on, the search query is treated as a regular expression
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Regular Expression"
 msgstr "Biểu thức chính quy"
@@ -3741,30 +3785,29 @@ msgid "Open Error"
 msgstr "Lỗi mở"
 
 #. TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Open Book"
 msgstr "Sách mở"
 
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Locate"
 msgstr "Định vị"
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Remove"
 msgstr "Xóa"
 
 #. TRANSLATORS: Status label for a recent document whose file can no longer be found
-#: swift
+#: kt swift
 #, fuzzy
 msgid "File Missing"
 msgstr "Tệp bị thiếu"
 
 #. TRANSLATORS: Status label for a recent document that's currently open in a tab
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Currently Open"
 msgstr "Hiện đang mở"
@@ -3788,7 +3831,7 @@ msgid "Text to Speech"
 msgstr "Chuyển văn bản thành lời nói"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Voice"
 msgstr "Giọng nói"
@@ -3799,14 +3842,14 @@ msgstr "Giọng nói"
 msgid "Rate"
 msgstr "Tỷ lệ"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
-#: swift
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+#: kt swift
 #, fuzzy
 msgid "Speech Rate"
 msgstr "Tốc độ lời nói"
 
 #. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Pitch"
 msgstr "Góc nghiêng"
@@ -3818,31 +3861,31 @@ msgid "Speech Dictionary"
 msgstr "Từ điển phát âm"
 
 #. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Play Sample"
 msgstr "Nghe bản mẫu"
 
 #. TRANSLATORS: Row label for the control that scales the size of document text
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Text Size"
 msgstr "Kích thước văn bản"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Line Spacing"
 msgstr "Khoảng Cách Dòng"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Paragraph Spacing"
 msgstr "Khoảng Cách Đoạn"
 
 #. TRANSLATORS: Label for the picker choosing how document text is aligned
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Alignment"
 msgstr "Văn bản và căn chỉnh:"
@@ -3860,43 +3903,43 @@ msgid "Restore last open documents"
 msgstr "Khôi phục các tài liệu đã mở gần đây nhất"
 
 #. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Swipe up moves forward"
 msgstr "Vuốt lên để chuyển sang trang tiếp theo"
 
 #. TRANSLATORS: Row label for the document's title in the Document Info sheet
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Title"
 msgstr "Tiêu đề"
 
 #. TRANSLATORS: Row label for the document's author in the Document Info sheet
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Author"
 msgstr "Tác giả"
 
 #. TRANSLATORS: Row label for the document's total word count
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Words"
 msgstr "Từ"
 
 #. TRANSLATORS: Row label for the document's total line count
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Lines"
 msgstr "Các dòng"
 
 #. TRANSLATORS: Row label for the document's total character count (including spaces)
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Characters"
 msgstr "Ký tự"
 
 #. TRANSLATORS: Row label for the document's character count with whitespace excluded
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Characters (excluding spaces)"
 msgstr "Số ký tự (không tính khoảng trắng)"
@@ -3907,8 +3950,8 @@ msgstr "Số ký tự (không tính khoảng trắng)"
 msgid "Mode"
 msgstr "Chế độ"
 
-#. TRANSLATORS: Go To mode option: navigate to a specific page number
-#: swift
+#. TRANSLATORS: Name of the "page" reading/navigation unit
+#: kt swift
 #, fuzzy
 msgid "Page"
 msgstr "Trang"
@@ -3932,12 +3975,12 @@ msgid "Page number"
 msgstr "Số trang"
 
 #. TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Percentage"
 msgstr "Phần trăm"
 
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Go To"
 msgstr "Chuyển đến"
@@ -3978,8 +4021,8 @@ msgstr "Phạm vi"
 msgid "Word"
 msgstr "Word"
 
-#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
-#: swift
+#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
+#: kt swift
 #, fuzzy
 msgid "Paragraph"
 msgstr "Đoạn văn"
@@ -4090,7 +4133,7 @@ msgid "Duration"
 msgstr "Thời lượng"
 
 #. TRANSLATORS: Placeholder in the custom sleep timer duration field, asking for a number of minutes
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Minutes"
 msgstr "Biên bản"
@@ -4156,25 +4199,25 @@ msgid "This document has no table of contents."
 msgstr "Tài liệu này không có mục lục."
 
 #. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Navigation unit"
 msgstr "Bộ điều hướng"
 
 #. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Previous {}"
 msgstr "Bài trước: {}"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Pause"
 msgstr "Tạm dừng"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Play"
 msgstr "Chơi"
@@ -4192,7 +4235,7 @@ msgid "Beginning of document"
 msgstr "Đầu tài liệu"
 
 #. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Next {}"
 msgstr "Tiếp theo{}"
@@ -4209,31 +4252,31 @@ msgstr "Nhấn nút phát để bắt đầu nghe."
 msgid "Untitled Link"
 msgstr "Liên kết không có tiêu đề"
 
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Export Document"
 msgstr "Xuất tài liệu"
 
 #. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Select a format to export the current document:"
 msgstr "Chọn định dạng để xuất tài liệu hiện tại:"
 
 #. TRANSLATORS: Export format option to save the document as a plain text file
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Plain Text (.txt)"
 msgstr "Văn bản thuần túy (.txt)"
 
 #. TRANSLATORS: Export format option to save the document as an HTML file
-#: kt
+#: swift kt
 #, fuzzy
 msgid "HTML (.html)"
 msgstr "HTML (.html)"
 
 #. TRANSLATORS: Export format option to save the document as a Markdown file
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Markdown (.md)"
 msgstr "Markdown (.md)"
@@ -4263,7 +4306,7 @@ msgid "Search Term"
 msgstr "Từ khóa tìm kiếm"
 
 #. TRANSLATORS: Button that opens a dropdown of previously used search terms
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Search History"
 msgstr "Lịch sử tìm kiếm"
@@ -4327,7 +4370,7 @@ msgstr "Không phải bây giờ"
 msgid "Custom Timer"
 msgstr "Bộ hẹn giờ tùy chỉnh"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 #, fuzzy
 msgid "Back"
@@ -4376,30 +4419,30 @@ msgid "Custom time..."
 msgstr "Thời gian tùy chỉnh..."
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Expanded"
 msgstr "Đã mở rộng"
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Collapsed"
 msgstr "Đã thu gọn"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Collapse"
 msgstr "Thu gọn"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Expand"
 msgstr "Mở rộng"
 
-#: kt
+#: swift kt
 #, fuzzy
 msgid "This document contains {} words."
 msgstr "Tài liệu này chứa {} từ."
@@ -4425,7 +4468,7 @@ msgstr "Đóng tìm kiếm"
 msgid "Document exported"
 msgstr "Tài liệu đã xuất"
 
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Failed to export document"
 msgstr "Xuất tài liệu thất bại."
@@ -4467,13 +4510,13 @@ msgid "More Options"
 msgstr "Các tùy chọn khác"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Pause Read Aloud"
 msgstr "Tạm dừng Đọc to"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Read Aloud"
 msgstr "Đọc to"
@@ -4492,49 +4535,49 @@ msgstr "Danh sách các phần tử"
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
-#: kt
+#: swift kt
 #, fuzzy
 msgid "No more matches."
 msgstr "Không còn trận đấu nào."
 
 #. TRANSLATORS: Name of the "heading" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Heading"
 msgstr "Tiêu đề"
 
 #. TRANSLATORS: Name of the "link" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Link"
 msgstr "Liên kết"
 
 #. TRANSLATORS: Name of the "section" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Section"
 msgstr "Phần"
 
 #. TRANSLATORS: Name of the "list" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "List"
 msgstr "Danh sách"
 
 #. TRANSLATORS: Name of the "list item" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "List Item"
 msgstr "Mục trong danh sách"
 
 #. TRANSLATORS: Name of the "table" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Table"
 msgstr "Bảng"
 
 #. TRANSLATORS: Name of the "separator" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Separator"
 msgstr "Dấu phân cách"
@@ -4657,17 +4700,17 @@ msgstr "1.5×"
 msgid "Speech Engine"
 msgstr "Động cơ nói"
 
-#: swift
+#: kt swift
 #, fuzzy
 msgid "1 book"
 msgstr "1 cuốn sách"
 
-#: swift
+#: kt swift
 #, fuzzy
 msgid "{} books"
 msgstr "{} cuốn sách"
 
-#: swift
+#: kt swift
 #, fuzzy
 msgid "..."
 msgstr "..."
@@ -4698,7 +4741,7 @@ msgstr "Tùy chỉnh: {} phút⁣"
 #. replaced with the number. Which of the three forms is used depends on the target language's
 #. own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
 #. trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
+#: swift kt
 #, fuzzy
 msgid "This document contains {} word."
 msgstr "Tài liệu này chứa {} từ."
@@ -4732,7 +4775,7 @@ msgstr "{} giây"
 msgid "{} seconds⁣"
 msgstr "{} giây⁣"
 
-#: kt
+#: swift kt
 #, fuzzy
 msgid "This document contains {} words.⁣"
 msgstr "Tài liệu này chứa {} từ.⁣"
@@ -4799,6 +4842,7 @@ msgstr "Đường dẫn hiện tại: {}"
 msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, sửa đổi {}{}"
 
+#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
 #: kt
 #, fuzzy
 msgid "{} percent"
@@ -4816,7 +4860,7 @@ msgstr "Tiêu đề {}"
 msgid "go to heading"
 msgstr "đi đến tiêu đề"
 
-#: kt
+#: swift kt
 #, fuzzy
 msgid "{}, Level {}"
 msgstr "{}, Cấp {}"
@@ -4858,13 +4902,13 @@ msgid "This document does not contain pages."
 msgstr "Tài liệu này không chứa các trang."
 
 #. TRANSLATORS: Name of the "formula" reading/navigation unit
-#: kt
+#: swift kt
 #, fuzzy
 msgid "Formula"
 msgstr "Công thức"
 
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
-#: swift
+#: kt swift
 #, fuzzy
 msgid "No matches."
 msgstr "Không có kết quả khớp."
@@ -4894,31 +4938,31 @@ msgid "Dark"
 msgstr "Tối"
 
 #. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
-#: swift
+#: kt swift
 #, fuzzy
 msgid "High Contrast Text"
 msgstr "Văn bản độ tương phản cao"
 
 #. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Hide previous and next buttons"
 msgstr "Ẩn nút trước và tiếp theo"
 
 #. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
-#: swift
+#: kt swift
 #, fuzzy
 msgid "This empties the list. The documents themselves are not deleted."
 msgstr "Điều này làm trống danh sách. Các tài liệu chính nó không bị xóa."
 
 #. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
-#: swift
+#: kt swift
 #, fuzzy
 msgid "{} ms"
 msgstr "{} ms"
 
 #. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Paragraph Pause"
 msgstr "Tạm dừng Đoạn văn"
@@ -4928,6 +4972,18 @@ msgstr "Tạm dừng Đoạn văn"
 #, fuzzy
 msgid "No other voices"
 msgstr "Không có giọng nói khác"
+
+#. TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
+#: swift
+#, fuzzy
+msgid "Original file"
+msgstr "Tệp gốc"
+
+#. TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
+#: kt
+#, fuzzy
+msgid "Settings exported"
+msgstr "Các cài đặt đã được xuất"
 
 #, fuzzy
 #~ msgid "Document Information"
