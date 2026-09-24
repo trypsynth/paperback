@@ -1512,7 +1512,7 @@ msgstr "Kan de documentbron niet laden."
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
-msgstr "Platte-tekstbestanden (*.txt)|*.txt|Alle bestanden (*.*)|*.*"
+msgstr "Plattetekstbestanden (*.txt)|*.txt|Alle bestanden (*.*)|*.*"
 
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
@@ -2630,15 +2630,15 @@ msgstr "[Alleen afbeelding. Deze pagina heeft geen tekst om te lezen.]"
 
 #. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
 msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
-msgstr "Paperback kan geen RAR-comic-archieven lezen. Pak het opnieuw in als .cbz om het hier te lezen."
+msgstr "Paperback kan geen RAR-comicarchieven lezen. Pak het opnieuw in als .cbz om het hier te lezen."
 
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
-msgstr "Comic-archief verwerken mislukt: {}"
+msgstr "Comicarchief verwerken mislukt: {}"
 
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 msgid "This comic archive contains no pages."
-msgstr "Dit comic-archief bevat geen pagina's."
+msgstr "Dit comicarchief bevat geen pagina's."
 
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
@@ -2726,7 +2726,7 @@ msgstr "Niet-ondersteunde compressiemodus ({})"
 
 #. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
 msgid "Invalid record offsets"
-msgstr "Ongeldige record-offsets"
+msgstr "Ongeldige recordoffsets"
 
 #. TRANSLATORS: Error shown when a MOBI file has no records
 msgid "No records found"
@@ -2762,7 +2762,7 @@ msgstr "Ongeldige HUFF-header"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman cache table offset is out of bounds
 msgid "Invalid HUFF cache offset"
-msgstr "Ongeldige HUFF-cache-offset"
+msgstr "Ongeldige HUFF-cacheoffset"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman code length is invalid
 msgid "Code len out of bounds"
@@ -2786,7 +2786,7 @@ msgstr "Ongeldige CDIC-offsets"
 
 #. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase offset is out of bounds
 msgid "Invalid CDIC phrase offset"
-msgstr "Ongeldige CDIC-frase-offset"
+msgstr "Ongeldige CDIC-fraseoffset"
 
 #. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase length is out of bounds
 msgid "Invalid CDIC phrase length"
@@ -2798,7 +2798,7 @@ msgstr "Ongeldige code_len {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
 msgid "Decode stack overflow"
-msgstr "Stack-overflow bij decoderen"
+msgstr "Stackoverflow bij decoderen"
 
 #. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
 msgid "File too short"
@@ -2950,7 +2950,7 @@ msgid "&No"
 msgstr "&Nee"
 
 msgid "No release notes provided."
-msgstr "Geen release-opmerkingen beschikbaar."
+msgstr "Geen releaseopmerkingen beschikbaar."
 
 msgid "%s Update"
 msgstr "%s-update"
@@ -4152,7 +4152,6 @@ msgstr "Geen andere stemmen"
 
 #. TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
 #: swift
-#, fuzzy
 msgid "Original file"
 msgstr "Origineel bestand"
 

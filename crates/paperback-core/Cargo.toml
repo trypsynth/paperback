@@ -38,7 +38,7 @@ lofty = "0.25.4"
 mp4ameta = "0.13.0"
 office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
-patois = "0.2.1"
+patois = "0.2.2"
 pdfium-render = { version = "0.9.4", default-features = false, features = ["pdfium_latest", "thread_safe"] }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.4", default-features = false, features = ["html"] }
