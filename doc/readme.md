@@ -27,7 +27,7 @@ Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iO
 
 ## Screen Reader Compatibility
 
-Paperback works well with all major screen readers. There is, however, one known issue for JAWS users.
+Paperback works well with all major screen readers. There are, however, two known issues for JAWS users.
 
 ### JAWS and Braille Displays
 

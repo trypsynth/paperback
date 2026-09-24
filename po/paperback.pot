@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 19:11+0000\n"
+"POT-Creation-Date: 2026-09-24 08:13-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1575,17 +1575,12 @@ msgstr ""
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr ""
 
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "{} - Paperback"
-msgstr ""
-
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] ""
-msgstr[1] ""
-
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
+msgstr ""
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
 msgstr ""
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
