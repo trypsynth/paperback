@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 6564745fd3218b1a; sections: 84030068,db723a70,df2f4c18,14335443,91be3b41,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2afffa4b3f966e85; sections: 84030068,db723a70,df2f4c18,14335443,d44bf4c8,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -29,13 +29,19 @@ Paperback draait op Windows 10/11, alle moderne versies van macOS op ARM, Linux,
 
 ## Schermlezercompatibiliteit
 
-Paperback werkt goed met alle bekende schermlezers. Er is echter één bekend probleem voor JAWS-gebruikers.
+Paperback werkt goed met alle grote schermezers. Er is echter een bekend probleem voor JAWS-gebruikers.
 
 ### JAWS en brailleleesregels
 
-Als je JAWS met een brailleleesregel gebruikt, kan het zijn dat lange alinea's worden afgekapt wanneer je met de navigatietoetsen van je leesregel vooruit scrolt. Het commando om de huidige alinea te lezen heeft er ook last van. Dit is een bug in de manier waarop JAWS omgaat met het tekstbesturingselement RICHEDIT50W, niet iets in Paperback zelf, en een bug waarvoor het behoorlijk lang heeft geduurd voordat er een oplossing boven water kwam, gezien het enthousiasme waarmee Vispero reageert op problemen met opensourcesoftware.
+Als je JAWS gebruikt met een brailleleesregel, kan het voorkomen dat lange alinea's worden afgekapt wanneer je vooruit bladert met de navigatietoetsen van je display. Het commando voor het lezen van de huidige alinea wordt ook beïnvloed. Dit is een fout in de manier waarop JAWS de RICHEDIT50W-tekstbesturingselement verwerkt, niet iets in Paperback zelf. Het duurde lange tijd voordat een oplossing beschikbaar kwam, gegeven Vispero's enthousiasme voor het reageren op problemen met open source-software.
 
-De workaround, die na maanden wachten uiteindelijk via de JAWS-discussiegroep boven water kwam, is om `paperback.jcf` te bewerken en "Braille Presentation and Panning" op "Always use DOM if available" te zetten. Schakel ook "Pan Text by Paragraph" in, anders blijft je leesregel op de actieve alinea staan in plaats van verder te gaan. Met beide instellingen zou scrollen correct moeten werken.
+De tijdelijke oplossing, uiteindelijk gevonden via de JAWS-discussiegroep na maanden wachten, is om `paperback.jcf` te bewerken en "Braille Presentation and Panning" in te stellen op "Always use DOM if available". Je wilt ook "Pan Text by Paragraph" inschakelen, anders blijft je display op de actieve alinea staan in plaats van verder te gaan. Met beide instellingen op hun plaats zou bladeren correct moeten werken.
+
+### JAWS en berichten van Paperback
+
+Paperback geeft meldingen zoals "No pages." of "This document has no audio." als toegankelijkheidsmeldingen, waardoor een schermlezer deze kan uitspreken boven wat het anders zegt. JAWS reageert daar alleen op wanneer "Enable accessible notification events" is ingeschakeld voor de applicatie, en op sommige machines is dit niet het geval.
+
+Als JAWS niets zegt wanneer je een toets indrukt die iets zou moeten rapporteren, open je het instellingencentrum met Paperback op de voorgrond (`Insert+6`), zoek naar "notification" en vink "Enable accessible notification events" aan. Dit schrijft de instelling naar `paperback.jcf`, zodat deze alleen op Paperback van toepassing is.
 
 ## Momenteel ondersteunde bestandstypen
 

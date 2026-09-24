@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 6564745fd3218b1a; sections: 84030068,db723a70,df2f4c18,14335443,91be3b41,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2afffa4b3f966e85; sections: 84030068,db723a70,df2f4c18,14335443,d44bf4c8,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -27,15 +27,21 @@ Paperback chạy trên Windows 10/11, tất cả các phiên bản ARM macOS hi�
 * Mọi phím tắt bàn phím có thể được thay đổi.
 * Đi kèm với `pb`, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy.
 
-## Tương thích trình đọc màn hình
+## Khả năng tương thích với Trình đọc màn hình
 
-Paperback hoạt động tốt với tất cả các trình đọc màn hình chính. Tuy nhiên, có một vấn đề đã biết cho người dùng JAWS.
+Paperback hoạt động tốt với tất cả các trình đọc màn hình chính. Tuy nhiên, có một vấn đề đã biết đối với người dùng JAWS.
 
 ### JAWS và Màn hình Braille
 
-Nếu bạn sử dụng JAWS với màn hình Braille, bạn có thể thấy rằng các đoạn văn dài bị cắt ngắn khi xoay tiến với các phím điều hướng của màn hình của bạn. Lệnh đọc đoạn hiện tại cũng bị ảnh hưởng. Đây là một lỗi trong cách xử lý điều khiển văn bản RICHEDIT50W của JAWS, không phải là điều gì trong chính Paperback, và một lỗi mất khá lâu để tìm ra một bản sửa chữa cho nó do sự nhiệt tình của Vispero trong việc phản ứng với các vấn đề liên quan đến phần mềm mã nguồn mở.
+Nếu bạn sử dụng JAWS với màn hình Braille, bạn có thể thấy rằng các đoạn văn dài bị cắt ngắn khi di chuyển tiến với các phím điều hướng của màn hình của bạn. Lệnh đọc đoạn hiện tại cũng bị ảnh hưởng. Đây là một lỗi trong cách JAWS xử lý điều khiển văn bản RICHEDIT50W, không phải điều gì trong chính Paperback, và lỗi này đã mất khá lâu để tìm ra cách sửa chữa do sự nhiệt tình của Vispero trong việc phản hồi các vấn đề với phần mềm mã nguồn mở.
 
-Giải pháp, cuối cùng được tìm ra thông qua nhóm thảo luận JAWS sau nhiều tháng chờ đợi, là chỉnh sửa `paperback.jcf` và đặt "Braille Presentation and Panning" thành "Always use DOM if available". Bạn cũng sẽ muốn bật "Pan Text by Paragraph", nếu không màn hình của bạn sẽ ở lại đoạn hoạt động thay vì tiến lên. Với cả hai cài đặt này, xoay tiến sẽ hoạt động chính xác.
+Cách khắc phục, cuối cùng được tìm thấy thông qua nhóm thảo luận JAWS sau nhiều tháng chờ đợi, là chỉnh sửa `paperback.jcf` và đặt "Braille Presentation and Panning" thành "Always use DOM if available". Bạn cũng muốn bật "Pan Text by Paragraph", nếu không màn hình của bạn sẽ ở lại đoạn văn đang hoạt động thay vì tiến lên. Với cả hai cài đặt được thiết lập, di chuyển pan sẽ hoạt động bình thường.
+
+### JAWS và các thông báo của Paperback
+
+Paperback nói những điều như "No pages." hoặc "This document has no audio." như các thông báo về khả năng tiếp cận, đó là điều cho phép trình đọc màn hình phát âm chúng trên bất kỳ những gì nó đang nói. JAWS chỉ hoạt động trên những thông báo đó khi "Enable accessible notification events" được bật cho ứng dụng, và trên một số máy tính nó không phải vậy.
+
+Nếu JAWS không nói gì khi bạn nhấn một phím mà nó nên báo cáo điều gì, hãy mở Settings Center với Paperback ở trước (`Insert+6`), tìm kiếm "notification", và đánh dấu "Enable accessible notification events". Điều đó ghi cài đặt vào `paperback.jcf`, vì vậy nó chỉ áp dụng cho Paperback.
 
 ## Các loại tệp hiện được hỗ trợ
 

@@ -3065,31 +3065,26 @@ msgstr "Alle sneltoetsen op dit tabblad naar de standaardwaarden herstellen?"
 msgid "Reset Shortcuts"
 msgstr "Sneltoetsen herstellen"
 
-#: swift
+#: kt swift
 msgid "Export Document Data"
 msgstr "Documentgegevens exporteren"
 
-#: swift
+#: kt swift
 msgid "Import Document Data"
 msgstr "Documentgegevens importeren"
 
-#. TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
-#: swift
-msgid "Settings exported"
-msgstr "Instellingen geëxporteerd"
-
 #. TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
-#: swift
+#: kt swift
 msgid "Failed to export settings"
 msgstr "Instellingen exporteren mislukt"
 
 #. TRANSLATORS: Confirmation shown after importing a document's settings and bookmarks from a .paperback file
-#: swift
+#: kt swift
 msgid "Settings imported"
 msgstr "Instellingen geïmporteerd"
 
 #. TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
-#: swift
+#: kt swift
 msgid "Failed to import settings"
 msgstr "Instellingen importeren mislukt"
 
@@ -3104,17 +3099,16 @@ msgid "More options"
 msgstr "Meer opties"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 msgid "Switch to TTS Mode"
 msgstr "Overschakelen naar TTS-modus"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 msgid "Switch to Text Mode"
 msgstr "Overschakelen naar tekstmodus"
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
-#: swift
+#: kt swift
 msgid "Recent Documents"
 msgstr "Recente documenten"
 
@@ -3144,22 +3138,22 @@ msgid "No document open"
 msgstr "Geen document geopend"
 
 #. TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
-#: swift
+#: kt swift
 msgid "Show All"
 msgstr "Alles tonen"
 
 #. TRANSLATORS: Toggle label; when on, search matching is case-sensitive
-#: swift
+#: kt swift
 msgid "Match Case"
 msgstr "Hoofdlettergevoelig"
 
 #. TRANSLATORS: Toggle label; when on, search only matches whole words
-#: swift
+#: kt swift
 msgid "Whole Word"
 msgstr "Heel woord"
 
 #. TRANSLATORS: Toggle label; when on, the search query is treated as a regular expression
-#: swift
+#: kt swift
 msgid "Regular Expression"
 msgstr "Reguliere expressie"
 
@@ -3169,26 +3163,25 @@ msgid "Open Error"
 msgstr "Fout bij openen"
 
 #. TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
-#: swift
+#: kt swift
 msgid "Open Book"
 msgstr "Boek openen"
 
-#: swift
+#: kt swift
 msgid "Locate"
 msgstr "Terugvinden"
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
-#: swift
+#: kt swift
 msgid "Remove"
 msgstr "Verwijderen"
 
 #. TRANSLATORS: Status label for a recent document whose file can no longer be found
-#: swift
+#: kt swift
 msgid "File Missing"
 msgstr "Bestand ontbreekt"
 
 #. TRANSLATORS: Status label for a recent document that's currently open in a tab
-#: swift
+#: kt swift
 msgid "Currently Open"
 msgstr "Momenteel geopend"
 
@@ -3208,7 +3201,7 @@ msgid "Text to Speech"
 msgstr "Tekst-naar-spraak"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
-#: swift
+#: kt swift
 msgid "Voice"
 msgstr "Stem"
 
@@ -3217,13 +3210,13 @@ msgstr "Stem"
 msgid "Rate"
 msgstr "Snelheid"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
-#: swift
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+#: kt swift
 msgid "Speech Rate"
 msgstr "Spreeksnelheid"
 
 #. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
-#: swift
+#: kt swift
 msgid "Pitch"
 msgstr "Toonhoogte"
 
@@ -3233,27 +3226,27 @@ msgid "Speech Dictionary"
 msgstr "Uitspraakwoordenboek"
 
 #. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
-#: swift
+#: kt swift
 msgid "Play Sample"
 msgstr "Voorbeeld afspelen"
 
 #. TRANSLATORS: Row label for the control that scales the size of document text
-#: swift
+#: kt swift
 msgid "Text Size"
 msgstr "Tekstgrootte"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
-#: swift
+#: kt swift
 msgid "Line Spacing"
 msgstr "Regelafstand"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
-#: swift
+#: kt swift
 msgid "Paragraph Spacing"
 msgstr "Alinea-afstand"
 
 #. TRANSLATORS: Label for the picker choosing how document text is aligned
-#: swift
+#: kt swift
 msgid "Alignment"
 msgstr "Uitlijning"
 
@@ -3268,37 +3261,37 @@ msgid "Restore last open documents"
 msgstr "Laatst geopende documenten herstellen"
 
 #. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
-#: swift
+#: kt swift
 msgid "Swipe up moves forward"
 msgstr "Omhoog vegen gaat vooruit"
 
 #. TRANSLATORS: Row label for the document's title in the Document Info sheet
-#: swift
+#: kt swift
 msgid "Title"
 msgstr "Titel"
 
 #. TRANSLATORS: Row label for the document's author in the Document Info sheet
-#: swift
+#: kt swift
 msgid "Author"
 msgstr "Auteur"
 
 #. TRANSLATORS: Row label for the document's total word count
-#: swift
+#: kt swift
 msgid "Words"
 msgstr "Woorden"
 
 #. TRANSLATORS: Row label for the document's total line count
-#: swift
+#: kt swift
 msgid "Lines"
 msgstr "Regels"
 
 #. TRANSLATORS: Row label for the document's total character count (including spaces)
-#: swift
+#: kt swift
 msgid "Characters"
 msgstr "Tekens"
 
 #. TRANSLATORS: Row label for the document's character count with whitespace excluded
-#: swift
+#: kt swift
 msgid "Characters (excluding spaces)"
 msgstr "Tekens (exclusief spaties)"
 
@@ -3307,8 +3300,8 @@ msgstr "Tekens (exclusief spaties)"
 msgid "Mode"
 msgstr "Modus"
 
-#. TRANSLATORS: Go To mode option: navigate to a specific page number
-#: swift
+#. TRANSLATORS: Name of the "page" reading/navigation unit
+#: kt swift
 msgid "Page"
 msgstr "Pagina"
 
@@ -3328,11 +3321,11 @@ msgid "Page number"
 msgstr "Paginanummer"
 
 #. TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
-#: swift
+#: kt swift
 msgid "Percentage"
 msgstr "Percentage"
 
-#: swift
+#: kt swift
 msgid "Go To"
 msgstr "Ga naar"
 
@@ -3366,8 +3359,8 @@ msgstr "Bereik"
 msgid "Word"
 msgstr "Woord"
 
-#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
-#: swift
+#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
+#: kt swift
 msgid "Paragraph"
 msgstr "Alinea"
 
@@ -3460,7 +3453,7 @@ msgid "Duration"
 msgstr "Tijdsduur"
 
 #. TRANSLATORS: Placeholder in the custom sleep timer duration field, asking for a number of minutes
-#: swift
+#: kt swift
 msgid "Minutes"
 msgstr "Minuten"
 
@@ -3515,22 +3508,22 @@ msgid "This document has no table of contents."
 msgstr "Dit document heeft geen inhoudsopgave."
 
 #. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
-#: swift
+#: kt swift
 msgid "Navigation unit"
 msgstr "Navigatie-eenheid"
 
 #. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: swift
+#: kt swift
 msgid "Previous {}"
 msgstr "Vorige {}"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 msgid "Pause"
 msgstr "Pauze"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 msgid "Play"
 msgstr "Afspelen"
 
@@ -3545,7 +3538,7 @@ msgid "Beginning of document"
 msgstr "Begin van document"
 
 #. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: swift
+#: kt swift
 msgid "Next {}"
 msgstr "Volgende {}"
 
@@ -3559,27 +3552,27 @@ msgstr "Tik op Afspelen om te beginnen met luisteren."
 msgid "Untitled Link"
 msgstr "Naamloze link"
 
-#: kt
+#: swift kt
 msgid "Export Document"
 msgstr "Document exporteren"
 
 #. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
-#: kt
+#: swift kt
 msgid "Select a format to export the current document:"
 msgstr "Selecteer een indeling om het huidige document te exporteren:"
 
 #. TRANSLATORS: Export format option to save the document as a plain text file
-#: kt
+#: swift kt
 msgid "Plain Text (.txt)"
 msgstr "Platte tekst (.txt)"
 
 #. TRANSLATORS: Export format option to save the document as an HTML file
-#: kt
+#: swift kt
 msgid "HTML (.html)"
 msgstr "HTML (.html)"
 
 #. TRANSLATORS: Export format option to save the document as a Markdown file
-#: kt
+#: swift kt
 msgid "Markdown (.md)"
 msgstr "Markdown (.md)"
 
@@ -3604,7 +3597,7 @@ msgid "Search Term"
 msgstr "Zoekterm"
 
 #. TRANSLATORS: Button that opens a dropdown of previously used search terms
-#: kt
+#: swift kt
 msgid "Search History"
 msgstr "Zoekgeschiedenis"
 
@@ -3657,7 +3650,7 @@ msgstr "Niet nu"
 msgid "Custom Timer"
 msgstr "Aangepaste timer"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 msgid "Back"
 msgstr "Terug"
@@ -3698,26 +3691,26 @@ msgid "Custom time..."
 msgstr "Aangepaste tijd..."
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 msgid "Expanded"
 msgstr "Uitgevouwen"
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 msgid "Collapsed"
 msgstr "Samengevouwen"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 msgid "Collapse"
 msgstr "Samenvouwen"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 msgid "Expand"
 msgstr "Uitvouwen"
 
-#: kt
+#: swift kt
 msgid "This document contains {} words."
 msgstr "Dit document bevat {} woorden."
 
@@ -3739,7 +3732,7 @@ msgstr "Zoeken sluiten"
 msgid "Document exported"
 msgstr "Document geëxporteerd"
 
-#: kt
+#: swift kt
 msgid "Failed to export document"
 msgstr "Document exporteren mislukt"
 
@@ -3774,12 +3767,12 @@ msgid "More Options"
 msgstr "Meer opties"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 msgid "Pause Read Aloud"
 msgstr "Voorlezen pauzeren"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 msgid "Read Aloud"
 msgstr "Voorlezen"
 
@@ -3795,42 +3788,42 @@ msgstr "Elementenlijst"
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
-#: kt
+#: swift kt
 msgid "No more matches."
 msgstr "Geen overeenkomsten meer."
 
 #. TRANSLATORS: Name of the "heading" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Heading"
 msgstr "Kop"
 
 #. TRANSLATORS: Name of the "link" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Link"
 msgstr "Link"
 
 #. TRANSLATORS: Name of the "section" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Section"
 msgstr "Sectie"
 
 #. TRANSLATORS: Name of the "list" reading/navigation unit
-#: kt
+#: swift kt
 msgid "List"
 msgstr "Lijst"
 
 #. TRANSLATORS: Name of the "list item" reading/navigation unit
-#: kt
+#: swift kt
 msgid "List Item"
 msgstr "Lijstitem"
 
 #. TRANSLATORS: Name of the "table" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Table"
 msgstr "Tabel"
 
 #. TRANSLATORS: Name of the "separator" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Separator"
 msgstr "Scheiding"
 
@@ -3933,15 +3926,15 @@ msgstr "1,5×"
 msgid "Speech Engine"
 msgstr "Spraakengine"
 
-#: swift
+#: kt swift
 msgid "1 book"
 msgstr "1 boek"
 
-#: swift
+#: kt swift
 msgid "{} books"
 msgstr "{} boeken"
 
-#: swift
+#: kt swift
 msgid "..."
 msgstr "..."
 
@@ -3967,7 +3960,7 @@ msgstr "Aangepast: {} minuten⁣"
 #. replaced with the number. Which of the three forms is used depends on the target language's
 #. own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
 #. trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
+#: swift kt
 msgid "This document contains {} word."
 msgstr "Dit document bevat {} woord."
 
@@ -3997,7 +3990,7 @@ msgstr "{} seconde"
 msgid "{} seconds⁣"
 msgstr "{} seconden⁣"
 
-#: kt
+#: swift kt
 msgid "This document contains {} words.⁣"
 msgstr "Dit document bevat {} woorden.⁣"
 
@@ -4053,6 +4046,7 @@ msgstr "Huidig pad: {}"
 msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, gewijzigd {}{}"
 
+#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
 #: kt
 msgid "{} percent"
 msgstr "{} procent"
@@ -4067,7 +4061,7 @@ msgstr "Kop {}"
 msgid "go to heading"
 msgstr "gaan naar kop"
 
-#: kt
+#: swift kt
 msgid "{}, Level {}"
 msgstr "{}, niveau {}"
 
@@ -4102,12 +4096,12 @@ msgid "This document does not contain pages."
 msgstr "Dit document bevat geen pagina's."
 
 #. TRANSLATORS: Name of the "formula" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Formula"
 msgstr "Formule"
 
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
-#: swift
+#: kt swift
 msgid "No matches."
 msgstr "Geen overeenkomsten."
 
@@ -4132,27 +4126,27 @@ msgid "Dark"
 msgstr "Donker"
 
 #. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
-#: swift
+#: kt swift
 msgid "High Contrast Text"
 msgstr "Tekst met hoog contrast"
 
 #. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
-#: swift
+#: kt swift
 msgid "Hide previous and next buttons"
 msgstr "Knoppen voor vorige en volgende verbergen"
 
 #. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
-#: swift
+#: kt swift
 msgid "This empties the list. The documents themselves are not deleted."
 msgstr "Dit leegt de lijst. De documenten zelf worden niet verwijderd."
 
 #. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
-#: swift
+#: kt swift
 msgid "{} ms"
 msgstr "{} ms"
 
 #. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
-#: swift
+#: kt swift
 msgid "Paragraph Pause"
 msgstr "Alineapauze"
 
@@ -4160,6 +4154,17 @@ msgstr "Alineapauze"
 #: kt
 msgid "No other voices"
 msgstr "Geen andere stemmen"
+
+#. TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
+#: swift
+#, fuzzy
+msgid "Original file"
+msgstr "Origineel bestand"
+
+#. TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
+#: kt
+msgid "Settings exported"
+msgstr "Instellingen geëxporteerd"
 
 #~ msgid "Document Information"
 #~ msgstr "Documentinformatie"
