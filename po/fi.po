@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-21 19:11+0000\n"
-"PO-Revision-Date: 2026-09-24 11:03+0300\n"
+"PO-Revision-Date: 2026-09-24 11:46+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1097,7 +1097,7 @@ msgstr "Siirry rivin &alkuun"
 
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
-msgstr "Ilmaise kirjanmerkit ja muistiinpanot merkkiäänellä"
+msgstr "I&lmaise kirjanmerkit ja muistiinpanot merkkiäänellä"
 
 #. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
 msgid "&Sync caret to audio playback"
@@ -1131,7 +1131,7 @@ msgstr "Kehitys"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
-msgstr "&Ikkunan pikanäppäin..."
+msgstr "Va&ihda ikkunan pikanäppäintä..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
@@ -3075,15 +3075,15 @@ msgstr "&Pikanäppäimet:"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
 msgid "&Set Shortcut..."
-msgstr "&Määritä pikanäppäin..."
+msgstr "&Määritä..."
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
 msgid "&Clear Shortcut"
-msgstr "&Poista pikanäppäin"
+msgstr "&Poista"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
 msgid "&Reset to Default"
-msgstr "&Palauta oletus"
+msgstr "Pa&lauta oletus"
 
 #. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
 msgid "Reset &All to Defaults"

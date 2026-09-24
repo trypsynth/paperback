@@ -18,11 +18,11 @@ Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa nykyaikaisissa ARM-pohjais
 * Ruudunlukijoista tuttu verkkoselaustilaa muistuttava navigointitoiminto, jonka avulla voit liikkua asiakirjoissa nopeasti ja vaivattomasti.
 * Tehokas tekstin etsimisen valintaikkuna, joka tukee hakuhistoriaa ja säännöllisiä lausekkeita.
 * Voidaan käyttää massamuistiversiona tai asentaa siten, että tiedostokytkennät määritetään automaattisesti.
-Tukee erittäin kattavasti yleisiä tiedostomuotoja.
+* Tukee erittäin kattavasti yleisiä tiedostomuotoja.
 * Toistaa äänikirjoja ja tukee niiden toistonopeuden muuttamista  sekä tarkan kohdan muistavia kirjanmerkkejä.
 * Mahdollistaa skannattujen PDF-asiakirjojen lukemisen Windowsin ja macOS:n tekstintunnistusominaisuuden avulla.
 * Kirjanmerkit ja muistiinpanot lukukohdan merkitsemistä ja siihen palaamista varten.
-* Kaikkia pikanäppäimiä on mahdollista vaihtaa.
+* Kaikkia pikanäppäimiä on mahdollista muokata.
 * Mukana tulee `pb`-komentorivityökalu, jolla voi muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon.
 
 ## Ruudunlukijoiden yhteensopivuus
@@ -62,9 +62,9 @@ Paperback tukee seuraavia tiedostomuotoja:
 
 ## Pikanäppäimet
 
-Paperback on suunniteltu ensisijaisesti näppäimistöllä käytettäväksi. Alla on luettelo nykyisistä pikanäppäimistä.
+Paperback on suunniteltu ensisijaisesti näppäimistöllä käytettäväksi. Alla on luettelo kaikista pikanäppäimistä.
 
-Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisiin. Erot johtuvat siitä, että näppäinyhdistelmät Ctrl+G, Ctrl+W sekä Alt + vasen/oikea nuoli on varattu macOS-alustalla järjestelmän tai muiden sovellusten käyttöön.
+Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa. Erot johtuvat siitä, että näppäinyhdistelmät Ctrl+G, Ctrl+W sekä Alt + vasen/oikea nuoli on varattu macOS-alustalla järjestelmän tai muiden sovellusten käyttöön.
 
 ### Tiedosto-valikko
 
