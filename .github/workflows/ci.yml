@@ -206,6 +206,10 @@ jobs:
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
           cargo test --workspace
+      - name: Run UI tests
+        run: |
+          $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
+          cargo test -p paperback -- --ignored
   test-macos:
     name: Tests (macOS)
     runs-on: macos-latest
