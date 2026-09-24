@@ -35,6 +35,7 @@ pub mod odp;
 pub mod odt;
 pub mod pdf;
 pub mod powerpoint;
+pub mod rst;
 pub mod rtf;
 pub mod text;
 pub mod util;
@@ -160,6 +161,7 @@ impl ParserRegistry {
 				FODT => odt::FodtParser,
 				ODT => odt::OdtParser,
 				POWERPOINT => powerpoint::PowerpointParser,
+				RST => rst::RstParser,
 				RTF => rtf::RtfParser,
 				TEXT => text::TextParser,
 				WRI => wri::WriParser,

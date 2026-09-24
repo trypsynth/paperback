@@ -245,6 +245,12 @@ formats! {
 		mime_types: ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.ms-powerpoint"],
 		flags: SUPPORTS_TOC,
 	},
+	RST {
+		name: "reStructuredText Files",
+		extensions: ["rst", "rest"],
+		mime_types: ["text/x-rst"],
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
+	},
 	RTF {
 		name: "RTF Documents",
 		extensions: ["rtf"],
