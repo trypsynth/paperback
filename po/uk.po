@@ -6,10 +6,10 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 0.9.2\n"
+"Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 19:11+0000\n"
-"PO-Revision-Date: 2026-09-24 17:28+0300\n"
+"POT-Creation-Date: 2026-09-24 08:33-0600\n"
+"PO-Revision-Date: 2026-09-24 18:36+0300\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1612,19 +1612,13 @@ msgstr "Документ перезавантажено."
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback не може виконувати жодних дій, поки відкрито Web-перегляд."
 
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "{} - Paperback"
-msgstr "{} - Paperback"
-
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d символ"
-msgstr[1] "%d символа"
-msgstr[2] "%d символів"
-
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Не вдалося експортувати документ."
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 msgid "&Undo\tCtrl+Z"
@@ -3121,33 +3115,26 @@ msgstr "Скинути всі комбінації клавіш на цій вк
 msgid "Reset Shortcuts"
 msgstr "Скидання комбінацій клавіш"
 
-#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
-#: swift
+#: kt swift
 msgid "Export Document Data"
 msgstr "Експортувати дані документа"
 
-#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
-#: swift
+#: kt swift
 msgid "Import Document Data"
 msgstr "Імпортувати дані документа"
 
-#. TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
-#: swift
-msgid "Settings exported"
-msgstr "Налаштування експортовано"
-
 #. TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
-#: swift
+#: kt swift
 msgid "Failed to export settings"
 msgstr "Не вдалося експортувати налаштування"
 
 #. TRANSLATORS: Confirmation shown after importing a document's settings and bookmarks from a .paperback file
-#: swift
+#: kt swift
 msgid "Settings imported"
 msgstr "Налаштування імпортовано"
 
 #. TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
-#: swift
+#: kt swift
 msgid "Failed to import settings"
 msgstr "Не вдалося імпортувати налаштування"
 
@@ -3162,17 +3149,16 @@ msgid "More options"
 msgstr "Інші параметри"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 msgid "Switch to TTS Mode"
 msgstr "Перейти в режим читання вголос"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 msgid "Switch to Text Mode"
 msgstr "Перейти в режим тексту"
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
-#: swift
+#: kt swift
 msgid "Recent Documents"
 msgstr "Останні документи"
 
@@ -3202,22 +3188,22 @@ msgid "No document open"
 msgstr "Немає відкритого документа"
 
 #. TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
-#: swift
+#: kt swift
 msgid "Show All"
 msgstr "Показати всі"
 
 #. TRANSLATORS: Toggle label; when on, search matching is case-sensitive
-#: swift
+#: kt swift
 msgid "Match Case"
 msgstr "Враховувати регістр"
 
 #. TRANSLATORS: Toggle label; when on, search only matches whole words
-#: swift
+#: kt swift
 msgid "Whole Word"
 msgstr "Ціле слово"
 
 #. TRANSLATORS: Toggle label; when on, the search query is treated as a regular expression
-#: swift
+#: kt swift
 msgid "Regular Expression"
 msgstr "Регулярний вираз"
 
@@ -3227,27 +3213,25 @@ msgid "Open Error"
 msgstr "Помилка відкриття"
 
 #. TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
-#: swift
+#: kt swift
 msgid "Open Book"
 msgstr "Відкрити книгу"
 
-#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
-#: swift
+#: kt swift
 msgid "Locate"
 msgstr "Знайти"
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
-#: swift
+#: kt swift
 msgid "Remove"
 msgstr "Вилучити"
 
 #. TRANSLATORS: Status label for a recent document whose file can no longer be found
-#: swift
+#: kt swift
 msgid "File Missing"
 msgstr "Файл відсутній"
 
 #. TRANSLATORS: Status label for a recent document that's currently open in a tab
-#: swift
+#: kt swift
 msgid "Currently Open"
 msgstr "Наразі відкритий"
 
@@ -3267,22 +3251,22 @@ msgid "Text to Speech"
 msgstr "Мовлення"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
-#: swift
+#: kt swift
 msgid "Voice"
 msgstr "Голос"
 
-#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 msgid "Rate"
 msgstr "Темп"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
-#: swift
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+#: kt swift
 msgid "Speech Rate"
 msgstr "Темп"
 
-#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
-#: swift
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
+#: kt swift
 msgid "Pitch"
 msgstr "Тон"
 
@@ -3292,27 +3276,27 @@ msgid "Speech Dictionary"
 msgstr "Словник вимови"
 
 #. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
-#: swift
+#: kt swift
 msgid "Play Sample"
 msgstr "Відтворити зразок"
 
 #. TRANSLATORS: Row label for the control that scales the size of document text
-#: swift
+#: kt swift
 msgid "Text Size"
 msgstr "Розмір тексту"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
-#: swift
+#: kt swift
 msgid "Line Spacing"
 msgstr "Міжрядковий інтервал"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
-#: swift
+#: kt swift
 msgid "Paragraph Spacing"
 msgstr "Інтервал між абзацами"
 
 #. TRANSLATORS: Label for the picker choosing how document text is aligned
-#: swift
+#: kt swift
 msgid "Alignment"
 msgstr "Вирівнювання"
 
@@ -3327,37 +3311,37 @@ msgid "Restore last open documents"
 msgstr "Відновлювати останні відкриті документи"
 
 #. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
-#: swift
+#: kt swift
 msgid "Swipe up moves forward"
 msgstr "Проведення вгору: перехід далі"
 
 #. TRANSLATORS: Row label for the document's title in the Document Info sheet
-#: swift
+#: kt swift
 msgid "Title"
 msgstr "Назва"
 
 #. TRANSLATORS: Row label for the document's author in the Document Info sheet
-#: swift
+#: kt swift
 msgid "Author"
 msgstr "Автор"
 
 #. TRANSLATORS: Row label for the document's total word count
-#: swift
+#: kt swift
 msgid "Words"
 msgstr "Слів"
 
 #. TRANSLATORS: Row label for the document's total line count
-#: swift
+#: kt swift
 msgid "Lines"
 msgstr "Рядків"
 
 #. TRANSLATORS: Row label for the document's total character count (including spaces)
-#: swift
+#: kt swift
 msgid "Characters"
 msgstr "Символів"
 
 #. TRANSLATORS: Row label for the document's character count with whitespace excluded
-#: swift
+#: kt swift
 msgid "Characters (excluding spaces)"
 msgstr "Символів (без урахування пробілів)"
 
@@ -3367,7 +3351,7 @@ msgid "Mode"
 msgstr "Режим"
 
 #. TRANSLATORS: Name of the "page" reading/navigation unit
-#: swift
+#: kt swift
 msgid "Page"
 msgstr "Сторінка"
 
@@ -3387,12 +3371,11 @@ msgid "Page number"
 msgstr "Номер сторінки"
 
 #. TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
-#: swift
+#: kt swift
 msgid "Percentage"
 msgstr "Відсоток"
 
-#. TRANSLATORS: Navigation title of the Go To sheet
-#: swift
+#: kt swift
 msgid "Go To"
 msgstr "Перехід"
 
@@ -3427,7 +3410,7 @@ msgid "Word"
 msgstr "Слово"
 
 #. TRANSLATORS: Name of the "paragraph" reading/navigation unit
-#: swift
+#: kt swift
 msgid "Paragraph"
 msgstr "Абзац"
 
@@ -3520,7 +3503,7 @@ msgid "Duration"
 msgstr "Тривалість"
 
 #. TRANSLATORS: Placeholder in the custom sleep timer duration field, asking for a number of minutes
-#: swift
+#: kt swift
 msgid "Minutes"
 msgstr "Хвилин"
 
@@ -3575,22 +3558,22 @@ msgid "This document has no table of contents."
 msgstr "У цьому документі немає змісту."
 
 #. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
-#: swift
+#: kt swift
 msgid "Navigation unit"
 msgstr "Тип навігації"
 
 #. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: swift
+#: kt swift
 msgid "Previous {}"
 msgstr "Назад: {}"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 msgid "Pause"
 msgstr "Призупинити"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 msgid "Play"
 msgstr "Відтворити"
 
@@ -3605,7 +3588,7 @@ msgid "Beginning of document"
 msgstr "Початок документа"
 
 #. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: swift
+#: kt swift
 msgid "Next {}"
 msgstr "Далі: {}"
 
@@ -3614,36 +3597,32 @@ msgstr "Далі: {}"
 msgid "Press play to start listening."
 msgstr "Натисніть «Відтворити», щоб почати слухати."
 
-#: kt
-msgid "Document Information"
-msgstr "Інформація про документ"
-
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 msgid "Untitled Link"
 msgstr "Посилання без назви"
 
-#: kt
+#: swift kt
 msgid "Export Document"
 msgstr "Експорт документа"
 
 #. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
-#: kt
+#: swift kt
 msgid "Select a format to export the current document:"
 msgstr "Виберіть формат для експорту поточного документа:"
 
 #. TRANSLATORS: Export format option to save the document as a plain text file
-#: kt
+#: swift kt
 msgid "Plain Text (.txt)"
 msgstr "Звичайний текст (.txt)"
 
 #. TRANSLATORS: Export format option to save the document as an HTML file
-#: kt
+#: swift kt
 msgid "HTML (.html)"
 msgstr "HTML (.html)"
 
 #. TRANSLATORS: Export format option to save the document as a Markdown file
-#: kt
+#: swift kt
 msgid "Markdown (.md)"
 msgstr "Markdown (.md)"
 
@@ -3668,7 +3647,7 @@ msgid "Search Term"
 msgstr "Пошуковий запит"
 
 #. TRANSLATORS: Button that opens a dropdown of previously used search terms
-#: kt
+#: swift kt
 msgid "Search History"
 msgstr "Історія пошуку"
 
@@ -3774,26 +3753,26 @@ msgid "Custom time..."
 msgstr "Власний час..."
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 msgid "Expanded"
 msgstr "Розгорнуто"
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 msgid "Collapsed"
 msgstr "Згорнуто"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 msgid "Collapse"
 msgstr "Згорнути"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 msgid "Expand"
 msgstr "Розгорнути"
 
-#: kt
+#: swift kt
 msgid "This document contains {} words."
 msgstr "Цей документ містить {} слів."
 
@@ -3805,7 +3784,7 @@ msgstr "Цей документ містить {} слів."
 msgid "words"
 msgstr "слів"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr "Закрити пошук"
@@ -3815,7 +3794,7 @@ msgstr "Закрити пошук"
 msgid "Document exported"
 msgstr "Документ експортовано"
 
-#: kt
+#: swift kt
 msgid "Failed to export document"
 msgstr "Не вдалося експортувати документ"
 
@@ -3850,12 +3829,12 @@ msgid "More Options"
 msgstr "Інші параметри"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 msgid "Pause Read Aloud"
 msgstr "Призупинити читання вголос"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 msgid "Read Aloud"
 msgstr "Читати вголос"
 
@@ -3870,42 +3849,43 @@ msgid "Elements List"
 msgstr "Список елементів"
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
-#: kt
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+#: swift kt
 msgid "No more matches."
 msgstr "Більше немає результатів."
 
 #. TRANSLATORS: Name of the "heading" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Heading"
 msgstr "Заголовок"
 
 #. TRANSLATORS: Name of the "link" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Link"
 msgstr "Посилання"
 
 #. TRANSLATORS: Name of the "section" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Section"
 msgstr "Розділ"
 
 #. TRANSLATORS: Name of the "list" reading/navigation unit
-#: kt
+#: swift kt
 msgid "List"
 msgstr "Список"
 
 #. TRANSLATORS: Name of the "list item" reading/navigation unit
-#: kt
+#: swift kt
 msgid "List Item"
 msgstr "Елемент списку"
 
 #. TRANSLATORS: Name of the "table" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Table"
 msgstr "Таблиця"
 
 #. TRANSLATORS: Name of the "separator" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Separator"
 msgstr "Роздільник"
 
@@ -4013,15 +3993,15 @@ msgstr "1.5×"
 msgid "Speech Engine"
 msgstr "Синтезатор мовлення"
 
-#: swift
+#: kt swift
 msgid "1 book"
 msgstr "1 книга"
 
-#: swift
+#: kt swift
 msgid "{} books"
 msgstr "{} книги"
 
-#: swift
+#: kt swift
 msgid "..."
 msgstr "..."
 
@@ -4047,7 +4027,7 @@ msgstr "Налаштування: {} хвилин⁣"
 #. replaced with the number. Which of the three forms is used depends on the target language's
 #. own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
 #. trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
+#: swift kt
 msgid "This document contains {} word."
 msgstr "Цей документ містить {} слово."
 
@@ -4077,7 +4057,7 @@ msgstr "{} секунда"
 msgid "{} seconds⁣"
 msgstr "{} секунд⁣"
 
-#: kt
+#: swift kt
 msgid "This document contains {} words.⁣"
 msgstr "Цей документ містить {} слів.⁣"
 
@@ -4176,7 +4156,7 @@ msgstr "Заголовок {}"
 msgid "go to heading"
 msgstr "перейти до заголовка"
 
-#: kt
+#: swift kt
 msgid "{}, Level {}"
 msgstr "{}, Рівень {}"
 
@@ -4211,12 +4191,12 @@ msgid "This document does not contain pages."
 msgstr "У цьому документі немає сторінок."
 
 #. TRANSLATORS: Name of the "formula" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Formula"
 msgstr "Математичний вираз"
 
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
-#: swift
+#: kt swift
 msgid "No matches."
 msgstr "Нічого не знайдено."
 
@@ -4241,27 +4221,27 @@ msgid "Dark"
 msgstr "Темна"
 
 #. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
-#: swift
+#: kt swift
 msgid "High Contrast Text"
 msgstr "Висококонтрастний текст"
 
 #. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
-#: swift
+#: kt swift
 msgid "Hide previous and next buttons"
 msgstr "Приховувати кнопки «Назад» і «Далі»"
 
 #. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
-#: swift
+#: kt swift
 msgid "This empties the list. The documents themselves are not deleted."
 msgstr "Це очистить список. Самі документи не видаляються."
 
 #. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
-#: swift
+#: kt swift
 msgid "{} ms"
 msgstr "{} мс"
 
 #. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
-#: swift
+#: kt swift
 msgid "Paragraph Pause"
 msgstr "Пауза між абзацами"
 
@@ -4269,3 +4249,22 @@ msgstr "Пауза між абзацами"
 #: kt
 msgid "No other voices"
 msgstr "Немає інших голосів"
+
+#. TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
+#: swift
+msgid "Original file"
+msgstr "Оригінальний файл"
+
+#. TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
+#: kt
+msgid "Settings exported"
+msgstr "Налаштування експортовано"
+
+#~ msgid "%d char"
+#~ msgid_plural "%d chars"
+#~ msgstr[0] "%d символ"
+#~ msgstr[1] "%d символа"
+#~ msgstr[2] "%d символів"
+
+#~ msgid "Document Information"
+#~ msgstr "Інформація про документ"
