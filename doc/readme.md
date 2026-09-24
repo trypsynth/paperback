@@ -374,10 +374,10 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed PDF paragraphs and headings splitting at every line, and words splitting apart at spaces.
 * Fixed numbered PDF headings running together into one heading.
 * Fixed PDFs whose structure tree leads to no text opening empty.
+* Lines set in a monospaced font, like code, are no longer joined into paragraphs.
 * Page headers and footers are no longer read out on every page of untagged PDFs.
 * PDFs that tag their page headers and footers as ordinary text no longer repeat the title and the page number between two paragraphs on every page.
 * PDFs now show their real title, rather than their file name.
-* Lines set in a monospaced font, like code, are no longer joined into paragraphs.
 
 ##### MOBI/AZW3 Books
 * Large MOBI books no longer run out of memory, and are no longer cut off after 20 MB.
@@ -406,8 +406,7 @@ The iOS and Android apps open every format the desktop does, and include:
 * Read aloud, with your choice of voice, rate and pitch, a speech rate control right on the reading bar, and an optional pause between paragraphs.
 * Playback of DAISY, M4B and MP3 audio books, which keeps going in the background and from the lock screen.
 * Navigation by headings, pages, links, tables, lists and more from the reading bar, plus the table of contents and Find.
-* A sleep timer, word count, and document export, plus a speech dictionary on iOS.
-* On iOS, export goes through the share sheet, so a book can be sent to another app rather than only saved to Files, and the book's own file can be shared unchanged.
+* A sleep timer, word count, and document export, plus a speech dictionary on iOS. On iOS, export goes through the share sheet, so a book can go to another app or to Files, in another format or exactly as it is.
 * Text size, spacing, and high contrast text options.
 * Keyboard shortcuts that match the desktop.
 
