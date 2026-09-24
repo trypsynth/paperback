@@ -56,6 +56,18 @@ fn is_pdf(file_path: &Path) -> bool {
 	file_path.extension().is_some_and(|extension| extension.eq_ignore_ascii_case("pdf"))
 }
 
+/// Whether [`PageRenderer::open`] can actually open this document. It rasterizes PDFs and decodes
+/// comic archive pages, and hands anything else to pdfium, which will not read an EPUB or a DOCX.
+/// "Include text pages" collects every page in the range, so without this a book with no
+/// image-only pages at all would send a job straight into a renderer that cannot open it.
+fn is_ocr_able(file_path: &Path) -> bool {
+	file_path.extension().is_some_and(|extension| {
+		extension.eq_ignore_ascii_case("pdf")
+			|| extension.eq_ignore_ascii_case("cbz")
+			|| extension.eq_ignore_ascii_case("cbr")
+	})
+}
+
 /// One page's outcome, as the worker reports it.
 type PageResult = (i32, Result<String, OcrError>);
 
@@ -98,8 +110,17 @@ impl DocumentManager {
 		self.spawn_ocr(vec![page], false);
 	}
 
-	/// Runs OCR on every image-only page in `start..=end` (1-based page numbers).
-	pub fn start_batch_ocr(&mut self, start: i32, end: i32) {
+	/// Runs OCR on every image-only page in `start..=end` (1-based page numbers), or on every
+	/// page in the range when `include_text_pages` is set.
+	///
+	/// The wider sweep exists for pages whose text came from an older or worse OCR pass, or that
+	/// carry no text for material living only in the page's images. It still includes the
+	/// image-only pages, which are a subset of the range, so one list covers both kinds.
+	///
+	/// A document the renderer cannot open keeps the narrow behaviour even with the box ticked:
+	/// there is nothing to render a page of an EPUB with, and reporting a completed job that
+	/// recognized nothing would be worse than saying the range held no image-only pages.
+	pub fn start_batch_ocr(&mut self, start: i32, end: i32, include_text_pages: bool) {
 		let label = self.live_region_label;
 		let Some(tab) = self.active_tab() else {
 			// TRANSLATORS: Announced when batch OCR is triggered with no document open
@@ -112,12 +133,19 @@ impl DocumentManager {
 			return;
 		}
 		let (start, end) = if start <= end { (start, end) } else { (end, start) };
-		let pages: Vec<i32> = tab
-			.session
-			.image_only_pages()
-			.into_iter()
-			.filter_map(|(page, _)| (page >= start && page <= end).then_some(page))
-			.collect();
+		let pages: Vec<i32> = if include_text_pages && is_ocr_able(&tab.file_path) {
+			let last = i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX);
+			// Left to go empty when the range starts past the last page, which is what sends it
+			// to the "nothing to do" announcement below rather than to a job for a page the
+			// document does not have.
+			(start..=end.min(last)).collect()
+		} else {
+			tab.session
+				.image_only_pages()
+				.into_iter()
+				.filter_map(|(page, _)| (page >= start && page <= end).then_some(page))
+				.collect()
+		};
 		if pages.is_empty() {
 			// TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 			announce(label, t("No image-only pages in the given range."));
@@ -168,10 +196,11 @@ impl DocumentManager {
 		let join_paragraphs =
 			is_pdf(file_path) && self.config.lock().unwrap().get_app_bool("join_pdf_paragraphs", true);
 		let tab = &mut self.tabs[index];
-		// Placeholder offsets are resolved now, not when the worker captured the page: earlier
-		// applies in this same job have already moved everything after them.
-		let offsets = tab.session.image_only_pages();
 		let mut pages = Vec::with_capacity(results.len());
+		// Where each page being replaced starts, read before the edit for the same reason the
+		// session re-resolves the span rather than trusting a captured offset: earlier applies in
+		// this job have already moved everything after them.
+		let mut starts = Vec::with_capacity(results.len());
 		for (page, result) in results {
 			let text = match result {
 				Ok(text) => text,
@@ -183,12 +212,19 @@ impl DocumentManager {
 					continue;
 				}
 			};
+			// A page that came back empty keeps the text it had. For an image-only page that is
+			// the placeholder; for a text page it is the text the reader is distrusting, and
+			// blanking it would be strictly worse than leaving it alone.
 			if text.trim().is_empty() {
 				continue;
 			}
 			let text = if join_paragraphs { join_wrapped_lines(&text) } else { text };
-			if let Some((_, offset)) = offsets.iter().find(|(candidate, _)| *candidate == page) {
-				pages.push((*offset, text));
+			// `page_offset` answers -1 for a page this document does not have, which is how a
+			// result for a page the session no longer holds gets dropped instead of panicking.
+			let start = tab.session.page_offset(page);
+			if start >= 0 {
+				starts.push(start);
+				pages.push((page, text));
 			}
 		}
 		if pages.is_empty() {
@@ -196,7 +232,7 @@ impl DocumentManager {
 		}
 		let caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let window = tab.window;
-		let outcome = tab.session.replace_image_only_pages(&pages);
+		let outcome = tab.session.replace_ocr_pages(&pages);
 		if let Some(job) = tab.ocr_job.as_mut() {
 			job.recognized += pages.len();
 		}
@@ -207,7 +243,7 @@ impl DocumentManager {
 			let shifted = outcome.shift(usize::try_from(mark.max(0)).unwrap_or(0));
 			tab.selection_mark.set(Some(i64::try_from(shifted).unwrap_or(mark)));
 		}
-		refresh_after_ocr(tab, &pages, window, caret, is_active);
+		refresh_after_ocr(tab, &starts, window, caret, is_active);
 		// The config stores document-absolute offsets (reading position, navigation history,
 		// bookmarks), every one of which the edits above just moved.
 		self.config.lock().unwrap().shift_document_positions(&file_path.to_string_lossy(), &outcome);
@@ -254,8 +290,8 @@ impl DocumentManager {
 
 /// Reloads the on-screen window when a replaced page was in or before it, so the recognized text
 /// appears and local offsets keep matching document ones.
-fn refresh_after_ocr(tab: &mut DocumentTab, pages: &[(i64, String)], window: TextWindow, caret: i64, is_active: bool) {
-	if !pages.iter().any(|(offset, _)| *offset < window.end()) {
+fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[i64], window: TextWindow, caret: i64, is_active: bool) {
+	if !starts.iter().any(|start| *start < window.end()) {
 		return;
 	}
 	let caret = caret.clamp(0, tab.session.document_len());
