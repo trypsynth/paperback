@@ -106,7 +106,8 @@ pub(super) fn read(text_page: &PdfTextPage, facts: &TreeFacts, want_tops: bool) 
 					}
 				}
 				if char_mcid >= 0
-					&& want_tops && !content.tops.contains_key(&char_mcid)
+					&& want_tops
+					&& !content.tops.contains_key(&char_mcid)
 					&& let Some(top) = char_top(text_page, i)
 				{
 					content.tops.insert(char_mcid, top);

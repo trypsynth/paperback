@@ -14,12 +14,15 @@ jobs:
       - uses: actions/checkout@v7
         with:
           submodules: recursive
+      # Pinned: rustfmt's own output changes between nightlies, and a floating one turns that
+      # into master going red on a day nobody touched the formatting. Bumping this is then a
+      # deliberate change with the reformat in the same commit.
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: nightly
+          toolchain: nightly-2026-09-22
           components: rustfmt
       - name: Check formatting
-        run: cargo +nightly fmt --check
+        run: cargo +nightly-2026-09-22 fmt --check
   android:
     name: Android checks
     runs-on: ubuntu-latest
