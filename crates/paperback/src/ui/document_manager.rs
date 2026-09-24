@@ -743,8 +743,9 @@ fn reparse_tab_in_place(
 mod tests {
 	use std::{env, fs, path::PathBuf, process};
 
-	use super::{position_announcement, read_fingerprint, tab_index_for_key};
 	use wxdragon::prelude::{WXK_NUMPAD1, WXK_NUMPAD3, WXK_NUMPAD9};
+
+	use super::{position_announcement, read_fingerprint, tab_index_for_key};
 
 	/// Ctrl+1 is the first document opened, and so maps to tab 0. Everything is checked against
 	/// the same function both key handlers call, because the mapping is the only part of this
