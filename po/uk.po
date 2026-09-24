@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 02:50+0000\n"
-"PO-Revision-Date: 2026-09-22 00:30+0300\n"
+"POT-Creation-Date: 2026-09-21 19:11+0000\n"
+"PO-Revision-Date: 2026-09-24 17:28+0300\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -35,15 +35,16 @@ msgstr "Архіви ZIP (.zip)"
 #. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
 msgid "No OCR language is installed. Add one in your system language settings."
 msgstr ""
-"Мова для OCR не встановлена. Додайте її в налаштуваннях мови вашої системи."
+"Не встановлено мову для розпізнавання тексту. Додайте її в системних "
+"налаштуваннях мови."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
-msgstr "Помилка розпізнавання."
+msgstr "Помилка розпізнавання тексту."
 
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
-msgstr "У цій системі функція OCR недоступна."
+msgstr "Розпізнавання тексту недоступне на цій системі."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -131,25 +132,25 @@ msgstr "%s — Закладка %d"
 
 #. TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
 msgid "No notes."
-msgstr "Нотаток немає."
+msgstr "Немає нотаток."
 
 msgid "No bookmarks."
-msgstr "Закладок немає."
+msgstr "Немає закладок."
 
 #. TRANSLATORS: Announced when there is no next bookmark/note from the current position
 msgid "No next note."
-msgstr "Наступної нотатки немає."
+msgstr "Немає наступної нотатки."
 
 msgid "No next bookmark."
-msgstr "Наступної закладки немає."
+msgstr "Немає наступної закладки."
 
 #. TRANSLATORS: Announced when there is no previous note from the current position
 msgid "No previous note."
-msgstr "Попередньої нотатки немає."
+msgstr "Немає попередньої нотатки."
 
 #. TRANSLATORS: Announced when there is no previous bookmark from the current position
 msgid "No previous bookmark."
-msgstr "Попередньої закладки немає."
+msgstr "Немає попередньої закладки."
 
 #. TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
 msgid "Bookmark."
@@ -234,7 +235,7 @@ msgstr "О&чистити останні документи"
 
 #. TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
 msgid "Remove all documents from the Recent Documents list"
-msgstr "Видалити всі документи зі списку останніх документів"
+msgstr "Вилучити всі документи зі списку останніх документів"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
@@ -375,11 +376,11 @@ msgstr "&Наступна таблиця"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
 msgid "Previous For&mula"
-msgstr "&Попередня формула"
+msgstr "&Попередній математичний вираз"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next formula.
 msgid "Next For&mula"
-msgstr "&Наступна формула"
+msgstr "&Наступний математичний вираз"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 msgid "Previous Se&parator"
@@ -567,19 +568,19 @@ msgstr "Зменшити інтервал перемотування аудіо"
 
 #. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
 msgid "&Increase Audio Speed"
-msgstr "&Збільшити швидкість відтворення аудіо"
+msgstr "&Збільшити швидкість аудіо"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
 msgid "Increase how fast the audio narration plays"
-msgstr "Збільшити швидкість відтворення аудіозапису"
+msgstr "Збільшити швидкість відтворення аудіо"
 
 #. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
 msgid "&Decrease Audio Speed"
-msgstr "&Зменшити швидкість відтворення аудіо"
+msgstr "&Зменшити швидкість аудіо"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
 msgid "Decrease how fast the audio narration plays"
-msgstr "Зменшити швидкість відтворення аудіозапису"
+msgstr "Зменшити швидкість відтворення аудіо"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
@@ -647,7 +648,7 @@ msgstr "&Знайти..."
 
 #. TRANSLATORS: Button label to remove selected documents from the list
 msgid "&Remove"
-msgstr "&Видалити"
+msgstr "&Вилучити"
 
 #. TRANSLATORS: Button label to clear all documents from the list
 msgid "&Clear All"
@@ -665,14 +666,14 @@ msgid ""
 "Are you sure you want to remove the selected document? This will also remove "
 "its reading position and bookmarks."
 msgstr ""
-"Ви впевнені, що хочете видалити вибраний документ? При цьому також будуть "
+"Ви впевнені, що хочете вилучити вибраний документ? При цьому також будуть "
 "видалені його позиція читання та закладки."
 
 msgid ""
 "Are you sure you want to remove the {} selected documents? This will also "
 "remove their reading positions and bookmarks."
 msgstr ""
-"Ви впевнені, що хочете видалити {} вибрані документи? При цьому також будуть "
+"Ви впевнені, що хочете вилучити {} вибрані документи? При цьому також будуть "
 "видалені їхні позиції читання та закладки."
 
 #. TRANSLATORS: Title of the confirmation dialog
@@ -684,7 +685,7 @@ msgid ""
 "Are you sure you want to remove all documents from the list? This will also "
 "remove all reading positions and bookmarks."
 msgstr ""
-"Ви впевнені, що хочете видалити всі документи зі списку? При цьому також "
+"Ви впевнені, що хочете вилучити всі документи зі списку? При цьому також "
 "будуть видалені всі позиції читання та закладки."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
@@ -779,7 +780,7 @@ msgstr "порожньо"
 
 #. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
-msgstr "Будь ласка, виберіть закладку, до якої потрібно перейти."
+msgstr "Виберіть закладку, щоб перейти до неї."
 
 #. TRANSLATORS: Generic error dialog title
 msgid "Error"
@@ -792,7 +793,7 @@ msgstr "Текст закладки:"
 #. TRANSLATORS: Title of the Document Info dialog
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
-msgstr "Інформація про документ"
+msgstr "Відомості про документ"
 
 #. TRANSLATORS: Label for the document's file path
 msgid "Path:"
@@ -850,7 +851,7 @@ msgstr "Елементи"
 
 #. TRANSLATORS: Label for the view selection dropdown in the Elements dialog
 msgid "&View:"
-msgstr "&Вид:"
+msgstr "&Показувати:"
 
 #. TRANSLATORS: Choice option in the view dropdown to show headings list
 msgid "Headings"
@@ -1264,7 +1265,7 @@ msgstr "Зміст"
 
 #. TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 msgid "Please select a section from the table of contents."
-msgstr "Будь ласка, виберіть розділ зі змісту."
+msgstr "Виберіть розділ зі змісту."
 
 #. TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 msgid "No Selection"
@@ -1303,6 +1304,10 @@ msgstr[0] "Цей документ містить %d слово."
 msgstr[1] "Цей документ містить %d слова."
 msgstr[2] "Цей документ містить %d слів."
 
+#. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
+msgid "{} to {}"
+msgstr "{} до {}"
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "Файл не знайдено: {}"
@@ -1323,7 +1328,7 @@ msgstr "Потрібно ввести пароль."
 
 #. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
 msgid "OCR in progress."
-msgstr "Розпізнавання триває."
+msgstr "Триває розпізнавання тексту."
 
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
@@ -1332,7 +1337,7 @@ msgstr "Немає відкритого документа."
 
 #. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
 msgid "OCR already in progress."
-msgstr "OCR вже виконується."
+msgstr "Розпізнавання тексту вже триває."
 
 #. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 msgid "No image-only pages in the given range."
@@ -1414,7 +1419,7 @@ msgstr "Результати"
 
 #. TRANSLATORS: Title of the Find dialog
 msgid "Find"
-msgstr "Знайти"
+msgstr "Пошук"
 
 #. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
@@ -1439,7 +1444,7 @@ msgstr "Використовувати &регулярні вирази"
 #. TRANSLATORS: Button to search backward for the previous match
 #. TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
 msgid "Find &Previous"
-msgstr "Знайти &Попереднє"
+msgstr "Знайти &назад"
 
 #. TRANSLATORS: Button to search forward for the next match
 #. TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
@@ -1461,7 +1466,7 @@ msgstr "Не знайдено."
 
 #. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
-msgstr "Більше результатів немає. Пошук по колу."
+msgstr "Немає результатів. Пошук по колу."
 
 #. TRANSLATORS: Error shown when the active document has no known file path to reveal
 #. TRANSLATORS: Error shown when the file manager could not be launched to reveal the active document's file
@@ -1667,7 +1672,7 @@ msgstr "Перейти на &Сторінку"
 
 #. TRANSLATORS: Menu item in the Go menu to open the find dialog.
 msgid "&Find..."
-msgstr "&Знайти..."
+msgstr "&Пошук..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Find menu item.
 msgid "Find text in the document"
@@ -1771,11 +1776,11 @@ msgstr "Навігація за таблицями"
 
 #. TRANSLATORS: Label for the Formulas submenu in the compact Go menu.
 msgid "For&mulas"
-msgstr "&Формули"
+msgstr "&Математичні вирази"
 
 #. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
 msgid "Navigate by formulas"
-msgstr "Навігація за формулами"
+msgstr "Навігація за математичними виразами"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
@@ -1863,7 +1868,7 @@ msgstr "Експортувати в звичайний &текст..."
 
 #. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
 msgid "Export document as plain text"
-msgstr "Експорт документа як звичайного тексту"
+msgstr "Експортувати документ у вигляді простого тексту"
 
 #. TRANSLATORS: Menu item in Tools > Import/Export to export the document as an HTML file.
 msgid "Export to &HTML..."
@@ -1891,7 +1896,7 @@ msgstr "Показати кількість слів"
 
 #. TRANSLATORS: Menu item in the Tools menu to show information about the document.
 msgid "Document &Info"
-msgstr "&Інформація про документ"
+msgstr "&Відомості про документ"
 
 #. TRANSLATORS: Status-bar help text for the Document Info menu item.
 msgid "Show document information"
@@ -1947,11 +1952,11 @@ msgstr "Параметри імпорту та експорту"
 
 #. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
 msgid "Select and &copy"
-msgstr "Вибрати та &скопіювати"
+msgstr "Виділити та &скопіювати"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
 msgid "Mark a selection and copy from it"
-msgstr "Позначте виділення та скопіюйте з нього"
+msgstr "Позначення початку виділення та копіювання від нього"
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
@@ -2091,15 +2096,15 @@ msgstr "Немає попередньої таблиці."
 
 #. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
 msgid "No formulas."
-msgstr "Немає формул."
+msgstr "Немає математичних виразів."
 
 #. TRANSLATORS: Announcement when there is no next formula to navigate to
 msgid "No next formula."
-msgstr "Немає наступної формули."
+msgstr "Немає наступного математичного виразу."
 
 #. TRANSLATORS: Announcement when there is no previous formula to navigate to
 msgid "No previous formula."
-msgstr "Немає попередньої формули."
+msgstr "Немає попередньогоматематичного виразу."
 
 #. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
@@ -2176,7 +2181,7 @@ msgstr "Початок контейнера."
 
 #. TRANSLATORS: Title of the dialog displaying a formula as MathML
 msgid "Formula View"
-msgstr "Перегляд формули"
+msgstr "Перегляд виразів"
 
 #. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
@@ -2198,7 +2203,7 @@ msgstr "Створити закладку з нотаткою"
 
 #. TRANSLATORS: Right-click context menu item and status text to open the find dialog
 msgid "&Find"
-msgstr "&Знайти"
+msgstr "&Пошук"
 
 msgid "Find text"
 msgstr "Знайти текст"
@@ -2212,7 +2217,7 @@ msgstr "Знайти наступний збіг"
 
 #. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
 msgid "Find &previous"
-msgstr "Знайти &Попереднє"
+msgstr "Знайти &назад"
 
 msgid "Find previous match"
 msgstr "Знайти попередній збіг"
@@ -2323,7 +2328,7 @@ msgstr "Вийти"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Find..."
-msgstr "Знайти..."
+msgstr "Пошук..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Find Next"
@@ -2331,7 +2336,7 @@ msgstr "Знайти Далі"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Find Previous"
-msgstr "Знайти попереднє"
+msgstr "Знайти назад"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go to Line..."
@@ -2471,11 +2476,11 @@ msgstr "Наступна таблиця"
 
 #. TRANSLATORS: Shortcut action to move to the previous formula
 msgid "Previous Formula"
-msgstr "Попередня формула"
+msgstr "Попередній математичний вираз"
 
 #. TRANSLATORS: Shortcut action to move to the next formula
 msgid "Next Formula"
-msgstr "Наступна формула"
+msgstr "Наступний математичний вираз"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Separator"
@@ -2984,7 +2989,7 @@ msgid ""
 "Please install it manually."
 msgstr ""
 "Оновлення завантажено в: %s\n"
-"Будь ласка, встановіть його вручну."
+"Встановіть його вручну."
 
 msgid "Update to %s"
 msgstr "Оновлення до %s"
@@ -3159,12 +3164,12 @@ msgstr "Інші параметри"
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
 #: swift
 msgid "Switch to TTS Mode"
-msgstr "Перейти до режиму читання вголос"
+msgstr "Перейти в режим читання вголос"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
 #: swift
 msgid "Switch to Text Mode"
-msgstr "Перейти до текстового режиму"
+msgstr "Перейти в режим тексту"
 
 #. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
@@ -3234,7 +3239,7 @@ msgstr "Знайти"
 #. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
 msgid "Remove"
-msgstr "Видалити"
+msgstr "Вилучити"
 
 #. TRANSLATORS: Status label for a recent document whose file can no longer be found
 #: swift
@@ -3244,7 +3249,7 @@ msgstr "Файл відсутній"
 #. TRANSLATORS: Status label for a recent document that's currently open in a tab
 #: swift
 msgid "Currently Open"
-msgstr "Наразі відкрито"
+msgstr "Наразі відкритий"
 
 #. TRANSLATORS: Title of the empty-state view shown when no documents have been opened yet
 #: swift
@@ -3259,7 +3264,7 @@ msgstr "Тут з’являтимуться документи, які ви в�
 #. TRANSLATORS: Section header in Settings grouping text-to-speech voice/rate/pitch controls
 #: swift
 msgid "Text to Speech"
-msgstr "Синтез мовлення"
+msgstr "Мовлення"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: swift
@@ -3269,17 +3274,17 @@ msgstr "Голос"
 #. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
 #: swift
 msgid "Rate"
-msgstr "Швидкість"
+msgstr "Темп"
 
-#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
 #: swift
 msgid "Speech Rate"
-msgstr "Швидкість мовлення"
+msgstr "Темп"
 
 #. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
 #: swift
 msgid "Pitch"
-msgstr "Висота"
+msgstr "Тон"
 
 #. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
 #: swift
@@ -3319,12 +3324,12 @@ msgstr "Поведінка"
 #. TRANSLATORS: Toggle to reopen previously open documents on next launch
 #: swift
 msgid "Restore last open documents"
-msgstr "Відновити останні відкриті документи"
+msgstr "Відновлювати останні відкриті документи"
 
 #. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
 #: swift
 msgid "Swipe up moves forward"
-msgstr "Змах угору переходить уперед"
+msgstr "Проведення вгору: перехід далі"
 
 #. TRANSLATORS: Row label for the document's title in the Document Info sheet
 #: swift
@@ -3389,7 +3394,7 @@ msgstr "Відсоток"
 #. TRANSLATORS: Navigation title of the Go To sheet
 #: swift
 msgid "Go To"
-msgstr "Перейти до"
+msgstr "Перехід"
 
 #. TRANSLATORS: Placeholder text for the password entry field
 #: swift
@@ -3416,7 +3421,7 @@ msgstr "Правило"
 msgid "Scope"
 msgstr "Сфера застосування"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a single word
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 msgid "Word"
 msgstr "Слово"
@@ -3562,32 +3567,32 @@ msgstr "Зміст"
 #. TRANSLATORS: Title shown when the current document has no table of contents
 #: swift
 msgid "No Table of Contents"
-msgstr "Зміст відсутній"
+msgstr "Немає змісту"
 
 #. TRANSLATORS: Description shown below the "No Table of Contents" title
 #: swift
 msgid "This document has no table of contents."
-msgstr "Цей документ не містить змісту."
+msgstr "У цьому документі немає змісту."
 
 #. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
 #: swift
 msgid "Navigation unit"
-msgstr "Одиниця навігації"
+msgstr "Тип навігації"
 
 #. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
 #: swift
 msgid "Previous {}"
-msgstr "Попередній: {}"
+msgstr "Назад: {}"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
 #: swift
 msgid "Pause"
-msgstr "Пауза"
+msgstr "Призупинити"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
 #: swift
 msgid "Play"
-msgstr "Відтворення"
+msgstr "Відтворити"
 
 #. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
@@ -3602,12 +3607,12 @@ msgstr "Початок документа"
 #. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
 #: swift
 msgid "Next {}"
-msgstr "Наступний: {}"
+msgstr "Далі: {}"
 
 #. TRANSLATORS: Placeholder shown in the read-aloud view before the user has started playback
 #: swift
 msgid "Press play to start listening."
-msgstr "Натисніть кнопку відтворення, щоб розпочати прослуховування."
+msgstr "Натисніть «Відтворити», щоб почати слухати."
 
 #: kt
 msgid "Document Information"
@@ -3817,12 +3822,12 @@ msgstr "Не вдалося експортувати документ"
 #. TRANSLATORS: Shown on the main screen before the app has finished loading any document state
 #: kt
 msgid "No document open. Please open a book."
-msgstr "Жодного документа не відкрито. Будь ласка відкрийте книгу."
+msgstr "Немає відкритого документа. Відкрийте книгу."
 
 #. TRANSLATORS: Shown on the main screen when no document is open and there are no recent documents to list
 #: kt
 msgid "No Documents"
-msgstr "Документів немає"
+msgstr "Немає документів"
 
 #. TRANSLATORS: Countdown shown while the reading sleep timer is active; {} is the remaining time as minutes:seconds
 #: kt
@@ -3857,7 +3862,7 @@ msgstr "Читати вголос"
 #. TRANSLATORS: Menu item / accessibility action to open the export document dialog
 #: kt
 msgid "Export As"
-msgstr "Експортувати як"
+msgstr "Експорт"
 
 #. TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
 #: kt
@@ -3929,8 +3934,8 @@ msgid ""
 "Paperback works best with a couple of permissions. Here's what we ask for "
 "and why:"
 msgstr ""
-"Paperback найкраще працює, якщо надати кілька дозволів. Ось що ми просимо і "
-"чому:"
+"Для найкращої роботи Paperback потрібно надати кілька дозволів. Нижче "
+"вказано, які саме доступи нам потрібні та навіщо:"
 
 #. TRANSLATORS: Heading for the notifications permission section on the onboarding screen
 #: kt
@@ -3950,7 +3955,7 @@ msgstr "Доступ до всіх файлів"
 #. TRANSLATORS: Button to open system settings for the all files access permission during onboarding
 #: kt
 msgid "Enable File Access"
-msgstr "Увімкнути доступ до файлів"
+msgstr "Надати доступ до файлів"
 
 #. TRANSLATORS: Button to leave the onboarding screen and continue into the app, whether or not permissions were granted
 #: kt
@@ -3960,23 +3965,23 @@ msgstr "Продовжити"
 #. TRANSLATORS: Settings switch: reopen the last-read book automatically on launch
 #: kt
 msgid "Restore last open book"
-msgstr "Відновити останню відкриту книгу"
+msgstr "Відновлювати останню відкриту книгу"
 
 #. TRANSLATORS: Settings switch: use the app's built-in file browser instead of the system document picker
 #: kt
 msgid "Use in-app file browser (requires All Files permission)"
 msgstr ""
-"Використовувати вбудований файловий браузер (потрібний дозвіл «Усі файли»)"
+"Вбудований файловий менеджер (потрібен дозвіл на доступ до всіх файлів)"
 
 #. TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
 #: kt
 msgid "Text-to-Speech"
-msgstr "Синтез мовлення"
+msgstr "Мовлення"
 
 #. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
-msgstr "За замовчуванням"
+msgstr "Системний за замовчуванням"
 
 #. TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
 #: kt
@@ -4006,7 +4011,7 @@ msgstr "1.5×"
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
 msgid "Speech Engine"
-msgstr "Голосовий рушій"
+msgstr "Синтезатор мовлення"
 
 #: swift
 msgid "1 book"
@@ -4023,7 +4028,7 @@ msgstr "..."
 #. TRANSLATORS: Menu item to jump to a specific page, line, or percentage in the document
 #: swift
 msgid "Go To..."
-msgstr "Перейти до..."
+msgstr "Перейти..."
 
 #. TRANSLATORS: Placeholder text shown in the empty search field of the Find screen
 #: swift
@@ -4135,8 +4140,8 @@ msgid ""
 "With VoiceOver, swipe up on the play button to move forward, or down to move "
 "back."
 msgstr ""
-"За допомогою VoiceOver проведіть пальцем вгору по кнопці відтворення, щоб "
-"перейти вперед, або вниз — щоб повернутися назад."
+"У VoiceOver проведіть угору на кнопці «Відтворити», щоб перейти далі, або "
+"вниз — щоб повернутися назад."
 
 #. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
 #: kt
@@ -4144,8 +4149,8 @@ msgid ""
 "With TalkBack, swipe up on the play button to move forward, or down to move "
 "back."
 msgstr ""
-"За допомогою TalkBack проведіть пальцем вгору по кнопці відтворення, щоб "
-"перейти вперед, або вниз — щоб повернутися назад."
+"У TalkBack проведіть угору на кнопці «Відтворити», щоб перейти далі, або "
+"вниз — щоб повернутися назад."
 
 #. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
 #: kt
@@ -4198,22 +4203,22 @@ msgstr "перейти до розділу"
 #. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
 #: kt
 msgid "This is a sample of the selected speech engine."
-msgstr "Це зразок вибраного голосового рушія."
+msgstr "Це зразок мовлення вибраного синтезатора."
 
 #. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
 #: kt
 msgid "This document does not contain pages."
-msgstr "Цей документ не містить сторінок."
+msgstr "У цьому документі немає сторінок."
 
 #. TRANSLATORS: Name of the "formula" reading/navigation unit
 #: kt
 msgid "Formula"
-msgstr "Формула"
+msgstr "Математичний вираз"
 
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
 #: swift
 msgid "No matches."
-msgstr "Результатів не знайдено."
+msgstr "Нічого не знайдено."
 
 #. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
 #: swift
@@ -4243,16 +4248,15 @@ msgstr "Висококонтрастний текст"
 #. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
 #: swift
 msgid "Hide previous and next buttons"
-msgstr "Приховати кнопки «Попередній» і «Наступний»"
+msgstr "Приховувати кнопки «Назад» і «Далі»"
 
 #. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
 #: swift
 msgid "This empties the list. The documents themselves are not deleted."
-msgstr "Це очищає список. Самі документи не видаляються."
+msgstr "Це очистить список. Самі документи не видаляються."
 
 #. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
 #: swift
-#| msgid "{} minutes"
 msgid "{} ms"
 msgstr "{} мс"
 
