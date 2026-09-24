@@ -348,7 +348,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Closing Paperback now hides the window straight away, rather than leaving it on screen while it saves.
 * Large books with little formatting in them now open in about half the time.
 * Messages chosen from a menu, such as "This document has no audio", are no longer cut off by the screen reader before you hear them.
-* On Linux, Settings no longer offers Customize Window Hotkey or Minimize to system tray, which only ever worked on Windows.
 * Opening a document no longer leaves Reopen Last Closed enabled when there is nothing to reopen.
 * Paperback no longer keeps retrying documents in your recent list that have gone missing, and caps how many recent documents it stores.
 * The old INI settings file is now deleted once it has been moved over to the new format.
