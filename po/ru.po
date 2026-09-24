@@ -482,9 +482,8 @@ msgid "Go to the start of the current list or table"
 msgstr "Перейти к началу текущего списка или таблицы"
 
 #. TRANSLATORS: Menu item in the Go menu to move past the end of the current list or table.
-#, fuzzy
 msgid "Past Container &End"
-msgstr "Пропустить «Container &End»    ,"
+msgstr ""
 
 #. TRANSLATORS: Status-bar help text for the Go > Past Container End menu item.
 #, fuzzy
@@ -2225,9 +2224,8 @@ msgid "Toggle word wrap"
 msgstr "Включить/выключить перенос слов"
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
-#, fuzzy
 msgid "&Full Screen"
-msgstr "&Полноэкранный режим    F11"
+msgstr ""
 
 #. TRANSLATORS: Status-bar help text for the Full Screen menu item.
 #, fuzzy
@@ -2657,9 +2655,8 @@ msgid "Go to Page..."
 msgstr "Перейти к странице"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Go Back"
-msgstr "Вперед и Назад    Ctrl+["
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2852,9 +2849,8 @@ msgid "Next List Item"
 msgstr "Следующий элемент списка"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Container Start"
-msgstr "Контейнер и запуск    Shift+,"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2867,9 +2863,8 @@ msgid "Elements List..."
 msgstr "Список элементов..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Reveal File in Folder"
-msgstr "Показать и сохранить в папке    Ctrl+Shift+C"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2877,9 +2872,8 @@ msgid "Open in Web View"
 msgstr "Открыть в веб-просмотре"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "View Source"
-msgstr "Просмотр и исходный код    Ctrl+U"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy

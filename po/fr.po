@@ -624,9 +624,8 @@ msgid "Play or pause this document's audio narration"
 msgstr "Lancer ou mettre en pause la lecture audio de ce document"
 
 #. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
-#, fuzzy
 msgid "Seek Audio &Forward"
-msgstr "Aller à &Suivant    Ctrl+]"
+msgstr ""
 
 #. TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
 #, fuzzy
@@ -2206,9 +2205,8 @@ msgid "Toggle word wrap"
 msgstr "Activer/désactiver le retour à la ligne automatique"
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
-#, fuzzy
 msgid "&Full Screen"
-msgstr "&Plein écran    F11"
+msgstr ""
 
 #. TRANSLATORS: Status-bar help text for the Full Screen menu item.
 #, fuzzy
@@ -2581,9 +2579,8 @@ msgid "Close All"
 msgstr "Fermer tout"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Reopen Last Closed"
-msgstr "Rouvrir & Dernière fermeture    Ctrl+Maj+T"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2631,9 +2628,8 @@ msgid "Go to Page..."
 msgstr "Aller à la page..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Go Back"
-msgstr "Aller & Retour    Ctrl+["
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2756,24 +2752,20 @@ msgid "Next Link"
 msgstr "Lien suivant"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Previous Image"
-msgstr "Image précédente    Maj+G"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Next Image"
-msgstr "Image suivante    G"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Previous Figure"
-msgstr "Figure précédente    Maj+F"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Next Figure"
-msgstr "Figure suivante    F"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2826,14 +2818,12 @@ msgid "Next List Item"
 msgstr "Élément de liste suivant"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Container Start"
-msgstr "Conteneur & Démarrer    Maj+,"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Past Container End"
-msgstr "Conteneur précédent et fin    ,"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2841,9 +2831,8 @@ msgid "Elements List..."
 msgstr "Liste des éléments..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Reveal File in Folder"
-msgstr "Afficher et enregistrer dans le dossier    Ctrl+Maj+C"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -2851,9 +2840,8 @@ msgid "Open in Web View"
 msgstr "Ouvrir en affichage Web"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "View Source"
-msgstr "Afficher la source    Ctrl+U"
+msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
