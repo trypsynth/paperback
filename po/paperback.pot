@@ -3069,11 +3069,6 @@ msgstr ""
 msgid "Import Document Data"
 msgstr ""
 
-#. TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
-#: swift
-msgid "Settings exported"
-msgstr ""
-
 #. TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
 #: swift
 msgid "Failed to export settings"
@@ -3109,7 +3104,6 @@ msgstr ""
 msgid "Switch to Text Mode"
 msgstr ""
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
 #: swift
 msgid "Recent Documents"
 msgstr ""
@@ -3173,7 +3167,6 @@ msgstr ""
 msgid "Locate"
 msgstr ""
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
 #: swift
 msgid "Remove"
 msgstr ""
@@ -3213,7 +3206,7 @@ msgstr ""
 msgid "Rate"
 msgstr ""
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
 #: swift
 msgid "Speech Rate"
 msgstr ""
@@ -3303,7 +3296,7 @@ msgstr ""
 msgid "Mode"
 msgstr ""
 
-#. TRANSLATORS: Go To mode option: navigate to a specific page number
+#. TRANSLATORS: Name of the "page" reading/navigation unit
 #: swift
 msgid "Page"
 msgstr ""
@@ -3362,7 +3355,7 @@ msgstr ""
 msgid "Word"
 msgstr ""
 
-#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
+#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
 #: swift
 msgid "Paragraph"
 msgstr ""
@@ -3653,7 +3646,7 @@ msgstr ""
 msgid "Custom Timer"
 msgstr ""
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 msgid "Back"
 msgstr ""
@@ -4049,6 +4042,7 @@ msgstr ""
 msgid "{}, {}, modified {}{}"
 msgstr ""
 
+#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
 #: kt
 msgid "{} percent"
 msgstr ""
@@ -4155,4 +4149,14 @@ msgstr ""
 #. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
 #: kt
 msgid "No other voices"
+msgstr ""
+
+#. TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
+#: swift
+msgid "Original file"
+msgstr ""
+
+#. TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
+#: kt
+msgid "Settings exported"
 msgstr ""

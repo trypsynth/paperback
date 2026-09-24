@@ -38,20 +38,7 @@ struct DocumentDataTransferMenu: ViewModifier {
 				}
 				.disabled(viewModel.activeTab == nil)
 			}
-			.fileMover(
-				isPresented: Binding(get: { exportURL != nil }, set: { if !$0 { exportURL = nil } }),
-				file: exportURL
-			) { result in
-				switch result {
-				case .success:
-					// TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
-					resultMessage = t("Settings exported")
-				case .failure:
-					// TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
-					resultMessage = t("Failed to export settings")
-				}
-				exportURL = nil
-			}
+			.shareSheet(for: $exportURL)
 			.fileImporter(
 				isPresented: $showImportPicker,
 				allowedContentTypes: [.paperbackData],
