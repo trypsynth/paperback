@@ -1927,9 +1927,9 @@ checksum = "11d3d7f243d5c5a8b9bb5d6dd2b1602c0cb0b9db1621bafc7ed66e35ff9fe092"
 
 [[package]]
 name = "live-region"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba86f91257e984e1cbf6c1257d6dad467c2dc915e117949c2bd51445e2d740ac"
+checksum = "53e1659caf4b85ebb83b85de72dd1caa6ed352c88e8cd50ca30164aaf295dcee"
 dependencies = [
  "objc",
  "pkg-config",
@@ -2653,9 +2653,9 @@ dependencies = [
 
 [[package]]
 name = "patois-build"
-version = "0.1.13"
+version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54688c7140390123a08f10e3984516ad057669204483aab5306fe8f6bd514dab"
+checksum = "6cbe7ee4457e601f05709cb5d40c8735dadfc9ce1f70503cdc52e01b4585678f"
 dependencies = [
  "serde_json",
 ]
