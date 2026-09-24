@@ -11,7 +11,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{
-	document_manager::{DocumentManager, DocumentTab},
+	document_manager::{DocumentManager, DocumentTab, tab_index_for_key},
 	menu_ids,
 	text_render::reload_window_around,
 };
@@ -214,6 +214,22 @@ pub(super) fn build_text_ctrl(
 						}
 					}
 				}
+			}
+			// Ctrl+1 through Ctrl+9 jump to the first nine open documents. Deliberately after the
+			// shortcut table rather than before it: a reader who has deliberately bound one of
+			// these chords to something of their own keeps it, and gets no tab switch rather than a
+			// switch that overrode them. No default binds any of these chords, so this is reached
+			// on a stock configuration.
+			//
+			// The title is announced by `switch_to_tab` itself, not by the notebook's
+			// page-changing handler, because the lock this call holds is the one that handler
+			// needs in order to announce at all.
+			if let Some(index) = tab_index_for_key(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
+				kbd.event.skip(false);
+				if let Ok(dm) = dm_for_keys.try_lock() {
+					dm.switch_to_tab(index);
+				}
+				return;
 			}
 		}
 		event.skip(true);
