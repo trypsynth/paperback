@@ -61,6 +61,7 @@ Paperback supports the following formats and extensions:
 * OpenDocument text files (`.odt`, `.fodt`)
 * PDF documents (`.pdf`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
+* reStructuredText documents (`.rst`, `.rest`)
 * RTF documents (`.rtf`)
 * Windows Write documents (`.wri`)
 * WinHelp files (`.hlp`)
@@ -297,6 +298,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * M4B audiobooks, split into their chapters.
 * Manual pages, both `man` and BSD `mdoc`, gzipped or not.
 * MP3 audiobooks, split into chapters when the file has them.
+* reStructuredText documents.
 * Windows Write (`.wri`) files.
 * WinHelp (`.hlp`) files.
 * Word 6 and Word 95 documents.
