@@ -342,8 +342,13 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 #### Fixed
 
 ##### General
+* A book reopened at startup now reads straight away, rather than staying silent until it was closed and opened again.
+* A document whose file has gone missing can now be removed from All Documents, instead of staying in the list however often you confirm.
 * Fixed a crash when closing Paperback.
 * Closing Paperback now hides the window straight away, rather than leaving it on screen while it saves.
+* Large books with little formatting in them now open in about half the time.
+* Messages chosen from a menu, such as "This document has no audio", are no longer cut off by the screen reader before you hear them.
+* On Linux, Settings no longer offers Customize Window Hotkey or Minimize to system tray, which only ever worked on Windows.
 * Opening a document no longer leaves Reopen Last Closed enabled when there is nothing to reopen.
 * Paperback no longer keeps retrying documents in your recent list that have gone missing, and caps how many recent documents it stores.
 * The old INI settings file is now deleted once it has been moved over to the new format.
@@ -402,6 +407,7 @@ The iOS and Android apps open every format the desktop does, and include:
 * Playback of DAISY, M4B and MP3 audio books, which keeps going in the background and from the lock screen.
 * Navigation by headings, pages, links, tables, lists and more from the reading bar, plus the table of contents and Find.
 * A sleep timer, word count, and document export, plus a speech dictionary on iOS.
+* On iOS, export goes through the share sheet, so a book can be sent to another app rather than only saved to Files, and the book's own file can be shared unchanged.
 * Text size, spacing, and high contrast text options.
 * Keyboard shortcuts that match the desktop.
 
