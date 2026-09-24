@@ -6,7 +6,37 @@ on:
   pull_request:
     branches:
       - master
+# One run per branch at a time: pushing again while a run is going makes that run pointless, and
+# the queued macOS jobs it holds are what everything else is waiting behind.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
+  # What a pull request touches, so the jobs that cost the most can sit out the ones that cannot
+  # break them. A translation or documentation pull request still gets the Windows tests and the
+  # Android checks, which compile every catalogue; it does not need an iPhone simulator.
+  # A push to master always runs everything.
+  changes:
+    name: What changed
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.check.outputs.code }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          if echo "$files" | grep -qvE '^(po/|doc/|web/|README\.md$)'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
   fmt:
     name: Format check
     runs-on: ubuntu-latest
@@ -75,6 +105,8 @@ jobs:
 
   android-instrumented:
     name: Android instrumented tests
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     # Split from the unit test job because booting an emulator costs minutes that the rest of
     # the Android checks should not wait on.
     runs-on: ubuntu-latest
@@ -133,6 +165,8 @@ jobs:
           retention-days: 7
   ios:
     name: iOS checks
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -212,6 +246,8 @@ jobs:
           cargo test -p paperback -- --ignored
   test-macos:
     name: Tests (macOS)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: macos-latest
     env:
       WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
