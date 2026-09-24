@@ -68,6 +68,10 @@ jobs:
           toolchain: stable
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       # The unit tests run on the host JVM and never call into the native library, but the code
       # they cover is compiled against the uniffi types, so the bindings have to exist for the
       # app module to compile at all. Generating them is a host build of paperback-core alone:
@@ -122,6 +126,10 @@ jobs:
           toolchain: stable
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       # Same reasoning as the unit test job: the app module only compiles once the uniffi types
       # exist, and generating them is a host build of paperback-core with no NDK involved.
       # The interface lives in the Rust now rather than in a .udl, so uniffi reads it from the
@@ -178,10 +186,30 @@ jobs:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       # The XCFramework and the Swift bindings both have to exist before xcodebuild runs: the
       # app imports the generated paperback.swift, and the project links the framework. This is
       # the same task the release build uses, so a break in either shows up here.
+      # The framework is the Rust side of the app, so it only changes when that does. Keyed on
+      # everything `cargo xtask ios` reads: the Rust sources and lockfile, the task itself, and
+      # the catalogues and readmes it turns into the app's strings and help.
+      - name: Cache the built XCFramework
+        id: xcframework
+        uses: actions/cache@v6
+        with:
+          path: |
+            ios/paperbackFFI.xcframework
+            ios/libpdfium.framework
+            ios/libpdfium.dylib
+            ios/Paperback/Generated
+            ios/Paperback/Readmes
+            ios/Paperback/*.lproj
+          key: xcframework-${{ hashFiles('Cargo.lock', 'crates/**/*.rs', 'crates/xtask/src/ios.rs', 'po/*.po', 'doc/readme*.md') }}
       - name: Build the XCFramework and Swift bindings
+        if: steps.xcframework.outputs.cache-hit != 'true'
         run: cargo xtask ios --release
       # No signing: CI has no certificate, and an unsigned build still compiles and links every
       # Swift file, which is what this job is for. Producing an .ipa needs the release flow.
@@ -233,6 +261,10 @@ jobs:
             mingw-w64-ucrt-x86_64-gettext-tools
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       # msgfmt comes from MSYS2, which setup-msys2 leaves off this step's PATH, so the build
       # scripts would silently skip every .po file. Appended rather than prepended: MSYS2's
       # usr/bin has a coreutils link.exe that would otherwise shadow the MSVC linker.
@@ -240,10 +272,14 @@ jobs:
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
           cargo test --workspace
+      # `--workspace` rather than `-p paperback`: selecting one package resolves features
+      # differently, so the run above is rebuilt from scratch, which cost more than eight minutes
+      # to reach four tests that take two seconds each. Only the UI tests are ignored, so this
+      # still runs exactly them.
       - name: Run UI tests
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
-          cargo test -p paperback -- --ignored
+          cargo test --workspace -- --ignored
   test-macos:
     name: Tests (macOS)
     needs: changes
@@ -266,6 +302,10 @@ jobs:
           components: clippy
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       - name: Cache wxWidgets source
         id: wxwidgets-cache
         uses: actions/cache@v6
@@ -315,6 +355,10 @@ jobs:
             mingw-w64-ucrt-x86_64-gettext-tools
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       # `clippy::all` is denied through [workspace.lints] in Cargo.toml, so this fails the job on
       # any of those lints. The pedantic and nursery groups stay warnings and are printed, not
       # enforced -- see the comment on the lint table for why.
