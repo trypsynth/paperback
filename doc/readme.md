@@ -35,6 +35,12 @@ If you use JAWS with a Braille display, you may find that long paragraphs are tr
 
 The workaround, eventually surfaced through the JAWS discussion group after months of waiting, is to edit `paperback.jcf` and set "Braille Presentation and Panning" to "Always use DOM if available". You'll also want to enable "Pan Text by Paragraph", otherwise your display will stay on the active paragraph rather than advancing. With both settings in place, panning should work correctly.
 
+### JAWS and Paperback's messages
+
+Paperback says things like "No pages." or "This document has no audio." as accessibility notifications, which is what lets a screen reader speak them over whatever it is saying. JAWS only acts on those when "Enable accessible notification events" is switched on for the application, and on some machines it is not.
+
+If JAWS says nothing when you press a key that should report something, open Settings Center with Paperback in front (`Insert+6`), search for "notification", and tick "Enable accessible notification events". That writes the setting to `paperback.jcf`, so it applies to Paperback alone.
+
 ## Currently supported file types
 
 Paperback supports the following formats and extensions:
