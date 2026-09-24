@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 19:11+0000\n"
+"POT-Creation-Date: 2026-09-24 14:16+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -1804,19 +1804,13 @@ msgstr "Documento recargado."
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback no puede realizar ninguna acción mientras Web View esté abierto."
 
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "{} - Paperback"
-msgstr "{} - Paperback"
-
-#, fuzzy
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d carácter"
-msgstr[1] "%d caracteres"
-
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "No se pudo exportar el documento."
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 #, fuzzy
@@ -4876,6 +4870,12 @@ msgstr "Archivo original"
 #, fuzzy
 msgid "Settings exported"
 msgstr "Configuraciones exportadas"
+
+#, fuzzy
+#~ msgid "%d char"
+#~ msgid_plural "%d chars"
+#~ msgstr[0] "%d carácter"
+#~ msgstr[1] "%d caracteres"
 
 #, fuzzy
 #~ msgid "Document Information"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 19:11+0000\n"
+"POT-Creation-Date: 2026-09-24 14:16+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1842,19 +1842,14 @@ msgstr "Đã tải lại tài liệu."
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback không thể thực hiện bất kỳ thao tác nào khi Web View đang mở."
 
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Xuất tài liệu thất bại."
+
 #. TRANSLATORS: Window title when a document is open; {} is the document title
 #, fuzzy
 msgid "{} - Paperback"
 msgstr "{} - Bản bìa mềm"
-
-#, fuzzy
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d ký tự"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Xuất tài liệu thất bại."
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 #, fuzzy
@@ -4984,6 +4979,11 @@ msgstr "Tệp gốc"
 #, fuzzy
 msgid "Settings exported"
 msgstr "Các cài đặt đã được xuất"
+
+#, fuzzy
+#~ msgid "%d char"
+#~ msgid_plural "%d chars"
+#~ msgstr[0] "%d ký tự"
 
 #, fuzzy
 #~ msgid "Document Information"
