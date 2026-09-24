@@ -2523,7 +2523,7 @@ dependencies = [
 
 [[package]]
 name = "paperback"
-version = "0.9.2"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -2547,8 +2547,10 @@ dependencies = [
  "tracing",
  "tracing-appender",
  "tracing-subscriber",
+ "uiautomation",
  "ureq",
  "windows",
+ "windows-core",
  "winres",
  "wx-utils",
  "wxdragon",
@@ -2557,7 +2559,7 @@ dependencies = [
 
 [[package]]
 name = "paperback-core"
-version = "0.9.2"
+version = "1.0.0"
 dependencies = [
  "aes 0.9.3",
  "anyhow",
@@ -2605,7 +2607,7 @@ dependencies = [
 
 [[package]]
 name = "paperback-formats"
-version = "0.9.2"
+version = "1.0.0"
 dependencies = [
  "bitflags 2.13.2",
 ]
@@ -2673,7 +2675,7 @@ dependencies = [
 
 [[package]]
 name = "pb"
-version = "0.9.2"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -4366,6 +4368,29 @@ name = "typenum"
 version = "1.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
+
+[[package]]
+name = "uiautomation"
+version = "0.25.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fa2eacf9390a8491bc949b04230f40c12520c6423a2962a6087eea1ef14373af"
+dependencies = [
+ "chrono",
+ "uiautomation_derive",
+ "windows",
+ "windows-core",
+]
+
+[[package]]
+name = "uiautomation_derive"
+version = "0.7.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c893ec96e05c3c81ba46f838f3190549ec185ef377d582ab3d44202b2dfacbd"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.6",
+]
 
 [[package]]
 name = "unicase"

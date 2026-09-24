@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 6564745fd3218b1a; sections: 84030068,db723a70,df2f4c18,14335443,91be3b41,6c87c514,94527a25,ca4819ea,a9eba369,e9860ee8,3b8321f8); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 06f1089b5f255d98; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,94527a25,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -27,17 +27,23 @@ Paperback draait op Windows 10/11, alle moderne versies van macOS op ARM, Linux,
 * Elke toetsenbordsneltoets kan worden aangepast.
 * Wordt geleverd met `pb`, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst.
 
-## Schermlezercompatibiliteit
+## Schermlezer-compatibiliteit
 
-Paperback werkt goed met alle bekende schermlezers. Er is echter één bekend probleem voor JAWS-gebruikers.
+Paperback werkt goed met alle belangrijke schermlezers. Er zijn echter twee bekende problemen voor JAWS-gebruikers.
 
 ### JAWS en brailleleesregels
 
-Als je JAWS met een brailleleesregel gebruikt, kan het zijn dat lange alinea's worden afgekapt wanneer je met de navigatietoetsen van je leesregel vooruit scrolt. Het commando om de huidige alinea te lezen heeft er ook last van. Dit is een bug in de manier waarop JAWS omgaat met het tekstbesturingselement RICHEDIT50W, niet iets in Paperback zelf, en een bug waarvoor het behoorlijk lang heeft geduurd voordat er een oplossing boven water kwam, gezien het enthousiasme waarmee Vispero reageert op problemen met opensourcesoftware.
+Als je JAWS gebruikt met een brailleleesregel, kan het gebeuren dat lange alinea's worden afgekapt bij het vooruitscrollen met de navigatietoetsen van je display. Het commando voor het lezen van de huidige alinea wordt ook beïnvloed. Dit is een bug in JAWS's omgang met het RICHEDIT50W-tekstbesturingselement, niet iets in Paperback zelf. Dit probleem duurde lang voordat er een oplossing kwam, gezien Vispero's enthousiasme voor het reageren op problemen met open source-software.
 
-De workaround, die na maanden wachten uiteindelijk via de JAWS-discussiegroep boven water kwam, is om `paperback.jcf` te bewerken en "Braille Presentation and Panning" op "Always use DOM if available" te zetten. Schakel ook "Pan Text by Paragraph" in, anders blijft je leesregel op de actieve alinea staan in plaats van verder te gaan. Met beide instellingen zou scrollen correct moeten werken.
+De omleiding, uiteindelijk naar voren gekomen via de JAWS-discussiegroep na maanden wachten, is om `paperback.jcf` te bewerken en "Braille Presentation and Panning" in te stellen op "Always use DOM if available". Je wilt ook "Pan Text by Paragraph" inschakelen, anders blijft je display op de actieve alinea staan in plaats van vooruit te gaan. Met beide instellingen op hun plaats zou het schuiven correct moeten werken.
 
-## Momenteel ondersteunde bestandstypen
+### JAWS en de meldingen van Paperback
+
+Paperback zegt dingen zoals "No pages." of "This document has no audio." als toegankelijkheidsmeldingen, waardoor een schermlezer ze kan uitspreken over wat het zegt. JAWS reageert hierop alleen wanneer "Enable accessible notification events" is ingeschakeld voor de applicatie. Op sommige machines is dit niet het geval.
+
+Als JAWS niets zegt wanneer je op een toets drukt die iets zou moeten melden, open je Settings Center met Paperback in beeld (`Insert+6`), zoek naar "notification" en vink "Enable accessible notification events" aan. Dit schrijft de instelling naar `paperback.jcf`, zodat deze alleen op Paperback van toepassing is.
+
+## Ondersteunde bestandstypen
 
 Paperback ondersteunt de volgende indelingen en extensies:
 
@@ -45,9 +51,9 @@ Paperback ondersteunt de volgende indelingen en extensies:
 * CHM-helpbestanden (`.chm`)
 * DAISY-boeken (`.opf`, `.zip`)
 * EPUB-boeken (`.epub`)
-* FB2-e-books (`.fb2`)
-* HTML-documenten (`.htm`, `.html`, `.xhtml`)
-* Manual pages, zowel `man` als BSD `mdoc` (`.1` t/m `.9`, `.man`, `.roff` en de met gzip gecomprimeerde vormen daarvan)
+* FB2-e-boeken (`.fb2`)
+* HTML-bestanden (`.htm`, `.html`, `.xhtml`)
+* Handmatige pagina's, zowel `man` als BSD `mdoc` (`.1` tot `.9`, `.man`, `.roff` en de gecomprimeerde vormen van elk)
 * Markdown-documenten (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word-documenten (`.docx`, `.docm`, `.doc`)
 * M4B-audioboeken (`.m4b`)
@@ -57,10 +63,11 @@ Paperback ondersteunt de volgende indelingen en extensies:
 * OpenDocument-tekstbestanden (`.odt`, `.fodt`)
 * PDF-documenten (`.pdf`)
 * PowerPoint-presentaties (`.pptx`, `.pptm`, `.ppt`)
+* reStructuredText-documenten (`.rst`, `.rest`)
 * RTF-documenten (`.rtf`)
 * Windows Write-documenten (`.wri`)
 * WinHelp-bestanden (`.hlp`)
-* Platte-tekst- en logbestanden (`.txt`, `.log`)
+* Platte tekst- en logbestanden (`.txt`, `.log`)
 
 ## Sneltoetsen
 
@@ -273,234 +280,239 @@ Let op: een openbare GitHub-sponsor beschouw ik als grond voor automatische opna
 * Timothy Wynn
 * Tyler Rodick
 
-## Versiegeschiedenis
+## Wijzigingen
 
 ### Versie 1.0
 
-1.0 is de eerste release op alle vijf de platforms: Windows, macOS, Linux, iOS en Android, met de iOS- en Android-apps in de App Store en op Google Play.
+1.0 is de eerste release op alle vijf platforms: Windows, macOS, Linux, iOS en Android, met de iOS- en Android-apps in de App Store en Google Play.
 
 #### Toegevoegd
 
 ##### Algemeen
-* Linux-ondersteuning, als AppImage of tar.gz, met desktopintegratie zodat documenten vanuit je bestandsbeheerder worden geopend.
-* Markeer het begin van een selectie met `Alt+F9`, kopieer alles van daar tot waar je bent uitgekomen met `Alt+F10` en ga terug naar de markering met `Alt+Shift+F9`, om een lang stuk tekst te kopiëren zonder er met shift+pijltjes doorheen te hoeven gaan. Alle drie staan onder Extra > Selecteren en kopiëren.
-* De sneltoets `=` meldt nu naast het percentage ook de pagina, bijvoorbeeld "15%, pagina 30", en blijft zoals het was bij documenten zonder paginanummers.
-* Het venster Over toont nu de licentie van Paperback en alle vertalers.
+* Linux-ondersteuning, als AppImage of tar.gz, met bureaubladintegratie zodat documenten vanuit je bestandsbeheerder openen.
+* Markeer het begin van een selectie met `Alt+F9`, kopieer alles vanaf daar tot waar je bent met `Alt+F10`, en ga terug naar het merk met `Alt+Shift+F9`, voor het kopiëren van een lange reeks tekst zonder shift-arrowing. Alle drie staan onder Extra > Selecteren en kopiëren.
+* De `=` sneltoets meldt nu de pagina en het percentage, bijvoorbeeld "15%, pagina 30", en blijft zoals het was voor documenten zonder paginanummers.
+* Het About-dialoogvenster toont nu de licentie van Paperback en alle vertalers.
 * Een Oekraïense vertaling.
 
 ##### Nieuwe indelingen
 * Comic-archieven (`.cbz`).
 * M4B-audioboeken, opgesplitst in hun hoofdstukken.
-* Manual pages, zowel `man` als BSD `mdoc`, al dan niet met gzip gecomprimeerd.
-* MP3-audioboeken, opgesplitst in hoofdstukken als het bestand die heeft.
+* Handmatige pagina's, zowel `man` als BSD `mdoc`, gecomprimeerd of niet.
+* MP3-audioboeken, opgesplitst in hoofdstukken wanneer het bestand die bevat.
+* reStructuredText-documenten.
 * Windows Write-bestanden (`.wri`).
 * WinHelp-bestanden (`.hlp`).
 * Word 6- en Word 95-documenten.
 
 ##### OCR
-* Gescande PDF-pagina's kunnen nu worden herkend met de OCR die in Windows en macOS is ingebouwd. Druk op `Enter` op een gescande pagina om die te herkennen, of gebruik Bulk-OCR (`Ctrl+Shift+O`) voor een reeks pagina's.
+* Gescande PDF-pagina's kunnen nu worden herkend met de OCR die in Windows en macOS is ingebouwd. Druk `Enter` op een gescande pagina om deze te herkennen, of gebruik Bulk-OCR (`Ctrl+Shift+O`) voor een reeks pagina's.
 
 ##### Navigatie
-* MathML-formules in EPUB en HTML worden weergegeven als AsciiMath met behulp van MathCAT. Gebruik `M` of `Shift+M` om door formules te navigeren, en daarna `Enter` of `Spatie` om de oorspronkelijke MathML te openen in de formuleweergave.
-* Een knop Alles zoeken in het zoekvenster, die elke regel met een overeenkomst opsomt zodat je direct naar de gewenste kunt springen.
-* De weergaven Tabellen, Lijsten en Pagina's in de elementenlijst (`F7`).
-* Ga naar regel, Ga naar pagina en Ga naar percentage accepteren nu `+n` en `-n` om relatief ten opzichte van je huidige positie te navigeren.
-* EPUB-, MOBI- en CHM-boeken zonder eigen koppen krijgen nu kopnavigatie op basis van hun inhoudsopgave.
+* MathML-formules in EPUB en HTML worden weergegeven als AsciiMath met behulp van MathCAT. Gebruik `M` of `Shift+M` om formules te navigeren, druk vervolgens `Enter` of `Space` om de originele MathML in Formuleweergave te openen.
+* Een knop Alles zoeken in het zoekdialoogvenster, met elke regel met een overeenkomst, zodat je direct naar de regel die je wilt kunt springen.
+* Weergaven voor tabellen, lijsten en pagina's in de elementenlijst (`F7`).
+* Ga naar regel, Ga naar pagina en Ga naar percentage accepteren nu `+n` en `-n` voor relatieve verplaatsing ten opzichte van waar je bent.
+* EPUB-, MOBI- en CHM-boeken zonder hun eigen koppen krijgen nu kopnavigatie van hun inhoudsopgave.
 * KF8-boeken (AZW3) ondersteunen nu sectienavigatie.
-* EPUB-pagina's die alleen uit een afbeelding bestaan, tonen daar nu een regel voor, zodat je erop kunt landen in plaats van er direct voorbij te gaan.
+* EPUB-pagina's die alleen een afbeelding zijn, tonen nu een regel ervoor, zodat je erop kunt landen in plaats van er rechtdoor heen te springen.
 
 ##### Audioboeken
-* Bediening van de afspeelsnelheid, van halve snelheid tot drie keer zo snel. Gebruik `Ctrl+Shift+.` en `Ctrl+Shift+,`, of het menu Extra.
-* Bladwijzers en notities in boeken met alleen audio onthouden nu het exacte tijdstip waarop je ze hebt gezet.
-* Volgende en vorige positie (`Alt+Links` en `Alt+Rechts`) werken nu in audioboeken.
-* De voortgang in een audioboek wordt nu gemeten aan de hand van de opname, zodat Ga naar percentage en de statusbalk overeenkomen met hoe ver je werkelijk bent.
+* Afspeelsnelheid-instellingen, van halve snelheid tot drie keer zo snel. Gebruik `Ctrl+Shift+.` en `Ctrl+Shift+,`, of het menu Extra.
+* Bladwijzers en notities in alleen-audioboeken onthouden nu het exacte moment waarop je ze instelt.
+* Volgende en vorige positie (`Alt+Left` en `Alt+Right`) werken nu in audioboeken.
+* Voortgang door een audioboek wordt nu gemeten aan de hand van de opname, dus Ga naar percentage en de statusbalk komen overeen met hoe ver je echt bent.
 
 ##### Recente documenten
 * Een item Recente documenten wissen in het submenu Recente documenten.
 
 ##### PDF-documenten
-* Een instelling om elke regel van een PDF apart te houden, in plaats van ze samen te voegen tot alinea's.
-* Afbeeldingen en figuren in PDF's worden nu gemeld.
-* PDF's die wel leesstructuur bevatten maar geen van hun afbeeldingen taggen, melden die afbeeldingen nu, in plaats van ze helemaal uit het boek weg te laten.
+* Een instelling om elke regel van een PDF gescheiden te houden, in plaats van ze samen te voegen tot alinea's.
+* Afbeeldingen en figuren in PDF's worden nu aangekondigd.
+* PDF's die leesstructuur bevatten maar geen van hun afbeeldingen van tags voorzien, melden nu die afbeeldingen, in plaats van ze helemaal uit het boek weg te laten.
 
 ##### Webweergave
 * Elk document kan nu in de webweergave worden geopend, niet alleen EPUB, HTML en Markdown.
 
 ##### Leesbaarheid
-* Koppen worden nu weergegeven in een grootte die past bij hun niveau, en afbeeldingen en tabellen staan los van de tekst eromheen.
+* Koppen worden nu getekend in een grootte die past bij hun niveau, en afbeeldingen en tabellen worden gescheiden van de omringende tekst.
 
 ##### pb
-* `pb --list-formats` toont elke indeling die pb kan lezen.
-* pb meldt nu welk bestand het niet kon lezen, en waarom.
+* `pb --list-formats` geeft alle indelingen weer die pb kan lezen.
+* pb geeft nu aan welk bestand niet kon worden gelezen en waarom.
 
 #### Opgelost
 
 ##### Algemeen
-* Een crash bij het afsluiten van Paperback opgelost.
-* Paperback verbergt het venster bij het afsluiten nu meteen, in plaats van het op het scherm te laten staan terwijl het opslaat.
-* Na het openen van een document blijft 'Laatst gesloten heropenen' niet langer ingeschakeld wanneer er niets te heropenen valt.
-* Paperback blijft niet langer documenten uit je lijst met recente documenten proberen die verdwenen zijn, en beperkt hoeveel recente documenten het opslaat.
-* Het oude INI-instellingenbestand wordt nu verwijderd zodra het naar de nieuwe indeling is overgezet.
-* De titels van de vensters voor lettertype en kleur, en het menu Exporteren als in het Vietnamees, zijn nu vertaald.
-* Na het bijwerken komt het opnieuw gestarte venster nu naar voren, in plaats van achter alle andere vensters in Alt+Tab te blijven staan.
-* Automatische terugloop wordt nu direct toegepast op grote documenten, in plaats van het hele document opnieuw te laden.
+* Een boek dat bij het opstarten heropend wordt, speelt nu direct af in plaats van stil te blijven totdat het gesloten en opnieuw geopend wordt.
+* Een document waarvan het bestand verdwenen is, kan nu uit Alle documenten verwijderd worden in plaats van in de lijst te blijven staan hoe vaak je ook bevestigt.
+* Crash bij het sluiten van Paperback opgelost.
+* Het sluiten van Paperback verbergt het venster nu direct in plaats van het op het scherm te laten staan terwijl het wordt opgeslagen.
+* Grote boeken met weinig opmaak gaan nu ongeveer twee keer zo snel open.
+* Berichten die uit een menu worden gekozen, zoals "Dit document heeft geen audio", worden niet langer door de schermlezer afgekapt voordat je ze hoort.
+* Het openen van een document schakelt Laatst gesloten heropenen niet meer in als er niets te heropenen is.
+* Paperback herprobeert documenten in je recente lijst die verdwenen zijn niet langer, en beperkt het aantal recente documenten dat het opslaat.
+* Het oude INI-instellingenbestand wordt nu verwijderd nadat het naar het nieuwe formaat is overgezet.
+* De titels van de lettertype- en kleurendialogen en het menu Exporteren als in het Vietnamees zijn nu vertaald.
+* Bij het bijwerken verschijnt het heropgestarte venster nu op de voorgrond in plaats van achter alle andere vensters in Alt+Tab.
+* Automatische terugloop wordt nu direct toegepast op grote documenten in plaats van het hele document opnieuw te laden.
 
 ##### Navigatie
-* `Alt+Links` gaat nu terug naar de plek waar je vandaan sprong, in plaats van naar een oudere positie.
-* Bladwijzergeluiden worden nu alleen afgespeeld wanneer je over een bladwijzer heen gaat, niet wanneer je op de regel landt waarop die staat.
-* Bij het sluiten van de inhoudsopgave, de elementenlijst en de Ga naar-vensters kom je nu direct op de gekozen regel terecht, in plaats van te moeten wachten tot de schermlezer het venster opnieuw heeft voorgelezen.
-* Ga naar regel, Ga naar pagina en Ga naar percentage weigeren nu getallen buiten het document, in plaats van stilletjes ergens anders heen te gaan.
-* Wanneer een document geen pagina's heeft, kapt NVDA de melding niet meer af.
-* Op OK drukken in de inhoudsopgave zonder te navigeren gaat nu naar het item dat al geselecteerd was.
-* De inhoudsopgave, de elementenlijst en de bladwijzerlijst haperen of bevriezen niet meer bij boeken met duizenden items.
-* Pijl omhoog en pijl omlaag onthouden hun kolom nu per document, in plaats van die mee te nemen wanneer je van tabblad wisselt.
+* `Alt+Left` gaat nu terug naar waar je vandaan sprong in plaats van naar een oudere positie.
+* Bladwijzerklanken spelen nu alleen af als je over een bladwijzer beweegt, niet als je op de regel waar deze op staat terechtkomt.
+* Het sluiten van de inhoudsopgave, de elementenlijst en de Ga-dialogen brengt je nu direct naar de regel waar je terechtkomt in plaats van de schermlezer het venster opnieuw te laten voorlezen.
+* Ga naar regel, Ga naar pagina en Ga naar percentage weigeren nu getallen buiten het document in plaats van stilletjes ergens anders heen te gaan.
+* NVDA kapt de melding niet langer af als een document geen pagina's heeft.
+* Op OK drukken in de inhoudsopgave zonder te verplaatsen gaat nu naar de vermelding die al geselecteerd was.
+* De inhoudsopgave, de elementenlijst en de bladwijzerlijst vertonen nu geen vertraging of bevriezen meer op boeken met duizenden vermeldingen.
+* Pijl-omhoog en pijl-omlaag onthouden nu hun kolom per document in plaats van deze mee te nemen bij het schakelen tussen tabbladen.
 
 ##### Audioboeken
-* Voor het afspelen van audio wordt op macOS nu `Control+Spatie` gebruikt, omdat `Command+Spatie` van Spotlight is.
+* Audioweergave maakt nu gebruik van `Control+Space` op macOS, omdat `Command+Space` van Spotlight is.
 
 ##### PDF-documenten
-* Opgelost dat PDF's die uit Apple Pages zijn geëxporteerd als platte tekst werden gelezen, zonder de koppen en lijsten waarmee ze zijn geschreven.
-* Opgelost dat PDF-alinea's en -koppen bij elke regel werden opgesplitst en woorden bij spaties uit elkaar vielen.
-* Opgelost dat genummerde PDF-koppen tot één kop werden samengevoegd.
-* Opgelost dat PDF's waarvan de structuur naar geen enkele tekst leidt, leeg werden geopend.
-* Kop- en voetteksten worden niet langer op elke pagina van PDF's zonder tags voorgelezen.
-* PDF's die hun kop- en voetteksten als gewone tekst taggen, herhalen niet langer op elke pagina de titel en het paginanummer tussen twee alinea's.
+* PDF's geëxporteerd uit Apple Pages lezen nu correct in plaats van als gewone tekst, zonder de koppen en lijsten waarmee ze geschreven waren.
+* PDF-alinea's en koppen splitsen niet langer op elke regel en woorden splitsen niet langer op spaties.
+* Genummerde PDF-koppen lopen niet langer in elkaar aan één kop.
+* PDF's waarvan de structuurboom tot geen tekst leidt, gaan niet langer leeg open.
+* Regels met een monospaced lettertype, zoals code, worden niet langer samengevoegd tot alinea's.
+* Paginakop- en voetteksten worden niet langer op elke pagina van niet-gecodeerde PDF's voorgelezen.
+* PDF's die hun paginakop- en voetteksten als gewone tekst taggen, herhalen de titel en het paginanummer niet langer tussen twee alinea's op elke pagina.
 * PDF's tonen nu hun echte titel in plaats van hun bestandsnaam.
-* Regels in een monospace-lettertype, zoals code, worden niet langer samengevoegd tot alinea's.
 
 ##### MOBI/AZW3-boeken
-* Grote MOBI-boeken lopen niet langer vast op een tekort aan geheugen en worden niet langer afgekapt na 20 MB.
-* MOBI- en AZW3-boeken worden nu veel sneller geopend.
-* Opgelost dat MOBI-boeken hun hoofdstuklijst kwijtraakten.
-* Verminkte tekst opgelost op de plekken waar MOBI-boeken van het ene record naar het volgende overgaan.
+* Grote MOBI-boeken raken niet langer zonder geheugen en worden niet langer afgekapt na 20 MB.
+* MOBI- en AZW3-boeken gaan nu veel sneller open.
+* MOBI-boeken die hun hoofdstuklijst verliezen, opgelost.
+* Verminkte tekst waar MOBI-boeken van het ene record naar het volgende overgaan, opgelost.
 
 ##### Webweergave
-* De webweergave laadt een enorm boek niet langer in één keer helemaal.
-* De webweergave toont documenten nu in hun geheel wanneer de lezer ze in hun geheel toont, in plaats van slechts een deel ervan.
+* De webweergave laadt niet langer een heel groot boek in één keer.
+* De webweergave toont documenten nu in hun geheel als de lezer ze in hun geheel toont, in plaats van slechts een deel ervan.
 
-##### Overige indelingen
-* FictionBook-boeken (.fb2) in windows-1251, en dat zijn de meeste, worden nu geopend in plaats van helemaal niet gelezen te kunnen worden.
-* FictionBook-boeken die een namespace of een HTML-entiteit gebruiken die ze nooit hebben gedeclareerd, worden nu geopend in plaats van als beschadigd te worden geweigerd.
-* Boeken in verouderde tekstcoderingen worden nu veel sneller geopend.
-* Opgelost dat sommige Chinese tekstbestanden als verminkte tekst werden geopend.
-* Met een wachtwoord beveiligde OpenDocument-bestanden vragen nu om hun wachtwoord, in plaats van als beschadigd te worden gemeld.
-* Met een wachtwoord beveiligde klassieke PowerPoint-bestanden worden nu geopend, en klassieke PowerPoint-dia's raken hun tekst niet meer kwijt.
-* Platte-tekstbestanden die met de extensie `.rtf` zijn opgeslagen, worden nu als tekst geopend, in plaats van te mislukken met een foutmelding.
-* RTF-opmaakcodes verschijnen niet langer als tekst.
+##### Andere formaten
+* FictionBook (.fb2)-boeken geschreven in windows-1251, wat de meeste zijn, gaan nu open in plaats van helemaal niet gelezen te worden.
+* FictionBook-boeken die een namespace of HTML-entiteit gebruiken die ze nooit gedeclareerd hebben, gaan nu open in plaats van als verbroken te worden geweigerd.
+* Boeken in verouderde coderingen gaan nu veel sneller open.
+* Sommige Chinese tekstbestanden die als verminkte tekst werden geopend, opgelost.
+* Met wachtwoord beveiligde OpenDocument-bestanden vragen nu naar hun wachtwoord in plaats van als verbroken te worden gemeld.
+* Met wachtwoord beveiligde verouderde PowerPoint-bestanden gaan nu open en verouderde PowerPoint-dia's verliezen hun tekst niet langer.
+* Platte tekstbestanden met een `.rtf`-extensie openen nu als tekst in plaats van met een fout te mislukken.
+* RTF-besturingswoorden verschijnen niet langer als tekst.
 
 #### iOS en Android
 
-De iOS- en Android-apps openen elke indeling die de desktopversie ondersteunt, en bevatten:
+De iOS- en Android-apps openen elk formaat dat de desktop-app kan, en bevatten:
 
-* Voorlezen, met je eigen keuze van stem, snelheid en toonhoogte, een regelaar voor de spreeksnelheid direct op de leesbalk, en een optionele pauze tussen alinea's.
+* Voorlezen, met je keuze van stem, spreeksnelheid en toonhoogte, een spreeksnelheidsbesturing direct op de leesbalk en een optionele pauze tussen alinea's.
 * Afspelen van DAISY-, M4B- en MP3-audioboeken, dat doorgaat op de achtergrond en vanaf het vergrendelscherm.
-* Navigatie per kop, pagina, link, tabel, lijst en meer vanaf de leesbalk, plus de inhoudsopgave en Zoeken.
-* Een slaaptimer, woordenaantal en documentexport, plus een uitspraakwoordenboek op iOS.
-* Opties voor tekstgrootte, afstand en tekst met hoog contrast.
-* Sneltoetsen die overeenkomen met de desktopversie.
+* Navigatie via koppen, pagina's, links, tabellen, lijsten en meer vanuit de leesbalk, plus de inhoudsopgave en Zoeken.
+* Een slaaptimer, woordenaantal en documentexport, plus een uitspraakwoordenboek op iOS. Op iOS verloopt de export via het deelblad, zodat een boek naar een ander app of naar Bestanden kan, in een ander formaat of exact zoals het is.
+* Opties voor tekengrootte, regelafstand en contrast.
+* Toetsenbordsneltoetsen die overeenkomen met de desktop-app.
 
 ### Versie 0.9.2
-* Audioboeken laten je schermlezer niet langer een reeks spaties voorlezen wanneer je het tekstveld focust.
-* Audioboeken noemen nu de bestandsnaam wanneer je er per sectie doorheen gaat.
-* Audioboeken melden nu hun werkelijke lengte, in plaats van te beweren dat elk bestand erin 24 uur duurt.
-* Het sluiten van de webweergave met Escape geeft geen debugmelding meer nadat je er een link in hebt gevolgd.
-* Kopiëren na Alles selecteren geeft je nu het hele document, in plaats van alleen het deel dat op dat moment geladen is.
-* Zoeken gaat nu direct naar de gevonden regel, in plaats van je te laten wachten tot de schermlezer het venster opnieuw heeft voorgelezen wanneer de focus naar het boek terugkeert.
-* Opgelost dat EPUB's met een verdwaald ZIP64-blok weigerden te openen met "Invalid local file header".
-* Opgelost dat lange documenten naar het begin terugsprongen terwijl een schermlezer ze aan het voorlezen was.
-* Links in de webweergave brengen je nu naar de sectie waarnaar ze verwijzen, in plaats van te mislukken met "File not found".
-* De automatische melding "Document opnieuw geladen" onderbreekt je schermlezer niet langer midden in een zin, maar wacht tot die klaar is met wat hij aan het zeggen was.
-* Het tabblad Algemeen van het venster Instellingen doorloopt zijn opties met Tab nu in de volgorde waarin ze op het scherm staan, met het updatekanaal direct na de optie voor het controleren op updates.
-* Windows toont nu altijd "Paperback" in het menu Openen met, in plaats van de volledige omschrijving van het programma.
-* Woordenaantal en Documentinformatie tonen nu hoeveel bestanden een audioboek bevat en hoe lang het in totaal duurt.
+* Audioboeken zorgen er niet langer voor dat je schermlezer een reeks spaties hardop leest wanneer je de tekstinvoer focust.
+* Audioboeken benoemen nu het bestand terwijl je er doorheen navigeert per sectie.
+* Audioboeken melden nu hun werkelijke tijdsduur in plaats van voor elk bestand 24 uur te claimen.
+* Het sluiten van de webweergave met Escape geeft geen debug-waarschuwing meer nadat je een link erin hebt gevolgd.
+* Kopiëren na Alles selecteren geeft je nu het hele document, in plaats van alleen het momenteel geladen deel.
+* Zoeken gaat nu rechtstreeks naar de regel waar het iets vond, in plaats van je door te laten worstelen terwijl de schermlezer het venster opnieuw hardop leest wanneer de focus terugkeert naar het boek.
+* EPUB-bestanden met een stray ZIP64-blok die weigerden te openen met "Invalid local file header" zijn gerepareerd.
+* Lange documenten die terugliepen naar het begin terwijl een schermlezer continu doorheen las zijn gerepareerd.
+* Links in de webweergave brengen je nu naar de sectie waar ze naar verwijzen, in plaats van te mislukken met "Bestand niet gevonden".
+* De automatische "Document herladen"-mededeling onderbreekt je schermlezer niet meer midden in een zin, maar wacht tot het klaar is met wat het zei.
+* Het tabblad Algemeen van het dialoogvenster Instellingen navigeert nu door zijn opties in de volgorde waarin ze op het scherm verschijnen, met het updatekanaal direct na de optie updates controleren.
+* Windows toont nu altijd "Paperback" in het menu Openen met, in plaats van de volledige tagline van het programma.
+* Woordenaantal en Documentinformatie tonen nu hoeveel bestanden een audioboek bevat en hoe lang het totaal duurt.
 
 ### Versie 0.9.1
-* Bladwijzer- en notitiegeluiden worden nu afgespeeld op macOS.
-* DAISY-boeken spelen hun audio nu af op macOS, in plaats van te openen en hun tijdlijn in stilte bij te houden.
-* Opgelost dat gekrulde aanhalingstekens, gedachtestreepjes en vergelijkbare tekens uit RTF-documenten verdwenen en daarbij de omringende woorden aan elkaar plakten.
-* Opgelost dat RTF-afbeeldingen hun ruwe gegevens als verminkte tekst in het document lekten.
-* Opgelost dat het submenu Recente documenten verouderde items behield totdat iets anders het toevallig opnieuw opbouwde.
-* De sneltoetsletters zijn terug in elke vertaling, zodat de Russische menu's weer met het toetsenbord te bedienen zijn.
-* Grote CHM-documenten worden nu tot zeven keer sneller geopend.
-* Geopende documenten worden nu bij Windows geregistreerd, zodat ze verschijnen in de jumplist van de taakbalk en in de lijst met recente items van het menu Start.
-* Opties is hernoemd naar Instellingen, in lijn met de mobiele apps en, op macOS, de platformconventie.
-* Paperback onthoudt nu de positie, grootte en gemaximaliseerde staat van het venster tussen sessies.
-* Meervoudsvormen worden nu vertaald, zodat berichten die dingen tellen goed leesbaar zijn in talen die meer dan één vorm nodig hebben.
-* Het selecteren van de ncc.html van een DAISY-boek opent nu het volledige audioboek in plaats van alleen de tekst.
-* De actienamen in het venster Toetsenbordsneltoetsen aanpassen kunnen nu worden vertaald.
-* De documenttitel staat nu vooraan in de titelbalk, zodat geopende boeken in de taakbalk en Alt+Tab uit elkaar te houden zijn.
-* Het updatevenster is nu vertaald.
+* Geluid van bladwijzers en notities speelt nu af op macOS.
+* DAISY-boeken spelen hun audio nu af op macOS, in plaats van hun tijdlijn stilzwijgend te openen en bij te werken.
+* Gekrulde aanhalingstekens, em-streepjes en soortgelijke tekens die uit RTF-documenten verdwenen en de omliggende woorden samenvoeging zijn gerepareerd.
+* RTF-afbeeldingen die hun ruwe gegevens als versleuterde tekst in het document lieten lekken zijn gerepareerd.
+* Het submenu Recente documenten dat verouderde items behield tot iets anders het heropbouwde is gerepareerd.
+* Toetsenbordversnellers zijn terug in elke vertaling, dus Russische menu's hebben opnieuw toetsenbordtoegang.
+* Grote CHM-documenten openen nu tot zeven keer sneller.
+* Geopende documenten worden nu bij Windows geregistreerd, zodat ze in de taakbalkjumplist en de recente lijst van het Start-menu verschijnen.
+* Opties is hernoemd naar Instellingen, wat aansluit bij de mobiele apps en op macOS de platformconventie.
+* Paperback onthoudt nu de raamposition, grootte en gemaximaliseerde staat tussen runs.
+* Meervoudsvormen zijn nu vertaald, zodat berichten die dingen tellen correct in talen met meer dan één vorm lezen.
+* Het selecteren van ncc.html van een DAISY-boek opent nu het volledige audioboek in plaats van alleen de tekst.
+* De actienamen in het dialoogvenster Toetsenbordsneltoetsen aanpassen kunnen nu vertaald worden.
+* De documenttitel staat nu eerst in de titelbalk, zodat geopende boeken in de taakbalk en Alt+Tab uit elkaar kunnen worden gehouden.
+* Het updatedialoogvenster is nu vertaald.
 
 ### Versie 0.9.0
 
 #### Toegevoegd
 
 ##### Algemeen
-* Een terminalprogramma, pb genaamd, om snel elke door Paperback ondersteunde indeling om te zetten naar HTML, Markdown of platte tekst.
-* Een optie om documenten opnieuw te laden die door andere programma's op de schijf zijn gewijzigd.
-* Een optie Bron weergeven om de bron van een document in een nieuw tabblad te openen, bijvoorbeeld handig voor het bewerken van Markdown.
-* Documenttekst wordt nu gepagineerd, wat betekent dat je boeken met tientallen miljoenen woorden nu in slechts een paar seconden kunt laden. Meld het als je hierbij iets vreemds tegenkomt.
+* Een terminalprogramma, genaamd pb, om snel documenten in een van Paperback's ondersteunde indelingen naar HTML, Markdown of platte tekst te converteren.
+* Een optie om documenten opnieuw in te laden die door andere programma's op schijf zijn gewijzigd.
+* Een optie Bron weergeven om de bron van een document in een nieuw tabblad te openen, handig voor bijvoorbeeld het bewerken van Markdown.
+* Documenttekst is nu gepagineerd, wat betekent dat je boeken met tientallen miljoenen woorden nu in slechts een paar seconden kunt laden. Meld alstublieft eventuele vreemdheden hiermee.
 
 ##### Platformondersteuning
-* Ondersteuning voor Windows op ARM64!
-* Native ondersteuning voor macOS!
-* Een optie voor volledig scherm.
+* ARM64 Windows-ondersteuning!
+* Native macOS-ondersteuning!
+* Een volledig scherm in-/uitschakelen.
 
-##### Venster Alle documenten
-* Een knop Terugvinden voor ontbrekende boeken waarvan alleen het pad is gewijzigd.
-* Een statusfilter en een statusbalk, zodat je op documentstatus kunt filteren en kunt zien hoeveel documenten er worden getoond en geselecteerd zijn.
-* De sneltoets `Ctrl+Shift+A` om de selectie van alle documenten op te heffen.
+##### Dialoogvenster Alle documenten
+* Een knop Terugvinden om ontbrekende boeken te lokaliseren die hun pad hebben gewijzigd.
+* Een statusfilter en statusbalk, zodat je op documentstatus kunt filteren en ziet hoeveel documenten worden weergegeven en geselecteerd.
+* De sneltoets `Ctrl+Shift+A` om alle documenten af te selecteren.
 
 ##### Opties en leesbaarheid
 * Een tabblad Leesbaarheid, met de volgende opties:
-    * Automatische terugloop (verplaatst vanuit Algemeen);
+    * Automatische terugloop (verplaatst uit algemeen);
     * Tabellen in de tekst weergeven (nieuw in deze release, zie hieronder);
     * Lettertype;
     * Achtergrondkleur;
     * Regelafstand;
     * Alinea-afstand;
-    * Tekenafstand;
+    * Letterafstand;
     * Tekstuitlijning.
-* Een menu-item voor automatische terugloop met bijbehorende sneltoets.
-* Een schakeloptie om te bepalen hoe je tabellen wilt laten weergeven, en de weergave van tabellen is gelijkgetrokken voor alle documenten.
+* Een menuitem Automatische terugloop en daaropvolgende venstersneltoets.
+* Een wisselaar om te bepalen hoe je tabellen wilt weergegeven, en hoe tabellen over documenten heen uniform worden weergegeven.
 
 ##### Navigatie
-* Ondersteuning voor navigeren per container.
-* Een optie om de cursor automatisch naar het begin van de regel te verplaatsen bij het navigeren tussen regels, vergelijkbaar met de bladermodus van schermlezers.
-* De sneltoets = om je huidige percentage in een document te melden.
+* Ondersteuning voor navigatie op container.
+* Een optie om de cursor automatisch naar het begin van de regel te verplaatsen bij navigatie tussen regels, vergelijkbaar met bladermodus in schermlezers.
+* De sneltoets Gelijkteken om je huidige percentage in een document aan te kondigen.
 
 ##### Bladwijzers
-* Tijdelijke bladwijzers: je kunt er één per document hebben, en ze blijven bewaard. Gebruik de schuine streep om er een in te stellen en de backslash om ernaartoe te springen.
+* Tijdelijke bladwijzers: je kunt er één per document hebben, en ze blijven bestaan. Gebruik schuine streep om er een in te stellen en backslash om ernaar te springen.
 
 ##### Woordenaantal
-* Geschatte leestijd in het woordenaantalvenster, plus de mogelijkheid om je leessnelheid in te stellen zodat dit getal echt nuttig is.
-* Als er een selectie actief is wanneer je het woordenaantalvenster opent, wordt nu getoond hoeveel woorden je hebt geselecteerd.
+* Geschatte leestijd in het dialoogvenster Woordenaantal, evenals de mogelijkheid om je leessnelheid in te stellen om deze metriek daadwerkelijk bruikbaar te maken.
+* Als een selectie actief is wanneer je het dialoogvenster Woordenaantal opent, wordt het aantal woorden dat je hebt geselecteerd nu weergegeven.
 
-##### Sneltoetsen
-* De mogelijkheid om elke sneltoets in de applicatie aan te passen via een eenvoudig venster.
-* Een instelbare sneltoets om Paperback vanuit het systeemvak te herstellen.
+##### Toetsenbordsneltoetsen
+* De mogelijkheid om elke toetsenbordsneltoets in de app aan te passen via een eenvoudig dialoogvenster.
+* Een configureerbare toetsenbordsneltoets om Paperback uit het systeemvak terug te zetten.
 
 ##### Talen
 * Nederlands, Fins en Pools.
 
 ##### Exporteren
-* Het menu-item Exporteren is uitgebreid zodat je naast platte tekst ook naar HTML en Markdown kunt exporteren.
+* Het menuitem Exporteren uitgebreid om naar HTML en Markdown te exporteren, naast platte tekst.
 
 ##### Updater
-* Een knop Annuleren in het venster dat tijdens het bijwerken wordt getoond.
-* De updater controleert nu of er niet met het gedownloade bestand is geknoeid.
+* Een knop Annuleren in het dialoogvenster Update wordt uitgevoerd.
+* De updater valideert nu dat het gedownloade bestand niet is gewijzigd.
 
 ##### Webweergave
 * De webweergave wordt nu geopend op je huidige leespositie.
 
 ##### DAISY-boeken
 * Ondersteuning voor DAISY 2.0-boeken.
-* Ondersteuning voor het afspelen van DAISY 2.02-audio.
+* Ondersteuning voor DAISY 2.02 audio afspelen.
 
 ##### Audioboeken
-* De mogelijkheid om audioboeken af te spelen, momenteel met ondersteuning voor zowel DAISY-audio (inclusief DAISY-audio + tekst) als zips met audiobestanden.
-* Sneltoetsen en menu-items om de audio af te spelen/te pauzeren, vooruit en terug te spoelen en de spoelstap aan te passen.
-* Opties om de leescursor te synchroniseren met het afspelen van de audio, de spoelstap in te stellen en te kiezen of spoelen voorbij het einde van een hoofdstuk verdergaat in het volgende.
+* De mogelijkheid om audioboeken af te spelen, momenteel ondersteunend DAISY audio (inclusief DAISY audio + tekst) en ZIP-bestanden met audiobestanden.
+* Toetsenbordsneltoetsen en menu-items om audio af te spelen/pauzeren, vooruit en achteruit te spoelen en de audiospoelstap aan te passen.
+* Opties om de leescursor met audio afspelen te synchroniseren, de audiospoelstap in te stellen en te kiezen of spoelen voorbij het einde van een hoofdstuk doorgaat naar het volgende.
 
 ##### CHM-documenten
 * Ondersteuning voor lijsten, lijstitems, figuren en afbeeldingen.
@@ -511,276 +523,276 @@ De iOS- en Android-apps openen elke indeling die de desktopversie ondersteunt, e
 #### Opgelost
 
 ##### Algemeen
-* Documenten in verouderde CJK-coderingen, zoals GBK, Big5 en Shift_JIS, worden nu correct weergegeven in plaats van als een brij mojibake.
-* Opgelost dat 'Laatst gesloten heropenen' de meegeleverde handleiding probeerde te heropenen.
-* Opgelost dat je geselecteerde tabblad niet goed de focus kreeg na het opnieuw starten van Paperback.
-* De omgang van Paperback met bestanden op Windows-netwerkschijven: 'Bestandslocatie openen' focust het bestand nu correct op de netwerkopslag, en de paden bevatten geen vreemde tekens meer.
-* .paperback-bestanden worden bij het herstellen van documenten niet langer geforceerd geladen; in plaats daarvan wordt je om bevestiging gevraagd wanneer er een wordt gevonden.
-* Bovenliggende map openen focust nu het betreffende bestand in de Verkenner.
-* Bij het openen van de handleiding wordt nu je gekozen taal gerespecteerd.
-* De gebruikersinterface van Paperback wordt nu goed geschaald op schermen met hoge DPI.
-* Het menu wordt nu correct bijgewerkt, en de focus gaat naar het tekstbesturingselement, bij het openen van de help in Paperback.
-* Overgestapt op een veel veiligere IPC-methode op Windows.
-* De titel van het actieve document wordt nu voorgelezen bij het wisselen tussen tabbladen.
-* Minder geheugengebruik bij grote documenten door de interne indextabellen per teken te halveren.
+* Documenten gecodeerd in verouderde CJK-coderingen, zoals GBK, Big5 en Shift_JIS, worden nu correct weergegeven in plaats van als onleesbare tekens.
+* "Laatst gesloten heropenen" probeert niet langer de meegeleverde handleiding opnieuw te openen.
+* Je geselecteerde tabblad krijgt na het herstarten van Paperback nu goed focus.
+* Paperbacks verwerking van bestanden op Windows-netwerkschijven: als je nu de bestandslocatie opent, krijgt het bestand op de netwerkopslag goed focus, en de paden bevatten niet langer vreemde tekens.
+* .paperback-bestanden worden niet langer forceer geladen bij documentherstel; in plaats daarvan krijg je een bevestigingsverzoek als er een wordt gevonden.
+* Map openen geeft nu de gegeven bestand focus in de verkenner.
+* Het openen van de handleiding respecteert nu je geselecteerde taal.
+* De gebruikersinterface van Paperback schaalt nu correct op high-DPI-schermen.
+* Het menu werkt nu correct bij, en focus gaat naar het tekstbesturingselement wanneer je hulp opent in Paperback.
+* Overgestapt naar een veel veiliger IPC-methode op Windows.
+* De titel van het actieve document wordt nu voorgelezen bij het schakelen tussen tabbladen.
+* Verminderd geheugengebruik bij grote documenten door de omvang van de interne per-teken-indextabellen te halveren.
 
-##### Venster Alle documenten
-* Opgelost dat Escape de vensters Documentinformatie en Alle documenten niet sloot.
-* Opgelost dat de titelbalk niet werd bijgewerkt na het sluiten van een document vanuit het venster Alle documenten.
-* Readme.html wordt niet langer aan je lijst met alle documenten toegevoegd wanneer je die opent via Shift+F1.
-* Het verwijderen van documenten uit het venster met recente documenten sluit nu ook hun actieve tabblad.
+##### Dialoogvenster Alle documenten
+* Escape sluit niet de dialoogvensters Documentinformatie en Alle documenten.
+* De titelbalk werkt niet bij na het sluiten van een document uit het dialoogvenster Alle documenten.
+* Readme.html wordt niet langer aan je lijst Alle documenten toegevoegd wanneer deze via Shift+F1 wordt geopend.
+* Het verwijderen van documenten uit het dialoogvenster Recent wordt nu ook hun actieve tabblad gesloten.
 * Je zoekfilter blijft nu behouden na het verwijderen van een document.
 
 ##### Navigatie
-* Opgelost dat paginanavigatie in sommige situaties de verkeerde regeltekst meldde.
-* Opgelost dat Ga naar regel, Ga naar pagina en Ga naar percentage je cursor in grote documenten op de verkeerde positie plaatsten.
-* Opgelost dat Zoeken en Volgende zoeken in grote documenten geen rekening hielden met het geladen documentvenster.
+* Paginanavigatie meldt in sommige situaties onjuiste regeltekst.
+* "Ga naar regel", "Ga naar pagina" en "Ga naar procent" plaatsen je cursor op de verkeerde positie in grote documenten.
+* "Zoeken" en "Volgende zoeken" respecteren het geladen documentvenster in grote documenten niet.
 
 ##### Bladwijzers
-* Bladwijzer-/notitiegeluiden zouden nu alleen nog moeten worden afgespeeld wanneer je over een woord navigeert dat er een bevat.
+* Bladwijzer-/notitiegeluiden worden nu correct uitsluitend afgespeeld wanneer je over een woord navigeert dat er een bevat.
 
 ##### Leesbaarheid
-* Opgelost dat het toepassen van automatische terugloop je naar het begin van je document schoot.
+* "Automatische terugloop" inschakelen stuurt je naar het begin van je document.
 
 ##### Webweergave
-* Opgelost dat het webweergavevenster niet in grootte kon worden aangepast en heel klein opende.
-* Afbeeldingen zouden nu correct moeten worden weergegeven in de ingesloten webweergave.
+* Het webweergave-dialoogvenster kan niet worden aangepast en verschijnt met een erg klein initieel formaat.
+* Afbeeldingen worden nu correct weergegeven in de ingebedde webweergave.
 
 ##### Updater
-* De updater toont nu correct de inhoud van Markdown-codetags in release-opmerkingen.
+* De updater toont nu correct de inhoud van markdown-codetags in releaseopmerkingen.
 
 ##### DAISY-boeken
-* Opgelost dat DAISY-boeken onjuiste informatie in de statusbalk toonden.
-* Het laden van DAISY-boeken met onjuiste coderingsdeclaraties opgelost.
+* DAISY-boeken tonen onjuiste informatie in de statusbalk.
+* DAISY-boeken laden met valse coderingsdeclaraties.
 
 ##### RTF-documenten
-* Het verwerken van RTF-documenten met niet-Latijnse tekens opgelost.
-* RTF `\pict`-groepen opgelost, zodat ingesloten afbeeldingsgegevens niet langer in de documenttekst lekken.
+* RTF-documenten verwerken met niet-Latijnse tekens erin.
+* RTF `\pict`-groepen zodat ingebedde afbeeldingsgegevens niet langer in de documenttekst lekken.
 
 ##### Mobi/AZW3-boeken
-* Opgelost dat filepos-ankers in Mobi-boeken HTML-tags opsplitsten en rommel in de boektekst zetten.
-* Links in klassieke Mobi-boeken opgelost.
-* Het verwerken van AZW3 sterk verbeterd.
+* Filepos-ankers in Mobi-boeken splitsen HTML-tags en voegen rommel in de boektekst in.
+* Links in verouderde Mobi-boeken.
+* Sterk verbeterd AZW3-verwerking.
 
 ##### Word-documenten
-* Opgelost dat Word-documenten met taalspecifieke stijlnamen hun koppen niet goed weergaven.
+* Word-documenten met landinstellingsspecifieke stijlnamen geven hun koppen niet correct weer.
 
 ##### HTML/XHTML-documenten
-* Opgelost dat dl-, dt- en dd-elementen geen regeleinden opleverden in XHTML-documenten.
+* dl-, dt- en dd-elementen produceren geen regelafbrekingen in XHTML-documenten.
 
 ##### PDF-documenten
-* Paperback valt bij PDF's met onjuiste tags nu terug op het uitlezen als platte tekst.
-* PDF-documenten met besturingstekens in hun titel en/of bladwijzers laten Paperback niet langer crashen bij het openen.
+* Paperback valt nu terug op normale tekstextractie voor onterecht gemarkeerde PDF's.
+* PDF-documenten met besturingselementen in hun titels en/of bladwijzers laten Paperback niet langer crashen bij het openen.
 
 ### Versie 0.8.5
-* Paginaondersteuning toegevoegd aan epub-boeken.
-* Ondersteuning toegevoegd voor versleutelde Microsoft Office-documenten. Momenteel worden klassiek Word, modern Word en modern PowerPoint ondersteund; klassiek PowerPoint is gepland voor de toekomst.
-* Ondersteuning toegevoegd voor klassieke Microsoft Word-documenten!
-* Ondersteuning toegevoegd voor klassieke PowerPoint-presentaties!
-* Ondersteuning toegevoegd voor mobi- en AZW3-boeken!
-* Ondersteuning toegevoegd voor PDF-bestanden met tags!
-* De sneltoets Ctrl+Q toegevoegd om de app af te sluiten.
-* Ondersteuning toegevoegd voor gecomprimeerde boeken van Bookshare (zowel DAISY als Word)!
-* Alternatieve tekst voor ingesloten afbeeldingen wordt nu correct getoond.
-* CHM-documenten ondersteunen nu correct de navigatie via interne links.
-* Opgelost dat 'ga naar pagina' er 1 naast zat.
-* Opgelost dat de Escape-toets niet werkte om het venster 'Openen als' te sluiten.
-* Opgelost dat het contextmenu van de lezer niet verscheen bij rechtsklikken of met de toets Toepassingen.
-* Opgelost dat soms het verkeerde document de focus kreeg bij het openen van documenten vanaf de terminal.
-* PDF's die alleen uit afbeeldingen bestaan, worden weer gedetecteerd en je wordt op hun bestaan gewezen.
-* Het is nu mogelijk om door afbeeldingen en figuren te navigeren met respectievelijk g/shift+g en f/shift+f.
-* Paperback respecteert nu je instelling voor de donkere modus van de applicatie.
-* Ondersteuning voor DAISY XML verwijderd, omdat dit niet langer nodig is.
-* Teruggeschakeld naar de native Win32-navigatie op eerste letter in de boomstructuur van de inhoudsopgave.
-* Het foutvenster bij laden toont nu meer gedetailleerde foutmeldingen.
-* De webweergave wordt nu veel sneller en soepeler geopend.
+* Paginaondersteuning aan epub-boeken toegevoegd.
+* Ondersteuning voor versleutelde Microsoft Office-documenten toegevoegd. Momenteel worden klassieke Word, moderne Word en moderne Powerpoint ondersteund; klassieke Powerpoint staat gepland voor de toekomst.
+* Ondersteuning voor klassieke Microsoft Word-documenten toegevoegd.
+* Ondersteuning voor klassieke Powerpoint-presentaties toegevoegd.
+* Ondersteuning voor mobi- en AZW3-boeken toegevoegd.
+* Ondersteuning voor getagde PDF-bestanden toegevoegd.
+* Sneltoets `Ctrl+Q` om de app te sluiten toegevoegd.
+* Ondersteuning voor gecomprimeerde boeken van Bookshare (zowel DAISY als Word) toegevoegd.
+* Alt-tekst voor ingebedde afbeeldingen wordt nu correct weergegeven.
+* CHM-documenten ondersteunen nu goed interne linknavigatie.
+* "Ga naar pagina" corrigeerd zodat het niet meer 1 afwijkt.
+* Escape-toets werkt nu om het dialoogvenster "Openen als" te sluiten.
+* Het contextmenu van de lezer verschijnt nu bij rechtsklikken of de toepassingstoets.
+* Het juiste document krijgt focus wanneer documenten van de opdrachtregel worden geopend.
+* PDF's met alleen afbeeldingen worden opnieuw gedetecteerd en waarschuwen je van hun bestaan.
+* Het is nu mogelijk door afbeeldingen en figuren te navigeren met g/Shift+G en f/Shift+F.
+* Paperback respecteert nu je instellingen voor donkere modus van de applicatie.
+* DAISY XML-ondersteuning verwijderd, omdat deze niet langer nodig is.
+* Overgestapt naar de ingebouwde Win32-navigatie met eerste letter in de inhoudsopgaveboom.
+* Het foutladings-dialoogvenster toont nu meer gedetailleerde foutmeldingen.
+* De webweergave opent nu veel sneller en soepeler.
 
 ### Versie 0.8.2
-* Paginaondersteuning toegevoegd aan RTF-documenten!
-* Een fout opgelost waarbij het openen van de webweergave in epubs met externe links deze automatisch activeerde.
-* Een fout opgelost waarbij de RTF-verwerker in zeldzame gevallen geen spatie tussen woorden plaatste.
-* Opgelost dat alinea's in sommige PDF-documenten werden opgesplitst in meerdere korte regels.
-* PDF-documenten hebben nu basisondersteuning voor link- en kopnavigatie!
-* RTF-tabs en regeleinden worden nu exact weergegeven zoals ze in het document voorkomen.
-* Teruggeschakeld naar de beproefde pdfium-bibliotheek voor het verwerken van PDF's, waardoor PDF-weergave weer veel betrouwbaarder is.
+* Paginaondersteuning aan RTF-documenten toegevoegd.
+* Bug opgelost waarbij het openen van de webweergave in epubs met externe links deze automatisch zou activeren.
+* Bug opgelost waarbij de RTF-verwerker in zeldzame gevallen geen spatie tussen woorden zou plaatsen.
+* Alinea's worden niet langer opgesplitst in meerdere korte regels in sommige PDF-documenten.
+* PDF-documenten ondersteunen nu basisnavigatie voor links en koppen.
+* RTF-tabs en regeleindes worden nu exact weergegeven zoals ze in het document voorkomen.
+* Teruggegaan naar de beproefd werkende pdfium-bibliotheek voor PDF-verwerking, waardoor PDF-rendering veel betrouwbaarder wordt.
 
 ### Versie 0.8.1
-* Ctrl+Shift+T toegevoegd om het laatst gesloten document te heropenen.
-* Het venster Alle documenten ondersteunt nu het selecteren van meerdere documenten om in één keer te openen.
-* Enkele fouten in de RTF-verwerker opgelost.
-* Opgelost dat bestandspaden met niet-ASCII-tekens (zoals het Bosnische š, č, ć, ž) beschadigd raakten bij het openen van een bestand via een tweede Paperback-instantie.
-* Opgelost dat PDF-tekst in de verkeerde volgorde werd voorgelezen en dat er onjuiste spaties rond woorden met hoofdletters stonden.
-* Opgelost dat het laden van documenten traag was bij het openen van grote bestanden.
-* De lokalisatie van de knoppen Ja/Nee in bevestigingsvensters opgelost.
+* `Ctrl+Shift+T` toegevoegd om het laatst gesloten document opnieuw te openen.
+* Het dialoogvenster Alle documenten ondersteunt nu het selecteren van meerdere documenten om tegelijk te openen.
+* Enkele bugs in de RTF-verwerker opgelost.
+* Bestandspaden met niet-ASCII-tekens (zoals Bosnisch š, č, ć, ž) worden niet langer beschadigd wanneer een bestand wordt geopend via een tweede Paperback-exemplaar.
+* PDF-tekst wordt niet langer in de verkeerde volgorde gelezen, en onjuiste spatiëring rond gekapitaliseerde woorden opgelost.
+* Traag laden van documenten bij het openen van grote bestanden opgelost.
+* Lokalisatie van de Ja-/Nee-knoppen in bevestigingsdialoogvensters opgelost.
 
 ### Versie 0.8.0
-* Japanse, vereenvoudigd Chinese en Vietnamese vertalingen toegevoegd!
-* Een automatische updater toegevoegd die je huidige geïnstalleerde versie van Paperback vervangt in plaats van alleen de nieuwe versie te downloaden!
-* Optionele geluidsfeedback toegevoegd bij het bereiken van een bladwijzer of notitie, met dank aan Andre Louis voor de geluiden!
-* Ondersteuning voor RTF-documenten toegevoegd!
-* Ondersteuning toegevoegd voor DAISY XML-documenten.
-* Ondersteuning toegevoegd voor Flat OpenDocument-tekstbestanden!
-* Ondersteuning toegevoegd voor Flat OpenDocument-presentaties!
-* Ondersteuning toegevoegd voor scheidingen met s en shift+s.
-* Elke navigatie van meer dan 300 tekens wordt nu automatisch toegevoegd aan je navigatiegeschiedenis.
-* Het herstellen van het venster van Paperback vanuit het systeemvak gerepareerd.
-* Opgelost dat Markdown-documenten ruwe tekst toonden in plaats van weergegeven HTML in de webweergave.
-* Opgelost dat tabellen niet goed werden weergegeven in Markdown-bestanden.
-* PDF's die alleen uit afbeeldingen bestaan, waarschuwen je nu bij het laden over hun bestaan.
-* Versie-informatie wordt nu correct ingesloten in het uitvoerbare bestand van Paperback.
-* Het optievenster opgesplitst in tabbladen voor eenvoudig gebruik en navigatie.
-* Overgestapt op Hayro voor het verwerken van PDF's, wat zorgt voor meer betrouwbaarheid, snelheid en minder DLL's.
-* De volledige app herschreven in Rust. De nieuwe codebase is veiliger, laadt documenten sneller en is eenvoudiger te onderhouden en uit te breiden.
-* Het contextmenu van het tekstbesturingselement bevat nu lezerspecifieke acties in plaats van algemene items zoals knippen en plakken.
+* Japanse, vereenvoudigde Chinese en Vietnamese vertalingen toegevoegd!
+* Een automatische updater toegevoegd die nu je huidige geïnstalleerde versie van Paperback vervangt in plaats van alleen de nieuwe versie te downloaden!
+* Optionele geluidsweergave toegevoegd voor het bereiken van een bladwijzer of notitie, dank Andre Louis voor de geluiden!
+* RTF-documentondersteuning toegevoegd!
+* Ondersteuning voor DAISY XML-documenten toegevoegd.
+* Ondersteuning voor Flat Open Document Text-bestanden toegevoegd!
+* Ondersteuning voor Flat Open Document-presentaties toegevoegd!
+* Ondersteuning voor scheidingen met `s` en `shift+s` toegevoegd.
+* Elke beweging van meer dan 300 tekens voegt nu automatisch aan je navigatiegeschiedenis toe.
+* Het herstellen van Paperback's venster vanuit het systeemvak opgelost.
+* Markdown-documenten die onbewerkte tekst weergaven in plaats van weergegeven HTML in de webweergave opgelost.
+* Tabellen die niet correct in Markdown-bestanden werden weergegeven opgelost.
+* Alleen-afbeeldings-PDF's geven je nu een waarschuwing wanneer je probeert er een te laden.
+* Versie-informatie correct in het Paperback-uitvoerbare bestand ingebed.
+* De opties-dialoog in tabbladen verdeeld voor gemakkelijker gebruik en navigatie.
+* Over gegaan naar Hayro voor PDF-verwerking, wat leidt tot meer betrouwbaarheid, snelheid en minder DLL's.
+* De hele app in Rust herschreven. De nieuwe codebase is veiliger, laadt documenten sneller en is gemakkelijker te onderhouden en uit te breiden.
+* Het contextmenu van het tekstbesturingselement bevat nu lezerspecifieke acties in plaats van generieke items zoals knippen en plakken.
 
 ### Versie 0.7.0
-* Tabelondersteuning toegevoegd voor op HTML en XHTML gebaseerde documenten! Navigeer tussen tabellen met T en Shift+T, en druk op Enter om er een in een webweergave te bekijken.
-* Een eenvoudige webweergavefunctie toegevoegd! Druk op Ctrl+Shift+V om de huidige sectie van je document te openen in een webgebaseerde renderer, handig voor inhoud zoals complexe opmaak of codevoorbeelden.
-* Een Russische vertaling toegevoegd, met dank aan Ruslan Gulmagomedov!
-* Een knop Alles wissen toegevoegd aan het venster Alle documenten.
-* De updatecontrole toont nu release-opmerkingen wanneer er een nieuwe versie beschikbaar is.
-* Opgelost dat het venster werd hersteld vanuit het systeemvak.
-* De vertalingen van de knoppen Ja/Nee in bevestigingsvensters opgelost.
-* Het laden van configuraties bij uitvoeren als administrator opgelost.
-* De verwerking van opmerkingen in XML- en HTML-documenten opgelost.
-* Het verwerken van de inhoudsopgave in Epub 2-boeken opgelost.
-* Het navigeren naar het volgende item met dezelfde letter in de inhoudsopgave opgelost.
-* Opgelost dat het zoekvenster niet goed verborgen werd bij gebruik van de knoppen volgende/vorige.
-* Opgelost dat epub-inhoudsopgaven je af en toe naar het verkeerde item brachten.
-* Diverse problemen met de verwerking van witruimte in XML, HTML en pre-tags opgelost.
-* Een off-by-one-fout in de linknavigatie opgelost.
-* Opgelost dat sommige boeken volgwitruimte op hun regels hadden.
-* Diverse verwerkingsproblemen opgelost.
-* Bladwijzergerelateerde menu-items en de elementenlijst worden nu correct uitgeschakeld wanneer er geen document open is.
-* De verwerking van lijsten in diverse documentindelingen verbeterd.
-* De vertaalworkflow voor bijdragers verbeterd.
-* Veel interne refactors, waarbij het grootste deel van de bedrijfslogica van de applicatie van C++ naar Rust is verplaatst voor betere prestaties en onderhoudbaarheid.
+* Tabelondersteuning voor HTML- en XHTML-gebaseerde documenten toegevoegd! Navigeer tussen tabellen met `T` en `shift+t`, en druk `Enter` om er een in een webweergave te bekijken.
+* Een basale webweergavefunctie toegevoegd! Druk `ctrl+shift+v` om de huidige sectie van je document in een webgebaseerde renderer te openen, handig voor inhoud zoals complexe opmaak of codevoorbeelden.
+* Een Russische vertaling toegevoegd, dank Ruslan Gulmagomedov!
+* Een knop Alles wissen toegevoegd aan de dialoog Alle documenten.
+* De updatecontrole geeft nu release notes weer wanneer een nieuwe versie beschikbaar is.
+* Het herstellen van het venster vanuit het systeemvak opgelost.
+* Vertaling van Ja/Nee-knoppen in bevestigingsdialogen opgelost.
+* Configuraties laden bij het uitvoeren als beheerder opgelost.
+* Commentaarverwerking in XML- en HTML-documenten opgelost.
+* TOC-verwerking in Epub 2-boeken opgelost.
+* Navigeren naar het volgende item met dezelfde letter in de inhoudsopgave opgelost.
+* De zoekdialoog niet correct verbergen bij gebruik van de volgende/vorige knoppen opgelost.
+* Epub-inhoudsopgave gooit je af en toe naar het verkeerde item opgelost.
+* Verschillende problemen met witruimteverwerking in XML-, HTML- en pre-tags opgelost.
+* Off-by-one fout in linknavigatie opgelost.
+* Sommige boeken met overbodige witruimte aan het einde van regels opgelost.
+* Verschillende verwerkingsproblemen opgelost.
+* Bladwijzer-gerelateerde menu-items en de elementenlijst zijn nu correct uitgeschakeld wanneer geen document geopend is.
+* Lijstverwerking in verschillende documentformaten verbeterd.
+* De vertalingsworkflow voor bijdragers verbeterd.
+* Veel interne refactors, waarbij het merendeel van de bedrijfslogica van de applicatie van C++ naar Rust is verplaatst voor betere prestaties en onderhoudbaarheid.
 
 ### Versie 0.6.1
-* Ondersteuning voor met een wachtwoord beveiligde PDF's toegevoegd!
-* Een zeer eenvoudige functie 'ga naar vorige/volgende positie' toegevoegd. Als je op Enter drukt op een interne link en je cursor verplaatst wordt, wordt die positie nu onthouden en kun je er met alt+pijl links/rechts naartoe navigeren.
-* Een elementenlijst toegevoegd! Momenteel toont deze alleen een boomstructuur van alle koppen in je document of een lijst met links, maar er zijn plannen om dit in de toekomst uit te breiden.
+* Ondersteuning voor met wachtwoord beveiligde PDF's toegevoegd!
+* Een heel basale functie voor navigeren naar vorige/volgende positie toegevoegd. Als je `Enter` op een interne link drukt en de cursor beweegt, zal die positie nu worden onthouden en kan ermee worden genavigeerd met `alt+left`/`alt+right`.
+* Een elementenlijst toegevoegd! Deze toont momenteel alleen een structuur van alle koppen in je document of een lijst met links, maar er zijn plannen om deze in de toekomst uit te breiden.
 * Een optie toegevoegd om Paperback standaard in gemaximaliseerde modus te starten.
-* Opgelost dat links in sommige Epub-documenten niet goed werkten.
-* Het verwerken van Epub-inhoudsopgaven met relatieve paden opgelost.
-* Opgelost dat sommige epub-documenten geen titel of auteur toonden.
-* Opgelost dat de titels van sommige epub-hoofdstukken niet goed verschenen in het inhoudsopgavevenster.
-* Opgelost dat je de spatiebalk niet kon gebruiken om de knoppen OK/Annuleren in het inhoudsopgavevenster te activeren.
+* Links in sommige Epub-documenten die niet goed werkten opgelost.
+* Verwerking van Epub-inhoudsopgaven met relatieve paden opgelost.
+* Sommige Epub-documenten die geen titel of auteur weergaven opgelost.
+* De titels van sommige Epub-hoofdstukken die niet goed in de inhoudsopgave-dialoog werden weergegeven opgelost.
+* Je kon de spatiebalk niet gebruiken om de OK/annuleer-knoppen in de inhoudsopgave-dialoog te activeren opgelost.
 * De verwerking van koppen in Word-documenten verbeterd.
-* Je krijgt nu gesproken feedback als de lijst met recente documenten leeg is wanneer je het venster probeert te openen.
+* Je krijgt nu gesproken feedback als de lijst met recente documenten leeg is wanneer je probeert de dialoog te openen.
 
 ### Versie 0.6.0
-* Een nieuwe optie om het Ga-menu in een veel compactere vorm te tonen, is toegevoegd aan het optievenster en is standaard ingeschakeld.
-* Een optie toegevoegd om navigatie via structuurelementen te laten doorlopen.
-* Een optie toegevoegd aan het menu Extra om de map te openen die het momenteel gefocuste document bevat.
-* Een vrij eenvoudig, maar zeer effectief updatesysteem toegevoegd.
-* Een eenvoudige slaaptimerfunctie toegevoegd, bereikbaar met Ctrl+Shift+S.
-* Ondersteuning toegevoegd voor het verwerken van FB2-e-books!
-* Ondersteuning toegevoegd voor het verwerken van OpenDocument-presentaties!
-* Ondersteuning toegevoegd voor het verwerken van OpenDocument-tekstbestanden!
-* Bladwijzers kunnen nu een hele regel markeren of slechts een opgegeven stuk tekst. Als er geen selectie actief is wanneer je een bladwijzer plaatst, is het gedrag zoals vóór 0.6 en wordt de hele regel gemarkeerd. Selecteer je echter tekst, dan wordt alleen die tekst in de bladwijzer opgenomen.
-* Bladwijzers kunnen nu optionele tekstnotities bevatten! Navigeer tussen bladwijzers met notities met N en Shift+N, of open het bladwijzervenster met alle bladwijzers, alleen notities of alleen niet-notities geselecteerd via specifieke sneltoetsen.
-* Bladwijzers in het bladwijzervenster hebben niet langer een vervelend voorvoegsel "bladwijzer x".
-* Epub-boeken met HTML-inhoud die zich voordoet als XML worden nu correct verwerkt.
-* Het laden van grote Markdown-documenten opgelost.
-* Opgelost dat het indrukken van de spatiebalk in de boomstructuur van de inhoudsopgave de knop OK activeerde.
-* De verwerking van witruimte aan het begin van pre-tags in zowel HTML- als XHTML-documenten opgelost.
-* Opgelost dat het tekstbesturingselement soms de focus niet terugkreeg bij terugkeer naar het venster van Paperback.
-* Opgelost dat het tekstveld in het venster 'ga naar percentage' de waarde van de schuifregelaar niet bijwerkte.
-* De weergave van aangepaste HTML-ID's in Markdown-documenten opgelost.
+* Een nieuwe optie om het Ga-menu in een veel compactere vorm weer te geven is aan het instellingendialoogvenster toegevoegd, standaard ingeschakeld.
+* Een optie toegevoegd om navigatie op basis van structurele elementen met terugloop in te schakelen.
+* Een optie aan het Extra-menu toegevoegd om de map met het momenteel actieve document te openen.
+* Een vrij eenvoudig, maar zeer effectief, updatersysteem toegevoegd.
+* Een basale slaaptimer-functie toegevoegd, toegankelijk via `Ctrl+Shift+S`.
+* Ondersteuning voor het verwerken van FB2-ebooks toegevoegd!
+* Ondersteuning voor het verwerken van OpenDocument-presentaties toegevoegd!
+* Ondersteuning voor het verwerken van OpenDocument Text-bestanden toegevoegd!
+* Bladwijzers kunnen nu worden gebruikt om een hele regel aan te duiden, of alleen bepaalde tekst. Als je geen selectie actief hebt wanneer je een bladwijzer plaatst, werkt het zoals vóór 0.6 en markeert het de hele regel. Als je echter wat tekst selecteert, wordt alleen die tekst in de bladwijzer opgenomen.
+* Bladwijzers kunnen nu optionele tekstnotities hebben! Navigeer tussen bladwijzers met notities met N en `Shift+N`, of open het bladwijzerdialoogvenster met alle bladwijzers, alleen notities of alleen niet-notities ingeschakeld met specifieke venstersneltoetsen.
+* Bladwijzers in het bladwijzerdialoogvenster hebben niet langer een vervelend "bladwijzer x"-voorvoegsel.
+* EPUB-boeken met HTML-inhoud die zich voordoet als XML worden nu correct verwerkt.
+* Laden van grote Markdown-documenten gerepareerd.
+* Het indrukken van de spatiebalk in de inhoudsopgave-boomweergave die de OK-knop activeert, gerepareerd.
+* Witruimteverwerking aan het begin van pre-tags in zowel HTML- als XHTML-documenten gerepareerd.
+* De tekstbesturing die soms niet opnieuw focus kreeg bij terugkeer naar het Paperback-venster, gerepareerd.
+* Het tekstveld in het dialoogvenster voor gaan naar procent dat de schuifregelaarwaarde niet bijwerkte, gerepareerd.
+* De weergave van aangepaste HTML-ID's in Markdown-documenten gerepareerd.
 * HTML in Markdown-codeblokken wordt nu correct weergegeven.
-* Bij het laden van een boek via de terminal terwijl er al een Paperback-instantie draait, krijg je geen foutmelding meer als het laden van je document langer dan 5 seconden duurt.
-* Bij het uitvoeren van Paperback als administrator wordt de configuratie nu correct geladen en opgeslagen.
-* Het is nu mogelijk om een bladwijzer rechtstreeks vanuit het bladwijzervenster te verwijderen.
-* Het is nu mogelijk om je bladwijzers en leespositie voor een bepaald document te importeren en exporteren. Het gegenereerde bestand krijgt de naam van het bestand met de extensie .paperback. Als zo'n bestand bij het laden in dezelfde map als een bestand wordt gevonden, wordt het automatisch geladen. Anders kun je ze handmatig importeren via een item in het menu Extra.
-* Links in documenten worden nu volledig ondersteund! Gebruik k en shift+k om er voor- en achteruit doorheen te gaan, en druk op Enter om er een te openen/activeren.
-* Veel interne refactors, waardoor de app sneller en het binaire bestand kleiner wordt.
-* Markdown-inhoud wordt nu voorbewerkt om CommonMark-compatibel te zijn vóór weergave.
-* Navigatie per lijst en per lijstitem wordt nu volledig ondersteund! Gebruik L en Shift+L om per lijst te gaan, en I en Shift+I om door lijstitems te gaan.
-* Numpad Delete werkt nu om documenten uit de tabbalk te verwijderen, naast de gewone Delete.
-* Paperback kan nu optioneel minimaliseren naar je systeemvak! Deze optie is standaard uitgeschakeld, maar door deze in te schakelen plaatst de minimaliseeroptie in het systeemmenu Paperback in je systeemvak, waarna je het kunt herstellen door op het verschenen pictogram te klikken.
-* Paperback is nu volledig vertaalbaar! De lijst met ondersteunde talen is momenteel vrij klein, maar groeit voortdurend!
-* Paperback heeft nu een officiële website, op [paperback.dev](https://paperback.dev)!
-* PPTX-documenten tonen nu een eenvoudige inhoudsopgave met alle dia's.
-* Het volledige pad naar het geopende document wordt nu getoond in het documentinformatievenster.
-* Het installatieprogramma bevat nu een optie om de handleiding na de installatie in je browser te bekijken.
-* De lijst met recente documenten is sterk uitgebreid! In plaats van alleen de laatste 10 geopende documenten te tonen, toont deze nu een instelbaar aantal, terwijl de overige ooit geopende documenten toegankelijk zijn via een klein venster.
-* Diverse kleine verbeteringen aan de verwerkers in het algemeen, waaronder het plaatsen van een lege regel tussen dia's in PPTX-presentaties, het oplossen van de verwerking van regeleinden binnen alinea's in Word-documenten, en het toevoegen van opsommingstekens aan lijstitems.
+* Als je een boek met een terminalparameter laadt terwijl een bestaand Paperback-exemplaar wordt uitgevoerd, krijg je niet langer een fout als het laden van je document meer dan 5 seconden duurt.
+* Als je Paperback als beheerder uitvoert, wordt de configuratie nu correct geladen en opgeslagen.
+* Het is nu mogelijk om een bladwijzer direct uit het bladwijzerdialoogvenster te verwijderen.
+* Het is nu mogelijk om je bladwijzers en leeespositie voor een bepaald document in te voeren en uit te voeren. Het gegenereerde bestand krijgt de naam van het bestand met een .paperback-extensie. Als zo'n bestand in dezelfde map als een bestand wordt gevonden terwijl dit wordt geladen, wordt het automatisch geladen. Anders kun je ze handmatig importeren met behulp van een item in het Extra-menu.
+* Links in documenten worden nu volledig ondersteund! Gebruik k en `Shift+K` om vooruit en achteruit door deze te gaan, en druk op Enter om een link te openen/activeren.
+* Veel interne refactorings, waardoor de app sneller wordt en het binaire bestand kleiner.
+* Markdown-inhoud wordt nu vooraf verwerkt om CommonMark-compatibel te zijn vóór weergave.
+* Navigatie op basis van lijsten en hun items wordt nu volledig ondersteund! Gebruik L en `Shift+L` om naar lijsten zelf te gaan, en I en `Shift+I` om door lijstitems te gaan.
+* Numpad-Delete werkt nu ook om documenten uit de tabbalk te verwijderen, naast normale Delete.
+* Paperback kan nu optioneel naar je systeemvak minimaliseren! Deze optie is standaard uitgeschakeld, maar als je deze inschakelt, worden documenten in het systeemmenu geminimaliseerd in je vak, en kunnen ze worden hersteld door op het gegenereerde pictogram te klikken.
+* Paperback kan nu volledig worden vertaald! De lijst met ondersteunde talen is momenteel vrij klein, maar groeit voortdurend!
+* Paperback heeft nu een officiële website op [paperback.dev](https://paperback.dev)!
+* PPTX-documenten geven nu een basisinhoudsopgave weer met daarin alle dia's.
+* Het volledige pad naar het geopende document wordt nu weergegeven in het dialoogvenster Documentinformatie.
+* Het installatieprogramma bevat nu een optie om de handleiding in je browser weer te geven na de installatie.
+* De lijst met recente documenten is drastisch uitgebreid! In plaats van alleen de laatste 10 documenten die je hebt geopend weer te geven, toont het nu een aanpasbaar aantal, met de rest van de documenten die je ooit hebt geopend, toegankelijk via een klein dialoogvenster.
+* Verschillende kleine verbeteringen voor alle parsers, inclusief het plaatsen van een lege regel tussen dia's in PPTX-presentaties, het repareren van de newline-verwerking in alinea's in Word-documenten en het toevoegen van opsommingstekens aan lijstitems.
 
 ### Versie 0.5.0
 * Ondersteuning voor Microsoft Word-documenten toegevoegd!
-* Ondersteuning toegevoegd voor PowerPoint-presentaties!
-* Opgelost dat bepaalde menu-items niet werden uitgeschakeld wanneer er geen documenten open waren.
-* De oriëntatie van de schuifregelaar voor 'ga naar percentage' opgelost.
-* De inhoudsopgave in Epub-boeken met URL-gecodeerde bestandspaden en/of fragment-ID's opgelost.
-* Opgelost dat witruimte op vreemde wijze uit XHTML-koppen werd verwijderd.
-* De verwerking van witruimte in geneste pre-tags in HTML-documenten opgelost.
-* HTML- en Markdown-documenten ondersteunen nu de inhoudsopgavefunctie! Wanneer je een HTML-/Markdown-document laadt, bouwt Paperback een eigen inhoudsopgave op basis van de koppenstructuur in je document en toont deze in het venster met ctrl+t.
-* HTML-documenten hebben nu de titel zoals ingesteld in de title-tag, indien aanwezig. Anders blijven ze de bestandsnaam zonder extensie gebruiken.
-* Overgestapt van UniversalSpeech naar een live-regio om spraak te melden. Dit betekent dat er geen schermlezer-DLL's meer met het programma worden meegeleverd en dat meer schermlezers nu worden ondersteund, zoals Microsoft Verteller.
-* Van zip-bibliotheek gewisseld om een breder scala aan epub-boeken te kunnen openen.
-* Het venster dat vraagt of je je document als platte tekst wilt openen, is volledig vernieuwd en biedt nu de mogelijkheid om je document te openen als platte tekst, HTML of Markdown.
-* Het venster 'ga naar percentage' bevat nu een tekstveld waarmee je handmatig een percentage kunt invoeren om naartoe te springen.
+* Ondersteuning voor PowerPoint-presentaties toegevoegd!
+* Bepaalde menu-items worden nu correct uitgeschakeld als er geen documenten open zijn.
+* Oriëntatie van de ga naar procent-schuifregelaar gerepareerd.
+* Inhoudsopgave in EPUB-boeken met URL-gecodeerde bestandspaden en/of fragmentaanduidingen gerepareerd.
+* Witruimte in XHTML-koppen op vreemde manieren verwijderd gerepareerd.
+* Witruimteafhandeling in geneste pre-tags in HTML-documenten gerepareerd.
+* HTML- en Markdown-documenten ondersteunen nu de inhoudsopgavefunctie! Als je een HTML-/Markdown-document laadt, bouwt Paperback zijn eigen inhoudsopgave uit de structuur van de koppen in je document, en toont die in de `Ctrl+T`-dialoog.
+* HTML-documenten hebben nu de titel zoals ingesteld in de title-tag, indien aanwezig. Anders gebruiken ze de bestandsnaam zonder extensie.
+* Van UniversalSpeech overgeschakeld naar het gebruik van een livegebied voor spraakrapportage. Dit betekent dat er geen schermlezer-DLL's meer bij het programma worden meegeleverd, en meer schermlezers worden nu ondersteund, zoals Microsoft Narrator.
+* Zipbibliotheken overgeschakeld om een breder scala aan EPUB-boeken te kunnen openen.
+* De dialoog waarin je wordt gevraagd of je je document als platte tekst wilt openen is volledig opnieuw gemaakt, en biedt nu de mogelijkheid om je document als platte tekst, HTML of Markdown te openen.
+* De ga naar procent-dialoog bevat nu een tekstveld waarmee je handmatig een percentage kunt invoeren om naar toe te springen.
 * De HTML-verwerker herkent nu dd, dt en dl als lijstelementen.
-* De inhoudsopgave in Epub-boeken wordt nu weer exact behouden.
-* Met de unicode niet-afbrekende spatie wordt nu rekening gehouden bij het verwijderen van lege regels.
-* Je wordt niet langer elke keer dat je een onbekend bestand laadt gevraagd hoe je het wilt openen, alleen de eerste keer.
+* De inhoudsopgave in EPUB-boeken wordt nu weer exact behouden.
+* De Unicode-onbreekbare spatie wordt nu in aanmerking genomen bij het verwijderen van lege regels.
+* Je wordt niet langer elke keer gevraagd hoe je een niet-herkend bestand wilt openen, maar alleen de eerste keer.
 
 ### Versie 0.4.1
-* Een optioneel startmenupictogram toegevoegd aan het installatieprogramma.
-* De inhoudsopgave is nu in enkele gevallen overzichtelijker; bijvoorbeeld als je een onderliggend en een bovenliggend item met dezelfde tekst op dezelfde positie hebt, zie je nu alleen het bovenliggende item.
-* De inhoudsopgave in bepaalde CHM-documenten opgelost.
-* De inhoudsopgave in Epub 3-boeken met absolute paden opgelost.
-* CHM-documenten tonen nu hun titel zoals ingesteld in het metagegevensbestand.
+* Optioneel pictogram in het startmenu toegevoegd aan het installatieprogramma.
+* De inhoudsopgave zou nu in enkele gevallen schoner moeten zijn, bijvoorbeeld als je een onderliggend en bovenliggend item met dezelfde tekst op dezelfde positie hebt, zie je nu alleen het bovenliggende item.
+* Inhoudsopgave in bepaalde CHM-documenten gerepareerd.
+* Inhoudsopgave in EPUB 3-boeken met absolute paden gerepareerd.
+* CHM-documenten moeten nu hun titel weergeven zoals ingesteld in het metagegevensbestand.
 
 ### Versie 0.4.0
-* Ondersteuning voor CHM-bestanden toegevoegd!
-* Bladwijzerondersteuning toegevoegd! Je kunt zoveel bladwijzers in zoveel documenten plaatsen als je wilt. Je kunt er voor- en achteruit doorheen springen met b en shift+b, er een instellen met ctrl+shift+b, en een venster openen om naar een specifieke bladwijzer te springen met ctrl+b.
-* Een installatieprogramma toegevoegd naast het draagbare zip-bestand! Het installatieprogramma installeert Paperback in je map Program Files en stelt automatisch bestandskoppelingen voor je in.
-* Tekstbestanden met BOM's worden nu correct gedecodeerd, en de BOM wordt niet langer aan het begin van de tekst getoond.
-* Veel meer informatie toegevoegd aan de statusbalk. Deze toont nu je huidige regel, teken en leespercentage.
-* HTML-opmerkingen en de inhoud van script- en style-tags worden niet langer in de tekstuitvoer getoond.
-* Bij het doorgeven van een relatief pad aan Paperback in de terminal wordt dit nu correct opgelost.
-* Verplaatsing via percentage wordt nu afgehandeld door een eigen op een schuifregelaar gebaseerd venster, bereikbaar met ctrl+shift+g.
-* Documenten zonder bekende titels of auteurs hebben nu altijd een standaardwaarde.
-* De logica voor het opslaan van de positie is nu veel slimmer en schrijft alleen naar de schijf wanneer dat absoluut noodzakelijk is.
-* Het document dat de focus had toen je Paperback afsloot, wordt nu onthouden bij het opnieuw starten van de applicatie.
-* Invoer in de vensters 'ga naar regel' en 'ga naar pagina' wordt nu strenger gecontroleerd.
-* Inhoudsopgavenavigatie in epub 3-boeken met relatieve paden in hun manifest opgelost.
+* CHM-bestandsondersteuning toegevoegd!
+* Bladwijzerondersteuning toegevoegd! Je kunt zoveel bladwijzers hebben als je wilt in zoveel documenten als je wilt. Je kunt er doorheen gaan met `B` en `Shift+B`, er een instellen met `Ctrl+Shift+B`, en een dialoog openen om naar een specifieke bladwijzer te springen met `Ctrl+B`.
+* Een installatieprogramma toegevoegd naast het draagbare zipbestand! Het installatieprogramma installeert Paperback in je Program Files-map en stelt automatisch bestandskoppelingen voor je in.
+* Tekstbestanden met BOM's worden nu correct gedecodeerd, en de BOM wordt niet langer aan het begin van de tekst weergegeven.
+* Veel meer informatie toegevoegd aan de statusbalk. Deze toont nu je huidige regel, teken en leesvorderingspercentage.
+* HTML-opmerkingen, evenals de inhoud van script- en style-tags, worden niet langer weergegeven in tekstuitvoer.
+* Als je een relatief pad aan Paperback op de opdrachtregel doorgeeft, wordt dit nu correct omgezet.
+* Percentagebewegingen worden nu afgehandeld door hun eigen schuifregelaar-gebaseerde dialoog, toegankelijk met `Ctrl+Shift+G`.
+* Documenten zonder bekende titels of auteurs hebben nu altijd een standaard.
+* De logica voor het opslaan van positie is nu veel intelligenter en schrijft alleen naar schijf wanneer absoluut nodig.
+* Het document waar je op gefocust was toen je Paperback sloot, wordt nu onthouden voor volgende toepassingsstarts.
+* Invoer in de ga naar regel- en ga naar pagina-dialogen moet nu strenger worden opgeschoond.
+* Inhoudsopgavenavigatie in EPUB 3-boeken met relatieve paden in hun manifesten gerepareerd.
 
 ### Versie 0.3.0
-* De inhoudsopgave in epub-boeken met URL-gecodeerde manifesten opgelost.
-* Kopnavigatie in HTML-documenten met multibyte-Unicode-tekens opgelost.
-* Hoog CPU-gebruik in documenten met lange titels opgelost, veroorzaakt door een regressie in wxWidgets.
-* Het laden van UTF-8-tekstbestanden opgelost.
-* Opgelost dat geneste inhoudsopgave-items in Epub-boeken je cursor op de verkeerde positie plaatsten.
-* Een crash bij het afsluiten van de applicatie in bepaalde gevallen opgelost.
-* Een selectievakje toegevoegd aan het optievenster om tekstterugloop in of uit te schakelen!
-* Het is nu mogelijk om te doneren aan de ontwikkeling van Paperback, via het nieuwe donatie-item in het menu Help of via de link 'sponsor this project' onderaan de hoofdpagina van de GitHub-repository.
+* Inhoudsopgave in EPUB-boeken met URL-gecodeerde manifesten gerepareerd.
+* Kopnavigatie in HTML-documenten met multibyte Unicode-tekens gerepareerd.
+* Hoog CPU-gebruik in documenten met lange titels vanwege een regressie in wxWidgets gerepareerd.
+* Laden van UTF-8-tekstbestanden gerepareerd.
+* Geneste inhoudsopgaveitems in EPUB-boeken die je cursor op de verkeerde positie plaatsen, gerepareerd.
+* Crash bij toepassingsafsluiting in bepaalde gevallen gerepareerd.
+* Selectievakje in de optiesdialoog toegevoegd om automatische terugloop in- of uit te schakelen!
+* Het is nu mogelijk om te doneren aan de ontwikkeling van Paperback, via het nieuwe donatie-item in het Help-menu of via de sponsor this project-link onderin de hoofdpagina van de GitHub-repository.
 * Markdown-documenten hebben nu altijd een titel, en Paperback zou nu vrijwel elk Markdown-bestand moeten kunnen laden.
 * PDF-documenten hebben nu altijd een titel, zelfs als de metagegevens ontbreken.
-* Van PDF-bibliotheek gewisseld naar die welke in Chromium wordt gebruikt, wat zorgt voor veel betrouwbaarder PDF-verwerking in het algemeen.
-* Je kunt nu slechts één instantie van Paperback tegelijk laten draaien. Als je paperback.exe met een bestandsnaam uitvoert terwijl het al draait, wordt dat document geopend in de reeds draaiende instantie.
-* Je kunt nu op Delete drukken op een document in het tabbladbesturingselement om het te sluiten.
+* PDF-bibliotheken overgeschakeld naar de bibliotheek die in Chromium wordt gebruikt, wat leidt tot veel betrouwbaardere PDF-verwerking in het algemeen.
+* Je kunt nu maar één exemplaar van Paperback tegelijk uitvoeren. `paperback.exe` uitvoeren met een bestandsnaam terwijl het al wordt uitgevoerd, opent dat document in het reeds actieve exemplaar.
+* Je kunt nu op Verwijderen drukken op een document in het tabbladbesturingselement om het te sluiten.
 
 ### Versie 0.2.1
-* Het totale aantal pagina's toegevoegd aan het pagina-label in het venster 'ga naar pagina'.
-* Tabben van de documentinhoud naar je lijst met geopende documenten toegestaan.
-* Opgelost dat de kop-sneltoetsen soms recente documenten openden als je er genoeg had.
-* Paperback verwijdert nu onnodige zachte afbreekstreepjes uit de tekstuitvoer.
-* Opgelost dat kopnavigatie je soms op het verkeerde teken plaatste.
+* Totaal aantal pagina's toegevoegd aan het paginalabel in de ga naar pagina-dialoog.
+* Tabben van documentinhoud naar je lijst geopende documenten toegestaan.
+* Kopsneltoetsen die soms recente documenten openen als je er genoeg hebt, gerepareerd.
+* Paperback verwijdert nu onnodige zware koppeltekens uit tekstuitvoer.
+* Kopnavigatie die je soms op het verkeerde teken plaatst, gerepareerd.
 
 ### Versie 0.2.0
-* Ondersteuning voor Markdown-documenten toegevoegd!
+* Ondersteuning voor markdown-documenten toegevoegd!
 * Ondersteuning voor PDF-documenten toegevoegd, inclusief de mogelijkheid om tussen pagina's te navigeren!
-* Sneltoetsen toegevoegd voor het navigeren per kop in HTML-inhoud, inclusief epub-boeken en Markdown-documenten. Deze sneltoetsen zijn ontworpen om te werken zoals een schermlezer.
-* Het laden van epubs met URL-gecodeerde bestandsnamen in hun manifest opgelost.
-* Het laden van epub 3-boeken met ingesloten XHTML opgelost.
-* Er wordt nu een bericht uitgesproken als het document geen inhoudsopgave of secties ondersteunt, in plaats van dat de menu-items worden uitgeschakeld.
-* Een menu met recente documenten toegevoegd! Dit bewaart momenteel je laatste 10 geopende documenten, en door op Enter te drukken op een ervan wordt het ter lezing geopend.
-* Het zoekvenster volledig herschreven, waardoor het veel eenvoudiger te gebruiken is, met daarnaast een geschiedenis van je laatste 25 zoekopdrachten en ondersteuning voor reguliere expressies!
-* Eerder geopende documenten worden nu onthouden bij het opnieuw starten van de applicatie. Dit is instelbaar via het nieuwe optie-item in het menu Extra.
-* Shift+F1 toegevoegd om de handleiding rechtstreeks in Paperback zelf te openen.
+* Toetsenbordsneltoetsen toegevoegd voor navigatie via koppen in HTML-inhoud, inclusief EPUB-boeken en markdown-documenten. Deze toetsenbordsneltoetsen zijn ontworpen om op dezelfde manier te werken als een schermlezer.
+* Laden van EPUB's met URL-gecodeerde bestandsnamen in hun manifesten is opgelost.
+* Laden van EPUB 3-boeken met ingesloten XHTML is opgelost.
+* Er wordt nu een bericht uitgesproken als het document geen inhoudsopgave of secties ondersteunt, in plaats van dat de menu-items zijn uitgeschakeld.
+* Menu met recente documenten toegevoegd! Het slaat momenteel je laatste 10 geopende documenten op, en je kunt op een ervan drukken om het te openen voor lezen.
+* De zoekdialoog volledig herschreven, waardoor het veel eenvoudiger is om te gebruiken, en ondersteuning voor een geschiedenis van je laatste 25 zoekopdrachten en ondersteuning voor reguliere expressies toegevoegd!
+* Eerder geopende documenten worden nu onthouden na het herstarten van de applicatie. Dit kan worden ingesteld via het nieuwe opties-item in het menu Extra.
+* `Shift+F1` toegevoegd om de handleiding rechtstreeks in Paperback te openen.
 
 ### Versie 0.1.0
-* Eerste release.
+* Initiële release.

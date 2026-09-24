@@ -82,6 +82,16 @@ cargo release
 
 This runs the `xtask` crate via the `cargo release` alias defined in `.cargo/config.toml`.
 
+## UI tests
+
+On Windows, `crates/paperback/tests` holds UI tests that start the real app, press keys and check what UI Automation reports: focus, the status bar, and what screen readers are told. They are skipped by `cargo test` and run with:
+
+```
+cargo test -p paperback -- --ignored
+```
+
+Close Paperback first; the tests refuse to start while it runs. While they run they take over the keyboard and focus, so leave the desktop alone until they finish. Each test keeps its config and log in a temp directory, set through the `PAPERBACK_CONFIG_DIR` environment variable, which also works for running Paperback by hand with a separate config.
+
 ## Pre-commit hooks
 
 This project uses [prek](https://github.com/LorenzoLeonardini/prek), a Rust-based pre-commit hook runner. Hooks are configured in `prek.toml`.

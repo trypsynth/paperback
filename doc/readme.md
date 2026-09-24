@@ -27,13 +27,19 @@ Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iO
 
 ## Screen Reader Compatibility
 
-Paperback works well with all major screen readers. There is, however, one known issue for JAWS users.
+Paperback works well with all major screen readers. There are, however, two known issues for JAWS users.
 
 ### JAWS and Braille Displays
 
 If you use JAWS with a Braille display, you may find that long paragraphs are truncated when panning forward with your display's navigation keys. The read current paragraph command is also affected. This is a bug in JAWS's handling of the RICHEDIT50W text control, not something in Paperback itself, and one that took quite a while to surface a fix for given Vispero's enthusiasm for responding to issues with open source software.
 
 The workaround, eventually surfaced through the JAWS discussion group after months of waiting, is to edit `paperback.jcf` and set "Braille Presentation and Panning" to "Always use DOM if available". You'll also want to enable "Pan Text by Paragraph", otherwise your display will stay on the active paragraph rather than advancing. With both settings in place, panning should work correctly.
+
+### JAWS and Paperback's messages
+
+Paperback says things like "No pages." or "This document has no audio." as accessibility notifications, which is what lets a screen reader speak them over whatever it is saying. JAWS only acts on those when "Enable accessible notification events" is switched on for the application, and on some machines it is not.
+
+If JAWS says nothing when you press a key that should report something, open Settings Center with Paperback in front (`Insert+6`), search for "notification", and tick "Enable accessible notification events". That writes the setting to `paperback.jcf`, so it applies to Paperback alone.
 
 ## Currently supported file types
 
@@ -55,6 +61,7 @@ Paperback supports the following formats and extensions:
 * OpenDocument text files (`.odt`, `.fodt`)
 * PDF documents (`.pdf`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
+* reStructuredText documents (`.rst`, `.rest`)
 * RTF documents (`.rtf`)
 * Windows Write documents (`.wri`)
 * WinHelp files (`.hlp`)
@@ -291,6 +298,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * M4B audiobooks, split into their chapters.
 * Manual pages, both `man` and BSD `mdoc`, gzipped or not.
 * MP3 audiobooks, split into chapters when the file has them.
+* reStructuredText documents.
 * Windows Write (`.wri`) files.
 * WinHelp (`.hlp`) files.
 * Word 6 and Word 95 documents.
@@ -334,8 +342,12 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 #### Fixed
 
 ##### General
+* A book reopened at startup now reads straight away, rather than staying silent until it was closed and opened again.
+* A document whose file has gone missing can now be removed from All Documents, instead of staying in the list however often you confirm.
 * Fixed a crash when closing Paperback.
 * Closing Paperback now hides the window straight away, rather than leaving it on screen while it saves.
+* Large books with little formatting in them now open in about half the time.
+* Messages chosen from a menu, such as "This document has no audio", are no longer cut off by the screen reader before you hear them.
 * Opening a document no longer leaves Reopen Last Closed enabled when there is nothing to reopen.
 * Paperback no longer keeps retrying documents in your recent list that have gone missing, and caps how many recent documents it stores.
 * The old INI settings file is now deleted once it has been moved over to the new format.
@@ -361,10 +373,10 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed PDF paragraphs and headings splitting at every line, and words splitting apart at spaces.
 * Fixed numbered PDF headings running together into one heading.
 * Fixed PDFs whose structure tree leads to no text opening empty.
+* Lines set in a monospaced font, like code, are no longer joined into paragraphs.
 * Page headers and footers are no longer read out on every page of untagged PDFs.
 * PDFs that tag their page headers and footers as ordinary text no longer repeat the title and the page number between two paragraphs on every page.
 * PDFs now show their real title, rather than their file name.
-* Lines set in a monospaced font, like code, are no longer joined into paragraphs.
 
 ##### MOBI/AZW3 Books
 * Large MOBI books no longer run out of memory, and are no longer cut off after 20 MB.
@@ -393,7 +405,7 @@ The iOS and Android apps open every format the desktop does, and include:
 * Read aloud, with your choice of voice, rate and pitch, a speech rate control right on the reading bar, and an optional pause between paragraphs.
 * Playback of DAISY, M4B and MP3 audio books, which keeps going in the background and from the lock screen.
 * Navigation by headings, pages, links, tables, lists and more from the reading bar, plus the table of contents and Find.
-* A sleep timer, word count, and document export, plus a speech dictionary on iOS.
+* A sleep timer, word count, and document export, plus a speech dictionary on iOS. On iOS, export goes through the share sheet, so a book can go to another app or to Files, in another format or exactly as it is.
 * Text size, spacing, and high contrast text options.
 * Keyboard shortcuts that match the desktop.
 
