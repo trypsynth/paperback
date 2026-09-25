@@ -14,7 +14,9 @@ shipped rather than introducing a second style beside it.
 
 ## Punctuation
 
-- German quotation marks: `„so“`, never `"so"` and never `“so”`.
+- German quotation marks: `„so“`. The pair is not symmetrical. It opens with the low double
+  quote U+201E and closes with the left double quote U+201C. Closing with the plain ASCII `"`
+  is wrong, and so is `“so”`.
 - Keep the ellipsis on menu items that open a dialog, exactly as the English has it.
 
 ## Keyboard shortcuts
