@@ -51,7 +51,7 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 - **iOS** &ndash; paid, on the App Store, for iPhone and iPad running iOS 17 or later.
 - **Android** &ndash; paid, on Google Play, Android 7 and later, with read-aloud that keeps playing in the background.
 
-Buying the phone apps is what pays for the work. If you would rather not, the source is public and builds for both.
+Buying the mobile apps is what pays for the work. If you would rather not, the source is public and builds for both.
 
 ## Formats
 
