@@ -58,15 +58,6 @@ pub(super) fn plural_schema() -> Value {
 	})
 }
 
-pub(super) fn markdown_schema() -> Value {
-	json!({
-		"type": "object",
-		"properties": { "markdown": { "type": "string" } },
-		"required": ["markdown"],
-		"additionalProperties": false
-	})
-}
-
 /// The system prompt for a batch of single strings, with the target language's conventions
 /// appended when its translators wrote some (see `po/style/<lang>.md`).
 pub(super) fn phrase_system_prompt(style: Option<&str>) -> String {

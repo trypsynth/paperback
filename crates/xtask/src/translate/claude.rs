@@ -25,10 +25,7 @@ use serde_json::{Value, json};
 use super::{
 	checks::{check, check_plural},
 	markdown::{chunk_name, restore_code_spans, split_markdown, structure_mismatch},
-	prompts::{
-		markdown_schema, markdown_system_prompt, phrase_system_prompt, plural_schema, plural_system_prompt,
-		translations_schema,
-	},
+	prompts::{markdown_system_prompt, phrase_system_prompt, plural_schema, plural_system_prompt, translations_schema},
 };
 
 const API_URL: &str = "https://api.anthropic.com/v1/messages";
@@ -112,20 +109,12 @@ impl ClaudeClient {
 	/// setting on the models that do have it - it holds down thinking tokens on a task whose
 	/// rules are all supplied up front - but it has to be conditional, because the model is
 	/// configurable and the cheap default is exactly the one that refuses it.
-	/// `effort` is what a request is allowed to spend on its answer. Low suits a batch of UI
-	/// labels, where every answer is a few words.
-	///
-	/// It does not suit a document. At low effort the German readme came back cut off mid-word
-	/// ("Zeigt den Dialog \u{201e}Alle Dokumente" and then nothing), the JSON still well formed
-	/// because the response is closed for you when the budget runs out. It looked like the model
-	/// dropping a list item, and it survived three retries, a heading cap and an explicit
-	/// instruction to return every item, because none of those buys more room to answer in.
-	fn output_config(&self, format: &Value, effort: Effort) -> Value {
+	/// Only the string batches use this. Every answer in one is a few words, which is what low
+	/// effort is for; the readme is asked for as text and has no `output_config` at all.
+	fn output_config(&self, format: &Value) -> Value {
 		let mut config = json!({ "format": format });
 		if supports_effort(&self.model) {
-			if let Some(level) = effort.level() {
-				config["effort"] = json!(level);
-			}
+			config["effort"] = json!("low");
 		}
 		config
 	}
@@ -162,7 +151,7 @@ impl ClaudeClient {
 		Ok(json!({
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
-			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": translations_schema() }), Effort::Low),
+			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": translations_schema() })),
 			// The rules are identical for every batch of one language, so they sit in a
 			// cacheable system block rather than being repeated in each user message.
 			"system": [{
@@ -249,7 +238,7 @@ impl ClaudeClient {
 		let request = json!({
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
-			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": plural_schema() }), Effort::Low),
+			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": plural_schema() })),
 			"system": [{
 				"type": "text",
 				"text": plural_system_prompt(target.style),
@@ -348,10 +337,19 @@ impl ClaudeClient {
 				 Return every heading and every list item this time, in the same order."
 			)
 		});
+		// Markdown comes back as text, not wrapped in JSON like the string batches are.
+		//
+		// It used to be a `json_schema` response with one string property, and German stopped
+		// dead in the middle of `Dialog \u{201e}Alle Dokumente`, at the exact point the closing
+		// quote belonged, on every attempt. A schema response is generated against a JSON
+		// grammar, so a quote character inside the string is the one thing the model cannot
+		// simply write, and a document full of typographic quotes has to thread that needle on
+		// every one. Asking for text asks for none of it. Retries, a heading cap, an explicit
+		// instruction and more effort all left it truncated in the same place, which is what a
+		// grammar does and not what a model that is merely being careless does.
 		let request = json!({
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
-			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": markdown_schema() }), Effort::Default),
 			"system": [{
 				"type": "text",
 				"text": markdown_system_prompt(target.style),
@@ -365,14 +363,7 @@ impl ClaudeClient {
 				)
 			}]
 		});
-		let text = self.send(&request)?;
-		#[derive(Deserialize)]
-		struct Payload {
-			markdown: String,
-		}
-		let payload: Payload = serde_json::from_str(&text)
-			.map_err(|e| format!("Claude returned a response that did not match the schema: {e} (body: {text})"))?;
-		Ok(payload.markdown)
+		Ok(unfenced(self.send(&request)?.trim()))
 	}
 
 	/// Posts `request` and returns the first text block, retrying the statuses that deserve it.
@@ -464,22 +455,20 @@ fn supports_effort(model: &str) -> bool {
 	!model.contains("haiku")
 }
 
-/// How much a request may spend on its answer. See [`ClaudeClient::output_config`].
-#[derive(Copy, Clone)]
-enum Effort {
-	/// A batch of short strings: cheap, and long enough for a label.
-	Low,
-	/// A document section, where the whole of it has to come back.
-	Default,
-}
-
-impl Effort {
-	fn level(self) -> Option<&'static str> {
-		match self {
-			Effort::Low => Some("low"),
-			Effort::Default => None,
-		}
+/// `markdown` without the code fence a model sometimes wraps a whole answer in.
+///
+/// Only when the first line opens a fence and the last line closes one, so a section that really
+/// does begin with a fenced block keeps it.
+fn unfenced(markdown: &str) -> String {
+	let mut lines = markdown.lines();
+	let (Some(first), Some(last)) = (lines.next(), markdown.lines().next_back()) else {
+		return markdown.to_string();
+	};
+	if markdown.lines().count() < 2 || !first.starts_with("```") || last.trim() != "```" {
+		return markdown.to_string();
 	}
+	let inner: Vec<&str> = markdown.lines().skip(1).collect();
+	inner[..inner.len() - 1].join("\n")
 }
 
 /// Maps a `po/<lang>.po` filename stem to the language name used in the prompt.
@@ -564,6 +553,24 @@ mod tests {
 		assert!(content.contains("\"id\": 0") && content.contains("\"id\": 1"), "every entry needs its id");
 	}
 
+	#[test]
+	fn a_whole_answer_wrapped_in_a_fence_is_unwrapped() {
+		let answer = "```markdown\n## Eins\n\nText.\n```";
+		assert_eq!(unfenced(answer), "## Eins\n\nText.");
+	}
+
+	/// A section that really does open with a fenced block keeps it.
+	#[test]
+	fn a_fenced_block_inside_the_answer_is_left_alone() {
+		let answer = "```\ncode\n```\n\nText after.";
+		assert_eq!(unfenced(answer), answer);
+	}
+
+	#[test]
+	fn an_answer_with_no_fence_is_unchanged() {
+		assert_eq!(unfenced("## Eins\n\nText."), "## Eins\n\nText.");
+	}
+
 	// Sending `effort` to a model that does not take it is a 400 on every single request, so
 	// this is correctness rather than tuning. Haiku is the default, which is what made it bite.
 	#[test]
@@ -571,16 +578,6 @@ mod tests {
 		assert!(!supports_effort("claude-haiku-4-5"));
 		assert!(supports_effort("claude-opus-5"));
 		assert!(supports_effort("claude-sonnet-5"));
-	}
-
-	/// The bug this guards: a readme section asked for at low effort came back cut off mid-word,
-	/// and no number of retries buys a request more room to answer in.
-	#[test]
-	fn a_document_request_is_not_capped_at_low_effort() {
-		let client = ClaudeClient { api_key: "test".to_string(), model: "claude-opus-5".to_string() };
-		let format = json!({ "type": "json_schema" });
-		assert_eq!(client.output_config(&format, Effort::Low)["effort"], "low");
-		assert!(client.output_config(&format, Effort::Default)["effort"].is_null());
 	}
 
 	#[test]
