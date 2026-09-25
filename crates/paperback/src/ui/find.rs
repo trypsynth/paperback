@@ -485,20 +485,18 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 		}
 		event.skip(false);
 	});
-	let frame_for_go = frame;
 	let find_dialog_for_go = Rc::clone(&find_dialog);
 	let doc_manager_for_go = Rc::clone(&doc_manager);
 	go_btn.on_click(move |_| {
 		if let Some(state) = find_dialog_for_go.lock().unwrap().as_ref() {
-			handle_result_go(&frame_for_go, state, &doc_manager_for_go, live_region_label);
+			handle_result_go(state, &doc_manager_for_go, live_region_label);
 		}
 	});
-	let frame_for_list = frame;
 	let find_dialog_for_list = Rc::clone(&find_dialog);
 	let doc_manager_for_list = Rc::clone(&doc_manager);
 	results_list.on_item_activated(move |_| {
 		if let Some(state) = find_dialog_for_list.lock().unwrap().as_ref() {
-			handle_result_go(&frame_for_list, state, &doc_manager_for_list, live_region_label);
+			handle_result_go(state, &doc_manager_for_list, live_region_label);
 		}
 	});
 }
@@ -601,7 +599,7 @@ pub fn handle_find_action(
 		show_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
 		return;
 	}
-	do_find(frame, forward, &state, doc_manager, config, live_region_label);
+	do_find(forward, &state, doc_manager, config, live_region_label);
 }
 
 /// Lists every line holding a match for the current query under the dialog's options. With no
@@ -702,12 +700,7 @@ fn populate_find_results(state: &FindDialogState, selected: i32) {
 /// Jumps to the selected results row, landing on the match on that line that follows the caret
 /// origin (falling back to the line's first match), then behaves like a found Find: selects the
 /// range, hides the dialog, and announces the line after the focus chain is cut.
-fn handle_result_go(
-	frame: &Frame,
-	state: &FindDialogState,
-	doc_manager: &Rc<Mutex<DocumentManager>>,
-	live_region_label: StaticText,
-) {
+fn handle_result_go(state: &FindDialogState, doc_manager: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
 	let (start, end, line_text) = {
 		let rows = state.result_rows.borrow();
 		let selected = results_selected_index(state.results_list).unwrap_or(0);
@@ -737,7 +730,6 @@ fn handle_result_go(
 }
 
 fn do_find(
-	frame: &Frame,
 	forward: bool,
 	state: &FindDialogState,
 	doc_manager: &Rc<Mutex<DocumentManager>>,

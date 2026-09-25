@@ -9,6 +9,9 @@ Rules:
 3. In links, translate the link text but never the URL.
 4. Leave proper nouns alone: Paperback, EPUB, PDF, DAISY, and the names of formats and programs.
 5. Translate the prose fully and naturally. Do not summarise, expand, or add notes.
+6. Return every heading and every list item you were given, in the same order. Do not merge two
+   list items into one, and do not leave one out, however repetitive a list of keyboard shortcuts
+   gets. A document that comes back with fewer items than it went in with is rejected.
 
 Return only the translated Markdown.
 

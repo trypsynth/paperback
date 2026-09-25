@@ -67,14 +67,13 @@ for lang in "${langs[@]}"; do
 		"$(bcp47 "$lang")" "$base_url" "$(page_for "$lang")" >>"$header_file"
 done
 printf '<link rel="alternate" hreflang="x-default" href="%s/readme.html">\n' "$base_url" >>"$header_file"
-# Just enough to keep the bar from rendering as a bulleted column above the title.
-# These pages use pandoc's stock template, so there is no site stylesheet to inherit.
-cat >>"$header_file" <<'CSS'
-<style>
-.language-bar ul { list-style: none; padding: 0; margin: 0 0 1.5em; display: flex; flex-wrap: wrap; gap: 0.4em 1em; }
-.language-bar [aria-current] { font-weight: bold; }
-</style>
-CSS
+# The site stylesheet, so the manual looks like the rest of paperback.dev. pandoc puts
+# header includes after its own <style> block, so these rules win.
+cat >>"$header_file" <<'HTML'
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="/css/site.css">
+HTML
 
 # Each link carries its own `lang`, so a screen reader announces "日本語" in a Japanese
 # voice rather than spelling it out in the voice of whatever page you are on. Same
@@ -99,7 +98,10 @@ mkdir -p "$out_dir"
 for lang in "${langs[@]}"; do
 	if [ "$lang" = en ]; then source_file="$doc_dir/readme.md"; else source_file="$doc_dir/readme-$lang.md"; fi
 	bar_file="$work_dir/bar-$lang.html"
-	language_bar "$lang" >"$bar_file"
+	# A way back to the rest of the site. These pages are built by pandoc, not cobalt, so they
+	# do not get the site header.
+	printf '<p><a href="/">&larr; paperback.dev</a></p>\n' >"$bar_file"
+	language_bar "$lang" >>"$bar_file"
 	pandoc "--defaults=$doc_dir/pandoc.yaml" \
 		-M "lang=$(bcp47 "$lang")" \
 		"--include-in-header=$header_file" \

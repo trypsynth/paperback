@@ -20,7 +20,7 @@ image = { version = "0.25.10", default-features = false, features = ["png"] }
 live-region = "0.3.2"
 paperback-core = { path = "../paperback-core" }
 paperback-formats = { path = "../paperback-formats" }
-patois = { version = "0.2.1", features = ["ui"] }
+patois = { version = "0.2.2", features = ["ui"] }
 # Decodes and plays DAISY narration in process. Recording and dithering are off: neither is
 # used, and both pull dependencies of their own. The symphonia extras cover the formats a
 # DAISY book can name that rodio's defaults leave out.
@@ -37,7 +37,13 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.2.0"
 toml = { workspace = true }
 wx-utils = { version = "0.3.1", features = ["shortcuts"] }
-wxdragon = { version = "0.9.22", features = ["webview"] }
+# `default-features = false` turns off the seven size knobs wxdragon enables by default, all of
+# which Paperback pays for and none of which it uses: it never prints, it decodes its own icon
+# with the `image` crate and hands wx raw pixels rather than going through wx's JPEG, TIFF, GIF
+# and friends handlers, its Find uses Rust regex, and its dialogs use the system icons rather
+# than the Tango set built into wxArtProvider. Asserts go too, since a release build cannot act
+# on them.
+wxdragon = { version = "0.9.22", default-features = false, features = ["webview"] }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]

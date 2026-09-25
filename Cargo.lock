@@ -1115,7 +1115,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2643,9 +2643,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "patois"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d737b1aaacfdc4aac90e572d964429ea85bbf31ad865652b4f7a646d4e08d3a"
+checksum = "2d8a7a8ed1b780906a3ee4cfb797cf467c0a758176701c10fd783ca0f2d39938"
 dependencies = [
  "inventory",
  "patois-macros",
@@ -3279,7 +3279,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -4006,7 +4006,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -4823,7 +4823,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5123,8 +5123,7 @@ dependencies = [
 [[package]]
 name = "wxdragon"
 version = "0.9.22"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c35127e8548aed8ae04d163d359db1b520dad9f42f28ecf67bf0b27f7f47e63f"
+source = "git+https://github.com/AllenDang/wxDragon?rev=7c53768b77ca7c6d5b1b3a8a0da77b9791d6e701#7c53768b77ca7c6d5b1b3a8a0da77b9791d6e701"
 dependencies = [
  "bitflags 2.13.2",
  "log",
@@ -5136,8 +5135,7 @@ dependencies = [
 [[package]]
 name = "wxdragon-macros"
 version = "0.9.22"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d14957ce8ba0c50e5686df98cde93e721caf329b22016cadd0d10d7f1172a432"
+source = "git+https://github.com/AllenDang/wxDragon?rev=7c53768b77ca7c6d5b1b3a8a0da77b9791d6e701#7c53768b77ca7c6d5b1b3a8a0da77b9791d6e701"
 dependencies = [
  "proc-macro2",
  "quick-xml 0.42.0",
@@ -5148,8 +5146,7 @@ dependencies = [
 [[package]]
 name = "wxdragon-sys"
 version = "0.9.22"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3858369cb3c4611755ad643348f6d82063c0a3d8aae56b6a4479b46043e5eb1f"
+source = "git+https://github.com/AllenDang/wxDragon?rev=7c53768b77ca7c6d5b1b3a8a0da77b9791d6e701#7c53768b77ca7c6d5b1b3a8a0da77b9791d6e701"
 dependencies = [
  "bindgen",
  "cmake",

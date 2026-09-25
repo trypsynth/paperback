@@ -24,11 +24,8 @@ use serde_json::{Value, json};
 
 use super::{
 	checks::{check, check_plural},
-	markdown::{restore_code_spans, split_markdown},
-	prompts::{
-		markdown_schema, markdown_system_prompt, phrase_system_prompt, plural_schema, plural_system_prompt,
-		translations_schema,
-	},
+	markdown::{chunk_name, restore_code_spans, split_markdown, structure_mismatch},
+	prompts::{markdown_system_prompt, phrase_system_prompt, plural_schema, plural_system_prompt, translations_schema},
 };
 
 const API_URL: &str = "https://api.anthropic.com/v1/messages";
@@ -57,6 +54,10 @@ const PLURAL_BATCH_LIMIT: usize = 20;
 const README_CHUNK_CHARS: usize = 6000;
 
 const MAX_TOKENS: u32 = 16000;
+/// How many times a readme chunk may come back missing headings or list items before the run
+/// fails. Two retries is enough for a model that dropped a section by accident; more than that
+/// and the chunk itself is the problem.
+const MARKDOWN_ATTEMPTS: usize = 3;
 
 /// Retries for the statuses that are worth retrying (429 and 5xx). Raw HTTP gets none of the
 /// automatic backoff the official SDKs have, so it is done here.
@@ -108,6 +109,8 @@ impl ClaudeClient {
 	/// setting on the models that do have it - it holds down thinking tokens on a task whose
 	/// rules are all supplied up front - but it has to be conditional, because the model is
 	/// configurable and the cheap default is exactly the one that refuses it.
+	/// Only the string batches use this. Every answer in one is a few words, which is what low
+	/// effort is for; the readme is asked for as text and has no `output_config` at all.
 	fn output_config(&self, format: &Value) -> Value {
 		let mut config = json!({ "format": format });
 		if supports_effort(&self.model) {
@@ -281,17 +284,72 @@ impl ClaudeClient {
 	pub fn translate_markdown(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
 		let mut translated: Vec<String> = Vec::new();
 		for chunk in split_markdown(markdown, README_CHUNK_CHARS) {
-			translated.push(self.translate_markdown_chunk(&chunk, target)?);
+			translated.push(self.translate_markdown_checked(&chunk, target)?);
 		}
 		let joined = translated.join("\n\n");
 		Ok(restore_code_spans(markdown, &joined))
 	}
 
-	fn translate_markdown_chunk(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
+	/// One chunk, translated and checked against its source, retried while it comes back short.
+	///
+	/// A chunk that fails the check is a chunk the model left something out of, and a second ask
+	/// usually gets it right. After [`MARKDOWN_ATTEMPTS`] tries this gives up loudly: half a
+	/// readme committed and opened as a pull request is worse than no readme, because nobody
+	/// reading the language it is in can tell which half is missing.
+	fn translate_markdown_checked(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
+		let mut last = String::new();
+		let mut last_text = String::new();
+		for attempt in 1..=MARKDOWN_ATTEMPTS {
+			// Each retry is told what was wrong with the attempt before it. A blind retry of the
+			// same request mostly returns the same answer: German dropped one of the six list
+			// items under "File menu" on three identical tries.
+			let previous = (attempt > 1).then_some(last.as_str());
+			let translated = self.translate_markdown_chunk(markdown, target, previous)?;
+			let Some(why) = structure_mismatch(markdown, &translated) else {
+				return Ok(translated);
+			};
+			eprintln!("{}: {why}; retrying ({attempt} of {MARKDOWN_ATTEMPTS})", chunk_name(markdown));
+			last = why;
+			last_text = translated;
+		}
+		// The counts alone say a section is short without saying which part of it went missing,
+		// which is not enough to tell a model that is dropping something from a check that is
+		// counting the wrong thing. The last attempt goes to the log so the next run can be read
+		// rather than guessed at.
+		eprintln!("--- what came back, last attempt:\n{last_text}\n--- what was sent:\n{markdown}\n---");
+		Err(format!(
+			"{} came back incomplete {MARKDOWN_ATTEMPTS} times in {}: {last}",
+			chunk_name(markdown),
+			target.language
+		)
+		.into())
+	}
+
+	fn translate_markdown_chunk(
+		&self,
+		markdown: &str,
+		target: &Target,
+		previous_problem: Option<&str>,
+	) -> Result<String, Box<dyn Error>> {
+		let correction = previous_problem.map_or_else(String::new, |why| {
+			format!(
+				"\n\nYour previous attempt did not match the document: {why}. \
+				 Return every heading and every list item this time, in the same order."
+			)
+		});
+		// Markdown comes back as text, not wrapped in JSON like the string batches are.
+		//
+		// It used to be a `json_schema` response with one string property, and German stopped
+		// dead in the middle of `Dialog \u{201e}Alle Dokumente`, at the exact point the closing
+		// quote belonged, on every attempt. A schema response is generated against a JSON
+		// grammar, so a quote character inside the string is the one thing the model cannot
+		// simply write, and a document full of typographic quotes has to thread that needle on
+		// every one. Asking for text asks for none of it. Retries, a heading cap, an explicit
+		// instruction and more effort all left it truncated in the same place, which is what a
+		// grammar does and not what a model that is merely being careless does.
 		let request = json!({
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
-			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": markdown_schema() })),
 			"system": [{
 				"type": "text",
 				"text": markdown_system_prompt(target.style),
@@ -299,17 +357,13 @@ impl ClaudeClient {
 			}],
 			"messages": [{
 				"role": "user",
-				"content": format!("Target language: {}\n\n<document>\n{markdown}\n</document>", target.language)
+				"content": format!(
+					"Target language: {}{correction}\n\n<document>\n{markdown}\n</document>",
+					target.language
+				)
 			}]
 		});
-		let text = self.send(&request)?;
-		#[derive(Deserialize)]
-		struct Payload {
-			markdown: String,
-		}
-		let payload: Payload = serde_json::from_str(&text)
-			.map_err(|e| format!("Claude returned a response that did not match the schema: {e} (body: {text})"))?;
-		Ok(payload.markdown)
+		Ok(unfenced(self.send(&request)?.trim()))
 	}
 
 	/// Posts `request` and returns the first text block, retrying the statuses that deserve it.
@@ -401,6 +455,22 @@ fn supports_effort(model: &str) -> bool {
 	!model.contains("haiku")
 }
 
+/// `markdown` without the code fence a model sometimes wraps a whole answer in.
+///
+/// Only when the first line opens a fence and the last line closes one, so a section that really
+/// does begin with a fenced block keeps it.
+fn unfenced(markdown: &str) -> String {
+	let mut lines = markdown.lines();
+	let (Some(first), Some(last)) = (lines.next(), markdown.lines().next_back()) else {
+		return markdown.to_string();
+	};
+	if markdown.lines().count() < 2 || !first.starts_with("```") || last.trim() != "```" {
+		return markdown.to_string();
+	}
+	let inner: Vec<&str> = markdown.lines().skip(1).collect();
+	inner[..inner.len() - 1].join("\n")
+}
+
 /// Maps a `po/<lang>.po` filename stem to the language name used in the prompt.
 ///
 /// A name rather than a code, because the prompt is prose and there is no language parameter to
@@ -481,6 +551,24 @@ mod tests {
 		assert!(content.contains("&Settings"), "the source string must reach the request");
 		assert!(content.contains("Menu item"), "the translator note must reach the request");
 		assert!(content.contains("\"id\": 0") && content.contains("\"id\": 1"), "every entry needs its id");
+	}
+
+	#[test]
+	fn a_whole_answer_wrapped_in_a_fence_is_unwrapped() {
+		let answer = "```markdown\n## Eins\n\nText.\n```";
+		assert_eq!(unfenced(answer), "## Eins\n\nText.");
+	}
+
+	/// A section that really does open with a fenced block keeps it.
+	#[test]
+	fn a_fenced_block_inside_the_answer_is_left_alone() {
+		let answer = "```\ncode\n```\n\nText after.";
+		assert_eq!(unfenced(answer), answer);
+	}
+
+	#[test]
+	fn an_answer_with_no_fence_is_unchanged() {
+		assert_eq!(unfenced("## Eins\n\nText."), "## Eins\n\nText.");
 	}
 
 	// Sending `effort` to a model that does not take it is a 400 on every single request, so

@@ -44,6 +44,7 @@ pub fn sync_readmes(
 	let hash = source_hash(&source_md);
 	let sections = split_sections(&source_md);
 	let hashes: Vec<String> = sections.iter().map(|section| section_hash(section)).collect();
+	let mut failed: Vec<String> = Vec::new();
 	for lang in langs {
 		let target_path = doc_dir.join(format!("readme-{lang}.md"));
 		let existing = fs::read_to_string(&target_path).ok();
@@ -69,23 +70,54 @@ pub fn sync_readmes(
 			continue;
 		};
 		let target = Target { language, style: style.as_deref() };
-		let translated_md = match reusable {
-			Some(reusable) => {
-				let mut out: Vec<String> = Vec::with_capacity(sections.len());
-				for (section, existing_section) in sections.iter().zip(reusable) {
-					match existing_section {
-						Some(kept) => out.push(kept),
-						None => out.push(client.translate_markdown(section, &target)?),
-					}
-				}
-				out.join("\n\n")
+		// One language failing its checks does not stop the other fourteen: it is recorded and
+		// reported at the end. A nightly run that gives up on the first bad language would leave
+		// every language after it in the list stale for as long as that one kept failing.
+		match translate_document(client, &sections, reusable, &target) {
+			Ok(translated_md) => {
+				fs::write(&target_path, format!("{}\n\n{}\n", marker_line(&hash, &hashes), translated_md.trim_end()))?;
+				println!("readme-{lang}.md ({language}): translated {to_translate} of {} sections", sections.len());
 			}
-			None => client.translate_markdown(&source_md, &target)?,
-		};
-		fs::write(&target_path, format!("{}\n\n{}\n", marker_line(&hash, &hashes), translated_md.trim_end()))?;
-		println!("readme-{lang}.md ({language}): translated {to_translate} of {} sections", sections.len());
+			Err(e) => {
+				eprintln!("readme-{lang}.md ({language}): not written: {e}");
+				failed.push(lang.clone());
+			}
+		}
+	}
+	if !failed.is_empty() {
+		return Err(format!("the readme came back incomplete for: {}", failed.join(", ")).into());
 	}
 	Ok(())
+}
+
+/// The translated readme, section by section, carrying over the sections `reusable` already has.
+fn translate_document(
+	client: &ClaudeClient,
+	sections: &[String],
+	reusable: Option<Vec<Option<String>>>,
+	target: &Target,
+) -> Result<String, Box<dyn Error>> {
+	let mut out: Vec<String> = Vec::with_capacity(sections.len());
+	match reusable {
+		Some(reusable) => {
+			for (section, existing_section) in sections.iter().zip(reusable) {
+				match existing_section {
+					Some(kept) => out.push(kept),
+					None => out.push(client.translate_markdown(section, target)?),
+				}
+			}
+		}
+		// Still section by section with nothing to carry over, rather than the whole document in
+		// one request. The text comes out the same, but a section that comes back short is caught
+		// against the section it came from instead of disappearing into a response that covered
+		// half the readme.
+		None => {
+			for section in sections {
+				out.push(client.translate_markdown(section, target)?);
+			}
+		}
+	}
+	Ok(out.join("\n\n"))
 }
 
 /// Whether `doc/readme-<lang>.md` needs (re)translating: yes if it doesn't exist yet, or

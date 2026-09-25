@@ -2,69 +2,101 @@
 layout: default.liquid
 title: Home
 permalink: /
+description: Paperback is a fast, fully accessible ebook and document reader for Windows, macOS, Linux, iOS and Android. Open source, and it collects nothing.
 ---
 
-# Paperback
+<div class="hero">
+<h1>Read anything, on anything</h1>
+<p class="lede">Paperback is a fast, fully accessible reader for ebooks, documents and audio books. It opens over twenty formats and speaks fifteen languages. Windows, macOS and Linux are free downloads. The iOS and Android apps are paid, and the source is MIT licensed if you would rather build them yourself.</p>
+<ul class="cta">
+<li><a href="/downloads">Download Paperback</a></li>
+<li><a href="/readme.html">Read the manual</a></li>
+</ul>
+</div>
 
-Paperback is a fully accessible, fast, and native ebook and document reader for Windows, macOS, and Linux, with Android and iOS apps in development.
+## Why Paperback
+
+<div class="cards">
+<div class="card">
+<h3>Screen readers come first</h3>
+<p>Not retrofitted. Every dialog and reading control was built against NVDA, JAWS, VoiceOver and TalkBack, and nothing in the program needs a mouse.</p>
+</div>
+<div class="card">
+<h3>Fast on old hardware</h3>
+<p>Books open in a moment, even the large ones. Nothing is rendered in a browser engine unless you ask for it, with <code>Ctrl+Shift+V</code>.</p>
+</div>
+<div class="card">
+<h3>Navigate like a browser</h3>
+<p>Move by heading, link, page, table, list or formula with single keys, the same way your screen reader moves through a web page.</p>
+</div>
+<div class="card">
+<h3>Read aloud</h3>
+<p>Your own voice, at the rate and pitch you set, with a sleep timer and bookmarks that come back to the exact second. Audio books play their own recording instead.</p>
+</div>
+<div class="card">
+<h3>Private by default</h3>
+<p>No account and no analytics. Your library and your place in it stay on your device.</p>
+</div>
+<div class="card">
+<h3>Yours to change</h3>
+<p>MIT licensed. The source and the translations are in the open, and you can build it yourself.</p>
+</div>
+</div>
 
 ## Platforms
 
-- **Windows** &ndash; installer and portable builds, for x64 and ARM64
-- **macOS** &ndash; signed and notarized, so it just works with no security warnings
-- **Linux** &ndash; AppImage installer and portable builds, for x64 and ARM64
-- **Android** &ndash; in development, coming to Google Play, with read-aloud and background playback
-- **iOS** &ndash; in development, coming to the App Store
+- **Windows** &ndash; free. Installer and portable builds, for x64 and ARM64. Windows 10 and later.
+- **macOS** &ndash; free. Signed and notarized, so it opens with no security warnings.
+- **Linux** &ndash; free. AppImage or tar.gz, for x64 and ARM64, with desktop integration so documents open from your file manager.
+- **iOS** &ndash; paid, on the App Store, for iPhone and iPad running iOS 17 or later.
+- **Android** &ndash; paid, on Google Play, Android 7 and later, with read-aloud that keeps playing in the background.
 
-## Supported formats
+Buying the mobile apps is what pays for the work. If you would rather not, the source is public and builds for both.
 
-- CHM (Compiled HTML Help)
-- DAISY
-- DOCX and DOC (Microsoft Word)
-- EPUB
-- FB2
-- HTML
-- M4B audiobooks
-- Markdown
-- MOBI, AZW, and AZW3 (Kindle)
-- ODP and FODP (OpenDocument Presentations)
-- ODT and FODT (OpenDocument Text)
-- PDF
-- PPTX and PPT (PowerPoint)
-- RTF
-- Plain text
+## Formats
 
-## Features
+<ul class="columns">
+<li>Comic book archives (.cbz)</li>
+<li>CHM help files</li>
+<li>DAISY books</li>
+<li>EPUB</li>
+<li>FB2</li>
+<li>HTML</li>
+<li>Manual pages (man and mdoc)</li>
+<li>Markdown</li>
+<li>Microsoft Word (.docx, .doc, and Word 6 and 95)</li>
+<li>M4B audio books</li>
+<li>MOBI, AZW and AZW3 (Kindle)</li>
+<li>MP3 audio books</li>
+<li>OpenDocument text and presentations</li>
+<li>PDF, including scanned PDFs through OCR</li>
+<li>PowerPoint (.pptx, .ppt)</li>
+<li>reStructuredText</li>
+<li>RTF</li>
+<li>Windows Write (.wri)</li>
+<li>WinHelp (.hlp)</li>
+<li>Plain text and log files</li>
+</ul>
 
-### Accessible by design
+## Languages
 
-Built from the ground up for accessibility: full screen reader support and clear keyboard navigation across the entire application.
+<ul class="columns">
+<li>Bosnian</li>
+<li>Chinese (Simplified)</li>
+<li>Czech</li>
+<li>Dutch</li>
+<li>English</li>
+<li>Finnish</li>
+<li>French</li>
+<li>German</li>
+<li>Japanese</li>
+<li>Polish</li>
+<li>Portuguese (Brazil)</li>
+<li>Russian</li>
+<li>Serbian</li>
+<li>Spanish</li>
+<li>Ukrainian</li>
+<li>Vietnamese</li>
+</ul>
 
-### Fast and lightweight
-
-Opens instantly and runs smoothly even on older hardware. Optimized for performance and battery life.
-
-### Open source and private
-
-Paperback is open source under the MIT license and collects no telemetry. Your library stays on your device.
-
-### Multilingual
-
-Paperback is translated into multiple languages by contributors around the world:
-
-- Bosnian
-- Chinese (Simplified)
-- Czech
-- Dutch
-- Finnish
-- French
-- German
-- Japanese
-- Polish
-- Portuguese (Brazil)
-- Russian
-- Serbian
-- Spanish
-- Vietnamese
-
-Want to add your language? See the [translation guide](/translations).
+Want to add your language? Read the [translation guide](/translations).
