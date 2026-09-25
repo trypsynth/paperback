@@ -4,7 +4,7 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Translations &ndash; Paperback</title>
-	<meta name="description" content="How to translate Paperback into your language, from starting a new .po file to opening the pull request." />
+	<meta name="description" content="How to translate Paperback into your language, how the machine translator works, how to steer it, and how to opt out of it." />
 	<meta name="color-scheme" content="light dark" />
 	<link rel="stylesheet" href="/css/site.css" />
 </head>
@@ -46,15 +46,16 @@
 		<div id="content-anchor"></div>
 
 <h1>Translation Guide</h1>
-<p>Thank you for your interest in translating Paperback! This page walks you through how to start a new translation, how to keep it updated, and how to submit your work.</p>
-<p>All translation files live in the <code>po</code> directory of the repository. The template is <code>paperback.pot</code>, and each language is stored as <code>po/&lt;lang&gt;.po</code> using the standard language code (for example: <code>es</code>, <code>pt_BR</code>, <code>de</code>).</p>
+<p>Thank you for your interest in translating Paperback. This page covers starting a new translation, keeping it up to date, and submitting your work. It also explains what the machine translator does, how to make it write your language the way you would, and how to switch it off for your language entirely.</p>
+<p>All translation files live in the <code>po</code> directory of the repository. The template is <code>paperback.pot</code>, and each language is <code>po/&lt;lang&gt;.po</code>.</p>
+<p>Use the code as it already appears in the <code>po</code> directory. Most are a bare language code (<code>es</code>, <code>de</code>, <code>fi</code>), and where a region is part of it, the existing files are the guide: <code>pt_br</code> is lower case and <code>zh_CN</code> is not. A new file should follow whichever form its language normally uses.</p>
 <h2>Prerequisites</h2>
 <ul>
 <li>gettext tools (<code>xgettext</code>, <code>msgmerge</code>, <code>msgfmt</code>) on your <code>PATH</code>, for merging and compiling translations.</li>
 <li><a href="https://poedit.net/download">Poedit</a> (optional but recommended), a graphical editor for <code>.po</code> files. Any text editor works too.</li>
 <li>Git and a GitHub account to submit your work.</li>
 </ul>
-<h2>Starting a New Translation</h2>
+<h2>Starting a new translation</h2>
 <ol>
 <li>Fork the repository on GitHub and clone your fork locally:</li>
 </ol>
@@ -91,7 +92,7 @@
 <ol start="7">
 <li>Test your translation by recompiling Paperback and selecting it from the options dialog.</li>
 </ol>
-<h2>Updating an Existing Translation</h2>
+<h2>Updating an existing translation</h2>
 <p>When new strings are added to Paperback:</p>
 <ol>
 <li>Switch to your translation branch and pull the latest changes:</li>
@@ -122,12 +123,62 @@
 <p>Remove fuzzy markers once reviewed, then compile and test (same as steps 6 and 7 above).</p>
 </li>
 </ol>
-<h2>Machine-translated languages</h2>
-<p>Languages not listed in <code>po/human-maintained-locales.txt</code> are kept up to date automatically: after every change to the source, <code>cargo xtask translate</code> fills in the new strings and readme sections with the Claude API and marks them <code>fuzzy</code> for review.</p>
-<p>You can tell the machine translator how your language should read by adding <code>po/style/&lt;lang&gt;.md</code> (for example <code>po/style/nl.md</code>). Write it in English, since the model reads it: the register (formal or informal), rules about articles, word order and capitalisation, and a glossary of the terms you want used consistently. The file is appended to the translator's instructions whenever your language is translated, and its conventions take precedence over the general rules. If the file is missing, nothing changes. Running <code>cargo xtask translate --dry-run</code> shows <code>with po/style/&lt;lang&gt;.md</code> on your language's line once the note is picked up.</p>
-<h2>Translating the README</h2>
-<p>If you want to translate the user-facing documentation as well, create a <code>doc/readme-&lt;lang&gt;.md</code> file (for example <code>doc/readme-da.md</code>) using the English <code>doc/readme.md</code> as your starting point. The build system picks it up automatically and embeds the rendered HTML into the binary alongside the UI strings. Submit it in the same pull request as your <code>.po</code> file.</p>
-<h2>Submitting Your Translation</h2>
+<h2>The machine translator</h2>
+<p>Any language <strong>not</strong> listed in <code>po/human-maintained-locales.txt</code> is filled in automatically. A GitHub Actions workflow runs on every push to master that changes a translatable source file, and it does this:</p>
+<ol>
+<li>Regenerates <code>po/paperback.pot</code> from the source.</li>
+<li>Runs <code>msgmerge</code> over every <code>.po</code> file, with <code>--no-fuzzy-matching</code>, so a new string arrives as a blank entry rather than a guess copied from a similar old one.</li>
+<li>Sends the blank entries to the Claude API, one batch per language, passing each string's <code>#. TRANSLATORS:</code> note along with it.</li>
+<li>Also re-translates any entry whose existing translation provably dropped a <code>%s</code>, a <code>{}</code>, an <code>&amp;</code> accelerator or a <code>\t</code> shortcut suffix.</li>
+<li>Machine-translates <code>doc/readme.md</code> into <code>doc/readme-&lt;lang&gt;.md</code> for the same languages.</li>
+<li>Opens or updates a pull request called <strong>chore: machine-translate missing strings</strong>.</li>
+</ol>
+<p>Three things about it are worth knowing.</p>
+<p><strong>Machine translations are marked <code>fuzzy</code>, and fuzzy entries still ship.</strong> The <code>fuzzy</code> marker means "a human has not reviewed this", not "this is switched off". If your language is machine translated, what the model wrote is what users are reading.</p>
+<p><strong>A filled entry is never revisited.</strong> The translator only touches entries that are blank or provably damaged. A translation that is simply wrong, but has the right placeholders, stays exactly as it is until a person changes it. So reviewing the machine output is worth doing, and a correction you make by hand will not be overwritten.</p>
+<p><strong>Your own work is never touched.</strong> A non-fuzzy entry was written by a person, and nothing in the normal flow overwrites one.</p>
+<h2>Steering the machine translator</h2>
+<p>If your language is machine translated and the wording is not how you would put it, you can fix that once instead of correcting it every release. Write your conventions in <code>po/style/&lt;lang&gt;.md</code>, and that file is given to the translator every time your language runs.</p>
+<p>Write it in English, because the model is what reads it. <code>po/style/nl.md</code> and <code>po/style/de.md</code> are worked examples. The things worth putting in it:</p>
+<ul>
+<li><strong>Register.</strong> Formal or informal, and which pronoun forms follow from that.</li>
+<li><strong>How labels should read.</strong> Whether menu items and buttons take an infinitive, an imperative, or a noun.</li>
+<li><strong>Capitalisation.</strong> Most languages use sentence case for labels where English uses Title Case, and saying so stops the English shape being carried over.</li>
+<li><strong>Words that stay in English.</strong> Format and product names, and any term your users expect untranslated.</li>
+<li><strong>A glossary.</strong> English to your language, for the terms you want rendered the same way every time.</li>
+<li><strong>Anything structural.</strong> Compound spelling, article rules, word order, quotation marks.</li>
+</ul>
+<p>Its conventions take precedence over the translator's general rules. If the file is missing, nothing changes. To check it has been picked up:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#8fa1b3;">cargo</span><span style="color:#c0c5ce;"> xtask translate</span><span style="color:#bf616a;"> --dry-run
+</span></code></pre>
+<p>Your language's line will say <code>with po/style/&lt;lang&gt;.md</code>.</p>
+<p>A style note only affects entries translated after you add it. It does not rewrite what is already in your <code>.po</code>, because a filled entry is never revisited.</p>
+<h2>Opting out of machine translation</h2>
+<p>If you would rather maintain your language entirely by hand, add your locale code on its own line to <code>po/human-maintained-locales.txt</code>:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">bs
+</span><span style="color:#c0c5ce;">cs
+</span><span style="color:#c0c5ce;">da
+</span><span style="color:#c0c5ce;">fi
+</span></code></pre>
+<p>The translator then skips your language completely, both <code>po/&lt;lang&gt;.po</code> and <code>doc/readme-&lt;lang&gt;.md</code>, and will not fill in a blank or a fuzzy entry even if one is sitting there. Untranslated strings fall back to English in the interface, which is the trade: nothing is written for you, and nothing is written over you.</p>
+<p>Removing your line opts back in. Neither direction is a commitment, and switching either way is a one-line pull request.</p>
+<h2>Translating the manual</h2>
+<p>The user manual is <code>doc/readme.md</code>. To translate it, create <code>doc/readme-&lt;lang&gt;.md</code> (for example <code>doc/readme-da.md</code>) using the English one as your starting point. The build picks it up automatically, publishes it at <code>paperback.dev/readme-&lt;lang&gt;.html</code>, and embeds it in the program for the Help menu. Submit it in the same pull request as your <code>.po</code> file.</p>
+<p>A machine-translated manual is written one heading at a time, and every section is checked against its English source before anything is written: the same headings at the same levels, the same number of list items, the same number of code fences. A section that comes back short is retried, and if it keeps coming back short the run reports which section failed and writes nothing, rather than publishing a manual with a piece missing.</p>
+<p>That check also runs against hand-written manuals when we go looking, which is how we find a section that was added to the English manual and never made it into a translation. If yours is a few sections behind, that is fine and nobody is counting; it just means the English text shows through in places.</p>
+<h2>Notes</h2>
+<ol>
+<li><strong>Keyboard shortcuts.</strong> Six strings carry their shortcut inside the translation, after a <code>\t</code>: Undo, Redo, Cut, Copy, Paste and Select All. In those the text after the tab is what the toolkit turns into the actual key, so keep <code>Ctrl+Z</code> and the rest exactly as the English has them. Translating them stops the shortcut working.</li>
+<li><strong>Key names elsewhere.</strong> Every other menu shortcut is generated from the user's configuration rather than from the catalogue, in English (<code>Ctrl</code>, <code>Shift</code>, <code>Alt</code>). Nothing you write in the <code>.po</code> changes that, so the manual should use the same English key names as the program shows. Localized key names are planned; if you want them for your language, say so in <a href="https://github.com/trypsynth/paperback/discussions/910">the translation discussion</a>.</li>
+<li><strong>Format strings.</strong> Keep <code>%s</code>, <code>%d</code> and <code>{}</code> exactly as they appear, and in an order that makes sense in your language.</li>
+<li><strong>Ampersands.</strong> <code>&amp;</code> marks the accelerator letter in a menu item or a button. Keep one, and choose a different letter if the English letter would collide with another item in the same menu.</li>
+<li><strong>Punctuation and spacing.</strong> Match the source for ellipses, colons and trailing spaces, so the interface lines up.</li>
+<li><strong>Encoding.</strong> UTF-8 without a BOM.</li>
+<li><strong><code>.mo</code> files.</strong> Do not commit them. They are compiled at build time.</li>
+</ol>
+<h2>Submitting your translation</h2>
 <ol>
 <li>Commit your <code>.po</code> file and push:</li>
 </ol>
@@ -148,15 +199,7 @@
 </li>
 </ol>
 <p>If you prefer not to use Git, attach your <code>.po</code> file to an issue and we will merge it for you.</p>
-<h2>Notes</h2>
-<ol>
-<li>Keyboard shortcuts: Keep the <code>\t</code> and key name together.</li>
-<li>Format strings: Keep <code>%s</code>, <code>%d</code>, and similar placeholders exactly as they appear.</li>
-<li>Ampersands (<code>&amp;</code>): Used for menu keyboard shortcuts. Choose different letters if the same key would appear twice in a menu.</li>
-<li>Punctuation and spacing: Match the source string for ellipses, colons, and spacing so UI alignment stays consistent.</li>
-<li>Encoding: Files must be UTF-8 without a BOM.</li>
-<li><code>.mo</code> files: Do not commit <code>.mo</code> files. They are compiled at build time and are not needed in the repository.</li>
-</ol>
+<p>Questions, or anything that does not make sense here, go in <a href="https://github.com/trypsynth/paperback/discussions/910">the translation discussion</a>.</p>
 
 	</main>
 	<footer class="site-footer">
