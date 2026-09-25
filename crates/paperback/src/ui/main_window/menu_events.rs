@@ -185,7 +185,7 @@ impl MainWindow {
 					menu_tools::handle_customize_shortcuts(&frame_copy, &dm, &config);
 				}
 				menu_ids::SLEEP_TIMER => {
-					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label);
+					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label, from_keyboard);
 				}
 				#[cfg(any(target_os = "windows", target_os = "macos"))]
 				menu_ids::BATCH_OCR => {

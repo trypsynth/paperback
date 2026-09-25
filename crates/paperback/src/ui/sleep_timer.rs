@@ -18,7 +18,7 @@ use patois::{nt, t};
 use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager, main_window::update_title_from_manager, navigation};
-use crate::ui::navigation::announce;
+use crate::ui::navigation::{announce, announce_for_command};
 
 /// When the running timer was set, as milliseconds since the epoch, or 0 when none is running.
 static START_MS: AtomicI64 = AtomicI64::new(0);
@@ -107,6 +107,7 @@ impl SleepTimer {
 		dm: &Rc<Mutex<DocumentManager>>,
 		config: &Rc<Mutex<ConfigManager>>,
 		live_region_label: StaticText,
+		from_keyboard: bool,
 	) {
 		if is_running() {
 			self.timer.stop();
@@ -115,7 +116,7 @@ impl SleepTimer {
 			let dm_ref = dm.lock().unwrap();
 			update_title_from_manager(frame, &dm_ref);
 			// TRANSLATORS: Announced when the user cancels a running sleep timer
-			announce(live_region_label, t("Sleep timer cancelled."));
+			announce_for_command(live_region_label, from_keyboard, t("Sleep timer cancelled."));
 			return;
 		}
 		let initial_duration = config.lock().unwrap().get_app_int("sleep_timer_duration", 30);
