@@ -31,6 +31,45 @@ final class SpeechScaleTests: XCTestCase {
 	}
 }
 
+final class PitchScaleTests: XCTestCase {
+	func testThePercentEndsMapToTheEndsOfThePitchRange() {
+		XCTAssertEqual(pitchRange.lowerBound, pitchForPercent(0), accuracy: 0.0001)
+		XCTAssertEqual(pitchRange.upperBound, pitchForPercent(100), accuracy: 0.0001)
+	}
+
+	func testAValueOutsideThePercentRangeIsBroughtBackInsideIt() {
+		XCTAssertEqual(pitchForPercent(100), pitchForPercent(500), accuracy: 0.0001)
+		XCTAssertEqual(pitchForPercent(0), pitchForPercent(-40), accuracy: 0.0001)
+	}
+
+	func testEveryPercentSurvivesTheRoundTrip() {
+		for percent in 0...100 {
+			XCTAssertEqual(percent, percentForPitch(pitchForPercent(percent)), "at \(percent)%")
+		}
+	}
+
+	func testSteppingPastAnEndSettlesThereRatherThanWrapping() {
+		XCTAssertEqual(0, percentForPitch(pitchForPercent(-1)))
+		XCTAssertEqual(100, percentForPitch(pitchForPercent(101)))
+	}
+
+	/// The engine's default pitch of 1.0 is not on the whole-percent grid. One step up from it
+	/// must land on the next percent rather than round back to where it started.
+	func testOneStepUpFromTheDefaultPitchMovesToTheNextPercent() {
+		let start = percentForPitch(1.0)
+		XCTAssertEqual(33, start)
+		XCTAssertEqual(34, percentForPitch(pitchForPercent(start + speechPercentStep)))
+	}
+
+	/// The menu marks the preset equal to the current percent, so a preset that did not survive
+	/// the round trip could be chosen and then never show as chosen.
+	func testEveryPitchPresetSurvivesTheRoundTrip() {
+		for preset in pitchPresets {
+			XCTAssertEqual(preset, percentForPitch(pitchForPercent(preset)), "preset \(preset)%")
+		}
+	}
+}
+
 final class PluralFormTests: XCTestCase {
 	private func form(_ count: Int) -> String {
 		nt("one", "few", "many", count)

@@ -30,7 +30,8 @@ use crate::workspace::project_root;
 ///
 /// Locales listed in `po/human-maintained-locales.txt` are skipped entirely, for both the
 /// po-string sync and the README sync. See that file and
-/// <https://github.com/trypsynth/paperback/issues/638>.
+/// <https://github.com/trypsynth/paperback/issues/638>. A locale that has `po/style/<lang>.md`
+/// gets that file appended to the model's instructions (see `load_style_note`).
 pub fn translate() -> Result<(), Box<dyn Error>> {
 	let mut dry_run = false;
 	let mut repair = false;
@@ -102,7 +103,7 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 			println!("{lang}: human-maintained, skipping");
 			continue;
 		}
-		translate_one(po_path, &pot_path, dry_run, repair, repair_copies, client.as_ref(), &context)?;
+		translate_one(&root, po_path, &pot_path, dry_run, repair, repair_copies, client.as_ref(), &context)?;
 	}
 	let auto_langs: Vec<String> = langs.into_iter().filter(|l| !human_maintained.contains(l.as_str())).collect();
 	readme::sync_readmes(&root, &auto_langs, client.as_ref(), dry_run)?;
@@ -142,13 +143,29 @@ fn parse_human_maintained_locales(content: &str) -> HashSet<String> {
 		.collect()
 }
 
+/// The conventions a locale's translators wrote for the model in `po/style/<lang>.md`, or
+/// `None` when there is no such file or it is blank.
+pub fn load_style_note(root: &Path, lang: &str) -> Option<String> {
+	let path = root.join("po").join("style").join(format!("{lang}.md"));
+	parse_style_note(&fs::read_to_string(path).ok()?)
+}
+
+fn parse_style_note(content: &str) -> Option<String> {
+	let note = content.trim();
+	(!note.is_empty()).then(|| note.to_string())
+}
+
+pub fn style_note_suffix(lang: &str, present: bool) -> String {
+	if present { format!(", with po/style/{lang}.md") } else { String::new() }
+}
+
 /// What to splice into a document: the entry index and its translated result.
 type Applied = Vec<(usize, Translation)>;
 
 /// Translates the ordinary entries, returning what to apply and how many carried a note.
 fn translate_singulars(
 	client: &claude::ClaudeClient,
-	language: &str,
+	target: &claude::Target,
 	candidates: &[(usize, String)],
 	context: &HashMap<String, String>,
 ) -> Result<(Applied, usize), Box<dyn Error>> {
@@ -160,7 +177,7 @@ fn translate_singulars(
 		.map(|(_, text)| claude::Phrase { source: text.clone(), context: context.get(text).cloned() })
 		.collect();
 	let annotated = phrases.iter().filter(|p| p.context.is_some()).count();
-	let results = client.translate_phrases(&phrases, language)?;
+	let results = client.translate_phrases(&phrases, target)?;
 	let applied = candidates
 		.iter()
 		.map(|(i, _)| *i)
@@ -173,7 +190,7 @@ fn translate_singulars(
 /// Translates the plural entries, asking for `nplurals` forms of each.
 fn translate_plurals(
 	client: &claude::ClaudeClient,
-	language: &str,
+	target: &claude::Target,
 	candidates: &[(usize, String, String)],
 	context: &HashMap<String, String>,
 	nplurals: usize,
@@ -192,7 +209,7 @@ fn translate_plurals(
 			context: context.get(singular).cloned(),
 		})
 		.collect();
-	let results = client.translate_plurals(&phrases, language, nplurals, rule)?;
+	let results = client.translate_plurals(&phrases, target, nplurals, rule)?;
 	Ok(candidates
 		.iter()
 		.map(|(i, _, _)| *i)
@@ -295,7 +312,9 @@ fn same_meaning_key(msgid: &str) -> String {
 		.collect()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn translate_one(
+	root: &Path,
 	po_path: &Path,
 	pot_path: &Path,
 	dry_run: bool,
@@ -305,6 +324,7 @@ fn translate_one(
 	context: &HashMap<String, String>,
 ) -> Result<(), Box<dyn Error>> {
 	let lang = po_path.file_stem().and_then(|s| s.to_str()).unwrap_or_default().to_string();
+	let style = load_style_note(root, &lang);
 	let original = fs::read_to_string(po_path)?;
 	// Work on a scratch copy so po_path is never touched unless there's a real change to
 	// write back (checked at the end), true for --dry-run and for the "msgmerge only
@@ -344,12 +364,13 @@ fn translate_one(
 	}
 	let total = candidates.len() + plurals.len();
 	if dry_run {
+		let style_note = style_note_suffix(&lang, style.is_some());
 		if total == 0 {
-			println!("{lang}: fully translated, nothing to do");
+			println!("{lang}: fully translated, nothing to do{style_note}");
 		} else {
 			let plural_note = if plurals.is_empty() { String::new() } else { format!(", {} plural", plurals.len()) };
 			let repair_note = if repaired > 0 { format!(" ({repaired} damaged)") } else { String::new() };
-			println!("{lang}: {total} entries would be translated{plural_note}{repair_note}");
+			println!("{lang}: {total} entries would be translated{plural_note}{repair_note}{style_note}");
 		}
 		return Ok(());
 	}
@@ -363,7 +384,8 @@ fn translate_one(
 				merged
 			}
 			Some(language) => {
-				let (mut applied, annotated) = translate_singulars(client, language, &candidates, context)?;
+				let target = claude::Target { language, style: style.as_deref() };
+				let (mut applied, annotated) = translate_singulars(client, &target, &candidates, context)?;
 				let plural_done = match plural_forms(&merged) {
 					// Without a usable Plural-Forms header there is no way to know how many
 					// forms to ask for, and guessing at two would write a Russian file that is
@@ -374,7 +396,7 @@ fn translate_one(
 					}
 					None => 0,
 					Some((nplurals, rule)) => {
-						let translated = translate_plurals(client, language, &plurals, context, nplurals, &rule)?;
+						let translated = translate_plurals(client, &target, &plurals, context, nplurals, &rule)?;
 						let done = translated.len();
 						applied.extend(translated);
 						done
@@ -458,6 +480,23 @@ mod tests {
 	fn human_maintained_locales_empty_when_only_comments() {
 		let content = "# nothing here yet\n";
 		assert!(parse_human_maintained_locales(content).is_empty());
+	}
+
+	#[test]
+	fn a_style_note_is_trimmed() {
+		let content = "\n\n# Dutch\n\nAddress the reader as \"je\".\n\n\n";
+		assert_eq!(parse_style_note(content), Some("# Dutch\n\nAddress the reader as \"je\".".to_string()));
+	}
+
+	#[test]
+	fn a_blank_style_note_counts_as_absent() {
+		assert_eq!(parse_style_note("  \n\n"), None);
+	}
+
+	#[test]
+	fn the_dry_run_line_names_the_style_note_it_would_use() {
+		assert_eq!(style_note_suffix("nl", true), ", with po/style/nl.md");
+		assert_eq!(style_note_suffix("nl", false), "");
 	}
 
 	#[test]

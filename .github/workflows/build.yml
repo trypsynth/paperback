@@ -6,7 +6,19 @@ on:
   pull_request:
     branches:
       - master
+    # A pull request that only moves translations or documentation does not change any of these
+    # packages, and building all eight of them is the most expensive thing this repository does.
+    paths-ignore:
+      - 'po/**'
+      - 'doc/**'
+      - 'web/**'
+      - 'README.md'
   workflow_dispatch:
+# One run per branch at a time. The release job below keeps its own queue, so a cancelled run
+# cannot leave a half-published set of assets behind.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -338,6 +350,45 @@ jobs:
         path: |
           paperback-android-arm64.apk
           paperback-android-arm.apk
+        retention-days: 30
+
+  build-ios:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    # cargo xtask ios only warns when pandoc is missing, and the .ipa then ships without Readmes.
+    - name: Install Pandoc
+      run: brew install pandoc
+    - name: Install Rust with iOS targets
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        targets: aarch64-apple-ios,aarch64-apple-ios-sim
+    - name: Cache Rust build artifacts
+      uses: Swatinem/rust-cache@v2
+    - name: Build the XCFramework and Swift bindings
+      run: cargo xtask ios --release
+    # Unsigned build: sideloading tools add the tester's own signature on install.
+    - name: Build the app
+      run: >
+        xcodebuild -project ios/Paperback.xcodeproj -scheme Paperback
+        -configuration Release -destination 'generic/platform=iOS'
+        -derivedDataPath ios/DerivedData
+        CODE_SIGNING_ALLOWED=NO build
+    - name: Package the unsigned IPA
+      run: |
+        mkdir -p "$RUNNER_TEMP/ipa/Payload"
+        cp -R ios/DerivedData/Build/Products/Release-iphoneos/Paperback.app "$RUNNER_TEMP/ipa/Payload/"
+        (cd "$RUNNER_TEMP/ipa" && zip -qry "$GITHUB_WORKSPACE/paperback-ios-unsigned.ipa" Payload)
+    - name: Upload IPA artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-ios-unsigned
+        path: paperback-ios-unsigned.ipa
         retention-days: 30
 
   build-macos:

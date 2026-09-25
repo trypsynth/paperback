@@ -24,11 +24,8 @@ use serde_json::{Value, json};
 
 use super::{
 	checks::{check, check_plural},
-	markdown::{restore_code_spans, split_markdown},
-	prompts::{
-		markdown_schema, markdown_system_prompt, phrase_system_prompt, plural_schema, plural_system_prompt,
-		translations_schema,
-	},
+	markdown::{chunk_name, restore_code_spans, split_markdown, structure_mismatch},
+	prompts::{markdown_system_prompt, phrase_system_prompt, plural_schema, plural_system_prompt, translations_schema},
 };
 
 const API_URL: &str = "https://api.anthropic.com/v1/messages";
@@ -57,6 +54,10 @@ const PLURAL_BATCH_LIMIT: usize = 20;
 const README_CHUNK_CHARS: usize = 6000;
 
 const MAX_TOKENS: u32 = 16000;
+/// How many times a readme chunk may come back missing headings or list items before the run
+/// fails. Two retries is enough for a model that dropped a section by accident; more than that
+/// and the chunk itself is the problem.
+const MARKDOWN_ATTEMPTS: usize = 3;
 
 /// Retries for the statuses that are worth retrying (429 and 5xx). Raw HTTP gets none of the
 /// automatic backoff the official SDKs have, so it is done here.
@@ -75,6 +76,13 @@ pub struct PluralPhrase {
 	pub singular: String,
 	pub plural: String,
 	pub context: Option<String>,
+}
+
+/// The language a batch is translated into, and the conventions its translators wrote for the
+/// model, when they wrote any (see `po/style/<lang>.md`).
+pub struct Target<'a> {
+	pub language: &'a str,
+	pub style: Option<&'a str>,
 }
 
 pub struct ClaudeClient {
@@ -101,6 +109,8 @@ impl ClaudeClient {
 	/// setting on the models that do have it - it holds down thinking tokens on a task whose
 	/// rules are all supplied up front - but it has to be conditional, because the model is
 	/// configurable and the cheap default is exactly the one that refuses it.
+	/// Only the string batches use this. Every answer in one is a few words, which is what low
+	/// effort is for; the readme is asked for as text and has no `output_config` at all.
 	fn output_config(&self, format: &Value) -> Value {
 		let mut config = json!({ "format": format });
 		if supports_effort(&self.model) {
@@ -109,12 +119,16 @@ impl ClaudeClient {
 		config
 	}
 
-	/// Translates `phrases` into `language`, in batches. Returns one result per input, in
-	/// order, with `None` where the result failed a check (see [`check`]).
-	pub fn translate_phrases(&self, phrases: &[Phrase], language: &str) -> Result<Vec<Option<String>>, Box<dyn Error>> {
+	/// Translates `phrases` into `target`'s language, in batches. Returns one result per input,
+	/// in order, with `None` where the result failed a check (see [`check`]).
+	pub fn translate_phrases(
+		&self,
+		phrases: &[Phrase],
+		target: &Target,
+	) -> Result<Vec<Option<String>>, Box<dyn Error>> {
 		let mut out = Vec::with_capacity(phrases.len());
 		for chunk in phrases.chunks(BATCH_LIMIT) {
-			out.extend(self.translate_chunk(chunk, language)?);
+			out.extend(self.translate_chunk(chunk, target)?);
 		}
 		Ok(out)
 	}
@@ -123,7 +137,7 @@ impl ClaudeClient {
 	/// asserted in a test: a request that is subtly wrong (a misplaced `format`, a missing
 	/// `id`) otherwise only shows up as a 400 from a live call, which the test suite never
 	/// makes.
-	fn phrase_request(&self, phrases: &[Phrase], language: &str) -> Result<Value, Box<dyn Error>> {
+	fn phrase_request(&self, phrases: &[Phrase], target: &Target) -> Result<Value, Box<dyn Error>> {
 		let items: Vec<Value> = phrases
 			.iter()
 			.enumerate()
@@ -138,25 +152,26 @@ impl ClaudeClient {
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
 			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": translations_schema() })),
-			// The rules are identical for every batch and every language, so they sit in a
+			// The rules are identical for every batch of one language, so they sit in a
 			// cacheable system block rather than being repeated in each user message.
 			"system": [{
 				"type": "text",
-				"text": phrase_system_prompt(),
+				"text": phrase_system_prompt(target.style),
 				"cache_control": { "type": "ephemeral" }
 			}],
 			"messages": [{
 				"role": "user",
 				"content": format!(
-					"Target language: {language}\n\nTranslate every entry:\n{}",
+					"Target language: {}\n\nTranslate every entry:\n{}",
+					target.language,
 					serde_json::to_string_pretty(&items)?
 				)
 			}]
 		}))
 	}
 
-	fn translate_chunk(&self, phrases: &[Phrase], language: &str) -> Result<Vec<Option<String>>, Box<dyn Error>> {
-		let request = self.phrase_request(phrases, language)?;
+	fn translate_chunk(&self, phrases: &[Phrase], target: &Target) -> Result<Vec<Option<String>>, Box<dyn Error>> {
+		let request = self.phrase_request(phrases, target)?;
 		let text = self.send(&request)?;
 		#[derive(Deserialize)]
 		struct Item {
@@ -190,13 +205,13 @@ impl ClaudeClient {
 	pub fn translate_plurals(
 		&self,
 		phrases: &[PluralPhrase],
-		language: &str,
+		target: &Target,
 		nplurals: usize,
 		plural_rule: &str,
 	) -> Result<Vec<Option<Vec<String>>>, Box<dyn Error>> {
 		let mut out = Vec::with_capacity(phrases.len());
 		for chunk in phrases.chunks(PLURAL_BATCH_LIMIT) {
-			out.extend(self.translate_plural_chunk(chunk, language, nplurals, plural_rule)?);
+			out.extend(self.translate_plural_chunk(chunk, target, nplurals, plural_rule)?);
 		}
 		Ok(out)
 	}
@@ -204,10 +219,11 @@ impl ClaudeClient {
 	fn translate_plural_chunk(
 		&self,
 		phrases: &[PluralPhrase],
-		language: &str,
+		target: &Target,
 		nplurals: usize,
 		plural_rule: &str,
 	) -> Result<Vec<Option<Vec<String>>>, Box<dyn Error>> {
+		let language = target.language;
 		let items: Vec<Value> = phrases
 			.iter()
 			.enumerate()
@@ -225,7 +241,7 @@ impl ClaudeClient {
 			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": plural_schema() })),
 			"system": [{
 				"type": "text",
-				"text": plural_system_prompt(),
+				"text": plural_system_prompt(target.style),
 				"cache_control": { "type": "ephemeral" }
 			}],
 			"messages": [{
@@ -265,38 +281,89 @@ impl ClaudeClient {
 	/// through `pandoc` into HTML, translate that, and convert it back, because its API had no
 	/// other way to protect code spans and fenced blocks from being translated; that round trip
 	/// is now just an instruction.
-	pub fn translate_markdown(&self, markdown: &str, language: &str) -> Result<String, Box<dyn Error>> {
+	pub fn translate_markdown(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
 		let mut translated: Vec<String> = Vec::new();
 		for chunk in split_markdown(markdown, README_CHUNK_CHARS) {
-			translated.push(self.translate_markdown_chunk(&chunk, language)?);
+			translated.push(self.translate_markdown_checked(&chunk, target)?);
 		}
 		let joined = translated.join("\n\n");
 		Ok(restore_code_spans(markdown, &joined))
 	}
 
-	fn translate_markdown_chunk(&self, markdown: &str, language: &str) -> Result<String, Box<dyn Error>> {
+	/// One chunk, translated and checked against its source, retried while it comes back short.
+	///
+	/// A chunk that fails the check is a chunk the model left something out of, and a second ask
+	/// usually gets it right. After [`MARKDOWN_ATTEMPTS`] tries this gives up loudly: half a
+	/// readme committed and opened as a pull request is worse than no readme, because nobody
+	/// reading the language it is in can tell which half is missing.
+	fn translate_markdown_checked(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
+		let mut last = String::new();
+		let mut last_text = String::new();
+		for attempt in 1..=MARKDOWN_ATTEMPTS {
+			// Each retry is told what was wrong with the attempt before it. A blind retry of the
+			// same request mostly returns the same answer: German dropped one of the six list
+			// items under "File menu" on three identical tries.
+			let previous = (attempt > 1).then_some(last.as_str());
+			let translated = self.translate_markdown_chunk(markdown, target, previous)?;
+			let Some(why) = structure_mismatch(markdown, &translated) else {
+				return Ok(translated);
+			};
+			eprintln!("{}: {why}; retrying ({attempt} of {MARKDOWN_ATTEMPTS})", chunk_name(markdown));
+			last = why;
+			last_text = translated;
+		}
+		// The counts alone say a section is short without saying which part of it went missing,
+		// which is not enough to tell a model that is dropping something from a check that is
+		// counting the wrong thing. The last attempt goes to the log so the next run can be read
+		// rather than guessed at.
+		eprintln!("--- what came back, last attempt:\n{last_text}\n--- what was sent:\n{markdown}\n---");
+		Err(format!(
+			"{} came back incomplete {MARKDOWN_ATTEMPTS} times in {}: {last}",
+			chunk_name(markdown),
+			target.language
+		)
+		.into())
+	}
+
+	fn translate_markdown_chunk(
+		&self,
+		markdown: &str,
+		target: &Target,
+		previous_problem: Option<&str>,
+	) -> Result<String, Box<dyn Error>> {
+		let correction = previous_problem.map_or_else(String::new, |why| {
+			format!(
+				"\n\nYour previous attempt did not match the document: {why}. \
+				 Return every heading and every list item this time, in the same order."
+			)
+		});
+		// Markdown comes back as text, not wrapped in JSON like the string batches are.
+		//
+		// It used to be a `json_schema` response with one string property, and German stopped
+		// dead in the middle of `Dialog \u{201e}Alle Dokumente`, at the exact point the closing
+		// quote belonged, on every attempt. A schema response is generated against a JSON
+		// grammar, so a quote character inside the string is the one thing the model cannot
+		// simply write, and a document full of typographic quotes has to thread that needle on
+		// every one. Asking for text asks for none of it. Retries, a heading cap, an explicit
+		// instruction and more effort all left it truncated in the same place, which is what a
+		// grammar does and not what a model that is merely being careless does.
 		let request = json!({
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
-			"output_config": self.output_config(&json!({ "type": "json_schema", "schema": markdown_schema() })),
 			"system": [{
 				"type": "text",
-				"text": markdown_system_prompt(),
+				"text": markdown_system_prompt(target.style),
 				"cache_control": { "type": "ephemeral" }
 			}],
 			"messages": [{
 				"role": "user",
-				"content": format!("Target language: {language}\n\n<document>\n{markdown}\n</document>")
+				"content": format!(
+					"Target language: {}{correction}\n\n<document>\n{markdown}\n</document>",
+					target.language
+				)
 			}]
 		});
-		let text = self.send(&request)?;
-		#[derive(Deserialize)]
-		struct Payload {
-			markdown: String,
-		}
-		let payload: Payload = serde_json::from_str(&text)
-			.map_err(|e| format!("Claude returned a response that did not match the schema: {e} (body: {text})"))?;
-		Ok(payload.markdown)
+		Ok(unfenced(self.send(&request)?.trim()))
 	}
 
 	/// Posts `request` and returns the first text block, retrying the statuses that deserve it.
@@ -388,6 +455,22 @@ fn supports_effort(model: &str) -> bool {
 	!model.contains("haiku")
 }
 
+/// `markdown` without the code fence a model sometimes wraps a whole answer in.
+///
+/// Only when the first line opens a fence and the last line closes one, so a section that really
+/// does begin with a fenced block keeps it.
+fn unfenced(markdown: &str) -> String {
+	let mut lines = markdown.lines();
+	let (Some(first), Some(last)) = (lines.next(), markdown.lines().next_back()) else {
+		return markdown.to_string();
+	};
+	if markdown.lines().count() < 2 || !first.starts_with("```") || last.trim() != "```" {
+		return markdown.to_string();
+	}
+	let inner: Vec<&str> = markdown.lines().skip(1).collect();
+	inner[..inner.len() - 1].join("\n")
+}
+
 /// Maps a `po/<lang>.po` filename stem to the language name used in the prompt.
 ///
 /// A name rather than a code, because the prompt is prose and there is no language parameter to
@@ -450,7 +533,8 @@ mod tests {
 			Phrase { source: "&Settings".to_string(), context: Some("Menu item".to_string()) },
 			Phrase { source: "Ready".to_string(), context: None },
 		];
-		let request = client.phrase_request(&phrases, "Russian").unwrap();
+		let target = Target { language: "Russian", style: Some("Use the informal register.") };
+		let request = client.phrase_request(&phrases, &target).unwrap();
 		assert_eq!(request["model"], "test-model", "the configured model has to reach the request");
 		assert_eq!(request["output_config"]["effort"], "low", "a model that accepts effort gets it");
 		// `format` nests inside output_config; as a top-level `output_format` it is the
@@ -459,12 +543,32 @@ mod tests {
 		assert!(request["output_config"]["format"]["schema"].is_object());
 		// The system prompt is a block list so it can carry cache_control, not a bare string.
 		assert_eq!(request["system"][0]["cache_control"]["type"], "ephemeral");
+		let system = request["system"][0]["text"].as_str().unwrap();
+		assert!(system.ends_with("## Conventions for this language\n\nUse the informal register."), "got: {system}");
 		assert_eq!(request["messages"][0]["role"], "user");
 		let content = request["messages"][0]["content"].as_str().unwrap();
 		assert!(content.contains("Target language: Russian"));
 		assert!(content.contains("&Settings"), "the source string must reach the request");
 		assert!(content.contains("Menu item"), "the translator note must reach the request");
 		assert!(content.contains("\"id\": 0") && content.contains("\"id\": 1"), "every entry needs its id");
+	}
+
+	#[test]
+	fn a_whole_answer_wrapped_in_a_fence_is_unwrapped() {
+		let answer = "```markdown\n## Eins\n\nText.\n```";
+		assert_eq!(unfenced(answer), "## Eins\n\nText.");
+	}
+
+	/// A section that really does open with a fenced block keeps it.
+	#[test]
+	fn a_fenced_block_inside_the_answer_is_left_alone() {
+		let answer = "```\ncode\n```\n\nText after.";
+		assert_eq!(unfenced(answer), answer);
+	}
+
+	#[test]
+	fn an_answer_with_no_fence_is_unchanged() {
+		assert_eq!(unfenced("## Eins\n\nText."), "## Eins\n\nText.");
 	}
 
 	// Sending `effort` to a model that does not take it is a 400 on every single request, so
@@ -480,7 +584,7 @@ mod tests {
 	fn the_opus_request_still_carries_effort() {
 		let client = ClaudeClient { api_key: "test".to_string(), model: "claude-opus-5".to_string() };
 		let phrases = vec![Phrase { source: "Ready".to_string(), context: None }];
-		let request = client.phrase_request(&phrases, "French").unwrap();
+		let request = client.phrase_request(&phrases, &Target { language: "French", style: None }).unwrap();
 		assert_eq!(request["output_config"]["effort"], "low");
 		assert_eq!(request["output_config"]["format"]["type"], "json_schema");
 	}
@@ -495,8 +599,17 @@ mod tests {
 	fn a_phrase_without_a_note_carries_no_context_field() {
 		let client = ClaudeClient { api_key: "test".to_string(), model: "test-model".to_string() };
 		let phrases = vec![Phrase { source: "Ready".to_string(), context: None }];
-		let request = client.phrase_request(&phrases, "French").unwrap();
+		let request = client.phrase_request(&phrases, &Target { language: "French", style: None }).unwrap();
 		let content = request["messages"][0]["content"].as_str().unwrap();
 		assert!(!content.contains("context"), "an absent note should be absent, not empty");
+	}
+
+	#[test]
+	fn a_target_without_a_note_gets_only_the_base_prompt() {
+		let client = ClaudeClient { api_key: "test".to_string(), model: "test-model".to_string() };
+		let phrases = vec![Phrase { source: "Ready".to_string(), context: None }];
+		let request = client.phrase_request(&phrases, &Target { language: "French", style: None }).unwrap();
+		let system = request["system"][0]["text"].as_str().unwrap();
+		assert!(!system.contains("## Conventions for this language"), "got: {system}");
 	}
 }

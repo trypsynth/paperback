@@ -24,10 +24,12 @@ impl TranslationManager {
 			return true;
 		}
 		let raw_sys_lang = patois::LanguageManager::system_language();
-		let sys_lang = raw_sys_lang.split('_').next().unwrap_or(&raw_sys_lang).to_string();
 		self.inner.initialize(WxStdCatalogLoader);
 		self.initialized = true;
-		if sys_lang != "en" && !self.is_language_available(&sys_lang) {
+		// Asks the same question patois answered when it picked a language, rather than guessing
+		// from the code's shape: a system language with a region can still be served by a
+		// catalogue for another region of it, so "not available" is only true when nothing fits.
+		if patois::ui::best_available_language(&raw_sys_lang, &self.available_languages()).is_none() {
 			tracing::warn!(system_lang = %raw_sys_lang, "system language not available, falling back to English");
 		}
 		tracing::info!(system_lang = %raw_sys_lang, selected = %self.inner.current_language(), "translations initialized");

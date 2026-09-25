@@ -7,8 +7,10 @@ use std::{
 };
 
 use super::{
-	claude::{ClaudeClient, language_name},
+	claude::{ClaudeClient, Target, language_name},
+	load_style_note,
 	markdown::split_sections,
+	style_note_suffix,
 };
 
 const MARKER_PREFIX: &str = "<!-- machine-translated from doc/readme.md (source-hash: ";
@@ -42,6 +44,7 @@ pub fn sync_readmes(
 	let hash = source_hash(&source_md);
 	let sections = split_sections(&source_md);
 	let hashes: Vec<String> = sections.iter().map(|section| section_hash(section)).collect();
+	let mut failed: Vec<String> = Vec::new();
 	for lang in langs {
 		let target_path = doc_dir.join(format!("readme-{lang}.md"));
 		let existing = fs::read_to_string(&target_path).ok();
@@ -50,10 +53,15 @@ pub fn sync_readmes(
 		}
 		let reusable = existing.as_deref().and_then(|content| reusable_sections(content, &hashes));
 		let to_translate = reusable.as_ref().map_or(sections.len(), |r| r.iter().filter(|s| s.is_none()).count());
+		let style = load_style_note(root, lang);
 		if dry_run {
+			let style_note = style_note_suffix(lang, style.is_some());
 			match &reusable {
-				Some(_) => println!("readme-{lang}.md: would translate {to_translate} of {} sections", sections.len()),
-				None => println!("readme-{lang}.md: would be translated in full"),
+				Some(_) => println!(
+					"readme-{lang}.md: would translate {to_translate} of {} sections{style_note}",
+					sections.len()
+				),
+				None => println!("readme-{lang}.md: would be translated in full{style_note}"),
 			}
 			continue;
 		}
@@ -61,23 +69,55 @@ pub fn sync_readmes(
 		let Some(language) = language_name(lang) else {
 			continue;
 		};
-		let translated_md = match reusable {
-			Some(reusable) => {
-				let mut out: Vec<String> = Vec::with_capacity(sections.len());
-				for (section, existing_section) in sections.iter().zip(reusable) {
-					match existing_section {
-						Some(kept) => out.push(kept),
-						None => out.push(client.translate_markdown(section, language)?),
-					}
-				}
-				out.join("\n\n")
+		let target = Target { language, style: style.as_deref() };
+		// One language failing its checks does not stop the other fourteen: it is recorded and
+		// reported at the end. A nightly run that gives up on the first bad language would leave
+		// every language after it in the list stale for as long as that one kept failing.
+		match translate_document(client, &sections, reusable, &target) {
+			Ok(translated_md) => {
+				fs::write(&target_path, format!("{}\n\n{}\n", marker_line(&hash, &hashes), translated_md.trim_end()))?;
+				println!("readme-{lang}.md ({language}): translated {to_translate} of {} sections", sections.len());
 			}
-			None => client.translate_markdown(&source_md, language)?,
-		};
-		fs::write(&target_path, format!("{}\n\n{}\n", marker_line(&hash, &hashes), translated_md.trim_end()))?;
-		println!("readme-{lang}.md ({language}): translated {to_translate} of {} sections", sections.len());
+			Err(e) => {
+				eprintln!("readme-{lang}.md ({language}): not written: {e}");
+				failed.push(lang.clone());
+			}
+		}
+	}
+	if !failed.is_empty() {
+		return Err(format!("the readme came back incomplete for: {}", failed.join(", ")).into());
 	}
 	Ok(())
+}
+
+/// The translated readme, section by section, carrying over the sections `reusable` already has.
+fn translate_document(
+	client: &ClaudeClient,
+	sections: &[String],
+	reusable: Option<Vec<Option<String>>>,
+	target: &Target,
+) -> Result<String, Box<dyn Error>> {
+	let mut out: Vec<String> = Vec::with_capacity(sections.len());
+	match reusable {
+		Some(reusable) => {
+			for (section, existing_section) in sections.iter().zip(reusable) {
+				match existing_section {
+					Some(kept) => out.push(kept),
+					None => out.push(client.translate_markdown(section, target)?),
+				}
+			}
+		}
+		// Still section by section with nothing to carry over, rather than the whole document in
+		// one request. The text comes out the same, but a section that comes back short is caught
+		// against the section it came from instead of disappearing into a response that covered
+		// half the readme.
+		None => {
+			for section in sections {
+				out.push(client.translate_markdown(section, target)?);
+			}
+		}
+	}
+	Ok(out.join("\n\n"))
 }
 
 /// Whether `doc/readme-<lang>.md` needs (re)translating: yes if it doesn't exist yet, or

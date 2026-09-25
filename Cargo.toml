@@ -3,7 +3,7 @@ members = ["crates/paperback", "crates/paperback-core", "crates/paperback-format
 resolver = "2"
 
 [workspace.package]
-version = "0.9.2"
+version = "1.0.0"
 edition = "2024"
 rust-version = "1.91.1"
 license = "MIT"
@@ -60,4 +60,7 @@ codegen-units = 1
 # Fixed upstream in zip-rs/zip2#962, merged but not yet published: 9.0.0-pre3 is still the newest
 # version on crates.io. Drop this once the fix reaches a release.
 [patch.crates-io]
+# Pinned to wxDragon main for the binary-size work that has not been released yet (its #224 and
+# #225). Swap back to a plain version requirement once a release carries them.
+wxdragon = { git = "https://github.com/AllenDang/wxDragon", rev = "7c53768b77ca7c6d5b1b3a8a0da77b9791d6e701" }
 zip = { git = "https://github.com/zip-rs/zip2.git", rev = "96407e1332cb9ec8f39af88e6dac866ce83995b8" }

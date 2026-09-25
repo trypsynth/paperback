@@ -18,6 +18,8 @@ use results_list::{
 	select_results_row,
 };
 
+use crate::ui::navigation::announce;
+
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 /// How long to leave the empty results list focused before populating it. Long enough for the
 /// screen reader to settle on the (empty) list first; populating while NVDA is still deciding how
@@ -483,20 +485,18 @@ fn bind_find_dialog_actions(params: FindDialogActionParams) {
 		}
 		event.skip(false);
 	});
-	let frame_for_go = frame;
 	let find_dialog_for_go = Rc::clone(&find_dialog);
 	let doc_manager_for_go = Rc::clone(&doc_manager);
 	go_btn.on_click(move |_| {
 		if let Some(state) = find_dialog_for_go.lock().unwrap().as_ref() {
-			handle_result_go(&frame_for_go, state, &doc_manager_for_go, live_region_label);
+			handle_result_go(state, &doc_manager_for_go, live_region_label);
 		}
 	});
-	let frame_for_list = frame;
 	let find_dialog_for_list = Rc::clone(&find_dialog);
 	let doc_manager_for_list = Rc::clone(&doc_manager);
 	results_list.on_item_activated(move |_| {
 		if let Some(state) = find_dialog_for_list.lock().unwrap().as_ref() {
-			handle_result_go(&frame_for_list, state, &doc_manager_for_list, live_region_label);
+			handle_result_go(state, &doc_manager_for_list, live_region_label);
 		}
 	});
 }
@@ -599,7 +599,7 @@ pub fn handle_find_action(
 		show_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
 		return;
 	}
-	do_find(frame, forward, &state, doc_manager, config, live_region_label);
+	do_find(forward, &state, doc_manager, config, live_region_label);
 }
 
 /// Lists every line holding a match for the current query under the dialog's options. With no
@@ -648,7 +648,7 @@ fn do_find_all(
 		(rows, origin)
 	};
 	if rows.is_empty() {
-		live_region::announce(live_region_label, &t("Not found."));
+		announce(live_region_label, t("Not found."));
 		state.switch_to_query_view();
 		state.dialog.show(true);
 		state.dialog.raise();
@@ -700,13 +700,8 @@ fn populate_find_results(state: &FindDialogState, selected: i32) {
 /// Jumps to the selected results row, landing on the match on that line that follows the caret
 /// origin (falling back to the line's first match), then behaves like a found Find: selects the
 /// range, hides the dialog, and announces the line after the focus chain is cut.
-fn handle_result_go(
-	frame: &Frame,
-	state: &FindDialogState,
-	doc_manager: &Rc<Mutex<DocumentManager>>,
-	live_region_label: StaticText,
-) {
-	let (start, end, announce) = {
+fn handle_result_go(state: &FindDialogState, doc_manager: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+	let (start, end, line_text) = {
 		let rows = state.result_rows.borrow();
 		let selected = results_selected_index(state.results_list).unwrap_or(0);
 		let Some(row) = rows.get(selected) else {
@@ -729,13 +724,12 @@ fn handle_result_go(
 	drop(dm);
 	state.dialog.show(false);
 	state.clear_results();
-	if !announce.trim().is_empty() {
-		navigation::announce_after_delay(frame, live_region_label, announce);
+	if !line_text.trim().is_empty() {
+		announce(live_region_label, line_text);
 	}
 }
 
 fn do_find(
-	frame: &Frame,
 	forward: bool,
 	state: &FindDialogState,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
@@ -782,7 +776,7 @@ fn do_find(
 	if !result.found {
 		drop(dm);
 		// TRANSLATORS: Announced when a search finds no matches in the document
-		live_region::announce(live_region_label, &t("Not found."));
+		announce(live_region_label, t("Not found."));
 		state.switch_to_query_view();
 		state.dialog.show(true);
 		state.dialog.raise();
@@ -795,7 +789,7 @@ fn do_find(
 	let dialog_was_shown = state.dialog.is_shown();
 	if result.wrapped && !dialog_was_shown {
 		// TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
-		live_region::announce(live_region_label, &t("No more results. Wrapping search."));
+		announce(live_region_label, t("No more results. Wrapping search."));
 	}
 	if result.position < 0 {
 		return;
@@ -830,7 +824,7 @@ fn do_find(
 			found_line
 		};
 		if !message.trim().is_empty() {
-			navigation::announce_after_delay(frame, live_region_label, message);
+			announce(live_region_label, message);
 		}
 	} else if result.wrapped {
 		// Find-next / Find-previous with the dialog closed. There is no focus chain
@@ -842,6 +836,6 @@ fn do_find(
 	} else if !found_line.trim().is_empty() {
 		// Find-next / Find-previous with the dialog closed and no wrap: no chain, so
 		// announce the found line directly.
-		live_region::announce(live_region_label, &found_line);
+		announce(live_region_label, found_line);
 	}
 }

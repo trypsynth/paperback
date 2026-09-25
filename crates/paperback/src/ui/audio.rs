@@ -7,7 +7,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager, navigation::set_caret_to_doc_offset};
-use crate::audio_player::AudioPlayer;
+use crate::{audio_player::AudioPlayer, ui::navigation::announce};
 
 pub fn handle_toggle_play_pause_audio(doc_manager: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
 	let mut dm = doc_manager.lock().unwrap();
@@ -23,7 +23,7 @@ pub fn handle_toggle_play_pause_audio(doc_manager: &Rc<Mutex<DocumentManager>>, 
 	drop(dm);
 	if !has_audio {
 		// TRANSLATORS: Announced when trying to play/pause audio on a document that has none
-		live_region::announce(live_region_label, &t("This document has no audio."));
+		announce(live_region_label, t("This document has no audio."));
 	}
 }
 
@@ -87,13 +87,13 @@ pub fn handle_seek_audio(
 	let Some(player) = tab.audio_player.as_mut() else {
 		drop(dm);
 		// TRANSLATORS: Announced when trying to seek audio on a document that has none
-		live_region::announce(live_region_label, &t("This document has no audio."));
+		announce(live_region_label, t("This document has no audio."));
 		return;
 	};
 	let Some(current_ms) = player.resume_point_ms() else {
 		drop(dm);
 		// TRANSLATORS: Announced when trying to seek audio before playback has established a position
-		live_region::announce(live_region_label, &t("Audio hasn't started playing yet."));
+		announce(live_region_label, t("Audio hasn't started playing yet."));
 		return;
 	};
 	let total_ms = player.timeline().total_duration_ms();
@@ -134,7 +134,7 @@ pub fn handle_change_audio_speed(
 	drop(dm);
 	let Some((speed, at_limit)) = result else {
 		// TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
-		live_region::announce(live_region_label, &t("This document has no audio."));
+		announce(live_region_label, t("This document has no audio."));
 		return;
 	};
 	let label = speed_label(speed);
@@ -147,7 +147,7 @@ pub fn handle_change_audio_speed(
 	} else {
 		label
 	};
-	live_region::announce(live_region_label, &message);
+	announce(live_region_label, message);
 }
 
 /// A human-readable label for a playback speed multiplier, e.g. `1.5x`, `1x`, `0.75x`.
@@ -220,7 +220,7 @@ pub fn handle_change_seek_amount(config: &Rc<Mutex<ConfigManager>>, live_region_
 	} else {
 		label
 	};
-	live_region::announce(live_region_label, &message);
+	announce(live_region_label, message);
 }
 
 #[cfg(test)]

@@ -12,6 +12,7 @@ use patois::t;
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
 use super::{document_manager::DocumentManager, navigation};
+use crate::ui::navigation::announce;
 
 /// What the copy shortcut found when it went to copy.
 enum CopyOutcome {
@@ -49,7 +50,7 @@ pub fn handle_set_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_l
 		dm.set_selection_mark(Some(position));
 	}
 	// TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
-	live_region::announce(live_region_label, &t("Beginning of selection set."));
+	announce(live_region_label, t("Beginning of selection set."));
 }
 
 /// Copies everything between the marked beginning and the reader's current position.
@@ -99,7 +100,7 @@ pub fn handle_copy_from_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_re
 			}
 		}
 	};
-	live_region::announce(live_region_label, &message);
+	announce(live_region_label, message);
 }
 
 /// Moves the reader back to the marked beginning, leaving the mark in place so the copy and the
@@ -127,7 +128,7 @@ pub fn handle_jump_to_selection_start(
 			}
 		}
 	};
-	live_region::announce(live_region_label, &message);
+	announce(live_region_label, message);
 	navigation::persist_navigation_history(config, history_update.as_ref());
 }
 

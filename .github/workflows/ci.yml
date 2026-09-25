@@ -6,7 +6,37 @@ on:
   pull_request:
     branches:
       - master
+# One run per branch at a time: pushing again while a run is going makes that run pointless, and
+# the queued macOS jobs it holds are what everything else is waiting behind.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
+  # What a pull request touches, so the jobs that cost the most can sit out the ones that cannot
+  # break them. A translation or documentation pull request still gets the Windows tests and the
+  # Android checks, which compile every catalogue; it does not need an iPhone simulator.
+  # A push to master always runs everything.
+  changes:
+    name: What changed
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.check.outputs.code }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          if echo "$files" | grep -qvE '^(po/|doc/|web/|README\.md$)'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
   fmt:
     name: Format check
     runs-on: ubuntu-latest
@@ -14,12 +44,15 @@ jobs:
       - uses: actions/checkout@v7
         with:
           submodules: recursive
+      # Pinned: rustfmt's own output changes between nightlies, and a floating one turns that
+      # into master going red on a day nobody touched the formatting. Bumping this is then a
+      # deliberate change with the reformat in the same commit.
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: nightly
+          toolchain: nightly-2026-09-22
           components: rustfmt
       - name: Check formatting
-        run: cargo +nightly fmt --check
+        run: cargo +nightly-2026-09-22 fmt --check
   android:
     name: Android checks
     runs-on: ubuntu-latest
@@ -35,6 +68,10 @@ jobs:
           toolchain: stable
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       # The unit tests run on the host JVM and never call into the native library, but the code
       # they cover is compiled against the uniffi types, so the bindings have to exist for the
       # app module to compile at all. Generating them is a host build of paperback-core alone:
@@ -72,6 +109,8 @@ jobs:
 
   android-instrumented:
     name: Android instrumented tests
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     # Split from the unit test job because booting an emulator costs minutes that the rest of
     # the Android checks should not wait on.
     runs-on: ubuntu-latest
@@ -87,6 +126,10 @@ jobs:
           toolchain: stable
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       # Same reasoning as the unit test job: the app module only compiles once the uniffi types
       # exist, and generating them is a host build of paperback-core with no NDK involved.
       # The interface lives in the Rust now rather than in a .udl, so uniffi reads it from the
@@ -130,6 +173,8 @@ jobs:
           retention-days: 7
   ios:
     name: iOS checks
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -141,10 +186,30 @@ jobs:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       # The XCFramework and the Swift bindings both have to exist before xcodebuild runs: the
       # app imports the generated paperback.swift, and the project links the framework. This is
       # the same task the release build uses, so a break in either shows up here.
+      # The framework is the Rust side of the app, so it only changes when that does. Keyed on
+      # everything `cargo xtask ios` reads: the Rust sources and lockfile, the task itself, and
+      # the catalogues and readmes it turns into the app's strings and help.
+      - name: Cache the built XCFramework
+        id: xcframework
+        uses: actions/cache@v6
+        with:
+          path: |
+            ios/paperbackFFI.xcframework
+            ios/libpdfium.framework
+            ios/libpdfium.dylib
+            ios/Paperback/Generated
+            ios/Paperback/Readmes
+            ios/Paperback/*.lproj
+          key: xcframework-${{ hashFiles('Cargo.lock', 'crates/**/*.rs', 'crates/xtask/src/ios.rs', 'po/*.po', 'doc/readme*.md') }}
       - name: Build the XCFramework and Swift bindings
+        if: steps.xcframework.outputs.cache-hit != 'true'
         run: cargo xtask ios --release
       # No signing: CI has no certificate, and an unsigned build still compiles and links every
       # Swift file, which is what this job is for. Producing an .ipa needs the release flow.
@@ -196,6 +261,10 @@ jobs:
             mingw-w64-ucrt-x86_64-gettext-tools
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       # msgfmt comes from MSYS2, which setup-msys2 leaves off this step's PATH, so the build
       # scripts would silently skip every .po file. Appended rather than prepended: MSYS2's
       # usr/bin has a coreutils link.exe that would otherwise shadow the MSVC linker.
@@ -203,8 +272,19 @@ jobs:
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
           cargo test --workspace
+      # `--workspace` rather than `-p paperback`: selecting one package resolves features
+      # differently, so the run above is rebuilt from scratch, which cost more than eight minutes
+      # to reach four tests that take two seconds each. Only the UI tests are ignored, so this
+      # named by target rather than with a bare --ignored, which would also run the deferred
+      # parser tests that are ignored because they do not pass yet.
+      - name: Run UI tests
+        run: |
+          $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
+          cargo test --workspace --test opens_document --test status_bar --test restores_last_document --test heading_announcements -- --ignored
   test-macos:
     name: Tests (macOS)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: macos-latest
     env:
       WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
@@ -223,6 +303,10 @@ jobs:
           components: clippy
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       - name: Cache wxWidgets source
         id: wxwidgets-cache
         uses: actions/cache@v6
@@ -272,6 +356,10 @@ jobs:
             mingw-w64-ucrt-x86_64-gettext-tools
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
       # `clippy::all` is denied through [workspace.lints] in Cargo.toml, so this fails the job on
       # any of those lints. The pedantic and nursery groups stay warnings and are printed, not
       # enforced -- see the comment on the lint table for why.

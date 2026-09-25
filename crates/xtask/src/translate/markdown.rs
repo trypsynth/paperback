@@ -89,25 +89,126 @@ fn split_at_headings(markdown: &str, level: usize) -> Vec<String> {
 /// The deepest heading level Markdown has.
 const MAX_HEADING_LEVEL: usize = 6;
 
-/// A section cut at ever deeper headings until each piece fits in `limit`, or there are no
-/// deeper headings left to cut at.
+/// What a translated section has to keep from its English source: the same headings, at the same
+/// levels, in the same order, and the same number of list items.
+///
+/// The model is asked for one document and returns another, and nothing downstream can tell the
+/// difference between prose it rendered differently and prose it left out. It does leave things
+/// out: a German run dropped the whole "Currently supported file types" section and the
+/// "Supported languages" one, and cut a paragraph off mid-sentence, and the result was written
+/// to `doc/readme-de.md` and opened as a pull request with nothing complaining. Structure is the
+/// part of a translation that must not change, so it is the part worth checking.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) struct Outline {
+	/// One entry per heading, holding its level. Not the text: that is translated.
+	headings: Vec<usize>,
+	list_items: usize,
+	fences: usize,
+}
+
+/// Why a translation does not match its source, or `None` when it does.
+pub(super) fn structure_mismatch(source: &str, translated: &str) -> Option<String> {
+	if translated.trim().is_empty() {
+		return Some("the translation is empty".to_string());
+	}
+	let want = outline(source);
+	let got = outline(translated);
+	if want == got {
+		return None;
+	}
+	if want.headings != got.headings {
+		return Some(format!("headings are {:?} in English and {:?} in the translation", want.headings, got.headings));
+	}
+	if want.list_items != got.list_items {
+		return Some(format!("{} list items in English and {} in the translation", want.list_items, got.list_items));
+	}
+	Some(format!("{} code fences in English and {} in the translation", want.fences, got.fences))
+}
+
+fn outline(markdown: &str) -> Outline {
+	let mut headings = Vec::new();
+	let mut list_items = 0;
+	let mut fences = 0;
+	let mut in_fence = false;
+	for line in markdown.lines() {
+		let trimmed = line.trim_start();
+		if trimmed.starts_with("```") {
+			fences += 1;
+			in_fence = !in_fence;
+			continue;
+		}
+		if in_fence {
+			continue;
+		}
+		if let Some(level) = heading_level(trimmed) {
+			headings.push(level);
+		} else if trimmed.starts_with("* ") || trimmed.starts_with("- ") {
+			list_items += 1;
+		}
+	}
+	Outline { headings, list_items, fences }
+}
+
+/// A chunk named by its first heading, so an error says which part of the readme failed.
+pub(super) fn chunk_name(markdown: &str) -> String {
+	for line in markdown.lines() {
+		let trimmed = line.trim_start();
+		if heading_level(trimmed).is_some() {
+			return format!("\"{}\"", trimmed.trim_start_matches('#').trim());
+		}
+	}
+	"a readme section with no heading".to_string()
+}
+
+/// The level of an ATX heading, or `None` for any other line. A run of `#` counts only when a
+/// space follows it, which is what Markdown requires and what keeps a `#` inside prose out.
+fn heading_level(line: &str) -> Option<usize> {
+	let hashes = line.bytes().take_while(|b| *b == b'#').count();
+	(hashes > 0 && hashes <= MAX_HEADING_LEVEL && line.as_bytes().get(hashes) == Some(&b' ')).then_some(hashes)
+}
+
+/// How many headings one request may carry: one, so a request is a heading and its body.
+///
+/// Length alone was the wrong bound. "Keyboard shortcuts" is 4794 characters, comfortably under
+/// the character limit, so it went as one request carrying six headings and eighty-seven shortcut
+/// lines, and German came back with two of the six, three attempts running. Capping at three
+/// headings fixed that section, and "Screen Reader Compatibility" then failed the same way at
+/// three headings and 1630 characters, dropping "JAWS and Paperback's messages" every time.
+///
+/// So the bound is one. Packing sections into a request saved calls, which is worth nothing when
+/// the answer comes back a section short, and a retry costs a call anyway. Sections are
+/// self-contained and the system prompt carries the instructions and the style note, so a request
+/// loses nothing by being small.
+const MAX_HEADINGS_PER_CHUNK: usize = 1;
+
+/// Whether a piece is more than one request should be asked to carry.
+fn too_big(markdown: &str, limit: usize) -> bool {
+	markdown.len() > limit || outline(markdown).headings.len() > MAX_HEADINGS_PER_CHUNK
+}
+
+/// A section cut at ever deeper headings until each piece is small enough to send, or there are
+/// no deeper headings left to cut at.
 fn split_oversized(section: String, limit: usize, level: usize) -> Vec<String> {
-	if section.len() <= limit || level > MAX_HEADING_LEVEL {
+	if !too_big(&section, limit) || level > MAX_HEADING_LEVEL {
 		return vec![section];
 	}
 	split_at_headings(&section, level).into_iter().flat_map(|piece| split_oversized(piece, limit, level + 1)).collect()
 }
 
-/// Splits Markdown into chunks of at most `limit` characters, breaking only at headings so the
-/// model never sees a half-open construct. A section longer than the limit is cut at its deeper
-/// headings: the changelog is one `##` section, and whole it is more than one response can hold.
-/// A piece with no heading left to cut at is left whole rather than cut mid-paragraph.
+/// Splits Markdown into chunks small enough to send, breaking only at headings so the model never
+/// sees a half-open construct. Small enough means within `limit` characters and within
+/// [`MAX_HEADINGS_PER_CHUNK`]: a piece over either is cut at its deeper headings, so the changelog,
+/// one `##` section that no single response could hold, comes apart at its versions. A piece with
+/// no heading left to cut at is left whole rather than cut mid-paragraph.
+///
+/// The packing at the end now only ever picks up a piece with no heading of its own, such as the
+/// text before the first one, which joins the chunk that follows it.
 pub(super) fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
 	let sections = split_sections(markdown).into_iter().flat_map(|section| split_oversized(section, limit, 3));
 	let mut chunks: Vec<String> = Vec::new();
 	for section in sections {
 		match chunks.last_mut() {
-			Some(last) if last.len() + section.len() + 2 <= limit => {
+			Some(last) if !too_big(&format!("{last}\n\n{section}"), limit) => {
 				last.push_str("\n\n");
 				last.push_str(&section);
 			}
@@ -121,6 +222,60 @@ pub(super) fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
 mod tests {
 	use super::*;
 
+	/// The shape that broke German: one section, comfortably under the character limit, several
+	/// headings deep.
+	#[test]
+	fn a_section_with_several_headings_is_cut_even_though_it_fits() {
+		let doc = "## Shortcuts\n\n### File\n\n* a\n\n### Go\n\n* b\n\n### Tools\n\n* c\n\n### Help\n\n* d\n";
+		let chunks = split_markdown(doc, 10_000);
+		assert_eq!(chunks.len(), 5, "got {chunks:?}");
+		for chunk in &chunks {
+			assert!(outline(chunk).headings.len() <= MAX_HEADINGS_PER_CHUNK, "{chunk:?}");
+		}
+	}
+
+	#[test]
+	fn a_translation_that_kept_every_heading_and_bullet_passes() {
+		let source = "## One\n\n* a\n* b\n\n### Two\n\nText.\n";
+		let translated = "## Eins\n\n* a\n* b\n\n### Zwei\n\nText.\n";
+		assert_eq!(structure_mismatch(source, translated), None);
+	}
+
+	/// What actually happened to German: two sections went missing from the response.
+	#[test]
+	fn a_translation_missing_a_section_is_rejected() {
+		let source = "## One\n\nText.\n\n## Two\n\nText.\n\n## Three\n\nText.\n";
+		let translated = "## Eins\n\nText.\n\n## Drei\n\nText.\n";
+		assert!(structure_mismatch(source, translated).is_some_and(|why| why.contains("headings")));
+	}
+
+	#[test]
+	fn a_translation_missing_list_items_is_rejected() {
+		let source = "## Formats\n\n* EPUB\n* PDF\n* RTF\n";
+		let translated = "## Formate\n\n* EPUB\n* PDF\n";
+		assert!(structure_mismatch(source, translated).is_some_and(|why| why.contains("list items")));
+	}
+
+	#[test]
+	fn an_empty_translation_is_rejected() {
+		assert!(structure_mismatch("## One\n\nText.\n", "   ").is_some());
+	}
+
+	/// A `#` and a `*` inside a fenced block are content, not structure.
+	#[test]
+	fn fenced_blocks_do_not_count_as_headings_or_bullets() {
+		let source = "## One\n\n```\n# not a heading\n* not a bullet\n```\n";
+		let translated = "## Eins\n\n```\n# not a heading\n* not a bullet\n```\n";
+		assert_eq!(structure_mismatch(source, translated), None);
+	}
+
+	#[test]
+	fn a_hash_without_a_space_is_not_a_heading() {
+		let source = "## One\n\nIssue #42 is fixed.\n";
+		let translated = "## Eins\n\nProblem #42 ist behoben.\n";
+		assert_eq!(structure_mismatch(source, translated), None);
+	}
+
 	#[test]
 	fn markdown_splits_on_section_headings() {
 		let doc = "# Title\n\nIntro.\n\n## One\n\nBody one.\n\n## Two\n\nBody two.\n";
@@ -130,12 +285,14 @@ mod tests {
 		assert!(chunks[2].starts_with("## Two"));
 	}
 
+	/// Sections are not packed together however much room is left: one heading per request is
+	/// the point of the bound, not an economy to spend when there is space.
 	#[test]
-	fn markdown_sections_pack_together_under_the_limit() {
+	fn each_section_is_its_own_chunk_however_large_the_limit() {
 		let doc = "# Title\n\nIntro.\n\n## One\n\nBody one.\n\n## Two\n\nBody two.\n";
 		let chunks = split_markdown(doc, 10_000);
-		assert_eq!(chunks.len(), 1, "the whole document fits in one chunk");
-		assert_eq!(chunks[0].trim(), doc.trim());
+		assert_eq!(chunks.len(), 3, "got {chunks:?}");
+		assert_eq!(chunks.join("\n\n").trim(), doc.trim(), "no text lost or duplicated");
 	}
 
 	#[test]

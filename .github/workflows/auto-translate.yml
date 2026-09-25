@@ -49,7 +49,38 @@ jobs:
         # placeholder, an accelerator or a shortcut suffix. Self-limiting: once an entry passes
         # the checks it stops being flagged, so this only ever costs anything while there is
         # real damage to undo.
-        run: cargo run -p xtask --release -- translate --repair ${{ inputs.repair_copies && '--repair-copies' || '' }}
+        run: |
+          set -o pipefail
+          cargo run -p xtask --release -- translate --repair ${{ inputs.repair_copies && '--repair-copies' || '' }} 2>&1 | tee "$RUNNER_TEMP/translate.log"
+      # `continue-on-error` above hides a real failure as well as a rate limit, and a manual that
+      # keeps coming back missing sections is not something to find out about by reading logs.
+      # Whatever the run could not write is put on the run summary and into the pull request.
+      - name: Report anything that did not translate
+        id: trouble
+        if: always()
+        run: |
+          log="$RUNNER_TEMP/translate.log"
+          if [ -f "$log" ] && grep -q 'came back incomplete' "$log"; then
+            {
+              echo "### The manual came back incomplete"
+              echo
+              echo '```'
+              grep -E 'came back incomplete|not written' "$log"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "note<<EOF"
+              echo
+              echo "**Some manuals were not written this run.** Their sections came back from the"
+              echo "model missing headings or list items, so nothing was written for them rather"
+              echo "than committing a short file."
+              echo
+              echo '```'
+              grep -E 'came back incomplete|not written' "$log"
+              echo '```'
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
       - name: Open or update translation PR
         uses: peter-evans/create-pull-request@v8
         with:
@@ -62,4 +93,6 @@ jobs:
           branch: auto-translate-strings
           delete-branch: true
           title: "chore: machine-translate missing strings"
-          body: Automated translation update. Runs on every push to master; safe to leave open and merge periodically.
+          body: |
+            Automated translation update. Runs on every push to master; safe to leave open and merge periodically.
+            ${{ steps.trouble.outputs.note }}

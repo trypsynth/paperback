@@ -22,6 +22,9 @@ pub(crate) fn gen_pot() -> Result<(), Box<dyn Error>> {
 	// Before anything is written: a concatenated call would otherwise land in the pot as a
 	// fragment that no lookup can ever match.
 	pot_lint::check_sources(&root)?;
+	// Likewise before anything is written: a translation that kept an old menu string's shortcut
+	// is spoken with that shortcut, and regenerating the pot is when such a copy tends to appear.
+	crate::po_lint::check_catalogues(&root)?;
 	let version = crate_version(&root, "paperback")?;
 	patois_build::gen_pot_from_dirs(&translatable_dirs, &po_dir, "paperback", &version)?;
 	// Steps 2 and 3: layer the mobile front-ends' own strings on top. Both directories are

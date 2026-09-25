@@ -58,94 +58,28 @@ pub(super) fn plural_schema() -> Value {
 	})
 }
 
-pub(super) fn markdown_schema() -> Value {
-	json!({
-		"type": "object",
-		"properties": { "markdown": { "type": "string" } },
-		"required": ["markdown"],
-		"additionalProperties": false
-	})
+/// The system prompt for a batch of single strings, with the target language's conventions
+/// appended when its translators wrote some (see `po/style/<lang>.md`).
+pub(super) fn phrase_system_prompt(style: Option<&str>) -> String {
+	with_style(include_str!("../../prompts/phrase.md"), style)
 }
 
-pub(super) const fn phrase_system_prompt() -> &'static str {
-	"You are translating the user interface of Paperback, a desktop ebook and document reader \
-	 used heavily with screen readers. Translate from English into the target language.\n\
-	 \n\
-	 You receive a JSON array of entries. Each has an `id`, the English `text`, and sometimes a \
-	 `context` note written by the developers. Return a translation for every id you are given.\n\
-	 \n\
-	 Rules, in order of importance:\n\
-	 \n\
-	 1. `&` immediately before a letter marks that letter as the keyboard accelerator for a menu \
-	 item or button. If the English has one, the translation MUST have exactly one too. Put it \
-	 before a letter that actually occurs in your translated text, preferring the first letter of \
-	 a main word. Never drop it, never leave it before a letter the translation does not contain, \
-	 and never add one where the English had none. This is a real accessibility feature, not \
-	 decoration.\n\
-	 2. A literal `\\t` (backslash then t) separates a label from its keyboard shortcut, as in \
-	 `&Open\\tCtrl+O`. Translate only the part before it. Reproduce the `\\t` and everything after \
-	 it byte for byte: key names like Ctrl, Shift, Alt, Enter and F1 are not translated.\n\
-	 3. Preserve every `%s`, `%d` and `{}` placeholder. The count of each must match the English \
-	 exactly. Their order may change to suit the target grammar.\n\
-	 4. Use the `context` note when there is one. It exists because the string is ambiguous \
-	 without it, and it usually says where the string appears or what a placeholder holds.\n\
-	 5. Keep the register of desktop software in the target language, and keep it short: these are \
-	 menu items, buttons, status bar text and dialog labels, sitting in a fixed amount of space.\n\
-	 6. Be consistent. The same English term should get the same translation everywhere in the \
-	 batch.\n\
-	 7. Leave proper nouns alone: Paperback, EPUB, PDF, DAISY, HTML, Markdown, file extensions, \
-	 and URLs.\n\
-	 \n\
-	 Translate the text and nothing else. Do not explain, comment, or add notes."
+/// The system prompt for a batch of plural messages; see [`phrase_system_prompt`].
+pub(super) fn plural_system_prompt(style: Option<&str>) -> String {
+	with_style(include_str!("../../prompts/plural.md"), style)
 }
 
-pub(super) const fn plural_system_prompt() -> &'static str {
-	"You are translating the user interface of Paperback, a desktop ebook and document reader \
-	 used heavily with screen readers. Translate from English into the target language.\n\
-	 \n\
-	 Each entry is one countable message, given as its English `singular` and `plural`, and \
-	 sometimes a `context` note from the developers. Return the full set of plural forms the \
-	 target language uses for it.\n\
-	 \n\
-	 Rules:\n\
-	 \n\
-	 1. Return exactly the number of forms asked for, in index order. Index i is the form used \
-	 for the counts where the stated gettext rule evaluates to i. Languages that inflect for \
-	 few and many need genuinely different wordings per index; do not repeat one form to fill \
-	 the slots, and do not return the English.\n\
-	 2. Every form must keep the `%d`, `%s` or `{}` placeholder the English has, exactly once \
-	 each unless the English repeats it. The count is substituted into that placeholder, so a \
-	 form without it renders a number-less sentence.\n\
-	 3. A form is the whole message, not a suffix: write the complete phrase for that count, \
-	 not just the ending that changes.\n\
-	 4. Use the `context` note when there is one, and keep the register short and plain, the \
-	 way status bar text and dialog labels read in the target language.\n\
-	 5. Leave proper nouns alone: Paperback, EPUB, PDF, DAISY, and file extensions.\n\
-	 \n\
-	 Return the forms and nothing else. Do not explain or add notes."
+/// The system prompt for a readme section; see [`phrase_system_prompt`].
+pub(super) fn markdown_system_prompt(style: Option<&str>) -> String {
+	with_style(include_str!("../../prompts/markdown.md"), style)
 }
 
-pub(super) const fn markdown_system_prompt() -> &'static str {
-	"You are translating the user documentation for Paperback, a desktop ebook and document \
-	 reader, from English into the target language.\n\
-	 \n\
-	 You receive part of a Markdown document. Return the same document translated, as Markdown.\n\
-	 \n\
-	 Rules:\n\
-	 \n\
-	 1. Preserve the Markdown structure exactly: heading levels, list nesting, tables, emphasis, \
-	 blockquotes, and the blank lines between blocks.\n\
-	 2. Do not translate anything inside backtick code spans or fenced code blocks. Commands, \
-	 file names, file extensions, keyboard shortcuts and configuration keys stay verbatim. This \
-	 includes key names that are ordinary words: `Alt+Left`, `Ctrl+Space`, `Shift+Home` and \
-	 `Page Down` keep their English key names, because they name physical keys rather than \
-	 describing a direction.\n\
-	 3. In links, translate the link text but never the URL.\n\
-	 4. Leave proper nouns alone: Paperback, EPUB, PDF, DAISY, and the names of formats and \
-	 programs.\n\
-	 5. Translate the prose fully and naturally. Do not summarise, expand, or add notes.\n\
-	 \n\
-	 Return only the translated Markdown."
+fn with_style(base: &str, style: Option<&str>) -> String {
+	let base = base.trim_end();
+	style
+		.map(str::trim)
+		.filter(|note| !note.is_empty())
+		.map_or_else(|| base.to_string(), |note| format!("{base}\n\n## Conventions for this language\n\n{note}"))
 }
 
 #[cfg(test)]
@@ -160,5 +94,25 @@ mod tests {
 		let forms = &schema["properties"]["translations"]["items"]["properties"]["forms"];
 		assert_eq!(forms["minItems"], 1);
 		assert!(forms["maxItems"].is_null());
+	}
+
+	#[test]
+	fn without_a_note_each_prompt_is_its_base_text() {
+		assert!(phrase_system_prompt(None).contains("keyboard accelerator"));
+		assert!(plural_system_prompt(None).contains("exactly the number of forms"));
+		assert!(markdown_system_prompt(None).contains("Preserve the Markdown structure"));
+		assert!(!phrase_system_prompt(None).contains("## Conventions for this language"));
+	}
+
+	#[test]
+	fn a_style_note_is_appended_under_its_own_heading() {
+		let note = "Address the reader as \"je\".\n";
+		for prompt in
+			[phrase_system_prompt(Some(note)), plural_system_prompt(Some(note)), markdown_system_prompt(Some(note))]
+		{
+			let (base, tail) = prompt.split_once("\n\n## Conventions for this language\n\n").expect("heading");
+			assert!(base.ends_with("take precedence over the general rules."), "got: {base}");
+			assert_eq!(tail, "Address the reader as \"je\".");
+		}
 	}
 }

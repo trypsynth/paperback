@@ -2,23 +2,34 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>{{ page.title }} &ndash; {{ site.title }}</title>
+	<meta name="description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}" />
+	<meta name="color-scheme" content="light dark" />
+	<link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
-	<header>
-		<a href="#content-anchor">Skip to main content</a>
-		<nav>
-			<ul style="list-style-type:none;">
-				{% for item in site.data.nav %}
-					{% assign link = item[1] %}
-					{% if page.permalink == link %}
-						<li><a href="{{ link }}" aria-current="page">{{ item[0] }}</a></li>
-					{% else %}
-						<li><a href="{{ link }}">{{ item[0] }}</a></li>
-					{% endif %}
-				{% endfor %}
-			</ul>
-		</nav>
+	<a class="skip-link" href="#content-anchor">Skip to main content</a>
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="/">Paperback</a>
+			<nav class="site-nav" aria-label="Main">
+				<ul>
+					{% comment %}cobalt hands the permalink back with no leading slash, and empty for
+					the home page, so comparing it to the nav link straight off matched nothing and no
+					page ever carried aria-current.{% endcomment %}
+					{% capture here %}/{{ page.permalink }}{% endcapture %}
+					{% for item in site.data.nav %}
+						{% assign link = item[1] %}
+						{% if here == link %}
+							<li><a href="{{ link }}" aria-current="page">{{ item[0] }}</a></li>
+						{% else %}
+							<li><a href="{{ link }}">{{ item[0] }}</a></li>
+						{% endif %}
+					{% endfor %}
+				</ul>
+			</nav>
+		</div>
 	</header>
 	<main>
 		<div id="content-anchor"></div>

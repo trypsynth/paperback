@@ -10,6 +10,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{DocumentManager, dialogs, ensure_parser_ready_for_path, menu, menu_ids, update_title_from_manager};
+use crate::ui::navigation::announce;
 
 /// Handles every menu id not covered by `bind_menu_events`'s own dispatch match: dynamic
 /// recent-document entries and "Show All Documents". Does nothing if `id` matches neither.
@@ -63,7 +64,7 @@ fn handle_show_all_documents(
 	};
 	if !has_documents {
 		// TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-		live_region::announce(live_region_label, &t("No recent documents."));
+		announce(live_region_label, t("No recent documents."));
 		return;
 	}
 	let open_paths = dm.lock().unwrap().open_paths();

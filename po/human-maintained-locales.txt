@@ -5,11 +5,13 @@
 # machine translation; remove it if you'd like automatic fallback translation
 # again. One locale code per line; '#' starts a comment.
 #
+# To keep machine translation but steer it instead, write your conventions
+# in po/style/<lang>.md; see po/style/nl.md.
+#
 # See https://github.com/trypsynth/paperback/issues/638
 
 bs
 cs
-de
 fi
 ja
 pl

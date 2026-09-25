@@ -6,10 +6,10 @@
 # partial written by AI
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 0.9.2\n"
+"Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 02:50+0000\n"
-"PO-Revision-Date: 2026-09-21 17:47+0800\n"
+"POT-Creation-Date: 2026-09-24 08:33-0600\n"
+"PO-Revision-Date: 2026-09-24 23:36+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -1279,6 +1279,10 @@ msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "本文档包含 %d 个单词。"
 
+#. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
+msgid "{} to {}"
+msgstr "{} 至 {}"
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "找不到文件: {}"
@@ -1576,17 +1580,13 @@ msgstr "文档已重新加载。"
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "当 Web 视图打开时，Paperback 无法执行任何操作。"
 
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "{} - Paperback"
-msgstr "{} - Paperback"
-
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d 字符"
-
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "导出文档失败。"
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 msgid "&Undo\tCtrl+Z"
@@ -3066,33 +3066,26 @@ msgstr "将此选项卡中的所有快捷键重置为默认值？"
 msgid "Reset Shortcuts"
 msgstr "重置快捷键"
 
-#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
-#: swift
+#: kt swift
 msgid "Export Document Data"
 msgstr "导出文档数据"
 
-#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
-#: swift
+#: kt swift
 msgid "Import Document Data"
 msgstr "导入文档数据"
 
-#. TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
-#: swift
-msgid "Settings exported"
-msgstr "设置已导出"
-
 #. TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
-#: swift
+#: kt swift
 msgid "Failed to export settings"
 msgstr "导出设置失败"
 
 #. TRANSLATORS: Confirmation shown after importing a document's settings and bookmarks from a .paperback file
-#: swift
+#: kt swift
 msgid "Settings imported"
 msgstr "设置已导入"
 
 #. TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
-#: swift
+#: kt swift
 msgid "Failed to import settings"
 msgstr "导入设置失败"
 
@@ -3107,17 +3100,16 @@ msgid "More options"
 msgstr "更多选项"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 msgid "Switch to TTS Mode"
 msgstr "切换到 TTS 模式"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 msgid "Switch to Text Mode"
 msgstr "切换到文本模式"
 
-#. TRANSLATORS: Navigation bar title of the recent documents screen
-#: swift
+#: kt swift
 msgid "Recent Documents"
 msgstr "最近文档"
 
@@ -3147,22 +3139,22 @@ msgid "No document open"
 msgstr "未打开文档"
 
 #. TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
-#: swift
+#: kt swift
 msgid "Show All"
 msgstr "显示全部"
 
 #. TRANSLATORS: Toggle label; when on, search matching is case-sensitive
-#: swift
+#: kt swift
 msgid "Match Case"
 msgstr "区分大小写"
 
 #. TRANSLATORS: Toggle label; when on, search only matches whole words
-#: swift
+#: kt swift
 msgid "Whole Word"
 msgstr "全字匹配"
 
 #. TRANSLATORS: Toggle label; when on, the search query is treated as a regular expression
-#: swift
+#: kt swift
 msgid "Regular Expression"
 msgstr "正则表达式"
 
@@ -3172,27 +3164,25 @@ msgid "Open Error"
 msgstr "打开错误"
 
 #. TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
-#: swift
+#: kt swift
 msgid "Open Book"
 msgstr "打开图书"
 
-#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
-#: swift
+#: kt swift
 msgid "Locate"
 msgstr "定位"
 
-#. TRANSLATORS: Swipe action to remove a document from the recent documents list
-#: swift
+#: kt swift
 msgid "Remove"
 msgstr "移除"
 
 #. TRANSLATORS: Status label for a recent document whose file can no longer be found
-#: swift
+#: kt swift
 msgid "File Missing"
 msgstr "文件缺失"
 
 #. TRANSLATORS: Status label for a recent document that's currently open in a tab
-#: swift
+#: kt swift
 msgid "Currently Open"
 msgstr "当前已打开"
 
@@ -3212,22 +3202,22 @@ msgid "Text to Speech"
 msgstr "文字转语音"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
-#: swift
+#: kt swift
 msgid "Voice"
 msgstr "语音"
 
-#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 msgid "Rate"
 msgstr "速率"
 
 #. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
-#: swift
+#: kt swift
 msgid "Speech Rate"
 msgstr "语音速率"
 
-#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
-#: swift
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
+#: kt swift
 msgid "Pitch"
 msgstr "音高"
 
@@ -3237,27 +3227,27 @@ msgid "Speech Dictionary"
 msgstr "语音词典"
 
 #. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
-#: swift
+#: kt swift
 msgid "Play Sample"
 msgstr "播放示例"
 
 #. TRANSLATORS: Row label for the control that scales the size of document text
-#: swift
+#: kt swift
 msgid "Text Size"
 msgstr "文本大小"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
-#: swift
+#: kt swift
 msgid "Line Spacing"
 msgstr "行距"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
-#: swift
+#: kt swift
 msgid "Paragraph Spacing"
 msgstr "段落间距"
 
 #. TRANSLATORS: Label for the picker choosing how document text is aligned
-#: swift
+#: kt swift
 msgid "Alignment"
 msgstr "对齐"
 
@@ -3272,37 +3262,37 @@ msgid "Restore last open documents"
 msgstr "恢复上次打开的文档"
 
 #. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
-#: swift
+#: kt swift
 msgid "Swipe up moves forward"
 msgstr "向上滑动向前移动"
 
 #. TRANSLATORS: Row label for the document's title in the Document Info sheet
-#: swift
+#: kt swift
 msgid "Title"
 msgstr "标题"
 
 #. TRANSLATORS: Row label for the document's author in the Document Info sheet
-#: swift
+#: kt swift
 msgid "Author"
 msgstr "作者"
 
 #. TRANSLATORS: Row label for the document's total word count
-#: swift
+#: kt swift
 msgid "Words"
 msgstr "字数"
 
 #. TRANSLATORS: Row label for the document's total line count
-#: swift
+#: kt swift
 msgid "Lines"
 msgstr "行数"
 
 #. TRANSLATORS: Row label for the document's total character count (including spaces)
-#: swift
+#: kt swift
 msgid "Characters"
 msgstr "字符数"
 
 #. TRANSLATORS: Row label for the document's character count with whitespace excluded
-#: swift
+#: kt swift
 msgid "Characters (excluding spaces)"
 msgstr "字符数（不含空格）"
 
@@ -3312,7 +3302,7 @@ msgid "Mode"
 msgstr "模式"
 
 #. TRANSLATORS: Name of the "page" reading/navigation unit
-#: swift
+#: kt swift
 msgid "Page"
 msgstr "页面"
 
@@ -3332,12 +3322,11 @@ msgid "Page number"
 msgstr "页码"
 
 #. TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
-#: swift
+#: kt swift
 msgid "Percentage"
 msgstr "百分比"
 
-#. TRANSLATORS: Navigation title of the Go To sheet
-#: swift
+#: kt swift
 msgid "Go To"
 msgstr "转到"
 
@@ -3366,13 +3355,13 @@ msgstr "规则"
 msgid "Scope"
 msgstr "范围"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a single word
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 msgid "Word"
 msgstr "单词"
 
 #. TRANSLATORS: Name of the "paragraph" reading/navigation unit
-#: swift
+#: kt swift
 msgid "Paragraph"
 msgstr "段落"
 
@@ -3465,7 +3454,7 @@ msgid "Duration"
 msgstr "持续时间"
 
 #. TRANSLATORS: Placeholder in the custom sleep timer duration field, asking for a number of minutes
-#: swift
+#: kt swift
 msgid "Minutes"
 msgstr "分钟"
 
@@ -3520,22 +3509,22 @@ msgid "This document has no table of contents."
 msgstr "此文档没有目录。"
 
 #. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
-#: swift
+#: kt swift
 msgid "Navigation unit"
 msgstr "导航单位"
 
 #. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: swift
+#: kt swift
 msgid "Previous {}"
 msgstr "上一个 {}"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 msgid "Pause"
 msgstr "暂停"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 msgid "Play"
 msgstr "播放"
 
@@ -3550,7 +3539,7 @@ msgid "Beginning of document"
 msgstr "文档开头"
 
 #. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: swift
+#: kt swift
 msgid "Next {}"
 msgstr "下一个 {}"
 
@@ -3559,36 +3548,32 @@ msgstr "下一个 {}"
 msgid "Press play to start listening."
 msgstr "按播放开始收听。"
 
-#: kt
-msgid "Document Information"
-msgstr "文档信息"
-
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 msgid "Untitled Link"
 msgstr "无标题链接"
 
-#: kt
+#: swift kt
 msgid "Export Document"
 msgstr "导出文档"
 
 #. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
-#: kt
+#: swift kt
 msgid "Select a format to export the current document:"
 msgstr "选择导出当前文档的格式:"
 
 #. TRANSLATORS: Export format option to save the document as a plain text file
-#: kt
+#: swift kt
 msgid "Plain Text (.txt)"
 msgstr "纯文本 (.txt)"
 
 #. TRANSLATORS: Export format option to save the document as an HTML file
-#: kt
+#: swift kt
 msgid "HTML (.html)"
 msgstr "HTML (.html)"
 
 #. TRANSLATORS: Export format option to save the document as a Markdown file
-#: kt
+#: swift kt
 msgid "Markdown (.md)"
 msgstr "Markdown (.md)"
 
@@ -3613,7 +3598,7 @@ msgid "Search Term"
 msgstr "搜索词"
 
 #. TRANSLATORS: Button that opens a dropdown of previously used search terms
-#: kt
+#: swift kt
 msgid "Search History"
 msgstr "搜索历史"
 
@@ -3713,26 +3698,26 @@ msgid "Custom time..."
 msgstr "自定义时间..."
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 msgid "Expanded"
 msgstr "已展开"
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 msgid "Collapsed"
 msgstr "已折叠"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 msgid "Collapse"
 msgstr "折叠"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 msgid "Expand"
 msgstr "展开"
 
-#: kt
+#: swift kt
 msgid "This document contains {} words."
 msgstr "本文档包含 {} 个单词。"
 
@@ -3744,7 +3729,7 @@ msgstr "本文档包含 {} 个单词。"
 msgid "words"
 msgstr "单词"
 
-#. TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
+#. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
 msgstr "关闭搜索"
@@ -3754,7 +3739,7 @@ msgstr "关闭搜索"
 msgid "Document exported"
 msgstr "文档已导出"
 
-#: kt
+#: swift kt
 msgid "Failed to export document"
 msgstr "导出文档失败"
 
@@ -3789,12 +3774,12 @@ msgid "More Options"
 msgstr "更多选项"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 msgid "Pause Read Aloud"
 msgstr "暂停朗读"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 msgid "Read Aloud"
 msgstr "朗读"
 
@@ -3809,42 +3794,43 @@ msgid "Elements List"
 msgstr "元素列表"
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
-#: kt
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+#: swift kt
 msgid "No more matches."
 msgstr "没有更多匹配项。"
 
 #. TRANSLATORS: Name of the "heading" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Heading"
 msgstr "标题"
 
 #. TRANSLATORS: Name of the "link" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Link"
 msgstr "链接"
 
 #. TRANSLATORS: Name of the "section" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Section"
 msgstr "章节"
 
 #. TRANSLATORS: Name of the "list" reading/navigation unit
-#: kt
+#: swift kt
 msgid "List"
 msgstr "列表"
 
 #. TRANSLATORS: Name of the "list item" reading/navigation unit
-#: kt
+#: swift kt
 msgid "List Item"
 msgstr "列表项"
 
 #. TRANSLATORS: Name of the "table" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Table"
 msgstr "表格"
 
 #. TRANSLATORS: Name of the "separator" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Separator"
 msgstr "分隔符"
 
@@ -3949,15 +3935,15 @@ msgstr "1.5×"
 msgid "Speech Engine"
 msgstr "语音引擎"
 
-#: swift
+#: kt swift
 msgid "1 book"
 msgstr "1 本书"
 
-#: swift
+#: kt swift
 msgid "{} books"
 msgstr "{} 本书"
 
-#: swift
+#: kt swift
 msgid "..."
 msgstr "..."
 
@@ -3983,7 +3969,7 @@ msgstr "自定义: {} 分钟⁣"
 #. replaced with the number. Which of the three forms is used depends on the target language's
 #. own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
 #. trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
+#: swift kt
 msgid "This document contains {} word."
 msgstr "本文档包含 {} 个单词。"
 
@@ -4013,7 +3999,7 @@ msgstr "{} 秒"
 msgid "{} seconds⁣"
 msgstr "{} 秒⁣"
 
-#: kt
+#: swift kt
 msgid "This document contains {} words.⁣"
 msgstr "本文档包含 {} 个单词。⁣"
 
@@ -4104,7 +4090,7 @@ msgstr "标题 {}"
 msgid "go to heading"
 msgstr "转到标题"
 
-#: kt
+#: swift kt
 msgid "{}, Level {}"
 msgstr "{}，级别 {}"
 
@@ -4139,12 +4125,12 @@ msgid "This document does not contain pages."
 msgstr "→  此文档不包含页面。"
 
 #. TRANSLATORS: Name of the "formula" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Formula"
 msgstr "公式"
 
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
-#: swift
+#: kt swift
 msgid "No matches."
 msgstr "没有匹配项。"
 
@@ -4169,27 +4155,27 @@ msgid "Dark"
 msgstr "深色"
 
 #. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
-#: swift
+#: kt swift
 msgid "High Contrast Text"
 msgstr "高对比度文本"
 
 #. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
-#: swift
+#: kt swift
 msgid "Hide previous and next buttons"
 msgstr "隐藏上一个和下一个按钮"
 
 #. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
-#: swift
+#: kt swift
 msgid "This empties the list. The documents themselves are not deleted."
 msgstr "这会清空列表。文档本身不会被删除。"
 
 #. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
-#: swift
+#: kt swift
 msgid "{} ms"
 msgstr "{} 毫秒"
 
 #. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
-#: swift
+#: kt swift
 msgid "Paragraph Pause"
 msgstr "段落暂停"
 
@@ -4197,3 +4183,13 @@ msgstr "段落暂停"
 #: kt
 msgid "No other voices"
 msgstr "没有其他语音"
+
+#. TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
+#: swift
+msgid "Original file"
+msgstr "原文件"
+
+#. TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
+#: kt
+msgid "Settings exported"
+msgstr "设置已导出"

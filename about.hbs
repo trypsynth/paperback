@@ -4,21 +4,6 @@ title: Licenses
 permalink: /licenses
 ---
 {% raw %}
-<style>
-/* The heading inside each summary is what you navigate by, so the disclosure marker next to it
-   is just noise. Dropping it leaves the heading sitting where a heading should. */
-summary {
-	list-style: none;
-	cursor: pointer;
-}
-summary::-webkit-details-marker {
-	display: none;
-}
-summary h4 {
-	display: inline;
-}
-</style>
-
 # Licenses
 
 Paperback is built on a great deal of work that other people gave away for free. This page credits all of it.
@@ -35,6 +20,7 @@ The desktop interface is [wxWidgets](https://www.wxwidgets.org/), under the wxWi
 
 Everything below is grouped by license. Each entry names the crates that use it and carries the full text.
 
+<div class="licenses">
 {{#each overview}}
 <h3>{{name}}</h3>
 
@@ -42,9 +28,9 @@ Everything below is grouped by license. Each entry names the crates that use it 
 
 {{#each indices}}
 {{#with (lookup ../../licenses this)}}
-<details>
-<summary><h4>{{#each used_by}}{{#unless @first}}, {{/unless}}{{crate.name}}{{/each}}</h4></summary>
-
+<div class="license">
+<h4 class="license-name">{{#each used_by}}{{#unless @first}}, {{/unless}}{{crate.name}}{{/each}}</h4>
+<div class="license-body">
 <ul>
 {{#each used_by}}
 <li><a href="{{#if crate.repository}}{{crate.repository}}{{else}}https://crates.io/crates/{{crate.name}}{{/if}}">{{crate.name}} {{crate.version}}</a></li>
@@ -52,9 +38,13 @@ Everything below is grouped by license. Each entry names the crates that use it 
 </ul>
 
 <pre>{{text}}</pre>
-</details>
+</div>
+</div>
 
 {{/with}}
 {{/each}}
 {{/each}}
+</div>
+
+<script src="/js/licenses.js"></script>
 {% endraw %}
