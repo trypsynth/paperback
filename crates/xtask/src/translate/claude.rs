@@ -300,7 +300,11 @@ impl ClaudeClient {
 	fn translate_markdown_checked(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
 		let mut last = String::new();
 		for attempt in 1..=MARKDOWN_ATTEMPTS {
-			let translated = self.translate_markdown_chunk(markdown, target)?;
+			// Each retry is told what was wrong with the attempt before it. A blind retry of the
+			// same request mostly returns the same answer: German dropped one of the six list
+			// items under "File menu" on three identical tries.
+			let previous = (attempt > 1).then_some(last.as_str());
+			let translated = self.translate_markdown_chunk(markdown, target, previous)?;
 			let Some(why) = structure_mismatch(markdown, &translated) else {
 				return Ok(translated);
 			};
@@ -315,7 +319,18 @@ impl ClaudeClient {
 		.into())
 	}
 
-	fn translate_markdown_chunk(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
+	fn translate_markdown_chunk(
+		&self,
+		markdown: &str,
+		target: &Target,
+		previous_problem: Option<&str>,
+	) -> Result<String, Box<dyn Error>> {
+		let correction = previous_problem.map_or_else(String::new, |why| {
+			format!(
+				"\n\nYour previous attempt did not match the document: {why}. \
+				 Return every heading and every list item this time, in the same order."
+			)
+		});
 		let request = json!({
 			"model": self.model,
 			"max_tokens": MAX_TOKENS,
@@ -327,7 +342,10 @@ impl ClaudeClient {
 			}],
 			"messages": [{
 				"role": "user",
-				"content": format!("Target language: {}\n\n<document>\n{markdown}\n</document>", target.language)
+				"content": format!(
+					"Target language: {}{correction}\n\n<document>\n{markdown}\n</document>",
+					target.language
+				)
 			}]
 		});
 		let text = self.send(&request)?;
