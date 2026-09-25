@@ -218,6 +218,9 @@ id="toc-zgodność-z-czytnikami-ekranu">Zgodność z czytnikami ekranu</a>
 <ul>
 <li><a href="#jaws-i-linijki-brajlowskie"
 id="toc-jaws-i-linijki-brajlowskie">JAWS i linijki brajlowskie</a></li>
+<li><a href="#jaws-i-komunikaty-paperbacka"
+id="toc-jaws-i-komunikaty-paperbacka">JAWS i komunikaty
+Paperbacka</a></li>
 </ul></li>
 <li><a href="#aktualnie-obsługiwane-typy-plików"
 id="toc-aktualnie-obsługiwane-typy-plików">Aktualnie obsługiwane typy
@@ -331,7 +334,7 @@ tekst.</li>
 </ul>
 <h1 id="zgodność-z-czytnikami-ekranu">Zgodność z czytnikami ekranu</h1>
 <p>Paperback dobrze współpracuje ze wszystkimi głównymi czytnikami
-ekranu. Istnieje jednak jeden znany problem dotyczący użytkowników
+ekranu. Istnieją jednak dwa znane problemy dotyczące użytkowników
 JAWS.</p>
 <h2 id="jaws-i-linijki-brajlowskie">JAWS i linijki brajlowskie</h2>
 <p>Jeśli używasz JAWS z linijką brajlowską, możesz zauważyć, że długie
@@ -350,6 +353,21 @@ Przy obu ustawieniach przesuwanie linijki powinno działać poprawnie.</p>
 <p>Nazwy tych opcji podano po angielsku, bo w takiej postaci występują w
 pliku konfiguracyjnym. Polska wersja JAWS ma odpowiadające im etykiety
 przetłumaczone, więc w okienku ustawień będą brzmiały inaczej.</p>
+<h2 id="jaws-i-komunikaty-paperbacka">JAWS i komunikaty Paperbacka</h2>
+<p>Paperback przekazuje komunikaty takie jak „Brak stron.” czy „Ten
+dokument nie zawiera dźwięku.” jako powiadomienia dostępności. Dzięki
+temu czytnik ekranu może je wypowiedzieć, przerywając to, co właśnie
+czyta. JAWS reaguje na te powiadomienia tylko wtedy, gdy dla danej
+aplikacji włączona jest opcja „Enable accessible notification events”.
+Na niektórych komputerach jest ona wyłączona.</p>
+<p>Jeśli JAWS milczy po naciśnięciu klawisza, który powinien wywołać
+komunikat, przejdź do okna Paperbacka i otwórz Centrum ustawień
+(<code>Insert+6</code>). W angielskiej wersji JAWS wyszukaj
+„notification” i zaznacz „Enable accessible notification events”. W
+polskiej wersji JAWS ta opcja nosi nazwę „Włącz ogłaszanie pojawiania
+się dostępnych powiadomień”; szukaj słowa „powiadomień” i włącz tę
+opcję. Ustawienie zostanie zapisane w pliku <code>paperback.jcf</code>,
+więc będzie dotyczyć tylko Paperbacka.</p>
 <h1 id="aktualnie-obsługiwane-typy-plików">Aktualnie obsługiwane typy
 plików</h1>
 <p>Paperback obsługuje następujące formaty i rozszerzenia:</p>
@@ -382,6 +400,8 @@ gzipem)</li>
 <li>Dokumenty PDF (<code>.pdf</code>)</li>
 <li>Prezentacje PowerPoint (<code>.pptx</code>, <code>.pptm</code>,
 <code>.ppt</code>)</li>
+<li>Dokumenty reStructuredText (<code>.rst</code>,
+<code>.rest</code>)</li>
 <li>Dokumenty RTF (<code>.rtf</code>)</li>
 <li>Dokumenty Windows Write (<code>.wri</code>)</li>
 <li>Pliki WinHelp (<code>.hlp</code>)</li>
@@ -740,6 +760,7 @@ tłumaczy.</li>
 <li>Strony podręcznika systemowego, zarówno <code>man</code>, jak i
 <code>mdoc</code> z BSD, spakowane gzipem lub nie.</li>
 <li>Audiobooki MP3, dzielone na rozdziały, jeśli plik je zawiera.</li>
+<li>Dokumenty reStructuredText.</li>
 <li>Pliki Windows Write (<code>.wri</code>).</li>
 <li>Pliki WinHelp (<code>.hlp</code>).</li>
 <li>Dokumenty Word 6 i Word 95.</li>
@@ -823,9 +844,20 @@ dlaczego.</li>
 <h3 id="naprawiono">Naprawiono</h3>
 <h4 id="ogólne-1">Ogólne</h4>
 <ul>
+<li>Książka otwarta ponownie przy uruchamianiu programu jest teraz od
+razu odczytywana. Nie trzeba jej już zamykać i otwierać ponownie, by
+rozpoczęło się czytanie.</li>
+<li>Z listy Wszystkie dokumenty można teraz usunąć dokument, którego
+plik zniknął. Wcześniej pozostawał na liście mimo wielokrotnego
+potwierdzania usunięcia.</li>
 <li>Naprawiono awarię przy zamykaniu Paperbacka.</li>
 <li>Zamknięcie Paperbacka od razu ukrywa teraz okno, zamiast zostawiać
 je na ekranie na czas zapisywania.</li>
+<li>Duże książki z niewielką ilością formatowania otwierają się teraz w
+czasie o około połowę krótszym.</li>
+<li>Komunikaty wywoływane z menu, takie jak „Ten dokument nie zawiera
+dźwięku”, nie są już przerywane przez czytnik ekranu, zanim zdążysz je
+usłyszeć.</li>
 <li>Otwarcie dokumentu nie zostawia już włączonej pozycji Otwórz
 ponownie ostatnio zamknięty, kiedy nie ma czego otwierać ponownie.</li>
 <li>Paperback nie ponawia już prób otwarcia brakujących dokumentów z
@@ -878,6 +910,8 @@ końcu każdego wiersza, a słowa rozdzielane przy spacjach.</li>
 nagłówek.</li>
 <li>Naprawiono błąd, przez który pliki PDF otwierały się jako puste, gdy
 ich drzewo struktury nie prowadziło do żadnego tekstu.</li>
+<li>Wiersze złożone czcionką o stałej szerokości znaku, na przykład kod,
+nie są już łączone w akapity.</li>
 <li>Nagłówki i stopki stron nie są już odczytywane na każdej stronie
 nieotagowanych plików PDF.</li>
 <li>Pliki PDF, które tagują nagłówki i stopki stron jako zwykły tekst,
@@ -885,8 +919,6 @@ nie powtarzają już tytułu i numeru strony między dwoma akapitami na
 każdej stronie.</li>
 <li>Pliki PDF pokazują teraz swój prawdziwy tytuł, a nie nazwę
 pliku.</li>
-<li>Wiersze złożone czcionką o stałej szerokości znaku, na przykład kod,
-nie są już łączone w akapity.</li>
 </ul>
 <h4 id="książki-mobiazw3">Książki MOBI/AZW3</h4>
 <ul>
@@ -935,7 +967,9 @@ z ekranu blokady.</li>
 <li>Nawigację po nagłówkach, stronach, odnośnikach, tabelach, listach i
 innych elementach z paska czytania, a także Spis treści i Znajdź.</li>
 <li>Wyłącznik czasowy, liczbę słów i eksport dokumentu, a na iOS także
-słownik mowy.</li>
+słownik mowy. Na iOS eksport odbywa się przez systemowy panel
+udostępniania, więc książkę można przekazać do innej aplikacji albo
+zapisać w aplikacji Pliki, w innym formacie lub bez zmian.</li>
 <li>Opcje rozmiaru tekstu, odstępów i wysokiego kontrastu tekstu.</li>
 <li>Skróty klawiszowe zgodne z wersją na komputery.</li>
 </ul>
