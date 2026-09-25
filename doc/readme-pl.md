@@ -27,7 +27,7 @@ Paperback działa w systemach Windows 10/11, we wszystkich nowoczesnych wersjach
 
 ## Zgodność z czytnikami ekranu
 
-Paperback dobrze współpracuje ze wszystkimi głównymi czytnikami ekranu. Istnieje jednak jeden znany problem dotyczący użytkowników JAWS.
+Paperback dobrze współpracuje ze wszystkimi głównymi czytnikami ekranu. Istnieją jednak dwa znane problemy dotyczące użytkowników JAWS.
 
 ### JAWS i linijki brajlowskie
 
@@ -36,6 +36,12 @@ Jeśli używasz JAWS z linijką brajlowską, możesz zauważyć, że długie aka
 Obejście, które po miesiącach oczekiwania wyszło w końcu na grupie dyskusyjnej JAWS, polega na edycji pliku `paperback.jcf` i ustawieniu opcji „Braille Presentation and Panning” na „Always use DOM if available”. Warto też włączyć „Pan Text by Paragraph”, bo inaczej linijka pozostanie na aktywnym akapicie, zamiast przesuwać się dalej. Przy obu ustawieniach przesuwanie linijki powinno działać poprawnie.
 
 Nazwy tych opcji podano po angielsku, bo w takiej postaci występują w pliku konfiguracyjnym. Polska wersja JAWS ma odpowiadające im etykiety przetłumaczone, więc w okienku ustawień będą brzmiały inaczej.
+
+### JAWS i komunikaty Paperbacka
+
+Paperback przekazuje komunikaty takie jak „Brak stron.” czy „Ten dokument nie zawiera dźwięku.” jako powiadomienia dostępności. Dzięki temu czytnik ekranu może je wypowiedzieć, przerywając to, co właśnie czyta. JAWS reaguje na te powiadomienia tylko wtedy, gdy dla danej aplikacji włączona jest opcja „Enable accessible notification events”. Na niektórych komputerach jest ona wyłączona.
+
+Jeśli JAWS milczy po naciśnięciu klawisza, który powinien wywołać komunikat, przejdź do okna Paperbacka i otwórz Centrum ustawień (`Insert+6`). W angielskiej wersji JAWS wyszukaj „notification” i zaznacz „Enable accessible notification events”. W polskiej wersji JAWS ta opcja nosi nazwę „Włącz ogłaszanie pojawiania się dostępnych powiadomień”; szukaj słowa „powiadomień” i włącz tę opcję. Ustawienie zostanie zapisane w pliku `paperback.jcf`, więc będzie dotyczyć tylko Paperbacka.
 
 ## Aktualnie obsługiwane typy plików
 
@@ -57,6 +63,7 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Pliki tekstowe OpenDocument (`.odt`, `.fodt`)
 * Dokumenty PDF (`.pdf`)
 * Prezentacje PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Dokumenty reStructuredText (`.rst`, `.rest`)
 * Dokumenty RTF (`.rtf`)
 * Dokumenty Windows Write (`.wri`)
 * Pliki WinHelp (`.hlp`)
@@ -293,6 +300,7 @@ Wersja 1.0 to pierwsze wydanie na wszystkich pięciu platformach: Windows, macOS
 * Audiobooki M4B, podzielone na rozdziały.
 * Strony podręcznika systemowego, zarówno `man`, jak i `mdoc` z BSD, spakowane gzipem lub nie.
 * Audiobooki MP3, dzielone na rozdziały, jeśli plik je zawiera.
+* Dokumenty reStructuredText.
 * Pliki Windows Write (`.wri`).
 * Pliki WinHelp (`.hlp`).
 * Dokumenty Word 6 i Word 95.
@@ -336,8 +344,12 @@ Wersja 1.0 to pierwsze wydanie na wszystkich pięciu platformach: Windows, macOS
 #### Naprawiono
 
 ##### Ogólne
+* Książka otwarta ponownie przy uruchamianiu programu jest teraz od razu odczytywana. Nie trzeba jej już zamykać i otwierać ponownie, by rozpoczęło się czytanie.
+* Z listy Wszystkie dokumenty można teraz usunąć dokument, którego plik zniknął. Wcześniej pozostawał na liście mimo wielokrotnego potwierdzania usunięcia.
 * Naprawiono awarię przy zamykaniu Paperbacka.
 * Zamknięcie Paperbacka od razu ukrywa teraz okno, zamiast zostawiać je na ekranie na czas zapisywania.
+* Duże książki z niewielką ilością formatowania otwierają się teraz w czasie o około połowę krótszym.
+* Komunikaty wywoływane z menu, takie jak „Ten dokument nie zawiera dźwięku”, nie są już przerywane przez czytnik ekranu, zanim zdążysz je usłyszeć.
 * Otwarcie dokumentu nie zostawia już włączonej pozycji Otwórz ponownie ostatnio zamknięty, kiedy nie ma czego otwierać ponownie.
 * Paperback nie ponawia już prób otwarcia brakujących dokumentów z listy ostatnich i ogranicza liczbę przechowywanych ostatnich dokumentów.
 * Stary plik ustawień INI jest teraz usuwany po przeniesieniu zapisanych w nim ustawień do nowego formatu.
@@ -363,10 +375,10 @@ Wersja 1.0 to pierwsze wydanie na wszystkich pięciu platformach: Windows, macOS
 * Naprawiono błąd, przez który akapity i nagłówki PDF były dzielone na końcu każdego wiersza, a słowa rozdzielane przy spacjach.
 * Naprawiono zlepianie numerowanych nagłówków PDF w jeden nagłówek.
 * Naprawiono błąd, przez który pliki PDF otwierały się jako puste, gdy ich drzewo struktury nie prowadziło do żadnego tekstu.
+* Wiersze złożone czcionką o stałej szerokości znaku, na przykład kod, nie są już łączone w akapity.
 * Nagłówki i stopki stron nie są już odczytywane na każdej stronie nieotagowanych plików PDF.
 * Pliki PDF, które tagują nagłówki i stopki stron jako zwykły tekst, nie powtarzają już tytułu i numeru strony między dwoma akapitami na każdej stronie.
 * Pliki PDF pokazują teraz swój prawdziwy tytuł, a nie nazwę pliku.
-* Wiersze złożone czcionką o stałej szerokości znaku, na przykład kod, nie są już łączone w akapity.
 
 ##### Książki MOBI/AZW3
 * Duże książki MOBI nie wyczerpują już pamięci i nie są już obcinane po 20 MB.
@@ -395,7 +407,7 @@ Aplikacje na iOS i Androida otwierają każdy format, który obsługuje wersja n
 * Czytanie na głos z wyborem głosu, tempa i wysokości głosu, regulacją tempa mowy wprost na pasku czytania oraz opcjonalną przerwą między akapitami.
 * Odtwarzanie audiobooków DAISY, M4B i MP3, które działa dalej w tle i z ekranu blokady.
 * Nawigację po nagłówkach, stronach, odnośnikach, tabelach, listach i innych elementach z paska czytania, a także Spis treści i Znajdź.
-* Wyłącznik czasowy, liczbę słów i eksport dokumentu, a na iOS także słownik mowy.
+* Wyłącznik czasowy, liczbę słów i eksport dokumentu, a na iOS także słownik mowy. Na iOS eksport odbywa się przez systemowy panel udostępniania, więc książkę można przekazać do innej aplikacji albo zapisać w aplikacji Pliki, w innym formacie lub bez zmian.
 * Opcje rozmiaru tekstu, odstępów i wysokiego kontrastu tekstu.
 * Skróty klawiszowe zgodne z wersją na komputery.
 
