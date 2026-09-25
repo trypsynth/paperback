@@ -144,7 +144,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+E`: Vie nykyinen asiakirja pelkkänä tekstinä.
 * `Ctrl+Shift+B`: Lisää kirjanmerkki nykyisen valinnan kohdalle tai kohdistimen sijaintiin tai poista se.
 * `Ctrl+Shift+N`: Lisää kirjanmerkin muistiinpano nykyisen valinnan tai kohdistimen kohdalle tai muokkaa sitä.
-* `Ctrl+Alt+W`: Ota rivitys käyttöön tai poista se käytöstä.
+* `Ctrl+Alt+W`: Ota automaattinen rivitys käyttöön tai poista se käytöstä.
 * `Ctrl+Välilyönti` (macOS: `RawCtrl+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
 * `'`: Kelaa äänitettä eteenpäin.
 * `;`: Kelaa äänitettä taaksepäin.
@@ -353,7 +353,7 @@ Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:
 * Vanha INI-asetustiedosto poistetaan sen jälkeen, kun se on siirretty uuteen muotoon.
 * Fontin- ja värinmääritysikkunoiden otsikot sekä Vie muodossa -valikko on nyt käännetty vietnamiksi.
 * Päivityksen jälkeen uudelleen käynnistyvän sovelluksen ikkuna siirtyy nyt etualalle sen sijaan, että jäisi Alt+Sarkain-järjestyksessä viimeiseksi.
-* Rivitys otetaan nyt käyttöön suurikokoisissa asiakirjoissa heti sen sijaan, että koko tiedosto avattaisiin uudelleen.
+* Automaattinen rivitys otetaan nyt käyttöön suurikokoisissa asiakirjoissa heti sen sijaan, että koko tiedosto avattaisiin uudelleen.
 
 ##### Navigointi
 * `Alt+Vasen nuoli` -näppäinkomennolla palataan nyt vanhemman sijainnin asemesta edelliseen kohtaan.
@@ -463,7 +463,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 
 ##### Asetukset ja luettavuus
 * Luettavuus-välilehti, jossa on seuraavat asetukset:
-    * Tekstin rivitys (siirretty Yleiset-välilehdeltä)
+    * Automaattinen rivitys (siirretty Yleiset-välilehdeltä)
     * Näytä taulukot tekstin osana (uusi tässä versiossa, katso jäljempää)
     * Fontti
     * Taustaväri
@@ -471,7 +471,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
     * Kappaleväli
     * Kirjainväli
     * Tekstin tasaus
-* Rivitys-vaihtoehto ja sille oma pikanäppäin.
+* Automaattinen rivitys -vaihtoehto ja sille oma pikanäppäin.
 * Asetus taulukoiden näyttötavan määrittämiseksi sekä yhtenäistetty taulukoiden esitystapa kaikille asiakirjoille.
 
 ##### Navigointi
@@ -550,7 +550,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Merkkiääni toistetaan nyt vain sellaisten sanojen kohdalla, joihin on lisätty kirjanmerkki tai muistiinpano.
 
 ##### Luettavuus
-* Rivityksen käyttöönotto siirsi kohdistuksen asiakirjan alkuun.
+* Automaattisen rivityksen käyttöönotto siirsi kohdistuksen asiakirjan alkuun.
 
 ##### Selainnäkymä
 * Selainnäkymäikkunan kokoa voi nyt muuttaa, eikä se avaudu enää liian pienenä.
@@ -765,7 +765,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * UTF-8-koodattujen tekstitiedostojen lataus korjattu.
 * Korjattu EPUB-kirjojen sisäkkäiset sisällysluettelokohdat, jotka siirtävät kohdistimen väärään kohtaan.
 * Korjattu joissakin tilanteissa ilmenevä kaatuminen sovellusta lopetettaessa.
-* Lisätty asetusvalintaikkunaan asetus, jolla otetaan rivitys käyttöön tai poistetaan se käytöstä.
+* Lisätty asetus, jolla automaattinen rivitys otetaan käyttöön tai poistetaan käytöstä.
 * Paperbackin kehitystä varten lahjoittaminen on nyt mahdollista joko ohje-valikon uudella Lahjoita-vaihtoehdolla tai GitHub-koodivaraston pääsivun alalaidassa olevan "Sponsor this project" -linkin kautta.
 * Markdown-asiakirjoilla on nyt aina nimi, ja Paperbackin pitäisi nyt pystyä lataamaan käytännössä mikä tahansa Markdown-tiedosto.
 * PDF-asiakirjoilla on nyt aina nimi, vaikka metatiedot puuttuisivat.
