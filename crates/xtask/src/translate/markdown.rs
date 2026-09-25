@@ -167,14 +167,19 @@ fn heading_level(line: &str) -> Option<usize> {
 	(hashes > 0 && hashes <= MAX_HEADING_LEVEL && line.as_bytes().get(hashes) == Some(&b' ')).then_some(hashes)
 }
 
-/// How many headings one request may carry.
+/// How many headings one request may carry: one, so a request is a heading and its body.
 ///
-/// Length alone was the wrong bound. The English "Keyboard shortcuts" section is 4794 characters,
-/// comfortably under the character limit, so it went as a single request carrying six headings and
-/// eighty-seven shortcut lines, and German came back with two of those six headings three attempts
-/// running. Cutting on heading count as well keeps a request close to one heading and its body,
-/// which is the shape the model answers whole.
-const MAX_HEADINGS_PER_CHUNK: usize = 3;
+/// Length alone was the wrong bound. "Keyboard shortcuts" is 4794 characters, comfortably under
+/// the character limit, so it went as one request carrying six headings and eighty-seven shortcut
+/// lines, and German came back with two of the six, three attempts running. Capping at three
+/// headings fixed that section, and "Screen Reader Compatibility" then failed the same way at
+/// three headings and 1630 characters, dropping "JAWS and Paperback's messages" every time.
+///
+/// So the bound is one. Packing sections into a request saved calls, which is worth nothing when
+/// the answer comes back a section short, and a retry costs a call anyway. Sections are
+/// self-contained and the system prompt carries the instructions and the style note, so a request
+/// loses nothing by being small.
+const MAX_HEADINGS_PER_CHUNK: usize = 1;
 
 /// Whether a piece is more than one request should be asked to carry.
 fn too_big(markdown: &str, limit: usize) -> bool {
@@ -190,10 +195,14 @@ fn split_oversized(section: String, limit: usize, level: usize) -> Vec<String> {
 	split_at_headings(&section, level).into_iter().flat_map(|piece| split_oversized(piece, limit, level + 1)).collect()
 }
 
-/// Splits Markdown into chunks of at most `limit` characters, breaking only at headings so the
-/// model never sees a half-open construct. A section longer than the limit is cut at its deeper
-/// headings: the changelog is one `##` section, and whole it is more than one response can hold.
-/// A piece with no heading left to cut at is left whole rather than cut mid-paragraph.
+/// Splits Markdown into chunks small enough to send, breaking only at headings so the model never
+/// sees a half-open construct. Small enough means within `limit` characters and within
+/// [`MAX_HEADINGS_PER_CHUNK`]: a piece over either is cut at its deeper headings, so the changelog,
+/// one `##` section that no single response could hold, comes apart at its versions. A piece with
+/// no heading left to cut at is left whole rather than cut mid-paragraph.
+///
+/// The packing at the end now only ever picks up a piece with no heading of its own, such as the
+/// text before the first one, which joins the chunk that follows it.
 pub(super) fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
 	let sections = split_sections(markdown).into_iter().flat_map(|section| split_oversized(section, limit, 3));
 	let mut chunks: Vec<String> = Vec::new();
@@ -213,30 +222,13 @@ pub(super) fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
 mod tests {
 	use super::*;
 
-	/// The shape that broke German: one section, comfortably under the character limit, but six
+	/// The shape that broke German: one section, comfortably under the character limit, several
 	/// headings deep.
 	#[test]
-	fn a_section_with_too_many_headings_is_cut_even_though_it_fits() {
-		let doc = "## Shortcuts
-
-### File
-
-* a
-
-### Go
-
-* b
-
-### Tools
-
-* c
-
-### Help
-
-* d
-";
+	fn a_section_with_several_headings_is_cut_even_though_it_fits() {
+		let doc = "## Shortcuts\n\n### File\n\n* a\n\n### Go\n\n* b\n\n### Tools\n\n* c\n\n### Help\n\n* d\n";
 		let chunks = split_markdown(doc, 10_000);
-		assert!(chunks.len() > 1, "got {chunks:?}");
+		assert_eq!(chunks.len(), 5, "got {chunks:?}");
 		for chunk in &chunks {
 			assert!(outline(chunk).headings.len() <= MAX_HEADINGS_PER_CHUNK, "{chunk:?}");
 		}
@@ -293,12 +285,14 @@ mod tests {
 		assert!(chunks[2].starts_with("## Two"));
 	}
 
+	/// Sections are not packed together however much room is left: one heading per request is
+	/// the point of the bound, not an economy to spend when there is space.
 	#[test]
-	fn markdown_sections_pack_together_under_the_limit() {
+	fn each_section_is_its_own_chunk_however_large_the_limit() {
 		let doc = "# Title\n\nIntro.\n\n## One\n\nBody one.\n\n## Two\n\nBody two.\n";
 		let chunks = split_markdown(doc, 10_000);
-		assert_eq!(chunks.len(), 1, "the whole document fits in one chunk");
-		assert_eq!(chunks[0].trim(), doc.trim());
+		assert_eq!(chunks.len(), 3, "got {chunks:?}");
+		assert_eq!(chunks.join("\n\n").trim(), doc.trim(), "no text lost or duplicated");
 	}
 
 	#[test]
