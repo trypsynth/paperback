@@ -299,6 +299,7 @@ impl ClaudeClient {
 	/// reading the language it is in can tell which half is missing.
 	fn translate_markdown_checked(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
 		let mut last = String::new();
+		let mut last_text = String::new();
 		for attempt in 1..=MARKDOWN_ATTEMPTS {
 			// Each retry is told what was wrong with the attempt before it. A blind retry of the
 			// same request mostly returns the same answer: German dropped one of the six list
@@ -310,7 +311,13 @@ impl ClaudeClient {
 			};
 			eprintln!("{}: {why}; retrying ({attempt} of {MARKDOWN_ATTEMPTS})", chunk_name(markdown));
 			last = why;
+			last_text = translated;
 		}
+		// The counts alone say a section is short without saying which part of it went missing,
+		// which is not enough to tell a model that is dropping something from a check that is
+		// counting the wrong thing. The last attempt goes to the log so the next run can be read
+		// rather than guessed at.
+		eprintln!("--- what came back, last attempt:\n{last_text}\n--- what was sent:\n{markdown}\n---");
 		Err(format!(
 			"{} came back incomplete {MARKDOWN_ATTEMPTS} times in {}: {last}",
 			chunk_name(markdown),
