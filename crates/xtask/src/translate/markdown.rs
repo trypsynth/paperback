@@ -167,10 +167,24 @@ fn heading_level(line: &str) -> Option<usize> {
 	(hashes > 0 && hashes <= MAX_HEADING_LEVEL && line.as_bytes().get(hashes) == Some(&b' ')).then_some(hashes)
 }
 
-/// A section cut at ever deeper headings until each piece fits in `limit`, or there are no
-/// deeper headings left to cut at.
+/// How many headings one request may carry.
+///
+/// Length alone was the wrong bound. The English "Keyboard shortcuts" section is 4794 characters,
+/// comfortably under the character limit, so it went as a single request carrying six headings and
+/// eighty-seven shortcut lines, and German came back with two of those six headings three attempts
+/// running. Cutting on heading count as well keeps a request close to one heading and its body,
+/// which is the shape the model answers whole.
+const MAX_HEADINGS_PER_CHUNK: usize = 3;
+
+/// Whether a piece is more than one request should be asked to carry.
+fn too_big(markdown: &str, limit: usize) -> bool {
+	markdown.len() > limit || outline(markdown).headings.len() > MAX_HEADINGS_PER_CHUNK
+}
+
+/// A section cut at ever deeper headings until each piece is small enough to send, or there are
+/// no deeper headings left to cut at.
 fn split_oversized(section: String, limit: usize, level: usize) -> Vec<String> {
-	if section.len() <= limit || level > MAX_HEADING_LEVEL {
+	if !too_big(&section, limit) || level > MAX_HEADING_LEVEL {
 		return vec![section];
 	}
 	split_at_headings(&section, level).into_iter().flat_map(|piece| split_oversized(piece, limit, level + 1)).collect()
@@ -185,7 +199,7 @@ pub(super) fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
 	let mut chunks: Vec<String> = Vec::new();
 	for section in sections {
 		match chunks.last_mut() {
-			Some(last) if last.len() + section.len() + 2 <= limit => {
+			Some(last) if !too_big(&format!("{last}\n\n{section}"), limit) => {
 				last.push_str("\n\n");
 				last.push_str(&section);
 			}
@@ -198,6 +212,35 @@ pub(super) fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	/// The shape that broke German: one section, comfortably under the character limit, but six
+	/// headings deep.
+	#[test]
+	fn a_section_with_too_many_headings_is_cut_even_though_it_fits() {
+		let doc = "## Shortcuts
+
+### File
+
+* a
+
+### Go
+
+* b
+
+### Tools
+
+* c
+
+### Help
+
+* d
+";
+		let chunks = split_markdown(doc, 10_000);
+		assert!(chunks.len() > 1, "got {chunks:?}");
+		for chunk in &chunks {
+			assert!(outline(chunk).headings.len() <= MAX_HEADINGS_PER_CHUNK, "{chunk:?}");
+		}
+	}
 
 	#[test]
 	fn a_translation_that_kept_every_heading_and_bullet_passes() {
