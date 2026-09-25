@@ -89,6 +89,84 @@ fn split_at_headings(markdown: &str, level: usize) -> Vec<String> {
 /// The deepest heading level Markdown has.
 const MAX_HEADING_LEVEL: usize = 6;
 
+/// What a translated section has to keep from its English source: the same headings, at the same
+/// levels, in the same order, and the same number of list items.
+///
+/// The model is asked for one document and returns another, and nothing downstream can tell the
+/// difference between prose it rendered differently and prose it left out. It does leave things
+/// out: a German run dropped the whole "Currently supported file types" section and the
+/// "Supported languages" one, and cut a paragraph off mid-sentence, and the result was written
+/// to `doc/readme-de.md` and opened as a pull request with nothing complaining. Structure is the
+/// part of a translation that must not change, so it is the part worth checking.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) struct Outline {
+	/// One entry per heading, holding its level. Not the text: that is translated.
+	headings: Vec<usize>,
+	list_items: usize,
+	fences: usize,
+}
+
+/// Why a translation does not match its source, or `None` when it does.
+pub(super) fn structure_mismatch(source: &str, translated: &str) -> Option<String> {
+	if translated.trim().is_empty() {
+		return Some("the translation is empty".to_string());
+	}
+	let want = outline(source);
+	let got = outline(translated);
+	if want == got {
+		return None;
+	}
+	if want.headings != got.headings {
+		return Some(format!("headings are {:?} in English and {:?} in the translation", want.headings, got.headings));
+	}
+	if want.list_items != got.list_items {
+		return Some(format!("{} list items in English and {} in the translation", want.list_items, got.list_items));
+	}
+	Some(format!("{} code fences in English and {} in the translation", want.fences, got.fences))
+}
+
+fn outline(markdown: &str) -> Outline {
+	let mut headings = Vec::new();
+	let mut list_items = 0;
+	let mut fences = 0;
+	let mut in_fence = false;
+	for line in markdown.lines() {
+		let trimmed = line.trim_start();
+		if trimmed.starts_with("```") {
+			fences += 1;
+			in_fence = !in_fence;
+			continue;
+		}
+		if in_fence {
+			continue;
+		}
+		if let Some(level) = heading_level(trimmed) {
+			headings.push(level);
+		} else if trimmed.starts_with("* ") || trimmed.starts_with("- ") {
+			list_items += 1;
+		}
+	}
+	Outline { headings, list_items, fences }
+}
+
+/// A chunk named by its first heading, so an error says which part of the readme failed.
+pub(super) fn chunk_name(markdown: &str) -> String {
+	for line in markdown.lines() {
+		let trimmed = line.trim_start();
+		if heading_level(trimmed).is_some() {
+			return format!("\"{}\"", trimmed.trim_start_matches('#').trim());
+		}
+	}
+	"a readme section with no heading".to_string()
+}
+
+/// The level of an ATX heading, or `None` for any other line. A run of `#` counts only when a
+/// space follows it, which is what Markdown requires and what keeps a `#` inside prose out.
+fn heading_level(line: &str) -> Option<usize> {
+	let hashes = line.bytes().take_while(|b| *b == b'#').count();
+	(hashes > 0 && hashes <= MAX_HEADING_LEVEL && line.as_bytes().get(hashes) == Some(&b' ')).then_some(hashes)
+}
+
 /// A section cut at ever deeper headings until each piece fits in `limit`, or there are no
 /// deeper headings left to cut at.
 fn split_oversized(section: String, limit: usize, level: usize) -> Vec<String> {
@@ -120,6 +198,48 @@ pub(super) fn split_markdown(markdown: &str, limit: usize) -> Vec<String> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn a_translation_that_kept_every_heading_and_bullet_passes() {
+		let source = "## One\n\n* a\n* b\n\n### Two\n\nText.\n";
+		let translated = "## Eins\n\n* a\n* b\n\n### Zwei\n\nText.\n";
+		assert_eq!(structure_mismatch(source, translated), None);
+	}
+
+	/// What actually happened to German: two sections went missing from the response.
+	#[test]
+	fn a_translation_missing_a_section_is_rejected() {
+		let source = "## One\n\nText.\n\n## Two\n\nText.\n\n## Three\n\nText.\n";
+		let translated = "## Eins\n\nText.\n\n## Drei\n\nText.\n";
+		assert!(structure_mismatch(source, translated).is_some_and(|why| why.contains("headings")));
+	}
+
+	#[test]
+	fn a_translation_missing_list_items_is_rejected() {
+		let source = "## Formats\n\n* EPUB\n* PDF\n* RTF\n";
+		let translated = "## Formate\n\n* EPUB\n* PDF\n";
+		assert!(structure_mismatch(source, translated).is_some_and(|why| why.contains("list items")));
+	}
+
+	#[test]
+	fn an_empty_translation_is_rejected() {
+		assert!(structure_mismatch("## One\n\nText.\n", "   ").is_some());
+	}
+
+	/// A `#` and a `*` inside a fenced block are content, not structure.
+	#[test]
+	fn fenced_blocks_do_not_count_as_headings_or_bullets() {
+		let source = "## One\n\n```\n# not a heading\n* not a bullet\n```\n";
+		let translated = "## Eins\n\n```\n# not a heading\n* not a bullet\n```\n";
+		assert_eq!(structure_mismatch(source, translated), None);
+	}
+
+	#[test]
+	fn a_hash_without_a_space_is_not_a_heading() {
+		let source = "## One\n\nIssue #42 is fixed.\n";
+		let translated = "## Eins\n\nProblem #42 ist behoben.\n";
+		assert_eq!(structure_mismatch(source, translated), None);
+	}
 
 	#[test]
 	fn markdown_splits_on_section_headings() {
