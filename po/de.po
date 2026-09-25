@@ -675,12 +675,11 @@ msgstr ""
 "Soll das gewählte Dokument wirklich aus der Liste entfernt werden? Dabei "
 "werden auch alle Lesezeichen und Lesepositionen gelöscht."
 
+#, fuzzy
 msgid ""
 "Are you sure you want to remove the {} selected documents? This will also "
 "remove their reading positions and bookmarks."
-msgstr ""
-"Sollen die gewählten Dokumente wirklich aus der Liste entfernt werden? Dabei "
-"werden auch alle Lesezeichen und Lesepositionen gelöscht."
+msgstr "Möchten Sie wirklich die {} ausgewählten Dokumente entfernen? Dies entfernt auch ihre Lesepositionen und Lesezeichen."
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
@@ -733,8 +732,9 @@ msgid "&Start page:"
 msgstr "&Erste Seite:"
 
 #. TRANSLATORS: Label for the ending page field of the Batch OCR range
+#, fuzzy
 msgid "&End page:"
-msgstr "Letzte Seite:"
+msgstr "&Endseite:"
 
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
@@ -1978,8 +1978,9 @@ msgid "&Sleep Timer..."
 msgstr "Ein&schlaftimer..."
 
 #. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
+#, fuzzy
 msgid "&Batch OCR..."
-msgstr "Texterkennung (Stapelverarbeitung)..."
+msgstr "&Batch-OCR..."
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
@@ -2872,8 +2873,9 @@ msgid "Password required or incorrect"
 msgstr "Passwort wird benötigt oder ist inkorrekt"
 
 #. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
+#, fuzzy
 msgid "Failed to open PDF document: {}"
-msgstr "Das PDF-Dokument konnte nicht geöffnet werden."
+msgstr "PDF-Dokument konnte nicht geöffnet werden: {}"
 
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 msgid "PPT file contains no slides"
