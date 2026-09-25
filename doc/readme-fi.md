@@ -27,13 +27,19 @@ Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa nykyaikaisissa ARM-pohjais
 
 ## Ruudunlukijoiden yhteensopivuus
 
-Paperback toimii sujuvasti kaikilla yleisimmillä ruudunlukijoilla. JAWS-käyttäjien on kuitenkin hyvä tietää  eräästä tunnetusta ongelmasta.
+Paperback toimii sujuvasti kaikilla yleisimmillä ruudunlukijoilla. JAWS-käyttäjien on kuitenkin hyvä tietää kahdesta tunnetusta ongelmasta.
 
 ### JAWS ja pistenäytöt
 
 Jos käytät JAWS-ruudunlukijaa ja pistenäyttöä, pitkät kappaleet saattavat katketa, kun tekstiä vieritetään eteenpäin näytön navigointinäppäimillä. Ongelma koskee myös nykyisen kappaleen lukukomentoa. Tämä johtuu JAWSin virheestä RICHEDIT50W-tekstikentän käsittelyssä, eli vika ei ole Paperbackissa. Ratkaisun löytäminen kesti kauan, koska Visperolta on tunnetusti vaikea saada vastauksia avoimen lähdekoodin sovellusten virheraportteihin.
 
 Kiertotienä ongelmaan on paperback.jcf-tiedoston muokkaaminen siten, että asetuksen "Braille Presentation and Panning" (Pistekirjoitusesitys ja -vieritys) arvoksi määritetään "Always use DOM if available" (Käytä aina DOMia, jos se on saatavilla). Lisäksi asetus "Pan Text by Paragraph" (Vieritä kappaleittain) on otettava käyttöön, jotta pistenäyttö siirtyy eteenpäin seuraavaan kappaleeseen. Näillä asetuksilla vierityksen pitäisi toimia oikein.
+
+### JAWS ja Paperbackin ilmoitukset
+
+Paperbackin ilmoitukset, kuten ”Ei sivuja” ja ”Asiakirjassa ei ole äänitettä”, lähetetään saavutettavuusilmoituksina, minkä ansiosta ruudunlukija voi lukea ne muun puheen päälle. JAWS reagoi niihin vain, jos sovellukselle on otettu käyttöön asetus "Enable accessible notification events" (Ota käyttöön saavutettavat ilmoitukset), eikä se ole käytössä kaikissa koneissa.
+
+Jos JAWS ei puhu mitään painaessasi jotain ilmoituksen aiheuttavaa näppäintä, avaa Settings Center (Asetuskeskus) Insert+6-pikanäppäimellä Paperbackin ollessa etualalla, etsi sanalla "notification" (ilmoitukset) ja valitse valintaruutu "Enable accessible notification events" (Ota käyttöön saavutettavat ilmoitukset). Tämä tallentaa asetuksen paperback.jcf-tiedostoon, joten se koskee vain Paperbackia.
 
 ## Tuettavat tiedostomuodot
 
@@ -55,6 +61,7 @@ Paperback tukee seuraavia tiedostomuotoja:
 * OpenDocument-tekstiasiakirjat (`.odt`, `.fodt`)
 * PDF-asiakirjat (`.pdf`)
 * PowerPoint-esitykset (`.pptx`, `.pptm`, `.ppt`)
+* reStructuredText-asiakirjat (`.rst`, `.rest`)
 * RTF-asiakirjat (`.rtf`)
 * Windows Write -asiakirjat (`.wri`)
 * WinHelp-ohjetiedostot (`.hlp`)
@@ -175,7 +182,7 @@ iOS- ja Android-sovellukset käyttävät samaa lukumoottoria kuin työpöytäver
 ### Asiakirjojen avaaminen
 
 * Käytä Avaa kirja -painiketta tai avaa asiakirja Tiedostot- tai muusta sovelluksesta ja valitse Paperback.
-* Androidissa voit ottaa asetuksista käyttöön sovelluksen sisäisen tiedostoselaimen. Se tarvitsee kaikkien tiedostojen käyttöoikeuden, minkä jälkeen suuret tiedostot voidaan avata suoraan kopioimatta niitä ensin.
+* Androidissa voit ottaa asetuksista käyttöön sovelluksen sisäisen tiedostoselaimen. Se tarvitsee kaikkien tiedostojen käyttöoikeuden, minkä jälkeen suurikokoiset tiedostot voidaan avata suoraan kopioimatta niitä ensin.
 * Tuo tai vie asiakirjan tiedot (`.paperback`) painamalla pitkään Avaa kirja -painiketta. Samoja tiedostoja käytetään myös työpöytäsovelluksessa.
 
 ### Reading and listening
@@ -281,7 +288,7 @@ Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:
 
 ##### Yleistä
 * Linux-tuki AppImage- ja tar.gz-paketteina sekä työpöytäintegraatiolla, jonka ansiosta asiakirjat avautuvat suoraan tiedostonhallinnasta.
-* Valinnan alkukohdan merkitseminen näppäinyhdistelmällä `Alt+F9`, valinnan alkukohdan ja nykyisen sijainnin välisen tekstin kopiointi näppäinyhdistelmällä `Alt+F10` ja valinnan alkukohtaan siirtyminen näppäinyhdistelmällä `Alt+Shift+F9`. Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Shift- ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon kohdasta Valitse ja kopioi.
+* Valinnan alkukohdan merkitseminen näppäinyhdistelmällä `Alt+F9`, valinnan alkukohdan ja nykyisen sijainnin välisen tekstin kopiointi näppäinyhdistelmällä `Alt+F10` ja valinnan alkukohtaan palaaminen näppäinyhdistelmällä `Alt+Shift+F9`. Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Shift- ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon kohdasta Valitse ja kopioi.
 * =-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim. ”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole sivunumeroita.
 * Tietoja-ikkunassa näkyvät nyt Paperbackin lisenssi ja kaikki kääntäjät.
 * Ukrainankielinen käännös.
@@ -291,6 +298,7 @@ Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:
 * Lukuihin jaetut M4B-äänikirjat.
 * Gzip-pakatut tai pakkaamattomat `man`- ja BSD `mdoc` -muodossa olevat man-sivut.
 * Tavalliset ja lukuihin jaetut MP3-äänikirjat.
+* reStructuredText-asiakirjat.
 * Windows Write -tiedostot (`.wri`).
 * WinHelp-ohjetiedostot (`.hlp`).
 * Word 6- ja 95-asiakirjat.
@@ -334,14 +342,18 @@ Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:
 #### Korjattu
 
 ##### Yleiset
+* Sovelluksen käynnistyksen yhteydessä uudelleen avatun kirjan lukeminen alkaa nyt heti eikä vasta sulkemisen ja uudelleen avaamisen jälkeen.
+* Asiakirjan, jonka tiedostoa ei enää löydy, voi nyt poistaa Kaikki asiakirjat -luettelosta. Aiemmin se jäi luetteloon poiston vahvistamisesta huolimatta.
 * Kaatuminen Paperbackia suljettaessa.
 * Ikkuna piilotetaan nyt heti Paperbackia suljettaessa sen sijaan, että se jäisi näkyviin tallennuksen ajaksi.
+* Suurikokoiset kirjat, joissa on vähän muotoilua, avautuvat nyt noin puolet nopeammin.
+* Ruudunlukija ei enää keskeytä valikosta valittujen toimintojen aiheuttamia ilmoituksia, kuten "Asiakirjassa ei ole äänitettä".
 * Avaa viimeksi suljettu -toiminto ei ole enää käytettävissä asiakirjan avaamisen jälkeen, jos uudelleen avattavia tiedostoja ei ole.
 * Paperback ei enää yritä toistuvasti avata viimeksi avattujen asiakirjojen luettelosta hävinneitä asiakirjoja, ja luetteloon tallennettavien asiakirjojen määrää on myös rajoitettu.
 * Vanha INI-asetustiedosto poistetaan sen jälkeen, kun se on siirretty uuteen muotoon.
 * Fontin- ja värinmääritysikkunoiden otsikot sekä Vie muodossa -valikko on nyt käännetty vietnamiksi.
 * Päivityksen jälkeen uudelleen käynnistyvän sovelluksen ikkuna siirtyy nyt etualalle sen sijaan, että jäisi Alt+Sarkain-järjestyksessä viimeiseksi.
-* Rivitys otetaan nyt käyttöön suurissa asiakirjoissa heti sen sijaan, että koko tiedosto avattaisiin uudelleen.
+* Rivitys otetaan nyt käyttöön suurikokoisissa asiakirjoissa heti sen sijaan, että koko tiedosto avattaisiin uudelleen.
 
 ##### Navigointi
 * `Alt+Vasen nuoli` -näppäinkomennolla palataan nyt vanhemman sijainnin asemesta edelliseen kohtaan.
@@ -361,19 +373,19 @@ Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:
 * Ongelma, jonka vuoksi PDF-tiedostojen kappaleet ja otsikot katkesivat jokaiselta riviltä ja sanat jakautuivat välilyöntien kohdalta.
 * Ongelma, jonka vuoksi PDF-tiedostojen numeroidut otsikot yhdistyivät yhdeksi otsikoksi.
 * Ongelma, jonka vuoksi PDF-tiedostot avautuivat tyhjinä, jos niiden rakennepuu ei sisältänyt tekstiä.
+* Tasalevyisellä fontilla näytettäviä rivejä, kuten koodia, ei enää yhdistetä kappaleiksi.
 * Ylä- ja alatunnisteita ei enää lueta jokaisella merkitsemättömien PDF-tiedostojen sivulla.
 * Otsikko ja sivunumero eivät enää toistu jokaisella sivulla kappaleiden välissä PDF-tiedostoissa, joissa ylä- ja alatunnisteet on merkitty tavalliseksi tekstiksi.
-* PDF-tiedostoissa näytetään nyt niiden oikea otsikko tiedostonimen sijasta.
-* Tasalevyisellä fontilla näytettäviä rivejä, kuten koodia, ei enää yhdistetä kappaleiksi.
+* PDF-tiedostoissa näytetään nyt niiden oikea otsikko tiedostonimen sijaan.
 
 ##### MOBI- ja AZW3-kirjat
-* Suuret MOBI-kirjat eivät enää aiheuta muistin loppumista, eikä niitä enää katkaista 20 megatavun kohdalla.
+* Suurikokoiset MOBI-kirjat eivät enää aiheuta muistin loppumista, eikä niitä enää katkaista 20 megatavun kohdalla.
 * MOBI- ja AZW3-kirjat avautuvat nyt huomattavasti nopeammin.
 * MOBI-kirjojen sisällysluettelon katoaminen.
 * Ongelma, jonka vuoksi MOBI-kirjojen teksti muuttui lukukelvottomaksi tietueiden vaihtumiskohdassa.
 
 ##### Selainnäkymä
-* Suuren kirjan koko sisältöä ei käsitellä kerralla selainnäkymässä.
+* Suurikokoisen kirjan koko sisältöä ei käsitellä kerralla selainnäkymässä.
 * Selainnäkymä näyttää nyt asiakirjan kokonaan lukutilan mukaisesti, eikä vain pientä osaa siitä.
 
 ##### Muut tiedostomuodot
@@ -393,7 +405,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Tekstistä puheeksi -toiminnolla lukeminen valitsemallasi äänellä, nopeudella ja äänenkorkeudella, puhenopeuden säätö suoraan lukupalkissa sekä valinnainen tauko kappaleiden välissä.
 * DAISY-, M4B- ja MP3-äänikirjojen toisto, joka jatkuu taustalla ja lukitusnäytöllä.
 * Navigointi lukupalkista otsikoiden, sivujen, linkkien, taulukoiden, luetteloiden ja muiden elementtien perusteella, minkä lisäksi käytössä ovat sisällysluettelo ja Etsi-toiminto.
-* Uniajastin, sanamäärä ja asiakirjan vienti sekä iOS:ssa käyttäjän sanasto.
+* Uniajastin, sanamäärä ja asiakirjan vienti sekä iOS:ssa käyttäjän sanasto. iOS:ssa vienti tapahtuu jakovalikosta, joten kirjan voi lähettää toiseen sovellukseen tai tallentaa Tiedostot-appiin joko muussa tai alkuperäisessä tiedostomuodossa.
 * Tekstikoon, rivivälin ja suurikontrastisen tekstin asetukset.
 * Samat pikanäppäimet kuin työpöytäversiossa.
 
@@ -419,7 +431,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Korjattu ongelma, jonka vuoksi RTF-kuvien raakadata vuoti asiakirjaan tekstisotkuna.
 * Korjattu ongelma, jonka vuoksi Viimeksi avatut -alivalikossa säilyi vanhentuneita merkintöjä, kunnes valikon sisältö muodostettiin uudelleen.
 * Valikkojen pikanäppäimet ovat palanneet kaikkiin käännöksiin, joten esimerkiksi venäjänkielistä käyttöliittymää käytettäessä valikkokohteita on taas mahdollista avata korostetuilla näppäimillä.
-* Suuret CHM-asiakirjat avautuvat nyt jopa seitsemän kertaa nopeammin.
+* Suurikokoiset CHM-asiakirjat avautuvat nyt jopa seitsemän kertaa nopeammin.
 * Avatut asiakirjat rekisteröidään Windowsiin, joten ne näkyvät nyt tehtäväpalkin pikavalikossa ja Käynnistä-valikon viimeksi avattujen tiedostojen luettelossa.
 * Asetukset-valikon englanninkielinen nimi (Options) on muutettu muotoon Settings, mikä vastaa mobiilisovelluksia sekä macOS-käyttöjärjestelmän käytäntöä.
 * Paperback muistaa nyt ikkunan sijainnin, koon ja suurennetun tilan käynnistysten välillä.
@@ -520,7 +532,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Valikko päivittyy nyt oikein ja kohdistus siirtyy asiakirjan tekstiin, kun ohje avataan Paperbackissa.
 * Windowsissa on otettu käyttöön huomattavasti turvallisempi prosessien välinen viestintämenetelmä.
 * Aktiivisen asiakirjan nimi luetaan nyt välilehteä vaihdettaessa.
-* Suurten asiakirjojen muistinkäyttöä on vähennetty puolittamalla sisäisten merkkikohtaisten indeksitaulukoiden koko.
+* Suurikokoisten asiakirjojen muistinkäyttöä on vähennetty puolittamalla sisäisten merkkikohtaisten indeksitaulukoiden koko.
 
 ##### Kaikki asiakirjat -valintaikkuna
 * Asiakirjan tiedot- ja Kaikki asiakirjat -valintaikkunat eivät sulkeutuneet Esc-näppäimellä.
@@ -531,8 +543,8 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 
 ##### Navigointi
 * Ruudunlukija puhui joissakin tilanteissa väärän rivin asiakirjassa liikuttaessa.
-* Siirry riville-, Siirry sivulle- ja Siirry prosenttiin -toiminnot siirsivät kohdistimen suurissa asiakirjoissa väärään kohtaan.
-* Etsi- ja Etsi seuraava -toiminnot eivät huomioineet suurten asiakirjojen näkyvissä olevaa osaa.
+* Siirry riville-, Siirry sivulle- ja Siirry prosenttiin -toiminnot siirsivät kohdistimen suurikokoisissa asiakirjoissa väärään kohtaan.
+* Etsi- ja Etsi seuraava -toiminnot eivät huomioineet suurikokoisten asiakirjojen näkyvissä olevaa osaa.
 
 ##### Kirjanmerkit
 * Merkkiääni toistetaan nyt vain sellaisten sanojen kohdalla, joihin on lisätty kirjanmerkki tai muistiinpano.
@@ -607,8 +619,8 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Kaikki asiakirjat -valintaikkuna tukee nyt kerralla useiden avattavien asiakirjojen valintaa.
 * Korjattu muutamia RTF-jäsentimen virheitä.
 * Korjattu muita kuin ASCII-merkkejä (kuten bosnian š, č, ć ja ž) sisältävät tiedostopolut, jotka vioittuivat, kun tiedosto avattiin toisen Paperback-kopion kautta.
-* Korjattu PDF-tekstin lukujärjestys sekä virheellinen sanaväli isolla kirjaimella alkavien sanojen ympärillä.
-* Korjattu hitaat asiakirjojen lataukset suuria tiedostoja avattaessa.
+* Korjattu PDF-tekstin lukemisjärjestys sekä virheellinen sanaväli isolla kirjaimella alkavien sanojen ympärillä.
+* Korjattu suurikokoisten tiedostojen avaamisen hitaus.
 * Korjattu vahvistusvalintaikkunoiden Kyllä- ja Ei-painikkeiden lokalisointi.
 
 ### Versio 0.8.0

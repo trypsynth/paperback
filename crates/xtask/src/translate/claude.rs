@@ -24,7 +24,7 @@ use serde_json::{Value, json};
 
 use super::{
 	checks::{check, check_plural},
-	markdown::{restore_code_spans, split_markdown},
+	markdown::{chunk_name, restore_code_spans, split_markdown, structure_mismatch},
 	prompts::{
 		markdown_schema, markdown_system_prompt, phrase_system_prompt, plural_schema, plural_system_prompt,
 		translations_schema,
@@ -57,6 +57,10 @@ const PLURAL_BATCH_LIMIT: usize = 20;
 const README_CHUNK_CHARS: usize = 6000;
 
 const MAX_TOKENS: u32 = 16000;
+/// How many times a readme chunk may come back missing headings or list items before the run
+/// fails. Two retries is enough for a model that dropped a section by accident; more than that
+/// and the chunk itself is the problem.
+const MARKDOWN_ATTEMPTS: usize = 3;
 
 /// Retries for the statuses that are worth retrying (429 and 5xx). Raw HTTP gets none of the
 /// automatic backoff the official SDKs have, so it is done here.
@@ -281,10 +285,34 @@ impl ClaudeClient {
 	pub fn translate_markdown(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
 		let mut translated: Vec<String> = Vec::new();
 		for chunk in split_markdown(markdown, README_CHUNK_CHARS) {
-			translated.push(self.translate_markdown_chunk(&chunk, target)?);
+			translated.push(self.translate_markdown_checked(&chunk, target)?);
 		}
 		let joined = translated.join("\n\n");
 		Ok(restore_code_spans(markdown, &joined))
+	}
+
+	/// One chunk, translated and checked against its source, retried while it comes back short.
+	///
+	/// A chunk that fails the check is a chunk the model left something out of, and a second ask
+	/// usually gets it right. After [`MARKDOWN_ATTEMPTS`] tries this gives up loudly: half a
+	/// readme committed and opened as a pull request is worse than no readme, because nobody
+	/// reading the language it is in can tell which half is missing.
+	fn translate_markdown_checked(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
+		let mut last = String::new();
+		for attempt in 1..=MARKDOWN_ATTEMPTS {
+			let translated = self.translate_markdown_chunk(markdown, target)?;
+			let Some(why) = structure_mismatch(markdown, &translated) else {
+				return Ok(translated);
+			};
+			eprintln!("{}: {why}; retrying ({attempt} of {MARKDOWN_ATTEMPTS})", chunk_name(markdown));
+			last = why;
+		}
+		Err(format!(
+			"{} came back incomplete {MARKDOWN_ATTEMPTS} times in {}: {last}",
+			chunk_name(markdown),
+			target.language
+		)
+		.into())
 	}
 
 	fn translate_markdown_chunk(&self, markdown: &str, target: &Target) -> Result<String, Box<dyn Error>> {
