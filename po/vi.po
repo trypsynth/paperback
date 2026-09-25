@@ -2883,12 +2883,12 @@ msgstr "Bảng Tiếp Theo"
 #. TRANSLATORS: Shortcut action to move to the previous formula
 #, fuzzy
 msgid "Previous Formula"
-msgstr "Kết quả trước đó"
+msgstr "Công Thức Trước"
 
 #. TRANSLATORS: Shortcut action to move to the next formula
 #, fuzzy
 msgid "Next Formula"
-msgstr "Kết quả tiếp theo"
+msgstr "Công Thức Tiếp Theo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy

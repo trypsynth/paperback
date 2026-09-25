@@ -946,7 +946,7 @@ msgstr "&Visualização:"
 
 #. TRANSLATORS: Choice option in the view dropdown to show headings list
 msgid "Headings"
-msgstr "Titulos"
+msgstr "Títulos"
 
 #. TRANSLATORS: Choice option in the view dropdown to show links list
 msgid "Links"
@@ -2781,12 +2781,12 @@ msgstr "Próxima Tabela"
 #. TRANSLATORS: Shortcut action to move to the previous formula
 #, fuzzy
 msgid "Previous Formula"
-msgstr "Resultado anterior"
+msgstr "Fórmula Anterior"
 
 #. TRANSLATORS: Shortcut action to move to the next formula
 #, fuzzy
 msgid "Next Formula"
-msgstr "Próximo resultado"
+msgstr "Próxima Fórmula"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
