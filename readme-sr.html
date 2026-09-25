@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Paperback - verzija 0.9.2</title>
+  <title>Paperback - verzija 1.0</title>
   <style>
     html {
       color: #1a1a1a;
@@ -205,7 +205,7 @@
 </ul>
 </nav>
 <header id="title-block-header">
-<h1 class="title">Paperback - verzija 0.9.2</h1>
+<h1 class="title">Paperback - verzija 1.0</h1>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -219,6 +219,8 @@ ekrana</a>
 <ul>
 <li><a href="#jaws-i-brajevi-redovi" id="toc-jaws-i-brajevi-redovi">JAWS
 i brajevi redovi</a></li>
+<li><a href="#jaws-i-paperbackove-poruke"
+id="toc-jaws-i-paperbackove-poruke">JAWS i Paperbackove poruke</a></li>
 </ul></li>
 <li><a href="#trenutno-podržane-vrste-datoteka"
 id="toc-trenutno-podržane-vrste-datoteka">Trenutno podržane vrste
@@ -237,6 +239,18 @@ alatima</a></li>
 id="toc-dodatni-tasteri-pri-prikazivanju-dokumenta">Dodatni tasteri pri
 prikazivanju dokumenta</a></li>
 </ul></li>
+<li><a href="#ios-i-android" id="toc-ios-i-android">iOS i Android</a>
+<ul>
+<li><a href="#otvaranje-dokumenata"
+id="toc-otvaranje-dokumenata">Otvaranje dokumenata</a></li>
+<li><a href="#čitanje-i-slušanje" id="toc-čitanje-i-slušanje">Čitanje i
+slušanje</a></li>
+<li><a href="#traka-čitanja" id="toc-traka-čitanja">Traka
+čitanja</a></li>
+<li><a href="#još-opcija" id="toc-još-opcija">Još opcija</a></li>
+<li><a href="#tastature-i-slušalice"
+id="toc-tastature-i-slušalice">Tastature i slušalice</a></li>
+</ul></li>
 <li><a href="#podržani-jezici" id="toc-podržani-jezici">Podržani
 jezici</a></li>
 <li><a href="#zahvalnost" id="toc-zahvalnost">Zahvalnost</a>
@@ -247,14 +261,21 @@ jezici</a></li>
 <li><a href="#dnevnik-promena" id="toc-dnevnik-promena">Dnevnik
 promena</a>
 <ul>
+<li><a href="#verzija-1.0" id="toc-verzija-1.0">Verzija 1.0</a>
+<ul>
+<li><a href="#dodato" id="toc-dodato">Dodato</a></li>
+<li><a href="#ispravljeno" id="toc-ispravljeno">Ispravljeno</a></li>
+<li><a href="#ios-i-android-1" id="toc-ios-i-android-1">iOS i
+Android</a></li>
+</ul></li>
 <li><a href="#verzija-0.9.2" id="toc-verzija-0.9.2">Verzija
 0.9.2</a></li>
 <li><a href="#verzija-0.9.1" id="toc-verzija-0.9.1">Verzija
 0.9.1</a></li>
 <li><a href="#verzija-0.9.0" id="toc-verzija-0.9.0">Verzija 0.9.0</a>
 <ul>
-<li><a href="#dodato" id="toc-dodato">Dodato</a></li>
-<li><a href="#ispravljeno" id="toc-ispravljeno">Ispravljeno</a></li>
+<li><a href="#dodato-1" id="toc-dodato-1">Dodato</a></li>
+<li><a href="#ispravljeno-1" id="toc-ispravljeno-1">Ispravljeno</a></li>
 </ul></li>
 <li><a href="#verzija-0.8.5" id="toc-verzija-0.8.5">Verzija
 0.8.5</a></li>
@@ -288,16 +309,14 @@ promena</a>
 </ul>
 </nav>
 <h1 id="uvod">Uvod</h1>
-<p>Paperback je lagan, brz i pristupačan čitač digitalnih knjiga i
-dokumenata za svakoga, od prosečnih čitalaca do naprednih korisnika.
-Dizajniran je kako bi bio pristupačan sa čitačima ekrana, brz i pružio
-iskustvo bez bespotrebnog zatrpavanja.</p>
+<p>Paperback je lagan, brz i pristupačan čitač digitalnih knjiga,
+dokumenata i zvučnih knjiga za svakoga, od prosečnih čitalaca do
+naprednih korisnika. Dizajniran je kako bi bio pristupačan sa čitačima
+ekrana, brz i pružio iskustvo bez bespotrebnog zatrpavanja.</p>
 <h1 id="sistemski-zahtevi">Sistemski zahtevi</h1>
 <p>Paperback trenutno radi na Windowsu 10 i 11 kao i svim modernim
-verzijama ARM macOS-a. Izvorne iOS i Android aplikacije su u aktivnom
-razvoju, javne verzije za testiranje su u planu ubrzo nakon 0.9.0
-desktop verzije, pre jedinstvene 1.0 verzije koja pokriva sve četiri
-platforme.</p>
+verzijama ARM macOS-a, Linuxa, iOS-a 17 i ili novijeg i Androida 7 ili
+novijeg. iOS i Android aplikacije su na App Storeu i Google Playu.</p>
 <h1 id="funkcije">Funkcije</h1>
 <ul>
 <li>U potpunosti je samostalan, i ne zahteva da nijedan program bude
@@ -317,11 +336,20 @@ istorija i podrška za regularne izraze.</li>
 <li>Može se u potpunosti pokrenuti kao prenosni program, ili se
 instalirati uz automatsko pridruživanje podržanih vrsta datoteka.</li>
 <li>Podržava ogromnu listu čestih formata datoteka.</li>
+<li>Reprodukuje zvučne knjige, uz promenljivu brzinu i knjižne oznake
+koje pamte tačno vreme.</li>
+<li>Čita skenirane PDF stranice uz optičko prepoznavanje ugrađeno u
+Windows i macOS.</li>
+<li>Knjižne oznake i napomene, kako biste mogli da označite vaše mesto i
+vratite se na njega.</li>
+<li>Svaka tasterska prečica se može promeniti.</li>
+<li>Dolazi uz <code>pb</code>, alatku komandne linije koja pretvara bilo
+koji podržan dokument u HTML, Markdown, ili običan tekst.</li>
 </ul>
 <h1 id="kompatibilnost-sa-čitačima-ekrana">Kompatibilnost sa čitačima
 ekrana</h1>
-<p>Paperback dobro radi sa svim značajnim čitačima ekrana. Postoji,
-međutim, jedan poznat problem za JAWS korisnike.</p>
+<p>Paperback dobro radi sa svim poznatim čitačima ekrana. Postoje,
+međutim, dva poznata problema za JAWS korisnike.</p>
 <h2 id="jaws-i-brajevi-redovi">JAWS i brajevi redovi</h2>
 <p>Ako koristite JAWS sa brajevim redom, možda ćete primetiti da su dugi
 pasusi odsečeni kada se krećete napred sa navigacionim tasterima na
@@ -330,31 +358,48 @@ pasusa. Ovo je greška u Jaws-ovom načinu obrade RICHEDIT50W tekstualne
 kontrole, a ne nešto u samom Paperbacku, a na ispravku ove greške se
 dugo čekalo ako se u obzir uzme entuzijazam kompanije Vispero za
 odgovaranje na greške u programima otvorenog koda.</p>
-<p>Način da se ova greška zaobiđ je konačno pronađen u JAWS grupi za
+<p>Način da se ova greška zaobiđe je konačno pronađen u JAWS grupi za
 Diskusiju nakon nekoliko meseci čekanja, a to je uređivanje
 <code>paperback.jcf</code> datoteke i podešavanje “Braille Presentation
 and Panning” na “Always use DOM if available”. Takođe treba omogućiti
 “Pan Text by Paragraph”, u suprotnom će vaš brajev red ostati na
 aktivnom pasusu umesto da se kreće napred. Uz oba podešavanja,
 navigacija bi trebala ispravno da radi.</p>
+<h2 id="jaws-i-paperbackove-poruke">JAWS i Paperbackove poruke</h2>
+<p>Paperback izgovara stvari poput “Nema stranica.” ili “Ovaj dokument
+nema zvuk.” kao obaveštenja pristupačnosti, što dozvoljava da ih čitač
+ekrana izgovori preko onoga što bi trebao da izgovori. JAWS reaguje na
+njih samo kada je “Enable accessible notification events” uključeno za
+aplikaciju, a na nekim računarima ovo nije slučaj.</p>
+<p>Ako JAWS ne izgovara ništa kada pritisnete taster koji bi trebao
+nešto da prijavi, otvorite Settings Center sa fokusiranim Paperbackom
+(<code>Insert+6</code>), pretražite “notification”, i označite “Enable
+accessible notification events”. Ovo će podešavanje upisati u
+<code>paperback.jcf</code>, kako bi se primenilo samo za Paperback.</p>
 <h1 id="trenutno-podržane-vrste-datoteka">Trenutno podržane vrste
 datoteka</h1>
 <p>Paperback podržava sledeće formate i ekstenzije:</p>
 <ul>
+<li>Arhive stripova (<code>.cbz</code>)</li>
 <li>CHM datoteke pomoći (<code>.chm</code>)</li>
 <li>DAISY knjige (<code>.opf</code>, <code>.zip</code>)</li>
 <li>EPUB knjige (<code>.epub</code>)</li>
 <li>FB2 digitalne knjige (<code>.fb2</code>)</li>
 <li>HTML dokumente (<code>.htm</code>, <code>.html</code>,
 <code>.xhtml</code>)</li>
+<li>Manual pages, i <code>man</code> i BSD <code>mdoc</code>
+(<code>.1</code> do <code>.9</code>, <code>.man</code>,
+<code>.roff</code>, i gzipovane oblike svakog)</li>
 <li>Markdown dokumente (<code>.md</code>, <code>.markdown</code>,
 <code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>,
 <code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>,
 <code>.ronn</code>)</li>
 <li>Microsoft Word dokumente (<code>.docx</code>, <code>.docm</code>,
 <code>.doc</code>)</li>
+<li>M4B zvučne knjige (<code>.m4b</code>)</li>
 <li>MOBI/Kindle knjige (<code>.mobi</code>, <code>.azw</code>,
 <code>.azw3</code>)</li>
+<li>MP3 zvučne knjige (<code>.mp3</code>)</li>
 <li>OpenDocument prezentacije (<code>.odp</code>,
 <code>.fodp</code>)</li>
 <li>OpenDocument tekstualne datoteke (<code>.odt</code>,
@@ -362,7 +407,11 @@ datoteka</h1>
 <li>PDF dokumente (<code>.pdf</code>)</li>
 <li>PowerPoint prezentacije (<code>.pptx</code>, <code>.pptm</code>,
 <code>.ppt</code>)</li>
+<li>reStructuredText dokumente (<code>.rst</code>,
+<code>.rest</code>)</li>
 <li>RTF dokumente (<code>.rtf</code>)</li>
+<li>Windows Write dokumente (<code>.wri</code>)</li>
+<li>WinHelp datoteke (<code>.hlp</code>)</li>
 <li>Datoteke običnog teksta ili dnevnike (<code>.txt</code>,
 <code>.log</code>)</li>
 </ul>
@@ -375,7 +424,7 @@ Alt+levo/desno zauzete za druge konvencije sistema ili ostalih
 aplikacija na ovoj platformi.</p>
 <h2 id="meni-datoteke">Meni datoteke</h2>
 <ul>
-<li><code>Ctrl+O</code>: otvori dokumnt.</li>
+<li><code>Ctrl+O</code>: otvori dokument.</li>
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): zatvori trenutni
 dokument.</li>
 <li><code>Ctrl+Šift+F4</code> (macOS: <code>Cmd+Šift+W</code>): zatvori
@@ -390,7 +439,7 @@ macOS-u ovo je u meniju aplikacije).</li>
 <h2 id="meni-kretanja">Meni kretanja</h2>
 <ul>
 <li><code>Ctrl+F</code>: prikaži dijalog pretrage.</li>
-<li><code>F3</code>(macOS: <code>Cmd+G</code>): pronađi sledeće.</li>
+<li><code>F3</code>(macOS: <code>Cmd+G</code>): pronađi naredno.</li>
 <li><code>Šift+F3</code> (macOS: <code>Cmd+Šift+G</code>): pronađi
 prethodno.</li>
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): pređi u red.</li>
@@ -398,7 +447,9 @@ prethodno.</li>
 procenat.</li>
 <li><code>Ctrl+P</code>: pređi na stranicu (kada trenutni dokument ovo
 podržava).</li>
-<li><code>=</code>: izgovori trenutni procenat čitanja.</li>
+<li><code>=</code>: izgovori trenutni procenat čitanja i stranicu, na
+primer “15%, stranica 30”. Stranica se ne izgovara u dokumentima koji
+nemaju brojeve stranica.</li>
 <li><code>Alt+Levo</code> (macOS: <code>Cmd+[</code>): vrati se nazad u
 istoriji navigacije.</li>
 <li><code>Alt+Desno</code> (macOS: <code>Cmd+]</code>): kreći se napred
@@ -432,13 +483,15 @@ poziciji.</li>
 <li><code>F</code>: naredna figura.</li>
 <li><code>Šift+T</code>: prethodna tabela.</li>
 <li><code>T</code>: naredna tabela.</li>
-<li><code>Šift+S</code>: prethodni separator.</li>
-<li><code>S</code>: naredni separator.</li>
+<li><code>Šift+M</code>: prethodna formula.</li>
+<li><code>M</code>: naredna formula.</li>
+<li><code>Šift+S</code>: prethodni razdvajač.</li>
+<li><code>S</code>: naredni razdvajač.</li>
 <li><code>Šift+L</code>: prethodna lista.</li>
 <li><code>L</code>: naredna lista.</li>
 <li><code>Šift+I</code>: prethodna stavka liste.</li>
 <li><code>I</code>: naredna stavka liste.</li>
-<li><code>Shift+,</code>: idi na početak trenutnog sadrživača (liste ili
+<li><code>Šift+,</code>: idi na početak trenutnog sadrživača (liste ili
 tabele).</li>
 <li><code>,</code>: prebaci se nakon kraja trenutnog sadrživača (liste
 ili tabele).</li>
@@ -464,18 +517,30 @@ poziciji trenutno izabranog teksta ili kursora.</li>
 <li><code>Ctrl+Šift+N</code>: dodaj ili izmeni napomenu knjižne oznake
 na poziciji trenutno izabranog teksta ili kursora.</li>
 <li><code>Ctrl+Alt+W</code>: uključi ili isključi prelamanje reči.</li>
-<li><code>Ctrl+razmak</code>: reprodukuj ili pauziraj zvučnu
-naraciju.</li>
+<li><code>Ctrl+razmak</code> (macOS: <code>FizičkiCtrl+Space</code>,
+taster CTRL, budući da Cmd+razmak otvara Spotlight): reprodukuj ili
+pauziraj zvučnu naraciju.</li>
 <li><code>'</code>: premotaj zvučnu naraciju napred.</li>
 <li><code>;</code>: premotaj zvučnu naraciju nazad.</li>
-<li><code>Ctrl+'</code>: povećaj količinu premotavanja zvuka.</li>
-<li><code>Ctrl+;</code>: smanji količinu premotavanja zvuka.</li>
+<li><code>Šift+'</code>: povećaj količinu premotavanja zvuka.</li>
+<li><code>Šift+;</code>: smanji količinu premotavanja zvuka.</li>
+<li><code>Ctrl+Šift+.</code>: ubrzaj zvučnu naraciju.</li>
+<li><code>Ctrl+Šift+,</code>: uspori zvučnu naraciju.</li>
 <li><code>F11</code> (macOS: <code>FizičkiCtrl+Ctrl+F</code>,
 CTRL+Command+F): uključi ili isključi režim celog ekrana.</li>
 <li><code>Ctrl+,</code>: otvori podešavanja (macOS: postavke, u meniju
 aplikacije).</li>
 <li><code>Ctrl+Šift+S</code>: uključi ili isključi tajmer pre
 spavanja.</li>
+<li><code>Ctrl+Šift+O</code>: prepoznaj opseg skeniranih PDF stranica uz
+optičko prepoznavanje znakova.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): označi početak
+izbora, kako bi se sve od početka do mesta na koje stanete kopiralo
+odjednom.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): kopiraj sve od
+označenog početka do trenutne pozicije.</li>
+<li><code>Alt+Šift+F9</code> (macOS: <code>Cmd+Šift+F9</code>): vrati se
+nazad na označen početak izbora, ostavljajući oznaku.</li>
 </ul>
 <h2 id="meni-pomoći">Meni pomoći</h2>
 <ul>
@@ -492,12 +557,123 @@ prikazivanju dokumenta</h2>
 <ul>
 <li><code>Delete</code> ili <code>numerički Delete</code> na kontroli
 kartica: zatvara izabranu karticu dokumenta.</li>
-<li><code>Enter</code> ili <code>razmak</code> u tekstu dokumenta:
-aktivira link na poziciji kursora, ili otvara prikaz tabele kada ste na
-markeru tabele.</li>
+<li><code>Enter</code> ili <code>razmak</code> u tekstu dokumenta: prati
+link ili otvara tabelu ili prikaz formule na poziciji kursora.</li>
 <li><code>Šift+F10</code> ili aplikacioni/taster za meni u tekstu
 dokumenta: otvara kontekstni meni.</li>
 </ul>
+<h1 id="ios-i-android">iOS i Android</h1>
+<p>iOS i Android aplikacije koriste isti obrađivač za čitanje kao i
+desktop, tako da otvaraju iste formate i pamte vaše mesto na isti način.
+Napravljene su tako da se koriste uz VoiceOver na iOS-u i TalkBack na
+Androidu.</p>
+<h2 id="otvaranje-dokumenata">Otvaranje dokumenata</h2>
+<ul>
+<li>Koristite dugme otvori knjigu, ili otvorite dokument iz aplikacije
+Datoteke ili neke druge aplikacije i izaberite Paperback.</li>
+<li>Na Androidu, možete umesto toga omogućiti ugrađeni istraživač
+datoteka u podešavanjima. Neophodna mu je dozvola za pristup svim
+datotekama, i odmah otvara velike datoteke umesto da ih prvo
+kopira.</li>
+<li>Dugim pritiskom na dugme otvori knjigu možete uvoziti ili izvoziti
+podatke dokumenta (<code>.paperback</code>), iste datoteke koje koristi
+desktop aplikacija.</li>
+</ul>
+<h2 id="čitanje-i-slušanje">Čitanje i slušanje</h2>
+<p>Obe aplikacije imaju dva načina za čitanje dokumenta. U tekstualnom
+režimu, čitate tekst vašim čitačem ekrana. U režimu čitanja na glas,
+Paperback vam čita tekst korišćenjem glasa kojeg izaberete u
+podešavanjima, i nastavlja čitanje u pozadini kao i sa zaključanog
+ekrana. Prebacujte se između režima iz menija više opcija.</p>
+<p>Zvučne knjige, kao što su DAISY, M4B i MP3 knjige umesto ovoga
+reprodukuju svoje snimke.</p>
+<h2 id="traka-čitanja">Traka čitanja</h2>
+<p>Traka na dnu ekrana sadrži, s leva na desno:</p>
+<ul>
+<li>Jedinicu navigacije, kao što je pasus, naslov, stranica, ili link.
+Prevucite gore ili dole na njoj da je promenite.</li>
+<li>Tasteri za prethodno, reprodukciju, ili naredno. Prethodno i naredno
+se kreću po jedinici navigacije.</li>
+<li>Brzina govora. Prevucite gore ili dole na njoj kako biste promenili
+koliko brzo Paperback čita.</li>
+</ul>
+<p>Možete takođe da prevlačite gore ili dole na tasteru za reprodukciju
+kako biste se kretali po jedinici navigacije, bez potrebe da tražite
+tastere prethodno i naredno. Ako je ovo sve što koristite, podešavanje
+za skrivanje tastera prethodno i naredno ih sklanja sa puta vašeg čitača
+ekrana. Podešavanje pomeranja prevlačenjem gore određuje na koji način
+se prevlačenje kreće.</p>
+<h2 id="još-opcija">Još opcija</h2>
+<p>Meni još opcija je gde se sve ostalo nalazi. Neke stavke se blago
+razlikuju u jednoj od aplikacija.</p>
+<ul>
+<li><strong>Pređi u režim čitanja na glas ili tekstualni režim:</strong>
+prebacuje se između režima čitanja na glas i tekstualnog režima,
+opisanih iznad. U tekstualnom režimu, stavka čitanja na glas pokreće i
+zaustavlja čitanje na glas bez napuštanja tekstualnog režima.</li>
+<li><strong>Sadržaj:</strong> poglavlja knjige, otvaraju se na poglavlju
+koje čitate. Izaberite neko kako biste odmah prešli na njega. Stavke
+koje imaju podnaslove se mogu proširiti i skupiti radnjama čitača
+ekrana.</li>
+<li><strong>Elementi:</strong> lista naslova ili linkova dokumenta.
+Prebacujte se između vrste biračom vrste na iOS-u, ili karticama na
+Androidu, a zatim izaberite element kako biste se prebacili na
+njega.</li>
+<li><strong>Pretraga:</strong> upišite tekst pretrage, ili izaberite
+raniju pretragu iz istorije pretrage, i izaberite da li želite da
+pretraga bude osetljiva na veličinu slova, obuhvata samo cele reči, ili
+koristi regularni izraz. Tasteri za pronalazak narednog ili prethodnog
+termina se premeštaju na rezultat i izgovaraju gde ste se prebacili, a
+pretraga ostaje otvorena kako biste mogli da nastavite. U režimu čitanja
+na glas, pretraga se takođe prikazuje kao jedinica navigacije na traci
+čitanja, kako biste takođe mogli da se krećete kroz rezultate na ovaj
+način.</li>
+<li><strong>Pređi na:</strong> pređi u red, na stranicu, ili na procenat
+dokumenta. Izaberite koji od ovih načina želite biračom režima.</li>
+<li><strong>Nedavni dokumenti:</strong> svaki dokument koji ste
+otvorili, označeni kao trenutno otvoren, zatvoren, ili datoteka
+nedostaje. Svaki od njih ima dve radnje čitača ekrana: uklanjanje ga
+briše iz liste, a pronalazak vam dozvoljava da pronađete dokument čija
+datoteka je premeštena. Čišćenje nedavnih dokumenata prazni listu bez
+brisanja bilo kog dokumenta.</li>
+<li><strong>Broj reči:</strong> broj reči u dokumentu.</li>
+<li><strong>Informacije o dokumentu:</strong> naslov, autor, ime
+datoteke i na iOS-u brojevi znakova i redova.</li>
+<li><strong>Izvoz:</strong> čuva dokument kao običan tekst, HTML, ili
+Markdown.</li>
+<li><strong>Tajmer pre spavanja:</strong> prekida čitanje nakon 5, 10,
+15, 30, 45, ili 60 minuta, ili nakon vremena koje izaberete. Ponovo ga
+otvorite dok je pokrenut kako biste videli koliko dugo je preostalo, ili
+ga otkazali.</li>
+<li><strong>Pomoć:</strong> otvara ovo uputstvo.</li>
+<li><strong>Podešavanja:</strong>
+<ul>
+<li><strong>Tekst u govor:</strong> glas, brzina govora i visina, dugme
+za reprodukciju primera kako biste ih čuli, i pauza između pasusa.
+Android takođe dozvoljava da izaberete sintetizator govora. Na iOS-u,
+ovo je takođe gde se nalazi govorni rečnik: pravila koja menjaju kako se
+reči izgovaraju, za svaki glas ili samo za određene.</li>
+<li><strong>Čitljivost:</strong> veličina teksta, odvajanje redova,
+odvajanje pasusa, poravnanje, i tekst visokog kontrasta. iOS takođe ima
+svetli i tamni izgled.</li>
+<li><strong>Ponašanje:</strong> da li dokumente treba ponovo otvoriti
+kada se aplikacija pokrene, na koji način se prevlačenje na tasteru za
+reprodukciju krećei da li će tasteri za prethodno i naredno biti
+skriveni. Android takođe ovde sadrži ugrađeni istraživač datoteka.</li>
+</ul></li>
+</ul>
+<h2 id="tastature-i-slušalice">Tastature i slušalice</h2>
+<p>Uz tastaturu, desktop prečice za otvaranje knjiga, nedavnih
+dokumenata, pretrage, prelazak na, sadržaj, broj reči, informacije o
+dokumentu, izvoz i tajmer pre spavanja rade, korišćenjem tastera
+<code>Cmd</code> umesto <code>Ctrl</code> na iOS-u. Slova brze
+navigacije takođe rade za kretanje po naslovima, stranicama, linkovima,
+i ostalo, a <code>razmak</code> reprodukuje i pauzira. Na iOS-u, slova
+dolaze do Paperbacka samo dok je VoiceOverova brza navigacija jednim
+slovom isključena.</p>
+<p>Na Androidu, taster na slušalicama reprodukuje i pauzira jednim
+pritiskom, kreće se napred ako se pritisne dva puta i vraća se nazad ako
+se pritisne tri puta.</p>
 <h1 id="podržani-jezici">Podržani jezici</h1>
 <p>Paperback je preveden na puno različitih jezika, a novi se stalno
 dodaju. Potpuna lista je ispod.</p>
@@ -513,6 +689,7 @@ href="translating.md">vodič za prevođenje na engleskom</a>.</p>
 <li>portugalski (Brazil)</li>
 <li>ruski</li>
 <li>srpski</li>
+<li>ukrajinski</li>
 <li>finski</li>
 <li>francuski</li>
 <li>holandski</li>
@@ -552,6 +729,242 @@ dodavanje u ovu listu.</p>
 <li>Tyler Rodick</li>
 </ul>
 <h1 id="dnevnik-promena">Dnevnik promena</h1>
+<h2 id="verzija-1.0">Verzija 1.0</h2>
+<p>1.0 je prva verzija na svih pet platformi: Windows, macOS, Linux, iOS
+i Android, uz iOS i Android aplikacije na App Storeu i Google Playu.</p>
+<h3 id="dodato">Dodato</h3>
+<h4 id="opšte">Opšte</h4>
+<ul>
+<li>Linux podrška, kao AppImage ili tar.gz, uz desktop integraciju kako
+bi se dokumenti otvarali iz vašeg upravljača datoteka.</li>
+<li>Označite početak izbora prečicom <code>Alt+F9</code>, kopirajte sve
+od početka do mesta na koje stignete prečicom <code>Alt+F10</code>, a
+vratite se nazad na oznaku prečicom <code>Alt+Šift+F9</code>, kako biste
+kopirali dužu količinu teksta bez potrebe da držite Šift i strelice kroz
+ceo deo. Sve tri opcije su dostupne iz Alati &gt; Izaberi i
+kopiraj.</li>
+<li>Prečica <code>=</code> sada izgovara stranicu pored procenta, na
+primer “15%, stranica 30”, a ostaje onakva kakva je bila za dokumente
+bez brojeva stranica.</li>
+<li>Dijalog o programu sada prikazuje Paperback licencu kao i svakog
+prevodioca.</li>
+<li>Ukrajinski prevod.</li>
+</ul>
+<h4 id="novi-formati">Novi formati</h4>
+<ul>
+<li>Arhive stripova (<code>.cbz</code>).</li>
+<li>M4B zvučne knjige, odvojene po njihovim poglavljima.</li>
+<li>Manual pages, i <code>man</code> i BSD <code>mdoc</code>, gzipovane
+ili ne.</li>
+<li>MP3 zvučne knjige, odvojene po poglavljima kada ih datoteka
+ima.</li>
+<li>reStructuredText dokumente.</li>
+<li>Windows Write (<code>.wri</code>) datoteke.</li>
+<li>WinHelp (<code>.hlp</code>) datoteke.</li>
+<li>Word 6 and Word 95 dokumenti.</li>
+</ul>
+<h4 id="optičko-prepoznavanje-znakova">Optičko prepoznavanje
+znakova</h4>
+<ul>
+<li>Skenirane PDF stranice se sada mogu prepoznati uz optičko
+prepoznavanje znakova ugrađeno u Windows i macOS. Pritisnite
+<code>Enter</code> na skeniranoj stranici da biste je prepoznali, ili
+koristite grupno optičko prepoznavanje znakova
+(<code>Ctrl+Šift+O</code>) za opseg stranica.</li>
+</ul>
+<h4 id="navigacija">Navigacija</h4>
+<ul>
+<li>MathML formule u EPUB-u i HTML-u se obrađuju kao AsciiMath
+korišćenjem MathCAT-a. Koristite <code>M</code> ili <code>Šift+M</code>
+da se krećete po formulama, a zatim <code>Enter</code> ili
+<code>Razmak</code> da otvorite originalni MathML u prikazu
+formule.</li>
+<li>Dugme pretraži sve u dijalogu pretrage, koje prikazuje svaki red sa
+terminom pretrage kako biste mogli da skočite pravo u onaj koji
+želite.</li>
+<li>Prikazi tabela, lista i stranica u listi elemenata
+(<code>F7</code>).</li>
+<li>Pređi u red, pređi na stranicu i pređi na procenat sada prihvataju
+<code>+n</code> i <code>-n</code> kako biste se pomerali u odnosu na
+vašu trenutnu poziciju.</li>
+<li>EPUB, MOBI i CHM knjige koje nemaju svoje naslove sada dobijaju
+navigaciju po naslovima prema njihovom sadržaju.</li>
+<li>KF8 (AZW3) knjige sada podržavaju kretanje po odeljcima.</li>
+<li>EPUB stranice koje su samo slike sada prikazuju red za sliku, kako
+biste mogli da stanete na njih umesto da se preskaču.</li>
+</ul>
+<h4 id="zvučne-knjige">Zvučne knjige</h4>
+<ul>
+<li>Kontrole brzine reprodukcije, od ubrzanja za pola do tri puta brže.
+Koristite <code>Ctrl+Šift+.</code> i <code>Ctrl+Šift+,</code>, ili meni
+alata.</li>
+<li>Knjižne oznake i napomene u knjigama koje sadrže samo zvuk sada
+pamte tačno vreme na kom ste ih dodali.</li>
+<li>Naredna i prethodna pozicija (<code>Alt+Levo</code> i
+<code>Alt+Desno</code>) sada rade u zvučnim knjigama.</li>
+<li>Napredak kroz zvučnu knjigu se sada meri po njenom snimku, tako da
+će kretanje na procenat i statusna traka ispravno prikazati koliko ste
+daleko zapravo stigli.</li>
+</ul>
+<h4 id="nedavni-dokumenti">Nedavni dokumenti</h4>
+<ul>
+<li>Stavka za čišćenje nedavnih dokumenata u podmeniju nedavnih
+dokumenata.</li>
+</ul>
+<h4 id="pdf-dokumenti">PDF dokumenti</h4>
+<ul>
+<li>Podešavanje koje će odvojiti svaki red PDF datoteke, umesto da ih
+spoji u pasuse.</li>
+<li>Slike i figure u PDF datotekama se sada izgovaraju.</li>
+<li>PDF datoteke koje sadrže slike u strukturi ali ne označavaju nijednu
+sada izgovaraju ove slike, umesto da ih u potpunosti izostave iz
+knjige.</li>
+</ul>
+<h4 id="web-prikaz">Web prikaz</h4>
+<ul>
+<li>Bilo koji dokument se sada može otvoriti u web prikazu, a ne samo
+EPUB, HTML i Markdown.</li>
+</ul>
+<h4 id="čitljivost">Čitljivost</h4>
+<ul>
+<li>Naslovi su sada prikazani u veličini koja se podudara sa njihovim
+nivoom, a slike i tabele se odvajaju od teksta oko njih.</li>
+</ul>
+<h4 id="pb">pb</h4>
+<ul>
+<li><code>pb --list-formats</code> prikazuje svaki format koji pb može
+da pročita.</li>
+<li>pb sada govori koju datoteku ne može da pročita, i zašto.</li>
+</ul>
+<h3 id="ispravljeno">Ispravljeno</h3>
+<h4 id="opšte-1">Opšte</h4>
+<ul>
+<li>Knjiga koja se ponovo otvori pri pokretanju se sada odmah čita,
+umesto da bude utišana dok se ne zatvori i ponovo otvori.</li>
+<li>Dokument čija datoteka nedostaje se sada može ukloniti iz svih
+dokumenata, umesto da ostane u listi bez obzira na to koliko god puta
+ste potvrdili.</li>
+<li>Ispravljeno rušenje kada se zatvori Paperback.</li>
+<li>Zatvaranje Paperbacka sada odmah krije prozor, umesto da ostane na
+ekranu dok čuva.</li>
+<li>Velike knjige sa malo formatiranja u njima se sada otvaraju gotovo
+upola brže.</li>
+<li>Čitač ekrana više ne prekida poruke koje su došle nakon izbora iz
+menija, kao što je “Ovaj dokument nema zvuk” pre nego što ih
+čujete.</li>
+<li>Otvaranje dokumenta više ne ostavlja ponovno otvaranje poslednjeg
+zatvorenog dokumenta omogućenim kada nema ničega za ponovno
+otvaranje.</li>
+<li>Paperback više ne pokušava da ponovo pronađe dokumente u vašoj listi
+nedavnih dokumenata koji nedostaju, i ograničava koliko nedavnih
+dokumenata čuva.</li>
+<li>Stara INI datoteka sa podešavanjima se sada briše nakon što se
+prebaci na novi format.</li>
+<li>Naslovi dijaloga za font i boju, kao i meni izvoza su sada prevedeni
+na vijetnamskom.</li>
+<li>Ažuriranje će sada vratiti ponovo pokrenut prozor u fokus, umesto da
+ga ostavi iza svakog drugog prozora u Alt+Tab listi.</li>
+<li>Prelamanje reči se sada odmah primenjuje u velikim dokumentima,
+umesto da se ceo dokument ponovo učita.</li>
+</ul>
+<h4 id="navigacija-1">Navigacija</h4>
+<ul>
+<li><code>Alt+Levo</code> se sada vraća na mesto sa kog ste se
+premestili, umesto na stariju poziciju.</li>
+<li>Zvukovi za knjižne oznake se sada reprodukuju samo kada se krećete
+kroz knjižnu oznaku, a ne kada stanete u red u kom se ona nalazi.</li>
+<li>Zatvaranje sadržaja, liste elemenata i dijaloga za kretanje vas sada
+odmah prebacuje u red u koji ste došli, umesto da vas tera da čekate da
+čitač ekrana ponovo pročita prozor.</li>
+<li>Kretanje u red, kretanje na stranicu i kretanje na procenat sada
+odbijaju brojeve van dokumenta umesto da se tiho kreću negde drugo.</li>
+<li>NVDA više ne prekida izgovor kada dokument nema stranice.</li>
+<li>Pritiskanje tastera u redu u sadržaju bez kretanja se sada kreće na
+stavku koja je već izabrana.</li>
+<li>Sadržaj, lista elemenata i lista knjižnih oznaka više ne usporavaju
+ili se zamrzavaju u knjigama sa hiljadama stavki.</li>
+<li>Strelice gore i dole sada pamte svoju kolonu po dokumentu, umesto da
+ih prenesu kada promenite karticu.</li>
+</ul>
+<h4 id="zvučne-knjige-1">Zvučne knjige</h4>
+<ul>
+<li>Reprodukcija zvuka sada koristi <code>Control+Razmak</code> na
+macOS-u, budući da <code>Command+Razmak</code> pripada Spotlightu.</li>
+</ul>
+<h4 id="pdf-dokumenti-1">PDF dokumenti</h4>
+<ul>
+<li>Ispravljene PDF datoteke izvezene iz aplikacije Apple Pages koje su
+se čitale kao običan tekst, bez bilo kojih naslova ili lista sa kojima
+su napisane.</li>
+<li>Ispravljeni PDF pasusi i naslovi koji su se razdvajali u svakom
+redu, kao i reči koje su se razdvajale u sredini na razmacima.</li>
+<li>Ispravljeni brojčani PDF naslovi koji su se spajali u jedan
+naslov.</li>
+<li>Ispravljene PDF datoteke čije stablo strukture nema tekst koje su se
+otvarale kao prazne.</li>
+<li>Redovi koji su označeni kao mono odvojen font, kao što je kod se
+više ne spajaju u pasuse.</li>
+<li>Podnožja i zaglavlja stranica se više ne čitaju na svakoj stranici
+neoznačenih PDF datoteka.</li>
+<li>PDF datoteke koje označe zaglavlja i podnožja stranica kao običan
+tekst više ne ponavljaju naslov i broj stranice između dva pasusa na
+svakoj stranici.</li>
+<li>PDF datoteke sada prikazuju svoj pravi naslov, umesto imena
+datoteke.</li>
+</ul>
+<h4 id="mobiazw3-knjige">MOBI/AZW3 knjige</h4>
+<ul>
+<li>Velike MOBI knjige više ne troše svu memoriju, i više se neće odseći
+nakon 20 MB.</li>
+<li>MOBI i AZW3 knjige se sada otvaraju mnogo brže.</li>
+<li>Ispravljene MOBI knjige koje su gubile svoje liste poglavlja.</li>
+<li>Ispravljen iskrivljen tekst kada MOBI knjige prelaze sa jednog
+zapisa na drugi.</li>
+</ul>
+<h4 id="web-prikaz-1">Web prikaz</h4>
+<ul>
+<li>Web prikaz više ne učitava celu ogromnu knjigu odjednom.</li>
+<li>Web prikaz sada prikazuje ceo dokument kada ih čitač prikazuje u
+celini, umesto samo njihov deo.</li>
+</ul>
+<h4 id="drugi-formati">Drugi formati</h4>
+<ul>
+<li>FictionBook (.fb2) knjige koje su napisane u windows-1251, što je
+slučaj za većinu njih se sada otvaraju umesto da njihovo čitanje uopšte
+ne uspe.</li>
+<li>FictionBook knjige koje koriste imenski prostor ili HTML entitet
+koji nikada nisu naglasili se sada otvaraju, umesto da se odbiju kao
+neispravne.</li>
+<li>Knjige u zastarelim kodiranjima se sada otvaraju mnogo brže.</li>
+<li>Ispravljene neke kineske tekstualne datoteke koje su se otvarale sa
+neispravnim tekstom.</li>
+<li>OpenDocument datoteke koje su zaštićene lozinkom sada traže lozinku,
+umesto da se prijave kao neispravne.</li>
+<li>Zastarele PowerPoint datoteke koje su zaštićene lozinkom se sada
+otvaraju, a zastareli PowerPoint slajdovi više ne gube svoj tekst.</li>
+<li>Datoteke običnog teksta koje su sačuvane uz <code>.rtf</code>
+ekstenziju se sada otvaraju kao tekst, umesto da otvaranje bude
+neuspešno uz grešku.</li>
+<li>RTF kontrolne reči se više ne prikazuju kao tekst.</li>
+</ul>
+<h3 id="ios-i-android-1">iOS i Android</h3>
+<p>iOS i Android aplikacije otvaraju svaki format koji desktop
+aplikacije otvaraju, i sadrže:</p>
+<ul>
+<li>Čitanje na glas, uz vaš izbor glasa, brzinu i visinu, kontrolu za
+brzinu govora dostupno na samoj traci čitanja, kao i opcionu pauzu
+između pasusa.</li>
+<li>Reprodukciju DAISY, M4B i MP3 zvučnih knjiga, koje nastavlja u
+pozadini i sa zaključanog ekrana.</li>
+<li>Kretanje po naslovima, stranicama, linkovima, tabelama, listama i
+više iz trake čitanja, uz sadržaj i pretragu.</li>
+<li>Tajmer pre spavanja, broj reči i izvoz dokumenta, kao i govorni
+rečnik na iOS-u. Na iOS-u, izvoz se vrši kroz prozor za deljenje, tako
+da knjiga može da se prebaci u neku drugu aplikaciju ili u Datoteke, u
+nekom drugom formatu ili tačno onakva kakva jeste.</li>
+<li>Opcije za veličinu teksta, odvajanje i tekst visokog kontrasta.</li>
+<li>Tasterske prečice koje se podudaraju sa desktop prečicama.</li>
+</ul>
 <h2 id="verzija-0.9.2">Verzija 0.9.2</h2>
 <ul>
 <li>Zvučne knjige više ne izazivaju da vaš čitač ekrana čita niz razmaka
@@ -620,8 +1033,8 @@ Alt+Tab.</li>
 <li>Dijalog za ažuriranje je sada preveden.</li>
 </ul>
 <h2 id="verzija-0.9.0">Verzija 0.9.0</h2>
-<h3 id="dodato">Dodato</h3>
-<h4 id="opšte">Opšte</h4>
+<h3 id="dodato-1">Dodato</h3>
+<h4 id="opšte-2">Opšte</h4>
 <ul>
 <li>Alat komandne linije, pb, koji brzo pretvara bilo koji format koji
 Paperback podržava u HTML, Markdown ili običan tekst.</li>
@@ -668,7 +1081,7 @@ dokumenata.</li>
 <li>Podešavanje koje određuje kako će se prikazivati tabele, a
 prikazivanje tabela je sada jedinstveno u svim dokumentima.</li>
 </ul>
-<h4 id="navigacija">Navigacija</h4>
+<h4 id="navigacija-2">Navigacija</h4>
 <ul>
 <li>Podrška za kretanje po sadrživačima.</li>
 <li>Opcija za automatsko pomeranje kursora na početak reda kada se
@@ -710,7 +1123,7 @@ običan tekst.</li>
 <li>Ažuriranje će sada proveriti da li preuzeta datoteka nije
 neočekivano izmenjena.</li>
 </ul>
-<h4 id="web-prikaz">Web prikaz</h4>
+<h4 id="web-prikaz-2">Web prikaz</h4>
 <ul>
 <li>Web prikaz se sada otvara na vašoj trenutnoj poziciji čitanja.</li>
 </ul>
@@ -719,7 +1132,7 @@ neočekivano izmenjena.</li>
 <li>Podrška za DAISY 2.0 knjige.</li>
 <li>Podrška Za reprodukciju DAISY 2.02 zvuka.</li>
 </ul>
-<h4 id="zvučne-knjige">Zvučne knjige</h4>
+<h4 id="zvučne-knjige-2">Zvučne knjige</h4>
 <ul>
 <li>Mogućnost reprodukcije zvučnih knjiga, trenutno podržava i DAISY
 zvuk (uključjući DAISY zvuk + tekst) i zipove zvučnih datoteka.</li>
@@ -738,8 +1151,8 @@ kraja poglavlja nastaviti na sledeće poglavlje.</li>
 <ul>
 <li>PowerPoint dokumenti sada podržavaju tabele.</li>
 </ul>
-<h3 id="ispravljeno">Ispravljeno</h3>
-<h4 id="opšte-1">Opšte</h4>
+<h3 id="ispravljeno-1">Ispravljeno</h3>
+<h4 id="opšte-3">Opšte</h4>
 <ul>
 <li>Dokumenti kodirani u zastarelim CJK kodiranjima, kao što su GBK,
 Big5 i Shift_JIS će se sada ispravno obraditi umesto kao gomila
@@ -782,7 +1195,7 @@ se otvori prečicom Šift+F1.</li>
 zatvara njihovu aktivnu karticu.</li>
 <li>Vaš filter pretrage se sada čuva nakon što se dokument ukloni.</li>
 </ul>
-<h4 id="navigacija-1">Navigacija</h4>
+<h4 id="navigacija-3">Navigacija</h4>
 <ul>
 <li>Navigacija po stranicama je izgovarala neispravan tekst reda u nekim
 situacijama.</li>
@@ -796,11 +1209,11 @@ učitanog dokumenta u većim dokumentima.</li>
 <li>Zvukovi knjižnih oznaka i napomena bi sada ispravno trebali da se
 reprodukuju samo kada se krećete po rečima koje ih sadrže.</li>
 </ul>
-<h4 id="čitljivost">Čitljivost</h4>
+<h4 id="čitljivost-1">Čitljivost</h4>
 <ul>
 <li>Primena prelamanja reči vas je vraćala na početak dokumenta.</li>
 </ul>
-<h4 id="web-prikaz-1">Web prikaz</h4>
+<h4 id="web-prikaz-3">Web prikaz</h4>
 <ul>
 <li>Veličina dijaloga Web prikaza nije bila promenljiva, a on se takođe
 otvarao u veoma maloj veličini.</li>
@@ -825,7 +1238,7 @@ latinični.</li>
 <li>RTF <code>\pict</code> grupe kao umetnuti podaci slika se više ne
 prikazuju kao tekst dokumenta.</li>
 </ul>
-<h4 id="mobiazw3-knjige">Mobi/AZW3 knjige</h4>
+<h4 id="mobiazw3-knjige-1">Mobi/AZW3 knjige</h4>
 <ul>
 <li>filepos veznici u Mobi knjigama su razdvajali HTML tagove i
 ostavljali smeće u tekstu knjige.</li>
@@ -842,7 +1255,7 @@ ispravno obrađivali naslove.</li>
 <li>dl, dt i dd elementi nisu dodavali nove redove u XHTML
 dokumentima.</li>
 </ul>
-<h4 id="pdf-dokumenti">PDF dokumenti</h4>
+<h4 id="pdf-dokumenti-2">PDF dokumenti</h4>
 <ul>
 <li>Paperback se vraća na izvlačenje običnog teksta za PDF datoteke sa
 pogrešnim tagovima.</li>
