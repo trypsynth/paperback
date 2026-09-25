@@ -2,12 +2,12 @@
 layout: default.liquid
 title: Home
 permalink: /
-description: Paperback is a fast, fully accessible ebook and document reader for Windows, macOS, Linux, iOS and Android. Free, open source, and no telemetry.
+description: Paperback is a fast, fully accessible ebook and document reader for Windows, macOS, Linux, iOS and Android. Open source, and it collects nothing.
 ---
 
 <div class="hero">
 <h1>Read anything, on anything</h1>
-<p class="lede">Paperback is a fast, fully accessible reader for ebooks, documents and audio books. It runs on Windows, macOS, Linux, iOS and Android, speaks fifteen languages, and opens over twenty formats. Free, open source, and it collects nothing.</p>
+<p class="lede">Paperback is a fast, fully accessible reader for ebooks, documents and audio books. It opens over twenty formats and speaks fifteen languages. Windows, macOS and Linux are free downloads. The iOS and Android apps are paid, and the source is MIT licensed if you would rather build them yourself.</p>
 <ul class="cta">
 <li><a href="/downloads">Download Paperback</a></li>
 <li><a href="/readme.html">Read the manual</a></li>
@@ -18,12 +18,12 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 
 <div class="cards">
 <div class="card">
-<h3>Built for screen readers</h3>
-<p>Not retrofitted. Every list, dialog and reading control was designed against NVDA, JAWS, VoiceOver and TalkBack, and the whole program works from the keyboard.</p>
+<h3>Screen readers come first</h3>
+<p>Not retrofitted. Every dialog and reading control was built against NVDA, JAWS, VoiceOver and TalkBack, and nothing in the program needs a mouse.</p>
 </div>
 <div class="card">
 <h3>Fast on old hardware</h3>
-<p>Books open in a moment, even the large ones. There is no web view, no framework and no splash screen to sit through.</p>
+<p>Books open in a moment, even the large ones. Nothing is rendered in a browser engine unless you ask for it, with <code>Ctrl+Shift+V</code>.</p>
 </div>
 <div class="card">
 <h3>Navigate like a browser</h3>
@@ -31,25 +31,27 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 </div>
 <div class="card">
 <h3>Read aloud</h3>
-<p>Your own voice, rate and pitch, a sleep timer, and bookmarks that come back to the exact place. Audio books play their own recording instead.</p>
+<p>Your own voice, at the rate and pitch you set, with a sleep timer and bookmarks that come back to the exact second. Audio books play their own recording instead.</p>
 </div>
 <div class="card">
 <h3>Private by default</h3>
-<p>No account, no analytics, no advertising. Your library, your place in it and your bookmarks stay on your device.</p>
+<p>No account and no analytics. Your library and your place in it stay on your device.</p>
 </div>
 <div class="card">
 <h3>Yours to change</h3>
-<p>MIT licensed, with the source, the issue tracker and the translations all in the open.</p>
+<p>MIT licensed. The source and the translations are in the open, and you can build it yourself.</p>
 </div>
 </div>
 
 ## Platforms
 
-- **Windows** &ndash; installer and portable builds, for x64 and ARM64. Windows 10 and later.
-- **macOS** &ndash; signed and notarized, so it opens with no security warnings.
-- **Linux** &ndash; AppImage or tar.gz, for x64 and ARM64, with desktop integration so documents open from your file manager.
-- **iOS** &ndash; on the App Store, for iPhone and iPad, iOS 17 and later.
-- **Android** &ndash; on Google Play, Android 7 and later, with read-aloud that keeps playing in the background.
+- **Windows** &ndash; free. Installer and portable builds, for x64 and ARM64. Windows 10 and later.
+- **macOS** &ndash; free. Signed and notarized, so it opens with no security warnings.
+- **Linux** &ndash; free. AppImage or tar.gz, for x64 and ARM64, with desktop integration so documents open from your file manager.
+- **iOS** &ndash; paid, on the App Store, for iPhone and iPad running iOS 17 or later.
+- **Android** &ndash; paid, on Google Play, Android 7 and later, with read-aloud that keeps playing in the background.
+
+Buying the phone apps is what pays for the work. If you would rather not, the source is public and builds for both.
 
 ## Formats
 
