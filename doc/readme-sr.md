@@ -77,8 +77,8 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 
 * `Ctrl+O`: otvori dokument.
 * `Ctrl+F4` (macOS: `Cmd+W`): zatvori trenutni dokument.
-* `Ctrl+Šift+F4` (macOS: `Cmd+Šift+W`): zatvori sve otvorene dokumente.
-* `Ctrl+Šift+T`: ponovo otvori poslednji zatvoren dokument.
+* `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): zatvori sve otvorene dokumente.
+* `Ctrl+Shift+T`: ponovo otvori poslednji zatvoren dokument.
 * `Ctrl+R`: prikaži dijalog sa svim dokumentima (iz nedavnih dokumenata).
 * `Ctrl+Q`: Izlaz iz aplikacije (Samo na Windowsu; na macOS-u ovo je u meniju aplikacije).
 
@@ -86,48 +86,48 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 
 * `Ctrl+F`: prikaži dijalog pretrage.
 * `F3`(macOS: `Cmd+G`): pronađi naredno.
-* `Šift+F3` (macOS: `Cmd+Šift+G`): pronađi prethodno.
+* `Shift+F3` (macOS: `Cmd+Shift+G`): pronađi prethodno.
 * `Ctrl+G` (macOS: `Cmd+L`): pređi u red.
-* `Ctrl+Šift+G` (macOS: `Cmd+Šift+L`): pređi na procenat.
+* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): pređi na procenat.
 * `Ctrl+P`: pređi na stranicu (kada trenutni dokument ovo podržava).
 * `=`: izgovori trenutni procenat čitanja i stranicu, na primer "15%, stranica 30". Stranica se ne izgovara u dokumentima koji nemaju brojeve stranica.
 * `Alt+Levo` (macOS: `Cmd+[`): vrati se nazad u istoriji navigacije.
 * `Alt+Desno` (macOS: `Cmd+]`): kreći se napred u istoriji navigacije.
 * `[`: prethodni odeljak.
 * `]`: naredni odeljak.
-* `Šift+H`: prethodni naslov.
+* `Shift+H`: prethodni naslov.
 * `H`: naredni naslov.
-* `Šift+1` do `Šift+6`: prethodni naslov na nivou 1-6.
+* `Shift+1` do `Shift+6`: prethodni naslov na nivou 1-6.
 * `1` do `6`: naredni naslov na nivou 1-6.
-* `Šift+P`: prethodna stranica.
+* `Shift+P`: prethodna stranica.
 * `P`: naredna stranica.
-* `Šift+B`: prethodna knjižna oznaka.
+* `Shift+B`: prethodna knjižna oznaka.
 * `B`: naredna knjižna oznaka.
 * `/`: postavi  privremenu knjižnu oznaku.
 * `\`: skoči na privremenu knjižnu oznaku.
-* `Šift+N`: prethodna napomena.
+* `Shift+N`: prethodna napomena.
 * `N`: naredna napomena.
 * `Ctrl+B`: skoči na sve knjižne oznake i napomene.
 * `Ctrl+Alt+B`: skoči samo na knjižne oznake.
 * `Ctrl+Alt+M`: skoči samo na napomene.
-* `Ctrl+Šift+W` (macOS: `FizičkiCtrl+Šift+W`, kontrol taster, a ne CMD): prikaži tekst napomene na trenutnoj poziciji.
-* `Šift+K`: prethodni link.
+* `Ctrl+Shift+W` (macOS: `FizičkiCtrl+Shift+W`, kontrol taster, a ne CMD): prikaži tekst napomene na trenutnoj poziciji.
+* `Shift+K`: prethodni link.
 * `K`: naredni link.
-* `Šift+G`: prethodna slika.
+* `Shift+G`: prethodna slika.
 * `G`: naredna slika.
-* `Šift+F`: prethodna figura.
+* `Shift+F`: prethodna figura.
 * `F`: naredna figura.
-* `Šift+T`: prethodna tabela.
+* `Shift+T`: prethodna tabela.
 * `T`: naredna tabela.
-* `Šift+M`: prethodna formula.
+* `Shift+M`: prethodna formula.
 * `M`: naredna formula.
-* `Šift+S`: prethodni razdvajač.
+* `Shift+S`: prethodni razdvajač.
 * `S`: naredni razdvajač.
-* `Šift+L`: prethodna lista.
+* `Shift+L`: prethodna lista.
 * `L`: naredna lista.
-* `Šift+I`: prethodna stavka liste.
+* `Shift+I`: prethodna stavka liste.
 * `I`: naredna stavka liste.
-* `Šift+,`: idi na početak trenutnog sadrživača (liste ili tabele).
+* `Shift+,`: idi na početak trenutnog sadrživača (liste ili tabele).
 * `,`: prebaci se nakon kraja trenutnog sadrživača (liste ili tabele).
 
 ### Meni sa alatima
@@ -136,43 +136,44 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 * `Ctrl+I`: prikaži informacije o dokumentu.
 * `Ctrl+T`: prikaži sadržaj.
 * `F7`: prikaži listu elemenata.
-* `Ctrl+Šift+C`: otvori izvorni folder.
-* `Ctrl+Šift+V`: Otvori trenutni sadržaj u Web prikazu.
+* `Ctrl+Shift+C`: otvori izvorni folder.
+* `Ctrl+Shift+V`: Otvori trenutni sadržaj u Web prikazu.
 * `Ctrl+U`: prikaži izvor dokumenta u novoj kartici.
-* `Ctrl+Šift+E`: izvezi podatke o dokumentu (`.paperback`).
-* `Ctrl+Šift+I`: uvezi podatke o dokumentu (`.paperback`).
+* `Ctrl+Shift+E`: izvezi podatke o dokumentu (`.paperback`).
+* `Ctrl+Shift+I`: uvezi podatke o dokumentu (`.paperback`).
 * `Ctrl+E`: izvezi trenutni dokument kao običan tekst.
-* `Ctrl+Šift+B`: dodaj ili ukloni knjižnu oznaku na poziciji trenutno izabranog teksta ili kursora.
-* `Ctrl+Šift+N`: dodaj ili izmeni napomenu knjižne oznake na poziciji trenutno izabranog teksta ili kursora.
+* `Ctrl+Shift+B`: dodaj ili ukloni knjižnu oznaku na poziciji trenutno izabranog teksta ili kursora.
+* `Ctrl+Shift+N`: dodaj ili izmeni napomenu knjižne oznake na poziciji trenutno izabranog teksta ili kursora.
 * `Ctrl+Alt+W`: uključi ili isključi prelamanje reči.
 * `Ctrl+razmak` (macOS: `FizičkiCtrl+Space`,  taster CTRL, budući da Cmd+razmak otvara Spotlight): reprodukuj ili pauziraj zvučnu naraciju.
 * `'`: premotaj zvučnu naraciju napred.
 * `;`: premotaj zvučnu naraciju nazad.
-* `Šift+'`: povećaj količinu premotavanja zvuka.
-* `Šift+;`: smanji količinu premotavanja zvuka.
-* `Ctrl+Šift+.`: ubrzaj zvučnu naraciju.
-* `Ctrl+Šift+,`: uspori zvučnu naraciju.
+* `Shift+'`: povećaj količinu premotavanja zvuka.
+* `Shift+;`: smanji količinu premotavanja zvuka.
+* `Ctrl+Shift+.`: ubrzaj zvučnu naraciju.
+* `Ctrl+Shift+,`: uspori zvučnu naraciju.
 * `F11` (macOS: `FizičkiCtrl+Ctrl+F`, CTRL+Command+F): uključi ili isključi režim celog ekrana.
 * `Ctrl+,`: otvori podešavanja (macOS: postavke, u meniju aplikacije).
-* `Ctrl+Šift+S`: uključi ili isključi tajmer pre spavanja.
-* `Ctrl+Šift+O`: prepoznaj opseg skeniranih PDF stranica uz optičko prepoznavanje znakova.
+* `Ctrl+Shift+S`: uključi ili isključi tajmer pre spavanja.
+* `Ctrl+Shift+O`: prepoznaj opseg skeniranih PDF stranica uz optičko prepoznavanje znakova.
 * `Alt+F9` (macOS: `Cmd+F9`): označi početak izbora, kako bi se sve od početka do mesta na koje stanete kopiralo odjednom.
 * `Alt+F10` (macOS: `Cmd+F10`): kopiraj sve od označenog početka do trenutne pozicije.
-* `Alt+Šift+F9` (macOS: `Cmd+Šift+F9`): vrati se nazad na označen početak izbora, ostavljajući oznaku.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): vrati se nazad na označen početak izbora, ostavljajući oznaku.
 
 ### Meni pomoći
 
 * `Ctrl+F1`: prikaži dijalog sa informacijama o programu.
 * `F1`: prikaži pomoć u podrazumevanom pretraživaču.
-* `Šift+F1`: prikaži pomoć u Paperbacku.
-* `Ctrl+Šift+U`: proveri da li postoje ažuriranja.
+* `Shift+F1`: prikaži pomoć u Paperbacku.
+* `Ctrl+Shift+U`: proveri da li postoje ažuriranja.
 * `Ctrl+D`: otvori stranicu za doniranje u podrazumevanom pretraživaču.
 
 ### Dodatni tasteri pri prikazivanju dokumenta
 
 * `Delete` ili `numerički Delete` na kontroli kartica: zatvara izabranu karticu dokumenta.
 * `Enter` ili `razmak` u tekstu dokumenta: prati link  ili otvara tabelu ili prikaz formule na poziciji kursora.
-* `Šift+F10` ili aplikacioni/taster za meni u tekstu dokumenta: otvara kontekstni meni.
+* `Enter` na skeniranoj PDF stranici: prepoznaje stranicu uz optičko prepoznavanje znakova.
+* `Shift+F10` ili aplikacioni/taster za meni u tekstu dokumenta: otvara kontekstni meni.
 
 ## iOS i Android
 
@@ -287,7 +288,7 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 
 ##### Opšte
 * Linux podrška, kao AppImage ili tar.gz, uz desktop integraciju kako bi se dokumenti otvarali iz vašeg upravljača datoteka.
-* Označite početak izbora prečicom `Alt+F9`, kopirajte sve od početka do mesta na koje stignete prečicom `Alt+F10`, a vratite se nazad na oznaku prečicom `Alt+Šift+F9`, kako biste kopirali dužu količinu teksta bez potrebe da držite Šift i strelice kroz ceo deo. Sve tri opcije su dostupne iz Alati > Izaberi i kopiraj.
+* Označite početak izbora prečicom `Alt+F9`, kopirajte sve od početka do mesta na koje stignete prečicom `Alt+F10`, a vratite se nazad na oznaku prečicom `Alt+Shift+F9`, kako biste kopirali dužu količinu teksta bez potrebe da držite Shift i strelice kroz ceo deo. Sve tri opcije su dostupne iz Alati > Izaberi i kopiraj.
 * Prečica `=` sada izgovara stranicu pored procenta, na primer "15%, stranica 30", a ostaje onakva kakva je bila za dokumente bez brojeva stranica.
 * Dijalog o programu sada prikazuje Paperback licencu kao i svakog prevodioca.
 * Ukrajinski prevod.
@@ -303,10 +304,10 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 * Word 6 and Word 95 dokumenti.
 
 ##### Optičko prepoznavanje znakova
-* Skenirane PDF stranice se sada mogu prepoznati uz optičko prepoznavanje znakova ugrađeno u Windows i macOS. Pritisnite `Enter` na skeniranoj stranici da biste je prepoznali, ili koristite grupno optičko prepoznavanje znakova (`Ctrl+Šift+O`) za opseg stranica.
+* Skenirane PDF stranice se sada mogu prepoznati uz optičko prepoznavanje znakova ugrađeno u Windows i macOS. Pritisnite `Enter` na skeniranoj stranici da biste je prepoznali, ili koristite grupno optičko prepoznavanje znakova (`Ctrl+Shift+O`) za opseg stranica.
 
 ##### Navigacija
-* MathML formule u EPUB-u i HTML-u se obrađuju kao AsciiMath korišćenjem MathCAT-a. Koristite `M` ili `Šift+M` da se krećete po formulama, a zatim `Enter` ili `Razmak` da otvorite originalni MathML u prikazu formule.
+* MathML formule u EPUB-u i HTML-u se obrađuju kao AsciiMath korišćenjem MathCAT-a. Koristite `M` ili `Shift+M` da se krećete po formulama, a zatim `Enter` ili `Razmak` da otvorite originalni MathML u prikazu formule.
 * Dugme pretraži sve u dijalogu pretrage, koje prikazuje svaki red sa terminom pretrage kako biste mogli da skočite pravo u onaj koji želite.
 * Prikazi tabela, lista i stranica u listi elemenata (`F7`).
 * Pređi u red, pređi na stranicu i pređi na procenat sada prihvataju `+n` i `-n` kako biste se pomerali u odnosu na vašu trenutnu poziciju.
@@ -315,7 +316,7 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 * EPUB stranice koje su samo slike sada prikazuju red za sliku, kako biste mogli da stanete na njih umesto da se preskaču.
 
 ##### Zvučne knjige
-* Kontrole brzine reprodukcije, od ubrzanja za pola do tri puta brže. Koristite `Ctrl+Šift+.` i `Ctrl+Šift+,`, ili meni alata.
+* Kontrole brzine reprodukcije, od ubrzanja za pola do tri puta brže. Koristite `Ctrl+Shift+.` i `Ctrl+Shift+,`, ili meni alata.
 * Knjižne oznake i napomene u knjigama koje sadrže samo zvuk sada pamte tačno vreme na kom ste ih dodali.
 * Naredna i prethodna pozicija (`Alt+Levo` i `Alt+Desno`) sada rade u zvučnim knjigama.
 * Napredak kroz zvučnu knjigu se sada meri po njenom snimku, tako da će kretanje na procenat i statusna traka ispravno prikazati koliko ste daleko zapravo stigli.
@@ -458,7 +459,7 @@ iOS i Android aplikacije otvaraju svaki format koji desktop aplikacije otvaraju,
 ##### Dijalog svih dokumenata
 * Dugme za lociranje u dijalogu sa svim dokumentima koje vam dozvoljava da pronađete knjige koje nedostaju zato što je njihova putanja promenjena.
 * Filtriranje stanja i statusna traka, kako biste mogli da izdvojite dokumente prema stanju dokumenta i vidite koliko dokumenata je prikazano, kao i izabrano.
-* Prečica `Ctrl+Šift+A` da poništite izbor svih dokumenata.
+* Prečica `Ctrl+Shift+A` da poništite izbor svih dokumenata.
 
 ##### Opcije i čitljivost
 * Kartica čitljivosti, sa sledećim opcijama:
@@ -536,7 +537,7 @@ iOS i Android aplikacije otvaraju svaki format koji desktop aplikacije otvaraju,
 ##### Dijalog svih dokumenata
 * Taster Escape  nije zatvarao dijalog informacija o dokumentu i dijalog sa svim dokumentima.
 * Traka naslova se nije ažurirala nakon što se dokument zatvori iz dijaloga svih dokumenata.
-* Readme.html se više neće dodavati u vašu listu svih dokumenata kada se otvori prečicom Šift+F1.
+* Readme.html se više neće dodavati u vašu listu svih dokumenata kada se otvori prečicom Shift+F1.
 * Uklanjanje dokumenata iz dijaloga nedavnih dokumenata sada takođe zatvara njihovu aktivnu karticu.
 * Vaš filter pretrage se sada čuva nakon što se dokument ukloni.
 
@@ -598,7 +599,7 @@ iOS i Android aplikacije otvaraju svaki format koji desktop aplikacije otvaraju,
 * Ispravljen kontekstni meni čitača koji se nije prikazivao desnim klikom ili aplikacionim tasterom.
 * Ispravljeno povremeno fokusiranje pogrešnog dokumenta kada se dokumenti otvaraju iz komandne linije.
 * PDF datoteke koje su samo u slikama se ponovo prepoznaju i upozoravaju vas o tome.
-* Sada možete da se krećete kroz slike i figure prečicama g/Šift+g i f/Šift+F.
+* Sada možete da se krećete kroz slike i figure prečicama g/Shift+g i f/Shift+F.
 * Paperback će sada poštovati vaše podešavanje tamnog režima.
 * Uklonjena DAISY XML podrška, budući da više nije potrebna.
 * Vraćena izvorna Win32 navigacija prvim slovom u stablu sadržaja.
@@ -615,7 +616,7 @@ iOS i Android aplikacije otvaraju svaki format koji desktop aplikacije otvaraju,
 * Vraćena isprobana i testirana biblioteka pdfium za obrađivanje PDF datoteka, što ponovo čini obrađivanje PDF datoteka puno pouzdanijim.
 
 ### Verzija 0.8.1
-* Dodata prečica Ctrl+Šift+T za ponovno otvaranje poslednjeg zatvorenog dokumenta.
+* Dodata prečica Ctrl+Shift+T za ponovno otvaranje poslednjeg zatvorenog dokumenta.
 * Dijalog svih dokumenata sada podržava izbor više dokumenata za otvaranje odjednom.
 * Ispravljeno nekoliko grešaka sa RTF obrađivačem.
 * Ispravljena greška zbog koje putanje datoteka koje sadrže znakove koji nisu ASCII (kao što su naša slova  š, č, ć, ž) postaju oštećene kada se datoteka otvori drugom kopijom Paperbacka.
@@ -631,7 +632,7 @@ iOS i Android aplikacije otvaraju svaki format koji desktop aplikacije otvaraju,
 * Dodata podrška za DAISY XML dokumente.
 * Dodata podrška za Flat Open Document Text datoteke!
 * Dodata podrška za Flat Open Document prezentacije!
-* Dodata podrška za separatore uz s i Šift+s.
+* Dodata podrška za separatore uz s i Shift+s.
 * Bilo koje kretanje koje je obimnije od 300 znakova će se sada automatski dodati u vašu istoriju navigacije.
 * Ispravljeno vraćanje prozora Paperbacka iz sistemske trake.
 * Ispravljeno prikazivanje Markdown dokumenata koji su prikazivali običan tekst umesto obrađenog HTML-a u Web prikazu.
@@ -645,8 +646,8 @@ iOS i Android aplikacije otvaraju svaki format koji desktop aplikacije otvaraju,
 * Kontekstni meni kontrole teksta će sada uključiti radnje vezane za čitač umesto generičkih stavki kao što su iseci i nalepi.
 
 ### Verzija 0.7.0
-* Dodata podrška za tabele u dokumentima zasnovanim na HTML-u i XHTML-u! Krećite se kroz tabele korišćenjem prečica T i Šift+T, a pritisnite Enter da biste ih pogledali u Web prikazu.
-* Dodata osnovna funkcija Web obrade! Pritisnite Ctrl+Šift+V da biste otvorili trenutni odeljak vašeg dokumenta u obrađivaču zasnovanom na Webu, što može biti korisno za sadržaj sa kompleksnim formatiranjem ili delove koda.
+* Dodata podrška za tabele u dokumentima zasnovanim na HTML-u i XHTML-u! Krećite se kroz tabele korišćenjem prečica T i Shift+T, a pritisnite Enter da biste ih pogledali u Web prikazu.
+* Dodata osnovna funkcija Web obrade! Pritisnite Ctrl+Shift+V da biste otvorili trenutni odeljak vašeg dokumenta u obrađivaču zasnovanom na Webu, što može biti korisno za sadržaj sa kompleksnim formatiranjem ili delove koda.
 * Dodat ruski prevod, hvala Ruslan Gulmagomedov!
 * Dodato dugme za čišćenje svih dokumenata u dijalogu sa dokumentima.
 * Provera ažuriranja sada prikazuje informacije o novoj verziji kada je nova verzija dostupna.
@@ -685,12 +686,12 @@ iOS i Android aplikacije otvaraju svaki format koji desktop aplikacije otvaraju,
 * Dodata opcija za kružnu navigaciju kroz strukturalne elemente.
 * Dodata opcija u meni sa alatima za otvaranje izvornog foldera trenutno fokusiranog dokumenta.
 * Dodat izuzetno jednostavan, ali vrlo efikasan sistem ažuriranja.
-* Dodata osnovna funkcija tajmera pre spavanja, kojoj se može pristupiti prečicom Ctrl+Šift+S.
+* Dodata osnovna funkcija tajmera pre spavanja, kojoj se može pristupiti prečicom Ctrl+Shift+S.
 * Dodata podrška za obradu FB2 digitalnih knjiga!
 * Dodata podrška za obradu OpenDocument prezentacija!
 * Dodata podrška za obradu OpenDocument tekstualnih datoteka!
 * Knjižne oznake sada mogu da označe ceo red, ili samo neki određen tekst. Ako nemate izabran tekst kada dodajete knjižnu oznaku, ponašanje je isto kao pre verzije 0.6, i označiće ceo red. Međutim, ako izaberete neki tekst, samo taj tekst će biti dodat kao knjižna oznaka.
-* Knjižne oznake sada mogu da imaju priložene tekstualne napomene! Krećite se kroz knjižne oznake koje sadrže napomene prečicama N i Šift+N, ili otvorite dijalog sa svim knjižnim oznakama, samo sa napomenama, ili samo bez napomena sa određenim prečicama.
+* Knjižne oznake sada mogu da imaju priložene tekstualne napomene! Krećite se kroz knjižne oznake koje sadrže napomene prečicama N i Shift+N, ili otvorite dijalog sa svim knjižnim oznakama, samo sa napomenama, ili samo bez napomena sa određenim prečicama.
 * Knjižne oznake u dijalogu sa knjižnim oznakama više neće imati dosadan "Knjižna oznaka x" prefiks.
 * Epub knjige koje sadrže HTML sadržaj za obrađivanje kao XML će sada ispravno biti obrađene.
 * Ispravljeno učitavanje velikih Markdown dokumenata.
@@ -704,10 +705,10 @@ iOS i Android aplikacije otvaraju svaki format koji desktop aplikacije otvaraju,
 * Ako je Paperback pokrenut kao administrator, podešavanja će se sada ispravno učitati i sačuvati.
 * Sada je moguće obrisati knjižnu oznaku direktno iz dijaloga sa knjižnim oznakama.
 * Sada je moguć uvoz i izvoz vaših knjižnih oznaka i pozicije čitanja za određeni dokument. Napravljena datoteka će biti imenovana po imenu datoteke sa .paperback ekstenzijom. Ako ovakva datoteka postoji u istom folderu kao i datoteka koju čitate, automatski će biti učitana. U suprotnom, možete ručno da ih uvezete korišćenjem stavke u meniju sa alatima.
-* Linkovi u dokumentima su sada u potpunosti podržani! Koristite k i Šift+k da se krećete napred i nazad kroz njih, i pritisnite Enter da ga otvorite ili aktivirate.
+* Linkovi u dokumentima su sada u potpunosti podržani! Koristite k i Shift+k da se krećete napred i nazad kroz njih, i pritisnite Enter da ga otvorite ili aktivirate.
 * Puno internog refaktorisanja, što aplikaciju čini bržom i veličinu datoteke manjom.
 * Markdown sadržaj se sada unapred obrađuje kako bi bio u skladu sa standardom CommonMark pre obrade.
-* Kretanje kroz liste i njihove stavke je sada u potpunosti podržano! Koristite L i Šift+L da se krećete po listama, a I i Šift+I da se krećete po stavkama liste.
+* Kretanje kroz liste i njihove stavke je sada u potpunosti podržano! Koristite L i Shift+L da se krećete po listama, a I i Shift+I da se krećete po stavkama liste.
 * Numerički delete sada radi za uklanjanje dokumenata sa trake sa karticama uz standardni Delete.
 * Paperback se sada može opciono minimizovati u vašu sistemsku traku! Ova opcija je podrazumevano isključena, ali će njeno uključivanje učiniti da opcija za minimizovanje u sistemskom meniju stavi Paperback u sistemsku traku, nakon čega se može vratiti klikom na ikonicu koja se pojavila.
 * Paperback se sada u potpunosti može prevesti! Lista podržanih jezika je trenutno prilično mala, ali stalno raste!
@@ -746,13 +747,13 @@ iOS i Android aplikacije otvaraju svaki format koji desktop aplikacije otvaraju,
 
 ### Verzija 0.4.0
 * Dodata podrška za CHM datoteke!
-* Dodata podrška za knjižne oznake! Možete imati koliko god knjižnih oznaka želite kroz koliko god dokumenata želite. Možete se kretati napred i nazad kroz njih prečicama b i Šift+b, dodati novi prečicom control+Šift+b, ili otvoriti dijalog za skakanje na određenu knjižnu oznaku prečicom control+b.
+* Dodata podrška za knjižne oznake! Možete imati koliko god knjižnih oznaka želite kroz koliko god dokumenata želite. Možete se kretati napred i nazad kroz njih prečicama b i Shift+b, dodati novi prečicom control+Shift+b, ili otvoriti dijalog za skakanje na određenu knjižnu oznaku prečicom control+b.
 * Dodata instalacija uz prenosnu zip datoteku! Instalacija će instalirati Paperback u vaš Program Files direktorijum, i automatski pridružiti podržane datoteke.
 * Tekstualne datoteke uz BOM bi trebale da budu ispravno dekodirane, a BOM se takođe neće prikazivati na početku teksta.
 * Dodato mnogo više informacija u statusnu traku. Sada će vam prikazati vaš trenutni red, znak i procenat čitanja.
 * HTML komentari, kao i sadržaj script i style tagova se više neće prikazivati u tekstu.
 * Ako prosledite relativnu putanju Paperbacku putem komandne linije, biće ispravno obrađena.
-* Kretanje kroz procenat se sada obrađuje sopstvenim dijalogom sa klizačem, kojem se može pristupiti prečicom control+Šift+g.
+* Kretanje kroz procenat se sada obrađuje sopstvenim dijalogom sa klizačem, kojem se može pristupiti prečicom control+Shift+g.
 * Dokumenti bez poznatog naslova ili autora će sada uvek imati podrazumevane informacije.
 * Logika čuvanja pozicije je sada mnogo pametnija i trebala bi da piše na disk samo kada je apsolutno neophodno.
 * Dokument na koji ste se fokusirali kada ste zatvorili Paperback se sada pamti kada se aplikacija restartuje.
@@ -791,7 +792,7 @@ iOS i Android aplikacije otvaraju svaki format koji desktop aplikacije otvaraju,
 * Dodat meni nedavnih dokumenata! Trenutno čuva vaših poslednjih 10 dokumenata, a pritiskanje Enter na nekom od njih će ga otvoriti za čitanje.
 * Potpuno redizajniran dijalog pretrage, sada je puno jednostavniji za korišćenje, a takođe sadrži i istoriju vaših poslednjih 25 pretraga i podršku za regularne izraze!
 * Prethodno otvoreni dokumenti se sada pamte nakon restartovanja aplikacije. Ovo se može podesiti kroz novu stavku za podešavanja u meniju sa alatima.
-* Dodata prečica Šift+f1 za otvaranje dokumentacije direktno u samom Paperbacku.
+* Dodata prečica Shift+f1 za otvaranje dokumentacije direktno u samom Paperbacku.
 
 ### Verzija 0.1.0
 * Prva verzija.
