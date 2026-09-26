@@ -246,7 +246,13 @@ fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: boo
 /// The two kinds of page are surveyed apart because they are counted differently: an untagged
 /// page offers visual lines and is judged with the body's font size to hand, a tagged page offers
 /// whole blocks and is judged by how much of the document repeats them. See [`running`].
-fn strip_tagged_running_text(pages: &mut [PageContent]) -> RunningText {
+///
+/// `strip` decides whether the tagged lines are actually taken out. The survey still runs either
+/// way, because the body font size it measures is what tells a heading from body text and has
+/// nothing to do with furniture -- but a caller converting a document as it is rather than as a
+/// reader would like it has asked for no line to go missing, and only the untagged path could
+/// honour that by never consulting the answer.
+fn strip_tagged_running_text(pages: &mut [PageContent], strip: bool) -> RunningText {
 	let untagged = || pages.iter().filter(|page| page.tagged.is_none());
 	let edges: Vec<PageEdges> = untagged().map(|page| PageEdges::of(&page.lines)).collect();
 	// The body size is taken over the whole document rather than one page: a chapter opening is
@@ -276,10 +282,12 @@ fn strip_tagged_running_text(pages: &mut [PageContent]) -> RunningText {
 		tagged_page_count = tagged_edges.len(),
 		"surveyed tagged pages for running headers and footers"
 	);
-	for page in pages.iter_mut() {
-		if let Some(tagged) = page.tagged.take() {
-			let doomed = tagged_running_lines(&tagged, &tagged_running);
-			page.tagged = Some(without_lines(tagged, &doomed));
+	if strip {
+		for page in pages.iter_mut() {
+			if let Some(tagged) = page.tagged.take() {
+				let doomed = tagged_running_lines(&tagged, &tagged_running);
+				page.tagged = Some(without_lines(tagged, &doomed));
+			}
 		}
 	}
 	running_text
@@ -439,7 +447,7 @@ impl Parser for PdfParser {
 		// what tells a heading from body text and has nothing to do with furniture. What the caller
 		// asked for is whether its answer is used: a document converted as it is keeps every line,
 		// and one converted as a reader would like it loses the ones that repeat.
-		let running_text = strip_tagged_running_text(&mut pages);
+		let running_text = strip_tagged_running_text(&mut pages, context.strip_running_text);
 		let running_text = if context.strip_running_text { running_text } else { running_text.recognizing_nothing() };
 		for (page_index, page) in pages.into_iter().enumerate() {
 			// A page the caller did not ask for was read for the survey or not at all, and has no
@@ -559,8 +567,10 @@ impl Parser for PdfParser {
 #[cfg(test)]
 mod tests {
 	use super::{
-		Line, PageContent, PageEdges, is_scanned_with_only_furniture, looks_like_page_number, running::detect,
+		Line, PageContent, PageEdges, TaggedPage, is_scanned_with_only_furniture, looks_like_page_number,
+		running::detect,
 	};
+	use crate::document::DocumentBuffer;
 
 	const BODY: f64 = 10.0;
 
@@ -588,6 +598,71 @@ mod tests {
 	fn a_scan_whose_only_text_repeats_on_every_page_is_a_scan() {
 		let pages: Vec<_> = (0..6).map(|_| page(0.95, &["Crowdfunded 190+ magazines, WeChat jiage8117"])).collect();
 		assert!(is_scanned_with_only_furniture(&pages[0], &running(&pages)));
+	}
+
+	/// A page laid out by its structure tree rather than by measured lines, carrying the same
+	/// repeated line at its edge. It has to be built here rather than reused from the untagged
+	/// helper, because the two paths survey and strip by different machinery and a flag honoured by
+	/// one but not the other is invisible until someone reads a tagged document.
+	///
+	/// `lines_info` is what the tagged survey reads and what `without_lines` rebuilds from, so a
+	/// page without it would never be stripped and the test would pass for the wrong reason. The
+	/// page carries a body as well as its repeated line, because the survey will not empty a page
+	/// and a two-line one has both of its lines at an edge.
+	fn tagged_page(blocks: &[&str]) -> PageContent {
+		let mut tagged = TaggedPage {
+			buffer: DocumentBuffer::new(),
+			display_text: String::new(),
+			lines_info: Vec::new(),
+			toc_items: Vec::new(),
+		};
+		for block in blocks {
+			let position = tagged.buffer.current_position();
+			tagged.lines_info.push((position, (*block).to_string()));
+			tagged.buffer.append(block);
+			tagged.buffer.append("\n");
+		}
+		tagged.display_text = tagged.buffer.content.clone();
+		PageContent { tagged: Some(tagged), ..Default::default() }
+	}
+
+	fn tagged_texts(pages: &[PageContent]) -> Vec<String> {
+		pages.iter().map(|page| page.tagged.as_ref().map_or(String::new(), |t| t.buffer.content.clone())).collect()
+	}
+
+	/// A caller that asked for no line to be taken out has to get that from a tagged document too,
+	/// not only from an untagged one. The removal here happens inside the survey, before its
+	/// answer is handed back, so a flag applied to the answer alone would leave tagged pages losing
+	/// their edge lines while the flag said they would not.
+	#[test]
+	fn turning_the_strip_off_keeps_the_repeated_lines_of_a_tagged_page() {
+		let make = || {
+			(0..6)
+				.map(|page| {
+					// A body that differs on every page, so that only the one repeated line is
+					// furniture. A page whose every line repeats is not stripped at all, the
+					// survey refusing to empty a page -- and the body is spelled with letters
+					// because the survey blanks digit runs, which would make "page 0" and "page 1"
+					// one line as far as it is concerned.
+					let body = format!("words unique to the {} page", (b'a' + page as u8) as char);
+					tagged_page(&["BOOK TITLE", body.as_str(), "a closing line", "and one after that"])
+				})
+				.collect::<Vec<_>>()
+		};
+		let mut stripped = make();
+		super::strip_tagged_running_text(&mut stripped, true);
+		let kept = tagged_texts(&stripped);
+		assert!(
+			kept.iter().all(|text| !text.contains("BOOK TITLE")),
+			"the survey should have taken the repeated line out: {kept:?}"
+		);
+
+		let mut untouched = make();
+		super::strip_tagged_running_text(&mut untouched, false);
+		assert!(
+			tagged_texts(&untouched).iter().all(|text| text.contains("BOOK TITLE")),
+			"a document converted as it is should keep every line"
+		);
 	}
 
 	/// A full-page figure with a caption of its own is a figure, not a scan. The caption does not
