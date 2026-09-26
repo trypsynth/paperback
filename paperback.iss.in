@@ -124,6 +124,11 @@ begin
 		RegWriteExpandStringValue(HKLM, PathSubkey, 'Path', NewPath);
 end;
 
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+	if (CurStep = ssPostInstall) and not WizardIsTaskSelected('addtopath') then RemoveAppFromPath;
+end;
+
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
 	if CurUninstallStep = usPostUninstall then RemoveAppFromPath;
