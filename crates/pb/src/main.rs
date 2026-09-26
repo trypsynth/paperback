@@ -67,7 +67,7 @@ fn main() -> Result<()> {
 		// The page count comes from opening the document, which is cheap, rather than from
 		// parsing it, which is not.
 		let count = usize::try_from(pdf::page_count(&context)?).unwrap_or(0);
-		context = context.with_only_pages(pages::wanted_pages(selection, count)?);
+		context = context.with_only_pages(pages::wanted_pages(selection, count, &input.display().to_string())?);
 		parsed_the_pages_asked_for = true;
 	}
 	let doc = match parse_document(&context) {

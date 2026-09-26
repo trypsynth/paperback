@@ -20,7 +20,7 @@ pub struct Cli {
 	/// Password for encrypted documents (omit to be prompted interactively)
 	#[arg(short, long)]
 	pub password: Option<String>,
-	/// Convert only these pages, as ranges: 5-10, 55, 80-end
+	/// Convert only these pages, as ranges: 5-10, 55, 80-end (comma or semicolon separated)
 	#[arg(long)]
 	pub pages: Option<String>,
 	/// Take out the headers and footers a document repeats from page to page, as the app does
