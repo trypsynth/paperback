@@ -23,7 +23,7 @@ pub struct Cli {
 	/// Convert only these pages, as ranges: 5-10, 55, 80-end
 	#[arg(long)]
 	pub pages: Option<String>,
-	/// Take out the headers and footers a document repeats from page to page
+	/// Take out the headers and footers a document repeats from page to page, as the app does
 	#[arg(long)]
 	pub strip_repeated: bool,
 	/// Print document metadata instead of content

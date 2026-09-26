@@ -92,6 +92,17 @@ pub(super) struct RunningText {
 }
 
 impl RunningText {
+	/// The same survey, matching nothing.
+	///
+	/// Keeps the body font size, which is what tells a heading from body text and has nothing to
+	/// do with furniture, and forgets every signature, so that no line is ever taken out. A caller
+	/// that wants the document as it is rather than as a reader would like it does not have to pay
+	/// for a survey whose answer it will not use.
+	pub(super) fn recognizing_nothing(mut self) -> Self {
+		self.signatures.clear();
+		self
+	}
+
 	/// Whether a line at a page edge is running text. A line is only ever tested when it sits
 	/// within [`EDGE_LINES`] of an edge, so a sentence in the body that happens to read like a
 	/// running head is never at risk.
@@ -164,7 +175,9 @@ fn edge_counts(pages: &[PageEdges]) -> HashMap<String, usize> {
 
 #[cfg(test)]
 mod tests {
-	use super::{PageEdges, detect, signature};
+	use std::collections::HashSet;
+
+	use super::{PageEdges, RunningText, detect, signature};
 
 	fn edges(first: &[&str], last: &[&str]) -> PageEdges {
 		PageEdges {
@@ -177,6 +190,19 @@ mod tests {
 	fn signature_blanks_out_the_page_number() {
 		assert_eq!(signature("DREAM CAR 17"), signature("DREAM CAR 209"));
 		assert_ne!(signature("DREAM CAR 17"), signature("DREAM ON 17"));
+	}
+
+	/// A caller that converts a document as it is rather than as a reader would like it is asking
+	/// for no line to be taken out, and the body size has to survive that request because it is
+	/// what tells a heading from body text.
+	#[test]
+	fn a_survey_asked_to_recognise_nothing_takes_nothing_out() {
+		let mut survey = RunningText { signatures: HashSet::new(), body_font_size: BODY };
+		survey.signatures.insert("RUNNING HEADER".to_string());
+		assert!(survey.contains("RUNNING HEADER", BODY));
+		let none = survey.recognizing_nothing();
+		assert!(!none.contains("RUNNING HEADER", BODY));
+		assert!((none.body_font_size - BODY).abs() < f64::EPSILON, "the body size has to survive");
 	}
 
 	const BODY: f64 = 11.0;
