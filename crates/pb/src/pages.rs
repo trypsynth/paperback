@@ -52,6 +52,18 @@ impl PageRange {
 		self.end().unwrap_or(page_count)
 	}
 
+	/// The first page of this range that a document of `page_count` pages does not have, which is
+	/// what an error should name.
+	///
+	/// For `8-700` against a 417-page document that is 700 rather than 8, because 8 is there and
+	/// saying otherwise points the reader at the wrong end of their own command.
+	fn past_page(&self, page_count: usize) -> usize {
+		match self.end() {
+			Some(end) if end > page_count => end,
+			_ => self.start(),
+		}
+	}
+
 	/// The 1-based pages this range covers, or `None` when any part of it falls outside a document
 	/// of `page_count` pages.
 	///
@@ -76,6 +88,9 @@ pub struct PageSelection(Vec<PageRange>);
 impl PageSelection {
 	/// Reads a `--pages` value such as `5-10,55,80-end`.
 	///
+	/// Parts are separated by a comma or a semicolon, and the two may be mixed, so a shell that
+	/// makes commas awkward to type can use `5;18-22;38` and get the same reading of it.
+	///
 	/// Pages are 1-based, matching both the page numbers printed in a PDF and the labels the
 	/// parsers write onto their own page-break markers, so page 0 does not exist.
 	///
@@ -85,7 +100,7 @@ impl PageSelection {
 	/// reversed, zero, or not a page range at all.
 	pub fn parse(spec: &str) -> Result<Self> {
 		let mut ranges = Vec::new();
-		for element in spec.split(',') {
+		for element in spec.split([',', ';']) {
 			let element = element.trim();
 			if element.is_empty() {
 				// Reachable via a stray or doubled comma. The all-empty specification is caught
@@ -114,7 +129,12 @@ impl PageSelection {
 			.map(|range| {
 				range
 					.resolve(page_count)
-					.ok_or_else(|| anyhow::anyhow!("page {} is past a document of {page_count} pages", range.start()))
+					// The page named is the one the reader wrote that does not exist. For `8-700` on
+					// a 417-page file that is 700: page 8 is there, and being told otherwise sends
+					// them looking for a problem in the wrong end of their command.
+					.ok_or_else(|| {
+						anyhow::anyhow!("page {} is past the last page of {page_count}", range.past_page(page_count))
+					})
 			})
 			.collect::<Result<Vec<_>>>()?
 			.into_iter()
@@ -137,19 +157,13 @@ impl PageSelection {
 		if breaks.is_empty() {
 			bail!("{}", no_pages_message(doc));
 		}
-		// Checked here rather than left to `pages`, so that the count and the document are named
-		// in the message a reader actually sees.
+		// Checked here rather than left to `pages`, so that the document is named in the message a
+		// reader actually sees. The page named is the one they wrote that does not exist.
 		for range in &self.0 {
 			if range.resolve(breaks.len()).is_none() {
-				// The page named is the one the reader actually wrote and that does not exist: the
-				// end of `5-10` rather than its start, since naming 5 for a range that begins there
-				// would send them looking in the wrong place.
-				let past = match range.end() {
-					Some(end) if end > breaks.len() => end,
-					_ => range.start(),
-				};
 				bail!(
-					"page {past} is past the last page; {} has {} {}",
+					"page {} is past the last page; {} has {} {}",
+					range.past_page(breaks.len()),
 					describe(doc),
 					breaks.len(),
 					page_word(breaks.len())
@@ -437,6 +451,25 @@ mod tests {
 		assert_eq!(pages(" 5 - 10 , 55 "), vec![4, 5, 6, 7, 8, 9, 54]);
 	}
 
+	/// A semicolon separates parts as well as a comma, for a shell that makes commas awkward, and
+	/// the two may be mixed because a reader who has started with one is not thereby forbidden the
+	/// other.
+	#[test]
+	fn a_semicolon_separates_parts_as_well_as_a_comma() {
+		assert_eq!(pages("5;18-22;38"), vec![4, 17, 18, 19, 20, 21, 37]);
+		assert_eq!(pages("5-10;55"), vec![4, 5, 6, 7, 8, 9, 54]);
+		assert_eq!(pages("5,10;55"), vec![4, 9, 54]);
+	}
+
+	#[test]
+	fn a_semicolon_is_not_a_way_to_sneak_past_a_rejection() {
+		// A reversed range is a reversed range whichever separator introduced it, and an element
+		// left empty by a trailing semicolon is as empty as one left by a trailing comma.
+		assert!(message("5-10;22-18").contains("starts at page 22"), "{}", message("5-10;22-18"));
+		assert!(message("5-10;").contains("5-10;"), "{}", message("5-10;"));
+		assert!(message("5;;10").contains("5;;10"), "{}", message("5;;10"));
+	}
+
 	#[test]
 	fn ranges_are_ordered_by_page_however_they_were_typed() {
 		assert_eq!(pages("92-94,5-7,55"), vec![4, 5, 6, 54, 91, 92, 93]);
@@ -607,6 +640,42 @@ mod tests {
 		}
 	}
 
+	/// The page an error names is the one the reader wrote that does not exist. `--pages 8-700` on
+	/// a 417-page file used to be refused as "page 8 is past the last page", which is false: page 8
+	/// is there, and 700 is what is not.
+	#[test]
+	fn the_error_names_the_page_that_is_missing_rather_than_the_one_that_is_not() {
+		let doc = document_of_pages(417, "Page");
+		let selection = PageSelection::parse("8-700").expect("valid");
+		let message = apply(&selection, &doc).expect_err("page 700 does not exist").to_string();
+		assert!(message.contains("700"), "{message}");
+		assert!(!message.contains("page 8 is past"), "{message}");
+		assert!(message.contains("417 pages"), "{message}");
+
+		// A range that starts past the end has only the one page to name.
+		let selection = PageSelection::parse("900-end").expect("valid");
+		let message = apply(&selection, &doc).expect_err("page 900 does not exist").to_string();
+		assert!(message.contains("900"), "{message}");
+	}
+
+	/// The route a PDF takes, which counts its pages before reading any of them, has to name the
+	/// same page and the same document as the route that slices a parsed one.
+	#[test]
+	fn both_routes_refuse_a_missing_page_the_same_way() {
+		let selection = PageSelection::parse("8-700").expect("valid");
+		let fast = wanted_pages(&selection, 417, "py.pdf").expect_err("page 700 does not exist").to_string();
+		assert!(fast.contains("700"), "{fast}");
+		assert!(fast.contains("py.pdf"), "{fast}");
+		assert!(fast.contains("417 pages"), "{fast}");
+
+		let doc = document_of_pages(417, "Page");
+		let slow = apply(&selection, &doc).expect_err("page 700 does not exist").to_string();
+		// The slow route names the document by its title, the fast one by its path, so only the
+		// page and the count are expected to match.
+		assert!(slow.contains("700"), "{slow}");
+		assert!(slow.contains("417 pages"), "{slow}");
+	}
+
 	/// The last page by number is in range, however the range was written to reach it.
 	#[test]
 	fn a_range_ending_exactly_on_the_last_page_is_fine() {
@@ -760,10 +829,23 @@ mod tests {
 ///
 /// # Errors
 ///
-/// Returns an error if the document is shorter than the pages asked for, or has none at all.
-pub fn wanted_pages(selection: &PageSelection, page_count: usize) -> Result<Vec<usize>> {
+/// Returns an error if the document is shorter than the pages asked for, or has none at all. The
+/// message is worded as [`PageSelection::resolve`] words it, so that a reader gets the same
+/// sentence whichever route their document took.
+pub fn wanted_pages(selection: &PageSelection, page_count: usize, name: &str) -> Result<Vec<usize>> {
 	if page_count == 0 {
-		bail!("this document has no pages to select from");
+		bail!("{name} has no pages to select from");
+	}
+	// Checked here for the same reason, so that the page named is the one the reader wrote and
+	// that does not exist, and the document is named alongside it.
+	for range in selection.0.iter() {
+		if range.resolve(page_count).is_none() {
+			bail!(
+				"page {} is past the last page; {name} has {page_count} {}",
+				range.past_page(page_count),
+				page_word(page_count)
+			);
+		}
 	}
 	selection.pages(page_count)
 }
