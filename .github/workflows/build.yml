@@ -41,6 +41,18 @@ jobs:
         components: rustfmt, clippy
     - name: Cache Rust build artifacts
       uses: Swatinem/rust-cache@v2
+    # rust-cache keeps only build/, deps/ and .fingerprint/ under target/release, so wxWidgets'
+    # compiled catalogs are dropped while wxdragon-sys still counts as built, and the app then
+    # embeds none of them: every stock wx string stays English in every language (#958). This
+    # cache's post step runs before rust-cache's cleanup, so it saves the catalogs first.
+    - name: Cache wxWidgets translations
+      uses: actions/cache@v6
+      with:
+        path: target/release/wxdragon_sys_cmake_build/share/locale
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+    - name: Rebuild wxWidgets if its translations are missing
+      shell: bash
+      run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
     - name: Install CMake, Ninja, and Pandoc
       run: |
         choco install cmake ninja pandoc minisign -y
@@ -62,6 +74,14 @@ jobs:
       run: |
         $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
         cargo release
+    - name: Check wxWidgets translations were embedded
+      shell: bash
+      run: |
+        exe=target/release/paperback${{ runner.os == 'Windows' && '.exe' || '' }}
+        if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
+          echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
+          exit 1
+        fi
     - name: Sign artifacts
       if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       shell: pwsh
@@ -113,6 +133,15 @@ jobs:
         components: rustfmt, clippy
     - name: Cache Rust build artifacts
       uses: Swatinem/rust-cache@v2
+    # Why these two steps exist: see build-windows.
+    - name: Cache wxWidgets translations
+      uses: actions/cache@v6
+      with:
+        path: target/release/wxdragon_sys_cmake_build/share/locale
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+    - name: Rebuild wxWidgets if its translations are missing
+      shell: bash
+      run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
     - name: Install CMake, Ninja, and Pandoc
       run: |
         choco install cmake ninja pandoc minisign -y
@@ -134,6 +163,14 @@ jobs:
       run: |
         $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
         cargo release
+    - name: Check wxWidgets translations were embedded
+      shell: bash
+      run: |
+        exe=target/release/paperback${{ runner.os == 'Windows' && '.exe' || '' }}
+        if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
+          echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
+          exit 1
+        fi
     - name: Sign artifacts
       if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       shell: pwsh
@@ -181,6 +218,15 @@ jobs:
         components: rustfmt, clippy
     - name: Cache Rust build artifacts
       uses: Swatinem/rust-cache@v2
+    # Why these two steps exist: see build-windows.
+    - name: Cache wxWidgets translations
+      uses: actions/cache@v6
+      with:
+        path: target/release/wxdragon_sys_cmake_build/share/locale
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+    - name: Rebuild wxWidgets if its translations are missing
+      shell: bash
+      run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
     - name: Install build dependencies
       run: |
         sudo apt-get update
@@ -195,6 +241,14 @@ jobs:
         chmod +x /usr/local/bin/appimagetool
     - name: Build
       run: cargo release
+    - name: Check wxWidgets translations were embedded
+      shell: bash
+      run: |
+        exe=target/release/paperback${{ runner.os == 'Windows' && '.exe' || '' }}
+        if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
+          echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
+          exit 1
+        fi
     - name: Sign artifacts
       if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       env:
@@ -241,6 +295,15 @@ jobs:
         components: rustfmt, clippy
     - name: Cache Rust build artifacts
       uses: Swatinem/rust-cache@v2
+    # Why these two steps exist: see build-windows.
+    - name: Cache wxWidgets translations
+      uses: actions/cache@v6
+      with:
+        path: target/release/wxdragon_sys_cmake_build/share/locale
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+    - name: Rebuild wxWidgets if its translations are missing
+      shell: bash
+      run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
     - name: Install build dependencies
       run: |
         sudo apt-get update
@@ -255,6 +318,14 @@ jobs:
         chmod +x /usr/local/bin/appimagetool
     - name: Build
       run: cargo release
+    - name: Check wxWidgets translations were embedded
+      shell: bash
+      run: |
+        exe=target/release/paperback${{ runner.os == 'Windows' && '.exe' || '' }}
+        if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
+          echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
+          exit 1
+        fi
     - name: Sign artifacts
       if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       env:
@@ -407,6 +478,15 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
     - name: Cache Rust build artifacts
       uses: Swatinem/rust-cache@v2
+    # Why these two steps exist: see build-windows.
+    - name: Cache wxWidgets translations
+      uses: actions/cache@v6
+      with:
+        path: target/release/wxdragon_sys_cmake_build/share/locale
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+    - name: Rebuild wxWidgets if its translations are missing
+      shell: bash
+      run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
     - name: Cache wxWidgets source
       id: wxwidgets-cache
       uses: actions/cache@v6
@@ -446,6 +526,14 @@ jobs:
         WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
         MACOSX_DEPLOYMENT_TARGET: "15.0"
       run: cargo release
+    - name: Check wxWidgets translations were embedded
+      shell: bash
+      run: |
+        exe=target/release/paperback${{ runner.os == 'Windows' && '.exe' || '' }}
+        if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
+          echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
+          exit 1
+        fi
     - name: Notarize and staple DMG
       if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       env:
