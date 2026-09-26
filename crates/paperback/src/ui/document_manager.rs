@@ -84,6 +84,33 @@ pub fn display_title(tab: &DocumentTab) -> String {
 	title_or_filename(tab.session.title(), &tab.file_path)
 }
 
+/// The 0-based tab index a key press names, if it names one at all.
+///
+/// `Ctrl+1` through `Ctrl+9` name the first nine open documents in the order they were
+/// opened, as they do in a browser. Only those, and only with Ctrl held and nothing else:
+/// `Ctrl+Shift+digit` and `Ctrl+Alt+digit` belong to whatever the shortcut table or the
+/// system has bound them to. The numpad row counts as well as the digits above it.
+///
+/// wxWidgets reports the macOS Command key as `control_down`, so this covers Cmd+1 there
+/// without a special case - which is the same reasoning `reader_input`'s `document_edge_for_key`
+/// is built on, and lands on the convention macOS users already have for their tabs.
+pub fn tab_index_for_key(key: i32, control: bool, alt: bool, shift: bool) -> Option<usize> {
+	if !control || alt || shift {
+		return None;
+	}
+	// `Ctrl+0` names nothing. It is left alone rather than treated as the tenth tab, since ten
+	// is a document this feature cannot reach and a key that does not work is worse than one
+	// that never appeared.
+	let digit = if (i32::from(b'1')..=i32::from(b'9')).contains(&key) {
+		key - i32::from(b'0')
+	} else if (WXK_NUMPAD1..=WXK_NUMPAD9).contains(&key) {
+		key - WXK_NUMPAD1 + 1
+	} else {
+		return None;
+	};
+	usize::try_from(digit - 1).ok()
+}
+
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
 
 pub struct DocumentManager {
@@ -248,6 +275,57 @@ impl DocumentManager {
 
 	pub const fn notebook(&self) -> &Notebook {
 		&self.notebook
+	}
+
+	/// Selects the tab at `index`, reporting whether there was such a tab.
+	///
+	/// Goes through the notebook rather than setting state directly, which is what makes this
+	/// behave exactly like the notebook's own Ctrl+Tab: the tab strip repaints, the page-changed
+	/// handler updates the title bar, pauses the other document's audio and checks whether the
+	/// file changed on disk.
+	///
+	/// The title is announced here rather than left to the page-changing handler, and that is the
+	/// part which is easy to get wrong. That handler takes the manager lock before it announces
+	/// anything, and every caller of this method already holds it - there is no way to reach a
+	/// `DocumentManager` except through its `MutexGuard` - so it takes the lock, fails, and
+	/// returns in silence. The jump then announced nothing at all, and what a screen reader said
+	/// instead was its own focus event on the newly revealed text control: "edit read only",
+	/// then whatever line the caret was on. Ctrl+Tab never had that problem because the notebook
+	/// handles it from its own key handler, with the lock free.
+	///
+	/// Announcing last, and through the delayed live region rather than straight to the reader,
+	/// is what makes the title land on top of that focus event instead of under it - the same
+	/// thing [`announce`]'s delay is there for everywhere else. It is the one behaviour worth
+	/// copying from Ctrl+Tab, and it is a behaviour of the announcement, not of the focus.
+	///
+	/// `Ctrl+<n>` for an `n` past the last document reports false and does nothing at all. The
+	/// alternative - saying so - would mean a new translatable string for a key that is mostly
+	/// pressed by habit, and a reader who is nine documents deep is not going to wonder what
+	/// went wrong.
+	pub fn switch_to_tab(&self, index: usize) -> bool {
+		let Some(tab) = self.tabs.get(index) else {
+			return false;
+		};
+		if self.active_tab_index() == Some(index) {
+			// Re-announced rather than left silent. "Already on this tab" and "the shortcut did
+			// nothing" are indistinguishable to a screen reader, and the shortcut doing nothing
+			// is the reading that costs the reader the most.
+			announce(self.live_region_label, display_title(tab));
+			return true;
+		}
+		self.notebook.set_selection(index);
+		// The same condition the page-changing handler uses. From the reading control the notebook
+		// does not have focus, the handler cannot get in to say anything, and the title is the
+		// only thing this gesture should be heard saying. From the tab strip the notebook does
+		// have focus and its native control announces its own new selection, so saying it again
+		// would read the title twice.
+		//
+		// After the page change, so that the title lands on top of the focus event the switch
+		// caused rather than under it.
+		if !self.notebook.has_focus() {
+			announce(self.live_region_label, display_title(&self.tabs[index]));
+		}
+		true
 	}
 
 	pub fn activate_current_link(&mut self) {
@@ -665,7 +743,64 @@ fn reparse_tab_in_place(
 mod tests {
 	use std::{env, fs, path::PathBuf, process};
 
-	use super::{position_announcement, read_fingerprint};
+	use wxdragon::prelude::{WXK_NUMPAD1, WXK_NUMPAD3, WXK_NUMPAD9};
+
+	use super::{position_announcement, read_fingerprint, tab_index_for_key};
+
+	/// Ctrl+1 is the first document opened, and so maps to tab 0. Everything is checked against
+	/// the same function both key handlers call, because the mapping is the only part of this
+	/// that can be wrong without a window to look at.
+	#[test]
+	fn ctrl_digit_names_a_tab_by_the_order_the_documents_were_opened() {
+		for (digit, expected) in [(1, 0), (2, 1), (5, 4), (9, 8)] {
+			assert_eq!(tab_index_for_key(i32::from(b'0') + digit, true, false, false), Some(expected));
+		}
+	}
+
+	#[test]
+	fn the_numpad_row_names_the_same_tab_as_the_digits() {
+		for offset in 0..9 {
+			let key = WXK_NUMPAD1 + offset;
+			assert_eq!(
+				tab_index_for_key(key, true, false, false),
+				tab_index_for_key(i32::from(b'1') + offset, true, false, false)
+			);
+		}
+	}
+
+	/// The digits below Ctrl belong to heading navigation and the digits under Alt to the menu
+	/// bar's own mnemonics, and both must keep working.
+	#[test]
+	fn a_digit_without_control_is_not_a_tab() {
+		assert_eq!(tab_index_for_key(i32::from(b'1'), false, false, false), None);
+		assert_eq!(tab_index_for_key(i32::from(b'1'), false, true, false), None);
+		assert_eq!(tab_index_for_key(i32::from(b'1'), false, false, true), None);
+	}
+
+	/// Shift and Alt chords on a digit belong to the shortcut table and to the system, not here.
+	#[test]
+	fn ctrl_shift_and_ctrl_alt_digits_are_left_alone() {
+		assert_eq!(tab_index_for_key(i32::from(b'3'), true, false, true), None);
+		assert_eq!(tab_index_for_key(i32::from(b'3'), true, true, false), None);
+		assert_eq!(tab_index_for_key(WXK_NUMPAD3, true, false, true), None);
+	}
+
+	/// There is no tenth document to name, and a tenth tab is not something this feature reaches.
+	#[test]
+	fn ctrl_zero_names_no_tab() {
+		assert_eq!(tab_index_for_key(i32::from(b'0'), true, false, false), None);
+	}
+
+	/// The other keys that share this range of codes: a Ctrl that happens to land on a neighbouring
+	/// key code must not be read as a digit. Numpad 0 sits directly below Numpad 1, and the
+	/// digit row's neighbours are punctuation.
+	#[test]
+	fn keys_beside_the_digits_name_no_tab() {
+		assert_eq!(tab_index_for_key(i32::from(b'0') - 1, true, false, false), None);
+		assert_eq!(tab_index_for_key(i32::from(b'9') + 1, true, false, false), None);
+		assert_eq!(tab_index_for_key(WXK_NUMPAD1 - 1, true, false, false), None);
+		assert_eq!(tab_index_for_key(WXK_NUMPAD9 + 1, true, false, false), None);
+	}
 
 	struct TempFile {
 		path: PathBuf,

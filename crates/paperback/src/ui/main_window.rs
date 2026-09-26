@@ -15,7 +15,7 @@ use wxdragon::{prelude::*, timer::Timer};
 use super::tray;
 use super::{
 	background, commands, dialogs,
-	document_manager::{DocumentManager, DocumentTab, display_title},
+	document_manager::{DocumentManager, DocumentTab, display_title, tab_index_for_key},
 	find::{self, FindDialogState},
 	help, icon, menu, menu_ids, navigation,
 	readability::build_font_from_readability,
@@ -222,23 +222,37 @@ impl MainWindow {
 		notebook.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(key_event) = &event
 				&& let Some(key) = key_event.get_key_code()
-				&& (key == WXK_DELETE || key == WXK_NUMPAD_DELETE)
 			{
-				let mut dm = dm.lock().unwrap();
-				close_active_document_announced(&mut dm, live_region_label);
-				update_title_from_manager(&frame_copy, &dm);
-				let has_docs = dm.tab_count() > 0;
-				let has_reopen = dm.has_recently_closed();
-				if has_docs {
-					dm.restore_focus();
-				} else {
-					dm.notebook().set_focus();
+				// The same Ctrl+digit chords the reading control answers, so arrowing across the tab
+				// strip and then reaching for a number still works. The native tab control announces
+				// its own selection from here, and the page-changing handler deliberately stays
+				// quiet when the notebook has focus - but `switch_to_tab` announces either way,
+				// because it cannot rely on that handler, whose lock this call already holds.
+				if let Some(index) =
+					tab_index_for_key(key, key_event.control_down(), key_event.alt_down(), key_event.shift_down())
+					&& let Ok(dm) = dm.try_lock()
+				{
+					key_event.event.skip(false);
+					dm.switch_to_tab(index);
+					return;
 				}
-				drop(dm);
-				menu::update_menu_item_states(&frame_copy, has_docs);
-				menu::update_reopen_state(&frame_copy, has_reopen);
-				event.skip(false);
-				return;
+				if key == WXK_DELETE || key == WXK_NUMPAD_DELETE {
+					let mut dm = dm.lock().unwrap();
+					close_active_document_announced(&mut dm, live_region_label);
+					update_title_from_manager(&frame_copy, &dm);
+					let has_docs = dm.tab_count() > 0;
+					let has_reopen = dm.has_recently_closed();
+					if has_docs {
+						dm.restore_focus();
+					} else {
+						dm.notebook().set_focus();
+					}
+					drop(dm);
+					menu::update_menu_item_states(&frame_copy, has_docs);
+					menu::update_reopen_state(&frame_copy, has_reopen);
+					event.skip(false);
+					return;
+				}
 			}
 			event.skip(true);
 		});
