@@ -224,14 +224,23 @@ impl DocumentManager {
 		}
 	}
 
-	/// Returns the native handle to fire an accessibility focus event on after `restore_focus`,
-	/// or `None` when the control emits its own focus event and no manual event is needed. On
-	/// Windows the read-only Richedit does not emit its own focus event on re-activation, so the
-	/// text control needs the explicit event; the notebook's native tab control announces its
-	/// selected tab on its own (firing a whole-control event here would swallow that).
+	/// Tells screen readers that the text control has focus, after `restore_focus`. On Windows the
+	/// read-only Richedit does not emit its own focus event on re-activation, and `SetFocus` on a
+	/// window that already has focus emits nothing at all, so the text control needs the explicit
+	/// event; the notebook's native tab control announces its selected tab on its own (firing a
+	/// whole-control event there would swallow that), so nothing is sent for it.
 	#[cfg(target_os = "windows")]
-	pub fn focus_target_handle(&self) -> Option<*mut std::ffi::c_void> {
-		if self.last_focus_in_text.get() { self.active_tab().map(|tab| tab.text_ctrl.get_handle()) } else { None }
+	pub fn announce_focus(&self) {
+		if !self.last_focus_in_text.get() {
+			return;
+		}
+		if let Some(tab) = self.active_tab() {
+			let hwnd = windows::Win32::Foundation::HWND(tab.text_ctrl.get_handle());
+			// EVENT_OBJECT_FOCUS = 0x8005, OBJID_CLIENT = -4, CHILDID_SELF = 0
+			unsafe {
+				windows::Win32::UI::Accessibility::NotifyWinEvent(0x8005, hwnd, -4, 0);
+			}
+		}
 	}
 
 	pub fn pop_recently_closed(&mut self) -> Option<PathBuf> {
