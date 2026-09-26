@@ -106,8 +106,16 @@ impl MainWindow {
 		notebook.msw_disable_composited();
 		sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
-		let doc_manager =
-			Rc::new(Mutex::new(DocumentManager::new(frame, notebook, Rc::clone(&config), live_region_label)));
+		// Shared by the frame's char hook and the menu dispatcher so a command can tell a
+		// shortcut from a menu click. See `menu_events::bind_key_source`.
+		let from_keyboard = Rc::new(Cell::new(false));
+		let doc_manager = Rc::new(Mutex::new(DocumentManager::new(
+			frame,
+			notebook,
+			Rc::clone(&config),
+			live_region_label,
+			Rc::clone(&from_keyboard),
+		)));
 		let find_dialog = Rc::new(Mutex::new(None));
 		#[cfg(target_os = "windows")]
 		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(&config.lock().unwrap().get_hotkey())));
@@ -117,9 +125,11 @@ impl MainWindow {
 			&config,
 			&find_dialog,
 			live_region_label,
+			&from_keyboard,
 			#[cfg(target_os = "windows")]
 			&hotkey_handle,
 		);
+		menu_events::bind_key_source(&frame, &config, Rc::clone(&from_keyboard));
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
 		let dm = Rc::clone(&doc_manager);

@@ -4,7 +4,7 @@
 //! through the document manager to reach the active tab, which is the tab whose control has
 //! focus.
 
-use std::{rc::Rc, sync::Mutex};
+use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use paperback_core::config::ActionId;
 use patois::t;
@@ -22,6 +22,7 @@ pub(super) fn build_text_ctrl(
 	word_wrap: bool,
 	self_rc: &Rc<Mutex<DocumentManager>>,
 	frame: Frame,
+	from_keyboard: Rc<Cell<bool>>,
 ) -> TextCtrl {
 	let style = TextCtrlStyle::MultiLine
 		| TextCtrlStyle::ReadOnly
@@ -173,6 +174,7 @@ pub(super) fn build_text_ctrl(
 				match act {
 					ActionId::AnnouncePercent => {
 						kbd.event.skip(false);
+						from_keyboard.set(false);
 						if let Ok(dm) = dm_for_keys.try_lock() {
 							dm.announce_current_percent();
 						}
@@ -180,6 +182,7 @@ pub(super) fn build_text_ctrl(
 					}
 					ActionId::SetTemporaryBookmark => {
 						kbd.event.skip(false);
+						from_keyboard.set(false);
 						if let Ok(dm) = dm_for_keys.try_lock() {
 							dm.set_temporary_bookmark();
 						}
@@ -187,6 +190,7 @@ pub(super) fn build_text_ctrl(
 					}
 					ActionId::JumpToTemporaryBookmark => {
 						kbd.event.skip(false);
+						from_keyboard.set(false);
 						if let Ok(mut dm) = dm_for_keys.try_lock() {
 							dm.jump_to_temporary_bookmark();
 						}

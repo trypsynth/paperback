@@ -18,7 +18,7 @@ use crate::ui::{
 		close_active_document_announced, ensure_parser_ready_for_path, rebuild_menu_bar, update_title_from_manager,
 	},
 	menu,
-	navigation::announce,
+	navigation::announce_for_command,
 };
 
 pub fn open(ctx: &Ctx) {
@@ -109,7 +109,7 @@ pub fn clear_recent_documents(ctx: &Ctx) {
 		let cfg = ctx.config.lock().unwrap();
 		if !cfg.has_recent_documents() {
 			// TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
-			announce(ctx.live_region_label, t("No recent documents."));
+			announce_for_command(ctx.live_region_label, ctx.from_keyboard, t("No recent documents."));
 			return;
 		}
 		cfg.clear_recent_documents();
@@ -117,7 +117,7 @@ pub fn clear_recent_documents(ctx: &Ctx) {
 	}
 	rebuild_menu_bar(ctx.frame, ctx.dm, ctx.config);
 	// TRANSLATORS: Announced after the Recent Documents list has been emptied
-	announce(ctx.live_region_label, t("Recent documents cleared."));
+	announce_for_command(ctx.live_region_label, ctx.from_keyboard, t("Recent documents cleared."));
 }
 
 pub fn exit(ctx: &Ctx) {
