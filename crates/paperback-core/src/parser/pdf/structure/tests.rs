@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
-use super::{ImagePlacement, UnclaimedImages, append_pdf_table_to_buffer, flush_block, normalize_list_label};
+use super::{
+	ImagePlacement, UnclaimedImages, append_pdf_table_to_buffer, flush_block,
+	marked_content::{PageText, TreeFacts, fold_repeated_references},
+	normalize_list_label,
+};
 use crate::document::{DocumentBuffer, MarkerType};
 
 /// OFF mode: the PDF table helper emits a single `"[Table]: <first row>"` placeholder line and
@@ -105,4 +109,74 @@ fn a_list_label_joins_the_line_that_follows_it() {
 	assert_eq!(buffer.content, "\u{2022} ANTIPASTI PER DUE\n");
 	assert_eq!(lines_info.len(), 1, "one line, not a label line and a text line");
 	assert!(label.is_empty(), "the label is spent once it is written");
+}
+
+/// The tree facts gathered from a page whose tree names these ids, in this order.
+fn facts_naming(mcids: &[i32]) -> TreeFacts {
+	let mut facts = TreeFacts::default();
+	for mcid in mcids {
+		facts.note_reference(*mcid);
+	}
+	facts
+}
+
+/// A paragraph running onto a new page names that page's first id once for itself and once more
+/// for each piece of text it lost there.
+#[test]
+fn a_reference_made_twice_counts_as_a_repeat() {
+	assert_eq!(facts_naming(&[0, 0, 3]).repeats, HashMap::from([(0, 1)]));
+	assert_eq!(facts_naming(&[0, 0, 0]).repeats, HashMap::from([(0, 2)]));
+}
+
+/// Each id's text on a page, `"t0 "` for id 0 and so on.
+fn text_of(mcids: &[i32]) -> HashMap<i32, String> {
+	mcids.iter().map(|mcid| (*mcid, format!("t{mcid} "))).collect()
+}
+
+/// The page's text after folding, for content running through the ids in `order` with those in
+/// `artifacts` inside `Artifact` marks, under a tree naming `named`.
+fn folded(order: &[i32], artifacts: &[i32], named: &[i32]) -> HashMap<i32, String> {
+	let mut text = text_of(order);
+	fold_repeated_references(order, &artifacts.iter().copied().collect(), &facts_naming(named), &mut text);
+	text
+}
+
+/// A paragraph names id 0 twice, a line number (artifact 1) follows it, and the words after the
+/// line number (id 2) are named by nothing.
+#[test]
+fn a_repeated_reference_takes_the_span_after_the_line_number() {
+	let text = folded(&[0, 1, 2, 3], &[1], &[0, 0, 3]);
+	assert_eq!(text[&0], "t0 t2 ");
+	assert_eq!(text[&3], "t3 ", "the next paragraph keeps its own text");
+}
+
+/// Id 0 named three times, with two line numbers and two pieces of text after them.
+#[test]
+fn a_reference_made_three_times_takes_two_spans() {
+	assert_eq!(folded(&[0, 1, 2, 3, 4, 5], &[1, 3], &[0, 0, 0, 5])[&0], "t0 t2 t4 ");
+}
+
+#[test]
+fn recovery_stops_at_the_next_referenced_mcid() {
+	assert_eq!(folded(&[0, 3, 5], &[], &[0, 0, 3])[&0], "t0 ", "id 5 lies past id 3, which the tree names");
+}
+
+#[test]
+fn recovery_takes_no_more_parts_than_extra_references() {
+	assert_eq!(folded(&[0, 2, 4, 3], &[], &[0, 0, 3])[&0], "t0 t2 ");
+}
+
+/// Guard: text the tree never names stays out of a page whose tree names every id once.
+#[test]
+fn a_page_without_repeats_is_left_alone() {
+	assert_eq!(folded(&[0, 1, 2, 3], &[1], &[0, 3]), text_of(&[0, 1, 2, 3]));
+}
+
+#[test]
+fn an_mcid_named_twice_is_read_once() {
+	let text = text_of(&[0, 3]);
+	let mut page = PageText::new(&text);
+	assert_eq!(page.take(0), Some("t0 "));
+	assert_eq!(page.take(0), None, "the second reference reads nothing");
+	assert_eq!(page.take(3), Some("t3 "));
 }

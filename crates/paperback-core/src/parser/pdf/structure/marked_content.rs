@@ -26,6 +26,9 @@ pub(super) struct TreeFacts {
 	/// Every marked-content id the tree points at, so [`object_mcid`] knows which of an object's
 	/// marks the tree is going to ask for.
 	pub referenced: HashSet<i32>,
+	/// How many more times the tree names each id after the first time on this page. Ids named
+	/// once are not in it.
+	pub repeats: HashMap<i32, usize>,
 	/// Whether the tree names an image anywhere. A tree that names none leaves the page's images
 	/// to be placed by the height they were drawn at; see
 	/// [`crate::parser::pdf::images::UnclaimedImages`].
@@ -43,6 +46,13 @@ impl TreeFacts {
 		facts
 	}
 
+	/// Note one of the tree's references to a marked-content id.
+	pub(super) fn note_reference(&mut self, mcid: i32) {
+		if !self.referenced.insert(mcid) {
+			*self.repeats.entry(mcid).or_default() += 1;
+		}
+	}
+
 	fn gather(&mut self, elem: &Tag) {
 		if elem.kind().unwrap_or_default() == "Figure" {
 			self.claims_figures = true;
@@ -52,7 +62,7 @@ impl TreeFacts {
 			if let Some(child) = elem.child(i) {
 				self.gather(&child);
 			} else if let Some(mcid) = elem.child_mcid(i) {
-				self.referenced.insert(mcid);
+				self.note_reference(mcid);
 			}
 		}
 	}
@@ -70,14 +80,42 @@ pub(super) struct PageMarkedContent {
 	pub coverage: f64,
 }
 
+/// A page's text by marked-content id, handing each id's text out once however many times the
+/// tree names it.
+pub(super) struct PageText<'a> {
+	pub text: &'a HashMap<i32, String>,
+	read: HashSet<i32>,
+}
+
+impl<'a> PageText<'a> {
+	pub(super) fn new(text: &'a HashMap<i32, String>) -> Self {
+		Self { text, read: HashSet::new() }
+	}
+
+	/// The text of `mcid`, or `None` when it has none or has been handed out already.
+	pub(super) fn take(&mut self, mcid: i32) -> Option<&'a str> {
+		if !self.read.insert(mcid) {
+			return None;
+		}
+		self.text.get(&mcid).map(String::as_str)
+	}
+}
+
 /// Walks the page's characters into [`PageMarkedContent`].
 ///
 /// `want_tops` asks for each id's height as well, which costs one pdfium call per id. Only a page
 /// placing images by height needs it, so a page whose tree names its figures does not pay for it.
+///
+/// An id the tree names more than once also gets the text of the ids lost in its place; see
+/// [`fold_repeated_references`].
 pub(super) fn read(text_page: &PdfTextPage, facts: &TreeFacts, want_tops: bool) -> PageMarkedContent {
 	let mut content = PageMarkedContent { text: HashMap::new(), tops: HashMap::new(), coverage: 1.0 };
 	let mut real_char_count: usize = 0;
 	let mut mcid_char_count: usize = 0;
+	let want_order = !facts.repeats.is_empty();
+	let mut order: Vec<i32> = Vec::new();
+	let mut artifacts: HashSet<i32> = HashSet::new();
+	let mut seen: HashSet<i32> = HashSet::new();
 	if let Some(char_count) = text_page.char_count() {
 		let mut current_mcid = -1;
 		// Chars of the current marked-content run with their pdfium index, so RTL
@@ -98,6 +136,12 @@ pub(super) fn read(text_page: &PdfTextPage, facts: &TreeFacts, want_tops: bool) 
 				let mut char_mcid = -1;
 				if !is_generated && let Some(obj) = text_page.text_object(i) {
 					char_mcid = object_mcid(&obj, &facts.referenced);
+					if want_order && char_mcid >= 0 && char_mcid != current_mcid && seen.insert(char_mcid) {
+						order.push(char_mcid);
+						if !facts.referenced.contains(&char_mcid) && is_artifact(&obj) {
+							artifacts.insert(char_mcid);
+						}
+					}
 				}
 				if !is_generated && !ch.is_whitespace() {
 					real_char_count += 1;
@@ -128,7 +172,36 @@ pub(super) fn read(text_page: &PdfTextPage, facts: &TreeFacts, want_tops: bool) 
 	if real_char_count > 0 {
 		content.coverage = mcid_char_count as f64 / real_char_count as f64;
 	}
+	fold_repeated_references(&order, &artifacts, facts, &mut content.text);
 	content
+}
+
+/// Gives each repeated reference the text the tree lost in its place.
+///
+/// For every id `m` the tree names `k` extra times, `order` is read forward from `m`: `artifacts`
+/// are passed over, the first id the tree does name ends the search, and up to `k` ids the tree
+/// never names have their text appended to `m`'s. `order` holds each id of the page once, where it
+/// first appears in the content.
+pub(super) fn fold_repeated_references(
+	order: &[i32],
+	artifacts: &HashSet<i32>,
+	facts: &TreeFacts,
+	text: &mut HashMap<i32, String>,
+) {
+	for (&mcid, &extra) in &facts.repeats {
+		let Some(start) = order.iter().position(|id| *id == mcid) else { continue };
+		let lost = order[start + 1..]
+			.iter()
+			.copied()
+			.filter(|id| !artifacts.contains(id))
+			.take_while(|id| !facts.referenced.contains(id))
+			.take(extra);
+		for id in lost {
+			if let Some(found) = text.remove(&id) {
+				text.entry(mcid).or_default().push_str(&found);
+			}
+		}
+	}
 }
 
 /// The marked-content id a text object's glyphs belong to.
@@ -158,6 +231,12 @@ fn object_mcid(obj: &PageObject, referenced: &HashSet<i32>) -> i32 {
 	deepest
 }
 
+/// Whether any of an object's marks is an `Artifact` one: a running head, a page or line number,
+/// or other page furniture.
+fn is_artifact(obj: &PageObject) -> bool {
+	(0..obj.mark_count()).filter_map(|index| obj.mark(index)).any(|mark| mark.name().as_deref() == Some("Artifact"))
+}
+
 /// The first marked-content id anywhere under an element, which is where its text starts on the
 /// page.
 pub(super) fn first_marked_content_id(elem: &Tag) -> Option<i32> {
@@ -176,13 +255,18 @@ pub(super) fn first_marked_content_id(elem: &Tag) -> Option<i32> {
 
 /// All the text under an element, ids resolved and run together, for the places that want an
 /// element's words rather than its layout: a heading's title, a list item's label, a table cell.
+/// An id the element names more than once is read the first time only.
 pub(super) fn collect_text(elem: &Tag, mcid_to_text: &HashMap<i32, String>, out: &mut String) {
+	collect_unread_text(elem, &mut PageText::new(mcid_to_text), out);
+}
+
+fn collect_unread_text(elem: &Tag, page_text: &mut PageText, out: &mut String) {
 	let count = elem.child_count();
 	for i in 0..count {
 		if let Some(child) = elem.child(i) {
-			collect_text(&child, mcid_to_text, out);
+			collect_unread_text(&child, page_text, out);
 		} else if let Some(mcid) = elem.child_mcid(i)
-			&& let Some(text) = mcid_to_text.get(&mcid)
+			&& let Some(text) = page_text.take(mcid)
 		{
 			out.push_str(text);
 		}

@@ -18,7 +18,7 @@
 use std::collections::HashMap;
 
 use self::{
-	marked_content::{MIN_MCID_COVERAGE, TreeFacts, collect_text, first_marked_content_id},
+	marked_content::{MIN_MCID_COVERAGE, PageText, TreeFacts, collect_text, first_marked_content_id},
 	tables::{append_pdf_table_to_buffer, build_html_table},
 };
 use super::images::{UnclaimedImages, append_image};
@@ -84,12 +84,13 @@ pub(super) fn extract_tagged_page_text(
 	}
 	let mut current_block = String::new();
 	let mut pending_label = String::new();
+	let mut page_text = PageText::new(&content.text);
 	let mut images = ImagePlacement { mcid_tops: &content.tops, unclaimed, block_top: None };
 	for i in 0..child_count {
 		if let Some(child) = struct_tree.child(i) {
 			process_struct_element(
 				&child,
-				&content.text,
+				&mut page_text,
 				buffer,
 				page_display_text,
 				&mut current_block,
@@ -232,7 +233,7 @@ fn flush_block_lines(
 #[allow(clippy::too_many_arguments)]
 fn process_struct_element(
 	elem: &Tag,
-	mcid_to_text: &HashMap<i32, String>,
+	page_text: &mut PageText,
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
 	current_block: &mut String,
@@ -249,7 +250,7 @@ fn process_struct_element(
 		// the label would go out as a line of its own, which arrowing through the item meets as a
 		// stop with nothing to say.
 		let mut label = String::new();
-		collect_text(elem, mcid_to_text, &mut label);
+		collect_text(elem, page_text.text, &mut label);
 		let label = trim_string(&collapse_whitespace(&label));
 		if !label.is_empty() {
 			images.note_element(elem);
@@ -259,7 +260,7 @@ fn process_struct_element(
 	}
 	if elem_type == "Table" {
 		flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info, images);
-		let html = build_html_table(elem, mcid_to_text);
+		let html = build_html_table(elem, page_text.text);
 		images.note_element(elem);
 		images.before_line(buffer, page_display_text, current_lines_info);
 		let pos = buffer.current_position();
@@ -311,7 +312,7 @@ fn process_struct_element(
 		if let Some(child) = elem.child(i) {
 			process_struct_element(
 				&child,
-				mcid_to_text,
+				page_text,
 				buffer,
 				page_display_text,
 				current_block,
@@ -322,7 +323,7 @@ fn process_struct_element(
 				images,
 			);
 		} else if let Some(mcid) = elem.child_mcid(i)
-			&& let Some(text) = mcid_to_text.get(&mcid)
+			&& let Some(text) = page_text.take(mcid)
 		{
 			images.note(mcid);
 			current_block.push_str(text);
@@ -354,7 +355,7 @@ fn process_struct_element(
 		};
 		if let Some(level) = heading_level {
 			let mut title = String::new();
-			collect_text(elem, mcid_to_text, &mut title);
+			collect_text(elem, page_text.text, &mut title);
 			let title = trim_string(&collapse_whitespace(&title));
 			if !title.is_empty() {
 				let marker_type = match level {
@@ -375,7 +376,7 @@ fn process_struct_element(
 		}
 		if elem_type == "LI" || elem_type == "TOCI" {
 			let mut li_text = String::new();
-			collect_text(elem, mcid_to_text, &mut li_text);
+			collect_text(elem, page_text.text, &mut li_text);
 			let li_text = trim_string(&collapse_whitespace(&li_text));
 			buffer.add_marker(Marker::new(MarkerType::ListItem, block_start_pos).with_text(li_text));
 		}
