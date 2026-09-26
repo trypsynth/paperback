@@ -33,13 +33,13 @@ Paperback toimii sujuvasti kaikilla yleisimmillä ruudunlukijoilla. JAWS-käytt�
 
 Jos käytät JAWS-ruudunlukijaa ja pistenäyttöä, pitkät kappaleet saattavat katketa, kun tekstiä vieritetään eteenpäin näytön navigointinäppäimillä. Ongelma koskee myös nykyisen kappaleen lukukomentoa. Tämä johtuu JAWSin virheestä RICHEDIT50W-tekstikentän käsittelyssä, eli vika ei ole Paperbackissa. Ratkaisun löytäminen kesti kauan, koska Visperolta on tunnetusti vaikea saada vastauksia avoimen lähdekoodin sovellusten virheraportteihin.
 
-Kiertotienä ongelmaan on paperback.jcf-tiedoston muokkaaminen siten, että asetuksen "Braille Presentation and Panning" (Pistekirjoitusesitys ja -vieritys) arvoksi määritetään "Always use DOM if available" (Käytä aina DOMia, jos se on saatavilla). Lisäksi asetus "Pan Text by Paragraph" (Vieritä kappaleittain) on otettava käyttöön, jotta pistenäyttö siirtyy eteenpäin seuraavaan kappaleeseen. Näillä asetuksilla vierityksen pitäisi toimia oikein.
+Kiertotienä ongelmaan on paperback.jcf-tiedoston muokkaaminen siten, että asetuksen ”Braille Presentation and Panning” (Pistekirjoitusesitys ja -vieritys) arvoksi määritetään ”Always use DOM if available” (Käytä aina DOMia, jos se on saatavilla). Lisäksi asetus ”Pan Text by Paragraph” (Vieritä kappaleittain) on otettava käyttöön, jotta pistenäyttö siirtyy eteenpäin seuraavaan kappaleeseen. Näillä asetuksilla vierityksen pitäisi toimia oikein.
 
 ### JAWS ja Paperbackin ilmoitukset
 
-Paperbackin ilmoitukset, kuten ”Ei sivuja” ja ”Asiakirjassa ei ole äänitettä”, lähetetään saavutettavuusilmoituksina, minkä ansiosta ruudunlukija voi lukea ne muun puheen päälle. JAWS reagoi niihin vain, jos sovellukselle on otettu käyttöön asetus "Enable accessible notification events" (Ota käyttöön saavutettavat ilmoitukset), eikä se ole käytössä kaikissa koneissa.
+Paperbackin ilmoitukset, kuten ”Ei sivuja” ja ”Asiakirjassa ei ole äänitettä”, lähetetään saavutettavuusilmoituksina, minkä ansiosta ruudunlukija voi lukea ne muun puheen päälle. JAWS reagoi niihin vain, jos sovellukselle on otettu käyttöön asetus ”Enable accessible notification events” (Ota käyttöön saavutettavat ilmoitukset), eikä se ole käytössä kaikissa koneissa.
 
-Jos JAWS ei puhu mitään painaessasi jotain ilmoituksen aiheuttavaa näppäintä, avaa Settings Center (Asetuskeskus) Insert+6-pikanäppäimellä Paperbackin ollessa etualalla, etsi sanalla "notification" (ilmoitukset) ja valitse valintaruutu "Enable accessible notification events" (Ota käyttöön saavutettavat ilmoitukset). Tämä tallentaa asetuksen paperback.jcf-tiedostoon, joten se koskee vain Paperbackia.
+Jos JAWS ei puhu mitään painaessasi jotain ilmoituksen aiheuttavaa näppäintä, avaa Settings Center (Asetuskeskus) Insert+6-pikanäppäimellä Paperbackin ollessa etualalla, etsi sanalla ”notification” (ilmoitukset) ja valitse valintaruutu ”Enable accessible notification events” (Ota käyttöön saavutettavat ilmoitukset). Tämä tallentaa asetuksen paperback.jcf-tiedostoon, joten se koskee vain Paperbackia.
 
 ## Tuettavat tiedostomuodot
 
@@ -79,7 +79,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+F4` (macOS: `Cmd+W`): Sulje nykyinen asiakirja.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Sulje kaikki avoimet asiakirjat.
 * `Ctrl+Shift+T`: Avaa viimeksi suljetun asiakirjan uudelleen.
-* `Ctrl+R`: Näytä "Kaikki asiakirjat" -valintaikkuna (Viimeksi avatut -valikosta).
+* `Ctrl+R`: Näytä ”Kaikki asiakirjat” -valintaikkuna (Viimeksi avatut -valikosta).
 * `Ctrl+Q`: Lopeta (vain Windowsissa; macOS:ää käytettäessä tämä komento löytyy sovellusvalikosta).
 
 ### Siirry-valikko
@@ -90,7 +90,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+G` (macOS: `Cmd+L`): Siirry riville.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Siirry prosenttiin.
 * `Ctrl+P`: Siirry sivulle (jos asiakirja tukee sitä).
-* `=`: Ilmoittaa asiakirjan lukukohdan prosentteina sekä sivunumeron (esim. "15 %, sivu 30"). Sivunumeroa ei ilmoiteta, jos asiakirjassa ei niitä ole.
+* `=`: Ilmoittaa asiakirjan lukukohdan prosentteina sekä sivunumeron (esim. ”15 %, sivu 30”). Sivunumeroa ei ilmoiteta, jos asiakirjassa ei niitä ole.
 * `Alt+Vasen nuoli` (macOS: `Cmd+[`): Siirry taaksepäin navigointihistoriassa.
 * `Alt+Oikea nuoli` (macOS: `Cmd+]`): Siirry eteenpäin navigointihistoriassa.
 * `[`: Edellinen luku.
@@ -144,7 +144,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+E`: Vie nykyinen asiakirja pelkkänä tekstinä.
 * `Ctrl+Shift+B`: Lisää kirjanmerkki nykyisen valinnan kohdalle tai kohdistimen sijaintiin tai poista se.
 * `Ctrl+Shift+N`: Lisää kirjanmerkin muistiinpano nykyisen valinnan tai kohdistimen kohdalle tai muokkaa sitä.
-* `Ctrl+Alt+W`: Ota rivitys käyttöön tai poista se käytöstä.
+* `Ctrl+Alt+W`: Ota automaattinen rivitys käyttöön tai poista se käytöstä.
 * `Ctrl+Välilyönti` (macOS: `RawCtrl+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
 * `'`: Kelaa äänitettä eteenpäin.
 * `;`: Kelaa äänitettä taaksepäin.
@@ -205,12 +205,12 @@ Voit siirtyä valitun siirtymistavan mukaisesti myös pyyhkäisemällä Toista-p
 
 Muut toiminnot löytyvät Lisää vaihtoehtoja -valikosta. Osa niistä toimii sovelluksesta riippuen hieman eri tavalla.
 
-* **Vaihda tekstistä puheeksi -tilaan tai Vaihda tekstitilaan:** vaihtaa edellä kuvatun tekstistä puheeksi -lukutilan ja tekstitilan välillä. Tekstitilassa "Lue tekstistä puheeksi -toiminnolla" -vaihtoehto aloittaa ja pysäyttää ääneenluvun poistumatta tekstitilasta.
+* **Vaihda tekstistä puheeksi -tilaan tai Vaihda tekstitilaan:** vaihtaa edellä kuvatun tekstistä puheeksi -lukutilan ja tekstitilan välillä. Tekstitilassa ”Lue tekstistä puheeksi -toiminnolla” -vaihtoehto aloittaa ja pysäyttää ääneenluvun poistumatta tekstitilasta.
 * **Sisällysluettelo:** näyttää kirjan luvut avattuna parhaillaan luettavan luvun kohdalta. Valitse luku siirtyäksesi sen kohdalle. Alalukuja sisältävät kohdat voidaan laajentaa ja supistaa ruudunlukijan toiminnoilla.
 * **Elementit:** näyttää asiakirjan otsikot ja linkit erillisissä luetteloissa. iOS:ssa luetteloa vaihdetaan Tyyppi-valitsimella ja Androidissa välilehdillä. Valitse haluamasi kohde siirtyäksesi siihen.
 * **Etsi:** kirjoita etsittävä teksti tai valitse hakuhistoriasta aiempi haku ja valitse, otetaanko kirjainkoko huomioon, etsitäänkö vain kokonaisia sanoja vai käytetäänkö säännöllistä lauseketta. Etsi edellinen- ja Etsi seuraava -painikkeet siirtävät hakutuloksen kohdalle samalla kun sen sijainti ilmoitetaan. Etsi-ikkuna pysyy avoinna haun jatkamista varten. Tekstistä puheeksi -lukutilassa Etsi-toiminto näkyy myös lukupalkissa navigointiyksikkönä, joten hakutuloksia voi selata myös sitä kautta.
 * **Siirry:** siirry asiakirjassa haluamallesi riville, sivulle tai tiettyyn prosenttikohtaan. Valitse haluamasi siirtymätapa Tila-valitsimella.
-* **Viimeksi avatut:** näyttää kaikki avaamasi asiakirjat ja ilmoittaa kunkin kohdalla, onko se parhaillaan avoinna, suljettu tai jos sen tiedostoa ei löydy. Asiakirjoille on kaksi ruudunlukijan toimintoa: "Poista" poistaa asiakirjan luettelosta ja "Etsi"-toiminnolla voit etsiä asiakirjan tiedoston, jos se on siirretty toiseen hakemistoon. "Tyhjennä viimeksi avattujen luettelo" tyhjentää luettelon poistamatta varsinaisia asiakirjoja.
+* **Viimeksi avatut:** näyttää kaikki avaamasi asiakirjat ja ilmoittaa kunkin kohdalla, onko se parhaillaan avoinna, suljettu tai jos sen tiedostoa ei löydy. Asiakirjoille on kaksi ruudunlukijan toimintoa: ”Poista” poistaa asiakirjan luettelosta ja ”Etsi”-toiminnolla voit etsiä asiakirjan tiedoston, jos se on siirretty toiseen hakemistoon. ”Tyhjennä viimeksi avattujen luettelo” tyhjentää luettelon poistamatta varsinaisia asiakirjoja.
 * **Sanamäärä:** näyttää asiakirjan sanojen määrän.
 * **Asiakirjan tiedot:** näyttää asiakirjan otsikon, tekijän, tiedostonimen ja iOS:ssä myös rivien ja merkkien määrän.
 * **Vie:** tallentaa asiakirjan teksti-, HTML- tai Markdown-muodossa.
@@ -347,13 +347,13 @@ Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:
 * Kaatuminen Paperbackia suljettaessa.
 * Ikkuna piilotetaan nyt heti Paperbackia suljettaessa sen sijaan, että se jäisi näkyviin tallennuksen ajaksi.
 * Suurikokoiset kirjat, joissa on vähän muotoilua, avautuvat nyt noin puolet nopeammin.
-* Ruudunlukija ei enää keskeytä valikosta valittujen toimintojen aiheuttamia ilmoituksia, kuten "Asiakirjassa ei ole äänitettä".
+* Ruudunlukija ei enää keskeytä valikosta valittujen toimintojen aiheuttamia ilmoituksia, kuten ”Asiakirjassa ei ole äänitettä”.
 * Avaa viimeksi suljettu -toiminto ei ole enää käytettävissä asiakirjan avaamisen jälkeen, jos uudelleen avattavia tiedostoja ei ole.
 * Paperback ei enää yritä toistuvasti avata viimeksi avattujen asiakirjojen luettelosta hävinneitä asiakirjoja, ja luetteloon tallennettavien asiakirjojen määrää on myös rajoitettu.
 * Vanha INI-asetustiedosto poistetaan sen jälkeen, kun se on siirretty uuteen muotoon.
 * Fontin- ja värinmääritysikkunoiden otsikot sekä Vie muodossa -valikko on nyt käännetty vietnamiksi.
 * Päivityksen jälkeen uudelleen käynnistyvän sovelluksen ikkuna siirtyy nyt etualalle sen sijaan, että jäisi Alt+Sarkain-järjestyksessä viimeiseksi.
-* Rivitys otetaan nyt käyttöön suurikokoisissa asiakirjoissa heti sen sijaan, että koko tiedosto avattaisiin uudelleen.
+* Automaattinen rivitys otetaan nyt käyttöön suurikokoisissa asiakirjoissa heti sen sijaan, että koko tiedosto avattaisiin uudelleen.
 
 ##### Navigointi
 * `Alt+Vasen nuoli` -näppäinkomennolla palataan nyt vanhemman sijainnin asemesta edelliseen kohtaan.
@@ -421,7 +421,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Selainnäkymän linkit siirtävät nyt osoittamaansa kohtaan eivätkä aiheuta enää ”Tiedostoa ei löydy” -ilmoitusta.
 * Automaattinen ”Asiakirja päivitetty” -ilmoitus odottaa nyt ruudunlukijan puheen päättymistä eikä keskeytä sitä enää kesken lauseen.
 * Asetukset-ikkunan Yleiset-välilehden sarkainjärjestys noudattaa nyt näytön järjestystä, ja päivityskanava on heti päivitystarkistuksen jälkeen.
-* Avaa sovelluksessa -valikossa ei näytetä enää sovelluksen koko kuvausta vaan pelkkä "Paperback".
+* Avaa sovelluksessa -valikossa ei näytetä enää sovelluksen koko kuvausta vaan pelkkä ”Paperback”.
 * Sanamäärä- ja Asiakirjan tiedot -ikkunoissa näytetään nyt äänikirjan tiedostomäärä sekä kokonaiskesto.
 
 ### Versio 0.9.1
@@ -463,7 +463,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 
 ##### Asetukset ja luettavuus
 * Luettavuus-välilehti, jossa on seuraavat asetukset:
-    * Tekstin rivitys (siirretty Yleiset-välilehdeltä)
+    * Automaattinen rivitys (siirretty Yleiset-välilehdeltä)
     * Näytä taulukot tekstin osana (uusi tässä versiossa, katso jäljempää)
     * Fontti
     * Taustaväri
@@ -471,8 +471,8 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
     * Kappaleväli
     * Kirjainväli
     * Tekstin tasaus
-* Rivitys-vaihtoehto ja sille oma pikanäppäin.
-* Asetus taulukoiden näyttötavan määrittämiseksi sekä yhtenäistetty taulukoiden esitystapa kaikille asiakirjoille.
+* Automaattisen rivityksen asetus ja sille oma pikanäppäin.
+* Taulukoiden näyttötavan määrittävä asetus sekä yhtenäistetty taulukoiden esitystapa kaikille asiakirjoille.
 
 ##### Navigointi
 * Lisätty tuki säilöittäin navigoimiselle.
@@ -550,7 +550,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Merkkiääni toistetaan nyt vain sellaisten sanojen kohdalla, joihin on lisätty kirjanmerkki tai muistiinpano.
 
 ##### Luettavuus
-* Rivityksen käyttöönotto siirsi kohdistuksen asiakirjan alkuun.
+* Automaattisen rivityksen käyttöönotto siirsi kohdistuksen asiakirjan alkuun.
 
 ##### Selainnäkymä
 * Selainnäkymäikkunan kokoa voi nyt muuttaa, eikä se avaudu enää liian pienenä.
@@ -593,8 +593,8 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Lisätty tuki sekä DAISY- että Word-muodossa oleville Booksharen pakatuille kirjoille.
 * Upotettujen kuvien vaihtoehtoisen tekstin pitäisi nyt näkyä oikein.
 * CHM-asiakirjoissa tuetaan nyt asianmukaisesti sisäisten linkkien navigointia.
-* Korjattu "Siirry sivulle" -toiminnon virhe, jonka vuoksi tietylle sivulle siirtyminen oli aina yhden numeron verran pielessä.
-* Korjattu ongelma, jonka vuoksi "Avaa muodossa" -valintaikkuna ei sulkeutunut Esc-näppäimellä.
+* Korjattu ”Siirry sivulle” -toiminnon virhe, jonka vuoksi tietylle sivulle siirtyminen oli aina yhden numeron verran pielessä.
+* Korjattu ongelma, jonka vuoksi ”Avaa muodossa” -valintaikkuna ei sulkeutunut Esc-näppäimellä.
 * Korjattu lukijan pikavalikko, joka ei avautunut hiiren oikealla painikkeella eikä sovellusnäppäimellä.
 * Korjattu ongelma, jonka vuoksi kohdistus siirtyi toisinaan väärään asiakirjaan, kun niitä avattiin komentoriviltä.
 * Pelkkiä kuvia sisältävät PDF-tiedostot tunnistetaan taas ja sovellus ilmoittaa niistä.
@@ -647,7 +647,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Lisätty taulukoiden tuki HTML- ja XHTML-pohjaisille asiakirjoille. Liiku taulukoiden välillä T:llä ja Shift+T:llä ja avaa taulukko selainnäkymässä painamalla Enter.
 * Lisätty alkeellinen verkkorenderöinti. Avaa asiakirjan nykyinen luku verkkopohjaisessa renderöijässä painamalla Ctrl+Shift+V. Tästä on hyötyä esimerkiksi monimutkaisessa muotoilussa tai koodiesimerkeissä.
 * Lisätty venäjänkielinen käännös. Kiitos Ruslan Gulmagomedoville.
-* Lisätty "Tyhjennä kaikki" -painike Kaikki asiakirjat -valintaikkunaan.
+* Lisätty ”Tyhjennä kaikki” -painike Kaikki asiakirjat -valintaikkunaan.
 * Päivitysten tarkistaja näyttää nyt julkaisutiedot, kun uusi versio on saatavilla.
 * Korjattu ikkunan palautus ilmaisinalueelta.
 * Kyllä/Ei-painikkeiden käännökset korjattu vahvistusvalintaikkunoissa.
@@ -677,7 +677,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Korjattu virhe, jonka vuoksi joidenkin EPUB-asiakirjojen lukujen nimet eivät näkyneet oikein sisällysluetteloikkunassa.
 * Korjattu virhe, jonka vuoksi sisällysluetteloikkunan OK- tai Peruuta-painikkeita ei voinut painaa välilyöntinäppäimellä.
 * Otsikoiden käsittelyä parannettu Word-asiakirjoissa.
-* Paperback antaa nyt äänipalautteen yritettäessä avata "Viimeksi avatut asiakirjat" -valintaikkunaa, kun luettelo on tyhjä.
+* Paperback antaa nyt äänipalautteen yritettäessä avata ”Viimeksi avatut asiakirjat” -valintaikkunaa, kun luettelo on tyhjä.
 
 ### Versio 0.6.0
 * Asetukset-valintaikkunaan lisätty uusi asetus, jolla Siirry-valikko voidaan näyttää huomattavasti tiiviimmässä muodossa. Se on oletusarvoisesti käytössä.
@@ -690,13 +690,13 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Lisätty OpenDocument-tekstitiedostojen jäsennystuki.
 * Kirjanmerkit voivat nyt kohdistua koko riville tai pelkästään valittuun tekstiin. Jos tekstiä ei ole valittuna kirjanmerkkiä luotaessa, toiminnallisuus on sama kuin ennen versiota 0.6, ja koko rivi merkitään. Mikäli tekstiä on valittuna, kirjanmerkki kohdistuu vain kyseiseen tekstiin.
 * Kirjanmerkeissä voi nyt olla valinnaisia muistiinpanoja. Siirry muistiinpanoja sisältävien kirjanmerkkien välillä N:llä ja Shift+N:llä, tai avaa kirjanmerkkien valintaikkuna, jossa kaikki kirjanmerkit, vain muistiinpanot tai vain ilman muistiinpanoja olevat kirjanmerkit voidaan valita tietyillä pikanäppäimillä.
-* Kirjanmerkeissä ei enää ole ärsyttävää "bookmark x" -etuliitettä kirjanmerkkien valintaikkunassa.
+* Kirjanmerkeissä ei enää ole ärsyttävää ”bookmark x” -etuliitettä kirjanmerkkien valintaikkunassa.
 * XML:ltä näyttävää HTML-koodia sisältävät EPUB-kirjat käsitellään nyt oikein.
 * Suurten Markdown-asiakirjojen lataaminen korjattu.
 * Välilyöntinäppäimen painaminen sisällysluettelon puurakenteessa ei enää paina OK-painiketta.
 * Välilyöntien käsittely korjattu pre-tagien alussa sekä HTML- että XHTML-asiakirjoissa.
 * Korjattu virhe, jonka vuoksi kohdistus ei siirtynyt takaisin tekstikenttään Paperbackin ikkunaan palattaessa.
-* "Siirry prosenttiin" -valintaikkunan tekstikenttä päivittää nyt oikein liukusäätimen arvon.
+* ”Siirry prosenttiin” -valintaikkunan tekstikenttä päivittää nyt oikein liukusäätimen arvon.
 * Mukautettujen HTML ID -tunnisteiden renderöinti korjattu Markdown-asiakirjoissa.
 * Markdown-koodilohkojen sisällä oleva HTML renderöidään nyt oikein.
 * Kun kirja ladataan komentoriviparametrilla jo käynnissä olevaan Paperback-kopioon, virheilmoitusta ei enää näytetä, vaikka dokumentin lataus kestäisi yli 5 sekuntia.
@@ -721,7 +721,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Lisätty Microsoft Word -asiakirjojen tuki.
 * Lisätty PowerPoint-esityksien tuki.
 * Korjattu virhe, jonka vuoksi tietyt valikkokohteet eivät poistuneet käytöstä, kun yhtään asiakirjaa ei ollut avoinna.
-* Korjattu "siirry prosenttiin" -liukusäätimen suunta.
+* Korjattu ”siirry prosenttiin” -liukusäätimen suunta.
 * Korjattu EPUB-kirjojen sisällysluettelot, joissa oli URL-koodattuja tiedostopolkuja ja/tai fragmenttitunnuksia.
 * Korjattu ongelma, jonka vuoksi XHTML-otsikoissa olevat välilyönnit poistettiin oudosti.
 * Korjattu HTML-asiakirjojen sisäkkäisten pre-tagien sisällä olevien välilyöntien käsittely.
@@ -730,7 +730,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Puhumiseen käytetään UniversalSpeech-kirjaston sijaan aktiivista aluetta. Tämä tarkoittaa, ettei ohjelman mukana enää toimiteta ruudunlukijoiden DLL-tiedostoja, ja nyt tuetaan useampia ruudunlukijoita, kuten Microsoft Narratoria.
 * ZIP-kirjastoja on vaihdettu, jotta voidaan avata laajempi valikoima EPUB-kirjoja.
 * Valintaikkuna, joka kysyy asiakirjan avaamista pelkkänä tekstinä, on uudistettu kokonaan ja se mahdollistaa nyt asiakirjan avaamisen pelkkänä tekstinä, HTML:nä tai Markdownina.
-* "Siirry prosenttiin" -valintaikkuna sisältää nyt tekstikentän, johon voit syöttää prosenttiluvun manuaalisesti.
+* ”Siirry prosenttiin” -valintaikkuna sisältää nyt tekstikentän, johon voit syöttää prosenttiluvun manuaalisesti.
 * HTML-jäsennin tunnistaa nyt dd-, dt- ja dl-elementit luetteloelementeiksi.
 * EPUB-kirjojen sisällysluettelot säilytetään jälleen täsmälleen sellaisina kuin ne ovat.
 * Unicode-merkistöön sisältyvä ei-sitova välilyönti käsitellään nyt tyhjiä rivejä poistettaessa.
@@ -765,8 +765,8 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * UTF-8-koodattujen tekstitiedostojen lataus korjattu.
 * Korjattu EPUB-kirjojen sisäkkäiset sisällysluettelokohdat, jotka siirtävät kohdistimen väärään kohtaan.
 * Korjattu joissakin tilanteissa ilmenevä kaatuminen sovellusta lopetettaessa.
-* Lisätty asetusvalintaikkunaan asetus, jolla otetaan rivitys käyttöön tai poistetaan se käytöstä.
-* Paperbackin kehitystä varten lahjoittaminen on nyt mahdollista joko ohje-valikon uudella Lahjoita-vaihtoehdolla tai GitHub-koodivaraston pääsivun alalaidassa olevan "Sponsor this project" -linkin kautta.
+* Lisätty asetus, jolla automaattinen rivitys otetaan käyttöön tai poistetaan käytöstä.
+* Paperbackin kehitystä varten lahjoittaminen on nyt mahdollista joko ohje-valikon uudella Lahjoita-vaihtoehdolla tai GitHub-koodivaraston pääsivun alalaidassa olevan ”Sponsor this project” -linkin kautta.
 * Markdown-asiakirjoilla on nyt aina nimi, ja Paperbackin pitäisi nyt pystyä lataamaan käytännössä mikä tahansa Markdown-tiedosto.
 * PDF-asiakirjoilla on nyt aina nimi, vaikka metatiedot puuttuisivat.
 * Otettu käyttöön Chromiumin käyttämä PDF-kirjasto, joka parantaa merkittävästi PDF-tiedostojen jäsennyksen luotettavuutta koko sovelluksessa.
@@ -774,7 +774,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Voit nyt sulkea välilehtisäätimessä näkyvän asiakirjan painamalla sen kohdalla Delete-näppäintä.
 
 ### Versio 0.2.1
-* "Siirry sivulle" -valintaikkunan sivunumerokentän selitteessä näytetään nyt sivujen kokonaismäärä.
+* ”Siirry sivulle” -valintaikkunan sivunumerokentän selitteessä näytetään nyt sivujen kokonaismäärä.
 * Asiakirjan sisällöstä voidaan nyt siirtyä Sarkain-näppäimellä avoimien asiakirjojen luetteloon.
 * Korjattu virhe, jonka vuoksi otsikkonavigointinäppäimet saattoivat toisinaan avata viimeksi avattuja asiakirjoja, jos niitä oli tarpeeksi.
 * Paperback poistaa nyt tarpeettomat pehmeät tavuviivat tekstitulosteesta.
