@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-24 08:33-0600\n"
-"PO-Revision-Date: 2026-09-26 14:49+0300\n"
+"PO-Revision-Date: 2026-09-26 21:03+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -511,7 +511,7 @@ msgstr "Merkitse kopioitavan valinnan alkukohta"
 
 #. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
 msgid "&Copy from Selection Start"
-msgstr "&Kopioi valinnan alkukohdasta"
+msgstr "&Kopioi valinnan alkukohdasta lähtien"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
 msgid "Copy from the beginning of the selection to here"
