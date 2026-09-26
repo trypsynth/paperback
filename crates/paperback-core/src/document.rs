@@ -115,6 +115,40 @@ pub struct ParserContext {
 	/// paragraphs they were wrapped from; when `false`, every line stands on its own. Off is
 	/// for documents whose line breaks are the content, such as code listings and poetry.
 	pub join_pdf_paragraphs: bool,
+	/// The 0-based pages a paginated parser should read, ascending and without repeats, or
+	/// `None` to read the whole document.
+	///
+	/// Reading a PDF page is the bulk of what parsing one costs -- pdfium has to load it and pull
+	/// its text and images -- so a caller after a few pages out of a long document reads only
+	/// those. Page numbers in the result are the document's own, so the markers still say
+	/// "Page 44000"; nothing is renumbered, because a reader who extracted a page range needs to
+	/// be able to say which pages they took.
+	///
+	/// Only the PDF parser honours this. The other paginated formats are already cheap to read
+	/// whole, and a caller that sets it should still get the whole document from them rather than
+	/// a silently short one.
+	pub only_pages: Option<Vec<usize>>,
+	/// Whether the lines a document repeats at its pages' edges are taken out of the text.
+	///
+	/// On by default, which is what a reader of the app expects and what every document read so
+	/// far has been given. It is a judgement rather than a fact, though: a line is taken out for
+	/// repeating on four or more pages, and on some documents that catches the tail of a sentence
+	/// that happens to fall at a page break, which is content rather than furniture. A caller that
+	/// would rather keep every word than have a tidy page edge can turn it off, and should expect
+	/// a running head on every page in exchange.
+	///
+	/// Turning it off also spares a caller that asked for part of a document from reading the rest
+	/// of it, since the survey judges a line by how many pages of the whole document carry it.
+	pub strip_running_text: bool,
+	/// Whether a page holding nothing but a scan says so in the text.
+	///
+	/// On by default, because the line is an instruction -- it tells a reader of the app that
+	/// pressing Enter on it will run OCR over the page and put the words in their place. A caller
+	/// with no Enter to press has no use for the sentence, and printing it into a converted file
+	/// puts a line of user-interface text into the middle of someone's book, once for every scanned
+	/// page in it. Turning it off leaves such a page contributing nothing, which is the honest
+	/// reading of a page that has no text on it.
+	pub image_only_placeholder: bool,
 }
 
 impl ParserContext {
@@ -126,12 +160,38 @@ impl ParserContext {
 			forced_extension: None,
 			render_tables_inline: true,
 			join_pdf_paragraphs: true,
+			only_pages: None,
+			strip_running_text: true,
+			image_only_placeholder: true,
 		}
 	}
 
 	#[must_use]
 	pub fn with_password(mut self, password: String) -> Self {
 		self.password = Some(password);
+		self
+	}
+
+	/// Reads only the given 0-based pages. See [`ParserContext::only_pages`].
+	#[must_use]
+	pub fn with_only_pages(mut self, pages: Vec<usize>) -> Self {
+		self.only_pages = Some(pages);
+		self
+	}
+
+	/// Sets whether repeated page-edge lines are taken out. See
+	/// [`ParserContext::strip_running_text`].
+	#[must_use]
+	pub const fn with_strip_running_text(mut self, strip: bool) -> Self {
+		self.strip_running_text = strip;
+		self
+	}
+
+	/// Sets whether a scanned page says so in the text. See
+	/// [`ParserContext::image_only_placeholder`].
+	#[must_use]
+	pub const fn with_image_only_placeholder(mut self, placeholder: bool) -> Self {
+		self.image_only_placeholder = placeholder;
 		self
 	}
 
