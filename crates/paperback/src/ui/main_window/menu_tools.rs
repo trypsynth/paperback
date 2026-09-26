@@ -143,8 +143,8 @@ pub(super) fn handle_batch_ocr(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, l
 		}
 		return;
 	}
-	if let Some((start, end)) = dialogs::show_batch_ocr_dialog(frame, max_page) {
-		dm.lock().unwrap().start_batch_ocr(start, end);
+	if let Some(range) = dialogs::show_batch_ocr_dialog(frame, max_page) {
+		dm.lock().unwrap().start_batch_ocr(range.start, range.end, range.include_text_pages);
 	}
 }
 
