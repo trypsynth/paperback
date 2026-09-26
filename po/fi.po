@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-24 08:33-0600\n"
-"PO-Revision-Date: 2026-09-24 21:59+0300\n"
+"PO-Revision-Date: 2026-09-26 14:49+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1073,7 +1073,7 @@ msgstr "&Pienennä ilmaisinalueelle"
 
 #. TRANSLATORS: Option to toggle word wrapping of text
 msgid "&Word wrap"
-msgstr "R&ivitys"
+msgstr "Automaattinen r&ivitys"
 
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
@@ -1480,10 +1480,10 @@ msgstr "Lahjoitussivun avaaminen selaimessa epäonnistui."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
-msgstr "Rivitys käytössä."
+msgstr "Automaattinen rivitys käytössä."
 
 msgid "Word wrap off."
-msgstr "Rivitys pois."
+msgstr "Automaattinen rivitys pois."
 
 #. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
 msgid "Full screen on."
@@ -1946,11 +1946,11 @@ msgstr ""
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
-msgstr "Rivit&ys"
+msgstr "Automaattinen rivit&ys"
 
 #. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 msgid "Toggle word wrap"
-msgstr "Ota rivitys käyttöön tai poista se käytöstä"
+msgstr "Ota automaattinen rivitys käyttöön tai poista se käytöstä"
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
 msgid "&Full Screen"
@@ -2537,7 +2537,7 @@ msgstr "Siirry valinnan alkukohtaan"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Word Wrap"
-msgstr "Ota rivitys käyttöön tai poista se käytöstä"
+msgstr "Vaihda automaattisen rivityksen tilaa"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Play/Pause Audio"
