@@ -115,6 +115,28 @@ pub struct ParserContext {
 	/// paragraphs they were wrapped from; when `false`, every line stands on its own. Off is
 	/// for documents whose line breaks are the content, such as code listings and poetry.
 	pub join_pdf_paragraphs: bool,
+	/// The 0-based pages a paginated parser should read, ascending and without repeats, or
+	/// `None` to read the whole document.
+	///
+	/// Reading a PDF page is the bulk of what parsing one costs -- pdfium has to load it and pull
+	/// its text and images -- so a caller after a few pages out of a long document reads only
+	/// those. Page numbers in the result are the document's own, so the markers still say
+	/// "Page 44000"; nothing is renumbered, because a reader who extracted a page range needs to
+	/// be able to say which pages they took.
+	///
+	/// Only the PDF parser honours this. The other paginated formats are already cheap to read
+	/// whole, and a caller that sets it should still get the whole document from them rather than
+	/// a silently short one.
+	pub only_pages: Option<Vec<usize>>,
+	/// Whether the repeated lines at a page's edges are taken out of the text.
+	///
+	/// On by default, because that is what a reader of the app expects and what every document
+	/// read so far has been given. It is a judgement rather than a fact, though: a line is taken
+	/// out for repeating on four or more pages, and on some documents that catches the tail of a
+	/// sentence that happens to fall at a page break, which is content rather than furniture. A
+	/// caller that would rather keep every word and give up the tidiness can turn it off, and
+	/// should expect a running head on every page in exchange.
+	pub strip_running_text: bool,
 }
 
 impl ParserContext {
@@ -126,12 +148,29 @@ impl ParserContext {
 			forced_extension: None,
 			render_tables_inline: true,
 			join_pdf_paragraphs: true,
+			only_pages: None,
+			strip_running_text: true,
 		}
 	}
 
 	#[must_use]
 	pub fn with_password(mut self, password: String) -> Self {
 		self.password = Some(password);
+		self
+	}
+
+	/// Reads only the given 0-based pages. See [`ParserContext::only_pages`].
+	#[must_use]
+	pub fn with_only_pages(mut self, pages: Vec<usize>) -> Self {
+		self.only_pages = Some(pages);
+		self
+	}
+
+	/// Sets whether repeated page-edge lines are taken out. See
+	/// [`ParserContext::strip_running_text`].
+	#[must_use]
+	pub const fn with_strip_running_text(mut self, strip: bool) -> Self {
+		self.strip_running_text = strip;
 		self
 	}
 

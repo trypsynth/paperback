@@ -20,6 +20,12 @@ pub struct Cli {
 	/// Password for encrypted documents (omit to be prompted interactively)
 	#[arg(short, long)]
 	pub password: Option<String>,
+	/// Convert only these pages, as ranges: 5-10, 55, 80-end
+	#[arg(long)]
+	pub pages: Option<String>,
+	/// Take out the headers and footers a document repeats from page to page
+	#[arg(long)]
+	pub strip_repeated: bool,
 	/// Print document metadata instead of content
 	#[arg(short, long)]
 	pub metadata: bool,
@@ -120,6 +126,23 @@ mod tests {
 	#[test]
 	fn accepts_the_no_join_paragraphs_flag() {
 		assert!(parse(&["pb", "b.pdf", "--no-join-paragraphs"]).no_join_paragraphs);
+	}
+
+	/// The specification is left as typed rather than parsed here, so that the error a reader gets
+	/// for a bad one comes from the code that knows what a page is.
+	#[test]
+	fn the_pages_flag_is_handed_over_whole() {
+		assert_eq!(parse(&["pb", "b.pdf", "--pages", "5-10,80-end"]).pages.as_deref(), Some("5-10,80-end"));
+		assert_eq!(parse(&["pb", "b.pdf"]).pages, None);
+	}
+
+	/// Stripping the repeated page-edge lines is off unless asked for, because it costs the whole
+	/// document to judge and a page range out of a long file should not pay that unasked.
+	#[test]
+	fn the_strip_repeated_flag_is_off_unless_given() {
+		assert!(!parse(&["pb", "b.pdf"]).strip_repeated);
+		assert!(!parse(&["pb", "b.pdf", "--pages", "1-5"]).strip_repeated);
+		assert!(parse(&["pb", "b.pdf", "--strip-repeated"]).strip_repeated);
 	}
 
 	/// Paths that start with a dash or contain spaces reach the parser intact rather than being
