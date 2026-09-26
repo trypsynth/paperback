@@ -3131,7 +3131,7 @@ msgstr "Odstavec"
 #. TRANSLATORS: Section header grouping the find/replace pattern fields for a text-substitution rule
 #: swift
 msgid "Pattern & Replacement"
-msgstr "&Nahrazení výrazu"
+msgstr "Nahrazení výrazu"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
 #: swift

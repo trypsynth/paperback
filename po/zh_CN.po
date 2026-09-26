@@ -3368,7 +3368,7 @@ msgstr "段落"
 #. TRANSLATORS: Section header grouping the find/replace pattern fields for a text-substitution rule
 #: swift
 msgid "Pattern & Replacement"
-msgstr "模式和替换(&R)"
+msgstr "模式和替换"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
 #: swift
