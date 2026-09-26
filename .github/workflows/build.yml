@@ -406,10 +406,10 @@ jobs:
         echo "ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS" >> $GITHUB_ENV
         echo "ANDROID_KEY_PASSWORD=$ANDROID_KEY_PASSWORD" >> $GITHUB_ENV
         echo "ANDROID_STORE_PASSWORD=$ANDROID_STORE_PASSWORD" >> $GITHUB_ENV
-    - name: Build Android native libraries, bindings, and APK
+    - name: Build Android native libraries, bindings, APKs and App Bundle
       run: |
         chmod +x android/gradlew
-        cargo android --release
+        cargo android --release --build-aab
     - name: Copy APKs
       run: |
         cp android/app/build/outputs/apk/release/app-arm64-v8a-release.apk paperback-android-arm64.apk
@@ -421,6 +421,14 @@ jobs:
         path: |
           paperback-android-arm64.apk
           paperback-android-arm.apk
+        retention-days: 30
+    # The App Bundle is what goes to Google Play, so keep it only from runs that signed it.
+    - name: Upload App Bundle
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+      uses: actions/upload-artifact@v7
+      with:
+        name: paperback-android-aab
+        path: android/app/build/outputs/bundle/release/app-release.aab
         retention-days: 30
 
   build-ios:
