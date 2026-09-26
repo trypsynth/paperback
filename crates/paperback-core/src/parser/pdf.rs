@@ -521,8 +521,10 @@ impl Parser for PdfParser {
 			// A page with an image but no extractable text gets a placeholder the user can OCR
 			// from (Enter on it replaces it with the recognized text). The marker, not the text, is
 			// what the OCR flow matches on, so changing the UI language cannot strand a placeholder.
+			// A caller converting the file rather than reading it in place is given neither, and
+			// the page then contributes nothing to the text.
 			let page_has_text = buffer.current_position() > page_start_offset;
-			if !page_has_text && page_has_image {
+			if !page_has_text && page_has_image && context.image_only_placeholder {
 				let placeholder_position = buffer.current_position();
 				buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, placeholder_position));
 				buffer.append(&image_only_placeholder());

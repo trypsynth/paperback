@@ -145,6 +145,25 @@ mod tests {
 		assert!(parse(&["pb", "b.pdf", "--strip-repeated"]).strip_repeated);
 	}
 
+	/// The instruction to press Enter on a scanned page is not something a converted file can be
+	/// asked to do, so there is no flag for it in either direction. It is turned off in `main`,
+	/// where the context is built, and the point of this is that no flag exists to bring it back.
+	#[test]
+	fn no_flag_offers_the_ocr_placeholder() {
+		for args in [
+			["pb", "b.pdf"].as_slice(),
+			["pb", "b.pdf", "--strip-repeated"].as_slice(),
+			["pb", "b.pdf", "--pages", "1-5"].as_slice(),
+			["pb", "b.pdf", "--format", "html", "-m"].as_slice(),
+		] {
+			assert!(
+				Cli::try_parse_from(args).is_ok(),
+				"{} was refused, so something in it is being read as a flag",
+				args.join(" ")
+			);
+		}
+	}
+
 	/// Paths that start with a dash or contain spaces reach the parser intact rather than being
 	/// read as flags.
 	#[test]

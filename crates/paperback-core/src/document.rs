@@ -140,6 +140,15 @@ pub struct ParserContext {
 	/// Turning it off also spares a caller that asked for part of a document from reading the rest
 	/// of it, since the survey judges a line by how many pages of the whole document carry it.
 	pub strip_running_text: bool,
+	/// Whether a page holding nothing but a scan says so in the text.
+	///
+	/// On by default, because the line is an instruction -- it tells a reader of the app that
+	/// pressing Enter on it will run OCR over the page and put the words in their place. A caller
+	/// with no Enter to press has no use for the sentence, and printing it into a converted file
+	/// puts a line of user-interface text into the middle of someone's book, once for every scanned
+	/// page in it. Turning it off leaves such a page contributing nothing, which is the honest
+	/// reading of a page that has no text on it.
+	pub image_only_placeholder: bool,
 }
 
 impl ParserContext {
@@ -153,6 +162,7 @@ impl ParserContext {
 			join_pdf_paragraphs: true,
 			only_pages: None,
 			strip_running_text: true,
+			image_only_placeholder: true,
 		}
 	}
 
@@ -174,6 +184,14 @@ impl ParserContext {
 	#[must_use]
 	pub const fn with_strip_running_text(mut self, strip: bool) -> Self {
 		self.strip_running_text = strip;
+		self
+	}
+
+	/// Sets whether a scanned page says so in the text. See
+	/// [`ParserContext::image_only_placeholder`].
+	#[must_use]
+	pub const fn with_image_only_placeholder(mut self, placeholder: bool) -> Self {
+		self.image_only_placeholder = placeholder;
 		self
 	}
 

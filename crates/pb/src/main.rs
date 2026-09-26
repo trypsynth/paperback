@@ -53,6 +53,11 @@ fn main() -> Result<()> {
 	// sentences. pb converts a document as it is; the app tidies it, so `--strip-repeated` is how a
 	// caller asks for the app's reading of the same file.
 	context = context.with_strip_running_text(cli.strip_repeated);
+	// Never, and with no flag to turn it back on. The line is an instruction to press Enter on a
+	// scanned page to OCR it, which is a thing a reader does in the app and not a thing a
+	// converted file can be asked to do, so printing it would put a line of user-interface text
+	// into the middle of someone's book, once for every scanned page in it.
+	context = context.with_image_only_placeholder(false);
 	if let Some(password) = cli.password {
 		context = context.with_password(password);
 	}
