@@ -15,6 +15,8 @@
 	SolidCompression=yes
 	WizardStyle=modern
 	UninstallDisplayIcon={app}\paperback.exe
+	ChangesAssociations=yes
+	ChangesEnvironment=yes
 	ArchitecturesAllowed=@ARCH_ALLOWED@
 	ArchitecturesInstallIn64BitMode=@ARCH_MODE@
 
@@ -61,7 +63,7 @@
 	; ZIP archives. Shared by multiple parsers (DAISY, Word-in-zip), so it is kept as its own opt-in task
 	; rather than tied to any single format's checkbox.
 	Root: HKCR; Subkey: ".zip\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_zip
-	; PATH. Appended only when not already present; removed cleanly on uninstall via [Code].
+	; PATH. Appended when missing; [Code] removes it when the task is unchecked and at the start of uninstall.
 	Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Flags: preservestringtype; Check: NeedsAddPath; Tasks: addtopath
 
 [Code]
@@ -131,7 +133,7 @@ end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
-	if CurUninstallStep = usPostUninstall then RemoveAppFromPath;
+	if CurUninstallStep = usUninstall then RemoveAppFromPath;
 end;
 
 [Run]
