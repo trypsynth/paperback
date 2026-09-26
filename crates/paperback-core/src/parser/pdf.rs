@@ -435,7 +435,12 @@ impl Parser for PdfParser {
 				read_page(&document, page_index, render_tables_inline, is_wanted, is_sampled)
 			})
 			.collect();
+		// The survey is run either way, because it is also what measures the body text, which is
+		// what tells a heading from body text and has nothing to do with furniture. What the caller
+		// asked for is whether its answer is used: a document converted as it is keeps every line,
+		// and one converted as a reader would like it loses the ones that repeat.
 		let running_text = strip_tagged_running_text(&mut pages);
+		let running_text = if context.strip_running_text { running_text } else { running_text.recognizing_nothing() };
 		for (page_index, page) in pages.into_iter().enumerate() {
 			// A page the caller did not ask for was read for the survey or not at all, and has no
 			// text to place. Its offset is still recorded, so that a page number asked for later

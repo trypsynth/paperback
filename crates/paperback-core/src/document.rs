@@ -128,14 +128,17 @@ pub struct ParserContext {
 	/// whole, and a caller that sets it should still get the whole document from them rather than
 	/// a silently short one.
 	pub only_pages: Option<Vec<usize>>,
-	/// Whether the repeated lines at a page's edges are taken out of the text.
+	/// Whether the lines a document repeats at its pages' edges are taken out of the text.
 	///
-	/// On by default, because that is what a reader of the app expects and what every document
-	/// read so far has been given. It is a judgement rather than a fact, though: a line is taken
-	/// out for repeating on four or more pages, and on some documents that catches the tail of a
-	/// sentence that happens to fall at a page break, which is content rather than furniture. A
-	/// caller that would rather keep every word and give up the tidiness can turn it off, and
-	/// should expect a running head on every page in exchange.
+	/// On by default, which is what a reader of the app expects and what every document read so
+	/// far has been given. It is a judgement rather than a fact, though: a line is taken out for
+	/// repeating on four or more pages, and on some documents that catches the tail of a sentence
+	/// that happens to fall at a page break, which is content rather than furniture. A caller that
+	/// would rather keep every word than have a tidy page edge can turn it off, and should expect
+	/// a running head on every page in exchange.
+	///
+	/// Turning it off also spares a caller that asked for part of a document from reading the rest
+	/// of it, since the survey judges a line by how many pages of the whole document carry it.
 	pub strip_running_text: bool,
 }
 

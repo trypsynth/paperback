@@ -49,9 +49,9 @@ fn main() -> Result<()> {
 	let mut context =
 		ParserContext::new(file_path).with_render_tables_inline(true).with_join_pdf_paragraphs(!cli.no_join_paragraphs);
 	// Off unless asked for, and the reason is in `ParserContext::strip_running_text`: taking the
-	// repeated page-edge lines out is a judgement, and a caller converting a page range out of a
-	// long document is better served by every word than by a tidy edge. It costs the whole
-	// document to get right, which is why it is not the default.
+	// repeated page-edge lines out is a judgement, not a fact, and on some documents it costs real
+	// sentences. pb converts a document as it is; the app tidies it, so `--strip-repeated` is how a
+	// caller asks for the app's reading of the same file.
 	context = context.with_strip_running_text(cli.strip_repeated);
 	if let Some(password) = cli.password {
 		context = context.with_password(password);
