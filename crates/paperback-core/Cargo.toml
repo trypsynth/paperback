@@ -28,7 +28,7 @@ chardetng = "1.0.0"
 ego-tree = "0.11.0"
 flate2 = "1.1.10"
 key-chord = "0.1.0"
-encoding_rs = "0.8.41"
+encoding_rs = "0.8.42"
 icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
 # Only the codecs comic archives actually use; the default feature set pulls in a dozen more.
 image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "gif", "webp", "bmp"] }
@@ -55,16 +55,16 @@ serde = { version = "1.0.229", default-features = false, features = ["derive", "
 pbkdf2 = { version = "0.13", default-features = false, features = ["hmac"] }
 sha1 = "0.11.0"
 sha2 = "0.11.0"
-thiserror = "2.0.20"
+thiserror = "2.0.21"
 toml = { workspace = true }
 tracing = "0.1.44"
 unicode-bidi = "0.3.18"
-uniffi = { version = "0.32.1", features = ["cli"], optional = true }
+uniffi = { version = "0.32.2", features = ["cli"], optional = true }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 mathcat = { version = "0.7.5", features = ["include-zip"] }
 
 [build-dependencies]
-uniffi = { version = "0.32.1", features = ["build"], optional = true }
+uniffi = { version = "0.32.2", features = ["build"], optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
