@@ -155,7 +155,8 @@ fn get_paragraph_heading_level(pr_element: Node, style_heading_map: &HashMap<Str
 				let style_lower = style.to_lowercase();
 				if style_lower.starts_with("heading") {
 					if let Some(level) = extract_number_from_string(style)
-						&& level > 0 && level <= MAX_HEADING_LEVEL
+						&& level > 0
+						&& level <= MAX_HEADING_LEVEL
 					{
 						return level;
 					}
