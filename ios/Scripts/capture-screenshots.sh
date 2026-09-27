@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Captures the App Store screenshots into target/screenshots/<class>/.
+# Captures the App Store screenshots into ios/store_assets/screenshots/<class>/, where the listing's set is kept.
 #   ios/Scripts/capture-screenshots.sh [all|iphone|ipad]
 # Paperback is universal, so App Store Connect needs both a 6.5" iPhone and a 13" iPad set. These simulators render an accepted size natively, so nothing is resampled; override them with IPHONE_SIMULATOR / IPAD_SIMULATOR.
 set -euo pipefail
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BUNDLE_ID="dev.paperback.ios"
 DERIVED="target/screenshots-build"
-OUT_ROOT="target/screenshots"
+OUT_ROOT="ios/store_assets/screenshots"
 BOOKS="target/screenshot-books"
 DEVICES=("iphone-6.5|${IPHONE_SIMULATOR:-iPhone 14 Plus}" "ipad-13|${IPAD_SIMULATOR:-iPad Pro 13-inch (M5)}")
 # Saved under the names ScreenshotMode.books opens them by.
