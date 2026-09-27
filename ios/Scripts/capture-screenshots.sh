@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Captures the App Store screenshots into target/screenshots/<class>/.
 #   ios/Scripts/capture-screenshots.sh [all|iphone|ipad]
-# Paperback is universal, so App Store Connect needs both a 6.9" iPhone and a 13" iPad set. These simulators render an accepted size natively, so nothing is resampled; override them with IPHONE_SIMULATOR / IPAD_SIMULATOR.
+# Paperback is universal, so App Store Connect needs both a 6.5" iPhone and a 13" iPad set. These simulators render an accepted size natively, so nothing is resampled; override them with IPHONE_SIMULATOR / IPAD_SIMULATOR.
 set -euo pipefail
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BUNDLE_ID="dev.paperback.ios"
 DERIVED="target/screenshots-build"
 OUT_ROOT="target/screenshots"
 BOOKS="target/screenshot-books"
-DEVICES=("iphone-6.9|${IPHONE_SIMULATOR:-iPhone Air}" "ipad-13|${IPAD_SIMULATOR:-iPad Pro 13-inch (M5)}")
+DEVICES=("iphone-6.5|${IPHONE_SIMULATOR:-iPhone 14 Plus}" "ipad-13|${IPAD_SIMULATOR:-iPad Pro 13-inch (M5)}")
 # Saved under the names ScreenshotMode.books opens them by.
 BOOK_SOURCES=(
 	"Pride and Prejudice.epub|jane-austen/pride-and-prejudice/downloads/jane-austen_pride-and-prejudice.epub"
@@ -22,7 +22,7 @@ fail() { echo "error: $*" >&2; exit 1; }
 
 accepted() {
 	case "$1" in
-		iphone-6.9) echo "1260x2736 1290x2796 1320x2868 2736x1260 2796x1290 2868x1320" ;;
+		iphone-6.5) echo "1242x2688 1284x2778 2688x1242 2778x1284" ;;
 		ipad-13) echo "2064x2752 2048x2732 2752x2064 2732x2048" ;;
 	esac
 }
