@@ -149,7 +149,7 @@ impl DocumentManager {
 			}
 			Err(err) => {
 				tracing::warn!(error = %err, "failed to spawn the ocr worker thread");
-				announce(label, OcrError::Failed(err.to_string()).message());
+				announce(label, ocr::message(&OcrError::Failed(err.to_string())));
 			}
 		}
 	}
@@ -178,7 +178,7 @@ impl DocumentManager {
 				Err(err) => {
 					tracing::warn!(page, error = %err, "ocr failed on page");
 					if matches!(err, OcrError::NoLanguage) {
-						announce(label, err.message());
+						announce(label, ocr::message(&err));
 					}
 					continue;
 				}
