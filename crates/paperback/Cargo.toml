@@ -36,7 +36,7 @@ tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.2.0"
 toml = { workspace = true }
-wx-utils = { version = "0.3.1", features = ["shortcuts"] }
+wx-utils = { version = "0.4.0", features = ["shortcuts"] }
 # `default-features = false` turns off the seven size knobs wxdragon enables by default, all of
 # which Paperback pays for and none of which it uses: it never prints, it decodes its own icon
 # with the `image` crate and hands wx raw pixels rather than going through wx's JPEG, TIFF, GIF
@@ -66,7 +66,7 @@ rstest = { workspace = true }
 
 [target.'cfg(windows)'.dev-dependencies]
 uiautomation = "0.25.1"
-windows-core = "0.62"
+windows-core = "0.100.0"
 
 [lints]
 workspace = true
