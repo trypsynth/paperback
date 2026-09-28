@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 08:33-0600\n"
+"POT-Creation-Date: 2026-09-28 22:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,12 +34,12 @@ msgstr ""
 msgid "No OCR language is installed. Add one in your system language settings."
 msgstr ""
 
-#. TRANSLATORS: Announced when the OCR engine fails on a page
-msgid "OCR failed."
-msgstr ""
-
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
+msgstr ""
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+msgid "OCR failed."
 msgstr ""
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
