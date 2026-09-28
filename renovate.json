@@ -17,6 +17,11 @@
     {
       "matchManagers": ["github-actions"],
       "groupName": "github actions"
+    },
+    {
+      "description": "windows-core is only here for #[implement] in the UI Automation tests, which has to use the same windows-core the windows crate does. windows is still on 0.62, so raise this ceiling together with windows.",
+      "matchPackageNames": ["windows-core"],
+      "allowedVersions": "<0.100.0"
     }
   ],
   "customManagers": [
