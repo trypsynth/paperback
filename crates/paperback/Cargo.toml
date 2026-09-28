@@ -53,13 +53,12 @@ windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_Sys
 objc = "0.2.7"
 
 [build-dependencies]
-embed-manifest = "1.5.1"
 flate2 = { version = "1.1.10", default-features = false }
 paperback-formats = { path = "../paperback-formats" }
 patois-build = "0.1.14"
+shipfitter = { version = "0.1.0", features = ["windows-resources"] }
 tar = "0.4.46"
 ureq = { version = "3.4.2", default-features = false, features = ["rustls"] }
-winres = "0.1.12"
 
 [dev-dependencies]
 rstest = { workspace = true }

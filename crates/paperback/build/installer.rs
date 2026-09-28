@@ -1,7 +1,7 @@
 //! Filling in `paperback.iss.in`, including the per-format association tasks and the registry
 //! entries that back them.
 
-use std::{env, fs};
+use shipfitter::build::configure_file;
 
 use crate::paths::{self, target_profile_dir};
 
@@ -73,30 +73,12 @@ pub fn configure() {
 		return;
 	};
 	let input_path = paths::workspace_dir().join("paperback.iss.in");
-	println!("cargo:rerun-if-changed={}", input_path.display());
 	if !input_path.exists() {
 		return;
 	}
-	let content = match fs::read_to_string(&input_path) {
-		Ok(c) => c,
-		Err(e) => {
-			println!("cargo:warning=Failed to read installer script: {e}");
-			return;
-		}
-	};
-	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
-	let (arch_allowed, arch_mode) = match env::var("CARGO_CFG_TARGET_ARCH").as_deref() {
-		Ok("aarch64") => ("arm64", "arm64"),
-		_ => ("x64compatible", "x64compatible"),
-	};
-	let new_content = content
-		.replace("@PROJECT_VERSION@", &version)
-		.replace("@ARCH_ALLOWED@", arch_allowed)
-		.replace("@ARCH_MODE@", arch_mode)
-		.replace("@FORMAT_TASKS@", &format_tasks_block())
-		.replace("@FORMAT_REGISTRY@", &format_registry_block());
-	let output_path = target_dir.join("paperback.iss");
-	if let Err(e) = fs::write(&output_path, new_content) {
+	let replacements = [("FORMAT_TASKS", format_tasks_block()), ("FORMAT_REGISTRY", format_registry_block())];
+	let replacements: Vec<(&str, &str)> = replacements.iter().map(|(name, value)| (*name, value.as_str())).collect();
+	if let Err(e) = configure_file(&input_path, &target_dir.join("paperback.iss"), &replacements) {
 		println!("cargo:warning=Failed to write installer script: {e}");
 	}
 }

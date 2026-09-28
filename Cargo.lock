@@ -2508,7 +2508,6 @@ dependencies = [
  "base64 0.23.1",
  "bitflags 2.13.2",
  "dunce",
- "embed-manifest",
  "flate2",
  "image",
  "live-region",
@@ -2521,6 +2520,7 @@ dependencies = [
  "rodio-wsola",
  "rstest",
  "ship-shape",
+ "shipfitter",
  "tar",
  "toml 1.1.6+spec-1.1.0",
  "tracing",
@@ -2530,7 +2530,6 @@ dependencies = [
  "ureq",
  "windows",
  "windows-core",
- "winres",
  "wx-utils",
  "wxdragon",
  "zip 9.0.0-pre3",
@@ -3550,6 +3549,21 @@ dependencies = [
  "serde",
  "ureq",
  "wxdragon",
+]
+
+[[package]]
+name = "shipfitter"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9742c6f21fa97433d11340b43670b7d28df18e5dbb2c4741fe155d3ca8feaf7d"
+dependencies = [
+ "embed-manifest",
+ "flate2",
+ "serde_json",
+ "tar",
+ "walkdir",
+ "winres",
+ "zip 8.6.0",
 ]
 
 [[package]]
@@ -5165,10 +5179,9 @@ dependencies = [
  "patois-build",
  "serde",
  "serde_json",
+ "shipfitter",
  "tar",
  "ureq",
- "walkdir",
- "zip 9.0.0-pre3",
 ]
 
 [[package]]
@@ -5275,6 +5288,20 @@ dependencies = [
  "flate2",
  "indexmap",
  "memchr",
+ "zopfli",
+]
+
+[[package]]
+name = "zip"
+version = "8.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d04a6b5381502aa6087c94c669499eb1602eb9c5e8198e534de571f7154809b"
+dependencies = [
+ "crc32fast",
+ "flate2",
+ "indexmap",
+ "memchr",
+ "typed-path",
  "zopfli",
 ]
 
