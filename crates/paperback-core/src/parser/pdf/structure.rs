@@ -287,13 +287,20 @@ fn process_struct_element(
 	let is_block = matches!(
 		elem_type.as_str(),
 		"P" | "H"
-			| "H1" | "H2"
-			| "H3" | "H4"
-			| "H5" | "H6"
-			| "L" | "LI"
-			| "Div" | "Sect"
-			| "Part" | "Art"
-			| "TOC" | "TOCI"
+			| "H1"
+			| "H2"
+			| "H3"
+			| "H4"
+			| "H5"
+			| "H6"
+			| "L"
+			| "LI"
+			| "Div"
+			| "Sect"
+			| "Part"
+			| "Art"
+			| "TOC"
+			| "TOCI"
 			| "Code"
 	);
 	let preserve_lines = elem_type == "Code";

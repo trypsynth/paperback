@@ -343,6 +343,34 @@ img {
 	margin-bottom: 0;
 }
 
+.stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+	gap: 1rem;
+	max-width: none;
+	margin: 1.25rem 0 1rem;
+	padding: 0;
+	list-style: none;
+}
+
+.stats li {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 0.9rem 1.1rem 1rem;
+	color: var(--muted);
+	margin: 0;
+}
+
+/* Block, so the number sits above its label, but still one run of text a screen reader reads as "108 stars on GitHub". */
+.stat {
+	display: block;
+	color: var(--text);
+	font-size: 1.9rem;
+	font-weight: 700;
+	line-height: 1.15;
+}
+
 /* Long flat lists of short items, such as formats and languages. */
 .columns {
 	max-width: none;
@@ -389,30 +417,23 @@ img {
 	font-size: 0.9rem;
 }
 
-.disclosure {
-	font: inherit;
-	color: var(--accent);
-	background: none;
-	border: 0;
-	padding: 0.1rem 0;
-	text-align: left;
-	cursor: pointer;
-	text-decoration: underline;
-	text-underline-offset: 0.15em;
-}
-
 .license {
 	max-width: none;
 	margin-bottom: 0.4rem;
 }
 
-.license-name {
-	margin: 0.6rem 0 0.2rem;
+.license h4 {
+	margin: 0.9rem 0 0.1rem;
 	font-size: 1rem;
 	font-weight: 600;
 }
 
-.license-body pre {
+.license summary {
+	color: var(--accent);
+	font-weight: normal;
+}
+
+.license pre {
 	max-height: 26rem;
 	white-space: pre-wrap;
 }

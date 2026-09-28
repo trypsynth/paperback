@@ -97,7 +97,13 @@ fn focus_again_once_settled(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManage
 	let doc_manager = Rc::clone(doc_manager);
 	let timer = Timer::new(frame);
 	timer.on_tick(move |_event| {
-		doc_manager.lock().unwrap().restore_focus();
+		let dm = doc_manager.lock().unwrap();
+		dm.restore_focus();
+		// Focus is normally already on the text by now, and focusing a control that has focus
+		// tells a screen reader nothing, so the retry has to say so itself.
+		#[cfg(target_os = "windows")]
+		dm.announce_focus();
+		drop(dm);
 		*holder.borrow_mut() = None;
 	});
 	if timer.start(FOCUS_SETTLE_DELAY_MS, true) {

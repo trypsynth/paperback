@@ -3920,7 +3920,7 @@ msgstr "Paragraphe"
 #: swift
 #, fuzzy
 msgid "Pattern & Replacement"
-msgstr "Modèles et pièces de rechange"
+msgstr "Motif et remplacement"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
 #: swift

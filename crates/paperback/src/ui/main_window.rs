@@ -178,13 +178,7 @@ impl MainWindow {
 					#[cfg(target_os = "windows")]
 					if let Ok(dm) = dm_for_activate.try_lock() {
 						dm.restore_focus();
-						if let Some(hwnd) = dm.focus_target_handle() {
-							let hwnd = windows::Win32::Foundation::HWND(hwnd);
-							// EVENT_OBJECT_FOCUS = 0x8005, OBJID_CLIENT = -4, CHILDID_SELF = 0
-							unsafe {
-								windows::Win32::UI::Accessibility::NotifyWinEvent(0x8005, hwnd, -4, 0);
-							}
-						}
+						dm.announce_focus();
 					}
 				} else {
 					// Deactivating: remember where focus was so we restore the same control (text

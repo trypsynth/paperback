@@ -191,7 +191,7 @@ fn show_toc_dialog_wx(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 		let tree_for_ok = tree;
 		Rc::new(move || {
 			let item = tree_for_ok.get_selection()?;
-			let data = tree_for_ok.get_custom_data(&item)?;
+			let data = tree_for_ok.get_custom_data_direct(&item)?;
 			data.downcast_ref::<i32>().copied()
 		})
 	};
@@ -225,7 +225,7 @@ fn bind_toc_selection(tree: TreeCtrl, selected_offset: Rc<Cell<i32>>) {
 	let tree_for_sel = tree;
 	tree.on_selection_changed(move |event| {
 		if let Some(item) = event.get_item()
-			&& let Some(data) = tree_for_sel.get_custom_data(&item)
+			&& let Some(data) = tree_for_sel.get_custom_data_direct(&item)
 			&& let Some(offset) = data.downcast_ref::<i32>()
 		{
 			selected_offset.set(*offset);
@@ -239,7 +239,7 @@ fn bind_toc_activation(dialog: Dialog, tree: TreeCtrl, selected_offset: Rc<Cell<
 	let tree_for_activate = tree;
 	tree.on_item_activated(move |event| {
 		if let Some(item) = event.get_item()
-			&& let Some(data) = tree_for_activate.get_custom_data(&item)
+			&& let Some(data) = tree_for_activate.get_custom_data_direct(&item)
 			&& let Some(offset) = data.downcast_ref::<i32>()
 		{
 			selected_offset.set(*offset);
@@ -317,7 +317,7 @@ fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> boo
 	if let Some((child, mut cookie)) = tree.get_first_child(parent) {
 		let mut current_child = Some(child);
 		while let Some(item) = current_child {
-			if let Some(data) = tree.get_custom_data(&item)
+			if let Some(data) = tree.get_custom_data_direct(&item)
 				&& let Some(item_offset) = data.downcast_ref::<i32>()
 				&& *item_offset == offset
 			{

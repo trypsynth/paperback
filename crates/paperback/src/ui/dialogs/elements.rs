@@ -540,7 +540,7 @@ fn bind_elements_activation(
 	let dialog_for_tree = dialog;
 	headings_tree.on_item_activated(move |event| {
 		if let Some(item) = event.get_item()
-			&& let Some(data) = tree_for_activate.get_custom_data(&item)
+			&& let Some(data) = tree_for_activate.get_custom_data_direct(&item)
 			&& let Some(offset) = data.downcast_ref::<i64>()
 		{
 			selected_offset_for_tree.set(*offset);
@@ -583,7 +583,7 @@ fn bind_elements_ok_action(
 		let selection = view_for_ok.get_selection().unwrap_or(VIEW_HEADINGS);
 		if selection == VIEW_HEADINGS {
 			if let Some(item) = headings_tree.get_selection()
-				&& let Some(data) = headings_tree.get_custom_data(&item)
+				&& let Some(data) = headings_tree.get_custom_data_direct(&item)
 				&& let Some(offset) = data.downcast_ref::<i64>()
 			{
 				selected_offset_for_ok.set(*offset);
