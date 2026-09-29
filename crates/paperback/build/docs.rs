@@ -5,10 +5,9 @@ use std::{
 	env,
 	fmt::Write as _,
 	fs::{self, DirEntry},
-	path::PathBuf,
+	path::{Path, PathBuf},
+	process::Command,
 };
-
-use shipfitter::build::{pandoc, pandoc_available};
 
 use crate::paths;
 
@@ -74,4 +73,25 @@ pub fn build() {
 		code
 	};
 	let _ = fs::write(out_dir.join("lang_readmes.rs"), code);
+}
+
+fn pandoc_available() -> bool {
+	Command::new("pandoc").arg("--version").output().is_ok_and(|o| o.status.success())
+}
+
+/// Converts `input` with pandoc using the options in the `defaults` file, with `lang` as the
+/// document language.
+fn pandoc(input: &Path, defaults: &Path, output: &Path, lang: Option<&str>) -> Result<(), String> {
+	println!("cargo:rerun-if-changed={}", input.display());
+	println!("cargo:rerun-if-changed={}", defaults.display());
+	let mut command = Command::new("pandoc");
+	command.arg(format!("--defaults={}", defaults.display()));
+	if let Some(lang) = lang {
+		command.args(["-M", &format!("lang={lang}")]);
+	}
+	let status = command.arg(input).arg("-o").arg(output).status().map_err(|e| e.to_string())?;
+	if !status.success() {
+		return Err(format!("pandoc failed to convert {}", input.display()));
+	}
+	Ok(())
 }
