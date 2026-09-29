@@ -49,10 +49,18 @@ jobs:
       uses: actions/cache@v6
       with:
         path: target/release/wxdragon_sys_cmake_build/share/locale
-        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', '.cargo/config.toml') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
       run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
+    # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+    - name: Cache the pinned wxWidgets source
+      uses: actions/cache@v6
+      with:
+        path: target/wxWidgets-*
+        key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+    - name: Fetch the pinned wxWidgets source
+      run: cargo xtask wxwidgets
     - name: Install CMake, Ninja, and Pandoc
       run: |
         choco install cmake ninja pandoc minisign -y
@@ -138,10 +146,18 @@ jobs:
       uses: actions/cache@v6
       with:
         path: target/release/wxdragon_sys_cmake_build/share/locale
-        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', '.cargo/config.toml') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
       run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
+    # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+    - name: Cache the pinned wxWidgets source
+      uses: actions/cache@v6
+      with:
+        path: target/wxWidgets-*
+        key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+    - name: Fetch the pinned wxWidgets source
+      run: cargo xtask wxwidgets
     - name: Install CMake, Ninja, and Pandoc
       run: |
         choco install cmake ninja pandoc minisign -y
@@ -223,10 +239,18 @@ jobs:
       uses: actions/cache@v6
       with:
         path: target/release/wxdragon_sys_cmake_build/share/locale
-        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', '.cargo/config.toml') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
       run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
+    # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+    - name: Cache the pinned wxWidgets source
+      uses: actions/cache@v6
+      with:
+        path: target/wxWidgets-*
+        key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+    - name: Fetch the pinned wxWidgets source
+      run: cargo xtask wxwidgets
     - name: Install build dependencies
       run: |
         sudo apt-get update
@@ -300,10 +324,18 @@ jobs:
       uses: actions/cache@v6
       with:
         path: target/release/wxdragon_sys_cmake_build/share/locale
-        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', '.cargo/config.toml') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
       run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
+    # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+    - name: Cache the pinned wxWidgets source
+      uses: actions/cache@v6
+      with:
+        path: target/wxWidgets-*
+        key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+    - name: Fetch the pinned wxWidgets source
+      run: cargo xtask wxwidgets
     - name: Install build dependencies
       run: |
         sudo apt-get update
@@ -491,19 +523,18 @@ jobs:
       uses: actions/cache@v6
       with:
         path: target/release/wxdragon_sys_cmake_build/share/locale
-        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', '.cargo/config.toml') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
       run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
-    - name: Cache wxWidgets source
-      id: wxwidgets-cache
+    # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+    - name: Cache the pinned wxWidgets source
       uses: actions/cache@v6
       with:
-        path: wxWidgets
-        key: wxwidgets-${{ runner.os }}-${{ runner.arch }}-v1
-    - name: Clone wxWidgets
-      if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
-      run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
+        path: target/wxWidgets-*
+        key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+    - name: Fetch the pinned wxWidgets source
+      run: cargo xtask wxwidgets
     - name: Import signing certificate
       if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       env:
@@ -531,7 +562,6 @@ jobs:
         rm -f "$CERT_PATH"
     - name: Build and package
       env:
-        WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
         MACOSX_DEPLOYMENT_TARGET: "15.0"
       run: cargo release
     - name: Check wxWidgets translations were embedded

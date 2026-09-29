@@ -5,6 +5,7 @@ use shipfitter::package::cargo_build_release;
 use crate::workspace::project_root;
 
 pub fn release() -> Result<(), Box<dyn Error>> {
+	crate::wxwidgets::ensure()?;
 	// Built as two separate invocations rather than `-p paperback -p pb` in one: Cargo leaks
 	// wxdragon-sys's build-script native-library search paths (wxWidgets' own libs) into
 	// every binary linked in the same invocation when multiple root packages are requested

@@ -33,6 +33,14 @@
         "# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>[^\\s]+?)\\s+COBALT_VERSION: (?<currentValue>[^\\s]+)"
       ],
       "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "description": "The wxWidgets master commit Paperback builds against, named in WXWIDGETS_DIR so a new one rebuilds wxWidgets.",
+      "customType": "regex",
+      "managerFilePatterns": [".cargo/config.toml"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+) branch=(?<currentValue>\\S+)\\s+WXWIDGETS_DIR = \\{ value = \"target/wxWidgets-(?<currentDigest>[0-9a-f]{40})\""
+      ]
     }
   ]
 }
