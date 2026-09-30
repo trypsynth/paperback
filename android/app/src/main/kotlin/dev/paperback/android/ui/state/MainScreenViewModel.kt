@@ -381,19 +381,27 @@ class MainScreenViewModel(
 	fun openDocument(
 		uri: Uri,
 		track: Boolean = true
+	) = openDocuments(listOf(uri), track)
+
+	// One after another in a single job: a job per document would race to add their tabs and write the config.
+	fun openDocuments(
+		uris: List<Uri>,
+		track: Boolean = true
 	) {
-		val uriString = uri.toString()
 		viewModelScope.launch(Dispatchers.IO) {
-			try {
-				context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-			} catch (_: SecurityException) {
+			for (uri in uris) {
+				val uriString = uri.toString()
+				try {
+					context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+				} catch (_: SecurityException) {
+				}
+				if (track) {
+					config.addRecentDocument(uriString)
+					config.addOpenedDocument(uriString)
+					config.flush()
+				}
+				loadDocument(uri, true)
 			}
-			if (track) {
-				config.addRecentDocument(uriString)
-				config.addOpenedDocument(uriString)
-				config.flush()
-			}
-			loadDocument(uri, true)
 		}
 	}
 

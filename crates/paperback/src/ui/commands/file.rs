@@ -28,33 +28,40 @@ pub fn open(ctx: &Ctx) {
 	let dialog = FileDialog::builder(ctx.frame)
 		.with_message(&dialog_title)
 		.with_wildcard(&wildcard)
-		.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
+		.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist | FileDialogStyle::Multiple)
 		.build();
-	if dialog.show_modal() == ID_OK
-		&& let Some(path) = dialog.get_path()
-	{
-		let path = Path::new(&path);
-		if !ensure_parser_ready_for_path(ctx.frame, path, ctx.config) {
-			return;
-		}
-		if ctx.dm.lock().unwrap().open_file(ctx.dm, path) {
-			let Ok(dm_ref) = ctx.dm.try_lock() else {
-				return;
-			};
-			update_title_from_manager(ctx.frame, &dm_ref);
-			dm_ref.focus_document_text();
-			drop(dm_ref);
-			let menu_bar = menu::create_menu_bar(&ctx.config.lock().unwrap());
-			ctx.frame.set_menu_bar(menu_bar);
-			menu::update_menu_item_states(ctx.frame, true);
-			// The rebuilt menu bar comes back with every item enabled, so the reopen item has
-			// to be told again whether there is anything to reopen. Every other place that
-			// rebuilds the bar does this; this one did not, which left Reopen Last Closed
-			// enabled and doing nothing after opening a document from a fresh start.
-			let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
-			menu::update_reopen_state(ctx.frame, has_reopen);
+	if dialog.show_modal() != ID_OK {
+		return;
+	}
+	// Windows hands back a multiple selection in no useful order, often the last file clicked first, so the tabs follow the folder instead.
+	let mut paths = dialog.get_paths();
+	paths.sort();
+	let mut opened_any = false;
+	for path in &paths {
+		let path = Path::new(path);
+		// One book that cannot be opened, or whose unknown type the reader declines to pick a reader for, does not stop the rest.
+		if ensure_parser_ready_for_path(ctx.frame, path, ctx.config) && ctx.dm.lock().unwrap().open_file(ctx.dm, path) {
+			opened_any = true;
 		}
 	}
+	if !opened_any {
+		return;
+	}
+	let Ok(dm_ref) = ctx.dm.try_lock() else {
+		return;
+	};
+	update_title_from_manager(ctx.frame, &dm_ref);
+	dm_ref.focus_document_text();
+	drop(dm_ref);
+	let menu_bar = menu::create_menu_bar(&ctx.config.lock().unwrap());
+	ctx.frame.set_menu_bar(menu_bar);
+	menu::update_menu_item_states(ctx.frame, true);
+	// The rebuilt menu bar comes back with every item enabled, so the reopen item has
+	// to be told again whether there is anything to reopen. Every other place that
+	// rebuilds the bar does this; this one did not, which left Reopen Last Closed
+	// enabled and doing nothing after opening a document from a fresh start.
+	let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
+	menu::update_reopen_state(ctx.frame, has_reopen);
 }
 
 pub fn close(ctx: &Ctx) {
