@@ -76,8 +76,8 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 ### Tiedosto-valikko
 
 * `Ctrl+O`: Avaa asiakirja.
-* `Ctrl+F4` (macOS: `Cmd+W`): Sulje nykyinen asiakirja.
-* `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Sulje kaikki avoimet asiakirjat.
+* `Ctrl+F4` (macOS:ssä `Cmd+W`): Sulje nykyinen asiakirja.
+* `Ctrl+Shift+F4` (macOS:ssä `Cmd+Shift+W`): Sulje kaikki avoimet asiakirjat.
 * `Ctrl+Shift+T`: Avaa viimeksi suljetun asiakirjan uudelleen.
 * `Ctrl+R`: Näytä ”Kaikki asiakirjat” -valintaikkuna (Viimeksi avatut -valikosta).
 * `Ctrl+Q`: Lopeta (vain Windowsissa; macOS:ää käytettäessä tämä komento löytyy sovellusvalikosta).
@@ -85,14 +85,14 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 ### Siirry-valikko
 
 * `Ctrl+F`: Näytä Etsi-valintaikkuna.
-* `F3` (macOS: `Cmd+G`): Etsi seuraava.
-* `Shift+F3` (macOS: `Cmd+Shift+G`): Etsi edellinen.
-* `Ctrl+G` (macOS: `Cmd+L`): Siirry riville.
-* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Siirry prosenttiin.
+* `F3` (macOS:ssä `Cmd+G`): Etsi seuraava.
+* `Shift+F3` (macOS:ssä `Cmd+Shift+G`): Etsi edellinen.
+* `Ctrl+G` (macOS:ssä `Cmd+L`): Siirry riville.
+* `Ctrl+Shift+G` (macOS:ssä `Cmd+Shift+L`): Siirry prosenttiin.
 * `Ctrl+P`: Siirry sivulle (jos asiakirja tukee sitä).
 * `=`: Ilmoittaa asiakirjan lukukohdan prosentteina sekä sivunumeron (esim. ”15 %, sivu 30”). Sivunumeroa ei ilmoiteta, jos asiakirjassa ei niitä ole.
-* `Alt+Vasen nuoli` (macOS: `Cmd+[`): Siirry taaksepäin navigointihistoriassa.
-* `Alt+Oikea nuoli` (macOS: `Cmd+]`): Siirry eteenpäin navigointihistoriassa.
+* `Alt+Vasen nuoli` (macOS:ssä `Cmd+[`): Siirry taaksepäin navigointihistoriassa.
+* `Alt+Oikea nuoli` (macOS:ssä `Cmd+]`): Siirry eteenpäin navigointihistoriassa.
 * `[`: Edellinen luku.
 * `]`: Seuraava luku.
 * `Shift+H`: Edellinen otsikko.
@@ -110,7 +110,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+B`: Siirry kaikkiin kirjanmerkkeihin ja muistiinpanoihin.
 * `Ctrl+Alt+B`: Siirry vain kirjanmerkkeihin.
 * `Ctrl+Alt+M`: Siirry vain muistiinpanoihin.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä muistiinpanon teksti nykyisessä sijainnissa.
+* `Ctrl+Shift+W` (macOS:ssä `RawCtrl+Shift+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä muistiinpanon teksti nykyisessä sijainnissa.
 * `Shift+K`: Edellinen linkki.
 * `K`: Seuraava linkki.
 * `Shift+G`: Edellinen kuva.
@@ -132,7 +132,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 
 ### Työkalut-valikko
 
-* `Ctrl+W` (macOS: `RawCtrl+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä nykyisen asiakirjan sanamäärä.
+* `Ctrl+W` (macOS:ssä `RawCtrl+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä nykyisen asiakirjan sanamäärä.
 * `Ctrl+I`: Näytä asiakirjan tiedot.
 * `Ctrl+T`: Näytä sisällysluettelo.
 * `F7`: Näytä elementtilista.
@@ -145,20 +145,20 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+Shift+B`: Lisää kirjanmerkki nykyisen valinnan kohdalle tai kohdistimen sijaintiin tai poista se.
 * `Ctrl+Shift+N`: Lisää kirjanmerkin muistiinpano nykyisen valinnan tai kohdistimen kohdalle tai muokkaa sitä.
 * `Ctrl+Alt+W`: Ota automaattinen rivitys käyttöön tai poista se käytöstä.
-* `Ctrl+Välilyönti` (macOS: `RawCtrl+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
+* `Ctrl+Välilyönti` (macOS:ssä `RawCtrl+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
 * `'`: Kelaa äänitettä eteenpäin.
 * `;`: Kelaa äänitettä taaksepäin.
 * `Shift+'`: Pidennä äänitteen kelauksen aikasiirtymää.
 * `Shift+;`: Lyhennä äänitteen kelauksen aikasiirtymää.
 * `Ctrl+Shift+.`: Nopeuta äänitteen toistoa.
 * `Ctrl+Shift+,`: Hidasta äänitteen toistoa.
-* `F11` (macOS: `RawCtrl+Ctrl+F` eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.
+* `F11` (macOS:ssä `RawCtrl+Ctrl+F` eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.
 * `Ctrl+,`: Avaa asetukset (löytyy macOS:ää käytettäessä sovellusvalikosta).
 * `Ctrl+Shift+S`: Ota uniajastin käyttöön tai poista se käytöstä.
 * `Ctrl+Shift+O`: Suorita tekstintunnistus skannatun PDF-asiakirjan valituille sivuille.
-* `Alt+F9` (macOS: `Cmd+F9`): Merkitse valinnan alkukohta.
-* `Alt+F10` (macOS: `Cmd+F10`): Kopioi valinnan merkityn alkukohdan ja kohdistimen nykyisen sijainnin välinen teksti.
-* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Palaa valinnan alkukohtaan.
+* `Alt+F9` (macOS:ssä `Cmd+F9`): Merkitse valinnan alkukohta.
+* `Alt+F10` (macOS:ssä `Cmd+F10`): Kopioi valinnan merkityn alkukohdan ja kohdistimen nykyisen sijainnin välinen teksti.
+* `Alt+Shift+F9` (macOS:ssä `Cmd+Shift+F9`): Palaa valinnan alkukohtaan.
 
 ### Ohje-valikko
 
@@ -171,6 +171,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 ### Asiakirjanäkymän lisänäppäimet
 
 * `Delete` / `Laskinnäppäimistön Delete` välilehtien ohjausobjektissa: Sulje valittu asiakirjan välilehti.
+* `Ctrl+1–9` (macOS:ssä `Cmd+1–9`) asiakirjan tekstissä tai välilehtien ohjausobjektissa: Siirry yhdeksään ensimmäiseen avoimeen asiakirjaan niiden avausjärjestyksessä.
 * `Enter` tai `Välilyönti` asiakirjan tekstissä: Avaa kohdistimen kohdalla oleva linkki tai näytä taulukko tai kaava omassa näkymässään.
 * `Enter` skannatun PDF-asiakirjan sivulla: Suorita sivun tekstintunnistus.
 * `Shift+F10` tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko.
