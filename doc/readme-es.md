@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 06f1089b5f255d98; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,94527a25,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versión 1.0
 
@@ -71,48 +71,48 @@ Paperback admite los siguientes formatos y extensiones:
 
 ## Atajos de teclado
 
-Paperback está diseñado para usar el teclado como elemento principal. Aquí están los atajos actuales.
+Paperback está diseñado para el uso orientado al teclado. Aquí se encuentran los atajos actuales.
 
-Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, el equivalente se indica entre paréntesis — principalmente porque `Ctrl+G`, `Ctrl+W` y `Alt+Left`/`Alt+Right` ya están reservados por otras convenciones del sistema o de la aplicación en esa plataforma.
+Los atajos que aparecen a continuación son para Windows. Cuando macOS difiere, el equivalente se indica entre paréntesis — principalmente porque Ctrl+G, Ctrl+W y Alt+Left/Right ya están asignados a otras convenciones del sistema u otras aplicaciones en esa plataforma.
 
 ### Menú Archivo
 
-* `Ctrl+O`: Abre un documento.
-* `Ctrl+F4` (macOS: `Cmd+W`): Cierra el documento actual.
-* `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Cierra todos los documentos abiertos.
-* `Ctrl+Shift+T`: Reabre el último documento cerrado.
-* `Ctrl+R`: Muestra el diálogo "Todos los documentos" (desde Documentos recientes).
-* `Ctrl+Q`: Sale (solo en Windows; en macOS está en el menú de la aplicación).
+* `Ctrl+O`: Abrir un documento.
+* `Ctrl+F4` (macOS: `Cmd+W`): Cerrar el documento actual.
+* `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Cerrar todos los documentos abiertos.
+* `Ctrl+Shift+T`: Reabrir el último documento cerrado.
+* `Ctrl+R`: Mostrar el diálogo "Todos los documentos" (desde Documentos recientes).
+* `Ctrl+Q`: Salir (solo en Windows; en macOS se encuentra en el menú de la aplicación).
 
 ### Menú Ir
 
-* `Ctrl+F`: Muestra el diálogo Buscar.
-* `F3` (macOS: `Cmd+G`): Busca el siguiente.
-* `Shift+F3` (macOS: `Cmd+Shift+G`): Busca el anterior.
-* `Ctrl+G` (macOS: `Cmd+L`): Ir a la línea.
-* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ir al porcentaje.
-* `Ctrl+P`: Ir a la página (cuando lo admita el documento actual).
-* `=`: Anuncia tu porcentaje de lectura actual y página, p. ej. "15%, página 30". La página se omite para documentos sin números de página.
-* `Alt+Left` (macOS: `Cmd+[`): Retrocede en el historial de navegación.
-* `Alt+Right` (macOS: `Cmd+]`): Avanza en el historial de navegación.
+* `Ctrl+F`: Mostrar el diálogo Buscar.
+* `F3` (macOS: `Cmd+G`): Buscar siguiente.
+* `Shift+F3` (macOS: `Cmd+Shift+G`): Buscar anterior.
+* `Ctrl+G` (macOS: `Cmd+L`): Ir a línea.
+* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ir a porcentaje.
+* `Ctrl+P`: Ir a página (cuando sea compatible con el documento actual).
+* `=`: Anunciar tu porcentaje de lectura actual y página, por ejemplo, "15%, página 30". La página se omite para documentos que no tienen números de página.
+* `Alt+Left` (macOS: `Cmd+[`): Retroceder en el historial de navegación.
+* `Alt+Right` (macOS: `Cmd+]`): Avanzar en el historial de navegación.
 * `[`: Sección anterior.
 * `]`: Sección siguiente.
 * `Shift+H`: Encabezado anterior.
 * `H`: Encabezado siguiente.
-* `Shift+1` a `Shift+6`: Encabezado anterior del nivel 1-6.
-* `1` a `6`: Encabezado siguiente del nivel 1-6.
+* `Shift+1` a través de `Shift+6`: Encabezado anterior de nivel 1-6.
+* `1` a través de `6`: Encabezado siguiente de nivel 1-6.
 * `Shift+P`: Página anterior.
 * `P`: Página siguiente.
 * `Shift+B`: Marcador anterior.
 * `B`: Marcador siguiente.
-* `/`: Establece tu marcador temporal.
-* `\`: Salta a tu marcador temporal.
+* `/`: Establecer tu marcador temporal.
+* `\`: Saltar a tu marcador temporal.
 * `Shift+N`: Nota anterior.
 * `N`: Nota siguiente.
-* `Ctrl+B`: Salta a todos los marcadores y notas.
-* `Ctrl+Alt+B`: Salta solo a marcadores.
-* `Ctrl+Alt+M`: Salta solo a notas.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, es decir, la tecla Control física en lugar de Cmd): Ve el texto de nota en la posición actual.
+* `Ctrl+B`: Saltar a todos los marcadores y notas.
+* `Ctrl+Alt+B`: Saltar solo a marcadores.
+* `Ctrl+Alt+M`: Saltar solo a notas.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, es decir, la tecla Control física en lugar de Cmd): Ver texto de nota en la posición actual.
 * `Shift+K`: Enlace anterior.
 * `K`: Enlace siguiente.
 * `Shift+G`: Imagen anterior.
@@ -134,48 +134,49 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 
 ### Menú Herramientas
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, es decir, la tecla Control física en lugar de Cmd): Muestra el recuento de palabras del documento actual.
-* `Ctrl+I`: Muestra información del documento.
-* `Ctrl+T`: Muestra la tabla de contenidos.
-* `F7`: Muestra la lista de elementos.
-* `Ctrl+Shift+C`: Abre la carpeta contenedora.
-* `Ctrl+Shift+V`: Abre el contenido actual en Vista web.
-* `Ctrl+U`: Ve la fuente del documento en una pestaña nueva.
-* `Ctrl+Shift+E`: Exporta datos del documento (`.paperback`).
-* `Ctrl+Shift+I`: Importa datos del documento (`.paperback`).
-* `Ctrl+E`: Exporta el documento actual a texto sin formato.
-* `Ctrl+Shift+B`: Alterna el marcador en la selección/cursor actual.
-* `Ctrl+Shift+N`: Añade o edita una nota de marcador en la selección/cursor actual.
-* `Ctrl+Alt+W`: Alterna el ajuste de palabras.
-* `Ctrl+Space` (macOS: `RawCtrl+Space`, es decir, la tecla Control física, ya que `Cmd+Space` abre Spotlight): Reproduce/pausa la narración de audio.
-* `'`: Busca hacia adelante en la narración de audio.
-* `;`: Busca hacia atrás en la narración de audio.
-* `Shift+'`: Aumenta la cantidad de búsqueda de audio.
-* `Shift+;`: Reduce la cantidad de búsqueda de audio.
-* `Ctrl+Shift+.`: Acelera la narración de audio.
-* `Ctrl+Shift+,`: Ralentiza la narración de audio.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, es decir, Control+Comando+F): Alterna pantalla completa.
-* `Ctrl+,`: Abre Configuración (macOS: en el menú de la aplicación).
-* `Ctrl+Shift+S`: Alterna el temporizador de reposo.
-* `Ctrl+Shift+O`: Reconoce un rango de páginas PDF escaneadas con OCR.
-* `Alt+F9` (macOS: `Cmd+F9`): Marca el inicio de una selección, para que todo desde aquí hasta donde llegues pueda copiarse de una sola vez.
-* `Alt+F10` (macOS: `Cmd+F10`): Copia todo desde el inicio marcado de la selección hasta la posición actual.
-* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Salta al inicio marcado de la selección, dejando la marca en su lugar.
+* `Ctrl+W` (macOS: `RawCtrl+W`, es decir, la tecla Control física en lugar de Cmd): Mostrar recuento de palabras del documento actual.
+* `Ctrl+I`: Mostrar información del documento.
+* `Ctrl+T`: Mostrar tabla de contenidos.
+* `F7`: Mostrar lista de elementos.
+* `Ctrl+Shift+C`: Abrir carpeta contenedora.
+* `Ctrl+Shift+V`: Abrir contenido actual en Vista Web.
+* `Ctrl+U`: Ver el código fuente del documento en una pestaña nueva.
+* `Ctrl+Shift+E`: Exportar datos del documento (`.paperback`).
+* `Ctrl+Shift+I`: Importar datos del documento (`.paperback`).
+* `Ctrl+E`: Exportar el documento actual a texto sin formato.
+* `Ctrl+Shift+B`: Alternar marcador en la selección actual/cursor.
+* `Ctrl+Shift+N`: Añadir o editar nota de marcador en la selección actual/cursor.
+* `Ctrl+Alt+W`: Alternar ajuste de línea.
+* `Ctrl+Space` (macOS: `RawCtrl+Space`, es decir, la tecla Control física, ya que Cmd+Space abre Spotlight): Reproducir/pausar narración de audio.
+* `'`: Avanzar narración de audio.
+* `;`: Retroceder narración de audio.
+* `Shift+'`: Aumentar la cantidad de búsqueda de audio.
+* `Shift+;`: Disminuir la cantidad de búsqueda de audio.
+* `Ctrl+Shift+.`: Acelerar narración de audio.
+* `Ctrl+Shift+,`: Ralentizar narración de audio.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, es decir, Control+Command+F): Alternar pantalla completa.
+* `Ctrl+,`: Abrir Configuración (macOS: en el menú de la aplicación).
+* `Ctrl+Shift+S`: Alternar temporizador de suspensión.
+* `Ctrl+Shift+O`: Reconocer un rango de páginas PDF escaneadas con OCR.
+* `Alt+F9` (macOS: `Cmd+F9`): Marcar el inicio de una selección, para que todo desde aquí hasta donde llegues pueda copiarse de una vez.
+* `Alt+F10` (macOS: `Cmd+F10`): Copiar todo desde el inicio marcado de la selección hasta la posición actual.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Saltar hacia atrás hasta el inicio marcado de la selección, dejando la marca en su lugar.
 
 ### Menú Ayuda
 
-* `Ctrl+F1`: Muestra el diálogo Acerca de.
-* `F1`: Ve la ayuda en tu navegador predeterminado.
-* `Shift+F1`: Ve la ayuda en Paperback.
-* `Ctrl+Shift+U`: Comprueba si hay actualizaciones.
-* `Ctrl+D`: Abre la página de donaciones en tu navegador predeterminado.
+* `Ctrl+F1`: Mostrar diálogo Acerca de.
+* `F1`: Ver ayuda en su navegador predeterminado.
+* `Shift+F1`: Ver ayuda en Paperback.
+* `Ctrl+Shift+U`: Buscar actualizaciones.
+* `Ctrl+D`: Abrir la página de donaciones en su navegador predeterminado.
 
 ### Teclas adicionales de vista de documento
 
-* `Delete` / `Numpad Delete` en el control de pestaña: Cierra la pestaña de documento seleccionada.
-* `Enter` o `Space` en el texto del documento: Sigue un enlace o abre una vista de tabla o fórmula en el cursor.
-* `Enter` en una página PDF escaneada: Reconoce la página con OCR.
-* `Shift+F10` o la tecla Menú/Aplicación en el texto del documento: Abre el menú contextual.
+* `Delete` / `Numpad Delete` en el control de pestañas: Cerrar la pestaña de documento seleccionada.
+* `Ctrl+1` a `Ctrl+9` (macOS: `Cmd+1` a `Cmd+9`) en el texto del documento o en el control de pestañas: Ir a los primeros nueve documentos abiertos, en el orden en que se abrieron.
+* `Enter` o `Space` en el texto del documento: Seguir un enlace o abrir una vista de tabla o fórmula en el cursor.
+* `Enter` en una página PDF escaneada: Reconocer la página con OCR.
+* `Shift+F10` o la tecla Menú/Aplicación en el texto del documento: Abrir el menú contextual.
 
 ## iOS y Android
 

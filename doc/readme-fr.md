@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 06f1089b5f255d98; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,94527a25,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -71,9 +71,9 @@ Paperback prend en charge les formats et extensions suivants :
 
 ## Raccourcis clavier
 
-Paperback est conçu pour une utilisation en priorité au clavier. Voici les raccourcis actuels.
+Paperback est conçu pour une utilisation basée en priorité sur le clavier. Voici les raccourcis actuels.
 
-Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équivalent est indiqué entre parenthèses — principalement parce que Ctrl+G, Ctrl+W et Alt+Left/Right sont déjà utilisés par d'autres conventions système ou d'application sur cette plateforme.
+Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équivalent est noté entre parenthèses — principalement parce que Ctrl+G, Ctrl+W et Alt+Left/Right sont déjà utilisés par d'autres conventions système ou d'application sur cette plateforme.
 
 ### Menu Fichier
 
@@ -81,56 +81,56 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `Ctrl+F4` (macOS : `Cmd+W`) : Fermer le document actif.
 * `Ctrl+Shift+F4` (macOS : `Cmd+Shift+W`) : Fermer tous les documents ouverts.
 * `Ctrl+Shift+T` : Rouvrir le dernier document fermé.
-* `Ctrl+R` : Afficher la boîte de dialogue « Tous les documents » (à partir des Documents récents).
+* `Ctrl+R` : Afficher la boîte de dialogue « Tous les documents » (à partir des documents récents).
 * `Ctrl+Q` : Quitter (Windows uniquement ; sur macOS, cette option se trouve dans le menu de l'application).
 
-### Menu Aller
+### Menu Aller à
 
-* `Ctrl+F` : Afficher la boîte de dialogue Rechercher.
-* `F3` (macOS : `Cmd+G`) : Rechercher le suivant.
-* `Shift+F3` (macOS : `Cmd+Shift+G`) : Rechercher le précédent.
-* `Ctrl+G` (macOS : `Cmd+L`) : Aller à la ligne.
-* `Ctrl+Shift+G` (macOS : `Cmd+Shift+L`) : Aller au pourcentage.
-* `Ctrl+P` : Aller à la page (si supporté par le document actif).
-* `=` : Annoncer votre pourcentage de lecture actuel et votre page, par exemple « 15%, page 30 ». La page est omise pour les documents sans numéros de page.
-* `Alt+Left` (macOS : `Cmd+[`) : Revenir en arrière dans l'historique de navigation.
-* `Alt+Right` (macOS : `Cmd+]`) : Avancer dans l'historique de navigation.
-* `[` : Section précédente.
-* `]` : Section suivante.
-* `Shift+H` : Titre précédent.
-* `H` : Titre suivant.
-* `Shift+1` à `Shift+6` : Titre précédent de niveau 1-6.
-* `1` à `6` : Titre suivant de niveau 1-6.
-* `Shift+P` : Page précédente.
-* `P` : Page suivante.
-* `Shift+B` : Signet précédent.
-* `B` : Signet suivant.
-* `/` : Définir votre signet temporaire.
-* `\` : Accéder à votre signet temporaire.
-* `Shift+N` : Note précédente.
-* `N` : Note suivante.
-* `Ctrl+B` : Aller à tous les signets et notes.
-* `Ctrl+Alt+B` : Aller aux signets uniquement.
-* `Ctrl+Alt+M` : Aller aux notes uniquement.
-* `Ctrl+Shift+W` (macOS : `RawCtrl+Shift+W`, c'est-à-dire la touche Control physique plutôt que Cmd) : Afficher le texte de la note à la position actuelle.
-* `Shift+K` : Lien précédent.
-* `K` : Lien suivant.
-* `Shift+G` : Image précédente.
-* `G` : Image suivante.
-* `Shift+F` : Figure précédente.
-* `F` : Figure suivante.
-* `Shift+T` : Tableau précédent.
-* `T` : Tableau suivant.
-* `Shift+M` : Formule précédente.
-* `M` : Formule suivante.
-* `Shift+S` : Séparateur précédent.
-* `S` : Séparateur suivant.
-* `Shift+L` : Liste précédente.
-* `L` : Liste suivante.
-* `Shift+I` : Élément de liste précédent.
-* `I` : Élément de liste suivant.
-* `Shift+,` : Aller au début du conteneur actif (liste ou tableau).
-* `,` : Dépasser la fin du conteneur actif (liste ou tableau).
+* `Ctrl+F`: Afficher la boîte de dialogue Rechercher.
+* `F3` (macOS: `Cmd+G`): Rechercher le suivant.
+* `Shift+F3` (macOS: `Cmd+Shift+G`): Rechercher le précédent.
+* `Ctrl+G` (macOS: `Cmd+L`): Aller à la ligne.
+* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Aller au pourcentage.
+* `Ctrl+P`: Aller à la page (si elle est prise en charge par le document actuel).
+* `=`: Annonce votre pourcentage de lecture actuel et votre page, par exemple « 15 %, page 30 ». La page est omise pour les documents sans numéros de page.
+* `Alt+Left` (macOS: `Cmd+[`): Revenir dans l'historique de navigation.
+* `Alt+Right` (macOS: `Cmd+]`): Aller de l'avant dans l'historique de navigation.
+* `[`: Section précédente.
+* `]`: Section suivante.
+* `Shift+H`: Titre précédent.
+* `H`: Titre suivant.
+* `Shift+1` à `Shift+6`: Titre précédent de niveau 1-6.
+* `1` à `6`: Titre suivant de niveau 1-6.
+* `Shift+P`: Page précédente.
+* `P`: Page suivante.
+* `Shift+B`: Signet précédent.
+* `B`: Signet suivant.
+* `/`: Définir votre signet temporaire.
+* `\`: Accéder à votre signet temporaire.
+* `Shift+N`: Note précédente.
+* `N`: Note suivante.
+* `Ctrl+B`: Accéder à tous les signets et notes.
+* `Ctrl+Alt+B`: Accéder aux signets uniquement.
+* `Ctrl+Alt+M`: Accéder aux notes uniquement.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, c'est-à-dire la touche Contrôle physique plutôt que Cmd): Afficher le texte de la note à la position actuelle.
+* `Shift+K`: Lien précédent.
+* `K`: Lien suivant.
+* `Shift+G`: Image précédente.
+* `G`: Image suivante.
+* `Shift+F`: Figure précédente.
+* `F`: Figure suivante.
+* `Shift+T`: Tableau précédent.
+* `T`: Tableau suivant.
+* `Shift+M`: Formule précédente.
+* `M`: Formule suivante.
+* `Shift+S`: Séparateur précédent.
+* `S`: Séparateur suivant.
+* `Shift+L`: Liste précédente.
+* `L`: Liste suivante.
+* `Shift+I`: Élément de liste précédent.
+* `I`: Élément de liste suivant.
+* `Shift+,`: Aller au début du conteneur actuel (liste ou tableau).
+* `,`: Aller au-delà de la fin du conteneur actuel (liste ou tableau).
 
 ### Menu Outils
 
@@ -139,26 +139,26 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `Ctrl+T` : Afficher la table des matières.
 * `F7` : Afficher la liste des éléments.
 * `Ctrl+Shift+C` : Ouvrir le dossier contenant.
-* `Ctrl+Shift+V` : Ouvrir le contenu actuel dans la Vue Web.
+* `Ctrl+Shift+V` : Ouvrir le contenu actif dans Web View.
 * `Ctrl+U` : Afficher la source du document dans un nouvel onglet.
 * `Ctrl+Shift+E` : Exporter les données du document (`.paperback`).
 * `Ctrl+Shift+I` : Importer les données du document (`.paperback`).
 * `Ctrl+E` : Exporter le document actif en texte brut.
 * `Ctrl+Shift+B` : Basculer le signet à la sélection/position du curseur actuelle.
-* `Ctrl+Shift+N` : Ajouter ou éditer une note de signet à la sélection/position du curseur actuelle.
-* `Ctrl+Alt+W` : Basculer le retour à la ligne automatique.
+* `Ctrl+Shift+N` : Ajouter ou modifier une note de signet à la sélection/position du curseur actuelle.
+* `Ctrl+Alt+W` : Basculer le retour à la ligne.
 * `Ctrl+Space` (macOS : `RawCtrl+Space`, c'est-à-dire la touche Control physique, car Cmd+Space ouvre Spotlight) : Lecture/pause de la narration audio.
-* `'` : Avancer rapidement dans la narration audio.
-* `;` : Reculer rapidement dans la narration audio.
-* `Shift+'` : Augmenter le montant de l'avance rapide audio.
-* `Shift+;` : Diminuer le montant de l'avance rapide audio.
+* `'` : Avancer dans la narration audio.
+* `;` : Reculer dans la narration audio.
+* `Shift+'` : Augmenter la durée de déplacement audio.
+* `Shift+;` : Diminuer la durée de déplacement audio.
 * `Ctrl+Shift+.` : Accélérer la narration audio.
 * `Ctrl+Shift+,` : Ralentir la narration audio.
-* `F11` (macOS : `RawCtrl+Ctrl+F`, c'est-à-dire Control+Command+F) : Basculer le mode plein écran.
-* `Ctrl+,` : Ouvrir les Paramètres (macOS : dans le menu de l'application).
+* `F11` (macOS : `RawCtrl+Ctrl+F`, c'est-à-dire Control+Command+F) : Basculer le plein écran.
+* `Ctrl+,` : Ouvrir les Paramètres (macOS : dans le menu de l'app).
 * `Ctrl+Shift+S` : Basculer la minuterie de sommeil.
 * `Ctrl+Shift+O` : Reconnaître une plage de pages PDF numérisées avec OCR.
-* `Alt+F9` (macOS : `Cmd+F9`) : Marquer le début d'une sélection, de sorte que tout ce qui va d'ici à votre position actuelle puisse être copié en une seule fois.
+* `Alt+F9` (macOS : `Cmd+F9`) : Marquer le début d'une sélection, afin que tout à partir d'ici jusqu'où vous allez puisse être copié en une seule fois.
 * `Alt+F10` (macOS : `Cmd+F10`) : Copier tout du début marqué de la sélection à la position actuelle.
 * `Alt+Shift+F9` (macOS : `Cmd+Shift+F9`) : Revenir au début marqué de la sélection, en laissant la marque en place.
 
@@ -168,11 +168,12 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `F1` : Afficher l'aide dans votre navigateur par défaut.
 * `Shift+F1` : Afficher l'aide dans Paperback.
 * `Ctrl+Shift+U` : Vérifier les mises à jour.
-* `Ctrl+D` : Ouvrir la page de don dans votre navigateur par défaut.
+* `Ctrl+D` : Ouvrir la page de donation dans votre navigateur par défaut.
 
-### Touches supplémentaires de la vue des documents
+### Touches supplémentaires pour la vue de document
 
 * `Delete` / `Numpad Delete` sur le contrôle d'onglet : Fermer l'onglet de document sélectionné.
+* `Ctrl+1` à `Ctrl+9` (macOS : `Cmd+1` à `Cmd+9`) dans le texte du document ou sur le contrôle d'onglet : Aller aux neuf premiers documents ouverts, dans l'ordre dans lequel ils ont été ouverts.
 * `Enter` ou `Space` dans le texte du document : Suivre un lien ou ouvrir une vue de tableau ou de formule au curseur.
 * `Enter` sur une page PDF numérisée : Reconnaître la page avec OCR.
 * `Shift+F10` ou la touche Menu/Application dans le texte du document : Ouvrir le menu contextuel.

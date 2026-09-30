@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 14:16+0000\n"
+"POT-Creation-Date: 2026-09-30 22:42+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -827,6 +827,11 @@ msgstr "&Page de début :"
 msgid "&End page:"
 msgstr "&Page de fin :"
 
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+#, fuzzy
+msgid "&Include text pages too"
+msgstr "&Inclure aussi les pages avec texte"
+
 #. TRANSLATORS: Label for the button that starts the batch OCR
 #, fuzzy
 msgid "OCR"
@@ -1271,6 +1276,11 @@ msgstr "Stable"
 msgid "Dev"
 msgstr "Développement"
 
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+#, fuzzy
+msgid "Log Level:"
+msgstr "Niveau de journalisation :"
+
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 #, fuzzy
 msgid "Customize &Window Hotkey..."
@@ -1412,6 +1422,36 @@ msgstr "Lisibilité"
 #, fuzzy
 msgid "Choose a colour"
 msgstr "Choisir une couleur"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+#, fuzzy
+msgid "Off"
+msgstr "Désactivé"
+
+#. TRANSLATORS: Log level choice that records only errors
+#, fuzzy
+msgid "Errors"
+msgstr "Erreurs"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+#, fuzzy
+msgid "Warnings"
+msgstr "Avertissements"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+#, fuzzy
+msgid "Information"
+msgstr "Informations"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+#, fuzzy
+msgid "Debug"
+msgstr "Débogage"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+#, fuzzy
+msgid "Trace"
+msgstr "Trace"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"

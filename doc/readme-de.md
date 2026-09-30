@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 06f1089b5f255d98; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,94527a25,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - Version 1.0
 
@@ -71,9 +71,9 @@ Paperback unterstützt die folgenden Formate und Dateitypen:
 
 ## Tastenkombinationen
 
-Paperback ist für die Verwendung mit der Tastatur ausgerichtet. Hier sind die aktuellen Tastenkombinationen.
+Paperback ist für die tastaturgesteuer­te Bedienung ausgelegt. Hier sind die aktuellen Tastenkombinationen.
 
-Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet, ist das Äquivalent in Klammern vermerkt — hauptsächlich, weil `Ctrl+G`, `Ctrl+W` und `Alt+Left`/`Alt+Right` auf dieser Plattform bereits von anderen System- oder App-Konventionen belegt sind.
+Die folgenden Tastenkombinationen gelten für Windows. Wo sich macOS unterscheidet, wird das Äquivalent in Klammern angegeben — hauptsächlich weil `Ctrl+G`, `Ctrl+W` und `Alt+Left`/`Alt+Right` auf dieser Plattform bereits durch andere System- oder App-Konventionen belegt sind.
 
 ### Menü „Datei"
 
@@ -81,38 +81,38 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 * `Ctrl+F4` (macOS: `Cmd+W`): Schließt das aktuelle Dokument.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Schließt alle offenen Dokumente.
 * `Ctrl+Shift+T`: Öffnet das zuletzt geschlossene Dokument erneut.
-* `Ctrl+R`: Zeigt den Dialog „Alle Dokumente" an (aus „Zuletzt verwendet").
-* `Ctrl+Q`: Beendet Paperback (nur Windows; auf macOS befindet sich diese Option stattdessen im App-Menü).
+* `Ctrl+R`: Zeigt den Dialog „Alle Dokumente" an (aus der Liste der zuletzt geöffneten Dokumente).
+* `Ctrl+Q`: Beendet das Programm (nur Windows; auf macOS befindet sich diese Option stattdessen im App-Menü).
 
 ### Menü „Gehe zu"
 
-* `Ctrl+F`: Suchen-Dialog anzeigen.
-* `F3` (macOS: `Cmd+G`): Nächstes Ergebnis suchen.
-* `Shift+F3` (macOS: `Cmd+Shift+G`): Vorheriges Ergebnis suchen.
-* `Ctrl+G` (macOS: `Cmd+L`): Zur Zeile gehen.
-* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Zum Prozentsatz gehen.
-* `Ctrl+P`: Zur Seite gehen (wenn vom aktuellen Dokument unterstützt).
-* `=`: Ankündigung des aktuellen Leseprozentsatzes und der Seitenzahl, z. B. „15 %, Seite 30". Die Seitenzahl wird bei Dokumenten ohne Seitenzahlen weggelassen.
-* `Alt+Left` (macOS: `Cmd+[`): Zurück in der Navigationshistorie.
-* `Alt+Right` (macOS: `Cmd+]`): Vorwärts in der Navigationshistorie.
+* `Ctrl+F`: Zeigt den Dialog „Suchen".
+* `F3` (macOS: `Cmd+G`): Nächstes Suchergebnis.
+* `Shift+F3` (macOS: `Cmd+Shift+G`): Vorheriges Suchergebnis.
+* `Ctrl+G` (macOS: `Cmd+L`): Gehe zu Zeile.
+* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Gehe zu Prozentsatz.
+* `Ctrl+P`: Gehe zu Seite (wenn vom aktuellen Dokument unterstützt).
+* `=`: Kündigt deine aktuelle Leseposition in Prozent und Seitenzahl an, z. B. „15%, Seite 30". Die Seitenzahl wird für Dokumente ohne Seitenzahlen weggelassen.
+* `Alt+Left` (macOS: `Cmd+[`): Gehe zurück im Navigationsverlauf.
+* `Alt+Right` (macOS: `Cmd+]`): Gehe vor im Navigationsverlauf.
 * `[`: Vorheriger Abschnitt.
 * `]`: Nächster Abschnitt.
 * `Shift+H`: Vorherige Überschrift.
 * `H`: Nächste Überschrift.
-* `Shift+1` bis `Shift+6`: Vorherige Überschrift der Ebene 1–6.
-* `1` bis `6`: Nächste Überschrift der Ebene 1–6.
+* `Shift+1` bis `Shift+6`: Vorherige Überschrift auf Ebene 1–6.
+* `1` bis `6`: Nächste Überschrift auf Ebene 1–6.
 * `Shift+P`: Vorherige Seite.
 * `P`: Nächste Seite.
 * `Shift+B`: Vorheriges Lesezeichen.
 * `B`: Nächstes Lesezeichen.
-* `/`: Temporäres Lesezeichen setzen.
-* `\`: Zum temporären Lesezeichen springen.
+* `/`: Setzt dein temporäres Lesezeichen.
+* `\`: Springt zu deinem temporären Lesezeichen.
 * `Shift+N`: Vorherige Notiz.
 * `N`: Nächste Notiz.
-* `Ctrl+B`: Zu allen Lesezeichen und Notizen springen.
-* `Ctrl+Alt+B`: Nur zu Lesezeichen springen.
-* `Ctrl+Alt+M`: Nur zu Notizen springen.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, d. h. die physische Steuerungstaste statt Cmd): Notiztext an der aktuellen Position anzeigen.
+* `Ctrl+B`: Springt zu allen Lesezeichen und Notizen.
+* `Ctrl+Alt+B`: Springt zu Lesezeichen.
+* `Ctrl+Alt+M`: Springt zu Notizen.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, d. h. die physikalische Ctrl-Taste statt Cmd): Zeigt den Notiztext an der aktuellen Position.
 * `Shift+K`: Vorheriger Link.
 * `K`: Nächster Link.
 * `Shift+G`: Vorheriges Bild.
@@ -123,56 +123,57 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 * `T`: Nächste Tabelle.
 * `Shift+M`: Vorherige Formel.
 * `M`: Nächste Formel.
-* `Shift+S`: Vorheriger Trenner.
-* `S`: Nächster Trenner.
+* `Shift+S`: Vorheriger Trennstrich.
+* `S`: Nächster Trennstrich.
 * `Shift+L`: Vorherige Liste.
 * `L`: Nächste Liste.
 * `Shift+I`: Vorheriges Listenelement.
 * `I`: Nächstes Listenelement.
-* `Shift+,`: Zum Anfang des aktuellen Containers (Liste oder Tabelle) gehen.
-* `,`: Über das Ende des aktuellen Containers (Liste oder Tabelle) hinausgehen.
+* `Shift+,`: Gehe zum Anfang des aktuellen Containers (Liste oder Tabelle).
+* `,`: Gehe über das Ende des aktuellen Containers (Liste oder Tabelle).
 
 ### Menü „Extras"
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, d. h. die physische Strg-Taste statt Cmd): Wortanzahl für das aktuelle Dokument anzeigen.
-* `Ctrl+I`: Dokumentinfo anzeigen.
+* `Ctrl+W` (macOS: `RawCtrl+W`, also die physische Taste Control statt Cmd): Wortanzahl für das aktuelle Dokument anzeigen.
+* `Ctrl+I`: Dokumentinformationen anzeigen.
 * `Ctrl+T`: Inhaltsverzeichnis anzeigen.
-* `F7`: Elementeliste anzeigen.
+* `F7`: Elementliste anzeigen.
 * `Ctrl+Shift+C`: Enthaltenden Ordner öffnen.
-* `Ctrl+Shift+V`: Aktuellen Inhalt in der Webansicht öffnen.
-* `Ctrl+U`: Dokumentquelle in einem neuen Tab anzeigen.
+* `Ctrl+Shift+V`: Aktuellen Inhalt in Web View öffnen.
+* `Ctrl+U`: Dokumentquellencode in einem neuen Reiter anzeigen.
 * `Ctrl+Shift+E`: Dokumentdaten exportieren (`.paperback`).
 * `Ctrl+Shift+I`: Dokumentdaten importieren (`.paperback`).
 * `Ctrl+E`: Aktuelles Dokument als Klartext exportieren.
-* `Ctrl+Shift+B`: Lesezeichen bei der aktuellen Auswahl/dem Cursor umschalten.
-* `Ctrl+Shift+N`: Lesezeichennotiz bei der aktuellen Auswahl/dem Cursor hinzufügen oder bearbeiten.
+* `Ctrl+Shift+B`: Lesezeichen bei der aktuellen Auswahl/Cursor umschalten.
+* `Ctrl+Shift+N`: Lesezeichen-Notiz bei der aktuellen Auswahl/Cursor hinzufügen oder bearbeiten.
 * `Ctrl+Alt+W`: Zeilenumbruch umschalten.
-* `Ctrl+Space` (macOS: `RawCtrl+Space`, d. h. die physische Strg-Taste, da Cmd+Space Spotlight öffnet): Audioerzählung abspielen/pausieren.
-* `'`: Audioerzählung vorwärts spulen.
-* `;`: Audioerzählung rückwärts spulen.
-* `Shift+'`: Spulmenge der Audioerzählung erhöhen.
-* `Shift+;`: Spulmenge der Audioerzählung verringern.
-* `Ctrl+Shift+.`: Audioerzählung beschleunigen.
-* `Ctrl+Shift+,`: Audioerzählung verlangsamen.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, d. h. Strg+Cmd+F): Vollbild umschalten.
+* `Ctrl+Space` (macOS: `RawCtrl+Space`, also die physische Taste Control, da Cmd+Space Spotlight öffnet): Audio-Erzählung abspielen/pausieren.
+* `'`: Audio-Erzählung vorspulen.
+* `;`: Audio-Erzählung zurückspulen.
+* `Shift+'`: Spulmenge der Audio-Erzählung erhöhen.
+* `Shift+;`: Spulmenge der Audio-Erzählung verringern.
+* `Ctrl+Shift+.`: Audio-Erzählung schneller abspielen.
+* `Ctrl+Shift+,`: Audio-Erzählung langsamer abspielen.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, also Control+Command+F): Vollbildmodus umschalten.
 * `Ctrl+,`: Einstellungen öffnen (macOS: im App-Menü).
-* `Ctrl+Shift+S`: Schlaf-Timer umschalten.
-* `Ctrl+Shift+O`: Einen Bereich gescannter PDF-Seiten mit Texterkennung erkennen.
-* `Alt+F9` (macOS: `Cmd+F9`): Markiere den Anfang einer Auswahl, sodass alles von hier bis dorthin in einem Zug kopiert werden kann.
+* `Ctrl+Shift+S`: Sleep-Timer umschalten.
+* `Ctrl+Shift+O`: Bereich von gescannten PDF-Seiten mit Texterkennung erkennen.
+* `Alt+F9` (macOS: `Cmd+F9`): Anfang einer Auswahl markieren, damit alles von hier bis dahin, wo du hinkommst, auf einmal kopiert werden kann.
 * `Alt+F10` (macOS: `Cmd+F10`): Alles vom markierten Anfang der Auswahl bis zur aktuellen Position kopieren.
-* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Springe zurück zum markierten Anfang der Auswahl und lasse die Markierung bestehen.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Zurück zum markierten Anfang der Auswahl springen und die Markierung beibehalten.
 
-### Menü „Hilfe"
+### Hilfemenü
 
-* `Ctrl+F1`: Zeigt den Dialog „Über" an.
-* `F1`: Öffnet die Hilfe im Standard-Browser.
-* `Shift+F1`: Zeigt die Hilfe in Paperback an.
-* `Ctrl+Shift+U`: Prüft auf Aktualisierungen.
-* `Ctrl+D`: Öffnet die Spendenseite im Standard-Browser.
+* `Ctrl+F1`: Zeigt den Dialog „Info".
+* `F1`: Öffnet die Hilfe im Standardbrowser.
+* `Shift+F1`: Öffnet die Hilfe in Paperback.
+* `Ctrl+Shift+U`: Sucht nach Aktualisierungen.
+* `Ctrl+D`: Öffnet die Spendenseite im Standardbrowser.
 
-### Zusätzliche Tastenkombinationen für die Dokumentanzeige
+### Zusätzliche Tastenkombinationen in der Dokumentansicht
 
 * `Delete` / `Numpad Delete` auf dem Reiter-Steuerelement: Schließt den ausgewählten Dokumentreiter.
+* `Ctrl+1` bis `Ctrl+9` (macOS: `Cmd+1` bis `Cmd+9`) im Dokumenttext oder auf dem Reiter-Steuerelement: Wechselt zu den ersten neun offenen Dokumenten in der Reihenfolge, in der sie geöffnet wurden.
 * `Enter` oder `Space` im Dokumenttext: Folgt einem Link oder öffnet eine Tabellen- oder Formelansicht an der Cursorposition.
 * `Enter` auf einer gescannten PDF-Seite: Erkennt die Seite mit Texterkennung.
 * `Shift+F10` oder die Menü-/Anwendungstaste im Dokumenttext: Öffnet das Kontextmenü.
