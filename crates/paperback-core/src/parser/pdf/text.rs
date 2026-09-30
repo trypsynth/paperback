@@ -323,11 +323,20 @@ pub(super) fn median_line_font_size(line_infos: &[Line]) -> f64 {
 /// How far above a page's first line other text has to sit, as a share of the height its text spans, before the page counts as drawn out of order. A running header drawn after the body sits well inside this, and a second column starts about where the first did.
 const OUT_OF_ORDER_SHARE: f64 = 0.25;
 
-/// Puts a page whose content stream starts partway down it back into top-down order. Some form generators draw the lower half of a page first, and an untagged page has only the stream to go on, so the form read from its middle. Only such a page is touched, and it is reordered by region, each a stretch the stream draws without leaving that part of the page, kept whole and placed by where it starts: every page drawn in order, columns included, comes back unchanged.
+/// Puts a page whose content stream starts partway down it back into top-down order. Some form generators draw the lower half of a page first, and an untagged page has only the stream to go on, so the form read from its middle. Only such a page is touched, and it is reordered by region, each a stretch the stream draws without leaving that part of the page, kept whole and placed by where it starts: every page drawn in order, columns included, comes back unchanged. Lines the stream draws first at the bottom of everything drawn after them, such as a footer, are not where it starts.
 fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
 	// A line with no position, such as an empty one, says nothing about the order and travels with the run it is drawn in.
 	let placed = |line: &&Line| line.top.is_finite() && line.bottom.is_finite();
-	let Some(first) = lines.iter().find(placed) else { return lines };
+	// Walks back from the end keeping the lowest top drawn after each line, so this ends on the earliest line that has a lower one drawn after it.
+	let mut lowest_after = f64::INFINITY;
+	let mut first = None;
+	for line in lines.iter().rev().filter(placed) {
+		if line.top > lowest_after + COORDINATE_EPSILON {
+			first = Some(line);
+		}
+		lowest_after = lowest_after.min(line.top);
+	}
+	let Some(first) = first else { return lines };
 	let highest = lines.iter().filter(placed).map(|line| line.top).fold(f64::MIN, f64::max);
 	let lowest = lines.iter().filter(placed).map(|line| line.bottom).fold(f64::MAX, f64::min);
 	let far = (highest - lowest) * OUT_OF_ORDER_SHARE;
@@ -443,6 +452,45 @@ mod tests {
 		assert_eq!(
 			texts(&restore_reading_order(lines)),
 			["1. Type of Transaction", "24. Procedure Date", "", "35. Remarks"]
+		);
+	}
+
+	/// The shape of a magazine page: the master page's footer lines come first, then the header, both columns top-down, and the title, intro and pull quote last. The intro sits above the first column, so the second column starts higher than the first.
+	#[test]
+	fn a_footer_drawn_first_does_not_reorder_the_columns() {
+		let stream = [
+			("folio", 38.0),
+			("footer", 38.0),
+			("header", 811.0),
+			("left 1", 395.0),
+			("left 2", 250.0),
+			("left 3", 83.0),
+			("right 1", 573.0),
+			("right 2", 400.0),
+			("right 3", 250.0),
+			("right 4", 83.0),
+			("title", 710.0),
+			("lead", 585.0),
+			("pull quote", 415.0),
+		];
+		let lines = stream.iter().map(|&(text, top)| line(text, top)).collect();
+		let expected: Vec<&str> = stream.iter().map(|&(text, _)| text).collect();
+		assert_eq!(texts(&restore_reading_order(lines)), expected);
+	}
+
+	#[test]
+	fn a_form_with_its_footer_drawn_first_is_still_read_from_the_top() {
+		let lines = vec![
+			line("footer", 40.0),
+			line("middle 1", 460.0),
+			line("middle 2", 330.0),
+			line("middle 3", 200.0),
+			line("top 1", 720.0),
+			line("top 2", 600.0),
+		];
+		assert_eq!(
+			texts(&restore_reading_order(lines)),
+			["top 1", "top 2", "middle 1", "middle 2", "middle 3", "footer"]
 		);
 	}
 
