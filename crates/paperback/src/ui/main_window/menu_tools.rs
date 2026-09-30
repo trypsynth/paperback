@@ -21,7 +21,11 @@ use super::{
 };
 #[cfg(target_os = "windows")]
 use super::{HotkeyHandle, re_register_hotkey};
-use crate::{config_ext::set_update_channel, translation_manager::TranslationManager, ui::navigation::announce};
+use crate::{
+	config_ext::{set_log_level, set_update_channel},
+	translation_manager::TranslationManager,
+	ui::navigation::announce,
+};
 
 pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 	let Ok(dm_ref) = dm.try_lock() else {
@@ -511,6 +515,8 @@ pub(super) fn handle_options(
 	cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 	cfg.set_app_string("language", &options.language);
 	set_update_channel(&cfg, options.update_channel);
+	set_log_level(&cfg, options.log_level);
+	crate::logging::set_level(options.log_level);
 	cfg.set_hotkey(&options.hotkey);
 	cfg.set_shortcuts(&options.shortcuts);
 	cfg.set_readability_font(&options.readability_font);
