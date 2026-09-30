@@ -8,7 +8,7 @@ use pdfium_render::prelude::{
 	FPDF_PAGEOBJECTMARK, FS_RECTF,
 };
 
-use super::{PdfDocument, PdfError, PdfTextPage, TagTree, bindings, utf8_out_param};
+use super::{PdfDocument, PdfError, PdfTextPage, TagTree, bindings, utf8_out_param, utf16_out_param};
 
 /// `PDFACTION_URI` and `FPDF_ANNOT_LINK`, the two codes the crate does not re-export. Every
 /// other code here is imported from it rather than written out, because a page-object type
@@ -303,6 +303,15 @@ pub struct ObjectMark<'object> {
 }
 
 impl ObjectMark<'_> {
+	/// The mark's tag as the content stream spells it: `P`, `Span`, `Artifact` and so on.
+	pub fn name(&self) -> Option<String> {
+		utf16_out_param(|buffer, len| {
+			let mut needed: c_ulong = 0;
+			let ok = unsafe { bindings().FPDFPageObjMark_GetName(self.handle, buffer.cast(), len, &mut needed) };
+			if ok != 0 { needed } else { 0 }
+		})
+	}
+
 	/// An integer parameter on this mark, such as `MCID`.
 	pub fn param_int(&self, key: &str) -> Option<i32> {
 		let mut value = 0;
