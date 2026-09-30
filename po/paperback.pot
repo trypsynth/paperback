@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 08:33-0600\n"
+"POT-Creation-Date: 2026-09-30 16:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -706,6 +706,10 @@ msgstr ""
 
 #. TRANSLATORS: Label for the ending page field of the Batch OCR range
 msgid "&End page:"
+msgstr ""
+
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+msgid "&Include text pages too"
 msgstr ""
 
 #. TRANSLATORS: Label for the button that starts the batch OCR

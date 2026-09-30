@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 14:16+0000\n"
+"POT-Creation-Date: 2026-09-30 16:09+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -823,6 +823,11 @@ msgstr "&Página de inicio:"
 #, fuzzy
 msgid "&End page:"
 msgstr "&Página final:"
+
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+#, fuzzy
+msgid "&Include text pages too"
+msgstr "&Incluir también páginas con texto"
 
 #. TRANSLATORS: Label for the button that starts the batch OCR
 #, fuzzy
