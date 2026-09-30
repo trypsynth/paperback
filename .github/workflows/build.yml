@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+      # The release branch, so what ships from it is built and tested there.
+      - "1.0"
   pull_request:
     branches:
       - master
@@ -638,7 +640,8 @@ jobs:
   release:
     needs: [build-windows, build-windows-arm64, build-linux, build-linux-arm64, build-android, build-macos]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+    # master only: `latest` is the dev build, and a push to the release branch must not replace it. Release branch builds stay as this run's artifacts.
+    if: github.event_name == 'push' && github.repository == 'trypsynth/paperback' && github.ref == 'refs/heads/master'
     # Every run publishes to the same `latest` release, so two of them uploading at once
     # interleave their assets: the release ends up with one run's installer next to another
     # run's signature for it, and the updater rejects the download it verifies. Queue them

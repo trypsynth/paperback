@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+      # The release branch, so what ships from it is built and tested there.
+      - "1.0"
   pull_request:
     branches:
       - master
