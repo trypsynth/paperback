@@ -122,6 +122,14 @@ impl ShortcutsConfig {
 mod tests {
 	use super::*;
 
+	/// On a Japanese keyboard `=` and `'` are typed with Shift, so the reader finds their shortcuts by the character typed instead of the key pressed (#982). That lookup is by character code with no modifiers, and has to land on the defaults.
+	#[test]
+	fn punctuation_defaults_are_found_by_the_character_they_type() {
+		let sc = ShortcutsConfig::default();
+		assert_eq!(sc.find_action(i32::from(b'='), false, false, false), Some(ActionId::AnnouncePercent));
+		assert_eq!(sc.find_action(i32::from(b'\''), false, false, false), Some(ActionId::SeekAudioForward));
+	}
+
 	#[test]
 	fn shortcuts_config_set_reset_and_find() {
 		let mut sc = ShortcutsConfig::default();

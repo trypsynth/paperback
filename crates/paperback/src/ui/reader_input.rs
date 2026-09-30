@@ -8,7 +8,7 @@ use std::{rc::Rc, sync::Mutex};
 
 use paperback_core::config::ActionId;
 use patois::t;
-use wxdragon::prelude::*;
+use wxdragon::{event::KeyboardEvent, prelude::*};
 
 use super::{
 	document_manager::{DocumentManager, DocumentTab, tab_index_for_key},
@@ -29,6 +29,7 @@ pub(super) fn build_text_ctrl(
 		| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
 	let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
 	let dm_for_enter = Rc::clone(self_rc);
+	let frame_for_char = frame;
 	text_ctrl.on_char(move |event| {
 		if let WindowEventData::Keyboard(kbd) = event {
 			if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
@@ -65,6 +66,8 @@ pub(super) fn build_text_ctrl(
 					let mut dm = dm_for_enter.lock().unwrap();
 					dm.activate_current_link();
 				}
+			} else if let Some(action) = shortcut_for_shifted_character(&kbd, &dm_for_enter) {
+				run_shortcut(action, &dm_for_enter, &frame_for_char);
 			} else {
 				kbd.event.skip(true);
 			}
@@ -170,49 +173,18 @@ pub(super) fn build_text_ctrl(
 				}
 			};
 			if let Some(act) = action {
-				match act {
-					ActionId::AnnouncePercent => {
-						kbd.event.skip(false);
-						if let Ok(dm) = dm_for_keys.try_lock() {
-							dm.announce_current_percent();
-						}
-						return;
-					}
-					ActionId::SetTemporaryBookmark => {
-						kbd.event.skip(false);
-						if let Ok(dm) = dm_for_keys.try_lock() {
-							dm.set_temporary_bookmark();
-						}
-						return;
-					}
-					ActionId::JumpToTemporaryBookmark => {
-						kbd.event.skip(false);
-						if let Ok(mut dm) = dm_for_keys.try_lock() {
-							dm.jump_to_temporary_bookmark();
-						}
-						return;
-					}
-					_ => {
-						// Alt chords are normally left to wxWidgets to resolve as menu
-						// accelerators, which is how Alt+Left gets to the navigation history.
-						// The selection commands are dispatched here as well because F10 means
-						// "activate the menu bar" to Windows, so whether Alt+F10 ever reaches the
-						// accelerator table on every platform is not something to bet a shortcut
-						// on. The two routes cannot both run: a keystroke the accelerator consumed
-						// never arrives here at all.
-						let alt_dispatched = matches!(
-							act,
-							ActionId::SetSelectionStart
-								| ActionId::CopyFromSelectionStart
-								| ActionId::JumpToSelectionStart
-						);
-						if !kbd.control_down() && !kbd.alt_down() || alt_dispatched || cfg!(target_os = "linux") {
-							let menu_id = menu_ids::action_to_menu_id(act);
-							kbd.event.skip(false);
-							frame_for_keys.process_menu_command(menu_id);
-							return;
-						}
-					}
+				// Alt chords are normally left to wxWidgets to resolve as menu
+				// accelerators, which is how Alt+Left gets to the navigation history.
+				// The selection commands are dispatched here as well because F10 means
+				// "activate the menu bar" to Windows, so whether Alt+F10 ever reaches the
+				// accelerator table on every platform is not something to bet a shortcut
+				// on. The two routes cannot both run: a keystroke the accelerator consumed
+				// never arrives here at all.
+				let plain = !kbd.control_down() && !kbd.alt_down();
+				if has_no_menu_item(act) || plain || is_selection_command(act) || cfg!(target_os = "linux") {
+					kbd.event.skip(false);
+					run_shortcut(act, &dm_for_keys, &frame_for_keys);
+					return;
 				}
 			}
 			// Ctrl+1 through Ctrl+9 jump to the first nine open documents. Deliberately after the
@@ -250,6 +222,40 @@ pub(super) fn build_text_ctrl(
 /// the middle of a paragraph announced itself from the start of that paragraph, which is not
 /// where it is. Stepping by character or by word passes over the bookmark's own position, so
 /// there the sound means what it says.
+/// The shortcuts that are carried out here rather than through a menu item, because they have none.
+const fn has_no_menu_item(action: ActionId) -> bool {
+	matches!(action, ActionId::AnnouncePercent | ActionId::SetTemporaryBookmark | ActionId::JumpToTemporaryBookmark)
+}
+
+const fn is_selection_command(action: ActionId) -> bool {
+	matches!(action, ActionId::SetSelectionStart | ActionId::CopyFromSelectionStart | ActionId::JumpToSelectionStart)
+}
+
+fn run_shortcut(action: ActionId, dm: &Rc<Mutex<DocumentManager>>, frame: &Frame) {
+	let Ok(mut dm) = dm.try_lock() else { return };
+	match action {
+		ActionId::AnnouncePercent => dm.announce_current_percent(),
+		ActionId::SetTemporaryBookmark => dm.set_temporary_bookmark(),
+		ActionId::JumpToTemporaryBookmark => dm.jump_to_temporary_bookmark(),
+		_ => {
+			drop(dm);
+			frame.process_menu_command(menu_ids::action_to_menu_id(action));
+		}
+	}
+}
+
+/// A shortcut on a punctuation key the reader's layout can only type with Shift, such as `=` and `'` on a Japanese keyboard, where they are Shift+- and Shift+7. The key-down handler matches the key itself, which there is `-` with Shift and so no shortcut; the character it types is what the shortcut names. Punctuation only, so Shift and a letter never runs the letter's own shortcut.
+fn shortcut_for_shifted_character(kbd: &KeyboardEvent, dm: &Rc<Mutex<DocumentManager>>) -> Option<ActionId> {
+	if !kbd.shift_down() || kbd.control_down() || kbd.alt_down() {
+		return None;
+	}
+	let code = kbd.get_unicode_key().and_then(|code| u32::try_from(code).ok())?;
+	let typed = char::from_u32(code).filter(char::is_ascii_punctuation)?;
+	let dm = dm.try_lock().ok()?;
+	let config = dm.config.lock().unwrap();
+	config.get_shortcuts().find_action(i32::from(typed as u8), false, false, false)
+}
+
 const fn moves_through_text(key: i32) -> bool {
 	matches!(key, WXK_LEFT | WXK_RIGHT)
 }
