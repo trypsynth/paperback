@@ -5,37 +5,23 @@
 
 use std::collections::HashSet;
 
-use pdfium::PdfiumDocument;
-
 use super::text::sanitize_pdf_text;
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType, TocItem},
+	document::TocItem,
+	pdfium::PdfDocument,
 	util::text::{collapse_whitespace, trim_string},
 };
 
-pub(super) fn add_heading_markers(buffer: &mut DocumentBuffer, items: &[TocItem], level: i32) {
-	for item in items {
-		let marker_type = match level {
-			1 => MarkerType::Heading1,
-			2 => MarkerType::Heading2,
-			3 => MarkerType::Heading3,
-			4 => MarkerType::Heading4,
-			5 => MarkerType::Heading5,
-			_ => MarkerType::Heading6,
-		};
-		buffer.add_marker(Marker::new(marker_type, item.offset).with_text(item.name.clone()).with_level(level));
-		add_heading_markers(buffer, &item.children, level + 1);
-	}
-}
+/// How deep into a nested outline to read. Beyond this the entries stop being navigation and
+/// start being the document over again.
+const MAX_OUTLINE_DEPTH: u32 = 16;
 
 pub(super) fn extract_toc(
-	document: &PdfiumDocument,
+	document: &PdfDocument,
 	page_offsets: &[usize],
 	page_lines_info: &[Vec<(usize, String)>],
 ) -> Vec<TocItem> {
-	let Ok(bookmarks) = document.toc(16) else {
-		return Vec::new();
-	};
+	let bookmarks = document.outline(MAX_OUTLINE_DEPTH);
 	if bookmarks.is_empty() {
 		return Vec::new();
 	}
@@ -44,28 +30,13 @@ pub(super) fn extract_toc(
 	let bookmark_count = bookmarks.len();
 	let mut skipped_count = 0usize;
 	for bookmark in &bookmarks {
-		let Some(level) = bookmark.level() else {
-			skipped_count += 1;
-			continue;
-		};
-		let Ok(raw_title) = bookmark.title() else {
-			skipped_count += 1;
-			continue;
-		};
-		let title = trim_string(&collapse_whitespace(&sanitize_pdf_text(&raw_title)));
+		let level = bookmark.level;
+		let title = trim_string(&collapse_whitespace(&sanitize_pdf_text(&bookmark.title)));
 		if title.is_empty() {
 			skipped_count += 1;
 			continue;
 		}
-		let Ok(dest) = bookmark.dest(document) else {
-			skipped_count += 1;
-			continue;
-		};
-		let Some(page_index) = dest.index(document) else {
-			skipped_count += 1;
-			continue;
-		};
-		let Ok(page_index) = usize::try_from(page_index) else {
+		let Ok(page_index) = usize::try_from(bookmark.page) else {
 			skipped_count += 1;
 			continue;
 		};

@@ -1,4 +1,5 @@
 standalone: true
+strip-comments: true
 toc: true
 metadata:
   title: "Paperback Documentation"

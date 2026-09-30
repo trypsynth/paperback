@@ -2,10 +2,10 @@ use std::{fmt::Write, path::Path};
 
 use paperback_core::document::DocumentStats;
 use patois::t;
-use wx_utils::dpi;
+use wx_utils::format_duration_ms;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_single_button_footer, duration_format::format_duration_ms};
+use super::{DIALOG_PADDING, add_single_button_footer};
 
 const DOC_INFO_WIDTH: i32 = 600;
 const DOC_INFO_HEIGHT: i32 = 400;
@@ -17,7 +17,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	dialog.set_escape_id(ID_CANCEL);
 	let info_ctrl = TextCtrl::builder(&dialog)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly)
-		.with_size(dpi::scale_size(&dialog, Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT)))
+		.with_size(dialog.from_dip(Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT)))
 		.build();
 	// TRANSLATORS: Label for the document's file path
 	let path_label = t("Path:");

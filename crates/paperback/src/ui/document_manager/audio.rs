@@ -5,14 +5,27 @@ use wxdragon::prelude::*;
 use super::DocumentManager;
 
 impl DocumentManager {
-	/// Stops every tab's audio ahead of the app closing, winding the native media sessions
-	/// down deliberately rather than as a side effect of the frame being destroyed.
+	/// Stops every tab's audio ahead of the app closing, winding playback down deliberately
+	/// rather than as a side effect of the frame being destroyed.
 	pub fn stop_all_audio(&mut self) {
 		for tab in &mut self.tabs {
 			if let Some(player) = tab.audio_player.as_mut() {
 				player.stop();
 			}
 		}
+	}
+
+	/// Takes note of where the caret is without sounding anything, after a move that jumps
+	/// rather than steps.
+	///
+	/// [`Self::check_bookmark_sounds`] decides by comparing against where the caret was last
+	/// seen. Leaving that stale across a jump would measure the next step from wherever the
+	/// reader used to be, so a step that never crosses a bookmark could sound as though it had.
+	pub(crate) fn forget_bookmark_sound_position(&self) {
+		let Some(tab) = self.active_tab() else {
+			return;
+		};
+		self.last_sound_position.set(Some(tab.window.to_doc(tab.text_ctrl.get_insertion_point())));
 	}
 
 	pub(crate) fn check_bookmark_sounds(&self) {
@@ -55,24 +68,26 @@ impl DocumentManager {
 	/// When "sync caret to audio" is on, moves the caret to follow playback. Called from a
 	/// recurring timer; a no-op for documents with no audio.
 	///
+	/// Also the tick that moves playback on to the next file, since rodio has no "finished"
+	/// callback of its own.
+	///
 	/// Uses `try_lock` on `config` rather than `lock`: this runs on the main thread on every
 	/// timer tick, and a modal dialog (e.g. Options) pumps the OS message loop while it holds
 	/// that same lock across `show_modal`. A blocking `lock` here would deadlock the UI thread
-	/// against itself the moment a tick landed mid-dialog; skipping the tick is harmless since
-	/// it just retries in 250ms.
+	/// against itself the moment a tick landed mid-dialog; a tick that misses the lock just
+	/// leaves the caret where it is and retries in 250ms.
 	pub fn pump_audio(&mut self) {
-		let Ok(config) = self.config.try_lock() else {
-			return;
-		};
-		let sync_enabled = config.get_app_bool("sync_caret_to_audio", true);
-		drop(config);
+		let sync_enabled = self.config.try_lock().ok().map(|config| config.get_app_bool("sync_caret_to_audio", true));
 		let Some(tab) = self.active_tab_mut() else {
 			return;
 		};
-		let Some(player) = tab.audio_player.as_ref() else {
+		let Some(player) = tab.audio_player.as_mut() else {
 			return;
 		};
-		if !sync_enabled || !player.is_playing() {
+		// Moving on to the next file is this tick's job too, and it has to happen whether or
+		// not the caret is following along, or the config lock was free this time round.
+		player.pump();
+		if sync_enabled != Some(true) || !player.is_playing() {
 			return;
 		}
 		let Some(elapsed) = player.elapsed_ms() else {

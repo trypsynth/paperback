@@ -4,7 +4,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 
 use crate::{document::TocItem, parser::util::path::resolve_relative_path, types::HeadingInfo};
 
-/// Reads `dc:title`/`dc:creator` out of `ncc.html`'s `<meta>` tags (case-insensitively — some
+/// Reads `dc:title`/`dc:creator` out of `ncc.html`'s `<meta>` tags (case-insensitively, since some
 /// producers write `dc:Title`), the same metadata a DAISY 3 OPF carries in `<dc-metadata>`.
 pub(super) fn parse_daisy2_ncc_metadata(ncc_content: &str) -> (Option<String>, Option<String>) {
 	let doc = scraper::Html::parse_document(ncc_content);

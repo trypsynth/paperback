@@ -9,6 +9,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{DocumentManager, dialogs, navigation};
+use crate::ui::navigation::announce;
 
 pub(super) fn handle_go_to_line(
 	frame: &Frame,
@@ -52,7 +53,7 @@ pub(super) fn handle_go_to_line(
 			(message, update)
 		};
 		navigation::persist_navigation_history(config, Some(&update));
-		navigation::announce_after_delay(frame, live_region_label, message);
+		announce(live_region_label, message);
 	}
 }
 
@@ -87,7 +88,9 @@ pub(super) fn handle_go_to_page(
 			let page_count = tab.session.page_count();
 			if page_count == 0 {
 				// TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-				live_region::announce(live_region_label, &t("No pages."));
+				// A menu invocation returns focus to the book just like a closed dialog does,
+				// so the announcement needs the same delay to cut off NVDA's focus-chain read.
+				announce(live_region_label, t("No pages."));
 				return;
 			}
 			let current_pos = navigation::doc_caret(tab);
@@ -117,7 +120,7 @@ pub(super) fn handle_go_to_page(
 			(message, update)
 		};
 		navigation::persist_navigation_history(config, Some(&update));
-		navigation::announce_after_delay(frame, live_region_label, message);
+		announce(live_region_label, message);
 	}
 }
 
@@ -165,6 +168,6 @@ pub(super) fn handle_go_to_percent(
 		navigation::persist_navigation_history(config, Some(&update));
 		// Same interrupt as Find/Go to Line/Go to Page: raise the announcement ~30ms after the
 		// dialog closes so the focus-return chain is cut off.
-		navigation::announce_after_delay(frame, live_region_label, message);
+		announce(live_region_label, message);
 	}
 }

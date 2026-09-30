@@ -2,8 +2,9 @@
 ///
 /// Called at startup before `ConfigManager::initialize()`. If an INI file exists
 /// and no TOML file exists yet, reads the INI via wxdragon's Config and writes a
-/// TOML file that the core's `ConfigManager` can load normally. This module is the
-/// only place in the binary that directly constructs `ConfigData`.
+/// TOML file that the core's `ConfigManager` can load normally, then deletes the
+/// INI. This module is the only place in the binary that directly constructs
+/// `ConfigData`.
 use std::{fs, path::Path};
 
 use base64::{Engine, engine::general_purpose::STANDARD};
@@ -15,24 +16,51 @@ use crate::config_ext::config_toml_path;
 
 pub fn migrate_if_needed() {
 	let toml_path = config_toml_path();
-	let ini_path = toml_path.with_extension("ini");
-	if toml_path.exists() || !ini_path.exists() {
+	settle(&toml_path.with_extension("ini"), &toml_path, migrate);
+}
+
+/// Migrates the INI when there is no TOML yet, and deletes it once its contents are in one.
+///
+/// A TOML already sitting there means an earlier launch migrated the INI but kept it, which is
+/// what every version before this one did, so the INI is deleted then too. The one case it
+/// survives is a migration that failed, where it is still the only copy of the reader's
+/// bookmarks and positions.
+fn settle(ini_path: &Path, toml_path: &Path, migrate: impl FnOnce(&Path, &Path) -> bool) {
+	if !ini_path.exists() {
 		return;
 	}
+	if !toml_path.exists() && !migrate(ini_path, toml_path) {
+		return;
+	}
+	match fs::remove_file(ini_path) {
+		Ok(()) => tracing::info!(path = %ini_path.display(), "removed the migrated INI config"),
+		Err(e) => tracing::warn!(path = %ini_path.display(), error = %e, "failed to remove the migrated INI config"),
+	}
+}
+
+/// Writes the INI's contents out as TOML, reporting whether the TOML now holds them.
+fn migrate(ini_path: &Path, toml_path: &Path) -> bool {
 	tracing::info!(ini = %ini_path.display(), toml = %toml_path.display(), "migrating config from INI to TOML");
-	let data = read_ini(&ini_path);
-	match toml::to_string(&data) {
-		Ok(serialized) => {
-			if let Some(parent) = toml_path.parent() {
-				let _ = fs::create_dir_all(parent);
-			}
-			if let Err(e) = fs::write(&toml_path, &serialized) {
-				tracing::error!(path = %toml_path.display(), error = %e, "failed to write migrated config");
-			} else {
-				tracing::info!("config migration complete");
-			}
+	let data = read_ini(ini_path);
+	let serialized = match toml::to_string(&data) {
+		Ok(serialized) => serialized,
+		Err(e) => {
+			tracing::error!(error = %e, "failed to serialize migrated config");
+			return false;
 		}
-		Err(e) => tracing::error!(error = %e, "failed to serialize migrated config"),
+	};
+	if let Some(parent) = toml_path.parent() {
+		let _ = fs::create_dir_all(parent);
+	}
+	match fs::write(toml_path, &serialized) {
+		Ok(()) => {
+			tracing::info!("config migration complete");
+			true
+		}
+		Err(e) => {
+			tracing::error!(path = %toml_path.display(), error = %e, "failed to write migrated config");
+			false
+		}
 	}
 }
 
@@ -156,10 +184,10 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 					let end_str = parts.next().unwrap_or_default();
 					let note_str = parts.next().unwrap_or_default();
 					if let (Ok(start), Ok(end)) = (start_str.parse::<i64>(), end_str.parse::<i64>()) {
-						doc.bookmarks.push(StoredBookmark { start, end, note: decode_note(note_str) });
+						doc.bookmarks.push(StoredBookmark { start, end, note: decode_note(note_str), audio_ms: None });
 					}
 				} else if let Ok(pos) = trimmed.parse::<i64>() {
-					doc.bookmarks.push(StoredBookmark { start: pos, end: pos, note: String::new() });
+					doc.bookmarks.push(StoredBookmark { start: pos, end: pos, note: String::new(), audio_ms: None });
 				}
 			}
 			doc.bookmarks.sort_by_key(|a| a.start);
@@ -175,4 +203,58 @@ fn decode_note(encoded: &str) -> String {
 		return String::new();
 	}
 	STANDARD.decode(encoded).map(|bytes: Vec<u8>| String::from_utf8_lossy(&bytes).to_string()).unwrap_or_default()
+}
+
+#[cfg(test)]
+mod tests {
+	use std::{env, fs, path::PathBuf};
+
+	use super::settle;
+
+	/// A fresh directory per test, so they can run side by side without seeing each other's files.
+	fn scratch(name: &str) -> PathBuf {
+		let dir = env::temp_dir().join(format!("paperback-legacy-config-{name}-{}", std::process::id()));
+		let _ = fs::remove_dir_all(&dir);
+		fs::create_dir_all(&dir).unwrap();
+		dir
+	}
+
+	/// The case that was reported: migrated long ago, INI never removed.
+	#[test]
+	fn an_ini_left_behind_by_an_earlier_migration_is_removed() {
+		let dir = scratch("left-behind");
+		let (ini, toml) = (dir.join("Paperback.ini"), dir.join("Paperback.toml"));
+		fs::write(&ini, "[app]").unwrap();
+		fs::write(&toml, "").unwrap();
+		settle(&ini, &toml, |_, _| panic!("already migrated, so nothing should be read"));
+		assert!(!ini.exists());
+		assert!(toml.exists());
+	}
+
+	#[test]
+	fn a_successful_migration_removes_the_ini() {
+		let dir = scratch("success");
+		let (ini, toml) = (dir.join("Paperback.ini"), dir.join("Paperback.toml"));
+		fs::write(&ini, "[app]").unwrap();
+		settle(&ini, &toml, |_, toml| fs::write(toml, "").is_ok());
+		assert!(!ini.exists());
+	}
+
+	/// A failed migration leaves the INI as the only copy of the reader's data, so it has to stay.
+	#[test]
+	fn a_failed_migration_keeps_the_ini() {
+		let dir = scratch("failure");
+		let (ini, toml) = (dir.join("Paperback.ini"), dir.join("Paperback.toml"));
+		fs::write(&ini, "[app]").unwrap();
+		settle(&ini, &toml, |_, _| false);
+		assert!(ini.exists());
+	}
+
+	#[test]
+	fn nothing_happens_without_an_ini() {
+		let dir = scratch("none");
+		let (ini, toml) = (dir.join("Paperback.ini"), dir.join("Paperback.toml"));
+		settle(&ini, &toml, |_, _| panic!("there is nothing to migrate"));
+		assert!(!toml.exists());
+	}
 }

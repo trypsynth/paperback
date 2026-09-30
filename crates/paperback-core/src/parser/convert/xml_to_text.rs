@@ -6,7 +6,8 @@ use super::{format_spans::FormatSpans, line_builder::LineBuilder, list_style::Li
 use crate::{
 	parser::ConverterOutput,
 	types::{
-		FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo,
+		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo,
+		SeparatorInfo, TableInfo,
 	},
 };
 
@@ -19,6 +20,7 @@ pub struct XmlToText {
 	images: Vec<ImageInfo>,
 	figures: Vec<ImageInfo>,
 	tables: Vec<TableInfo>,
+	formulas: Vec<FormulaInfo>,
 	separators: Vec<SeparatorInfo>,
 	page_breaks: Vec<PageBreakInfo>,
 	lists: Vec<ListInfo>,
@@ -119,6 +121,11 @@ impl XmlToText {
 	}
 
 	#[must_use]
+	pub fn get_formulas(&self) -> &[FormulaInfo] {
+		&self.formulas
+	}
+
+	#[must_use]
 	pub fn get_separators(&self) -> &[SeparatorInfo] {
 		&self.separators
 	}
@@ -161,6 +168,7 @@ impl XmlToText {
 		self.images.clear();
 		self.figures.clear();
 		self.tables.clear();
+		self.formulas.clear();
 		self.separators.clear();
 		self.page_breaks.clear();
 		self.lists.clear();
@@ -204,6 +212,9 @@ impl ConverterOutput for XmlToText {
 	}
 	fn get_tables(&self) -> &[TableInfo] {
 		&self.tables
+	}
+	fn get_formulas(&self) -> &[FormulaInfo] {
+		&self.formulas
 	}
 	fn get_separators(&self) -> &[SeparatorInfo] {
 		&self.separators

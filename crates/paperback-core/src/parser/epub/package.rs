@@ -121,3 +121,6 @@ pub(super) fn parse_package(package: Node<'_, '_>, opf_dir: &str) -> PackagePart
 	}
 	(manifest, spine, nav_path, ncx_path, PackageMetadata { title, author })
 }
+
+#[cfg(test)]
+mod tests;

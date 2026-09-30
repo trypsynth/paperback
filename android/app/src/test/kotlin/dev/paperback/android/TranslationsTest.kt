@@ -8,7 +8,7 @@ import java.util.Locale
 
 /** The tags actually shipped in assets/translations, as `cargo xtask android` names them. */
 private val SHIPPED = listOf(
-	"bs", "cs", "de", "es", "fi", "fr", "ja", "nl", "pl", "pt_br", "ru", "sr", "vi", "zh_CN"
+	"bs", "cs", "de", "es", "fi", "fr", "ja", "nl", "pl", "pt_br", "ru", "sr", "uk", "vi", "zh_CN"
 )
 
 class BestLocaleMatchTest {

@@ -9,34 +9,42 @@ use anyhow::Result;
 use paperback_formats::FormatMeta;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem, is_heading_marker},
 	t,
-	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{
+		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
+	},
 };
 
+pub mod cbr;
+pub mod cbz;
 pub mod chm;
 pub mod convert;
 pub mod daisy;
 pub mod epub;
 pub mod fb2;
+pub mod hlp;
 pub mod html;
 pub mod m4b;
+pub mod man;
 pub mod markdown;
 pub mod mobi;
+pub mod mp3;
+mod odf_crypto;
 pub mod odp;
 pub mod odt;
 pub mod pdf;
 pub mod powerpoint;
+pub mod rst;
 pub mod rtf;
 pub mod text;
 pub mod util;
 pub mod word;
+pub mod wri;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
 pub trait Parser: Send + Sync {
-	/// Parse a document from the given context.
-	///
 	/// # Errors
 	///
 	/// Returns an error if the file cannot be read or parsed.
@@ -45,7 +53,7 @@ pub trait Parser: Send + Sync {
 
 /// A parser paired with the format it was registered for.
 ///
-/// Every fact about a format — its name, extensions and supported navigation features — lives
+/// Every fact about a format (its name, extensions and supported navigation features) lives
 /// in `paperback-formats` and is attached here at registration time, so parsers themselves hold
 /// no metadata that could drift from that table.
 pub struct RegisteredParser {
@@ -74,8 +82,6 @@ impl RegisteredParser {
 		self.format.flags
 	}
 
-	/// Parse a document from the given context.
-	///
 	/// # Errors
 	///
 	/// Returns an error if the file cannot be read or parsed.
@@ -135,41 +141,56 @@ impl ParserRegistry {
 		static REGISTRY: OnceLock<ParserRegistry> = OnceLock::new();
 		REGISTRY.get_or_init(|| {
 			parser_registry! {
+				CBR => cbr::CbrParser,
+				CBZ => cbz::CbzParser,
 				CHM => chm::ChmParser,
+				HLP => hlp::HlpParser,
 				DAISY => daisy::DaisyParser,
 				WORD => word::WordParser,
 				EPUB => epub::EpubParser,
 				FB2 => fb2::Fb2Parser,
 				HTML => html::HtmlParser,
 				PDF => pdf::PdfParser,
+				MAN => man::ManParser,
 				MARKDOWN => markdown::MarkdownParser,
 				M4B => m4b::M4bParser,
+				MP3 => mp3::Mp3Parser,
 				MOBI => mobi::MobiParser,
 				FODP => odp::FodpParser,
 				ODP => odp::OdpParser,
 				FODT => odt::FodtParser,
 				ODT => odt::OdtParser,
 				POWERPOINT => powerpoint::PowerpointParser,
+				RST => rst::RstParser,
 				RTF => rtf::RtfParser,
 				TEXT => text::TextParser,
+				WRI => wri::WriParser,
 			}
 		})
 	}
 }
 
-/// The extension that selects a file's parser: ordinarily just `path`'s own extension, except a
-/// loose DAISY 2.02 book's master file is named `ncc.html`, which would otherwise route to the
-/// HTML parser since DAISY only claims `opf`/`zip` (an `.html` extension can't be reserved for
-/// DAISY without also capturing every ordinary HTML file).
+/// The extension that selects a file's parser: ordinarily just `path`'s own extension, with
+/// two exceptions.
+///
+/// A loose DAISY 2.02 book's master file is named `ncc.html`, which would otherwise route to
+/// the HTML parser since DAISY only claims `opf`/`zip` (an `.html` extension can't be reserved
+/// for DAISY without also capturing every ordinary HTML file).
+///
+/// A manual page is named for its section rather than its format, and an installed one is
+/// gzipped on top of that: `ls.1`, `Tcl_Init.3tcl`, `printf.3.gz`. The section names the
+/// format as surely as an extension would, so those route to the manual page parser, which
+/// unpacks the gzipped ones itself.
 fn resolve_extension(path: &Path) -> Option<&str> {
 	if path.file_name().is_some_and(|n| n.eq_ignore_ascii_case("ncc.html")) {
 		return Some("opf");
 	}
+	if man::is_manual_page_name(path) {
+		return Some("man");
+	}
 	path.extension().and_then(|e| e.to_str())
 }
 
-/// Parse a document from the given context.
-///
 /// # Errors
 ///
 /// Returns an error if:
@@ -226,6 +247,15 @@ pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 		.get_parsers_for_extension(extension)
 		.iter()
 		.fold(ParserFlags::NONE, |acc, p| acc | p.supported_flags())
+}
+
+/// Whether any parser can read the file at `path`, judged the same way [`parse_document`]
+/// picks one. Prefer this to [`parser_supports_extension`] wherever a path is at hand: a
+/// manual page is named for its section rather than for its format, which only the whole name
+/// can tell.
+#[must_use]
+pub fn parser_supports_path(path: &Path) -> bool {
+	resolve_extension(path).is_some_and(parser_supports_extension)
 }
 
 #[must_use]
@@ -305,6 +335,7 @@ pub trait ConverterOutput {
 	fn get_images(&self) -> &[ImageInfo];
 	fn get_figures(&self) -> &[ImageInfo];
 	fn get_tables(&self) -> &[TableInfo];
+	fn get_formulas(&self) -> &[FormulaInfo];
 	fn get_separators(&self) -> &[SeparatorInfo];
 	fn get_lists(&self) -> &[ListInfo];
 	fn get_list_items(&self) -> &[ListItemInfo];
@@ -334,13 +365,21 @@ fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offse
 
 fn add_images(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	for image in converter.get_images() {
-		buffer.add_marker(Marker::new(MarkerType::Image, offset + image.offset).with_text(image.alt_text.clone()));
+		buffer.add_marker(
+			Marker::new(MarkerType::Image, offset + image.offset)
+				.with_text(image.alt_text.clone())
+				.with_length(image.length),
+		);
 	}
 }
 
 fn add_figures(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	for figure in converter.get_figures() {
-		buffer.add_marker(Marker::new(MarkerType::Figure, offset + figure.offset).with_text(figure.alt_text.clone()));
+		buffer.add_marker(
+			Marker::new(MarkerType::Figure, offset + figure.offset)
+				.with_text(figure.alt_text.clone())
+				.with_length(figure.length),
+		);
 	}
 }
 
@@ -374,6 +413,17 @@ fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn Conv
 	}
 }
 
+fn add_formulas(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	for formula in converter.get_formulas() {
+		buffer.add_marker(
+			Marker::new(MarkerType::Formula, offset + formula.offset)
+				.with_text(formula.text.clone())
+				.with_reference(formula.mathml.clone())
+				.with_length(formula.length),
+		);
+	}
+}
+
 fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	for bold in converter.get_bolds() {
 		buffer.add_marker(Marker::new(MarkerType::Bold, offset + bold.offset).with_length(bold.length));
@@ -386,6 +436,90 @@ fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, 
 	}
 }
 
+/// Writes a heading marker for every entry of a table of contents, so that a document whose own
+/// text carries no headings can still be moved through by heading.
+///
+/// Some documents name every one of their sections and mark up none of them. A PDF may carry a
+/// full bookmark outline over pages whose text is all one size; an old CHM names each of its
+/// topics in its `.hhc` and writes them as styled paragraphs rather than as `<h1>`. The reader of
+/// one of those gets a working table of contents and nothing at all to jump between, which on a
+/// 7,000 topic reference is the difference between a usable book and an unusable one.
+pub fn add_heading_markers(buffer: &mut DocumentBuffer, items: &[TocItem], level: i32) {
+	add_heading_markers_where(buffer, items, level, &|_| true);
+}
+
+/// [`add_heading_markers`], for a document that marks up some of its headings and not others.
+///
+/// `wanted` is asked about each entry's offset and says whether that entry still needs a marker.
+/// An entry it turns down is skipped and its children are still offered, because a section that
+/// wrote its own heading may sit above subsections that did not.
+pub fn add_heading_markers_where(
+	buffer: &mut DocumentBuffer,
+	items: &[TocItem],
+	level: i32,
+	wanted: &dyn Fn(usize) -> bool,
+) {
+	for item in items {
+		if wanted(item.offset) {
+			let marker_type = match level {
+				1 => MarkerType::Heading1,
+				2 => MarkerType::Heading2,
+				3 => MarkerType::Heading3,
+				4 => MarkerType::Heading4,
+				5 => MarkerType::Heading5,
+				_ => MarkerType::Heading6,
+			};
+			buffer.add_marker(Marker::new(marker_type, item.offset).with_text(item.name.clone()).with_level(level));
+		}
+		add_heading_markers_where(buffer, &item.children, level + 1, wanted);
+	}
+}
+
+/// Gives a document heading navigation from its table of contents where its own text carries none.
+///
+/// A book that names every chapter in its table of contents but marks none of them up as a heading
+/// hands the reader a working Ctrl+T and nothing to move between with the heading key. This adds a
+/// heading marker for each table-of-contents entry, skipping any entry whose stretch of the book
+/// already holds a real heading, so a well-marked-up book is left alone and a poorly-marked one
+/// gains its chapters without anything being announced twice. Classic Gutenberg EPUBs and old CHMs
+/// and MOBIs all need this.
+pub fn add_toc_heading_markers(buffer: &mut DocumentBuffer, toc_items: &[TocItem]) {
+	let existing = heading_positions(buffer);
+	let spans = toc_entry_offsets(toc_items);
+	add_heading_markers_where(buffer, toc_items, 1, &|offset| !span_has_heading(&spans, &existing, offset));
+}
+
+/// Where the document's own text already carries a heading, sorted for the span check.
+fn heading_positions(buffer: &DocumentBuffer) -> Vec<usize> {
+	let mut positions: Vec<usize> =
+		buffer.markers.iter().filter(|marker| is_heading_marker(marker.mtype)).map(|marker| marker.position).collect();
+	positions.sort_unstable();
+	positions
+}
+
+/// Every table-of-contents entry offset in the tree, sorted, so the stretch one entry speaks for
+/// runs to wherever the next entry starts.
+fn toc_entry_offsets(items: &[TocItem]) -> Vec<usize> {
+	let mut offsets = Vec::new();
+	collect_toc_offsets(items, &mut offsets);
+	offsets.sort_unstable();
+	offsets
+}
+
+fn collect_toc_offsets(items: &[TocItem], out: &mut Vec<usize>) {
+	for item in items {
+		out.push(item.offset);
+		collect_toc_offsets(&item.children, out);
+	}
+}
+
+/// Whether the stretch of the book starting at `offset` and running to the next entry already holds
+/// a heading of its own.
+fn span_has_heading(spans: &[usize], existing: &[usize], offset: usize) -> bool {
+	let end = spans.iter().copied().find(|start| *start > offset).unwrap_or(usize::MAX);
+	existing.iter().any(|position| *position >= offset && *position < end)
+}
+
 /// Transfer all converter markers to a `DocumentBuffer`.
 /// `offset` is added to each marker position (for multi-section parsers like CHM/EPUB).
 pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
@@ -394,6 +528,7 @@ pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn Conver
 	add_images(buffer, converter, offset);
 	add_figures(buffer, converter, offset);
 	add_tables_separators_lists(buffer, converter, offset);
+	add_formulas(buffer, converter, offset);
 	add_formatting(buffer, converter, offset);
 }
 
@@ -407,6 +542,7 @@ pub fn add_converter_markers_excluding_links(
 	add_images(buffer, converter, offset);
 	add_figures(buffer, converter, offset);
 	add_tables_separators_lists(buffer, converter, offset);
+	add_formulas(buffer, converter, offset);
 	add_formatting(buffer, converter, offset);
 }
 
@@ -417,318 +553,4 @@ pub fn is_external_url(url: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-	use std::{iter, ptr};
-
-	use rstest::rstest;
-
-	use super::*;
-	use crate::types::{FormatInfo, HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo};
-
-	struct MockConverter {
-		headings: Vec<HeadingInfo>,
-		links: Vec<LinkInfo>,
-		images: Vec<ImageInfo>,
-		figures: Vec<ImageInfo>,
-		tables: Vec<TableInfo>,
-		separators: Vec<SeparatorInfo>,
-		lists: Vec<ListInfo>,
-		list_items: Vec<ListItemInfo>,
-		bolds: Vec<FormatInfo>,
-		italics: Vec<FormatInfo>,
-		underlines: Vec<FormatInfo>,
-	}
-
-	impl ConverterOutput for MockConverter {
-		fn get_headings(&self) -> &[HeadingInfo] {
-			&self.headings
-		}
-
-		fn get_links(&self) -> &[LinkInfo] {
-			&self.links
-		}
-
-		fn get_images(&self) -> &[ImageInfo] {
-			&self.images
-		}
-
-		fn get_figures(&self) -> &[ImageInfo] {
-			&self.figures
-		}
-
-		fn get_tables(&self) -> &[TableInfo] {
-			&self.tables
-		}
-
-		fn get_separators(&self) -> &[SeparatorInfo] {
-			&self.separators
-		}
-
-		fn get_lists(&self) -> &[ListInfo] {
-			&self.lists
-		}
-
-		fn get_list_items(&self) -> &[ListItemInfo] {
-			&self.list_items
-		}
-
-		fn get_bolds(&self) -> &[FormatInfo] {
-			&self.bolds
-		}
-
-		fn get_italics(&self) -> &[FormatInfo] {
-			&self.italics
-		}
-
-		fn get_underlines(&self) -> &[FormatInfo] {
-			&self.underlines
-		}
-	}
-	fn sample_converter() -> MockConverter {
-		MockConverter {
-			headings: vec![HeadingInfo { offset: 1, level: 2, text: "Heading".to_string() }],
-			links: vec![LinkInfo { offset: 2, text: "Link".to_string(), reference: "#a".to_string() }],
-			images: vec![],
-			figures: vec![],
-			tables: vec![TableInfo {
-				offset: 3,
-				text: "T".to_string(),
-				html_content: "<table/>".to_string(),
-				length: 11,
-			}],
-			separators: vec![SeparatorInfo { offset: 4, length: 7 }],
-			lists: vec![ListInfo { offset: 5, item_count: 3, length: 4 }],
-			list_items: vec![ListItemInfo { offset: 6, level: 1, text: "Item".to_string() }],
-			bolds: vec![],
-			italics: vec![],
-			underlines: vec![],
-		}
-	}
-
-	#[test]
-	fn join_extensions_formats_and_skips_empty_entries() {
-		let joined = join_extensions(["txt", "", "md"]);
-		assert_eq!(joined, "*.txt;*.md");
-	}
-
-	#[test]
-	fn join_extensions_returns_empty_for_empty_input() {
-		let joined = join_extensions(iter::empty::<&str>());
-		assert_eq!(joined, "");
-	}
-
-	#[rstest]
-	#[case("http://example.com", true)]
-	#[case("HTTPS://example.com", true)]
-	#[case("MailTo:test@example.com", true)]
-	#[case("ftp://example.com", false)]
-	#[case("#local", false)]
-	#[case("https//example.com", false)]
-	#[case("mailtox:test@example.com", false)]
-	#[case("httpx://example.com", false)]
-	fn is_external_url_classifies_schemes(#[case] url: &str, #[case] expected: bool) {
-		assert_eq!(is_external_url(url), expected);
-	}
-
-	#[rstest]
-	#[case("txt", true)]
-	#[case(".TXT", true)]
-	#[case("log", true)]
-	#[case("m4b", true)]
-	#[case(".M4B", true)]
-	#[case("m4a", false)]
-	#[case("", false)]
-	#[case(".", false)]
-	#[case("notarealextension", false)]
-	#[case(" txt", false)]
-	#[case("txt ", false)]
-	#[case("..txt", true)]
-	#[case("...log", true)]
-	fn parser_supports_extension_classifies_inputs(#[case] extension: &str, #[case] expected: bool) {
-		assert_eq!(parser_supports_extension(extension), expected);
-	}
-
-	#[test]
-	fn file_filter_string_contains_supported_and_fallback_groups() {
-		let filter = build_file_filter_string();
-		assert!(filter.contains("All Supported Files ("));
-		assert!(filter.contains("*.txt"));
-		assert!(filter.contains("*.epub"));
-		#[cfg(not(target_os = "macos"))]
-		assert!(filter.ends_with("All Files (*.*)|*.*"));
-	}
-
-	#[test]
-	fn add_converter_markers_transfers_all_marker_types_with_offset() {
-		let converter = sample_converter();
-		let mut buffer = DocumentBuffer::new();
-		add_converter_markers(&mut buffer, &converter, 100);
-		assert_eq!(buffer.markers.len(), 6);
-		assert_eq!(buffer.markers[0].mtype, MarkerType::Heading2);
-		assert_eq!(buffer.markers[0].position, 101);
-		assert_eq!(buffer.markers[0].text, "Heading");
-		assert_eq!(buffer.markers[1].mtype, MarkerType::Link);
-		assert_eq!(buffer.markers[1].position, 102);
-		assert_eq!(buffer.markers[1].reference, "#a");
-		assert_eq!(buffer.markers[2].mtype, MarkerType::Table);
-		assert_eq!(buffer.markers[2].length, 11);
-		assert_eq!(buffer.markers[3].mtype, MarkerType::Separator);
-		assert_eq!(buffer.markers[3].length, 7);
-		assert_eq!(buffer.markers[4].mtype, MarkerType::List);
-		assert_eq!(buffer.markers[4].level, 3);
-		assert_eq!(buffer.markers[5].mtype, MarkerType::ListItem);
-		assert_eq!(buffer.markers[5].level, 1);
-	}
-
-	#[test]
-	fn add_converter_markers_excluding_links_skips_link_markers() {
-		let converter = sample_converter();
-		let mut buffer = DocumentBuffer::new();
-		add_converter_markers_excluding_links(&mut buffer, &converter, 10);
-		assert_eq!(buffer.markers.len(), 5);
-		assert!(buffer.markers.iter().all(|marker| marker.mtype != MarkerType::Link));
-	}
-
-	#[test]
-	fn add_converter_markers_handles_empty_converter_output() {
-		let converter = MockConverter {
-			headings: vec![],
-			links: vec![],
-			images: vec![],
-			figures: vec![],
-			tables: vec![],
-			separators: vec![],
-			lists: vec![],
-			list_items: vec![],
-			bolds: vec![],
-			italics: vec![],
-			underlines: vec![],
-		};
-		let mut buffer = DocumentBuffer::new();
-		add_converter_markers(&mut buffer, &converter, 0);
-		assert!(buffer.markers.is_empty());
-	}
-
-	#[test]
-	fn resolve_extension_routes_loose_ncc_html_to_opf() {
-		let book_directory = Path::new("books").join("daisy2");
-		assert_eq!(resolve_extension(&book_directory.join("ncc.html")), Some("opf"));
-		assert_eq!(resolve_extension(&book_directory.join("NCC.HTML")), Some("opf"));
-	}
-
-	#[test]
-	fn resolve_extension_leaves_other_html_files_alone() {
-		let chapter = Path::new("books").join("chapter1.html");
-		assert_eq!(resolve_extension(&chapter), Some("html"));
-	}
-
-	#[test]
-	fn parse_document_errors_when_missing_extension() {
-		let context = ParserContext::new("no_extension".to_string());
-		let err = parse_document(&context).expect_err("expected missing extension error");
-		assert!(err.to_string().contains("No file extension found"));
-	}
-
-	#[test]
-	fn parse_document_errors_for_unknown_forced_extension() {
-		let context = ParserContext::new("anything".to_string()).with_forced_extension("unknown_ext".to_string());
-		let err = parse_document(&context).expect_err("expected unknown parser error");
-		assert!(err.to_string().contains("No parser found for extension"));
-	}
-
-	#[test]
-	fn get_parser_flags_for_context_returns_none_for_unknown_extension() {
-		let context = ParserContext::new("doc.unknown_ext".to_string());
-		assert_eq!(get_parser_flags_for_context(&context), ParserFlags::NONE);
-	}
-
-	#[test]
-	fn m4b_parser_advertises_audio_book_navigation() {
-		let context = ParserContext::new("book.m4b".to_string());
-		assert_eq!(
-			get_parser_flags_for_context(&context),
-			ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_AUDIO
-		);
-	}
-
-	/// Guards against a format being declared in `paperback-formats` with no parser wired up
-	/// in `parser_registry!` (it would show up in the installer and open dialog but fail to
-	/// open), and against a parser being registered twice.
-	#[test]
-	fn every_declared_format_has_exactly_one_parser() {
-		let registered: Vec<&'static FormatMeta> =
-			ParserRegistry::global().all_parsers().iter().map(RegisteredParser::format).collect();
-		for format in paperback_formats::ALL {
-			let count = registered.iter().filter(|candidate| ptr::eq(**candidate, *format)).count();
-			assert_eq!(count, 1, "{} must have exactly one registered parser, found {count}", format.name);
-		}
-		assert_eq!(registered.len(), paperback_formats::ALL.len(), "a parser was registered for an unlisted format");
-	}
-
-	/// Registration order decides which parser wins a shared extension, so it must track the
-	/// order of the format table rather than drifting from it.
-	#[test]
-	fn registration_order_matches_the_format_table() {
-		let registered: Vec<&str> = ParserRegistry::global().all_parsers().iter().map(RegisteredParser::name).collect();
-		let declared: Vec<&str> = paperback_formats::ALL.iter().map(|format| format.name).collect();
-		assert_eq!(registered, declared);
-	}
-
-	/// `.zip` is claimed by both DAISY and Word, and `parse_document` tries claimants in
-	/// registration order, so DAISY must stay ahead of Word.
-	#[test]
-	fn zip_is_offered_to_daisy_before_word() {
-		let names: Vec<_> =
-			ParserRegistry::global().get_parsers_for_extension("zip").iter().map(|p| p.name()).collect();
-		assert_eq!(names, vec![paperback_formats::DAISY.name, paperback_formats::WORD.name]);
-	}
-
-	/// The registry stores parsers in a `Vec`, so the file dialog's filter groups appear in a
-	/// stable order rather than whatever order a hash map happened to yield.
-	#[test]
-	fn file_filter_lists_groups_in_registration_order() {
-		let filter = build_file_filter_string();
-		// Groups are "Label (*.ext;…)|*.ext;…" pairs, so every other field is a label.
-		let labels: Vec<&str> =
-			filter.split('|').step_by(2).filter_map(|group| group.split_once(" (").map(|(label, _)| label)).collect();
-		let expected: Vec<&str> = ParserRegistry::global().all_parsers().iter().map(RegisteredParser::name).collect();
-		assert_eq!(labels.first().copied(), Some("All Supported Files"));
-		assert_eq!(&labels[1..=expected.len()], expected.as_slice());
-	}
-
-	#[test]
-	fn file_filter_string_contains_text_files_group_name() {
-		let filter = build_file_filter_string();
-		assert!(filter.contains("Text Files ("));
-	}
-	/// `add_tables_separators_lists` sets the Table marker's `length` to `table.length`
-	/// (display units) and offsets it by the base offset.
-	#[test]
-	fn add_tables_separators_lists_sets_table_marker_length() {
-		let converter = MockConverter {
-			headings: vec![],
-			links: vec![],
-			images: vec![],
-			figures: vec![],
-			tables: vec![TableInfo {
-				offset: 10,
-				text: "T".to_string(),
-				html_content: "<table/>".to_string(),
-				length: 7, // display-unit field — must appear as marker length
-			}],
-			separators: vec![],
-			lists: vec![],
-			list_items: vec![],
-			bolds: vec![],
-			italics: vec![],
-			underlines: vec![],
-		};
-		let mut buffer = DocumentBuffer::new();
-		let base_offset = 100usize;
-		add_converter_markers(&mut buffer, &converter, base_offset);
-		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
-		assert_eq!(table_marker.position, base_offset + 10, "position = offset + table.offset");
-		assert_eq!(table_marker.length, 7, "marker length must equal table length, not byte length");
-		assert_eq!(table_marker.reference, "<table/>", "marker reference must be the table HTML");
-	}
-}
+mod tests;

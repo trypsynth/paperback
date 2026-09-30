@@ -2,10 +2,18 @@ use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::DocumentListStatus};
 use patois::{nt, t};
-use wx_utils::{confirm, dpi};
+use wx_utils::confirm;
 use wxdragon::{ffi, prelude::*, timer::Timer, window::FromWindowWithClassName};
 
 use super::DIALOG_PADDING;
+
+mod list;
+
+use list::{
+	DocumentList, append_document_list_item, clear_document_list, document_list_item_count, get_document_list_text,
+	get_path_for_index, get_selected_index, get_selected_indices, get_selected_path, select_document_list_item,
+	set_all_document_list_items_selected,
+};
 
 const RECENT_DOCS_LIST_WIDTH: i32 = 800;
 const RECENT_DOCS_LIST_HEIGHT: i32 = 600;
@@ -13,14 +21,6 @@ const RECENT_DOCS_FILENAME_WIDTH: i32 = 250;
 const RECENT_DOCS_STATUS_WIDTH: i32 = 100;
 const RECENT_DOCS_PATH_WIDTH: i32 = 450;
 const STATUS_BAR_DEBOUNCE_MS: i32 = 10;
-
-// wxListCtrl is not exposed to VoiceOver as an accessible table on macOS.
-// wxDataViewListCtrl uses the native data-view implementation there, while the
-// existing ListCtrl remains appropriate on Windows and Linux.
-#[cfg(target_os = "macos")]
-type DocumentList = DataViewListCtrl;
-#[cfg(not(target_os = "macos"))]
-type DocumentList = ListCtrl;
 
 pub struct AllDocumentsResult {
 	pub open: Option<String>,
@@ -65,7 +65,7 @@ pub fn show_all_documents_dialog(
 	let paths_to_close: Rc<Mutex<Vec<String>>> = Rc::new(Mutex::new(Vec::new()));
 	// TRANSLATORS: Label for the search input field in the All Documents dialog
 	let search_label = StaticText::builder(&dialog).with_label(&t("&search")).build();
-	let search_ctrl = TextCtrl::builder(&dialog).with_size(dpi::scale_size(&dialog, Size::new(300, -1))).build();
+	let search_ctrl = TextCtrl::builder(&dialog).with_size(dialog.from_dip(Size::new(300, -1))).build();
 	let (status_label, status_choice) = build_all_documents_status_choice(dialog);
 	let list = build_all_documents_list(dialog);
 	let status_bar = build_all_documents_status_bar(dialog);
@@ -151,14 +151,14 @@ pub fn show_all_documents_dialog(
 fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 	let doc_list = ListCtrl::builder(&dialog)
 		.with_style(ListCtrlStyle::Report)
-		.with_size(dpi::scale_size(&dialog, Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT)))
+		.with_size(dialog.from_dip(Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT)))
 		.build();
 	// TRANSLATORS: Column header for the document filename in the All Documents list
-	doc_list.insert_column(0, &t("File Name"), ListColumnFormat::Left, dpi::scale(&dialog, RECENT_DOCS_FILENAME_WIDTH));
+	doc_list.insert_column(0, &t("File Name"), ListColumnFormat::Left, dialog.from_dip_int(RECENT_DOCS_FILENAME_WIDTH));
 	// TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
-	doc_list.insert_column(1, &t("Status"), ListColumnFormat::Left, dpi::scale(&dialog, RECENT_DOCS_STATUS_WIDTH));
+	doc_list.insert_column(1, &t("Status"), ListColumnFormat::Left, dialog.from_dip_int(RECENT_DOCS_STATUS_WIDTH));
 	// TRANSLATORS: Column header for the file path in the All Documents list
-	doc_list.insert_column(2, &t("Path"), ListColumnFormat::Left, dpi::scale(&dialog, RECENT_DOCS_PATH_WIDTH));
+	doc_list.insert_column(2, &t("Path"), ListColumnFormat::Left, dialog.from_dip_int(RECENT_DOCS_PATH_WIDTH));
 	doc_list
 }
 
@@ -166,7 +166,7 @@ fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 	let doc_list = DataViewListCtrl::builder(&dialog)
 		.with_style(DataViewStyle::Multiple | DataViewStyle::RowLines)
-		.with_size(dpi::scale_size(&dialog, Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT)))
+		.with_size(dialog.from_dip(Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT)))
 		.build();
 	let column_flags = DataViewColumnFlags::Resizable;
 	// TRANSLATORS: Column header for the document filename in the All Documents list
@@ -174,7 +174,7 @@ fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 		&t("File Name"),
 		0,
 		DataViewAlign::Left,
-		dpi::scale(&dialog, RECENT_DOCS_FILENAME_WIDTH),
+		dialog.from_dip_int(RECENT_DOCS_FILENAME_WIDTH),
 		column_flags,
 	);
 	// TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
@@ -182,7 +182,7 @@ fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 		&t("Status"),
 		1,
 		DataViewAlign::Left,
-		dpi::scale(&dialog, RECENT_DOCS_STATUS_WIDTH),
+		dialog.from_dip_int(RECENT_DOCS_STATUS_WIDTH),
 		column_flags,
 	);
 	// TRANSLATORS: Column header for the file path in the All Documents list
@@ -190,7 +190,7 @@ fn build_all_documents_list(dialog: Dialog) -> DocumentList {
 		&t("Path"),
 		2,
 		DataViewAlign::Left,
-		dpi::scale(&dialog, RECENT_DOCS_PATH_WIDTH),
+		dialog.from_dip_int(RECENT_DOCS_PATH_WIDTH),
 		column_flags,
 	);
 	doc_list
@@ -720,139 +720,4 @@ fn bind_all_documents_locate(
 			status_debounce: &status_debounce,
 		});
 	});
-}
-
-#[cfg(not(target_os = "macos"))]
-fn get_selected_index(list: DocumentList) -> i32 {
-	let selected = list.get_first_selected_item();
-	if selected >= 0 {
-		return selected;
-	}
-	list.get_next_item(-1, ListNextItemFlag::All, ListItemState::Focused)
-}
-
-#[cfg(target_os = "macos")]
-fn get_selected_index(list: DocumentList) -> i32 {
-	list.get_selected_row().and_then(|index| i32::try_from(index).ok()).unwrap_or(-1)
-}
-
-#[cfg(not(target_os = "macos"))]
-fn get_selected_indices(list: DocumentList) -> Vec<i32> {
-	let mut indices = Vec::new();
-	let mut next = list.get_first_selected_item();
-	while next >= 0 {
-		indices.push(next);
-		next = list.get_next_item(i64::from(next), ListNextItemFlag::All, ListItemState::Selected);
-	}
-	indices
-}
-
-#[cfg(target_os = "macos")]
-fn get_selected_indices(list: DocumentList) -> Vec<i32> {
-	(0..list.get_item_count())
-		.filter(|&index| list.is_row_selected(index))
-		.filter_map(|index| i32::try_from(index).ok())
-		.collect()
-}
-
-fn get_path_for_index(list: DocumentList, index: i32) -> Option<String> {
-	if index < 0 {
-		return None;
-	}
-	#[cfg(not(target_os = "macos"))]
-	if let Ok(index_u64) = u64::try_from(index)
-		&& let Some(data) = list.get_custom_data(index_u64)
-		&& let Some(path) = data.as_ref().downcast_ref::<String>()
-	{
-		return Some(path.clone());
-	}
-	let path = get_document_list_text(list, index, 2);
-	if path.is_empty() { None } else { Some(path) }
-}
-
-fn get_selected_path(list: DocumentList) -> Option<String> {
-	let index = get_selected_index(list);
-	get_path_for_index(list, index)
-}
-
-#[cfg(not(target_os = "macos"))]
-fn document_list_item_count(list: DocumentList) -> i32 {
-	list.get_item_count()
-}
-
-#[cfg(target_os = "macos")]
-fn document_list_item_count(list: DocumentList) -> i32 {
-	i32::try_from(list.get_item_count()).unwrap_or(i32::MAX)
-}
-
-#[cfg(not(target_os = "macos"))]
-fn clear_document_list(list: DocumentList) {
-	list.cleanup_all_custom_data();
-	list.delete_all_items();
-}
-
-#[cfg(target_os = "macos")]
-fn clear_document_list(list: DocumentList) {
-	list.delete_all_items();
-}
-
-#[cfg(not(target_os = "macos"))]
-fn append_document_list_item(list: DocumentList, filename: &str, status: &str, path: &str) {
-	let index = i64::from(list.get_item_count());
-	list.insert_item(index, filename, None);
-	if let Ok(index_u64) = u64::try_from(index) {
-		list.set_custom_data(index_u64, path.to_owned());
-	}
-	list.set_item_text_by_column(index, 1, status);
-	list.set_item_text_by_column(index, 2, path);
-}
-
-#[cfg(target_os = "macos")]
-fn append_document_list_item(list: DocumentList, filename: &str, status: &str, path: &str) {
-	list.append_item(&[Variant::from(filename), Variant::from(status), Variant::from(path)]);
-}
-
-#[cfg(not(target_os = "macos"))]
-fn select_document_list_item(list: DocumentList, index: i32) {
-	list.set_item_state(
-		i64::from(index),
-		ListItemState::Selected | ListItemState::Focused,
-		ListItemState::Selected | ListItemState::Focused,
-	);
-	list.ensure_visible(i64::from(index));
-}
-
-#[cfg(target_os = "macos")]
-fn select_document_list_item(list: DocumentList, index: i32) {
-	let Ok(index) = usize::try_from(index) else { return };
-	list.select_row(index);
-	if let Some(item) = list.row_to_item(index) {
-		list.set_current_item(&item);
-		list.ensure_visible(&item);
-	}
-}
-
-#[cfg(not(target_os = "macos"))]
-fn set_all_document_list_items_selected(list: DocumentList, selected: bool) {
-	let state = if selected { ListItemState::Selected } else { ListItemState::default() };
-	list.set_item_state(-1, state, ListItemState::Selected);
-}
-
-#[cfg(target_os = "macos")]
-fn set_all_document_list_items_selected(list: DocumentList, selected: bool) {
-	if selected {
-		list.select_all();
-	} else {
-		list.unselect_all();
-	}
-}
-
-#[cfg(not(target_os = "macos"))]
-fn get_document_list_text(list: DocumentList, index: i32, column: usize) -> String {
-	list.get_item_text(i64::from(index), column as i32)
-}
-
-#[cfg(target_os = "macos")]
-fn get_document_list_text(list: DocumentList, index: i32, column: usize) -> String {
-	usize::try_from(index).map_or_else(|_| String::new(), |index| list.get_text_value(index, column))
 }

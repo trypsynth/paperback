@@ -164,7 +164,7 @@ fn table_is_detected() {
 #[test]
 fn find_anchor_byte_offset_locates_block_containing_position() {
 	let xml = "<root><body><p>First paragraph.</p><p>Second paragraph.</p></body></root>";
-	// Text output: "First paragraph.\nSecond paragraph." — second paragraph starts at 17.
+	// Text output: "First paragraph.\nSecond paragraph." (second paragraph starts at 17).
 	let mut converter = XmlToText::new();
 	let offset = converter.find_anchor_byte_offset(xml, 20).expect("offset for position in second paragraph");
 	assert!(xml[offset..].starts_with("<p>Second"), "got offset {offset}: {}", &xml[offset..]);
@@ -183,7 +183,7 @@ fn find_anchor_byte_offset_at_position_zero_uses_first_body_element() {
 #[test]
 fn find_anchor_byte_offset_picks_nearest_inline_element() {
 	let xml = "<root><body><p>Start <em>middle</em> end of line</p></body></root>";
-	// Position inside " end of line" — nearest preceding element start is <em>.
+	// Position inside " end of line". Nearest preceding element start is <em>.
 	let mut converter = XmlToText::new();
 	let offset = converter.find_anchor_byte_offset(xml, 16).expect("offset for position after em");
 	assert!(xml[offset..].starts_with("<em>"), "got offset {offset}: {}", &xml[offset..]);
@@ -231,7 +231,7 @@ fn xml_table_display_length_is_display_extent_not_byte_length() {
 	assert_eq!(tables.len(), 1, "expected exactly one table");
 	let table = &tables[0];
 	assert_eq!(table.offset, 6, "table starts after 'Intro\\n'");
-	// display_length = 5 (display extent); emitted byte length = 6 — they differ.
+	// display_length = 5 (display extent); emitted byte length = 6, they differ.
 	assert_eq!(table.length, 5, "length must be the display extent (5), not byte length (6)");
 }
 

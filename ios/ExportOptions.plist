@@ -8,7 +8,5 @@
 	<string>63Z3C555W6</string>
 	<key>uploadSymbols</key>
 	<true/>
-	<key>compileBitcode</key>
-	<false/>
 </dict>
 </plist>

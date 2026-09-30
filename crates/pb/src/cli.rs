@@ -6,7 +6,11 @@ use clap::{Parser, ValueEnum};
 #[command(name = "pb", about = "Convert any document to text, HTML, or Markdown")]
 pub struct Cli {
 	/// Input document file
-	pub input: PathBuf,
+	#[arg(required_unless_present = "list_formats")]
+	pub input: Option<PathBuf>,
+	/// List the formats pb can read, and the extensions it knows them by
+	#[arg(long)]
+	pub list_formats: bool,
 	/// Output format
 	#[arg(short, long, default_value = "text")]
 	pub format: Format,
@@ -22,6 +26,10 @@ pub struct Cli {
 	/// Exit with code 2 instead of prompting for a password (useful for batch processing)
 	#[arg(long)]
 	pub no_prompt: bool,
+	/// Keep every line of an untagged PDF page separate instead of joining wrapped lines back
+	/// into paragraphs (for code listings, poetry and transcripts)
+	#[arg(long)]
+	pub no_join_paragraphs: bool,
 	/// Print paperback-core's parser log output to stderr (set RUST_LOG for finer control)
 	#[arg(short, long)]
 	pub verbose: bool,
@@ -59,15 +67,24 @@ mod tests {
 		assert!(Cli::try_parse_from(["pb"]).is_err(), "input path must be required");
 	}
 
+	/// Asking what pb reads is a question about pb, not about a file, so it takes none.
+	#[test]
+	fn listing_the_formats_needs_no_input() {
+		let cli = parse(&["pb", "--list-formats"]);
+		assert!(cli.list_formats);
+		assert!(cli.input.is_none());
+	}
+
 	#[test]
 	fn defaults_to_text_output_on_stdout() {
 		let cli = parse(&["pb", "book.epub"]);
-		assert_eq!(cli.input, PathBuf::from("book.epub"));
+		assert_eq!(cli.input, Some(PathBuf::from("book.epub")));
 		assert!(matches!(cli.format, Format::Text));
 		assert!(cli.output.is_none());
 		assert!(cli.password.is_none());
 		assert!(!cli.metadata);
 		assert!(!cli.no_prompt);
+		assert!(!cli.no_join_paragraphs);
 		assert!(!cli.verbose);
 	}
 
@@ -100,11 +117,16 @@ mod tests {
 		assert!(cli.no_prompt);
 	}
 
+	#[test]
+	fn accepts_the_no_join_paragraphs_flag() {
+		assert!(parse(&["pb", "b.pdf", "--no-join-paragraphs"]).no_join_paragraphs);
+	}
+
 	/// Paths that start with a dash or contain spaces reach the parser intact rather than being
 	/// read as flags.
 	#[test]
 	fn treats_awkward_paths_as_input() {
 		let cli = parse(&["pb", "--", "-weird name.txt"]);
-		assert_eq!(cli.input, PathBuf::from("-weird name.txt"));
+		assert_eq!(cli.input, Some(PathBuf::from("-weird name.txt")));
 	}
 }

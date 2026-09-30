@@ -123,3 +123,6 @@ pub(super) fn find_single_dtbook_href(package: &OpfPackage) -> Option<String> {
 pub(super) fn dir_of(resolved_path: &str) -> String {
 	resolved_path.rsplit_once('/').map_or_else(String::new, |(dir, _)| dir.to_string())
 }
+
+#[cfg(test)]
+mod tests;

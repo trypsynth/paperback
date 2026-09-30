@@ -1,9 +1,6 @@
 package dev.paperback.android.tts
 
 import android.content.Context
-import android.media.AudioAttributes
-import android.media.AudioFocusRequest
-import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +23,7 @@ private const val POLL_INTERVAL_MS = 250L
  */
 class DaisyAudioPlayer(
 	private val context: Context
-) {
+) : RecordedPlayer {
 	private val scope = CoroutineScope(Dispatchers.Main)
 	private val cacheDir = File(context.cacheDir, "paperback_daisy_audio_cache")
 
@@ -62,62 +59,8 @@ class DaisyAudioPlayer(
 	/** Set for the duration of one `seekRelativeMs`, so only that seek reports where it lands. */
 	private var reportNextSeek = false
 
-	private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-	private var audioFocusRequest: AudioFocusRequest? = null
-	private var wasPlayingBeforeFocusLoss = false
-
-	// Mirrors TtsManager's own focus handling.
-	private val audioFocusChangeListener =
-		AudioManager.OnAudioFocusChangeListener { focusChange ->
-			when (focusChange) {
-				AudioManager.AUDIOFOCUS_LOSS,
-				AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-					wasPlayingBeforeFocusLoss = playing
-					if (playing) pause()
-				}
-				AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-					// System handles ducking; nothing to do here.
-				}
-				AudioManager.AUDIOFOCUS_GAIN -> {
-					if (wasPlayingBeforeFocusLoss) {
-						wasPlayingBeforeFocusLoss = false
-						play()
-					}
-				}
-			}
-		}
-
-	private fun speechAudioAttributes(): AudioAttributes =
-		AudioAttributes
-			.Builder()
-			.setUsage(AudioAttributes.USAGE_MEDIA)
-			.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-			.build()
-
-	private fun requestAudioFocus() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			val request =
-				AudioFocusRequest
-					.Builder(AudioManager.AUDIOFOCUS_GAIN)
-					.setAudioAttributes(speechAudioAttributes())
-					.setOnAudioFocusChangeListener(audioFocusChangeListener)
-					.build()
-			audioFocusRequest = request
-			audioManager.requestAudioFocus(request)
-		} else {
-			@Suppress("DEPRECATION")
-			audioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-		}
-	}
-
-	private fun abandonAudioFocus() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
-		} else {
-			@Suppress("DEPRECATION")
-			audioManager.abandonAudioFocus(audioFocusChangeListener)
-		}
-	}
+	private val audioFocus =
+		AudioFocusHolder(context, isPlaying = { playing }, onPause = { pause() }, onResume = { play() })
 
 	/** Switches to narrating `session`, stopping whatever this player was previously doing.
 	 * `docKey` scopes the extracted-source cache so it doesn't collide with another document's. */
@@ -140,11 +83,11 @@ class DaisyAudioPlayer(
 
 	val hasAudio: Boolean get() = session?.hasAudioFfi() == true
 
-	fun isPlaying(): Boolean = playing
+	override fun isPlaying(): Boolean = playing
 
-	fun play() {
+	override fun play() {
 		if (session == null) return
-		requestAudioFocus()
+		audioFocus.request()
 		playing = true
 		val pending = pendingTargetMs
 		pendingTargetMs = null
@@ -162,7 +105,7 @@ class DaisyAudioPlayer(
 		}
 	}
 
-	fun pause() {
+	override fun pause() {
 		playing = false
 		stopPolling()
 		mediaPlayer?.let {
@@ -203,13 +146,13 @@ class DaisyAudioPlayer(
 		pendingTargetMs = null
 		lastSeekTarget = null
 		reportNextSeek = false
-		abandonAudioFocus()
+		audioFocus.abandon()
 		if (wasActive) onPlaybackStateChanged?.invoke(false)
 	}
 
 	/** Seeks playback to the point covering `position` in the text, if the timeline narrates
 	 * it. Leaves the transport running or paused as it already was. */
-	fun seekToPosition(position: Long): Boolean {
+	override fun seekToPosition(position: Long): Boolean {
 		val session = session ?: return false
 		val point = session.audioPointForPositionFfi(position)
 		if (!point.found) return false
@@ -297,22 +240,20 @@ class DaisyAudioPlayer(
 		} catch (_: Exception) {
 			return false
 		}
-		if (lengthMs <= 0) return false
-		val naiveMs = rawMs + deltaMs
-		return when {
-			naiveMs > lengthMs -> {
+		return when (val spill = spillOf(rawMs, lengthMs, deltaMs)) {
+			is SeekSpill.PastEnd -> {
 				val next = session.audioNextSourceAfterFfi(source)
 				if (next < 0) return false
-				loadSource(next, SourceSeek.FromStart(naiveMs - lengthMs))
+				loadSource(next, SourceSeek.FromStart(spill.overflowMs))
 				true
 			}
-			naiveMs < 0 -> {
+			is SeekSpill.BeforeStart -> {
 				val previous = session.audioPreviousSourceBeforeFfi(source)
 				if (previous < 0) return false
-				loadSource(previous, SourceSeek.FromEnd(-naiveMs))
+				loadSource(previous, SourceSeek.FromEnd(spill.underflowMs))
 				true
 			}
-			else -> false
+			SeekSpill.WithinFile -> false
 		}
 	}
 
@@ -618,5 +559,44 @@ class DaisyAudioPlayer(
 		stop()
 		session = null
 		docKey = null
+	}
+}
+
+/** Where a relative seek lands relative to the file it starts in. */
+internal sealed interface SeekSpill {
+	/** The seek stays inside this file, so it is an ordinary seek. */
+	object WithinFile : SeekSpill
+
+	/** The seek runs off the end, [overflowMs] into whatever plays next. */
+	data class PastEnd(
+		val overflowMs: Long
+	) : SeekSpill
+
+	/** The seek runs off the front, [underflowMs] back from the end of whatever plays before. */
+	data class BeforeStart(
+		val underflowMs: Long
+	) : SeekSpill
+}
+
+/**
+ * Where seeking [deltaMs] from [rawMs] lands, in a file that really runs for [lengthMs].
+ *
+ * This works in the file's own time rather than the document's elapsed time on purpose: an
+ * audiobook that is only a bundle of narration files gives every clip the same placeholder
+ * duration, far longer than the recording it stands for, so elapsed-time arithmetic would resolve
+ * back into the same file past its end, where a seek can only clamp. A file whose length is not
+ * known yet ([lengthMs] of zero or less) can only be seeked within.
+ */
+internal fun spillOf(
+	rawMs: Long,
+	lengthMs: Long,
+	deltaMs: Long
+): SeekSpill {
+	if (lengthMs <= 0) return SeekSpill.WithinFile
+	val naiveMs = rawMs + deltaMs
+	return when {
+		naiveMs > lengthMs -> SeekSpill.PastEnd(naiveMs - lengthMs)
+		naiveMs < 0 -> SeekSpill.BeforeStart(-naiveMs)
+		else -> SeekSpill.WithinFile
 	}
 }

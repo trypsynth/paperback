@@ -53,6 +53,15 @@ impl ConfigManager {
 		}
 	}
 
+	/// An initialized manager that lives only in memory, for tests outside this module that need
+	/// to store and read settings without a file.
+	#[cfg(test)]
+	pub(crate) fn in_memory() -> Self {
+		let mut manager = Self::new();
+		manager.initialized = true;
+		manager
+	}
+
 	pub fn initialize(&mut self, config_path: PathBuf) -> bool {
 		let (data, needs_save) = if config_path.exists() {
 			fs::read_to_string(&config_path)

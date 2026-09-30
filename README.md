@@ -9,6 +9,7 @@
   - HTML documents (htm/html/xhtml)
   - EPUB books (epub)
   - FictionBook ebooks (fb2)
+  - Comic book archives (cbz)
   - CHM help files (chm)
   - DAISY books (opf/zip)
   - PDF documents (pdf)
@@ -17,6 +18,7 @@
   - OpenDocument text files (odt/fodt)
   - OpenDocument presentations (odp/fodp)
   - RTF documents (rtf)
+  - WinHelp files (hlp)
   - M4B audiobooks (m4b)
   - MOBI/Kindle books (mobi/azw/azw3)
   - Markdown documents (md/markdown/mdx/mdown/mdwn/mkd/mkdn/mkdown/ronn)
@@ -24,8 +26,9 @@
 - Intuitive tabbed interface for managing multiple documents, with single-instance behavior so opening a file from the shell or a file association reuses the running window
 - Full screen reader accessibility, including live-region status announcements for actions like search results and navigation
 - Robust find functionality with match case, whole word, and regular expression options, plus persisted search history
-- Seamless navigation between EPUB sections, headings (per level), pages, links, lists, list items, images, figures, tables, and separators via hotkeys similar to screen reader conventions, with a table of contents and elements list for quick jumps
+- Seamless navigation between EPUB sections, headings (per level), pages, links, lists, list items, images, figures, tables, formulas, and separators via hotkeys similar to screen reader conventions, with a table of contents and elements list for quick jumps
 - Precise navigation to specific lines or percentages within documents, plus per-document navigation history (back/forward)
+- MathML formulas rendered as AsciiMath through MathCAT, with formula navigation and Formula View
 - Bookmarks and notes, with optional sound feedback and a dedicated dialog to jump to any of them
 - Extensive readability customization: custom fonts and colors, line/paragraph/letter spacing, text alignment, word wrap, and inline vs. placeholder table rendering
 - Password-protected document support, and per-document settings (position, bookmarks, format overrides) that can be exported/imported via `.paperback` files
@@ -79,6 +82,16 @@ cargo release
 
 This runs the `xtask` crate via the `cargo release` alias defined in `.cargo/config.toml`.
 
+## UI tests
+
+On Windows, `crates/paperback/tests` holds UI tests that start the real app, press keys and check what UI Automation reports: focus, the status bar, and what screen readers are told. They are skipped by `cargo test` and run with:
+
+```
+cargo test -p paperback -- --ignored
+```
+
+Close Paperback first; the tests refuse to start while it runs. While they run they take over the keyboard and focus, so leave the desktop alone until they finish. Each test keeps its config and log in a temp directory, set through the `PAPERBACK_CONFIG_DIR` environment variable, which also works for running Paperback by hand with a separate config.
+
 ## Pre-commit hooks
 
 This project uses [prek](https://github.com/LorenzoLeonardini/prek), a Rust-based pre-commit hook runner. Hooks are configured in `prek.toml`.
@@ -109,3 +122,5 @@ Contributions are welcome! Whether through issues, pull requests, or discussions
 ## License
 
 This project is licensed under the [MIT license](LICENSE.md).
+
+Paperback is built on other people's work. The libraries it uses, and their licenses, are credited at [paperback.dev/licenses](https://paperback.dev/licenses).

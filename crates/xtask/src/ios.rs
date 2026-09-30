@@ -3,14 +3,14 @@ use std::{
 	error::Error,
 	fs,
 	io::{Cursor, Read},
-	path::Path,
+	path::{Path, PathBuf},
 	process::Command,
 };
 
 use flate2::read::GzDecoder;
 use tar::Archive;
 
-use crate::workspace::project_root;
+use crate::workspace::{build_host_ffi_library, project_root};
 
 // Pinned instead of `releases/latest`: whatever `latest` currently resolves to
 // crashes on real iOS devices (not the Simulator) with
@@ -32,6 +32,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	download_pdfium_dylib(PDFIUM_IOS_ARM64_URL, &pdfium_dest)?;
 	wrap_pdfium_framework(&root, &pdfium_dest)?;
 	println!("Generating Swift bindings via uniffi-bindgen...");
+	let ffi_library = build_host_ffi_library(&cargo)?.to_string_lossy().into_owned();
 	let status = Command::new(&cargo)
 		.current_dir(&root)
 		.args([
@@ -44,7 +45,8 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 			"uniffi-bindgen",
 			"--",
 			"generate",
-			"crates/paperback-core/src/paperback.udl",
+			"--library",
+			&ffi_library,
 			"--language",
 			"swift",
 			"--out-dir",
@@ -60,8 +62,8 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	if release {
 		build_args.push("--release");
 	}
-	// Both slices: without the simulator one the app cannot be built for, let alone run in,
-	// the Simulator — xcodebuild fails with "no library for this platform was found".
+	// Both slices: without the simulator one the app cannot be built for, let alone run in
+	// the Simulator. xcodebuild fails with "no library for this platform was found".
 	for (target, label) in [("aarch64-apple-ios", "device"), ("aarch64-apple-ios-sim", "simulator")] {
 		println!("Building for {target} ({label})...");
 		let status = Command::new(&cargo).current_dir(&root).args(&build_args).args(["--target", target]).status()?;
@@ -93,7 +95,6 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("xcodebuild -create-xcframework failed".into());
 	}
-	// Generate Localizable.strings for each translated language
 	let po_dir = root.join("po");
 	let ios_dir = root.join("ios/Paperback");
 	if po_dir.is_dir() {
@@ -173,31 +174,67 @@ pub fn ios_release() -> Result<(), Box<dyn Error>> {
 	}
 	println!("IPA ready: {}", ipa.display());
 	if upload {
-		println!("Uploading to App Store Connect...");
-		let status = Command::new("xcrun")
-			.args([
-				"altool",
-				"--upload-app",
-				"--type",
-				"ios",
-				"--file",
-				&ipa.to_string_lossy(),
-				"--authentication-key-path",
-				"",
-			])
-			.status();
-		match status {
-			Ok(s) if s.success() => println!("Upload complete."),
-			_ => println!(
-				"altool upload failed or not configured. Upload {} manually via Transporter or Xcode Organizer.",
-				ipa.display()
-			),
-		}
+		upload_ipa(&ipa)?;
 	} else {
 		println!("To upload, run:  cargo xtask ios-release --upload");
 		println!("Or drag {} into Transporter or Xcode Organizer.", ipa.display());
 	}
 	Ok(())
+}
+
+/// Hands the IPA to App Store Connect with the same App Store Connect API key the macOS
+/// notarization step uses, named by the same environment variables so there is one set of
+/// credentials to keep rather than two.
+///
+/// altool finds the key itself by id, looking for `AuthKey_<id>.p8` under `./private_keys`,
+/// `~/private_keys`, `~/.private_keys` and `~/.appstoreconnect/private_keys`. A missing key or
+/// id is reported here rather than left to altool, whose own message for it is easy to miss.
+fn upload_ipa(ipa: &Path) -> Result<(), Box<dyn Error>> {
+	let key_id = env::var("APPSTORE_API_KEY_ID").unwrap_or_default().trim().to_string();
+	let issuer_id = env::var("APPSTORE_API_ISSUER_ID").unwrap_or_default().trim().to_string();
+	if key_id.is_empty() || issuer_id.is_empty() {
+		return Err("APPSTORE_API_KEY_ID and APPSTORE_API_ISSUER_ID must both be set to upload. 			They are the same values the macOS notarization step uses."
+			.into());
+	}
+	let key_name = format!("AuthKey_{key_id}.p8");
+	let searched = [
+		PathBuf::from("private_keys"),
+		home_dir().join("private_keys"),
+		home_dir().join(".private_keys"),
+		home_dir().join(".appstoreconnect/private_keys"),
+	];
+	if !searched.iter().any(|dir| dir.join(&key_name).exists()) {
+		let places = searched.iter().map(|d| d.display().to_string()).collect::<Vec<_>>().join(", ");
+		return Err(format!("{key_name} not found. altool looks for it in: {places}").into());
+	}
+	println!("Uploading to App Store Connect...");
+	let status = Command::new("xcrun")
+		.args([
+			"altool",
+			"--upload-app",
+			"--type",
+			"ios",
+			"--file",
+			&ipa.to_string_lossy(),
+			"--apiKey",
+			&key_id,
+			"--apiIssuer",
+			&issuer_id,
+		])
+		.status()?;
+	if !status.success() {
+		return Err(format!(
+			"altool upload failed. The IPA is still at {}, so it can go through Transporter instead.",
+			ipa.display()
+		)
+		.into());
+	}
+	println!("Upload complete. The build appears in TestFlight once Apple finishes processing it.");
+	Ok(())
+}
+
+fn home_dir() -> PathBuf {
+	PathBuf::from(env::var("HOME").unwrap_or_default())
 }
 
 fn download_pdfium_dylib(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
@@ -233,7 +270,7 @@ fn download_pdfium_dylib(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
 }
 
 // Wraps libpdfium.dylib in a proper .framework bundle. iOS doesn't support standalone
-// third-party dylibs at all — only .framework bundles — regardless of whether the dylib is
+// third-party dylibs at all, only .framework bundles, regardless of whether the dylib is
 // wrapped in an XCFramework container; App Store Connect's upload validator rejects a
 // bare-dylib XCFramework with ITMS-90426 ("SwiftSupport folder is missing"), because it still
 // routes through the legacy validation path that a raw dylib triggers. A real .framework
@@ -247,7 +284,7 @@ fn download_pdfium_dylib(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
 //
 // The framework's binary keeps the "libpdfium.dylib" filename (not the usual extension-less
 // framework-binary convention) because the `pdfium` crate's dlopen call constructs exactly
-// that filename via `libloading::library_filename("pdfium")` — AppViewModel.swift points
+// that filename via `libloading::library_filename("pdfium")`. AppViewModel.swift points
 // setPdfiumLibraryPath at .../Frameworks/libpdfium.framework to match.
 fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>> {
 	let framework_dir = root.join("ios/libpdfium.framework");
@@ -266,7 +303,7 @@ fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>
 	}
 	// The prebuilt binary's LC_BUILD_VERSION load command declares a minos far above our own
 	// deployment target (observed: iOS 26.0, just whatever SDK the upstream release happened to
-	// be built with) — nothing in PDFium actually requires that OS version, but App Store
+	// be built with). Nothing in PDFium actually requires that OS version, but App Store
 	// Connect's validator takes the declaration at face value and rejects the bundle as
 	// unsupported on our (lower) deployment target. Rewrite it to match.
 	let status = Command::new("xcrun")

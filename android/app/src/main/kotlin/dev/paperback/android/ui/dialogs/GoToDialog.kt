@@ -10,15 +10,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
-import dev.paperback.android.ui.DocumentTabState
+import dev.paperback.android.ui.components.PickerMenuItem
+import dev.paperback.android.ui.components.pickerAnchorColors
+import dev.paperback.android.ui.state.DocumentTabState
+import dev.paperback.android.ui.state.lineIndexFor
 
 const val GO_TO_LINE = "Line"
 const val GO_TO_PAGE = "Page"
@@ -96,7 +104,7 @@ fun GoToDialog(
 			onDismiss()
 		} else if (targetPos != null) {
 			val targetLine = docState.session.lineFromPosition(targetPos)
-			val indexToScroll = (targetLine - 1).toInt().coerceAtLeast(0)
+			val indexToScroll = lineIndexFor(targetLine)
 			onGoTo(indexToScroll)
 			onDismiss()
 		}
@@ -117,6 +125,7 @@ fun GoToDialog(
 					) {
 						OutlinedButton(
 							onClick = { dropdownExpanded = true },
+							colors = pickerAnchorColors(),
 							modifier = Modifier
 								.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
 								.fillMaxWidth()
@@ -137,29 +146,44 @@ fun GoToDialog(
 							onDismissRequest = { dropdownExpanded = false }
 						) {
 							modes.forEach { mode ->
-								DropdownMenuItem(
-									text = { Text(goToModeName(mode)) },
-									onClick = {
-										selectedMode = mode
-										dropdownExpanded = false
-									}
-								)
+								PickerMenuItem(label = goToModeName(mode), selected = mode == selectedMode) {
+									selectedMode = mode
+									dropdownExpanded = false
+								}
 							}
 						}
 					}
 					Spacer(modifier = Modifier.height(16.dp))
 				}
 				if (selectedMode == GO_TO_PERCENTAGE) {
-					Text("$sliderPercent%", style = MaterialTheme.typography.labelLarge)
-					Slider(
-						value = sliderPercent.toFloat(),
-						onValueChange = { sliderPercent = kotlin.math.round(it).toInt() },
-						valueRange = 0f..100f,
-						steps = 99,
-						modifier = Modifier.fillMaxWidth().semantics {
-							stateDescription = "$sliderPercent percent"
+					// The track draws one tick per step, which at a hundred of them reads as a dotted
+					// line rather than a slider. Carrying the range info out here lets the visible
+					// slider drop its ticks while TalkBack still swipes a percent at a time.
+					Column(
+						modifier = Modifier.clearAndSetSemantics {
+							contentDescription = goToModeName(GO_TO_PERCENTAGE)
+							// TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
+							stateDescription = t("{} percent", sliderPercent.toString())
+							progressBarRangeInfo = ProgressBarRangeInfo(
+								current = sliderPercent.toFloat(),
+								range = 0f..100f,
+								steps = 99
+							)
+							setProgress { targetValue ->
+								sliderPercent = kotlin.math.round(targetValue).toInt()
+								true
+							}
 						}
-					)
+					) {
+						Text("$sliderPercent%", style = MaterialTheme.typography.labelLarge)
+						Slider(
+							value = sliderPercent.toFloat(),
+							onValueChange = { sliderPercent = kotlin.math.round(it).toInt() },
+							valueRange = 0f..100f,
+							steps = 0,
+							modifier = Modifier.fillMaxWidth()
+						)
+					}
 				} else {
 					TextField(
 						value = inputValue,

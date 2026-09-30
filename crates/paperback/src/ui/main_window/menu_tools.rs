@@ -8,7 +8,7 @@ use std::{env, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{
 	config::ConfigManager,
-	document::DocumentStats,
+	document::{DocumentStats, ParseSettings},
 	export::ExportFormat,
 	parser::is_external_url,
 	session::{DocumentSession, SourceView},
@@ -21,7 +21,11 @@ use super::{
 };
 #[cfg(target_os = "windows")]
 use super::{HotkeyHandle, re_register_hotkey};
-use crate::{config_ext::set_update_channel, translation_manager::TranslationManager};
+use crate::{
+	config_ext::{set_log_level, set_update_channel},
+	translation_manager::TranslationManager,
+	ui::navigation::announce,
+};
 
 pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 	let Ok(dm_ref) = dm.try_lock() else {
@@ -74,7 +78,7 @@ pub(super) fn handle_table_of_contents(
 			let toc_items = &tab.session.handle().document().toc_items;
 			if toc_items.is_empty() {
 				// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-				live_region::announce(live_region_label, &t("No table of contents."));
+				announce(live_region_label, t("No table of contents."));
 				return;
 			}
 			let current_pos = navigation::doc_caret(tab);
@@ -96,7 +100,7 @@ pub(super) fn handle_table_of_contents(
 		(message, update)
 	};
 	navigation::persist_navigation_history(config, Some(&update));
-	navigation::announce_after_delay(frame, live_region_label, message);
+	announce(live_region_label, message);
 }
 
 /// The announcement for landing on document offset `offset` after picking a table of contents
@@ -111,6 +115,40 @@ fn toc_announcement(session: &DocumentSession, offset: i64) -> String {
 		t("Line %d").replacen("%d", &session.line_from_position(offset).to_string(), 1)
 	} else {
 		content.trim().to_string()
+	}
+}
+
+/// Opens the Batch OCR range dialog, or offers to stop the batch that is already running. One
+/// menu item covers both so there is nothing to enable and disable as a job starts and ends, and
+/// the answer to "how do I stop this" is the same item that started it.
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub(super) fn handle_batch_ocr(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+	let (max_page, running) = {
+		let dm_ref = dm.lock().unwrap();
+		let Some(tab) = dm_ref.active_tab() else {
+			// TRANSLATORS: Announced when Batch OCR is chosen with no document open
+			announce(live_region_label, t("No document open."));
+			return;
+		};
+		(i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX), dm_ref.batch_ocr_running())
+	};
+	if running {
+		let confirm = MessageDialog::builder(
+			frame,
+			// TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
+			&t("Batch OCR is running. Stop it?"),
+			// TRANSLATORS: Title of the Batch OCR dialog
+			&t("Batch OCR"),
+		)
+		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion)
+		.build();
+		if confirm.show_modal() == ID_YES {
+			dm.lock().unwrap().cancel_ocr();
+		}
+		return;
+	}
+	if let Some(range) = dialogs::show_batch_ocr_dialog(frame, max_page) {
+		dm.lock().unwrap().start_batch_ocr(range.start, range.end, range.include_text_pages);
 	}
 }
 
@@ -140,7 +178,7 @@ pub(super) fn handle_elements_list(
 		(message, update)
 	};
 	navigation::persist_navigation_history(config, Some(&update));
-	navigation::announce_after_delay(frame, live_region_label, message);
+	announce(live_region_label, message);
 }
 
 /// The announcement for landing on document offset `offset` from the Elements view `kind`.
@@ -434,6 +472,7 @@ pub(super) fn handle_options(
 	let (
 		old_word_wrap,
 		old_render_tables_inline,
+		old_join_pdf_paragraphs,
 		old_compact_menu,
 		old_readability_font,
 		old_line_spacing,
@@ -446,6 +485,7 @@ pub(super) fn handle_options(
 		(
 			cfg.get_app_bool("word_wrap", false),
 			cfg.get_app_bool("render_tables_inline", true),
+			cfg.get_app_bool("join_pdf_paragraphs", true),
 			cfg.get_app_bool("compact_go_menu", true),
 			cfg.get_readability_font(),
 			cfg.get_line_spacing(),
@@ -459,6 +499,7 @@ pub(super) fn handle_options(
 	cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);
 	cfg.set_app_bool("word_wrap", options.word_wrap);
 	cfg.set_app_bool("render_tables_inline", options.render_tables_inline);
+	cfg.set_app_bool("join_pdf_paragraphs", options.join_pdf_paragraphs);
 	cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
 	cfg.set_app_bool("start_maximized", options.start_maximized);
 	cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
@@ -474,6 +515,8 @@ pub(super) fn handle_options(
 	cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 	cfg.set_app_string("language", &options.language);
 	set_update_channel(&cfg, options.update_channel);
+	set_log_level(&cfg, options.log_level);
+	crate::logging::set_level(options.log_level);
 	cfg.set_hotkey(&options.hotkey);
 	cfg.set_shortcuts(&options.shortcuts);
 	cfg.set_readability_font(&options.readability_font);
@@ -491,7 +534,8 @@ pub(super) fn handle_options(
 	drop(cfg);
 	let options_word_wrap = options.word_wrap;
 	let options_render_tables_inline = options.render_tables_inline;
-	let render_tables_inline_changed = old_render_tables_inline != options_render_tables_inline;
+	let parse_settings_changed = old_render_tables_inline != options_render_tables_inline
+		|| old_join_pdf_paragraphs != options.join_pdf_paragraphs;
 	let font_changed = old_readability_font != options.readability_font;
 	let line_spacing_changed = old_line_spacing != options.line_spacing;
 	let bg_color_changed = old_bg_color != options.bg_color;
@@ -531,9 +575,13 @@ pub(super) fn handle_options(
 			dm_ref.apply_paragraph_spacing(options.paragraph_spacing);
 		}
 	}
-	if render_tables_inline_changed {
+	if parse_settings_changed {
+		let settings = ParseSettings {
+			render_tables_inline: options_render_tables_inline,
+			join_pdf_paragraphs: options.join_pdf_paragraphs,
+		};
 		let mut dm_ref = dm.lock().unwrap();
-		dm_ref.apply_render_tables_inline(options_render_tables_inline);
+		dm_ref.apply_parse_settings(settings);
 	}
 	let options_compact_menu = options.compact_go_menu;
 	if current_language != options.language || old_compact_menu != options_compact_menu {

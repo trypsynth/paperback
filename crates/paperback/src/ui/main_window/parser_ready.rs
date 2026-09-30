@@ -4,7 +4,10 @@
 
 use std::{path::Path, rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ConfigManager, parser::parser_supports_extension};
+use paperback_core::{
+	config::ConfigManager,
+	parser::{parser_supports_extension, parser_supports_path},
+};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -12,7 +15,7 @@ use super::dialogs;
 
 pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
 	let extension = parser_extension_for_path(path);
-	if extension.is_empty() || parser_supports_extension(&extension) {
+	if extension.is_empty() || parser_supports_path(path) {
 		return true;
 	}
 	let cfg = config.lock().unwrap();

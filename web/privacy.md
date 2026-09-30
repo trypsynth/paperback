@@ -2,6 +2,7 @@
 layout: default.liquid
 title: Privacy Policy
 permalink: /privacy
+description: Paperback collects no personal data on any platform. There is no account, no analytics and no tracking.
 ---
 # Privacy Policy
 

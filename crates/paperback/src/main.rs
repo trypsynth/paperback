@@ -10,10 +10,18 @@ mod legacy_config;
 #[cfg(target_os = "linux")]
 mod linux_integration;
 mod logging;
+mod ocr;
+#[cfg(any(target_os = "windows", test))]
+mod rtf;
+mod search;
+mod shell;
 #[cfg(test)]
 mod test_locale;
+mod text_format;
+mod text_window;
 mod translation_manager;
 mod ui;
+mod updater;
 
 use std::{env, fs, io};
 
@@ -22,7 +30,7 @@ use ui::PaperbackApp;
 use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
-	let _log_guard = logging::init(&config_ext::config_dir());
+	let _log_guard = logging::init(&config_ext::config_dir(), config_ext::log_level_from_disk());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
 	set_pdfium_path_from_exe();
 	cleanup_legacy_files();
@@ -31,11 +39,26 @@ fn main() {
 	// This needs to be called before WX initializes to properly take effect.
 	#[cfg(target_os = "macos")]
 	promote_unbundled_to_regular_app();
+	#[cfg(target_os = "windows")]
+	pin_rich_edit();
 	let _ = wxdragon::main(|app| {
 		let _ = set_appearance(Appearance::System);
 		let app_state = PaperbackApp::new(app);
 		let _ = Box::leak(Box::new(app_state));
 	});
+}
+
+/// Keeps the rich edit library loaded until the process ends.
+///
+/// At exit wxWidgets frees the rich edit library before it shuts COM down. A screen reader still holds
+/// accessibility objects that live in that library, so COM's shutdown then calls into unloaded
+/// code and the process crashes. Holding a reference of our own means wx's free never unloads it.
+#[cfg(target_os = "windows")]
+fn pin_rich_edit() {
+	use windows::{Win32::System::LibraryLoader::LoadLibraryW, core::w};
+	if let Err(e) = unsafe { LoadLibraryW(w!("msftedit.dll")) } {
+		tracing::warn!(error = %e, "could not pin msftedit.dll");
+	}
 }
 
 #[cfg(target_os = "macos")]

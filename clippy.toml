@@ -2,3 +2,7 @@
 # accumulators through one recursive call; clippy's default of 7 is too tight for both. Anything
 # past 10 should be bundled into a struct rather than allowed here.
 too-many-arguments-threshold = 10
+
+# Product names that read as prose, not as code items. Without this every mention of
+# WinHelp has to be wrapped in backticks and then renders as inline code in the docs.
+doc-valid-idents = ["WinHelp", ".."]

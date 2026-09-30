@@ -43,6 +43,5 @@ pub fn append_menu_entries(menu: &Menu, entries: &[MenuEntry]) {
 }
 
 pub fn format_menu_label(base: &str, action: ActionId, config: &ConfigManager) -> String {
-	let shortcut = config.get_shortcut_menu_str(action);
-	if shortcut.is_empty() { base.to_string() } else { format!("{base}\t{shortcut}") }
+	wx_utils::menu_label(base, &config.get_shortcut_menu_str(action))
 }

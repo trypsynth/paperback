@@ -20,7 +20,7 @@ pub fn extract_title_from_path(path: &str) -> String {
 /// `..` segments. An absolute `path` (leading `/`) ignores `base_dir` entirely. Used to
 /// resolve hrefs against their containing document's location inside an archive (EPUB,
 /// CHM), where paths are always archive-internal and `/`-separated regardless of host
-/// platform — deliberately implemented with plain string splitting rather than
+/// platform. It is deliberately implemented with plain string splitting rather than
 /// [`std::path::Path`], since `Path` treats `\` as a separator on Windows and would
 /// otherwise resolve a literal backslash in an href differently depending on the platform
 /// the code is compiled for. Case-folding and URL-decoding are the caller's job, since

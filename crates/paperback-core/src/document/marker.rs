@@ -3,6 +3,7 @@
 //! structure, plus the small helpers ([`is_heading_marker`], [`is_container_marker`],
 //! [`ContainerSpan`]) that classify them.
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(i32)]
 pub enum MarkerType {
@@ -25,6 +26,11 @@ pub enum MarkerType {
 	Bold = 16,
 	Italic = 17,
 	Underline = 18,
+	/// A PDF page that holds an image but no extractable text. Sits at the start of the page's
+	/// OCR placeholder line and is what the OCR flow matches on, so the feature never depends on
+	/// comparing against a translated string.
+	ImageOnlyPage = 19,
+	Formula = 20,
 }
 
 impl From<MarkerType> for i32 {
@@ -66,6 +72,8 @@ impl TryFrom<i32> for MarkerType {
 			16 => Ok(Self::Bold),
 			17 => Ok(Self::Italic),
 			18 => Ok(Self::Underline),
+			19 => Ok(Self::ImageOnlyPage),
+			20 => Ok(Self::Formula),
 			_ => Err(()),
 		}
 	}
@@ -146,11 +154,11 @@ mod tests {
 
 	#[test]
 	fn marker_type_round_trip_for_all_known_values() {
-		for raw in 0..=18 {
+		for raw in 0..=20 {
 			let marker = MarkerType::try_from(raw).unwrap();
 			assert_eq!(i32::from(marker), raw);
 		}
-		assert!(MarkerType::try_from(19).is_err());
+		assert!(MarkerType::try_from(21).is_err());
 		assert!(MarkerType::try_from(-1).is_err());
 	}
 

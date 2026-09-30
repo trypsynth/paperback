@@ -7,6 +7,8 @@ use std::{cell::Cell, rc::Rc};
 use patois::t;
 use wxdragon::prelude::*;
 
+use crate::ui::navigation::announce;
+
 /// The numeric entry of a Go to dialog together with the range it validates against and
 /// the value it resolved to when the dialog was confirmed.
 pub(super) struct NumberEntry {
@@ -49,7 +51,7 @@ impl NumberEntry {
 	/// the entry is invalid, announces `out_of_range` and keeps the dialog open for a retry.
 	pub fn submit(&self, dialog: Dialog, live_region_label: StaticText, out_of_range: &str) {
 		let Some(value) = self.resolve() else {
-			live_region::announce(live_region_label, out_of_range);
+			announce(live_region_label, out_of_range);
 			self.focus();
 			return;
 		};

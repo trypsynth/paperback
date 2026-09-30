@@ -8,10 +8,10 @@ use std::{rc::Rc, sync::Mutex};
 
 use paperback_core::config::ActionId;
 use patois::t;
-use wxdragon::prelude::*;
+use wxdragon::{event::KeyboardEvent, prelude::*};
 
 use super::{
-	document_manager::{DocumentManager, DocumentTab},
+	document_manager::{DocumentManager, DocumentTab, tab_index_for_key},
 	menu_ids,
 	text_render::reload_window_around,
 };
@@ -29,21 +29,45 @@ pub(super) fn build_text_ctrl(
 		| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
 	let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
 	let dm_for_enter = Rc::clone(self_rc);
+	let frame_for_char = frame;
 	text_ctrl.on_char(move |event| {
 		if let WindowEventData::Keyboard(kbd) = event {
 			if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
-				let table_html = {
+				// Enter on an image-only page runs OCR instead of the table/link activation
+				// below. Enter only; Space always falls through to that activation.
+				#[cfg(any(target_os = "windows", target_os = "macos"))]
+				if kbd.get_key_code() == Some(13) {
+					let on_placeholder = {
+						let dm = dm_for_enter.lock().unwrap();
+						dm.image_only_page_at_caret().is_some()
+					};
+					if on_placeholder {
+						dm_for_enter.lock().unwrap().start_ocr_for_current_page();
+						return;
+					}
+				}
+				// Drop the manager lock before opening the modal dialog, whose handlers may lock it again.
+				let dialog = {
 					let dm = dm_for_enter.lock().unwrap();
-					dm.activate_current_table()
+					dm.activate_current_formula()
+						.map(|html| {
+							// TRANSLATORS: Title of the dialog displaying a formula as MathML
+							(t("Formula View"), html)
+						})
+						.or_else(|| {
+							// TRANSLATORS: Title of the dialog showing a table activated in the document
+							dm.activate_current_table().map(|html| (t("Table View"), html))
+						})
+						.map(|(title, html)| (dm.frame, title, html))
 				};
-				if let Some(html) = table_html {
-					let frame = dm_for_enter.lock().unwrap().frame;
-					// TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
-					super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
+				if let Some((frame, title, html)) = dialog {
+					super::dialogs::show_web_view_dialog(&frame, &title, &html, false, None);
 				} else {
 					let mut dm = dm_for_enter.lock().unwrap();
 					dm.activate_current_link();
 				}
+			} else if let Some(action) = shortcut_for_shifted_character(&kbd, &dm_for_enter) {
+				run_shortcut(action, &dm_for_enter, &frame_for_char);
 			} else {
 				kbd.event.skip(true);
 			}
@@ -66,12 +90,17 @@ pub(super) fn build_text_ctrl(
 	let dm_for_key_up = Rc::clone(self_rc);
 	text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
 		event.skip(true);
+		let moved_over_text = event.get_key_code().is_some_and(moves_through_text);
 		if let Ok(mut dm) = dm_for_key_up.try_lock() {
 			// Before the status bar reads the position, so it reports the compacted window.
 			dm.compact_window_after_user_move();
 			dm.update_status_bar();
 			dm.save_position_throttled();
-			dm.check_bookmark_sounds();
+			if moved_over_text {
+				dm.check_bookmark_sounds();
+			} else {
+				dm.forget_bookmark_sound_position();
+			}
 		}
 	});
 	let dm_for_mouse = Rc::clone(self_rc);
@@ -82,6 +111,10 @@ pub(super) fn build_text_ctrl(
 			dm.compact_window_after_user_move();
 			dm.update_status_bar();
 			dm.save_position_throttled();
+			// Clicking straight onto a bookmark is deliberate enough to deserve the sound,
+			// and lands inside it, so the same enter-the-range test says so. It reads the
+			// position the arrow keys left behind, which is why jumps keep that up to date
+			// rather than leaving it stale.
 			dm.check_bookmark_sounds();
 		}
 	});
@@ -140,37 +173,35 @@ pub(super) fn build_text_ctrl(
 				}
 			};
 			if let Some(act) = action {
-				match act {
-					ActionId::AnnouncePercent => {
-						kbd.event.skip(false);
-						if let Ok(dm) = dm_for_keys.try_lock() {
-							dm.announce_current_percent();
-						}
-						return;
-					}
-					ActionId::SetTemporaryBookmark => {
-						kbd.event.skip(false);
-						if let Ok(dm) = dm_for_keys.try_lock() {
-							dm.set_temporary_bookmark();
-						}
-						return;
-					}
-					ActionId::JumpToTemporaryBookmark => {
-						kbd.event.skip(false);
-						if let Ok(mut dm) = dm_for_keys.try_lock() {
-							dm.jump_to_temporary_bookmark();
-						}
-						return;
-					}
-					_ => {
-						if !kbd.control_down() && !kbd.alt_down() || cfg!(target_os = "linux") {
-							let menu_id = menu_ids::action_to_menu_id(act);
-							kbd.event.skip(false);
-							frame_for_keys.process_menu_command(menu_id);
-							return;
-						}
-					}
+				// Alt chords are normally left to wxWidgets to resolve as menu
+				// accelerators, which is how Alt+Left gets to the navigation history.
+				// The selection commands are dispatched here as well because F10 means
+				// "activate the menu bar" to Windows, so whether Alt+F10 ever reaches the
+				// accelerator table on every platform is not something to bet a shortcut
+				// on. The two routes cannot both run: a keystroke the accelerator consumed
+				// never arrives here at all.
+				let plain = !kbd.control_down() && !kbd.alt_down();
+				if has_no_menu_item(act) || plain || is_selection_command(act) || cfg!(target_os = "linux") {
+					kbd.event.skip(false);
+					run_shortcut(act, &dm_for_keys, &frame_for_keys);
+					return;
 				}
+			}
+			// Ctrl+1 through Ctrl+9 jump to the first nine open documents. Deliberately after the
+			// shortcut table rather than before it: a reader who has deliberately bound one of
+			// these chords to something of their own keeps it, and gets no tab switch rather than a
+			// switch that overrode them. No default binds any of these chords, so this is reached
+			// on a stock configuration.
+			//
+			// The title is announced by `switch_to_tab` itself, not by the notebook's
+			// page-changing handler, because the lock this call holds is the one that handler
+			// needs in order to announce at all.
+			if let Some(index) = tab_index_for_key(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
+				kbd.event.skip(false);
+				if let Ok(dm) = dm_for_keys.try_lock() {
+					dm.switch_to_tab(index);
+				}
+				return;
 			}
 		}
 		event.skip(true);
@@ -181,6 +212,52 @@ pub(super) fn build_text_ctrl(
 		show_reader_context_menu(text_ctrl_for_right_click);
 	});
 	text_ctrl
+}
+
+/// Whether a key moves the caret through the text one piece at a time, rather than jumping it
+/// somewhere else.
+///
+/// Only these play a bookmark's sound. Landing on a line that happens to hold a bookmark used
+/// to sound exactly like moving onto the bookmark itself, so a bookmark attached to a word in
+/// the middle of a paragraph announced itself from the start of that paragraph, which is not
+/// where it is. Stepping by character or by word passes over the bookmark's own position, so
+/// there the sound means what it says.
+/// The shortcuts that are carried out here rather than through a menu item, because they have none.
+const fn has_no_menu_item(action: ActionId) -> bool {
+	matches!(action, ActionId::AnnouncePercent | ActionId::SetTemporaryBookmark | ActionId::JumpToTemporaryBookmark)
+}
+
+const fn is_selection_command(action: ActionId) -> bool {
+	matches!(action, ActionId::SetSelectionStart | ActionId::CopyFromSelectionStart | ActionId::JumpToSelectionStart)
+}
+
+fn run_shortcut(action: ActionId, dm: &Rc<Mutex<DocumentManager>>, frame: &Frame) {
+	let Ok(mut dm) = dm.try_lock() else { return };
+	match action {
+		ActionId::AnnouncePercent => dm.announce_current_percent(),
+		ActionId::SetTemporaryBookmark => dm.set_temporary_bookmark(),
+		ActionId::JumpToTemporaryBookmark => dm.jump_to_temporary_bookmark(),
+		_ => {
+			drop(dm);
+			frame.process_menu_command(menu_ids::action_to_menu_id(action));
+		}
+	}
+}
+
+/// A shortcut on a punctuation key the reader's layout can only type with Shift, such as `=` and `'` on a Japanese keyboard, where they are Shift+- and Shift+7. The key-down handler matches the key itself, which there is `-` with Shift and so no shortcut; the character it types is what the shortcut names. Punctuation only, so Shift and a letter never runs the letter's own shortcut.
+fn shortcut_for_shifted_character(kbd: &KeyboardEvent, dm: &Rc<Mutex<DocumentManager>>) -> Option<ActionId> {
+	if !kbd.shift_down() || kbd.control_down() || kbd.alt_down() {
+		return None;
+	}
+	let code = kbd.get_unicode_key().and_then(|code| u32::try_from(code).ok())?;
+	let typed = char::from_u32(code).filter(char::is_ascii_punctuation)?;
+	let dm = dm.try_lock().ok()?;
+	let config = dm.config.lock().unwrap();
+	config.get_shortcuts().find_action(i32::from(typed as u8), false, false, false)
+}
+
+const fn moves_through_text(key: i32) -> bool {
+	matches!(key, WXK_LEFT | WXK_RIGHT)
 }
 
 /// Which end of the document a key press names as a "jump to the very start/end" gesture, if

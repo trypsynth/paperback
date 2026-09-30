@@ -6,9 +6,9 @@ use wxdragon::prelude::*;
 
 use super::{document_manager::DocumentManager, icon, menu_ids};
 
-/// Gives `tray_icon` the application icon. Left as-is if the artwork can't be built, which is
-/// better than the stock "information" glyph this used to show: the notification area falls
-/// back to a blank slot rather than to something that looks like a message from another app.
+/// Gives `tray_icon` the application icon. Left as-is if the artwork can't be built: the
+/// notification area falls back to a blank slot rather than to a stock "information" glyph
+/// that looks like a message from another app.
 pub fn set_tray_icon(tray_icon: &TaskBarIcon) {
 	if let Some(bundle) = icon::notification_area_bundle() {
 		tray_icon.set_icon_bundle(&bundle, "Paperback");

@@ -18,8 +18,8 @@ use crate::util::{
 
 /// Render an EPUB directly to HTML by stitching spine-item bodies.
 ///
-/// Bypasses the text-buffer pipeline entirely — no `HtmlToText`, no marker
-/// reconstruction — making it dramatically faster on large EPUBs.
+/// Bypasses the text-buffer pipeline entirely, with no `HtmlToText` and no marker
+/// reconstruction, making it dramatically faster on large EPUBs.
 pub fn render(file_path: &str) -> Result<String> {
 	let file = File::open(file_path).with_context(|| format!("failed to open '{file_path}'"))?;
 	let mut archive = ZipArchive::new(BufReader::new(file)).context("failed to read EPUB as zip")?;

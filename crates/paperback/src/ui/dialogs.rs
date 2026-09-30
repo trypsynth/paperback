@@ -1,7 +1,7 @@
 // `build_ok_cancel_buttons` translates its own "Cancel" label via patois, since
 // wx-utils is itself a `[package.metadata.patois] translatable = true` crate whose
 // `t()` calls patois-build folds into this app's own catalog at build time (see
-// `build_translations` in build.rs) — the same mechanism ship-shape uses. `ok_label`
+// `build()` in `build/translations.rs`), the same mechanism ship-shape uses. `ok_label`
 // is still supplied by each dialog, since it varies ("OK" vs. a verb like "Go").
 //
 // Not a fit for every dialog: `toc.rs` deliberately gives its OK button a non-stock
@@ -13,15 +13,32 @@ pub(super) use wx_utils::{
 	DIALOG_PADDING, add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons,
 };
 
+/// The most entries a table of contents or heading tree shows under one parent on Windows. More
+/// than that are split into groups under it. On every move in a tree, NVDA counts the focused
+/// item's siblings with one cross-process message each, so thousands of chapters under one parent
+/// lag on each arrow key.
+#[cfg(target_os = "windows")]
+const MAX_TREE_SIBLINGS: usize = 500;
+
+/// The label of a group of tree entries, named after its first and last entry.
+#[cfg(target_os = "windows")]
+fn tree_group_label(first: &str, last: &str) -> String {
+	// TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
+	patois::t("{} to {}").replacen("{}", first, 1).replacen("{}", last, 1)
+}
+
 mod about;
 pub use about::show_about_dialog;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+mod batch_ocr;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub use batch_ocr::show_batch_ocr_dialog;
 mod all_documents;
 pub use all_documents::show_all_documents_dialog;
 mod bookmark;
 pub use bookmark::show_bookmark_dialog;
 mod document_info;
 pub use document_info::show_document_info_dialog;
-mod duration_format;
 mod elements;
 pub use elements::{ElementsKind, show_elements_dialog};
 mod go_to;

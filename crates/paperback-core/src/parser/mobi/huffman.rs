@@ -1,6 +1,6 @@
 //! MOBI HUFF/CDIC decompression (`compression` mode 17480): builds a code table from the
 //! `HUFF` record and a phrase dictionary from the `CDIC` record(s), then recursively
-//! expands compressed text through them — a dictionary phrase can itself reference other
+//! expands compressed text through them. A dictionary phrase can itself reference other
 //! phrases, hence the explicit stack in `decode` rather than plain recursion.
 
 use anyhow::Result;

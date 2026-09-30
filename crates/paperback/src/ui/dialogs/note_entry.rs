@@ -1,5 +1,4 @@
 use patois::t;
-use wx_utils::dpi;
 use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
@@ -15,7 +14,7 @@ pub fn show_note_entry_dialog(
 	let note_ctrl = TextCtrl::builder(&dialog)
 		.with_value(existing_note)
 		.with_style(TextCtrlStyle::MultiLine)
-		.with_size(dpi::scale_size(&dialog, Size::new(400, 200)))
+		.with_size(dialog.from_dip(Size::new(400, 200)))
 		.build();
 	// TRANSLATORS: OK button that confirms the entered bookmark/note text
 	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));

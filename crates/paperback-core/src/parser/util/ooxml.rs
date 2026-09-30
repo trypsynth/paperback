@@ -26,7 +26,8 @@ pub fn read_ooxml_relationships<R: Read + Seek>(
 						let target = node.attribute("Target").unwrap_or("").to_string();
 						let rel_type = node.attribute("Type").unwrap_or("");
 						if rel_type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
-							&& !id.is_empty() && !target.is_empty()
+							&& !id.is_empty()
+							&& !target.is_empty()
 						{
 							rels.insert(id, target);
 						}
@@ -159,7 +160,7 @@ mod tests {
 		assert_eq!(rels.keys().collect::<Vec<_>>(), vec!["rId3"]);
 	}
 
-	/// A missing rels part is normal — a document with no hyperlinks has none — so it must read
+	/// A missing rels part is normal (a document with no hyperlinks has none), so it must read
 	/// as "no relationships" rather than failing the parse.
 	#[test]
 	fn returns_empty_when_the_rels_entry_is_absent() {

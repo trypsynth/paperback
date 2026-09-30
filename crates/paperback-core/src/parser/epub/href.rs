@@ -36,3 +36,6 @@ pub(super) fn split_href(input: &str) -> (String, Option<String>) {
 		(trimmed.to_string(), None)
 	}
 }
+
+#[cfg(test)]
+mod tests;

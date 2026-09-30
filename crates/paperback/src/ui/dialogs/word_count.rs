@@ -1,7 +1,6 @@
 use patois::{nt, t};
+use wx_utils::format_duration_seconds;
 use wxdragon::prelude::*;
-
-use super::duration_format::format_duration_seconds;
 
 fn format_reading_time(word_count: usize, wpm: i32) -> String {
 	if wpm <= 0 {

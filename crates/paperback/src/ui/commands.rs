@@ -26,6 +26,7 @@ pub mod audio;
 pub mod bookmarks;
 pub mod file;
 pub mod navigation;
+pub mod selection;
 
 /// What has to be true for a command to be usable.
 ///
@@ -39,6 +40,8 @@ pub enum Enable {
 	HasDocument,
 	/// Needs something in the recently-closed stack.
 	HasRecentlyClosed,
+	/// Needs something in the recent-documents list.
+	HasRecentDocuments,
 }
 
 /// What a handler is allowed to touch.
@@ -141,6 +144,15 @@ pub static COMMANDS: &[Command] = &[
 		help: Some(|| t("Reopen the last closed document")),
 		enable: Enable::HasRecentlyClosed,
 		behavior: Behavior::Run(file::reopen_last_closed),
+	},
+	Command {
+		action: ActionId::ClearRecentDocuments,
+		// TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
+		label: || t("Clea&r Recent Documents"),
+		// TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
+		help: Some(|| t("Remove all documents from the Recent Documents list")),
+		enable: Enable::HasRecentDocuments,
+		behavior: Behavior::Run(file::clear_recent_documents),
 	},
 	Command {
 		action: ActionId::Exit,
@@ -364,6 +376,22 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Navigate { target: MarkerNavTarget::Table, next: true },
 	},
 	Command {
+		action: ActionId::PreviousFormula,
+		// TRANSLATORS: Menu item in the Go menu to move to the previous formula.
+		label: || t("Previous For&mula"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Formula, next: false },
+	},
+	Command {
+		action: ActionId::NextFormula,
+		// TRANSLATORS: Menu item in the Go menu to move to the next formula.
+		label: || t("Next For&mula"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Navigate { target: MarkerNavTarget::Formula, next: true },
+	},
+	Command {
 		action: ActionId::PreviousSeparator,
 		// TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 		label: || t("Previous Se&parator"),
@@ -534,6 +562,38 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Run(bookmarks::with_note),
 	},
 	Command {
+		action: ActionId::SetSelectionStart,
+		// TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+		label: || t("Set Selection St&art"),
+		// TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+		help: Some(|| t("Mark the beginning of a selection to copy from")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(selection::set_start),
+	},
+	Command {
+		action: ActionId::CopyFromSelectionStart,
+		// TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+		label: || t("&Copy from Selection Start"),
+		// TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+		help: Some(|| t("Copy from the beginning of the selection to here")),
+		// Deliberately not gated on a mark being set: the command has to stay enabled so pressing
+		// it with nothing marked can say so. Gating it here would leave a disabled menu item and
+		// a shortcut that does nothing at all, with no way to find out why.
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(selection::copy_from_start),
+	},
+	Command {
+		action: ActionId::JumpToSelectionStart,
+		// TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+		label: || t("&Jump to Selection Start"),
+		// TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+		help: Some(|| t("Go back to the beginning of the selection")),
+		// Enabled for the same reason as the copy above: an unset mark has to be announced, not
+		// turned into a dead menu item.
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(selection::jump_to_start),
+	},
+	Command {
 		action: ActionId::PlayPauseAudio,
 		// TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 		label: || t("&Play/Pause Audio"),
@@ -577,6 +637,24 @@ pub static COMMANDS: &[Command] = &[
 		help: Some(|| t("Decrease how far seeking the audio narration moves")),
 		enable: Enable::Always,
 		behavior: Behavior::Run(audio::decrease_seek_amount),
+	},
+	Command {
+		action: ActionId::IncreaseAudioSpeed,
+		// TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+		label: || t("&Increase Audio Speed"),
+		// TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
+		help: Some(|| t("Increase how fast the audio narration plays")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(audio::increase_speed),
+	},
+	Command {
+		action: ActionId::DecreaseAudioSpeed,
+		// TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+		label: || t("&Decrease Audio Speed"),
+		// TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
+		help: Some(|| t("Decrease how fast the audio narration plays")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(audio::decrease_speed),
 	},
 ];
 
@@ -635,6 +713,11 @@ pub fn apply_enable(frame: &Frame, enable: Enable, available: bool) {
 	let Some(menu_bar) = frame.get_menu_bar() else {
 		return;
 	};
+	apply_enable_to(&menu_bar, enable, available);
+}
+
+/// [`apply_enable`] for a menu bar that is not attached to a frame yet.
+pub fn apply_enable_to(menu_bar: &MenuBar, enable: Enable, available: bool) {
 	for command in COMMANDS.iter().filter(|command| command.enable == enable) {
 		menu_bar.enable_item(command.id(), available);
 	}
@@ -661,6 +744,12 @@ mod tests {
 		for command in COMMANDS {
 			assert!(find(command.id()).is_some(), "{:?} is not reachable by its own id", command.action);
 		}
+	}
+
+	#[test]
+	fn clear_recent_documents_needs_recent_documents() {
+		let command = for_action(ActionId::ClearRecentDocuments).unwrap();
+		assert_eq!(command.enable, Enable::HasRecentDocuments);
 	}
 
 	/// A command whose id came back as the fallback would collide with anything else that

@@ -1,8 +1,8 @@
 //! Filesystem helpers shared by unit tests.
 //!
 //! Parsers take a path rather than bytes, so testing one means putting a real file on disk.
-//! Several test modules had grown their own `unique_temp_path` for that; this is the one
-//! implementation, and unlike those it removes what it created when the test ends.
+//! These helpers are the one implementation of that, and they remove what they create when the
+//! test ends.
 
 use std::{
 	env, fs,
@@ -14,7 +14,7 @@ use std::{
 
 /// A uniquely named directory under the system temp dir, deleted when the guard drops.
 ///
-/// Bind it to a variable for the lifetime of the test — `let _dir = TempDir::new(..)` drops
+/// Bind it to a variable for the lifetime of the test. `let _dir = TempDir::new(..)` drops
 /// immediately and takes the files with it.
 pub struct TempDir {
 	path: PathBuf,

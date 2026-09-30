@@ -33,6 +33,10 @@ fn tables_entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	commands::menu_entries(&[ActionId::PreviousTable, ActionId::NextTable], config)
 }
 
+fn formula_entries(config: &ConfigManager) -> Vec<MenuEntry> {
+	commands::menu_entries(&[ActionId::PreviousFormula, ActionId::NextFormula], config)
+}
+
 fn separators_entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	commands::menu_entries(&[ActionId::PreviousSeparator, ActionId::NextSeparator], config)
 }
@@ -145,6 +149,16 @@ fn create_tables_submenu(config: &ConfigManager) -> Menu {
 
 fn append_tables_items(menu: &Menu, config: &ConfigManager) {
 	let entries = tables_entries(config);
+	append_menu_entries(menu, &entries);
+}
+
+fn create_formulas_submenu(config: &ConfigManager) -> Menu {
+	let entries = formula_entries(config);
+	build_menu(&entries)
+}
+
+fn append_formula_items(menu: &Menu, config: &ConfigManager) {
+	let entries = formula_entries(config);
 	append_menu_entries(menu, &entries);
 }
 
@@ -282,6 +296,11 @@ pub fn create_go_menu(config: &ConfigManager, compact: bool) -> Menu {
 		// TRANSLATORS: Status-bar help text for the Go > Tables submenu.
 		let tables_help = t("Navigate by tables");
 		menu.append_submenu(create_tables_submenu(config), &tables_label, &tables_help);
+		// TRANSLATORS: Label for the Formulas submenu in the compact Go menu.
+		let formulas_label = t("For&mulas");
+		// TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
+		let formulas_help = t("Navigate by formulas");
+		menu.append_submenu(create_formulas_submenu(config), &formulas_label, &formulas_help);
 		// TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 		let separators_label = t("&Separators");
 		// TRANSLATORS: Status-bar help text for the Go > Separators submenu.
@@ -314,6 +333,8 @@ pub fn create_go_menu(config: &ConfigManager, compact: bool) -> Menu {
 		menu.append_separator();
 		append_tables_items(&menu, config);
 		menu.append_separator();
+		append_formula_items(&menu, config);
+		menu.append_separator();
 		append_separators_items(&menu, config);
 		menu.append_separator();
 		append_lists_items(&menu, config);
@@ -344,6 +365,8 @@ mod tests {
 			ActionId::NextFigure,
 			ActionId::PreviousTable,
 			ActionId::NextTable,
+			ActionId::PreviousFormula,
+			ActionId::NextFormula,
 			ActionId::PreviousSeparator,
 			ActionId::NextSeparator,
 			ActionId::PreviousList,

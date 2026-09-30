@@ -14,12 +14,12 @@ use crate::audio_player::AudioPlayer;
 /// [`persist_navigation_history`]. Kept as an owned tuple (rather than borrowing
 /// from the tab) so it can outlive the `DocumentManager` lock: callers build it
 /// while a tab is borrowed, drop the lock, then persist it against `config`.
-type HistoryUpdate = (String, Vec<i64>, usize);
+pub(super) type HistoryUpdate = (String, Vec<i64>, usize);
 
 /// Snapshots `tab`'s current position history as a [`HistoryUpdate`], if `tab.track`
 /// is set. Use this when the caller has already updated the history itself (e.g. via
 /// `history_go_forward`/`history_go_back`, which navigate *within* existing history
-/// rather than recording a new entry) — for the common "record a new position, then
+/// rather than recording a new entry). For the common "record a new position, then
 /// snapshot" case, use [`record_history`] or [`move_to_offset_and_record_history`]
 /// instead.
 fn tracked_history_update(tab: &DocumentTab) -> Option<HistoryUpdate> {
@@ -30,11 +30,11 @@ fn tracked_history_update(tab: &DocumentTab) -> Option<HistoryUpdate> {
 	Some((tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index))
 }
 
-/// Records `offset` as a new entry in `tab`'s position history and returns the
-/// resulting snapshot unconditionally. Callers that should only persist it when
-/// `tab.track` is set (most callers) should gate with `tab.track.then_some(update)`.
-fn record_history(tab: &mut DocumentTab, offset: i64) -> HistoryUpdate {
-	tab.session.check_and_record_history(offset);
+/// Records a jump from `from` to `to` in `tab`'s position history and returns the resulting
+/// snapshot unconditionally. Callers that should only persist it when `tab.track` is set
+/// (most callers) should gate with `tab.track.then_some(update)`.
+fn record_history(tab: &mut DocumentTab, from: i64, to: i64) -> HistoryUpdate {
+	tab.session.record_jump(from, to);
 	let (history, history_index) = tab.session.get_history();
 	(tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index)
 }
@@ -136,13 +136,18 @@ pub fn select_doc_range(tab: &mut DocumentTab, start: i64, end: i64) {
 	seek_audio_to_position(tab, start);
 }
 
-/// Moves the caret to `offset`, focuses the document, shows the position, and
-/// records the jump in the session's position history. Returns the resulting
-/// history snapshot unconditionally — gate on `tab.track` at the call site if the
-/// update should only be persisted when history tracking is enabled for this tab.
+/// Moves the caret to `offset`, focuses the document, shows the position, and records the
+/// jump in the session's position history. Returns the resulting history snapshot
+/// unconditionally; gate on `tab.track` at the call site if the update should only be
+/// persisted when history tracking is enabled for this tab.
+///
+/// Where the caret was is read before it moves, because that is the position going back has
+/// to return to. #835: recording it from anywhere else lands the reader at the top of
+/// whatever section they had jumped into last, rather than at the line they left.
 pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> HistoryUpdate {
+	let from = doc_caret(tab);
 	jump_to_doc_offset(tab, offset);
-	record_history(tab, offset)
+	record_history(tab, from, offset)
 }
 
 /// Keeps a document's audio in step with the caret, called after every jump that moves the
@@ -170,6 +175,7 @@ pub enum MarkerNavTarget {
 	Heading(i32),
 	Link,
 	Table,
+	Formula,
 	Separator,
 	List,
 	ListItem,
@@ -272,6 +278,16 @@ fn nav_announcements(target: MarkerNavTarget, level_filter: i32) -> NavAnnouncem
 			not_found_next: t("No next table."),
 			// TRANSLATORS: Announced when there is no previous table from the current position
 			not_found_prev: t("No previous table."),
+			format: NavFoundFormat::TextOnly,
+		},
+		MarkerNavTarget::Formula => NavAnnouncements {
+			// TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
+			not_supported: t("No formulas."),
+			// TRANSLATORS: Announcement when there is no next formula to navigate to
+			not_found_next: t("No next formula."),
+			// TRANSLATORS: Announcement when there is no previous formula to navigate to
+			not_found_prev: t("No previous formula."),
+			// The marker text is the formula's AsciiMath rendering; announce it as-is.
 			format: NavFoundFormat::TextOnly,
 		},
 		MarkerNavTarget::Separator => NavAnnouncements {
@@ -415,7 +431,6 @@ pub fn handle_history_navigation(
 			// TRANSLATORS: Announced when moving forward/backward through the caret position history
 			let message = if forward { t("Navigated to next position.") } else { t("Navigated to previous position.") };
 			jump_to_doc_offset(tab, result.offset);
-			tab.session.set_stable_position(result.offset);
 			let history_update = tracked_history_update(tab);
 			(message, history_update)
 		} else {
@@ -449,6 +464,7 @@ pub fn handle_marker_navigation(
 			MarkerNavTarget::Heading(level) => tab.session.navigate_heading(current_pos, wrap, next, level),
 			MarkerNavTarget::Link => tab.session.navigate_link(current_pos, wrap, next),
 			MarkerNavTarget::Table => tab.session.navigate_table(current_pos, wrap, next),
+			MarkerNavTarget::Formula => tab.session.navigate_formula(current_pos, wrap, next),
 			MarkerNavTarget::Separator => tab.session.navigate_separator(current_pos, wrap, next),
 			MarkerNavTarget::List => tab.session.navigate_list(current_pos, wrap, next),
 			MarkerNavTarget::ListItem => tab.session.navigate_list_item(current_pos, wrap, next),
@@ -457,7 +473,7 @@ pub fn handle_marker_navigation(
 		};
 		let target_offset = result.offset;
 		if apply_navigation_result(tab, &result, target, next, live_region_label) {
-			let update = record_history(tab, target_offset);
+			let update = record_history(tab, current_pos, target_offset);
 			tab.track.then_some(update)
 		} else {
 			None
@@ -523,33 +539,39 @@ pub fn selected_range(text_ctrl: TextCtrl) -> (i64, i64) {
 
 /// How long after a jump the interrupting announcement is raised.
 ///
-/// The interrupt must land after NVDA has started the focus-return chain — if it fires
-/// before, the chain reads over the announcement instead — but as close to the chain's
+/// The interrupt must land after NVDA has started the focus-return chain (if it fires
+/// before, the chain reads over the announcement instead), but as close to the chain's
 /// start as possible, so as little of it escapes before the cut. NVDA's own find dialog
 /// uses 100ms; Paperback's chain starts quickly, and 30ms was chosen by binary search on
 /// the Find dialog (60ms left a barely-audible sliver of the chain, 10ms occasionally let
 /// the full chain through after the announcement, 0ms always did).
 const FOCUS_CHAIN_INTERRUPT_DELAY_MS: i32 = 30;
 
-/// Announces `message` shortly after a dialog closes, so it cuts off the focus-chain
-/// announcement the screen reader starts when focus returns to the book.
+/// Announces `message` shortly after whatever the reader just did, so it cuts off the
+/// focus-chain announcement the screen reader starts when focus returns to the book.
 ///
-/// The one-shot `wxTimer` is kept alive through its single tick by the `Rc`/`RefCell` it
-/// hands its own callback: the tick clears the cell, which drops the timer and destroys
-/// the native timer. If the timer cannot be armed, fall back to announcing immediately
-/// rather than silently dropping the message.
-#[allow(clippy::needless_pass_by_value)]
-pub fn announce_after_delay(frame: &Frame, live_region_label: StaticText, message: String) {
-	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
+/// Every announcement goes through this. A message raised the moment a command runs is spoken
+/// before the screen reader has noticed the focus change that closing a menu or a dialog causes,
+/// and the chain that follows reads straight over it: that is why choosing Play from the menu
+/// read the book's title instead of "This document has no audio".
+///
+/// The timer hangs off the live region itself rather than the frame, so a handler that never
+/// sees the window can still announce. The one-shot `wxTimer` is kept alive through its single
+/// tick by the `Rc`/`RefCell` it hands its own callback: the tick clears the cell, which drops
+/// the timer and destroys the native timer. If the timer cannot be armed, fall back to
+/// announcing immediately rather than silently dropping the message.
+pub fn announce(live_region_label: StaticText, message: impl AsRef<str>) {
+	let message = message.as_ref();
+	let timer_holder: Rc<RefCell<Option<Timer<StaticText>>>> = Rc::new(RefCell::new(None));
 	let holder = Rc::clone(&timer_holder);
-	let timer = Timer::new(frame);
-	let announce = message.clone();
+	let timer = Timer::new(&live_region_label);
+	let announce = message.to_string();
 	timer.on_tick(move |_event| {
 		live_region::announce(live_region_label, &announce);
 		*holder.borrow_mut() = None;
 	});
 	if !timer.start(FOCUS_CHAIN_INTERRUPT_DELAY_MS, true) {
-		live_region::announce(live_region_label, &message);
+		live_region::announce(live_region_label, message);
 		return;
 	}
 	*timer_holder.borrow_mut() = Some(timer);

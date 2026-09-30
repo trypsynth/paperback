@@ -6,13 +6,19 @@ use super::XmlToText;
 use crate::{
 	parser::{
 		convert::{
-			block_elements::is_block_element, format_spans::FormatKind, line_builder::LineBuilder,
-			list_style::ListStyle, table_text::table_render_bundle,
+			block_elements::is_block_element,
+			format_spans::FormatKind,
+			formula::{formula_text, is_xml_formula, xml_formula_fragment},
+			line_builder::LineBuilder,
+			list_style::ListStyle,
+			table_text::table_render_bundle,
 		},
 		util::xml::collect_element_text,
 	},
 	t,
-	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo},
+	types::{
+		FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo,
+	},
 	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
 
@@ -25,7 +31,8 @@ impl XmlToText {
 					return;
 				}
 				if let Some(target) = self.position_watch
-					&& self.in_body && self.text.get_current_text_position() <= target
+					&& self.in_body
+					&& self.text.get_current_text_position() <= target
 				{
 					self.watched_byte_offset = Some(node.range().start);
 				}
@@ -91,6 +98,12 @@ impl XmlToText {
 		}
 		if Self::tag_is(tag_name, "table") {
 			self.handle_table_xml(node);
+			return true;
+		}
+		if is_xml_formula(node) {
+			if self.in_body {
+				self.handle_formula_xml(node);
+			}
 			return true;
 		}
 		if Self::tag_is(tag_name, "hr") && self.in_body {
@@ -172,7 +185,7 @@ impl XmlToText {
 				let image_text = format!("[{label}: {description}]");
 				let offset = self.text.get_current_text_position();
 				self.text.current_line.push_str(&image_text);
-				let info = ImageInfo { offset, alt_text: description };
+				let info = ImageInfo { offset, alt_text: description, length: display_len(&image_text) };
 				if is_figure {
 					self.figures.push(info);
 				} else {
@@ -181,6 +194,26 @@ impl XmlToText {
 			}
 		}
 		skip_children
+	}
+
+	fn handle_formula_xml(&mut self, node: Node<'_, '_>) {
+		let mathml = xml_formula_fragment(node);
+		let Some(rendered) = formula_text(&mathml, node.attribute("alttext"), || collect_element_text(node)) else {
+			return;
+		};
+		let block = node.attribute("display") == Some("block");
+		if block {
+			self.text.finalize_current_line();
+		}
+		let offset = self.text.get_current_text_position();
+		self.resync_id_position(node, offset);
+		self.record_descendant_ids(node, offset);
+		let length = display_len(&rendered);
+		self.text.current_line.push_str(&rendered);
+		if block {
+			self.text.finalize_current_line();
+		}
+		self.formulas.push(FormulaInfo { offset, text: rendered, mathml, length });
 	}
 
 	fn handle_table_xml(&mut self, node: Node<'_, '_>) {

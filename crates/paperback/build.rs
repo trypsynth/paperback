@@ -18,11 +18,17 @@ mod version;
 #[path = "build/windows.rs"]
 mod windows;
 
-use std::env;
+use std::{
+	env,
+	path::{Path, PathBuf},
+};
 
 fn main() {
 	paths::track_packaging_inputs();
 	translations::build();
+	let translators = PathBuf::from(env::var("OUT_DIR").unwrap_or_default()).join("translators.rs");
+	patois_build::credits::write_translators_module(Path::new("../../po"), &translators)
+		.expect("writing the translator credits");
 	pdfium::copy_dll();
 	docs::build();
 	installer::configure();

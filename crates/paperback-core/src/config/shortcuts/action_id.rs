@@ -11,6 +11,7 @@ pub enum ActionId {
 	CloseAll,
 	ReopenLastClosed,
 	ShowAllRecentDocuments,
+	ClearRecentDocuments,
 	Exit,
 	Find,
 	FindNext,
@@ -57,6 +58,8 @@ pub enum ActionId {
 	NextFigure,
 	PreviousTable,
 	NextTable,
+	PreviousFormula,
+	NextFormula,
 	PreviousSeparator,
 	NextSeparator,
 	PreviousList,
@@ -74,15 +77,21 @@ pub enum ActionId {
 	ViewSource,
 	ToggleBookmark,
 	BookmarkWithNote,
+	SetSelectionStart,
+	CopyFromSelectionStart,
+	JumpToSelectionStart,
 	ToggleWordWrap,
 	PlayPauseAudio,
 	SeekAudioForward,
 	SeekAudioBackward,
 	IncreaseAudioSeekAmount,
 	DecreaseAudioSeekAmount,
+	IncreaseAudioSpeed,
+	DecreaseAudioSpeed,
 	ToggleFullScreen,
 	Options,
 	SleepTimer,
+	BatchOcr,
 	CustomizeShortcuts,
 	ImportDocumentData,
 	ExportDocumentData,
@@ -104,6 +113,7 @@ impl ActionId {
 			Self::CloseAll,
 			Self::ReopenLastClosed,
 			Self::ShowAllRecentDocuments,
+			Self::ClearRecentDocuments,
 			Self::Exit,
 			Self::Find,
 			Self::FindNext,
@@ -150,6 +160,8 @@ impl ActionId {
 			Self::NextFigure,
 			Self::PreviousTable,
 			Self::NextTable,
+			Self::PreviousFormula,
+			Self::NextFormula,
 			Self::PreviousSeparator,
 			Self::NextSeparator,
 			Self::PreviousList,
@@ -167,15 +179,21 @@ impl ActionId {
 			Self::ViewSource,
 			Self::ToggleBookmark,
 			Self::BookmarkWithNote,
+			Self::SetSelectionStart,
+			Self::CopyFromSelectionStart,
+			Self::JumpToSelectionStart,
 			Self::ToggleWordWrap,
 			Self::PlayPauseAudio,
 			Self::SeekAudioForward,
 			Self::SeekAudioBackward,
 			Self::IncreaseAudioSeekAmount,
 			Self::DecreaseAudioSeekAmount,
+			Self::IncreaseAudioSpeed,
+			Self::DecreaseAudioSpeed,
 			Self::ToggleFullScreen,
 			Self::Options,
 			Self::SleepTimer,
+			Self::BatchOcr,
 			Self::CustomizeShortcuts,
 			Self::ImportDocumentData,
 			Self::ExportDocumentData,
@@ -197,6 +215,7 @@ impl ActionId {
 			| Self::CloseAll
 			| Self::ReopenLastClosed
 			| Self::ShowAllRecentDocuments
+			| Self::ClearRecentDocuments
 			| Self::Exit => ShortcutCategory::File,
 			Self::Find
 			| Self::FindNext
@@ -243,6 +262,8 @@ impl ActionId {
 			| Self::NextFigure
 			| Self::PreviousTable
 			| Self::NextTable
+			| Self::PreviousFormula
+			| Self::NextFormula
 			| Self::PreviousSeparator
 			| Self::NextSeparator
 			| Self::PreviousList
@@ -260,15 +281,21 @@ impl ActionId {
 			| Self::ViewSource
 			| Self::ToggleBookmark
 			| Self::BookmarkWithNote
+			| Self::SetSelectionStart
+			| Self::CopyFromSelectionStart
+			| Self::JumpToSelectionStart
 			| Self::ToggleWordWrap
 			| Self::PlayPauseAudio
 			| Self::SeekAudioForward
 			| Self::SeekAudioBackward
 			| Self::IncreaseAudioSeekAmount
 			| Self::DecreaseAudioSeekAmount
+			| Self::IncreaseAudioSpeed
+			| Self::DecreaseAudioSpeed
 			| Self::ToggleFullScreen
 			| Self::Options
 			| Self::SleepTimer
+			| Self::BatchOcr
 			| Self::CustomizeShortcuts
 			| Self::ImportDocumentData
 			| Self::ExportDocumentData
@@ -293,6 +320,8 @@ impl ActionId {
 			Self::ReopenLastClosed => crate::t("Reopen Last Closed"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ShowAllRecentDocuments => crate::t("Show All Recent Documents..."),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::ClearRecentDocuments => crate::t("Clear Recent Documents"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::Exit => crate::t("Exit"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -385,6 +414,10 @@ impl ActionId {
 			Self::PreviousTable => crate::t("Previous Table"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::NextTable => crate::t("Next Table"),
+			// TRANSLATORS: Shortcut action to move to the previous formula
+			Self::PreviousFormula => crate::t("Previous Formula"),
+			// TRANSLATORS: Shortcut action to move to the next formula
+			Self::NextFormula => crate::t("Next Formula"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::PreviousSeparator => crate::t("Previous Separator"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -420,6 +453,12 @@ impl ActionId {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::BookmarkWithNote => crate::t("Bookmark with Note"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::SetSelectionStart => crate::t("Set Selection Start"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::CopyFromSelectionStart => crate::t("Copy from Selection Start"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::JumpToSelectionStart => crate::t("Jump to Selection Start"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ToggleWordWrap => crate::t("Toggle Word Wrap"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::PlayPauseAudio => crate::t("Play/Pause Audio"),
@@ -432,11 +471,17 @@ impl ActionId {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::DecreaseAudioSeekAmount => crate::t("Decrease Audio Seek Amount"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::IncreaseAudioSpeed => crate::t("Increase Audio Speed"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::DecreaseAudioSpeed => crate::t("Decrease Audio Speed"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ToggleFullScreen => crate::t("Full Screen"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::Options => crate::t("Settings..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::SleepTimer => crate::t("Sleep Timer..."),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::BatchOcr => crate::t("Batch OCR..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::CustomizeShortcuts => crate::t("Customize Keyboard Shortcuts..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -470,6 +515,7 @@ impl ActionId {
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "W")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
 			Self::ShowAllRecentDocuments => Some(KeyChord::new(true, false, false, "R")),
+			Self::ClearRecentDocuments => None,
 			Self::Exit => None,
 			Self::Find => Some(KeyChord::new(true, false, false, "F")),
 			Self::FindNext => Some(KeyChord::new(true, false, false, "G")),
@@ -516,6 +562,8 @@ impl ActionId {
 			Self::NextFigure => Some(KeyChord::new(false, false, false, "F")),
 			Self::PreviousTable => Some(KeyChord::new(false, false, true, "T")),
 			Self::NextTable => Some(KeyChord::new(false, false, false, "T")),
+			Self::PreviousFormula => Some(KeyChord::new(false, false, true, "M")),
+			Self::NextFormula => Some(KeyChord::new(false, false, false, "M")),
 			Self::PreviousSeparator => Some(KeyChord::new(false, false, true, "S")),
 			Self::NextSeparator => Some(KeyChord::new(false, false, false, "S")),
 			Self::PreviousList => Some(KeyChord::new(false, false, true, "L")),
@@ -533,12 +581,21 @@ impl ActionId {
 			Self::ViewSource => Some(KeyChord::new(true, false, false, "U")),
 			Self::ToggleBookmark => Some(KeyChord::new(true, false, true, "B")),
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
+			// Option+F9/F10 is a media key chord on an Apple keyboard, and the system eats it
+			// before wx sees it, so the Cmd forms are what actually reach the app here.
+			Self::SetSelectionStart => Some(KeyChord::new(true, false, false, "F9")),
+			Self::CopyFromSelectionStart => Some(KeyChord::new(true, false, false, "F10")),
+			Self::JumpToSelectionStart => Some(KeyChord::new(true, false, true, "F9")),
 			Self::ToggleWordWrap => Some(KeyChord::new(true, true, false, "W")),
 			Self::PlayPauseAudio => Some(KeyChord::new_raw_ctrl(true, false, false, "Space")),
 			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),
 			Self::DecreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, ";")),
+			// Plain Shift+,/. (< and >) are already Container Start/End, so speed takes the
+			// same pair with Ctrl added.
+			Self::IncreaseAudioSpeed => Some(KeyChord::new(true, false, true, ".")),
+			Self::DecreaseAudioSpeed => Some(KeyChord::new(true, false, true, ",")),
 			// The conventional shortcut is Control+Command+F; RawCtrl forces the
 			// physical Control key while plain Ctrl auto-translates to Command on mac.
 			Self::ToggleFullScreen => {
@@ -546,6 +603,7 @@ impl ActionId {
 			}
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
+			Self::BatchOcr => Some(KeyChord::new(true, false, true, "O")),
 			Self::CustomizeShortcuts => None,
 			Self::ImportDocumentData => Some(KeyChord::new(true, false, true, "I")),
 			Self::ExportDocumentData => Some(KeyChord::new(true, false, true, "E")),
@@ -565,6 +623,7 @@ impl ActionId {
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "F4")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
 			Self::ShowAllRecentDocuments => Some(KeyChord::new(true, false, false, "R")),
+			Self::ClearRecentDocuments => None,
 			Self::Exit => Some(KeyChord::new(true, false, false, "Q")),
 			Self::Find => Some(KeyChord::new(true, false, false, "F")),
 			Self::FindNext => Some(KeyChord::new(false, false, false, "F3")),
@@ -611,6 +670,8 @@ impl ActionId {
 			Self::NextFigure => Some(KeyChord::new(false, false, false, "F")),
 			Self::PreviousTable => Some(KeyChord::new(false, false, true, "T")),
 			Self::NextTable => Some(KeyChord::new(false, false, false, "T")),
+			Self::PreviousFormula => Some(KeyChord::new(false, false, true, "M")),
+			Self::NextFormula => Some(KeyChord::new(false, false, false, "M")),
 			Self::PreviousSeparator => Some(KeyChord::new(false, false, true, "S")),
 			Self::NextSeparator => Some(KeyChord::new(false, false, false, "S")),
 			Self::PreviousList => Some(KeyChord::new(false, false, true, "L")),
@@ -628,15 +689,25 @@ impl ActionId {
 			Self::ViewSource => Some(KeyChord::new(true, false, false, "U")),
 			Self::ToggleBookmark => Some(KeyChord::new(true, false, true, "B")),
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
+			// Shift+F10 is the context menu (and Windows' context-menu key), so this pair is on
+			// Alt instead, which is free apart from Alt+Left/Right in the navigation history.
+			Self::SetSelectionStart => Some(KeyChord::new(false, true, false, "F9")),
+			Self::CopyFromSelectionStart => Some(KeyChord::new(false, true, false, "F10")),
+			Self::JumpToSelectionStart => Some(KeyChord::new(false, true, true, "F9")),
 			Self::ToggleWordWrap => Some(KeyChord::new(true, true, false, "W")),
 			Self::PlayPauseAudio => Some(KeyChord::new(true, false, false, "Space")),
 			Self::SeekAudioForward => Some(KeyChord::new(false, false, false, "'")),
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),
 			Self::DecreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, ";")),
+			// Plain Shift+,/. (< and >) are already Container Start/End, so speed takes the
+			// same pair with Ctrl added.
+			Self::IncreaseAudioSpeed => Some(KeyChord::new(true, false, true, ".")),
+			Self::DecreaseAudioSpeed => Some(KeyChord::new(true, false, true, ",")),
 			Self::ToggleFullScreen => Some(KeyChord::new(false, false, false, "F11")),
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
+			Self::BatchOcr => Some(KeyChord::new(true, false, true, "O")),
 			Self::CustomizeShortcuts => None,
 			Self::ImportDocumentData => Some(KeyChord::new(true, false, true, "I")),
 			Self::ExportDocumentData => Some(KeyChord::new(true, false, true, "E")),

@@ -48,22 +48,30 @@ pub(crate) fn translatable_crate_src_dirs(root: &Path) -> Result<Vec<PathBuf>, B
 	Ok(dirs)
 }
 
-/// Resolve `package_name`'s version via `cargo metadata`, which correctly follows
-/// `version.workspace = true` inheritance from the workspace root. Hand-parsing the crate's
-/// own `Cargo.toml` instead would just find no literal `version = "..."` line and silently
-/// produce a wrong default.
-pub(crate) fn crate_version(root: &Path, package_name: &str) -> Result<String, Box<dyn Error>> {
-	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-	let output =
-		Command::new(&cargo).args(["metadata", "--format-version", "1", "--no-deps"]).current_dir(root).output()?;
-	if !output.status.success() {
-		return Err("cargo metadata failed".into());
+pub(crate) use shipfitter::package::crate_version;
+
+/// Builds paperback-core for the host and returns the shared library uniffi reads its interface
+/// from.
+///
+/// The bindings used to be generated from a `.udl` file. They now come from the compiled
+/// library, which carries the interface as metadata, so there is one description of the FFI
+/// rather than a Rust one and an IDL one kept in step by hand.
+pub fn build_host_ffi_library(cargo: &str) -> Result<PathBuf, Box<dyn Error>> {
+	let status = Command::new(cargo)
+		.current_dir(project_root())
+		// Debug, not release: uniffi reads the interface out of the library's symbols, and the
+		// release profile strips them. This build exists only to be read, never to be shipped.
+		.args(["build", "-p", "paperback-core", "--features", "uniffi", "--lib"])
+		.status()?;
+	if !status.success() {
+		return Err("building paperback-core for the host failed".into());
 	}
-	let meta: serde_json::Value = serde_json::from_slice(&output.stdout)?;
-	meta["packages"]
-		.as_array()
-		.and_then(|packages| packages.iter().find(|p| p["name"] == package_name))
-		.and_then(|p| p["version"].as_str())
-		.map(str::to_string)
-		.ok_or_else(|| format!("cargo metadata: package {package_name} not found").into())
+	let dir = project_root().join("target/debug");
+	for name in ["paperback_core.dll", "libpaperback_core.dylib", "libpaperback_core.so"] {
+		let candidate = dir.join(name);
+		if candidate.exists() {
+			return Ok(candidate);
+		}
+	}
+	Err(format!("no host library for paperback-core under {}", dir.display()).into())
 }
