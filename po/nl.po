@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 14:16+0000\n"
+"POT-Creation-Date: 2026-09-30 16:44+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -708,6 +708,11 @@ msgstr "&Eerste pagina:"
 msgid "&End page:"
 msgstr "&Laatste pagina:"
 
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+#, fuzzy
+msgid "&Include text pages too"
+msgstr "&Tekstpagina's ook opnemen"
+
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
 msgstr "OCR"
@@ -1108,6 +1113,11 @@ msgstr "Stabiel"
 msgid "Dev"
 msgstr "Ontwikkel"
 
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+#, fuzzy
+msgid "Log Level:"
+msgstr "Logniveau:"
+
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
 msgstr "&Venstersneltoets aanpassen..."
@@ -1224,6 +1234,36 @@ msgstr "Leesbaarheid"
 #. TRANSLATORS: Title of the system dialog for picking a background colour
 msgid "Choose a colour"
 msgstr "Kleur kiezen"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+#, fuzzy
+msgid "Off"
+msgstr "Uit"
+
+#. TRANSLATORS: Log level choice that records only errors
+#, fuzzy
+msgid "Errors"
+msgstr "Fouten"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+#, fuzzy
+msgid "Warnings"
+msgstr "Waarschuwingen"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+#, fuzzy
+msgid "Information"
+msgstr "Informatie"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+#, fuzzy
+msgid "Debug"
+msgstr "Foutopsporing"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+#, fuzzy
+msgid "Trace"
+msgstr "Trace"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
