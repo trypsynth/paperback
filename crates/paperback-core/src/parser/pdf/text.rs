@@ -199,7 +199,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 	if !current_chars.is_empty() {
 		result.push(measure_line(text_page, &current_chars));
 	}
-	result
+	restore_reading_order(result)
 }
 
 /// The top edge of a line, in PDF user units, taken from its first character. Y grows up the
@@ -320,9 +320,131 @@ pub(super) fn median_line_font_size(line_infos: &[Line]) -> f64 {
 	sorted_median(&mut sizes)
 }
 
+/// How far above a page's first line other text has to sit, as a share of the height its text spans, before the page counts as drawn out of order. A running header drawn after the body sits well inside this, and a second column starts about where the first did.
+const OUT_OF_ORDER_SHARE: f64 = 0.25;
+
+/// Puts a page whose content stream starts partway down it back into top-down order. Some form generators draw the lower half of a page first, and an untagged page has only the stream to go on, so the form read from its middle. Only such a page is touched, and it is reordered by region, each a stretch the stream draws without leaving that part of the page, kept whole and placed by where it starts: every page drawn in order, columns included, comes back unchanged.
+fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
+	// A line with no position, such as an empty one, says nothing about the order and travels with the run it is drawn in.
+	let placed = |line: &&Line| line.top.is_finite() && line.bottom.is_finite();
+	let Some(first) = lines.iter().find(placed) else { return lines };
+	let highest = lines.iter().filter(placed).map(|line| line.top).fold(f64::MIN, f64::max);
+	let lowest = lines.iter().filter(placed).map(|line| line.bottom).fold(f64::MAX, f64::min);
+	let far = (highest - lowest) * OUT_OF_ORDER_SHARE;
+	if far <= 0.0 || highest - first.top < far {
+		return lines;
+	}
+	let mut runs: Vec<(f64, Vec<Line>)> = Vec::new();
+	for line in lines {
+		// Only a jump across a good part of the page, up or down, leaves one region of it for another. A form steps back up a line or two all the time within a row, and the footer is drawn straight after whatever comes before it.
+		let previous = runs.last().and_then(|(_, run)| run.iter().rev().find(placed));
+		let jumps = placed(&&line) && previous.is_none_or(|prev| (line.top - prev.top).abs() > far);
+		match runs.last_mut() {
+			Some((_, run)) if !jumps => run.push(line),
+			_ => runs.push((if placed(&&line) { line.top } else { f64::MAX }, vec![line])),
+		}
+	}
+	runs.sort_by(|a, b| b.0.total_cmp(&a.0));
+	runs.into_iter().flat_map(|(_, run)| run).collect()
+}
+
 #[cfg(test)]
 mod tests {
-	use super::{CharBox, ends_line, looks_monospaced, sanitize_pdf_text, space_is_invisible};
+	use super::{
+		CharBox, Line, ends_line, looks_monospaced, restore_reading_order, sanitize_pdf_text, space_is_invisible,
+	};
+
+	fn line(text: &str, top: f64) -> Line {
+		Line { text: text.to_string(), size: 10.0, top, bottom: top - 10.0, monospaced: false }
+	}
+
+	fn texts(lines: &[Line]) -> Vec<&str> {
+		lines.iter().map(|line| line.text.as_str()).collect()
+	}
+
+	#[test]
+	fn a_page_drawn_top_down_keeps_its_order() {
+		let lines = vec![line("title", 700.0), line("one", 680.0), line("two", 660.0), line("three", 100.0)];
+		assert_eq!(texts(&restore_reading_order(lines)), ["title", "one", "two", "three"]);
+	}
+
+	#[test]
+	fn a_second_column_is_not_moved_ahead_of_the_first() {
+		let lines = vec![
+			line("left 1", 700.0),
+			line("left 2", 400.0),
+			line("left 3", 100.0),
+			line("right 1", 702.0),
+			line("right 2", 400.0),
+		];
+		assert_eq!(texts(&restore_reading_order(lines)), ["left 1", "left 2", "left 3", "right 1", "right 2"]);
+	}
+
+	#[test]
+	fn a_running_header_drawn_last_stays_where_the_stream_put_it() {
+		let lines = vec![line("body 1", 690.0), line("body 2", 400.0), line("body 3", 100.0), line("header", 740.0)];
+		assert_eq!(texts(&restore_reading_order(lines)), ["body 1", "body 2", "body 3", "header"]);
+	}
+
+	/// The shape of the ADA dental claim form: the stream starts at the table halfway down, reaches the bottom, then goes back for the top half, a column at a time, and draws the title last.
+	#[test]
+	fn a_form_drawn_from_its_middle_is_read_from_the_top() {
+		let lines = vec![
+			line("24. Procedure Date", 460.0),
+			line("35. Remarks", 330.0),
+			line("37. Authorize", 240.0),
+			line("48. Name", 130.0),
+			line("1. Type of Transaction", 720.0),
+			line("7. Gender", 610.0),
+			line("M F", 600.0),
+			line("8. Subscriber ID", 612.0),
+			line("11. Other Insurance", 520.0),
+			line("12. Policyholder Name", 690.0),
+			line("23. Patient ID", 500.0),
+			line("© American Dental Association", 40.0),
+			line("Dental Claim Form", 760.0),
+		];
+		assert_eq!(
+			texts(&restore_reading_order(lines)),
+			[
+				"Dental Claim Form",
+				"1. Type of Transaction",
+				"7. Gender",
+				"M F",
+				"8. Subscriber ID",
+				"11. Other Insurance",
+				"12. Policyholder Name",
+				"23. Patient ID",
+				"24. Procedure Date",
+				"35. Remarks",
+				"37. Authorize",
+				"48. Name",
+				"© American Dental Association",
+			]
+		);
+	}
+
+	/// The real form has an empty line with no position in it, which must not stop the page being put in order.
+	#[test]
+	fn a_line_with_no_position_does_not_keep_a_form_out_of_order() {
+		let empty = Line {
+			text: String::new(),
+			size: 0.0,
+			top: f64::NEG_INFINITY,
+			bottom: f64::NEG_INFINITY,
+			monospaced: false,
+		};
+		let lines = vec![
+			line("24. Procedure Date", 450.0),
+			empty,
+			line("35. Remarks", 330.0),
+			line("1. Type of Transaction", 720.0),
+		];
+		assert_eq!(
+			texts(&restore_reading_order(lines)),
+			["1. Type of Transaction", "24. Procedure Date", "", "35. Remarks"]
+		);
+	}
 
 	/// The coordinates below come from what pdfium reports for the PDF attached to #808, so the
 	/// ratios each case turns on are the ones real pages produce.
