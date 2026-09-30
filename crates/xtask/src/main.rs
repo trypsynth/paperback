@@ -2,9 +2,7 @@ use std::{env, error::Error};
 
 mod android;
 mod ios;
-mod po_lint;
 mod pot;
-mod pot_lint;
 mod release;
 mod translate;
 mod workspace;

@@ -1,8 +1,6 @@
 //! Build script for the Paperback desktop app. Everything it actually does lives in the
 //! modules under `build/`; this file only decides what runs, and in what order.
 
-#[path = "build/credits.rs"]
-mod credits;
 #[path = "build/docs.rs"]
 mod docs;
 #[path = "build/installer.rs"]
@@ -20,12 +18,17 @@ mod version;
 #[path = "build/windows.rs"]
 mod windows;
 
-use std::env;
+use std::{
+	env,
+	path::{Path, PathBuf},
+};
 
 fn main() {
 	paths::track_packaging_inputs();
 	translations::build();
-	credits::build();
+	let translators = PathBuf::from(env::var("OUT_DIR").unwrap_or_default()).join("translators.rs");
+	patois_build::credits::write_translators_module(Path::new("../../po"), &translators)
+		.expect("writing the translator credits");
 	pdfium::copy_dll();
 	docs::build();
 	installer::configure();

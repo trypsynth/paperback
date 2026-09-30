@@ -2712,9 +2712,9 @@ dependencies = [
 
 [[package]]
 name = "patois-build"
-version = "0.1.14"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6cbe7ee4457e601f05709cb5d40c8735dadfc9ce1f70503cdc52e01b4585678f"
+checksum = "0fa4e15cde2568c2d35e8335a3e705e5072f7dacd6e9f3bfed9f726f7e629d4d"
 dependencies = [
  "serde_json",
 ]
@@ -2728,6 +2728,19 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.6",
+]
+
+[[package]]
+name = "patois-translate"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b61ef604c625cd533dad6df1e2e410f9f32f4baeb1bb983aea1814ab344dec18"
+dependencies = [
+ "patois",
+ "patois-build",
+ "serde",
+ "serde_json",
+ "ureq",
 ]
 
 [[package]]
@@ -5289,7 +5302,7 @@ version = "0.1.0"
 dependencies = [
  "flate2",
  "patois-build",
- "serde",
+ "patois-translate",
  "serde_json",
  "shipfitter",
  "tar",
