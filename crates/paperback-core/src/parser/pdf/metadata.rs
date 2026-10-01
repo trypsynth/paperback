@@ -36,6 +36,12 @@ const AUTHORING_EXTENSIONS: [&str; 12] =
 /// Titles that carry no information, which several tools write when the author never set one.
 const PLACEHOLDER_TITLES: [&str; 5] = ["untitled", "untitled document", "unnamed", "no title", "document1"];
 
+/// Words no book is called on their own, which turn up as a whole title when a tool picks a stray word off a page (#986 had `FROM`). Articles, prepositions and conjunctions only: pronouns name real books (*It*, *Us*, *We*, *Them*), and so does *If—*.
+const FUNCTION_WORDS: [&str; 18] = [
+	"a", "an", "the", "and", "or", "but", "nor", "of", "to", "from", "in", "on", "at", "by", "for", "with", "into",
+	"than",
+];
+
 /// The book's title from the PDF's metadata, ignoring the values that are not titles at all.
 ///
 /// A PDF's `/Title` is whatever produced it chose to put there, and print-production tools
@@ -53,7 +59,7 @@ fn is_not_really_a_title(title: &str) -> bool {
 	if lowered.starts_with("microsoft word - ") || lowered.starts_with("microsoft powerpoint - ") {
 		return true;
 	}
-	if PLACEHOLDER_TITLES.contains(&lowered.as_str()) {
+	if PLACEHOLDER_TITLES.contains(&lowered.as_str()) || FUNCTION_WORDS.contains(&lowered.as_str()) {
 		return true;
 	}
 	AUTHORING_EXTENSIONS.iter().any(|extension| lowered.ends_with(extension))
@@ -78,6 +84,8 @@ mod tests {
 	#[case("Microsoft PowerPoint - deck")]
 	#[case("Untitled")]
 	#[case("untitled document")]
+	#[case("FROM")]
+	#[case("the")]
 	fn a_source_filename_is_not_a_title(#[case] title: &str) {
 		assert!(is_not_really_a_title(title), "{title} should have been rejected");
 	}
@@ -94,6 +102,10 @@ mod tests {
 	#[case("Microsoft Word Step by Step")]
 	#[case("A History of the Doc Holliday Legend")]
 	#[case("Untitled Symphony No. 2")]
+	#[case("It")]
+	#[case("Us")]
+	#[case("If—")]
+	#[case("From Here to Eternity")]
 	fn a_real_title_is_kept(#[case] title: &str) {
 		assert!(!is_not_really_a_title(title), "{title} should have been kept");
 	}
