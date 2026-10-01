@@ -25,7 +25,7 @@ use super::{
 use crate::ipc::IpcCommand;
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
-	updater::{self, MAIN_WINDOW_PTR},
+	updater,
 };
 
 mod menu_events;
@@ -80,7 +80,6 @@ impl MainWindow {
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).build();
 		window_geometry::apply_defaults(&frame);
-		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
 		#[cfg(target_os = "windows")]
 		remember_frame_hwnd(&frame);
 		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
@@ -357,8 +356,8 @@ impl MainWindow {
 		self.doc_manager.lock().unwrap().restore_focus();
 	}
 
-	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
-		updater::run_update_check(silent, channel);
+	pub fn check_for_updates(&self, silent: bool, channel: UpdateChannel) {
+		updater::run_update_check(&self.frame, silent, channel);
 	}
 
 	pub fn open_file(&self, path: &Path) -> bool {

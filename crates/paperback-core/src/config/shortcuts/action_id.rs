@@ -598,9 +598,14 @@ impl ActionId {
 			Self::DecreaseAudioSpeed => Some(KeyChord::new(true, false, true, ",")),
 			// The conventional shortcut is Control+Command+F; RawCtrl forces the
 			// physical Control key while plain Ctrl auto-translates to Command on mac.
-			Self::ToggleFullScreen => {
-				Some(KeyChord { ctrl: true, raw_ctrl: true, alt: false, shift: false, key: "F".to_string() })
-			}
+			Self::ToggleFullScreen => Some(KeyChord {
+				ctrl: true,
+				raw_ctrl: true,
+				alt: false,
+				shift: false,
+				win: false,
+				key: "F".to_string(),
+			}),
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
 			Self::BatchOcr => Some(KeyChord::new(true, false, true, "O")),

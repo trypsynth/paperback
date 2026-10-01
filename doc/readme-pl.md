@@ -173,6 +173,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 ### Dodatkowe klawisze w widoku dokumentu
 
 * `Delete` / `Delete na klawiaturze numerycznej` na kontrolce kart: zamknij kartę wybranego dokumentu.
+* `Ctrl+1` do `Ctrl+9` (macOS: `Cmd+1` do `Cmd+9`) w tekście dokumentu lub na kontrolce kart: przejdź do jednego z pierwszych dziewięciu otwartych dokumentów, w kolejności ich otwarcia.
 * `Enter` albo `Spacja` w tekście dokumentu: otwórz odnośnik, Widok tabeli lub Widok wzoru pod kursorem.
 * `Enter` na zeskanowanej stronie PDF: rozpoznaj tekst na stronie za pomocą OCR.
 * `Shift+F10` albo klawisz Menu/Aplikacje w tekście dokumentu: otwórz menu kontekstowe.

@@ -486,7 +486,7 @@ mod tests {
 	const BODY: f64 = 10.0;
 
 	fn line(text: &str) -> Line {
-		Line { text: text.to_string(), size: BODY, top: 0.0, bottom: 0.0, monospaced: false }
+		Line { text: text.to_string(), size: BODY, top: 0.0, bottom: 0.0, monospaced: false, bold: false }
 	}
 
 	fn page(coverage: f64, lines: &[&str]) -> PageContent {

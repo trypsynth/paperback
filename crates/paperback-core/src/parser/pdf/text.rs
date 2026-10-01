@@ -7,7 +7,7 @@
 //! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by the metadata and
 //! table of contents readers as well.
 
-use std::cmp::Ordering;
+use std::{cell::Cell, cmp::Ordering};
 
 use crate::{
 	parser::util::bidi,
@@ -31,6 +31,8 @@ pub(super) struct Line {
 	/// Whether it is set in a monospaced face, which marks it as something whose own line
 	/// breaks are the content: code, or anything else laid out by column.
 	pub monospaced: bool,
+	/// Whether all of it is set in a bold face, which is how a heading set no larger than the text around it stands out.
+	pub bold: bool,
 }
 
 /// Tolerance, in PDF user units, for calling two baselines or two box edges the same. pdfium
@@ -45,6 +47,8 @@ const NO_ADVANCE_RATIO: f64 = 0.25;
 /// underneath that glyph rather than after it. The same page measured 58% at most for real
 /// spaces (an `f` overhangs the space after it) and 92% at least for the spurious ones.
 const SWALLOWED_RATIO: f64 = 0.8;
+/// How many of a page's spaces are measured to decide whether a covered space means anything there. Enough to see the font's habit, few enough that the pdfium calls stay a fixed cost per page.
+const COVER_SAMPLE: usize = 64;
 
 /// Whether a U+0020 in the text layer renders as no space at all, judged from where pdfium puts
 /// it relative to its neighbours. Both shapes of this reach us as an ordinary space that pdfium
@@ -79,15 +83,21 @@ pub(super) fn space_is_invisible(
 	{
 		return true;
 	}
-	if let Some(prev) = prev_box {
-		let on_the_same_line =
-			prev.bottom <= space_box.bottom + COORDINATE_EPSILON && prev.top >= space_box.top - COORDINATE_EPSILON;
-		let covered_width = prev.right - space_box.left;
-		if on_the_same_line && covered_width >= width * SWALLOWED_RATIO {
-			return true;
-		}
-	}
-	false
+	prev_box.is_some_and(|prev| covers(prev, space_box))
+}
+
+/// Whether `prev`, on the same line, lies over most of `space_box`, the second shape [`space_is_invisible`] looks for.
+fn covers(prev: CharBox, space_box: CharBox) -> bool {
+	let width = space_box.right - space_box.left;
+	let on_the_same_line =
+		prev.bottom <= space_box.bottom + COORDINATE_EPSILON && prev.top >= space_box.top - COORDINATE_EPSILON;
+	let covered_width = prev.right - space_box.left;
+	width > 0.0 && on_the_same_line && covered_width >= width * SWALLOWED_RATIO
+}
+
+/// Whether a space covered by the glyph before it is hidden by that glyph, given how many of a page's measured spaces are covered. A split ligature in front of a space is rare: the PDF of #808 has at most 4% of a page's spaces covered. A font whose glyph boxes are wider than their advances covers nearly all of them, 64% to 91% a page in the PDF of #993, and there being covered says nothing.
+fn covering_hides(covered: usize, measured: usize) -> bool {
+	covered * 4 <= measured
 }
 
 /// The top edge of one character, which is what gives a tagged block the height the structure
@@ -96,20 +106,55 @@ pub(super) fn char_top(text_page: &PdfTextPage, index: i32) -> Option<f64> {
 	text_page.char_box(index).map(|boxed| boxed.top)
 }
 
-/// [`space_is_invisible`] for the space at `index` of `text_page`, fetching only the geometry
-/// each test actually needs. Costs three or four pdfium calls per space character and none at
-/// all for anything else, so a page pays for it in proportion to its spaces rather than its
-/// length - the per-character cost that #747 had to undo.
-pub(super) fn is_invisible_space(text_page: &PdfTextPage, index: i32, char_count: i32) -> bool {
-	let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
-		return false;
-	};
-	let next_origin = if index + 1 < char_count { text_page.char_origin(index + 1) } else { None };
-	if space_is_invisible(origin, space_box, next_origin, None) {
-		return true;
+/// [`space_is_invisible`] for the spaces of one page, fetching only the geometry each test actually needs. Costs three or four pdfium calls per space character and none at all for anything else, so a page pays for it in proportion to its spaces rather than its length - the per-character cost that #747 had to undo.
+pub(super) struct SpaceFilter {
+	char_count: i32,
+	/// [`covering_hides`] for this page, measured the first time a covered space turns up, so a page without one never pays for it.
+	covering_hides: Cell<Option<bool>>,
+}
+
+impl SpaceFilter {
+	pub(super) const fn new(char_count: i32) -> Self {
+		Self { char_count, covering_hides: Cell::new(None) }
 	}
-	let prev_box = if index > 0 { text_page.char_box(index - 1) } else { None };
-	space_is_invisible(origin, space_box, None, prev_box)
+
+	/// Whether the space at `index` of `text_page` renders as no space at all.
+	pub(super) fn hides(&self, text_page: &PdfTextPage, index: i32) -> bool {
+		let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
+			return false;
+		};
+		let next_origin = if index + 1 < self.char_count { text_page.char_origin(index + 1) } else { None };
+		if space_is_invisible(origin, space_box, next_origin, None) {
+			return true;
+		}
+		let prev_box = if index > 0 { text_page.char_box(index - 1) } else { None };
+		space_is_invisible(origin, space_box, None, prev_box) && self.covering_hides(text_page)
+	}
+
+	fn covering_hides(&self, text_page: &PdfTextPage) -> bool {
+		if let Some(hides) = self.covering_hides.get() {
+			return hides;
+		}
+		let (mut measured, mut covered) = (0, 0);
+		for index in 1..self.char_count {
+			if measured == COVER_SAMPLE {
+				break;
+			}
+			if text_page.unicode_at(index) != u32::from(' ') {
+				continue;
+			}
+			let (Some(space_box), Some(prev)) = (text_page.char_box(index), text_page.char_box(index - 1)) else {
+				continue;
+			};
+			measured += 1;
+			if covers(prev, space_box) {
+				covered += 1;
+			}
+		}
+		let hides = covering_hides(covered, measured);
+		self.covering_hides.set(Some(hides));
+		hides
+	}
 }
 
 /// Whether `ch` ends the current visual line. pdfium writes a line break as the pair `"\r\n"`,
@@ -152,6 +197,7 @@ fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	Line {
 		size: line_font_size(text_page, chars),
 		monospaced: line_is_monospaced(text_page, chars),
+		bold: line_is_bold(text_page, chars),
 		text: reorder_run(text_page, chars),
 		top,
 		bottom,
@@ -173,6 +219,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 				top: f64::NEG_INFINITY,
 				bottom: f64::NEG_INFINITY,
 				monospaced: false,
+				bold: false,
 			})
 			.collect();
 	};
@@ -181,6 +228,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 	// reordered visual→logical (handles RTL scripts) before paragraph joining.
 	let mut current_chars: Vec<(char, i32)> = Vec::new();
 	let mut previous_char = None;
+	let spaces = SpaceFilter::new(char_count);
 	for i in 0..char_count {
 		let unicode = text_page.unicode_at(i);
 		let Some(ch) = char::from_u32(unicode) else { continue };
@@ -191,7 +239,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 		} else if ch == '\n' || (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			// The '\n' of a "\r\n" pair, and anything else with no text of its own: dropped, but
 			// still the previous character as far as the next `ends_line` is concerned.
-		} else if ch != ' ' || !is_invisible_space(text_page, i, char_count) {
+		} else if ch != ' ' || !spaces.hides(text_page, i) {
 			current_chars.push((ch, i));
 		}
 		previous_char = Some(ch);
@@ -289,6 +337,33 @@ fn char_is_monospaced(text_page: &PdfTextPage, index: i32) -> bool {
 	looks_monospaced(&font.name)
 }
 
+/// The weight from which a face counts as bold: semibold and up.
+const BOLD_WEIGHT: i32 = 600;
+
+/// Whether a font name belongs to a bold face, for a font whose weight pdfium cannot report. Names come subset-tagged as `ABCDEF+Arial-BoldMT`.
+fn looks_bold(font_name: &str) -> bool {
+	const HINTS: [&str; 5] = ["bold", "black", "heavy", "semibold", "demi"];
+	let name = font_name.rsplit('+').next().unwrap_or(font_name).to_ascii_lowercase();
+	HINTS.iter().any(|hint| name.contains(hint))
+}
+
+fn char_is_bold(text_page: &PdfTextPage, index: i32) -> bool {
+	if let Some(weight) = text_page.font_weight(index) {
+		return weight >= BOLD_WEIGHT;
+	}
+	text_page.font(index).is_some_and(|font| looks_bold(&font.name))
+}
+
+/// Whether a line is set in a bold face throughout, over the same handful of characters the size is measured across. All of them have to be: a paragraph that opens with a bold word is not a heading.
+fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
+	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+	if indices.is_empty() {
+		return false;
+	}
+	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
+	indices.iter().step_by(step).all(|&i| char_is_bold(text_page, i))
+}
+
 /// Whether a line is set in a monospaced face, over the same handful of characters the size is
 /// measured across. Most of them have to agree: one word of code quoted in a sentence of prose
 /// does not make the sentence a listing.
@@ -360,11 +435,12 @@ fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
 #[cfg(test)]
 mod tests {
 	use super::{
-		CharBox, Line, ends_line, looks_monospaced, restore_reading_order, sanitize_pdf_text, space_is_invisible,
+		CharBox, Line, covering_hides, ends_line, looks_monospaced, restore_reading_order, sanitize_pdf_text,
+		space_is_invisible,
 	};
 
 	fn line(text: &str, top: f64) -> Line {
-		Line { text: text.to_string(), size: 10.0, top, bottom: top - 10.0, monospaced: false }
+		Line { text: text.to_string(), size: 10.0, top, bottom: top - 10.0, monospaced: false, bold: false }
 	}
 
 	fn texts(lines: &[Line]) -> Vec<&str> {
@@ -442,6 +518,7 @@ mod tests {
 			top: f64::NEG_INFINITY,
 			bottom: f64::NEG_INFINITY,
 			monospaced: false,
+			bold: false,
 		};
 		let lines = vec![
 			line("24. Procedure Date", 450.0),
@@ -527,6 +604,16 @@ mod tests {
 		// The advance alone looks ordinary here, so only the ligature's box gives it away.
 		assert!(!space_is_invisible((287.34, 387.61), space, Some((290.12, 387.61)), None));
 		assert!(space_is_invisible((287.34, 387.61), space, None, Some(char_box(284.87, 289.77, 387.61, 394.44))));
+	}
+
+	/// Shares of covered spaces measured on pages of both PDFs: #808's, where a covered space is a split ligature, and #993's, whose glyph boxes overhang nearly every space.
+	#[test]
+	fn covering_hides_a_space_only_where_covered_spaces_are_rare() {
+		assert!(covering_hides(4, 229), "#808 page 4");
+		assert!(covering_hides(12, 362), "#808 page 26, its most");
+		assert!(!covering_hides(338, 386), "#993 page 4");
+		assert!(!covering_hides(95, 153), "#993 page 2, its fewest");
+		assert!(covering_hides(0, 0), "a page with no spaces to measure");
 	}
 
 	/// "name of paper": an `f` overhangs the space after it by more than half its width, and that

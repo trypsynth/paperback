@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 06f1089b5f255d98; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,94527a25,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versión 1.0
 
@@ -173,6 +173,7 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 ### Teclas adicionales de vista de documento
 
 * `Delete` / `Numpad Delete` en el control de pestaña: Cierra la pestaña de documento seleccionada.
+* `Ctrl+1` a `Ctrl+9` (macOS: `Cmd+1` a `Cmd+9`) en el texto del documento o en el control de pestaña: Ir a los primeros nueve documentos abiertos, en el orden en que se abrieron.
 * `Enter` o `Space` en el texto del documento: Sigue un enlace o abre una vista de tabla o fórmula en el cursor.
 * `Enter` en una página PDF escaneada: Reconoce la página con OCR.
 * `Shift+F10` o la tecla Menú/Aplicación en el texto del documento: Abre el menú contextual.
