@@ -2700,9 +2700,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "patois"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d8a7a8ed1b780906a3ee4cfb797cf467c0a758176701c10fd783ca0f2d39938"
+checksum = "75b8d37756e8066067907b01d2cb1ffb7f2886707af4909280a523b2f98f59cc"
 dependencies = [
  "inventory",
  "patois-macros",
@@ -2732,9 +2732,9 @@ dependencies = [
 
 [[package]]
 name = "patois-translate"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b61ef604c625cd533dad6df1e2e410f9f32f4baeb1bb983aea1814ab344dec18"
+checksum = "fde8cd43e127bb3697ff2123ae47157ddcfbee4ac8c74996ac9336c35f05ec7e"
 dependencies = [
  "patois",
  "patois-build",
