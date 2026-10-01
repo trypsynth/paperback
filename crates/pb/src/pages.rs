@@ -221,15 +221,18 @@ fn parse_page(text: &str) -> Option<usize> {
 /// the selection comes out in document order however it was typed.
 fn merge(ranges: Vec<PageRange>) -> Vec<PageRange> {
 	let mut sorted = ranges;
-	// A `ToEnd` range sorts after a `Fixed` one starting at the same page, because it reaches
-	// further, and so has to be the one that survives the merge.
+	// A `ToEnd` range sorts before a `Fixed` one starting at the same page, because it has no end
+	// and `None` sorts first. That ordering does not matter to the result: whichever of the two
+	// comes second, the merge below keeps the `ToEnd`, which is the one that reaches further.
 	sorted.sort_unstable_by_key(|range| (range.start(), range.end().is_some()));
 	let mut merged: Vec<PageRange> = Vec::new();
 	for range in sorted {
 		// A range already running to the last page swallows everything after it, and nothing
-		// sorts beyond it.
-		let merged_into_previous =
-			merged.last().is_some_and(|previous| previous.end().is_none_or(|end| range.start() <= end + 1));
+		// sorts beyond it. Saturating, because a reader may write the largest page number there
+		// is and adding one to it would wrap round to zero.
+		let merged_into_previous = merged
+			.last()
+			.is_some_and(|previous| previous.end().is_none_or(|end| range.start() <= end.saturating_add(1)));
 		if !merged_into_previous {
 			merged.push(range);
 			continue;
@@ -318,7 +321,6 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 	let selected = selection.resolve(doc)?;
 	let breaks = page_breaks(doc);
 	let total = doc.buffer.total_display_len();
-
 	// Each page runs from its own page-break marker to the next one, and the last page runs to the
 	// end of the content. Two adjacent pages selected together still produce two spans, so that
 	// the separator between them is added the same way whatever was asked for.
@@ -347,7 +349,6 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 	if spans.is_empty() {
 		bail!("no text on the pages asked for");
 	}
-
 	// The new position of something that used to sit at `position`, or `None` when it fell in a
 	// part of the document that is not in the extract. The end of a span belongs to the span
 	// before it, so a marker sitting exactly on a page boundary stays with the page it heads.
@@ -358,7 +359,6 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 			.or_else(|| spans.last().filter(|span| position == span.end))
 			.map(|span| span.offset + (position - span.start))
 	};
-
 	let mut buffer = DocumentBuffer::with_content(content);
 	for marker in &doc.buffer.markers {
 		let Some(position) = rebase(marker.position) else { continue };
@@ -381,7 +381,6 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 			length,
 		});
 	}
-
 	let mut out = Document::new().with_title(doc.title.clone()).with_author(doc.author.clone());
 	out.toc_items = doc.toc_items.iter().filter_map(|item| rebase_toc(item, &rebase)).collect();
 	out.id_positions =
@@ -420,6 +419,10 @@ mod tests {
 
 	/// Enough pages that no range in these tests runs off the end by accident.
 	const PAGES: usize = 200;
+
+	/// The largest page number a specification can name, which is also the one that overflows when
+	/// the merge asks whether the page after it exists.
+	const LAST_PAGE: usize = usize::MAX;
 
 	fn pages(spec: &str) -> Vec<usize> {
 		PageSelection::parse(spec).expect("a valid --pages value").pages(PAGES).expect("the range fits the document")
@@ -473,6 +476,15 @@ mod tests {
 	#[test]
 	fn ranges_are_ordered_by_page_however_they_were_typed() {
 		assert_eq!(pages("92-94,5-7,55"), vec![4, 5, 6, 54, 91, 92, 93]);
+	}
+
+	/// The largest page number there is, followed by a range touching it. Asking whether the two
+	/// merge turns on whether the first ends one page short of the second, and the page after the
+	/// largest number does not exist to be counted to.
+	#[test]
+	fn the_largest_page_number_does_not_wrap_around_when_ranges_are_merged() {
+		let selection = PageSelection::parse(&format!("1-{LAST_PAGE},2")).expect("a valid --pages value");
+		assert_eq!(selection.0, vec![PageRange::Fixed(1, LAST_PAGE)]);
 	}
 
 	/// `--pages 5-10,8-12` asks for two overlapping stretches. Selecting 8-10 twice would print
@@ -658,24 +670,6 @@ mod tests {
 		assert!(message.contains("900"), "{message}");
 	}
 
-	/// The route a PDF takes, which counts its pages before reading any of them, has to name the
-	/// same page and the same document as the route that slices a parsed one.
-	#[test]
-	fn both_routes_refuse_a_missing_page_the_same_way() {
-		let selection = PageSelection::parse("8-700").expect("valid");
-		let fast = wanted_pages(&selection, 417, "py.pdf").expect_err("page 700 does not exist").to_string();
-		assert!(fast.contains("700"), "{fast}");
-		assert!(fast.contains("py.pdf"), "{fast}");
-		assert!(fast.contains("417 pages"), "{fast}");
-
-		let doc = document_of_pages(417, "Page");
-		let slow = apply(&selection, &doc).expect_err("page 700 does not exist").to_string();
-		// The slow route names the document by its title, the fast one by its path, so only the
-		// page and the count are expected to match.
-		assert!(slow.contains("700"), "{slow}");
-		assert!(slow.contains("417 pages"), "{slow}");
-	}
-
 	/// The last page by number is in range, however the range was written to reach it.
 	#[test]
 	fn a_range_ending_exactly_on_the_last_page_is_fine() {
@@ -818,34 +812,4 @@ mod tests {
 		assert_eq!(extract("1", &doc), "page1 text\n");
 		assert_eq!(extract("1-end", &doc), "page1 text\n");
 	}
-}
-
-/// The 0-based pages a `--pages` specification asks for, for handing to a parser that can read
-/// only those.
-///
-/// This is the same selection [`apply`] would make, worked out before the document is read. A
-/// parser that honours it returns just those pages, already carrying their own page numbers, so
-/// the extract is the same one `apply` would have produced -- arrived at without reading the rest.
-///
-/// # Errors
-///
-/// Returns an error if the document is shorter than the pages asked for, or has none at all. The
-/// message is worded as [`PageSelection::resolve`] words it, so that a reader gets the same
-/// sentence whichever route their document took.
-pub fn wanted_pages(selection: &PageSelection, page_count: usize, name: &str) -> Result<Vec<usize>> {
-	if page_count == 0 {
-		bail!("{name} has no pages to select from");
-	}
-	// Checked here for the same reason, so that the page named is the one the reader wrote and
-	// that does not exist, and the document is named alongside it.
-	for range in selection.0.iter() {
-		if range.resolve(page_count).is_none() {
-			bail!(
-				"page {} is past the last page; {name} has {page_count} {}",
-				range.past_page(page_count),
-				page_word(page_count)
-			);
-		}
-	}
-	selection.pages(page_count)
 }

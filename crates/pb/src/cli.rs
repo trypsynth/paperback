@@ -145,6 +145,20 @@ mod tests {
 		assert!(parse(&["pb", "b.pdf", "--strip-repeated"]).strip_repeated);
 	}
 
+	/// The instruction to press Enter on a scanned page is not something a converted file can be
+	/// asked to do, so no flag offers it in either direction. Asserted against the command's own
+	/// argument list rather than by parsing sample command lines, which would pass just as well
+	/// against a flag that existed but was never spelled out in the samples.
+	#[test]
+	fn no_flag_offers_the_ocr_placeholder() {
+		let flags: Vec<String> =
+			Cli::command().get_arguments().filter_map(|arg| arg.get_long().map(str::to_string)).collect();
+		assert!(
+			!flags.iter().any(|flag| flag.contains("ocr") || flag.contains("placeholder")),
+			"pb offers a flag for the OCR placeholder: {flags:?}"
+		);
+	}
+
 	/// Paths that start with a dash or contain spaces reach the parser intact rather than being
 	/// read as flags.
 	#[test]

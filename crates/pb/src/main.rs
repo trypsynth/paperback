@@ -5,7 +5,7 @@ use clap::Parser;
 use paperback_core::{
 	document::{Document, ParserContext},
 	export::{self, ExportFormat},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, parse_document, pdf},
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, parse_document},
 	set_pdfium_library_path,
 };
 
@@ -56,20 +56,6 @@ fn main() -> Result<()> {
 	if let Some(password) = cli.password {
 		context = context.with_password(password);
 	}
-	// Handed to the parser rather than worked out here, because it is the parser that knows what a
-	// page costs to read. A PDF is asked for just the pages wanted, which is nearly all of the
-	// time saved on a long document; the cheaper formats read the whole thing and are sliced
-	// afterwards by `pages::apply` below. Both routes end up with the same extract.
-	let mut parsed_the_pages_asked_for = false;
-	if let Some(selection) = &selection
-		&& ext.eq_ignore_ascii_case("pdf")
-	{
-		// The page count comes from opening the document, which is cheap, rather than from
-		// parsing it, which is not.
-		let count = usize::try_from(pdf::page_count(&context)?).unwrap_or(0);
-		context = context.with_only_pages(pages::wanted_pages(selection, count, &input.display().to_string())?);
-		parsed_the_pages_asked_for = true;
-	}
 	let doc = match parse_document(&context) {
 		Ok(doc) => doc,
 		Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
@@ -83,12 +69,13 @@ fn main() -> Result<()> {
 		}
 		Err(e) => return Err(e.context(format!("failed to parse {}", input.display()))),
 	};
-	// Cut down to the pages asked for, unless the parse already returned only those. Which route
-	// was taken is the parser's business: a PDF that was asked for a few pages never built the
-	// rest, while a cheaper format read everything and is sliced here.
+	// Cut down to the pages asked for. Every format goes this way: the pages are chosen from the
+	// parsed document rather than asked of the parser, because a page range out of an encrypted
+	// PDF cannot be resolved until the password is in hand, and because the survey that judges a
+	// repeated line a fact about the whole document rather than about the extract.
 	let doc = match selection {
-		Some(selection) if !parsed_the_pages_asked_for => pages::apply(&selection, &doc)?,
-		_ => doc,
+		Some(selection) => pages::apply(&selection, &doc)?,
+		None => doc,
 	};
 	let handle = paperback_core::document::DocumentHandle::new(doc);
 	let is_markdown = !cli.metadata && matches!(cli.format, Format::Markdown);
