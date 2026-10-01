@@ -31,6 +31,8 @@ pub(super) struct Line {
 	/// Whether it is set in a monospaced face, which marks it as something whose own line
 	/// breaks are the content: code, or anything else laid out by column.
 	pub monospaced: bool,
+	/// Whether all of it is set in a bold face, which is how a heading set no larger than the text around it stands out.
+	pub bold: bool,
 }
 
 /// Tolerance, in PDF user units, for calling two baselines or two box edges the same. pdfium
@@ -195,6 +197,7 @@ fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	Line {
 		size: line_font_size(text_page, chars),
 		monospaced: line_is_monospaced(text_page, chars),
+		bold: line_is_bold(text_page, chars),
 		text: reorder_run(text_page, chars),
 		top,
 		bottom,
@@ -216,6 +219,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 				top: f64::NEG_INFINITY,
 				bottom: f64::NEG_INFINITY,
 				monospaced: false,
+				bold: false,
 			})
 			.collect();
 	};
@@ -333,6 +337,33 @@ fn char_is_monospaced(text_page: &PdfTextPage, index: i32) -> bool {
 	looks_monospaced(&font.name)
 }
 
+/// The weight from which a face counts as bold: semibold and up.
+const BOLD_WEIGHT: i32 = 600;
+
+/// Whether a font name belongs to a bold face, for a font whose weight pdfium cannot report. Names come subset-tagged as `ABCDEF+Arial-BoldMT`.
+fn looks_bold(font_name: &str) -> bool {
+	const HINTS: [&str; 5] = ["bold", "black", "heavy", "semibold", "demi"];
+	let name = font_name.rsplit('+').next().unwrap_or(font_name).to_ascii_lowercase();
+	HINTS.iter().any(|hint| name.contains(hint))
+}
+
+fn char_is_bold(text_page: &PdfTextPage, index: i32) -> bool {
+	if let Some(weight) = text_page.font_weight(index) {
+		return weight >= BOLD_WEIGHT;
+	}
+	text_page.font(index).is_some_and(|font| looks_bold(&font.name))
+}
+
+/// Whether a line is set in a bold face throughout, over the same handful of characters the size is measured across. All of them have to be: a paragraph that opens with a bold word is not a heading.
+fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
+	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+	if indices.is_empty() {
+		return false;
+	}
+	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
+	indices.iter().step_by(step).all(|&i| char_is_bold(text_page, i))
+}
+
 /// Whether a line is set in a monospaced face, over the same handful of characters the size is
 /// measured across. Most of them have to agree: one word of code quoted in a sentence of prose
 /// does not make the sentence a listing.
@@ -409,7 +440,7 @@ mod tests {
 	};
 
 	fn line(text: &str, top: f64) -> Line {
-		Line { text: text.to_string(), size: 10.0, top, bottom: top - 10.0, monospaced: false }
+		Line { text: text.to_string(), size: 10.0, top, bottom: top - 10.0, monospaced: false, bold: false }
 	}
 
 	fn texts(lines: &[Line]) -> Vec<&str> {
@@ -487,6 +518,7 @@ mod tests {
 			top: f64::NEG_INFINITY,
 			bottom: f64::NEG_INFINITY,
 			monospaced: false,
+			bold: false,
 		};
 		let lines = vec![
 			line("24. Procedure Date", 450.0),

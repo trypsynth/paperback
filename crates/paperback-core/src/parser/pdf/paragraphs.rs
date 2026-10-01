@@ -82,6 +82,58 @@ fn merge_drop_caps(raw_lines: &[Line], body_font_size: f64) -> Vec<Line> {
 const HEADING_FONT_RATIO: f64 = 1.2;
 const HEADING_MAX_LEN: usize = 150;
 
+/// The longest bold line that reads as a heading. A heading set in the body's size is a few words; a bold line longer than this is emphasis.
+const BOLD_HEADING_MAX_LEN: usize = 80;
+
+/// What makes a line a heading on a page: its size, or, where bold is rare enough on the page to mean something, being set in bold throughout.
+struct HeadingRule {
+	size: f64,
+	bold_is_rare: bool,
+}
+
+impl HeadingRule {
+	/// A page where most lines are bold sets its body in bold, and bold there says nothing.
+	fn for_page(lines: &[Line], body_font_size: f64) -> Self {
+		let text_lines = lines.iter().filter(|line| !line.text.trim().is_empty()).count();
+		let bold_lines = lines.iter().filter(|line| line.bold && !line.text.trim().is_empty()).count();
+		Self { size: heading_threshold(body_font_size), bold_is_rare: bold_lines * 2 < text_lines }
+	}
+
+	/// Which of `lines` are headings, each `trimmed` to its text and `len` characters.
+	fn mark(&self, lines: &[Line], trimmed: &[(String, usize)]) -> Vec<bool> {
+		(0..lines.len())
+			.map(|index| {
+				let (line, (text, len)) = (&lines[index], &trimmed[index]);
+				if *len == 0 {
+					return false;
+				}
+				if line.size >= self.size && *len <= HEADING_MAX_LEN {
+					return true;
+				}
+				// A bold paragraph is emphasis however short its lines are, such as the capitals a licence opens with.
+				let bold_beside = |other: Option<usize>| {
+					other.and_then(|other| lines.get(other)).is_some_and(|other| {
+						other.bold && !other.text.trim().is_empty() && (other.size - line.size).abs() < f64::EPSILON
+					})
+				};
+				self.bold_is_rare
+					&& line.bold
+					&& *len <= BOLD_HEADING_MAX_LEN
+					&& reads_as_a_title(text)
+					&& !bold_beside(index.checked_sub(1))
+					&& !bold_beside(Some(index + 1))
+			})
+			.collect()
+	}
+}
+
+/// Whether a bold line reads like a title rather than a label, a sentence or a row of figures: it opens with a capital or a number, has a word in it, and does not end a sentence or a clause, introduce what follows ("Tip:"), or run a dot leader out to a page number as a contents line does. The PDF of #993 sets every section title in bold a size smaller than the body, so no size rule could find them.
+fn reads_as_a_title(text: &str) -> bool {
+	let opens_like_a_title = text.chars().next().is_some_and(|c| c.is_uppercase() || c.is_ascii_digit());
+	let has_a_word = text.split_whitespace().any(|word| word.chars().filter(|c| c.is_alphabetic()).count() >= 2);
+	opens_like_a_title && has_a_word && !text.ends_with(['.', ',', ';', ':']) && !text.contains("...")
+}
+
 /// The point size at which a line reads as a heading rather than as body text.
 fn heading_threshold(body_font_size: f64) -> f64 {
 	if body_font_size > 0.0 { body_font_size * HEADING_FONT_RATIO } else { f64::INFINITY }
@@ -95,17 +147,25 @@ fn heading_threshold(body_font_size: f64) -> f64 {
 /// a transcript) can only be read with the joining out of the way. Headings are still marked,
 /// because that is a question about size and not about where a paragraph ends.
 pub(super) fn split_lines(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
-	let heading_threshold = heading_threshold(body_font_size);
-	raw_lines
-		.iter()
+	let trimmed = trimmed_lines(raw_lines);
+	let marked = HeadingRule::for_page(raw_lines, body_font_size).mark(raw_lines, &trimmed);
+	trimmed
+		.into_iter()
+		.zip(marked)
 		.enumerate()
-		.filter_map(|(index, line)| {
-			let trimmed = trim_string(&collapse_whitespace(&line.text));
-			let len = display_len(&trimmed);
-			if len == 0 {
-				return None;
-			}
-			Some((trimmed, line.size >= heading_threshold && len <= HEADING_MAX_LEN, index))
+		.filter(|(_, ((_, len), _))| *len > 0)
+		.map(|(index, ((text, _), is_heading))| (text, is_heading, index))
+		.collect()
+}
+
+/// Each line's text with its whitespace collapsed and trimmed, and that text's length.
+fn trimmed_lines(lines: &[Line]) -> Vec<(String, usize)> {
+	lines
+		.iter()
+		.map(|line| {
+			let text = trim_string(&collapse_whitespace(&line.text));
+			let len = display_len(&text);
+			(text, len)
 		})
 		.collect()
 }
@@ -157,6 +217,7 @@ pub fn join_wrapped_lines(text: &str) -> String {
 			top,
 			bottom: top - RECOGNIZED_TEXT_SIZE,
 			monospaced: false,
+			bold: false,
 		});
 		top -= RECOGNIZED_TEXT_SIZE;
 	}
@@ -171,16 +232,14 @@ pub fn join_wrapped_lines(text: &str) -> String {
 /// with. An untagged page needs it to place its images: the paragraphs no longer say where on
 /// the page they were set, and that line does.
 pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
-	let heading_threshold = heading_threshold(body_font_size);
 	let raw_lines = merge_drop_caps(raw_lines, body_font_size);
+	let trimmed = trimmed_lines(&raw_lines);
+	let marked = HeadingRule::for_page(&raw_lines, body_font_size).mark(&raw_lines, &trimmed);
 	let lines: Vec<(Line, bool)> = raw_lines
 		.iter()
-		.map(|line| {
-			let trimmed = trim_string(&collapse_whitespace(&line.text));
-			let len = display_len(&trimmed);
-			let is_heading_line = line.size >= heading_threshold && len > 0 && len <= HEADING_MAX_LEN;
-			(Line { text: trimmed, ..line.clone() }, is_heading_line)
-		})
+		.zip(trimmed)
+		.zip(marked)
+		.map(|((line, (text, _)), is_heading_line)| (Line { text, ..line.clone() }, is_heading_line))
 		.collect();
 	// Two ways a line can end a paragraph, needing different amounts of evidence. A line that
 	// ends a sentence and stops any way short of the measure has ended the paragraph with it. A
@@ -202,7 +261,7 @@ pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(S
 	let mut last_line_bottom = f64::INFINITY;
 	let mut previous_was_monospaced = false;
 	for (line_index, (line_info, is_heading_line)) in lines.iter().enumerate() {
-		let Line { text: line, size, top, bottom, monospaced } = line_info;
+		let Line { text: line, size, top, bottom, monospaced, .. } = line_info;
 		if line.is_empty() {
 			if !current_paragraph.is_empty() {
 				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading, current_start_line));
@@ -512,7 +571,7 @@ c. can print words"
 		let mut out = Vec::new();
 		for (text, size) in lines {
 			let bottom = top - size;
-			out.push(Line { text: (*text).to_string(), size: *size, top, bottom, monospaced: false });
+			out.push(Line { text: (*text).to_string(), size: *size, top, bottom, monospaced: false, bold: false });
 			// A fifth of a line of clear space: what sits between two lines of one paragraph.
 			top = bottom - size * 0.2;
 		}
@@ -529,7 +588,7 @@ c. can print words"
 				top -= size * 1.4;
 			}
 			let bottom = top - size;
-			out.push(Line { text: (*text).to_string(), size: *size, top, bottom, monospaced: false });
+			out.push(Line { text: (*text).to_string(), size: *size, top, bottom, monospaced: false, bold: false });
 			top = bottom - size * 0.2;
 		}
 		out
@@ -728,5 +787,71 @@ c. can print words"
 		assert!(result[0].1);
 		assert_eq!(result[1].0, "This is the body text of the document.");
 		assert!(!result[1].1);
+	}
+
+	/// Lay `lines` out like [`tight`], marking which are set in bold throughout.
+	fn weighted(lines: &[(&str, f64, bool)]) -> Vec<Line> {
+		let mut out = tight(&lines.iter().map(|(text, size, _)| (*text, *size)).collect::<Vec<_>>());
+		for (line, (_, _, bold)) in out.iter_mut().zip(lines) {
+			line.bold = *bold;
+		}
+		out
+	}
+
+	/// Page 11 of the PDF attached to #993: section titles in bold Segoe UI at 13.5pt, between paragraphs of 15.5pt body text.
+	#[test]
+	fn a_bold_title_smaller_than_the_body_is_a_heading() {
+		let lines = weighted(&[
+			("and the surgery. Some things just happen.", 15.5, false),
+			("Emergency Management", 13.5, true),
+			("The events that surround the injury set the stage for what follows,", 15.5, false),
+			("and the writer has to know them.", 15.5, false),
+		]);
+		let result = join_paragraphs(&lines, 15.5);
+		assert_eq!(result.len(), 3);
+		assert_eq!(result[1].0, "Emergency Management");
+		assert!(result[1].1, "the bold title is a heading");
+		assert!(!result[0].1 && !result[2].1, "the body around it is not");
+	}
+
+	#[test]
+	fn a_bold_sentence_is_emphasis_not_a_heading() {
+		let lines = weighted(&[
+			("Never move a patient with a suspected spinal injury.", 12.0, true),
+			("The body follows.", 12.0, false),
+		]);
+		assert!(!join_paragraphs(&lines, 12.0)[0].1);
+	}
+
+	/// The Apple Developer Program License Agreement opens with a paragraph of bold capitals whose lines each look like a title.
+	#[test]
+	fn a_bold_paragraph_is_not_a_run_of_headings() {
+		let lines = weighted(&[
+			("PLEASE READ THE FOLLOWING APPLE DEVELOPER PROGRAM LICENSE AGREEMENT", 10.0, true),
+			("TERMS AND CONDITIONS CAREFULLY BEFORE DOWNLOADING OR USING THE APPLE", 10.0, true),
+			("SOFTWARE. THESE TERMS CONSTITUTE A LEGAL AGREEMENT.", 10.0, true),
+			("You would like to use the Apple Software to develop one or more Applications", 10.0, false),
+			("for Apple-branded products, and Apple is willing to grant You a license.", 10.0, false),
+			("And more body text follows here, set in the regular weight of the face.", 10.0, false),
+			("And more body text follows here, set in the regular weight of the face.", 10.0, false),
+		]);
+		assert!(join_paragraphs(&lines, 10.0).iter().all(|(_, is_heading, _)| !is_heading));
+	}
+
+	#[test]
+	fn a_label_a_contents_line_and_a_row_of_figures_are_not_titles() {
+		assert!(super::reads_as_a_title("Emergency Management"));
+		assert!(super::reads_as_a_title("3.1 Service Agreement"));
+		assert!(!super::reads_as_a_title("Tip:"));
+		assert!(!super::reads_as_a_title("9 UPGRADE PROCEDURE FROM REV E TO REV H....... 53"));
+		assert!(!super::reads_as_a_title("18-19 19-20 20-21 4.000 6.000"));
+	}
+
+	/// A page set mostly in bold, such as a cover or a form, says nothing by it.
+	#[test]
+	fn bold_means_nothing_on_a_page_mostly_set_in_bold() {
+		let lines =
+			weighted(&[("Claim Form", 12.0, true), ("Patient Name", 12.0, true), ("Date of Birth", 12.0, false)]);
+		assert!(join_paragraphs(&lines, 12.0).iter().all(|(_, is_heading, _)| !is_heading));
 	}
 }

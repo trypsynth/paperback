@@ -104,6 +104,12 @@ impl<'page> PdfTextPage<'page> {
 		(ok != 0).then_some(CharBox { left, right, bottom, top })
 	}
 
+	/// The weight of a glyph's font, 400 for regular and 700 for bold, or `None` where pdfium cannot tell.
+	pub fn font_weight(&self, index: i32) -> Option<i32> {
+		let weight = unsafe { bindings().FPDFText_GetFontWeight(self.handle, index) };
+		(weight > 0).then_some(weight)
+	}
+
 	pub fn font_size(&self, index: i32) -> f64 {
 		unsafe { bindings().FPDFText_GetFontSize(self.handle, index) }
 	}
