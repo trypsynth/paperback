@@ -171,7 +171,6 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 ### Dodatne prečice
 
 * `Delete` / `Numpad Delete` na kontroli kartica: Zatvara karticu odabranog dokumenta.
-* Od `Ctrl+1` do `Ctrl+9` (macOS: od `Cmd+1` do `Cmd+9`) u tekstu dokumenta ili na kontroli kartica: Prelazi na jedan od prvih devet otvorenih dokumenata, redoslijedom kojim su otvoreni.
 * `Enter` ili `Razmak` u dokumentu: Otvara poveznicu na položaju kursora ili otvara prikaz tabele ili formule.
 * `Enter` na skeniranoj PDF stranici: Prepoznaje stranicu pomoću OCR-a.
 * `Shift+F10` ili taster `Aplikacije` u dokumentu: Otvara kontekstni izbornik.
