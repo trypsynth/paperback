@@ -1007,7 +1007,7 @@ msgstr "Prečica prozora"
 #. TRANSLATORS: Checkbox label for Control modifier key
 #. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
 msgid "&Ctrl"
-msgstr "&Control"
+msgstr "&Ctrl"
 
 #. TRANSLATORS: Checkbox label for Alt modifier key
 #. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.

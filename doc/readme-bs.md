@@ -71,25 +71,25 @@ Paperback podržava sljedeće formate i ekstenzije:
 
 Paperback je osmišljen prvenstveno za korištenje putem tastature. Evo trenutno dostupnih prečica.
 
-Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razlikuju, odgovarajuća prečica navedena je u zagradi. Razlog je uglavnom to što su `Control+G`, `Control+W` i `Alt+Strelica lijevo/desno` na toj platformi već zauzete sistemskim prečicama ili ustaljenim prečicama aplikacija.
+Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razlikuju, odgovarajuća prečica navedena je u zagradi. Razlog je uglavnom to što su `Ctrl+G`, `Ctrl+W` i `Alt+Strelica lijevo/desno` na toj platformi već zauzete sistemskim prečicama ili ustaljenim prečicama aplikacija.
 
 ### Izbornik `Datoteka`
 
-* `Control+O`: Otvara dokument.
-* `Control+F4` (macOS: `Cmd+W`): Zatvara trenutni dokument.
-* `Control+Shift+F4` (macOS: `Cmd+Shift+W`): Zatvara sve otvorene dokumente.
-* `Control+Shift+T`: Ponovo otvara posljednji zatvoreni dokument.
-* `Control+R`: Otvara dijalog "Svi dokumenti" (iz nedavnih dokumenata).
-* `Control+Q`: Izlazi iz programa (samo na Windowsu; na macOS-u se ova stavka nalazi u izborniku aplikacije).
+* `Ctrl+O`: Otvara dokument.
+* `Ctrl+F4` (macOS: `Cmd+W`): Zatvara trenutni dokument.
+* `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Zatvara sve otvorene dokumente.
+* `Ctrl+Shift+T`: Ponovo otvara posljednji zatvoreni dokument.
+* `Ctrl+R`: Otvara dijalog "Svi dokumenti" (iz nedavnih dokumenata).
+* `Ctrl+Q`: Izlazi iz programa (samo na Windowsu; na macOS-u se ova stavka nalazi u izborniku aplikacije).
 
 ### Izbornik `Idi`
 
-* `Control+F`: Otvara dijalog "Traži".
+* `Ctrl+F`: Otvara dijalog "Traži".
 * `F3` (macOS: `Cmd+G`): Traži sljedeće.
 * `Shift+F3` (macOS: `Cmd+Shift+G`): Traži prethodno.
-* `Control+G` (macOS: `Cmd+L`): Otvara dijalog "Idi na red".
-* `Control+Shift+G` (macOS: `Cmd+Shift+L`): Otvara dijalog "Idi na postotak".
-* `Control+P`: Otvara dijalog "Idi na stranicu" (kad dokument to podržava).
+* `Ctrl+G` (macOS: `Cmd+L`): Otvara dijalog "Idi na red".
+* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Otvara dijalog "Idi na postotak".
+* `Ctrl+P`: Otvara dijalog "Idi na stranicu" (kad dokument to podržava).
 * `=`: Izgovara trenutni postotak pročitanog dokumenta i stranicu, npr. "15%, stranica 30". Kod dokumenata koji nemaju brojeve stranica stranica se izostavlja.
 * `Alt+Strelica lijevo` (macOS: `Cmd+[`): Ide natrag u historiji kretanja.
 * `Alt+Strelica desno` (macOS: `Cmd+]`): Ide naprijed u historiji kretanja.
@@ -107,10 +107,10 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 * `\`: Prelazi na privremenu oznaku.
 * `Shift+N`: Prethodna bilješka.
 * `N`: Sljedeća bilješka.
-* `Control+B`: Prelazi na sve oznake i bilješke.
-* `Control+Alt+B`: Prelazi samo na oznake.
-* `Control+Alt+M`: Prelazi samo na bilješke.
-* `Control+Shift+W` (macOS: `RawCtrl+Shift+W`, tj. fizički taster Control umjesto tastera Cmd): Prikazuje tekst bilješke na trenutnom položaju.
+* `Ctrl+B`: Prelazi na sve oznake i bilješke.
+* `Ctrl+Alt+B`: Prelazi samo na oznake.
+* `Ctrl+Alt+M`: Prelazi samo na bilješke.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje tekst bilješke na trenutnom položaju.
 * `Shift+K`: Prethodna poveznica.
 * `K`: Sljedeća poveznica.
 * `Shift+G`: Prethodna slika.
@@ -132,46 +132,46 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 
 ### Izbornik `Alati`
 
-* `Control+W` (macOS: `RawCtrl+W`, tj. fizički taster Control umjesto tastera Cmd): Prikazuje broj riječi u trenutnom dokumentu.
-* `Control+I`: Prikazuje informacije o dokumentu.
-* `Control+T`: Prikazuje sadržaj.
+* `Ctrl+W` (macOS: `RawCtrl+W`, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje broj riječi u trenutnom dokumentu.
+* `Ctrl+I`: Prikazuje informacije o dokumentu.
+* `Ctrl+T`: Prikazuje sadržaj.
 * `F7`: Prikazuje popis elemenata.
-* `Control+Shift+C`: Otvara mapu u kojoj se nalazi trenutna datoteka.
-* `Control+Shift+V`: Otvara trenutni sadržaj u web prikazu.
-* `Control+U`: Prikazuje izvorni sadržaj dokumenta u novoj kartici.
-* `Control+Shift+E`: Izvozi podatke dokumenta (`.paperback`).
-* `Control+Shift+I`: Uvozi podatke dokumenta (`.paperback`).
-* `Control+E`: Izvozi trenutni dokument kao običan tekst.
-* `Control+Shift+B`: Dodaje i uklanja oznaku na trenutnom odabiru ili položaju.
-* `Control+Shift+N`: Dodaje ili uređuje bilješku oznake na trenutnom odabiru ili položaju.
-* `Control+Alt+W`: Uključuje i isključuje prelamanje riječi.
-* `Control+Razmak` (macOS: `RawCtrl+Razmak`, tj. fizički taster Control, jer `Cmd+Razmak` otvara Spotlight): Pokreće ili pauzira zvučnu naraciju.
+* `Ctrl+Shift+C`: Otvara mapu u kojoj se nalazi trenutna datoteka.
+* `Ctrl+Shift+V`: Otvara trenutni sadržaj u web prikazu.
+* `Ctrl+U`: Prikazuje izvorni sadržaj dokumenta u novoj kartici.
+* `Ctrl+Shift+E`: Izvozi podatke dokumenta (`.paperback`).
+* `Ctrl+Shift+I`: Uvozi podatke dokumenta (`.paperback`).
+* `Ctrl+E`: Izvozi trenutni dokument kao običan tekst.
+* `Ctrl+Shift+B`: Dodaje i uklanja oznaku na trenutnom odabiru ili položaju.
+* `Ctrl+Shift+N`: Dodaje ili uređuje bilješku oznake na trenutnom odabiru ili položaju.
+* `Ctrl+Alt+W`: Uključuje i isključuje prelamanje riječi.
+* `Ctrl+Razmak` (macOS: `RawCtrl+Razmak`, tj. fizički taster Ctrl, jer `Cmd+Razmak` otvara Spotlight): Pokreće ili pauzira zvučnu naraciju.
 * `'`: Premotava zvučnu naraciju naprijed.
 * `;`: Premotava zvučnu naraciju nazad.
 * `Shift+'`: Povećava korak premotavanja.
 * `Shift+;`: Smanjuje korak premotavanja.
-* `Control+Shift+.`: Ubrzava zvučnu naraciju.
-* `Control+Shift+,`: Usporava zvučnu naraciju.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, tj. Control+Command+F): Uključuje i isključuje prikaz preko cijelog zaslona.
-* `Control+,`: Otvara postavke (na macOS-u se nalaze u izborniku aplikacije).
-* `Control+Shift+S`: Uključuje i isključuje odbrojavanje za spavanje.
-* `Control+Shift+O`: Prepoznaje raspon skeniranih PDF stranica pomoću OCR-a.
+* `Ctrl+Shift+.`: Ubrzava zvučnu naraciju.
+* `Ctrl+Shift+,`: Usporava zvučnu naraciju.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, tj. Ctrl+Command+F): Uključuje i isključuje prikaz preko cijelog zaslona.
+* `Ctrl+,`: Otvara postavke (na macOS-u se nalaze u izborniku aplikacije).
+* `Ctrl+Shift+S`: Uključuje i isključuje odbrojavanje za spavanje.
+* `Ctrl+Shift+O`: Prepoznaje raspon skeniranih PDF stranica pomoću OCR-a.
 * `Alt+F9` (macOS: `Cmd+F9`): Označava početak odabira, tako da sve od tog mjesta do mjesta do kojeg stignete možete kopirati odjednom.
 * `Alt+F10` (macOS: `Cmd+F10`): Kopira sve od označenog početka odabira do trenutnog položaja.
 * `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Vraća vas na označeni početak odabira, a označeni početak ostaje sačuvan.
 
 ### Izbornik `Pomoć`
 
-* `Control+F1`: Prikazuje dijalog "O Paperbacku".
+* `Ctrl+F1`: Prikazuje dijalog "O Paperbacku".
 * `F1`: Prikazuje dokumentaciju u zadanom pretraživaču.
 * `Shift+F1`: Prikazuje dokumentaciju u Paperbacku.
-* `Control+Shift+U`: Provjerava ima li ažuriranja.
-* `Control+D`: Otvara stranicu za donacije u zadanom pretraživaču.
+* `Ctrl+Shift+U`: Provjerava ima li ažuriranja.
+* `Ctrl+D`: Otvara stranicu za donacije u zadanom pretraživaču.
 
 ### Dodatne prečice
 
 * `Delete` / `Numpad Delete` na kontroli kartica: Zatvara karticu odabranog dokumenta.
-* Od `Control+1` do `Control+9` (macOS: od `Cmd+1` do `Cmd+9`) u tekstu dokumenta ili na kontroli kartica: Prelazi na jedan od prvih devet otvorenih dokumenata, redoslijedom kojim su otvoreni.
+* Od `Ctrl+1` do `Ctrl+9` (macOS: od `Cmd+1` do `Cmd+9`) u tekstu dokumenta ili na kontroli kartica: Prelazi na jedan od prvih devet otvorenih dokumenata, redoslijedom kojim su otvoreni.
 * `Enter` ili `Razmak` u dokumentu: Otvara poveznicu na položaju kursora ili otvara prikaz tabele ili formule.
 * `Enter` na skeniranoj PDF stranici: Prepoznaje stranicu pomoću OCR-a.
 * `Shift+F10` ili taster `Aplikacije` u dokumentu: Otvara kontekstni izbornik.
@@ -224,7 +224,7 @@ U izborniku "Više opcija" nalazi se sve ostalo. Neke stavke rade malo drugačij
 
 ### Tastature i slušalice
 
-Uz tastaturu rade sve prečice iz verzije za računare za otvaranje knjiga, nedavne dokumente, traženje, dijalog "Idi na", sadržaj, broj riječi, informacije o dokumentu, izvoz i odbrojavanje za spavanje, s tim da se na iOS-u umjesto `Control` koristi `Cmd`. Isto vrijedi i za tastere s jednim slovom za kretanje po naslovima, stranicama, poveznicama i ostalim elementima, a `Razmak` pokreće i pauzira reprodukciju. Na iOS-u tasteri s jednim slovom stižu do Paperbacka samo kada je VoiceOverova funkcija brzog kretanja jednim slovom (Quick Nav) isključena.
+Uz tastaturu rade sve prečice iz verzije za računare za otvaranje knjiga, nedavne dokumente, traženje, dijalog "Idi na", sadržaj, broj riječi, informacije o dokumentu, izvoz i odbrojavanje za spavanje, s tim da se na iOS-u umjesto `Ctrl` koristi `Cmd`. Isto vrijedi i za tastere s jednim slovom za kretanje po naslovima, stranicama, poveznicama i ostalim elementima, a `Razmak` pokreće i pauzira reprodukciju. Na iOS-u tasteri s jednim slovom stižu do Paperbacka samo kada je VoiceOverova funkcija brzog kretanja jednim slovom (Quick Nav) isključena.
 
 Na Androidu dugme na slušalicama jednim pritiskom pokreće i pauzira reprodukciju, s dva pritiska ide naprijed, a s tri pritiska vraća nazad.
 
@@ -308,7 +308,7 @@ Verzija 1.0 je prvo izdanje dostupno na svih pet platformi: Windowsu, macOS-u, L
 * Word 6 i Word 95 dokumenti.
 
 ##### OCR
-* Skenirane PDF stranice sada se mogu prepoznati pomoću OCR-a ugrađenog u Windows i macOS. Pritisnite `Enter` na skeniranoj stranici da biste je prepoznali ili za raspon stranica koristite skupni OCR (`Control+Shift+O`).
+* Skenirane PDF stranice sada se mogu prepoznati pomoću OCR-a ugrađenog u Windows i macOS. Pritisnite `Enter` na skeniranoj stranici da biste je prepoznali ili za raspon stranica koristite skupni OCR (`Ctrl+Shift+O`).
 
 ##### Kretanje
 * MathML formule u EPUB i HTML dokumentima prikazuju se kao AsciiMath pomoću alata MathCAT. Koristite `M` ili `Shift+M` za kretanje po formulama, a zatim `Enter` ili `Razmak` da biste izvorni MathML otvorili u prikazu formule.
@@ -320,7 +320,7 @@ Verzija 1.0 je prvo izdanje dostupno na svih pet platformi: Windowsu, macOS-u, L
 * EPUB stranice koje sadrže samo sliku sada za nju prikazuju jedan red, tako da se možete zaustaviti na njima umjesto da ih odmah preskočite.
 
 ##### Zvučne knjige
-* Kontrole brzine reprodukcije, od upola sporije do tri puta brže. Koristite `Control+Shift+.` i `Control+Shift+,` ili izbornik "Alati".
+* Kontrole brzine reprodukcije, od upola sporije do tri puta brže. Koristite `Ctrl+Shift+.` i `Ctrl+Shift+,` ili izbornik "Alati".
 * Oznake i bilješke u knjigama koje sadrže samo zvuk sada pamte tačno vrijeme u kojem ste ih postavili.
 * Sljedeći i prethodni položaj (`Alt+Strelica lijevo` i `Alt+Strelica desno`) sada rade i u zvučnim knjigama.
 * Napredak kroz zvučnu knjigu sada se mjeri prema njenom snimku, pa "Idi na postotak" i statusna traka odgovaraju onome koliko ste zaista odmakli.
@@ -370,7 +370,7 @@ Verzija 1.0 je prvo izdanje dostupno na svih pet platformi: Windowsu, macOS-u, L
 * Strelice gore i dolje sada pamte kolonu kursora za svaki dokument posebno, umjesto da je prenose kada promijenite karticu.
 
 ##### Zvučne knjige
-* Reprodukcija zvuka na macOS-u sada koristi `Control+Razmak`, jer `Command+Razmak` pripada Spotlightu.
+* Reprodukcija zvuka na macOS-u sada koristi `Ctrl+Razmak`, jer `Command+Razmak` pripada Spotlightu.
 
 ##### PDF dokumenti
 * Ispravljena je greška zbog koje su se PDF dokumenti izvezeni iz Apple Pagesa čitali kao običan tekst, bez naslova i popisa s kojima su napisani.
@@ -463,7 +463,7 @@ Aplikacije za iOS i Android otvaraju sve formate koje otvara i verzija za račun
 ##### Dijalog "Svi dokumenti"
 * Dugme "Pronađi", koje omogućava pronalaženje knjiga koje nedostaju zbog promjene njihove putanje.
 * Filter statusa i statusna traka, pomoću kojih možete filtrirati dokumente po statusu i vidjeti koliko je dokumenata prikazano i odabrano.
-* Prečica `Control+Shift+A` za poništavanje odabira svih dokumenata.
+* Prečica `Ctrl+Shift+A` za poništavanje odabira svih dokumenata.
 
 ##### Postavke i čitljivost
 * Kartica "Čitljivost", koja sadrži sljedeće opcije:
@@ -594,7 +594,7 @@ Aplikacije za iOS i Android otvaraju sve formate koje otvara i verzija za račun
 * Dodana je podrška za starije Microsoft PowerPoint prezentacije.
 * Dodana je podrška za MOBI i AZW3 knjige.
 * Dodana je podrška za označene PDF dokumente.
-* Dodana je prečica `Control+Q` za izlaženje iz programa.
+* Dodana je prečica `Ctrl+Q` za izlaženje iz programa.
 * Dodana je podrška za ZIP arhive knjiga preuzete sa servisa Bookshare (i u DAISY i u Word formatu).
 * Alternativni tekst za ugrađene slike bi se sada trebao prikazivati.
 * CHM dokumenti sada ispravno podržavaju kretanje po internim poveznicama.
@@ -622,7 +622,7 @@ Aplikacije za iOS i Android otvaraju sve formate koje otvara i verzija za račun
 
 ### Verzija 0.8.1
 
-* Dodana je prečica `Control+Shift+T` za ponovno otvaranje posljednjeg zatvorenog dokumenta.
+* Dodana je prečica `Ctrl+Shift+T` za ponovno otvaranje posljednjeg zatvorenog dokumenta.
 * Dijalog "Svi dokumenti" sada podržava višestruki odabir.
 * Ispravljeno je nekoliko grešaka u obrađivaču RTF dokumenata.
 * Ispravljena je greška zbog koje su putanje datoteka koje sadrže znakove izvan ASCII skupa (poput bosanskih slova č, ć, š, đ i ž) postajale oštećene prilikom otvaranja datoteke putem druge instance Paperbacka.
@@ -654,7 +654,7 @@ Aplikacije za iOS i Android otvaraju sve formate koje otvara i verzija za račun
 ### Verzija 0.7.0
 
 * Dodana je podrška za tabele u dokumentima zasnovanim na HTML-u i XHTML-u! Između tabela se krećete pomoću `T` i `Shift+T`, a pritiskom na `Enter` tabelu otvarate u web prikazu.
-* Dodana je osnovna funkcija web prikaza! Pritisnite `Control+Shift+V` da biste trenutni odjeljak dokumenta otvorili u web prikazu, što je korisno za sadržaj poput složenog oblikovanja ili primjera koda.
+* Dodana je osnovna funkcija web prikaza! Pritisnite `Ctrl+Shift+V` da biste trenutni odjeljak dokumenta otvorili u web prikazu, što je korisno za sadržaj poput složenog oblikovanja ili primjera koda.
 * Dodan je prijevod na ruski jezik. Zahvaljujemo Ruslanu Gulmagomedovu!
 * Dodano je dugme "Očisti sve" u dijalog "Svi dokumenti".
 * Provjera ažuriranja sada prikazuje bilješke o izdanju kada je dostupna nova verzija.
@@ -695,7 +695,7 @@ Aplikacije za iOS i Android otvaraju sve formate koje otvara i verzija za račun
 * Dodana je opcija koja omogućava kružno kretanje prilikom navigacije po strukturnim elementima.
 * U izbornik "Alati" dodana je opcija za otvaranje mape u kojoj se nalazi trenutno aktivni dokument.
 * Dodan je jednostavan, ali vrlo efikasan sistem za ažuriranje.
-* Dodana je osnovna funkcija odbrojavanja za spavanje, kojoj možete pristupiti pomoću `Control+Shift+S`.
+* Dodana je osnovna funkcija odbrojavanja za spavanje, kojoj možete pristupiti pomoću `Ctrl+Shift+S`.
 * Dodana je podrška za FB2 elektronske knjige.
 * Dodana je podrška za OpenDocument prezentacije.
 * Dodana je podrška za OpenDocument tekstualne dokumente.
@@ -737,7 +737,7 @@ Aplikacije za iOS i Android otvaraju sve formate koje otvara i verzija za račun
 * Ispravljen je sadržaj u EPUB knjigama s URL kodiranim putanjama datoteka i/ili identifikatorima fragmenata.
 * Ispravljeno je nepravilno uklanjanje razmaka iz XHTML naslova u određenim slučajevima.
 * Ispravljeno je rukovanje razmacima unutar ugniježđenih oznaka `pre` u HTML dokumentima.
-* HTML i Markdown dokumenti sada podržavaju funkciju sadržaja! Prilikom otvaranja HTML ili Markdown dokumenta, Paperback će na osnovu strukture naslova u dokumentu automatski napraviti sadržaj i prikazati ga u dijalogu `Control+T`.
+* HTML i Markdown dokumenti sada podržavaju funkciju sadržaja! Prilikom otvaranja HTML ili Markdown dokumenta, Paperback će na osnovu strukture naslova u dokumentu automatski napraviti sadržaj i prikazati ga u dijalogu `Ctrl+T`.
 * HTML dokumenti sada će koristiti naslov definisan u oznaci `title`, ako postoji. U suprotnom će, kao i do sada, koristiti naziv datoteke bez ekstenzije.
 * UniversalSpeech je zamijenjen live regionom za prijavljivanje govora. Zbog toga se DLL datoteke čitača zaslona više ne isporučuju uz program, a podržan je i veći broj čitača zaslona, uključujući Microsoft Narrator.
 * Biblioteka za rad sa ZIP datotekama je zamijenjena kako bi bilo moguće otvoriti veći broj EPUB knjiga.
@@ -759,13 +759,13 @@ Aplikacije za iOS i Android otvaraju sve formate koje otvara i verzija za račun
 ### Verzija 0.4.0
 
 * Dodana je podrška za CHM dokumente.
-* Dodana je podrška za oznake! Možete imati neograničen broj oznaka u neograničenom broju dokumenata. Krećite se između njih naprijed i nazad pomoću `B` i `Shift+B`, postavite novu oznaku pomoću `Control+Shift+B`, a dijalog za prelazak na određenu oznaku otvorite pomoću `Control+B`.
+* Dodana je podrška za oznake! Možete imati neograničen broj oznaka u neograničenom broju dokumenata. Krećite se između njih naprijed i nazad pomoću `B` i `Shift+B`, postavite novu oznaku pomoću `Ctrl+Shift+B`, a dijalog za prelazak na određenu oznaku otvorite pomoću `Ctrl+B`.
 * Dodan je instalacijski program uz prenosivu ZIP verziju! Instalacijski program će instalirati Paperback u mapu `Program Files` i automatski postaviti pridruživanje datoteka.
 * Tekstualne datoteke s BOM oznakom sada će se ispravno dekodirati, a BOM više neće biti prikazan na početku teksta.
 * U statusnu traku dodano je mnogo više informacija. Sada prikazuje trenutni red, znak i postotak pročitanog dokumenta.
 * HTML komentari, kao ni sadržaj oznaka `script` i `style`, više se neće prikazivati u tekstualnom izlazu.
 * Ako Paperbacku putem komandne linije proslijedite relativnu putanju, sada će je ispravno razriješiti.
-* Kretanje po postotku sada koristi zaseban dijalog sa klizačem, kojem možete pristupiti pomoću `Control+Shift+G`.
+* Kretanje po postotku sada koristi zaseban dijalog sa klizačem, kojem možete pristupiti pomoću `Ctrl+Shift+G`.
 * Dokumenti bez poznatog naslova ili autora sada će uvijek imati podrazumijevane vrijednosti.
 * Logika za spremanje položaja sada je mnogo pametnija i zapisivat će podatke na disk samo kada je to zaista potrebno.
 * Dokument koji je bio u fokusu prilikom zatvaranja Paperbacka sada će biti zapamćen i ponovo otvoren nakon ponovnog pokretanja programa.
