@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 06f1089b5f255d98; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,94527a25,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versão 1.0
 
@@ -173,6 +173,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 ### Teclas adicionais de visualização de documento
 
 * `Delete` / `Numpad Delete` no controle de aba: Fechar a aba do documento selecionado.
+* `Ctrl+1` até `Ctrl+9` (macOS: `Cmd+1` até `Cmd+9`) no texto do documento ou no controle de aba: Ir para os primeiros nove documentos abertos, na ordem em que foram abertos.
 * `Enter` ou `Space` no texto do documento: Seguir um link ou abrir visualização de tabela ou fórmula no cursor.
 * `Enter` em uma página de PDF digitalizada: Reconhecer a página com OCR.
 * `Shift+F10` ou a tecla Menu/Aplicativo no texto do documento: Abrir o menu de contexto.
