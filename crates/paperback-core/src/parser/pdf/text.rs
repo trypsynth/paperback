@@ -89,7 +89,8 @@ fn covers(prev: CharBox, space_box: CharBox) -> bool {
 	let width = space_box.right - space_box.left;
 	let on_the_same_line =
 		prev.bottom <= space_box.bottom + COORDINATE_EPSILON && prev.top >= space_box.top - COORDINATE_EPSILON;
-	width > 0.0 && on_the_same_line && prev.right - space_box.left >= width * SWALLOWED_RATIO
+	let covered_width = prev.right - space_box.left;
+	width > 0.0 && on_the_same_line && covered_width >= width * SWALLOWED_RATIO
 }
 
 /// Whether a space covered by the glyph before it is hidden by that glyph, given how many of a page's measured spaces are covered. A split ligature in front of a space is rare: the PDF of #808 has at most 4% of a page's spaces covered. A font whose glyph boxes are wider than their advances covers nearly all of them, 64% to 91% a page in the PDF of #993, and there being covered says nothing.
