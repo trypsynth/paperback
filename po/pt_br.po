@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-30 16:44+0000\n"
+"POT-Creation-Date: 2026-10-01 11:24-0600\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -1163,6 +1163,7 @@ msgid "&Shift"
 msgstr "&Shift"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
 #, fuzzy
 msgid "&Win"
 msgstr "&Vencer"
@@ -3405,8 +3406,15 @@ msgstr "Não foi encontrado nenhum analisador para a extensão: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Todos os analisadores falharam para a extensão: .{}"
 
-msgid "Unknown update file format."
-msgstr "Formato desconhecido de arquivo."
+#, fuzzy
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Não está sendo executado a partir de um AppImage; não é possível fazer auto-atualização."
+
+msgid "Failed to get current exe path"
+msgstr "Falha ao obter caminho atual.exe caminho"
+
+msgid "Failed to launch update script"
+msgstr "Falha ao carregar atualização de script"
 
 #, fuzzy
 msgid "Failed to open disk image"
@@ -3415,22 +3423,6 @@ msgstr "Falha ao abrir imagem de disco"
 #, fuzzy
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
 msgstr "A atualização foi baixada e sua imagem de disco foi aberta. Feche o %s e arraste a nova versão para Aplicativos para concluir a instalação."
-
-#, fuzzy
-msgid "Update Ready"
-msgstr "Pronto para atualização"
-
-msgid "Failed to get current exe path"
-msgstr "Falha ao obter caminho atual.exe caminho"
-
-msgid "Failed to launch installer script"
-msgstr "Falha ao carregar script de instalação"
-
-msgid "Failed to launch update script"
-msgstr "Falha ao carregar atualização de script"
-
-msgid "Update failed"
-msgstr "Falha na atualização"
 
 #, fuzzy
 msgid ""
@@ -3467,6 +3459,13 @@ msgstr "%s Atualização"
 msgid "Downloading update..."
 msgstr "Baixando atualização..."
 
+msgid "Update failed"
+msgstr "Falha na atualização"
+
+#, fuzzy
+msgid "Update Ready"
+msgstr "Pronto para atualização"
+
 msgid "No updates available."
 msgstr "Nenhuma atualização disponível."
 
@@ -3485,21 +3484,21 @@ msgstr "Falha na verificação de segurança. A atualização pode ter sido adul
 msgid "Security Error"
 msgstr "Erro de segurança"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d hora"
 msgstr[1] "%d horas"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minuto"
 msgstr[1] "%d minutos"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d second"
 msgid_plural "%d seconds"
@@ -3515,6 +3514,16 @@ msgstr "Definir Atalho para {}"
 #, fuzzy
 msgid "Configure shortcut for {}:"
 msgstr "Configurar atalho para {}:"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+#, fuzzy
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+#, fuzzy
+msgid "&Option"
+msgstr "&Option"
 
 #, fuzzy
 msgid "Tip: click in the key field and press the key combination you want."
@@ -3568,6 +3577,15 @@ msgstr "&Restaurar Padrão"
 msgid "Reset &All to Defaults"
 msgstr "Restaurar &Todos os Padrões"
 
+#, fuzzy
+msgid "A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key from every other program."
+msgstr "Um atalho em todo o sistema precisa de Ctrl, Alt ou Win, caso contrário esse comando seria retirado de todos os outros programas."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+#, fuzzy
+msgid "Shortcut Not Allowed"
+msgstr "Atalho Não Permitido"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 #, fuzzy
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
@@ -3578,7 +3596,7 @@ msgstr "'{}' já está atribuído a '{}'. Reatribuir para '{}'?"
 msgid "Shortcut Conflict"
 msgstr "Conflito de atalhos"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 #, fuzzy
 msgid "Reset all shortcuts to their default values?"
 msgstr "Restaurar todos os atalhos para seus valores padrão?"
@@ -4910,6 +4928,12 @@ msgstr "Arquivo original"
 #, fuzzy
 msgid "Settings exported"
 msgstr "Configurações exportadas"
+
+#~ msgid "Unknown update file format."
+#~ msgstr "Formato desconhecido de arquivo."
+
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Falha ao carregar script de instalação"
 
 #, fuzzy
 #~ msgid "%d char"
