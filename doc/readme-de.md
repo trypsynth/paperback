@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 06f1089b5f255d98; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,94527a25,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - Version 1.0
 
@@ -173,6 +173,7 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 ### Zusätzliche Tastenkombinationen für die Dokumentanzeige
 
 * `Delete` / `Numpad Delete` auf dem Reiter-Steuerelement: Schließt den ausgewählten Dokumentreiter.
+* `Ctrl+1` bis `Ctrl+9` (macOS: `Cmd+1` bis `Cmd+9`) im Dokumenttext oder auf dem Reiter-Steuerelement: Gehe zu den ersten neun offenen Dokumenten in der Reihenfolge, in der sie geöffnet wurden.
 * `Enter` oder `Space` im Dokumenttext: Folgt einem Link oder öffnet eine Tabellen- oder Formelansicht an der Cursorposition.
 * `Enter` auf einer gescannten PDF-Seite: Erkennt die Seite mit Texterkennung.
 * `Shift+F10` oder die Menü-/Anwendungstaste im Dokumenttext: Öffnet das Kontextmenü.
