@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-30 16:44+0000\n"
-"PO-Revision-Date: 2026-10-01 13:15+0300\n"
+"POT-Creation-Date: 2026-10-01 11:24-0600\n"
+"PO-Revision-Date: 2026-10-01 23:19+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1039,6 +1039,7 @@ msgid "&Shift"
 msgstr "&Shift"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
 msgid "&Win"
 msgstr "&Win"
 
@@ -1259,17 +1260,14 @@ msgid "Off"
 msgstr "Ei käytössä"
 
 #. TRANSLATORS: Log level choice that records only errors
-#| msgid "Error"
 msgid "Errors"
 msgstr "Virheet"
 
 #. TRANSLATORS: Log level choice that records warnings and errors
-#| msgid "Warning"
 msgid "Warnings"
 msgstr "Varoitukset"
 
 #. TRANSLATORS: Log level choice that records general activity, warnings and errors
-#| msgid "Duration"
 msgid "Information"
 msgstr "Tiedot"
 
@@ -2976,8 +2974,16 @@ msgstr "Tiedostotunnisteelle .{} ei löydy jäsennintä"
 msgid "All parsers failed for extension: .{}"
 msgstr "Tiedostotunnistetta .{} ei voitu käsitellä millään jäsentimellä"
 
-msgid "Unknown update file format."
-msgstr "Tuntematon päivitystiedoston muoto."
+msgid "Not running from an AppImage; cannot self-update."
+msgstr ""
+"Automaattinen päivitys ei ole mahdollista, koska sovellusta ei ole "
+"käynnistetty AppImage-tiedostosta."
+
+msgid "Failed to get current exe path"
+msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
+
+msgid "Failed to launch update script"
+msgstr "Päivitysskriptin käynnistys epäonnistui"
 
 msgid "Failed to open disk image"
 msgstr "Levykuvan avaaminen epäonnistui"
@@ -2988,21 +2994,6 @@ msgid ""
 msgstr ""
 "Päivitys on ladattu ja sen levykuva avattu. Sulje %s ja viimeistele asennus "
 "vetämällä uusi versio Ohjelmat-kansioon."
-
-msgid "Update Ready"
-msgstr "Päivitys valmiina"
-
-msgid "Failed to get current exe path"
-msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
-
-msgid "Failed to launch installer script"
-msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
-
-msgid "Failed to launch update script"
-msgstr "Päivitysskriptin käynnistys epäonnistui"
-
-msgid "Update failed"
-msgstr "Päivitys epäonnistui"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -3034,6 +3025,12 @@ msgstr "%sin päivitys"
 msgid "Downloading update..."
 msgstr "Päivitystä ladataan..."
 
+msgid "Update failed"
+msgstr "Päivitys epäonnistui"
+
+msgid "Update Ready"
+msgstr "Päivitys valmiina"
+
 msgid "No updates available."
 msgstr "Päivityksiä ei saatavilla."
 
@@ -3050,19 +3047,19 @@ msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %
 msgid "Security Error"
 msgstr "Suojausvirhe"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d tunti"
 msgstr[1] "%d tuntia"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minuutti"
 msgstr[1] "%d minuuttia"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d sekunti"
@@ -3075,6 +3072,15 @@ msgstr "Määritä pikanäppäin komennolle {}"
 #. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 msgid "Configure shortcut for {}:"
 msgstr "Määritä komennon {} pikanäppäin:"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+#| msgid "Options"
+msgid "&Option"
+msgstr "&Alt"
 
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr ""
@@ -3119,6 +3125,17 @@ msgstr "Pa&lauta oletus"
 msgid "Reset &All to Defaults"
 msgstr "Palauta &oletukset"
 
+msgid ""
+"A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key "
+"from every other program."
+msgstr ""
+"Järjestelmänlaajuinen pikanäppäin edellyttää Ctrl-, Alt- tai Win-näppäimen "
+"käyttöä, jotta valittu näppäin toimii myös muissa sovelluksissa."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+msgid "Shortcut Not Allowed"
+msgstr "Pikanäppäintä ei voi käyttää"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
 msgstr ""
@@ -3129,7 +3146,7 @@ msgstr ""
 msgid "Shortcut Conflict"
 msgstr "Pikanäppäimen ristiriita"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 msgid "Reset all shortcuts to their default values?"
 msgstr "Palautetaanko kaikki oletuspikanäppäimet?"
 
