@@ -17,7 +17,7 @@ bitflags = { workspace = true }
 dunce = "1.0.5"
 # Decodes the embedded application icon in `ui::icon`; already in the tree via pdfium.
 image = { version = "0.25.10", default-features = false, features = ["png"] }
-live-region = "0.3.2"
+live-region = "0.3.3"
 native-ocr = "0.1.0"
 paperback-core = { path = "../paperback-core" }
 paperback-formats = { path = "../paperback-formats" }
@@ -35,9 +35,9 @@ rodio-wsola = "0.2.0"
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-ship-shape = "0.2.0"
+ship-shape = "0.3.0"
 toml = { workspace = true }
-wx-utils = { version = "0.3.1", features = ["shortcuts"] }
+wx-utils = { version = "0.4.1", features = ["shortcuts"] }
 # `default-features = false` turns off the seven size knobs wxdragon enables by default, all of
 # which Paperback pays for and none of which it uses: it never prints, it decodes its own icon
 # with the `image` crate and hands wx raw pixels rather than going through wx's JPEG, TIFF, GIF

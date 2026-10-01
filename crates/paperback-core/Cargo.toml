@@ -27,7 +27,7 @@ cfb = "0.15.0"
 chardetng = "1.0.0"
 ego-tree = "0.11.0"
 flate2 = "1.1.10"
-key-chord = "0.1.0"
+key-chord = "0.2.2"
 encoding_rs = "0.8.42"
 icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
 # Only the codecs comic archives actually use; the default feature set pulls in a dozen more.

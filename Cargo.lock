@@ -982,6 +982,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "dirs"
+version = "7.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d57d423b3c82e89b9a24ca3091fee61f456a26edbd28d26c65906f4bc1dcd8f"
+dependencies = [
+ "dirs-sys",
+]
+
+[[package]]
 name = "dirs-sys"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1399,6 +1408,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6303bc9732ae41b04cb554b844a762b4115a61bfaa81e3e83050991eeb56863f"
 dependencies = [
  "digest 0.11.3",
+]
+
+[[package]]
+name = "homeport"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2bf4118cd58fd23a3f2b529027ddf92759d500df2bffbdd5ab610d1f14d0a75a"
+dependencies = [
+ "dirs 7.0.0",
 ]
 
 [[package]]
@@ -1847,15 +1865,15 @@ dependencies = [
 
 [[package]]
 name = "key-chord"
-version = "0.1.0"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51c77b35c5bcda790d6ee8c4734e9b762c4505717c09d5bc32bfee2594df0307"
+checksum = "6f0b9fc9ea91fa687a6702b248bae651b2781b173c5b9e41b2a719527c9283c0"
 
 [[package]]
 name = "lazy_static"
-version = "1.5.0"
+version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+checksum = "20870f649af7073d53e38067b2a84312175d56ea15217e1b15bc83506ec50afb"
 
 [[package]]
 name = "libbz2-rs-sys"
@@ -1943,9 +1961,9 @@ checksum = "11d3d7f243d5c5a8b9bb5d6dd2b1602c0cb0b9db1621bafc7ed66e35ff9fe092"
 
 [[package]]
 name = "live-region"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53e1659caf4b85ebb83b85de72dd1caa6ed352c88e8cd50ca30164aaf295dcee"
+checksum = "7b3c726b63a8bc31584b55bd512caf673fe65215420cac2e1fc8d3901ccf5203"
 dependencies = [
  "objc",
  "pkg-config",
@@ -2041,7 +2059,7 @@ checksum = "21a23e5a28e90434c787466125d2d2658d284f6f2779d6fbe6a6155f442be985"
 dependencies = [
  "bitflags 2.13.2",
  "cfg-if",
- "dirs",
+ "dirs 6.0.0",
  "env_logger",
  "error-chain",
  "fastrand",
@@ -3661,10 +3679,11 @@ dependencies = [
 
 [[package]]
 name = "ship-shape"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20be0c0df76d3290384bd3271039638cb2af1069ee1a8ad119beea227887f357"
+checksum = "24d8d8a8c8427c40bf6c501aa42af704d1be34ffa35bd3f87dd569a4fff81899"
 dependencies = [
+ "homeport",
  "minisign-verify",
  "patois",
  "pulldown-cmark",
@@ -5229,9 +5248,9 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "wx-utils"
-version = "0.3.1"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f35a5cb1b6a413bb13e277e43becb05bbe2e1a71e31129d73a70c5317711a2c2"
+checksum = "92cb0406267678a3fd8fcd060d708ccbcce6f639b1beb4741ce53df1254de16e"
 dependencies = [
  "key-chord",
  "live-region",
@@ -5331,9 +5350,9 @@ dependencies = [
 
 [[package]]
 name = "yoke-derive"
-version = "0.8.3"
+version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33811428bee40dbceb6d545e95754741d17a6aef9a4849f0fd62e2ba4f412a78"
+checksum = "ec8ebde2db3681e8c9980cc27822030e68752690ddfa9473e739aeb4dbde6d71"
 dependencies = [
  "proc-macro2",
  "quote",
