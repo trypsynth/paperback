@@ -12,6 +12,7 @@ use paperback_core::{
 mod cli;
 mod formats;
 mod input;
+mod ocr;
 mod pages;
 
 use cli::{Cli, Format};
@@ -70,10 +71,22 @@ fn main() -> Result<()> {
 	// parsed document rather than asked of the parser, because a page range out of an encrypted
 	// PDF cannot be resolved until the password is in hand, and because the survey that judges a
 	// repeated line a fact about the whole document rather than about the extract.
-	let doc = match selection {
+	let mut doc = match selection {
 		Some(selection) => pages::apply(&selection, &doc)?,
 		None => doc,
 	};
+	let ocr = ocr::Selection { image_pages: cli.ocr_image_pages, text_pages: cli.ocr_text_pages };
+	if ocr.any() {
+		// After the slice, so that a page range is read from the pages it kept rather than from
+		// the whole book, and after the password is settled, so an encrypted document is opened
+		// once with the password rather than twice without it.
+		//
+		// The pass replaces what each page had with the words read off its picture, so what is
+		// left of a page that was read is its text and nothing else. A page the engine read
+		// nothing from keeps what it had, which is why this is not the same as stripping every
+		// instruction afterwards.
+		ocr::pages(&mut doc, &context.file_path, context.password.as_deref(), ocr)?;
+	}
 	let handle = paperback_core::document::DocumentHandle::new(doc);
 	let is_markdown = !cli.metadata && matches!(cli.format, Format::Markdown);
 	let result = if cli.metadata {
