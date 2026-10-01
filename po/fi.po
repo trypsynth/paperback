@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 08:33-0600\n"
-"PO-Revision-Date: 2026-09-26 21:03+0300\n"
+"POT-Creation-Date: 2026-09-30 16:44+0000\n"
+"PO-Revision-Date: 2026-10-01 13:15+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -727,6 +727,10 @@ msgstr "E&nsimmäinen sivu:"
 msgid "&End page:"
 msgstr "V&iimeinen sivu:"
 
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+msgid "&Include text pages too"
+msgstr "&Käsittele myös tekstisivut"
+
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
 msgstr "Tekstintunnistus"
@@ -1129,6 +1133,10 @@ msgstr "Vakaa"
 msgid "Dev"
 msgstr "Kehitys"
 
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Lokitaso:"
+
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
 msgstr "Muokkaa &ikkunan pikanäppäintä..."
@@ -1245,6 +1253,33 @@ msgstr "Luettavuus"
 #. TRANSLATORS: Title of the system dialog for picking a background colour
 msgid "Choose a colour"
 msgstr "Valitse väri"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Ei käytössä"
+
+#. TRANSLATORS: Log level choice that records only errors
+#| msgid "Error"
+msgid "Errors"
+msgstr "Virheet"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+#| msgid "Warning"
+msgid "Warnings"
+msgstr "Varoitukset"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+#| msgid "Duration"
+msgid "Information"
+msgstr "Tiedot"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Vianmääritys"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Yksityiskohtainen"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
