@@ -8,7 +8,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use super::super::text::{char_top, is_invisible_space, reorder_run};
+use super::super::text::{SpaceFilter, char_top, reorder_run};
 use crate::pdfium::{PageObject, PdfTextPage, Tag, TagTree};
 
 /// The mark parameter a tagged page stamps its glyphs with, and the one the tree points at.
@@ -83,15 +83,16 @@ pub(super) fn read(text_page: &PdfTextPage, facts: &TreeFacts, want_tops: bool) 
 		// Chars of the current marked-content run with their pdfium index, so RTL
 		// runs can be reordered visual→logical per run.
 		let mut current_chars: Vec<(char, i32)> = Vec::new();
+		let spaces = SpaceFilter::new(char_count);
 		for i in 0..char_count {
 			let unicode = text_page.unicode_at(i);
 			if let Some(ch) = char::from_u32(unicode) {
 				if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t')) || ch == '\u{00AD}' {
 					continue;
 				}
-				// A space the page never renders (see `is_invisible_space`) would land in the
+				// A space the page never renders (see `SpaceFilter`) would land in the
 				// middle of a word here just as it does in plain extraction.
-				if ch == ' ' && is_invisible_space(text_page, i, char_count) {
+				if ch == ' ' && spaces.hides(text_page, i) {
 					continue;
 				}
 				let is_generated = text_page.is_generated(i);
