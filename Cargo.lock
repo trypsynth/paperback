@@ -2732,9 +2732,9 @@ dependencies = [
 
 [[package]]
 name = "patois-translate"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fde8cd43e127bb3697ff2123ae47157ddcfbee4ac8c74996ac9336c35f05ec7e"
+checksum = "122b04193680a5dfd615be386b4eebf42d1e4b8372bd945565e266a4bf15650c"
 dependencies = [
  "patois",
  "patois-build",
