@@ -10,6 +10,9 @@ repository.workspace = true
 [dependencies]
 anyhow = { workspace = true }
 clap = { version = "4.6.7", features = ["derive"] }
+# The OCR engine itself, for --ocr-image-pages. Core renders the pages; recognizing them is the
+# engine's job, and the desktop crate depends on this the same way rather than through core.
+native-ocr = "0.1.0"
 paperback-core = { path = "../paperback-core" }
 rpassword = "7.5.4"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
