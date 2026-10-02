@@ -62,7 +62,12 @@ fn is_not_really_a_title(title: &str) -> bool {
 	if PLACEHOLDER_TITLES.contains(&lowered.as_str()) || FUNCTION_WORDS.contains(&lowered.as_str()) {
 		return true;
 	}
-	AUTHORING_EXTENSIONS.iter().any(|extension| lowered.ends_with(extension))
+	AUTHORING_EXTENSIONS.iter().any(|extension| lowered.ends_with(extension)) || looks_like_a_job_name(title)
+}
+
+/// Whether a title is one unbroken token with a dot and a digit in it, which is the name a typesetting system gave the job rather than anything the book is called: #1003 had `RudzkaV33.pod.O241`. A title of one word has no dot (*Emma*, *1984*), and one with dots but no digit is initials (*R.U.R.*).
+fn looks_like_a_job_name(title: &str) -> bool {
+	!title.contains(char::is_whitespace) && title.contains('.') && title.contains(|c: char| c.is_ascii_digit())
 }
 
 #[cfg(test)]
@@ -86,6 +91,8 @@ mod tests {
 	#[case("untitled document")]
 	#[case("FROM")]
 	#[case("the")]
+	#[case("RudzkaV33.pod.O241")]
+	#[case("ms_v12.final")]
 	fn a_source_filename_is_not_a_title(#[case] title: &str) {
 		assert!(is_not_really_a_title(title), "{title} should have been rejected");
 	}
@@ -106,6 +113,10 @@ mod tests {
 	#[case("Us")]
 	#[case("If—")]
 	#[case("From Here to Eternity")]
+	#[case("1984")]
+	#[case("Catch-22")]
+	#[case("S.T.A.L.K.E.R.")]
+	#[case("Web 2.0 Architectures")]
 	fn a_real_title_is_kept(#[case] title: &str) {
 		assert!(!is_not_really_a_title(title), "{title} should have been kept");
 	}
