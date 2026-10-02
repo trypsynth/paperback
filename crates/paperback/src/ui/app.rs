@@ -98,7 +98,7 @@ impl PaperbackApp {
 			(cfg.get_app_bool("check_for_updates_on_startup", true), get_update_channel(&cfg))
 		};
 		if check_updates {
-			MainWindow::check_for_updates(true, channel);
+			main_window.check_for_updates(true, channel);
 		}
 		Self {
 			_config: config,

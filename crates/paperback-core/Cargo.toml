@@ -27,7 +27,7 @@ cfb = "0.15.0"
 chardetng = "1.0.0"
 ego-tree = "0.11.0"
 flate2 = "1.1.10"
-key-chord = "0.1.0"
+key-chord = "0.2.2"
 encoding_rs = "0.8.42"
 icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
 # Only the codecs comic archives actually use; the default feature set pulls in a dozen more.
@@ -38,7 +38,7 @@ lofty = "0.25.4"
 mp4ameta = "0.13.0"
 office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
-patois = "0.2.2"
+patois = "0.2.3"
 pdfium-render = { version = "0.9.4", default-features = false, features = ["pdfium_latest", "thread_safe"] }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.4", default-features = false, features = ["html"] }

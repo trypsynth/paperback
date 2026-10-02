@@ -365,6 +365,14 @@ jobs:
           # Writing the cache takes about five minutes. Only master writes one; a pull request
           # restores it and skips the write, which is the slowest step in several of these jobs.
           save-if: ${{ github.ref == 'refs/heads/master' }}
+      # Needed whenever wxdragon-sys has to build wxWidgets again, such as after its features change, which a restored cache otherwise hides.
+      - name: Cache the pinned wxWidgets source
+        uses: actions/cache@v6
+        with:
+          path: target/wxWidgets-*
+          key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+      - name: Fetch the pinned wxWidgets source
+        run: cargo xtask wxwidgets
       # `clippy::all` is denied through [workspace.lints] in Cargo.toml, so this fails the job on
       # any of those lints. The pedantic and nursery groups stay warnings and are printed, not
       # enforced -- see the comment on the lint table for why.

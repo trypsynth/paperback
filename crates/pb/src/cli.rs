@@ -20,6 +20,18 @@ pub struct Cli {
 	/// Password for encrypted documents (omit to be prompted interactively)
 	#[arg(short, long)]
 	pub password: Option<String>,
+	/// Convert only these pages, as ranges: 5-10, 55, 80-end (comma or semicolon separated)
+	#[arg(long)]
+	pub pages: Option<String>,
+	/// Keep the headers and footers a document repeats from page to page, which are taken out by default as the app does
+	#[arg(long)]
+	pub keep_repeated: bool,
+	/// Read the text off pages that are a picture and nothing else, as Batch OCR does
+	#[arg(long)]
+	pub ocr_image_pages: bool,
+	/// Read the text off pages that already have text, for a text layer worth replacing
+	#[arg(long)]
+	pub ocr_text_pages: bool,
 	/// Print document metadata instead of content
 	#[arg(short, long)]
 	pub metadata: bool,
@@ -120,6 +132,66 @@ mod tests {
 	#[test]
 	fn accepts_the_no_join_paragraphs_flag() {
 		assert!(parse(&["pb", "b.pdf", "--no-join-paragraphs"]).no_join_paragraphs);
+	}
+
+	/// The specification is left as typed rather than parsed here, so that the error a reader gets
+	/// for a bad one comes from the code that knows what a page is.
+	#[test]
+	fn the_pages_flag_is_handed_over_whole() {
+		assert_eq!(parse(&["pb", "b.pdf", "--pages", "5-10,80-end"]).pages.as_deref(), Some("5-10,80-end"));
+		assert_eq!(parse(&["pb", "b.pdf"]).pages, None);
+	}
+
+	/// pb has always read a document the way the app does, running heads taken out, so a script written against it keeps getting the same text. Keeping them is the request.
+	#[test]
+	fn repeated_lines_are_taken_out_unless_asked_to_keep_them() {
+		assert!(!parse(&["pb", "b.pdf"]).keep_repeated);
+		assert!(!parse(&["pb", "b.pdf", "--pages", "1-5"]).keep_repeated);
+		assert!(parse(&["pb", "b.pdf", "--keep-repeated"]).keep_repeated);
+	}
+
+	/// No flag turns the OCR instruction back on. --ocr-image-pages is not such a flag: it reads the
+	/// pages the instruction marks and takes the instruction out of the file, so a conversion that
+	/// prints it is a fault in the pass rather than something the reader asked for. Asserted against
+	/// the command's own argument list, since parsing sample command lines would pass just as well
+	/// against a flag that existed but was never spelled out in them.
+	#[test]
+	fn no_flag_offers_the_ocr_placeholder() {
+		let flags: Vec<String> =
+			Cli::command().get_arguments().filter_map(|arg| arg.get_long().map(str::to_string)).collect();
+		assert!(
+			!flags.iter().any(|flag| flag.contains("placeholder")),
+			"pb offers a flag for the OCR instruction itself: {flags:?}"
+		);
+		assert!(flags.contains(&"ocr-image-pages".to_string()), "the flag that reads scanned pages is gone: {flags:?}");
+		assert!(flags.contains(&"ocr-text-pages".to_string()), "the flag that re-reads text pages is gone: {flags:?}");
+	}
+
+	#[test]
+	fn accepts_the_ocr_image_pages_flag() {
+		assert!(!parse(&["pb", "b.pdf"]).ocr_image_pages);
+		assert!(parse(&["pb", "b.pdf", "--ocr-image-pages"]).ocr_image_pages);
+	}
+
+	/// The two flags ask for disjoint kinds of page, so each stands on its own. Neither requires the
+	/// other, since a reader who wants scanned pages re-read and a reader who wants text pages
+	/// re-read are asking for different work.
+	#[test]
+	fn either_page_flag_can_be_given_on_its_own() {
+		let images = parse(&["pb", "b.pdf", "--ocr-image-pages"]);
+		assert!(images.ocr_image_pages);
+		assert!(!images.ocr_text_pages);
+
+		let text = parse(&["pb", "b.pdf", "--ocr-text-pages"]);
+		assert!(text.ocr_text_pages);
+		assert!(!text.ocr_image_pages);
+
+		let both = parse(&["pb", "b.pdf", "--ocr-image-pages", "--ocr-text-pages"]);
+		assert!(both.ocr_image_pages);
+		assert!(both.ocr_text_pages);
+
+		assert!(!parse(&["pb", "b.pdf"]).ocr_image_pages);
+		assert!(!parse(&["pb", "b.pdf"]).ocr_text_pages);
 	}
 
 	/// Paths that start with a dash or contain spaces reach the parser intact rather than being

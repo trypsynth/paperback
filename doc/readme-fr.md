@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 06f1089b5f255d98; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,94527a25,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -173,6 +173,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 ### Touches supplémentaires de la vue des documents
 
 * `Delete` / `Numpad Delete` sur le contrôle d'onglet : Fermer l'onglet de document sélectionné.
+* `Ctrl+1` à `Ctrl+9` (macOS : `Cmd+1` à `Cmd+9`) dans le texte du document ou sur le contrôle d'onglet : Aller aux neuf premiers documents ouverts, dans l'ordre dans lequel ils ont été ouverts.
 * `Enter` ou `Space` dans le texte du document : Suivre un lien ou ouvrir une vue de tableau ou de formule au curseur.
 * `Enter` sur une page PDF numérisée : Reconnaître la page avec OCR.
 * `Shift+F10` ou la touche Menu/Application dans le texte du document : Ouvrir le menu contextuel.

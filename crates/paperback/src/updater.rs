@@ -1,20 +1,13 @@
 //! The auto-updater flow: checking GitHub for a newer release, and the Windows-only foreground
 //! hand-off that lets the relaunched instance take the foreground when it replaces this process.
 
-use std::{
-	env,
-	sync::{
-		Arc,
-		atomic::{AtomicUsize, Ordering},
-	},
-};
+use std::{env, sync::Arc};
 
 use paperback_core::version;
-use ship_shape::{UpdateChannel as ShipChannel, UpdaterConfig};
+use ship_shape::{InstallKind, UpdateChannel as ShipChannel, UpdaterConfig, ui::CheckTrigger};
+use wxdragon::prelude::*;
 
 use crate::config_ext::UpdateChannel;
-
-pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 
 const PAPERBACK_GITHUB_REPO: &str = "trypsynth/paperback";
 const PAPERBACK_MINISIGN_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs574QJHEkoRiGX7";
@@ -102,16 +95,20 @@ fn beat_foreground_grant() {
 #[cfg(not(target_os = "windows"))]
 fn beat_foreground_grant() {}
 
-pub fn run_update_check(silent: bool, channel: UpdateChannel) {
+pub fn run_update_check(parent: &Frame, silent: bool, channel: UpdateChannel) {
 	tracing::info!(channel = %channel, silent, "checking for updates");
+	let install_kind = if is_installer_distribution() { InstallKind::Installer } else { InstallKind::Portable };
 	let config = Arc::new(
 		UpdaterConfig::new(
 			PAPERBACK_GITHUB_REPO,
 			"paperback",
 			"Paperback",
 			PAPERBACK_MINISIGN_KEY,
-			version::user_agent(),
+			env!("CARGO_PKG_VERSION"),
 		)
+		.with_commit(version::COMMIT_HASH)
+		.with_install_kind(install_kind)
+		.with_user_agent(version::user_agent())
 		.with_asset_suffix(UPDATE_ASSET_SUFFIX),
 	);
 	beat_foreground_grant();
@@ -119,15 +116,8 @@ pub fn run_update_check(silent: bool, channel: UpdateChannel) {
 		UpdateChannel::Stable => ShipChannel::Stable,
 		UpdateChannel::Dev => ShipChannel::Dev,
 	};
-	ship_shape::ui::run_update_check(
-		config,
-		MAIN_WINDOW_PTR.load(Ordering::SeqCst),
-		env!("CARGO_PKG_VERSION"),
-		version::COMMIT_HASH,
-		is_installer_distribution(),
-		ship_channel,
-		silent,
-	);
+	let trigger = if silent { CheckTrigger::Automatic } else { CheckTrigger::Manual };
+	ship_shape::ui::run_update_check(config, parent, ship_channel, trigger);
 }
 
 pub fn is_installer_distribution() -> bool {
