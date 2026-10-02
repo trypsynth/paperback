@@ -130,31 +130,19 @@ mod tests {
 		assert_eq!(sc.find_action(i32::from(b'\''), false, false, false), Some(ActionId::SeekAudioForward));
 	}
 
-	/// F5 is the reload key, the way it is in a browser, and it has to be found by the key code the
-	/// text control actually reports rather than by its name. 344 is `WXK_F5` as wxdragon defines
-	/// it, which is what `key-chord` derives an "F5" chord from. Not gated per platform because the
-	/// chord is the same on both: the macOS form of this would have been Cmd+R, and that is already
-	/// Show All Recent Documents.
+	/// Found by the key code the text control reports, 344 (`WXK_F5`), through the lookup the key handler uses.
 	#[test]
 	fn f5_reloads_the_document() {
 		let chord = ActionId::Reload.default_chord().expect("reload ships a default chord");
 		assert_eq!(chord, KeyChord::new(false, false, false, "F5"));
 		assert!(chord.matches(344, false, false, false), "F5 on its own must match");
-		// Through the same lookup the key handler calls, so this covers the wiring and not just
-		// the table. A second action claiming F5 would win here by being earlier in `all()`.
 		assert_eq!(ShortcutsConfig::default().find_action(344, false, false, false), Some(ActionId::Reload));
-		// Bare, or it stops being the browser-shaped key and starts shadowing Ctrl+F5, which a
-		// reader would reasonably reach for even though nothing binds it yet.
 		assert!(!chord.matches(344, true, false, false), "must not answer for Ctrl+F5");
 		assert!(!chord.matches(344, false, true, false), "must not answer for Alt+F5");
 		assert!(!chord.matches(344, false, false, true), "must not answer for Shift+F5");
 	}
 
-	/// Two actions sharing a default chord is neither a compile error nor a warning: `find_action`
-	/// walks `all()` in order and returns the first match, so the later one is simply unreachable
-	/// and its key appears to do the wrong thing. The Customize Shortcuts dialog holds the whole
-	/// keymap as one scope for the same reason. Checked across every pair rather than per action,
-	/// because a per-action assertion cannot see a chord some *other* action has taken.
+	/// `find_action` returns the first match, so of two actions sharing a default chord the later one could never be reached.
 	#[test]
 	fn no_two_actions_share_a_default_chord() {
 		let all = ActionId::all();

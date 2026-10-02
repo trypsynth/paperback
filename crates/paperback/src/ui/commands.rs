@@ -761,11 +761,7 @@ mod tests {
 		assert_eq!(command.enable, Enable::HasRecentDocuments);
 	}
 
-	/// F5 is off with no document open, and stays on for a help file or a source view, where the
-	/// handler declines to act. Gating the item on `track` instead would want a new `Enable` rule
-	/// and a pass over the tabs to drive it, and no other command changes state as the reader
-	/// switches tabs; leaving it on keeps "is there a document" and "will this one do anything" in
-	/// the two places that already own them.
+	/// On for a help file or a source view too, where the handler does nothing: no other command's state changes as the reader switches tabs.
 	#[test]
 	fn reload_needs_a_document() {
 		let command = for_action(ActionId::Reload).unwrap();

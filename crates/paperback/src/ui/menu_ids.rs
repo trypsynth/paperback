@@ -1,5 +1,5 @@
 use wx_utils::seq_ids;
-use wxdragon::id::{ID_ABOUT, ID_EXIT};
+use wxdragon::id::{ID_ABOUT, ID_EXIT, ID_HIGHEST};
 
 pub const EXIT: i32 = ID_EXIT;
 pub const ABOUT: i32 = ID_ABOUT;
@@ -28,17 +28,11 @@ mod edit_ids {
 	pub const SELECT_ALL: i32 = ffi::WXD_ID_SELECTALL as i32;
 }
 
-const BASE: i32 = 5000;
+// Above wxWidgets' stock ids, which run from 5000 to 5999. One of ours landing on a stock id takes on its meaning: on macOS wxID_CUT, wxID_COPY, wxID_PASTE and wxID_CLEAR are bound to the native cut:, copy:, paste: and delete: actions instead of to our handler.
+const BASE: i32 = ID_HIGHEST + 1;
 
 // File menu (BASE + 0..99)
-// File menu (BASE + 0..99). These start at BASE + 30 rather than BASE: wxWidgets has ids of its
-// own in this range (EXIT is 5006, ABOUT 5014, PREFERENCES 5022) which `Exit` and `About` map to
-// rather than to a `seq_ids!` one, and nothing here stops a menu item being handed the same
-// number as one. The ids are assigned in sequence, so inserting an item in the middle walks the
-// later ones along until one of them lands on a constant - which is how adding Reload gave
-// Clear Recent Documents the same id as Exit. Starting past all three leaves the walk somewhere
-// harmless to go, and `no_menu_id_collides_with_a_wxwidgets_id` keeps it that way.
-seq_ids!(BASE + 30 => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS, RELOAD);
+seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS, RELOAD);
 
 // Recent documents - reserved range (BASE + 100..199)
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
@@ -246,9 +240,7 @@ mod tests {
 		assert!(id < RECENT_DOCUMENT_BASE);
 	}
 
-	/// The File menu owns `BASE + 0..99` and the recent-document entries start at `BASE + 100`. An
-	/// action landing outside that range would be enabled and disabled alongside the recent list
-	/// rather than the File menu's own items, and the two would fight over it.
+	/// The recent-document entries start at `BASE + 100`, so a File item past them would be enabled and disabled along with the recent list.
 	#[test]
 	fn reload_has_a_file_menu_id() {
 		use paperback_core::config::ActionId;
@@ -257,23 +249,16 @@ mod tests {
 		assert!(id < RECENT_DOCUMENT_BASE);
 	}
 
-	/// `Exit` and `About` are wxWidgets' own ids rather than ones from `seq_ids!`, so nothing in
-	/// this file stops some other action being handed the same number as one of them. It
-	/// happened: adding a File item walked the sequence along until a later one landed on
-	/// `wxID_EXIT` (5006), which `every_command_has_a_distinct_id` in the command table caught.
-	/// Asserted here so the next insertion into any range is caught beside that range rather
-	/// than in another crate. The two actions that are *meant* to hold those ids are exempt.
+	/// Adding Reload once walked a File id onto wxID_EXIT, and moving the File menu up to escape it put Close on wxID_CUT, which macOS binds to the native cut: action. Only the actions meant to be stock items may have a stock id.
 	#[test]
-	fn no_menu_id_collides_with_a_wxwidgets_id() {
+	fn only_stock_actions_have_wxwidgets_ids() {
 		use paperback_core::config::ActionId;
 		for action in ActionId::all() {
 			if matches!(action, ActionId::Exit | ActionId::About) {
 				continue;
 			}
 			let id = action_to_menu_id(*action);
-			assert_ne!(id, EXIT, "{action:?} is wxID_EXIT");
-			assert_ne!(id, ABOUT, "{action:?} is wxID_ABOUT");
-			assert_ne!(id, PREFERENCES, "{action:?} is wxID_PREFERENCES");
+			assert!(!(5000..=ID_HIGHEST).contains(&id), "{action:?} has {id}, a wxWidgets stock id");
 		}
 	}
 }

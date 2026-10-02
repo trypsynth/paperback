@@ -519,9 +519,7 @@ impl ActionId {
 			Self::Close => Some(KeyChord::new(true, false, false, "W")),
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "W")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
-			// Bare F5 on macOS as everywhere else: Cmd+R is already Show All Recent Documents
-			// here, and an unmodified function key needs no macOS variant the way F7 does not
-			// have one either.
+			// Not Cmd+R, the browser's reload on macOS, which is Show All Recent Documents here.
 			Self::Reload => Some(KeyChord::new(false, false, false, "F5")),
 			Self::ShowAllRecentDocuments => Some(KeyChord::new(true, false, false, "R")),
 			Self::ClearRecentDocuments => None,
@@ -636,7 +634,6 @@ impl ActionId {
 			Self::Close => Some(KeyChord::new(true, false, false, "F4")),
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "F4")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
-			// Bare, like the F-keys already bound here (F3, F7, F11) and like F5 in a browser.
 			Self::Reload => Some(KeyChord::new(false, false, false, "F5")),
 			Self::ShowAllRecentDocuments => Some(KeyChord::new(true, false, false, "R")),
 			Self::ClearRecentDocuments => None,

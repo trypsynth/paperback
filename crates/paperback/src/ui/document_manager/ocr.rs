@@ -48,9 +48,7 @@ pub(super) struct OcrJob {
 	batch: bool,
 	/// Pages whose text has made it into the document so far, for the closing announcement.
 	recognized: usize,
-	/// Set when the stop was a side effect of something else rather than the reader asking for
-	/// it. Re-reading the document cancels whatever OCR was running on it, and a reader who
-	/// pressed F5 did not ask to be told how many pages had been recognized on the way out.
+	/// Stopped by a re-read rather than by the reader, so its remaining flushes are dropped and nothing is announced.
 	quiet_cancel: bool,
 }
 
@@ -91,8 +89,7 @@ impl DocumentManager {
 	/// Asks a running batch to stop after the page it is on. The completion path announces how
 	/// much was recognized before the stop, so there is nothing to announce here.
 	///
-	/// `quiet` is for a stop the reader did not ask for on its own terms - re-reading the
-	/// document does this - where a count of pages recognized is noise rather than news.
+	/// `quiet` is for a stop that comes from re-reading the document, where the count would describe discarded text.
 	pub fn cancel_ocr(&mut self, quiet: bool) {
 		if let Some(job) = self.active_tab_mut().and_then(|tab| tab.ocr_job.as_mut()) {
 			job.cancel.store(true, Ordering::Relaxed);
@@ -193,11 +190,7 @@ impl DocumentManager {
 	/// Folds a group of recognized pages into the document. Called on the UI thread from the
 	/// worker, once per flush.
 	///
-	/// Drops the flush for a job that was stopped as a side effect of a re-read. The worker only
-	/// tests the cancel flag between pages, and a flush is queued from the page before the one it
-	/// stops on, so a group recognized before the reader pressed F5 can still be waiting to be
-	/// applied by the time the document has been re-read. Writing it would put the text back into
-	/// the buffer the re-read was for clearing, which is the one outcome F5 has to rule out.
+	/// Drops a flush for a job stopped by a re-read: the worker only checks the cancel flag between pages, so pages recognized before F5 can still arrive after it.
 	pub(crate) fn apply_ocr_results(&mut self, file_path: &Path, results: Vec<PageResult>) {
 		let label = self.live_region_label;
 		let Some(index) = self.tabs.iter().position(|tab| tab.file_path.as_path() == file_path) else {
@@ -269,10 +262,7 @@ impl DocumentManager {
 
 	/// Announces batch progress. Called on the UI thread from the worker.
 	///
-	/// Silent for a job that was stopped as a side effect of something else, for the same reason
-	/// [`DocumentManager::finish_ocr`] is. The progress announcements are already queued when the
-	/// reader presses F5, and one of them landing afterwards cuts off the "Document reloaded."
-	/// that matters more than a count of pages on their way to being discarded.
+	/// Silent for a job stopped by a re-read, or a queued count would cut off "Document reloaded."
 	pub(crate) fn announce_ocr_progress(&self, done: usize, total: usize) {
 		if self.active_tab().is_some_and(|tab| tab.ocr_job.as_ref().is_some_and(|job| job.quiet_cancel)) {
 			return;
@@ -284,11 +274,7 @@ impl DocumentManager {
 
 	/// Clears the job and announces the outcome. Called on the UI thread when the worker ends.
 	///
-	/// Says nothing at all when the job was stopped as a side effect of something else. A reader
-	/// who pressed F5 is told the document was re-read, and "Batch OCR stopped. 12 pages
-	/// recognized." on top of that describes work whose text the re-read has just thrown away:
-	/// it is a report about something that is no longer there, arriving after the announcement
-	/// that actually matters.
+	/// Silent for a job stopped by a re-read, whose pages the re-read threw away.
 	pub(crate) fn finish_ocr(&mut self, file_path: &Path, canceled: bool) {
 		let label = self.live_region_label;
 		let Some(tab) = self.tabs.iter_mut().find(|tab| tab.file_path.as_path() == file_path) else {
