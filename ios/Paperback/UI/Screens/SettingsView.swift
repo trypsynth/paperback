@@ -208,7 +208,7 @@ struct SettingsView: View {
 						UIApplication.shared.open(url)
 					}
 				} label: {
-					// TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the iOS Settings app, where the language can be changed
+					// TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
 					LabeledContent {
 						Text(currentLanguageName).foregroundStyle(.secondary)
 					} label: {
