@@ -6,10 +6,10 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 0.8.2\n"
+"Project-Id-Version: paperback 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 08:33-0600\n"
-"PO-Revision-Date: 2026-10-01 01:12+0200\n"
+"POT-Creation-Date: 2026-10-01 11:24-0600\n"
+"PO-Revision-Date: 2026-10-02 23:55+0200\n"
 "Last-Translator: 4Sense Gaming <lukas@4sensegaming.cz>\n"
 "Language-Team: Lukáš Hosnedl <lukas@4sensegaming.cz>\n"
 "Language: cs\n"
@@ -730,6 +730,10 @@ msgstr "&Počáteční stránka:"
 msgid "&End page:"
 msgstr "&Konečná stránka:"
 
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+msgid "&Include text pages too"
+msgstr "&Zahrnout i stránky s textem"
+
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
 msgstr "Spustit OCR"
@@ -1038,6 +1042,7 @@ msgid "&Shift"
 msgstr "&Shift"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
 msgid "&Win"
 msgstr "&Win"
 
@@ -1129,6 +1134,10 @@ msgstr "Stabilní"
 #. TRANSLATORS: Developer/development update channel option
 msgid "Dev"
 msgstr "Vývojový"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Úroveň logování:"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
@@ -1246,6 +1255,30 @@ msgstr "Čitelnost"
 #. TRANSLATORS: Title of the system dialog for picking a background colour
 msgid "Choose a colour"
 msgstr "Výběr barvy"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Vypnuto"
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr "Chyby"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr "Varování"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr "Informace"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Debug"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Trace"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -1387,7 +1420,6 @@ msgid "Temporary bookmark."
 msgstr "Dočasná záložka."
 
 #. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
-#| msgid "Page %d"
 msgid "%s, page %d"
 msgstr "%s, stránka %d"
 
@@ -1450,7 +1482,6 @@ msgid "Find &Next"
 msgstr "Najít &následující"
 
 #. TRANSLATORS: Button that finds and lists every occurrence of the search text
-#| msgid "Find &Next"
 msgid "Find &All"
 msgstr "Najít &vše"
 
@@ -2952,8 +2983,14 @@ msgstr "Nebyl nalezen žádný parser pro příponu: . {}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Všechny parsery selhaly u přípony: .{}"
 
-msgid "Unknown update file format."
-msgstr "Neznámý formát souboru aktualizace."
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Paperback není spuštěn z AppImage; nelze automaticky aktualizovat."
+
+msgid "Failed to get current exe path"
+msgstr "Nepodařilo se zjistit cestu k aktuálnímu spustitelnému souboru"
+
+msgid "Failed to launch update script"
+msgstr "Nepodařilo se spustit aktualizační skript"
 
 msgid "Failed to open disk image"
 msgstr "Nepodařilo se otevřít obraz disku"
@@ -2964,21 +3001,6 @@ msgid ""
 msgstr ""
 "Aktualizace je stažena a její obraz disku otevřen. Pro dokončení instalace "
 "ukončete %s a přetáhněte novou verzi do složky Applications."
-
-msgid "Update Ready"
-msgstr "Aktualizace připravena"
-
-msgid "Failed to get current exe path"
-msgstr "Nepodařilo se zjistit cestu k aktuálnímu spustitelnému souboru"
-
-msgid "Failed to launch installer script"
-msgstr "Nepodařilo se spustit instalační skript"
-
-msgid "Failed to launch update script"
-msgstr "Nepodařilo se spustit aktualizační skript"
-
-msgid "Update failed"
-msgstr "Aktualizace selhala"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -3010,6 +3032,12 @@ msgstr "%s aktualizace"
 msgid "Downloading update..."
 msgstr "Stahuje se aktualizace..."
 
+msgid "Update failed"
+msgstr "Aktualizace selhala"
+
+msgid "Update Ready"
+msgstr "Aktualizace připravena"
+
 msgid "No updates available."
 msgstr "Žádné aktualizace nejsou dostupné."
 
@@ -3028,21 +3056,21 @@ msgstr ""
 msgid "Security Error"
 msgstr "Chyba zabezpečení"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d hodina"
 msgstr[1] "%d hodiny"
 msgstr[2] "%d hodin"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minuta"
 msgstr[1] "%d minuty"
 msgstr[2] "%d minut"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d vteřina"
@@ -3056,6 +3084,15 @@ msgstr "Nastavení zkratky pro {}"
 #. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 msgid "Configure shortcut for {}:"
 msgstr "Nastavte klávesovou zkratku pro {}:"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+#| msgid "Options"
+msgid "&Option"
+msgstr "&Option"
 
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr ""
@@ -3099,6 +3136,17 @@ msgstr "&Obnovit na výchozí"
 msgid "Reset &All to Defaults"
 msgstr "&Obnovit všechny výchozí zkratky"
 
+msgid ""
+"A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key "
+"from every other program."
+msgstr ""
+"V globální systémové zkratce je nutné použít Ctrl, Alt nebo Windows, jinak "
+"by zkratka přebrala tuto klávesu všem ostatním programům."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+msgid "Shortcut Not Allowed"
+msgstr "Nepovolená zkratka"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
 msgstr "'{}' už má přiřazenou zkratku '{}'. Chcete ji změnit na '{}'?"
@@ -3107,7 +3155,7 @@ msgstr "'{}' už má přiřazenou zkratku '{}'. Chcete ji změnit na '{}'?"
 msgid "Shortcut Conflict"
 msgstr "Konflikt zkratek"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 msgid "Reset all shortcuts to their default values?"
 msgstr "Obnovit všechny klávesové zkratky na výchozí hodnoty?"
 
@@ -4148,13 +4196,11 @@ msgstr "{}, {}, změněno {}{}"
 
 #. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
 #: kt
-#| msgid "Percent"
 msgid "{} percent"
 msgstr "{} procent"
 
 #. TRANSLATORS: TalkBack state of a heading line in the document; {} is its level number
 #: kt
-#| msgid "Heading"
 msgid "Heading {}"
 msgstr "Nadpis {}"
 
