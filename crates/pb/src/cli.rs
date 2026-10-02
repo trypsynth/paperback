@@ -23,9 +23,9 @@ pub struct Cli {
 	/// Convert only these pages, as ranges: 5-10, 55, 80-end (comma or semicolon separated)
 	#[arg(long)]
 	pub pages: Option<String>,
-	/// Take out the headers and footers a document repeats from page to page, as the app does
+	/// Keep the headers and footers a document repeats from page to page, which are taken out by default as the app does
 	#[arg(long)]
-	pub strip_repeated: bool,
+	pub keep_repeated: bool,
 	/// Print document metadata instead of content
 	#[arg(short, long)]
 	pub metadata: bool,
@@ -136,13 +136,12 @@ mod tests {
 		assert_eq!(parse(&["pb", "b.pdf"]).pages, None);
 	}
 
-	/// Stripping the repeated page-edge lines is off unless asked for, because it costs the whole
-	/// document to judge and a page range out of a long file should not pay that unasked.
+	/// pb has always read a document the way the app does, running heads taken out, so a script written against it keeps getting the same text. Keeping them is the request.
 	#[test]
-	fn the_strip_repeated_flag_is_off_unless_given() {
-		assert!(!parse(&["pb", "b.pdf"]).strip_repeated);
-		assert!(!parse(&["pb", "b.pdf", "--pages", "1-5"]).strip_repeated);
-		assert!(parse(&["pb", "b.pdf", "--strip-repeated"]).strip_repeated);
+	fn repeated_lines_are_taken_out_unless_asked_to_keep_them() {
+		assert!(!parse(&["pb", "b.pdf"]).keep_repeated);
+		assert!(!parse(&["pb", "b.pdf", "--pages", "1-5"]).keep_repeated);
+		assert!(parse(&["pb", "b.pdf", "--keep-repeated"]).keep_repeated);
 	}
 
 	/// The instruction to press Enter on a scanned page is not something a converted file can be

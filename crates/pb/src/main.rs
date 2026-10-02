@@ -48,11 +48,8 @@ fn main() -> Result<()> {
 	}
 	let mut context =
 		ParserContext::new(file_path).with_render_tables_inline(true).with_join_pdf_paragraphs(!cli.no_join_paragraphs);
-	// Off unless asked for, and the reason is in `ParserContext::strip_running_text`: taking the
-	// repeated page-edge lines out is a judgement, not a fact, and on some documents it costs real
-	// sentences. pb converts a document as it is; the app tidies it, so `--strip-repeated` is how a
-	// caller asks for the app's reading of the same file.
-	context = context.with_strip_running_text(cli.strip_repeated);
+	// On by default, so pb gives the app's reading of a file as it always has. Taking the repeated page-edge lines out is a judgement, though, and on some documents it costs real sentences (see `ParserContext::strip_running_text`), so `--keep-repeated` is there for a caller that would rather keep every line.
+	context = context.with_strip_running_text(!cli.keep_repeated);
 	if let Some(password) = cli.password {
 		context = context.with_password(password);
 	}
