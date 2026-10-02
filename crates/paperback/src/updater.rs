@@ -109,7 +109,8 @@ pub fn run_update_check(parent: &Frame, silent: bool, channel: UpdateChannel) {
 		.with_commit(version::COMMIT_HASH)
 		.with_install_kind(install_kind)
 		.with_user_agent(version::user_agent())
-		.with_asset_suffix(UPDATE_ASSET_SUFFIX),
+		.with_asset_suffix(UPDATE_ASSET_SUFFIX)
+		.with_macos_relaunch_env("PAPERBACK_CONFIG_DIR", crate::config_ext::config_dir().to_string_lossy()),
 	);
 	beat_foreground_grant();
 	let ship_channel = match channel {
@@ -117,6 +118,15 @@ pub fn run_update_check(parent: &Frame, silent: bool, channel: UpdateChannel) {
 		UpdateChannel::Dev => ShipChannel::Dev,
 	};
 	let trigger = if silent { CheckTrigger::Automatic } else { CheckTrigger::Manual };
+	#[cfg(target_os = "macos")]
+	ship_shape::ui::run_update_check_with_exit_handler(
+		config,
+		parent,
+		ship_channel,
+		trigger,
+		crate::ui::quit_for_update,
+	);
+	#[cfg(not(target_os = "macos"))]
 	ship_shape::ui::run_update_check(config, parent, ship_channel, trigger);
 }
 

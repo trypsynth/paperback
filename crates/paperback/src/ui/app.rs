@@ -362,3 +362,15 @@ fn send_ipc_command(command: &IpcCommand) {
 	#[cfg(target_os = "linux")]
 	pipe_unix::send(&payload);
 }
+
+/// The updater calls this on the UI thread only once its helper is ready. Force-close runs the
+/// normal persistence and audio cleanup without macOS's hide-on-close veto.
+#[cfg(target_os = "macos")]
+pub fn quit_for_update() {
+	if let Some(window) = main_window_from_ptr() {
+		window.frame().close(true);
+	}
+	if let Some(app) = wxdragon::app::get_app_instance() {
+		app.exit_main_loop();
+	}
+}

@@ -60,6 +60,10 @@ codegen-units = 1
 # Fixed upstream in zip-rs/zip2#962, merged but not yet published: 9.0.0-pre3 is still the newest
 # version on crates.io. Drop this once the fix reaches a release.
 [patch.crates-io]
+# Automatic macOS installation and its shutdown callback are not released yet.
+# Companion PR: https://github.com/trypsynth/ship-shape/pull/6
+# Replace this pin with a crates.io dependency after that change is released.
+ship-shape = { git = "https://github.com/johanntan/ship-shape", rev = "41969f2e79010ef5e372710009af46b3baa78ac4" }
 # Pinned to wxDragon main for the binary-size work (its #224 and #225) and the tree item data fix
 # (#241), none of it released yet. Swap back to a plain version requirement once a release carries them.
 wxdragon = { git = "https://github.com/AllenDang/wxDragon", rev = "82356530e28062b0909de96b6831a585cae7256c" }
