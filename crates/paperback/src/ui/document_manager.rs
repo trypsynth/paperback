@@ -498,12 +498,18 @@ impl DocumentManager {
 		}
 	}
 
-	/// Reloads the tab at `index` if its file changed on disk since it was last parsed. Returns
-	/// true only when the tab content was actually replaced. If the stored password no longer
-	/// decrypts the file, prompts for a new one and retries once. Uses `try_lock` on the config:
-	/// the caller may be a frame-activation handler running inside a nested modal event loop
-	/// whose opener already holds the lock.
+	/// Reloads the tab at `index` if its file changed on disk since it was last parsed and automatic reloading is on.
 	pub fn reload_tab_if_changed(&mut self, index: usize) -> bool {
+		self.reload_tab(index, false)
+	}
+
+	/// Re-reads the tab at `index` from disk. Returns true only when the tab content was
+	/// actually replaced.
+	///
+	/// `forced` is the reader pressing F5, which skips the checks for a changed file and for the automatic reloading setting: turning that setting off asks not to be reloaded unasked, and F5 is asking. It does not reload an untracked tab, a help file or a source view, since a source view's title is applied once when it opens and a re-parse would leave "Source: ..." over an ordinary reading.
+	///
+	/// If the stored password no longer decrypts the file, prompts for a new one and retries once. Uses `try_lock` on the config: the caller may be a frame-activation handler running inside a nested modal event loop whose opener already holds the lock.
+	pub fn reload_tab(&mut self, index: usize, forced: bool) -> bool {
 		let Some(tab) = self.tabs.get(index) else {
 			return false;
 		};
@@ -513,14 +519,14 @@ impl DocumentManager {
 		let Some(current) = read_fingerprint(&tab.file_path) else {
 			return false;
 		};
-		if tab.disk_fingerprint == Some(current) {
+		if !forced && tab.disk_fingerprint == Some(current) {
 			return false;
 		}
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let Ok(cfg) = self.config.try_lock() else {
 			return false;
 		};
-		if !cfg.get_app_bool("auto_reload_documents", true) {
+		if !forced && !cfg.get_app_bool("auto_reload_documents", true) {
 			return false;
 		}
 		let password = cfg.get_document_password(&path_str);
@@ -544,7 +550,7 @@ impl DocumentManager {
 		let tab = &mut self.tabs[index];
 		if reloaded {
 			tab.session.set_history(&positions, history_index);
-			tracing::info!(path = %path_str, "document reloaded after on-disk change");
+			tracing::info!(path = %path_str, forced, "document reloaded");
 		} else {
 			tab.disk_fingerprint = Some(current);
 		}

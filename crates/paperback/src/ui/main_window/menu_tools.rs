@@ -143,7 +143,7 @@ pub(super) fn handle_batch_ocr(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, l
 		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion)
 		.build();
 		if confirm.show_modal() == ID_YES {
-			dm.lock().unwrap().cancel_ocr();
+			dm.lock().unwrap().cancel_ocr(false);
 		}
 		return;
 	}

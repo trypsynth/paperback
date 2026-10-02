@@ -1,5 +1,5 @@
 use wx_utils::seq_ids;
-use wxdragon::id::{ID_ABOUT, ID_EXIT};
+use wxdragon::id::{ID_ABOUT, ID_EXIT, ID_HIGHEST};
 
 pub const EXIT: i32 = ID_EXIT;
 pub const ABOUT: i32 = ID_ABOUT;
@@ -28,10 +28,11 @@ mod edit_ids {
 	pub const SELECT_ALL: i32 = ffi::WXD_ID_SELECTALL as i32;
 }
 
-const BASE: i32 = 5000;
+// Above wxWidgets' stock ids, which run from 5000 to 5999. One of ours landing on a stock id takes on its meaning: on macOS wxID_CUT, wxID_COPY, wxID_PASTE and wxID_CLEAR are bound to the native cut:, copy:, paste: and delete: actions instead of to our handler.
+const BASE: i32 = ID_HIGHEST + 1;
 
 // File menu (BASE + 0..99)
-seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS);
+seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS, RELOAD);
 
 // Recent documents - reserved range (BASE + 100..199)
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
@@ -130,6 +131,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::Close => CLOSE,
 		ActionId::CloseAll => CLOSE_ALL,
 		ActionId::ReopenLastClosed => REOPEN_LAST_CLOSED,
+		ActionId::Reload => RELOAD,
 		ActionId::ShowAllRecentDocuments => SHOW_ALL_DOCUMENTS,
 		ActionId::ClearRecentDocuments => CLEAR_RECENT_DOCUMENTS,
 		ActionId::Exit => EXIT,
@@ -236,5 +238,27 @@ mod tests {
 		let id = action_to_menu_id(ActionId::ClearRecentDocuments);
 		assert_eq!(id, CLEAR_RECENT_DOCUMENTS);
 		assert!(id < RECENT_DOCUMENT_BASE);
+	}
+
+	/// The recent-document entries start at `BASE + 100`, so a File item past them would be enabled and disabled along with the recent list.
+	#[test]
+	fn reload_has_a_file_menu_id() {
+		use paperback_core::config::ActionId;
+		let id = action_to_menu_id(ActionId::Reload);
+		assert_eq!(id, RELOAD);
+		assert!(id < RECENT_DOCUMENT_BASE);
+	}
+
+	/// Adding Reload once walked a File id onto wxID_EXIT, and moving the File menu up to escape it put Close on wxID_CUT, which macOS binds to the native cut: action. Only the actions meant to be stock items may have a stock id.
+	#[test]
+	fn only_stock_actions_have_wxwidgets_ids() {
+		use paperback_core::config::ActionId;
+		for action in ActionId::all() {
+			if matches!(action, ActionId::Exit | ActionId::About) {
+				continue;
+			}
+			let id = action_to_menu_id(*action);
+			assert!(!(5000..=ID_HIGHEST).contains(&id), "{action:?} has {id}, a wxWidgets stock id");
+		}
 	}
 }

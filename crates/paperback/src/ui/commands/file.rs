@@ -111,6 +111,32 @@ pub fn reopen_last_closed(ctx: &Ctx) {
 	}
 }
 
+/// Re-reads the current document from disk, whether or not it changed and whether or not automatic reloading is on.
+///
+/// `try_lock`, because `reload_tab` can raise a password prompt whose event loop re-enters the menu handlers. A missing file or a failed parse is silent, as on the automatic path: the document they were reading stays put.
+pub fn reload(ctx: &Ctx) {
+	let Ok(mut dm) = ctx.dm.try_lock() else {
+		return;
+	};
+	let Some(index) = dm.active_tab_index() else {
+		return;
+	};
+	// A file that is gone has nothing to re-read, so a batch running on it keeps going rather than losing its pages for nothing.
+	if !dm.active_tab().is_some_and(|tab| tab.file_path.exists()) {
+		return;
+	}
+	// Stopped before the re-read, or its pages would be put back into the new buffer, and quietly, since a count of pages recognized describes text the re-read throws away.
+	dm.cancel_ocr(true);
+	if !dm.reload_tab(index, true) {
+		return;
+	}
+	update_title_from_manager(ctx.frame, &dm);
+	dm.update_status_bar();
+	// High, unlike the automatic reload's Medium: here the reader asked for it.
+	// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+	live_region::announce_with_priority(ctx.live_region_label, &t("Document reloaded."), live_region::Priority::High);
+}
+
 pub fn clear_recent_documents(ctx: &Ctx) {
 	{
 		let cfg = ctx.config.lock().unwrap();
