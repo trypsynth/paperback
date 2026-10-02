@@ -201,6 +201,24 @@ struct SettingsView: View {
 				// TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
 				Text(t("With VoiceOver, swipe up on the play button to move forward, or down to move back."))
 			}
+			Section {
+				// iOS keeps a language for each app on its own page in the Settings app, which is where the system lets one be chosen: an app that changes it itself only sees the change after a relaunch.
+				Button {
+					if let url = URL(string: UIApplication.openSettingsURLString) {
+						UIApplication.shared.open(url)
+					}
+				} label: {
+					// TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the iOS Settings app, where the language can be changed
+					LabeledContent {
+						Text(currentLanguageName).foregroundStyle(.secondary)
+					} label: {
+						Text(t("Language"))
+					}
+				}
+			} footer: {
+				// TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+				Text(t("Opens Paperback in the Settings app, where its language can be changed."))
+			}
 			ReadabilitySettingsSection(viewModel: viewModel)
 			TtsSettingsSection(
 				ttsManager: viewModel.reading.ttsManager,
@@ -211,6 +229,13 @@ struct SettingsView: View {
 		// TRANSLATORS: Navigation bar title of the Settings screen
 		.navigationTitle(t("Settings"))
 		.navigationBarTitleDisplayMode(.inline)
+	}
+
+	/// The language the app is shown in, named in that language, as the iOS language list names them.
+	private var currentLanguageName: String {
+		let code = Bundle.main.preferredLocalizations.first ?? "en"
+		let locale = Locale(identifier: code)
+		return locale.localizedString(forIdentifier: code)?.capitalized(with: locale) ?? code
 	}
 
 	private var voicePicker: some View {
