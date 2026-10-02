@@ -10,6 +10,7 @@ pub enum ActionId {
 	Close,
 	CloseAll,
 	ReopenLastClosed,
+	Reload,
 	ShowAllRecentDocuments,
 	ClearRecentDocuments,
 	Exit,
@@ -112,6 +113,7 @@ impl ActionId {
 			Self::Close,
 			Self::CloseAll,
 			Self::ReopenLastClosed,
+			Self::Reload,
 			Self::ShowAllRecentDocuments,
 			Self::ClearRecentDocuments,
 			Self::Exit,
@@ -214,6 +216,7 @@ impl ActionId {
 			| Self::Close
 			| Self::CloseAll
 			| Self::ReopenLastClosed
+			| Self::Reload
 			| Self::ShowAllRecentDocuments
 			| Self::ClearRecentDocuments
 			| Self::Exit => ShortcutCategory::File,
@@ -318,6 +321,8 @@ impl ActionId {
 			Self::CloseAll => crate::t("Close All"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ReopenLastClosed => crate::t("Reopen Last Closed"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::Reload => crate::t("Reload"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ShowAllRecentDocuments => crate::t("Show All Recent Documents..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -514,6 +519,10 @@ impl ActionId {
 			Self::Close => Some(KeyChord::new(true, false, false, "W")),
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "W")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
+			// Bare F5 on macOS as everywhere else: Cmd+R is already Show All Recent Documents
+			// here, and an unmodified function key needs no macOS variant the way F7 does not
+			// have one either.
+			Self::Reload => Some(KeyChord::new(false, false, false, "F5")),
 			Self::ShowAllRecentDocuments => Some(KeyChord::new(true, false, false, "R")),
 			Self::ClearRecentDocuments => None,
 			Self::Exit => None,
@@ -627,6 +636,8 @@ impl ActionId {
 			Self::Close => Some(KeyChord::new(true, false, false, "F4")),
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "F4")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
+			// Bare, like the F-keys already bound here (F3, F7, F11) and like F5 in a browser.
+			Self::Reload => Some(KeyChord::new(false, false, false, "F5")),
 			Self::ShowAllRecentDocuments => Some(KeyChord::new(true, false, false, "R")),
 			Self::ClearRecentDocuments => None,
 			Self::Exit => Some(KeyChord::new(true, false, false, "Q")),

@@ -111,6 +111,51 @@ pub fn reopen_last_closed(ctx: &Ctx) {
 	}
 }
 
+/// Reloads the current document from disk on request, whether or not the file has changed and
+/// whether or not automatic reloading is switched on.
+///
+/// `try_lock` rather than the `lock().unwrap()` its neighbours here use, because `reload_tab`
+/// can raise a modal password prompt whose event loop re-enters the menu handlers; holding this
+/// lock across that is the deadlock `reload_tab`'s own `try_lock` on the config already avoids
+/// one level down.
+///
+/// A file that is not there, and a re-parse that fails, are silent here exactly as they are on
+/// the automatic path. The old text staying put is visible enough, and a modal error over a key
+/// someone pressed once is a worse answer than the document they were reading remaining. A
+/// running batch is cancelled either way, before the file is even looked at.
+pub fn reload(ctx: &Ctx) {
+	let Ok(mut dm) = ctx.dm.try_lock() else {
+		return;
+	};
+	let Some(index) = dm.active_tab_index() else {
+		return;
+	};
+	// Before the re-parse, and not after it: a batch that is still running would go on reading
+	// pages of the file into a document that is being replaced underneath it. `apply_ocr_results`
+	// re-resolves each page against the current session by number, so its text would land in the
+	// freshly read buffer and put back exactly what the re-read was meant to clear. Closing the
+	// document does not stop a batch either - the tab is dropped, the worker keeps its own handle
+	// on the cancel flag and runs to the end - so this is the only place a reader can call one off
+	// short of finding it by hand.
+	//
+	// Quiet, because the count of pages it managed before stopping describes text this re-read is
+	// discarding. "Document reloaded." is the whole of what happened as far as the reader is
+	// concerned, and a second line about the OCR would only contradict it.
+	dm.cancel_ocr(true);
+	if !dm.reload_tab(index, true) {
+		return;
+	}
+	// The same two updates the frame-activation handler makes after a reload: both the title and
+	// the status bar are derived from a session that has just been rebuilt.
+	update_title_from_manager(ctx.frame, &dm);
+	dm.update_status_bar();
+	// High rather than the Medium the automatic path uses, because that priority is chosen
+	// precisely on the grounds that the reader did not ask for this and it should queue behind
+	// whatever is being read out. Here they did ask.
+	// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+	live_region::announce_with_priority(ctx.live_region_label, &t("Document reloaded."), live_region::Priority::High);
+}
+
 pub fn clear_recent_documents(ctx: &Ctx) {
 	{
 		let cfg = ctx.config.lock().unwrap();

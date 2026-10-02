@@ -130,6 +130,65 @@ mod tests {
 		assert_eq!(sc.find_action(i32::from(b'\''), false, false, false), Some(ActionId::SeekAudioForward));
 	}
 
+	/// F5 is the reload key, the way it is in a browser, and it has to be found by the key code the
+	/// text control actually reports rather than by its name. 344 is `WXK_F5` as wxdragon defines
+	/// it, which is what `key-chord` derives an "F5" chord from. Not gated per platform because the
+	/// chord is the same on both: the macOS form of this would have been Cmd+R, and that is already
+	/// Show All Recent Documents.
+	#[test]
+	fn f5_reloads_the_document() {
+		let chord = ActionId::Reload.default_chord().expect("reload ships a default chord");
+		assert_eq!(chord, KeyChord::new(false, false, false, "F5"));
+		assert!(chord.matches(344, false, false, false), "F5 on its own must match");
+		// Through the same lookup the key handler calls, so this covers the wiring and not just
+		// the table. A second action claiming F5 would win here by being earlier in `all()`.
+		assert_eq!(ShortcutsConfig::default().find_action(344, false, false, false), Some(ActionId::Reload));
+		// Bare, or it stops being the browser-shaped key and starts shadowing Ctrl+F5, which a
+		// reader would reasonably reach for even though nothing binds it yet.
+		assert!(!chord.matches(344, true, false, false), "must not answer for Ctrl+F5");
+		assert!(!chord.matches(344, false, true, false), "must not answer for Alt+F5");
+		assert!(!chord.matches(344, false, false, true), "must not answer for Shift+F5");
+	}
+
+	/// Two actions sharing a default chord is neither a compile error nor a warning: `find_action`
+	/// walks `all()` in order and returns the first match, so the later one is simply unreachable
+	/// and its key appears to do the wrong thing. The Customize Shortcuts dialog holds the whole
+	/// keymap as one scope for the same reason. Checked across every pair rather than per action,
+	/// because a per-action assertion cannot see a chord some *other* action has taken.
+	#[test]
+	fn no_two_actions_share_a_default_chord() {
+		let all = ActionId::all();
+		for (index, &first) in all.iter().enumerate() {
+			let Some(first_chord) = first.default_chord() else {
+				continue;
+			};
+			for &second in &all[index + 1..] {
+				let Some(second_chord) = second.default_chord() else {
+					continue;
+				};
+				assert_ne!(
+					(
+						&first_chord.key,
+						first_chord.ctrl,
+						first_chord.raw_ctrl,
+						first_chord.alt,
+						first_chord.shift,
+						first_chord.win
+					),
+					(
+						&second_chord.key,
+						second_chord.ctrl,
+						second_chord.raw_ctrl,
+						second_chord.alt,
+						second_chord.shift,
+						second_chord.win
+					),
+					"{first:?} and {second:?} ship the same default chord"
+				);
+			}
+		}
+	}
+
 	#[test]
 	fn shortcuts_config_set_reset_and_find() {
 		let mut sc = ShortcutsConfig::default();

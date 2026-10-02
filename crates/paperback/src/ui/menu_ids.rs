@@ -31,7 +31,14 @@ mod edit_ids {
 const BASE: i32 = 5000;
 
 // File menu (BASE + 0..99)
-seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS);
+// File menu (BASE + 0..99). These start at BASE + 30 rather than BASE: wxWidgets has ids of its
+// own in this range (EXIT is 5006, ABOUT 5014, PREFERENCES 5022) which `Exit` and `About` map to
+// rather than to a `seq_ids!` one, and nothing here stops a menu item being handed the same
+// number as one. The ids are assigned in sequence, so inserting an item in the middle walks the
+// later ones along until one of them lands on a constant - which is how adding Reload gave
+// Clear Recent Documents the same id as Exit. Starting past all three leaves the walk somewhere
+// harmless to go, and `no_menu_id_collides_with_a_wxwidgets_id` keeps it that way.
+seq_ids!(BASE + 30 => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS, RELOAD);
 
 // Recent documents - reserved range (BASE + 100..199)
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
@@ -130,6 +137,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::Close => CLOSE,
 		ActionId::CloseAll => CLOSE_ALL,
 		ActionId::ReopenLastClosed => REOPEN_LAST_CLOSED,
+		ActionId::Reload => RELOAD,
 		ActionId::ShowAllRecentDocuments => SHOW_ALL_DOCUMENTS,
 		ActionId::ClearRecentDocuments => CLEAR_RECENT_DOCUMENTS,
 		ActionId::Exit => EXIT,
@@ -236,5 +244,36 @@ mod tests {
 		let id = action_to_menu_id(ActionId::ClearRecentDocuments);
 		assert_eq!(id, CLEAR_RECENT_DOCUMENTS);
 		assert!(id < RECENT_DOCUMENT_BASE);
+	}
+
+	/// The File menu owns `BASE + 0..99` and the recent-document entries start at `BASE + 100`. An
+	/// action landing outside that range would be enabled and disabled alongside the recent list
+	/// rather than the File menu's own items, and the two would fight over it.
+	#[test]
+	fn reload_has_a_file_menu_id() {
+		use paperback_core::config::ActionId;
+		let id = action_to_menu_id(ActionId::Reload);
+		assert_eq!(id, RELOAD);
+		assert!(id < RECENT_DOCUMENT_BASE);
+	}
+
+	/// `Exit` and `About` are wxWidgets' own ids rather than ones from `seq_ids!`, so nothing in
+	/// this file stops some other action being handed the same number as one of them. It
+	/// happened: adding a File item walked the sequence along until a later one landed on
+	/// `wxID_EXIT` (5006), which `every_command_has_a_distinct_id` in the command table caught.
+	/// Asserted here so the next insertion into any range is caught beside that range rather
+	/// than in another crate. The two actions that are *meant* to hold those ids are exempt.
+	#[test]
+	fn no_menu_id_collides_with_a_wxwidgets_id() {
+		use paperback_core::config::ActionId;
+		for action in ActionId::all() {
+			if matches!(action, ActionId::Exit | ActionId::About) {
+				continue;
+			}
+			let id = action_to_menu_id(*action);
+			assert_ne!(id, EXIT, "{action:?} is wxID_EXIT");
+			assert_ne!(id, ABOUT, "{action:?} is wxID_ABOUT");
+			assert_ne!(id, PREFERENCES, "{action:?} is wxID_PREFERENCES");
+		}
 	}
 }

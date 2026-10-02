@@ -498,12 +498,32 @@ impl DocumentManager {
 		}
 	}
 
-	/// Reloads the tab at `index` if its file changed on disk since it was last parsed. Returns
-	/// true only when the tab content was actually replaced. If the stored password no longer
-	/// decrypts the file, prompts for a new one and retries once. Uses `try_lock` on the config:
-	/// the caller may be a frame-activation handler running inside a nested modal event loop
-	/// whose opener already holds the lock.
+	/// Reloads the tab at `index` if its file changed on disk since it was last parsed.
+	///
+	/// The automatic half of [`DocumentManager::reload_tab`], kept as its own name because that
+	/// is what its two callers mean: a tab switch and a window activation both ask "has this
+	/// moved under me", and neither asks to be told no.
 	pub fn reload_tab_if_changed(&mut self, index: usize) -> bool {
+		self.reload_tab(index, false)
+	}
+
+	/// Re-reads the tab at `index` from disk. Returns true only when the tab content was
+	/// actually replaced.
+	///
+	/// `forced` is the reader pressing F5. It drops the two gates that make this a judgement
+	/// rather than an instruction: whether the file looks different, and the "Automatically
+	/// reload changed documents" setting. Someone who has switched that setting off has said
+	/// "do not do this to me without being asked", and a key they press themselves is the asking.
+	///
+	/// The `track` gate is not dropped, and `forced` does not reach it. An untracked tab is a
+	/// help file or a source view, and a source view's title override is applied once when the
+	/// tab is opened rather than stored on it, so re-parsing would leave a tab labelled
+	/// "Source: ..." holding an ordinarily-parsed document.
+	///
+	/// If the stored password no longer decrypts the file, prompts for a new one and retries
+	/// once. Uses `try_lock` on the config: the caller may be a frame-activation handler
+	/// running inside a nested modal event loop whose opener already holds the lock.
+	pub fn reload_tab(&mut self, index: usize, forced: bool) -> bool {
 		let Some(tab) = self.tabs.get(index) else {
 			return false;
 		};
@@ -513,14 +533,14 @@ impl DocumentManager {
 		let Some(current) = read_fingerprint(&tab.file_path) else {
 			return false;
 		};
-		if tab.disk_fingerprint == Some(current) {
+		if !forced && tab.disk_fingerprint == Some(current) {
 			return false;
 		}
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let Ok(cfg) = self.config.try_lock() else {
 			return false;
 		};
-		if !cfg.get_app_bool("auto_reload_documents", true) {
+		if !forced && !cfg.get_app_bool("auto_reload_documents", true) {
 			return false;
 		}
 		let password = cfg.get_document_password(&path_str);
@@ -544,7 +564,7 @@ impl DocumentManager {
 		let tab = &mut self.tabs[index];
 		if reloaded {
 			tab.session.set_history(&positions, history_index);
-			tracing::info!(path = %path_str, "document reloaded after on-disk change");
+			tracing::info!(path = %path_str, forced, "document reloaded");
 		} else {
 			tab.disk_fingerprint = Some(current);
 		}

@@ -149,7 +149,7 @@ impl MainWindow {
 					// Medium rather than the default high: a file changing on disk is not
 					// something the user asked for, so it waits for the current utterance to
 					// finish instead of cutting them off mid sentence.
-					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+					// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
 					live_region::announce_with_priority(
 						live_region_label,
 						&t("Document reloaded."),
@@ -200,7 +200,7 @@ impl MainWindow {
 					dm_ref.update_status_bar();
 					// Medium rather than the default high, for the same reason as the reload
 					// announcement on the page change path.
-					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+					// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
 					live_region::announce_with_priority(
 						live_region_label,
 						&t("Document reloaded."),
