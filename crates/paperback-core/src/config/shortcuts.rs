@@ -253,6 +253,49 @@ mod tests {
 	}
 
 	#[test]
+	fn file_category_holds_document_commands() {
+		assert_eq!(
+			ShortcutCategory::File.actions(),
+			[
+				ActionId::Open,
+				ActionId::Close,
+				ActionId::CloseAll,
+				ActionId::ReopenLastClosed,
+				ActionId::ShowAllRecentDocuments,
+				ActionId::ClearRecentDocuments,
+				ActionId::Exit,
+				ActionId::RevealFileInFolder,
+				ActionId::ImportDocumentData,
+				ActionId::ExportDocumentData,
+				ActionId::ExportToPlainText,
+				ActionId::ExportToHtml,
+				ActionId::ExportToMarkdown,
+			]
+		);
+	}
+
+	#[test]
+	fn tools_category_holds_the_remaining_six() {
+		assert_eq!(
+			ShortcutCategory::Tools.actions(),
+			[
+				ActionId::WordCount,
+				ActionId::DocumentInfo,
+				ActionId::Options,
+				ActionId::SleepTimer,
+				ActionId::BatchOcr,
+				ActionId::CustomizeShortcuts,
+			]
+		);
+	}
+
+	#[test]
+	fn table_of_contents_and_elements_list_are_go_commands() {
+		assert_eq!(ActionId::TableOfContents.category(), ShortcutCategory::Go);
+		assert_eq!(ActionId::ElementsList.category(), ShortcutCategory::Go);
+	}
+
+	#[test]
 	fn edit_category_holds_find_and_selection() {
 		assert_eq!(
 			ShortcutCategory::Edit.actions(),

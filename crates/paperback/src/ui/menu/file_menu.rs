@@ -1,6 +1,6 @@
-//! Assembles the File menu. Labels, shortcuts, help text and ids all come from the command
-//! table; this file only decides the order things appear in, and owns the Recent Documents
-//! submenu, whose items are generated from the recent list rather than being fixed commands.
+//! Assembles the File menu: the document commands from the command table, the export and
+//! document data items, and the Recent Documents submenu, whose items are generated from the
+//! recent list rather than being fixed commands.
 
 use std::path::Path;
 
@@ -10,9 +10,6 @@ use patois::t;
 use super::builder::{MenuEntry, format_menu_label, item, item_with_help, submenu};
 use crate::ui::{commands, menu_ids};
 
-/// The File menu's fixed items, in order, above the Recent Documents submenu.
-const ITEMS: &[ActionId] = &[ActionId::Open, ActionId::Close, ActionId::CloseAll, ActionId::ReopenLastClosed];
-
 /// Shown only on Windows and Linux; macOS puts Quit in the application menu.
 const EXIT_ITEM: ActionId = ActionId::Exit;
 
@@ -20,12 +17,53 @@ const EXIT_ITEM: ActionId = ActionId::Exit;
 const CLEAR_RECENT_ITEM: ActionId = ActionId::ClearRecentDocuments;
 
 pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
-	let mut entries = commands::menu_entries(ITEMS, config);
 	// TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 	let recent_label = t("&Recent Documents");
 	// TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 	let recent_help = t("Open a recent document");
+	// TRANSLATORS: Label for the Export submenu in the File menu, which lists the formats a document can be exported to.
+	let export_label = t("Ex&port");
+	// TRANSLATORS: Menu item in the File > Export submenu to export the document as a plain text file.
+	let export_text_label = format_menu_label(&t("Export to &Plain Text..."), ActionId::ExportToPlainText, config);
+	// TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
+	let export_text_help = t("Export document as plain text");
+	// TRANSLATORS: Menu item in the File > Export submenu to export the document as an HTML file.
+	let export_html_label = format_menu_label(&t("Export to &HTML..."), ActionId::ExportToHtml, config);
+	// TRANSLATORS: Status-bar help text for the Export to HTML menu item.
+	let export_html_help = t("Export document as HTML");
+	// TRANSLATORS: Menu item in the File > Export submenu to export the document as a Markdown file.
+	let export_markdown_label = format_menu_label(&t("Export to &Markdown..."), ActionId::ExportToMarkdown, config);
+	// TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
+	let export_markdown_help = t("Export document as Markdown");
+	// TRANSLATORS: Menu item in the File menu to import bookmarks and reading position from a file.
+	let import_label = format_menu_label(&t("&Import Document Data..."), ActionId::ImportDocumentData, config);
+	// TRANSLATORS: Status-bar help text for the Import Document Data menu item.
+	let import_help = t("Import bookmarks and position");
+	// TRANSLATORS: Menu item in the File menu to export bookmarks and reading position to a file.
+	let export_data_label = format_menu_label(&t("&Export Document Data..."), ActionId::ExportDocumentData, config);
+	// TRANSLATORS: Status-bar help text for the Export Document Data menu item.
+	let export_data_help = t("Export bookmarks and position");
+	// TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
+	let reveal_label = format_menu_label(&t("Reveal &File in Folder"), ActionId::RevealFileInFolder, config);
+	// TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
+	let reveal_help = t("Reveal document in the file manager");
+	let export_formats = vec![
+		item_with_help(menu_ids::EXPORT_TO_PLAIN_TEXT, export_text_label, export_text_help),
+		item_with_help(menu_ids::EXPORT_TO_HTML, export_html_label, export_html_help),
+		item_with_help(menu_ids::EXPORT_TO_MARKDOWN, export_markdown_label, export_markdown_help),
+	];
+	let mut entries = commands::menu_entries(&[ActionId::Open], config);
 	entries.push(submenu(recent_label, recent_help, recent_document_entries(config)));
+	entries.push(commands::menu_entry(ActionId::ReopenLastClosed, config));
+	entries.extend([
+		MenuEntry::Separator,
+		submenu(export_label, String::new(), export_formats),
+		item_with_help(menu_ids::IMPORT_DOCUMENT_DATA, import_label, import_help),
+		item_with_help(menu_ids::EXPORT_DOCUMENT_DATA, export_data_label, export_data_help),
+		item_with_help(menu_ids::REVEAL_FILE_IN_FOLDER, reveal_label, reveal_help),
+		MenuEntry::Separator,
+	]);
+	entries.extend(commands::menu_entries(&[ActionId::Close, ActionId::CloseAll], config));
 	if !cfg!(target_os = "macos") {
 		entries.push(MenuEntry::Separator);
 		entries.push(commands::menu_entry(EXIT_ITEM, config));

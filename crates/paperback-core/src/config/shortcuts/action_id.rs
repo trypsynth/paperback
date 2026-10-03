@@ -218,7 +218,13 @@ impl ActionId {
 			| Self::ReopenLastClosed
 			| Self::ShowAllRecentDocuments
 			| Self::ClearRecentDocuments
-			| Self::Exit => ShortcutCategory::File,
+			| Self::Exit
+			| Self::RevealFileInFolder
+			| Self::ImportDocumentData
+			| Self::ExportDocumentData
+			| Self::ExportToPlainText
+			| Self::ExportToHtml
+			| Self::ExportToMarkdown => ShortcutCategory::File,
 			Self::Reload | Self::OpenInWebView | Self::ViewSource | Self::ToggleWordWrap | Self::ToggleFullScreen => {
 				ShortcutCategory::View
 			}
@@ -228,7 +234,9 @@ impl ActionId {
 			| Self::SetSelectionStart
 			| Self::CopyFromSelectionStart
 			| Self::JumpToSelectionStart => ShortcutCategory::Edit,
-			Self::GoToLine
+			Self::TableOfContents
+			| Self::ElementsList
+			| Self::GoToLine
 			| Self::GoToPercent
 			| Self::GoToPage
 			| Self::GoBack
@@ -284,18 +292,10 @@ impl ActionId {
 			| Self::BookmarkWithNote => ShortcutCategory::Bookmarks,
 			Self::WordCount
 			| Self::DocumentInfo
-			| Self::TableOfContents
-			| Self::ElementsList
-			| Self::RevealFileInFolder
 			| Self::Options
 			| Self::SleepTimer
 			| Self::BatchOcr
-			| Self::CustomizeShortcuts
-			| Self::ImportDocumentData
-			| Self::ExportDocumentData
-			| Self::ExportToPlainText
-			| Self::ExportToHtml
-			| Self::ExportToMarkdown => ShortcutCategory::Tools,
+			| Self::CustomizeShortcuts => ShortcutCategory::Tools,
 			Self::PlayPauseAudio
 			| Self::SeekAudioForward
 			| Self::SeekAudioBackward

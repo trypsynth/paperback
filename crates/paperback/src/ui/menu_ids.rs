@@ -31,14 +31,14 @@ mod edit_ids {
 // Above wxWidgets' stock ids, which run from 5000 to 5999. One of ours landing on a stock id takes on its meaning: on macOS wxID_CUT, wxID_COPY, wxID_PASTE and wxID_CLEAR are bound to the native cut:, copy:, paste: and delete: actions instead of to our handler.
 const BASE: i32 = ID_HIGHEST + 1;
 
-// File menu (BASE + 0..99)
+// File menu, plus Reload from the View menu (BASE + 0..99)
 seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS, RELOAD);
 
 // Recent documents - reserved range (BASE + 100..199)
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
 pub const RECENT_DOCUMENT_MAX: i32 = BASE + 199;
 
-// Go menu: Find (BASE + 200..209)
+// Edit menu: Find; Announce Percentage; Bookmarks menu: temporary bookmark (BASE + 200..209)
 seq_ids!(BASE + 200 => FIND, FIND_NEXT, FIND_PREVIOUS, ANNOUNCE_PERCENT, SET_TEMPORARY_BOOKMARK, JUMP_TO_TEMPORARY_BOOKMARK);
 
 // Go menu: Go to (BASE + 210..219)
@@ -64,7 +64,7 @@ seq_ids!(BASE + 250 =>
 // Go menu: Page navigation (BASE + 270..279)
 seq_ids!(BASE + 270 => PREVIOUS_PAGE, NEXT_PAGE);
 
-// Go menu: Bookmarks and notes (BASE + 280..289)
+// Bookmarks menu: bookmarks and notes (BASE + 280..289)
 seq_ids!(BASE + 280 =>
 	PREVIOUS_BOOKMARK, NEXT_BOOKMARK,
 	PREVIOUS_NOTE, NEXT_NOTE,
@@ -87,25 +87,25 @@ seq_ids!(BASE + 310 => PREVIOUS_LIST, NEXT_LIST, PREVIOUS_LIST_ITEM, NEXT_LIST_I
 seq_ids!(BASE + 314 => CONTAINER_START, CONTAINER_END);
 seq_ids!(BASE + 316 => PREVIOUS_FORMULA, NEXT_FORMULA);
 
-// Tools menu: Document info (BASE + 400..409)
+// Tools menu: document info; Go menu: table of contents and elements list; File menu: reveal; View menu: web view and source (BASE + 400..409)
 seq_ids!(BASE + 400 =>
 	WORD_COUNT, DOCUMENT_INFO, TABLE_OF_CONTENTS, ELEMENTS_LIST,
 	REVEAL_FILE_IN_FOLDER, OPEN_IN_WEB_VIEW, VIEW_SOURCE,
 );
 
-// Tools menu: Import/Export (BASE + 410..419)
+// File menu: export and document data (BASE + 410..419)
 seq_ids!(BASE + 410 => IMPORT_DOCUMENT_DATA, EXPORT_DOCUMENT_DATA, EXPORT_TO_PLAIN_TEXT, EXPORT_TO_HTML, EXPORT_TO_MARKDOWN);
 
-// Tools menu: Bookmarks (BASE + 420..429)
+// Bookmarks menu: creating bookmarks (BASE + 420..429)
 seq_ids!(BASE + 420 => TOGGLE_BOOKMARK, BOOKMARK_WITH_NOTE);
 
 // Tools menu: Settings (BASE + 430..439)
 seq_ids!(BASE + 430 => OPTIONS, SLEEP_TIMER, CUSTOMIZE_SHORTCUTS);
 
-// Tools menu: View toggles (BASE + 440..449)
+// View menu: toggles (BASE + 440..449)
 seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP, TOGGLE_FULL_SCREEN);
 
-// Tools menu: Audio playback (BASE + 450..459)
+// Audio menu (BASE + 450..459)
 seq_ids!(BASE + 450 =>
 	PLAY_PAUSE_AUDIO, SEEK_AUDIO_FORWARD, SEEK_AUDIO_BACKWARD,
 	INCREASE_AUDIO_SEEK_AMOUNT, DECREASE_AUDIO_SEEK_AMOUNT,
@@ -115,7 +115,7 @@ seq_ids!(BASE + 450 =>
 // Tools menu: OCR (BASE + 460..469)
 seq_ids!(BASE + 460 => BATCH_OCR);
 
-// Tools menu: Select and copy submenu (BASE + 470..479)
+// Edit menu: selection (BASE + 470..479)
 seq_ids!(BASE + 470 => SET_SELECTION_START, COPY_FROM_SELECTION_START, JUMP_TO_SELECTION_START);
 
 // Help menu (BASE + 500..599)
