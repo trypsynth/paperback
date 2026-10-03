@@ -24,14 +24,13 @@
   const row = (url, label, count) =>
     `<li><a href="${url}">${label}</a> <span class="count">${fmtCount(count)}</span></li>`;
 
-  const render = (release, label, subtitle = "", showApk = false, showMac = false) => {
+  const render = (release, label, subtitle = "", showMac = false) => {
     const assets = (release.assets ?? []).filter(a => !legacyAssetNames.has(a.name.toLowerCase()));
     const exes = assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
     const winZips = assets.filter(a => a.name.toLowerCase().endsWith(".zip"));
     const linuxTarballs = assets.filter(a => a.name.toLowerCase().endsWith(".tar.gz"));
     const linuxAppImages = assets.filter(a => a.name.toLowerCase().endsWith(".appimage"));
     const macDmg = assets.find(a => a.name.toLowerCase().endsWith(".dmg"));
-    const apks = showApk ? assets.filter(a => a.name.toLowerCase().endsWith(".apk")) : [];
     const version = release.tag_name.replace(/^v/, "");
     const archLabel = name => name.toLowerCase().includes("arm64") ? " (ARM64)" : name.toLowerCase().includes("x64") ? " (x64)" : "";
     const archOrder = name => name.toLowerCase().includes("arm64") ? 1 : 0;
@@ -42,10 +41,6 @@
       ...(showMac && macDmg ? [row(macDmg.browser_download_url, "macOS (.dmg)", macDmg.download_count)] : []),
       ...byArch(linuxAppImages).map(a => row(a.browser_download_url, `Linux Installer${archLabel(a.name)} (.AppImage)`, a.download_count)),
       ...byArch(linuxTarballs).map(a => row(a.browser_download_url, `Linux Portable${archLabel(a.name)} (.tar.gz)`, a.download_count)),
-      ...apks.map(a => {
-        const apkLabel = a.name.includes("arm64") ? "Android APK (arm64-v8a)" : a.name.includes("arm") ? "Android APK (armeabi-v7a)" : "Android APK";
-        return row(a.browser_download_url, apkLabel, a.download_count);
-      }),
     ];
     return `
       <h3>${label} ${version}</h3>
@@ -64,10 +59,10 @@
     const stable = releases.find(isStable);
     const dev = releases.find(r => r.tag_name === "latest");
     const previousStable = releases.filter(isStable).slice(1);
-    stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users", false, true) : "No stable release found.";
-    devEl.innerHTML = dev ? render(dev, "Master Build", "Includes experimental features, may be unstable", true, true) : "No development builds found.";
+    stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users", true) : "No stable release found.";
+    devEl.innerHTML = dev ? render(dev, "Master Build", "Includes experimental features, may be unstable", true) : "No development builds found.";
     if (previousStable.length > 0) {
-      const blocks = previousStable.map(r => `<div class="release">${render(r, "Stable Version", "", false, true)}</div>`).join("");
+      const blocks = previousStable.map(r => `<div class="release">${render(r, "Stable Version", "", true)}</div>`).join("");
       historyEl.innerHTML = `
         <details>
           <summary>Previous stable releases</summary>
