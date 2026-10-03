@@ -3679,8 +3679,9 @@ dependencies = [
 
 [[package]]
 name = "ship-shape"
-version = "0.3.0"
-source = "git+https://github.com/johanntan/ship-shape?rev=bbbdc5761a54a9b0b742b0f393e28ae0548e895b#bbbdc5761a54a9b0b742b0f393e28ae0548e895b"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4509036deff18ba59490ea407c32a5af270578d3243b69365cdc73a829af4a3e"
 dependencies = [
  "homeport",
  "minisign-verify",
