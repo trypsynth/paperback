@@ -34,13 +34,14 @@ impl Default for HotkeyConfig {
 pub enum ShortcutCategory {
 	File,
 	Go,
+	Audio,
 	Tools,
 	Help,
 }
 
 impl ShortcutCategory {
 	pub const fn all() -> &'static [Self] {
-		&[Self::File, Self::Go, Self::Tools, Self::Help]
+		&[Self::File, Self::Go, Self::Audio, Self::Tools, Self::Help]
 	}
 
 	pub fn display_name(self) -> String {
@@ -49,6 +50,8 @@ impl ShortcutCategory {
 			Self::File => crate::t("File"),
 			// TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::Go => crate::t("Go"),
+			// TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::Audio => crate::t("Audio"),
 			// TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::Tools => crate::t("Tools"),
 			// TRANSLATORS: Name of the "Help" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
@@ -238,6 +241,22 @@ mod tests {
 			total_actions += actions.len();
 		}
 		assert_eq!(total_actions, ActionId::all().len());
+	}
+
+	#[test]
+	fn audio_category_holds_the_playback_commands() {
+		assert_eq!(
+			ShortcutCategory::Audio.actions(),
+			[
+				ActionId::PlayPauseAudio,
+				ActionId::SeekAudioForward,
+				ActionId::SeekAudioBackward,
+				ActionId::IncreaseAudioSeekAmount,
+				ActionId::DecreaseAudioSeekAmount,
+				ActionId::IncreaseAudioSpeed,
+				ActionId::DecreaseAudioSpeed,
+			]
+		);
 	}
 
 	#[test]

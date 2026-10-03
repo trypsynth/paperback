@@ -4,6 +4,7 @@ use wxdragon::prelude::*;
 
 use crate::ui::commands::{self, Enable};
 
+mod audio_menu;
 mod builder;
 #[cfg(target_os = "macos")]
 mod edit_menu;
@@ -29,6 +30,7 @@ pub fn menus(config: &ConfigManager, compact_go: bool) -> Vec<TopMenu> {
 	vec![
 		TopMenu { category: ShortcutCategory::File, entries: file_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::Go, entries: go_menu::entries(config, compact_go) },
+		TopMenu { category: ShortcutCategory::Audio, entries: audio_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::Tools, entries: tools_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::Help, entries: help_menu::entries(config) },
 	]
@@ -41,6 +43,8 @@ fn title(category: ShortcutCategory) -> String {
 		ShortcutCategory::File => t("&File"),
 		// TRANSLATORS: Top-level "Go" menu label in the menu bar
 		ShortcutCategory::Go => t("&Go"),
+		// TRANSLATORS: Top-level "Audio" menu label in the menu bar
+		ShortcutCategory::Audio => t("&Audio"),
 		// TRANSLATORS: Top-level "Tools" menu label in the menu bar
 		ShortcutCategory::Tools => t("&Tools"),
 		// TRANSLATORS: Top-level "Help" menu label in the menu bar

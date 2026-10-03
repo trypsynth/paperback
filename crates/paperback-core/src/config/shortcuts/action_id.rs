@@ -288,13 +288,6 @@ impl ActionId {
 			| Self::CopyFromSelectionStart
 			| Self::JumpToSelectionStart
 			| Self::ToggleWordWrap
-			| Self::PlayPauseAudio
-			| Self::SeekAudioForward
-			| Self::SeekAudioBackward
-			| Self::IncreaseAudioSeekAmount
-			| Self::DecreaseAudioSeekAmount
-			| Self::IncreaseAudioSpeed
-			| Self::DecreaseAudioSpeed
 			| Self::ToggleFullScreen
 			| Self::Options
 			| Self::SleepTimer
@@ -305,6 +298,13 @@ impl ActionId {
 			| Self::ExportToPlainText
 			| Self::ExportToHtml
 			| Self::ExportToMarkdown => ShortcutCategory::Tools,
+			Self::PlayPauseAudio
+			| Self::SeekAudioForward
+			| Self::SeekAudioBackward
+			| Self::IncreaseAudioSeekAmount
+			| Self::DecreaseAudioSeekAmount
+			| Self::IncreaseAudioSpeed
+			| Self::DecreaseAudioSpeed => ShortcutCategory::Audio,
 			Self::About | Self::ViewHelpBrowser | Self::ViewHelpPaperback | Self::CheckForUpdates | Self::Donate => {
 				ShortcutCategory::Help
 			}

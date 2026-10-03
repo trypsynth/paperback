@@ -102,18 +102,6 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		config.get_app_bool("word_wrap", false),
 	));
 	entries.push(MenuEntry::Separator);
-	entries.extend(commands::menu_entries(
-		&[
-			ActionId::PlayPauseAudio,
-			ActionId::SeekAudioForward,
-			ActionId::SeekAudioBackward,
-			ActionId::IncreaseAudioSeekAmount,
-			ActionId::DecreaseAudioSeekAmount,
-			ActionId::IncreaseAudioSpeed,
-			ActionId::DecreaseAudioSpeed,
-		],
-		config,
-	));
 	// TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
 	let full_screen_label = format_menu_label(&t("&Full Screen"), ActionId::ToggleFullScreen, config);
 	// TRANSLATORS: Status-bar help text for the Full Screen menu item.

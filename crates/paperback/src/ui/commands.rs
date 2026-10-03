@@ -609,7 +609,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::PlayPauseAudio,
-		// TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
+		// TRANSLATORS: Menu item in the Audio menu to play or pause the document's audio narration.
 		label: || t("&Play/Pause Audio"),
 		// TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
 		help: Some(|| t("Play or pause this document's audio narration")),
@@ -618,7 +618,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::SeekAudioForward,
-		// TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
+		// TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 		label: || t("Seek Audio &Forward"),
 		// TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
 		help: Some(|| t("Skip the audio narration forward")),
@@ -627,7 +627,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::SeekAudioBackward,
-		// TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
+		// TRANSLATORS: Menu item in the Audio menu to skip the audio narration backward.
 		label: || t("Seek Audio &Backward"),
 		// TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
 		help: Some(|| t("Skip the audio narration backward")),
@@ -636,7 +636,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::IncreaseAudioSeekAmount,
-		// TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
+		// TRANSLATORS: Menu item in the Audio menu to increase the amount of time each audio seek skips.
 		label: || t("&Increase Audio Seek Amount"),
 		// TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 		help: Some(|| t("Increase how far seeking the audio narration moves")),
@@ -645,7 +645,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::DecreaseAudioSeekAmount,
-		// TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
+		// TRANSLATORS: Menu item in the Audio menu to decrease the amount of time each audio seek skips.
 		label: || t("&Decrease Audio Seek Amount"),
 		// TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 		help: Some(|| t("Decrease how far seeking the audio narration moves")),
@@ -654,7 +654,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::IncreaseAudioSpeed,
-		// TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+		// TRANSLATORS: Menu item in the Audio menu to increase the audio narration's playback speed.
 		label: || t("&Increase Audio Speed"),
 		// TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
 		help: Some(|| t("Increase how fast the audio narration plays")),
@@ -663,7 +663,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::DecreaseAudioSpeed,
-		// TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+		// TRANSLATORS: Menu item in the Audio menu to decrease the audio narration's playback speed.
 		label: || t("&Decrease Audio Speed"),
 		// TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
 		help: Some(|| t("Decrease how fast the audio narration plays")),
