@@ -1,97 +1,32 @@
-//! Running the readmes through pandoc and generating the lookup table that maps a language code
-//! to the HTML embedded in the binary for the Help menu.
+//! Rendering the readmes into the HTML embedded in the binary for the Help menu, and generating the lookup table that maps a language code to it.
 
-use std::{
-	env,
-	fmt::Write as _,
-	fs::{self, DirEntry},
-	path::{Path, PathBuf},
-	process::Command,
-};
+use std::{env, fmt::Write as _, fs, path::PathBuf};
+
+use shipfitter::docs::{Page, bcp47, convert, readmes};
 
 use crate::paths;
 
 pub fn build() {
 	let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap_or_default());
 	let doc_dir = paths::workspace_dir().join("doc");
-	let readme = doc_dir.join("readme.md");
-	let config = doc_dir.join("pandoc.yaml");
-	// The readmes are embedded in the binary and nothing reads them from the install directory,
-	// so a build without them would ship an app whose Help menu does nothing. Fail instead.
-	assert!(
-		pandoc_available(),
-		"pandoc is required to build Paperback: it converts doc/readme*.md into the help shown by \
-		 the Help menu, which is embedded in the binary. Install it and build again."
-	);
-	let mut embedded_langs: Vec<String> = Vec::new();
-	{
-		if let Err(e) = pandoc(&readme, &config, &out_dir.join("readme.html"), Some("en")) {
-			panic!("{e}");
-		}
-		embedded_langs.push("en".to_string());
-		if let Ok(entries) = fs::read_dir(&doc_dir) {
-			let mut doc_entries: Vec<_> = entries.flatten().collect();
-			doc_entries.sort_by_key(DirEntry::file_name);
-			for entry in doc_entries {
-				let path = entry.path();
-				if path.extension().and_then(|e| e.to_str()) != Some("md") {
-					continue;
-				}
-				let stem = match path.file_stem().and_then(|s| s.to_str()) {
-					Some(s) => s.to_string(),
-					None => continue,
-				};
-				let lang_code = match stem.strip_prefix("readme-") {
-					Some(code) if !code.is_empty() => code.to_string(),
-					_ => continue,
-				};
-				let lang_output = out_dir.join(format!("readme-{lang_code}.html"));
-				// Pandoc needs the language as BCP 47 to emit a usable `lang` attribute, but our
-				// locale codes use gettext's underscore form (zh_CN). Without this metadata every
-				// readme ships with `lang=""`, so a screen reader has no idea which language the
-				// help is in and may read a translated page with an English voice.
-				let bcp47 = lang_code.replace('_', "-");
-				if let Err(e) = pandoc(&path, &config, &lang_output, Some(&bcp47)) {
-					panic!("{e}");
-				}
-				embedded_langs.push(lang_code);
-			}
-		}
+	println!("cargo:rerun-if-changed={}", doc_dir.display());
+	// The readmes are embedded in the binary and nothing reads them from the install directory, so a build without them would ship an app whose Help menu does nothing. Fail instead.
+	let readmes =
+		readmes(&doc_dir).unwrap_or_else(|e| panic!("couldn't list the readmes in {}: {e}", doc_dir.display()));
+	let mut code = String::from("pub fn readme_for_lang(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
+	for readme in &readmes {
+		// The page's `lang`, so a screen reader reads a translated manual in that language's voice.
+		let lang = bcp47(&readme.code);
+		let page = Page { lang: &lang, title: "Paperback Documentation", ..Page::default() };
+		let html = readme.html_name();
+		convert(&readme.path, &out_dir.join(&html), &page).unwrap_or_else(|e| panic!("{e}"));
+		let _ = writeln!(
+			code,
+			"        {:?} => Some(include_bytes!(concat!(env!(\"OUT_DIR\"), {:?}))),",
+			readme.code,
+			format!("/{html}")
+		);
 	}
-	let code = {
-		let mut code =
-			String::from("pub fn readme_for_lang(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
-		for lang_code in &embedded_langs {
-			let filename =
-				if lang_code == "en" { "/readme.html".to_string() } else { format!("/readme-{lang_code}.html") };
-			let _ = writeln!(
-				code,
-				"        {lang_code:?} => Some(include_bytes!(concat!(env!(\"OUT_DIR\"), {filename:?}))),",
-			);
-		}
-		code.push_str("        _ => None,\n    }\n}\n");
-		code
-	};
+	code.push_str("        _ => None,\n    }\n}\n");
 	let _ = fs::write(out_dir.join("lang_readmes.rs"), code);
-}
-
-fn pandoc_available() -> bool {
-	Command::new("pandoc").arg("--version").output().is_ok_and(|o| o.status.success())
-}
-
-/// Converts `input` with pandoc using the options in the `defaults` file, with `lang` as the
-/// document language.
-fn pandoc(input: &Path, defaults: &Path, output: &Path, lang: Option<&str>) -> Result<(), String> {
-	println!("cargo:rerun-if-changed={}", input.display());
-	println!("cargo:rerun-if-changed={}", defaults.display());
-	let mut command = Command::new("pandoc");
-	command.arg(format!("--defaults={}", defaults.display()));
-	if let Some(lang) = lang {
-		command.args(["-M", &format!("lang={lang}")]);
-	}
-	let status = command.arg(input).arg("-o").arg(output).status().map_err(|e| e.to_string())?;
-	if !status.success() {
-		return Err(format!("pandoc failed to convert {}", input.display()));
-	}
-	Ok(())
 }

@@ -45,13 +45,12 @@ This file is for people working on Paperback. If you want to use it, the [user g
 - Rust 1.91.1 or later (edition 2024), from [rustup](https://rustup.rs).
 - The nightly toolchain, for formatting: `rustup toolchain install nightly`. CI checks formatting with a pinned nightly; `.github/workflows/ci.yml` names it.
 - CMake and Ninja, to compile wxWidgets.
-- `pandoc` on `PATH`, which turns the user guide into the HTML shown by the Help menu. The build fails without it.
 - gettext (`msgfmt`) on `PATH`, to compile the translations. Without it the build still succeeds, but the app is English only.
 - On Windows, the [WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) on the linker's `LIB` path.
 - On Linux, the GTK 3 and WebKitGTK development packages. On Debian and Ubuntu:
 
   ```
-  sudo apt install cmake ninja-build pandoc gettext libgtk-3-dev libwebkit2gtk-4.1-dev libpng-dev libjpeg-dev libtiff-dev libgl1-mesa-dev libglu1-mesa-dev libxkbcommon-dev libwayland-dev libexpat1-dev libxtst-dev libsm-dev libice-dev libasound2-dev
+  sudo apt install cmake ninja-build gettext libgtk-3-dev libwebkit2gtk-4.1-dev libpng-dev libjpeg-dev libtiff-dev libgl1-mesa-dev libglu1-mesa-dev libxkbcommon-dev libwayland-dev libexpat1-dev libxtst-dev libsm-dev libice-dev libasound2-dev
   ```
 
 ### wxWidgets

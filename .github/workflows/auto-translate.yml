@@ -37,10 +37,8 @@ jobs:
           toolchain: stable
       - name: Cache Rust build artifacts
         uses: Swatinem/rust-cache@v2
-      # pandoc is still needed by the build and the android/ios tasks; the translate task
-      # itself no longer converts the readme through HTML.
-      - name: Install gettext and pandoc
-        run: sudo apt-get update && sudo apt-get install -y gettext pandoc
+      - name: Install gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext
       - name: Translate
         # A rate limit or an outage shouldn't turn every push red; entries that didn't get
         # translated, and any that failed a placeholder/accelerator check, are simply retried

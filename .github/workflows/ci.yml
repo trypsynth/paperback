@@ -75,7 +75,7 @@ jobs:
       # The unit tests run on the host JVM and never call into the native library, but the code
       # they cover is compiled against the uniffi types, so the bindings have to exist for the
       # app module to compile at all. Generating them is a host build of paperback-core alone:
-      # no NDK or cargo-ndk, and none of the pdfium, translation, or pandoc assets that the APK
+      # no NDK or cargo-ndk, and none of the pdfium, translation, or Help assets that the APK
       # build in build.yml needs on top. ktlint skips the generated file either way.
       # The interface lives in the Rust now rather than in a .udl, so uniffi reads it from the
       # compiled library's own metadata. That means building the library first, and building it
@@ -242,8 +242,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-      - name: Install CMake, Ninja, and Pandoc
-        run: choco install cmake ninja pandoc -y
+      - name: Install CMake and Ninja
+        run: choco install cmake ninja -y
       - name: Install WebView2 SDK
         run: |
           nuget install Microsoft.Web.WebView2 -OutputDirectory packages
@@ -299,9 +299,9 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-      - name: Install CMake, Ninja, Pandoc, and Gettext
+      - name: Install CMake, Ninja, and Gettext
         run: |
-          brew install cmake ninja pandoc gettext
+          brew install cmake ninja gettext
           echo "/opt/homebrew/opt/gettext/bin" >> "$GITHUB_PATH"
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -342,8 +342,8 @@ jobs:
         with:
           toolchain: stable
           components: clippy
-      - name: Install CMake, Ninja, and Pandoc
-        run: choco install cmake ninja pandoc -y
+      - name: Install CMake and Ninja
+        run: choco install cmake ninja -y
       - name: Install WebView2 SDK
         run: |
           nuget install Microsoft.Web.WebView2 -OutputDirectory packages
