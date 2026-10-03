@@ -1,4 +1,22 @@
+use std::sync::LazyLock;
+
+use regex::Regex;
 use roman::to;
+
+/// A run of dot leaders before a page number at the end of a line: `Getting Started.......12`.
+static LEADERS: LazyLock<Regex> = LazyLock::new(|| {
+	Regex::new(r"(?m)[ \t]*(?:[.\u{2026}\u{00B7}][ \t]?){4,}[ \t]*(\d+|[ivxlcdmIVXLCDM]+)[ \t]*$")
+		.expect("leader pattern is valid")
+});
+
+/// Collapses table-of-contents dot leaders into a single space, so a contents line reads
+/// "Getting Started 12" rather than every dot being spoken. Only runs of four or more dots,
+/// ellipses or middle dots followed by a page number at the end of a line count, which leaves
+/// ellipses and fill-in blanks (`Name: ______`) alone.
+#[must_use]
+pub fn collapse_leaders(input: &str) -> String {
+	LEADERS.replace_all(input, " $1").into_owned()
+}
 
 #[must_use]
 pub fn remove_soft_hyphens(input: &str) -> String {
@@ -141,6 +159,20 @@ mod tests {
 	#[case("", "")]
 	fn test_normalize_line_endings(#[case] input: &str, #[case] expected: &str) {
 		assert_eq!(normalize_line_endings(input), expected);
+	}
+
+	#[rstest]
+	#[case("Physical description of b.book.................3", "Physical description of b.book 3")]
+	#[case("1. Presentation .............. 4", "1. Presentation 4")]
+	#[case("Preface . . . . . . . . . . vii", "Preface vii")]
+	#[case("Index\u{2026}\u{2026}\u{2026}\u{2026}212", "Index 212")]
+	#[case("Line one.......1\nLine two.......2", "Line one 1\nLine two 2")]
+	// Left alone: an ellipsis, a fill-in blank, and leaders not ending in a page number.
+	#[case("Wait for it... then go", "Wait for it... then go")]
+	#[case("Name: ______________", "Name: ______________")]
+	#[case("Loading........ please wait", "Loading........ please wait")]
+	fn collapse_leaders_reads_contents_lines_without_the_dots(#[case] input: &str, #[case] expected: &str) {
+		assert_eq!(collapse_leaders(input), expected);
 	}
 
 	#[rstest]

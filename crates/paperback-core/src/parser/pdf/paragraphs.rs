@@ -9,7 +9,7 @@
 use std::mem;
 
 use super::text::{Line, is_cjk, keeps_hyphen};
-use crate::util::text::{collapse_whitespace, display_len, trim_string};
+use crate::util::text::{collapse_leaders, collapse_whitespace, display_len, trim_string};
 
 /// Fraction of the lines on a page that must be at least as long as the length this returns.
 /// pdfium runs two visual lines together into one line of text often enough - a third of the
@@ -357,6 +357,10 @@ pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(S
 	}
 	if !current_paragraph.is_empty() {
 		paragraphs.push((current_paragraph, current_is_heading, current_start_line));
+	}
+	// A contents page's dot leaders would otherwise be read out dot by dot.
+	for (text, _, _) in &mut paragraphs {
+		*text = collapse_leaders(text);
 	}
 	paragraphs
 }
