@@ -38,7 +38,7 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 <p>No account and no analytics. Your library and your place in it stay on your device.</p>
 </div>
 <div class="card">
-<h3>Yours to change</h3>
+<h3>Open source</h3>
 <p>MIT licensed. The source and the translations are in the open, and you can build it yourself.</p>
 </div>
 </div>
