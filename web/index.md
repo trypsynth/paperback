@@ -18,8 +18,8 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 
 <div class="cards">
 <div class="card">
-<h3>Screen readers come first</h3>
-<p>Not retrofitted. Every dialog and reading control was built against NVDA, JAWS, VoiceOver and TalkBack, and nothing in the program needs a mouse.</p>
+<h3>Made for screen readers</h3>
+<p>Paperback is written by a blind developer and tested with NVDA, JAWS, VoiceOver and TalkBack. Everything works from the keyboard, no mouse needed.</p>
 </div>
 <div class="card">
 <h3>Fast on old hardware</h3>
