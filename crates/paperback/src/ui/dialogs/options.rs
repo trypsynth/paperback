@@ -187,7 +187,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		.build();
 	let strip_running_text_check = CheckBox::builder(&readability_panel)
 		// TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
-		.with_label(&t("&Strip page headers and footers"))
+		.with_label(&t("Remove repeated page &headers and footers in PDFs"))
 		.build();
 	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
