@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-01 11:24-0600\n"
-"PO-Revision-Date: 2026-10-03 19:22+0300\n"
+"PO-Revision-Date: 2026-10-03 20:18+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -3306,12 +3306,12 @@ msgstr "Nopeus"
 #. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
 #: kt swift
 msgid "Speech Rate"
-msgstr "Nopeus"
+msgstr "Puhenopeus"
 
 #. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
 #: kt swift
 msgid "Pitch"
-msgstr "Korkeus"
+msgstr "Äänenkorkeus"
 
 #. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
 #: swift
