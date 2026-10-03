@@ -28,7 +28,7 @@ use super::{
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, TocItem},
 	pdfium::{PdfPage, PdfTextPage, Tag},
-	util::text::{collapse_whitespace, display_len, trim_string},
+	util::text::{collapse_leaders, collapse_whitespace, display_len, trim_string},
 };
 
 mod marked_content;
@@ -183,6 +183,29 @@ pub(super) fn normalize_list_label(label: &str) -> String {
 	if !label.is_empty() && label.chars().all(is_private_use) { "\u{2022}".to_string() } else { label.to_string() }
 }
 
+/// Whether `text` is nothing but a list label: a bullet, a number (`1.`, `1.2.`, `10)`), a
+/// single letter (`a.`, `(b)`) or a roman numeral (`iv.`). Words that end in a full stop, such as
+/// "etc.", are not labels.
+pub(super) fn is_bare_list_label(text: &str) -> bool {
+	let label = text.trim();
+	if label.is_empty() || label.chars().count() > 10 {
+		return false;
+	}
+	let is_bullet = |c: char| {
+		matches!(c, '\u{2022}' | '\u{25E6}' | '\u{25AA}' | '\u{25CF}' | '\u{2013}' | '-' | '*')
+			|| ('\u{E000}'..='\u{F8FF}').contains(&c)
+	};
+	if label.chars().all(is_bullet) {
+		return true;
+	}
+	let Some(body) = label.strip_suffix('.').or_else(|| label.strip_suffix(')')) else { return false };
+	let body = body.strip_prefix('(').unwrap_or(body);
+	let numeric = !body.is_empty() && body.chars().all(|c| c.is_ascii_digit() || c == '.');
+	let letter = body.chars().count() == 1 && body.chars().all(char::is_alphabetic);
+	let roman = !body.is_empty() && body.len() <= 5 && body.chars().all(|c| "ivxlIVXL".contains(c));
+	numeric || letter || roman
+}
+
 fn flush_block(
 	pending_label: &mut String,
 	current_block: &mut String,
@@ -191,7 +214,7 @@ fn flush_block(
 	current_lines_info: &mut Vec<(usize, String)>,
 	images: &mut ImagePlacement,
 ) {
-	let trimmed = trim_string(&collapse_whitespace(current_block));
+	let trimmed = collapse_leaders(&trim_string(&collapse_whitespace(current_block)));
 	current_block.clear();
 	if trimmed.is_empty() {
 		// A label waits here for the block that carries its item's text. An item that never gets
@@ -337,6 +360,12 @@ fn process_struct_element(
 			&& let Some(text) = page_text.take(mcid)
 		{
 			images.note(mcid);
+			// Word tags a list's number as marked content of its own inside the item's body, not
+			// as an Lbl, and what separates it from the text is a tab stop, which is positioning
+			// rather than a character: "1." and "The input voltage" ran together.
+			if is_bare_list_label(current_block) && text.chars().next().is_some_and(|c| !c.is_whitespace()) {
+				current_block.push(' ');
+			}
 			current_block.push_str(text);
 		}
 	}
