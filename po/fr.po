@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 14:16+0000\n"
+"POT-Creation-Date: 2026-10-01 11:24-0600\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -827,6 +827,11 @@ msgstr "&Page de début :"
 msgid "&End page:"
 msgstr "&Page de fin :"
 
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+#, fuzzy
+msgid "&Include text pages too"
+msgstr "&Inclure aussi les pages avec texte"
+
 #. TRANSLATORS: Label for the button that starts the batch OCR
 #, fuzzy
 msgid "OCR"
@@ -1167,6 +1172,7 @@ msgid "&Shift"
 msgstr "&Maj+"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
 #, fuzzy
 msgid "&Win"
 msgstr "&Gagner"
@@ -1270,6 +1276,11 @@ msgstr "Stable"
 #. TRANSLATORS: Developer/development update channel option
 msgid "Dev"
 msgstr "Développement"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+#, fuzzy
+msgid "Log Level:"
+msgstr "Niveau de journalisation :"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 #, fuzzy
@@ -1412,6 +1423,36 @@ msgstr "Lisibilité"
 #, fuzzy
 msgid "Choose a colour"
 msgstr "Choisir une couleur"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+#, fuzzy
+msgid "Off"
+msgstr "Désactivé"
+
+#. TRANSLATORS: Log level choice that records only errors
+#, fuzzy
+msgid "Errors"
+msgstr "Erreurs"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+#, fuzzy
+msgid "Warnings"
+msgstr "Avertissements"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+#, fuzzy
+msgid "Information"
+msgstr "Informations"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+#, fuzzy
+msgid "Debug"
+msgstr "Débogage"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+#, fuzzy
+msgid "Trace"
+msgstr "Trace"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -2782,12 +2823,12 @@ msgstr "Tableau suivant"
 #. TRANSLATORS: Shortcut action to move to the previous formula
 #, fuzzy
 msgid "Previous Formula"
-msgstr "Résultat précédent"
+msgstr "Formule précédente"
 
 #. TRANSLATORS: Shortcut action to move to the next formula
 #, fuzzy
 msgid "Next Formula"
-msgstr "Résultat suivant"
+msgstr "Formule suivante"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -3368,8 +3409,15 @@ msgstr "Aucun analyseur syntaxique n'a été trouvé pour l'extension : .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Tous les analyseurs ont échoué pour l'extension : . {}"
 
-msgid "Unknown update file format."
-msgstr "Format de fichier de mise à jour inconnu."
+#, fuzzy
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Ne s'exécute pas à partir d'une AppImage ; impossible de se mettre à jour automatiquement."
+
+msgid "Failed to get current exe path"
+msgstr "Impossible d'obtenir le chemin de l'exécutable actuel"
+
+msgid "Failed to launch update script"
+msgstr "Impossible de lancer le script de mise à jour"
 
 #, fuzzy
 msgid "Failed to open disk image"
@@ -3378,23 +3426,6 @@ msgstr "Impossible d'ouvrir l'image disque"
 #, fuzzy
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
 msgstr "La mise à jour a été téléchargée et son image disque ouverte. Quittez %s et faites glisser la nouvelle version dans Applications pour terminer l'installation."
-
-#, fuzzy
-msgid "Update Ready"
-msgstr "Prêt pour la mise à jour"
-
-msgid "Failed to get current exe path"
-msgstr "Impossible d'obtenir le chemin de l'exécutable actuel"
-
-#, fuzzy
-msgid "Failed to launch installer script"
-msgstr "Échec du lancement du script d'installation"
-
-msgid "Failed to launch update script"
-msgstr "Impossible de lancer le script de mise à jour"
-
-msgid "Update failed"
-msgstr "Échec de la mise à jour"
 
 #, fuzzy
 msgid ""
@@ -3430,6 +3461,13 @@ msgstr "%s Mise à jour"
 msgid "Downloading update..."
 msgstr "Téléchargement de la mise à jour..."
 
+msgid "Update failed"
+msgstr "Échec de la mise à jour"
+
+#, fuzzy
+msgid "Update Ready"
+msgstr "Prêt pour la mise à jour"
+
 msgid "No updates available."
 msgstr "Aucune mise à jour disponible."
 
@@ -3448,21 +3486,21 @@ msgstr "Échec de la vérification de sécurité. La mise à jour a peut-être �
 msgid "Security Error"
 msgstr "Erreur de sécurité"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d heure"
 msgstr[1] "%d heures"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minute"
 msgstr[1] "%d minutes"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d second"
 msgid_plural "%d seconds"
@@ -3478,6 +3516,16 @@ msgstr "Définir le raccourci pour {}"
 #, fuzzy
 msgid "Configure shortcut for {}:"
 msgstr "Configurer le raccourci pour {} :"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+#, fuzzy
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+#, fuzzy
+msgid "&Option"
+msgstr "&Option"
 
 #, fuzzy
 msgid "Tip: click in the key field and press the key combination you want."
@@ -3531,6 +3579,15 @@ msgstr "&Réinitialiser par défaut"
 msgid "Reset &All to Defaults"
 msgstr "Réinitialiser &tous par défaut"
 
+#, fuzzy
+msgid "A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key from every other program."
+msgstr "Un raccourci système nécessite Ctrl, Alt ou Win, sinon il prendrait cette touche à tous les autres programmes."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+#, fuzzy
+msgid "Shortcut Not Allowed"
+msgstr "Raccourci non autorisé"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 #, fuzzy
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
@@ -3541,7 +3598,7 @@ msgstr "« {} » est déjà attribué à « {} ». Le réattribuer à « {} » ?
 msgid "Shortcut Conflict"
 msgstr "Conflit de raccourcis"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 #, fuzzy
 msgid "Reset all shortcuts to their default values?"
 msgstr "Réinitialiser tous les raccourcis à leurs valeurs par défaut ?"
@@ -3920,7 +3977,7 @@ msgstr "Paragraphe"
 #: swift
 #, fuzzy
 msgid "Pattern & Replacement"
-msgstr "Modèles et pièces de rechange"
+msgstr "Motif et remplacement"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
 #: swift
@@ -4873,6 +4930,13 @@ msgstr "Fichier d'origine"
 #, fuzzy
 msgid "Settings exported"
 msgstr "Paramètres exportés"
+
+#~ msgid "Unknown update file format."
+#~ msgstr "Format de fichier de mise à jour inconnu."
+
+#, fuzzy
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Échec du lancement du script d'installation"
 
 #, fuzzy
 #~ msgid "%d char"

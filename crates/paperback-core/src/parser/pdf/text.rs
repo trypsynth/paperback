@@ -7,7 +7,7 @@
 //! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by the metadata and
 //! table of contents readers as well.
 
-use std::cmp::Ordering;
+use std::{cell::Cell, cmp::Ordering};
 
 use crate::{
 	parser::util::bidi,
@@ -31,6 +31,8 @@ pub(super) struct Line {
 	/// Whether it is set in a monospaced face, which marks it as something whose own line
 	/// breaks are the content: code, or anything else laid out by column.
 	pub monospaced: bool,
+	/// Whether all of it is set in a bold face, which is how a heading set no larger than the text around it stands out.
+	pub bold: bool,
 }
 
 /// Tolerance, in PDF user units, for calling two baselines or two box edges the same. pdfium
@@ -45,6 +47,8 @@ const NO_ADVANCE_RATIO: f64 = 0.25;
 /// underneath that glyph rather than after it. The same page measured 58% at most for real
 /// spaces (an `f` overhangs the space after it) and 92% at least for the spurious ones.
 const SWALLOWED_RATIO: f64 = 0.8;
+/// How many of a page's spaces are measured to decide whether a covered space means anything there. Enough to see the font's habit, few enough that the pdfium calls stay a fixed cost per page.
+const COVER_SAMPLE: usize = 64;
 
 /// Whether a U+0020 in the text layer renders as no space at all, judged from where pdfium puts
 /// it relative to its neighbours. Both shapes of this reach us as an ordinary space that pdfium
@@ -79,15 +83,21 @@ pub(super) fn space_is_invisible(
 	{
 		return true;
 	}
-	if let Some(prev) = prev_box {
-		let on_the_same_line =
-			prev.bottom <= space_box.bottom + COORDINATE_EPSILON && prev.top >= space_box.top - COORDINATE_EPSILON;
-		let covered_width = prev.right - space_box.left;
-		if on_the_same_line && covered_width >= width * SWALLOWED_RATIO {
-			return true;
-		}
-	}
-	false
+	prev_box.is_some_and(|prev| covers(prev, space_box))
+}
+
+/// Whether `prev`, on the same line, lies over most of `space_box`, the second shape [`space_is_invisible`] looks for.
+fn covers(prev: CharBox, space_box: CharBox) -> bool {
+	let width = space_box.right - space_box.left;
+	let on_the_same_line =
+		prev.bottom <= space_box.bottom + COORDINATE_EPSILON && prev.top >= space_box.top - COORDINATE_EPSILON;
+	let covered_width = prev.right - space_box.left;
+	width > 0.0 && on_the_same_line && covered_width >= width * SWALLOWED_RATIO
+}
+
+/// Whether a space covered by the glyph before it is hidden by that glyph, given how many of a page's measured spaces are covered. A split ligature in front of a space is rare: the PDF of #808 has at most 4% of a page's spaces covered. A font whose glyph boxes are wider than their advances covers nearly all of them, 64% to 91% a page in the PDF of #993, and there being covered says nothing.
+fn covering_hides(covered: usize, measured: usize) -> bool {
+	covered * 4 <= measured
 }
 
 /// The top edge of one character, which is what gives a tagged block the height the structure
@@ -96,20 +106,55 @@ pub(super) fn char_top(text_page: &PdfTextPage, index: i32) -> Option<f64> {
 	text_page.char_box(index).map(|boxed| boxed.top)
 }
 
-/// [`space_is_invisible`] for the space at `index` of `text_page`, fetching only the geometry
-/// each test actually needs. Costs three or four pdfium calls per space character and none at
-/// all for anything else, so a page pays for it in proportion to its spaces rather than its
-/// length - the per-character cost that #747 had to undo.
-pub(super) fn is_invisible_space(text_page: &PdfTextPage, index: i32, char_count: i32) -> bool {
-	let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
-		return false;
-	};
-	let next_origin = if index + 1 < char_count { text_page.char_origin(index + 1) } else { None };
-	if space_is_invisible(origin, space_box, next_origin, None) {
-		return true;
+/// [`space_is_invisible`] for the spaces of one page, fetching only the geometry each test actually needs. Costs three or four pdfium calls per space character and none at all for anything else, so a page pays for it in proportion to its spaces rather than its length - the per-character cost that #747 had to undo.
+pub(super) struct SpaceFilter {
+	char_count: i32,
+	/// [`covering_hides`] for this page, measured the first time a covered space turns up, so a page without one never pays for it.
+	covering_hides: Cell<Option<bool>>,
+}
+
+impl SpaceFilter {
+	pub(super) const fn new(char_count: i32) -> Self {
+		Self { char_count, covering_hides: Cell::new(None) }
 	}
-	let prev_box = if index > 0 { text_page.char_box(index - 1) } else { None };
-	space_is_invisible(origin, space_box, None, prev_box)
+
+	/// Whether the space at `index` of `text_page` renders as no space at all.
+	pub(super) fn hides(&self, text_page: &PdfTextPage, index: i32) -> bool {
+		let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
+			return false;
+		};
+		let next_origin = if index + 1 < self.char_count { text_page.char_origin(index + 1) } else { None };
+		if space_is_invisible(origin, space_box, next_origin, None) {
+			return true;
+		}
+		let prev_box = if index > 0 { text_page.char_box(index - 1) } else { None };
+		space_is_invisible(origin, space_box, None, prev_box) && self.covering_hides(text_page)
+	}
+
+	fn covering_hides(&self, text_page: &PdfTextPage) -> bool {
+		if let Some(hides) = self.covering_hides.get() {
+			return hides;
+		}
+		let (mut measured, mut covered) = (0, 0);
+		for index in 1..self.char_count {
+			if measured == COVER_SAMPLE {
+				break;
+			}
+			if text_page.unicode_at(index) != u32::from(' ') {
+				continue;
+			}
+			let (Some(space_box), Some(prev)) = (text_page.char_box(index), text_page.char_box(index - 1)) else {
+				continue;
+			};
+			measured += 1;
+			if covers(prev, space_box) {
+				covered += 1;
+			}
+		}
+		let hides = covering_hides(covered, measured);
+		self.covering_hides.set(Some(hides));
+		hides
+	}
 }
 
 /// Whether `ch` ends the current visual line. pdfium writes a line break as the pair `"\r\n"`,
@@ -152,6 +197,7 @@ fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	Line {
 		size: line_font_size(text_page, chars),
 		monospaced: line_is_monospaced(text_page, chars),
+		bold: line_is_bold(text_page, chars),
 		text: reorder_run(text_page, chars),
 		top,
 		bottom,
@@ -173,6 +219,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 				top: f64::NEG_INFINITY,
 				bottom: f64::NEG_INFINITY,
 				monospaced: false,
+				bold: false,
 			})
 			.collect();
 	};
@@ -181,6 +228,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 	// reordered visual→logical (handles RTL scripts) before paragraph joining.
 	let mut current_chars: Vec<(char, i32)> = Vec::new();
 	let mut previous_char = None;
+	let spaces = SpaceFilter::new(char_count);
 	for i in 0..char_count {
 		let unicode = text_page.unicode_at(i);
 		let Some(ch) = char::from_u32(unicode) else { continue };
@@ -191,7 +239,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 		} else if ch == '\n' || (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			// The '\n' of a "\r\n" pair, and anything else with no text of its own: dropped, but
 			// still the previous character as far as the next `ends_line` is concerned.
-		} else if ch != ' ' || !is_invisible_space(text_page, i, char_count) {
+		} else if ch != ' ' || !spaces.hides(text_page, i) {
 			current_chars.push((ch, i));
 		}
 		previous_char = Some(ch);
@@ -199,7 +247,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 	if !current_chars.is_empty() {
 		result.push(measure_line(text_page, &current_chars));
 	}
-	result
+	restore_reading_order(result)
 }
 
 /// The top edge of a line, in PDF user units, taken from its first character. Y grows up the
@@ -289,6 +337,33 @@ fn char_is_monospaced(text_page: &PdfTextPage, index: i32) -> bool {
 	looks_monospaced(&font.name)
 }
 
+/// The weight from which a face counts as bold: semibold and up.
+const BOLD_WEIGHT: i32 = 600;
+
+/// Whether a font name belongs to a bold face, for a font whose weight pdfium cannot report. Names come subset-tagged as `ABCDEF+Arial-BoldMT`.
+fn looks_bold(font_name: &str) -> bool {
+	const HINTS: [&str; 5] = ["bold", "black", "heavy", "semibold", "demi"];
+	let name = font_name.rsplit('+').next().unwrap_or(font_name).to_ascii_lowercase();
+	HINTS.iter().any(|hint| name.contains(hint))
+}
+
+fn char_is_bold(text_page: &PdfTextPage, index: i32) -> bool {
+	if let Some(weight) = text_page.font_weight(index) {
+		return weight >= BOLD_WEIGHT;
+	}
+	text_page.font(index).is_some_and(|font| looks_bold(&font.name))
+}
+
+/// Whether a line is set in a bold face throughout, over the same handful of characters the size is measured across. All of them have to be: a paragraph that opens with a bold word is not a heading.
+fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
+	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+	if indices.is_empty() {
+		return false;
+	}
+	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
+	indices.iter().step_by(step).all(|&i| char_is_bold(text_page, i))
+}
+
 /// Whether a line is set in a monospaced face, over the same handful of characters the size is
 /// measured across. Most of them have to agree: one word of code quoted in a sentence of prose
 /// does not make the sentence a listing.
@@ -320,9 +395,181 @@ pub(super) fn median_line_font_size(line_infos: &[Line]) -> f64 {
 	sorted_median(&mut sizes)
 }
 
+/// How far above a page's first line other text has to sit, as a share of the height its text spans, before the page counts as drawn out of order. A running header drawn after the body sits well inside this, and a second column starts about where the first did.
+const OUT_OF_ORDER_SHARE: f64 = 0.25;
+
+/// Puts a page whose content stream starts partway down it back into top-down order. Some form generators draw the lower half of a page first, and an untagged page has only the stream to go on, so the form read from its middle. Only such a page is touched, and it is reordered by region, each a stretch the stream draws without leaving that part of the page, kept whole and placed by where it starts: every page drawn in order, columns included, comes back unchanged. Lines the stream draws first at the bottom of everything drawn after them, such as a footer, are not where it starts.
+fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
+	// A line with no position, such as an empty one, says nothing about the order and travels with the run it is drawn in.
+	let placed = |line: &&Line| line.top.is_finite() && line.bottom.is_finite();
+	// Walks back from the end keeping the lowest top drawn after each line, so this ends on the earliest line that has a lower one drawn after it.
+	let mut lowest_after = f64::INFINITY;
+	let mut first = None;
+	for line in lines.iter().rev().filter(placed) {
+		if line.top > lowest_after + COORDINATE_EPSILON {
+			first = Some(line);
+		}
+		lowest_after = lowest_after.min(line.top);
+	}
+	let Some(first) = first else { return lines };
+	let highest = lines.iter().filter(placed).map(|line| line.top).fold(f64::MIN, f64::max);
+	let lowest = lines.iter().filter(placed).map(|line| line.bottom).fold(f64::MAX, f64::min);
+	let far = (highest - lowest) * OUT_OF_ORDER_SHARE;
+	if far <= 0.0 || highest - first.top < far {
+		return lines;
+	}
+	let mut runs: Vec<(f64, Vec<Line>)> = Vec::new();
+	for line in lines {
+		// Only a jump across a good part of the page, up or down, leaves one region of it for another. A form steps back up a line or two all the time within a row, and the footer is drawn straight after whatever comes before it.
+		let previous = runs.last().and_then(|(_, run)| run.iter().rev().find(placed));
+		let jumps = placed(&&line) && previous.is_none_or(|prev| (line.top - prev.top).abs() > far);
+		match runs.last_mut() {
+			Some((_, run)) if !jumps => run.push(line),
+			_ => runs.push((if placed(&&line) { line.top } else { f64::MAX }, vec![line])),
+		}
+	}
+	runs.sort_by(|a, b| b.0.total_cmp(&a.0));
+	runs.into_iter().flat_map(|(_, run)| run).collect()
+}
+
 #[cfg(test)]
 mod tests {
-	use super::{CharBox, ends_line, looks_monospaced, sanitize_pdf_text, space_is_invisible};
+	use super::{
+		CharBox, Line, covering_hides, ends_line, looks_monospaced, restore_reading_order, sanitize_pdf_text,
+		space_is_invisible,
+	};
+
+	fn line(text: &str, top: f64) -> Line {
+		Line { text: text.to_string(), size: 10.0, top, bottom: top - 10.0, monospaced: false, bold: false }
+	}
+
+	fn texts(lines: &[Line]) -> Vec<&str> {
+		lines.iter().map(|line| line.text.as_str()).collect()
+	}
+
+	#[test]
+	fn a_page_drawn_top_down_keeps_its_order() {
+		let lines = vec![line("title", 700.0), line("one", 680.0), line("two", 660.0), line("three", 100.0)];
+		assert_eq!(texts(&restore_reading_order(lines)), ["title", "one", "two", "three"]);
+	}
+
+	#[test]
+	fn a_second_column_is_not_moved_ahead_of_the_first() {
+		let lines = vec![
+			line("left 1", 700.0),
+			line("left 2", 400.0),
+			line("left 3", 100.0),
+			line("right 1", 702.0),
+			line("right 2", 400.0),
+		];
+		assert_eq!(texts(&restore_reading_order(lines)), ["left 1", "left 2", "left 3", "right 1", "right 2"]);
+	}
+
+	#[test]
+	fn a_running_header_drawn_last_stays_where_the_stream_put_it() {
+		let lines = vec![line("body 1", 690.0), line("body 2", 400.0), line("body 3", 100.0), line("header", 740.0)];
+		assert_eq!(texts(&restore_reading_order(lines)), ["body 1", "body 2", "body 3", "header"]);
+	}
+
+	/// The shape of the ADA dental claim form: the stream starts at the table halfway down, reaches the bottom, then goes back for the top half, a column at a time, and draws the title last.
+	#[test]
+	fn a_form_drawn_from_its_middle_is_read_from_the_top() {
+		let lines = vec![
+			line("24. Procedure Date", 460.0),
+			line("35. Remarks", 330.0),
+			line("37. Authorize", 240.0),
+			line("48. Name", 130.0),
+			line("1. Type of Transaction", 720.0),
+			line("7. Gender", 610.0),
+			line("M F", 600.0),
+			line("8. Subscriber ID", 612.0),
+			line("11. Other Insurance", 520.0),
+			line("12. Policyholder Name", 690.0),
+			line("23. Patient ID", 500.0),
+			line("© American Dental Association", 40.0),
+			line("Dental Claim Form", 760.0),
+		];
+		assert_eq!(
+			texts(&restore_reading_order(lines)),
+			[
+				"Dental Claim Form",
+				"1. Type of Transaction",
+				"7. Gender",
+				"M F",
+				"8. Subscriber ID",
+				"11. Other Insurance",
+				"12. Policyholder Name",
+				"23. Patient ID",
+				"24. Procedure Date",
+				"35. Remarks",
+				"37. Authorize",
+				"48. Name",
+				"© American Dental Association",
+			]
+		);
+	}
+
+	/// The real form has an empty line with no position in it, which must not stop the page being put in order.
+	#[test]
+	fn a_line_with_no_position_does_not_keep_a_form_out_of_order() {
+		let empty = Line {
+			text: String::new(),
+			size: 0.0,
+			top: f64::NEG_INFINITY,
+			bottom: f64::NEG_INFINITY,
+			monospaced: false,
+			bold: false,
+		};
+		let lines = vec![
+			line("24. Procedure Date", 450.0),
+			empty,
+			line("35. Remarks", 330.0),
+			line("1. Type of Transaction", 720.0),
+		];
+		assert_eq!(
+			texts(&restore_reading_order(lines)),
+			["1. Type of Transaction", "24. Procedure Date", "", "35. Remarks"]
+		);
+	}
+
+	/// The shape of a magazine page: the master page's footer lines come first, then the header, both columns top-down, and the title, intro and pull quote last. The intro sits above the first column, so the second column starts higher than the first.
+	#[test]
+	fn a_footer_drawn_first_does_not_reorder_the_columns() {
+		let stream = [
+			("folio", 38.0),
+			("footer", 38.0),
+			("header", 811.0),
+			("left 1", 395.0),
+			("left 2", 250.0),
+			("left 3", 83.0),
+			("right 1", 573.0),
+			("right 2", 400.0),
+			("right 3", 250.0),
+			("right 4", 83.0),
+			("title", 710.0),
+			("lead", 585.0),
+			("pull quote", 415.0),
+		];
+		let lines = stream.iter().map(|&(text, top)| line(text, top)).collect();
+		let expected: Vec<&str> = stream.iter().map(|&(text, _)| text).collect();
+		assert_eq!(texts(&restore_reading_order(lines)), expected);
+	}
+
+	#[test]
+	fn a_form_with_its_footer_drawn_first_is_still_read_from_the_top() {
+		let lines = vec![
+			line("footer", 40.0),
+			line("middle 1", 460.0),
+			line("middle 2", 330.0),
+			line("middle 3", 200.0),
+			line("top 1", 720.0),
+			line("top 2", 600.0),
+		];
+		assert_eq!(
+			texts(&restore_reading_order(lines)),
+			["top 1", "top 2", "middle 1", "middle 2", "middle 3", "footer"]
+		);
+	}
 
 	/// The coordinates below come from what pdfium reports for the PDF attached to #808, so the
 	/// ratios each case turns on are the ones real pages produce.
@@ -357,6 +604,16 @@ mod tests {
 		// The advance alone looks ordinary here, so only the ligature's box gives it away.
 		assert!(!space_is_invisible((287.34, 387.61), space, Some((290.12, 387.61)), None));
 		assert!(space_is_invisible((287.34, 387.61), space, None, Some(char_box(284.87, 289.77, 387.61, 394.44))));
+	}
+
+	/// Shares of covered spaces measured on pages of both PDFs: #808's, where a covered space is a split ligature, and #993's, whose glyph boxes overhang nearly every space.
+	#[test]
+	fn covering_hides_a_space_only_where_covered_spaces_are_rare() {
+		assert!(covering_hides(4, 229), "#808 page 4");
+		assert!(covering_hides(12, 362), "#808 page 26, its most");
+		assert!(!covering_hides(338, 386), "#993 page 4");
+		assert!(!covering_hides(95, 153), "#993 page 2, its fewest");
+		assert!(covering_hides(0, 0), "a page with no spaces to measure");
 	}
 
 	/// "name of paper": an `f` overhangs the space after it by more than half its width, and that

@@ -151,6 +151,15 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Run(file::reopen_last_closed),
 	},
 	Command {
+		action: ActionId::Reload,
+		// TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+		label: || t("&Reload"),
+		// TRANSLATORS: Status-bar help text for the File > Reload menu item.
+		help: Some(|| t("Re-read the current document from disk")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(file::reload),
+	},
+	Command {
 		action: ActionId::ClearRecentDocuments,
 		// TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 		label: || t("Clea&r Recent Documents"),
@@ -755,6 +764,13 @@ mod tests {
 	fn clear_recent_documents_needs_recent_documents() {
 		let command = for_action(ActionId::ClearRecentDocuments).unwrap();
 		assert_eq!(command.enable, Enable::HasRecentDocuments);
+	}
+
+	/// On for a help file or a source view too, where the handler does nothing: no other command's state changes as the reader switches tabs.
+	#[test]
+	fn reload_needs_a_document() {
+		let command = for_action(ActionId::Reload).unwrap();
+		assert_eq!(command.enable, Enable::HasDocument);
 	}
 
 	/// A command whose id came back as the fallback would collide with anything else that

@@ -15,7 +15,7 @@ use wxdragon::{prelude::*, timer::Timer};
 use super::tray;
 use super::{
 	background, commands, dialogs,
-	document_manager::{DocumentManager, DocumentTab, display_title},
+	document_manager::{DocumentManager, DocumentTab, display_title, tab_index_for_key},
 	find::{self, FindDialogState},
 	help, icon, menu, menu_ids, navigation,
 	readability::build_font_from_readability,
@@ -25,7 +25,7 @@ use super::{
 use crate::ipc::IpcCommand;
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
-	updater::{self, MAIN_WINDOW_PTR},
+	updater,
 };
 
 mod menu_events;
@@ -80,7 +80,6 @@ impl MainWindow {
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).build();
 		window_geometry::apply_defaults(&frame);
-		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
 		#[cfg(target_os = "windows")]
 		remember_frame_hwnd(&frame);
 		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
@@ -160,7 +159,7 @@ impl MainWindow {
 					// Medium rather than the default high: a file changing on disk is not
 					// something the user asked for, so it waits for the current utterance to
 					// finish instead of cutting them off mid sentence.
-					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+					// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
 					live_region::announce_with_priority(
 						live_region_label,
 						&t("Document reloaded."),
@@ -188,13 +187,7 @@ impl MainWindow {
 					#[cfg(target_os = "windows")]
 					if let Ok(dm) = dm_for_activate.try_lock() {
 						dm.restore_focus();
-						if let Some(hwnd) = dm.focus_target_handle() {
-							let hwnd = windows::Win32::Foundation::HWND(hwnd);
-							// EVENT_OBJECT_FOCUS = 0x8005, OBJID_CLIENT = -4, CHILDID_SELF = 0
-							unsafe {
-								windows::Win32::UI::Accessibility::NotifyWinEvent(0x8005, hwnd, -4, 0);
-							}
-						}
+						dm.announce_focus();
 					}
 				} else {
 					// Deactivating: remember where focus was so we restore the same control (text
@@ -217,7 +210,7 @@ impl MainWindow {
 					dm_ref.update_status_bar();
 					// Medium rather than the default high, for the same reason as the reload
 					// announcement on the page change path.
-					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+					// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
 					live_region::announce_with_priority(
 						live_region_label,
 						&t("Document reloaded."),
@@ -232,23 +225,37 @@ impl MainWindow {
 		notebook.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(key_event) = &event
 				&& let Some(key) = key_event.get_key_code()
-				&& (key == WXK_DELETE || key == WXK_NUMPAD_DELETE)
 			{
-				let mut dm = dm.lock().unwrap();
-				close_active_document_announced(&mut dm, live_region_label);
-				update_title_from_manager(&frame_copy, &dm);
-				let has_docs = dm.tab_count() > 0;
-				let has_reopen = dm.has_recently_closed();
-				if has_docs {
-					dm.restore_focus();
-				} else {
-					dm.notebook().set_focus();
+				// The same Ctrl+digit chords the reading control answers, so arrowing across the tab
+				// strip and then reaching for a number still works. The native tab control announces
+				// its own selection from here, and the page-changing handler deliberately stays
+				// quiet when the notebook has focus - but `switch_to_tab` announces either way,
+				// because it cannot rely on that handler, whose lock this call already holds.
+				if let Some(index) =
+					tab_index_for_key(key, key_event.control_down(), key_event.alt_down(), key_event.shift_down())
+					&& let Ok(dm) = dm.try_lock()
+				{
+					key_event.event.skip(false);
+					dm.switch_to_tab(index);
+					return;
 				}
-				drop(dm);
-				menu::update_menu_item_states(&frame_copy, has_docs);
-				menu::update_reopen_state(&frame_copy, has_reopen);
-				event.skip(false);
-				return;
+				if key == WXK_DELETE || key == WXK_NUMPAD_DELETE {
+					let mut dm = dm.lock().unwrap();
+					close_active_document_announced(&mut dm, live_region_label);
+					update_title_from_manager(&frame_copy, &dm);
+					let has_docs = dm.tab_count() > 0;
+					let has_reopen = dm.has_recently_closed();
+					if has_docs {
+						dm.restore_focus();
+					} else {
+						dm.notebook().set_focus();
+					}
+					drop(dm);
+					menu::update_menu_item_states(&frame_copy, has_docs);
+					menu::update_reopen_state(&frame_copy, has_reopen);
+					event.skip(false);
+					return;
+				}
 			}
 			event.skip(true);
 		});
@@ -359,8 +366,8 @@ impl MainWindow {
 		self.doc_manager.lock().unwrap().restore_focus();
 	}
 
-	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
-		updater::run_update_check(silent, channel);
+	pub fn check_for_updates(&self, silent: bool, channel: UpdateChannel) {
+		updater::run_update_check(&self.frame, silent, channel);
 	}
 
 	pub fn open_file(&self, path: &Path) -> bool {

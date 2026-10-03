@@ -1,5 +1,3 @@
-//! The status bar's position text.
-
 #![cfg(target_os = "windows")]
 
 mod common;

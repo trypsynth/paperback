@@ -213,7 +213,7 @@ impl MainWindow {
 				}
 				menu_ids::CHECK_FOR_UPDATES => {
 					let channel = get_update_channel(&config.lock().unwrap());
-					updater::run_update_check(false, channel);
+					updater::run_update_check(&frame_copy, false, channel);
 				}
 				menu_ids::DONATE => {
 					help::handle_donate(&frame_copy);

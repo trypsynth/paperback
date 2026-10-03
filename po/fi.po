@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 08:33-0600\n"
-"PO-Revision-Date: 2026-09-24 21:59+0300\n"
+"POT-Creation-Date: 2026-10-01 11:24-0600\n"
+"PO-Revision-Date: 2026-10-01 23:19+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -511,7 +511,7 @@ msgstr "Merkitse kopioitavan valinnan alkukohta"
 
 #. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
 msgid "&Copy from Selection Start"
-msgstr "&Kopioi valinnan alkukohdasta"
+msgstr "&Kopioi valinnan alkukohdasta lähtien"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
 msgid "Copy from the beginning of the selection to here"
@@ -726,6 +726,10 @@ msgstr "E&nsimmäinen sivu:"
 #. TRANSLATORS: Label for the ending page field of the Batch OCR range
 msgid "&End page:"
 msgstr "V&iimeinen sivu:"
+
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+msgid "&Include text pages too"
+msgstr "&Käsittele myös tekstisivut"
 
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
@@ -1035,6 +1039,7 @@ msgid "&Shift"
 msgstr "&Shift"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
 msgid "&Win"
 msgstr "&Win"
 
@@ -1073,7 +1078,7 @@ msgstr "&Pienennä ilmaisinalueelle"
 
 #. TRANSLATORS: Option to toggle word wrapping of text
 msgid "&Word wrap"
-msgstr "R&ivitys"
+msgstr "Automaattinen r&ivitys"
 
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
@@ -1128,6 +1133,10 @@ msgstr "Vakaa"
 #. TRANSLATORS: Developer/development update channel option
 msgid "Dev"
 msgstr "Kehitys"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Lokitaso:"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
@@ -1245,6 +1254,30 @@ msgstr "Luettavuus"
 #. TRANSLATORS: Title of the system dialog for picking a background colour
 msgid "Choose a colour"
 msgstr "Valitse väri"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Ei käytössä"
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr "Virheet"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr "Varoitukset"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr "Tiedot"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Vianmääritys"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Yksityiskohtainen"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -1480,10 +1513,10 @@ msgstr "Lahjoitussivun avaaminen selaimessa epäonnistui."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
-msgstr "Rivitys käytössä."
+msgstr "Automaattinen rivitys käytössä."
 
 msgid "Word wrap off."
-msgstr "Rivitys pois."
+msgstr "Automaattinen rivitys pois."
 
 #. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
 msgid "Full screen on."
@@ -1946,11 +1979,11 @@ msgstr ""
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
-msgstr "Rivit&ys"
+msgstr "Automaattinen rivit&ys"
 
 #. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 msgid "Toggle word wrap"
-msgstr "Ota rivitys käyttöön tai poista se käytöstä"
+msgstr "Ota automaattinen rivitys käyttöön tai poista se käytöstä"
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
 msgid "&Full Screen"
@@ -2537,7 +2570,7 @@ msgstr "Siirry valinnan alkukohtaan"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Word Wrap"
-msgstr "Ota rivitys käyttöön tai poista se käytöstä"
+msgstr "Vaihda automaattisen rivityksen tilaa"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Play/Pause Audio"
@@ -2941,8 +2974,16 @@ msgstr "Tiedostotunnisteelle .{} ei löydy jäsennintä"
 msgid "All parsers failed for extension: .{}"
 msgstr "Tiedostotunnistetta .{} ei voitu käsitellä millään jäsentimellä"
 
-msgid "Unknown update file format."
-msgstr "Tuntematon päivitystiedoston muoto."
+msgid "Not running from an AppImage; cannot self-update."
+msgstr ""
+"Automaattinen päivitys ei ole mahdollista, koska sovellusta ei ole "
+"käynnistetty AppImage-tiedostosta."
+
+msgid "Failed to get current exe path"
+msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
+
+msgid "Failed to launch update script"
+msgstr "Päivitysskriptin käynnistys epäonnistui"
 
 msgid "Failed to open disk image"
 msgstr "Levykuvan avaaminen epäonnistui"
@@ -2953,21 +2994,6 @@ msgid ""
 msgstr ""
 "Päivitys on ladattu ja sen levykuva avattu. Sulje %s ja viimeistele asennus "
 "vetämällä uusi versio Ohjelmat-kansioon."
-
-msgid "Update Ready"
-msgstr "Päivitys valmiina"
-
-msgid "Failed to get current exe path"
-msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
-
-msgid "Failed to launch installer script"
-msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
-
-msgid "Failed to launch update script"
-msgstr "Päivitysskriptin käynnistys epäonnistui"
-
-msgid "Update failed"
-msgstr "Päivitys epäonnistui"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -2999,6 +3025,12 @@ msgstr "%sin päivitys"
 msgid "Downloading update..."
 msgstr "Päivitystä ladataan..."
 
+msgid "Update failed"
+msgstr "Päivitys epäonnistui"
+
+msgid "Update Ready"
+msgstr "Päivitys valmiina"
+
 msgid "No updates available."
 msgstr "Päivityksiä ei saatavilla."
 
@@ -3015,19 +3047,19 @@ msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %
 msgid "Security Error"
 msgstr "Suojausvirhe"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d tunti"
 msgstr[1] "%d tuntia"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minuutti"
 msgstr[1] "%d minuuttia"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d sekunti"
@@ -3040,6 +3072,15 @@ msgstr "Määritä pikanäppäin komennolle {}"
 #. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 msgid "Configure shortcut for {}:"
 msgstr "Määritä komennon {} pikanäppäin:"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+#| msgid "Options"
+msgid "&Option"
+msgstr "&Alt"
 
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr ""
@@ -3084,6 +3125,17 @@ msgstr "Pa&lauta oletus"
 msgid "Reset &All to Defaults"
 msgstr "Palauta &oletukset"
 
+msgid ""
+"A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key "
+"from every other program."
+msgstr ""
+"Järjestelmänlaajuinen pikanäppäin edellyttää Ctrl-, Alt- tai Win-näppäimen "
+"käyttöä, jotta valittu näppäin toimii myös muissa sovelluksissa."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+msgid "Shortcut Not Allowed"
+msgstr "Pikanäppäintä ei voi käyttää"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
 msgstr ""
@@ -3094,7 +3146,7 @@ msgstr ""
 msgid "Shortcut Conflict"
 msgstr "Pikanäppäimen ristiriita"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 msgid "Reset all shortcuts to their default values?"
 msgstr "Palautetaanko kaikki oletuspikanäppäimet?"
 

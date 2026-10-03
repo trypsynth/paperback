@@ -3,6 +3,8 @@
 
 use std::{collections::BTreeSet, env, fs};
 
+use shipfitter::macos::MacApp;
+
 use crate::paths::{self, target_profile_dir};
 
 /// Builds the `<string>ext</string>` lines for `CFBundleTypeExtensions`, deduped since a couple
@@ -26,30 +28,8 @@ pub fn generate_app_bundle() {
 	let macos_dir = bundle_dir.join("MacOS");
 	let _ = fs::create_dir_all(&macos_dir);
 	let _ = fs::create_dir_all(bundle_dir.join("Resources"));
-	let plist = format!(
-		r#"<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>CFBundleName</key>
-	<string>Paperback</string>
-	<key>CFBundleDisplayName</key>
-	<string>Paperback</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.trypsynth.paperback</string>
-	<key>CFBundleVersion</key>
-	<string>{version}</string>
-	<key>CFBundleShortVersionString</key>
-	<string>{version}</string>
-	<key>CFBundleExecutable</key>
-	<string>paperback</string>
-	<key>CFBundleIconFile</key>
-	<string>paperback</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>NSHighResolutionCapable</key>
-	<true/>
-	<key>CFBundleDocumentTypes</key>
+	let extra = format!(
+		r"	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleTypeRole</key>
@@ -62,9 +42,17 @@ pub fn generate_app_bundle() {
 			<string>Document</string>
 		</dict>
 	</array>
-</dict>
-</plist>"#
+"
 	);
+	let plist = MacApp {
+		name: "Paperback",
+		identifier: "com.trypsynth.paperback",
+		executable: "paperback",
+		version: &version,
+		icon: Some("paperback"),
+		extra: &extra,
+	}
+	.info_plist();
 	let plist_path = bundle_dir.join("Info.plist");
 	if let Err(e) = fs::write(&plist_path, plist) {
 		println!("cargo:warning=Failed to write Info.plist: {e}");

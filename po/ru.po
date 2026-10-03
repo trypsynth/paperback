@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 14:16+0000\n"
+"POT-Creation-Date: 2026-10-01 11:24-0600\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -824,6 +824,11 @@ msgstr "&Начальная страница:"
 msgid "&End page:"
 msgstr "&Конечная страница:"
 
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+#, fuzzy
+msgid "&Include text pages too"
+msgstr "&Включать и текстовые страницы"
+
 #. TRANSLATORS: Label for the button that starts the batch OCR
 #, fuzzy
 msgid "OCR"
@@ -1165,6 +1170,7 @@ msgid "&Shift"
 msgstr "&Shift"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
 #, fuzzy
 msgid "&Win"
 msgstr "&Победа"
@@ -1276,6 +1282,11 @@ msgstr "Стабильный"
 #. TRANSLATORS: Developer/development update channel option
 msgid "Dev"
 msgstr "Разрабатываемый"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+#, fuzzy
+msgid "Log Level:"
+msgstr "Уровень логирования:"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 #, fuzzy
@@ -1407,6 +1418,36 @@ msgstr "Читаемость"
 #, fuzzy
 msgid "Choose a colour"
 msgstr "Выберите цвет"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+#, fuzzy
+msgid "Off"
+msgstr "Отключено"
+
+#. TRANSLATORS: Log level choice that records only errors
+#, fuzzy
+msgid "Errors"
+msgstr "Ошибки"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+#, fuzzy
+msgid "Warnings"
+msgstr "Предупреждения"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+#, fuzzy
+msgid "Information"
+msgstr "Информация"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+#, fuzzy
+msgid "Debug"
+msgstr "Отладка"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+#, fuzzy
+msgid "Trace"
+msgstr "Трассировка"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -2807,12 +2848,12 @@ msgstr "Следующая таблица"
 #. TRANSLATORS: Shortcut action to move to the previous formula
 #, fuzzy
 msgid "Previous Formula"
-msgstr "Предыдущий результат"
+msgstr "Предыдущая формула"
 
 #. TRANSLATORS: Shortcut action to move to the next formula
 #, fuzzy
 msgid "Next Formula"
-msgstr "Следующий результат"
+msgstr "Следующая формула"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -3391,8 +3432,15 @@ msgstr "Не найден парсер для расширения: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Все парсеры не смогли обработать расширение: . {}"
 
-msgid "Unknown update file format."
-msgstr "Неизвестный формат файла обновления"
+#, fuzzy
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Не запущено из AppImage; автоматическое обновление невозможно."
+
+msgid "Failed to get current exe path"
+msgstr "Не удалось получить путь к исполняемому файлу"
+
+msgid "Failed to launch update script"
+msgstr "Не удалось запустить  скрипт обновления"
 
 #, fuzzy
 msgid "Failed to open disk image"
@@ -3401,22 +3449,6 @@ msgstr "Не удалось открыть образ диска"
 #, fuzzy
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
 msgstr "Обновление загружено, его образ диска открыт. Закройте %s и перетащите новую версию в «Программы», чтобы завершить установку."
-
-#, fuzzy
-msgid "Update Ready"
-msgstr "Готов к обновлению"
-
-msgid "Failed to get current exe path"
-msgstr "Не удалось получить путь к исполняемому файлу"
-
-msgid "Failed to launch installer script"
-msgstr "Не удалось запустить установочный скрипт"
-
-msgid "Failed to launch update script"
-msgstr "Не удалось запустить  скрипт обновления"
-
-msgid "Update failed"
-msgstr "Ошибка обновления"
 
 #, fuzzy
 msgid ""
@@ -3452,6 +3484,13 @@ msgstr "%s Обновление"
 msgid "Downloading update..."
 msgstr "Загрузка обновления..."
 
+msgid "Update failed"
+msgstr "Ошибка обновления"
+
+#, fuzzy
+msgid "Update Ready"
+msgstr "Готов к обновлению"
+
 msgid "No updates available."
 msgstr "Нет доступных обновлений."
 
@@ -3470,7 +3509,7 @@ msgstr "Проверка безопасности завершилась неу�
 msgid "Security Error"
 msgstr "Ошибка безопасности"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d hour"
 msgid_plural "%d hours"
@@ -3478,7 +3517,7 @@ msgstr[0] "%d час"
 msgstr[1] "%d часа"
 msgstr[2] "%d часов"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d minute"
 msgid_plural "%d minutes"
@@ -3486,7 +3525,7 @@ msgstr[0] "%d минута"
 msgstr[1] "%d минуты"
 msgstr[2] "%d минут"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d second"
 msgid_plural "%d seconds"
@@ -3503,6 +3542,16 @@ msgstr "Установить сочетание клавиш для {}"
 #, fuzzy
 msgid "Configure shortcut for {}:"
 msgstr "Настройка сочетания клавиш для {}:"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+#, fuzzy
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+#, fuzzy
+msgid "&Option"
+msgstr "&Option"
 
 #, fuzzy
 msgid "Tip: click in the key field and press the key combination you want."
@@ -3556,6 +3605,15 @@ msgstr "&Восстановить по умолчанию"
 msgid "Reset &All to Defaults"
 msgstr "Восстановить &все по умолчанию"
 
+#, fuzzy
+msgid "A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key from every other program."
+msgstr "Системной горячей клавише нужны Ctrl, Alt или Win, иначе она отберёт эту клавишу у других программ."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+#, fuzzy
+msgid "Shortcut Not Allowed"
+msgstr "Горячая клавиша не разрешена"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 #, fuzzy
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
@@ -3566,7 +3624,7 @@ msgstr "«{}» уже назначено для «{}». Переназначит
 msgid "Shortcut Conflict"
 msgstr "Конфликт ярлыков"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 #, fuzzy
 msgid "Reset all shortcuts to their default values?"
 msgstr "Сбросить все сочетания клавиш на значения по умолчанию?"
@@ -4897,6 +4955,12 @@ msgstr "Исходный файл"
 #, fuzzy
 msgid "Settings exported"
 msgstr "Настройки экспортированы"
+
+#~ msgid "Unknown update file format."
+#~ msgstr "Неизвестный формат файла обновления"
+
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Не удалось запустить установочный скрипт"
 
 #, fuzzy
 #~ msgid "%d char"

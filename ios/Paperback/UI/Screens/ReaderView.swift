@@ -72,10 +72,12 @@ struct ReaderView: View {
 		.fileImporter(
 			isPresented: $navigation.showFilePicker,
 			allowedContentTypes: [.item],
-			allowsMultipleSelection: false
+			allowsMultipleSelection: true
 		) { result in
-			guard case .success(let urls) = result, let url = urls.first else { return }
-			viewModel.openDocument(url: url)
+			guard case .success(let urls) = result else { return }
+			for url in urls {
+				viewModel.openDocument(url: url)
+			}
 		}
 		// TRANSLATORS: Title of the alert shown when a document fails to open
 		.alert(t("Open Error"), isPresented: Binding(

@@ -49,10 +49,10 @@ jobs:
       # deliberate change with the reformat in the same commit.
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: nightly-2026-09-22
+          toolchain: nightly-2026-09-28
           components: rustfmt
       - name: Check formatting
-        run: cargo +nightly-2026-09-22 fmt --check
+        run: cargo fmt --check
   android:
     name: Android checks
     runs-on: ubuntu-latest
@@ -268,6 +268,14 @@ jobs:
       # msgfmt comes from MSYS2, which setup-msys2 leaves off this step's PATH, so the build
       # scripts would silently skip every .po file. Appended rather than prepended: MSYS2's
       # usr/bin has a coreutils link.exe that would otherwise shadow the MSVC linker.
+      # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+      - name: Cache the pinned wxWidgets source
+        uses: actions/cache@v6
+        with:
+          path: target/wxWidgets-*
+          key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+      - name: Fetch the pinned wxWidgets source
+        run: cargo xtask wxwidgets
       - name: Run tests
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
@@ -286,8 +294,6 @@ jobs:
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: macos-latest
-    env:
-      WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
     steps:
       - uses: actions/checkout@v7
         with:
@@ -307,15 +313,14 @@ jobs:
           # Writing the cache takes about five minutes. Only master writes one; a pull request
           # restores it and skips the write, which is the slowest step in several of these jobs.
           save-if: ${{ github.ref == 'refs/heads/master' }}
-      - name: Cache wxWidgets source
-        id: wxwidgets-cache
+      # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+      - name: Cache the pinned wxWidgets source
         uses: actions/cache@v6
         with:
-          path: wxWidgets
-          key: wxwidgets-${{ runner.os }}-${{ runner.arch }}-v1
-      - name: Clone wxWidgets
-        if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
-        run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
+          path: target/wxWidgets-*
+          key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+      - name: Fetch the pinned wxWidgets source
+        run: cargo xtask wxwidgets
       - name: Run tests
         run: cargo test --workspace
       # The default profile shares the wxWidgets build with the workspace tests.
@@ -360,6 +365,14 @@ jobs:
           # Writing the cache takes about five minutes. Only master writes one; a pull request
           # restores it and skips the write, which is the slowest step in several of these jobs.
           save-if: ${{ github.ref == 'refs/heads/master' }}
+      # Needed whenever wxdragon-sys has to build wxWidgets again, such as after its features change, which a restored cache otherwise hides.
+      - name: Cache the pinned wxWidgets source
+        uses: actions/cache@v6
+        with:
+          path: target/wxWidgets-*
+          key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+      - name: Fetch the pinned wxWidgets source
+        run: cargo xtask wxwidgets
       # `clippy::all` is denied through [workspace.lints] in Cargo.toml, so this fails the job on
       # any of those lints. The pedantic and nursery groups stay warnings and are printed, not
       # enforced -- see the comment on the lint table for why.

@@ -79,6 +79,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+F4` (macOS: `Cmd+W`): Close the current document.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Close all open documents.
 * `Ctrl+Shift+T`: Reopen the last closed document.
+* `F5`: Re-read the current document from disk. Works whether or not "Automatically reload changed documents" is switched on in Settings.
 * `Ctrl+R`: Show the "All Documents" dialog (from Recent Documents).
 * `Ctrl+Q`: Exit (Windows only; on macOS this is under the app menu instead).
 
@@ -171,6 +172,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 ### Additional document-view keys
 
 * `Delete` / `Numpad Delete` on the tab control: Close the selected document tab.
+* `Ctrl+1` through `Ctrl+9` (macOS: `Cmd+1` through `Cmd+9`) in the document text or on the tab control: Go to the first nine open documents, in the order they were opened.
 * `Enter` or `Space` in the document text: Follow a link or open a table or formula view at the cursor.
 * `Enter` on a scanned PDF page: Recognize the page with OCR.
 * `Shift+F10` or the Menu/Application key in the document text: Open the context menu.

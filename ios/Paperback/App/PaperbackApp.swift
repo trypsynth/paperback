@@ -50,6 +50,9 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
 		self.window = window
 		window.makeKeyAndVisible()
 		open(options.urlContexts)
+		#if DEBUG
+		if ScreenshotMode.isActive { ScreenshotMode.stage(appViewModel) }
+		#endif
 	}
 
 	func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {

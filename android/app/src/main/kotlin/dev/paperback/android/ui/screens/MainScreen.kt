@@ -198,8 +198,8 @@ fun MainScreen(
 	val supportedMimeTypes by viewModel.supportedMimeTypes.collectAsStateWithLifecycle()
 
 	val filePickerLauncher = rememberLauncherForActivityResult(
-		contract = ActivityResultContracts.OpenDocument(),
-		onResult = { uri -> uri?.let { viewModel.openDocument(it) } }
+		contract = ActivityResultContracts.OpenMultipleDocuments(),
+		onResult = { uris -> if (uris.isNotEmpty()) viewModel.openDocuments(uris) }
 	)
 
 	var locateTargetUri by remember { mutableStateOf<String?>(null) }

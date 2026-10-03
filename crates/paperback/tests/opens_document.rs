@@ -1,5 +1,3 @@
-//! Opening a document from the command line.
-
 #![cfg(target_os = "windows")]
 
 mod common;

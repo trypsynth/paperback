@@ -2,12 +2,11 @@ use std::{env, error::Error};
 
 mod android;
 mod ios;
-mod po_lint;
 mod pot;
-mod pot_lint;
 mod release;
 mod translate;
 mod workspace;
+mod wxwidgets;
 
 fn main() -> Result<(), Box<dyn Error>> {
 	let task = env::args().nth(1);
@@ -18,6 +17,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 		Some("ios-release") => ios::ios_release()?,
 		Some("gen-pot") => pot::gen_pot()?,
 		Some("translate") => translate::translate()?,
+		Some("wxwidgets") => println!("wxWidgets is at {}", wxwidgets::ensure()?.display()),
 		_ => print_help(),
 	}
 	Ok(())
@@ -27,6 +27,7 @@ pub(crate) fn print_help() {
 	println!("Tasks:");
 	println!("	release       Build release binaries and package them");
 	println!("	gen-pot       Regenerate po/paperback.pot from all translatable crates");
+	println!("	wxwidgets     Fetch the wxWidgets commit .cargo/config.toml pins, if it is not already there");
 	println!("	android       Generate Kotlin bindings and build native Android libraries");
 	println!("	  --release          Build APK using gradlew assembleRelease");
 	println!("	  --debug            Build APK using gradlew assembleDebug");

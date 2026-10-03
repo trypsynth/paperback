@@ -83,41 +83,25 @@ fn handle_show_all_documents(
 			dm_ref.restore_focus();
 		}
 	}
-	if let Some(path) = result.open {
-		let path_buf = Path::new(&path).to_path_buf();
-		let path = path_buf.as_path();
-		if !ensure_parser_ready_for_path(frame, path, config) {
-			return;
+	let mut opened_any = false;
+	for path in &result.open {
+		let path = Path::new(path);
+		// One book that cannot be opened, or whose unknown type the reader declines to pick a reader for, does not stop the rest.
+		if ensure_parser_ready_for_path(frame, path, config) && dm.lock().unwrap().open_file(dm, path) {
+			opened_any = true;
 		}
-		if dm.lock().unwrap().open_file(dm, path) {
-			{
-				let dm_ref = dm.lock().unwrap();
-				update_title_from_manager(frame, &dm_ref);
-				dm_ref.focus_document_text();
-			}
-			let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-			frame.set_menu_bar(menu_bar);
-			menu::update_menu_item_states(frame, true);
-			let has_reopen = dm.lock().unwrap().has_recently_closed();
-			menu::update_reopen_state(frame, has_reopen);
-		} else {
-			let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-			frame.set_menu_bar(menu_bar);
-			let dm_ref = dm.lock().unwrap();
-			let has_docs = dm_ref.tab_count() > 0;
-			let has_reopen = dm_ref.has_recently_closed();
-			drop(dm_ref);
-			menu::update_menu_item_states(frame, has_docs);
-			menu::update_reopen_state(frame, has_reopen);
-		}
-	} else {
-		let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-		frame.set_menu_bar(menu_bar);
-		let dm_ref = dm.lock().unwrap();
-		let has_docs = dm_ref.tab_count() > 0;
-		let has_reopen = dm_ref.has_recently_closed();
-		drop(dm_ref);
-		menu::update_menu_item_states(frame, has_docs);
-		menu::update_reopen_state(frame, has_reopen);
 	}
+	if opened_any {
+		let dm_ref = dm.lock().unwrap();
+		update_title_from_manager(frame, &dm_ref);
+		dm_ref.focus_document_text();
+	}
+	let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+	frame.set_menu_bar(menu_bar);
+	let dm_ref = dm.lock().unwrap();
+	let has_docs = dm_ref.tab_count() > 0;
+	let has_reopen = dm_ref.has_recently_closed();
+	drop(dm_ref);
+	menu::update_menu_item_states(frame, has_docs);
+	menu::update_reopen_state(frame, has_reopen);
 }

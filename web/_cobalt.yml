@@ -1,3 +1,6 @@
+# The build scripts live beside the site but are not part of it.
+ignore:
+  - "*.sh"
 site:
   title: Paperback
   description: Paperback is a fast, fully accessible ebook and document reader for Windows, macOS, Linux, iOS and Android.

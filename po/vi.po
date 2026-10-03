@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 14:16+0000\n"
+"POT-Creation-Date: 2026-10-01 11:24-0600\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -843,6 +843,11 @@ msgstr "&Trang bắt đầu:"
 msgid "&End page:"
 msgstr "&Trang kết thúc:"
 
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+#, fuzzy
+msgid "&Include text pages too"
+msgstr "&Bao gồm cả trang có văn bản"
+
 #. TRANSLATORS: Label for the button that starts the batch OCR
 #, fuzzy
 msgid "OCR"
@@ -1193,6 +1198,7 @@ msgid "&Shift"
 msgstr "&Shift"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
 #, fuzzy
 msgid "&Win"
 msgstr "&Win"
@@ -1300,6 +1306,11 @@ msgstr "Ổn định"
 #, fuzzy
 msgid "Dev"
 msgstr "Dev"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+#, fuzzy
+msgid "Log Level:"
+msgstr "Mức ghi nhật ký:"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 #, fuzzy
@@ -1443,6 +1454,36 @@ msgstr "Khả năng đọc"
 #, fuzzy
 msgid "Choose a colour"
 msgstr "Chọn một màu"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+#, fuzzy
+msgid "Off"
+msgstr "Tắt"
+
+#. TRANSLATORS: Log level choice that records only errors
+#, fuzzy
+msgid "Errors"
+msgstr "Lỗi"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+#, fuzzy
+msgid "Warnings"
+msgstr "Cảnh báo"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+#, fuzzy
+msgid "Information"
+msgstr "Thông tin"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+#, fuzzy
+msgid "Debug"
+msgstr "Gỡ lỗi"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+#, fuzzy
+msgid "Trace"
+msgstr "Theo dõi"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -2883,12 +2924,12 @@ msgstr "Bảng Tiếp Theo"
 #. TRANSLATORS: Shortcut action to move to the previous formula
 #, fuzzy
 msgid "Previous Formula"
-msgstr "Kết quả trước đó"
+msgstr "Công Thức Trước"
 
 #. TRANSLATORS: Shortcut action to move to the next formula
 #, fuzzy
 msgid "Next Formula"
-msgstr "Kết quả tiếp theo"
+msgstr "Công Thức Tiếp Theo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -3470,8 +3511,16 @@ msgid "All parsers failed for extension: .{}"
 msgstr "Tất cả các trình phân tích cú pháp đều không thành công đối với phần mở rộng: . {}"
 
 #, fuzzy
-msgid "Unknown update file format."
-msgstr "Định dạng tệp cập nhật không xác định."
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Không chạy từ AppImage; không thể tự cập nhật."
+
+#, fuzzy
+msgid "Failed to get current exe path"
+msgstr "Không thể lấy được đường dẫn hiện tại của tệp exe"
+
+#, fuzzy
+msgid "Failed to launch update script"
+msgstr "Không thể khởi chạy tập lệnh cập nhật"
 
 #, fuzzy
 msgid "Failed to open disk image"
@@ -3480,26 +3529,6 @@ msgstr "Không thể mở liên kết."
 #, fuzzy
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
 msgstr "Bản cập nhật đã được tải về và ảnh đĩa đã được mở. Hãy thoát %s và kéo phiên bản mới vào Applications để hoàn tất cài đặt."
-
-#, fuzzy
-msgid "Update Ready"
-msgstr "Sẵn sàng cập nhật"
-
-#, fuzzy
-msgid "Failed to get current exe path"
-msgstr "Không thể lấy được đường dẫn hiện tại của tệp exe"
-
-#, fuzzy
-msgid "Failed to launch installer script"
-msgstr "Không thể khởi chạy tập lệnh cài đặt"
-
-#, fuzzy
-msgid "Failed to launch update script"
-msgstr "Không thể khởi chạy tập lệnh cập nhật"
-
-#, fuzzy
-msgid "Update failed"
-msgstr "Cập nhật không thành công"
 
 #, fuzzy
 msgid ""
@@ -3539,6 +3568,14 @@ msgstr "%s Cập nhật"
 msgid "Downloading update..."
 msgstr "Đang tải bản cập nhật..."
 
+#, fuzzy
+msgid "Update failed"
+msgstr "Cập nhật không thành công"
+
+#, fuzzy
+msgid "Update Ready"
+msgstr "Sẵn sàng cập nhật"
+
 msgid "No updates available."
 msgstr "Không có bản cập nhật nào."
 
@@ -3557,19 +3594,19 @@ msgstr "Không xác minh được tính bảo mật. Bản cập nhật có th�
 msgid "Security Error"
 msgstr "Lỗi bảo mật"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d giờ"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d phút"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 #, fuzzy
 msgid "%d second"
 msgid_plural "%d seconds"
@@ -3584,6 +3621,16 @@ msgstr "Đặt phím tắt cho {}"
 #, fuzzy
 msgid "Configure shortcut for {}:"
 msgstr "Cấu hình phím tắt cho {}:"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+#, fuzzy
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+#, fuzzy
+msgid "&Option"
+msgstr "&Option"
 
 #, fuzzy
 msgid "Tip: click in the key field and press the key combination you want."
@@ -3637,6 +3684,15 @@ msgstr "&Đặt lại về mặc định"
 msgid "Reset &All to Defaults"
 msgstr "Đặt lại &tất cả về mặc định"
 
+#, fuzzy
+msgid "A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key from every other program."
+msgstr "Một phím tắt toàn hệ thống cần Ctrl, Alt hoặc Win, nếu không nó sẽ lấy phím đó từ mọi chương trình khác."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+#, fuzzy
+msgid "Shortcut Not Allowed"
+msgstr "Phím tắt không được phép"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 #, fuzzy
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
@@ -3647,7 +3703,7 @@ msgstr "'{}' đã được gán cho '{}'. Gán lại cho '{}'?"
 msgid "Shortcut Conflict"
 msgstr "Xung đột phím tắt"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 #, fuzzy
 msgid "Reset all shortcuts to their default values?"
 msgstr "Đặt lại tất cả phím tắt về giá trị mặc định?"
@@ -4979,6 +5035,14 @@ msgstr "Tệp gốc"
 #, fuzzy
 msgid "Settings exported"
 msgstr "Các cài đặt đã được xuất"
+
+#, fuzzy
+#~ msgid "Unknown update file format."
+#~ msgstr "Định dạng tệp cập nhật không xác định."
+
+#, fuzzy
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Không thể khởi chạy tập lệnh cài đặt"
 
 #, fuzzy
 #~ msgid "%d char"

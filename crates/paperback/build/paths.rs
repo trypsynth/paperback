@@ -28,13 +28,4 @@ pub fn workspace_dir() -> PathBuf {
 	manifest_dir.parent().and_then(Path::parent).expect("crate lives two levels below the workspace root").to_path_buf()
 }
 
-pub fn target_profile_dir() -> Option<PathBuf> {
-	let profile = env::var("PROFILE").ok()?;
-	if let Ok(target_dir) = env::var("CARGO_TARGET_DIR") {
-		let mut dir = PathBuf::from(target_dir);
-		dir.push(profile);
-		return Some(dir);
-	}
-	let out_dir = PathBuf::from(env::var("OUT_DIR").ok()?);
-	out_dir.ancestors().nth(3).map(Path::to_path_buf)
-}
+pub use shipfitter::build::target_profile_dir;

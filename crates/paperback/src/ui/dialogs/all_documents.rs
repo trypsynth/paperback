@@ -23,7 +23,7 @@ const RECENT_DOCS_PATH_WIDTH: i32 = 450;
 const STATUS_BAR_DEBOUNCE_MS: i32 = 10;
 
 pub struct AllDocumentsResult {
-	pub open: Option<String>,
+	pub open: Vec<String>,
 	pub paths_to_close: Vec<String>,
 }
 
@@ -61,7 +61,7 @@ pub fn show_all_documents_dialog(
 	// TRANSLATORS: Title of the All Documents dialog
 	let dialog_title = t("All Documents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
-	let selected_path = Rc::new(Mutex::new(None));
+	let selected_paths: Rc<Mutex<Vec<String>>> = Rc::new(Mutex::new(Vec::new()));
 	let paths_to_close: Rc<Mutex<Vec<String>>> = Rc::new(Mutex::new(Vec::new()));
 	// TRANSLATORS: Label for the search input field in the All Documents dialog
 	let search_label = StaticText::builder(&dialog).with_label(&t("&search")).build();
@@ -95,7 +95,7 @@ pub fn show_all_documents_dialog(
 		status_debounce: &status_debounce,
 	});
 	bind_all_documents_selection(widgets, status_debounce.clone());
-	let open_action = make_all_documents_open_action(dialog, widgets.list, Rc::clone(&selected_path));
+	let open_action = make_all_documents_open_action(dialog, widgets.list, Rc::clone(&selected_paths));
 	bind_all_documents_open(widgets.list, widgets.open_button, &open_action);
 	let remove_action = make_all_documents_remove_action(
 		dialog,
@@ -142,7 +142,7 @@ pub fn show_all_documents_dialog(
 	);
 	dialog.show_modal();
 	AllDocumentsResult {
-		open: selected_path.lock().unwrap().clone(),
+		open: selected_paths.lock().unwrap().clone(),
 		paths_to_close: paths_to_close.lock().unwrap().clone(),
 	}
 }
@@ -281,13 +281,14 @@ fn bind_all_documents_selection(widgets: AllDocumentsWidgets, status_debounce: S
 fn make_all_documents_open_action(
 	dialog: Dialog,
 	list: DocumentList,
-	selected_path: Rc<Mutex<Option<String>>>,
+	selected_paths: Rc<Mutex<Vec<String>>>,
 ) -> Rc<dyn Fn()> {
 	Rc::new(move || {
-		if let Some(path) = get_selected_path(list)
-			&& Path::new(&path).exists()
-		{
-			*selected_path.lock().unwrap() = Some(path);
+		// Every selected book, in the order the list shows them, as the Open dialog does (#987). Missing ones are skipped rather than stopping the rest.
+		let selected = get_selected_indices(list).into_iter().filter_map(|index| get_path_for_index(list, index));
+		let paths: Vec<String> = selected.filter(|path| Path::new(path).exists()).collect();
+		if !paths.is_empty() {
+			*selected_paths.lock().unwrap() = paths;
 			dialog.end_modal(ID_OK);
 		}
 	})

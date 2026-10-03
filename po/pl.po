@@ -713,6 +713,10 @@ msgstr "Strona &początkowa:"
 msgid "&End page:"
 msgstr "Strona &końcowa:"
 
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+msgid "&Include text pages too"
+msgstr "&Uwzględnij także strony z warstwą tekstową"
+
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
 msgstr "Rozpoznaj tekst"
@@ -1113,6 +1117,10 @@ msgstr "Stabilny"
 msgid "Dev"
 msgstr "Deweloperski"
 
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Poziom szczegółowości dziennika:"
+
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
 msgstr "Dostosuj &skrót okna..."
@@ -1229,6 +1237,30 @@ msgstr "Czytelność"
 #. TRANSLATORS: Title of the system dialog for picking a background colour
 msgid "Choose a colour"
 msgstr "Wybierz kolor"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Wyłączony"
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr "Błędy"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr "Ostrzeżenia"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr "Informacje"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Debugowanie"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Śledzenie"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -1591,11 +1623,11 @@ msgstr "Paperback nie może wykonywać żadnych czynności, gdy otwarty jest Wid
 msgid "{} - Paperback"
 msgstr "{} - Paperback"
 
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d znak"
-msgstr[1] "%d znaki"
-msgstr[2] "%d znaków"
+#~ msgid "%d char"
+#~ msgid_plural "%d chars"
+#~ msgstr[0] "%d znak"
+#~ msgstr[1] "%d znaki"
+#~ msgstr[2] "%d znaków"
 
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
@@ -3575,9 +3607,13 @@ msgstr "Następny element: {}"
 msgid "Press play to start listening."
 msgstr "Naciśnij przycisk odtwarzania, aby rozpocząć słuchanie."
 
-#: kt
-msgid "Document Information"
-msgstr "Informacje o dokumencie"
+#. TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
+#: swift
+msgid "Original file"
+msgstr "Oryginalny plik"
+
+#~ msgid "Document Information"
+#~ msgstr "Informacje o dokumencie"
 
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt

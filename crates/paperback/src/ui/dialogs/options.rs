@@ -11,7 +11,7 @@ use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
-	config_ext::{UpdateChannel, get_update_channel},
+	config_ext::{LogLevel, UpdateChannel, get_log_level, get_update_channel},
 	translation_manager::TranslationManager,
 };
 
@@ -49,6 +49,7 @@ pub struct OptionsDialogResult {
 	pub reading_speed_wpm: i32,
 	pub language: String,
 	pub update_channel: UpdateChannel,
+	pub log_level: LogLevel,
 	pub hotkey: HotkeyConfig,
 	pub shortcuts: ShortcutsConfig,
 	pub readability_font: ReadabilityFont,
@@ -81,6 +82,7 @@ struct OptionsDialogUi {
 	reading_speed_ctrl: SpinCtrl,
 	language_combo: Choice,
 	update_channel_combo: Choice,
+	log_level_combo: Choice,
 	language_codes: Vec<String>,
 	current_language: String,
 	ok_button: Button,
@@ -106,6 +108,8 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		Some(1) => UpdateChannel::Dev,
 		_ => UpdateChannel::Stable,
 	};
+	let chosen_level = ui.log_level_combo.get_selection().and_then(|index| LogLevel::ALL.get(index as usize).copied());
+	let log_level = chosen_level.unwrap_or_default();
 	let readability_font = ui.readability_font.borrow().clone();
 	let line_spacing = ui.line_spacing_ctrl.get_selection().unwrap_or(0) as i32;
 	let bg_color = ui.bg_color.get();
@@ -137,6 +141,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
 		language,
 		update_channel,
+		log_level,
 		hotkey: ui.hotkey.borrow().clone(),
 		shortcuts: ui.shortcuts.borrow().clone(),
 		readability_font,
@@ -242,6 +247,18 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
+	// TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+	let log_level_label_text = t("Log Level:");
+	let log_level_label = StaticText::builder(&general_panel).with_label(&log_level_label_text).build();
+	let log_level_combo = Choice::builder(&general_panel).build();
+	for level in LogLevel::ALL {
+		log_level_combo.append(&log_level_name(level));
+	}
+	#[cfg(target_os = "macos")]
+	log_level_combo.set_accessibility_label(log_level_label_text.replace('&', "").trim_end_matches(':').trim());
+	let log_level_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	log_level_sizer.add(&log_level_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	log_level_sizer.add(&log_level_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	// Global window hotkeys are a Windows-only concept (see start_hotkey_listener in
 	// main_window.rs); macOS and Linux have no equivalent, so this button isn't built there.
 	#[cfg(target_os = "windows")]
@@ -259,6 +276,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	minimize_to_tray_check.show(false);
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
+	general_sizer.add_sizer(&log_level_sizer, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&shortcuts_button, 0, SizerFlag::All, option_padding);
@@ -471,6 +489,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		UpdateChannel::Dev => 1,
 	};
 	update_channel_combo.set_selection(channel_index);
+	let log_level_index = LogLevel::ALL.iter().position(|level| *level == get_log_level(config)).unwrap_or(0);
+	log_level_combo.set_selection(u32::try_from(log_level_index).unwrap_or(0));
 	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
 	#[cfg(target_os = "windows")]
 	{
@@ -577,6 +597,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		reading_speed_ctrl,
 		language_combo,
 		update_channel_combo,
+		log_level_combo,
 		language_codes,
 		current_language,
 		ok_button,
@@ -603,4 +624,21 @@ fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
 fn resolve_options_language(ui: &OptionsDialogUi) -> String {
 	patois::ui::resolve_language_choice(&ui.language_combo, &ui.language_codes)
 		.unwrap_or_else(|| ui.current_language.clone())
+}
+
+fn log_level_name(level: LogLevel) -> String {
+	match level {
+		// TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+		LogLevel::Off => t("Off"),
+		// TRANSLATORS: Log level choice that records only errors
+		LogLevel::Error => t("Errors"),
+		// TRANSLATORS: Log level choice that records warnings and errors
+		LogLevel::Warn => t("Warnings"),
+		// TRANSLATORS: Log level choice that records general activity, warnings and errors
+		LogLevel::Info => t("Information"),
+		// TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+		LogLevel::Debug => t("Debug"),
+		// TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+		LogLevel::Trace => t("Trace"),
+	}
 }

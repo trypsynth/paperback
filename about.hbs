@@ -29,8 +29,9 @@ Everything below is grouped by license. Each entry names the crates that use it 
 {{#each indices}}
 {{#with (lookup ../../licenses this)}}
 <div class="license">
-<h4 class="license-name">{{#each used_by}}{{#unless @first}}, {{/unless}}{{crate.name}}{{/each}}</h4>
-<div class="license-body">
+<h4>{{#each used_by}}{{#unless @first}}, {{/unless}}{{crate.name}}{{/each}}</h4>
+<details>
+<summary>Versions and license text</summary>
 <ul>
 {{#each used_by}}
 <li><a href="{{#if crate.repository}}{{crate.repository}}{{else}}https://crates.io/crates/{{crate.name}}{{/if}}">{{crate.name}} {{crate.version}}</a></li>
@@ -38,13 +39,11 @@ Everything below is grouped by license. Each entry names the crates that use it 
 </ul>
 
 <pre>{{text}}</pre>
-</div>
+</details>
 </div>
 
 {{/with}}
 {{/each}}
 {{/each}}
 </div>
-
-<script src="/js/licenses.js"></script>
 {% endraw %}

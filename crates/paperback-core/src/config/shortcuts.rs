@@ -122,6 +122,61 @@ impl ShortcutsConfig {
 mod tests {
 	use super::*;
 
+	/// On a Japanese keyboard `=` and `'` are typed with Shift, so the reader finds their shortcuts by the character typed instead of the key pressed (#982). That lookup is by character code with no modifiers, and has to land on the defaults.
+	#[test]
+	fn punctuation_defaults_are_found_by_the_character_they_type() {
+		let sc = ShortcutsConfig::default();
+		assert_eq!(sc.find_action(i32::from(b'='), false, false, false), Some(ActionId::AnnouncePercent));
+		assert_eq!(sc.find_action(i32::from(b'\''), false, false, false), Some(ActionId::SeekAudioForward));
+	}
+
+	/// Found by the key code the text control reports, 344 (`WXK_F5`), through the lookup the key handler uses.
+	#[test]
+	fn f5_reloads_the_document() {
+		let chord = ActionId::Reload.default_chord().expect("reload ships a default chord");
+		assert_eq!(chord, KeyChord::new(false, false, false, "F5"));
+		assert!(chord.matches(344, false, false, false), "F5 on its own must match");
+		assert_eq!(ShortcutsConfig::default().find_action(344, false, false, false), Some(ActionId::Reload));
+		assert!(!chord.matches(344, true, false, false), "must not answer for Ctrl+F5");
+		assert!(!chord.matches(344, false, true, false), "must not answer for Alt+F5");
+		assert!(!chord.matches(344, false, false, true), "must not answer for Shift+F5");
+	}
+
+	/// `find_action` returns the first match, so of two actions sharing a default chord the later one could never be reached.
+	#[test]
+	fn no_two_actions_share_a_default_chord() {
+		let all = ActionId::all();
+		for (index, &first) in all.iter().enumerate() {
+			let Some(first_chord) = first.default_chord() else {
+				continue;
+			};
+			for &second in &all[index + 1..] {
+				let Some(second_chord) = second.default_chord() else {
+					continue;
+				};
+				assert_ne!(
+					(
+						&first_chord.key,
+						first_chord.ctrl,
+						first_chord.raw_ctrl,
+						first_chord.alt,
+						first_chord.shift,
+						first_chord.win
+					),
+					(
+						&second_chord.key,
+						second_chord.ctrl,
+						second_chord.raw_ctrl,
+						second_chord.alt,
+						second_chord.shift,
+						second_chord.win
+					),
+					"{first:?} and {second:?} ship the same default chord"
+				);
+			}
+		}
+	}
+
 	#[test]
 	fn shortcuts_config_set_reset_and_find() {
 		let mut sc = ShortcutsConfig::default();

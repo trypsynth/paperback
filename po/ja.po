@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 11:10-0600\n"
-"PO-Revision-Date: 2026-08-25 22:11+0900\n"
+"POT-Creation-Date: 2026-09-24 08:33-0600\n"
+"PO-Revision-Date: 2026-09-25 22:32+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -31,6 +31,18 @@ msgstr "pbコマンドをPATHに追加する"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIPアーカイブ(.zip)"
 
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "OCR用の言語がインストールされていません。システムの言語設定から追加してください。"
+
+#. TRANSLATORS: Announced when the OCR engine fails on a page
+msgid "OCR failed."
+msgstr "OCRに失敗しました。"
+
+#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
+msgid "OCR is not available on this system."
+msgstr "このシステムではOCRを利用できません。"
+
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "IPCサーバーを作成できません"
@@ -41,12 +53,23 @@ msgstr "警告"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
+#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 msgid "This document has no audio."
 msgstr "この文書には音声ナレーションがありません。"
 
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 msgid "Audio hasn't started playing yet."
 msgstr "音声はまだ再生されていません。"
+
+#. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
+msgid "{} (maximum)"
+msgstr "{}（最大）"
+
+#. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
+msgid "{} (minimum)"
+msgstr "{}（最小）"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -92,14 +115,6 @@ msgstr "30分"
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 msgid "1 hour"
 msgstr "1時間"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
-msgid "{} (maximum)"
-msgstr "{}（最大）"
-
-#. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
-msgid "{} (minimum)"
-msgstr "{}（最小）"
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
@@ -170,6 +185,15 @@ msgstr "メモの表示"
 msgid "Open Document"
 msgstr "文書を開く"
 
+#. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "最近開いた文書はありません。"
+
+#. TRANSLATORS: Announced after the Recent Documents list has been emptied
+msgid "Recent documents cleared."
+msgstr "最近開いた文書の一覧を消去しました。"
+
 #. TRANSLATORS: Menu item in the File menu to open a document.
 msgid "&Open..."
 msgstr "開く(&O)..."
@@ -201,6 +225,14 @@ msgstr "最後に閉じた文書を開く(&L)"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "最後に閉じた文書を開きます"
+
+#. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
+msgid "Clea&r Recent Documents"
+msgstr "最近開いた文書の一覧を消去(&R)"
+
+#. TRANSLATORS: Status-bar help text for the File > Recent Documents > Clear Recent Documents menu item.
+msgid "Remove all documents from the Recent Documents list"
+msgstr "最近開いた文書の一覧からすべての文書を削除します"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
 #. TRANSLATORS: System tray menu item to quit the application
@@ -339,6 +371,14 @@ msgstr "前のテーブル(&T)"
 msgid "Next &Table"
 msgstr "次のテーブル(&T)"
 
+#. TRANSLATORS: Menu item in the Go menu to move to the previous formula.
+msgid "Previous For&mula"
+msgstr "前の数式(&M)"
+
+#. TRANSLATORS: Menu item in the Go menu to move to the next formula.
+msgid "Next For&mula"
+msgstr "次の数式(&M)"
+
 #. TRANSLATORS: Menu item in the Go menu to move to the previous separator (e.g. a horizontal rule) in the document.
 msgid "Previous Se&parator"
 msgstr "前の区切り線(&p)"
@@ -459,6 +499,30 @@ msgstr "しおりの切り替え(&B)"
 msgid "Bookmark with &Note"
 msgstr "メモ付きのしおりを作成(&N)"
 
+#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+msgid "Set Selection St&art"
+msgstr "選択開始位置を設定(&A)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+msgid "Mark the beginning of a selection to copy from"
+msgstr "コピーする範囲の選択開始位置を記録します"
+
+#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+msgid "&Copy from Selection Start"
+msgstr "選択開始位置からコピー(&C)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+msgid "Copy from the beginning of the selection to here"
+msgstr "選択開始位置から現在位置までをコピーします"
+
+#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+msgid "&Jump to Selection Start"
+msgstr "選択開始位置へ移動(&J)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+msgid "Go back to the beginning of the selection"
+msgstr "選択開始位置へ移動します"
+
 #. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
 msgstr "音声の再生/一時停止(&P)"
@@ -499,9 +563,28 @@ msgstr "音声の移動量を減らす(&D)"
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "音声ナレーションを1回で移動する量を減らします"
 
+#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+msgid "&Increase Audio Speed"
+msgstr "音声の速度を上げる(&I)"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
+msgid "Increase how fast the audio narration plays"
+msgstr "音声ナレーションの再生速度を上げます"
+
+#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+msgid "&Decrease Audio Speed"
+msgstr "音声の速度を下げる(&D)"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
+msgid "Decrease how fast the audio narration plays"
+msgstr "音声ナレーションの再生速度を下げます"
+
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "アクセシブル、軽量、高速な電子書籍・文書リーダー"
+
+msgid "Paperback is built on other people's work. The libraries it uses, and their licenses, are credited at {}."
+msgstr "Paperbackは多くの人の成果の上に成り立っています。使用しているライブラリーとそのライセンスは、{}に掲載しています。"
 
 #. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
@@ -570,28 +653,19 @@ msgstr "すべて削除(&C)"
 msgid "Close"
 msgstr "閉じる"
 
-msgid ""
-"Are you sure you want to remove the selected document? This will also remove "
-"its reading position and bookmarks."
-msgstr ""
-"選択した文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
+msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
+msgstr "選択した文書を削除しますか？これにより、読書位置としおりも削除されます。"
 
-msgid ""
-"Are you sure you want to remove the {} selected documents? This will also "
-"remove their reading positions and bookmarks."
-msgstr ""
-"{}件の文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
+msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
+msgstr "{}件の文書を削除しますか？これにより、読書位置としおりも削除されます。"
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
 msgstr "確認"
 
 #. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
-msgid ""
-"Are you sure you want to remove all documents from the list? This will also "
-"remove all reading positions and bookmarks."
-msgstr ""
-"すべての文書を削除しますか？これにより、読み上げ位置としおりも削除されます。"
+msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
+msgstr "すべての文書を削除しますか？これにより、読書位置としおりも削除されます。"
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
 msgid "No documents."
@@ -734,21 +808,6 @@ msgstr "総再生時間:"
 msgid "Average duration:"
 msgstr "平均再生時間:"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d時間"
-
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d分"
-
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d秒"
-
 #. TRANSLATORS: A page in the Elements list with no readable first line; %d is the page number
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
 msgid "Page %d"
@@ -797,10 +856,10 @@ msgstr "無題"
 #. TRANSLATORS: OK button that confirms the entered bookmark/note text
 #. TRANSLATORS: OK button that confirms the chosen file format in the Open As dialog
 #. TRANSLATORS: Label for the confirmation button
-#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
-#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
 #. TRANSLATORS: OK button that confirms the entered sleep timer duration
 #. TRANSLATORS: Label for the confirmation button
+#. TRANSLATORS: OK button in the Set Shortcut dialog that accepts the captured key combination.
+#. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
 msgid "OK"
 msgstr "OK"
 
@@ -809,8 +868,6 @@ msgstr "OK"
 msgid "Go"
 msgstr "移動"
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button in the Set Shortcut dialog.
 #. TRANSLATORS: Label for the cancellation button
 #. TRANSLATORS: Cancel button that closes the Find dialog
 #. TRANSLATORS: Label for the cancellation button
@@ -897,6 +954,82 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
+#. TRANSLATORS: Description text shown when the background color is set to default
+msgid "Background: Default"
+msgstr "背景色: 既定"
+
+#. TRANSLATORS: Description text shown when the font is set to default
+msgid "Font: Default"
+msgstr "フォント: 既定"
+
+#. TRANSLATORS: Fallback font name
+msgid "Default"
+msgstr "既定"
+
+#. TRANSLATORS: Font description prefix; {} is the font face name
+msgid "Font: {}"
+msgstr "フォント: {}"
+
+#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+msgid "{}pt"
+msgstr "{}ポイント"
+
+#. TRANSLATORS: Font weight attribute name
+msgid "Bold"
+msgstr "太字"
+
+#. TRANSLATORS: Font style attribute name
+msgid "Italic"
+msgstr "斜体"
+
+#. TRANSLATORS: Font underline attribute name
+msgid "Underlined"
+msgstr "下線"
+
+#. TRANSLATORS: Font strikethrough attribute name
+msgid "Strikethrough"
+msgstr "取り消し線"
+
+#. TRANSLATORS: Title of the system dialog for picking a font
+msgid "Choose a font"
+msgstr "フォントの選択"
+
+#. TRANSLATORS: Title of the hotkey customization dialog
+msgid "Window Hotkey"
+msgstr "ウィンドウを開くホットキー"
+
+#. TRANSLATORS: Checkbox label for Control modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox label for Alt modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox label for Shift modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+msgid "&Shift"
+msgstr "&Shift"
+
+#. TRANSLATORS: Checkbox label for Windows modifier key
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label for the hotkey key selection input field
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+msgid "&Key:"
+msgstr "キー(&K):"
+
+#. TRANSLATORS: Button label to clear the current hotkey selection
+msgid "Clear"
+msgstr "設定解除"
+
+#. TRANSLATORS: Representation of the Spacebar key
+msgid "Space"
+msgstr "Space"
+
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
 msgstr "設定"
@@ -924,6 +1057,10 @@ msgstr "ワードラップ(&W)"
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
 msgstr "テーブルをインライン表示(&I)"
+
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+msgid "&Join wrapped lines into paragraphs in PDFs"
+msgstr "PDFの折り返された行を段落にまとめる(&J)"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1086,148 +1223,6 @@ msgstr "表示"
 msgid "Choose a colour"
 msgstr "色の選択"
 
-#. TRANSLATORS: Description text shown when the background color is set to default
-msgid "Background: Default"
-msgstr "背景色: 既定"
-
-#. TRANSLATORS: Description text shown when the font is set to default
-msgid "Font: Default"
-msgstr "フォント: 既定"
-
-#. TRANSLATORS: Fallback font name
-msgid "Default"
-msgstr "既定"
-
-#. TRANSLATORS: Font description prefix; {} is the font face name
-msgid "Font: {}"
-msgstr "フォント: {}"
-
-#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
-msgid "{}pt"
-msgstr "{}ポイント"
-
-#. TRANSLATORS: Font weight attribute name
-msgid "Bold"
-msgstr "太字"
-
-#. TRANSLATORS: Font style attribute name
-msgid "Italic"
-msgstr "斜体"
-
-#. TRANSLATORS: Font underline attribute name
-msgid "Underlined"
-msgstr "下線"
-
-#. TRANSLATORS: Font strikethrough attribute name
-msgid "Strikethrough"
-msgstr "取り消し線"
-
-#. TRANSLATORS: Title of the system dialog for picking a font
-msgid "Choose a font"
-msgstr "フォントの選択"
-
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "ウィンドウを開くホットキー"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-msgid "&Ctrl"
-msgstr "&Ctrl"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-msgid "&Alt"
-msgstr "&Alt"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-msgid "&Shift"
-msgstr "&Shift"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-msgid "&Win"
-msgstr "&Win"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-msgid "&Key:"
-msgstr "キー(&K):"
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-msgid "Clear"
-msgstr "設定解除"
-
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "Space"
-
-#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
-msgid "Customize Keyboard Shortcuts"
-msgstr "キーボードショートカットのカスタマイズ"
-
-#. TRANSLATORS: Label above the list of shortcuts for a category in the Keyboard Shortcuts dialog.
-msgid "&Shortcuts:"
-msgstr "ショートカット(&S):"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
-msgid "&Set Shortcut..."
-msgstr "ショートカットを設定(&S)..."
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
-msgid "&Clear Shortcut"
-msgstr "ショートカットを解除(&C)"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
-msgid "&Reset to Default"
-msgstr "既定に戻す(&R)"
-
-#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
-msgid "Reset &All to Defaults"
-msgstr "すべて既定に戻す(&A)"
-
-#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
-msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
-msgstr "「{}」は既に「{}」に割り当てられています。「{}」に割り当て直しますか？"
-
-#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
-msgid "Shortcut Conflict"
-msgstr "ショートカットの重複"
-
-msgid "Reset all shortcuts to their default values?"
-msgstr "すべてのショートカットを既定に戻しますか？"
-
-#. TRANSLATORS: Title of the confirmation dialog for resetting all keyboard shortcuts to their defaults.
-msgid "Reset Shortcuts"
-msgstr "ショートカットの初期化"
-
-#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
-msgid "Set Shortcut for {}"
-msgstr "「{}」のショートカットを設定"
-
-#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
-msgid "Configure shortcut for {}:"
-msgstr "「{}」に割り当てるショートカット:"
-
-msgid "Tip: click in the key field and press the key combination you want."
-msgstr ""
-"ヒント: キー入力欄をクリックして、割り当てたいキーの組み合わせを押してくださ"
-"い。"
-
-#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
-msgid "Detected: (none)"
-msgstr "検出されたキー: なし"
-
-msgid "Detected: {}"
-msgstr "検出されたキー: {}"
-
-msgid "No key detected"
-msgstr "キーが検出されていません。"
-
-#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
-msgid "&Clear"
-msgstr "割り当てを解除(&C)"
-
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "スリープタイマー"
@@ -1276,6 +1271,26 @@ msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "この文書の単語数は%dです。"
 
+#. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
+msgid "{} to {}"
+msgstr "{}から{}まで"
+
+#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
+msgid "File not found: {}"
+msgstr "ファイルが見つかりません: {}"
+
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
+msgid "A .paperback file was found for this document. Would you like to import it?"
+msgstr "この文書用の.paperbackファイルが見つかりました。インポートしますか？"
+
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
+msgid "Import document data"
+msgstr "文書データのインポート"
+
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
+msgid "Password is required."
+msgstr "パスワードが必要です。"
+
 #. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
 msgid "OCR in progress."
 msgstr "OCRを実行中です。"
@@ -1315,23 +1330,6 @@ msgid "Batch OCR complete. %d page recognized."
 msgid_plural "Batch OCR complete. %d pages recognized."
 msgstr[0] "一括OCRが完了しました。%dページを認識しました。"
 
-#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
-msgid "File not found: {}"
-msgstr "ファイルが見つかりません: {}"
-
-#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
-msgid ""
-"A .paperback file was found for this document. Would you like to import it?"
-msgstr "この文書用の.paperbackファイルが見つかりました。インポートしますか？"
-
-#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
-msgid "Import document data"
-msgstr "文書データのインポート"
-
-#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
-msgid "Password is required."
-msgstr "パスワードが必要です。"
-
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "リンク先へ移動しました。"
@@ -1352,6 +1350,10 @@ msgstr "一時しおりがありません。"
 msgid "Temporary bookmark."
 msgstr "一時しおり。"
 
+#. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
+msgid "%s, page %d"
+msgstr "%s、ページ%d"
+
 #. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr "パスワード(&P):"
@@ -1371,6 +1373,10 @@ msgstr "ファイル: {}"
 #. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
 msgid "Details: {}"
 msgstr "詳細: {}"
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr "検索結果"
 
 #. TRANSLATORS: Title of the Find dialog
 msgid "Find"
@@ -1410,10 +1416,6 @@ msgstr "次を検索(&N)"
 msgid "Find &All"
 msgstr "すべて検索(&A)"
 
-#. TRANSLATORS: Accessible name of the list of Find All results
-msgid "Results"
-msgstr "検索結果"
-
 #. TRANSLATORS: Button that jumps to the selected find result
 #. TRANSLATORS: Top-level "Go" menu label in the menu bar
 msgid "&Go"
@@ -1433,11 +1435,8 @@ msgid "Failed to reveal file in folder."
 msgstr "ファイルの場所を開けません。"
 
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
-msgid ""
-"readme.html not found. Please ensure the application was built properly."
-msgstr ""
-"readme.htmlが見つかりません。アプリケーションが正しくビルドされていることをご"
-"確認ください。"
+msgid "readme.html not found. Please ensure the application was built properly."
+msgstr "readme.htmlが見つかりません。アプリケーションが正しくビルドされていることをご確認ください。"
 
 #. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
@@ -1447,13 +1446,19 @@ msgstr "既定のブラウザーを起動できません。"
 msgid "Failed to open donation page in browser."
 msgstr "ブラウザーで寄付ページを開けません。"
 
-#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
-msgid "Unsupported format selected."
-msgstr "選択した形式には対応していません。"
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+msgid "Word wrap on."
+msgstr "ワードラップ オン。"
 
-#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-msgid "No recent documents."
-msgstr "最近開いた文書はありません。"
+msgid "Word wrap off."
+msgstr "ワードラップ オフ。"
+
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+msgid "Full screen on."
+msgstr "全画面表示 オン。"
+
+msgid "Full screen off."
+msgstr "全画面表示 オフ。"
 
 #. TRANSLATORS: Announced when landing on a blank line; %d is the line number
 msgid "Line %d"
@@ -1550,6 +1555,10 @@ msgstr "メモとしおりをインポートしました。"
 msgid "Import Successful"
 msgstr "インポート完了"
 
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
+msgid "Unsupported format selected."
+msgstr "選択した形式には対応していません。"
+
 #. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
 msgstr "Paperback"
@@ -1561,31 +1570,13 @@ msgstr "文書を再読み込みしました。"
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Webビューが開いている間はアクションを実行できません。"
 
-#. TRANSLATORS: Window title when a document is open; {} is the document title
-msgid "{} - Paperback"
-msgstr "{} - Paperback"
-
-msgid "%d char"
-msgid_plural "%d chars"
-msgstr[0] "%d文字"
-
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "文書をエクスポートできません。"
 
-#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
-msgid "Word wrap on."
-msgstr "ワードラップ オン。"
-
-msgid "Word wrap off."
-msgstr "ワードラップ オフ。"
-
-#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
-msgid "Full screen on."
-msgstr "全画面表示 オン。"
-
-msgid "Full screen off."
-msgstr "全画面表示 オフ。"
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "{} - Paperback"
+msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 msgid "&Undo\tCtrl+Z"
@@ -1735,6 +1726,14 @@ msgstr "テーブル(&T)"
 msgid "Navigate by tables"
 msgstr "テーブル単位で移動します"
 
+#. TRANSLATORS: Label for the Formulas submenu in the compact Go menu.
+msgid "For&mulas"
+msgstr "数式(&M)"
+
+#. TRANSLATORS: Status-bar help text for the Go > Formulas submenu.
+msgid "Navigate by formulas"
+msgstr "数式単位で移動します"
+
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "&Separators"
 msgstr "区切り線(&S)"
@@ -1805,7 +1804,7 @@ msgstr "文書データのインポート(&I)..."
 
 #. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
 msgid "Import bookmarks and position"
-msgstr "しおりと位置情報をインポートします"
+msgstr "しおりと読書位置をインポートします"
 
 #. TRANSLATORS: Menu item in Tools > Import/Export to export bookmarks and reading position to a file.
 msgid "&Export Document Data..."
@@ -1813,7 +1812,7 @@ msgstr "文書データのエクスポート(&E)..."
 
 #. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
-msgstr "しおりと位置情報をエクスポートします"
+msgstr "しおりと読書位置をエクスポートします"
 
 #. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a plain text file.
 msgid "Export to &Plain Text..."
@@ -1902,6 +1901,14 @@ msgstr "インポート/エクスポート(&M)"
 #. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
 msgid "Import and export options"
 msgstr "インポート/エクスポートオプション"
+
+#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
+msgid "Select and &copy"
+msgstr "選択とコピー(&C)"
+
+#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
+msgid "Mark a selection and copy from it"
+msgstr "選択開始位置の設定と、その位置からのコピーを行います"
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
 msgid "Word w&rap"
@@ -2039,6 +2046,18 @@ msgstr "次のテーブルがありません。"
 msgid "No previous table."
 msgstr "前のテーブルがありません。"
 
+#. TRANSLATORS: Announcement when formula navigation is unavailable because the document has no formulas
+msgid "No formulas."
+msgstr "数式がありません。"
+
+#. TRANSLATORS: Announcement when there is no next formula to navigate to
+msgid "No next formula."
+msgstr "次の数式がありません。"
+
+#. TRANSLATORS: Announcement when there is no previous formula to navigate to
+msgid "No previous formula."
+msgstr "前の数式がありません。"
+
 #. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr "区切り線がありません。"
@@ -2085,10 +2104,10 @@ msgstr "リンク"
 
 #. TRANSLATORS: Announced when moving forward/backward through the caret position history
 msgid "Navigated to next position."
-msgstr "次の位置へ移動します。"
+msgstr "次の位置へ移動しました。"
 
 msgid "Navigated to previous position."
-msgstr "前の位置へ移動します。"
+msgstr "前の位置へ移動しました。"
 
 #. TRANSLATORS: Announced when there is no next/previous position in the caret position history
 msgid "No next position."
@@ -2112,21 +2131,11 @@ msgstr "コンテナーの末尾です。"
 msgid "Start of container."
 msgstr "コンテナーの先頭です。"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr ""
-"OCR用の言語がインストールされていません。システムの言語設定から追加してくださ"
-"い。"
+#. TRANSLATORS: Title of the dialog displaying a formula as MathML
+msgid "Formula View"
+msgstr "数式ビュー"
 
-#. TRANSLATORS: Announced when the OCR engine fails on a page
-msgid "OCR failed."
-msgstr "OCRに失敗しました。"
-
-#. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
-msgid "OCR is not available on this system."
-msgstr "このシステムではOCRを利用できません。"
-
-#. TRANSLATORS: Title of the dialog showing the HTML rendering of a table activated in the document
+#. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr "テーブルビュー"
 
@@ -2183,6 +2192,34 @@ msgstr "パーセント移動(&P)"
 msgid "Go to percent"
 msgstr "パーセントを指定して移動します"
 
+#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
+msgid "Copied (%d chars)."
+msgstr "コピーしました（%d文字）。"
+
+#. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
+msgid "Beginning of selection set."
+msgstr "選択開始位置を設定しました。"
+
+#. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
+msgid "Cannot copy; set beginning of selection first."
+msgstr "コピーできません。先に選択開始位置を設定してください。"
+
+#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
+msgid "Nothing to copy."
+msgstr "コピーする内容がありません。"
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr "クリップボードにコピーできませんでした。"
+
+#. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
+msgid "Cannot jump; set beginning of selection first."
+msgstr "移動できません。先に選択開始位置を設定してください。"
+
+#. TRANSLATORS: Announced after jumping back to the marked beginning of the selection.
+msgid "Jumped to beginning of selection."
+msgstr "選択開始位置へ移動しました。"
+
 #. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "スリープタイマーをキャンセルしました。"
@@ -2230,6 +2267,10 @@ msgstr "最後に閉じた文書を開く"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "最近開いた文書をすべて表示..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Clear Recent Documents"
+msgstr "最近開いた文書の一覧を消去"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Exit"
@@ -2383,6 +2424,14 @@ msgstr "前のテーブル"
 msgid "Next Table"
 msgstr "次のテーブル"
 
+#. TRANSLATORS: Shortcut action to move to the previous formula
+msgid "Previous Formula"
+msgstr "前の数式"
+
+#. TRANSLATORS: Shortcut action to move to the next formula
+msgid "Next Formula"
+msgstr "次の数式"
+
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Separator"
 msgstr "前の区切り線"
@@ -2440,6 +2489,18 @@ msgid "Bookmark with Note"
 msgstr "メモ付きのしおりを作成"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Set Selection Start"
+msgstr "選択開始位置を設定"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Copy from Selection Start"
+msgstr "選択開始位置からコピー"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Jump to Selection Start"
+msgstr "選択開始位置へ移動"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Word Wrap"
 msgstr "ワードラップの切り替え"
 
@@ -2462,6 +2523,14 @@ msgstr "音声の移動量を増やす"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Decrease Audio Seek Amount"
 msgstr "音声の移動量を減らす"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Increase Audio Speed"
+msgstr "音声の速度を上げる"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Decrease Audio Speed"
+msgstr "音声の速度を下げる"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
@@ -2539,6 +2608,10 @@ msgstr "ヘルプ"
 msgid "None"
 msgstr "なし"
 
+#. TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
+msgid "This view shows the part of the document you are reading."
+msgstr "このビューでは、文書のうち読んでいる部分を表示しています。"
+
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
 msgstr "[画像のみ。EnterキーでOCRを実行します。]"
@@ -2547,17 +2620,29 @@ msgstr "[画像のみ。EnterキーでOCRを実行します。]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[画像のみ。このページには読めるテキストがありません。]"
 
+#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
+msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
+msgstr "PaperbackはRAR形式のコミックアーカイブには対応していません。.cbz形式に変換してから開いてください。"
+
+#. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
+msgid "Failed to parse comic archive: {}"
+msgstr "コミックアーカイブを解析できません: {}"
+
+#. TRANSLATORS: Error shown when a comic book archive holds no page images at all
+msgid "This comic archive contains no pages."
+msgstr "このコミックアーカイブにはページがありません。"
+
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "図"
 
+#. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
 msgid "Image"
 msgstr "画像"
 
 #. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr ""
-"DAISY .opfファイルが正しくないか、マニフェストにDTBook XMLが見つかりません"
+msgstr "DAISY .opfファイルが正しくないか、マニフェストにDTBook XMLが見つかりません"
 
 #. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
 msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
@@ -2581,7 +2666,7 @@ msgstr "サポートされていないコンテンツ"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
-msgstr "OPFに package要素がありません"
+msgstr "OPFにpackage要素がありません"
 
 #. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
 msgid "no readable spine items"
@@ -2599,6 +2684,14 @@ msgstr "EPUBに読み取り可能な要素がありません（{}）"
 msgid "Failed to convert FB2 XML to text"
 msgstr "FB2 XMLをテキストに変換できません"
 
+#. TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
+msgid "Failed to parse WinHelp file: {}"
+msgstr "WinHelpファイルを解析できません: {}"
+
+#. TRANSLATORS: Name given to a WinHelp topic that carries no title of its own; {} is the topic's number
+msgid "Topic {}"
+msgstr "トピック{}"
+
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "HTMLファイルが空です: {}"
@@ -2606,10 +2699,6 @@ msgstr "HTMLファイルが空です: {}"
 #. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
 msgid "Failed to convert HTML to text: {}"
 msgstr "HTMLをテキストに変換できません: {}"
-
-#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
-msgid "Chapter {}"
-msgstr "章{}"
 
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 msgid "Failed to convert Markdown to text: {}"
@@ -2707,6 +2796,16 @@ msgstr "復号スタックがオーバーフローしました"
 msgid "File too short"
 msgstr "ファイルが短すぎます"
 
+#. TRANSLATORS: Error detail shown when an OpenDocument file is encrypted and no password was given (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+msgid "Password required"
+msgstr "パスワードが必要です"
+
+#. TRANSLATORS: Error detail shown when the password for an OpenDocument file is wrong (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+msgid "Password incorrect"
+msgstr "パスワードが間違っています"
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
 msgstr "ODPファイルにページがありません"
@@ -2723,16 +2822,19 @@ msgstr "パスワードが必要または間違っています"
 msgid "Failed to open PDF document: {}"
 msgstr "PDFファイルを開けません: {}"
 
-msgid ""
-"Password-protected PPT files are not currently supported. Try saving the "
-"file as PPTX and opening that instead."
-msgstr ""
-"パスワードで保護されたPPTファイルは現在サポートされていません。ファイルをPPTX"
-"形式で保存してそちらを開いてください。"
-
 #. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
 msgid "PPT file contains no slides"
 msgstr "PPTファイルにスライドがありません"
+
+#. TRANSLATORS: Error detail shown when an encrypted PowerPoint file needs a password (the internal sentinel prefix before it is not translated)
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+msgid "File is encrypted and requires a password"
+msgstr "ファイルは暗号化されており、パスワードが必要です"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office file fails; {} is the underlying error
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+msgid "Decryption failed (wrong password?): {}"
+msgstr "復号に失敗しました（パスワードが違う可能性があります）: {}"
 
 #. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
 msgid "PowerPoint Document stream not found"
@@ -2746,13 +2848,9 @@ msgstr "PPTXファイルにスライドがありません"
 msgid "Failed to parse RTF document: {}"
 msgstr "RTFファイルを解析できません: {}"
 
-#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-msgid "File is encrypted and requires a password"
-msgstr "ファイルは暗号化されており、パスワードが必要です"
-
-#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
-msgid "Decryption failed (wrong password?): {}"
-msgstr "復号に失敗しました（パスワードが違う可能性があります）: {}"
+#. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
+msgid "Chapter {}"
+msgstr "章{}"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -2784,9 +2882,7 @@ msgstr "ZIPアーカイブ内に読み取れる内容が見つかりません"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr ""
-"旧形式DOCとしての解析に失敗しました: {}。OOXMLとしての再試行も失敗しました: "
-"{}"
+msgstr "旧形式DOCとしての解析に失敗しました: {}。OOXMLとしての再試行も失敗しました: {}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 msgid "No file extension found for: {}"
@@ -2800,27 +2896,14 @@ msgstr "この拡張子に対応するパーサーがありません: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "この拡張子のパーサーがすべて失敗しました: .{}"
 
-#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-msgid "Password required"
-msgstr "パスワードが必要です"
-
-#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
-msgid "Password incorrect"
-msgstr "パスワードが間違っています"
-
 msgid "Unknown update file format."
 msgstr "更新ファイルが不明な形式です。"
 
 msgid "Failed to open disk image"
 msgstr "ディスクイメージを開けません"
 
-msgid ""
-"The update has been downloaded and its disk image opened. Quit %s and drag "
-"the new version into Applications to finish installing."
-msgstr ""
-"更新をダウンロードし、ディスクイメージを開きました。%sを終了し、新しいバー"
-"ジョンをアプリケーションフォルダーにドラッグしてインストールを完了してくださ"
-"い。"
+msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
+msgstr "更新をダウンロードし、ディスクイメージを開きました。%sを終了し、新しいバージョンをアプリケーションフォルダーにドラッグしてインストールを完了してください。"
 
 msgid "Update Ready"
 msgstr "更新準備完了"
@@ -2835,7 +2918,7 @@ msgid "Failed to launch update script"
 msgstr "更新スクリプトを起動できません"
 
 msgid "Update failed"
-msgstr "アップデート失敗"
+msgstr "更新失敗"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -2876,396 +2959,463 @@ msgstr "更新がありません。最新バージョン: %s"
 msgid "Info"
 msgstr "情報"
 
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr ""
-"セキュリティ検証に失敗しました。更新ファイルが改ざんされている可能性がありま"
-"す: %s"
+msgid "Security verification failed. The update might have been tampered with: %s"
+msgstr "セキュリティ検証に失敗しました。更新ファイルが改ざんされている可能性があります: %s"
 
 msgid "Security Error"
 msgstr "セキュリティエラー"
 
-#. TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
-#: swift
+#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d時間"
+
+#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d分"
+
+#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d秒"
+
+#. TRANSLATORS: Title of the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+msgid "Set Shortcut for {}"
+msgstr "「{}」のショートカットを設定"
+
+#. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
+msgid "Configure shortcut for {}:"
+msgstr "「{}」に割り当てるショートカット:"
+
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr "ヒント: キー入力欄をクリックして、割り当てたいキーの組み合わせを押してください。"
+
+#. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
+msgid "Detected: (none)"
+msgstr "検出されたキー: なし"
+
+msgid "Detected: {}"
+msgstr "検出されたキー: {}"
+
+msgid "No key detected"
+msgstr "キーが検出されていません。"
+
+#. TRANSLATORS: Button in the Set Shortcut dialog that clears the captured key combination.
+msgid "&Clear"
+msgstr "割り当てを解除(&C)"
+
+#. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
+msgid "Customize Keyboard Shortcuts"
+msgstr "キーボードショートカットのカスタマイズ"
+
+#. TRANSLATORS: Label above the list of shortcuts for a tab in the Keyboard Shortcuts dialog.
+msgid "&Shortcuts:"
+msgstr "ショートカット(&S):"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that opens a prompt to assign a new shortcut to the selected action.
+msgid "&Set Shortcut..."
+msgstr "ショートカットを設定(&S)..."
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that removes the shortcut assigned to the selected action.
+msgid "&Clear Shortcut"
+msgstr "ショートカットを解除(&C)"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores the selected action's shortcut to its default.
+msgid "&Reset to Default"
+msgstr "既定に戻す(&R)"
+
+#. TRANSLATORS: Button in the Keyboard Shortcuts dialog that restores every action's shortcut to its default.
+msgid "Reset &All to Defaults"
+msgstr "すべて既定に戻す(&A)"
+
+#. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
+msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
+msgstr "「{}」は既に「{}」に割り当てられています。「{}」に割り当て直しますか？"
+
+#. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
+msgid "Shortcut Conflict"
+msgstr "ショートカットの重複"
+
+#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+msgid "Reset all shortcuts to their default values?"
+msgstr "すべてのショートカットを既定に戻しますか？"
+
+#. TRANSLATORS: Confirmation prompt shown when resetting the current tab's keyboard shortcuts to their defaults.
+msgid "Reset all shortcuts in this tab to their default values?"
+msgstr "このタブのショートカットをすべて既定に戻しますか？"
+
+#. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
+msgid "Reset Shortcuts"
+msgstr "ショートカットの初期化"
+
+#: kt swift
 msgid "Export Document Data"
-msgstr ""
+msgstr "文書データのエクスポート"
 
-#. TRANSLATORS: Long-press menu item to import a document's saved settings and bookmarks from a .paperback file
-#: swift
+#: kt swift
 msgid "Import Document Data"
-msgstr ""
-
-#. TRANSLATORS: Confirmation shown after exporting a document's settings and bookmarks to a .paperback file
-#: swift
-msgid "Settings exported"
-msgstr ""
+msgstr "文書データのインポート"
 
 #. TRANSLATORS: Message shown when exporting a document's settings and bookmarks to a .paperback file fails
-#: swift
+#: kt swift
 msgid "Failed to export settings"
-msgstr ""
+msgstr "設定をエクスポートできません"
 
 #. TRANSLATORS: Confirmation shown after importing a document's settings and bookmarks from a .paperback file
-#: swift
+#: kt swift
 msgid "Settings imported"
-msgstr ""
+msgstr "設定をインポートしました"
 
 #. TRANSLATORS: Message shown when importing a document's settings and bookmarks from a .paperback file fails
-#: swift
+#: kt swift
 msgid "Failed to import settings"
-msgstr ""
+msgstr "設定をインポートできません"
 
 #. TRANSLATORS: Title of the alert reporting the result of importing/exporting a document's settings and bookmarks
 #: swift
 msgid "Document Data"
-msgstr ""
+msgstr "文書データ"
 
 #. TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
 #: swift
 msgid "More options"
-msgstr ""
+msgstr "その他のオプション"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 msgid "Switch to TTS Mode"
-msgstr ""
+msgstr "読み上げモードに切り替え"
 
 #. TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
-#: swift
+#: kt swift
 msgid "Switch to Text Mode"
-msgstr ""
+msgstr "テキストモードに切り替え"
 
-#. TRANSLATORS: Menu item to open the list of recently opened documents
-#: swift
+#: kt swift
 msgid "Recent Documents"
-msgstr ""
+msgstr "最近開いた文書"
 
 #. TRANSLATORS: Menu item to open the sleep timer; the "(active)" variant is shown while a timer is currently counting down
 #: swift
 msgid "Sleep Timer (active)"
-msgstr ""
+msgstr "スリープタイマー（動作中）"
 
 #. TRANSLATORS: Label for the wheel picker choosing between the Headings and Links tabs
 #: swift
 msgid "Type"
-msgstr ""
+msgstr "種類"
 
 #. TRANSLATORS: Title shown when a document has no headings or links to list in the Elements sheet
 #: swift
 msgid "No Elements"
-msgstr ""
+msgstr "要素がありません"
 
 #. TRANSLATORS: Description shown under the "No Elements" title explaining what would appear here
 #: swift
 msgid "Headings, images, and other elements will appear here."
-msgstr ""
+msgstr "見出しや画像などの要素がここに表示されます。"
 
 #. TRANSLATORS: Shown in the main reading area when no document is currently open
 #: swift
 msgid "No document open"
-msgstr ""
+msgstr "文書が開いていません"
 
 #. TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
-#: swift
+#: kt swift
 msgid "Show All"
-msgstr ""
+msgstr "すべて表示"
 
 #. TRANSLATORS: Toggle label; when on, search matching is case-sensitive
-#: swift
+#: kt swift
 msgid "Match Case"
-msgstr ""
+msgstr "大文字/小文字を区別"
 
 #. TRANSLATORS: Toggle label; when on, search only matches whole words
-#: swift
+#: kt swift
 msgid "Whole Word"
-msgstr ""
+msgstr "単語単位で一致"
 
 #. TRANSLATORS: Toggle label; when on, the search query is treated as a regular expression
-#: swift
+#: kt swift
 msgid "Regular Expression"
-msgstr ""
+msgstr "正規表現"
 
 #. TRANSLATORS: Title of the alert shown when a document fails to open
 #: swift
 msgid "Open Error"
-msgstr ""
+msgstr "読み込みエラー"
 
 #. TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
-#: swift
+#: kt swift
 msgid "Open Book"
-msgstr ""
+msgstr "本を開く"
 
-#. TRANSLATORS: Button to pick a new file location for a recent document that can no longer be found
-#: swift
+#: kt swift
 msgid "Locate"
-msgstr ""
+msgstr "場所を指定"
 
-#. TRANSLATORS: Button to remove a document from the recent documents list
-#: swift
+#: kt swift
 msgid "Remove"
-msgstr ""
+msgstr "削除"
 
 #. TRANSLATORS: Status label for a recent document whose file can no longer be found
-#: swift
+#: kt swift
 msgid "File Missing"
-msgstr ""
+msgstr "ファイルが見つかりません"
 
 #. TRANSLATORS: Status label for a recent document that's currently open in a tab
-#: swift
+#: kt swift
 msgid "Currently Open"
-msgstr ""
+msgstr "開いています"
 
 #. TRANSLATORS: Title of the empty-state view shown when no documents have been opened yet
 #: swift
 msgid "No Recent Documents"
-msgstr ""
+msgstr "最近開いた文書がありません"
 
 #. TRANSLATORS: Description text under the "No Recent Documents" empty-state title
 #: swift
 msgid "Documents you open will appear here."
-msgstr ""
+msgstr "開いた文書がここに表示されます。"
 
 #. TRANSLATORS: Section header in Settings grouping text-to-speech voice/rate/pitch controls
 #: swift
 msgid "Text to Speech"
-msgstr ""
+msgstr "読み上げ"
 
 #. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
-#: swift
+#: kt swift
 msgid "Voice"
-msgstr ""
+msgstr "音声"
 
-#. TRANSLATORS: Label above the speech rate slider (visual label; the slider itself has its own accessibility label)
+#. TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
 #: swift
 msgid "Rate"
-msgstr ""
+msgstr "速度"
 
-#. TRANSLATORS: VoiceOver accessibility label for the speech rate slider
-#: swift
+#. TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+#: kt swift
 msgid "Speech Rate"
-msgstr ""
+msgstr "読み上げ速度"
 
-#. TRANSLATORS: Label above the speech pitch slider (visual label; the slider itself has its own accessibility label)
-#: swift
+#. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
+#: kt swift
 msgid "Pitch"
-msgstr ""
+msgstr "ピッチ"
 
 #. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
 #: swift
 msgid "Speech Dictionary"
-msgstr ""
+msgstr "読み上げ辞書"
 
 #. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
-#: swift
+#: kt swift
 msgid "Play Sample"
-msgstr ""
+msgstr "サンプルを再生"
 
 #. TRANSLATORS: Row label for the control that scales the size of document text
-#: swift
+#: kt swift
 msgid "Text Size"
-msgstr ""
+msgstr "文字サイズ"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between lines of text
-#: swift
-#, fuzzy
+#: kt swift
 msgid "Line Spacing"
-msgstr "行の間隔(&L):"
+msgstr "行の間隔"
 
 #. TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
-#: swift
-#, fuzzy
+#: kt swift
 msgid "Paragraph Spacing"
-msgstr "段落の間隔(&P):"
+msgstr "段落の間隔"
 
 #. TRANSLATORS: Label for the picker choosing how document text is aligned
-#: swift
-#, fuzzy
+#: kt swift
 msgid "Alignment"
-msgstr "テキストの配置(&A):"
+msgstr "テキストの配置"
 
 #. TRANSLATORS: Section header in Settings grouping general app behavior toggles
 #: swift
 msgid "Behavior"
-msgstr ""
+msgstr "動作"
 
 #. TRANSLATORS: Toggle to reopen previously open documents on next launch
 #: swift
 msgid "Restore last open documents"
-msgstr ""
+msgstr "前回開いていた文書を復元する"
 
 #. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
-#: swift
+#: kt swift
 msgid "Swipe up moves forward"
-msgstr ""
+msgstr "上スワイプで進む"
 
 #. TRANSLATORS: Row label for the document's title in the Document Info sheet
-#: swift
+#: kt swift
 msgid "Title"
-msgstr ""
+msgstr "タイトル"
 
 #. TRANSLATORS: Row label for the document's author in the Document Info sheet
-#: swift
+#: kt swift
 msgid "Author"
-msgstr ""
+msgstr "著者"
 
 #. TRANSLATORS: Row label for the document's total word count
-#: swift
+#: kt swift
 msgid "Words"
-msgstr ""
+msgstr "単語数"
 
 #. TRANSLATORS: Row label for the document's total line count
-#: swift
+#: kt swift
 msgid "Lines"
-msgstr ""
+msgstr "行数"
 
 #. TRANSLATORS: Row label for the document's total character count (including spaces)
-#: swift
+#: kt swift
 msgid "Characters"
-msgstr ""
+msgstr "文字数"
 
 #. TRANSLATORS: Row label for the document's character count with whitespace excluded
-#: swift
+#: kt swift
 msgid "Characters (excluding spaces)"
-msgstr ""
+msgstr "文字数（スペースを除く）"
 
 #. TRANSLATORS: Label for the wheel picker that chooses whether Go To navigates by line, page, or percent
 #: swift
 msgid "Mode"
-msgstr ""
+msgstr "種類"
 
-#. TRANSLATORS: Go To mode option: navigate to a specific page number
-#: swift
+#. TRANSLATORS: Name of the "page" reading/navigation unit
+#: kt swift
 msgid "Page"
-msgstr ""
+msgstr "ページ"
 
 #. TRANSLATORS: Go To mode option: navigate to a percentage through the document
 #: swift
 msgid "Percent"
-msgstr ""
+msgstr "パーセント"
 
 #. TRANSLATORS: Placeholder for the line number input field in Go To
 #: swift
 msgid "Line number"
-msgstr ""
+msgstr "行番号"
 
 #. TRANSLATORS: Placeholder for the page number input field in Go To
 #: swift
 msgid "Page number"
-msgstr ""
+msgstr "ページ番号"
 
 #. TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
-#: swift
+#: kt swift
 msgid "Percentage"
-msgstr ""
+msgstr "パーセント"
 
-#. TRANSLATORS: Navigation title of the Go To sheet
-#: swift
+#: kt swift
 msgid "Go To"
-msgstr ""
+msgstr "移動"
 
 #. TRANSLATORS: Placeholder text for the password entry field
 #: swift
 msgid "Password"
-msgstr ""
+msgstr "パスワード"
 
 #. TRANSLATORS: Footer text naming the file that needs a password; {} is the file name
 #: swift
 msgid "Enter password for {}"
-msgstr ""
+msgstr "{}のパスワードを入力してください"
 
 #. TRANSLATORS: Navigation title of the sheet prompting for a document's password
 #: swift
 msgid "Password Required"
-msgstr ""
+msgstr "パスワードが必要です"
 
 #. TRANSLATORS: Section header grouping the scope picker for a text-substitution rule
 #: swift
 msgid "Rule"
-msgstr ""
+msgstr "ルール"
 
 #. TRANSLATORS: Label for the picker choosing whether a rule applies to a whole word or a whole paragraph
 #: swift
 msgid "Scope"
-msgstr ""
+msgstr "範囲"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a single word
+#. TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 #: swift
 msgid "Word"
-msgstr ""
+msgstr "単語"
 
-#. TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
-#: swift
+#. TRANSLATORS: Name of the "paragraph" reading/navigation unit
+#: kt swift
 msgid "Paragraph"
-msgstr ""
+msgstr "段落"
 
 #. TRANSLATORS: Section header grouping the find/replace pattern fields for a text-substitution rule
 #: swift
 msgid "Pattern & Replacement"
-msgstr ""
+msgstr "検索と置換"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
 #: swift
 msgid "Pattern"
-msgstr ""
+msgstr "検索する文字列"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the replacement text
 #: swift
 msgid "Replacement"
-msgstr ""
+msgstr "置換後の文字列"
 
 #. TRANSLATORS: Toggle limiting a word-scope rule to whole-word matches only (no partial-word matches)
 #: swift
 msgid "Whole word only"
-msgstr ""
+msgstr "単語単位で一致"
 
 #. TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
 #: swift
 msgid "Regular expression (\\1 = first capture group)"
-msgstr ""
+msgstr "正規表現（\\1 = 1番目のキャプチャグループ）"
 
 #. TRANSLATORS: Toggle for whether this text-substitution rule is currently active
 #: swift
 msgid "Enabled"
-msgstr ""
+msgstr "有効"
 
 #. TRANSLATORS: Section header for choosing which TTS voices a rule applies to
 #: swift
 msgid "Apply to"
-msgstr ""
+msgstr "適用先"
 
 #. TRANSLATORS: Row label leading to the voice-filter picker for this rule
 #: swift
 msgid "Voices"
-msgstr ""
+msgstr "音声"
 
 #. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
 #: swift
 msgid "New Rule"
-msgstr ""
+msgstr "新しいルール"
 
 #. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
 #: swift
 msgid "Edit Rule"
-msgstr ""
+msgstr "ルールを編集"
 
 #. TRANSLATORS: Button to save the rule and dismiss the editor
 #: swift
 msgid "Save"
-msgstr ""
+msgstr "保存"
 
 #. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
 #: swift
 msgid "All voices"
-msgstr ""
+msgstr "すべての音声"
 
 #. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
 #: swift
 msgid "Apply To"
-msgstr ""
+msgstr "適用先"
 
 #: swift
 msgid "Sleep timer running, {} remaining"
-msgstr ""
+msgstr "スリープタイマー動作中。残り{}"
 
 #. TRANSLATORS: Sleep timer duration option that reveals a field to type a custom number of
 #. minutes; {} is the number typed so far, e.g. "Custom: 45 minutes" — shown once non-empty
@@ -3276,291 +3426,275 @@ msgstr ""
 #. trailing character isn't a typo — see pluralManyMarker in Translations.swift.
 #: swift
 msgid "Custom"
-msgstr ""
+msgstr "カスタム"
 
 #: swift
 msgid "Custom: {} minutes"
-msgstr ""
+msgstr "カスタム: {}分"
 
 #: swift
 msgid "Duration"
-msgstr ""
+msgstr "長さ"
 
 #. TRANSLATORS: Placeholder in the custom sleep timer duration field, asking for a number of minutes
-#: swift
+#: kt swift
 msgid "Minutes"
-msgstr ""
+msgstr "分"
 
 #. TRANSLATORS: Button that dismisses the keyboard after typing a custom sleep timer duration
 #: swift
 msgid "Done"
-msgstr ""
+msgstr "完了"
 
 #. TRANSLATORS: Button that starts the sleep timer with the selected duration, or stops it if one is already running
 #: swift
 msgid "Stop Timer"
-msgstr ""
+msgstr "タイマーを停止"
 
 #. TRANSLATORS: Button that starts the sleep timer with the selected duration, or stops it if one is already running
 #: swift
 msgid "Start Timer"
-msgstr ""
+msgstr "タイマーを開始"
 
 #. TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
 #: swift
 msgid "Edit"
-msgstr ""
+msgstr "編集"
 
 #. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
 #: swift
 msgid "Add Rule"
-msgstr ""
+msgstr "ルールを追加"
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
 #: swift
 msgid "No Rules"
-msgstr ""
+msgstr "ルールがありません"
 
 #. TRANSLATORS: Accessibility label for the horizontal strip of open document tabs
 #: swift
 msgid "Tabs"
-msgstr ""
+msgstr "タブ"
 
 #. TRANSLATORS: Navigation title of the table of contents screen
 #: swift
 msgid "Contents"
-msgstr ""
+msgstr "目次"
 
 #. TRANSLATORS: Title shown when the current document has no table of contents
 #: swift
 msgid "No Table of Contents"
-msgstr ""
+msgstr "目次がありません"
 
 #. TRANSLATORS: Description shown below the "No Table of Contents" title
 #: swift
 msgid "This document has no table of contents."
-msgstr ""
+msgstr "この文書には目次がありません。"
 
 #. TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
-#: swift
+#: kt swift
 msgid "Navigation unit"
-msgstr ""
+msgstr "移動単位"
 
 #. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: swift
+#: kt swift
 msgid "Previous {}"
-msgstr ""
+msgstr "前の{}"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 msgid "Pause"
-msgstr ""
+msgstr "一時停止"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
-#: swift
+#: kt swift
 msgid "Play"
-msgstr ""
+msgstr "再生"
 
 #. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
 msgid "End of document"
-msgstr ""
+msgstr "文書の末尾です"
 
 #. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
 msgid "Beginning of document"
-msgstr ""
+msgstr "文書の先頭です"
 
 #. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: swift
+#: kt swift
 msgid "Next {}"
-msgstr ""
+msgstr "次の{}"
 
 #. TRANSLATORS: Placeholder shown in the read-aloud view before the user has started playback
 #: swift
 msgid "Press play to start listening."
-msgstr ""
-
-#: kt
-msgid "Document Information"
-msgstr ""
+msgstr "再生を押すと読み上げが始まります。"
 
 #. TRANSLATORS: Fallback label for a link in the Elements screen when it has no visible text
 #: kt
 msgid "Untitled Link"
-msgstr ""
+msgstr "名前のないリンク"
 
-#: kt
-#, fuzzy
+#: swift kt
 msgid "Export Document"
-msgstr "文書データのエクスポート(&E)..."
+msgstr "文書をエクスポート"
 
 #. TRANSLATORS: Instruction text in the Export Document dialog, above the list of export format options
-#: kt
-#, fuzzy
+#: swift kt
 msgid "Select a format to export the current document:"
-msgstr "現在の文書を閉じます"
+msgstr "エクスポートする形式を選んでください:"
 
 #. TRANSLATORS: Export format option to save the document as a plain text file
-#: kt
-#, fuzzy
+#: swift kt
 msgid "Plain Text (.txt)"
-msgstr "プレーンテキスト"
+msgstr "プレーンテキスト(.txt)"
 
 #. TRANSLATORS: Export format option to save the document as an HTML file
-#: kt
+#: swift kt
 msgid "HTML (.html)"
-msgstr ""
+msgstr "HTML(.html)"
 
 #. TRANSLATORS: Export format option to save the document as a Markdown file
-#: kt
-#, fuzzy
+#: swift kt
 msgid "Markdown (.md)"
-msgstr "Markdown"
+msgstr "Markdown(.md)"
 
 #. TRANSLATORS: Shown in the in-app file browser when a folder has no openable documents or subfolders
 #: kt
 msgid "No supported books or folders found here."
-msgstr ""
+msgstr "対応する本やフォルダーが見つかりません。"
 
 #. TRANSLATORS: TalkBack description of a file browser entry's type, read as e.g. "myfile.epub, File, modified ..."
 #: kt
 msgid "Folder"
-msgstr ""
+msgstr "フォルダー"
 
 #. TRANSLATORS: Display name for the device's root storage folder in the in-app file browser
 #: kt
 msgid "Internal Storage"
-msgstr ""
+msgstr "内部ストレージ"
 
 #. TRANSLATORS: Label for the text field where the user types what to search for
 #: kt
 msgid "Search Term"
-msgstr ""
+msgstr "検索する文字列"
 
 #. TRANSLATORS: Button that opens a dropdown of previously used search terms
-#: kt
+#: swift kt
 msgid "Search History"
-msgstr ""
+msgstr "検索履歴"
 
 #. TRANSLATORS: Label for the password input field
 #: kt
 msgid "Password:"
-msgstr ""
+msgstr "パスワード:"
 
 #: kt
 msgid "All Files Access Required"
-msgstr ""
+msgstr "すべてのファイルへのアクセスが必要です"
 
 #. TRANSLATORS: Intro sentence explaining what the "All Files Access" permission is used for
 #: kt
-msgid ""
-"Paperback requires the 'All Files Access' permission to enable the custom in-"
-"app file browser."
-msgstr ""
+msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgstr "アプリ内のファイルブラウザーを使うには、「すべてのファイルへのアクセス」の権限が必要です。"
 
 #. TRANSLATORS: Heading introducing the list of reasons the permission is needed
 #: kt
 msgid "Why we need this:"
-msgstr ""
+msgstr "この権限が必要な理由:"
 
 #. TRANSLATORS: First reason for requesting the "All Files Access" permission
 #: kt
-msgid ""
-"To provide a fast, fully screen-reader accessible file manager inside the "
-"app."
-msgstr ""
+msgid "To provide a fast, fully screen-reader accessible file manager inside the app."
+msgstr "アプリ内に、高速でスクリーンリーダーに完全対応したファイル管理画面を提供するため。"
 
 #. TRANSLATORS: Second reason for requesting the "All Files Access" permission
 #: kt
-msgid ""
-"To load large files instantly without needing to copy them into the app's "
-"cache."
-msgstr ""
+msgid "To load large files instantly without needing to copy them into the app's cache."
+msgstr "大きなファイルを、アプリのキャッシュにコピーせずにすぐ読み込むため。"
 
 #. TRANSLATORS: Third reason for requesting the "All Files Access" permission
 #: kt
 msgid "To display the exact local file paths of your documents."
-msgstr ""
+msgstr "文書の正確なファイルパスを表示するため。"
 
 #. TRANSLATORS: Button label to grant the requested permission
 #: kt
 msgid "Grant"
-msgstr ""
+msgstr "許可する"
 
 #. TRANSLATORS: Button label to dismiss the permission rationale dialog without granting it
 #: kt
 msgid "Not Now"
-msgstr ""
+msgstr "後で"
 
 #. TRANSLATORS: Dialog title, switches between the main sleep timer view and the custom-minutes entry view
 #: kt
 msgid "Custom Timer"
-msgstr ""
+msgstr "カスタムタイマー"
 
-#. TRANSLATORS: Accessibility label for the back button that leaves the settings screen
+#. TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 #: kt
 msgid "Back"
-msgstr ""
+msgstr "戻る"
 
 #. TRANSLATORS: Button to confirm and start the sleep timer with the custom minutes entered
 #: kt
 msgid "Start"
-msgstr ""
+msgstr "開始"
 
 #. TRANSLATORS: Sentence announced to screen readers with the sleep timer's remaining time; {} is replaced with e.g. "3:45"
 #: kt
 msgid "Active: {} remaining"
-msgstr ""
+msgstr "動作中。残り{}"
 
 #. TRANSLATORS: Unit label shown under the sleep timer's remaining time
 #: kt
-#, fuzzy
 msgid "remaining"
-msgstr "警告"
+msgstr "残り"
 
 #. TRANSLATORS: Button to cancel the currently running sleep timer
 #: kt
 msgid "Cancel Timer"
-msgstr ""
+msgstr "タイマーをキャンセル"
 
 #. TRANSLATORS: Heading introducing the preset duration chips, shown while a sleep timer is already active
 #: kt
 msgid "Change to:"
-msgstr ""
+msgstr "変更先:"
 
 #. TRANSLATORS: Preset sleep timer duration chip; {} is replaced with the number of minutes
 #: kt
-#, fuzzy
 msgid "{} minutes"
-msgstr "2分"
+msgstr "{}分"
 
 #. TRANSLATORS: Chip to switch to the custom-minutes entry view for the sleep timer
 #: kt
 msgid "Custom time..."
-msgstr ""
+msgstr "カスタムの時間..."
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 msgid "Expanded"
-msgstr ""
+msgstr "展開"
 
 #. TRANSLATORS: TalkBack state description for a table-of-contents or heading row announcing whether its children are shown
-#: kt
+#: swift kt
 msgid "Collapsed"
-msgstr ""
+msgstr "折りたたみ"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 msgid "Collapse"
-msgstr ""
+msgstr "折りたたむ"
 
 #. TRANSLATORS: TalkBack custom action toggling whether a table-of-contents or heading row's children are shown
-#: kt
+#: swift kt
 msgid "Expand"
-msgstr ""
+msgstr "展開する"
 
-#: kt
+#: swift kt
 msgid "This document contains {} words."
 msgstr "この文書の単語数は{}です。"
 
@@ -3569,117 +3703,113 @@ msgstr "この文書の単語数は{}です。"
 #. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
 #. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
-#, fuzzy
 msgid "words"
-msgstr "単語数:"
+msgstr "単語"
 
 #. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
 msgid "Close Search"
-msgstr ""
+msgstr "検索を閉じる"
 
 #. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
 #: kt
-#, fuzzy
 msgid "Document exported"
-msgstr "文書を再読み込みしました。"
+msgstr "文書をエクスポートしました"
 
-#. TRANSLATORS: Toast confirming the document was exported successfully, or the failure message if not
-#: kt
-#, fuzzy
+#: swift kt
 msgid "Failed to export document"
-msgstr "文書をエクスポートできません。"
+msgstr "文書をエクスポートできません"
 
 #. TRANSLATORS: Shown on the main screen before the app has finished loading any document state
 #: kt
 msgid "No document open. Please open a book."
-msgstr ""
+msgstr "文書が開いていません。本を開いてください。"
 
 #. TRANSLATORS: Shown on the main screen when no document is open and there are no recent documents to list
 #: kt
 msgid "No Documents"
-msgstr ""
+msgstr "文書がありません"
 
 #. TRANSLATORS: Countdown shown while the reading sleep timer is active; {} is the remaining time as minutes:seconds
 #: kt
 msgid "Sleep timer: {}"
-msgstr ""
+msgstr "スリープタイマー: {}"
 
 #. TRANSLATORS: Accessibility action to cancel the active reading sleep timer
 #: kt
 msgid "Cancel sleep timer"
-msgstr ""
+msgstr "スリープタイマーをキャンセル"
 
 #. TRANSLATORS: Confirm button to proceed with importing the found document settings
 #: kt
 msgid "Import"
-msgstr ""
+msgstr "インポート"
 
 #. TRANSLATORS: Accessibility label for the overflow icon button that opens the options menu
 #: kt
 msgid "More Options"
-msgstr ""
+msgstr "その他のオプション"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 msgid "Pause Read Aloud"
-msgstr ""
+msgstr "読み上げを一時停止"
 
 #. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: kt
+#: swift kt
 msgid "Read Aloud"
-msgstr ""
+msgstr "読み上げを開始"
 
 #. TRANSLATORS: Menu item / accessibility action to open the export document dialog
 #: kt
-#, fuzzy
 msgid "Export As"
-msgstr "エクスポート完了"
+msgstr "形式を選んでエクスポート"
 
 #. TRANSLATORS: Menu item / accessibility action to open the list of headings and links in the current document
 #: kt
 msgid "Elements List"
-msgstr ""
+msgstr "要素リスト"
 
 #. TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
-#: kt
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+#: swift kt
 msgid "No more matches."
-msgstr ""
+msgstr "これ以上見つかりません。"
 
 #. TRANSLATORS: Name of the "heading" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Heading"
-msgstr ""
+msgstr "見出し"
 
 #. TRANSLATORS: Name of the "link" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Link"
-msgstr ""
+msgstr "リンク"
 
 #. TRANSLATORS: Name of the "section" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Section"
-msgstr ""
+msgstr "セクション"
 
 #. TRANSLATORS: Name of the "list" reading/navigation unit
-#: kt
+#: swift kt
 msgid "List"
-msgstr ""
+msgstr "リスト"
 
 #. TRANSLATORS: Name of the "list item" reading/navigation unit
-#: kt
+#: swift kt
 msgid "List Item"
-msgstr ""
+msgstr "リスト項目"
 
 #. TRANSLATORS: Name of the "table" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Table"
-msgstr ""
+msgstr "テーブル"
 
 #. TRANSLATORS: Name of the "separator" reading/navigation unit
-#: kt
+#: swift kt
 msgid "Separator"
-msgstr ""
+msgstr "区切り線"
 
 #. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
 #. above; {} is the number of seconds. Which of the three forms is used depends on the
@@ -3687,143 +3817,134 @@ msgstr ""
 #. Translations.kt). The "many" form's trailing character isn't a typo — see
 #. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
-#, fuzzy
 msgid "{} seconds"
-msgstr "5秒"
+msgstr "{}秒"
 
 #. TRANSLATORS: Shown next to a permission on the onboarding screen once it has been granted
 #: kt
 msgid "✓ Granted"
-msgstr ""
+msgstr "✓ 許可済み"
 
 #. TRANSLATORS: Heading shown on the first-run permissions onboarding screen
 #: kt
 msgid "Before You Start"
-msgstr ""
+msgstr "はじめる前に"
 
 #. TRANSLATORS: Intro paragraph explaining that the following sections describe requested permissions
 #: kt
-msgid ""
-"Paperback works best with a couple of permissions. Here's what we ask for "
-"and why:"
-msgstr ""
+msgid "Paperback works best with a couple of permissions. Here's what we ask for and why:"
+msgstr "Paperbackはいくつかの権限があると最も快適に使えます。必要な権限とその理由は次のとおりです。"
 
 #. TRANSLATORS: Heading for the notifications permission section on the onboarding screen
 #: kt
-#, fuzzy
 msgid "Notifications"
-msgstr "セクションがありません。"
+msgstr "通知"
 
 #. TRANSLATORS: Button to grant the notifications permission during onboarding
 #: kt
 msgid "Enable Notifications"
-msgstr ""
+msgstr "通知を許可する"
 
 #. TRANSLATORS: Heading for the all files access permission section on the onboarding screen
 #: kt
 msgid "All Files Access"
-msgstr ""
+msgstr "すべてのファイルへのアクセス"
 
 #. TRANSLATORS: Button to open system settings for the all files access permission during onboarding
 #: kt
 msgid "Enable File Access"
-msgstr ""
+msgstr "ファイルへのアクセスを許可する"
 
 #. TRANSLATORS: Button to leave the onboarding screen and continue into the app, whether or not permissions were granted
 #: kt
-#, fuzzy
 msgid "Continue"
-msgstr "コンテナー(&C)"
+msgstr "続ける"
 
 #. TRANSLATORS: Settings switch: reopen the last-read book automatically on launch
 #: kt
 msgid "Restore last open book"
-msgstr ""
+msgstr "前回開いていた本を復元する"
 
 #. TRANSLATORS: Settings switch: use the app's built-in file browser instead of the system document picker
 #: kt
 msgid "Use in-app file browser (requires All Files permission)"
-msgstr ""
+msgstr "アプリ内のファイルブラウザーを使う（全ファイルへのアクセス権限が必要）"
 
 #. TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
 #: kt
 msgid "Text-to-Speech"
-msgstr ""
+msgstr "読み上げ"
 
 #. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
-msgstr ""
+msgstr "システムの既定"
 
 #. TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
 #: kt
 msgid "Back {}"
-msgstr ""
+msgstr "{}戻る"
 
 #. TRANSLATORS: TalkBack label for the read-aloud bar's forward button when navigating audio by time; {} is an amount like "30 seconds"
 #: kt
-#, fuzzy
 msgid "Forward {}"
-msgstr "進む(&F)"
+msgstr "{}進む"
 
 #. TRANSLATORS: Placeholder in the Go To dialog's number field; {} is the mode name ("Line", "Page", or "Percentage")
 #: kt
 msgid "Enter {}"
-msgstr ""
+msgstr "{}を入力"
 
 #. TRANSLATORS: Shown in place of the document when it could not be opened; {} is the reason
 #: kt
-#, fuzzy
 msgid "Error loading document: {}"
-msgstr "文書を読み込めません。"
+msgstr "文書を読み込めません: {}"
 
 #. TRANSLATORS: 1.5x line spacing option
 #: kt
 msgid "1.5×"
-msgstr ""
+msgstr "1.5倍"
 
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
 msgid "Speech Engine"
-msgstr ""
+msgstr "読み上げエンジン"
 
-#: swift
+#: kt swift
 msgid "1 book"
-msgstr ""
+msgstr "1冊"
 
-#: swift
+#: kt swift
 msgid "{} books"
-msgstr ""
+msgstr "{}冊"
 
-#: swift
+#: kt swift
 msgid "..."
-msgstr ""
+msgstr "..."
 
 #. TRANSLATORS: Menu item to jump to a specific page, line, or percentage in the document
 #: swift
 msgid "Go To..."
-msgstr ""
+msgstr "移動..."
 
 #. TRANSLATORS: Placeholder text shown in the empty search field of the Find screen
 #: swift
-#, fuzzy
 msgid "Search..."
-msgstr "検索(&S)"
+msgstr "検索..."
 
 #: swift
 msgid "Custom: {} minute"
-msgstr ""
+msgstr "カスタム: {}分"
 
 #: swift
 msgid "Custom: {} minutes⁣"
-msgstr ""
+msgstr "カスタム: {}分"
 
 #. TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is
 #. replaced with the number. Which of the three forms is used depends on the target language's
 #. own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's
 #. trailing character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
-#, fuzzy
+#: swift kt
 msgid "This document contains {} word."
 msgstr "この文書の単語数は{}です。"
 
@@ -3833,7 +3954,7 @@ msgstr "この文書の単語数は{}です。"
 #. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 msgid "word"
-msgstr ""
+msgstr "単語"
 
 #. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
 #. above; {} is the number of seconds. Which of the three forms is used depends on the
@@ -3841,9 +3962,8 @@ msgstr ""
 #. Translations.kt). The "many" form's trailing character isn't a typo — see
 #. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
-#, fuzzy
 msgid "{} second"
-msgstr "1秒"
+msgstr "{}秒"
 
 #. TRANSLATORS: Fallback audio seek amount label for a value outside the fixed presets
 #. above; {} is the number of seconds. Which of the three forms is used depends on the
@@ -3851,12 +3971,10 @@ msgstr "1秒"
 #. Translations.kt). The "many" form's trailing character isn't a typo — see
 #. PLURAL_MANY_MARKER in Translations.kt.
 #: kt
-#, fuzzy
 msgid "{} seconds⁣"
-msgstr "5秒"
+msgstr "{}秒"
 
-#: kt
-#, fuzzy
+#: swift kt
 msgid "This document contains {} words.⁣"
 msgstr "この文書の単語数は{}です。"
 
@@ -3866,56 +3984,177 @@ msgstr "この文書の単語数は{}です。"
 #. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
 #: kt
 msgid "words⁣"
-msgstr ""
+msgstr "単語"
 
 #. TRANSLATORS: Closing note explaining the fallback if the user denies the permission
 #: kt
-msgid ""
-"If you deny this permission, you can still use the Android System File "
-"Picker to open your books by turning off the custom file browser setting."
-msgstr ""
+msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
+msgstr "この権限を許可しない場合も、アプリ内のファイルブラウザーの設定をオフにすれば、Androidのファイル選択画面から本を開けます。"
 
 #. TRANSLATORS: Explanation of why the app requests the notifications permission
 #: kt
-msgid ""
-"Lets Paperback show playback controls in the notification shade while text-"
-"to-speech is reading, so you can pause, resume, and skip without reopening "
-"the app."
-msgstr ""
+msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is reading, so you can pause, resume, and skip without reopening the app."
+msgstr "読み上げ中に通知パネルで再生操作ができるようになり、アプリを開き直さずに一時停止・再開・スキップができます。"
 
 #. TRANSLATORS: Explanation of why the app requests the all files access permission
 #: kt
-msgid ""
-"Powers the optional in-app file browser, so you can open documents from "
-"anywhere on your device — including network drives — instantly, with full "
-"screen-reader support. You can skip this and use the system file picker "
-"instead."
-msgstr ""
+msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your device — including network drives — instantly, with full screen-reader support. You can skip this and use the system file picker instead."
+msgstr "アプリ内のファイルブラウザーが使えるようになり、ネットワークドライブを含む端末内のどこからでも、スクリーンリーダーに対応した操作で文書をすぐに開けます。許可せずにシステムのファイル選択画面を使うこともできます。"
 
 #. TRANSLATORS: Announced by the screen reader when the in-app file browser opens
 #: kt
-#, fuzzy
 msgid "File Manager"
-msgstr "ファイル名"
+msgstr "ファイル管理"
 
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
 #: kt
 msgid "{}% through"
-msgstr ""
+msgstr "{}%経過"
 
 #. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
 #: swift
-msgid ""
-"With VoiceOver, swipe up on the play button to move forward, or down to move "
-"back."
-msgstr ""
+msgid "With VoiceOver, swipe up on the play button to move forward, or down to move back."
+msgstr "VoiceOverでは、再生ボタンを上にスワイプすると進み、下にスワイプすると戻ります。"
 
 #. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
 #: kt
-msgid ""
-"With TalkBack, swipe up on the play button to move forward, or down to move "
-"back."
-msgstr ""
+msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
+msgstr "TalkBackでは、再生ボタンを上にスワイプすると進み、下にスワイプすると戻ります。"
+
+#. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
+#: kt
+msgid "Current path: {}"
+msgstr "現在の場所: {}"
+
+#: kt
+msgid "{}, {}, modified {}{}"
+msgstr "{}、{}、更新日時 {}{}"
+
+#. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
+#: kt
+msgid "{} percent"
+msgstr "{}パーセント"
+
+#. TRANSLATORS: TalkBack state of a heading line in the document; {} is its level number
+#: kt
+msgid "Heading {}"
+msgstr "見出しレベル{}"
+
+#. TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
+#: kt
+msgid "go to heading"
+msgstr "見出しへ移動"
+
+#: swift kt
+msgid "{}, Level {}"
+msgstr "{}、レベル{}"
+
+#. TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
+#: kt
+msgid "go to link"
+msgstr "リンクへ移動"
+
+#. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
+#: kt
+msgid "show import and export options"
+msgstr "インポートとエクスポートのオプションを表示"
+
+#. TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
+#: kt
+msgid "open"
+msgstr "開く"
+
+#. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
+#: kt
+msgid "go to chapter"
+msgstr "章へ移動"
+
+#. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
+#: kt
+msgid "This is a sample of the selected speech engine."
+msgstr "これは選択した読み上げエンジンのサンプルです。"
+
+#. TRANSLATORS: Announced when the Go To Page shortcut is used on a document with no page numbers
+#: kt
+msgid "This document does not contain pages."
+msgstr "この文書にはページがありません。"
+
+#. TRANSLATORS: Name of the "formula" reading/navigation unit
+#: swift kt
+msgid "Formula"
+msgstr "数式"
+
+#. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
+#: kt swift
+msgid "No matches."
+msgstr "見つかりません。"
+
+#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
+#: swift
+msgid "Appearance"
+msgstr "外観"
+
+#. TRANSLATORS: Appearance option following the phone's own light/dark setting
+#: swift
+msgid "System"
+msgstr "システムに合わせる"
+
+#. TRANSLATORS: Appearance option pinning the app to its light colours
+#: swift
+msgid "Light"
+msgstr "ライト"
+
+#. TRANSLATORS: Appearance option pinning the app to its dark colours
+#: swift
+msgid "Dark"
+msgstr "ダーク"
+
+#. TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
+#: kt swift
+msgid "High Contrast Text"
+msgstr "ハイコントラスト表示"
+
+#. TRANSLATORS: Toggle that removes the reading bar's previous/next buttons from the screen reader's swipe order, since the play button's swipe up/down does the same thing
+#: kt swift
+msgid "Hide previous and next buttons"
+msgstr "「前へ」「次へ」ボタンを隠す"
+
+#. TRANSLATORS: Body of the dialog confirming that the recent documents list should be emptied
+#: kt swift
+msgid "This empties the list. The documents themselves are not deleted."
+msgstr "一覧を空にします。文書そのものは削除されません。"
+
+#. TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
+#: kt swift
+msgid "{} ms"
+msgstr "{}ミリ秒"
+
+#. TRANSLATORS: Row label for the setting that adds silence between paragraphs when reading aloud
+#: kt swift
+msgid "Paragraph Pause"
+msgstr "段落間のポーズ時間"
+
+#. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
+#: kt
+msgid "No other voices"
+msgstr "他の音声はありません"
+
+#. TRANSLATORS: Export option that shares the document's own file, exactly as it is, rather than converting it
+#: swift
+msgid "Original file"
+msgstr "元のファイル"
+
+#. TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
+#: kt
+msgid "Settings exported"
+msgstr "設定をエクスポートしました"
+
+#~ msgid "%d char"
+#~ msgid_plural "%d chars"
+#~ msgstr[0] "%d文字"
+
+#~ msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+#~ msgstr "パスワードで保護されたPPTファイルは現在サポートされていません。ファイルをPPTX形式で保存してそちらを開いてください。"
 
 #~ msgid "1 document."
 #~ msgstr "1件の文書。"
@@ -3941,12 +4180,8 @@ msgstr ""
 #~ msgid "&Options"
 #~ msgstr "オプション(&O)"
 
-#~ msgid ""
-#~ "This PDF contains images only, with no extractable text. You may need to "
-#~ "run it through OCR software to read its contents."
-#~ msgstr ""
-#~ "このPDFには画像のみが含まれ、抽出可能なテキストがありません。内容を読むに"
-#~ "はOCRソフトウェアが必要です。"
+#~ msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+#~ msgstr "このPDFには画像のみが含まれ、抽出可能なテキストがありません。内容を読むにはOCRソフトウェアが必要です。"
 
 #~ msgid "Previous Section\t["
 #~ msgstr "前のセクション\t["
@@ -4212,19 +4447,11 @@ msgstr ""
 #~ msgid "Show All...\tCtrl+R"
 #~ msgstr "すべて表示...\tCtrl+R"
 
-#~ msgid ""
-#~ "Are you sure you want to remove this document from the list? This will "
-#~ "also remove its reading position."
-#~ msgstr ""
-#~ "リストからこの文書を削除しますか？これにより、文書の読み上げ位置の情報も削"
-#~ "除されます。"
+#~ msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
+#~ msgstr "リストからこの文書を削除しますか？これにより、文書の読み上げ位置の情報も削除されます。"
 
-#~ msgid ""
-#~ "Are you sure you want to remove these {} documents from the list? This "
-#~ "will also remove their reading positions."
-#~ msgstr ""
-#~ "リストから文書「{}」を削除しますか？これにより、文書の読み上げ位置の情報も"
-#~ "削除されます。"
+#~ msgid "Are you sure you want to remove these {} documents from the list? This will also remove their reading positions."
+#~ msgstr "リストから文書「{}」を削除しますか？これにより、文書の読み上げ位置の情報も削除されます。"
 
 #~ msgid "Root"
 #~ msgstr "ルート"
