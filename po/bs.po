@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-30 16:44+0000\n"
-"PO-Revision-Date: 2026-10-01 12:00+0200\n"
+"POT-Creation-Date: 2026-10-02 20:02+0000\n"
+"PO-Revision-Date: 2026-10-03 12:00+0200\n"
 "Last-Translator: Tarik Hadžirović <tarik.hadzirovic.official@gmail.com>\n"
 "Language-Team: Tarik Hadžirović <tarik.hadzirovic.official@gmail.com>\n"
 "Language: bs\n"
@@ -33,7 +33,9 @@ msgstr "ZIP arhive (.zip)"
 
 #. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
 msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Nije instaliran nijedan jezik za OCR. Dodajte ga u jezičkim postavkama sistema."
+msgstr ""
+"Nije instaliran nijedan jezik za OCR. Dodajte ga u jezičkim postavkama "
+"sistema."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -185,6 +187,10 @@ msgstr "Pregled bilješke"
 msgid "Open Document"
 msgstr "Otvaranje dokumenta"
 
+#. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+msgid "Document reloaded."
+msgstr "Dokument je ponovo učitan."
+
 #. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -225,6 +231,14 @@ msgstr "Ponovo otvori &posljednji zatvoreni"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Ponovo otvara posljednji zatvoreni dokument"
+
+#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+msgid "&Reload"
+msgstr "Ponovo &učitaj"
+
+#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
+msgid "Re-read the current document from disk"
+msgstr "Ponovo učitava trenutni dokument s diska"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 msgid "Clea&r Recent Documents"
@@ -583,8 +597,12 @@ msgstr "Usporava reprodukciju zvučne naracije"
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "Pristupačan, lagan i brz čitač e-knjiga i dokumenata"
 
-msgid "Paperback is built on other people's work. The libraries it uses, and their licenses, are credited at {}."
-msgstr "Paperback je izgrađen na radu drugih ljudi. Biblioteke koje koristi i njihove licence navedene su na {}."
+msgid ""
+"Paperback is built on other people's work. The libraries it uses, and their "
+"licenses, are credited at {}."
+msgstr ""
+"Paperback je izgrađen na radu drugih ljudi. Biblioteke koje koristi i "
+"njihove licence navedene su na {}."
 
 #. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
@@ -653,19 +671,31 @@ msgstr "O&čisti sve"
 msgid "Close"
 msgstr "Zatvori"
 
-msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
-msgstr "Jeste li sigurni da želite ukloniti odabrani dokument? Ovo će također ukloniti njegov položaj čitanja i oznake."
+msgid ""
+"Are you sure you want to remove the selected document? This will also remove "
+"its reading position and bookmarks."
+msgstr ""
+"Jeste li sigurni da želite ukloniti odabrani dokument? Ovo će također "
+"ukloniti njegov položaj čitanja i oznake."
 
-msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
-msgstr "Jeste li sigurni da želite ukloniti odabrane dokumente ({})? Ovo će također ukloniti njihove položaje čitanja i oznake."
+msgid ""
+"Are you sure you want to remove the {} selected documents? This will also "
+"remove their reading positions and bookmarks."
+msgstr ""
+"Jeste li sigurni da želite ukloniti odabrane dokumente ({})? Ovo će također "
+"ukloniti njihove položaje čitanja i oznake."
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
 msgstr "Potvrda"
 
 #. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
-msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
-msgstr "Jeste li sigurni da želite ukloniti sve dokumente s popisa? Ovo će također ukloniti sve položaje čitanja i oznake."
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"Jeste li sigurni da želite ukloniti sve dokumente s popisa? Ovo će također "
+"ukloniti sve položaje čitanja i oznake."
 
 #. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
 msgid "No documents."
@@ -941,8 +971,12 @@ msgid "Open As"
 msgstr "Otvori kao"
 
 #. TRANSLATORS: Prompt template informing the user that no parser was found for their file. The {} placeholder is replaced with the file path.
-msgid "No suitable parser was found for {}.\nHow would you like to open this file?"
-msgstr "Nije pronađen odgovarajući obrađivač za {}.\nKako želite otvoriti ovu datoteku?"
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr ""
+"Nije pronađen odgovarajući obrađivač za {}.\n"
+"Kako želite otvoriti ovu datoteku?"
 
 #. TRANSLATORS: Label for the format selection dropdown
 msgid "Open &as:"
@@ -1020,6 +1054,7 @@ msgid "&Shift"
 msgstr "&Shift"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
 msgid "&Win"
 msgstr "&Windows"
 
@@ -1320,8 +1355,10 @@ msgid "File not found: {}"
 msgstr "Datoteka nije pronađena: {}"
 
 #. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
-msgid "A .paperback file was found for this document. Would you like to import it?"
-msgstr "Za ovaj dokument pronađena je .paperback datoteka. Želite li je uvesti?"
+msgid ""
+"A .paperback file was found for this document. Would you like to import it?"
+msgstr ""
+"Za ovaj dokument pronađena je .paperback datoteka. Želite li je uvesti?"
 
 #. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
 msgid "Import document data"
@@ -1479,8 +1516,11 @@ msgid "Failed to reveal file in folder."
 msgstr "Prikazivanje datoteke u mapi nije uspjelo."
 
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
-msgid "readme.html not found. Please ensure the application was built properly."
-msgstr "Datoteka readme.html nije pronađena. Provjerite je li aplikacija ispravno izgrađena."
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr ""
+"Datoteka readme.html nije pronađena. Provjerite je li aplikacija ispravno "
+"izgrađena."
 
 #. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
@@ -1606,9 +1646,6 @@ msgstr "Odabran je nepodržan format."
 #. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
 msgstr "Paperback"
-
-msgid "Document reloaded."
-msgstr "Dokument je ponovo učitan."
 
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
@@ -2311,6 +2348,10 @@ msgid "Reopen Last Closed"
 msgstr "Ponovo otvori posljednji zatvoreni"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reload"
+msgstr "Ponovo učitaj"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "Prikaži sve nedavne dokumente..."
 
@@ -2667,8 +2708,12 @@ msgid "[Image only. This page has no text to read.]"
 msgstr "[Samo slika. Ova stranica nema teksta za čitanje.]"
 
 #. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
-msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
-msgstr "Paperback ne može čitati RAR arhive stripova. Da biste strip čitali ovdje, ponovo ga spakujte kao .cbz."
+msgid ""
+"Paperback cannot read RAR comic archives. Repack it as a .cbz to read it "
+"here."
+msgstr ""
+"Paperback ne može čitati RAR arhive stripova. Da biste strip čitali ovdje, "
+"ponovo ga spakujte kao .cbz."
 
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
@@ -2688,11 +2733,14 @@ msgstr "Slika"
 
 #. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
 msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
-msgstr "Neispravna DAISY .opf datoteka ili DTBook XML nije pronađen u manifestu"
+msgstr ""
+"Neispravna DAISY .opf datoteka ili DTBook XML nije pronađen u manifestu"
 
 #. TRANSLATORS: Error shown when a DAISY 2.02 ncc.html file names no readable content pages
 msgid "Invalid DAISY 2.02 ncc.html file or could not find its content pages"
-msgstr "Neispravna DAISY 2.02 ncc.html datoteka ili nisu pronađene njene stranice sa sadržajem"
+msgstr ""
+"Neispravna DAISY 2.02 ncc.html datoteka ili nisu pronađene njene stranice sa "
+"sadržajem"
 
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 msgid "Failed to convert DTBook XML to text"
@@ -2928,7 +2976,9 @@ msgstr "U ZIP arhivi nije pronađen čitljiv sadržaj"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "Obrada starog DOC formata nije uspjela: {}. Rezervna OOXML obrada nije uspjela: {}"
+msgstr ""
+"Obrada starog DOC formata nije uspjela: {}. Rezervna OOXML obrada nije "
+"uspjela: {}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 msgid "No file extension found for: {}"
@@ -2942,32 +2992,31 @@ msgstr "Nije pronađen obrađivač za ekstenziju: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Nijedan obrađivač nije uspio za ekstenziju: .{}"
 
-msgid "Unknown update file format."
-msgstr "Nepoznat format datoteke ažuriranja."
-
-msgid "Failed to open disk image"
-msgstr "Otvaranje slike diska nije uspjelo"
-
-msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
-msgstr "Ažuriranje je preuzeto i njegova slika diska je otvorena. Zatvorite %s i prevucite novu verziju u mapu Applications da biste dovršili instalaciju."
-
-msgid "Update Ready"
-msgstr "Ažuriranje je spremno"
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Paperback nije pokrenut kao AppImage; automatsko ažuriranje nije moguće."
 
 msgid "Failed to get current exe path"
 msgstr "Dohvatanje putanje izvršne datoteke nije uspjelo"
 
-msgid "Failed to launch installer script"
-msgstr "Pokretanje instalacijske skripte nije uspjelo"
-
 msgid "Failed to launch update script"
 msgstr "Pokretanje skripte za ažuriranje nije uspjelo"
 
-msgid "Update failed"
-msgstr "Ažuriranje nije uspjelo"
+msgid "Failed to open disk image"
+msgstr "Otvaranje slike diska nije uspjelo"
 
-msgid "Update downloaded to: %s\nPlease install it manually."
-msgstr "Ažuriranje je preuzeto u: %s\nInstalirajte ga ručno."
+msgid ""
+"The update has been downloaded and its disk image opened. Quit %s and drag "
+"the new version into Applications to finish installing."
+msgstr ""
+"Ažuriranje je preuzeto i njegova slika diska je otvorena. Zatvorite %s i "
+"prevucite novu verziju u mapu Applications da biste dovršili instalaciju."
+
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Ažuriranje je preuzeto u: %s\n"
+"Instalirajte ga ručno."
 
 msgid "Update to %s"
 msgstr "Ažuriraj na %s"
@@ -2992,6 +3041,12 @@ msgstr "Ažuriranje aplikacije %s"
 msgid "Downloading update..."
 msgstr "Preuzimanje ažuriranja..."
 
+msgid "Update failed"
+msgstr "Ažuriranje nije uspjelo"
+
+msgid "Update Ready"
+msgstr "Ažuriranje je spremno"
+
 msgid "No updates available."
 msgstr "Nema dostupnih ažuriranja."
 
@@ -3001,27 +3056,30 @@ msgstr "Nema dostupnih ažuriranja. Najnovija verzija: %s"
 msgid "Info"
 msgstr "Informacije"
 
-msgid "Security verification failed. The update might have been tampered with: %s"
-msgstr "Sigurnosna provjera nije uspjela. Ažuriranje je možda neovlašteno izmijenjeno: %s"
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+"Sigurnosna provjera nije uspjela. Ažuriranje je možda neovlašteno "
+"izmijenjeno: %s"
 
 msgid "Security Error"
 msgstr "Sigurnosna greška"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d sat"
 msgstr[1] "%d sata"
 msgstr[2] "%d sati"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minuta"
 msgstr[1] "%d minute"
 msgstr[2] "%d minuta"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d sekunda"
@@ -3036,8 +3094,17 @@ msgstr "Postavljanje prečice: {}"
 msgid "Configure shortcut for {}:"
 msgstr "Podesite prečicu za radnju {}:"
 
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+msgid "&Option"
+msgstr "O&ption"
+
 msgid "Tip: click in the key field and press the key combination you want."
-msgstr "Savjet: kliknite u polje za taster i pritisnite željenu kombinaciju tastera."
+msgstr ""
+"Savjet: kliknite u polje za taster i pritisnite željenu kombinaciju tastera."
 
 #. TRANSLATORS: Placeholder shown in the Set Shortcut dialog before any key combination has been captured
 msgid "Detected: (none)"
@@ -3077,15 +3144,24 @@ msgstr "&Vrati zadanu"
 msgid "Reset &All to Defaults"
 msgstr "Vrati sve na &zadane"
 
+msgid "A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key from every other program."
+msgstr "Globalna prečica mora sadržavati Ctrl, Alt ili Windows, inače bi taj taster oduzela svim ostalim programima."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+msgid "Shortcut Not Allowed"
+msgstr "Prečica nije dozvoljena"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
-msgstr "Prečica '{}' je već dodijeljena radnji '{}'. Želite li je dodijeliti radnji '{}'?"
+msgstr ""
+"Prečica '{}' je već dodijeljena radnji '{}'. Želite li je dodijeliti radnji "
+"'{}'?"
 
 #. TRANSLATORS: Title of the dialog warning that a shortcut is already taken
 msgid "Shortcut Conflict"
 msgstr "Sukob prečica"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 msgid "Reset all shortcuts to their default values?"
 msgstr "Želite li vratiti sve prečice na zadane vrijednosti?"
 
@@ -3644,8 +3720,12 @@ msgstr "Potreban je pristup svim datotekama"
 
 #. TRANSLATORS: Intro sentence explaining what the "All Files Access" permission is used for
 #: kt
-msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
-msgstr "Paperback treba dozvolu 'Pristup svim datotekama' da bi omogućio ugrađeni pretraživač datoteka."
+msgid ""
+"Paperback requires the 'All Files Access' permission to enable the custom in-"
+"app file browser."
+msgstr ""
+"Paperback treba dozvolu 'Pristup svim datotekama' da bi omogućio ugrađeni "
+"pretraživač datoteka."
 
 #. TRANSLATORS: Heading introducing the list of reasons the permission is needed
 #: kt
@@ -3654,13 +3734,21 @@ msgstr "Zašto nam je ovo potrebno:"
 
 #. TRANSLATORS: First reason for requesting the "All Files Access" permission
 #: kt
-msgid "To provide a fast, fully screen-reader accessible file manager inside the app."
-msgstr "Da bismo u aplikaciji ponudili brz pretraživač datoteka koji je potpuno pristupačan čitačima zaslona."
+msgid ""
+"To provide a fast, fully screen-reader accessible file manager inside the "
+"app."
+msgstr ""
+"Da bismo u aplikaciji ponudili brz pretraživač datoteka koji je potpuno "
+"pristupačan čitačima zaslona."
 
 #. TRANSLATORS: Second reason for requesting the "All Files Access" permission
 #: kt
-msgid "To load large files instantly without needing to copy them into the app's cache."
-msgstr "Da bismo velike datoteke učitavali odmah, bez kopiranja u predmemoriju aplikacije."
+msgid ""
+"To load large files instantly without needing to copy them into the app's "
+"cache."
+msgstr ""
+"Da bismo velike datoteke učitavali odmah, bez kopiranja u predmemoriju "
+"aplikacije."
 
 #. TRANSLATORS: Third reason for requesting the "All Files Access" permission
 #: kt
@@ -3880,7 +3968,9 @@ msgstr "Prije nego što počnete"
 
 #. TRANSLATORS: Intro paragraph explaining that the following sections describe requested permissions
 #: kt
-msgid "Paperback works best with a couple of permissions. Here's what we ask for and why:"
+msgid ""
+"Paperback works best with a couple of permissions. Here's what we ask for "
+"and why:"
 msgstr "Paperback najbolje radi uz nekoliko dozvola. Evo šta tražimo i zašto:"
 
 #. TRANSLATORS: Heading for the notifications permission section on the onboarding screen
@@ -3916,7 +4006,8 @@ msgstr "Vrati posljednju otvorenu knjigu"
 #. TRANSLATORS: Settings switch: use the app's built-in file browser instead of the system document picker
 #: kt
 msgid "Use in-app file browser (requires All Files permission)"
-msgstr "Koristi ugrađeni pretraživač datoteka (zahtijeva pristup svim datotekama)"
+msgstr ""
+"Koristi ugrađeni pretraživač datoteka (zahtijeva pristup svim datotekama)"
 
 #. TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
 #: kt
@@ -4036,18 +4127,37 @@ msgstr "riječi"
 
 #. TRANSLATORS: Closing note explaining the fallback if the user denies the permission
 #: kt
-msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
-msgstr "Ako odbijete ovu dozvolu, i dalje možete otvarati knjige pomoću Androidovog sistemskog birača datoteka tako što ćete isključiti postavku ugrađenog pretraživača datoteka."
+msgid ""
+"If you deny this permission, you can still use the Android System File "
+"Picker to open your books by turning off the custom file browser setting."
+msgstr ""
+"Ako odbijete ovu dozvolu, i dalje možete otvarati knjige pomoću Androidovog "
+"sistemskog birača datoteka tako što ćete isključiti postavku ugrađenog "
+"pretraživača datoteka."
 
 #. TRANSLATORS: Explanation of why the app requests the notifications permission
 #: kt
-msgid "Lets Paperback show playback controls in the notification shade while text-to-speech is reading, so you can pause, resume, and skip without reopening the app."
-msgstr "Omogućava Paperbacku da dok traje čitanje naglas prikazuje kontrole reprodukcije u obavještenjima, pa možete pauzirati, nastaviti i preskakati bez ponovnog otvaranja aplikacije."
+msgid ""
+"Lets Paperback show playback controls in the notification shade while text-"
+"to-speech is reading, so you can pause, resume, and skip without reopening "
+"the app."
+msgstr ""
+"Omogućava Paperbacku da dok traje čitanje naglas prikazuje kontrole "
+"reprodukcije u obavještenjima, pa možete pauzirati, nastaviti i preskakati "
+"bez ponovnog otvaranja aplikacije."
 
 #. TRANSLATORS: Explanation of why the app requests the all files access permission
 #: kt
-msgid "Powers the optional in-app file browser, so you can open documents from anywhere on your device — including network drives — instantly, with full screen-reader support. You can skip this and use the system file picker instead."
-msgstr "Omogućava opcionalni ugrađeni pretraživač datoteka, pa dokumente s bilo kojeg mjesta na uređaju, uključujući mrežne diskove, možete otvoriti odmah i uz punu podršku za čitače zaslona. Ovo možete preskočiti i umjesto toga koristiti sistemski birač datoteka."
+msgid ""
+"Powers the optional in-app file browser, so you can open documents from "
+"anywhere on your device — including network drives — instantly, with full "
+"screen-reader support. You can skip this and use the system file picker "
+"instead."
+msgstr ""
+"Omogućava opcionalni ugrađeni pretraživač datoteka, pa dokumente s bilo "
+"kojeg mjesta na uređaju, uključujući mrežne diskove, možete otvoriti odmah i "
+"uz punu podršku za čitače zaslona. Ovo možete preskočiti i umjesto toga "
+"koristiti sistemski birač datoteka."
 
 #. TRANSLATORS: Announced by the screen reader when the in-app file browser opens
 #: kt
@@ -4061,13 +4171,21 @@ msgstr "Pročitano {}%"
 
 #. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
 #: swift
-msgid "With VoiceOver, swipe up on the play button to move forward, or down to move back."
-msgstr "Uz VoiceOver kliznite prema gore po dugmetu za reprodukciju da biste išli naprijed, ili prema dolje da biste se vratili nazad."
+msgid ""
+"With VoiceOver, swipe up on the play button to move forward, or down to move "
+"back."
+msgstr ""
+"Uz VoiceOver kliznite prema gore po dugmetu za reprodukciju da biste išli "
+"naprijed, ili prema dolje da biste se vratili nazad."
 
 #. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
 #: kt
-msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
-msgstr "Uz TalkBack kliznite prema gore po dugmetu za reprodukciju da biste išli naprijed, ili prema dolje da biste se vratili nazad."
+msgid ""
+"With TalkBack, swipe up on the play button to move forward, or down to move "
+"back."
+msgstr ""
+"Uz TalkBack kliznite prema gore po dugmetu za reprodukciju da biste išli "
+"naprijed, ili prema dolje da biste se vratili nazad."
 
 #. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
 #: kt
@@ -4196,6 +4314,22 @@ msgstr "Izvorna datoteka"
 #: kt
 msgid "Settings exported"
 msgstr "Postavke su izvezene"
+
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt swift
+msgid "Language"
+msgstr "Jezik"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt swift
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr "Otvara Paperback u aplikaciji Postavke, gdje se može promijeniti njegov jezik."
+
+#~ msgid "Unknown update file format."
+#~ msgstr "Nepoznat format datoteke ažuriranja."
+
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Pokretanje instalacijske skripte nije uspjelo"
 
 #~ msgid "&Locate…"
 #~ msgstr "&Pronađi"

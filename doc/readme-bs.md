@@ -79,6 +79,7 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 * `Ctrl+F4` (macOS: `Cmd+W`): Zatvara trenutni dokument.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Zatvara sve otvorene dokumente.
 * `Ctrl+Shift+T`: Ponovo otvara posljednji zatvoreni dokument.
+* `F5`: Ponovo učitava trenutni dokument s diska. Radi bez obzira na to da li je u postavkama uključena opcija "Automatski ponovo učitaj izmijenjene dokumente".
 * `Ctrl+R`: Otvara dijalog "Svi dokumenti" (iz nedavnih dokumenata).
 * `Ctrl+Q`: Izlazi iz programa (samo na Windowsu; na macOS-u se ova stavka nalazi u izborniku aplikacije).
 
