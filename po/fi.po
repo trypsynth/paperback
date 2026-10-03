@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-01 11:24-0600\n"
-"PO-Revision-Date: 2026-10-03 06:05+0300\n"
+"PO-Revision-Date: 2026-10-03 19:22+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -675,7 +675,7 @@ msgstr ""
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
-msgstr "Vahvista"
+msgstr "Vahvistus"
 
 #. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
 msgid ""
@@ -733,7 +733,7 @@ msgstr "&Käsittele myös tekstisivut"
 
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
-msgstr "Tekstintunnistus"
+msgstr "Suorita tekstintunnistus"
 
 #. TRANSLATORS: Title of the Jump to Bookmark dialog
 msgid "Jump to Bookmark"
@@ -1349,7 +1349,7 @@ msgstr "Asiakirjatietojen tuonti"
 
 #. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
 msgid "Password is required."
-msgstr "Tarvitaan salasana."
+msgstr "Salasana tarvitaan."
 
 #. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
 msgid "OCR in progress."
@@ -3103,7 +3103,7 @@ msgstr "&Poista"
 
 #. TRANSLATORS: Title of the Keyboard Shortcuts dialog.
 msgid "Customize Keyboard Shortcuts"
-msgstr "Muokkaa pikanäppäimiä"
+msgstr "Pikanäppäinten muokkaus"
 
 #. TRANSLATORS: Label above the list of shortcuts for a tab in the Keyboard Shortcuts dialog.
 msgid "&Shortcuts:"
@@ -4163,7 +4163,7 @@ msgid ""
 "back."
 msgstr ""
 "Siirry VoiceOveria käytettäessä eteenpäin pyyhkäisemällä toistopainikkeen "
-"kohdalla ylöspäin tai taaksepäin pyyhkäisemällä alaspäin."
+"kohdalla ylös tai taaksepäin pyyhkäisemällä alas."
 
 #. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
 #: kt
@@ -4172,7 +4172,7 @@ msgid ""
 "back."
 msgstr ""
 "Siirry TalkBackia käytettäessä eteenpäin pyyhkäisemällä toistopainikkeen "
-"kohdalla ylöspäin tai taaksepäin pyyhkäisemällä alaspäin."
+"kohdalla ylös tai taaksepäin pyyhkäisemällä alas."
 
 #. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
 #: kt
