@@ -1,188 +1,39 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja">
+<html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Paperback - バージョン1.0</title>
-  <style>
-    html {
-      color: #1a1a1a;
-      background-color: #fdfdfd;
-    }
-    body {
-      margin: 0 auto;
-      max-width: 36em;
-      padding-left: 50px;
-      padding-right: 50px;
-      padding-top: 50px;
-      padding-bottom: 50px;
-      hyphens: auto;
-      overflow-wrap: break-word;
-      text-rendering: optimizeLegibility;
-      font-kerning: normal;
-    }
-    @media (max-width: 600px) {
-      body {
-        font-size: 0.9em;
-        padding: 12px;
-      }
-      h1 {
-        font-size: 1.8em;
-      }
-    }
-    @media print {
-      html {
-        background-color: white;
-      }
-      body {
-        background-color: transparent;
-        color: black;
-        font-size: 12pt;
-      }
-      p, h2, h3 {
-        orphans: 3;
-        widows: 3;
-      }
-      h2, h3, h4 {
-        page-break-after: avoid;
-      }
-    }
-    p {
-      margin: 1em 0;
-    }
-    a {
-      color: #1a1a1a;
-    }
-    a:visited {
-      color: #1a1a1a;
-    }
-    img {
-      max-width: 100%;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      margin-top: 1.4em;
-    }
-    h5, h6 {
-      font-size: 1em;
-      font-style: italic;
-    }
-    h6 {
-      font-weight: normal;
-    }
-    ol, ul {
-      padding-left: 1.7em;
-      margin-top: 1em;
-    }
-    li > ol, li > ul {
-      margin-top: 0;
-    }
-    blockquote {
-      margin: 1em 0 1em 1.7em;
-      padding-left: 1em;
-      border-left: 2px solid #e6e6e6;
-      color: #606060;
-    }
-    code {
-      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
-      font-size: 85%;
-      margin: 0;
-      hyphens: manual;
-    }
-    pre {
-      margin: 1em 0;
-      overflow: auto;
-    }
-    pre code {
-      padding: 0;
-      overflow: visible;
-      overflow-wrap: normal;
-    }
-    .sourceCode {
-     background-color: transparent;
-     overflow: visible;
-    }
-    hr {
-      background-color: #1a1a1a;
-      border: none;
-      height: 1px;
-      margin: 1em 0;
-    }
-    table {
-      margin: 1em 0;
-      border-collapse: collapse;
-      width: 100%;
-      overflow-x: auto;
-      display: block;
-      font-variant-numeric: lining-nums tabular-nums;
-    }
-    table caption {
-      margin-bottom: 0.75em;
-    }
-    tbody {
-      margin-top: 0.5em;
-      border-top: 1px solid #1a1a1a;
-      border-bottom: 1px solid #1a1a1a;
-    }
-    th {
-      border-top: 1px solid #1a1a1a;
-      padding: 0.25em 0.5em 0.25em 0.5em;
-    }
-    td {
-      padding: 0.125em 0.5em 0.25em 0.5em;
-    }
-    header {
-      margin-bottom: 4em;
-      text-align: center;
-    }
-    #TOC li {
-      list-style: none;
-    }
-    #TOC ul {
-      padding-left: 1.3em;
-    }
-    #TOC > ul {
-      padding-left: 0;
-    }
-    #TOC a:not(:hover) {
-      text-decoration: none;
-    }
-    code{white-space: pre-wrap;}
-    span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
-    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    /* The extra [class] is a hack that increases specificity enough to
-       override a similar rule in reveal.js */
-    ul.task-list[class]{list-style: none;}
-    ul.task-list li input[type="checkbox"] {
-      font-size: inherit;
-      width: 0.8em;
-      margin: 0 0.8em 0.2em -1.6em;
-      vertical-align: middle;
-    }
-    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
-  </style>
-  <link rel="alternate" hreflang="en" href="https://paperback.dev/readme.html">
-  <link rel="alternate" hreflang="bs" href="https://paperback.dev/readme-bs.html">
-  <link rel="alternate" hreflang="cs" href="https://paperback.dev/readme-cs.html">
-  <link rel="alternate" hreflang="de" href="https://paperback.dev/readme-de.html">
-  <link rel="alternate" hreflang="es" href="https://paperback.dev/readme-es.html">
-  <link rel="alternate" hreflang="fi" href="https://paperback.dev/readme-fi.html">
-  <link rel="alternate" hreflang="fr" href="https://paperback.dev/readme-fr.html">
-  <link rel="alternate" hreflang="ja" href="https://paperback.dev/readme-ja.html">
-  <link rel="alternate" hreflang="nl" href="https://paperback.dev/readme-nl.html">
-  <link rel="alternate" hreflang="pl" href="https://paperback.dev/readme-pl.html">
-  <link rel="alternate" hreflang="pt-br" href="https://paperback.dev/readme-pt_br.html">
-  <link rel="alternate" hreflang="ru" href="https://paperback.dev/readme-ru.html">
-  <link rel="alternate" hreflang="sr" href="https://paperback.dev/readme-sr.html">
-  <link rel="alternate" hreflang="uk" href="https://paperback.dev/readme-uk.html">
-  <link rel="alternate" hreflang="vi" href="https://paperback.dev/readme-vi.html">
-  <link rel="alternate" hreflang="zh-CN" href="https://paperback.dev/readme-zh_CN.html">
-  <link rel="alternate" hreflang="x-default" href="https://paperback.dev/readme.html">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <link rel="stylesheet" href="/css/site.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paperback - バージョン1.0</title>
+<style>
+:root { color-scheme: light dark; }
+body { font-family: system-ui, sans-serif; line-height: 1.5; max-width: 45em; margin: 0 auto; padding: 1em; }
+h1, h2, h3, h4 { line-height: 1.25; }
+code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
+pre { overflow-x: auto; padding: 0.75em; border: 1px solid color-mix(in srgb, currentColor 25%, transparent); }
+table { border-collapse: collapse; margin: 1em 0; }
+th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); padding: 0.3em 0.6em; text-align: left; }
+#TOC ul { padding-left: 1.5em; }
+</style>
+<link rel="alternate" hreflang="en" href="https://paperback.dev/readme.html">
+<link rel="alternate" hreflang="bs" href="https://paperback.dev/readme-bs.html">
+<link rel="alternate" hreflang="cs" href="https://paperback.dev/readme-cs.html">
+<link rel="alternate" hreflang="de" href="https://paperback.dev/readme-de.html">
+<link rel="alternate" hreflang="es" href="https://paperback.dev/readme-es.html">
+<link rel="alternate" hreflang="fi" href="https://paperback.dev/readme-fi.html">
+<link rel="alternate" hreflang="fr" href="https://paperback.dev/readme-fr.html">
+<link rel="alternate" hreflang="ja" href="https://paperback.dev/readme-ja.html">
+<link rel="alternate" hreflang="nl" href="https://paperback.dev/readme-nl.html">
+<link rel="alternate" hreflang="pl" href="https://paperback.dev/readme-pl.html">
+<link rel="alternate" hreflang="pt-br" href="https://paperback.dev/readme-pt_br.html">
+<link rel="alternate" hreflang="ru" href="https://paperback.dev/readme-ru.html">
+<link rel="alternate" hreflang="sr" href="https://paperback.dev/readme-sr.html">
+<link rel="alternate" hreflang="uk" href="https://paperback.dev/readme-uk.html">
+<link rel="alternate" hreflang="vi" href="https://paperback.dev/readme-vi.html">
+<link rel="alternate" hreflang="zh-CN" href="https://paperback.dev/readme-zh_CN.html">
+<link rel="alternate" hreflang="x-default" href="https://paperback.dev/readme.html">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="/css/site.css">
 </head>
 <body>
 <p><a href="/">&larr; paperback.dev</a></p>
@@ -201,118 +52,83 @@
 <li><a href="/readme-pt_br.html" lang="pt-br" hreflang="pt-br">Português (Brasil)</a></li>
 <li><a href="/readme-ru.html" lang="ru" hreflang="ru">Русский</a></li>
 <li><a href="/readme-sr.html" lang="sr" hreflang="sr">Српски</a></li>
-<li><a href="/readme-uk.html" lang="uk" hreflang="uk">uk</a></li>
+<li><a href="/readme-uk.html" lang="uk" hreflang="uk">Українська</a></li>
 <li><a href="/readme-vi.html" lang="vi" hreflang="vi">Tiếng Việt</a></li>
 <li><a href="/readme-zh_CN.html" lang="zh-CN" hreflang="zh-CN">中文（简体）</a></li>
 </ul>
 </nav>
-<header id="title-block-header">
-<h1 class="title">Paperback - バージョン1.0</h1>
-</header>
-<nav id="TOC" role="doc-toc">
+<main>
+<h1 id="paperback---バージョン10">Paperback - バージョン1.0</h1>
+<nav id="TOC">
 <ul>
-<li><a href="#はじめに" id="toc-はじめに">はじめに</a></li>
-<li><a href="#動作環境" id="toc-動作環境">動作環境</a></li>
-<li><a href="#特徴" id="toc-特徴">特徴</a></li>
-<li><a href="#スクリーンリーダーとの互換性"
-id="toc-スクリーンリーダーとの互換性">スクリーンリーダーとの互換性</a>
-<ul>
-<li><a href="#jawsと点字ディスプレイ"
-id="toc-jawsと点字ディスプレイ">JAWSと点字ディスプレイ</a></li>
-<li><a href="#jawsとpaperbackのメッセージ"
-id="toc-jawsとpaperbackのメッセージ">JAWSとPaperbackのメッセージ</a></li>
-</ul></li>
-<li><a href="#現在対応しているファイル形式"
-id="toc-現在対応しているファイル形式">現在対応しているファイル形式</a></li>
-<li><a href="#キーボードショートカット"
-id="toc-キーボードショートカット">キーボードショートカット</a>
-<ul>
-<li><a href="#ファイルメニュー"
-id="toc-ファイルメニュー">ファイルメニュー</a></li>
-<li><a href="#移動メニュー" id="toc-移動メニュー">移動メニュー</a></li>
-<li><a href="#ツールメニュー"
-id="toc-ツールメニュー">ツールメニュー</a></li>
-<li><a href="#ヘルプメニュー"
-id="toc-ヘルプメニュー">ヘルプメニュー</a></li>
-<li><a href="#文書ビューのその他のキー"
-id="toc-文書ビューのその他のキー">文書ビューのその他のキー</a></li>
-</ul></li>
-<li><a href="#ios版とandroid版"
-id="toc-ios版とandroid版">iOS版とAndroid版</a>
-<ul>
-<li><a href="#文書を開く" id="toc-文書を開く">文書を開く</a></li>
-<li><a href="#テキストモードと読み上げモード"
-id="toc-テキストモードと読み上げモード">テキストモードと読み上げモード</a></li>
-<li><a href="#読書バー" id="toc-読書バー">読書バー</a></li>
-<li><a href="#その他のオプション"
-id="toc-その他のオプション">その他のオプション</a></li>
-<li><a href="#キーボードとヘッドセット"
-id="toc-キーボードとヘッドセット">キーボードとヘッドセット</a></li>
-</ul></li>
-<li><a href="#対応言語" id="toc-対応言語">対応言語</a></li>
-<li><a href="#クレジット" id="toc-クレジット">クレジット</a>
-<ul>
-<li><a href="#開発" id="toc-開発">開発</a></li>
-<li><a href="#寄付" id="toc-寄付">寄付</a></li>
-</ul></li>
-<li><a href="#変更履歴" id="toc-変更履歴">変更履歴</a>
-<ul>
-<li><a href="#バージョン1.0" id="toc-バージョン1.0">バージョン1.0</a>
-<ul>
-<li><a href="#追加" id="toc-追加">追加</a></li>
-<li><a href="#修正" id="toc-修正">修正</a></li>
-<li><a href="#ios版とandroid版-1"
-id="toc-ios版とandroid版-1">iOS版とAndroid版</a></li>
-</ul></li>
-<li><a href="#バージョン0.9.2"
-id="toc-バージョン0.9.2">バージョン0.9.2</a></li>
-<li><a href="#バージョン0.9.1"
-id="toc-バージョン0.9.1">バージョン0.9.1</a></li>
-<li><a href="#バージョン0.9.0"
-id="toc-バージョン0.9.0">バージョン0.9.0</a>
-<ul>
-<li><a href="#追加-1" id="toc-追加-1">追加</a></li>
-<li><a href="#修正-1" id="toc-修正-1">修正</a></li>
-</ul></li>
-<li><a href="#バージョン0.8.5"
-id="toc-バージョン0.8.5">バージョン0.8.5</a></li>
-<li><a href="#バージョン0.8.2"
-id="toc-バージョン0.8.2">バージョン0.8.2</a></li>
-<li><a href="#バージョン0.8.1"
-id="toc-バージョン0.8.1">バージョン0.8.1</a></li>
-<li><a href="#バージョン0.8.0"
-id="toc-バージョン0.8.0">バージョン0.8.0</a></li>
-<li><a href="#バージョン0.7.0"
-id="toc-バージョン0.7.0">バージョン0.7.0</a></li>
-<li><a href="#バージョン0.6.1"
-id="toc-バージョン0.6.1">バージョン0.6.1</a></li>
-<li><a href="#バージョン0.6.0"
-id="toc-バージョン0.6.0">バージョン0.6.0</a></li>
-<li><a href="#バージョン0.5.0"
-id="toc-バージョン0.5.0">バージョン0.5.0</a></li>
-<li><a href="#バージョン0.4.1"
-id="toc-バージョン0.4.1">バージョン0.4.1</a></li>
-<li><a href="#バージョン0.4.0"
-id="toc-バージョン0.4.0">バージョン0.4.0</a></li>
-<li><a href="#バージョン0.3.0"
-id="toc-バージョン0.3.0">バージョン0.3.0</a></li>
-<li><a href="#バージョン0.2.1"
-id="toc-バージョン0.2.1">バージョン0.2.1</a></li>
-<li><a href="#バージョン0.2.0"
-id="toc-バージョン0.2.0">バージョン0.2.0</a></li>
-<li><a href="#バージョン0.1.0"
-id="toc-バージョン0.1.0">バージョン0.1.0</a></li>
-</ul></li>
+<li><a href="#はじめに">はじめに</a></li>
+<li><a href="#動作環境">動作環境</a></li>
+<li><a href="#特徴">特徴</a></li>
+<li><a href="#スクリーンリーダーとの互換性">スクリーンリーダーとの互換性</a><ul>
+<li><a href="#jawsと点字ディスプレイ">JAWSと点字ディスプレイ</a></li>
+<li><a href="#jawsとpaperbackのメッセージ">JAWSとPaperbackのメッセージ</a></li>
+</ul>
+</li>
+<li><a href="#現在対応しているファイル形式">現在対応しているファイル形式</a></li>
+<li><a href="#キーボードショートカット">キーボードショートカット</a><ul>
+<li><a href="#ファイルメニュー">ファイルメニュー</a></li>
+<li><a href="#移動メニュー">移動メニュー</a></li>
+<li><a href="#ツールメニュー">ツールメニュー</a></li>
+<li><a href="#ヘルプメニュー">ヘルプメニュー</a></li>
+<li><a href="#文書ビューのその他のキー">文書ビューのその他のキー</a></li>
+</ul>
+</li>
+<li><a href="#ios版とandroid版">iOS版とAndroid版</a><ul>
+<li><a href="#文書を開く">文書を開く</a></li>
+<li><a href="#テキストモードと読み上げモード">テキストモードと読み上げモード</a></li>
+<li><a href="#読書バー">読書バー</a></li>
+<li><a href="#その他のオプション">その他のオプション</a></li>
+<li><a href="#キーボードとヘッドセット">キーボードとヘッドセット</a></li>
+</ul>
+</li>
+<li><a href="#対応言語">対応言語</a></li>
+<li><a href="#クレジット">クレジット</a><ul>
+<li><a href="#開発">開発</a></li>
+<li><a href="#寄付">寄付</a></li>
+</ul>
+</li>
+<li><a href="#変更履歴">変更履歴</a><ul>
+<li><a href="#バージョン10">バージョン1.0</a><ul>
+<li><a href="#追加">追加</a></li>
+<li><a href="#修正">修正</a></li>
+<li><a href="#ios版とandroid版-1">iOS版とAndroid版</a></li>
+</ul>
+</li>
+<li><a href="#バージョン092">バージョン0.9.2</a></li>
+<li><a href="#バージョン091">バージョン0.9.1</a></li>
+<li><a href="#バージョン090">バージョン0.9.0</a><ul>
+<li><a href="#追加-1">追加</a></li>
+<li><a href="#修正-1">修正</a></li>
+</ul>
+</li>
+<li><a href="#バージョン085">バージョン0.8.5</a></li>
+<li><a href="#バージョン082">バージョン0.8.2</a></li>
+<li><a href="#バージョン081">バージョン0.8.1</a></li>
+<li><a href="#バージョン080">バージョン0.8.0</a></li>
+<li><a href="#バージョン070">バージョン0.7.0</a></li>
+<li><a href="#バージョン061">バージョン0.6.1</a></li>
+<li><a href="#バージョン060">バージョン0.6.0</a></li>
+<li><a href="#バージョン050">バージョン0.5.0</a></li>
+<li><a href="#バージョン041">バージョン0.4.1</a></li>
+<li><a href="#バージョン040">バージョン0.4.0</a></li>
+<li><a href="#バージョン030">バージョン0.3.0</a></li>
+<li><a href="#バージョン021">バージョン0.2.1</a></li>
+<li><a href="#バージョン020">バージョン0.2.0</a></li>
+<li><a href="#バージョン010">バージョン0.1.0</a></li>
+</ul>
+</li>
 </ul>
 </nav>
-<h1 id="はじめに">はじめに</h1>
+<h2 id="はじめに">はじめに</h2>
 <p>Paperbackは、電子書籍、文書、オーディオブックのための、軽量で高速、アクセシブルなリーダーです。気軽に読書する人からヘビーユーザーまで、あらゆる人のために作られています。スクリーンリーダーでのアクセシビリティ、動作の速さ、余計なものを詰め込まない使い心地を重視して設計しています。</p>
-<h1 id="動作環境">動作環境</h1>
-<p>Paperbackは、Windows
-10/11、ARM版macOSの新しいバージョンすべて、Linux、iOS 17以降、Android
-7以降で動作します。iOS版とAndroid版はApp StoreとGoogle
-Playで公開しています。</p>
-<h1 id="特徴">特徴</h1>
+<h2 id="動作環境">動作環境</h2>
+<p>Paperbackは、Windows 10/11、ARM版macOSの新しいバージョンすべて、Linux、iOS 17以降、Android 7以降で動作します。iOS版とAndroid版はApp StoreとGoogle Playで公開しています。</p>
+<h2 id="特徴">特徴</h2>
 <ul>
 <li>完全に単体で動作します。読書を始めるために、ほかのソフトウェアをコンピューターにインストールする必要はありません。</li>
 <li>古いハードウェアでも非常に高速に動作します。</li>
@@ -329,19 +145,15 @@ Playで公開しています。</p>
 <li>すべてのキーボードショートカットを変更できます。</li>
 <li>対応する文書をHTML、Markdown、プレーンテキストに変換するコマンドラインツール<code>pb</code>が付属します。</li>
 </ul>
-<h1 id="スクリーンリーダーとの互換性">スクリーンリーダーとの互換性</h1>
+<h2 id="スクリーンリーダーとの互換性">スクリーンリーダーとの互換性</h2>
 <p>Paperbackは主要なスクリーンリーダーで問題なく動作します。ただし、JAWSのユーザーには既知の問題が2つあります。</p>
-<h2 id="jawsと点字ディスプレイ">JAWSと点字ディスプレイ</h2>
+<h3 id="jawsと点字ディスプレイ">JAWSと点字ディスプレイ</h3>
 <p>JAWSで点字ディスプレイを使っている場合、長い段落をディスプレイの操作キーでスクロールしていくと、途中で切れてしまうことがあります。現在の段落を読むコマンドも同様です。これはPaperback自体の問題ではなく、RICHEDIT50Wテキストコントロールの扱いに関するJAWSの不具合です。そして、オープンソースソフトウェアの問題報告に対するVisperoの熱心さを考えれば無理もないことですが、修正の手がかりが見つかるまでにかなりの時間がかかりました。</p>
 <p>数か月待った末にJAWSのディスカッショングループで判明した回避策は、<code>paperback.jcf</code>を編集して「点字出力とパン」を「DOMが利用可能であれば使用する」に設定することです。あわせて「テキストを段落ごとに移動」も有効にしてください。そうしないと、表示が先に進まず、現在の段落にとどまったままになります。両方を設定すれば、表示のスクロールは正しく動作します。</p>
-<h2 id="jawsとpaperbackのメッセージ">JAWSとPaperbackのメッセージ</h2>
-<p>Paperbackは「ページがありません。」や「この文書には音声ナレーションがありません。」といったメッセージを、アクセシビリティ通知として送ります。そのため、スクリーンリーダーは読み上げ中の内容に割り込んで、これらのメッセージを読み上げます。JAWSがこの通知を読み上げるのは、そのアプリケーションで「Accessible
-Notification
-Eventsを有効」がオンになっている場合だけで、環境によってはオフになっています。</p>
-<p>何かを知らせるはずのキーを押してもJAWSが何も読み上げない場合は、Paperbackを前面にした状態で設定センター（<code>Insert+6</code>）を開き、「notification」で検索して「Accessible
-Notification
-Eventsを有効」をオンにしてください。この設定は<code>paperback.jcf</code>に書き込まれるため、Paperbackにだけ適用されます。</p>
-<h1 id="現在対応しているファイル形式">現在対応しているファイル形式</h1>
+<h3 id="jawsとpaperbackのメッセージ">JAWSとPaperbackのメッセージ</h3>
+<p>Paperbackは「ページがありません。」や「この文書には音声ナレーションがありません。」といったメッセージを、アクセシビリティ通知として送ります。そのため、スクリーンリーダーは読み上げ中の内容に割り込んで、これらのメッセージを読み上げます。JAWSがこの通知を読み上げるのは、そのアプリケーションで「Accessible Notification Eventsを有効」がオンになっている場合だけで、環境によってはオフになっています。</p>
+<p>何かを知らせるはずのキーを押してもJAWSが何も読み上げない場合は、Paperbackを前面にした状態で設定センター（<code>Insert+6</code>）を開き、「notification」で検索して「Accessible Notification Eventsを有効」をオンにしてください。この設定は<code>paperback.jcf</code>に書き込まれるため、Paperbackにだけ適用されます。</p>
+<h2 id="現在対応しているファイル形式">現在対応しているファイル形式</h2>
 <p>Paperbackは次の形式と拡張子に対応しています。</p>
 <ul>
 <li>コミックブックアーカイブ（<code>.cbz</code>）</li>
@@ -352,8 +164,7 @@ Eventsを有効」をオンにしてください。この設定は<code>paperbac
 <li>HTML文書（<code>.htm</code>、<code>.html</code>、<code>.xhtml</code>）</li>
 <li>manページ（<code>man</code>とBSDの<code>mdoc</code>の両方。<code>.1</code>から<code>.9</code>、<code>.man</code>、<code>.roff</code>、およびそれぞれをgzip圧縮したもの）</li>
 <li>Markdown文書（<code>.md</code>、<code>.markdown</code>、<code>.mdx</code>、<code>.mdown</code>、<code>.mdwn</code>、<code>.mkd</code>、<code>.mkdn</code>、<code>.mkdown</code>、<code>.ronn</code>）</li>
-<li>Microsoft
-Word文書（<code>.docx</code>、<code>.docm</code>、<code>.doc</code>）</li>
+<li>Microsoft Word文書（<code>.docx</code>、<code>.docm</code>、<code>.doc</code>）</li>
 <li>M4Bオーディオブック（<code>.m4b</code>）</li>
 <li>MOBI/Kindle書籍（<code>.mobi</code>、<code>.azw</code>、<code>.azw3</code>）</li>
 <li>MP3オーディオブック（<code>.mp3</code>）</li>
@@ -367,48 +178,35 @@ Word文書（<code>.docx</code>、<code>.docm</code>、<code>.doc</code>）</li>
 <li>WinHelpファイル（<code>.hlp</code>）</li>
 <li>プレーンテキストとログファイル（<code>.txt</code>、<code>.log</code>）</li>
 </ul>
-<h1 id="キーボードショートカット">キーボードショートカット</h1>
+<h2 id="キーボードショートカット">キーボードショートカット</h2>
 <p>Paperbackはキーボード操作を第一に考えて設計されています。現在のショートカットは次のとおりです。</p>
 <p>以下のショートカットはWindows版のものです。macOSで異なる場合は、対応するキーをかっこ内に示しています。これは主に、Ctrl+G、Ctrl+W、Alt+左右矢印が、macOSではシステムやアプリの慣習によってすでに別の用途で使われているためです。</p>
-<h2 id="ファイルメニュー">ファイルメニュー</h2>
+<h3 id="ファイルメニュー">ファイルメニュー</h3>
 <ul>
 <li><code>Ctrl+O</code>: 文書を開きます。</li>
-<li><code>Ctrl+F4</code>（macOS:
-<code>Cmd+W</code>）：現在の文書を閉じます。</li>
-<li><code>Ctrl+Shift+F4</code>（macOS:
-<code>Cmd+Shift+W</code>）：開いているすべての文書を閉じます。</li>
+<li><code>Ctrl+F4</code>（macOS: <code>Cmd+W</code>）：現在の文書を閉じます。</li>
+<li><code>Ctrl+Shift+F4</code>（macOS: <code>Cmd+Shift+W</code>）：開いているすべての文書を閉じます。</li>
 <li><code>Ctrl+Shift+T</code>: 最後に閉じた文書を開きます。</li>
-<li><code>Ctrl+R</code>:
-「すべての文書」ダイアログを表示します（「最近開いた文書」から開きます）。</li>
-<li><code>Ctrl+Q</code>:
-終了します（Windowsのみ。macOSではアプリメニューにあります）。</li>
+<li><code>Ctrl+R</code>: 「すべての文書」ダイアログを表示します（「最近開いた文書」から開きます）。</li>
+<li><code>Ctrl+Q</code>: 終了します（Windowsのみ。macOSではアプリメニューにあります）。</li>
 </ul>
-<h2 id="移動メニュー">移動メニュー</h2>
+<h3 id="移動メニュー">移動メニュー</h3>
 <ul>
 <li><code>Ctrl+F</code>: 検索ダイアログを表示します。</li>
 <li><code>F3</code>（macOS: <code>Cmd+G</code>）：次を検索します。</li>
-<li><code>Shift+F3</code>（macOS:
-<code>Cmd+Shift+G</code>）：前を検索します。</li>
-<li><code>Ctrl+G</code>（macOS:
-<code>Cmd+L</code>）：指定行へ移動します。</li>
-<li><code>Ctrl+Shift+G</code>（macOS:
-<code>Cmd+Shift+L</code>）：パーセント移動します。</li>
-<li><code>Ctrl+P</code>:
-指定ページへ移動します（現在の文書がページに対応している場合）。</li>
-<li><code>=</code>:
-現在の読書位置のパーセントとページを読み上げます（例：「15%、ページ30」）。ページ番号のない文書では、ページを省略します。</li>
-<li><code>Alt+Left</code>（macOS:
-<code>Cmd+[</code>）：ナビゲーション履歴を戻ります。</li>
-<li><code>Alt+Right</code>（macOS:
-<code>Cmd+]</code>）：ナビゲーション履歴を進みます。</li>
+<li><code>Shift+F3</code>（macOS: <code>Cmd+Shift+G</code>）：前を検索します。</li>
+<li><code>Ctrl+G</code>（macOS: <code>Cmd+L</code>）：指定行へ移動します。</li>
+<li><code>Ctrl+Shift+G</code>（macOS: <code>Cmd+Shift+L</code>）：パーセント移動します。</li>
+<li><code>Ctrl+P</code>: 指定ページへ移動します（現在の文書がページに対応している場合）。</li>
+<li><code>=</code>: 現在の読書位置のパーセントとページを読み上げます（例：「15%、ページ30」）。ページ番号のない文書では、ページを省略します。</li>
+<li><code>Alt+Left</code>（macOS: <code>Cmd+[</code>）：ナビゲーション履歴を戻ります。</li>
+<li><code>Alt+Right</code>（macOS: <code>Cmd+]</code>）：ナビゲーション履歴を進みます。</li>
 <li><code>[</code>: 前のセクションへ移動します。</li>
 <li><code>]</code>: 次のセクションへ移動します。</li>
 <li><code>Shift+H</code>: 前の見出しへ移動します。</li>
 <li><code>H</code>: 次の見出しへ移動します。</li>
-<li><code>Shift+1</code>から<code>Shift+6</code>:
-レベル1から6の前の見出しへ移動します。</li>
-<li><code>1</code>から<code>6</code>:
-レベル1から6の次の見出しへ移動します。</li>
+<li><code>Shift+1</code>から<code>Shift+6</code>: レベル1から6の前の見出しへ移動します。</li>
+<li><code>1</code>から<code>6</code>: レベル1から6の次の見出しへ移動します。</li>
 <li><code>Shift+P</code>: 前のページへ移動します。</li>
 <li><code>P</code>: 次のページへ移動します。</li>
 <li><code>Shift+B</code>: 前のしおりへ移動します。</li>
@@ -420,8 +218,7 @@ Word文書（<code>.docx</code>、<code>.docm</code>、<code>.doc</code>）</li>
 <li><code>Ctrl+B</code>: すべてのしおりとメモの一覧へ移動します。</li>
 <li><code>Ctrl+Alt+B</code>: しおりだけの一覧へ移動します。</li>
 <li><code>Ctrl+Alt+M</code>: メモだけの一覧へ移動します。</li>
-<li><code>Ctrl+Shift+W</code>（macOS:
-<code>RawCtrl+Shift+W</code>。CmdではなくControlキー自体）：現在の位置にあるメモの内容を表示します。</li>
+<li><code>Ctrl+Shift+W</code>（macOS: <code>RawCtrl+Shift+W</code>。CmdではなくControlキー自体）：現在の位置にあるメモの内容を表示します。</li>
 <li><code>Shift+K</code>: 前のリンクへ移動します。</li>
 <li><code>K</code>: 次のリンクへ移動します。</li>
 <li><code>Shift+G</code>: 前の画像へ移動します。</li>
@@ -438,55 +235,40 @@ Word文書（<code>.docx</code>、<code>.docm</code>、<code>.doc</code>）</li>
 <li><code>L</code>: 次のリストへ移動します。</li>
 <li><code>Shift+I</code>: 前のリスト項目へ移動します。</li>
 <li><code>I</code>: 次のリスト項目へ移動します。</li>
-<li><code>Shift+,</code>:
-現在のコンテナー（リストまたはテーブル）の先頭へ移動します。</li>
-<li><code>,</code>:
-現在のコンテナー（リストまたはテーブル）の末尾へ移動します。</li>
+<li><code>Shift+,</code>: 現在のコンテナー（リストまたはテーブル）の先頭へ移動します。</li>
+<li><code>,</code>: 現在のコンテナー（リストまたはテーブル）の末尾へ移動します。</li>
 </ul>
-<h2 id="ツールメニュー">ツールメニュー</h2>
+<h3 id="ツールメニュー">ツールメニュー</h3>
 <ul>
-<li><code>Ctrl+W</code>（macOS:
-<code>RawCtrl+W</code>。CmdではなくControlキー自体）：現在の文書の単語数を表示します。</li>
+<li><code>Ctrl+W</code>（macOS: <code>RawCtrl+W</code>。CmdではなくControlキー自体）：現在の文書の単語数を表示します。</li>
 <li><code>Ctrl+I</code>: 文書情報を表示します。</li>
 <li><code>Ctrl+T</code>: 目次を表示します。</li>
 <li><code>F7</code>: 要素リストを表示します。</li>
 <li><code>Ctrl+Shift+C</code>: 文書のあるフォルダーを開きます。</li>
 <li><code>Ctrl+Shift+V</code>: 現在の内容をWebビューで開きます。</li>
 <li><code>Ctrl+U</code>: 文書のソースを新しいタブで表示します。</li>
-<li><code>Ctrl+Shift+E</code>:
-文書データ（<code>.paperback</code>）をエクスポートします。</li>
-<li><code>Ctrl+Shift+I</code>:
-文書データ（<code>.paperback</code>）をインポートします。</li>
-<li><code>Ctrl+E</code>:
-現在の文書をプレーンテキストにエクスポートします。</li>
-<li><code>Ctrl+Shift+B</code>:
-現在の選択範囲またはカーソル位置のしおりを切り替えます。</li>
-<li><code>Ctrl+Shift+N</code>:
-現在の選択範囲またはカーソル位置に、しおりのメモを作成または編集します。</li>
+<li><code>Ctrl+Shift+E</code>: 文書データ（<code>.paperback</code>）をエクスポートします。</li>
+<li><code>Ctrl+Shift+I</code>: 文書データ（<code>.paperback</code>）をインポートします。</li>
+<li><code>Ctrl+E</code>: 現在の文書をプレーンテキストにエクスポートします。</li>
+<li><code>Ctrl+Shift+B</code>: 現在の選択範囲またはカーソル位置のしおりを切り替えます。</li>
+<li><code>Ctrl+Shift+N</code>: 現在の選択範囲またはカーソル位置に、しおりのメモを作成または編集します。</li>
 <li><code>Ctrl+Alt+W</code>: ワードラップを切り替えます。</li>
-<li><code>Ctrl+Space</code>（macOS:
-<code>RawCtrl+Space</code>。Cmd+SpaceはSpotlightを開くため、Controlキー自体）：音声ナレーションを再生または一時停止します。</li>
+<li><code>Ctrl+Space</code>（macOS: <code>RawCtrl+Space</code>。Cmd+SpaceはSpotlightを開くため、Controlキー自体）：音声ナレーションを再生または一時停止します。</li>
 <li><code>'</code>: 音声ナレーションを進めます。</li>
 <li><code>;</code>: 音声ナレーションを戻します。</li>
 <li><code>Shift+'</code>: 音声の移動量を増やします。</li>
 <li><code>Shift+;</code>: 音声の移動量を減らします。</li>
 <li><code>Ctrl+Shift+.</code>: 音声ナレーションを速くします。</li>
 <li><code>Ctrl+Shift+,</code>: 音声ナレーションを遅くします。</li>
-<li><code>F11</code>（macOS:
-<code>RawCtrl+Ctrl+F</code>。つまりControl+Command+F）：全画面表示を切り替えます。</li>
-<li><code>Ctrl+,</code>:
-設定を開きます（macOSではアプリメニューにあります）。</li>
+<li><code>F11</code>（macOS: <code>RawCtrl+Ctrl+F</code>。つまりControl+Command+F）：全画面表示を切り替えます。</li>
+<li><code>Ctrl+,</code>: 設定を開きます（macOSではアプリメニューにあります）。</li>
 <li><code>Ctrl+Shift+S</code>: スリープタイマーを切り替えます。</li>
-<li><code>Ctrl+Shift+O</code>:
-スキャンしたPDFのページを範囲指定してOCRで認識します。</li>
-<li><code>Alt+F9</code>（macOS:
-<code>Cmd+F9</code>）：選択開始位置を設定します。ここから移動先までの範囲を、後でまとめてコピーできます。</li>
-<li><code>Alt+F10</code>（macOS:
-<code>Cmd+F10</code>）：選択開始位置から現在の位置までをすべてコピーします。</li>
-<li><code>Alt+Shift+F9</code>（macOS:
-<code>Cmd+Shift+F9</code>）：選択開始位置へ戻ります。位置の記録はそのまま残ります。</li>
+<li><code>Ctrl+Shift+O</code>: スキャンしたPDFのページを範囲指定してOCRで認識します。</li>
+<li><code>Alt+F9</code>（macOS: <code>Cmd+F9</code>）：選択開始位置を設定します。ここから移動先までの範囲を、後でまとめてコピーできます。</li>
+<li><code>Alt+F10</code>（macOS: <code>Cmd+F10</code>）：選択開始位置から現在の位置までをすべてコピーします。</li>
+<li><code>Alt+Shift+F9</code>（macOS: <code>Cmd+Shift+F9</code>）：選択開始位置へ戻ります。位置の記録はそのまま残ります。</li>
 </ul>
-<h2 id="ヘルプメニュー">ヘルプメニュー</h2>
+<h3 id="ヘルプメニュー">ヘルプメニュー</h3>
 <ul>
 <li><code>Ctrl+F1</code>: バージョン情報ダイアログを表示します。</li>
 <li><code>F1</code>: 既定のブラウザーでヘルプを表示します。</li>
@@ -494,29 +276,25 @@ Word文書（<code>.docx</code>、<code>.docm</code>、<code>.doc</code>）</li>
 <li><code>Ctrl+Shift+U</code>: 更新を確認します。</li>
 <li><code>Ctrl+D</code>: 既定のブラウザーで寄付ページを開きます。</li>
 </ul>
-<h2 id="文書ビューのその他のキー">文書ビューのその他のキー</h2>
+<h3 id="文書ビューのその他のキー">文書ビューのその他のキー</h3>
 <ul>
-<li>タブコントロールで<code>Delete</code>または<code>Numpad Delete</code>:
-選択している文書のタブを閉じます。</li>
-<li>文書のテキスト内で<code>Enter</code>または<code>Space</code>:
-カーソル位置のリンクを開く、またはテーブルビューや数式ビューを開きます。</li>
-<li>スキャンされたPDFのページで<code>Enter</code>:
-そのページをOCRで認識します。</li>
+<li>タブコントロールで<code>Delete</code>または<code>Numpad Delete</code>: 選択している文書のタブを閉じます。</li>
+<li>文書のテキスト内で<code>Enter</code>または<code>Space</code>: カーソル位置のリンクを開く、またはテーブルビューや数式ビューを開きます。</li>
+<li>スキャンされたPDFのページで<code>Enter</code>: そのページをOCRで認識します。</li>
 <li>文書のテキスト内で<code>Shift+F10</code>またはメニューキー（アプリケーションキー）：コンテキストメニューを開きます。</li>
 </ul>
-<h1 id="ios版とandroid版">iOS版とAndroid版</h1>
+<h2 id="ios版とandroid版">iOS版とAndroid版</h2>
 <p>iOS版とAndroid版は、デスクトップ版と同じ読書エンジンを使っています。そのため、開ける形式も、読書位置を記憶する仕組みも同じです。iOSではVoiceOver、AndroidではTalkBackと組み合わせて使うことを前提に作られています。</p>
-<h2 id="文書を開く">文書を開く</h2>
+<h3 id="文書を開く">文書を開く</h3>
 <ul>
 <li>「本を開く」ボタンを使うか、ファイルアプリやほかのアプリから文書を開いてPaperbackを選びます。</li>
 <li>Android版では、代わりに設定でアプリ内のファイルブラウザーを有効にできます。「すべてのファイルへのアクセス」の権限が必要ですが、大きなファイルをいったんコピーせずにそのまま開けます。</li>
 <li>「本を開く」ボタンを長押しすると、文書データ（<code>.paperback</code>）をインポートまたはエクスポートできます。デスクトップ版が使うものと同じファイルです。</li>
 </ul>
-<h2
-id="テキストモードと読み上げモード">テキストモードと読み上げモード</h2>
+<h3 id="テキストモードと読み上げモード">テキストモードと読み上げモード</h3>
 <p>どちらのアプリにも、文書を読む方法が2つあります。テキストモードでは、スクリーンリーダーでテキストを読みます。読み上げモードでは、設定で選んだ音声でPaperbackがテキストを読み上げ、バックグラウンドやロック画面からも読み上げを続けます。2つのモードは「その他のオプション」メニューで切り替えます。</p>
 <p>DAISY、M4B、MP3などのオーディオブックでは、代わりにその録音音声を再生します。</p>
-<h2 id="読書バー">読書バー</h2>
+<h3 id="読書バー">読書バー</h3>
 <p>画面下部のバーには、左から順に次のものがあります。</p>
 <ul>
 <li>移動単位。段落、見出し、ページ、リンクなどがあり、上下にスワイプすると変更できます。</li>
@@ -524,46 +302,34 @@ id="テキストモードと読み上げモード">テキストモードと読�
 <li>読み上げ速度。上下にスワイプすると、Paperbackが読み上げる速さが変わります。</li>
 </ul>
 <p>「再生」ボタンを上下にスワイプしても移動単位で移動できるので、「前へ」「次へ」のボタンまで指を伸ばす必要はありません。この操作だけを使う場合は、「「前へ」「次へ」ボタンを隠す」の設定でボタンを消せば、スクリーンリーダーの操作の邪魔になりません。スワイプの向きは「上スワイプで進む」の設定で決まります。</p>
-<h2 id="その他のオプション">その他のオプション</h2>
+<h3 id="その他のオプション">その他のオプション</h3>
 <p>そのほかの機能はすべて「その他のオプション」メニューにあります。一部の項目は、iOSとAndroidで動作が少し異なります。</p>
 <ul>
-<li><strong>読み上げモードに切り替え／テキストモードに切り替え</strong>:
-上で説明した読み上げモードとテキストモードを切り替えます。テキストモードでは、「読み上げを開始」の項目を使うと、テキストモードのまま読み上げの開始と一時停止ができます。</li>
-<li><strong>目次</strong>:
-本の章の一覧を、いま読んでいる章を選択した状態で開きます。項目を選ぶと、そこへ直接移動します。下位の章がある項目は、スクリーンリーダーのアクションで展開したり折りたたんだりできます。</li>
-<li><strong>要素</strong>:
-文書内の見出しまたはリンクの一覧です。iOS版では「種類」のピッカー、Android版ではタブで切り替えてから、項目を選ぶとそこへ移動します。</li>
-<li><strong>検索</strong>:
-探す語を入力するか、「検索履歴」から以前の検索を選び、「大文字/小文字を区別」「単語単位で検索」「正規表現を使用」を使うかどうかを指定します。「前を検索」「次を検索」で一致した箇所へ移動し、移動先を読み上げます。検索の画面は開いたままなので、続けて検索できます。読み上げモードでは、検索は読書バーの移動単位としても選べるので、そこから一致箇所をたどることもできます。</li>
-<li><strong>移動</strong>:
-行、ページ、パーセントを指定して文書内を移動します。どれを指定するかは「種類」のピッカーで選びます。</li>
-<li><strong>最近開いた文書</strong>:
-これまでに開いたすべての文書が一覧され、それぞれ開いている、閉じている、ファイルが見つからないのいずれかの状態が示されます。各項目には2つのスクリーンリーダーアクションがあり、「削除」で一覧から取り除き、「場所を指定」でファイルが移動した文書を指定し直せます。「最近開いた文書の一覧を消去」は、文書そのものを削除せずに一覧を空にします。</li>
+<li><strong>読み上げモードに切り替え／テキストモードに切り替え</strong>: 上で説明した読み上げモードとテキストモードを切り替えます。テキストモードでは、「読み上げを開始」の項目を使うと、テキストモードのまま読み上げの開始と一時停止ができます。</li>
+<li><strong>目次</strong>: 本の章の一覧を、いま読んでいる章を選択した状態で開きます。項目を選ぶと、そこへ直接移動します。下位の章がある項目は、スクリーンリーダーのアクションで展開したり折りたたんだりできます。</li>
+<li><strong>要素</strong>: 文書内の見出しまたはリンクの一覧です。iOS版では「種類」のピッカー、Android版ではタブで切り替えてから、項目を選ぶとそこへ移動します。</li>
+<li><strong>検索</strong>: 探す語を入力するか、「検索履歴」から以前の検索を選び、「大文字/小文字を区別」「単語単位で検索」「正規表現を使用」を使うかどうかを指定します。「前を検索」「次を検索」で一致した箇所へ移動し、移動先を読み上げます。検索の画面は開いたままなので、続けて検索できます。読み上げモードでは、検索は読書バーの移動単位としても選べるので、そこから一致箇所をたどることもできます。</li>
+<li><strong>移動</strong>: 行、ページ、パーセントを指定して文書内を移動します。どれを指定するかは「種類」のピッカーで選びます。</li>
+<li><strong>最近開いた文書</strong>: これまでに開いたすべての文書が一覧され、それぞれ開いている、閉じている、ファイルが見つからないのいずれかの状態が示されます。各項目には2つのスクリーンリーダーアクションがあり、「削除」で一覧から取り除き、「場所を指定」でファイルが移動した文書を指定し直せます。「最近開いた文書の一覧を消去」は、文書そのものを削除せずに一覧を空にします。</li>
 <li><strong>単語数</strong>: 文書に含まれる単語の数です。</li>
-<li><strong>文書情報</strong>:
-タイトル、著者、ファイル名を表示します。iOS版では行数と文字数も表示します。</li>
-<li><strong>エクスポート</strong>:
-文書をプレーンテキスト、HTML、Markdownとして保存します。</li>
-<li><strong>スリープタイマー</strong>:
-5分、10分、15分、30分、45分、60分、または自分で指定した時間が経過したら、読み上げを停止します。動作中にもう一度開くと、残り時間を確認したり、取り消したりできます。</li>
+<li><strong>文書情報</strong>: タイトル、著者、ファイル名を表示します。iOS版では行数と文字数も表示します。</li>
+<li><strong>エクスポート</strong>: 文書をプレーンテキスト、HTML、Markdownとして保存します。</li>
+<li><strong>スリープタイマー</strong>: 5分、10分、15分、30分、45分、60分、または自分で指定した時間が経過したら、読み上げを停止します。動作中にもう一度開くと、残り時間を確認したり、取り消したりできます。</li>
 <li><strong>ヘルプ</strong>: このreadmeを開きます。</li>
 <li><strong>設定</strong>:
 <ul>
-<li><strong>読み上げ</strong>:
-音声、読み上げ速度、ピッチ、それらを試聴する「サンプルを再生」ボタン、段落の間のポーズを設定します。Android版では読み上げエンジンも選べます。iOS版では、読み上げ辞書もここにあります。読み上げ辞書には、語の読み方を変える規則を、すべての音声または一部の音声に対して登録できます。</li>
-<li><strong>表示</strong>:
-文字サイズ、行の間隔、段落の間隔、テキストの配置、ハイコントラスト表示を設定します。iOS版では、ライトとダークの外観も選べます。</li>
-<li><strong>動作</strong>:
-アプリの起動時に文書を開き直すかどうか、「再生」ボタンのスワイプで進む向き、「前へ」「次へ」ボタンを隠すかどうかを設定します。Android版では、アプリ内のファイルブラウザーもここにあります。</li>
-</ul></li>
+<li><strong>読み上げ</strong>: 音声、読み上げ速度、ピッチ、それらを試聴する「サンプルを再生」ボタン、段落の間のポーズを設定します。Android版では読み上げエンジンも選べます。iOS版では、読み上げ辞書もここにあります。読み上げ辞書には、語の読み方を変える規則を、すべての音声または一部の音声に対して登録できます。</li>
+<li><strong>表示</strong>: 文字サイズ、行の間隔、段落の間隔、テキストの配置、ハイコントラスト表示を設定します。iOS版では、ライトとダークの外観も選べます。</li>
+<li><strong>動作</strong>: アプリの起動時に文書を開き直すかどうか、「再生」ボタンのスワイプで進む向き、「前へ」「次へ」ボタンを隠すかどうかを設定します。Android版では、アプリ内のファイルブラウザーもここにあります。</li>
 </ul>
-<h2 id="キーボードとヘッドセット">キーボードとヘッドセット</h2>
+</li>
+</ul>
+<h3 id="キーボードとヘッドセット">キーボードとヘッドセット</h3>
 <p>キーボードを使う場合、本を開く、最近開いた文書、検索、移動、目次、単語数、文書情報、エクスポート、スリープタイマーについては、デスクトップ版と同じショートカットがそのまま使えます。iOSでは<code>Ctrl</code>の代わりに<code>Cmd</code>を使います。見出しやページ、リンクなどを移動する1文字のキーも同様に使え、<code>Space</code>で再生と一時停止ができます。iOSでは、VoiceOverの1文字クイックナビゲーションがオフのときだけ、1文字のキーがPaperbackに届きます。</p>
 <p>Androidでは、ヘッドセットのボタンを1回押すと再生と一時停止、2回押すと次へ移動、3回押すと前へ戻ります。</p>
-<h1 id="対応言語">対応言語</h1>
+<h2 id="対応言語">対応言語</h2>
 <p>Paperbackは多くの言語に翻訳されており、対応する言語は今も増え続けています。以下がその一覧です。</p>
-<p>翻訳に参加する方法は、<a
-href="translating.md">翻訳ガイド</a>を参照してください。</p>
+<p>翻訳に参加する方法は、<a href="translating.md">翻訳ガイド</a>を参照してください。</p>
 <ul>
 <li>ボスニア語</li>
 <li>チェコ語</li>
@@ -581,13 +347,13 @@ href="translating.md">翻訳ガイド</a>を参照してください。</p>
 <li>ウクライナ語</li>
 <li>ベトナム語</li>
 </ul>
-<h1 id="クレジット">クレジット</h1>
-<h2 id="開発">開発</h2>
+<h2 id="クレジット">クレジット</h2>
+<h3 id="開発">開発</h3>
 <ul>
 <li>Quin Gillespie: 主要開発者、プロジェクト創設者。</li>
 <li>Aryan Choudhary: 主要コントリビューター。</li>
 </ul>
-<h2 id="寄付">寄付</h2>
+<h3 id="寄付">寄付</h3>
 <p>以下の方々から、Paperbackの開発に対して寄付をいただきました。寄付をしても自動的にここへ名前が載るわけではなく、公開を希望された方だけを掲載しています。</p>
 <p>補足：GitHubで公開のスポンサーになっている場合は、この一覧に自動的に掲載します。</p>
 <ul>
@@ -610,12 +376,11 @@ href="translating.md">翻訳ガイド</a>を参照してください。</p>
 <li>Timothy Wynn</li>
 <li>Tyler Rodick</li>
 </ul>
-<h1 id="変更履歴">変更履歴</h1>
-<h2 id="バージョン1.0">バージョン1.0</h2>
-<p>1.0は、Windows、macOS、Linux、iOS、Androidの5つのプラットフォームすべてで提供する最初のリリースです。iOS版とAndroid版はApp
-StoreとGoogle Playで公開しています。</p>
-<h3 id="追加">追加</h3>
-<h4 id="全般">全般</h4>
+<h2 id="変更履歴">変更履歴</h2>
+<h3 id="バージョン10">バージョン1.0</h3>
+<p>1.0は、Windows、macOS、Linux、iOS、Androidの5つのプラットフォームすべてで提供する最初のリリースです。iOS版とAndroid版はApp StoreとGoogle Playで公開しています。</p>
+<h4 id="追加">追加</h4>
+<h5 id="全般">全般</h5>
 <ul>
 <li>Linuxに対応しました。AppImageまたはtar.gzで提供し、デスクトップ環境と統合されるため、ファイルマネージャーから文書を開けます。</li>
 <li><code>Alt+F9</code>で選択開始位置を設定し、<code>Alt+F10</code>でそこから現在の位置までをまとめてコピーし、<code>Alt+Shift+F9</code>で選択開始位置へ戻れるようになりました。長い範囲をShift+矢印キーで選択しなくてもコピーできます。いずれも「ツール」&gt;「選択とコピー」にあります。</li>
@@ -623,7 +388,7 @@ StoreとGoogle Playで公開しています。</p>
 <li>バージョン情報ダイアログに、Paperbackのライセンスとすべての翻訳者を表示するようになりました。</li>
 <li>ウクライナ語の翻訳を追加しました。</li>
 </ul>
-<h4 id="新しい形式">新しい形式</h4>
+<h5 id="新しい形式">新しい形式</h5>
 <ul>
 <li>コミックブックアーカイブ（<code>.cbz</code>）に対応しました。</li>
 <li>M4Bオーディオブックに対応し、章ごとに分割して読み込みます。</li>
@@ -634,11 +399,11 @@ StoreとGoogle Playで公開しています。</p>
 <li>WinHelp（<code>.hlp</code>）ファイルに対応しました。</li>
 <li>Word 6とWord 95の文書に対応しました。</li>
 </ul>
-<h4 id="ocr">OCR</h4>
+<h5 id="ocr">OCR</h5>
 <ul>
 <li>スキャンしたPDFのページを、WindowsとmacOSに内蔵されているOCRで認識できるようになりました。スキャンされたページで<code>Enter</code>を押すとそのページを認識します。範囲を指定して認識する場合は一括OCR（<code>Ctrl+Shift+O</code>）を使います。</li>
 </ul>
-<h4 id="ナビゲーション">ナビゲーション</h4>
+<h5 id="ナビゲーション">ナビゲーション</h5>
 <ul>
 <li>EPUBとHTMLに含まれるMathMLの数式を、MathCATを使ってAsciiMathで表示するようになりました。<code>M</code>または<code>Shift+M</code>で数式間を移動し、<code>Enter</code>または<code>Space</code>で元のMathMLを数式ビューで開けます。</li>
 <li>検索ダイアログに「すべて検索」ボタンを追加しました。一致した行をすべて一覧表示するので、目的の行へ直接移動できます。</li>
@@ -648,38 +413,38 @@ StoreとGoogle Playで公開しています。</p>
 <li>KF8（AZW3）の書籍で、セクション単位の移動に対応しました。</li>
 <li>画像だけのEPUBのページにも、その画像を表す1行が表示されるようになり、読み飛ばさずにその位置へ移動できます。</li>
 </ul>
-<h4 id="オーディオブック">オーディオブック</h4>
+<h5 id="オーディオブック">オーディオブック</h5>
 <ul>
 <li>再生速度を0.5倍から3倍まで変更できるようになりました。<code>Ctrl+Shift+.</code>と<code>Ctrl+Shift+,</code>、または「ツール」メニューから操作します。</li>
 <li>音声だけの書籍でも、しおりとメモが設定した時点の時間を正確に記憶するようになりました。</li>
 <li>前後の位置へ移動（<code>Alt+Left</code>と<code>Alt+Right</code>）が、オーディオブックでも使えるようになりました。</li>
 <li>オーディオブックの進み具合を録音音声の再生時間から計算するようになり、パーセント移動とステータスバーの表示が実際の位置と合うようになりました。</li>
 </ul>
-<h4 id="最近開いた文書">最近開いた文書</h4>
+<h5 id="最近開いた文書">最近開いた文書</h5>
 <ul>
 <li>「最近開いた文書」のサブメニューに「最近開いた文書の一覧を消去」を追加しました。</li>
 </ul>
-<h4 id="pdf文書">PDF文書</h4>
+<h5 id="pdf文書">PDF文書</h5>
 <ul>
 <li>PDFの行を段落にまとめず、1行ずつそのまま表示する設定を追加しました。</li>
 <li>PDF内の画像と図を読み上げるようになりました。</li>
 <li>読み上げ用の構造情報を持ちながら、画像にはタグを付けていないPDFでも、画像を読み上げるようになりました。以前は、こうした画像は本文からまったく省かれていました。</li>
 </ul>
-<h4 id="webビュー">Webビュー</h4>
+<h5 id="webビュー">Webビュー</h5>
 <ul>
 <li>EPUB、HTML、Markdownに限らず、どの文書でもWebビューで開けるようになりました。</li>
 </ul>
-<h4 id="表示">表示</h4>
+<h5 id="表示">表示</h5>
 <ul>
 <li>見出しがレベルに応じた大きさで表示されるようになり、画像とテーブルは前後の本文と区別できるようになりました。</li>
 </ul>
-<h4 id="pb">pb</h4>
+<h5 id="pb">pb</h5>
 <ul>
 <li><code>pb --list-formats</code>で、pbが読み込めるすべての形式を一覧表示できます。</li>
 <li>pbが、読み込めなかったファイルとその理由を表示するようになりました。</li>
 </ul>
-<h3 id="修正">修正</h3>
-<h4 id="全般-1">全般</h4>
+<h4 id="修正">修正</h4>
+<h5 id="全般-1">全般</h5>
 <ul>
 <li>起動時に開き直した書籍がすぐに読み上げられるようになりました。以前は、いったん閉じて開き直すまで読み上げられませんでした。</li>
 <li>ファイルがなくなった文書を「すべての文書」から削除できるようになりました。以前は、何度確認しても一覧に残っていました。</li>
@@ -694,7 +459,7 @@ StoreとGoogle Playで公開しています。</p>
 <li>更新後に起動し直したときに、ウィンドウが前面に表示されるようになりました。以前は、Alt+Tabでほかのすべてのウィンドウの後ろに回っていました。</li>
 <li>大きな文書でも、ワードラップがすぐに適用されるようになりました。以前は文書全体を読み込み直していました。</li>
 </ul>
-<h4 id="ナビゲーション-1">ナビゲーション</h4>
+<h5 id="ナビゲーション-1">ナビゲーション</h5>
 <ul>
 <li><code>Alt+Left</code>で、さらに古い位置ではなく、移動元の位置へ戻るようになりました。</li>
 <li>しおりの音が、しおりのある語を通過したときだけ鳴るようになりました。しおりのある行に移動しただけでは鳴りません。</li>
@@ -705,14 +470,13 @@ StoreとGoogle Playで公開しています。</p>
 <li>数千件の項目がある書籍でも、目次、要素リスト、しおりの一覧が遅くなったり固まったりしなくなりました。</li>
 <li>上下矢印キーが、カーソルの桁位置を文書ごとに記憶するようになりました。以前は、タブを切り替えると前の文書の桁位置が引き継がれていました。</li>
 </ul>
-<h4 id="オーディオブック-1">オーディオブック</h4>
+<h5 id="オーディオブック-1">オーディオブック</h5>
 <ul>
 <li>macOSでは<code>Command+Space</code>がSpotlightに割り当てられているため、音声の再生に<code>Control+Space</code>を使うようになりました。</li>
 </ul>
-<h4 id="pdf文書-1">PDF文書</h4>
+<h5 id="pdf文書-1">PDF文書</h5>
 <ul>
-<li>Apple
-Pagesから書き出したPDFが、本来の見出しやリストを失ってプレーンテキストとして読み込まれる問題を修正しました。</li>
+<li>Apple Pagesから書き出したPDFが、本来の見出しやリストを失ってプレーンテキストとして読み込まれる問題を修正しました。</li>
 <li>PDFの段落と見出しが行ごとに分割されたり、語がスペースの位置で分かれたりする問題を修正しました。</li>
 <li>番号付きのPDFの見出しが、1つの見出しにつながってしまう問題を修正しました。</li>
 <li>構造ツリーからテキストにたどり着けないPDFが、中身が空のまま開く問題を修正しました。</li>
@@ -721,19 +485,19 @@ Pagesから書き出したPDFが、本来の見出しやリストを失ってプ
 <li>ページのヘッダーとフッターを通常のテキストとしてタグ付けしているPDFで、タイトルとページ番号が段落の間に毎ページ現れる問題を修正しました。</li>
 <li>PDFがファイル名ではなく、本来のタイトルを表示するようになりました。</li>
 </ul>
-<h4 id="mobiazw3の書籍">MOBI/AZW3の書籍</h4>
+<h5 id="mobiazw3の書籍">MOBI/AZW3の書籍</h5>
 <ul>
 <li>大きなMOBIの書籍でメモリが足りなくなることがなくなり、20MBまでで打ち切られることもなくなりました。</li>
 <li>MOBIとAZW3の書籍が大幅に速く開くようになりました。</li>
 <li>MOBIの書籍が章の一覧を失う問題を修正しました。</li>
 <li>MOBIの書籍で、レコードの境界にあるテキストが文字化けする問題を修正しました。</li>
 </ul>
-<h4 id="webビュー-1">Webビュー</h4>
+<h5 id="webビュー-1">Webビュー</h5>
 <ul>
 <li>Webビューが、巨大な書籍の全体を一度に読み込まなくなりました。</li>
 <li>本文側で文書全体を表示しているときは、Webビューでも全体を表示するようになりました。以前は一部しか表示されませんでした。</li>
 </ul>
-<h4 id="そのほかの形式">そのほかの形式</h4>
+<h5 id="そのほかの形式">そのほかの形式</h5>
 <ul>
 <li>windows-1251で書かれたFictionBook（.fb2）の書籍が開くようになりました。FictionBookのほとんどはこの文字コードですが、以前はまったく読み込めませんでした。</li>
 <li>宣言していない名前空間やHTMLの実体参照を使っているFictionBookの書籍が、壊れたファイルとして扱われず、開けるようになりました。</li>
@@ -744,7 +508,7 @@ Pagesから書き出したPDFが、本来の見出しやリストを失ってプ
 <li>拡張子が<code>.rtf</code>のプレーンテキストファイルが、エラーにならずテキストとして開くようになりました。</li>
 <li>RTFの制御ワードがテキストとして表示されなくなりました。</li>
 </ul>
-<h3 id="ios版とandroid版-1">iOS版とAndroid版</h3>
+<h4 id="ios版とandroid版-1">iOS版とAndroid版</h4>
 <p>iOS版とAndroid版は、デスクトップ版が対応するすべての形式を開けます。さらに、次の機能があります。</p>
 <ul>
 <li>音声、速度、ピッチを選べる読み上げ。読み上げ速度は読書バーから変更でき、段落の間にポーズを入れることもできます。</li>
@@ -754,7 +518,7 @@ Pagesから書き出したPDFが、本来の見出しやリストを失ってプ
 <li>文字サイズ、間隔、ハイコントラスト表示の設定。</li>
 <li>デスクトップ版と同じキーボードショートカット。</li>
 </ul>
-<h2 id="バージョン0.9.2">バージョン0.9.2</h2>
+<h3 id="バージョン092">バージョン0.9.2</h3>
 <ul>
 <li>オーディオブックでテキスト欄にフォーカスしたときに、スクリーンリーダーが連続した空白を読み上げなくなりました。</li>
 <li>オーディオブックをセクションごとにたどると、ファイル名を読み上げるようになりました。</li>
@@ -762,17 +526,15 @@ Pagesから書き出したPDFが、本来の見出しやリストを失ってプ
 <li>Webビュー内のリンクをたどった後にEscapeで閉じても、デバッグ用の警告が表示されなくなりました。</li>
 <li>すべて選択の後にコピーすると、読み込み済みの部分だけでなく文書全体がコピーされるようになりました。</li>
 <li>検索を実行すると、見つかった行にすぐ移動するようになりました。以前は、書籍にフォーカスが戻るときにスクリーンリーダーがウィンドウを読み上げ直すのを待つ必要がありました。</li>
-<li>余分なZIP64のブロックを含むEPUBが「Invalid local file
-header」で開けない問題を修正しました。</li>
+<li>余分なZIP64のブロックを含むEPUBが「Invalid local file header」で開けない問題を修正しました。</li>
 <li>スクリーンリーダーで長い文書を連続読みしているときに、文書の先頭へ戻ってしまう問題を修正しました。</li>
-<li>Webビュー内のリンクが「File not
-found」で失敗せず、リンク先のセクションへ移動するようになりました。</li>
+<li>Webビュー内のリンクが「File not found」で失敗せず、リンク先のセクションへ移動するようになりました。</li>
 <li>「文書を再読み込みしました」の自動通知が、スクリーンリーダーの読み上げを途中で止めず、読み終わるのを待つようになりました。</li>
 <li>設定ダイアログの「一般」タブで、画面に表示されている順にTabキーで移動できるようになりました。更新チャンネルは、更新を確認するオプションの直後に移動しました。</li>
 <li>Windowsの「プログラムから開く」メニューに、プログラムの長い説明ではなく、常に「Paperback」と表示されるようになりました。</li>
 <li>単語数と文書情報で、オーディオブックに含まれるファイルの数と、合計の再生時間を表示するようになりました。</li>
 </ul>
-<h2 id="バージョン0.9.1">バージョン0.9.1</h2>
+<h3 id="バージョン091">バージョン0.9.1</h3>
 <ul>
 <li>macOSでしおりとメモの音が鳴るようになりました。</li>
 <li>macOSでDAISY図書の音声が再生されるようになりました。以前は、無音のまま時間だけが進んでいました。</li>
@@ -790,28 +552,28 @@ found」で失敗せず、リンク先のセクションへ移動するように
 <li>タイトルバーで文書のタイトルが先に表示されるようになり、タスクバーやAlt+Tabで開いている書籍を区別できます。</li>
 <li>更新ダイアログが翻訳されるようになりました。</li>
 </ul>
-<h2 id="バージョン0.9.0">バージョン0.9.0</h2>
-<h3 id="追加-1">追加</h3>
-<h4 id="全般-2">全般</h4>
+<h3 id="バージョン090">バージョン0.9.0</h3>
+<h4 id="追加-1">追加</h4>
+<h5 id="全般-2">全般</h5>
 <ul>
 <li>Paperbackが対応するすべての形式を、HTML、Markdown、プレーンテキストにすばやく変換できるCLIツール「pb」を追加しました。</li>
 <li>ほかのプログラムがディスク上で変更した文書を再読み込みするオプションを追加しました。</li>
 <li>文書のソースを新しいタブで開く「ソースを表示」のオプションを追加しました。Markdownの編集などに便利です。</li>
 <li>文書のテキストをページ単位で扱うようにしました。これにより、数千万語の書籍でもわずか数秒で読み込めます。不自然な動作を見つけたら報告してください。</li>
 </ul>
-<h4 id="プラットフォーム対応">プラットフォーム対応</h4>
+<h5 id="プラットフォーム対応">プラットフォーム対応</h5>
 <ul>
 <li>ARM64版のWindowsに対応しました。</li>
 <li>macOSにネイティブ対応しました。</li>
 <li>全画面表示の切り替えを追加しました。</li>
 </ul>
-<h4 id="すべての文書ダイアログ">「すべての文書」ダイアログ</h4>
+<h5 id="すべての文書ダイアログ">「すべての文書」ダイアログ</h5>
 <ul>
 <li>パスが変わって見つからなくなった書籍を指定し直す「場所を指定」ボタンを追加しました。</li>
 <li>状態のフィルターとステータスバーを追加しました。文書の状態で絞り込み、表示中と選択中の件数を確認できます。</li>
 <li>すべての文書の選択を解除する<code>Ctrl+Shift+A</code>のショートカットを追加しました。</li>
 </ul>
-<h4 id="オプションと表示">オプションと表示</h4>
+<h5 id="オプションと表示">オプションと表示</h5>
 <ul>
 <li>「表示」タブを追加し、次のオプションを用意しました。
 <ul>
@@ -823,68 +585,69 @@ found」で失敗せず、リンク先のセクションへ移動するように
 <li>段落の間隔</li>
 <li>文字の間隔</li>
 <li>テキストの配置</li>
-</ul></li>
+</ul>
+</li>
 <li>ワードラップのメニュー項目と、それに対応するショートカットキーを追加しました。</li>
 <li>テーブルの表示方法を切り替えるオプションを追加し、文書によって異なっていた表示のしかたを統一しました。</li>
 </ul>
-<h4 id="ナビゲーション-2">ナビゲーション</h4>
+<h5 id="ナビゲーション-2">ナビゲーション</h5>
 <ul>
 <li>コンテナー単位での移動に対応しました。</li>
 <li>行を移動するときに、カーソルを自動的に行頭へ移動するオプションを追加しました。スクリーンリーダーのWeb閲覧モードに近い動作です。</li>
 <li>文書内の現在の位置をパーセントで読み上げる<code>=</code>キーのショートカットを追加しました。</li>
 </ul>
-<h4 id="しおり">しおり</h4>
+<h5 id="しおり">しおり</h5>
 <ul>
 <li>一時しおりを追加しました。文書ごとに1つ設定でき、保存もされます。スラッシュで設定し、バックスラッシュで移動します。</li>
 </ul>
-<h4 id="単語数">単語数</h4>
+<h5 id="単語数">単語数</h5>
 <ul>
 <li>単語数ダイアログに推定閲覧時間を追加しました。自分の閲覧速度を設定すれば、この数値が実際に役立つものになります。</li>
 <li>単語数ダイアログを開いたときに選択範囲があれば、選択した単語の数も表示するようになりました。</li>
 </ul>
-<h4 id="キーボードショートカット-1">キーボードショートカット</h4>
+<h5 id="キーボードショートカット-1">キーボードショートカット</h5>
 <ul>
 <li>アプリのすべてのキーボードショートカットを、簡単なダイアログでカスタマイズできるようになりました。</li>
 <li>Paperbackをシステムトレーから元に戻すキーボードショートカットを設定できるようになりました。</li>
 </ul>
-<h4 id="言語">言語</h4>
+<h5 id="言語">言語</h5>
 <ul>
 <li>オランダ語、フィンランド語、ポーランド語を追加しました。</li>
 </ul>
-<h4 id="エクスポート">エクスポート</h4>
+<h5 id="エクスポート">エクスポート</h5>
 <ul>
 <li>エクスポートのメニュー項目を拡張し、プレーンテキストに加えてHTMLとMarkdownにも書き出せるようになりました。</li>
 </ul>
-<h4 id="更新">更新</h4>
+<h5 id="更新">更新</h5>
 <ul>
 <li>更新中のダイアログにキャンセルボタンを追加しました。</li>
 <li>ダウンロードしたファイルが改ざんされていないかを検証するようになりました。</li>
 </ul>
-<h4 id="webビュー-2">Webビュー</h4>
+<h5 id="webビュー-2">Webビュー</h5>
 <ul>
 <li>Webビューが現在の読書位置で開くようになりました。</li>
 </ul>
-<h4 id="daisy図書">DAISY図書</h4>
+<h5 id="daisy図書">DAISY図書</h5>
 <ul>
 <li>DAISY 2.0の図書に対応しました。</li>
 <li>DAISY 2.02の音声再生に対応しました。</li>
 </ul>
-<h4 id="オーディオブック-2">オーディオブック</h4>
+<h5 id="オーディオブック-2">オーディオブック</h5>
 <ul>
 <li>オーディオブックを再生できるようになりました。現在は、DAISYの音声（音声＋テキストを含む）と、音声ファイルのZIPに対応しています。</li>
 <li>ナレーションの再生と一時停止、前後への移動、移動量の変更を行うキーボードショートカットとメニュー項目を追加しました。</li>
 <li>キャレットを音声の再生に同期するか、音声の移動量をどれだけにするか、章の末尾を越えて移動したときに次の章へ続けるかを設定するオプションを追加しました。</li>
 </ul>
-<h4 id="chm文書">CHM文書</h4>
+<h5 id="chm文書">CHM文書</h5>
 <ul>
 <li>リスト、リスト項目、図、画像に対応しました。</li>
 </ul>
-<h4 id="powerpoint">PowerPoint</h4>
+<h5 id="powerpoint">PowerPoint</h5>
 <ul>
 <li>PowerPointの文書でテーブルに対応しました。</li>
 </ul>
-<h3 id="修正-1">修正</h3>
-<h4 id="全般-3">全般</h4>
+<h4 id="修正-1">修正</h4>
+<h5 id="全般-3">全般</h5>
 <ul>
 <li>GBK、Big5、Shift_JISなどの旧来のCJK文字コードの文書が、文字化けせず正しく表示されるようになりました。</li>
 <li>「最後に閉じた文書を開く」が、付属のreadmeを開こうとする問題を修正しました。</li>
@@ -899,7 +662,7 @@ found」で失敗せず、リンク先のセクションへ移動するように
 <li>タブを切り替えたときに、アクティブな文書のタイトルを読み上げるようになりました。</li>
 <li>内部の文字ごとのインデックステーブルのサイズを半分にし、大きな文書でのメモリ使用量を削減しました。</li>
 </ul>
-<h4 id="すべての文書ダイアログ-1">「すべての文書」ダイアログ</h4>
+<h5 id="すべての文書ダイアログ-1">「すべての文書」ダイアログ</h5>
 <ul>
 <li>文書情報と「すべての文書」のダイアログがEscapeで閉じない問題を修正しました。</li>
 <li>「すべての文書」から文書を閉じた後に、タイトルバーが更新されない問題を修正しました。</li>
@@ -907,63 +670,62 @@ found」で失敗せず、リンク先のセクションへ移動するように
 <li>最近開いた文書のダイアログから文書を削除すると、開いているタブも閉じるようになりました。</li>
 <li>文書を削除した後も、検索フィルターが保持されるようになりました。</li>
 </ul>
-<h4 id="ナビゲーション-3">ナビゲーション</h4>
+<h5 id="ナビゲーション-3">ナビゲーション</h5>
 <ul>
 <li>ページ移動で、状況によって誤った行のテキストが読み上げられる問題を修正しました。</li>
 <li>大きな文書で、指定行へ移動、指定ページへ移動、パーセント移動がカーソルを誤った位置に置く問題を修正しました。</li>
 <li>大きな文書で、検索と次を検索が読み込み済みの範囲を考慮しない問題を修正しました。</li>
 </ul>
-<h4 id="しおり-1">しおり</h4>
+<h5 id="しおり-1">しおり</h5>
 <ul>
 <li>しおりとメモの音が、それを含む語を通過したときだけ鳴るようになりました。</li>
 </ul>
-<h4 id="表示-1">表示</h4>
+<h5 id="表示-1">表示</h5>
 <ul>
 <li>ワードラップを適用すると、文書の先頭に移動してしまう問題を修正しました。</li>
 </ul>
-<h4 id="webビュー-3">Webビュー</h4>
+<h5 id="webビュー-3">Webビュー</h5>
 <ul>
 <li>Webビューのダイアログのサイズを変更できず、初期サイズが非常に小さい問題を修正しました。</li>
 <li>埋め込みのWebビューで、画像が正しく表示されるようになりました。</li>
 </ul>
-<h4 id="更新-1">更新</h4>
+<h5 id="更新-1">更新</h5>
 <ul>
 <li>リリースノート内のMarkdownのコードタグの内容が、正しく表示されるようになりました。</li>
 </ul>
-<h4 id="daisy図書-1">DAISY図書</h4>
+<h5 id="daisy図書-1">DAISY図書</h5>
 <ul>
 <li>DAISY図書がステータスバーに誤った情報を表示する問題を修正しました。</li>
 <li>不正な文字コード宣言を含むDAISY図書の読み込みを修正しました。</li>
 </ul>
-<h4 id="rtf文書">RTF文書</h4>
+<h5 id="rtf文書">RTF文書</h5>
 <ul>
 <li>非ラテン文字を含むRTF文書の解析を修正しました。</li>
 <li>RTFの<code>\pict</code>グループを修正し、埋め込まれた画像データが文書のテキストに混入しなくなりました。</li>
 </ul>
-<h4 id="mobiazw3の書籍-1">Mobi/AZW3の書籍</h4>
+<h5 id="mobiazw3の書籍-1">Mobi/AZW3の書籍</h5>
 <ul>
 <li>MobiのfileposアンカーがHTMLタグを分割し、書籍のテキストに不要な文字列が入る問題を修正しました。</li>
 <li>旧形式のMobiの書籍のリンクを修正しました。</li>
 <li>AZW3の解析を大幅に改善しました。</li>
 </ul>
-<h4 id="word文書">Word文書</h4>
+<h5 id="word文書">Word文書</h5>
 <ul>
 <li>ロケール固有のスタイル名を使うWord文書で、見出しが正しく表示されない問題を修正しました。</li>
 </ul>
-<h4 id="htmlxhtml文書">HTML/XHTML文書</h4>
+<h5 id="htmlxhtml文書">HTML/XHTML文書</h5>
 <ul>
 <li>XHTML文書で、dl、dt、dd要素が改行を生成しない問題を修正しました。</li>
 </ul>
-<h4 id="pdf文書-2">PDF文書</h4>
+<h5 id="pdf文書-2">PDF文書</h5>
 <ul>
 <li>タグ付けが誤っているPDFでは、プレーンテキストの抽出にフォールバックするようになりました。</li>
 <li>タイトルやしおりに制御文字を含むPDF文書を開くと、Paperbackがクラッシュする問題を修正しました。</li>
 </ul>
-<h2 id="バージョン0.8.5">バージョン0.8.5</h2>
+<h3 id="バージョン085">バージョン0.8.5</h3>
 <ul>
 <li>EPUBの書籍でページに対応しました。</li>
-<li>暗号化されたMicrosoft
-Officeの文書に対応しました。現在は旧形式のWord、新しいWord、新しいPowerPointに対応しており、旧形式のPowerPointは今後対応する予定です。</li>
+<li>暗号化されたMicrosoft Officeの文書に対応しました。現在は旧形式のWord、新しいWord、新しいPowerPointに対応しており、旧形式のPowerPointは今後対応する予定です。</li>
 <li>旧形式のMicrosoft Word文書に対応しました。</li>
 <li>旧形式のPowerPointのプレゼンテーションに対応しました。</li>
 <li>MOBIとAZW3の書籍に対応しました。</li>
@@ -979,13 +741,12 @@ Officeの文書に対応しました。現在は旧形式のWord、新しいWord
 <li>画像だけのPDFを再び検出し、その旨を知らせるようになりました。</li>
 <li>g/Shift+gで画像、f/Shift+fで図へ移動できるようになりました。</li>
 <li>アプリケーションのダークモードの設定に従うようになりました。</li>
-<li>DAISY
-XMLへの対応を削除しました。すでに必要がなくなったためです。</li>
+<li>DAISY XMLへの対応を削除しました。すでに必要がなくなったためです。</li>
 <li>目次のツリーで、頭文字による移動をWin32のネイティブな動作に戻しました。</li>
 <li>読み込みエラーのダイアログが、より詳しいエラーメッセージを表示するようになりました。</li>
 <li>Webビューがはるかに速く、滑らかに開くようになりました。</li>
 </ul>
-<h2 id="バージョン0.8.2">バージョン0.8.2</h2>
+<h3 id="バージョン082">バージョン0.8.2</h3>
 <ul>
 <li>RTF文書でページに対応しました。</li>
 <li>外部リンクを含むEPUBでWebビューを開くと、リンクが自動的に開かれてしまう不具合を修正しました。</li>
@@ -995,7 +756,7 @@ XMLへの対応を削除しました。すでに必要がなくなったため�
 <li>RTFのタブと改行を、文書に書かれているとおりに表示するようになりました。</li>
 <li>PDFの解析に、実績のあるpdfiumライブラリーを使用するように戻しました。これにより、PDFの表示が再び大幅に安定しました。</li>
 </ul>
-<h2 id="バージョン0.8.1">バージョン0.8.1</h2>
+<h3 id="バージョン081">バージョン0.8.1</h3>
 <ul>
 <li>最後に閉じた文書を開くCtrl+Shift+Tのショートカットを追加しました。</li>
 <li>「すべての文書」ダイアログで、複数の文書を選んで一度に開けるようになりました。</li>
@@ -1005,12 +766,11 @@ XMLへの対応を削除しました。すでに必要がなくなったため�
 <li>大きなファイルを開くときに、文書の読み込みが遅い問題を修正しました。</li>
 <li>確認ダイアログの「はい」「いいえ」ボタンのローカライズを修正しました。</li>
 </ul>
-<h2 id="バージョン0.8.0">バージョン0.8.0</h2>
+<h3 id="バージョン080">バージョン0.8.0</h3>
 <ul>
 <li>日本語、簡体字中国語、ベトナム語の翻訳を追加しました。</li>
 <li>自動更新機能を追加しました。新しいバージョンをダウンロードするだけでなく、インストール済みのPaperbackを置き換えます。</li>
-<li>しおりやメモに到達したときの音によるフィードバックを追加しました（オプション）。音はAndre
-Louisさんの提供です。</li>
+<li>しおりやメモに到達したときの音によるフィードバックを追加しました（オプション）。音はAndre Louisさんの提供です。</li>
 <li>RTF文書に対応しました。</li>
 <li>DAISY XML文書に対応しました。</li>
 <li>Flat Open Document形式のテキストファイルに対応しました。</li>
@@ -1027,12 +787,11 @@ Louisさんの提供です。</li>
 <li>アプリ全体をRustで書き直しました。新しいコードベースはより安全で、文書の読み込みも速く、保守と拡張が容易です。</li>
 <li>テキストコントロールのコンテキストメニューに、切り取りや貼り付けのような一般的な項目ではなく、リーダー固有の操作を表示するようになりました。</li>
 </ul>
-<h2 id="バージョン0.7.0">バージョン0.7.0</h2>
+<h3 id="バージョン070">バージョン0.7.0</h3>
 <ul>
 <li>HTMLおよびXHTMLベースの文書でテーブルに対応しました。TとShift+Tでテーブル間を移動し、Enterを押すとWebビューで表示できます。</li>
 <li>基本的なWeb表示機能を追加しました。Ctrl+Shift+Vを押すと、文書の現在のセクションをWebベースの表示で開けます。複雑な書式やコード例のような内容に便利です。</li>
-<li>ロシア語の翻訳を追加しました。Ruslan
-Gulmagomedovさんに感謝します。</li>
+<li>ロシア語の翻訳を追加しました。Ruslan Gulmagomedovさんに感謝します。</li>
 <li>「すべての文書」ダイアログに「すべて削除」ボタンを追加しました。</li>
 <li>更新の確認で、新しいバージョンがある場合にリリースノートを表示するようになりました。</li>
 <li>ウィンドウをシステムトレーから元に戻す動作を修正しました。</li>
@@ -1052,7 +811,7 @@ Gulmagomedovさんに感謝します。</li>
 <li>翻訳に参加する人のために、作業の流れを改善しました。</li>
 <li>内部のリファクタリングを多数行い、アプリケーションのビジネスロジックの大部分をC++からRustへ移しました。性能と保守性が向上しています。</li>
 </ul>
-<h2 id="バージョン0.6.1">バージョン0.6.1</h2>
+<h3 id="バージョン061">バージョン0.6.1</h3>
 <ul>
 <li>パスワードで保護されたPDFに対応しました。</li>
 <li>前後の位置へ移動する、ごく基本的な機能を追加しました。内部リンクでEnterを押してカーソルが移動すると、その位置が記憶され、Alt+左右矢印で移動できます。</li>
@@ -1066,7 +825,7 @@ Gulmagomedovさんに感謝します。</li>
 <li>Word文書の見出しの扱いを改善しました。</li>
 <li>最近開いた文書の一覧が空の状態でダイアログを開こうとすると、音声で知らせるようになりました。</li>
 </ul>
-<h2 id="バージョン0.6.0">バージョン0.6.0</h2>
+<h3 id="バージョン060">バージョン0.6.0</h3>
 <ul>
 <li>移動メニューをよりコンパクトな形で表示する新しいオプションを、オプションダイアログに追加しました。既定でオンです。</li>
 <li>構造要素による移動を、文書の端で折り返すようにするオプションを追加しました。</li>
@@ -1078,8 +837,7 @@ Gulmagomedovさんに感謝します。</li>
 <li>OpenDocument形式のテキストファイルの解析に対応しました。</li>
 <li>しおりで、行全体を対象にすることも、指定したテキストだけを対象にすることもできるようになりました。しおりを設定するときに選択範囲がなければ0.6より前と同じ動作で行全体を対象にし、テキストを選択していれば、その部分だけがしおりに含まれます。</li>
 <li>しおりに任意のテキストのメモを添えられるようになりました。メモのあるしおりの間はNとShift+Nで移動でき、すべてのしおり、メモのみ、メモのないしおりのみを選んだ状態で、それぞれのショートカットからしおりのダイアログを開けます。</li>
-<li>しおりのダイアログで、しおりの名前に煩わしい「bookmark
-x」という接頭辞が付かなくなりました。</li>
+<li>しおりのダイアログで、しおりの名前に煩わしい「bookmark x」という接頭辞が付かなくなりました。</li>
 <li>XMLのように見えるHTMLの内容を含むEPUBの書籍を、正しく処理するようになりました。</li>
 <li>大きなMarkdown文書の読み込みを修正しました。</li>
 <li>目次のツリービューでスペースを押すと、OKボタンが押される問題を修正しました。</li>
@@ -1099,15 +857,14 @@ x」という接頭辞が付かなくなりました。</li>
 <li>タブバーから文書を削除する操作が、通常のDeleteに加えて、テンキーのDeleteでも使えるようになりました。</li>
 <li>Paperbackをシステムトレーに最小化できるようになりました（オプション）。既定ではオフですが、オンにするとシステムメニューの最小化でPaperbackがシステムトレーに入り、表示されたアイコンをクリックすると元に戻せます。</li>
 <li>Paperbackが完全に翻訳可能になりました。対応する言語の数はまだ少ないですが、着実に増えています。</li>
-<li>Paperbackの公式サイト<a
-href="https://paperback.dev">paperback.dev</a>を公開しました。</li>
+<li>Paperbackの公式サイト<a href="https://paperback.dev">paperback.dev</a>を公開しました。</li>
 <li>PPTX文書で、すべてのスライドを含む基本的な目次を表示するようになりました。</li>
 <li>文書情報ダイアログに、開いている文書の完全なパスを表示するようになりました。</li>
 <li>インストーラーに、インストール後にブラウザーでreadmeを表示するオプションを追加しました。</li>
 <li>最近開いた文書の一覧を大幅に拡張しました。直近の10件だけでなく、任意の件数を表示できるようになり、それ以外の過去に開いたすべての文書も、小さなダイアログから利用できます。</li>
 <li>各形式のパーサーに、細かな改善を加えました。PPTXのプレゼンテーションでスライドの間に空行を入れる、Word文書の段落内の改行の扱いを修正する、リスト項目に箇条書きの記号を付けるなどです。</li>
 </ul>
-<h2 id="バージョン0.5.0">バージョン0.5.0</h2>
+<h3 id="バージョン050">バージョン0.5.0</h3>
 <ul>
 <li>Microsoft Word文書に対応しました。</li>
 <li>PowerPointのプレゼンテーションに対応しました。</li>
@@ -1127,7 +884,7 @@ href="https://paperback.dev">paperback.dev</a>を公開しました。</li>
 <li>空行を取り除くときに、Unicodeのノーブレークスペースも考慮するようになりました。</li>
 <li>認識できないファイルの開き方を尋ねられるのは最初の1回だけになり、読み込むたびに尋ねられることはなくなりました。</li>
 </ul>
-<h2 id="バージョン0.4.1">バージョン0.4.1</h2>
+<h3 id="バージョン041">バージョン0.4.1</h3>
 <ul>
 <li>インストーラーに、スタートメニューにアイコンを作成するオプションを追加しました。</li>
 <li>目次が、いくつかの場面でより整理されるようになりました。たとえば、同じ位置に同じテキストの親項目と子項目がある場合は、親項目だけが表示されます。</li>
@@ -1135,12 +892,11 @@ href="https://paperback.dev">paperback.dev</a>を公開しました。</li>
 <li>絶対パスを含むEPUB 3の書籍の目次を修正しました。</li>
 <li>CHM文書が、メタデータファイルに設定されたタイトルを表示するようになりました。</li>
 </ul>
-<h2 id="バージョン0.4.0">バージョン0.4.0</h2>
+<h3 id="バージョン040">バージョン0.4.0</h3>
 <ul>
 <li>CHMファイルに対応しました。</li>
 <li>しおりに対応しました。文書の数にもしおりの数にも制限はありません。bとShift+bで前後に移動し、Ctrl+Shift+bで設定し、Ctrl+bでダイアログを開いて特定のしおりへ移動できます。</li>
-<li>ポータブル版のzipファイルに加えて、インストーラーを追加しました。インストーラーはPaperbackをProgram
-Filesのディレクトリーにインストールし、ファイルの関連付けを自動的に設定します。</li>
+<li>ポータブル版のzipファイルに加えて、インストーラーを追加しました。インストーラーはPaperbackをProgram Filesのディレクトリーにインストールし、ファイルの関連付けを自動的に設定します。</li>
 <li>BOM付きのテキストファイルが正しくデコードされるようになり、BOMがテキストの先頭に表示されることもなくなりました。</li>
 <li>ステータスバーの情報を大幅に増やしました。現在の行、文字の位置、読書位置のパーセントを表示します。</li>
 <li>HTMLのコメントと、scriptタグおよびstyleタグの内容が、テキストの出力に表示されなくなりました。</li>
@@ -1150,10 +906,9 @@ Filesのディレクトリーにインストールし、ファイルの関連付
 <li>読書位置を保存する処理が大幅に賢くなり、本当に必要なときだけディスクに書き込むようになりました。</li>
 <li>Paperbackを閉じたときにフォーカスしていた文書を、アプリケーションの再起動後も記憶するようになりました。</li>
 <li>指定行へ移動と指定ページへ移動のダイアログへの入力を、より厳密にチェックするようになりました。</li>
-<li>マニフェストに相対パスを含むEPUB
-3の書籍で、目次からの移動を修正しました。</li>
+<li>マニフェストに相対パスを含むEPUB 3の書籍で、目次からの移動を修正しました。</li>
 </ul>
-<h2 id="バージョン0.3.0">バージョン0.3.0</h2>
+<h3 id="バージョン030">バージョン0.3.0</h3>
 <ul>
 <li>マニフェストがURLエンコードされているEPUBの書籍の目次を修正しました。</li>
 <li>マルチバイトのUnicode文字を含むHTML文書の見出しの移動を修正しました。</li>
@@ -1169,7 +924,7 @@ Filesのディレクトリーにインストールし、ファイルの関連付
 <li>Paperbackを同時に1つしか起動できないようにしました。すでに起動している状態でファイル名を指定してpaperback.exeを実行すると、起動しているインスタンスでその文書が開きます。</li>
 <li>タブコントロールで文書にDeleteを押すと、閉じられるようになりました。</li>
 </ul>
-<h2 id="バージョン0.2.1">バージョン0.2.1</h2>
+<h3 id="バージョン021">バージョン0.2.1</h3>
 <ul>
 <li>指定ページへ移動のダイアログで、ページのラベルに総ページ数を追加しました。</li>
 <li>文書の内容から、開いている文書の一覧へTabキーで移動できるようにしました。</li>
@@ -1177,7 +932,7 @@ Filesのディレクトリーにインストールし、ファイルの関連付
 <li>テキストの出力から、不要なソフトハイフンを取り除くようになりました。</li>
 <li>見出しの移動で、誤った文字の位置に移動することがある問題を修正しました。</li>
 </ul>
-<h2 id="バージョン0.2.0">バージョン0.2.0</h2>
+<h3 id="バージョン020">バージョン0.2.0</h3>
 <ul>
 <li>Markdown文書に対応しました。</li>
 <li>PDF文書に対応しました。ページ間の移動もできます。</li>
@@ -1190,9 +945,10 @@ Filesのディレクトリーにインストールし、ファイルの関連付
 <li>以前開いていた文書を、アプリケーションの再起動後も記憶するようになりました。これは、ツールメニューに追加した「オプション」の項目から設定できます。</li>
 <li>Paperback内でreadmeを直接開くShift+F1を追加しました。</li>
 </ul>
-<h2 id="バージョン0.1.0">バージョン0.1.0</h2>
+<h3 id="バージョン010">バージョン0.1.0</h3>
 <ul>
 <li>最初のリリースです。</li>
 </ul>
+</main>
 </body>
 </html>
