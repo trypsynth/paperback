@@ -17,21 +17,21 @@ use crate::parser::util::xml::find_child_element;
 const LEVELS: usize = 9;
 
 #[derive(Clone, Debug, Default)]
-struct Level {
+pub(super) struct Level {
 	/// `w:numFmt`: decimal, lowerLetter, upperRoman, bullet, none, ...
-	format: String,
+	pub(super) format: String,
 	/// `w:lvlText`: the label template, `%N` standing for level N's current number.
-	text: String,
-	start: i32,
+	pub(super) text: String,
+	pub(super) start: i32,
 	/// `w:isLgl`: every level's number is shown in decimal, as legal documents number sections.
-	legal: bool,
+	pub(super) legal: bool,
 }
 
 #[derive(Debug, Default)]
-struct Instance {
-	abstract_id: String,
-	start_overrides: HashMap<usize, i32>,
-	level_overrides: HashMap<usize, Level>,
+pub(super) struct Instance {
+	pub(super) abstract_id: String,
+	pub(super) start_overrides: HashMap<usize, i32>,
+	pub(super) level_overrides: HashMap<usize, Level>,
 }
 
 /// The numbering definitions of one document and the running counts through it.
@@ -60,7 +60,7 @@ impl Numbering {
 	pub(super) fn load(numbering_xml: Option<&str>, styles_xml: Option<&str>) -> Self {
 		let mut numbering = Self::default();
 		if let Some(xml) = numbering_xml.and_then(|text| XmlDocument::parse(text).ok()) {
-			for node in xml.root().descendants().filter(|n| n.is_element()) {
+			for node in xml.root().descendants().filter(Node::is_element) {
 				match node.tag_name().name() {
 					"abstractNum" => {
 						if let Some(id) = node.attribute("abstractNumId") {
@@ -105,6 +105,23 @@ impl Numbering {
 	/// `None` for a paragraph that is not numbered, or whose level shows no label.
 	pub(super) fn label_for(&mut self, paragraph_properties: Option<Node>) -> Option<ListLabel> {
 		let (num_id, ilvl) = self.list_of(paragraph_properties?)?;
+		self.label_of(&num_id, ilvl)
+	}
+
+	/// Numbering already parsed by a reader of its own format (the binary `.doc` one): abstract
+	/// lists by id, each with its levels, and the instances that point at them, by id.
+	pub(super) fn from_definitions(
+		abstracts: HashMap<String, Vec<Option<Level>>>,
+		instances: HashMap<String, Instance>,
+	) -> Self {
+		Self { abstracts, instances, ..Self::default() }
+	}
+
+	/// The label for the next item of list instance `num_id` at level `ilvl` (0-based),
+	/// advancing its count. `None` when the instance or level is unknown, or shows no label.
+	pub(super) fn label_of(&mut self, num_id: &str, ilvl: usize) -> Option<ListLabel> {
+		let ilvl = ilvl.min(LEVELS - 1);
+		let num_id = num_id.to_string();
 		let instance = self.instances.get(&num_id)?;
 		let abstract_id = instance.abstract_id.clone();
 		let levels: Vec<Option<Level>> = (0..LEVELS)

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use roxmltree::Document as XmlDocument;
 
-use super::{Walk, numbering::Numbering, traverse};
+use super::{super::numbering::Numbering, Walk, traverse};
 use crate::{
 	document::{DocumentBuffer, MarkerType},
 	util::text::display_len,

@@ -27,11 +27,11 @@ use crate::{
 	util::zip::read_zip_entry_by_name,
 };
 
-mod numbering;
 mod paragraph;
 
-use numbering::Numbering;
 use paragraph::{extract_number_from_string, process_paragraph};
+
+use super::numbering::Numbering;
 
 pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool) -> Result<Document> {
 	let file =

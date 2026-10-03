@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use roxmltree::{Node, NodeType};
 
-use super::numbering::Numbering;
+use super::super::numbering::Numbering;
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, format_marker_types},
 	parser::util::{ooxml::collect_ooxml_run_text, toc::heading_level_to_marker_type, xml::find_child_element},
