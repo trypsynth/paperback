@@ -576,6 +576,22 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Run(bookmarks::with_note),
 	},
 	Command {
+		action: ActionId::SetTemporaryBookmark,
+		// TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
+		label: || t("&Set Temporary Bookmark"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::set_temporary),
+	},
+	Command {
+		action: ActionId::JumpToTemporaryBookmark,
+		// TRANSLATORS: Menu item in the Bookmarks menu to go back to the position remembered as the temporary bookmark.
+		label: || t("&Jump to Temporary Bookmark"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::jump_to_temporary),
+	},
+	Command {
 		action: ActionId::SetSelectionStart,
 		// TRANSLATORS: Menu item in the Edit menu to mark the current position as the beginning of a selection to copy from later.
 		label: || t("Set Selection St&art"),

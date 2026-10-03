@@ -56,3 +56,15 @@ pub fn toggle(ctx: &Ctx) {
 pub fn with_note(ctx: &Ctx) {
 	bookmarks::handle_bookmark_with_note(ctx.frame, ctx.dm, ctx.config, ctx.live_region_label, ctx.from_keyboard);
 }
+
+pub fn set_temporary(ctx: &Ctx) {
+	if let Ok(dm) = ctx.dm.try_lock() {
+		dm.set_temporary_bookmark();
+	}
+}
+
+pub fn jump_to_temporary(ctx: &Ctx) {
+	if let Ok(mut dm) = ctx.dm.try_lock() {
+		dm.jump_to_temporary_bookmark();
+	}
+}

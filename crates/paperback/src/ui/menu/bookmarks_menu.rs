@@ -21,5 +21,8 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		&[ActionId::JumpToAllBookmarks, ActionId::JumpToBookmarksOnly, ActionId::JumpToNotesOnly],
 		config,
 	));
+	entries.push(MenuEntry::Separator);
+	entries
+		.extend(commands::menu_entries(&[ActionId::SetTemporaryBookmark, ActionId::JumpToTemporaryBookmark], config));
 	entries
 }

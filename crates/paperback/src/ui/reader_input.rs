@@ -226,15 +226,12 @@ const fn is_selection_command(action: ActionId) -> bool {
 }
 
 fn run_shortcut(action: ActionId, dm: &Rc<Mutex<DocumentManager>>, frame: &Frame) {
-	let Ok(mut dm) = dm.try_lock() else { return };
-	match action {
-		ActionId::AnnouncePercent => dm.announce_current_percent(),
-		ActionId::SetTemporaryBookmark => dm.set_temporary_bookmark(),
-		ActionId::JumpToTemporaryBookmark => dm.jump_to_temporary_bookmark(),
-		_ => {
-			drop(dm);
-			frame.process_menu_command(menu_ids::action_to_menu_id(action));
-		}
+	let Ok(dm) = dm.try_lock() else { return };
+	if action == ActionId::AnnouncePercent {
+		dm.announce_current_percent();
+	} else {
+		drop(dm);
+		frame.process_menu_command(menu_ids::action_to_menu_id(action));
 	}
 }
 

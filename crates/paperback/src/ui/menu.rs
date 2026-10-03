@@ -64,7 +64,7 @@ fn title(category: ShortcutCategory) -> String {
 
 /// Commands reachable only through their keyboard shortcut.
 pub const fn is_keyboard_only(action: ActionId) -> bool {
-	matches!(action, ActionId::AnnouncePercent | ActionId::SetTemporaryBookmark | ActionId::JumpToTemporaryBookmark)
+	matches!(action, ActionId::AnnouncePercent)
 }
 
 pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
@@ -108,6 +108,13 @@ mod tests {
 		} else {
 			false
 		}
+	}
+
+	#[test]
+	fn only_announce_percentage_is_keyboard_only() {
+		let keyboard_only: Vec<ActionId> =
+			ActionId::all().iter().copied().filter(|&action| is_keyboard_only(action)).collect();
+		assert_eq!(keyboard_only, [ActionId::AnnouncePercent]);
 	}
 
 	#[test]

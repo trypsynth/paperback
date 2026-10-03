@@ -86,16 +86,6 @@ impl MainWindow {
 						dm_ref.announce_current_percent();
 					}
 				}
-				menu_ids::SET_TEMPORARY_BOOKMARK => {
-					if let Ok(dm_ref) = dm.try_lock() {
-						dm_ref.set_temporary_bookmark();
-					}
-				}
-				menu_ids::JUMP_TO_TEMPORARY_BOOKMARK => {
-					if let Ok(mut dm_ref) = dm.try_lock() {
-						dm_ref.jump_to_temporary_bookmark();
-					}
-				}
 				menu_ids::GO_TO_LINE => {
 					menu_go::handle_go_to_line(&frame_copy, &dm, &config, live_region_label);
 				}
