@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-03 19:40+0000\n"
+"POT-Creation-Date: 2026-10-03 13:54-0600\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -1236,10 +1236,15 @@ msgstr "&Ajuste de texto"
 msgid "Render tables &inline"
 msgstr "Mostrar tablas en &línea"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
 #, fuzzy
 msgid "&Join wrapped lines into paragraphs in PDFs"
 msgstr "&Unir líneas ajustadas en párrafos en PDFs"
+
+#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+#, fuzzy
+msgid "Remove repeated page &headers and footers in PDFs"
+msgstr "Eliminar &encabezados y pies de página repetidos en archivos PDF"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
