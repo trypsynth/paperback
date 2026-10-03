@@ -27,8 +27,10 @@ use crate::{
 	util::zip::read_zip_entry_by_name,
 };
 
+mod numbering;
 mod paragraph;
 
+use numbering::Numbering;
 use paragraph::{extract_number_from_string, process_paragraph};
 
 pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool) -> Result<Document> {
@@ -118,10 +120,57 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 ) -> Result<()> {
 	let style_heading_map = build_style_heading_map(archive);
 	let rels = read_ooxml_relationships(archive, "word/_rels/document.xml.rels");
+	let numbering = Numbering::load(
+		read_zip_entry_by_name(archive, "word/numbering.xml").ok().as_deref(),
+		read_zip_entry_by_name(archive, "word/styles.xml").ok().as_deref(),
+	);
 	let doc_content = read_zip_entry_by_name(archive, "word/document.xml")?;
 	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
-	traverse(doc_xml.root(), buffer, headings, id_positions, &rels, &style_heading_map, render_tables_inline);
+	let mut walk = Walk {
+		buffer,
+		headings,
+		id_positions,
+		rels: &rels,
+		style_heading_map: &style_heading_map,
+		render_tables_inline,
+		numbering,
+		list: None,
+	};
+	traverse(doc_xml.root(), &mut walk);
+	walk.end_list();
 	Ok(())
+}
+
+/// What a walk of `word/document.xml` writes into and consults.
+struct Walk<'a> {
+	buffer: &'a mut DocumentBuffer,
+	headings: &'a mut Vec<HeadingInfo>,
+	id_positions: &'a mut HashMap<String, usize>,
+	rels: &'a HashMap<String, String>,
+	style_heading_map: &'a HashMap<String, i32>,
+	render_tables_inline: bool,
+	numbering: Numbering,
+	/// The run of numbered or bulleted paragraphs being built: where it starts, how many items
+	/// it has, and where its last item ends. Any other paragraph, or a table, ends it.
+	list: Option<ListRun>,
+}
+
+struct ListRun {
+	start: usize,
+	items: i32,
+	end: usize,
+}
+
+impl Walk<'_> {
+	/// Marks the run of list items just finished as one list, so the reader can step over it
+	/// the way it steps over an HTML list.
+	fn end_list(&mut self) {
+		let Some(ListRun { start, items, end }) = self.list.take() else { return };
+		let length = end.saturating_sub(start);
+		if length > 0 {
+			self.buffer.add_marker(Marker::new(MarkerType::List, start).with_level(items).with_length(length));
+		}
+	}
 }
 
 /// Reads `word/styles.xml` and returns a map of style ID → heading level (1-9).
@@ -182,30 +231,40 @@ fn build_style_heading_map<R: Read + Seek>(archive: &mut ZipArchive<R>) -> HashM
 	map
 }
 
-fn traverse(
-	node: Node,
-	buffer: &mut DocumentBuffer,
-	headings: &mut Vec<HeadingInfo>,
-	id_positions: &mut HashMap<String, usize>,
-	rels: &HashMap<String, String>,
-	style_heading_map: &HashMap<String, i32>,
-	render_tables_inline: bool,
-) {
+fn traverse(node: Node, walk: &mut Walk) {
 	if node.node_type() == NodeType::Element {
 		let tag_name = node.tag_name().name();
 		if let Some(id) = node.attribute("id") {
-			id_positions.insert(id.to_string(), buffer.current_position());
+			walk.id_positions.insert(id.to_string(), walk.buffer.current_position());
 		}
 		if tag_name == "p" {
-			process_paragraph(node, buffer, headings, id_positions, rels, style_heading_map);
+			let start = walk.buffer.current_position();
+			let is_list_item = process_paragraph(
+				node,
+				walk.buffer,
+				walk.headings,
+				walk.id_positions,
+				walk.rels,
+				walk.style_heading_map,
+				&mut walk.numbering,
+			);
+			if is_list_item {
+				let end = walk.buffer.current_position();
+				let run = walk.list.get_or_insert(ListRun { start, items: 0, end });
+				run.items += 1;
+				run.end = end;
+			} else {
+				walk.end_list();
+			}
 			return;
 		} else if tag_name == "tbl" {
-			process_table(node, buffer, rels, render_tables_inline);
+			walk.end_list();
+			process_table(node, walk.buffer, walk.rels, walk.render_tables_inline);
 			return;
 		}
 	}
 	for child in node.children() {
-		traverse(child, buffer, headings, id_positions, rels, style_heading_map, render_tables_inline);
+		traverse(child, walk);
 	}
 }
 

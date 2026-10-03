@@ -2,11 +2,34 @@ use std::collections::HashMap;
 
 use roxmltree::Document as XmlDocument;
 
-use super::traverse;
+use super::{Walk, numbering::Numbering, traverse};
 use crate::{
 	document::{DocumentBuffer, MarkerType},
 	util::text::display_len,
 };
+
+/// Walks a parsed `document.xml` the way `parse_ooxml_from_archive` does, with the given
+/// numbering definitions, and returns what it wrote.
+fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering) -> DocumentBuffer {
+	let mut buffer = DocumentBuffer::new();
+	let mut headings = Vec::new();
+	let mut id_positions = HashMap::new();
+	let rels = HashMap::new();
+	let style_heading_map = HashMap::new();
+	let mut walk = Walk {
+		buffer: &mut buffer,
+		headings: &mut headings,
+		id_positions: &mut id_positions,
+		rels: &rels,
+		style_heading_map: &style_heading_map,
+		render_tables_inline,
+		numbering,
+		list: None,
+	};
+	traverse(xml_doc.root(), &mut walk);
+	walk.end_list();
+	buffer
+}
 
 /// Parse a Word table. The second cell contains U+1D11E (MUSICAL SYMBOL G CLEF, non-BMP,
 /// UTF-16 width 2) to lock the display-unit arithmetic. OFF mode emits the placeholder; ON mode
@@ -25,21 +48,14 @@ fn word_table_emits_placeholder_or_tsv_by_flag() {
 	</body></document>";
 	let xml_doc = XmlDocument::parse(xml).expect("valid xml");
 	// OFF: placeholder "[Table]: Kop 𝄞".
-	let mut buffer = DocumentBuffer::new();
-	let mut headings = Vec::new();
-	let mut id_positions = HashMap::new();
-	let rels = HashMap::new();
-	traverse(xml_doc.root(), &mut buffer, &mut headings, &mut id_positions, &rels, &HashMap::new(), false);
+	let buffer = walk(&xml_doc, false, Numbering::default());
 	assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 	assert_eq!(table_marker.text, "Kop \u{1D11E}", "marker caption is the first-row text, no prefix");
 	assert_eq!(table_marker.length, display_len("[Table]: Kop \u{1D11E}") + 1, "marker length in display units");
 	assert!(table_marker.reference.contains("<td>Kop</td>"), "marker reference is the table HTML");
 	// ON: full TSV "Kop\t𝄞".
-	let mut buffer = DocumentBuffer::new();
-	let mut headings = Vec::new();
-	let mut id_positions = HashMap::new();
-	traverse(xml_doc.root(), &mut buffer, &mut headings, &mut id_positions, &rels, &HashMap::new(), true);
+	let buffer = walk(&xml_doc, true, Numbering::default());
 	assert_eq!(buffer.content, "Kop\t\u{1D11E}\n");
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 	assert_eq!(table_marker.length, display_len("Kop\t\u{1D11E}") + 1, "marker length spans the TSV");
@@ -50,12 +66,34 @@ fn word_table_emits_placeholder_or_tsv_by_flag() {
 /// (roxmltree matches on the local name here, mirroring the existing table test fixtures).
 fn parse_run_props(xml: &str) -> DocumentBuffer {
 	let xml_doc = XmlDocument::parse(xml).expect("valid xml");
-	let mut buffer = DocumentBuffer::new();
-	let mut headings = Vec::new();
-	let mut id_positions = HashMap::new();
-	let rels = HashMap::new();
-	traverse(xml_doc.root(), &mut buffer, &mut headings, &mut id_positions, &rels, &HashMap::new(), false);
-	buffer
+	walk(&xml_doc, false, Numbering::default())
+}
+
+/// Word's automatic numbering is generated, not stored in the text: a numbered procedure used to
+/// come out as unnumbered paragraphs. Each item now carries its label and a list-item marker,
+/// and the run of items is one list that ends at the next ordinary paragraph.
+#[test]
+fn numbered_paragraphs_get_their_labels_and_list_markers() {
+	let numbering = Numbering::load(
+		Some(
+			r#"<numbering><abstractNum abstractNumId="7"><lvl ilvl="0"><start val="1"/><numFmt val="decimal"/><lvlText val="%1."/></lvl></abstractNum><num numId="4"><abstractNumId val="7"/></num></numbering>"#,
+		),
+		None,
+	);
+	let xml = r#"<document><body>
+		<p><r><t>Before.</t></r></p>
+		<p><pPr><numPr><ilvl val="0"/><numId val="4"/></numPr></pPr><r><t>Press Power.</t></r></p>
+		<p><pPr><numPr><ilvl val="0"/><numId val="4"/></numPr></pPr><r><t>Wait for the beep.</t></r></p>
+		<p><r><t>After.</t></r></p>
+	</body></document>"#;
+	let buffer = walk(&XmlDocument::parse(xml).expect("valid xml"), false, numbering);
+	assert_eq!(buffer.content, "Before.\n1. Press Power.\n2. Wait for the beep.\nAfter.\n");
+	let items: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::ListItem).collect();
+	assert_eq!(items.len(), 2);
+	assert_eq!((items[0].position, items[0].text.as_str(), items[0].level), (8, "1. Press Power.", 1));
+	let list = buffer.markers.iter().find(|m| m.mtype == MarkerType::List).expect("List marker");
+	assert_eq!((list.position, list.level), (8, 2));
+	assert_eq!(list.length, display_len("1. Press Power.\n2. Wait for the beep.\n"));
 }
 
 #[test]

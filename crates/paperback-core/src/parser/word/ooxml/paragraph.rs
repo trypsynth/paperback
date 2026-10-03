@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use roxmltree::{Node, NodeType};
 
+use super::numbering::Numbering;
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, format_marker_types},
 	parser::util::{ooxml::collect_ooxml_run_text, toc::heading_level_to_marker_type, xml::find_child_element},
@@ -9,6 +10,8 @@ use crate::{
 	util::text::display_len,
 };
 
+/// Writes one paragraph into the buffer. Returns whether it is an item of a numbered or
+/// bulleted list, so the caller can mark where the list it belongs to starts and ends.
 pub(super) fn process_paragraph(
 	element: Node,
 	buffer: &mut DocumentBuffer,
@@ -16,10 +19,14 @@ pub(super) fn process_paragraph(
 	id_positions: &mut HashMap<String, usize>,
 	rels: &HashMap<String, String>,
 	style_heading_map: &HashMap<String, i32>,
-) {
+	numbering: &mut Numbering,
+) -> bool {
 	let paragraph_start = buffer.current_position();
-	let mut paragraph_text = String::new();
-	let mut para_display_len = 0usize;
+	// Word keeps list numbers and bullets out of the text and generates them; without this a
+	// numbered procedure reads as a run of unnumbered paragraphs.
+	let label = numbering.label_for(find_child_element(element, "pPr"));
+	let mut paragraph_text = label.as_ref().map_or_else(String::new, |label| format!("{} ", label.text));
+	let mut para_display_len = display_len(&paragraph_text);
 	let mut heading_level = 0;
 	let mut is_paragraph_style_heading = false;
 	let mut format_spans: Vec<(MarkerType, usize, usize)> = Vec::new();
@@ -104,6 +111,12 @@ pub(super) fn process_paragraph(
 			headings.push(HeadingInfo { offset: paragraph_start, level: heading_level, text: heading_text });
 		}
 	}
+	// A numbered heading keeps its number but is a heading, not a list item.
+	let Some(label) = label.filter(|_| heading_level == 0 && !trimmed.is_empty()) else { return false };
+	buffer.add_marker(
+		Marker::new(MarkerType::ListItem, paragraph_start).with_text(trimmed.to_string()).with_level(label.level),
+	);
+	true
 }
 
 /// Appends the hyperlink's display text to `paragraph_text`, records a Link
