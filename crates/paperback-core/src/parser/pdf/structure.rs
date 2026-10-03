@@ -21,7 +21,10 @@ use self::{
 	marked_content::{MIN_MCID_COVERAGE, PageText, TreeFacts, collect_text, first_marked_content_id},
 	tables::{append_pdf_table_to_buffer, build_html_table},
 };
-use super::images::{UnclaimedImages, append_image};
+use super::{
+	images::{UnclaimedImages, append_image},
+	text::HyphenEvidence,
+};
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, TocItem},
 	pdfium::{PdfPage, PdfTextPage, Tag},
@@ -49,6 +52,7 @@ pub(super) fn extract_tagged_page_text(
 	flat_toc_items: &mut Vec<(u32, TocItem)>,
 	render_tables_inline: bool,
 	image_tops: &[f64],
+	evidence: &mut HyphenEvidence,
 ) -> bool {
 	let Some(struct_tree) = page.tags() else { return false };
 	let child_count = struct_tree.child_count();
@@ -60,7 +64,7 @@ pub(super) fn extract_tagged_page_text(
 	// then left alone: a `Figure` is not always one drawn image, so counting both would announce
 	// some of them twice.
 	let unclaimed = UnclaimedImages::new(if facts.claims_figures { &[] } else { image_tops });
-	let content = marked_content::read(text_page, &facts, !unclaimed.is_empty());
+	let content = marked_content::read(text_page, &facts, !unclaimed.is_empty(), evidence);
 	let coverage = content.coverage;
 	let tagged_trusted = coverage >= MIN_MCID_COVERAGE;
 	tracing::debug!(page_index, coverage, tagged_trusted, "computed mcid coverage for page structure tree");

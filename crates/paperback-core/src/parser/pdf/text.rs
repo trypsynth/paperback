@@ -7,7 +7,7 @@
 //! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by the metadata and
 //! table of contents readers as well.
 
-use std::{cell::Cell, cmp::Ordering};
+use std::{cell::Cell, cmp::Ordering, collections::HashSet};
 
 use crate::{
 	parser::util::bidi,
@@ -15,7 +15,119 @@ use crate::{
 };
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
-	input.chars().filter(|&ch| (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}').collect()
+	let chars: Vec<char> = input.chars().collect();
+	let evidence = HyphenEvidence::from_chars(&chars);
+	let mut out = String::with_capacity(input.len());
+	for (i, &ch) in chars.iter().enumerate() {
+		if ch == LINE_END_HYPHEN {
+			if keeps_line_end_hyphen(&chars, i, &evidence) {
+				out.push('-');
+			}
+		} else if (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}' {
+			out.push(ch);
+		}
+	}
+	out
+}
+
+/// Every character on the page, read once, indexed as pdfium indexes them: `None` where pdfium
+/// reports a value that is not a character.
+pub(super) fn page_chars(text_page: &PdfTextPage, char_count: i32) -> Vec<Option<char>> {
+	(0..char_count).map(|i| char::from_u32(text_page.unicode_at(i))).collect()
+}
+
+/// The page's characters as plain text for [`HyphenEvidence`] and [`keeps_line_end_hyphen`],
+/// with a space standing in for anything that is not a character.
+pub(super) fn context_chars(page: &[Option<char>]) -> Vec<char> {
+	page.iter().map(|c| c.unwrap_or(' ')).collect()
+}
+
+/// What pdfium reports in place of a hyphen that ends a line: it takes the hyphen for one that
+/// splits a word and marks it so a reader can join the halves.
+pub(super) const LINE_END_HYPHEN: char = '\u{0002}';
+
+/// The words on a page, as evidence for whether a hyphen pdfium found at the end of a line is
+/// part of the word (`NFB-NEWSLINE`, `non-web`) or only splits it (`sugges-tion`).
+#[derive(Default)]
+pub(super) struct HyphenEvidence {
+	/// Compounds written with a hyphen somewhere it is not at a line end, lower-cased.
+	hyphenated: HashSet<String>,
+	/// Every unhyphenated word seen, lower-cased.
+	words: HashSet<String>,
+}
+
+impl HyphenEvidence {
+	pub(super) fn from_chars(chars: &[char]) -> Self {
+		let mut evidence = Self::default();
+		evidence.add_chars(chars);
+		evidence
+	}
+
+	/// Adds a page's words. A document keeps one of these across its pages, so a word split at a
+	/// line end is judged by how the whole document so far writes it, not only that page: a book
+	/// that writes "OpenSolaris" or "MTBF" on one page joins them when they wrap on a later one.
+	pub(super) fn add_chars(&mut self, chars: &[char]) {
+		let evidence = self;
+		let mut word = String::new();
+		let mut broken = false;
+		for &ch in chars.iter().chain(std::iter::once(&' ')) {
+			if ch.is_alphanumeric() || ch == '-' {
+				word.extend(ch.to_lowercase());
+				continue;
+			}
+			if ch == LINE_END_HYPHEN {
+				// A word broken at a line end is evidence for itself neither way.
+				broken = true;
+				word.clear();
+				continue;
+			}
+			let token = word.trim_matches('-');
+			if !broken && !token.is_empty() {
+				if token.contains('-') {
+					evidence.hyphenated.insert(token.to_string());
+				} else {
+					evidence.words.insert(token.to_string());
+				}
+			}
+			broken = false;
+			word.clear();
+		}
+	}
+}
+
+/// Whether the line-end hyphen at `at` in `chars` belongs to the word.
+pub(super) fn keeps_line_end_hyphen(chars: &[char], at: usize, evidence: &HyphenEvidence) -> bool {
+	let left_start = chars[..at].iter().rposition(|c| !c.is_alphanumeric()).map_or(0, |p| p + 1);
+	let left: String = chars[left_start..at].iter().collect();
+	let right_start =
+		chars[at + 1..].iter().position(|c| !c.is_whitespace() && !c.is_control()).map_or(chars.len(), |p| at + 1 + p);
+	let right: String = chars[right_start..].iter().take_while(|c| c.is_alphanumeric()).collect();
+	keeps_hyphen(&left, &right, Some(evidence))
+}
+
+/// Whether a hyphen between `left` and `right` at a line break is part of the word.
+///
+/// What the document itself writes decides first: a compound it hyphenates elsewhere keeps its
+/// hyphen, a word it writes whole elsewhere loses it. Failing that, a hyphen next to an
+/// abbreviation, a capitalised word or a number belongs to a compound (`NFB-NEWSLINE`,
+/// `COVID-19`), while one between two lower-case halves splits an ordinary word.
+pub(super) fn keeps_hyphen(left: &str, right: &str, evidence: Option<&HyphenEvidence>) -> bool {
+	if left.is_empty() || right.is_empty() {
+		return false;
+	}
+	if let Some(evidence) = evidence {
+		let (l, r) = (left.to_lowercase(), right.to_lowercase());
+		if evidence.hyphenated.contains(&format!("{l}-{r}")) {
+			return true;
+		}
+		if evidence.words.contains(&format!("{l}{r}")) {
+			return false;
+		}
+	}
+	let left_is_abbreviation =
+		left.chars().count() >= 2 && left.chars().all(|c| c.is_uppercase() || c.is_ascii_digit());
+	let right_opens_a_name = right.chars().next().is_some_and(|c| c.is_uppercase() || c.is_ascii_digit());
+	left_is_abbreviation || right_opens_a_name || left.chars().any(|c| c.is_ascii_digit())
 }
 
 /// One visual line of an untagged page.
@@ -204,7 +316,9 @@ fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	}
 }
 
-pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Vec<Line> {
+/// The page's visual lines. `evidence` holds the words of the pages read so far, for judging the
+/// hyphens pdfium finds at line ends (see [`keeps_line_end_hyphen`]); this page's are added to it.
+pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evidence: &mut HyphenEvidence) -> Vec<Line> {
 	let Some(char_count) = text_page.char_count() else {
 		tracing::warn!(
 			page_index,
@@ -229,13 +343,19 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 	let mut current_chars: Vec<(char, i32)> = Vec::new();
 	let mut previous_char = None;
 	let spaces = SpaceFilter::new(char_count);
-	for i in 0..char_count {
-		let unicode = text_page.unicode_at(i);
-		let Some(ch) = char::from_u32(unicode) else { continue };
+	let page = page_chars(text_page, char_count);
+	let context = context_chars(&page);
+	evidence.add_chars(&context);
+	for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
+		let Some(ch) = ch else { continue };
 		if ends_line(ch, previous_char) {
 			let line = measure_line(text_page, &current_chars);
 			current_chars.clear();
 			result.push(line);
+		} else if ch == LINE_END_HYPHEN {
+			if keeps_line_end_hyphen(&context, at, evidence) {
+				current_chars.push(('-', i));
+			}
 		} else if ch == '\n' || (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			// The '\n' of a "\r\n" pair, and anything else with no text of its own: dropped, but
 			// still the previous character as far as the next `ends_line` is concerned.
@@ -435,9 +555,39 @@ fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
 #[cfg(test)]
 mod tests {
 	use super::{
-		CharBox, Line, covering_hides, ends_line, looks_monospaced, restore_reading_order, sanitize_pdf_text,
-		space_is_invisible,
+		CharBox, Line, covering_hides, ends_line, keeps_hyphen, looks_monospaced, restore_reading_order,
+		sanitize_pdf_text, space_is_invisible,
 	};
+
+	/// pdfium marks a hyphen it finds at the end of a line with U+0002. An ordinary word split
+	/// across lines is joined, but a compound that merely wrapped keeps its hyphen: the SELVAS
+	/// NFB-NEWSLINE guide and the Mantis Q40 conformance report both lost real hyphens here.
+	#[test]
+	fn line_end_hyphens_are_kept_only_where_they_belong_to_the_word() {
+		assert_eq!(sanitize_pdf_text("sugges\u{0002}tion"), "suggestion");
+		assert_eq!(
+			sanitize_pdf_text("We have developed NFB\u{0002}NEWSLINE apps"),
+			"We have developed NFB-NEWSLINE apps"
+		);
+		assert_eq!(sanitize_pdf_text("a COVID\u{0002}19 update"), "a COVID-19 update");
+		// The page writes "non-web" elsewhere, so the wrapped one keeps its hyphen too.
+		assert_eq!(
+			sanitize_pdf_text("non-web software or non\u{0002}web documents"),
+			"non-web software or non-web documents"
+		);
+		// The page writes the word whole elsewhere, so the split is joined even next to a capital.
+		assert_eq!(sanitize_pdf_text("Braille notes. Braille\u{0002}Note"), "Braille notes. Braille-Note");
+		assert_eq!(sanitize_pdf_text("BrailleNote and Braille\u{0002}Note"), "BrailleNote and BrailleNote");
+	}
+
+	#[test]
+	fn hyphens_without_evidence_follow_the_shape_of_the_word() {
+		assert!(!keeps_hyphen("infor", "mation", None));
+		assert!(keeps_hyphen("NFB", "NEWSLINE", None));
+		assert!(keeps_hyphen("Victor", "Reader", None));
+		assert!(keeps_hyphen("MP3", "player", None));
+		assert!(!keeps_hyphen("", "word", None), "nothing before the hyphen: not a compound");
+	}
 
 	fn line(text: &str, top: f64) -> Line {
 		Line { text: text.to_string(), size: 10.0, top, bottom: top - 10.0, monospaced: false, bold: false }

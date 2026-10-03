@@ -28,7 +28,7 @@ use paragraphs::{join_paragraphs, split_lines};
 use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
 use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
-use text::{Line, extract_text_lines, median_line_font_size};
+use text::{HyphenEvidence, Line, extract_text_lines, median_line_font_size};
 use toc::{build_toc_tree, extract_toc};
 
 /// Everything one page contributes, as read from pdfium and before any of it is placed in the
@@ -56,7 +56,12 @@ struct PageContent {
 }
 
 /// Read one page from pdfium: its text, its links, and the images it draws.
-fn read_page(document: &PdfDocument, page_index: i32, render_tables_inline: bool) -> PageContent {
+fn read_page(
+	document: &PdfDocument,
+	page_index: i32,
+	render_tables_inline: bool,
+	evidence: &mut HyphenEvidence,
+) -> PageContent {
 	let Ok(page) = document.page(page_index) else {
 		tracing::warn!(page_index, "failed to load pdf page, skipping its text");
 		return PageContent::default();
@@ -90,10 +95,11 @@ fn read_page(document: &PdfDocument, page_index: i32, render_tables_inline: bool
 		&mut tagged.toc_items,
 		render_tables_inline,
 		&content.image_tops,
+		evidence,
 	) {
 		content.tagged = Some(tagged);
 	} else {
-		content.lines = extract_text_lines(&text_page, page_index);
+		content.lines = extract_text_lines(&text_page, page_index, evidence);
 	}
 	content.web_links = collect_web_links(&text_page);
 	content.annotation_links = collect_annotation_links(&page, &text_page);
@@ -376,8 +382,14 @@ impl Parser for PdfParser {
 		let mut has_any_text = false;
 		let mut has_any_images = false;
 		let mut detected_heading_positions: Vec<(usize, String)> = Vec::new();
-		let mut pages: Vec<PageContent> =
-			(0..page_count).map(|page_index| read_page(&document, page_index, render_tables_inline)).collect();
+		let mut pages: Vec<PageContent> = {
+			// Words of the pages read so far, for telling a hyphen that belongs to a word from one that
+			// only splits it at a line end.
+			let mut evidence = HyphenEvidence::default();
+			(0..page_count)
+				.map(|page_index| read_page(&document, page_index, render_tables_inline, &mut evidence))
+				.collect()
+		};
 		// The survey runs either way, because it is also what measures the body text, which is what
 		// tells a heading from body text and has nothing to do with furniture. What the caller asked
 		// for is whether its answer is used: a document converted as it is keeps every line, and one
