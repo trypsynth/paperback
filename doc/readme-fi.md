@@ -79,6 +79,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+F4` (macOS:ssä `Cmd+W`): Sulje nykyinen asiakirja.
 * `Ctrl+Shift+F4` (macOS:ssä `Cmd+Shift+W`): Sulje kaikki avoimet asiakirjat.
 * `Ctrl+Shift+T`: Avaa viimeksi suljetun asiakirjan uudelleen.
+* `F5`: Päivitä asiakirjan sisältö. Tämä toimii riippumatta siitä, onko "Päivitä muuttuneet asiakirjat automaattisesti" -asetus käytössä.
 * `Ctrl+R`: Näytä ”Kaikki asiakirjat” -valintaikkuna (Viimeksi avatut -valikosta).
 * `Ctrl+Q`: Lopeta (vain Windowsissa; macOS:ää käytettäessä tämä komento löytyy sovellusvalikosta).
 
