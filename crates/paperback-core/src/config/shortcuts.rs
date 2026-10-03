@@ -33,6 +33,7 @@ impl Default for HotkeyConfig {
 #[serde(rename_all = "snake_case")]
 pub enum ShortcutCategory {
 	File,
+	Edit,
 	View,
 	Go,
 	Bookmarks,
@@ -43,13 +44,15 @@ pub enum ShortcutCategory {
 
 impl ShortcutCategory {
 	pub const fn all() -> &'static [Self] {
-		&[Self::File, Self::View, Self::Go, Self::Bookmarks, Self::Audio, Self::Tools, Self::Help]
+		&[Self::File, Self::Edit, Self::View, Self::Go, Self::Bookmarks, Self::Audio, Self::Tools, Self::Help]
 	}
 
 	pub fn display_name(self) -> String {
 		match self {
 			// TRANSLATORS: Name of the "File" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::File => crate::t("File"),
+			// TRANSLATORS: Name of the "Edit" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::Edit => crate::t("Edit"),
 			// TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::View => crate::t("View"),
 			// TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
@@ -247,6 +250,21 @@ mod tests {
 			total_actions += actions.len();
 		}
 		assert_eq!(total_actions, ActionId::all().len());
+	}
+
+	#[test]
+	fn edit_category_holds_find_and_selection() {
+		assert_eq!(
+			ShortcutCategory::Edit.actions(),
+			[
+				ActionId::Find,
+				ActionId::FindNext,
+				ActionId::FindPrevious,
+				ActionId::SetSelectionStart,
+				ActionId::CopyFromSelectionStart,
+				ActionId::JumpToSelectionStart,
+			]
+		);
 	}
 
 	#[test]

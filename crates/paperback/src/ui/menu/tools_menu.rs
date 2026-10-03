@@ -2,7 +2,7 @@ use paperback_core::config::{ActionId, ConfigManager};
 use patois::t;
 
 use super::builder::{MenuEntry, format_menu_label, item, item_with_help, submenu};
-use crate::ui::{commands, menu_ids};
+use crate::ui::menu_ids;
 
 pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	// TRANSLATORS: Menu item in Tools > Import/Export to import bookmarks and reading position from a file.
@@ -69,16 +69,6 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		submenu(import_export_label, import_export_help, import_export),
 		MenuEntry::Separator,
 	];
-	// TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
-	let select_copy_label = t("Select and &copy");
-	// TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
-	let select_copy_help = t("Mark a selection and copy from it");
-	let select_copy = commands::menu_entries(
-		&[ActionId::SetSelectionStart, ActionId::CopyFromSelectionStart, ActionId::JumpToSelectionStart],
-		config,
-	);
-	entries.push(submenu(select_copy_label, select_copy_help, select_copy));
-	entries.push(MenuEntry::Separator);
 	// TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
 	let options_label = format_menu_label(&t("&Settings"), ActionId::Options, config);
 	// TRANSLATORS: Menu item in the Tools menu to open the dialog for customizing keyboard shortcuts.

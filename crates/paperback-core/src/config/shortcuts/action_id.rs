@@ -225,7 +225,10 @@ impl ActionId {
 			Self::Find
 			| Self::FindNext
 			| Self::FindPrevious
-			| Self::GoToLine
+			| Self::SetSelectionStart
+			| Self::CopyFromSelectionStart
+			| Self::JumpToSelectionStart => ShortcutCategory::Edit,
+			Self::GoToLine
 			| Self::GoToPercent
 			| Self::GoToPage
 			| Self::GoBack
@@ -284,9 +287,6 @@ impl ActionId {
 			| Self::TableOfContents
 			| Self::ElementsList
 			| Self::RevealFileInFolder
-			| Self::SetSelectionStart
-			| Self::CopyFromSelectionStart
-			| Self::JumpToSelectionStart
 			| Self::Options
 			| Self::SleepTimer
 			| Self::BatchOcr

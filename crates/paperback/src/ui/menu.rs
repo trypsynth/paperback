@@ -7,7 +7,6 @@ use crate::ui::commands::{self, Enable};
 mod audio_menu;
 mod bookmarks_menu;
 mod builder;
-#[cfg(target_os = "macos")]
 mod edit_menu;
 mod file_menu;
 mod go_menu;
@@ -31,6 +30,7 @@ pub struct TopMenu {
 pub fn menus(config: &ConfigManager, compact_go: bool) -> Vec<TopMenu> {
 	vec![
 		TopMenu { category: ShortcutCategory::File, entries: file_menu::entries(config) },
+		TopMenu { category: ShortcutCategory::Edit, entries: edit_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::View, entries: view_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::Go, entries: go_menu::entries(config, compact_go) },
 		TopMenu { category: ShortcutCategory::Bookmarks, entries: bookmarks_menu::entries(config) },
@@ -45,6 +45,8 @@ fn title(category: ShortcutCategory) -> String {
 	match category {
 		// TRANSLATORS: Top-level "File" menu label in the menu bar
 		ShortcutCategory::File => t("&File"),
+		// TRANSLATORS: Top-level "Edit" menu label in the menu bar
+		ShortcutCategory::Edit => t("&Edit"),
 		// TRANSLATORS: Top-level "View" menu label in the menu bar
 		ShortcutCategory::View => t("&View"),
 		// TRANSLATORS: Top-level "Go" menu label in the menu bar
@@ -67,18 +69,8 @@ pub const fn is_keyboard_only(action: ActionId) -> bool {
 
 pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let compact_go = config.get_app_bool("compact_go_menu", true);
-	let mut menus = menus(config, compact_go).into_iter();
 	let mut builder = MenuBar::builder();
-	if let Some(file) = menus.next() {
-		builder = builder.append(build_menu(&file.entries), &title(file.category));
-	}
-	#[cfg(target_os = "macos")]
-	{
-		// TRANSLATORS: Top-level "Edit" menu label in the menu bar (macOS only)
-		let edit_label = t("&Edit");
-		builder = builder.append(edit_menu::create_edit_menu(config), &edit_label);
-	}
-	for menu in menus {
+	for menu in menus(config, compact_go) {
 		builder = builder.append(build_menu(&menu.entries), &title(menu.category));
 	}
 	let menu_bar = builder.build();

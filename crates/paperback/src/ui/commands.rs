@@ -577,18 +577,18 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::SetSelectionStart,
-		// TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
+		// TRANSLATORS: Menu item in the Edit menu to mark the current position as the beginning of a selection to copy from later.
 		label: || t("Set Selection St&art"),
-		// TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+		// TRANSLATORS: Status-bar help text for the Edit > Set Selection Start menu item.
 		help: Some(|| t("Mark the beginning of a selection to copy from")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(selection::set_start),
 	},
 	Command {
 		action: ActionId::CopyFromSelectionStart,
-		// TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
+		// TRANSLATORS: Menu item in the Edit menu to copy everything from the marked beginning of a selection to the current position.
 		label: || t("&Copy from Selection Start"),
-		// TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+		// TRANSLATORS: Status-bar help text for the Edit > Copy from Selection Start menu item.
 		help: Some(|| t("Copy from the beginning of the selection to here")),
 		// Deliberately not gated on a mark being set: the command has to stay enabled so pressing
 		// it with nothing marked can say so. Gating it here would leave a disabled menu item and
@@ -598,9 +598,9 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::JumpToSelectionStart,
-		// TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+		// TRANSLATORS: Menu item in the Edit menu to go back to the marked beginning of the selection.
 		label: || t("&Jump to Selection Start"),
-		// TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+		// TRANSLATORS: Status-bar help text for the Edit > Jump to Selection Start menu item.
 		help: Some(|| t("Go back to the beginning of the selection")),
 		// Enabled for the same reason as the copy above: an unset mark has to be announced, not
 		// turned into a dead menu item.

@@ -114,18 +114,6 @@ fn groups(config: &ConfigManager) -> Vec<(String, String, Vec<MenuEntry>)> {
 }
 
 pub fn entries(config: &ConfigManager, compact: bool) -> Vec<MenuEntry> {
-	// TRANSLATORS: Menu item in the Go menu to open the find dialog.
-	let find_label = format_menu_label(&t("&Find..."), ActionId::Find, config);
-	// TRANSLATORS: Status-bar help text for the Go > Find menu item.
-	let find_help = t("Find text in the document");
-	// TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
-	let find_next_label = format_menu_label(&t("Find &Next"), ActionId::FindNext, config);
-	// TRANSLATORS: Status-bar help text for the Go > Find Next menu item.
-	let find_next_help = t("Find next occurrence");
-	// TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
-	let find_prev_label = format_menu_label(&t("Find &Previous"), ActionId::FindPrevious, config);
-	// TRANSLATORS: Status-bar help text for the Go > Find Previous menu item.
-	let find_prev_help = t("Find previous occurrence");
 	// TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
 	let goto_line_label = format_menu_label(&t("Go to &line..."), ActionId::GoToLine, config);
 	// TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
@@ -143,10 +131,6 @@ pub fn entries(config: &ConfigManager, compact: bool) -> Vec<MenuEntry> {
 	// TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
 	let go_forward_help = t("Go forward in history");
 	let mut entries = vec![
-		item_with_help(menu_ids::FIND, find_label, find_help),
-		item_with_help(menu_ids::FIND_NEXT, find_next_label, find_next_help),
-		item_with_help(menu_ids::FIND_PREVIOUS, find_prev_label, find_prev_help),
-		MenuEntry::Separator,
 		item_with_help(menu_ids::GO_TO_LINE, goto_line_label, goto_line_help),
 		item_with_help(menu_ids::GO_TO_PERCENT, goto_percent_label, goto_percent_help),
 		MenuEntry::Separator,
