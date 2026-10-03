@@ -8,7 +8,7 @@ description: Download Paperback for Windows, macOS and Linux, or get the iOS and
 
 Pick the stable version unless you want to try what is coming next. Nothing here asks you to sign in.
 
-## Computers
+## Desktop apps
 
 Free, for Windows, macOS and Linux.
 
