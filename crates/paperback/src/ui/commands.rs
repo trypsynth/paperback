@@ -677,9 +677,11 @@ pub fn for_action(action: ActionId) -> Option<&'static Command> {
 	COMMANDS.iter().find(|command| command.action == action)
 }
 
-/// One menu entry for `action`, for the group builders in `menu/go_menu.rs`.
+/// One menu entry for `action`, with its label, shortcut and help text.
 ///
-/// Panics for the same reason [`append_item`] does, and is covered by the same kind of test.
+/// Panics if `action` has not been ported to [`COMMANDS`], rather than quietly building a menu
+/// with an item missing. The menu tests build every menu, so this fires in CI rather than on a
+/// user's launch.
 pub fn menu_entry(action: ActionId, config: &ConfigManager) -> MenuEntry {
 	let command =
 		for_action(action).unwrap_or_else(|| panic!("{action:?} is in a menu's item list but not in COMMANDS"));
@@ -689,17 +691,6 @@ pub fn menu_entry(action: ActionId, config: &ConfigManager) -> MenuEntry {
 /// Menu entries for `actions`, in the order given.
 pub fn menu_entries(actions: &[ActionId], config: &ConfigManager) -> Vec<MenuEntry> {
 	actions.iter().map(|&action| menu_entry(action, config)).collect()
-}
-
-/// Appends `action`'s menu item, with its label, shortcut and help text, to `menu`.
-///
-/// Panics if `action` has not been ported to [`COMMANDS`], rather than quietly building a menu
-/// with an item missing. Every caller's list is covered by a test, so this fires in CI rather
-/// than on a user's launch.
-pub fn append_item(menu: &Menu, action: ActionId, config: &ConfigManager) {
-	let command =
-		for_action(action).unwrap_or_else(|| panic!("{action:?} is in a menu's item list but not in COMMANDS"));
-	let _ = menu.append(command.id(), &command.menu_label(config), &command.help_text(), ItemKind::Normal);
 }
 
 /// Looks up a ported command by wx id.

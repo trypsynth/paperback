@@ -12,7 +12,7 @@ use wxdragon::{event::KeyboardEvent, prelude::*};
 
 use super::{
 	document_manager::{DocumentManager, DocumentTab, tab_index_for_key},
-	menu_ids,
+	menu, menu_ids,
 	text_render::reload_window_around,
 };
 
@@ -182,7 +182,7 @@ pub(super) fn build_text_ctrl(
 				// on. The two routes cannot both run: a keystroke the accelerator consumed
 				// never arrives here at all.
 				let plain = !kbd.control_down() && !kbd.alt_down();
-				if has_no_menu_item(act) || plain || is_selection_command(act) || cfg!(target_os = "linux") {
+				if menu::is_keyboard_only(act) || plain || is_selection_command(act) || cfg!(target_os = "linux") {
 					kbd.event.skip(false);
 					if has_no_menu_item(act) {
 						// These have no menu item, so the key never becomes a menu command and the
@@ -221,19 +221,6 @@ pub(super) fn build_text_ctrl(
 	text_ctrl
 }
 
-/// Whether a key moves the caret through the text one piece at a time, rather than jumping it
-/// somewhere else.
-///
-/// Only these play a bookmark's sound. Landing on a line that happens to hold a bookmark used
-/// to sound exactly like moving onto the bookmark itself, so a bookmark attached to a word in
-/// the middle of a paragraph announced itself from the start of that paragraph, which is not
-/// where it is. Stepping by character or by word passes over the bookmark's own position, so
-/// there the sound means what it says.
-/// The shortcuts that are carried out here rather than through a menu item, because they have none.
-const fn has_no_menu_item(action: ActionId) -> bool {
-	matches!(action, ActionId::AnnouncePercent | ActionId::SetTemporaryBookmark | ActionId::JumpToTemporaryBookmark)
-}
-
 const fn is_selection_command(action: ActionId) -> bool {
 	matches!(action, ActionId::SetSelectionStart | ActionId::CopyFromSelectionStart | ActionId::JumpToSelectionStart)
 }
@@ -263,6 +250,14 @@ fn shortcut_for_shifted_character(kbd: &KeyboardEvent, dm: &Rc<Mutex<DocumentMan
 	config.get_shortcuts().find_action(i32::from(typed as u8), false, false, false)
 }
 
+/// Whether a key moves the caret through the text one piece at a time, rather than jumping it
+/// somewhere else.
+///
+/// Only these play a bookmark's sound. Landing on a line that happens to hold a bookmark used
+/// to sound exactly like moving onto the bookmark itself, so a bookmark attached to a word in
+/// the middle of a paragraph announced itself from the start of that paragraph, which is not
+/// where it is. Stepping by character or by word passes over the bookmark's own position, so
+/// there the sound means what it says.
 const fn moves_through_text(key: i32) -> bool {
 	matches!(key, WXK_LEFT | WXK_RIGHT)
 }
