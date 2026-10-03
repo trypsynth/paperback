@@ -132,9 +132,12 @@ pub fn reload(ctx: &Ctx) {
 	}
 	update_title_from_manager(ctx.frame, &dm);
 	dm.update_status_bar();
-	// High, unlike the automatic reload's Medium: here the reader asked for it.
+	// High, unlike the automatic reload's Medium: here the reader asked for it. `announce` is
+	// `announce_with_priority` at High, so going through `announce_for_command` keeps the
+	// priority and adds the menu delay that lets the message land after the chain a closed
+	// menu starts.
 	// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
-	live_region::announce_with_priority(ctx.live_region_label, &t("Document reloaded."), live_region::Priority::High);
+	announce_for_command(ctx.live_region_label, ctx.from_keyboard, t("Document reloaded."));
 }
 
 pub fn clear_recent_documents(ctx: &Ctx) {
