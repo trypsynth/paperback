@@ -490,7 +490,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 
 ##### Pikanäppäimet
 * Helppokäyttöinen valintaikkuna, jossa voi muokata kaikkia sovelluksen pikanäppäimiä.
-* Muokattava pikanäppäin Paperbackin palauttamiseen ilmoitusalueelta.
+* Muokattava pikanäppäin Paperbackin palauttamiseen ilmaisinalueelta.
 
 ##### Kielet
 * Hollannin-, puolan- ja suomenkieliset käännökset.
@@ -635,7 +635,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Lisätty tuki Flat Open Document -esityksille.
 * Lisätty tuki erottimiin siirtymiselle S- ja Shift+S-näppäimillä.
 * Kaikki yli 300 merkin pituiset siirtymät lisätään nyt automaattisesti navigointihistoriaan.
-* Korjattu Paperbackin ikkunan palautus ilmoitusalueelta.
+* Korjattu Paperbackin ikkunan palautus ilmaisinalueelta.
 * Korjattu Markdown-asiakirjojen näyttäminen selainnäkymässä raakatekstinä muotoillun HTML:n sijaan.
 * Korjattu Markdown-taulukoiden virheellinen muotoilu.
 * Paperback varoittaa nyt yritettäessä avata pelkkiä kuvia sisältäviä PDF-tiedostoja.
