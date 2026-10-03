@@ -12,6 +12,8 @@ use paperback_core::{
 mod cli;
 mod formats;
 mod input;
+mod ocr;
+mod pages;
 
 use cli::{Cli, Format};
 
@@ -28,7 +30,12 @@ fn main() -> Result<()> {
 	let ext = input.extension().and_then(|e| e.to_str()).unwrap_or("");
 	input::check(&input)?;
 	let file_path = input.to_string_lossy().into_owned();
-	if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" {
+	// Read up front so a bad specification is refused before a long parse rather than after it.
+	// The pages themselves are chosen below, once the document has been read and its length known.
+	let selection = cli.pages.as_deref().map(pages::PageSelection::parse).transpose()?;
+	// This path bypasses the text buffer entirely, so there are no page-break markers in it to
+	// select from and --pages would be silently dropped. The normal route below is taken instead.
+	if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" && selection.is_none() {
 		let html = export::epub_direct::render(&file_path)
 			.with_context(|| format!("failed to convert {}", input.display()))?;
 		// map_or_else reads worse here than the plain if/else.
@@ -42,6 +49,8 @@ fn main() -> Result<()> {
 	}
 	let mut context =
 		ParserContext::new(file_path).with_render_tables_inline(true).with_join_pdf_paragraphs(!cli.no_join_paragraphs);
+	// On by default, so pb gives the app's reading of a file as it always has. Taking the repeated page-edge lines out is a judgement, though, and on some documents it costs real sentences (see `ParserContext::strip_running_text`), so `--keep-repeated` is there for a caller that would rather keep every line.
+	context = context.with_strip_running_text(!cli.keep_repeated);
 	if let Some(password) = cli.password {
 		context = context.with_password(password);
 	}
@@ -58,6 +67,26 @@ fn main() -> Result<()> {
 		}
 		Err(e) => return Err(e.context(format!("failed to parse {}", input.display()))),
 	};
+	// Cut down to the pages asked for. Every format goes this way: the pages are chosen from the
+	// parsed document rather than asked of the parser, because a page range out of an encrypted
+	// PDF cannot be resolved until the password is in hand, and because the survey that judges a
+	// repeated line a fact about the whole document rather than about the extract.
+	let mut doc = match selection {
+		Some(selection) => pages::apply(&selection, &doc)?,
+		None => doc,
+	};
+	let ocr = ocr::Selection { image_pages: cli.ocr_image_pages, text_pages: cli.ocr_text_pages };
+	if ocr.any() {
+		// After the slice, so that a page range is read from the pages it kept rather than from
+		// the whole book, and after the password is settled, so an encrypted document is opened
+		// once with the password rather than twice without it.
+		//
+		// The pass replaces what each page had with the words read off its picture, so what is
+		// left of a page that was read is its text and nothing else. A page the engine read
+		// nothing from keeps what it had, which is why this is not the same as stripping every
+		// instruction afterwards.
+		ocr::pages(&mut doc, &context.file_path, context.password.as_deref(), ocr)?;
+	}
 	let handle = paperback_core::document::DocumentHandle::new(doc);
 	let is_markdown = !cli.metadata && matches!(cli.format, Format::Markdown);
 	let result = if cli.metadata {

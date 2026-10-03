@@ -115,6 +115,15 @@ pub struct ParserContext {
 	/// paragraphs they were wrapped from; when `false`, every line stands on its own. Off is
 	/// for documents whose line breaks are the content, such as code listings and poetry.
 	pub join_pdf_paragraphs: bool,
+	/// Whether the lines a document repeats at its pages' edges are taken out of the text.
+	///
+	/// On by default, which is what a reader of the app expects and what every document read so
+	/// far has been given. It is a judgement rather than a fact, though: a line is taken out for
+	/// repeating on four or more pages, and on some documents that catches the tail of a sentence
+	/// that happens to fall at a page break, which is content rather than furniture. A caller that
+	/// would rather keep every word than have a tidy page edge can turn it off, and should expect
+	/// a running head on every page in exchange.
+	pub strip_running_text: bool,
 }
 
 impl ParserContext {
@@ -126,12 +135,21 @@ impl ParserContext {
 			forced_extension: None,
 			render_tables_inline: true,
 			join_pdf_paragraphs: true,
+			strip_running_text: true,
 		}
 	}
 
 	#[must_use]
 	pub fn with_password(mut self, password: String) -> Self {
 		self.password = Some(password);
+		self
+	}
+
+	/// Sets whether repeated page-edge lines are taken out. See
+	/// [`ParserContext::strip_running_text`].
+	#[must_use]
+	pub const fn with_strip_running_text(mut self, strip: bool) -> Self {
+		self.strip_running_text = strip;
 		self
 	}
 

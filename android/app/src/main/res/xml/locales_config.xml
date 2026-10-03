@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The languages Android offers on Paperback's page in the Settings app, so a reader can choose one for Paperback alone. One per po/<lang>.po, which LocalesConfigTest checks. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+	<locale android:name="en" />
+	<locale android:name="bs" />
+	<locale android:name="cs" />
+	<locale android:name="de" />
+	<locale android:name="es" />
+	<locale android:name="fi" />
+	<locale android:name="fr" />
+	<locale android:name="ja" />
+	<locale android:name="nl" />
+	<locale android:name="pl" />
+	<locale android:name="pt-BR" />
+	<locale android:name="ru" />
+	<locale android:name="sr" />
+	<locale android:name="uk" />
+	<locale android:name="vi" />
+	<locale android:name="zh-CN" />
+</locale-config>

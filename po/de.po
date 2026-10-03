@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-30 16:44+0000\n"
+"POT-Creation-Date: 2026-10-01 11:24-0600\n"
 "PO-Revision-Date: 2026-09-24 20:59+0200\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -1033,6 +1033,7 @@ msgid "&Shift"
 msgstr "&Umschalt"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
 msgid "&Win"
 msgstr "&Win"
 
@@ -2958,29 +2959,21 @@ msgstr "Kein Parser für die Erweiterung .{} gefunden"
 msgid "All parsers failed for extension: .{}"
 msgstr "Alle Parser für die Erweiterung .{} fehlgeschlagen"
 
-msgid "Unknown update file format."
-msgstr "Unbekanntes Update-Dateiformat."
+#, fuzzy
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Läuft nicht aus einem AppImage; Selbstaktualisierung nicht möglich."
+
+msgid "Failed to get current exe path"
+msgstr "Fehler beim Abrufen des aktuellen Exe-Pfads"
+
+msgid "Failed to launch update script"
+msgstr "Fehler beim Starten des Update-Skripts"
 
 msgid "Failed to open disk image"
 msgstr "Das Disk-Image konnte nicht geöffnet werden"
 
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
 msgstr "Das Update wurde heruntergeladen und das Disk-Image geöffnet. Beende %s und ziehe die neue Version in den Ordner Applications, um die Installation abzuschließen."
-
-msgid "Update Ready"
-msgstr "Update bereit"
-
-msgid "Failed to get current exe path"
-msgstr "Fehler beim Abrufen des aktuellen Exe-Pfads"
-
-msgid "Failed to launch installer script"
-msgstr "Fehler beim Starten des Installationsskripts"
-
-msgid "Failed to launch update script"
-msgstr "Fehler beim Starten des Update-Skripts"
-
-msgid "Update failed"
-msgstr "Update fehlgeschlagen"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -3012,6 +3005,12 @@ msgstr "%s Update"
 msgid "Downloading update..."
 msgstr "Update wird heruntergeladen..."
 
+msgid "Update failed"
+msgstr "Update fehlgeschlagen"
+
+msgid "Update Ready"
+msgstr "Update bereit"
+
 msgid "No updates available."
 msgstr "Keine Updates verfügbar."
 
@@ -3027,19 +3026,19 @@ msgstr "Die Sicherheitsüberprüfung ist fehlgeschlagen. Das Update wurde mögli
 msgid "Security Error"
 msgstr "Sicherheitsfehler"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d Stunde"
 msgstr[1] "%d Stunden"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d Minute"
 msgstr[1] "%d Minuten"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d Sekunde"
@@ -3052,6 +3051,16 @@ msgstr "Tastenkombination für {} festlegen"
 #. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 msgid "Configure shortcut for {}:"
 msgstr "Tastenkombination für {} konfigurieren:"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+#, fuzzy
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+#, fuzzy
+msgid "&Option"
+msgstr "&Option"
 
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr "Tipp: Klicke in das Tastenfeld und drücke die gewünschte Tastenkombination."
@@ -3094,6 +3103,15 @@ msgstr "Auf Standard zu&rücksetzen"
 msgid "Reset &All to Defaults"
 msgstr "&Alle auf Standard zurücksetzen"
 
+#, fuzzy
+msgid "A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key from every other program."
+msgstr "Eine systemweite Tastenkombination benötigt Ctrl, Alt oder Win, sonst würde sie diesen Tasten-Zuschlag jedem anderen Programm wegnehmen."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+#, fuzzy
+msgid "Shortcut Not Allowed"
+msgstr "Tastenkombination nicht zulässig"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
 msgstr "'{}' ist bereits '{}' zugeordnet. Neu für '{}' zuordnen?"
@@ -3102,7 +3120,7 @@ msgstr "'{}' ist bereits '{}' zugeordnet. Neu für '{}' zuordnen?"
 msgid "Shortcut Conflict"
 msgstr "Tastenkonflikt"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 msgid "Reset all shortcuts to their default values?"
 msgstr "Alle Tastenkombinationen auf ihre Standardwerte zurücksetzen?"
 
@@ -4213,6 +4231,12 @@ msgstr "Originaldatei"
 #: kt
 msgid "Settings exported"
 msgstr "Einstellungen exportiert"
+
+#~ msgid "Unknown update file format."
+#~ msgstr "Unbekanntes Update-Dateiformat."
+
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Fehler beim Starten des Installationsskripts"
 
 #~ msgid "%d char"
 #~ msgid_plural "%d chars"

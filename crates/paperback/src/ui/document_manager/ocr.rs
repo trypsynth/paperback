@@ -48,6 +48,8 @@ pub(super) struct OcrJob {
 	batch: bool,
 	/// Pages whose text has made it into the document so far, for the closing announcement.
 	recognized: usize,
+	/// Stopped by a re-read rather than by the reader, so its remaining flushes are dropped and nothing is announced.
+	quiet_cancel: bool,
 }
 
 /// Whether a document is a PDF, which is what the paragraph joining setting is about. The
@@ -86,9 +88,12 @@ impl DocumentManager {
 
 	/// Asks a running batch to stop after the page it is on. The completion path announces how
 	/// much was recognized before the stop, so there is nothing to announce here.
-	pub fn cancel_ocr(&mut self) {
-		if let Some(job) = self.active_tab().and_then(|tab| tab.ocr_job.as_ref()) {
+	///
+	/// `quiet` is for a stop that comes from re-reading the document, where the count would describe discarded text.
+	pub fn cancel_ocr(&mut self, quiet: bool) {
+		if let Some(job) = self.active_tab_mut().and_then(|tab| tab.ocr_job.as_mut()) {
 			job.cancel.store(true, Ordering::Relaxed);
+			job.quiet_cancel = quiet;
 		}
 	}
 
@@ -172,7 +177,7 @@ impl DocumentManager {
 		match worker {
 			Ok(_) => {
 				if let Some(tab) = self.active_tab_mut() {
-					tab.ocr_job = Some(OcrJob { cancel, batch, recognized: 0 });
+					tab.ocr_job = Some(OcrJob { cancel, batch, recognized: 0, quiet_cancel: false });
 				}
 			}
 			Err(err) => {
@@ -184,11 +189,17 @@ impl DocumentManager {
 
 	/// Folds a group of recognized pages into the document. Called on the UI thread from the
 	/// worker, once per flush.
+	///
+	/// Drops a flush for a job stopped by a re-read: the worker only checks the cancel flag between pages, so pages recognized before F5 can still arrive after it.
 	pub(crate) fn apply_ocr_results(&mut self, file_path: &Path, results: Vec<PageResult>) {
 		let label = self.live_region_label;
 		let Some(index) = self.tabs.iter().position(|tab| tab.file_path.as_path() == file_path) else {
 			return;
 		};
+		if self.tabs[index].ocr_job.as_ref().is_some_and(|job| job.quiet_cancel) {
+			tracing::debug!(path = %file_path.display(), "dropping an ocr flush for a job the reader stopped by re-reading");
+			return;
+		}
 		let is_active = self.active_tab_index() == Some(index);
 		// An OCR engine reads a page a printed line at a time, so its text arrives broken at
 		// every line end. The reader who asked for wrapped lines to be joined asked about the
@@ -250,13 +261,20 @@ impl DocumentManager {
 	}
 
 	/// Announces batch progress. Called on the UI thread from the worker.
+	///
+	/// Silent for a job stopped by a re-read, or a queued count would cut off "Document reloaded."
 	pub(crate) fn announce_ocr_progress(&self, done: usize, total: usize) {
+		if self.active_tab().is_some_and(|tab| tab.ocr_job.as_ref().is_some_and(|job| job.quiet_cancel)) {
+			return;
+		}
 		// TRANSLATORS: Batch OCR progress announcement; the two %d placeholders are the pages done and the total pages
 		let message = t("OCR %d of %d.").replacen("%d", &done.to_string(), 1).replacen("%d", &total.to_string(), 1);
 		announce(self.live_region_label, message);
 	}
 
 	/// Clears the job and announces the outcome. Called on the UI thread when the worker ends.
+	///
+	/// Silent for a job stopped by a re-read, whose pages the re-read threw away.
 	pub(crate) fn finish_ocr(&mut self, file_path: &Path, canceled: bool) {
 		let label = self.live_region_label;
 		let Some(tab) = self.tabs.iter_mut().find(|tab| tab.file_path.as_path() == file_path) else {
@@ -265,6 +283,9 @@ impl DocumentManager {
 		let Some(job) = tab.ocr_job.take() else {
 			return;
 		};
+		if job.quiet_cancel {
+			return;
+		}
 		if !job.batch {
 			let message = if job.recognized > 0 {
 				// TRANSLATORS: Announced after OCR replaces an image-only page with the recognized text
