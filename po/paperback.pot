@@ -1067,6 +1067,10 @@ msgstr ""
 msgid "&Join wrapped lines into paragraphs in PDFs"
 msgstr ""
 
+#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "&Strip page headers and footers"
+msgstr ""
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr ""

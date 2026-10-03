@@ -95,11 +95,12 @@ impl Default for Document {
 pub struct ParseSettings {
 	pub render_tables_inline: bool,
 	pub join_pdf_paragraphs: bool,
+	pub strip_running_text: bool,
 }
 
 impl Default for ParseSettings {
 	fn default() -> Self {
-		Self { render_tables_inline: true, join_pdf_paragraphs: true }
+		Self { render_tables_inline: true, join_pdf_paragraphs: true, strip_running_text: true }
 	}
 }
 
@@ -175,6 +176,7 @@ impl ParserContext {
 	pub const fn with_parse_settings(mut self, settings: ParseSettings) -> Self {
 		self.render_tables_inline = settings.render_tables_inline;
 		self.join_pdf_paragraphs = settings.join_pdf_paragraphs;
+		self.strip_running_text = settings.strip_running_text;
 		self
 	}
 }
@@ -217,5 +219,15 @@ mod tests {
 		assert_eq!(context.file_path, "book.epub");
 		assert_eq!(context.password.as_deref(), Some("secret"));
 		assert_eq!(context.forced_extension.as_deref(), Some("txt"));
+	}
+
+	#[test]
+	fn parse_settings_reach_the_parser_context() {
+		let settings = ParseSettings { strip_running_text: false, ..ParseSettings::default() };
+		let context = ParserContext::new("book.pdf".to_string()).with_parse_settings(settings);
+		assert!(!context.strip_running_text);
+		// The other two move with it, so a partial override cannot quietly drop them.
+		assert!(context.render_tables_inline);
+		assert!(context.join_pdf_paragraphs);
 	}
 }

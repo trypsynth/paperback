@@ -676,6 +676,7 @@ fn parse_settings(cfg: &ConfigManager) -> ParseSettings {
 	ParseSettings {
 		render_tables_inline: cfg.get_app_bool("render_tables_inline", true),
 		join_pdf_paragraphs: cfg.get_app_bool("join_pdf_paragraphs", true),
+		strip_running_text: cfg.get_app_bool("strip_running_text", true),
 	}
 }
 
