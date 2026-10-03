@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: d5b08595bb9ff6e5; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,f994348b,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - версия 1.0
 
@@ -81,6 +81,7 @@ Paperback разработан для работы в первую очеред�
 * `Ctrl+F4` (macOS: `Cmd+W`): закрыть текущий документ.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): закрыть все открытые документы.
 * `Ctrl+Shift+T`: открыть снова последний закрытый документ.
+* `F5`: перечитать текущий документ с диска. Работает независимо от того, включена ли опция «Автоматическая перезагрузка измененных документов» в Параметры.
 * `Ctrl+R`: показать диалог «Все документы» (из последних документов).
 * `Ctrl+Q`: выход (только Windows; на macOS это находится в меню приложения).
 

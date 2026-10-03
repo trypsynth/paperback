@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 11:24-0600\n"
+"POT-Creation-Date: 2026-10-03 19:40+0000\n"
 "PO-Revision-Date: 2026-09-24 20:59+0200\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -193,6 +193,10 @@ msgstr "Notiz ansehen"
 msgid "Open Document"
 msgstr "Dokument öffnen"
 
+#. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+msgid "Document reloaded."
+msgstr "Dokument neu geladen."
+
 #. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -233,6 +237,16 @@ msgstr "&Letztes Dokument erneut öffnen"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Das zuletzt geladene Dokument öffnen"
+
+#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+#, fuzzy
+msgid "&Reload"
+msgstr "&Aktualisieren"
+
+#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
+#, fuzzy
+msgid "Re-read the current document from disk"
+msgstr "Aktuelles Dokument von der Festplatte neu laden"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 msgid "Clea&r Recent Documents"
@@ -1623,9 +1637,6 @@ msgstr "Ungültiges Format gewählt."
 msgid "Paperback"
 msgstr "Paperback"
 
-msgid "Document reloaded."
-msgstr "Dokument neu geladen."
-
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback kann keine Aktionen ausführen, während Web-View geöffnet ist."
@@ -2325,6 +2336,11 @@ msgstr "Alle schließen"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Reopen Last Closed"
 msgstr "Letztes Dokument erneut öffnen"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Reload"
+msgstr "Aktualisieren"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
@@ -4231,6 +4247,18 @@ msgstr "Originaldatei"
 #: kt
 msgid "Settings exported"
 msgstr "Einstellungen exportiert"
+
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt swift
+#, fuzzy
+msgid "Language"
+msgstr "Sprache"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt swift
+#, fuzzy
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr "Öffnet Paperback in der Einstellungs-App, wo die Sprache geändert werden kann."
 
 #~ msgid "Unknown update file format."
 #~ msgstr "Unbekanntes Update-Dateiformat."

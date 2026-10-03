@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 11:24-0600\n"
+"POT-Creation-Date: 2026-10-03 19:40+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -211,6 +211,11 @@ msgstr "Xem ghi chú"
 msgid "Open Document"
 msgstr "Mở tài liệu"
 
+#. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+#, fuzzy
+msgid "Document reloaded."
+msgstr "Đã tải lại tài liệu."
+
 #. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -260,6 +265,16 @@ msgstr "Mở lại &lần cuối cùng"
 #, fuzzy
 msgid "Reopen the last closed document"
 msgstr "Mở lại tài liệu vừa đóng"
+
+#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+#, fuzzy
+msgid "&Reload"
+msgstr "&Tải lại"
+
+#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
+#, fuzzy
+msgid "Re-read the current document from disk"
+msgstr "Tải lại tài liệu hiện tại từ đĩa"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 #, fuzzy
@@ -1874,10 +1889,6 @@ msgstr "Đã chọn định dạng không được hỗ trợ."
 msgid "Paperback"
 msgstr "Bìa mềm"
 
-#, fuzzy
-msgid "Document reloaded."
-msgstr "Đã tải lại tài liệu."
-
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 #, fuzzy
 msgid "Paperback cannot perform any actions while Web View is open."
@@ -2720,6 +2731,11 @@ msgstr "Đóng tất cả"
 #, fuzzy
 msgid "Reopen Last Closed"
 msgstr "Mở Lại Cuối Cùng Đã Đóng"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Reload"
+msgstr "Tải lại"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -5035,6 +5051,18 @@ msgstr "Tệp gốc"
 #, fuzzy
 msgid "Settings exported"
 msgstr "Các cài đặt đã được xuất"
+
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt swift
+#, fuzzy
+msgid "Language"
+msgstr "Ngôn ngữ"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt swift
+#, fuzzy
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr "Mở Paperback trong ứng dụng Cài đặt, nơi có thể thay đổi ngôn ngữ của nó."
 
 #, fuzzy
 #~ msgid "Unknown update file format."

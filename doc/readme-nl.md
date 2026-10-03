@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: d5b08595bb9ff6e5; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,f994348b,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -81,6 +81,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Ctrl+F4` (macOS: `Cmd+W`): Het huidige document sluiten.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Alle geopende documenten sluiten.
 * `Ctrl+Shift+T`: Het laatst gesloten document heropenen.
+* `F5`: Het huidige document opnieuw van schijf inlezen. Werkt ongeacht of "Automatisch gewijzigde documenten opnieuw laden" in Instellingen is ingeschakeld.
 * `Ctrl+R`: Het venster "Alle documenten" tonen (vanuit Recente documenten).
 * `Ctrl+Q`: Afsluiten (alleen Windows; op macOS staat dit in het appmenu).
 
