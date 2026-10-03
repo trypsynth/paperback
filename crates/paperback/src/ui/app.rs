@@ -362,3 +362,30 @@ fn send_ipc_command(command: &IpcCommand) {
 	#[cfg(target_os = "linux")]
 	pipe_unix::send(&payload);
 }
+
+/// The updater calls this on the UI thread only once its helper is ready. Force-close runs the
+/// normal persistence and audio cleanup without macOS's hide-on-close veto.
+#[cfg(target_os = "macos")]
+pub fn quit_for_update() {
+	if let Some(window) = main_window_from_ptr() {
+		window.frame().enable(false);
+		window.announce_update_restart();
+	}
+	// macOS posts live-region announcements on the next main run-loop iteration. Keep the
+	// window alive briefly so VoiceOver can receive it; never block the UI thread.
+	std::thread::spawn(|| {
+		std::thread::sleep(std::time::Duration::from_secs(2));
+		wxdragon::call_after(Box::new(finish_quit_for_update));
+		wxdragon::wake_up_idle();
+	});
+}
+
+#[cfg(target_os = "macos")]
+fn finish_quit_for_update() {
+	if let Some(window) = main_window_from_ptr() {
+		window.frame().close(true);
+	}
+	if let Some(app) = wxdragon::app::get_app_instance() {
+		app.exit_main_loop();
+	}
+}
