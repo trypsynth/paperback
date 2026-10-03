@@ -5,22 +5,28 @@ use clap::{Parser, ValueEnum};
 #[derive(Parser)]
 #[command(name = "pb", about = "Convert any document to text, HTML, or Markdown")]
 pub struct Cli {
-	/// Input document file
-	#[arg(required_unless_present = "list_formats")]
-	pub input: Option<PathBuf>,
+	/// Input document file, or files. `*` and `?` are expanded, so the same command line works on Windows
+	#[arg(required_unless_present = "list_formats", num_args = 1..)]
+	pub input: Vec<PathBuf>,
 	/// List the formats pb can read, and the extensions it knows them by
 	#[arg(long)]
 	pub list_formats: bool,
 	/// Output format
 	#[arg(short, long, default_value = "text")]
 	pub format: Format,
-	/// Write output to a file instead of stdout
-	#[arg(short, long)]
+	/// Write output to a file instead of stdout. Only for a single input; use --output-dir for several
+	#[arg(short, long, conflicts_with = "output_dir")]
 	pub output: Option<PathBuf>,
+	/// Write one file per input into this folder, named after each document
+	#[arg(long)]
+	pub output_dir: Option<PathBuf>,
+	/// Replace an output file that is already there, rather than leaving it alone
+	#[arg(long)]
+	pub force: bool,
 	/// Password for encrypted documents (omit to be prompted interactively)
 	#[arg(short, long)]
 	pub password: Option<String>,
-	/// Convert only these pages, as ranges: 5-10, 55, 80-end (comma or semicolon separated)
+	/// Convert only these pages of every input, as ranges: 5-10, 55, 80-end (comma or semicolon separated)
 	#[arg(long)]
 	pub pages: Option<String>,
 	/// Keep the headers and footers a document repeats from page to page, which are taken out by default as the app does
@@ -47,7 +53,7 @@ pub struct Cli {
 	pub verbose: bool,
 }
 
-#[derive(Clone, ValueEnum)]
+#[derive(Clone, Copy, ValueEnum)]
 pub enum Format {
 	#[value(alias = "txt")]
 	Text,
@@ -55,6 +61,18 @@ pub enum Format {
 	Html,
 	#[value(alias = "md")]
 	Markdown,
+}
+
+impl Format {
+	/// The extension a file of this format is given, which is what names it in `--output-dir`.
+	#[must_use]
+	pub const fn extension(self) -> &'static str {
+		match self {
+			Self::Text => "txt",
+			Self::Html => "html",
+			Self::Markdown => "md",
+		}
+	}
 }
 
 #[cfg(test)]
@@ -84,20 +102,65 @@ mod tests {
 	fn listing_the_formats_needs_no_input() {
 		let cli = parse(&["pb", "--list-formats"]);
 		assert!(cli.list_formats);
-		assert!(cli.input.is_none());
+		assert!(cli.input.is_empty());
 	}
 
 	#[test]
 	fn defaults_to_text_output_on_stdout() {
 		let cli = parse(&["pb", "book.epub"]);
-		assert_eq!(cli.input, Some(PathBuf::from("book.epub")));
+		assert_eq!(cli.input, [PathBuf::from("book.epub")]);
 		assert!(matches!(cli.format, Format::Text));
 		assert!(cli.output.is_none());
+		assert!(cli.output_dir.is_none());
+		assert!(!cli.force);
 		assert!(cli.password.is_none());
 		assert!(!cli.metadata);
 		assert!(!cli.no_prompt);
 		assert!(!cli.no_join_paragraphs);
 		assert!(!cli.verbose);
+	}
+
+	/// One file per argument, in the order given. A Windows shell hands `*.pdf` over as one
+	/// literal argument, so several can arrive having been named one at a time as well as several
+	/// having been expanded before pb saw them.
+	#[test]
+	fn takes_several_inputs() {
+		let cli = parse(&["pb", "a.epub", "b.pdf", "c.docx"]);
+		assert_eq!(cli.input, [PathBuf::from("a.epub"), PathBuf::from("b.pdf"), PathBuf::from("c.docx")]);
+	}
+
+	/// A pattern reaches the parser whole rather than being rejected as an option, so `inputs`
+	/// gets to expand it and say why when it matches nothing.
+	#[test]
+	fn a_pattern_reaches_the_parser_whole() {
+		assert_eq!(parse(&["pb", "*.pdf"]).input, [PathBuf::from("*.pdf")]);
+		assert_eq!(parse(&["pb", "books/*/ch?.epub"]).input, [PathBuf::from("books/*/ch?.epub")]);
+	}
+
+	#[test]
+	fn reads_the_output_directory_and_the_force_flag() {
+		let cli = parse(&["pb", "a.epub", "--output-dir", "out", "--force"]);
+		assert_eq!(cli.output_dir, Some(PathBuf::from("out")));
+		assert!(cli.force);
+		assert!(!parse(&["pb", "a.epub", "--output-dir", "out"]).force);
+	}
+
+	/// `--force` applies wherever the output lands: refusing to replace a named file as well as a
+	/// folder is the whole of it, and a flag that only guarded one of the two would leave the
+	/// other silently overwriting.
+	#[test]
+	fn the_force_flag_is_accepted_wherever_the_output_goes() {
+		assert!(parse(&["pb", "a.epub", "-o", "out.txt", "--force"]).force);
+		assert!(parse(&["pb", "a.epub", "-o", "out.txt", "-f", "md", "--force"]).force);
+		assert!(parse(&["pb", "a.epub", "--output-dir", "out", "--force"]).force);
+		assert!(!parse(&["pb", "a.epub", "-o", "out.txt"]).force);
+	}
+
+	/// Naming one file to write to and a folder to write into are two different instructions, and
+	/// taking both means guessing which one was meant.
+	#[test]
+	fn a_named_file_and_an_output_directory_are_mutually_exclusive() {
+		assert!(Cli::try_parse_from(["pb", "a.epub", "-o", "out.txt", "--output-dir", "out"]).is_err());
 	}
 
 	#[test]
@@ -199,6 +262,19 @@ mod tests {
 	#[test]
 	fn treats_awkward_paths_as_input() {
 		let cli = parse(&["pb", "--", "-weird name.txt"]);
-		assert_eq!(cli.input, Some(PathBuf::from("-weird name.txt")));
+		assert_eq!(cli.input, [PathBuf::from("-weird name.txt")]);
+	}
+
+	/// Each format names its files differently, and a reader who asked for Markdown should not
+	/// find `.txt` beside their book wondering what happened to the request.
+	#[test]
+	fn every_format_names_its_files() {
+		assert_eq!(Format::Text.extension(), "txt");
+		assert_eq!(Format::Html.extension(), "html");
+		assert_eq!(Format::Markdown.extension(), "md");
+		let mut extensions = [Format::Text, Format::Html, Format::Markdown].map(Format::extension).to_vec();
+		extensions.sort_unstable();
+		extensions.dedup();
+		assert_eq!(extensions.len(), 3, "two formats would write over each other's names");
 	}
 }

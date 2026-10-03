@@ -52,6 +52,19 @@ impl PageRange {
 		self.end().unwrap_or(page_count)
 	}
 
+	/// This range written the way the reader would have written it, for naming a file after it.
+	///
+	/// A range whose ends are the same is one page, and is written as the number rather than as
+	/// `7-7`: `book.p7.md` reads as the page that was asked for, where `book.p7-7.md` reads as a
+	/// range typed the long way round.
+	fn label(&self) -> String {
+		match *self {
+			Self::Fixed(start, end) if start == end => start.to_string(),
+			Self::Fixed(start, end) => format!("{start}-{end}"),
+			Self::ToEnd(start) => format!("{start}-end"),
+		}
+	}
+
 	/// The first page of this range that a document of `page_count` pages does not have, which is
 	/// what an error should name.
 	///
@@ -171,6 +184,22 @@ impl PageSelection {
 			}
 		}
 		self.pages(breaks.len())
+	}
+
+	/// What this selection asks for, in a form to put in a file name: `5-10_20`, or `80-end` for
+	/// a range that runs to the last page.
+	///
+	/// Ranges are joined with an underscore rather than the hyphen that holds one together, so
+	/// that `--pages 1-5;20` is `p1-5_20` and not `p1-5-20`. The hyphen version reads as a single
+	/// range from 1 to 520, which is not what was asked for and not a mistake anyone would notice
+	/// until they opened the file.
+	///
+	/// The merged ranges, not the specification as typed, so that `--pages 5-10,7-12` and
+	/// `--pages 5-12` name the same output. Two files differing only in how their reader happened
+	/// to type the same request is a puzzle with no payoff.
+	#[must_use]
+	pub fn label(&self) -> String {
+		self.0.iter().map(PageRange::label).collect::<Vec<_>>().join("_")
 	}
 }
 
