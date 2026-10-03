@@ -1,4 +1,10 @@
-use std::{env, fmt::Write as _, fs, io, process};
+use std::{
+	env,
+	fmt::Write as _,
+	fs,
+	io::{self, Write as _},
+	process,
+};
 
 use anyhow::{Context, Result};
 use clap::Parser;
@@ -22,8 +28,7 @@ fn main() -> Result<()> {
 	init_logging(cli.verbose);
 	point_at_pdfium();
 	if cli.list_formats {
-		print!("{}", formats::listing());
-		return Ok(());
+		return write_stdout(&formats::listing());
 	}
 	// clap holds the input to being there unless the formats are all that was asked for.
 	let input = cli.input.expect("an input file");
@@ -43,8 +48,7 @@ fn main() -> Result<()> {
 		return if let Some(path) = cli.output {
 			fs::write(&path, &html).with_context(|| format!("failed to write {}", path.display()))
 		} else {
-			print!("{html}");
-			Ok(())
+			write_stdout(&html)
 		};
 	}
 	let mut context =
@@ -112,9 +116,27 @@ fn main() -> Result<()> {
 		}
 		.with_context(|| format!("failed to write {}", path.display()))
 	} else {
-		print!("{result}");
-		Ok(())
+		write_stdout(&result)
 	}
+}
+
+/// Writes the output to stdout, treating a reader that stopped early as a normal end.
+///
+/// `pb book.pdf | head` closes the pipe once it has its lines; `print!` panics on the failed
+/// write, which reads as a crash in a script that only wanted the start of a book.
+fn write_stdout(text: &str) -> Result<()> {
+	let mut out = io::stdout().lock();
+	match out.write_all(text.as_bytes()).and_then(|()| out.flush()) {
+		Err(e) if is_closed_pipe(&e) => Ok(()),
+		result => result.context("failed to write to stdout"),
+	}
+}
+
+/// Whether a write failed because the other end of the pipe has gone away. Windows reports a
+/// closed pipe as `ERROR_NO_DATA` (232) as well as the `ERROR_BROKEN_PIPE` that maps to
+/// [`io::ErrorKind::BrokenPipe`].
+fn is_closed_pipe(error: &io::Error) -> bool {
+	error.kind() == io::ErrorKind::BrokenPipe || (cfg!(windows) && error.raw_os_error() == Some(232))
 }
 
 /// Points the PDF reader at the Pdfium library shipped beside this executable, the same way the
