@@ -79,6 +79,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+F4` (macOS:ssä `Cmd+W`): Sulje nykyinen asiakirja.
 * `Ctrl+Shift+F4` (macOS:ssä `Cmd+Shift+W`): Sulje kaikki avoimet asiakirjat.
 * `Ctrl+Shift+T`: Avaa viimeksi suljetun asiakirjan uudelleen.
+* `F5`: Päivitä asiakirjan sisältö. Tämä toimii riippumatta siitä, onko "Päivitä muuttuneet asiakirjat automaattisesti" -asetus käytössä.
 * `Ctrl+R`: Näytä ”Kaikki asiakirjat” -valintaikkuna (Viimeksi avatut -valikosta).
 * `Ctrl+Q`: Lopeta (vain Windowsissa; macOS:ää käytettäessä tämä komento löytyy sovellusvalikosta).
 
@@ -198,7 +199,7 @@ Näytön alareunassa olevassa palkissa ovat vasemmalta oikealle:
 
 * Siirtymistapa, kuten kappale, otsikko, sivu tai linkki. Vaihda sitä pyyhkäisemällä ylös- tai alaspäin.
 * Edellinen-, Toista- ja Seuraava-painikkeet. Edellinen- ja Seuraava-painikkeilla siirrytään valitun siirtymistavan mukaisesti.
-* Puhenopeus. Muuta Paperbackin lukunopeutta pyyhkäisemällä ylös- tai alaspäin.
+* Puhenopeus. Muuta Paperbackin lukunopeutta pyyhkäisemällä ylös tai alas.
 
 Voit siirtyä valitun siirtymistavan mukaisesti myös pyyhkäisemällä Toista-painikkeen kohdalla ylös- tai alaspäin, jolloin Edellinen- ja Seuraava-painikkeita ei tarvitse käyttää. Jos käytät vain tätä tapaa, voit piilottaa painikkeet ruudunlukijalta Piilota Edellinen- ja Seuraava-painikkeet -asetuksella. Ylöspäin pyyhkäisy siirtää eteenpäin -asetuksella valitaan, kumpaan suuntaan pyyhkäisyllä siirrytään.
 
@@ -218,7 +219,7 @@ Muut toiminnot löytyvät Lisää vaihtoehtoja -valikosta. Osa niistä toimii so
 * **Uniajastin:** pysäyttää lukemisen 5, 10, 15, 30, 45 tai 60 minuutin kuluttua tai itse valitsemanasi ajankohtana. Avaa se uudelleen ajastuksen ollessa käynnissä nähdäksesi jäljellä olevan ajan tai peruuttaaksesi sen.
 * **Ohje:** avaa tämän lueminut-tiedoston.
 * **Asetukset:**
-    * **Tekstistä puheeksi:** ääni, nopeus ja korkeus, Toista näyte -painike arvojen vaikutuksen kuuntelemiseksi sekä kappaleiden välinen tauko. Androidissa voit valita myös puhemoottorin. iOS:ssa täältä löytyy myös käyttäjän sanasto, johon lisättävillä säännöillä on mahdollista muuttaa sanojen ääntämistä kaikilla tai vain tietyillä äänillä.
+    * **Tekstistä puheeksi:** ääni, puhenopeus ja äänenkorkeus, Toista näyte -painike arvojen vaikutuksen kuuntelemiseksi sekä kappaleiden välinen tauko. Androidissa voit valita myös puhemoottorin. iOS:ssa täältä löytyy myös käyttäjän sanasto, johon lisättävillä säännöillä on mahdollista muuttaa sanojen ääntämistä kaikilla tai vain tietyillä äänillä.
     * **Luettavuus:** tekstin koko, rivi- ja kappaleväli, tasaus sekä suurikontrastinen teksti. iOS:ssa on myös vaalea ja tumma ulkoasu.
     * **Toiminta:** avataanko asiakirjat uudelleen sovelluksen käynnistyessä, mihin suuntaan toistopainikkeen pyyhkäisy siirtää ja piilotetaanko Edellinen- ja Seuraava-painikkeet. Android-versiossa täällä on myös sovelluksen sisäinen tiedostoselain.
 
@@ -403,7 +404,7 @@ Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:
 
 iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversio, ja niissä on lisäksi seuraavat ominaisuudet:
 
-* Tekstistä puheeksi -toiminnolla lukeminen valitsemallasi äänellä, nopeudella ja äänenkorkeudella, puhenopeuden säätö suoraan lukupalkissa sekä valinnainen tauko kappaleiden välissä.
+* Tekstistä puheeksi -toiminnolla lukeminen valitsemallasi äänellä, nopeudella ja äänenkorkeudella, puhenopeuden muuttaminen lukupalkissa sekä valinnainen tauko kappaleiden välissä.
 * DAISY-, M4B- ja MP3-äänikirjojen toisto, joka jatkuu taustalla ja lukitusnäytöllä.
 * Navigointi lukupalkista otsikoiden, sivujen, linkkien, taulukoiden, luetteloiden ja muiden elementtien perusteella, minkä lisäksi käytössä ovat sisällysluettelo ja Etsi-toiminto.
 * Uniajastin, sanamäärä ja asiakirjan vienti sekä iOS:ssa käyttäjän sanasto. iOS:ssa vienti tapahtuu jakovalikosta, joten kirjan voi lähettää toiseen sovellukseen tai tallentaa Tiedostot-appiin joko muussa tai alkuperäisessä tiedostomuodossa.
@@ -489,7 +490,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 
 ##### Pikanäppäimet
 * Helppokäyttöinen valintaikkuna, jossa voi muokata kaikkia sovelluksen pikanäppäimiä.
-* Muokattava pikanäppäin Paperbackin palauttamiseen ilmoitusalueelta.
+* Muokattava pikanäppäin Paperbackin palauttamiseen ilmaisinalueelta.
 
 ##### Kielet
 * Hollannin-, puolan- ja suomenkieliset käännökset.
@@ -634,7 +635,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Lisätty tuki Flat Open Document -esityksille.
 * Lisätty tuki erottimiin siirtymiselle S- ja Shift+S-näppäimillä.
 * Kaikki yli 300 merkin pituiset siirtymät lisätään nyt automaattisesti navigointihistoriaan.
-* Korjattu Paperbackin ikkunan palautus ilmoitusalueelta.
+* Korjattu Paperbackin ikkunan palautus ilmaisinalueelta.
 * Korjattu Markdown-asiakirjojen näyttäminen selainnäkymässä raakatekstinä muotoillun HTML:n sijaan.
 * Korjattu Markdown-taulukoiden virheellinen muotoilu.
 * Paperback varoittaa nyt yritettäessä avata pelkkiä kuvia sisältäviä PDF-tiedostoja.
