@@ -508,7 +508,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::PreviousNote,
 		// TRANSLATORS: Menu item in the Bookmarks menu to move to the previous note in the document.
-		label: || t("Previous &Note"),
+		label: || t("Previous Not&e"),
 		// TRANSLATORS: Status-bar help text for the Bookmarks > Previous Note menu item.
 		help: Some(|| t("Go to previous note")),
 		enable: Enable::HasDocument,
@@ -544,7 +544,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::JumpToNotesOnly,
 		// TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only notes.
-		label: || t("Jump to Notes &Only..."),
+		label: || t("Jump to Notes Onl&y..."),
 		// TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Notes Only menu item.
 		help: Some(|| t("Show notes only")),
 		enable: Enable::HasDocument,
@@ -562,7 +562,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::ToggleBookmark,
 		// TRANSLATORS: Menu item in the Bookmarks menu to add or remove a bookmark at the current reading position.
-		label: || t("Toggle &Bookmark"),
+		label: || t("&Toggle Bookmark"),
 		help: None,
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::toggle),
@@ -570,7 +570,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::BookmarkWithNote,
 		// TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
-		label: || t("Bookmark with &Note"),
+		label: || t("Bookmark &with Note"),
 		help: None,
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::with_note),
@@ -594,7 +594,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::SetSelectionStart,
 		// TRANSLATORS: Menu item in the Edit menu to mark the current position as the beginning of a selection to copy from later.
-		label: || t("Set Selection St&art"),
+		label: || t("Set &Selection Start"),
 		// TRANSLATORS: Status-bar help text for the Edit > Set Selection Start menu item.
 		help: Some(|| t("Mark the beginning of a selection to copy from")),
 		enable: Enable::HasDocument,
@@ -603,7 +603,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::CopyFromSelectionStart,
 		// TRANSLATORS: Menu item in the Edit menu to copy everything from the marked beginning of a selection to the current position.
-		label: || t("&Copy from Selection Start"),
+		label: || t("Copy fro&m Selection Start"),
 		// TRANSLATORS: Status-bar help text for the Edit > Copy from Selection Start menu item.
 		help: Some(|| t("Copy from the beginning of the selection to here")),
 		// Deliberately not gated on a mark being set: the command has to stay enabled so pressing
@@ -653,7 +653,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::IncreaseAudioSeekAmount,
 		// TRANSLATORS: Menu item in the Audio menu to increase the amount of time each audio seek skips.
-		label: || t("&Increase Audio Seek Amount"),
+		label: || t("Increase Audio Seek &Amount"),
 		// TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 		help: Some(|| t("Increase how far seeking the audio narration moves")),
 		enable: Enable::Always,
@@ -662,7 +662,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::DecreaseAudioSeekAmount,
 		// TRANSLATORS: Menu item in the Audio menu to decrease the amount of time each audio seek skips.
-		label: || t("&Decrease Audio Seek Amount"),
+		label: || t("Decrease Audio Seek Am&ount"),
 		// TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 		help: Some(|| t("Decrease how far seeking the audio narration moves")),
 		enable: Enable::Always,

@@ -110,6 +110,67 @@ mod tests {
 		}
 	}
 
+	/// The letter after the label's `&`, lowercased; the shortcut after a tab is not part of it.
+	fn access_key(label: &str) -> Option<char> {
+		let text = label.split('\t').next().unwrap_or(label);
+		let mut chars = text.chars();
+		while let Some(c) = chars.next() {
+			if c == '&' {
+				match chars.next() {
+					Some('&') => {}
+					Some(key) => return key.to_lowercase().next(),
+					None => return None,
+				}
+			}
+		}
+		None
+	}
+
+	fn top_level_labels(entries: &[MenuEntry]) -> Vec<&str> {
+		entries
+			.iter()
+			.filter_map(|entry| match entry {
+				MenuEntry::Item(spec) | MenuEntry::Check(spec, _) => Some(spec.label.as_str()),
+				MenuEntry::Submenu { label, .. } => Some(label.as_str()),
+				MenuEntry::Separator | MenuEntry::Disabled(_) => None,
+			})
+			.collect()
+	}
+
+	/// One line per label whose access key an earlier label already has.
+	fn access_key_clashes<'a>(labels: impl IntoIterator<Item = &'a str>) -> Vec<String> {
+		let mut seen: Vec<(char, &str)> = Vec::new();
+		let mut clashes = Vec::new();
+		for label in labels {
+			let Some(key) = access_key(label) else { continue };
+			if let Some((_, earlier)) = seen.iter().find(|(seen_key, _)| *seen_key == key) {
+				clashes.push(format!("{earlier:?} and {label:?} share {key:?}"));
+			} else {
+				seen.push((key, label));
+			}
+		}
+		clashes
+	}
+
+	#[cfg(not(target_os = "macos"))]
+	#[test]
+	fn access_keys_are_unique_at_the_top_of_each_menu() {
+		let menus = menus(&ConfigManager::new(), true);
+		let titles: Vec<String> = menus.iter().map(|menu| title(menu.category)).collect();
+		let mut clashes: Vec<String> = access_key_clashes(titles.iter().map(String::as_str))
+			.into_iter()
+			.map(|c| format!("menu bar: {c}"))
+			.collect();
+		for menu in &menus {
+			clashes.extend(
+				access_key_clashes(top_level_labels(&menu.entries))
+					.into_iter()
+					.map(|c| format!("{:?} menu: {c}", menu.category)),
+			);
+		}
+		assert!(clashes.is_empty(), "\n{}", clashes.join("\n"));
+	}
+
 	#[test]
 	fn only_announce_percentage_is_keyboard_only() {
 		let keyboard_only: Vec<ActionId> =

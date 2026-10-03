@@ -6,7 +6,7 @@ use crate::ui::{commands, menu_ids};
 
 pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	// TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
-	let word_wrap_label = format_menu_label(&t("Word w&rap"), ActionId::ToggleWordWrap, config);
+	let word_wrap_label = format_menu_label(&t("W&ord wrap"), ActionId::ToggleWordWrap, config);
 	// TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 	let word_wrap_help = t("Toggle word wrap");
 	// TRANSLATORS: Checkable menu item in the View menu that toggles full screen mode.

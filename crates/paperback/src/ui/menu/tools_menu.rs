@@ -14,7 +14,7 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	// TRANSLATORS: Status-bar help text for the Document Info menu item.
 	let doc_info_help = t("Show document information");
 	// TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
-	let sleep_label = format_menu_label(&t("&Sleep Timer..."), ActionId::SleepTimer, config);
+	let sleep_label = format_menu_label(&t("Sleep &Timer..."), ActionId::SleepTimer, config);
 	// TRANSLATORS: Menu item in the Tools menu to open the dialog for customizing keyboard shortcuts.
 	let shortcuts_label =
 		format_menu_label(&t("Customize &Keyboard Shortcuts..."), ActionId::CustomizeShortcuts, config);
