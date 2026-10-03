@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: d5b08595bb9ff6e5; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,f994348b,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versão 1.0
 
@@ -81,6 +81,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 * `Ctrl+F4` (macOS: `Cmd+W`): Fechar o documento atual.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Fechar todos os documentos abertos.
 * `Ctrl+Shift+T`: Reabrir o último documento fechado.
+* `F5`: Reler o documento atual do disco. Funciona independentemente de "Recarregar automaticamente documentos alterados" estar ativado em Configurações.
 * `Ctrl+R`: Mostrar o diálogo "Todos os Documentos" (de Documentos Recentes).
 * `Ctrl+Q`: Sair (apenas Windows; no macOS está no menu do aplicativo).
 

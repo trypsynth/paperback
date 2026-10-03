@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 11:24-0600\n"
+"POT-Creation-Date: 2026-10-03 19:40+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -211,6 +211,11 @@ msgstr "Afficher la note"
 msgid "Open Document"
 msgstr "Ouvrir un document"
 
+#. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+#, fuzzy
+msgid "Document reloaded."
+msgstr "Document rechargé."
+
 #. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -257,6 +262,16 @@ msgstr "Rouvrir le &dernier fermé"
 #, fuzzy
 msgid "Reopen the last closed document"
 msgstr "Rouvrir le dernier document fermé"
+
+#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+#, fuzzy
+msgid "&Reload"
+msgstr "&Recharger"
+
+#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
+#, fuzzy
+msgid "Re-read the current document from disk"
+msgstr "Relire le document actuel depuis le disque"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 #, fuzzy
@@ -1839,10 +1854,6 @@ msgstr "Format non pris en charge sélectionné."
 msgid "Paperback"
 msgstr "Paperback"
 
-#, fuzzy
-msgid "Document reloaded."
-msgstr "Document rechargé."
-
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 #, fuzzy
 msgid "Paperback cannot perform any actions while Web View is open."
@@ -2619,6 +2630,11 @@ msgstr "Fermer tout"
 #, fuzzy
 msgid "Reopen Last Closed"
 msgstr "Rouvrir le dernier fermé"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Reload"
+msgstr "Recharger"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -4930,6 +4946,18 @@ msgstr "Fichier d'origine"
 #, fuzzy
 msgid "Settings exported"
 msgstr "Paramètres exportés"
+
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt swift
+#, fuzzy
+msgid "Language"
+msgstr "Langue"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt swift
+#, fuzzy
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr "Ouvre Paperback dans l'application Paramètres, où sa langue peut être modifiée."
 
 #~ msgid "Unknown update file format."
 #~ msgstr "Format de fichier de mise à jour inconnu."
