@@ -11,20 +11,6 @@ fn groups(config: &ConfigManager) -> Vec<(String, String, Vec<MenuEntry>)> {
 	let goto_page_label = format_menu_label(&t("Go to &Page"), ActionId::GoToPage, config);
 	let mut pages = vec![item(menu_ids::GO_TO_PAGE, goto_page_label)];
 	pages.extend(commands::menu_entries(&[ActionId::PreviousPage, ActionId::NextPage], config));
-	let mut bookmarks = commands::menu_entries(
-		&[ActionId::PreviousBookmark, ActionId::NextBookmark, ActionId::PreviousNote, ActionId::NextNote],
-		config,
-	);
-	bookmarks.push(MenuEntry::Separator);
-	bookmarks.extend(commands::menu_entries(
-		&[
-			ActionId::JumpToAllBookmarks,
-			ActionId::JumpToBookmarksOnly,
-			ActionId::JumpToNotesOnly,
-			ActionId::ViewNoteText,
-		],
-		config,
-	));
 	vec![
 		(
 			// TRANSLATORS: Label for the Sections submenu in the compact Go menu.
@@ -64,13 +50,6 @@ fn groups(config: &ConfigManager) -> Vec<(String, String, Vec<MenuEntry>)> {
 			// TRANSLATORS: Status-bar help text for the Go > Pages submenu.
 			t("Navigate by pages"),
 			pages,
-		),
-		(
-			// TRANSLATORS: Label for the Bookmarks submenu in the compact Go menu.
-			t("&Bookmarks"),
-			// TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
-			t("Navigate by bookmarks"),
-			bookmarks,
 		),
 		(
 			// TRANSLATORS: Label for the Links submenu in the compact Go menu.

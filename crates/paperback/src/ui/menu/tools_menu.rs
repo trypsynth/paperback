@@ -79,8 +79,6 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		submenu(import_export_label, import_export_help, import_export),
 		MenuEntry::Separator,
 	];
-	entries.extend(commands::menu_entries(&[ActionId::ToggleBookmark, ActionId::BookmarkWithNote], config));
-	entries.push(MenuEntry::Separator);
 	// TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
 	let select_copy_label = t("Select and &copy");
 	// TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.

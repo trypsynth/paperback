@@ -229,8 +229,6 @@ impl ActionId {
 			| Self::GoBack
 			| Self::GoForward
 			| Self::AnnouncePercent
-			| Self::SetTemporaryBookmark
-			| Self::JumpToTemporaryBookmark
 			| Self::PreviousSection
 			| Self::NextSection
 			| Self::PreviousHeading
@@ -249,14 +247,6 @@ impl ActionId {
 			| Self::NextHeading6
 			| Self::PreviousPage
 			| Self::NextPage
-			| Self::PreviousBookmark
-			| Self::NextBookmark
-			| Self::PreviousNote
-			| Self::NextNote
-			| Self::JumpToAllBookmarks
-			| Self::JumpToBookmarksOnly
-			| Self::JumpToNotesOnly
-			| Self::ViewNoteText
 			| Self::PreviousLink
 			| Self::NextLink
 			| Self::PreviousImage
@@ -275,6 +265,18 @@ impl ActionId {
 			| Self::NextListItem
 			| Self::ContainerStart
 			| Self::ContainerEnd => ShortcutCategory::Go,
+			Self::SetTemporaryBookmark
+			| Self::JumpToTemporaryBookmark
+			| Self::PreviousBookmark
+			| Self::NextBookmark
+			| Self::PreviousNote
+			| Self::NextNote
+			| Self::JumpToAllBookmarks
+			| Self::JumpToBookmarksOnly
+			| Self::JumpToNotesOnly
+			| Self::ViewNoteText
+			| Self::ToggleBookmark
+			| Self::BookmarkWithNote => ShortcutCategory::Bookmarks,
 			Self::WordCount
 			| Self::DocumentInfo
 			| Self::TableOfContents
@@ -282,8 +284,6 @@ impl ActionId {
 			| Self::RevealFileInFolder
 			| Self::OpenInWebView
 			| Self::ViewSource
-			| Self::ToggleBookmark
-			| Self::BookmarkWithNote
 			| Self::SetSelectionStart
 			| Self::CopyFromSelectionStart
 			| Self::JumpToSelectionStart

@@ -489,79 +489,79 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::PreviousBookmark,
-		// TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+		// TRANSLATORS: Menu item in the Bookmarks menu to move to the previous bookmark in the document.
 		label: || t("&Previous Bookmark"),
-		// TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Previous Bookmark menu item.
 		help: Some(|| t("Go to previous bookmark")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::previous_bookmark),
 	},
 	Command {
 		action: ActionId::NextBookmark,
-		// TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+		// TRANSLATORS: Menu item in the Bookmarks menu to move to the next bookmark in the document.
 		label: || t("&Next Bookmark"),
-		// TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Next Bookmark menu item.
 		help: Some(|| t("Go to next bookmark")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::next_bookmark),
 	},
 	Command {
 		action: ActionId::PreviousNote,
-		// TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
+		// TRANSLATORS: Menu item in the Bookmarks menu to move to the previous note in the document.
 		label: || t("Previous &Note"),
-		// TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Previous Note menu item.
 		help: Some(|| t("Go to previous note")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::previous_note),
 	},
 	Command {
 		action: ActionId::NextNote,
-		// TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+		// TRANSLATORS: Menu item in the Bookmarks menu to move to the next note in the document.
 		label: || t("Next N&ote"),
-		// TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Next Note menu item.
 		help: Some(|| t("Go to next note")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::next_note),
 	},
 	Command {
 		action: ActionId::JumpToAllBookmarks,
-		// TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+		// TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing all bookmarks and notes.
 		label: || t("Jump to &All..."),
-		// TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Jump to All menu item.
 		help: Some(|| t("Show all bookmarks and notes")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::jump_to_all),
 	},
 	Command {
 		action: ActionId::JumpToBookmarksOnly,
-		// TRANSLATORS: Menu item in the Go menu to open a dialog listing only bookmarks.
+		// TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only bookmarks.
 		label: || t("Jump to &Bookmarks Only..."),
-		// TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Bookmarks Only menu item.
 		help: Some(|| t("Show bookmarks only")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::jump_to_bookmarks_only),
 	},
 	Command {
 		action: ActionId::JumpToNotesOnly,
-		// TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
+		// TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only notes.
 		label: || t("Jump to Notes &Only..."),
-		// TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Notes Only menu item.
 		help: Some(|| t("Show notes only")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::jump_to_notes_only),
 	},
 	Command {
 		action: ActionId::ViewNoteText,
-		// TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
+		// TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
 		label: || t("&View Note Text"),
-		// TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
 		help: Some(|| t("View the note at current position")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::view_note_text),
 	},
 	Command {
 		action: ActionId::ToggleBookmark,
-		// TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
+		// TRANSLATORS: Menu item in the Bookmarks menu to add or remove a bookmark at the current reading position.
 		label: || t("Toggle &Bookmark"),
 		help: None,
 		enable: Enable::HasDocument,
@@ -569,7 +569,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::BookmarkWithNote,
-		// TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
+		// TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
 		label: || t("Bookmark with &Note"),
 		help: None,
 		enable: Enable::HasDocument,
