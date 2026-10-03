@@ -1,10 +1,8 @@
 //! Word 97-2003 automatic numbering: the `1.`, `a)` and bullets a `.doc` generates rather than
 //! stores in its text, read from the binary structures [MS-DOC] describes.
 //!
-//! * Each paragraph's properties (PAPX) sit in 512-byte formatting pages (FKPs) of the
-//!   `WordDocument` stream, found through the paragraph bin table (`PlcBtePapx`) in the table
-//!   stream. A paragraph is in a list when its properties carry `sprmPIlfo` (which list instance)
-//!   and `sprmPIlvl` (which level).
+//! * A paragraph is in a list when its properties (see [`super::properties`]) carry `sprmPIlfo`
+//!   (which list instance) and `sprmPIlvl` (which level).
 //! * The list definitions (`PlfLst`) give each list's levels: number format, start value and the
 //!   label template, in which a character 0-8 stands for that level's current number.
 //! * The list instances (`PlfLfo`) point paragraphs at a definition, optionally restarting levels.
@@ -14,98 +12,38 @@
 
 use std::collections::HashMap;
 
-use super::super::numbering::{Instance, Level, ListLabel, Numbering};
+use super::{
+	super::numbering::{Instance, Level, ListLabel, Numbering},
+	properties::fc_lcb,
+};
 
 /// Offsets in the FIB of the (fc, lcb) pairs this needs, in `FibRgFcLcb97`.
-const FIB_FC_PLCF_BTE_PAPX: usize = 0x0102;
 const FIB_FC_PLF_LST: usize = 0x02E2;
 const FIB_FC_PLF_LFO: usize = 0x02EA;
-const SPRM_P_ILVL: u16 = 0x260A;
-const SPRM_P_ILFO: u16 = 0x460B;
-const SPRM_T_DEF_TABLE: u16 = 0xD608;
-const SPRM_P_CHG_TABS: u16 = 0xC615;
-const FKP_SIZE: usize = 512;
 const LSTF_SIZE: usize = 28;
 const LVLF_SIZE: usize = 28;
 const LFO_SIZE: usize = 16;
 
-/// A document's lists: where to find each paragraph's properties, and the numbering they refer to.
+/// A document's lists: the numbering its list paragraphs refer to.
 pub(super) struct DocLists {
-	/// Paragraph bin table: file-offset ranges and the FKP page holding their properties.
-	bins: Vec<(u32, u32, u32)>,
 	numbering: Numbering,
 }
 
 impl DocLists {
-	/// Reads the bin table and the list definitions. `None` when the document has no lists or its
-	/// structures cannot be read, in which case it is read exactly as before.
+	/// Reads the list definitions and instances. `None` when the document has no lists or they
+	/// cannot be read, in which case it is read without them.
 	pub(super) fn read(word_document: &[u8], table: &[u8]) -> Option<Self> {
 		let lists = read_plf_lst(table, fc_lcb(word_document, FIB_FC_PLF_LST)?)?;
 		let instances = read_plf_lfo(table, fc_lcb(word_document, FIB_FC_PLF_LFO)?)?;
-		let bins = read_bin_table(table, fc_lcb(word_document, FIB_FC_PLCF_BTE_PAPX)?)?;
 		(!lists.is_empty() && !instances.is_empty())
-			.then(|| Self { bins, numbering: Numbering::from_definitions(lists, instances) })
+			.then(|| Self { numbering: Numbering::from_definitions(lists, instances) })
 	}
 
-	/// The label for the paragraph whose paragraph mark is at file offset `mark_fc`, advancing the
-	/// count of the list it is in. `None` for a paragraph that is not in a list.
-	pub(super) fn label_for_paragraph(&mut self, word_document: &[u8], mark_fc: u32) -> Option<ListLabel> {
-		let (ilfo, ilvl) = self.paragraph_list(word_document, mark_fc)?;
+	/// The label for the next paragraph in list instance `ilfo` at level `ilvl`, advancing the
+	/// count of that list.
+	pub(super) fn label(&mut self, ilfo: i16, ilvl: u8) -> Option<ListLabel> {
 		self.numbering.label_of(&ilfo.to_string(), usize::from(ilvl))
 	}
-
-	/// `(ilfo, ilvl)` from the properties of the paragraph whose mark is at `mark_fc`.
-	fn paragraph_list(&self, word_document: &[u8], mark_fc: u32) -> Option<(i16, u8)> {
-		let &(_, _, page) = self.bins.iter().find(|&&(start, end, _)| start <= mark_fc && mark_fc < end)?;
-		let base = usize::try_from(page).ok()?.checked_mul(FKP_SIZE)?;
-		let fkp = word_document.get(base..base + FKP_SIZE)?;
-		let crun = usize::from(fkp[FKP_SIZE - 1]);
-		let run = (0..crun).find(|&i| {
-			let start = read_u32(fkp, i * 4).unwrap_or(u32::MAX);
-			let end = read_u32(fkp, (i + 1) * 4).unwrap_or(0);
-			start <= mark_fc && mark_fc < end
-		})?;
-		// BxPap: one byte giving the PAPX's offset in words, then 12 bytes of layout cache.
-		let b_offset = usize::from(*fkp.get((crun + 1) * 4 + run * 13)?) * 2;
-		if b_offset == 0 {
-			return None; // default paragraph properties
-		}
-		let cb = usize::from(*fkp.get(b_offset)?);
-		let (start, len) =
-			if cb == 0 { (b_offset + 2, usize::from(*fkp.get(b_offset + 1)?) * 2) } else { (b_offset + 1, cb * 2 - 1) };
-		// GrpPrlAndIstd: the paragraph style (istd), then the property modifiers.
-		let grpprl = fkp.get(start + 2..(start + len).min(FKP_SIZE))?;
-		let (mut ilfo, mut ilvl) = (None, 0u8);
-		for (sprm, operand) in sprms(grpprl) {
-			match sprm {
-				SPRM_P_ILFO => ilfo = operand.get(..2).map(|b| i16::from_le_bytes([b[0], b[1]])),
-				SPRM_P_ILVL => ilvl = operand.first().copied().unwrap_or(0),
-				_ => {}
-			}
-		}
-		ilfo.filter(|&i| i > 0).map(|i| (i, ilvl.min(8)))
-	}
-}
-
-/// The `(fc, lcb)` pair at `offset` in the FIB, when the structure it points at exists.
-fn fc_lcb(word_document: &[u8], offset: usize) -> Option<(usize, usize)> {
-	let fc = usize::try_from(read_u32(word_document, offset)?).ok()?;
-	let lcb = usize::try_from(read_u32(word_document, offset + 4)?).ok()?;
-	(lcb > 0).then_some((fc, lcb))
-}
-
-/// `PlcBtePapx`: n+1 file offsets, then n FKP page numbers (the low 22 bits of each entry).
-fn read_bin_table(table: &[u8], (fc, lcb): (usize, usize)) -> Option<Vec<(u32, u32, u32)>> {
-	let plc = table.get(fc..fc.checked_add(lcb)?)?;
-	let n = lcb.checked_sub(4)? / 8;
-	let mut bins = Vec::with_capacity(n);
-	for i in 0..n {
-		let start = read_u32(plc, i * 4)?;
-		let end = read_u32(plc, (i + 1) * 4)?;
-		let page = read_u32(plc, (n + 1) * 4 + i * 4)? & 0x003F_FFFF;
-		bins.push((start, end, page));
-	}
-	Some(bins)
 }
 
 /// `PlfLst`: the list definitions, followed in the table stream by their levels (one for a
@@ -210,46 +148,6 @@ const fn number_format(nfc: u8) -> &'static str {
 		0xFF => "none",
 		_ => "decimal",
 	}
-}
-
-/// The property modifiers in a grpprl, as `(sprm, operand)`. The operand's size comes from the
-/// sprm's own top three bits; a variable-size one says its size in its first byte, except the two
-/// that [MS-DOC] gives sizes of their own. Reading stops at anything it cannot size.
-fn sprms(grpprl: &[u8]) -> Vec<(u16, &[u8])> {
-	let mut out = Vec::new();
-	let mut i = 0;
-	while i + 2 <= grpprl.len() {
-		let sprm = u16::from_le_bytes([grpprl[i], grpprl[i + 1]]);
-		i += 2;
-		let size = match sprm >> 13 {
-			0 | 1 => 1,
-			2 | 4 | 5 => 2,
-			3 => 4,
-			7 => 3,
-			_ if sprm == SPRM_T_DEF_TABLE => {
-				let Some(cb) = grpprl.get(i..i + 2).map(|b| usize::from(u16::from_le_bytes([b[0], b[1]]))) else {
-					break;
-				};
-				cb + 1
-			}
-			_ if sprm == SPRM_P_CHG_TABS => break,
-			_ => match grpprl.get(i) {
-				Some(&cb) => {
-					i += 1;
-					usize::from(cb)
-				}
-				None => break,
-			},
-		};
-		let Some(operand) = grpprl.get(i..i + size) else { break };
-		out.push((sprm, operand));
-		i += size;
-	}
-	out
-}
-
-fn read_u32(data: &[u8], at: usize) -> Option<u32> {
-	data.get(at..at + 4).map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
 }
 
 #[cfg(test)]

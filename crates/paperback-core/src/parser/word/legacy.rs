@@ -14,7 +14,13 @@ use office_crypto::decrypt_from_file;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, util::path::extract_title_from_path},
+	parser::{
+		PASSWORD_REQUIRED_ERROR_PREFIX,
+		util::{
+			path::extract_title_from_path,
+			toc::{build_toc_from_buffer, heading_level_to_marker_type},
+		},
+	},
 	t,
 	util::encoding::convert_to_utf8,
 };
@@ -35,13 +41,19 @@ const FIB_FLAG_USE_1_TABLE: u16 = 0x0200;
 const FIB_NFIB_WORD97: u16 = 0x00C1;
 
 mod lists;
+mod properties;
+mod styles;
 
 use lists::DocLists;
+use properties::Paragraphs;
+use styles::{OUTLINE_BODY_TEXT, ParagraphStyle};
 
 /// Marks where a list item starts in the extracted text, through normalization, until
 /// [`finish_doc`] turns it into a list-item marker. Level N (1-9) is `U+FDD0 + N - 1`:
 /// noncharacters, which no document can contain and which normalization leaves alone.
 const LIST_ITEM_MARK: u32 = 0xFDD0;
+/// Marks where a heading starts, as [`LIST_ITEM_MARK`] does a list item: level N is `U+FDE0 + N - 1`.
+const HEADING_MARK: u32 = 0xFDE0;
 
 pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 	let file =
@@ -131,8 +143,20 @@ fn extract_doc_text_from_piece_table(word_document: &[u8], table_stream: &[u8]) 
 	}
 	let clx = &table_stream[fc_clx..fc_clx + lcb_clx];
 	let (units, pieces) = clx_pieces(clx, word_document)?;
-	let lists = DocLists::read(word_document, table_stream);
-	Some(label_list_paragraphs(&units, &pieces, lists, word_document))
+	let formatting = Paragraphs::read(word_document, table_stream).map(|paragraphs| Formatting {
+		paragraphs,
+		lists: DocLists::read(word_document, table_stream),
+		styles: styles::paragraph_styles(word_document, table_stream),
+	});
+	Some(mark_paragraphs(&units, &pieces, formatting, word_document))
+}
+
+/// What the document's formatting says about each paragraph's place in its structure.
+struct Formatting {
+	paragraphs: Paragraphs,
+	lists: Option<DocLists>,
+	/// What each paragraph style gives its paragraphs, by `istd`.
+	styles: Vec<ParagraphStyle>,
 }
 
 /// One piece of the piece table: the character positions it covers and where its text is.
@@ -150,32 +174,54 @@ impl Piece {
 	}
 }
 
-/// The document's text with each list paragraph's label in front of it (and a [`LIST_ITEM_MARK`]
-/// before that), in the order Word shows them. `units` is the text by character position, one
-/// UTF-16 unit each, as the piece table lays it out.
-fn label_list_paragraphs(units: &[u16], pieces: &[Piece], lists: Option<DocLists>, word_document: &[u8]) -> String {
-	let Some(mut lists) = lists else { return String::from_utf16_lossy(units) };
+/// The document's text with each heading marked by a [`HEADING_MARK`], and each list paragraph's
+/// label in front of it (with a [`LIST_ITEM_MARK`] before that), in the order Word shows them. A
+/// numbered heading keeps its number, but is a heading rather than a list item. `units` is the
+/// text by character position, one UTF-16 unit each, as the piece table lays it out.
+fn mark_paragraphs(units: &[u16], pieces: &[Piece], formatting: Option<Formatting>, word_document: &[u8]) -> String {
+	let Some(mut formatting) = formatting else { return String::from_utf16_lossy(units) };
 	let mut out: Vec<u16> = Vec::with_capacity(units.len());
 	let mut start = 0;
 	while start < units.len() {
 		// A paragraph runs to its paragraph mark, or to a table cell's end mark.
 		let end = units[start..].iter().position(|&u| u == 0x0D || u == 0x07).map_or(units.len(), |p| start + p + 1);
 		let mark = end - 1;
-		let label = pieces
+		let properties = pieces
 			.iter()
 			.find(|p| p.cp_start <= mark && mark < p.cp_end)
 			.and_then(|p| u32::try_from(p.fc_of(mark)).ok())
-			.and_then(|fc| lists.label_for_paragraph(word_document, fc));
-		if let Some(label) = label {
-			let level = u32::try_from(label.level.clamp(1, 9) - 1).unwrap_or(0);
-			out.extend(char::from_u32(LIST_ITEM_MARK + level).unwrap_or(' ').encode_utf16(&mut [0; 2]).iter());
-			out.extend(label.text.encode_utf16());
-			out.push(u16::from(b' '));
+			.and_then(|fc| formatting.paragraphs.at(word_document, fc));
+		if let Some(properties) = properties {
+			let style = formatting.styles.get(usize::from(properties.istd)).copied().unwrap_or_default();
+			let heading = properties
+				.outline
+				.map_or(style.heading, |outline| (outline < OUTLINE_BODY_TEXT).then_some(outline + 1));
+			let ilvl = properties.ilvl.or(style.ilvl).unwrap_or(0);
+			let label = properties
+				.ilfo
+				.or(style.ilfo)
+				.filter(|&ilfo| ilfo > 0)
+				.and_then(|ilfo| formatting.lists.as_mut().and_then(|lists| lists.label(ilfo, ilvl)));
+			if let Some(level) = heading {
+				push_mark(&mut out, HEADING_MARK, i32::from(level));
+			} else if let Some(label) = &label {
+				push_mark(&mut out, LIST_ITEM_MARK, label.level);
+			}
+			if let Some(label) = label {
+				out.extend(label.text.encode_utf16());
+				out.push(u16::from(b' '));
+			}
 		}
 		out.extend_from_slice(&units[start..end]);
 		start = end;
 	}
 	String::from_utf16_lossy(&out)
+}
+
+/// Appends the noncharacter that marks a level-`level` (1-9) heading or list item.
+fn push_mark(out: &mut Vec<u16>, base: u32, level: i32) {
+	let level = u32::try_from(level.clamp(1, 9) - 1).unwrap_or(0);
+	out.extend(char::from_u32(base + level).unwrap_or(' ').encode_utf16(&mut [0; 2]).iter());
 }
 
 #[cfg(test)]
@@ -297,21 +343,23 @@ fn finish_doc(text: String, file_path: &str) -> Result<Document> {
 	let normalized = normalize_doc_text(&text);
 	let mut buffer = DocumentBuffer::new();
 	if !normalized.is_empty() {
-		append_with_list_items(&mut buffer, &normalized);
+		append_marked(&mut buffer, &normalized);
 		if !buffer.content.ends_with('\n') {
 			buffer.append("\n");
 		}
 	}
 	let title = extract_title_from_path(file_path);
+	let toc_items = build_toc_from_buffer(&buffer);
 	let mut document = Document::new().with_title(title);
 	document.set_buffer(buffer);
+	document.toc_items = toc_items;
 	Ok(document)
 }
 
-/// Appends the normalized text, turning each [`LIST_ITEM_MARK`] at the start of a line into a
-/// list-item marker, and each run of list items into one list the reader can step over, as HTML
-/// and `.docx` lists are.
-fn append_with_list_items(buffer: &mut DocumentBuffer, text: &str) {
+/// Appends the normalized text, turning each [`HEADING_MARK`] at the start of a line into a
+/// heading marker and each [`LIST_ITEM_MARK`] into a list-item marker, and each run of list items
+/// into one list the reader can step over, as HTML and `.docx` headings and lists are.
+fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
 	let mut run: Option<(usize, i32, usize)> = None; // start, items, end of last item
 	let close = |buffer: &mut DocumentBuffer, run: &mut Option<(usize, i32, usize)>| {
 		if let Some((start, items, end)) = run.take()
@@ -322,18 +370,24 @@ fn append_with_list_items(buffer: &mut DocumentBuffer, text: &str) {
 	};
 	for line in text.split_inclusive('\n') {
 		let mut chars = line.chars();
-		let level = chars
-			.next()
-			.and_then(|c| (u32::from(c).wrapping_sub(LIST_ITEM_MARK) < 9).then(|| u32::from(c) - LIST_ITEM_MARK));
-		let body: String = if level.is_some() { chars.as_str() } else { line }
-			.chars()
-			.filter(|&c| !(LIST_ITEM_MARK..LIST_ITEM_MARK + 9).contains(&u32::from(c)))
-			.collect();
+		let first = chars.next().map_or(0, u32::from);
+		let level_of = |base: u32| (first.wrapping_sub(base) < 9).then(|| i32::try_from(first - base).unwrap_or(0) + 1);
+		let (heading, item) = (level_of(HEADING_MARK), level_of(LIST_ITEM_MARK));
+		let body: String =
+			if heading.or(item).is_some() { chars.as_str() } else { line }.chars().filter(|&c| !is_mark(c)).collect();
 		let start = buffer.current_position();
 		buffer.append(&body);
-		match level {
+		if let Some(level) = heading.filter(|_| !body.trim().is_empty()) {
+			close(buffer, &mut run);
+			buffer.add_marker(
+				Marker::new(heading_level_to_marker_type(level), start)
+					.with_text(body.trim().to_string())
+					.with_level(level),
+			);
+			continue;
+		}
+		match item {
 			Some(level) if !body.trim().is_empty() => {
-				let level = i32::try_from(level).unwrap_or(0) + 1;
 				buffer.add_marker(
 					Marker::new(MarkerType::ListItem, start).with_text(body.trim().to_string()).with_level(level),
 				);
@@ -346,6 +400,12 @@ fn append_with_list_items(buffer: &mut DocumentBuffer, text: &str) {
 		}
 	}
 	close(buffer, &mut run);
+}
+
+/// Whether `c` is one of the noncharacters that mark a heading or a list item.
+fn is_mark(c: char) -> bool {
+	let c = u32::from(c);
+	(LIST_ITEM_MARK..LIST_ITEM_MARK + 9).contains(&c) || (HEADING_MARK..HEADING_MARK + 9).contains(&c)
 }
 
 fn extract_doc_text_simple(word_document: &[u8]) -> String {

@@ -1,4 +1,4 @@
-use super::{number_format, read_lvl, read_plf_lfo, sprms};
+use super::{number_format, read_lvl, read_plf_lfo};
 
 /// A level as Word writes one: LVLF, then its paragraph and character modifiers, then the label
 /// template. `template` uses 0-8 for the level placeholders, at the 1-based positions in `numbers`.
@@ -60,17 +60,6 @@ fn list_instances_are_numbered_from_one_and_carry_their_restarts() {
 	assert_eq!(instances["1"].abstract_id, "111");
 	assert_eq!(instances["2"].abstract_id, "222");
 	assert_eq!(instances["2"].start_overrides.get(&0), Some(&5));
-}
-
-#[test]
-fn property_modifiers_are_sized_from_the_sprm_and_unsizable_ones_stop_the_walk() {
-	// sprmPIlvl (1 byte) 2, sprmPIlfo (2 bytes) 3, then sprmPChgTabs, which has a size rule of
-	// its own and stops the walk rather than being misread.
-	let grpprl = [0x0A, 0x26, 0x02, 0x0B, 0x46, 0x03, 0x00, 0x15, 0xC6, 0x03, 9, 9, 9];
-	let found: Vec<_> = sprms(&grpprl).iter().map(|(s, o)| (*s, o.to_vec())).collect();
-	assert_eq!(found, vec![(0x260A, vec![2]), (0x460B, vec![3, 0])]);
-	// A truncated operand is not read past the end.
-	assert!(sprms(&[0x0B, 0x46, 0x03]).is_empty());
 }
 
 #[test]
