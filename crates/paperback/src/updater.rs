@@ -98,20 +98,24 @@ fn beat_foreground_grant() {}
 pub fn run_update_check(parent: &Frame, silent: bool, channel: UpdateChannel) {
 	tracing::info!(channel = %channel, silent, "checking for updates");
 	let install_kind = if is_installer_distribution() { InstallKind::Installer } else { InstallKind::Portable };
-	let config = Arc::new(
-		UpdaterConfig::new(
-			PAPERBACK_GITHUB_REPO,
-			"paperback",
-			"Paperback",
-			PAPERBACK_MINISIGN_KEY,
-			env!("CARGO_PKG_VERSION"),
-		)
-		.with_commit(version::COMMIT_HASH)
-		.with_install_kind(install_kind)
-		.with_user_agent(version::user_agent())
-		.with_asset_suffix(UPDATE_ASSET_SUFFIX)
-		.with_macos_relaunch_env("PAPERBACK_CONFIG_DIR", crate::config_ext::config_dir().to_string_lossy()),
-	);
+	let config = UpdaterConfig::new(
+		PAPERBACK_GITHUB_REPO,
+		"paperback",
+		"Paperback",
+		PAPERBACK_MINISIGN_KEY,
+		env!("CARGO_PKG_VERSION"),
+	)
+	.with_commit(version::COMMIT_HASH)
+	.with_install_kind(install_kind)
+	.with_user_agent(version::user_agent())
+	.with_asset_suffix(UPDATE_ASSET_SUFFIX);
+	#[cfg(target_os = "macos")]
+	let config = if let Some(directory) = env::var_os("PAPERBACK_CONFIG_DIR") {
+		config.with_macos_relaunch_env("PAPERBACK_CONFIG_DIR", directory)
+	} else {
+		config
+	};
+	let config = Arc::new(config);
 	beat_foreground_grant();
 	let ship_channel = match channel {
 		UpdateChannel::Stable => ShipChannel::Stable,

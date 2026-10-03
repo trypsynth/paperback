@@ -3680,7 +3680,7 @@ dependencies = [
 [[package]]
 name = "ship-shape"
 version = "0.3.0"
-source = "git+https://github.com/johanntan/ship-shape?rev=41969f2e79010ef5e372710009af46b3baa78ac4#41969f2e79010ef5e372710009af46b3baa78ac4"
+source = "git+https://github.com/johanntan/ship-shape?rev=bbbdc5761a54a9b0b742b0f393e28ae0548e895b#bbbdc5761a54a9b0b742b0f393e28ae0548e895b"
 dependencies = [
  "homeport",
  "minisign-verify",

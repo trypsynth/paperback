@@ -54,7 +54,11 @@ pub struct MainWindow {
 	config: Rc<Mutex<ConfigManager>>,
 	#[cfg(target_os = "windows")]
 	tray_state: Rc<Mutex<Option<tray::TrayState>>>,
-	_live_region_label: StaticText,
+	#[cfg_attr(
+		not(target_os = "macos"),
+		allow(dead_code, reason = "keeps the announcement label with the main window")
+	)]
+	live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
 	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
@@ -336,7 +340,7 @@ impl MainWindow {
 			config,
 			#[cfg(target_os = "windows")]
 			tray_state,
-			_live_region_label: live_region_label,
+			live_region_label,
 			_find_dialog: find_dialog,
 			#[cfg(target_os = "windows")]
 			_hotkey_handle: hotkey_handle,
@@ -512,6 +516,11 @@ impl MainWindow {
 	/// Get the frame
 	pub const fn frame(&self) -> &Frame {
 		&self.frame
+	}
+
+	#[cfg(target_os = "macos")]
+	pub(super) fn announce_update_restart(&self) {
+		live_region::announce(self.live_region_label, &t("Installing the update. Paperback will restart."));
 	}
 
 	fn ensure_parser_ready(&self, path: &Path) -> bool {
