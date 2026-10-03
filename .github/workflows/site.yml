@@ -2,9 +2,6 @@ name: Build & Deploy Website
 on:
   push:
     branches: [ master ]
-  # Daily, so the GitHub numbers on the home page stay current between pushes.
-  schedule:
-    - cron: "0 12 * * *"
   workflow_dispatch:
 permissions:
   contents: write
@@ -38,10 +35,6 @@ jobs:
           sudo mv cargo-about /usr/local/bin/
       - name: Generate the licenses page
         run: cargo about generate about.hbs -o web/licenses.md
-      - name: Fetch the GitHub numbers for the home page
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: bash web/stats.sh
       - name: Build Cobalt site
         run: cobalt build
         working-directory: web

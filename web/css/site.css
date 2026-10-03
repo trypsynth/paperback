@@ -343,34 +343,6 @@ img {
 	margin-bottom: 0;
 }
 
-.stats {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-	gap: 1rem;
-	max-width: none;
-	margin: 1.25rem 0 1rem;
-	padding: 0;
-	list-style: none;
-}
-
-.stats li {
-	background: var(--surface);
-	border: 1px solid var(--border);
-	border-radius: var(--radius);
-	padding: 0.9rem 1.1rem 1rem;
-	color: var(--muted);
-	margin: 0;
-}
-
-/* Block, so the number sits above its label, but still one run of text a screen reader reads as "108 stars on GitHub". */
-.stat {
-	display: block;
-	color: var(--text);
-	font-size: 1.9rem;
-	font-weight: 700;
-	line-height: 1.15;
-}
-
 /* Long flat lists of short items, such as formats and languages. */
 .columns {
 	max-width: none;

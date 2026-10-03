@@ -43,22 +43,6 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 </div>
 </div>
 
-{% if site.data.stats %}
-## Built in the open
-
-<ul class="stats">
-<li><span class="stat">{{ site.data.stats.stars }}</span> stars on GitHub</li>
-<li><span class="stat">{{ site.data.stats.contributors }}</span> contributors</li>
-<li><span class="stat">{{ site.data.stats.merged_prs }}</span> pull requests merged</li>
-<li><span class="stat">{{ site.data.stats.closed_percent }}%</span> of issues closed, {{ site.data.stats.closed_issues }} of {{ site.data.stats.issues }}</li>
-<li><span class="stat">{{ site.data.stats.commits }}</span> commits</li>
-<li><span class="stat">{{ site.data.stats.forks }}</span> forks</li>
-<li><span class="stat">{{ site.data.stats.downloads }}</span> desktop downloads</li>
-</ul>
-
-From [Paperback on GitHub](https://github.com/trypsynth/paperback), as of {{ site.data.stats.updated }}.
-{% endif %}
-
 ## Platforms
 
 - **Windows** &ndash; free. Installer and portable builds, for x64 and ARM64. Windows 10 and later.
