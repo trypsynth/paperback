@@ -152,9 +152,9 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::Reload,
-		// TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+		// TRANSLATORS: Menu item in the View menu to re-read the current document from disk.
 		label: || t("&Reload"),
-		// TRANSLATORS: Status-bar help text for the File > Reload menu item.
+		// TRANSLATORS: Status-bar help text for the View > Reload menu item.
 		help: Some(|| t("Re-read the current document from disk")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(file::reload),

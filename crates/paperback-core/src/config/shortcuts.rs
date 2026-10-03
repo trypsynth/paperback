@@ -33,6 +33,7 @@ impl Default for HotkeyConfig {
 #[serde(rename_all = "snake_case")]
 pub enum ShortcutCategory {
 	File,
+	View,
 	Go,
 	Bookmarks,
 	Audio,
@@ -42,13 +43,15 @@ pub enum ShortcutCategory {
 
 impl ShortcutCategory {
 	pub const fn all() -> &'static [Self] {
-		&[Self::File, Self::Go, Self::Bookmarks, Self::Audio, Self::Tools, Self::Help]
+		&[Self::File, Self::View, Self::Go, Self::Bookmarks, Self::Audio, Self::Tools, Self::Help]
 	}
 
 	pub fn display_name(self) -> String {
 		match self {
 			// TRANSLATORS: Name of the "File" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::File => crate::t("File"),
+			// TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::View => crate::t("View"),
 			// TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::Go => crate::t("Go"),
 			// TRANSLATORS: Name of the "Bookmarks" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
@@ -244,6 +247,20 @@ mod tests {
 			total_actions += actions.len();
 		}
 		assert_eq!(total_actions, ActionId::all().len());
+	}
+
+	#[test]
+	fn view_category_holds_display_commands() {
+		assert_eq!(
+			ShortcutCategory::View.actions(),
+			[
+				ActionId::Reload,
+				ActionId::OpenInWebView,
+				ActionId::ViewSource,
+				ActionId::ToggleWordWrap,
+				ActionId::ToggleFullScreen,
+			]
+		);
 	}
 
 	#[test]

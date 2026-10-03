@@ -216,10 +216,12 @@ impl ActionId {
 			| Self::Close
 			| Self::CloseAll
 			| Self::ReopenLastClosed
-			| Self::Reload
 			| Self::ShowAllRecentDocuments
 			| Self::ClearRecentDocuments
 			| Self::Exit => ShortcutCategory::File,
+			Self::Reload | Self::OpenInWebView | Self::ViewSource | Self::ToggleWordWrap | Self::ToggleFullScreen => {
+				ShortcutCategory::View
+			}
 			Self::Find
 			| Self::FindNext
 			| Self::FindPrevious
@@ -282,13 +284,9 @@ impl ActionId {
 			| Self::TableOfContents
 			| Self::ElementsList
 			| Self::RevealFileInFolder
-			| Self::OpenInWebView
-			| Self::ViewSource
 			| Self::SetSelectionStart
 			| Self::CopyFromSelectionStart
 			| Self::JumpToSelectionStart
-			| Self::ToggleWordWrap
-			| Self::ToggleFullScreen
 			| Self::Options
 			| Self::SleepTimer
 			| Self::BatchOcr

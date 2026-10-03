@@ -11,8 +11,7 @@ use super::builder::{MenuEntry, format_menu_label, item, item_with_help, submenu
 use crate::ui::{commands, menu_ids};
 
 /// The File menu's fixed items, in order, above the Recent Documents submenu.
-const ITEMS: &[ActionId] =
-	&[ActionId::Open, ActionId::Close, ActionId::CloseAll, ActionId::ReopenLastClosed, ActionId::Reload];
+const ITEMS: &[ActionId] = &[ActionId::Open, ActionId::Close, ActionId::CloseAll, ActionId::ReopenLastClosed];
 
 /// Shown only on Windows and Linux; macOS puts Quit in the application menu.
 const EXIT_ITEM: ActionId = ActionId::Exit;

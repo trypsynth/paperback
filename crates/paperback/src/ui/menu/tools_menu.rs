@@ -1,7 +1,7 @@
 use paperback_core::config::{ActionId, ConfigManager};
 use patois::t;
 
-use super::builder::{MenuEntry, check, format_menu_label, item, item_with_help, submenu};
+use super::builder::{MenuEntry, format_menu_label, item, item_with_help, submenu};
 use crate::ui::{commands, menu_ids};
 
 pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
@@ -53,14 +53,6 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	let open_folder_label = format_menu_label(&t("Reveal &File in Folder"), ActionId::RevealFileInFolder, config);
 	// TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
 	let open_folder_help = t("Reveal document in the file manager");
-	// TRANSLATORS: Menu item in the Tools menu to open the document in a web view.
-	let web_view_label = format_menu_label(&t("Open in &Web View"), ActionId::OpenInWebView, config);
-	// TRANSLATORS: Status-bar help text for the Open in Web View menu item.
-	let web_view_help = t("Open document in web view");
-	// TRANSLATORS: Menu item in the Tools menu to open the document's underlying source markup in a new tab.
-	let view_source_label = format_menu_label(&t("View &Source"), ActionId::ViewSource, config);
-	// TRANSLATORS: Status-bar help text for the View Source menu item.
-	let view_source_help = t("Open the document source in a new tab");
 	// TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
 	let import_export_label = t("I&mport/Export");
 	// TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
@@ -73,8 +65,6 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		item_with_help(menu_ids::ELEMENTS_LIST, elements_label, elements_help),
 		MenuEntry::Separator,
 		item_with_help(menu_ids::REVEAL_FILE_IN_FOLDER, open_folder_label, open_folder_help),
-		item_with_help(menu_ids::OPEN_IN_WEB_VIEW, web_view_label, web_view_help),
-		item_with_help(menu_ids::VIEW_SOURCE, view_source_label, view_source_help),
 		MenuEntry::Separator,
 		submenu(import_export_label, import_export_help, import_export),
 		MenuEntry::Separator,
@@ -88,23 +78,6 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		config,
 	);
 	entries.push(submenu(select_copy_label, select_copy_help, select_copy));
-	entries.push(MenuEntry::Separator);
-	// TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
-	let word_wrap_label = format_menu_label(&t("Word w&rap"), ActionId::ToggleWordWrap, config);
-	// TRANSLATORS: Status-bar help text for the Word Wrap menu item.
-	let word_wrap_help = t("Toggle word wrap");
-	entries.push(check(
-		menu_ids::TOGGLE_WORD_WRAP,
-		word_wrap_label,
-		word_wrap_help,
-		config.get_app_bool("word_wrap", false),
-	));
-	entries.push(MenuEntry::Separator);
-	// TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
-	let full_screen_label = format_menu_label(&t("&Full Screen"), ActionId::ToggleFullScreen, config);
-	// TRANSLATORS: Status-bar help text for the Full Screen menu item.
-	let full_screen_help = t("Toggle full screen");
-	entries.push(check(menu_ids::TOGGLE_FULL_SCREEN, full_screen_label, full_screen_help, false));
 	entries.push(MenuEntry::Separator);
 	// TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
 	let options_label = format_menu_label(&t("&Settings"), ActionId::Options, config);

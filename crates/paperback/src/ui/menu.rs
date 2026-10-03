@@ -14,6 +14,7 @@ mod go_menu;
 mod help_menu;
 mod state;
 mod tools_menu;
+mod view_menu;
 
 use builder::build_menu;
 pub use builder::{MenuEntry, format_menu_label, item_with_help};
@@ -30,6 +31,7 @@ pub struct TopMenu {
 pub fn menus(config: &ConfigManager, compact_go: bool) -> Vec<TopMenu> {
 	vec![
 		TopMenu { category: ShortcutCategory::File, entries: file_menu::entries(config) },
+		TopMenu { category: ShortcutCategory::View, entries: view_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::Go, entries: go_menu::entries(config, compact_go) },
 		TopMenu { category: ShortcutCategory::Bookmarks, entries: bookmarks_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::Audio, entries: audio_menu::entries(config) },
@@ -43,6 +45,8 @@ fn title(category: ShortcutCategory) -> String {
 	match category {
 		// TRANSLATORS: Top-level "File" menu label in the menu bar
 		ShortcutCategory::File => t("&File"),
+		// TRANSLATORS: Top-level "View" menu label in the menu bar
+		ShortcutCategory::View => t("&View"),
 		// TRANSLATORS: Top-level "Go" menu label in the menu bar
 		ShortcutCategory::Go => t("&Go"),
 		// TRANSLATORS: Top-level "Bookmarks" menu label in the menu bar
