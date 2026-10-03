@@ -4,7 +4,7 @@
 //! through the document manager to reach the active tab, which is the tab whose control has
 //! focus.
 
-use std::{rc::Rc, sync::Mutex};
+use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use paperback_core::config::ActionId;
 use patois::t;
@@ -22,6 +22,7 @@ pub(super) fn build_text_ctrl(
 	word_wrap: bool,
 	self_rc: &Rc<Mutex<DocumentManager>>,
 	frame: Frame,
+	from_keyboard: Rc<Cell<bool>>,
 ) -> TextCtrl {
 	let style = TextCtrlStyle::MultiLine
 		| TextCtrlStyle::ReadOnly
@@ -183,6 +184,12 @@ pub(super) fn build_text_ctrl(
 				let plain = !kbd.control_down() && !kbd.alt_down();
 				if has_no_menu_item(act) || plain || is_selection_command(act) || cfg!(target_os = "linux") {
 					kbd.event.skip(false);
+					if has_no_menu_item(act) {
+						// These have no menu item, so the key never becomes a menu command and the
+						// dispatcher never reads the mark off one. Clear it here instead, so a key
+						// that led nowhere cannot leave it set for the next menu click.
+						from_keyboard.set(false);
+					}
 					run_shortcut(act, &dm_for_keys, &frame_for_keys);
 					return;
 				}
