@@ -22,11 +22,14 @@ mod edit_ids {
 	pub const UNDO: i32 = ffi::WXD_ID_UNDO as i32;
 	pub const REDO: i32 = ffi::WXD_ID_REDO as i32;
 	pub const CUT: i32 = ffi::WXD_ID_CUT as i32;
-	pub const COPY: i32 = ffi::WXD_ID_COPY as i32;
 	pub const PASTE: i32 = ffi::WXD_ID_PASTE as i32;
 	pub const DELETE: i32 = ffi::WXD_ID_CLEAR as i32;
-	pub const SELECT_ALL: i32 = ffi::WXD_ID_SELECTALL as i32;
 }
+
+#[allow(clippy::cast_possible_truncation)]
+pub const COPY: i32 = wxdragon::ffi::WXD_ID_COPY as i32;
+#[allow(clippy::cast_possible_truncation)]
+pub const SELECT_ALL: i32 = wxdragon::ffi::WXD_ID_SELECTALL as i32;
 
 // Above wxWidgets' stock ids, which run from 5000 to 5999. One of ours landing on a stock id takes on its meaning: on macOS wxID_CUT, wxID_COPY, wxID_PASTE and wxID_CLEAR are bound to the native cut:, copy:, paste: and delete: actions instead of to our handler.
 const BASE: i32 = ID_HIGHEST + 1;

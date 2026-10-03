@@ -1,9 +1,7 @@
 use paperback_core::config::{ActionId, ConfigManager};
 use patois::t;
 
-#[cfg(target_os = "macos")]
-use super::builder::item;
-use super::builder::{MenuEntry, format_menu_label, item_with_help};
+use super::builder::{MenuEntry, format_menu_label, item, item_with_help};
 use crate::ui::{commands, menu_ids};
 
 pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
@@ -33,6 +31,18 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 			item(menu_ids::PASTE, paste_label),
 			item(menu_ids::DELETE, delete_label),
 			MenuEntry::Separator,
+			item(menu_ids::SELECT_ALL, select_all_label),
+			MenuEntry::Separator,
+		]);
+	}
+	#[cfg(not(target_os = "macos"))]
+	{
+		// TRANSLATORS: Menu item in the Edit menu to copy the current selection.
+		let copy_label = t("&Copy\tCtrl+C");
+		// TRANSLATORS: Menu item in the Edit menu to select all text.
+		let select_all_label = t("Select &All\tCtrl+A");
+		entries.extend([
+			item(menu_ids::COPY, copy_label),
 			item(menu_ids::SELECT_ALL, select_all_label),
 			MenuEntry::Separator,
 		]);

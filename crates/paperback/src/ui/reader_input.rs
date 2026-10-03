@@ -74,8 +74,8 @@ pub(super) fn build_text_ctrl(
 			}
 		}
 	});
-	// Ctrl+C is intercepted here rather than through the Edit menu because that menu only
-	// exists on macOS; elsewhere the control handles the key itself and no menu event fires.
+	// A Ctrl+C that reaches the control copies the whole document when everything loaded is
+	// selected; otherwise the control copies its selection.
 	#[cfg(not(target_os = "macos"))]
 	{
 		let dm_for_copy = Rc::clone(self_rc);
