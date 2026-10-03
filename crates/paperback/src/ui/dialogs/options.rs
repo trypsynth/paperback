@@ -182,7 +182,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
 	let join_pdf_paragraphs_check = CheckBox::builder(&readability_panel)
-		// TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+		// TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
 		.with_label(&t("&Join wrapped lines into paragraphs in PDFs"))
 		.build();
 	let strip_running_text_check = CheckBox::builder(&readability_panel)
