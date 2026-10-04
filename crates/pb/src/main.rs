@@ -344,10 +344,11 @@ fn write_converted(
 	// `--output-dir .` on a folder of books is a natural thing to type and destroys the folder on
 	// the second run, because each document's output lands on the next document's name. Refused
 	// whatever --force says: the reader is not replacing a file, they are replacing their inputs.
-	if inputs::same_file(&path) == inputs::same_file(input) {
+	let target = resolved(&path);
+	if target == resolved(input) {
 		bail!("{} is the document being converted; write somewhere else", path.display());
 	}
-	if let Some(earlier) = written.get(&inputs::same_file(&path)) {
+	if let Some(earlier) = written.get(&target) {
 		bail!("{} and {} are both writing {}", earlier.display(), input.display(), path.display());
 	}
 	// Asked to be left alone rather than replaced. A run over a folder writes names nobody chose
@@ -356,8 +357,20 @@ fn write_converted(
 	if path.exists() && !cli.force {
 		bail!("{} is already there; pass --force to replace it", path.display());
 	}
-	written.insert(inputs::same_file(&path), input.to_path_buf());
+	written.insert(target, input.to_path_buf());
 	write_file(&path, converted, !cli.metadata && matches!(cli.format, Format::Markdown))
+}
+
+/// The file a path names on disk, so that `.`, an absolute path and a different case all reach the same folder. The output may not exist yet, so its folder is resolved and its name put back.
+fn resolved(path: &Path) -> PathBuf {
+	let full = fs::canonicalize(path).unwrap_or_else(|_| {
+		let parent = path.parent().filter(|parent| !parent.as_os_str().is_empty()).unwrap_or_else(|| Path::new("."));
+		match (fs::canonicalize(parent), path.file_name()) {
+			(Ok(dir), Some(name)) => dir.join(name),
+			_ => path.to_path_buf(),
+		}
+	});
+	inputs::same_file(&full)
 }
 
 /// The name one document's output gets inside `--output-dir`.
@@ -650,6 +663,22 @@ mod tests {
 		write_converted(&cli, &destination, &input, None, "converted", &mut written)
 			.expect_err("a document must not be replaced by its own conversion");
 		assert_eq!(fs::read_to_string(&input).expect("read"), "the book");
+	}
+
+	#[test]
+	fn a_document_spelled_another_way_is_still_not_written_over_itself() {
+		let dir = TempDir::new("self-spelled");
+		fs::create_dir(dir.join("sub")).expect("mkdir");
+		fs::write(dir.join("book.md"), b"the book").expect("write");
+		let input = dir.join("sub").join("..").join("book.md");
+		let out = dir.path.to_str().unwrap();
+		let cli =
+			cli::Cli::try_parse_from(["pb", "book.md", "--output-dir", out, "-f", "md", "--force"]).expect("parse");
+		let destination = destination(&cli, 1).expect("destination");
+		let mut written = HashMap::new();
+		write_converted(&cli, &destination, &input, None, "converted", &mut written)
+			.expect_err("--force must not let a document be replaced by its own conversion");
+		assert_eq!(fs::read_to_string(dir.join("book.md")).expect("read"), "the book");
 	}
 
 	/// A file that is not there is written without ceremony.

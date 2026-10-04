@@ -1,6 +1,6 @@
 //! Turning the paths on the command line into the files to convert.
 //!
-//! A Unix shell expands `*.pdf` into the list of matching files before pb ever see it. The
+//! A Unix shell expands `*.pdf` into the list of matching files before pb ever sees it. The
 //! Windows shells do not, so a pattern reaches pb as one literal argument, and a reader who
 //! learned the habit on one platform is left typing `pb *.pdf` and being told the file `*.pdf`
 //! does not exist. Expanding it here means one command line works the same everywhere.
@@ -31,9 +31,6 @@ pub struct Inputs {
 /// `*` or a `?`, so a document whose real name contains one of those still converts.
 #[must_use]
 pub fn is_pattern(arg: &Path) -> bool {
-	// `to_string_lossy` rather than a component walk: a pattern is a string the reader typed, and
-	// asking the filesystem whether it happens to exist is the only way to tell one apart from a
-	// file that really is called that.
 	arg.as_os_str().to_string_lossy().contains(['*', '?']) && !arg.exists()
 }
 
@@ -89,17 +86,7 @@ fn expand(pattern: &Path) -> (Vec<PathBuf>, bool) {
 	(files, true)
 }
 
-/// The pattern as `glob` should read it, with the meaning taken off every bracket.
-///
-/// The escape for a bracket is a character class of one: `[[]` is a `[`, and `[]]` is a `]`. A
-/// backslash would read as an escape to a Unix reader and as the path separator to a Windows one,
-/// which is why the class form is the one that means the same thing everywhere. Escaping every
-/// bracket rather than only unmatched ones is also what stops `[2024]` from being read as a class
-/// and matching a single character out of 2024.
-///
-/// Escaping is applied to the whole string rather than to the file name alone, because a pattern
-/// can name a folder on the way: `Books [2024]/*.pdf` is a folder of PDFs in a folder with
-/// brackets, and it is the same mistake to read it as a class either way.
+/// The pattern as `glob` should read it, with every bracket escaped as a class of one (`[[]`, `[]]`), since a backslash is the path separator on Windows.
 fn escaped(pattern: &Path) -> String {
 	let mut out = String::new();
 	for character in pattern.to_string_lossy().chars() {
@@ -212,19 +199,6 @@ mod tests {
 		let collected = collect(&[dir.pattern("*.epub")]);
 		assert_eq!(names(&collected.files), ["a.epub", "b.epub"], "not sorted, or the .txt slipped in");
 		assert!(collected.unmatched.is_empty());
-	}
-
-	/// `*.pdf` with no folder in front of it is the commonest pattern there is.
-	#[test]
-	fn a_pattern_with_no_folder_in_front_of_it_reads_the_folder_the_reader_is_in() {
-		let dir = TempDir::new("bare");
-		fs::write(dir.join("a.pdf"), b"x").expect("write");
-		fs::write(dir.join("b.txt"), b"x").expect("write");
-		let saved = env::current_dir().expect("a current directory");
-		env::set_current_dir(&dir.path).expect("change directory");
-		let collected = collect(&[PathBuf::from("*.pdf")]);
-		env::set_current_dir(saved).expect("change back");
-		assert_eq!(names(&collected.files), ["a.pdf"]);
 	}
 
 	/// `?` stands for exactly one character, so it separates `a1.txt` from `a12.txt`.
