@@ -72,11 +72,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#trenutno-podržane-vrste-datoteka">Trenutno podržane vrste datoteka</a></li>
 <li><a href="#prečice-na-tastaturi">Prečice na tastaturi</a><ul>
 <li><a href="#izbornik-datoteka">Izbornik Datoteka</a></li>
-<li><a href="#izbornik-uredi">Izbornik Uredi</a></li>
-<li><a href="#izbornik-prikaz">Izbornik Prikaz</a></li>
 <li><a href="#izbornik-idi">Izbornik Idi</a></li>
-<li><a href="#izbornik-oznake">Izbornik Oznake</a></li>
-<li><a href="#izbornik-zvuk">Izbornik Zvuk</a></li>
 <li><a href="#izbornik-alati">Izbornik Alati</a></li>
 <li><a href="#izbornik-pomoć">Izbornik Pomoć</a></li>
 <li><a href="#dodatne-prečice">Dodatne prečice</a></li>
@@ -191,34 +187,15 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Zatvara trenutni dokument.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Zatvara sve otvorene dokumente.</li>
 <li><code>Ctrl+Shift+T</code>: Ponovo otvara posljednji zatvoreni dokument.</li>
+<li><code>F5</code>: Ponovo učitava trenutni dokument s diska. Radi bez obzira na to da li je u postavkama uključena opcija “Automatski ponovo učitaj izmijenjene dokumente”.</li>
 <li><code>Ctrl+R</code>: Otvara dijalog “Svi dokumenti” (iz nedavnih dokumenata).</li>
-<li><code>Ctrl+Shift+C</code>: Otvara mapu u kojoj se nalazi trenutna datoteka.</li>
-<li><code>Ctrl+Shift+E</code>: Izvozi podatke dokumenta (<code>.paperback</code>).</li>
-<li><code>Ctrl+Shift+I</code>: Uvozi podatke dokumenta (<code>.paperback</code>).</li>
-<li><code>Ctrl+E</code>: Izvozi trenutni dokument kao običan tekst.</li>
 <li><code>Ctrl+Q</code>: Izlazi iz programa (samo na Windowsu; na macOS-u se ova stavka nalazi u izborniku aplikacije).</li>
 </ul>
-<h3 id="izbornik-uredi">Izbornik <code>Uredi</code></h3>
+<h3 id="izbornik-idi">Izbornik <code>Idi</code></h3>
 <ul>
 <li><code>Ctrl+F</code>: Otvara dijalog “Traži”.</li>
 <li><code>F3</code> (macOS: <code>Cmd+G</code>): Traži sljedeće.</li>
 <li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Traži prethodno.</li>
-<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Označava početak odabira, tako da sve od tog mjesta do mjesta do kojeg stignete možete kopirati odjednom.</li>
-<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Kopira sve od označenog početka odabira do trenutnog položaja.</li>
-<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Vraća vas na označeni početak odabira, a označeni početak ostaje sačuvan.</li>
-</ul>
-<h3 id="izbornik-prikaz">Izbornik <code>Prikaz</code></h3>
-<ul>
-<li><code>F5</code>: Ponovo učitava trenutni dokument s diska. Radi bez obzira na to da li je u postavkama uključena opcija “Automatski ponovo učitaj izmijenjene dokumente”.</li>
-<li><code>Ctrl+Alt+W</code>: Uključuje i isključuje prelamanje riječi.</li>
-<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, tj. Ctrl+Command+F): Uključuje i isključuje prikaz preko cijelog zaslona.</li>
-<li><code>Ctrl+Shift+V</code>: Otvara trenutni sadržaj u web prikazu.</li>
-<li><code>Ctrl+U</code>: Prikazuje izvorni sadržaj dokumenta u novoj kartici.</li>
-</ul>
-<h3 id="izbornik-idi">Izbornik <code>Idi</code></h3>
-<ul>
-<li><code>Ctrl+T</code>: Prikazuje sadržaj.</li>
-<li><code>F7</code>: Prikazuje popis elemenata.</li>
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Otvara dijalog “Idi na red”.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Otvara dijalog “Idi na postotak”.</li>
 <li><code>Ctrl+P</code>: Otvara dijalog “Idi na stranicu” (kad dokument to podržava).</li>
@@ -233,6 +210,16 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Od <code>1</code> do <code>6</code>: Sljedeći naslov nivoa od 1 do 6.</li>
 <li><code>Shift+P</code>: Prethodna stranica.</li>
 <li><code>P</code>: Sljedeća stranica.</li>
+<li><code>Shift+B</code>: Prethodna oznaka.</li>
+<li><code>B</code>: Sljedeća oznaka.</li>
+<li><code>/</code>: Postavlja privremenu oznaku.</li>
+<li><code>\</code>: Prelazi na privremenu oznaku.</li>
+<li><code>Shift+N</code>: Prethodna bilješka.</li>
+<li><code>N</code>: Sljedeća bilješka.</li>
+<li><code>Ctrl+B</code>: Prelazi na sve oznake i bilješke.</li>
+<li><code>Ctrl+Alt+B</code>: Prelazi samo na oznake.</li>
+<li><code>Ctrl+Alt+M</code>: Prelazi samo na bilješke.</li>
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje tekst bilješke na trenutnom položaju.</li>
 <li><code>Shift+K</code>: Prethodna poveznica.</li>
 <li><code>K</code>: Sljedeća poveznica.</li>
 <li><code>Shift+G</code>: Prethodna slika.</li>
@@ -252,38 +239,35 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>: Prelazi na početak trenutnog bloka (popisa ili tabele).</li>
 <li><code>,</code>: Prelazi iza kraja trenutnog bloka (popisa ili tabele).</li>
 </ul>
-<h3 id="izbornik-oznake">Izbornik <code>Oznake</code></h3>
-<ul>
-<li><code>Ctrl+Shift+B</code>: Dodaje i uklanja oznaku na trenutnom odabiru ili položaju.</li>
-<li><code>Ctrl+Shift+N</code>: Dodaje ili uređuje bilješku oznake na trenutnom odabiru ili položaju.</li>
-<li><code>Shift+B</code>: Prethodna oznaka.</li>
-<li><code>B</code>: Sljedeća oznaka.</li>
-<li><code>Shift+N</code>: Prethodna bilješka.</li>
-<li><code>N</code>: Sljedeća bilješka.</li>
-<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje tekst bilješke na trenutnom položaju.</li>
-<li><code>Ctrl+B</code>: Prelazi na sve oznake i bilješke.</li>
-<li><code>Ctrl+Alt+B</code>: Prelazi samo na oznake.</li>
-<li><code>Ctrl+Alt+M</code>: Prelazi samo na bilješke.</li>
-<li><code>/</code>: Postavlja privremenu oznaku.</li>
-<li><code>\</code>: Prelazi na privremenu oznaku.</li>
-</ul>
-<h3 id="izbornik-zvuk">Izbornik <code>Zvuk</code></h3>
-<ul>
-<li><code>Ctrl+Razmak</code> (macOS: <code>RawCtrl+Razmak</code>, tj. fizički taster Ctrl, jer <code>Cmd+Razmak</code> otvara Spotlight): Pokreće ili pauzira zvučnu naraciju.</li>
-<li><code>'</code>: Premotava zvučnu naraciju naprijed.</li>
-<li><code>;</code>: Premotava zvučnu naraciju natrag.</li>
-<li><code>Shift+'</code>: Povećava korak premotavanja.</li>
-<li><code>Shift+;</code>: Smanjuje korak premotavanja.</li>
-<li><code>Ctrl+Shift+.</code>: Ubrzava zvučnu naraciju.</li>
-<li><code>Ctrl+Shift+,</code>: Usporava zvučnu naraciju.</li>
-</ul>
 <h3 id="izbornik-alati">Izbornik <code>Alati</code></h3>
 <ul>
 <li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje broj riječi u trenutnom dokumentu.</li>
 <li><code>Ctrl+I</code>: Prikazuje informacije o dokumentu.</li>
-<li><code>Ctrl+Shift+O</code>: Prepoznaje raspon skeniranih PDF stranica pomoću OCR-a.</li>
-<li><code>Ctrl+Shift+S</code>: Uključuje i isključuje odbrojavanje za spavanje.</li>
+<li><code>Ctrl+T</code>: Prikazuje sadržaj.</li>
+<li><code>F7</code>: Prikazuje popis elemenata.</li>
+<li><code>Ctrl+Shift+C</code>: Otvara mapu u kojoj se nalazi trenutna datoteka.</li>
+<li><code>Ctrl+Shift+V</code>: Otvara trenutni sadržaj u web prikazu.</li>
+<li><code>Ctrl+U</code>: Prikazuje izvorni sadržaj dokumenta u novoj kartici.</li>
+<li><code>Ctrl+Shift+E</code>: Izvozi podatke dokumenta (<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Uvozi podatke dokumenta (<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Izvozi trenutni dokument kao običan tekst.</li>
+<li><code>Ctrl+Shift+B</code>: Dodaje i uklanja oznaku na trenutnom odabiru ili položaju.</li>
+<li><code>Ctrl+Shift+N</code>: Dodaje ili uređuje bilješku oznake na trenutnom odabiru ili položaju.</li>
+<li><code>Ctrl+Alt+W</code>: Uključuje i isključuje prelamanje riječi.</li>
+<li><code>Ctrl+Razmak</code> (macOS: <code>RawCtrl+Razmak</code>, tj. fizički taster Ctrl, jer <code>Cmd+Razmak</code> otvara Spotlight): Pokreće ili pauzira zvučnu naraciju.</li>
+<li><code>'</code>: Premotava zvučnu naraciju naprijed.</li>
+<li><code>;</code>: Premotava zvučnu naraciju nazad.</li>
+<li><code>Shift+'</code>: Povećava korak premotavanja.</li>
+<li><code>Shift+;</code>: Smanjuje korak premotavanja.</li>
+<li><code>Ctrl+Shift+.</code>: Ubrzava zvučnu naraciju.</li>
+<li><code>Ctrl+Shift+,</code>: Usporava zvučnu naraciju.</li>
+<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, tj. Ctrl+Command+F): Uključuje i isključuje prikaz preko cijelog zaslona.</li>
 <li><code>Ctrl+,</code>: Otvara postavke (na macOS-u se nalaze u izborniku aplikacije).</li>
+<li><code>Ctrl+Shift+S</code>: Uključuje i isključuje odbrojavanje za spavanje.</li>
+<li><code>Ctrl+Shift+O</code>: Prepoznaje raspon skeniranih PDF stranica pomoću OCR-a.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Označava početak odabira, tako da sve od tog mjesta do mjesta do kojeg stignete možete kopirati odjednom.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Kopira sve od označenog početka odabira do trenutnog položaja.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Vraća vas na označeni početak odabira, a označeni početak ostaje sačuvan.</li>
 </ul>
 <h3 id="izbornik-pomoć">Izbornik <code>Pomoć</code></h3>
 <ul>
@@ -297,7 +281,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Delete</code> / <code>Numpad Delete</code> na kontroli kartica: Zatvara karticu odabranog dokumenta.</li>
 <li>Od <code>Ctrl+1</code> do <code>Ctrl+9</code> (macOS: od <code>Cmd+1</code> do <code>Cmd+9</code>) u tekstu dokumenta ili na kontroli kartica: Prelazi na jedan od prvih devet otvorenih dokumenata, redoslijedom kojim su otvoreni.</li>
-<li><code>Ctrl+Tab</code> i <code>Ctrl+Shift+Tab</code>: Prelaze na sljedeći ili prethodni otvoreni dokument; nakon posljednjeg dokumenta prelazi se na prvi i obrnuto.</li>
 <li><code>Enter</code> ili <code>Razmak</code> u dokumentu: Otvara poveznicu na položaju kursora ili otvara prikaz tabele ili formule.</li>
 <li><code>Enter</code> na skeniranoj PDF stranici: Prepoznaje stranicu pomoću OCR-a.</li>
 <li><code>Shift+F10</code> ili taster <code>Aplikacije</code> u dokumentu: Otvara kontekstni izbornik.</li>
@@ -345,7 +328,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="tastature-i-slušalice">Tastature i slušalice</h3>
 <p>Uz tastaturu rade sve prečice iz verzije za računare za otvaranje knjiga, nedavne dokumente, traženje, dijalog “Idi na”, sadržaj, broj riječi, informacije o dokumentu, izvoz i odbrojavanje za spavanje, s tim da se na iOS-u umjesto <code>Ctrl</code> koristi <code>Cmd</code>. Isto vrijedi i za tastere s jednim slovom za kretanje po naslovima, stranicama, poveznicama i ostalim elementima, a <code>Razmak</code> pokreće i pauzira reprodukciju. Na iOS-u tasteri s jednim slovom stižu do Paperbacka samo kada je VoiceOverova funkcija brzog kretanja jednim slovom (Quick Nav) isključena.</p>
-<p>Na Androidu dugme na slušalicama jednim pritiskom pokreće i pauzira reprodukciju, s dva pritiska ide naprijed, a s tri pritiska vraća natrag.</p>
+<p>Na Androidu dugme na slušalicama jednim pritiskom pokreće i pauzira reprodukciju, s dva pritiska ide naprijed, a s tri pritiska vraća nazad.</p>
 <h2 id="podržani-jezici">Podržani jezici</h2>
 <p>Paperback je preveden na mnoge različite jezike, a novi prijevodi se stalno dodaju. Potpuni popis nalazi se u nastavku.</p>
 <p>Ako želite doprinijeti projektu prevođenjem, pročitajte naš <a href="translating.md">vodič za prevođenje</a>.</p>
@@ -654,7 +637,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h5 id="zvučne-knjige-2">Zvučne knjige</h5>
 <ul>
 <li>Mogućnost reprodukcije zvučnih knjiga, trenutno uz podršku za DAISY knjige sa zvukom (uključujući DAISY knjige sa zvukom i tekstom) i ZIP arhive sa zvučnim datotekama.</li>
-<li>Prečice na tastaturi i stavke izbornika za pokretanje i pauziranje zvučne naracije, premotavanje unaprijed i unatrag te podešavanje koraka premotavanja.</li>
+<li>Prečice na tastaturi i stavke izbornika za pokretanje i pauziranje zvučne naracije, premotavanje unaprijed i unazad te podešavanje koraka premotavanja.</li>
 <li>Opcije za usklađivanje kursora s reprodukcijom zvuka, postavljanje koraka premotavanja i odabir da li se premotavanje preko kraja poglavlja nastavlja u sljedeće poglavlje.</li>
 </ul>
 <h5 id="chm-dokumenti">CHM dokumenti</h5>
@@ -914,7 +897,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="verzija-040">Verzija 0.4.0</h3>
 <ul>
 <li>Dodana je podrška za CHM dokumente.</li>
-<li>Dodana je podrška za oznake! Možete imati neograničen broj oznaka u neograničenom broju dokumenata. Krećite se između njih naprijed i natrag pomoću <code>B</code> i <code>Shift+B</code>, postavite novu oznaku pomoću <code>Ctrl+Shift+B</code>, a dijalog za prelazak na određenu oznaku otvorite pomoću <code>Ctrl+B</code>.</li>
+<li>Dodana je podrška za oznake! Možete imati neograničen broj oznaka u neograničenom broju dokumenata. Krećite se između njih naprijed i nazad pomoću <code>B</code> i <code>Shift+B</code>, postavite novu oznaku pomoću <code>Ctrl+Shift+B</code>, a dijalog za prelazak na određenu oznaku otvorite pomoću <code>Ctrl+B</code>.</li>
 <li>Dodan je instalacijski program uz prenosivu ZIP verziju! Instalacijski program će instalirati Paperback u mapu <code>Program Files</code> i automatski postaviti pridruživanje datoteka.</li>
 <li>Tekstualne datoteke s BOM oznakom sada će se ispravno dekodirati, a BOM više neće biti prikazan na početku teksta.</li>
 <li>U statusnu traku dodano je mnogo više informacija. Sada prikazuje trenutni red, znak i postotak pročitanog dokumenta.</li>
