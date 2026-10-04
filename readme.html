@@ -72,7 +72,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#currently-supported-file-types">Currently supported file types</a></li>
 <li><a href="#keyboard-shortcuts">Keyboard shortcuts</a><ul>
 <li><a href="#file-menu">File menu</a></li>
+<li><a href="#edit-menu">Edit menu</a></li>
+<li><a href="#view-menu">View menu</a></li>
 <li><a href="#go-menu">Go menu</a></li>
+<li><a href="#bookmarks-menu">Bookmarks menu</a></li>
+<li><a href="#audio-menu">Audio menu</a></li>
 <li><a href="#tools-menu">Tools menu</a></li>
 <li><a href="#help-menu">Help menu</a></li>
 <li><a href="#additional-document-view-keys">Additional document-view keys</a></li>
@@ -187,15 +191,34 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Close the current document.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Close all open documents.</li>
 <li><code>Ctrl+Shift+T</code>: Reopen the last closed document.</li>
-<li><code>F5</code>: Re-read the current document from disk. Works whether or not “Automatically reload changed documents” is switched on in Settings.</li>
 <li><code>Ctrl+R</code>: Show the “All Documents” dialog (from Recent Documents).</li>
+<li><code>Ctrl+Shift+C</code>: Open containing folder.</li>
+<li><code>Ctrl+Shift+E</code>: Export document data (<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Import document data (<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Export the current document to plain text.</li>
 <li><code>Ctrl+Q</code>: Exit (Windows only; on macOS this is under the app menu instead).</li>
 </ul>
-<h3 id="go-menu">Go menu</h3>
+<h3 id="edit-menu">Edit menu</h3>
 <ul>
 <li><code>Ctrl+F</code>: Show the Find dialog.</li>
 <li><code>F3</code> (macOS: <code>Cmd+G</code>): Find next.</li>
 <li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Find previous.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Mark the beginning of a selection, so everything from here to wherever you get to can be copied in one go.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Copy everything from the marked beginning of the selection to the current position.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Jump back to the marked beginning of the selection, leaving the mark in place.</li>
+</ul>
+<h3 id="view-menu">View menu</h3>
+<ul>
+<li><code>F5</code>: Re-read the current document from disk. Works whether or not “Automatically reload changed documents” is switched on in Settings.</li>
+<li><code>Ctrl+Alt+W</code>: Toggle word wrap.</li>
+<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, i.e. Control+Command+F): Toggle full screen.</li>
+<li><code>Ctrl+Shift+V</code>: Open current content in Web View.</li>
+<li><code>Ctrl+U</code>: View the document source in a new tab.</li>
+</ul>
+<h3 id="go-menu">Go menu</h3>
+<ul>
+<li><code>Ctrl+T</code>: Show table of contents.</li>
+<li><code>F7</code>: Show elements list.</li>
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Go to line.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Go to percent.</li>
 <li><code>Ctrl+P</code>: Go to page (when supported by the current document).</li>
@@ -210,16 +233,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>1</code> through <code>6</code>: Next heading at level 1-6.</li>
 <li><code>Shift+P</code>: Previous page.</li>
 <li><code>P</code>: Next page.</li>
-<li><code>Shift+B</code>: Previous bookmark.</li>
-<li><code>B</code>: Next bookmark.</li>
-<li><code>/</code>: Set your temporary bookmark.</li>
-<li><code>\</code>: Jump to your temporary bookmark.</li>
-<li><code>Shift+N</code>: Previous note.</li>
-<li><code>N</code>: Next note.</li>
-<li><code>Ctrl+B</code>: Jump to all bookmarks and notes.</li>
-<li><code>Ctrl+Alt+B</code>: Jump to bookmarks only.</li>
-<li><code>Ctrl+Alt+M</code>: Jump to notes only.</li>
-<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, i.e. the physical Control key rather than Cmd): View note text at the current position.</li>
 <li><code>Shift+K</code>: Previous link.</li>
 <li><code>K</code>: Next link.</li>
 <li><code>Shift+G</code>: Previous image.</li>
@@ -239,21 +252,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>: Go to the start of the current container (list or table).</li>
 <li><code>,</code>: Go past the end of the current container (list or table).</li>
 </ul>
-<h3 id="tools-menu">Tools menu</h3>
+<h3 id="bookmarks-menu">Bookmarks menu</h3>
 <ul>
-<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, i.e. the physical Control key rather than Cmd): Show word count for the current document.</li>
-<li><code>Ctrl+I</code>: Show document info.</li>
-<li><code>Ctrl+T</code>: Show table of contents.</li>
-<li><code>F7</code>: Show elements list.</li>
-<li><code>Ctrl+Shift+C</code>: Open containing folder.</li>
-<li><code>Ctrl+Shift+V</code>: Open current content in Web View.</li>
-<li><code>Ctrl+U</code>: View the document source in a new tab.</li>
-<li><code>Ctrl+Shift+E</code>: Export document data (<code>.paperback</code>).</li>
-<li><code>Ctrl+Shift+I</code>: Import document data (<code>.paperback</code>).</li>
-<li><code>Ctrl+E</code>: Export the current document to plain text.</li>
 <li><code>Ctrl+Shift+B</code>: Toggle bookmark at the current selection/cursor.</li>
 <li><code>Ctrl+Shift+N</code>: Add or edit bookmark note at the current selection/cursor.</li>
-<li><code>Ctrl+Alt+W</code>: Toggle word wrap.</li>
+<li><code>Shift+B</code>: Previous bookmark.</li>
+<li><code>B</code>: Next bookmark.</li>
+<li><code>Shift+N</code>: Previous note.</li>
+<li><code>N</code>: Next note.</li>
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, i.e. the physical Control key rather than Cmd): View note text at the current position.</li>
+<li><code>Ctrl+B</code>: Jump to all bookmarks and notes.</li>
+<li><code>Ctrl+Alt+B</code>: Jump to bookmarks only.</li>
+<li><code>Ctrl+Alt+M</code>: Jump to notes only.</li>
+<li><code>/</code>: Set your temporary bookmark.</li>
+<li><code>\</code>: Jump to your temporary bookmark.</li>
+</ul>
+<h3 id="audio-menu">Audio menu</h3>
+<ul>
 <li><code>Ctrl+Space</code> (macOS: <code>RawCtrl+Space</code>, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.</li>
 <li><code>'</code>: Seek audio narration forward.</li>
 <li><code>;</code>: Seek audio narration backward.</li>
@@ -261,13 +276,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: Decrease the audio seek amount.</li>
 <li><code>Ctrl+Shift+.</code>: Speed up audio narration.</li>
 <li><code>Ctrl+Shift+,</code>: Slow down audio narration.</li>
-<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, i.e. Control+Command+F): Toggle full screen.</li>
-<li><code>Ctrl+,</code>: Open Settings (macOS: under the app menu).</li>
-<li><code>Ctrl+Shift+S</code>: Toggle sleep timer.</li>
+</ul>
+<h3 id="tools-menu">Tools menu</h3>
+<ul>
+<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, i.e. the physical Control key rather than Cmd): Show word count for the current document.</li>
+<li><code>Ctrl+I</code>: Show document info.</li>
 <li><code>Ctrl+Shift+O</code>: Recognize a range of scanned PDF pages with OCR.</li>
-<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Mark the beginning of a selection, so everything from here to wherever you get to can be copied in one go.</li>
-<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Copy everything from the marked beginning of the selection to the current position.</li>
-<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Jump back to the marked beginning of the selection, leaving the mark in place.</li>
+<li><code>Ctrl+Shift+S</code>: Toggle sleep timer.</li>
+<li><code>Ctrl+,</code>: Open Settings (macOS: under the app menu).</li>
 </ul>
 <h3 id="help-menu">Help menu</h3>
 <ul>
