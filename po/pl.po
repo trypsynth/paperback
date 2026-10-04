@@ -217,7 +217,7 @@ msgstr "Zamknij wszystkie dokumenty"
 
 #. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
 msgid "Reopen &Last Closed"
-msgstr "Otwórz ponownie &ostatnio zamknięty"
+msgstr "Otwórz po&nownie ostatnio zamknięty"
 
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
@@ -1659,7 +1659,7 @@ msgstr "Zaznacz &wszystko\tCtrl+A"
 
 #. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
-msgstr "&Ostatnie dokumenty"
+msgstr "Ostatnie &dokumenty"
 
 #. TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 msgid "Open a recent document"
@@ -2955,8 +2955,8 @@ msgstr "Nie znaleziono parsera dla rozszerzenia: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Wszystkie parsery zawiodły dla rozszerzenia: .{}"
 
-msgid "Unknown update file format."
-msgstr "Nieznany format pliku aktualizacji."
+#~ msgid "Unknown update file format."
+#~ msgstr "Nieznany format pliku aktualizacji."
 
 msgid "Failed to open disk image"
 msgstr "Nie udało się otworzyć obrazu dysku"
@@ -2970,8 +2970,8 @@ msgstr "Aktualizacja gotowa"
 msgid "Failed to get current exe path"
 msgstr "Nie udało się pobrać bieżącej ścieżki pliku exe"
 
-msgid "Failed to launch installer script"
-msgstr "Nie udało się uruchomić skryptu instalatora"
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Nie udało się uruchomić skryptu instalatora"
 
 msgid "Failed to launch update script"
 msgstr "Nie udało się uruchomić skryptu aktualizacji"
@@ -4218,6 +4218,127 @@ msgstr "{} ms"
 #| msgid "Paragraph"
 msgid "Paragraph Pause"
 msgstr "Przerwa między akapitami"
+
+#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+msgid "&Reload"
+msgstr "&Przeładuj"
+
+#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
+msgid "Re-read the current document from disk"
+msgstr "Przeładuj bieżący dokument z dysku"
+
+#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "Remove repeated page &headers and footers in PDFs"
+msgstr "&Usuwaj powtarzające się nagłówki i stopki stron w plikach PDF"
+
+msgid "Installing the update. Paperback will restart."
+msgstr "Trwa instalowanie aktualizacji. Paperback uruchomi się ponownie."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reload"
+msgstr "Przeładuj"
+
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Program nie został uruchomiony z pliku AppImage, więc nie może się sam zaktualizować."
+
+msgid "Failed to start installation"
+msgstr "Nie udało się rozpocząć instalacji"
+
+msgid "Failed to stage the application"
+msgstr "Nie udało się przygotować aplikacji do instalacji"
+
+msgid "The update contains a different application."
+msgstr "Aktualizacja zawiera inną aplikację."
+
+msgid "Could not determine the update log directory."
+msgstr "Nie udało się ustalić folderu dziennika aktualizacji."
+
+msgid "Failed to launch update helper"
+msgstr "Nie udało się uruchomić programu pomocniczego aktualizacji"
+
+msgid "The update helper did not start. See the log:"
+msgstr "Program pomocniczy aktualizacji nie uruchomił się. Sprawdź dziennik:"
+
+msgid "The application did not quit within 60 seconds. The current app was kept."
+msgstr "Aplikacja nie zamknęła się w ciągu 60 sekund. Zachowano obecną wersję aplikacji."
+
+msgid "The installation changed while waiting. The current app was kept."
+msgstr "Podczas oczekiwania zainstalowana aplikacja uległa zmianie. Zachowano obecną wersję aplikacji."
+
+msgid "Could not move the current application. The current app was kept."
+msgstr "Nie udało się przenieść zainstalowanej aplikacji. Zachowano obecną wersję aplikacji."
+
+msgid "Could not install the update. The previous version was restored."
+msgstr "Nie udało się zainstalować aktualizacji. Przywrócono poprzednią wersję."
+
+msgid "Could not restore the previous version. Recover it from:"
+msgstr "Nie udało się przywrócić poprzedniej wersji. Odzyskaj ją z:"
+
+msgid "macOS could not launch the update. The previous version is preserved at:"
+msgstr "System macOS nie mógł uruchomić zaktualizowanej aplikacji. Poprzednia wersja została zachowana w:"
+
+msgid "Application update failed"
+msgstr "Aktualizacja aplikacji nie powiodła się"
+
+msgid "Log:"
+msgstr "Dziennik:"
+
+msgid "Update cancelled."
+msgstr "Aktualizacja została anulowana."
+
+msgid "Invalid application metadata"
+msgstr "Nieprawidłowe metadane aplikacji"
+
+msgid "The disk image must contain exactly one matching application."
+msgstr "Obraz dysku musi zawierać dokładnie jedną aplikację o właściwym identyfikatorze."
+
+msgid "The update must be signed by the application's developer team"
+msgstr "Aktualizacja musi być podpisana przez zespół deweloperski aplikacji"
+
+msgid "Invalid application executable."
+msgstr "Nieprawidłowy plik wykonywalny aplikacji."
+
+msgid "Invalid application executable"
+msgstr "Nieprawidłowy plik wykonywalny aplikacji"
+
+msgid "Application signature verification failed"
+msgstr "Weryfikacja podpisu aplikacji nie powiodła się"
+
+msgid "Failed to mount disk image"
+msgstr "Nie udało się zamontować obrazu dysku"
+
+msgid "Failed to unmount disk image"
+msgstr "Nie udało się odmontować obrazu dysku"
+
+msgid "Preparing update..."
+msgstr "Przygotowywanie aktualizacji..."
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+msgid "&Option"
+msgstr "&Option"
+
+msgid "A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key from every other program."
+msgstr "Skrót globalny musi zawierać klawisz Ctrl, Alt lub Win. W przeciwnym razie przejmie wybrany klawisz i uniemożliwi korzystanie z niego w innych programach."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+msgid "Shortcut Not Allowed"
+msgstr "Niedozwolony skrót"
+
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt
+#: swift
+msgid "Language"
+msgstr "Język"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt
+#: swift
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr "Otwiera ustawienia Paperbacka w systemowej aplikacji Ustawienia, gdzie można zmienić jego język."
 
 #. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
 #: kt
