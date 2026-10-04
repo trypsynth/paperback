@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: d5b08595bb9ff6e5; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,f994348b,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 50ae5f8f1895cd78; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,75b3aaec,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - версия 1.0
 
@@ -175,6 +175,7 @@ Paperback разработан для работы в первую очеред�
 
 * `Delete` / `Numpad Delete` на элементе управления вкладками: закрыть выбранную вкладку документа.
 * `Ctrl+1` по `Ctrl+9` (macOS: `Cmd+1` по `Cmd+9`) в тексте документа или на элементе управления вкладками: перейти к первым девяти открытым документам в порядке их открытия.
+* `Ctrl+Tab` и `Ctrl+Shift+Tab`: перейти к следующему или предыдущему открытому документу, циклически переходя на одном из концов.
 * `Enter` или `Space` в тексте документа: следовать по ссылке или открыть представление таблицы или формулы на позиции курсора.
 * `Enter` на отсканированной странице PDF: распознать страницу с помощью OCR.
 * `Shift+F10` или клавиша Menu/Application в тексте документа: открыть контекстное меню.

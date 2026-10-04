@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-03 13:54-0600\n"
+"POT-Creation-Date: 2026-10-04 00:44+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1621,6 +1621,9 @@ msgstr ""
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr ""
 
+msgid "Installing the update. Paperback will restart."
+msgstr ""
+
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr ""
@@ -2961,10 +2964,79 @@ msgstr ""
 msgid "Failed to launch update script"
 msgstr ""
 
+msgid "Failed to start installation"
+msgstr ""
+
+msgid "Failed to stage the application"
+msgstr ""
+
+msgid "The update contains a different application."
+msgstr ""
+
+msgid "Could not determine the update log directory."
+msgstr ""
+
+msgid "Failed to launch update helper"
+msgstr ""
+
+msgid "The update helper did not start. See the log:"
+msgstr ""
+
+msgid "The application did not quit within 60 seconds. The current app was kept."
+msgstr ""
+
+msgid "The installation changed while waiting. The current app was kept."
+msgstr ""
+
+msgid "Could not move the current application. The current app was kept."
+msgstr ""
+
+msgid "Could not install the update. The previous version was restored."
+msgstr ""
+
+msgid "Could not restore the previous version. Recover it from:"
+msgstr ""
+
+msgid "macOS could not launch the update. The previous version is preserved at:"
+msgstr ""
+
+msgid "Application update failed"
+msgstr ""
+
+msgid "Log:"
+msgstr ""
+
+msgid "Update cancelled."
+msgstr ""
+
 msgid "Failed to open disk image"
 msgstr ""
 
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
+msgstr ""
+
+msgid "Invalid application metadata"
+msgstr ""
+
+msgid "The disk image must contain exactly one matching application."
+msgstr ""
+
+msgid "The update must be signed by the application's developer team"
+msgstr ""
+
+msgid "Invalid application executable."
+msgstr ""
+
+msgid "Invalid application executable"
+msgstr ""
+
+msgid "Application signature verification failed"
+msgstr ""
+
+msgid "Failed to mount disk image"
+msgstr ""
+
+msgid "Failed to unmount disk image"
 msgstr ""
 
 msgid ""
@@ -2996,6 +3068,9 @@ msgid "Downloading update..."
 msgstr ""
 
 msgid "Update failed"
+msgstr ""
+
+msgid "Preparing update..."
 msgstr ""
 
 msgid "Update Ready"

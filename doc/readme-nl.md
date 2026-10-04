@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: d5b08595bb9ff6e5; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,f994348b,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 50ae5f8f1895cd78; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,75b3aaec,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -175,6 +175,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 
 * `Delete` / `Numpad Delete` op het tabbladelement: Het geselecteerde documenttabblad sluiten.
 * `Ctrl+1` t/m `Ctrl+9` (macOS: `Cmd+1` t/m `Cmd+9`) in de documenttekst of op het tabbladelement: Ga naar de eerste negen geopende documenten, in de volgorde waarin ze werden geopend.
+* `Ctrl+Tab` en `Ctrl+Shift+Tab`: Ga naar het volgende of vorige geopende document, met omwikkeling aan beide uiteinden.
 * `Enter` of `Spatie` in de documenttekst: Een link volgen of een tabel- of formuleweergave openen op de cursor.
 * `Enter` op een gescande PDF-pagina: De pagina herkennen met OCR.
 * `Shift+F10` of de menu- of applicatietoets in de documenttekst: Het contextmenu openen.
