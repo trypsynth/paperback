@@ -260,11 +260,19 @@ jobs:
             gettext
             mingw-w64-ucrt-x86_64-gettext-tools
       - name: Cache Rust dependencies
+        id: rust-cache
         uses: Swatinem/rust-cache@v2
         with:
           # Writing the cache takes about five minutes. Only master writes one; a pull request
           # restores it and skips the write, which is the slowest step in several of these jobs.
           save-if: ${{ github.ref == 'refs/heads/master' }}
+      # A pull request that changes Cargo.lock restores a partial cache, and wxdragon-sys then rebuilds wxWidgets on top of the old CMake tree. The debug .pdb files that leaves behind are corrupt, and the UI tests' link of paperback-core fails on them (LNK1103). Building wxWidgets afresh on a miss avoids that.
+      - name: Rebuild wxWidgets on a partial cache
+        if: steps.rust-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          rm -rf target/debug/wxwidgets_cmake_build target/debug/wxdragon_sys_cmake_build
+          cargo clean -p wxdragon-sys
       # msgfmt comes from MSYS2, which setup-msys2 leaves off this step's PATH, so the build
       # scripts would silently skip every .po file. Appended rather than prepended: MSYS2's
       # usr/bin has a coreutils link.exe that would otherwise shadow the MSVC linker.
