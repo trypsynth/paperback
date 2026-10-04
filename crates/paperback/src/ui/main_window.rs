@@ -34,6 +34,7 @@ mod menu_events;
 mod menu_file;
 mod menu_go;
 mod menu_tools;
+mod menu_view;
 mod parser_ready;
 mod restore;
 pub(crate) use parser_ready::ensure_parser_ready_for_path;
@@ -543,43 +544,6 @@ impl MainWindow {
 
 	fn update_recent_documents_menu(&self) {
 		rebuild_menu_bar(&self.frame, &self.doc_manager, &self.config);
-	}
-
-	/// Prompts for a save path and exports `tab`'s document as `format`, showing a
-	/// generic failure dialog on error. Shared by the `EXPORT_TO_PLAIN_TEXT` /
-	/// `EXPORT_TO_HTML` / `EXPORT_TO_MARKDOWN` menu handlers, which differ only in
-	/// `format`, the default file `extension`, the file-picker `wildcard`, and the
-	/// file-picker `dialog_title`.
-	fn export_document_as(
-		frame: &Frame,
-		tab: &DocumentTab,
-		format: paperback_core::export::ExportFormat,
-		extension: &str,
-		wildcard: &str,
-		dialog_title: &str,
-	) {
-		let default_name =
-			// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-			tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-		let default_file = format!("{default_name}.{extension}");
-		let dialog = FileDialog::builder(frame)
-			.with_message(dialog_title)
-			.with_default_file(&default_file)
-			.with_wildcard(wildcard)
-			.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-			.build();
-		if dialog.show_modal() == ID_OK
-			&& let Some(path) = dialog.get_path()
-			&& let Err(e) = tab.session.export_as(&path, format)
-		{
-			tracing::error!(path = %path, error = %e, format = ?format, "failed to export document");
-			let dialog =
-				// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-				MessageDialog::builder(frame, &t("Failed to export document."), &t("Error"))
-					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-					.build();
-			dialog.show_modal();
-		}
 	}
 }
 

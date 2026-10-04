@@ -15,7 +15,7 @@ use super::HotkeyHandle;
 use super::menu_edit;
 use super::{
 	DocumentManager, FindDialogState, MainWindow, background, commands, dialogs, find, get_update_channel, help, menu,
-	menu_file, menu_go, menu_ids, menu_tools, sleep_timer, update_title_from_manager, updater,
+	menu_file, menu_go, menu_ids, menu_tools, menu_view, sleep_timer, update_title_from_manager, updater,
 };
 use crate::ui::navigation::announce_for_command;
 
@@ -129,19 +129,19 @@ impl MainWindow {
 					announce_for_command(live_region_label, from_keyboard, msg);
 				}
 				menu_ids::EXPORT_TO_PLAIN_TEXT => {
-					menu_tools::handle_export_to_plain_text(&frame_copy, &dm);
+					menu_file::handle_export_to_plain_text(&frame_copy, &dm);
 				}
 				menu_ids::EXPORT_TO_HTML => {
-					menu_tools::handle_export_to_html(&frame_copy, &dm);
+					menu_file::handle_export_to_html(&frame_copy, &dm);
 				}
 				menu_ids::EXPORT_TO_MARKDOWN => {
-					menu_tools::handle_export_to_markdown(&frame_copy, &dm);
+					menu_file::handle_export_to_markdown(&frame_copy, &dm);
 				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {
-					menu_tools::handle_export_document_data(&frame_copy, &dm, &config);
+					menu_file::handle_export_document_data(&frame_copy, &dm, &config);
 				}
 				menu_ids::IMPORT_DOCUMENT_DATA => {
-					menu_tools::handle_import_document_data(&frame_copy, &dm, &config);
+					menu_file::handle_import_document_data(&frame_copy, &dm, &config);
 				}
 				menu_ids::WORD_COUNT => {
 					menu_tools::handle_word_count(&frame_copy, &dm, &config);
@@ -150,19 +150,19 @@ impl MainWindow {
 					menu_tools::handle_document_info(&frame_copy, &dm);
 				}
 				menu_ids::TABLE_OF_CONTENTS => {
-					menu_tools::handle_table_of_contents(&frame_copy, &dm, &config, live_region_label);
+					menu_go::handle_table_of_contents(&frame_copy, &dm, &config, live_region_label);
 				}
 				menu_ids::ELEMENTS_LIST => {
-					menu_tools::handle_elements_list(&frame_copy, &dm, &config, live_region_label);
+					menu_go::handle_elements_list(&frame_copy, &dm, &config, live_region_label);
 				}
 				menu_ids::OPEN_IN_WEB_VIEW => {
-					menu_tools::handle_open_in_web_view(&frame_copy, &dm);
+					menu_view::handle_open_in_web_view(&frame_copy, &dm);
 				}
 				menu_ids::REVEAL_FILE_IN_FOLDER => {
 					help::handle_reveal_file_in_folder(&frame_copy, &dm);
 				}
 				menu_ids::VIEW_SOURCE => {
-					menu_tools::handle_view_source(&frame_copy, &dm);
+					menu_view::handle_view_source(&frame_copy, &dm);
 				}
 				menu_ids::OPTIONS | menu_ids::PREFERENCES => {
 					menu_tools::handle_options(
