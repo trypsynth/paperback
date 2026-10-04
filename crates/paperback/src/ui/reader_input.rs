@@ -16,6 +16,14 @@ use super::{
 	text_render::reload_window_around,
 };
 
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "windows")]
+mod windows;
+
+#[cfg(target_os = "windows")]
+use windows::try_navigate_line_by_column;
+
 /// Builds the reading control and binds everything it responds to.
 pub(super) fn build_text_ctrl(
 	panel: Panel,
@@ -161,6 +169,28 @@ pub(super) fn build_text_ctrl(
 				}
 				return;
 			}
+			#[cfg(target_os = "macos")]
+			if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
+				let handled = dm_for_keys.try_lock().is_ok_and(|mut dm| {
+					let start_of_line = dm.config.lock().unwrap().get_app_bool("line_start_navigation", false);
+					if !start_of_line {
+						return false;
+					}
+					let new_pos =
+						dm.active_tab_mut().and_then(|tab| navigate_line_by_column(tab, key == WXK_DOWN, None, true));
+					if let Some((new_pos, _)) = new_pos {
+						macos::set_line_start(text_ctrl_for_menu, new_pos);
+						dm.update_status_bar();
+						true
+					} else {
+						false
+					}
+				});
+				if handled {
+					kbd.event.skip(false);
+					return;
+				}
+			}
 			#[cfg(target_os = "windows")]
 			if let Ok(dm) = dm_for_keys.try_lock() {
 				dm.set_preferred_column(None);
@@ -284,38 +314,6 @@ const fn document_edge_for_key(key: i32, control: bool, shift: bool, alt: bool) 
 	}
 }
 
-/// One line-vertical-navigation attempt within whatever's currently loaded in `tab.text_ctrl`.
-/// Returns `None` (outer) if the current position has no known line/column (shouldn't happen in
-/// practice), `Some(None)` if the target line falls outside what's currently loaded - the caller
-/// checks whether there's more document in that direction and, if so, reloads and retries - or
-/// `Some(Some(..))` on success.
-#[cfg(target_os = "windows")]
-fn try_navigate_line_by_column(
-	tab: &DocumentTab,
-	going_down: bool,
-	pref_col: Option<i64>,
-	start_of_line: bool,
-) -> Option<Option<(i64, i64)>> {
-	let text_ctrl = tab.text_ctrl;
-	let current_pos = text_ctrl.get_insertion_point().max(0);
-	let (current_col, current_line) = text_ctrl.position_to_xy(current_pos)?;
-	let col = pref_col.unwrap_or(current_col);
-	let target_line = if going_down { current_line + 1 } else { current_line - 1 };
-	if target_line < 0 {
-		return Some(None);
-	}
-	let target_line_start = text_ctrl.xy_to_position(0, target_line);
-	if target_line_start < 0 {
-		return Some(None);
-	}
-	if start_of_line {
-		return Some(Some((target_line_start, 0)));
-	}
-	let target_line_len = i64::from(text_ctrl.get_line_length(target_line));
-	let new_pos = target_line_start + col.min(target_line_len);
-	Some(Some((new_pos, col)))
-}
-
 /// Returns (`new_position`, `preferred_column`) for vertical navigation.
 /// With `start_of_line` set, the caret lands at the start of the target visual line. Otherwise it
 /// uses character-column-based navigation (`pref_col` or the current column), so the cursor lands on
@@ -326,7 +324,7 @@ fn try_navigate_line_by_column(
 /// which RichEdit handles natively with no window awareness at all) can strand the caret mid-chapter
 /// with no keyboard-only way past it except an explicit jump (heading/bookmark navigation etc.) -
 /// found the hard way testing a huge book, not something worth leaving as a TODO.
-#[cfg(target_os = "windows")]
+#[cfg(any(target_os = "windows", target_os = "macos"))]
 fn navigate_line_by_column(
 	tab: &mut DocumentTab,
 	going_down: bool,
@@ -346,6 +344,16 @@ fn navigate_line_by_column(
 	let local = tab.window.to_local(doc_pos);
 	tab.text_ctrl.set_insertion_point(local);
 	try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)?
+}
+
+#[cfg(target_os = "macos")]
+fn try_navigate_line_by_column(
+	tab: &DocumentTab,
+	going_down: bool,
+	_pref_col: Option<i64>,
+	_start_of_line: bool,
+) -> Option<Option<(i64, i64)>> {
+	macos::try_adjacent_line_start(tab.text_ctrl, going_down)
 }
 
 fn show_reader_context_menu(text_ctrl: TextCtrl) {

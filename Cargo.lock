@@ -2811,6 +2811,7 @@ version = "1.0.0"
 dependencies = [
  "anyhow",
  "clap",
+ "glob",
  "native-ocr",
  "paperback-core",
  "rpassword",

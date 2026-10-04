@@ -10,6 +10,9 @@ repository.workspace = true
 [dependencies]
 anyhow = { workspace = true }
 clap = { version = "4.6.7", features = ["derive"] }
+# Expands the patterns a Windows shell does not, so `pb *.pdf` reads the same there as it does in a
+# shell that expands them itself. Already in the lock file as a build dependency of bindgen.
+glob = "0.3.4"
 # The OCR engine itself, for --ocr-image-pages. Core renders the pages; recognizing them is the
 # engine's job, and the desktop crate depends on this the same way rather than through core.
 native-ocr = "0.1.0"

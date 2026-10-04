@@ -1,11 +1,6 @@
-use std::{
-	cell::Cell,
-	path::Path,
-	rc::Rc,
-	sync::{Mutex, atomic::Ordering},
-};
 #[cfg(target_os = "windows")]
-use std::{cell::RefCell, sync::atomic::AtomicIsize};
+use std::cell::RefCell;
+use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::config::ConfigManager;
 use patois::t;
@@ -21,21 +16,23 @@ use super::{
 	readability::build_font_from_readability,
 	sleep_timer, status, window_geometry,
 };
-#[cfg(any(target_os = "linux", target_os = "windows"))]
-use crate::ipc::IpcCommand;
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
 	updater,
 };
 
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+mod ipc;
 #[cfg(not(target_os = "macos"))]
 mod menu_edit;
 mod menu_events;
 mod menu_file;
 mod menu_go;
 mod menu_tools;
+mod menu_view;
 mod parser_ready;
 mod restore;
+mod window_events;
 pub(crate) use parser_ready::ensure_parser_ready_for_path;
 
 #[cfg(target_os = "windows")]
@@ -69,9 +66,6 @@ pub struct MainWindow {
 	/// at the end of the function that set it up never fires again.
 	_timers: Vec<Rc<Timer<Frame>>>,
 }
-
-#[cfg(target_os = "windows")]
-static HIDDEN_POPUP: AtomicIsize = AtomicIsize::new(0);
 
 impl MainWindow {
 	/// Accessor for background callbacks (e.g. the OCR worker thread) that can't hold the app's
@@ -136,217 +130,22 @@ impl MainWindow {
 		);
 		menu_events::bind_key_source(&frame, &config, Rc::clone(&from_keyboard));
 		#[cfg(not(target_os = "windows"))]
-		bind_tab_cycling(&frame, &doc_manager);
-		let frame_copy = frame;
-		let notebook = *doc_manager.lock().unwrap().notebook();
-		let dm = Rc::clone(&doc_manager);
-		notebook.on_page_changing(move |event| {
-			let Ok(dm_ref) = dm.try_lock() else {
-				return;
-			};
-			if !dm_ref.notebook().has_focus()
-				&& let Some(new_index) = event.get_selection()
-				&& let Ok(new_index) = usize::try_from(new_index)
-				&& let Some(tab) = dm_ref.get_tab(new_index)
-			{
-				announce(live_region_label, display_title(tab));
-			}
-		});
-		let reload_guard = Rc::new(Cell::new(false));
-		let dm = Rc::clone(&doc_manager);
-		let page_reload_guard = Rc::clone(&reload_guard);
-		notebook.on_page_changed(move |_event| {
-			let Ok(mut dm_ref) = dm.try_lock() else {
-				return;
-			};
-			if !page_reload_guard.get() {
-				page_reload_guard.set(true);
-				if let Some(index) = dm_ref.active_tab_index()
-					&& dm_ref.reload_tab_if_changed(index)
-				{
-					// Medium rather than the default high: a file changing on disk is not
-					// something the user asked for, so it waits for the current utterance to
-					// finish instead of cutting them off mid sentence.
-					// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
-					live_region::announce_with_priority(
-						live_region_label,
-						&t("Document reloaded."),
-						live_region::Priority::Medium,
-					);
-				}
-				page_reload_guard.set(false);
-			}
-			update_title_from_manager(&frame_copy, &dm_ref);
-			dm_ref.reset_sound_line();
-			dm_ref.pause_inactive_audio();
-		});
-		let dm_for_activate = Rc::clone(&doc_manager);
-		let activate_reload_guard = Rc::clone(&reload_guard);
-		let frame_for_activate = frame;
-		frame.on_activate(move |event| {
-			event.skip(true);
-			if let WindowEventData::Activate(activate) = &event {
-				if activate.is_active() {
-					// On Windows the read-only Richedit does not emit its own focus event when the
-					// window is re-activated, so screen readers keep announcing the frame ("pane")
-					// instead of the book text. Restore focus to whichever control had it before we
-					// left (text control or tab strip) and fire the MSAA focus event explicitly so
-					// screen readers re-sync.
-					#[cfg(target_os = "windows")]
-					if let Ok(dm) = dm_for_activate.try_lock() {
-						dm.restore_focus();
-						dm.announce_focus();
-					}
-				} else {
-					// Deactivating: remember where focus was so we restore the same control (text
-					// control or tab strip) on the way back, rather than always forcing the text.
-					#[cfg(target_os = "windows")]
-					if let Ok(dm) = dm_for_activate.try_lock() {
-						dm.record_focus_target();
-					}
-				}
-			}
-			if let WindowEventData::Activate(activate) = &event
-				&& activate.is_active()
-				&& !activate_reload_guard.get()
-				&& let Ok(mut dm_ref) = dm_for_activate.try_lock()
-				&& let Some(index) = dm_ref.active_tab_index()
-			{
-				activate_reload_guard.set(true);
-				if dm_ref.reload_tab_if_changed(index) {
-					update_title_from_manager(&frame_for_activate, &dm_ref);
-					dm_ref.update_status_bar();
-					// Medium rather than the default high, for the same reason as the reload
-					// announcement on the page change path.
-					// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
-					live_region::announce_with_priority(
-						live_region_label,
-						&t("Document reloaded."),
-						live_region::Priority::Medium,
-					);
-				}
-				activate_reload_guard.set(false);
-			}
-		});
-		let dm = Rc::clone(&doc_manager);
-		let frame_copy = frame;
-		notebook.on_key_down(move |event| {
-			if let WindowEventData::Keyboard(key_event) = &event
-				&& let Some(key) = key_event.get_key_code()
-			{
-				// The same Ctrl+digit chords the reading control answers, so arrowing across the tab
-				// strip and then reaching for a number still works. The native tab control announces
-				// its own selection from here, and the page-changing handler deliberately stays
-				// quiet when the notebook has focus - but `switch_to_tab` announces either way,
-				// because it cannot rely on that handler, whose lock this call already holds.
-				if let Some(index) =
-					tab_index_for_key(key, key_event.control_down(), key_event.alt_down(), key_event.shift_down())
-					&& let Ok(dm) = dm.try_lock()
-				{
-					key_event.event.skip(false);
-					dm.switch_to_tab(index);
-					return;
-				}
-				if key == WXK_DELETE || key == WXK_NUMPAD_DELETE {
-					let mut dm = dm.lock().unwrap();
-					close_active_document_announced(&mut dm, live_region_label);
-					update_title_from_manager(&frame_copy, &dm);
-					let has_docs = dm.tab_count() > 0;
-					let has_reopen = dm.has_recently_closed();
-					if has_docs {
-						dm.restore_focus();
-					} else {
-						dm.notebook().set_focus();
-					}
-					drop(dm);
-					menu::update_menu_item_states(&frame_copy, has_docs);
-					menu::update_reopen_state(&frame_copy, has_reopen);
-					event.skip(false);
-					return;
-				}
-			}
-			event.skip(true);
-		});
+		window_events::bind_tab_cycling(&frame, &doc_manager);
+		window_events::bind_document_events(frame, &doc_manager, live_region_label);
 		#[cfg(target_os = "windows")]
 		let tray_state = Rc::new(Mutex::new(None));
 		#[cfg(target_os = "windows")]
 		tray::bind_tray_events(frame, &doc_manager, &config, &tray_state);
-		{
-			let dm_for_close = Rc::clone(&doc_manager);
-			let config_for_close = Rc::clone(&config);
-			let timers_for_close = timers.clone();
+		window_events::bind_teardown(
+			frame,
+			&doc_manager,
+			&config,
+			&timers,
 			#[cfg(target_os = "windows")]
-			let tray_for_close = Rc::clone(&tray_state);
+			&tray_state,
 			#[cfg(target_os = "windows")]
-			let hotkey_for_close = Rc::clone(&hotkey_handle);
-			frame.on_close(move |event| {
-				let mut dm = dm_for_close.lock().unwrap();
-				{
-					let cfg = config_for_close.lock().unwrap();
-					// Geometry has to be read while the window is still on screen, so this
-					// comes before it goes.
-					window_geometry::save(&frame, &cfg);
-					if let Some(tab) = dm.active_tab() {
-						cfg.set_app_string("active_document", &tab.file_path.to_string_lossy());
-					}
-					// Off the screen now. Everything below is bookkeeping: writing the config,
-					// saving each document's position, winding audio down. None of it is slow,
-					// but all of it happens after the key press, and a window that is still
-					// there while it runs is a window that feels slow to close.
-					frame.show(false);
-					cfg.flush();
-				}
-				dm.save_all_positions();
-				// Stop audio and move focus off the per-tab child controls (the hidden audio
-				// control included) before the frame tears its children down.
-				dm.stop_all_audio();
-				frame.set_focus();
-				#[cfg(target_os = "macos")]
-				if let WindowEventData::General(ref ev) = event
-					&& ev.can_veto()
-				{
-					drop(dm);
-					ev.veto();
-					frame.show(false);
-					return;
-				}
-				#[cfg(target_os = "windows")]
-				if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
-					state.icon.remove_icon();
-				}
-				#[cfg(target_os = "windows")]
-				if let Some(handle) = hotkey_for_close.borrow_mut().take() {
-					use windows::Win32::{
-						Foundation::{LPARAM, WPARAM},
-						UI::WindowsAndMessaging::{PostThreadMessageW, WM_QUIT},
-					};
-					if handle.thread_id != 0 {
-						unsafe {
-							let _ = PostThreadMessageW(handle.thread_id, WM_QUIT, WPARAM(0), LPARAM(0));
-						}
-					}
-				}
-				// Last, and only once the close is really going ahead: macOS hides the window
-				// and vetoes instead of exiting, and a timer stopped on that path would stay
-				// stopped when the window came back. These tick every 250ms against the frame,
-				// so one landing while it tears its children down is delivered to an event
-				// handler that no longer exists, which is an access violation rather than a
-				// panic. Stopping them here makes that impossible rather than unlikely.
-				for timer in &timers_for_close {
-					timer.stop();
-				}
-				event.skip(true);
-			});
-		}
-		#[cfg(target_os = "windows")]
-		{
-			let tray_for_destroy = Rc::clone(&tray_state);
-			frame.on_destroy(move |_event| {
-				if let Some(state) = tray_for_destroy.lock().unwrap().take() {
-					state.icon.destroy();
-				}
-			});
-		}
+			&hotkey_handle,
+		);
 		restore::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
 		Self {
 			frame,
@@ -391,136 +190,6 @@ impl MainWindow {
 		result
 	}
 
-	#[cfg(any(target_os = "linux", target_os = "windows"))]
-	pub fn handle_ipc_command(&self, command: IpcCommand) {
-		tracing::info!(command = ?command, "received IPC command");
-		let mut web_view_dialog = None;
-		dialogs::ACTIVE_WEB_VIEW.with(|v| {
-			web_view_dialog = v.get();
-		});
-		if let Some(parent_dialog) = web_view_dialog {
-			let dialog = MessageDialog::builder(
-				&parent_dialog,
-				// TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
-				&t("Paperback cannot perform any actions while Web View is open."),
-				// TRANSLATORS: Title of a warning dialog
-				&t("Warning"),
-			)
-			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
-			.build();
-			dialog.show_modal();
-			return;
-		}
-		match command {
-			IpcCommand::Activate => {
-				self.activate_from_ipc();
-			}
-			IpcCommand::ToggleVisibility => {
-				self.toggle_visibility();
-			}
-			IpcCommand::OpenFile(path) => {
-				self.activate_from_ipc();
-				self.open_file(&path);
-				self.frame.raise();
-				self.doc_manager.lock().unwrap().focus_document_text();
-			}
-		}
-	}
-
-	#[cfg(any(target_os = "linux", target_os = "windows"))]
-	fn toggle_visibility(&self) {
-		let is_shown = self.frame.is_shown();
-		if is_shown && self.is_window_active() {
-			let mut has_popup = false;
-			#[cfg(target_os = "windows")]
-			{
-				use windows::Win32::{
-					Foundation::HWND,
-					UI::WindowsAndMessaging::{GetLastActivePopup, SW_HIDE, ShowWindow},
-				};
-				let handle = self.frame.get_handle();
-				if !handle.is_null() {
-					let frame_hwnd = HWND(handle);
-					let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
-					if active_popup != frame_hwnd {
-						has_popup = true;
-						HIDDEN_POPUP.store(active_popup.0 as isize, Ordering::SeqCst);
-						let _ = unsafe { ShowWindow(active_popup, SW_HIDE) };
-					}
-				}
-			}
-			if has_popup {
-				self.frame.show(false);
-			} else {
-				self.frame.iconize(true);
-			}
-		} else {
-			self.activate_from_ipc();
-		}
-	}
-
-	#[cfg(any(target_os = "linux", target_os = "windows"))]
-	fn activate_from_ipc(&self) {
-		self.frame.show(true);
-		self.frame.iconize(false);
-		self.frame.request_user_attention(UserAttentionFlag::Info);
-		self.frame.raise();
-		#[allow(unused_mut)]
-		let mut has_popup = false;
-		#[cfg(target_os = "windows")]
-		{
-			use windows::Win32::{
-				Foundation::HWND,
-				UI::WindowsAndMessaging::{GetLastActivePopup, SW_SHOW, SetForegroundWindow, ShowWindow},
-			};
-			let handle = self.frame.get_handle();
-			if !handle.is_null() {
-				let frame_hwnd = HWND(handle);
-				let hidden = HIDDEN_POPUP.swap(0, Ordering::SeqCst);
-				if hidden != 0 {
-					let active_popup = HWND(hidden as _);
-					let _ = unsafe { ShowWindow(active_popup, SW_SHOW) };
-					let _ = unsafe { SetForegroundWindow(active_popup) };
-					has_popup = true;
-				} else {
-					let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
-					has_popup = active_popup != frame_hwnd;
-					let _ = unsafe { SetForegroundWindow(active_popup) };
-				}
-			}
-		}
-		if !has_popup {
-			self.doc_manager.lock().unwrap().restore_focus();
-		}
-		#[cfg(not(target_os = "linux"))]
-		if let Some(state) = self.tray_state.lock().unwrap().as_mut() {
-			tray::set_tray_icon(&state.icon);
-		}
-	}
-
-	#[cfg(any(target_os = "linux", target_os = "windows"))]
-	fn is_window_active(&self) -> bool {
-		#[cfg(target_os = "windows")]
-		{
-			use windows::Win32::{
-				Foundation::HWND,
-				UI::WindowsAndMessaging::{GetForegroundWindow, GetLastActivePopup},
-			};
-			let handle = self.frame.get_handle();
-			if handle.is_null() {
-				return self.frame.has_focus();
-			}
-			let frame_hwnd = HWND(handle);
-			let foreground = unsafe { GetForegroundWindow() };
-			let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
-			foreground == frame_hwnd || foreground == active_popup
-		}
-		#[cfg(not(target_os = "windows"))]
-		{
-			self.frame.has_focus()
-		}
-	}
-
 	fn update_title(&self) {
 		if let Ok(dm) = self.doc_manager.try_lock() {
 			update_title_from_manager(&self.frame, &dm);
@@ -543,43 +212,6 @@ impl MainWindow {
 
 	fn update_recent_documents_menu(&self) {
 		rebuild_menu_bar(&self.frame, &self.doc_manager, &self.config);
-	}
-
-	/// Prompts for a save path and exports `tab`'s document as `format`, showing a
-	/// generic failure dialog on error. Shared by the `EXPORT_TO_PLAIN_TEXT` /
-	/// `EXPORT_TO_HTML` / `EXPORT_TO_MARKDOWN` menu handlers, which differ only in
-	/// `format`, the default file `extension`, the file-picker `wildcard`, and the
-	/// file-picker `dialog_title`.
-	fn export_document_as(
-		frame: &Frame,
-		tab: &DocumentTab,
-		format: paperback_core::export::ExportFormat,
-		extension: &str,
-		wildcard: &str,
-		dialog_title: &str,
-	) {
-		let default_name =
-			// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-			tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-		let default_file = format!("{default_name}.{extension}");
-		let dialog = FileDialog::builder(frame)
-			.with_message(dialog_title)
-			.with_default_file(&default_file)
-			.with_wildcard(wildcard)
-			.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-			.build();
-		if dialog.show_modal() == ID_OK
-			&& let Some(path) = dialog.get_path()
-			&& let Err(e) = tab.session.export_as(&path, format)
-		{
-			tracing::error!(path = %path, error = %e, format = ?format, "failed to export document");
-			let dialog =
-				// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-				MessageDialog::builder(frame, &t("Failed to export document."), &t("Error"))
-					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-					.build();
-			dialog.show_modal();
-		}
 	}
 }
 
@@ -656,23 +288,4 @@ pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		}
 		frame.set_status_text(&status_text, 0);
 	}
-}
-
-/// Ctrl+Tab and Ctrl+Shift+Tab move between documents, as they do in a browser. The Windows tab control does this on its own; the macOS and GTK ones do not. Bound on the frame's char hook so it works from the book and the tab strip alike, before Tab can move focus.
-#[cfg(not(target_os = "windows"))]
-fn bind_tab_cycling(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
-	let dm = Rc::clone(doc_manager);
-	frame.bind_internal(EventType::CHAR_HOOK, move |event| {
-		// wxWidgets reports Command as Control on macOS, so the physical Control key has to be read directly. Command+Tab is the system's application switcher and never arrives here anyway.
-		#[cfg(target_os = "macos")]
-		let control = wxdragon::utils::get_key_state(WXK_RAW_CONTROL) && !event.control_down();
-		#[cfg(not(target_os = "macos"))]
-		let control = event.control_down();
-		if event.get_key_code() != Some(WXK_TAB) || !control || event.alt_down() {
-			return;
-		}
-		let Ok(dm) = dm.try_lock() else { return };
-		event.skip(false);
-		dm.cycle_tab(!event.shift_down());
-	});
 }
