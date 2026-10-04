@@ -84,9 +84,8 @@ fn destination(cli: &Cli, count: usize) -> Result<Destination<'_>> {
 	if let Some(path) = &cli.output {
 		if count > 1 {
 			bail!(
-				"-o names one file, but {} documents were given to convert\n\
-				 Write them into a folder with --output-dir instead",
-				count
+				"-o names one file, but {count} documents were given to convert\n\
+				 Write them into a folder with --output-dir instead"
 			);
 		}
 		return Ok(Destination::File(path));
@@ -133,7 +132,7 @@ fn run(cli: &Cli, files: &[PathBuf], selection: Option<&PageSelection>, destinat
 			// 2 has meant that since before this could run over more than one file. A password that
 			// was given and refused is an ordinary failure instead: it is the same error the first
 			// document of the run reports, and counting it here too described one problem twice.
-			Err(err) if err.chain().any(|cause| cause.is::<NeedsPassword>()) => {
+			Err(err) if err.chain().any(is_needs_password) => {
 				eprintln!("pb: {err:#}");
 				tally.locked += 1;
 			}
@@ -143,7 +142,8 @@ fn run(cli: &Cli, files: &[PathBuf], selection: Option<&PageSelection>, destinat
 			}
 		}
 	}
-	report(&tally, reporting)
+	report(&tally, reporting);
+	Ok(())
 }
 
 /// Marks a document that `--no-prompt` would not ask a password for, so that carrying on past it
@@ -160,11 +160,23 @@ impl std::fmt::Display for NeedsPassword {
 
 impl std::error::Error for NeedsPassword {}
 
+/// Whether this error, or anything it was raised on top of, is [`NeedsPassword`].
+///
+/// The marker is carried as a context rather than returned bare, so it is somewhere in the chain
+/// rather than at the root, and which is why this walks the chain instead of downcasting the error
+/// itself.
+fn is_needs_password(cause: &(dyn std::error::Error + 'static)) -> bool {
+	cause.is::<NeedsPassword>()
+}
+
 /// What happened, and what the exit code should be.
-fn report(tally: &Tally, reporting: bool) -> Result<()> {
+///
+/// Returns nothing because it does not return at all unless the run went well: a run with a
+/// problem exits from here rather than unwinding, so the caller has nothing to do either way.
+fn report(tally: &Tally, reporting: bool) {
 	if reporting {
-		let mut line =
-			format!("pb: converted {} of {}", tally.converted, tally.converted + tally.failed + tally.locked);
+		let total = tally.converted + tally.failed + tally.locked;
+		let mut line = format!("pb: converted {} of {}", tally.converted, total);
 		if tally.failed > 0 {
 			let _ = write!(line, ", {} failed", tally.failed);
 		}
@@ -181,7 +193,6 @@ fn report(tally: &Tally, reporting: bool) -> Result<()> {
 	if tally.failed > 0 {
 		process::exit(1);
 	}
-	Ok(())
 }
 
 /// Converts the documents of one run, and remembers what it learned from the last of them.
@@ -198,7 +209,7 @@ struct Converter<'a> {
 }
 
 impl<'a> Converter<'a> {
-	fn new(cli: &'a Cli) -> Self {
+	const fn new(cli: &'a Cli) -> Self {
 		Self { cli, remembered: None }
 	}
 
@@ -348,7 +359,7 @@ fn output_name(stem: &str, format: Format, selection: Option<&PageSelection>) ->
 
 /// Writes one document's output to a file.
 ///
-/// A UTF-8 BOM goes in front of Markdown written to a file, so that editors like EdSharp detect
+/// A UTF-8 BOM goes in front of Markdown written to a file, so that editors like `EdSharp` detect
 /// the encoding. It goes there rather than in the bytes themselves because a Markdown file with
 /// one is what those editors expect, and stdout is left alone: there the reader is a pipe.
 fn write_file(path: &Path, text: &str, markdown: bool) -> Result<()> {
@@ -636,7 +647,7 @@ mod tests {
 	fn a_document_held_by_a_password_is_recognised_when_it_reaches_the_tally() {
 		let cli = cli::Cli::try_parse_from(["pb", "a.epub", "--no-prompt"]).expect("parse");
 		let error = anyhow::Error::new(NeedsPassword).context("a.epub");
-		assert!(error.chain().any(|cause| cause.is::<NeedsPassword>()), "the run would count this as a plain failure");
+		assert!(error.chain().any(is_needs_password), "the run would count this as a plain failure");
 		assert!(cli.no_prompt);
 	}
 
@@ -648,7 +659,7 @@ mod tests {
 	fn a_refused_password_is_an_ordinary_failure() {
 		let error = anyhow::Error::msg("failed to parse locked.pdf")
 			.context("[password_required]Password required or incorrect");
-		let counted_as_a_password_problem = error.chain().any(|cause| cause.is::<NeedsPassword>());
+		let counted_as_a_password_problem = error.chain().any(is_needs_password);
 		assert!(!counted_as_a_password_problem, "a refused password would be counted apart from the failures again");
 
 		let printed = format!("{error:#}");

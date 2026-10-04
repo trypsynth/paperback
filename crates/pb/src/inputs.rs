@@ -246,7 +246,7 @@ mod tests {
 		let dir = TempDir::new("dupe");
 		fs::write(dir.join("a.epub"), b"x").expect("write");
 		fs::write(dir.join("b.epub"), b"x").expect("write");
-		let args = vec![PathBuf::from(dir.pattern("*.epub")), PathBuf::from(dir.join("a.epub"))];
+		let args = vec![PathBuf::from(dir.pattern("*.epub")), dir.join("a.epub")];
 		let files = collect(&args).expect("collect");
 		assert_eq!(names(&files), ["a.epub", "b.epub"]);
 	}
@@ -261,6 +261,6 @@ mod tests {
 
 	#[test]
 	fn no_arguments_collect_to_no_files() {
-		assert!(collect(&[]).expect("collect").is_empty());
+		assert_eq!(collect(&[]).expect("collect"), Vec::<PathBuf>::new());
 	}
 }

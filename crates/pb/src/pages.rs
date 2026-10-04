@@ -70,7 +70,7 @@ impl PageRange {
 	///
 	/// For `8-700` against a 417-page document that is 700 rather than 8, because 8 is there and
 	/// saying otherwise points the reader at the wrong end of their own command.
-	fn past_page(&self, page_count: usize) -> usize {
+	const fn past_page(&self, page_count: usize) -> usize {
 		match self.end() {
 			Some(end) if end > page_count => end,
 			_ => self.start(),

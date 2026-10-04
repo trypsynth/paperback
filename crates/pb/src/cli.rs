@@ -48,7 +48,7 @@ pub struct Cli {
 	/// into paragraphs (for code listings, poetry and transcripts)
 	#[arg(long)]
 	pub no_join_paragraphs: bool,
-	/// Print paperback-core's parser log output to stderr (set RUST_LOG for finer control)
+	/// Print paperback-core's parser log output to stderr (set `RUST_LOG` for finer control)
 	#[arg(short, long)]
 	pub verbose: bool,
 }
@@ -102,7 +102,7 @@ mod tests {
 	fn listing_the_formats_needs_no_input() {
 		let cli = parse(&["pb", "--list-formats"]);
 		assert!(cli.list_formats);
-		assert!(cli.input.is_empty());
+		assert_eq!(cli.input, Vec::<PathBuf>::new());
 	}
 
 	#[test]
