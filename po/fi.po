@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-04 00:44+0000\n"
-"PO-Revision-Date: 2026-10-04 20:00+0300\n"
+"PO-Revision-Date: 2026-10-04 23:44+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -91,7 +91,7 @@ msgstr "30 sekuntia"
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 msgid "1 minute"
-msgstr "1 minuutti"
+msgstr "minuutti"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -116,7 +116,7 @@ msgstr "30 minuuttia"
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 msgid "1 hour"
-msgstr "1 tunti"
+msgstr "tunti"
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
