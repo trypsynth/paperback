@@ -184,7 +184,7 @@ pub(super) fn build_text_ctrl(
 				let plain = !kbd.control_down() && !kbd.alt_down();
 				if menu::is_keyboard_only(act) || plain || is_selection_command(act) || cfg!(target_os = "linux") {
 					kbd.event.skip(false);
-					if has_no_menu_item(act) {
+					if menu::is_keyboard_only(act) {
 						// These have no menu item, so the key never becomes a menu command and the
 						// dispatcher never reads the mark off one. Clear it here instead, so a key
 						// that led nowhere cannot leave it set for the next menu click.
