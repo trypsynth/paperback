@@ -41,7 +41,7 @@ seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED,
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
 pub const RECENT_DOCUMENT_MAX: i32 = BASE + 199;
 
-// Edit menu: Find; Announce Percentage; Bookmarks menu: temporary bookmark (BASE + 200..209)
+// Edit menu: Find; Announce Percentage (keyboard only); Bookmarks menu: temporary bookmark (BASE + 200..209)
 seq_ids!(BASE + 200 => FIND, FIND_NEXT, FIND_PREVIOUS, ANNOUNCE_PERCENT, SET_TEMPORARY_BOOKMARK, JUMP_TO_TEMPORARY_BOOKMARK);
 
 // Go menu: Go to (BASE + 210..219)

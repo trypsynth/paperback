@@ -185,7 +185,7 @@ pub(super) fn build_text_ctrl(
 				if menu::is_keyboard_only(act) || plain || is_selection_command(act) || cfg!(target_os = "linux") {
 					kbd.event.skip(false);
 					if menu::is_keyboard_only(act) {
-						// These have no menu item, so the key never becomes a menu command and the
+						// A keyboard-only command has no menu item, so the key never becomes a menu command and the
 						// dispatcher never reads the mark off one. Clear it here instead, so a key
 						// that led nowhere cannot leave it set for the next menu click.
 						from_keyboard.set(false);
