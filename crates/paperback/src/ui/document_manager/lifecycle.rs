@@ -262,6 +262,10 @@ impl DocumentManager {
 		{
 			player.stop();
 		}
+		// Stopped before the tab goes, which drops this end of the cancel flag: the worker keeps its own
+		// clone and would otherwise read on to the end of the range for a document nobody is looking
+		// at. Quiet, because the count would describe text belonging to a document no longer open.
+		self.stop_ocr_at(index, true);
 		let _page = self.notebook.get_page(index);
 		self.notebook.remove_page(index);
 		self.tabs.remove(index);
