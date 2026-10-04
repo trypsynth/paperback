@@ -317,6 +317,15 @@ impl DocumentManager {
 	/// alternative - saying so - would mean a new translatable string for a key that is mostly
 	/// pressed by habit, and a reader who is nine documents deep is not going to wonder what
 	/// went wrong.
+	/// Moves to the next document, or the previous one, wrapping around at either end.
+	#[cfg(not(target_os = "windows"))]
+	pub fn cycle_tab(&self, forward: bool) {
+		let count = self.tabs.len();
+		let Some(active) = self.active_tab_index() else { return };
+		let index = if forward { (active + 1) % count } else { (active + count - 1) % count };
+		self.switch_to_tab(index);
+	}
+
 	pub fn switch_to_tab(&self, index: usize) -> bool {
 		let Some(tab) = self.tabs.get(index) else {
 			return false;

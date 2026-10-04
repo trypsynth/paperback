@@ -133,6 +133,8 @@ impl MainWindow {
 			&hotkey_handle,
 		);
 		menu_events::bind_key_source(&frame, &config, Rc::clone(&from_keyboard));
+		#[cfg(not(target_os = "windows"))]
+		bind_tab_cycling(&frame, &doc_manager);
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
 		let dm = Rc::clone(&doc_manager);
@@ -652,4 +654,23 @@ pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		}
 		frame.set_status_text(&status_text, 0);
 	}
+}
+
+/// Ctrl+Tab and Ctrl+Shift+Tab move between documents, as they do in a browser. The Windows tab control does this on its own; the macOS and GTK ones do not. Bound on the frame's char hook so it works from the book and the tab strip alike, before Tab can move focus.
+#[cfg(not(target_os = "windows"))]
+fn bind_tab_cycling(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
+	let dm = Rc::clone(doc_manager);
+	frame.bind_internal(EventType::CHAR_HOOK, move |event| {
+		// wxWidgets reports Command as Control on macOS, so the physical Control key has to be read directly. Command+Tab is the system's application switcher and never arrives here anyway.
+		#[cfg(target_os = "macos")]
+		let control = wxdragon::utils::get_key_state(WXK_RAW_CONTROL) && !event.control_down();
+		#[cfg(not(target_os = "macos"))]
+		let control = event.control_down();
+		if event.get_key_code() != Some(WXK_TAB) || !control || event.alt_down() {
+			return;
+		}
+		let Ok(dm) = dm.try_lock() else { return };
+		event.skip(false);
+		dm.cycle_tab(!event.shift_down());
+	});
 }
