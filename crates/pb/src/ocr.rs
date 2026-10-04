@@ -38,7 +38,7 @@ pub struct Selection {
 
 impl Selection {
 	/// Whether this asks for any kind of page at all.
-	pub fn any(self) -> bool {
+	pub const fn any(self) -> bool {
 		self.image_pages || self.text_pages
 	}
 }
@@ -57,7 +57,7 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 		return Ok(());
 	}
 	if !is_ocr_able(file_path) {
-		eprintln!("pb: {} has no pages to read, since it is not a PDF or a comic archive", file_path);
+		eprintln!("pb: {file_path} has no pages to read, since it is not a PDF or a comic archive");
 		return Ok(());
 	}
 	let mut edits = page_edits(doc, selection);
@@ -172,10 +172,7 @@ fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 			// document is the very start of the content and has no newline in front of it to find a
 			// start after.
 			let byte_start = buffer.byte_index_for_display(start);
-			let head = match buffer.content[..byte_start].rfind('\n') {
-				Some(offset) => offset + 1,
-				None => 0,
-			};
+			let head = buffer.content[..byte_start].rfind('\n').map_or(0, |offset| offset + 1);
 			// The newline is left where it was rather than carried in the replacement.
 			let rest = &buffer.content[byte_start..];
 			let length = rest.find('\n').unwrap_or(rest.len());

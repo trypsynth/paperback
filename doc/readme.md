@@ -23,7 +23,7 @@ Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iO
 * Reads scanned PDF pages with the OCR built into Windows and macOS.
 * Bookmarks and notes, so you can mark your place and come back to it.
 * Every keyboard shortcut can be changed.
-* Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text.
+* Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text. It takes as many documents as you give it, expands `*.pdf` and the like itself so the same command line works on Windows, and can write one file per document into a folder.
 
 ## Screen Reader Compatibility
 
