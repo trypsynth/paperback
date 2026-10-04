@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-03 13:54-0600\n"
+"POT-Creation-Date: 2026-10-04 00:44+0000\n"
 "PO-Revision-Date: 2026-09-24 20:59+0200\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -1646,6 +1646,10 @@ msgstr "Paperback"
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback kann keine Aktionen ausführen, während Web-View geöffnet ist."
 
+#, fuzzy
+msgid "Installing the update. Paperback will restart."
+msgstr "Installiere das Update. Paperback wird neu gestartet."
+
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Das Dokument konnte nicht exportiert werden."
@@ -2990,11 +2994,103 @@ msgstr "Fehler beim Abrufen des aktuellen Exe-Pfads"
 msgid "Failed to launch update script"
 msgstr "Fehler beim Starten des Update-Skripts"
 
+#, fuzzy
+msgid "Failed to start installation"
+msgstr "Installation konnte nicht gestartet werden"
+
+#, fuzzy
+msgid "Failed to stage the application"
+msgstr "Anwendung konnte nicht vorbereitet werden"
+
+#, fuzzy
+msgid "The update contains a different application."
+msgstr "Das Update enthält eine andere Anwendung."
+
+#, fuzzy
+msgid "Could not determine the update log directory."
+msgstr "Updateprotokollverzeichnis konnte nicht ermittelt werden."
+
+#, fuzzy
+msgid "Failed to launch update helper"
+msgstr "Update-Helfer konnte nicht gestartet werden"
+
+#, fuzzy
+msgid "The update helper did not start. See the log:"
+msgstr "Der Update-Helfer ist nicht gestartet. Siehe das Protokoll:"
+
+#, fuzzy
+msgid "The application did not quit within 60 seconds. The current app was kept."
+msgstr "Die Anwendung ist nicht innerhalb von 60 Sekunden beendet worden. Die aktuelle App wurde beibehalten."
+
+#, fuzzy
+msgid "The installation changed while waiting. The current app was kept."
+msgstr "Die Installation hat sich während des Wartens geändert. Die aktuelle App wurde beibehalten."
+
+#, fuzzy
+msgid "Could not move the current application. The current app was kept."
+msgstr "Aktuelle Anwendung konnte nicht verschoben werden. Die aktuelle App wurde beibehalten."
+
+#, fuzzy
+msgid "Could not install the update. The previous version was restored."
+msgstr "Update konnte nicht installiert werden. Die vorherige Version wurde wiederhergestellt."
+
+#, fuzzy
+msgid "Could not restore the previous version. Recover it from:"
+msgstr "Vorherige Version konnte nicht wiederhergestellt werden. Stelle sie wieder her von:"
+
+#, fuzzy
+msgid "macOS could not launch the update. The previous version is preserved at:"
+msgstr "macOS konnte das Update nicht starten. Die vorherige Version ist erhalten unter:"
+
+#, fuzzy
+msgid "Application update failed"
+msgstr "Anwendungsupdate fehlgeschlagen"
+
+#, fuzzy
+msgid "Log:"
+msgstr "Protokoll:"
+
+#, fuzzy
+msgid "Update cancelled."
+msgstr "Update abgebrochen."
+
 msgid "Failed to open disk image"
 msgstr "Das Disk-Image konnte nicht geöffnet werden"
 
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
 msgstr "Das Update wurde heruntergeladen und das Disk-Image geöffnet. Beende %s und ziehe die neue Version in den Ordner Applications, um die Installation abzuschließen."
+
+#, fuzzy
+msgid "Invalid application metadata"
+msgstr "Ungültige Anwendungsmetadaten"
+
+#, fuzzy
+msgid "The disk image must contain exactly one matching application."
+msgstr "Das Disk-Image muss genau eine übereinstimmende Anwendung enthalten."
+
+#, fuzzy
+msgid "The update must be signed by the application's developer team"
+msgstr "Das Update muss vom Entwicklerteam der Anwendung signiert sein"
+
+#, fuzzy
+msgid "Invalid application executable."
+msgstr "Ungültige Anwendungsdatei."
+
+#, fuzzy
+msgid "Invalid application executable"
+msgstr "Ungültige Anwendungsdatei"
+
+#, fuzzy
+msgid "Application signature verification failed"
+msgstr "Signaturverifizierung der Anwendung fehlgeschlagen"
+
+#, fuzzy
+msgid "Failed to mount disk image"
+msgstr "Disk-Image konnte nicht eingebunden werden"
+
+#, fuzzy
+msgid "Failed to unmount disk image"
+msgstr "Disk-Image konnte nicht ausgebunden werden"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -3028,6 +3124,10 @@ msgstr "Update wird heruntergeladen..."
 
 msgid "Update failed"
 msgstr "Update fehlgeschlagen"
+
+#, fuzzy
+msgid "Preparing update..."
+msgstr "Update wird vorbereitet…"
 
 msgid "Update Ready"
 msgstr "Update bereit"
