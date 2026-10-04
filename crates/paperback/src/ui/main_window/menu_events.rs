@@ -11,6 +11,8 @@ use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
 use super::HotkeyHandle;
+#[cfg(not(target_os = "macos"))]
+use super::menu_edit;
 use super::{
 	DocumentManager, FindDialogState, MainWindow, background, commands, dialogs, find, get_update_channel, help, menu,
 	menu_file, menu_go, menu_ids, menu_tools, sleep_timer, update_title_from_manager, updater,
@@ -84,16 +86,6 @@ impl MainWindow {
 				menu_ids::ANNOUNCE_PERCENT => {
 					if let Ok(dm_ref) = dm.try_lock() {
 						dm_ref.announce_current_percent();
-					}
-				}
-				menu_ids::SET_TEMPORARY_BOOKMARK => {
-					if let Ok(dm_ref) = dm.try_lock() {
-						dm_ref.set_temporary_bookmark();
-					}
-				}
-				menu_ids::JUMP_TO_TEMPORARY_BOOKMARK => {
-					if let Ok(mut dm_ref) = dm.try_lock() {
-						dm_ref.jump_to_temporary_bookmark();
 					}
 				}
 				menu_ids::GO_TO_LINE => {
@@ -218,14 +210,21 @@ impl MainWindow {
 				menu_ids::DONATE => {
 					help::handle_donate(&frame_copy);
 				}
-				#[cfg(target_os = "macos")]
 				menu_ids::COPY => {
-					// Only macOS builds an Edit menu, so only macOS sees Copy as a menu event; every
-					// other platform intercepts the key in `build_text_ctrl`.
-					let widened = dm.lock().unwrap().copy_whole_document_if_all_selected();
-					if !widened {
-						event.skip(true);
+					// On macOS the native copy runs unless the copy widened to the whole document.
+					#[cfg(target_os = "macos")]
+					{
+						let widened = dm.lock().unwrap().copy_whole_document_if_all_selected();
+						if !widened {
+							event.skip(true);
+						}
 					}
+					#[cfg(not(target_os = "macos"))]
+					menu_edit::handle_copy(&dm);
+				}
+				#[cfg(not(target_os = "macos"))]
+				menu_ids::SELECT_ALL => {
+					menu_edit::handle_select_all(&dm);
 				}
 				_ => {
 					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);

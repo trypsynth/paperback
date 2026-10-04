@@ -33,22 +33,34 @@ impl Default for HotkeyConfig {
 #[serde(rename_all = "snake_case")]
 pub enum ShortcutCategory {
 	File,
+	Edit,
+	View,
 	Go,
+	Bookmarks,
+	Audio,
 	Tools,
 	Help,
 }
 
 impl ShortcutCategory {
 	pub const fn all() -> &'static [Self] {
-		&[Self::File, Self::Go, Self::Tools, Self::Help]
+		&[Self::File, Self::Edit, Self::View, Self::Go, Self::Bookmarks, Self::Audio, Self::Tools, Self::Help]
 	}
 
 	pub fn display_name(self) -> String {
 		match self {
 			// TRANSLATORS: Name of the "File" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::File => crate::t("File"),
+			// TRANSLATORS: Name of the "Edit" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::Edit => crate::t("Edit"),
+			// TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::View => crate::t("View"),
 			// TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::Go => crate::t("Go"),
+			// TRANSLATORS: Name of the "Bookmarks" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::Bookmarks => crate::t("Bookmarks"),
+			// TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::Audio => crate::t("Audio"),
 			// TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::Tools => crate::t("Tools"),
 			// TRANSLATORS: Name of the "Help" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
@@ -238,6 +250,115 @@ mod tests {
 			total_actions += actions.len();
 		}
 		assert_eq!(total_actions, ActionId::all().len());
+	}
+
+	#[test]
+	fn file_category_holds_document_commands() {
+		assert_eq!(
+			ShortcutCategory::File.actions(),
+			[
+				ActionId::Open,
+				ActionId::Close,
+				ActionId::CloseAll,
+				ActionId::ReopenLastClosed,
+				ActionId::ShowAllRecentDocuments,
+				ActionId::ClearRecentDocuments,
+				ActionId::Exit,
+				ActionId::RevealFileInFolder,
+				ActionId::ImportDocumentData,
+				ActionId::ExportDocumentData,
+				ActionId::ExportToPlainText,
+				ActionId::ExportToHtml,
+				ActionId::ExportToMarkdown,
+			]
+		);
+	}
+
+	#[test]
+	fn tools_category_holds_the_remaining_six() {
+		assert_eq!(
+			ShortcutCategory::Tools.actions(),
+			[
+				ActionId::WordCount,
+				ActionId::DocumentInfo,
+				ActionId::Options,
+				ActionId::SleepTimer,
+				ActionId::BatchOcr,
+				ActionId::CustomizeShortcuts,
+			]
+		);
+	}
+
+	#[test]
+	fn table_of_contents_and_elements_list_are_go_commands() {
+		assert_eq!(ActionId::TableOfContents.category(), ShortcutCategory::Go);
+		assert_eq!(ActionId::ElementsList.category(), ShortcutCategory::Go);
+	}
+
+	#[test]
+	fn edit_category_holds_find_and_selection() {
+		assert_eq!(
+			ShortcutCategory::Edit.actions(),
+			[
+				ActionId::Find,
+				ActionId::FindNext,
+				ActionId::FindPrevious,
+				ActionId::SetSelectionStart,
+				ActionId::CopyFromSelectionStart,
+				ActionId::JumpToSelectionStart,
+			]
+		);
+	}
+
+	#[test]
+	fn view_category_holds_display_commands() {
+		assert_eq!(
+			ShortcutCategory::View.actions(),
+			[
+				ActionId::Reload,
+				ActionId::OpenInWebView,
+				ActionId::ViewSource,
+				ActionId::ToggleWordWrap,
+				ActionId::ToggleFullScreen,
+			]
+		);
+	}
+
+	#[test]
+	fn bookmarks_category_holds_creating_and_jumping() {
+		assert_eq!(
+			ShortcutCategory::Bookmarks.actions(),
+			[
+				ActionId::SetTemporaryBookmark,
+				ActionId::JumpToTemporaryBookmark,
+				ActionId::PreviousBookmark,
+				ActionId::NextBookmark,
+				ActionId::PreviousNote,
+				ActionId::NextNote,
+				ActionId::JumpToAllBookmarks,
+				ActionId::JumpToBookmarksOnly,
+				ActionId::JumpToNotesOnly,
+				ActionId::ViewNoteText,
+				ActionId::ToggleBookmark,
+				ActionId::BookmarkWithNote,
+			]
+		);
+	}
+
+	#[test]
+	fn audio_category_holds_the_playback_commands() {
+		assert_eq!(
+			ShortcutCategory::Audio.actions(),
+			[
+				ActionId::PlayPauseAudio,
+				ActionId::SeekAudioForward,
+				ActionId::SeekAudioBackward,
+				ActionId::IncreaseAudioSeekAmount,
+				ActionId::DecreaseAudioSeekAmount,
+				ActionId::IncreaseAudioSpeed,
+				ActionId::DecreaseAudioSpeed,
+			]
+		);
 	}
 
 	#[test]

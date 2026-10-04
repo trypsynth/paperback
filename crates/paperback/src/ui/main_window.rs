@@ -28,6 +28,8 @@ use crate::{
 	updater,
 };
 
+#[cfg(not(target_os = "macos"))]
+mod menu_edit;
 mod menu_events;
 mod menu_file;
 mod menu_go;
