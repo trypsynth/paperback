@@ -52,6 +52,11 @@ pub struct Ctx<'a> {
 	pub dm: &'a Rc<Mutex<DocumentManager>>,
 	pub config: &'a Rc<Mutex<ConfigManager>>,
 	pub live_region_label: StaticText,
+	/// Whether a keyboard shortcut asked for this command rather than a menu click. Both
+	/// produce an identical menu event, so the char hook tags this one; see
+	/// `menu_events::bind_key_source`. `false` is the safe default -- it only ever costs a
+	/// little latency, never the message.
+	pub from_keyboard: bool,
 }
 
 /// What running a command does.
@@ -101,7 +106,7 @@ impl Command {
 		match self.behavior {
 			Behavior::Run(handler) => handler(ctx),
 			Behavior::Navigate { target, next } => {
-				handle_marker_navigation(ctx.dm, ctx.config, ctx.live_region_label, target, next);
+				handle_marker_navigation(ctx.dm, ctx.config, ctx.live_region_label, target, next, ctx.from_keyboard);
 			}
 		}
 	}

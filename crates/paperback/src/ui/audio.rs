@@ -7,9 +7,13 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager, navigation::set_caret_to_doc_offset};
-use crate::{audio_player::AudioPlayer, ui::navigation::announce};
+use crate::{audio_player::AudioPlayer, ui::navigation::announce_for_command};
 
-pub fn handle_toggle_play_pause_audio(doc_manager: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+pub fn handle_toggle_play_pause_audio(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+	from_keyboard: bool,
+) {
 	let mut dm = doc_manager.lock().unwrap();
 	let has_audio = {
 		let Some(tab) = dm.active_tab_mut() else { return };
@@ -23,7 +27,7 @@ pub fn handle_toggle_play_pause_audio(doc_manager: &Rc<Mutex<DocumentManager>>, 
 	drop(dm);
 	if !has_audio {
 		// TRANSLATORS: Announced when trying to play/pause audio on a document that has none
-		announce(live_region_label, t("This document has no audio."));
+		announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
 	}
 }
 
@@ -71,6 +75,7 @@ pub fn handle_seek_audio(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 	forward: bool,
 ) {
 	let (sync_enabled, amount_seconds, spill_into_next_file) = {
@@ -87,13 +92,13 @@ pub fn handle_seek_audio(
 	let Some(player) = tab.audio_player.as_mut() else {
 		drop(dm);
 		// TRANSLATORS: Announced when trying to seek audio on a document that has none
-		announce(live_region_label, t("This document has no audio."));
+		announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
 		return;
 	};
 	let Some(current_ms) = player.resume_point_ms() else {
 		drop(dm);
 		// TRANSLATORS: Announced when trying to seek audio before playback has established a position
-		announce(live_region_label, t("Audio hasn't started playing yet."));
+		announce_for_command(live_region_label, from_keyboard, t("Audio hasn't started playing yet."));
 		return;
 	};
 	let total_ms = player.timeline().total_duration_ms();
@@ -123,6 +128,7 @@ pub fn handle_seek_audio(
 pub fn handle_change_audio_speed(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 	increase: bool,
 ) {
 	let mut dm = doc_manager.lock().unwrap();
@@ -134,7 +140,7 @@ pub fn handle_change_audio_speed(
 	drop(dm);
 	let Some((speed, at_limit)) = result else {
 		// TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
-		announce(live_region_label, t("This document has no audio."));
+		announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
 		return;
 	};
 	let label = speed_label(speed);
@@ -147,7 +153,7 @@ pub fn handle_change_audio_speed(
 	} else {
 		label
 	};
-	announce(live_region_label, message);
+	announce_for_command(live_region_label, from_keyboard, message);
 }
 
 /// A human-readable label for a playback speed multiplier, e.g. `1.5x`, `1x`, `0.75x`.
@@ -193,7 +199,12 @@ fn seek_amount_label(seconds: i32) -> String {
 /// through the same preset list shown in the Options dialog's dropdown, and announces the new
 /// value. A global setting rather than a per-document action, so unlike `handle_seek_audio` this
 /// doesn't need an active document or audio player.
-pub fn handle_change_seek_amount(config: &Rc<Mutex<ConfigManager>>, live_region_label: StaticText, increase: bool) {
+pub fn handle_change_seek_amount(
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+	increase: bool,
+	from_keyboard: bool,
+) {
 	let presets = dialogs::AUDIO_SEEK_AMOUNTS_SECONDS;
 	let cfg = config.lock().unwrap();
 	let current = cfg.get_app_int("audio_seek_amount_seconds", 10);
@@ -220,7 +231,7 @@ pub fn handle_change_seek_amount(config: &Rc<Mutex<ConfigManager>>, live_region_
 	} else {
 		label
 	};
-	announce(live_region_label, message);
+	announce_for_command(live_region_label, from_keyboard, message);
 }
 
 #[cfg(test)]
