@@ -10,6 +10,9 @@ final class AppViewModel {
 	// previous book can never bleed into the next one (its buffer stays scheduled on the audio
 	// node across pause() until something clears it — see TtsManager.pause()).
 	var activeTabId: UUID? = nil {
+		willSet {
+			if newValue != activeTabId { reading.saveTextModePosition() }
+		}
 		didSet {
 			guard activeTabId != oldValue else { return }
 			reading.ttsManager.stop()
@@ -138,6 +141,10 @@ final class AppViewModel {
 			self?.configManager.setAppString(key: "tts_voice_identifier", value: identifier ?? "")
 		}
 
+		reading.isTextMode = configManager.getAppBool(key: "text_mode", defaultValue: false)
+		reading.onTextModeChanged = { [weak self] isTextMode in
+			self?.configManager.setAppBool(key: "text_mode", value: isTextMode)
+		}
 		if restorePreviousDocuments {
 			for path in configManager.getOpenedDocuments() {
 				tryRestoreDocument(path: path)
@@ -145,6 +152,7 @@ final class AppViewModel {
 		}
 		NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
 			.sink { [weak self] _ in
+				self?.reading.saveTextModePosition()
 				self?.configManager.flush()
 			}
 			.store(in: &cancellables)
@@ -191,6 +199,7 @@ final class AppViewModel {
 				saveBookmark(for: url, path: path)
 			}
 			reading.loadSegment(for: tab)
+			if reading.isTextMode { reading.enterTextMode() }
 			reading.updateNowPlaying()
 		} catch {
 			if scopeStarted { url.stopAccessingSecurityScopedResource() }
@@ -290,9 +299,11 @@ final class AppViewModel {
 	}
 
 	func closeTab(_ tab: DocumentTab) {
+		if tab.id == activeTabId { reading.saveTextModePosition() }
 		let path = tab.url.path(percentEncoded: false)
 		if tab.session != nil {
-			configManager.setDocumentPosition(path: path, position: tab.currentPosition)
+			let position = tabs.first { $0.id == tab.id }?.currentPosition ?? tab.currentPosition
+			configManager.setDocumentPosition(path: path, position: position)
 		}
 		configManager.removeOpenedDocument(path: path)
 		tab.securityScopeURL?.stopAccessingSecurityScopedResource()
@@ -306,6 +317,7 @@ final class AppViewModel {
 		activeTabId = tab.id
 		if let t = activeTab {
 			reading.loadSegment(for: t)
+			if reading.isTextMode { reading.enterTextMode() }
 		}
 	}
 

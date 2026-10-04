@@ -39,7 +39,10 @@ final class ReadingController {
 		setupRemoteCommands()
 	}
 
-	var isTextMode: Bool = false
+	var isTextMode: Bool = false {
+		didSet { if isTextMode != oldValue { onTextModeChanged?(isTextMode) } }
+	}
+	@ObservationIgnored var onTextModeChanged: ((Bool) -> Void)?
 	// Tracks the first visible 0-indexed line in TextModeView; updated eagerly while scrolling.
 	var textModeFirstLine: Int = 0
 
@@ -565,7 +568,7 @@ final class ReadingController {
 		}
 	}
 
-	private func enterTextMode() {
+	func enterTextMode() {
 		guard let session = activeSession else { return }
 		let line = session.lineFromPosition(position: ttsPosition)
 		let scrollIdx = max(0, Int(line) - 1)
@@ -574,12 +577,18 @@ final class ReadingController {
 	}
 
 	private func exitTextMode() {
-		guard let session = activeSession else { return }
+		guard activeSession != nil else { return }
+		saveTextModePosition()
+		refreshCurrentSegment()
+		context?.activeLineScrollIndex = textModeFirstLine
+	}
+
+	// Scrolling in text mode only moves textModeFirstLine, so the place it reached is lost unless it is saved before the app is backgrounded or the document stops being the active one.
+	func saveTextModePosition() {
+		guard isTextMode, let session = activeSession else { return }
 		let pos = session.positionFromLine(line: Int64(textModeFirstLine + 1))
 		ttsPosition = pos
 		context?.persistPosition(pos)
-		refreshCurrentSegment()
-		context?.activeLineScrollIndex = textModeFirstLine
 	}
 
 	private func setupRemoteCommands() {

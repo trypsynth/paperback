@@ -33,6 +33,8 @@ enum ScreenshotMode {
 	}
 
 	static func stage(_ viewModel: AppViewModel) {
+		// Text mode is remembered between launches, so the text screen's run would otherwise leave every later screen in it.
+		viewModel.reading.isTextMode = false
 		// Tabs restored from the previous launch would otherwise change the order.
 		for tab in viewModel.tabs {
 			viewModel.closeTab(tab)
