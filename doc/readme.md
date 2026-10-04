@@ -173,6 +173,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 
 * `Delete` / `Numpad Delete` on the tab control: Close the selected document tab.
 * `Ctrl+1` through `Ctrl+9` (macOS: `Cmd+1` through `Cmd+9`) in the document text or on the tab control: Go to the first nine open documents, in the order they were opened.
+* `Ctrl+Tab` and `Ctrl+Shift+Tab`: Go to the next or previous open document, wrapping around at either end.
 * `Enter` or `Space` in the document text: Follow a link or open a table or formula view at the cursor.
 * `Enter` on a scanned PDF page: Recognize the page with OCR.
 * `Shift+F10` or the Menu/Application key in the document text: Open the context menu.
