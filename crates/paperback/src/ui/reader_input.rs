@@ -16,6 +16,9 @@ use super::{
 	text_render::reload_window_around,
 };
 
+#[cfg(target_os = "macos")]
+mod macos;
+
 /// Builds the reading control and binds everything it responds to.
 pub(super) fn build_text_ctrl(
 	panel: Panel,
@@ -160,6 +163,28 @@ pub(super) fn build_text_ctrl(
 					kbd.event.skip(true);
 				}
 				return;
+			}
+			#[cfg(target_os = "macos")]
+			if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
+				let handled = dm_for_keys.try_lock().is_ok_and(|mut dm| {
+					let start_of_line = dm.config.lock().unwrap().get_app_bool("line_start_navigation", false);
+					if !start_of_line {
+						return false;
+					}
+					let new_pos =
+						dm.active_tab_mut().and_then(|tab| navigate_line_by_column(tab, key == WXK_DOWN, None, true));
+					if let Some((new_pos, _)) = new_pos {
+						macos::set_line_start(text_ctrl_for_menu, new_pos);
+						dm.update_status_bar();
+						true
+					} else {
+						false
+					}
+				});
+				if handled {
+					kbd.event.skip(false);
+					return;
+				}
 			}
 			#[cfg(target_os = "windows")]
 			if let Ok(dm) = dm_for_keys.try_lock() {
@@ -326,7 +351,7 @@ fn try_navigate_line_by_column(
 /// which RichEdit handles natively with no window awareness at all) can strand the caret mid-chapter
 /// with no keyboard-only way past it except an explicit jump (heading/bookmark navigation etc.) -
 /// found the hard way testing a huge book, not something worth leaving as a TODO.
-#[cfg(target_os = "windows")]
+#[cfg(any(target_os = "windows", target_os = "macos"))]
 fn navigate_line_by_column(
 	tab: &mut DocumentTab,
 	going_down: bool,
@@ -346,6 +371,16 @@ fn navigate_line_by_column(
 	let local = tab.window.to_local(doc_pos);
 	tab.text_ctrl.set_insertion_point(local);
 	try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)?
+}
+
+#[cfg(target_os = "macos")]
+fn try_navigate_line_by_column(
+	tab: &DocumentTab,
+	going_down: bool,
+	_pref_col: Option<i64>,
+	_start_of_line: bool,
+) -> Option<Option<(i64, i64)>> {
+	macos::try_adjacent_line_start(tab.text_ctrl, going_down)
 }
 
 fn show_reader_context_menu(text_ctrl: TextCtrl) {
