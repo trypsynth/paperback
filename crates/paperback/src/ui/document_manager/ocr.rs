@@ -100,9 +100,8 @@ impl DocumentManager {
 	///
 	/// `quiet` is for a stop that comes from re-reading the document, where the count would describe discarded text.
 	pub fn cancel_ocr(&mut self, quiet: bool) {
-		if let Some(job) = self.active_tab_mut().and_then(|tab| tab.ocr_job.as_mut()) {
-			job.cancel.store(true, Ordering::Relaxed);
-			job.quiet_cancel = quiet;
+		if let Some(index) = self.active_tab_index() {
+			self.stop_ocr_at(index, quiet);
 		}
 	}
 
@@ -198,8 +197,6 @@ impl DocumentManager {
 			.spawn(move || run_ocr(&path_str, password.as_deref(), &pages, &path, &worker_cancel, batch, id));
 		match worker {
 			Ok(_) => {
-				// The tab can have gone between reading it and here, and a worker started for one that
-				// no longer exists has nowhere to apply its results, so it is cancelled.
 				if let Some(tab) = self.active_tab_mut() {
 					tab.ocr_job = Some(job);
 				} else {
