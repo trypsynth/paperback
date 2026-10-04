@@ -1,4 +1,5 @@
 use std::{
+	collections::{HashMap, HashSet},
 	fs::{self, File},
 	io::{self, Read, Seek},
 	path::Path,
@@ -97,6 +98,21 @@ pub fn extract_zip_entry_to_file_with_password<R: Read + Seek>(
 	Ok(())
 }
 
+/// Returns a function mapping a reference to the archive entry it names, matching case-insensitively when no entry has the exact name. Books are often written against a case-insensitive filesystem, so a reference to `01.Mp3` that plays fine once extracted on Windows or macOS has to find the zip's `01.mp3` too. A reference matching nothing comes back unchanged, so the lookup still reports it missing.
+pub fn zip_entry_name_resolver<R: Read + Seek>(archive: &ZipArchive<R>) -> impl Fn(&str) -> String + use<R> {
+	let names: HashSet<String> = archive.file_names().flatten().map(String::from).collect();
+	let mut lowercase = HashMap::new();
+	for name in &names {
+		lowercase.entry(name.to_lowercase()).or_insert_with(|| name.clone());
+	}
+	move |reference: &str| {
+		if names.contains(reference) {
+			return reference.to_string();
+		}
+		lowercase.get(&reference.to_lowercase()).cloned().unwrap_or_else(|| reference.to_string())
+	}
+}
+
 /// Extracts every entry of `archive` for which `skip` returns `false` into
 /// `output_dir`, preserving the archive's internal directory structure so that
 /// relative references between entries (e.g. an XHTML file's
@@ -164,6 +180,16 @@ mod tests {
 	fn read_zip_entry_by_name_reports_missing_entry() {
 		let mut archive = build_test_archive();
 		assert!(read_zip_entry_by_name(&mut archive, "missing.txt").is_err());
+	}
+
+	#[test]
+	fn zip_entry_name_resolver_matches_case_insensitively() {
+		let archive = build_test_archive();
+		let resolve = zip_entry_name_resolver(&archive);
+		assert_eq!(resolve("foo.txt"), "foo.txt");
+		assert_eq!(resolve("FOO.Txt"), "foo.txt");
+		assert_eq!(resolve("Nested/Bar.TXT"), "nested/bar.txt");
+		assert_eq!(resolve("missing.txt"), "missing.txt");
 	}
 
 	#[test]

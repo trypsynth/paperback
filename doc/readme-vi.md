@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 50ae5f8f1895cd78; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,75b3aaec,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -81,6 +81,7 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 * `Ctrl+F4` (macOS: `Cmd+W`): Đóng tài liệu hiện tại.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Đóng tất cả các tài liệu đang mở.
 * `Ctrl+Shift+T`: Mở lại tài liệu đã đóng lần cuối.
+* `F5`: Đọc lại tài liệu hiện tại từ đĩa. Hoạt động cho dù "Tự động tải lại các tài liệu đã thay đổi" có được bật trong Cài đặt hay không.
 * `Ctrl+R`: Hiển thị hộp thoại "Tất cả tài liệu" (từ Tài liệu gần đây).
 * `Ctrl+Q`: Thoát (chỉ Windows; trên macOS điều này nằm trong menu ứng dụng thay vào đó).
 
@@ -174,6 +175,7 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 
 * `Delete` / `Numpad Delete` trên điều khiển tab: Đóng tab tài liệu được chọn.
 * `Ctrl+1` đến `Ctrl+9` (macOS: `Cmd+1` đến `Cmd+9`) trong văn bản tài liệu hoặc trên điều khiển tab: Đi đến chín tài liệu đang mở đầu tiên, theo thứ tự chúng được mở.
+* `Ctrl+Tab` và `Ctrl+Shift+Tab`: Đi đến tài liệu đang mở tiếp theo hoặc trước đó, quấn quanh ở một trong hai đầu.
 * `Enter` hoặc `Space` trong văn bản tài liệu: Theo dõi liên kết hoặc mở chế độ xem bảng hoặc công thức ở con trỏ.
 * `Enter` trên trang PDF được quét: Nhận diện trang bằng OCR.
 * `Shift+F10` hoặc phím Menu/Ứng dụng trong văn bản tài liệu: Mở menu ngữ cảnh.

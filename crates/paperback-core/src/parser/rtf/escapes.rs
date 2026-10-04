@@ -66,6 +66,32 @@ fn consume_line_break(bytes: &[u8], idx: &mut usize) -> bool {
 	}
 }
 
+/// Terminates a control word left open at the end of `out` by pushing the space that
+/// delimits it.
+///
+/// In the source, the backslash of a following escape is what ended the control word:
+/// `{\leveltext\'01-;}`. Once that escape is replaced with the character it stands for, the
+/// control word runs straight into it, and the lexer, which ends a control word only at
+/// whitespace, reads `\leveltext` plus the decoded byte and the `-` after it as one word and
+/// fails on the `-` as a numeric parameter. Word writes exactly this for every dash-bulleted
+/// list, so the whole document would refuse to open.
+fn end_open_control_word(out: &mut String) {
+	let bytes = out.as_bytes();
+	let mut start = bytes.len();
+	while start > 0 && (bytes[start - 1].is_ascii_alphanumeric() || bytes[start - 1] == b'-') {
+		start -= 1;
+	}
+	if start == bytes.len() || start == 0 || !bytes[start].is_ascii_alphabetic() {
+		return;
+	}
+	// An odd run of backslashes before the letters starts a control word; an even run is
+	// escaped backslashes followed by ordinary text.
+	let backslashes = bytes[..start].iter().rev().take_while(|&&b| b == b'\\').count();
+	if backslashes % 2 == 1 {
+		out.push(' ');
+	}
+}
+
 /// Reads an RTF numeric parameter at `start`, allowing the leading `-` that `\uN`
 /// uses for codepoints above 0x7FFF. Returns the index just past the last digit.
 fn read_param_end(bytes: &[u8], start: usize) -> Option<usize> {
@@ -201,12 +227,14 @@ pub(super) fn normalize_escapes(
 			match bytes[i + 1] {
 				// RTF non-breaking space
 				b'~' => {
+					end_open_control_word(&mut result);
 					result.push(' ');
 					i += 2;
 					continue;
 				}
 				// Optional / non-breaking hyphen
 				b'-' | b'_' => {
+					end_open_control_word(&mut result);
 					result.push('-');
 					i += 2;
 					continue;
@@ -222,6 +250,7 @@ pub(super) fn normalize_escapes(
 			{
 				let buf = [byte];
 				let (decoded, _, _) = current_encoding.decode(&buf);
+				end_open_control_word(&mut result);
 				result.push_str(&decoded);
 				i += 4;
 				continue;

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 11:24-0600\n"
+"POT-Creation-Date: 2026-10-04 00:44+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -184,6 +184,10 @@ msgstr ""
 msgid "Open Document"
 msgstr ""
 
+#. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+msgid "Document reloaded."
+msgstr ""
+
 #. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -223,6 +227,14 @@ msgstr ""
 
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+msgid "&Reload"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
+msgid "Re-read the current document from disk"
 msgstr ""
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
@@ -1063,8 +1075,12 @@ msgstr ""
 msgid "Render tables &inline"
 msgstr ""
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
 msgid "&Join wrapped lines into paragraphs in PDFs"
+msgstr ""
+
+#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "Remove repeated page &headers and footers in PDFs"
 msgstr ""
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
@@ -1601,11 +1617,11 @@ msgstr ""
 msgid "Paperback"
 msgstr ""
 
-msgid "Document reloaded."
-msgstr ""
-
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
+msgstr ""
+
+msgid "Installing the update. Paperback will restart."
 msgstr ""
 
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
@@ -2304,6 +2320,10 @@ msgid "Reopen Last Closed"
 msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reload"
+msgstr ""
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr ""
 
@@ -2944,10 +2964,79 @@ msgstr ""
 msgid "Failed to launch update script"
 msgstr ""
 
+msgid "Failed to start installation"
+msgstr ""
+
+msgid "Failed to stage the application"
+msgstr ""
+
+msgid "The update contains a different application."
+msgstr ""
+
+msgid "Could not determine the update log directory."
+msgstr ""
+
+msgid "Failed to launch update helper"
+msgstr ""
+
+msgid "The update helper did not start. See the log:"
+msgstr ""
+
+msgid "The application did not quit within 60 seconds. The current app was kept."
+msgstr ""
+
+msgid "The installation changed while waiting. The current app was kept."
+msgstr ""
+
+msgid "Could not move the current application. The current app was kept."
+msgstr ""
+
+msgid "Could not install the update. The previous version was restored."
+msgstr ""
+
+msgid "Could not restore the previous version. Recover it from:"
+msgstr ""
+
+msgid "macOS could not launch the update. The previous version is preserved at:"
+msgstr ""
+
+msgid "Application update failed"
+msgstr ""
+
+msgid "Log:"
+msgstr ""
+
+msgid "Update cancelled."
+msgstr ""
+
 msgid "Failed to open disk image"
 msgstr ""
 
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
+msgstr ""
+
+msgid "Invalid application metadata"
+msgstr ""
+
+msgid "The disk image must contain exactly one matching application."
+msgstr ""
+
+msgid "The update must be signed by the application's developer team"
+msgstr ""
+
+msgid "Invalid application executable."
+msgstr ""
+
+msgid "Invalid application executable"
+msgstr ""
+
+msgid "Application signature verification failed"
+msgstr ""
+
+msgid "Failed to mount disk image"
+msgstr ""
+
+msgid "Failed to unmount disk image"
 msgstr ""
 
 msgid ""
@@ -2979,6 +3068,9 @@ msgid "Downloading update..."
 msgstr ""
 
 msgid "Update failed"
+msgstr ""
+
+msgid "Preparing update..."
 msgstr ""
 
 msgid "Update Ready"
@@ -4276,4 +4368,16 @@ msgstr ""
 #. TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
 #: kt
 msgid "Settings exported"
+msgstr ""
+
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt
+#: swift
+msgid "Language"
+msgstr ""
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt
+#: swift
+msgid "Opens Paperback in the Settings app, where its language can be changed."
 msgstr ""

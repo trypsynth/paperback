@@ -35,7 +35,7 @@ rodio-wsola = "0.2.0"
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-ship-shape = "0.3.0"
+ship-shape = "0.4.0"
 toml = { workspace = true }
 wx-utils = { version = "0.4.1", features = ["shortcuts"] }
 # `default-features = false` turns off the seven size knobs wxdragon enables by default, all of
@@ -57,7 +57,7 @@ objc = "0.2.7"
 flate2 = { version = "1.1.10", default-features = false }
 paperback-formats = { path = "../paperback-formats" }
 patois-build = "0.1.15"
-shipfitter = { version = "0.2.1", features = ["windows-resources"] }
+shipfitter = { version = "0.2.1", features = ["docs", "windows-resources"] }
 tar = "0.4.46"
 ureq = { version = "3.4.2", default-features = false, features = ["rustls"] }
 

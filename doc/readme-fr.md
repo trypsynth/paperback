@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: cbe22347ff4d5de8; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,c673db92,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 50ae5f8f1895cd78; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,75b3aaec,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -81,6 +81,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `Ctrl+F4` (macOS : `Cmd+W`) : Fermer le document actif.
 * `Ctrl+Shift+F4` (macOS : `Cmd+Shift+W`) : Fermer tous les documents ouverts.
 * `Ctrl+Shift+T` : Rouvrir le dernier document fermé.
+* `F5` : Relire le document actif depuis le disque. Fonctionne que « Recharger automatiquement les documents modifiés » soit activé ou non dans Paramètres.
 * `Ctrl+R` : Afficher la boîte de dialogue « Tous les documents » (à partir des Documents récents).
 * `Ctrl+Q` : Quitter (Windows uniquement ; sur macOS, cette option se trouve dans le menu de l'application).
 
@@ -174,6 +175,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 
 * `Delete` / `Numpad Delete` sur le contrôle d'onglet : Fermer l'onglet de document sélectionné.
 * `Ctrl+1` à `Ctrl+9` (macOS : `Cmd+1` à `Cmd+9`) dans le texte du document ou sur le contrôle d'onglet : Aller aux neuf premiers documents ouverts, dans l'ordre dans lequel ils ont été ouverts.
+* `Ctrl+Tab` et `Ctrl+Shift+Tab` : Aller au document ouvert suivant ou précédent, en passant d'un bout à l'autre.
 * `Enter` ou `Space` dans le texte du document : Suivre un lien ou ouvrir une vue de tableau ou de formule au curseur.
 * `Enter` sur une page PDF numérisée : Reconnaître la page avec OCR.
 * `Shift+F10` ou la touche Menu/Application dans le texte du document : Ouvrir le menu contextuel.

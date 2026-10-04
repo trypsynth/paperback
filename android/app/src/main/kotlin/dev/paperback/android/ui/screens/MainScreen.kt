@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -74,14 +73,14 @@ fun MainScreen(
 	val speechRatePercent by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
 	val activeSearchQuery by viewModel.search.query.collectAsStateWithLifecycle()
 	val activeSearchOptions by viewModel.search.options.collectAsStateWithLifecycle()
-	var isTextMode by rememberSaveable { mutableStateOf(false) }
+	val isTextMode by settings.textMode.state.collectAsStateWithLifecycle()
 
 	// An audio-only tab has no real text spine to show in Text Mode (its top-bar toggle is
 	// hidden for the same reason), so switching to one from a Text Mode session falls back to
 	// Read-Aloud mode instead of stranding the user on a blank text view with no way back.
 	LaunchedEffect(state.activeTab?.documentUri) {
 		if (state.activeTab?.isAudioOnly == true) {
-			isTextMode = false
+			settings.textMode.set(false)
 		}
 	}
 
@@ -325,7 +324,7 @@ fun MainScreen(
 					onTocOpen = { viewModel.tocRequest.request() },
 					onTabSelect = { viewModel.setActiveTab(it) },
 					onTabClose = { viewModel.closeTab(it) },
-					onToggleTextMode = { isTextMode = !isTextMode },
+					onToggleTextMode = { settings.textMode.set(!isTextMode) },
 					onTogglePlayPause = { viewModel.togglePlayPause() },
 					onRecentsOpen = { onItemClick(AllDocumentsRoute) },
 					onGoToOpen = { viewModel.openGoToDialog() },
@@ -424,7 +423,7 @@ fun MainScreen(
 							val jumpToLine: (Int) -> Unit = { indexToScroll ->
 								viewModel.savePosition(docState.session, docState.documentUri, indexToScroll)
 								viewModel.refreshSegmentPreview()
-								isTextMode = true
+								settings.textMode.set(true)
 								scope.launch {
 									listState.scrollToItem(indexToScroll)
 									lineIndexToFocus = indexToScroll

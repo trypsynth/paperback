@@ -148,3 +148,17 @@ fn normalize_escapes_uses_font_charset_for_encoding() {
 	assert!(out.contains('Ć'), "expected Ć (Windows-1250 0xC6), got: {out}");
 	assert!(!out.contains('Æ'), "should not contain Æ (Windows-1252 0xC6)");
 }
+
+/// Word writes every dash-bulleted list level as `{\leveltext...\'01-;}`. Replacing the hex
+/// escape removed the backslash that ended `\leveltext`, and the lexer then read the `-` as the
+/// control word's numeric parameter and refused the whole document.
+#[test]
+fn normalize_escapes_keeps_a_control_word_terminated_after_replacing_an_escape() {
+	let output = normalize_escapes(r"{\leveltext\'01-;}", encoding_rs::WINDOWS_1252, &HashMap::new());
+	assert_eq!(output, "{\\leveltext \u{1}-;}");
+	let output = normalize_escapes(r"\pard\'e9t\'e9", encoding_rs::WINDOWS_1252, &HashMap::new());
+	assert_eq!(output, r"\pard été");
+	// Text that only looks like a control word, after an escaped backslash, gets no space.
+	let output = normalize_escapes(r"C:\\dir\'e9", encoding_rs::WINDOWS_1252, &HashMap::new());
+	assert_eq!(output, r"C:\\diré");
+}

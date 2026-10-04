@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 11:24-0600\n"
+"POT-Creation-Date: 2026-10-04 00:44+0000\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -203,6 +203,11 @@ msgstr "Visualizar Nota"
 msgid "Open Document"
 msgstr "Abrir Documento"
 
+#. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+#, fuzzy
+msgid "Document reloaded."
+msgstr "Documento recarregado."
+
 #. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -248,6 +253,16 @@ msgstr "Reabrir &Último Fechado"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Reabrir o último documento fechado"
+
+#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+#, fuzzy
+msgid "&Reload"
+msgstr "&Recarregar"
+
+#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
+#, fuzzy
+msgid "Re-read the current document from disk"
+msgstr "Ler novamente o documento atual do disco"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 #, fuzzy
@@ -1215,10 +1230,15 @@ msgstr "&Quebra de palavras"
 msgid "Render tables &inline"
 msgstr "Renderizar tabelas &em linha"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
 #, fuzzy
 msgid "&Join wrapped lines into paragraphs in PDFs"
 msgstr "&Unir linhas quebradas em parágrafos em PDFs"
+
+#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+#, fuzzy
+msgid "Remove repeated page &headers and footers in PDFs"
+msgstr "Remover &cabeçalhos e rodapés repetidos em PDFs"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1835,14 +1855,14 @@ msgstr "Formato selecionado não suportado."
 msgid "Paperback"
 msgstr "Paperback"
 
-#, fuzzy
-msgid "Document reloaded."
-msgstr "Documento recarregado."
-
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 #, fuzzy
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "O Paperback não pode realizar nenhuma ação enquanto o Web View estiver aberto."
+
+#, fuzzy
+msgid "Installing the update. Paperback will restart."
+msgstr "Instalando a atualização. O Paperback será reiniciado."
 
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
@@ -2618,6 +2638,11 @@ msgstr "Fechar Tudo"
 #, fuzzy
 msgid "Reopen Last Closed"
 msgstr "Reabrir Última Fechada"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Reload"
+msgstr "Recarregar"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -3417,12 +3442,104 @@ msgid "Failed to launch update script"
 msgstr "Falha ao carregar atualização de script"
 
 #, fuzzy
+msgid "Failed to start installation"
+msgstr "Falha ao iniciar a instalação"
+
+#, fuzzy
+msgid "Failed to stage the application"
+msgstr "Falha ao preparar o aplicativo"
+
+#, fuzzy
+msgid "The update contains a different application."
+msgstr "A atualização contém um aplicativo diferente."
+
+#, fuzzy
+msgid "Could not determine the update log directory."
+msgstr "Não foi possível determinar o diretório de log da atualização."
+
+#, fuzzy
+msgid "Failed to launch update helper"
+msgstr "Falha ao executar o auxiliar de atualização"
+
+#, fuzzy
+msgid "The update helper did not start. See the log:"
+msgstr "O auxiliar de atualização não foi iniciado. Veja o log:"
+
+#, fuzzy
+msgid "The application did not quit within 60 seconds. The current app was kept."
+msgstr "O aplicativo não foi encerrado em 60 segundos. O aplicativo atual foi mantido."
+
+#, fuzzy
+msgid "The installation changed while waiting. The current app was kept."
+msgstr "A instalação foi alterada durante a espera. O aplicativo atual foi mantido."
+
+#, fuzzy
+msgid "Could not move the current application. The current app was kept."
+msgstr "Não foi possível mover o aplicativo atual. O aplicativo atual foi mantido."
+
+#, fuzzy
+msgid "Could not install the update. The previous version was restored."
+msgstr "Não foi possível instalar a atualização. A versão anterior foi restaurada."
+
+#, fuzzy
+msgid "Could not restore the previous version. Recover it from:"
+msgstr "Não foi possível restaurar a versão anterior. Recupere-a em:"
+
+#, fuzzy
+msgid "macOS could not launch the update. The previous version is preserved at:"
+msgstr "O macOS não conseguiu executar a atualização. A versão anterior foi preservada em:"
+
+#, fuzzy
+msgid "Application update failed"
+msgstr "Falha na atualização do aplicativo"
+
+#, fuzzy
+msgid "Log:"
+msgstr "Log:"
+
+#, fuzzy
+msgid "Update cancelled."
+msgstr "Atualização cancelada."
+
+#, fuzzy
 msgid "Failed to open disk image"
 msgstr "Falha ao abrir imagem de disco"
 
 #, fuzzy
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
 msgstr "A atualização foi baixada e sua imagem de disco foi aberta. Feche o %s e arraste a nova versão para Aplicativos para concluir a instalação."
+
+#, fuzzy
+msgid "Invalid application metadata"
+msgstr "Metadados do aplicativo inválidos"
+
+#, fuzzy
+msgid "The disk image must contain exactly one matching application."
+msgstr "A imagem de disco deve conter exatamente um aplicativo correspondente."
+
+#, fuzzy
+msgid "The update must be signed by the application's developer team"
+msgstr "A atualização deve ser assinada pela equipe de desenvolvedores do aplicativo"
+
+#, fuzzy
+msgid "Invalid application executable."
+msgstr "Executável do aplicativo inválido."
+
+#, fuzzy
+msgid "Invalid application executable"
+msgstr "Executável do aplicativo inválido"
+
+#, fuzzy
+msgid "Application signature verification failed"
+msgstr "Falha na verificação de assinatura do aplicativo"
+
+#, fuzzy
+msgid "Failed to mount disk image"
+msgstr "Falha ao montar a imagem de disco"
+
+#, fuzzy
+msgid "Failed to unmount disk image"
+msgstr "Falha ao desmontar a imagem de disco"
 
 #, fuzzy
 msgid ""
@@ -3461,6 +3578,10 @@ msgstr "Baixando atualização..."
 
 msgid "Update failed"
 msgstr "Falha na atualização"
+
+#, fuzzy
+msgid "Preparing update..."
+msgstr "Preparando atualização..."
 
 #, fuzzy
 msgid "Update Ready"
@@ -4928,6 +5049,18 @@ msgstr "Arquivo original"
 #, fuzzy
 msgid "Settings exported"
 msgstr "Configurações exportadas"
+
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt swift
+#, fuzzy
+msgid "Language"
+msgstr "Idioma"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt swift
+#, fuzzy
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr "Abre o Paperback no app de Configurações, onde seu idioma pode ser alterado."
 
 #~ msgid "Unknown update file format."
 #~ msgstr "Formato desconhecido de arquivo."

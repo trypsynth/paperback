@@ -8,7 +8,10 @@
 
 use std::collections::{HashMap, HashSet};
 
-use super::super::text::{SpaceFilter, char_top, reorder_run};
+use super::super::text::{
+	HyphenEvidence, LINE_END_HYPHEN, SpaceFilter, char_top, context_chars, keeps_line_end_hyphen, page_chars,
+	reorder_run,
+};
 use crate::pdfium::{PageObject, PdfTextPage, Tag, TagTree};
 
 /// The mark parameter a tagged page stamps its glyphs with, and the one the tree points at.
@@ -108,7 +111,12 @@ impl<'a> PageText<'a> {
 ///
 /// An id the tree names more than once also gets the text of the ids lost in its place; see
 /// [`fold_repeated_references`].
-pub(super) fn read(text_page: &PdfTextPage, facts: &TreeFacts, want_tops: bool) -> PageMarkedContent {
+pub(super) fn read(
+	text_page: &PdfTextPage,
+	facts: &TreeFacts,
+	want_tops: bool,
+	evidence: &mut HyphenEvidence,
+) -> PageMarkedContent {
 	let mut content = PageMarkedContent { text: HashMap::new(), tops: HashMap::new(), coverage: 1.0 };
 	let mut real_char_count: usize = 0;
 	let mut mcid_char_count: usize = 0;
@@ -122,9 +130,17 @@ pub(super) fn read(text_page: &PdfTextPage, facts: &TreeFacts, want_tops: bool) 
 		// runs can be reordered visual→logical per run.
 		let mut current_chars: Vec<(char, i32)> = Vec::new();
 		let spaces = SpaceFilter::new(char_count);
-		for i in 0..char_count {
-			let unicode = text_page.unicode_at(i);
-			if let Some(ch) = char::from_u32(unicode) {
+		let page = page_chars(text_page, char_count);
+		let context = context_chars(&page);
+		evidence.add_chars(&context);
+		for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
+			if let Some(ch) = ch {
+				// A hyphen pdfium found at a line end is part of the word or only splits it; see
+				// `keeps_line_end_hyphen`.
+				let ch = match ch {
+					LINE_END_HYPHEN if keeps_line_end_hyphen(&context, at, evidence) => '-',
+					_ => ch,
+				};
 				if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t')) || ch == '\u{00AD}' {
 					continue;
 				}

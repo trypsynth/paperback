@@ -1,126 +1,163 @@
 # Paperback
 
-[Paperback](https://paperback.dev) is a lightweight, fast, and accessible ebook and document reader for everyone, from casual readers to heavy power users. Designed for screen reader accessibility and a blazing fast bloat-free reading experience.
+[Paperback](https://paperback.dev) is an accessible reader for ebooks, documents, and audiobooks, designed for screen reader users first. It runs on Windows, macOS, Linux, iOS, and Android, and all five apps share one reading engine written in Rust.
+
+This file is for people who work on Paperback. To use it, see the [user guide](doc/readme.md) or download it from [paperback.dev](https://paperback.dev). To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Features
 
-- Written entirely in Rust to ensure it's modern, fast, and memory-safe
-- Supports a wide range of document formats:
-  - HTML documents (htm/html/xhtml)
-  - EPUB books (epub)
-  - FictionBook ebooks (fb2)
-  - Comic book archives (cbz)
-  - CHM help files (chm)
-  - DAISY books (opf/zip)
-  - PDF documents (pdf)
-  - Word documents (doc/docx/docm)
-  - PowerPoint presentations (ppt/pptx/pptm)
-  - OpenDocument text files (odt/fodt)
-  - OpenDocument presentations (odp/fodp)
-  - RTF documents (rtf)
-  - WinHelp files (hlp)
-  - M4B audiobooks (m4b)
-  - MOBI/Kindle books (mobi/azw/azw3)
-  - Markdown documents (md/markdown/mdx/mdown/mdwn/mkd/mkdn/mkdown/ronn)
-  - Plain text and log files (txt/log)
-- Intuitive tabbed interface for managing multiple documents, with single-instance behavior so opening a file from the shell or a file association reuses the running window
-- Full screen reader accessibility, including live-region status announcements for actions like search results and navigation
-- Robust find functionality with match case, whole word, and regular expression options, plus persisted search history
-- Seamless navigation between EPUB sections, headings (per level), pages, links, lists, list items, images, figures, tables, formulas, and separators via hotkeys similar to screen reader conventions, with a table of contents and elements list for quick jumps
-- Precise navigation to specific lines or percentages within documents, plus per-document navigation history (back/forward)
-- MathML formulas rendered as AsciiMath through MathCAT, with formula navigation and Formula View
-- Bookmarks and notes, with optional sound feedback and a dedicated dialog to jump to any of them
-- Extensive readability customization: custom fonts and colors, line/paragraph/letter spacing, text alignment, word wrap, and inline vs. placeholder table rendering
-- Password-protected document support, and per-document settings (position, bookmarks, format overrides) that can be exported/imported via `.paperback` files
-- Recently closed and recently opened document tracking, with quick reopen
-- Built-in auto-update checker with stable/dev channels
-- System tray support on Windows and Linux
-- A `pb` CLI tool for scripted conversion of documents to plain text, HTML, or Markdown
-- Lightweight installer that automatically sets up file associations
-- Translated into numerous languages
+- Opens EPUB, PDF, Word, PowerPoint, OpenDocument, RTF, HTML, Markdown, reStructuredText, FictionBook, MOBI and Kindle, CHM, WinHelp, DAISY, comic book archives, man pages, Windows Write, plain text, and M4B and MP3 audiobooks. For the full list of file extensions, see the [user guide](doc/readme.md#currently-supported-file-types).
+- Opens documents in tabs. Files opened from the shell or through a file association go to the window that's already running.
+- Moves by heading, page, link, list, table, image, figure, formula, and more with single-letter keys, like a screen reader's browse mode. A table of contents and an elements list are also available.
+- Finds text, with options for case, whole words, and regular expressions, and remembers past searches.
+- Keeps bookmarks, notes, and navigation history, and goes to a line, page, or percentage.
+- Plays audiobooks and DAISY audio at adjustable speeds, with a sleep timer.
+- Reads scanned PDF pages with the OCR engine built into Windows and macOS.
+- Reads MathML as AsciiMath through MathCAT.
+- Reads untagged PDFs in order, joins their wrapped lines into paragraphs, finds headings by size and weight, and removes running headers and footers. You can turn off each of these.
+- Lets you change the font, colors, spacing, alignment, word wrap, and every keyboard shortcut.
+- Exports and imports each document's position, bookmarks, and notes as a `.paperback` file.
+- Updates itself, from either the stable or the dev channel.
+- Includes `pb`, a command-line tool that converts any supported document to plain text, HTML, or Markdown.
+- Is translated into 15 languages.
 
-## Workspace layout
+## Repository layout
 
-This is a Cargo workspace. The main crates are:
-
-| Crate | Description |
+| Path | Contents |
 |---|---|
-| `paperback-core` | Core document parsing and reading logic (library) |
-| `paperback` | The GUI application (wxWidgets via wxDragon) |
-| `pb` | CLI tool to convert documents to text or HTML |
-| `xtask` | Build and release automation (`cargo release`) |
+| `crates/paperback-core` | The reading engine: the parsers, the document model, navigation, and settings. The mobile apps call it through [UniFFI](https://mozilla.github.io/uniffi-rs/). |
+| `crates/paperback` | The desktop app, built on wxWidgets through [wxDragon](https://github.com/AllenDang/wxDragon). |
+| `crates/paperback-formats` | Format names and file extensions, shared by the parsers and the packaging code. |
+| `crates/pb` | The `pb` command-line converter. |
+| `crates/xtask` | Build, release, and translation tasks. |
+| `ios/` | The iOS app, written in SwiftUI. |
+| `android/` | The Android app, written in Kotlin with Jetpack Compose. |
+| `po/` | The translation template and a catalog for each language. |
+| `doc/` | The user guide and its translations, which each app shows as its Help. |
 
-## Requirements
+## Build the desktop app
 
-- Rust 1.87+ (edition 2024). Install via [rustup](https://rustup.rs).
-- Rust nightly toolchain, used by the `cargo fmt` pre-commit hook. Install with:
+### Requirements
+
+To build the desktop app, you need the following:
+
+- Rust 1.91.1 or later, from [rustup](https://rustup.rs).
+- The nightly Rust toolchain, which formats the code. To install it, run `rustup toolchain install nightly`. CI checks formatting with the nightly that `.github/workflows/ci.yml` names.
+- CMake and Ninja, which compile wxWidgets.
+- gettext, for `msgfmt`, which compiles the translations. Without it, the app builds but is English only.
+- On Windows, the [WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) on the linker's `LIB` path.
+- On Linux, the GTK 3 and WebKitGTK development packages. On Debian or Ubuntu, install them with this command:
+
   ```
-  rustup toolchain install nightly
+  sudo apt install cmake ninja-build gettext libgtk-3-dev libwebkit2gtk-4.1-dev libpng-dev libjpeg-dev libtiff-dev libgl1-mesa-dev libglu1-mesa-dev libxkbcommon-dev libwayland-dev libexpat1-dev libxtst-dev libsm-dev libice-dev libasound2-dev
   ```
-- CMake and Ninja, required to compile wxWidgets via wxDragon.
-- `pandoc` on `PATH`: converts the readmes into the HTML help embedded in the binary. The build
-  fails without it, since the Help menu has nothing else to show.
 
-### Optional tools
+### Fetch wxWidgets
 
-These are not needed for a basic build but are required for a complete release:
+Paperback builds against a pinned commit of wxWidgets master instead of a release, because it relies on accessibility fixes that haven't shipped in a release yet. `WXWIDGETS_DIR` in `.cargo/config.toml` names the commit. Before your first build, and whenever the pinned commit changes, fetch it:
 
-- gettext tools (`xgettext`, `msgfmt`, `msgmerge`) on `PATH`: generates the translation template and compiles translations
-- InnoSetup: creates the Windows installer
+```
+cargo xtask wxwidgets
+```
 
-## Building
+### Build and run
+
+To build the app, run the following command:
 
 ```
 cargo build --release
 ```
 
-This produces the binary in `target/release/`. To build a full release package (zip on Windows, tar.gz + AppImage on Linux, translations, etc.):
+The app is `target/release/paperback`. To keep your own settings safe while you test, set `PAPERBACK_CONFIG_DIR` to another directory, and the app keeps its configuration there instead.
+
+To build the packages a release ships, such as the Windows installer, the macOS disk image, and the Linux AppImage, run the following command:
 
 ```
 cargo release
 ```
 
-This runs the `xtask` crate via the `cargo release` alias defined in `.cargo/config.toml`.
+The Windows installer needs [Inno Setup](https://jrsoftware.org/isinfo.php). The Linux AppImage needs `appimagetool` on your `PATH`; without it, `cargo release` builds only the tarball.
 
-## UI tests
+### Run the tests
 
-On Windows, `crates/paperback/tests` holds UI tests that start the real app, press keys and check what UI Automation reports: focus, the status bar, and what screen readers are told. They are skipped by `cargo test` and run with:
+To run the tests, run the following command:
+
+```
+cargo test --workspace
+```
+
+On Windows, `crates/paperback/tests` also contains UI tests. They start the app, press keys, and check what UI Automation reports, including what screen readers are told. These tests are skipped by default. To run them, close Paperback, and then run the following command:
 
 ```
 cargo test -p paperback -- --ignored
 ```
 
-Close Paperback first; the tests refuse to start while it runs. While they run they take over the keyboard and focus, so leave the desktop alone until they finish. Each test keeps its config and log in a temp directory, set through the `PAPERBACK_CONFIG_DIR` environment variable, which also works for running Paperback by hand with a separate config.
+The UI tests take over the keyboard and focus, so don't use your computer until they finish.
+
+### Use pb
+
+`pb` converts a document to plain text, HTML, or Markdown. For example:
+
+```
+cargo run --release -p pb -- book.epub -f markdown -o book.md
+```
+
+`pb` can also convert only some pages, keep repeated page headers and footers, and read scanned PDF pages with OCR. For all of its options, run `pb --help`.
+
+## Build the iOS app
+
+To build the iOS app, you need a Mac with Xcode, and the iOS Rust targets:
+
+```
+rustup target add aarch64-apple-ios aarch64-apple-ios-sim
+```
+
+Then build the reading engine:
+
+```
+cargo ios
+```
+
+`cargo ios` builds the reading engine for devices and the Simulator, and generates the Swift bindings and translations that the Xcode project uses. To build the app, open `ios/Paperback.xcodeproj` in Xcode.
+
+## Build the Android app
+
+To build the Android app, you need the Android SDK and NDK, [cargo-ndk](https://github.com/bbqsrc/cargo-ndk), and the Android Rust targets:
+
+```
+rustup target add aarch64-linux-android armv7-linux-androideabi
+cargo install cargo-ndk
+```
+
+Then build the reading engine and the app:
+
+```
+cargo android --debug
+```
+
+`cargo android` builds the reading engine and generates the Kotlin bindings and translations. The `--debug` and `--release` options also build the app, and `--install-debug` installs it on a connected device. To work in Android Studio, run `cargo android` once, and then open the `android/` directory.
+
+## Translations
+
+Paperback uses gettext catalogs through [patois](https://github.com/trypsynth/patois). Strings marked with `t()` in Rust, Swift, and Kotlin are collected into `po/paperback.pot`. To update the template, run the following command:
+
+```
+cargo gen-pot
+```
+
+Each language's strings are in `po/<lang>.po`, and its user guide is in `doc/readme-<lang>.md`. To find out how to translate Paperback, see [CONTRIBUTING.md](CONTRIBUTING.md#translations).
 
 ## Pre-commit hooks
 
-This project uses [prek](https://github.com/LorenzoLeonardini/prek), a Rust-based pre-commit hook runner. Hooks are configured in `prek.toml`.
-
-Install prek and set up the hooks:
+Paperback uses [prek](https://github.com/j178/prek) to run the hooks in `prek.toml`. The hooks remove trailing whitespace, end files with a newline, and format the Rust code. To install them, run the following commands:
 
 ```
 cargo install prek
 prek install
 ```
 
-The following hooks run on every commit:
-
-- `trailing-whitespace`: strips trailing whitespace
-- `end-of-file-fixer`: ensures files end with a newline
-- `cargo fmt` (nightly): formats all Rust code with `cargo +nightly fmt --all`
-
-## Linux
-
-Building on Linux requires wxWidgets 3.2+ with the GTK3 backend. The wxDragon build system handles compiling the wxWidgets bindings automatically.
-
-`cargo release` produces both a portable `.tar.gz` and, if `appimagetool` is on `PATH`, an `.AppImage`. The first time Paperback is launched from the AppImage, it offers to associate itself with file types and add itself to the desktop menu — the same choices the Windows installer offers as checkboxes during setup, applied via `xdg-mime` instead of the registry. Missing `appimagetool` just skips that package; the portable tarball is still built either way.
-
-## Contributing
-
-Contributions are welcome! Whether through issues, pull requests, or discussions, your interest is appreciated. Thanks for using Paperback!
-
 ## License
 
-This project is licensed under the [MIT license](LICENSE.md).
+Paperback is licensed under the [MIT license](LICENSE.md).
 
-Paperback is built on other people's work. The libraries it uses, and their licenses, are credited at [paperback.dev/licenses](https://paperback.dev/licenses).
+The libraries Paperback uses, and their licenses, are credited at [paperback.dev/licenses](https://paperback.dev/licenses).

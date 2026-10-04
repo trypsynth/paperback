@@ -1,11 +1,23 @@
 use std::collections::HashMap;
 
 use super::{
-	ImagePlacement, UnclaimedImages, append_pdf_table_to_buffer, flush_block,
+	ImagePlacement, UnclaimedImages, append_pdf_table_to_buffer, flush_block, is_bare_list_label,
 	marked_content::{PageText, TreeFacts, fold_repeated_references},
 	normalize_list_label,
 };
 use crate::document::{DocumentBuffer, MarkerType};
+
+/// Word tags a list's number as marked content inside the item's body rather than as an Lbl, so
+/// the walker has to recognise a block that so far holds only a label and space the text from it.
+#[test]
+fn bare_list_labels_are_recognised_and_words_are_not() {
+	for label in ["1.", "12.", "1.2.", "3)", "a.", "(b)", "iv.", "XII.", "\u{2022}", "-", "\u{F0B7}", " 2. "] {
+		assert!(is_bare_list_label(label), "{label:?} is a list label");
+	}
+	for text in ["", "etc.", "Mr.", "The", "1", "Fig.", "e.g.", "Step 1.", "Introduction."] {
+		assert!(!is_bare_list_label(text), "{text:?} is not a list label");
+	}
+}
 
 /// OFF mode: the PDF table helper emits a single `"[Table]: <first row>"` placeholder line and
 /// the Table marker's length equals the emitted display extent. The HTML has a non-BMP char

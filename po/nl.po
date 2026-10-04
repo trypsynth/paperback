@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 11:24-0600\n"
+"POT-Creation-Date: 2026-10-04 00:44+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -184,6 +184,10 @@ msgstr "Notitie bekijken"
 msgid "Open Document"
 msgstr "Document openen"
 
+#. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+msgid "Document reloaded."
+msgstr "Document opnieuw geladen."
+
 #. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -224,6 +228,16 @@ msgstr "&Laatst gesloten heropenen"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Het laatst gesloten document heropenen"
+
+#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+#, fuzzy
+msgid "&Reload"
+msgstr "&Opnieuw laden"
+
+#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
+#, fuzzy
+msgid "Re-read the current document from disk"
+msgstr "Huidige document opnieuw van schijf laden"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 msgid "Clea&r Recent Documents"
@@ -1066,9 +1080,14 @@ msgstr "Automatische &terugloop"
 msgid "Render tables &inline"
 msgstr "Tabellen in de &tekst weergeven"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
 msgid "&Join wrapped lines into paragraphs in PDFs"
 msgstr "Afgebroken regels in PDF's &samenvoegen tot alinea's"
+
+#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+#, fuzzy
+msgid "Remove repeated page &headers and footers in PDFs"
+msgstr "Herhaalde pagina-&koppen en voetteksten in PDF's verwijderen"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1611,12 +1630,13 @@ msgstr "Niet-ondersteunde indeling geselecteerd."
 msgid "Paperback"
 msgstr "Paperback"
 
-msgid "Document reloaded."
-msgstr "Document opnieuw geladen."
-
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback kan geen acties uitvoeren terwijl webweergave is geopend."
+
+#, fuzzy
+msgid "Installing the update. Paperback will restart."
+msgstr "Update wordt geïnstalleerd. Paperback wordt opnieuw gestart."
 
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
@@ -2314,6 +2334,11 @@ msgid "Reopen Last Closed"
 msgstr "Laatst gesloten heropenen"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Reload"
+msgstr "Opnieuw laden"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "Alle recente documenten tonen..."
 
@@ -2955,11 +2980,103 @@ msgstr "Ophalen van huidig exe-pad mislukt"
 msgid "Failed to launch update script"
 msgstr "Updatescript starten mislukt"
 
+#, fuzzy
+msgid "Failed to start installation"
+msgstr "Installatie starten mislukt"
+
+#, fuzzy
+msgid "Failed to stage the application"
+msgstr "Applicatie voorbereiden mislukt"
+
+#, fuzzy
+msgid "The update contains a different application."
+msgstr "De update bevat een andere applicatie."
+
+#, fuzzy
+msgid "Could not determine the update log directory."
+msgstr "Updatelogmap kon niet worden bepaald."
+
+#, fuzzy
+msgid "Failed to launch update helper"
+msgstr "Updatehulpprogramma starten mislukt"
+
+#, fuzzy
+msgid "The update helper did not start. See the log:"
+msgstr "Het updatehulpprogramma is niet gestart. Zie het logboek:"
+
+#, fuzzy
+msgid "The application did not quit within 60 seconds. The current app was kept."
+msgstr "De applicatie is niet afgesloten binnen 60 seconden. De huidige app is behouden."
+
+#, fuzzy
+msgid "The installation changed while waiting. The current app was kept."
+msgstr "De installatie is gewijzigd tijdens het wachten. De huidige app is behouden."
+
+#, fuzzy
+msgid "Could not move the current application. The current app was kept."
+msgstr "De huidige applicatie kon niet worden verplaatst. De huidige app is behouden."
+
+#, fuzzy
+msgid "Could not install the update. The previous version was restored."
+msgstr "De update kon niet worden geïnstalleerd. De vorige versie is hersteld."
+
+#, fuzzy
+msgid "Could not restore the previous version. Recover it from:"
+msgstr "De vorige versie kon niet worden hersteld. Herstel deze van:"
+
+#, fuzzy
+msgid "macOS could not launch the update. The previous version is preserved at:"
+msgstr "macOS kon de update niet starten. De vorige versie is behouden op:"
+
+#, fuzzy
+msgid "Application update failed"
+msgstr "Applicatie-update mislukt"
+
+#, fuzzy
+msgid "Log:"
+msgstr "Logboek:"
+
+#, fuzzy
+msgid "Update cancelled."
+msgstr "Update geannuleerd."
+
 msgid "Failed to open disk image"
 msgstr "Schijfkopie openen mislukt"
 
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
 msgstr "De update is gedownload en de schijfkopie is geopend. Sluit %s af en sleep de nieuwe versie naar Programma's om de installatie te voltooien."
+
+#, fuzzy
+msgid "Invalid application metadata"
+msgstr "Ongeldige applicatiemetagegevens"
+
+#, fuzzy
+msgid "The disk image must contain exactly one matching application."
+msgstr "De diskimage moet precies één overeenkomende applicatie bevatten."
+
+#, fuzzy
+msgid "The update must be signed by the application's developer team"
+msgstr "De update moet door het ontwikkelingsteam van de applicatie zijn ondertekend"
+
+#, fuzzy
+msgid "Invalid application executable."
+msgstr "Ongeldig toepassingsuitvoeringsbestand."
+
+#, fuzzy
+msgid "Invalid application executable"
+msgstr "Ongeldig toepassingsuitvoeringsbestand"
+
+#, fuzzy
+msgid "Application signature verification failed"
+msgstr "Verificatie van applicatiehandtekening mislukt"
+
+#, fuzzy
+msgid "Failed to mount disk image"
+msgstr "Diskimage koppelen mislukt"
+
+#, fuzzy
+msgid "Failed to unmount disk image"
+msgstr "Diskimage ontkoppelen mislukt"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -2993,6 +3110,10 @@ msgstr "Update downloaden..."
 
 msgid "Update failed"
 msgstr "Update mislukt"
+
+#, fuzzy
+msgid "Preparing update..."
+msgstr "Update wordt voorbereid..."
 
 msgid "Update Ready"
 msgstr "Update gereed"
@@ -4217,6 +4338,18 @@ msgstr "Origineel bestand"
 #: kt
 msgid "Settings exported"
 msgstr "Instellingen geëxporteerd"
+
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt swift
+#, fuzzy
+msgid "Language"
+msgstr "Taal"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt swift
+#, fuzzy
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr "Opent Paperback in de Instellingen-app, waar je de taal kunt wijzigen."
 
 #~ msgid "Unknown update file format."
 #~ msgstr "Onbekende indeling van updatebestand."

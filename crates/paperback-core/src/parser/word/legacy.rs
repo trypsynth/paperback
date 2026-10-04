@@ -13,8 +13,14 @@ use encoding_rs::WINDOWS_1252;
 use office_crypto::decrypt_from_file;
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, util::path::extract_title_from_path},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	parser::{
+		PASSWORD_REQUIRED_ERROR_PREFIX,
+		util::{
+			path::extract_title_from_path,
+			toc::{build_toc_from_buffer, heading_level_to_marker_type},
+		},
+	},
 	t,
 	util::encoding::convert_to_utf8,
 };
@@ -33,6 +39,21 @@ const FIB_FLAG_USE_1_TABLE: u16 = 0x0200;
 /// keep their text in the `WordDocument` stream itself and write no `0Table`/`1Table`, so the
 /// Word 97 path below cannot read them. Word 97 is `nFib` 0x00C1 and up.
 const FIB_NFIB_WORD97: u16 = 0x00C1;
+
+mod lists;
+mod properties;
+mod styles;
+
+use lists::DocLists;
+use properties::Paragraphs;
+use styles::{OUTLINE_BODY_TEXT, ParagraphStyle};
+
+/// Marks where a list item starts in the extracted text, through normalization, until
+/// [`finish_doc`] turns it into a list-item marker. Level N (1-9) is `U+FDD0 + N - 1`:
+/// noncharacters, which no document can contain and which normalization leaves alone.
+const LIST_ITEM_MARK: u32 = 0xFDD0;
+/// Marks where a heading starts, as [`LIST_ITEM_MARK`] does a list item: level N is `U+FDE0 + N - 1`.
+const HEADING_MARK: u32 = 0xFDE0;
 
 pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 	let file =
@@ -82,18 +103,7 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 			tracing::warn!(path = %context.file_path, "doc text extraction produced no content, simple fallback extraction also found nothing");
 			text = extract_doc_text_simple(&word_document);
 		}
-		let normalized = normalize_doc_text(&text);
-		let mut buffer = DocumentBuffer::new();
-		if !normalized.is_empty() {
-			buffer.append(&normalized);
-			if !buffer.content.ends_with('\n') {
-				buffer.append("\n");
-			}
-		}
-		let title = extract_title_from_path(&context.file_path);
-		let mut document = Document::new().with_title(title);
-		document.set_buffer(buffer);
-		return Ok(document);
+		return finish_doc(text, &context.file_path);
 	}
 	// Word 6.0 and Word 95 keep their text in the WordDocument stream and write no table stream, so
 	// the Word 97 path below would fail at the very first step. Their text is the run between fcMin
@@ -115,18 +125,7 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 		tracing::warn!(path = %context.file_path, "doc text extraction produced no content, simple fallback extraction also found nothing");
 		text = extract_doc_text_simple(&word_document);
 	}
-	let normalized = normalize_doc_text(&text);
-	let mut buffer = DocumentBuffer::new();
-	if !normalized.is_empty() {
-		buffer.append(&normalized);
-		if !buffer.content.ends_with('\n') {
-			buffer.append("\n");
-		}
-	}
-	let title = extract_title_from_path(&context.file_path);
-	let mut document = Document::new().with_title(title);
-	document.set_buffer(buffer);
-	Ok(document)
+	finish_doc(text, &context.file_path)
 }
 
 fn read_stream<R: Read + Seek>(compound: &mut CompoundFile<R>, path: &str) -> Result<Vec<u8>> {
@@ -143,10 +142,95 @@ fn extract_doc_text_from_piece_table(word_document: &[u8], table_stream: &[u8]) 
 		return None;
 	}
 	let clx = &table_stream[fc_clx..fc_clx + lcb_clx];
-	parse_doc_clx(clx, word_document)
+	let (units, pieces) = clx_pieces(clx, word_document)?;
+	let formatting = Paragraphs::read(word_document, table_stream).map(|paragraphs| Formatting {
+		paragraphs,
+		lists: DocLists::read(word_document, table_stream),
+		styles: styles::paragraph_styles(word_document, table_stream),
+	});
+	Some(mark_paragraphs(&units, &pieces, formatting, word_document))
 }
 
+/// What the document's formatting says about each paragraph's place in its structure.
+struct Formatting {
+	paragraphs: Paragraphs,
+	lists: Option<DocLists>,
+	/// What each paragraph style gives its paragraphs, by `istd`.
+	styles: Vec<ParagraphStyle>,
+}
+
+/// One piece of the piece table: the character positions it covers and where its text is.
+struct Piece {
+	cp_start: usize,
+	cp_end: usize,
+	fc: usize,
+	ansi: bool,
+}
+
+impl Piece {
+	/// The file offset of character position `cp`, which this piece covers.
+	const fn fc_of(&self, cp: usize) -> usize {
+		self.fc + (cp - self.cp_start) * if self.ansi { 1 } else { 2 }
+	}
+}
+
+/// The document's text with each heading marked by a [`HEADING_MARK`], and each list paragraph's
+/// label in front of it (with a [`LIST_ITEM_MARK`] before that), in the order Word shows them. A
+/// numbered heading keeps its number, but is a heading rather than a list item. `units` is the
+/// text by character position, one UTF-16 unit each, as the piece table lays it out.
+fn mark_paragraphs(units: &[u16], pieces: &[Piece], formatting: Option<Formatting>, word_document: &[u8]) -> String {
+	let Some(mut formatting) = formatting else { return String::from_utf16_lossy(units) };
+	let mut out: Vec<u16> = Vec::with_capacity(units.len());
+	let mut start = 0;
+	while start < units.len() {
+		// A paragraph runs to its paragraph mark, or to a table cell's end mark.
+		let end = units[start..].iter().position(|&u| u == 0x0D || u == 0x07).map_or(units.len(), |p| start + p + 1);
+		let mark = end - 1;
+		let properties = pieces
+			.iter()
+			.find(|p| p.cp_start <= mark && mark < p.cp_end)
+			.and_then(|p| u32::try_from(p.fc_of(mark)).ok())
+			.and_then(|fc| formatting.paragraphs.at(word_document, fc));
+		if let Some(properties) = properties {
+			let style = formatting.styles.get(usize::from(properties.istd)).copied().unwrap_or_default();
+			let heading = properties
+				.outline
+				.map_or(style.heading, |outline| (outline < OUTLINE_BODY_TEXT).then_some(outline + 1));
+			let ilvl = properties.ilvl.or(style.ilvl).unwrap_or(0);
+			let label = properties
+				.ilfo
+				.or(style.ilfo)
+				.filter(|&ilfo| ilfo > 0)
+				.and_then(|ilfo| formatting.lists.as_mut().and_then(|lists| lists.label(ilfo, ilvl)));
+			if let Some(level) = heading {
+				push_mark(&mut out, HEADING_MARK, i32::from(level));
+			} else if let Some(label) = &label {
+				push_mark(&mut out, LIST_ITEM_MARK, label.level);
+			}
+			if let Some(label) = label {
+				out.extend(label.text.encode_utf16());
+				out.push(u16::from(b' '));
+			}
+		}
+		out.extend_from_slice(&units[start..end]);
+		start = end;
+	}
+	String::from_utf16_lossy(&out)
+}
+
+/// Appends the noncharacter that marks a level-`level` (1-9) heading or list item.
+fn push_mark(out: &mut Vec<u16>, base: u32, level: i32) {
+	let level = u32::try_from(level.clamp(1, 9) - 1).unwrap_or(0);
+	out.extend(char::from_u32(base + level).unwrap_or(' ').encode_utf16(&mut [0; 2]).iter());
+}
+
+#[cfg(test)]
 fn parse_doc_clx(clx: &[u8], word_document: &[u8]) -> Option<String> {
+	clx_pieces(clx, word_document).map(|(units, _)| String::from_utf16_lossy(&units))
+}
+
+/// The piece table inside a Clx, read into text by character position and the pieces that lay it out.
+fn clx_pieces(clx: &[u8], word_document: &[u8]) -> Option<(Vec<u16>, Vec<Piece>)> {
 	let mut offset = 0usize;
 	while offset < clx.len() {
 		let section = clx[offset];
@@ -170,12 +254,17 @@ fn parse_doc_clx(clx: &[u8], word_document: &[u8]) -> Option<String> {
 		if offset.checked_add(piece_table_size)? > clx.len() {
 			return None;
 		}
-		return parse_doc_piece_table(&clx[offset..offset + piece_table_size], word_document);
+		return read_piece_table(&clx[offset..offset + piece_table_size], word_document);
 	}
 	None
 }
 
+#[cfg(test)]
 fn parse_doc_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<String> {
+	read_piece_table(piece_table, word_document).map(|(units, _)| String::from_utf16_lossy(&units))
+}
+
+fn read_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<(Vec<u16>, Vec<Piece>)> {
 	if piece_table.len() < 4 {
 		return None;
 	}
@@ -191,7 +280,8 @@ fn parse_doc_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<Str
 	for i in 0..=piece_count {
 		cps.push(read_u32_le(piece_table, i * 4));
 	}
-	let mut text = String::new();
+	let mut units: Vec<u16> = Vec::new();
+	let mut pieces = Vec::with_capacity(piece_count);
 	for i in 0..piece_count {
 		let pcd_offset = cp_table_len + (i * 8);
 		if pcd_offset + 8 > piece_table.len() {
@@ -216,16 +306,18 @@ fn parse_doc_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<Str
 		}
 		let end = fc.saturating_add(byte_count).min(word_document.len());
 		let slice = &word_document[fc..end];
+		let cp_start = units.len();
 		if is_ansi {
+			// Every byte of a compressed piece is one character position, and Windows-1252 maps
+			// each to one character in the Basic Multilingual Plane, so positions stay aligned.
 			let (decoded, _, _) = WINDOWS_1252.decode(slice);
-			text.push_str(decoded.as_ref());
+			units.extend(decoded.encode_utf16());
 		} else {
-			let utf16: Vec<u16> =
-				slice.as_chunks::<2>().0.iter().map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]])).collect();
-			text.push_str(&String::from_utf16_lossy(&utf16));
+			units.extend(slice.as_chunks::<2>().0.iter().map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]])));
 		}
+		pieces.push(Piece { cp_start, cp_end: units.len(), fc, ansi: is_ansi });
 	}
-	Some(text)
+	Some((units, pieces))
 }
 
 /// The main text of a Word 6.0 / Word 95 document, which is the byte run between `fcMin` and
@@ -251,15 +343,69 @@ fn finish_doc(text: String, file_path: &str) -> Result<Document> {
 	let normalized = normalize_doc_text(&text);
 	let mut buffer = DocumentBuffer::new();
 	if !normalized.is_empty() {
-		buffer.append(&normalized);
+		append_marked(&mut buffer, &normalized);
 		if !buffer.content.ends_with('\n') {
 			buffer.append("\n");
 		}
 	}
 	let title = extract_title_from_path(file_path);
+	let toc_items = build_toc_from_buffer(&buffer);
 	let mut document = Document::new().with_title(title);
 	document.set_buffer(buffer);
+	document.toc_items = toc_items;
 	Ok(document)
+}
+
+/// Appends the normalized text, turning each [`HEADING_MARK`] at the start of a line into a
+/// heading marker and each [`LIST_ITEM_MARK`] into a list-item marker, and each run of list items
+/// into one list the reader can step over, as HTML and `.docx` headings and lists are.
+fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
+	let mut run: Option<(usize, i32, usize)> = None; // start, items, end of last item
+	let close = |buffer: &mut DocumentBuffer, run: &mut Option<(usize, i32, usize)>| {
+		if let Some((start, items, end)) = run.take()
+			&& end > start
+		{
+			buffer.add_marker(Marker::new(MarkerType::List, start).with_level(items).with_length(end - start));
+		}
+	};
+	for line in text.split_inclusive('\n') {
+		let mut chars = line.chars();
+		let first = chars.next().map_or(0, u32::from);
+		let level_of = |base: u32| (first.wrapping_sub(base) < 9).then(|| i32::try_from(first - base).unwrap_or(0) + 1);
+		let (heading, item) = (level_of(HEADING_MARK), level_of(LIST_ITEM_MARK));
+		let body: String =
+			if heading.or(item).is_some() { chars.as_str() } else { line }.chars().filter(|&c| !is_mark(c)).collect();
+		let start = buffer.current_position();
+		buffer.append(&body);
+		if let Some(level) = heading.filter(|_| !body.trim().is_empty()) {
+			close(buffer, &mut run);
+			buffer.add_marker(
+				Marker::new(heading_level_to_marker_type(level), start)
+					.with_text(body.trim().to_string())
+					.with_level(level),
+			);
+			continue;
+		}
+		match item {
+			Some(level) if !body.trim().is_empty() => {
+				buffer.add_marker(
+					Marker::new(MarkerType::ListItem, start).with_text(body.trim().to_string()).with_level(level),
+				);
+				let (_, items, end) = run.get_or_insert((start, 0, start));
+				*items += 1;
+				*end = buffer.current_position();
+			}
+			_ if body.trim().is_empty() => {}
+			_ => close(buffer, &mut run),
+		}
+	}
+	close(buffer, &mut run);
+}
+
+/// Whether `c` is one of the noncharacters that mark a heading or a list item.
+fn is_mark(c: char) -> bool {
+	let c = u32::from(c);
+	(LIST_ITEM_MARK..LIST_ITEM_MARK + 9).contains(&c) || (HEADING_MARK..HEADING_MARK + 9).contains(&c)
 }
 
 fn extract_doc_text_simple(word_document: &[u8]) -> String {

@@ -19,7 +19,7 @@ use super::{
 		HistoryUpdate, doc_caret, doc_selected_range, move_to_offset_and_record_history, persist_navigation_history,
 	},
 };
-use crate::ui::navigation::announce;
+use crate::ui::navigation::{announce, announce_for_command};
 
 /// How close to the playback time a bookmark has to be for toggling to treat it as the one here.
 /// Playback moves on between one press and the next, so an exact match would never happen and the
@@ -149,6 +149,7 @@ pub fn handle_bookmark_navigation(
 	live_region_label: StaticText,
 	next: bool,
 	notes_only: bool,
+	from_keyboard: bool,
 ) {
 	let wrap = config.lock().unwrap().get_app_bool("navigation_wrap", false);
 	let mut dm = doc_manager.lock().unwrap();
@@ -163,7 +164,7 @@ pub fn handle_bookmark_navigation(
 		None => navigate_text_bookmark(tab, config, wrap, next, notes_only),
 	};
 	drop(dm);
-	announce(live_region_label, message);
+	announce_for_command(live_region_label, from_keyboard, message);
 	persist_navigation_history(config, history_update.as_ref());
 }
 
@@ -210,6 +211,8 @@ pub fn handle_bookmark_dialog(
 		(message, tab.track.then_some(update))
 	};
 	drop(dm);
+	// The dialog was modal, so focus is already back on the book by now: this is the dialog-return
+	// chain, and the menu that opened the dialog closed long before it appeared.
 	announce(live_region_label, message);
 	persist_navigation_history(config, history_update.as_ref());
 }
@@ -226,6 +229,7 @@ pub fn handle_toggle_bookmark(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) {
 	let Some((start, end, path_str, audio_ms)) = bookmark_target(doc_manager) else {
 		return;
@@ -248,7 +252,7 @@ pub fn handle_toggle_bookmark(
 	drop(cfg);
 	// TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 	let message = if existed { t("Bookmark removed.") } else { t("Bookmark added.") };
-	announce(live_region_label, message);
+	announce_for_command(live_region_label, from_keyboard, message);
 }
 
 pub fn handle_bookmark_with_note(
@@ -256,6 +260,7 @@ pub fn handle_bookmark_with_note(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) {
 	let Some((start, end, path_str, audio_ms)) = bookmark_target(doc_manager) else {
 		return;
@@ -290,7 +295,7 @@ pub fn handle_bookmark_with_note(
 	cfg.flush();
 	drop(cfg);
 	// TRANSLATORS: Announced after saving a bookmark's note text
-	announce(live_region_label, t("Bookmark saved."));
+	announce_for_command(live_region_label, from_keyboard, t("Bookmark saved."));
 }
 
 pub fn handle_view_note_text(

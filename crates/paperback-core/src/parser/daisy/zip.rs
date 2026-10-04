@@ -19,7 +19,7 @@ use crate::{
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
 	t,
-	util::zip::read_zip_entry_by_name_with_password,
+	util::zip::{read_zip_entry_by_name_with_password, zip_entry_name_resolver},
 };
 
 /// Parses a DAISY book packaged as a zip archive: DAISY 3 (OPF manifest plus DTBook XML, with
@@ -31,6 +31,7 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	let buffer;
 	let file = File::open(path).context("Failed to open zip file")?;
 	let mut archive = ZipArchive::new(BufReader::new(file)).context("Failed to read zip archive")?;
+	let entry_name = zip_entry_name_resolver(&archive);
 	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
 	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
 	let opf_path = archive
@@ -60,11 +61,11 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 		let archive_path = context.file_path.clone();
 		{
 			let mut read_text = |href: &str| -> Result<String> {
-				read_zip_entry_by_name_with_password(&mut archive, href, password.as_deref())
+				read_zip_entry_by_name_with_password(&mut archive, &entry_name(href), password.as_deref())
 			};
 			let resolve_audio = |href: &str| AudioLocation::ZipEntry {
 				archive: archive_path.clone(),
-				entry: href.to_string(),
+				entry: entry_name(href),
 				password: password.clone(),
 			};
 			if let Some(document) = build_daisy_document(
@@ -167,11 +168,11 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 		let archive_path = context.file_path.clone();
 		{
 			let mut read_text = |href: &str| -> Result<String> {
-				read_zip_entry_by_name_with_password(&mut archive, href, password.as_deref())
+				read_zip_entry_by_name_with_password(&mut archive, &entry_name(href), password.as_deref())
 			};
 			let resolve_audio = |href: &str| AudioLocation::ZipEntry {
 				archive: archive_path.clone(),
-				entry: href.to_string(),
+				entry: entry_name(href),
 				password: password.clone(),
 			};
 			if let Some(document) = build_daisy2_document(
@@ -188,7 +189,7 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 			}
 		}
 		let mut read_text = |href: &str| -> Result<String> {
-			read_zip_entry_by_name_with_password(&mut archive, href, password.as_deref())
+			read_zip_entry_by_name_with_password(&mut archive, &entry_name(href), password.as_deref())
 		};
 		if let Some(document) = build_daisy2_text_only_document(
 			&ncc_content,

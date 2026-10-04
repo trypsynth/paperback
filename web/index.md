@@ -18,8 +18,8 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 
 <div class="cards">
 <div class="card">
-<h3>Screen readers come first</h3>
-<p>Not retrofitted. Every dialog and reading control was built against NVDA, JAWS, VoiceOver and TalkBack, and nothing in the program needs a mouse.</p>
+<h3>Made for screen readers</h3>
+<p>Paperback is written by a blind developer and tested with NVDA, JAWS, VoiceOver and TalkBack. Everything works from the keyboard, no mouse needed.</p>
 </div>
 <div class="card">
 <h3>Fast on old hardware</h3>
@@ -38,26 +38,10 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 <p>No account and no analytics. Your library and your place in it stay on your device.</p>
 </div>
 <div class="card">
-<h3>Yours to change</h3>
+<h3>Open source</h3>
 <p>MIT licensed. The source and the translations are in the open, and you can build it yourself.</p>
 </div>
 </div>
-
-{% if site.data.stats %}
-## Built in the open
-
-<ul class="stats">
-<li><span class="stat">{{ site.data.stats.stars }}</span> stars on GitHub</li>
-<li><span class="stat">{{ site.data.stats.contributors }}</span> contributors</li>
-<li><span class="stat">{{ site.data.stats.merged_prs }}</span> pull requests merged</li>
-<li><span class="stat">{{ site.data.stats.closed_percent }}%</span> of issues closed, {{ site.data.stats.closed_issues }} of {{ site.data.stats.issues }}</li>
-<li><span class="stat">{{ site.data.stats.commits }}</span> commits</li>
-<li><span class="stat">{{ site.data.stats.forks }}</span> forks</li>
-<li><span class="stat">{{ site.data.stats.downloads }}</span> desktop downloads</li>
-</ul>
-
-From [Paperback on GitHub](https://github.com/trypsynth/paperback), as of {{ site.data.stats.updated }}.
-{% endif %}
 
 ## Platforms
 

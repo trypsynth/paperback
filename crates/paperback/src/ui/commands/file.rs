@@ -18,7 +18,7 @@ use crate::ui::{
 		close_active_document_announced, ensure_parser_ready_for_path, rebuild_menu_bar, update_title_from_manager,
 	},
 	menu,
-	navigation::announce,
+	navigation::announce_for_command,
 };
 
 pub fn open(ctx: &Ctx) {
@@ -132,9 +132,12 @@ pub fn reload(ctx: &Ctx) {
 	}
 	update_title_from_manager(ctx.frame, &dm);
 	dm.update_status_bar();
-	// High, unlike the automatic reload's Medium: here the reader asked for it.
+	// High, unlike the automatic reload's Medium: here the reader asked for it. `announce` is
+	// `announce_with_priority` at High, so going through `announce_for_command` keeps the
+	// priority and adds the menu delay that lets the message land after the chain a closed
+	// menu starts.
 	// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
-	live_region::announce_with_priority(ctx.live_region_label, &t("Document reloaded."), live_region::Priority::High);
+	announce_for_command(ctx.live_region_label, ctx.from_keyboard, t("Document reloaded."));
 }
 
 pub fn clear_recent_documents(ctx: &Ctx) {
@@ -142,7 +145,7 @@ pub fn clear_recent_documents(ctx: &Ctx) {
 		let cfg = ctx.config.lock().unwrap();
 		if !cfg.has_recent_documents() {
 			// TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
-			announce(ctx.live_region_label, t("No recent documents."));
+			announce_for_command(ctx.live_region_label, ctx.from_keyboard, t("No recent documents."));
 			return;
 		}
 		cfg.clear_recent_documents();
@@ -150,7 +153,7 @@ pub fn clear_recent_documents(ctx: &Ctx) {
 	}
 	rebuild_menu_bar(ctx.frame, ctx.dm, ctx.config);
 	// TRANSLATORS: Announced after the Recent Documents list has been emptied
-	announce(ctx.live_region_label, t("Recent documents cleared."));
+	announce_for_command(ctx.live_region_label, ctx.from_keyboard, t("Recent documents cleared."));
 }
 
 pub fn exit(ctx: &Ctx) {

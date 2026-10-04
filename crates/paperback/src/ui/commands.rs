@@ -52,6 +52,11 @@ pub struct Ctx<'a> {
 	pub dm: &'a Rc<Mutex<DocumentManager>>,
 	pub config: &'a Rc<Mutex<ConfigManager>>,
 	pub live_region_label: StaticText,
+	/// Whether a keyboard shortcut asked for this command rather than a menu click. Both
+	/// produce an identical menu event, so the char hook tags this one; see
+	/// `menu_events::bind_key_source`. `false` is the safe default -- it only ever costs a
+	/// little latency, never the message.
+	pub from_keyboard: bool,
 }
 
 /// What running a command does.
@@ -101,7 +106,7 @@ impl Command {
 		match self.behavior {
 			Behavior::Run(handler) => handler(ctx),
 			Behavior::Navigate { target, next } => {
-				handle_marker_navigation(ctx.dm, ctx.config, ctx.live_region_label, target, next);
+				handle_marker_navigation(ctx.dm, ctx.config, ctx.live_region_label, target, next, ctx.from_keyboard);
 			}
 		}
 	}
@@ -147,9 +152,9 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::Reload,
-		// TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+		// TRANSLATORS: Menu item in the View menu to re-read the current document from disk.
 		label: || t("&Reload"),
-		// TRANSLATORS: Status-bar help text for the File > Reload menu item.
+		// TRANSLATORS: Status-bar help text for the View > Reload menu item.
 		help: Some(|| t("Re-read the current document from disk")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(file::reload),
@@ -484,106 +489,122 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::PreviousBookmark,
-		// TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+		// TRANSLATORS: Menu item in the Bookmarks menu to move to the previous bookmark in the document.
 		label: || t("&Previous Bookmark"),
-		// TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Previous Bookmark menu item.
 		help: Some(|| t("Go to previous bookmark")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::previous_bookmark),
 	},
 	Command {
 		action: ActionId::NextBookmark,
-		// TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+		// TRANSLATORS: Menu item in the Bookmarks menu to move to the next bookmark in the document.
 		label: || t("&Next Bookmark"),
-		// TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Next Bookmark menu item.
 		help: Some(|| t("Go to next bookmark")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::next_bookmark),
 	},
 	Command {
 		action: ActionId::PreviousNote,
-		// TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
-		label: || t("Previous &Note"),
-		// TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
+		// TRANSLATORS: Menu item in the Bookmarks menu to move to the previous note in the document.
+		label: || t("Previous Not&e"),
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Previous Note menu item.
 		help: Some(|| t("Go to previous note")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::previous_note),
 	},
 	Command {
 		action: ActionId::NextNote,
-		// TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+		// TRANSLATORS: Menu item in the Bookmarks menu to move to the next note in the document.
 		label: || t("Next N&ote"),
-		// TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Next Note menu item.
 		help: Some(|| t("Go to next note")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::next_note),
 	},
 	Command {
 		action: ActionId::JumpToAllBookmarks,
-		// TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+		// TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing all bookmarks and notes.
 		label: || t("Jump to &All..."),
-		// TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Jump to All menu item.
 		help: Some(|| t("Show all bookmarks and notes")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::jump_to_all),
 	},
 	Command {
 		action: ActionId::JumpToBookmarksOnly,
-		// TRANSLATORS: Menu item in the Go menu to open a dialog listing only bookmarks.
+		// TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only bookmarks.
 		label: || t("Jump to &Bookmarks Only..."),
-		// TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Bookmarks Only menu item.
 		help: Some(|| t("Show bookmarks only")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::jump_to_bookmarks_only),
 	},
 	Command {
 		action: ActionId::JumpToNotesOnly,
-		// TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
-		label: || t("Jump to Notes &Only..."),
-		// TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
+		// TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only notes.
+		label: || t("Jump to Notes Onl&y..."),
+		// TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Notes Only menu item.
 		help: Some(|| t("Show notes only")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::jump_to_notes_only),
 	},
 	Command {
 		action: ActionId::ViewNoteText,
-		// TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
+		// TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
 		label: || t("&View Note Text"),
-		// TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
+		// TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
 		help: Some(|| t("View the note at current position")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::view_note_text),
 	},
 	Command {
 		action: ActionId::ToggleBookmark,
-		// TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
-		label: || t("Toggle &Bookmark"),
+		// TRANSLATORS: Menu item in the Bookmarks menu to add or remove a bookmark at the current reading position.
+		label: || t("&Toggle Bookmark"),
 		help: None,
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::toggle),
 	},
 	Command {
 		action: ActionId::BookmarkWithNote,
-		// TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
-		label: || t("Bookmark with &Note"),
+		// TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
+		label: || t("Bookmark &with Note"),
 		help: None,
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::with_note),
 	},
 	Command {
+		action: ActionId::SetTemporaryBookmark,
+		// TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
+		label: || t("&Set Temporary Bookmark"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::set_temporary),
+	},
+	Command {
+		action: ActionId::JumpToTemporaryBookmark,
+		// TRANSLATORS: Menu item in the Bookmarks menu to go back to the position remembered as the temporary bookmark.
+		label: || t("&Jump to Temporary Bookmark"),
+		help: None,
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(bookmarks::jump_to_temporary),
+	},
+	Command {
 		action: ActionId::SetSelectionStart,
-		// TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
-		label: || t("Set Selection St&art"),
-		// TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+		// TRANSLATORS: Menu item in the Edit menu to mark the current position as the beginning of a selection to copy from later.
+		label: || t("Set &Selection Start"),
+		// TRANSLATORS: Status-bar help text for the Edit > Set Selection Start menu item.
 		help: Some(|| t("Mark the beginning of a selection to copy from")),
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(selection::set_start),
 	},
 	Command {
 		action: ActionId::CopyFromSelectionStart,
-		// TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
-		label: || t("&Copy from Selection Start"),
-		// TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+		// TRANSLATORS: Menu item in the Edit menu to copy everything from the marked beginning of a selection to the current position.
+		label: || t("Copy fro&m Selection Start"),
+		// TRANSLATORS: Status-bar help text for the Edit > Copy from Selection Start menu item.
 		help: Some(|| t("Copy from the beginning of the selection to here")),
 		// Deliberately not gated on a mark being set: the command has to stay enabled so pressing
 		// it with nothing marked can say so. Gating it here would leave a disabled menu item and
@@ -593,9 +614,9 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::JumpToSelectionStart,
-		// TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+		// TRANSLATORS: Menu item in the Edit menu to go back to the marked beginning of the selection.
 		label: || t("&Jump to Selection Start"),
-		// TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+		// TRANSLATORS: Status-bar help text for the Edit > Jump to Selection Start menu item.
 		help: Some(|| t("Go back to the beginning of the selection")),
 		// Enabled for the same reason as the copy above: an unset mark has to be announced, not
 		// turned into a dead menu item.
@@ -604,7 +625,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::PlayPauseAudio,
-		// TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
+		// TRANSLATORS: Menu item in the Audio menu to play or pause the document's audio narration.
 		label: || t("&Play/Pause Audio"),
 		// TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
 		help: Some(|| t("Play or pause this document's audio narration")),
@@ -613,7 +634,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::SeekAudioForward,
-		// TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
+		// TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 		label: || t("Seek Audio &Forward"),
 		// TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
 		help: Some(|| t("Skip the audio narration forward")),
@@ -622,7 +643,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::SeekAudioBackward,
-		// TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
+		// TRANSLATORS: Menu item in the Audio menu to skip the audio narration backward.
 		label: || t("Seek Audio &Backward"),
 		// TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
 		help: Some(|| t("Skip the audio narration backward")),
@@ -631,8 +652,8 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::IncreaseAudioSeekAmount,
-		// TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
-		label: || t("&Increase Audio Seek Amount"),
+		// TRANSLATORS: Menu item in the Audio menu to increase the amount of time each audio seek skips.
+		label: || t("Increase Audio Seek &Amount"),
 		// TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 		help: Some(|| t("Increase how far seeking the audio narration moves")),
 		enable: Enable::Always,
@@ -640,8 +661,8 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::DecreaseAudioSeekAmount,
-		// TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
-		label: || t("&Decrease Audio Seek Amount"),
+		// TRANSLATORS: Menu item in the Audio menu to decrease the amount of time each audio seek skips.
+		label: || t("Decrease Audio Seek Am&ount"),
 		// TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 		help: Some(|| t("Decrease how far seeking the audio narration moves")),
 		enable: Enable::Always,
@@ -649,7 +670,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::IncreaseAudioSpeed,
-		// TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+		// TRANSLATORS: Menu item in the Audio menu to increase the audio narration's playback speed.
 		label: || t("&Increase Audio Speed"),
 		// TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
 		help: Some(|| t("Increase how fast the audio narration plays")),
@@ -658,7 +679,7 @@ pub static COMMANDS: &[Command] = &[
 	},
 	Command {
 		action: ActionId::DecreaseAudioSpeed,
-		// TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+		// TRANSLATORS: Menu item in the Audio menu to decrease the audio narration's playback speed.
 		label: || t("&Decrease Audio Speed"),
 		// TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
 		help: Some(|| t("Decrease how fast the audio narration plays")),
@@ -672,9 +693,11 @@ pub fn for_action(action: ActionId) -> Option<&'static Command> {
 	COMMANDS.iter().find(|command| command.action == action)
 }
 
-/// One menu entry for `action`, for the group builders in `menu/go_menu.rs`.
+/// One menu entry for `action`, with its label, shortcut and help text.
 ///
-/// Panics for the same reason [`append_item`] does, and is covered by the same kind of test.
+/// Panics if `action` has not been ported to [`COMMANDS`], rather than quietly building a menu
+/// with an item missing. The menu tests build every menu, so this fires in CI rather than on a
+/// user's launch.
 pub fn menu_entry(action: ActionId, config: &ConfigManager) -> MenuEntry {
 	let command =
 		for_action(action).unwrap_or_else(|| panic!("{action:?} is in a menu's item list but not in COMMANDS"));
@@ -684,17 +707,6 @@ pub fn menu_entry(action: ActionId, config: &ConfigManager) -> MenuEntry {
 /// Menu entries for `actions`, in the order given.
 pub fn menu_entries(actions: &[ActionId], config: &ConfigManager) -> Vec<MenuEntry> {
 	actions.iter().map(|&action| menu_entry(action, config)).collect()
-}
-
-/// Appends `action`'s menu item, with its label, shortcut and help text, to `menu`.
-///
-/// Panics if `action` has not been ported to [`COMMANDS`], rather than quietly building a menu
-/// with an item missing. Every caller's list is covered by a test, so this fires in CI rather
-/// than on a user's launch.
-pub fn append_item(menu: &Menu, action: ActionId, config: &ConfigManager) {
-	let command =
-		for_action(action).unwrap_or_else(|| panic!("{action:?} is in a menu's item list but not in COMMANDS"));
-	let _ = menu.append(command.id(), &command.menu_label(config), &command.help_text(), ItemKind::Normal);
 }
 
 /// Looks up a ported command by wx id.

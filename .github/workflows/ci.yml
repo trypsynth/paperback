@@ -75,7 +75,7 @@ jobs:
       # The unit tests run on the host JVM and never call into the native library, but the code
       # they cover is compiled against the uniffi types, so the bindings have to exist for the
       # app module to compile at all. Generating them is a host build of paperback-core alone:
-      # no NDK or cargo-ndk, and none of the pdfium, translation, or pandoc assets that the APK
+      # no NDK or cargo-ndk, and none of the pdfium, translation, or Help assets that the APK
       # build in build.yml needs on top. ktlint skips the generated file either way.
       # The interface lives in the Rust now rather than in a .udl, so uniffi reads it from the
       # compiled library's own metadata. That means building the library first, and building it
@@ -242,8 +242,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-      - name: Install CMake, Ninja, and Pandoc
-        run: choco install cmake ninja pandoc -y
+      - name: Install CMake and Ninja
+        run: choco install cmake ninja -y
       - name: Install WebView2 SDK
         run: |
           nuget install Microsoft.Web.WebView2 -OutputDirectory packages
@@ -260,11 +260,19 @@ jobs:
             gettext
             mingw-w64-ucrt-x86_64-gettext-tools
       - name: Cache Rust dependencies
+        id: rust-cache
         uses: Swatinem/rust-cache@v2
         with:
           # Writing the cache takes about five minutes. Only master writes one; a pull request
           # restores it and skips the write, which is the slowest step in several of these jobs.
           save-if: ${{ github.ref == 'refs/heads/master' }}
+      # A pull request that changes Cargo.lock restores a partial cache, and wxdragon-sys then rebuilds wxWidgets on top of the old CMake tree. The debug .pdb files that leaves behind are corrupt, and the UI tests' link of paperback-core fails on them (LNK1103). Building wxWidgets afresh on a miss avoids that.
+      - name: Rebuild wxWidgets on a partial cache
+        if: steps.rust-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          rm -rf target/debug/wxwidgets_cmake_build target/debug/wxdragon_sys_cmake_build
+          cargo clean -p wxdragon-sys
       # msgfmt comes from MSYS2, which setup-msys2 leaves off this step's PATH, so the build
       # scripts would silently skip every .po file. Appended rather than prepended: MSYS2's
       # usr/bin has a coreutils link.exe that would otherwise shadow the MSVC linker.
@@ -299,9 +307,9 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-      - name: Install CMake, Ninja, Pandoc, and Gettext
+      - name: Install CMake, Ninja, and Gettext
         run: |
-          brew install cmake ninja pandoc gettext
+          brew install cmake ninja gettext
           echo "/opt/homebrew/opt/gettext/bin" >> "$GITHUB_PATH"
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -342,8 +350,8 @@ jobs:
         with:
           toolchain: stable
           components: clippy
-      - name: Install CMake, Ninja, and Pandoc
-        run: choco install cmake ninja pandoc -y
+      - name: Install CMake and Ninja
+        run: choco install cmake ninja -y
       - name: Install WebView2 SDK
         run: |
           nuget install Microsoft.Web.WebView2 -OutputDirectory packages

@@ -28,6 +28,8 @@ use crate::{
 	updater,
 };
 
+#[cfg(not(target_os = "macos"))]
+mod menu_edit;
 mod menu_events;
 mod menu_file;
 mod menu_go;
@@ -54,7 +56,11 @@ pub struct MainWindow {
 	config: Rc<Mutex<ConfigManager>>,
 	#[cfg(target_os = "windows")]
 	tray_state: Rc<Mutex<Option<tray::TrayState>>>,
-	_live_region_label: StaticText,
+	#[cfg_attr(
+		not(target_os = "macos"),
+		allow(dead_code, reason = "keeps the announcement label with the main window")
+	)]
+	live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
 	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
@@ -105,8 +111,16 @@ impl MainWindow {
 		notebook.msw_disable_composited();
 		sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
-		let doc_manager =
-			Rc::new(Mutex::new(DocumentManager::new(frame, notebook, Rc::clone(&config), live_region_label)));
+		// Shared by the frame's char hook and the menu dispatcher so a command can tell a
+		// shortcut from a menu click. See `menu_events::bind_key_source`.
+		let from_keyboard = Rc::new(Cell::new(false));
+		let doc_manager = Rc::new(Mutex::new(DocumentManager::new(
+			frame,
+			notebook,
+			Rc::clone(&config),
+			live_region_label,
+			Rc::clone(&from_keyboard),
+		)));
 		let find_dialog = Rc::new(Mutex::new(None));
 		#[cfg(target_os = "windows")]
 		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(&config.lock().unwrap().get_hotkey())));
@@ -116,9 +130,13 @@ impl MainWindow {
 			&config,
 			&find_dialog,
 			live_region_label,
+			&from_keyboard,
 			#[cfg(target_os = "windows")]
 			&hotkey_handle,
 		);
+		menu_events::bind_key_source(&frame, &config, Rc::clone(&from_keyboard));
+		#[cfg(not(target_os = "windows"))]
+		bind_tab_cycling(&frame, &doc_manager);
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
 		let dm = Rc::clone(&doc_manager);
@@ -336,7 +354,7 @@ impl MainWindow {
 			config,
 			#[cfg(target_os = "windows")]
 			tray_state,
-			_live_region_label: live_region_label,
+			live_region_label,
 			_find_dialog: find_dialog,
 			#[cfg(target_os = "windows")]
 			_hotkey_handle: hotkey_handle,
@@ -514,6 +532,11 @@ impl MainWindow {
 		&self.frame
 	}
 
+	#[cfg(target_os = "macos")]
+	pub(super) fn announce_update_restart(&self) {
+		live_region::announce(self.live_region_label, &t("Installing the update. Paperback will restart."));
+	}
+
 	fn ensure_parser_ready(&self, path: &Path) -> bool {
 		ensure_parser_ready_for_path(&self.frame, path, &self.config)
 	}
@@ -633,4 +656,23 @@ pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		}
 		frame.set_status_text(&status_text, 0);
 	}
+}
+
+/// Ctrl+Tab and Ctrl+Shift+Tab move between documents, as they do in a browser. The Windows tab control does this on its own; the macOS and GTK ones do not. Bound on the frame's char hook so it works from the book and the tab strip alike, before Tab can move focus.
+#[cfg(not(target_os = "windows"))]
+fn bind_tab_cycling(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
+	let dm = Rc::clone(doc_manager);
+	frame.bind_internal(EventType::CHAR_HOOK, move |event| {
+		// wxWidgets reports Command as Control on macOS, so the physical Control key has to be read directly. Command+Tab is the system's application switcher and never arrives here anyway.
+		#[cfg(target_os = "macos")]
+		let control = wxdragon::utils::get_key_state(WXK_RAW_CONTROL) && !event.control_down();
+		#[cfg(not(target_os = "macos"))]
+		let control = event.control_down();
+		if event.get_key_code() != Some(WXK_TAB) || !control || event.alt_down() {
+			return;
+		}
+		let Ok(dm) = dm.try_lock() else { return };
+		event.skip(false);
+		dm.cycle_tab(!event.shift_down());
+	});
 }

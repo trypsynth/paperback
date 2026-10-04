@@ -374,6 +374,7 @@ fn apply_navigation_result(
 	target: MarkerNavTarget,
 	next: bool,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) -> bool {
 	let level_filter = match target {
 		MarkerNavTarget::Heading(level) => level,
@@ -381,12 +382,12 @@ fn apply_navigation_result(
 	};
 	let ann = nav_announcements(target, level_filter);
 	if result.not_supported {
-		live_region::announce(live_region_label, &ann.not_supported);
+		announce_for_command(live_region_label, from_keyboard, &ann.not_supported);
 		return false;
 	}
 	if !result.found {
 		let message = if next { &ann.not_found_next } else { &ann.not_found_prev };
-		live_region::announce(live_region_label, message);
+		announce_for_command(live_region_label, from_keyboard, message);
 		return false;
 	}
 	let mut context_text = match target {
@@ -405,7 +406,7 @@ fn apply_navigation_result(
 		_ => 0,
 	};
 	let message = format_nav_found_message(&ann, &context_text, context_index, result.wrapped, next);
-	live_region::announce(live_region_label, &message);
+	announce_for_command(live_region_label, from_keyboard, &message);
 	jump_to_doc_offset(tab, result.offset);
 	true
 }
@@ -415,6 +416,7 @@ pub fn handle_history_navigation(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 	forward: bool,
+	from_keyboard: bool,
 ) {
 	let mut dm = doc_manager.lock().unwrap();
 	let (message, history_update) = {
@@ -440,7 +442,7 @@ pub fn handle_history_navigation(
 		}
 	};
 	drop(dm);
-	live_region::announce(live_region_label, &message);
+	announce_for_command(live_region_label, from_keyboard, &message);
 	persist_navigation_history(config, history_update.as_ref());
 }
 
@@ -450,6 +452,7 @@ pub fn handle_marker_navigation(
 	live_region_label: StaticText,
 	target: MarkerNavTarget,
 	next: bool,
+	from_keyboard: bool,
 ) {
 	let wrap = config.lock().unwrap().get_app_bool("navigation_wrap", false);
 	let mut dm = doc_manager.lock().unwrap();
@@ -472,7 +475,7 @@ pub fn handle_marker_navigation(
 			MarkerNavTarget::Figure => tab.session.navigate_figure(current_pos, wrap, next),
 		};
 		let target_offset = result.offset;
-		if apply_navigation_result(tab, &result, target, next, live_region_label) {
+		if apply_navigation_result(tab, &result, target, next, live_region_label, from_keyboard) {
 			let update = record_history(tab, current_pos, target_offset);
 			tab.track.then_some(update)
 		} else {
@@ -491,6 +494,7 @@ pub fn handle_container_navigation(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 	to_end: bool,
+	from_keyboard: bool,
 ) {
 	let mut dm = doc_manager.lock().unwrap();
 	let history_update = {
@@ -501,11 +505,11 @@ pub fn handle_container_navigation(
 		let result = tab.session.navigate_container(current_pos, to_end);
 		if result.not_supported {
 			// TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
-			live_region::announce(live_region_label, &t("No containers."));
+			announce_for_command(live_region_label, from_keyboard, t("No containers."));
 			None
 		} else if !result.found {
 			// TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
-			live_region::announce(live_region_label, &t("Not in a container."));
+			announce_for_command(live_region_label, from_keyboard, t("Not in a container."));
 			None
 		} else {
 			let offset = result.offset;
@@ -516,7 +520,7 @@ pub fn handle_container_navigation(
 			} else {
 				line
 			};
-			live_region::announce(live_region_label, &message);
+			announce_for_command(live_region_label, from_keyboard, &message);
 			let update = move_to_offset_and_record_history(tab, offset);
 			tab.track.then_some(update)
 		}
@@ -547,6 +551,15 @@ pub fn selected_range(text_ctrl: TextCtrl) -> (i64, i64) {
 /// the full chain through after the announcement, 0ms always did).
 const FOCUS_CHAIN_INTERRUPT_DELAY_MS: i32 = 30;
 
+/// How long after a command raised by a menu item the interrupting announcement is raised.
+///
+/// Closing a popup menu sends focus back to the frame and the screen reader answers by reading
+/// the frame's whole child chain -- window title, tab strip, then the book -- which reads over
+/// anything said before that chain starts. That chain starts well after the one
+/// [`FOCUS_CHAIN_INTERRUPT_DELAY_MS`] was tuned against: at 30ms the message was spoken first
+/// and then cut off part-way through.
+const MENU_FOCUS_CHAIN_INTERRUPT_DELAY_MS: i32 = 100;
+
 /// Announces `message` shortly after whatever the reader just did, so it cuts off the
 /// focus-chain announcement the screen reader starts when focus returns to the book.
 ///
@@ -554,13 +567,34 @@ const FOCUS_CHAIN_INTERRUPT_DELAY_MS: i32 = 30;
 /// before the screen reader has noticed the focus change that closing a menu or a dialog causes,
 /// and the chain that follows reads straight over it: that is why choosing Play from the menu
 /// read the book's title instead of "This document has no audio".
+pub fn announce(live_region_label: StaticText, message: impl AsRef<str>) {
+	announce_after(live_region_label, message, FOCUS_CHAIN_INTERRUPT_DELAY_MS);
+}
+
+/// Announces `message` for a command, waiting only when a menu item was used to raise it.
 ///
+/// Closing a popup menu sends focus back to the frame and the screen reader answers by reading
+/// the frame's whole child chain -- window title, tab strip, then the book -- which reads over
+/// anything said before that chain starts. A shortcut never takes focus away from the book,
+/// nothing reads over the message, and waiting would be latency paid for nothing.
+///
+/// Which of the two ran cannot be told from the command itself, because a menu click and a
+/// shortcut produce the same event; callers pass that in as `from_keyboard`. See
+/// [`crate::ui::commands::Ctx::from_keyboard`].
+pub fn announce_for_command(live_region_label: StaticText, from_keyboard: bool, message: impl AsRef<str>) {
+	if from_keyboard {
+		live_region::announce(live_region_label, message.as_ref());
+	} else {
+		announce_after(live_region_label, message, MENU_FOCUS_CHAIN_INTERRUPT_DELAY_MS);
+	}
+}
+
 /// The timer hangs off the live region itself rather than the frame, so a handler that never
 /// sees the window can still announce. The one-shot `wxTimer` is kept alive through its single
 /// tick by the `Rc`/`RefCell` it hands its own callback: the tick clears the cell, which drops
 /// the timer and destroys the native timer. If the timer cannot be armed, fall back to
 /// announcing immediately rather than silently dropping the message.
-pub fn announce(live_region_label: StaticText, message: impl AsRef<str>) {
+fn announce_after(live_region_label: StaticText, message: impl AsRef<str>, delay_ms: i32) {
 	let message = message.as_ref();
 	let timer_holder: Rc<RefCell<Option<Timer<StaticText>>>> = Rc::new(RefCell::new(None));
 	let holder = Rc::clone(&timer_holder);
@@ -570,7 +604,7 @@ pub fn announce(live_region_label: StaticText, message: impl AsRef<str>) {
 		live_region::announce(live_region_label, &announce);
 		*holder.borrow_mut() = None;
 	});
-	if !timer.start(FOCUS_CHAIN_INTERRUPT_DELAY_MS, true) {
+	if !timer.start(delay_ms, true) {
 		live_region::announce(live_region_label, message);
 		return;
 	}

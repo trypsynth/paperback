@@ -115,7 +115,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 			}
 		}
 	}
-	generate_readmes(&root, &ios_dir.join("Readmes"))?;
+	crate::docs::write_app_readmes(&ios_dir.join("Readmes"))?;
 	println!("iOS build complete.");
 	println!("  XCFramework: ios/paperbackFFI.xcframework");
 	println!("  PDFium framework: ios/libpdfium.framework");
@@ -353,45 +353,4 @@ fn pdfium_framework_info_plist() -> String {
 </plist>
 "#
 	)
-}
-
-fn generate_readmes(root: &Path, readmes_dir: &Path) -> Result<(), Box<dyn Error>> {
-	let doc_dir = root.join("doc");
-	if !doc_dir.is_dir() {
-		return Ok(());
-	}
-	fs::create_dir_all(readmes_dir)?;
-	let pandoc_config = doc_dir.join("pandoc.yaml");
-	let default_readme = doc_dir.join("readme.md");
-	if default_readme.exists() {
-		let status = Command::new("pandoc")
-			.arg(format!("--defaults={}", pandoc_config.display()))
-			.arg(&default_readme)
-			.arg("-o")
-			.arg(readmes_dir.join("readme.html"))
-			.status();
-		match status {
-			Ok(s) if s.success() => {}
-			_ => println!("Warning: Failed to generate default English documentation"),
-		}
-	}
-	for entry in fs::read_dir(&doc_dir)?.flatten() {
-		let path = entry.path();
-		let Some(name) = path.file_name().and_then(|n| n.to_str()) else { continue };
-		if !name.starts_with("readme-") || !name.ends_with(".md") {
-			continue;
-		}
-		let out_name = name.replace(".md", ".html");
-		let status = Command::new("pandoc")
-			.arg(format!("--defaults={}", pandoc_config.display()))
-			.arg(&path)
-			.arg("-o")
-			.arg(readmes_dir.join(out_name))
-			.status();
-		match status {
-			Ok(s) if s.success() => {}
-			_ => println!("Warning: Failed to generate documentation for language: {name}"),
-		}
-	}
-	Ok(())
 }

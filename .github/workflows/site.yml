@@ -2,9 +2,6 @@ name: Build & Deploy Website
 on:
   push:
     branches: [ master ]
-  # Daily, so the GitHub numbers on the home page stay current between pushes.
-  schedule:
-    - cron: "0 12 * * *"
   workflow_dispatch:
 permissions:
   contents: write
@@ -25,8 +22,6 @@ jobs:
           wget "https://github.com/cobalt-org/cobalt.rs/releases/download/v$COBALT_VERSION/cobalt-v$COBALT_VERSION-x86_64-unknown-linux-gnu.tar.gz"
           tar -xzf cobalt-*.tar.gz
           sudo mv cobalt /usr/local/bin/
-      - name: Install Pandoc
-        run: sudo apt-get update && sudo apt-get install -y pandoc
       # The licenses page credits every dependency, so it is generated from the real
       # dependency tree rather than kept in the repository where it would go stale.
       # Pinned the same way cobalt is above.
@@ -40,17 +35,13 @@ jobs:
           sudo mv cargo-about /usr/local/bin/
       - name: Generate the licenses page
         run: cargo about generate about.hbs -o web/licenses.md
-      - name: Fetch the GitHub numbers for the home page
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: bash web/stats.sh
       - name: Build Cobalt site
         run: cobalt build
         working-directory: web
       # After cobalt, which regenerates _site: this writes the manual in every
       # language into the built site, English at readme.html as before.
       - name: Build the documentation in every language
-        run: bash web/build-docs.sh
+        run: cargo xtask site-docs web/_site
       - name: Copy CNAME to site
         run: cp CNAME web/_site/CNAME
       - name: Deploy to GitHub Pages

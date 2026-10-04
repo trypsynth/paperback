@@ -116,15 +116,15 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab() else {
 			return false;
 		};
-		let (from, to) = tab.text_ctrl.get_selection();
-		if from >= to {
-			return false;
-		}
 		let doc_len = tab.session.document_len();
 		// Only the widened case is handled here. Anything else is left to the control's own copy,
 		// which is better tested than anything this could put in its place.
-		let covers_everything_loaded = from <= 0 && to >= tab.text_ctrl.get_last_position();
-		if !covers_everything_loaded || tab.window.is_whole_document(doc_len) {
+		let source = copy_source(
+			tab.text_ctrl.get_selection(),
+			tab.text_ctrl.get_last_position(),
+			tab.window.is_whole_document(doc_len),
+		);
+		if source != CopySource::WholeDocument {
 			return false;
 		}
 		let text = tab.session.get_text_range(0, doc_len);
@@ -132,6 +132,26 @@ impl DocumentManager {
 			return false;
 		}
 		Clipboard::get().set_text(&text)
+	}
+
+	/// The text Edit > Copy puts on the clipboard: the control's selection, or the whole document
+	/// when everything loaded is selected but only part of the document is loaded. `None` when
+	/// nothing is selected.
+	#[cfg(not(target_os = "macos"))]
+	pub fn text_to_copy(&self) -> Option<String> {
+		let tab = self.active_tab()?;
+		let doc_len = tab.session.document_len();
+		let source = copy_source(
+			tab.text_ctrl.get_selection(),
+			tab.text_ctrl.get_last_position(),
+			tab.window.is_whole_document(doc_len),
+		);
+		let text = match source {
+			CopySource::Nothing => return None,
+			CopySource::Selection => tab.text_ctrl.get_string_selection(),
+			CopySource::WholeDocument => tab.session.get_text_range(0, doc_len),
+		};
+		(!text.is_empty()).then_some(text)
 	}
 
 	/// Collapses a window that grew during a long read back to target size around the caret.
@@ -223,5 +243,53 @@ impl DocumentManager {
 			(tab.track, update)
 		};
 		persist_navigation_history(&self.config, track.then_some(&update));
+	}
+}
+
+/// What a copy takes from the reading control.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CopySource {
+	Nothing,
+	/// The text selected in the control.
+	Selection,
+	/// The whole document, of which the control holds only part.
+	WholeDocument,
+}
+
+/// What copying `selection` takes, for a control holding text up to `last_position` that is the
+/// whole document or only part of it.
+pub const fn copy_source(selection: (i64, i64), last_position: i64, window_is_whole_document: bool) -> CopySource {
+	let (from, to) = selection;
+	if from >= to {
+		CopySource::Nothing
+	} else if from <= 0 && to >= last_position && !window_is_whole_document {
+		CopySource::WholeDocument
+	} else {
+		CopySource::Selection
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{CopySource, copy_source};
+
+	#[test]
+	fn nothing_selected_copies_nothing() {
+		assert_eq!(copy_source((5, 5), 100, false), CopySource::Nothing);
+	}
+
+	#[test]
+	fn part_of_the_loaded_text_copies_the_selection() {
+		assert_eq!(copy_source((10, 20), 100, false), CopySource::Selection);
+	}
+
+	#[test]
+	fn all_loaded_text_of_a_partly_loaded_document_copies_the_whole_document() {
+		assert_eq!(copy_source((0, 100), 100, false), CopySource::WholeDocument);
+	}
+
+	#[test]
+	fn all_text_of_a_fully_loaded_document_copies_the_selection() {
+		assert_eq!(copy_source((0, 100), 100, true), CopySource::Selection);
 	}
 }

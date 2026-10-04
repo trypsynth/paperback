@@ -88,7 +88,8 @@ impl DocumentManager {
 			// Re-slice just the currently loaded window rather than the whole document: a wrap
 			// toggle doesn't change what range is loaded, only how it's laid out.
 			let slice = tab.session.get_window(tab.window.start(), tab.window.end());
-			let text_ctrl = reader_input::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame);
+			let text_ctrl =
+				reader_input::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);

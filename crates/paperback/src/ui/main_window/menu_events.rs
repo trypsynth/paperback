@@ -3,7 +3,7 @@
 
 #[cfg(target_os = "windows")]
 use std::cell::RefCell;
-use std::{rc::Rc, sync::Mutex};
+use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use paperback_core::config::ConfigManager;
 use patois::t;
@@ -11,11 +11,13 @@ use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
 use super::HotkeyHandle;
+#[cfg(not(target_os = "macos"))]
+use super::menu_edit;
 use super::{
 	DocumentManager, FindDialogState, MainWindow, background, commands, dialogs, find, get_update_channel, help, menu,
 	menu_file, menu_go, menu_ids, menu_tools, sleep_timer, update_title_from_manager, updater,
 };
-use crate::ui::navigation::announce;
+use crate::ui::navigation::announce_for_command;
 
 impl MainWindow {
 	#[allow(clippy::too_many_lines)]
@@ -25,12 +27,14 @@ impl MainWindow {
 		config: &Rc<Mutex<ConfigManager>>,
 		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
 		live_region_label: StaticText,
+		from_keyboard: &Rc<Cell<bool>>,
 		#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
 	) -> Vec<Rc<Timer<Frame>>> {
 		let frame_copy = *frame;
 		let dm = Rc::clone(doc_manager);
 		let config = Rc::clone(config);
 		let find_dialog = Rc::clone(find_dialog);
+		let from_keyboard = Rc::clone(from_keyboard);
 		#[cfg(target_os = "windows")]
 		let hotkey_handle_for_options = Rc::clone(hotkey_handle);
 		let sleep_timer = sleep_timer::SleepTimer::new(frame, doc_manager, &config);
@@ -42,11 +46,14 @@ impl MainWindow {
 		background::bind_resize(frame, doc_manager);
 		frame.on_menu(move |event| {
 			let id = event.get_id();
+			// Whether a shortcut key produced this command, or a menu click did. Taken here and
+			// cleared whatever the outcome, so a key that led nowhere cannot leave it set.
+			let from_keyboard = from_keyboard.replace(false);
 			// Commands that have moved to the table handle themselves; the match below is the
 			// shrinking remainder, still keyed to menu ids by hand.
 			if commands::dispatch(
 				id,
-				&commands::Ctx { frame: &frame_copy, dm: &dm, config: &config, live_region_label },
+				&commands::Ctx { frame: &frame_copy, dm: &dm, config: &config, live_region_label, from_keyboard },
 			) {
 				return;
 			}
@@ -55,24 +62,30 @@ impl MainWindow {
 					find::show_find_dialog(&frame_copy, &dm, &config, &find_dialog, live_region_label);
 				}
 				menu_ids::FIND_NEXT => {
-					find::handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, true);
+					find::handle_find_action(
+						&frame_copy,
+						&dm,
+						&config,
+						&find_dialog,
+						live_region_label,
+						true,
+						from_keyboard,
+					);
 				}
 				menu_ids::FIND_PREVIOUS => {
-					find::handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, false);
+					find::handle_find_action(
+						&frame_copy,
+						&dm,
+						&config,
+						&find_dialog,
+						live_region_label,
+						false,
+						from_keyboard,
+					);
 				}
 				menu_ids::ANNOUNCE_PERCENT => {
 					if let Ok(dm_ref) = dm.try_lock() {
 						dm_ref.announce_current_percent();
-					}
-				}
-				menu_ids::SET_TEMPORARY_BOOKMARK => {
-					if let Ok(dm_ref) = dm.try_lock() {
-						dm_ref.set_temporary_bookmark();
-					}
-				}
-				menu_ids::JUMP_TO_TEMPORARY_BOOKMARK => {
-					if let Ok(mut dm_ref) = dm.try_lock() {
-						dm_ref.jump_to_temporary_bookmark();
 					}
 				}
 				menu_ids::GO_TO_LINE => {
@@ -102,7 +115,7 @@ impl MainWindow {
 					}
 					// TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 					let msg = if new_state { t("Word wrap on.") } else { t("Word wrap off.") };
-					announce(live_region_label, msg);
+					announce_for_command(live_region_label, from_keyboard, msg);
 					dm.lock().unwrap().restore_focus();
 				}
 				menu_ids::TOGGLE_FULL_SCREEN => {
@@ -113,7 +126,7 @@ impl MainWindow {
 					}
 					// TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
 					let msg = if new_state { t("Full screen on.") } else { t("Full screen off.") };
-					announce(live_region_label, msg);
+					announce_for_command(live_region_label, from_keyboard, msg);
 				}
 				menu_ids::EXPORT_TO_PLAIN_TEXT => {
 					menu_tools::handle_export_to_plain_text(&frame_copy, &dm);
@@ -164,7 +177,7 @@ impl MainWindow {
 					menu_tools::handle_customize_shortcuts(&frame_copy, &dm, &config);
 				}
 				menu_ids::SLEEP_TIMER => {
-					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label);
+					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label, from_keyboard);
 				}
 				#[cfg(any(target_os = "windows", target_os = "macos"))]
 				menu_ids::BATCH_OCR => {
@@ -197,14 +210,21 @@ impl MainWindow {
 				menu_ids::DONATE => {
 					help::handle_donate(&frame_copy);
 				}
-				#[cfg(target_os = "macos")]
 				menu_ids::COPY => {
-					// Only macOS builds an Edit menu, so only macOS sees Copy as a menu event; every
-					// other platform intercepts the key in `build_text_ctrl`.
-					let widened = dm.lock().unwrap().copy_whole_document_if_all_selected();
-					if !widened {
-						event.skip(true);
+					// On macOS the native copy runs unless the copy widened to the whole document.
+					#[cfg(target_os = "macos")]
+					{
+						let widened = dm.lock().unwrap().copy_whole_document_if_all_selected();
+						if !widened {
+							event.skip(true);
+						}
 					}
+					#[cfg(not(target_os = "macos"))]
+					menu_edit::handle_copy(&dm);
+				}
+				#[cfg(not(target_os = "macos"))]
+				menu_ids::SELECT_ALL => {
+					menu_edit::handle_select_all(&dm);
 				}
 				_ => {
 					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);
@@ -213,4 +233,35 @@ impl MainWindow {
 		});
 		timers
 	}
+}
+
+/// Marks commands that a keyboard shortcut asked for, so announcements can tell a shortcut from
+/// a menu click.
+///
+/// Both arrive as the very same menu command. The menu labels carry their shortcut as a
+/// tab-and-key accelerator, so wxWidgets consumes the keystroke and rewrites it into a menu command before
+/// the book ever sees it -- which is why the text control's own key handler cannot mark these:
+/// by the time the event reaches it, it is no longer a keystroke. A `CHAR_HOOK` on the frame is
+/// delivered *before* the accelerator table is consulted, the last point at which the key is
+/// still a key; the command that follows is the one the accelerator was about to send, and the
+/// menu dispatcher reads the mark off it.
+///
+/// The mark is set only for keys that map to a known action, and is cleared by the dispatcher
+/// on every command plus by the key handler for actions it runs itself, so a key that produces
+/// no command cannot leave it set for a later menu click.
+pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, from_keyboard: Rc<Cell<bool>>) {
+	let config = Rc::clone(config);
+	frame.bind_internal(EventType::CHAR_HOOK, move |event| {
+		if let Some(key) = event.get_key_code()
+			&& let Ok(cfg) = config.try_lock()
+			&& cfg
+				.get_shortcuts()
+				.find_action(key, event.control_down(), event.alt_down(), event.shift_down())
+				.is_some()
+		{
+			from_keyboard.set(true);
+		}
+		// Deliberately never skipped: the accelerator still has to run, since it is what
+		// delivers the command the mark will be read by.
+	});
 }

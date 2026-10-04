@@ -216,21 +216,32 @@ impl ActionId {
 			| Self::Close
 			| Self::CloseAll
 			| Self::ReopenLastClosed
-			| Self::Reload
 			| Self::ShowAllRecentDocuments
 			| Self::ClearRecentDocuments
-			| Self::Exit => ShortcutCategory::File,
+			| Self::Exit
+			| Self::RevealFileInFolder
+			| Self::ImportDocumentData
+			| Self::ExportDocumentData
+			| Self::ExportToPlainText
+			| Self::ExportToHtml
+			| Self::ExportToMarkdown => ShortcutCategory::File,
+			Self::Reload | Self::OpenInWebView | Self::ViewSource | Self::ToggleWordWrap | Self::ToggleFullScreen => {
+				ShortcutCategory::View
+			}
 			Self::Find
 			| Self::FindNext
 			| Self::FindPrevious
+			| Self::SetSelectionStart
+			| Self::CopyFromSelectionStart
+			| Self::JumpToSelectionStart => ShortcutCategory::Edit,
+			Self::TableOfContents
+			| Self::ElementsList
 			| Self::GoToLine
 			| Self::GoToPercent
 			| Self::GoToPage
 			| Self::GoBack
 			| Self::GoForward
 			| Self::AnnouncePercent
-			| Self::SetTemporaryBookmark
-			| Self::JumpToTemporaryBookmark
 			| Self::PreviousSection
 			| Self::NextSection
 			| Self::PreviousHeading
@@ -249,14 +260,6 @@ impl ActionId {
 			| Self::NextHeading6
 			| Self::PreviousPage
 			| Self::NextPage
-			| Self::PreviousBookmark
-			| Self::NextBookmark
-			| Self::PreviousNote
-			| Self::NextNote
-			| Self::JumpToAllBookmarks
-			| Self::JumpToBookmarksOnly
-			| Self::JumpToNotesOnly
-			| Self::ViewNoteText
 			| Self::PreviousLink
 			| Self::NextLink
 			| Self::PreviousImage
@@ -275,36 +278,31 @@ impl ActionId {
 			| Self::NextListItem
 			| Self::ContainerStart
 			| Self::ContainerEnd => ShortcutCategory::Go,
+			Self::SetTemporaryBookmark
+			| Self::JumpToTemporaryBookmark
+			| Self::PreviousBookmark
+			| Self::NextBookmark
+			| Self::PreviousNote
+			| Self::NextNote
+			| Self::JumpToAllBookmarks
+			| Self::JumpToBookmarksOnly
+			| Self::JumpToNotesOnly
+			| Self::ViewNoteText
+			| Self::ToggleBookmark
+			| Self::BookmarkWithNote => ShortcutCategory::Bookmarks,
 			Self::WordCount
 			| Self::DocumentInfo
-			| Self::TableOfContents
-			| Self::ElementsList
-			| Self::RevealFileInFolder
-			| Self::OpenInWebView
-			| Self::ViewSource
-			| Self::ToggleBookmark
-			| Self::BookmarkWithNote
-			| Self::SetSelectionStart
-			| Self::CopyFromSelectionStart
-			| Self::JumpToSelectionStart
-			| Self::ToggleWordWrap
-			| Self::PlayPauseAudio
+			| Self::Options
+			| Self::SleepTimer
+			| Self::BatchOcr
+			| Self::CustomizeShortcuts => ShortcutCategory::Tools,
+			Self::PlayPauseAudio
 			| Self::SeekAudioForward
 			| Self::SeekAudioBackward
 			| Self::IncreaseAudioSeekAmount
 			| Self::DecreaseAudioSeekAmount
 			| Self::IncreaseAudioSpeed
-			| Self::DecreaseAudioSpeed
-			| Self::ToggleFullScreen
-			| Self::Options
-			| Self::SleepTimer
-			| Self::BatchOcr
-			| Self::CustomizeShortcuts
-			| Self::ImportDocumentData
-			| Self::ExportDocumentData
-			| Self::ExportToPlainText
-			| Self::ExportToHtml
-			| Self::ExportToMarkdown => ShortcutCategory::Tools,
+			| Self::DecreaseAudioSpeed => ShortcutCategory::Audio,
 			Self::About | Self::ViewHelpBrowser | Self::ViewHelpPaperback | Self::CheckForUpdates | Self::Donate => {
 				ShortcutCategory::Help
 			}

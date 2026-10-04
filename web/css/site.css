@@ -1,7 +1,7 @@
 /* paperback.dev
  *
- * One stylesheet for the whole site, including the manual pages pandoc builds, which link it
- * after pandoc's own styles so the rules here win.
+ * One stylesheet for the whole site, including the manual pages `cargo xtask site-docs` builds,
+ * which link it after their own built-in styles so the rules here win.
  *
  * Nothing on the page depends on colour or position to make sense: the markup is plain headings,
  * lists and links, and every interactive part carries its own state. Contrast is at least 4.5:1
@@ -52,7 +52,7 @@ body {
 	font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
 	font-size: 1.0625rem;
 	line-height: 1.65;
-	/* Pandoc's stock template sets these three on body; the site layout wants them off. */
+	/* The manual's built-in styles set these on body; the site layout wants them off. */
 	max-width: none;
 	padding: 0;
 	hyphens: none;
@@ -341,34 +341,6 @@ img {
 
 .card p:last-child, .card ul:last-child {
 	margin-bottom: 0;
-}
-
-.stats {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-	gap: 1rem;
-	max-width: none;
-	margin: 1.25rem 0 1rem;
-	padding: 0;
-	list-style: none;
-}
-
-.stats li {
-	background: var(--surface);
-	border: 1px solid var(--border);
-	border-radius: var(--radius);
-	padding: 0.9rem 1.1rem 1rem;
-	color: var(--muted);
-	margin: 0;
-}
-
-/* Block, so the number sits above its label, but still one run of text a screen reader reads as "108 stars on GitHub". */
-.stat {
-	display: block;
-	color: var(--text);
-	font-size: 1.9rem;
-	font-weight: 700;
-	line-height: 1.15;
 }
 
 /* Long flat lists of short items, such as formats and languages. */

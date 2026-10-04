@@ -79,6 +79,7 @@ Níže uvedené zkratky platí pro Windows. Tam, kde se macOS liší, je ekvival
 * `Ctrl+F4` (macOS: `Cmd+W`): Zavření aktuálního dokumentu.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Zavření všech otevřených dokumentů.
 * `Ctrl+Shift+T`: Znovuotevření naposledy zavřeného dokumentu.
+* `F5`: Opětovné načtení aktuálního dokumentu z disku. Funguje bez ohledu na to, zda je v Nastavení zapnuta možnost "Automaticky znovu načítat změněné dokumenty".
 * `Ctrl+R`: Zobrazení dialogu "Všechny dokumenty" (z nabídky Nedávné dokumenty).
 * `Ctrl+Q`: Ukončení aplikace (pouze ve Windows; na macOS je tato položka místo toho v nabídce aplikace).
 
