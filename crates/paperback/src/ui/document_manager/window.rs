@@ -1,10 +1,8 @@
-//! The loaded-window management for a document: keeping the text control's slice of a large
-//! document ahead of a forward read, compacting it when the caret runs out of text behind it or
-//! the layout changes, copying the whole document when a windowed Select All only reached a slice,
-//! and jumping to the true document edges rather than the loaded window's. Split out of the main
-//! `DocumentManager` impl; see [`super`] for the windowing model in `text_window`.
+//! The loaded-window management for a document: keeping the text control's slice of a large document ahead of a forward read, compacting it when the caret runs out of text behind it or the layout changes, copying the whole document when a windowed Select All only reached a slice, and jumping to the true document edges rather than the loaded window's. Split out of the main `DocumentManager` impl; see [`super`] for the windowing model in `text_window`.
 
-use wxdragon::{clipboard::Clipboard, prelude::*};
+#[cfg(target_os = "macos")]
+use wxdragon::clipboard::Clipboard;
+use wxdragon::prelude::*;
 
 use super::{DocumentManager, DocumentTab};
 use crate::{
@@ -99,19 +97,10 @@ impl DocumentManager {
 		tab.text_ctrl.show_position(local);
 	}
 
-	/// Copies the current selection, widening it to the whole document when everything loaded is
-	/// selected but only part of the document is.
+	/// Copies the current selection, widening it to the whole document when everything loaded is selected but only part of the document is. Select All can only ever reach what the control holds, which for a windowed document is a slice of the book rather than the book, so a selection covering all of it means all of it in the only sense the user has. Keyed off the selection rather than a remembered Select All, so clicking anywhere collapses it and this stops applying on its own with no flag to keep in step.
 	///
-	/// Select All can only ever reach what the control holds, which for a windowed document is a
-	/// slice of the book rather than the book. The window is not something a reader can see, name
-	/// or reason about, so a selection covering all of it means all of it in the only sense the
-	/// user has - and copying half a chapter when they asked for the book is a silent wrong answer.
-	///
-	/// Deliberately keyed off the selection rather than a remembered Select All: clicking anywhere
-	/// collapses the selection, so this stops applying on its own with no flag to keep in step.
-	///
-	/// Returns whether it copied. False means nothing special applied and the caller should let
-	/// the control's own copy run.
+	/// macOS only, where the copy is the native one and this is what widens it. Elsewhere the copy runs through `menu_edit::handle_copy`, which reaches the whole document through `text_to_copy` instead. Returns whether it copied; false means the caller should let the control's own copy run.
+	#[cfg(target_os = "macos")]
 	pub fn copy_whole_document_if_all_selected(&self) -> bool {
 		let Some(tab) = self.active_tab() else {
 			return false;

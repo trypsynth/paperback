@@ -8,7 +8,7 @@
 use std::{rc::Rc, sync::Mutex};
 
 use paperback_core::config::ConfigManager;
-use patois::t;
+use patois::{nt, t};
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
 use super::{document_manager::DocumentManager, navigation};
@@ -34,10 +34,9 @@ const fn ordered_ends(mark: i64, caret: i64) -> (i64, i64) {
 	if mark <= caret { (mark, caret) } else { (caret, mark) }
 }
 
-/// What the copy shortcut says once it has copied `count` characters.
-fn copied_announcement(count: usize) -> String {
-	// TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
-	t("Copied (%d chars).").replacen("%d", &count.to_string(), 1)
+/// Shared with the plain Ctrl+C copy, which copies a selection rather than a marked range; the two are the same action to the reader and are worded the same way. Counted in characters rather than bytes, so an astral-plane character is one to someone listening rather than four.
+pub fn copied_announcement(count: usize) -> String {
+	nt("Copied %d character.", "Copied %d characters.", count as u64).replacen("%d", &count.to_string(), 1)
 }
 
 /// Marks the reader's current position as the beginning of a selection to copy from later.
@@ -89,7 +88,7 @@ pub fn handle_copy_from_selection_start(
 	let message = match outcome {
 		// TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
 		CopyOutcome::NoMark => t("Cannot copy; set beginning of selection first."),
-		// TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
+		// TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
 		CopyOutcome::Empty => t("Nothing to copy."),
 		CopyOutcome::Text(text) => {
 			// Counted in characters, not in the display units the range is measured in: a spoken
@@ -150,7 +149,13 @@ mod tests {
 
 	#[test]
 	fn copied_announcement_names_the_character_count() {
-		assert_eq!(copied_announcement(42), "Copied (42 chars).");
-		assert_eq!(copied_announcement(0), "Copied (0 chars).");
+		assert_eq!(copied_announcement(42), "Copied 42 characters.");
+		assert_eq!(copied_announcement(0), "Copied 0 characters.");
+	}
+
+	/// One is read aloud by a person, not measured by a buffer.
+	#[test]
+	fn copied_announcement_singular_for_one_character() {
+		assert_eq!(copied_announcement(1), "Copied 1 character.");
 	}
 }
