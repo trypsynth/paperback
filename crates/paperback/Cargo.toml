@@ -70,3 +70,8 @@ windows-core = "0.62"
 
 [lints]
 workspace = true
+
+# AppKit requires the main thread; Rust's default test harness uses worker threads.
+[[test]]
+name = "macos_line_navigation"
+harness = false
