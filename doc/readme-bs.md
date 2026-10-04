@@ -79,15 +79,34 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 * `Ctrl+F4` (macOS: `Cmd+W`): Zatvara trenutni dokument.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Zatvara sve otvorene dokumente.
 * `Ctrl+Shift+T`: Ponovo otvara posljednji zatvoreni dokument.
-* `F5`: Ponovo učitava trenutni dokument s diska. Radi bez obzira na to da li je u postavkama uključena opcija "Automatski ponovo učitaj izmijenjene dokumente".
 * `Ctrl+R`: Otvara dijalog "Svi dokumenti" (iz nedavnih dokumenata).
+* `Ctrl+Shift+C`: Otvara mapu u kojoj se nalazi trenutna datoteka.
+* `Ctrl+Shift+E`: Izvozi podatke dokumenta (`.paperback`).
+* `Ctrl+Shift+I`: Uvozi podatke dokumenta (`.paperback`).
+* `Ctrl+E`: Izvozi trenutni dokument kao običan tekst.
 * `Ctrl+Q`: Izlazi iz programa (samo na Windowsu; na macOS-u se ova stavka nalazi u izborniku aplikacije).
 
-### Izbornik `Idi`
+### Izbornik `Uredi`
 
 * `Ctrl+F`: Otvara dijalog "Traži".
 * `F3` (macOS: `Cmd+G`): Traži sljedeće.
 * `Shift+F3` (macOS: `Cmd+Shift+G`): Traži prethodno.
+* `Alt+F9` (macOS: `Cmd+F9`): Označava početak odabira, tako da sve od tog mjesta do mjesta do kojeg stignete možete kopirati odjednom.
+* `Alt+F10` (macOS: `Cmd+F10`): Kopira sve od označenog početka odabira do trenutnog položaja.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Vraća vas na označeni početak odabira, a označeni početak ostaje sačuvan.
+
+### Izbornik `Prikaz`
+
+* `F5`: Ponovo učitava trenutni dokument s diska. Radi bez obzira na to da li je u postavkama uključena opcija "Automatski ponovo učitaj izmijenjene dokumente".
+* `Ctrl+Alt+W`: Uključuje i isključuje prelamanje riječi.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, tj. Ctrl+Command+F): Uključuje i isključuje prikaz preko cijelog zaslona.
+* `Ctrl+Shift+V`: Otvara trenutni sadržaj u web prikazu.
+* `Ctrl+U`: Prikazuje izvorni sadržaj dokumenta u novoj kartici.
+
+### Izbornik `Idi`
+
+* `Ctrl+T`: Prikazuje sadržaj.
+* `F7`: Prikazuje popis elemenata.
 * `Ctrl+G` (macOS: `Cmd+L`): Otvara dijalog "Idi na red".
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Otvara dijalog "Idi na postotak".
 * `Ctrl+P`: Otvara dijalog "Idi na stranicu" (kad dokument to podržava).
@@ -102,16 +121,6 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 * Od `1` do `6`: Sljedeći naslov nivoa od 1 do 6.
 * `Shift+P`: Prethodna stranica.
 * `P`: Sljedeća stranica.
-* `Shift+B`: Prethodna oznaka.
-* `B`: Sljedeća oznaka.
-* `/`: Postavlja privremenu oznaku.
-* `\`: Prelazi na privremenu oznaku.
-* `Shift+N`: Prethodna bilješka.
-* `N`: Sljedeća bilješka.
-* `Ctrl+B`: Prelazi na sve oznake i bilješke.
-* `Ctrl+Alt+B`: Prelazi samo na oznake.
-* `Ctrl+Alt+M`: Prelazi samo na bilješke.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje tekst bilješke na trenutnom položaju.
 * `Shift+K`: Prethodna poveznica.
 * `K`: Sljedeća poveznica.
 * `Shift+G`: Prethodna slika.
@@ -131,35 +140,38 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 * `Shift+,`: Prelazi na početak trenutnog bloka (popisa ili tabele).
 * `,`: Prelazi iza kraja trenutnog bloka (popisa ili tabele).
 
-### Izbornik `Alati`
+### Izbornik `Oznake`
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje broj riječi u trenutnom dokumentu.
-* `Ctrl+I`: Prikazuje informacije o dokumentu.
-* `Ctrl+T`: Prikazuje sadržaj.
-* `F7`: Prikazuje popis elemenata.
-* `Ctrl+Shift+C`: Otvara mapu u kojoj se nalazi trenutna datoteka.
-* `Ctrl+Shift+V`: Otvara trenutni sadržaj u web prikazu.
-* `Ctrl+U`: Prikazuje izvorni sadržaj dokumenta u novoj kartici.
-* `Ctrl+Shift+E`: Izvozi podatke dokumenta (`.paperback`).
-* `Ctrl+Shift+I`: Uvozi podatke dokumenta (`.paperback`).
-* `Ctrl+E`: Izvozi trenutni dokument kao običan tekst.
 * `Ctrl+Shift+B`: Dodaje i uklanja oznaku na trenutnom odabiru ili položaju.
 * `Ctrl+Shift+N`: Dodaje ili uređuje bilješku oznake na trenutnom odabiru ili položaju.
-* `Ctrl+Alt+W`: Uključuje i isključuje prelamanje riječi.
+* `Shift+B`: Prethodna oznaka.
+* `B`: Sljedeća oznaka.
+* `Shift+N`: Prethodna bilješka.
+* `N`: Sljedeća bilješka.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje tekst bilješke na trenutnom položaju.
+* `Ctrl+B`: Prelazi na sve oznake i bilješke.
+* `Ctrl+Alt+B`: Prelazi samo na oznake.
+* `Ctrl+Alt+M`: Prelazi samo na bilješke.
+* `/`: Postavlja privremenu oznaku.
+* `\`: Prelazi na privremenu oznaku.
+
+### Izbornik `Zvuk`
+
 * `Ctrl+Razmak` (macOS: `RawCtrl+Razmak`, tj. fizički taster Ctrl, jer `Cmd+Razmak` otvara Spotlight): Pokreće ili pauzira zvučnu naraciju.
 * `'`: Premotava zvučnu naraciju naprijed.
-* `;`: Premotava zvučnu naraciju nazad.
+* `;`: Premotava zvučnu naraciju natrag.
 * `Shift+'`: Povećava korak premotavanja.
 * `Shift+;`: Smanjuje korak premotavanja.
 * `Ctrl+Shift+.`: Ubrzava zvučnu naraciju.
 * `Ctrl+Shift+,`: Usporava zvučnu naraciju.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, tj. Ctrl+Command+F): Uključuje i isključuje prikaz preko cijelog zaslona.
-* `Ctrl+,`: Otvara postavke (na macOS-u se nalaze u izborniku aplikacije).
-* `Ctrl+Shift+S`: Uključuje i isključuje odbrojavanje za spavanje.
+
+### Izbornik `Alati`
+
+* `Ctrl+W` (macOS: `RawCtrl+W`, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje broj riječi u trenutnom dokumentu.
+* `Ctrl+I`: Prikazuje informacije o dokumentu.
 * `Ctrl+Shift+O`: Prepoznaje raspon skeniranih PDF stranica pomoću OCR-a.
-* `Alt+F9` (macOS: `Cmd+F9`): Označava početak odabira, tako da sve od tog mjesta do mjesta do kojeg stignete možete kopirati odjednom.
-* `Alt+F10` (macOS: `Cmd+F10`): Kopira sve od označenog početka odabira do trenutnog položaja.
-* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Vraća vas na označeni početak odabira, a označeni početak ostaje sačuvan.
+* `Ctrl+Shift+S`: Uključuje i isključuje odbrojavanje za spavanje.
+* `Ctrl+,`: Otvara postavke (na macOS-u se nalaze u izborniku aplikacije).
 
 ### Izbornik `Pomoć`
 
@@ -173,6 +185,7 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 
 * `Delete` / `Numpad Delete` na kontroli kartica: Zatvara karticu odabranog dokumenta.
 * Od `Ctrl+1` do `Ctrl+9` (macOS: od `Cmd+1` do `Cmd+9`) u tekstu dokumenta ili na kontroli kartica: Prelazi na jedan od prvih devet otvorenih dokumenata, redoslijedom kojim su otvoreni.
+* `Ctrl+Tab` i `Ctrl+Shift+Tab`: Prelaze na sljedeći ili prethodni otvoreni dokument; nakon posljednjeg dokumenta prelazi se na prvi i obrnuto.
 * `Enter` ili `Razmak` u dokumentu: Otvara poveznicu na položaju kursora ili otvara prikaz tabele ili formule.
 * `Enter` na skeniranoj PDF stranici: Prepoznaje stranicu pomoću OCR-a.
 * `Shift+F10` ili taster `Aplikacije` u dokumentu: Otvara kontekstni izbornik.
@@ -227,7 +240,7 @@ U izborniku "Više opcija" nalazi se sve ostalo. Neke stavke rade malo drugačij
 
 Uz tastaturu rade sve prečice iz verzije za računare za otvaranje knjiga, nedavne dokumente, traženje, dijalog "Idi na", sadržaj, broj riječi, informacije o dokumentu, izvoz i odbrojavanje za spavanje, s tim da se na iOS-u umjesto `Ctrl` koristi `Cmd`. Isto vrijedi i za tastere s jednim slovom za kretanje po naslovima, stranicama, poveznicama i ostalim elementima, a `Razmak` pokreće i pauzira reprodukciju. Na iOS-u tasteri s jednim slovom stižu do Paperbacka samo kada je VoiceOverova funkcija brzog kretanja jednim slovom (Quick Nav) isključena.
 
-Na Androidu dugme na slušalicama jednim pritiskom pokreće i pauzira reprodukciju, s dva pritiska ide naprijed, a s tri pritiska vraća nazad.
+Na Androidu dugme na slušalicama jednim pritiskom pokreće i pauzira reprodukciju, s dva pritiska ide naprijed, a s tri pritiska vraća natrag.
 
 ## Podržani jezici
 
@@ -514,7 +527,7 @@ Aplikacije za iOS i Android otvaraju sve formate koje otvara i verzija za račun
 
 ##### Zvučne knjige
 * Mogućnost reprodukcije zvučnih knjiga, trenutno uz podršku za DAISY knjige sa zvukom (uključujući DAISY knjige sa zvukom i tekstom) i ZIP arhive sa zvučnim datotekama.
-* Prečice na tastaturi i stavke izbornika za pokretanje i pauziranje zvučne naracije, premotavanje unaprijed i unazad te podešavanje koraka premotavanja.
+* Prečice na tastaturi i stavke izbornika za pokretanje i pauziranje zvučne naracije, premotavanje unaprijed i unatrag te podešavanje koraka premotavanja.
 * Opcije za usklađivanje kursora s reprodukcijom zvuka, postavljanje koraka premotavanja i odabir da li se premotavanje preko kraja poglavlja nastavlja u sljedeće poglavlje.
 
 ##### CHM dokumenti
@@ -760,7 +773,7 @@ Aplikacije za iOS i Android otvaraju sve formate koje otvara i verzija za račun
 ### Verzija 0.4.0
 
 * Dodana je podrška za CHM dokumente.
-* Dodana je podrška za oznake! Možete imati neograničen broj oznaka u neograničenom broju dokumenata. Krećite se između njih naprijed i nazad pomoću `B` i `Shift+B`, postavite novu oznaku pomoću `Ctrl+Shift+B`, a dijalog za prelazak na određenu oznaku otvorite pomoću `Ctrl+B`.
+* Dodana je podrška za oznake! Možete imati neograničen broj oznaka u neograničenom broju dokumenata. Krećite se između njih naprijed i natrag pomoću `B` i `Shift+B`, postavite novu oznaku pomoću `Ctrl+Shift+B`, a dijalog za prelazak na određenu oznaku otvorite pomoću `Ctrl+B`.
 * Dodan je instalacijski program uz prenosivu ZIP verziju! Instalacijski program će instalirati Paperback u mapu `Program Files` i automatski postaviti pridruživanje datoteka.
 * Tekstualne datoteke s BOM oznakom sada će se ispravno dekodirati, a BOM više neće biti prikazan na početku teksta.
 * U statusnu traku dodano je mnogo više informacija. Sada prikazuje trenutni red, znak i postotak pročitanog dokumenta.
