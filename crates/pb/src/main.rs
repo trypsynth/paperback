@@ -1,4 +1,5 @@
 use std::{
+	collections::HashMap,
 	env,
 	fmt::Write as _,
 	fs,
@@ -54,23 +55,15 @@ fn main() -> Result<()> {
 	if cli.list_formats {
 		return write_stdout(&formats::listing());
 	}
-	// A Windows shell hands `*.pdf` over as one literal argument, so the patterns are expanded
-	// here rather than being left for a shell that may not expand them.
-	let files = inputs::collect(&cli.input)?;
 	// Read up front so a bad specification is refused before a long parse rather than after it.
 	// The pages themselves are chosen below, once the document has been read and its length known.
 	let selection = cli.pages.as_deref().map(PageSelection::parse).transpose()?;
-
-	let destination = destination(&cli, files.len())?;
-	// One document into one named file is the whole of pb until now, and it says nothing when it
-	// works. Several documents is a run over a folder, which is worth a report: a hundred files
-	// converting silently and two failing quietly is a reader who has to go and look.
-	if files.len() == 1 && matches!(destination, Destination::File(_)) {
-		let file = &files[0];
-		let converted = Converter::new(&cli).convert(file, selection.as_ref())?;
-		return write_converted(&cli, &destination, file, selection.as_ref(), &converted);
-	}
-	run(&cli, &files, selection.as_ref(), &destination)
+	// A Windows shell hands `*.pdf` over as one literal argument, so the patterns are expanded here
+	// rather than being left for a shell that may not expand them. A pattern that matched nothing
+	// is carried rather than raised, so one mistyped pattern does not cost the reader the rest.
+	let inputs = inputs::collect(&cli.input);
+	let destination = destination(&cli, inputs.files.len())?;
+	run(&cli, &inputs, selection.as_ref(), &destination)
 }
 
 /// Where the output of this run goes, and whether the instruction to put it there is one that can
@@ -79,16 +72,22 @@ fn destination(cli: &Cli, count: usize) -> Result<Destination<'_>> {
 	if let Some(dir) = &cli.output_dir {
 		return Ok(Destination::Directory(dir));
 	}
-	// One named file, several documents: there is nowhere to put the second one that is not a lie
-	// about what the first is. Naming `--output-dir` says what was meant.
 	if let Some(path) = &cli.output {
 		if count > 1 {
 			bail!(
-				"-o names one file, but {count} documents were given to convert\n\
-				 Write them into a folder with --output-dir instead"
+				"-o names one file, but {count} documents were given to convert\nWrite them into a folder with --output-dir instead"
 			);
 		}
 		return Ok(Destination::File(path));
+	}
+	// Several documents to stdout would arrive one after another with nothing between them: two
+	// books run into each other mid-sentence, and in HTML one `<html>` document starts inside
+	// another. One document on stdout is a pipe a reader can take; several is a file nobody asked
+	// to be assembled.
+	if count > 1 {
+		bail!(
+			"{count} documents were given with nowhere to put them\nWrite them into a folder with --output-dir instead"
+		);
 	}
 	Ok(Destination::Stdout)
 }
@@ -97,29 +96,39 @@ fn destination(cli: &Cli, count: usize) -> Result<Destination<'_>> {
 ///
 /// A document that cannot be read is that document's problem, not the run's: over a folder of a
 /// hundred books, stopping at the first EPUB with no password leaves the reader with nothing and
-/// no way of telling which of the hundred was the problem. Each failure is named as it happens
-/// and the run carries on, and the exit code says afterwards that not everything converted.
-fn run(cli: &Cli, files: &[PathBuf], selection: Option<&PageSelection>, destination: &Destination<'_>) -> Result<()> {
+/// no way of telling which of the hundred was the problem.
+fn run(
+	cli: &Cli,
+	inputs: &inputs::Inputs,
+	selection: Option<&PageSelection>,
+	destination: &Destination<'_>,
+) -> Result<()> {
 	if let Destination::Directory(dir) = destination {
 		// Made up front rather than per document, so a folder pb cannot create is reported once
 		// before anything has been read rather than as the same failure for every file.
 		fs::create_dir_all(dir).with_context(|| format!("failed to create the folder {}", dir.display()))?;
 	}
+	let files = &inputs.files;
 	let reporting = files.len() > 1 || matches!(destination, Destination::Directory(_));
 	let mut converter = Converter::new(cli);
 	let mut tally = Tally::default();
+	let mut written: HashMap<PathBuf, PathBuf> = HashMap::new();
+	// Reported before anything is read, so the reader learns of a mistyped pattern without waiting
+	// for the run it was meant to be part of.
+	for pattern in &inputs.unmatched {
+		eprintln!("pb: no file matches {pattern:?}");
+		tally.failed += 1;
+	}
 	for file in files {
-		// Before the document is touched, not after it is written. A run over a folder is a
-		// long silence between the first prompt and the summary, and a reader watching it has
-		// nothing to tell whether pb has stopped or is chewing through a nine-hundred-page PDF.
-		// It also says which document a password prompt belongs to, which matters once the run
-		// has asked only once and is reusing that answer for every book after.
+		// Before the document is touched, not after it is written. A run over a folder is a long
+		// silence between the first prompt and the summary, and it is what tells a reader which
+		// document a password prompt belongs to.
 		if reporting {
 			eprintln!("pb: converting {}...", file.display());
 		}
 		let outcome = converter
 			.convert(file, selection)
-			.and_then(|converted| write_converted(cli, destination, file, selection, &converted));
+			.and_then(|converted| write_converted(cli, destination, file, selection, &converted, &mut written));
 		match outcome {
 			Ok(()) => {
 				tally.converted += 1;
@@ -159,6 +168,18 @@ impl std::fmt::Display for NeedsPassword {
 }
 
 impl std::error::Error for NeedsPassword {}
+
+/// A document that would not parse, said the way a reader is meant to hear it.
+///
+/// The parsers mark a document that wants a password with a prefix so that pb can tell it from
+/// every other way a document will not open. That prefix is a sentinel between pieces of this
+/// code, not something to read: a wrong password should say the password was not accepted, not
+/// spell out the name of the field it was recognised by.
+fn parse_failed(input: &Path, error: &anyhow::Error) -> anyhow::Error {
+	let message = error.to_string();
+	let message = message.strip_prefix(PASSWORD_REQUIRED_ERROR_PREFIX).unwrap_or(&message);
+	anyhow::anyhow!("failed to parse {}: {message}", input.display())
+}
 
 /// Whether this error, or anything it was raised on top of, is [`NeedsPassword`].
 ///
@@ -245,32 +266,27 @@ impl<'a> Converter<'a> {
 				if cli.no_prompt {
 					return Err(anyhow::Error::new(NeedsPassword).context(input.display().to_string()));
 				}
-				// Asked at most once in a run. A document that will not open for the password already
-				// in hand -- the one `-p` gave, or the one a reader typed for an earlier document --
-				// is not asked about again: they have answered, and the answer was wrong. Asking
-				// again looks like a second attempt at a document already dealt with, and where
-				// there is no terminal to type into -- a script, a pipeline, a run over a folder --
-				// it waits there for good.
+				// Asked at most once in a run. A document that will not open for the password
+				// already in hand is not asked about again: the reader has answered, and the
+				// answer was wrong. Where there is no terminal to type into, asking again
+				// waits there for good rather than saying the password did not fit.
 				//
-				// The refusal is then reported exactly as the first document's would be, because it
-				// is the same failure. A run that answered "1 failed, 1 needing a password" for two
-				// documents that both turned on the password was describing one problem twice, in
-				// two vocabularies.
-				//
-				// The parser cannot tell a wrong password from a missing one:
-				// `PdfError::PasswordRequired` covers both, which is why this is asked from what the
-				// reader supplied rather than from what came back.
+				// The parser cannot tell a wrong password from a missing one, which is why
+				// this is asked from what the reader supplied rather than what came back.
 				if self.password().is_some() {
-					return Err(e.context(format!("failed to parse {}", input.display())));
+					return Err(parse_failed(input, &e));
 				}
 				let password = rpassword::prompt_password("Password: ").context("failed to read password")?;
-				self.remembered = Some(password.clone());
-				context.password = Some(password);
-				// A password the reader gets wrong lands here too, and is reported the way any
-				// other document that would not parse is.
-				parse_document(&context).with_context(|| format!("failed to parse {}", input.display()))?
+				context.password = Some(password.clone());
+				// Remembered only once the password has actually opened something. A reader who
+				// mistypes it is asked again for the next document rather than having one wrong
+				// answer silently applied to every book after, so a mistyped password costs one
+				// document and not the whole run.
+				let doc = parse_document(&context).map_err(|e| parse_failed(input, &e))?;
+				self.remembered = Some(password);
+				doc
 			}
-			Err(e) => return Err(e.context(format!("failed to parse {}", input.display()))),
+			Err(e) => return Err(parse_failed(input, &e)),
 		};
 		// Cut down to the pages asked for. Every format goes this way: the pages are chosen from the
 		// parsed document rather than asked of the parser, because a page range out of an encrypted
@@ -307,28 +323,40 @@ impl<'a> Converter<'a> {
 }
 
 /// Puts one document's output where this run was told to put it.
+///
+/// `written` is what this run has already put there, so that two documents wanting one name is
+/// caught. `--force` is about files that were there before pb started; two documents in one run
+/// arriving at one name is pb's own naming, and overwriting the first with the second would lose a
+/// book on the strength of a flag the reader meant for something else entirely.
 fn write_converted(
 	cli: &Cli,
 	destination: &Destination<'_>,
 	input: &Path,
 	selection: Option<&PageSelection>,
 	converted: &str,
+	written: &mut HashMap<PathBuf, PathBuf>,
 ) -> Result<()> {
 	let path = match destination {
 		Destination::Stdout => return write_stdout(converted),
 		Destination::File(path) => path.to_path_buf(),
 		Destination::Directory(dir) => dir.join(target_for(cli, input, selection)),
 	};
+	// `--output-dir .` on a folder of books is a natural thing to type and destroys the folder on
+	// the second run, because each document's output lands on the next document's name. Refused
+	// whatever --force says: the reader is not replacing a file, they are replacing their inputs.
+	if inputs::same_file(&path) == inputs::same_file(input) {
+		bail!("{} is the document being converted; write somewhere else", path.display());
+	}
+	if let Some(earlier) = written.get(&inputs::same_file(&path)) {
+		bail!("{} and {} are both writing {}", earlier.display(), input.display(), path.display());
+	}
 	// Asked to be left alone rather than replaced. A run over a folder writes names nobody chose
 	// individually, and a reader who runs the same command twice should be told which files the
 	// second run would replace rather than find out afterwards.
-	//
-	// This is checked for a named file as well as a folder, which pb did not used to do: `fs::write`
-	// replaces whatever is at the path, and `-o out.txt` on a file that already holds something is
-	// the reader losing work they never said they were replacing. --force is how they say it.
 	if path.exists() && !cli.force {
 		bail!("{} is already there; pass --force to replace it", path.display());
 	}
+	written.insert(inputs::same_file(&path), input.to_path_buf());
 	write_file(&path, converted, !cli.metadata && matches!(cli.format, Format::Markdown))
 }
 
@@ -340,14 +368,10 @@ fn target_for(cli: &Cli, input: &Path, selection: Option<&PageSelection>) -> Pat
 
 /// A document's output file named after the document, the pages asked for, and the format.
 ///
-/// The page range is in the name because two runs of the same command over the same folder ask
-/// for different extracts, and without it the second silently replaces the first -- which, of
-/// everything this could get wrong, is the one a reader would only notice by having lost the
-/// pages they wanted.
-///
-/// Taken from the document's stem rather than its whole name, so that `book.epub` and `book.pdf`
-/// sitting in one folder both come out as `book.md` and collide, which is worth a reader's
-/// knowing rather than papering over: two documents of the same name are two different books.
+/// The page range is in the name because two runs over one folder ask for different extracts, and
+/// without it the second silently replaces the first. Taken from the stem rather than the whole
+/// name, so that `book.epub` and `book.pdf` in one folder both want `book.md` -- which is why a
+/// run tracks what it has written rather than letting the second take the first's place.
 fn output_name(stem: &str, format: Format, selection: Option<&PageSelection>) -> PathBuf {
 	let mut name = PathBuf::from(stem);
 	if let Some(selection) = selection {
@@ -468,17 +492,6 @@ mod tests {
 		output_name(stem, format, selection.as_ref()).to_string_lossy().into_owned()
 	}
 
-	/// The line printed as a document is picked up. It names the document, because that is the
-	/// whole of it: a run over a folder is otherwise a silence between the first prompt and the
-	/// summary, and a password prompt with nothing above it belongs to no document in particular.
-	#[test]
-	fn the_starting_line_says_which_document_is_being_read() {
-		let line = format!("pb: converting {}...", Path::new("books/py_enc.pdf").display());
-		assert!(line.contains("py_enc.pdf"), "{line}");
-		assert!(line.starts_with("pb: "), "{line} would not sit with the rest of pb's output");
-		assert!(line.ends_with("..."), "{line} does not read as work still in progress");
-	}
-
 	#[test]
 	fn an_output_is_named_after_the_document_and_the_format() {
 		assert_eq!(named("book", Format::Text, None), "book.txt");
@@ -567,12 +580,18 @@ mod tests {
 	fn with_nowhere_to_put_it_the_output_goes_to_stdout() {
 		let cli = cli::Cli::try_parse_from(["pb", "a.epub"]).expect("parse");
 		assert!(matches!(destination(&cli, 1).expect("stdout"), Destination::Stdout));
-		assert!(matches!(destination(&cli, 5).expect("stdout"), Destination::Stdout));
+	}
+
+	/// Several documents to stdout would run into each other with nothing between them, and in
+	/// HTML one document would start inside another. There is no honest way to put them there.
+	#[test]
+	fn several_documents_cannot_be_sent_to_stdout() {
+		let cli = cli::Cli::try_parse_from(["pb", "a.epub", "b.epub"]).expect("parse");
+		let error = destination(&cli, 2).expect_err("two documents, one stdout").to_string();
+		assert!(error.contains("--output-dir"), "{error} does not say what to use instead");
 	}
 
 	/// Nothing already on disk is replaced without `--force`, wherever the output was headed.
-	/// This one used to replace a named file silently -- `fs::write` does, and `-o out.txt` on a
-	/// file holding something was the reader losing work they never said they were replacing.
 	#[test]
 	fn an_output_file_that_is_already_there_is_left_alone_without_force() {
 		let dir = TempDir::new("overwrite");
@@ -580,54 +599,60 @@ mod tests {
 		fs::write(&existing, b"what was there before").expect("write");
 		let input = dir.join("book.epub");
 		fs::write(&input, b"x").expect("write");
-
 		let refuse = |args: &[&str]| {
 			let cli = cli::Cli::try_parse_from(args).expect("parse");
-			write_converted(&cli, &destination(&cli, 1).expect("destination"), &input, None, "new text")
+			let mut written = HashMap::new();
+			write_converted(&cli, &destination(&cli, 1).expect("destination"), &input, None, "new text", &mut written)
 		};
-
 		refuse(&["pb", "book.epub", "-o", existing.to_str().unwrap()])
 			.expect_err("an existing file must not be replaced without --force");
 		assert_eq!(fs::read_to_string(&existing).expect("read"), "what was there before");
-
 		refuse(&["pb", "book.epub", "-o", existing.to_str().unwrap(), "--force"]).expect("--force replaces it");
 		assert_eq!(fs::read_to_string(&existing).expect("read"), "new text");
 	}
 
-	/// The same rule in a folder, where the name is pb's rather than the reader's.
+	/// `a/book.txt` and `b/book.txt` both want `out/book.txt`. `--force` is about files that were
+	/// there before pb started, so it cannot be what lets the second book overwrite the first.
 	#[test]
-	fn a_file_in_the_output_directory_that_is_already_there_is_left_alone_without_force() {
-		let dir = TempDir::new("dir-overwrite");
-		let input = dir.join("book.epub");
-		fs::write(&input, b"x").expect("write");
+	fn two_documents_wanting_one_name_do_not_overwrite_each_other() {
+		let dir = TempDir::new("collision");
+		let first = dir.join("a");
+		let second = dir.join("b");
+		fs::create_dir_all(&first).expect("mkdir");
+		fs::create_dir_all(&second).expect("mkdir");
+		let first = first.join("book.txt");
+		let second = second.join("book.txt");
+		fs::write(&first, b"the first book").expect("write");
+		fs::write(&second, b"the second book").expect("write");
 		let out = dir.join("out");
 		fs::create_dir_all(&out).expect("mkdir");
-		fs::write(out.join("book.md"), b"what was there before").expect("write");
-
-		let attempt = |force: bool| {
-			// The absolute path, because `run` is what makes the folder and this goes straight to
-			// the writer; a relative one would resolve against the crate directory.
-			let mut args = vec!["pb", "book.epub", "--output-dir", out.to_str().unwrap(), "-f", "md"];
-			if force {
-				args.push("--force");
-			}
-			let cli = cli::Cli::try_parse_from(&args).expect("parse");
-			let destination = destination(&cli, 1).expect("destination");
-			write_converted(&cli, &destination, &input, None, "new text")
-		};
-
-		attempt(false).expect_err("an existing file must not be replaced without --force");
-		assert_eq!(fs::read_to_string(out.join("book.md")).expect("read"), "what was there before");
-		attempt(true).expect("--force replaces it");
-		// Markdown written to a file still carries its BOM, so the replacement is checked for the
-		// text rather than for an exact match on the bytes.
-		let replaced = fs::read_to_string(out.join("book.md")).expect("read");
-		assert!(replaced.contains("new text"), "{replaced:?}");
-		assert!(replaced.starts_with('\u{feff}'), "the BOM went missing in the rewrite");
+		let cli = cli::Cli::try_parse_from(["pb", "book.txt", "--output-dir", out.to_str().unwrap(), "--force"])
+			.expect("parse");
+		let destination = destination(&cli, 1).expect("destination");
+		let mut written = HashMap::new();
+		write_converted(&cli, &destination, &first, None, "the first book", &mut written).expect("the first book");
+		let error = write_converted(&cli, &destination, &second, None, "the second book", &mut written)
+			.expect_err("--force must not let the second book overwrite the first");
+		assert!(error.to_string().contains("both writing"), "{error}");
+		assert_eq!(fs::read_to_string(out.join("book.txt")).expect("read"), "the first book");
 	}
 
-	/// A file that is not there is written without ceremony, which is the ordinary case and the
-	/// one that must not grow a prompt or a flag.
+	/// `--output-dir .` is a natural thing to type, and it replaces each document with the next.
+	#[test]
+	fn a_document_is_never_written_over_itself() {
+		let dir = TempDir::new("self");
+		let input = dir.join("book.md");
+		fs::write(&input, b"the book").expect("write");
+		let cli = cli::Cli::try_parse_from(["pb", "book.md", "--output-dir", dir.path.to_str().unwrap(), "-f", "md"])
+			.expect("parse");
+		let destination = destination(&cli, 1).expect("destination");
+		let mut written = HashMap::new();
+		write_converted(&cli, &destination, &input, None, "converted", &mut written)
+			.expect_err("a document must not be replaced by its own conversion");
+		assert_eq!(fs::read_to_string(&input).expect("read"), "the book");
+	}
+
+	/// A file that is not there is written without ceremony.
 	#[test]
 	fn an_output_path_that_is_free_is_written_without_asking() {
 		let dir = TempDir::new("fresh");
@@ -635,20 +660,32 @@ mod tests {
 		fs::write(&input, b"x").expect("write");
 		let fresh = dir.join("out.txt");
 		let cli = cli::Cli::try_parse_from(["pb", "book.epub", "-o", fresh.to_str().unwrap()]).expect("parse");
-		write_converted(&cli, &destination(&cli, 1).expect("destination"), &input, None, "new text")
+		let destination = destination(&cli, 1).expect("destination");
+		let mut written = HashMap::new();
+		write_converted(&cli, &destination, &input, None, "new text", &mut written)
 			.expect("writing to a path that is free");
 		assert_eq!(fs::read_to_string(&fresh).expect("read"), "new text");
 	}
 
-	/// A password refused under `--no-prompt` is counted apart from a failure, because the reader
-	/// can do something about it and because exit code 2 has meant that since long before this ran
-	/// over more than one file.
+	/// The prefix pb recognises a password by is a sentinel between pieces of this code, and a
+	/// reader whose password was refused should be told that rather than shown the field name.
 	#[test]
-	fn a_document_held_by_a_password_is_recognised_when_it_reaches_the_tally() {
-		let cli = cli::Cli::try_parse_from(["pb", "a.epub", "--no-prompt"]).expect("parse");
-		let error = anyhow::Error::new(NeedsPassword).context("a.epub");
-		assert!(error.chain().any(is_needs_password), "the run would count this as a plain failure");
-		assert!(cli.no_prompt);
+	fn the_password_marker_is_not_shown_to_the_reader() {
+		let error = parse_failed(
+			Path::new("alpha.pdf"),
+			&anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required or incorrect"),
+		);
+		let printed = error.to_string();
+		assert!(!printed.contains(PASSWORD_REQUIRED_ERROR_PREFIX), "{printed}");
+		assert!(printed.contains("alpha.pdf"), "{printed} does not name the document");
+		assert!(printed.contains("Password required or incorrect"), "{printed}");
+	}
+
+	/// An error that is not about a password keeps its own wording.
+	#[test]
+	fn an_ordinary_parse_error_is_left_alone() {
+		let printed = parse_failed(Path::new("x.pdf"), &anyhow::anyhow!("Failed to open PDF document")).to_string();
+		assert!(printed.contains("Failed to open PDF document"), "{printed}");
 	}
 
 	/// A password that was given and refused is an ordinary failure, reported the way the parser
@@ -674,6 +711,18 @@ mod tests {
 		let needed = format!("{:#}", anyhow::Error::new(NeedsPassword).context("locked.pdf"));
 		assert!(needed.contains("locked.pdf"), "{needed}");
 		assert!(needed.contains("-p"), "{needed} does not say how to supply one");
+	}
+
+	/// `is_pattern` answers the one question it is asked: is this something to expand. A file that
+	/// happens to be named with a star in it is that file, and the distinction is the whole reason
+	/// the check exists.
+	#[test]
+	fn a_pattern_is_only_a_pattern_when_no_such_file_is_there() {
+		let dir = TempDir::new("is-pattern");
+		let real = dir.join("book.pdf");
+		fs::write(&real, b"x").expect("write");
+		assert!(!inputs::is_pattern(&real), "a file that exists is a path whatever else it holds");
+		assert!(inputs::is_pattern(&dir.join("*.pdf")));
 	}
 
 	/// A run remembers one password and offers it to every document after the first, rather than
