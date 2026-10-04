@@ -10,8 +10,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{
-	DocumentManager, DocumentTab, POSITION_SAVE_INTERVAL_SECS, build_document_load_error_message, parse_settings,
-	prompt_for_password, read_fingerprint, show_error_dialog, title_or_filename,
+	DocumentManager, DocumentTab, POSITION_SAVE_INTERVAL_SECS, parse_settings, read_fingerprint, title_or_filename,
 };
 use crate::{
 	audio_player::AudioPlayer,
@@ -330,4 +329,34 @@ impl DocumentManager {
 		}
 		self.last_position_save.set(Some(now));
 	}
+}
+
+pub(super) fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
+	// TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
+	let dialog = TextEntryDialog::builder(parent, &t("&Password:"), &t("Document Password")).password().build();
+	if dialog.show_modal() != ID_OK {
+		return None;
+	}
+	dialog.get_value().filter(|value| !value.trim().is_empty())
+}
+
+pub(super) fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
+	let dialog = MessageDialog::builder(parent, message, title)
+		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+		.build();
+	dialog.show_modal();
+}
+
+pub(super) fn build_document_load_error_message(path: &Path, error: &str) -> String {
+	let details = error.trim().strip_prefix(PASSWORD_REQUIRED_ERROR_PREFIX).map_or_else(|| error.trim(), str::trim);
+	if details.is_empty() {
+		// TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+		return t("Failed to load document.");
+	}
+	// TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+	let file_line = t("File: {}").replace("{}", &path.display().to_string());
+	// TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+	let details_line = t("Details: {}").replace("{}", details);
+	// TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
+	format!("{}\n\n{file_line}\n{details_line}", t("Failed to load document."))
 }
