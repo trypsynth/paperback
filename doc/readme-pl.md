@@ -81,6 +81,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `Ctrl+F4` (macOS: `Cmd+W`): Zamknij bieżący dokument.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Zamknij wszystkie otwarte dokumenty.
 * `Ctrl+Shift+T`: Otwórz ponownie ostatnio zamknięty dokument.
+* `F5`: Przeładuj bieżący dokument z dysku. Działa niezależnie od tego, czy opcja „Automatycznie przeładowuj zmienione dokumenty” jest włączona w Ustawieniach.
 * `Ctrl+R`: Pokaż dialog Wszystkie dokumenty (z menu Ostatnie dokumenty).
 * `Ctrl+Q`: Zakończ (tylko Windows; w systemie macOS znajduje się w menu aplikacji).
 
@@ -174,6 +175,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 
 * `Delete` / `Delete na klawiaturze numerycznej` na kontrolce kart: zamknij kartę wybranego dokumentu.
 * `Ctrl+1` do `Ctrl+9` (macOS: `Cmd+1` do `Cmd+9`) w tekście dokumentu lub na kontrolce kart: przejdź do jednego z pierwszych dziewięciu otwartych dokumentów, w kolejności ich otwarcia.
+* `Ctrl+Tab` i `Ctrl+Shift+Tab`: przejdź do następnego lub poprzedniego otwartego dokumentu. Po ostatnim dokumencie przejdziesz do pierwszego, a przed pierwszym do ostatniego.
 * `Enter` albo `Spacja` w tekście dokumentu: otwórz odnośnik, Widok tabeli lub Widok wzoru pod kursorem.
 * `Enter` na zeskanowanej stronie PDF: rozpoznaj tekst na stronie za pomocą OCR.
 * `Shift+F10` albo klawisz Menu/Aplikacje w tekście dokumentu: otwórz menu kontekstowe.
@@ -419,12 +421,12 @@ Aplikacje na iOS i Androida otwierają każdy format, który obsługuje wersja n
 * Zamknięcie widoku WWW klawiszem Escape nie wyświetla już komunikatu diagnostycznego, kiedy wcześniej otworzyłeś w nim odsyłacz.
 * Kopiowanie po zaznaczeniu wszystkiego daje teraz cały dokument, a nie tylko tę jego część, która jest właśnie wczytana.
 * Wyszukiwanie przenosi teraz od razu do znalezionego wiersza, bez wysłuchiwania, jak czytnik ekranu ponownie odczytuje całe okno przy powrocie do książki.
-* Naprawiono otwieranie plików EPUB z pozostawionym blokiem ZIP64, które kończyło się komunikatem „Invalid local file header".
+* Naprawiono otwieranie plików EPUB z pozostawionym blokiem ZIP64, które kończyło się komunikatem „Invalid local file header”.
 * Naprawiono wracanie długich dokumentów na początek, kiedy czytnik ekranu czytał je ciągiem.
-* Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast kończyć się komunikatem „Nie znaleziono pliku".
+* Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast kończyć się komunikatem „Nie znaleziono pliku”.
 * Automatyczny komunikat o przeładowaniu dokumentu nie przerywa już czytnikowi ekranu w połowie zdania, a czeka, aż skończy wypowiedź.
 * Na karcie Ogólne w oknie ustawień tabulator przechodzi teraz przez opcje w kolejności, w jakiej są widoczne na ekranie, a kanał aktualizacji następuje bezpośrednio po opcji sprawdzania aktualizacji.
-* Windows pokazuje teraz zawsze „Paperback" w menu Otwórz za pomocą, a nie pełne hasło programu.
+* Windows pokazuje teraz zawsze „Paperback” w menu Otwórz za pomocą, a nie pełne hasło programu.
 * Licznik słów oraz informacje o dokumencie pokazują teraz, ile plików zawiera audiobook i jak długo trwa w całości.
 
 ### Wersja 0.9.1
@@ -693,7 +695,7 @@ Aplikacje na iOS i Androida otwierają każdy format, który obsługuje wersja n
 * Dodano obsługę parsowania plików tekstowych OpenDocument!
 * Zakładki mogą teraz obejmować cały wiersz albo tylko wskazany tekst. Jeśli podczas dodawania zakładki nic nie jest zaznaczone, działanie pozostaje takie jak przed wersją 0.6 i zakładka obejmuje cały wiersz. Jeśli zaznaczysz tekst, w zakładce znajdzie się tylko ten tekst.
 * Zakładki mogą teraz mieć opcjonalne notatki tekstowe. Między zakładkami z notatkami można przechodzić klawiszami `N` i `Shift+N`, a dialog zakładek można otwierać z widokiem wszystkich zakładek, tylko notatek albo tylko zakładek bez notatek za pomocą osobnych skrótów.
-* Zakładki w dialogu zakładek nie mają już irytującego prefiksu "zakładka x".
+* Zakładki w dialogu zakładek nie mają już irytującego prefiksu „zakładka x”.
 * Książki EPUB zawierające treść HTML udającą XML są teraz obsługiwane poprawnie.
 * Naprawiono wczytywanie dużych dokumentów Markdown.
 * Naprawiono aktywowanie przycisku OK po naciśnięciu spacji w widoku drzewa Spisu treści.
