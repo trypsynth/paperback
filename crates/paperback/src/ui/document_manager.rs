@@ -128,6 +128,8 @@ pub struct DocumentManager {
 	/// dispatcher. See `menu_events::bind_key_source` for why the book's own key handler
 	/// cannot do this.
 	pub(super) from_keyboard: Rc<Cell<bool>>,
+	/// Hands out an id per OCR job, so a worker whose tab has been closed is recognisable as stale rather than mistaken for one on a reopened tab.
+	next_job_id: Cell<u64>,
 }
 
 impl DocumentManager {
@@ -150,6 +152,7 @@ impl DocumentManager {
 			last_focus_in_text: Cell::new(true),
 			recently_closed: Vec::new(),
 			from_keyboard,
+			next_job_id: Cell::new(0),
 		}
 	}
 
