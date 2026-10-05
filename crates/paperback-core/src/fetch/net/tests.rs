@@ -134,6 +134,33 @@ fn a_redirect_from_https_to_plain_http_is_reported_as_insecure() {
 }
 
 #[test]
+fn the_limit_is_16_mib() {
+	assert_eq!(MAX_SIZE, 16 * 1024 * 1024);
+}
+
+#[test]
+fn a_document_announced_as_larger_than_the_limit_is_refused_before_its_body() {
+	let base = serve(|method, _, _, stream| respond(stream, method, "200 OK", &[], &[b'x'; 100]));
+	let result = open_within(&format!("{base}/a.epub"), 50);
+	assert!(matches!(result, Err(FetchError::TooLarge(50))), "{:?}", result.err());
+}
+
+#[test]
+fn a_document_growing_past_the_limit_is_stopped_and_removed() {
+	let base = serve(|_, _, _, stream| {
+		let _ = stream.write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n");
+		let _ = stream.write_all(&[b'x'; 100]);
+	});
+	let dir = TempDir::new("fetch-too-large");
+	let dest = dir.path().join("a.epub");
+	let remote = open_within(&format!("{base}/a.epub"), 50).expect("open");
+	let result = save(remote, &dest);
+	assert!(matches!(result, Err(FetchError::TooLarge(50))), "{result:?}");
+	assert!(!dest.exists());
+	assert!(!dir.path().join("a.epub.part").exists());
+}
+
+#[test]
 fn open_reports_a_missing_document_by_status() {
 	let base = serve(|method, _, _, stream| respond(stream, method, "404 Not Found", &[], b""));
 	assert!(matches!(open(&format!("{base}/gone.epub")), Err(FetchError::Http(404))));

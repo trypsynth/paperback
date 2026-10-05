@@ -16,6 +16,8 @@ use crate::version::user_agent;
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(30);
 const OVERALL_TIMEOUT: Duration = Duration::from_mins(10);
 const CHUNK_SIZE: usize = 8192;
+/// The largest document downloaded, in bytes.
+pub const MAX_SIZE: u64 = 16 * 1024 * 1024;
 
 /// What a server says about a link before its body is read.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -53,6 +55,8 @@ pub enum FetchError {
 	Refused(String),
 	#[error("the secure link was redirected to an insecure address, so it was not downloaded")]
 	Insecure,
+	#[error("the document is larger than {} MB, so it was not downloaded", .0 / (1024 * 1024))]
+	TooLarge(u64),
 }
 
 impl From<ureq::Error> for FetchError {
@@ -85,6 +89,7 @@ pub struct Remote {
 	given_url: String,
 	info: RemoteInfo,
 	body: Body,
+	max_size: u64,
 }
 
 /// Sends one GET for `url` and reads the response's headers, leaving its body for
@@ -92,12 +97,21 @@ pub struct Remote {
 ///
 /// # Errors
 ///
-/// Returns [`FetchError::Http`] for an error status and [`FetchError::Network`] when the server
-/// cannot be reached.
+/// Returns [`FetchError::Http`] for an error status, [`FetchError::Network`] when the server
+/// cannot be reached, and [`FetchError::TooLarge`] when the server announces more than
+/// [`MAX_SIZE`] bytes.
 pub fn open(url: &str) -> Result<Remote, FetchError> {
+	open_within(url, MAX_SIZE)
+}
+
+/// [`open`], with `max_size` in place of [`MAX_SIZE`].
+fn open_within(url: &str, max_size: u64) -> Result<Remote, FetchError> {
 	let response = Agent::new_with_config(config_for(url)).get(url).header("User-Agent", &user_agent()).call()?;
 	let info = info_from(&response, url);
-	Ok(Remote { given_url: url.to_string(), info, body: response.into_body() })
+	if info.size.is_some_and(|size| size > max_size) {
+		return Err(FetchError::TooLarge(max_size));
+	}
+	Ok(Remote { given_url: url.to_string(), info, body: response.into_body(), max_size })
 }
 
 impl Remote {
@@ -113,8 +127,9 @@ impl Remote {
 	/// # Errors
 	///
 	/// Returns [`FetchError::Refused`] when the link's [`Verdict`] is a refusal,
-	/// [`FetchError::Cancelled`] when `cancel` is set, and the other variants for network and disk
-	/// failures. `dest` is left as it was in every error case.
+	/// [`FetchError::Cancelled`] when `cancel` is set, [`FetchError::TooLarge`] when the body grows
+	/// past the limit, and the other variants for network and disk failures. `dest` is left as it
+	/// was in every error case.
 	pub fn save(
 		self,
 		dest: &Path,
@@ -136,8 +151,11 @@ impl Remote {
 			if read == 0 {
 				break;
 			}
-			part.write_all(&buffer[..read])?;
 			done += read as u64;
+			if done > self.max_size {
+				return Err(FetchError::TooLarge(self.max_size));
+			}
+			part.write_all(&buffer[..read])?;
 			progress(done, self.info.size);
 		}
 		part.finish(dest)?;
