@@ -58,11 +58,11 @@ fn main() -> Result<()> {
 	// Read up front so a bad specification is refused before a long parse rather than after it.
 	// The pages themselves are chosen below, once the document has been read and its length known.
 	let selection = cli.pages.as_deref().map(PageSelection::parse).transpose()?;
+	let given = inputs::with_stdin_list(&cli.input, io::stdin().lock())?;
 	// A Windows shell hands `*.pdf` over as one literal argument, so the patterns are expanded here
 	// rather than being left for a shell that may not expand them. A pattern that matched nothing
 	// is carried rather than raised, so one mistyped pattern does not cost the reader the rest.
-	let args = inputs::with_stdin_list(&cli.input, io::stdin().lock())?;
-	let inputs = inputs::collect(&args);
+	let inputs = inputs::collect(&given);
 	let destination = destination(&cli, inputs.files.len())?;
 	run(&cli, &inputs, selection.as_ref(), &destination)
 }

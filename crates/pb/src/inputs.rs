@@ -18,6 +18,15 @@ use std::{
 
 use anyhow::{Context, Result, bail};
 
+/// One input as the reader gave it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Given {
+	/// An argument on the command line, which may be a pattern.
+	Argument(PathBuf),
+	/// A line of the list on stdin, taken as written.
+	Listed(PathBuf),
+}
+
 /// What the arguments on the command line named.
 #[derive(Debug, Default)]
 pub struct Inputs {
@@ -37,15 +46,22 @@ pub fn is_pattern(arg: &Path) -> bool {
 	arg.as_os_str().to_string_lossy().contains(['*', '?']) && !arg.exists()
 }
 
-/// Every file the arguments name, and every pattern among them that matched nothing.
+/// Every file the inputs name, and every pattern among the arguments that matched nothing.
 ///
-/// An argument that is not a pattern is passed through as it is, whether or not it exists:
-/// `input::check` says why a missing file is a problem in terms the reader can act on, which is
-/// a better place for that than here.
+/// A listed input, and an argument that is not a pattern, is passed through as it is, whether or
+/// not it exists: `input::check` says why a missing file is a problem in terms the reader can act
+/// on, which is a better place for that than here.
 #[must_use]
-pub fn collect(args: &[PathBuf]) -> Inputs {
+pub fn collect(given: &[Given]) -> Inputs {
 	let mut collected = Inputs::default();
-	for arg in args {
+	for item in given {
+		let arg = match item {
+			Given::Listed(path) => {
+				collected.files.push(path.clone());
+				continue;
+			}
+			Given::Argument(arg) => arg,
+		};
 		if !is_pattern(arg) {
 			collected.files.push(arg.clone());
 			continue;
@@ -61,50 +77,53 @@ pub fn collect(args: &[PathBuf]) -> Inputs {
 	collected
 }
 
-/// The arguments with a `-` replaced by the inputs listed on stdin, one per line.
+/// The arguments, with a `-` replaced by the inputs listed on stdin, one per line.
 ///
-/// Blank lines and lines starting with `#` are skipped. Surrounding whitespace, Windows line ends
-/// and a byte order mark are taken off. stdin is read only when a `-` is among the arguments.
+/// A listed line is taken as written, never as a pattern. Blank lines are skipped, and so are
+/// lines starting with `#` unless a file of that name exists. Surrounding whitespace, Windows line
+/// ends and a byte order mark are taken off. stdin is read only when a `-` is among the arguments.
 ///
 /// # Errors
 ///
 /// Returns an error if `-` is given more than once, if a line of the list is not UTF-8, or if `-`
 /// is the only argument and the list names nothing.
-pub fn with_stdin_list(args: &[PathBuf], stdin: impl BufRead) -> Result<Vec<PathBuf>> {
+pub fn with_stdin_list(args: &[PathBuf], stdin: impl BufRead) -> Result<Vec<Given>> {
 	let dashes = args.iter().filter(|arg| is_stdin(arg)).count();
 	if dashes == 0 {
-		return Ok(args.to_vec());
+		return Ok(args.iter().cloned().map(Given::Argument).collect());
 	}
 	if dashes > 1 {
 		bail!("- was given {dashes} times, but the list on stdin can be read only once");
 	}
-	let listed = read_list(stdin)?;
+	let listed = read_list(stdin, |entry| Path::new(entry).exists())?;
 	if listed.is_empty() && args.len() == 1 {
 		bail!("the list on stdin names no documents");
 	}
-	let mut expanded = Vec::with_capacity(args.len() - 1 + listed.len());
+	let mut given = Vec::with_capacity(args.len() - 1 + listed.len());
 	for arg in args {
 		if is_stdin(arg) {
-			expanded.extend(listed.iter().map(PathBuf::from));
+			given.extend(listed.iter().map(|entry| Given::Listed(PathBuf::from(entry))));
 		} else {
-			expanded.push(arg.clone());
+			given.push(Given::Argument(arg.clone()));
 		}
 	}
-	Ok(expanded)
+	Ok(given)
 }
 
 fn is_stdin(arg: &Path) -> bool {
 	arg.as_os_str() == "-"
 }
 
-fn read_list(stdin: impl BufRead) -> Result<Vec<String>> {
+/// The entries of the list; a `#` line is a comment unless `exists` says a file of that name does.
+fn read_list(stdin: impl BufRead, exists: impl Fn(&str) -> bool) -> Result<Vec<String>> {
 	let mut listed = Vec::new();
 	for (index, line) in stdin.lines().enumerate() {
 		let line = line.with_context(|| format!("line {} of the list on stdin is not UTF-8 text", index + 1))?;
 		let entry = line.trim_start_matches('\u{feff}').trim();
-		if !entry.is_empty() && !entry.starts_with('#') {
-			listed.push(entry.to_string());
+		if entry.is_empty() || (entry.starts_with('#') && !exists(entry)) {
+			continue;
 		}
+		listed.push(entry.to_string());
 	}
 	Ok(listed)
 }
@@ -247,7 +266,7 @@ mod tests {
 		for name in ["b.epub", "a.epub", "c.txt"] {
 			fs::write(dir.join(name), b"x").expect("write");
 		}
-		let collected = collect(&[dir.pattern("*.epub")]);
+		let collected = collect_args(&[dir.pattern("*.epub")]);
 		assert_eq!(names(&collected.files), ["a.epub", "b.epub"], "not sorted, or the .txt slipped in");
 		assert!(collected.unmatched.is_empty());
 	}
@@ -259,7 +278,7 @@ mod tests {
 		for name in ["a1.txt", "a12.txt"] {
 			fs::write(dir.join(name), b"x").expect("write");
 		}
-		let collected = collect(&[dir.pattern("a?.txt")]);
+		let collected = collect_args(&[dir.pattern("a?.txt")]);
 		assert_eq!(names(&collected.files), ["a1.txt"]);
 	}
 
@@ -268,7 +287,7 @@ mod tests {
 		let dir = TempDir::new("folders");
 		fs::create_dir(dir.join("sub")).expect("mkdir");
 		fs::write(dir.join("a.epub"), b"x").expect("write");
-		let collected = collect(&[dir.pattern("*")]);
+		let collected = collect_args(&[dir.pattern("*")]);
 		assert_eq!(names(&collected.files), ["a.epub"]);
 	}
 
@@ -279,7 +298,7 @@ mod tests {
 		let dir = TempDir::new("brackets");
 		fs::create_dir(dir.join("Books [2024]")).expect("mkdir");
 		fs::write(dir.join("Books [2024]").join("a.pdf"), b"x").expect("write");
-		let collected = collect(&[dir.pattern("Books [2024]/*.pdf")]);
+		let collected = collect_args(&[dir.pattern("Books [2024]/*.pdf")]);
 		assert_eq!(names(&collected.files), ["a.pdf"]);
 		assert!(collected.unmatched.is_empty(), "{:?}", collected.unmatched);
 	}
@@ -289,7 +308,7 @@ mod tests {
 	fn brackets_in_a_file_name_are_read_as_brackets() {
 		let dir = TempDir::new("brackets-file");
 		fs::write(dir.join("notes[final].pdf"), b"x").expect("write");
-		let collected = collect(&[dir.pattern("*s[final].pdf")]);
+		let collected = collect_args(&[dir.pattern("*s[final].pdf")]);
 		assert_eq!(names(&collected.files), ["notes[final].pdf"]);
 		assert!(collected.unmatched.is_empty(), "{:?}", collected.unmatched);
 	}
@@ -302,7 +321,7 @@ mod tests {
 			fs::write(dir.join(name), b"x").expect("write");
 		}
 		for name in ["[book].pdf", "book].pdf", "book[.pdf"] {
-			let collected = collect(&[dir.pattern(name)]);
+			let collected = collect_args(&[dir.pattern(name)]);
 			assert_eq!(names(&collected.files), [name], "{name}");
 		}
 	}
@@ -316,7 +335,7 @@ mod tests {
 		fs::write(dir.join("one").join("a.pdf"), b"x").expect("write");
 		fs::write(dir.join("two").join("b.pdf"), b"x").expect("write");
 		fs::write(dir.join("c.pdf"), b"x").expect("write");
-		let collected = collect(&[dir.pattern("*/*.pdf")]);
+		let collected = collect_args(&[dir.pattern("*/*.pdf")]);
 		assert_eq!(
 			names(&collected.files),
 			["a.pdf", "b.pdf"],
@@ -331,7 +350,7 @@ mod tests {
 		fs::create_dir(dir.join("sub")).expect("mkdir");
 		fs::write(dir.join("a.pdf"), b"x").expect("write");
 		fs::write(dir.join("sub").join("b.pdf"), b"x").expect("write");
-		let collected = collect(&[dir.pattern("*.pdf")]);
+		let collected = collect_args(&[dir.pattern("*.pdf")]);
 		assert_eq!(names(&collected.files), ["a.pdf"]);
 	}
 
@@ -342,8 +361,8 @@ mod tests {
 	fn a_pattern_matches_the_case_the_platform_considers_the_same_file() {
 		let dir = TempDir::new("case");
 		fs::write(dir.join("SCAN.PDF"), b"x").expect("write");
-		let lower = collect(&[dir.pattern("*.pdf")]);
-		let upper = collect(&[dir.pattern("*.PDF")]);
+		let lower = collect_args(&[dir.pattern("*.pdf")]);
+		let upper = collect_args(&[dir.pattern("*.PDF")]);
 		assert_eq!(upper.files.len(), 1, "`*.PDF` reaches SCAN.PDF everywhere");
 		if cfg!(windows) {
 			assert_eq!(lower.files.len(), 1, "`*.pdf` reaches SCAN.PDF on Windows");
@@ -358,7 +377,7 @@ mod tests {
 	fn a_pattern_matching_nothing_is_carried_rather_than_fatal() {
 		let dir = TempDir::new("no-match");
 		fs::write(dir.join("a.pdf"), b"x").expect("write");
-		let collected = collect(&[dir.pattern("*.pdf"), dir.pattern("*.mobi")]);
+		let collected = collect_args(&[dir.pattern("*.pdf"), dir.pattern("*.mobi")]);
 		assert_eq!(
 			names(&collected.files),
 			["a.pdf"],
@@ -374,7 +393,7 @@ mod tests {
 		fs::write(dir.join("a.pdf"), b"x").expect("write");
 		fs::write(dir.join("b.epub"), b"x").expect("write");
 		fs::write(dir.join("c.pdf"), b"x").expect("write");
-		let collected = collect(&[dir.pattern("*.pdf"), dir.pattern("*.epub")]);
+		let collected = collect_args(&[dir.pattern("*.pdf"), dir.pattern("*.epub")]);
 		assert_eq!(names(&collected.files), ["a.pdf", "c.pdf", "b.epub"]);
 	}
 
@@ -384,18 +403,18 @@ mod tests {
 		let dir = TempDir::new("dupe");
 		fs::write(dir.join("a.epub"), b"x").expect("write");
 		fs::write(dir.join("b.epub"), b"x").expect("write");
-		let collected = collect(&[dir.pattern("*.epub"), dir.join("a.epub")]);
+		let collected = collect_args(&[dir.pattern("*.epub"), dir.join("a.epub")]);
 		assert_eq!(names(&collected.files), ["a.epub", "b.epub"]);
 	}
 
 	#[test]
 	fn a_missing_path_is_passed_through_rather_than_refused_here() {
-		assert_eq!(collect(&[PathBuf::from("nowhere.epub")]).files, [PathBuf::from("nowhere.epub")]);
+		assert_eq!(collect_args(&[PathBuf::from("nowhere.epub")]).files, [PathBuf::from("nowhere.epub")]);
 	}
 
 	#[test]
 	fn no_arguments_collect_to_no_files() {
-		assert!(collect(&[]).files.is_empty());
+		assert!(collect_args(&[]).files.is_empty());
 	}
 
 	/// A shell that expands `*.txt` hands over `./book.txt`; a reader who types the name gets
@@ -406,33 +425,76 @@ mod tests {
 		assert_eq!(same_file(Path::new("a/./b.txt")), same_file(Path::new("a/b.txt")));
 	}
 
-	fn listed(args: &[&str], stdin: &str) -> anyhow::Result<Vec<PathBuf>> {
+	fn collect_args(args: &[PathBuf]) -> Inputs {
+		let given: Vec<Given> = args.iter().cloned().map(Given::Argument).collect();
+		collect(&given)
+	}
+
+	fn listed(args: &[&str], stdin: &str) -> anyhow::Result<Vec<Given>> {
 		let args: Vec<PathBuf> = args.iter().map(PathBuf::from).collect();
 		with_stdin_list(&args, io::Cursor::new(stdin.as_bytes()))
+	}
+
+	fn on_stdin(names: &[&str]) -> Vec<Given> {
+		names.iter().map(|name| Given::Listed(PathBuf::from(name))).collect()
 	}
 
 	#[test]
 	fn a_dash_is_replaced_by_the_inputs_listed_on_stdin() {
 		let inputs = listed(&["a.epub", "-", "d.pdf"], "b.epub\nc.docx\n").expect("a list");
-		assert_eq!(inputs, ["a.epub", "b.epub", "c.docx", "d.pdf"].map(PathBuf::from));
+		assert_eq!(
+			inputs,
+			[
+				Given::Argument("a.epub".into()),
+				Given::Listed("b.epub".into()),
+				Given::Listed("c.docx".into()),
+				Given::Argument("d.pdf".into())
+			]
+		);
 	}
 
 	#[test]
 	fn blank_lines_and_comments_in_the_list_are_skipped() {
 		let inputs = listed(&["-"], "# books\n\nb.epub\n   \n  # more\nc.pdf").expect("a list");
-		assert_eq!(inputs, ["b.epub", "c.pdf"].map(PathBuf::from));
+		assert_eq!(inputs, on_stdin(&["b.epub", "c.pdf"]));
+	}
+
+	#[test]
+	fn a_hash_line_naming_a_file_that_exists_is_that_file() {
+		let listed =
+			read_list(io::Cursor::new("#1 Hit.epub\n# a comment\n"), |entry| entry == "#1 Hit.epub").expect("a list");
+		assert_eq!(listed, ["#1 Hit.epub"]);
+	}
+
+	#[test]
+	fn a_listed_line_is_taken_as_written_and_not_as_a_pattern() {
+		let dir = TempDir::new("listed-literal");
+		fs::write(dir.join("ab.epub"), b"x").expect("write");
+		let mangled = dir.pattern("??.epub");
+		let given = listed(&["-"], &format!("{}\n", mangled.display())).expect("a list");
+		let collected = collect(&given);
+		assert_eq!(collected.files, [mangled]);
+		assert!(collected.unmatched.is_empty(), "{:?}", collected.unmatched);
+	}
+
+	#[test]
+	fn a_pattern_typed_beside_a_list_still_expands() {
+		let dir = TempDir::new("typed-pattern");
+		fs::write(dir.join("a.epub"), b"x").expect("write");
+		let given = listed(&[dir.pattern("*.epub").to_str().expect("a UTF-8 path"), "-"], "b.pdf\n").expect("a list");
+		assert_eq!(names(&collect(&given).files), ["a.epub", "b.pdf"]);
 	}
 
 	#[test]
 	fn windows_line_ends_and_a_byte_order_mark_are_taken_off() {
 		let inputs = listed(&["-"], "\u{feff}b.epub\r\nc.pdf\r\n").expect("a list");
-		assert_eq!(inputs, ["b.epub", "c.pdf"].map(PathBuf::from));
+		assert_eq!(inputs, on_stdin(&["b.epub", "c.pdf"]));
 	}
 
 	#[test]
 	fn surrounding_spaces_are_taken_off_and_inner_ones_kept() {
 		let inputs = listed(&["-"], "  my book.epub  \n").expect("a list");
-		assert_eq!(inputs, [PathBuf::from("my book.epub")]);
+		assert_eq!(inputs, on_stdin(&["my book.epub"]));
 	}
 
 	#[test]
@@ -450,7 +512,10 @@ mod tests {
 			}
 		}
 		let args = [PathBuf::from("a.epub")];
-		assert_eq!(with_stdin_list(&args, io::BufReader::new(Untouched)).expect("no list"), args);
+		assert_eq!(
+			with_stdin_list(&args, io::BufReader::new(Untouched)).expect("no list"),
+			[Given::Argument("a.epub".into())]
+		);
 	}
 
 	#[test]

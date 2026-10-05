@@ -5,7 +5,7 @@ use clap::{Parser, ValueEnum};
 #[derive(Parser)]
 #[command(name = "pb", about = "Convert any document to text, HTML, or Markdown")]
 pub struct Cli {
-	/// Input document file, or files. `*` and `?` are expanded, so the same command line works on Windows. `-` reads more inputs from stdin, one per line
+	/// Input document file, or files. `*` and `?` are expanded, so the same command line works on Windows. `-` reads more inputs from stdin, one path per line, taken as written; blank lines and lines starting with # are skipped
 	#[arg(required_unless_present = "list_formats", num_args = 1..)]
 	pub input: Vec<PathBuf>,
 	/// List the formats pb can read, and the extensions it knows them by
