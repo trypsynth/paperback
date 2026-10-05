@@ -129,6 +129,14 @@ pub struct AppSettings {
 	pub find_whole_word: bool,
 	#[serde(default)]
 	pub find_use_regex: bool,
+	/// Whether a Find match is left selected.
+	///
+	/// On is what a sighted reader expects: the match is picked out on screen. Off moves the
+	/// caret to the match instead of selecting it, which suits a screen reader listener, who
+	/// hears the line around the caret either way and gains nothing from the match being a
+	/// selection - a selected string is spoken as a selection rather than as text.
+	#[serde(default = "default_true")]
+	pub highlight_found_text: bool,
 	#[serde(default = "default_recent_documents_to_show")]
 	pub recent_documents_to_show: i64,
 	#[serde(default = "default_sleep_timer")]
@@ -182,6 +190,7 @@ impl Default for AppSettings {
 			find_match_case: false,
 			find_whole_word: false,
 			find_use_regex: false,
+			highlight_found_text: true,
 			recent_documents_to_show: DEFAULT_RECENT_DOCUMENTS_TO_SHOW,
 			sleep_timer_duration: 30,
 			reading_speed_wpm: 150,
@@ -273,6 +282,14 @@ mod tests {
 		let serialized = toml::to_string(&doc).unwrap();
 		let parsed: DocumentConfig = toml::from_str(&serialized).unwrap();
 		assert_eq!(parsed.temporary_bookmark, Some(12_345));
+	}
+
+	/// Every config file written before this setting existed has no such key, and all of them
+	/// must keep the highlighting they have always had rather than quietly lose it.
+	#[test]
+	fn highlight_found_text_defaults_to_true_when_missing() {
+		let parsed: AppSettings = toml::from_str("word_wrap = true\n").unwrap();
+		assert!(parsed.highlight_found_text);
 	}
 
 	#[test]

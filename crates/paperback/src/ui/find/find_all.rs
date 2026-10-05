@@ -111,11 +111,13 @@ fn populate_find_results(state: &FindDialogState, selected: i32) {
 }
 
 /// Jumps to the selected results row, landing on the match on that line that follows the caret
-/// origin (falling back to the line's first match), then behaves like a found Find: selects the
-/// range, hides the dialog, and announces the line after the focus chain is cut.
+/// origin (falling back to the line's first match), then behaves like a found Find: moves to the
+/// range, highlighting it or not according to the reader's setting, hides the dialog, and
+/// announces the line after the focus chain is cut.
 pub(super) fn handle_result_go(
 	state: &FindDialogState,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 ) {
 	let (start, end, line_text) = {
@@ -130,6 +132,9 @@ pub(super) fn handle_result_go(
 		};
 		(span.start, span.end, row.text.clone())
 	};
+	// Read before the document lock is taken, so the two locks are never held the other way round
+	// from the rest of the app.
+	let highlight_found_text = config.lock().unwrap().get_app_bool("highlight_found_text", true);
 	let mut dm = doc_manager.lock().unwrap();
 	let Some(tab) = dm.active_tab_mut() else {
 		return;
@@ -137,7 +142,7 @@ pub(super) fn handle_result_go(
 	if !tab.text_ctrl.is_valid() {
 		return;
 	}
-	navigation::select_doc_range(tab, start, end);
+	state.reveal_match(tab, start, end, highlight_found_text);
 	drop(dm);
 	state.dialog.show(false);
 	state.clear_results();

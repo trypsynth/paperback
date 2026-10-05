@@ -1104,6 +1104,10 @@ msgstr ""
 msgid "Move to &start of line"
 msgstr ""
 
+#. TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+msgid "&Highlight found text"
+msgstr ""
+
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr ""
