@@ -15,8 +15,8 @@ mod state;
 mod tools_menu;
 mod view_menu;
 
-use builder::build_menu;
 pub use builder::{MenuEntry, format_menu_label, item_with_help};
+use builder::{build_menu, claim_access_key, deduplicate_access_keys};
 pub use file_menu::recent_documents_for_menu;
 pub use state::{update_menu_item_states, update_reopen_state};
 
@@ -28,7 +28,7 @@ pub struct TopMenu {
 
 /// The menu bar's menus, in order.
 pub fn menus(config: &ConfigManager, compact_go: bool) -> Vec<TopMenu> {
-	vec![
+	let mut menus = vec![
 		TopMenu { category: ShortcutCategory::File, entries: file_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::Edit, entries: edit_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::View, entries: view_menu::entries(config) },
@@ -37,7 +37,24 @@ pub fn menus(config: &ConfigManager, compact_go: bool) -> Vec<TopMenu> {
 		TopMenu { category: ShortcutCategory::Audio, entries: audio_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::Tools, entries: tools_menu::entries(config) },
 		TopMenu { category: ShortcutCategory::Help, entries: help_menu::entries(config) },
-	]
+	];
+	for menu in &mut menus {
+		deduplicate_access_keys(&mut menu.entries);
+	}
+	menus
+}
+
+/// The menu bar labels of `menus`, each with an access key of its own where it has a free letter.
+fn titles(menus: &[TopMenu]) -> Vec<String> {
+	let mut used = Vec::new();
+	menus
+		.iter()
+		.map(|menu| {
+			let mut label = title(menu.category);
+			claim_access_key(&mut label, &mut used);
+			label
+		})
+		.collect()
 }
 
 /// The menu bar label of the menu holding `category`'s commands.
@@ -69,9 +86,10 @@ pub const fn is_keyboard_only(action: ActionId) -> bool {
 
 pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let compact_go = config.get_app_bool("compact_go_menu", true);
+	let menus = menus(config, compact_go);
 	let mut builder = MenuBar::builder();
-	for menu in menus(config, compact_go) {
-		builder = builder.append(build_menu(&menu.entries), &title(menu.category));
+	for (menu, title) in menus.iter().zip(titles(&menus)) {
+		builder = builder.append(build_menu(&menu.entries), &title);
 	}
 	let menu_bar = builder.build();
 	commands::apply_enable_to(&menu_bar, Enable::HasRecentDocuments, config.has_recent_documents());
