@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 50ae5f8f1895cd78; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,75b3aaec,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versión 1.0
 
@@ -25,7 +25,7 @@ Paperback funciona en Windows 10/11, todas las versiones modernas de ARM macOS, 
 * Lee páginas PDF escaneadas con el OCR integrado en Windows y macOS.
 * Marcadores y notas, para que puedas marcar tu lugar y volver a él.
 * Cada atajo de teclado puede ser personalizado.
-* Viene con `pb`, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano.
+* Viene con `pb`, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano. Acepta tantos documentos como le proporciones, expande `*.pdf` y similares por sí sola para que el mismo comando funcione en Windows, y puede escribir un archivo por documento en una carpeta.
 
 ## Compatibilidad con lectores de pantalla
 
@@ -81,15 +81,34 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 * `Ctrl+F4` (macOS: `Cmd+W`): Cierra el documento actual.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Cierra todos los documentos abiertos.
 * `Ctrl+Shift+T`: Reabre el último documento cerrado.
-* `F5`: Vuelve a leer el documento actual desde el disco. Funciona tanto si "Recargar automáticamente documentos modificados" está activado en Configuración como si no.
 * `Ctrl+R`: Muestra el diálogo "Todos los documentos" (desde Documentos recientes).
+* `Ctrl+Shift+C`: Abre la carpeta contenedora.
+* `Ctrl+Shift+E`: Exporta datos del documento (`.paperback`).
+* `Ctrl+Shift+I`: Importa datos del documento (`.paperback`).
+* `Ctrl+E`: Exporta el documento actual a texto sin formato.
 * `Ctrl+Q`: Sale (solo en Windows; en macOS está en el menú de la aplicación).
 
-### Menú Ir
+### Menú Editar
 
 * `Ctrl+F`: Muestra el diálogo Buscar.
 * `F3` (macOS: `Cmd+G`): Busca el siguiente.
 * `Shift+F3` (macOS: `Cmd+Shift+G`): Busca el anterior.
+* `Alt+F9` (macOS: `Cmd+F9`): Marca el inicio de una selección, para que todo desde aquí hasta donde llegues pueda copiarse de una sola vez.
+* `Alt+F10` (macOS: `Cmd+F10`): Copia todo desde el inicio marcado de la selección hasta la posición actual.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Salta al inicio marcado de la selección, dejando la marca en su lugar.
+
+### Menú Vista
+
+* `F5`: Vuelve a leer el documento actual desde el disco. Funciona tanto si "Recargar automáticamente documentos modificados" está activado en Configuración como si no.
+* `Ctrl+Alt+W`: Alterna el ajuste de palabras.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, es decir, Control+Comando+F): Alterna pantalla completa.
+* `Ctrl+Shift+V`: Abre el contenido actual en Vista web.
+* `Ctrl+U`: Ve la fuente del documento en una pestaña nueva.
+
+### Menú Ir
+
+* `Ctrl+T`: Muestra la tabla de contenidos.
+* `F7`: Muestra la lista de elementos.
 * `Ctrl+G` (macOS: `Cmd+L`): Ir a la línea.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ir al porcentaje.
 * `Ctrl+P`: Ir a la página (cuando lo admita el documento actual).
@@ -104,16 +123,6 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 * `1` a `6`: Encabezado siguiente del nivel 1-6.
 * `Shift+P`: Página anterior.
 * `P`: Página siguiente.
-* `Shift+B`: Marcador anterior.
-* `B`: Marcador siguiente.
-* `/`: Establece tu marcador temporal.
-* `\`: Salta a tu marcador temporal.
-* `Shift+N`: Nota anterior.
-* `N`: Nota siguiente.
-* `Ctrl+B`: Salta a todos los marcadores y notas.
-* `Ctrl+Alt+B`: Salta solo a marcadores.
-* `Ctrl+Alt+M`: Salta solo a notas.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, es decir, la tecla Control física en lugar de Cmd): Ve el texto de nota en la posición actual.
 * `Shift+K`: Enlace anterior.
 * `K`: Enlace siguiente.
 * `Shift+G`: Imagen anterior.
@@ -133,21 +142,23 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 * `Shift+,`: Ir al inicio del contenedor actual (lista o tabla).
 * `,`: Ir más allá del final del contenedor actual (lista o tabla).
 
-### Menú Herramientas
+### Menú Marcadores
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, es decir, la tecla Control física en lugar de Cmd): Muestra el recuento de palabras del documento actual.
-* `Ctrl+I`: Muestra información del documento.
-* `Ctrl+T`: Muestra la tabla de contenidos.
-* `F7`: Muestra la lista de elementos.
-* `Ctrl+Shift+C`: Abre la carpeta contenedora.
-* `Ctrl+Shift+V`: Abre el contenido actual en Vista web.
-* `Ctrl+U`: Ve la fuente del documento en una pestaña nueva.
-* `Ctrl+Shift+E`: Exporta datos del documento (`.paperback`).
-* `Ctrl+Shift+I`: Importa datos del documento (`.paperback`).
-* `Ctrl+E`: Exporta el documento actual a texto sin formato.
 * `Ctrl+Shift+B`: Alterna el marcador en la selección/cursor actual.
 * `Ctrl+Shift+N`: Añade o edita una nota de marcador en la selección/cursor actual.
-* `Ctrl+Alt+W`: Alterna el ajuste de palabras.
+* `Shift+B`: Marcador anterior.
+* `B`: Marcador siguiente.
+* `Shift+N`: Nota anterior.
+* `N`: Nota siguiente.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, es decir, la tecla Control física en lugar de Cmd): Ve el texto de nota en la posición actual.
+* `Ctrl+B`: Salta a todos los marcadores y notas.
+* `Ctrl+Alt+B`: Salta solo a marcadores.
+* `Ctrl+Alt+M`: Salta solo a notas.
+* `/`: Establece tu marcador temporal.
+* `\`: Salta a tu marcador temporal.
+
+### Menú Audio
+
 * `Ctrl+Space` (macOS: `RawCtrl+Space`, es decir, la tecla Control física, ya que `Cmd+Space` abre Spotlight): Reproduce/pausa la narración de audio.
 * `'`: Busca hacia adelante en la narración de audio.
 * `;`: Busca hacia atrás en la narración de audio.
@@ -155,13 +166,14 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 * `Shift+;`: Reduce la cantidad de búsqueda de audio.
 * `Ctrl+Shift+.`: Acelera la narración de audio.
 * `Ctrl+Shift+,`: Ralentiza la narración de audio.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, es decir, Control+Comando+F): Alterna pantalla completa.
-* `Ctrl+,`: Abre Configuración (macOS: en el menú de la aplicación).
-* `Ctrl+Shift+S`: Alterna el temporizador de reposo.
+
+### Menú Herramientas
+
+* `Ctrl+W` (macOS: `RawCtrl+W`, es decir, la tecla Control física en lugar de Cmd): Muestra el conteo de palabras del documento actual.
+* `Ctrl+I`: Muestra información del documento.
 * `Ctrl+Shift+O`: Reconoce un rango de páginas PDF escaneadas con OCR.
-* `Alt+F9` (macOS: `Cmd+F9`): Marca el inicio de una selección, para que todo desde aquí hasta donde llegues pueda copiarse de una sola vez.
-* `Alt+F10` (macOS: `Cmd+F10`): Copia todo desde el inicio marcado de la selección hasta la posición actual.
-* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Salta al inicio marcado de la selección, dejando la marca en su lugar.
+* `Ctrl+Shift+S`: Alterna el temporizador de reposo.
+* `Ctrl+,`: Abre Configuración (macOS: en el menú de la aplicación).
 
 ### Menú Ayuda
 

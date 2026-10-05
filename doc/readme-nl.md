@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 50ae5f8f1895cd78; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,75b3aaec,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -25,7 +25,7 @@ Paperback draait op Windows 10/11, alle moderne versies van macOS op ARM, Linux,
 * Leest gescande PDF-pagina's met de OCR die in Windows en macOS is ingebouwd.
 * Bladwijzers en notities, zodat je kunt markeren waar je gebleven bent en er later naar terug kunt gaan.
 * Elke toetsenbordsneltoets kan worden aangepast.
-* Wordt geleverd met `pb`, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst.
+* Wordt geleverd met `pb`, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, vouwt `*.pdf` enzovoort zelf uit zodat dezelfde opdracht op Windows werkt, en kan één bestand per document naar een map schrijven.
 
 ## Schermlezercompatibiliteit
 
@@ -81,15 +81,34 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Ctrl+F4` (macOS: `Cmd+W`): Het huidige document sluiten.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Alle geopende documenten sluiten.
 * `Ctrl+Shift+T`: Het laatst gesloten document heropenen.
-* `F5`: Het huidige document opnieuw van schijf inlezen. Werkt ongeacht of "Automatisch gewijzigde documenten opnieuw laden" in Instellingen is ingeschakeld.
 * `Ctrl+R`: Het venster "Alle documenten" tonen (vanuit Recente documenten).
+* `Ctrl+Shift+C`: Bovenliggende map openen.
+* `Ctrl+Shift+E`: Documentgegevens exporteren (`.paperback`).
+* `Ctrl+Shift+I`: Documentgegevens importeren (`.paperback`).
+* `Ctrl+E`: Het huidige document exporteren naar platte tekst.
 * `Ctrl+Q`: Afsluiten (alleen Windows; op macOS staat dit in het appmenu).
 
-### Menu Ga
+### Menu Bewerken
 
 * `Ctrl+F`: Het zoekvenster tonen.
 * `F3` (macOS: `Cmd+G`): Volgende zoeken.
 * `Shift+F3` (macOS: `Cmd+Shift+G`): Vorige zoeken.
+* `Alt+F9` (macOS: `Cmd+F9`): Het begin van een selectie markeren, zodat alles van hier tot waar je ook uitkomt in één keer kan worden gekopieerd.
+* `Alt+F10` (macOS: `Cmd+F10`): Alles van het gemarkeerde begin van de selectie tot de huidige positie kopiëren.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Terugspringen naar het gemarkeerde begin van de selectie, waarbij de markering blijft staan.
+
+### Menu Weergave
+
+* `F5`: Het huidige document opnieuw van schijf inlezen. Werkt ongeacht of "Automatisch gewijzigde documenten opnieuw laden" in Instellingen is ingeschakeld.
+* `Ctrl+Alt+W`: Automatische terugloop in-/uitschakelen.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, oftewel Control+Command+F): Volledig scherm in-/uitschakelen.
+* `Ctrl+Shift+V`: De huidige inhoud openen in Webweergave.
+* `Ctrl+U`: De documentbron in een nieuw tabblad weergeven.
+
+### Menu Ga
+
+* `Ctrl+T`: Inhoudsopgave tonen.
+* `F7`: Elementenlijst tonen.
 * `Ctrl+G` (macOS: `Cmd+L`): Ga naar regel.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ga naar percentage.
 * `Ctrl+P`: Ga naar pagina (indien ondersteund door het huidige document).
@@ -104,16 +123,6 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `1` t/m `6`: Volgende kop op niveau 1-6.
 * `Shift+P`: Vorige pagina.
 * `P`: Volgende pagina.
-* `Shift+B`: Vorige bladwijzer.
-* `B`: Volgende bladwijzer.
-* `/`: Je tijdelijke bladwijzer instellen.
-* `\`: Naar je tijdelijke bladwijzer springen.
-* `Shift+N`: Vorige notitie.
-* `N`: Volgende notitie.
-* `Ctrl+B`: Naar alle bladwijzers en notities springen.
-* `Ctrl+Alt+B`: Alleen naar bladwijzers springen.
-* `Ctrl+Alt+M`: Alleen naar notities springen.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, oftewel de fysieke Control-toets in plaats van Cmd): De notitietekst op de huidige positie tonen.
 * `Shift+K`: Vorige link.
 * `K`: Volgende link.
 * `Shift+G`: Vorige afbeelding.
@@ -133,21 +142,23 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Shift+,`: Ga naar het begin van de huidige container (lijst of tabel).
 * `,`: Ga voorbij het einde van de huidige container (lijst of tabel).
 
-### Menu Extra
+### Menu Bladwijzers
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, oftewel de fysieke Control-toets in plaats van Cmd): Woordenaantal van het huidige document tonen.
-* `Ctrl+I`: Documentinformatie tonen.
-* `Ctrl+T`: Inhoudsopgave tonen.
-* `F7`: Elementenlijst tonen.
-* `Ctrl+Shift+C`: Bovenliggende map openen.
-* `Ctrl+Shift+V`: De huidige inhoud openen in webweergave.
-* `Ctrl+U`: De documentbron in een nieuw tabblad weergeven.
-* `Ctrl+Shift+E`: Documentgegevens exporteren (`.paperback`).
-* `Ctrl+Shift+I`: Documentgegevens importeren (`.paperback`).
-* `Ctrl+E`: Het huidige document exporteren naar platte tekst.
 * `Ctrl+Shift+B`: Bladwijzer in-/uitschakelen op de huidige selectie/cursor.
 * `Ctrl+Shift+N`: Bladwijzernotitie toevoegen of bewerken op de huidige selectie/cursor.
-* `Ctrl+Alt+W`: Automatische terugloop in-/uitschakelen.
+* `Shift+B`: Vorige bladwijzer.
+* `B`: Volgende bladwijzer.
+* `Shift+N`: Vorige notitie.
+* `N`: Volgende notitie.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, oftewel de fysieke Control-toets in plaats van Cmd): De notitietekst op de huidige positie bekijken.
+* `Ctrl+B`: Naar alle bladwijzers en notities springen.
+* `Ctrl+Alt+B`: Alleen naar bladwijzers springen.
+* `Ctrl+Alt+M`: Alleen naar notities springen.
+* `/`: Je tijdelijke bladwijzer instellen.
+* `\`: Naar je tijdelijke bladwijzer springen.
+
+### Menu Audio
+
 * `Ctrl+Spatie` (macOS: `RawCtrl+Spatie`, oftewel de fysieke Control-toets, omdat Cmd+Spatie Spotlight opent): Audio afspelen/pauzeren.
 * `'`: Audio vooruitspoelen.
 * `;`: Audio terugspoelen.
@@ -155,13 +166,14 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Shift+;`: De audiospoelstap verkleinen.
 * `Ctrl+Shift+.`: Audio sneller afspelen.
 * `Ctrl+Shift+,`: Audio langzamer afspelen.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, oftewel Control+Command+F): Volledig scherm in-/uitschakelen.
-* `Ctrl+,`: Instellingen openen (macOS: in het appmenu).
-* `Ctrl+Shift+S`: Slaaptimer in-/uitschakelen.
+
+### Menu Extra
+
+* `Ctrl+W` (macOS: `RawCtrl+W`, oftewel de fysieke Control-toets in plaats van Cmd): Woordenaantal van het huidige document tonen.
+* `Ctrl+I`: Documentinformatie tonen.
 * `Ctrl+Shift+O`: Een reeks gescande PDF-pagina's herkennen met OCR.
-* `Alt+F9` (macOS: `Cmd+F9`): Het begin van een selectie markeren, zodat alles van hier tot waar je ook uitkomt in één keer kan worden gekopieerd.
-* `Alt+F10` (macOS: `Cmd+F10`): Alles van het gemarkeerde begin van de selectie tot de huidige positie kopiëren.
-* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Terugspringen naar het gemarkeerde begin van de selectie, waarbij de markering blijft staan.
+* `Ctrl+Shift+S`: Slaaptimer in-/uitschakelen.
+* `Ctrl+,`: Instellingen openen (macOS: in het appmenu).
 
 ### Menu Help
 
