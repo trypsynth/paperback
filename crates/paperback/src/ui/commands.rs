@@ -553,7 +553,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::ViewNoteText,
 		// TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
-		label: || t("&View Note Text"),
+		label: || t("&View Note Text..."),
 		// TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
 		help: Some(|| t("View the note at current position")),
 		enable: Enable::HasDocument,
@@ -570,7 +570,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::BookmarkWithNote,
 		// TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
-		label: || t("Bookmark &with Note"),
+		label: || t("Bookmark &with Note..."),
 		help: None,
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::with_note),

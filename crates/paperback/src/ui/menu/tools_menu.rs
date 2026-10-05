@@ -6,11 +6,11 @@ use crate::ui::menu_ids;
 
 pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	// TRANSLATORS: Menu item in the Tools menu to show the document's word count.
-	let word_count_label = format_menu_label(&t("&Word Count"), ActionId::WordCount, config);
+	let word_count_label = format_menu_label(&t("&Word Count..."), ActionId::WordCount, config);
 	// TRANSLATORS: Status-bar help text for the Word Count menu item.
 	let word_count_help = t("Show word count");
 	// TRANSLATORS: Menu item in the Tools menu to show information about the document.
-	let doc_info_label = format_menu_label(&t("Document &Info"), ActionId::DocumentInfo, config);
+	let doc_info_label = format_menu_label(&t("Document &Info..."), ActionId::DocumentInfo, config);
 	// TRANSLATORS: Status-bar help text for the Document Info menu item.
 	let doc_info_help = t("Show document information");
 	// TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
