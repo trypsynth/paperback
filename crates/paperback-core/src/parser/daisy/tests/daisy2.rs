@@ -139,3 +139,50 @@ fn zip_with_no_audio_and_no_daisy_markup_still_errors() {
 	let err = DaisyParser.parse(&context).expect_err("a zip with neither DAISY markup nor audio should still fail");
 	assert!(err.to_string().contains("does not appear to be a valid DAISY"));
 }
+
+/// A DAISY 2.02 book from a Polish library declares windows-1250 at the top of each file, and was read as Windows-1252, so "Śnieżka" came out as "Œnie¿ka".
+#[test]
+fn reads_a_loose_daisy_2_02_book_in_the_encoding_it_declares() {
+	let ncc = "<?xml version=\"1.0\" encoding=\"windows-1250\"?>
+<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>T</title>
+<meta name=\"dc:title\" content=\"Wejście na szczyt\"/>
+<meta name=\"ncc:charset\" content=\"windows-1250\"/>
+</head><body>
+<h1 id=\"ncc1\"><a href=\"content.html#h1\">Śnieżka</a></h1>
+</body></html>";
+	let content = "<?xml version=\"1.0\" encoding=\"windows-1250\"?>
+<html xmlns=\"http://www.w3.org/1999/xhtml\"><body>
+<h1 id=\"h1\">Śnieżka</h1>
+<p>Najwyższy szczyt Karkonoszy.</p>
+</body></html>";
+	let dir = TempDir::new("daisy2_windows_1250");
+	let path = dir.write("ncc.html", encoding_rs::WINDOWS_1250.encode(ncc).0);
+	dir.write("content.html", encoding_rs::WINDOWS_1250.encode(content).0);
+	let document = DaisyParser.parse(&ParserContext::new(path.to_string_lossy().to_string())).expect("parse the book");
+	assert_eq!(document.title, "Wejście na szczyt");
+	assert!(document.buffer.content.contains("Śnieżka"), "text: {:?}", document.buffer.content);
+	assert!(document.buffer.content.contains("Najwyższy szczyt"), "text: {:?}", document.buffer.content);
+}
+
+#[test]
+fn reads_a_zipped_daisy_2_02_book_in_the_encoding_it_declares() {
+	let ncc = "<?xml version=\"1.0\" encoding=\"windows-1251\"?>
+<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>T</title>
+<meta name=\"dc:title\" content=\"Восхождение\"/>
+</head><body>
+<h1 id=\"ncc1\"><a href=\"content.html#h1\">Эльбрус</a></h1>
+</body></html>";
+	let content = "<?xml version=\"1.0\" encoding=\"windows-1251\"?>
+<html xmlns=\"http://www.w3.org/1999/xhtml\"><body>
+<h1 id=\"h1\">Эльбрус</h1>
+<p>Высочайшая вершина России.</p>
+</body></html>";
+	let ncc = encoding_rs::WINDOWS_1251.encode(ncc).0;
+	let content = encoding_rs::WINDOWS_1251.encode(content).0;
+	let zip_bytes = write_zip(&[("ncc.html", &ncc), ("content.html", &content)]);
+	let dir = TempDir::new("daisy2_windows_1251");
+	let path = dir.write("book.zip", zip_bytes);
+	let document = DaisyParser.parse(&ParserContext::new(path.to_string_lossy().to_string())).expect("parse the book");
+	assert_eq!(document.title, "Восхождение");
+	assert!(document.buffer.content.contains("Высочайшая вершина"), "text: {:?}", document.buffer.content);
+}

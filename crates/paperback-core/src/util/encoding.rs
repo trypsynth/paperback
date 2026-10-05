@@ -86,9 +86,27 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 /// How far into an HTML file a browser looks for its `<meta charset>`, per the HTML specification's prescan.
 const HTML_PRESCAN_BYTES: usize = 1024;
 
-/// The encoding an HTML file's `<meta charset>` or `http-equiv` Content-Type names, if it names one this build knows.
+/// How far into a file to look for the XML declaration. It has to be the first thing in the file, so anything past the first line is not one.
+const XML_DECLARATION_SCAN_BYTES: usize = 200;
+
+/// The encoding an XML declaration names, if it names one this build knows.
+#[must_use]
+pub fn xml_declared_encoding(bytes: &[u8]) -> Option<&'static Encoding> {
+	let head = String::from_utf8_lossy(&bytes[..bytes.len().min(XML_DECLARATION_SCAN_BYTES)]);
+	let declaration = head.split_once("?>")?.0;
+	let after_key = declaration.split_once("encoding")?.1;
+	let quoted = after_key.trim_start().strip_prefix('=')?.trim_start();
+	let quote = quoted.chars().next().filter(|c| *c == '"' || *c == '\'')?;
+	let label = quoted[1..].split(quote).next()?;
+	Encoding::for_label(label.as_bytes())
+}
+
+/// The encoding an HTML or XHTML file declares, in its XML declaration or its `<meta charset>` or `http-equiv` Content-Type, if it names one this build knows.
 #[must_use]
 pub fn html_declared_encoding(bytes: &[u8]) -> Option<&'static Encoding> {
+	if let Some(encoding) = xml_declared_encoding(bytes) {
+		return Some(encoding);
+	}
 	let head = String::from_utf8_lossy(&bytes[..bytes.len().min(HTML_PRESCAN_BYTES)]).to_ascii_lowercase();
 	let value = head.split("charset").skip(1).find_map(|rest| rest.trim_start().strip_prefix('='))?;
 	let value = value.trim_start().trim_start_matches(['"', '\'']);
@@ -98,9 +116,9 @@ pub fn html_declared_encoding(bytes: &[u8]) -> Option<&'static Encoding> {
 	Some(if encoding == UTF_16LE || encoding == UTF_16BE { UTF_8 } else { encoding })
 }
 
-/// Decodes an HTML file, trusting what it says about itself before guessing.
+/// Decodes an HTML or XHTML file, trusting what it says about itself before guessing.
 ///
-/// Its `<meta charset>` comes first, then `fallback`, whatever encoding its surroundings point to, and only then a guess. A file claiming UTF-8 that is not valid UTF-8 has its claim ignored, as old editors stamped that on whatever they saved.
+/// Its own declaration comes first, then `fallback`, whatever encoding its surroundings point to, and only then a guess. A file claiming UTF-8 that is not valid UTF-8 has its claim ignored, as old editors stamped that on whatever they saved.
 #[must_use]
 pub fn decode_html(bytes: &[u8], fallback: Option<&'static Encoding>) -> String {
 	let has_bom =
@@ -252,6 +270,7 @@ mod tests {
 	#[case(b"<meta charset=\"utf-16\">", Some("UTF-8"))]
 	#[case(b"<meta charset=\"klingon\">", None)]
 	#[case(b"<p>no declaration</p>", None)]
+	#[case(b"<?xml version=\"1.0\" encoding=\"windows-1250\"?><html>", Some("windows-1250"))]
 	fn reads_the_charset_an_html_file_declares(#[case] input: &[u8], #[case] expected: Option<&str>) {
 		assert_eq!(html_declared_encoding(input).map(Encoding::name), expected);
 	}

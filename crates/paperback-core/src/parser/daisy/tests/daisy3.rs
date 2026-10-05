@@ -434,3 +434,16 @@ fn corrupt_chapter_does_not_abort_the_whole_book() {
 	let document = DaisyParser.parse(&context).expect("DAISY parse should succeed despite one corrupt chapter");
 	assert!(document.buffer.content.contains("Valid chapter text."));
 }
+
+#[test]
+fn reads_a_dtbook_in_the_encoding_it_declares() {
+	let dir = TempDir::new("daisy3_windows_1250");
+	let opf = "<?xml version=\"1.0\" encoding=\"windows-1250\"?>\n<package unique-identifier=\"uid\"><metadata><dc-metadata xmlns:dc=\"http://purl.org/dc/elements/1.0/\"><dc:Title>Wejście na szczyt</dc:Title></dc-metadata></metadata><manifest><item href=\"book.xml\" media-type=\"application/x-dtbook+xml\"/></manifest></package>";
+	let dtbook = "<?xml version=\"1.0\" encoding=\"windows-1250\"?>\n<dtbook><book><frontmatter><p id=\"p1\">Śnieżka, najwyższy szczyt Karkonoszy.</p></frontmatter></book></dtbook>";
+	let opf_path = dir.write("book.opf", encoding_rs::WINDOWS_1250.encode(opf).0);
+	dir.write("book.xml", encoding_rs::WINDOWS_1250.encode(dtbook).0);
+	let document =
+		DaisyParser.parse(&ParserContext::new(opf_path.to_string_lossy().to_string())).expect("parse the book");
+	assert_eq!(document.title, "Wejście na szczyt");
+	assert!(document.buffer.content.contains("Śnieżka, najwyższy"), "text: {:?}", document.buffer.content);
+}
