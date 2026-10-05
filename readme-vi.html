@@ -72,8 +72,12 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#các-định-dạng-tệp-được-hỗ-trợ-hiện-tại">Các định dạng tệp được hỗ trợ hiện tại</a></li>
 <li><a href="#phím-tắt-bàn-phím">Phím tắt bàn phím</a><ul>
 <li><a href="#menu-tệp">Menu Tệp</a></li>
-<li><a href="#menu-go">Menu Go</a></li>
-<li><a href="#menu-công-cụ">Menu Công cụ</a></li>
+<li><a href="#menu-chỉnh-sửa">Menu Chỉnh sửa</a></li>
+<li><a href="#menu-xem">Menu Xem</a></li>
+<li><a href="#menu-điều-hướng">Menu Điều hướng</a></li>
+<li><a href="#menu-dấu-trang">Menu Dấu trang</a></li>
+<li><a href="#menu-âm-thanh">Menu Âm Thanh</a></li>
+<li><a href="#menu-công-cụ">Menu Công Cụ</a></li>
 <li><a href="#menu-trợ-giúp">Menu Trợ giúp</a></li>
 <li><a href="#các-phím-xem-tài-liệu-bổ-sung">Các phím xem tài liệu bổ sung</a></li>
 </ul>
@@ -143,7 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Đọc các trang PDF được quét bằng OCR tích hợp trong Windows và macOS.</li>
 <li>Dấu trang và ghi chú, để bạn có thể đánh dấu vị trí của mình và quay lại nó.</li>
 <li>Mọi phím tắt bàn phím có thể được thay đổi.</li>
-<li>Đi kèm với <code>pb</code>, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy.</li>
+<li>Đi kèm với <code>pb</code>, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy. Nó có thể nhận bao nhiêu tài liệu bạn cung cấp, tự động mở rộng <code>*.pdf</code> và các tệp tương tự để lệnh dòng lệnh tương tự hoạt động trên Windows, và có thể ghi một tệp trên mỗi tài liệu vào một thư mục.</li>
 </ul>
 <h2 id="khả-năng-tương-thích-với-trình-đọc-màn-hình">Khả năng Tương thích với Trình Đọc Màn hình</h2>
 <p>Paperback hoạt động tốt với tất cả các trình đọc màn hình chính. Tuy nhiên, có hai vấn đề đã biết đối với người dùng JAWS.</p>
@@ -187,15 +191,34 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Đóng tài liệu hiện tại.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Đóng tất cả các tài liệu đang mở.</li>
 <li><code>Ctrl+Shift+T</code>: Mở lại tài liệu đã đóng lần cuối.</li>
-<li><code>F5</code>: Đọc lại tài liệu hiện tại từ đĩa. Hoạt động cho dù “Tự động tải lại các tài liệu đã thay đổi” có được bật trong Cài đặt hay không.</li>
 <li><code>Ctrl+R</code>: Hiển thị hộp thoại “Tất cả tài liệu” (từ Tài liệu gần đây).</li>
+<li><code>Ctrl+Shift+C</code>: Mở thư mục chứa.</li>
+<li><code>Ctrl+Shift+E</code>: Xuất dữ liệu tài liệu (<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Nhập dữ liệu tài liệu (<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Xuất tài liệu hiện tại sang văn bản thuần.</li>
 <li><code>Ctrl+Q</code>: Thoát (chỉ Windows; trên macOS điều này nằm trong menu ứng dụng thay vào đó).</li>
 </ul>
-<h3 id="menu-go">Menu Go</h3>
+<h3 id="menu-chỉnh-sửa">Menu Chỉnh sửa</h3>
 <ul>
 <li><code>Ctrl+F</code>: Hiển thị hộp thoại Tìm.</li>
 <li><code>F3</code> (macOS: <code>Cmd+G</code>): Tìm tiếp theo.</li>
 <li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Tìm trước đó.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Đánh dấu đầu lựa chọn, để mọi thứ từ đây đến nơi bạn đến có thể được sao chép cùng một lúc.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Sao chép mọi thứ từ đầu lựa chọn được đánh dấu đến vị trí hiện tại.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Nhảy lại đầu lựa chọn được đánh dấu, để lại dấu tại chỗ.</li>
+</ul>
+<h3 id="menu-xem">Menu Xem</h3>
+<ul>
+<li><code>F5</code>: Đọc lại tài liệu hiện tại từ đĩa. Hoạt động cho dù “Tự động tải lại các tài liệu đã thay đổi” có được bật trong Cài đặt hay không.</li>
+<li><code>Ctrl+Alt+W</code>: Bật/tắt tự động ngắt dòng.</li>
+<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, tức là Control+Command+F): Bật/tắt toàn màn hình.</li>
+<li><code>Ctrl+Shift+V</code>: Mở nội dung hiện tại trong Chế độ xem web.</li>
+<li><code>Ctrl+U</code>: Xem nguồn tài liệu trong một tab mới.</li>
+</ul>
+<h3 id="menu-điều-hướng">Menu Điều hướng</h3>
+<ul>
+<li><code>Ctrl+T</code>: Hiển thị mục lục.</li>
+<li><code>F7</code>: Hiển thị danh sách phần tử.</li>
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Đi đến dòng.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Đi đến phần trăm.</li>
 <li><code>Ctrl+P</code>: Đi đến trang (khi được tài liệu hiện tại hỗ trợ).</li>
@@ -210,16 +233,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>1</code> đến <code>6</code>: Tiêu đề tiếp theo ở mức 1-6.</li>
 <li><code>Shift+P</code>: Trang trước.</li>
 <li><code>P</code>: Trang tiếp theo.</li>
-<li><code>Shift+B</code>: Dấu trang trước.</li>
-<li><code>B</code>: Dấu trang tiếp theo.</li>
-<li><code>/</code>: Đặt dấu trang tạm thời của bạn.</li>
-<li><code>\</code>: Nhảy đến dấu trang tạm thời của bạn.</li>
-<li><code>Shift+N</code>: Ghi chú trước.</li>
-<li><code>N</code>: Ghi chú tiếp theo.</li>
-<li><code>Ctrl+B</code>: Nhảy đến tất cả dấu trang và ghi chú.</li>
-<li><code>Ctrl+Alt+B</code>: Nhảy đến dấu trang chỉ.</li>
-<li><code>Ctrl+Alt+M</code>: Nhảy đến ghi chú chỉ.</li>
-<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, tức là phím Control vật lý chứ không phải Cmd): Xem văn bản ghi chú ở vị trí hiện tại.</li>
 <li><code>Shift+K</code>: Liên kết trước.</li>
 <li><code>K</code>: Liên kết tiếp theo.</li>
 <li><code>Shift+G</code>: Hình ảnh trước.</li>
@@ -239,21 +252,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>: Đi đến đầu vùng chứa hiện tại (danh sách hoặc bảng).</li>
 <li><code>,</code>: Đi quá cuối vùng chứa hiện tại (danh sách hoặc bảng).</li>
 </ul>
-<h3 id="menu-công-cụ">Menu Công cụ</h3>
+<h3 id="menu-dấu-trang">Menu Dấu trang</h3>
 <ul>
-<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, tức là phím Control vật lý chứ không phải Cmd): Hiển thị số từ cho tài liệu hiện tại.</li>
-<li><code>Ctrl+I</code>: Hiển thị thông tin tài liệu.</li>
-<li><code>Ctrl+T</code>: Hiển thị mục lục.</li>
-<li><code>F7</code>: Hiển thị danh sách phần tử.</li>
-<li><code>Ctrl+Shift+C</code>: Mở thư mục chứa.</li>
-<li><code>Ctrl+Shift+V</code>: Mở nội dung hiện tại trong Web View.</li>
-<li><code>Ctrl+U</code>: Xem nguồn tài liệu trong một tab mới.</li>
-<li><code>Ctrl+Shift+E</code>: Xuất dữ liệu tài liệu (<code>.paperback</code>).</li>
-<li><code>Ctrl+Shift+I</code>: Nhập dữ liệu tài liệu (<code>.paperback</code>).</li>
-<li><code>Ctrl+E</code>: Xuất tài liệu hiện tại sang văn bản thuần.</li>
 <li><code>Ctrl+Shift+B</code>: Bật/tắt dấu trang ở lựa chọn/con trỏ hiện tại.</li>
 <li><code>Ctrl+Shift+N</code>: Thêm hoặc chỉnh sửa ghi chú dấu trang ở lựa chọn/con trỏ hiện tại.</li>
-<li><code>Ctrl+Alt+W</code>: Bật/tắt tự động ngắt dòng.</li>
+<li><code>Shift+B</code>: Dấu trang trước.</li>
+<li><code>B</code>: Dấu trang tiếp theo.</li>
+<li><code>Shift+N</code>: Ghi chú trước.</li>
+<li><code>N</code>: Ghi chú tiếp theo.</li>
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, tức là phím Control vật lý chứ không phải Cmd): Xem văn bản ghi chú ở vị trí hiện tại.</li>
+<li><code>Ctrl+B</code>: Nhảy đến tất cả dấu trang và ghi chú.</li>
+<li><code>Ctrl+Alt+B</code>: Nhảy đến dấu trang chỉ.</li>
+<li><code>Ctrl+Alt+M</code>: Nhảy đến ghi chú chỉ.</li>
+<li><code>/</code>: Đặt dấu trang tạm thời của bạn.</li>
+<li><code>\</code>: Nhảy đến dấu trang tạm thời của bạn.</li>
+</ul>
+<h3 id="menu-âm-thanh">Menu Âm Thanh</h3>
+<ul>
 <li><code>Ctrl+Space</code> (macOS: <code>RawCtrl+Space</code>, tức là phím Control vật lý, vì Cmd+Space mở Spotlight): Phát/tạm dừng kể chuyện âm thanh.</li>
 <li><code>'</code>: Tìm kiếm kể chuyện âm thanh về phía trước.</li>
 <li><code>;</code>: Tìm kiếm kể chuyện âm thanh về phía sau.</li>
@@ -261,13 +276,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: Giảm lượng tìm kiếm âm thanh.</li>
 <li><code>Ctrl+Shift+.</code>: Tăng tốc độ kể chuyện âm thanh.</li>
 <li><code>Ctrl+Shift+,</code>: Giảm tốc độ kể chuyện âm thanh.</li>
-<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, tức là Control+Command+F): Bật/tắt toàn màn hình.</li>
-<li><code>Ctrl+,</code>: Mở Cài đặt (macOS: trong menu ứng dụng).</li>
-<li><code>Ctrl+Shift+S</code>: Bật/tắt bộ hẹn giờ ngủ.</li>
+</ul>
+<h3 id="menu-công-cụ">Menu Công Cụ</h3>
+<ul>
+<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, tức là phím Control vật lý chứ không phải Cmd): Hiển thị số từ cho tài liệu hiện tại.</li>
+<li><code>Ctrl+I</code>: Hiển thị thông tin tài liệu.</li>
 <li><code>Ctrl+Shift+O</code>: Nhận diện một loạt các trang PDF được quét bằng OCR.</li>
-<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Đánh dấu đầu lựa chọn, để mọi thứ từ đây đến nơi bạn đến có thể được sao chép cùng một lúc.</li>
-<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Sao chép mọi thứ từ đầu lựa chọn được đánh dấu đến vị trí hiện tại.</li>
-<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Nhảy lại đầu lựa chọn được đánh dấu, để lại dấu tại chỗ.</li>
+<li><code>Ctrl+Shift+S</code>: Bật/tắt bộ hẹn giờ ngủ.</li>
+<li><code>Ctrl+,</code>: Mở Cài đặt (macOS: trong menu ứng dụng).</li>
 </ul>
 <h3 id="menu-trợ-giúp">Menu Trợ giúp</h3>
 <ul>

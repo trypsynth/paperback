@@ -72,8 +72,12 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#derzeit-unterstützte-dateitypen">Derzeit unterstützte Dateitypen</a></li>
 <li><a href="#tastenkombinationen">Tastenkombinationen</a><ul>
 <li><a href="#menü-datei">Menü „Datei”</a></li>
+<li><a href="#menü-bearbeiten">Menü „Bearbeiten”</a></li>
+<li><a href="#menü-ansicht">Menü „Ansicht”</a></li>
 <li><a href="#menü-gehe-zu">Menü „Gehe zu”</a></li>
-<li><a href="#menü-extras">Menü „Extras”</a></li>
+<li><a href="#menü-lesezeichen">Menü „Lesezeichen”</a></li>
+<li><a href="#menü-audio">Menü „Audio”</a></li>
+<li><a href="#menü-werkzeuge">Menü „Werkzeuge”</a></li>
 <li><a href="#menü-hilfe">Menü „Hilfe”</a></li>
 <li><a href="#zusätzliche-tastenkombinationen-für-die-dokumentanzeige">Zusätzliche Tastenkombinationen für die Dokumentanzeige</a></li>
 </ul>
@@ -143,7 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Liest gescannte PDF-Seiten mit der in Windows und macOS integrierten Texterkennung.</li>
 <li>Lesezeichen und Notizen, damit du deine Position markieren und später dorthin zurückkehren kannst.</li>
 <li>Jede Tastenkombination kann geändert werden.</li>
-<li>Kommt mit <code>pb</code>, einem Befehlszeilentool, das beliebige unterstützte Dokumente in HTML, Markdown oder einfachen Text konvertiert.</li>
+<li>Kommt mit <code>pb</code>, einem Befehlszeilentool, das beliebige unterstützte Dokumente in HTML, Markdown oder einfachen Text konvertiert. Es verarbeitet beliebig viele Dokumente, expandiert <code>*.pdf</code> und ähnliches selbst, sodass dieselbe Befehlszeile auf Windows funktioniert, und kann eine Datei pro Dokument in einen Ordner schreiben.</li>
 </ul>
 <h2 id="bildschirmleser-kompatibilität">Bildschirmleser-Kompatibilität</h2>
 <p>Paperback funktioniert gut mit allen gängigen Bildschirmlesern. Es gibt jedoch zwei bekannte Probleme für JAWS-Nutzer.</p>
@@ -187,15 +191,34 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Schließt das aktuelle Dokument.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Schließt alle offenen Dokumente.</li>
 <li><code>Ctrl+Shift+T</code>: Öffnet das zuletzt geschlossene Dokument erneut.</li>
-<li><code>F5</code>: Liest das aktuelle Dokument von der Festplatte neu ein. Funktioniert unabhängig davon, ob „Geänderte Dokumente automatisch neu laden” in den Einstellungen aktiviert ist.</li>
 <li><code>Ctrl+R</code>: Zeigt den Dialog „Alle Dokumente” an (aus „Zuletzt verwendet”).</li>
+<li><code>Ctrl+Shift+C</code>: Enthaltenden Ordner öffnen.</li>
+<li><code>Ctrl+Shift+E</code>: Dokumentdaten exportieren (<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Dokumentdaten importieren (<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Aktuelles Dokument als Klartext exportieren.</li>
 <li><code>Ctrl+Q</code>: Beendet Paperback (nur Windows; auf macOS befindet sich diese Option stattdessen im App-Menü).</li>
 </ul>
-<h3 id="menü-gehe-zu">Menü „Gehe zu”</h3>
+<h3 id="menü-bearbeiten">Menü „Bearbeiten”</h3>
 <ul>
 <li><code>Ctrl+F</code>: Suchen-Dialog anzeigen.</li>
 <li><code>F3</code> (macOS: <code>Cmd+G</code>): Nächstes Ergebnis suchen.</li>
 <li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Vorheriges Ergebnis suchen.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Markiere den Anfang einer Auswahl, sodass alles von hier bis dorthin in einem Zug kopiert werden kann.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Alles vom markierten Anfang der Auswahl bis zur aktuellen Position kopieren.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Springe zurück zum markierten Anfang der Auswahl und lasse die Markierung bestehen.</li>
+</ul>
+<h3 id="menü-ansicht">Menü „Ansicht”</h3>
+<ul>
+<li><code>F5</code>: Liest das aktuelle Dokument von der Festplatte neu ein. Funktioniert unabhängig davon, ob „Geänderte Dokumente automatisch neu laden” in den Einstellungen aktiviert ist.</li>
+<li><code>Ctrl+Alt+W</code>: Wortumbruch umschalten.</li>
+<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, d. h. Strg+Cmd+F): Vollbild umschalten.</li>
+<li><code>Ctrl+Shift+V</code>: Aktuellen Inhalt in der Webansicht öffnen.</li>
+<li><code>Ctrl+U</code>: Dokumentquelle in einem neuen Tab anzeigen.</li>
+</ul>
+<h3 id="menü-gehe-zu">Menü „Gehe zu”</h3>
+<ul>
+<li><code>Ctrl+T</code>: Inhaltsverzeichnis anzeigen.</li>
+<li><code>F7</code>: Elementliste anzeigen.</li>
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Zur Zeile gehen.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Zum Prozentsatz gehen.</li>
 <li><code>Ctrl+P</code>: Zur Seite gehen (wenn vom aktuellen Dokument unterstützt).</li>
@@ -210,16 +233,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>1</code> bis <code>6</code>: Nächste Überschrift der Ebene 1–6.</li>
 <li><code>Shift+P</code>: Vorherige Seite.</li>
 <li><code>P</code>: Nächste Seite.</li>
-<li><code>Shift+B</code>: Vorheriges Lesezeichen.</li>
-<li><code>B</code>: Nächstes Lesezeichen.</li>
-<li><code>/</code>: Temporäres Lesezeichen setzen.</li>
-<li><code>\</code>: Zum temporären Lesezeichen springen.</li>
-<li><code>Shift+N</code>: Vorherige Notiz.</li>
-<li><code>N</code>: Nächste Notiz.</li>
-<li><code>Ctrl+B</code>: Zu allen Lesezeichen und Notizen springen.</li>
-<li><code>Ctrl+Alt+B</code>: Nur zu Lesezeichen springen.</li>
-<li><code>Ctrl+Alt+M</code>: Nur zu Notizen springen.</li>
-<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, d. h. die physische Steuerungstaste statt Cmd): Notiztext an der aktuellen Position anzeigen.</li>
 <li><code>Shift+K</code>: Vorheriger Link.</li>
 <li><code>K</code>: Nächster Link.</li>
 <li><code>Shift+G</code>: Vorheriges Bild.</li>
@@ -239,21 +252,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>: Zum Anfang des aktuellen Containers (Liste oder Tabelle) gehen.</li>
 <li><code>,</code>: Über das Ende des aktuellen Containers (Liste oder Tabelle) hinausgehen.</li>
 </ul>
-<h3 id="menü-extras">Menü „Extras”</h3>
+<h3 id="menü-lesezeichen">Menü „Lesezeichen”</h3>
 <ul>
-<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, d. h. die physische Strg-Taste statt Cmd): Wortanzahl für das aktuelle Dokument anzeigen.</li>
-<li><code>Ctrl+I</code>: Dokumentinfo anzeigen.</li>
-<li><code>Ctrl+T</code>: Inhaltsverzeichnis anzeigen.</li>
-<li><code>F7</code>: Elementeliste anzeigen.</li>
-<li><code>Ctrl+Shift+C</code>: Enthaltenden Ordner öffnen.</li>
-<li><code>Ctrl+Shift+V</code>: Aktuellen Inhalt in der Webansicht öffnen.</li>
-<li><code>Ctrl+U</code>: Dokumentquelle in einem neuen Tab anzeigen.</li>
-<li><code>Ctrl+Shift+E</code>: Dokumentdaten exportieren (<code>.paperback</code>).</li>
-<li><code>Ctrl+Shift+I</code>: Dokumentdaten importieren (<code>.paperback</code>).</li>
-<li><code>Ctrl+E</code>: Aktuelles Dokument als Klartext exportieren.</li>
 <li><code>Ctrl+Shift+B</code>: Lesezeichen bei der aktuellen Auswahl/dem Cursor umschalten.</li>
 <li><code>Ctrl+Shift+N</code>: Lesezeichennotiz bei der aktuellen Auswahl/dem Cursor hinzufügen oder bearbeiten.</li>
-<li><code>Ctrl+Alt+W</code>: Zeilenumbruch umschalten.</li>
+<li><code>Shift+B</code>: Vorheriges Lesezeichen.</li>
+<li><code>B</code>: Nächstes Lesezeichen.</li>
+<li><code>Shift+N</code>: Vorherige Notiz.</li>
+<li><code>N</code>: Nächste Notiz.</li>
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, d. h. die physische Strg-Taste statt Cmd): Notiztext an der aktuellen Position anzeigen.</li>
+<li><code>Ctrl+B</code>: Zu allen Lesezeichen und Notizen springen.</li>
+<li><code>Ctrl+Alt+B</code>: Nur zu Lesezeichen springen.</li>
+<li><code>Ctrl+Alt+M</code>: Nur zu Notizen springen.</li>
+<li><code>/</code>: Temporäres Lesezeichen setzen.</li>
+<li><code>\</code>: Zum temporären Lesezeichen springen.</li>
+</ul>
+<h3 id="menü-audio">Menü „Audio”</h3>
+<ul>
 <li><code>Ctrl+Space</code> (macOS: <code>RawCtrl+Space</code>, d. h. die physische Strg-Taste, da Cmd+Space Spotlight öffnet): Audioerzählung abspielen/pausieren.</li>
 <li><code>'</code>: Audioerzählung vorwärts spulen.</li>
 <li><code>;</code>: Audioerzählung rückwärts spulen.</li>
@@ -261,13 +276,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: Spulmenge der Audioerzählung verringern.</li>
 <li><code>Ctrl+Shift+.</code>: Audioerzählung beschleunigen.</li>
 <li><code>Ctrl+Shift+,</code>: Audioerzählung verlangsamen.</li>
-<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, d. h. Strg+Cmd+F): Vollbild umschalten.</li>
-<li><code>Ctrl+,</code>: Einstellungen öffnen (macOS: im App-Menü).</li>
-<li><code>Ctrl+Shift+S</code>: Schlaf-Timer umschalten.</li>
+</ul>
+<h3 id="menü-werkzeuge">Menü „Werkzeuge”</h3>
+<ul>
+<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, d. h. die physische Strg-Taste statt Cmd): Wortanzahl für das aktuelle Dokument anzeigen.</li>
+<li><code>Ctrl+I</code>: Dokumentinfo anzeigen.</li>
 <li><code>Ctrl+Shift+O</code>: Einen Bereich gescannter PDF-Seiten mit Texterkennung erkennen.</li>
-<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Markiere den Anfang einer Auswahl, sodass alles von hier bis dorthin in einem Zug kopiert werden kann.</li>
-<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Alles vom markierten Anfang der Auswahl bis zur aktuellen Position kopieren.</li>
-<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Springe zurück zum markierten Anfang der Auswahl und lasse die Markierung bestehen.</li>
+<li><code>Ctrl+Shift+S</code>: Schlaf-Timer umschalten.</li>
+<li><code>Ctrl+,</code>: Einstellungen öffnen (macOS: im App-Menü).</li>
 </ul>
 <h3 id="menü-hilfe">Menü „Hilfe”</h3>
 <ul>

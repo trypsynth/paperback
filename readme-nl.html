@@ -72,7 +72,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#momenteel-ondersteunde-bestandstypen">Momenteel ondersteunde bestandstypen</a></li>
 <li><a href="#sneltoetsen">Sneltoetsen</a><ul>
 <li><a href="#menu-bestand">Menu Bestand</a></li>
+<li><a href="#menu-bewerken">Menu Bewerken</a></li>
+<li><a href="#menu-weergave">Menu Weergave</a></li>
 <li><a href="#menu-ga">Menu Ga</a></li>
+<li><a href="#menu-bladwijzers">Menu Bladwijzers</a></li>
+<li><a href="#menu-audio">Menu Audio</a></li>
 <li><a href="#menu-extra">Menu Extra</a></li>
 <li><a href="#menu-help">Menu Help</a></li>
 <li><a href="#aanvullende-toetsen-voor-de-documentweergave">Aanvullende toetsen voor de documentweergave</a></li>
@@ -143,7 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Leest gescande PDF-pagina’s met de OCR die in Windows en macOS is ingebouwd.</li>
 <li>Bladwijzers en notities, zodat je kunt markeren waar je gebleven bent en er later naar terug kunt gaan.</li>
 <li>Elke toetsenbordsneltoets kan worden aangepast.</li>
-<li>Wordt geleverd met <code>pb</code>, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst.</li>
+<li>Wordt geleverd met <code>pb</code>, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, vouwt <code>*.pdf</code> enzovoort zelf uit zodat dezelfde opdracht op Windows werkt, en kan één bestand per document naar een map schrijven.</li>
 </ul>
 <h2 id="schermlezercompatibiliteit">Schermlezercompatibiliteit</h2>
 <p>Paperback werkt goed met alle belangrijke schermlezers. Er zijn echter twee bekende problemen voor JAWS-gebruikers.</p>
@@ -187,15 +191,34 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Het huidige document sluiten.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Alle geopende documenten sluiten.</li>
 <li><code>Ctrl+Shift+T</code>: Het laatst gesloten document heropenen.</li>
-<li><code>F5</code>: Het huidige document opnieuw van schijf inlezen. Werkt ongeacht of “Automatisch gewijzigde documenten opnieuw laden” in Instellingen is ingeschakeld.</li>
 <li><code>Ctrl+R</code>: Het venster “Alle documenten” tonen (vanuit Recente documenten).</li>
+<li><code>Ctrl+Shift+C</code>: Bovenliggende map openen.</li>
+<li><code>Ctrl+Shift+E</code>: Documentgegevens exporteren (<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Documentgegevens importeren (<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Het huidige document exporteren naar platte tekst.</li>
 <li><code>Ctrl+Q</code>: Afsluiten (alleen Windows; op macOS staat dit in het appmenu).</li>
 </ul>
-<h3 id="menu-ga">Menu Ga</h3>
+<h3 id="menu-bewerken">Menu Bewerken</h3>
 <ul>
 <li><code>Ctrl+F</code>: Het zoekvenster tonen.</li>
 <li><code>F3</code> (macOS: <code>Cmd+G</code>): Volgende zoeken.</li>
 <li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Vorige zoeken.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Het begin van een selectie markeren, zodat alles van hier tot waar je ook uitkomt in één keer kan worden gekopieerd.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Alles van het gemarkeerde begin van de selectie tot de huidige positie kopiëren.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Terugspringen naar het gemarkeerde begin van de selectie, waarbij de markering blijft staan.</li>
+</ul>
+<h3 id="menu-weergave">Menu Weergave</h3>
+<ul>
+<li><code>F5</code>: Het huidige document opnieuw van schijf inlezen. Werkt ongeacht of “Automatisch gewijzigde documenten opnieuw laden” in Instellingen is ingeschakeld.</li>
+<li><code>Ctrl+Alt+W</code>: Automatische terugloop in-/uitschakelen.</li>
+<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, oftewel Control+Command+F): Volledig scherm in-/uitschakelen.</li>
+<li><code>Ctrl+Shift+V</code>: De huidige inhoud openen in Webweergave.</li>
+<li><code>Ctrl+U</code>: De documentbron in een nieuw tabblad weergeven.</li>
+</ul>
+<h3 id="menu-ga">Menu Ga</h3>
+<ul>
+<li><code>Ctrl+T</code>: Inhoudsopgave tonen.</li>
+<li><code>F7</code>: Elementenlijst tonen.</li>
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Ga naar regel.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Ga naar percentage.</li>
 <li><code>Ctrl+P</code>: Ga naar pagina (indien ondersteund door het huidige document).</li>
@@ -210,16 +233,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>1</code> t/m <code>6</code>: Volgende kop op niveau 1-6.</li>
 <li><code>Shift+P</code>: Vorige pagina.</li>
 <li><code>P</code>: Volgende pagina.</li>
-<li><code>Shift+B</code>: Vorige bladwijzer.</li>
-<li><code>B</code>: Volgende bladwijzer.</li>
-<li><code>/</code>: Je tijdelijke bladwijzer instellen.</li>
-<li><code>\</code>: Naar je tijdelijke bladwijzer springen.</li>
-<li><code>Shift+N</code>: Vorige notitie.</li>
-<li><code>N</code>: Volgende notitie.</li>
-<li><code>Ctrl+B</code>: Naar alle bladwijzers en notities springen.</li>
-<li><code>Ctrl+Alt+B</code>: Alleen naar bladwijzers springen.</li>
-<li><code>Ctrl+Alt+M</code>: Alleen naar notities springen.</li>
-<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, oftewel de fysieke Control-toets in plaats van Cmd): De notitietekst op de huidige positie tonen.</li>
 <li><code>Shift+K</code>: Vorige link.</li>
 <li><code>K</code>: Volgende link.</li>
 <li><code>Shift+G</code>: Vorige afbeelding.</li>
@@ -239,21 +252,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>: Ga naar het begin van de huidige container (lijst of tabel).</li>
 <li><code>,</code>: Ga voorbij het einde van de huidige container (lijst of tabel).</li>
 </ul>
-<h3 id="menu-extra">Menu Extra</h3>
+<h3 id="menu-bladwijzers">Menu Bladwijzers</h3>
 <ul>
-<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, oftewel de fysieke Control-toets in plaats van Cmd): Woordenaantal van het huidige document tonen.</li>
-<li><code>Ctrl+I</code>: Documentinformatie tonen.</li>
-<li><code>Ctrl+T</code>: Inhoudsopgave tonen.</li>
-<li><code>F7</code>: Elementenlijst tonen.</li>
-<li><code>Ctrl+Shift+C</code>: Bovenliggende map openen.</li>
-<li><code>Ctrl+Shift+V</code>: De huidige inhoud openen in webweergave.</li>
-<li><code>Ctrl+U</code>: De documentbron in een nieuw tabblad weergeven.</li>
-<li><code>Ctrl+Shift+E</code>: Documentgegevens exporteren (<code>.paperback</code>).</li>
-<li><code>Ctrl+Shift+I</code>: Documentgegevens importeren (<code>.paperback</code>).</li>
-<li><code>Ctrl+E</code>: Het huidige document exporteren naar platte tekst.</li>
 <li><code>Ctrl+Shift+B</code>: Bladwijzer in-/uitschakelen op de huidige selectie/cursor.</li>
 <li><code>Ctrl+Shift+N</code>: Bladwijzernotitie toevoegen of bewerken op de huidige selectie/cursor.</li>
-<li><code>Ctrl+Alt+W</code>: Automatische terugloop in-/uitschakelen.</li>
+<li><code>Shift+B</code>: Vorige bladwijzer.</li>
+<li><code>B</code>: Volgende bladwijzer.</li>
+<li><code>Shift+N</code>: Vorige notitie.</li>
+<li><code>N</code>: Volgende notitie.</li>
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, oftewel de fysieke Control-toets in plaats van Cmd): De notitietekst op de huidige positie bekijken.</li>
+<li><code>Ctrl+B</code>: Naar alle bladwijzers en notities springen.</li>
+<li><code>Ctrl+Alt+B</code>: Alleen naar bladwijzers springen.</li>
+<li><code>Ctrl+Alt+M</code>: Alleen naar notities springen.</li>
+<li><code>/</code>: Je tijdelijke bladwijzer instellen.</li>
+<li><code>\</code>: Naar je tijdelijke bladwijzer springen.</li>
+</ul>
+<h3 id="menu-audio">Menu Audio</h3>
+<ul>
 <li><code>Ctrl+Spatie</code> (macOS: <code>RawCtrl+Spatie</code>, oftewel de fysieke Control-toets, omdat Cmd+Spatie Spotlight opent): Audio afspelen/pauzeren.</li>
 <li><code>'</code>: Audio vooruitspoelen.</li>
 <li><code>;</code>: Audio terugspoelen.</li>
@@ -261,13 +276,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: De audiospoelstap verkleinen.</li>
 <li><code>Ctrl+Shift+.</code>: Audio sneller afspelen.</li>
 <li><code>Ctrl+Shift+,</code>: Audio langzamer afspelen.</li>
-<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, oftewel Control+Command+F): Volledig scherm in-/uitschakelen.</li>
-<li><code>Ctrl+,</code>: Instellingen openen (macOS: in het appmenu).</li>
-<li><code>Ctrl+Shift+S</code>: Slaaptimer in-/uitschakelen.</li>
+</ul>
+<h3 id="menu-extra">Menu Extra</h3>
+<ul>
+<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, oftewel de fysieke Control-toets in plaats van Cmd): Woordenaantal van het huidige document tonen.</li>
+<li><code>Ctrl+I</code>: Documentinformatie tonen.</li>
 <li><code>Ctrl+Shift+O</code>: Een reeks gescande PDF-pagina’s herkennen met OCR.</li>
-<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Het begin van een selectie markeren, zodat alles van hier tot waar je ook uitkomt in één keer kan worden gekopieerd.</li>
-<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Alles van het gemarkeerde begin van de selectie tot de huidige positie kopiëren.</li>
-<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Terugspringen naar het gemarkeerde begin van de selectie, waarbij de markering blijft staan.</li>
+<li><code>Ctrl+Shift+S</code>: Slaaptimer in-/uitschakelen.</li>
+<li><code>Ctrl+,</code>: Instellingen openen (macOS: in het appmenu).</li>
 </ul>
 <h3 id="menu-help">Menu Help</h3>
 <ul>

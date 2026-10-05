@@ -72,7 +72,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#types-de-fichiers-actuellement-pris-en-charge">Types de fichiers actuellement pris en charge</a></li>
 <li><a href="#raccourcis-clavier">Raccourcis clavier</a><ul>
 <li><a href="#menu-fichier">Menu Fichier</a></li>
+<li><a href="#menu-modifier">Menu Modifier</a></li>
+<li><a href="#menu-affichage">Menu Affichage</a></li>
 <li><a href="#menu-aller">Menu Aller</a></li>
+<li><a href="#menu-signets">Menu Signets</a></li>
+<li><a href="#menu-audio">Menu Audio</a></li>
 <li><a href="#menu-outils">Menu Outils</a></li>
 <li><a href="#menu-aide">Menu Aide</a></li>
 <li><a href="#touches-supplémentaires-de-la-vue-des-documents">Touches supplémentaires de la vue des documents</a></li>
@@ -143,7 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Lit les pages PDF numérisées avec l’OCR intégré à Windows et macOS.</li>
 <li>Signets et notes, pour que vous puissiez marquer votre place et y revenir.</li>
 <li>Chaque raccourci clavier peut être modifié.</li>
-<li>Livré avec <code>pb</code>, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut.</li>
+<li>Livré avec <code>pb</code>, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut. Il accepte autant de documents que vous lui en fournissez, développe <code>*.pdf</code> et les fichiers similaires de lui-même pour que la même ligne de commande fonctionne sur Windows, et peut écrire un fichier par document dans un dossier.</li>
 </ul>
 <h2 id="compatibilité-avec-les-lecteurs-décran">Compatibilité avec les lecteurs d’écran</h2>
 <p>Paperback fonctionne bien avec tous les principaux lecteurs d’écran. Il existe cependant deux problèmes connus pour les utilisateurs de JAWS.</p>
@@ -187,15 +191,34 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+F4</code> (macOS : <code>Cmd+W</code>) : Fermer le document actif.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS : <code>Cmd+Shift+W</code>) : Fermer tous les documents ouverts.</li>
 <li><code>Ctrl+Shift+T</code> : Rouvrir le dernier document fermé.</li>
-<li><code>F5</code> : Relire le document actif depuis le disque. Fonctionne que « Recharger automatiquement les documents modifiés » soit activé ou non dans Paramètres.</li>
 <li><code>Ctrl+R</code> : Afficher la boîte de dialogue « Tous les documents » (à partir des Documents récents).</li>
+<li><code>Ctrl+Shift+C</code> : Ouvrir le dossier contenant.</li>
+<li><code>Ctrl+Shift+E</code> : Exporter les données du document (<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code> : Importer les données du document (<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code> : Exporter le document actif en texte brut.</li>
 <li><code>Ctrl+Q</code> : Quitter (Windows uniquement ; sur macOS, cette option se trouve dans le menu de l’application).</li>
 </ul>
-<h3 id="menu-aller">Menu Aller</h3>
+<h3 id="menu-modifier">Menu Modifier</h3>
 <ul>
 <li><code>Ctrl+F</code> : Afficher la boîte de dialogue Rechercher.</li>
 <li><code>F3</code> (macOS : <code>Cmd+G</code>) : Rechercher le suivant.</li>
 <li><code>Shift+F3</code> (macOS : <code>Cmd+Shift+G</code>) : Rechercher le précédent.</li>
+<li><code>Alt+F9</code> (macOS : <code>Cmd+F9</code>) : Marquer le début d’une sélection, de sorte que tout ce qui va d’ici à votre position actuelle puisse être copié en une seule fois.</li>
+<li><code>Alt+F10</code> (macOS : <code>Cmd+F10</code>) : Copier tout du début marqué de la sélection à la position actuelle.</li>
+<li><code>Alt+Shift+F9</code> (macOS : <code>Cmd+Shift+F9</code>) : Revenir au début marqué de la sélection, en laissant la marque en place.</li>
+</ul>
+<h3 id="menu-affichage">Menu Affichage</h3>
+<ul>
+<li><code>F5</code> : Relire le document actif depuis le disque. Fonctionne que « Recharger automatiquement les documents modifiés » soit activé ou non dans Paramètres.</li>
+<li><code>Ctrl+Alt+W</code> : Basculer le retour à la ligne automatique.</li>
+<li><code>F11</code> (macOS : <code>RawCtrl+Ctrl+F</code>, c’est-à-dire Control+Command+F) : Basculer le mode plein écran.</li>
+<li><code>Ctrl+Shift+V</code> : Ouvrir le contenu actuel dans Vue Web.</li>
+<li><code>Ctrl+U</code> : Afficher la source du document dans un nouvel onglet.</li>
+</ul>
+<h3 id="menu-aller">Menu Aller</h3>
+<ul>
+<li><code>Ctrl+T</code> : Afficher la table des matières.</li>
+<li><code>F7</code> : Afficher la liste des éléments.</li>
 <li><code>Ctrl+G</code> (macOS : <code>Cmd+L</code>) : Aller à la ligne.</li>
 <li><code>Ctrl+Shift+G</code> (macOS : <code>Cmd+Shift+L</code>) : Aller au pourcentage.</li>
 <li><code>Ctrl+P</code> : Aller à la page (si supporté par le document actif).</li>
@@ -210,16 +233,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>1</code> à <code>6</code> : Titre suivant de niveau 1-6.</li>
 <li><code>Shift+P</code> : Page précédente.</li>
 <li><code>P</code> : Page suivante.</li>
-<li><code>Shift+B</code> : Signet précédent.</li>
-<li><code>B</code> : Signet suivant.</li>
-<li><code>/</code> : Définir votre signet temporaire.</li>
-<li><code>\</code> : Accéder à votre signet temporaire.</li>
-<li><code>Shift+N</code> : Note précédente.</li>
-<li><code>N</code> : Note suivante.</li>
-<li><code>Ctrl+B</code> : Aller à tous les signets et notes.</li>
-<li><code>Ctrl+Alt+B</code> : Aller aux signets uniquement.</li>
-<li><code>Ctrl+Alt+M</code> : Aller aux notes uniquement.</li>
-<li><code>Ctrl+Shift+W</code> (macOS : <code>RawCtrl+Shift+W</code>, c’est-à-dire la touche Control physique plutôt que Cmd) : Afficher le texte de la note à la position actuelle.</li>
 <li><code>Shift+K</code> : Lien précédent.</li>
 <li><code>K</code> : Lien suivant.</li>
 <li><code>Shift+G</code> : Image précédente.</li>
@@ -239,21 +252,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code> : Aller au début du conteneur actif (liste ou tableau).</li>
 <li><code>,</code> : Dépasser la fin du conteneur actif (liste ou tableau).</li>
 </ul>
-<h3 id="menu-outils">Menu Outils</h3>
+<h3 id="menu-signets">Menu Signets</h3>
 <ul>
-<li><code>Ctrl+W</code> (macOS : <code>RawCtrl+W</code>, c’est-à-dire la touche Control physique plutôt que Cmd) : Afficher le nombre de mots du document actif.</li>
-<li><code>Ctrl+I</code> : Afficher les informations du document.</li>
-<li><code>Ctrl+T</code> : Afficher la table des matières.</li>
-<li><code>F7</code> : Afficher la liste des éléments.</li>
-<li><code>Ctrl+Shift+C</code> : Ouvrir le dossier contenant.</li>
-<li><code>Ctrl+Shift+V</code> : Ouvrir le contenu actuel dans la Vue Web.</li>
-<li><code>Ctrl+U</code> : Afficher la source du document dans un nouvel onglet.</li>
-<li><code>Ctrl+Shift+E</code> : Exporter les données du document (<code>.paperback</code>).</li>
-<li><code>Ctrl+Shift+I</code> : Importer les données du document (<code>.paperback</code>).</li>
-<li><code>Ctrl+E</code> : Exporter le document actif en texte brut.</li>
 <li><code>Ctrl+Shift+B</code> : Basculer le signet à la sélection/position du curseur actuelle.</li>
 <li><code>Ctrl+Shift+N</code> : Ajouter ou éditer une note de signet à la sélection/position du curseur actuelle.</li>
-<li><code>Ctrl+Alt+W</code> : Basculer le retour à la ligne automatique.</li>
+<li><code>Shift+B</code> : Signet précédent.</li>
+<li><code>B</code> : Signet suivant.</li>
+<li><code>Shift+N</code> : Note précédente.</li>
+<li><code>N</code> : Note suivante.</li>
+<li><code>Ctrl+Shift+W</code> (macOS : <code>RawCtrl+Shift+W</code>, c’est-à-dire la touche Control physique plutôt que Cmd) : Afficher le texte de la note à la position actuelle.</li>
+<li><code>Ctrl+B</code> : Aller à tous les signets et notes.</li>
+<li><code>Ctrl+Alt+B</code> : Aller aux signets uniquement.</li>
+<li><code>Ctrl+Alt+M</code> : Aller aux notes uniquement.</li>
+<li><code>/</code> : Définir votre signet temporaire.</li>
+<li><code>\</code> : Accéder à votre signet temporaire.</li>
+</ul>
+<h3 id="menu-audio">Menu Audio</h3>
+<ul>
 <li><code>Ctrl+Space</code> (macOS : <code>RawCtrl+Space</code>, c’est-à-dire la touche Control physique, car Cmd+Space ouvre Spotlight) : Lecture/pause de la narration audio.</li>
 <li><code>'</code> : Avancer rapidement dans la narration audio.</li>
 <li><code>;</code> : Reculer rapidement dans la narration audio.</li>
@@ -261,13 +276,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code> : Diminuer le montant de l’avance rapide audio.</li>
 <li><code>Ctrl+Shift+.</code> : Accélérer la narration audio.</li>
 <li><code>Ctrl+Shift+,</code> : Ralentir la narration audio.</li>
-<li><code>F11</code> (macOS : <code>RawCtrl+Ctrl+F</code>, c’est-à-dire Control+Command+F) : Basculer le mode plein écran.</li>
-<li><code>Ctrl+,</code> : Ouvrir les Paramètres (macOS : dans le menu de l’application).</li>
-<li><code>Ctrl+Shift+S</code> : Basculer la minuterie de sommeil.</li>
+</ul>
+<h3 id="menu-outils">Menu Outils</h3>
+<ul>
+<li><code>Ctrl+W</code> (macOS : <code>RawCtrl+W</code>, c’est-à-dire la touche Control physique plutôt que Cmd) : Afficher le nombre de mots du document actif.</li>
+<li><code>Ctrl+I</code> : Afficher les informations du document.</li>
 <li><code>Ctrl+Shift+O</code> : Reconnaître une plage de pages PDF numérisées avec OCR.</li>
-<li><code>Alt+F9</code> (macOS : <code>Cmd+F9</code>) : Marquer le début d’une sélection, de sorte que tout ce qui va d’ici à votre position actuelle puisse être copié en une seule fois.</li>
-<li><code>Alt+F10</code> (macOS : <code>Cmd+F10</code>) : Copier tout du début marqué de la sélection à la position actuelle.</li>
-<li><code>Alt+Shift+F9</code> (macOS : <code>Cmd+Shift+F9</code>) : Revenir au début marqué de la sélection, en laissant la marque en place.</li>
+<li><code>Ctrl+Shift+S</code> : Basculer la minuterie de sommeil.</li>
+<li><code>Ctrl+,</code> : Ouvrir Paramètres (macOS : dans le menu de l’application).</li>
 </ul>
 <h3 id="menu-aide">Menu Aide</h3>
 <ul>

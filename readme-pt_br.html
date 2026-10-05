@@ -72,7 +72,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#tipos-de-arquivo-atualmente-suportados">Tipos de arquivo atualmente suportados</a></li>
 <li><a href="#atalhos-de-teclado">Atalhos de teclado</a><ul>
 <li><a href="#menu-arquivo">Menu Arquivo</a></li>
+<li><a href="#menu-editar">Menu Editar</a></li>
+<li><a href="#menu-visualização">Menu Visualização</a></li>
 <li><a href="#menu-ir">Menu Ir</a></li>
+<li><a href="#menu-favoritos">Menu Favoritos</a></li>
+<li><a href="#menu-áudio">Menu Áudio</a></li>
 <li><a href="#menu-ferramentas">Menu Ferramentas</a></li>
 <li><a href="#menu-ajuda">Menu Ajuda</a></li>
 <li><a href="#teclas-adicionais-de-visualização-de-documento">Teclas adicionais de visualização de documento</a></li>
@@ -143,7 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Lê páginas PDF digitalizadas com o OCR integrado no Windows e macOS.</li>
 <li>Marcadores e notas, para que você possa marcar seu lugar e voltar a ele.</li>
 <li>Todos os atalhos de teclado podem ser alterados.</li>
-<li>Vem com <code>pb</code>, uma ferramenta de linha de comando que converte qualquer documento suportado para HTML, Markdown ou texto simples.</li>
+<li>Vem com <code>pb</code>, uma ferramenta de linha de comando que converte qualquer documento suportado para HTML, Markdown ou texto simples. Ele aceita quantos documentos você fornecer, expande <code>*.pdf</code> e similares por conta própria para que o mesmo comando funcione no Windows, e pode escrever um arquivo por documento em uma pasta.</li>
 </ul>
 <h2 id="compatibilidade-com-leitores-de-tela">Compatibilidade com Leitores de Tela</h2>
 <p>O Paperback funciona bem com todos os principais leitores de tela. Existem, porém, dois problemas conhecidos para usuários de JAWS.</p>
@@ -187,15 +191,34 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Fechar o documento atual.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Fechar todos os documentos abertos.</li>
 <li><code>Ctrl+Shift+T</code>: Reabrir o último documento fechado.</li>
-<li><code>F5</code>: Reler o documento atual do disco. Funciona independentemente de “Recarregar automaticamente documentos alterados” estar ativado em Configurações.</li>
 <li><code>Ctrl+R</code>: Mostrar o diálogo “Todos os Documentos” (de Documentos Recentes).</li>
+<li><code>Ctrl+Shift+C</code>: Abrir pasta contendo.</li>
+<li><code>Ctrl+Shift+E</code>: Exportar dados do documento (<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Importar dados do documento (<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Exportar o documento atual para texto simples.</li>
 <li><code>Ctrl+Q</code>: Sair (apenas Windows; no macOS está no menu do aplicativo).</li>
 </ul>
-<h3 id="menu-ir">Menu Ir</h3>
+<h3 id="menu-editar">Menu Editar</h3>
 <ul>
 <li><code>Ctrl+F</code>: Mostrar o diálogo Localizar.</li>
 <li><code>F3</code> (macOS: <code>Cmd+G</code>): Localizar próximo.</li>
 <li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Localizar anterior.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Marcar o início de uma seleção, para que tudo daqui até onde você chegar possa ser copiado de uma só vez.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Copiar tudo desde o início marcado da seleção até a posição atual.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Voltar ao início marcado da seleção, deixando a marca no lugar.</li>
+</ul>
+<h3 id="menu-visualização">Menu Visualização</h3>
+<ul>
+<li><code>F5</code>: Reler o documento atual do disco. Funciona independentemente de “Recarregar automaticamente documentos alterados” estar ativado em Configurações.</li>
+<li><code>Ctrl+Alt+W</code>: Alternar quebra de linha.</li>
+<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, ou seja, Control+Command+F): Alternar para tela cheia.</li>
+<li><code>Ctrl+Shift+V</code>: Abrir conteúdo atual na Visualização da Web.</li>
+<li><code>Ctrl+U</code>: Ver a fonte do documento em uma nova aba.</li>
+</ul>
+<h3 id="menu-ir">Menu Ir</h3>
+<ul>
+<li><code>Ctrl+T</code>: Mostrar índice.</li>
+<li><code>F7</code>: Mostrar lista de elementos.</li>
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Ir para linha.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Ir para percentual.</li>
 <li><code>Ctrl+P</code>: Ir para página (quando suportado pelo documento atual).</li>
@@ -210,16 +233,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>1</code> até <code>6</code>: Próximo título no nível 1-6.</li>
 <li><code>Shift+P</code>: Página anterior.</li>
 <li><code>P</code>: Próxima página.</li>
-<li><code>Shift+B</code>: Marcador anterior.</li>
-<li><code>B</code>: Próximo marcador.</li>
-<li><code>/</code>: Definir seu marcador temporário.</li>
-<li><code>\</code>: Ir para seu marcador temporário.</li>
-<li><code>Shift+N</code>: Nota anterior.</li>
-<li><code>N</code>: Próxima nota.</li>
-<li><code>Ctrl+B</code>: Ir para todos os marcadores e notas.</li>
-<li><code>Ctrl+Alt+B</code>: Ir para marcadores apenas.</li>
-<li><code>Ctrl+Alt+M</code>: Ir para notas apenas.</li>
-<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, ou seja, a tecla Control física em vez de Cmd): Ver texto da nota na posição atual.</li>
 <li><code>Shift+K</code>: Link anterior.</li>
 <li><code>K</code>: Próximo link.</li>
 <li><code>Shift+G</code>: Imagem anterior.</li>
@@ -239,21 +252,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>: Ir para o início do contêiner atual (lista ou tabela).</li>
 <li><code>,</code>: Ir após o fim do contêiner atual (lista ou tabela).</li>
 </ul>
-<h3 id="menu-ferramentas">Menu Ferramentas</h3>
+<h3 id="menu-favoritos">Menu Favoritos</h3>
 <ul>
-<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, ou seja, a tecla Control física em vez de Cmd): Mostrar contagem de palavras do documento atual.</li>
-<li><code>Ctrl+I</code>: Mostrar informações do documento.</li>
-<li><code>Ctrl+T</code>: Mostrar tabela de conteúdos.</li>
-<li><code>F7</code>: Mostrar lista de elementos.</li>
-<li><code>Ctrl+Shift+C</code>: Abrir pasta contendo.</li>
-<li><code>Ctrl+Shift+V</code>: Abrir conteúdo atual na Visualização da Web.</li>
-<li><code>Ctrl+U</code>: Ver a fonte do documento em uma nova aba.</li>
-<li><code>Ctrl+Shift+E</code>: Exportar dados do documento (<code>.paperback</code>).</li>
-<li><code>Ctrl+Shift+I</code>: Importar dados do documento (<code>.paperback</code>).</li>
-<li><code>Ctrl+E</code>: Exportar o documento atual para texto simples.</li>
 <li><code>Ctrl+Shift+B</code>: Alternar marcador na seleção/cursor atual.</li>
 <li><code>Ctrl+Shift+N</code>: Adicionar ou editar nota de marcador na seleção/cursor atual.</li>
-<li><code>Ctrl+Alt+W</code>: Alternar quebra de linha.</li>
+<li><code>Shift+B</code>: Marcador anterior.</li>
+<li><code>B</code>: Próximo marcador.</li>
+<li><code>Shift+N</code>: Nota anterior.</li>
+<li><code>N</code>: Próxima nota.</li>
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, ou seja, a tecla Control física em vez de Cmd): Ver texto da nota na posição atual.</li>
+<li><code>Ctrl+B</code>: Ir para todos os marcadores e notas.</li>
+<li><code>Ctrl+Alt+B</code>: Ir para marcadores apenas.</li>
+<li><code>Ctrl+Alt+M</code>: Ir para notas apenas.</li>
+<li><code>/</code>: Definir seu marcador temporário.</li>
+<li><code>\</code>: Ir para seu marcador temporário.</li>
+</ul>
+<h3 id="menu-áudio">Menu Áudio</h3>
+<ul>
 <li><code>Ctrl+Space</code> (macOS: <code>RawCtrl+Space</code>, ou seja, a tecla Control física, pois Cmd+Space abre o Spotlight): Reproduzir/pausar narração de áudio.</li>
 <li><code>'</code>: Avançar narração de áudio.</li>
 <li><code>;</code>: Retroceder narração de áudio.</li>
@@ -261,13 +276,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: Diminuir o valor de busca de áudio.</li>
 <li><code>Ctrl+Shift+.</code>: Acelerar narração de áudio.</li>
 <li><code>Ctrl+Shift+,</code>: Desacelerar narração de áudio.</li>
-<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, ou seja, Control+Command+F): Alternar tela cheia.</li>
-<li><code>Ctrl+,</code>: Abrir Configurações (macOS: no menu do aplicativo).</li>
-<li><code>Ctrl+Shift+S</code>: Alternar temporizador de repouso.</li>
+</ul>
+<h3 id="menu-ferramentas">Menu Ferramentas</h3>
+<ul>
+<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, ou seja, a tecla Control física em vez de Cmd): Mostrar contagem de palavras do documento atual.</li>
+<li><code>Ctrl+I</code>: Mostrar informações do documento.</li>
 <li><code>Ctrl+Shift+O</code>: Reconhecer um intervalo de páginas de PDF digitalizadas com OCR.</li>
-<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Marcar o início de uma seleção, para que tudo daqui até onde você chegar possa ser copiado de uma só vez.</li>
-<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Copiar tudo desde o início marcado da seleção até a posição atual.</li>
-<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Voltar ao início marcado da seleção, deixando a marca no lugar.</li>
+<li><code>Ctrl+Shift+S</code>: Alternar temporizador de repouso.</li>
+<li><code>Ctrl+,</code>: Abrir Configurações (macOS: no menu do aplicativo).</li>
 </ul>
 <h3 id="menu-ajuda">Menu Ajuda</h3>
 <ul>
