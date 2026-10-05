@@ -1,0 +1,170 @@
+use std::{
+	fmt::Write as _,
+	fs,
+	io::{BufRead, BufReader, Write},
+	net::{TcpListener, TcpStream},
+	sync::atomic::{AtomicBool, Ordering},
+	thread,
+	time::Duration,
+};
+
+use super::*;
+use crate::util::test_support::TempDir;
+
+/// Serves one request per connection; `handler(method, path, base, stream)` writes the response.
+fn serve(handler: impl Fn(&str, &str, &str, &mut TcpStream) + Send + 'static) -> String {
+	let listener = TcpListener::bind("127.0.0.1:0").expect("bind a local port");
+	let base = format!("http://{}", listener.local_addr().expect("local address"));
+	let base_for_thread = base.clone();
+	thread::spawn(move || {
+		for stream in listener.incoming() {
+			let Ok(mut stream) = stream else { break };
+			let mut reader = BufReader::new(stream.try_clone().expect("clone the stream"));
+			let mut request_line = String::new();
+			if reader.read_line(&mut request_line).is_err() {
+				continue;
+			}
+			let mut header = String::new();
+			while reader.read_line(&mut header).is_ok_and(|read| read > 2) {
+				header.clear();
+			}
+			let mut words = request_line.split_whitespace();
+			let method = words.next().unwrap_or_default().to_string();
+			let path = words.next().unwrap_or_default().to_string();
+			handler(&method, &path, &base_for_thread, &mut stream);
+		}
+	});
+	base
+}
+
+/// Writes a complete response; the body is left out for HEAD.
+fn respond(stream: &mut TcpStream, method: &str, status: &str, headers: &[(&str, &str)], body: &[u8]) {
+	let mut head = format!("HTTP/1.1 {status}\r\nConnection: close\r\nContent-Length: {}\r\n", body.len());
+	for (name, value) in headers {
+		let _ = write!(head, "{name}: {value}\r\n");
+	}
+	head.push_str("\r\n");
+	let _ = stream.write_all(head.as_bytes());
+	if method != "HEAD" {
+		let _ = stream.write_all(body);
+	}
+}
+
+#[test]
+fn probe_reads_the_type_size_and_name() {
+	let base = serve(|method, _, _, stream| {
+		respond(stream, method, "200 OK", &[("Content-Type", "application/epub+zip")], b"0123456789");
+	});
+	let info = probe(&format!("{base}/books/a.epub")).expect("probe");
+	assert_eq!(info.content_type.as_deref(), Some("application/epub+zip"));
+	assert_eq!(info.size, Some(10));
+	assert_eq!(info.file_name, "a.epub");
+	assert_eq!(info.verdict(&format!("{base}/books/a.epub")), Verdict::Pass);
+}
+
+#[test]
+fn probe_follows_a_301_and_a_302_with_head_requests() {
+	for status in ["301 Moved Permanently", "302 Found"] {
+		let base = serve(move |method, path, base, stream| match (method, path) {
+			("HEAD", "/old") => {
+				respond(stream, method, status, &[("Location", format!("{base}/book.epub").as_str())], b"");
+			}
+			("HEAD", "/book.epub") => {
+				respond(stream, method, "200 OK", &[("Content-Type", "application/epub+zip")], b"x");
+			}
+			_ => respond(stream, method, "500 Internal Server Error", &[], b""),
+		});
+		let info = probe(&format!("{base}/old")).expect(status);
+		assert!(info.final_url.ends_with("/book.epub"), "{status}: {}", info.final_url);
+		assert_eq!(info.file_name, "book.epub", "{status}");
+	}
+}
+
+#[test]
+fn probe_reads_the_get_headers_when_head_is_refused() {
+	for refusal in ["403 Forbidden", "405 Method Not Allowed"] {
+		let base = serve(move |method, _, _, stream| {
+			if method == "HEAD" {
+				respond(stream, method, refusal, &[], b"");
+			} else {
+				respond(stream, method, "200 OK", &[("Content-Type", "application/pdf")], b"%PDF");
+			}
+		});
+		let info = probe(&format!("{base}/download?id=3")).expect(refusal);
+		assert_eq!(info.content_type.as_deref(), Some("application/pdf"), "{refusal}");
+		assert_eq!(info.file_name, "download.pdf", "{refusal}");
+	}
+}
+
+#[test]
+fn probe_takes_the_name_the_server_gives() {
+	let base = serve(|method, _, _, stream| {
+		respond(stream, method, "200 OK", &[("Content-Disposition", "attachment; filename=\"Report 2024.pdf\"")], b"x");
+	});
+	let info = probe(&format!("{base}/download?id=3")).expect("probe");
+	assert_eq!(info.file_name, "Report 2024.pdf");
+}
+
+#[test]
+fn probe_reports_a_missing_document_by_status() {
+	let base = serve(|method, _, _, stream| respond(stream, method, "404 Not Found", &[], b""));
+	assert!(matches!(probe(&format!("{base}/gone.epub")), Err(FetchError::Http(404))));
+}
+
+#[test]
+fn download_writes_the_file_and_reports_progress() {
+	let base = serve(|method, _, _, stream| respond(stream, method, "200 OK", &[], b"0123456789"));
+	let dir = TempDir::new("fetch-download");
+	let dest = dir.path().join("a.epub");
+	let mut last = None;
+	let bytes = download(&format!("{base}/a.epub"), &dest, &AtomicBool::new(false), |done, total| {
+		last = Some((done, total));
+	})
+	.expect("download");
+	assert_eq!(bytes, 10);
+	assert_eq!(last, Some((10, Some(10))));
+	assert_eq!(fs::read(&dest).expect("read"), b"0123456789");
+	assert!(!dir.path().join("a.epub.part").exists());
+}
+
+#[test]
+fn download_refuses_a_redirect_to_a_file_no_parser_reads() {
+	let base = serve(|method, path, base, stream| match path {
+		"/book" => respond(stream, method, "302 Found", &[("Location", format!("{base}/setup.exe").as_str())], b""),
+		_ => respond(stream, method, "200 OK", &[], b"MZ"),
+	});
+	let dir = TempDir::new("fetch-refuse");
+	let dest = dir.path().join("book");
+	let result = download(&format!("{base}/book"), &dest, &AtomicBool::new(false), |_, _| {});
+	assert!(matches!(result, Err(FetchError::Refused(ref extension)) if extension == "exe"), "{result:?}");
+	assert!(!dest.exists());
+	assert!(!dir.path().join("book.part").exists());
+}
+
+#[test]
+fn a_cancelled_download_leaves_nothing_behind() {
+	let base = serve(|_, _, _, stream| {
+		let _ = stream.write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 16384\r\n\r\n");
+		let _ = stream.write_all(&[b'x'; 8192]);
+		let _ = stream.flush();
+		thread::sleep(Duration::from_secs(5));
+		let _ = stream.write_all(&[b'x'; 8192]);
+	});
+	let dir = TempDir::new("fetch-cancel");
+	let dest = dir.path().join("a.epub");
+	let cancel = AtomicBool::new(false);
+	let result = download(&format!("{base}/a.epub"), &dest, &cancel, |_, _| cancel.store(true, Ordering::Relaxed));
+	assert!(matches!(result, Err(FetchError::Cancelled)), "{result:?}");
+	assert!(!dest.exists());
+	assert!(!dir.path().join("a.epub.part").exists());
+}
+
+#[test]
+fn a_failed_download_keeps_the_copy_already_there() {
+	let base = serve(|method, _, _, stream| respond(stream, method, "404 Not Found", &[], b""));
+	let dir = TempDir::new("fetch-keep");
+	let dest = dir.write("a.epub", "the copy from before");
+	let result = download(&format!("{base}/a.epub"), &dest, &AtomicBool::new(false), |_, _| {});
+	assert!(matches!(result, Err(FetchError::Http(404))), "{result:?}");
+	assert_eq!(fs::read_to_string(&dest).expect("read"), "the copy from before");
+}

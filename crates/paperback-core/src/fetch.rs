@@ -7,6 +7,11 @@ use percent_encoding::percent_decode_str;
 
 use crate::parser::{parser_supports_extension, url_extension, url_file_name};
 
+#[cfg(feature = "fetch")]
+mod net;
+#[cfg(feature = "fetch")]
+pub use net::{FetchError, RemoteInfo, download, probe};
+
 /// What may happen to a link once its names and type are known.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Verdict {
