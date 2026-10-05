@@ -1,13 +1,15 @@
 //! Downloading the links among the inputs, each into its own folder under one folder per run.
 
-use std::{env, fs, path::PathBuf, process, sync::atomic::AtomicBool};
+use std::{env, fs, path::PathBuf, sync::atomic::AtomicBool};
 
 use anyhow::{Context, Result, anyhow, bail};
 use paperback_core::fetch::{self, Verdict};
+use tempfile::TempDir;
 
-/// The folder one run downloads into.
+/// The folder one run downloads into, created on first use under a name no other run shares.
 pub struct Downloads {
-	root: PathBuf,
+	parent: PathBuf,
+	root: Option<TempDir>,
 	count: usize,
 }
 
@@ -26,14 +28,15 @@ impl Drop for Downloaded {
 
 impl Default for Downloads {
 	fn default() -> Self {
-		Self::in_folder(env::temp_dir().join(format!("pb-{}", process::id())))
+		Self::in_folder(env::temp_dir())
 	}
 }
 
 impl Downloads {
+	/// Downloads into a new `pb-` folder inside `parent`.
 	#[must_use]
-	pub const fn in_folder(root: PathBuf) -> Self {
-		Self { root, count: 0 }
+	pub const fn in_folder(parent: PathBuf) -> Self {
+		Self { parent, root: None, count: 0 }
 	}
 
 	/// Checks `url` against the safety rule and downloads it.
@@ -55,18 +58,36 @@ impl Downloads {
 				info.content_type.as_deref().unwrap_or("no content type")
 			),
 		}
-		self.count += 1;
-		let folder = self.root.join(self.count.to_string());
-		fs::create_dir_all(&folder).with_context(|| format!("failed to create the folder {}", folder.display()))?;
+		let folder = self.next_folder()?;
 		let downloaded = Downloaded { path: folder.join(&info.file_name) };
 		fetch::download(url, &downloaded.path, &AtomicBool::new(false), |_, _| {})
 			.map_err(|error| anyhow!("{url}: {error}"))?;
 		Ok(downloaded)
 	}
 
+	/// A new, empty folder for one download inside the run's folder, which is created first if
+	/// this is the run's first download.
+	fn next_folder(&mut self) -> Result<PathBuf> {
+		let root = if let Some(root) = &self.root {
+			root.path().to_path_buf()
+		} else {
+			let root = tempfile::Builder::new()
+				.prefix("pb-")
+				.tempdir_in(&self.parent)
+				.with_context(|| format!("failed to create a download folder in {}", self.parent.display()))?;
+			let path = root.path().to_path_buf();
+			self.root = Some(root);
+			path
+		};
+		self.count += 1;
+		let folder = root.join(self.count.to_string());
+		fs::create_dir(&folder).with_context(|| format!("failed to create the folder {}", folder.display()))?;
+		Ok(folder)
+	}
+
 	/// Removes the run's download folder.
-	pub fn remove(&self) {
-		let _ = fs::remove_dir_all(&self.root);
+	pub fn remove(&mut self) {
+		drop(self.root.take());
 	}
 }
 
@@ -78,7 +99,7 @@ fn not_downloaded(url: &str, extension: &str) -> anyhow::Error {
 mod tests {
 	use std::{
 		env, fs,
-		path::PathBuf,
+		path::{Path, PathBuf},
 		process,
 		sync::atomic::{AtomicU64, Ordering},
 	};
@@ -109,23 +130,42 @@ mod tests {
 		}
 	}
 
+	fn entries(path: &Path) -> usize {
+		fs::read_dir(path).expect("read the folder").count()
+	}
+
 	#[test]
 	fn a_link_to_a_type_pb_does_not_read_is_refused_without_a_download() {
 		let dir = TempDir::new("refused");
-		let mut downloads = Downloads::in_folder(dir.join("run"));
+		let mut downloads = Downloads::in_folder(dir.path.clone());
 		let error = downloads.fetch("https://example.invalid/setup.exe").err().expect("refused").to_string();
 		assert!(error.contains("https://example.invalid/setup.exe"), "{error}");
 		assert!(error.contains("not downloaded"), "{error}");
-		assert!(!dir.join("run").exists());
+		assert_eq!(entries(&dir.path), 0, "a refused link left a folder behind");
+	}
+
+	#[test]
+	fn each_run_downloads_into_a_new_folder_of_its_own() {
+		let dir = TempDir::new("own-folder");
+		let mut one = Downloads::in_folder(dir.path.clone());
+		let mut two = Downloads::in_folder(dir.path.clone());
+		let (first, second) = (one.next_folder().expect("a folder"), two.next_folder().expect("a folder"));
+		assert_ne!(first.parent(), second.parent());
+		for folder in [&first, &second] {
+			assert!(folder.starts_with(&dir.path), "{}", folder.display());
+			let run = folder.parent().and_then(Path::file_name).expect("a run folder").to_string_lossy();
+			assert!(run.starts_with("pb-"), "{run}");
+		}
 	}
 
 	#[test]
 	fn removing_the_downloads_removes_the_run_folder() {
 		let dir = TempDir::new("remove");
-		let root = dir.join("run");
-		fs::create_dir_all(root.join("1")).expect("mkdir");
-		Downloads::in_folder(root.clone()).remove();
-		assert!(!root.exists());
+		let mut downloads = Downloads::in_folder(dir.path.clone());
+		let folder = downloads.next_folder().expect("a folder");
+		assert!(folder.exists());
+		downloads.remove();
+		assert_eq!(entries(&dir.path), 0);
 	}
 
 	#[test]

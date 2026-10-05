@@ -172,6 +172,18 @@ fn a_cancelled_download_leaves_nothing_behind() {
 }
 
 #[test]
+fn a_download_never_writes_through_a_part_file_already_there() {
+	let base = serve(|method, _, _, stream| respond(stream, method, "200 OK", &[], b"0123456789"));
+	let dir = TempDir::new("fetch-planted");
+	let planted = dir.write("a.epub.part", "planted");
+	let dest = dir.path().join("a.epub");
+	let result = download(&format!("{base}/a.epub"), &dest, &AtomicBool::new(false), |_, _| {});
+	assert!(matches!(result, Err(FetchError::Io(_))), "{result:?}");
+	assert_eq!(fs::read_to_string(&planted).expect("read"), "planted");
+	assert!(!dest.exists());
+}
+
+#[test]
 fn a_failed_download_keeps_the_copy_already_there() {
 	let base = serve(|method, _, _, stream| respond(stream, method, "404 Not Found", &[], b""));
 	let dir = TempDir::new("fetch-keep");

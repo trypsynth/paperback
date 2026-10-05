@@ -108,8 +108,7 @@ pub fn download(
 	if let Verdict::Refuse(extension) = info.verdict(url) {
 		return Err(FetchError::Refused(extension));
 	}
-	let part = PartFile(part_path(dest));
-	let mut file = File::create(&part.0)?;
+	let mut part = PartFile::create(part_path(dest))?;
 	let mut reader = response.into_body().into_reader();
 	let mut buffer = [0u8; CHUNK_SIZE];
 	let mut done = 0u64;
@@ -121,12 +120,11 @@ pub fn download(
 		if read == 0 {
 			break;
 		}
-		file.write_all(&buffer[..read])?;
+		part.write_all(&buffer[..read])?;
 		done += read as u64;
 		progress(done, info.size);
 	}
-	drop(file);
-	fs::rename(&part.0, dest)?;
+	part.finish(dest)?;
 	Ok(done)
 }
 
@@ -146,12 +144,36 @@ fn part_path(dest: &Path) -> PathBuf {
 	PathBuf::from(name)
 }
 
-/// Removes the partial file when dropped; after the rename there is nothing left to remove.
-struct PartFile(PathBuf);
+/// A partial download, created only where no file exists yet. Dropping it closes and removes the
+/// file; after [`PartFile::finish`] there is nothing left to remove.
+struct PartFile {
+	path: PathBuf,
+	file: Option<File>,
+}
+
+impl PartFile {
+	fn create(path: PathBuf) -> io::Result<Self> {
+		let file = File::create_new(&path)?;
+		Ok(Self { path, file: Some(file) })
+	}
+
+	fn write_all(&mut self, bytes: &[u8]) -> io::Result<()> {
+		self.file.as_mut().map_or_else(
+			|| Err(io::Error::other("the partial download is already closed")),
+			|file| file.write_all(bytes),
+		)
+	}
+
+	fn finish(mut self, dest: &Path) -> io::Result<()> {
+		drop(self.file.take());
+		fs::rename(&self.path, dest)
+	}
+}
 
 impl Drop for PartFile {
 	fn drop(&mut self) {
-		let _ = fs::remove_file(&self.0);
+		drop(self.file.take());
+		let _ = fs::remove_file(&self.path);
 	}
 }
 
