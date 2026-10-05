@@ -33,6 +33,31 @@ fn verdict_follows_the_extension_rules(
 }
 
 #[rstest]
+#[case("https://github.com/o/r/blob/main/book.pdf", None, Some("text/html; charset=utf-8"), Verdict::Warn)]
+#[case("https://example.org/book.pdf", Some("book.pdf"), Some("application/xhtml+xml"), Verdict::Warn)]
+#[case("https://example.org/page.html", None, Some("text/html"), Verdict::Pass)]
+#[case("https://example.org/book.xhtml", None, Some("application/xhtml+xml"), Verdict::Pass)]
+#[case(PAGE, None, Some("text/html"), Verdict::Pass)]
+#[case("https://example.org/notes.md", None, Some("text/plain"), Verdict::Pass)]
+fn a_web_page_sent_for_another_document_gets_the_warning(
+	#[case] url: &str,
+	#[case] disposition: Option<&str>,
+	#[case] content_type: Option<&str>,
+	#[case] expected: Verdict,
+) {
+	assert_eq!(verdict(url, url, disposition, content_type), expected);
+}
+
+#[rstest]
+#[case("text/html", true)]
+#[case("Text/HTML; charset=utf-8", true)]
+#[case("application/xhtml+xml", true)]
+#[case("application/pdf", false)]
+fn is_web_page_reads_the_html_types(#[case] content_type: &str, #[case] expected: bool) {
+	assert_eq!(is_web_page(content_type), expected);
+}
+
+#[rstest]
 #[case("https://example.org/setup.exe", Some("exe"))]
 #[case("https://example.org/a.epub", None)]
 #[case(PAGE, None)]

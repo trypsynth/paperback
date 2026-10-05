@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use paperback_formats::ALL;
+use paperback_formats::{ALL, FormatMeta};
 use percent_encoding::percent_decode_str;
 
 use crate::parser::{parser_supports_extension, url_extension, url_file_name};
@@ -30,7 +30,8 @@ pub fn refused_extension(url: &str) -> Option<String> {
 }
 
 /// The [`Verdict`] for a link, from the link given, the link it ended at after redirects, the
-/// server's file name and its MIME type.
+/// server's file name and its MIME type. A web page sent where the names promise another kind of
+/// document gets [`Verdict::Warn`].
 #[must_use]
 pub fn verdict(
 	given_url: &str,
@@ -46,6 +47,11 @@ pub fn verdict(
 	if let Some(refused) = extensions.iter().find(|extension| !parser_supports_extension(extension)) {
 		return Verdict::Refuse(refused.clone());
 	}
+	let web_page_extension =
+		|extension: &String| html_format().is_some_and(|format| format.extensions.contains(&extension.as_str()));
+	if !extensions.is_empty() && content_type.is_some_and(is_web_page) && !extensions.iter().any(web_page_extension) {
+		return Verdict::Warn;
+	}
 	if !extensions.is_empty() || content_type.and_then(extension_for_mime).is_some() {
 		Verdict::Pass
 	} else {
@@ -57,11 +63,29 @@ pub fn verdict(
 /// parameters and case.
 #[must_use]
 pub fn extension_for_mime(content_type: &str) -> Option<&'static str> {
-	let essence = content_type.split(';').next().unwrap_or_default().trim().to_ascii_lowercase();
+	let essence = essence(content_type);
 	ALL.iter()
 		.find(|format| format.mime_types.contains(&essence.as_str()))
 		.and_then(|format| format.extensions.first().copied())
 		.filter(|extension| parser_supports_extension(extension))
+}
+
+/// Whether `content_type` is one of the HTML format's MIME types, matched without parameters and
+/// case.
+#[must_use]
+pub fn is_web_page(content_type: &str) -> bool {
+	let essence = essence(content_type);
+	html_format().is_some_and(|format| format.mime_types.contains(&essence.as_str()))
+}
+
+/// The format that `text/html` belongs to.
+fn html_format() -> Option<&'static FormatMeta> {
+	ALL.iter().copied().find(|format| format.mime_types.contains(&"text/html"))
+}
+
+/// `content_type` without parameters, lowercased.
+fn essence(content_type: &str) -> String {
+	content_type.split(';').next().unwrap_or_default().trim().to_ascii_lowercase()
 }
 
 /// The file name in a `Content-Disposition` header; `filename*` wins over `filename`.
