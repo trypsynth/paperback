@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 11:24-0600\n"
-"PO-Revision-Date: 2026-10-03 20:18+0300\n"
+"POT-Creation-Date: 2026-10-04 00:44+0000\n"
+"PO-Revision-Date: 2026-10-04 23:44+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -91,7 +91,7 @@ msgstr "30 sekuntia"
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 msgid "1 minute"
-msgstr "1 minuutti"
+msgstr "minuutti"
 
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
@@ -116,7 +116,7 @@ msgstr "30 minuuttia"
 #. TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
 #. TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
 msgid "1 hour"
-msgstr "1 tunti"
+msgstr "tunti"
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
@@ -187,6 +187,10 @@ msgstr "Näytä muistiinpano"
 msgid "Open Document"
 msgstr "Asiakirjan avaaminen"
 
+#. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+msgid "Document reloaded."
+msgstr "Asiakirja päivitetty."
+
 #. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -227,6 +231,15 @@ msgstr "Avaa &viimeksi suljettu"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Avaa viimeksi suljettu asiakirja"
+
+#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+msgid "&Reload"
+msgstr "&Päivitä"
+
+#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
+#| msgid "Close the current document"
+msgid "Re-read the current document from disk"
+msgstr "Päivitä avoinna oleva asiakirja"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 msgid "Clea&r Recent Documents"
@@ -1084,9 +1097,13 @@ msgstr "Automaattinen r&ivitys"
 msgid "Render tables &inline"
 msgstr "Näytä taulukot tekst&in osana"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
 msgid "&Join wrapped lines into paragraphs in PDFs"
 msgstr "&Yhdistä PDF-tiedostojen rivitetyt tekstit kappaleiksi"
+
+#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "Remove repeated page &headers and footers in PDFs"
+msgstr "Poista PDF-asiakirjoista toistuvat ylä- ja alatunnisteet"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1628,12 +1645,12 @@ msgstr "Valittua tiedostomuotoa ei tueta."
 msgid "Paperback"
 msgstr "Paperback"
 
-msgid "Document reloaded."
-msgstr "Asiakirja päivitetty."
-
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
+
+msgid "Installing the update. Paperback will restart."
+msgstr "Päivitystä asennetaan. Paperback käynnistyy uudelleen."
 
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
@@ -2333,6 +2350,10 @@ msgid "Reopen Last Closed"
 msgstr "Avaa viimeksi suljettu"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reload"
+msgstr "Päivitä"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "Näytä viimeksi avatut asiakirjat..."
 
@@ -2985,6 +3006,64 @@ msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
 msgid "Failed to launch update script"
 msgstr "Päivitysskriptin käynnistys epäonnistui"
 
+#| msgid "Failed to export settings"
+msgid "Failed to start installation"
+msgstr "Asennusta ei voitu käynnistää"
+
+#| msgid "Exit the application"
+msgid "Failed to stage the application"
+msgstr "Sovelluksen valmistelu epäonnistui"
+
+msgid "The update contains a different application."
+msgstr "Päivitys on tarkoitettu eri sovellukselle."
+
+#| msgid "Could not determine content to display in Web View."
+msgid "Could not determine the update log directory."
+msgstr "Päivityslokin hakemistoa ei voitu määrittää."
+
+#| msgid "Failed to launch update script"
+msgid "Failed to launch update helper"
+msgstr "Päivitysapuria ei voitu käynnistää"
+
+msgid "The update helper did not start. See the log:"
+msgstr "Päivitysapuri ei käynnistynyt. Katso lisätietoja lokista:"
+
+msgid ""
+"The application did not quit within 60 seconds. The current app was kept."
+msgstr ""
+"Sovellus ei sulkeutunut 60 sekunnin kuluessa. Nykyistä versiota ei korvattu."
+
+msgid "The installation changed while waiting. The current app was kept."
+msgstr ""
+"Asennustiedostoissa havaittiin muutoksia päivitystä odotettaessa. Nykyistä "
+"versiota ei korvattu."
+
+msgid "Could not move the current application. The current app was kept."
+msgstr "Nykyisen version siirtäminen epäonnistui. Sovellusta ei päivitetty."
+
+msgid "Could not install the update. The previous version was restored."
+msgstr "Päivitystä ei voitu asentaa. Edellinen versio palautettiin."
+
+msgid "Could not restore the previous version. Recover it from:"
+msgstr "Edellistä versiota ei voitu palauttaa. Palauta se sijainnista:"
+
+msgid ""
+"macOS could not launch the update. The previous version is preserved at:"
+msgstr ""
+"macOS ei voinut käynnistää päivitystä. Edellinen versio on tallessa "
+"sijainnissa:"
+
+#| msgid "Update failed"
+msgid "Application update failed"
+msgstr "Sovelluksen päivitys epäonnistui"
+
+msgid "Log:"
+msgstr "Loki:"
+
+#| msgid "Update failed"
+msgid "Update cancelled."
+msgstr "Päivitys peruutettu."
+
 msgid "Failed to open disk image"
 msgstr "Levykuvan avaaminen epäonnistui"
 
@@ -2994,6 +3073,32 @@ msgid ""
 msgstr ""
 "Päivitys on ladattu ja sen levykuva avattu. Sulje %s ja viimeistele asennus "
 "vetämällä uusi versio Ohjelmat-kansioon."
+
+msgid "Invalid application metadata"
+msgstr "Sovelluksen metatiedot ovat virheellisiä"
+
+msgid "The disk image must contain exactly one matching application."
+msgstr "Levykuvassa saa olla vain yksi vastaava sovellus."
+
+msgid "The update must be signed by the application's developer team"
+msgstr "Päivityksen on oltava sovelluksen kehittäjätiimin allekirjoittama"
+
+msgid "Invalid application executable."
+msgstr "Sovelluksen käynnistystiedosto on virheellinen."
+
+msgid "Invalid application executable"
+msgstr "Virhe sovelluksen käynnistystiedostossa"
+
+msgid "Application signature verification failed"
+msgstr "Sovelluksen allekirjoitusta ei voitu tarkistaa"
+
+#| msgid "Failed to open disk image"
+msgid "Failed to mount disk image"
+msgstr "Levykuvaa ei voitu liittää tiedostojärjestelmään"
+
+#| msgid "Failed to open disk image"
+msgid "Failed to unmount disk image"
+msgstr "Levykuvaa ei voitu irrottaa tiedostojärjestelmästä"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -3027,6 +3132,10 @@ msgstr "Päivitystä ladataan..."
 
 msgid "Update failed"
 msgstr "Päivitys epäonnistui"
+
+#| msgid "Downloading update..."
+msgid "Preparing update..."
+msgstr "Päivitystä valmistellaan..."
 
 msgid "Update Ready"
 msgstr "Päivitys valmiina"
@@ -3078,7 +3187,6 @@ msgid "&Cmd"
 msgstr "&Cmd"
 
 #. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
-#| msgid "Options"
 msgid "&Option"
 msgstr "&Alt"
 
@@ -4301,3 +4409,16 @@ msgstr "Alkuperäinen tiedosto"
 #: kt
 msgid "Settings exported"
 msgstr "Asetukset viety"
+
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt swift
+#| msgid "&Language:"
+msgid "Language"
+msgstr "Kieli"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt swift
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr ""
+"Avaa Paperbackin asetukset järjestelmän Asetukset-sovelluksessa, jossa voi "
+"vaihtaa kieltä."
