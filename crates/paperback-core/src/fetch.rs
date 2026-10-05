@@ -117,14 +117,49 @@ fn name_extension(name: &str) -> Option<String> {
 	Path::new(name).extension().and_then(|extension| extension.to_str()).map(str::to_ascii_lowercase)
 }
 
-/// The part after the last `/` or `\`, with control characters and `<>:"|?*` replaced by `_` and
-/// trailing dots and spaces removed; `None` if nothing is left.
+/// The longest file name saved, in bytes, leaving room for `.part` and the folder in the path.
+const MAX_NAME_BYTES: usize = 200;
+
+/// The part after the last `/` or `\`, with control characters and `<>:"|?*` replaced by `_`,
+/// trailing dots and spaces removed, `_` put before a Windows device name, and the name cut to
+/// [`MAX_NAME_BYTES`] with its extension kept; `None` if nothing is left.
 fn safe_file_name(name: &str) -> Option<String> {
 	let base = name.rsplit(['/', '\\']).next().unwrap_or_default();
 	let replaced: String =
 		base.chars().map(|c| if c.is_control() || r#"<>:"|?*"#.contains(c) { '_' } else { c }).collect();
 	let trimmed = replaced.trim().trim_end_matches(['.', ' ']);
-	(!trimmed.is_empty()).then(|| trimmed.to_string())
+	if trimmed.is_empty() {
+		return None;
+	}
+	let named = if is_device_name(trimmed) { format!("_{trimmed}") } else { trimmed.to_string() };
+	Some(shortened(&named))
+}
+
+/// Whether Windows reads `name` as a device: `CON`, `PRN`, `AUX`, `NUL`, `COM0`-`COM9` or
+/// `LPT0`-`LPT9`, in any case and with any extension.
+fn is_device_name(name: &str) -> bool {
+	let stem = name.split('.').next().unwrap_or_default().trim_end().to_ascii_uppercase();
+	matches!(stem.as_str(), "CON" | "PRN" | "AUX" | "NUL")
+		|| (stem.len() == 4
+			&& (stem.starts_with("COM") || stem.starts_with("LPT"))
+			&& stem.as_bytes()[3].is_ascii_digit())
+}
+
+/// `name` cut to [`MAX_NAME_BYTES`] on a character boundary, keeping an extension of up to 15 bytes.
+fn shortened(name: &str) -> String {
+	if name.len() <= MAX_NAME_BYTES {
+		return name.to_string();
+	}
+	let extension = Path::new(name)
+		.extension()
+		.and_then(|extension| extension.to_str())
+		.filter(|extension| extension.len() < 16)
+		.map_or_else(String::new, |extension| format!(".{extension}"));
+	let mut end = MAX_NAME_BYTES - extension.len();
+	while !name.is_char_boundary(end) {
+		end -= 1;
+	}
+	format!("{}{extension}", &name[..end])
 }
 
 #[cfg(test)]

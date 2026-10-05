@@ -65,12 +65,34 @@ fn disposition_file_name_reads_both_forms(#[case] header: &str, #[case] expected
 }
 
 #[rstest]
+#[case("attachment; filename=\"CON.pdf\"", "_CON.pdf")]
+#[case("attachment; filename=\"nul.epub\"", "_nul.epub")]
+#[case("attachment; filename=\"com1.txt\"", "_com1.txt")]
+#[case("attachment; filename=\"Lpt9\"", "_Lpt9")]
+#[case("attachment; filename=\"console.pdf\"", "console.pdf")]
+#[case("attachment; filename=\"com10.pdf\"", "com10.pdf")]
+fn windows_device_names_get_an_underscore(#[case] header: &str, #[case] expected: &str) {
+	assert_eq!(disposition_file_name(header).as_deref(), Some(expected));
+}
+
+#[rstest]
+#[case("a")]
+#[case("\u{e9}")]
+fn a_very_long_name_is_shortened_and_keeps_its_extension(#[case] letter: &str) {
+	let header = format!("attachment; filename=\"{}.pdf\"", letter.repeat(300));
+	let name = disposition_file_name(&header).expect("a name");
+	assert!(name.len() <= 200, "{} bytes", name.len());
+	assert_eq!(Path::new(&name).extension().and_then(|extension| extension.to_str()), Some("pdf"), "{name}");
+}
+
+#[rstest]
 #[case("https://example.org/books/a.epub", None, Some("application/epub+zip"), "a.epub")]
 #[case(PAGE, None, Some("application/pdf"), "download.pdf")]
 #[case("https://example.org/", None, Some("application/pdf"), "document.pdf")]
 #[case(PAGE, Some("Report 2024.pdf"), Some("application/octet-stream"), "Report 2024.pdf")]
 #[case("https://example.org/a%3Ab.pdf", None, None, "a_b.pdf")]
 #[case("https://example.org/notes", None, Some("text/plain; charset=utf-8"), "notes.txt")]
+#[case("https://example.org/files/CON.pdf", None, None, "_CON.pdf")]
 fn file_name_for_names_the_working_copy(
 	#[case] final_url: &str,
 	#[case] disposition: Option<&str>,
