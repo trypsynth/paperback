@@ -12,8 +12,11 @@
 
 use std::{
 	collections::HashSet,
+	io::BufRead,
 	path::{Component, Path, PathBuf},
 };
+
+use anyhow::{Context, Result, bail};
 
 /// What the arguments on the command line named.
 #[derive(Debug, Default)]
@@ -56,6 +59,54 @@ pub fn collect(args: &[PathBuf]) -> Inputs {
 	}
 	dedupe(&mut collected.files);
 	collected
+}
+
+/// The arguments with a `-` replaced by the inputs listed on stdin, one per line.
+///
+/// Blank lines and lines starting with `#` are skipped. Surrounding whitespace, Windows line ends
+/// and a byte order mark are taken off. stdin is read only when a `-` is among the arguments.
+///
+/// # Errors
+///
+/// Returns an error if `-` is given more than once, if a line of the list is not UTF-8, or if `-`
+/// is the only argument and the list names nothing.
+pub fn with_stdin_list(args: &[PathBuf], stdin: impl BufRead) -> Result<Vec<PathBuf>> {
+	let dashes = args.iter().filter(|arg| is_stdin(arg)).count();
+	if dashes == 0 {
+		return Ok(args.to_vec());
+	}
+	if dashes > 1 {
+		bail!("- was given {dashes} times, but the list on stdin can be read only once");
+	}
+	let listed = read_list(stdin)?;
+	if listed.is_empty() && args.len() == 1 {
+		bail!("the list on stdin names no documents");
+	}
+	let mut expanded = Vec::with_capacity(args.len() - 1 + listed.len());
+	for arg in args {
+		if is_stdin(arg) {
+			expanded.extend(listed.iter().map(PathBuf::from));
+		} else {
+			expanded.push(arg.clone());
+		}
+	}
+	Ok(expanded)
+}
+
+fn is_stdin(arg: &Path) -> bool {
+	arg.as_os_str() == "-"
+}
+
+fn read_list(stdin: impl BufRead) -> Result<Vec<String>> {
+	let mut listed = Vec::new();
+	for (index, line) in stdin.lines().enumerate() {
+		let line = line.with_context(|| format!("line {} of the list on stdin is not UTF-8 text", index + 1))?;
+		let entry = line.trim_start_matches('\u{feff}').trim();
+		if !entry.is_empty() && !entry.starts_with('#') {
+			listed.push(entry.to_string());
+		}
+	}
+	Ok(listed)
 }
 
 /// The files one pattern matches, sorted, and whether it matched anything.
@@ -128,7 +179,7 @@ pub fn same_file(path: &Path) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-	use std::{env, fs, process, sync::atomic::AtomicU64};
+	use std::{env, fs, io, process, sync::atomic::AtomicU64};
 
 	use super::*;
 
@@ -353,5 +404,65 @@ mod tests {
 	fn a_leading_dot_slash_does_not_make_a_different_file() {
 		assert_eq!(same_file(Path::new("./book.txt")), same_file(Path::new("book.txt")));
 		assert_eq!(same_file(Path::new("a/./b.txt")), same_file(Path::new("a/b.txt")));
+	}
+
+	fn listed(args: &[&str], stdin: &str) -> anyhow::Result<Vec<PathBuf>> {
+		let args: Vec<PathBuf> = args.iter().map(PathBuf::from).collect();
+		with_stdin_list(&args, io::Cursor::new(stdin.as_bytes()))
+	}
+
+	#[test]
+	fn a_dash_is_replaced_by_the_inputs_listed_on_stdin() {
+		let inputs = listed(&["a.epub", "-", "d.pdf"], "b.epub\nc.docx\n").expect("a list");
+		assert_eq!(inputs, ["a.epub", "b.epub", "c.docx", "d.pdf"].map(PathBuf::from));
+	}
+
+	#[test]
+	fn blank_lines_and_comments_in_the_list_are_skipped() {
+		let inputs = listed(&["-"], "# books\n\nb.epub\n   \n  # more\nc.pdf").expect("a list");
+		assert_eq!(inputs, ["b.epub", "c.pdf"].map(PathBuf::from));
+	}
+
+	#[test]
+	fn windows_line_ends_and_a_byte_order_mark_are_taken_off() {
+		let inputs = listed(&["-"], "\u{feff}b.epub\r\nc.pdf\r\n").expect("a list");
+		assert_eq!(inputs, ["b.epub", "c.pdf"].map(PathBuf::from));
+	}
+
+	#[test]
+	fn surrounding_spaces_are_taken_off_and_inner_ones_kept() {
+		let inputs = listed(&["-"], "  my book.epub  \n").expect("a list");
+		assert_eq!(inputs, [PathBuf::from("my book.epub")]);
+	}
+
+	#[test]
+	fn a_second_dash_is_refused() {
+		let error = listed(&["-", "-"], "b.epub\n").expect_err("two dashes").to_string();
+		assert!(error.contains("once"), "{error}");
+	}
+
+	#[test]
+	fn without_a_dash_stdin_is_left_unread() {
+		struct Untouched;
+		impl io::Read for Untouched {
+			fn read(&mut self, _: &mut [u8]) -> io::Result<usize> {
+				panic!("stdin was read without a - in the arguments")
+			}
+		}
+		let args = [PathBuf::from("a.epub")];
+		assert_eq!(with_stdin_list(&args, io::BufReader::new(Untouched)).expect("no list"), args);
+	}
+
+	#[test]
+	fn a_dash_alone_with_an_empty_list_is_refused() {
+		let error = listed(&["-"], "# nothing yet\n\n").expect_err("no inputs at all").to_string();
+		assert!(error.contains("stdin"), "{error}");
+	}
+
+	#[test]
+	fn a_list_that_is_not_utf8_names_the_line() {
+		let args = [PathBuf::from("-")];
+		let error = with_stdin_list(&args, io::Cursor::new(&b"b.epub\n\xff\xfe.pdf\n"[..])).expect_err("not UTF-8");
+		assert!(error.to_string().contains("line 2"), "{error}");
 	}
 }

@@ -61,7 +61,8 @@ fn main() -> Result<()> {
 	// A Windows shell hands `*.pdf` over as one literal argument, so the patterns are expanded here
 	// rather than being left for a shell that may not expand them. A pattern that matched nothing
 	// is carried rather than raised, so one mistyped pattern does not cost the reader the rest.
-	let inputs = inputs::collect(&cli.input);
+	let args = inputs::with_stdin_list(&cli.input, io::stdin().lock())?;
+	let inputs = inputs::collect(&args);
 	let destination = destination(&cli, inputs.files.len())?;
 	run(&cli, &inputs, selection.as_ref(), &destination)
 }

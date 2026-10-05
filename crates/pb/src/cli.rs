@@ -5,7 +5,7 @@ use clap::{Parser, ValueEnum};
 #[derive(Parser)]
 #[command(name = "pb", about = "Convert any document to text, HTML, or Markdown")]
 pub struct Cli {
-	/// Input document file, or files. `*` and `?` are expanded, so the same command line works on Windows
+	/// Input document file, or files. `*` and `?` are expanded, so the same command line works on Windows. `-` reads more inputs from stdin, one per line
 	#[arg(required_unless_present = "list_formats", num_args = 1..)]
 	pub input: Vec<PathBuf>,
 	/// List the formats pb can read, and the extensions it knows them by
@@ -255,6 +255,12 @@ mod tests {
 
 		assert!(!parse(&["pb", "b.pdf"]).ocr_image_pages);
 		assert!(!parse(&["pb", "b.pdf"]).ocr_text_pages);
+	}
+
+	#[test]
+	fn a_dash_is_an_input() {
+		assert_eq!(parse(&["pb", "-"]).input, [PathBuf::from("-")]);
+		assert_eq!(parse(&["pb", "-f", "md", "--output-dir", "out", "-"]).input, [PathBuf::from("-")]);
 	}
 
 	/// Paths that start with a dash or contain spaces reach the parser intact rather than being
