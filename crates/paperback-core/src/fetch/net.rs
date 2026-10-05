@@ -51,12 +51,15 @@ pub enum FetchError {
 	Cancelled,
 	#[error(".{0} files cannot be read, so the link was not downloaded")]
 	Refused(String),
+	#[error("the secure link was redirected to an insecure address, so it was not downloaded")]
+	Insecure,
 }
 
 impl From<ureq::Error> for FetchError {
 	fn from(error: ureq::Error) -> Self {
 		match error {
 			ureq::Error::StatusCode(code) => Self::Http(code),
+			ureq::Error::RequireHttpsOnly(_) => Self::Insecure,
 			other => Self::Network(other.to_string()),
 		}
 	}
@@ -68,9 +71,13 @@ impl From<io::Error> for FetchError {
 	}
 }
 
-fn agent() -> Agent {
-	let config = Config::builder().timeout_connect(Some(CONNECT_TIMEOUT)).timeout_global(Some(OVERALL_TIMEOUT)).build();
-	Agent::new_with_config(config)
+/// The settings for fetching `url`; an https link is followed only to https addresses.
+fn config_for(url: &str) -> Config {
+	Config::builder()
+		.timeout_connect(Some(CONNECT_TIMEOUT))
+		.timeout_global(Some(OVERALL_TIMEOUT))
+		.https_only(url.get(..8).is_some_and(|scheme| scheme.eq_ignore_ascii_case("https://")))
+		.build()
 }
 
 /// A link's response, with its headers read and its body not yet.
@@ -88,7 +95,7 @@ pub struct Remote {
 /// Returns [`FetchError::Http`] for an error status and [`FetchError::Network`] when the server
 /// cannot be reached.
 pub fn open(url: &str) -> Result<Remote, FetchError> {
-	let response = agent().get(url).header("User-Agent", &user_agent()).call()?;
+	let response = Agent::new_with_config(config_for(url)).get(url).header("User-Agent", &user_agent()).call()?;
 	let info = info_from(&response, url);
 	Ok(Remote { given_url: url.to_string(), info, body: response.into_body() })
 }

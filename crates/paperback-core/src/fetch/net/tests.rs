@@ -121,6 +121,19 @@ fn open_takes_the_name_the_server_gives() {
 }
 
 #[test]
+fn an_https_link_is_only_followed_to_https() {
+	assert!(config_for("https://example.org/a.epub").https_only());
+	assert!(config_for("HTTPS://example.org/a.epub").https_only());
+	assert!(!config_for("http://example.org/a.epub").https_only());
+}
+
+#[test]
+fn a_redirect_from_https_to_plain_http_is_reported_as_insecure() {
+	let error = FetchError::from(ureq::Error::RequireHttpsOnly("http://example.org/a.epub".to_string()));
+	assert!(matches!(error, FetchError::Insecure), "{error:?}");
+}
+
+#[test]
 fn open_reports_a_missing_document_by_status() {
 	let base = serve(|method, _, _, stream| respond(stream, method, "404 Not Found", &[], b""));
 	assert!(matches!(open(&format!("{base}/gone.epub")), Err(FetchError::Http(404))));
