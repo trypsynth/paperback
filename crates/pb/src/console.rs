@@ -20,6 +20,21 @@ pub fn text(bytes: &[u8]) -> Option<String> {
 	}
 }
 
+/// `bytes` decoded with the system's ANSI code page, which a text file saved by a Windows program is in when it is not UTF-8. It differs from the console's code page on most systems, so a list file decoded with that one comes out wrong without failing. `None` on other platforms.
+#[must_use]
+pub fn ansi_text(bytes: &[u8]) -> Option<String> {
+	#[cfg(windows)]
+	{
+		// SAFETY: GetACP takes no arguments and cannot fail.
+		decode_code_page(unsafe { windows_sys::Win32::Globalization::GetACP() }, bytes)
+	}
+	#[cfg(not(windows))]
+	{
+		let _ = bytes;
+		None
+	}
+}
+
 /// `bytes` decoded with the Windows code page `code_page`; `None` for empty input or bytes that
 /// are not valid in that code page.
 #[cfg(windows)]
@@ -47,6 +62,12 @@ mod tests {
 	#[test]
 	fn a_line_in_an_oem_code_page_is_decoded() {
 		assert_eq!(decode_code_page(850, b"caf\x82.txt").as_deref(), Some("caf\u{e9}.txt"));
+	}
+
+	/// The same é is a different byte in the ANSI code page a list file is saved in, which is why a file is not decoded with the console's.
+	#[test]
+	fn a_line_in_an_ansi_code_page_is_decoded() {
+		assert_eq!(decode_code_page(1252, b"caf\xe9.txt").as_deref(), Some("caf\u{e9}.txt"));
 	}
 
 	#[test]

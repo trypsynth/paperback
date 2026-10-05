@@ -71,7 +71,8 @@ fn main() -> Result<()> {
 
 /// The entries of the list `--files-from` names, read from stdin when it names `-`.
 fn read_files_from(path: &Path) -> Result<Vec<inputs::Given>> {
-	let bytes = if path.as_os_str() == "-" {
+	let from_stdin = path.as_os_str() == "-";
+	let bytes = if from_stdin {
 		stdin_list_allowed(io::stdin().is_terminal())?;
 		let mut bytes = Vec::new();
 		io::stdin().lock().read_to_end(&mut bytes).context("failed to read the list from stdin")?;
@@ -79,15 +80,22 @@ fn read_files_from(path: &Path) -> Result<Vec<inputs::Given>> {
 	} else {
 		fs::read(path).with_context(|| format!("failed to read the list {}", path.display()))?
 	};
-	Ok(inputs::read_list(&bytes, |entry| Path::new(entry).exists(), console::text))
+	// A pipe carries what cmd's own commands write, in the console's code page, and a file what a Windows program saved, in the ANSI one.
+	let fallback = if from_stdin { console::text } else { console::ansi_text };
+	Ok(inputs::read_list(&bytes, |entry| Path::new(entry).exists(), fallback))
 }
 
 /// Refuses `--files-from -` when stdin is the console, where pb would otherwise wait in silence
 /// for a list to be typed.
 fn stdin_list_allowed(stdin_is_terminal: bool) -> Result<()> {
 	if stdin_is_terminal {
+		let example = if cfg!(windows) {
+			"dir /b *.pdf | pb --files-from - --output-dir out (cmd), or Get-ChildItem -Name *.pdf | pb --files-from - --output-dir out (PowerShell)"
+		} else {
+			"ls *.pdf | pb --files-from - --output-dir out"
+		};
 		bail!(
-			"--files-from - reads the list from a pipe or a redirected file, but stdin is the console\nPipe a list in, for example: dir /b *.pdf | pb --files-from - --output-dir out"
+			"--files-from - reads the list from a pipe or a redirected file, but stdin is the console\nPipe a list in, for example: {example}"
 		);
 	}
 	Ok(())
