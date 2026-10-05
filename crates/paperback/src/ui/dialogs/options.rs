@@ -200,7 +200,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		// TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
 		CheckBox::builder(&reading_panel).with_label(&t("Move to &start of line")).build();
 	let highlight_found_text_check = CheckBox::builder(&reading_panel)
-		// TRANSLATORS: Option to highlight the text a Find matches, by selecting it. Turning it off moves the caret to the match without selecting anything, which suits a listener who wants the match heard in the context of its line rather than announced as a selection.
+		// TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
 		.with_label(&t("&Highlight found text"))
 		.build();
 	let bookmark_sounds_check =

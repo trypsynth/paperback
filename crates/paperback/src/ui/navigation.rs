@@ -127,11 +127,7 @@ fn jump_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
 /// range form of [`jump_to_doc_offset`], for jumps to a span of text rather than to a single
 /// position. Keeps audio in sync with `start`, like `jump_to_doc_offset`.
 ///
-/// With `highlight` the range is selected, which is what a sighted reader expects: the match is
-/// picked out on screen. Without it only the caret is moved, to the end of the range, so nothing
-/// is selected and a screen reader reads the line around the caret as ordinary text instead of
-/// announcing a selected string. The caret lands at `end` either way, since that is where
-/// selecting the range leaves it.
+/// With `highlight` the range is selected, which is what a sighted reader expects: the match is picked out on screen. Without it only the caret is moved, so nothing is selected and a screen reader reads the line around the caret as ordinary text instead of announcing a selected string. The caret goes to `start`, because a screen reader speaks the character after the caret: reading the current word then reads the match, and marking a selection start there takes the match in.
 ///
 /// Only `start` is checked against the window: a match is expected to be far shorter than a
 /// window's `RELOAD_MARGIN`, so `end` lands safely inside whatever window `start` triggers.
@@ -147,7 +143,7 @@ pub fn reveal_doc_range(tab: &mut DocumentTab, start: i64, end: i64, highlight: 
 	} else {
 		// Moving the insertion point collapses any selection, so this also takes the highlight
 		// off a match found while the setting was still on.
-		tab.text_ctrl.set_insertion_point(local_end);
+		tab.text_ctrl.set_insertion_point(local_start);
 	}
 	tab.text_ctrl.show_position(local_start);
 	seek_audio_to_position(tab, start);

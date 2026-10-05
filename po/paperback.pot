@@ -1104,7 +1104,7 @@ msgstr ""
 msgid "Move to &start of line"
 msgstr ""
 
-#. TRANSLATORS: Option to highlight the text a Find matches, by selecting it. Turning it off moves the caret to the match without selecting anything, which suits a listener who wants the match heard in the context of its line rather than announced as a selection.
+#. TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
 msgid "&Highlight found text"
 msgstr ""
 
