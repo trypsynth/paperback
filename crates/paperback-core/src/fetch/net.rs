@@ -1,6 +1,7 @@
 //! Asking a server what a link holds, and downloading it.
 
 use std::{
+	fmt,
 	fs::{self, File},
 	io::{self, Read, Write},
 	path::{Path, PathBuf},
@@ -8,6 +9,7 @@ use std::{
 	time::Duration,
 };
 
+use patois::t;
 use ureq::{Agent, Body, ResponseExt, config::Config, http::Response};
 
 use super::{Verdict, disposition_file_name, file_name_for, verdict};
@@ -41,23 +43,50 @@ impl RemoteInfo {
 	}
 }
 
-#[derive(Debug, thiserror::Error)]
+/// Why a link could not be downloaded.
+#[derive(Debug)]
 pub enum FetchError {
-	#[error("the server answered with status {0}")]
+	/// The server answered with this error status.
 	Http(u16),
-	#[error("the server could not be reached: {0}")]
+	/// The server could not be reached, or the connection broke off.
 	Network(String),
-	#[error("the download could not be saved: {0}")]
+	/// The download could not be written to disk.
 	Io(String),
-	#[error("the download was cancelled")]
 	Cancelled,
-	#[error(".{0} files cannot be read, so the link was not downloaded")]
+	/// The link names this extension, which no parser reads.
 	Refused(String),
-	#[error("the secure link was redirected to an insecure address, so it was not downloaded")]
+	/// An https link was redirected to plain http.
 	Insecure,
-	#[error("the document is larger than {} MB, so it was not downloaded", .0 / (1024 * 1024))]
+	/// The document is larger than this many bytes.
 	TooLarge(u64),
 }
+
+impl fmt::Display for FetchError {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		let message = match self {
+			// TRANSLATORS: Error when downloading a document from a link fails; {} is the HTTP status code, such as 404
+			Self::Http(code) => t("the server answered with status {}").replace("{}", &code.to_string()),
+			// TRANSLATORS: Error when the server of a link cannot be reached; {} is the technical reason
+			Self::Network(reason) => t("the server could not be reached: {}").replace("{}", reason),
+			// TRANSLATORS: Error when a document downloaded from a link cannot be saved; {} is the technical reason
+			Self::Io(reason) => t("the download could not be saved: {}").replace("{}", reason),
+			// TRANSLATORS: Message when downloading a document from a link is cancelled
+			Self::Cancelled => t("the download was cancelled"),
+			// TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
+			Self::Refused(extension) => {
+				t(".{} files cannot be read, so the link was not downloaded").replace("{}", extension)
+			}
+			// TRANSLATORS: Error when a secure https link is redirected to an insecure http address
+			Self::Insecure => t("the secure link was redirected to an insecure address, so it was not downloaded"),
+			// TRANSLATORS: Error when a document behind a link is too large to download; {} is the limit in megabytes
+			Self::TooLarge(limit) => t("the document is larger than {} MB, so it was not downloaded")
+				.replace("{}", &(limit / (1024 * 1024)).to_string()),
+		};
+		f.write_str(&message)
+	}
+}
+
+impl std::error::Error for FetchError {}
 
 impl From<ureq::Error> for FetchError {
 	fn from(error: ureq::Error) -> Self {

@@ -134,6 +134,26 @@ fn a_redirect_from_https_to_plain_http_is_reported_as_insecure() {
 }
 
 #[test]
+fn every_error_says_what_went_wrong() {
+	assert_eq!(FetchError::Http(404).to_string(), "the server answered with status 404");
+	assert_eq!(FetchError::Network("timed out".into()).to_string(), "the server could not be reached: timed out");
+	assert_eq!(FetchError::Io("disk full".into()).to_string(), "the download could not be saved: disk full");
+	assert_eq!(FetchError::Cancelled.to_string(), "the download was cancelled");
+	assert_eq!(
+		FetchError::Refused("exe".into()).to_string(),
+		".exe files cannot be read, so the link was not downloaded"
+	);
+	assert_eq!(
+		FetchError::Insecure.to_string(),
+		"the secure link was redirected to an insecure address, so it was not downloaded"
+	);
+	assert_eq!(
+		FetchError::TooLarge(MAX_SIZE).to_string(),
+		"the document is larger than 16 MB, so it was not downloaded"
+	);
+}
+
+#[test]
 fn the_limit_is_16_mib() {
 	assert_eq!(MAX_SIZE, 16 * 1024 * 1024);
 }
