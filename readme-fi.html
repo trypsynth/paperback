@@ -72,7 +72,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#tuettavat-tiedostomuodot">Tuettavat tiedostomuodot</a></li>
 <li><a href="#pikanäppäimet">Pikanäppäimet</a><ul>
 <li><a href="#tiedosto-valikko">Tiedosto-valikko</a></li>
+<li><a href="#muokkaa-valikko">Muokkaa-valikko</a></li>
+<li><a href="#näytä-valikko">Näytä-valikko</a></li>
 <li><a href="#siirry-valikko">Siirry-valikko</a></li>
+<li><a href="#kirjanmerkit-valikko">Kirjanmerkit-valikko</a></li>
+<li><a href="#ääni-valikko">Ääni-valikko</a></li>
 <li><a href="#työkalut-valikko">Työkalut-valikko</a></li>
 <li><a href="#ohje-valikko">Ohje-valikko</a></li>
 <li><a href="#asiakirjanäkymän-lisänäppäimet">Asiakirjanäkymän lisänäppäimet</a></li>
@@ -143,7 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Mahdollistaa skannattujen PDF-asiakirjojen lukemisen Windowsin ja macOS:n tekstintunnistusominaisuuden avulla.</li>
 <li>Kirjanmerkit ja muistiinpanot lukukohdan merkitsemistä ja siihen palaamista varten.</li>
 <li>Kaikkia pikanäppäimiä on mahdollista muokata.</li>
-<li>Mukana tulee <code>pb</code>-komentorivityökalu, jolla voi muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon.</li>
+<li>Mukana tulee <code>pb</code>-komentorivityökalu, joka muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon. Se voi käsitellä kerralla useita asiakirjoja, tulkitsee *.pdf-tyyppiset jokerimerkit myös Windowsissa ja tallentaa muunnetut asiakirjat määritettyyn kansioon omiksi tiedostoikseen.</li>
 </ul>
 <h2 id="ruudunlukijoiden-yhteensopivuus">Ruudunlukijoiden yhteensopivuus</h2>
 <p>Paperback toimii sujuvasti kaikilla yleisimmillä ruudunlukijoilla. JAWS-käyttäjien on kuitenkin hyvä tietää kahdesta tunnetusta ongelmasta.</p>
@@ -185,105 +189,118 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Ctrl+O</code>: Avaa asiakirja.</li>
 <li><code>Ctrl+F4</code> (macOS:ssä <code>Cmd+W</code>): Sulje nykyinen asiakirja.</li>
-<li><code>Ctrl+Shift+F4</code> (macOS:ssä <code>Cmd+Shift+W</code>): Sulje kaikki avoimet asiakirjat.</li>
-<li><code>Ctrl+Shift+T</code>: Avaa viimeksi suljetun asiakirjan uudelleen.</li>
-<li><code>F5</code>: Päivitä asiakirjan sisältö. Tämä toimii riippumatta siitä, onko “Päivitä muuttuneet asiakirjat automaattisesti” -asetus käytössä.</li>
+<li><code>Ctrl+Vaihto+F4</code> (macOS:ssä <code>Cmd+Vaihto+W</code>): Sulje kaikki avoimet asiakirjat.</li>
+<li><code>Ctrl+Vaihto+T</code>: Avaa viimeksi suljetun asiakirjan uudelleen.</li>
 <li><code>Ctrl+R</code>: Näytä ”Kaikki asiakirjat” -valintaikkuna (Viimeksi avatut -valikosta).</li>
+<li><code>Ctrl+Vaihto+C</code>: Avaa asiakirjan kansio.</li>
+<li><code>Ctrl+Vaihto+E</code>: Vie asiakirjan tiedot <code>.paperback</code>-tiedostoon.</li>
+<li><code>Ctrl+Vaihto+I</code>: Tuo asiakirjan tiedot <code>.paperback</code>-tiedostosta.</li>
+<li><code>Ctrl+E</code>: Vie nykyinen asiakirja pelkkänä tekstinä.</li>
 <li><code>Ctrl+Q</code>: Lopeta (vain Windowsissa; macOS:ää käytettäessä tämä komento löytyy sovellusvalikosta).</li>
 </ul>
-<h3 id="siirry-valikko">Siirry-valikko</h3>
+<h3 id="muokkaa-valikko">Muokkaa-valikko</h3>
 <ul>
 <li><code>Ctrl+F</code>: Näytä Etsi-valintaikkuna.</li>
 <li><code>F3</code> (macOS:ssä <code>Cmd+G</code>): Etsi seuraava.</li>
-<li><code>Shift+F3</code> (macOS:ssä <code>Cmd+Shift+G</code>): Etsi edellinen.</li>
-<li><code>Ctrl+G</code> (macOS:ssä <code>Cmd+L</code>): Siirry riville.</li>
-<li><code>Ctrl+Shift+G</code> (macOS:ssä <code>Cmd+Shift+L</code>): Siirry prosenttiin.</li>
+<li><code>Vaihto+F3</code> (macOS:ssä <code>Cmd+Vaihto+G</code>): Etsi edellinen.</li>
+<li><code>Alt+F9</code> (macOS:ssä <code>Cmd+F9</code>): Merkitse valinnan alkukohta.</li>
+<li><code>Alt+F10</code> (macOS:ssä <code>Cmd+F10</code>): Kopioi valinnan merkityn alkukohdan ja kohdistimen nykyisen sijainnin välinen teksti.</li>
+<li><code>Alt+Vaihto+F9</code> (macOS:ssä <code>Cmd+Vaihto+F9</code>): Palaa valinnan alkukohtaan.</li>
+</ul>
+<h3 id="näytä-valikko">Näytä-valikko</h3>
+<ul>
+<li><code>F5</code>: Päivitä asiakirjan sisältö. Tämä toimii riippumatta siitä, onko “Päivitä muuttuneet asiakirjat automaattisesti” -asetus käytössä.</li>
+<li><code>Ctrl+Alt+W</code>: Ota automaattinen rivitys käyttöön tai poista se käytöstä.</li>
+<li><code>F11</code> (macOS:ssä <code>RawCtrl+Ctrl+F</code> eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.</li>
+<li><code>Ctrl+Vaihto+V</code>: Avaa nykyinen sisältö selainnäkymässä.</li>
+<li><code>Ctrl+U</code>: Näytä asiakirjan lähdekoodi uudessa välilehdessä.</li>
+</ul>
+<h3 id="siirry-valikko">Siirry-valikko</h3>
+<ul>
+<li><code>Ctrl+T</code>: Näytä sisällysluettelo.</li>
+<li><code>F7</code>: Näytä elementtilista.</li>
+<li><code>Ctrl+G</code> (macOS:ssä <code>Cmd+L</code>): Siirry riville.
+§* <code>Ctrl+Vaihto+G</code> (macOS:ssä <code>Cmd+Vaihto+L</code>): Siirry prosenttiin.</li>
 <li><code>Ctrl+P</code>: Siirry sivulle (jos asiakirja tukee sitä).</li>
 <li><code>=</code>: Ilmoittaa asiakirjan lukukohdan prosentteina sekä sivunumeron (esim. ”15 %, sivu 30”). Sivunumeroa ei ilmoiteta, jos asiakirjassa ei niitä ole.</li>
 <li><code>Alt+Vasen nuoli</code> (macOS:ssä <code>Cmd+[</code>): Siirry taaksepäin navigointihistoriassa.</li>
 <li><code>Alt+Oikea nuoli</code> (macOS:ssä <code>Cmd+]</code>): Siirry eteenpäin navigointihistoriassa.</li>
 <li><code>[</code>: Edellinen luku.</li>
 <li><code>]</code>: Seuraava luku.</li>
-<li><code>Shift+H</code>: Edellinen otsikko.</li>
+<li><code>Vaihto+H</code>: Edellinen otsikko.</li>
 <li><code>H</code>: Seuraava otsikko.</li>
-<li><code>Shift+1</code>–<code>Shift+6</code>: Edellinen otsikko tasoilla 1–6.</li>
+<li><code>Vaihto+1</code>–<code>Vaihto+6</code>: Edellinen otsikko tasoilla 1–6.</li>
 <li><code>1</code>–<code>6</code>: Seuraava otsikko tasoilla 1–6.</li>
-<li><code>Shift+P</code>: Edellinen sivu.</li>
+<li><code>Vaihto+P</code>: Edellinen sivu.</li>
 <li><code>P</code>: Seuraava sivu.</li>
-<li><code>Shift+B</code>: Edellinen kirjanmerkki.</li>
+<li><code>Vaihto+K</code>: Edellinen linkki.</li>
+<li><code>K</code>: Seuraava linkki.</li>
+<li><code>Vaihto+G</code>: Edellinen kuva.</li>
+<li><code>G</code>: Seuraava kuva.</li>
+<li><code>Vaihto+F</code>: Edellinen kuvitus.</li>
+<li><code>F</code>: Seuraava kuvitus.</li>
+<li><code>Vaihto+T</code>: Edellinen taulukko.</li>
+<li><code>T</code>: Seuraava taulukko.</li>
+<li><code>Vaihto+M</code>: Edellinen matemaattinen kaava.</li>
+<li><code>M</code>: Seuraava matemaattinen kaava.</li>
+<li><code>Vaihto+S</code>: Edellinen erotin.</li>
+<li><code>S</code>: Seuraava erotin.</li>
+<li><code>Vaihto+L</code>: Edellinen luettelo.</li>
+<li><code>L</code>: Seuraava luettelo.</li>
+<li><code>Vaihto+I</code>: Edellinen luettelokohde.</li>
+<li><code>I</code>: Seuraava luettelokohde.</li>
+<li><code>Vaihto+,</code>: Siirry nykyisen säilön, eli luettelon tai taulukon, alkuun.</li>
+<li><code>,</code>: Siirry nykyisen säilön, eli luettelon tai taulukon, jälkeiseen kohtaan.</li>
+</ul>
+<h3 id="kirjanmerkit-valikko">Kirjanmerkit-valikko</h3>
+<ul>
+<li><code>Ctrl+Vaihto+B</code>: Lisää kirjanmerkki nykyisen valinnan kohdalle tai kohdistimen sijaintiin tai poista se.</li>
+<li><code>Ctrl+Vaihto+N</code>: Lisää kirjanmerkin muistiinpano nykyisen valinnan tai kohdistimen kohdalle tai muokkaa sitä.</li>
+<li><code>Vaihto+B</code>: Edellinen kirjanmerkki.</li>
 <li><code>B</code>: Seuraava kirjanmerkki.</li>
-<li><code>/</code>: Lisää tilapäinen kirjanmerkki.</li>
-<li><code>\</code>: Siirry tilapäiseen kirjanmerkkiin.</li>
-<li><code>Shift+N</code>: Edellinen muistiinpano.</li>
+<li><code>Vaihto+N</code>: Edellinen muistiinpano.</li>
 <li><code>N</code>: Seuraava muistiinpano.</li>
+<li><code>Ctrl+Vaihto+W</code> (macOS:ssä <code>RawCtrl+Vaihto+W</code> eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä muistiinpanon teksti nykyisessä sijainnissa.</li>
 <li><code>Ctrl+B</code>: Siirry kaikkiin kirjanmerkkeihin ja muistiinpanoihin.</li>
 <li><code>Ctrl+Alt+B</code>: Siirry vain kirjanmerkkeihin.</li>
 <li><code>Ctrl+Alt+M</code>: Siirry vain muistiinpanoihin.</li>
-<li><code>Ctrl+Shift+W</code> (macOS:ssä <code>RawCtrl+Shift+W</code> eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä muistiinpanon teksti nykyisessä sijainnissa.</li>
-<li><code>Shift+K</code>: Edellinen linkki.</li>
-<li><code>K</code>: Seuraava linkki.</li>
-<li><code>Shift+G</code>: Edellinen kuva.</li>
-<li><code>G</code>: Seuraava kuva.</li>
-<li><code>Shift+F</code>: Edellinen kuvitus.</li>
-<li><code>F</code>: Seuraava kuvitus.</li>
-<li><code>Shift+T</code>: Edellinen taulukko.</li>
-<li><code>T</code>: Seuraava taulukko.</li>
-<li><code>Shift+M</code>: Edellinen matemaattinen kaava.</li>
-<li><code>M</code>: Seuraava matemaattinen kaava.</li>
-<li><code>Shift+S</code>: Edellinen erotin.</li>
-<li><code>S</code>: Seuraava erotin.</li>
-<li><code>Shift+L</code>: Edellinen luettelo.</li>
-<li><code>L</code>: Seuraava luettelo.</li>
-<li><code>Shift+I</code>: Edellinen luettelokohde.</li>
-<li><code>I</code>: Seuraava luettelokohde.</li>
-<li><code>Shift+,</code>: Siirry nykyisen säilön, eli luettelon tai taulukon, alkuun.</li>
-<li><code>,</code>: Siirry nykyisen säilön, eli luettelon tai taulukon, jälkeiseen kohtaan.</li>
+<li><code>/</code>: Lisää tilapäinen kirjanmerkki.</li>
+<li><code>\</code>: Siirry tilapäiseen kirjanmerkkiin.</li>
+</ul>
+<h3 id="ääni-valikko">Ääni-valikko</h3>
+<ul>
+<li><code>Ctrl+Välilyönti</code> (macOS:ssä <code>RawCtrl+Välilyönti</code> eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.</li>
+<li><code>'</code>: Kelaa äänitettä eteenpäin.</li>
+<li><code>;</code>: Kelaa äänitettä taaksepäin.</li>
+<li><code>Vaihto+'</code>: Pidennä kelauksen aikasiirtymää.</li>
+<li><code>Vaihto+;</code>: Lyhennä kelauksen aikasiirtymää.</li>
+<li><code>Ctrl+Vaihto+.</code>: Nopeuta äänitteen toistoa.</li>
+<li><code>Ctrl+Vaihto+,</code>: Hidasta äänitteen toistoa.</li>
 </ul>
 <h3 id="työkalut-valikko">Työkalut-valikko</h3>
 <ul>
 <li><code>Ctrl+W</code> (macOS:ssä <code>RawCtrl+W</code> eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä nykyisen asiakirjan sanamäärä.</li>
 <li><code>Ctrl+I</code>: Näytä asiakirjan tiedot.</li>
-<li><code>Ctrl+T</code>: Näytä sisällysluettelo.</li>
-<li><code>F7</code>: Näytä elementtilista.</li>
-<li><code>Ctrl+Shift+C</code>: Avaa asiakirjan kansio.</li>
-<li><code>Ctrl+Shift+V</code>: Avaa nykyinen sisältö selainnäkymässä.</li>
-<li><code>Ctrl+U</code>: Näytä asiakirjan lähdekoodi uudessa välilehdessä.</li>
-<li><code>Ctrl+Shift+E</code>: Vie asiakirjan tiedot <code>.paperback</code>-tiedostoon.</li>
-<li><code>Ctrl+Shift+I</code>: Tuo asiakirjan tiedot <code>.paperback</code>-tiedostosta.</li>
-<li><code>Ctrl+E</code>: Vie nykyinen asiakirja pelkkänä tekstinä.</li>
-<li><code>Ctrl+Shift+B</code>: Lisää kirjanmerkki nykyisen valinnan kohdalle tai kohdistimen sijaintiin tai poista se.</li>
-<li><code>Ctrl+Shift+N</code>: Lisää kirjanmerkin muistiinpano nykyisen valinnan tai kohdistimen kohdalle tai muokkaa sitä.</li>
-<li><code>Ctrl+Alt+W</code>: Ota automaattinen rivitys käyttöön tai poista se käytöstä.</li>
-<li><code>Ctrl+Välilyönti</code> (macOS:ssä <code>RawCtrl+Välilyönti</code> eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.</li>
-<li><code>'</code>: Kelaa äänitettä eteenpäin.</li>
-<li><code>;</code>: Kelaa äänitettä taaksepäin.</li>
-<li><code>Shift+'</code>: Pidennä äänitteen kelauksen aikasiirtymää.</li>
-<li><code>Shift+;</code>: Lyhennä äänitteen kelauksen aikasiirtymää.</li>
-<li><code>Ctrl+Shift+.</code>: Nopeuta äänitteen toistoa.</li>
-<li><code>Ctrl+Shift+,</code>: Hidasta äänitteen toistoa.</li>
-<li><code>F11</code> (macOS:ssä <code>RawCtrl+Ctrl+F</code> eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.</li>
+<li><code>Ctrl+Vaihto+O</code>: Suorita tekstintunnistus skannatun PDF-asiakirjan valituille sivuille.</li>
+<li><code>Ctrl+Vaihto+S</code>: Ota uniajastin käyttöön tai poista se käytöstä.</li>
 <li><code>Ctrl+,</code>: Avaa asetukset (löytyy macOS:ää käytettäessä sovellusvalikosta).</li>
-<li><code>Ctrl+Shift+S</code>: Ota uniajastin käyttöön tai poista se käytöstä.</li>
-<li><code>Ctrl+Shift+O</code>: Suorita tekstintunnistus skannatun PDF-asiakirjan valituille sivuille.</li>
-<li><code>Alt+F9</code> (macOS:ssä <code>Cmd+F9</code>): Merkitse valinnan alkukohta.</li>
-<li><code>Alt+F10</code> (macOS:ssä <code>Cmd+F10</code>): Kopioi valinnan merkityn alkukohdan ja kohdistimen nykyisen sijainnin välinen teksti.</li>
-<li><code>Alt+Shift+F9</code> (macOS:ssä <code>Cmd+Shift+F9</code>): Palaa valinnan alkukohtaan.</li>
 </ul>
 <h3 id="ohje-valikko">Ohje-valikko</h3>
 <ul>
 <li><code>Ctrl+F1</code>: Näytä Tietoa-valintaikkuna.</li>
 <li><code>F1</code>: Näytä ohje oletusselaimessa.</li>
-<li><code>Shift+F1</code>: Näytä ohje Paperbackissa.</li>
-<li><code>Ctrl+Shift+U</code>: Tarkista päivitykset.</li>
+<li><code>Vaihto+F1</code>: Näytä ohje Paperbackissa.</li>
+<li><code>Ctrl+Vaihto+U</code>: Tarkista päivitykset.</li>
 <li><code>Ctrl+D</code>: Avaa lahjoitussivu oletusselaimessa.</li>
 </ul>
 <h3 id="asiakirjanäkymän-lisänäppäimet">Asiakirjanäkymän lisänäppäimet</h3>
 <ul>
 <li><code>Delete</code> / <code>Laskinnäppäimistön Delete</code> välilehtien ohjausobjektissa: Sulje valittu asiakirjan välilehti.</li>
 <li><code>Ctrl+1–9</code> (macOS:ssä <code>Cmd+1–9</code>) asiakirjan tekstissä tai välilehtien ohjausobjektissa: Siirry yhdeksään ensimmäiseen avoimeen asiakirjaan niiden avausjärjestyksessä.</li>
+<li><code>Ctrl+Sarkain</code> ja <code>Ctrl+Vaihto+Sarkain</code>: Siirry seuraavaan tai edelliseen avoinna olevaan asiakirjaan. Viimeisen jälkeen siirrytään ensimmäiseen ja ensimmäistä edeltävästä viimeiseen.</li>
 <li><code>Enter</code> tai <code>Välilyönti</code> asiakirjan tekstissä: Avaa kohdistimen kohdalla oleva linkki tai näytä taulukko tai kaava omassa näkymässään.</li>
 <li><code>Enter</code> skannatun PDF-asiakirjan sivulla: Suorita sivun tekstintunnistus.</li>
-<li><code>Shift+F10</code> tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko.</li>
+<li><code>Vaihto+F10</code> tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko.</li>
 </ul>
 <h2 id="ios-ja-android">iOS ja Android</h2>
 <p>iOS- ja Android-sovellukset käyttävät samaa lukumoottoria kuin työpöytäversio, joten ne avaavat samoja tiedostomuotoja ja muistavat lukukohdan samalla tavalla. Ne on suunniteltu käytettäviksi iOS:n VoiceOver- ja Androidin TalkBack-ruudunlukijan kanssa.</p>
@@ -385,7 +402,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h5 id="yleistä">Yleistä</h5>
 <ul>
 <li>Linux-tuki AppImage- ja tar.gz-paketteina sekä työpöytäintegraatiolla, jonka ansiosta asiakirjat avautuvat suoraan tiedostonhallinnasta.</li>
-<li>Valinnan alkukohdan merkitseminen näppäinyhdistelmällä <code>Alt+F9</code>, valinnan alkukohdan ja nykyisen sijainnin välisen tekstin kopiointi näppäinyhdistelmällä <code>Alt+F10</code> ja valinnan alkukohtaan palaaminen näppäinyhdistelmällä <code>Alt+Shift+F9</code>. Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Shift- ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon kohdasta Valitse ja kopioi.</li>
+<li>Valinnan alkukohdan merkitseminen näppäinyhdistelmällä <code>Alt+F9</code>, valinnan alkukohdan ja nykyisen sijainnin välisen tekstin kopiointi näppäinyhdistelmällä <code>Alt+F10</code> ja valinnan alkukohtaan palaaminen näppäinyhdistelmällä <code>Alt+Vaihto+F9</code>. Näin voit kopioida pitkän tekstijakson tarvitsematta valita sitä Vaihto- ja nuolinäppäimillä. Kaikki kolme toimintoa löytyvät Työkalut-valikon kohdasta Valitse ja kopioi.</li>
 <li>=-näppäin ilmoittaa nyt sekä prosenttiarvon että sivunumeron (esim. ”15 %, sivu 30”). Toiminto säilyy ennallaan, jos asiakirjassa ei ole sivunumeroita.</li>
 <li>Tietoja-ikkunassa näkyvät nyt Paperbackin lisenssi ja kaikki kääntäjät.</li>
 <li>Ukrainankielinen käännös.</li>
@@ -403,11 +420,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h5 id="tekstintunnistus">Tekstintunnistus</h5>
 <ul>
-<li>Skannatuille PDF-asiakirjojen sivuille voidaan nyt suorittaa tekstintunnistus Windowsin ja macOS:n omalla tekstintunnistustoiminnolla. Suorita tunnistus skannatulle sivulle painamalla <code>Enter</code> sen kohdalla tai käytä tietylle sivualueelle usean sivun tunnistusta (<code>Ctrl+Shift+O</code>).</li>
+<li>Skannatuille PDF-asiakirjojen sivuille voidaan nyt suorittaa tekstintunnistus Windowsin ja macOS:n omalla tekstintunnistustoiminnolla. Suorita tunnistus skannatulle sivulle painamalla <code>Enter</code> sen kohdalla tai käytä tietylle sivualueelle usean sivun tunnistusta (<code>Ctrl+Vaihto+O</code>).</li>
 </ul>
 <h5 id="navigointi">Navigointi</h5>
 <ul>
-<li>EPUB- ja HTML-tiedostojen MathML-kaavat näytetään AsciiMath-muodossa MathCATia käyttäen. Navigoi kaavojen välillä painamalla <code>M</code> tai <code>Shift+M</code> ja avaa alkuperäinen MathML kaavanäkymässä painamalla <code>Enter</code> tai <code>Välilyönti</code>.</li>
+<li>EPUB- ja HTML-tiedostojen MathML-kaavat näytetään AsciiMath-muodossa MathCATia käyttäen. Navigoi kaavojen välillä painamalla <code>M</code> tai <code>Vaihto+M</code> ja avaa alkuperäinen MathML kaavanäkymässä painamalla <code>Enter</code> tai <code>Välilyönti</code>.</li>
 <li>Etsi-valintaikkunassa on uusi Etsi kaikki -painike, joka näyttää kaikki hakusanan sisältävät rivit, mikä mahdollistaa siirtymisen suoraan halutulle riville.</li>
 <li>Elementtilista (<code>F7</code>) näyttää nyt asiakirjan taulukot, luettelot ja sivut.</li>
 <li>Siirry riville-, Siirry sivulle- ja Siirry prosenttiin -toiminnot tukevat nyt merkintöjä <code>+n</code> ja <code>-n</code>, joilla voit siirtyä suhteessa nykyiseen sijaintiisi.</li>
@@ -417,7 +434,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h5 id="äänikirjat">Äänikirjat</h5>
 <ul>
-<li>Toistonopeuden muuttaminen puolikkaasta kolminkertaiseen. Käytä näppäinyhdistelmiä <code>Ctrl+Shift+.</code> ja <code>Ctrl+Shift+,</code> tai Työkalut-valikkoa.</li>
+<li>Toistonopeuden muuttaminen puolikkaasta kolminkertaiseen. Käytä näppäinyhdistelmiä <code>Ctrl+Vaihto+.</code> ja <code>Ctrl+Vaihto+,</code> tai Työkalut-valikkoa.</li>
 <li>Äänikirjojen kirjanmerkit ja muistiinpanot muistavat nyt tarkan kohdan, johon ne lisättiin.</li>
 <li>Seuraava ja edellinen sijainti (<code>Alt+Vasen nuoli</code> ja <code>Alt+Oikea nuoli</code>) toimivat nyt äänikirjoissa.</li>
 <li>Äänikirjan kuuntelun edistymistä mitataan nyt tallenteen keston perusteella, joten Siirry prosenttiin -komento ja tilarivi näyttävät kirjan todellisen kohdan.</li>
@@ -573,7 +590,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Etsi-painike sellaisten kirjojen etsimiseen, joiden hakemistopolut ovat muuttuneet.</li>
 <li>Tilasuodatin ja tilarivi, joiden avulla voit suodattaa asiakirjoja tilan perusteella sekä nähdä näytettävien ja valittujen asiakirjojen määrän.</li>
-<li><code>Ctrl+Shift+A</code>-pikanäppäin kaikkien asiakirjojen valinnan perumiseen.</li>
+<li><code>Ctrl+Vaihto+A</code>-pikanäppäin kaikkien asiakirjojen valinnan perumiseen.</li>
 </ul>
 <h5 id="asetukset-ja-luettavuus">Asetukset ja luettavuus</h5>
 <ul>
@@ -668,7 +685,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Asiakirjan tiedot- ja Kaikki asiakirjat -valintaikkunat eivät sulkeutuneet Esc-näppäimellä.</li>
 <li>Otsikkopalkki ei päivittynyt, kun asiakirja suljettiin Kaikki asiakirjat -valintaikkunasta.</li>
-<li>Readme.html-tiedostoa ei enää lisätä Kaikki asiakirjat -luetteloon, kun se avataan Shift+F1-pikanäppäimellä.</li>
+<li>Readme.html-tiedostoa ei enää lisätä Kaikki asiakirjat -luetteloon, kun se avataan Vaihto+F1-pikanäppäimellä.</li>
 <li>Asiakirjojen poistaminen Viimeksi avatut asiakirjat -valintaikkunasta sulkee nyt myös niiden aktiiviset välilehdet.</li>
 <li>Hakusuodatin säilytetään nyt myös asiakirjan poistamisen jälkeen.</li>
 </ul>
@@ -741,7 +758,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Korjattu lukijan pikavalikko, joka ei avautunut hiiren oikealla painikkeella eikä sovellusnäppäimellä.</li>
 <li>Korjattu ongelma, jonka vuoksi kohdistus siirtyi toisinaan väärään asiakirjaan, kun niitä avattiin komentoriviltä.</li>
 <li>Pelkkiä kuvia sisältävät PDF-tiedostot tunnistetaan taas ja sovellus ilmoittaa niistä.</li>
-<li>Kuvien ja kuvitusten välillä on nyt mahdollista liikkua G/Shift+G- ja F/Shift+F-näppäimillä.</li>
+<li>Kuvien ja kuvitusten välillä on nyt mahdollista liikkua G/Vaihto+G- ja F/Vaihto+F-näppäimillä.</li>
 <li>Paperback noudattaa nyt sovelluksen tumman tilan asetusta.</li>
 <li>DAISY XML -tuki on poistettu, koska sitä ei enää tarvita.</li>
 <li>Palattu käyttämään alkuperäistä Win32:n ensimmäisen kirjaimen navigointia sisällysluettelopuussa.</li>
@@ -760,7 +777,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="versio-081">Versio 0.8.1</h3>
 <ul>
-<li>Lisätty Ctrl+Shift+T viimeksi suljetun asiakirjan uudelleenavaamista varten.</li>
+<li>Lisätty Ctrl+Vaihto+T viimeksi suljetun asiakirjan uudelleenavaamista varten.</li>
 <li>Kaikki asiakirjat -valintaikkuna tukee nyt kerralla useiden avattavien asiakirjojen valintaa.</li>
 <li>Korjattu muutamia RTF-jäsentimen virheitä.</li>
 <li>Korjattu muita kuin ASCII-merkkejä (kuten bosnian š, č, ć ja ž) sisältävät tiedostopolut, jotka vioittuivat, kun tiedosto avattiin toisen Paperback-kopion kautta.</li>
@@ -777,7 +794,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Lisätty tuki DAISY XML -asiakirjoille.</li>
 <li>Lisätty tuki Flat Open Document Text -tiedostoille.</li>
 <li>Lisätty tuki Flat Open Document -esityksille.</li>
-<li>Lisätty tuki erottimiin siirtymiselle S- ja Shift+S-näppäimillä.</li>
+<li>Lisätty tuki erottimiin siirtymiselle S- ja Vaihto+S-näppäimillä.</li>
 <li>Kaikki yli 300 merkin pituiset siirtymät lisätään nyt automaattisesti navigointihistoriaan.</li>
 <li>Korjattu Paperbackin ikkunan palautus ilmaisinalueelta.</li>
 <li>Korjattu Markdown-asiakirjojen näyttäminen selainnäkymässä raakatekstinä muotoillun HTML:n sijaan.</li>
@@ -791,8 +808,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="versio-070">Versio 0.7.0</h3>
 <ul>
-<li>Lisätty taulukoiden tuki HTML- ja XHTML-pohjaisille asiakirjoille. Liiku taulukoiden välillä T:llä ja Shift+T:llä ja avaa taulukko selainnäkymässä painamalla Enter.</li>
-<li>Lisätty alkeellinen verkkorenderöinti. Avaa asiakirjan nykyinen luku verkkopohjaisessa renderöijässä painamalla Ctrl+Shift+V. Tästä on hyötyä esimerkiksi monimutkaisessa muotoilussa tai koodiesimerkeissä.</li>
+<li>Lisätty taulukoiden tuki HTML- ja XHTML-pohjaisille asiakirjoille. Liiku taulukoiden välillä T:llä ja Vaihto+T:llä ja avaa taulukko selainnäkymässä painamalla Enter.</li>
+<li>Lisätty alkeellinen verkkorenderöinti. Avaa asiakirjan nykyinen luku verkkopohjaisessa renderöijässä painamalla Ctrl+Vaihto+V. Tästä on hyötyä esimerkiksi monimutkaisessa muotoilussa tai koodiesimerkeissä.</li>
 <li>Lisätty venäjänkielinen käännös. Kiitos Ruslan Gulmagomedoville.</li>
 <li>Lisätty ”Tyhjennä kaikki” -painike Kaikki asiakirjat -valintaikkunaan.</li>
 <li>Päivitysten tarkistaja näyttää nyt julkaisutiedot, kun uusi versio on saatavilla.</li>
@@ -833,12 +850,12 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Lisätty asetus, jolla rakenteisten elementtien perusteella tapahtuva navigointi palaa asiakirjan lopussa takaisin alkuun.</li>
 <li>Työkalut-valikkoon lisätty vaihtoehto, jolla voidaan avata nykyisen asiakirjan sisältävä kansio.</li>
 <li>Lisätty melko yksinkertainen mutta erittäin tehokas päivitysjärjestelmä.</li>
-<li>Lisätty perustason uniajastin, jonka voi avata Ctrl+Shift+S-näppäinkomennolla.</li>
+<li>Lisätty perustason uniajastin, jonka voi avata Ctrl+Vaihto+S-näppäinkomennolla.</li>
 <li>Lisätty FB2-e-kirjojen jäsennystuki.</li>
 <li>Lisätty OpenDocument-esitysten jäsennystuki.</li>
 <li>Lisätty OpenDocument-tekstitiedostojen jäsennystuki.</li>
 <li>Kirjanmerkit voivat nyt kohdistua koko riville tai pelkästään valittuun tekstiin. Jos tekstiä ei ole valittuna kirjanmerkkiä luotaessa, toiminnallisuus on sama kuin ennen versiota 0.6, ja koko rivi merkitään. Mikäli tekstiä on valittuna, kirjanmerkki kohdistuu vain kyseiseen tekstiin.</li>
-<li>Kirjanmerkeissä voi nyt olla valinnaisia muistiinpanoja. Siirry muistiinpanoja sisältävien kirjanmerkkien välillä N:llä ja Shift+N:llä, tai avaa kirjanmerkkien valintaikkuna, jossa kaikki kirjanmerkit, vain muistiinpanot tai vain ilman muistiinpanoja olevat kirjanmerkit voidaan valita tietyillä pikanäppäimillä.</li>
+<li>Kirjanmerkeissä voi nyt olla valinnaisia muistiinpanoja. Siirry muistiinpanoja sisältävien kirjanmerkkien välillä N:llä ja Vaihto+N:llä, tai avaa kirjanmerkkien valintaikkuna, jossa kaikki kirjanmerkit, vain muistiinpanot tai vain ilman muistiinpanoja olevat kirjanmerkit voidaan valita tietyillä pikanäppäimillä.</li>
 <li>Kirjanmerkeissä ei enää ole ärsyttävää ”bookmark x” -etuliitettä kirjanmerkkien valintaikkunassa.</li>
 <li>XML:ltä näyttävää HTML-koodia sisältävät EPUB-kirjat käsitellään nyt oikein.</li>
 <li>Suurten Markdown-asiakirjojen lataaminen korjattu.</li>
@@ -852,10 +869,10 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Asetukset ladataan ja tallennetaan nyt asianmukaisesti, kun Paperback on käynnissä järjestelmänvalvojana.</li>
 <li>Kirjanmerkki voidaan nyt poistaa suoraan kirjanmerkkien valintaikkunasta.</li>
 <li>Asiakirjan kirjanmerkkien ja lukukohdan tuonti ja vienti on nyt mahdollista. Luotu tiedosto nimetään asiakirjan tiedostonimen perusteella ja sen tunniste on .paperback. Mikäli tällainen tiedosto löytyy ladattaessa asiakirjan kansiosta, se ladataan automaattisesti. Muussa tapauksessa voit tuoda sen manuaalisesti Työkalut-valikon toiminnolla.</li>
-<li>Asiakirjojen sisäiset linkit ovat nyt täysin tuettuja. Siirry niiden välillä eteen- ja taaksepäin K- ja Shift+K-näppäimillä ja avaa linkki tai siirry sen kohdalle Enterillä.</li>
+<li>Asiakirjojen sisäiset linkit ovat nyt täysin tuettuja. Siirry niiden välillä eteen- ja taaksepäin K- ja Vaihto+K-näppäimillä ja avaa linkki tai siirry sen kohdalle Enterillä.</li>
 <li>Tehty useita sisäisiä uudelleenjärjestelyjä, jotka nopeuttavat ohjelmaa ja pienentävät binääriä.</li>
 <li>Markdown-sisältö esikäsitellään nyt CommonMark-yhteensopivaksi ennen renderöintiä.</li>
-<li>Luetteloiden ja niiden kohteiden välillä navigointia tuetaan nyt täysin. Voit siirtyä luetteloiden välillä L- ja Shift+L-näppäimillä ja luettelokohteiden välillä I- ja Shift+I-näppäimillä.</li>
+<li>Luetteloiden ja niiden kohteiden välillä navigointia tuetaan nyt täysin. Voit siirtyä luetteloiden välillä L- ja Vaihto+L-näppäimillä ja luettelokohteiden välillä I- ja Vaihto+I-näppäimillä.</li>
 <li>Tavallisen Delete-näppäimen lisäksi myös numeronäppäimistön Deleteä voi  nyt käyttää asiakirjojen poistamiseen välilehtipalkista.</li>
 <li>Paperback voidaan nyt haluttaessa pienentää ilmaisinalueelle. Tämä asetus on oletusarvoisesti poissa käytöstä, mutta kun se otetaan käyttöön, Paperbackin järjestelmävalikon pienennystoiminto siirtää sovelluksen ilmaisinalueelle, josta se voidaan palauttaa napsauttamalla Paperbackin kuvaketta.</li>
 <li>Paperback on nyt käännettävissä eri kielille. Sen tukemien kielten luettelo on toistaiseksi melko pieni, mutta se kasvaa jatkuvasti.</li>
@@ -897,13 +914,13 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="versio-040">Versio 0.4.0</h3>
 <ul>
 <li>Lisätty CHM-tiedostojen tuki.</li>
-<li>Lisätty kirjanmerkkien tuki. Voit lisätä niitä asiakirjoihin rajattomasti. Siirry niiden välillä eteen- ja taaksepäin B- ja Shift+B-näppäimillä, lisää kirjanmerkki näppäinkomennolla Ctrl+Shift+B ja avaa tiettyyn kirjanmerkkiin siirtävä valintaikkuna näppäinkomennolla Ctrl+B.</li>
+<li>Lisätty kirjanmerkkien tuki. Voit lisätä niitä asiakirjoihin rajattomasti. Siirry niiden välillä eteen- ja taaksepäin B- ja Vaihto+B-näppäimillä, lisää kirjanmerkki näppäinkomennolla Ctrl+Vaihto+B ja avaa tiettyyn kirjanmerkkiin siirtävä valintaikkuna näppäinkomennolla Ctrl+B.</li>
 <li>Massamuistiversion ZIP-paketin lisäksi on nyt saatavilla asennusohjelma. Se asentaa Paperbackin Program Files -hakemistoon ja määrittää tiedostoliitokset automaattisesti.</li>
 <li>BOM-merkkejä sisältävät tekstitiedostot dekoodataan nyt oikein, eikä BOM enää näy tekstin alussa.</li>
 <li>Tilariville lisätty paljon uutta tietoa. Se näyttää nyt nykyisen rivin, merkin ja luetun osuuden prosentteina.</li>
 <li>HTML-kommentteja tai script- ja style-tagien sisältöä ei enää näytetä tekstitulosteessa.</li>
 <li>Jos komentorivillä annetaan suhteellinen polku, Paperback tulkitsee sen oikein.</li>
-<li>Prosenttisiirtymää käsitellään nyt omassa liukusäätimeen perustuvassa valintaikkunassaan, joka voidaan avata näppäinkomennolla Ctrl+Shift+G.</li>
+<li>Prosenttisiirtymää käsitellään nyt omassa liukusäätimeen perustuvassa valintaikkunassaan, joka voidaan avata näppäinkomennolla Ctrl+Vaihto+G.</li>
 <li>Asiakirjoille, joilla ei ole nimeä tai tekijää, asetetaan nyt aina niiden oletusarvot.</li>
 <li>Sijainnin tallennuslogiikka on nyt paljon älykkäämpi ja kirjoittaa levylle vain silloin, kun se on ehdottoman välttämätöntä.</li>
 <li>Asiakirja, joka oli aktiivisena Paperbackin sulkemishetkellä, avataan nyt uudelleen sovelluksen käynnistyessä.</li>
@@ -945,7 +962,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Lisätty viimeksi avattujen asiakirjojen valikko. Siihen tallennetaan tällä hetkellä 10 viimeksi avattua asiakirjaa, ja Enter-näppäimen painaminen jonkin kohteen kohdalla avaa kyseisen asiakirjan luettavaksi.</li>
 <li>Etsi-valintaikkuna on kirjoitettu kokonaan uudelleen, joten sitä on nyt paljon helpompi käyttää. Siihen on lisätty myös viimeisimmän 25 haun historia sekä sääntölausekkeiden tuki.</li>
 <li>Aiemmin avatut asiakirjat muistetaan nyt myös sovelluksen uudelleenkäynnistyksen jälkeen. Tämä toiminto voidaan määrittää Työkalut-valikon uudesta Asetukset-kohdasta.</li>
-<li>Lisätty näppäinkomento Shift+F1, joka avaa readme-tiedoston suoraan Paperbackissa.</li>
+<li>Lisätty näppäinkomento Vaihto+F1, joka avaa readme-tiedoston suoraan Paperbackissa.</li>
 </ul>
 <h3 id="versio-010">Versio 0.1.0</h3>
 <ul>
