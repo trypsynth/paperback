@@ -65,7 +65,7 @@ fn main() -> Result<()> {
 	// rather than being left for a shell that may not expand them. A pattern that matched nothing
 	// is carried rather than raised, so one mistyped pattern does not cost the reader the rest.
 	let inputs = inputs::collect(&given);
-	let destination = destination(&cli, inputs.files.len())?;
+	let destination = destination(&cli, inputs.sources.len())?;
 	run(&cli, &inputs, selection.as_ref(), &destination)
 }
 
@@ -143,8 +143,8 @@ fn run(
 		// before anything has been read rather than as the same failure for every file.
 		fs::create_dir_all(dir).with_context(|| format!("failed to create the folder {}", dir.display()))?;
 	}
-	let files = &inputs.files;
-	let reporting = files.len() > 1 || matches!(destination, Destination::Directory(_));
+	let sources = &inputs.sources;
+	let reporting = sources.len() > 1 || matches!(destination, Destination::Directory(_));
 	let mut converter = Converter::new(cli);
 	let mut tally = Tally::default();
 	let mut written: HashMap<PathBuf, PathBuf> = HashMap::new();
@@ -158,7 +158,8 @@ fn run(
 		eprintln!("pb: {problem}");
 		tally.failed += 1;
 	}
-	for file in files {
+	for source in sources {
+		let inputs::Source::File(file) = source else { continue };
 		// Before the document is touched, not after it is written. A run over a folder is a long
 		// silence between the first prompt and the summary, and it is what tells a reader which
 		// document a password prompt belongs to.
