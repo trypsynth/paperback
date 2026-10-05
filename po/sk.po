@@ -3787,7 +3787,7 @@ msgstr "Žiadne podporované knihy alebo priečinky."
 #. TRANSLATORS: TalkBack description of a file browser entry's type, read as e.g. "myfile.epub, File, modified ..."
 #: kt
 msgid "Folder"
-msgstr "Súbor"
+msgstr "Priečinok"
 
 #. TRANSLATORS: Display name for the device's root storage folder in the in-app file browser
 #: kt
@@ -4309,7 +4309,7 @@ msgstr "Nadpis {}"
 #. TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
 #: kt
 msgid "go to heading"
-msgstr "prejdete na nadpis"
+msgstr "prejsť na nadpis"
 
 #: swift kt
 msgid "{}, Level {}"
@@ -4318,22 +4318,22 @@ msgstr "{}, Úrovne {}"
 #. TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
 #: kt
 msgid "go to link"
-msgstr "prejdete na odkaz"
+msgstr "prejsť na odkaz"
 
 #. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
 #: kt
 msgid "show import and export options"
-msgstr "zobraziť možnosti importovania a exportovania"
+msgstr "zobraziť možnosti importu a exportu"
 
 #. TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
 #: kt
 msgid "open"
-msgstr "otvoríte"
+msgstr "otvoriť"
 
 #. TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
 #: kt
 msgid "go to chapter"
-msgstr "prejdete na kapitolu"
+msgstr "prejsť na kapitolu"
 
 #. TRANSLATORS: Sentence spoken aloud to preview the selected speech engine, voice, rate and pitch
 #: kt
