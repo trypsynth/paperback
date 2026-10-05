@@ -25,7 +25,7 @@ Paperback draait op Windows 10/11, alle moderne versies van macOS op ARM, Linux,
 * Leest gescande PDF-pagina's met de OCR die in Windows en macOS is ingebouwd.
 * Bladwijzers en notities, zodat je kunt markeren waar je gebleven bent en er later naar terug kunt gaan.
 * Elke toetsenbordsneltoets kan worden aangepast.
-* Wordt geleverd met `pb`, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, vouwt `*.pdf` enzovoort zelf uit zodat dezelfde opdracht op Windows werkt, en kan één bestand per document naar een map schrijven.
+* Wordt geleverd met `pb`, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, verwerkt jokertekens zoals `*.pdf` zelf zodat dezelfde opdracht ook op Windows werkt, en kan per document één bestand in een map schrijven.
 
 ## Schermlezercompatibiliteit
 
@@ -97,12 +97,12 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Alt+F10` (macOS: `Cmd+F10`): Alles van het gemarkeerde begin van de selectie tot de huidige positie kopiëren.
 * `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Terugspringen naar het gemarkeerde begin van de selectie, waarbij de markering blijft staan.
 
-### Menu Weergave
+### Menu Beeld
 
-* `F5`: Het huidige document opnieuw van schijf inlezen. Werkt ongeacht of "Automatisch gewijzigde documenten opnieuw laden" in Instellingen is ingeschakeld.
+* `F5`: Het huidige document opnieuw van schijf inlezen. Werkt ongeacht of "Gewijzigde documenten automatisch opnieuw laden" in Instellingen is ingeschakeld.
 * `Ctrl+Alt+W`: Automatische terugloop in-/uitschakelen.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, oftewel Control+Command+F): Volledig scherm in-/uitschakelen.
-* `Ctrl+Shift+V`: De huidige inhoud openen in Webweergave.
+* `Ctrl+Shift+V`: De huidige inhoud openen in webweergave.
 * `Ctrl+U`: De documentbron in een nieuw tabblad weergeven.
 
 ### Menu Ga
@@ -187,7 +187,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 
 * `Delete` / `Numpad Delete` op het tabbladelement: Het geselecteerde documenttabblad sluiten.
 * `Ctrl+1` t/m `Ctrl+9` (macOS: `Cmd+1` t/m `Cmd+9`) in de documenttekst of op het tabbladelement: Ga naar de eerste negen geopende documenten, in de volgorde waarin ze werden geopend.
-* `Ctrl+Tab` en `Ctrl+Shift+Tab`: Ga naar het volgende of vorige geopende document, met omwikkeling aan beide uiteinden.
+* `Ctrl+Tab` en `Ctrl+Shift+Tab`: Ga naar het volgende of vorige geopende document; na het laatste kom je weer bij het eerste en andersom.
 * `Enter` of `Spatie` in de documenttekst: Een link volgen of een tabel- of formuleweergave openen op de cursor.
 * `Enter` op een gescande PDF-pagina: De pagina herkennen met OCR.
 * `Shift+F10` of de menu- of applicatietoets in de documenttekst: Het contextmenu openen.
