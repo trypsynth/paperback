@@ -12,19 +12,20 @@
 
 use std::{
 	collections::HashSet,
-	io::BufRead,
 	path::{Component, Path, PathBuf},
 };
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 
 /// One input as the reader gave it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Given {
 	/// An argument on the command line, which may be a pattern.
 	Argument(PathBuf),
-	/// A line of the list on stdin, taken as written.
+	/// A line of the list read with `--files-from`, which is never a pattern.
 	Listed(PathBuf),
+	/// A line of that list that could not be read, described for the reader.
+	Unreadable(String),
 }
 
 /// What the arguments on the command line named.
@@ -35,6 +36,8 @@ pub struct Inputs {
 	/// Patterns that matched no file. Carried rather than refused, so that one mistyped pattern
 	/// among several does not stop the run before the patterns that were right have converted.
 	pub unmatched: Vec<String>,
+	/// Listed inputs that cannot be converted, described for the reader.
+	pub problems: Vec<String>,
 }
 
 /// Whether an argument is a pattern to expand rather than a path to convert.
@@ -46,18 +49,27 @@ pub fn is_pattern(arg: &Path) -> bool {
 	arg.as_os_str().to_string_lossy().contains(['*', '?']) && !arg.exists()
 }
 
-/// Every file the inputs name, and every pattern among the arguments that matched nothing.
+/// Every file the inputs name, every pattern among the arguments that matched nothing, and every
+/// listed input that cannot be converted.
 ///
-/// A listed input, and an argument that is not a pattern, is passed through as it is, whether or
-/// not it exists: `input::check` says why a missing file is a problem in terms the reader can act
-/// on, which is a better place for that than here.
+/// An argument that is not a pattern, and a listed input without `*` or `?`, is passed through as
+/// it is, whether or not it exists: `input::check` says why a missing file is a problem in terms
+/// the reader can act on, which is a better place for that than here.
 #[must_use]
 pub fn collect(given: &[Given]) -> Inputs {
 	let mut collected = Inputs::default();
 	for item in given {
 		let arg = match item {
+			Given::Listed(path) if is_pattern(path) => {
+				collected.problems.push(listed_pattern(path));
+				continue;
+			}
 			Given::Listed(path) => {
 				collected.files.push(path.clone());
+				continue;
+			}
+			Given::Unreadable(problem) => {
+				collected.problems.push(problem.clone());
 				continue;
 			}
 			Given::Argument(arg) => arg,
@@ -77,55 +89,76 @@ pub fn collect(given: &[Given]) -> Inputs {
 	collected
 }
 
-/// The arguments, with a `-` replaced by the inputs listed on stdin, one per line.
-///
-/// A listed line is taken as written, never as a pattern. Blank lines are skipped, and so are
-/// lines starting with `#` unless a file of that name exists. Surrounding whitespace, Windows line
-/// ends and a byte order mark are taken off. stdin is read only when a `-` is among the arguments.
+/// The arguments, followed by the entries of the list read with `--files-from`.
 ///
 /// # Errors
 ///
-/// Returns an error if `-` is given more than once, if a line of the list is not UTF-8, or if `-`
-/// is the only argument and the list names nothing.
-pub fn with_stdin_list(args: &[PathBuf], stdin: impl BufRead) -> Result<Vec<Given>> {
-	let dashes = args.iter().filter(|arg| is_stdin(arg)).count();
-	if dashes == 0 {
-		return Ok(args.iter().cloned().map(Given::Argument).collect());
-	}
-	if dashes > 1 {
-		bail!("- was given {dashes} times, but the list on stdin can be read only once");
-	}
-	let listed = read_list(stdin, |entry| Path::new(entry).exists())?;
-	if listed.is_empty() && args.len() == 1 {
-		bail!("the list on stdin names no documents");
-	}
-	let mut given = Vec::with_capacity(args.len() - 1 + listed.len());
-	for arg in args {
-		if is_stdin(arg) {
-			given.extend(listed.iter().map(|entry| Given::Listed(PathBuf::from(entry))));
-		} else {
-			given.push(Given::Argument(arg.clone()));
+/// Returns an error if there is a list, it names nothing, and no arguments were given either.
+pub fn gather(args: &[PathBuf], listed: Option<Vec<Given>>) -> Result<Vec<Given>> {
+	let mut given: Vec<Given> = args.iter().cloned().map(Given::Argument).collect();
+	if let Some(listed) = listed {
+		if listed.is_empty() && given.is_empty() {
+			bail!("the list given with --files-from names no documents");
 		}
+		given.extend(listed);
 	}
 	Ok(given)
 }
 
-fn is_stdin(arg: &Path) -> bool {
-	arg.as_os_str() == "-"
-}
-
-/// The entries of the list; a `#` line is a comment unless `exists` says a file of that name does.
-fn read_list(stdin: impl BufRead, exists: impl Fn(&str) -> bool) -> Result<Vec<String>> {
+/// The entries of a list, one path per line.
+///
+/// Surrounding spaces, Windows line ends and byte order marks are taken off. Blank lines are
+/// skipped, and so are lines starting with `#` unless `exists` says a file of that name does. A
+/// list starting with a UTF-16 byte order mark is read as UTF-16. A line that is not UTF-8 is
+/// decoded with `fallback`, and becomes [`Given::Unreadable`] when that gives nothing.
+pub fn read_list(
+	bytes: &[u8],
+	exists: impl Fn(&str) -> bool,
+	fallback: impl Fn(&[u8]) -> Option<String>,
+) -> Vec<Given> {
+	let lines: Vec<Option<String>> = utf16(bytes).map_or_else(
+		|| bytes.split(|&byte| byte == b'\n').map(|line| decode_line(line, &fallback)).collect(),
+		|text| text.lines().map(|line| Some(line.to_string())).collect(),
+	);
 	let mut listed = Vec::new();
-	for (index, line) in stdin.lines().enumerate() {
-		let line = line.with_context(|| format!("line {} of the list on stdin is not UTF-8 text", index + 1))?;
+	for (index, line) in lines.into_iter().enumerate() {
+		let Some(line) = line else {
+			listed.push(Given::Unreadable(format!("line {} of the list is not UTF-8 text", index + 1)));
+			continue;
+		};
 		let entry = line.trim_start_matches('\u{feff}').trim();
 		if entry.is_empty() || (entry.starts_with('#') && !exists(entry)) {
 			continue;
 		}
-		listed.push(entry.to_string());
+		listed.push(Given::Listed(PathBuf::from(entry)));
 	}
-	Ok(listed)
+	listed
+}
+
+fn decode_line(line: &[u8], fallback: &impl Fn(&[u8]) -> Option<String>) -> Option<String> {
+	let line = line.strip_suffix(b"\r").unwrap_or(line);
+	std::str::from_utf8(line).map(str::to_string).ok().or_else(|| fallback(line))
+}
+
+/// The text of a list that starts with a UTF-16 byte order mark, little- or big-endian.
+fn utf16(bytes: &[u8]) -> Option<String> {
+	let (little_endian, body) = match bytes {
+		[0xFF, 0xFE, rest @ ..] => (true, rest),
+		[0xFE, 0xFF, rest @ ..] => (false, rest),
+		_ => return None,
+	};
+	let (pairs, _) = body.as_chunks::<2>();
+	let units =
+		pairs.iter().map(|&pair| if little_endian { u16::from_le_bytes(pair) } else { u16::from_be_bytes(pair) });
+	Some(char::decode_utf16(units).map(|decoded| decoded.unwrap_or(char::REPLACEMENT_CHARACTER)).collect())
+}
+
+/// What a listed name holding `*` or `?` is reported as, since a list is not expanded.
+fn listed_pattern(path: &Path) -> String {
+	format!(
+		"{}: patterns are not expanded in a list given with --files-from\nIf the name had other letters in place of a ?, the program that wrote the list could not encode them; in Windows PowerShell 5.1, run $OutputEncoding = [Text.UTF8Encoding]::new() first",
+		path.display()
+	)
 }
 
 /// The files one pattern matches, sorted, and whether it matched anything.
@@ -198,7 +231,7 @@ pub fn same_file(path: &Path) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-	use std::{env, fs, io, process, sync::atomic::AtomicU64};
+	use std::{env, fs, process, sync::atomic::AtomicU64};
 
 	use super::*;
 
@@ -430,104 +463,106 @@ mod tests {
 		collect(&given)
 	}
 
-	fn listed(args: &[&str], stdin: &str) -> anyhow::Result<Vec<Given>> {
-		let args: Vec<PathBuf> = args.iter().map(PathBuf::from).collect();
-		with_stdin_list(&args, io::Cursor::new(stdin.as_bytes()))
+	fn no_fallback(_: &[u8]) -> Option<String> {
+		None
 	}
 
-	fn on_stdin(names: &[&str]) -> Vec<Given> {
+	fn read(bytes: &[u8]) -> Vec<Given> {
+		read_list(bytes, |_| false, no_fallback)
+	}
+
+	fn listed(names: &[&str]) -> Vec<Given> {
 		names.iter().map(|name| Given::Listed(PathBuf::from(name))).collect()
 	}
 
 	#[test]
-	fn a_dash_is_replaced_by_the_inputs_listed_on_stdin() {
-		let inputs = listed(&["a.epub", "-", "d.pdf"], "b.epub\nc.docx\n").expect("a list");
-		assert_eq!(
-			inputs,
-			[
-				Given::Argument("a.epub".into()),
-				Given::Listed("b.epub".into()),
-				Given::Listed("c.docx".into()),
-				Given::Argument("d.pdf".into())
-			]
-		);
+	fn the_listed_inputs_follow_the_typed_ones() {
+		let given = gather(&[PathBuf::from("a.epub")], Some(listed(&["b.epub"]))).expect("inputs");
+		assert_eq!(given, [Given::Argument("a.epub".into()), Given::Listed("b.epub".into())]);
+	}
+
+	#[test]
+	fn without_a_list_the_arguments_are_the_inputs() {
+		assert_eq!(gather(&[PathBuf::from("a.epub")], None).expect("inputs"), [Given::Argument("a.epub".into())]);
+	}
+
+	#[test]
+	fn an_empty_list_with_nothing_else_is_refused() {
+		let error = gather(&[], Some(Vec::new())).expect_err("no inputs at all").to_string();
+		assert!(error.contains("--files-from"), "{error}");
+	}
+
+	#[test]
+	fn an_empty_list_beside_typed_inputs_is_accepted() {
+		assert_eq!(gather(&[PathBuf::from("a.epub")], Some(Vec::new())).expect("inputs").len(), 1);
 	}
 
 	#[test]
 	fn blank_lines_and_comments_in_the_list_are_skipped() {
-		let inputs = listed(&["-"], "# books\n\nb.epub\n   \n  # more\nc.pdf").expect("a list");
-		assert_eq!(inputs, on_stdin(&["b.epub", "c.pdf"]));
+		assert_eq!(read(b"# books\n\nb.epub\n   \n  # more\nc.pdf"), listed(&["b.epub", "c.pdf"]));
 	}
 
 	#[test]
 	fn a_hash_line_naming_a_file_that_exists_is_that_file() {
-		let listed =
-			read_list(io::Cursor::new("#1 Hit.epub\n# a comment\n"), |entry| entry == "#1 Hit.epub").expect("a list");
-		assert_eq!(listed, ["#1 Hit.epub"]);
+		let given = read_list(b"#1 Hit.epub\n# a comment\n", |entry| entry == "#1 Hit.epub", no_fallback);
+		assert_eq!(given, listed(&["#1 Hit.epub"]));
 	}
 
 	#[test]
-	fn a_listed_line_is_taken_as_written_and_not_as_a_pattern() {
+	fn windows_line_ends_and_a_byte_order_mark_are_taken_off() {
+		assert_eq!(read("\u{feff}b.epub\r\nc.pdf\r\n".as_bytes()), listed(&["b.epub", "c.pdf"]));
+	}
+
+	#[test]
+	fn surrounding_spaces_are_taken_off_and_inner_ones_kept() {
+		assert_eq!(read(b"  my book.epub  \n"), listed(&["my book.epub"]));
+	}
+
+	#[test]
+	fn a_utf16_list_is_read() {
+		let mut bytes = vec![0xFF, 0xFE];
+		bytes.extend("caf\u{e9}.epub\r\nb.pdf\r\n".encode_utf16().flat_map(u16::to_le_bytes));
+		assert_eq!(read(&bytes), listed(&["caf\u{e9}.epub", "b.pdf"]));
+	}
+
+	#[test]
+	fn a_line_that_is_not_utf8_is_decoded_with_the_fallback() {
+		let latin1 = |bytes: &[u8]| Some(bytes.iter().map(|&byte| char::from(byte)).collect());
+		assert_eq!(read_list(b"caf\xe9.txt\n", |_| false, latin1), listed(&["caf\u{e9}.txt"]));
+	}
+
+	#[test]
+	fn a_line_nothing_can_decode_is_one_failed_input_and_the_rest_are_kept() {
+		let given = read(b"b.epub\n\xff\xfe.pdf\nc.pdf\n");
+		assert_eq!(given.len(), 3, "{given:?}");
+		assert_eq!(given[0], Given::Listed("b.epub".into()));
+		assert!(matches!(&given[1], Given::Unreadable(problem) if problem.contains("line 2")), "{:?}", given[1]);
+		assert_eq!(given[2], Given::Listed("c.pdf".into()));
+	}
+
+	#[test]
+	fn an_unreadable_line_is_reported_rather_than_converted() {
+		let collected = collect(&[Given::Unreadable("line 2 of the list is not UTF-8 text".to_string())]);
+		assert!(collected.files.is_empty());
+		assert_eq!(collected.problems, ["line 2 of the list is not UTF-8 text"]);
+	}
+
+	#[test]
+	fn a_listed_name_with_a_star_or_a_question_mark_is_reported_rather_than_expanded() {
 		let dir = TempDir::new("listed-literal");
 		fs::write(dir.join("ab.epub"), b"x").expect("write");
-		let mangled = dir.pattern("??.epub");
-		let given = listed(&["-"], &format!("{}\n", mangled.display())).expect("a list");
-		let collected = collect(&given);
-		assert_eq!(collected.files, [mangled]);
-		assert!(collected.unmatched.is_empty(), "{:?}", collected.unmatched);
+		let collected = collect(&[Given::Listed(dir.pattern("??.epub"))]);
+		assert!(collected.files.is_empty(), "{:?}", collected.files);
+		assert_eq!(collected.problems.len(), 1, "{:?}", collected.problems);
+		assert!(collected.problems[0].contains("not expanded"), "{}", collected.problems[0]);
+		assert!(collected.problems[0].contains("$OutputEncoding"), "{}", collected.problems[0]);
 	}
 
 	#[test]
 	fn a_pattern_typed_beside_a_list_still_expands() {
 		let dir = TempDir::new("typed-pattern");
 		fs::write(dir.join("a.epub"), b"x").expect("write");
-		let given = listed(&[dir.pattern("*.epub").to_str().expect("a UTF-8 path"), "-"], "b.pdf\n").expect("a list");
+		let given = gather(&[dir.pattern("*.epub")], Some(listed(&["b.pdf"]))).expect("inputs");
 		assert_eq!(names(&collect(&given).files), ["a.epub", "b.pdf"]);
-	}
-
-	#[test]
-	fn windows_line_ends_and_a_byte_order_mark_are_taken_off() {
-		let inputs = listed(&["-"], "\u{feff}b.epub\r\nc.pdf\r\n").expect("a list");
-		assert_eq!(inputs, on_stdin(&["b.epub", "c.pdf"]));
-	}
-
-	#[test]
-	fn surrounding_spaces_are_taken_off_and_inner_ones_kept() {
-		let inputs = listed(&["-"], "  my book.epub  \n").expect("a list");
-		assert_eq!(inputs, on_stdin(&["my book.epub"]));
-	}
-
-	#[test]
-	fn a_second_dash_is_refused() {
-		let error = listed(&["-", "-"], "b.epub\n").expect_err("two dashes").to_string();
-		assert!(error.contains("once"), "{error}");
-	}
-
-	#[test]
-	fn without_a_dash_stdin_is_left_unread() {
-		struct Untouched;
-		impl io::Read for Untouched {
-			fn read(&mut self, _: &mut [u8]) -> io::Result<usize> {
-				panic!("stdin was read without a - in the arguments")
-			}
-		}
-		let args = [PathBuf::from("a.epub")];
-		assert_eq!(
-			with_stdin_list(&args, io::BufReader::new(Untouched)).expect("no list"),
-			[Given::Argument("a.epub".into())]
-		);
-	}
-
-	#[test]
-	fn a_dash_alone_with_an_empty_list_is_refused() {
-		let error = listed(&["-"], "# nothing yet\n\n").expect_err("no inputs at all").to_string();
-		assert!(error.contains("stdin"), "{error}");
-	}
-
-	#[test]
-	fn a_list_that_is_not_utf8_names_the_line() {
-		let args = [PathBuf::from("-")];
-		let error = with_stdin_list(&args, io::Cursor::new(&b"b.epub\n\xff\xfe.pdf\n"[..])).expect_err("not UTF-8");
-		assert!(error.to_string().contains("line 2"), "{error}");
 	}
 }

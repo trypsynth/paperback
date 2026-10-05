@@ -20,5 +20,8 @@ paperback-core = { path = "../paperback-core" }
 rpassword = "7.5.4"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_Globalization", "Win32_System_Console"] }
+
 [lints]
 workspace = true

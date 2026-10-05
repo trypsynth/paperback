@@ -3,7 +3,7 @@ use std::{
 	env,
 	fmt::Write as _,
 	fs,
-	io::{self, Write as _},
+	io::{self, IsTerminal as _, Read as _, Write as _},
 	path::{Path, PathBuf},
 	process,
 };
@@ -18,6 +18,7 @@ use paperback_core::{
 };
 
 mod cli;
+mod console;
 mod formats;
 mod input;
 mod inputs;
@@ -58,13 +59,38 @@ fn main() -> Result<()> {
 	// Read up front so a bad specification is refused before a long parse rather than after it.
 	// The pages themselves are chosen below, once the document has been read and its length known.
 	let selection = cli.pages.as_deref().map(PageSelection::parse).transpose()?;
-	let given = inputs::with_stdin_list(&cli.input, io::stdin().lock())?;
+	let listed = cli.files_from.as_deref().map(read_files_from).transpose()?;
+	let given = inputs::gather(&cli.input, listed)?;
 	// A Windows shell hands `*.pdf` over as one literal argument, so the patterns are expanded here
 	// rather than being left for a shell that may not expand them. A pattern that matched nothing
 	// is carried rather than raised, so one mistyped pattern does not cost the reader the rest.
 	let inputs = inputs::collect(&given);
 	let destination = destination(&cli, inputs.files.len())?;
 	run(&cli, &inputs, selection.as_ref(), &destination)
+}
+
+/// The entries of the list `--files-from` names, read from stdin when it names `-`.
+fn read_files_from(path: &Path) -> Result<Vec<inputs::Given>> {
+	let bytes = if path.as_os_str() == "-" {
+		stdin_list_allowed(io::stdin().is_terminal())?;
+		let mut bytes = Vec::new();
+		io::stdin().lock().read_to_end(&mut bytes).context("failed to read the list from stdin")?;
+		bytes
+	} else {
+		fs::read(path).with_context(|| format!("failed to read the list {}", path.display()))?
+	};
+	Ok(inputs::read_list(&bytes, |entry| Path::new(entry).exists(), console::text))
+}
+
+/// Refuses `--files-from -` when stdin is the console, where pb would otherwise wait in silence
+/// for a list to be typed.
+fn stdin_list_allowed(stdin_is_terminal: bool) -> Result<()> {
+	if stdin_is_terminal {
+		bail!(
+			"--files-from - reads the list from a pipe or a redirected file, but stdin is the console\nPipe a list in, for example: dir /b *.pdf | pb --files-from - --output-dir out"
+		);
+	}
+	Ok(())
 }
 
 /// Where the output of this run goes, and whether the instruction to put it there is one that can
@@ -118,6 +144,10 @@ fn run(
 	// for the run it was meant to be part of.
 	for pattern in &inputs.unmatched {
 		eprintln!("pb: no file matches {pattern:?}");
+		tally.failed += 1;
+	}
+	for problem in &inputs.problems {
+		eprintln!("pb: {problem}");
 		tally.failed += 1;
 	}
 	for file in files {
@@ -753,6 +783,13 @@ mod tests {
 		fs::write(&real, b"x").expect("write");
 		assert!(!inputs::is_pattern(&real), "a file that exists is a path whatever else it holds");
 		assert!(inputs::is_pattern(&dir.join("*.pdf")));
+	}
+
+	#[test]
+	fn a_list_from_stdin_is_refused_when_stdin_is_the_console() {
+		let error = stdin_list_allowed(true).expect_err("the console").to_string();
+		assert!(error.contains("console"), "{error}");
+		stdin_list_allowed(false).expect("a pipe or a redirected file");
 	}
 
 	/// A run remembers one password and offers it to every document after the first, rather than

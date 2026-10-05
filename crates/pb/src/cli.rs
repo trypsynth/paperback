@@ -5,9 +5,12 @@ use clap::{Parser, ValueEnum};
 #[derive(Parser)]
 #[command(name = "pb", about = "Convert any document to text, HTML, or Markdown")]
 pub struct Cli {
-	/// Input document file, or files. `*` and `?` are expanded, so the same command line works on Windows. `-` reads more inputs from stdin, one path per line, taken as written; blank lines and lines starting with # are skipped
-	#[arg(required_unless_present = "list_formats", num_args = 1..)]
+	/// Input document file, or files. `*` and `?` are expanded, so the same command line works on Windows
+	#[arg(required_unless_present_any = ["list_formats", "files_from"], num_args = 1..)]
 	pub input: Vec<PathBuf>,
+	/// Also convert the documents listed in this file, one path per line; `-` reads the list from stdin. Spaces around a name are removed, blank lines and lines starting with # are skipped, and patterns are not expanded
+	#[arg(long, value_name = "FILE")]
+	pub files_from: Option<PathBuf>,
 	/// List the formats pb can read, and the extensions it knows them by
 	#[arg(long)]
 	pub list_formats: bool,
@@ -258,9 +261,14 @@ mod tests {
 	}
 
 	#[test]
-	fn a_dash_is_an_input() {
-		assert_eq!(parse(&["pb", "-"]).input, [PathBuf::from("-")]);
-		assert_eq!(parse(&["pb", "-f", "md", "--output-dir", "out", "-"]).input, [PathBuf::from("-")]);
+	fn a_list_of_inputs_can_be_named_with_or_without_typed_ones() {
+		let cli = parse(&["pb", "--files-from", "-", "--output-dir", "out"]);
+		assert_eq!(cli.files_from, Some(PathBuf::from("-")));
+		assert_eq!(cli.input, Vec::<PathBuf>::new());
+		let cli = parse(&["pb", "a.epub", "--files-from", "list.txt"]);
+		assert_eq!(cli.files_from, Some(PathBuf::from("list.txt")));
+		assert_eq!(cli.input, [PathBuf::from("a.epub")]);
+		assert!(parse(&["pb", "a.epub"]).files_from.is_none());
 	}
 
 	/// Paths that start with a dash or contain spaces reach the parser intact rather than being
