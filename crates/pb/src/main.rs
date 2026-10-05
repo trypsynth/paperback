@@ -152,7 +152,11 @@ fn run(
 		destination,
 		selection,
 		converter: Converter::new(cli),
-		downloads: remote::Downloads::default(),
+		downloads: if cli.no_prompt {
+			remote::Downloads::default()
+		} else {
+			remote::Downloads::default().with_prompt(remote::ask_console)
+		},
 		written: HashMap::new(),
 	};
 	let mut tally = Tally::default();

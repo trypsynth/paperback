@@ -44,7 +44,7 @@ pub struct Cli {
 	/// Print document metadata instead of content
 	#[arg(short, long)]
 	pub metadata: bool,
-	/// Exit with code 2 instead of prompting for a password (useful for batch processing)
+	/// Never ask: exit with code 2 instead of prompting for a password, and refuse a link that gets a security warning instead of asking whether to download it (useful for batch processing)
 	#[arg(long)]
 	pub no_prompt: bool,
 	/// Keep every line of an untagged PDF page separate instead of joining wrapped lines back
