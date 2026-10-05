@@ -72,7 +72,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#aktualnie-obsługiwane-typy-plików">Aktualnie obsługiwane typy plików</a></li>
 <li><a href="#skróty-klawiszowe">Skróty klawiszowe</a><ul>
 <li><a href="#menu-plik">Menu Plik</a></li>
+<li><a href="#menu-edycja">Menu Edycja</a></li>
+<li><a href="#menu-widok">Menu Widok</a></li>
 <li><a href="#menu-przejdź">Menu Przejdź</a></li>
+<li><a href="#menu-zakładki">Menu Zakładki</a></li>
+<li><a href="#menu-dźwięk">Menu Dźwięk</a></li>
 <li><a href="#menu-narzędzia">Menu Narzędzia</a></li>
 <li><a href="#menu-pomoc">Menu Pomoc</a></li>
 <li><a href="#dodatkowe-klawisze-w-widoku-dokumentu">Dodatkowe klawisze w widoku dokumentu</a></li>
@@ -143,7 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Odczytuje zeskanowane strony PDF za pomocą OCR wbudowanego w Windows i macOS.</li>
 <li>Pozwala dodawać zakładki i notatki, aby zaznaczać miejsca i do nich wracać.</li>
 <li>Umożliwia zmianę każdego skrótu klawiszowego.</li>
-<li>Zawiera <code>pb</code>, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst.</li>
+<li>Zawiera <code>pb</code>, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak <code>*.pdf</code>, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu.</li>
 </ul>
 <h2 id="zgodność-z-czytnikami-ekranu">Zgodność z czytnikami ekranu</h2>
 <p>Paperback dobrze współpracuje ze wszystkimi głównymi czytnikami ekranu. Istnieją jednak dwa znane problemy dotyczące użytkowników JAWS.</p>
@@ -188,15 +192,34 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Zamknij bieżący dokument.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Zamknij wszystkie otwarte dokumenty.</li>
 <li><code>Ctrl+Shift+T</code>: Otwórz ponownie ostatnio zamknięty dokument.</li>
-<li><code>F5</code>: Przeładuj bieżący dokument z dysku. Działa niezależnie od tego, czy opcja „Automatycznie przeładowuj zmienione dokumenty” jest włączona w Ustawieniach.</li>
 <li><code>Ctrl+R</code>: Pokaż dialog Wszystkie dokumenty (z menu Ostatnie dokumenty).</li>
+<li><code>Ctrl+Shift+C</code>: Otwórz folder zawierający.</li>
+<li><code>Ctrl+Shift+E</code>: Eksportuj dane dokumentu (<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Importuj dane dokumentu (<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Eksportuj bieżący dokument do zwykłego tekstu.</li>
 <li><code>Ctrl+Q</code>: Zakończ (tylko Windows; w systemie macOS znajduje się w menu aplikacji).</li>
 </ul>
-<h3 id="menu-przejdź">Menu Przejdź</h3>
+<h3 id="menu-edycja">Menu Edycja</h3>
 <ul>
 <li><code>Ctrl+F</code>: Pokaż dialog Znajdź.</li>
 <li><code>F3</code> (macOS: <code>Cmd+G</code>): Znajdź następne.</li>
 <li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Znajdź poprzednie.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Ustaw początek zaznaczenia, aby później skopiować za jednym razem tekst od tego miejsca do pozycji, do której przejdziesz.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Skopiuj tekst od ustawionego początku zaznaczenia do bieżącej pozycji.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Wróć do początku zaznaczenia, nie usuwając jego znacznika.</li>
+</ul>
+<h3 id="menu-widok">Menu Widok</h3>
+<ul>
+<li><code>F5</code>: Przeładuj bieżący dokument z dysku. Działa niezależnie od tego, czy opcja „Automatycznie przeładowuj zmienione dokumenty” jest włączona w Ustawieniach.</li>
+<li><code>Ctrl+Alt+W</code>: Przełącz zawijanie wierszy.</li>
+<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, czyli Control+Command+F): Przełącz tryb pełnoekranowy.</li>
+<li><code>Ctrl+Shift+V</code>: Otwórz bieżącą treść w Widoku WWW.</li>
+<li><code>Ctrl+U</code>: Wyświetl źródło dokumentu w nowej karcie.</li>
+</ul>
+<h3 id="menu-przejdź">Menu Przejdź</h3>
+<ul>
+<li><code>Ctrl+T</code>: Pokaż Spis treści.</li>
+<li><code>F7</code>: Pokaż Listę elementów.</li>
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Przejdź do wiersza.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Przejdź do procentu.</li>
 <li><code>Ctrl+P</code>: Przejdź do strony (gdy jest obsługiwana przez bieżący dokument).</li>
@@ -211,16 +234,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>1</code> do <code>6</code>: Następny nagłówek poziomu 1-6.</li>
 <li><code>Shift+P</code>: Poprzednia strona.</li>
 <li><code>P</code>: Następna strona.</li>
-<li><code>Shift+B</code>: Poprzednia zakładka.</li>
-<li><code>B</code>: Następna zakładka.</li>
-<li><code>/</code>: Ustaw zakładkę tymczasową.</li>
-<li><code>\</code>: Przejdź do zakładki tymczasowej.</li>
-<li><code>Shift+N</code>: Poprzednia notatka.</li>
-<li><code>N</code>: Następna notatka.</li>
-<li><code>Ctrl+B</code>: Przejdź do wszystkich zakładek i notatek.</li>
-<li><code>Ctrl+Alt+B</code>: Przejdź tylko do zakładek.</li>
-<li><code>Ctrl+Alt+M</code>: Przejdź tylko do notatek.</li>
-<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, czyli fizyczny klawisz Control, a nie Cmd): Wyświetl tekst notatki w bieżącej pozycji.</li>
 <li><code>Shift+K</code>: Poprzedni odnośnik.</li>
 <li><code>K</code>: Następny odnośnik.</li>
 <li><code>Shift+G</code>: Poprzedni obraz.</li>
@@ -240,21 +253,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>: Przejdź na początek bieżącego kontenera (listy lub tabeli).</li>
 <li><code>,</code>: Przejdź poza koniec bieżącego kontenera (listy lub tabeli).</li>
 </ul>
-<h3 id="menu-narzędzia">Menu Narzędzia</h3>
+<h3 id="menu-zakładki">Menu Zakładki</h3>
 <ul>
-<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, czyli fizyczny klawisz Control, a nie Cmd): Pokaż liczbę słów w bieżącym dokumencie.</li>
-<li><code>Ctrl+I</code>: Pokaż informacje o dokumencie.</li>
-<li><code>Ctrl+T</code>: Pokaż Spis treści.</li>
-<li><code>F7</code>: Pokaż Listę elementów.</li>
-<li><code>Ctrl+Shift+C</code>: Otwórz folder zawierający.</li>
-<li><code>Ctrl+Shift+V</code>: Otwórz bieżącą treść w Widoku WWW.</li>
-<li><code>Ctrl+U</code>: Wyświetl źródło dokumentu w nowej karcie.</li>
-<li><code>Ctrl+Shift+E</code>: Eksportuj dane dokumentu (<code>.paperback</code>).</li>
-<li><code>Ctrl+Shift+I</code>: Importuj dane dokumentu (<code>.paperback</code>).</li>
-<li><code>Ctrl+E</code>: Eksportuj bieżący dokument do zwykłego tekstu.</li>
 <li><code>Ctrl+Shift+B</code>: Przełącz zakładkę przy bieżącym zaznaczeniu lub kursorze.</li>
 <li><code>Ctrl+Shift+N</code>: Dodaj lub edytuj notatkę do zakładki przy bieżącym zaznaczeniu lub kursorze.</li>
-<li><code>Ctrl+Alt+W</code>: Przełącz zawijanie wierszy.</li>
+<li><code>Shift+B</code>: Poprzednia zakładka.</li>
+<li><code>B</code>: Następna zakładka.</li>
+<li><code>Shift+N</code>: Poprzednia notatka.</li>
+<li><code>N</code>: Następna notatka.</li>
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, czyli fizyczny klawisz Control, a nie Cmd): Wyświetl tekst notatki w bieżącej pozycji.</li>
+<li><code>Ctrl+B</code>: Przejdź do wszystkich zakładek i notatek.</li>
+<li><code>Ctrl+Alt+B</code>: Przejdź tylko do zakładek.</li>
+<li><code>Ctrl+Alt+M</code>: Przejdź tylko do notatek.</li>
+<li><code>/</code>: Ustaw zakładkę tymczasową.</li>
+<li><code>\</code>: Przejdź do zakładki tymczasowej.</li>
+</ul>
+<h3 id="menu-dźwięk">Menu Dźwięk</h3>
+<ul>
 <li><code>Ctrl+Spacja</code> (macOS: <code>RawCtrl+Spacja</code>, czyli fizyczny klawisz Control, ponieważ Cmd+Spacja otwiera Spotlight): Odtwórz lub wstrzymaj narrację dźwiękową.</li>
 <li><code>'</code>: Przewiń narrację dźwiękową w przód.</li>
 <li><code>;</code>: Przewiń narrację dźwiękową w tył.</li>
@@ -262,13 +277,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: Zmniejsz skok przewijania dźwięku.</li>
 <li><code>Ctrl+Shift+.</code>: Zwiększ szybkość odtwarzania narracji dźwiękowej.</li>
 <li><code>Ctrl+Shift+,</code>: Zmniejsz szybkość odtwarzania narracji dźwiękowej.</li>
-<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, czyli Control+Command+F): Przełącz tryb pełnoekranowy.</li>
-<li><code>Ctrl+,</code>: Otwórz Ustawienia (w systemie macOS: w menu aplikacji).</li>
-<li><code>Ctrl+Shift+S</code>: Przełącz Wyłącznik czasowy.</li>
+</ul>
+<h3 id="menu-narzędzia">Menu Narzędzia</h3>
+<ul>
+<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, czyli fizyczny klawisz Control, a nie Cmd): Pokaż liczbę słów w bieżącym dokumencie.</li>
+<li><code>Ctrl+I</code>: Pokaż informacje o dokumencie.</li>
 <li><code>Ctrl+Shift+O</code>: Rozpoznaj tekst na wybranym zakresie zeskanowanych stron PDF za pomocą OCR.</li>
-<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Ustaw początek zaznaczenia, aby później skopiować za jednym razem tekst od tego miejsca do pozycji, do której przejdziesz.</li>
-<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Skopiuj tekst od ustawionego początku zaznaczenia do bieżącej pozycji.</li>
-<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Wróć do początku zaznaczenia, nie usuwając jego znacznika.</li>
+<li><code>Ctrl+Shift+S</code>: Przełącz Wyłącznik czasowy.</li>
+<li><code>Ctrl+,</code>: Otwórz Ustawienia (w systemie macOS: w menu aplikacji).</li>
 </ul>
 <h3 id="menu-pomoc">Menu Pomoc</h3>
 <ul>
