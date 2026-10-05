@@ -230,14 +230,12 @@ msgid "Reopen the last closed document"
 msgstr "Het laatst gesloten document heropenen"
 
 #. TRANSLATORS: Menu item in the View menu to re-read the current document from disk.
-#, fuzzy
 msgid "&Reload"
 msgstr "&Opnieuw laden"
 
 #. TRANSLATORS: Status-bar help text for the View > Reload menu item.
-#, fuzzy
 msgid "Re-read the current document from disk"
-msgstr "Huidige document opnieuw van schijf laden"
+msgstr "Het huidige document opnieuw van schijf inlezen"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 msgid "Clea&r Recent Documents"
@@ -498,7 +496,7 @@ msgstr "Alleen notities tonen"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
 msgid "&View Note Text"
-msgstr "Notitiet&ekst tonen"
+msgstr "Notitiet&ekst bekijken"
 
 #. TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
 msgid "View the note at current position"
@@ -510,17 +508,15 @@ msgstr "Bladwijzer &plaatsen/verwijderen"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
 msgid "Bookmark &with Note"
-msgstr "Bladwijzer met &notitie"
+msgstr "Bladwijzer &met notitie"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
-#, fuzzy
 msgid "&Set Temporary Bookmark"
-msgstr "&Tijdelijke bladwijzer instellen"
+msgstr "Tijdelijke bladwijzer &instellen"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to go back to the position remembered as the temporary bookmark.
-#, fuzzy
 msgid "&Jump to Temporary Bookmark"
-msgstr "&Naar tijdelijke bladwijzer springen"
+msgstr "Naar ti&jdelijke bladwijzer springen"
 
 #. TRANSLATORS: Menu item in the Edit menu to mark the current position as the beginning of a selection to copy from later.
 msgid "Set &Selection Start"
@@ -532,7 +528,7 @@ msgstr "Het begin van een selectie markeren om vanaf daar te kopiëren"
 
 #. TRANSLATORS: Menu item in the Edit menu to copy everything from the marked beginning of a selection to the current position.
 msgid "Copy fro&m Selection Start"
-msgstr "&Kopiëren vanaf begin van selectie"
+msgstr "Kopiëren &vanaf begin van selectie"
 
 #. TRANSLATORS: Status-bar help text for the Edit > Copy from Selection Start menu item.
 msgid "Copy from the beginning of the selection to here"
@@ -540,7 +536,7 @@ msgstr "Vanaf het begin van de selectie tot hier kopiëren"
 
 #. TRANSLATORS: Menu item in the Edit menu to go back to the marked beginning of the selection.
 msgid "&Jump to Selection Start"
-msgstr "&Naar begin van selectie springen"
+msgstr "Naar begin van selectie s&pringen"
 
 #. TRANSLATORS: Status-bar help text for the Edit > Jump to Selection Start menu item.
 msgid "Go back to the beginning of the selection"
@@ -733,9 +729,8 @@ msgid "&End page:"
 msgstr "&Laatste pagina:"
 
 #. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
-#, fuzzy
 msgid "&Include text pages too"
-msgstr "&Tekstpagina's ook opnemen"
+msgstr "Ook pagina's met &tekst herkennen"
 
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
@@ -1096,9 +1091,8 @@ msgid "&Join wrapped lines into paragraphs in PDFs"
 msgstr "Afgebroken regels in PDF's &samenvoegen tot alinea's"
 
 #. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
-#, fuzzy
 msgid "Remove repeated page &headers and footers in PDFs"
-msgstr "Herhaalde pagina-&koppen en voetteksten in PDF's verwijderen"
+msgstr "Herhaalde &kop- en voetteksten in PDF's verwijderen"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1145,7 +1139,6 @@ msgid "Dev"
 msgstr "Ontwikkel"
 
 #. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
-#, fuzzy
 msgid "Log Level:"
 msgstr "Logniveau:"
 
@@ -1267,32 +1260,26 @@ msgid "Choose a colour"
 msgstr "Kleur kiezen"
 
 #. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
-#, fuzzy
 msgid "Off"
 msgstr "Uit"
 
 #. TRANSLATORS: Log level choice that records only errors
-#, fuzzy
 msgid "Errors"
-msgstr "Fouten"
+msgstr "Errors"
 
 #. TRANSLATORS: Log level choice that records warnings and errors
-#, fuzzy
 msgid "Warnings"
-msgstr "Waarschuwingen"
+msgstr "Warnings"
 
 #. TRANSLATORS: Log level choice that records general activity, warnings and errors
-#, fuzzy
 msgid "Information"
-msgstr "Informatie"
+msgstr "Information"
 
 #. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
-#, fuzzy
 msgid "Debug"
-msgstr "Foutopsporing"
+msgstr "Debug"
 
 #. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
-#, fuzzy
 msgid "Trace"
 msgstr "Trace"
 
@@ -1649,9 +1636,8 @@ msgstr "Niet-ondersteunde indeling geselecteerd."
 msgid "Paperback"
 msgstr "Paperback"
 
-#, fuzzy
 msgid "Installing the update. Paperback will restart."
-msgstr "Update wordt geïnstalleerd. Paperback wordt opnieuw gestart."
+msgstr "De update wordt geïnstalleerd. Paperback wordt opnieuw gestart."
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
 msgid "{} - Paperback"
@@ -1706,7 +1692,6 @@ msgid "Open a recent document"
 msgstr "Een recent document openen"
 
 #. TRANSLATORS: Label for the Export submenu in the File menu, which lists the formats a document can be exported to.
-#, fuzzy
 msgid "Ex&port"
 msgstr "Ex&porteren"
 
@@ -1784,7 +1769,7 @@ msgstr "Navigeren per kop"
 
 #. TRANSLATORS: Label for the Pages submenu in the compact Go menu.
 msgid "&Pages"
-msgstr "&Pagina's"
+msgstr "Pa&gina's"
 
 #. TRANSLATORS: Status-bar help text for the Go > Pages submenu.
 msgid "Navigate by pages"
@@ -1816,7 +1801,7 @@ msgstr "Navigeren per figuur"
 
 #. TRANSLATORS: Label for the Tables submenu in the compact Go menu.
 msgid "&Tables"
-msgstr "&Tabellen"
+msgstr "Ta&bellen"
 
 #. TRANSLATORS: Status-bar help text for the Go > Tables submenu.
 msgid "Navigate by tables"
@@ -1832,7 +1817,7 @@ msgstr "Navigeren per formule"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
 msgid "Sep&arators"
-msgstr "Sc&heidingen"
+msgstr "Schei&dingen"
 
 #. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
 msgid "Navigate by separators"
@@ -1864,7 +1849,7 @@ msgstr "Ga naar een specifieke regel"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
 msgid "Go to pe&rcent..."
-msgstr "Ga naar &percentage..."
+msgstr "Ga naar perce&ntage..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
 msgid "Go to a percentage of the document"
@@ -1984,7 +1969,7 @@ msgstr "Volledig scherm in-/uitschakelen"
 
 #. TRANSLATORS: Menu item in the View menu to open the document in a web view.
 msgid "Open in &Web View"
-msgstr "&Openen in webweergave"
+msgstr "Openen in &webweergave"
 
 #. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
 msgid "Open document in web view"
@@ -2004,19 +1989,17 @@ msgstr "&Bestand"
 
 #. TRANSLATORS: Top-level "Edit" menu label in the menu bar
 msgid "&Edit"
-msgstr "&Bewerken"
+msgstr "Be&werken"
 
 #. TRANSLATORS: Top-level "View" menu label in the menu bar
-#, fuzzy
 msgid "&View"
-msgstr "&Weergave"
+msgstr "Bee&ld"
 
 #. TRANSLATORS: Top-level "Bookmarks" menu label in the menu bar
 msgid "&Bookmarks"
-msgstr "&Bladwijzers"
+msgstr "Bla&dwijzers"
 
 #. TRANSLATORS: Top-level "Audio" menu label in the menu bar
-#, fuzzy
 msgid "&Audio"
 msgstr "&Audio"
 
@@ -2340,7 +2323,6 @@ msgid "Reopen Last Closed"
 msgstr "Laatst gesloten heropenen"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Reload"
 msgstr "Opnieuw laden"
 
@@ -2470,7 +2452,7 @@ msgstr "Alleen naar notities springen..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "View Note Text"
-msgstr "Notitietekst tonen"
+msgstr "Notitietekst bekijken"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Link"
@@ -2681,12 +2663,10 @@ msgid "Edit"
 msgstr "Bewerken"
 
 #. TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
-#, fuzzy
 msgid "View"
-msgstr "Weergave"
+msgstr "Beeld"
 
 #. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
-#, fuzzy
 msgid "Audio"
 msgstr "Audio"
 
@@ -2990,9 +2970,8 @@ msgstr "Geen verwerker gevonden voor extensie: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Alle verwerkers zijn mislukt voor extensie: .{}"
 
-#, fuzzy
 msgid "Not running from an AppImage; cannot self-update."
-msgstr "Draait niet vanuit een AppImage; kan niet automatisch bijwerken."
+msgstr "Draait niet vanuit een AppImage; zichzelf bijwerken is niet mogelijk."
 
 msgid "Failed to get current exe path"
 msgstr "Ophalen van huidig exe-pad mislukt"
@@ -3000,63 +2979,48 @@ msgstr "Ophalen van huidig exe-pad mislukt"
 msgid "Failed to launch update script"
 msgstr "Updatescript starten mislukt"
 
-#, fuzzy
 msgid "Failed to start installation"
 msgstr "Installatie starten mislukt"
 
-#, fuzzy
 msgid "Failed to stage the application"
 msgstr "Applicatie voorbereiden mislukt"
 
-#, fuzzy
 msgid "The update contains a different application."
 msgstr "De update bevat een andere applicatie."
 
-#, fuzzy
 msgid "Could not determine the update log directory."
-msgstr "Updatelogmap kon niet worden bepaald."
+msgstr "De map van het updatelogboek kon niet worden bepaald."
 
-#, fuzzy
 msgid "Failed to launch update helper"
 msgstr "Updatehulpprogramma starten mislukt"
 
-#, fuzzy
 msgid "The update helper did not start. See the log:"
 msgstr "Het updatehulpprogramma is niet gestart. Zie het logboek:"
 
-#, fuzzy
 msgid "The application did not quit within 60 seconds. The current app was kept."
-msgstr "De applicatie is niet afgesloten binnen 60 seconden. De huidige app is behouden."
+msgstr "De applicatie is niet binnen 60 seconden afgesloten. De huidige applicatie is behouden."
 
-#, fuzzy
 msgid "The installation changed while waiting. The current app was kept."
-msgstr "De installatie is gewijzigd tijdens het wachten. De huidige app is behouden."
+msgstr "De installatie is tijdens het wachten gewijzigd. De huidige applicatie is behouden."
 
-#, fuzzy
 msgid "Could not move the current application. The current app was kept."
-msgstr "De huidige applicatie kon niet worden verplaatst. De huidige app is behouden."
+msgstr "De huidige applicatie kon niet worden verplaatst en is behouden."
 
-#, fuzzy
 msgid "Could not install the update. The previous version was restored."
 msgstr "De update kon niet worden geïnstalleerd. De vorige versie is hersteld."
 
-#, fuzzy
 msgid "Could not restore the previous version. Recover it from:"
-msgstr "De vorige versie kon niet worden hersteld. Herstel deze van:"
+msgstr "De vorige versie kon niet worden hersteld. Herstel deze vanuit:"
 
-#, fuzzy
 msgid "macOS could not launch the update. The previous version is preserved at:"
-msgstr "macOS kon de update niet starten. De vorige versie is behouden op:"
+msgstr "macOS kon de update niet starten. De vorige versie is bewaard in:"
 
-#, fuzzy
 msgid "Application update failed"
 msgstr "Applicatie-update mislukt"
 
-#, fuzzy
 msgid "Log:"
 msgstr "Logboek:"
 
-#, fuzzy
 msgid "Update cancelled."
 msgstr "Update geannuleerd."
 
@@ -3066,37 +3030,29 @@ msgstr "Schijfkopie openen mislukt"
 msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
 msgstr "De update is gedownload en de schijfkopie is geopend. Sluit %s af en sleep de nieuwe versie naar Programma's om de installatie te voltooien."
 
-#, fuzzy
 msgid "Invalid application metadata"
-msgstr "Ongeldige applicatiemetagegevens"
+msgstr "Ongeldige metagegevens van applicatie"
 
-#, fuzzy
 msgid "The disk image must contain exactly one matching application."
-msgstr "De diskimage moet precies één overeenkomende applicatie bevatten."
+msgstr "De schijfkopie moet precies één overeenkomende applicatie bevatten."
 
-#, fuzzy
 msgid "The update must be signed by the application's developer team"
-msgstr "De update moet door het ontwikkelingsteam van de applicatie zijn ondertekend"
+msgstr "De update moet zijn ondertekend door het ontwikkelaarsteam van de applicatie"
 
-#, fuzzy
 msgid "Invalid application executable."
-msgstr "Ongeldig toepassingsuitvoeringsbestand."
+msgstr "Ongeldig uitvoerbaar bestand van applicatie."
 
-#, fuzzy
 msgid "Invalid application executable"
-msgstr "Ongeldig toepassingsuitvoeringsbestand"
+msgstr "Ongeldig uitvoerbaar bestand van applicatie"
 
-#, fuzzy
 msgid "Application signature verification failed"
 msgstr "Verificatie van applicatiehandtekening mislukt"
 
-#, fuzzy
 msgid "Failed to mount disk image"
-msgstr "Diskimage koppelen mislukt"
+msgstr "Schijfkopie activeren mislukt"
 
-#, fuzzy
 msgid "Failed to unmount disk image"
-msgstr "Diskimage ontkoppelen mislukt"
+msgstr "Schijfkopie deactiveren mislukt"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -3131,9 +3087,8 @@ msgstr "Update downloaden..."
 msgid "Update failed"
 msgstr "Update mislukt"
 
-#, fuzzy
 msgid "Preparing update..."
-msgstr "Update wordt voorbereid..."
+msgstr "Update voorbereiden..."
 
 msgid "Update Ready"
 msgstr "Update gereed"
@@ -3180,12 +3135,10 @@ msgid "Configure shortcut for {}:"
 msgstr "Sneltoets configureren voor {}:"
 
 #. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
-#, fuzzy
 msgid "&Cmd"
 msgstr "&Cmd"
 
 #. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
-#, fuzzy
 msgid "&Option"
 msgstr "&Option"
 
@@ -3230,12 +3183,10 @@ msgstr "&Herstellen naar standaardwaarden"
 msgid "Reset &All to Defaults"
 msgstr "&Alles herstellen naar standaardwaarden"
 
-#, fuzzy
 msgid "A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key from every other program."
-msgstr "Een systeembrede sneltoets vereist Ctrl, Alt of Win, anders zou die toets aan alle andere programma's worden ontnomen."
+msgstr "Een systeembrede sneltoets moet Ctrl, Alt of Win bevatten, anders kunnen alle andere programma's die toets niet meer gebruiken."
 
 #. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
-#, fuzzy
 msgid "Shortcut Not Allowed"
 msgstr "Sneltoets niet toegestaan"
 
@@ -4356,15 +4307,13 @@ msgstr "Instellingen geëxporteerd"
 
 #. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
 #: kt swift
-#, fuzzy
 msgid "Language"
 msgstr "Taal"
 
 #. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
 #: kt swift
-#, fuzzy
 msgid "Opens Paperback in the Settings app, where its language can be changed."
-msgstr "Opent Paperback in de Instellingen-app, waar je de taal kunt wijzigen."
+msgstr "Opent Paperback in de app Instellingen, waar je de taal kunt wijzigen."
 
 #~ msgid "Previous &Note"
 #~ msgstr "Vorige &notitie"
