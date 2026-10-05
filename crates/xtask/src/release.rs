@@ -44,15 +44,20 @@ fn build_mac_dmg(target_dir: &std::path::Path) -> Result<(), Box<dyn Error>> {
 
 	use shipfitter::macos::{dmg, sign};
 
-	// build.rs lays out the bundle and its Info.plist, but runs before the binary is linked, so
-	// the freshly linked binary is copied in now.
+	// build.rs lays out the bundle and its Info.plist, but runs before the binaries are linked, so
+	// the freshly linked GUI and CLI binaries are copied in now.
 	let bundle = target_dir.join("Paperback.app");
 	let macos_dir = bundle.join("Contents/MacOS");
 	let exe = target_dir.join("paperback");
 	if !exe.exists() {
 		return Err("paperback binary not found after build".into());
 	}
+	let pb_exe = target_dir.join("pb");
+	if !pb_exe.exists() {
+		return Err("pb binary not found after build".into());
+	}
 	fs::copy(&exe, macos_dir.join("paperback"))?;
+	fs::copy(&pb_exe, macos_dir.join("pb"))?;
 	let dylib = target_dir.join("libpdfium.dylib");
 	if dylib.exists() {
 		fs::copy(&dylib, macos_dir.join("libpdfium.dylib"))?;
