@@ -84,19 +84,32 @@ pub fn disposition_file_name(header: &str) -> Option<String> {
 	plain
 }
 
-/// The name a link's working copy is saved under: the server's file name, else the link's last
-/// segment, else `document`; the MIME type's extension is appended when the name has no
-/// supported one.
+/// The name a link's working copy is saved under: the server's file name, else the final link's
+/// last segment, else `document`. A name without a supported extension gets the MIME type's
+/// extension, else the supported extension of the final link, else that of the link given.
 #[must_use]
-pub fn file_name_for(final_url: &str, disposition_name: Option<&str>, content_type: Option<&str>) -> String {
+pub fn file_name_for(
+	given_url: &str,
+	final_url: &str,
+	disposition_name: Option<&str>,
+	content_type: Option<&str>,
+) -> String {
 	let name = disposition_name
 		.and_then(safe_file_name)
 		.or_else(|| url_file_name(final_url).as_deref().and_then(safe_file_name))
 		.unwrap_or_else(|| "document".to_string());
-	let supported = name_extension(&name).is_some_and(|extension| parser_supports_extension(&extension));
-	match content_type.and_then(extension_for_mime) {
-		Some(extension) if !supported => format!("{name}.{extension}"),
-		_ => name,
+	if name_extension(&name).is_some_and(|extension| parser_supports_extension(&extension)) {
+		return name;
+	}
+	let extension = content_type.and_then(extension_for_mime).map(str::to_string).or_else(|| {
+		[final_url, given_url]
+			.into_iter()
+			.filter_map(url_extension)
+			.find(|extension| parser_supports_extension(extension))
+	});
+	match extension {
+		Some(extension) => format!("{name}.{extension}"),
+		None => name,
 	}
 }
 

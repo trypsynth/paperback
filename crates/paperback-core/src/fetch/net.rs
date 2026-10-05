@@ -86,7 +86,7 @@ pub fn probe(url: &str) -> Result<RemoteInfo, FetchError> {
 		Err(ureq::Error::StatusCode(_)) => agent.get(url).header("User-Agent", &user_agent()).call()?,
 		other => other?,
 	};
-	Ok(info_from(&response))
+	Ok(info_from(&response, url))
 }
 
 /// Downloads `url` into `dest` + `.part` and renames it over `dest` once complete; `progress`
@@ -104,7 +104,7 @@ pub fn download(
 	mut progress: impl FnMut(u64, Option<u64>),
 ) -> Result<u64, FetchError> {
 	let response = agent().get(url).header("User-Agent", &user_agent()).call()?;
-	let info = info_from(&response);
+	let info = info_from(&response, url);
 	if let Verdict::Refuse(extension) = info.verdict(url) {
 		return Err(FetchError::Refused(extension));
 	}
@@ -130,13 +130,13 @@ pub fn download(
 	Ok(done)
 }
 
-fn info_from(response: &Response<Body>) -> RemoteInfo {
+fn info_from(response: &Response<Body>, given_url: &str) -> RemoteInfo {
 	let header = |name: &str| response.headers().get(name).and_then(|value| value.to_str().ok()).map(str::to_string);
 	let final_url = response.get_uri().to_string();
 	let disposition_name = header("content-disposition").as_deref().and_then(disposition_file_name);
 	let content_type = header("content-type");
 	let size = header("content-length").and_then(|value| value.parse().ok());
-	let file_name = file_name_for(&final_url, disposition_name.as_deref(), content_type.as_deref());
+	let file_name = file_name_for(given_url, &final_url, disposition_name.as_deref(), content_type.as_deref());
 	RemoteInfo { final_url, disposition_name, content_type, size, file_name }
 }
 

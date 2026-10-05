@@ -48,6 +48,7 @@ fn refused_extension_needs_no_server(#[case] url: &str, #[case] expected: Option
 #[case("application/epub+zip", Some("epub"))]
 #[case("application/octet-stream", None)]
 #[case("application/zip", None)]
+#[case("application/vnd.openxmlformats-officedocument.wordprocessingml.document", Some("docx"))]
 fn extension_for_mime_ignores_parameters_and_case(#[case] content_type: &str, #[case] expected: Option<&str>) {
 	assert_eq!(extension_for_mime(content_type), expected);
 }
@@ -76,5 +77,38 @@ fn file_name_for_names_the_working_copy(
 	#[case] content_type: Option<&str>,
 	#[case] expected: &str,
 ) {
-	assert_eq!(file_name_for(final_url, disposition, content_type), expected);
+	assert_eq!(file_name_for(final_url, final_url, disposition, content_type), expected);
+}
+
+#[rstest]
+#[case(
+	"https://example.org/files/report.pdf",
+	"https://bucket.example.net/7f3a2b?sig=1",
+	None,
+	Some("binary/octet-stream"),
+	"7f3a2b.pdf"
+)]
+#[case(
+	"https://example.org/files/report.pdf",
+	"https://example.org/files/report.pdf",
+	Some("report"),
+	None,
+	"report.pdf"
+)]
+#[case("https://example.org/book", "https://cdn.example.org/files/book.epub", Some("book"), None, "book.epub")]
+#[case(
+	"https://example.org/files/report.pdf",
+	"https://bucket.example.net/7f3a2b",
+	None,
+	Some("application/epub+zip"),
+	"7f3a2b.epub"
+)]
+fn a_name_without_an_extension_takes_one_from_the_links(
+	#[case] given_url: &str,
+	#[case] final_url: &str,
+	#[case] disposition: Option<&str>,
+	#[case] content_type: Option<&str>,
+	#[case] expected: &str,
+) {
+	assert_eq!(file_name_for(given_url, final_url, disposition, content_type), expected);
 }

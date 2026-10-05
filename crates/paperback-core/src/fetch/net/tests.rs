@@ -97,6 +97,18 @@ fn probe_reads_the_get_headers_when_head_is_refused() {
 }
 
 #[test]
+fn probe_names_a_redirect_without_an_extension_after_the_link_given() {
+	let base = serve(|method, path, base, stream| match path {
+		"/files/report.pdf" => {
+			respond(stream, method, "302 Found", &[("Location", format!("{base}/7f3a2b?sig=1").as_str())], b"");
+		}
+		_ => respond(stream, method, "200 OK", &[("Content-Type", "binary/octet-stream")], b"%PDF"),
+	});
+	let info = probe(&format!("{base}/files/report.pdf")).expect("probe");
+	assert_eq!(info.file_name, "7f3a2b.pdf");
+}
+
+#[test]
 fn probe_takes_the_name_the_server_gives() {
 	let base = serve(|method, _, _, stream| {
 		respond(stream, method, "200 OK", &[("Content-Disposition", "attachment; filename=\"Report 2024.pdf\"")], b"x");
