@@ -73,7 +73,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#sneltoetsen">Sneltoetsen</a><ul>
 <li><a href="#menu-bestand">Menu Bestand</a></li>
 <li><a href="#menu-bewerken">Menu Bewerken</a></li>
-<li><a href="#menu-weergave">Menu Weergave</a></li>
+<li><a href="#menu-beeld">Menu Beeld</a></li>
 <li><a href="#menu-ga">Menu Ga</a></li>
 <li><a href="#menu-bladwijzers">Menu Bladwijzers</a></li>
 <li><a href="#menu-audio">Menu Audio</a></li>
@@ -147,7 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Leest gescande PDF-pagina’s met de OCR die in Windows en macOS is ingebouwd.</li>
 <li>Bladwijzers en notities, zodat je kunt markeren waar je gebleven bent en er later naar terug kunt gaan.</li>
 <li>Elke toetsenbordsneltoets kan worden aangepast.</li>
-<li>Wordt geleverd met <code>pb</code>, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, vouwt <code>*.pdf</code> enzovoort zelf uit zodat dezelfde opdracht op Windows werkt, en kan één bestand per document naar een map schrijven.</li>
+<li>Wordt geleverd met <code>pb</code>, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, verwerkt jokertekens zoals <code>*.pdf</code> zelf zodat dezelfde opdracht ook op Windows werkt, en kan per document één bestand in een map schrijven.</li>
 </ul>
 <h2 id="schermlezercompatibiliteit">Schermlezercompatibiliteit</h2>
 <p>Paperback werkt goed met alle belangrijke schermlezers. Er zijn echter twee bekende problemen voor JAWS-gebruikers.</p>
@@ -207,12 +207,12 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Alles van het gemarkeerde begin van de selectie tot de huidige positie kopiëren.</li>
 <li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Terugspringen naar het gemarkeerde begin van de selectie, waarbij de markering blijft staan.</li>
 </ul>
-<h3 id="menu-weergave">Menu Weergave</h3>
+<h3 id="menu-beeld">Menu Beeld</h3>
 <ul>
-<li><code>F5</code>: Het huidige document opnieuw van schijf inlezen. Werkt ongeacht of “Automatisch gewijzigde documenten opnieuw laden” in Instellingen is ingeschakeld.</li>
+<li><code>F5</code>: Het huidige document opnieuw van schijf inlezen. Werkt ongeacht of “Gewijzigde documenten automatisch opnieuw laden” in Instellingen is ingeschakeld.</li>
 <li><code>Ctrl+Alt+W</code>: Automatische terugloop in-/uitschakelen.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, oftewel Control+Command+F): Volledig scherm in-/uitschakelen.</li>
-<li><code>Ctrl+Shift+V</code>: De huidige inhoud openen in Webweergave.</li>
+<li><code>Ctrl+Shift+V</code>: De huidige inhoud openen in webweergave.</li>
 <li><code>Ctrl+U</code>: De documentbron in een nieuw tabblad weergeven.</li>
 </ul>
 <h3 id="menu-ga">Menu Ga</h3>
@@ -297,7 +297,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Delete</code> / <code>Numpad Delete</code> op het tabbladelement: Het geselecteerde documenttabblad sluiten.</li>
 <li><code>Ctrl+1</code> t/m <code>Ctrl+9</code> (macOS: <code>Cmd+1</code> t/m <code>Cmd+9</code>) in de documenttekst of op het tabbladelement: Ga naar de eerste negen geopende documenten, in de volgorde waarin ze werden geopend.</li>
-<li><code>Ctrl+Tab</code> en <code>Ctrl+Shift+Tab</code>: Ga naar het volgende of vorige geopende document, met omwikkeling aan beide uiteinden.</li>
+<li><code>Ctrl+Tab</code> en <code>Ctrl+Shift+Tab</code>: Ga naar het volgende of vorige geopende document; na het laatste kom je weer bij het eerste en andersom.</li>
 <li><code>Enter</code> of <code>Spatie</code> in de documenttekst: Een link volgen of een tabel- of formuleweergave openen op de cursor.</li>
 <li><code>Enter</code> op een gescande PDF-pagina: De pagina herkennen met OCR.</li>
 <li><code>Shift+F10</code> of de menu- of applicatietoets in de documenttekst: Het contextmenu openen.</li>
