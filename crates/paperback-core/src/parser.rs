@@ -552,5 +552,31 @@ pub fn is_external_url(url: &str) -> bool {
 	lower.starts_with("http:") || lower.starts_with("https:") || lower.starts_with("mailto:")
 }
 
+/// Whether `text` is an http or https link.
+#[must_use]
+pub fn is_remote_url(text: &str) -> bool {
+	let lower = text.to_ascii_lowercase();
+	["http://", "https://"].iter().any(|scheme| lower.strip_prefix(scheme).is_some_and(|rest| !rest.is_empty()))
+}
+
+/// The last path segment of a link, percent-decoded, without query or fragment.
+#[must_use]
+pub fn url_file_name(url: &str) -> Option<String> {
+	let after_scheme = url.split_once("://").map_or(url, |(_, rest)| rest);
+	let before_query = after_scheme.split(['?', '#']).next().unwrap_or_default();
+	let (_, path) = before_query.split_once('/')?;
+	let segment = path.rsplit('/').next().unwrap_or_default();
+	let decoded = percent_encoding::percent_decode_str(segment).decode_utf8_lossy();
+	let name = decoded.rsplit(['/', '\\']).next().unwrap_or_default().trim();
+	(!name.is_empty()).then(|| name.to_string())
+}
+
+/// The lowercase extension of [`url_file_name`].
+#[must_use]
+pub fn url_extension(url: &str) -> Option<String> {
+	let name = url_file_name(url)?;
+	Path::new(&name).extension().and_then(|extension| extension.to_str()).map(str::to_ascii_lowercase)
+}
+
 #[cfg(test)]
 mod tests;
