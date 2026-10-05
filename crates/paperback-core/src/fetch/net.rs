@@ -73,59 +73,69 @@ fn agent() -> Agent {
 	Agent::new_with_config(config)
 }
 
-/// Asks the server what `url` holds with a HEAD request. When HEAD gets an error status, a GET is
-/// sent instead and only its headers are read.
-///
-/// # Errors
-///
-/// Returns [`FetchError::Http`] for an error status on the GET, [`FetchError::Network`] when the
-/// server cannot be reached.
-pub fn probe(url: &str) -> Result<RemoteInfo, FetchError> {
-	let agent = agent();
-	let response = match agent.head(url).header("User-Agent", &user_agent()).call() {
-		Err(ureq::Error::StatusCode(_)) => agent.get(url).header("User-Agent", &user_agent()).call()?,
-		other => other?,
-	};
-	Ok(info_from(&response, url))
+/// A link's response, with its headers read and its body not yet.
+pub struct Remote {
+	given_url: String,
+	info: RemoteInfo,
+	body: Body,
 }
 
-/// Downloads `url` into `dest` + `.part` and renames it over `dest` once complete; `progress`
-/// gets the bytes so far and the expected total. `cancel` is checked before each chunk.
+/// Sends one GET for `url` and reads the response's headers, leaving its body for
+/// [`Remote::save`]. Dropping the [`Remote`] instead closes the connection unread.
 ///
 /// # Errors
 ///
-/// Returns [`FetchError::Refused`] when the link ends at a name whose extension no parser reads,
-/// [`FetchError::Cancelled`] when `cancel` is set, and the other variants for network, status and
-/// disk failures. `dest` is left as it was in every error case.
-pub fn download(
-	url: &str,
-	dest: &Path,
-	cancel: &AtomicBool,
-	mut progress: impl FnMut(u64, Option<u64>),
-) -> Result<u64, FetchError> {
+/// Returns [`FetchError::Http`] for an error status and [`FetchError::Network`] when the server
+/// cannot be reached.
+pub fn open(url: &str) -> Result<Remote, FetchError> {
 	let response = agent().get(url).header("User-Agent", &user_agent()).call()?;
 	let info = info_from(&response, url);
-	if let Verdict::Refuse(extension) = info.verdict(url) {
-		return Err(FetchError::Refused(extension));
+	Ok(Remote { given_url: url.to_string(), info, body: response.into_body() })
+}
+
+impl Remote {
+	/// What the server said about the link.
+	#[must_use]
+	pub const fn info(&self) -> &RemoteInfo {
+		&self.info
 	}
-	let mut part = PartFile::create(part_path(dest))?;
-	let mut reader = response.into_body().into_reader();
-	let mut buffer = [0u8; CHUNK_SIZE];
-	let mut done = 0u64;
-	loop {
-		if cancel.load(Ordering::Relaxed) {
-			return Err(FetchError::Cancelled);
+
+	/// Streams the body into `dest` + `.part` and renames it over `dest` once complete; `progress`
+	/// gets the bytes so far and the expected total. `cancel` is checked before each chunk.
+	///
+	/// # Errors
+	///
+	/// Returns [`FetchError::Refused`] when the link's [`Verdict`] is a refusal,
+	/// [`FetchError::Cancelled`] when `cancel` is set, and the other variants for network and disk
+	/// failures. `dest` is left as it was in every error case.
+	pub fn save(
+		self,
+		dest: &Path,
+		cancel: &AtomicBool,
+		mut progress: impl FnMut(u64, Option<u64>),
+	) -> Result<u64, FetchError> {
+		if let Verdict::Refuse(extension) = self.info.verdict(&self.given_url) {
+			return Err(FetchError::Refused(extension));
 		}
-		let read = reader.read(&mut buffer).map_err(|error| FetchError::Network(error.to_string()))?;
-		if read == 0 {
-			break;
+		let mut part = PartFile::create(part_path(dest))?;
+		let mut reader = self.body.into_reader();
+		let mut buffer = [0u8; CHUNK_SIZE];
+		let mut done = 0u64;
+		loop {
+			if cancel.load(Ordering::Relaxed) {
+				return Err(FetchError::Cancelled);
+			}
+			let read = reader.read(&mut buffer).map_err(|error| FetchError::Network(error.to_string()))?;
+			if read == 0 {
+				break;
+			}
+			part.write_all(&buffer[..read])?;
+			done += read as u64;
+			progress(done, self.info.size);
 		}
-		part.write_all(&buffer[..read])?;
-		done += read as u64;
-		progress(done, info.size);
+		part.finish(dest)?;
+		Ok(done)
 	}
-	part.finish(dest)?;
-	Ok(done)
 }
 
 fn info_from(response: &Response<Body>, given_url: &str) -> RemoteInfo {

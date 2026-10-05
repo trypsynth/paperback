@@ -44,12 +44,13 @@ impl Downloads {
 	/// # Errors
 	///
 	/// Returns an error naming `url` when the link is refused, when the server gives no sign of a
-	/// format pb reads, or when the probe or the download fails.
+	/// format pb reads, or when the request or the download fails.
 	pub fn fetch(&mut self, url: &str) -> Result<Downloaded> {
 		if let Some(extension) = fetch::refused_extension(url) {
 			return Err(not_downloaded(url, &extension));
 		}
-		let info = fetch::probe(url).map_err(|error| anyhow!("{url}: {error}"))?;
+		let remote = fetch::open(url).map_err(|error| anyhow!("{url}: {error}"))?;
+		let info = remote.info();
 		match info.verdict(url) {
 			Verdict::Pass => {}
 			Verdict::Refuse(extension) => return Err(not_downloaded(url, &extension)),
@@ -60,8 +61,7 @@ impl Downloads {
 		}
 		let folder = self.next_folder()?;
 		let downloaded = Downloaded { path: folder.join(&info.file_name) };
-		fetch::download(url, &downloaded.path, &AtomicBool::new(false), |_, _| {})
-			.map_err(|error| anyhow!("{url}: {error}"))?;
+		remote.save(&downloaded.path, &AtomicBool::new(false), |_, _| {}).map_err(|error| anyhow!("{url}: {error}"))?;
 		Ok(downloaded)
 	}
 

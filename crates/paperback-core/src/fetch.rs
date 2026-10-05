@@ -10,7 +10,7 @@ use crate::parser::{parser_supports_extension, url_extension, url_file_name};
 #[cfg(feature = "fetch")]
 mod net;
 #[cfg(feature = "fetch")]
-pub use net::{FetchError, RemoteInfo, download, probe};
+pub use net::{FetchError, Remote, RemoteInfo, open};
 
 /// What may happen to a link once its names and type are known.
 #[derive(Debug, Clone, PartialEq, Eq)]

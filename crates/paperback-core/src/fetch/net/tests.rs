@@ -3,7 +3,10 @@ use std::{
 	fs,
 	io::{BufRead, BufReader, Write},
 	net::{TcpListener, TcpStream},
-	sync::atomic::{AtomicBool, Ordering},
+	sync::{
+		Arc,
+		atomic::{AtomicBool, AtomicUsize, Ordering},
+	},
 	thread,
 	time::Duration,
 };
@@ -50,12 +53,17 @@ fn respond(stream: &mut TcpStream, method: &str, status: &str, headers: &[(&str,
 	}
 }
 
+fn save(remote: Remote, dest: &Path) -> Result<u64, FetchError> {
+	remote.save(dest, &AtomicBool::new(false), |_, _| {})
+}
+
 #[test]
-fn probe_reads_the_type_size_and_name() {
+fn open_reads_the_type_size_and_name() {
 	let base = serve(|method, _, _, stream| {
 		respond(stream, method, "200 OK", &[("Content-Type", "application/epub+zip")], b"0123456789");
 	});
-	let info = probe(&format!("{base}/books/a.epub")).expect("probe");
+	let remote = open(&format!("{base}/books/a.epub")).expect("open");
+	let info = remote.info();
 	assert_eq!(info.content_type.as_deref(), Some("application/epub+zip"));
 	assert_eq!(info.size, Some(10));
 	assert_eq!(info.file_name, "a.epub");
@@ -63,76 +71,69 @@ fn probe_reads_the_type_size_and_name() {
 }
 
 #[test]
-fn probe_follows_a_301_and_a_302_with_head_requests() {
+fn a_link_is_requested_once_for_its_headers_and_its_body() {
+	let requests = Arc::new(AtomicUsize::new(0));
+	let counted = Arc::clone(&requests);
+	let base = serve(move |method, _, _, stream| {
+		counted.fetch_add(1, Ordering::SeqCst);
+		respond(stream, method, "200 OK", &[("Content-Type", "application/epub+zip")], b"0123456789");
+	});
+	let dir = TempDir::new("fetch-once");
+	let remote = open(&format!("{base}/a.epub")).expect("open");
+	save(remote, &dir.path().join("a.epub")).expect("save");
+	assert_eq!(requests.load(Ordering::SeqCst), 1);
+}
+
+#[test]
+fn open_follows_a_301_and_a_302() {
 	for status in ["301 Moved Permanently", "302 Found"] {
-		let base = serve(move |method, path, base, stream| match (method, path) {
-			("HEAD", "/old") => {
+		let base = serve(move |method, path, base, stream| match path {
+			"/old" => {
 				respond(stream, method, status, &[("Location", format!("{base}/book.epub").as_str())], b"");
 			}
-			("HEAD", "/book.epub") => {
-				respond(stream, method, "200 OK", &[("Content-Type", "application/epub+zip")], b"x");
-			}
-			_ => respond(stream, method, "500 Internal Server Error", &[], b""),
+			_ => respond(stream, method, "200 OK", &[("Content-Type", "application/epub+zip")], b"x"),
 		});
-		let info = probe(&format!("{base}/old")).expect(status);
-		assert!(info.final_url.ends_with("/book.epub"), "{status}: {}", info.final_url);
-		assert_eq!(info.file_name, "book.epub", "{status}");
+		let remote = open(&format!("{base}/old")).expect(status);
+		assert!(remote.info().final_url.ends_with("/book.epub"), "{status}: {}", remote.info().final_url);
+		assert_eq!(remote.info().file_name, "book.epub", "{status}");
 	}
 }
 
 #[test]
-fn probe_reads_the_get_headers_when_head_is_refused() {
-	for refusal in ["403 Forbidden", "405 Method Not Allowed"] {
-		let base = serve(move |method, _, _, stream| {
-			if method == "HEAD" {
-				respond(stream, method, refusal, &[], b"");
-			} else {
-				respond(stream, method, "200 OK", &[("Content-Type", "application/pdf")], b"%PDF");
-			}
-		});
-		let info = probe(&format!("{base}/download?id=3")).expect(refusal);
-		assert_eq!(info.content_type.as_deref(), Some("application/pdf"), "{refusal}");
-		assert_eq!(info.file_name, "download.pdf", "{refusal}");
-	}
-}
-
-#[test]
-fn probe_names_a_redirect_without_an_extension_after_the_link_given() {
+fn open_names_a_redirect_without_an_extension_after_the_link_given() {
 	let base = serve(|method, path, base, stream| match path {
 		"/files/report.pdf" => {
 			respond(stream, method, "302 Found", &[("Location", format!("{base}/7f3a2b?sig=1").as_str())], b"");
 		}
 		_ => respond(stream, method, "200 OK", &[("Content-Type", "binary/octet-stream")], b"%PDF"),
 	});
-	let info = probe(&format!("{base}/files/report.pdf")).expect("probe");
-	assert_eq!(info.file_name, "7f3a2b.pdf");
+	let remote = open(&format!("{base}/files/report.pdf")).expect("open");
+	assert_eq!(remote.info().file_name, "7f3a2b.pdf");
 }
 
 #[test]
-fn probe_takes_the_name_the_server_gives() {
+fn open_takes_the_name_the_server_gives() {
 	let base = serve(|method, _, _, stream| {
 		respond(stream, method, "200 OK", &[("Content-Disposition", "attachment; filename=\"Report 2024.pdf\"")], b"x");
 	});
-	let info = probe(&format!("{base}/download?id=3")).expect("probe");
-	assert_eq!(info.file_name, "Report 2024.pdf");
+	let remote = open(&format!("{base}/download?id=3")).expect("open");
+	assert_eq!(remote.info().file_name, "Report 2024.pdf");
 }
 
 #[test]
-fn probe_reports_a_missing_document_by_status() {
+fn open_reports_a_missing_document_by_status() {
 	let base = serve(|method, _, _, stream| respond(stream, method, "404 Not Found", &[], b""));
-	assert!(matches!(probe(&format!("{base}/gone.epub")), Err(FetchError::Http(404))));
+	assert!(matches!(open(&format!("{base}/gone.epub")), Err(FetchError::Http(404))));
 }
 
 #[test]
-fn download_writes_the_file_and_reports_progress() {
+fn save_writes_the_file_and_reports_progress() {
 	let base = serve(|method, _, _, stream| respond(stream, method, "200 OK", &[], b"0123456789"));
 	let dir = TempDir::new("fetch-download");
 	let dest = dir.path().join("a.epub");
 	let mut last = None;
-	let bytes = download(&format!("{base}/a.epub"), &dest, &AtomicBool::new(false), |done, total| {
-		last = Some((done, total));
-	})
-	.expect("download");
+	let remote = open(&format!("{base}/a.epub")).expect("open");
+	let bytes = remote.save(&dest, &AtomicBool::new(false), |done, total| last = Some((done, total))).expect("save");
 	assert_eq!(bytes, 10);
 	assert_eq!(last, Some((10, Some(10))));
 	assert_eq!(fs::read(&dest).expect("read"), b"0123456789");
@@ -140,14 +141,16 @@ fn download_writes_the_file_and_reports_progress() {
 }
 
 #[test]
-fn download_refuses_a_redirect_to_a_file_no_parser_reads() {
+fn saving_a_link_that_ends_at_a_file_no_parser_reads_is_refused() {
 	let base = serve(|method, path, base, stream| match path {
 		"/book" => respond(stream, method, "302 Found", &[("Location", format!("{base}/setup.exe").as_str())], b""),
 		_ => respond(stream, method, "200 OK", &[], b"MZ"),
 	});
 	let dir = TempDir::new("fetch-refuse");
 	let dest = dir.path().join("book");
-	let result = download(&format!("{base}/book"), &dest, &AtomicBool::new(false), |_, _| {});
+	let remote = open(&format!("{base}/book")).expect("open");
+	assert_eq!(remote.info().verdict(&format!("{base}/book")), Verdict::Refuse("exe".to_string()));
+	let result = save(remote, &dest);
 	assert!(matches!(result, Err(FetchError::Refused(ref extension)) if extension == "exe"), "{result:?}");
 	assert!(!dest.exists());
 	assert!(!dir.path().join("book.part").exists());
@@ -165,9 +168,24 @@ fn a_cancelled_download_leaves_nothing_behind() {
 	let dir = TempDir::new("fetch-cancel");
 	let dest = dir.path().join("a.epub");
 	let cancel = AtomicBool::new(false);
-	let result = download(&format!("{base}/a.epub"), &dest, &cancel, |_, _| cancel.store(true, Ordering::Relaxed));
+	let remote = open(&format!("{base}/a.epub")).expect("open");
+	let result = remote.save(&dest, &cancel, |_, _| cancel.store(true, Ordering::Relaxed));
 	assert!(matches!(result, Err(FetchError::Cancelled)), "{result:?}");
 	assert!(!dest.exists());
+	assert!(!dir.path().join("a.epub.part").exists());
+}
+
+#[test]
+fn a_download_cut_short_keeps_the_copy_already_there() {
+	let base = serve(|_, _, _, stream| {
+		let _ = stream.write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 100\r\n\r\n0123456789");
+	});
+	let dir = TempDir::new("fetch-keep");
+	let dest = dir.write("a.epub", "the copy from before");
+	let remote = open(&format!("{base}/a.epub")).expect("open");
+	let result = save(remote, &dest);
+	assert!(matches!(result, Err(FetchError::Network(_))), "{result:?}");
+	assert_eq!(fs::read_to_string(&dest).expect("read"), "the copy from before");
 	assert!(!dir.path().join("a.epub.part").exists());
 }
 
@@ -177,18 +195,9 @@ fn a_download_never_writes_through_a_part_file_already_there() {
 	let dir = TempDir::new("fetch-planted");
 	let planted = dir.write("a.epub.part", "planted");
 	let dest = dir.path().join("a.epub");
-	let result = download(&format!("{base}/a.epub"), &dest, &AtomicBool::new(false), |_, _| {});
+	let remote = open(&format!("{base}/a.epub")).expect("open");
+	let result = save(remote, &dest);
 	assert!(matches!(result, Err(FetchError::Io(_))), "{result:?}");
 	assert_eq!(fs::read_to_string(&planted).expect("read"), "planted");
 	assert!(!dest.exists());
-}
-
-#[test]
-fn a_failed_download_keeps_the_copy_already_there() {
-	let base = serve(|method, _, _, stream| respond(stream, method, "404 Not Found", &[], b""));
-	let dir = TempDir::new("fetch-keep");
-	let dest = dir.write("a.epub", "the copy from before");
-	let result = download(&format!("{base}/a.epub"), &dest, &AtomicBool::new(false), |_, _| {});
-	assert!(matches!(result, Err(FetchError::Http(404))), "{result:?}");
-	assert_eq!(fs::read_to_string(&dest).expect("read"), "the copy from before");
 }
