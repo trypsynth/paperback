@@ -1,8 +1,7 @@
-use std::{collections::HashMap, fs::File, io::BufReader};
+use std::collections::HashMap;
 
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
-use zip::ZipArchive;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
@@ -23,13 +22,8 @@ pub struct OdpParser;
 impl Parser for OdpParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing odp file");
-		let file = File::open(&context.file_path)
-			.with_context(|| format!("Failed to open ODP file '{}'", context.file_path))?;
-		let mut archive = ZipArchive::new(BufReader::new(file))
-			.with_context(|| format!("Failed to read ODP as zip '{}'", context.file_path))?;
-		// No `.context()` here: it would wrap the `[password_required]` sentinel an encrypted
-		// file returns, and the layers above match on that sentinel at the top of the error.
-		let content_str = read_odf_content(&mut archive, "content.xml", context.password.as_deref())?;
+		// No `.context()` here: it would wrap the `[password_required]` sentinel an encrypted file returns, and the layers above match on that sentinel at the top of the error.
+		let content_str = read_odf_content(&context.file_path, "content.xml", context.password.as_deref())?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid ODP content.xml")?;
 		let mut buffer = DocumentBuffer::new();
 		let id_positions = HashMap::new();
