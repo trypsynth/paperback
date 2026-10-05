@@ -561,7 +561,7 @@ msgstr "Posunúť zvukovú stopu vpred"
 
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration backward.
 msgid "Seek Audio &Backward"
-msgstr "Posunúť zvuk naspäť"
+msgstr "Posunúť zvuk na&späť"
 
 #. TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
 msgid "Skip the audio narration backward"
@@ -1865,7 +1865,7 @@ msgstr "Navigácia po zoznamoch"
 
 #. TRANSLATORS: Label for the Containers submenu in the compact Go menu.
 msgid "&Containers"
-msgstr "Kontajnery"
+msgstr "K&ontajnery"
 
 #. TRANSLATORS: Status-bar help text for the Go > Containers submenu.
 msgid "Navigate by containers"
@@ -1873,7 +1873,7 @@ msgstr "Navigácia po kontajneroch"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
 msgid "Go to li&ne..."
-msgstr "Prejsť na &riadok..."
+msgstr "Prejsť na r&iadok..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
 msgid "Go to a specific line"
