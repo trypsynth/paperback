@@ -265,16 +265,18 @@ pub(super) fn bind_find_dialog_actions(params: FindDialogActionParams) {
 	});
 	let find_dialog_for_go = Rc::clone(&find_dialog);
 	let doc_manager_for_go = Rc::clone(&doc_manager);
+	let config_for_go = Rc::clone(&config);
 	go_btn.on_click(move |_| {
 		if let Some(state) = find_dialog_for_go.lock().unwrap().as_ref() {
-			handle_result_go(state, &doc_manager_for_go, live_region_label);
+			handle_result_go(state, &doc_manager_for_go, &config_for_go, live_region_label);
 		}
 	});
 	let find_dialog_for_list = Rc::clone(&find_dialog);
 	let doc_manager_for_list = Rc::clone(&doc_manager);
+	let config_for_list = Rc::clone(&config);
 	results_list.on_item_activated(move |_| {
 		if let Some(state) = find_dialog_for_list.lock().unwrap().as_ref() {
-			handle_result_go(state, &doc_manager_for_list, live_region_label);
+			handle_result_go(state, &doc_manager_for_list, &config_for_list, live_region_label);
 		}
 	});
 }
