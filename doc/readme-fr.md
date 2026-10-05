@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 50ae5f8f1895cd78; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,75b3aaec,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -25,7 +25,7 @@ Paperback fonctionne sur Windows 10/11, toutes les versions modernes d'ARM macOS
 * Lit les pages PDF numérisées avec l'OCR intégré à Windows et macOS.
 * Signets et notes, pour que vous puissiez marquer votre place et y revenir.
 * Chaque raccourci clavier peut être modifié.
-* Livré avec `pb`, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut.
+* Livré avec `pb`, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut. Il accepte autant de documents que vous lui en fournissez, développe `*.pdf` et les fichiers similaires de lui-même pour que la même ligne de commande fonctionne sur Windows, et peut écrire un fichier par document dans un dossier.
 
 ## Compatibilité avec les lecteurs d'écran
 
@@ -81,15 +81,34 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `Ctrl+F4` (macOS : `Cmd+W`) : Fermer le document actif.
 * `Ctrl+Shift+F4` (macOS : `Cmd+Shift+W`) : Fermer tous les documents ouverts.
 * `Ctrl+Shift+T` : Rouvrir le dernier document fermé.
-* `F5` : Relire le document actif depuis le disque. Fonctionne que « Recharger automatiquement les documents modifiés » soit activé ou non dans Paramètres.
 * `Ctrl+R` : Afficher la boîte de dialogue « Tous les documents » (à partir des Documents récents).
+* `Ctrl+Shift+C` : Ouvrir le dossier contenant.
+* `Ctrl+Shift+E` : Exporter les données du document (`.paperback`).
+* `Ctrl+Shift+I` : Importer les données du document (`.paperback`).
+* `Ctrl+E` : Exporter le document actif en texte brut.
 * `Ctrl+Q` : Quitter (Windows uniquement ; sur macOS, cette option se trouve dans le menu de l'application).
 
-### Menu Aller
+### Menu Modifier
 
 * `Ctrl+F` : Afficher la boîte de dialogue Rechercher.
 * `F3` (macOS : `Cmd+G`) : Rechercher le suivant.
 * `Shift+F3` (macOS : `Cmd+Shift+G`) : Rechercher le précédent.
+* `Alt+F9` (macOS : `Cmd+F9`) : Marquer le début d'une sélection, de sorte que tout ce qui va d'ici à votre position actuelle puisse être copié en une seule fois.
+* `Alt+F10` (macOS : `Cmd+F10`) : Copier tout du début marqué de la sélection à la position actuelle.
+* `Alt+Shift+F9` (macOS : `Cmd+Shift+F9`) : Revenir au début marqué de la sélection, en laissant la marque en place.
+
+### Menu Affichage
+
+* `F5` : Relire le document actif depuis le disque. Fonctionne que « Recharger automatiquement les documents modifiés » soit activé ou non dans Paramètres.
+* `Ctrl+Alt+W` : Basculer le retour à la ligne automatique.
+* `F11` (macOS : `RawCtrl+Ctrl+F`, c'est-à-dire Control+Command+F) : Basculer le mode plein écran.
+* `Ctrl+Shift+V` : Ouvrir le contenu actuel dans Vue Web.
+* `Ctrl+U` : Afficher la source du document dans un nouvel onglet.
+
+### Menu Aller
+
+* `Ctrl+T` : Afficher la table des matières.
+* `F7` : Afficher la liste des éléments.
 * `Ctrl+G` (macOS : `Cmd+L`) : Aller à la ligne.
 * `Ctrl+Shift+G` (macOS : `Cmd+Shift+L`) : Aller au pourcentage.
 * `Ctrl+P` : Aller à la page (si supporté par le document actif).
@@ -104,16 +123,6 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `1` à `6` : Titre suivant de niveau 1-6.
 * `Shift+P` : Page précédente.
 * `P` : Page suivante.
-* `Shift+B` : Signet précédent.
-* `B` : Signet suivant.
-* `/` : Définir votre signet temporaire.
-* `\` : Accéder à votre signet temporaire.
-* `Shift+N` : Note précédente.
-* `N` : Note suivante.
-* `Ctrl+B` : Aller à tous les signets et notes.
-* `Ctrl+Alt+B` : Aller aux signets uniquement.
-* `Ctrl+Alt+M` : Aller aux notes uniquement.
-* `Ctrl+Shift+W` (macOS : `RawCtrl+Shift+W`, c'est-à-dire la touche Control physique plutôt que Cmd) : Afficher le texte de la note à la position actuelle.
 * `Shift+K` : Lien précédent.
 * `K` : Lien suivant.
 * `Shift+G` : Image précédente.
@@ -133,21 +142,23 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `Shift+,` : Aller au début du conteneur actif (liste ou tableau).
 * `,` : Dépasser la fin du conteneur actif (liste ou tableau).
 
-### Menu Outils
+### Menu Signets
 
-* `Ctrl+W` (macOS : `RawCtrl+W`, c'est-à-dire la touche Control physique plutôt que Cmd) : Afficher le nombre de mots du document actif.
-* `Ctrl+I` : Afficher les informations du document.
-* `Ctrl+T` : Afficher la table des matières.
-* `F7` : Afficher la liste des éléments.
-* `Ctrl+Shift+C` : Ouvrir le dossier contenant.
-* `Ctrl+Shift+V` : Ouvrir le contenu actuel dans la Vue Web.
-* `Ctrl+U` : Afficher la source du document dans un nouvel onglet.
-* `Ctrl+Shift+E` : Exporter les données du document (`.paperback`).
-* `Ctrl+Shift+I` : Importer les données du document (`.paperback`).
-* `Ctrl+E` : Exporter le document actif en texte brut.
 * `Ctrl+Shift+B` : Basculer le signet à la sélection/position du curseur actuelle.
 * `Ctrl+Shift+N` : Ajouter ou éditer une note de signet à la sélection/position du curseur actuelle.
-* `Ctrl+Alt+W` : Basculer le retour à la ligne automatique.
+* `Shift+B` : Signet précédent.
+* `B` : Signet suivant.
+* `Shift+N` : Note précédente.
+* `N` : Note suivante.
+* `Ctrl+Shift+W` (macOS : `RawCtrl+Shift+W`, c'est-à-dire la touche Control physique plutôt que Cmd) : Afficher le texte de la note à la position actuelle.
+* `Ctrl+B` : Aller à tous les signets et notes.
+* `Ctrl+Alt+B` : Aller aux signets uniquement.
+* `Ctrl+Alt+M` : Aller aux notes uniquement.
+* `/` : Définir votre signet temporaire.
+* `\` : Accéder à votre signet temporaire.
+
+### Menu Audio
+
 * `Ctrl+Space` (macOS : `RawCtrl+Space`, c'est-à-dire la touche Control physique, car Cmd+Space ouvre Spotlight) : Lecture/pause de la narration audio.
 * `'` : Avancer rapidement dans la narration audio.
 * `;` : Reculer rapidement dans la narration audio.
@@ -155,13 +166,14 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `Shift+;` : Diminuer le montant de l'avance rapide audio.
 * `Ctrl+Shift+.` : Accélérer la narration audio.
 * `Ctrl+Shift+,` : Ralentir la narration audio.
-* `F11` (macOS : `RawCtrl+Ctrl+F`, c'est-à-dire Control+Command+F) : Basculer le mode plein écran.
-* `Ctrl+,` : Ouvrir les Paramètres (macOS : dans le menu de l'application).
-* `Ctrl+Shift+S` : Basculer la minuterie de sommeil.
+
+### Menu Outils
+
+* `Ctrl+W` (macOS : `RawCtrl+W`, c'est-à-dire la touche Control physique plutôt que Cmd) : Afficher le nombre de mots du document actif.
+* `Ctrl+I` : Afficher les informations du document.
 * `Ctrl+Shift+O` : Reconnaître une plage de pages PDF numérisées avec OCR.
-* `Alt+F9` (macOS : `Cmd+F9`) : Marquer le début d'une sélection, de sorte que tout ce qui va d'ici à votre position actuelle puisse être copié en une seule fois.
-* `Alt+F10` (macOS : `Cmd+F10`) : Copier tout du début marqué de la sélection à la position actuelle.
-* `Alt+Shift+F9` (macOS : `Cmd+Shift+F9`) : Revenir au début marqué de la sélection, en laissant la marque en place.
+* `Ctrl+Shift+S` : Basculer la minuterie de sommeil.
+* `Ctrl+,` : Ouvrir Paramètres (macOS : dans le menu de l'application).
 
 ### Menu Aide
 
