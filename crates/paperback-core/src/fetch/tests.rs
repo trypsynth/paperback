@@ -1,0 +1,80 @@
+use rstest::rstest;
+
+use super::*;
+
+const PAGE: &str = "https://example.org/download?id=3";
+
+#[rstest]
+#[case(
+	"https://example.org/a.epub",
+	"https://example.org/a.epub",
+	None,
+	Some("application/octet-stream"),
+	Verdict::Pass
+)]
+#[case(PAGE, PAGE, None, Some("application/pdf"), Verdict::Pass)]
+#[case(PAGE, PAGE, None, Some("Application/PDF; name=x"), Verdict::Pass)]
+#[case(PAGE, PAGE, None, Some("application/octet-stream"), Verdict::Warn)]
+#[case(PAGE, PAGE, None, None, Verdict::Warn)]
+#[case("https://example.org/setup.exe", "https://example.org/setup.exe", None, Some("application/pdf"), Verdict::Refuse("exe".into()))]
+#[case("https://example.org/book", "https://cdn.example.org/setup.exe", None, Some("application/epub+zip"), Verdict::Refuse("exe".into()))]
+#[case("https://example.org/download.php?id=3", "https://example.org/download.php?id=3", None, Some("application/pdf"), Verdict::Refuse("php".into()))]
+#[case(PAGE, PAGE, Some("setup.exe"), Some("application/pdf"), Verdict::Refuse("exe".into()))]
+#[case(PAGE, PAGE, Some("Report.pdf"), Some("application/octet-stream"), Verdict::Pass)]
+#[case("https://example.org/a.epub", "https://example.org/a.epub", Some("a.exe"), None, Verdict::Refuse("exe".into()))]
+fn verdict_follows_the_extension_rules(
+	#[case] given: &str,
+	#[case] final_url: &str,
+	#[case] disposition: Option<&str>,
+	#[case] content_type: Option<&str>,
+	#[case] expected: Verdict,
+) {
+	assert_eq!(verdict(given, final_url, disposition, content_type), expected);
+}
+
+#[rstest]
+#[case("https://example.org/setup.exe", Some("exe"))]
+#[case("https://example.org/a.epub", None)]
+#[case(PAGE, None)]
+fn refused_extension_needs_no_server(#[case] url: &str, #[case] expected: Option<&str>) {
+	assert_eq!(refused_extension(url).as_deref(), expected);
+}
+
+#[rstest]
+#[case("application/pdf", Some("pdf"))]
+#[case("Application/PDF", Some("pdf"))]
+#[case("text/html; charset=utf-8", Some("htm"))]
+#[case("text/plain;charset=windows-1252", Some("txt"))]
+#[case("application/epub+zip", Some("epub"))]
+#[case("application/octet-stream", None)]
+#[case("application/zip", None)]
+fn extension_for_mime_ignores_parameters_and_case(#[case] content_type: &str, #[case] expected: Option<&str>) {
+	assert_eq!(extension_for_mime(content_type), expected);
+}
+
+#[rstest]
+#[case("attachment; filename=\"Report 2024.pdf\"", Some("Report 2024.pdf"))]
+#[case("attachment; FILENAME=a.epub", Some("a.epub"))]
+#[case("attachment; filename*=UTF-8''R%C3%A9sum%C3%A9.pdf; filename=\"Resume.pdf\"", Some("Résumé.pdf"))]
+#[case("attachment; filename=\"..\\\\..\\\\evil.pdf\"", Some("evil.pdf"))]
+#[case("attachment; filename=\"a:b?.pdf\"", Some("a_b_.pdf"))]
+#[case("inline", None)]
+fn disposition_file_name_reads_both_forms(#[case] header: &str, #[case] expected: Option<&str>) {
+	assert_eq!(disposition_file_name(header).as_deref(), expected);
+}
+
+#[rstest]
+#[case("https://example.org/books/a.epub", None, Some("application/epub+zip"), "a.epub")]
+#[case(PAGE, None, Some("application/pdf"), "download.pdf")]
+#[case("https://example.org/", None, Some("application/pdf"), "document.pdf")]
+#[case(PAGE, Some("Report 2024.pdf"), Some("application/octet-stream"), "Report 2024.pdf")]
+#[case("https://example.org/a%3Ab.pdf", None, None, "a_b.pdf")]
+#[case("https://example.org/notes", None, Some("text/plain; charset=utf-8"), "notes.txt")]
+fn file_name_for_names_the_working_copy(
+	#[case] final_url: &str,
+	#[case] disposition: Option<&str>,
+	#[case] content_type: Option<&str>,
+	#[case] expected: &str,
+) {
+	assert_eq!(file_name_for(final_url, disposition, content_type), expected);
+}
