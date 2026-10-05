@@ -1,12 +1,8 @@
-use std::str;
-
-use encoding_rs::{Encoding, UTF_8};
-
-use crate::util::encoding::{convert_to_utf8, html_declared_encoding};
+use encoding_rs::Encoding;
 
 /// The ANSI code page Windows uses for a language, for the languages where that is not Windows-1252.
 ///
-/// A CHM compiled before Unicode holds its title, contents and usually its pages in the code page of the language it was compiled for, and that language is the one thing about its encoding it reliably records. Western languages are left out so their books keep going through the guessing in [`convert_to_utf8`], which also catches the Chinese CHMs compiled under an English language ID.
+/// A CHM compiled before Unicode holds its title, contents and usually its pages in the code page of the language it was compiled for, and that language is the one thing about its encoding it reliably records. Western languages are left out so their books keep going through the guessing in [`crate::util::encoding::convert_to_utf8`], which also catches the Chinese CHMs compiled under an English language ID.
 pub(super) fn encoding_for_lcid(lcid: u32) -> Option<&'static Encoding> {
 	// Serbian, Bosnian, Azeri and Uzbek are each written in both Latin and Cyrillic, which only the full LCID tells apart.
 	let cyrillic_variant = matches!(lcid, 0x0C1A | 0x1C1A | 0x201A | 0x281A | 0x301A | 0x082C | 0x0843);
@@ -30,24 +26,6 @@ pub(super) fn encoding_for_lcid(lcid: u32) -> Option<&'static Encoding> {
 	Some(encoding)
 }
 
-/// Decodes text from inside a CHM, trusting what the file says about itself before guessing.
-///
-/// A page's own `<meta charset>` wins over the CHM's language, since one book can hold pages saved in different code pages. A page claiming UTF-8 that is not valid UTF-8 has its claim ignored, as old editors stamped that on whatever they saved.
-pub(super) fn decode(bytes: &[u8], language_encoding: Option<&'static Encoding>) -> String {
-	let has_bom =
-		bytes.starts_with(&[0xEF, 0xBB, 0xBF]) || bytes.starts_with(&[0xFF, 0xFE]) || bytes.starts_with(&[0xFE, 0xFF]);
-	if has_bom {
-		return convert_to_utf8(bytes);
-	}
-	if let Ok(text) = str::from_utf8(bytes) {
-		return text.to_owned();
-	}
-	html_declared_encoding(bytes)
-		.filter(|encoding| *encoding != UTF_8)
-		.or(language_encoding)
-		.map_or_else(|| convert_to_utf8(bytes), |encoding| encoding.decode_without_bom_handling(bytes).0.into_owned())
-}
-
 /// Reads text that came out of HTML entities as Latin-1 back as the bytes of the CHM's own code page.
 ///
 /// HTML Help Workshop writes the contents file of a non-Western book in ASCII, spelling each byte of the code page as the Latin-1 entity with the same number, so `&Iuml;&eth;` in a Russian book is windows-1251 for "Пр", not "Ïð". Text with anything past U+00FF in it was not written that way and is left alone.
@@ -64,6 +42,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
+	use crate::util::encoding::decode_html;
 
 	#[rstest]
 	#[case(0x0419, Some("windows-1251"))]
@@ -85,20 +64,20 @@ mod tests {
 	#[test]
 	fn a_russian_page_is_decoded_as_cyrillic() {
 		let (bytes, _, _) = encoding_rs::WINDOWS_1251.encode("<p>Москва 1994</p>");
-		assert_eq!(decode(&bytes, encoding_for_lcid(0x0419)), "<p>Москва 1994</p>");
+		assert_eq!(decode_html(&bytes, encoding_for_lcid(0x0419)), "<p>Москва 1994</p>");
 	}
 
 	#[test]
 	fn a_page_charset_wins_over_the_book_language() {
 		let (bytes, _, _) = encoding_rs::WINDOWS_1253
 			.encode("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1253\"><p>Αθήνα</p>");
-		assert!(decode(&bytes, encoding_for_lcid(0x0419)).ends_with("<p>Αθήνα</p>"));
+		assert!(decode_html(&bytes, encoding_for_lcid(0x0419)).ends_with("<p>Αθήνα</p>"));
 	}
 
 	#[test]
 	fn a_false_utf8_claim_falls_back_to_the_book_language() {
 		let (bytes, _, _) = encoding_rs::WINDOWS_1251.encode("<meta charset=\"utf-8\"><p>Москва</p>");
-		assert!(decode(&bytes, encoding_for_lcid(0x0419)).ends_with("<p>Москва</p>"));
+		assert!(decode_html(&bytes, encoding_for_lcid(0x0419)).ends_with("<p>Москва</p>"));
 	}
 
 	#[test]
@@ -115,12 +94,12 @@ mod tests {
 
 	#[test]
 	fn valid_utf8_is_kept_whatever_the_language() {
-		assert_eq!(decode("Москва".as_bytes(), encoding_for_lcid(0x0804)), "Москва");
+		assert_eq!(decode_html("Москва".as_bytes(), encoding_for_lcid(0x0804)), "Москва");
 	}
 
 	#[test]
 	fn an_unknown_language_still_detects_gbk() {
 		let (bytes, _, _) = encoding_rs::GBK.encode("你好，世界。这是一个测试。");
-		assert_eq!(decode(&bytes, None), "你好，世界。这是一个测试。");
+		assert_eq!(decode_html(&bytes, None), "你好，世界。这是一个测试。");
 	}
 }

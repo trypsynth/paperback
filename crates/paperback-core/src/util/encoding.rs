@@ -98,6 +98,25 @@ pub fn html_declared_encoding(bytes: &[u8]) -> Option<&'static Encoding> {
 	Some(if encoding == UTF_16LE || encoding == UTF_16BE { UTF_8 } else { encoding })
 }
 
+/// Decodes an HTML file, trusting what it says about itself before guessing.
+///
+/// Its `<meta charset>` comes first, then `fallback`, whatever encoding its surroundings point to, and only then a guess. A file claiming UTF-8 that is not valid UTF-8 has its claim ignored, as old editors stamped that on whatever they saved.
+#[must_use]
+pub fn decode_html(bytes: &[u8], fallback: Option<&'static Encoding>) -> String {
+	let has_bom =
+		bytes.starts_with(&[0xEF, 0xBB, 0xBF]) || bytes.starts_with(&[0xFF, 0xFE]) || bytes.starts_with(&[0xFE, 0xFF]);
+	if has_bom {
+		return convert_to_utf8(bytes);
+	}
+	if let Ok(text) = str::from_utf8(bytes) {
+		return text.to_owned();
+	}
+	html_declared_encoding(bytes)
+		.filter(|encoding| *encoding != UTF_8)
+		.or(fallback)
+		.map_or_else(|| convert_to_utf8(bytes), |encoding| encoding.decode_without_bom_handling(bytes).0.into_owned())
+}
+
 fn decode_utf32_le(input: &[u8]) -> String {
 	input
 		.as_chunks::<4>()

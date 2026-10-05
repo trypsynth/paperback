@@ -4,7 +4,6 @@ use encoding_rs::Encoding;
 use libchm::{ChmFile, Entry};
 use rayon::prelude::*;
 
-use super::encoding::decode;
 use crate::{
 	parser::{
 		ConverterOutput,
@@ -13,6 +12,7 @@ use crate::{
 	types::{
 		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
 	},
+	util::encoding::decode_html,
 };
 
 /// One converted HTML file: its text plus everything the converter recorded about it.
@@ -118,7 +118,7 @@ fn convert_section(
 	render_tables_inline: bool,
 	encoding: Option<&'static Encoding>,
 ) -> Option<SectionContent> {
-	let utf8_content = decode(content_bytes, encoding);
+	let utf8_content = decode_html(content_bytes, encoding);
 	let mut converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	// currently always true, HtmlToText::convert has no failure path today
 	if !converter.convert(&utf8_content, HtmlSourceMode::NativeHtml) {

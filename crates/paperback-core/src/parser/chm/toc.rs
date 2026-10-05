@@ -6,10 +6,10 @@ use libchm::ChmFile;
 use scraper::{ElementRef, Html, Selector};
 
 use super::{
-	encoding::{decode, encoding_for_lcid, reinterpret_latin1},
+	encoding::{encoding_for_lcid, reinterpret_latin1},
 	href::normalize_path,
 };
-use crate::document::TocItem;
+use crate::{document::TocItem, util::encoding::decode_html};
 
 /// What the `#SYSTEM` file says about the book as a whole.
 pub(super) struct SystemInfo {
@@ -42,7 +42,7 @@ pub(super) fn parse_system_file(chm: &mut ChmFile) -> SystemInfo {
 	}
 	let encoding = lcid.and_then(encoding_for_lcid);
 	tracing::debug!(lcid = ?lcid, encoding = ?encoding.map(Encoding::name), "read chm language");
-	let title = title_bytes.map(|bytes| decode(bytes, encoding)).filter(|title| !title.trim().is_empty());
+	let title = title_bytes.map(|bytes| decode_html(bytes, encoding)).filter(|title| !title.trim().is_empty());
 	SystemInfo { title, encoding }
 }
 
@@ -59,7 +59,7 @@ pub(super) fn parse_hhc_file(
 		tracing::debug!(path = %hhc_path, "hhc file is empty, table of contents will be empty");
 		return Ok(Vec::new());
 	}
-	let content = decode(&content_bytes, encoding);
+	let content = decode_html(&content_bytes, encoding);
 	let document = Html::parse_document(&content);
 	let body_selector = Selector::parse("body").unwrap();
 	let Some(body) = document.select(&body_selector).next() else {
