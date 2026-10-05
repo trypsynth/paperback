@@ -396,8 +396,7 @@ mod tests {
 
 	const C: i32 = 'C' as i32;
 
-	/// The intercept has to recognise exactly Ctrl+C, or it would take a chord the reader bound to
-	/// something else.
+	/// The intercept has to recognise exactly Ctrl+C, or it would take a chord the reader bound to something else.
 	#[test]
 	fn only_plain_control_c_is_the_copy_key() {
 		assert!(is_copy_chord(C, true, false, false), "Ctrl+C is the copy key");

@@ -34,9 +34,14 @@ const fn ordered_ends(mark: i64, caret: i64) -> (i64, i64) {
 	if mark <= caret { (mark, caret) } else { (caret, mark) }
 }
 
-/// Shared with the plain Ctrl+C copy, which copies a selection rather than a marked range; the two are the same action to the reader and are worded the same way. Counted in characters rather than bytes, so an astral-plane character is one to someone listening rather than four.
+/// Shared with the plain Ctrl+C copy, which copies a selection rather than a marked range; the two are the same action to the reader and are worded the same way.
 pub fn copied_announcement(count: usize) -> String {
-	nt("Copied %d character.", "Copied %d characters.", count as u64).replacen("%d", &count.to_string(), 1)
+	// TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+	nt("Copied %d character.", "Copied %d characters.", u64::try_from(count).unwrap_or(0)).replacen(
+		"%d",
+		&count.to_string(),
+		1,
+	)
 }
 
 /// Marks the reader's current position as the beginning of a selection to copy from later.
