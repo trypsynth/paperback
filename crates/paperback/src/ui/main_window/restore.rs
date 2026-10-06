@@ -38,9 +38,15 @@ pub(super) fn schedule_restore_documents(
 		if state.restored || state.closing {
 			return;
 		}
+		// A dialog opened under the lock (e.g. the zip picker for a command-line file) runs a nested
+		// event loop that delivers this idle event; blocking here would deadlock, so retry later.
+		let Ok(dm) = doc_manager.try_lock() else {
+			return;
+		};
+		let pre_restore_active = dm.active_tab_index();
+		drop(dm);
 		state.restored = true;
 		drop(state);
-		let pre_restore_active = doc_manager.lock().unwrap().active_tab_index();
 		let active_path = config.lock().unwrap().get_app_string("active_document", "");
 		let paths = config.lock().unwrap().get_opened_documents();
 		tracing::info!(count = paths.len(), "restoring previously open documents");
