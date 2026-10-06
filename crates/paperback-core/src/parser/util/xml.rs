@@ -103,6 +103,237 @@ fn replace_encoding_declaration(text: &str) -> String {
 	out
 }
 
+/// Writes `node` and everything under it back out as XML, leaving out every element `skip` accepts
+/// along with its contents. Elements are written under their local names, without prefixes.
+pub fn serialize_xml(node: Node, output: &mut String, skip: &dyn Fn(Node) -> bool) {
+	match node.node_type() {
+		NodeType::Root => {
+			for child in node.children() {
+				serialize_xml(child, output, skip);
+			}
+		}
+		NodeType::Element => {
+			if skip(node) {
+				return;
+			}
+			let tag_name = node.tag_name().name();
+			output.push('<');
+			output.push_str(tag_name);
+			for attr in node.attributes() {
+				output.push(' ');
+				output.push_str(attr.name());
+				output.push_str("=\"");
+				output.push_str(&escape_xml(attr.value()));
+				output.push('"');
+			}
+			if node.children().count() == 0 {
+				output.push_str("/>");
+			} else {
+				output.push('>');
+				for child in node.children() {
+					serialize_xml(child, output, skip);
+				}
+				output.push_str("</");
+				output.push_str(tag_name);
+				output.push('>');
+			}
+		}
+		NodeType::Text => {
+			if let Some(text) = node.text() {
+				output.push_str(&escape_xml(text));
+			}
+		}
+		NodeType::Comment => {
+			if let Some(text) = node.text() {
+				output.push_str("<!--");
+				output.push_str(text);
+				output.push_str("-->");
+			}
+		}
+		NodeType::PI => {
+			if let Some(text) = node.text() {
+				output.push_str("<?");
+				output.push_str(text);
+				output.push_str("?>");
+			}
+		}
+	}
+}
+
+#[must_use]
+pub fn escape_xml(s: &str) -> String {
+	if !s.chars().any(|c| matches!(c, '&' | '<' | '>' | '"' | '\'')) {
+		return s.to_string();
+	}
+	let mut result = String::with_capacity(s.len());
+	for c in s.chars() {
+		match c {
+			'&' => result.push_str("&amp;"),
+			'<' => result.push_str("&lt;"),
+			'>' => result.push_str("&gt;"),
+			'"' => result.push_str("&quot;"),
+			'\'' => result.push_str("&apos;"),
+			_ => result.push(c),
+		}
+	}
+	result
+}
+
+/// Makes a document that is not quite valid XML readable, or returns `None` when there was
+/// nothing to mend.
+///
+/// Declares the namespace prefixes the document uses and never declared, then replaces the HTML
+/// character entities XML does not know. A prefix listed in `known_prefixes` is declared with the
+/// URI listed beside it.
+#[must_use]
+pub fn repair_xml(xml: &str, known_prefixes: &[(&str, &str)]) -> Option<String> {
+	let namespaced = declare_missing_namespaces(xml, known_prefixes);
+	let entities = resolve_html_entities(namespaced.as_deref().unwrap_or(xml));
+	entities.or(namespaced)
+}
+
+/// Declares the namespace prefixes a document uses and never declared, so a strict XML parser will
+/// read it.
+///
+/// A FictionBook written by hand or by a careless converter often opens with a bare
+/// `<FictionBook>` and then writes a footnote as `<a l:href="#n1">`, with no `xmlns:l` anywhere.
+/// That is not valid XML and roxmltree refuses the whole file, though every FictionBook reader
+/// takes it: Bulgakov's "The White Guard" in FBReader's own test corpus is written exactly that
+/// way. Returns `None` when every prefix the document uses is already declared, which is when there
+/// is nothing to gain by parsing it again.
+fn declare_missing_namespaces(xml: &str, known_prefixes: &[(&str, &str)]) -> Option<String> {
+	let mut missing: Vec<&str> = Vec::new();
+	for prefix in used_prefixes(xml) {
+		let declaration = format!("xmlns:{prefix}");
+		if !xml.contains(&declaration) && !missing.contains(&prefix) {
+			missing.push(prefix);
+		}
+	}
+	if missing.is_empty() {
+		return None;
+	}
+	let insert_at = root_element_attribute_position(xml)?;
+	let mut out = String::with_capacity(xml.len() + missing.len() * 48);
+	out.push_str(&xml[..insert_at]);
+	for prefix in &missing {
+		// A prefix missing from `known_prefixes` gets a URI of its own.
+		let uri = known_prefixes
+			.iter()
+			.find(|(known, _)| known == prefix)
+			.map_or_else(|| format!("urn:paperback:undeclared:{prefix}"), |(_, uri)| (*uri).to_string());
+		out.push_str(&format!(" xmlns:{prefix}=\"{uri}\""));
+	}
+	out.push_str(&xml[insert_at..]);
+	Some(out)
+}
+
+/// The prefixes a document uses on an element or an attribute name.
+fn used_prefixes(xml: &str) -> Vec<&str> {
+	let mut prefixes = Vec::new();
+	let is_name_char = |c: char| c.is_alphanumeric() || matches!(c, '_' | '-' | '.');
+	for (index, _) in xml.match_indices(':') {
+		let before = &xml[..index];
+		// Stepping over the character that ended the name, not over one byte of it: a file of
+		// random bytes reaches here, and one byte into a multi-byte character is not a place a
+		// string can be cut.
+		let start = before.char_indices().rev().find(|(_, c)| !is_name_char(*c)).map_or(0, |(at, c)| at + c.len_utf8());
+		let prefix = &before[start..];
+		// A prefix is a name, it follows either the `<` of a tag or the whitespace before an
+		// attribute, and what comes after the colon is a name too.
+		let opener = before[..start].chars().next_back();
+		let follows_name_start = opener.is_some_and(|c| c == '<' || c.is_whitespace());
+		let next_is_name = xml[index + 1..].chars().next().is_some_and(|c| c.is_alphabetic() || c == '_');
+		if prefix.is_empty() || prefix == "xmlns" || !follows_name_start || !next_is_name {
+			continue;
+		}
+		// Only inside a tag: a colon in the body of the book says nothing about namespaces.
+		if xml[..index].rfind('<').is_none_or(|tag| xml[tag..index].contains('>')) {
+			continue;
+		}
+		if !prefixes.contains(&prefix) {
+			prefixes.push(prefix);
+		}
+	}
+	prefixes
+}
+
+/// Where an attribute can be added to the root element's start tag, which is just before the `>`
+/// that closes it.
+fn root_element_attribute_position(xml: &str) -> Option<usize> {
+	let mut at = 0;
+	loop {
+		let open = xml[at..].find('<')? + at;
+		let after = xml[open + 1..].chars().next()?;
+		if after == '?' || after == '!' {
+			// A declaration, a comment or a doctype, none of which is the root element.
+			at = xml[open..].find('>')? + open + 1;
+			continue;
+		}
+		let mut quote = None;
+		for (offset, ch) in xml[open..].char_indices() {
+			match (quote, ch) {
+				(None, c) if c == '"' || c == '\'' => quote = Some(ch),
+				(Some(open_quote), ch) if ch == open_quote => quote = None,
+				(None, '>') => {
+					let end = open + offset;
+					// A tag that closes itself has nothing under it, so `/` belongs after what is
+					// being added rather than before it.
+					let insert = if xml[..end].ends_with('/') { end - 1 } else { end };
+					return Some(insert);
+				}
+				_ => {}
+			}
+		}
+		return None;
+	}
+}
+
+/// Replaces the HTML character entities an XML parser does not know with the characters they
+/// stand for.
+///
+/// XML declares five entities and no more, so `&nbsp;` or `&mdash;` in a FictionBook is an error
+/// that costs the whole book. They are common: a converter that has just read HTML writes what it
+/// read. An entity that is not in the HTML set either is dropped, because a missing character is
+/// a smaller loss than a missing book.
+fn resolve_html_entities(xml: &str) -> Option<String> {
+	/// Longest HTML entity name, `CounterClockwiseContourIntegral;`, plus room.
+	const MAX_ENTITY_LEN: usize = 34;
+	let mut out = String::with_capacity(xml.len());
+	let mut rest = xml;
+	let mut changed = false;
+	while let Some(start) = rest.find('&') {
+		out.push_str(&rest[..start]);
+		let after = &rest[start + 1..];
+		let name_end = after.char_indices().take(MAX_ENTITY_LEN).find(|(_, c)| *c == ';').map(|(at, _)| at);
+		let Some(name_end) = name_end else {
+			out.push('&');
+			rest = after;
+			continue;
+		};
+		let name = &after[..name_end];
+		rest = &after[name_end + 1..];
+		// The five XML declares, and the numeric references every parser resolves on its own.
+		if matches!(name, "amp" | "lt" | "gt" | "quot" | "apos") || name.starts_with('#') {
+			out.push('&');
+			out.push_str(name);
+			out.push(';');
+			continue;
+		}
+		changed = true;
+		if let Some((first, second)) = web_atoms::NAMED_ENTITIES.get(&format!("{name};")) {
+			out.extend(char::from_u32(*first));
+			// The table gives a second code point of zero for the entities that stand for one
+			// character, which is most of them.
+			out.extend(char::from_u32(*second).filter(|c| *c != '\0'));
+		}
+	}
+	if !changed {
+		return None;
+	}
+	out.push_str(rest);
+	Some(out)
+}
+
 #[cfg(test)]
 mod tests {
 	use roxmltree::Document;
@@ -204,5 +435,48 @@ mod tests {
 		let path = dir.write_str("odd.xml", r#"<?xml version="1.0" encoding="x-madeup"?><p>plain</p>"#);
 		let text = read_xml_to_string(&path).expect("read the file");
 		assert!(text.contains("<p>plain</p>"), "got {text:?}");
+	}
+
+	const CONTENT_NS: &str = "http://purl.org/rss/1.0/modules/content/";
+
+	fn namespace_of(xml: &str, local_name: &str) -> Option<String> {
+		let doc = Document::parse(xml).expect("the repaired document parses");
+		doc.descendants()
+			.find(|node| node.is_element() && node.tag_name().name() == local_name)
+			.and_then(|node| node.tag_name().namespace().map(str::to_string))
+	}
+
+	#[test]
+	fn repair_declares_a_known_prefix_with_its_real_namespace() {
+		let xml = "<rss><item><content:encoded>x</content:encoded></item></rss>";
+		let repaired = repair_xml(xml, &[("content", CONTENT_NS)]).expect("a prefix was missing");
+		assert_eq!(namespace_of(&repaired, "encoded").as_deref(), Some(CONTENT_NS));
+	}
+
+	#[test]
+	fn repair_declares_an_unknown_prefix_with_a_placeholder_namespace() {
+		let xml = "<rss><item><foo:bar>x</foo:bar></item></rss>";
+		let repaired = repair_xml(xml, &[("content", CONTENT_NS)]).expect("a prefix was missing");
+		assert_eq!(namespace_of(&repaired, "bar").as_deref(), Some("urn:paperback:undeclared:foo"));
+	}
+
+	#[test]
+	fn repair_replaces_html_entities() {
+		let repaired = repair_xml("<p>a&nbsp;b&mdash;c</p>", &[]).expect("entities were replaced");
+		let doc = Document::parse(&repaired).expect("the repaired document parses");
+		assert_eq!(doc.root_element().text(), Some("a\u{a0}b\u{2014}c"));
+	}
+
+	#[test]
+	fn repair_leaves_a_well_formed_document_alone() {
+		assert_eq!(repair_xml(r#"<p xmlns:c="urn:c"><c:x>a &amp; b</c:x></p>"#, &[]), None);
+	}
+
+	#[test]
+	fn serialize_skips_what_the_predicate_names_and_escapes_the_rest() {
+		let doc = Document::parse(r#"<a><b x="1 &quot; 2">3 &lt; 4</b><binary>AAAA</binary><c/></a>"#).unwrap();
+		let mut out = String::new();
+		serialize_xml(doc.root(), &mut out, &|node| node.tag_name().name() == "binary");
+		assert_eq!(out, r#"<a><b x="1 &quot; 2">3 &lt; 4</b><c/></a>"#);
 	}
 }

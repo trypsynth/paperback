@@ -2760,6 +2760,94 @@ msgstr ""
 msgid "Failed to convert FB2 XML to text"
 msgstr ""
 
+#. TRANSLATORS: How the publication date of a feed item is written, such as "6 October 2026"; {day} is the day of the month, {month} the month's name and {year} the year
+msgid "{day} {month} {year}"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 January 2026"
+msgid "January"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 February 2026"
+msgid "February"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 March 2026"
+msgid "March"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 April 2026"
+msgid "April"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 May 2026"
+msgid "May"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 June 2026"
+msgid "June"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 July 2026"
+msgid "July"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 August 2026"
+msgid "August"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 September 2026"
+msgid "September"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 October 2026"
+msgid "October"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 November 2026"
+msgid "November"
+msgstr ""
+
+#. TRANSLATORS: Month name in the publication date of a feed item, such as "6 December 2026"
+msgid "December"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a file opened as an RSS or Atom feed turns out to be some other kind of XML
+msgid "This file is not an RSS or Atom feed."
+msgstr ""
+
+#. TRANSLATORS: Error shown when a feed file is not well-formed XML; {} is the XML parser's description of the problem
+msgid "Couldn't read the feed: {}"
+msgstr ""
+
+#. TRANSLATORS: The whole text of a feed that has no items and no description
+msgid "This feed has no items."
+msgstr ""
+
+#. TRANSLATORS: Link at the start of a feed to the website the feed comes from
+msgid "Website"
+msgstr ""
+
+#. TRANSLATORS: Link at the end of a feed item to the web page the item comes from
+msgid "Original article"
+msgstr ""
+
+#. TRANSLATORS: Line under a feed item's heading; {date} is when it was published, such as "6 October 2026", and {author} who wrote it
+msgid "Published {date} by {author}"
+msgstr ""
+
+#. TRANSLATORS: Line under a feed item's heading; {date} is when it was published, such as "6 October 2026"
+msgid "Published {date}"
+msgstr ""
+
+#. TRANSLATORS: Line under a feed item's heading; {author} is who wrote it
+msgid "By {author}"
+msgstr ""
+
+#. TRANSLATORS: Heading of a feed item that has no title, no text and no date
+msgid "Untitled item"
+msgstr ""
+
 #. TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
 msgid "Failed to parse WinHelp file: {}"
 msgstr ""

@@ -6,7 +6,7 @@ This file is for people who work on Paperback. To use it, see the [user guide](d
 
 ## Features
 
-- Opens EPUB, PDF, Word, PowerPoint, OpenDocument, RTF, HTML, Markdown, reStructuredText, FictionBook, MOBI and Kindle, CHM, WinHelp, DAISY, comic book archives, man pages, Windows Write, plain text, and M4B and MP3 audiobooks. For the full list of file extensions, see the [user guide](doc/readme.md#currently-supported-file-types).
+- Opens EPUB, PDF, Word, PowerPoint, OpenDocument, RTF, HTML, Markdown, reStructuredText, FictionBook, MOBI and Kindle, CHM, WinHelp, DAISY, comic book archives, man pages, RSS and Atom feeds, Windows Write, plain text, and M4B and MP3 audiobooks. For the full list of file extensions, see the [user guide](doc/readme.md#currently-supported-file-types).
 - Opens documents in tabs. Files opened from the shell or through a file association go to the window that's already running.
 - Moves by heading, page, link, list, table, image, figure, formula, and more with single-letter keys, like a screen reader's browse mode. A table of contents and an elements list are also available.
 - Finds text, with options for case, whole words, and regular expressions, and remembers past searches.

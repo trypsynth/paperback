@@ -162,6 +162,13 @@ formats! {
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS,
 		installer: OPT_IN_HANDLER,
 	},
+	/// The parser checks the root element, so an `.xml` file that is not a feed is turned away.
+	FEED {
+		name: "RSS and Atom Feeds",
+		extensions: ["rss", "atom", "xml"],
+		mime_types: ["application/rss+xml", "application/atom+xml"],
+		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS,
+	},
 	HTML {
 		name: "HTML Files",
 		extensions: ["htm", "html", "xhtml"],
@@ -313,6 +320,23 @@ mod tests {
 					"{}: application/zip belongs to the standalone zip task",
 					format.name
 				);
+			}
+		}
+	}
+
+	#[test]
+	fn feeds_served_by_type_are_named_as_rss() {
+		for mime in ["application/rss+xml", "application/atom+xml"] {
+			let format = ALL.iter().find(|format| format.mime_types.contains(&mime)).expect("a format claims it");
+			assert_eq!(format.extensions.first(), Some(&"rss"), "{mime}");
+		}
+	}
+
+	#[test]
+	fn no_format_claims_every_xml_file() {
+		for format in ALL {
+			for generic in ["application/xml", "text/xml"] {
+				assert!(!format.mime_types.contains(&generic), "{}: {generic}", format.name);
 			}
 		}
 	}

@@ -8,12 +8,17 @@ use crate::{
 	parser::{
 		Parser, add_converter_markers,
 		convert::xml_to_text::XmlToText,
-		util::xml::{collect_element_text, find_child_element, read_xml_to_string},
+		util::xml::{collect_element_text, find_child_element, read_xml_to_string, repair_xml, serialize_xml},
 	},
 	t,
 };
 
 type Metadata = (String, String);
+
+const XLINK_NS: &str = "http://www.w3.org/1999/xlink";
+
+/// `l` and `xlink` are both how an FB2 book writes a link.
+const FB2_PREFIXES: &[(&str, &str)] = &[("l", XLINK_NS), ("xlink", XLINK_NS)];
 
 pub struct Fb2Parser;
 
@@ -26,8 +31,9 @@ impl Parser for Fb2Parser {
 		if let Some(pos) = xml_content.rfind(CLOSING_TAG) {
 			xml_content.truncate(pos + CLOSING_TAG.len());
 		}
-		let (xml_content, (title, author)) =
-			clean_fb2(&xml_content).or_else(|| clean_fb2(&repair_fb2_xml(&xml_content)?)).unwrap_or_else(|| {
+		let (xml_content, (title, author)) = clean_fb2(&xml_content)
+			.or_else(|| clean_fb2(&repair_xml(&xml_content, FB2_PREFIXES)?))
+			.unwrap_or_else(|| {
 				tracing::warn!(
 					path = %context.file_path,
 					"roxmltree failed to parse fb2 xml, falling back to unstripped xml which may include base64 binary blobs"
@@ -59,82 +65,9 @@ impl Parser for Fb2Parser {
 fn clean_fb2(xml_content: &str) -> Option<(String, Metadata)> {
 	let doc = XmlDocument::parse(xml_content).ok()?;
 	let mut result = String::new();
-	serialize_without_binary(doc.root(), &mut result);
+	serialize_xml(doc.root(), &mut result, &|node| node.tag_name().name() == "binary");
 	let meta = extract_metadata_from_doc(&doc);
 	Some((result, meta))
-}
-
-fn serialize_without_binary(node: Node, output: &mut String) {
-	match node.node_type() {
-		NodeType::Root => {
-			for child in node.children() {
-				serialize_without_binary(child, output);
-			}
-		}
-		NodeType::Element => {
-			let tag_name = node.tag_name().name();
-			if tag_name == "binary" {
-				return;
-			}
-			output.push('<');
-			output.push_str(tag_name);
-			for attr in node.attributes() {
-				output.push(' ');
-				output.push_str(attr.name());
-				output.push_str("=\"");
-				output.push_str(&escape_xml(attr.value()));
-				output.push('"');
-			}
-			if node.children().count() == 0 {
-				output.push_str("/>");
-			} else {
-				output.push('>');
-				for child in node.children() {
-					serialize_without_binary(child, output);
-				}
-				output.push_str("</");
-				output.push_str(tag_name);
-				output.push('>');
-			}
-		}
-		NodeType::Text => {
-			if let Some(text) = node.text() {
-				output.push_str(&escape_xml(text));
-			}
-		}
-		NodeType::Comment => {
-			if let Some(text) = node.text() {
-				output.push_str("<!--");
-				output.push_str(text);
-				output.push_str("-->");
-			}
-		}
-		NodeType::PI => {
-			if let Some(text) = node.text() {
-				output.push_str("<?");
-				output.push_str(text);
-				output.push_str("?>");
-			}
-		}
-	}
-}
-
-fn escape_xml(s: &str) -> String {
-	if !s.chars().any(|c| matches!(c, '&' | '<' | '>' | '"' | '\'')) {
-		return s.to_string();
-	}
-	let mut result = String::with_capacity(s.len());
-	for c in s.chars() {
-		match c {
-			'&' => result.push_str("&amp;"),
-			'<' => result.push_str("&lt;"),
-			'>' => result.push_str("&gt;"),
-			'"' => result.push_str("&quot;"),
-			'\'' => result.push_str("&apos;"),
-			_ => result.push(c),
-		}
-	}
-	result
 }
 
 fn extract_metadata(xml_content: &str) -> Metadata {
@@ -191,163 +124,6 @@ fn find_element_by_path<'a, 'input>(node: Node<'a, 'input>, path: &[&str]) -> Op
 		}
 	}
 	None
-}
-
-/// Declares the namespace prefixes a document uses and never declared, so a strict XML parser will
-/// read it.
-///
-/// A FictionBook written by hand or by a careless converter often opens with a bare
-/// `<FictionBook>` and then writes a footnote as `<a l:href="#n1">`, with no `xmlns:l` anywhere.
-/// That is not valid XML and roxmltree refuses the whole file, though every FictionBook reader
-/// takes it: Bulgakov's "The White Guard" in FBReader's own test corpus is written exactly that
-/// way. Nothing downstream looks at namespaces, only at local names, so the declarations added
-/// here need only exist. Returns `None` when every prefix the document uses is already declared,
-/// which is when there is nothing to gain by parsing it again.
-fn declare_missing_namespaces(xml: &str) -> Option<String> {
-	let mut missing: Vec<&str> = Vec::new();
-	for prefix in used_prefixes(xml) {
-		let declaration = format!("xmlns:{prefix}");
-		if !xml.contains(&declaration) && !missing.contains(&prefix) {
-			missing.push(prefix);
-		}
-	}
-	if missing.is_empty() {
-		return None;
-	}
-	let insert_at = root_element_attribute_position(xml)?;
-	let mut out = String::with_capacity(xml.len() + missing.len() * 48);
-	out.push_str(&xml[..insert_at]);
-	for prefix in &missing {
-		// The one prefix worth naming properly: `l` and `xlink` are both how FictionBook writes a
-		// link. Anything else gets a URI of its own so that two prefixes never collide.
-		let uri = if matches!(*prefix, "l" | "xlink") {
-			"http://www.w3.org/1999/xlink".to_string()
-		} else {
-			format!("urn:paperback:undeclared:{prefix}")
-		};
-		out.push_str(&format!(" xmlns:{prefix}=\"{uri}\""));
-	}
-	out.push_str(&xml[insert_at..]);
-	Some(out)
-}
-
-/// The prefixes a document uses on an element or an attribute name.
-fn used_prefixes(xml: &str) -> Vec<&str> {
-	let mut prefixes = Vec::new();
-	let is_name_char = |c: char| c.is_alphanumeric() || matches!(c, '_' | '-' | '.');
-	for (index, _) in xml.match_indices(':') {
-		let before = &xml[..index];
-		// Stepping over the character that ended the name, not over one byte of it: a file of
-		// random bytes reaches here, and one byte into a multi-byte character is not a place a
-		// string can be cut.
-		let start = before.char_indices().rev().find(|(_, c)| !is_name_char(*c)).map_or(0, |(at, c)| at + c.len_utf8());
-		let prefix = &before[start..];
-		// A prefix is a name, it follows either the `<` of a tag or the whitespace before an
-		// attribute, and what comes after the colon is a name too.
-		let opener = before[..start].chars().next_back();
-		let follows_name_start = opener.is_some_and(|c| c == '<' || c.is_whitespace());
-		let next_is_name = xml[index + 1..].chars().next().is_some_and(|c| c.is_alphabetic() || c == '_');
-		if prefix.is_empty() || prefix == "xmlns" || !follows_name_start || !next_is_name {
-			continue;
-		}
-		// Only inside a tag: a colon in the body of the book says nothing about namespaces.
-		if xml[..index].rfind('<').is_none_or(|tag| xml[tag..index].contains('>')) {
-			continue;
-		}
-		if !prefixes.contains(&prefix) {
-			prefixes.push(prefix);
-		}
-	}
-	prefixes
-}
-
-/// Where an attribute can be added to the root element's start tag, which is just before the `>`
-/// that closes it.
-fn root_element_attribute_position(xml: &str) -> Option<usize> {
-	let mut at = 0;
-	loop {
-		let open = xml[at..].find('<')? + at;
-		let after = xml[open + 1..].chars().next()?;
-		if after == '?' || after == '!' {
-			// A declaration, a comment or a doctype, none of which is the root element.
-			at = xml[open..].find('>')? + open + 1;
-			continue;
-		}
-		let mut quote = None;
-		for (offset, ch) in xml[open..].char_indices() {
-			match (quote, ch) {
-				(None, c) if c == '"' || c == '\'' => quote = Some(ch),
-				(Some(open_quote), ch) if ch == open_quote => quote = None,
-				(None, '>') => {
-					let end = open + offset;
-					// A tag that closes itself has nothing under it, so `/` belongs after what is
-					// being added rather than before it.
-					let insert = if xml[..end].ends_with('/') { end - 1 } else { end };
-					return Some(insert);
-				}
-				_ => {}
-			}
-		}
-		return None;
-	}
-}
-
-/// Makes a FictionBook that is not quite valid XML readable, or returns `None` when there was
-/// nothing to mend.
-///
-/// Both repairs are for files that every FictionBook reader opens and a strict XML parser will
-/// not, which is a large share of what is out there: the format is old, and much of its library
-/// was converted from HTML by tools that were not careful.
-fn repair_fb2_xml(xml: &str) -> Option<String> {
-	let namespaced = declare_missing_namespaces(xml);
-	let entities = resolve_html_entities(namespaced.as_deref().unwrap_or(xml));
-	entities.or(namespaced)
-}
-
-/// Replaces the HTML character entities an XML parser does not know with the characters they
-/// stand for.
-///
-/// XML declares five entities and no more, so `&nbsp;` or `&mdash;` in a FictionBook is an error
-/// that costs the whole book. They are common: a converter that has just read HTML writes what it
-/// read. An entity that is not in the HTML set either is dropped, because a missing character is
-/// a smaller loss than a missing book.
-fn resolve_html_entities(xml: &str) -> Option<String> {
-	/// Longest HTML entity name, `CounterClockwiseContourIntegral;`, plus room.
-	const MAX_ENTITY_LEN: usize = 34;
-	let mut out = String::with_capacity(xml.len());
-	let mut rest = xml;
-	let mut changed = false;
-	while let Some(start) = rest.find('&') {
-		out.push_str(&rest[..start]);
-		let after = &rest[start + 1..];
-		let name_end = after.char_indices().take(MAX_ENTITY_LEN).find(|(_, c)| *c == ';').map(|(at, _)| at);
-		let Some(name_end) = name_end else {
-			out.push('&');
-			rest = after;
-			continue;
-		};
-		let name = &after[..name_end];
-		rest = &after[name_end + 1..];
-		// The five XML declares, and the numeric references every parser resolves on its own.
-		if matches!(name, "amp" | "lt" | "gt" | "quot" | "apos") || name.starts_with('#') {
-			out.push('&');
-			out.push_str(name);
-			out.push(';');
-			continue;
-		}
-		changed = true;
-		if let Some((first, second)) = web_atoms::NAMED_ENTITIES.get(&format!("{name};")) {
-			out.extend(char::from_u32(*first));
-			// The table gives a second code point of zero for the entities that stand for one
-			// character, which is most of them.
-			out.extend(char::from_u32(*second).filter(|c| *c != '\0'));
-		}
-	}
-	if !changed {
-		return None;
-	}
-	out.push_str(rest);
-	Some(out)
 }
 
 #[cfg(test)]

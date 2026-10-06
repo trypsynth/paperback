@@ -23,6 +23,7 @@ pub mod convert;
 pub mod daisy;
 pub mod epub;
 pub mod fb2;
+pub mod feed;
 pub mod hlp;
 pub mod html;
 pub mod m4b;
@@ -149,6 +150,7 @@ impl ParserRegistry {
 				WORD => word::WordParser,
 				EPUB => epub::EpubParser,
 				FB2 => fb2::Fb2Parser,
+				FEED => feed::FeedParser,
 				HTML => html::HtmlParser,
 				PDF => pdf::PdfParser,
 				MAN => man::ManParser,

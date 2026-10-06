@@ -62,6 +62,7 @@ Paperback supports the following formats and extensions:
 * PDF documents (`.pdf`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * reStructuredText documents (`.rst`, `.rest`)
+* RSS and Atom feeds (`.rss`, `.atom`, `.xml`)
 * RTF documents (`.rtf`)
 * Windows Write documents (`.wri`)
 * WinHelp files (`.hlp`)

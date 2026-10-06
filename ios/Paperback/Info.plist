@@ -290,6 +290,29 @@
 				</array>
 			</dict>
 		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>dev.paperback.feed</string>
+			<key>UTTypeDescription</key>
+			<string>RSS or Atom Feed</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.xml</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>rss</string>
+					<string>atom</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/rss+xml</string>
+					<string>application/atom+xml</string>
+				</array>
+			</dict>
+		</dict>
 	</array>
 	<key>CFBundleDocumentTypes</key>
 	<array>
@@ -323,6 +346,7 @@
 				<string>org.oasis-open.opendocument.text</string>
 				<string>dev.paperback.fodt</string>
 				<string>dev.paperback.wri</string>
+				<string>dev.paperback.feed</string>
 			</array>
 		</dict>
 		<dict>

@@ -131,6 +131,9 @@ fn is_external_url_classifies_schemes(#[case] url: &str, #[case] expected: bool)
 #[case("txt ", false)]
 #[case("..txt", true)]
 #[case("...log", true)]
+#[case("rss", true)]
+#[case("atom", true)]
+#[case(".XML", true)]
 fn parser_supports_extension_classifies_inputs(#[case] extension: &str, #[case] expected: bool) {
 	assert_eq!(parser_supports_extension(extension), expected);
 }
@@ -243,6 +246,26 @@ fn m4b_parser_advertises_audio_book_navigation() {
 		get_parser_flags_for_context(&context),
 		ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_AUDIO
 	);
+}
+
+#[test]
+fn feed_parser_advertises_section_contents_and_list_navigation() {
+	let context = ParserContext::new("news.atom".to_string());
+	assert_eq!(
+		get_parser_flags_for_context(&context),
+		ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
+	);
+}
+
+#[test]
+fn parse_document_reads_a_feed_saved_as_xml() {
+	let dir = crate::util::test_support::TempDir::new("parse-feed");
+	let path = dir.write_str(
+		"feed.xml",
+		r#"<rss version="2.0"><channel><title>Saved Feed</title><item><title>One</title></item></channel></rss>"#,
+	);
+	let doc = parse_document(&ParserContext::new(path)).expect("a feed saved as .xml opens");
+	assert_eq!(doc.title, "Saved Feed");
 }
 
 /// Guards against a format being declared in `paperback-formats` with no parser wired up

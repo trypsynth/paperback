@@ -72,6 +72,7 @@ Buying the mobile apps is what pays for the work. If you would rather not, the s
 <li>PDF, including scanned PDFs through OCR</li>
 <li>PowerPoint (.pptx, .ppt)</li>
 <li>reStructuredText</li>
+<li>RSS and Atom feeds</li>
 <li>RTF</li>
 <li>Windows Write (.wri)</li>
 <li>WinHelp (.hlp)</li>
