@@ -72,8 +72,8 @@ impl fmt::Display for FetchError {
 			Self::Io(reason) => t("the download could not be saved: {}").replace("{}", reason),
 			// TRANSLATORS: Message when downloading a document from a link is cancelled
 			Self::Cancelled => t("the download was cancelled"),
-			// TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
 			Self::Refused(extension) => {
+				// TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
 				t(".{} files cannot be read, so the link was not downloaded").replace("{}", extension)
 			}
 			// TRANSLATORS: Error when a secure https link is redirected to an insecure http address
