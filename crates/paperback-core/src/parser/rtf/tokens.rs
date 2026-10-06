@@ -126,16 +126,8 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 			Token::ControlSymbol((ctrl, property)) => {
 				match ctrl {
 					ControlWord::Pard => in_header = false,
-					ControlWord::Par | ControlWord::Line => {
-						if !in_header {
-							buffer.append("\n");
-						}
-					}
-					ControlWord::Tab => {
-						if !in_header {
-							buffer.append("\t");
-						}
-					}
+					ControlWord::Par | ControlWord::Line if !in_header => buffer.append("\n"),
+					ControlWord::Tab if !in_header => buffer.append("\t"),
 					ControlWord::Unicode => {
 						if !in_header && let Property::Value(code) = property {
 							let code = if *code < 0 {
@@ -238,24 +230,22 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 					_ => {}
 				}
 			}
-			Token::PlainText(text) => {
-				if !in_header {
-					if let Some(url) = text.strip_prefix("HYPERLINK ") {
-						let url = url.trim().trim_matches('"').to_string();
-						pending_link = Some(PendingLink { url, start_position: buffer.current_position() });
-					} else if let Some(link) = pending_link.take() {
-						let display_text = text.to_string();
-						let text_len = display_text.chars().count();
-						buffer.append(&display_text);
-						buffer.add_marker(
-							Marker::new(MarkerType::Link, link.start_position)
-								.with_text(display_text)
-								.with_reference(link.url)
-								.with_length(text_len),
-						);
-					} else {
-						buffer.append(text);
-					}
+			Token::PlainText(text) if !in_header => {
+				if let Some(url) = text.strip_prefix("HYPERLINK ") {
+					let url = url.trim().trim_matches('"').to_string();
+					pending_link = Some(PendingLink { url, start_position: buffer.current_position() });
+				} else if let Some(link) = pending_link.take() {
+					let display_text = text.to_string();
+					let text_len = display_text.chars().count();
+					buffer.append(&display_text);
+					buffer.add_marker(
+						Marker::new(MarkerType::Link, link.start_position)
+							.with_text(display_text)
+							.with_reference(link.url)
+							.with_length(text_len),
+					);
+				} else {
+					buffer.append(text);
 				}
 			}
 			Token::CRLF if !in_header => {
