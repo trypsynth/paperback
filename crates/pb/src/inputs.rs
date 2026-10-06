@@ -71,33 +71,31 @@ pub fn is_pattern(arg: &Path) -> bool {
 /// Every file the inputs name, every pattern among the arguments that matched nothing, and every
 /// listed input that cannot be converted.
 ///
-/// An argument that is not a pattern, and a listed input without `*` or `?`, is passed through as
-/// it is, whether or not it exists: `input::check` says why a missing file is a problem in terms
+/// An http or https link, listed or typed, is a [`Source::Link`]. An argument that is not a
+/// pattern, and a listed input without `*` or `?`, is passed through as it is, whether or not it
+/// exists: `input::check` says why a missing file is a problem in terms
 /// the reader can act on, which is a better place for that than here.
 #[must_use]
 pub fn collect(given: &[Given]) -> Inputs {
 	let mut collected = Inputs::default();
 	for item in given {
-		let arg = match item {
-			Given::Listed(path) if is_pattern(path) => {
-				collected.problems.push(listed_pattern(path));
-				continue;
-			}
-			Given::Listed(path) => {
-				collected.sources.push(Source::File(path.clone()));
-				continue;
-			}
+		let (arg, listed) = match item {
 			Given::Unreadable(problem) => {
 				collected.problems.push(problem.clone());
 				continue;
 			}
-			Given::Argument(arg) => arg,
+			Given::Listed(path) => (path, true),
+			Given::Argument(arg) => (arg, false),
 		};
 		if let Some(url) = arg.to_str().filter(|text| is_remote_url(text)) {
 			collected.sources.push(Source::Link(url.to_string()));
 			continue;
 		}
-		if !is_pattern(arg) {
+		if listed && is_pattern(arg) {
+			collected.problems.push(listed_pattern(arg));
+			continue;
+		}
+		if listed || !is_pattern(arg) {
 			collected.sources.push(Source::File(arg.clone()));
 			continue;
 		}
@@ -647,5 +645,11 @@ mod tests {
 			Source::Link("https://example.org/a.epub?x=1".to_string()).shown(),
 			"https://example.org/a.epub?x=1"
 		);
+	}
+	#[test]
+	fn a_link_in_a_list_is_a_link() {
+		let collected = collect(&[Given::Listed(PathBuf::from("https://example.org/a.epub?x=1&y=2"))]);
+		assert_eq!(collected.sources, [Source::Link("https://example.org/a.epub?x=1&y=2".to_string())]);
+		assert!(collected.problems.is_empty(), "{:?}", collected.problems);
 	}
 }
