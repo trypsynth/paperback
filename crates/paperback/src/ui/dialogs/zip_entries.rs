@@ -1,10 +1,12 @@
+use std::{cell::Cell, rc::Rc};
+
 use patois::t;
 use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 
 /// Lets the user pick one of `names` from inside a zip archive. Returns the index of the chosen
-/// name, or `None` if the dialog was cancelled.
+/// name, or `None` if the dialog was cancelled. Closing the dialog with Alt+F4 also closes `parent`.
 pub fn show_zip_entries_dialog(parent: &Frame, names: &[String]) -> Option<usize> {
 	// TRANSLATORS: Title of the dialog listing the documents inside a zip archive
 	let title = t("Open from Archive");
@@ -25,10 +27,25 @@ pub fn show_zip_entries_dialog(parent: &Frame, names: &[String]) -> Option<usize
 	content_sizer.add(&list, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING / 2);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	list.on_item_double_clicked(move |_| dialog.end_modal(ID_OK));
+	let closed = Rc::new(Cell::new(false));
+	let closed_in_handler = Rc::clone(&closed);
+	dialog.on_close(move |event| {
+		closed_in_handler.set(true);
+		dialog.end_modal(ID_CANCEL);
+		event.skip(false);
+	});
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	list.set_focus();
 	if dialog.show_modal() != ID_OK {
+		if closed.get() {
+			// Deferred: the caller still holds the document-manager lock the close handler needs.
+			wxdragon::call_after(Box::new(|| {
+				if let Some(window) = crate::ui::app::main_window_from_ptr() {
+					window.frame().close(false);
+				}
+			}));
+		}
 		return None;
 	}
 	list.get_selection().map(|index| index as usize)
