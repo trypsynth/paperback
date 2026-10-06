@@ -42,12 +42,16 @@ const BATCH_OCR_FLUSH_EVERY: usize = BATCH_OCR_PROGRESS_EVERY;
 
 /// A running OCR job, one per tab. Owned by the UI thread; the worker sees only `cancel`.
 pub(super) struct OcrJob {
+	/// Which run this is, so a message from a worker that has outlived its tab is recognised as stale rather than applied to whatever tab now holds the same path.
+	id: u64,
 	/// Raised by the UI thread to stop a batch after the page it is working on.
 	cancel: Arc<AtomicBool>,
 	/// True for a range job, false for a single page. Only a batch is worth offering to cancel.
 	batch: bool,
 	/// Pages whose text has made it into the document so far, for the closing announcement.
 	recognized: usize,
+	/// Stopped by a re-read rather than by the reader, so its remaining flushes are dropped and nothing is announced.
+	quiet_cancel: bool,
 }
 
 /// Whether a document is a PDF, which is what the paragraph joining setting is about. The
@@ -56,8 +60,27 @@ fn is_pdf(file_path: &Path) -> bool {
 	file_path.extension().is_some_and(|extension| extension.eq_ignore_ascii_case("pdf"))
 }
 
+/// Whether [`PageRenderer::open`] can actually open this document. It rasterizes PDFs and decodes
+/// comic archive pages, and hands anything else to pdfium, which will not read an EPUB or a DOCX.
+/// "Include text pages" collects every page in the range, so without this a book with no
+/// image-only pages at all would send a job straight into a renderer that cannot open it.
+fn is_ocr_able(file_path: &Path) -> bool {
+	file_path.extension().is_some_and(|extension| {
+		extension.eq_ignore_ascii_case("pdf")
+			|| extension.eq_ignore_ascii_case("cbz")
+			|| extension.eq_ignore_ascii_case("cbr")
+	})
+}
+
 /// One page's outcome, as the worker reports it.
 type PageResult = (i32, Result<String, OcrError>);
+
+/// The position of the tab whose current OCR job is `id`, over each tab's job id.
+///
+/// A worker outliving its tab is the case this exists for: the document can be closed mid-run and opened again, so the search is over job ids and never over paths, which cannot tell the two apart.
+fn index_running_job(job_ids: &[Option<u64>], id: u64) -> Option<usize> {
+	job_ids.iter().position(|job_id| *job_id == Some(id))
+}
 
 impl DocumentManager {
 	/// The offset of the OCR placeholder the caret is sitting on, if it is on one.
@@ -74,9 +97,21 @@ impl DocumentManager {
 
 	/// Asks a running batch to stop after the page it is on. The completion path announces how
 	/// much was recognized before the stop, so there is nothing to announce here.
-	pub fn cancel_ocr(&mut self) {
-		if let Some(job) = self.active_tab().and_then(|tab| tab.ocr_job.as_ref()) {
+	///
+	/// `quiet` is for a stop that comes from re-reading the document, where the count would describe discarded text.
+	pub fn cancel_ocr(&mut self, quiet: bool) {
+		if let Some(index) = self.active_tab_index() {
+			self.stop_ocr_at(index, quiet);
+		}
+	}
+
+	/// Asks the OCR job on the tab at `index` to stop after the page it is on, whether or not that tab is the active one. Closing a document is the caller: it is about to drop the tab, which drops this end of the cancel flag without raising it.
+	///
+	/// Advisory rather than a wait, since the UI thread cannot block on OCR: the stop lands at the worker's next page boundary, and those results are dropped because [`Self::tab_running_job`] no longer finds the job.
+	pub(crate) fn stop_ocr_at(&mut self, index: usize, quiet: bool) {
+		if let Some(job) = self.tabs.get_mut(index).and_then(|tab| tab.ocr_job.as_mut()) {
 			job.cancel.store(true, Ordering::Relaxed);
+			job.quiet_cancel = quiet;
 		}
 	}
 
@@ -98,8 +133,17 @@ impl DocumentManager {
 		self.spawn_ocr(vec![page], false);
 	}
 
-	/// Runs OCR on every image-only page in `start..=end` (1-based page numbers).
-	pub fn start_batch_ocr(&mut self, start: i32, end: i32) {
+	/// Runs OCR on every image-only page in `start..=end` (1-based page numbers), or on every
+	/// page in the range when `include_text_pages` is set.
+	///
+	/// The wider sweep exists for pages whose text came from an older or worse OCR pass, or that
+	/// carry no text for material living only in the page's images. It still includes the
+	/// image-only pages, which are a subset of the range, so one list covers both kinds.
+	///
+	/// A document the renderer cannot open keeps the narrow behaviour even with the box ticked:
+	/// there is nothing to render a page of an EPUB with, and reporting a completed job that
+	/// recognized nothing would be worse than saying the range held no image-only pages.
+	pub fn start_batch_ocr(&mut self, start: i32, end: i32, include_text_pages: bool) {
 		let label = self.live_region_label;
 		let Some(tab) = self.active_tab() else {
 			// TRANSLATORS: Announced when batch OCR is triggered with no document open
@@ -112,12 +156,19 @@ impl DocumentManager {
 			return;
 		}
 		let (start, end) = if start <= end { (start, end) } else { (end, start) };
-		let pages: Vec<i32> = tab
-			.session
-			.image_only_pages()
-			.into_iter()
-			.filter_map(|(page, _)| (page >= start && page <= end).then_some(page))
-			.collect();
+		let pages: Vec<i32> = if include_text_pages && is_ocr_able(&tab.file_path) {
+			let last = i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX);
+			// Left to go empty when the range starts past the last page, which is what sends it
+			// to the "nothing to do" announcement below rather than to a job for a page the
+			// document does not have.
+			(start..=end.min(last)).collect()
+		} else {
+			tab.session
+				.image_only_pages()
+				.into_iter()
+				.filter_map(|(page, _)| (page >= start && page <= end).then_some(page))
+				.collect()
+		};
 		if pages.is_empty() {
 			// TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 			announce(label, t("No image-only pages in the given range."));
@@ -138,29 +189,49 @@ impl DocumentManager {
 		let password = (!password.is_empty()).then_some(password);
 		let cancel = Arc::new(AtomicBool::new(false));
 		let worker_cancel = Arc::clone(&cancel);
+		let id = self.next_job_id.get();
+		self.next_job_id.set(id.wrapping_add(1));
+		let job = OcrJob { id, cancel, batch, recognized: 0, quiet_cancel: false };
 		let worker = thread::Builder::new()
 			.name("paperback-ocr".into())
-			.spawn(move || run_ocr(&path_str, password.as_deref(), &pages, &path, &worker_cancel, batch));
+			.spawn(move || run_ocr(&path_str, password.as_deref(), &pages, &path, &worker_cancel, batch, id));
 		match worker {
 			Ok(_) => {
 				if let Some(tab) = self.active_tab_mut() {
-					tab.ocr_job = Some(OcrJob { cancel, batch, recognized: 0 });
+					tab.ocr_job = Some(job);
+				} else {
+					job.cancel.store(true, Ordering::Relaxed);
 				}
 			}
 			Err(err) => {
 				tracing::warn!(error = %err, "failed to spawn the ocr worker thread");
-				announce(label, OcrError::Failed(err.to_string()).message());
+				announce(label, ocr::message(&OcrError::Failed(err.to_string())));
 			}
 		}
 	}
 
+	/// The tab running OCR job `id`, if it is still open and still running that job.
+	///
+	/// Every message from a worker is matched this way rather than by path alone: closing a tab drops its job but not the worker, so a worker can outlive its document and find a tab with the same path reopened.
+	fn tab_running_job(&self, id: u64) -> Option<usize> {
+		let job_ids: Vec<Option<u64>> = self.tabs.iter().map(|tab| tab.ocr_job.as_ref().map(|job| job.id)).collect();
+		index_running_job(&job_ids, id)
+	}
+
 	/// Folds a group of recognized pages into the document. Called on the UI thread from the
 	/// worker, once per flush.
-	pub(crate) fn apply_ocr_results(&mut self, file_path: &Path, results: Vec<PageResult>) {
+	///
+	/// Drops a flush for a job that is no longer open, or was stopped by a re-read: the worker only checks the cancel flag between pages, so pages recognized before F5 can still arrive after it.
+	pub(crate) fn apply_ocr_results(&mut self, id: u64, file_path: &Path, results: Vec<PageResult>) {
 		let label = self.live_region_label;
-		let Some(index) = self.tabs.iter().position(|tab| tab.file_path.as_path() == file_path) else {
+		let Some(index) = self.tab_running_job(id) else {
+			tracing::debug!(path = %file_path.display(), job = id, "dropping an ocr flush for a job that is no longer open");
 			return;
 		};
+		if self.tabs[index].ocr_job.as_ref().is_some_and(|job| job.quiet_cancel) {
+			tracing::debug!(path = %file_path.display(), "dropping an ocr flush for a job the reader stopped by re-reading");
+			return;
+		}
 		let is_active = self.active_tab_index() == Some(index);
 		// An OCR engine reads a page a printed line at a time, so its text arrives broken at
 		// every line end. The reader who asked for wrapped lines to be joined asked about the
@@ -168,27 +239,35 @@ impl DocumentManager {
 		let join_paragraphs =
 			is_pdf(file_path) && self.config.lock().unwrap().get_app_bool("join_pdf_paragraphs", true);
 		let tab = &mut self.tabs[index];
-		// Placeholder offsets are resolved now, not when the worker captured the page: earlier
-		// applies in this same job have already moved everything after them.
-		let offsets = tab.session.image_only_pages();
 		let mut pages = Vec::with_capacity(results.len());
+		// Where each page being replaced starts, read before the edit for the same reason the
+		// session re-resolves the span rather than trusting a captured offset: earlier applies in
+		// this job have already moved everything after them.
+		let mut starts = Vec::with_capacity(results.len());
 		for (page, result) in results {
 			let text = match result {
 				Ok(text) => text,
 				Err(err) => {
 					tracing::warn!(page, error = %err, "ocr failed on page");
 					if matches!(err, OcrError::NoLanguage) {
-						announce(label, err.message());
+						announce(label, ocr::message(&err));
 					}
 					continue;
 				}
 			};
+			// A page that came back empty keeps the text it had. For an image-only page that is
+			// the placeholder; for a text page it is the text the reader is distrusting, and
+			// blanking it would be strictly worse than leaving it alone.
 			if text.trim().is_empty() {
 				continue;
 			}
 			let text = if join_paragraphs { join_wrapped_lines(&text) } else { text };
-			if let Some((_, offset)) = offsets.iter().find(|(candidate, _)| *candidate == page) {
-				pages.push((*offset, text));
+			// `page_offset` answers -1 for a page this document does not have, which is how a
+			// result for a page the session no longer holds gets dropped instead of panicking.
+			let start = tab.session.page_offset(page);
+			if start >= 0 {
+				starts.push(start);
+				pages.push((page, text));
 			}
 		}
 		if pages.is_empty() {
@@ -196,7 +275,7 @@ impl DocumentManager {
 		}
 		let caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let window = tab.window;
-		let outcome = tab.session.replace_image_only_pages(&pages);
+		let outcome = tab.session.replace_ocr_pages(&pages);
 		if let Some(job) = tab.ocr_job.as_mut() {
 			job.recognized += pages.len();
 		}
@@ -207,28 +286,43 @@ impl DocumentManager {
 			let shifted = outcome.shift(usize::try_from(mark.max(0)).unwrap_or(0));
 			tab.selection_mark.set(Some(i64::try_from(shifted).unwrap_or(mark)));
 		}
-		refresh_after_ocr(tab, &pages, window, caret, is_active);
+		refresh_after_ocr(tab, &starts, window, caret, is_active);
 		// The config stores document-absolute offsets (reading position, navigation history,
 		// bookmarks), every one of which the edits above just moved.
 		self.config.lock().unwrap().shift_document_positions(&file_path.to_string_lossy(), &outcome);
 	}
 
 	/// Announces batch progress. Called on the UI thread from the worker.
-	pub(crate) fn announce_ocr_progress(&self, done: usize, total: usize) {
+	///
+	/// Silent for a job that is no longer open or was stopped by a re-read, or a queued count would cut off "Document reloaded."
+	pub(crate) fn announce_ocr_progress(&self, id: u64, done: usize, total: usize) {
+		let Some(index) = self.tab_running_job(id) else {
+			return;
+		};
+		if self.tabs[index].ocr_job.as_ref().is_some_and(|job| job.quiet_cancel) {
+			return;
+		}
 		// TRANSLATORS: Batch OCR progress announcement; the two %d placeholders are the pages done and the total pages
 		let message = t("OCR %d of %d.").replacen("%d", &done.to_string(), 1).replacen("%d", &total.to_string(), 1);
 		announce(self.live_region_label, message);
 	}
 
 	/// Clears the job and announces the outcome. Called on the UI thread when the worker ends.
-	pub(crate) fn finish_ocr(&mut self, file_path: &Path, canceled: bool) {
+	///
+	/// Silent for a job that is no longer open or was stopped by a re-read, whose pages the re-read threw away.
+	pub(crate) fn finish_ocr(&mut self, id: u64, file_path: &Path, canceled: bool) {
 		let label = self.live_region_label;
-		let Some(tab) = self.tabs.iter_mut().find(|tab| tab.file_path.as_path() == file_path) else {
+		let Some(index) = self.tab_running_job(id) else {
+			tracing::debug!(path = %file_path.display(), job = id, "ocr finished for a job that is no longer open");
 			return;
 		};
+		let tab = &mut self.tabs[index];
 		let Some(job) = tab.ocr_job.take() else {
 			return;
 		};
+		if job.quiet_cancel {
+			return;
+		}
 		if !job.batch {
 			let message = if job.recognized > 0 {
 				// TRANSLATORS: Announced after OCR replaces an image-only page with the recognized text
@@ -254,8 +348,8 @@ impl DocumentManager {
 
 /// Reloads the on-screen window when a replaced page was in or before it, so the recognized text
 /// appears and local offsets keep matching document ones.
-fn refresh_after_ocr(tab: &mut DocumentTab, pages: &[(i64, String)], window: TextWindow, caret: i64, is_active: bool) {
-	if !pages.iter().any(|(offset, _)| *offset < window.end()) {
+fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[i64], window: TextWindow, caret: i64, is_active: bool) {
+	if !starts.iter().any(|start| *start < window.end()) {
 		return;
 	}
 	let caret = caret.clamp(0, tab.session.document_len());
@@ -269,12 +363,22 @@ fn refresh_after_ocr(tab: &mut DocumentTab, pages: &[(i64, String)], window: Tex
 
 /// The worker thread: opens the document once, then renders and recognizes each page in turn,
 /// posting results back to the UI thread in flushes.
-fn run_ocr(path_str: &str, password: Option<&str>, pages: &[i32], file_path: &Path, cancel: &AtomicBool, batch: bool) {
+///
+/// `id` travels with every message so the UI thread can tell this run apart from any other job on the same document, which may by now be open again under a new tab.
+fn run_ocr(
+	path_str: &str,
+	password: Option<&str>,
+	pages: &[i32],
+	file_path: &Path,
+	cancel: &AtomicBool,
+	batch: bool,
+	id: u64,
+) {
 	let mut renderer = match PageRenderer::open(path_str, password) {
 		Ok(renderer) => renderer,
 		Err(err) => {
 			tracing::warn!(error = %err, "failed to open the document for ocr");
-			post_finish(file_path, false);
+			post_finish(id, file_path, false);
 			return;
 		}
 	};
@@ -295,30 +399,30 @@ fn run_ocr(path_str: &str, password: Option<&str>, pages: &[i32], file_path: &Pa
 		pending.push((*page, result));
 		let done = done + 1;
 		if pending.len() >= BATCH_OCR_FLUSH_EVERY && done != total {
-			post_apply(file_path, std::mem::take(&mut pending));
+			post_apply(id, file_path, std::mem::take(&mut pending));
 		}
 		if batch && done % BATCH_OCR_PROGRESS_EVERY == 0 && done != total {
-			post_progress(done, total);
+			post_progress(id, done, total);
 		}
 	}
 	if !pending.is_empty() {
-		post_apply(file_path, pending);
+		post_apply(id, file_path, pending);
 	}
-	post_finish(file_path, canceled);
+	post_finish(id, file_path, canceled);
 }
 
-fn post_apply(file_path: &Path, results: Vec<PageResult>) {
+fn post_apply(id: u64, file_path: &Path, results: Vec<PageResult>) {
 	let path = file_path.to_path_buf();
-	run_on_ui_thread(move |manager| manager.apply_ocr_results(&path, results));
+	run_on_ui_thread(move |manager| manager.apply_ocr_results(id, &path, results));
 }
 
-fn post_progress(done: usize, total: usize) {
-	run_on_ui_thread(move |manager| manager.announce_ocr_progress(done, total));
+fn post_progress(id: u64, done: usize, total: usize) {
+	run_on_ui_thread(move |manager| manager.announce_ocr_progress(id, done, total));
 }
 
-fn post_finish(file_path: &Path, canceled: bool) {
+fn post_finish(id: u64, file_path: &Path, canceled: bool) {
 	let path: PathBuf = file_path.to_path_buf();
-	run_on_ui_thread(move |manager| manager.finish_ocr(&path, canceled));
+	run_on_ui_thread(move |manager| manager.finish_ocr(id, &path, canceled));
 }
 
 /// Queues `action` to run on the UI thread with the document manager locked. Every call lands in
@@ -332,4 +436,36 @@ fn run_on_ui_thread(action: impl FnOnce(&mut DocumentManager) + Send + 'static) 
 		}
 	}));
 	wxdragon::wake_up_idle();
+}
+
+#[cfg(test)]
+mod tests {
+	use super::index_running_job;
+
+	/// The case that needs the id: a batch is running, the reader closes the document with Ctrl+F4, and opens it again before the worker reaches its next page boundary.
+	#[test]
+	fn a_worker_whose_tab_was_closed_finds_nothing_when_the_document_is_reopened() {
+		// Tab 0, reopened, is running job 2. The worker's own job 1 is gone with the closed tab.
+		let open = [Some(2)];
+		assert_eq!(index_running_job(&open, 1), None);
+		assert_eq!(index_running_job(&open, 2), Some(0));
+	}
+
+	/// An idle tab is never the answer, including for an adjacent id - which is what two jobs on one document in sequence look like.
+	#[test]
+	fn an_idle_tab_is_never_the_tab_a_worker_means() {
+		let open = [None, None, None];
+		for id in 0..3 {
+			assert_eq!(index_running_job(&open, id), None);
+		}
+	}
+
+	/// With several documents open, each on its own job, the right tab is found and an idle one does not absorb its neighbour's lookup.
+	#[test]
+	fn the_job_s_own_tab_is_found_among_several_open_documents() {
+		let open = [None, Some(7), Some(3)];
+		assert_eq!(index_running_job(&open, 7), Some(1));
+		assert_eq!(index_running_job(&open, 3), Some(2));
+		assert_eq!(index_running_job(&open, 4), None);
+	}
 }

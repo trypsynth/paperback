@@ -49,13 +49,21 @@ jobs:
       uses: actions/cache@v6
       with:
         path: target/release/wxdragon_sys_cmake_build/share/locale
-        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', '.cargo/config.toml') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
       run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
-    - name: Install CMake, Ninja, and Pandoc
+    # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+    - name: Cache the pinned wxWidgets source
+      uses: actions/cache@v6
+      with:
+        path: target/wxWidgets-*
+        key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+    - name: Fetch the pinned wxWidgets source
+      run: cargo xtask wxwidgets
+    - name: Install CMake, Ninja, and minisign
       run: |
-        choco install cmake ninja pandoc minisign -y
+        choco install cmake ninja minisign -y
     - name: Install WebView2 SDK
       run: |
         nuget install Microsoft.Web.WebView2 -OutputDirectory packages
@@ -138,13 +146,21 @@ jobs:
       uses: actions/cache@v6
       with:
         path: target/release/wxdragon_sys_cmake_build/share/locale
-        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', '.cargo/config.toml') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
       run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
-    - name: Install CMake, Ninja, and Pandoc
+    # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+    - name: Cache the pinned wxWidgets source
+      uses: actions/cache@v6
+      with:
+        path: target/wxWidgets-*
+        key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+    - name: Fetch the pinned wxWidgets source
+      run: cargo xtask wxwidgets
+    - name: Install CMake, Ninja, and minisign
       run: |
-        choco install cmake ninja pandoc minisign -y
+        choco install cmake ninja minisign -y
     - name: Install WebView2 SDK
       run: |
         nuget install Microsoft.Web.WebView2 -OutputDirectory packages
@@ -223,14 +239,22 @@ jobs:
       uses: actions/cache@v6
       with:
         path: target/release/wxdragon_sys_cmake_build/share/locale
-        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', '.cargo/config.toml') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
       run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
+    # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+    - name: Cache the pinned wxWidgets source
+      uses: actions/cache@v6
+      with:
+        path: target/wxWidgets-*
+        key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+    - name: Fetch the pinned wxWidgets source
+      run: cargo xtask wxwidgets
     - name: Install build dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake ninja-build pandoc gettext minisign \
+        sudo apt-get install -y cmake ninja-build gettext minisign \
           libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
           libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
           libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev \
@@ -300,14 +324,22 @@ jobs:
       uses: actions/cache@v6
       with:
         path: target/release/wxdragon_sys_cmake_build/share/locale
-        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', '.cargo/config.toml') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
       run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
+    # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+    - name: Cache the pinned wxWidgets source
+      uses: actions/cache@v6
+      with:
+        path: target/wxWidgets-*
+        key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+    - name: Fetch the pinned wxWidgets source
+      run: cargo xtask wxwidgets
     - name: Install build dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake ninja-build pandoc gettext minisign \
+        sudo apt-get install -y cmake ninja-build gettext minisign \
           libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
           libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
           libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev \
@@ -364,11 +396,6 @@ jobs:
       uses: actions/checkout@v7
       with:
         fetch-depth: 0
-    # cargo xtask android shells out to pandoc for the bundled Help documents and only warns
-    # if it is missing, so without this the APK ships with no assets/readmes at all and Help
-    # fails at runtime for every user.
-    - name: Install Pandoc
-      run: sudo apt-get update && sudo apt-get install -y pandoc
     - name: Set up JDK 17
       uses: actions/setup-java@v6
       with:
@@ -439,9 +466,6 @@ jobs:
       with:
         submodules: recursive
         fetch-depth: 0
-    # cargo xtask ios only warns when pandoc is missing, and the .ipa then ships without Readmes.
-    - name: Install Pandoc
-      run: brew install pandoc
     - name: Install Rust with iOS targets
       uses: dtolnay/rust-toolchain@stable
       with:
@@ -480,7 +504,7 @@ jobs:
         fetch-depth: 0
     - name: Install dependencies
       run: |
-        brew install cmake ninja pandoc gettext minisign
+        brew install cmake ninja gettext minisign
         echo "/opt/homebrew/opt/gettext/bin" >> $GITHUB_PATH
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
@@ -491,19 +515,18 @@ jobs:
       uses: actions/cache@v6
       with:
         path: target/release/wxdragon_sys_cmake_build/share/locale
-        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', '.cargo/config.toml') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
       run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
-    - name: Cache wxWidgets source
-      id: wxwidgets-cache
+    # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+    - name: Cache the pinned wxWidgets source
       uses: actions/cache@v6
       with:
-        path: wxWidgets
-        key: wxwidgets-${{ runner.os }}-${{ runner.arch }}-v1
-    - name: Clone wxWidgets
-      if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
-      run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
+        path: target/wxWidgets-*
+        key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+    - name: Fetch the pinned wxWidgets source
+      run: cargo xtask wxwidgets
     - name: Import signing certificate
       if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       env:
@@ -531,7 +554,6 @@ jobs:
         rm -f "$CERT_PATH"
     - name: Build and package
       env:
-        WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
         MACOSX_DEPLOYMENT_TARGET: "15.0"
       run: cargo release
     - name: Check wxWidgets translations were embedded
@@ -606,7 +628,7 @@ jobs:
         retention-days: 30
 
   release:
-    needs: [build-windows, build-windows-arm64, build-linux, build-linux-arm64, build-android, build-macos]
+    needs: [build-windows, build-windows-arm64, build-linux, build-linux-arm64, build-macos]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
     # Every run publishes to the same `latest` release, so two of them uploading at once
@@ -661,11 +683,6 @@ jobs:
       with:
         name: paperback-linux-arm64-signatures
         path: linux-arm64-build
-    - name: Download Android APK
-      uses: actions/download-artifact@v8
-      with:
-        name: paperback-android
-        path: android-build
     - name: Download macOS artifact
       uses: actions/download-artifact@v8
       with:
@@ -756,8 +773,6 @@ jobs:
           linux-arm64-build/paperback-arm64.tar.gz.minisig
           linux-arm64-build/paperback-arm64.AppImage
           linux-arm64-build/paperback-arm64.AppImage.minisig
-          android-build/paperback-android-arm64.apk
-          android-build/paperback-android-arm.apk
           macos-build/paperback.dmg
           macos-build/paperback.dmg.minisig
         prerelease: true

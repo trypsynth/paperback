@@ -39,19 +39,26 @@ pub fn parse_smil_pars(content: &str) -> Vec<SmilPar> {
 fn par_from_node(par: Node) -> Option<SmilPar> {
 	let text = par.children().find(|n| n.is_element() && n.tag_name().name() == "text")?;
 	// DAISY 2.02 producers commonly nest `<audio>` inside a `<seq>` rather than placing it
-	// directly under `<par>`, so this searches descendants, not just direct children.
-	let audio = par.descendants().find(|n| n.is_element() && n.tag_name().name() == "audio")?;
+	// directly under `<par>`, so this searches descendants, not just direct children. A nested
+	// `<par>` is its own entry with its own audio, so its clips are left to it.
+	let own_par = |node: &Node| node.ancestors().skip(1).find(|n| n.tag_name().name() == "par") == Some(par);
+	let is_own_audio = |node: &Node| node.is_element() && node.tag_name().name() == "audio" && own_par(node);
+	let audios: Vec<Node> = par.descendants().filter(is_own_audio).collect();
 	let src = text.attribute("src")?;
 	let (text_file, text_id) = match src.split_once('#') {
 		Some((file, id)) => (if file.is_empty() { None } else { Some(file.to_string()) }, id.to_string()),
 		None => (None, src.to_string()),
 	};
-	let audio_src = audio.attribute("src")?.to_string();
+	let first = audios.first()?;
+	let audio_src = first.attribute("src")?.to_string();
+	// An audio-only DAISY 2.02 book gives each heading one par holding every phrase of its section in a `<seq>`, so the par plays from its first clip to the end of the last one in the same file. Taking only the first made a section one phrase long, and a five-second skip landed several headings on (#969).
+	let same_file = |audio: &&Node| audio.attribute("src") == Some(audio_src.as_str());
+	let last = audios.iter().take_while(same_file).last().unwrap_or(first);
 	// SMIL 1.0 (DAISY 2.02) spells these `clip-begin`/`clip-end`; SMIL 2.0 (DAISY 3) uses
 	// `clipBegin`/`clipEnd`.
 	let clip_begin_ms =
-		audio.attribute("clipBegin").or_else(|| audio.attribute("clip-begin")).map_or(0, parse_smil_time);
-	let clip_end_ms = audio.attribute("clipEnd").or_else(|| audio.attribute("clip-end")).map(parse_smil_time);
+		first.attribute("clipBegin").or_else(|| first.attribute("clip-begin")).map_or(0, parse_smil_time);
+	let clip_end_ms = last.attribute("clipEnd").or_else(|| last.attribute("clip-end")).map(parse_smil_time);
 	let mut anchor_ids: Vec<String> = par
 		.attribute("id")
 		.into_iter()
@@ -100,6 +107,49 @@ fn scale_to_ms(count: f64, ms_per_unit: f64) -> u64 {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	/// The shape of an audio-only DAISY 2.02 book: one par per heading, its whole section a `<seq>` of phrase clips.
+	#[test]
+	fn a_par_plays_every_phrase_of_its_section() {
+		let smil = r#"<smil><body><seq>
+			<par id="p1"><text src="ncc.html#h1"/><seq>
+				<audio src="a.mp3" clip-begin="npt=0.000s" clip-end="npt=2.500s"/>
+				<audio src="a.mp3" clip-begin="npt=2.500s" clip-end="npt=6.000s"/>
+				<audio src="a.mp3" clip-begin="npt=6.000s" clip-end="npt=41.250s"/>
+			</seq></par>
+			<par id="p2"><text src="ncc.html#h2"/><seq>
+				<audio src="a.mp3" clip-begin="npt=41.250s" clip-end="npt=50.000s"/>
+			</seq></par>
+		</seq></body></smil>"#;
+		let pars = parse_smil_pars(smil);
+		assert_eq!(pars.len(), 2);
+		assert_eq!((pars[0].clip_begin_ms, pars[0].clip_end_ms), (0, Some(41_250)));
+		assert_eq!((pars[1].clip_begin_ms, pars[1].clip_end_ms), (41_250, Some(50_000)));
+	}
+
+	#[test]
+	fn a_par_stops_at_the_first_clip_from_another_file() {
+		let smil = r#"<smil><body><par><text src="t.html#x"/><seq>
+			<audio src="a.mp3" clip-begin="npt=1s" clip-end="npt=2s"/>
+			<audio src="a.mp3" clip-begin="npt=2s" clip-end="npt=3s"/>
+			<audio src="b.mp3" clip-begin="npt=0s" clip-end="npt=9s"/>
+		</seq></par></body></smil>"#;
+		let pars = parse_smil_pars(smil);
+		assert_eq!(pars[0].audio_src, "a.mp3");
+		assert_eq!((pars[0].clip_begin_ms, pars[0].clip_end_ms), (1000, Some(3000)));
+	}
+
+	#[test]
+	fn a_nested_par_keeps_its_own_clips() {
+		let smil = r#"<smil><body><par><text src="t.html#outer"/><seq>
+			<audio src="a.mp3" clip-begin="npt=0s" clip-end="npt=4s"/>
+			<par><text src="t.html#inner"/><audio src="a.mp3" clip-begin="npt=4s" clip-end="npt=8s"/></par>
+		</seq></par></body></smil>"#;
+		let pars = parse_smil_pars(smil);
+		assert_eq!(pars.len(), 2);
+		assert_eq!((pars[0].text_id.as_str(), pars[0].clip_end_ms), ("outer", Some(4000)));
+		assert_eq!((pars[1].text_id.as_str(), pars[1].clip_begin_ms), ("inner", 4000));
+	}
 
 	#[test]
 	fn parses_plain_seconds() {

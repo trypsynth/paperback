@@ -1,5 +1,3 @@
-//! Reopening the last session's document on the next launch.
-
 #![cfg(target_os = "windows")]
 
 mod common;

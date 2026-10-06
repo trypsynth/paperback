@@ -1,6 +1,3 @@
-//! Shared harness for UI Automation tests: launches the real binary against a generated
-//! fixture, with its config and logs redirected to a temp dir.
-
 #![allow(dead_code)]
 
 pub mod fixture;

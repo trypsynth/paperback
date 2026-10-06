@@ -8,11 +8,11 @@
 use std::{rc::Rc, sync::Mutex};
 
 use paperback_core::config::ConfigManager;
-use patois::t;
+use patois::{nt, t};
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
 use super::{document_manager::DocumentManager, navigation};
-use crate::ui::navigation::announce;
+use crate::ui::navigation::announce_for_command;
 
 /// What the copy shortcut found when it went to copy.
 enum CopyOutcome {
@@ -34,14 +34,18 @@ const fn ordered_ends(mark: i64, caret: i64) -> (i64, i64) {
 	if mark <= caret { (mark, caret) } else { (caret, mark) }
 }
 
-/// What the copy shortcut says once it has copied `count` characters.
-fn copied_announcement(count: usize) -> String {
-	// TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
-	t("Copied (%d chars).").replacen("%d", &count.to_string(), 1)
+/// Shared with the plain Ctrl+C copy, which copies a selection rather than a marked range; the two are the same action to the reader and are worded the same way.
+pub fn copied_announcement(count: usize) -> String {
+	// TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+	nt("Copied %d character.", "Copied %d characters.", u64::try_from(count).unwrap_or(0)).replacen(
+		"%d",
+		&count.to_string(),
+		1,
+	)
 }
 
 /// Marks the reader's current position as the beginning of a selection to copy from later.
-pub fn handle_set_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+pub fn handle_set_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
 	{
 		let dm = dm.lock().unwrap();
 		let Some(position) = dm.active_tab().map(navigation::doc_caret) else {
@@ -50,11 +54,15 @@ pub fn handle_set_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_l
 		dm.set_selection_mark(Some(position));
 	}
 	// TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
-	announce(live_region_label, t("Beginning of selection set."));
+	announce_for_command(live_region_label, from_keyboard, t("Beginning of selection set."));
 }
 
 /// Copies everything between the marked beginning and the reader's current position.
-pub fn handle_copy_from_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+pub fn handle_copy_from_selection_start(
+	dm: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+	from_keyboard: bool,
+) {
 	// Everything that touches the document happens under the lock; the clipboard write and the
 	// announcement deliberately do not. `Clipboard::set_text` goes through OLE on Windows, which
 	// can pump messages, and the document manager's mutex is not reentrant - holding it across a
@@ -85,7 +93,7 @@ pub fn handle_copy_from_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_re
 	let message = match outcome {
 		// TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
 		CopyOutcome::NoMark => t("Cannot copy; set beginning of selection first."),
-		// TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
+		// TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
 		CopyOutcome::Empty => t("Nothing to copy."),
 		CopyOutcome::Text(text) => {
 			// Counted in characters, not in the display units the range is measured in: a spoken
@@ -100,7 +108,7 @@ pub fn handle_copy_from_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_re
 			}
 		}
 	};
-	announce(live_region_label, message);
+	announce_for_command(live_region_label, from_keyboard, message);
 }
 
 /// Moves the reader back to the marked beginning, leaving the mark in place so the copy and the
@@ -109,6 +117,7 @@ pub fn handle_jump_to_selection_start(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) {
 	let (message, history_update) = {
 		let mut dm = dm.lock().unwrap();
@@ -128,7 +137,7 @@ pub fn handle_jump_to_selection_start(
 			}
 		}
 	};
-	announce(live_region_label, message);
+	announce_for_command(live_region_label, from_keyboard, message);
 	navigation::persist_navigation_history(config, history_update.as_ref());
 }
 
@@ -145,7 +154,13 @@ mod tests {
 
 	#[test]
 	fn copied_announcement_names_the_character_count() {
-		assert_eq!(copied_announcement(42), "Copied (42 chars).");
-		assert_eq!(copied_announcement(0), "Copied (0 chars).");
+		assert_eq!(copied_announcement(42), "Copied 42 characters.");
+		assert_eq!(copied_announcement(0), "Copied 0 characters.");
+	}
+
+	/// One is read aloud by a person, not measured by a buffer.
+	#[test]
+	fn copied_announcement_singular_for_one_character() {
+		assert_eq!(copied_announcement(1), "Copied 1 character.");
 	}
 }

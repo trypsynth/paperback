@@ -23,7 +23,7 @@ Paperback działa w systemach Windows 10/11, we wszystkich nowoczesnych wersjach
 * Odczytuje zeskanowane strony PDF za pomocą OCR wbudowanego w Windows i macOS.
 * Pozwala dodawać zakładki i notatki, aby zaznaczać miejsca i do nich wracać.
 * Umożliwia zmianę każdego skrótu klawiszowego.
-* Zawiera `pb`, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst.
+* Zawiera `pb`, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak `*.pdf`, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu.
 
 ## Zgodność z czytnikami ekranu
 
@@ -82,13 +82,33 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Zamknij wszystkie otwarte dokumenty.
 * `Ctrl+Shift+T`: Otwórz ponownie ostatnio zamknięty dokument.
 * `Ctrl+R`: Pokaż dialog Wszystkie dokumenty (z menu Ostatnie dokumenty).
+* `Ctrl+Shift+C`: Otwórz folder zawierający.
+* `Ctrl+Shift+E`: Eksportuj dane dokumentu (`.paperback`).
+* `Ctrl+Shift+I`: Importuj dane dokumentu (`.paperback`).
+* `Ctrl+E`: Eksportuj bieżący dokument do zwykłego tekstu.
 * `Ctrl+Q`: Zakończ (tylko Windows; w systemie macOS znajduje się w menu aplikacji).
 
-### Menu Przejdź
+### Menu Edycja
 
 * `Ctrl+F`: Pokaż dialog Znajdź.
 * `F3` (macOS: `Cmd+G`): Znajdź następne.
 * `Shift+F3` (macOS: `Cmd+Shift+G`): Znajdź poprzednie.
+* `Alt+F9` (macOS: `Cmd+F9`): Ustaw początek zaznaczenia, aby później skopiować za jednym razem tekst od tego miejsca do pozycji, do której przejdziesz.
+* `Alt+F10` (macOS: `Cmd+F10`): Skopiuj tekst od ustawionego początku zaznaczenia do bieżącej pozycji.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Wróć do początku zaznaczenia, nie usuwając jego znacznika.
+
+### Menu Widok
+
+* `F5`: Przeładuj bieżący dokument z dysku. Działa niezależnie od tego, czy opcja „Automatycznie przeładowuj zmienione dokumenty” jest włączona w Ustawieniach.
+* `Ctrl+Alt+W`: Przełącz zawijanie wierszy.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, czyli Control+Command+F): Przełącz tryb pełnoekranowy.
+* `Ctrl+Shift+V`: Otwórz bieżącą treść w Widoku WWW.
+* `Ctrl+U`: Wyświetl źródło dokumentu w nowej karcie.
+
+### Menu Przejdź
+
+* `Ctrl+T`: Pokaż Spis treści.
+* `F7`: Pokaż Listę elementów.
 * `Ctrl+G` (macOS: `Cmd+L`): Przejdź do wiersza.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Przejdź do procentu.
 * `Ctrl+P`: Przejdź do strony (gdy jest obsługiwana przez bieżący dokument).
@@ -103,16 +123,6 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `1` do `6`: Następny nagłówek poziomu 1-6.
 * `Shift+P`: Poprzednia strona.
 * `P`: Następna strona.
-* `Shift+B`: Poprzednia zakładka.
-* `B`: Następna zakładka.
-* `/`: Ustaw zakładkę tymczasową.
-* `\`: Przejdź do zakładki tymczasowej.
-* `Shift+N`: Poprzednia notatka.
-* `N`: Następna notatka.
-* `Ctrl+B`: Przejdź do wszystkich zakładek i notatek.
-* `Ctrl+Alt+B`: Przejdź tylko do zakładek.
-* `Ctrl+Alt+M`: Przejdź tylko do notatek.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, czyli fizyczny klawisz Control, a nie Cmd): Wyświetl tekst notatki w bieżącej pozycji.
 * `Shift+K`: Poprzedni odnośnik.
 * `K`: Następny odnośnik.
 * `Shift+G`: Poprzedni obraz.
@@ -132,21 +142,23 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `Shift+,`: Przejdź na początek bieżącego kontenera (listy lub tabeli).
 * `,`: Przejdź poza koniec bieżącego kontenera (listy lub tabeli).
 
-### Menu Narzędzia
+### Menu Zakładki
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, czyli fizyczny klawisz Control, a nie Cmd): Pokaż liczbę słów w bieżącym dokumencie.
-* `Ctrl+I`: Pokaż informacje o dokumencie.
-* `Ctrl+T`: Pokaż Spis treści.
-* `F7`: Pokaż Listę elementów.
-* `Ctrl+Shift+C`: Otwórz folder zawierający.
-* `Ctrl+Shift+V`: Otwórz bieżącą treść w Widoku WWW.
-* `Ctrl+U`: Wyświetl źródło dokumentu w nowej karcie.
-* `Ctrl+Shift+E`: Eksportuj dane dokumentu (`.paperback`).
-* `Ctrl+Shift+I`: Importuj dane dokumentu (`.paperback`).
-* `Ctrl+E`: Eksportuj bieżący dokument do zwykłego tekstu.
 * `Ctrl+Shift+B`: Przełącz zakładkę przy bieżącym zaznaczeniu lub kursorze.
 * `Ctrl+Shift+N`: Dodaj lub edytuj notatkę do zakładki przy bieżącym zaznaczeniu lub kursorze.
-* `Ctrl+Alt+W`: Przełącz zawijanie wierszy.
+* `Shift+B`: Poprzednia zakładka.
+* `B`: Następna zakładka.
+* `Shift+N`: Poprzednia notatka.
+* `N`: Następna notatka.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, czyli fizyczny klawisz Control, a nie Cmd): Wyświetl tekst notatki w bieżącej pozycji.
+* `Ctrl+B`: Przejdź do wszystkich zakładek i notatek.
+* `Ctrl+Alt+B`: Przejdź tylko do zakładek.
+* `Ctrl+Alt+M`: Przejdź tylko do notatek.
+* `/`: Ustaw zakładkę tymczasową.
+* `\`: Przejdź do zakładki tymczasowej.
+
+### Menu Dźwięk
+
 * `Ctrl+Spacja` (macOS: `RawCtrl+Spacja`, czyli fizyczny klawisz Control, ponieważ Cmd+Spacja otwiera Spotlight): Odtwórz lub wstrzymaj narrację dźwiękową.
 * `'`: Przewiń narrację dźwiękową w przód.
 * `;`: Przewiń narrację dźwiękową w tył.
@@ -154,13 +166,14 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `Shift+;`: Zmniejsz skok przewijania dźwięku.
 * `Ctrl+Shift+.`: Zwiększ szybkość odtwarzania narracji dźwiękowej.
 * `Ctrl+Shift+,`: Zmniejsz szybkość odtwarzania narracji dźwiękowej.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, czyli Control+Command+F): Przełącz tryb pełnoekranowy.
-* `Ctrl+,`: Otwórz Ustawienia (w systemie macOS: w menu aplikacji).
-* `Ctrl+Shift+S`: Przełącz Wyłącznik czasowy.
+
+### Menu Narzędzia
+
+* `Ctrl+W` (macOS: `RawCtrl+W`, czyli fizyczny klawisz Control, a nie Cmd): Pokaż liczbę słów w bieżącym dokumencie.
+* `Ctrl+I`: Pokaż informacje o dokumencie.
 * `Ctrl+Shift+O`: Rozpoznaj tekst na wybranym zakresie zeskanowanych stron PDF za pomocą OCR.
-* `Alt+F9` (macOS: `Cmd+F9`): Ustaw początek zaznaczenia, aby później skopiować za jednym razem tekst od tego miejsca do pozycji, do której przejdziesz.
-* `Alt+F10` (macOS: `Cmd+F10`): Skopiuj tekst od ustawionego początku zaznaczenia do bieżącej pozycji.
-* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Wróć do początku zaznaczenia, nie usuwając jego znacznika.
+* `Ctrl+Shift+S`: Przełącz Wyłącznik czasowy.
+* `Ctrl+,`: Otwórz Ustawienia (w systemie macOS: w menu aplikacji).
 
 ### Menu Pomoc
 
@@ -173,6 +186,8 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 ### Dodatkowe klawisze w widoku dokumentu
 
 * `Delete` / `Delete na klawiaturze numerycznej` na kontrolce kart: zamknij kartę wybranego dokumentu.
+* `Ctrl+1` do `Ctrl+9` (macOS: `Cmd+1` do `Cmd+9`) w tekście dokumentu lub na kontrolce kart: przejdź do jednego z pierwszych dziewięciu otwartych dokumentów, w kolejności ich otwarcia.
+* `Ctrl+Tab` i `Ctrl+Shift+Tab`: przejdź do następnego lub poprzedniego otwartego dokumentu. Po ostatnim dokumencie przejdziesz do pierwszego, a przed pierwszym do ostatniego.
 * `Enter` albo `Spacja` w tekście dokumentu: otwórz odnośnik, Widok tabeli lub Widok wzoru pod kursorem.
 * `Enter` na zeskanowanej stronie PDF: rozpoznaj tekst na stronie za pomocą OCR.
 * `Shift+F10` albo klawisz Menu/Aplikacje w tekście dokumentu: otwórz menu kontekstowe.
@@ -418,12 +433,12 @@ Aplikacje na iOS i Androida otwierają każdy format, który obsługuje wersja n
 * Zamknięcie widoku WWW klawiszem Escape nie wyświetla już komunikatu diagnostycznego, kiedy wcześniej otworzyłeś w nim odsyłacz.
 * Kopiowanie po zaznaczeniu wszystkiego daje teraz cały dokument, a nie tylko tę jego część, która jest właśnie wczytana.
 * Wyszukiwanie przenosi teraz od razu do znalezionego wiersza, bez wysłuchiwania, jak czytnik ekranu ponownie odczytuje całe okno przy powrocie do książki.
-* Naprawiono otwieranie plików EPUB z pozostawionym blokiem ZIP64, które kończyło się komunikatem „Invalid local file header".
+* Naprawiono otwieranie plików EPUB z pozostawionym blokiem ZIP64, które kończyło się komunikatem „Invalid local file header”.
 * Naprawiono wracanie długich dokumentów na początek, kiedy czytnik ekranu czytał je ciągiem.
-* Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast kończyć się komunikatem „Nie znaleziono pliku".
+* Odsyłacze w widoku WWW prowadzą teraz do wskazanej sekcji, zamiast kończyć się komunikatem „Nie znaleziono pliku”.
 * Automatyczny komunikat o przeładowaniu dokumentu nie przerywa już czytnikowi ekranu w połowie zdania, a czeka, aż skończy wypowiedź.
 * Na karcie Ogólne w oknie ustawień tabulator przechodzi teraz przez opcje w kolejności, w jakiej są widoczne na ekranie, a kanał aktualizacji następuje bezpośrednio po opcji sprawdzania aktualizacji.
-* Windows pokazuje teraz zawsze „Paperback" w menu Otwórz za pomocą, a nie pełne hasło programu.
+* Windows pokazuje teraz zawsze „Paperback” w menu Otwórz za pomocą, a nie pełne hasło programu.
 * Licznik słów oraz informacje o dokumencie pokazują teraz, ile plików zawiera audiobook i jak długo trwa w całości.
 
 ### Wersja 0.9.1
@@ -692,7 +707,7 @@ Aplikacje na iOS i Androida otwierają każdy format, który obsługuje wersja n
 * Dodano obsługę parsowania plików tekstowych OpenDocument!
 * Zakładki mogą teraz obejmować cały wiersz albo tylko wskazany tekst. Jeśli podczas dodawania zakładki nic nie jest zaznaczone, działanie pozostaje takie jak przed wersją 0.6 i zakładka obejmuje cały wiersz. Jeśli zaznaczysz tekst, w zakładce znajdzie się tylko ten tekst.
 * Zakładki mogą teraz mieć opcjonalne notatki tekstowe. Między zakładkami z notatkami można przechodzić klawiszami `N` i `Shift+N`, a dialog zakładek można otwierać z widokiem wszystkich zakładek, tylko notatek albo tylko zakładek bez notatek za pomocą osobnych skrótów.
-* Zakładki w dialogu zakładek nie mają już irytującego prefiksu "zakładka x".
+* Zakładki w dialogu zakładek nie mają już irytującego prefiksu „zakładka x”.
 * Książki EPUB zawierające treść HTML udającą XML są teraz obsługiwane poprawnie.
 * Naprawiono wczytywanie dużych dokumentów Markdown.
 * Naprawiono aktywowanie przycisku OK po naciśnięciu spacji w widoku drzewa Spisu treści.

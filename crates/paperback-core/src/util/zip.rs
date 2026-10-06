@@ -1,4 +1,5 @@
 use std::{
+	collections::{HashMap, HashSet},
 	fs::{self, File},
 	io::{self, Read, Seek},
 	path::Path,
@@ -7,7 +8,7 @@ use std::{
 use anyhow::{Context, Result};
 use zip::{ZipArchive, result::ZipError};
 
-use crate::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, t, util::encoding::convert_to_utf8};
+use crate::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, t, util::encoding::decode_html};
 
 pub fn read_zip_entry_by_name<R: Read + Seek>(archive: &mut ZipArchive<R>, name: &str) -> Result<String> {
 	read_zip_entry_by_name_with_password(archive, name, None)
@@ -42,7 +43,7 @@ pub fn read_zip_entry_by_name_with_password<R: Read + Seek>(
 	};
 	let mut contents = Vec::new();
 	entry.read_to_end(&mut contents).with_context(|| format!("Failed to read entry '{name}'"))?;
-	Ok(convert_to_utf8(&contents))
+	Ok(decode_html(&contents, None))
 }
 
 /// Reads a zip entry's raw bytes, unlike `read_zip_entry_by_name` which assumes text and
@@ -95,6 +96,21 @@ pub fn extract_zip_entry_to_file_with_password<R: Read + Seek>(
 		File::create(output_path).with_context(|| format!("Failed to create file '{}'", output_path.display()))?;
 	io::copy(&mut entry, &mut out_file).with_context(|| format!("Failed to extract entry '{name}'"))?;
 	Ok(())
+}
+
+/// Returns a function mapping a reference to the archive entry it names, matching case-insensitively when no entry has the exact name. Books are often written against a case-insensitive filesystem, so a reference to `01.Mp3` that plays fine once extracted on Windows or macOS has to find the zip's `01.mp3` too. A reference matching nothing comes back unchanged, so the lookup still reports it missing.
+pub fn zip_entry_name_resolver<R: Read + Seek>(archive: &ZipArchive<R>) -> impl Fn(&str) -> String + use<R> {
+	let names: HashSet<String> = archive.file_names().flatten().map(String::from).collect();
+	let mut lowercase = HashMap::new();
+	for name in &names {
+		lowercase.entry(name.to_lowercase()).or_insert_with(|| name.clone());
+	}
+	move |reference: &str| {
+		if names.contains(reference) {
+			return reference.to_string();
+		}
+		lowercase.get(&reference.to_lowercase()).cloned().unwrap_or_else(|| reference.to_string())
+	}
 }
 
 /// Extracts every entry of `archive` for which `skip` returns `false` into
@@ -164,6 +180,16 @@ mod tests {
 	fn read_zip_entry_by_name_reports_missing_entry() {
 		let mut archive = build_test_archive();
 		assert!(read_zip_entry_by_name(&mut archive, "missing.txt").is_err());
+	}
+
+	#[test]
+	fn zip_entry_name_resolver_matches_case_insensitively() {
+		let archive = build_test_archive();
+		let resolve = zip_entry_name_resolver(&archive);
+		assert_eq!(resolve("foo.txt"), "foo.txt");
+		assert_eq!(resolve("FOO.Txt"), "foo.txt");
+		assert_eq!(resolve("Nested/Bar.TXT"), "nested/bar.txt");
+		assert_eq!(resolve("missing.txt"), "missing.txt");
 	}
 
 	#[test]

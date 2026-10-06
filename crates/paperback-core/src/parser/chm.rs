@@ -14,6 +14,7 @@ use crate::{
 };
 
 mod convert;
+mod encoding;
 mod href;
 mod toc;
 
@@ -47,17 +48,24 @@ impl Parser for ChmParser {
 		}
 		html_files.sort();
 		tracing::debug!(html_file_count = html_files.len(), hhc_found = !hhc_file.is_empty(), "chm structure detected");
-		let title = parse_system_file(&mut chm).unwrap_or_else(|| {
+		let system = parse_system_file(&mut chm);
+		let title = system.title.unwrap_or_else(|| {
 			tracing::debug!(path = %context.file_path, "no title found in #SYSTEM record, falling back to filename");
 			extract_title_from_path(&context.file_path)
 		});
 		if hhc_file.is_empty() {
 			tracing::debug!(path = %context.file_path, "chm has no hhc file, table of contents will be empty");
 		}
-		let mut toc_items = if hhc_file.is_empty() { Vec::new() } else { parse_hhc_file(&mut chm, &hhc_file)? };
+		let mut toc_items =
+			if hhc_file.is_empty() { Vec::new() } else { parse_hhc_file(&mut chm, &hhc_file, system.encoding)? };
 		let ordered_files = build_ordered_file_list(&html_files, &toc_items);
-		let converted =
-			convert_sections(&context.file_path, &ordered_files, &entries_by_path, context.render_tables_inline);
+		let converted = convert_sections(
+			&context.file_path,
+			&ordered_files,
+			&entries_by_path,
+			context.render_tables_inline,
+			system.encoding,
+		);
 		// Keep each file's original index so the "Section N" label still reflects its position in
 		// the document even when earlier files were skipped.
 		let mut sections: Vec<(usize, &String, SectionContent)> = Vec::with_capacity(converted.len());

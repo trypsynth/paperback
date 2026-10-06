@@ -33,22 +33,34 @@ impl Default for HotkeyConfig {
 #[serde(rename_all = "snake_case")]
 pub enum ShortcutCategory {
 	File,
+	Edit,
+	View,
 	Go,
+	Bookmarks,
+	Audio,
 	Tools,
 	Help,
 }
 
 impl ShortcutCategory {
 	pub const fn all() -> &'static [Self] {
-		&[Self::File, Self::Go, Self::Tools, Self::Help]
+		&[Self::File, Self::Edit, Self::View, Self::Go, Self::Bookmarks, Self::Audio, Self::Tools, Self::Help]
 	}
 
 	pub fn display_name(self) -> String {
 		match self {
 			// TRANSLATORS: Name of the "File" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::File => crate::t("File"),
+			// TRANSLATORS: Name of the "Edit" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::Edit => crate::t("Edit"),
+			// TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::View => crate::t("View"),
 			// TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::Go => crate::t("Go"),
+			// TRANSLATORS: Name of the "Bookmarks" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::Bookmarks => crate::t("Bookmarks"),
+			// TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+			Self::Audio => crate::t("Audio"),
 			// TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 			Self::Tools => crate::t("Tools"),
 			// TRANSLATORS: Name of the "Help" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
@@ -122,6 +134,61 @@ impl ShortcutsConfig {
 mod tests {
 	use super::*;
 
+	/// On a Japanese keyboard `=` and `'` are typed with Shift, so the reader finds their shortcuts by the character typed instead of the key pressed (#982). That lookup is by character code with no modifiers, and has to land on the defaults.
+	#[test]
+	fn punctuation_defaults_are_found_by_the_character_they_type() {
+		let sc = ShortcutsConfig::default();
+		assert_eq!(sc.find_action(i32::from(b'='), false, false, false), Some(ActionId::AnnouncePercent));
+		assert_eq!(sc.find_action(i32::from(b'\''), false, false, false), Some(ActionId::SeekAudioForward));
+	}
+
+	/// Found by the key code the text control reports, 344 (`WXK_F5`), through the lookup the key handler uses.
+	#[test]
+	fn f5_reloads_the_document() {
+		let chord = ActionId::Reload.default_chord().expect("reload ships a default chord");
+		assert_eq!(chord, KeyChord::new(false, false, false, "F5"));
+		assert!(chord.matches(344, false, false, false), "F5 on its own must match");
+		assert_eq!(ShortcutsConfig::default().find_action(344, false, false, false), Some(ActionId::Reload));
+		assert!(!chord.matches(344, true, false, false), "must not answer for Ctrl+F5");
+		assert!(!chord.matches(344, false, true, false), "must not answer for Alt+F5");
+		assert!(!chord.matches(344, false, false, true), "must not answer for Shift+F5");
+	}
+
+	/// `find_action` returns the first match, so of two actions sharing a default chord the later one could never be reached.
+	#[test]
+	fn no_two_actions_share_a_default_chord() {
+		let all = ActionId::all();
+		for (index, &first) in all.iter().enumerate() {
+			let Some(first_chord) = first.default_chord() else {
+				continue;
+			};
+			for &second in &all[index + 1..] {
+				let Some(second_chord) = second.default_chord() else {
+					continue;
+				};
+				assert_ne!(
+					(
+						&first_chord.key,
+						first_chord.ctrl,
+						first_chord.raw_ctrl,
+						first_chord.alt,
+						first_chord.shift,
+						first_chord.win
+					),
+					(
+						&second_chord.key,
+						second_chord.ctrl,
+						second_chord.raw_ctrl,
+						second_chord.alt,
+						second_chord.shift,
+						second_chord.win
+					),
+					"{first:?} and {second:?} ship the same default chord"
+				);
+			}
+		}
+	}
+
 	#[test]
 	fn shortcuts_config_set_reset_and_find() {
 		let mut sc = ShortcutsConfig::default();
@@ -183,6 +250,115 @@ mod tests {
 			total_actions += actions.len();
 		}
 		assert_eq!(total_actions, ActionId::all().len());
+	}
+
+	#[test]
+	fn file_category_holds_document_commands() {
+		assert_eq!(
+			ShortcutCategory::File.actions(),
+			[
+				ActionId::Open,
+				ActionId::Close,
+				ActionId::CloseAll,
+				ActionId::ReopenLastClosed,
+				ActionId::ShowAllRecentDocuments,
+				ActionId::ClearRecentDocuments,
+				ActionId::Exit,
+				ActionId::RevealFileInFolder,
+				ActionId::ImportDocumentData,
+				ActionId::ExportDocumentData,
+				ActionId::ExportToPlainText,
+				ActionId::ExportToHtml,
+				ActionId::ExportToMarkdown,
+			]
+		);
+	}
+
+	#[test]
+	fn tools_category_holds_the_remaining_six() {
+		assert_eq!(
+			ShortcutCategory::Tools.actions(),
+			[
+				ActionId::WordCount,
+				ActionId::DocumentInfo,
+				ActionId::Options,
+				ActionId::SleepTimer,
+				ActionId::BatchOcr,
+				ActionId::CustomizeShortcuts,
+			]
+		);
+	}
+
+	#[test]
+	fn table_of_contents_and_elements_list_are_go_commands() {
+		assert_eq!(ActionId::TableOfContents.category(), ShortcutCategory::Go);
+		assert_eq!(ActionId::ElementsList.category(), ShortcutCategory::Go);
+	}
+
+	#[test]
+	fn edit_category_holds_find_and_selection() {
+		assert_eq!(
+			ShortcutCategory::Edit.actions(),
+			[
+				ActionId::Find,
+				ActionId::FindNext,
+				ActionId::FindPrevious,
+				ActionId::SetSelectionStart,
+				ActionId::CopyFromSelectionStart,
+				ActionId::JumpToSelectionStart,
+			]
+		);
+	}
+
+	#[test]
+	fn view_category_holds_display_commands() {
+		assert_eq!(
+			ShortcutCategory::View.actions(),
+			[
+				ActionId::Reload,
+				ActionId::OpenInWebView,
+				ActionId::ViewSource,
+				ActionId::ToggleWordWrap,
+				ActionId::ToggleFullScreen,
+			]
+		);
+	}
+
+	#[test]
+	fn bookmarks_category_holds_creating_and_jumping() {
+		assert_eq!(
+			ShortcutCategory::Bookmarks.actions(),
+			[
+				ActionId::SetTemporaryBookmark,
+				ActionId::JumpToTemporaryBookmark,
+				ActionId::PreviousBookmark,
+				ActionId::NextBookmark,
+				ActionId::PreviousNote,
+				ActionId::NextNote,
+				ActionId::JumpToAllBookmarks,
+				ActionId::JumpToBookmarksOnly,
+				ActionId::JumpToNotesOnly,
+				ActionId::ViewNoteText,
+				ActionId::ToggleBookmark,
+				ActionId::BookmarkWithNote,
+			]
+		);
+	}
+
+	#[test]
+	fn audio_category_holds_the_playback_commands() {
+		assert_eq!(
+			ShortcutCategory::Audio.actions(),
+			[
+				ActionId::PlayPauseAudio,
+				ActionId::SeekAudioForward,
+				ActionId::SeekAudioBackward,
+				ActionId::IncreaseAudioSeekAmount,
+				ActionId::DecreaseAudioSeekAmount,
+				ActionId::IncreaseAudioSpeed,
+				ActionId::DecreaseAudioSpeed,
+			]
+		);
 	}
 
 	#[test]

@@ -28,17 +28,22 @@ English → Dutch. Use these consistently.
 - command line, command-line tool → terminal, terminalprogramma
 - comic archive → comicarchief
 - container → container; list → lijst; list item → lijstitem; table → tabel; figure → figuur; image → afbeelding
+- disk image (macOS) → schijfkopie; mount/unmount a disk image → activeren/deactiveren
 - document info → documentinformatie; document data (.paperback file) → documentgegevens
 - duration → tijdsduur
 - elements list → elementenlijst
+- executable → uitvoerbaar bestand
 - file manager → bestandsbeheerder; in-app file browser → bestandsbrowser in de app; file picker → bestandskiezer
 - find → zoeken; find next/previous → volgende/vorige zoeken; match (search result) → overeenkomst; match case → hoofdlettergevoelig; whole word → heel woord
-- Go menu → Ga; Tools menu → Extra; File menu → Bestand; Help menu → Help
+- File menu → Bestand; Edit menu → Bewerken; View menu → Beeld; Go menu → Ga; Bookmarks menu → Bladwijzers; Audio menu → Audio; Tools menu → Extra; Help menu → Help
+- menu bar access keys: `&Bestand`, `Be&werken`, `Bee&ld`, `&Ga`, `Bla&dwijzers`, `&Audio`, `E&xtra`, `&Help`
+- headers and footers (of a page) → kop- en voetteksten
 - heading → kop (plural koppen); heading level 2 → kop niveau 2
 - keyboard shortcut → toetsenbordsneltoets; shortcut (on its own) → sneltoets; customize keyboard shortcuts → toetsenbordsneltoetsen aanpassen; window hotkey → venstersneltoets
 - legacy (file format) → klassiek; legacy (encoding) → verouderd
 - link → link
 - locate (a missing file) → terugvinden
+- log → logboek; log level → logniveau; the level names Errors, Warnings, Information, Debug and Trace stay English; Off (no logging) → Uit
 - monospaced font → monospacelettertype
 - page → pagina; line → regel; character → teken; word count → woordenaantal
 - parse, parser → verwerken, verwerker
@@ -62,3 +67,4 @@ English → Dutch. Use these consistently.
 - toggle bookmark → bladwijzer plaatsen/verwijderen; toggle word wrap → automatische terugloop in-/uitschakelen
 - web view → webweergave; table view → tabelweergave; formula view → formuleweergave
 - word wrap → automatische terugloop
+- wrap around (navigation) → rondlopen

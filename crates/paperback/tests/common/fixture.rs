@@ -1,5 +1,3 @@
-//! Documents the UI tests open, generated at test time.
-
 use std::path::{Path, PathBuf};
 
 pub const HTML_NAME: &str = "ui-test.html";

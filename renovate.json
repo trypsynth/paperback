@@ -17,6 +17,11 @@
     {
       "matchManagers": ["github-actions"],
       "groupName": "github actions"
+    },
+    {
+      "description": "windows-core is only here for #[implement] in the UI Automation tests, which has to use the same windows-core the windows crate does. windows is still on 0.62, so raise this ceiling together with windows.",
+      "matchPackageNames": ["windows-core"],
+      "allowedVersions": "<0.100.0"
     }
   ],
   "customManagers": [
@@ -28,6 +33,14 @@
         "# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>[^\\s]+?)\\s+COBALT_VERSION: (?<currentValue>[^\\s]+)"
       ],
       "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "description": "The wxWidgets master commit Paperback builds against, named in WXWIDGETS_DIR so a new one rebuilds wxWidgets.",
+      "customType": "regex",
+      "managerFilePatterns": [".cargo/config.toml"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+) branch=(?<currentValue>\\S+)\\s+WXWIDGETS_DIR = \\{ value = \"target/wxWidgets-(?<currentDigest>[0-9a-f]{40})\""
+      ]
     }
   ]
 }

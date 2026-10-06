@@ -257,3 +257,38 @@ fn extract_content_maps_special_char_control_words_from_real_rtf_string() {
 		"Earth\u{2019}s \u{2018}quoted\u{2019}\u{201C}double\u{201D}em\u{2014}dash en\u{2013}dash \u{2022}bullet"
 	);
 }
+
+/// The minimal dash-bulleted list Word writes. It used to fail in the lexer with
+/// "Unable to parse - as integer".
+#[test]
+fn extract_content_reads_a_document_with_a_dash_bullet_list_level() {
+	let rtf = r"{\rtf1\ansi\deff0{\fonttbl{\f0 Arial;}}{\*\listtable{\list{\listlevel{\leveltext\leveltemplateid1290421206\'01-;}{\levelnumbers;}}}}\pard Body text.\par}";
+	let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+	let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+	let buffer = extract_content_from_tokens(&tokens);
+	assert_eq!(buffer.content, "Body text.");
+}
+
+/// WordPad's minimal files and many generators never write \pard: the text follows the font
+/// table directly. It was treated as header and the document came out empty.
+#[test]
+fn extract_content_keeps_body_text_written_without_pard() {
+	let rtf = r"{\rtf1\ansi\deff0{\fonttbl{\f0 Arial;}}{\colortbl;\red0\green0\blue0;}\f0 Hello plain world.\par Second line.\par}";
+	let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+	let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+	let buffer = extract_content_from_tokens(&tokens);
+	assert_eq!(buffer.content, "Hello plain world.\nSecond line.");
+}
+
+/// Formatting that opens the body before any text still applies to that text.
+#[test]
+fn extract_content_keeps_bold_that_starts_the_body_without_pard() {
+	let rtf = r"{\rtf1\ansi{\fonttbl{\f0 Arial;}}\b Bold\b0  rest\par}";
+	let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+	let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+	let buffer = extract_content_from_tokens(&tokens);
+	assert_eq!(buffer.content, "Bold rest");
+	let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
+	assert_eq!(bold.len(), 1);
+	assert_eq!(bold[0].length, "Bold".chars().count());
+}

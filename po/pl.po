@@ -217,7 +217,7 @@ msgstr "Zamknij wszystkie dokumenty"
 
 #. TRANSLATORS: Menu item in the File menu to reopen the most recently closed document.
 msgid "Reopen &Last Closed"
-msgstr "Otwórz ponownie &ostatnio zamknięty"
+msgstr "Otwórz po&nownie ostatnio zamknięty"
 
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
@@ -441,8 +441,8 @@ msgid "Go to next bookmark"
 msgstr "Przejdź do następnej zakładki"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
-msgid "Previous &Note"
-msgstr "Poprzednia &notatka"
+#~ msgid "Previous &Note"
+#~ msgstr "Poprzednia &notatka"
 
 #. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
 msgid "Go to previous note"
@@ -473,8 +473,8 @@ msgid "Show bookmarks only"
 msgstr "Pokaż tylko zakładki"
 
 #. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
-msgid "Jump to Notes &Only..."
-msgstr "Przejdź tylko do n&otatek..."
+#~ msgid "Jump to Notes &Only..."
+#~ msgstr "Przejdź tylko do n&otatek..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
 msgid "Show notes only"
@@ -489,24 +489,24 @@ msgid "View the note at current position"
 msgstr "Wyświetl notatkę w bieżącej pozycji"
 
 #. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
-msgid "Toggle &Bookmark"
-msgstr "Przełącz &zakładkę"
+#~ msgid "Toggle &Bookmark"
+#~ msgstr "Przełącz &zakładkę"
 
 #. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
-msgid "Bookmark with &Note"
-msgstr "Zakładka z &notatką"
+#~ msgid "Bookmark with &Note"
+#~ msgstr "Zakładka z &notatką"
 
 #. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
-msgid "Set Selection St&art"
-msgstr "&Ustaw początek zaznaczenia"
+#~ msgid "Set Selection St&art"
+#~ msgstr "&Ustaw początek zaznaczenia"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
 msgid "Mark the beginning of a selection to copy from"
 msgstr "Oznacz początek zaznaczenia, od którego chcesz kopiować tekst"
 
 #. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
-msgid "&Copy from Selection Start"
-msgstr "&Kopiuj od początku zaznaczenia"
+#~ msgid "&Copy from Selection Start"
+#~ msgstr "&Kopiuj od początku zaznaczenia"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
 msgid "Copy from the beginning of the selection to here"
@@ -545,16 +545,16 @@ msgid "Skip the audio narration backward"
 msgstr "Przewiń narrację dźwiękową w tył"
 
 #. TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
-msgid "&Increase Audio Seek Amount"
-msgstr "&Zwiększ skok przewijania dźwięku"
+#~ msgid "&Increase Audio Seek Amount"
+#~ msgstr "&Zwiększ skok przewijania dźwięku"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 msgid "Increase how far seeking the audio narration moves"
 msgstr "Zwiększ skok przewijania narracji dźwiękowej"
 
 #. TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
-msgid "&Decrease Audio Seek Amount"
-msgstr "Z&mniejsz skok przewijania dźwięku"
+#~ msgid "&Decrease Audio Seek Amount"
+#~ msgstr "Z&mniejsz skok przewijania dźwięku"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 msgid "Decrease how far seeking the audio narration moves"
@@ -712,6 +712,10 @@ msgstr "Strona &początkowa:"
 #. TRANSLATORS: Label for the ending page field of the Batch OCR range
 msgid "&End page:"
 msgstr "Strona &końcowa:"
+
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+msgid "&Include text pages too"
+msgstr "&Uwzględnij także strony z warstwą tekstową"
 
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
@@ -1113,6 +1117,10 @@ msgstr "Stabilny"
 msgid "Dev"
 msgstr "Deweloperski"
 
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Poziom szczegółowości dziennika:"
+
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
 msgstr "Dostosuj &skrót okna..."
@@ -1229,6 +1237,30 @@ msgstr "Czytelność"
 #. TRANSLATORS: Title of the system dialog for picking a background colour
 msgid "Choose a colour"
 msgstr "Wybierz kolor"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Wyłączony"
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr "Błędy"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr "Ostrzeżenia"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr "Informacje"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Debugowanie"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Śledzenie"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
@@ -1627,7 +1659,7 @@ msgstr "Zaznacz &wszystko\tCtrl+A"
 
 #. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
-msgstr "&Ostatnie dokumenty"
+msgstr "Ostatnie &dokumenty"
 
 #. TRANSLATORS: Status-bar help text for the File > Recent Documents submenu.
 msgid "Open a recent document"
@@ -1642,8 +1674,8 @@ msgid "Show All..."
 msgstr "Pokaż wszystkie..."
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-msgid "Go to &Page"
-msgstr "Przejdź do &strony"
+#~ msgid "Go to &Page"
+#~ msgstr "Przejdź do &strony"
 
 #. TRANSLATORS: Menu item in the Go menu to open the find dialog.
 msgid "&Find..."
@@ -1662,16 +1694,16 @@ msgid "Find previous occurrence"
 msgstr "Znajdź poprzednie wystąpienie"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
-msgid "Go to &line..."
-msgstr "Przejdź do &wiersza..."
+#~ msgid "Go to &line..."
+#~ msgstr "Przejdź do &wiersza..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
 msgid "Go to a specific line"
 msgstr "Przejdź do określonego wiersza"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
-msgid "Go to &percent..."
-msgstr "Przejdź do &procentu..."
+#~ msgid "Go to &percent..."
+#~ msgstr "Przejdź do &procentu..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
 msgid "Go to a percentage of the document"
@@ -1714,12 +1746,12 @@ msgid "&Bookmarks"
 msgstr "&Zakładki"
 
 #. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
-msgid "Navigate by bookmarks"
-msgstr "Nawiguj po zakładkach"
+#~ msgid "Navigate by bookmarks"
+#~ msgstr "Nawiguj po zakładkach"
 
 #. TRANSLATORS: Label for the Links submenu in the compact Go menu.
-msgid "&Links"
-msgstr "&Odnośniki"
+#~ msgid "&Links"
+#~ msgstr "&Odnośniki"
 
 #. TRANSLATORS: Status-bar help text for the Go > Links submenu.
 msgid "Navigate by links"
@@ -1734,8 +1766,8 @@ msgid "Navigate by images"
 msgstr "Nawiguj po obrazach"
 
 #. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
-msgid "&Figures"
-msgstr "&Rysunki"
+#~ msgid "&Figures"
+#~ msgstr "&Rysunki"
 
 #. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
 msgid "Navigate by figures"
@@ -1758,8 +1790,8 @@ msgid "Navigate by formulas"
 msgstr "Nawiguj po wzorach"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
-msgid "&Separators"
-msgstr "Se&paratory"
+#~ msgid "&Separators"
+#~ msgstr "Se&paratory"
 
 #. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
 msgid "Navigate by separators"
@@ -1878,8 +1910,8 @@ msgid "Show document information"
 msgstr "Pokaż informacje o dokumencie"
 
 #. TRANSLATORS: Menu item in the Tools menu to show the document's table of contents.
-msgid "&Table of Contents"
-msgstr "&Spis treści"
+#~ msgid "&Table of Contents"
+#~ msgstr "&Spis treści"
 
 #. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
 msgid "Show table of contents"
@@ -1918,24 +1950,24 @@ msgid "Open the document source in a new tab"
 msgstr "Otwórz źródło dokumentu w nowej karcie"
 
 #. TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
-msgid "I&mport/Export"
-msgstr "I&mport/eksport"
+#~ msgid "I&mport/Export"
+#~ msgstr "I&mport/eksport"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
-msgid "Import and export options"
-msgstr "Opcje importu i eksportu"
+#~ msgid "Import and export options"
+#~ msgstr "Opcje importu i eksportu"
 
 #. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
-msgid "Select and &copy"
-msgstr "Zaznacz i &kopiuj"
+#~ msgid "Select and &copy"
+#~ msgstr "Zaznacz i &kopiuj"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
-msgid "Mark a selection and copy from it"
-msgstr "Ustaw początek zaznaczenia i skopiuj od niego tekst"
+#~ msgid "Mark a selection and copy from it"
+#~ msgstr "Ustaw początek zaznaczenia i skopiuj od niego tekst"
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
-msgid "Word w&rap"
-msgstr "Zawijanie wie&rszy"
+#~ msgid "Word w&rap"
+#~ msgstr "Zawijanie wie&rszy"
 
 #. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 msgid "Toggle word wrap"
@@ -1954,8 +1986,8 @@ msgid "&Settings"
 msgstr "&Ustawienia"
 
 #. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
-msgid "&Sleep Timer..."
-msgstr "&Wyłącznik czasowy..."
+#~ msgid "&Sleep Timer..."
+#~ msgstr "&Wyłącznik czasowy..."
 
 #. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
 msgid "&Batch OCR..."
@@ -2923,8 +2955,8 @@ msgstr "Nie znaleziono parsera dla rozszerzenia: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Wszystkie parsery zawiodły dla rozszerzenia: .{}"
 
-msgid "Unknown update file format."
-msgstr "Nieznany format pliku aktualizacji."
+#~ msgid "Unknown update file format."
+#~ msgstr "Nieznany format pliku aktualizacji."
 
 msgid "Failed to open disk image"
 msgstr "Nie udało się otworzyć obrazu dysku"
@@ -2938,8 +2970,8 @@ msgstr "Aktualizacja gotowa"
 msgid "Failed to get current exe path"
 msgstr "Nie udało się pobrać bieżącej ścieżki pliku exe"
 
-msgid "Failed to launch installer script"
-msgstr "Nie udało się uruchomić skryptu instalatora"
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Nie udało się uruchomić skryptu instalatora"
 
 msgid "Failed to launch update script"
 msgstr "Nie udało się uruchomić skryptu aktualizacji"
@@ -4187,6 +4219,127 @@ msgstr "{} ms"
 msgid "Paragraph Pause"
 msgstr "Przerwa między akapitami"
 
+#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+msgid "&Reload"
+msgstr "&Przeładuj"
+
+#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
+msgid "Re-read the current document from disk"
+msgstr "Przeładuj bieżący dokument z dysku"
+
+#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "Remove repeated page &headers and footers in PDFs"
+msgstr "&Usuwaj powtarzające się nagłówki i stopki stron w plikach PDF"
+
+msgid "Installing the update. Paperback will restart."
+msgstr "Trwa instalowanie aktualizacji. Paperback uruchomi się ponownie."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reload"
+msgstr "Przeładuj"
+
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Program nie został uruchomiony z pliku AppImage, więc nie może się sam zaktualizować."
+
+msgid "Failed to start installation"
+msgstr "Nie udało się rozpocząć instalacji"
+
+msgid "Failed to stage the application"
+msgstr "Nie udało się przygotować aplikacji do instalacji"
+
+msgid "The update contains a different application."
+msgstr "Aktualizacja zawiera inną aplikację."
+
+msgid "Could not determine the update log directory."
+msgstr "Nie udało się ustalić folderu dziennika aktualizacji."
+
+msgid "Failed to launch update helper"
+msgstr "Nie udało się uruchomić programu pomocniczego aktualizacji"
+
+msgid "The update helper did not start. See the log:"
+msgstr "Program pomocniczy aktualizacji nie uruchomił się. Sprawdź dziennik:"
+
+msgid "The application did not quit within 60 seconds. The current app was kept."
+msgstr "Aplikacja nie zamknęła się w ciągu 60 sekund. Zachowano obecną wersję aplikacji."
+
+msgid "The installation changed while waiting. The current app was kept."
+msgstr "Podczas oczekiwania zainstalowana aplikacja uległa zmianie. Zachowano obecną wersję aplikacji."
+
+msgid "Could not move the current application. The current app was kept."
+msgstr "Nie udało się przenieść zainstalowanej aplikacji. Zachowano obecną wersję aplikacji."
+
+msgid "Could not install the update. The previous version was restored."
+msgstr "Nie udało się zainstalować aktualizacji. Przywrócono poprzednią wersję."
+
+msgid "Could not restore the previous version. Recover it from:"
+msgstr "Nie udało się przywrócić poprzedniej wersji. Odzyskaj ją z:"
+
+msgid "macOS could not launch the update. The previous version is preserved at:"
+msgstr "System macOS nie mógł uruchomić zaktualizowanej aplikacji. Poprzednia wersja została zachowana w:"
+
+msgid "Application update failed"
+msgstr "Aktualizacja aplikacji nie powiodła się"
+
+msgid "Log:"
+msgstr "Dziennik:"
+
+msgid "Update cancelled."
+msgstr "Aktualizacja została anulowana."
+
+msgid "Invalid application metadata"
+msgstr "Nieprawidłowe metadane aplikacji"
+
+msgid "The disk image must contain exactly one matching application."
+msgstr "Obraz dysku musi zawierać dokładnie jedną aplikację o właściwym identyfikatorze."
+
+msgid "The update must be signed by the application's developer team"
+msgstr "Aktualizacja musi być podpisana przez zespół deweloperski aplikacji"
+
+msgid "Invalid application executable."
+msgstr "Nieprawidłowy plik wykonywalny aplikacji."
+
+msgid "Invalid application executable"
+msgstr "Nieprawidłowy plik wykonywalny aplikacji"
+
+msgid "Application signature verification failed"
+msgstr "Weryfikacja podpisu aplikacji nie powiodła się"
+
+msgid "Failed to mount disk image"
+msgstr "Nie udało się zamontować obrazu dysku"
+
+msgid "Failed to unmount disk image"
+msgstr "Nie udało się odmontować obrazu dysku"
+
+msgid "Preparing update..."
+msgstr "Przygotowywanie aktualizacji..."
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+msgid "&Option"
+msgstr "&Option"
+
+msgid "A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key from every other program."
+msgstr "Skrót globalny musi zawierać klawisz Ctrl, Alt lub Win. W przeciwnym razie przejmie wybrany klawisz i uniemożliwi korzystanie z niego w innych programach."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+msgid "Shortcut Not Allowed"
+msgstr "Niedozwolony skrót"
+
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt
+#: swift
+msgid "Language"
+msgstr "Język"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt
+#: swift
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr "Otwiera ustawienia Paperbacka w systemowej aplikacji Ustawienia, gdzie można zmienić jego język."
+
 #. TRANSLATORS: TalkBack value announced on the voice picker when the chosen engine offers nothing to choose between
 #: kt
 msgid "No other voices"
@@ -4381,6 +4534,102 @@ msgstr "Brak innych głosów"
 
 #~ msgid "Root"
 #~ msgstr "Początek"
+
+#. TRANSLATORS: Top-level "Audio" menu label in the menu bar
+msgid "&Audio"
+msgstr "&Dźwięk"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
+msgid "&Go to Page"
+msgstr "Prze&jdź do strony"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to go back to the position remembered as the temporary bookmark.
+msgid "&Jump to Temporary Bookmark"
+msgstr "Przejdź do zakładki t&ymczasowej"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
+msgid "&Set Temporary Bookmark"
+msgstr "&Ustaw zakładkę tymczasową"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to add or remove a bookmark at the current reading position.
+msgid "&Toggle Bookmark"
+msgstr "Przełącz &zakładkę"
+
+#. TRANSLATORS: Top-level "View" menu label in the menu bar
+msgid "&View"
+msgstr "&Widok"
+
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Audio"
+msgstr "Dźwięk"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
+msgid "Bookmark &with Note"
+msgstr "Zakładka z no&tatką"
+
+#. TRANSLATORS: Menu item in the Edit menu to copy everything from the marked beginning of a selection to the current position.
+msgid "Copy fro&m Selection Start"
+msgstr "Kopiuj &od początku zaznaczenia"
+
+#. TRANSLATORS: Menu item in the Audio menu to decrease the amount of time each audio seek skips.
+msgid "Decrease Audio Seek Am&ount"
+msgstr "Z&mniejsz skok przewijania dźwięku"
+
+#. TRANSLATORS: Label for the Export submenu in the File menu, which lists the formats a document can be exported to.
+msgid "Ex&port"
+msgstr "Ekspo&rt"
+
+#. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
+msgid "Fig&ures"
+msgstr "Rys&unki"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
+msgid "Go to li&ne..."
+msgstr "Przejdź do w&iersza..."
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
+msgid "Go to pe&rcent..."
+msgstr "Pr&zejdź do procentu..."
+
+#. TRANSLATORS: Menu item in the Audio menu to increase the amount of time each audio seek skips.
+msgid "Increase Audio Seek &Amount"
+msgstr "&Zwiększ skok przewijania dźwięku"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only notes.
+msgid "Jump to Notes Onl&y..."
+msgstr "Przejdź tylko &do notatek..."
+
+#. TRANSLATORS: Label for the Links submenu in the compact Go menu.
+msgid "Lin&ks"
+msgstr "O&dnośniki"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the previous note in the document.
+msgid "Previous Not&e"
+msgstr "Poprzednia not&atka"
+
+#. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
+msgid "Sep&arators"
+msgstr "Sepa&ratory"
+
+#. TRANSLATORS: Menu item in the Edit menu to mark the current position as the beginning of a selection to copy from later.
+msgid "Set &Selection Start"
+msgstr "U&staw początek zaznaczenia"
+
+#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
+msgid "Sleep &Timer..."
+msgstr "&Wyłącznik czasowy..."
+
+#. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
+msgid "Table &of Contents"
+msgstr "Spis treś&ci"
+
+#. TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "View"
+msgstr "Widok"
+
+#. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
+msgid "W&ord wrap"
+msgstr "&Zawijanie wierszy"
 
 #~ msgid "Open folder containing the document"
 #~ msgstr "Otwórz folder zawierający dokument"

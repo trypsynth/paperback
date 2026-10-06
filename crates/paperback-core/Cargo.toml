@@ -16,19 +16,15 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib", "staticlib"]
 
 [dependencies]
-# AES-CBC for the OpenDocument encryption scheme (see parser::odf_crypto). cipher-0.4 based, the
-# same aes the zip crate's aes-crypto already pulls in.
-aes = "0.9.3"
 anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
-cbc = "0.2.1"
 cfb = "0.15.0"
 chardetng = "1.0.0"
 ego-tree = "0.11.0"
 flate2 = "1.1.10"
-key-chord = "0.1.0"
-encoding_rs = "0.8.41"
+key-chord = "0.2.2"
+encoding_rs = "0.8.42"
 icu_properties = { version = "2.3.0", features = ["unicode_bidi"] }
 # Only the codecs comic archives actually use; the default feature set pulls in a dozen more.
 image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "gif", "webp", "bmp"] }
@@ -36,9 +32,11 @@ libchm = "0.3.0"
 libhlp = "0.2.0"
 lofty = "0.25.4"
 mp4ameta = "0.13.0"
+# Pinned exactly: it is still a release candidate, and its API may change before 0.1.0.
+odf-crypto = { version = "=0.1.0-rc.8", features = ["crypto-ops"] }
 office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
-patois = "0.2.2"
+patois = "0.2.3"
 pdfium-render = { version = "0.9.4", default-features = false, features = ["pdfium_latest", "thread_safe"] }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.4", default-features = false, features = ["html"] }
@@ -52,19 +50,18 @@ scraper = "0.27.0"
 # parser has never heard of. Already in the tree under scraper.
 web_atoms = "0.3.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
-pbkdf2 = { version = "0.13", default-features = false, features = ["hmac"] }
 sha1 = "0.11.0"
-sha2 = "0.11.0"
-thiserror = "2.0.20"
+thiserror = "2.0.21"
 toml = { workspace = true }
 tracing = "0.1.44"
 unicode-bidi = "0.3.18"
-uniffi = { version = "0.32.1", features = ["cli"], optional = true }
+uniffi = { version = "0.32.2", features = ["cli"], optional = true }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 mathcat = { version = "0.7.5", features = ["include-zip"] }
 
 [build-dependencies]
-uniffi = { version = "0.32.1", features = ["build"], optional = true }
+shipfitter = "0.2.1"
+uniffi = { version = "0.32.2", features = ["build"], optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }

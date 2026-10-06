@@ -30,7 +30,7 @@ use ui::PaperbackApp;
 use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
-	let _log_guard = logging::init(&config_ext::config_dir());
+	let _log_guard = logging::init(&config_ext::config_dir(), config_ext::log_level_from_disk());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
 	set_pdfium_path_from_exe();
 	cleanup_legacy_files();

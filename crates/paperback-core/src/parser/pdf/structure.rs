@@ -18,14 +18,17 @@
 use std::collections::HashMap;
 
 use self::{
-	marked_content::{MIN_MCID_COVERAGE, TreeFacts, collect_text, first_marked_content_id},
+	marked_content::{MIN_MCID_COVERAGE, PageText, TreeFacts, collect_text, first_marked_content_id},
 	tables::{append_pdf_table_to_buffer, build_html_table},
 };
-use super::images::{UnclaimedImages, append_image};
+use super::{
+	images::{UnclaimedImages, append_image},
+	text::HyphenEvidence,
+};
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, TocItem},
 	pdfium::{PdfPage, PdfTextPage, Tag},
-	util::text::{collapse_whitespace, display_len, trim_string},
+	util::text::{collapse_leaders, collapse_whitespace, display_len, trim_string},
 };
 
 mod marked_content;
@@ -49,6 +52,7 @@ pub(super) fn extract_tagged_page_text(
 	flat_toc_items: &mut Vec<(u32, TocItem)>,
 	render_tables_inline: bool,
 	image_tops: &[f64],
+	evidence: &mut HyphenEvidence,
 ) -> bool {
 	let Some(struct_tree) = page.tags() else { return false };
 	let child_count = struct_tree.child_count();
@@ -60,7 +64,7 @@ pub(super) fn extract_tagged_page_text(
 	// then left alone: a `Figure` is not always one drawn image, so counting both would announce
 	// some of them twice.
 	let unclaimed = UnclaimedImages::new(if facts.claims_figures { &[] } else { image_tops });
-	let content = marked_content::read(text_page, &facts, !unclaimed.is_empty());
+	let content = marked_content::read(text_page, &facts, !unclaimed.is_empty(), evidence);
 	let coverage = content.coverage;
 	let tagged_trusted = coverage >= MIN_MCID_COVERAGE;
 	tracing::debug!(page_index, coverage, tagged_trusted, "computed mcid coverage for page structure tree");
@@ -84,12 +88,13 @@ pub(super) fn extract_tagged_page_text(
 	}
 	let mut current_block = String::new();
 	let mut pending_label = String::new();
+	let mut page_text = PageText::new(&content.text);
 	let mut images = ImagePlacement { mcid_tops: &content.tops, unclaimed, block_top: None };
 	for i in 0..child_count {
 		if let Some(child) = struct_tree.child(i) {
 			process_struct_element(
 				&child,
-				&content.text,
+				&mut page_text,
 				buffer,
 				page_display_text,
 				&mut current_block,
@@ -178,6 +183,29 @@ pub(super) fn normalize_list_label(label: &str) -> String {
 	if !label.is_empty() && label.chars().all(is_private_use) { "\u{2022}".to_string() } else { label.to_string() }
 }
 
+/// Whether `text` is nothing but a list label: a bullet, a number (`1.`, `1.2.`, `10)`), a
+/// single letter (`a.`, `(b)`) or a roman numeral (`iv.`). Words that end in a full stop, such as
+/// "etc.", are not labels.
+pub(super) fn is_bare_list_label(text: &str) -> bool {
+	let label = text.trim();
+	if label.is_empty() || label.chars().count() > 10 {
+		return false;
+	}
+	let is_bullet = |c: char| {
+		matches!(c, '\u{2022}' | '\u{25E6}' | '\u{25AA}' | '\u{25CF}' | '\u{2013}' | '-' | '*')
+			|| ('\u{E000}'..='\u{F8FF}').contains(&c)
+	};
+	if label.chars().all(is_bullet) {
+		return true;
+	}
+	let Some(body) = label.strip_suffix('.').or_else(|| label.strip_suffix(')')) else { return false };
+	let body = body.strip_prefix('(').unwrap_or(body);
+	let numeric = !body.is_empty() && body.chars().all(|c| c.is_ascii_digit() || c == '.');
+	let letter = body.chars().count() == 1 && body.chars().all(char::is_alphabetic);
+	let roman = !body.is_empty() && body.len() <= 5 && body.chars().all(|c| "ivxlIVXL".contains(c));
+	numeric || letter || roman
+}
+
 fn flush_block(
 	pending_label: &mut String,
 	current_block: &mut String,
@@ -186,7 +214,7 @@ fn flush_block(
 	current_lines_info: &mut Vec<(usize, String)>,
 	images: &mut ImagePlacement,
 ) {
-	let trimmed = trim_string(&collapse_whitespace(current_block));
+	let trimmed = collapse_leaders(&trim_string(&collapse_whitespace(current_block)));
 	current_block.clear();
 	if trimmed.is_empty() {
 		// A label waits here for the block that carries its item's text. An item that never gets
@@ -232,7 +260,7 @@ fn flush_block_lines(
 #[allow(clippy::too_many_arguments)]
 fn process_struct_element(
 	elem: &Tag,
-	mcid_to_text: &HashMap<i32, String>,
+	page_text: &mut PageText,
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
 	current_block: &mut String,
@@ -249,7 +277,7 @@ fn process_struct_element(
 		// the label would go out as a line of its own, which arrowing through the item meets as a
 		// stop with nothing to say.
 		let mut label = String::new();
-		collect_text(elem, mcid_to_text, &mut label);
+		collect_text(elem, page_text.text, &mut label);
 		let label = trim_string(&collapse_whitespace(&label));
 		if !label.is_empty() {
 			images.note_element(elem);
@@ -259,7 +287,7 @@ fn process_struct_element(
 	}
 	if elem_type == "Table" {
 		flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info, images);
-		let html = build_html_table(elem, mcid_to_text);
+		let html = build_html_table(elem, page_text.text);
 		images.note_element(elem);
 		images.before_line(buffer, page_display_text, current_lines_info);
 		let pos = buffer.current_position();
@@ -318,7 +346,7 @@ fn process_struct_element(
 		if let Some(child) = elem.child(i) {
 			process_struct_element(
 				&child,
-				mcid_to_text,
+				page_text,
 				buffer,
 				page_display_text,
 				current_block,
@@ -329,9 +357,15 @@ fn process_struct_element(
 				images,
 			);
 		} else if let Some(mcid) = elem.child_mcid(i)
-			&& let Some(text) = mcid_to_text.get(&mcid)
+			&& let Some(text) = page_text.take(mcid)
 		{
 			images.note(mcid);
+			// Word tags a list's number as marked content of its own inside the item's body, not
+			// as an Lbl, and what separates it from the text is a tab stop, which is positioning
+			// rather than a character: "1." and "The input voltage" ran together.
+			if is_bare_list_label(current_block) && text.chars().next().is_some_and(|c| !c.is_whitespace()) {
+				current_block.push(' ');
+			}
 			current_block.push_str(text);
 		}
 	}
@@ -361,7 +395,7 @@ fn process_struct_element(
 		};
 		if let Some(level) = heading_level {
 			let mut title = String::new();
-			collect_text(elem, mcid_to_text, &mut title);
+			collect_text(elem, page_text.text, &mut title);
 			let title = trim_string(&collapse_whitespace(&title));
 			if !title.is_empty() {
 				let marker_type = match level {
@@ -382,7 +416,7 @@ fn process_struct_element(
 		}
 		if elem_type == "LI" || elem_type == "TOCI" {
 			let mut li_text = String::new();
-			collect_text(elem, mcid_to_text, &mut li_text);
+			collect_text(elem, page_text.text, &mut li_text);
 			let li_text = trim_string(&collapse_whitespace(&li_text));
 			buffer.add_marker(Marker::new(MarkerType::ListItem, block_start_pos).with_text(li_text));
 		}

@@ -10,6 +10,7 @@ pub enum ActionId {
 	Close,
 	CloseAll,
 	ReopenLastClosed,
+	Reload,
 	ShowAllRecentDocuments,
 	ClearRecentDocuments,
 	Exit,
@@ -112,6 +113,7 @@ impl ActionId {
 			Self::Close,
 			Self::CloseAll,
 			Self::ReopenLastClosed,
+			Self::Reload,
 			Self::ShowAllRecentDocuments,
 			Self::ClearRecentDocuments,
 			Self::Exit,
@@ -216,18 +218,30 @@ impl ActionId {
 			| Self::ReopenLastClosed
 			| Self::ShowAllRecentDocuments
 			| Self::ClearRecentDocuments
-			| Self::Exit => ShortcutCategory::File,
+			| Self::Exit
+			| Self::RevealFileInFolder
+			| Self::ImportDocumentData
+			| Self::ExportDocumentData
+			| Self::ExportToPlainText
+			| Self::ExportToHtml
+			| Self::ExportToMarkdown => ShortcutCategory::File,
+			Self::Reload | Self::OpenInWebView | Self::ViewSource | Self::ToggleWordWrap | Self::ToggleFullScreen => {
+				ShortcutCategory::View
+			}
 			Self::Find
 			| Self::FindNext
 			| Self::FindPrevious
+			| Self::SetSelectionStart
+			| Self::CopyFromSelectionStart
+			| Self::JumpToSelectionStart => ShortcutCategory::Edit,
+			Self::TableOfContents
+			| Self::ElementsList
 			| Self::GoToLine
 			| Self::GoToPercent
 			| Self::GoToPage
 			| Self::GoBack
 			| Self::GoForward
 			| Self::AnnouncePercent
-			| Self::SetTemporaryBookmark
-			| Self::JumpToTemporaryBookmark
 			| Self::PreviousSection
 			| Self::NextSection
 			| Self::PreviousHeading
@@ -246,14 +260,6 @@ impl ActionId {
 			| Self::NextHeading6
 			| Self::PreviousPage
 			| Self::NextPage
-			| Self::PreviousBookmark
-			| Self::NextBookmark
-			| Self::PreviousNote
-			| Self::NextNote
-			| Self::JumpToAllBookmarks
-			| Self::JumpToBookmarksOnly
-			| Self::JumpToNotesOnly
-			| Self::ViewNoteText
 			| Self::PreviousLink
 			| Self::NextLink
 			| Self::PreviousImage
@@ -272,36 +278,31 @@ impl ActionId {
 			| Self::NextListItem
 			| Self::ContainerStart
 			| Self::ContainerEnd => ShortcutCategory::Go,
+			Self::SetTemporaryBookmark
+			| Self::JumpToTemporaryBookmark
+			| Self::PreviousBookmark
+			| Self::NextBookmark
+			| Self::PreviousNote
+			| Self::NextNote
+			| Self::JumpToAllBookmarks
+			| Self::JumpToBookmarksOnly
+			| Self::JumpToNotesOnly
+			| Self::ViewNoteText
+			| Self::ToggleBookmark
+			| Self::BookmarkWithNote => ShortcutCategory::Bookmarks,
 			Self::WordCount
 			| Self::DocumentInfo
-			| Self::TableOfContents
-			| Self::ElementsList
-			| Self::RevealFileInFolder
-			| Self::OpenInWebView
-			| Self::ViewSource
-			| Self::ToggleBookmark
-			| Self::BookmarkWithNote
-			| Self::SetSelectionStart
-			| Self::CopyFromSelectionStart
-			| Self::JumpToSelectionStart
-			| Self::ToggleWordWrap
-			| Self::PlayPauseAudio
+			| Self::Options
+			| Self::SleepTimer
+			| Self::BatchOcr
+			| Self::CustomizeShortcuts => ShortcutCategory::Tools,
+			Self::PlayPauseAudio
 			| Self::SeekAudioForward
 			| Self::SeekAudioBackward
 			| Self::IncreaseAudioSeekAmount
 			| Self::DecreaseAudioSeekAmount
 			| Self::IncreaseAudioSpeed
-			| Self::DecreaseAudioSpeed
-			| Self::ToggleFullScreen
-			| Self::Options
-			| Self::SleepTimer
-			| Self::BatchOcr
-			| Self::CustomizeShortcuts
-			| Self::ImportDocumentData
-			| Self::ExportDocumentData
-			| Self::ExportToPlainText
-			| Self::ExportToHtml
-			| Self::ExportToMarkdown => ShortcutCategory::Tools,
+			| Self::DecreaseAudioSpeed => ShortcutCategory::Audio,
 			Self::About | Self::ViewHelpBrowser | Self::ViewHelpPaperback | Self::CheckForUpdates | Self::Donate => {
 				ShortcutCategory::Help
 			}
@@ -318,6 +319,8 @@ impl ActionId {
 			Self::CloseAll => crate::t("Close All"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ReopenLastClosed => crate::t("Reopen Last Closed"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::Reload => crate::t("Reload"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ShowAllRecentDocuments => crate::t("Show All Recent Documents..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -437,9 +440,9 @@ impl ActionId {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::WordCount => crate::t("Word Count"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-			Self::DocumentInfo => crate::t("Document Info"),
+			Self::DocumentInfo => crate::t("Document Info..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-			Self::TableOfContents => crate::t("Table of Contents"),
+			Self::TableOfContents => crate::t("Table of Contents..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ElementsList => crate::t("Elements List..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -514,6 +517,8 @@ impl ActionId {
 			Self::Close => Some(KeyChord::new(true, false, false, "W")),
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "W")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
+			// Not Cmd+R, the browser's reload on macOS, which is Show All Recent Documents here.
+			Self::Reload => Some(KeyChord::new(false, false, false, "F5")),
 			Self::ShowAllRecentDocuments => Some(KeyChord::new(true, false, false, "R")),
 			Self::ClearRecentDocuments => None,
 			Self::Exit => None,
@@ -598,9 +603,14 @@ impl ActionId {
 			Self::DecreaseAudioSpeed => Some(KeyChord::new(true, false, true, ",")),
 			// The conventional shortcut is Control+Command+F; RawCtrl forces the
 			// physical Control key while plain Ctrl auto-translates to Command on mac.
-			Self::ToggleFullScreen => {
-				Some(KeyChord { ctrl: true, raw_ctrl: true, alt: false, shift: false, key: "F".to_string() })
-			}
+			Self::ToggleFullScreen => Some(KeyChord {
+				ctrl: true,
+				raw_ctrl: true,
+				alt: false,
+				shift: false,
+				win: false,
+				key: "F".to_string(),
+			}),
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
 			Self::BatchOcr => Some(KeyChord::new(true, false, true, "O")),
@@ -622,6 +632,7 @@ impl ActionId {
 			Self::Close => Some(KeyChord::new(true, false, false, "F4")),
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "F4")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
+			Self::Reload => Some(KeyChord::new(false, false, false, "F5")),
 			Self::ShowAllRecentDocuments => Some(KeyChord::new(true, false, false, "R")),
 			Self::ClearRecentDocuments => None,
 			Self::Exit => Some(KeyChord::new(true, false, false, "Q")),

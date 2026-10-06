@@ -97,45 +97,8 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	{
 		println!("Warning: could not generate Android translations: {e}");
 	}
-	let readmes_assets_dir = assets_dir.join("readmes");
-	let _ = fs::create_dir_all(&readmes_assets_dir);
-	let doc_dir = project_root().join("doc");
-	let pandoc_config = doc_dir.join("pandoc.yaml");
-	if doc_dir.is_dir() {
-		let default_readme = doc_dir.join("readme.md");
-		if default_readme.exists() {
-			let status = Command::new("pandoc")
-				.arg(format!("--defaults={}", pandoc_config.display()))
-				.arg(&default_readme)
-				.arg("-o")
-				.arg(readmes_assets_dir.join("readme.html"))
-				.status();
-			match status {
-				Ok(s) if s.success() => {}
-				_ => println!("Warning: Failed to generate default English documentation"),
-			}
-		}
-		if let Ok(entries) = fs::read_dir(&doc_dir) {
-			for entry in entries.flatten() {
-				let path = entry.path();
-				if let Some(name) = path.file_name().and_then(|n| n.to_str())
-					&& name.starts_with("readme-")
-					&& name.ends_with(".md")
-				{
-					let out_name = name.replace(".md", ".html");
-					let status = Command::new("pandoc")
-						.arg(format!("--defaults={}", pandoc_config.display()))
-						.arg(&path)
-						.arg("-o")
-						.arg(readmes_assets_dir.join(out_name))
-						.status();
-					match status {
-						Ok(s) if s.success() => {}
-						_ => println!("Warning: Failed to generate documentation for language: {name}"),
-					}
-				}
-			}
-		}
+	if let Err(e) = crate::docs::write_app_readmes(&assets_dir.join("readmes")) {
+		println!("Warning: could not generate the Help documents: {e}");
 	}
 	if gradle_tasks.is_empty() && !build_aab {
 		println!("Open android/ in Android Studio to build the APK.");

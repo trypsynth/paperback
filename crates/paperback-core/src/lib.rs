@@ -34,10 +34,4 @@ pub fn set_pdfium_library_path(path: String) {
 	pdfium::set_library_path(&path);
 }
 
-/// Translates library-internal strings (e.g. document content labels, parser error messages).
-///
-/// `patois`'s "ui" feature (which pulls in wxdragon) is never enabled here, so this stays free
-/// of desktop UI dependencies for the CLI and mobile FFI consumers of this crate.
-pub(crate) fn t(s: &str) -> String {
-	patois::t(s)
-}
+pub(crate) use patois::t;

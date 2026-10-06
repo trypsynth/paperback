@@ -1,34 +1,28 @@
 use std::{
 	cell::Cell,
-	fs,
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::Mutex,
-	time::{Instant, SystemTime},
+	time::Instant,
 };
 
-use paperback_core::{
-	config::ConfigManager, document::ParseSettings, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession,
-};
+use paperback_core::{config::ConfigManager, session::DocumentSession};
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{
-	navigation::{self, move_to_offset_and_record_history, persist_navigation_history},
-	readability::{
-		ReadabilityStyle, apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_readability_format_to_ctrl,
-		build_font_from_readability, readability_style,
-	},
-	sleep_timer, status,
-	text_render::fill_text_ctrl_with_formatting,
-};
+use super::navigation::{move_to_offset_and_record_history, persist_navigation_history};
 use crate::{audio_player::AudioPlayer, text_window::TextWindow, ui::navigation::announce};
 
 mod appearance;
 mod audio;
 mod lifecycle;
 mod ocr;
+mod position;
+mod reload;
+mod tabs;
 mod window;
+
+use reload::{FileFingerprint, parse_settings, read_fingerprint};
 
 pub struct DocumentTab {
 	pub panel: Panel,
@@ -56,21 +50,6 @@ pub struct DocumentTab {
 	ocr_job: Option<ocr::OcrJob>,
 }
 
-/// Change-detection stamp for an open document's file, compared on every frame activation and
-/// tab switch. Metadata-only on purpose: `config::compute_document_hash` would read up to 2 MiB
-/// from disk per check and still miss mid-file edits in files larger than that (it hashes only
-/// head, tail and size), whereas a single `fs::metadata` call catches any completed write.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-struct FileFingerprint {
-	modified: SystemTime,
-	len: u64,
-}
-
-fn read_fingerprint(path: &Path) -> Option<FileFingerprint> {
-	let meta = fs::metadata(path).ok()?;
-	Some(FileFingerprint { modified: meta.modified().ok()?, len: meta.len() })
-}
-
 pub fn title_or_filename(title: String, path: &Path) -> String {
 	if title.is_empty() {
 		// TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
@@ -82,6 +61,33 @@ pub fn title_or_filename(title: String, path: &Path) -> String {
 
 pub fn display_title(tab: &DocumentTab) -> String {
 	title_or_filename(tab.session.title(), &tab.file_path)
+}
+
+/// The 0-based tab index a key press names, if it names one at all.
+///
+/// `Ctrl+1` through `Ctrl+9` name the first nine open documents in the order they were
+/// opened, as they do in a browser. Only those, and only with Ctrl held and nothing else:
+/// `Ctrl+Shift+digit` and `Ctrl+Alt+digit` belong to whatever the shortcut table or the
+/// system has bound them to. The numpad row counts as well as the digits above it.
+///
+/// wxWidgets reports the macOS Command key as `control_down`, so this covers Cmd+1 there
+/// without a special case - which is the same reasoning `reader_input`'s `document_edge_for_key`
+/// is built on, and lands on the convention macOS users already have for their tabs.
+pub fn tab_index_for_key(key: i32, control: bool, alt: bool, shift: bool) -> Option<usize> {
+	if !control || alt || shift {
+		return None;
+	}
+	// `Ctrl+0` names nothing. It is left alone rather than treated as the tenth tab, since ten
+	// is a document this feature cannot reach and a key that does not work is worse than one
+	// that never appeared.
+	let digit = if (i32::from(b'1')..=i32::from(b'9')).contains(&key) {
+		key - i32::from(b'0')
+	} else if (WXK_NUMPAD1..=WXK_NUMPAD9).contains(&key) {
+		key - WXK_NUMPAD1 + 1
+	} else {
+		return None;
+	};
+	usize::try_from(digit - 1).ok()
 }
 
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
@@ -97,6 +103,12 @@ pub struct DocumentManager {
 	last_audio_seek_position: Cell<Option<i64>>,
 	last_focus_in_text: Cell<bool>,
 	recently_closed: Vec<PathBuf>,
+	/// Set by the frame's char hook when a shortcut key is seen, and consumed by the menu
+	/// dispatcher. See `menu_events::bind_key_source` for why the book's own key handler
+	/// cannot do this.
+	pub(super) from_keyboard: Rc<Cell<bool>>,
+	/// Hands out an id per OCR job, so a worker whose tab has been closed is recognisable as stale rather than mistaken for one on a reopened tab.
+	next_job_id: Cell<u64>,
 }
 
 impl DocumentManager {
@@ -105,6 +117,7 @@ impl DocumentManager {
 		notebook: Notebook,
 		config: Rc<Mutex<ConfigManager>>,
 		live_region_label: StaticText,
+		from_keyboard: Rc<Cell<bool>>,
 	) -> Self {
 		Self {
 			frame,
@@ -117,6 +130,8 @@ impl DocumentManager {
 			last_audio_seek_position: Cell::new(None),
 			last_focus_in_text: Cell::new(true),
 			recently_closed: Vec::new(),
+			from_keyboard,
+			next_job_id: Cell::new(0),
 		}
 	}
 
@@ -172,75 +187,6 @@ impl DocumentManager {
 	pub fn find_tab_by_path(&self, path: &Path) -> Option<usize> {
 		let target = normalized_path_key(path);
 		self.tabs.iter().position(|tab| normalized_path_key(&tab.file_path) == target)
-	}
-
-	/// Restores focus to whichever control had it when the window was last active (the text
-	/// control or the notebook), falling back to the notebook when there's no active document.
-	/// Puts focus on the freshly opened document's text, and makes that the target a later
-	/// [`Self::restore_focus`] will return to.
-	///
-	/// Opening a document is a request to read it, so it is not a case for restoring an earlier
-	/// preference: whatever had focus a moment ago was about a different document, or about
-	/// there being none.
-	pub fn focus_document_text(&self) {
-		if let Some(tab) = self.active_tab() {
-			self.last_focus_in_text.set(true);
-			tab.text_ctrl.set_focus();
-		} else {
-			self.notebook.set_focus();
-		}
-	}
-
-	pub fn restore_focus(&self) {
-		if self.last_focus_in_text.get() {
-			if let Some(tab) = self.active_tab() {
-				tab.text_ctrl.set_focus();
-			} else {
-				self.notebook.set_focus();
-			}
-		} else {
-			self.notebook.set_focus();
-		}
-	}
-
-	/// Records whether the text control or the notebook currently has focus, so focus can be
-	/// restored to the same place when the window is next activated. Only updates when one of
-	/// the two is confidently focused (a mid-focus-transition leaves the previous value).
-	///
-	/// With no documents open there is nothing to record: the notebook is the only focusable
-	/// control, so it has focus by default rather than by choice. Writing that down as "the user
-	/// prefers the tab strip" made the next document open onto its own tab strip instead of its
-	/// text, because [`Self::restore_focus`] honours the preference and could not tell a real
-	/// one from the absence of an alternative.
-	#[cfg(target_os = "windows")]
-	pub fn record_focus_target(&self) {
-		if self.tabs.is_empty() {
-			return;
-		}
-		if self.active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()) {
-			self.last_focus_in_text.set(true);
-		} else if self.notebook.has_focus() {
-			self.last_focus_in_text.set(false);
-		}
-	}
-
-	/// Tells screen readers that the text control has focus, after `restore_focus`. On Windows the
-	/// read-only Richedit does not emit its own focus event on re-activation, and `SetFocus` on a
-	/// window that already has focus emits nothing at all, so the text control needs the explicit
-	/// event; the notebook's native tab control announces its selected tab on its own (firing a
-	/// whole-control event there would swallow that), so nothing is sent for it.
-	#[cfg(target_os = "windows")]
-	pub fn announce_focus(&self) {
-		if !self.last_focus_in_text.get() {
-			return;
-		}
-		if let Some(tab) = self.active_tab() {
-			let hwnd = windows::Win32::Foundation::HWND(tab.text_ctrl.get_handle());
-			// EVENT_OBJECT_FOCUS = 0x8005, OBJID_CLIENT = -4, CHILDID_SELF = 0
-			unsafe {
-				windows::Win32::UI::Accessibility::NotifyWinEvent(0x8005, hwnd, -4, 0);
-			}
-		}
 	}
 
 	pub fn pop_recently_closed(&mut self) -> Option<PathBuf> {
@@ -302,246 +248,6 @@ impl DocumentManager {
 			})
 		})
 	}
-
-	/// Whether the caret is on an image-only PDF page's OCR placeholder line.
-	pub fn update_status_bar(&self) {
-		let sleep_start = sleep_timer::start_ms();
-		let sleep_duration = sleep_timer::duration_minutes();
-		if self.tabs.is_empty() {
-			// TRANSLATORS: Default status bar text when no document is open
-			let mut status_text = t("Ready");
-			if sleep_start > 0 {
-				let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
-				if remaining > 0 {
-					status_text = status::format_sleep_timer_status(&status_text, remaining);
-				}
-			}
-			self.frame.set_status_text(&status_text, 0);
-			return;
-		}
-		if let Some(tab) = self.active_tab() {
-			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-			let status_info = tab.session.get_status_info(position);
-			let mut status_text = status::format_status_text(&status_info);
-			if sleep_start > 0 {
-				let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
-				if remaining > 0 {
-					status_text = status::format_sleep_timer_status(&status_text, remaining);
-				}
-			}
-			self.frame.set_status_text(&status_text, 0);
-		}
-	}
-
-	/// Announces the current caret position as a percentage of the document, and the page it falls
-	/// on where the document has pages, via the live region.
-	pub fn announce_current_percent(&self) {
-		let Some(tab) = self.active_tab() else {
-			return;
-		};
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		let percent = navigation::reading_percent(tab, position);
-		let page = page_at(tab, position);
-		announce(self.live_region_label, position_announcement(percent, page));
-	}
-
-	/// Sets the temporary bookmark at the current caret position and announces it.
-	pub fn set_temporary_bookmark(&self) {
-		let Some(tab) = self.active_tab() else {
-			return;
-		};
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		let path_str = tab.file_path.to_string_lossy().to_string();
-		let config = self.config.lock().unwrap();
-		config.set_temporary_bookmark(&path_str, Some(position));
-		config.flush();
-		drop(config);
-		// TRANSLATORS: Announced after setting a temporary bookmark at the current position
-		announce(self.live_region_label, t("Temporary bookmark set."));
-	}
-
-	/// Jumps to the temporary bookmark, announcing the line text there, or "No temporary bookmark."
-	/// if none has been set.
-	pub fn jump_to_temporary_bookmark(&mut self) {
-		let path_str = {
-			let Some(tab) = self.active_tab() else {
-				return;
-			};
-			tab.file_path.to_string_lossy().to_string()
-		};
-		let position = {
-			let config = self.config.lock().unwrap();
-			config.get_temporary_bookmark(&path_str)
-		};
-		let Some(position) = position else {
-			// TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
-			announce(self.live_region_label, t("No temporary bookmark."));
-			return;
-		};
-		let (message, track, update) = {
-			let tab = self.active_tab_mut().unwrap();
-			let position = position.clamp(0, tab.session.document_len().max(0));
-			let line_text = tab.session.get_line_text(position);
-			let message = if line_text.trim().is_empty() {
-				// TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
-				t("Temporary bookmark.")
-			} else {
-				line_text
-			};
-			let update = move_to_offset_and_record_history(tab, position);
-			(message, tab.track, update)
-		};
-		announce(self.live_region_label, message);
-		persist_navigation_history(&self.config, track.then_some(&update));
-	}
-
-	/// Re-parses every open document with the new parse settings and refills its text control.
-	/// Re-parsing (rather than transforming in place) keeps every format's table rendering
-	/// identical via the shared parse-time helper. A tab whose re-parse fails is left unchanged.
-	pub fn apply_parse_settings(&mut self, settings: ParseSettings) {
-		// Read readability settings and collect each tab's parse inputs (path, password, forced
-		// format) under a single config lock, so we don't re-lock per tab while mutating the tabs.
-		let (style, parse_inputs) = {
-			let cfg = self.config.lock().unwrap();
-			let parse_inputs: Vec<(String, String, String)> = self
-				.tabs
-				.iter()
-				.map(|tab| {
-					let path_str = tab.file_path.to_string_lossy().to_string();
-					let password = cfg.get_document_password(&path_str);
-					let forced_extension = cfg.get_document_format(&path_str);
-					(path_str, password, forced_extension)
-				})
-				.collect();
-			(readability_style(&cfg), parse_inputs)
-		};
-		for (tab, (path_str, password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
-			let _ = reparse_tab_in_place(tab, &path_str, &password, &forced_extension, settings, &style);
-		}
-	}
-
-	/// Reloads the tab at `index` if its file changed on disk since it was last parsed. Returns
-	/// true only when the tab content was actually replaced. If the stored password no longer
-	/// decrypts the file, prompts for a new one and retries once. Uses `try_lock` on the config:
-	/// the caller may be a frame-activation handler running inside a nested modal event loop
-	/// whose opener already holds the lock.
-	pub fn reload_tab_if_changed(&mut self, index: usize) -> bool {
-		let Some(tab) = self.tabs.get(index) else {
-			return false;
-		};
-		if !tab.track {
-			return false;
-		}
-		let Some(current) = read_fingerprint(&tab.file_path) else {
-			return false;
-		};
-		if tab.disk_fingerprint == Some(current) {
-			return false;
-		}
-		let path_str = tab.file_path.to_string_lossy().to_string();
-		let Ok(cfg) = self.config.try_lock() else {
-			return false;
-		};
-		if !cfg.get_app_bool("auto_reload_documents", true) {
-			return false;
-		}
-		let password = cfg.get_document_password(&path_str);
-		let forced_extension = cfg.get_document_format(&path_str);
-		let settings = parse_settings(&cfg);
-		let style = readability_style(&cfg);
-		drop(cfg);
-		let tab = &mut self.tabs[index];
-		let (positions, history_index) = tab.session.get_history();
-		let positions = positions.to_vec();
-		let reloaded = match reparse_tab_in_place(tab, &path_str, &password, &forced_extension, settings, &style) {
-			Ok(()) => true,
-			Err(err) if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
-				// Recorded before the prompt so a re-entrant call during its modal
-				// event loop sees the file as unchanged and skips a second prompt.
-				tab.disk_fingerprint = Some(current);
-				self.reprompt_password_and_reparse(index, &path_str, &forced_extension, settings, &style)
-			}
-			Err(_) => false,
-		};
-		let tab = &mut self.tabs[index];
-		if reloaded {
-			tab.session.set_history(&positions, history_index);
-			tracing::info!(path = %path_str, "document reloaded after on-disk change");
-		} else {
-			tab.disk_fingerprint = Some(current);
-		}
-		reloaded
-	}
-
-	/// Asks for a fresh password after a reload attempt failed to decrypt the file, then retries
-	/// the re-parse once. Dismissing the prompt keeps the old tab content without an error: the
-	/// reload was not user-initiated, so there is nothing to recover from. A wrong password shows
-	/// the same load-error dialog as the open flow.
-	fn reprompt_password_and_reparse(
-		&mut self,
-		index: usize,
-		path_str: &str,
-		forced_extension: &str,
-		settings: ParseSettings,
-		style: &ReadabilityStyle,
-	) -> bool {
-		if let Ok(cfg) = self.config.try_lock() {
-			cfg.set_document_password(path_str, "");
-		}
-		let Some(password) = prompt_for_password(&self.notebook) else {
-			return false;
-		};
-		let tab = &mut self.tabs[index];
-		match reparse_tab_in_place(tab, path_str, &password, forced_extension, settings, style) {
-			Ok(()) => {
-				if !password.is_empty()
-					&& let Ok(cfg) = self.config.try_lock()
-				{
-					cfg.set_document_password(path_str, &password);
-				}
-				true
-			}
-			Err(err) => {
-				let message = build_document_load_error_message(&self.tabs[index].file_path, &err);
-				// TRANSLATORS: Generic error dialog title
-				show_error_dialog(&self.notebook, &message, &t("Error"));
-				false
-			}
-		}
-	}
-}
-
-/// The 1-based page `position` falls on, or `None` for a document that has no pages at all -
-/// meaning one with no page-break markers, which is every plain text and markdown document and any
-/// EPUB that carries no page list.
-///
-/// The `.max(1)` covers a hole in `current_page`, which answers 0 both for a document with no pages
-/// and for a position ahead of the first marker: the first is what the guard above has already
-/// turned into `None`, the second is not a page number to say out loud. Only a PDF escapes the
-/// second case, since its first page marker sits at offset 0. An RTF's and a DAISY book's first
-/// break lands mid-document, and an EPUB page list starts at the first *content* page, leaving the
-/// cover and title pages in front of every marker.
-///
-/// Every caller of `current_page` patches that 0 differently or not at all - Go to Page clamps it
-/// (`dialogs::show_go_to_page_dialog`), the Elements view reads it as "no closest page"
-/// (`dialogs::elements`), and iOS's Go To sheet shows it to the reader as a plain 0. This agrees
-/// with Go to Page, the one other place that speaks a page number; the fix that would stop it being
-/// forgotten belongs in `current_page` itself.
-fn page_at(tab: &DocumentTab, position: i64) -> Option<i32> {
-	if tab.session.page_count() == 0 {
-		return None;
-	}
-	Some(tab.session.current_page(position).max(1))
-}
-
-/// What the "announce percentage" shortcut says for `percent` through the document, on `page` where
-/// it has pages - "15%, page 30" - or the bare percentage where it has none.
-fn position_announcement(percent: i32, page: Option<i32>) -> String {
-	let Some(page) = page else {
-		return format!("{percent}%");
-	};
-	// TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
-	t("%s, page %d").replacen("%d", &page.to_string(), 1).replacen("%s", &format!("{percent}%"), 1)
 }
 
 fn normalized_path_key(path: &Path) -> String {
@@ -557,124 +263,68 @@ fn normalized_path_key(path: &Path) -> String {
 	}
 }
 
-fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
-	// TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
-	let dialog = TextEntryDialog::builder(parent, &t("&Password:"), &t("Document Password")).password().build();
-	if dialog.show_modal() != ID_OK {
-		return None;
-	}
-	dialog.get_value().filter(|value| !value.trim().is_empty())
-}
-
-fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
-	let dialog = MessageDialog::builder(parent, message, title)
-		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-		.build();
-	dialog.show_modal();
-}
-
-fn build_document_load_error_message(path: &Path, error: &str) -> String {
-	let details = error.trim().strip_prefix(PASSWORD_REQUIRED_ERROR_PREFIX).map_or_else(|| error.trim(), str::trim);
-	if details.is_empty() {
-		// TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
-		return t("Failed to load document.");
-	}
-	// TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
-	let file_line = t("File: {}").replace("{}", &path.display().to_string());
-	// TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
-	let details_line = t("Details: {}").replace("{}", details);
-	// TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
-	format!("{}\n\n{file_line}\n{details_line}", t("Failed to load document."))
-}
-
-/// The parse-time toggles as the reader has them set.
-fn parse_settings(cfg: &ConfigManager) -> ParseSettings {
-	ParseSettings {
-		render_tables_inline: cfg.get_app_bool("render_tables_inline", true),
-		join_pdf_paragraphs: cfg.get_app_bool("join_pdf_paragraphs", true),
-	}
-}
-
-/// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
-/// position. Returns the parse error and leaves the tab unchanged if the re-parse fails.
-fn reparse_tab_in_place(
-	tab: &mut DocumentTab,
-	path_str: &str,
-	password: &str,
-	forced_extension: &str,
-	settings: ParseSettings,
-	style: &ReadabilityStyle,
-) -> Result<(), String> {
-	let new_fingerprint = read_fingerprint(&tab.file_path);
-	let current_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-	let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
-	// Find the nearest anchor at-or-before the cursor using the full id_positions key
-	// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
-	// making the subsequent lookup fail). Record the within-block offset so the cursor
-	// lands at the same structural position after reparsing. Fallback: percentage-based
-	// position for formats with no anchors.
-	let stable_anchor = {
-		let id_positions = &tab.session.handle().document().id_positions;
-		id_positions
-			.iter()
-			.filter(|&(_, &off)| off <= pos)
-			.max_by_key(|&(_, &off)| off)
-			.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
-	};
-	let fallback_percent = tab.session.get_status_info(current_pos).percentage;
-	let new_session = match DocumentSession::new(path_str, password, forced_extension, settings) {
-		Ok(session) => session,
-		Err(err) => {
-			tracing::error!(path = %path_str, error = %err, "failed to re-parse document");
-			return Err(err);
-		}
-	};
-	tab.session = new_session;
-	// TODO(windowing): still whole-document on every reparse, see
-	// C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md Phase 2 - should load a window
-	// centered on `restored_pos` instead.
-	let doc_len = tab.session.document_len();
-	let slice = tab.session.get_window(0, doc_len);
-	fill_text_ctrl_with_formatting(tab.text_ctrl, &slice);
-	tab.window = TextWindow::whole(doc_len);
-	if let Some(font) = build_font_from_readability(&style.rf) {
-		tab.text_ctrl.set_font(&font);
-	}
-	apply_foreground_color_to_ctrl(tab.text_ctrl, style.rf.color);
-	apply_bg_color_to_ctrl(tab.text_ctrl, style.bg_color);
-	apply_readability_format_to_ctrl(
-		tab.text_ctrl,
-		style.line_spacing,
-		style.paragraph_spacing,
-		style.letter_spacing,
-		style.text_alignment,
-	);
-	tab.panel.layout();
-	let max_pos = tab.text_ctrl.get_last_position();
-	let restored_pos = if let Some((ref key, within)) = stable_anchor {
-		match tab.session.handle().document().id_positions.get(key) {
-			Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
-			None => tab.session.position_from_percent(fallback_percent).clamp(0, max_pos),
-		}
-	} else {
-		tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
-	};
-	tab.text_ctrl.set_insertion_point(restored_pos);
-	tab.text_ctrl.show_position(restored_pos);
-	tab.disk_fingerprint = new_fingerprint;
-	// The buffer was rebuilt, and the caret above was re-derived from an anchor or a percentage
-	// rather than carried over, so there is nothing honest to map an old mark onto. Clearing it
-	// means the next copy says "set beginning of selection first" instead of copying whatever now
-	// happens to sit at the old offset.
-	tab.selection_mark.set(None);
-	Ok(())
-}
-
 #[cfg(test)]
 mod tests {
 	use std::{env, fs, path::PathBuf, process};
 
-	use super::{position_announcement, read_fingerprint};
+	use wxdragon::prelude::{WXK_NUMPAD1, WXK_NUMPAD3, WXK_NUMPAD9};
+
+	use super::{position::position_announcement, read_fingerprint, tab_index_for_key};
+
+	/// Ctrl+1 is the first document opened, and so maps to tab 0. Everything is checked against
+	/// the same function both key handlers call, because the mapping is the only part of this
+	/// that can be wrong without a window to look at.
+	#[test]
+	fn ctrl_digit_names_a_tab_by_the_order_the_documents_were_opened() {
+		for (digit, expected) in [(1, 0), (2, 1), (5, 4), (9, 8)] {
+			assert_eq!(tab_index_for_key(i32::from(b'0') + digit, true, false, false), Some(expected));
+		}
+	}
+
+	#[test]
+	fn the_numpad_row_names_the_same_tab_as_the_digits() {
+		for offset in 0..9 {
+			let key = WXK_NUMPAD1 + offset;
+			assert_eq!(
+				tab_index_for_key(key, true, false, false),
+				tab_index_for_key(i32::from(b'1') + offset, true, false, false)
+			);
+		}
+	}
+
+	/// The digits below Ctrl belong to heading navigation and the digits under Alt to the menu
+	/// bar's own mnemonics, and both must keep working.
+	#[test]
+	fn a_digit_without_control_is_not_a_tab() {
+		assert_eq!(tab_index_for_key(i32::from(b'1'), false, false, false), None);
+		assert_eq!(tab_index_for_key(i32::from(b'1'), false, true, false), None);
+		assert_eq!(tab_index_for_key(i32::from(b'1'), false, false, true), None);
+	}
+
+	/// Shift and Alt chords on a digit belong to the shortcut table and to the system, not here.
+	#[test]
+	fn ctrl_shift_and_ctrl_alt_digits_are_left_alone() {
+		assert_eq!(tab_index_for_key(i32::from(b'3'), true, false, true), None);
+		assert_eq!(tab_index_for_key(i32::from(b'3'), true, true, false), None);
+		assert_eq!(tab_index_for_key(WXK_NUMPAD3, true, false, true), None);
+	}
+
+	/// There is no tenth document to name, and a tenth tab is not something this feature reaches.
+	#[test]
+	fn ctrl_zero_names_no_tab() {
+		assert_eq!(tab_index_for_key(i32::from(b'0'), true, false, false), None);
+	}
+
+	/// The other keys that share this range of codes: a Ctrl that happens to land on a neighbouring
+	/// key code must not be read as a digit. Numpad 0 sits directly below Numpad 1, and the
+	/// digit row's neighbours are punctuation.
+	#[test]
+	fn keys_beside_the_digits_name_no_tab() {
+		assert_eq!(tab_index_for_key(i32::from(b'0') - 1, true, false, false), None);
+		assert_eq!(tab_index_for_key(i32::from(b'9') + 1, true, false, false), None);
+		assert_eq!(tab_index_for_key(WXK_NUMPAD1 - 1, true, false, false), None);
+		assert_eq!(tab_index_for_key(WXK_NUMPAD9 + 1, true, false, false), None);
+	}
 
 	struct TempFile {
 		path: PathBuf,

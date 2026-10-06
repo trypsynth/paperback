@@ -29,15 +29,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+        with:
+          # The readme's history: patois-translate finds the English each translation was made from there, so a changed section keeps the translation of every line that did not change.
+          fetch-depth: 0
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
       - name: Cache Rust build artifacts
         uses: Swatinem/rust-cache@v2
-      # pandoc is still needed by the build and the android/ios tasks; the translate task
-      # itself no longer converts the readme through HTML.
-      - name: Install gettext and pandoc
-        run: sudo apt-get update && sudo apt-get install -y gettext pandoc
+      - name: Install gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext
       - name: Translate
         # A rate limit or an outage shouldn't turn every push red; entries that didn't get
         # translated, and any that failed a placeholder/accelerator check, are simply retried

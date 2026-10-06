@@ -38,6 +38,18 @@ fn apply_format_toggle(
 	*on = want_on;
 }
 
+/// Whether a token at the top level of the document marks the start of body content.
+fn starts_body(token: &Token) -> bool {
+	match token {
+		Token::PlainText(text) => !text.trim().is_empty(),
+		Token::ControlSymbol((ctrl, _)) => matches!(
+			ctrl,
+			ControlWord::Par | ControlWord::Line | ControlWord::Bold | ControlWord::Italic | ControlWord::Underline
+		),
+		_ => false,
+	}
+}
+
 #[allow(clippy::too_many_lines)]
 pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	let mut buffer = DocumentBuffer::new();
@@ -102,6 +114,13 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 		}
 		if skip_until_depth.is_some() {
 			continue;
+		}
+		// The header tables (fonts, colours, styles, info) are groups of their own, so the first
+		// text, paragraph mark or character formatting directly in the document's group is body
+		// content even when the writer never emitted \pard; WordPad's minimal files and many
+		// generators start writing text straight after the font table.
+		if in_header && depth == 1 && starts_body(token) {
+			in_header = false;
 		}
 		match token {
 			Token::ControlSymbol((ctrl, property)) => {

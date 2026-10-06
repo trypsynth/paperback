@@ -1,5 +1,3 @@
-//! What screen readers are told when navigating by heading.
-
 #![cfg(target_os = "windows")]
 
 mod common;

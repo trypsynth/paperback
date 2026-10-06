@@ -23,7 +23,7 @@ Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iO
 * Reads scanned PDF pages with the OCR built into Windows and macOS.
 * Bookmarks and notes, so you can mark your place and come back to it.
 * Every keyboard shortcut can be changed.
-* Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text.
+* Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text. It takes as many documents as you give it, expands `*.pdf` and the like itself so the same command line works on Windows, and can write one file per document into a folder.
 
 ## Screen Reader Compatibility
 
@@ -80,13 +80,33 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Close all open documents.
 * `Ctrl+Shift+T`: Reopen the last closed document.
 * `Ctrl+R`: Show the "All Documents" dialog (from Recent Documents).
+* `Ctrl+Shift+C`: Open containing folder.
+* `Ctrl+Shift+E`: Export document data (`.paperback`).
+* `Ctrl+Shift+I`: Import document data (`.paperback`).
+* `Ctrl+E`: Export the current document to plain text.
 * `Ctrl+Q`: Exit (Windows only; on macOS this is under the app menu instead).
 
-### Go menu
+### Edit menu
 
 * `Ctrl+F`: Show the Find dialog.
 * `F3` (macOS: `Cmd+G`): Find next.
 * `Shift+F3` (macOS: `Cmd+Shift+G`): Find previous.
+* `Alt+F9` (macOS: `Cmd+F9`): Mark the beginning of a selection, so everything from here to wherever you get to can be copied in one go.
+* `Alt+F10` (macOS: `Cmd+F10`): Copy everything from the marked beginning of the selection to the current position.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Jump back to the marked beginning of the selection, leaving the mark in place.
+
+### View menu
+
+* `F5`: Re-read the current document from disk. Works whether or not "Automatically reload changed documents" is switched on in Settings.
+* `Ctrl+Alt+W`: Toggle word wrap.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, i.e. Control+Command+F): Toggle full screen.
+* `Ctrl+Shift+V`: Open current content in Web View.
+* `Ctrl+U`: View the document source in a new tab.
+
+### Go menu
+
+* `Ctrl+T`: Show table of contents.
+* `F7`: Show elements list.
 * `Ctrl+G` (macOS: `Cmd+L`): Go to line.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Go to percent.
 * `Ctrl+P`: Go to page (when supported by the current document).
@@ -101,16 +121,6 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `1` through `6`: Next heading at level 1-6.
 * `Shift+P`: Previous page.
 * `P`: Next page.
-* `Shift+B`: Previous bookmark.
-* `B`: Next bookmark.
-* `/`: Set your temporary bookmark.
-* `\`: Jump to your temporary bookmark.
-* `Shift+N`: Previous note.
-* `N`: Next note.
-* `Ctrl+B`: Jump to all bookmarks and notes.
-* `Ctrl+Alt+B`: Jump to bookmarks only.
-* `Ctrl+Alt+M`: Jump to notes only.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, i.e. the physical Control key rather than Cmd): View note text at the current position.
 * `Shift+K`: Previous link.
 * `K`: Next link.
 * `Shift+G`: Previous image.
@@ -130,21 +140,23 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Shift+,`: Go to the start of the current container (list or table).
 * `,`: Go past the end of the current container (list or table).
 
-### Tools menu
+### Bookmarks menu
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, i.e. the physical Control key rather than Cmd): Show word count for the current document.
-* `Ctrl+I`: Show document info.
-* `Ctrl+T`: Show table of contents.
-* `F7`: Show elements list.
-* `Ctrl+Shift+C`: Open containing folder.
-* `Ctrl+Shift+V`: Open current content in Web View.
-* `Ctrl+U`: View the document source in a new tab.
-* `Ctrl+Shift+E`: Export document data (`.paperback`).
-* `Ctrl+Shift+I`: Import document data (`.paperback`).
-* `Ctrl+E`: Export the current document to plain text.
 * `Ctrl+Shift+B`: Toggle bookmark at the current selection/cursor.
 * `Ctrl+Shift+N`: Add or edit bookmark note at the current selection/cursor.
-* `Ctrl+Alt+W`: Toggle word wrap.
+* `Shift+B`: Previous bookmark.
+* `B`: Next bookmark.
+* `Shift+N`: Previous note.
+* `N`: Next note.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, i.e. the physical Control key rather than Cmd): View note text at the current position.
+* `Ctrl+B`: Jump to all bookmarks and notes.
+* `Ctrl+Alt+B`: Jump to bookmarks only.
+* `Ctrl+Alt+M`: Jump to notes only.
+* `/`: Set your temporary bookmark.
+* `\`: Jump to your temporary bookmark.
+
+### Audio menu
+
 * `Ctrl+Space` (macOS: `RawCtrl+Space`, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.
 * `'`: Seek audio narration forward.
 * `;`: Seek audio narration backward.
@@ -152,13 +164,14 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Shift+;`: Decrease the audio seek amount.
 * `Ctrl+Shift+.`: Speed up audio narration.
 * `Ctrl+Shift+,`: Slow down audio narration.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, i.e. Control+Command+F): Toggle full screen.
-* `Ctrl+,`: Open Settings (macOS: under the app menu).
-* `Ctrl+Shift+S`: Toggle sleep timer.
+
+### Tools menu
+
+* `Ctrl+W` (macOS: `RawCtrl+W`, i.e. the physical Control key rather than Cmd): Show word count for the current document.
+* `Ctrl+I`: Show document info.
 * `Ctrl+Shift+O`: Recognize a range of scanned PDF pages with OCR.
-* `Alt+F9` (macOS: `Cmd+F9`): Mark the beginning of a selection, so everything from here to wherever you get to can be copied in one go.
-* `Alt+F10` (macOS: `Cmd+F10`): Copy everything from the marked beginning of the selection to the current position.
-* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Jump back to the marked beginning of the selection, leaving the mark in place.
+* `Ctrl+Shift+S`: Toggle sleep timer.
+* `Ctrl+,`: Open Settings (macOS: under the app menu).
 
 ### Help menu
 
@@ -171,6 +184,8 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 ### Additional document-view keys
 
 * `Delete` / `Numpad Delete` on the tab control: Close the selected document tab.
+* `Ctrl+1` through `Ctrl+9` (macOS: `Cmd+1` through `Cmd+9`) in the document text or on the tab control: Go to the first nine open documents, in the order they were opened.
+* `Ctrl+Tab` and `Ctrl+Shift+Tab`: Go to the next or previous open document, wrapping around at either end.
 * `Enter` or `Space` in the document text: Follow a link or open a table or formula view at the cursor.
 * `Enter` on a scanned PDF page: Recognize the page with OCR.
 * `Shift+F10` or the Menu/Application key in the document text: Open the context menu.

@@ -54,7 +54,7 @@ pub fn find_child_element<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Opt
 /// which is what the XML specification asks for.
 pub fn read_xml_to_string(path: &str) -> std::io::Result<String> {
 	let bytes = std::fs::read(path)?;
-	let Some(encoding) = declared_encoding(&bytes) else {
+	let Some(encoding) = crate::util::encoding::xml_declared_encoding(&bytes) else {
 		// A file that declares nothing is guessed at the way a plain text file is, byte order
 		// marks and all, rather than simply assumed to be UTF-8: a FictionBook written in
 		// windows-1251 and saved without a declaration is still a windows-1251 book.
@@ -64,22 +64,6 @@ pub fn read_xml_to_string(path: &str) -> std::io::Result<String> {
 	// file is read as UTF-16 whatever its declaration says.
 	let (text, _, _) = encoding.decode(&bytes);
 	Ok(replace_encoding_declaration(&text))
-}
-
-/// How far into a file to look for the XML declaration. It has to be the first thing in the file,
-/// so anything past the first line is not one.
-const DECLARATION_SCAN_BYTES: usize = 200;
-
-/// The encoding an XML declaration names, if it names one this build knows.
-fn declared_encoding(bytes: &[u8]) -> Option<&'static encoding_rs::Encoding> {
-	let head = &bytes[..bytes.len().min(DECLARATION_SCAN_BYTES)];
-	let head = String::from_utf8_lossy(head);
-	let declaration = head.split_once("?>")?.0;
-	let after_key = declaration.split_once("encoding")?.1;
-	let quoted = after_key.trim_start().strip_prefix('=')?.trim_start();
-	let quote = quoted.chars().next().filter(|c| *c == '"' || *c == '\'')?;
-	let label = quoted[1..].split(quote).next()?;
-	encoding_rs::Encoding::for_label(label.as_bytes())
 }
 
 /// Rewrites the decoded text's own encoding declaration to UTF-8, which is what it now is.

@@ -7,7 +7,7 @@
 //! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by the metadata and
 //! table of contents readers as well.
 
-use std::cmp::Ordering;
+use std::{cell::Cell, cmp::Ordering, collections::HashSet};
 
 use crate::{
 	parser::util::bidi,
@@ -15,7 +15,119 @@ use crate::{
 };
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
-	input.chars().filter(|&ch| (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}').collect()
+	let chars: Vec<char> = input.chars().collect();
+	let evidence = HyphenEvidence::from_chars(&chars);
+	let mut out = String::with_capacity(input.len());
+	for (i, &ch) in chars.iter().enumerate() {
+		if ch == LINE_END_HYPHEN {
+			if keeps_line_end_hyphen(&chars, i, &evidence) {
+				out.push('-');
+			}
+		} else if (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}' {
+			out.push(ch);
+		}
+	}
+	out
+}
+
+/// Every character on the page, read once, indexed as pdfium indexes them: `None` where pdfium
+/// reports a value that is not a character.
+pub(super) fn page_chars(text_page: &PdfTextPage, char_count: i32) -> Vec<Option<char>> {
+	(0..char_count).map(|i| char::from_u32(text_page.unicode_at(i))).collect()
+}
+
+/// The page's characters as plain text for [`HyphenEvidence`] and [`keeps_line_end_hyphen`],
+/// with a space standing in for anything that is not a character.
+pub(super) fn context_chars(page: &[Option<char>]) -> Vec<char> {
+	page.iter().map(|c| c.unwrap_or(' ')).collect()
+}
+
+/// What pdfium reports in place of a hyphen that ends a line: it takes the hyphen for one that
+/// splits a word and marks it so a reader can join the halves.
+pub(super) const LINE_END_HYPHEN: char = '\u{0002}';
+
+/// The words on a page, as evidence for whether a hyphen pdfium found at the end of a line is
+/// part of the word (`NFB-NEWSLINE`, `non-web`) or only splits it (`sugges-tion`).
+#[derive(Default)]
+pub(super) struct HyphenEvidence {
+	/// Compounds written with a hyphen somewhere it is not at a line end, lower-cased.
+	hyphenated: HashSet<String>,
+	/// Every unhyphenated word seen, lower-cased.
+	words: HashSet<String>,
+}
+
+impl HyphenEvidence {
+	pub(super) fn from_chars(chars: &[char]) -> Self {
+		let mut evidence = Self::default();
+		evidence.add_chars(chars);
+		evidence
+	}
+
+	/// Adds a page's words. A document keeps one of these across its pages, so a word split at a
+	/// line end is judged by how the whole document so far writes it, not only that page: a book
+	/// that writes "OpenSolaris" or "MTBF" on one page joins them when they wrap on a later one.
+	pub(super) fn add_chars(&mut self, chars: &[char]) {
+		let evidence = self;
+		let mut word = String::new();
+		let mut broken = false;
+		for &ch in chars.iter().chain(std::iter::once(&' ')) {
+			if ch.is_alphanumeric() || ch == '-' {
+				word.extend(ch.to_lowercase());
+				continue;
+			}
+			if ch == LINE_END_HYPHEN {
+				// A word broken at a line end is evidence for itself neither way.
+				broken = true;
+				word.clear();
+				continue;
+			}
+			let token = word.trim_matches('-');
+			if !broken && !token.is_empty() {
+				if token.contains('-') {
+					evidence.hyphenated.insert(token.to_string());
+				} else {
+					evidence.words.insert(token.to_string());
+				}
+			}
+			broken = false;
+			word.clear();
+		}
+	}
+}
+
+/// Whether the line-end hyphen at `at` in `chars` belongs to the word.
+pub(super) fn keeps_line_end_hyphen(chars: &[char], at: usize, evidence: &HyphenEvidence) -> bool {
+	let left_start = chars[..at].iter().rposition(|c| !c.is_alphanumeric()).map_or(0, |p| p + 1);
+	let left: String = chars[left_start..at].iter().collect();
+	let right_start =
+		chars[at + 1..].iter().position(|c| !c.is_whitespace() && !c.is_control()).map_or(chars.len(), |p| at + 1 + p);
+	let right: String = chars[right_start..].iter().take_while(|c| c.is_alphanumeric()).collect();
+	keeps_hyphen(&left, &right, Some(evidence))
+}
+
+/// Whether a hyphen between `left` and `right` at a line break is part of the word.
+///
+/// What the document itself writes decides first: a compound it hyphenates elsewhere keeps its
+/// hyphen, a word it writes whole elsewhere loses it. Failing that, a hyphen next to an
+/// abbreviation, a capitalised word or a number belongs to a compound (`NFB-NEWSLINE`,
+/// `COVID-19`), while one between two lower-case halves splits an ordinary word.
+pub(super) fn keeps_hyphen(left: &str, right: &str, evidence: Option<&HyphenEvidence>) -> bool {
+	if left.is_empty() || right.is_empty() {
+		return false;
+	}
+	if let Some(evidence) = evidence {
+		let (l, r) = (left.to_lowercase(), right.to_lowercase());
+		if evidence.hyphenated.contains(&format!("{l}-{r}")) {
+			return true;
+		}
+		if evidence.words.contains(&format!("{l}{r}")) {
+			return false;
+		}
+	}
+	let left_is_abbreviation =
+		left.chars().count() >= 2 && left.chars().all(|c| c.is_uppercase() || c.is_ascii_digit());
+	let right_opens_a_name = right.chars().next().is_some_and(|c| c.is_uppercase() || c.is_ascii_digit());
+	left_is_abbreviation || right_opens_a_name || left.chars().any(|c| c.is_ascii_digit())
 }
 
 /// One visual line of an untagged page.
@@ -31,6 +143,8 @@ pub(super) struct Line {
 	/// Whether it is set in a monospaced face, which marks it as something whose own line
 	/// breaks are the content: code, or anything else laid out by column.
 	pub monospaced: bool,
+	/// Whether all of it is set in a bold face, which is how a heading set no larger than the text around it stands out.
+	pub bold: bool,
 }
 
 /// Tolerance, in PDF user units, for calling two baselines or two box edges the same. pdfium
@@ -45,6 +159,8 @@ const NO_ADVANCE_RATIO: f64 = 0.25;
 /// underneath that glyph rather than after it. The same page measured 58% at most for real
 /// spaces (an `f` overhangs the space after it) and 92% at least for the spurious ones.
 const SWALLOWED_RATIO: f64 = 0.8;
+/// How many of a page's spaces are measured to decide whether a covered space means anything there. Enough to see the font's habit, few enough that the pdfium calls stay a fixed cost per page.
+const COVER_SAMPLE: usize = 64;
 
 /// Whether a U+0020 in the text layer renders as no space at all, judged from where pdfium puts
 /// it relative to its neighbours. Both shapes of this reach us as an ordinary space that pdfium
@@ -79,15 +195,21 @@ pub(super) fn space_is_invisible(
 	{
 		return true;
 	}
-	if let Some(prev) = prev_box {
-		let on_the_same_line =
-			prev.bottom <= space_box.bottom + COORDINATE_EPSILON && prev.top >= space_box.top - COORDINATE_EPSILON;
-		let covered_width = prev.right - space_box.left;
-		if on_the_same_line && covered_width >= width * SWALLOWED_RATIO {
-			return true;
-		}
-	}
-	false
+	prev_box.is_some_and(|prev| covers(prev, space_box))
+}
+
+/// Whether `prev`, on the same line, lies over most of `space_box`, the second shape [`space_is_invisible`] looks for.
+fn covers(prev: CharBox, space_box: CharBox) -> bool {
+	let width = space_box.right - space_box.left;
+	let on_the_same_line =
+		prev.bottom <= space_box.bottom + COORDINATE_EPSILON && prev.top >= space_box.top - COORDINATE_EPSILON;
+	let covered_width = prev.right - space_box.left;
+	width > 0.0 && on_the_same_line && covered_width >= width * SWALLOWED_RATIO
+}
+
+/// Whether a space covered by the glyph before it is hidden by that glyph, given how many of a page's measured spaces are covered. A split ligature in front of a space is rare: the PDF of #808 has at most 4% of a page's spaces covered. A font whose glyph boxes are wider than their advances covers nearly all of them, 64% to 91% a page in the PDF of #993, and there being covered says nothing.
+fn covering_hides(covered: usize, measured: usize) -> bool {
+	covered * 4 <= measured
 }
 
 /// The top edge of one character, which is what gives a tagged block the height the structure
@@ -96,20 +218,55 @@ pub(super) fn char_top(text_page: &PdfTextPage, index: i32) -> Option<f64> {
 	text_page.char_box(index).map(|boxed| boxed.top)
 }
 
-/// [`space_is_invisible`] for the space at `index` of `text_page`, fetching only the geometry
-/// each test actually needs. Costs three or four pdfium calls per space character and none at
-/// all for anything else, so a page pays for it in proportion to its spaces rather than its
-/// length - the per-character cost that #747 had to undo.
-pub(super) fn is_invisible_space(text_page: &PdfTextPage, index: i32, char_count: i32) -> bool {
-	let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
-		return false;
-	};
-	let next_origin = if index + 1 < char_count { text_page.char_origin(index + 1) } else { None };
-	if space_is_invisible(origin, space_box, next_origin, None) {
-		return true;
+/// [`space_is_invisible`] for the spaces of one page, fetching only the geometry each test actually needs. Costs three or four pdfium calls per space character and none at all for anything else, so a page pays for it in proportion to its spaces rather than its length - the per-character cost that #747 had to undo.
+pub(super) struct SpaceFilter {
+	char_count: i32,
+	/// [`covering_hides`] for this page, measured the first time a covered space turns up, so a page without one never pays for it.
+	covering_hides: Cell<Option<bool>>,
+}
+
+impl SpaceFilter {
+	pub(super) const fn new(char_count: i32) -> Self {
+		Self { char_count, covering_hides: Cell::new(None) }
 	}
-	let prev_box = if index > 0 { text_page.char_box(index - 1) } else { None };
-	space_is_invisible(origin, space_box, None, prev_box)
+
+	/// Whether the space at `index` of `text_page` renders as no space at all.
+	pub(super) fn hides(&self, text_page: &PdfTextPage, index: i32) -> bool {
+		let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
+			return false;
+		};
+		let next_origin = if index + 1 < self.char_count { text_page.char_origin(index + 1) } else { None };
+		if space_is_invisible(origin, space_box, next_origin, None) {
+			return true;
+		}
+		let prev_box = if index > 0 { text_page.char_box(index - 1) } else { None };
+		space_is_invisible(origin, space_box, None, prev_box) && self.covering_hides(text_page)
+	}
+
+	fn covering_hides(&self, text_page: &PdfTextPage) -> bool {
+		if let Some(hides) = self.covering_hides.get() {
+			return hides;
+		}
+		let (mut measured, mut covered) = (0, 0);
+		for index in 1..self.char_count {
+			if measured == COVER_SAMPLE {
+				break;
+			}
+			if text_page.unicode_at(index) != u32::from(' ') {
+				continue;
+			}
+			let (Some(space_box), Some(prev)) = (text_page.char_box(index), text_page.char_box(index - 1)) else {
+				continue;
+			};
+			measured += 1;
+			if covers(prev, space_box) {
+				covered += 1;
+			}
+		}
+		let hides = covering_hides(covered, measured);
+		self.covering_hides.set(Some(hides));
+		hides
+	}
 }
 
 /// Whether `ch` ends the current visual line. pdfium writes a line break as the pair `"\r\n"`,
@@ -152,13 +309,16 @@ fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	Line {
 		size: line_font_size(text_page, chars),
 		monospaced: line_is_monospaced(text_page, chars),
+		bold: line_is_bold(text_page, chars),
 		text: reorder_run(text_page, chars),
 		top,
 		bottom,
 	}
 }
 
-pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Vec<Line> {
+/// The page's visual lines. `evidence` holds the words of the pages read so far, for judging the
+/// hyphens pdfium finds at line ends (see [`keeps_line_end_hyphen`]); this page's are added to it.
+pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evidence: &mut HyphenEvidence) -> Vec<Line> {
 	let Some(char_count) = text_page.char_count() else {
 		tracing::warn!(
 			page_index,
@@ -173,6 +333,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 				top: f64::NEG_INFINITY,
 				bottom: f64::NEG_INFINITY,
 				monospaced: false,
+				bold: false,
 			})
 			.collect();
 	};
@@ -181,17 +342,24 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 	// reordered visual→logical (handles RTL scripts) before paragraph joining.
 	let mut current_chars: Vec<(char, i32)> = Vec::new();
 	let mut previous_char = None;
-	for i in 0..char_count {
-		let unicode = text_page.unicode_at(i);
-		let Some(ch) = char::from_u32(unicode) else { continue };
+	let spaces = SpaceFilter::new(char_count);
+	let page = page_chars(text_page, char_count);
+	let context = context_chars(&page);
+	evidence.add_chars(&context);
+	for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
+		let Some(ch) = ch else { continue };
 		if ends_line(ch, previous_char) {
 			let line = measure_line(text_page, &current_chars);
 			current_chars.clear();
 			result.push(line);
+		} else if ch == LINE_END_HYPHEN {
+			if keeps_line_end_hyphen(&context, at, evidence) {
+				current_chars.push(('-', i));
+			}
 		} else if ch == '\n' || (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			// The '\n' of a "\r\n" pair, and anything else with no text of its own: dropped, but
 			// still the previous character as far as the next `ends_line` is concerned.
-		} else if ch != ' ' || !is_invisible_space(text_page, i, char_count) {
+		} else if ch != ' ' || !spaces.hides(text_page, i) {
 			current_chars.push((ch, i));
 		}
 		previous_char = Some(ch);
@@ -199,7 +367,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32) -> Ve
 	if !current_chars.is_empty() {
 		result.push(measure_line(text_page, &current_chars));
 	}
-	result
+	restore_reading_order(result)
 }
 
 /// The top edge of a line, in PDF user units, taken from its first character. Y grows up the
@@ -289,6 +457,33 @@ fn char_is_monospaced(text_page: &PdfTextPage, index: i32) -> bool {
 	looks_monospaced(&font.name)
 }
 
+/// The weight from which a face counts as bold: semibold and up.
+const BOLD_WEIGHT: i32 = 600;
+
+/// Whether a font name belongs to a bold face, for a font whose weight pdfium cannot report. Names come subset-tagged as `ABCDEF+Arial-BoldMT`.
+fn looks_bold(font_name: &str) -> bool {
+	const HINTS: [&str; 5] = ["bold", "black", "heavy", "semibold", "demi"];
+	let name = font_name.rsplit('+').next().unwrap_or(font_name).to_ascii_lowercase();
+	HINTS.iter().any(|hint| name.contains(hint))
+}
+
+fn char_is_bold(text_page: &PdfTextPage, index: i32) -> bool {
+	if let Some(weight) = text_page.font_weight(index) {
+		return weight >= BOLD_WEIGHT;
+	}
+	text_page.font(index).is_some_and(|font| looks_bold(&font.name))
+}
+
+/// Whether a line is set in a bold face throughout, over the same handful of characters the size is measured across. All of them have to be: a paragraph that opens with a bold word is not a heading.
+fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
+	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+	if indices.is_empty() {
+		return false;
+	}
+	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
+	indices.iter().step_by(step).all(|&i| char_is_bold(text_page, i))
+}
+
 /// Whether a line is set in a monospaced face, over the same handful of characters the size is
 /// measured across. Most of them have to agree: one word of code quoted in a sentence of prose
 /// does not make the sentence a listing.
@@ -320,9 +515,211 @@ pub(super) fn median_line_font_size(line_infos: &[Line]) -> f64 {
 	sorted_median(&mut sizes)
 }
 
+/// How far above a page's first line other text has to sit, as a share of the height its text spans, before the page counts as drawn out of order. A running header drawn after the body sits well inside this, and a second column starts about where the first did.
+const OUT_OF_ORDER_SHARE: f64 = 0.25;
+
+/// Puts a page whose content stream starts partway down it back into top-down order. Some form generators draw the lower half of a page first, and an untagged page has only the stream to go on, so the form read from its middle. Only such a page is touched, and it is reordered by region, each a stretch the stream draws without leaving that part of the page, kept whole and placed by where it starts: every page drawn in order, columns included, comes back unchanged. Lines the stream draws first at the bottom of everything drawn after them, such as a footer, are not where it starts.
+fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
+	// A line with no position, such as an empty one, says nothing about the order and travels with the run it is drawn in.
+	let placed = |line: &&Line| line.top.is_finite() && line.bottom.is_finite();
+	// Walks back from the end keeping the lowest top drawn after each line, so this ends on the earliest line that has a lower one drawn after it.
+	let mut lowest_after = f64::INFINITY;
+	let mut first = None;
+	for line in lines.iter().rev().filter(placed) {
+		if line.top > lowest_after + COORDINATE_EPSILON {
+			first = Some(line);
+		}
+		lowest_after = lowest_after.min(line.top);
+	}
+	let Some(first) = first else { return lines };
+	let highest = lines.iter().filter(placed).map(|line| line.top).fold(f64::MIN, f64::max);
+	let lowest = lines.iter().filter(placed).map(|line| line.bottom).fold(f64::MAX, f64::min);
+	let far = (highest - lowest) * OUT_OF_ORDER_SHARE;
+	if far <= 0.0 || highest - first.top < far {
+		return lines;
+	}
+	let mut runs: Vec<(f64, Vec<Line>)> = Vec::new();
+	for line in lines {
+		// Only a jump across a good part of the page, up or down, leaves one region of it for another. A form steps back up a line or two all the time within a row, and the footer is drawn straight after whatever comes before it.
+		let previous = runs.last().and_then(|(_, run)| run.iter().rev().find(placed));
+		let jumps = placed(&&line) && previous.is_none_or(|prev| (line.top - prev.top).abs() > far);
+		match runs.last_mut() {
+			Some((_, run)) if !jumps => run.push(line),
+			_ => runs.push((if placed(&&line) { line.top } else { f64::MAX }, vec![line])),
+		}
+	}
+	runs.sort_by(|a, b| b.0.total_cmp(&a.0));
+	runs.into_iter().flat_map(|(_, run)| run).collect()
+}
+
 #[cfg(test)]
 mod tests {
-	use super::{CharBox, ends_line, looks_monospaced, sanitize_pdf_text, space_is_invisible};
+	use super::{
+		CharBox, Line, covering_hides, ends_line, keeps_hyphen, looks_monospaced, restore_reading_order,
+		sanitize_pdf_text, space_is_invisible,
+	};
+
+	/// pdfium marks a hyphen it finds at the end of a line with U+0002. An ordinary word split
+	/// across lines is joined, but a compound that merely wrapped keeps its hyphen: the SELVAS
+	/// NFB-NEWSLINE guide and the Mantis Q40 conformance report both lost real hyphens here.
+	#[test]
+	fn line_end_hyphens_are_kept_only_where_they_belong_to_the_word() {
+		assert_eq!(sanitize_pdf_text("sugges\u{0002}tion"), "suggestion");
+		assert_eq!(
+			sanitize_pdf_text("We have developed NFB\u{0002}NEWSLINE apps"),
+			"We have developed NFB-NEWSLINE apps"
+		);
+		assert_eq!(sanitize_pdf_text("a COVID\u{0002}19 update"), "a COVID-19 update");
+		// The page writes "non-web" elsewhere, so the wrapped one keeps its hyphen too.
+		assert_eq!(
+			sanitize_pdf_text("non-web software or non\u{0002}web documents"),
+			"non-web software or non-web documents"
+		);
+		// The page writes the word whole elsewhere, so the split is joined even next to a capital.
+		assert_eq!(sanitize_pdf_text("Braille notes. Braille\u{0002}Note"), "Braille notes. Braille-Note");
+		assert_eq!(sanitize_pdf_text("BrailleNote and Braille\u{0002}Note"), "BrailleNote and BrailleNote");
+	}
+
+	#[test]
+	fn hyphens_without_evidence_follow_the_shape_of_the_word() {
+		assert!(!keeps_hyphen("infor", "mation", None));
+		assert!(keeps_hyphen("NFB", "NEWSLINE", None));
+		assert!(keeps_hyphen("Victor", "Reader", None));
+		assert!(keeps_hyphen("MP3", "player", None));
+		assert!(!keeps_hyphen("", "word", None), "nothing before the hyphen: not a compound");
+	}
+
+	fn line(text: &str, top: f64) -> Line {
+		Line { text: text.to_string(), size: 10.0, top, bottom: top - 10.0, monospaced: false, bold: false }
+	}
+
+	fn texts(lines: &[Line]) -> Vec<&str> {
+		lines.iter().map(|line| line.text.as_str()).collect()
+	}
+
+	#[test]
+	fn a_page_drawn_top_down_keeps_its_order() {
+		let lines = vec![line("title", 700.0), line("one", 680.0), line("two", 660.0), line("three", 100.0)];
+		assert_eq!(texts(&restore_reading_order(lines)), ["title", "one", "two", "three"]);
+	}
+
+	#[test]
+	fn a_second_column_is_not_moved_ahead_of_the_first() {
+		let lines = vec![
+			line("left 1", 700.0),
+			line("left 2", 400.0),
+			line("left 3", 100.0),
+			line("right 1", 702.0),
+			line("right 2", 400.0),
+		];
+		assert_eq!(texts(&restore_reading_order(lines)), ["left 1", "left 2", "left 3", "right 1", "right 2"]);
+	}
+
+	#[test]
+	fn a_running_header_drawn_last_stays_where_the_stream_put_it() {
+		let lines = vec![line("body 1", 690.0), line("body 2", 400.0), line("body 3", 100.0), line("header", 740.0)];
+		assert_eq!(texts(&restore_reading_order(lines)), ["body 1", "body 2", "body 3", "header"]);
+	}
+
+	/// The shape of the ADA dental claim form: the stream starts at the table halfway down, reaches the bottom, then goes back for the top half, a column at a time, and draws the title last.
+	#[test]
+	fn a_form_drawn_from_its_middle_is_read_from_the_top() {
+		let lines = vec![
+			line("24. Procedure Date", 460.0),
+			line("35. Remarks", 330.0),
+			line("37. Authorize", 240.0),
+			line("48. Name", 130.0),
+			line("1. Type of Transaction", 720.0),
+			line("7. Gender", 610.0),
+			line("M F", 600.0),
+			line("8. Subscriber ID", 612.0),
+			line("11. Other Insurance", 520.0),
+			line("12. Policyholder Name", 690.0),
+			line("23. Patient ID", 500.0),
+			line("© American Dental Association", 40.0),
+			line("Dental Claim Form", 760.0),
+		];
+		assert_eq!(
+			texts(&restore_reading_order(lines)),
+			[
+				"Dental Claim Form",
+				"1. Type of Transaction",
+				"7. Gender",
+				"M F",
+				"8. Subscriber ID",
+				"11. Other Insurance",
+				"12. Policyholder Name",
+				"23. Patient ID",
+				"24. Procedure Date",
+				"35. Remarks",
+				"37. Authorize",
+				"48. Name",
+				"© American Dental Association",
+			]
+		);
+	}
+
+	/// The real form has an empty line with no position in it, which must not stop the page being put in order.
+	#[test]
+	fn a_line_with_no_position_does_not_keep_a_form_out_of_order() {
+		let empty = Line {
+			text: String::new(),
+			size: 0.0,
+			top: f64::NEG_INFINITY,
+			bottom: f64::NEG_INFINITY,
+			monospaced: false,
+			bold: false,
+		};
+		let lines = vec![
+			line("24. Procedure Date", 450.0),
+			empty,
+			line("35. Remarks", 330.0),
+			line("1. Type of Transaction", 720.0),
+		];
+		assert_eq!(
+			texts(&restore_reading_order(lines)),
+			["1. Type of Transaction", "24. Procedure Date", "", "35. Remarks"]
+		);
+	}
+
+	/// The shape of a magazine page: the master page's footer lines come first, then the header, both columns top-down, and the title, intro and pull quote last. The intro sits above the first column, so the second column starts higher than the first.
+	#[test]
+	fn a_footer_drawn_first_does_not_reorder_the_columns() {
+		let stream = [
+			("folio", 38.0),
+			("footer", 38.0),
+			("header", 811.0),
+			("left 1", 395.0),
+			("left 2", 250.0),
+			("left 3", 83.0),
+			("right 1", 573.0),
+			("right 2", 400.0),
+			("right 3", 250.0),
+			("right 4", 83.0),
+			("title", 710.0),
+			("lead", 585.0),
+			("pull quote", 415.0),
+		];
+		let lines = stream.iter().map(|&(text, top)| line(text, top)).collect();
+		let expected: Vec<&str> = stream.iter().map(|&(text, _)| text).collect();
+		assert_eq!(texts(&restore_reading_order(lines)), expected);
+	}
+
+	#[test]
+	fn a_form_with_its_footer_drawn_first_is_still_read_from_the_top() {
+		let lines = vec![
+			line("footer", 40.0),
+			line("middle 1", 460.0),
+			line("middle 2", 330.0),
+			line("middle 3", 200.0),
+			line("top 1", 720.0),
+			line("top 2", 600.0),
+		];
+		assert_eq!(
+			texts(&restore_reading_order(lines)),
+			["top 1", "top 2", "middle 1", "middle 2", "middle 3", "footer"]
+		);
+	}
 
 	/// The coordinates below come from what pdfium reports for the PDF attached to #808, so the
 	/// ratios each case turns on are the ones real pages produce.
@@ -357,6 +754,16 @@ mod tests {
 		// The advance alone looks ordinary here, so only the ligature's box gives it away.
 		assert!(!space_is_invisible((287.34, 387.61), space, Some((290.12, 387.61)), None));
 		assert!(space_is_invisible((287.34, 387.61), space, None, Some(char_box(284.87, 289.77, 387.61, 394.44))));
+	}
+
+	/// Shares of covered spaces measured on pages of both PDFs: #808's, where a covered space is a split ligature, and #993's, whose glyph boxes overhang nearly every space.
+	#[test]
+	fn covering_hides_a_space_only_where_covered_spaces_are_rare() {
+		assert!(covering_hides(4, 229), "#808 page 4");
+		assert!(covering_hides(12, 362), "#808 page 26, its most");
+		assert!(!covering_hides(338, 386), "#993 page 4");
+		assert!(!covering_hides(95, 153), "#993 page 2, its fewest");
+		assert!(covering_hides(0, 0), "a page with no spaces to measure");
 	}
 
 	/// "name of paper": an `f` overhangs the space after it by more than half its width, and that

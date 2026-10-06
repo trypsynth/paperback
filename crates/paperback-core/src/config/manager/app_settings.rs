@@ -24,10 +24,12 @@ impl ConfigManager {
 			"word_wrap" => data.app.word_wrap,
 			"render_tables_inline" => data.app.render_tables_inline,
 			"join_pdf_paragraphs" => data.app.join_pdf_paragraphs,
+			"strip_running_text" => data.app.strip_running_text,
 			"navigation_wrap" => data.app.navigation_wrap,
 			"find_match_case" => data.app.find_match_case,
 			"find_whole_word" => data.app.find_whole_word,
 			"find_use_regex" => data.app.find_use_regex,
+			"highlight_found_text" => data.app.highlight_found_text,
 			_ => data.app.extra.get(key).and_then(toml::Value::as_bool).unwrap_or(default_value),
 		}
 	}
@@ -80,10 +82,12 @@ impl ConfigManager {
 				"word_wrap" => data.app.word_wrap = value,
 				"render_tables_inline" => data.app.render_tables_inline = value,
 				"join_pdf_paragraphs" => data.app.join_pdf_paragraphs = value,
+				"strip_running_text" => data.app.strip_running_text = value,
 				"navigation_wrap" => data.app.navigation_wrap = value,
 				"find_match_case" => data.app.find_match_case = value,
 				"find_whole_word" => data.app.find_whole_word = value,
 				"find_use_regex" => data.app.find_use_regex = value,
+				"highlight_found_text" => data.app.highlight_found_text = value,
 				_ => {
 					data.app.extra.insert(key.to_string(), toml::Value::Boolean(value));
 				}
@@ -129,6 +133,24 @@ mod tests {
 		assert!(config.get_app_bool("join_pdf_paragraphs", true));
 		config.set_app_bool("join_pdf_paragraphs", false);
 		assert!(!config.get_app_bool("join_pdf_paragraphs", true));
+	}
+
+	#[test]
+	fn strip_running_text_round_trips() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		assert!(config.get_app_bool("strip_running_text", true));
+		config.set_app_bool("strip_running_text", false);
+		assert!(!config.get_app_bool("strip_running_text", true));
+	}
+
+	#[test]
+	fn highlight_found_text_round_trips() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		assert!(config.get_app_bool("highlight_found_text", true));
+		config.set_app_bool("highlight_found_text", false);
+		assert!(!config.get_app_bool("highlight_found_text", true));
 	}
 
 	#[test]

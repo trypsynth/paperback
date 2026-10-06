@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use encoding_rs::Encoding;
 use libchm::{ChmFile, Entry};
 use rayon::prelude::*;
 
@@ -11,7 +12,7 @@ use crate::{
 	types::{
 		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
 	},
-	util::encoding::convert_to_utf8,
+	util::encoding::decode_html,
 };
 
 /// One converted HTML file: its text plus everything the converter recorded about it.
@@ -86,6 +87,7 @@ pub(super) fn convert_sections(
 	ordered_files: &[String],
 	entries_by_path: &HashMap<String, Entry>,
 	render_tables_inline: bool,
+	encoding: Option<&'static Encoding>,
 ) -> Vec<Result<SectionContent, String>> {
 	ordered_files
 		.par_iter()
@@ -103,16 +105,20 @@ pub(super) fn convert_sections(
 				if content_bytes.is_empty() {
 					return Err(format!("{file_path} (entry is empty)"));
 				}
-				convert_section(&content_bytes, render_tables_inline)
+				convert_section(&content_bytes, render_tables_inline, encoding)
 					.ok_or_else(|| format!("{file_path} (html conversion failed)"))
 			},
 		)
 		.collect()
 }
 
-/// Convert one file's raw bytes to text, transcoding to UTF-8 first.
-fn convert_section(content_bytes: &[u8], render_tables_inline: bool) -> Option<SectionContent> {
-	let utf8_content = convert_to_utf8(content_bytes);
+/// Convert one file's raw bytes to text, decoding them to UTF-8 first.
+fn convert_section(
+	content_bytes: &[u8],
+	render_tables_inline: bool,
+	encoding: Option<&'static Encoding>,
+) -> Option<SectionContent> {
+	let utf8_content = decode_html(content_bytes, encoding);
 	let mut converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	// currently always true, HtmlToText::convert has no failure path today
 	if !converter.convert(&utf8_content, HtmlSourceMode::NativeHtml) {

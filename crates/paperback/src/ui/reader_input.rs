@@ -4,17 +4,25 @@
 //! through the document manager to reach the active tab, which is the tab whose control has
 //! focus.
 
-use std::{rc::Rc, sync::Mutex};
+use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use paperback_core::config::ActionId;
 use patois::t;
-use wxdragon::prelude::*;
+use wxdragon::{event::KeyboardEvent, prelude::*};
 
 use super::{
-	document_manager::{DocumentManager, DocumentTab},
-	menu_ids,
+	document_manager::{DocumentManager, DocumentTab, tab_index_for_key},
+	menu, menu_ids,
 	text_render::reload_window_around,
 };
+
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "windows")]
+mod windows;
+
+#[cfg(target_os = "windows")]
+use windows::try_navigate_line_by_column;
 
 /// Builds the reading control and binds everything it responds to.
 pub(super) fn build_text_ctrl(
@@ -22,6 +30,7 @@ pub(super) fn build_text_ctrl(
 	word_wrap: bool,
 	self_rc: &Rc<Mutex<DocumentManager>>,
 	frame: Frame,
+	from_keyboard: Rc<Cell<bool>>,
 ) -> TextCtrl {
 	let style = TextCtrlStyle::MultiLine
 		| TextCtrlStyle::ReadOnly
@@ -29,6 +38,7 @@ pub(super) fn build_text_ctrl(
 		| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
 	let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
 	let dm_for_enter = Rc::clone(self_rc);
+	let frame_for_char = frame;
 	text_ctrl.on_char(move |event| {
 		if let WindowEventData::Keyboard(kbd) = event {
 			if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
@@ -65,25 +75,13 @@ pub(super) fn build_text_ctrl(
 					let mut dm = dm_for_enter.lock().unwrap();
 					dm.activate_current_link();
 				}
+			} else if let Some(action) = shortcut_for_shifted_character(&kbd, &dm_for_enter) {
+				run_shortcut(action, &dm_for_enter, &frame_for_char);
 			} else {
 				kbd.event.skip(true);
 			}
 		}
 	});
-	// Ctrl+C is intercepted here rather than through the Edit menu because that menu only
-	// exists on macOS; elsewhere the control handles the key itself and no menu event fires.
-	#[cfg(not(target_os = "macos"))]
-	{
-		let dm_for_copy = Rc::clone(self_rc);
-		text_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
-			let handled = event.get_key_code() == Some(i32::from(b'C'))
-				&& event.control_down()
-				&& dm_for_copy.try_lock().is_ok_and(|dm| dm.copy_whole_document_if_all_selected());
-			if !handled {
-				event.skip(true);
-			}
-		});
-	}
 	let dm_for_key_up = Rc::clone(self_rc);
 	text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
 		event.skip(true);
@@ -127,6 +125,18 @@ pub(super) fn build_text_ctrl(
 				show_reader_context_menu(text_ctrl_for_menu);
 				return;
 			}
+			// Ctrl+C is intercepted here because the reading control consumes it in its own window procedure, before wx consults the accelerator table, so it never becomes a menu command and the handler Edit > Copy reaches never runs for the keystroke. Raising the same command a click produces is what makes the two ways of copying behave identically.
+			// The mark is set here rather than by `bind_key_source`'s CHAR_HOOK, which resolves a key through the ActionIds and finds nothing for a wxWidgets stock command; without it the announcement is deferred as though a menu had been clicked, and read over by the focus chain returning to the book. It is cleared again when the command goes unhandled, so a Ctrl+C that reaches nothing cannot leave the mark set for the next click.
+			// macOS leaves Ctrl+C to the native copy, which is reached before this handler.
+			#[cfg(not(target_os = "macos"))]
+			if is_copy_key(key, kbd) {
+				kbd.event.skip(false);
+				from_keyboard.set(true);
+				if !frame_for_keys.process_menu_command(menu_ids::COPY) {
+					from_keyboard.set(false);
+				}
+				return;
+			}
 			if let Some(to_end) = document_edge_for_key(key, kbd.control_down(), kbd.shift_down(), kbd.alt_down()) {
 				kbd.event.skip(false);
 				if let Ok(mut dm) = dm_for_keys.try_lock() {
@@ -157,6 +167,28 @@ pub(super) fn build_text_ctrl(
 				}
 				return;
 			}
+			#[cfg(target_os = "macos")]
+			if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
+				let handled = dm_for_keys.try_lock().is_ok_and(|mut dm| {
+					let start_of_line = dm.config.lock().unwrap().get_app_bool("line_start_navigation", false);
+					if !start_of_line {
+						return false;
+					}
+					let new_pos =
+						dm.active_tab_mut().and_then(|tab| navigate_line_by_column(tab, key == WXK_DOWN, None, true));
+					if let Some((new_pos, _)) = new_pos {
+						macos::set_line_start(text_ctrl_for_menu, new_pos);
+						dm.update_status_bar();
+						true
+					} else {
+						false
+					}
+				});
+				if handled {
+					kbd.event.skip(false);
+					return;
+				}
+			}
 			#[cfg(target_os = "windows")]
 			if let Ok(dm) = dm_for_keys.try_lock() {
 				dm.set_preferred_column(None);
@@ -170,50 +202,41 @@ pub(super) fn build_text_ctrl(
 				}
 			};
 			if let Some(act) = action {
-				match act {
-					ActionId::AnnouncePercent => {
-						kbd.event.skip(false);
-						if let Ok(dm) = dm_for_keys.try_lock() {
-							dm.announce_current_percent();
-						}
-						return;
+				// Alt chords are normally left to wxWidgets to resolve as menu
+				// accelerators, which is how Alt+Left gets to the navigation history.
+				// The selection commands are dispatched here as well because F10 means
+				// "activate the menu bar" to Windows, so whether Alt+F10 ever reaches the
+				// accelerator table on every platform is not something to bet a shortcut
+				// on. The two routes cannot both run: a keystroke the accelerator consumed
+				// never arrives here at all.
+				let plain = !kbd.control_down() && !kbd.alt_down();
+				if menu::is_keyboard_only(act) || plain || is_selection_command(act) || cfg!(target_os = "linux") {
+					kbd.event.skip(false);
+					if menu::is_keyboard_only(act) {
+						// A keyboard-only command has no menu item, so the key never becomes a menu command and the
+						// dispatcher never reads the mark off one. Clear it here instead, so a key
+						// that led nowhere cannot leave it set for the next menu click.
+						from_keyboard.set(false);
 					}
-					ActionId::SetTemporaryBookmark => {
-						kbd.event.skip(false);
-						if let Ok(dm) = dm_for_keys.try_lock() {
-							dm.set_temporary_bookmark();
-						}
-						return;
-					}
-					ActionId::JumpToTemporaryBookmark => {
-						kbd.event.skip(false);
-						if let Ok(mut dm) = dm_for_keys.try_lock() {
-							dm.jump_to_temporary_bookmark();
-						}
-						return;
-					}
-					_ => {
-						// Alt chords are normally left to wxWidgets to resolve as menu
-						// accelerators, which is how Alt+Left gets to the navigation history.
-						// The selection commands are dispatched here as well because F10 means
-						// "activate the menu bar" to Windows, so whether Alt+F10 ever reaches the
-						// accelerator table on every platform is not something to bet a shortcut
-						// on. The two routes cannot both run: a keystroke the accelerator consumed
-						// never arrives here at all.
-						let alt_dispatched = matches!(
-							act,
-							ActionId::SetSelectionStart
-								| ActionId::CopyFromSelectionStart
-								| ActionId::JumpToSelectionStart
-						);
-						if !kbd.control_down() && !kbd.alt_down() || alt_dispatched || cfg!(target_os = "linux") {
-							let menu_id = menu_ids::action_to_menu_id(act);
-							kbd.event.skip(false);
-							frame_for_keys.process_menu_command(menu_id);
-							return;
-						}
-					}
+					run_shortcut(act, &dm_for_keys, &frame_for_keys);
+					return;
 				}
+			}
+			// Ctrl+1 through Ctrl+9 jump to the first nine open documents. Deliberately after the
+			// shortcut table rather than before it: a reader who has deliberately bound one of
+			// these chords to something of their own keeps it, and gets no tab switch rather than a
+			// switch that overrode them. No default binds any of these chords, so this is reached
+			// on a stock configuration.
+			//
+			// The title is announced by `switch_to_tab` itself, not by the notebook's
+			// page-changing handler, because the lock this call holds is the one that handler
+			// needs in order to announce at all.
+			if let Some(index) = tab_index_for_key(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
+				kbd.event.skip(false);
+				if let Ok(dm) = dm_for_keys.try_lock() {
+					dm.switch_to_tab(index);
+				}
+				return;
 			}
 		}
 		event.skip(true);
@@ -224,6 +247,43 @@ pub(super) fn build_text_ctrl(
 		show_reader_context_menu(text_ctrl_for_right_click);
 	});
 	text_ctrl
+}
+
+const fn is_selection_command(action: ActionId) -> bool {
+	matches!(action, ActionId::SetSelectionStart | ActionId::CopyFromSelectionStart | ActionId::JumpToSelectionStart)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn is_copy_key(key: i32, kbd: &KeyboardEvent) -> bool {
+	is_copy_chord(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down())
+}
+
+/// Plain Control+C only; Ctrl+Shift+C and Ctrl+Alt+C are left to the reader, who may have bound one of those to something of their own. Its own function of the key and the modifiers so it can be tested without a `KeyboardEvent`, which cannot be built outside a running app.
+#[cfg(not(target_os = "macos"))]
+const fn is_copy_chord(key: i32, control: bool, alt: bool, shift: bool) -> bool {
+	key == 'C' as i32 && control && !alt && !shift
+}
+
+fn run_shortcut(action: ActionId, dm: &Rc<Mutex<DocumentManager>>, frame: &Frame) {
+	let Ok(dm) = dm.try_lock() else { return };
+	if action == ActionId::AnnouncePercent {
+		dm.announce_current_percent();
+	} else {
+		drop(dm);
+		frame.process_menu_command(menu_ids::action_to_menu_id(action));
+	}
+}
+
+/// A shortcut on a punctuation key the reader's layout can only type with Shift, such as `=` and `'` on a Japanese keyboard, where they are Shift+- and Shift+7. The key-down handler matches the key itself, which there is `-` with Shift and so no shortcut; the character it types is what the shortcut names. Punctuation only, so Shift and a letter never runs the letter's own shortcut.
+fn shortcut_for_shifted_character(kbd: &KeyboardEvent, dm: &Rc<Mutex<DocumentManager>>) -> Option<ActionId> {
+	if !kbd.shift_down() || kbd.control_down() || kbd.alt_down() {
+		return None;
+	}
+	let code = kbd.get_unicode_key().and_then(|code| u32::try_from(code).ok())?;
+	let typed = char::from_u32(code).filter(char::is_ascii_punctuation)?;
+	let dm = dm.try_lock().ok()?;
+	let config = dm.config.lock().unwrap();
+	config.get_shortcuts().find_action(i32::from(typed as u8), false, false, false)
 }
 
 /// Whether a key moves the caret through the text one piece at a time, rather than jumping it
@@ -263,38 +323,6 @@ const fn document_edge_for_key(key: i32, control: bool, shift: bool, alt: bool) 
 	}
 }
 
-/// One line-vertical-navigation attempt within whatever's currently loaded in `tab.text_ctrl`.
-/// Returns `None` (outer) if the current position has no known line/column (shouldn't happen in
-/// practice), `Some(None)` if the target line falls outside what's currently loaded - the caller
-/// checks whether there's more document in that direction and, if so, reloads and retries - or
-/// `Some(Some(..))` on success.
-#[cfg(target_os = "windows")]
-fn try_navigate_line_by_column(
-	tab: &DocumentTab,
-	going_down: bool,
-	pref_col: Option<i64>,
-	start_of_line: bool,
-) -> Option<Option<(i64, i64)>> {
-	let text_ctrl = tab.text_ctrl;
-	let current_pos = text_ctrl.get_insertion_point().max(0);
-	let (current_col, current_line) = text_ctrl.position_to_xy(current_pos)?;
-	let col = pref_col.unwrap_or(current_col);
-	let target_line = if going_down { current_line + 1 } else { current_line - 1 };
-	if target_line < 0 {
-		return Some(None);
-	}
-	let target_line_start = text_ctrl.xy_to_position(0, target_line);
-	if target_line_start < 0 {
-		return Some(None);
-	}
-	if start_of_line {
-		return Some(Some((target_line_start, 0)));
-	}
-	let target_line_len = i64::from(text_ctrl.get_line_length(target_line));
-	let new_pos = target_line_start + col.min(target_line_len);
-	Some(Some((new_pos, col)))
-}
-
 /// Returns (`new_position`, `preferred_column`) for vertical navigation.
 /// With `start_of_line` set, the caret lands at the start of the target visual line. Otherwise it
 /// uses character-column-based navigation (`pref_col` or the current column), so the cursor lands on
@@ -305,7 +333,7 @@ fn try_navigate_line_by_column(
 /// which RichEdit handles natively with no window awareness at all) can strand the caret mid-chapter
 /// with no keyboard-only way past it except an explicit jump (heading/bookmark navigation etc.) -
 /// found the hard way testing a huge book, not something worth leaving as a TODO.
-#[cfg(target_os = "windows")]
+#[cfg(any(target_os = "windows", target_os = "macos"))]
 fn navigate_line_by_column(
 	tab: &mut DocumentTab,
 	going_down: bool,
@@ -325,6 +353,16 @@ fn navigate_line_by_column(
 	let local = tab.window.to_local(doc_pos);
 	tab.text_ctrl.set_insertion_point(local);
 	try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)?
+}
+
+#[cfg(target_os = "macos")]
+fn try_navigate_line_by_column(
+	tab: &DocumentTab,
+	going_down: bool,
+	_pref_col: Option<i64>,
+	_start_of_line: bool,
+) -> Option<Option<(i64, i64)>> {
+	macos::try_adjacent_line_start(tab.text_ctrl, going_down)
 }
 
 fn show_reader_context_menu(text_ctrl: TextCtrl) {
@@ -350,4 +388,27 @@ fn show_reader_context_menu(text_ctrl: TextCtrl) {
 		.append_item(menu_ids::GO_TO_PERCENT, &t("Go to &percent"), &t("Go to percent"))
 		.build();
 	text_ctrl.popup_menu(&mut menu, None);
+}
+
+#[cfg(all(test, not(target_os = "macos")))]
+mod tests {
+	use super::is_copy_chord;
+
+	const C: i32 = 'C' as i32;
+
+	/// The intercept has to recognise exactly Ctrl+C, or it would take a chord the reader bound to something else.
+	#[test]
+	fn only_plain_control_c_is_the_copy_key() {
+		assert!(is_copy_chord(C, true, false, false), "Ctrl+C is the copy key");
+		assert!(!is_copy_chord(C, false, false, false), "a bare C types a c");
+		assert!(!is_copy_chord(C, true, true, false), "Ctrl+Alt+C may be the reader's own");
+		assert!(!is_copy_chord(C, true, false, true), "Ctrl+Shift+C may be the reader's own");
+	}
+
+	/// Only the letter, so a neighbouring key on the keyboard is not mistaken for it.
+	#[test]
+	fn only_the_letter_c_is_the_copy_key() {
+		assert!(!is_copy_chord('V' as i32, true, false, false), "Ctrl+V pastes");
+		assert!(!is_copy_chord('X' as i32, true, false, false), "Ctrl+X cuts");
+	}
 }

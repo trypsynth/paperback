@@ -1,10 +1,8 @@
-//! The loaded-window management for a document: keeping the text control's slice of a large
-//! document ahead of a forward read, compacting it when the caret runs out of text behind it or
-//! the layout changes, copying the whole document when a windowed Select All only reached a slice,
-//! and jumping to the true document edges rather than the loaded window's. Split out of the main
-//! `DocumentManager` impl; see [`super`] for the windowing model in `text_window`.
+//! The loaded-window management for a document: keeping the text control's slice of a large document ahead of a forward read, compacting it when the caret runs out of text behind it or the layout changes, copying the whole document when a windowed Select All only reached a slice, and jumping to the true document edges rather than the loaded window's. Split out of the main `DocumentManager` impl; see [`super`] for the windowing model in `text_window`.
 
-use wxdragon::{clipboard::Clipboard, prelude::*};
+#[cfg(target_os = "macos")]
+use wxdragon::clipboard::Clipboard;
+use wxdragon::prelude::*;
 
 use super::{DocumentManager, DocumentTab};
 use crate::{
@@ -99,32 +97,23 @@ impl DocumentManager {
 		tab.text_ctrl.show_position(local);
 	}
 
-	/// Copies the current selection, widening it to the whole document when everything loaded is
-	/// selected but only part of the document is.
+	/// Copies the current selection, widening it to the whole document when everything loaded is selected but only part of the document is. Select All can only ever reach what the control holds, which for a windowed document is a slice of the book rather than the book, so a selection covering all of it means all of it in the only sense the user has. Keyed off the selection rather than a remembered Select All, so clicking anywhere collapses it and this stops applying on its own with no flag to keep in step.
 	///
-	/// Select All can only ever reach what the control holds, which for a windowed document is a
-	/// slice of the book rather than the book. The window is not something a reader can see, name
-	/// or reason about, so a selection covering all of it means all of it in the only sense the
-	/// user has - and copying half a chapter when they asked for the book is a silent wrong answer.
-	///
-	/// Deliberately keyed off the selection rather than a remembered Select All: clicking anywhere
-	/// collapses the selection, so this stops applying on its own with no flag to keep in step.
-	///
-	/// Returns whether it copied. False means nothing special applied and the caller should let
-	/// the control's own copy run.
+	/// macOS only, where the copy is the native one and this is what widens it. Elsewhere the copy runs through `menu_edit::handle_copy`, which reaches the whole document through `text_to_copy` instead. Returns whether it copied; false means the caller should let the control's own copy run.
+	#[cfg(target_os = "macos")]
 	pub fn copy_whole_document_if_all_selected(&self) -> bool {
 		let Some(tab) = self.active_tab() else {
 			return false;
 		};
-		let (from, to) = tab.text_ctrl.get_selection();
-		if from >= to {
-			return false;
-		}
 		let doc_len = tab.session.document_len();
 		// Only the widened case is handled here. Anything else is left to the control's own copy,
 		// which is better tested than anything this could put in its place.
-		let covers_everything_loaded = from <= 0 && to >= tab.text_ctrl.get_last_position();
-		if !covers_everything_loaded || tab.window.is_whole_document(doc_len) {
+		let source = copy_source(
+			tab.text_ctrl.get_selection(),
+			tab.text_ctrl.get_last_position(),
+			tab.window.is_whole_document(doc_len),
+		);
+		if source != CopySource::WholeDocument {
 			return false;
 		}
 		let text = tab.session.get_text_range(0, doc_len);
@@ -132,6 +121,26 @@ impl DocumentManager {
 			return false;
 		}
 		Clipboard::get().set_text(&text)
+	}
+
+	/// The text Edit > Copy puts on the clipboard: the control's selection, or the whole document
+	/// when everything loaded is selected but only part of the document is loaded. `None` when
+	/// nothing is selected.
+	#[cfg(not(target_os = "macos"))]
+	pub fn text_to_copy(&self) -> Option<String> {
+		let tab = self.active_tab()?;
+		let doc_len = tab.session.document_len();
+		let source = copy_source(
+			tab.text_ctrl.get_selection(),
+			tab.text_ctrl.get_last_position(),
+			tab.window.is_whole_document(doc_len),
+		);
+		let text = match source {
+			CopySource::Nothing => return None,
+			CopySource::Selection => tab.text_ctrl.get_string_selection(),
+			CopySource::WholeDocument => tab.session.get_text_range(0, doc_len),
+		};
+		(!text.is_empty()).then_some(text)
 	}
 
 	/// Collapses a window that grew during a long read back to target size around the caret.
@@ -223,5 +232,53 @@ impl DocumentManager {
 			(tab.track, update)
 		};
 		persist_navigation_history(&self.config, track.then_some(&update));
+	}
+}
+
+/// What a copy takes from the reading control.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CopySource {
+	Nothing,
+	/// The text selected in the control.
+	Selection,
+	/// The whole document, of which the control holds only part.
+	WholeDocument,
+}
+
+/// What copying `selection` takes, for a control holding text up to `last_position` that is the
+/// whole document or only part of it.
+pub const fn copy_source(selection: (i64, i64), last_position: i64, window_is_whole_document: bool) -> CopySource {
+	let (from, to) = selection;
+	if from >= to {
+		CopySource::Nothing
+	} else if from <= 0 && to >= last_position && !window_is_whole_document {
+		CopySource::WholeDocument
+	} else {
+		CopySource::Selection
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{CopySource, copy_source};
+
+	#[test]
+	fn nothing_selected_copies_nothing() {
+		assert_eq!(copy_source((5, 5), 100, false), CopySource::Nothing);
+	}
+
+	#[test]
+	fn part_of_the_loaded_text_copies_the_selection() {
+		assert_eq!(copy_source((10, 20), 100, false), CopySource::Selection);
+	}
+
+	#[test]
+	fn all_loaded_text_of_a_partly_loaded_document_copies_the_whole_document() {
+		assert_eq!(copy_source((0, 100), 100, false), CopySource::WholeDocument);
+	}
+
+	#[test]
+	fn all_text_of_a_fully_loaded_document_copies_the_selection() {
+		assert_eq!(copy_source((0, 100), 100, true), CopySource::Selection);
 	}
 }

@@ -11,7 +11,7 @@ use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
-	config_ext::{UpdateChannel, get_update_channel},
+	config_ext::{LogLevel, UpdateChannel, get_log_level, get_update_channel},
 	translation_manager::TranslationManager,
 };
 
@@ -34,11 +34,13 @@ pub struct OptionsDialogResult {
 	pub word_wrap: bool,
 	pub render_tables_inline: bool,
 	pub join_pdf_paragraphs: bool,
+	pub strip_running_text: bool,
 	pub minimize_to_tray: bool,
 	pub start_maximized: bool,
 	pub compact_go_menu: bool,
 	pub navigation_wrap: bool,
 	pub line_start_navigation: bool,
+	pub highlight_found_text: bool,
 	pub check_for_updates_on_startup: bool,
 	pub bookmark_sounds: bool,
 	pub sync_caret_to_audio: bool,
@@ -49,6 +51,7 @@ pub struct OptionsDialogResult {
 	pub reading_speed_wpm: i32,
 	pub language: String,
 	pub update_channel: UpdateChannel,
+	pub log_level: LogLevel,
 	pub hotkey: HotkeyConfig,
 	pub shortcuts: ShortcutsConfig,
 	pub readability_font: ReadabilityFont,
@@ -66,11 +69,13 @@ struct OptionsDialogUi {
 	word_wrap_check: CheckBox,
 	render_tables_inline_check: CheckBox,
 	join_pdf_paragraphs_check: CheckBox,
+	strip_running_text_check: CheckBox,
 	minimize_to_tray_check: CheckBox,
 	start_maximized_check: CheckBox,
 	compact_go_menu_check: CheckBox,
 	navigation_wrap_check: CheckBox,
 	line_start_nav_check: CheckBox,
+	highlight_found_text_check: CheckBox,
 	check_for_updates_check: CheckBox,
 	bookmark_sounds_check: CheckBox,
 	sync_caret_to_audio_check: CheckBox,
@@ -81,6 +86,7 @@ struct OptionsDialogUi {
 	reading_speed_ctrl: SpinCtrl,
 	language_combo: Choice,
 	update_channel_combo: Choice,
+	log_level_combo: Choice,
 	language_codes: Vec<String>,
 	current_language: String,
 	ok_button: Button,
@@ -106,6 +112,8 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		Some(1) => UpdateChannel::Dev,
 		_ => UpdateChannel::Stable,
 	};
+	let chosen_level = ui.log_level_combo.get_selection().and_then(|index| LogLevel::ALL.get(index as usize).copied());
+	let log_level = chosen_level.unwrap_or_default();
 	let readability_font = ui.readability_font.borrow().clone();
 	let line_spacing = ui.line_spacing_ctrl.get_selection().unwrap_or(0) as i32;
 	let bg_color = ui.bg_color.get();
@@ -122,11 +130,13 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		word_wrap: ui.word_wrap_check.is_checked(),
 		render_tables_inline: ui.render_tables_inline_check.is_checked(),
 		join_pdf_paragraphs: ui.join_pdf_paragraphs_check.is_checked(),
+		strip_running_text: ui.strip_running_text_check.is_checked(),
 		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
 		start_maximized: ui.start_maximized_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
 		navigation_wrap: ui.navigation_wrap_check.is_checked(),
 		line_start_navigation: ui.line_start_nav_check.is_checked(),
+		highlight_found_text: ui.highlight_found_text_check.is_checked(),
 		check_for_updates_on_startup: ui.check_for_updates_check.is_checked(),
 		bookmark_sounds: ui.bookmark_sounds_check.is_checked(),
 		sync_caret_to_audio: ui.sync_caret_to_audio_check.is_checked(),
@@ -137,6 +147,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
 		language,
 		update_channel,
+		log_level,
 		hotkey: ui.hotkey.borrow().clone(),
 		shortcuts: ui.shortcuts.borrow().clone(),
 		readability_font,
@@ -174,8 +185,12 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
 	let join_pdf_paragraphs_check = CheckBox::builder(&readability_panel)
-		// TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+		// TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
 		.with_label(&t("&Join wrapped lines into paragraphs in PDFs"))
+		.build();
+	let strip_running_text_check = CheckBox::builder(&readability_panel)
+		// TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+		.with_label(&t("Remove repeated page &headers and footers in PDFs"))
 		.build();
 	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
@@ -184,6 +199,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let line_start_nav_check =
 		// TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
 		CheckBox::builder(&reading_panel).with_label(&t("Move to &start of line")).build();
+	let highlight_found_text_check = CheckBox::builder(&reading_panel)
+		// TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+		.with_label(&t("&Highlight found text"))
+		.build();
 	let bookmark_sounds_check =
 		// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
@@ -242,6 +261,18 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
+	// TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+	let log_level_label_text = t("Log Level:");
+	let log_level_label = StaticText::builder(&general_panel).with_label(&log_level_label_text).build();
+	let log_level_combo = Choice::builder(&general_panel).build();
+	for level in LogLevel::ALL {
+		log_level_combo.append(&log_level_name(level));
+	}
+	#[cfg(target_os = "macos")]
+	log_level_combo.set_accessibility_label(log_level_label_text.replace('&', "").trim_end_matches(':').trim());
+	let log_level_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	log_level_sizer.add(&log_level_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	log_level_sizer.add(&log_level_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	// Global window hotkeys are a Windows-only concept (see start_hotkey_listener in
 	// main_window.rs); macOS and Linux have no equivalent, so this button isn't built there.
 	#[cfg(target_os = "windows")]
@@ -259,12 +290,14 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	minimize_to_tray_check.show(false);
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
+	general_sizer.add_sizer(&log_level_sizer, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&shortcuts_button, 0, SizerFlag::All, option_padding);
 	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
 	reading_sizer.add(&line_start_nav_check, 0, SizerFlag::All, option_padding);
+	reading_sizer.add(&highlight_found_text_check, 0, SizerFlag::All, option_padding);
 	for check in [&compact_go_menu_check, &bookmark_sounds_check, &sync_caret_to_audio_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
@@ -407,6 +440,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&join_pdf_paragraphs_check, 0, SizerFlag::All, option_padding);
+	readability_sizer.add(&strip_running_text_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&paragraph_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&letter_spacing_sizer, 0, SizerFlag::All, option_padding);
@@ -436,11 +470,13 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
 	join_pdf_paragraphs_check.set_value(config.get_app_bool("join_pdf_paragraphs", true));
+	strip_running_text_check.set_value(config.get_app_bool("strip_running_text", true));
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
 	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
+	highlight_found_text_check.set_value(config.get_app_bool("highlight_found_text", true));
 	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
 	sync_caret_to_audio_check.set_value(config.get_app_bool("sync_caret_to_audio", true));
 	let stored_seek_amount = config.get_app_int("audio_seek_amount_seconds", 10);
@@ -471,6 +507,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		UpdateChannel::Dev => 1,
 	};
 	update_channel_combo.set_selection(channel_index);
+	let log_level_index = LogLevel::ALL.iter().position(|level| *level == get_log_level(config)).unwrap_or(0);
+	log_level_combo.set_selection(u32::try_from(log_level_index).unwrap_or(0));
 	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
 	#[cfg(target_os = "windows")]
 	{
@@ -562,11 +600,13 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		word_wrap_check,
 		render_tables_inline_check,
 		join_pdf_paragraphs_check,
+		strip_running_text_check,
 		minimize_to_tray_check,
 		start_maximized_check,
 		compact_go_menu_check,
 		navigation_wrap_check,
 		line_start_nav_check,
+		highlight_found_text_check,
 		check_for_updates_check,
 		bookmark_sounds_check,
 		sync_caret_to_audio_check,
@@ -577,6 +617,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		reading_speed_ctrl,
 		language_combo,
 		update_channel_combo,
+		log_level_combo,
 		language_codes,
 		current_language,
 		ok_button,
@@ -603,4 +644,21 @@ fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
 fn resolve_options_language(ui: &OptionsDialogUi) -> String {
 	patois::ui::resolve_language_choice(&ui.language_combo, &ui.language_codes)
 		.unwrap_or_else(|| ui.current_language.clone())
+}
+
+fn log_level_name(level: LogLevel) -> String {
+	match level {
+		// TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+		LogLevel::Off => t("Off"),
+		// TRANSLATORS: Log level choice that records only errors
+		LogLevel::Error => t("Errors"),
+		// TRANSLATORS: Log level choice that records warnings and errors
+		LogLevel::Warn => t("Warnings"),
+		// TRANSLATORS: Log level choice that records general activity, warnings and errors
+		LogLevel::Info => t("Information"),
+		// TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+		LogLevel::Debug => t("Debug"),
+		// TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+		LogLevel::Trace => t("Trace"),
+	}
 }

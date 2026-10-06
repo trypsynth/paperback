@@ -27,11 +27,19 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	menu_ids::EXPORT_TO_PLAIN_TEXT,
 ];
 
+/// Edit > Copy and Select All, which macOS leaves to its native Edit menu.
+#[cfg(not(target_os = "macos"))]
+const DOCUMENT_DEPENDENT_EDIT_IDS: &[i32] = &[menu_ids::COPY, menu_ids::SELECT_ALL];
+
 pub fn update_menu_item_states(frame: &Frame, has_document: bool) {
 	let Some(menu_bar) = frame.get_menu_bar() else {
 		return;
 	};
 	for &id in DOCUMENT_DEPENDENT_IDS {
+		menu_bar.enable_item(id, has_document);
+	}
+	#[cfg(not(target_os = "macos"))]
+	for &id in DOCUMENT_DEPENDENT_EDIT_IDS {
 		menu_bar.enable_item(id, has_document);
 	}
 	commands::apply_enable(frame, Enable::HasDocument, has_document);

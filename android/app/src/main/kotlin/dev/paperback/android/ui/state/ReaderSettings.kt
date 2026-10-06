@@ -65,6 +65,8 @@ class ReaderSettings(
 
 	val highContrastText = boolSetting("high_contrast_text", false)
 
+	val textMode = boolSetting("text_mode", false)
+
 	private fun boolSetting(
 		key: String,
 		default: Boolean

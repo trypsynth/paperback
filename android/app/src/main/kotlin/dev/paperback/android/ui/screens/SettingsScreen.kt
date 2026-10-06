@@ -1,5 +1,10 @@
 package dev.paperback.android.ui.screens
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
@@ -10,6 +15,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -133,6 +140,34 @@ private fun PercentSetting(
 			valueRange = PERCENT_RANGE,
 			steps = 0,
 			enabled = !isSystemDefault
+		)
+	}
+}
+
+/** Opens Paperback's language page in the Settings app, showing the language Paperback is in now. */
+@Composable
+private fun LanguageRow() {
+	val context = LocalContext.current
+	val locale = LocalConfiguration.current.locales[0]
+	val current = locale.getDisplayLanguage(locale).replaceFirstChar { it.titlecase(locale) }
+	Column(
+		modifier = Modifier
+			.fillMaxWidth()
+			.clickable(role = Role.Button) {
+				context
+					.startActivity(Intent(Settings.ACTION_APP_LOCALE_SETTINGS, Uri.fromParts("package", context.packageName, null)))
+			}.padding(vertical = 8.dp)
+	) {
+		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+			// TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+			Text(t("Language"))
+			Text(current, color = MaterialTheme.colorScheme.onSurfaceVariant)
+		}
+		// TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+		Text(
+			t("Opens Paperback in the Settings app, where its language can be changed."),
+			style = MaterialTheme.typography.bodySmall,
+			color = MaterialTheme.colorScheme.onSurfaceVariant
 		)
 	}
 }
@@ -276,6 +311,10 @@ fun SettingsScreen(
 					style = MaterialTheme.typography.bodySmall,
 					color = MaterialTheme.colorScheme.onSurfaceVariant
 				)
+				// Android keeps a language for each app from Android 13 on, chosen on the app's own page in the Settings app. Before that the only language is the phone's own.
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+					LanguageRow()
+				}
 
 				Spacer(modifier = Modifier.height(24.dp))
 				// TRANSLATORS: Section header in Settings grouping controls for how document text is displayed

@@ -1,18 +1,30 @@
 use std::collections::{HashMap, HashSet};
 
 use anyhow::{Context, Result};
+use encoding_rs::Encoding;
 use libchm::ChmFile;
 use scraper::{ElementRef, Html, Selector};
 
-use super::href::normalize_path;
-use crate::{document::TocItem, util::encoding::convert_to_utf8};
+use super::{
+	encoding::{encoding_for_lcid, reinterpret_latin1},
+	href::normalize_path,
+};
+use crate::{document::TocItem, util::encoding::decode_html};
 
-pub(super) fn parse_system_file(chm: &mut ChmFile) -> Option<String> {
-	let content = chm.find("/#SYSTEM").and_then(|e| chm.read(&e)).ok()?;
-	if content.len() < 4 {
-		return None;
-	}
+/// What the `#SYSTEM` file says about the book as a whole.
+pub(super) struct SystemInfo {
+	pub title: Option<String>,
+	pub encoding: Option<&'static Encoding>,
+}
+
+pub(super) fn parse_system_file(chm: &mut ChmFile) -> SystemInfo {
+	let Some(content) = chm.find("/#SYSTEM").and_then(|e| chm.read(&e)).ok().filter(|content| content.len() >= 4)
+	else {
+		return SystemInfo { title: None, encoding: None };
+	};
 	let read_le16 = |data: &[u8], offset: usize| -> u16 { u16::from_le_bytes([data[offset], data[offset + 1]]) };
+	let mut title_bytes: Option<&[u8]> = None;
+	let mut lcid = None;
 	let mut index = 4;
 	while index + 4 <= content.len() {
 		let code = read_le16(&content, index);
@@ -20,22 +32,25 @@ pub(super) fn parse_system_file(chm: &mut ChmFile) -> Option<String> {
 		if index + 4 + length > content.len() {
 			break;
 		}
-		// Code 3 is the title.
-		if code == 3 && length > 0 {
-			let title_bytes = &content[index + 4..index + 4 + length];
-			let title_bytes =
-				if title_bytes.last() == Some(&0) { &title_bytes[..title_bytes.len() - 1] } else { title_bytes };
-			let title = String::from_utf8_lossy(title_bytes).to_string();
-			if !title.trim().is_empty() {
-				return Some(title);
-			}
+		let data = &content[index + 4..index + 4 + length];
+		match code {
+			3 if title_bytes.is_none() => title_bytes = Some(data.strip_suffix(&[0]).unwrap_or(data)),
+			4 if data.len() >= 4 => lcid = Some(u32::from_le_bytes([data[0], data[1], data[2], data[3]])),
+			_ => {}
 		}
 		index += 4 + length;
 	}
-	None
+	let encoding = lcid.and_then(encoding_for_lcid);
+	tracing::debug!(lcid = ?lcid, encoding = ?encoding.map(Encoding::name), "read chm language");
+	let title = title_bytes.map(|bytes| decode_html(bytes, encoding)).filter(|title| !title.trim().is_empty());
+	SystemInfo { title, encoding }
 }
 
-pub(super) fn parse_hhc_file(chm: &mut ChmFile, hhc_path: &str) -> Result<Vec<TocItem>> {
+pub(super) fn parse_hhc_file(
+	chm: &mut ChmFile,
+	hhc_path: &str,
+	encoding: Option<&'static Encoding>,
+) -> Result<Vec<TocItem>> {
 	let content_bytes = chm
 		.find(hhc_path)
 		.and_then(|e| chm.read(&e))
@@ -44,7 +59,7 @@ pub(super) fn parse_hhc_file(chm: &mut ChmFile, hhc_path: &str) -> Result<Vec<To
 		tracing::debug!(path = %hhc_path, "hhc file is empty, table of contents will be empty");
 		return Ok(Vec::new());
 	}
-	let content = convert_to_utf8(&content_bytes);
+	let content = decode_html(&content_bytes, encoding);
 	let document = Html::parse_document(&content);
 	let body_selector = Selector::parse("body").unwrap();
 	let Some(body) = document.select(&body_selector).next() else {
@@ -53,7 +68,19 @@ pub(super) fn parse_hhc_file(chm: &mut ChmFile, hhc_path: &str) -> Result<Vec<To
 	};
 	let mut toc_items = Vec::new();
 	parse_hhc_node(body, &mut toc_items);
+	if let Some(encoding) = encoding {
+		reinterpret_latin1_names(&mut toc_items, encoding);
+	}
 	Ok(toc_items)
+}
+
+fn reinterpret_latin1_names(items: &mut [TocItem], encoding: &'static Encoding) {
+	for item in items {
+		if let Some(name) = reinterpret_latin1(&item.name, encoding) {
+			item.name = name;
+		}
+		reinterpret_latin1_names(&mut item.children, encoding);
+	}
 }
 
 fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {

@@ -9,6 +9,7 @@ use crate::{
 };
 
 mod legacy;
+mod numbering;
 pub mod ooxml;
 
 pub struct WordParser;

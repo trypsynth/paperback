@@ -2,10 +2,10 @@
 //!
 //! The dialog itself lives in `wx_utils::shortcuts`; all that is needed here is to describe
 //! Paperback's keymap to it. Every category is a view onto one set of bindings, so a chord has
-//! to be unique across all of them, which is what `TabKind::SharedKeymap` says.
+//! to be unique across all of them, which is what giving every tab the same `TabScope::Mode` says.
 
 use paperback_core::config::{ActionId, KeyChord, ShortcutCategory, ShortcutsConfig};
-use wx_utils::shortcuts::{ShortcutModel, TabKind};
+use wx_utils::shortcuts::{ShortcutModel, TabScope};
 use wxdragon::prelude::*;
 
 /// A [`ShortcutsConfig`] presented as tabs, one per [`ShortcutCategory`].
@@ -24,8 +24,8 @@ impl ShortcutModel for CategorizedShortcuts {
 		ShortcutCategory::all().iter().map(|c| c.display_name()).collect()
 	}
 
-	fn tab_kind(&self) -> TabKind {
-		TabKind::SharedKeymap
+	fn tab_scope(&self, _tab: usize) -> TabScope {
+		TabScope::Mode(0)
 	}
 
 	fn actions(&self, tab: usize) -> Vec<ActionId> {

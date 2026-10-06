@@ -428,6 +428,73 @@ impl DocumentSession {
 		self.handle.replace_ranges(edits)
 	}
 
+	/// The display-unit `[start, end)` span of the text belonging to `page` (1-based): from that
+	/// page's own `PageBreak` marker up to the next page's, or the end of the document for the
+	/// last one. A page with neither text nor an image sits between two page breaks at the same
+	/// offset, so its span is empty; replacing one is a pure insertion.
+	///
+	/// The span **includes the page's trailing newline**, unlike [`Self::line_bounds_at`], whose
+	/// `end` stops short of it. A replacement built from this span therefore has to put a newline
+	/// back, or the page's last line fuses onto the next page's first and that page's `PageBreak`
+	/// no longer starts a line. The span always *starts* on the page-break marker, which is what
+	/// keeps the marker alive across the edit (see [`DocumentBuffer::replace_ranges`]).
+	#[must_use]
+	pub fn page_text_bounds(&self, page: i32) -> Option<(i64, i64)> {
+		let index = usize::try_from(page.checked_sub(1)?).ok()?;
+		let offsets = self.page_offsets();
+		let start = *offsets.get(index)?;
+		let end = offsets.get(index + 1).copied().unwrap_or_else(|| self.document_len());
+		Some((start, end.max(start)))
+	}
+
+	/// Folds recognized text into the document, keyed by 1-based page number, in one pass.
+	///
+	/// Each page is handled according to what it actually is at the moment the edit is built. A
+	/// page still carrying an `ImageOnlyPage` marker gets exactly the treatment
+	/// [`Self::replace_image_only_pages`] gives it: the placeholder line is swapped, its newline
+	/// left in place, and the marker consumed. A page that already has text has its whole span
+	/// replaced instead, newline included, which is what lets a page be re-OCR'd when its existing
+	/// text is stale.
+	///
+	/// Keying by page rather than by offset is deliberate. Applying one page's text moves every
+	/// offset after it, so a placeholder offset captured when the job started is stale by the
+	/// next flush; page numbers stay true and the span is re-resolved here, from live markers.
+	///
+	/// Re-OCR'ing a text page discards the markers inside it -- its headings, links, images,
+	/// tables and list items -- because [`DocumentBuffer::replace_ranges`] drops any marker
+	/// strictly inside a replaced span. That is the same plain text an image-only page ends up
+	/// with, and markers left pointing into text that no longer exists would be worse than none.
+	///
+	/// Pages out of range are skipped rather than failing the batch, matching
+	/// [`Self::replace_image_only_pages`]. Returns the outcome so callers can remap the positions
+	/// they hold themselves.
+	pub fn replace_ocr_pages(&mut self, pages: &[(i32, String)]) -> ReplaceOutcome {
+		let edits: Vec<Edit> = pages
+			.iter()
+			.filter_map(|(page, text)| {
+				let (start, end) = self.page_text_bounds(*page)?;
+				if let Some(placeholder) = self.image_only_page_at(start) {
+					// The placeholder line, and only that line. `line_bounds_at` stops before
+					// the newline, so the recognized text goes in without one.
+					let (line_start, line_end) = self.line_bounds_at(placeholder)?;
+					return Some(Edit {
+						start: usize::try_from(line_start.max(0)).unwrap_or(0),
+						end: usize::try_from(line_end.max(0)).unwrap_or(0),
+						text: text.clone(),
+					});
+				}
+				// The page's whole span, newline included, so the replacement carries one.
+				let text = if text.ends_with('\n') { text.clone() } else { format!("{text}\n") };
+				Some(Edit {
+					start: usize::try_from(start.max(0)).unwrap_or(0),
+					end: usize::try_from(end.max(0)).unwrap_or(0),
+					text,
+				})
+			})
+			.collect();
+		self.handle.replace_ranges(edits)
+	}
+
 	/// This document's recorded audio, when it has any (DAISY audiobooks; text-only
 	/// documents have none).
 	#[must_use]
