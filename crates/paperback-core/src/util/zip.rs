@@ -2,7 +2,7 @@ use std::{
 	collections::{HashMap, HashSet},
 	fs::{self, File},
 	io::{self, BufReader, Read, Seek},
-	path::{Path, PathBuf},
+	path::{Component, Path, PathBuf},
 };
 
 use anyhow::{Context, Result};
@@ -124,28 +124,50 @@ pub fn zip_entry_name_resolver<R: Read + Seek>(archive: &ZipArchive<R>) -> impl 
 pub struct ZipEntryInfo {
 	/// The entry's name exactly as stored, so it can be passed back to the extract helpers.
 	pub name: String,
-	pub size: u64,
 	/// Whether a parser can open this entry.
 	pub supported: bool,
 }
 
 /// Lists the files in `archive`, skipping directories and any entry whose name would escape an
-/// extraction directory. Reads only the central directory, so encrypted entries are listed too.
-pub fn list_zip_entries<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<Vec<ZipEntryInfo>> {
-	let mut entries = Vec::new();
-	for i in 0..archive.len() {
-		let entry = archive.by_index_raw(i).with_context(|| format!("Failed to get entry at index {i}"))?;
-		let Ok(name) = entry.name() else { continue };
-		if entry.is_dir() || entry.enclosed_name().is_none() {
-			continue;
+/// extraction directory. Reads only the central directory (not each entry's own header, which is
+/// a seek per entry and takes seconds on a big archive), so encrypted entries are listed too.
+pub fn list_zip_entries<R: Read + Seek>(archive: &ZipArchive<R>) -> Vec<ZipEntryInfo> {
+	archive
+		.file_names()
+		.flatten()
+		.filter(|name| {
+			!name.ends_with('/') && Path::new(&**name).components().all(|c| matches!(c, Component::Normal(_)))
+		})
+		.map(|name| ZipEntryInfo { supported: parser_supports_path(Path::new(&*name)), name: name.into_owned() })
+		.collect()
+}
+
+/// Whether `name` is the file that opens a DAISY book (a DAISY 3 `.opf` or a DAISY 2.02 `ncc.html`).
+fn is_daisy_book_file(name: &str) -> bool {
+	let file_name = name.rsplit_once('/').map_or(name, |(_, file)| file);
+	file_name.eq_ignore_ascii_case("ncc.html")
+		|| Path::new(file_name).extension().is_some_and(|e| e.eq_ignore_ascii_case("opf"))
+}
+
+/// The books of an archive, for the "browse a zip" picker: every openable file, except that a
+/// DAISY book is one entry (its `.opf` or `ncc.html`) and the many files inside its folder are left out.
+pub fn zip_books(entries: &[ZipEntryInfo]) -> Vec<String> {
+	let supported = || entries.iter().filter(|e| e.supported);
+	let book_dirs: HashSet<&str> = supported()
+		.filter(|e| is_daisy_book_file(&e.name))
+		.map(|e| e.name.rsplit_once('/').map_or("", |(dir, _)| dir))
+		.collect();
+	let inside_book = |name: &str| {
+		let mut dir = name;
+		while let Some((parent, _)) = dir.rsplit_once('/') {
+			if book_dirs.contains(parent) {
+				return true;
+			}
+			dir = parent;
 		}
-		entries.push(ZipEntryInfo {
-			size: entry.size(),
-			supported: parser_supports_path(Path::new(&*name)),
-			name: name.into_owned(),
-		});
-	}
-	Ok(entries)
+		book_dirs.contains("")
+	};
+	supported().filter(|e| is_daisy_book_file(&e.name) || !inside_book(&e.name)).map(|e| e.name.clone()).collect()
 }
 
 /// Extracts `entry_name` of the archive at `zip_path` to a stable path under `cache_root` and
@@ -163,7 +185,16 @@ pub fn extract_zip_entry_to_cache(zip_path: &Path, entry_name: &str, cache_root:
 	hasher.update(source.to_string_lossy().as_bytes());
 	hasher.update(b"!");
 	hasher.update(entry_name.as_bytes());
-	let output_path = cache_root.join(URL_SAFE_NO_PAD.encode(hasher.finalize())).join(file_name);
+	let entry_root = cache_root.join(URL_SAFE_NO_PAD.encode(hasher.finalize()));
+	if is_daisy_book_file(entry_name) {
+		// A DAISY book is many files that refer to each other, so extract its whole folder.
+		let prefix = entry_name.rsplit_once('/').map_or_else(String::new, |(dir, _)| format!("{dir}/"));
+		extract_zip_to_dir(&mut archive, &entry_root, |p| {
+			!p.to_string_lossy().replace('\\', "/").starts_with(&prefix)
+		})?;
+		return Ok(entry_root.join(entry_name));
+	}
+	let output_path = entry_root.join(file_name);
 	extract_zip_entry_to_file(&mut archive, entry_name, &output_path)?;
 	Ok(output_path)
 }
@@ -371,21 +402,21 @@ mod tests {
 			writer.finish().expect("finish zip");
 		}
 		cursor.set_position(0);
-		let mut archive = ZipArchive::new(cursor).expect("open zip");
-		let entries = list_zip_entries(&mut archive).expect("list entries");
+		let archive = ZipArchive::new(cursor).expect("open zip");
+		let entries = list_zip_entries(&archive);
 		assert_eq!(
 			entries,
 			[
-				ZipEntryInfo { name: "dir/book.epub".into(), size: 3, supported: true },
-				ZipEntryInfo { name: "pic.xyz".into(), size: 5, supported: false },
+				ZipEntryInfo { name: "dir/book.epub".into(), supported: true },
+				ZipEntryInfo { name: "pic.xyz".into(), supported: false },
 			]
 		);
 	}
 
 	#[test]
 	fn list_zip_entries_lists_encrypted_entries_without_a_password() {
-		let mut archive = build_encrypted_test_archive();
-		let entries = list_zip_entries(&mut archive).expect("list entries");
+		let archive = build_encrypted_test_archive();
+		let entries = list_zip_entries(&archive);
 		assert_eq!(entries.len(), 1);
 		assert_eq!(entries[0].name, "secret.mp3");
 	}
@@ -395,8 +426,8 @@ mod tests {
 		let mut cursor = Cursor::new(Vec::new());
 		ZipWriter::new(&mut cursor).finish().expect("finish zip");
 		cursor.set_position(0);
-		let mut archive = ZipArchive::new(cursor).expect("open zip");
-		assert!(list_zip_entries(&mut archive).expect("list entries").is_empty());
+		let archive = ZipArchive::new(cursor).expect("open zip");
+		assert!(list_zip_entries(&archive).is_empty());
 	}
 
 	#[test]
@@ -415,5 +446,32 @@ mod tests {
 		assert!(first.starts_with(&cache));
 		assert_eq!(fs::read_to_string(&first).expect("read"), "nested");
 		assert!(extract_zip_entry_to_cache(&zip_path, "missing.txt", &cache).is_err());
+	}
+
+	fn entry(name: &str) -> ZipEntryInfo {
+		ZipEntryInfo { name: name.into(), supported: parser_supports_path(Path::new(name)) }
+	}
+
+	#[test]
+	fn zip_books_collapses_a_daisy_folder_to_its_opf() {
+		let entries =
+			["a.epub", "d1/book.opf", "d1/book.xml", "d1/sub/x.smil", "d2/ncc.html", "d2/p1.html", "d3/note.txt"]
+				.map(entry);
+		assert_eq!(zip_books(&entries), ["a.epub", "d1/book.opf", "d2/ncc.html", "d3/note.txt"]);
+	}
+
+	#[test]
+	fn extract_zip_entry_to_cache_extracts_the_whole_daisy_folder() {
+		let dir = TempDir::new("zip");
+		let zip_path = dir.path().join("pack.zip");
+		let mut writer = ZipWriter::new(File::create(&zip_path).expect("create zip"));
+		for name in ["d1/book.opf", "d1/book.xml", "d2/other.xml"] {
+			writer.start_file(name, FileOptions::<()>::default()).expect("start file");
+			writer.write_all(b"x").expect("write file");
+		}
+		writer.finish().expect("finish zip");
+		let opf = extract_zip_entry_to_cache(&zip_path, "d1/book.opf", &dir.path().join("cache")).expect("extract");
+		assert!(opf.is_file() && opf.with_file_name("book.xml").is_file());
+		assert!(!opf.parent().unwrap().parent().unwrap().join("d2").exists());
 	}
 }

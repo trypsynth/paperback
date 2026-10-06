@@ -16,7 +16,7 @@ use std::{
 use paperback_core::{
 	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
 	session::DocumentSession,
-	util::zip::{extract_zip_entry_to_cache, list_zip_entries},
+	util::zip::{extract_zip_entry_to_cache, list_zip_entries, zip_books},
 };
 use patois::t;
 use wxdragon::prelude::*;
@@ -111,6 +111,16 @@ impl DocumentManager {
 			(password, forced_extension, settings)
 		};
 		let path_str = path.to_string_lossy().to_string();
+		// A zip of several books is browsed rather than opened as whichever book a parser finds first.
+		if !is_restore {
+			match self.pick_zip_entry(path, 2) {
+				ZipPick::NotBrowsable => {}
+				ZipPick::Handled => return false,
+				ZipPick::Chosen(entry_path) => {
+					return self.open_file_impl(self_rc, &entry_path, track, is_restore, title_override);
+				}
+			}
+		}
 		tracing::info!(path = %path.display(), "opening document");
 		match DocumentSession::new(&path_str, &password, &forced_extension, settings) {
 			Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
@@ -136,7 +146,7 @@ impl DocumentManager {
 						}
 					}
 				} else {
-					match self.pick_zip_entry(path) {
+					match self.pick_zip_entry(path, 1) {
 						ZipPick::NotBrowsable => {}
 						ZipPick::Handled => return false,
 						ZipPick::Chosen(entry_path) => {
@@ -153,18 +163,16 @@ impl DocumentManager {
 		}
 	}
 
-	/// For a zip that no parser could read as a document: offers the documents inside it and
-	/// extracts the chosen one.
-	fn pick_zip_entry(&self, path: &Path) -> ZipPick {
+	/// For a zip with at least `min_books` documents inside: offers them and extracts the chosen one.
+	fn pick_zip_entry(&self, path: &Path, min_books: usize) -> ZipPick {
 		if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip")) {
 			return ZipPick::NotBrowsable;
 		}
 		let Some(names) = File::open(path)
 			.ok()
 			.and_then(|file| zip::ZipArchive::new(BufReader::new(file)).ok())
-			.and_then(|mut archive| list_zip_entries(&mut archive).ok())
-			.map(|entries| entries.into_iter().filter(|e| e.supported).map(|e| e.name).collect::<Vec<_>>())
-			.filter(|names| !names.is_empty())
+			.map(|archive| zip_books(&list_zip_entries(&archive)))
+			.filter(|names| names.len() >= min_books)
 		else {
 			return ZipPick::NotBrowsable;
 		};
