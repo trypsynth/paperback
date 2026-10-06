@@ -3,9 +3,21 @@
 //! control, closing tabs, and saving reading positions. Split out of the main `DocumentManager`
 //! impl.
 
-use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex, time::Instant};
+use std::{
+	cell::Cell,
+	fs::File,
+	io::BufReader,
+	path::{Path, PathBuf},
+	rc::Rc,
+	sync::Mutex,
+	time::Instant,
+};
 
-use paperback_core::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
+use paperback_core::{
+	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
+	session::DocumentSession,
+	util::zip::{extract_zip_entry_to_cache, list_zip_entries},
+};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -14,8 +26,10 @@ use super::{
 };
 use crate::{
 	audio_player::AudioPlayer,
+	config_ext::config_dir,
 	shell,
 	ui::{
+		dialogs,
 		readability::{
 			apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_readability_format_to_ctrl,
 			build_font_from_readability,
@@ -113,12 +127,46 @@ impl DocumentManager {
 						}
 					}
 				} else {
+					if let Some(picked) = self.pick_zip_entry(path) {
+						return picked.is_some_and(|entry_path| {
+							self.open_file_impl(self_rc, &entry_path, track, is_restore, title_override)
+						});
+					}
 					tracing::error!(path = %path.display(), error = %err, "failed to open document");
 					let message = build_document_load_error_message(path, &err);
 					// TRANSLATORS: Generic error dialog title
 					show_error_dialog(&self.notebook, &message, &t("Error"));
 					false
 				}
+			}
+		}
+	}
+
+	/// For a zip that no parser could read as a document: offers the documents inside it and
+	/// extracts the chosen one. `None` when it isn't a browsable zip, so the caller reports the
+	/// original error; `Some(None)` when the user cancelled or the extraction failed (already reported).
+	fn pick_zip_entry(&self, path: &Path) -> Option<Option<PathBuf>> {
+		if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip")) {
+			return None;
+		}
+		let mut archive = zip::ZipArchive::new(BufReader::new(File::open(path).ok()?)).ok()?;
+		let names: Vec<String> =
+			list_zip_entries(&mut archive).ok()?.into_iter().filter(|e| e.supported).map(|e| e.name).collect();
+		if names.is_empty() {
+			return None;
+		}
+		let Some(chosen) = dialogs::show_zip_entries_dialog(&self.frame, &names) else {
+			return Some(None);
+		};
+		match extract_zip_entry_to_cache(path, &names[chosen], &config_dir().join("zip_cache")) {
+			Ok(entry_path) => Some(Some(entry_path)),
+			Err(err) => {
+				tracing::error!(path = %path.display(), error = %err, "failed to extract archive entry");
+				// TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+				let message = t("Couldn't extract the document from the archive: {}").replace("{}", &err.to_string());
+				// TRANSLATORS: Generic error dialog title
+				show_error_dialog(&self.notebook, &message, &t("Error"));
+				Some(None)
 			}
 		}
 	}

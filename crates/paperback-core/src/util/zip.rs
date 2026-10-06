@@ -1,14 +1,20 @@
 use std::{
 	collections::{HashMap, HashSet},
 	fs::{self, File},
-	io::{self, Read, Seek},
-	path::Path,
+	io::{self, BufReader, Read, Seek},
+	path::{Path, PathBuf},
 };
 
 use anyhow::{Context, Result};
+use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
+use sha1::{Digest, Sha1};
 use zip::{ZipArchive, result::ZipError};
 
-use crate::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, t, util::encoding::decode_html};
+use crate::{
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, parser_supports_path},
+	t,
+	util::encoding::decode_html,
+};
 
 pub fn read_zip_entry_by_name<R: Read + Seek>(archive: &mut ZipArchive<R>, name: &str) -> Result<String> {
 	read_zip_entry_by_name_with_password(archive, name, None)
@@ -111,6 +117,55 @@ pub fn zip_entry_name_resolver<R: Read + Seek>(archive: &ZipArchive<R>) -> impl 
 		}
 		lowercase.get(&reference.to_lowercase()).cloned().unwrap_or_else(|| reference.to_string())
 	}
+}
+
+/// One file inside an archive, as shown by the "browse a zip" picker.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ZipEntryInfo {
+	/// The entry's name exactly as stored, so it can be passed back to the extract helpers.
+	pub name: String,
+	pub size: u64,
+	/// Whether a parser can open this entry.
+	pub supported: bool,
+}
+
+/// Lists the files in `archive`, skipping directories and any entry whose name would escape an
+/// extraction directory. Reads only the central directory, so encrypted entries are listed too.
+pub fn list_zip_entries<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<Vec<ZipEntryInfo>> {
+	let mut entries = Vec::new();
+	for i in 0..archive.len() {
+		let entry = archive.by_index_raw(i).with_context(|| format!("Failed to get entry at index {i}"))?;
+		let Ok(name) = entry.name() else { continue };
+		if entry.is_dir() || entry.enclosed_name().is_none() {
+			continue;
+		}
+		entries.push(ZipEntryInfo {
+			size: entry.size(),
+			supported: parser_supports_path(Path::new(&*name)),
+			name: name.into_owned(),
+		});
+	}
+	Ok(entries)
+}
+
+/// Extracts `entry_name` of the archive at `zip_path` to a stable path under `cache_root` and
+/// returns it. The path depends only on the archive and entry, and the file keeps the entry's own
+/// name, so the extracted copy opens like any other file: the same reading position, bookmarks
+/// and recent-documents entry come back each time. An earlier copy is overwritten.
+pub fn extract_zip_entry_to_cache(zip_path: &Path, entry_name: &str, cache_root: &Path) -> Result<PathBuf> {
+	let mut archive = ZipArchive::new(BufReader::new(
+		File::open(zip_path).with_context(|| format!("Failed to open '{}'", zip_path.display()))?,
+	))?;
+	// Only the last component is used, so a name like `../x` can't leave `cache_root`.
+	let file_name = Path::new(entry_name).file_name().with_context(|| format!("Invalid entry name '{entry_name}'"))?;
+	let source = fs::canonicalize(zip_path).unwrap_or_else(|_| zip_path.to_path_buf());
+	let mut hasher = Sha1::new();
+	hasher.update(source.to_string_lossy().as_bytes());
+	hasher.update(b"!");
+	hasher.update(entry_name.as_bytes());
+	let output_path = cache_root.join(URL_SAFE_NO_PAD.encode(hasher.finalize())).join(file_name);
+	extract_zip_entry_to_file(&mut archive, entry_name, &output_path)?;
+	Ok(output_path)
 }
 
 /// Extracts every entry of `archive` for which `skip` returns `false` into
@@ -298,5 +353,67 @@ mod tests {
 	fn read_zip_entry_bytes_with_password_rejects_the_wrong_password() {
 		let mut archive = build_encrypted_test_archive();
 		assert!(read_zip_entry_bytes_with_password(&mut archive, "secret.mp3", Some("wrong")).is_err());
+	}
+
+	#[test]
+	fn list_zip_entries_returns_files_only_with_support_flag() {
+		let mut cursor = Cursor::new(Vec::new());
+		{
+			let mut writer = ZipWriter::new(&mut cursor);
+			let options = FileOptions::<()>::default();
+			writer.add_directory("dir/", options).expect("add dir");
+			writer.start_file("dir/book.epub", options).expect("start file");
+			writer.write_all(b"abc").expect("write file");
+			writer.start_file("pic.xyz", options).expect("start file");
+			writer.write_all(b"12345").expect("write file");
+			writer.start_file("../evil.epub", options).expect("start file");
+			writer.write_all(b"x").expect("write file");
+			writer.finish().expect("finish zip");
+		}
+		cursor.set_position(0);
+		let mut archive = ZipArchive::new(cursor).expect("open zip");
+		let entries = list_zip_entries(&mut archive).expect("list entries");
+		assert_eq!(
+			entries,
+			[
+				ZipEntryInfo { name: "dir/book.epub".into(), size: 3, supported: true },
+				ZipEntryInfo { name: "pic.xyz".into(), size: 5, supported: false },
+			]
+		);
+	}
+
+	#[test]
+	fn list_zip_entries_lists_encrypted_entries_without_a_password() {
+		let mut archive = build_encrypted_test_archive();
+		let entries = list_zip_entries(&mut archive).expect("list entries");
+		assert_eq!(entries.len(), 1);
+		assert_eq!(entries[0].name, "secret.mp3");
+	}
+
+	#[test]
+	fn list_zip_entries_of_an_empty_archive_is_empty() {
+		let mut cursor = Cursor::new(Vec::new());
+		ZipWriter::new(&mut cursor).finish().expect("finish zip");
+		cursor.set_position(0);
+		let mut archive = ZipArchive::new(cursor).expect("open zip");
+		assert!(list_zip_entries(&mut archive).expect("list entries").is_empty());
+	}
+
+	#[test]
+	fn extract_zip_entry_to_cache_is_stable_and_keeps_the_file_name() {
+		let dir = TempDir::new("zip");
+		let zip_path = dir.path().join("pack.zip");
+		let mut writer = ZipWriter::new(File::create(&zip_path).expect("create zip"));
+		writer.start_file("nested/bar.txt", FileOptions::<()>::default()).expect("start file");
+		writer.write_all(b"nested").expect("write file");
+		writer.finish().expect("finish zip");
+		let cache = dir.path().join("cache");
+		let first = extract_zip_entry_to_cache(&zip_path, "nested/bar.txt", &cache).expect("extract");
+		let second = extract_zip_entry_to_cache(&zip_path, "nested/bar.txt", &cache).expect("extract again");
+		assert_eq!(first, second);
+		assert_eq!(first.file_name().and_then(|n| n.to_str()), Some("bar.txt"));
+		assert!(first.starts_with(&cache));
+		assert_eq!(fs::read_to_string(&first).expect("read"), "nested");
+		assert!(extract_zip_entry_to_cache(&zip_path, "missing.txt", &cache).is_err());
 	}
 }

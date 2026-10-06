@@ -73,3 +73,5 @@ pub use web_view::ACTIVE_WEB_VIEW;
 pub use web_view::show_web_view_dialog;
 mod word_count;
 pub use word_count::{AudioOnlySummary, show_word_count_dialog};
+mod zip_entries;
+pub use zip_entries::show_zip_entries_dialog;
