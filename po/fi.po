@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 04:50+0000\n"
-"PO-Revision-Date: 2026-10-06 21:22+0300\n"
+"PO-Revision-Date: 2026-10-07 00:49+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -2720,11 +2720,11 @@ msgstr "Tässä näkymässä näytetään luettavana olevan asiakirjan osa."
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
-msgstr "[Sivulla on pelkkä kuva. Aloita tekstintunnistus painamalla Enter.]"
+msgstr "[Pelkkä kuva. Aloita tekstintunnistus painamalla Enter.]"
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
 msgid "[Image only. This page has no text to read.]"
-msgstr "[Sivulla on pelkkä kuva. Luettavaa tekstiä ei ole.]"
+msgstr "[Pelkkä kuva. Luettavaa tekstiä ei ole.]"
 
 #. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
 msgid ""
