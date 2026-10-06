@@ -39,6 +39,15 @@ use crate::{
 	},
 };
 
+/// What `pick_zip_entry` made of a file that failed to open.
+enum ZipPick {
+	/// Not a zip with readable documents inside: report the original error.
+	NotBrowsable,
+	/// The user cancelled, or the extraction failed and was already reported.
+	Handled,
+	Chosen(PathBuf),
+}
+
 impl DocumentManager {
 	pub fn open_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path) -> bool {
 		self.open_file_impl(self_rc, path, true, false, None)
@@ -127,10 +136,12 @@ impl DocumentManager {
 						}
 					}
 				} else {
-					if let Some(picked) = self.pick_zip_entry(path) {
-						return picked.is_some_and(|entry_path| {
-							self.open_file_impl(self_rc, &entry_path, track, is_restore, title_override)
-						});
+					match self.pick_zip_entry(path) {
+						ZipPick::NotBrowsable => {}
+						ZipPick::Handled => return false,
+						ZipPick::Chosen(entry_path) => {
+							return self.open_file_impl(self_rc, &entry_path, track, is_restore, title_override);
+						}
 					}
 					tracing::error!(path = %path.display(), error = %err, "failed to open document");
 					let message = build_document_load_error_message(path, &err);
@@ -143,30 +154,32 @@ impl DocumentManager {
 	}
 
 	/// For a zip that no parser could read as a document: offers the documents inside it and
-	/// extracts the chosen one. `None` when it isn't a browsable zip, so the caller reports the
-	/// original error; `Some(None)` when the user cancelled or the extraction failed (already reported).
-	fn pick_zip_entry(&self, path: &Path) -> Option<Option<PathBuf>> {
+	/// extracts the chosen one.
+	fn pick_zip_entry(&self, path: &Path) -> ZipPick {
 		if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip")) {
-			return None;
+			return ZipPick::NotBrowsable;
 		}
-		let mut archive = zip::ZipArchive::new(BufReader::new(File::open(path).ok()?)).ok()?;
-		let names: Vec<String> =
-			list_zip_entries(&mut archive).ok()?.into_iter().filter(|e| e.supported).map(|e| e.name).collect();
-		if names.is_empty() {
-			return None;
-		}
+		let Some(names) = File::open(path)
+			.ok()
+			.and_then(|file| zip::ZipArchive::new(BufReader::new(file)).ok())
+			.and_then(|mut archive| list_zip_entries(&mut archive).ok())
+			.map(|entries| entries.into_iter().filter(|e| e.supported).map(|e| e.name).collect::<Vec<_>>())
+			.filter(|names| !names.is_empty())
+		else {
+			return ZipPick::NotBrowsable;
+		};
 		let Some(chosen) = dialogs::show_zip_entries_dialog(&self.frame, &names) else {
-			return Some(None);
+			return ZipPick::Handled;
 		};
 		match extract_zip_entry_to_cache(path, &names[chosen], &config_dir().join("zip_cache")) {
-			Ok(entry_path) => Some(Some(entry_path)),
+			Ok(entry_path) => ZipPick::Chosen(entry_path),
 			Err(err) => {
 				tracing::error!(path = %path.display(), error = %err, "failed to extract archive entry");
 				// TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
 				let message = t("Couldn't extract the document from the archive: {}").replace("{}", &err.to_string());
 				// TRANSLATORS: Generic error dialog title
 				show_error_dialog(&self.notebook, &message, &t("Error"));
-				Some(None)
+				ZipPick::Handled
 			}
 		}
 	}
