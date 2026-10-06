@@ -47,9 +47,9 @@ pub fn verdict(
 	if let Some(refused) = extensions.iter().find(|extension| !parser_supports_extension(extension)) {
 		return Verdict::Refuse(refused.clone());
 	}
-	let web_page_extension =
-		|extension: &String| html_format().is_some_and(|format| format.extensions.contains(&extension.as_str()));
-	if !extensions.is_empty() && content_type.is_some_and(is_web_page) && !extensions.iter().any(web_page_extension) {
+	let other_extension =
+		|extension: &String| html_format().is_none_or(|format| !format.extensions.contains(&extension.as_str()));
+	if content_type.is_some_and(is_web_page) && extensions.iter().any(other_extension) {
 		return Verdict::Warn;
 	}
 	if !extensions.is_empty() || content_type.and_then(extension_for_mime).is_some() {

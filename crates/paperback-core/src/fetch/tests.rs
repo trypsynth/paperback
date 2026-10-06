@@ -48,6 +48,12 @@ fn a_web_page_sent_for_another_document_gets_the_warning(
 	assert_eq!(verdict(url, url, disposition, content_type), expected);
 }
 
+#[test]
+fn a_document_link_redirected_to_a_web_page_gets_the_warning() {
+	let given = "https://example.org/book.pdf";
+	assert_eq!(verdict(given, "https://example.org/login.html", None, Some("text/html")), Verdict::Warn);
+}
+
 #[rstest]
 #[case("text/html", true)]
 #[case("Text/HTML; charset=utf-8", true)]
