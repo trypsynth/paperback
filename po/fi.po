@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 04:50+0000\n"
-"PO-Revision-Date: 2026-10-06 16:27+0300\n"
+"PO-Revision-Date: 2026-10-06 16:41+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1726,15 +1726,15 @@ msgstr "V&ie"
 
 #. TRANSLATORS: Menu item in the File > Export submenu to export the document as a plain text file.
 msgid "Export to &Plain Text..."
-msgstr "Vie te&kstimuotoon..."
+msgstr "Te&kstimuotoon..."
 
 #. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
 msgid "Export document as plain text"
-msgstr "Vie asiakirja tekstimuotoon"
+msgstr "Vie asiakirja tekstimuodossa"
 
 #. TRANSLATORS: Menu item in the File > Export submenu to export the document as an HTML file.
 msgid "Export to &HTML..."
-msgstr "Vie &HTML-muotoon..."
+msgstr "&HTML-muotoon..."
 
 #. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
 msgid "Export document as HTML"
@@ -1742,7 +1742,7 @@ msgstr "Vie asiakirja HTML-muodossa"
 
 #. TRANSLATORS: Menu item in the File > Export submenu to export the document as a Markdown file.
 msgid "Export to &Markdown..."
-msgstr "Vie &Markdown-muotoon..."
+msgstr "&Markdown-muotoon..."
 
 #. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
 msgid "Export document as Markdown"
