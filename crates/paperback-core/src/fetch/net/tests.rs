@@ -62,7 +62,7 @@ fn open_reads_the_type_size_and_name() {
 	let base = serve(|method, _, _, stream| {
 		respond(stream, method, "200 OK", &[("Content-Type", "application/epub+zip")], b"0123456789");
 	});
-	let remote = open(&format!("{base}/books/a.epub")).expect("open");
+	let remote = open(&format!("{base}/books/a.epub"), DEFAULT_MAX_SIZE).expect("open");
 	let info = remote.info();
 	assert_eq!(info.content_type.as_deref(), Some("application/epub+zip"));
 	assert_eq!(info.size, Some(10));
@@ -79,7 +79,7 @@ fn a_link_is_requested_once_for_its_headers_and_its_body() {
 		respond(stream, method, "200 OK", &[("Content-Type", "application/epub+zip")], b"0123456789");
 	});
 	let dir = TempDir::new("fetch-once");
-	let remote = open(&format!("{base}/a.epub")).expect("open");
+	let remote = open(&format!("{base}/a.epub"), DEFAULT_MAX_SIZE).expect("open");
 	save(remote, &dir.path().join("a.epub")).expect("save");
 	assert_eq!(requests.load(Ordering::SeqCst), 1);
 }
@@ -93,7 +93,7 @@ fn open_follows_a_301_and_a_302() {
 			}
 			_ => respond(stream, method, "200 OK", &[("Content-Type", "application/epub+zip")], b"x"),
 		});
-		let remote = open(&format!("{base}/old")).expect(status);
+		let remote = open(&format!("{base}/old"), DEFAULT_MAX_SIZE).expect(status);
 		assert!(remote.info().final_url.ends_with("/book.epub"), "{status}: {}", remote.info().final_url);
 		assert_eq!(remote.info().file_name, "book.epub", "{status}");
 	}
@@ -107,7 +107,7 @@ fn open_names_a_redirect_without_an_extension_after_the_link_given() {
 		}
 		_ => respond(stream, method, "200 OK", &[("Content-Type", "binary/octet-stream")], b"%PDF"),
 	});
-	let remote = open(&format!("{base}/files/report.pdf")).expect("open");
+	let remote = open(&format!("{base}/files/report.pdf"), DEFAULT_MAX_SIZE).expect("open");
 	assert_eq!(remote.info().file_name, "7f3a2b.pdf");
 }
 
@@ -116,7 +116,7 @@ fn open_takes_the_name_the_server_gives() {
 	let base = serve(|method, _, _, stream| {
 		respond(stream, method, "200 OK", &[("Content-Disposition", "attachment; filename=\"Report 2024.pdf\"")], b"x");
 	});
-	let remote = open(&format!("{base}/download?id=3")).expect("open");
+	let remote = open(&format!("{base}/download?id=3"), DEFAULT_MAX_SIZE).expect("open");
 	assert_eq!(remote.info().file_name, "Report 2024.pdf");
 }
 
@@ -148,20 +148,20 @@ fn every_error_says_what_went_wrong() {
 		"the secure link was redirected to an insecure address, so it was not downloaded"
 	);
 	assert_eq!(
-		FetchError::TooLarge(MAX_SIZE).to_string(),
-		"the document is larger than 16 MB, so it was not downloaded"
+		FetchError::TooLarge(DEFAULT_MAX_SIZE).to_string(),
+		"the document is larger than 512 MB, so it was not downloaded"
 	);
 }
 
 #[test]
-fn the_limit_is_16_mib() {
-	assert_eq!(MAX_SIZE, 16 * 1024 * 1024);
+fn the_default_limit_is_512_mib() {
+	assert_eq!(DEFAULT_MAX_SIZE, 512 * 1024 * 1024);
 }
 
 #[test]
 fn a_document_announced_as_larger_than_the_limit_is_refused_before_its_body() {
 	let base = serve(|method, _, _, stream| respond(stream, method, "200 OK", &[], &[b'x'; 100]));
-	let result = open_within(&format!("{base}/a.epub"), 50);
+	let result = open(&format!("{base}/a.epub"), 50);
 	assert!(matches!(result, Err(FetchError::TooLarge(50))), "{:?}", result.err());
 }
 
@@ -173,7 +173,7 @@ fn a_document_growing_past_the_limit_is_stopped_and_removed() {
 	});
 	let dir = TempDir::new("fetch-too-large");
 	let dest = dir.path().join("a.epub");
-	let remote = open_within(&format!("{base}/a.epub"), 50).expect("open");
+	let remote = open(&format!("{base}/a.epub"), 50).expect("open");
 	let result = save(remote, &dest);
 	assert!(matches!(result, Err(FetchError::TooLarge(50))), "{result:?}");
 	assert!(!dest.exists());
@@ -183,7 +183,7 @@ fn a_document_growing_past_the_limit_is_stopped_and_removed() {
 #[test]
 fn open_reports_a_missing_document_by_status() {
 	let base = serve(|method, _, _, stream| respond(stream, method, "404 Not Found", &[], b""));
-	assert!(matches!(open(&format!("{base}/gone.epub")), Err(FetchError::Http(404))));
+	assert!(matches!(open(&format!("{base}/gone.epub"), DEFAULT_MAX_SIZE), Err(FetchError::Http(404))));
 }
 
 #[test]
@@ -192,7 +192,7 @@ fn save_writes_the_file_and_reports_progress() {
 	let dir = TempDir::new("fetch-download");
 	let dest = dir.path().join("a.epub");
 	let mut last = None;
-	let remote = open(&format!("{base}/a.epub")).expect("open");
+	let remote = open(&format!("{base}/a.epub"), DEFAULT_MAX_SIZE).expect("open");
 	let bytes = remote.save(&dest, &AtomicBool::new(false), |done, total| last = Some((done, total))).expect("save");
 	assert_eq!(bytes, 10);
 	assert_eq!(last, Some((10, Some(10))));
@@ -208,7 +208,7 @@ fn saving_a_link_that_ends_at_a_file_no_parser_reads_is_refused() {
 	});
 	let dir = TempDir::new("fetch-refuse");
 	let dest = dir.path().join("book");
-	let remote = open(&format!("{base}/book")).expect("open");
+	let remote = open(&format!("{base}/book"), DEFAULT_MAX_SIZE).expect("open");
 	assert_eq!(remote.info().verdict(&format!("{base}/book")), Verdict::Refuse("exe".to_string()));
 	let result = save(remote, &dest);
 	assert!(matches!(result, Err(FetchError::Refused(ref extension)) if extension == "exe"), "{result:?}");
@@ -228,7 +228,7 @@ fn a_cancelled_download_leaves_nothing_behind() {
 	let dir = TempDir::new("fetch-cancel");
 	let dest = dir.path().join("a.epub");
 	let cancel = AtomicBool::new(false);
-	let remote = open(&format!("{base}/a.epub")).expect("open");
+	let remote = open(&format!("{base}/a.epub"), DEFAULT_MAX_SIZE).expect("open");
 	let result = remote.save(&dest, &cancel, |_, _| cancel.store(true, Ordering::Relaxed));
 	assert!(matches!(result, Err(FetchError::Cancelled)), "{result:?}");
 	assert!(!dest.exists());
@@ -242,7 +242,7 @@ fn a_download_cut_short_keeps_the_copy_already_there() {
 	});
 	let dir = TempDir::new("fetch-keep");
 	let dest = dir.write("a.epub", "the copy from before");
-	let remote = open(&format!("{base}/a.epub")).expect("open");
+	let remote = open(&format!("{base}/a.epub"), DEFAULT_MAX_SIZE).expect("open");
 	let result = save(remote, &dest);
 	assert!(matches!(result, Err(FetchError::Network(_))), "{result:?}");
 	assert_eq!(fs::read_to_string(&dest).expect("read"), "the copy from before");
@@ -255,7 +255,7 @@ fn a_download_never_writes_through_a_part_file_already_there() {
 	let dir = TempDir::new("fetch-planted");
 	let planted = dir.write("a.epub.part", "planted");
 	let dest = dir.path().join("a.epub");
-	let remote = open(&format!("{base}/a.epub")).expect("open");
+	let remote = open(&format!("{base}/a.epub"), DEFAULT_MAX_SIZE).expect("open");
 	let result = save(remote, &dest);
 	assert!(matches!(result, Err(FetchError::Io(_))), "{result:?}");
 	assert_eq!(fs::read_to_string(&planted).expect("read"), "planted");

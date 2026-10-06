@@ -9,7 +9,7 @@ use std::{
 };
 
 use anyhow::{Context, Result, anyhow, bail};
-use paperback_core::fetch::{self, RemoteInfo, Verdict};
+use paperback_core::fetch::{self, FetchError, RemoteInfo, Verdict};
 use tempfile::TempDir;
 
 /// A question put to the reader, answered yes (`true`) or no.
@@ -23,6 +23,8 @@ pub struct Downloads {
 	/// Asked whether to download a link that got a security warning; without it, such a link is
 	/// refused.
 	ask: Option<Prompt>,
+	/// The largest document downloaded, in bytes.
+	max_size: u64,
 }
 
 /// One downloaded document; the folder it was downloaded into is removed when this is dropped.
@@ -48,7 +50,14 @@ impl Downloads {
 	/// Downloads into a new `pb-` folder inside `parent`.
 	#[must_use]
 	pub const fn in_folder(parent: PathBuf) -> Self {
-		Self { parent, root: None, count: 0, ask: None }
+		Self { parent, root: None, count: 0, ask: None, max_size: fetch::DEFAULT_MAX_SIZE }
+	}
+
+	/// Refuses documents larger than `max_size` bytes.
+	#[must_use]
+	pub const fn with_max_size(mut self, max_size: u64) -> Self {
+		self.max_size = max_size;
+		self
 	}
 
 	/// Asks `ask` with the warning whether to download a link that got one.
@@ -68,11 +77,11 @@ impl Downloads {
 		if let Some(extension) = fetch::refused_extension(url) {
 			return Err(not_downloaded(url, &extension));
 		}
-		let remote = fetch::open(url).map_err(|error| anyhow!("{url}: {error}"))?;
+		let remote = fetch::open(url, self.max_size).map_err(|error| fetch_failed(url, &error))?;
 		self.allowed(url, remote.info())?;
 		let folder = self.next_folder()?;
 		let downloaded = Downloaded { path: folder.join(&remote.info().file_name) };
-		remote.save(&downloaded.path, &AtomicBool::new(false), |_, _| {}).map_err(|error| anyhow!("{url}: {error}"))?;
+		remote.save(&downloaded.path, &AtomicBool::new(false), |_, _| {}).map_err(|error| fetch_failed(url, &error))?;
 		Ok(downloaded)
 	}
 
@@ -123,6 +132,17 @@ fn not_downloaded(url: &str, extension: &str) -> anyhow::Error {
 	anyhow!(
 		"{url}: pb does not read .{extension} files, so it was not downloaded\nIf it is a document, download it yourself and pass the file instead"
 	)
+}
+
+/// A failed request or download, naming the link; a document over the limit also says how to
+/// raise it.
+fn fetch_failed(url: &str, error: &FetchError) -> anyhow::Error {
+	match error {
+		FetchError::TooLarge(_) => {
+			anyhow!("{url}: {error}\nPass --max-download-size with a larger size in MB to allow it")
+		}
+		_ => anyhow!("{url}: {error}"),
+	}
 }
 
 /// The security warning for a link, naming what the server sends.
@@ -287,6 +307,26 @@ mod tests {
 		let mut downloads = Downloads::default().with_prompt(|_| panic!("a refused link was asked about"));
 		let exe = "https://example.org/setup.exe";
 		downloads.allowed(exe, &info(exe, "application/octet-stream")).expect_err("refused");
+	}
+
+	#[test]
+	fn a_document_over_the_limit_says_how_to_raise_it() {
+		let error = fetch_failed(LINK, &FetchError::TooLarge(fetch::DEFAULT_MAX_SIZE)).to_string();
+		assert!(error.contains(LINK) && error.contains("512 MB"), "{error}");
+		assert!(error.contains("--max-download-size"), "{error}");
+	}
+
+	#[test]
+	fn other_download_failures_name_the_link_and_the_reason() {
+		let error = fetch_failed(LINK, &FetchError::Http(404)).to_string();
+		assert!(error.contains(LINK) && error.contains("404"), "{error}");
+		assert!(!error.contains("--max-download-size"), "{error}");
+	}
+
+	#[test]
+	fn the_limit_downloads_use_can_be_set() {
+		assert_eq!(Downloads::default().max_size, fetch::DEFAULT_MAX_SIZE);
+		assert_eq!(Downloads::default().with_max_size(5).max_size, 5);
 	}
 
 	#[test]

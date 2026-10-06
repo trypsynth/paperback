@@ -18,8 +18,8 @@ use crate::version::user_agent;
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(30);
 const OVERALL_TIMEOUT: Duration = Duration::from_mins(10);
 const CHUNK_SIZE: usize = 8192;
-/// The largest document downloaded, in bytes.
-pub const MAX_SIZE: u64 = 16 * 1024 * 1024;
+/// The largest document downloaded unless a caller asks for another limit, in bytes.
+pub const DEFAULT_MAX_SIZE: u64 = 512 * 1024 * 1024;
 
 /// What a server says about a link before its body is read.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -128,13 +128,8 @@ pub struct Remote {
 ///
 /// Returns [`FetchError::Http`] for an error status, [`FetchError::Network`] when the server
 /// cannot be reached, and [`FetchError::TooLarge`] when the server announces more than
-/// [`MAX_SIZE`] bytes.
-pub fn open(url: &str) -> Result<Remote, FetchError> {
-	open_within(url, MAX_SIZE)
-}
-
-/// [`open`], with `max_size` in place of [`MAX_SIZE`].
-fn open_within(url: &str, max_size: u64) -> Result<Remote, FetchError> {
+/// `max_size` bytes, the limit [`Remote::save`] then holds the body to as well.
+pub fn open(url: &str, max_size: u64) -> Result<Remote, FetchError> {
 	let response = Agent::new_with_config(config_for(url)).get(url).header("User-Agent", &user_agent()).call()?;
 	let info = info_from(&response, url);
 	if info.size.is_some_and(|size| size > max_size) {

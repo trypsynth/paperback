@@ -47,6 +47,9 @@ pub struct Cli {
 	/// Never ask: exit with code 2 instead of prompting for a password, and refuse a link that gets a security warning instead of asking whether to download it (useful for batch processing)
 	#[arg(long)]
 	pub no_prompt: bool,
+	/// The largest document to download from a link, in MB
+	#[arg(long, value_name = "MB", default_value_t = 512)]
+	pub max_download_size: u64,
 	/// Keep every line of an untagged PDF page separate instead of joining wrapped lines back
 	/// into paragraphs (for code listings, poetry and transcripts)
 	#[arg(long)]
@@ -258,6 +261,12 @@ mod tests {
 
 		assert!(!parse(&["pb", "b.pdf"]).ocr_image_pages);
 		assert!(!parse(&["pb", "b.pdf"]).ocr_text_pages);
+	}
+
+	#[test]
+	fn downloads_are_limited_to_512_mb_unless_told_otherwise() {
+		assert_eq!(parse(&["pb", "https://example.org/a.pdf"]).max_download_size, 512);
+		assert_eq!(parse(&["pb", "https://example.org/a.pdf", "--max-download-size", "2048"]).max_download_size, 2048);
 	}
 
 	#[test]

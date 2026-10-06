@@ -89,6 +89,11 @@ fn read_files_from(path: &Path) -> Result<Vec<inputs::Given>> {
 
 /// Refuses `--files-from -` when stdin is the console, where pb would otherwise wait in silence
 /// for a list to be typed.
+/// `size` megabytes in bytes, held at `u64::MAX`.
+const fn megabytes(size: u64) -> u64 {
+	size.saturating_mul(1024 * 1024)
+}
+
 fn stdin_list_allowed(stdin_is_terminal: bool) -> Result<()> {
 	if stdin_is_terminal {
 		let example = if cfg!(windows) {
@@ -152,10 +157,9 @@ fn run(
 		destination,
 		selection,
 		converter: Converter::new(cli),
-		downloads: if cli.no_prompt {
-			remote::Downloads::default()
-		} else {
-			remote::Downloads::default().with_prompt(remote::ask_console)
+		downloads: {
+			let downloads = remote::Downloads::default().with_max_size(megabytes(cli.max_download_size));
+			if cli.no_prompt { downloads } else { downloads.with_prompt(remote::ask_console) }
 		},
 		written: HashMap::new(),
 	};
@@ -838,6 +842,12 @@ mod tests {
 		fs::write(&real, b"x").expect("write");
 		assert!(!inputs::is_pattern(&real), "a file that exists is a path whatever else it holds");
 		assert!(inputs::is_pattern(&dir.join("*.pdf")));
+	}
+
+	#[test]
+	fn the_download_limit_is_given_in_megabytes() {
+		assert_eq!(megabytes(512), 512 * 1024 * 1024);
+		assert_eq!(megabytes(u64::MAX), u64::MAX);
 	}
 
 	#[test]
