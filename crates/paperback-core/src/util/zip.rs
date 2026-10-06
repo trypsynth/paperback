@@ -124,13 +124,10 @@ pub fn zip_entry_name_resolver<R: Read + Seek>(archive: &ZipArchive<R>) -> impl 
 pub struct ZipEntryInfo {
 	/// The entry's name exactly as stored, so it can be passed back to the extract helpers.
 	pub name: String,
-	/// Whether a parser can open this entry.
 	pub supported: bool,
 }
 
-/// Lists the files in `archive`, skipping directories and any entry whose name would escape an
-/// extraction directory. Reads only the central directory (not each entry's own header, which is
-/// a seek per entry and takes seconds on a big archive), so encrypted entries are listed too.
+/// Lists the files in `archive`, skipping directories and any entry whose name would escape an extraction directory. Reads only the central directory (not each entry's own header, which is a seek per entry and takes seconds on a big archive), so encrypted entries are listed too.
 pub fn list_zip_entries<R: Read + Seek>(archive: &ZipArchive<R>) -> Vec<ZipEntryInfo> {
 	archive
 		.file_names()
@@ -142,15 +139,13 @@ pub fn list_zip_entries<R: Read + Seek>(archive: &ZipArchive<R>) -> Vec<ZipEntry
 		.collect()
 }
 
-/// Whether `name` is the file that opens a DAISY book (a DAISY 3 `.opf` or a DAISY 2.02 `ncc.html`).
 fn is_daisy_book_file(name: &str) -> bool {
 	let file_name = name.rsplit_once('/').map_or(name, |(_, file)| file);
 	file_name.eq_ignore_ascii_case("ncc.html")
 		|| Path::new(file_name).extension().is_some_and(|e| e.eq_ignore_ascii_case("opf"))
 }
 
-/// The books of an archive, for the "browse a zip" picker: every openable file, except that a
-/// DAISY book is one entry (its `.opf` or `ncc.html`) and the many files inside its folder are left out.
+/// A DAISY book is one entry (its `.opf` or `ncc.html`), so the many files inside its folder are left out of the picker.
 pub fn zip_books(entries: &[ZipEntryInfo]) -> Vec<String> {
 	let supported = || entries.iter().filter(|e| e.supported);
 	let book_dirs: HashSet<&str> = supported()
@@ -170,10 +165,7 @@ pub fn zip_books(entries: &[ZipEntryInfo]) -> Vec<String> {
 	supported().filter(|e| is_daisy_book_file(&e.name) || !inside_book(&e.name)).map(|e| e.name.clone()).collect()
 }
 
-/// Extracts `entry_name` of the archive at `zip_path` to a stable path under `cache_root` and
-/// returns it. The path depends only on the archive and entry, and the file keeps the entry's own
-/// name, so the extracted copy opens like any other file: the same reading position, bookmarks
-/// and recent-documents entry come back each time. An earlier copy is overwritten.
+/// The path depends only on the archive and entry, and the file keeps the entry's own name, so the extracted copy opens like any other file: the same reading position, bookmarks and recent-documents entry come back each time. An earlier copy is overwritten.
 pub fn extract_zip_entry_to_cache(zip_path: &Path, entry_name: &str, cache_root: &Path) -> Result<PathBuf> {
 	let mut archive = ZipArchive::new(BufReader::new(
 		File::open(zip_path).with_context(|| format!("Failed to open '{}'", zip_path.display()))?,

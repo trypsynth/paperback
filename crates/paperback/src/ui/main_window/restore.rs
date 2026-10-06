@@ -38,8 +38,7 @@ pub(super) fn schedule_restore_documents(
 		if state.restored || state.closing {
 			return;
 		}
-		// A dialog opened under the lock (e.g. the zip picker for a command-line file) runs a nested
-		// event loop that delivers this idle event; blocking here would deadlock, so retry later.
+		// A dialog opened under the lock (e.g. the zip picker for a command-line file) runs a nested event loop that delivers this idle event; blocking here would deadlock, so retry later.
 		let Ok(dm) = doc_manager.try_lock() else {
 			return;
 		};

@@ -5,8 +5,7 @@ use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 
-/// Lets the user pick one of `names` from inside a zip archive. Returns the index of the chosen
-/// name, or `None` if the dialog was cancelled. Closing the dialog with Alt+F4 also closes `parent`.
+/// Returns the index of the chosen name, or `None` if the dialog was cancelled. Closing it with Alt+F4 also closes `parent`.
 pub fn show_zip_entries_dialog(parent: &Frame, names: &[String]) -> Option<usize> {
 	// TRANSLATORS: Title of the dialog listing the documents inside a zip archive
 	let title = t("Open from Archive");
