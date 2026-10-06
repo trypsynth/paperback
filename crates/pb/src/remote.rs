@@ -120,7 +120,9 @@ impl Downloads {
 }
 
 fn not_downloaded(url: &str, extension: &str) -> anyhow::Error {
-	anyhow!("{url}: pb does not read .{extension} files, so it was not downloaded")
+	anyhow!(
+		"{url}: pb does not read .{extension} files, so it was not downloaded\nIf it is a document, download it yourself and pass the file instead"
+	)
 }
 
 /// The security warning for a link, naming what the server sends.
@@ -201,6 +203,7 @@ mod tests {
 		let error = downloads.fetch("https://example.invalid/setup.exe").err().expect("refused").to_string();
 		assert!(error.contains("https://example.invalid/setup.exe"), "{error}");
 		assert!(error.contains("not downloaded"), "{error}");
+		assert!(error.contains("download it yourself"), "{error}");
 		assert_eq!(entries(&dir.path), 0, "a refused link left a folder behind");
 	}
 
