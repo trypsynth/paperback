@@ -6,7 +6,7 @@ description: Paperback collects no personal data on any platform. There is no ac
 ---
 # Privacy Policy
 
-*Last updated: 2026-07-22*
+*Last updated: 2026-10-06*
 
 Paperback does not collect, store, or share any personal data. There is no account, no analytics, no advertising, and no tracking of any kind. This applies to every platform Paperback is available on.
 
@@ -38,4 +38,4 @@ If this policy ever changes, the update will be posted on this page with a new "
 
 ## Contact
 
-Questions about this policy can be filed as an issue on [GitHub](https://github.com/trypsynth/paperback/issues).
+Questions about this policy can be sent to [trypsynth@gmail.com](mailto:trypsynth@gmail.com). See the [support page](/support) for other ways to get in touch.

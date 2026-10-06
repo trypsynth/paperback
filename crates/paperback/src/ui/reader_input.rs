@@ -82,20 +82,6 @@ pub(super) fn build_text_ctrl(
 			}
 		}
 	});
-	// A Ctrl+C that reaches the control copies the whole document when everything loaded is
-	// selected; otherwise the control copies its selection.
-	#[cfg(not(target_os = "macos"))]
-	{
-		let dm_for_copy = Rc::clone(self_rc);
-		text_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
-			let handled = event.get_key_code() == Some(i32::from(b'C'))
-				&& event.control_down()
-				&& dm_for_copy.try_lock().is_ok_and(|dm| dm.copy_whole_document_if_all_selected());
-			if !handled {
-				event.skip(true);
-			}
-		});
-	}
 	let dm_for_key_up = Rc::clone(self_rc);
 	text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
 		event.skip(true);
@@ -137,6 +123,18 @@ pub(super) fn build_text_ctrl(
 			if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
 				kbd.event.skip(false);
 				show_reader_context_menu(text_ctrl_for_menu);
+				return;
+			}
+			// Ctrl+C is intercepted here because the reading control consumes it in its own window procedure, before wx consults the accelerator table, so it never becomes a menu command and the handler Edit > Copy reaches never runs for the keystroke. Raising the same command a click produces is what makes the two ways of copying behave identically.
+			// The mark is set here rather than by `bind_key_source`'s CHAR_HOOK, which resolves a key through the ActionIds and finds nothing for a wxWidgets stock command; without it the announcement is deferred as though a menu had been clicked, and read over by the focus chain returning to the book. It is cleared again when the command goes unhandled, so a Ctrl+C that reaches nothing cannot leave the mark set for the next click.
+			// macOS leaves Ctrl+C to the native copy, which is reached before this handler.
+			#[cfg(not(target_os = "macos"))]
+			if is_copy_key(key, kbd) {
+				kbd.event.skip(false);
+				from_keyboard.set(true);
+				if !frame_for_keys.process_menu_command(menu_ids::COPY) {
+					from_keyboard.set(false);
+				}
 				return;
 			}
 			if let Some(to_end) = document_edge_for_key(key, kbd.control_down(), kbd.shift_down(), kbd.alt_down()) {
@@ -253,6 +251,17 @@ pub(super) fn build_text_ctrl(
 
 const fn is_selection_command(action: ActionId) -> bool {
 	matches!(action, ActionId::SetSelectionStart | ActionId::CopyFromSelectionStart | ActionId::JumpToSelectionStart)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn is_copy_key(key: i32, kbd: &KeyboardEvent) -> bool {
+	is_copy_chord(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down())
+}
+
+/// Plain Control+C only; Ctrl+Shift+C and Ctrl+Alt+C are left to the reader, who may have bound one of those to something of their own. Its own function of the key and the modifiers so it can be tested without a `KeyboardEvent`, which cannot be built outside a running app.
+#[cfg(not(target_os = "macos"))]
+const fn is_copy_chord(key: i32, control: bool, alt: bool, shift: bool) -> bool {
+	key == 'C' as i32 && control && !alt && !shift
 }
 
 fn run_shortcut(action: ActionId, dm: &Rc<Mutex<DocumentManager>>, frame: &Frame) {
@@ -379,4 +388,27 @@ fn show_reader_context_menu(text_ctrl: TextCtrl) {
 		.append_item(menu_ids::GO_TO_PERCENT, &t("Go to &percent"), &t("Go to percent"))
 		.build();
 	text_ctrl.popup_menu(&mut menu, None);
+}
+
+#[cfg(all(test, not(target_os = "macos")))]
+mod tests {
+	use super::is_copy_chord;
+
+	const C: i32 = 'C' as i32;
+
+	/// The intercept has to recognise exactly Ctrl+C, or it would take a chord the reader bound to something else.
+	#[test]
+	fn only_plain_control_c_is_the_copy_key() {
+		assert!(is_copy_chord(C, true, false, false), "Ctrl+C is the copy key");
+		assert!(!is_copy_chord(C, false, false, false), "a bare C types a c");
+		assert!(!is_copy_chord(C, true, true, false), "Ctrl+Alt+C may be the reader's own");
+		assert!(!is_copy_chord(C, true, false, true), "Ctrl+Shift+C may be the reader's own");
+	}
+
+	/// Only the letter, so a neighbouring key on the keyboard is not mistaken for it.
+	#[test]
+	fn only_the_letter_c_is_the_copy_key() {
+		assert!(!is_copy_chord('V' as i32, true, false, false), "Ctrl+V pastes");
+		assert!(!is_copy_chord('X' as i32, true, false, false), "Ctrl+X cuts");
+	}
 }

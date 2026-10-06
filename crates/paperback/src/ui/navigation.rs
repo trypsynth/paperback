@@ -122,21 +122,29 @@ fn jump_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
 	seek_audio_to_position(tab, offset);
 }
 
-/// Selects the document-absolute range `[start, end)`, focusing the document and reloading
-/// `tab`'s window first if `start` falls outside it (see `DocumentTab::window`) - the range form
-/// of [`jump_to_doc_offset`], for jumps that should highlight a span of text (e.g. a Find match)
-/// rather than just place the caret. Keeps audio in sync with `start`, like `jump_to_doc_offset`.
+/// Reveals the document-absolute range `[start, end)` - a Find match - focusing the document and
+/// reloading `tab`'s window first if `start` falls outside it (see `DocumentTab::window`). The
+/// range form of [`jump_to_doc_offset`], for jumps to a span of text rather than to a single
+/// position. Keeps audio in sync with `start`, like `jump_to_doc_offset`.
+///
+/// With `highlight` the range is selected, which is what a sighted reader expects: the match is picked out on screen. Without it only the caret is moved, so nothing is selected and a screen reader reads the line around the caret as ordinary text instead of announcing a selected string. The caret goes to `start`, because a screen reader speaks the character after the caret: reading the current word then reads the match, and marking a selection start there takes the match in.
 ///
 /// Only `start` is checked against the window: a match is expected to be far shorter than a
 /// window's `RELOAD_MARGIN`, so `end` lands safely inside whatever window `start` triggers.
-pub fn select_doc_range(tab: &mut DocumentTab, start: i64, end: i64) {
+pub fn reveal_doc_range(tab: &mut DocumentTab, start: i64, end: i64, highlight: bool) {
 	if tab.window.needs_reload_for(start, tab.session.document_len()) {
 		reload_window_around(tab, start, "selection jump");
 	}
 	let local_start = tab.window.to_local(start);
 	let local_end = tab.window.to_local(end);
 	tab.text_ctrl.set_focus();
-	tab.text_ctrl.set_selection(local_start, local_end);
+	if highlight {
+		tab.text_ctrl.set_selection(local_start, local_end);
+	} else {
+		// Moving the insertion point collapses any selection, so this also takes the highlight
+		// off a match found while the setting was still on.
+		tab.text_ctrl.set_insertion_point(local_start);
+	}
 	tab.text_ctrl.show_position(local_start);
 	seek_audio_to_position(tab, start);
 }

@@ -441,8 +441,8 @@ msgid "Go to next bookmark"
 msgstr "Przejdź do następnej zakładki"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
-msgid "Previous &Note"
-msgstr "Poprzednia &notatka"
+#~ msgid "Previous &Note"
+#~ msgstr "Poprzednia &notatka"
 
 #. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
 msgid "Go to previous note"
@@ -473,8 +473,8 @@ msgid "Show bookmarks only"
 msgstr "Pokaż tylko zakładki"
 
 #. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
-msgid "Jump to Notes &Only..."
-msgstr "Przejdź tylko do n&otatek..."
+#~ msgid "Jump to Notes &Only..."
+#~ msgstr "Przejdź tylko do n&otatek..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
 msgid "Show notes only"
@@ -489,24 +489,24 @@ msgid "View the note at current position"
 msgstr "Wyświetl notatkę w bieżącej pozycji"
 
 #. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
-msgid "Toggle &Bookmark"
-msgstr "Przełącz &zakładkę"
+#~ msgid "Toggle &Bookmark"
+#~ msgstr "Przełącz &zakładkę"
 
 #. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
-msgid "Bookmark with &Note"
-msgstr "Zakładka z &notatką"
+#~ msgid "Bookmark with &Note"
+#~ msgstr "Zakładka z &notatką"
 
 #. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
-msgid "Set Selection St&art"
-msgstr "&Ustaw początek zaznaczenia"
+#~ msgid "Set Selection St&art"
+#~ msgstr "&Ustaw początek zaznaczenia"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
 msgid "Mark the beginning of a selection to copy from"
 msgstr "Oznacz początek zaznaczenia, od którego chcesz kopiować tekst"
 
 #. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
-msgid "&Copy from Selection Start"
-msgstr "&Kopiuj od początku zaznaczenia"
+#~ msgid "&Copy from Selection Start"
+#~ msgstr "&Kopiuj od początku zaznaczenia"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
 msgid "Copy from the beginning of the selection to here"
@@ -545,16 +545,16 @@ msgid "Skip the audio narration backward"
 msgstr "Przewiń narrację dźwiękową w tył"
 
 #. TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
-msgid "&Increase Audio Seek Amount"
-msgstr "&Zwiększ skok przewijania dźwięku"
+#~ msgid "&Increase Audio Seek Amount"
+#~ msgstr "&Zwiększ skok przewijania dźwięku"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 msgid "Increase how far seeking the audio narration moves"
 msgstr "Zwiększ skok przewijania narracji dźwiękowej"
 
 #. TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
-msgid "&Decrease Audio Seek Amount"
-msgstr "Z&mniejsz skok przewijania dźwięku"
+#~ msgid "&Decrease Audio Seek Amount"
+#~ msgstr "Z&mniejsz skok przewijania dźwięku"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 msgid "Decrease how far seeking the audio narration moves"
@@ -1674,8 +1674,8 @@ msgid "Show All..."
 msgstr "Pokaż wszystkie..."
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-msgid "Go to &Page"
-msgstr "Przejdź do &strony"
+#~ msgid "Go to &Page"
+#~ msgstr "Przejdź do &strony"
 
 #. TRANSLATORS: Menu item in the Go menu to open the find dialog.
 msgid "&Find..."
@@ -1694,16 +1694,16 @@ msgid "Find previous occurrence"
 msgstr "Znajdź poprzednie wystąpienie"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
-msgid "Go to &line..."
-msgstr "Przejdź do &wiersza..."
+#~ msgid "Go to &line..."
+#~ msgstr "Przejdź do &wiersza..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
 msgid "Go to a specific line"
 msgstr "Przejdź do określonego wiersza"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
-msgid "Go to &percent..."
-msgstr "Przejdź do &procentu..."
+#~ msgid "Go to &percent..."
+#~ msgstr "Przejdź do &procentu..."
 
 #. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
 msgid "Go to a percentage of the document"
@@ -1746,12 +1746,12 @@ msgid "&Bookmarks"
 msgstr "&Zakładki"
 
 #. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
-msgid "Navigate by bookmarks"
-msgstr "Nawiguj po zakładkach"
+#~ msgid "Navigate by bookmarks"
+#~ msgstr "Nawiguj po zakładkach"
 
 #. TRANSLATORS: Label for the Links submenu in the compact Go menu.
-msgid "&Links"
-msgstr "&Odnośniki"
+#~ msgid "&Links"
+#~ msgstr "&Odnośniki"
 
 #. TRANSLATORS: Status-bar help text for the Go > Links submenu.
 msgid "Navigate by links"
@@ -1766,8 +1766,8 @@ msgid "Navigate by images"
 msgstr "Nawiguj po obrazach"
 
 #. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
-msgid "&Figures"
-msgstr "&Rysunki"
+#~ msgid "&Figures"
+#~ msgstr "&Rysunki"
 
 #. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
 msgid "Navigate by figures"
@@ -1790,8 +1790,8 @@ msgid "Navigate by formulas"
 msgstr "Nawiguj po wzorach"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
-msgid "&Separators"
-msgstr "Se&paratory"
+#~ msgid "&Separators"
+#~ msgstr "Se&paratory"
 
 #. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
 msgid "Navigate by separators"
@@ -1910,8 +1910,8 @@ msgid "Show document information"
 msgstr "Pokaż informacje o dokumencie"
 
 #. TRANSLATORS: Menu item in the Tools menu to show the document's table of contents.
-msgid "&Table of Contents"
-msgstr "&Spis treści"
+#~ msgid "&Table of Contents"
+#~ msgstr "&Spis treści"
 
 #. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
 msgid "Show table of contents"
@@ -1950,24 +1950,24 @@ msgid "Open the document source in a new tab"
 msgstr "Otwórz źródło dokumentu w nowej karcie"
 
 #. TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
-msgid "I&mport/Export"
-msgstr "I&mport/eksport"
+#~ msgid "I&mport/Export"
+#~ msgstr "I&mport/eksport"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
-msgid "Import and export options"
-msgstr "Opcje importu i eksportu"
+#~ msgid "Import and export options"
+#~ msgstr "Opcje importu i eksportu"
 
 #. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
-msgid "Select and &copy"
-msgstr "Zaznacz i &kopiuj"
+#~ msgid "Select and &copy"
+#~ msgstr "Zaznacz i &kopiuj"
 
 #. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
-msgid "Mark a selection and copy from it"
-msgstr "Ustaw początek zaznaczenia i skopiuj od niego tekst"
+#~ msgid "Mark a selection and copy from it"
+#~ msgstr "Ustaw początek zaznaczenia i skopiuj od niego tekst"
 
 #. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
-msgid "Word w&rap"
-msgstr "Zawijanie wie&rszy"
+#~ msgid "Word w&rap"
+#~ msgstr "Zawijanie wie&rszy"
 
 #. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 msgid "Toggle word wrap"
@@ -1986,8 +1986,8 @@ msgid "&Settings"
 msgstr "&Ustawienia"
 
 #. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
-msgid "&Sleep Timer..."
-msgstr "&Wyłącznik czasowy..."
+#~ msgid "&Sleep Timer..."
+#~ msgstr "&Wyłącznik czasowy..."
 
 #. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
 msgid "&Batch OCR..."
@@ -4534,6 +4534,102 @@ msgstr "Brak innych głosów"
 
 #~ msgid "Root"
 #~ msgstr "Początek"
+
+#. TRANSLATORS: Top-level "Audio" menu label in the menu bar
+msgid "&Audio"
+msgstr "&Dźwięk"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
+msgid "&Go to Page"
+msgstr "Prze&jdź do strony"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to go back to the position remembered as the temporary bookmark.
+msgid "&Jump to Temporary Bookmark"
+msgstr "Przejdź do zakładki t&ymczasowej"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
+msgid "&Set Temporary Bookmark"
+msgstr "&Ustaw zakładkę tymczasową"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to add or remove a bookmark at the current reading position.
+msgid "&Toggle Bookmark"
+msgstr "Przełącz &zakładkę"
+
+#. TRANSLATORS: Top-level "View" menu label in the menu bar
+msgid "&View"
+msgstr "&Widok"
+
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Audio"
+msgstr "Dźwięk"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
+msgid "Bookmark &with Note"
+msgstr "Zakładka z no&tatką"
+
+#. TRANSLATORS: Menu item in the Edit menu to copy everything from the marked beginning of a selection to the current position.
+msgid "Copy fro&m Selection Start"
+msgstr "Kopiuj &od początku zaznaczenia"
+
+#. TRANSLATORS: Menu item in the Audio menu to decrease the amount of time each audio seek skips.
+msgid "Decrease Audio Seek Am&ount"
+msgstr "Z&mniejsz skok przewijania dźwięku"
+
+#. TRANSLATORS: Label for the Export submenu in the File menu, which lists the formats a document can be exported to.
+msgid "Ex&port"
+msgstr "Ekspo&rt"
+
+#. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
+msgid "Fig&ures"
+msgstr "Rys&unki"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
+msgid "Go to li&ne..."
+msgstr "Przejdź do w&iersza..."
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
+msgid "Go to pe&rcent..."
+msgstr "Pr&zejdź do procentu..."
+
+#. TRANSLATORS: Menu item in the Audio menu to increase the amount of time each audio seek skips.
+msgid "Increase Audio Seek &Amount"
+msgstr "&Zwiększ skok przewijania dźwięku"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only notes.
+msgid "Jump to Notes Onl&y..."
+msgstr "Przejdź tylko &do notatek..."
+
+#. TRANSLATORS: Label for the Links submenu in the compact Go menu.
+msgid "Lin&ks"
+msgstr "O&dnośniki"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the previous note in the document.
+msgid "Previous Not&e"
+msgstr "Poprzednia not&atka"
+
+#. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
+msgid "Sep&arators"
+msgstr "Sepa&ratory"
+
+#. TRANSLATORS: Menu item in the Edit menu to mark the current position as the beginning of a selection to copy from later.
+msgid "Set &Selection Start"
+msgstr "U&staw początek zaznaczenia"
+
+#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
+msgid "Sleep &Timer..."
+msgstr "&Wyłącznik czasowy..."
+
+#. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
+msgid "Table &of Contents"
+msgstr "Spis treś&ci"
+
+#. TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "View"
+msgstr "Widok"
+
+#. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
+msgid "W&ord wrap"
+msgstr "&Zawijanie wierszy"
 
 #~ msgid "Open folder containing the document"
 #~ msgstr "Otwórz folder zawierający dokument"

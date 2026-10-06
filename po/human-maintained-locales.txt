@@ -15,6 +15,7 @@ cs
 fi
 ja
 pl
+sk
 sr
 zh_CN
 uk

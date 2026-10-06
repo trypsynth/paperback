@@ -8,7 +8,10 @@ use paperback_core::{config::ConfigManager, session::FindAllLine, util::text::di
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{document_manager::DocumentManager, navigation};
+use super::{
+	document_manager::{DocumentManager, DocumentTab},
+	navigation,
+};
 use crate::search::{FindOptions, find_text_with_wrap};
 
 mod dialog;
@@ -49,6 +52,10 @@ pub struct FindDialogState {
 	in_progress: Rc<Cell<bool>>,
 	view: Rc<Cell<FindView>>,
 	origin: Rc<Cell<i64>>,
+	/// The document-absolute span of the match the last Find jumped to, when found text is not
+	/// left selected. See [`FindDialogState::search_origin`] for why the span is kept rather than
+	/// read back off the widget.
+	last_match: Rc<Cell<Option<(i64, i64)>>>,
 	result_rows: Rc<RefCell<Vec<FindAllLine>>>,
 	result_labels: Rc<RefCell<Vec<String>>>,
 }
@@ -110,6 +117,7 @@ impl FindDialogState {
 			in_progress: Rc::new(Cell::new(false)),
 			view: Rc::new(Cell::new(FindView::Query)),
 			origin: Rc::new(Cell::new(0)),
+			last_match: Rc::new(Cell::new(None)),
 			result_rows,
 			result_labels,
 		};
@@ -168,6 +176,37 @@ impl FindDialogState {
 			return None;
 		}
 		Some(FindInProgressGuard { flag: Rc::clone(&self.in_progress) })
+	}
+
+	/// Where the next search resumes from, as a document-absolute `(start, end)` pair.
+	///
+	/// A live selection is the origin: either the match the previous Find left selected, or text
+	/// the reader selected themselves to search from. With found text left unselected there is no
+	/// selection to read that from, and the caret alone will not do - searching from it would land
+	/// straight back on the match the reader is already sitting on, so Find Next would never move.
+	/// The span of the last match is used instead, but only while the caret still sits at one of
+	/// its ends: anywhere else means the reader has moved, and the caret is the origin.
+	fn search_origin(&self, tab: &DocumentTab) -> (i64, i64) {
+		let (start, end) = navigation::doc_selected_range(tab);
+		if start != end {
+			return (start, end);
+		}
+		match self.last_match.get() {
+			Some((match_start, match_end)) if start == match_start || start == match_end => (match_start, match_end),
+			_ => (start, end),
+		}
+	}
+
+	/// Moves to the match at `[start, end)`, highlighted or not according to the reader's setting.
+	///
+	/// An unselected match leaves nothing in the widget for [`Self::search_origin`] to read the
+	/// next search's starting point from, so its span is remembered here at the same time. A
+	/// selected one is its own record, and is left to be one.
+	fn reveal_match(&self, tab: &mut DocumentTab, start: i64, end: i64, highlight: bool) {
+		navigation::reveal_doc_range(tab, start, end, highlight);
+		if !highlight {
+			self.last_match.set(Some((start, end)));
+		}
 	}
 
 	/// Empties the results list and its cached labels, so leaving Find All does not leave tens of
@@ -351,6 +390,9 @@ fn do_find(
 	};
 	state.save_settings(config);
 	state.add_to_history(config, &query);
+	// Read before the document lock is taken, so the two locks are never held the other way round
+	// from the rest of the app.
+	let highlight_found_text = config.lock().unwrap().get_app_bool("highlight_found_text", true);
 	let mut options = FindOptions::default();
 	if forward {
 		options |= FindOptions::FORWARD;
@@ -375,8 +417,8 @@ fn do_find(
 	// text_ctrl) in the same document-absolute coordinate space `tab.window` uses, so a
 	// found match can be reached even when it falls outside the loaded window.
 	let text = tab.session.content();
-	let (sel_start, sel_end) = navigation::doc_selected_range(tab);
-	let start_pos = if forward { sel_end } else { sel_start };
+	let (origin_start, origin_end) = state.search_origin(tab);
+	let start_pos = if forward { origin_end } else { origin_start };
 	let result = find_text_with_wrap(&text, &query, start_pos, options);
 	tracing::debug!(query = %query, forward, found = result.found, wrapped = result.wrapped, "find search");
 	if !result.found {
@@ -407,7 +449,7 @@ fn do_find(
 	// Capture the line containing the match while the document lock is held; it is
 	// announced after focus has returned to the book.
 	let found_line = tab.session.get_line_text(start);
-	navigation::select_doc_range(tab, start, end);
+	state.reveal_match(tab, start, end, highlight_found_text);
 	drop(dm);
 	state.dialog.show(false);
 	let message = if result.wrapped {

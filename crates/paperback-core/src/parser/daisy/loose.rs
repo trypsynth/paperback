@@ -17,7 +17,7 @@ use crate::{
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
 	t,
-	util::encoding::convert_to_utf8,
+	util::encoding::decode_html,
 };
 
 /// Parses a DAISY book laid out as loose files on disk: either DAISY 3, where
@@ -30,7 +30,7 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	if path.file_name().is_some_and(|n| n.eq_ignore_ascii_case("ncc.html")) {
 		return parse_daisy2(context, path, title);
 	}
-	let opf_content = convert_to_utf8(&fs::read(path)?);
+	let opf_content = decode_html(&fs::read(path)?, None);
 	let package = parse_opf_package(&opf_content, "")?;
 	if let Some(t) = package.title.clone() {
 		title = t;
@@ -42,8 +42,9 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	{
 		let mut read_text = |href: &str| -> Result<String> {
 			let full_path = base_dir.join(href);
-			Ok(convert_to_utf8(
+			Ok(decode_html(
 				&fs::read(&full_path).with_context(|| format!("Failed to read file at {}", full_path.display()))?,
+				None,
 			))
 		};
 		let resolve_audio = |href: &str| AudioLocation::File(base_dir.join(href).to_string_lossy().to_string());
@@ -62,9 +63,10 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	let dtbook_found = dtbook_href.is_some();
 	if let Some(dtbook_path) = dtbook_href {
 		let xml_full_path = base_dir.join(&dtbook_path);
-		let xml_content = convert_to_utf8(
+		let xml_content = decode_html(
 			&fs::read(&xml_full_path)
 				.with_context(|| format!("Failed to read DTBook XML file at {}", xml_full_path.display()))?,
+			None,
 		);
 		let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 		if converter.convert(&xml_content) {
@@ -82,7 +84,7 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 						ncx_found = true;
 						match fs::read(&entry_path) {
 							Ok(bytes) => {
-								let ncx_content = convert_to_utf8(&bytes);
+								let ncx_content = decode_html(&bytes, None);
 								if let Some(ncx_toc) =
 									parse_daisy_ncx(&ncx_content, "", converter.get_id_positions(), &HashMap::new())
 									&& !ncx_toc.is_empty()
@@ -125,7 +127,7 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 /// Parses a DAISY 2.02 book laid out as loose files on disk: `path` names `ncc.html`, with the
 /// SMIL (for narrated books), content HTML, and audio files sitting alongside it.
 fn parse_daisy2(context: &ParserContext, path: &Path, mut title: String) -> Result<Document> {
-	let ncc_content = convert_to_utf8(&fs::read(path)?);
+	let ncc_content = decode_html(&fs::read(path)?, None);
 	let mut author = String::new();
 	let (ncc_title, ncc_author) = parse_daisy2_ncc_metadata(&ncc_content);
 	if let Some(t) = ncc_title {
@@ -138,8 +140,9 @@ fn parse_daisy2(context: &ParserContext, path: &Path, mut title: String) -> Resu
 	let ncc_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("ncc.html");
 	let mut read_text = |href: &str| -> Result<String> {
 		let full_path = base_dir.join(href);
-		Ok(convert_to_utf8(
+		Ok(decode_html(
 			&fs::read(&full_path).with_context(|| format!("Failed to read file at {}", full_path.display()))?,
+			None,
 		))
 	};
 	let resolve_audio = |href: &str| AudioLocation::File(base_dir.join(href).to_string_lossy().to_string());

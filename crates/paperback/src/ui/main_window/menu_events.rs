@@ -220,7 +220,7 @@ impl MainWindow {
 						}
 					}
 					#[cfg(not(target_os = "macos"))]
-					menu_edit::handle_copy(&dm);
+					menu_edit::handle_copy(&dm, live_region_label, from_keyboard);
 				}
 				#[cfg(not(target_os = "macos"))]
 				menu_ids::SELECT_ALL => {

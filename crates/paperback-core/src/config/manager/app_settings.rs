@@ -29,6 +29,7 @@ impl ConfigManager {
 			"find_match_case" => data.app.find_match_case,
 			"find_whole_word" => data.app.find_whole_word,
 			"find_use_regex" => data.app.find_use_regex,
+			"highlight_found_text" => data.app.highlight_found_text,
 			_ => data.app.extra.get(key).and_then(toml::Value::as_bool).unwrap_or(default_value),
 		}
 	}
@@ -86,6 +87,7 @@ impl ConfigManager {
 				"find_match_case" => data.app.find_match_case = value,
 				"find_whole_word" => data.app.find_whole_word = value,
 				"find_use_regex" => data.app.find_use_regex = value,
+				"highlight_found_text" => data.app.highlight_found_text = value,
 				_ => {
 					data.app.extra.insert(key.to_string(), toml::Value::Boolean(value));
 				}
@@ -140,6 +142,15 @@ mod tests {
 		assert!(config.get_app_bool("strip_running_text", true));
 		config.set_app_bool("strip_running_text", false);
 		assert!(!config.get_app_bool("strip_running_text", true));
+	}
+
+	#[test]
+	fn highlight_found_text_round_trips() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		assert!(config.get_app_bool("highlight_found_text", true));
+		config.set_app_bool("highlight_found_text", false);
+		assert!(!config.get_app_bool("highlight_found_text", true));
 	}
 
 	#[test]

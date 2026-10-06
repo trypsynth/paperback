@@ -10,7 +10,7 @@ use crate::{
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
 	t,
-	util::encoding::convert_to_utf8,
+	util::encoding::decode_html,
 };
 
 pub struct HtmlParser;
@@ -25,7 +25,7 @@ impl Parser for HtmlParser {
 			// TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 			anyhow::bail!(t("HTML file is empty: {}").replace("{}", &context.file_path));
 		}
-		let html_content = convert_to_utf8(&bytes);
+		let html_content = decode_html(&bytes, None);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&html_content, HtmlSourceMode::NativeHtml) {
 			// currently unreachable, HtmlToText::convert never returns false today
@@ -105,6 +105,16 @@ mod tests {
 		assert_eq!(doc.toc_items[0].name, "Chapter One");
 		assert_eq!(doc.toc_items[0].children.len(), 1);
 		assert_eq!(doc.toc_items[0].children[0].name, "Section");
+	}
+
+	#[test]
+	fn reads_a_page_in_the_charset_it_declares() {
+		let (bytes, _, _) = encoding_rs::WINDOWS_1251.encode("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1251\"><title>Москва</title></head><body><p>Привет</p></body></html>");
+		let dir = TempDir::new("html-parser");
+		let doc =
+			HtmlParser.parse(&ParserContext::new(dir.write_str("page.html", bytes))).expect("parse html document");
+		assert_eq!(doc.title, "Москва");
+		assert!(doc.buffer.content.contains("Привет"), "text: {:?}", doc.buffer.content);
 	}
 
 	#[test]

@@ -40,6 +40,7 @@ pub struct OptionsDialogResult {
 	pub compact_go_menu: bool,
 	pub navigation_wrap: bool,
 	pub line_start_navigation: bool,
+	pub highlight_found_text: bool,
 	pub check_for_updates_on_startup: bool,
 	pub bookmark_sounds: bool,
 	pub sync_caret_to_audio: bool,
@@ -74,6 +75,7 @@ struct OptionsDialogUi {
 	compact_go_menu_check: CheckBox,
 	navigation_wrap_check: CheckBox,
 	line_start_nav_check: CheckBox,
+	highlight_found_text_check: CheckBox,
 	check_for_updates_check: CheckBox,
 	bookmark_sounds_check: CheckBox,
 	sync_caret_to_audio_check: CheckBox,
@@ -134,6 +136,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
 		navigation_wrap: ui.navigation_wrap_check.is_checked(),
 		line_start_navigation: ui.line_start_nav_check.is_checked(),
+		highlight_found_text: ui.highlight_found_text_check.is_checked(),
 		check_for_updates_on_startup: ui.check_for_updates_check.is_checked(),
 		bookmark_sounds: ui.bookmark_sounds_check.is_checked(),
 		sync_caret_to_audio: ui.sync_caret_to_audio_check.is_checked(),
@@ -196,6 +199,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let line_start_nav_check =
 		// TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
 		CheckBox::builder(&reading_panel).with_label(&t("Move to &start of line")).build();
+	let highlight_found_text_check = CheckBox::builder(&reading_panel)
+		// TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+		.with_label(&t("&Highlight found text"))
+		.build();
 	let bookmark_sounds_check =
 		// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
@@ -290,6 +297,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
 	reading_sizer.add(&line_start_nav_check, 0, SizerFlag::All, option_padding);
+	reading_sizer.add(&highlight_found_text_check, 0, SizerFlag::All, option_padding);
 	for check in [&compact_go_menu_check, &bookmark_sounds_check, &sync_caret_to_audio_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
@@ -468,6 +476,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
 	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
+	highlight_found_text_check.set_value(config.get_app_bool("highlight_found_text", true));
 	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
 	sync_caret_to_audio_check.set_value(config.get_app_bool("sync_caret_to_audio", true));
 	let stored_seek_amount = config.get_app_int("audio_seek_amount_seconds", 10);
@@ -597,6 +606,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		compact_go_menu_check,
 		navigation_wrap_check,
 		line_start_nav_check,
+		highlight_found_text_check,
 		check_for_updates_check,
 		bookmark_sounds_check,
 		sync_caret_to_audio_check,

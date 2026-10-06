@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 50ae5f8f1895cd78; sections: 84030068,db723a70,df2f4c18,14335443,1387e8b7,3887c286,75b3aaec,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -25,7 +25,7 @@ Paperback chạy trên Windows 10/11, tất cả các phiên bản ARM macOS hi�
 * Đọc các trang PDF được quét bằng OCR tích hợp trong Windows và macOS.
 * Dấu trang và ghi chú, để bạn có thể đánh dấu vị trí của mình và quay lại nó.
 * Mọi phím tắt bàn phím có thể được thay đổi.
-* Đi kèm với `pb`, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy.
+* Đi kèm với `pb`, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy. Nó có thể nhận bao nhiêu tài liệu bạn cung cấp, tự động mở rộng `*.pdf` và các tệp tương tự để lệnh dòng lệnh tương tự hoạt động trên Windows, và có thể ghi một tệp trên mỗi tài liệu vào một thư mục.
 
 ## Khả năng Tương thích với Trình Đọc Màn hình
 
@@ -81,15 +81,34 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 * `Ctrl+F4` (macOS: `Cmd+W`): Đóng tài liệu hiện tại.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Đóng tất cả các tài liệu đang mở.
 * `Ctrl+Shift+T`: Mở lại tài liệu đã đóng lần cuối.
-* `F5`: Đọc lại tài liệu hiện tại từ đĩa. Hoạt động cho dù "Tự động tải lại các tài liệu đã thay đổi" có được bật trong Cài đặt hay không.
 * `Ctrl+R`: Hiển thị hộp thoại "Tất cả tài liệu" (từ Tài liệu gần đây).
+* `Ctrl+Shift+C`: Mở thư mục chứa.
+* `Ctrl+Shift+E`: Xuất dữ liệu tài liệu (`.paperback`).
+* `Ctrl+Shift+I`: Nhập dữ liệu tài liệu (`.paperback`).
+* `Ctrl+E`: Xuất tài liệu hiện tại sang văn bản thuần.
 * `Ctrl+Q`: Thoát (chỉ Windows; trên macOS điều này nằm trong menu ứng dụng thay vào đó).
 
-### Menu Go
+### Menu Chỉnh sửa
 
 * `Ctrl+F`: Hiển thị hộp thoại Tìm.
 * `F3` (macOS: `Cmd+G`): Tìm tiếp theo.
 * `Shift+F3` (macOS: `Cmd+Shift+G`): Tìm trước đó.
+* `Alt+F9` (macOS: `Cmd+F9`): Đánh dấu đầu lựa chọn, để mọi thứ từ đây đến nơi bạn đến có thể được sao chép cùng một lúc.
+* `Alt+F10` (macOS: `Cmd+F10`): Sao chép mọi thứ từ đầu lựa chọn được đánh dấu đến vị trí hiện tại.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Nhảy lại đầu lựa chọn được đánh dấu, để lại dấu tại chỗ.
+
+### Menu Xem
+
+* `F5`: Đọc lại tài liệu hiện tại từ đĩa. Hoạt động cho dù "Tự động tải lại các tài liệu đã thay đổi" có được bật trong Cài đặt hay không.
+* `Ctrl+Alt+W`: Bật/tắt tự động ngắt dòng.
+* `F11` (macOS: `RawCtrl+Ctrl+F`, tức là Control+Command+F): Bật/tắt toàn màn hình.
+* `Ctrl+Shift+V`: Mở nội dung hiện tại trong Chế độ xem web.
+* `Ctrl+U`: Xem nguồn tài liệu trong một tab mới.
+
+### Menu Điều hướng
+
+* `Ctrl+T`: Hiển thị mục lục.
+* `F7`: Hiển thị danh sách phần tử.
 * `Ctrl+G` (macOS: `Cmd+L`): Đi đến dòng.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Đi đến phần trăm.
 * `Ctrl+P`: Đi đến trang (khi được tài liệu hiện tại hỗ trợ).
@@ -104,16 +123,6 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 * `1` đến `6`: Tiêu đề tiếp theo ở mức 1-6.
 * `Shift+P`: Trang trước.
 * `P`: Trang tiếp theo.
-* `Shift+B`: Dấu trang trước.
-* `B`: Dấu trang tiếp theo.
-* `/`: Đặt dấu trang tạm thời của bạn.
-* `\`: Nhảy đến dấu trang tạm thời của bạn.
-* `Shift+N`: Ghi chú trước.
-* `N`: Ghi chú tiếp theo.
-* `Ctrl+B`: Nhảy đến tất cả dấu trang và ghi chú.
-* `Ctrl+Alt+B`: Nhảy đến dấu trang chỉ.
-* `Ctrl+Alt+M`: Nhảy đến ghi chú chỉ.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, tức là phím Control vật lý chứ không phải Cmd): Xem văn bản ghi chú ở vị trí hiện tại.
 * `Shift+K`: Liên kết trước.
 * `K`: Liên kết tiếp theo.
 * `Shift+G`: Hình ảnh trước.
@@ -133,21 +142,23 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 * `Shift+,`: Đi đến đầu vùng chứa hiện tại (danh sách hoặc bảng).
 * `,`: Đi quá cuối vùng chứa hiện tại (danh sách hoặc bảng).
 
-### Menu Công cụ
+### Menu Dấu trang
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, tức là phím Control vật lý chứ không phải Cmd): Hiển thị số từ cho tài liệu hiện tại.
-* `Ctrl+I`: Hiển thị thông tin tài liệu.
-* `Ctrl+T`: Hiển thị mục lục.
-* `F7`: Hiển thị danh sách phần tử.
-* `Ctrl+Shift+C`: Mở thư mục chứa.
-* `Ctrl+Shift+V`: Mở nội dung hiện tại trong Web View.
-* `Ctrl+U`: Xem nguồn tài liệu trong một tab mới.
-* `Ctrl+Shift+E`: Xuất dữ liệu tài liệu (`.paperback`).
-* `Ctrl+Shift+I`: Nhập dữ liệu tài liệu (`.paperback`).
-* `Ctrl+E`: Xuất tài liệu hiện tại sang văn bản thuần.
 * `Ctrl+Shift+B`: Bật/tắt dấu trang ở lựa chọn/con trỏ hiện tại.
 * `Ctrl+Shift+N`: Thêm hoặc chỉnh sửa ghi chú dấu trang ở lựa chọn/con trỏ hiện tại.
-* `Ctrl+Alt+W`: Bật/tắt tự động ngắt dòng.
+* `Shift+B`: Dấu trang trước.
+* `B`: Dấu trang tiếp theo.
+* `Shift+N`: Ghi chú trước.
+* `N`: Ghi chú tiếp theo.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, tức là phím Control vật lý chứ không phải Cmd): Xem văn bản ghi chú ở vị trí hiện tại.
+* `Ctrl+B`: Nhảy đến tất cả dấu trang và ghi chú.
+* `Ctrl+Alt+B`: Nhảy đến dấu trang chỉ.
+* `Ctrl+Alt+M`: Nhảy đến ghi chú chỉ.
+* `/`: Đặt dấu trang tạm thời của bạn.
+* `\`: Nhảy đến dấu trang tạm thời của bạn.
+
+### Menu Âm Thanh
+
 * `Ctrl+Space` (macOS: `RawCtrl+Space`, tức là phím Control vật lý, vì Cmd+Space mở Spotlight): Phát/tạm dừng kể chuyện âm thanh.
 * `'`: Tìm kiếm kể chuyện âm thanh về phía trước.
 * `;`: Tìm kiếm kể chuyện âm thanh về phía sau.
@@ -155,13 +166,14 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 * `Shift+;`: Giảm lượng tìm kiếm âm thanh.
 * `Ctrl+Shift+.`: Tăng tốc độ kể chuyện âm thanh.
 * `Ctrl+Shift+,`: Giảm tốc độ kể chuyện âm thanh.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, tức là Control+Command+F): Bật/tắt toàn màn hình.
-* `Ctrl+,`: Mở Cài đặt (macOS: trong menu ứng dụng).
-* `Ctrl+Shift+S`: Bật/tắt bộ hẹn giờ ngủ.
+
+### Menu Công Cụ
+
+* `Ctrl+W` (macOS: `RawCtrl+W`, tức là phím Control vật lý chứ không phải Cmd): Hiển thị số từ cho tài liệu hiện tại.
+* `Ctrl+I`: Hiển thị thông tin tài liệu.
 * `Ctrl+Shift+O`: Nhận diện một loạt các trang PDF được quét bằng OCR.
-* `Alt+F9` (macOS: `Cmd+F9`): Đánh dấu đầu lựa chọn, để mọi thứ từ đây đến nơi bạn đến có thể được sao chép cùng một lúc.
-* `Alt+F10` (macOS: `Cmd+F10`): Sao chép mọi thứ từ đầu lựa chọn được đánh dấu đến vị trí hiện tại.
-* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): Nhảy lại đầu lựa chọn được đánh dấu, để lại dấu tại chỗ.
+* `Ctrl+Shift+S`: Bật/tắt bộ hẹn giờ ngủ.
+* `Ctrl+,`: Mở Cài đặt (macOS: trong menu ứng dụng).
 
 ### Menu Trợ giúp
 
