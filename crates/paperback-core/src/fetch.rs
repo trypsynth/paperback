@@ -159,14 +159,15 @@ fn safe_file_name(name: &str) -> Option<String> {
 	Some(shortened(&named))
 }
 
-/// Whether Windows reads `name` as a device: `CON`, `PRN`, `AUX`, `NUL`, `COM0`-`COM9` or
-/// `LPT0`-`LPT9`, in any case and with any extension.
+/// Whether Windows reads `name` as a device: `CON`, `PRN`, `AUX`, `NUL`, or `COM` or `LPT` followed
+/// by a digit or one of `¹²³`, in any case and with any extension.
 fn is_device_name(name: &str) -> bool {
 	let stem = name.split('.').next().unwrap_or_default().trim_end().to_ascii_uppercase();
+	let characters: Vec<char> = stem.chars().collect();
 	matches!(stem.as_str(), "CON" | "PRN" | "AUX" | "NUL")
-		|| (stem.len() == 4
+		|| (characters.len() == 4
 			&& (stem.starts_with("COM") || stem.starts_with("LPT"))
-			&& stem.as_bytes()[3].is_ascii_digit())
+			&& matches!(characters[3], '0'..='9' | '\u{b9}' | '\u{b2}' | '\u{b3}'))
 }
 
 /// `name` cut to [`MAX_NAME_BYTES`] on a character boundary, keeping an extension of up to 15 bytes.

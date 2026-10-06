@@ -102,6 +102,8 @@ fn disposition_file_name_reads_both_forms(#[case] header: &str, #[case] expected
 #[case("attachment; filename=\"Lpt9\"", "_Lpt9")]
 #[case("attachment; filename=\"console.pdf\"", "console.pdf")]
 #[case("attachment; filename=\"com10.pdf\"", "com10.pdf")]
+#[case("attachment; filename=\"COM\u{b9}.pdf\"", "_COM\u{b9}.pdf")]
+#[case("attachment; filename=\"lpt\u{b3}\"", "_lpt\u{b3}")]
 fn windows_device_names_get_an_underscore(#[case] header: &str, #[case] expected: &str) {
 	assert_eq!(disposition_file_name(header).as_deref(), Some(expected));
 }
