@@ -127,7 +127,7 @@ pub fn entries(config: &ConfigManager, compact: bool) -> Vec<MenuEntry> {
 	// TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
 	let go_forward_help = t("Go forward in history");
 	// TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
-	let toc_label = format_menu_label(&t("Table &of Contents"), ActionId::TableOfContents, config);
+	let toc_label = format_menu_label(&t("Table &of Contents..."), ActionId::TableOfContents, config);
 	// TRANSLATORS: Status-bar help text for the Table of Contents menu item.
 	let toc_help = t("Show table of contents");
 	// TRANSLATORS: Menu item in the Go menu to show a list of the document's structural elements.
@@ -135,7 +135,7 @@ pub fn entries(config: &ConfigManager, compact: bool) -> Vec<MenuEntry> {
 	// TRANSLATORS: Status-bar help text for the Elements List menu item.
 	let elements_help = t("Show elements list");
 	// TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-	let goto_page_label = format_menu_label(&t("&Go to Page"), ActionId::GoToPage, config);
+	let goto_page_label = format_menu_label(&t("&Go to Page..."), ActionId::GoToPage, config);
 	let mut entries = vec![
 		item_with_help(menu_ids::TABLE_OF_CONTENTS, toc_label, toc_help),
 		item_with_help(menu_ids::ELEMENTS_LIST, elements_label, elements_help),
