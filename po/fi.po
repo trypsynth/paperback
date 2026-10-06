@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 04:50+0000\n"
-"PO-Revision-Date: 2026-10-06 16:41+0300\n"
+"PO-Revision-Date: 2026-10-06 21:22+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1323,7 +1323,7 @@ msgstr "Sisällysluettelo"
 
 #. TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 msgid "Please select a section from the table of contents."
-msgstr "Valitse luku sisällysluettelosta."
+msgstr "Valitse sisällysluettelosta luku, johon haluat siirtyä."
 
 #. TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 msgid "No Selection"
@@ -1627,15 +1627,15 @@ msgstr "Rivi %d"
 #. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
-msgstr "Ei sivuja."
+msgstr "Sivuja ei ole."
 
 #. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
 msgid "No table of contents."
-msgstr "Ei sisällysluetteloa."
+msgstr "Sisällysluetteloa ei ole."
 
 #. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
 msgid "Batch OCR is running. Stop it?"
-msgstr "Usean sivun tekstintunnistus on käynnissä. Pysäytetäänkö?"
+msgstr "Usean sivun tekstintunnistus on käynnissä. Keskeytetäänkö?"
 
 #. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
 msgid "Web View"
@@ -3131,7 +3131,7 @@ msgid "&No"
 msgstr "&Ei"
 
 msgid "No release notes provided."
-msgstr "Julkaisutietoja ei saatavilla."
+msgstr "Julkaisutietoja ei ole saatavilla."
 
 msgid "%s Update"
 msgstr "%sin päivitys"
@@ -4351,7 +4351,7 @@ msgstr "Kaava"
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
 #: kt swift
 msgid "No matches."
-msgstr "Ei tuloksia."
+msgstr "Hakutuloksia ei löydy."
 
 #. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
 #: swift
