@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 12:00+0000\n"
+"POT-Creation-Date: 2026-10-08 21:23+0000\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -1250,6 +1250,11 @@ msgstr "&Unir linhas quebradas em parágrafos em PDFs"
 msgid "Remove repeated page &headers and footers in PDFs"
 msgstr "Remover &cabeçalhos e rodapés repetidos em PDFs"
 
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+#, fuzzy
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr "Ler texto entre sinais de dólar como &fórmula matemática em Markdown"
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr "Mostrar menu compacto &para ir"
@@ -1899,33 +1904,33 @@ msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 #, fuzzy
-msgid "&Undo\tCtrl+Z"
-msgstr "&Desfazer\tCtrl+Z"
+msgid "&Undo"
+msgstr "&Desfazer"
 
 #. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
 #, fuzzy
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Refazer\tCtrl+Shift+Z"
+msgid "&Redo"
+msgstr "&Refazer"
 
 #. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
 #, fuzzy
-msgid "Cu&t\tCtrl+X"
-msgstr "Cor&tar\tCtrl+X"
+msgid "Cu&t"
+msgstr "Cor&tar"
 
 #. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
 #, fuzzy
-msgid "&Copy\tCtrl+C"
-msgstr "&Copiar\tCtrl+C"
+msgid "&Copy"
+msgstr "&Copiar"
 
 #. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
 #, fuzzy
-msgid "&Paste\tCtrl+V"
-msgstr "&Colar\tCtrl+V"
+msgid "&Paste"
+msgstr "&Colar"
 
 #. TRANSLATORS: Menu item in the Edit menu to select all text.
 #, fuzzy
-msgid "Select &All\tCtrl+A"
-msgstr "Selecionar &Tudo\tCtrl+A"
+msgid "Select &All"
+msgstr "Selecionar &Tudo"
 
 #. TRANSLATORS: Menu item in the Edit menu to open the find dialog.
 #, fuzzy
@@ -4337,8 +4342,8 @@ msgstr "Este documento não tem sumário."
 msgid "Navigation unit"
 msgstr "Unidade de navegação"
 
-#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "previous" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 #, fuzzy
 msgid "Previous {}"
 msgstr "Anterior{}"
@@ -4367,8 +4372,8 @@ msgstr "Fim do documento"
 msgid "Beginning of document"
 msgstr "Início do documento"
 
-#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "next" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 #, fuzzy
 msgid "Next {}"
 msgstr "Próximo{}"
@@ -5129,6 +5134,90 @@ msgstr "Idioma"
 #, fuzzy
 msgid "Opens Paperback in the Settings app, where its language can be changed."
 msgstr "Abre o Paperback no app de Configurações, onde seu idioma pode ser alterado."
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
+#: kt swift
+#, fuzzy
+msgid "Previous Paragraph"
+msgstr "Parágrafo Anterior"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
+#: kt swift
+#, fuzzy
+msgid "Previous Line"
+msgstr "Linha Anterior"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by paragraph
+#: kt swift
+#, fuzzy
+msgid "Next Paragraph"
+msgstr "Próximo Parágrafo"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by line
+#: kt swift
+#, fuzzy
+msgid "Next Line"
+msgstr "Próxima Linha"
+
+#. TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+#: kt
+#, fuzzy
+msgid "Show all options in a menu"
+msgstr "Mostrar todas as opções em um menu"
+
+#. TRANSLATORS: TalkBack action on a document tab that closes it; {} is the document's title
+#: kt
+#, fuzzy
+msgid "Close {}"
+msgstr "Fechar {}"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
+#: kt
+#, fuzzy
+msgid "Select navigation unit"
+msgstr "Selecionar unidade de navegação"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+#: kt
+#, fuzzy
+msgid "Select speech rate"
+msgstr "Selecionar velocidade de fala"
+
+#. TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
+#: kt
+#, fuzzy
+msgid "Storage Devices"
+msgstr "Dispositivos de Armazenamento"
+
+#. TRANSLATORS: TalkBack label for the file manager's row that goes up a folder; {} is the parent folder's name
+#: kt
+#, fuzzy
+msgid "Go up to parent directory: {}"
+msgstr "Ir para o diretório pai: {}"
+
+#, fuzzy
+#~ msgid "&Undo\tCtrl+Z"
+#~ msgstr "&Desfazer\tCtrl+Z"
+
+#, fuzzy
+#~ msgid "&Redo\tCtrl+Shift+Z"
+#~ msgstr "&Refazer\tCtrl+Shift+Z"
+
+#, fuzzy
+#~ msgid "Cu&t\tCtrl+X"
+#~ msgstr "Cor&tar\tCtrl+X"
+
+#, fuzzy
+#~ msgid "&Copy\tCtrl+C"
+#~ msgstr "&Copiar\tCtrl+C"
+
+#, fuzzy
+#~ msgid "&Paste\tCtrl+V"
+#~ msgstr "&Colar\tCtrl+V"
+
+#, fuzzy
+#~ msgid "Select &All\tCtrl+A"
+#~ msgstr "Selecionar &Tudo\tCtrl+A"
 
 #, fuzzy
 #~ msgid "&View Note Text"
