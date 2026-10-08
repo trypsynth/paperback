@@ -1,3 +1,6 @@
+/// Browser fixes required by the `MathML` emitted by `math-core`.
+pub const MATHML_STYLES: &str = include_str!("mathml.css");
+
 /// Escapes a single character for safe use in HTML text content (`&`, `<`, `>`), appending
 /// the result to `out`. Kept separate from [`escape`] since some callers stream characters
 /// one at a time rather than escaping a whole string up front.

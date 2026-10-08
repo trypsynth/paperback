@@ -38,6 +38,7 @@ fn sample_session(parser_flags: ParserFlags) -> DocumentSession {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags,
+		parse_settings: ParseSettings::default(),
 	}
 }
 
@@ -51,6 +52,7 @@ fn session_with_content(content: &str) -> DocumentSession {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::empty(),
+		parse_settings: ParseSettings::default(),
 	}
 }
 
@@ -63,5 +65,6 @@ fn session_from_buffer(buffer: DocumentBuffer) -> DocumentSession {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::empty(),
+		parse_settings: ParseSettings::default(),
 	}
 }
