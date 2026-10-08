@@ -60,6 +60,68 @@ fun getSegmentTypeName(type: SegmentTypeFfi): String =
 		SegmentTypeFfi.FIGURE -> t("Figure")
 	}
 
+/** A whole phrase per unit, because many languages inflect "previous"/"next" to agree with the noun (#1033). */
+fun getPreviousUnitLabel(type: SegmentTypeFfi): String =
+	when (type) {
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by paragraph
+		SegmentTypeFfi.PARAGRAPH -> t("Previous Paragraph")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by line
+		SegmentTypeFfi.LINE -> t("Previous Line")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by heading
+		SegmentTypeFfi.HEADING -> t("Previous Heading")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by link
+		SegmentTypeFfi.LINK -> t("Previous Link")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by section
+		SegmentTypeFfi.SECTION -> t("Previous Section")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by page
+		SegmentTypeFfi.PAGE -> t("Previous Page")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by list
+		SegmentTypeFfi.LIST -> t("Previous List")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by list item
+		SegmentTypeFfi.LIST_ITEM -> t("Previous List Item")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by table
+		SegmentTypeFfi.TABLE -> t("Previous Table")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by formula
+		SegmentTypeFfi.FORMULA -> t("Previous Formula")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by separator
+		SegmentTypeFfi.SEPARATOR -> t("Previous Separator")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by image
+		SegmentTypeFfi.IMAGE -> t("Previous Image")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by figure
+		SegmentTypeFfi.FIGURE -> t("Previous Figure")
+	}
+
+/** A whole phrase per unit, because many languages inflect "previous"/"next" to agree with the noun (#1033). */
+fun getNextUnitLabel(type: SegmentTypeFfi): String =
+	when (type) {
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by paragraph
+		SegmentTypeFfi.PARAGRAPH -> t("Next Paragraph")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by line
+		SegmentTypeFfi.LINE -> t("Next Line")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by heading
+		SegmentTypeFfi.HEADING -> t("Next Heading")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by link
+		SegmentTypeFfi.LINK -> t("Next Link")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by section
+		SegmentTypeFfi.SECTION -> t("Next Section")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by page
+		SegmentTypeFfi.PAGE -> t("Next Page")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by list
+		SegmentTypeFfi.LIST -> t("Next List")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by list item
+		SegmentTypeFfi.LIST_ITEM -> t("Next List Item")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by table
+		SegmentTypeFfi.TABLE -> t("Next Table")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by formula
+		SegmentTypeFfi.FORMULA -> t("Next Formula")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by separator
+		SegmentTypeFfi.SEPARATOR -> t("Next Separator")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by image
+		SegmentTypeFfi.IMAGE -> t("Next Image")
+		// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by figure
+		SegmentTypeFfi.FIGURE -> t("Next Figure")
+	}
+
 /** Matches the labels desktop shows for the same presets in its Options dialog. */
 fun getSeekAmountName(seconds: Int): String =
 	when (seconds) {
