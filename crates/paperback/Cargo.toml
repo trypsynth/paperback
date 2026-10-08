@@ -58,7 +58,7 @@ objc = "0.2.7"
 flate2 = { version = "1.1.10", default-features = false }
 paperback-formats = { path = "../paperback-formats" }
 patois-build = "0.1.16"
-shipfitter = { version = "0.2.1", features = ["docs", "windows-resources"] }
+shipfitter = { version = "0.2.2", features = ["docs", "windows-resources"] }
 tar = "0.4.46"
 ureq = { version = "3.4.2", default-features = false, features = ["rustls"] }
 

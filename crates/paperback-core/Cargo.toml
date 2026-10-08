@@ -62,7 +62,7 @@ mathcat = { version = "0.7.5", features = ["include-zip"] }
 math-core = "0.7.0"
 
 [build-dependencies]
-shipfitter = "0.2.1"
+shipfitter = "0.2.2"
 uniffi = { version = "0.32.2", features = ["build"], optional = true }
 
 [dev-dependencies]
