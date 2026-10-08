@@ -20,7 +20,9 @@ mod tagged;
 mod text;
 mod toc;
 
-use images::{append_images, images_before_each_paragraph, page_image_tops, page_largest_image_coverage};
+use images::{
+	PAGE_IMAGE_COVERAGE, append_images, images_before_each_paragraph, page_image_tops, page_largest_image_coverage,
+};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_title, metadata_value};
 pub use paragraphs::join_wrapped_lines;
@@ -452,7 +454,8 @@ impl Parser for PdfParser {
 					}
 				}
 			}
-			let page_has_image = !page.image_tops.is_empty();
+			// A page-sized scan is left out of `image_tops` so it isn't announced, but a page that is nothing else still needs its OCR placeholder.
+			let page_has_image = !page.image_tops.is_empty() || page.largest_image_coverage >= PAGE_IMAGE_COVERAGE;
 			if page_has_image {
 				has_any_images = true;
 			}
