@@ -20,10 +20,10 @@ impl MarkdownSession {
 }
 
 #[fixture]
-fn markdown() -> MarkdownSession {
+fn markdown(#[default(ParseSettings::default())] settings: ParseSettings) -> MarkdownSession {
 	let dir = TempDir::new("markdown-formula-session");
 	let path = dir.write_str("formulas.md", MARKDOWN_SOURCE);
-	let session = DocumentSession::new(&path, "", "", ParseSettings::default()).expect("open Markdown");
+	let session = DocumentSession::new(&path, "", "", settings).expect("open Markdown");
 	MarkdownSession { dir, session }
 }
 
@@ -53,6 +53,16 @@ fn markdown_web_view_renders_formulas_as_mathml(markdown: MarkdownSession) {
 	assert_eq!(formulas.len(), 2);
 	assert_eq!(formulas[0].html(), formula);
 	assert_eq!(formulas[1].attr("display"), Some("block"));
+}
+
+#[rstest]
+fn markdown_web_view_keeps_dollars_when_dollar_math_is_off(
+	#[with(ParseSettings { markdown_dollar_math: false, ..ParseSettings::default() })] markdown: MarkdownSession,
+) {
+	let target = markdown.session.webview_target_path(0, markdown.temp_path()).expect("Markdown web view");
+	let html = std::fs::read_to_string(target.path).unwrap();
+	assert!(!html.contains("<math"), "{html}");
+	assert!(html.contains("Before $x^2$."), "{html}");
 }
 
 #[rstest]

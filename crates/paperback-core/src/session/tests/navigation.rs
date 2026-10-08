@@ -232,6 +232,7 @@ fn navigate_section_in_an_audio_only_book_announces_the_file_name() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::SUPPORTS_SECTIONS,
+		parse_settings: ParseSettings::default(),
 	};
 	let first = session.navigate_section(-1, false, true);
 	assert!(first.found);

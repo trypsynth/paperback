@@ -15,8 +15,10 @@ use crate::{
 	util::encoding::convert_to_utf8,
 };
 
-// Rendering and source lookup must use the same grammar to keep block anchors in sync.
-const MARKDOWN_OPTIONS: Options = Options::ENABLE_TABLES.union(Options::ENABLE_MATH);
+/// The grammar for both rendering and source lookup, which must agree to keep block anchors in sync.
+const fn markdown_options(dollar_math: bool) -> Options {
+	if dollar_math { Options::ENABLE_TABLES.union(Options::ENABLE_MATH) } else { Options::ENABLE_TABLES }
+}
 
 /// Converts Markdown to HTML with an empty `<span id="pb-block-N"></span>` before each block.
 ///
@@ -24,8 +26,8 @@ const MARKDOWN_OPTIONS: Options = Options::ENABLE_TABLES.union(Options::ENABLE_M
 /// in the converted text can be mapped back to a `#fragment` when the document
 /// is shown in a web view.
 #[must_use]
-pub fn markdown_to_html(markdown_text: &str) -> String {
-	let parser = MarkdownParserImpl::new_ext(markdown_text, MARKDOWN_OPTIONS).into_offset_iter();
+pub fn markdown_to_html(markdown_text: &str, dollar_math: bool) -> String {
+	let parser = MarkdownParserImpl::new_ext(markdown_text, markdown_options(dollar_math)).into_offset_iter();
 	// Created per document so that equations and similar environments are numbered from (1) in each one.
 	let mut math = LatexToMathML::new(MathCoreConfig { xml_namespace: true, annotation: true, ..Default::default() })
 		.expect("math conversion configuration is valid");
@@ -64,7 +66,8 @@ pub fn markdown_to_html(markdown_text: &str) -> String {
 		//
 		// This still misreads a `$` that directly follows a non-space character and isn't followed by a digit, as in
 		// the shell's `$PATH:$HOME` or PHP's `$a.$b`. Markdown is ambiguous here: without knowing whether the writer
-		// uses dollars for math, there is no way to tell which reading is meant.
+		// uses dollars for math, there is no way to tell which reading is meant, so the reader can turn dollar math
+		// off (see `ParserContext::markdown_dollar_math`).
 		let closes_before_digit =
 			display == MathDisplay::Inline && markdown_text[range.end..].starts_with(|c: char| c.is_ascii_digit());
 		if closes_before_digit {
@@ -85,13 +88,13 @@ pub fn markdown_to_html(markdown_text: &str) -> String {
 }
 
 /// Returns the byte offset in `markdown_text` where the 1-based `block_index`
-/// block begins, using the same block numbering as [`markdown_to_html`].
+/// block begins, using the same block numbering as [`markdown_to_html`] given the same `dollar_math`.
 ///
 /// This maps a `pb-block-N` anchor (recorded in `id_positions`) back to its
 /// location in the original Markdown source.
 #[must_use]
-pub fn block_source_offset(markdown_text: &str, block_index: usize) -> Option<usize> {
-	let parser = MarkdownParserImpl::new_ext(markdown_text, MARKDOWN_OPTIONS).into_offset_iter();
+pub fn block_source_offset(markdown_text: &str, block_index: usize, dollar_math: bool) -> Option<usize> {
+	let parser = MarkdownParserImpl::new_ext(markdown_text, markdown_options(dollar_math)).into_offset_iter();
 	let mut block_counter = 0usize;
 	for (event, range) in parser {
 		if matches!(
@@ -115,7 +118,7 @@ impl Parser for MarkdownParser {
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open Markdown file '{}'", context.file_path))?;
 		let markdown_content = convert_to_utf8(&bytes);
-		let html_content = markdown_to_html(&markdown_content);
+		let html_content = markdown_to_html(&markdown_content, context.markdown_dollar_math);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&html_content, HtmlSourceMode::Markdown) {
 			// currently unreachable, HtmlToText::convert never returns false today
@@ -145,7 +148,7 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		document::MarkerType,
+		document::{MarkerType, ParseSettings},
 		util::{test_support::TempDir, text::display_len},
 	};
 
@@ -179,7 +182,7 @@ mod tests {
 
 	#[test]
 	fn preserves_tex_in_mathml_annotations() {
-		let html = Html::parse_fragment(&markdown_to_html(r"$x < y$ and $\sqrt{x}$"));
+		let html = Html::parse_fragment(&markdown_to_html(r"$x < y$ and $\sqrt{x}$", true));
 		let selector = Selector::parse("math annotation[encoding='application/x-tex']").unwrap();
 		let annotations: Vec<_> = html.select(&selector).map(|node| node.text().collect::<String>()).collect();
 		assert_eq!(annotations, ["x < y", r"\sqrt{x}"]);
@@ -190,7 +193,7 @@ mod tests {
 		let source = "$$\\begin{equation}x=1\\end{equation}$$\n\n$$\\begin{align}y&=2\\end{align}$$";
 		let selector = Selector::parse("math mtext").unwrap();
 		for _ in 0..2 {
-			let html = Html::parse_fragment(&markdown_to_html(source));
+			let html = Html::parse_fragment(&markdown_to_html(source, true));
 			let numbers: Vec<_> = html.select(&selector).map(|node| node.text().collect::<String>()).collect();
 			assert_eq!(numbers, ["(1)", "(2)"]);
 		}
@@ -223,7 +226,7 @@ mod tests {
 		assert_eq!(formulas.len(), 1);
 		assert_eq!(formulas[0].text, "x^2");
 		assert_eq!(formulas[0].position, display_len(&format!("Before {source} then ")));
-		let html = markdown_to_html(&markdown);
+		let html = markdown_to_html(&markdown, true);
 		assert!(!html.contains("<img"));
 	}
 
@@ -239,6 +242,16 @@ mod tests {
 	fn table_cells_read_formulas_once() {
 		let doc = parse_markdown("| Proof of $x^2$ |\n| --- |");
 		assert_eq!(doc.buffer.content, "Proof of x^2");
+	}
+
+	#[test]
+	fn dollar_math_can_be_turned_off() {
+		let dir = TempDir::new("markdown-parser");
+		let path = dir.write_str("shell.md", "Install to $HOME/bin:$PATH.");
+		let settings = ParseSettings { markdown_dollar_math: false, ..ParseSettings::default() };
+		let doc = MarkdownParser.parse(&ParserContext::new(path).with_parse_settings(settings)).unwrap();
+		assert_eq!(doc.buffer.content, "Install to $HOME/bin:$PATH.");
+		assert!(!doc.buffer.markers.iter().any(|marker| marker.mtype == MarkerType::Formula));
 	}
 
 	#[test]
@@ -258,14 +271,14 @@ mod tests {
 	fn source_anchors_point_past_multiline_math() {
 		let source = "$x^2$\n\n$$\n\\begin{aligned}\nx &= 1\\\\\ny &= 2\n\\end{aligned}\n$$\n\nAfter.";
 		let doc = parse_markdown(source);
-		assert_eq!(block_source_offset(source, 3), source.find("After."));
+		assert_eq!(block_source_offset(source, 3, true), source.find("After."));
 		assert_eq!(doc.id_positions["pb-block-3"], doc.buffer.content.find("After.").unwrap());
-		assert_eq!(block_source_offset(source, 4), None);
+		assert_eq!(block_source_offset(source, 4, true), None);
 	}
 
 	#[test]
 	fn markdown_to_html_injects_block_anchors() {
-		let html = markdown_to_html("# Title\n\nFirst paragraph.\n\nSecond paragraph.\n");
+		let html = markdown_to_html("# Title\n\nFirst paragraph.\n\nSecond paragraph.\n", true);
 		let anchor_2 = html.find(r#"<span id="pb-block-2"></span>"#).expect("second anchor present");
 		let anchor_3 = html.find(r#"<span id="pb-block-3"></span>"#).expect("third anchor present");
 		let first_para = html.find("<p>First paragraph.</p>").expect("first paragraph present");
@@ -278,16 +291,16 @@ mod tests {
 	fn block_source_offset_points_at_block_start_in_source() {
 		let source = "# Title\n\nFirst paragraph.\n\nSecond paragraph.\n";
 		// Block 1 = heading, 2 = first paragraph, 3 = second paragraph.
-		assert_eq!(block_source_offset(source, 1), Some(source.find("# Title").unwrap()));
-		assert_eq!(block_source_offset(source, 2), Some(source.find("First paragraph.").unwrap()));
-		assert_eq!(block_source_offset(source, 3), Some(source.find("Second paragraph.").unwrap()));
-		assert_eq!(block_source_offset(source, 99), None);
+		assert_eq!(block_source_offset(source, 1, true), Some(source.find("# Title").unwrap()));
+		assert_eq!(block_source_offset(source, 2, true), Some(source.find("First paragraph.").unwrap()));
+		assert_eq!(block_source_offset(source, 3, true), Some(source.find("Second paragraph.").unwrap()));
+		assert_eq!(block_source_offset(source, 99, true), None);
 	}
 
 	#[test]
 	fn markdown_block_anchors_reach_id_positions_without_changing_text() {
 		let source = "# Title\n\nFirst paragraph.\n\nSecond paragraph.\n";
-		let html = markdown_to_html(source);
+		let html = markdown_to_html(source, true);
 		let mut converter = HtmlToText::new();
 		assert!(converter.convert(&html, HtmlSourceMode::Markdown));
 		let text = converter.get_text();

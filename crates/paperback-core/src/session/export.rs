@@ -83,7 +83,10 @@ impl DocumentSession {
 					let html_path = doc_temp_dir.join("document.html");
 					if let Ok(bytes) = fs::read(&self.file_path) {
 						let markdown_text = convert_to_utf8(&bytes);
-						let html_body = parser::markdown::markdown_to_html(&markdown_text);
+						let html_body = parser::markdown::markdown_to_html(
+							&markdown_text,
+							self.parse_settings.markdown_dollar_math,
+						);
 						let full_html = format!(
 							"<html><head><meta charset=\"utf-8\"><style>{MATHML_STYLES}</style></head><body>{html_body}</body></html>"
 						);
@@ -241,7 +244,9 @@ impl DocumentSession {
 	fn markdown_caret(&self, content: &str, pos: usize) -> usize {
 		nearest_fragment_before(&self.handle, pos)
 			.and_then(|id| id.strip_prefix("pb-block-").and_then(|n| n.parse::<usize>().ok()))
-			.and_then(|index| parser::markdown::block_source_offset(content, index))
+			.and_then(|index| {
+				parser::markdown::block_source_offset(content, index, self.parse_settings.markdown_dollar_math)
+			})
 			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
 			.unwrap_or(0)
 	}
