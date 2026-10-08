@@ -64,9 +64,7 @@ fn event_key(event: *mut Object) -> Option<(usize, i32)> {
 fn shortcut_action(shortcuts: &ShortcutsConfig, key: i32, modifiers: usize) -> Option<ActionId> {
 	ActionId::all().iter().copied().find(|&action| {
 		shortcuts.get_chord(action).is_some_and(|chord| {
-			// Plain Ctrl in the config means Command on macOS; RawCtrl means physical Control.
-			// Test both explicitly, including chords that require both, and leave VoiceOver's
-			// Control+Option commands alone unless that exact chord was assigned.
+			// Plain Ctrl in the config means Command on macOS and RawCtrl means physical Control; test both so VoiceOver's Control+Option commands pass through unless that exact chord was assigned.
 			chord.ctrl == (modifiers & COMMAND != 0)
 				&& chord.raw_ctrl == (modifiers & CONTROL != 0)
 				&& chord.matches(key, chord.ctrl || chord.raw_ctrl, modifiers & OPTION != 0, modifiers & SHIFT != 0)
@@ -100,11 +98,9 @@ pub fn install(frame: Frame, config: Rc<Mutex<ConfigManager>>, from_keyboard: Rc
 		if !item.is_some_and(|item| item.is_enabled()) {
 			return event;
 		}
-		// Use the existing wx command dispatcher, with the same announcement timing as a
-		// keyboard shortcut. Synchronous dispatch prevents the mark leaking to a menu click.
+		// Synchronous dispatch keeps the keyboard mark from leaking to a later menu click.
 		from_keyboard.set(true);
-		// wx callbacks default to Skip(true), so this can return false even after our
-		// dispatcher ran. The matched app command must still consume the native key.
+		// wx callbacks default to Skip(true), so this can return false even after our dispatcher ran; the matched command must still consume the native key.
 		frame.process_menu_command(id);
 		from_keyboard.set(false);
 		ptr::null_mut()

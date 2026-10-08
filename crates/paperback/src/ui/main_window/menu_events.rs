@@ -249,8 +249,7 @@ impl MainWindow {
 /// The mark is set only for keys that map to a known action, and is cleared by the dispatcher
 /// on every command plus by the key handler for actions it runs itself, so a key that produces
 /// no command cannot leave it set for a later menu click.
-/// On macOS, `mac_shortcuts` intercepts app menu shortcuts before Cocoa selects their menu
-/// items and sets the mark itself; this hook still covers keys left to wxWidgets.
+/// On macOS, `mac_shortcuts` runs menu shortcuts before Cocoa selects their items and sets the mark itself; this hook still covers keys left to wxWidgets.
 pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, from_keyboard: Rc<Cell<bool>>) {
 	let config = Rc::clone(config);
 	frame.bind_internal(EventType::CHAR_HOOK, move |event| {

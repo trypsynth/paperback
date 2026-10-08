@@ -129,7 +129,6 @@ fn main() {
 		received.borrow_mut().clear();
 		frame.process_menu_command(menu_ids::FIND_NEXT);
 		assert_eq!(*received.borrow(), [(menu_ids::FIND_NEXT, false)], "menu clicks must retain their own source");
-
 		let bar = frame.get_menu_bar().unwrap();
 		bar.enable_item(menu_ids::NEXT_HEADING, false);
 		received.borrow_mut().clear();
@@ -138,7 +137,6 @@ fn main() {
 		bar.enable_item(menu_ids::NEXT_HEADING, true);
 		send_key(frame, "h", CONTROL | OPTION, 4);
 		assert!(received.borrow().is_empty(), "VoiceOver chords must pass through");
-
 		let other = Frame::builder().with_title("Other window").build();
 		let other_text = TextCtrl::builder(&other).build();
 		other.show(true);
@@ -151,7 +149,6 @@ fn main() {
 		send_key(frame, "h", 0, 4);
 		assert!(received.borrow().is_empty(), "a disabled main frame must not handle dialog keys");
 		frame.enable(true);
-
 		// Child destruction must not unregister the frame's monitor.
 		let child = TextCtrl::builder(&panel).build();
 		child.destroy();
