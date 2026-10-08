@@ -228,6 +228,20 @@ mod tests {
 	}
 
 	#[test]
+	fn headings_name_formulas_as_the_reading_buffer_does() {
+		let doc = parse_markdown("## Proof of $x^2$\n\nBody.");
+		let heading = doc.buffer.markers.iter().find(|marker| marker.mtype == MarkerType::Heading2).unwrap();
+		assert_eq!(doc.buffer.content, "Proof of x^2\nBody.");
+		assert_eq!((heading.text.as_str(), doc.toc_items[0].name.as_str()), ("Proof of x^2", "Proof of x^2"));
+	}
+
+	#[test]
+	fn table_cells_read_formulas_once() {
+		let doc = parse_markdown("| Proof of $x^2$ |\n| --- |");
+		assert_eq!(doc.buffer.content, "Proof of x^2");
+	}
+
+	#[test]
 	fn failed_formulas_in_block_quotes_omit_quote_markers() {
 		let doc = parse_markdown("> $$\n> \\frac{x}\n> $$");
 		assert_eq!(doc.buffer.content, "$$ \\frac{x} $$");
