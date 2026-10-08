@@ -561,6 +561,14 @@ pub fn is_remote_url(text: &str) -> bool {
 	["http://", "https://"].iter().any(|scheme| lower.strip_prefix(scheme).is_some_and(|rest| !rest.is_empty()))
 }
 
+/// Whether `href` starts with a URI scheme such as `https:` or `mailto:`.
+#[must_use]
+pub fn has_url_scheme(href: &str) -> bool {
+	let Some(colon) = href.find(':') else { return false };
+	let scheme = &href[..colon];
+	scheme.chars().next().is_some_and(|c| c.is_ascii_alphabetic())
+		&& scheme.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '+' | '-' | '.'))
+}
 /// The last path segment of a link, percent-decoded, without query or fragment.
 #[must_use]
 pub fn url_file_name(url: &str) -> Option<String> {

@@ -4,7 +4,10 @@ use anyhow::{Result, anyhow};
 use roxmltree::{Document as XmlDocument, Node};
 
 use crate::{
-	parser::util::xml::{collect_element_text, escape_xml, serialize_xml},
+	parser::{
+		is_remote_url,
+		util::xml::{collect_element_text, escape_xml, serialize_xml},
+	},
 	t,
 };
 
@@ -82,7 +85,7 @@ fn read_rss(channel: Node, item_parent: Node) -> Feed {
 fn read_rss_item(item: Node) -> FeedItem {
 	let link = non_empty(child_text(item, |node| is_rss(node, "link")))
 		.or_else(|| permalink_guid(item))
-		.or_else(|| item.attribute((RDF_NS, "about")).filter(|about| is_web_address(about)).map(str::to_string));
+		.or_else(|| item.attribute((RDF_NS, "about")).filter(|about| is_remote_url(about.trim())).map(str::to_string));
 	FeedItem {
 		title: child_text(item, |node| is_rss(node, "title")),
 		link,
@@ -103,7 +106,7 @@ fn permalink_guid(item: Node) -> Option<String> {
 	if guid.attribute("isPermaLink").is_some_and(|value| value.trim().eq_ignore_ascii_case("false")) {
 		return None;
 	}
-	Some(collect_element_text(guid)).filter(|text| is_web_address(text))
+	Some(collect_element_text(guid)).filter(|text| is_remote_url(text.trim()))
 }
 
 /// The name in an RSS address written as `jane@example.com (Jane Doe)`, or the whole text when it carries no name in brackets.
@@ -267,11 +270,6 @@ fn joined_text(node: Node, wanted: impl Fn(Node) -> bool) -> String {
 
 fn non_empty(text: String) -> Option<String> {
 	(!text.is_empty()).then_some(text)
-}
-
-fn is_web_address(text: &str) -> bool {
-	let lower = text.trim().to_ascii_lowercase();
-	lower.starts_with("http://") || lower.starts_with("https://")
 }
 
 trait OrNonEmpty {

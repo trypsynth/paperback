@@ -1,10 +1,10 @@
 //! Resolving a link in a feed item's body against the item's own web address.
 
-use crate::parser::util::path::resolve_relative_path;
+use crate::parser::{has_url_scheme, util::path::resolve_relative_path};
 
 /// `href` resolved against `base`, the web address of the page the item stands for. A link that is already absolute, a `#fragment`, or any link when `base` is not an absolute web address comes back as written.
 pub(super) fn resolve_feed_href(base: Option<&str>, href: &str) -> String {
-	if href.is_empty() || href.starts_with('#') || has_scheme(href) {
+	if href.is_empty() || href.starts_with('#') || has_url_scheme(href) {
 		return href.to_string();
 	}
 	let Some((scheme, authority, path)) = base.and_then(split_web_address) else {
@@ -26,14 +26,6 @@ pub(super) fn resolve_feed_href(base: Option<&str>, href: &str) -> String {
 		resolved.push('/');
 	}
 	format!("{scheme}://{authority}/{resolved}{suffix}")
-}
-
-/// Whether `href` starts with a URI scheme such as `https:` or `mailto:`.
-fn has_scheme(href: &str) -> bool {
-	let Some(colon) = href.find(':') else { return false };
-	let scheme = &href[..colon];
-	scheme.chars().next().is_some_and(|c| c.is_ascii_alphabetic())
-		&& scheme.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '+' | '-' | '.'))
 }
 
 /// An `http` or `https` address split into its scheme, its host and its path, with any query or fragment dropped.

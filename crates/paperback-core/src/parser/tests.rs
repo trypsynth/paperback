@@ -153,6 +153,19 @@ fn url_extension_reads_the_last_segment(#[case] url: &str, #[case] expected: Opt
 }
 
 #[rstest]
+#[case("https://example.com", true)]
+#[case("mailto:a@b.c", true)]
+#[case("tel:+31", true)]
+#[case("svn+ssh://host", true)]
+#[case("#local", false)]
+#[case("/path:with-colon", false)]
+#[case("1http://x", false)]
+#[case("page.html", false)]
+#[case("", false)]
+fn has_url_scheme_detects_a_leading_scheme(#[case] href: &str, #[case] expected: bool) {
+	assert_eq!(has_url_scheme(href), expected);
+}
+#[rstest]
 #[case("txt", true)]
 #[case(".TXT", true)]
 #[case("log", true)]
