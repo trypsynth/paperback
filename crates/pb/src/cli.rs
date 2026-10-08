@@ -5,7 +5,7 @@ use clap::{Parser, ValueEnum};
 #[derive(Parser)]
 #[command(name = "pb", about = "Convert any document to text, HTML, or Markdown")]
 pub struct Cli {
-	/// Input document file, or files. `*` and `?` are expanded, so the same command line works on Windows
+	/// Input document files, patterns or http(s) links. `*` and `?` are expanded, so the same command line works on Windows. Quote a link that holds ? or &
 	#[arg(required_unless_present_any = ["list_formats", "files_from"], num_args = 1..)]
 	pub input: Vec<PathBuf>,
 	/// Also convert the documents listed in this file, one path per line; `-` reads the list from stdin. Spaces around a name are removed, blank lines and lines starting with # are skipped, and patterns are not expanded
@@ -44,9 +44,12 @@ pub struct Cli {
 	/// Print document metadata instead of content
 	#[arg(short, long)]
 	pub metadata: bool,
-	/// Exit with code 2 instead of prompting for a password (useful for batch processing)
+	/// Never ask: exit with code 2 instead of prompting for a password, and refuse a link that gets a security warning instead of asking whether to download it (useful for batch processing)
 	#[arg(long)]
 	pub no_prompt: bool,
+	/// The largest document to download from a link, in MB
+	#[arg(long, value_name = "MB", default_value_t = 512)]
+	pub max_download_size: u64,
 	/// Keep every line of an untagged PDF page separate instead of joining wrapped lines back
 	/// into paragraphs (for code listings, poetry and transcripts)
 	#[arg(long)]
@@ -258,6 +261,12 @@ mod tests {
 
 		assert!(!parse(&["pb", "b.pdf"]).ocr_image_pages);
 		assert!(!parse(&["pb", "b.pdf"]).ocr_text_pages);
+	}
+
+	#[test]
+	fn downloads_are_limited_to_512_mb_unless_told_otherwise() {
+		assert_eq!(parse(&["pb", "https://example.org/a.pdf"]).max_download_size, 512);
+		assert_eq!(parse(&["pb", "https://example.org/a.pdf", "--max-download-size", "2048"]).max_download_size, 2048);
 	}
 
 	#[test]

@@ -24,8 +24,10 @@ mod input;
 mod inputs;
 mod ocr;
 mod pages;
+mod remote;
 
 use cli::{Cli, Format};
+use inputs::Source;
 use pages::PageSelection;
 
 /// Where one document's output goes.
@@ -65,7 +67,7 @@ fn main() -> Result<()> {
 	// rather than being left for a shell that may not expand them. A pattern that matched nothing
 	// is carried rather than raised, so one mistyped pattern does not cost the reader the rest.
 	let inputs = inputs::collect(&given);
-	let destination = destination(&cli, inputs.files.len())?;
+	let destination = destination(&cli, inputs.sources.len())?;
 	run(&cli, &inputs, selection.as_ref(), &destination)
 }
 
@@ -83,6 +85,11 @@ fn read_files_from(path: &Path) -> Result<Vec<inputs::Given>> {
 	// A pipe carries what cmd's own commands write, in the console's code page, and a file what a Windows program saved, in the ANSI one.
 	let fallback = if from_stdin { console::text } else { console::ansi_text };
 	Ok(inputs::read_list(&bytes, |entry| Path::new(entry).exists(), fallback))
+}
+
+/// `size` megabytes in bytes, held at `u64::MAX`.
+const fn megabytes(size: u64) -> u64 {
+	size.saturating_mul(1024 * 1024)
 }
 
 /// Refuses `--files-from -` when stdin is the console, where pb would otherwise wait in silence
@@ -143,11 +150,20 @@ fn run(
 		// before anything has been read rather than as the same failure for every file.
 		fs::create_dir_all(dir).with_context(|| format!("failed to create the folder {}", dir.display()))?;
 	}
-	let files = &inputs.files;
-	let reporting = files.len() > 1 || matches!(destination, Destination::Directory(_));
-	let mut converter = Converter::new(cli);
+	let sources = &inputs.sources;
+	let reporting = sources.len() > 1 || matches!(destination, Destination::Directory(_));
+	let mut job = Job {
+		cli,
+		destination,
+		selection,
+		converter: Converter::new(cli),
+		downloads: {
+			let downloads = remote::Downloads::default().with_max_size(megabytes(cli.max_download_size));
+			if cli.no_prompt { downloads } else { downloads.with_prompt(remote::ask_console) }
+		},
+		written: HashMap::new(),
+	};
 	let mut tally = Tally::default();
-	let mut written: HashMap<PathBuf, PathBuf> = HashMap::new();
 	// Reported before anything is read, so the reader learns of a mistyped pattern without waiting
 	// for the run it was meant to be part of.
 	for pattern in &inputs.unmatched {
@@ -158,21 +174,19 @@ fn run(
 		eprintln!("pb: {problem}");
 		tally.failed += 1;
 	}
-	for file in files {
+	for source in sources {
+		let shown = source.shown();
 		// Before the document is touched, not after it is written. A run over a folder is a long
 		// silence between the first prompt and the summary, and it is what tells a reader which
 		// document a password prompt belongs to.
 		if reporting {
-			eprintln!("pb: converting {}...", file.display());
+			eprintln!("pb: converting {shown}...");
 		}
-		let outcome = converter
-			.convert(file, selection)
-			.and_then(|converted| write_converted(cli, destination, file, selection, &converted, &mut written));
-		match outcome {
-			Ok(()) => {
+		match job.convert(source, &shown) {
+			Ok(target) => {
 				tally.converted += 1;
 				if reporting && matches!(destination, Destination::Directory(_)) {
-					eprintln!("pb: {} -> {}", file.display(), target_for(cli, file, selection).display());
+					eprintln!("pb: {shown} -> {}", target.display());
 				}
 			}
 			// A document held by a password under `--no-prompt` is counted apart from a failure,
@@ -190,8 +204,36 @@ fn run(
 			}
 		}
 	}
+	job.downloads.remove();
 	report(&tally, reporting);
 	Ok(())
+}
+
+/// What every document of one run shares.
+struct Job<'a> {
+	cli: &'a Cli,
+	destination: &'a Destination<'a>,
+	selection: Option<&'a PageSelection>,
+	converter: Converter<'a>,
+	downloads: remote::Downloads,
+	written: HashMap<PathBuf, String>,
+}
+
+impl Job<'_> {
+	/// Converts one source and writes its output, returning the name it was written under.
+	fn convert(&mut self, source: &Source, shown: &str) -> Result<PathBuf> {
+		let downloaded;
+		let input = match source {
+			Source::File(path) => path.as_path(),
+			Source::Link(url) => {
+				downloaded = self.downloads.fetch(url)?;
+				downloaded.path.as_path()
+			}
+		};
+		let converted = self.converter.convert(input, shown, self.selection)?;
+		write_converted(self.cli, self.destination, input, shown, self.selection, &converted, &mut self.written)?;
+		Ok(target_for(self.cli, input, self.selection))
+	}
 }
 
 /// Marks a document that `--no-prompt` would not ask a password for, so that carrying on past it
@@ -214,10 +256,10 @@ impl std::error::Error for NeedsPassword {}
 /// every other way a document will not open. That prefix is a sentinel between pieces of this
 /// code, not something to read: a wrong password should say the password was not accepted, not
 /// spell out the name of the field it was recognised by.
-fn parse_failed(input: &Path, error: &anyhow::Error) -> anyhow::Error {
+fn parse_failed(shown: &str, error: &anyhow::Error) -> anyhow::Error {
 	let message = error.to_string();
 	let message = message.strip_prefix(PASSWORD_REQUIRED_ERROR_PREFIX).unwrap_or(&message);
-	anyhow::anyhow!("failed to parse {}: {message}", input.display())
+	anyhow::anyhow!("failed to parse {shown}: {message}")
 }
 
 /// Whether this error, or anything it was raised on top of, is [`NeedsPassword`].
@@ -280,7 +322,7 @@ impl<'a> Converter<'a> {
 	}
 
 	/// Reads one document and renders it in the format asked for.
-	fn convert(&mut self, input: &Path, selection: Option<&PageSelection>) -> Result<String> {
+	fn convert(&mut self, input: &Path, shown: &str, selection: Option<&PageSelection>) -> Result<String> {
 		let cli = self.cli;
 		let ext = input.extension().and_then(|e| e.to_str()).unwrap_or("");
 		input::check(input)?;
@@ -288,8 +330,7 @@ impl<'a> Converter<'a> {
 		// This path bypasses the text buffer entirely, so there are no page-break markers in it to
 		// select from and --pages would be silently dropped. The normal route below is taken instead.
 		if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" && selection.is_none() {
-			return export::epub_direct::render(&file_path)
-				.with_context(|| format!("failed to convert {}", input.display()));
+			return export::epub_direct::render(&file_path).with_context(|| format!("failed to convert {shown}"));
 		}
 		let mut context = ParserContext::new(file_path)
 			.with_render_tables_inline(true)
@@ -303,7 +344,7 @@ impl<'a> Converter<'a> {
 			Ok(doc) => doc,
 			Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
 				if cli.no_prompt {
-					return Err(anyhow::Error::new(NeedsPassword).context(input.display().to_string()));
+					return Err(anyhow::Error::new(NeedsPassword).context(shown.to_string()));
 				}
 				// Asked at most once in a run. A document that will not open for the password
 				// already in hand is not asked about again: the reader has answered, and the
@@ -313,7 +354,7 @@ impl<'a> Converter<'a> {
 				// The parser cannot tell a wrong password from a missing one, which is why
 				// this is asked from what the reader supplied rather than what came back.
 				if self.password().is_some() {
-					return Err(parse_failed(input, &e));
+					return Err(parse_failed(shown, &e));
 				}
 				let password = rpassword::prompt_password("Password: ").context("failed to read password")?;
 				context.password = Some(password.clone());
@@ -321,11 +362,11 @@ impl<'a> Converter<'a> {
 				// mistypes it is asked again for the next document rather than having one wrong
 				// answer silently applied to every book after, so a mistyped password costs one
 				// document and not the whole run.
-				let doc = parse_document(&context).map_err(|e| parse_failed(input, &e))?;
+				let doc = parse_document(&context).map_err(|e| parse_failed(shown, &e))?;
 				self.remembered = Some(password);
 				doc
 			}
-			Err(e) => return Err(parse_failed(input, &e)),
+			Err(e) => return Err(parse_failed(shown, &e)),
 		};
 		// Cut down to the pages asked for. Every format goes this way: the pages are chosen from the
 		// parsed document rather than asked of the parser, because a page range out of an encrypted
@@ -371,9 +412,10 @@ fn write_converted(
 	cli: &Cli,
 	destination: &Destination<'_>,
 	input: &Path,
+	shown: &str,
 	selection: Option<&PageSelection>,
 	converted: &str,
-	written: &mut HashMap<PathBuf, PathBuf>,
+	written: &mut HashMap<PathBuf, String>,
 ) -> Result<()> {
 	let path = match destination {
 		Destination::Stdout => return write_stdout(converted),
@@ -388,7 +430,7 @@ fn write_converted(
 		bail!("{} is the document being converted; write somewhere else", path.display());
 	}
 	if let Some(earlier) = written.get(&target) {
-		bail!("{} and {} are both writing {}", earlier.display(), input.display(), path.display());
+		bail!("{earlier} and {shown} are both writing {}", path.display());
 	}
 	// Asked to be left alone rather than replaced. A run over a folder writes names nobody chose
 	// individually, and a reader who runs the same command twice should be told which files the
@@ -396,7 +438,7 @@ fn write_converted(
 	if path.exists() && !cli.force {
 		bail!("{} is already there; pass --force to replace it", path.display());
 	}
-	written.insert(target, input.to_path_buf());
+	written.insert(target, shown.to_string());
 	write_file(&path, converted, !cli.metadata && matches!(cli.format, Format::Markdown))
 }
 
@@ -654,7 +696,15 @@ mod tests {
 		let refuse = |args: &[&str]| {
 			let cli = cli::Cli::try_parse_from(args).expect("parse");
 			let mut written = HashMap::new();
-			write_converted(&cli, &destination(&cli, 1).expect("destination"), &input, None, "new text", &mut written)
+			write_converted(
+				&cli,
+				&destination(&cli, 1).expect("destination"),
+				&input,
+				"book.epub",
+				None,
+				"new text",
+				&mut written,
+			)
 		};
 		refuse(&["pb", "book.epub", "-o", existing.to_str().unwrap()])
 			.expect_err("an existing file must not be replaced without --force");
@@ -682,8 +732,9 @@ mod tests {
 			.expect("parse");
 		let destination = destination(&cli, 1).expect("destination");
 		let mut written = HashMap::new();
-		write_converted(&cli, &destination, &first, None, "the first book", &mut written).expect("the first book");
-		let error = write_converted(&cli, &destination, &second, None, "the second book", &mut written)
+		write_converted(&cli, &destination, &first, "a/book.txt", None, "the first book", &mut written)
+			.expect("the first book");
+		let error = write_converted(&cli, &destination, &second, "b/book.txt", None, "the second book", &mut written)
 			.expect_err("--force must not let the second book overwrite the first");
 		assert!(error.to_string().contains("both writing"), "{error}");
 		assert_eq!(fs::read_to_string(out.join("book.txt")).expect("read"), "the first book");
@@ -699,7 +750,7 @@ mod tests {
 			.expect("parse");
 		let destination = destination(&cli, 1).expect("destination");
 		let mut written = HashMap::new();
-		write_converted(&cli, &destination, &input, None, "converted", &mut written)
+		write_converted(&cli, &destination, &input, "book.md", None, "converted", &mut written)
 			.expect_err("a document must not be replaced by its own conversion");
 		assert_eq!(fs::read_to_string(&input).expect("read"), "the book");
 	}
@@ -715,7 +766,7 @@ mod tests {
 			cli::Cli::try_parse_from(["pb", "book.md", "--output-dir", out, "-f", "md", "--force"]).expect("parse");
 		let destination = destination(&cli, 1).expect("destination");
 		let mut written = HashMap::new();
-		write_converted(&cli, &destination, &input, None, "converted", &mut written)
+		write_converted(&cli, &destination, &input, "book.md", None, "converted", &mut written)
 			.expect_err("--force must not let a document be replaced by its own conversion");
 		assert_eq!(fs::read_to_string(dir.join("book.md")).expect("read"), "the book");
 	}
@@ -730,7 +781,7 @@ mod tests {
 		let cli = cli::Cli::try_parse_from(["pb", "book.epub", "-o", fresh.to_str().unwrap()]).expect("parse");
 		let destination = destination(&cli, 1).expect("destination");
 		let mut written = HashMap::new();
-		write_converted(&cli, &destination, &input, None, "new text", &mut written)
+		write_converted(&cli, &destination, &input, "book.epub", None, "new text", &mut written)
 			.expect("writing to a path that is free");
 		assert_eq!(fs::read_to_string(&fresh).expect("read"), "new text");
 	}
@@ -740,7 +791,7 @@ mod tests {
 	#[test]
 	fn the_password_marker_is_not_shown_to_the_reader() {
 		let error = parse_failed(
-			Path::new("alpha.pdf"),
+			"alpha.pdf",
 			&anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required or incorrect"),
 		);
 		let printed = error.to_string();
@@ -752,7 +803,7 @@ mod tests {
 	/// An error that is not about a password keeps its own wording.
 	#[test]
 	fn an_ordinary_parse_error_is_left_alone() {
-		let printed = parse_failed(Path::new("x.pdf"), &anyhow::anyhow!("Failed to open PDF document")).to_string();
+		let printed = parse_failed("x.pdf", &anyhow::anyhow!("Failed to open PDF document")).to_string();
 		assert!(printed.contains("Failed to open PDF document"), "{printed}");
 	}
 
@@ -794,6 +845,12 @@ mod tests {
 	}
 
 	#[test]
+	fn the_download_limit_is_given_in_megabytes() {
+		assert_eq!(megabytes(512), 512 * 1024 * 1024);
+		assert_eq!(megabytes(u64::MAX), u64::MAX);
+	}
+
+	#[test]
 	fn a_list_from_stdin_is_refused_when_stdin_is_the_console() {
 		let error = stdin_list_allowed(true).expect_err("the console").to_string();
 		assert!(error.contains("console"), "{error}");
@@ -817,5 +874,35 @@ mod tests {
 		let mut converter = Converter::new(&given);
 		converter.remembered = Some("hunter2".to_string());
 		assert_eq!(converter.password().map(String::as_str), Some("abc"), "-p must win over a remembered one");
+	}
+
+	#[test]
+	fn two_links_wanting_one_name_are_reported_by_their_links() {
+		let dir = TempDir::new("link-collision");
+		let (one, two) = (dir.join("1"), dir.join("2"));
+		fs::create_dir_all(&one).expect("mkdir");
+		fs::create_dir_all(&two).expect("mkdir");
+		let (one, two) = (one.join("download.pdf"), two.join("download.pdf"));
+		fs::write(&one, b"x").expect("write");
+		fs::write(&two, b"x").expect("write");
+		let out = dir.join("out");
+		let cli = cli::Cli::try_parse_from(["pb", "x", "--output-dir", out.to_str().unwrap()]).expect("parse");
+		fs::create_dir_all(&out).expect("mkdir");
+		let destination = destination(&cli, 2).expect("destination");
+		let mut written = HashMap::new();
+		write_converted(&cli, &destination, &one, "https://example.org/download?id=1", None, "one", &mut written)
+			.expect("the first link");
+		let error =
+			write_converted(&cli, &destination, &two, "https://example.org/download?id=2", None, "two", &mut written)
+				.expect_err("two links, one name")
+				.to_string();
+		assert!(error.contains("download?id=1") && error.contains("download?id=2"), "{error}");
+	}
+
+	#[test]
+	fn a_parse_failure_names_what_the_reader_gave() {
+		let printed =
+			parse_failed("https://example.org/a.pdf", &anyhow::anyhow!("Failed to open PDF document")).to_string();
+		assert!(printed.contains("https://example.org/a.pdf"), "{printed}");
 	}
 }
