@@ -6,7 +6,7 @@ use std::{
 	time::Instant,
 };
 
-use paperback_core::{config::ConfigManager, session::DocumentSession};
+use paperback_core::{config::ConfigManager, session::DocumentSession, util::html::MATHML_STYLES};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -243,7 +243,7 @@ impl DocumentManager {
 			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 			tab.session.get_formula_at_position(pos).map(|mathml| {
 				format!(
-					"<style>math {{ font-size: 2.5em; }} body {{ display: flex; justify-content: center; margin-top: 2em; }}</style>{mathml}"
+					"<style>{MATHML_STYLES}\nmath {{ font-size: 2.5em; }} body {{ display: flex; justify-content: center; margin-top: 2em; }}</style>{mathml}"
 				)
 			})
 		})

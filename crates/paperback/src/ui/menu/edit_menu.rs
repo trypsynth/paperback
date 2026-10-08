@@ -9,19 +9,19 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	#[cfg(target_os = "macos")]
 	{
 		// TRANSLATORS: Menu item in the Edit menu to undo the last action.
-		let undo_label = t("&Undo\tCtrl+Z");
+		let undo_label = wx_utils::menu_label(&t("&Undo"), "Ctrl+Z");
 		// TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
-		let redo_label = t("&Redo\tCtrl+Shift+Z");
+		let redo_label = wx_utils::menu_label(&t("&Redo"), "Ctrl+Shift+Z");
 		// TRANSLATORS: Menu item in the Edit menu to cut the current selection.
-		let cut_label = t("Cu&t\tCtrl+X");
+		let cut_label = wx_utils::menu_label(&t("Cu&t"), "Ctrl+X");
 		// TRANSLATORS: Menu item in the Edit menu to copy the current selection.
-		let copy_label = t("&Copy\tCtrl+C");
+		let copy_label = wx_utils::menu_label(&t("&Copy"), "Ctrl+C");
 		// TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
-		let paste_label = t("&Paste\tCtrl+V");
+		let paste_label = wx_utils::menu_label(&t("&Paste"), "Ctrl+V");
 		// TRANSLATORS: Menu item in the Edit menu to delete the current selection.
 		let delete_label = t("&Delete");
 		// TRANSLATORS: Menu item in the Edit menu to select all text.
-		let select_all_label = t("Select &All\tCtrl+A");
+		let select_all_label = wx_utils::menu_label(&t("Select &All"), "Ctrl+A");
 		entries.extend([
 			item(menu_ids::UNDO, undo_label),
 			item(menu_ids::REDO, redo_label),
@@ -38,9 +38,9 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	#[cfg(not(target_os = "macos"))]
 	{
 		// TRANSLATORS: Menu item in the Edit menu to copy the current selection.
-		let copy_label = t("&Copy\tCtrl+C");
+		let copy_label = wx_utils::menu_label(&t("&Copy"), "Ctrl+C");
 		// TRANSLATORS: Menu item in the Edit menu to select all text.
-		let select_all_label = t("Select &All\tCtrl+A");
+		let select_all_label = wx_utils::menu_label(&t("Select &All"), "Ctrl+A");
 		entries.extend([
 			item(menu_ids::COPY, copy_label),
 			item(menu_ids::SELECT_ALL, select_all_label),

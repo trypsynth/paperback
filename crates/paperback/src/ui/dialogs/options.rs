@@ -35,6 +35,7 @@ pub struct OptionsDialogResult {
 	pub render_tables_inline: bool,
 	pub join_pdf_paragraphs: bool,
 	pub strip_running_text: bool,
+	pub markdown_dollar_math: bool,
 	pub minimize_to_tray: bool,
 	pub start_maximized: bool,
 	pub compact_go_menu: bool,
@@ -70,6 +71,7 @@ struct OptionsDialogUi {
 	render_tables_inline_check: CheckBox,
 	join_pdf_paragraphs_check: CheckBox,
 	strip_running_text_check: CheckBox,
+	markdown_dollar_math_check: CheckBox,
 	minimize_to_tray_check: CheckBox,
 	start_maximized_check: CheckBox,
 	compact_go_menu_check: CheckBox,
@@ -131,6 +133,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		render_tables_inline: ui.render_tables_inline_check.is_checked(),
 		join_pdf_paragraphs: ui.join_pdf_paragraphs_check.is_checked(),
 		strip_running_text: ui.strip_running_text_check.is_checked(),
+		markdown_dollar_math: ui.markdown_dollar_math_check.is_checked(),
 		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
 		start_maximized: ui.start_maximized_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
@@ -191,6 +194,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let strip_running_text_check = CheckBox::builder(&readability_panel)
 		// TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
 		.with_label(&t("Remove repeated page &headers and footers in PDFs"))
+		.build();
+	let markdown_dollar_math_check = CheckBox::builder(&readability_panel)
+		// TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+		.with_label(&t("Read text between dollar signs as &math in Markdown"))
 		.build();
 	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
@@ -441,6 +448,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&join_pdf_paragraphs_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&strip_running_text_check, 0, SizerFlag::All, option_padding);
+	readability_sizer.add(&markdown_dollar_math_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&paragraph_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&letter_spacing_sizer, 0, SizerFlag::All, option_padding);
@@ -471,6 +479,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
 	join_pdf_paragraphs_check.set_value(config.get_app_bool("join_pdf_paragraphs", true));
 	strip_running_text_check.set_value(config.get_app_bool("strip_running_text", true));
+	markdown_dollar_math_check.set_value(config.get_app_bool("markdown_dollar_math", true));
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
@@ -601,6 +610,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		render_tables_inline_check,
 		join_pdf_paragraphs_check,
 		strip_running_text_check,
+		markdown_dollar_math_check,
 		minimize_to_tray_check,
 		start_maximized_check,
 		compact_go_menu_check,
