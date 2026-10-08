@@ -33,7 +33,7 @@ mod menu_view;
 mod parser_ready;
 mod restore;
 mod window_events;
-pub(crate) use parser_ready::ensure_parser_ready_for_path;
+pub(crate) use parser_ready::{ensure_parser_ready_for_path, resolve_zip_path};
 
 #[cfg(target_os = "windows")]
 mod hotkey;
@@ -178,10 +178,13 @@ impl MainWindow {
 	}
 
 	pub fn open_file(&self, path: &Path) -> bool {
-		if !self.ensure_parser_ready(path) {
+		let Some(path) = resolve_zip_path(&self.frame, path, &self.config, &self.doc_manager) else {
+			return false;
+		};
+		if !self.ensure_parser_ready(&path) {
 			return false;
 		}
-		let result = self.doc_manager.lock().unwrap().open_file(&self.doc_manager, path);
+		let result = self.doc_manager.lock().unwrap().open_file(&self.doc_manager, &path);
 		if result {
 			self.update_title();
 			self.update_recent_documents_menu();

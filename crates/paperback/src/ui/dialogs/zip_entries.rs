@@ -5,8 +5,14 @@ use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 
-/// Returns the index of the chosen name, or `None` if the dialog was cancelled. Closing it with Alt+F4 also closes `parent`.
-pub fn show_zip_entries_dialog(parent: &Frame, names: &[String]) -> Option<usize> {
+pub enum ZipChoice {
+	Entry(usize),
+	Cancelled,
+	/// Closed with the title-bar X or Alt+F4, as opposed to the Cancel button or Escape.
+	Closed,
+}
+
+pub fn show_zip_entries_dialog(parent: &Frame, names: &[String]) -> ZipChoice {
 	// TRANSLATORS: Title of the dialog listing the documents inside a zip archive
 	let title = t("Open from Archive");
 	let dialog = Dialog::builder(parent, &title).build();
@@ -37,15 +43,7 @@ pub fn show_zip_entries_dialog(parent: &Frame, names: &[String]) -> Option<usize
 	dialog.centre();
 	list.set_focus();
 	if dialog.show_modal() != ID_OK {
-		if closed.get() {
-			// Deferred: the caller still holds the document-manager lock the close handler needs.
-			wxdragon::call_after(Box::new(|| {
-				if let Some(window) = crate::ui::app::main_window_from_ptr() {
-					window.frame().close(false);
-				}
-			}));
-		}
-		return None;
+		return if closed.get() { ZipChoice::Closed } else { ZipChoice::Cancelled };
 	}
-	list.get_selection().map(|index| index as usize)
+	list.get_selection().map_or(ZipChoice::Cancelled, |index| ZipChoice::Entry(index as usize))
 }

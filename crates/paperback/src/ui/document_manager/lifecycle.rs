@@ -3,21 +3,9 @@
 //! control, closing tabs, and saving reading positions. Split out of the main `DocumentManager`
 //! impl.
 
-use std::{
-	cell::Cell,
-	fs::File,
-	io::BufReader,
-	path::{Path, PathBuf},
-	rc::Rc,
-	sync::Mutex,
-	time::Instant,
-};
+use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex, time::Instant};
 
-use paperback_core::{
-	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
-	session::DocumentSession,
-	util::zip::{extract_zip_entry_to_cache, list_zip_entries, zip_books},
-};
+use paperback_core::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -26,10 +14,8 @@ use super::{
 };
 use crate::{
 	audio_player::AudioPlayer,
-	config_ext::config_dir,
 	shell,
 	ui::{
-		dialogs,
 		readability::{
 			apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_readability_format_to_ctrl,
 			build_font_from_readability,
@@ -38,15 +24,6 @@ use crate::{
 		text_render::load_window_into_ctrl,
 	},
 };
-
-/// What `pick_zip_entry` made of a file that failed to open.
-enum ZipPick {
-	/// Not a zip with readable documents inside: report the original error.
-	NotBrowsable,
-	/// The user cancelled, or the extraction failed and was already reported.
-	Handled,
-	Chosen(PathBuf),
-}
 
 impl DocumentManager {
 	pub fn open_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path) -> bool {
@@ -111,16 +88,6 @@ impl DocumentManager {
 			(password, forced_extension, settings)
 		};
 		let path_str = path.to_string_lossy().to_string();
-		// A zip of several books is browsed rather than opened as whichever book a parser finds first.
-		if !is_restore {
-			match self.pick_zip_entry(path, 2) {
-				ZipPick::NotBrowsable => {}
-				ZipPick::Handled => return false,
-				ZipPick::Chosen(entry_path) => {
-					return self.open_file_impl(self_rc, &entry_path, track, is_restore, title_override);
-				}
-			}
-		}
 		tracing::info!(path = %path.display(), "opening document");
 		match DocumentSession::new(&path_str, &password, &forced_extension, settings) {
 			Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
@@ -146,48 +113,12 @@ impl DocumentManager {
 						}
 					}
 				} else {
-					match self.pick_zip_entry(path, 1) {
-						ZipPick::NotBrowsable => {}
-						ZipPick::Handled => return false,
-						ZipPick::Chosen(entry_path) => {
-							return self.open_file_impl(self_rc, &entry_path, track, is_restore, title_override);
-						}
-					}
 					tracing::error!(path = %path.display(), error = %err, "failed to open document");
 					let message = build_document_load_error_message(path, &err);
 					// TRANSLATORS: Generic error dialog title
 					show_error_dialog(&self.notebook, &message, &t("Error"));
 					false
 				}
-			}
-		}
-	}
-
-	/// For a zip with at least `min_books` documents inside: offers them and extracts the chosen one.
-	fn pick_zip_entry(&self, path: &Path, min_books: usize) -> ZipPick {
-		if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip")) {
-			return ZipPick::NotBrowsable;
-		}
-		let Some(names) = File::open(path)
-			.ok()
-			.and_then(|file| zip::ZipArchive::new(BufReader::new(file)).ok())
-			.map(|archive| zip_books(&list_zip_entries(&archive)))
-			.filter(|names| names.len() >= min_books)
-		else {
-			return ZipPick::NotBrowsable;
-		};
-		let Some(chosen) = dialogs::show_zip_entries_dialog(&self.frame, &names) else {
-			return ZipPick::Handled;
-		};
-		match extract_zip_entry_to_cache(path, &names[chosen], &config_dir().join("zip_cache")) {
-			Ok(entry_path) => ZipPick::Chosen(entry_path),
-			Err(err) => {
-				tracing::error!(path = %path.display(), error = %err, "failed to extract archive entry");
-				// TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
-				let message = t("Couldn't extract the document from the archive: {}").replace("{}", &err.to_string());
-				// TRANSLATORS: Generic error dialog title
-				show_error_dialog(&self.notebook, &message, &t("Error"));
-				ZipPick::Handled
 			}
 		}
 	}

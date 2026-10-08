@@ -1364,10 +1364,6 @@ msgstr ""
 msgid "Password is required."
 msgstr ""
 
-#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
-msgid "Couldn't extract the document from the archive: {}"
-msgstr ""
-
 #. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr ""
@@ -1640,6 +1636,10 @@ msgstr ""
 
 #. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 msgid "Could not load the document source."
+msgstr ""
+
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+msgid "Couldn't extract the document from the archive: {}"
 msgstr ""
 
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support

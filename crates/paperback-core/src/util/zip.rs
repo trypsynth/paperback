@@ -119,15 +119,14 @@ pub fn zip_entry_name_resolver<R: Read + Seek>(archive: &ZipArchive<R>) -> impl 
 	}
 }
 
-/// One file inside an archive, as shown by the "browse a zip" picker.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ZipEntryInfo {
-	/// The entry's name exactly as stored, so it can be passed back to the extract helpers.
+	/// As stored, so it can be passed back to the extract helpers.
 	pub name: String,
 	pub supported: bool,
 }
 
-/// Lists the files in `archive`, skipping directories and any entry whose name would escape an extraction directory. Reads only the central directory (not each entry's own header, which is a seek per entry and takes seconds on a big archive), so encrypted entries are listed too.
+/// Skips directories and names that would escape an extraction directory. Reads only the central directory, because each entry's own header costs a seek, which takes seconds on a big archive.
 pub fn list_zip_entries<R: Read + Seek>(archive: &ZipArchive<R>) -> Vec<ZipEntryInfo> {
 	archive
 		.file_names()
@@ -139,19 +138,41 @@ pub fn list_zip_entries<R: Read + Seek>(archive: &ZipArchive<R>) -> Vec<ZipEntry
 		.collect()
 }
 
-fn is_daisy_book_file(name: &str) -> bool {
-	let file_name = name.rsplit_once('/').map_or(name, |(_, file)| file);
-	file_name.eq_ignore_ascii_case("ncc.html")
-		|| Path::new(file_name).extension().is_some_and(|e| e.eq_ignore_ascii_case("opf"))
+fn file_name_of(name: &str) -> &str {
+	name.rsplit_once('/').map_or(name, |(_, file)| file)
 }
 
-/// A DAISY book is one entry (its `.opf` or `ncc.html`), so the many files inside its folder are left out of the picker.
+fn dir_of(name: &str) -> &str {
+	name.rsplit_once('/').map_or("", |(dir, _)| dir)
+}
+
+fn extension_is(name: &str, extensions: &[&str]) -> bool {
+	Path::new(name).extension().is_some_and(|e| extensions.iter().any(|x| e.eq_ignore_ascii_case(x)))
+}
+
+fn is_opf(name: &str) -> bool {
+	extension_is(name, &["opf"])
+}
+
+fn is_daisy_book_file(name: &str) -> bool {
+	file_name_of(name).eq_ignore_ascii_case("ncc.html") || is_opf(name)
+}
+
+fn is_word_file(name: &str) -> bool {
+	extension_is(name, &["docx", "docm", "doc"])
+}
+
+/// Files that routinely sit beside a book (a readme) or get merged into one (several .docx), so they don't make a zip a collection.
+fn is_companion_file(name: &str) -> bool {
+	is_word_file(name) || extension_is(name, &["txt", "html", "htm", "xhtml"])
+}
+
+/// A DAISY book is one entry (its `.opf`, or `ncc.html` when there is none), so the many files inside its folder are left out.
 pub fn zip_books(entries: &[ZipEntryInfo]) -> Vec<String> {
 	let supported = || entries.iter().filter(|e| e.supported);
-	let book_dirs: HashSet<&str> = supported()
-		.filter(|e| is_daisy_book_file(&e.name))
-		.map(|e| e.name.rsplit_once('/').map_or("", |(dir, _)| dir))
-		.collect();
+	let book_dirs: HashSet<&str> =
+		supported().filter(|e| is_daisy_book_file(&e.name)).map(|e| dir_of(&e.name)).collect();
+	let opf_dirs: HashSet<&str> = supported().filter(|e| is_opf(&e.name)).map(|e| dir_of(&e.name)).collect();
 	let inside_book = |name: &str| {
 		let mut dir = name;
 		while let Some((parent, _)) = dir.rsplit_once('/') {
@@ -160,9 +181,28 @@ pub fn zip_books(entries: &[ZipEntryInfo]) -> Vec<String> {
 			}
 			dir = parent;
 		}
-		book_dirs.contains("")
+		// A book at the archive root owns only the files beside it; the rest of the archive is other books.
+		book_dirs.contains("") && !name.contains('/')
 	};
-	supported().filter(|e| is_daisy_book_file(&e.name) || !inside_book(&e.name)).map(|e| e.name.clone()).collect()
+	supported()
+		.filter(|e| {
+			if is_daisy_book_file(&e.name) {
+				is_opf(&e.name) || !opf_dirs.contains(dir_of(&e.name))
+			} else {
+				!inside_book(&e.name)
+			}
+		})
+		.map(|e| e.name.clone())
+		.collect()
+}
+
+/// The documents to offer for `archive`, or `None` when it should open as a single document. That is when it holds a collection, or when no parser would claim it (neither a DAISY book nor Word documents).
+pub fn zip_books_to_browse<R: Read + Seek>(archive: &ZipArchive<R>) -> Option<Vec<String>> {
+	let entries = list_zip_entries(archive);
+	let books = zip_books(&entries);
+	let is_collection = books.iter().filter(|name| !is_companion_file(name)).count() >= 2;
+	let claimed = entries.iter().any(|e| is_daisy_book_file(&e.name) || is_word_file(&e.name));
+	((is_collection || !claimed) && !books.is_empty()).then_some(books)
 }
 
 /// The path depends only on the archive and entry, and the file keeps the entry's own name, so the extracted copy opens like any other file: the same reading position, bookmarks and recent-documents entry come back each time. An earlier copy is overwritten.
@@ -180,9 +220,22 @@ pub fn extract_zip_entry_to_cache(zip_path: &Path, entry_name: &str, cache_root:
 	let entry_root = cache_root.join(URL_SAFE_NO_PAD.encode(hasher.finalize()));
 	if is_daisy_book_file(entry_name) {
 		// A DAISY book is many files that refer to each other, so extract its whole folder.
-		let prefix = entry_name.rsplit_once('/').map_or_else(String::new, |(dir, _)| format!("{dir}/"));
+		let dir = dir_of(entry_name);
+		let prefix = if dir.is_empty() { String::new() } else { format!("{dir}/") };
+		// A book at the root would otherwise take every other book in the archive along.
+		let other_books: Vec<String> = if prefix.is_empty() {
+			archive
+				.file_names()
+				.flatten()
+				.filter(|n| is_daisy_book_file(n) && !dir_of(n).is_empty())
+				.map(|n| format!("{}/", dir_of(&n)))
+				.collect()
+		} else {
+			Vec::new()
+		};
 		extract_zip_to_dir(&mut archive, &entry_root, |p| {
-			!p.to_string_lossy().replace('\\', "/").starts_with(&prefix)
+			let p = p.to_string_lossy().replace('\\', "/");
+			!p.starts_with(&prefix) || other_books.iter().any(|d| p.starts_with(d))
 		})?;
 		return Ok(entry_root.join(entry_name));
 	}
@@ -465,5 +518,58 @@ mod tests {
 		let opf = extract_zip_entry_to_cache(&zip_path, "d1/book.opf", &dir.path().join("cache")).expect("extract");
 		assert!(opf.is_file() && opf.with_file_name("book.xml").is_file());
 		assert!(!opf.parent().unwrap().parent().unwrap().join("d2").exists());
+	}
+
+	#[test]
+	fn zip_books_keeps_other_books_beside_a_root_daisy_book() {
+		let entries = ["book.opf", "ch1.html", "d1/other.opf", "d1/p.html", "e/a.epub"].map(entry);
+		assert_eq!(zip_books(&entries), ["book.opf", "d1/other.opf", "e/a.epub"]);
+	}
+
+	#[test]
+	fn zip_books_lists_a_daisy_folder_once_when_it_has_both_entry_files() {
+		let entries = ["d1/ncc.html", "d1/book.opf"].map(entry);
+		assert_eq!(zip_books(&entries), ["d1/book.opf"]);
+	}
+
+	#[test]
+	fn extract_zip_entry_to_cache_leaves_other_books_out_of_a_root_daisy_book() {
+		let dir = TempDir::new("zip");
+		let zip_path = write_zip(&dir, &["book.opf", "book.xml", "d1/other.opf", "d1/other.xml"]);
+		let opf = extract_zip_entry_to_cache(&zip_path, "book.opf", &dir.path().join("cache")).expect("extract");
+		assert!(opf.with_file_name("book.xml").is_file());
+		assert!(!opf.with_file_name("d1").exists());
+	}
+
+	fn write_zip(dir: &TempDir, names: &[&str]) -> PathBuf {
+		let path = dir.path().join("pack.zip");
+		let mut writer = ZipWriter::new(File::create(&path).expect("create zip"));
+		for name in names {
+			writer.start_file(*name, FileOptions::<()>::default()).expect("start file");
+			writer.write_all(b"x").expect("write file");
+		}
+		writer.finish().expect("finish zip");
+		path
+	}
+
+	fn browse(dir: &TempDir, names: &[&str]) -> Option<Vec<String>> {
+		let archive = ZipArchive::new(File::open(write_zip(dir, names)).expect("open")).expect("archive");
+		zip_books_to_browse(&archive)
+	}
+
+	#[test]
+	fn zip_books_to_browse_leaves_single_books_to_their_parsers() {
+		let dir = TempDir::new("zip");
+		assert_eq!(browse(&dir, &["d1/ncc.html", "d1/book.opf", "readme.txt", "readme.html"]), None);
+		assert_eq!(browse(&dir, &["a.docx", "b.docx"]), None);
+	}
+
+	#[test]
+	fn zip_books_to_browse_offers_collections_and_unclaimed_zips() {
+		let dir = TempDir::new("zip");
+		assert_eq!(browse(&dir, &["a.epub", "b.epub"]).map(|b| b.len()), Some(2));
+		assert_eq!(browse(&dir, &["d1/a.opf", "d2/b.opf"]).map(|b| b.len()), Some(2));
+		assert_eq!(browse(&dir, &["only.epub"]), Some(vec!["only.epub".to_string()]));
+		assert_eq!(browse(&dir, &["pic.xyz"]), None);
 	}
 }

@@ -10,7 +10,8 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{
-	DocumentManager, DocumentTab, dialogs, ensure_parser_ready_for_path, menu, menu_ids, update_title_from_manager,
+	DocumentManager, DocumentTab, dialogs, ensure_parser_ready_for_path, menu, menu_ids, resolve_zip_path,
+	update_title_from_manager,
 };
 use crate::ui::navigation::announce;
 
@@ -87,9 +88,11 @@ fn handle_show_all_documents(
 	}
 	let mut opened_any = false;
 	for path in &result.open {
-		let path = Path::new(path);
+		let Some(path) = resolve_zip_path(frame, Path::new(path), config, dm) else {
+			continue;
+		};
 		// One book that cannot be opened, or whose unknown type the reader declines to pick a reader for, does not stop the rest.
-		if ensure_parser_ready_for_path(frame, path, config) && dm.lock().unwrap().open_file(dm, path) {
+		if ensure_parser_ready_for_path(frame, &path, config) && dm.lock().unwrap().open_file(dm, &path) {
 			opened_any = true;
 		}
 	}
