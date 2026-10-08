@@ -51,6 +51,7 @@ zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Shell"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
+block = "0.1.6"
 objc = "0.2.7"
 
 [build-dependencies]
@@ -74,4 +75,8 @@ workspace = true
 # AppKit requires the main thread; Rust's default test harness uses worker threads.
 [[test]]
 name = "macos_line_navigation"
+harness = false
+
+[[test]]
+name = "macos_menu_shortcuts"
 harness = false
