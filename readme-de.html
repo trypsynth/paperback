@@ -71,14 +71,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </li>
 <li><a href="#derzeit-unterstützte-dateitypen">Derzeit unterstützte Dateitypen</a></li>
 <li><a href="#tastenkombinationen">Tastenkombinationen</a><ul>
-<li><a href="#menü-datei">Menü „Datei”</a></li>
-<li><a href="#menü-bearbeiten">Menü „Bearbeiten”</a></li>
-<li><a href="#menü-ansicht">Menü „Ansicht”</a></li>
-<li><a href="#menü-gehe-zu">Menü „Gehe zu”</a></li>
-<li><a href="#menü-lesezeichen">Menü „Lesezeichen”</a></li>
-<li><a href="#menü-audio">Menü „Audio”</a></li>
-<li><a href="#menü-werkzeuge">Menü „Werkzeuge”</a></li>
-<li><a href="#menü-hilfe">Menü „Hilfe”</a></li>
+<li><a href="#menü-datei">Menü „Datei“</a></li>
+<li><a href="#menü-bearbeiten">Menü „Bearbeiten“</a></li>
+<li><a href="#menü-ansicht">Menü „Ansicht“</a></li>
+<li><a href="#menü-gehe-zu">Menü „Gehe zu“</a></li>
+<li><a href="#menü-lesezeichen">Menü „Lesezeichen“</a></li>
+<li><a href="#menü-audio">Menü „Audio“</a></li>
+<li><a href="#menü-werkzeuge">Menü „Werkzeuge“</a></li>
+<li><a href="#menü-hilfe">Menü „Hilfe“</a></li>
 <li><a href="#zusätzliche-tastenkombinationen-für-die-dokumentanzeige">Zusätzliche Tastenkombinationen für die Dokumentanzeige</a></li>
 </ul>
 </li>
@@ -153,10 +153,10 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <p>Paperback funktioniert gut mit allen gängigen Bildschirmlesern. Es gibt jedoch zwei bekannte Probleme für JAWS-Nutzer.</p>
 <h3 id="jaws-und-braille-displays">JAWS und Braille-Displays</h3>
 <p>Bei Verwendung von JAWS mit einem Braille-Display kann es vorkommen, dass lange Absätze abgeschnitten werden, wenn du mit den Navigationstasten deines Displays vorwärts blätterst. Auch der Befehl zum Vorlesen des aktuellen Absatzes ist betroffen. Dies ist ein Fehler in der Behandlung des RICHEDIT50W-Textsteuerelements durch JAWS, nicht etwas in Paperback selbst, und ein Fehler, für den eine Lösung aufgrund von Visperos mangelndem Engagement bei der Reaktion auf Probleme mit Open-Source-Software lange dauerte.</p>
-<p>Der Workaround, der schließlich nach monatelangem Warten durch die JAWS-Diskussionsgruppe gefunden wurde, besteht darin, <code>paperback.jcf</code> zu bearbeiten und „Braille Presentation and Panning” auf „Always use DOM if available” einzustellen. Du solltest auch „Pan Text by Paragraph” aktivieren, sonst bleibt dein Display beim aktiven Absatz stehen, anstatt weiterzugehen. Mit beiden Einstellungen sollte das Blättern ordnungsgemäß funktionieren.</p>
+<p>Der Workaround, der schließlich nach monatelangem Warten durch die JAWS-Diskussionsgruppe gefunden wurde, besteht darin, <code>paperback.jcf</code> zu bearbeiten und „Braille Presentation and Panning“ auf „Always use DOM if available“ einzustellen. Du solltest auch „Pan Text by Paragraph“ aktivieren, sonst bleibt dein Display beim aktiven Absatz stehen, anstatt weiterzugehen. Mit beiden Einstellungen sollte das Blättern ordnungsgemäß funktionieren.</p>
 <h3 id="jaws-und-paperbacks-meldungen">JAWS und Paperbacks Meldungen</h3>
-<p>Paperback gibt Meldungen wie „Keine Seiten.” oder „Dieses Dokument hat keine Audioinhalte.” als Barrierefreiheitsbenachrichtigungen aus, womit Bildschirmleser diese über ihre anderen Ausgaben hinweg sprechen können. JAWS berücksichtigt diese nur, wenn „Enable accessible notification events” für die Anwendung eingeschaltet ist, und auf manchen Computern ist das nicht der Fall.</p>
-<p>Wenn JAWS nichts sagt, wenn du eine Taste drückst, die etwas melden sollte, öffne das Settings Center mit Paperback im Vordergrund (<code>Insert+6</code>), suche nach „notification”, und aktiviere „Enable accessible notification events”. Das schreibt die Einstellung in <code>paperback.jcf</code>, sodass sie nur auf Paperback zutrifft.</p>
+<p>Paperback gibt Meldungen wie „Keine Seiten.“ oder „Dieses Dokument hat keine Audioinhalte.“ als Barrierefreiheitsbenachrichtigungen aus, womit Bildschirmleser diese über ihre anderen Ausgaben hinweg sprechen können. JAWS berücksichtigt diese nur, wenn „Enable accessible notification events“ für die Anwendung eingeschaltet ist, und auf manchen Computern ist das nicht der Fall.</p>
+<p>Wenn JAWS nichts sagt, wenn du eine Taste drückst, die etwas melden sollte, öffne das Settings Center mit Paperback im Vordergrund (<code>Insert+6</code>), suche nach „notification“, und aktiviere „Enable accessible notification events“. Das schreibt die Einstellung in <code>paperback.jcf</code>, sodass sie nur auf Paperback zutrifft.</p>
 <h2 id="derzeit-unterstützte-dateitypen">Derzeit unterstützte Dateitypen</h2>
 <p>Paperback unterstützt die folgenden Formate und Dateitypen:</p>
 <ul>
@@ -185,20 +185,20 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h2 id="tastenkombinationen">Tastenkombinationen</h2>
 <p>Paperback ist für die Verwendung mit der Tastatur ausgerichtet. Hier sind die aktuellen Tastenkombinationen.</p>
 <p>Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet, ist das Äquivalent in Klammern vermerkt — hauptsächlich, weil <code>Ctrl+G</code>, <code>Ctrl+W</code> und <code>Alt+Left</code>/<code>Alt+Right</code> auf dieser Plattform bereits von anderen System- oder App-Konventionen belegt sind.</p>
-<h3 id="menü-datei">Menü „Datei”</h3>
+<h3 id="menü-datei">Menü „Datei“</h3>
 <ul>
 <li><code>Ctrl+O</code>: Öffnet ein Dokument.</li>
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Schließt das aktuelle Dokument.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Schließt alle offenen Dokumente.</li>
 <li><code>Ctrl+Shift+T</code>: Öffnet das zuletzt geschlossene Dokument erneut.</li>
-<li><code>Ctrl+R</code>: Zeigt den Dialog „Alle Dokumente” an (aus „Zuletzt verwendet”).</li>
+<li><code>Ctrl+R</code>: Zeigt den Dialog „Alle Dokumente“ an (aus „Zuletzt verwendet“).</li>
 <li><code>Ctrl+Shift+C</code>: Enthaltenden Ordner öffnen.</li>
 <li><code>Ctrl+Shift+E</code>: Dokumentdaten exportieren (<code>.paperback</code>).</li>
 <li><code>Ctrl+Shift+I</code>: Dokumentdaten importieren (<code>.paperback</code>).</li>
 <li><code>Ctrl+E</code>: Aktuelles Dokument als Klartext exportieren.</li>
 <li><code>Ctrl+Q</code>: Beendet Paperback (nur Windows; auf macOS befindet sich diese Option stattdessen im App-Menü).</li>
 </ul>
-<h3 id="menü-bearbeiten">Menü „Bearbeiten”</h3>
+<h3 id="menü-bearbeiten">Menü „Bearbeiten“</h3>
 <ul>
 <li><code>Ctrl+F</code>: Suchen-Dialog anzeigen.</li>
 <li><code>F3</code> (macOS: <code>Cmd+G</code>): Nächstes Ergebnis suchen.</li>
@@ -207,22 +207,22 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Alles vom markierten Anfang der Auswahl bis zur aktuellen Position kopieren.</li>
 <li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Springe zurück zum markierten Anfang der Auswahl und lasse die Markierung bestehen.</li>
 </ul>
-<h3 id="menü-ansicht">Menü „Ansicht”</h3>
+<h3 id="menü-ansicht">Menü „Ansicht“</h3>
 <ul>
-<li><code>F5</code>: Liest das aktuelle Dokument von der Festplatte neu ein. Funktioniert unabhängig davon, ob „Geänderte Dokumente automatisch neu laden” in den Einstellungen aktiviert ist.</li>
+<li><code>F5</code>: Liest das aktuelle Dokument von der Festplatte neu ein. Funktioniert unabhängig davon, ob „Geänderte Dokumente automatisch neu laden“ in den Einstellungen aktiviert ist.</li>
 <li><code>Ctrl+Alt+W</code>: Wortumbruch umschalten.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, d. h. Strg+Cmd+F): Vollbild umschalten.</li>
 <li><code>Ctrl+Shift+V</code>: Aktuellen Inhalt in der Webansicht öffnen.</li>
 <li><code>Ctrl+U</code>: Dokumentquelle in einem neuen Tab anzeigen.</li>
 </ul>
-<h3 id="menü-gehe-zu">Menü „Gehe zu”</h3>
+<h3 id="menü-gehe-zu">Menü „Gehe zu“</h3>
 <ul>
 <li><code>Ctrl+T</code>: Inhaltsverzeichnis anzeigen.</li>
 <li><code>F7</code>: Elementliste anzeigen.</li>
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Zur Zeile gehen.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Zum Prozentsatz gehen.</li>
 <li><code>Ctrl+P</code>: Zur Seite gehen (wenn vom aktuellen Dokument unterstützt).</li>
-<li><code>=</code>: Ankündigung des aktuellen Leseprozentsatzes und der Seitenzahl, z. B. „15 %, Seite 30”. Die Seitenzahl wird bei Dokumenten ohne Seitenzahlen weggelassen.</li>
+<li><code>=</code>: Ankündigung des aktuellen Leseprozentsatzes und der Seitenzahl, z. B. „15 %, Seite 30“. Die Seitenzahl wird bei Dokumenten ohne Seitenzahlen weggelassen.</li>
 <li><code>Alt+Left</code> (macOS: <code>Cmd+[</code>): Zurück in der Navigationshistorie.</li>
 <li><code>Alt+Right</code> (macOS: <code>Cmd+]</code>): Vorwärts in der Navigationshistorie.</li>
 <li><code>[</code>: Vorheriger Abschnitt.</li>
@@ -252,7 +252,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>: Zum Anfang des aktuellen Containers (Liste oder Tabelle) gehen.</li>
 <li><code>,</code>: Über das Ende des aktuellen Containers (Liste oder Tabelle) hinausgehen.</li>
 </ul>
-<h3 id="menü-lesezeichen">Menü „Lesezeichen”</h3>
+<h3 id="menü-lesezeichen">Menü „Lesezeichen“</h3>
 <ul>
 <li><code>Ctrl+Shift+B</code>: Lesezeichen bei der aktuellen Auswahl/dem Cursor umschalten.</li>
 <li><code>Ctrl+Shift+N</code>: Lesezeichennotiz bei der aktuellen Auswahl/dem Cursor hinzufügen oder bearbeiten.</li>
@@ -267,7 +267,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>/</code>: Temporäres Lesezeichen setzen.</li>
 <li><code>\</code>: Zum temporären Lesezeichen springen.</li>
 </ul>
-<h3 id="menü-audio">Menü „Audio”</h3>
+<h3 id="menü-audio">Menü „Audio“</h3>
 <ul>
 <li><code>Ctrl+Space</code> (macOS: <code>RawCtrl+Space</code>, d. h. die physische Strg-Taste, da Cmd+Space Spotlight öffnet): Audioerzählung abspielen/pausieren.</li>
 <li><code>'</code>: Audioerzählung vorwärts spulen.</li>
@@ -277,7 +277,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+Shift+.</code>: Audioerzählung beschleunigen.</li>
 <li><code>Ctrl+Shift+,</code>: Audioerzählung verlangsamen.</li>
 </ul>
-<h3 id="menü-werkzeuge">Menü „Werkzeuge”</h3>
+<h3 id="menü-werkzeuge">Menü „Werkzeuge“</h3>
 <ul>
 <li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, d. h. die physische Strg-Taste statt Cmd): Wortanzahl für das aktuelle Dokument anzeigen.</li>
 <li><code>Ctrl+I</code>: Dokumentinfo anzeigen.</li>
@@ -285,9 +285,9 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+Shift+S</code>: Schlaf-Timer umschalten.</li>
 <li><code>Ctrl+,</code>: Einstellungen öffnen (macOS: im App-Menü).</li>
 </ul>
-<h3 id="menü-hilfe">Menü „Hilfe”</h3>
+<h3 id="menü-hilfe">Menü „Hilfe“</h3>
 <ul>
-<li><code>Ctrl+F1</code>: Zeigt den Dialog „Über” an.</li>
+<li><code>Ctrl+F1</code>: Zeigt den Dialog „Über“ an.</li>
 <li><code>F1</code>: Öffnet die Hilfe im Standard-Browser.</li>
 <li><code>Shift+F1</code>: Zeigt die Hilfe in Paperback an.</li>
 <li><code>Ctrl+Shift+U</code>: Prüft auf Aktualisierungen.</li>
@@ -306,12 +306,12 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <p>Die Apps für iOS und Android nutzen die gleiche Lese-Engine wie die Desktop-Version, öffnen daher die gleichen Formate und speichern die Leseposition auf die gleiche Weise. Sie sind für die Verwendung mit VoiceOver auf iOS und TalkBack auf Android konzipiert.</p>
 <h3 id="dokumente-öffnen">Dokumente öffnen</h3>
 <ul>
-<li>Nutze die Schaltfläche „Buch öffnen”, oder öffne ein Dokument aus der Datei-App oder einer anderen App und wähle Paperback.</li>
+<li>Nutze die Schaltfläche „Buch öffnen“, oder öffne ein Dokument aus der Datei-App oder einer anderen App und wähle Paperback.</li>
 <li>Auf Android kannst du stattdessen den In-App-Dateibrowser in den Einstellungen aktivieren. Er benötigt die Berechtigung für den Zugriff auf alle Dateien und öffnet große Dateien direkt, anstatt sie zuerst zu kopieren.</li>
-<li>Halte die Schaltfläche „Buch öffnen” gedrückt, um die Daten eines Dokuments (<code>.paperback</code>) zu importieren oder zu exportieren – dieselben Dateien, die die Desktop-App verwendet.</li>
+<li>Halte die Schaltfläche „Buch öffnen“ gedrückt, um die Daten eines Dokuments (<code>.paperback</code>) zu importieren oder zu exportieren – dieselben Dateien, die die Desktop-App verwendet.</li>
 </ul>
 <h3 id="lesen-und-anhören">Lesen und Anhören</h3>
-<p>Jede App hat zwei Möglichkeiten, ein Dokument zu lesen. Im Textmodus liest der Bildschirmleser den Text vor. Im Modus „Vorlesen” liest Paperback den Text mit der Stimme vor, die du in den Einstellungen wählst, und spielt im Hintergrund sowie vom Sperrbildschirm weiter. Wechsle zwischen ihnen im Menü „Weitere Optionen”.</p>
+<p>Jede App hat zwei Möglichkeiten, ein Dokument zu lesen. Im Textmodus liest der Bildschirmleser den Text vor. Im Modus „Vorlesen“ liest Paperback den Text mit der Stimme vor, die du in den Einstellungen wählst, und spielt im Hintergrund sowie vom Sperrbildschirm weiter. Wechsle zwischen ihnen im Menü „Weitere Optionen“.</p>
 <p>Audiobücher wie DAISY, M4B und MP3-Bücher spielen stattdessen ihre eigene Aufnahme ab.</p>
 <h3 id="die-lesezeile">Die Lesezeile</h3>
 <p>Die Leiste am unteren Rand des Bildschirms enthält von links nach rechts:</p>
@@ -322,14 +322,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <p>Du kannst auch nach oben oder unten auf die Abspielen-Schaltfläche wischen, um dich um die Navigationseinheit zu bewegen, ohne die Schaltflächen für Zurück und Weiter erreichen zu müssen. Falls du nur das nutzt, entfernt die Einstellung Schaltflächen für Zurück und Weiter ausblenden diese aus dem Weg deines Bildschirmlesers. Die Einstellung Wischen nach oben bewegt vorwärts bestimmt, in welche Richtung ein Wisch führt.</p>
 <h3 id="weitere-optionen">Weitere Optionen</h3>
-<p>Das Menü „Weitere Optionen” enthält alles Übrige. Einige Einträge verhalten sich auf den einzelnen Apps etwas anders.</p>
+<p>Das Menü „Weitere Optionen“ enthält alles Übrige. Einige Einträge verhalten sich auf den einzelnen Apps etwas anders.</p>
 <ul>
-<li><strong>Zu Vorlesemodus oder zu Textmodus wechseln:</strong> wechselt zwischen dem Modus „Vorlesen” und dem Textmodus (siehe oben). Im Textmodus startet und pausiert ein Eintrag „Vorlesen” die Wiedergabe, ohne den Textmodus zu verlassen.</li>
+<li><strong>Zu Vorlesemodus oder zu Textmodus wechseln:</strong> wechselt zwischen dem Modus „Vorlesen“ und dem Textmodus (siehe oben). Im Textmodus startet und pausiert ein Eintrag „Vorlesen“ die Wiedergabe, ohne den Textmodus zu verlassen.</li>
 <li><strong>Inhaltsverzeichnis:</strong> zeigt die Kapitel des Buchs und öffnet das Kapitel, das du gerade liest. Wähle ein Kapitel, um direkt dorthin zu springen. Einträge mit Unterkapiteln können mit den Aktionen des Bildschirmlesers aus- und eingeklappt werden.</li>
 <li><strong>Elemente:</strong> eine Liste der Überschriften oder Links des Dokuments. Wechsle zwischen beiden mit der Typauswahl unter iOS oder den Registerkarten unter Android, und wähle dann einen Eintrag, um dorthin zu springen.</li>
-<li><strong>Suchen:</strong> gib ein, was zu suchen ist, oder wähle eine frühere Suche aus dem Suchverlauf, und entscheide, ob Groß- und Kleinschreibung beachtet werden soll, nur ganze Wörter gesucht werden sollen, oder ein regulärer Ausdruck verwendet werden soll. „Vorherige suchen” und „Nächste suchen” springen zu einer Übereinstimmung und geben an, wo sie gefunden wurde. Die Suche bleibt offen, sodass du weitermachen kannst. Im Vorlesemodus wird die Suche auch als Navigationselement in der Leiste angezeigt, sodass du die Übereinstimmungen auch von dort aus durchgehen kannst.</li>
+<li><strong>Suchen:</strong> gib ein, was zu suchen ist, oder wähle eine frühere Suche aus dem Suchverlauf, und entscheide, ob Groß- und Kleinschreibung beachtet werden soll, nur ganze Wörter gesucht werden sollen, oder ein regulärer Ausdruck verwendet werden soll. „Vorherige suchen“ und „Nächste suchen“ springen zu einer Übereinstimmung und geben an, wo sie gefunden wurde. Die Suche bleibt offen, sodass du weitermachen kannst. Im Vorlesemodus wird die Suche auch als Navigationselement in der Leiste angezeigt, sodass du die Übereinstimmungen auch von dort aus durchgehen kannst.</li>
 <li><strong>Gehe zu:</strong> springe zu einer Zeile, einer Seite oder einer Prozentzahl im Dokument. Wähle mit der Modusauswahl aus.</li>
-<li><strong>Zuletzt geöffnete Dokumente:</strong> alle Dokumente, die du geöffnet hast, jeweils gekennzeichnet als zurzeit offen, geschlossen oder Datei fehlt. Jedes Dokument hat zwei Aktionen des Bildschirmlesers: „Entfernen” nimmt es aus der Liste, und „Suchen” ermöglicht es dir, ein Dokument zu finden, dessen Datei verschoben wurde. „Zuletzt geöffnete Dokumente löschen” leert die Liste, ohne Dokumente zu löschen.</li>
+<li><strong>Zuletzt geöffnete Dokumente:</strong> alle Dokumente, die du geöffnet hast, jeweils gekennzeichnet als zurzeit offen, geschlossen oder Datei fehlt. Jedes Dokument hat zwei Aktionen des Bildschirmlesers: „Entfernen“ nimmt es aus der Liste, und „Suchen“ ermöglicht es dir, ein Dokument zu finden, dessen Datei verschoben wurde. „Zuletzt geöffnete Dokumente löschen“ leert die Liste, ohne Dokumente zu löschen.</li>
 <li><strong>Wortanzahl:</strong> die Anzahl der Wörter im Dokument.</li>
 <li><strong>Dokument-Info:</strong> Titel, Autor, Dateiname und unter iOS auch die Zeilen- und Zeichenanzahl.</li>
 <li><strong>Exportieren:</strong> speichert das Dokument als reinen Text, HTML oder Markdown.</li>
@@ -337,9 +337,9 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Hilfe:</strong> öffnet diese Anleitung.</li>
 <li><strong>Einstellungen:</strong>
 <ul>
-<li><strong>Vorlesen:</strong> die Stimme, die Sprechgeschwindigkeit und die Tonhöhe, eine Schaltfläche „Beispiel abspielen”, um sie zu hören, und die Pause zwischen Absätzen. Android ermöglicht dir auch die Auswahl der Sprach-Engine. Unter iOS ist dies auch der Ort, an dem sich das Sprachwörterbuch befindet: Regeln, die ändern, wie Wörter gesprochen werden, für jede Stimme oder nur für einige.</li>
+<li><strong>Vorlesen:</strong> die Stimme, die Sprechgeschwindigkeit und die Tonhöhe, eine Schaltfläche „Beispiel abspielen“, um sie zu hören, und die Pause zwischen Absätzen. Android ermöglicht dir auch die Auswahl der Sprach-Engine. Unter iOS ist dies auch der Ort, an dem sich das Sprachwörterbuch befindet: Regeln, die ändern, wie Wörter gesprochen werden, für jede Stimme oder nur für einige.</li>
 <li><strong>Lesbarkeit:</strong> Textgröße, Zeilenabstand, Absatzabstand, Ausrichtung und hochkontrastiger Text. iOS hat auch helles und dunkles Erscheinungsbild.</li>
-<li><strong>Verhalten:</strong> ob deine Dokumente erneut geöffnet werden, wenn die App startet, in welche Richtung ein Wischen auf die Wiedergabeschaltfläche verläuft, und ob die Schaltflächen „Zurück” und „Vorwärts” ausgeblendet werden sollen. Android hat auch den integrierten Dateibrowser hier.</li>
+<li><strong>Verhalten:</strong> ob deine Dokumente erneut geöffnet werden, wenn die App startet, in welche Richtung ein Wischen auf die Wiedergabeschaltfläche verläuft, und ob die Schaltflächen „Zurück“ und „Vorwärts“ ausgeblendet werden sollen. Android hat auch den integrierten Dateibrowser hier.</li>
 </ul>
 </li>
 </ul>
@@ -402,9 +402,9 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h5 id="allgemein">Allgemein</h5>
 <ul>
 <li>Linux-Unterstützung als AppImage oder tar.gz mit Desktopintegration, sodass sich Dokumente aus dem Dateimanager öffnen lassen.</li>
-<li>Markiere den Anfang einer Auswahl mit <code>Alt+F9</code>, kopiere alles von dort bis zu deiner aktuellen Position mit <code>Alt+F10</code>, und kehre zur Markierung mit <code>Alt+Shift+F9</code> zurück – zum Kopieren langer Textabschnitte ohne Shift-Pfeiltasten. Alle drei Funktionen findest du unter Menü „Extras” &gt; Menü „Auswahl und Kopieren”.</li>
-<li>Die Tastenkombination <code>=</code> gibt nun die Seite sowie den Prozentsatz an, z. B. „15%, Seite 30”, und verhält sich bei Dokumenten ohne Seitenzahlen wie zuvor.</li>
-<li>Das Fenster „Über” zeigt nun die Lizenz von Paperback und alle Übersetzer.</li>
+<li>Markiere den Anfang einer Auswahl mit <code>Alt+F9</code>, kopiere alles von dort bis zu deiner aktuellen Position mit <code>Alt+F10</code>, und kehre zur Markierung mit <code>Alt+Shift+F9</code> zurück – zum Kopieren langer Textabschnitte ohne Shift-Pfeiltasten. Alle drei Funktionen findest du unter Menü „Extras“ &gt; Menü „Auswahl und Kopieren“.</li>
+<li>Die Tastenkombination <code>=</code> gibt nun die Seite sowie den Prozentsatz an, z. B. „15%, Seite 30“, und verhält sich bei Dokumenten ohne Seitenzahlen wie zuvor.</li>
+<li>Das Fenster „Über“ zeigt nun die Lizenz von Paperback und alle Übersetzer.</li>
 <li>Eine ukrainische Übersetzung.</li>
 </ul>
 <h5 id="neue-formate">Neue Formate</h5>
@@ -425,23 +425,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h5 id="navigation">Navigation</h5>
 <ul>
 <li>MathML-Formeln in EPUB und HTML werden mit MathCAT als AsciiMath dargestellt. Nutze <code>M</code> oder <code>Shift+M</code> zum Navigieren in Formeln, dann <code>Enter</code> oder <code>Space</code> um die ursprüngliche MathML in der Formelansicht zu öffnen.</li>
-<li>Ein Schaltfläche „Alle suchen” im Suchdialog, die jede Zeile mit einem Treffer auflistet, so dass du direkt zur gewünschten springen kannst.</li>
+<li>Ein Schaltfläche „Alle suchen“ im Suchdialog, die jede Zeile mit einem Treffer auflistet, so dass du direkt zur gewünschten springen kannst.</li>
 <li>Tabellenansicht, Listenansicht und Seitenansicht in der Elementenliste (<code>F7</code>).</li>
-<li>„Gehe zu Zeile”, „Gehe zu Seite” und „Gehe zu Prozent” nehmen jetzt <code>+n</code> und <code>-n</code> an, um relativ zur aktuellen Position zu navigieren.</li>
+<li>„Gehe zu Zeile“, „Gehe zu Seite“ und „Gehe zu Prozent“ nehmen jetzt <code>+n</code> und <code>-n</code> an, um relativ zur aktuellen Position zu navigieren.</li>
 <li>EPUB-, MOBI- und CHM-Bücher ohne eigene Überschriften erhalten jetzt Überschrift-Navigation aus ihrem Inhaltsverzeichnis.</li>
 <li>KF8-(AZW3-)Bücher unterstützen jetzt Abschnittsnavigation.</li>
 <li>EPUB-Seiten, die nur aus einem Bild bestehen, zeigen jetzt eine Zeile dafür an, so dass du dort landen kannst, statt direkt vorbeizuspringen.</li>
 </ul>
 <h5 id="hörbücher">Hörbücher</h5>
 <ul>
-<li>Wiedergabegeschwindigkeit lässt sich von halber Geschwindigkeit bis zur dreifachen Geschwindigkeit steuern. Verwende <code>Ctrl+Shift+.</code> und <code>Ctrl+Shift+,</code>, oder das Menü „Werkzeuge”.</li>
+<li>Wiedergabegeschwindigkeit lässt sich von halber Geschwindigkeit bis zur dreifachen Geschwindigkeit steuern. Verwende <code>Ctrl+Shift+.</code> und <code>Ctrl+Shift+,</code>, oder das Menü „Werkzeuge“.</li>
 <li>Lesezeichen und Notizen in reinen Hörbüchern merken sich jetzt die genaue Zeit, zu der sie gesetzt wurden.</li>
 <li>Nächste und vorherige Position (<code>Alt+Left</code> und <code>Alt+Right</code>) funktionieren jetzt in Hörbüchern.</li>
-<li>Der Fortschritt durch ein Hörbuch wird jetzt an seiner Aufnahme gemessen, sodass „Gehe zu Prozent” und die Statusleiste zeigen, wie weit du wirklich bist.</li>
+<li>Der Fortschritt durch ein Hörbuch wird jetzt an seiner Aufnahme gemessen, sodass „Gehe zu Prozent“ und die Statusleiste zeigen, wie weit du wirklich bist.</li>
 </ul>
 <h5 id="zuletzt-geöffnete-dokumente">Zuletzt geöffnete Dokumente</h5>
 <ul>
-<li>Ein eindeutiger Eintrag für zuletzt geöffnete Dokumente im Untermenü „Zuletzt geöffnete Dokumente”.</li>
+<li>Ein eindeutiger Eintrag für zuletzt geöffnete Dokumente im Untermenü „Zuletzt geöffnete Dokumente“.</li>
 </ul>
 <h5 id="pdf-dokumente">PDF-Dokumente</h5>
 <ul>
@@ -466,15 +466,15 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h5 id="allgemein-1">Allgemein</h5>
 <ul>
 <li>Ein Buch, das beim Start erneut geöffnet wird, liest sich jetzt sofort vor, statt bis zur Schließung und erneuten Öffnung stumm zu bleiben.</li>
-<li>Ein Dokument, dessen Datei verloren gegangen ist, kann jetzt aus „Alle Dokumente” entfernt werden, statt in der Liste zu bleiben, obwohl du dies bestätigst.</li>
+<li>Ein Dokument, dessen Datei verloren gegangen ist, kann jetzt aus „Alle Dokumente“ entfernt werden, statt in der Liste zu bleiben, obwohl du dies bestätigst.</li>
 <li>Absturz beim Schließen von Paperback behoben.</li>
 <li>Das Schließen von Paperback blendet das Fenster jetzt sofort aus, statt es auf dem Bildschirm zu lassen, während es speichert.</li>
 <li>Große Bücher mit wenig Formatierung öffnen sich jetzt etwa halb so schnell.</li>
-<li>Meldungen, die aus einem Menü gewählt werden, wie „Dieses Dokument hat keinen Audio”, werden vom Bildschirmleser nicht mehr abgeschnitten, bevor du sie hörst.</li>
-<li>Das Öffnen eines Dokuments lässt „Zuletzt geschlossenes erneut öffnen” nicht mehr aktiviert, wenn es nichts zu öffnen gibt.</li>
+<li>Meldungen, die aus einem Menü gewählt werden, wie „Dieses Dokument hat keinen Audio“, werden vom Bildschirmleser nicht mehr abgeschnitten, bevor du sie hörst.</li>
+<li>Das Öffnen eines Dokuments lässt „Zuletzt geschlossenes erneut öffnen“ nicht mehr aktiviert, wenn es nichts zu öffnen gibt.</li>
 <li>Paperback versucht nicht mehr, Dokumente aus der Liste der zuletzt geöffneten Dateien erneut aufzurufen, die verloren gegangen sind, und begrenzt die Anzahl der gespeicherten zuletzt geöffneten Dokumente.</li>
 <li>Die alte INI-Einstellungsdatei wird jetzt gelöscht, nachdem sie in das neue Format übertragen wurde.</li>
-<li>Die Titel der Schrift- und Farbdialoge sowie das Menü „Exportieren unter” im Vietnamesischen sind jetzt übersetzt.</li>
+<li>Die Titel der Schrift- und Farbdialoge sowie das Menü „Exportieren unter“ im Vietnamesischen sind jetzt übersetzt.</li>
 <li>Nach einer Aktualisierung wird das neu gestartete Fenster jetzt nach vorne gebracht, statt es hinter jedem anderen Fenster in <code>Alt+Tab</code> zu lassen.</li>
 <li>Zeilenumbruch wird jetzt sofort bei großen Dokumenten angewendet, statt die ganze Sache erneut zu laden.</li>
 </ul>
@@ -533,7 +533,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Vorlesen mit wählbarer Stimme, Sprechgeschwindigkeit und Tonhöhe, einer Sprachgeschwindigkeitsregelung direkt in der Leiste und optionalen Pausen zwischen Absätzen.</li>
 <li>Wiedergabe von DAISY-, M4B- und MP3-Hörbüchern, die im Hintergrund und vom Sperrbildschirm aus weiterlaufen.</li>
 <li>Navigation nach Überschriften, Seiten, Links, Tabellen, Listen und mehr über die Leiste, sowie Inhaltsverzeichnis und Suchen.</li>
-<li>Ein Schlaf-Timer, Wortanzahl und Dokumentexport, plus ein Sprachverzeichnis unter iOS. Unter iOS erfolgt der Export über das Freigabemenü, sodass ein Buch in einer anderen App oder unter „Dateien” in einem anderen Format oder genau wie vorhanden weitergegeben werden kann.</li>
+<li>Ein Schlaf-Timer, Wortanzahl und Dokumentexport, plus ein Sprachverzeichnis unter iOS. Unter iOS erfolgt der Export über das Freigabemenü, sodass ein Buch in einer anderen App oder unter „Dateien“ in einem anderen Format oder genau wie vorhanden weitergegeben werden kann.</li>
 <li>Optionen für Textgröße, Zeilenabstand und hochkontrastreiche Texte.</li>
 <li>Tastenkombinationen, die denen der Desktop-Version entsprechen.</li>
 </ul>
@@ -543,15 +543,15 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Audiobooks benennen die Datei nun, während du sie nach Abschnitten durchschreitest.</li>
 <li>Audiobooks geben die echte Länge an, statt zu behaupten, dass jede Datei darin 24 Stunden läuft.</li>
 <li>Wenn du die Web View mit Escape schließt, zeigt sich keine Debug-Meldung mehr, nachdem du einem Link darin gefolgt bist.</li>
-<li>Nach „Alles auswählen” und Kopieren erhältst du das ganze Dokument, statt nur des gerade geladenen Teils.</li>
-<li>„Suchen” springt direkt zur gefundenen Zeile, statt dass der Bildschirmleser das Fenster erneut vorliest, während der Fokus zum Buch zurückkehrt.</li>
-<li>EPUBs mit einem verirrten ZIP64-Block, die mit „Invalid local file header” nicht geöffnet werden konnten, funktionieren nun.</li>
+<li>Nach „Alles auswählen“ und Kopieren erhältst du das ganze Dokument, statt nur des gerade geladenen Teils.</li>
+<li>„Suchen“ springt direkt zur gefundenen Zeile, statt dass der Bildschirmleser das Fenster erneut vorliest, während der Fokus zum Buch zurückkehrt.</li>
+<li>EPUBs mit einem verirrten ZIP64-Block, die mit „Invalid local file header“ nicht geöffnet werden konnten, funktionieren nun.</li>
 <li>Lange Dokumente springen nicht mehr an ihren Anfang zurück, während ein Bildschirmleser durchgehend darin liest.</li>
-<li>Links in der WebView bringen dich zum Abschnitt, auf den sie zeigen, statt mit „File not found” zu fehlschlagen.</li>
-<li>Die automatische Ankündigung „Dokument neu geladen” unterbricht deinen Bildschirmleser nicht mehr mitten im Satz, sondern wartet, bis er fertig ist.</li>
-<li>Der Reiter „Allgemein” im Einstellungsdialog wechselt nun in der Reihenfolge durch seine Optionen, wie sie auf dem Bildschirm erscheinen, mit dem Update-Kanal direkt nach der Option „Auf Updates prüfen”.</li>
-<li>Windows zeigt nun immer „Paperback” im Menü „Öffnen mit” an, statt des vollständigen Tagline des Programms.</li>
-<li>„Wortanzahl” und „Dokumentinfo” zeigen nun, wie viele Dateien ein Audiobook enthält, und wie lange es insgesamt läuft.</li>
+<li>Links in der WebView bringen dich zum Abschnitt, auf den sie zeigen, statt mit „File not found“ zu fehlschlagen.</li>
+<li>Die automatische Ankündigung „Dokument neu geladen“ unterbricht deinen Bildschirmleser nicht mehr mitten im Satz, sondern wartet, bis er fertig ist.</li>
+<li>Der Reiter „Allgemein“ im Einstellungsdialog wechselt nun in der Reihenfolge durch seine Optionen, wie sie auf dem Bildschirm erscheinen, mit dem Update-Kanal direkt nach der Option „Auf Updates prüfen“.</li>
+<li>Windows zeigt nun immer „Paperback“ im Menü „Öffnen mit“ an, statt des vollständigen Tagline des Programms.</li>
+<li>„Wortanzahl“ und „Dokumentinfo“ zeigen nun, wie viele Dateien ein Audiobook enthält, und wie lange es insgesamt läuft.</li>
 </ul>
 <h3 id="version-091">Version 0.9.1</h3>
 <ul>
@@ -559,15 +559,15 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>DAISY-Bücher geben ihre Audio unter macOS wieder, statt sie zu öffnen und ihre Zeitleiste stumm abzuspielen.</li>
 <li>Fehler behoben: Lockige Anführungszeichen, Gedankenstriche und ähnliche Zeichen verschwinden nicht mehr aus RTF-Dokumenten und führen nicht mehr dazu, dass benachbarte Wörter zusammenlaufen.</li>
 <li>Fehler behoben: RTF-Bilder geben ihre Rohdaten nicht mehr als Zeichensalat in das Dokument ab.</li>
-<li>Fehler behoben: Das Untermenü „Zuletzt verwendet” behielt veraltete Einträge bei, bis ein anderes Ereignis zu ihrem Neuaufbau führte.</li>
+<li>Fehler behoben: Das Untermenü „Zuletzt verwendet“ behielt veraltete Einträge bei, bis ein anderes Ereignis zu ihrem Neuaufbau führte.</li>
 <li>Tastenkombinationen sind wieder in jeder Übersetzung vorhanden, sodass die Menüs Russlands wieder Tastaturzugriff haben.</li>
 <li>Große CHM-Dokumente öffnen sich jetzt bis zu siebenmal schneller.</li>
-<li>Geöffnete Dokumente werden nun bei Windows registriert, sodass sie in der Sprungliste der Taskleiste und in der Liste „Zuletzt verwendet” des Startmenüs angezeigt werden.</li>
-<li>„Einstellungen” hat den Namen „Optionen” ersetzt und entspricht damit den mobilen Apps und auf macOS der Plattformkonvention.</li>
+<li>Geöffnete Dokumente werden nun bei Windows registriert, sodass sie in der Sprungliste der Taskleiste und in der Liste „Zuletzt verwendet“ des Startmenüs angezeigt werden.</li>
+<li>„Einstellungen“ hat den Namen „Optionen“ ersetzt und entspricht damit den mobilen Apps und auf macOS der Plattformkonvention.</li>
 <li>Paperback speichert seine Fensterposition, Größe und den maximierten Zustand jetzt zwischen den Ausführungen.</li>
 <li>Pluralformen werden jetzt übersetzt, sodass Meldungen, die Dinge zählen, in Sprachen, die mehr als eine Form benötigen, ordnungsgemäß gelesen werden.</li>
 <li>Die Auswahl der Datei ncc.html eines DAISY-Buches öffnet jetzt das komplette Hörbuch statt nur seinen Text.</li>
-<li>Die Aktionsnamen im Dialog „Tastenkombinationen anpassen” können jetzt übersetzt werden.</li>
+<li>Die Aktionsnamen im Dialog „Tastenkombinationen anpassen“ können jetzt übersetzt werden.</li>
 <li>Der Dokumenttitel steht jetzt an erster Stelle in der Titelleiste, sodass offene Bücher in der Taskleiste und bei Alt+Tab unterschieden werden können.</li>
 <li>Der Aktualisierungsdialog wird jetzt übersetzt.</li>
 </ul>
@@ -577,7 +577,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Ein CLI-Tool namens pb, um schnell alle von Paperback unterstützten Formate in HTML, Markdown oder reinen Text umzuwandeln.</li>
 <li>Eine Option zum Neuladen von Dokumenten, die von anderen Programmen auf der Festplatte geändert wurden.</li>
-<li>Eine Option „Quelle anzeigen”, um die Quelle eines Dokuments in einem neuen Tab zu öffnen, nützlich beispielsweise zum Bearbeiten von Markdown.</li>
+<li>Eine Option „Quelle anzeigen“, um die Quelle eines Dokuments in einem neuen Tab zu öffnen, nützlich beispielsweise zum Bearbeiten von Markdown.</li>
 <li>Dokumenttext wird jetzt paginiert, sodass du Bücher mit Millionen von Wörtern in nur wenigen Sekunden laden kannst. Bitte berichte über jede Besonderheit, die du damit findest.</li>
 </ul>
 <h5 id="plattformunterstützung">Plattformunterstützung</h5>
@@ -586,7 +586,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Native macOS-Unterstützung!</li>
 <li>Ein Vollbildmodus-Schalter.</li>
 </ul>
-<h5 id="dialogfeld-alle-dokumente">Dialogfeld „Alle Dokumente”</h5>
+<h5 id="dialogfeld-alle-dokumente">Dialogfeld „Alle Dokumente“</h5>
 <ul>
 <li>Eine Suchschaltfläche, um vermisste Bücher zu finden, deren Pfad sich gerade geändert hat.</li>
 <li>Ein Statusfilter und eine Statusleiste, um nach Dokumentstatus zu filtern und zu sehen, wie viele Dokumente angezeigt und ausgewählt sind.</li>
@@ -635,7 +635,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h5 id="export">Export</h5>
 <ul>
-<li>Das Menüelement „Exportieren” wurde erweitert, um neben Klartext auch den Export nach HTML und Markdown zu ermöglichen.</li>
+<li>Das Menüelement „Exportieren“ wurde erweitert, um neben Klartext auch den Export nach HTML und Markdown zu ermöglichen.</li>
 </ul>
 <h5 id="aktualisierung">Aktualisierung</h5>
 <ul>
@@ -669,11 +669,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h5 id="allgemein-3">Allgemein</h5>
 <ul>
 <li>Dokumente in veralteten CJK-Kodierungen wie GBK, Big5 und Shift_JIS werden jetzt korrekt angezeigt statt als Zeichensalat.</li>
-<li>„Letztes geschlossenes Dokument erneut öffnen” versucht nicht mehr, die gebündelte Readme zu öffnen.</li>
+<li>„Letztes geschlossenes Dokument erneut öffnen“ versucht nicht mehr, die gebündelte Readme zu öffnen.</li>
 <li>Der ausgewählte Tab wird nach dem Neustart von Paperback jetzt richtig fokussiert.</li>
-<li>Paperbacks Umgang mit Dateien auf Windows-Netzlaufwerken: „Im Ordner anzeigen” fokussiert die Datei jetzt richtig auf dem Netzwerkspeicher, und die Pfade enthalten keine merkwürdigen Zeichen mehr.</li>
+<li>Paperbacks Umgang mit Dateien auf Windows-Netzlaufwerken: „Im Ordner anzeigen“ fokussiert die Datei jetzt richtig auf dem Netzwerkspeicher, und die Pfade enthalten keine merkwürdigen Zeichen mehr.</li>
 <li>.paperback-Dateien werden bei der Dokumentwiederherstellung nicht mehr zwangsweise geladen, stattdessen wirst du um Bestätigung gefragt, wenn eine gefunden wird.</li>
-<li>„Enthaltenden Ordner öffnen” fokussiert die Datei jetzt im Explorer.</li>
+<li>„Enthaltenden Ordner öffnen“ fokussiert die Datei jetzt im Explorer.</li>
 <li>Das Öffnen der Readme respektiert jetzt deine ausgewählte Sprache.</li>
 <li>Die Benutzeroberfläche von Paperback wird jetzt auf hochauflösenden Displays richtig skaliert.</li>
 <li>Das Menü wird jetzt richtig aktualisiert und der Fokus wechselt zum Textsteuerelement, wenn die Hilfe in Paperback geöffnet wird.</li>
@@ -681,19 +681,19 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Der Titel des aktiven Dokuments wird jetzt verlesen, wenn zwischen Tabs gewechselt wird.</li>
 <li>Reduzierte Speichernutzung bei großen Dokumenten durch Halbierung der Größe der internen Zeichenindextabellen.</li>
 </ul>
-<h5 id="dialog-alle-dokumente">Dialog „Alle Dokumente”</h5>
+<h5 id="dialog-alle-dokumente">Dialog „Alle Dokumente“</h5>
 <ul>
-<li>Escape schließt die Dialoge „Dokumentinformationen” und „Alle Dokumente” nicht.</li>
-<li>Die Titelleiste wird nicht aktualisiert, nachdem ein Dokument aus dem Dialog „Alle Dokumente” geschlossen wurde.</li>
-<li>Readme.html wird nicht mehr zur Liste „Alle Dokumente” hinzugefügt, wenn es über <code>Shift+F1</code> geöffnet wird.</li>
-<li>Das Entfernen von Dokumenten aus dem Dialog „Zuletzt verwendet” schließt nun auch deren aktive Registerkarte.</li>
+<li>Escape schließt die Dialoge „Dokumentinformationen“ und „Alle Dokumente“ nicht.</li>
+<li>Die Titelleiste wird nicht aktualisiert, nachdem ein Dokument aus dem Dialog „Alle Dokumente“ geschlossen wurde.</li>
+<li>Readme.html wird nicht mehr zur Liste „Alle Dokumente“ hinzugefügt, wenn es über <code>Shift+F1</code> geöffnet wird.</li>
+<li>Das Entfernen von Dokumenten aus dem Dialog „Zuletzt verwendet“ schließt nun auch deren aktive Registerkarte.</li>
 <li>Der Suchfilter bleibt nach dem Entfernen eines Dokuments erhalten.</li>
 </ul>
 <h5 id="navigation-3">Navigation</h5>
 <ul>
 <li>Seitennavigation gibt in manchen Fällen falschen Zeilentext an.</li>
-<li>„Gehe zu Zeile”, „Gehe zu Seite” und „Gehe zu Prozent” platzieren den Cursor in großen Dokumenten an der falschen Position.</li>
-<li>„Suchen” und „Suchen (nächstes)” beachten in großen Dokumenten das geladene Dokumentfenster nicht.</li>
+<li>„Gehe zu Zeile“, „Gehe zu Seite“ und „Gehe zu Prozent“ platzieren den Cursor in großen Dokumenten an der falschen Position.</li>
+<li>„Suchen“ und „Suchen (nächstes)“ beachten in großen Dokumenten das geladene Dokumentfenster nicht.</li>
 </ul>
 <h5 id="lesezeichen-1">Lesezeichen</h5>
 <ul>
@@ -753,8 +753,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Unterstützung für gezippte Bücher von Bookshare hinzugefügt (sowohl DAISY als auch Word)!</li>
 <li>Alternativtext für eingebettete Bilder wird nun korrekt angezeigt.</li>
 <li>CHM-Dokumente unterstützen nun ordnungsgemäß die Navigation über interne Links.</li>
-<li>Problem behoben: „Gehe zu Seite” war um 1 verschoben.</li>
-<li>Problem behoben: Die Escape-Taste funktioniert nicht zum Schließen des Dialogs „Öffnen unter”.</li>
+<li>Problem behoben: „Gehe zu Seite“ war um 1 verschoben.</li>
+<li>Problem behoben: Die Escape-Taste funktioniert nicht zum Schließen des Dialogs „Öffnen unter“.</li>
 <li>Problem behoben: Das Kontextmenü des Readers wird bei Rechtsklick oder der Anwendungstaste nicht angezeigt.</li>
 <li>Problem behoben: Beim Öffnen von Dokumenten aus der Befehlszeile wird manchmal das falsche Dokument fokussiert.</li>
 <li>Nur-Bild-PDFs werden wieder erkannt und du wirst auf ihr Vorhandensein hingewiesen.</li>
@@ -778,7 +778,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="version-081">Version 0.8.1</h3>
 <ul>
 <li><code>Ctrl+Shift+T</code> hinzugefügt zum Erneut-Öffnen des zuletzt geschlossenen Dokuments.</li>
-<li>Der Dialog „Alle Dokumente” unterstützt jetzt das Auswählen mehrerer Dokumente zum gleichzeitigen Öffnen.</li>
+<li>Der Dialog „Alle Dokumente“ unterstützt jetzt das Auswählen mehrerer Dokumente zum gleichzeitigen Öffnen.</li>
 <li>Mehrere Fehler im RTF-Parser behoben.</li>
 <li>Dateipfade mit Nicht-ASCII-Zeichen (wie bosnisches š, č, ć, ž) werden nicht mehr beschädigt, wenn eine Datei über eine zweite Paperback-Instanz geöffnet wird.</li>
 <li>PDF-Text wird nicht mehr in falscher Reihenfolge gelesen, und die Abstände um großgeschriebene Wörter sind korrekt.</li>
@@ -811,7 +811,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tabellenunterstützung für HTML- und XHTML-basierte Dokumente hinzugefügt! Navigiere zwischen Tabellen mit T und Shift+T, und drücke Enter, um eine in einer Webansicht anzuzeigen.</li>
 <li>Grundlegende Webrendering-Funktion hinzugefügt! Drücke <code>Ctrl+Shift+V</code>, um den aktuellen Abschnitt deines Dokuments in einem webbasierten Renderer zu öffnen, nützlich für Inhalte wie komplexe Formatierungen oder Code-Beispiele.</li>
 <li>Russische Übersetzung hinzugefügt, danke Ruslan Gulmagomedov!</li>
-<li>Schaltfläche „Alle löschen” zum Dialog „Alle Dokumente” hinzugefügt.</li>
+<li>Schaltfläche „Alle löschen“ zum Dialog „Alle Dokumente“ hinzugefügt.</li>
 <li>Der Update-Checker zeigt jetzt Versionshinweise an, wenn eine neue Version verfügbar ist.</li>
 <li>Wiederherstellen des Fensters aus der Taskleiste behoben.</li>
 <li>Ja/Nein-Schaltflächenübersetzungen in Bestätigungsdialogen behoben.</li>
@@ -819,7 +819,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Kommentarverarbeitung in XML- und HTML-Dokumenten behoben.</li>
 <li>Inhaltsverzeichnis-Parsing in EPUB-2-Büchern behoben.</li>
 <li>Navigation zum nächsten Element mit demselben Buchstaben im Inhaltsverzeichnis behoben.</li>
-<li>Suchdialog versteckt sich jetzt ordnungsgemäß mit den Schaltflächen „Weiter”/„Zurück”.</li>
+<li>Suchdialog versteckt sich jetzt ordnungsgemäß mit den Schaltflächen „Weiter“/„Zurück“.</li>
 <li>Inhaltsverzeichnis von EPUB wirft dich gelegentlich zum falschen Element – behoben.</li>
 <li>Verschiedene Probleme bei der Leerzeichenbehandlung in XML, HTML und <code>pre</code>-Tags behoben.</li>
 <li>Fehler um eins bei der Link-Navigation behoben.</li>
@@ -840,15 +840,15 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Parsing von EPUB-Inhaltsverzeichnissen mit relativen Pfaden wurde korrigiert.</li>
 <li>Einige EPUB-Dokumente zeigen nun einen Titel oder Autor an.</li>
 <li>Die Titel einiger EPUB-Kapitel werden nun richtig im Inhaltsverzeichnis-Dialog angezeigt.</li>
-<li>Du kannst nun die Leertaste verwenden, um die Schaltflächen „OK” und „Abbrechen” im Inhaltsverzeichnis-Dialog zu aktivieren.</li>
+<li>Du kannst nun die Leertaste verwenden, um die Schaltflächen „OK“ und „Abbrechen“ im Inhaltsverzeichnis-Dialog zu aktivieren.</li>
 <li>Die Behandlung von Überschriften in Word-Dokumenten wurde verbessert.</li>
 <li>Du erhältst jetzt Sprachfeedback, wenn die Liste der letzten Dokumente leer ist und du versuchst, den Dialog zu öffnen.</li>
 </ul>
 <h3 id="version-060">Version 0.6.0</h3>
 <ul>
-<li>Eine neue Option zum Anzeigen des Menüs „Gehe zu” in einer viel kompakteren Form wurde zum Optionsdialog hinzugefügt und ist standardmäßig aktiviert.</li>
+<li>Eine neue Option zum Anzeigen des Menüs „Gehe zu“ in einer viel kompakteren Form wurde zum Optionsdialog hinzugefügt und ist standardmäßig aktiviert.</li>
 <li>Eine Option zum Umschließen der Navigation durch strukturelle Elemente hinzugefügt.</li>
-<li>Eine Option zum Menü „Extras” hinzugefügt, um den Ordner mit dem derzeit fokussierten Dokument zu öffnen.</li>
+<li>Eine Option zum Menü „Extras“ hinzugefügt, um den Ordner mit dem derzeit fokussierten Dokument zu öffnen.</li>
 <li>Ein ziemlich einfaches, aber sehr effektives Aktualisierungssystem hinzugefügt.</li>
 <li>Eine grundlegende Schlafzeitgeberfunktion hinzugefügt, erreichbar mit <code>Ctrl+Shift+S</code>.</li>
 <li>Unterstützung für das Parsen von FB2-eBooks hinzugefügt!</li>
@@ -856,19 +856,19 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Unterstützung für das Parsen von OpenDocument Text-Dateien hinzugefügt!</li>
 <li>Lesezeichen können jetzt ein ganzes Zeichen oder nur etwas angegebenen Text als Lesezeichen setzen. Wenn beim Platzieren eines Lesezeichens keine Auswahl aktiv ist, verhält sich dies wie vor 0.6 und markiert das gesamte Zeichen. Wenn du jedoch einen Text auswählst, wird nur dieser Text in das Lesezeichen einbezogen.</li>
 <li>Lesezeichen können jetzt optionale Textnotizen enthalten! Navigiere zwischen Lesezeichen mit Notizen mit <code>N</code> und <code>Shift+N</code>, oder öffne den Lesezeichendialog mit allen Lesezeichen, nur Notizen oder nur Lesezeichen ohne Notizen mit spezifischen Hotkeys.</li>
-<li>Lesezeichen im Lesezeichendialog haben nicht mehr das lästige Präfix „Lesezeichen x”.</li>
+<li>Lesezeichen im Lesezeichendialog haben nicht mehr das lästige Präfix „Lesezeichen x“.</li>
 <li>EPUB-Bücher mit HTML-Inhalten, die sich als XML ausgeben, werden nun korrekt verarbeitet.</li>
 <li>Laden großer Markdown-Dokumente behoben.</li>
 <li>Das Drücken von Leerzeichen in der Baumansicht des Inhaltsverzeichnisses, das die OK-Schaltfläche aktiviert, behoben.</li>
 <li>Whitespace-Behandlung am Anfang von Pre-Tags in HTML- und XHTML-Dokumenten behoben.</li>
 <li>Das Textfeld erhält manchmal nicht den Fokus zurück, wenn man zu Paperbacks Fenster zurückkehrt, behoben.</li>
-<li>Das Textfeld im Dialog „Gehe zu Prozent” aktualisiert den Wert des Schiebereglers nicht, behoben.</li>
+<li>Das Textfeld im Dialog „Gehe zu Prozent“ aktualisiert den Wert des Schiebereglers nicht, behoben.</li>
 <li>Das Rendern von benutzerdefinierten HTML-IDs in Markdown-Dokumenten behoben.</li>
 <li>HTML innerhalb von Markdown-Codeblöcken wird nun korrekt gerendert.</li>
 <li>Wenn du ein Buch mit einem Befehlszeilenparameter lädst, während eine vorhandene Paperback-Instanz ausgeführt wird, erhältst du keine Fehlermeldung mehr, wenn das Laden deines Dokuments länger als 5 Sekunden dauert.</li>
 <li>Wenn Paperback als Administrator ausgeführt wird, wird die Konfiguration nun korrekt geladen und gespeichert.</li>
 <li>Es ist nun möglich, ein Lesezeichen direkt aus dem Lesezeichendialog zu löschen.</li>
-<li>Es ist nun möglich, deine Lesezeichen und Leseposition für ein bestimmtes Dokument zu importieren und zu exportieren. Die generierte Datei wird nach der Datei mit einer .paperback-Erweiterung benannt. Wenn eine solche Datei beim Laden in demselben Verzeichnis wie eine Datei gefunden wird, wird sie automatisch geladen. Andernfalls kannst du sie manuell mit einem Element im Menü „Extras” importieren.</li>
+<li>Es ist nun möglich, deine Lesezeichen und Leseposition für ein bestimmtes Dokument zu importieren und zu exportieren. Die generierte Datei wird nach der Datei mit einer .paperback-Erweiterung benannt. Wenn eine solche Datei beim Laden in demselben Verzeichnis wie eine Datei gefunden wird, wird sie automatisch geladen. Andernfalls kannst du sie manuell mit einem Element im Menü „Extras“ importieren.</li>
 <li>Links innerhalb von Dokumenten werden nun vollständig unterstützt! Verwende <code>K</code> und <code>Shift+K</code>, um vorwärts und rückwärts durch sie zu navigieren, und drücke <code>Enter</code>, um einen zu öffnen/aktivieren.</li>
 <li>Viele interne Umgestaltungen, die die App schneller und das Binärformat kleiner machen.</li>
 <li>Markdown-Inhalte werden nun vorverarbeitet, um vor dem Rendern CommonMark-konform zu sein.</li>
@@ -888,7 +888,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Unterstützung für Microsoft-Word-Dokumente hinzugefügt!</li>
 <li>Unterstützung für PowerPoint-Präsentationen hinzugefügt!</li>
 <li>Bestimmte Menüelemente werden nun korrekt deaktiviert, wenn keine Dokumente geöffnet sind.</li>
-<li>Die Ausrichtung des Schiebers für „Gehe zu Prozent” wurde korrigiert.</li>
+<li>Die Ausrichtung des Schiebers für „Gehe zu Prozent“ wurde korrigiert.</li>
 <li>Das Inhaltsverzeichnis in EPUB-Büchern mit URL-codierten Dateipfaden und/oder Fragment-IDs wurde korrigiert.</li>
 <li>Leerzeichen werden nicht mehr auf seltsame Weise aus XHTML-Überschriften entfernt.</li>
 <li>Die Behandlung von Leerzeichen innerhalb verschachtelter pre-Tags in HTML-Dokumenten wurde korrigiert.</li>
@@ -897,7 +897,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Von UniversalSpeech gewechselt zu einer Live-Region für die Sprachausgabe. Das bedeutet, dass keine Bildschirmleser-DLLs mehr mit dem Programm ausgeliefert werden, und weitere Bildschirmleser werden nun unterstützt, wie beispielsweise Microsoft Narrator.</li>
 <li>Zip-Bibliotheken gewechselt, um das Öffnen einer größeren Vielfalt von EPUB-Büchern zu ermöglichen.</li>
 <li>Der Dialog, der dich fragt, ob du dein Dokument als Nur-Text öffnen möchtest, wurde vollständig überarbeitet und erlaubt dir nun, dein Dokument als Nur-Text, HTML oder Markdown zu öffnen.</li>
-<li>Der Dialog „Gehe zu Prozent” enthält nun ein Textfeld, mit dem du manuell einen Prozentsatz eingeben kannst, zu dem du springen möchtest.</li>
+<li>Der Dialog „Gehe zu Prozent“ enthält nun ein Textfeld, mit dem du manuell einen Prozentsatz eingeben kannst, zu dem du springen möchtest.</li>
 <li>Der HTML-Parser erkennt nun dd, dt und dl als Listenelemente.</li>
 <li>Das Inhaltsverzeichnis in EPUB-Büchern wird nun wieder exakt beibehalten.</li>
 <li>Das Unicode-Leerzeichen ohne Umbruch wird nun beim Entfernen von Leerzeilen berücksichtigt.</li>
@@ -915,7 +915,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>CHM-Dateiunterstützung hinzugefügt!</li>
 <li>Lesezeichen-Unterstützung hinzugefügt! Du kannst beliebig viele Lesezeichen in mehreren Dokumenten haben. Du kannst mit <code>b</code> und <code>Shift+b</code> vorwärts und rückwärts durch sie springen, eins mit <code>Ctrl+Shift+b</code> setzen und mit <code>Ctrl+b</code> einen Dialog öffnen, um zu einem bestimmten Lesezeichen zu springen.</li>
-<li>Ein Installationsprogramm neben der portablen ZIP-Datei hinzugefügt! Das Installationsprogramm installiert Paperback in dein Verzeichnis „Programme” und richtet automatisch Dateizuordnungen für dich ein.</li>
+<li>Ein Installationsprogramm neben der portablen ZIP-Datei hinzugefügt! Das Installationsprogramm installiert Paperback in dein Verzeichnis „Programme“ und richtet automatisch Dateizuordnungen für dich ein.</li>
 <li>Textdateien mit BOMs werden jetzt korrekt dekodiert, und die BOM wird nicht mehr am Anfang des Texts angezeigt.</li>
 <li>Viel mehr Informationen zur Statusleiste hinzugefügt. Sie zeigt dir jetzt deine aktuelle Zeile, das Zeichen und den Lesefortschritt in Prozent an.</li>
 <li>HTML-Kommentare sowie der Inhalt von Script- und Style-Tags werden nicht mehr in der Textausgabe angezeigt.</li>
@@ -924,7 +924,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Dokumente ohne bekannte Titel oder Autoren haben jetzt immer einen Standard.</li>
 <li>Die Logik zum Speichern der Leseposition ist jetzt viel intelligenter und sollte nur noch schreiben, wenn es absolut notwendig ist.</li>
 <li>Das Dokument, das du hattest, als du Paperback geschlossen hast, wird jetzt über Neustarts der Anwendung hinweg gespeichert.</li>
-<li>Die Eingabe in die Dialoge „Gehe zu Zeile” und „Gehe zu Seite” wird jetzt strikter bereinigt.</li>
+<li>Die Eingabe in die Dialoge „Gehe zu Zeile“ und „Gehe zu Seite“ wird jetzt strikter bereinigt.</li>
 <li>Navigation im Inhaltsverzeichnis in EPUB-3-Büchern mit relativen Pfaden in ihren Manifesten behoben.</li>
 </ul>
 <h3 id="version-030">Version 0.3.0</h3>
@@ -936,7 +936,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Verschachtelte Inhaltsverzeichnis-Elemente in EPUB-Büchern, die den Cursor an die falsche Position setzten, wurden korrigiert.</li>
 <li>Ein Absturz beim Beenden der Anwendung in bestimmten Fällen wurde korrigiert.</li>
 <li>Ein Kontrollkästchen im Optionsdialog zum Aktivieren oder Deaktivieren des Zeilenumbruchs wurde hinzugefügt!</li>
-<li>Es ist jetzt möglich, Paperbracks Entwicklung zu unterstützen, entweder über den neuen Spenden-Eintrag im Hilfemenü oder über den Link „Sponsor this project” am unteren Ende der Hauptseite des GitHub-Repositorys.</li>
+<li>Es ist jetzt möglich, Paperbracks Entwicklung zu unterstützen, entweder über den neuen Spenden-Eintrag im Hilfemenü oder über den Link „Sponsor this project“ am unteren Ende der Hauptseite des GitHub-Repositorys.</li>
 <li>Markdown-Dokumente haben jetzt immer einen Titel, und Paperback sollte jetzt in der Lage sein, praktisch jede Markdown-Datei zu laden.</li>
 <li>PDF-Dokumente haben jetzt immer einen Titel, auch wenn die Metadaten fehlen.</li>
 <li>PDF-Bibliotheken wurden auf die in Chromium verwendete umgestellt, was zu einer deutlich zuverlässigeren PDF-Analyse insgesamt führt.</li>
@@ -945,7 +945,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="version-021">Version 0.2.1</h3>
 <ul>
-<li>Die Gesamtzahl der Seiten wurde zum Seitenlabel im Dialog „Seite ansteuern” hinzugefügt.</li>
+<li>Die Gesamtzahl der Seiten wurde zum Seitenlabel im Dialog „Seite ansteuern“ hinzugefügt.</li>
 <li>Tabbing vom Dokumentinhalt zur Liste der geöffneten Dokumente ermöglicht.</li>
 <li>Der Fehler wurde behoben, dass die Tastenkombinationen für Überschriften manchmal die zuletzt verwendeten Dokumente öffneten, wenn genug davon vorhanden waren.</li>
 <li>Paperback entfernt jetzt unnötige bedingte Trennstriche aus der Textausgabe.</li>
@@ -960,8 +960,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Laden von EPUB-3-Büchern mit darin eingebettetem XHTML behoben.</li>
 <li>Eine Meldung wird nun angesagt, wenn das Dokument kein Inhaltsverzeichnis oder Abschnitte unterstützt, anstatt dass die Menüelemente deaktiviert sind.</li>
 <li>Menü für zuletzt verwendete Dokumente hinzugefügt! Es speichert derzeit die letzten 10 geöffneten Dokumente, und die Eingabetaste auf einem Dokument öffnet es zum Lesen.</li>
-<li>Dialog „Suchen” komplett neu geschrieben, wodurch er viel einfacher zu verwenden ist, außerdem wurde ein Verlauf der letzten 25 Suchen und Unterstützung für reguläre Ausdrücke hinzugefügt!</li>
-<li>Zuvor geöffnete Dokumente werden nun über Neustarts der Anwendung hinweg gespeichert. Dies ist konfigurierbar über den neuen Eintrag „Optionen” im Menü „Extras”.</li>
+<li>Dialog „Suchen“ komplett neu geschrieben, wodurch er viel einfacher zu verwenden ist, außerdem wurde ein Verlauf der letzten 25 Suchen und Unterstützung für reguläre Ausdrücke hinzugefügt!</li>
+<li>Zuvor geöffnete Dokumente werden nun über Neustarts der Anwendung hinweg gespeichert. Dies ist konfigurierbar über den neuen Eintrag „Optionen“ im Menü „Extras“.</li>
 <li><code>Shift+F1</code> zum direkten Öffnen der Readme in Paperback hinzugefügt.</li>
 </ul>
 <h3 id="version-010">Version 0.1.0</h3>
