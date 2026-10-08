@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 5e3e3226ca7ab1c2; sections: 84030068,db723a70,df2f4c18,6a9811ab,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -25,7 +25,7 @@ Paperback chạy trên Windows 10/11, tất cả các phiên bản ARM macOS hi�
 * Đọc các trang PDF được quét bằng OCR tích hợp trong Windows và macOS.
 * Dấu trang và ghi chú, để bạn có thể đánh dấu vị trí của mình và quay lại nó.
 * Mọi phím tắt bàn phím có thể được thay đổi.
-* Đi kèm với `pb`, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy. Nó có thể nhận bao nhiêu tài liệu bạn cung cấp, tự động mở rộng `*.pdf` và các tệp tương tự để lệnh dòng lệnh tương tự hoạt động trên Windows, và có thể ghi một tệp trên mỗi tài liệu vào một thư mục.
+* Đi kèm với `pb`, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy. Nó có thể nhận bao nhiêu tài liệu bạn cung cấp, tự động mở rộng `*.pdf` và các tệp tương tự để lệnh dòng lệnh tương tự hoạt động trên Windows, và có thể ghi một tệp trên mỗi tài liệu vào một thư mục. Nó cũng có thể đọc danh sách các tài liệu từ một tệp hoặc từ stdin với `--files-from`, và chuyển đổi các tài liệu trực tiếp từ các liên kết http và https.
 
 ## Khả năng Tương thích với Trình Đọc Màn hình
 

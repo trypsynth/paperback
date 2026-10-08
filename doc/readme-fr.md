@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 5e3e3226ca7ab1c2; sections: 84030068,db723a70,df2f4c18,6a9811ab,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -25,7 +25,7 @@ Paperback fonctionne sur Windows 10/11, toutes les versions modernes d'ARM macOS
 * Lit les pages PDF numérisées avec l'OCR intégré à Windows et macOS.
 * Signets et notes, pour que vous puissiez marquer votre place et y revenir.
 * Chaque raccourci clavier peut être modifié.
-* Livré avec `pb`, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut. Il accepte autant de documents que vous lui en fournissez, développe `*.pdf` et les fichiers similaires de lui-même pour que la même ligne de commande fonctionne sur Windows, et peut écrire un fichier par document dans un dossier.
+* Livré avec `pb`, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut. Il accepte autant de documents que vous lui en fournissez, développe `*.pdf` et les fichiers similaires de lui-même pour que la même ligne de commande fonctionne sur Windows, et peut écrire un fichier par document dans un dossier. Il peut également lire une liste de documents à partir d'un fichier ou de stdin avec `--files-from`, et convertir des documents directement à partir de liens http et https.
 
 ## Compatibilité avec les lecteurs d'écran
 

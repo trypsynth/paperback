@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 04:50+0000\n"
+"POT-Creation-Date: 2026-10-08 12:00+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -495,7 +495,7 @@ msgid "Show notes only"
 msgstr "Alleen notities tonen"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
-msgid "&View Note Text"
+msgid "&View Note Text..."
 msgstr "Notitiet&ekst bekijken"
 
 #. TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
@@ -507,7 +507,7 @@ msgid "&Toggle Bookmark"
 msgstr "Bladwijzer &plaatsen/verwijderen"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
-msgid "Bookmark &with Note"
+msgid "Bookmark &with Note..."
 msgstr "Bladwijzer &met notitie"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
@@ -791,7 +791,6 @@ msgid "Edit bookmark note:"
 msgstr "Bladwijzernotitie bewerken:"
 
 #. TRANSLATORS: Title of the Document Info dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "Documentinformatie"
 
@@ -1106,6 +1105,11 @@ msgstr "Navigatie laten &rondlopen"
 msgid "Move to &start of line"
 msgstr "Ga naar &begin van regel"
 
+#. TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+#, fuzzy
+msgid "&Highlight found text"
+msgstr "&Gevonden tekst markeren"
+
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr "Geluiden afspelen bij bladwijzers en &notities"
@@ -1292,7 +1296,6 @@ msgid "&Minutes:"
 msgstr "&Minuten:"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "Inhoudsopgave"
 
@@ -1514,6 +1517,15 @@ msgstr "Donatiepagina openen in browser mislukt."
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback kan geen acties uitvoeren terwijl webweergave is geopend."
+
+#. TRANSLATORS: Announced when the copy shortcut is pressed with nothing selected, so there was nothing to put on the clipboard.
+#. TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
+msgid "Nothing to copy."
+msgstr "Niets om te kopiëren."
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr "Kan niet naar het klembord kopiëren."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
@@ -1864,7 +1876,7 @@ msgid "Go forward in history"
 msgstr "Vooruit in geschiedenis"
 
 #. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
-msgid "Table &of Contents"
+msgid "Table &of Contents..."
 msgstr "In&houdsopgave"
 
 #. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
@@ -1880,7 +1892,7 @@ msgid "Show elements list"
 msgstr "Elementenlijst tonen"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-msgid "&Go to Page"
+msgid "&Go to Page..."
 msgstr "Ga naar &pagina"
 
 #. TRANSLATORS: Menu item in the Help menu to show information about the application.
@@ -1924,7 +1936,7 @@ msgid "Support Paperback development"
 msgstr "Ontwikkeling van Paperback steunen"
 
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
-msgid "&Word Count"
+msgid "&Word Count..."
 msgstr "&Woordenaantal"
 
 #. TRANSLATORS: Status-bar help text for the Word Count menu item.
@@ -1932,7 +1944,7 @@ msgid "Show word count"
 msgstr "Woordenaantal tonen"
 
 #. TRANSLATORS: Menu item in the Tools menu to show information about the document.
-msgid "Document &Info"
+msgid "Document &Info..."
 msgstr "&Documentinformatie"
 
 #. TRANSLATORS: Status-bar help text for the Document Info menu item.
@@ -2249,9 +2261,12 @@ msgstr "Ga naar &percentage"
 msgid "Go to percent"
 msgstr "Ga naar percentage"
 
-#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
-msgid "Copied (%d chars)."
-msgstr "Gekopieerd (%d tekens)."
+#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+#, fuzzy
+msgid "Copied %d character."
+msgid_plural "Copied %d characters."
+msgstr[0] "Gekopieerd %d teken."
+msgstr[1] "Gekopieerd %d tekens."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 msgid "Beginning of selection set."
@@ -2260,14 +2275,6 @@ msgstr "Begin van selectie ingesteld."
 #. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
 msgid "Cannot copy; set beginning of selection first."
 msgstr "Kan niet kopiëren; stel eerst begin van selectie in."
-
-#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
-msgid "Nothing to copy."
-msgstr "Niets om te kopiëren."
-
-#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
-msgid "Could not copy to the clipboard."
-msgstr "Kan niet naar het klembord kopiëren."
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 msgid "Cannot jump; set beginning of selection first."
@@ -2527,6 +2534,16 @@ msgid "Past Container End"
 msgstr "Voorbij einde van container"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Document Info..."
+msgstr "Documentinformatie..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Table of Contents..."
+msgstr "Inhoudsopgave..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Elements List..."
 msgstr "Elementenlijst..."
 
@@ -2685,6 +2702,41 @@ msgstr "Geen"
 #. TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
 msgid "This view shows the part of the document you are reading."
 msgstr "Deze weergave toont het deel van het document dat je leest."
+
+#. TRANSLATORS: Error when downloading a document from a link fails; {} is the HTTP status code, such as 404
+#, fuzzy
+msgid "the server answered with status {}"
+msgstr "de server antwoordde met status {}"
+
+#. TRANSLATORS: Error when the server of a link cannot be reached; {} is the technical reason
+#, fuzzy
+msgid "the server could not be reached: {}"
+msgstr "de server kon niet bereikt worden: {}"
+
+#. TRANSLATORS: Error when a document downloaded from a link cannot be saved; {} is the technical reason
+#, fuzzy
+msgid "the download could not be saved: {}"
+msgstr "het downloaden kon niet opgeslagen worden: {}"
+
+#. TRANSLATORS: Message when downloading a document from a link is cancelled
+#, fuzzy
+msgid "the download was cancelled"
+msgstr "het downloaden werd geannuleerd"
+
+#. TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
+#, fuzzy
+msgid ".{} files cannot be read, so the link was not downloaded"
+msgstr ".{}-bestanden kunnen niet gelezen worden, dus de link werd niet gedownload"
+
+#. TRANSLATORS: Error when a secure https link is redirected to an insecure http address
+#, fuzzy
+msgid "the secure link was redirected to an insecure address, so it was not downloaded"
+msgstr "de veilige link werd omgeleid naar een onveilig adres, dus het werd niet gedownload"
+
+#. TRANSLATORS: Error when a document behind a link is too large to download; {} is the limit in megabytes
+#, fuzzy
+msgid "the document is larger than {} MB, so it was not downloaded"
+msgstr "het document is groter dan {} MB, dus het werd niet gedownload"
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
@@ -2879,6 +2931,10 @@ msgstr "Wachtwoord vereist"
 #. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
 msgid "Password incorrect"
 msgstr "Wachtwoord onjuist"
+
+#, fuzzy
+msgid "This document is encrypted in a way Paperback cannot open: {}"
+msgstr "Dit document is versleuteld op een manier die Paperback niet kan openen: {}"
 
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
@@ -4314,6 +4370,27 @@ msgstr "Taal"
 #: kt swift
 msgid "Opens Paperback in the Settings app, where its language can be changed."
 msgstr "Opent Paperback in de app Instellingen, waar je de taal kunt wijzigen."
+
+#~ msgid "&View Note Text"
+#~ msgstr "Notitiet&ekst bekijken"
+
+#~ msgid "Bookmark &with Note"
+#~ msgstr "Bladwijzer &met notitie"
+
+#~ msgid "Table &of Contents"
+#~ msgstr "In&houdsopgave"
+
+#~ msgid "&Go to Page"
+#~ msgstr "Ga naar &pagina"
+
+#~ msgid "&Word Count"
+#~ msgstr "&Woordenaantal"
+
+#~ msgid "Document &Info"
+#~ msgstr "&Documentinformatie"
+
+#~ msgid "Copied (%d chars)."
+#~ msgstr "Gekopieerd (%d tekens)."
 
 #~ msgid "Previous &Note"
 #~ msgstr "Vorige &notitie"
