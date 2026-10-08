@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 5e3e3226ca7ab1c2; sections: 84030068,db723a70,df2f4c18,6a9811ab,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versión 1.0
 
@@ -25,7 +25,7 @@ Paperback funciona en Windows 10/11, todas las versiones modernas de ARM macOS, 
 * Lee páginas PDF escaneadas con el OCR integrado en Windows y macOS.
 * Marcadores y notas, para que puedas marcar tu lugar y volver a él.
 * Cada atajo de teclado puede ser personalizado.
-* Viene con `pb`, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano. Acepta tantos documentos como le proporciones, expande `*.pdf` y similares por sí sola para que el mismo comando funcione en Windows, y puede escribir un archivo por documento en una carpeta.
+* Viene con `pb`, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano. Acepta tantos documentos como le proporciones, expande `*.pdf` y similares por sí sola para que el mismo comando funcione en Windows, y puede escribir un archivo por documento en una carpeta. También puede leer una lista de documentos de un archivo o desde stdin con `--files-from`, y convertir documentos directamente desde enlaces http y https.
 
 ## Compatibilidad con lectores de pantalla
 

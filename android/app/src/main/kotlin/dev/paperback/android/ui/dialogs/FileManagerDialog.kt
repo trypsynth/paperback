@@ -137,7 +137,8 @@ fun FileManagerDialog(
 					title = {
 						Text(
 							text = if (currentDirectory.absolutePath == "/storage") {
-								"Storage Devices"
+								// TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
+								t("Storage Devices")
 							} else if (currentDirectory.absolutePath ==
 								Environment.getExternalStorageDirectory().absolutePath
 							) {
@@ -169,6 +170,7 @@ fun FileManagerDialog(
 
 				Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
 					if (virtualParent != null) {
+						val parentName = if (virtualParent.absolutePath == "/storage") t("Storage Devices") else virtualParent.name
 						Row(
 							modifier = Modifier
 								.fillMaxWidth()
@@ -176,8 +178,8 @@ fun FileManagerDialog(
 								.padding(16.dp)
 								.clearAndSetSemantics {
 									role = Role.Button
-									contentDescription =
-										"Go up to parent directory: ${if (virtualParent.absolutePath == "/storage") "Storage Devices" else virtualParent.name}"
+									// TRANSLATORS: TalkBack label for the file manager's row that goes up a folder; {} is the parent folder's name
+									contentDescription = t("Go up to parent directory: {}", parentName)
 								},
 							verticalAlignment = Alignment.CenterVertically
 						) {

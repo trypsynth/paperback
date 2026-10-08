@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 04:50+0000\n"
+"POT-Creation-Date: 2026-10-08 12:00+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -596,7 +596,7 @@ msgstr "Chỉ hiển thị ghi chú"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
 #, fuzzy
-msgid "&View Note Text"
+msgid "&View Note Text..."
 msgstr "&Xem nội dung ghi chú"
 
 #. TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
@@ -611,7 +611,7 @@ msgstr "Bật tắt &dấu trang"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
 #, fuzzy
-msgid "Bookmark &with Note"
+msgid "Bookmark &with Note..."
 msgstr "Dấu trang có &ghi chú"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
@@ -934,7 +934,6 @@ msgid "Edit bookmark note:"
 msgstr "Sửa ghi chú dấu trang:"
 
 #. TRANSLATORS: Title of the Document Info dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "Thông tin tài liệu"
 
@@ -1299,6 +1298,11 @@ msgstr "Điều hướng &xoay vòng"
 msgid "Move to &start of line"
 msgstr "Di chuyển đến &đầu dòng"
 
+#. TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+#, fuzzy
+msgid "&Highlight found text"
+msgstr "&Tô sáng văn bản tìm thấy"
+
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 #, fuzzy
 msgid "Play &sounds on bookmarks and notes"
@@ -1525,7 +1529,6 @@ msgid "&Minutes:"
 msgstr "&Phút:"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "Mục lục"
 
@@ -1772,6 +1775,17 @@ msgstr "Không thể mở trang ủng hộ trên trình duyệt."
 #, fuzzy
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback không thể thực hiện bất kỳ thao tác nào khi Web View đang mở."
+
+#. TRANSLATORS: Announced when the copy shortcut is pressed with nothing selected, so there was nothing to put on the clipboard.
+#. TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
+#, fuzzy
+msgid "Nothing to copy."
+msgstr "Không có gì để sao chép."
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+#, fuzzy
+msgid "Could not copy to the clipboard."
+msgstr "Không thể sao chép vào bảng nhớ tạm."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 #, fuzzy
@@ -2193,7 +2207,7 @@ msgstr "Tiến về phía trước trong dòng lịch sử"
 
 #. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
 #, fuzzy
-msgid "Table &of Contents"
+msgid "Table &of Contents..."
 msgstr "&Mục lục"
 
 #. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
@@ -2213,7 +2227,7 @@ msgstr "Hiển thị danh sách các phần tử"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
 #, fuzzy
-msgid "&Go to Page"
+msgid "&Go to Page..."
 msgstr "Truy cập &page"
 
 #. TRANSLATORS: Menu item in the Help menu to show information about the application.
@@ -2268,7 +2282,7 @@ msgstr "Hỗ trợ phát triển phiên bản bìa mềm"
 
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
 #, fuzzy
-msgid "&Word Count"
+msgid "&Word Count..."
 msgstr "&Đếm từ"
 
 #. TRANSLATORS: Status-bar help text for the Word Count menu item.
@@ -2278,7 +2292,7 @@ msgstr "Hiển thị số từ"
 
 #. TRANSLATORS: Menu item in the Tools menu to show information about the document.
 #, fuzzy
-msgid "Document &Info"
+msgid "Document &Info..."
 msgstr "&Thông tin tài liệu"
 
 #. TRANSLATORS: Status-bar help text for the Document Info menu item.
@@ -2653,10 +2667,11 @@ msgstr "Truy cập &percent"
 msgid "Go to percent"
 msgstr "Đi tới phần trăm"
 
-#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
+#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
 #, fuzzy
-msgid "Copied (%d chars)."
-msgstr "Đã sao chép (%d ký tự)."
+msgid "Copied %d character."
+msgid_plural "Copied %d characters."
+msgstr[0] "Đã sao chép %d ký tự."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 #, fuzzy
@@ -2667,16 +2682,6 @@ msgstr "Đã đặt đầu vùng chọn."
 #, fuzzy
 msgid "Cannot copy; set beginning of selection first."
 msgstr "Không thể sao chép; hãy đặt phần đầu của vùng chọn trước."
-
-#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
-#, fuzzy
-msgid "Nothing to copy."
-msgstr "Không có gì để sao chép."
-
-#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
-#, fuzzy
-msgid "Could not copy to the clipboard."
-msgstr "Không thể sao chép vào bảng nhớ tạm."
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 #, fuzzy
@@ -2999,6 +3004,16 @@ msgstr "Qua Cuối Container"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
+msgid "Document Info..."
+msgstr "Thông tin tài liệu..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Table of Contents..."
+msgstr "Mục lục..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Elements List..."
 msgstr "Danh Sách Phần Tử..."
 
@@ -3196,6 +3211,41 @@ msgstr "Không có"
 #, fuzzy
 msgid "This view shows the part of the document you are reading."
 msgstr "Chế độ xem này hiển thị phần tài liệu bạn đang đọc."
+
+#. TRANSLATORS: Error when downloading a document from a link fails; {} is the HTTP status code, such as 404
+#, fuzzy
+msgid "the server answered with status {}"
+msgstr "máy chủ trả lời với trạng thái {}"
+
+#. TRANSLATORS: Error when the server of a link cannot be reached; {} is the technical reason
+#, fuzzy
+msgid "the server could not be reached: {}"
+msgstr "không thể kết nối đến máy chủ: {}"
+
+#. TRANSLATORS: Error when a document downloaded from a link cannot be saved; {} is the technical reason
+#, fuzzy
+msgid "the download could not be saved: {}"
+msgstr "không thể lưu tệp tải xuống: {}"
+
+#. TRANSLATORS: Message when downloading a document from a link is cancelled
+#, fuzzy
+msgid "the download was cancelled"
+msgstr "tải xuống đã bị hủy"
+
+#. TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
+#, fuzzy
+msgid ".{} files cannot be read, so the link was not downloaded"
+msgstr "không thể đọc tệp .{}, vì vậy liên kết không được tải xuống"
+
+#. TRANSLATORS: Error when a secure https link is redirected to an insecure http address
+#, fuzzy
+msgid "the secure link was redirected to an insecure address, so it was not downloaded"
+msgstr "liên kết an toàn đã được chuyển hướng đến địa chỉ không an toàn, vì vậy nó không được tải xuống"
+
+#. TRANSLATORS: Error when a document behind a link is too large to download; {} is the limit in megabytes
+#, fuzzy
+msgid "the document is larger than {} MB, so it was not downloaded"
+msgstr "tài liệu lớn hơn {} MB, vì vậy nó không được tải xuống"
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 #, fuzzy
@@ -3438,6 +3488,10 @@ msgstr "Yêu cầu nhập mật khẩu"
 #, fuzzy
 msgid "Password incorrect"
 msgstr "Mật khẩu không chính xác"
+
+#, fuzzy
+msgid "This document is encrypted in a way Paperback cannot open: {}"
+msgstr "Tài liệu này được mã hóa theo cách mà Paperback không thể mở: {}"
 
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 #, fuzzy
@@ -5178,6 +5232,34 @@ msgstr "Ngôn ngữ"
 #, fuzzy
 msgid "Opens Paperback in the Settings app, where its language can be changed."
 msgstr "Mở Paperback trong ứng dụng Cài đặt, nơi có thể thay đổi ngôn ngữ của nó."
+
+#, fuzzy
+#~ msgid "&View Note Text"
+#~ msgstr "&Xem nội dung ghi chú"
+
+#, fuzzy
+#~ msgid "Bookmark &with Note"
+#~ msgstr "Dấu trang có &ghi chú"
+
+#, fuzzy
+#~ msgid "Table &of Contents"
+#~ msgstr "&Mục lục"
+
+#, fuzzy
+#~ msgid "&Go to Page"
+#~ msgstr "Truy cập &page"
+
+#, fuzzy
+#~ msgid "&Word Count"
+#~ msgstr "&Đếm từ"
+
+#, fuzzy
+#~ msgid "Document &Info"
+#~ msgstr "&Thông tin tài liệu"
+
+#, fuzzy
+#~ msgid "Copied (%d chars)."
+#~ msgstr "Đã sao chép (%d ký tự)."
 
 #, fuzzy
 #~ msgid "Previous &Note"

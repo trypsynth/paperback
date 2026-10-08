@@ -274,7 +274,8 @@ fun MainScreenTopBar(
 						onClick = { moreOptionsExpanded = true },
 						modifier = Modifier.semantics {
 							traversalIndex = 2f
-							this.onClick(label = "show all options in a menu") {
+							// TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+							this.onClick(label = t("Show all options in a menu")) {
 								moreOptionsExpanded = true
 								true
 							}
@@ -303,7 +304,8 @@ fun MainScreenTopBar(
 						onClick = { emptyMenuExpanded = true },
 						modifier = Modifier.semantics {
 							traversalIndex = 2f
-							this.onClick(label = "show all options in a menu") {
+							// TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+							this.onClick(label = t("Show all options in a menu")) {
 								emptyMenuExpanded = true
 								true
 							}
@@ -337,7 +339,8 @@ fun MainScreenTopBar(
 						modifier = Modifier.semantics {
 							customActions = listOf(
 								CustomAccessibilityAction(
-									label = "Close ${tab.title}",
+									// TRANSLATORS: TalkBack action on a document tab that closes it; {} is the document's title
+									label = t("Close {}", tab.title),
 									action = {
 										onTabClose(index)
 										true

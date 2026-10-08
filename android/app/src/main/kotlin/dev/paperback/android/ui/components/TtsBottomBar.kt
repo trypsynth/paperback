@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 import dev.paperback.android.ui.state.NavUnit
 import dev.paperback.android.ui.state.getNavUnitName
+import dev.paperback.android.ui.state.getNextUnitLabel
+import dev.paperback.android.ui.state.getPreviousUnitLabel
 import kotlin.math.roundToInt
 
 private const val SEEK_RANGE = 10000
@@ -69,29 +71,23 @@ fun TtsBottomBar(
 	// text, so they read as "back"/"forward" by that amount instead of "previous"/"next" thing.
 	// Find reads as "Find Previous"/"Find Next", matching the old standalone find bar's buttons,
 	// rather than "Previous Find"/"Next Find".
-	val isTimeUnit = currentUnit is NavUnit.Time
-	val isFindUnit = currentUnit is NavUnit.Find
-	val prevLabel = when {
-		isTimeUnit ->
+	val prevLabel = when (currentUnit) {
+		is NavUnit.Time ->
 			// TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
 			t("Back {}").replace("{}", unitName)
-		isFindUnit ->
+		is NavUnit.Find ->
 			// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by Find matches
 			t("Find Previous")
-		else ->
-			// TRANSLATORS: TalkBack label for the read-aloud bar's previous button; {} is a unit name like "Paragraph"
-			t("Previous {}").replace("{}", unitName)
+		is NavUnit.Segment -> getPreviousUnitLabel(currentUnit.type)
 	}
-	val nextLabel = when {
-		isTimeUnit ->
+	val nextLabel = when (currentUnit) {
+		is NavUnit.Time ->
 			// TRANSLATORS: TalkBack label for the read-aloud bar's forward button when navigating audio by time; {} is an amount like "30 seconds"
 			t("Forward {}").replace("{}", unitName)
-		isFindUnit ->
+		is NavUnit.Find ->
 			// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by Find matches
 			t("Find Next")
-		else ->
-			// TRANSLATORS: TalkBack label for the read-aloud bar's next button; {} is a unit name like "Paragraph"
-			t("Next {}").replace("{}", unitName)
+		is NavUnit.Segment -> getNextUnitLabel(currentUnit.type)
 	}
 
 	BottomAppBar(modifier = modifier) {
@@ -132,7 +128,8 @@ fun TtsBottomBar(
 							}
 							true
 						}
-						onClick(label = "Select navigation unit") {
+						// TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
+						onClick(label = t("Select navigation unit")) {
 							dropdownExpanded = true
 							true
 						}
@@ -187,7 +184,8 @@ fun TtsBottomBar(
 								}
 								true
 							}
-							onClick(label = "Activate") {
+							// No label, so TalkBack says its own "activate" in the reader's language.
+							onClick(label = null) {
 								onPlayPause()
 								true
 							}
@@ -235,7 +233,8 @@ fun TtsBottomBar(
 							}
 							true
 						}
-						onClick(label = "Select speech rate") {
+						// TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+						onClick(label = t("Select speech rate")) {
 							rateMenuExpanded = true
 							true
 						}

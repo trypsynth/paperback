@@ -7,8 +7,7 @@ final class SegmentTypeNameTests: XCTestCase {
 		.list, .listItem, .table, .separator, .image, .figure, .formula,
 	]
 
-	/// The reading bar names the current unit and builds "Previous {}" and "Next {}" from it, so
-	/// a type with no name of its own would leave a button announcing nothing useful.
+	/// The reading bar's unit picker lists every unit by name, so a type with no name of its own would leave an entry announcing nothing useful.
 	func testEveryTypeTheCoreCanReportHasAName() {
 		for type in Self.allTypes {
 			XCTAssertFalse(segmentTypeName(type).isEmpty, "\(type) has no name")

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 04:50+0000\n"
+"POT-Creation-Date: 2026-10-08 12:00+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -578,7 +578,7 @@ msgstr "Mostrar solo notas"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
 #, fuzzy
-msgid "&View Note Text"
+msgid "&View Note Text..."
 msgstr "&Ver texto de nota"
 
 #. TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
@@ -592,7 +592,7 @@ msgstr "Alternar &Marcador"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
 #, fuzzy
-msgid "Bookmark &with Note"
+msgid "Bookmark &with Note..."
 msgstr "Marcador con &nota"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
@@ -915,7 +915,6 @@ msgid "Edit bookmark note:"
 msgstr "Editar nota del marcador:"
 
 #. TRANSLATORS: Title of the Document Info dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "Información del documento"
 
@@ -1270,6 +1269,11 @@ msgstr "&Navegación cíclica"
 msgid "Move to &start of line"
 msgstr "Ir a &principio de línea"
 
+#. TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+#, fuzzy
+msgid "&Highlight found text"
+msgstr "&Resaltar texto encontrado"
+
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr "Reproducir &sonidos en marcadores y notas"
@@ -1491,7 +1495,6 @@ msgid "&Minutes:"
 msgstr "&Minutos:"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "Tabla de contenidos"
 
@@ -1741,6 +1744,17 @@ msgstr "No se pudo abrir la página de donaciones en el navegador."
 #, fuzzy
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback no puede realizar ninguna acción mientras Web View esté abierto."
+
+#. TRANSLATORS: Announced when the copy shortcut is pressed with nothing selected, so there was nothing to put on the clipboard.
+#. TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
+#, fuzzy
+msgid "Nothing to copy."
+msgstr "No hay nada que copiar."
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+#, fuzzy
+msgid "Could not copy to the clipboard."
+msgstr "No se pudo copiar al portapapeles."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 #, fuzzy
@@ -2134,7 +2148,7 @@ msgstr "Avanzar en el historial"
 
 #. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
 #, fuzzy
-msgid "Table &of Contents"
+msgid "Table &of Contents..."
 msgstr "&Tabla de Contenidos"
 
 #. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
@@ -2152,7 +2166,7 @@ msgstr "Mostrar lista de elementos"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
 #, fuzzy
-msgid "&Go to Page"
+msgid "&Go to Page..."
 msgstr "Ir a la &página"
 
 #. TRANSLATORS: Menu item in the Help menu to show information about the application.
@@ -2202,7 +2216,7 @@ msgstr "Apoyar el desarrollo de Paperback"
 
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
 #, fuzzy
-msgid "&Word Count"
+msgid "&Word Count..."
 msgstr "Contar &Palabras"
 
 #. TRANSLATORS: Status-bar help text for the Word Count menu item.
@@ -2211,7 +2225,7 @@ msgstr "Mostrar conteo de palabras"
 
 #. TRANSLATORS: Menu item in the Tools menu to show information about the document.
 #, fuzzy
-msgid "Document &Info"
+msgid "Document &Info..."
 msgstr "&Información del Documento"
 
 #. TRANSLATORS: Status-bar help text for the Document Info menu item.
@@ -2557,10 +2571,12 @@ msgstr "Ir al &porcentaje"
 msgid "Go to percent"
 msgstr "Ir al porcentaje"
 
-#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
+#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
 #, fuzzy
-msgid "Copied (%d chars)."
-msgstr "Copiado (%d caracteres)."
+msgid "Copied %d character."
+msgid_plural "Copied %d characters."
+msgstr[0] "Copiado %d carácter."
+msgstr[1] "Copiados %d caracteres."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 #, fuzzy
@@ -2571,16 +2587,6 @@ msgstr "Inicio de selección establecido."
 #, fuzzy
 msgid "Cannot copy; set beginning of selection first."
 msgstr "No se puede copiar; primero establezca el inicio de la selección."
-
-#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
-#, fuzzy
-msgid "Nothing to copy."
-msgstr "No hay nada que copiar."
-
-#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
-#, fuzzy
-msgid "Could not copy to the clipboard."
-msgstr "No se pudo copiar al portapapeles."
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 #, fuzzy
@@ -2898,6 +2904,16 @@ msgstr "Fin de Contenedor"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
+msgid "Document Info..."
+msgstr "Información del documento..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Table of Contents..."
+msgstr "Tabla de contenidos..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Elements List..."
 msgstr "Lista de Elementos..."
 
@@ -3095,6 +3111,41 @@ msgstr "Ninguno"
 #, fuzzy
 msgid "This view shows the part of the document you are reading."
 msgstr "Esta vista muestra la parte del documento que está leyendo."
+
+#. TRANSLATORS: Error when downloading a document from a link fails; {} is the HTTP status code, such as 404
+#, fuzzy
+msgid "the server answered with status {}"
+msgstr "el servidor respondió con estado {}"
+
+#. TRANSLATORS: Error when the server of a link cannot be reached; {} is the technical reason
+#, fuzzy
+msgid "the server could not be reached: {}"
+msgstr "no se pudo alcanzar el servidor: {}"
+
+#. TRANSLATORS: Error when a document downloaded from a link cannot be saved; {} is the technical reason
+#, fuzzy
+msgid "the download could not be saved: {}"
+msgstr "no se pudo guardar la descarga: {}"
+
+#. TRANSLATORS: Message when downloading a document from a link is cancelled
+#, fuzzy
+msgid "the download was cancelled"
+msgstr "la descarga fue cancelada"
+
+#. TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
+#, fuzzy
+msgid ".{} files cannot be read, so the link was not downloaded"
+msgstr "no se pueden leer archivos .{}, por lo que no se descargó el enlace"
+
+#. TRANSLATORS: Error when a secure https link is redirected to an insecure http address
+#, fuzzy
+msgid "the secure link was redirected to an insecure address, so it was not downloaded"
+msgstr "el enlace seguro fue redirigido a una dirección insegura, por lo que no se descargó"
+
+#. TRANSLATORS: Error when a document behind a link is too large to download; {} is the limit in megabytes
+#, fuzzy
+msgid "the document is larger than {} MB, so it was not downloaded"
+msgstr "el documento es más grande que {} MB, por lo que no se descargó"
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 #, fuzzy
@@ -3337,6 +3388,10 @@ msgstr "Se requiere contraseña"
 #, fuzzy
 msgid "Password incorrect"
 msgstr "Contraseña incorrecta"
+
+#, fuzzy
+msgid "This document is encrypted in a way Paperback cannot open: {}"
+msgstr "Este documento está cifrado de una forma que Paperback no puede abrir: {}"
 
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 #, fuzzy
@@ -5073,6 +5128,34 @@ msgstr "Idioma"
 #, fuzzy
 msgid "Opens Paperback in the Settings app, where its language can be changed."
 msgstr "Abre Paperback en la aplicación de Configuración, donde se puede cambiar su idioma."
+
+#, fuzzy
+#~ msgid "&View Note Text"
+#~ msgstr "&Ver texto de nota"
+
+#, fuzzy
+#~ msgid "Bookmark &with Note"
+#~ msgstr "Marcador con &nota"
+
+#, fuzzy
+#~ msgid "Table &of Contents"
+#~ msgstr "&Tabla de Contenidos"
+
+#, fuzzy
+#~ msgid "&Go to Page"
+#~ msgstr "Ir a la &página"
+
+#, fuzzy
+#~ msgid "&Word Count"
+#~ msgstr "Contar &Palabras"
+
+#, fuzzy
+#~ msgid "Document &Info"
+#~ msgstr "&Información del Documento"
+
+#, fuzzy
+#~ msgid "Copied (%d chars)."
+#~ msgstr "Copiado (%d caracteres)."
 
 #, fuzzy
 #~ msgid "Previous &Note"
