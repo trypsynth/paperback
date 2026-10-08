@@ -105,8 +105,7 @@ impl MainWindow {
 		notebook.msw_disable_composited();
 		sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
-		// Shared by the frame's char hook and the menu dispatcher so a command can tell a
-		// shortcut from a menu click. See `menu_events::bind_key_source`.
+		// Shared by the frame's char hook, the macOS event monitor and the menu dispatcher so a command can tell a shortcut from a menu click. See `menu_events::bind_key_source`.
 		let from_keyboard = Rc::new(Cell::new(false));
 		let doc_manager = Rc::new(Mutex::new(DocumentManager::new(
 			frame,
@@ -129,6 +128,8 @@ impl MainWindow {
 			&hotkey_handle,
 		);
 		menu_events::bind_key_source(&frame, &config, Rc::clone(&from_keyboard));
+		#[cfg(target_os = "macos")]
+		super::mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard));
 		#[cfg(not(target_os = "windows"))]
 		window_events::bind_tab_cycling(&frame, &doc_manager);
 		window_events::bind_document_events(frame, &doc_manager, live_region_label);
