@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 12:00+0000\n"
+"POT-Creation-Date: 2026-10-08 21:23+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1285,6 +1285,11 @@ msgstr "&Nối các dòng được gói lại thành các đoạn trong PDF"
 msgid "Remove repeated page &headers and footers in PDFs"
 msgstr "Loại bỏ &đầu trang và chân trang lặp lại trong PDF"
 
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+#, fuzzy
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr "Đọc văn bản giữa dấu dollar dưới dạng &công thức toán học trong Markdown"
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr "Hiển thị menu &điều hướng thu gọn"
@@ -1939,33 +1944,33 @@ msgstr "{} - Bản bìa mềm"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
 #, fuzzy
-msgid "&Undo\tCtrl+Z"
-msgstr "&Hoàn tác\tCtrl+Z"
+msgid "&Undo"
+msgstr "&Hoàn tác"
 
 #. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
 #, fuzzy
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Làm lại\tCtrl+Shift+Z"
+msgid "&Redo"
+msgstr "&Làm lại"
 
 #. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
 #, fuzzy
-msgid "Cu&t\tCtrl+X"
-msgstr "&Cắt\tCtrl+X"
+msgid "Cu&t"
+msgstr "C&ắt"
 
 #. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
 #, fuzzy
-msgid "&Copy\tCtrl+C"
-msgstr "&Sao chép\tCtrl+C"
+msgid "&Copy"
+msgstr "&Sao chép"
 
 #. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
 #, fuzzy
-msgid "&Paste\tCtrl+V"
-msgstr "&Dán\tCtrl+V"
+msgid "&Paste"
+msgstr "&Dán"
 
 #. TRANSLATORS: Menu item in the Edit menu to select all text.
 #, fuzzy
-msgid "Select &All\tCtrl+A"
-msgstr "C&họn tất cả\tCtrl+A"
+msgid "Select &All"
+msgstr "Chọn &Tất cả"
 
 #. TRANSLATORS: Menu item in the Edit menu to open the find dialog.
 #, fuzzy
@@ -4440,8 +4445,8 @@ msgstr "Tài liệu này không có mục lục."
 msgid "Navigation unit"
 msgstr "Bộ điều hướng"
 
-#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "previous" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 #, fuzzy
 msgid "Previous {}"
 msgstr "Bài trước: {}"
@@ -4470,8 +4475,8 @@ msgstr "Hết tài liệu"
 msgid "Beginning of document"
 msgstr "Đầu tài liệu"
 
-#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "next" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 #, fuzzy
 msgid "Next {}"
 msgstr "Tiếp theo{}"
@@ -5232,6 +5237,90 @@ msgstr "Ngôn ngữ"
 #, fuzzy
 msgid "Opens Paperback in the Settings app, where its language can be changed."
 msgstr "Mở Paperback trong ứng dụng Cài đặt, nơi có thể thay đổi ngôn ngữ của nó."
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
+#: kt swift
+#, fuzzy
+msgid "Previous Paragraph"
+msgstr "Đoạn trước"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
+#: kt swift
+#, fuzzy
+msgid "Previous Line"
+msgstr "Dòng trước"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by paragraph
+#: kt swift
+#, fuzzy
+msgid "Next Paragraph"
+msgstr "Đoạn tiếp theo"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by line
+#: kt swift
+#, fuzzy
+msgid "Next Line"
+msgstr "Dòng tiếp theo"
+
+#. TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+#: kt
+#, fuzzy
+msgid "Show all options in a menu"
+msgstr "Hiển thị tất cả tùy chọn trong một menu"
+
+#. TRANSLATORS: TalkBack action on a document tab that closes it; {} is the document's title
+#: kt
+#, fuzzy
+msgid "Close {}"
+msgstr "Đóng {}"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
+#: kt
+#, fuzzy
+msgid "Select navigation unit"
+msgstr "Chọn đơn vị điều hướng"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+#: kt
+#, fuzzy
+msgid "Select speech rate"
+msgstr "Chọn tốc độ nói"
+
+#. TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
+#: kt
+#, fuzzy
+msgid "Storage Devices"
+msgstr "Thiết bị lưu trữ"
+
+#. TRANSLATORS: TalkBack label for the file manager's row that goes up a folder; {} is the parent folder's name
+#: kt
+#, fuzzy
+msgid "Go up to parent directory: {}"
+msgstr "Đi lên thư mục cha: {}"
+
+#, fuzzy
+#~ msgid "&Undo\tCtrl+Z"
+#~ msgstr "&Hoàn tác\tCtrl+Z"
+
+#, fuzzy
+#~ msgid "&Redo\tCtrl+Shift+Z"
+#~ msgstr "&Làm lại\tCtrl+Shift+Z"
+
+#, fuzzy
+#~ msgid "Cu&t\tCtrl+X"
+#~ msgstr "&Cắt\tCtrl+X"
+
+#, fuzzy
+#~ msgid "&Copy\tCtrl+C"
+#~ msgstr "&Sao chép\tCtrl+C"
+
+#, fuzzy
+#~ msgid "&Paste\tCtrl+V"
+#~ msgstr "&Dán\tCtrl+V"
+
+#, fuzzy
+#~ msgid "Select &All\tCtrl+A"
+#~ msgstr "C&họn tất cả\tCtrl+A"
 
 #, fuzzy
 #~ msgid "&View Note Text"
