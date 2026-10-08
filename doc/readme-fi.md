@@ -23,7 +23,7 @@ Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa nykyaikaisissa ARM-pohjais
 * Mahdollistaa skannattujen PDF-asiakirjojen lukemisen Windowsin ja macOS:n tekstintunnistusominaisuuden avulla.
 * Kirjanmerkit ja muistiinpanot lukukohdan merkitsemistä ja siihen palaamista varten.
 * Kaikkia pikanäppäimiä on mahdollista muokata.
-* Mukana tulee `pb`-komentorivityökalu, joka muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon. Se voi käsitellä kerralla useita asiakirjoja, tulkitsee *.pdf-tyyppiset jokerimerkit myös Windowsissa ja tallentaa muunnetut asiakirjat määritettyyn kansioon omiksi tiedostoikseen.
+* Mukana tulee `pb`-komentorivityökalu, joka muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon. Se käsittelee kerralla useita asiakirjoja, tulkitsee `*.pdf`-tyyppiset jokerimerkit myös Windowsissa ja tallentaa muunnetut asiakirjat määritettyyn kansioon omiksi tiedostoikseen. Lisäksi se pystyy lukemaan `--files-from`-valitsimella käsiteltävien asiakirjojen luettelon tiedostosta tai vakiosyötteestä. Asiakirjoja voi muuntaa myös suoraan HTTP- ja HTTPS-osoitteista.
 
 ## Ruudunlukijoiden yhteensopivuus
 
@@ -240,7 +240,7 @@ Muut toiminnot löytyvät Lisää vaihtoehtoja -valikosta. Osa niistä toimii so
 
 Näppäimistöä käytettäessä työpöytäsovelluksen pikanäppäimillä voi avata kirjoja ja viimeksi avattuja asiakirjoja, käyttää Etsi- ja Siirry-toimintoja, avata sisällysluettelon, tarkistaa sanamäärän ja tarkastella asiakirjan tietoja, viedä asiakirjan eri tiedostomuotoihin sekä käyttää uniajastinta. iOS:ssa käytetään `Ctrl`-näppäimen sijasta `Cmd`-näppäintä. Myös otsikoiden, sivujen, linkkien ja muiden kohteiden välillä siirtymiseen tarkoitetut navigointikomennot toimivat, ja `Välilyönti` aloittaa ja pysäyttää toiston. iOS:ssa navigointikomennot toimivat Paperbackissa vain, kun VoiceOverin pikanavigointinäppäimet on poistettu käytöstä.
 
-Android-laitteissa kuulokkeiden painikkeen yksi painallus aloittaa tai pysäyttää toiston, kaksi painallusta siirtää eteenpäin ja kolme painallusta taaksepäin.	
+Android-laitteissa kuulokkeiden painikkeen yksi painallus aloittaa tai pysäyttää toiston, kaksi painallusta siirtää eteenpäin ja kolme painallusta taaksepäin.
 
 ## Tuettavat kielet
 
