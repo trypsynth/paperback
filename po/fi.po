@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-08 12:00+0000\n"
-"PO-Revision-Date: 2026-10-08 21:03+0300\n"
+"PO-Revision-Date: 2026-10-08 23:06+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1058,7 +1058,7 @@ msgstr "&Alt"
 #. TRANSLATORS: Checkbox label for Shift modifier key
 #. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
 msgid "&Shift"
-msgstr "&Shift"
+msgstr "&Vaihto"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
 #. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
@@ -1687,7 +1687,7 @@ msgstr "K&umoa\tCtrl+Z"
 
 #. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
 msgid "&Redo\tCtrl+Shift+Z"
-msgstr "Tee uu&delleen\tCtrl+Shift+Z"
+msgstr "Tee uu&delleen\tCtrl+Vaihto+Z"
 
 #. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
 msgid "Cu&t\tCtrl+X"
