@@ -7,8 +7,7 @@ const MATHML: &str = "<math><mi>x</mi><mo>=</mo><mn>1</mn></math>";
 
 const MARKDOWN_SOURCE: &str = "Before $x^2$.\n\n$$\n\\frac{a}{b}\n$$\n\nAfter.";
 
-/// A session over [`MARKDOWN_SOURCE`], with the directory that holds the file and receives
-/// web and source views.
+/// A session over [`MARKDOWN_SOURCE`], with the directory that holds the file and receives web and source views.
 struct MarkdownSession {
 	dir: TempDir,
 	session: DocumentSession,

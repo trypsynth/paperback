@@ -29,11 +29,9 @@ pub fn markdown_to_html(markdown_text: &str) -> String {
 	// Created per document so that equations and similar environments are numbered from (1) in each one.
 	let mut math = LatexToMathML::new(MathCoreConfig { xml_namespace: true, annotation: true, ..Default::default() })
 		.expect("math conversion configuration is valid");
-
 	let mut block_counter = 0usize;
 	let mut image_depth = 0usize;
 	let mut events = Vec::new();
-
 	for (event, range) in parser {
 		match &event {
 			Event::Start(Tag::Paragraph | Tag::Heading { .. } | Tag::Item | Tag::BlockQuote(_) | Tag::CodeBlock(_)) => {
@@ -44,7 +42,6 @@ pub fn markdown_to_html(markdown_text: &str) -> String {
 			Event::End(TagEnd::Image) => image_depth -= 1,
 			_ => {}
 		}
-
 		let (latex, display, delimiter) = match &event {
 			// Inside an image, emitted text goes into its plain-text alt attribute, so math stays as TeX.
 			Event::InlineMath(latex) if image_depth == 0 => (latex, MathDisplay::Inline, "$"),
@@ -54,32 +51,26 @@ pub fn markdown_to_html(markdown_text: &str) -> String {
 				continue;
 			}
 		};
-
-		// math-core turns blank TeX into an empty `<mrow>`, which MathCAT reads as a
-		// backslash.
+		// math-core turns blank TeX into an empty `<mrow>`, which MathCAT reads as a backslash.
 		if latex.trim().is_empty() {
 			continue;
 		}
-
-		// Rebuilt from the TeX rather than sliced from the source, because the source range of a
-		// multi-line formula includes container prefixes on its later lines, such as `> ` in a block quote.
+		// Rebuilt from the TeX rather than sliced from the source, because the source range of a multi-line formula
+		// includes container prefixes on its later lines, such as `> ` in a block quote.
 		let source_text = Event::Text(format!("{delimiter}{latex}{delimiter}").into());
-
-		// pulldown-cmark ends inline math at any `$` preceded by a non-space, so in
-		// "Tickets cost $10-$20 each." it interprets "$10-$" as math. Following Pandoc, we don't emit
-		// MathML when the closing `$` is followed by a digit. The span can't be re-parsed, so any
-		// Markdown formatting inside it (very unlikely) is shown literally.
+		// pulldown-cmark ends inline math at any `$` preceded by a non-space, so in "Tickets cost $10-$20 each." it
+		// interprets "$10-$" as math. Following Pandoc, we don't emit MathML when the closing `$` is followed by a
+		// digit. The span can't be re-parsed, so any Markdown formatting inside it (very unlikely) is shown literally.
 		//
-		// This still misreads a `$` that directly follows a non-space character and isn't followed by a
-		// digit, as in the shell's `$PATH:$HOME` or PHP's `$a.$b`. Markdown is ambiguous here: without
-		// knowing whether the writer uses dollars for math, there is no way to tell which reading is meant.
+		// This still misreads a `$` that directly follows a non-space character and isn't followed by a digit, as in
+		// the shell's `$PATH:$HOME` or PHP's `$a.$b`. Markdown is ambiguous here: without knowing whether the writer
+		// uses dollars for math, there is no way to tell which reading is meant.
 		let closes_before_digit =
 			display == MathDisplay::Inline && markdown_text[range.end..].starts_with(|c: char| c.is_ascii_digit());
 		if closes_before_digit {
 			events.push(source_text);
 			continue;
 		}
-
 		match math.convert_with_global_state(latex, display) {
 			Ok(converted) => events.push(Event::InlineHtml(converted.mathml.into())),
 			Err(error) => {
