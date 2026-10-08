@@ -2838,6 +2838,7 @@ dependencies = [
  "tracing",
  "unicode-bidi",
  "uniffi",
+ "ureq",
  "web_atoms 0.3.0",
  "zip 9.0.0-pre3",
 ]
@@ -2944,6 +2945,7 @@ dependencies = [
  "native-ocr",
  "paperback-core",
  "rpassword",
+ "tempfile",
  "tracing-subscriber",
  "windows-sys 0.61.2",
 ]
