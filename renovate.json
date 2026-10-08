@@ -15,8 +15,16 @@
       "rangeStrategy": "bump"
     },
     {
-      "matchManagers": ["github-actions"],
-      "groupName": "github actions"
+      "description": "Gradle, the Gradle wrapper, the Android Gradle plugin, Kotlin and every library in the version catalog move together, majors included, so a Kotlin or AGP bump arrives with whatever it needs.",
+      "matchManagers": ["gradle", "gradle-wrapper"],
+      "groupName": "android dependencies",
+      "separateMajorMinor": false
+    },
+    {
+      "description": "Everything the workflows pin (actions, the Rust toolchain, downloaded tools) in one PR, majors included, since the PR's own CI exercises all of it.",
+      "matchFileNames": [".github/workflows/**"],
+      "groupName": "github actions",
+      "separateMajorMinor": false
     },
     {
       "description": "windows-core is only here for #[implement] in the UI Automation tests, which has to use the same windows-core the windows crate does. windows is still on 0.62, so raise this ceiling together with windows.",
