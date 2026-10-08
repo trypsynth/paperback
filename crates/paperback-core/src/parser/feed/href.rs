@@ -2,9 +2,7 @@
 
 use crate::parser::util::path::resolve_relative_path;
 
-/// `href` resolved against `base`, the web address of the page the item stands for. A link that is
-/// already absolute, a `#fragment`, or any link when `base` is not an absolute web address comes
-/// back as written.
+/// `href` resolved against `base`, the web address of the page the item stands for. A link that is already absolute, a `#fragment`, or any link when `base` is not an absolute web address comes back as written.
 pub(super) fn resolve_feed_href(base: Option<&str>, href: &str) -> String {
 	if href.is_empty() || href.starts_with('#') || has_scheme(href) {
 		return href.to_string();
@@ -38,8 +36,7 @@ fn has_scheme(href: &str) -> bool {
 		&& scheme.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '+' | '-' | '.'))
 }
 
-/// An `http` or `https` address split into its scheme, its host and its path, with any query or
-/// fragment dropped.
+/// An `http` or `https` address split into its scheme, its host and its path, with any query or fragment dropped.
 fn split_web_address(address: &str) -> Option<(&str, &str, &str)> {
 	let (scheme, rest) = address.split_once("://")?;
 	if !scheme.eq_ignore_ascii_case("http") && !scheme.eq_ignore_ascii_case("https") {

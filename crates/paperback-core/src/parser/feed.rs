@@ -1,5 +1,4 @@
-//! RSS and Atom feeds: each item becomes a section with its own heading, read through the HTML
-//! converter.
+//! RSS and Atom feeds: each item becomes a section with its own heading, read through the HTML converter.
 
 mod date;
 mod href;
@@ -46,8 +45,7 @@ impl Parser for FeedParser {
 	}
 }
 
-/// Reads the feed in `xml`, repairing undeclared prefixes and HTML entities when it is not
-/// well-formed as it stands.
+/// Reads the feed in `xml`, repairing undeclared prefixes and HTML entities when it is not well-formed as it stands.
 fn parse_feed_xml(xml: &str) -> Result<Feed> {
 	let error = match XmlDocument::parse(xml) {
 		Ok(doc) => return read_feed(&doc),
@@ -120,8 +118,7 @@ fn build_document(feed: &Feed, context: &ParserContext) -> Document {
 	document
 }
 
-/// The introduction, when the feed has a description or a website, then one part per item; or a
-/// single line saying the feed is empty when it has none of those.
+/// The introduction, when the feed has a description or a website, then one part per item; or a single line saying the feed is empty when it has none of those.
 fn document_parts(feed: &Feed) -> Vec<Part> {
 	let mut parts = Vec::with_capacity(feed.items.len() + 1);
 	if let Some(html) = intro_html(feed) {
@@ -180,7 +177,6 @@ fn link_paragraph(href: &str, text: &str) -> String {
 	format!("<p><a href=\"{}\">{}</a></p>", escape_xml(href), escape_xml(text))
 }
 
-/// The line under an item's heading naming when it was published and who wrote it.
 fn byline(item: &FeedItem) -> Option<String> {
 	let published = (!item.date.trim().is_empty()).then(|| feed_date_text(&item.date));
 	let writer = &item.author;
@@ -218,15 +214,13 @@ fn item_name(item: &FeedItem) -> String {
 	t("Untitled item")
 }
 
-/// The text `html` shows, with every run of whitespace made a single space.
 fn plain_text(html: &str) -> String {
 	let mut converter = HtmlToText::new();
 	converter.convert(html, HtmlSourceMode::NativeHtml);
 	converter.get_text().split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
-/// `text` cut after the last whole word that fits in [`UNTITLED_NAME_LEN`] characters, with any
-/// dots it ends in replaced by one ellipsis, or all of it when it fits.
+/// `text` cut after the last whole word that fits in [`UNTITLED_NAME_LEN`] characters, with any dots it ends in replaced by one ellipsis, or all of it when it fits.
 fn start_of(text: &str) -> String {
 	if text.chars().count() <= UNTITLED_NAME_LEN {
 		return text.to_string();

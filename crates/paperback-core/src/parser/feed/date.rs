@@ -4,8 +4,7 @@ use chrono::{DateTime, Datelike, NaiveDate};
 
 use crate::t;
 
-/// The date `raw` names, written as a day, a month name and a year in the feed's own time zone, or
-/// `raw` itself, trimmed, when it is not a date this can read.
+/// The date `raw` names, written as a day, a month name and a year in the feed's own time zone, or `raw` itself, trimmed, when it is not a date this can read.
 pub(super) fn feed_date_text(raw: &str) -> String {
 	let trimmed = raw.trim();
 	parse_date(trimmed).map_or_else(|| trimmed.to_string(), format_date)

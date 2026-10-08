@@ -193,3 +193,15 @@ fn a_feed_without_a_title_is_named_after_its_file() {
 	let doc = parse_feed("news.xml", rss("<item><title>One</title></item>")).expect("parse feed");
 	assert_eq!(doc.title, "news");
 }
+
+#[test]
+fn an_empty_anchor_in_an_xhtml_body_does_not_swallow_the_text_after_it() {
+	let doc = parse_ok(concat!(
+		r#"<feed xmlns="http://www.w3.org/2005/Atom"><title>F</title><entry><title>T</title>"#,
+		r#"<content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p><a id="fn1"/>Plain words</p></div></content>"#,
+		r#"</entry></feed>"#,
+	));
+	let swallowed = markers(&doc, MarkerType::Link).into_iter().any(|marker| marker.text.contains("Plain words"));
+	assert!(!swallowed, "got {:?}", doc.buffer.markers);
+	assert!(doc.buffer.content.contains("Plain words"), "got {:?}", doc.buffer.content);
+}

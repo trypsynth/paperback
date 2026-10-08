@@ -126,7 +126,7 @@ pub fn serialize_xml(node: Node, output: &mut String, skip: &dyn Fn(Node) -> boo
 				output.push_str(&escape_xml(attr.value()));
 				output.push('"');
 			}
-			if node.children().count() == 0 {
+			if node.children().count() == 0 && is_html_void_element(tag_name) {
 				output.push_str("/>");
 			} else {
 				output.push('>');
@@ -158,6 +158,25 @@ pub fn serialize_xml(node: Node, output: &mut String, skip: &dyn Fn(Node) -> boo
 			}
 		}
 	}
+}
+
+fn is_html_void_element(name: &str) -> bool {
+	matches!(
+		name,
+		"area"
+			| "base"
+			| "br"
+			| "col"
+			| "embed"
+			| "hr"
+			| "img"
+			| "input"
+			| "link"
+			| "meta"
+			| "source"
+			| "track"
+			| "wbr"
+	)
 }
 
 #[must_use]
@@ -477,6 +496,14 @@ mod tests {
 		let doc = Document::parse(r#"<a><b x="1 &quot; 2">3 &lt; 4</b><binary>AAAA</binary><c/></a>"#).unwrap();
 		let mut out = String::new();
 		serialize_xml(doc.root(), &mut out, &|node| node.tag_name().name() == "binary");
-		assert_eq!(out, r#"<a><b x="1 &quot; 2">3 &lt; 4</b><c/></a>"#);
+		assert_eq!(out, r#"<a><b x="1 &quot; 2">3 &lt; 4</b><c></c></a>"#);
+	}
+
+	#[test]
+	fn serialize_closes_an_empty_element_but_self_closes_an_html_void_one() {
+		let doc = Document::parse(r#"<p><a id="fn1"/>text<br/><img src="x.png"/><iframe/></p>"#).unwrap();
+		let mut out = String::new();
+		serialize_xml(doc.root(), &mut out, &|_| false);
+		assert_eq!(out, r#"<p><a id="fn1"></a>text<br/><img src="x.png"/><iframe></iframe></p>"#);
 	}
 }

@@ -16,8 +16,7 @@ const DC_NS: &str = "http://purl.org/dc/elements/1.1/";
 const ATOM_NS: &str = "http://www.w3.org/2005/Atom";
 const ATOM_03_NS: &str = "http://purl.org/atom/ns#";
 
-/// The prefixes of feed extensions and their namespaces, for `repair_xml` to declare in a feed that
-/// uses them undeclared.
+/// The prefixes of feed extensions and their namespaces, for `repair_xml` to declare in a feed that uses them undeclared.
 pub(super) const FEED_PREFIXES: &[(&str, &str)] = &[("content", CONTENT_NS), ("dc", DC_NS), ("atom", ATOM_NS)];
 
 /// What a feed says about itself and its items. Bodies are HTML; everything else is plain text.
@@ -67,8 +66,7 @@ pub(super) fn read_feed(doc: &XmlDocument) -> Result<Feed> {
 	Ok(feed)
 }
 
-/// An RSS channel, with its items taken from `item_parent`: the channel itself in RSS 0.9x and 2.0,
-/// the document root in RSS 1.0.
+/// An RSS channel, with its items taken from `item_parent`: the channel itself in RSS 0.9x and 2.0, the document root in RSS 1.0.
 fn read_rss(channel: Node, item_parent: Node) -> Feed {
 	let author = joined_text(channel, |node| is_in(node, DC_NS, "creator"))
 		.or_non_empty(|| person_name(&child_text(channel, |node| is_rss(node, "managingEditor"))));
@@ -108,8 +106,7 @@ fn permalink_guid(item: Node) -> Option<String> {
 	Some(collect_element_text(guid)).filter(|text| is_web_address(text))
 }
 
-/// The name in an RSS address written as `jane@example.com (Jane Doe)`, or the whole text when it
-/// carries no name in brackets.
+/// The name in an RSS address written as `jane@example.com (Jane Doe)`, or the whole text when it carries no name in brackets.
 fn person_name(text: &str) -> String {
 	let trimmed = text.trim();
 	trimmed
@@ -147,7 +144,6 @@ fn read_atom_entry(entry: Node) -> FeedItem {
 	}
 }
 
-/// The names of every `author`, joined with commas.
 fn atom_authors(node: Node) -> String {
 	node.children()
 		.filter(|author| is_atom(*author, "author"))
@@ -166,8 +162,7 @@ fn atom_link(node: Node) -> Option<String> {
 		.and_then(|href| non_empty(href.trim().to_string()))
 }
 
-/// An Atom text construct as HTML: `html` as it is, `xhtml` written back out as markup, and plain
-/// text escaped into paragraphs.
+/// An Atom text construct as HTML: `html` as it is, `xhtml` written back out as markup, and plain text escaped into paragraphs.
 fn atom_html(node: Node) -> String {
 	let kind = node.attribute("type").unwrap_or("text").trim().to_ascii_lowercase();
 	if kind.contains("xhtml") {
@@ -203,8 +198,7 @@ fn xhtml_html(node: Node) -> String {
 	out.trim().to_string()
 }
 
-/// Plain text as HTML: each run of lines between blank lines is a paragraph, and each line break
-/// inside one is a `<br>`.
+/// Plain text as HTML: each run of lines between blank lines is a paragraph, and each line break inside one is a `<br>`.
 fn text_to_html(text: &str) -> String {
 	let mut html = String::new();
 	let mut lines: Vec<String> = Vec::new();
@@ -222,9 +216,7 @@ fn text_to_html(text: &str) -> String {
 	html
 }
 
-/// The HTML an element holds. One that holds only text holds HTML escaped or wrapped in CDATA, and
-/// that text is the markup. One that holds elements holds the markup itself, which is written back
-/// out.
+/// The HTML an element holds. One that holds only text holds HTML escaped or wrapped in CDATA, and that text is the markup. One that holds elements holds the markup itself, which is written back out.
 fn inner_html(node: Node) -> String {
 	let mut out = String::new();
 	if node.children().any(|child| child.is_element()) {
@@ -260,12 +252,10 @@ fn child<'a, 'input>(node: Node<'a, 'input>, wanted: impl Fn(Node) -> bool) -> O
 	node.children().find(|child| wanted(*child))
 }
 
-/// The trimmed text of the first child `wanted` accepts, or an empty string.
 fn child_text(node: Node, wanted: impl Fn(Node) -> bool) -> String {
 	child(node, wanted).map(collect_element_text).unwrap_or_default()
 }
 
-/// The trimmed text of every child `wanted` accepts, joined with commas.
 fn joined_text(node: Node, wanted: impl Fn(Node) -> bool) -> String {
 	node.children()
 		.filter(|child| wanted(*child))
@@ -478,6 +468,14 @@ mod tests {
 			r#"<entry><content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>Hi <em>there</em> &amp; you</p></div></content></entry>"#,
 		));
 		assert_eq!(feed.items[0].body_html, "<p>Hi <em>there</em> &amp; you</p>");
+	}
+
+	#[test]
+	fn atom_xhtml_empty_elements_get_a_closing_tag() {
+		let feed = read(&atom(
+			r#"<entry><content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p><a id="fn1"/>Body<br/></p></div></content></entry>"#,
+		));
+		assert_eq!(feed.items[0].body_html, r#"<p><a id="fn1"></a>Body<br/></p>"#);
 	}
 
 	#[test]
