@@ -87,13 +87,13 @@ fn read_files_from(path: &Path) -> Result<Vec<inputs::Given>> {
 	Ok(inputs::read_list(&bytes, |entry| Path::new(entry).exists(), fallback))
 }
 
-/// Refuses `--files-from -` when stdin is the console, where pb would otherwise wait in silence
-/// for a list to be typed.
 /// `size` megabytes in bytes, held at `u64::MAX`.
 const fn megabytes(size: u64) -> u64 {
 	size.saturating_mul(1024 * 1024)
 }
 
+/// Refuses `--files-from -` when stdin is the console, where pb would otherwise wait in silence
+/// for a list to be typed.
 fn stdin_list_allowed(stdin_is_terminal: bool) -> Result<()> {
 	if stdin_is_terminal {
 		let example = if cfg!(windows) {
