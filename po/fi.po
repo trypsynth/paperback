@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-04 00:44+0000\n"
-"PO-Revision-Date: 2026-10-04 23:44+0300\n"
+"POT-Creation-Date: 2026-10-05 04:50+0000\n"
+"PO-Revision-Date: 2026-10-07 00:49+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -232,12 +232,11 @@ msgstr "Avaa &viimeksi suljettu"
 msgid "Reopen the last closed document"
 msgstr "Avaa viimeksi suljettu asiakirja"
 
-#. TRANSLATORS: Menu item in the File menu to re-read the current document from disk.
+#. TRANSLATORS: Menu item in the View menu to re-read the current document from disk.
 msgid "&Reload"
 msgstr "&Päivitä"
 
-#. TRANSLATORS: Status-bar help text for the File > Reload menu item.
-#| msgid "Close the current document"
+#. TRANSLATORS: Status-bar help text for the View > Reload menu item.
 msgid "Re-read the current document from disk"
 msgstr "Päivitä avoinna oleva asiakirja"
 
@@ -442,103 +441,111 @@ msgstr "Säilön &jälkeinen kohta"
 msgid "Go past the end of the current list or table"
 msgstr "Siirry luettelon tai taulukon lopun jälkeiseen kohtaan"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the previous bookmark in the document.
 msgid "&Previous Bookmark"
 msgstr "Edellinen &kirjanmerkki"
 
-#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Previous Bookmark menu item.
 msgid "Go to previous bookmark"
 msgstr "Siirry edelliseen kirjanmerkkiin"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the next bookmark in the document.
 msgid "&Next Bookmark"
 msgstr "Seuraava ki&rjanmerkki"
 
-#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Next Bookmark menu item.
 msgid "Go to next bookmark"
 msgstr "Siirry seuraavaan kirjanmerkkiin"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
-msgid "Previous &Note"
-msgstr "Edellinen &muistiinpano"
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the previous note in the document.
+msgid "Previous Not&e"
+msgstr "Edellinen m&uistiinpano"
 
-#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Previous Note menu item.
 msgid "Go to previous note"
 msgstr "Siirry edelliseen muistiinpanoon"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the next note in the document.
 msgid "Next N&ote"
 msgstr "Seuraava m&uistiinpano"
 
-#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Next Note menu item.
 msgid "Go to next note"
 msgstr "Siirry seuraavaan muistiinpanoon"
 
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing all bookmarks and notes.
 msgid "Jump to &All..."
 msgstr "Siirry k&aikkiin..."
 
-#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Jump to All menu item.
 msgid "Show all bookmarks and notes"
 msgstr "Näytä kaikki kirjanmerkit ja muistiinpanot"
 
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only bookmarks.
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only bookmarks.
 msgid "Jump to &Bookmarks Only..."
 msgstr "Siirry vain &kirjanmerkkeihin..."
 
-#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Bookmarks Only menu item.
 msgid "Show bookmarks only"
 msgstr "Näytä vain kirjanmerkit"
 
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
-msgid "Jump to Notes &Only..."
-msgstr "Siirry vain mu&istiinpanoihin..."
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only notes.
+msgid "Jump to Notes Onl&y..."
+msgstr "Siirr&y vain muistiinpanoihin..."
 
-#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Notes Only menu item.
 msgid "Show notes only"
 msgstr "Näytä vain muistiinpanot"
 
-#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
+#. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
 msgid "&View Note Text"
 msgstr "&Näytä muistiinpano"
 
-#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
 msgid "View the note at current position"
 msgstr "Näytä nykyisen sijainnin muistiinpano"
 
-#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
-msgid "Toggle &Bookmark"
-msgstr "Lisää tai poista &kirjanmerkki"
+#. TRANSLATORS: Menu item in the Bookmarks menu to add or remove a bookmark at the current reading position.
+msgid "&Toggle Bookmark"
+msgstr "&Lisää tai poista kirjanmerkki"
 
-#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
-msgid "Bookmark with &Note"
-msgstr "Kirjanmerkki muistiinpan&olla"
+#. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
+msgid "Bookmark &with Note"
+msgstr "Kirjanmerkki &muistiinpanolla"
 
-#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
-msgid "Set Selection St&art"
+#. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
+msgid "&Set Temporary Bookmark"
+msgstr "Lisää t&ilapäinen kirjanmerkki"
+
+#. TRANSLATORS: Menu item in the Bookmarks menu to go back to the position remembered as the temporary bookmark.
+msgid "&Jump to Temporary Bookmark"
+msgstr "&Siirry tilapäiseen kirjanmerkkiin"
+
+#. TRANSLATORS: Menu item in the Edit menu to mark the current position as the beginning of a selection to copy from later.
+msgid "Set &Selection Start"
 msgstr "Merkitse valinnan &alkukohta"
 
-#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+#. TRANSLATORS: Status-bar help text for the Edit > Set Selection Start menu item.
 msgid "Mark the beginning of a selection to copy from"
 msgstr "Merkitse kopioitavan valinnan alkukohta"
 
-#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
-msgid "&Copy from Selection Start"
-msgstr "&Kopioi valinnan alkukohdasta lähtien"
+#. TRANSLATORS: Menu item in the Edit menu to copy everything from the marked beginning of a selection to the current position.
+msgid "Copy fro&m Selection Start"
+msgstr "&Kopioi valinnan alkukohdasta"
 
-#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+#. TRANSLATORS: Status-bar help text for the Edit > Copy from Selection Start menu item.
 msgid "Copy from the beginning of the selection to here"
 msgstr "Kopioi nykyiseen sijaintiin asti valinnan alkukohdasta"
 
-#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+#. TRANSLATORS: Menu item in the Edit menu to go back to the marked beginning of the selection.
 msgid "&Jump to Selection Start"
 msgstr "&Palaa valinnan alkukohtaan"
 
-#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+#. TRANSLATORS: Status-bar help text for the Edit > Jump to Selection Start menu item.
 msgid "Go back to the beginning of the selection"
 msgstr "Palaa valinnan alkukohtaan"
 
-#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
+#. TRANSLATORS: Menu item in the Audio menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
 msgstr "&Toista/pysäytä äänite"
 
@@ -546,7 +553,7 @@ msgstr "&Toista/pysäytä äänite"
 msgid "Play or pause this document's audio narration"
 msgstr "Aloita tai pysäytä asiakirjan äänitteen toisto"
 
-#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
+#. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
 msgstr "Kelaa äänitettä etee&npäin"
 
@@ -554,7 +561,7 @@ msgstr "Kelaa äänitettä etee&npäin"
 msgid "Skip the audio narration forward"
 msgstr "Kelaa äänitettä eteenpäin"
 
-#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
+#. TRANSLATORS: Menu item in the Audio menu to skip the audio narration backward.
 msgid "Seek Audio &Backward"
 msgstr "Kelaa äänitettä t&aaksepäin"
 
@@ -562,23 +569,23 @@ msgstr "Kelaa äänitettä t&aaksepäin"
 msgid "Skip the audio narration backward"
 msgstr "Kelaa äänitettä taaksepäin"
 
-#. TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
-msgid "&Increase Audio Seek Amount"
-msgstr "P&idennä kelauksen aikasiirtymää"
+#. TRANSLATORS: Menu item in the Audio menu to increase the amount of time each audio seek skips.
+msgid "Increase Audio Seek &Amount"
+msgstr "&Pidennä kelauksen aikasiirtymää"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 msgid "Increase how far seeking the audio narration moves"
 msgstr "Pidennä aikaa, jonka verran äänitettä kelataan eteen- tai taaksepäin"
 
-#. TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
-msgid "&Decrease Audio Seek Amount"
+#. TRANSLATORS: Menu item in the Audio menu to decrease the amount of time each audio seek skips.
+msgid "Decrease Audio Seek Am&ount"
 msgstr "&Lyhennä kelauksen aikasiirtymää"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Lyhennä aikaa, jonka verran äänitettä kelataan eteen- tai taaksepäin"
 
-#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+#. TRANSLATORS: Menu item in the Audio menu to increase the audio narration's playback speed.
 msgid "&Increase Audio Speed"
 msgstr "&Nopeuta äänitteen toistoa"
 
@@ -586,7 +593,7 @@ msgstr "&Nopeuta äänitteen toistoa"
 msgid "Increase how fast the audio narration plays"
 msgstr "Nopeuttaa äänitteen toistoa"
 
-#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+#. TRANSLATORS: Menu item in the Audio menu to decrease the audio narration's playback speed.
 msgid "&Decrease Audio Speed"
 msgstr "&Hidasta äänitteen toistoa"
 
@@ -757,6 +764,7 @@ msgid "&Filter:"
 msgstr "Su&odata:"
 
 #. TRANSLATORS: Option in the filter dropdown to show bookmarks only
+#. TRANSLATORS: Name of the "Bookmarks" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Bookmarks"
 msgstr "Kirjanmerkit"
 
@@ -1117,6 +1125,10 @@ msgstr "Siirry a&lkuun asiakirjan lopussa"
 msgid "Move to &start of line"
 msgstr "Siirry rivin &alkuun"
 
+#. TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+msgid "&Highlight found text"
+msgstr "&Korosta löydetty teksti"
+
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr "I&lmaise kirjanmerkit ja muistiinpanot merkkiäänellä"
@@ -1311,7 +1323,7 @@ msgstr "Sisällysluettelo"
 
 #. TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 msgid "Please select a section from the table of contents."
-msgstr "Valitse luku sisällysluettelosta."
+msgstr "Valitse sisällysluettelosta luku, johon haluat siirtyä."
 
 #. TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 msgid "No Selection"
@@ -1368,6 +1380,26 @@ msgstr "Asiakirjatietojen tuonti"
 msgid "Password is required."
 msgstr "Salasana tarvitaan."
 
+#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
+msgid "&Password:"
+msgstr "&Salasana:"
+
+msgid "Document Password"
+msgstr "Asiakirjan salasana"
+
+#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
+msgid "Failed to load document."
+msgstr "Asiakirjan avaus epäonnistui."
+
+#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+msgid "File: {}"
+msgstr "Tiedosto: {}"
+
+#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+msgid "Details: {}"
+msgstr "Tiedot: {}"
+
 #. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
 msgid "OCR in progress."
 msgstr "Tekstintunnistus on käynnissä."
@@ -1409,10 +1441,6 @@ msgid_plural "Batch OCR complete. %d pages recognized."
 msgstr[0] "Usean sivun tekstintunnistus suoritettu. Tunnistettu %d sivu."
 msgstr[1] "Usean sivun tekstintunnistus suoritettu. Tunnistettu %d sivua."
 
-#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
-msgid "Navigated to internal link."
-msgstr "Siirrytty sisäiseen linkkiin."
-
 #. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
 msgstr "Valmis"
@@ -1433,33 +1461,9 @@ msgstr "Tilapäinen kirjanmerkki."
 msgid "%s, page %d"
 msgstr "%s, sivu %d"
 
-#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
-msgid "&Password:"
-msgstr "&Salasana:"
-
-msgid "Document Password"
-msgstr "Asiakirjan salasana"
-
-#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
-#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
-msgid "Failed to load document."
-msgstr "Asiakirjan avaus epäonnistui."
-
-#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
-msgid "File: {}"
-msgstr "Tiedosto: {}"
-
-#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
-msgid "Details: {}"
-msgstr "Tiedot: {}"
-
-#. TRANSLATORS: Accessible name of the list of Find All results
-msgid "Results"
-msgstr "Tulokset"
-
-#. TRANSLATORS: Title of the Find dialog
-msgid "Find"
-msgstr "Etsi"
+#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
+msgid "Navigated to internal link."
+msgstr "Siirrytty sisäiseen linkkiin."
 
 #. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
@@ -1482,12 +1486,12 @@ msgid "Use &regular expressions"
 msgstr "Kä&ytä säännöllisiä lausekkeita"
 
 #. TRANSLATORS: Button to search backward for the previous match
-#. TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
+#. TRANSLATORS: Menu item in the Edit menu to find the previous occurrence of the current search term.
 msgid "Find &Previous"
 msgstr "Etsi ede&llinen"
 
 #. TRANSLATORS: Button to search forward for the next match
-#. TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
+#. TRANSLATORS: Menu item in the Edit menu to find the next occurrence of the current search term.
 msgid "Find &Next"
 msgstr "Etsi se&uraava"
 
@@ -1503,6 +1507,14 @@ msgstr "S&iirry"
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Ei löydy."
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr "Tulokset"
+
+#. TRANSLATORS: Title of the Find dialog
+msgid "Find"
+msgstr "Etsi"
 
 #. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
@@ -1528,6 +1540,10 @@ msgstr "Oletusselaimen käynnistys epäonnistui."
 msgid "Failed to open donation page in browser."
 msgstr "Lahjoitussivun avaaminen selaimessa epäonnistui."
 
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
+
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
 msgstr "Automaattinen rivitys käytössä."
@@ -1541,49 +1557,6 @@ msgstr "Koko näyttö käytössä."
 
 msgid "Full screen off."
 msgstr "Koko näyttö pois."
-
-#. TRANSLATORS: Announced when landing on a blank line; %d is the line number
-msgid "Line %d"
-msgstr "Rivi %d"
-
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-msgid "No pages."
-msgstr "Ei sivuja."
-
-#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-msgid "No table of contents."
-msgstr "Ei sisällysluetteloa."
-
-#. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
-msgid "Batch OCR is running. Stop it?"
-msgstr "Usean sivun tekstintunnistus on käynnissä. Pysäytetäänkö?"
-
-#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
-msgid "Web View"
-msgstr "Selainnäkymä"
-
-#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
-msgid "Could not determine content to display in Web View."
-msgstr "Selainnäkymässä näytettävää sisältöä ei voitu määrittää."
-
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "asiakirja"
-
-#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
-msgid "Source:"
-msgstr "Lähdekoodi:"
-
-#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
-msgid "Source view is not available for this document format."
-msgstr "Tämä asiakirjamuoto ei tue lähdekoodinäkymää."
-
-#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
-msgid "Could not load the document source."
-msgstr "Asiakirjan lähdekoodia ei voitu näyttää."
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -1608,6 +1581,10 @@ msgstr "Markdown-tiedostot (*.md)|*.md|Kaikki tiedostot (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
 msgid "Export document to Markdown"
 msgstr "Vie asiakirja Markdown-muotoon"
+
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "asiakirja"
 
 #. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 msgid "Paperback files (*.paperback)|*.paperback"
@@ -1637,6 +1614,49 @@ msgstr "Muistiinpanot ja kirjanmerkit tuotu onnistuneesti."
 msgid "Import Successful"
 msgstr "Tuonti onnistui"
 
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Asiakirjan vienti epäonnistui."
+
+#. TRANSLATORS: Announced when landing on a blank line; %d is the line number
+msgid "Line %d"
+msgstr "Rivi %d"
+
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+#. A menu invocation returns focus to the book just like a closed dialog does,
+#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+msgid "No pages."
+msgstr "Sivuja ei ole."
+
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
+msgstr "Sisällysluetteloa ei ole."
+
+#. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
+msgid "Batch OCR is running. Stop it?"
+msgstr "Usean sivun tekstintunnistus on käynnissä. Keskeytetäänkö?"
+
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+msgid "Web View"
+msgstr "Selainnäkymä"
+
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+msgid "Could not determine content to display in Web View."
+msgstr "Selainnäkymässä näytettävää sisältöä ei voitu määrittää."
+
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+msgid "Source:"
+msgstr "Lähdekoodi:"
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+msgid "Source view is not available for this document format."
+msgstr "Tämä asiakirjamuoto ei tue lähdekoodinäkymää."
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+msgid "Could not load the document source."
+msgstr "Asiakirjan lähdekoodia ei voitu näyttää."
+
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
 msgstr "Valittua tiedostomuotoa ei tueta."
@@ -1645,16 +1665,8 @@ msgstr "Valittua tiedostomuotoa ei tueta."
 msgid "Paperback"
 msgstr "Paperback"
 
-#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
-msgid "Paperback cannot perform any actions while Web View is open."
-msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
-
 msgid "Installing the update. Paperback will restart."
 msgstr "Päivitystä asennetaan. Paperback käynnistyy uudelleen."
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Asiakirjan vienti epäonnistui."
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
 msgid "{} - Paperback"
@@ -1684,6 +1696,22 @@ msgstr "L&iitä\tCtrl+V"
 msgid "Select &All\tCtrl+A"
 msgstr "Valitse k&aikki\tCtrl+A"
 
+#. TRANSLATORS: Menu item in the Edit menu to open the find dialog.
+msgid "&Find..."
+msgstr "&Etsi..."
+
+#. TRANSLATORS: Status-bar help text for the Edit > Find menu item.
+msgid "Find text in the document"
+msgstr "Etsi tekstiä asiakirjasta"
+
+#. TRANSLATORS: Status-bar help text for the Edit > Find Next menu item.
+msgid "Find next occurrence"
+msgstr "Etsi seuraava esiintymä"
+
+#. TRANSLATORS: Status-bar help text for the Edit > Find Previous menu item.
+msgid "Find previous occurrence"
+msgstr "Etsi edellinen esiintymä"
+
 #. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
 msgstr "&Viimeksi avatut"
@@ -1692,6 +1720,58 @@ msgstr "&Viimeksi avatut"
 msgid "Open a recent document"
 msgstr "Avaa viimeksi avattu asiakirja"
 
+#. TRANSLATORS: Label for the Export submenu in the File menu, which lists the formats a document can be exported to.
+msgid "Ex&port"
+msgstr "V&ie"
+
+#. TRANSLATORS: Menu item in the File > Export submenu to export the document as a plain text file.
+msgid "Export to &Plain Text..."
+msgstr "Te&kstimuotoon..."
+
+#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
+msgid "Export document as plain text"
+msgstr "Vie asiakirja tekstimuodossa"
+
+#. TRANSLATORS: Menu item in the File > Export submenu to export the document as an HTML file.
+msgid "Export to &HTML..."
+msgstr "&HTML-muotoon..."
+
+#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
+msgid "Export document as HTML"
+msgstr "Vie asiakirja HTML-muodossa"
+
+#. TRANSLATORS: Menu item in the File > Export submenu to export the document as a Markdown file.
+msgid "Export to &Markdown..."
+msgstr "&Markdown-muotoon..."
+
+#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
+msgid "Export document as Markdown"
+msgstr "Vie asiakirja Markdown-muodossa"
+
+#. TRANSLATORS: Menu item in the File menu to import bookmarks and reading position from a file.
+msgid "&Import Document Data..."
+msgstr "&Tuo asiakirjan tiedot..."
+
+#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
+msgid "Import bookmarks and position"
+msgstr "Tuo kirjanmerkit ja sijainti"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and reading position to a file.
+msgid "&Export Document Data..."
+msgstr "&Vie asiakirjan tiedot..."
+
+#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
+msgid "Export bookmarks and position"
+msgstr "Vie kirjanmerkit ja sijainti"
+
+#. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
+msgid "Reveal &File in Folder"
+msgstr "Avaa as&iakirjan kansio"
+
+#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
+msgid "Reveal document in the file manager"
+msgstr "Avaa asiakirjan kansio tiedostonhallinnassa"
+
 #. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
 msgstr "(Viimeksi avattuja asiakirjoja ei ole)"
@@ -1699,50 +1779,6 @@ msgstr "(Viimeksi avattuja asiakirjoja ei ole)"
 #. TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
 msgid "Show All..."
 msgstr "Näytä kaikki..."
-
-#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-msgid "Go to &Page"
-msgstr "Siirry s&ivulle"
-
-#. TRANSLATORS: Menu item in the Go menu to open the find dialog.
-msgid "&Find..."
-msgstr "&Etsi..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Find menu item.
-msgid "Find text in the document"
-msgstr "Etsi tekstiä asiakirjasta"
-
-#. TRANSLATORS: Status-bar help text for the Go > Find Next menu item.
-msgid "Find next occurrence"
-msgstr "Etsi seuraava esiintymä"
-
-#. TRANSLATORS: Status-bar help text for the Go > Find Previous menu item.
-msgid "Find previous occurrence"
-msgstr "Etsi edellinen esiintymä"
-
-#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
-msgid "Go to &line..."
-msgstr "Siirry rivi&lle..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
-msgid "Go to a specific line"
-msgstr "Siirry tietylle riville"
-
-#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
-msgid "Go to &percent..."
-msgstr "Siirry &prosenttiin..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
-msgid "Go to a percentage of the document"
-msgstr "Siirry prosenttiin"
-
-#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
-msgid "Go back in history"
-msgstr "Siirry historiassa taaksepäin"
-
-#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
-msgid "Go forward in history"
-msgstr "Siirry historiassa eteenpäin"
 
 #. TRANSLATORS: Label for the Sections submenu in the compact Go menu.
 msgid "&Sections"
@@ -1768,17 +1804,10 @@ msgstr "&Sivut"
 msgid "Navigate by pages"
 msgstr "Siirry sivuittain"
 
-#. TRANSLATORS: Label for the Bookmarks submenu in the compact Go menu.
-msgid "&Bookmarks"
-msgstr "&Kirjanmerkit"
-
-#. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
-msgid "Navigate by bookmarks"
-msgstr "Siirry kirjanmerkeittäin"
-
 #. TRANSLATORS: Label for the Links submenu in the compact Go menu.
-msgid "&Links"
-msgstr "&Linkit"
+#| msgid "Next Lin&k"
+msgid "Lin&ks"
+msgstr "Lin&kit"
 
 #. TRANSLATORS: Status-bar help text for the Go > Links submenu.
 msgid "Navigate by links"
@@ -1793,7 +1822,7 @@ msgid "Navigate by images"
 msgstr "Siirry kuvittain"
 
 #. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
-msgid "&Figures"
+msgid "Fig&ures"
 msgstr "K&uvitukset"
 
 #. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
@@ -1817,7 +1846,7 @@ msgid "Navigate by formulas"
 msgstr "Siirry kaavoittain"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
-msgid "&Separators"
+msgid "Sep&arators"
 msgstr "&Erottimet"
 
 #. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
@@ -1839,6 +1868,50 @@ msgstr "&Säilöt"
 #. TRANSLATORS: Status-bar help text for the Go > Containers submenu.
 msgid "Navigate by containers"
 msgstr "Siirry säilöittäin"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
+msgid "Go to li&ne..."
+msgstr "Siirry rivi&lle..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
+msgid "Go to a specific line"
+msgstr "Siirry tietylle riville"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
+msgid "Go to pe&rcent..."
+msgstr "Siirry &prosenttiin..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
+msgid "Go to a percentage of the document"
+msgstr "Siirry prosenttiin"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
+msgid "Go back in history"
+msgstr "Siirry historiassa taaksepäin"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
+msgid "Go forward in history"
+msgstr "Siirry historiassa eteenpäin"
+
+#. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
+msgid "Table &of Contents"
+msgstr "Sisäll&ysluettelo"
+
+#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
+msgid "Show table of contents"
+msgstr "Näytä sisällysluettelo"
+
+#. TRANSLATORS: Menu item in the Go menu to show a list of the document's structural elements.
+msgid "&Elements List..."
+msgstr "&Elementtilista..."
+
+#. TRANSLATORS: Status-bar help text for the Elements List menu item.
+msgid "Show elements list"
+msgstr "Näytä elementtilista"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
+msgid "&Go to Page"
+msgstr "Siirry si&vulle"
 
 #. TRANSLATORS: Menu item in the Help menu to show information about the application.
 msgid "&About Paperback"
@@ -1880,46 +1953,6 @@ msgstr "&Lahjoita"
 msgid "Support Paperback development"
 msgstr "Tue Paperbackin kehitystä"
 
-#. TRANSLATORS: Menu item in Tools > Import/Export to import bookmarks and reading position from a file.
-msgid "&Import Document Data..."
-msgstr "&Tuo asiakirjan tiedot..."
-
-#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
-msgid "Import bookmarks and position"
-msgstr "Tuo kirjanmerkit ja sijainti"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export bookmarks and reading position to a file.
-msgid "&Export Document Data..."
-msgstr "&Vie asiakirjan tiedot..."
-
-#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
-msgid "Export bookmarks and position"
-msgstr "Vie kirjanmerkit ja sijainti"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a plain text file.
-msgid "Export to &Plain Text..."
-msgstr "Vie te&kstimuotoon..."
-
-#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
-msgid "Export document as plain text"
-msgstr "Vie asiakirja tekstimuotoon"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as an HTML file.
-msgid "Export to &HTML..."
-msgstr "Vie &HTML-muotoon..."
-
-#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
-msgid "Export document as HTML"
-msgstr "Vie asiakirja HTML-muodossa"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a Markdown file.
-msgid "Export to &Markdown..."
-msgstr "Vie &Markdown-muotoon..."
-
-#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
-msgid "Export document as Markdown"
-msgstr "Vie asiakirja Markdown-muodossa"
-
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
 msgid "&Word Count"
 msgstr "&Sanamäärä"
@@ -1936,73 +1969,27 @@ msgstr "Asiakir&jan tiedot"
 msgid "Show document information"
 msgstr "Näytä asiakirjan tiedot"
 
-#. TRANSLATORS: Menu item in the Tools menu to show the document's table of contents.
-msgid "&Table of Contents"
-msgstr "&Sisällysluettelo"
+#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
+msgid "Sleep &Timer..."
+msgstr "&Uniajastin..."
 
-#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
-msgid "Show table of contents"
-msgstr "Näytä sisällysluettelo"
+#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
+msgid "&Settings"
+msgstr "&Asetukset"
 
-#. TRANSLATORS: Menu item in the Tools menu to show a list of the document's structural elements.
-msgid "&Elements List..."
-msgstr "&Elementtilista..."
+#. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
+msgid "&Batch OCR..."
+msgstr "&Usean sivun tekstintunnistus..."
 
-#. TRANSLATORS: Status-bar help text for the Elements List menu item.
-msgid "Show elements list"
-msgstr "Näytä elementtilista"
-
-#. TRANSLATORS: Menu item in the Tools menu to reveal the document's file in the system file manager.
-msgid "Reveal &File in Folder"
-msgstr "Avaa as&iakirjan kansio"
-
-#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
-msgid "Reveal document in the file manager"
-msgstr "Avaa asiakirjan kansio tiedostonhallinnassa"
-
-#. TRANSLATORS: Menu item in the Tools menu to open the document in a web view.
-msgid "Open in &Web View"
-msgstr "Avaa sel&ainnäkymässä"
-
-#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
-msgid "Open document in web view"
-msgstr "Avaa asiakirja selainnäkymässä"
-
-#. TRANSLATORS: Menu item in the Tools menu to open the document's underlying source markup in a new tab.
-msgid "View &Source"
-msgstr "Näytä läh&dekoodi"
-
-#. TRANSLATORS: Status-bar help text for the View Source menu item.
-msgid "Open the document source in a new tab"
-msgstr "Avaa asiakirjan lähdekoodi uudessa välilehdessä"
-
-#. TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
-msgid "I&mport/Export"
-msgstr "T&uo ja vie"
-
-#. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
-msgid "Import and export options"
-msgstr "Tuonnin ja viennin asetukset"
-
-#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
-msgid "Select and &copy"
-msgstr "Valitse ja &kopioi"
-
-#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
-msgid "Mark a selection and copy from it"
-msgstr ""
-"Merkitse valinnan alkukohta ja kopioi sen ja nykyisen sijainnin välinen "
-"teksti"
-
-#. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
-msgid "Word w&rap"
-msgstr "Automaattinen rivit&ys"
+#. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
+msgid "W&ord wrap"
+msgstr "Automaattinen &rivitys"
 
 #. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 msgid "Toggle word wrap"
 msgstr "Ota automaattinen rivitys käyttöön tai poista se käytöstä"
 
-#. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
+#. TRANSLATORS: Checkable menu item in the View menu that toggles full screen mode.
 msgid "&Full Screen"
 msgstr "&Koko näyttö"
 
@@ -2010,21 +1997,42 @@ msgstr "&Koko näyttö"
 msgid "Toggle full screen"
 msgstr "Ota koko näytön tila käyttöön tai poista se käytöstä"
 
-#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
-msgid "&Settings"
-msgstr "&Asetukset"
+#. TRANSLATORS: Menu item in the View menu to open the document in a web view.
+msgid "Open in &Web View"
+msgstr "Avaa sel&ainnäkymässä"
 
-#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
-msgid "&Sleep Timer..."
-msgstr "&Uniajastin..."
+#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
+msgid "Open document in web view"
+msgstr "Avaa asiakirja selainnäkymässä"
 
-#. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
-msgid "&Batch OCR..."
-msgstr "&Usean sivun tekstintunnistus..."
+#. TRANSLATORS: Menu item in the View menu to open the document's underlying source markup in a new tab.
+msgid "View &Source"
+msgstr "Näytä läh&dekoodi"
+
+#. TRANSLATORS: Status-bar help text for the View Source menu item.
+msgid "Open the document source in a new tab"
+msgstr "Avaa asiakirjan lähdekoodi uudessa välilehdessä"
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Tiedosto"
+
+#. TRANSLATORS: Top-level "Edit" menu label in the menu bar
+msgid "&Edit"
+msgstr "&Muokkaa"
+
+#. TRANSLATORS: Top-level "View" menu label in the menu bar
+#| msgid "&View:"
+msgid "&View"
+msgstr "&Näytä"
+
+#. TRANSLATORS: Top-level "Bookmarks" menu label in the menu bar
+msgid "&Bookmarks"
+msgstr "&Kirjanmerkit"
+
+#. TRANSLATORS: Top-level "Audio" menu label in the menu bar
+msgid "&Audio"
+msgstr "&Ääni"
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
@@ -2033,10 +2041,6 @@ msgstr "T&yökalut"
 #. TRANSLATORS: Top-level "Help" menu label in the menu bar
 msgid "&Help"
 msgstr "&Ohje"
-
-#. TRANSLATORS: Top-level "Edit" menu label in the menu bar (macOS only)
-msgid "&Edit"
-msgstr "&Muokkaa"
 
 #. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
@@ -2685,6 +2689,19 @@ msgstr "Lahjoita"
 msgid "File"
 msgstr "Tiedosto"
 
+#. TRANSLATORS: Name of the "Edit" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Edit"
+msgstr "Muokkaa"
+
+#. TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+#| msgid "&View:"
+msgid "View"
+msgstr "Näytä"
+
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Audio"
+msgstr "Ääni"
+
 #. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Tools"
 msgstr "Työkalut"
@@ -2703,11 +2720,11 @@ msgstr "Tässä näkymässä näytetään luettavana olevan asiakirjan osa."
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
-msgstr "[Sivulla on pelkkä kuva. Aloita tekstintunnistus painamalla Enter.]"
+msgstr "[Pelkkä kuva. Aloita tekstintunnistus painamalla Enter.]"
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
 msgid "[Image only. This page has no text to read.]"
-msgstr "[Sivulla on pelkkä kuva. Luettavaa tekstiä ei ole.]"
+msgstr "[Pelkkä kuva. Luettavaa tekstiä ei ole.]"
 
 #. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
 msgid ""
@@ -3006,22 +3023,18 @@ msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
 msgid "Failed to launch update script"
 msgstr "Päivitysskriptin käynnistys epäonnistui"
 
-#| msgid "Failed to export settings"
 msgid "Failed to start installation"
 msgstr "Asennusta ei voitu käynnistää"
 
-#| msgid "Exit the application"
 msgid "Failed to stage the application"
 msgstr "Sovelluksen valmistelu epäonnistui"
 
 msgid "The update contains a different application."
 msgstr "Päivitys on tarkoitettu eri sovellukselle."
 
-#| msgid "Could not determine content to display in Web View."
 msgid "Could not determine the update log directory."
 msgstr "Päivityslokin hakemistoa ei voitu määrittää."
 
-#| msgid "Failed to launch update script"
 msgid "Failed to launch update helper"
 msgstr "Päivitysapuria ei voitu käynnistää"
 
@@ -3053,14 +3066,12 @@ msgstr ""
 "macOS ei voinut käynnistää päivitystä. Edellinen versio on tallessa "
 "sijainnissa:"
 
-#| msgid "Update failed"
 msgid "Application update failed"
 msgstr "Sovelluksen päivitys epäonnistui"
 
 msgid "Log:"
 msgstr "Loki:"
 
-#| msgid "Update failed"
 msgid "Update cancelled."
 msgstr "Päivitys peruutettu."
 
@@ -3092,11 +3103,9 @@ msgstr "Virhe sovelluksen käynnistystiedostossa"
 msgid "Application signature verification failed"
 msgstr "Sovelluksen allekirjoitusta ei voitu tarkistaa"
 
-#| msgid "Failed to open disk image"
 msgid "Failed to mount disk image"
 msgstr "Levykuvaa ei voitu liittää tiedostojärjestelmään"
 
-#| msgid "Failed to open disk image"
 msgid "Failed to unmount disk image"
 msgstr "Levykuvaa ei voitu irrottaa tiedostojärjestelmästä"
 
@@ -3122,7 +3131,7 @@ msgid "&No"
 msgstr "&Ei"
 
 msgid "No release notes provided."
-msgstr "Julkaisutietoja ei saatavilla."
+msgstr "Julkaisutietoja ei ole saatavilla."
 
 msgid "%s Update"
 msgstr "%sin päivitys"
@@ -3133,7 +3142,6 @@ msgstr "Päivitystä ladataan..."
 msgid "Update failed"
 msgstr "Päivitys epäonnistui"
 
-#| msgid "Downloading update..."
 msgid "Preparing update..."
 msgstr "Päivitystä valmistellaan..."
 
@@ -3672,11 +3680,6 @@ msgstr "Pysäytä ajastin"
 #: swift
 msgid "Start Timer"
 msgstr "Käynnistä ajastin"
-
-#. TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
-#: swift
-msgid "Edit"
-msgstr "Muokkaa"
 
 #. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
 #: swift
@@ -4348,7 +4351,7 @@ msgstr "Kaava"
 #. TRANSLATORS: Announced when a Find query matches nothing anywhere in the document
 #: kt swift
 msgid "No matches."
-msgstr "Ei tuloksia."
+msgstr "Hakutuloksia ei löydy."
 
 #. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
 #: swift
@@ -4412,7 +4415,6 @@ msgstr "Asetukset viety"
 
 #. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
 #: kt swift
-#| msgid "&Language:"
 msgid "Language"
 msgstr "Kieli"
 
