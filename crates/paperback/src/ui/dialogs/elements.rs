@@ -101,6 +101,8 @@ fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_po
 		&selected_offset,
 		ok_button,
 	);
+	#[cfg(target_os = "macos")]
+	super::bind_enter_button(dialog, ok_button);
 	finalize_elements_layout(dialog, content_sizer, ok_button, cancel_button);
 	// The dialog opens on Headings (the choice is set to index 0 when it is built), so the
 	// tree is the visible pane.
@@ -275,6 +277,7 @@ fn bind_elements_activation_dv(
 			&& let Some(id_ptr) = item.get_id::<c_void>()
 			&& let Some(&offset) = offsets_for_tree.get(&(id_ptr as usize))
 		{
+			event.event.skip(false);
 			selected_for_tree.set(offset);
 			dialog_for_tree.end_modal(wxdragon::id::ID_OK);
 		}
@@ -284,12 +287,13 @@ fn bind_elements_activation_dv(
 	let views_for_click = Rc::clone(views);
 	let selected_for_list = Rc::clone(selected_offset);
 	let dialog_for_list = dialog;
-	content_list.on_item_activated(move |_| {
+	content_list.on_item_activated(move |event| {
 		if let Some(offset) = flat_selected_offset(
 			view_for_list.get_selection().unwrap_or(VIEW_HEADINGS),
 			list_for_click,
 			&views_for_click,
 		) {
+			event.event.skip(false);
 			selected_for_list.set(offset);
 			dialog_for_list.end_modal(wxdragon::id::ID_OK);
 		}
