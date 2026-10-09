@@ -28,6 +28,12 @@ fn first_content_line_after_returns_empty_without_content() {
 }
 
 #[test]
+fn first_content_line_after_reads_display_ranges_after_astral_characters() {
+	let session = session_with_content("😀\n\n27\nA 😀 paragraph.\nLast line");
+	assert_eq!(session.first_content_line_after(0), "A 😀 paragraph.");
+}
+
+#[test]
 fn navigation_result_constructors_have_expected_flags() {
 	let not_found = NavigationResult::not_found();
 	assert!(!not_found.found);

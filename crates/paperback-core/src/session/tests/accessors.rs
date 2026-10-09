@@ -67,8 +67,8 @@ fn page_offsets_are_in_document_order_even_for_unsorted_insertion() {
 #[test]
 fn text_range_and_line_text_extract_expected_content() {
 	let session = sample_session(ParserFlags::NONE);
-	assert_eq!(session.get_text_range(0, 5), "line1");
-	assert_eq!(session.get_text_range(5, 5), "");
+	assert_eq!(session.get_text_range_display(0, 5), "line1");
+	assert_eq!(session.get_text_range_display(5, 5), "");
 	assert_eq!(session.get_line_text(0), "line1");
 	assert_eq!(session.get_line_text(7), "line2");
 	assert_eq!(session.get_line_text(999), "line3");

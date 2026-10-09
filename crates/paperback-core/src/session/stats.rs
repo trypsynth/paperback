@@ -398,20 +398,6 @@ impl DocumentSession {
 			.collect()
 	}
 
-	/// Returns the text between two positions (start inclusive, end exclusive).
-	#[must_use]
-	pub fn get_text_range(&self, start: i64, end: i64) -> String {
-		let total_chars = self.handle.document().buffer.char_count();
-		let start_pos = usize::try_from(start.max(0)).unwrap_or(0).min(total_chars);
-		let end_pos = usize::try_from(end.max(0)).unwrap_or(0).min(total_chars);
-		if start_pos >= end_pos {
-			return String::new();
-		}
-		let start_byte = self.handle.document().buffer.byte_index_for_char(start_pos);
-		let end_byte = self.handle.document().buffer.byte_index_for_char(end_pos);
-		self.handle.document().buffer.content[start_byte..end_byte].to_string()
-	}
-
 	/// The display-unit `[start, end)` span of the line containing `position` (display units),
 	/// where `end` is the index of the line's terminating `\n` (exclusive of it). Unlike
 	/// [`Self::get_line_text`], which treats its argument as a *char* index, this converts via
@@ -444,10 +430,7 @@ impl DocumentSession {
 		let Some((start, end)) = self.line_bounds_at(position) else {
 			return String::new();
 		};
-		let buf = &self.handle.document().buffer;
-		let start_char = buf.char_index_for_display(usize::try_from(start.max(0)).unwrap_or(0));
-		let end_char = buf.char_index_for_display(usize::try_from(end.max(0)).unwrap_or(0));
-		self.get_text_range(i64::try_from(start_char).unwrap_or(0), i64::try_from(end_char).unwrap_or(0))
+		self.get_text_range_display(start, end)
 	}
 
 	/// Returns the first non-blank line of real content at or after `position`, skipping blank
@@ -464,8 +447,9 @@ impl DocumentSession {
 			let idx = newlines.partition_point(|&p| p < pos);
 			let line_start = if idx == 0 { 0 } else { newlines[idx - 1] + 1 };
 			let line_end = newlines.get(idx).copied().unwrap_or(total_chars);
-			let line =
-				self.get_text_range(i64::try_from(line_start).unwrap_or(0), i64::try_from(line_end).unwrap_or(0));
+			let start_display = i64::try_from(buf.display_index_for_char(line_start)).unwrap_or(0);
+			let end_display = i64::try_from(buf.display_index_for_char(line_end)).unwrap_or(0);
+			let line = self.get_text_range_display(start_display, end_display);
 			if is_content_line(line.trim()) {
 				return line;
 			}
