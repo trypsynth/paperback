@@ -1,4 +1,10 @@
 use super::*;
+use crate::util::text::display_len;
+
+/// The session API takes positions as `i64`, while `display_len` measures in `usize`.
+fn display_len_i64(s: &str) -> i64 {
+	i64::try_from(display_len(s)).unwrap()
+}
 
 #[test]
 fn status_and_percent_helpers_handle_bounds() {
@@ -235,4 +241,81 @@ fn get_table_at_position_handles_multibyte_extent() {
 	// Position 5 is within [0, 6) by display length but would be outside [0, 1) by char count.
 	assert_eq!(session.get_table_at_position(5).as_deref(), Some("<table/>"));
 	assert!(session.get_table_at_position(6).is_none());
+}
+
+#[test]
+fn line_and_status_helpers_use_display_positions_after_emoji() {
+	let content = "😀😀😀😀\nab\ncdefgh\nij\n";
+	let ab = display_len("😀😀😀😀\n");
+	let next = display_len("😀😀😀😀\nab\n");
+	let ab_pos = display_len_i64("😀😀😀😀\n");
+	let next_pos = display_len_i64("😀😀😀😀\nab\n");
+	let end = display_len_i64(content);
+	let mut buffer = DocumentBuffer::with_content(content.to_string());
+	buffer.add_marker(Marker::new(MarkerType::Bold, ab).with_length(display_len("ab")));
+	buffer.add_marker(Marker::new(MarkerType::Italic, next).with_length(display_len("cdefgh")));
+	let session = session_from_buffer(buffer);
+	assert_eq!(session.get_line_text(ab_pos), "ab");
+	assert_eq!(session.first_content_line_after(ab_pos), "ab");
+	assert_eq!(session.line_from_position(ab_pos), 2);
+	assert_eq!(session.position_from_line(2), ab_pos);
+	assert_eq!(session.position_from_line(3), next_pos);
+	let status = session.get_status_info(ab_pos);
+	assert_eq!(status.line_number, 2);
+	assert_eq!(status.character_number, 6);
+	assert_eq!(status.percentage, 27);
+	assert_eq!(session.position_from_percent(27), ab_pos);
+	assert_eq!(session.position_from_percent(1), display_len_i64("😀"));
+	let markers = session.get_line_markers(2);
+	assert_eq!(markers.len(), 1);
+	assert_eq!(markers[0].mtype, MarkerType::Bold);
+	assert_eq!(markers[0].position, ab_pos);
+	assert_eq!(markers[0].length, display_len_i64("ab"));
+	assert_eq!(session.get_line_markers(3)[0].mtype, MarkerType::Italic);
+	assert_eq!(session.line_from_position(ab_pos - 1), 1);
+	assert_eq!(session.get_line_text(ab_pos - 1), "😀😀😀😀");
+	assert_eq!(session.get_line_text(-1), "😀😀😀😀");
+	assert_eq!(session.line_from_position(-1), 1);
+	assert_eq!(session.position_from_line(0), 0);
+	assert_eq!(session.position_from_line(999), end);
+	assert_eq!(session.position_from_percent(-1), 0);
+	assert_eq!(session.position_from_percent(101), end);
+	assert_eq!(session.get_line_text(i64::MAX), "");
+	assert_eq!(session.first_content_line_after(i64::MAX), "");
+	assert_eq!(session.line_from_position(i64::MAX), 5);
+	let status = session.get_status_info(i64::MAX);
+	assert_eq!(status.line_number, 5);
+	assert_eq!(status.character_number, 19);
+	assert_eq!(status.percentage, 100);
+}
+
+#[test]
+fn line_helpers_handle_empty_and_unterminated_documents() {
+	let empty = session_with_content("");
+	assert_eq!(empty.get_line_text(100), "");
+	assert_eq!(empty.first_content_line_after(100), "");
+	assert_eq!(empty.line_from_position(100), 1);
+	assert_eq!(empty.position_from_line(100), 0);
+	assert_eq!(empty.position_from_percent(100), 0);
+	assert_eq!(empty.get_status_info(100).percentage, 0);
+	let session = session_with_content("😀\nab");
+	assert_eq!(session.get_line_text(i64::MAX), "ab");
+	assert_eq!(session.first_content_line_after(i64::MAX), "ab");
+	assert_eq!(session.position_from_line(2), display_len_i64("😀\n"));
+	assert_eq!(session.position_from_line(3), display_len_i64("😀\nab"));
+}
+
+#[test]
+fn first_content_line_after_skips_headers_after_emoji() {
+	let session = session_with_content("😀\nPage 27\n\nab\n");
+	assert_eq!(session.first_content_line_after(display_len_i64("😀\n")), "ab");
+}
+
+#[test]
+fn line_segments_keep_char_indices_when_line_helpers_use_display_units() {
+	let session = session_with_content("😀😀😀😀\nab\ncdefgh\nij\n");
+	let segment = session.get_text_segment(5, SegmentTypeFfi::Line, SegmentDirectionFfi::Current);
+	assert_eq!(segment.text, "ab");
+	assert_eq!(segment.start_pos, 5);
+	assert_eq!(segment.end_pos, 8);
 }
