@@ -267,7 +267,7 @@ const fn is_copy_chord(key: i32, control: bool, alt: bool, shift: bool) -> bool 
 fn run_shortcut(action: ActionId, dm: &Rc<Mutex<DocumentManager>>, frame: &Frame) {
 	let Ok(dm) = dm.try_lock() else { return };
 	if action == ActionId::AnnouncePercent {
-		dm.announce_current_percent();
+		dm.announce_current_percent(true);
 	} else {
 		drop(dm);
 		frame.process_menu_command(menu_ids::action_to_menu_id(action));

@@ -85,7 +85,7 @@ impl MainWindow {
 				}
 				menu_ids::ANNOUNCE_PERCENT => {
 					if let Ok(dm_ref) = dm.try_lock() {
-						dm_ref.announce_current_percent();
+						dm_ref.announce_current_percent(from_keyboard);
 					}
 				}
 				menu_ids::GO_TO_LINE => {

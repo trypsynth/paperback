@@ -59,12 +59,12 @@ pub fn with_note(ctx: &Ctx) {
 
 pub fn set_temporary(ctx: &Ctx) {
 	if let Ok(dm) = ctx.dm.try_lock() {
-		dm.set_temporary_bookmark();
+		dm.set_temporary_bookmark(ctx.from_keyboard);
 	}
 }
 
 pub fn jump_to_temporary(ctx: &Ctx) {
 	if let Ok(mut dm) = ctx.dm.try_lock() {
-		dm.jump_to_temporary_bookmark();
+		dm.jump_to_temporary_bookmark(ctx.from_keyboard);
 	}
 }
