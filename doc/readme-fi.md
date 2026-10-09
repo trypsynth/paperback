@@ -6,7 +6,7 @@ Paperback on kevyt ja saavutettava e- ja asiakirjojen luku- ja äänikirjojen ku
 
 ## Järjestelmävaatimukset
 
-Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa nykyaikaisissa ARM-pohjaisissa macOS:n versioissa, Linuxissa, iOS 17:ssä ja sitä uudemmissa sekä Android 7:ssä ja sitä uudemmissa versioissa. iOS- ja Android-sovellukset ovat saatavilla App Storesta ja Google Playsta.
+Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa nykyaikaisissa ARM-pohjaisissa macOSin versioissa, Linuxissa, iOS 17:ssä ja sitä uudemmissa sekä Android 7:ssä ja sitä uudemmissa versioissa. iOS- ja Android-sovellukset ovat saatavilla App Storesta ja Google Playsta.
 
 ## Ominaisuudet
 
@@ -20,7 +20,7 @@ Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa nykyaikaisissa ARM-pohjais
 * Voidaan käyttää massamuistiversiona tai asentaa siten, että tiedostokytkennät määritetään automaattisesti.
 * Tukee erittäin kattavasti yleisiä tiedostomuotoja.
 * Toistaa äänikirjoja ja tukee niiden toistonopeuden muuttamista  sekä tarkan kohdan muistavia kirjanmerkkejä.
-* Mahdollistaa skannattujen PDF-asiakirjojen lukemisen Windowsin ja macOS:n tekstintunnistusominaisuuden avulla.
+* Mahdollistaa skannattujen PDF-asiakirjojen lukemisen Windowsin ja macOSin tekstintunnistusominaisuuden avulla.
 * Kirjanmerkit ja muistiinpanot lukukohdan merkitsemistä ja siihen palaamista varten.
 * Kaikkia pikanäppäimiä on mahdollista muokata.
 * Mukana tulee `pb`-komentorivityökalu, joka muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon. Se käsittelee kerralla useita asiakirjoja, tulkitsee `*.pdf`-tyyppiset jokerimerkit myös Windowsissa ja tallentaa muunnetut asiakirjat määritettyyn kansioon omiksi tiedostoikseen. Lisäksi se pystyy lukemaan `--files-from`-valitsimella käsiteltävien asiakirjojen luettelon tiedostosta tai vakiosyötteestä. Asiakirjoja voi muuntaa myös suoraan HTTP- ja HTTPS-osoitteista.
@@ -76,30 +76,30 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 ### Tiedosto-valikko
 
 * `Ctrl+O`: Avaa asiakirja.
-* `Ctrl+F4` (macOS:ssä `Cmd+W`): Sulje nykyinen asiakirja.
-* `Ctrl+Vaihto+F4` (macOS:ssä `Cmd+Vaihto+W`): Sulje kaikki avoimet asiakirjat.
+* `Ctrl+F4` (macOSissa `Cmd+W`): Sulje nykyinen asiakirja.
+* `Ctrl+Vaihto+F4` (macOSissa `Cmd+Vaihto+W`): Sulje kaikki avoimet asiakirjat.
 * `Ctrl+Vaihto+T`: Avaa viimeksi suljetun asiakirjan uudelleen.
 * `Ctrl+R`: Näytä ”Kaikki asiakirjat” -valintaikkuna (Viimeksi avatut -valikosta).
 * `Ctrl+Vaihto+C`: Avaa asiakirjan kansio.
 * `Ctrl+Vaihto+E`: Vie asiakirjan tiedot `.paperback`-tiedostoon.
 * `Ctrl+Vaihto+I`: Tuo asiakirjan tiedot `.paperback`-tiedostosta.
 * `Ctrl+E`: Vie nykyinen asiakirja pelkkänä tekstinä.
-* `Ctrl+Q`: Lopeta (vain Windowsissa; macOS:ää käytettäessä tämä komento löytyy sovellusvalikosta).
+* `Ctrl+Q`: Lopeta (vain Windowsissa; macOSia käytettäessä tämä komento löytyy sovellusvalikosta).
 
 ### Muokkaa-valikko
 
 * `Ctrl+F`: Näytä Etsi-valintaikkuna.
-* `F3` (macOS:ssä `Cmd+G`): Etsi seuraava.
-* `Vaihto+F3` (macOS:ssä `Cmd+Vaihto+G`): Etsi edellinen.
-* `Alt+F9` (macOS:ssä `Cmd+F9`): Merkitse valinnan alkukohta.
-* `Alt+F10` (macOS:ssä `Cmd+F10`): Kopioi valinnan merkityn alkukohdan ja kohdistimen nykyisen sijainnin välinen teksti.
-* `Alt+Vaihto+F9` (macOS:ssä `Cmd+Vaihto+F9`): Palaa valinnan alkukohtaan.
+* `F3` (macOSissa `Cmd+G`): Etsi seuraava.
+* `Vaihto+F3` (macOSissa `Cmd+Vaihto+G`): Etsi edellinen.
+* `Alt+F9` (macOSissa `Cmd+F9`): Merkitse valinnan alkukohta.
+* `Alt+F10` (macOSissa `Cmd+F10`): Kopioi valinnan merkityn alkukohdan ja kohdistimen nykyisen sijainnin välinen teksti.
+* `Alt+Vaihto+F9` (macOSissa `Cmd+Vaihto+F9`): Palaa valinnan alkukohtaan.
 
 ### Näytä-valikko
 
 * `F5`: Päivitä asiakirjan sisältö. Tämä toimii riippumatta siitä, onko "Päivitä muuttuneet asiakirjat automaattisesti" -asetus käytössä.
 * `Ctrl+Alt+W`: Ota automaattinen rivitys käyttöön tai poista se käytöstä.
-* `F11` (macOS:ssä `RawCtrl+Ctrl+F` eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.
+* `F11` (macOSissa `RawCtrl+Ctrl+F` eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.
 * `Ctrl+Vaihto+V`: Avaa nykyinen sisältö selainnäkymässä.
 * `Ctrl+U`: Näytä asiakirjan lähdekoodi uudessa välilehdessä.
 
@@ -107,12 +107,12 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 
 * `Ctrl+T`: Näytä sisällysluettelo.
 * `F7`: Näytä elementtilista.
-* `Ctrl+G` (macOS:ssä `Cmd+L`): Siirry riville.
-§* `Ctrl+Vaihto+G` (macOS:ssä `Cmd+Vaihto+L`): Siirry prosenttiin.
+* `Ctrl+G` (macOSissa `Cmd+L`): Siirry riville.
+§* `Ctrl+Vaihto+G` (macOSissa `Cmd+Vaihto+L`): Siirry prosenttiin.
 * `Ctrl+P`: Siirry sivulle (jos asiakirja tukee sitä).
 * `=`: Ilmoittaa asiakirjan lukukohdan prosentteina sekä sivunumeron (esim. ”15 %, sivu 30”). Sivunumeroa ei ilmoiteta, jos asiakirjassa ei niitä ole.
-* `Alt+Vasen nuoli` (macOS:ssä `Cmd+[`): Siirry taaksepäin navigointihistoriassa.
-* `Alt+Oikea nuoli` (macOS:ssä `Cmd+]`): Siirry eteenpäin navigointihistoriassa.
+* `Alt+Vasen nuoli` (macOSissa `Cmd+[`): Siirry taaksepäin navigointihistoriassa.
+* `Alt+Oikea nuoli` (macOSissa `Cmd+]`): Siirry eteenpäin navigointihistoriassa.
 * `[`: Edellinen luku.
 * `]`: Seuraava luku.
 * `Vaihto+H`: Edellinen otsikko.
@@ -148,7 +148,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `B`: Seuraava kirjanmerkki.
 * `Vaihto+N`: Edellinen muistiinpano.
 * `N`: Seuraava muistiinpano.
-* `Ctrl+Vaihto+W` (macOS:ssä `RawCtrl+Vaihto+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä muistiinpanon teksti nykyisessä sijainnissa.
+* `Ctrl+Vaihto+W` (macOSissa `RawCtrl+Vaihto+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä muistiinpanon teksti nykyisessä sijainnissa.
 * `Ctrl+B`: Siirry kaikkiin kirjanmerkkeihin ja muistiinpanoihin.
 * `Ctrl+Alt+B`: Siirry vain kirjanmerkkeihin.
 * `Ctrl+Alt+M`: Siirry vain muistiinpanoihin.
@@ -157,7 +157,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 
 ### Ääni-valikko
 
-* `Ctrl+Välilyönti` (macOS:ssä `RawCtrl+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
+* `Ctrl+Välilyönti` (macOSissa `RawCtrl+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
 * `'`: Kelaa äänitettä eteenpäin.
 * `;`: Kelaa äänitettä taaksepäin.
 * `Vaihto+'`: Pidennä kelauksen aikasiirtymää.
@@ -167,11 +167,11 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 
 ### Työkalut-valikko
 
-* `Ctrl+W` (macOS:ssä `RawCtrl+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä nykyisen asiakirjan sanamäärä.
+* `Ctrl+W` (macOSissa `RawCtrl+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä nykyisen asiakirjan sanamäärä.
 * `Ctrl+I`: Näytä asiakirjan tiedot.
 * `Ctrl+Vaihto+O`: Suorita tekstintunnistus skannatun PDF-asiakirjan valituille sivuille.
 * `Ctrl+Vaihto+S`: Ota uniajastin käyttöön tai poista se käytöstä.
-* `Ctrl+,`: Avaa asetukset (löytyy macOS:ää käytettäessä sovellusvalikosta).
+* `Ctrl+,`: Avaa asetukset (löytyy macOSia käytettäessä sovellusvalikosta).
 
 ### Ohje-valikko
 
@@ -184,7 +184,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 ### Asiakirjanäkymän lisänäppäimet
 
 * `Delete` / `Laskinnäppäimistön Delete` välilehtien ohjausobjektissa: Sulje valittu asiakirjan välilehti.
-* `Ctrl+1–9` (macOS:ssä `Cmd+1–9`) asiakirjan tekstissä tai välilehtien ohjausobjektissa: Siirry yhdeksään ensimmäiseen avoimeen asiakirjaan niiden avausjärjestyksessä.
+* `Ctrl+1–9` (macOSissa `Cmd+1–9`) asiakirjan tekstissä tai välilehtien ohjausobjektissa: Siirry yhdeksään ensimmäiseen avoimeen asiakirjaan niiden avausjärjestyksessä.
 * `Ctrl+Sarkain` ja `Ctrl+Vaihto+Sarkain`: Siirry seuraavaan tai edelliseen avoinna olevaan asiakirjaan. Viimeisen jälkeen siirrytään ensimmäiseen ja ensimmäistä edeltävästä viimeiseen.
 * `Enter` tai `Välilyönti` asiakirjan tekstissä: Avaa kohdistimen kohdalla oleva linkki tai näytä taulukko tai kaava omassa näkymässään.
 * `Enter` skannatun PDF-asiakirjan sivulla: Suorita sivun tekstintunnistus.
@@ -192,7 +192,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 
 ## iOS ja Android
 
-iOS- ja Android-sovellukset käyttävät samaa lukumoottoria kuin työpöytäversio, joten ne avaavat samoja tiedostomuotoja ja muistavat lukukohdan samalla tavalla. Ne on suunniteltu käytettäviksi iOS:n VoiceOver- ja Androidin TalkBack-ruudunlukijan kanssa.
+iOS- ja Android-sovellukset käyttävät samaa lukumoottoria kuin työpöytäversio, joten ne avaavat samoja tiedostomuotoja ja muistavat lukukohdan samalla tavalla. Ne on suunniteltu käytettäviksi iOSin VoiceOver- ja Androidin TalkBack-ruudunlukijan kanssa.
 
 ### Asiakirjojen avaaminen
 
@@ -222,23 +222,23 @@ Muut toiminnot löytyvät Lisää vaihtoehtoja -valikosta. Osa niistä toimii so
 
 * **Vaihda tekstistä puheeksi -tilaan tai Vaihda tekstitilaan:** vaihtaa edellä kuvatun tekstistä puheeksi -lukutilan ja tekstitilan välillä. Tekstitilassa ”Lue tekstistä puheeksi -toiminnolla” -vaihtoehto aloittaa ja pysäyttää ääneenluvun poistumatta tekstitilasta.
 * **Sisällysluettelo:** näyttää kirjan luvut avattuna parhaillaan luettavan luvun kohdalta. Valitse luku siirtyäksesi sen kohdalle. Alalukuja sisältävät kohdat voidaan laajentaa ja supistaa ruudunlukijan toiminnoilla.
-* **Elementit:** näyttää asiakirjan otsikot ja linkit erillisissä luetteloissa. iOS:ssa luetteloa vaihdetaan Tyyppi-valitsimella ja Androidissa välilehdillä. Valitse haluamasi kohde siirtyäksesi siihen.
+* **Elementit:** näyttää asiakirjan otsikot ja linkit erillisissä luetteloissa. iOSissa luetteloa vaihdetaan Tyyppi-valitsimella ja Androidissa välilehdillä. Valitse haluamasi kohde siirtyäksesi siihen.
 * **Etsi:** kirjoita etsittävä teksti tai valitse hakuhistoriasta aiempi haku ja valitse, otetaanko kirjainkoko huomioon, etsitäänkö vain kokonaisia sanoja vai käytetäänkö säännöllistä lauseketta. Etsi edellinen- ja Etsi seuraava -painikkeet siirtävät hakutuloksen kohdalle samalla kun sen sijainti ilmoitetaan. Etsi-ikkuna pysyy avoinna haun jatkamista varten. Tekstistä puheeksi -lukutilassa Etsi-toiminto näkyy myös lukupalkissa navigointiyksikkönä, joten hakutuloksia voi selata myös sitä kautta.
 * **Siirry:** siirry asiakirjassa haluamallesi riville, sivulle tai tiettyyn prosenttikohtaan. Valitse haluamasi siirtymätapa Tila-valitsimella.
 * **Viimeksi avatut:** näyttää kaikki avaamasi asiakirjat ja ilmoittaa kunkin kohdalla, onko se parhaillaan avoinna, suljettu tai jos sen tiedostoa ei löydy. Asiakirjoille on kaksi ruudunlukijan toimintoa: ”Poista” poistaa asiakirjan luettelosta ja ”Etsi”-toiminnolla voit etsiä asiakirjan tiedoston, jos se on siirretty toiseen hakemistoon. ”Tyhjennä viimeksi avattujen luettelo” tyhjentää luettelon poistamatta varsinaisia asiakirjoja.
 * **Sanamäärä:** näyttää asiakirjan sanojen määrän.
-* **Asiakirjan tiedot:** näyttää asiakirjan otsikon, tekijän, tiedostonimen ja iOS:ssä myös rivien ja merkkien määrän.
+* **Asiakirjan tiedot:** näyttää asiakirjan otsikon, tekijän, tiedostonimen ja iOSissa myös rivien ja merkkien määrän.
 * **Vie:** tallentaa asiakirjan teksti-, HTML- tai Markdown-muodossa.
 * **Uniajastin:** pysäyttää lukemisen 5, 10, 15, 30, 45 tai 60 minuutin kuluttua tai itse valitsemanasi ajankohtana. Avaa se uudelleen ajastuksen ollessa käynnissä nähdäksesi jäljellä olevan ajan tai peruuttaaksesi sen.
 * **Ohje:** avaa tämän lueminut-tiedoston.
 * **Asetukset:**
-    * **Tekstistä puheeksi:** ääni, puhenopeus ja äänenkorkeus, Toista näyte -painike arvojen vaikutuksen kuuntelemiseksi sekä kappaleiden välinen tauko. Androidissa voit valita myös puhemoottorin. iOS:ssa täältä löytyy myös käyttäjän sanasto, johon lisättävillä säännöillä on mahdollista muuttaa sanojen ääntämistä kaikilla tai vain tietyillä äänillä.
-    * **Luettavuus:** tekstin koko, rivi- ja kappaleväli, tasaus sekä suurikontrastinen teksti. iOS:ssa on myös vaalea ja tumma ulkoasu.
+    * **Tekstistä puheeksi:** ääni, puhenopeus ja äänenkorkeus, Toista näyte -painike arvojen vaikutuksen kuuntelemiseksi sekä kappaleiden välinen tauko. Androidissa voit valita myös puhemoottorin. iOSissa täältä löytyy myös käyttäjän sanasto, johon lisättävillä säännöillä on mahdollista muuttaa sanojen ääntämistä kaikilla tai vain tietyillä äänillä.
+    * **Luettavuus:** tekstin koko, rivi- ja kappaleväli, tasaus sekä suurikontrastinen teksti. iOSissa on myös vaalea ja tumma ulkoasu.
     * **Toiminta:** avataanko asiakirjat uudelleen sovelluksen käynnistyessä, mihin suuntaan toistopainikkeen pyyhkäisy siirtää ja piilotetaanko Edellinen- ja Seuraava-painikkeet. Android-versiossa täällä on myös sovelluksen sisäinen tiedostoselain.
 
 ### Näppäimistöt ja kuulokkeet
 
-Näppäimistöä käytettäessä työpöytäsovelluksen pikanäppäimillä voi avata kirjoja ja viimeksi avattuja asiakirjoja, käyttää Etsi- ja Siirry-toimintoja, avata sisällysluettelon, tarkistaa sanamäärän ja tarkastella asiakirjan tietoja, viedä asiakirjan eri tiedostomuotoihin sekä käyttää uniajastinta. iOS:ssa käytetään `Ctrl`-näppäimen sijasta `Cmd`-näppäintä. Myös otsikoiden, sivujen, linkkien ja muiden kohteiden välillä siirtymiseen tarkoitetut navigointikomennot toimivat, ja `Välilyönti` aloittaa ja pysäyttää toiston. iOS:ssa navigointikomennot toimivat Paperbackissa vain, kun VoiceOverin pikanavigointinäppäimet on poistettu käytöstä.
+Näppäimistöä käytettäessä työpöytäsovelluksen pikanäppäimillä voi avata kirjoja ja viimeksi avattuja asiakirjoja, käyttää Etsi- ja Siirry-toimintoja, avata sisällysluettelon, tarkistaa sanamäärän ja tarkastella asiakirjan tietoja, viedä asiakirjan eri tiedostomuotoihin sekä käyttää uniajastinta. iOSissa käytetään `Ctrl`-näppäimen sijasta `Cmd`-näppäintä. Myös otsikoiden, sivujen, linkkien ja muiden kohteiden välillä siirtymiseen tarkoitetut navigointikomennot toimivat, ja `Välilyönti` aloittaa ja pysäyttää toiston. iOSissa navigointikomennot toimivat Paperbackissa vain, kun VoiceOverin pikanavigointinäppäimet on poistettu käytöstä.
 
 Android-laitteissa kuulokkeiden painikkeen yksi painallus aloittaa tai pysäyttää toiston, kaksi painallusta siirtää eteenpäin ja kolme painallusta taaksepäin.
 
@@ -297,7 +297,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 
 ### Versio 1.0
 
-Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:lle, Linuxille, iOS:lle ja Androidille. iOS- ja Android-sovellukset ovat saatavilla App Storesta ja Google Playsta.
+Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOSille, Linuxille, iOSille ja Androidille. iOS- ja Android-sovellukset ovat saatavilla App Storesta ja Google Playsta.
 
 #### Lisätty
 
@@ -319,7 +319,7 @@ Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:
 * Word 6- ja 95-asiakirjat.
 
 ##### Tekstintunnistus
-* Skannatuille PDF-asiakirjojen sivuille voidaan nyt suorittaa tekstintunnistus Windowsin ja macOS:n omalla tekstintunnistustoiminnolla. Suorita tunnistus skannatulle sivulle painamalla `Enter` sen kohdalla tai käytä tietylle sivualueelle usean sivun tunnistusta (`Ctrl+Vaihto+O`).
+* Skannatuille PDF-asiakirjojen sivuille voidaan nyt suorittaa tekstintunnistus Windowsin ja macOSin omalla tekstintunnistustoiminnolla. Suorita tunnistus skannatulle sivulle painamalla `Enter` sen kohdalla tai käytä tietylle sivualueelle usean sivun tunnistusta (`Ctrl+Vaihto+O`).
 
 ##### Navigointi
 * EPUB- ja HTML-tiedostojen MathML-kaavat näytetään AsciiMath-muodossa MathCATia käyttäen. Navigoi kaavojen välillä painamalla `M` tai `Vaihto+M` ja avaa alkuperäinen MathML kaavanäkymässä painamalla `Enter` tai `Välilyönti`.
@@ -381,7 +381,7 @@ Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOS:
 * Ylä- ja alanuolinäppäimillä vaihdettu sarake on nyt asiakirjakohtainen sen sijaan, että se olisi sama kaikilla välilehdillä.
 
 ##### Äänikirjat
-* Äänitteen toiston pikanäppäin on nyt macOS:ssä `Ctrl+Välilyönti`, koska `Cmd+Välilyönti` on varattu Spotlight-haulle.
+* Äänitteen toiston pikanäppäin on nyt macOSissa `Ctrl+Välilyönti`, koska `Cmd+Välilyönti` on varattu Spotlight-haulle.
 
 ##### PDF-asiakirjat
 * Ongelma, jonka vuoksi Apple Pages -sovelluksesta viedyt PDF-tiedostot luettiin pelkkänä tekstinä ilman niihin sisältyviä otsikoita ja luetteloita.
@@ -420,7 +420,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Tekstistä puheeksi -toiminnolla lukeminen valitsemallasi äänellä, nopeudella ja äänenkorkeudella, puhenopeuden muuttaminen lukupalkissa sekä valinnainen tauko kappaleiden välissä.
 * DAISY-, M4B- ja MP3-äänikirjojen toisto, joka jatkuu taustalla ja lukitusnäytöllä.
 * Navigointi lukupalkista otsikoiden, sivujen, linkkien, taulukoiden, luetteloiden ja muiden elementtien perusteella, minkä lisäksi käytössä ovat sisällysluettelo ja Etsi-toiminto.
-* Uniajastin, sanamäärä ja asiakirjan vienti sekä iOS:ssa käyttäjän sanasto. iOS:ssa vienti tapahtuu jakovalikosta, joten kirjan voi lähettää toiseen sovellukseen tai tallentaa Tiedostot-appiin joko muussa tai alkuperäisessä tiedostomuodossa.
+* Uniajastin, sanamäärä ja asiakirjan vienti sekä iOSissa käyttäjän sanasto. iOSissa vienti tapahtuu jakovalikosta, joten kirjan voi lähettää toiseen sovellukseen tai tallentaa Tiedostot-appiin joko muussa tai alkuperäisessä tiedostomuodossa.
 * Tekstikoon, rivivälin ja suurikontrastisen tekstin asetukset.
 * Samat pikanäppäimet kuin työpöytäversiossa.
 
@@ -440,8 +440,8 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 * Sanamäärä- ja Asiakirjan tiedot -ikkunoissa näytetään nyt äänikirjan tiedostomäärä sekä kokonaiskesto.
 
 ### Versio 0.9.1
-* Kirjanmerkkien ja muistiinpanojen merkkiäänet toistuvat nyt macOS:ssä.
-* DAISY-kirjojen ääni kuuluu nyt macOS:ssä, eikä niiden aikajanaa seurata äänettömästi.
+* Kirjanmerkkien ja muistiinpanojen merkkiäänet toistuvat nyt macOSissa.
+* DAISY-kirjojen ääni kuuluu nyt macOSissa, eikä niiden aikajanaa seurata äänettömästi.
 * Korjattu ongelma, jonka vuoksi kaarevat lainausmerkit, ajatusviivat ja vastaavat merkit katosivat RTF-asiakirjoista yhdistäen samalla ympäröivät sanat toisiinsa.
 * Korjattu ongelma, jonka vuoksi RTF-kuvien raakadata vuoti asiakirjaan tekstisotkuna.
 * Korjattu ongelma, jonka vuoksi Viimeksi avatut -alivalikossa säilyi vanhentuneita merkintöjä, kunnes valikon sisältö muodostettiin uudelleen.
@@ -468,7 +468,7 @@ iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversi
 
 ##### Tuettavat käyttöjärjestelmät
 * Tuki ARM64-pohjaiselle Windowsille.
-* Tuki macOS:lle.
+* Tuki macOSille.
 * Koko näytön tilan käyttöönotto tai käytöstä poisto.
 
 ##### Kaikki asiakirjat -valintaikkuna
