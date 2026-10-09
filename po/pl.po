@@ -480,9 +480,9 @@ msgstr "Pokaż tylko zakładki"
 msgid "Show notes only"
 msgstr "Pokaż tylko notatki"
 
-#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
-msgid "&View Note Text"
-msgstr "&Wyświetl treść notatki"
+#. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
+msgid "&View Note Text..."
+msgstr "&Wyświetl treść notatki..."
 
 #. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
 msgid "View the note at current position"
@@ -1634,28 +1634,28 @@ msgid "Failed to export document."
 msgstr "Nie udało się wyeksportować dokumentu."
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
-msgid "&Undo\tCtrl+Z"
-msgstr "&Cofnij\tCtrl+Z"
+msgid "&Undo"
+msgstr "&Cofnij"
 
 #. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Ponów\tCtrl+Shift+Z"
+msgid "&Redo"
+msgstr "&Ponów"
 
 #. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
-msgid "Cu&t\tCtrl+X"
-msgstr "Wy&tnij\tCtrl+X"
+msgid "Cu&t"
+msgstr "Wy&tnij"
 
 #. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
-msgid "&Copy\tCtrl+C"
-msgstr "&Kopiuj\tCtrl+C"
+msgid "&Copy"
+msgstr "&Kopiuj"
 
 #. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
-msgid "&Paste\tCtrl+V"
-msgstr "&Wklej\tCtrl+V"
+msgid "&Paste"
+msgstr "&Wklej"
 
 #. TRANSLATORS: Menu item in the Edit menu to select all text.
-msgid "Select &All\tCtrl+A"
-msgstr "Zaznacz &wszystko\tCtrl+A"
+msgid "Select &All"
+msgstr "Zaznacz &wszystko"
 
 #. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
@@ -1894,16 +1894,16 @@ msgid "Export document as Markdown"
 msgstr "Eksportuj dokument jako Markdown"
 
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
-msgid "&Word Count"
-msgstr "&Liczba słów"
+msgid "&Word Count..."
+msgstr "&Liczba słów..."
 
 #. TRANSLATORS: Status-bar help text for the Word Count menu item.
 msgid "Show word count"
 msgstr "Pokaż liczbę słów"
 
 #. TRANSLATORS: Menu item in the Tools menu to show information about the document.
-msgid "Document &Info"
-msgstr "&Informacje o dokumencie"
+msgid "Document &Info..."
+msgstr "&Informacje o dokumencie..."
 
 #. TRANSLATORS: Status-bar help text for the Document Info menu item.
 msgid "Show document information"
@@ -2247,9 +2247,12 @@ msgstr "Przejdź do &procentu"
 msgid "Go to percent"
 msgstr "Przejdź do procentu"
 
-#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
-msgid "Copied (%d chars)."
-msgstr "Skopiowano (liczba znaków: %d)."
+#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+msgid "Copied %d character."
+msgid_plural "Copied %d characters."
+msgstr[0] "Skopiowano %d znak."
+msgstr[1] "Skopiowano %d znaki."
+msgstr[2] "Skopiowano %d znaków."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 msgid "Beginning of selection set."
@@ -3572,10 +3575,10 @@ msgstr "Ten dokument nie zawiera spisu treści."
 msgid "Navigation unit"
 msgstr "Jednostka nawigacji"
 
-#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
+#. TRANSLATORS: Accessibility label for the "previous" button when navigating audio by time; {} is an amount like "30 seconds"
 #: swift
 msgid "Previous {}"
-msgstr "Poprzedni element: {}"
+msgstr "Wstecz: {}"
 
 #. TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
 #: swift
@@ -3597,10 +3600,10 @@ msgstr "Koniec dokumentu"
 msgid "Beginning of document"
 msgstr "Początek dokumentu"
 
-#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
+#. TRANSLATORS: Accessibility label for the "next" button when navigating audio by time; {} is an amount like "30 seconds"
 #: swift
 msgid "Next {}"
-msgstr "Następny element: {}"
+msgstr "Do przodu: {}"
 
 #. TRANSLATORS: Placeholder shown in the read-aloud view before the user has started playback
 #: swift
@@ -4540,8 +4543,8 @@ msgid "&Audio"
 msgstr "&Dźwięk"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-msgid "&Go to Page"
-msgstr "Prze&jdź do strony"
+msgid "&Go to Page..."
+msgstr "Prze&jdź do strony..."
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to go back to the position remembered as the temporary bookmark.
 msgid "&Jump to Temporary Bookmark"
@@ -4564,8 +4567,8 @@ msgid "Audio"
 msgstr "Dźwięk"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
-msgid "Bookmark &with Note"
-msgstr "Zakładka z no&tatką"
+msgid "Bookmark &with Note..."
+msgstr "Zakładka z no&tatką..."
 
 #. TRANSLATORS: Menu item in the Edit menu to copy everything from the marked beginning of a selection to the current position.
 msgid "Copy fro&m Selection Start"
@@ -4620,8 +4623,8 @@ msgid "Sleep &Timer..."
 msgstr "&Wyłącznik czasowy..."
 
 #. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
-msgid "Table &of Contents"
-msgstr "Spis treś&ci"
+msgid "Table &of Contents..."
+msgstr "Spis treś&ci..."
 
 #. TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "View"
@@ -4633,3 +4636,143 @@ msgstr "&Zawijanie wierszy"
 
 #~ msgid "Open folder containing the document"
 #~ msgstr "Otwórz folder zawierający dokument"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Document Info..."
+msgstr "Informacje o dokumencie..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Table of Contents..."
+msgstr "Spis treści..."
+
+#. TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+msgid "&Highlight found text"
+msgstr "Zaznaczaj znaleziony te&kst"
+
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr "Traktuj tekst między znakami dolara jako wzory &matematyczne w dokumentach Markdown"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
+#: kt
+#: swift
+msgid "Previous Paragraph"
+msgstr "Poprzedni akapit"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by paragraph
+#: kt
+#: swift
+msgid "Next Paragraph"
+msgstr "Następny akapit"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
+#: kt
+#: swift
+msgid "Previous Line"
+msgstr "Poprzedni wiersz"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by line
+#: kt
+#: swift
+msgid "Next Line"
+msgstr "Następny wiersz"
+
+#. TRANSLATORS: TalkBack action on a document tab that closes it; {} is the document's title
+#: kt
+msgid "Close {}"
+msgstr "Zamknij dokument „{}”"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
+#: kt
+msgid "Select navigation unit"
+msgstr "wybrać jednostkę nawigacji"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+#: kt
+msgid "Select speech rate"
+msgstr "wybrać szybkość mowy"
+
+#. TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+#: kt
+msgid "Show all options in a menu"
+msgstr "pokazać wszystkie opcje w menu"
+
+#. TRANSLATORS: TalkBack label for the file manager's row that goes up a folder; {} is the parent folder's name
+#: kt
+msgid "Go up to parent directory: {}"
+msgstr "Przejdź do folderu nadrzędnego: {}"
+
+#. TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
+#: kt
+msgid "Storage Devices"
+msgstr "Nośniki danych"
+
+#. TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
+msgid ".{} files cannot be read, so the link was not downloaded"
+msgstr "nie można odczytywać plików .{}, więc nie pobrano pliku z odnośnika"
+
+#. TRANSLATORS: Error when a document behind a link is too large to download; {} is the limit in megabytes
+msgid "the document is larger than {} MB, so it was not downloaded"
+msgstr "dokument jest większy niż {} MB, więc nie został pobrany"
+
+#. TRANSLATORS: Error when a document downloaded from a link cannot be saved; {} is the technical reason
+msgid "the download could not be saved: {}"
+msgstr "nie udało się zapisać pobranego pliku: {}"
+
+#. TRANSLATORS: Message when downloading a document from a link is cancelled
+msgid "the download was cancelled"
+msgstr "pobieranie zostało anulowane"
+
+#. TRANSLATORS: Error when a secure https link is redirected to an insecure http address
+msgid "the secure link was redirected to an insecure address, so it was not downloaded"
+msgstr "nastąpiło przekierowanie z zabezpieczonego adresu na niezabezpieczony, więc nie pobrano pliku"
+
+#. TRANSLATORS: Error when downloading a document from a link fails; {} is the HTTP status code, such as 404
+msgid "the server answered with status {}"
+msgstr "serwer zwrócił kod stanu {}"
+
+#. TRANSLATORS: Error when the server of a link cannot be reached; {} is the technical reason
+msgid "the server could not be reached: {}"
+msgstr "nie udało się połączyć z serwerem: {}"
+
+msgid "This document is encrypted in a way Paperback cannot open: {}"
+msgstr "Ten dokument zaszyfrowano w sposób nieobsługiwany przez Paperbacka: {}"
+
+#~ msgid "&Copy\tCtrl+C"
+#~ msgstr "&Kopiuj\tCtrl+C"
+
+#~ msgid "&Undo\tCtrl+Z"
+#~ msgstr "&Cofnij\tCtrl+Z"
+
+#~ msgid "&Redo\tCtrl+Shift+Z"
+#~ msgstr "&Ponów\tCtrl+Shift+Z"
+
+#~ msgid "Cu&t\tCtrl+X"
+#~ msgstr "Wy&tnij\tCtrl+X"
+
+#~ msgid "&Paste\tCtrl+V"
+#~ msgstr "&Wklej\tCtrl+V"
+
+#~ msgid "Select &All\tCtrl+A"
+#~ msgstr "Zaznacz &wszystko\tCtrl+A"
+
+#~ msgid "&Go to Page"
+#~ msgstr "Prze&jdź do strony"
+
+#~ msgid "&View Note Text"
+#~ msgstr "&Wyświetl treść notatki"
+
+#~ msgid "&Word Count"
+#~ msgstr "&Liczba słów"
+
+#~ msgid "Bookmark &with Note"
+#~ msgstr "Zakładka z no&tatką"
+
+#~ msgid "Document &Info"
+#~ msgstr "&Informacje o dokumencie"
+
+#~ msgid "Table &of Contents"
+#~ msgstr "Spis treś&ci"
+
+#~ msgid "Copied (%d chars)."
+#~ msgstr "Skopiowano (liczba znaków: %d)."
