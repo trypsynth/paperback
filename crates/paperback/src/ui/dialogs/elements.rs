@@ -287,12 +287,14 @@ fn bind_elements_activation_dv(
 	let views_for_click = Rc::clone(views);
 	let selected_for_list = Rc::clone(selected_offset);
 	let dialog_for_list = dialog;
-	content_list.on_item_activated(move |event| {
+	content_list.on_item_activated(move |#[cfg_attr(not(target_os = "macos"), allow(unused_variables))] event| {
 		if let Some(offset) = flat_selected_offset(
 			view_for_list.get_selection().unwrap_or(VIEW_HEADINGS),
 			list_for_click,
 			&views_for_click,
 		) {
+			// Consumed so the row's activation doesn't confirm the dialog a second time. Only macOS's DataViewListCtrl hands over its event; the ListCtrl used on Linux exposes none to consume.
+			#[cfg(target_os = "macos")]
 			event.event.skip(false);
 			selected_for_list.set(offset);
 			dialog_for_list.end_modal(wxdragon::id::ID_OK);
