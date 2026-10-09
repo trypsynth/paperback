@@ -66,8 +66,11 @@ pub fn handle_select_all(dm: &Rc<Mutex<DocumentManager>>, live_region_label: Sta
 /// Its own function of the count so the wording can be pinned without a document, which a test cannot build.
 fn selected_message(count: usize) -> String {
 	// TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-	nt("Selected %d character.", "Selected %d characters.", u64::try_from(count).unwrap_or(0))
-		.replacen("%d", &count.to_string(), 1)
+	nt("Selected %d character.", "Selected %d characters.", u64::try_from(count).unwrap_or(0)).replacen(
+		"%d",
+		&count.to_string(),
+		1,
+	)
 }
 
 #[cfg(test)]
