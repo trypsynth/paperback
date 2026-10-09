@@ -147,7 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Čita skenirane PDF stranice pomoću OCR-a ugrađenog u Windows i macOS.</li>
 <li>Podržava oznake i bilješke, pa možete obilježiti mjesto do kojeg ste stigli i kasnije mu se vratiti.</li>
 <li>Svaka prečica na tastaturi može se promijeniti.</li>
-<li>Uključuje <code>pb</code>, alat za komandnu liniju koji bilo koji podržani dokument pretvara u HTML, Markdown ili običan tekst.</li>
+<li>Uključuje <code>pb</code>, alat za komandnu liniju koji bilo koji podržani dokument pretvara u HTML, Markdown ili običan tekst. Prihvata onoliko dokumenata koliko mu navedete, sam proširuje obrasce poput <code>*.pdf</code>, tako da ista komandna linija radi i na Windowsu, i može upisati po jednu datoteku za svaki dokument u mapu. Može pročitati i popis dokumenata iz datoteke ili sa standardnog ulaza pomoću <code>--files-from</code>, te pretvarati dokumente direktno s http i https poveznica.</li>
 </ul>
 <h2 id="kompatibilnost-s-čitačima-zaslona">Kompatibilnost s čitačima zaslona</h2>
 <p>Paperback radi vrlo dobro s većinom poznatih čitača zaslona. Međutim, postoje dva poznata problema za korisnike JAWS-a.</p>
@@ -329,7 +329,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Elementi:</strong> popis naslova ili poveznica u dokumentu. Između njih se prebacujete biračem “Vrsta” na iOS-u ili karticama na Androidu, a zatim odaberete stavku da biste prešli na nju.</li>
 <li><strong>Traži:</strong> upišite šta tražite ili odaberite raniju pretragu iz historije pretraživanja te odaberite želite li razlikovati velika i mala slova, tražiti samo cijele riječi ili koristiti regularni izraz. “Traži prethodno” i “Traži sljedeće” prelaze na podudaranje i izgovaraju gdje ste se našli, a pretraga ostaje otvorena kako biste mogli nastaviti. U načinu čitanja naglas traženje se pojavljuje i kao jedinica kretanja na traci za čitanje, pa se i odatle možete kretati kroz podudaranja.</li>
 <li><strong>Idi na:</strong> prelazi na red, stranicu ili postotak dokumenta. Šta od toga želite, birate biračem “Način”.</li>
-<li><strong>Nedavni dokumenti:</strong> svi dokumenti koje ste otvorili, pri čemu je svaki označen kao trenutno otvoren, zatvoren ili kao dokument čija datoteka nedostaje. Svaki od njih ima dvije radnje čitača zaslona: “Ukloni” ga uklanja s popisa, a “Pronađi” vam omogućava da pronađete dokument čija je datoteka premještena. “Očisti nedavne dokumente” prazni popis bez brisanja ijednog dokumenta.</li>
+<li><strong>Nedavni dokumenti:</strong> svi dokumenti koje ste otvorili, pri čemu svaki ima status “Trenutno otvoreno”, “Zatvoreno” ili “Datoteka nedostaje”. Svaki od njih ima dvije radnje čitača zaslona: “Ukloni” ga uklanja s popisa, a “Pronađi” vam omogućava da pronađete dokument čija je datoteka premještena. “Očisti nedavne dokumente” prazni popis bez brisanja ijednog dokumenta.</li>
 <li><strong>Broj riječi:</strong> broj riječi u dokumentu.</li>
 <li><strong>Informacije o dokumentu:</strong> naslov, autor, naziv datoteke, a na iOS-u i broj redova i znakova.</li>
 <li><strong>Izvoz:</strong> sprema dokument kao običan tekst, HTML ili Markdown.</li>
