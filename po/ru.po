@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 21:23+0000\n"
+"POT-Creation-Date: 2026-10-09 16:45+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -1547,6 +1547,16 @@ msgstr[0] "Документ содержит %d слово."
 msgstr[1] "Документ содержит %d слова."
 msgstr[2] "Документ содержит %d слов."
 
+#. TRANSLATORS: Title of the dialog listing the documents inside a zip archive
+#, fuzzy
+msgid "Open from Archive"
+msgstr "Открыть из архива"
+
+#. TRANSLATORS: Label for the list of documents inside a zip archive
+#, fuzzy
+msgid "&Documents in this archive:"
+msgstr "&Документы в этом архиве:"
+
 #. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
 #, fuzzy
 msgid "{} to {}"
@@ -1771,6 +1781,14 @@ msgstr "Нечего копировать."
 msgid "Could not copy to the clipboard."
 msgstr "Не удалось скопировать в буфер обмена."
 
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+#, fuzzy
+msgid "Selected %d character."
+msgid_plural "Selected %d characters."
+msgstr[0] "Выделен %d символ."
+msgstr[1] "Выделено %d символа."
+msgstr[2] "Выделено %d символов."
+
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 #, fuzzy
 msgid "Word wrap on."
@@ -1897,6 +1915,11 @@ msgstr "Просмотр исходного кода недоступен для
 #, fuzzy
 msgid "Could not load the document source."
 msgstr "Не удалось загрузить исходный документ."
+
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+#, fuzzy
+msgid "Couldn't extract the document from the archive: {}"
+msgstr "Не удалось извлечь документ из архива: {}"
 
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."

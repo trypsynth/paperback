@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 21:23+0000\n"
+"POT-Creation-Date: 2026-10-09 16:45+0000\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -1543,6 +1543,16 @@ msgid_plural "This document contains %d words."
 msgstr[0] "Este documento contém %d palavra."
 msgstr[1] "Este documento contém %d palavras."
 
+#. TRANSLATORS: Title of the dialog listing the documents inside a zip archive
+#, fuzzy
+msgid "Open from Archive"
+msgstr "Abrir do Arquivo"
+
+#. TRANSLATORS: Label for the list of documents inside a zip archive
+#, fuzzy
+msgid "&Documents in this archive:"
+msgstr "&Documentos neste arquivo:"
+
 #. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
 #, fuzzy
 msgid "{} to {}"
@@ -1760,6 +1770,13 @@ msgstr "Nada para copiar."
 msgid "Could not copy to the clipboard."
 msgstr "Não foi possível copiar para a área de transferência."
 
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+#, fuzzy
+msgid "Selected %d character."
+msgid_plural "Selected %d characters."
+msgstr[0] "Selecionado %d caractere."
+msgstr[1] "Selecionados %d caracteres."
+
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 #, fuzzy
 msgid "Word wrap on."
@@ -1885,6 +1902,11 @@ msgstr "A visualização de fonte não está disponível para este formato de do
 #, fuzzy
 msgid "Could not load the document source."
 msgstr "Não foi possível carregar a fonte do documento."
+
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+#, fuzzy
+msgid "Couldn't extract the document from the archive: {}"
+msgstr "Não foi possível extrair o documento do arquivo: {}"
 
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."

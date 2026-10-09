@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 21:23+0000\n"
+"POT-Creation-Date: 2026-10-09 16:45+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -1342,6 +1342,16 @@ msgid_plural "This document contains %d words."
 msgstr[0] "Dit document bevat %d woord."
 msgstr[1] "Dit document bevat %d woorden."
 
+#. TRANSLATORS: Title of the dialog listing the documents inside a zip archive
+#, fuzzy
+msgid "Open from Archive"
+msgstr "Uit archief openen"
+
+#. TRANSLATORS: Label for the list of documents inside a zip archive
+#, fuzzy
+msgid "&Documents in this archive:"
+msgstr "&Documenten in dit archief:"
+
 #. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
 msgid "{} to {}"
 msgstr "{} tot en met {}"
@@ -1532,6 +1542,13 @@ msgstr "Niets om te kopiëren."
 msgid "Could not copy to the clipboard."
 msgstr "Kan niet naar het klembord kopiëren."
 
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+#, fuzzy
+msgid "Selected %d character."
+msgid_plural "Selected %d characters."
+msgstr[0] "Geselecteerd %d teken."
+msgstr[1] "Geselecteerd %d tekens."
+
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
 msgstr "Automatische terugloop aan."
@@ -1644,6 +1661,11 @@ msgstr "Bronweergave is niet beschikbaar voor dit documentformaat."
 #. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 msgid "Could not load the document source."
 msgstr "Kan de documentbron niet laden."
+
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+#, fuzzy
+msgid "Couldn't extract the document from the archive: {}"
+msgstr "Document uit archief uitpakken mislukt: {}"
 
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
