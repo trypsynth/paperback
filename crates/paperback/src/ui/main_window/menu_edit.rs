@@ -6,7 +6,10 @@ use patois::{nt, t};
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
 use super::DocumentManager;
-use crate::ui::{navigation::announce_for_command, selection::copied_announcement};
+use crate::ui::{
+	navigation::{announce_for_command, announce_for_selection_command},
+	selection::copied_announcement,
+};
 
 /// What the copy shortcut found when it went to copy.
 #[derive(Clone, Copy)]
@@ -45,16 +48,19 @@ fn copy_message(outcome: CopyOutcome) -> String {
 
 /// Selects everything the reading control holds, and says how much text the document has.
 ///
-/// Announces for the same reason the copy above does, and one more: a screen reader's own report of
-/// a selection change is not something this app can hold back, so as the only feedback the command
-/// gave the reader it went out the instant the menu closed and the focus-return chain read over it.
-/// Saying it here means a menu click gets the same delayed announcement every other command gets,
-/// and a shortcut gets it immediately.
+/// Announces for the same reason the copy above does, and one more. As the only feedback the command
+/// gave the reader, a screen reader's own report of the selection change went out the instant the
+/// menu closed and the focus-return chain read over it; saying it here gives a menu click the same
+/// delayed announcement every other command gets.
+///
+/// The shortcut waits as well, which the copy's does not. Selecting is not silent: the change is
+/// itself reported, and a message raised the moment the command runs is spoken first and leaves that
+/// report hanging on the end.
 pub fn handle_select_all(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
 	let Some(count) = dm.lock().unwrap().select_all_and_count() else {
 		return;
 	};
-	announce_for_command(live_region_label, from_keyboard, selected_message(count));
+	announce_for_selection_command(live_region_label, from_keyboard, selected_message(count));
 }
 
 /// Its own function of the count so the wording can be pinned without a document, which a test cannot build.
