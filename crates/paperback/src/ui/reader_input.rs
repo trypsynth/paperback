@@ -16,6 +16,7 @@ use super::{
 	text_render::reload_window_around,
 };
 
+mod activation;
 #[cfg(target_os = "macos")]
 mod macos;
 #[cfg(target_os = "windows")]
@@ -39,44 +40,48 @@ pub(super) fn build_text_ctrl(
 	let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
 	let dm_for_enter = Rc::clone(self_rc);
 	let frame_for_char = frame;
+	activation::bind_activation(text_ctrl, move |enter| {
+		#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+		let _ = enter;
+		// Enter on an image-only page runs OCR instead of the table/link activation
+		// below. Enter only; Space always falls through to that activation.
+		#[cfg(any(target_os = "windows", target_os = "macos"))]
+		if enter {
+			let on_placeholder = {
+				let dm = dm_for_enter.lock().unwrap();
+				dm.image_only_page_at_caret().is_some()
+			};
+			if on_placeholder {
+				dm_for_enter.lock().unwrap().start_ocr_for_current_page();
+				return;
+			}
+		}
+		// Drop the manager lock before opening the modal dialog, whose handlers may lock it again.
+		let dialog = {
+			let dm = dm_for_enter.lock().unwrap();
+			dm.activate_current_formula()
+				.map(|html| {
+					// TRANSLATORS: Title of the dialog displaying a formula as MathML
+					(t("Formula View"), html)
+				})
+				.or_else(|| {
+					// TRANSLATORS: Title of the dialog showing a table activated in the document
+					dm.activate_current_table().map(|html| (t("Table View"), html))
+				})
+				.map(|(title, html)| (dm.frame, title, html))
+		};
+		if let Some((frame, title, html)) = dialog {
+			super::dialogs::show_web_view_dialog(&frame, &title, &html, false, None);
+		} else {
+			let mut dm = dm_for_enter.lock().unwrap();
+			dm.activate_current_link();
+		}
+	});
+	let dm_for_char = Rc::clone(self_rc);
 	text_ctrl.on_char(move |event| {
 		if let WindowEventData::Keyboard(kbd) = event {
-			if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
-				// Enter on an image-only page runs OCR instead of the table/link activation
-				// below. Enter only; Space always falls through to that activation.
-				#[cfg(any(target_os = "windows", target_os = "macos"))]
-				if kbd.get_key_code() == Some(13) {
-					let on_placeholder = {
-						let dm = dm_for_enter.lock().unwrap();
-						dm.image_only_page_at_caret().is_some()
-					};
-					if on_placeholder {
-						dm_for_enter.lock().unwrap().start_ocr_for_current_page();
-						return;
-					}
-				}
-				// Drop the manager lock before opening the modal dialog, whose handlers may lock it again.
-				let dialog = {
-					let dm = dm_for_enter.lock().unwrap();
-					dm.activate_current_formula()
-						.map(|html| {
-							// TRANSLATORS: Title of the dialog displaying a formula as MathML
-							(t("Formula View"), html)
-						})
-						.or_else(|| {
-							// TRANSLATORS: Title of the dialog showing a table activated in the document
-							dm.activate_current_table().map(|html| (t("Table View"), html))
-						})
-						.map(|(title, html)| (dm.frame, title, html))
-				};
-				if let Some((frame, title, html)) = dialog {
-					super::dialogs::show_web_view_dialog(&frame, &title, &html, false, None);
-				} else {
-					let mut dm = dm_for_enter.lock().unwrap();
-					dm.activate_current_link();
-				}
-			} else if let Some(action) = shortcut_for_shifted_character(&kbd, &dm_for_enter) {
-				run_shortcut(action, &dm_for_enter, &frame_for_char);
+			if let Some(action) = shortcut_for_shifted_character(&kbd, &dm_for_char) {
+				run_shortcut(action, &dm_for_char, &frame_for_char);
 			} else {
 				kbd.event.skip(true);
 			}

@@ -13,6 +13,11 @@ pub(super) use wx_utils::{
 	DIALOG_PADDING, add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons,
 };
 
+#[cfg(target_os = "macos")]
+mod activation;
+#[cfg(target_os = "macos")]
+use activation::bind_enter_button;
+
 /// The most entries a table of contents or heading tree shows under one parent on Windows. More
 /// than that are split into groups under it. On every move in a tree, NVDA counts the focused
 /// item's siblings with one cross-process message each, so thousands of chapters under one parent
