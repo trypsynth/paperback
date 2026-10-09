@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-08 21:23+0000\n"
-"PO-Revision-Date: 2026-10-09 03:17+0300\n"
+"PO-Revision-Date: 2026-10-09 03:59+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -753,7 +753,7 @@ msgstr "&Käsittele myös tekstisivut"
 
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
-msgstr "Suorita tekstintunnistus"
+msgstr "Aloita"
 
 #. TRANSLATORS: Title of the Jump to Bookmark dialog
 msgid "Jump to Bookmark"
@@ -1116,7 +1116,7 @@ msgstr "Poista PDF-asiakirjoista toistuvat ylä- ja alatunnisteet"
 msgid "Read text between dollar signs as &math in Markdown"
 msgstr ""
 "Käsittele dollarimerkkien välinen teksti Markdown-asiakirjoissa "
-"matemaattisena kaavana"
+"&matemaattisena kaavana"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -4513,13 +4513,13 @@ msgstr "Sulje {}"
 #: kt
 #| msgid "Navigation unit"
 msgid "Select navigation unit"
-msgstr "Navigoinnin tarkkuus"
+msgstr "Valitse navigoinnin tarkkuus"
 
 #. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
 #: kt
 #| msgid "Speech Rate"
 msgid "Select speech rate"
-msgstr "Puhenopeus"
+msgstr "Valitse puhenopeus"
 
 #. TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
 #: kt
