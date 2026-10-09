@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 21:23+0000\n"
+"POT-Creation-Date: 2026-10-09 16:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1535,6 +1535,12 @@ msgstr ""
 #. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
 msgid "Could not copy to the clipboard."
 msgstr ""
+
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+msgid "Selected %d character."
+msgid_plural "Selected %d characters."
+msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
