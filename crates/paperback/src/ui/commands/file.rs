@@ -10,6 +10,7 @@ use std::{path::Path, process};
 
 use paperback_core::parser::{build_file_filter_string, is_remote_url};
 use patois::t;
+use wx_utils::show_error;
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
 use super::Ctx;
@@ -77,8 +78,13 @@ pub fn open_from_url(ctx: &Ctx) {
 	let Some(text) = dialogs::show_open_url_dialog(ctx.frame, &links::prefill(&clipboard)) else {
 		return;
 	};
-	let (links, not_links) = links::from_text(&text);
-	open_links(ctx.frame, ctx.dm, ctx.config, links, not_links);
+	let link = text.trim();
+	if is_remote_url(link) {
+		open_links(ctx.frame, ctx.dm, ctx.config, vec![link.to_string()]);
+	} else if !link.is_empty() {
+		// TRANSLATORS: Title of the error shown when what was typed into Open from URL is not a web link
+		show_error(ctx.frame, links::not_a_link(link), &t("Open from URL"));
+	}
 }
 
 pub fn close(ctx: &Ctx) {
@@ -108,19 +114,14 @@ pub fn close_all(ctx: &Ctx) {
 
 pub fn reopen_last_closed(ctx: &Ctx) {
 	let path = ctx.dm.lock().unwrap().pop_recently_closed();
-	if let Some(link) = path.as_ref().map(|path| path.to_string_lossy()).filter(|path| is_remote_url(path)) {
-		let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
-		menu::update_reopen_state(ctx.frame, has_reopen);
-		open_links(ctx.frame, ctx.dm, ctx.config, vec![link.into_owned()], Vec::new());
-		return;
-	}
 	if let Some(path) = path {
-		if !ensure_parser_ready_for_path(ctx.frame, &path, ctx.config) {
+		if let Some(link) = path.to_str().filter(|path| is_remote_url(path)) {
+			open_links(ctx.frame, ctx.dm, ctx.config, vec![link.to_string()]);
+		} else if !ensure_parser_ready_for_path(ctx.frame, &path, ctx.config) {
 			// Put it back: the document was never reopened, so it is still the last closed one.
 			ctx.dm.lock().unwrap().push_recently_closed(path);
 			return;
-		}
-		if ctx.dm.lock().unwrap().open_file(ctx.dm, &path) {
+		} else if ctx.dm.lock().unwrap().open_file(ctx.dm, &path) {
 			let dm_ref = ctx.dm.lock().unwrap();
 			update_title_from_manager(ctx.frame, &dm_ref);
 			dm_ref.focus_document_text();

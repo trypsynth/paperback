@@ -50,6 +50,15 @@ pub(crate) fn resolve_zip_path(
 	{
 		return Some(path.to_path_buf());
 	}
+	browse_zip(frame, path, quit_if_closed)
+}
+
+/// [`resolve_zip_path`] without its check for a format saved for `path`, for a downloaded zip
+/// whose settings are kept under its link.
+pub fn browse_zip(frame: &Frame, path: &Path, quit_if_closed: bool) -> Option<PathBuf> {
+	if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip")) {
+		return Some(path.to_path_buf());
+	}
 	let Some(names) = File::open(path)
 		.ok()
 		.and_then(|file| zip::ZipArchive::new(BufReader::new(file)).ok())

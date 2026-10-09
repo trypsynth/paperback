@@ -100,6 +100,21 @@ pub fn launch(test_name: &str) -> App {
 /// Launches the app on the generated HTML fixture; `configure` adjusts the seeded config
 /// before it is written. `test_name` keys the temp dir.
 pub fn launch_with(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> App {
+	let (base, fixture) = prepare(test_name, configure);
+	start(base, fixture.as_os_str())
+}
+
+/// Serves the fixture over http on 127.0.0.1 and launches the app with its link instead of its
+/// path, on the default seeded config.
+pub fn launch_with_link(test_name: &str) -> (App, FixtureServer) {
+	let (base, fixture) = prepare(test_name, |_| {});
+	let server = FixtureServer::start(&fixture);
+	(start(base, OsStr::new(&server.link())), server)
+}
+
+/// Makes the temp dir `test_name` keys, with the fixture and a seeded config that `configure`
+/// adjusts; returns the dir and the fixture's path.
+fn prepare(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> (PathBuf, PathBuf) {
 	let base = std::env::temp_dir().join(format!("paperback-ui-{test_name}-{}", std::process::id()));
 	let _ = std::fs::remove_dir_all(&base);
 	let fixture = fixture::write_html(&base.join("fixture"));
@@ -109,26 +124,14 @@ pub fn launch_with(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> 
 	configure(&mut config);
 	std::fs::write(config_dir.join("Paperback.toml"), toml::to_string(&config).expect("serialize config"))
 		.expect("write config");
-	let child = spawn(&config_dir, Some(fixture.as_os_str()));
-	let pid = child.id();
-	App { child, pid, base }
+	(base, fixture)
 }
 
-/// Serves the fixture over http on 127.0.0.1 and launches the app with its link instead of its
-/// path; `configure` adjusts the seeded config before it is written.
-pub fn launch_with_link(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> (App, FixtureServer) {
-	let base = std::env::temp_dir().join(format!("paperback-ui-{test_name}-{}", std::process::id()));
-	let _ = std::fs::remove_dir_all(&base);
-	let server = FixtureServer::start(&fixture::write_html(&base.join("fixture")));
-	let config_dir = base.join("config");
-	std::fs::create_dir_all(&config_dir).expect("create config dir");
-	let mut config = seeded_config();
-	configure(&mut config);
-	std::fs::write(config_dir.join("Paperback.toml"), toml::to_string(&config).expect("serialize config"))
-		.expect("write config");
-	let child = spawn(&config_dir, Some(OsStr::new(&server.link())));
+/// Starts the app on `base`'s config dir with `argument`.
+fn start(base: PathBuf, argument: &OsStr) -> App {
+	let child = spawn(&base.join("config"), Some(argument));
 	let pid = child.id();
-	(App { child, pid, base }, server)
+	App { child, pid, base }
 }
 
 /// A web server on 127.0.0.1 that answers every request with the fixture, until the test ends.
@@ -348,14 +351,19 @@ pub fn alt_f4() {
 	send_inputs(&inputs);
 }
 
-/// Presses and releases a letter key with Ctrl held, and Shift too when `shift` is set.
-pub fn press_ctrl(key: char, shift: bool) {
-	press_with_ctrl(letter(key), KEYBD_EVENT_FLAGS(0), shift);
+/// Presses and releases a letter key with Ctrl held, e.g. `press_ctrl('L')`.
+pub fn press_ctrl(key: char) {
+	chord(&[VK_CONTROL], letter(key));
+}
+
+/// Presses and releases a letter key with Ctrl and Shift held.
+pub fn press_ctrl_shift(key: char) {
+	chord(&[VK_CONTROL, VK_SHIFT], letter(key));
 }
 
 /// Presses and releases F4 with Ctrl held, closing the current document.
 pub fn ctrl_f4() {
-	press_with_ctrl(VK_F4, KEYBD_EVENT_FLAGS(0), false);
+	chord(&[VK_CONTROL], VK_F4);
 }
 
 pub fn enter() {
@@ -373,17 +381,15 @@ pub fn type_text(text: &str) {
 	send_inputs(&inputs);
 }
 
-fn press_with_ctrl(key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS, shift: bool) {
-	let mut inputs = vec![key_input(VK_CONTROL, KEYBD_EVENT_FLAGS(0))];
-	if shift {
-		inputs.push(key_input(VK_SHIFT, KEYBD_EVENT_FLAGS(0)));
-	}
-	inputs.push(key_input(key, flags));
-	inputs.push(key_input(key, flags | KEYEVENTF_KEYUP));
-	if shift {
-		inputs.push(key_input(VK_SHIFT, KEYEVENTF_KEYUP));
-	}
-	inputs.push(key_input(VK_CONTROL, KEYEVENTF_KEYUP));
+/// Presses and releases `key` with `modifiers` held.
+fn chord(modifiers: &[VIRTUAL_KEY], key: VIRTUAL_KEY) {
+	let down = KEYBD_EVENT_FLAGS(0);
+	let inputs: Vec<INPUT> = modifiers
+		.iter()
+		.map(|&modifier| key_input(modifier, down))
+		.chain([key_input(key, down), key_input(key, KEYEVENTF_KEYUP)])
+		.chain(modifiers.iter().rev().map(|&modifier| key_input(modifier, KEYEVENTF_KEYUP)))
+		.collect();
 	send_inputs(&inputs);
 }
 

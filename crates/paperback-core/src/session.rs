@@ -228,9 +228,6 @@ pub struct DocumentSession {
 	parser_flags: ParserFlags,
 	/// The settings the document was parsed with, which views that re-render its source must follow too.
 	parse_settings: ParseSettings,
-	/// Where the document's settings are kept when that is not `file_path`: a document opened from
-	/// a link is parsed from a temporary copy but remembered under the link.
-	settings_path: Option<String>,
 }
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
@@ -358,21 +355,7 @@ impl DocumentSession {
 			history_index: 0,
 			parser_flags,
 			parse_settings: settings,
-			settings_path: None,
 		})
-	}
-
-	/// Keeps the document's settings, such as its bookmarks, under `path` rather than under the
-	/// file it was parsed from.
-	pub fn set_settings_path(&mut self, path: &str) {
-		self.settings_path = Some(path.to_string());
-	}
-
-	/// The path the document's settings are kept under: the one given to
-	/// [`Self::set_settings_path`], or else the file it was parsed from.
-	#[must_use]
-	pub fn settings_path(&self) -> &str {
-		self.settings_path.as_deref().unwrap_or(&self.file_path)
 	}
 
 	/// The parsed document handle backing this session.

@@ -1,8 +1,8 @@
 use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{
-	config::ConfigManager,
-	parser::{build_file_filter_string, is_remote_url},
+	config::{ConfigManager, document_missing},
+	parser::build_file_filter_string,
 	types::DocumentListStatus,
 };
 use patois::{nt, t};
@@ -290,7 +290,7 @@ fn make_all_documents_open_action(
 	Rc::new(move || {
 		// Every selected book, in the order the list shows them, as the Open dialog does (#987). Missing ones are skipped rather than stopping the rest.
 		let selected = get_selected_indices(list).into_iter().filter_map(|index| get_path_for_index(list, index));
-		let paths: Vec<String> = selected.filter(|path| is_remote_url(path) || Path::new(path).exists()).collect();
+		let paths: Vec<String> = selected.filter(|path| !document_missing(path)).collect();
 		if !paths.is_empty() {
 			*selected_paths.lock().unwrap() = paths;
 			dialog.end_modal(ID_OK);

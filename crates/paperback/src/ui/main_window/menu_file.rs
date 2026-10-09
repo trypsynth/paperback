@@ -34,7 +34,7 @@ pub(super) fn handle_fallback(
 			&& let Some(path) = recent_docs.get(doc_index)
 		{
 			if is_remote_url(path) {
-				open_links(frame, dm, config, vec![path.clone()], Vec::new());
+				open_links(frame, dm, config, vec![path.clone()]);
 				return;
 			}
 			let path = Path::new(path);
@@ -115,7 +115,7 @@ fn handle_show_all_documents(
 	menu::update_menu_item_states(frame, has_docs);
 	menu::update_reopen_state(frame, has_reopen);
 	if !links.is_empty() {
-		open_links(frame, dm, config, links, Vec::new());
+		open_links(frame, dm, config, links);
 	}
 }
 

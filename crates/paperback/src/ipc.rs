@@ -18,12 +18,11 @@ pub enum IpcCommand {
 	Activate,
 	#[cfg(any(target_os = "linux", target_os = "windows", test))]
 	ToggleVisibility,
-	OpenFile(PathBuf),
-	OpenLink(String),
+	Open(Target),
 }
 
 /// What a command-line argument asks Paperback to open.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Target {
 	/// A file, by its full path.
 	File(PathBuf),
@@ -56,10 +55,10 @@ pub fn decode_execute_payload(data: &[u8]) -> Option<IpcCommand> {
 	if payload == IPC_COMMAND_TOGGLE_VISIBILITY {
 		return Some(IpcCommand::ToggleVisibility);
 	}
-	if is_remote_url(payload) {
-		return Some(IpcCommand::OpenLink(payload.to_string()));
-	}
-	Some(IpcCommand::OpenFile(PathBuf::from(payload)))
+	// The sending instance already gave a file its full path.
+	let target =
+		if is_remote_url(payload) { Target::Link(payload.to_string()) } else { Target::File(PathBuf::from(payload)) };
+	Some(IpcCommand::Open(target))
 }
 
 pub fn normalize_cli_path(path: &Path) -> PathBuf {
@@ -104,10 +103,10 @@ mod tests {
 	fn decode_execute_payload_handles_open_file() {
 		let cmd = decode_execute_payload(b"C:\\test\\file.txt\0").expect("expected command");
 		match cmd {
-			IpcCommand::OpenFile(path) => {
+			IpcCommand::Open(Target::File(path)) => {
 				assert_eq!(path, PathBuf::from("C:\\test\\file.txt"));
 			}
-			_ => panic!("expected OpenFile"),
+			_ => panic!("expected a file to open"),
 		}
 	}
 
@@ -136,8 +135,8 @@ mod tests {
 	fn decode_execute_payload_allows_spaced_open_file_paths() {
 		let cmd = decode_execute_payload(b"  C:\\My Docs\\book.txt  ").expect("expected command");
 		match cmd {
-			IpcCommand::OpenFile(path) => assert_eq!(path, PathBuf::from("C:\\My Docs\\book.txt")),
-			_ => panic!("expected OpenFile"),
+			IpcCommand::Open(Target::File(path)) => assert_eq!(path, PathBuf::from("C:\\My Docs\\book.txt")),
+			_ => panic!("expected a file to open"),
 		}
 	}
 
@@ -145,8 +144,8 @@ mod tests {
 	fn decode_execute_payload_handles_non_utf8_bytes_lossy() {
 		let cmd = decode_execute_payload(&[0xFF, 0xFE, b'a']).expect("expected command");
 		match cmd {
-			IpcCommand::OpenFile(path) => assert!(path.to_string_lossy().contains('a')),
-			_ => panic!("expected OpenFile"),
+			IpcCommand::Open(Target::File(path)) => assert!(path.to_string_lossy().contains('a')),
+			_ => panic!("expected a file to open"),
 		}
 	}
 
@@ -154,16 +153,16 @@ mod tests {
 	fn decode_execute_payload_strips_embedded_nulls() {
 		let cmd = decode_execute_payload(b"C:\\Books\\novel.epub\0\0").expect("expected command");
 		match cmd {
-			IpcCommand::OpenFile(path) => assert_eq!(path, PathBuf::from("C:\\Books\\novel.epub")),
-			_ => panic!("expected OpenFile"),
+			IpcCommand::Open(Target::File(path)) => assert_eq!(path, PathBuf::from("C:\\Books\\novel.epub")),
+			_ => panic!("expected a file to open"),
 		}
 	}
 
 	#[test]
 	fn decode_execute_payload_hands_a_link_on_as_written() {
 		match decode_execute_payload(b"https://example.org/Book%20One.epub\0").expect("expected command") {
-			IpcCommand::OpenLink(link) => assert_eq!(link, "https://example.org/Book%20One.epub"),
-			other => panic!("expected OpenLink, got {other:?}"),
+			IpcCommand::Open(Target::Link(link)) => assert_eq!(link, "https://example.org/Book%20One.epub"),
+			other => panic!("expected a link to open, got {other:?}"),
 		}
 	}
 

@@ -204,6 +204,10 @@ impl DocumentManager {
 
 	pub fn find_tab_by_path(&self, path: &Path) -> Option<usize> {
 		let target = normalized_path_key(path);
+		// A link only matches itself, so there is no file of any tab to look up on disk.
+		if is_remote_url(&target) {
+			return self.tabs.iter().position(|tab| tab.file_path == path);
+		}
 		self.tabs.iter().position(|tab| normalized_path_key(&tab.file_path) == target)
 	}
 

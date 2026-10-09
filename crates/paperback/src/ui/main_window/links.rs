@@ -15,8 +15,9 @@ use wx_utils::{
 use wxdragon::prelude::*;
 
 use super::{
-	DocumentManager, dialogs, ensure_parser_ready_for_path, parser_ready::choose_format, rebuild_menu_bar,
-	resolve_zip_path, update_title_from_manager,
+	DocumentManager, dialogs, ensure_parser_ready_for_path,
+	parser_ready::{browse_zip, choose_format},
+	rebuild_menu_bar, update_title_from_manager,
 };
 use crate::{
 	links::{self, Outcome, Stage},
@@ -24,13 +25,12 @@ use crate::{
 };
 
 /// Downloads `links` in one window and opens each document that came down, then lists what could
-/// not be opened, `not_links` first. A link that is already open only selects its tab.
+/// not be opened. A link that is already open only selects its tab.
 pub fn open_links(
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	links: Vec<String>,
-	not_links: Vec<String>,
 ) {
 	let (notebook, open_tabs): (Notebook, Vec<Option<usize>>) = {
 		let dm_ref = dm.lock().unwrap();
@@ -42,7 +42,6 @@ pub fn open_links(
 	let to_download: Vec<String> =
 		links.into_iter().zip(open_tabs).filter_map(|(link, open_tab)| open_tab.is_none().then_some(link)).collect();
 	if to_download.is_empty() {
-		report(frame, &links::report(&[], &not_links));
 		return;
 	}
 	let (frame, dm, config) = (*frame, Rc::clone(dm), Rc::clone(config));
@@ -52,34 +51,30 @@ pub fn open_links(
 		&t("Open from URL"),
 		// TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
 		&t("Connecting..."),
-		move |progress| download_all(&to_download, progress),
+		move |progress| {
+			let count = to_download.len();
+			to_download
+				.iter()
+				.enumerate()
+				.take_while(|_| !progress.is_cancelled())
+				.map(|(index, link)| download(link, index + 1, count, progress))
+				.collect()
+		},
 		move |outcomes, ended| {
 			// Cancelling opens nothing; dropping the outcomes deletes what was downloaded.
 			if ended == Ended::Completed {
-				open_downloads(&frame, &dm, &config, outcomes, &not_links);
+				open_downloads(&frame, &dm, &config, outcomes);
 			}
 		},
 	);
 }
 
-fn download_all(links: &[String], progress: &Progress) -> Vec<Outcome> {
-	let mut outcomes = Vec::new();
-	for (index, link) in links.iter().enumerate() {
-		if progress.is_cancelled() {
-			break;
-		}
-		progress.set(0, None);
-		progress.set_message(&links::step(Stage::Checking, index + 1, links.len(), link));
-		outcomes.push(download(link, index + 1, links.len(), progress));
-	}
-	outcomes
-}
-
 fn download(link: &str, n: usize, count: usize, progress: &Progress) -> Outcome {
-	let refused = |extension: String| Outcome::Refused { link: link.to_string(), extension };
 	let failed = |error: FetchError| Outcome::Failed { link: link.to_string(), error };
+	progress.set(0, None);
+	progress.set_message(&links::step(Stage::Checking, n, count, link));
 	if let Some(extension) = fetch::refused_extension(link) {
-		return refused(extension);
+		return failed(FetchError::Refused(extension));
 	}
 	let remote = match fetch::open(link, fetch::DEFAULT_MAX_SIZE) {
 		Ok(remote) => remote,
@@ -88,7 +83,7 @@ fn download(link: &str, n: usize, count: usize, progress: &Progress) -> Outcome 
 	let info = remote.info().clone();
 	let warned = match info.verdict(link) {
 		Verdict::Pass => false,
-		Verdict::Refuse(extension) => return refused(extension),
+		Verdict::Refuse(extension) => return failed(FetchError::Refused(extension)),
 		Verdict::Warn => {
 			let warning = links::warning_text(link, info.content_type.as_deref());
 			if progress.ask(move |parent| dialogs::confirm_download(parent, &warning)) != Some(true) {
@@ -114,9 +109,8 @@ fn open_downloads(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	outcomes: Vec<Outcome>,
-	not_links: &[String],
 ) {
-	let problems = links::report(&outcomes, not_links);
+	let problems = links::report(&outcomes);
 	let mut opened_any = false;
 	for outcome in outcomes {
 		let Outcome::Downloaded { link, copy, warned } = outcome else {
@@ -131,7 +125,10 @@ fn open_downloads(
 		rebuild_menu_bar(frame, dm, config);
 		dm.lock().unwrap().focus_document_text();
 	}
-	report(frame, &problems);
+	if !problems.is_empty() {
+		// TRANSLATORS: Title of the error listing the links that could not be opened
+		show_error(frame, problems.join("\n"), &t("Open from URL"));
+	}
 }
 
 fn open_download(
@@ -142,14 +139,13 @@ fn open_download(
 	copy: WorkingCopy,
 	warned: bool,
 ) -> bool {
-	let saved_format = config.lock().unwrap().get_document_format(link);
-	let copy_name = copy.path().file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default();
-	if links::needs_open_as(warned, &copy_name, &saved_format) && !choose_format(frame, Path::new(link), config) {
+	if links::needs_open_as(warned, copy.path()) && !choose_format(frame, Path::new(link), config) {
 		return false;
 	}
-	// A zip of several books offers the same list as one opened from disk.
-	if saved_format.is_empty() {
-		match resolve_zip_path(frame, copy.path(), config, false) {
+	// A zip of several books offers the same list as one opened from disk, unless a format was
+	// picked for the link.
+	if config.lock().unwrap().get_document_format(link).is_empty() {
+		match browse_zip(frame, copy.path(), false) {
 			None => return false,
 			Some(extracted) if extracted != copy.path() => {
 				return ensure_parser_ready_for_path(frame, &extracted, config)
@@ -159,11 +155,4 @@ fn open_download(
 		}
 	}
 	dm.lock().unwrap().open_link(dm, link, copy)
-}
-
-fn report(frame: &Frame, problems: &[String]) {
-	if !problems.is_empty() {
-		// TRANSLATORS: Title of the error listing the links that could not be opened
-		show_error(frame, problems.join("\n"), &t("Open from URL"));
-	}
 }

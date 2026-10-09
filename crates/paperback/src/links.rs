@@ -1,33 +1,25 @@
-//! The parts of opening documents from links that need no window: reading the links out of what
-//! the reader typed, and wording the download window, the security warning and what went wrong.
+//! The parts of opening documents from links that need no window: the link Open from URL starts
+//! with, and the wording of the download window, the security warning and what went wrong.
 
 use std::path::Path;
 
 use paperback_core::{
 	fetch::{self, FetchError},
-	parser::{is_remote_url, parser_supports_extension},
+	parser::{is_remote_url, parser_supports_path},
 };
 use patois::t;
 
 use crate::working_copy::WorkingCopy;
 
-/// The links in `text`, one per line, each once and in order, and the lines that are not links.
-pub fn from_text(text: &str) -> (Vec<String>, Vec<String>) {
-	let mut links: Vec<String> = Vec::new();
-	let mut not_links = Vec::new();
-	for line in text.lines().map(str::trim).filter(|line| !line.is_empty()) {
-		if !is_remote_url(line) {
-			not_links.push(line.to_string());
-		} else if !links.iter().any(|link| link == line) {
-			links.push(line.to_string());
-		}
-	}
-	(links, not_links)
+/// What Open from URL's field starts with: the first line of `clipboard` that is a link.
+pub fn prefill(clipboard: &str) -> String {
+	clipboard.lines().map(str::trim).find(|line| is_remote_url(line)).unwrap_or_default().to_string()
 }
 
-/// What Open from URL's field starts with: the lines of `clipboard` that are links.
-pub fn prefill(clipboard: &str) -> String {
-	from_text(clipboard).0.join("\n")
+/// The error for text typed into Open from URL that is not an http or https link.
+pub fn not_a_link(text: &str) -> String {
+	// TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+	format!("{text}: {}", t("this is not a web link"))
 }
 
 /// What the download window is doing with a link.
@@ -79,14 +71,11 @@ pub fn warning_text(link: &str, content_type: Option<&str>) -> String {
 	format!("{link}\n{reason}\n{}", t("Download it anyway?"))
 }
 
-/// Whether the reader picks a format before a downloaded document opens: after a security
-/// warning, and when its file name has no extension Paperback reads, unless a format was already
-/// picked for the link.
-pub fn needs_open_as(warned: bool, copy_name: &str, saved_format: &str) -> bool {
-	if !saved_format.is_empty() && parser_supports_extension(saved_format) {
-		return false;
-	}
-	warned || !Path::new(copy_name).extension().and_then(|ext| ext.to_str()).is_some_and(parser_supports_extension)
+/// Whether the reader picks a format before the downloaded `copy` opens: after a security
+/// warning, and when Paperback does not read its kind of file. A format already picked for the
+/// link is used without asking again.
+pub fn needs_open_as(warned: bool, copy: &Path) -> bool {
+	warned || !parser_supports_path(copy)
 }
 
 /// What became of one link.
@@ -97,34 +86,22 @@ pub enum Outcome {
 		/// The reader said yes to a security warning for it.
 		warned: bool,
 	},
-	/// The link names a kind of file Paperback does not read.
-	Refused {
-		link: String,
-		extension: String,
-	},
-	Failed {
-		link: String,
-		error: FetchError,
-	},
+	/// Refused, or the download failed.
+	Failed { link: String, error: FetchError },
 	/// The reader said no to a security warning, or cancelled.
 	Skipped,
 }
 
-/// The lines of the error shown after a batch: one per line that was not a link, then one per
-/// link that was refused or failed.
-pub fn report(outcomes: &[Outcome], not_links: &[String]) -> Vec<String> {
-	// TRANSLATORS: Follows a line typed into Open from URL that is not an http or https link, in the list of what could not be opened
-	let not_links = not_links.iter().map(|line| format!("{line}: {}", t("this is not a web link")));
-	let problems = outcomes.iter().filter_map(|outcome| match outcome {
-		Outcome::Refused { link, extension } => {
-			// TRANSLATORS: Follows a link in the list of what could not be opened; %s is the file extension the link ends in, such as exe
-			let message = t("Paperback cannot read .%s files, so it was not downloaded").replacen("%s", extension, 1);
-			Some(format!("{link}: {message}"))
-		}
-		Outcome::Failed { link, error } => Some(format!("{link}: {error}")),
-		Outcome::Downloaded { .. } | Outcome::Skipped => None,
-	});
-	not_links.chain(problems).collect()
+/// The lines of the error shown after the links were downloaded: one per link that was refused
+/// or failed.
+pub fn report(outcomes: &[Outcome]) -> Vec<String> {
+	outcomes
+		.iter()
+		.filter_map(|outcome| match outcome {
+			Outcome::Failed { link, error } => Some(format!("{link}: {error}")),
+			Outcome::Downloaded { .. } | Outcome::Skipped => None,
+		})
+		.collect()
 }
 
 #[cfg(test)]
@@ -135,19 +112,8 @@ mod tests {
 	use crate::{test_locale, working_copy::WorkingCopy};
 
 	#[test]
-	fn from_text_keeps_each_link_once_in_order() {
-		let text = "https://a.org/x.epub\r\n\n  https://b.org/y.pdf  \nsee chapter 3\nhttps://a.org/x.epub\n";
-		let (links, not_links) = from_text(text);
-		assert_eq!(links, vec!["https://a.org/x.epub", "https://b.org/y.pdf"]);
-		assert_eq!(not_links, vec!["see chapter 3"]);
-	}
-
-	#[test]
-	fn prefill_keeps_only_the_clipboards_links() {
-		assert_eq!(
-			prefill("https://a.org/x.epub\r\nnotes\nhttps://b.org/y.pdf"),
-			"https://a.org/x.epub\nhttps://b.org/y.pdf"
-		);
+	fn prefill_takes_the_first_link_on_the_clipboard() {
+		assert_eq!(prefill("notes\r\n  https://a.org/x.epub \nhttps://b.org/y.pdf"), "https://a.org/x.epub");
 	}
 
 	#[test]
@@ -156,8 +122,9 @@ mod tests {
 	}
 
 	#[test]
-	fn from_text_of_blank_text_is_empty() {
-		assert_eq!(from_text(" \n\t\n"), (Vec::new(), Vec::new()));
+	fn not_a_link_names_what_was_typed() {
+		let _locale = test_locale::pinned_to("en");
+		assert_eq!(not_a_link("see chapter 3"), "see chapter 3: this is not a web link");
 	}
 
 	#[rstest]
@@ -198,19 +165,17 @@ mod tests {
 	}
 
 	#[rstest]
-	#[case::a_name_paperback_reads(false, "book.epub", "", false)]
-	#[case::the_reader_accepted_the_warning(true, "book.epub", "", true)]
-	#[case::a_name_without_an_extension(false, "download", "", true)]
-	#[case::a_name_paperback_does_not_read(false, "download.php", "", true)]
-	#[case::a_format_already_chosen(true, "download", "html", false)]
-	#[case::a_chosen_format_paperback_no_longer_reads(false, "download", "xyz", true)]
-	fn needs_open_as_unless_the_format_is_known(
+	#[case::a_name_paperback_reads(false, "book.epub", false)]
+	#[case::the_reader_accepted_the_warning(true, "book.epub", true)]
+	#[case::a_name_without_an_extension(false, "download", true)]
+	#[case::a_name_paperback_does_not_read(false, "download.php", true)]
+	#[case::a_gzipped_man_page(false, "ls.1.gz", false)]
+	fn needs_open_as_after_a_warning_or_for_a_file_paperback_does_not_read(
 		#[case] warned: bool,
 		#[case] copy_name: &str,
-		#[case] saved_format: &str,
 		#[case] expected: bool,
 	) {
-		assert_eq!(needs_open_as(warned, copy_name, saved_format), expected);
+		assert_eq!(needs_open_as(warned, Path::new(copy_name)), expected);
 	}
 
 	#[test]
@@ -222,15 +187,17 @@ mod tests {
 				copy: WorkingCopy::new("x.epub").unwrap(),
 				warned: false,
 			},
-			Outcome::Refused { link: "https://a.org/setup.exe".to_string(), extension: "exe".to_string() },
+			Outcome::Failed {
+				link: "https://a.org/setup.exe".to_string(),
+				error: FetchError::Refused("exe".to_string()),
+			},
 			Outcome::Failed { link: "https://a.org/gone.pdf".to_string(), error: FetchError::Http(404) },
 			Outcome::Skipped,
 		];
 		assert_eq!(
-			report(&outcomes, &["see chapter 3".to_string()]),
+			report(&outcomes),
 			vec![
-				"see chapter 3: this is not a web link",
-				"https://a.org/setup.exe: Paperback cannot read .exe files, so it was not downloaded",
+				"https://a.org/setup.exe: .exe files cannot be read, so the link was not downloaded",
 				"https://a.org/gone.pdf: the server answered with status 404",
 			]
 		);

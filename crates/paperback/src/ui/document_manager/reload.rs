@@ -43,24 +43,22 @@ impl DocumentManager {
 	/// Re-parsing (rather than transforming in place) keeps every format's table rendering
 	/// identical via the shared parse-time helper. A tab whose re-parse fails is left unchanged.
 	pub fn apply_parse_settings(&mut self, settings: ParseSettings) {
-		// Read readability settings and collect each tab's parse inputs (path, password, forced
-		// format) under a single config lock, so we don't re-lock per tab while mutating the tabs.
+		// Read readability settings and collect each tab's parse inputs (password, forced format)
+		// under a single config lock, so we don't re-lock per tab while mutating the tabs.
 		let (style, parse_inputs) = {
 			let cfg = self.config.lock().unwrap();
-			let parse_inputs: Vec<(String, String, String)> = self
+			let parse_inputs: Vec<(String, String)> = self
 				.tabs
 				.iter()
 				.map(|tab| {
-					let path_str = tab.file_path.to_string_lossy().to_string();
-					let password = cfg.get_document_password(&path_str);
-					let forced_extension = cfg.get_document_format(&path_str);
-					(path_str, password, forced_extension)
+					let path_str = tab.file_path.to_string_lossy();
+					(cfg.get_document_password(&path_str), cfg.get_document_format(&path_str))
 				})
 				.collect();
 			(readability_style(&cfg), parse_inputs)
 		};
-		for (tab, (path_str, password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
-			let _ = reparse_tab_in_place(tab, &path_str, &password, &forced_extension, settings, &style);
+		for (tab, (password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
+			let _ = reparse_tab_in_place(tab, &password, &forced_extension, settings, &style);
 		}
 	}
 
@@ -103,7 +101,7 @@ impl DocumentManager {
 		let tab = &mut self.tabs[index];
 		let (positions, history_index) = tab.session.get_history();
 		let positions = positions.to_vec();
-		let reloaded = match reparse_tab_in_place(tab, &path_str, &password, &forced_extension, settings, &style) {
+		let reloaded = match reparse_tab_in_place(tab, &password, &forced_extension, settings, &style) {
 			Ok(()) => true,
 			Err(err) if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
 				// Recorded before the prompt so a re-entrant call during its modal
@@ -142,7 +140,7 @@ impl DocumentManager {
 			return false;
 		};
 		let tab = &mut self.tabs[index];
-		match reparse_tab_in_place(tab, path_str, &password, forced_extension, settings, style) {
+		match reparse_tab_in_place(tab, &password, forced_extension, settings, style) {
 			Ok(()) => {
 				if !password.is_empty()
 					&& let Ok(cfg) = self.config.try_lock()
@@ -173,12 +171,8 @@ pub(super) fn parse_settings(cfg: &ConfigManager) -> ParseSettings {
 
 /// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
 /// position. Returns the parse error and leaves the tab unchanged if the re-parse fails.
-///
-/// `path_str` is where the document's settings are kept, which for a document opened from a link
-/// is the link; the file parsed is always the one the tab reads from.
 fn reparse_tab_in_place(
 	tab: &mut DocumentTab,
-	path_str: &str,
 	password: &str,
 	forced_extension: &str,
 	settings: ParseSettings,
@@ -203,12 +197,9 @@ fn reparse_tab_in_place(
 	let fallback_percent = tab.session.get_status_info(current_pos).percentage;
 	let parse_path = tab.local_path().to_string_lossy().into_owned();
 	let new_session = match DocumentSession::new(&parse_path, password, forced_extension, settings) {
-		Ok(mut session) => {
-			session.set_settings_path(path_str);
-			session
-		}
+		Ok(session) => session,
 		Err(err) => {
-			tracing::error!(path = %path_str, error = %err, "failed to re-parse document");
+			tracing::error!(path = %parse_path, error = %err, "failed to re-parse document");
 			return Err(err);
 		}
 	};

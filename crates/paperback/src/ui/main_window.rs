@@ -18,6 +18,7 @@ use super::{
 };
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
+	ipc::Target,
 	updater,
 };
 
@@ -196,8 +197,14 @@ impl MainWindow {
 		result
 	}
 
-	pub fn open_links(&self, links: Vec<String>) {
-		open_links(&self.frame, &self.doc_manager, &self.config, links, Vec::new());
+	/// Opens what a command line or another Paperback names: a file, or a document behind a link.
+	pub fn open_target(&self, target: Target, quit_if_picker_closed: bool) {
+		match target {
+			Target::File(path) => {
+				self.open_file(&path, quit_if_picker_closed);
+			}
+			Target::Link(link) => open_links(&self.frame, &self.doc_manager, &self.config, vec![link]),
+		}
 	}
 
 	fn update_title(&self) {

@@ -3,11 +3,7 @@
 //! [`compute_document_hash`], the content-based fingerprint [`super::ConfigManager::get_doc_key`]
 //! hashes a document path down to.
 
-use std::{
-	cmp::{self, Ordering},
-	fs,
-	path::Path,
-};
+use std::{cmp, fs, path::Path};
 
 use sha1::{Digest, Sha1};
 
@@ -32,14 +28,9 @@ pub fn get_sorted_document_list(
 		}
 	}
 	let mut rest: Vec<String> = all_docs.iter().filter(|path| !doc_paths.contains(path)).cloned().collect();
-	rest.sort_by(|a, b| {
-		let a_name = document_name(a).unwrap_or_else(|| a.clone());
-		let b_name = document_name(b).unwrap_or_else(|| b.clone());
-		let name_cmp = a_name.to_lowercase().cmp(&b_name.to_lowercase());
-		if name_cmp != Ordering::Equal {
-			return name_cmp;
-		}
-		a.to_lowercase().cmp(&b.to_lowercase())
+	rest.sort_by_cached_key(|path| {
+		let name = document_name(path).unwrap_or_else(|| path.clone());
+		(name.to_lowercase(), path.to_lowercase())
 	});
 	doc_paths.extend(rest);
 	let filter_lower = filter.to_lowercase();
@@ -50,8 +41,7 @@ pub fn get_sorted_document_list(
 			if !filter.is_empty() && !filename.to_lowercase().contains(&filter_lower) {
 				return None;
 			}
-			// A link has no file of its own to go missing: opening it downloads it again.
-			let status = if !is_remote_url(&path) && !Path::new(&path).exists() {
+			let status = if document_missing(&path) {
 				DocumentListStatus::Missing
 			} else if open_paths.contains(&path) {
 				DocumentListStatus::Open
@@ -74,6 +64,12 @@ pub fn document_name(path: &str) -> Option<String> {
 		return url_file_name(path);
 	}
 	Path::new(path).file_name().and_then(|name| name.to_str()).map(str::to_string)
+}
+
+/// Whether the document's file is gone. A link never is: opening it downloads it again.
+#[must_use]
+pub fn document_missing(path: &str) -> bool {
+	!is_remote_url(path) && !Path::new(path).exists()
 }
 
 #[must_use]

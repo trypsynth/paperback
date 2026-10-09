@@ -18,10 +18,10 @@ use super::MainWindow;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
-use crate::ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME};
+use crate::ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME, Target};
 use crate::{
 	config_ext::{config_toml_path, get_update_channel},
-	ipc::{Target, target_for_argument},
+	ipc::target_for_argument,
 	legacy_config::migrate_if_needed,
 	translation_manager::TranslationManager,
 };
@@ -112,18 +112,10 @@ impl PaperbackApp {
 }
 
 fn open_from_command_line(main_window: &MainWindow) {
-	let Some(argument) = env::args().nth(1) else {
-		return;
-	};
-	match target_for_argument(&argument) {
-		Target::File(path) => {
-			tracing::info!(path = %path.display(), "opening file from command line");
-			main_window.open_file(&path, true);
-		}
-		Target::Link(link) => {
-			tracing::info!(link = %link, "opening link from command line");
-			main_window.open_links(vec![link]);
-		}
+	if let Some(argument) = env::args().nth(1) {
+		let target = target_for_argument(&argument);
+		tracing::info!(?target, "opening from command line");
+		main_window.open_target(target, true);
 	}
 }
 
@@ -137,11 +129,7 @@ pub fn main_window_from_ptr() -> Option<&'static MainWindow> {
 
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 fn ipc_command_from_cli() -> IpcCommand {
-	match env::args().nth(1).map(|argument| target_for_argument(&argument)) {
-		Some(Target::File(path)) => IpcCommand::OpenFile(path),
-		Some(Target::Link(link)) => IpcCommand::OpenLink(link),
-		None => IpcCommand::Activate,
-	}
+	env::args().nth(1).map_or(IpcCommand::Activate, |argument| IpcCommand::Open(target_for_argument(&argument)))
 }
 
 // Replaces wxWidgets DDE which has no access controls; any process in the
@@ -356,8 +344,8 @@ fn send_ipc_command(command: &IpcCommand) {
 		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
 		#[cfg(any(target_os = "linux", target_os = "windows", test))]
 		IpcCommand::ToggleVisibility => IPC_COMMAND_TOGGLE_VISIBILITY.to_string(),
-		IpcCommand::OpenFile(path) => path.to_string_lossy().to_string(),
-		IpcCommand::OpenLink(link) => link.clone(),
+		IpcCommand::Open(Target::File(path)) => path.to_string_lossy().to_string(),
+		IpcCommand::Open(Target::Link(link)) => link.clone(),
 	};
 	#[cfg(windows)]
 	{

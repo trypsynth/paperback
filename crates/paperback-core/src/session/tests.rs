@@ -39,7 +39,6 @@ fn sample_session(parser_flags: ParserFlags) -> DocumentSession {
 		history_index: 0,
 		parser_flags,
 		parse_settings: ParseSettings::default(),
-		settings_path: None,
 	}
 }
 
@@ -54,7 +53,6 @@ fn session_with_content(content: &str) -> DocumentSession {
 		history_index: 0,
 		parser_flags: ParserFlags::empty(),
 		parse_settings: ParseSettings::default(),
-		settings_path: None,
 	}
 }
 
@@ -68,6 +66,5 @@ fn session_from_buffer(buffer: DocumentBuffer) -> DocumentSession {
 		history_index: 0,
 		parser_flags: ParserFlags::empty(),
 		parse_settings: ParseSettings::default(),
-		settings_path: None,
 	}
 }

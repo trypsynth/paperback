@@ -10,7 +10,8 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{
-	DocumentManager, DocumentTab, POSITION_SAVE_INTERVAL_SECS, parse_settings, read_fingerprint, title_or_filename,
+	DocumentManager, DocumentTab, POSITION_SAVE_INTERVAL_SECS, parse_settings, read_fingerprint, reading_path,
+	title_or_filename,
 };
 use crate::{
 	audio_player::AudioPlayer,
@@ -47,12 +48,7 @@ impl DocumentManager {
 	/// Opens a document downloaded from `link`, reading it from `copy` but keeping its settings and
 	/// its place in the recent documents under the link. The copy is deleted with the tab.
 	pub fn open_link(&mut self, self_rc: &Rc<Mutex<Self>>, link: &str, copy: WorkingCopy) -> bool {
-		let path = Path::new(link);
-		if let Some(index) = self.find_tab_by_path(path) {
-			self.notebook.set_selection(index);
-			return true;
-		}
-		self.parse_and_add_tab(self_rc, path, Some(copy), true, None)
+		self.parse_and_add_tab(self_rc, Path::new(link), Some(copy), true, None)
 	}
 
 	fn open_file_impl(
@@ -113,13 +109,8 @@ impl DocumentManager {
 			(password, forced_extension, settings)
 		};
 		let path_str = path.to_string_lossy().to_string();
-		let parse_path = working_copy.as_ref().map_or(path, WorkingCopy::path).to_string_lossy().into_owned();
-		let open = |password: &str| {
-			DocumentSession::new(&parse_path, password, &forced_extension, settings).map(|mut session| {
-				session.set_settings_path(&path_str);
-				session
-			})
-		};
+		let parse_path = reading_path(path, working_copy.as_ref()).to_string_lossy().into_owned();
+		let open = |password: &str| DocumentSession::new(&parse_path, password, &forced_extension, settings);
 		tracing::info!(path = %path.display(), "opening document");
 		match open(&password) {
 			Ok(session) => self.add_session_tab(self_rc, path, working_copy, session, &password, track, title_override),
@@ -171,7 +162,7 @@ impl DocumentManager {
 			self.notebook.set_selection(index);
 			return true;
 		}
-		let local_path = working_copy.as_ref().map_or(path, WorkingCopy::path).to_path_buf();
+		let local_path = reading_path(path, working_copy.as_ref()).to_path_buf();
 		let title = title_override.map_or_else(|| title_or_filename(session.title(), &local_path), ToString::to_string);
 		let panel = Panel::builder(&self.notebook).build();
 		let config = self.config.lock().unwrap();

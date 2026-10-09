@@ -208,14 +208,14 @@ impl DocumentSession {
 	}
 
 	fn navigate_bookmark_inner(
-		&self,
 		config: &ConfigManager,
+		path: &str,
 		position: i64,
 		wrap: bool,
 		next: bool,
 		notes_only: bool,
 	) -> NavigationResult {
-		let result = bookmark_navigate(config, self.settings_path(), position, wrap, next, notes_only);
+		let result = bookmark_navigate(config, path, position, wrap, next, notes_only);
 		if result.found {
 			NavigationResult {
 				found: true,
@@ -231,14 +231,31 @@ impl DocumentSession {
 		}
 	}
 
+	/// Moves to the next or previous bookmark among those kept under `path`, which is where the
+	/// document's settings are: the link for a document opened from one.
 	#[must_use]
-	pub fn navigate_bookmark(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		self.navigate_bookmark_inner(config, position, wrap, next, false)
+	pub fn navigate_bookmark(
+		&self,
+		config: &ConfigManager,
+		path: &str,
+		position: i64,
+		wrap: bool,
+		next: bool,
+	) -> NavigationResult {
+		Self::navigate_bookmark_inner(config, path, position, wrap, next, false)
 	}
 
+	/// [`Self::navigate_bookmark`] for the bookmarks that have a note.
 	#[must_use]
-	pub fn navigate_note(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		self.navigate_bookmark_inner(config, position, wrap, next, true)
+	pub fn navigate_note(
+		&self,
+		config: &ConfigManager,
+		path: &str,
+		position: i64,
+		wrap: bool,
+		next: bool,
+	) -> NavigationResult {
+		Self::navigate_bookmark_inner(config, path, position, wrap, next, true)
 	}
 
 	fn history_navigate(&mut self, current_pos: i64, forward: bool) -> NavigationResult {
