@@ -19,7 +19,7 @@ use paperback_core::{
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DocumentManager, dialogs};
+use super::dialogs;
 use crate::ui::dialogs::ZipChoice;
 
 pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
