@@ -1338,6 +1338,14 @@ msgid_plural "This document contains %d words."
 msgstr[0] ""
 msgstr[1] ""
 
+#. TRANSLATORS: Title of the dialog listing the documents inside a zip archive
+msgid "Open from Archive"
+msgstr ""
+
+#. TRANSLATORS: Label for the list of documents inside a zip archive
+msgid "&Documents in this archive:"
+msgstr ""
+
 #. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
 msgid "{} to {}"
 msgstr ""
@@ -1639,6 +1647,10 @@ msgstr ""
 
 #. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 msgid "Could not load the document source."
+msgstr ""
+
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+msgid "Couldn't extract the document from the archive: {}"
 msgstr ""
 
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support

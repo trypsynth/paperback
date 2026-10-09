@@ -44,7 +44,7 @@ impl MainWindow {
 			}
 			IpcCommand::OpenFile(path) => {
 				self.activate_from_ipc();
-				self.open_file(&path);
+				self.open_file(&path, false);
 				self.frame.raise();
 				self.doc_manager.lock().unwrap().focus_document_text();
 			}
