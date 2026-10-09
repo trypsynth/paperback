@@ -5,12 +5,12 @@
 
 use std::{path::Path, rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ConfigManager, export::ExportFormat};
+use paperback_core::{config::ConfigManager, export::ExportFormat, parser::is_remote_url};
 use patois::t;
 use wxdragon::prelude::*;
 
 use super::{
-	DocumentManager, DocumentTab, dialogs, ensure_parser_ready_for_path, menu, menu_ids, resolve_zip_path,
+	DocumentManager, DocumentTab, dialogs, ensure_parser_ready_for_path, menu, menu_ids, open_links, resolve_zip_path,
 	update_title_from_manager,
 };
 use crate::ui::navigation::announce;
@@ -33,6 +33,10 @@ pub(super) fn handle_fallback(
 		if let Ok(doc_index) = usize::try_from(doc_index)
 			&& let Some(path) = recent_docs.get(doc_index)
 		{
+			if is_remote_url(path) {
+				open_links(frame, dm, config, vec![path.clone()], Vec::new());
+				return;
+			}
 			let path = Path::new(path);
 			if !ensure_parser_ready_for_path(frame, path, config) {
 				return;
@@ -86,8 +90,9 @@ fn handle_show_all_documents(
 			dm_ref.restore_focus();
 		}
 	}
+	let (links, files): (Vec<String>, Vec<String>) = result.open.into_iter().partition(|path| is_remote_url(path));
 	let mut opened_any = false;
-	for path in &result.open {
+	for path in &files {
 		let Some(path) = resolve_zip_path(frame, Path::new(path), config, false) else {
 			continue;
 		};
@@ -109,6 +114,9 @@ fn handle_show_all_documents(
 	drop(dm_ref);
 	menu::update_menu_item_states(frame, has_docs);
 	menu::update_reopen_state(frame, has_reopen);
+	if !links.is_empty() {
+		open_links(frame, dm, config, links, Vec::new());
+	}
 }
 
 pub(super) fn handle_export_to_plain_text(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) {

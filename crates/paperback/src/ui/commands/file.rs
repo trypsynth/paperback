@@ -8,14 +8,14 @@
 
 use std::{path::Path, process};
 
-use paperback_core::parser::build_file_filter_string;
+use paperback_core::parser::{build_file_filter_string, is_remote_url};
 use patois::t;
 use wxdragon::prelude::*;
 
 use super::Ctx;
 use crate::ui::{
 	main_window::{
-		close_active_document_announced, ensure_parser_ready_for_path, rebuild_menu_bar, resolve_zip_path,
+		close_active_document_announced, ensure_parser_ready_for_path, open_links, rebuild_menu_bar, resolve_zip_path,
 		update_title_from_manager,
 	},
 	menu,
@@ -95,6 +95,12 @@ pub fn close_all(ctx: &Ctx) {
 
 pub fn reopen_last_closed(ctx: &Ctx) {
 	let path = ctx.dm.lock().unwrap().pop_recently_closed();
+	if let Some(link) = path.as_ref().map(|path| path.to_string_lossy()).filter(|path| is_remote_url(path)) {
+		let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
+		menu::update_reopen_state(ctx.frame, has_reopen);
+		open_links(ctx.frame, ctx.dm, ctx.config, vec![link.into_owned()], Vec::new());
+		return;
+	}
 	if let Some(path) = path {
 		if !ensure_parser_ready_for_path(ctx.frame, &path, ctx.config) {
 			// Put it back: the document was never reopened, so it is still the last closed one.

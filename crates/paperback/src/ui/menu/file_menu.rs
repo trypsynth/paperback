@@ -2,9 +2,7 @@
 //! document data items, and the Recent Documents submenu, whose items are generated from the
 //! recent list rather than being fixed commands.
 
-use std::path::Path;
-
-use paperback_core::config::{ActionId, ConfigManager};
+use paperback_core::config::{ActionId, ConfigManager, document_name};
 use patois::t;
 
 use super::builder::{MenuEntry, format_menu_label, item, item_with_help, submenu};
@@ -79,11 +77,12 @@ fn recent_document_entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		entries.push(MenuEntry::Disabled(t("(No recent documents)")));
 	} else {
 		for (index, path) in recent_docs.iter().enumerate() {
-			let filename =
-				Path::new(path).file_name().map_or_else(|| path.clone(), |s| s.to_string_lossy().to_string());
-			let label = format!("&{} {}", index + 1, filename);
 			if let Ok(offset) = i32::try_from(index) {
-				entries.push(item_with_help(menu_ids::RECENT_DOCUMENT_BASE + offset, label, path.clone()));
+				entries.push(item_with_help(
+					menu_ids::RECENT_DOCUMENT_BASE + offset,
+					recent_label(index, path),
+					path.clone(),
+				));
 			}
 		}
 	}
@@ -95,8 +94,28 @@ fn recent_document_entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	entries
 }
 
+/// The Recent Documents item for the `index`th entry, numbered from 1 as its access key.
+fn recent_label(index: usize, path: &str) -> String {
+	format!("&{} {}", index + 1, document_name(path).unwrap_or_else(|| path.to_string()))
+}
+
 pub fn recent_documents_for_menu(config: &ConfigManager) -> Vec<String> {
 	let mut docs = config.get_recent_documents();
 	docs.truncate(config.recent_documents_limit());
 	docs
+}
+
+#[cfg(test)]
+mod tests {
+	use super::recent_label;
+
+	#[test]
+	fn a_recent_link_is_named_after_its_file_name() {
+		assert_eq!(recent_label(0, "https://example.org/books/Moby%20Dick.epub?from=list"), "&1 Moby Dick.epub");
+	}
+
+	#[test]
+	fn a_recent_file_is_named_after_its_file_name() {
+		assert_eq!(recent_label(1, "books/novel.epub"), "&2 novel.epub");
+	}
 }

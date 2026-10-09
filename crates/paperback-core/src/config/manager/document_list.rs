@@ -33,8 +33,8 @@ pub fn get_sorted_document_list(
 	}
 	let mut rest: Vec<String> = all_docs.iter().filter(|path| !doc_paths.contains(path)).cloned().collect();
 	rest.sort_by(|a, b| {
-		let a_name = file_name_of(a).unwrap_or_else(|| a.clone());
-		let b_name = file_name_of(b).unwrap_or_else(|| b.clone());
+		let a_name = document_name(a).unwrap_or_else(|| a.clone());
+		let b_name = document_name(b).unwrap_or_else(|| b.clone());
 		let name_cmp = a_name.to_lowercase().cmp(&b_name.to_lowercase());
 		if name_cmp != Ordering::Equal {
 			return name_cmp;
@@ -46,7 +46,7 @@ pub fn get_sorted_document_list(
 	doc_paths
 		.into_iter()
 		.filter_map(|path| {
-			let filename = file_name_of(&path).unwrap_or_default();
+			let filename = document_name(&path).unwrap_or_default();
 			if !filter.is_empty() && !filename.to_lowercase().contains(&filter_lower) {
 				return None;
 			}
@@ -68,7 +68,8 @@ pub fn get_sorted_document_list(
 
 /// The name a document is listed, sorted and searched by: the file's own name, or for a link the
 /// file name it ends in.
-fn file_name_of(path: &str) -> Option<String> {
+#[must_use]
+pub fn document_name(path: &str) -> Option<String> {
 	if is_remote_url(path) {
 		return url_file_name(path);
 	}
