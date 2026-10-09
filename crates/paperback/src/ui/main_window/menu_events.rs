@@ -85,7 +85,7 @@ impl MainWindow {
 				}
 				menu_ids::ANNOUNCE_PERCENT => {
 					if let Ok(dm_ref) = dm.try_lock() {
-						dm_ref.announce_current_percent();
+						dm_ref.announce_current_percent(from_keyboard);
 					}
 				}
 				menu_ids::GO_TO_LINE => {
@@ -224,7 +224,7 @@ impl MainWindow {
 				}
 				#[cfg(not(target_os = "macos"))]
 				menu_ids::SELECT_ALL => {
-					menu_edit::handle_select_all(&dm);
+					menu_edit::handle_select_all(&dm, live_region_label, from_keyboard);
 				}
 				_ => {
 					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);
