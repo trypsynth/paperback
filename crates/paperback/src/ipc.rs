@@ -3,6 +3,8 @@ use std::{
 	path::{Path, PathBuf},
 };
 
+use paperback_core::parser::is_remote_url;
+
 #[cfg(any(target_os = "linux", target_os = "windows", test))]
 pub const IPC_COMMAND_ACTIVATE: &str = "ACTIVATE";
 #[cfg(any(target_os = "linux", target_os = "windows", test))]
@@ -17,6 +19,24 @@ pub enum IpcCommand {
 	#[cfg(any(target_os = "linux", target_os = "windows", test))]
 	ToggleVisibility,
 	OpenFile(PathBuf),
+	OpenLink(String),
+}
+
+/// What a command-line argument asks Paperback to open.
+#[derive(Debug, PartialEq, Eq)]
+pub enum Target {
+	/// A file, by its full path.
+	File(PathBuf),
+	/// A web link, as given.
+	Link(String),
+}
+
+pub fn target_for_argument(argument: &str) -> Target {
+	if is_remote_url(argument) {
+		Target::Link(argument.to_string())
+	} else {
+		Target::File(normalize_cli_path(Path::new(argument)))
+	}
 }
 
 #[cfg(any(target_os = "linux", target_os = "windows", test))]
@@ -35,6 +55,9 @@ pub fn decode_execute_payload(data: &[u8]) -> Option<IpcCommand> {
 	}
 	if payload == IPC_COMMAND_TOGGLE_VISIBILITY {
 		return Some(IpcCommand::ToggleVisibility);
+	}
+	if is_remote_url(payload) {
+		return Some(IpcCommand::OpenLink(payload.to_string()));
 	}
 	Some(IpcCommand::OpenFile(PathBuf::from(payload)))
 }
@@ -134,6 +157,28 @@ mod tests {
 			IpcCommand::OpenFile(path) => assert_eq!(path, PathBuf::from("C:\\Books\\novel.epub")),
 			_ => panic!("expected OpenFile"),
 		}
+	}
+
+	#[test]
+	fn decode_execute_payload_hands_a_link_on_as_written() {
+		match decode_execute_payload(b"https://example.org/Book%20One.epub\0").expect("expected command") {
+			IpcCommand::OpenLink(link) => assert_eq!(link, "https://example.org/Book%20One.epub"),
+			other => panic!("expected OpenLink, got {other:?}"),
+		}
+	}
+
+	#[test]
+	fn a_link_argument_is_opened_as_written() {
+		assert_eq!(
+			target_for_argument("https://example.org/Book%20One.epub"),
+			Target::Link("https://example.org/Book%20One.epub".to_string())
+		);
+	}
+
+	#[test]
+	fn a_file_argument_is_opened_by_its_full_path() {
+		let expected = env::current_dir().unwrap().join("nonexistent_book.epub");
+		assert_eq!(target_for_argument("nonexistent_book.epub"), Target::File(expected));
 	}
 
 	#[test]

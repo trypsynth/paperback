@@ -22,6 +22,12 @@ use wxdragon::prelude::*;
 use super::dialogs;
 use crate::ui::dialogs::ZipChoice;
 
+/// Shows Open As for `path` unless a format is already saved for it, and saves the choice.
+pub fn choose_format(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
+	let cfg = config.lock().unwrap();
+	ensure_parser_for_unknown_file(frame, path, &cfg)
+}
+
 pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
 	let extension = parser_extension_for_path(path);
 	if extension.is_empty() || parser_supports_path(path) {

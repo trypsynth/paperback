@@ -23,6 +23,7 @@ use crate::{
 
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 mod ipc;
+mod links;
 #[cfg(not(target_os = "macos"))]
 mod menu_edit;
 mod menu_events;
@@ -33,6 +34,7 @@ mod menu_view;
 mod parser_ready;
 mod restore;
 mod window_events;
+pub use links::open_links;
 pub(crate) use parser_ready::{ensure_parser_ready_for_path, resolve_zip_path};
 
 #[cfg(target_os = "windows")]
@@ -192,6 +194,10 @@ impl MainWindow {
 			self.doc_manager.lock().unwrap().focus_document_text();
 		}
 		result
+	}
+
+	pub fn open_links(&self, links: Vec<String>) {
+		open_links(&self.frame, &self.doc_manager, &self.config, links, Vec::new());
 	}
 
 	fn update_title(&self) {
