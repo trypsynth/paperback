@@ -4,6 +4,9 @@ pub mod fixture;
 
 use std::{
 	cell::Cell,
+	ffi::OsStr,
+	io::{Read, Write},
+	net::{TcpListener, TcpStream},
 	path::{Path, PathBuf},
 	process::{Child, Command},
 	sync::{Arc, Mutex},
@@ -26,7 +29,8 @@ use windows::{
 			},
 			Input::KeyboardAndMouse::{
 				INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
-				MAPVK_VK_TO_VSC, MapVirtualKeyW, SendInput, VIRTUAL_KEY, VK_DOWN, VK_F4, VK_MENU, VK_SHIFT,
+				KEYEVENTF_UNICODE, MAPVK_VK_TO_VSC, MapVirtualKeyW, SendInput, VIRTUAL_KEY, VK_CONTROL, VK_DOWN, VK_F4,
+				VK_MENU, VK_RETURN, VK_SHIFT,
 			},
 		},
 	},
@@ -105,9 +109,68 @@ pub fn launch_with(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> 
 	configure(&mut config);
 	std::fs::write(config_dir.join("Paperback.toml"), toml::to_string(&config).expect("serialize config"))
 		.expect("write config");
-	let child = spawn(&config_dir, Some(&fixture));
+	let child = spawn(&config_dir, Some(fixture.as_os_str()));
 	let pid = child.id();
 	App { child, pid, base }
+}
+
+/// Serves the fixture over http on 127.0.0.1 and launches the app with its link instead of its
+/// path; `configure` adjusts the seeded config before it is written.
+pub fn launch_with_link(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> (App, FixtureServer) {
+	let base = std::env::temp_dir().join(format!("paperback-ui-{test_name}-{}", std::process::id()));
+	let _ = std::fs::remove_dir_all(&base);
+	let server = FixtureServer::start(&fixture::write_html(&base.join("fixture")));
+	let config_dir = base.join("config");
+	std::fs::create_dir_all(&config_dir).expect("create config dir");
+	let mut config = seeded_config();
+	configure(&mut config);
+	std::fs::write(config_dir.join("Paperback.toml"), toml::to_string(&config).expect("serialize config"))
+		.expect("write config");
+	let child = spawn(&config_dir, Some(OsStr::new(&server.link())));
+	let pid = child.id();
+	(App { child, pid, base }, server)
+}
+
+/// A web server on 127.0.0.1 that answers every request with the fixture, until the test ends.
+pub struct FixtureServer {
+	port: u16,
+}
+
+impl FixtureServer {
+	fn start(fixture: &Path) -> Self {
+		let listener = TcpListener::bind("127.0.0.1:0").expect("bind the fixture server");
+		let port = listener.local_addr().expect("fixture server address").port();
+		let body = std::fs::read(fixture).expect("read fixture");
+		std::thread::spawn(move || {
+			for stream in listener.incoming().flatten() {
+				let body = body.clone();
+				std::thread::spawn(move || serve(stream, &body));
+			}
+		});
+		Self { port }
+	}
+
+	/// The fixture's link, ending in its file name.
+	pub fn link(&self) -> String {
+		format!("http://127.0.0.1:{}/{}", self.port, fixture::HTML_NAME)
+	}
+}
+
+fn serve(mut stream: TcpStream, body: &[u8]) {
+	let mut request = Vec::new();
+	let mut buffer = [0; 1024];
+	while !request.windows(4).any(|w| w == b"\r\n\r\n") {
+		match stream.read(&mut buffer) {
+			Ok(0) | Err(_) => return,
+			Ok(n) => request.extend_from_slice(&buffer[..n]),
+		}
+	}
+	let head = format!(
+		"HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+		body.len()
+	);
+	let _ = stream.write_all(head.as_bytes());
+	let _ = stream.write_all(body);
 }
 
 /// The config every launch starts from: no update check, no restored session, English UI.
@@ -119,11 +182,11 @@ fn seeded_config() -> ConfigData {
 	config
 }
 
-fn spawn(config_dir: &Path, document: Option<&Path>) -> Child {
+fn spawn(config_dir: &Path, argument: Option<&OsStr>) -> Child {
 	assert_no_running_instance();
 	let mut command = Command::new(env!("CARGO_BIN_EXE_paperback"));
-	if let Some(document) = document {
-		command.arg(document);
+	if let Some(argument) = argument {
+		command.arg(argument);
 	}
 	command
 		.env("PAPERBACK_CONFIG_DIR", config_dir)
@@ -283,6 +346,54 @@ pub fn alt_f4() {
 		key_input(VK_MENU, KEYEVENTF_KEYUP),
 	];
 	send_inputs(&inputs);
+}
+
+/// Presses and releases a letter key with Ctrl held, and Shift too when `shift` is set.
+pub fn press_ctrl(key: char, shift: bool) {
+	press_with_ctrl(letter(key), KEYBD_EVENT_FLAGS(0), shift);
+}
+
+/// Presses and releases F4 with Ctrl held, closing the current document.
+pub fn ctrl_f4() {
+	press_with_ctrl(VK_F4, KEYBD_EVENT_FLAGS(0), false);
+}
+
+pub fn enter() {
+	send_key(VK_RETURN, KEYBD_EVENT_FLAGS(0));
+}
+
+/// Types `text` as characters, whatever the keyboard layout.
+pub fn type_text(text: &str) {
+	let inputs: Vec<INPUT> = text
+		.encode_utf16()
+		.flat_map(|unit| {
+			[unicode_input(unit, KEYEVENTF_UNICODE), unicode_input(unit, KEYEVENTF_UNICODE | KEYEVENTF_KEYUP)]
+		})
+		.collect();
+	send_inputs(&inputs);
+}
+
+fn press_with_ctrl(key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS, shift: bool) {
+	let mut inputs = vec![key_input(VK_CONTROL, KEYBD_EVENT_FLAGS(0))];
+	if shift {
+		inputs.push(key_input(VK_SHIFT, KEYBD_EVENT_FLAGS(0)));
+	}
+	inputs.push(key_input(key, flags));
+	inputs.push(key_input(key, flags | KEYEVENTF_KEYUP));
+	if shift {
+		inputs.push(key_input(VK_SHIFT, KEYEVENTF_KEYUP));
+	}
+	inputs.push(key_input(VK_CONTROL, KEYEVENTF_KEYUP));
+	send_inputs(&inputs);
+}
+
+const fn unicode_input(unit: u16, flags: KEYBD_EVENT_FLAGS) -> INPUT {
+	INPUT {
+		r#type: INPUT_KEYBOARD,
+		Anonymous: INPUT_0 {
+			ki: KEYBDINPUT { wVk: VIRTUAL_KEY(0), wScan: unit, dwFlags: flags, time: 0, dwExtraInfo: 0 },
+		},
+	}
 }
 
 /// Letters and digits are their own virtual-key codes.

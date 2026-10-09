@@ -23,6 +23,7 @@ use crate::{
 		reader_input,
 		text_render::load_window_into_ctrl,
 	},
+	working_copy::WorkingCopy,
 };
 
 impl DocumentManager {
@@ -41,6 +42,17 @@ impl DocumentManager {
 	/// Opens a synthetic source-view document (untracked) with an explicit tab title.
 	pub fn open_source_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path, title: &str) -> bool {
 		self.open_file_impl(self_rc, path, false, false, Some(title))
+	}
+
+	/// Opens a document downloaded from `link`, reading it from `copy` but keeping its settings and
+	/// its place in the recent documents under the link. The copy is deleted with the tab.
+	pub fn open_link(&mut self, self_rc: &Rc<Mutex<Self>>, link: &str, copy: WorkingCopy) -> bool {
+		let path = Path::new(link);
+		if let Some(index) = self.find_tab_by_path(path) {
+			self.notebook.set_selection(index);
+			return true;
+		}
+		self.parse_and_add_tab(self_rc, path, Some(copy), true, None)
 	}
 
 	fn open_file_impl(
@@ -77,6 +89,19 @@ impl DocumentManager {
 				config.import_settings_from_file(&path.to_string_lossy(), import_path.to_str().unwrap());
 			}
 		}
+		self.parse_and_add_tab(self_rc, path, None, track, title_override)
+	}
+
+	/// Parses the document and gives it a tab. `path` is what the reader opened, under which its
+	/// settings are kept; the file parsed is `working_copy` when there is one.
+	fn parse_and_add_tab(
+		&mut self,
+		self_rc: &Rc<Mutex<Self>>,
+		path: &Path,
+		working_copy: Option<WorkingCopy>,
+		track: bool,
+		title_override: Option<&str>,
+	) -> bool {
 		let (password, forced_extension, settings) = {
 			let config = self.config.lock().unwrap();
 			let path_str = path.to_string_lossy();
@@ -88,9 +113,16 @@ impl DocumentManager {
 			(password, forced_extension, settings)
 		};
 		let path_str = path.to_string_lossy().to_string();
+		let parse_path = working_copy.as_ref().map_or(path, WorkingCopy::path).to_string_lossy().into_owned();
+		let open = |password: &str| {
+			DocumentSession::new(&parse_path, password, &forced_extension, settings).map(|mut session| {
+				session.set_settings_path(&path_str);
+				session
+			})
+		};
 		tracing::info!(path = %path.display(), "opening document");
-		match DocumentSession::new(&path_str, &password, &forced_extension, settings) {
-			Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
+		match open(&password) {
+			Ok(session) => self.add_session_tab(self_rc, path, working_copy, session, &password, track, title_override),
 			Err(err) => {
 				if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
 					let config = self.config.lock().unwrap();
@@ -102,8 +134,10 @@ impl DocumentManager {
 						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
 						return false;
 					};
-					match DocumentSession::new(&path_str, &password, &forced_extension, settings) {
-						Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
+					match open(&password) {
+						Ok(session) => {
+							self.add_session_tab(self_rc, path, working_copy, session, &password, track, title_override)
+						}
 						Err(retry_error) => {
 							tracing::error!(path = %path.display(), error = %retry_error, "failed to open document");
 							let message = build_document_load_error_message(path, &retry_error);
@@ -123,10 +157,11 @@ impl DocumentManager {
 		}
 	}
 
-	pub fn add_session_tab(
+	fn add_session_tab(
 		&mut self,
 		self_rc: &Rc<Mutex<Self>>,
 		path: &Path,
+		working_copy: Option<WorkingCopy>,
 		session: DocumentSession,
 		password: &str,
 		track: bool,
@@ -136,7 +171,8 @@ impl DocumentManager {
 			self.notebook.set_selection(index);
 			return true;
 		}
-		let title = title_override.map_or_else(|| title_or_filename(session.title(), path), ToString::to_string);
+		let local_path = working_copy.as_ref().map_or(path, WorkingCopy::path).to_path_buf();
+		let title = title_override.map_or_else(|| title_or_filename(session.title(), &local_path), ToString::to_string);
 		let panel = Panel::builder(&self.notebook).build();
 		let config = self.config.lock().unwrap();
 		let mut session = session;
@@ -187,10 +223,10 @@ impl DocumentManager {
 			text_ctrl,
 			session,
 			file_path: path.to_path_buf(),
-			working_copy: None,
+			working_copy,
 			track,
 			audio_player,
-			disk_fingerprint: read_fingerprint(path),
+			disk_fingerprint: read_fingerprint(&local_path),
 			preferred_column: Cell::new(None),
 			selection_mark: Cell::new(None),
 			window,
@@ -223,7 +259,10 @@ impl DocumentManager {
 		}
 		if track {
 			config.add_recent_document(&path_str);
-			shell::add_recent_document(path);
+			// The jump list opens files; a link's working copy is gone once its tab closes.
+			if self.tabs[tab_index].working_copy.is_none() {
+				shell::add_recent_document(path);
+			}
 			config.set_document_opened(&path_str, true);
 			config.add_opened_document(&path_str);
 		}
@@ -309,6 +348,14 @@ impl DocumentManager {
 			config.set_navigation_history(&path_str, history, history_index);
 		}
 		config.flush();
+	}
+
+	/// Deletes the working copies of the documents opened from links, for quitting: the app exits
+	/// without dropping its tabs, so their copies would otherwise stay in the temporary folder.
+	pub fn remove_working_copies(&mut self) {
+		for tab in &mut self.tabs {
+			tab.working_copy = None;
+		}
 	}
 
 	pub fn save_position_throttled(&self) {

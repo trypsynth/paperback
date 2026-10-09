@@ -30,7 +30,7 @@ pub fn show_bookmark_dialog(
 	current_pos: i64,
 	initial_filter: BookmarkFilterType,
 ) -> Option<BookmarkDialogResult> {
-	let file_path = session.file_path().to_string();
+	let file_path = session.settings_path().to_string();
 	let snippets = Rc::new(text_snippets(session, &config.lock().unwrap().get_bookmarks(&file_path)));
 	// TRANSLATORS: Title of the Jump to Bookmark dialog
 	let dialog = Dialog::builder(parent, &t("Jump to Bookmark")).build();

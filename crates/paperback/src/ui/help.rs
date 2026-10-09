@@ -36,12 +36,18 @@ pub fn readme_path() -> Option<PathBuf> {
 }
 
 pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
-	let file_path = doc_manager.lock().unwrap().active_tab().map(|tab| tab.file_path.clone());
-	let Some(file_path) = file_path else {
+	let file_path =
+		doc_manager.lock().unwrap().active_tab().map(|tab| (tab.file_path.clone(), tab.working_copy.is_some()));
+	let Some((file_path, from_link)) = file_path else {
 		// TRANSLATORS: Error shown when the active document has no known file path to reveal
 		show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
 		return;
 	};
+	if from_link {
+		// TRANSLATORS: Shown by Reveal File in Folder for a document opened from a web link, which is read from a temporary copy
+		show_error(frame, t("This document was opened from a link, so it has no folder to show."), &t("Error"));
+		return;
+	}
 	#[cfg(target_os = "windows")]
 	{
 		use std::os::windows::process::CommandExt;

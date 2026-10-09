@@ -368,7 +368,10 @@ impl DocumentSession {
 		self.settings_path = Some(path.to_string());
 	}
 
-	fn settings_path(&self) -> &str {
+	/// The path the document's settings are kept under: the one given to
+	/// [`Self::set_settings_path`], or else the file it was parsed from.
+	#[must_use]
+	pub fn settings_path(&self) -> &str {
 		self.settings_path.as_deref().unwrap_or(&self.file_path)
 	}
 

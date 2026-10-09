@@ -161,6 +161,10 @@ pub fn clear_recent_documents(ctx: &Ctx) {
 }
 
 pub fn exit(ctx: &Ctx) {
-	ctx.dm.lock().unwrap().save_all_positions();
+	{
+		let mut dm = ctx.dm.lock().unwrap();
+		dm.save_all_positions();
+		dm.remove_working_copies();
+	}
 	process::exit(0);
 }
