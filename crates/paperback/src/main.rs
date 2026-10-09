@@ -7,6 +7,7 @@ mod audio_player;
 mod config_ext;
 mod ipc;
 mod legacy_config;
+mod links;
 #[cfg(target_os = "linux")]
 mod linux_integration;
 mod logging;
