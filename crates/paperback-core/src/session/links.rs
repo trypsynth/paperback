@@ -88,7 +88,7 @@ impl DocumentSession {
 		config: &ConfigManager,
 		position: i64,
 	) -> ffi::BookmarkDisplayAtPosition {
-		let bookmark = config.get_bookmarks(&self.file_path).into_iter().find(|bm| bm.start == position);
+		let bookmark = config.get_bookmarks(self.settings_path()).into_iter().find(|bm| bm.start == position);
 		let Some(bookmark) = bookmark else {
 			return ffi::BookmarkDisplayAtPosition { found: false, note: String::new(), snippet: String::new() };
 		};

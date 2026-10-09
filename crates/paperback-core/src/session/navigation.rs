@@ -215,7 +215,7 @@ impl DocumentSession {
 		next: bool,
 		notes_only: bool,
 	) -> NavigationResult {
-		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, notes_only);
+		let result = bookmark_navigate(config, self.settings_path(), position, wrap, next, notes_only);
 		if result.found {
 			NavigationResult {
 				found: true,

@@ -160,6 +160,7 @@ mod tests {
 			history_index: 0,
 			parser_flags: ParserFlags::empty(),
 			parse_settings: ParseSettings::default(),
+			settings_path: None,
 		}
 	}
 

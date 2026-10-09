@@ -233,6 +233,7 @@ fn navigate_section_in_an_audio_only_book_announces_the_file_name() {
 		history_index: 0,
 		parser_flags: ParserFlags::SUPPORTS_SECTIONS,
 		parse_settings: ParseSettings::default(),
+		settings_path: None,
 	};
 	let first = session.navigate_section(-1, false, true);
 	assert!(first.found);
@@ -251,6 +252,32 @@ fn navigate_bookmark_and_note_return_not_found_with_empty_config() {
 	let config = ConfigManager::new();
 	assert!(!session.navigate_bookmark(&config, 0, false, true).found);
 	assert!(!session.navigate_note(&config, 0, false, true).found);
+}
+
+/// A document opened from a link is parsed from a temporary copy but remembered under the link,
+/// so moving between bookmarks has to use the link's bookmarks and not the copy's.
+#[test]
+fn navigate_bookmark_follows_the_settings_path() {
+	let mut session = sample_session(ParserFlags::NONE);
+	session.set_settings_path("https://example.org/book.epub");
+	let config = ConfigManager::in_memory();
+	config.add_bookmark("https://example.org/book.epub", 6, 6, "");
+	config.add_bookmark("book.epub", 12, 12, "");
+	let first = session.navigate_bookmark(&config, 0, false, true);
+	assert_eq!((true, 6), (first.found, first.offset));
+	assert!(!session.navigate_bookmark(&config, 6, false, true).found);
+}
+
+#[test]
+fn bookmark_display_at_position_follows_the_settings_path() {
+	let mut session = sample_session(ParserFlags::NONE);
+	session.set_settings_path("https://example.org/book.epub");
+	let config = ConfigManager::in_memory();
+	config.add_bookmark("https://example.org/book.epub", 6, 6, "saved under the link");
+	config.add_bookmark("book.epub", 12, 12, "saved under the copy");
+	let display = session.bookmark_display_at_position(&config, 6);
+	assert_eq!((true, "saved under the link"), (display.found, display.note.as_str()));
+	assert!(!session.bookmark_display_at_position(&config, 12).found);
 }
 
 #[test]
