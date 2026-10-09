@@ -12,7 +12,10 @@ use std::{
 use sha1::{Digest, Sha1};
 
 use super::ConfigManager;
-use crate::types::{DocumentListItem, DocumentListStatus};
+use crate::{
+	parser::{is_remote_url, url_file_name},
+	types::{DocumentListItem, DocumentListStatus},
+};
 
 pub fn get_sorted_document_list(
 	config: &ConfigManager,
@@ -30,10 +33,8 @@ pub fn get_sorted_document_list(
 	}
 	let mut rest: Vec<String> = all_docs.iter().filter(|path| !doc_paths.contains(path)).cloned().collect();
 	rest.sort_by(|a, b| {
-		let a_path = Path::new(a);
-		let b_path = Path::new(b);
-		let a_name = a_path.file_name().and_then(|n| n.to_str()).unwrap_or(a);
-		let b_name = b_path.file_name().and_then(|n| n.to_str()).unwrap_or(b);
+		let a_name = file_name_of(a).unwrap_or_else(|| a.clone());
+		let b_name = file_name_of(b).unwrap_or_else(|| b.clone());
 		let name_cmp = a_name.to_lowercase().cmp(&b_name.to_lowercase());
 		if name_cmp != Ordering::Equal {
 			return name_cmp;
@@ -45,12 +46,12 @@ pub fn get_sorted_document_list(
 	doc_paths
 		.into_iter()
 		.filter_map(|path| {
-			let path_obj = Path::new(&path);
-			let filename = path_obj.file_name().and_then(|n| n.to_str()).unwrap_or("").to_string();
+			let filename = file_name_of(&path).unwrap_or_default();
 			if !filter.is_empty() && !filename.to_lowercase().contains(&filter_lower) {
 				return None;
 			}
-			let status = if !path_obj.exists() {
+			// A link has no file of its own to go missing: opening it downloads it again.
+			let status = if !is_remote_url(&path) && !Path::new(&path).exists() {
 				DocumentListStatus::Missing
 			} else if open_paths.contains(&path) {
 				DocumentListStatus::Open
@@ -63,6 +64,15 @@ pub fn get_sorted_document_list(
 			Some(DocumentListItem { path, filename, status })
 		})
 		.collect()
+}
+
+/// The name a document is listed, sorted and searched by: the file's own name, or for a link the
+/// file name it ends in.
+fn file_name_of(path: &str) -> Option<String> {
+	if is_remote_url(path) {
+		return url_file_name(path);
+	}
+	Path::new(path).file_name().and_then(|name| name.to_str()).map(str::to_string)
 }
 
 #[must_use]
@@ -139,5 +149,45 @@ mod tests {
 		assert_eq!(closed_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&closed_path]);
 		let missing_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Missing));
 		assert_eq!(missing_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&missing_path]);
+	}
+
+	/// A document opened from a link has no file of its own to go missing; it is downloaded again
+	/// when it is opened.
+	#[test]
+	fn a_link_is_open_or_closed_and_never_missing() {
+		let config = ConfigManager::in_memory();
+		config.add_recent_document("https://example.org/a.epub");
+		config.add_recent_document("https://example.org/b.pdf");
+		let open_paths = vec!["https://example.org/b.pdf".to_string()];
+		let statuses: Vec<_> = get_sorted_document_list(&config, &open_paths, "", None)
+			.into_iter()
+			.map(|item| (item.path, item.status))
+			.collect();
+		assert_eq!(
+			statuses,
+			vec![
+				("https://example.org/b.pdf".to_string(), DocumentListStatus::Open),
+				("https://example.org/a.epub".to_string(), DocumentListStatus::Closed),
+			]
+		);
+	}
+
+	#[test]
+	fn a_link_is_named_and_found_by_its_file_name() {
+		let config = ConfigManager::in_memory();
+		config.add_recent_document("https://example.org/books/Moby%20Dick.epub?from=aardvark");
+		let found = get_sorted_document_list(&config, &[], "moby", None);
+		assert_eq!(found.iter().map(|item| item.filename.as_str()).collect::<Vec<_>>(), vec!["Moby Dick.epub"]);
+		assert!(get_sorted_document_list(&config, &[], "aardvark", None).is_empty());
+	}
+
+	#[test]
+	fn a_link_is_sorted_by_its_file_name() {
+		let config = ConfigManager::in_memory();
+		config.set_document_position("b.epub-notes.txt", 1);
+		config.set_document_position("https://example.org/b.epub?ref=zzz", 1);
+		let order: Vec<_> =
+			get_sorted_document_list(&config, &[], "", None).into_iter().map(|item| item.filename).collect();
+		assert_eq!(order, vec!["b.epub", "b.epub-notes.txt"]);
 	}
 }
