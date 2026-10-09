@@ -38,6 +38,7 @@ pub(crate) fn resolve_zip_path(
 	config: &Rc<Mutex<ConfigManager>>,
 	quit_if_closed: bool,
 ) -> Option<PathBuf> {
+	// A format the user forced for this zip means they want it opened as one document, not browsed.
 	if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
 		|| !config.lock().unwrap().get_document_format(&path.to_string_lossy()).is_empty()
 	{
@@ -55,6 +56,7 @@ pub(crate) fn resolve_zip_path(
 		ZipChoice::Cancelled => return None,
 		ZipChoice::Closed => {
 			if quit_if_closed {
+				// Queued so the frame closes from the event loop, not from inside this open call.
 				wxdragon::call_after(Box::new(|| {
 					if let Some(window) = crate::ui::app::main_window_from_ptr() {
 						window.frame().close(false);
@@ -64,6 +66,7 @@ pub(crate) fn resolve_zip_path(
 			return None;
 		}
 	};
+	// Temp, not the config dir: extracted books are disposable and the OS cleans it.
 	let cache = env::temp_dir().join("paperback-zip-cache");
 	match extract_zip_entry_to_cache(path, &names[chosen], &cache) {
 		Ok(extracted) => Some(extracted),

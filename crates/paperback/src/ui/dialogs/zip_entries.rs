@@ -32,6 +32,7 @@ pub fn show_zip_entries_dialog(parent: &Frame, names: &[String]) -> ZipChoice {
 	content_sizer.add(&list, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING / 2);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	list.on_item_double_clicked(move |_| dialog.end_modal(ID_OK));
+	// Only the window close (X, Alt+F4) reaches `on_close`; Cancel and Escape end the modal on their own.
 	let closed = Rc::new(Cell::new(false));
 	let closed_in_handler = Rc::clone(&closed);
 	dialog.on_close(move |event| {
