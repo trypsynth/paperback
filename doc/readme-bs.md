@@ -23,7 +23,7 @@ Paperback radi na Windowsu 10/11, svim modernim verzijama macOS-a za ARM proceso
 * Čita skenirane PDF stranice pomoću OCR-a ugrađenog u Windows i macOS.
 * Podržava oznake i bilješke, pa možete obilježiti mjesto do kojeg ste stigli i kasnije mu se vratiti.
 * Svaka prečica na tastaturi može se promijeniti.
-* Uključuje `pb`, alat za komandnu liniju koji bilo koji podržani dokument pretvara u HTML, Markdown ili običan tekst.
+* Uključuje `pb`, alat za komandnu liniju koji bilo koji podržani dokument pretvara u HTML, Markdown ili običan tekst. Prihvata onoliko dokumenata koliko mu navedete, sam proširuje obrasce poput `*.pdf`, tako da ista komandna linija radi i na Windowsu, i može upisati po jednu datoteku za svaki dokument u mapu. Može pročitati i popis dokumenata iz datoteke ili sa standardnog ulaza pomoću `--files-from`, te pretvarati dokumente direktno s http i https poveznica.
 
 ## Kompatibilnost s čitačima zaslona
 
@@ -225,7 +225,7 @@ U izborniku "Više opcija" nalazi se sve ostalo. Neke stavke rade malo drugačij
 * **Elementi:** popis naslova ili poveznica u dokumentu. Između njih se prebacujete biračem "Vrsta" na iOS-u ili karticama na Androidu, a zatim odaberete stavku da biste prešli na nju.
 * **Traži:** upišite šta tražite ili odaberite raniju pretragu iz historije pretraživanja te odaberite želite li razlikovati velika i mala slova, tražiti samo cijele riječi ili koristiti regularni izraz. "Traži prethodno" i "Traži sljedeće" prelaze na podudaranje i izgovaraju gdje ste se našli, a pretraga ostaje otvorena kako biste mogli nastaviti. U načinu čitanja naglas traženje se pojavljuje i kao jedinica kretanja na traci za čitanje, pa se i odatle možete kretati kroz podudaranja.
 * **Idi na:** prelazi na red, stranicu ili postotak dokumenta. Šta od toga želite, birate biračem "Način".
-* **Nedavni dokumenti:** svi dokumenti koje ste otvorili, pri čemu je svaki označen kao trenutno otvoren, zatvoren ili kao dokument čija datoteka nedostaje. Svaki od njih ima dvije radnje čitača zaslona: "Ukloni" ga uklanja s popisa, a "Pronađi" vam omogućava da pronađete dokument čija je datoteka premještena. "Očisti nedavne dokumente" prazni popis bez brisanja ijednog dokumenta.
+* **Nedavni dokumenti:** svi dokumenti koje ste otvorili, pri čemu svaki ima status "Trenutno otvoreno", "Zatvoreno" ili "Datoteka nedostaje". Svaki od njih ima dvije radnje čitača zaslona: "Ukloni" ga uklanja s popisa, a "Pronađi" vam omogućava da pronađete dokument čija je datoteka premještena. "Očisti nedavne dokumente" prazni popis bez brisanja ijednog dokumenta.
 * **Broj riječi:** broj riječi u dokumentu.
 * **Informacije o dokumentu:** naslov, autor, naziv datoteke, a na iOS-u i broj redova i znakova.
 * **Izvoz:** sprema dokument kao običan tekst, HTML ili Markdown.
