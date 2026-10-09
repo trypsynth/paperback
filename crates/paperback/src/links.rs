@@ -25,6 +25,11 @@ pub fn from_text(text: &str) -> (Vec<String>, Vec<String>) {
 	(links, not_links)
 }
 
+/// What Open from URL's field starts with: the lines of `clipboard` that are links.
+pub fn prefill(clipboard: &str) -> String {
+	from_text(clipboard).0.join("\n")
+}
+
 /// What the download window is doing with a link.
 #[derive(Debug, Clone, Copy)]
 pub enum Stage {
@@ -135,6 +140,19 @@ mod tests {
 		let (links, not_links) = from_text(text);
 		assert_eq!(links, vec!["https://a.org/x.epub", "https://b.org/y.pdf"]);
 		assert_eq!(not_links, vec!["see chapter 3"]);
+	}
+
+	#[test]
+	fn prefill_keeps_only_the_clipboards_links() {
+		assert_eq!(
+			prefill("https://a.org/x.epub\r\nnotes\nhttps://b.org/y.pdf"),
+			"https://a.org/x.epub\nhttps://b.org/y.pdf"
+		);
+	}
+
+	#[test]
+	fn prefill_ignores_a_link_inside_a_sentence() {
+		assert_eq!(prefill("Read this: https://a.org/x.epub"), "");
 	}
 
 	#[test]

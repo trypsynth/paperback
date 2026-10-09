@@ -124,6 +124,15 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Run(file::open),
 	},
 	Command {
+		action: ActionId::OpenFromUrl,
+		// TRANSLATORS: Menu item in the File menu to open documents from web links.
+		label: || t("Open from &URL..."),
+		// TRANSLATORS: Status-bar help text for the File > Open from URL menu item.
+		help: Some(|| t("Open documents from web links")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(file::open_from_url),
+	},
+	Command {
 		action: ActionId::Close,
 		// TRANSLATORS: Menu item in the File menu to close the current document.
 		label: || t("&Close"),

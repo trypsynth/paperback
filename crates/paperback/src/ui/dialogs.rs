@@ -12,6 +12,19 @@
 pub(super) use wx_utils::{
 	DIALOG_PADDING, add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons,
 };
+use wxdragon::prelude::{Dialog, EventType, ID_OK, TextCtrl, WXK_RETURN, WxEvtHandler};
+
+/// Enter in `ctrl`, a multi-line field, confirms `dialog`; Shift+Enter starts a new line.
+fn bind_enter_submits(dialog: Dialog, ctrl: TextCtrl) {
+	ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
+		if event.get_key_code() == Some(WXK_RETURN) && !event.shift_down() {
+			dialog.end_modal(ID_OK);
+			event.skip(false);
+			return;
+		}
+		event.skip(true);
+	});
+}
 
 #[cfg(target_os = "macos")]
 mod activation;
@@ -62,7 +75,7 @@ pub use note_entry::show_note_entry_dialog;
 mod open_as;
 pub use open_as::show_open_as_dialog;
 mod open_url;
-pub use open_url::confirm_download;
+pub use open_url::{confirm_download, show_open_url_dialog};
 mod options;
 pub(crate) use options::AUDIO_SEEK_AMOUNTS_SECONDS;
 pub use options::show_options_dialog;

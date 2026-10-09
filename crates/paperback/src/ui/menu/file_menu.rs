@@ -50,7 +50,7 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		item_with_help(menu_ids::EXPORT_TO_HTML, export_html_label, export_html_help),
 		item_with_help(menu_ids::EXPORT_TO_MARKDOWN, export_markdown_label, export_markdown_help),
 	];
-	let mut entries = commands::menu_entries(&[ActionId::Open], config);
+	let mut entries = commands::menu_entries(&[ActionId::Open, ActionId::OpenFromUrl], config);
 	entries.push(submenu(recent_label, recent_help, recent_document_entries(config)));
 	entries.push(commands::menu_entry(ActionId::ReopenLastClosed, config));
 	entries.extend([

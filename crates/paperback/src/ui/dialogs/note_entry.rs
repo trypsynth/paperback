@@ -1,7 +1,7 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
+use super::{DIALOG_PADDING, add_ok_cancel_footer, bind_enter_submits, build_ok_cancel_buttons};
 
 pub fn show_note_entry_dialog(
 	parent: &dyn WxWidget,
@@ -18,21 +18,7 @@ pub fn show_note_entry_dialog(
 		.build();
 	// TRANSLATORS: OK button that confirms the entered bookmark/note text
 	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));
-	let dialog_for_key = dialog;
-	note_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
-		if let Some(key) = event.get_key_code()
-			&& key == WXK_RETURN
-		{
-			if event.shift_down() {
-				event.skip(true);
-			} else {
-				dialog_for_key.end_modal(ID_OK);
-				event.skip(false);
-			}
-			return;
-		}
-		event.skip(true);
-	});
+	bind_enter_submits(dialog, note_ctrl);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&message_label, 0, SizerFlag::All, DIALOG_PADDING);
 	content_sizer.add(

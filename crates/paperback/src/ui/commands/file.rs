@@ -10,16 +10,20 @@ use std::{path::Path, process};
 
 use paperback_core::parser::{build_file_filter_string, is_remote_url};
 use patois::t;
-use wxdragon::prelude::*;
+use wxdragon::{clipboard::Clipboard, prelude::*};
 
 use super::Ctx;
-use crate::ui::{
-	main_window::{
-		close_active_document_announced, ensure_parser_ready_for_path, open_links, rebuild_menu_bar, resolve_zip_path,
-		update_title_from_manager,
+use crate::{
+	links,
+	ui::{
+		dialogs,
+		main_window::{
+			close_active_document_announced, ensure_parser_ready_for_path, open_links, rebuild_menu_bar,
+			resolve_zip_path, update_title_from_manager,
+		},
+		menu,
+		navigation::announce_for_command,
 	},
-	menu,
-	navigation::announce_for_command,
 };
 
 pub fn open(ctx: &Ctx) {
@@ -66,6 +70,15 @@ pub fn open(ctx: &Ctx) {
 	// enabled and doing nothing after opening a document from a fresh start.
 	let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
 	menu::update_reopen_state(ctx.frame, has_reopen);
+}
+
+pub fn open_from_url(ctx: &Ctx) {
+	let clipboard = Clipboard::get().get_text().unwrap_or_default();
+	let Some(text) = dialogs::show_open_url_dialog(ctx.frame, &links::prefill(&clipboard)) else {
+		return;
+	};
+	let (links, not_links) = links::from_text(&text);
+	open_links(ctx.frame, ctx.dm, ctx.config, links, not_links);
 }
 
 pub fn close(ctx: &Ctx) {
