@@ -156,7 +156,7 @@ impl DocumentManager {
 			return;
 		}
 		let (start, end) = if start <= end { (start, end) } else { (end, start) };
-		let pages: Vec<i32> = if include_text_pages && is_ocr_able(&tab.file_path) {
+		let pages: Vec<i32> = if include_text_pages && is_ocr_able(tab.local_path()) {
 			let last = i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX);
 			// Left to go empty when the range starts past the last page, which is what sends it
 			// to the "nothing to do" announcement below rather than to a job for a page the
@@ -184,9 +184,9 @@ impl DocumentManager {
 			return;
 		};
 		let path = tab.file_path.clone();
-		let path_str = path.to_string_lossy().to_string();
-		let password = self.config.lock().unwrap().get_document_password(&path_str);
+		let password = self.config.lock().unwrap().get_document_password(&path.to_string_lossy());
 		let password = (!password.is_empty()).then_some(password);
+		let path_str = tab.local_path().to_string_lossy().to_string();
 		let cancel = Arc::new(AtomicBool::new(false));
 		let worker_cancel = Arc::clone(&cancel);
 		let id = self.next_job_id.get();
@@ -236,8 +236,8 @@ impl DocumentManager {
 		// An OCR engine reads a page a printed line at a time, so its text arrives broken at
 		// every line end. The reader who asked for wrapped lines to be joined asked about the
 		// text of a page, not about where it was read from.
-		let join_paragraphs =
-			is_pdf(file_path) && self.config.lock().unwrap().get_app_bool("join_pdf_paragraphs", true);
+		let join_paragraphs = is_pdf(self.tabs[index].local_path())
+			&& self.config.lock().unwrap().get_app_bool("join_pdf_paragraphs", true);
 		let tab = &mut self.tabs[index];
 		let mut pages = Vec::with_capacity(results.len());
 		// Where each page being replaced starts, read before the edit for the same reason the

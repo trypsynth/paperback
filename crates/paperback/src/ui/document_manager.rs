@@ -6,12 +6,14 @@ use std::{
 	time::Instant,
 };
 
-use paperback_core::{config::ConfigManager, session::DocumentSession, util::html::MATHML_STYLES};
+use paperback_core::{
+	config::ConfigManager, parser::is_remote_url, session::DocumentSession, util::html::MATHML_STYLES,
+};
 use patois::t;
 use wxdragon::prelude::*;
 
 use super::navigation::{move_to_offset_and_record_history, persist_navigation_history};
-use crate::{audio_player::AudioPlayer, text_window::TextWindow, ui::navigation::announce};
+use crate::{audio_player::AudioPlayer, text_window::TextWindow, ui::navigation::announce, working_copy::WorkingCopy};
 
 mod appearance;
 mod audio;
@@ -28,7 +30,11 @@ pub struct DocumentTab {
 	pub panel: Panel,
 	pub text_ctrl: TextCtrl,
 	pub session: DocumentSession,
+	/// What the reader opened: a file, or for a document opened from a link the link itself. Its
+	/// settings, its place in the recent documents and its tab are all found by this.
 	pub file_path: PathBuf,
+	/// The downloaded copy a document opened from a link is read from, deleted with the tab.
+	pub working_copy: Option<WorkingCopy>,
 	pub track: bool,
 	pub audio_player: Option<AudioPlayer>,
 	disk_fingerprint: Option<FileFingerprint>,
@@ -59,8 +65,20 @@ pub fn title_or_filename(title: String, path: &Path) -> String {
 	}
 }
 
+impl DocumentTab {
+	/// The file the document is read from: its working copy if it was opened from a link,
+	/// otherwise its own file.
+	pub fn local_path(&self) -> &Path {
+		reading_path(&self.file_path, self.working_copy.as_ref())
+	}
+}
+
+fn reading_path<'a>(file_path: &'a Path, working_copy: Option<&'a WorkingCopy>) -> &'a Path {
+	working_copy.map_or(file_path, WorkingCopy::path)
+}
+
 pub fn display_title(tab: &DocumentTab) -> String {
-	title_or_filename(tab.session.title(), &tab.file_path)
+	title_or_filename(tab.session.title(), tab.local_path())
 }
 
 /// The 0-based tab index a key press names, if it names one at all.
@@ -251,6 +269,10 @@ impl DocumentManager {
 }
 
 fn normalized_path_key(path: &Path) -> String {
+	let as_given = path.to_string_lossy();
+	if is_remote_url(&as_given) {
+		return as_given.into_owned();
+	}
 	let normalized = dunce::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
 	let value = normalized.to_string_lossy().to_string();
 	#[cfg(target_os = "windows")]
@@ -265,11 +287,37 @@ fn normalized_path_key(path: &Path) -> String {
 
 #[cfg(test)]
 mod tests {
-	use std::{env, fs, path::PathBuf, process};
+	use std::{
+		env, fs,
+		path::{Path, PathBuf},
+		process,
+	};
 
 	use wxdragon::prelude::{WXK_NUMPAD1, WXK_NUMPAD3, WXK_NUMPAD9};
 
-	use super::{position::position_announcement, read_fingerprint, tab_index_for_key};
+	use super::{
+		normalized_path_key, position::position_announcement, read_fingerprint, reading_path, tab_index_for_key,
+	};
+	use crate::working_copy::WorkingCopy;
+
+	/// A document opened from a link is known by the link but read from its downloaded copy.
+	#[test]
+	fn a_tab_with_a_working_copy_is_read_from_the_copy() {
+		let copy = WorkingCopy::new("book.epub").unwrap();
+		assert_eq!(reading_path(Path::new("https://example.org/book.epub"), Some(&copy)), copy.path());
+	}
+
+	#[test]
+	fn a_tab_without_a_working_copy_is_read_from_its_file() {
+		assert_eq!(reading_path(Path::new("books/book.epub"), None), Path::new("books/book.epub"));
+	}
+
+	/// The path of a link is case-sensitive, so two links that differ only in case are two
+	/// documents, even on Windows.
+	#[test]
+	fn a_link_is_matched_as_written() {
+		assert_eq!(normalized_path_key(Path::new("https://example.org/Book.EPUB")), "https://example.org/Book.EPUB");
+	}
 
 	/// Ctrl+1 is the first document opened, and so maps to tab 0. Everything is checked against
 	/// the same function both key handlers call, because the mapping is the only part of this

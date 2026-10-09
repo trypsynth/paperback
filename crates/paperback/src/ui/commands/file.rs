@@ -126,7 +126,7 @@ pub fn reload(ctx: &Ctx) {
 		return;
 	};
 	// A file that is gone has nothing to re-read, so a batch running on it keeps going rather than losing its pages for nothing.
-	if !dm.active_tab().is_some_and(|tab| tab.file_path.exists()) {
+	if !dm.active_tab().is_some_and(|tab| tab.local_path().exists()) {
 		return;
 	}
 	// Stopped before the re-read, or its pages would be put back into the new buffer, and quietly, since a count of pages recognized describes text the re-read throws away.

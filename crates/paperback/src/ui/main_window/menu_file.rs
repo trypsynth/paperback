@@ -181,7 +181,7 @@ pub(super) fn handle_export_document_data(
 	};
 	let default_name =
 		// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-		tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+		tab.local_path().file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 	let default_file = format!("{default_name}.paperback");
 	// TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 	let wildcard = t("Paperback files (*.paperback)|*.paperback");
@@ -273,7 +273,7 @@ fn export_document_as(
 ) {
 	let default_name =
 		// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-		tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+		tab.local_path().file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 	let default_file = format!("{default_name}.{extension}");
 	let dialog = FileDialog::builder(frame)
 		.with_message(dialog_title)

@@ -187,6 +187,7 @@ impl DocumentManager {
 			text_ctrl,
 			session,
 			file_path: path.to_path_buf(),
+			working_copy: None,
 			track,
 			audio_player,
 			disk_fingerprint: read_fingerprint(path),

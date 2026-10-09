@@ -82,7 +82,7 @@ impl DocumentManager {
 		if !tab.track {
 			return false;
 		}
-		let Some(current) = read_fingerprint(&tab.file_path) else {
+		let Some(current) = read_fingerprint(tab.local_path()) else {
 			return false;
 		};
 		if !forced && tab.disk_fingerprint == Some(current) {
@@ -173,6 +173,9 @@ pub(super) fn parse_settings(cfg: &ConfigManager) -> ParseSettings {
 
 /// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
 /// position. Returns the parse error and leaves the tab unchanged if the re-parse fails.
+///
+/// `path_str` is where the document's settings are kept, which for a document opened from a link
+/// is the link; the file parsed is always the one the tab reads from.
 fn reparse_tab_in_place(
 	tab: &mut DocumentTab,
 	path_str: &str,
@@ -181,7 +184,7 @@ fn reparse_tab_in_place(
 	settings: ParseSettings,
 	style: &ReadabilityStyle,
 ) -> Result<(), String> {
-	let new_fingerprint = read_fingerprint(&tab.file_path);
+	let new_fingerprint = read_fingerprint(tab.local_path());
 	let current_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 	let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
 	// Find the nearest anchor at-or-before the cursor using the full id_positions key
@@ -198,8 +201,12 @@ fn reparse_tab_in_place(
 			.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
 	};
 	let fallback_percent = tab.session.get_status_info(current_pos).percentage;
-	let new_session = match DocumentSession::new(path_str, password, forced_extension, settings) {
-		Ok(session) => session,
+	let parse_path = tab.local_path().to_string_lossy().into_owned();
+	let new_session = match DocumentSession::new(&parse_path, password, forced_extension, settings) {
+		Ok(mut session) => {
+			session.set_settings_path(path_str);
+			session
+		}
 		Err(err) => {
 			tracing::error!(path = %path_str, error = %err, "failed to re-parse document");
 			return Err(err);
