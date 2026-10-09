@@ -15,7 +15,8 @@ use wxdragon::prelude::*;
 use super::Ctx;
 use crate::ui::{
 	main_window::{
-		close_active_document_announced, ensure_parser_ready_for_path, rebuild_menu_bar, update_title_from_manager,
+		close_active_document_announced, ensure_parser_ready_for_path, rebuild_menu_bar, resolve_zip_path,
+		update_title_from_manager,
 	},
 	menu,
 	navigation::announce_for_command,
@@ -38,9 +39,12 @@ pub fn open(ctx: &Ctx) {
 	paths.sort();
 	let mut opened_any = false;
 	for path in &paths {
-		let path = Path::new(path);
+		let Some(path) = resolve_zip_path(ctx.frame, Path::new(path), ctx.config, false) else {
+			continue;
+		};
 		// One book that cannot be opened, or whose unknown type the reader declines to pick a reader for, does not stop the rest.
-		if ensure_parser_ready_for_path(ctx.frame, path, ctx.config) && ctx.dm.lock().unwrap().open_file(ctx.dm, path) {
+		if ensure_parser_ready_for_path(ctx.frame, &path, ctx.config) && ctx.dm.lock().unwrap().open_file(ctx.dm, &path)
+		{
 			opened_any = true;
 		}
 	}

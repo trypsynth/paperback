@@ -23,7 +23,7 @@ Paperback działa w systemach Windows 10/11, we wszystkich nowoczesnych wersjach
 * Odczytuje zeskanowane strony PDF za pomocą OCR wbudowanego w Windows i macOS.
 * Pozwala dodawać zakładki i notatki, aby zaznaczać miejsca i do nich wracać.
 * Umożliwia zmianę każdego skrótu klawiszowego.
-* Zawiera `pb`, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak `*.pdf`, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu.
+* Zawiera `pb`, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak `*.pdf`, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu. Opcja `--files-from` pozwala też wczytać listę dokumentów z pliku lub ze standardowego wejścia. Można również przekształcać dokumenty bezpośrednio z odnośników HTTP i HTTPS.
 
 ## Zgodność z czytnikami ekranu
 

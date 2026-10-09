@@ -334,6 +334,47 @@ jobs:
       # The default profile shares the wxWidgets build with the workspace tests.
       - name: Run clippy
         run: cargo clippy --workspace --all-targets
+  test-linux:
+    name: Tests (Linux)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build clang libclang-dev pkg-config libssl-dev gettext \
+            libgtk-3-dev libpng-dev libjpeg-dev libgl1-mesa-dev libglu1-mesa-dev \
+            libxkbcommon-dev libwayland-dev libexpat1-dev libtiff-dev \
+            libwebkit2gtk-4.1-dev libxtst-dev libsm-dev libice-dev \
+            libasound2-dev
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: clippy
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          # Writing the cache takes about five minutes. Only master writes one; a pull request
+          # restores it and skips the write, which is the slowest step in several of these jobs.
+          save-if: ${{ github.ref == 'refs/heads/master' }}
+      # The wxWidgets commit .cargo/config.toml pins in WXWIDGETS_DIR, cached by that pin.
+      - name: Cache the pinned wxWidgets source
+        uses: actions/cache@v6
+        with:
+          path: target/wxWidgets-*
+          key: wxwidgets-src-${{ hashFiles('.cargo/config.toml') }}
+      - name: Fetch the pinned wxWidgets source
+        run: cargo xtask wxwidgets
+      - name: Run tests
+        run: cargo test --workspace
+      # The default profile shares the wxWidgets build with the workspace tests.
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets
   clippy:
     name: Clippy
     runs-on: windows-latest

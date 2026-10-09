@@ -2,16 +2,25 @@
 //! through, while an unrecognized one prompts the user via the "Open As" dialog (remembering
 //! their choice per-path) unless a previous choice for that path is already on record.
 
-use std::{path::Path, rc::Rc, sync::Mutex};
+use std::{
+	env,
+	fs::File,
+	io::BufReader,
+	path::{Path, PathBuf},
+	rc::Rc,
+	sync::Mutex,
+};
 
 use paperback_core::{
 	config::ConfigManager,
 	parser::{parser_supports_extension, parser_supports_path},
+	util::zip::{extract_zip_entry_to_cache, zip_books_to_browse},
 };
 use patois::t;
 use wxdragon::prelude::*;
 
 use super::dialogs;
+use crate::ui::dialogs::ZipChoice;
 
 pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
 	let extension = parser_extension_for_path(path);
@@ -20,6 +29,60 @@ pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &
 	}
 	let cfg = config.lock().unwrap();
 	ensure_parser_for_unknown_file(frame, path, &cfg)
+}
+
+/// Lets the user pick a document from a zip that holds several, and returns what to open instead. Runs before the document manager is locked, since the picker is modal.
+pub(crate) fn resolve_zip_path(
+	frame: &Frame,
+	path: &Path,
+	config: &Rc<Mutex<ConfigManager>>,
+	quit_if_closed: bool,
+) -> Option<PathBuf> {
+	// A format the user forced for this zip means they want it opened as one document, not browsed.
+	if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
+		|| !config.lock().unwrap().get_document_format(&path.to_string_lossy()).is_empty()
+	{
+		return Some(path.to_path_buf());
+	}
+	let Some(names) = File::open(path)
+		.ok()
+		.and_then(|file| zip::ZipArchive::new(BufReader::new(file)).ok())
+		.and_then(|archive| zip_books_to_browse(&archive))
+	else {
+		return Some(path.to_path_buf());
+	};
+	let chosen = match dialogs::show_zip_entries_dialog(frame, &names) {
+		ZipChoice::Entry(chosen) => chosen,
+		ZipChoice::Cancelled => return None,
+		ZipChoice::Closed => {
+			if quit_if_closed {
+				// Queued so the frame closes from the event loop, not from inside this open call.
+				wxdragon::call_after(Box::new(|| {
+					if let Some(window) = crate::ui::app::main_window_from_ptr() {
+						window.frame().close(false);
+					}
+				}));
+			}
+			return None;
+		}
+	};
+	// Temp, not the config dir: extracted books are disposable and the OS cleans it.
+	let cache = env::temp_dir().join("paperback-zip-cache");
+	match extract_zip_entry_to_cache(path, &names[chosen], &cache) {
+		Ok(extracted) => Some(extracted),
+		Err(err) => {
+			tracing::error!(path = %path.display(), error = %err, "failed to extract archive entry");
+			// TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+			let message = t("Couldn't extract the document from the archive: {}").replace("{}", &err.to_string());
+			// TRANSLATORS: Generic error dialog title
+			let title = t("Error");
+			MessageDialog::builder(frame, &message, &title)
+				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+				.build()
+				.show_modal();
+			None
+		}
+	}
 }
 
 fn parser_extension_for_path(path: &Path) -> String {

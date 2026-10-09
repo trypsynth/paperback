@@ -88,7 +88,7 @@ impl PaperbackApp {
 				window.show_from_dock();
 				for file in &files {
 					tracing::info!(path = %file, "opening file from macOS open-files event");
-					window.open_file(Path::new(file));
+					window.open_file(Path::new(file), false);
 				}
 			}
 		});
@@ -114,7 +114,7 @@ fn open_from_command_line(main_window: &MainWindow) {
 	if let Some(path) = env::args().nth(1) {
 		let normalized = normalize_cli_path(Path::new(&path));
 		tracing::info!(path = %normalized.display(), "opening file from command line");
-		main_window.open_file(&normalized);
+		main_window.open_file(&normalized, true);
 	}
 }
 
@@ -262,14 +262,12 @@ mod pipe_unix {
 
 	pub fn serve_loop(listener: UnixListener, on_data: impl Fn(Vec<u8>) + Send + 'static) {
 		thread::spawn(move || {
-			for conn in listener.incoming() {
-				if let Ok(mut stream) = conn {
-					let mut buf = vec![0u8; 4096];
-					if let Ok(n) = stream.read(&mut buf) {
-						if n > 0 {
-							on_data(buf[..n].to_vec());
-						}
-					}
+			for mut stream in listener.incoming().flatten() {
+				let mut buf = vec![0u8; 4096];
+				if let Ok(n) = stream.read(&mut buf)
+					&& n > 0
+				{
+					on_data(buf[..n].to_vec());
 				}
 			}
 		});
