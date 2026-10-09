@@ -22,6 +22,7 @@ mod text_window;
 mod translation_manager;
 mod ui;
 mod updater;
+mod working_copy;
 
 use std::{env, fs, io};
 
