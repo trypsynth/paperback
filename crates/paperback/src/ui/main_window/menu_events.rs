@@ -224,7 +224,7 @@ impl MainWindow {
 				}
 				#[cfg(not(target_os = "macos"))]
 				menu_ids::SELECT_ALL => {
-					menu_edit::handle_select_all(&dm);
+					menu_edit::handle_select_all(&dm, live_region_label, from_keyboard);
 				}
 				_ => {
 					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);

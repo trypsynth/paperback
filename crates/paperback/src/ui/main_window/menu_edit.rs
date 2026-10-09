@@ -2,7 +2,7 @@
 
 use std::{rc::Rc, sync::Mutex};
 
-use patois::t;
+use patois::{nt, t};
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
 use super::DocumentManager;
@@ -43,10 +43,25 @@ fn copy_message(outcome: CopyOutcome) -> String {
 	}
 }
 
-pub fn handle_select_all(dm: &Rc<Mutex<DocumentManager>>) {
-	if let Some(tab) = dm.lock().unwrap().active_tab() {
-		tab.text_ctrl.select_all();
-	}
+/// Selects everything the reading control holds, and says how much text the document has.
+///
+/// Announces for the same reason the copy above does, and one more: a screen reader's own report of
+/// a selection change is not something this app can hold back, so as the only feedback the command
+/// gave the reader it went out the instant the menu closed and the focus-return chain read over it.
+/// Saying it here means a menu click gets the same delayed announcement every other command gets,
+/// and a shortcut gets it immediately.
+pub fn handle_select_all(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
+	let Some(count) = dm.lock().unwrap().select_all_and_count() else {
+		return;
+	};
+	announce_for_command(live_region_label, from_keyboard, selected_message(count));
+}
+
+/// Its own function of the count so the wording can be pinned without a document, which a test cannot build.
+fn selected_message(count: usize) -> String {
+	// TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+	nt("Selected %d character.", "Selected %d characters.", u64::try_from(count).unwrap_or(0))
+		.replacen("%d", &count.to_string(), 1)
 }
 
 #[cfg(test)]
@@ -74,5 +89,16 @@ mod tests {
 	#[test]
 	fn a_clipboard_that_refused_the_text_says_so() {
 		assert_eq!(copy_message(CopyOutcome::Failed), "Could not copy to the clipboard.");
+	}
+
+	#[test]
+	fn a_select_all_says_how_many_characters_the_document_has() {
+		assert_eq!(selected_message(42), "Selected 42 characters.");
+	}
+
+	/// One is read aloud by a person, not measured by a buffer.
+	#[test]
+	fn a_select_all_of_one_character_is_not_plural() {
+		assert_eq!(selected_message(1), "Selected 1 character.");
 	}
 }
