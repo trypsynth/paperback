@@ -77,7 +77,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 ### File menu
 
 * `Ctrl+O`: Open a document.
-* `Ctrl+L` (macOS: `Cmd+Option+O`): Open documents from web links, one per line.
+* `Ctrl+L` (macOS: `Cmd+Option+O`): Open a document from a web link.
 * `Ctrl+F4` (macOS: `Cmd+W`): Close the current document.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Close all open documents.
 * `Ctrl+Shift+T`: Reopen the last closed document.
