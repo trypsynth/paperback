@@ -88,7 +88,7 @@ impl PaperbackApp {
 				window.show_from_dock();
 				for file in &files {
 					tracing::info!(path = %file, "opening file from macOS open-files event");
-					window.open_file(Path::new(file));
+					window.open_file(Path::new(file), false);
 				}
 			}
 		});
@@ -114,7 +114,7 @@ fn open_from_command_line(main_window: &MainWindow) {
 	if let Some(path) = env::args().nth(1) {
 		let normalized = normalize_cli_path(Path::new(&path));
 		tracing::info!(path = %normalized.display(), "opening file from command line");
-		main_window.open_file(&normalized);
+		main_window.open_file(&normalized, true);
 	}
 }
 

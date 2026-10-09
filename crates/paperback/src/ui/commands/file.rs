@@ -39,7 +39,7 @@ pub fn open(ctx: &Ctx) {
 	paths.sort();
 	let mut opened_any = false;
 	for path in &paths {
-		let Some(path) = resolve_zip_path(ctx.frame, Path::new(path), ctx.config, ctx.dm) else {
+		let Some(path) = resolve_zip_path(ctx.frame, Path::new(path), ctx.config, false) else {
 			continue;
 		};
 		// One book that cannot be opened, or whose unknown type the reader declines to pick a reader for, does not stop the rest.

@@ -8,7 +8,7 @@ use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 pub enum ZipChoice {
 	Entry(usize),
 	Cancelled,
-	/// Closed with the title-bar X or Alt+F4, as opposed to the Cancel button or Escape.
+	/// Kept apart from `Cancelled` because closing the window is how a user leaves when the picker is all that opened at startup.
 	Closed,
 }
 

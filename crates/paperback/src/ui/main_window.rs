@@ -177,8 +177,8 @@ impl MainWindow {
 		updater::run_update_check(&self.frame, silent, channel);
 	}
 
-	pub fn open_file(&self, path: &Path) -> bool {
-		let Some(path) = resolve_zip_path(&self.frame, path, &self.config, &self.doc_manager) else {
+	pub fn open_file(&self, path: &Path, quit_if_picker_closed: bool) -> bool {
+		let Some(path) = resolve_zip_path(&self.frame, path, &self.config, quit_if_picker_closed) else {
 			return false;
 		};
 		if !self.ensure_parser_ready(&path) {

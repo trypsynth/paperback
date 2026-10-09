@@ -196,7 +196,7 @@ pub fn zip_books(entries: &[ZipEntryInfo]) -> Vec<String> {
 		.collect()
 }
 
-/// The documents to offer for `archive`, or `None` when it should open as a single document. That is when it holds a collection, or when no parser would claim it (neither a DAISY book nor Word documents).
+/// A collection, or a zip no parser would claim, is something to pick from. A lone DAISY book or a set of Word documents has a parser of its own, and a picker would only get in its way. `None` means open the zip as one document.
 pub fn zip_books_to_browse<R: Read + Seek>(archive: &ZipArchive<R>) -> Option<Vec<String>> {
 	let entries = list_zip_entries(archive);
 	let books = zip_books(&entries);
@@ -219,23 +219,12 @@ pub fn extract_zip_entry_to_cache(zip_path: &Path, entry_name: &str, cache_root:
 	hasher.update(entry_name.as_bytes());
 	let entry_root = cache_root.join(URL_SAFE_NO_PAD.encode(hasher.finalize()));
 	if is_daisy_book_file(entry_name) {
-		// A DAISY book is many files that refer to each other, so extract its whole folder.
+		// A DAISY book is many files that refer to each other, so extract its whole folder. At the archive root that would be the whole archive, so only the files beside the book come along.
 		let dir = dir_of(entry_name);
 		let prefix = if dir.is_empty() { String::new() } else { format!("{dir}/") };
-		// A book at the root would otherwise take every other book in the archive along.
-		let other_books: Vec<String> = if prefix.is_empty() {
-			archive
-				.file_names()
-				.flatten()
-				.filter(|n| is_daisy_book_file(n) && !dir_of(n).is_empty())
-				.map(|n| format!("{}/", dir_of(&n)))
-				.collect()
-		} else {
-			Vec::new()
-		};
 		extract_zip_to_dir(&mut archive, &entry_root, |p| {
 			let p = p.to_string_lossy().replace('\\', "/");
-			!p.starts_with(&prefix) || other_books.iter().any(|d| p.starts_with(d))
+			!p.starts_with(&prefix) || (prefix.is_empty() && p.contains('/'))
 		})?;
 		return Ok(entry_root.join(entry_name));
 	}
@@ -535,10 +524,11 @@ mod tests {
 	#[test]
 	fn extract_zip_entry_to_cache_leaves_other_books_out_of_a_root_daisy_book() {
 		let dir = TempDir::new("zip");
-		let zip_path = write_zip(&dir, &["book.opf", "book.xml", "d1/other.opf", "d1/other.xml"]);
+		let zip_path = write_zip(&dir, &["book.opf", "book.xml", "d1/other.opf", "d1/other.xml", "e/a.epub"]);
 		let opf = extract_zip_entry_to_cache(&zip_path, "book.opf", &dir.path().join("cache")).expect("extract");
 		assert!(opf.with_file_name("book.xml").is_file());
 		assert!(!opf.with_file_name("d1").exists());
+		assert!(!opf.with_file_name("e").exists());
 	}
 
 	fn write_zip(dir: &TempDir, names: &[&str]) -> PathBuf {

@@ -88,7 +88,7 @@ fn handle_show_all_documents(
 	}
 	let mut opened_any = false;
 	for path in &result.open {
-		let Some(path) = resolve_zip_path(frame, Path::new(path), config, dm) else {
+		let Some(path) = resolve_zip_path(frame, Path::new(path), config, false) else {
 			continue;
 		};
 		// One book that cannot be opened, or whose unknown type the reader declines to pick a reader for, does not stop the rest.

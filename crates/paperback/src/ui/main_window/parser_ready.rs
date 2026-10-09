@@ -36,7 +36,7 @@ pub(crate) fn resolve_zip_path(
 	frame: &Frame,
 	path: &Path,
 	config: &Rc<Mutex<ConfigManager>>,
-	doc_manager: &Rc<Mutex<DocumentManager>>,
+	quit_if_closed: bool,
 ) -> Option<PathBuf> {
 	if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
 		|| !config.lock().unwrap().get_document_format(&path.to_string_lossy()).is_empty()
@@ -54,8 +54,7 @@ pub(crate) fn resolve_zip_path(
 		ZipChoice::Entry(chosen) => chosen,
 		ZipChoice::Cancelled => return None,
 		ZipChoice::Closed => {
-			// Closing the picker is what the user did to leave Paperback when nothing else is open.
-			if doc_manager.try_lock().is_ok_and(|dm| dm.active_tab_index().is_none()) {
+			if quit_if_closed {
 				wxdragon::call_after(Box::new(|| {
 					if let Some(window) = crate::ui::app::main_window_from_ptr() {
 						window.frame().close(false);
