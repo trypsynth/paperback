@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 12:00+0000\n"
-"PO-Revision-Date: 2026-10-08 23:06+0300\n"
+"POT-Creation-Date: 2026-10-08 21:23+0000\n"
+"PO-Revision-Date: 2026-10-09 03:17+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -498,7 +498,6 @@ msgid "Show notes only"
 msgstr "Näytä vain muistiinpanot"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
-#| msgid "&View Note Text"
 msgid "&View Note Text..."
 msgstr "&Näytä muistiinpano..."
 
@@ -511,7 +510,6 @@ msgid "&Toggle Bookmark"
 msgstr "&Lisää tai poista kirjanmerkki"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
-#| msgid "Bookmark &with Note"
 msgid "Bookmark &with Note..."
 msgstr "Kirjanmerkki &muistiinpanolla..."
 
@@ -1114,6 +1112,12 @@ msgstr "&Yhdistä PDF-tiedostojen rivitetyt tekstit kappaleiksi"
 msgid "Remove repeated page &headers and footers in PDFs"
 msgstr "Poista PDF-asiakirjoista toistuvat ylä- ja alatunnisteet"
 
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr ""
+"Käsittele dollarimerkkien välinen teksti Markdown-asiakirjoissa "
+"matemaattisena kaavana"
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr "Näytä tiivis &Siirry-valikko"
@@ -1682,28 +1686,30 @@ msgid "{} - Paperback"
 msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
-msgid "&Undo\tCtrl+Z"
-msgstr "K&umoa\tCtrl+Z"
+msgid "&Undo"
+msgstr "K&umoa"
 
 #. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "Tee uu&delleen\tCtrl+Vaihto+Z"
+msgid "&Redo"
+msgstr "Tee uu&delleen"
 
 #. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
-msgid "Cu&t\tCtrl+X"
-msgstr "&Leikkaa\tCtrl+X"
+msgid "Cu&t"
+msgstr "&Leikkaa"
 
 #. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
-msgid "&Copy\tCtrl+C"
-msgstr "&Kopioi\tCtrl+C"
+msgid "&Copy"
+msgstr "&Kopioi"
 
 #. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
-msgid "&Paste\tCtrl+V"
-msgstr "L&iitä\tCtrl+V"
+#| msgid "&Paste\tCtrl+V"
+msgid "&Paste"
+msgstr "&Liitä"
 
 #. TRANSLATORS: Menu item in the Edit menu to select all text.
-msgid "Select &All\tCtrl+A"
-msgstr "Valitse k&aikki\tCtrl+A"
+#| msgid "Select &All\tCtrl+A"
+msgid "Select &All"
+msgstr "Valitse k&aikki"
 
 #. TRANSLATORS: Menu item in the Edit menu to open the find dialog.
 msgid "&Find..."
@@ -1902,13 +1908,12 @@ msgid "Go forward in history"
 msgstr "Siirry historiassa eteenpäin"
 
 #. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
-#| msgid "Table &of Contents"
 msgid "Table &of Contents..."
 msgstr "Sisäll&ysluettelo..."
 
 #. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
 msgid "Show table of contents"
-msgstr "Näytä sisällysluettelo"
+msgstr "Avaa sisällysluettelo"
 
 #. TRANSLATORS: Menu item in the Go menu to show a list of the document's structural elements.
 msgid "&Elements List..."
@@ -1916,10 +1921,9 @@ msgstr "&Elementtilista..."
 
 #. TRANSLATORS: Status-bar help text for the Elements List menu item.
 msgid "Show elements list"
-msgstr "Näytä elementtilista"
+msgstr "Avaa elementtilista"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-#| msgid "Go to Page..."
 msgid "&Go to Page..."
 msgstr "&Siirry sivulle..."
 
@@ -1964,7 +1968,6 @@ msgid "Support Paperback development"
 msgstr "Tue Paperbackin kehitystä"
 
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
-#| msgid "&Word Count"
 msgid "&Word Count..."
 msgstr "&Sanamäärä..."
 
@@ -1973,7 +1976,6 @@ msgid "Show word count"
 msgstr "Näytä sanamäärä"
 
 #. TRANSLATORS: Menu item in the Tools menu to show information about the document.
-#| msgid "Document &Info"
 msgid "Document &Info..."
 msgstr "Asiakirjan t&iedot..."
 
@@ -2292,7 +2294,6 @@ msgid "Go to percent"
 msgstr "Siirry prosenttiin"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-#| msgid "Copied (%d chars)."
 msgid "Copied %d character."
 msgid_plural "Copied %d characters."
 msgstr[0] "Kopioitu %d merkki."
@@ -2564,12 +2565,10 @@ msgid "Past Container End"
 msgstr "Säilön jälkeinen kohta"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#| msgid "Document Info"
 msgid "Document Info..."
 msgstr "Asiakirjan tiedot..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#| msgid "Table of Contents"
 msgid "Table of Contents..."
 msgstr "Sisällysluettelo..."
 
@@ -3766,8 +3765,8 @@ msgstr "Asiakirjassa ei ole sisällysluetteloa."
 msgid "Navigation unit"
 msgstr "Navigoinnin tarkkuus"
 
-#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "previous" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 msgid "Previous {}"
 msgstr "Edellinen {}"
 
@@ -3791,8 +3790,8 @@ msgstr "Asiakirjan loppu"
 msgid "Beginning of document"
 msgstr "Asiakirjan alku"
 
-#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "next" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 msgid "Next {}"
 msgstr "Seuraava {}"
 
@@ -4371,7 +4370,7 @@ msgstr "siirtyäksesi linkkiin"
 #. TRANSLATORS: TalkBack action label for a long press that opens the import and export menu
 #: kt
 msgid "show import and export options"
-msgstr "näyttääksesi tuonnin ja viennin asetukset"
+msgstr "avataksesi tuonnin ja viennin asetukset"
 
 #. TRANSLATORS: TalkBack action label for a document in the recent list, read as "double tap to open"
 #: kt
@@ -4474,3 +4473,72 @@ msgid "Opens Paperback in the Settings app, where its language can be changed."
 msgstr ""
 "Avaa Paperbackin asetukset järjestelmän Asetukset-sovelluksessa, jossa voi "
 "vaihtaa kieltä."
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
+#: kt swift
+#| msgid "Previous Page"
+msgid "Previous Paragraph"
+msgstr "Edellinen kappale"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
+#: kt swift
+#| msgid "Previous Link"
+msgid "Previous Line"
+msgstr "Edellinen rivi"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by paragraph
+#: kt swift
+#| msgid "Paragraph"
+msgid "Next Paragraph"
+msgstr "Seuraava kappale"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by line
+#: kt swift
+#| msgid "Next Link"
+msgid "Next Line"
+msgstr "Seuraava rivi"
+
+#. TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+#: kt
+msgid "Show all options in a menu"
+msgstr "Avaa kaikkien vaihtoehtojen valikko"
+
+#. TRANSLATORS: TalkBack action on a document tab that closes it; {} is the document's title
+#: kt
+#| msgid "Close"
+msgid "Close {}"
+msgstr "Sulje {}"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
+#: kt
+#| msgid "Navigation unit"
+msgid "Select navigation unit"
+msgstr "Navigoinnin tarkkuus"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+#: kt
+#| msgid "Speech Rate"
+msgid "Select speech rate"
+msgstr "Puhenopeus"
+
+#. TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
+#: kt
+msgid "Storage Devices"
+msgstr "Tallennustilat"
+
+#. TRANSLATORS: TalkBack label for the file manager's row that goes up a folder; {} is the parent folder's name
+#: kt
+msgid "Go up to parent directory: {}"
+msgstr "Siirry ylemmän tason hakemistoon: {}"
+
+#~ msgid "&Undo\tCtrl+Z"
+#~ msgstr "K&umoa\tCtrl+Z"
+
+#~ msgid "&Redo\tCtrl+Shift+Z"
+#~ msgstr "Tee uu&delleen\tCtrl+Vaihto+Z"
+
+#~ msgid "Cu&t\tCtrl+X"
+#~ msgstr "&Leikkaa\tCtrl+X"
+
+#~ msgid "&Copy\tCtrl+C"
+#~ msgstr "&Kopioi\tCtrl+C"
