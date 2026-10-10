@@ -22,6 +22,12 @@ use wxdragon::prelude::*;
 use super::dialogs;
 use crate::ui::dialogs::ZipChoice;
 
+/// Shows Open As for `path` unless a format is already saved for it, and saves the choice.
+pub fn choose_format(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
+	let cfg = config.lock().unwrap();
+	ensure_parser_for_unknown_file(frame, path, &cfg)
+}
+
 pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
 	let extension = parser_extension_for_path(path);
 	if extension.is_empty() || parser_supports_path(path) {
@@ -42,6 +48,15 @@ pub(crate) fn resolve_zip_path(
 	if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
 		|| !config.lock().unwrap().get_document_format(&path.to_string_lossy()).is_empty()
 	{
+		return Some(path.to_path_buf());
+	}
+	browse_zip(frame, path, quit_if_closed)
+}
+
+/// [`resolve_zip_path`] without its check for a format saved for `path`, for a downloaded zip
+/// whose settings are kept under its link.
+pub fn browse_zip(frame: &Frame, path: &Path, quit_if_closed: bool) -> Option<PathBuf> {
+	if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip")) {
 		return Some(path.to_path_buf());
 	}
 	let Some(names) = File::open(path)

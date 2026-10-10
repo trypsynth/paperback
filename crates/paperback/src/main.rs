@@ -7,6 +7,7 @@ mod audio_player;
 mod config_ext;
 mod ipc;
 mod legacy_config;
+mod links;
 #[cfg(target_os = "linux")]
 mod linux_integration;
 mod logging;
@@ -22,6 +23,7 @@ mod text_window;
 mod translation_manager;
 mod ui;
 mod updater;
+mod working_copy;
 
 use std::{env, fs, io};
 

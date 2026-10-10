@@ -555,8 +555,9 @@ pub fn is_external_url(url: &str) -> bool {
 /// Whether `text` is an http or https link.
 #[must_use]
 pub fn is_remote_url(text: &str) -> bool {
-	let lower = text.to_ascii_lowercase();
-	["http://", "https://"].iter().any(|scheme| lower.strip_prefix(scheme).is_some_and(|rest| !rest.is_empty()))
+	["http://", "https://"].iter().any(|scheme| {
+		text.len() > scheme.len() && text.get(..scheme.len()).is_some_and(|prefix| prefix.eq_ignore_ascii_case(scheme))
+	})
 }
 
 /// The last path segment of a link, percent-decoded, without query or fragment.
