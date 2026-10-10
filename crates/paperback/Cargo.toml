@@ -40,7 +40,7 @@ ship-shape = "0.4.1"
 # The temporary folder a document opened from a link is downloaded into.
 tempfile = "3.27.0"
 toml = { workspace = true }
-wx-utils = { version = "0.4.2", features = ["shortcuts"] }
+wx-utils = { version = "0.4.3", features = ["shortcuts"] }
 # `default-features = false` turns off the seven size knobs wxdragon enables by default, all of
 # which Paperback pays for and none of which it uses: it never prints, it decodes its own icon
 # with the `image` crate and hands wx raw pixels rather than going through wx's JPEG, TIFF, GIF

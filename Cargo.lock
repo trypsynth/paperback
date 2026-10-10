@@ -5509,9 +5509,9 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "wx-utils"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9ec56dbb82e24c9eff07f9e637f5a44410a4166ac9c8f25fe0fce34d8c58d17"
+checksum = "e92a58893c3e57e6156221c2eafc9ef3dcc6e6576813e7fc74b6b00e909741a9"
 dependencies = [
  "key-chord",
  "live-region",
