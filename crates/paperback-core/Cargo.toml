@@ -57,9 +57,9 @@ tracing = "0.1.44"
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.2", features = ["cli"], optional = true }
 ureq = { version = "3.4.2", default-features = false, features = ["rustls"], optional = true }
-zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
+zip = { version = "9.0.1", default-features = false, features = ["deflate"] }
 mathcat = { version = "0.7.5", features = ["include-zip"] }
-math-core = "0.7.0"
+math-core = "0.8.2"
 
 [build-dependencies]
 shipfitter = "0.2.2"
@@ -70,7 +70,7 @@ rstest = { workspace = true }
 # Only for constructing password-protected archives in tests; matches the main `zip`
 # dependency's default-features = false, adding just aes-crypto rather than the full
 # default bundle (bzip2, lzma, ppmd, zstd).
-zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate", "aes-crypto"] }
+zip = { version = "9.0.1", default-features = false, features = ["deflate", "aes-crypto"] }
 
 [features]
 fetch = ["dep:ureq"]
