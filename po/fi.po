@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 21:23+0000\n"
-"PO-Revision-Date: 2026-10-09 03:59+0300\n"
+"POT-Creation-Date: 2026-10-09 16:45+0000\n"
+"PO-Revision-Date: 2026-10-10 03:08+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1363,6 +1363,14 @@ msgid_plural "This document contains %d words."
 msgstr[0] "Asiakirjassa on %d sana."
 msgstr[1] "Asiakirjassa on %d sanaa."
 
+#. TRANSLATORS: Title of the dialog listing the documents inside a zip archive
+msgid "Open from Archive"
+msgstr "Avaa paketista"
+
+#. TRANSLATORS: Label for the list of documents inside a zip archive
+msgid "&Documents in this archive:"
+msgstr "Paketin as&iakirjat:"
+
 #. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
 msgid "{} to {}"
 msgstr "{} / {}"
@@ -1557,6 +1565,14 @@ msgstr "Kopioitavaa tekstiä ei ole."
 msgid "Could not copy to the clipboard."
 msgstr "Leikepöydälle ei voi kopioida."
 
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+#| msgid "Copied %d character."
+#| msgid_plural "Copied %d characters."
+msgid "Selected %d character."
+msgid_plural "Selected %d characters."
+msgstr[0] "%d merkki valittu."
+msgstr[1] "%d merkkiä valittu."
+
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
 msgstr "Automaattinen rivitys käytössä."
@@ -1670,6 +1686,11 @@ msgstr "Tämä asiakirjamuoto ei tue lähdekoodinäkymää."
 msgid "Could not load the document source."
 msgstr "Asiakirjan lähdekoodia ei voitu näyttää."
 
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+#| msgid "Could not load the document source."
+msgid "Couldn't extract the document from the archive: {}"
+msgstr "Asiakirjan purkaminen paketista ei onnistunut. Virhe: {}"
+
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
 msgstr "Valittua tiedostomuotoa ei tueta."
@@ -1702,12 +1723,10 @@ msgid "&Copy"
 msgstr "&Kopioi"
 
 #. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
-#| msgid "&Paste\tCtrl+V"
 msgid "&Paste"
 msgstr "&Liitä"
 
 #. TRANSLATORS: Menu item in the Edit menu to select all text.
-#| msgid "Select &All\tCtrl+A"
 msgid "Select &All"
 msgstr "Valitse k&aikki"
 
@@ -4476,25 +4495,21 @@ msgstr ""
 
 #. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
 #: kt swift
-#| msgid "Previous Page"
 msgid "Previous Paragraph"
 msgstr "Edellinen kappale"
 
 #. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
 #: kt swift
-#| msgid "Previous Link"
 msgid "Previous Line"
 msgstr "Edellinen rivi"
 
 #. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by paragraph
 #: kt swift
-#| msgid "Paragraph"
 msgid "Next Paragraph"
 msgstr "Seuraava kappale"
 
 #. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by line
 #: kt swift
-#| msgid "Next Link"
 msgid "Next Line"
 msgstr "Seuraava rivi"
 
@@ -4505,19 +4520,16 @@ msgstr "Avaa kaikkien vaihtoehtojen valikko"
 
 #. TRANSLATORS: TalkBack action on a document tab that closes it; {} is the document's title
 #: kt
-#| msgid "Close"
 msgid "Close {}"
 msgstr "Sulje {}"
 
 #. TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
 #: kt
-#| msgid "Navigation unit"
 msgid "Select navigation unit"
 msgstr "Valitse navigoinnin tarkkuus"
 
 #. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
 #: kt
-#| msgid "Speech Rate"
 msgid "Select speech rate"
 msgstr "Valitse puhenopeus"
 
@@ -4530,15 +4542,3 @@ msgstr "Tallennustilat"
 #: kt
 msgid "Go up to parent directory: {}"
 msgstr "Siirry ylemmän tason hakemistoon: {}"
-
-#~ msgid "&Undo\tCtrl+Z"
-#~ msgstr "K&umoa\tCtrl+Z"
-
-#~ msgid "&Redo\tCtrl+Shift+Z"
-#~ msgstr "Tee uu&delleen\tCtrl+Vaihto+Z"
-
-#~ msgid "Cu&t\tCtrl+X"
-#~ msgstr "&Leikkaa\tCtrl+X"
-
-#~ msgid "&Copy\tCtrl+C"
-#~ msgstr "&Kopioi\tCtrl+C"
