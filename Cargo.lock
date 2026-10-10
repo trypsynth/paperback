@@ -3901,9 +3901,9 @@ dependencies = [
 
 [[package]]
 name = "ship-shape"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4509036deff18ba59490ea407c32a5af270578d3243b69365cdc73a829af4a3e"
+checksum = "8b0b7c20aa2e52b4bc6836cae11b8ac863a0263139522d11f8b09ee123dcd3a4"
 dependencies = [
  "homeport",
  "minisign-verify",
@@ -3912,6 +3912,7 @@ dependencies = [
  "serde",
  "tempfile",
  "ureq",
+ "wx-utils",
  "wxdragon",
 ]
 
@@ -5507,9 +5508,9 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "wx-utils"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92cb0406267678a3fd8fcd060d708ccbcce6f639b1beb4741ce53df1254de16e"
+checksum = "b9ec56dbb82e24c9eff07f9e637f5a44410a4166ac9c8f25fe0fce34d8c58d17"
 dependencies = [
  "key-chord",
  "live-region",
