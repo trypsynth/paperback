@@ -57,7 +57,8 @@ fun TtsBottomBar(
 	currentUnit: NavUnit,
 	navUnits: List<NavUnit>,
 	onNavUnitChange: (NavUnit) -> Unit,
-	speechRatePercent: Int,
+	// Null hides the rate control: the System default engine follows the rate set in Android's own settings.
+	speechRatePercent: Int?,
 	onSpeechRateChange: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 	swipeUpMovesForward: Boolean = true,
@@ -210,44 +211,46 @@ fun TtsBottomBar(
 			// Speech rate sits opposite the unit selector and works the same way: a chip to tap
 			// for presets, a swipe slider for TalkBack, so changing speed mid-book does not mean
 			// a trip into Settings.
-			Box(modifier = Modifier.align(Alignment.CenterEnd)) {
-				FilterChip(
-					selected = false,
-					onClick = { rateMenuExpanded = true },
-					label = { Text("$speechRatePercent%") },
-					modifier = Modifier.clearAndSetSemantics {
-						// TRANSLATORS: TalkBack label for the read-aloud bar's speech rate control
-						contentDescription = t("Speech Rate")
-						stateDescription = "$speechRatePercent%"
-						progressBarRangeInfo = ProgressBarRangeInfo(
-							current = (SEEK_RANGE / 2).toFloat(),
-							range = 0f..SEEK_RANGE.toFloat(),
-							steps = SEEK_RANGE - 1,
-						)
-						setProgress { targetValue ->
-							val current = SEEK_RANGE / 2
-							val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
-							when {
-								newPos > current -> onSpeechRateChange(speechRatePercent + RATE_STEP)
-								newPos < current -> onSpeechRateChange(speechRatePercent - RATE_STEP)
+			if (speechRatePercent != null) {
+				Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+					FilterChip(
+						selected = false,
+						onClick = { rateMenuExpanded = true },
+						label = { Text("$speechRatePercent%") },
+						modifier = Modifier.clearAndSetSemantics {
+							// TRANSLATORS: TalkBack label for the read-aloud bar's speech rate control
+							contentDescription = t("Speech Rate")
+							stateDescription = "$speechRatePercent%"
+							progressBarRangeInfo = ProgressBarRangeInfo(
+								current = (SEEK_RANGE / 2).toFloat(),
+								range = 0f..SEEK_RANGE.toFloat(),
+								steps = SEEK_RANGE - 1,
+							)
+							setProgress { targetValue ->
+								val current = SEEK_RANGE / 2
+								val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
+								when {
+									newPos > current -> onSpeechRateChange(speechRatePercent + RATE_STEP)
+									newPos < current -> onSpeechRateChange(speechRatePercent - RATE_STEP)
+								}
+								true
 							}
-							true
+							// TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+							onClick(label = t("Select speech rate")) {
+								rateMenuExpanded = true
+								true
+							}
 						}
-						// TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
-						onClick(label = t("Select speech rate")) {
-							rateMenuExpanded = true
-							true
-						}
-					}
-				)
-				DropdownMenu(
-					expanded = rateMenuExpanded,
-					onDismissRequest = { rateMenuExpanded = false },
-				) {
-					RATE_PRESETS.forEach { percent ->
-						PickerMenuItem(label = "$percent%", selected = percent == speechRatePercent) {
-							onSpeechRateChange(percent)
-							rateMenuExpanded = false
+					)
+					DropdownMenu(
+						expanded = rateMenuExpanded,
+						onDismissRequest = { rateMenuExpanded = false },
+					) {
+						RATE_PRESETS.forEach { percent ->
+							PickerMenuItem(label = "$percent%", selected = percent == speechRatePercent) {
+								onSpeechRateChange(percent)
+								rateMenuExpanded = false
+							}
 						}
 					}
 				}
