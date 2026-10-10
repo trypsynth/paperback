@@ -19,7 +19,8 @@ dunce = "1.0.5"
 image = { version = "0.25.10", default-features = false, features = ["png"] }
 live-region = "0.3.3"
 native-ocr = "0.1.0"
-paperback-core = { path = "../paperback-core" }
+# `fetch` downloads documents opened from links.
+paperback-core = { path = "../paperback-core", features = ["fetch"] }
 paperback-formats = { path = "../paperback-formats" }
 patois = { version = "0.2.3", features = ["ui"] }
 # Decodes and plays DAISY narration in process. Recording and dithering are off: neither is
@@ -35,9 +36,11 @@ rodio-wsola = "0.2.0"
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-ship-shape = "0.4.0"
+ship-shape = "0.4.1"
+# The temporary folder a document opened from a link is downloaded into.
+tempfile = "3.27.0"
 toml = { workspace = true }
-wx-utils = { version = "0.4.1", features = ["shortcuts"] }
+wx-utils = { version = "0.4.3", features = ["shortcuts"] }
 # `default-features = false` turns off the seven size knobs wxdragon enables by default, all of
 # which Paperback pays for and none of which it uses: it never prints, it decodes its own icon
 # with the `image` crate and hands wx raw pixels rather than going through wx's JPEG, TIFF, GIF

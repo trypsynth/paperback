@@ -258,6 +258,7 @@ mod tests {
 			ShortcutCategory::File.actions(),
 			[
 				ActionId::Open,
+				ActionId::OpenFromUrl,
 				ActionId::Close,
 				ActionId::CloseAll,
 				ActionId::ReopenLastClosed,

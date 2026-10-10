@@ -42,9 +42,9 @@ impl MainWindow {
 			IpcCommand::ToggleVisibility => {
 				self.toggle_visibility();
 			}
-			IpcCommand::OpenFile(path) => {
+			IpcCommand::Open(target) => {
 				self.activate_from_ipc();
-				self.open_file(&path, false);
+				self.open_target(target, false);
 				self.frame.raise();
 				self.doc_manager.lock().unwrap().focus_document_text();
 			}

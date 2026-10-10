@@ -200,6 +200,9 @@ pub(super) fn bind_teardown(
 			frame.show(false);
 			return;
 		}
+		// Only once the app is really quitting: on macOS the window is only hidden above, and its
+		// documents stay open.
+		dm.remove_working_copies();
 		#[cfg(target_os = "windows")]
 		if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
 			state.icon.remove_icon();

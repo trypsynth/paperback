@@ -7,6 +7,7 @@ use super::{KeyChord, ShortcutCategory};
 #[serde(rename_all = "snake_case")]
 pub enum ActionId {
 	Open,
+	OpenFromUrl,
 	Close,
 	CloseAll,
 	ReopenLastClosed,
@@ -110,6 +111,7 @@ impl ActionId {
 	pub const fn all() -> &'static [Self] {
 		&[
 			Self::Open,
+			Self::OpenFromUrl,
 			Self::Close,
 			Self::CloseAll,
 			Self::ReopenLastClosed,
@@ -213,6 +215,7 @@ impl ActionId {
 	pub const fn category(self) -> ShortcutCategory {
 		match self {
 			Self::Open
+			| Self::OpenFromUrl
 			| Self::Close
 			| Self::CloseAll
 			| Self::ReopenLastClosed
@@ -313,6 +316,8 @@ impl ActionId {
 		match self {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::Open => crate::t("Open..."),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::OpenFromUrl => crate::t("Open from URL..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::Close => crate::t("Close"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -514,6 +519,7 @@ impl ActionId {
 		#[cfg(target_os = "macos")]
 		match self {
 			Self::Open => Some(KeyChord::new(true, false, false, "O")),
+			Self::OpenFromUrl => Some(KeyChord::new(true, true, false, "O")),
 			Self::Close => Some(KeyChord::new(true, false, false, "W")),
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "W")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),
@@ -629,6 +635,7 @@ impl ActionId {
 		#[cfg(not(target_os = "macos"))]
 		match self {
 			Self::Open => Some(KeyChord::new(true, false, false, "O")),
+			Self::OpenFromUrl => Some(KeyChord::new(true, false, false, "L")),
 			Self::Close => Some(KeyChord::new(true, false, false, "F4")),
 			Self::CloseAll => Some(KeyChord::new(true, false, true, "F4")),
 			Self::ReopenLastClosed => Some(KeyChord::new(true, false, true, "T")),

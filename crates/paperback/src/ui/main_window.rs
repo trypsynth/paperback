@@ -18,11 +18,13 @@ use super::{
 };
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
+	ipc::Target,
 	updater,
 };
 
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 mod ipc;
+mod links;
 #[cfg(not(target_os = "macos"))]
 mod menu_edit;
 mod menu_events;
@@ -33,6 +35,7 @@ mod menu_view;
 mod parser_ready;
 mod restore;
 mod window_events;
+pub use links::open_links;
 pub(crate) use parser_ready::{ensure_parser_ready_for_path, resolve_zip_path};
 
 #[cfg(target_os = "windows")]
@@ -194,6 +197,16 @@ impl MainWindow {
 		result
 	}
 
+	/// Opens what a command line or another Paperback names: a file, or a document behind a link.
+	pub fn open_target(&self, target: Target, quit_if_picker_closed: bool) {
+		match target {
+			Target::File(path) => {
+				self.open_file(&path, quit_if_picker_closed);
+			}
+			Target::Link(link) => open_links(&self.frame, &self.doc_manager, &self.config, vec![link]),
+		}
+	}
+
 	fn update_title(&self) {
 		if let Ok(dm) = self.doc_manager.try_lock() {
 			update_title_from_manager(&self.frame, &dm);
@@ -280,7 +293,7 @@ pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		let template = t("{} - Paperback");
 		frame.set_title(&template.replace("{}", &display_title(tab)));
 		#[cfg(target_os = "macos")]
-		frame.set_represented_filename(&tab.file_path.to_string_lossy());
+		frame.set_represented_filename(&tab.local_path().to_string_lossy());
 		let position = navigation::doc_caret(tab);
 		let status_info = tab.session.get_status_info(position);
 		let mut status_text = status::format_status_text(&status_info);
