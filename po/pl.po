@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 02:50+0000\n"
+"POT-Creation-Date: 2026-10-09 16:45+0000\n"
 "PO-Revision-Date: 2026-06-08 13:45+0200\n"
 "Last-Translator: Michał Dziwisz <michal@dziwisz.net>\n"
 "Language-Team: Polish\n"
@@ -1316,6 +1316,14 @@ msgstr[0] "Ten dokument zawiera %d słowo."
 msgstr[1] "Ten dokument zawiera %d słowa."
 msgstr[2] "Ten dokument zawiera %d słów."
 
+#. TRANSLATORS: Title of the dialog listing the documents inside a zip archive
+msgid "Open from Archive"
+msgstr "Otwórz z archiwum"
+
+#. TRANSLATORS: Label for the list of documents inside a zip archive
+msgid "&Documents in this archive:"
+msgstr "&Dokumenty w tym archiwum:"
+
 #. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
 msgid "{} to {}"
 msgstr "Od „{}” do „{}”"
@@ -1551,6 +1559,10 @@ msgstr "Widok źródła nie jest dostępny dla tego formatu dokumentu."
 #. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 msgid "Could not load the document source."
 msgstr "Nie udało się wczytać źródła dokumentu."
+
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+msgid "Couldn't extract the document from the archive: {}"
+msgstr "Nie udało się wypakować dokumentu z archiwum: {}"
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -2269,6 +2281,13 @@ msgstr "Nie ma nic do skopiowania."
 #. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
 msgid "Could not copy to the clipboard."
 msgstr "Nie udało się skopiować tekstu do schowka."
+
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+msgid "Selected %d character."
+msgid_plural "Selected %d characters."
+msgstr[0] "Zaznaczono %d znak."
+msgstr[1] "Zaznaczono %d znaki."
+msgstr[2] "Zaznaczono %d znaków."
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 msgid "Cannot jump; set beginning of selection first."
