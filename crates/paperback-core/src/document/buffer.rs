@@ -391,9 +391,11 @@ impl DocumentBuffer {
 		self.display_len_at_char.get(char_index).map_or(self.content_display_len, |&v| v as usize)
 	}
 
-	/// The char index whose char covers `display_index`, or the nearest one before it if
-	/// `display_index` lands inside a surrogate pair (shouldn't happen for a well-formed
-	/// caller, but this stays well-defined rather than panicking).
+	/// The index of the char that starts at `display_index`. A `display_index` inside a surrogate
+	/// pair, where no caret can sit, rounds forward to the char after the pair. Anything past the
+	/// end of the document maps to `char_count() + 1`; callers clamp to
+	/// [`Self::total_display_len`] first, since `to_u32` truncates offsets beyond `u32::MAX` in
+	/// release builds.
 	#[must_use]
 	pub fn char_index_for_display(&self, display_index: usize) -> usize {
 		self.display_len_at_char.binary_search(&to_u32(display_index)).unwrap_or_else(|idx| idx)
@@ -546,7 +548,9 @@ mod tests {
 		assert_eq!(buffer.total_display_len(), 4);
 		assert_eq!(buffer.char_index_for_display(0), 0);
 		assert_eq!(buffer.char_index_for_display(1), 1);
+		assert_eq!(buffer.char_index_for_display(2), 2); // inside the emoji: rounds forward to 'b'
 		assert_eq!(buffer.char_index_for_display(3), 2);
+		assert_eq!(buffer.char_index_for_display(5), 4); // past the end: char_count() + 1
 		// byte<->display composition round-trips through the char index for every char start.
 		assert_eq!(buffer.byte_index_for_display(0), 0);
 		assert_eq!(buffer.byte_index_for_display(1), 1);
