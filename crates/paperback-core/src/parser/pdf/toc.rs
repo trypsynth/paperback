@@ -16,9 +16,13 @@ use crate::{
 /// start being the document over again.
 const MAX_OUTLINE_DEPTH: u32 = 16;
 
+/// `page_offsets` holds one entry per page, in page order, and `None` for a page the caller did
+/// not ask to be read: a bookmark reaching such a page points at nothing this document holds, and
+/// saying so is the difference between dropping that bookmark and placing it, along with every
+/// other bookmark like it, on the first page of the extract.
 pub(super) fn extract_toc(
 	document: &PdfDocument,
-	page_offsets: &[usize],
+	page_offsets: &[Option<usize>],
 	page_lines_info: &[Vec<(usize, String)>],
 ) -> Vec<TocItem> {
 	let bookmarks = document.outline(MAX_OUTLINE_DEPTH);
@@ -40,8 +44,9 @@ pub(super) fn extract_toc(
 			skipped_count += 1;
 			continue;
 		};
-		let Some(&page_start_offset) = page_offsets.get(page_index) else {
-			skipped_count += 1;
+		// Not counted as skipped: the range left the page out, which is not a bookmark that could
+		// not be read. Reported as a fault it would be a warning printed on a correct run.
+		let Some(page_start_offset) = page_offsets.get(page_index).copied().flatten() else {
 			continue;
 		};
 		let mut actual_offset = page_start_offset;

@@ -337,6 +337,33 @@ impl<'a> Converter<'a> {
 			.with_join_pdf_paragraphs(!cli.no_join_paragraphs);
 		// On by default, so pb gives the app's reading of a file as it always has. Taking the repeated page-edge lines out is a judgement, though, and on some documents it costs real sentences (see `ParserContext::strip_running_text`), so `--keep-repeated` is there for a caller that would rather keep every line.
 		context = context.with_strip_running_text(!cli.keep_repeated);
+		// Asking for the document's own hyphens is what lets the parser leave the pages it was not
+		// asked for unopened: deciding a line-end hyphen otherwise means knowing how the whole book
+		// spells a word, so every page before the range has to be read for its words. The two
+		// together with `--pages` are the whole of what makes a range out of a long PDF quick, and
+		// neither of them is any faster without the other.
+		context = context.with_no_hyphenation(cli.no_hyphenation);
+		// Told which pages are wanted, so a parser that can start partway through a long document
+		// does not read the rest of it first: for a PDF, opening a page is most of what parsing
+		// costs, and a thousand-page extract from a 45,000-page file is two seconds rather than
+		// forty. What the reader gets is still decided by `pages::apply` below, from the parsed
+		// document, so this decides how much is read and never what comes out.
+		//
+		// Left unset unless the page's own text can be settled from that page alone, which is what
+		// the two flags above are for. A PDF page's text otherwise depends on the document around
+		// it -- on how the book spells a word, when a hyphen ends a line, and on which lines recur
+		// at the page edges, for the repeated-line survey -- so the pages outside the range would
+		// still have to be read to get the ones inside it right. Skipping them then would not make
+		// the extract quicker, only different, and quietly: words losing a hyphen, and a running
+		// head the whole book agrees on surviving in an extract that never looked at the book.
+		// Given both flags, the pages outside the range are the same pages opened or not, and the
+		// extract is the one a whole-document conversion under the same flags would produce.
+		if let Some(selection) = selection
+			&& cli.no_hyphenation
+			&& cli.keep_repeated
+		{
+			context = context.with_page_window(selection.window());
+		}
 		if let Some(password) = self.password() {
 			context = context.with_password(password.clone());
 		}
@@ -386,7 +413,7 @@ impl<'a> Converter<'a> {
 			// left of a page that was read is its text and nothing else. A page the engine read
 			// nothing from keeps what it had, which is why this is not the same as stripping every
 			// instruction afterwards.
-			ocr::pages(&mut doc, &context.file_path, context.password.as_deref(), ocr)?;
+			ocr::pages(&mut doc, &context.file_path, context.password.as_deref(), ocr, cli.no_hyphenation)?;
 		}
 		let handle = paperback_core::document::DocumentHandle::new(doc);
 		Ok(if cli.metadata {

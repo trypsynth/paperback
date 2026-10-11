@@ -261,7 +261,9 @@ impl DocumentManager {
 			if text.trim().is_empty() {
 				continue;
 			}
-			let text = if join_paragraphs { join_wrapped_lines(&text) } else { text };
+			// The app decides a line-end hyphen from the document's own spelling, as it always has;
+			// leaving them all as the document has them is `pb --no-hyphenation`.
+			let text = if join_paragraphs { join_wrapped_lines(&text, false) } else { text };
 			// `page_offset` answers -1 for a page this document does not have, which is how a
 			// result for a page the session no longer holds gets dropped instead of panicking.
 			let start = tab.session.page_offset(page);

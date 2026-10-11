@@ -193,7 +193,16 @@ enum UntaggedLine {
 ///
 /// Kept apart from writing the lines out so that both kinds of page reach the document the same
 /// way, as finished lines: a tagged one from [`structure`], an untagged one from here.
-fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: bool) -> Vec<UntaggedLine> {
+///
+/// `no_hyphenation` is passed on to the joining, which decides a line-end hyphen a second time --
+/// the page's lines already had one decision made about each, but a line that ends on a hyphen is
+/// joined here, so this is where a caller asking for the document's own hyphens has to be obeyed.
+fn untagged_page_lines(
+	page: &PageContent,
+	running_text: &RunningText,
+	join: bool,
+	no_hyphenation: bool,
+) -> Vec<UntaggedLine> {
 	let mut line_infos = page.lines.clone();
 	// Measured before the running headers come out. They are set at or below the body's size, so
 	// dropping them pulls the median up, and a heading only just above it would stop counting as
@@ -201,7 +210,11 @@ fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: boo
 	let body_size = median_line_font_size(&line_infos);
 	strip_running_text(&mut line_infos, running_text);
 	let line_tops: Vec<f64> = line_infos.iter().map(|line| line.top).collect();
-	let paragraphs = if join { join_paragraphs(&line_infos, body_size) } else { split_lines(&line_infos, body_size) };
+	let paragraphs = if join {
+		join_paragraphs(&line_infos, body_size, no_hyphenation)
+	} else {
+		split_lines(&line_infos, body_size)
+	};
 	// A page with no text at all is left alone: the image-only placeholder the caller writes is
 	// more use on a scanned page than a line for each of the pieces it was scanned into.
 	if paragraphs.is_empty() {
@@ -373,9 +386,14 @@ impl Parser for PdfParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing pdf document");
 		let render_tables_inline = context.render_tables_inline;
+		// The pages worth reading, when the caller wants only some of them. `None` is the whole
+		// document, which is what the app and every caller without a page range asks for.
+		let wanted = context.page_window;
 		let document = load_document(context)?;
 		let mut buffer = DocumentBuffer::new();
-		let mut page_offsets = Vec::new();
+		// One entry per page, in page order, and `None` for a page the caller did not ask for: see
+		// where these are pushed, below.
+		let mut page_offsets: Vec<Option<usize>> = Vec::new();
 		let mut id_positions = HashMap::new();
 		let mut page_lines_info: Vec<Vec<(usize, String)>> = Vec::new();
 		let page_count = document.page_count();
@@ -386,10 +404,24 @@ impl Parser for PdfParser {
 		let mut detected_heading_positions: Vec<(usize, String)> = Vec::new();
 		let mut pages: Vec<PageContent> = {
 			// Words of the pages read so far, for telling a hyphen that belongs to a word from one that
-			// only splits it at a line end.
-			let mut evidence = HyphenEvidence::default();
+			// only splits it at a line end. One that has been asked to decide nothing keeps every
+			// hyphen as the document has it, and gathers no words to do it with.
+			let mut evidence =
+				if context.no_hyphenation { HyphenEvidence::keeping_hyphens() } else { HyphenEvidence::default() };
 			(0..page_count)
-				.map(|page_index| read_page(&document, page_index, render_tables_inline, &mut evidence))
+				.map(|page_index| {
+					// The skip has to come before the pdfium call rather than after it: asking for a
+					// page and its text is what parsing a PDF costs, so a page skipped once it has been
+					// loaded has already cost as much as one that was read. `page_count` is asked after
+					// the document is open, so nothing here runs before the password is settled.
+					let page = usize::try_from(page_index).unwrap_or(usize::MAX);
+					if let Some(window) = wanted
+						&& !window.contains(page)
+					{
+						return PageContent::default();
+					}
+					read_page(&document, page_index, render_tables_inline, &mut evidence)
+				})
 				.collect()
 		};
 		// The survey runs either way, because it is also what measures the body text, which is what
@@ -399,9 +431,20 @@ impl Parser for PdfParser {
 		let survey = strip_tagged_running_text(&mut pages, context.strip_running_text);
 		let running_text = if context.strip_running_text { survey } else { survey.recognizing_nothing() };
 		for (page_index, page) in pages.into_iter().enumerate() {
+			// The pages are in order, one entry each, so this is the page's own number.
+			let read = wanted.is_none_or(|window| window.contains(page_index));
 			let marker_position = buffer.current_position();
-			page_offsets.push(marker_position);
-			id_positions.insert(format!("page_{page_index}"), marker_position);
+			// A page nobody asked for gives up no offset and no id. It holds no text, so it sits at
+			// the position the next page of text begins at, and everything looked up by page number
+			// would answer with that one position: a bookmark on any of the pages left out would be
+			// placed on the extract's first page, hundreds of them deep, and the id of every page
+			// that was left out would name that same spot. The page-break marker is still written,
+			// because the number of markers is how long the document is, and a range that runs past
+			// its end has to be able to say so.
+			page_offsets.push(read.then_some(marker_position));
+			if read {
+				id_positions.insert(format!("page_{page_index}"), marker_position);
+			}
 			buffer.add_marker(
 				Marker::new(MarkerType::PageBreak, marker_position).with_text(format!("Page {}", page_index + 1)),
 			);
@@ -434,7 +477,9 @@ impl Parser for PdfParser {
 					(level, item)
 				}));
 			} else {
-				for line in untagged_page_lines(&page, &running_text, context.join_pdf_paragraphs) {
+				for line in
+					untagged_page_lines(&page, &running_text, context.join_pdf_paragraphs, context.no_hyphenation)
+				{
 					match line {
 						UntaggedLine::Image => {
 							append_images(1, &mut buffer, &mut page_display_text, &mut current_lines_info);
@@ -531,6 +576,57 @@ mod tests {
 	fn running(pages: &[PageContent]) -> super::RunningText {
 		let edges: Vec<PageEdges> = pages.iter().map(|page| PageEdges::of(&page.lines)).collect();
 		detect(&edges, BODY)
+	}
+
+	/// A page the parser was told not to read contributes to neither survey, so cutting a document
+	/// down to a page range reaches the same verdict about the pages it kept as reading all of it
+	/// would. In particular it is not surveyed as a page whose text is nothing, and it is not
+	/// counted among the untagged pages of a document that mostly has tagged ones.
+	///
+	/// This is the shape of the fourth bug the review of the first attempt turned up: the pages
+	/// left out were surveyed anyway, so which lines counted as furniture was decided over a set of
+	/// pages the reader had not asked about.
+	#[test]
+	fn pages_that_were_not_read_do_not_change_the_survey() {
+		let read_pages = |count: usize| -> Vec<PageContent> {
+			(0..count).map(|sheet| page(0.0, &["DREAM CAR 17", &format!("words unique to page {sheet}")])).collect()
+		};
+		let whole = super::strip_tagged_running_text(&mut read_pages(6), true);
+		assert_ne!(whole.len(), 0, "the fixture repeats nothing, so this test would prove nothing");
+
+		let mut windowed_pages: Vec<PageContent> = (0..40).map(|_| PageContent::default()).collect();
+		windowed_pages.extend(read_pages(6));
+		let windowed = super::strip_tagged_running_text(&mut windowed_pages, true);
+
+		assert_eq!(windowed.len(), whole.len(), "the pages left out changed which lines are furniture");
+		assert!(whole.contains("DREAM CAR 17", BODY));
+		assert!(windowed.contains("DREAM CAR 17", BODY));
+	}
+
+	/// The same for a document laid out by its structure tree, whose pages are surveyed apart from
+	/// the untagged ones. A page with no text at all is not a tagged page, so the pages left out
+	/// join neither survey rather than being counted as pages of the document's prose.
+	#[test]
+	fn pages_that_were_not_read_do_not_change_the_tagged_survey() {
+		// The body has to differ in letters rather than in a page number: the survey blanks digit
+		// runs, so "page 0" and "page 1" would be one line as far as it is concerned.
+		let bodies = ["alpha", "bravo", "charlie", "delta", "echo", "foxtrot"];
+		let tagged_pages = || -> Vec<PageContent> {
+			bodies
+				.iter()
+				.map(|body| tagged_page(&["BOOK TITLE", body, "a closing line", "and one after that"]))
+				.collect()
+		};
+		for unread in [0, 40] {
+			let mut pages: Vec<PageContent> = (0..unread).map(|_| PageContent::default()).collect();
+			pages.extend(tagged_pages());
+			super::strip_tagged_running_text(&mut pages, true);
+			let kept = tagged_texts(&pages);
+			assert!(
+				kept.iter().all(|text| !text.contains("BOOK TITLE")),
+				"{unread} pages that were not read changed the tagged survey"
+			);
+		}
 	}
 
 	/// The reported case: a scanned magazine with the same advert stamped on every page. The

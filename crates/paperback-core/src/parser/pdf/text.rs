@@ -50,6 +50,11 @@ pub(super) const LINE_END_HYPHEN: char = '\u{0002}';
 /// part of the word (`NFB-NEWSLINE`, `non-web`) or only splits it (`sugges-tion`).
 #[derive(Default)]
 pub(super) struct HyphenEvidence {
+	/// Whether the document's own hyphens are left alone, with nothing decided. A caller that has
+	/// asked for that (see `ParserContext::no_hyphenation`) gets it by carrying the answer here
+	/// rather than as a second argument, because the page readers that need it are already at
+	/// clippy's argument limit and this is the value they all consult.
+	keep_hyphens: bool,
 	/// Compounds written with a hyphen somewhere it is not at a line end, lower-cased.
 	hyphenated: HashSet<String>,
 	/// Every unhyphenated word seen, lower-cased.
@@ -57,6 +62,20 @@ pub(super) struct HyphenEvidence {
 }
 
 impl HyphenEvidence {
+	/// Evidence asked to decide nothing: every line-end hyphen is kept as the document has it.
+	///
+	/// Nothing is gathered under it either, so a parser holds one of these instead of reading a
+	/// document's words -- which is what makes a page's text depend on that page alone.
+	pub(super) fn keeping_hyphens() -> Self {
+		Self { keep_hyphens: true, ..Self::default() }
+	}
+
+	/// Whether this survey wants a page's words at all. Gathering them means opening the page, so
+	/// a survey that decides nothing must not be asked to.
+	pub(super) const fn gathers_words(&self) -> bool {
+		!self.keep_hyphens
+	}
+
 	pub(super) fn from_chars(chars: &[char]) -> Self {
 		let mut evidence = Self::default();
 		evidence.add_chars(chars);
@@ -67,6 +86,9 @@ impl HyphenEvidence {
 	/// line end is judged by how the whole document so far writes it, not only that page: a book
 	/// that writes "OpenSolaris" or "MTBF" on one page joins them when they wrap on a later one.
 	pub(super) fn add_chars(&mut self, chars: &[char]) {
+		if self.keep_hyphens {
+			return;
+		}
 		let evidence = self;
 		let mut word = String::new();
 		let mut broken = false;
@@ -97,6 +119,11 @@ impl HyphenEvidence {
 
 /// Whether the line-end hyphen at `at` in `chars` belongs to the word.
 pub(super) fn keeps_line_end_hyphen(chars: &[char], at: usize, evidence: &HyphenEvidence) -> bool {
+	// A survey asked to decide nothing keeps the document's hyphen without looking at anything,
+	// which is the whole of what `--no-hyphenation` asks for.
+	if !evidence.gathers_words() {
+		return true;
+	}
 	let left_start = chars[..at].iter().rposition(|c| !c.is_alphanumeric()).map_or(0, |p| p + 1);
 	let left: String = chars[left_start..at].iter().collect();
 	let right_start =
@@ -555,8 +582,8 @@ fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
 #[cfg(test)]
 mod tests {
 	use super::{
-		CharBox, Line, covering_hides, ends_line, keeps_hyphen, looks_monospaced, restore_reading_order,
-		sanitize_pdf_text, space_is_invisible,
+		CharBox, HyphenEvidence, Line, covering_hides, ends_line, keeps_hyphen, keeps_line_end_hyphen,
+		looks_monospaced, restore_reading_order, sanitize_pdf_text, space_is_invisible,
 	};
 
 	/// pdfium marks a hyphen it finds at the end of a line with U+0002. An ordinary word split
@@ -578,6 +605,36 @@ mod tests {
 		// The page writes the word whole elsewhere, so the split is joined even next to a capital.
 		assert_eq!(sanitize_pdf_text("Braille notes. Braille\u{0002}Note"), "Braille notes. Braille-Note");
 		assert_eq!(sanitize_pdf_text("BrailleNote and Braille\u{0002}Note"), "BrailleNote and BrailleNote");
+	}
+
+	/// What `--no-hyphenation` asks for: the document's own hyphens, decided by nothing. A survey
+	/// that keeps every hyphen has to say so before it looks at the word, because the words that
+	/// would decide it are the ones it has been asked not to gather.
+	#[test]
+	fn a_survey_asked_to_keep_every_hyphen_keeps_one_it_would_otherwise_take_out() {
+		let page: Vec<char> = "infor\u{0002}mation".chars().collect();
+		let at = 5;
+		let mut reading = HyphenEvidence::default();
+		reading.add_chars(&page);
+		assert!(!keeps_line_end_hyphen(&page, at, &reading), "evidence that a word wraps drops the hyphen");
+
+		let keeping = HyphenEvidence::keeping_hyphens();
+		assert!(keeps_line_end_hyphen(&page, at, &keeping), "--no-hyphenation leaves the document's hyphen alone");
+	}
+
+	/// The words a page contributes are what makes the decision a fact about the whole document, so
+	/// a survey that decides nothing must ask for none of them: gathering them means opening the
+	/// page, which is exactly what a page range was meant to avoid.
+	#[test]
+	fn a_survey_asked_to_keep_every_hyphen_gathers_no_words() {
+		assert!(HyphenEvidence::default().gathers_words());
+		let mut keeping = HyphenEvidence::keeping_hyphens();
+		assert!(!keeping.gathers_words());
+		keeping.add_chars(&"non-web software".chars().collect::<Vec<char>>());
+		assert!(
+			keeping.hyphenated.is_empty() && keeping.words.is_empty(),
+			"a survey that decides nothing gathered words to decide with"
+		);
 	}
 
 	#[test]

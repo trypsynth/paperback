@@ -208,7 +208,7 @@ const RECOGNIZED_TEXT_SIZE: f64 = 12.0;
 /// any two, so what decides a paragraph is where a line falls short of the measure and what it
 /// ends with.
 #[must_use]
-pub fn join_wrapped_lines(text: &str) -> String {
+pub fn join_wrapped_lines(text: &str, no_hyphenation: bool) -> String {
 	let mut lines: Vec<Line> = Vec::new();
 	let mut top = 0.0;
 	for line in text.lines() {
@@ -222,7 +222,7 @@ pub fn join_wrapped_lines(text: &str) -> String {
 		});
 		top -= RECOGNIZED_TEXT_SIZE;
 	}
-	join_paragraphs(&lines, RECOGNIZED_TEXT_SIZE)
+	join_paragraphs(&lines, RECOGNIZED_TEXT_SIZE, no_hyphenation)
 		.into_iter()
 		.map(|(paragraph, ..)| paragraph)
 		.collect::<Vec<String>>()
@@ -232,7 +232,11 @@ pub fn join_wrapped_lines(text: &str) -> String {
 /// The third field of each paragraph is the index, into `raw_lines`, of the line it starts
 /// with. An untagged page needs it to place its images: the paragraphs no longer say where on
 /// the page they were set, and that line does.
-pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
+pub(super) fn join_paragraphs(
+	raw_lines: &[Line],
+	body_font_size: f64,
+	no_hyphenation: bool,
+) -> Vec<(String, bool, usize)> {
 	let raw_lines = merge_drop_caps(raw_lines, body_font_size);
 	let trimmed = trimmed_lines(&raw_lines);
 	let marked = HeadingRule::for_page(&raw_lines, body_font_size).mark(&raw_lines, &trimmed);
@@ -323,13 +327,15 @@ pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(S
 				let last_char = current_paragraph.chars().last().unwrap_or(' ');
 				if current_paragraph.ends_with('-') {
 					// A hyphen the line ended on splits a word, unless it joins a compound such as
-					// NFB-NEWSLINE or COVID-19 that only happened to wrap there.
+					// NFB-NEWSLINE or COVID-19 that only happened to wrap there. A caller that asked
+					// for the document's own hyphens leaves it where the document put it, which is the
+					// third place a line-end hyphen is decided besides the two page readers.
 					let left = current_paragraph[..current_paragraph.len() - 1]
 						.rsplit(|c: char| !c.is_alphanumeric())
 						.next()
 						.unwrap_or("");
 					let right: String = line.chars().take_while(|c| c.is_alphanumeric()).collect();
-					if !keeps_hyphen(left, &right, None) {
+					if !no_hyphenation && !keeps_hyphen(left, &right, None) {
 						current_paragraph.pop();
 					}
 					current_paragraph.push_str(line);
@@ -419,7 +425,7 @@ mod tests {
 			"until it too has said what it has to say."
 		);
 		assert_eq!(
-			join_wrapped_lines(recognized),
+			join_wrapped_lines(recognized, false),
 			concat!(
 				"The first thing to understand about the way a page is set is that a line ends where the ",
 				"measure runs out and not where the sentence does, which is why a paragraph read line by ",
@@ -439,7 +445,7 @@ mod tests {
 
 Another line that stops short";
 		assert_eq!(
-			join_wrapped_lines(recognized),
+			join_wrapped_lines(recognized, false),
 			"A line that stops short
 Another line that stops short"
 		);
@@ -447,7 +453,7 @@ Another line that stops short"
 
 	#[test]
 	fn join_wrapped_lines_leaves_empty_text_empty() {
-		assert_eq!(join_wrapped_lines(""), "");
+		assert_eq!(join_wrapped_lines("", false), "");
 	}
 
 	/// A lettered list runs its items together without this: OCR gives no bullet glyph and the
@@ -466,7 +472,7 @@ Another line that stops short"
 			"c. can print words"
 		);
 		assert_eq!(
-			join_wrapped_lines(recognized),
+			join_wrapped_lines(recognized, false),
 			concat!(
 				"1. The most important difference between computers and other machines is that computers
 ",
@@ -499,7 +505,7 @@ c. can print words"
 	/// opening with capitals, and the chapter title is one heading rather than one per line.
 	#[test]
 	fn join_paragraphs_keeps_a_chapter_opening_whole() {
-		let result = join_paragraphs(&issue_813_page(), 11.0);
+		let result = join_paragraphs(&issue_813_page(), 11.0, false);
 		let texts: Vec<&str> = result.iter().map(|(text, ..)| text.as_str()).collect();
 		assert_eq!(
 			texts,
@@ -529,7 +535,7 @@ c. can print words"
 			("2.1.1.1 Show / Hide Strings", 14.0),
 			("2.1.1.2 Color Indicates String or Velocity", 14.0),
 		]);
-		let result = join_paragraphs(&lines, 10.0);
+		let result = join_paragraphs(&lines, 10.0, false);
 		assert_eq!(result.len(), 3, "got {result:?}");
 	}
 
@@ -537,7 +543,7 @@ c. can print words"
 	#[test]
 	fn join_paragraphs_keeps_headings_of_different_sizes_apart() {
 		let lines = tight(&[("PART ONE", 30.0), ("Getting Started", 20.0)]);
-		let result = join_paragraphs(&lines, 11.0);
+		let result = join_paragraphs(&lines, 11.0, false);
 		assert_eq!(result.len(), 2);
 	}
 
@@ -551,7 +557,7 @@ c. can print words"
 			("EAP trainers can use this book in conjunction with: English for Academic Research:", 10.0),
 			("A Guide for Teachers.", 10.0),
 		]);
-		let result = join_paragraphs(&lines, 10.0);
+		let result = join_paragraphs(&lines, 10.0, false);
 		assert_eq!(result.len(), 2, "got {result:?}");
 		assert!(result[0].0.ends_with("international field."));
 		assert!(result[1].0.starts_with("EAP trainers"));
@@ -565,14 +571,14 @@ c. can print words"
 			("decide some criteria for judging how effective the subject lines are. Compare", 9.5),
 			("your criteria with a colleague's.", 9.5),
 		]);
-		let result = join_paragraphs(&lines, 9.5);
+		let result = join_paragraphs(&lines, 9.5, false);
 		assert_eq!(result.len(), 1, "got {result:?}");
 	}
 
 	#[test]
 	fn join_paragraphs_merges_continuation_lines() {
 		let lines = tight(&[("The suggestion appears here.", 12.0), ("And here.", 12.0)]);
-		let result = join_paragraphs(&lines, 12.0);
+		let result = join_paragraphs(&lines, 12.0, false);
 		assert_eq!(result.len(), 1);
 		assert_eq!(result[0].0, "The suggestion appears here. And here.");
 		assert!(!result[0].1);
@@ -633,7 +639,7 @@ c. can print words"
 			("The function above greets whoever it is handed, and returns", 10.0, false),
 			("the greeting it built.", 10.0, false),
 		]);
-		let result = join_paragraphs(&lines, 10.0);
+		let result = join_paragraphs(&lines, 10.0, false);
 		let texts: Vec<&str> = result.iter().map(|(text, ..)| text.as_str()).collect();
 		assert_eq!(
 			texts,
@@ -653,7 +659,7 @@ c. can print words"
 	#[test]
 	fn join_paragraphs_still_joins_the_prose_around_a_listing() {
 		let lines = mixed(&[("The suggestion appears here.", 12.0, false), ("And here.", 12.0, false)]);
-		assert_eq!(join_paragraphs(&lines, 12.0).len(), 1);
+		assert_eq!(join_paragraphs(&lines, 12.0, false).len(), 1);
 	}
 
 	// #813 again: a run of one-line paragraphs is what every length test reads as one block,
@@ -667,7 +673,7 @@ c. can print words"
 			("Lesson One", 12.0, true),
 			("Lesson Two", 12.0, true),
 		]);
-		let result = join_paragraphs(&lines, 12.0);
+		let result = join_paragraphs(&lines, 12.0, false);
 		let texts: Vec<&str> = result.iter().map(|(text, ..)| text.as_str()).collect();
 		assert_eq!(texts, ["Before We Get Started", "About the Author: Valentina Romano", "Lesson One", "Lesson Two"]);
 	}
@@ -681,7 +687,7 @@ c. can print words"
 			("and then repeat his answer after him.", 12.0, false),
 			("FEMALE: Parli italiano?", 12.0, true),
 		]);
-		let result = join_paragraphs(&lines, 12.0);
+		let result = join_paragraphs(&lines, 12.0, false);
 		assert_eq!(result.len(), 2, "got {result:?}");
 		assert!(result[0].0.ends_with("repeat his answer after him."));
 		assert_eq!(result[1].0, "FEMALE: Parli italiano?");
@@ -702,7 +708,7 @@ c. can print words"
 		lines[2].bottom -= 11.0;
 		lines[3].top -= 11.0;
 		lines[3].bottom -= 11.0;
-		let result = join_paragraphs(&lines, 11.0);
+		let result = join_paragraphs(&lines, 11.0, false);
 		assert_eq!(result.len(), 1, "got {result:?}");
 	}
 
@@ -711,7 +717,7 @@ c. can print words"
 	#[test]
 	fn join_paragraphs_glues_a_drop_cap_to_its_paragraph() {
 		let lines = tight(&[("T", 153.5), ("his morning, people all over the planet got out of bed.", 12.0)]);
-		let result = join_paragraphs(&lines, 12.0);
+		let result = join_paragraphs(&lines, 12.0, false);
 		assert_eq!(result.len(), 1, "got {result:?}");
 		assert_eq!(result[0].0, "This morning, people all over the planet got out of bed.");
 		assert!(!result[0].1, "the paragraph it opens is not a heading");
@@ -722,21 +728,32 @@ c. can print words"
 	#[test]
 	fn join_paragraphs_leaves_a_chapter_number_alone() {
 		let digit = tight(&[("4", 40.0), ("INCONVENIENT OR NOT", 24.0)]);
-		assert_eq!(join_paragraphs(&digit, 11.0).len(), 2);
+		assert_eq!(join_paragraphs(&digit, 11.0, false).len(), 2);
 		// A roman numeral is a letter, so only the case of what follows tells them apart.
 		let roman = tight(&[("I", 40.0), ("The Long Road Home", 24.0)]);
-		assert_eq!(join_paragraphs(&roman, 11.0).len(), 2);
+		assert_eq!(join_paragraphs(&roman, 11.0, false).len(), 2);
 	}
 
 	#[test]
 	fn join_paragraphs_leaves_an_ordinary_capital_alone() {
 		// Body-sized, so nothing to do with a drop cap however the next line starts.
 		let lines = tight(&[("A", 12.0), ("small letter follows.", 12.0)]);
-		assert_eq!(join_paragraphs(&lines, 12.0).len(), 1);
+		assert_eq!(join_paragraphs(&lines, 12.0, false).len(), 1);
 	}
 
 	// #813: nothing in a PDF separates five lines of code from five wrapped lines of prose,
 	// so a reader whose document is a listing turns the joining off and gets the lines back.
+	/// A line ending on a hyphen is decided a second time where the lines are joined, and a caller
+	/// that asked for the document's own hyphens has to be obeyed there too: this is the decision
+	/// that turned `no-` and `one` into `noone` when only the shape of the word was consulted.
+	#[test]
+	fn a_caller_asking_for_the_documents_own_hyphens_keeps_a_joined_one() {
+		let page = tight(&[("a compound such as no-", 10.0), ("one is written that way", 10.0)]);
+		let joined = |no_hyphenation| join_paragraphs(&page, 10.0, no_hyphenation)[0].0.clone();
+		assert_eq!(joined(false), "a compound such as noone is written that way");
+		assert_eq!(joined(true), "a compound such as no-one is written that way");
+	}
+
 	#[test]
 	fn split_lines_keeps_every_line_apart() {
 		let lines = tight(&[
@@ -767,7 +784,7 @@ c. can print words"
 	#[test]
 	fn join_paragraphs_runs_the_same_listing_together() {
 		let lines = tight(&[("def greet(name):", 11.0), ("# say hello", 11.0), ("return message", 11.0)]);
-		assert_eq!(join_paragraphs(&lines, 11.0).len(), 1);
+		assert_eq!(join_paragraphs(&lines, 11.0, false).len(), 1);
 	}
 
 	// A heading is a question about size, not about where a paragraph ends, so it is still
@@ -795,7 +812,7 @@ c. can print words"
 	#[test]
 	fn join_paragraphs_flags_large_font_lines_as_headings() {
 		let lines = tight(&[("Chapter One", 18.0), ("This is the body text of the document.", 12.0)]);
-		let result = join_paragraphs(&lines, 12.0);
+		let result = join_paragraphs(&lines, 12.0, false);
 		assert_eq!(result.len(), 2);
 		assert_eq!(result[0].0, "Chapter One");
 		assert!(result[0].1);
@@ -821,7 +838,7 @@ c. can print words"
 			("The events that surround the injury set the stage for what follows,", 15.5, false),
 			("and the writer has to know them.", 15.5, false),
 		]);
-		let result = join_paragraphs(&lines, 15.5);
+		let result = join_paragraphs(&lines, 15.5, false);
 		assert_eq!(result.len(), 3);
 		assert_eq!(result[1].0, "Emergency Management");
 		assert!(result[1].1, "the bold title is a heading");
@@ -834,7 +851,7 @@ c. can print words"
 			("Never move a patient with a suspected spinal injury.", 12.0, true),
 			("The body follows.", 12.0, false),
 		]);
-		assert!(!join_paragraphs(&lines, 12.0)[0].1);
+		assert!(!join_paragraphs(&lines, 12.0, false)[0].1);
 	}
 
 	/// The Apple Developer Program License Agreement opens with a paragraph of bold capitals whose lines each look like a title.
@@ -849,7 +866,7 @@ c. can print words"
 			("And more body text follows here, set in the regular weight of the face.", 10.0, false),
 			("And more body text follows here, set in the regular weight of the face.", 10.0, false),
 		]);
-		assert!(join_paragraphs(&lines, 10.0).iter().all(|(_, is_heading, _)| !is_heading));
+		assert!(join_paragraphs(&lines, 10.0, false).iter().all(|(_, is_heading, _)| !is_heading));
 	}
 
 	#[test]
@@ -866,6 +883,6 @@ c. can print words"
 	fn bold_means_nothing_on_a_page_mostly_set_in_bold() {
 		let lines =
 			weighted(&[("Claim Form", 12.0, true), ("Patient Name", 12.0, true), ("Date of Birth", 12.0, false)]);
-		assert!(join_paragraphs(&lines, 12.0).iter().all(|(_, is_heading, _)| !is_heading));
+		assert!(join_paragraphs(&lines, 12.0, false).iter().all(|(_, is_heading, _)| !is_heading));
 	}
 }

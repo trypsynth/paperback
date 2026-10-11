@@ -110,6 +110,50 @@ impl Default for ParseSettings {
 	}
 }
 
+/// The pages a caller asked for, as the one stretch that covers all of them.
+///
+/// A caller converting a page range out of a long document does not want the rest of it read, and
+/// for a PDF reading a page is most of what parsing costs: a thousand-page extract from a 45,000
+/// page file takes about a second against the forty-odd it takes to read every page and throw
+/// away all but the thousand. So a parser that can start partway through is told where to start and
+/// where to stop, and one that cannot ignores this.
+///
+/// Pages are 0-based and `end` is exclusive, unlike the 1-based ranges a reader types, because
+/// this is what a parser indexes pages by. `end` is `None` for "through to the last page", since a
+/// reader who writes `--pages 80-end` is naming a page count neither they nor the caller knows
+/// before the document is open.
+///
+/// This is a hint about what is worth reading, not an instruction about what the document
+/// contains: a parser still emits whatever it emits for every page, so page numbering and
+/// everything downstream of it are unchanged. What it may change is any measurement taken across
+/// the document -- the PDF parser's survey of repeated page-edge lines and of the body font size
+/// sees the window rather than the whole book -- which is unavoidable, since measuring a
+/// document-wide fact means reading the document.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PageWindow {
+	/// The first page wanted, 0-based.
+	pub start: usize,
+	/// One past the last page wanted, 0-based, or `None` for through to the last page.
+	pub end: Option<usize>,
+}
+
+impl PageWindow {
+	#[must_use]
+	pub const fn new(start: usize, end: Option<usize>) -> Self {
+		Self { start, end }
+	}
+
+	/// Whether a 0-based page is one the caller asked for.
+	#[must_use]
+	pub const fn contains(&self, page: usize) -> bool {
+		page >= self.start
+			&& match self.end {
+				Some(end) => page < end,
+				None => true,
+			}
+	}
+}
+
 #[derive(Debug, Clone)]
 pub struct ParserContext {
 	pub file_path: String,
@@ -135,6 +179,27 @@ pub struct ParserContext {
 	/// documents whose dollars are not math, such as `$HOME/bin:$PATH` in a README: Markdown can't express which reading
 	/// the writer meant.
 	pub markdown_dollar_math: bool,
+	/// Whether a PDF's line-end hyphens are left exactly as the document has them.
+	///
+	/// pdfium reports a hyphen at the end of a line without saying whether it belongs to the word
+	/// (`no-one` wrapped after the hyphen) or only splits it (`sugges-tion` for `suggestion`), so
+	/// the parser decides, and it decides from what the document writes elsewhere -- which means
+	/// knowing how the whole book spells a word before it can set one page of it. A caller that
+	/// would rather have the document's characters as they stand than that guess can turn the
+	/// decision off: every hyphen at a line end is kept, and nothing about the rest of the
+	/// document is gathered or consulted.
+	///
+	/// Off by default, and the guess is right far more often than not. On is for a caller that
+	/// wants a page's text to depend on that page alone -- which is what lets a parser skip the
+	/// pages it was not asked for and still produce the same text for the ones it was. See
+	/// [`PageWindow`] for the other half of that.
+	pub no_hyphenation: bool,
+	/// The pages the caller wants, when it wants only some of them. See [`PageWindow`].
+	///
+	/// `None` means the whole document, which is what every caller that has not asked for a range
+	/// gets, and what the desktop app always gets: it sets this nowhere, so an app session reads
+	/// exactly the pages it read before this existed.
+	pub page_window: Option<PageWindow>,
 }
 
 impl ParserContext {
@@ -148,7 +213,25 @@ impl ParserContext {
 			join_pdf_paragraphs: true,
 			strip_running_text: true,
 			markdown_dollar_math: true,
+			no_hyphenation: false,
+			page_window: None,
 		}
+	}
+
+	/// Sets whether a PDF's line-end hyphens are left as the document has them. See
+	/// [`ParserContext::no_hyphenation`].
+	#[must_use]
+	pub const fn with_no_hyphenation(mut self, no_hyphenation: bool) -> Self {
+		self.no_hyphenation = no_hyphenation;
+		self
+	}
+
+	/// Sets the pages worth reading, for a caller converting a range out of a long document. See
+	/// [`PageWindow`].
+	#[must_use]
+	pub const fn with_page_window(mut self, window: PageWindow) -> Self {
+		self.page_window = Some(window);
+		self
 	}
 
 	#[must_use]

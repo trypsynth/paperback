@@ -19,8 +19,10 @@
 //! into ranges first and resolved against the real page count afterwards. That is what lets
 //! `--pages 80-end` mean "through to the last page" without the reader counting first.
 
+use std::collections::HashSet;
+
 use anyhow::{Result, bail};
-use paperback_core::document::{Document, DocumentBuffer, Marker, MarkerType, TocItem};
+use paperback_core::document::{Document, DocumentBuffer, Marker, MarkerType, PageWindow, TocItem};
 
 /// What one element of a `--pages` specification asks for, before the page count is known.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -186,6 +188,26 @@ impl PageSelection {
 		self.pages(breaks.len())
 	}
 
+	/// The one stretch of pages that covers everything this selection asks for, for a parser that
+	/// can read part of a document without reading the rest of it.
+	///
+	/// The merged ranges, so the stretch is as small as what was typed allows: `--pages 5-10` asks
+	/// a parser for pages 5 to 10 and nothing either side of them, which is what makes an extract
+	/// from late in a long PDF quick to reach. Ranges far apart widen it to everything between them
+	/// -- `--pages 1;45000` is the whole document -- and that costs speed and nothing else, since
+	/// the pages are chosen from the parsed document afterwards either way.
+	///
+	/// It decides only how much is read. A parser given one still emits every page it always did,
+	/// so this can neither add a page nor leave one out.
+	#[must_use]
+	pub fn window(&self) -> PageWindow {
+		// Merged, so the ranges are in page order and do not overlap: the first starts earliest and
+		// the last reaches furthest. Pages are 1-based here, and 0-based with an exclusive end there.
+		// The first range starts at page 1 or later, so there is no page 0 to step back past.
+		let start = self.0.first().map_or(0, |first| first.start() - 1);
+		PageWindow::new(start, self.0.last().and_then(PageRange::end))
+	}
+
 	/// What this selection asks for, in a form to put in a file name: `5-10_20`, or `80-end` for
 	/// a range that runs to the last page.
 	///
@@ -278,20 +300,30 @@ fn merge(ranges: Vec<PageRange>) -> Vec<PageRange> {
 	merged
 }
 
-/// The display-unit positions of every page-break marker, in document order.
+/// Every page-break marker, in page order, as indexes into the buffer's marker list.
 ///
-/// Sorted rather than taken in buffer order, because a parser may add its markers in any order
-/// and page 5 has to be the fifth page of the book, not the fifth marker added.
+/// Sorted by position rather than taken in buffer order, because a parser may add its markers in
+/// any order and page 5 has to be the fifth page of the book, not the fifth marker added.
+///
+/// Indexes rather than positions, and sorted stably, because two pages can share a position: a
+/// page holding no text has its break sitting exactly where the next page's does. Which of two
+/// markers at one position heads which page is then decided by the order the parser added them,
+/// which is the order it wrote the pages in. That matters because a parser reading only part of a
+/// document -- the PDF parser given a page range opens no page outside it -- leaves every page it
+/// did not read at the position its content would have started at, so pages 1 to 42999 and page
+/// 43000 all put their break at the same place. Page order is what tells page 43000's marker from
+/// the 42999 empty pages' markers ahead of it.
 fn page_breaks(doc: &Document) -> Vec<usize> {
-	let mut positions: Vec<usize> = doc
+	let mut indexes: Vec<usize> = doc
 		.buffer
 		.markers
 		.iter()
-		.filter(|marker| marker.mtype == MarkerType::PageBreak)
-		.map(|marker| marker.position)
+		.enumerate()
+		.filter(|(_, marker)| marker.mtype == MarkerType::PageBreak)
+		.map(|(index, _)| index)
 		.collect();
-	positions.sort_unstable();
-	positions
+	indexes.sort_by_key(|index| doc.buffer.markers[*index].position);
+	indexes
 }
 
 const fn page_word(page_count: usize) -> &'static str {
@@ -355,9 +387,15 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 	// the separator between them is added the same way whatever was asked for.
 	let mut content = String::new();
 	let mut spans: Vec<Span> = Vec::new();
+	// The markers heading the pages that were kept. A page-break marker is carried over only when
+	// it is one of these, because its position says nothing: every page the parser did not read
+	// put its break where the next page's content begins, so an extract of pages 43000-44000 has
+	// 42999 other markers sitting inside its first page's span. Rebased by position they would all
+	// come across, and the HTML renderer would draw a rule for each of them.
+	let heading: HashSet<usize> = selected.iter().map(|&page| breaks[page]).collect();
 	for &page in &selected {
-		let start = breaks[page];
-		let end = breaks.get(page + 1).copied().unwrap_or(total);
+		let start = doc.buffer.markers[breaks[page]].position;
+		let end = breaks.get(page + 1).map_or(total, |&next| doc.buffer.markers[next].position);
 		if start >= end {
 			continue;
 		}
@@ -389,7 +427,10 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 			.map(|span| span.offset + (position - span.start))
 	};
 	let mut buffer = DocumentBuffer::with_content(content);
-	for marker in &doc.buffer.markers {
+	for (index, marker) in doc.buffer.markers.iter().enumerate() {
+		if marker.mtype == MarkerType::PageBreak && !heading.contains(&index) {
+			continue;
+		}
 		let Some(position) = rebase(marker.position) else { continue };
 		let Some(span) = spans.iter().find(|span| marker.position >= span.start && marker.position < span.end) else {
 			continue;
@@ -459,6 +500,48 @@ mod tests {
 
 	fn message(spec: &str) -> String {
 		PageSelection::parse(spec).expect_err("the specification cannot be read").to_string()
+	}
+
+	fn window(spec: &str) -> PageWindow {
+		PageSelection::parse(spec).expect("a valid --pages value").window()
+	}
+
+	/// The stretch a parser is asked for covers what was asked for and no more, so a range late in
+	/// a long document starts the read there rather than at its first page. That is the whole of
+	/// what makes the extract quick.
+	#[test]
+	fn the_window_starts_at_the_first_page_asked_for() {
+		assert_eq!(window("7"), PageWindow::new(6, Some(7)));
+		assert_eq!(window("43000-44000"), PageWindow::new(42999, Some(44000)));
+		assert_eq!(window("1-5"), PageWindow::new(0, Some(5)));
+	}
+
+	/// `end` names a page count the caller does not know before the document is open, so the window
+	/// runs to the last page rather than to a number the selection happens to hold.
+	#[test]
+	fn a_range_to_the_end_leaves_the_window_open() {
+		assert_eq!(window("80-end"), PageWindow::new(79, None));
+		assert_eq!(window("5-10,80-end"), PageWindow::new(4, None));
+	}
+
+	/// Ranges far apart widen the window to everything between them, which costs speed and nothing
+	/// else: the pages are still chosen from the parsed document afterwards.
+	#[test]
+	fn the_window_covers_the_gap_between_ranges_that_are_apart() {
+		assert_eq!(window("5;20"), PageWindow::new(4, Some(20)));
+		assert_eq!(window("5000-5010;6000"), PageWindow::new(4999, Some(6000)));
+	}
+
+	/// The window holds pages, and a page is in it when it is one of those asked for -- the end
+	/// being one past the last, as a range is written in code.
+	#[test]
+	fn the_window_holds_exactly_the_pages_it_covers() {
+		let window = PageWindow::new(42999, Some(44000));
+		assert!(!window.contains(42998), "the page before the range is not in it");
+		assert!(window.contains(42999), "the first page asked for is");
+		assert!(window.contains(43999), "the last page asked for is");
+		assert!(!window.contains(44000), "the page after the range is not");
+		assert!(PageWindow::new(79, None).contains(999_999), "an open window reaches any page");
 	}
 
 	#[test]
@@ -827,6 +910,30 @@ mod tests {
 				assert!(item.offset <= total, "{spec}: {item:?} points past the end of {total}");
 			}
 		}
+	}
+
+	/// An extract of pages 43000-44000 taken from a parser that opened only those pages: the pages
+	/// it did not read hold no text, so every one of their breaks sits at the position page 43000's
+	/// text begins at. Carried over by position they all land on page 43000, and the HTML renderer
+	/// draws a rule for each: 42999 of them before the extract's own first rule.
+	#[test]
+	fn the_breaks_of_pages_that_were_not_read_are_left_out() {
+		const FIRST_READ: usize = 43_000;
+		let mut buffer = DocumentBuffer::new();
+		// Every page before the one that was read, each with a break where the page that follows
+		// begins -- which, nothing being between them, is the same spot for all of them.
+		for page in 1..FIRST_READ {
+			buffer.add_marker(Marker::new(MarkerType::PageBreak, 0).with_text(format!("Page {page}")));
+		}
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 0).with_text(format!("Page {FIRST_READ}")));
+		buffer.append("text of page 43000\n");
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+
+		let out = extract_document("43000", &doc);
+		assert_eq!(out.buffer.content, "text of page 43000\n");
+		let breaks = out.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::PageBreak).count();
+		assert_eq!(breaks, 1, "the extract carries a break for a page that was not read");
 	}
 
 	#[test]

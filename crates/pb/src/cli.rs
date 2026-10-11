@@ -35,6 +35,9 @@ pub struct Cli {
 	/// Keep the headers and footers a document repeats from page to page, which are taken out by default as the app does
 	#[arg(long)]
 	pub keep_repeated: bool,
+	/// Leave a PDF's line-end hyphens exactly as the document has them, instead of working out from the rest of the document whether each one joins a compound or only splits a word. With --pages and --keep-repeated this is also what lets pb read only the pages asked for, which turns an extract from late in a long PDF from a minute into a couple of seconds
+	#[arg(long)]
+	pub no_hyphenation: bool,
 	/// Read the text off pages that are a picture and nothing else, as Batch OCR does
 	#[arg(long)]
 	pub ocr_image_pages: bool,
@@ -216,6 +219,8 @@ mod tests {
 	fn repeated_lines_are_taken_out_unless_asked_to_keep_them() {
 		assert!(!parse(&["pb", "b.pdf"]).keep_repeated);
 		assert!(!parse(&["pb", "b.pdf", "--pages", "1-5"]).keep_repeated);
+		assert!(!parse(&["pb", "b.pdf"]).no_hyphenation);
+		assert!(parse(&["pb", "b.pdf", "--no-hyphenation"]).no_hyphenation);
 		assert!(parse(&["pb", "b.pdf", "--keep-repeated"]).keep_repeated);
 	}
 
