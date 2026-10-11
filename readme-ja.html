@@ -72,7 +72,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#現在対応しているファイル形式">現在対応しているファイル形式</a></li>
 <li><a href="#キーボードショートカット">キーボードショートカット</a><ul>
 <li><a href="#ファイルメニュー">ファイルメニュー</a></li>
+<li><a href="#編集メニュー">編集メニュー</a></li>
+<li><a href="#表示メニュー">表示メニュー</a></li>
 <li><a href="#移動メニュー">移動メニュー</a></li>
+<li><a href="#しおりメニュー">しおりメニュー</a></li>
+<li><a href="#音声メニュー">音声メニュー</a></li>
 <li><a href="#ツールメニュー">ツールメニュー</a></li>
 <li><a href="#ヘルプメニュー">ヘルプメニュー</a></li>
 <li><a href="#文書ビューのその他のキー">文書ビューのその他のキー</a></li>
@@ -143,7 +147,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>スキャンしたPDFのページを、WindowsとmacOSに内蔵されているOCRで読み取れます。</li>
 <li>しおりとメモに対応しているので、読んでいた場所に印を付けて、後から戻れます。</li>
 <li>すべてのキーボードショートカットを変更できます。</li>
-<li>対応する文書をHTML、Markdown、プレーンテキストに変換するコマンドラインツール<code>pb</code>が付属します。</li>
+<li>httpとhttpsのリンクから文書を直接開けます。開き直すときに再ダウンロードし、読書位置としおりはそのまま保持します。</li>
+<li>対応する文書をHTML、Markdown、プレーンテキストに変換するコマンドラインツール<code>pb</code>が付属します。文書はいくつでも指定でき、<code>*.pdf</code>のような書き方は<code>pb</code>自身が展開するため、Windowsでも同じコマンドラインが使えます。文書ごとに1つのファイルをフォルダーへ書き出すこともできます。<code>--files-from</code>でファイルや標準入力から文書の一覧を読み込むことも、httpとhttpsのリンクにある文書を直接変換することもできます。</li>
 </ul>
 <h2 id="スクリーンリーダーとの互換性">スクリーンリーダーとの互換性</h2>
 <p>Paperbackは主要なスクリーンリーダーで問題なく動作します。ただし、JAWSのユーザーには既知の問題が2つあります。</p>
@@ -184,17 +189,38 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="ファイルメニュー">ファイルメニュー</h3>
 <ul>
 <li><code>Ctrl+O</code>: 文書を開きます。</li>
+<li><code>Ctrl+L</code>（macOS: <code>Cmd+Option+O</code>）：Webのリンクから文書を開きます。</li>
 <li><code>Ctrl+F4</code>（macOS: <code>Cmd+W</code>）：現在の文書を閉じます。</li>
 <li><code>Ctrl+Shift+F4</code>（macOS: <code>Cmd+Shift+W</code>）：開いているすべての文書を閉じます。</li>
 <li><code>Ctrl+Shift+T</code>: 最後に閉じた文書を開きます。</li>
 <li><code>Ctrl+R</code>: 「すべての文書」ダイアログを表示します（「最近開いた文書」から開きます）。</li>
+<li><code>Ctrl+Shift+C</code>: 文書のあるフォルダーを開きます。</li>
+<li><code>Ctrl+Shift+E</code>: 文書データ（<code>.paperback</code>）をエクスポートします。</li>
+<li><code>Ctrl+Shift+I</code>: 文書データ（<code>.paperback</code>）をインポートします。</li>
+<li><code>Ctrl+E</code>: 現在の文書をプレーンテキストにエクスポートします。</li>
 <li><code>Ctrl+Q</code>: 終了します（Windowsのみ。macOSではアプリメニューにあります）。</li>
 </ul>
-<h3 id="移動メニュー">移動メニュー</h3>
+<h3 id="編集メニュー">編集メニュー</h3>
 <ul>
 <li><code>Ctrl+F</code>: 検索ダイアログを表示します。</li>
 <li><code>F3</code>（macOS: <code>Cmd+G</code>）：次を検索します。</li>
 <li><code>Shift+F3</code>（macOS: <code>Cmd+Shift+G</code>）：前を検索します。</li>
+<li><code>Alt+F9</code>（macOS: <code>Cmd+F9</code>）：選択開始位置を設定します。ここから移動先までの範囲を、後でまとめてコピーできます。</li>
+<li><code>Alt+F10</code>（macOS: <code>Cmd+F10</code>）：選択開始位置から現在の位置までをすべてコピーします。</li>
+<li><code>Alt+Shift+F9</code>（macOS: <code>Cmd+Shift+F9</code>）：選択開始位置へ戻ります。位置の記録はそのまま残ります。</li>
+</ul>
+<h3 id="表示メニュー">表示メニュー</h3>
+<ul>
+<li><code>F5</code>: 現在の文書をディスクから読み直します。設定の「変更された文書を自動的に再読み込み」がオンかオフかに関係なく動作します。</li>
+<li><code>Ctrl+Alt+W</code>: ワードラップを切り替えます。</li>
+<li><code>F11</code>（macOS: <code>RawCtrl+Ctrl+F</code>。つまりControl+Command+F）：全画面表示を切り替えます。</li>
+<li><code>Ctrl+Shift+V</code>: 現在の内容をWebビューで開きます。</li>
+<li><code>Ctrl+U</code>: 文書のソースを新しいタブで表示します。</li>
+</ul>
+<h3 id="移動メニュー">移動メニュー</h3>
+<ul>
+<li><code>Ctrl+T</code>: 目次を表示します。</li>
+<li><code>F7</code>: 要素リストを表示します。</li>
 <li><code>Ctrl+G</code>（macOS: <code>Cmd+L</code>）：指定行へ移動します。</li>
 <li><code>Ctrl+Shift+G</code>（macOS: <code>Cmd+Shift+L</code>）：パーセント移動します。</li>
 <li><code>Ctrl+P</code>: 指定ページへ移動します（現在の文書がページに対応している場合）。</li>
@@ -209,16 +235,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>1</code>から<code>6</code>: レベル1から6の次の見出しへ移動します。</li>
 <li><code>Shift+P</code>: 前のページへ移動します。</li>
 <li><code>P</code>: 次のページへ移動します。</li>
-<li><code>Shift+B</code>: 前のしおりへ移動します。</li>
-<li><code>B</code>: 次のしおりへ移動します。</li>
-<li><code>/</code>: 一時しおりを設定します。</li>
-<li><code>\</code>: 一時しおりへ移動します。</li>
-<li><code>Shift+N</code>: 前のメモへ移動します。</li>
-<li><code>N</code>: 次のメモへ移動します。</li>
-<li><code>Ctrl+B</code>: すべてのしおりとメモの一覧へ移動します。</li>
-<li><code>Ctrl+Alt+B</code>: しおりだけの一覧へ移動します。</li>
-<li><code>Ctrl+Alt+M</code>: メモだけの一覧へ移動します。</li>
-<li><code>Ctrl+Shift+W</code>（macOS: <code>RawCtrl+Shift+W</code>。CmdではなくControlキー自体）：現在の位置にあるメモの内容を表示します。</li>
 <li><code>Shift+K</code>: 前のリンクへ移動します。</li>
 <li><code>K</code>: 次のリンクへ移動します。</li>
 <li><code>Shift+G</code>: 前の画像へ移動します。</li>
@@ -238,21 +254,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>: 現在のコンテナー（リストまたはテーブル）の先頭へ移動します。</li>
 <li><code>,</code>: 現在のコンテナー（リストまたはテーブル）の末尾へ移動します。</li>
 </ul>
-<h3 id="ツールメニュー">ツールメニュー</h3>
+<h3 id="しおりメニュー">しおりメニュー</h3>
 <ul>
-<li><code>Ctrl+W</code>（macOS: <code>RawCtrl+W</code>。CmdではなくControlキー自体）：現在の文書の単語数を表示します。</li>
-<li><code>Ctrl+I</code>: 文書情報を表示します。</li>
-<li><code>Ctrl+T</code>: 目次を表示します。</li>
-<li><code>F7</code>: 要素リストを表示します。</li>
-<li><code>Ctrl+Shift+C</code>: 文書のあるフォルダーを開きます。</li>
-<li><code>Ctrl+Shift+V</code>: 現在の内容をWebビューで開きます。</li>
-<li><code>Ctrl+U</code>: 文書のソースを新しいタブで表示します。</li>
-<li><code>Ctrl+Shift+E</code>: 文書データ（<code>.paperback</code>）をエクスポートします。</li>
-<li><code>Ctrl+Shift+I</code>: 文書データ（<code>.paperback</code>）をインポートします。</li>
-<li><code>Ctrl+E</code>: 現在の文書をプレーンテキストにエクスポートします。</li>
 <li><code>Ctrl+Shift+B</code>: 現在の選択範囲またはカーソル位置のしおりを切り替えます。</li>
 <li><code>Ctrl+Shift+N</code>: 現在の選択範囲またはカーソル位置に、しおりのメモを作成または編集します。</li>
-<li><code>Ctrl+Alt+W</code>: ワードラップを切り替えます。</li>
+<li><code>Shift+B</code>: 前のしおりへ移動します。</li>
+<li><code>B</code>: 次のしおりへ移動します。</li>
+<li><code>Shift+N</code>: 前のメモへ移動します。</li>
+<li><code>N</code>: 次のメモへ移動します。</li>
+<li><code>Ctrl+Shift+W</code>（macOS: <code>RawCtrl+Shift+W</code>。CmdではなくControlキー自体）：現在の位置にあるメモの内容を表示します。</li>
+<li><code>Ctrl+B</code>: すべてのしおりとメモの一覧へ移動します。</li>
+<li><code>Ctrl+Alt+B</code>: しおりだけの一覧へ移動します。</li>
+<li><code>Ctrl+Alt+M</code>: メモだけの一覧へ移動します。</li>
+<li><code>/</code>: 一時しおりを設定します。</li>
+<li><code>\</code>: 一時しおりへ移動します。</li>
+</ul>
+<h3 id="音声メニュー">音声メニュー</h3>
+<ul>
 <li><code>Ctrl+Space</code>（macOS: <code>RawCtrl+Space</code>。Cmd+SpaceはSpotlightを開くため、Controlキー自体）：音声ナレーションを再生または一時停止します。</li>
 <li><code>'</code>: 音声ナレーションを進めます。</li>
 <li><code>;</code>: 音声ナレーションを戻します。</li>
@@ -260,13 +278,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: 音声の移動量を減らします。</li>
 <li><code>Ctrl+Shift+.</code>: 音声ナレーションを速くします。</li>
 <li><code>Ctrl+Shift+,</code>: 音声ナレーションを遅くします。</li>
-<li><code>F11</code>（macOS: <code>RawCtrl+Ctrl+F</code>。つまりControl+Command+F）：全画面表示を切り替えます。</li>
-<li><code>Ctrl+,</code>: 設定を開きます（macOSではアプリメニューにあります）。</li>
-<li><code>Ctrl+Shift+S</code>: スリープタイマーを切り替えます。</li>
+</ul>
+<h3 id="ツールメニュー">ツールメニュー</h3>
+<ul>
+<li><code>Ctrl+W</code>（macOS: <code>RawCtrl+W</code>。CmdではなくControlキー自体）：現在の文書の単語数を表示します。</li>
+<li><code>Ctrl+I</code>: 文書情報を表示します。</li>
 <li><code>Ctrl+Shift+O</code>: スキャンしたPDFのページを範囲指定してOCRで認識します。</li>
-<li><code>Alt+F9</code>（macOS: <code>Cmd+F9</code>）：選択開始位置を設定します。ここから移動先までの範囲を、後でまとめてコピーできます。</li>
-<li><code>Alt+F10</code>（macOS: <code>Cmd+F10</code>）：選択開始位置から現在の位置までをすべてコピーします。</li>
-<li><code>Alt+Shift+F9</code>（macOS: <code>Cmd+Shift+F9</code>）：選択開始位置へ戻ります。位置の記録はそのまま残ります。</li>
+<li><code>Ctrl+Shift+S</code>: スリープタイマーを切り替えます。</li>
+<li><code>Ctrl+,</code>: 設定を開きます（macOSではアプリメニューにあります）。</li>
 </ul>
 <h3 id="ヘルプメニュー">ヘルプメニュー</h3>
 <ul>
@@ -279,6 +298,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="文書ビューのその他のキー">文書ビューのその他のキー</h3>
 <ul>
 <li>タブコントロールで<code>Delete</code>または<code>Numpad Delete</code>: 選択している文書のタブを閉じます。</li>
+<li>文書のテキスト内またはタブコントロールで<code>Ctrl+1</code>から<code>Ctrl+9</code>（macOS: <code>Cmd+1</code>から<code>Cmd+9</code>）：開いている文書のうち最初の9件へ、開いた順に移動します。</li>
+<li><code>Ctrl+Tab</code>と<code>Ctrl+Shift+Tab</code>: 次または前の文書へ移動します。両端では反対側へ折り返します。</li>
 <li>文書のテキスト内で<code>Enter</code>または<code>Space</code>: カーソル位置のリンクを開く、またはテーブルビューや数式ビューを開きます。</li>
 <li>スキャンされたPDFのページで<code>Enter</code>: そのページをOCRで認識します。</li>
 <li>文書のテキスト内で<code>Shift+F10</code>またはメニューキー（アプリケーションキー）：コンテキストメニューを開きます。</li>
