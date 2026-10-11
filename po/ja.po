@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 04:50+0000\n"
+"POT-Creation-Date: 2026-10-09 16:45+0000\n"
 "PO-Revision-Date: 2026-09-25 22:32+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
@@ -496,8 +496,8 @@ msgid "Show notes only"
 msgstr "メモのみを表示します"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
-msgid "&View Note Text"
-msgstr "メモの本文を表示(&V)"
+msgid "&View Note Text..."
+msgstr "メモの本文を表示(&V)..."
 
 #. TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
 msgid "View the note at current position"
@@ -508,8 +508,8 @@ msgid "&Toggle Bookmark"
 msgstr "しおりの切り替え(&T)"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
-msgid "Bookmark &with Note"
-msgstr "メモ付きのしおりを作成(&W)"
+msgid "Bookmark &with Note..."
+msgstr "メモ付きのしおりを作成(&W)..."
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
 msgid "&Set Temporary Bookmark"
@@ -789,7 +789,6 @@ msgid "Edit bookmark note:"
 msgstr "しおりのメモを編集:"
 
 #. TRANSLATORS: Title of the Document Info dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "文書情報"
 
@@ -1092,6 +1091,10 @@ msgstr "PDFの折り返された行を段落にまとめる(&J)"
 msgid "Remove repeated page &headers and footers in PDFs"
 msgstr "PDFで毎ページ繰り返されるヘッダーとフッターを除去する(&H)"
 
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr "Markdownでドル記号に囲まれた部分を数式として扱う(&M)"
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr "[移動]メニューをコンパクト表示(&G)"
@@ -1294,7 +1297,6 @@ msgid "&Minutes:"
 msgstr "分(&M):"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "目次"
 
@@ -1332,6 +1334,14 @@ msgstr[0] "選択範囲の単語数は%dです。"
 msgid "This document contains %d word."
 msgid_plural "This document contains %d words."
 msgstr[0] "この文書の単語数は%dです。"
+
+#. TRANSLATORS: Title of the dialog listing the documents inside a zip archive
+msgid "Open from Archive"
+msgstr "アーカイブから開く"
+
+#. TRANSLATORS: Label for the list of documents inside a zip archive
+msgid "&Documents in this archive:"
+msgstr "このアーカイブ内の文書(&D):"
 
 #. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
 msgid "{} to {}"
@@ -1512,6 +1522,20 @@ msgstr "ブラウザーで寄付ページを開けません。"
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Webビューが開いている間はアクションを実行できません。"
 
+#. TRANSLATORS: Announced when the copy shortcut is pressed with nothing selected, so there was nothing to put on the clipboard.
+#. TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
+msgid "Nothing to copy."
+msgstr "コピーする内容がありません。"
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr "クリップボードにコピーできませんでした。"
+
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+msgid "Selected %d character."
+msgid_plural "Selected %d characters."
+msgstr[0] "%d文字を選択しました。"
+
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
 msgstr "ワードラップ オン。"
@@ -1625,6 +1649,10 @@ msgstr "この文書形式ではソースを表示できません。"
 msgid "Could not load the document source."
 msgstr "ソースの表示に失敗しました。"
 
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+msgid "Couldn't extract the document from the archive: {}"
+msgstr "アーカイブから文書を取り出せません: {}"
+
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
 msgstr "選択した形式には対応していません。"
@@ -1641,28 +1669,28 @@ msgid "{} - Paperback"
 msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
-msgid "&Undo\tCtrl+Z"
-msgstr "元に戻す(&U)\tCtrl+Z"
+msgid "&Undo"
+msgstr "元に戻す(&U)"
 
 #. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "やり直し(&R)\tCtrl+Shift+Z"
+msgid "&Redo"
+msgstr "やり直し(&R)"
 
 #. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
-msgid "Cu&t\tCtrl+X"
-msgstr "切り取り(&T)\tCtrl+X"
+msgid "Cu&t"
+msgstr "切り取り(&T)"
 
 #. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
-msgid "&Copy\tCtrl+C"
-msgstr "コピー(&C)\tCtrl+C"
+msgid "&Copy"
+msgstr "コピー(&C)"
 
 #. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
-msgid "&Paste\tCtrl+V"
-msgstr "貼り付け(&P)\tCtrl+V"
+msgid "&Paste"
+msgstr "貼り付け(&P)"
 
 #. TRANSLATORS: Menu item in the Edit menu to select all text.
-msgid "Select &All\tCtrl+A"
-msgstr "すべて選択(&A)\tCtrl+A"
+msgid "Select &All"
+msgstr "すべて選択(&A)"
 
 #. TRANSLATORS: Menu item in the Edit menu to open the find dialog.
 msgid "&Find..."
@@ -1861,8 +1889,8 @@ msgid "Go forward in history"
 msgstr "履歴を進みます"
 
 #. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
-msgid "Table &of Contents"
-msgstr "目次(&O)"
+msgid "Table &of Contents..."
+msgstr "目次(&O)..."
 
 #. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
 msgid "Show table of contents"
@@ -1877,8 +1905,8 @@ msgid "Show elements list"
 msgstr "要素リストを表示します"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-msgid "&Go to Page"
-msgstr "指定ページへ移動(&G)"
+msgid "&Go to Page..."
+msgstr "指定ページへ移動(&G)..."
 
 #. TRANSLATORS: Menu item in the Help menu to show information about the application.
 msgid "&About Paperback"
@@ -1921,16 +1949,16 @@ msgid "Support Paperback development"
 msgstr "Paperbackの開発を支援します"
 
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
-msgid "&Word Count"
-msgstr "単語数(&W)"
+msgid "&Word Count..."
+msgstr "単語数(&W)..."
 
 #. TRANSLATORS: Status-bar help text for the Word Count menu item.
 msgid "Show word count"
 msgstr "単語数を表示します"
 
 #. TRANSLATORS: Menu item in the Tools menu to show information about the document.
-msgid "Document &Info"
-msgstr "文書情報(&I)"
+msgid "Document &Info..."
+msgstr "文書情報(&I)..."
 
 #. TRANSLATORS: Status-bar help text for the Document Info menu item.
 msgid "Show document information"
@@ -2246,9 +2274,10 @@ msgstr "パーセント移動(&P)"
 msgid "Go to percent"
 msgstr "パーセントを指定して移動します"
 
-#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
-msgid "Copied (%d chars)."
-msgstr "コピーしました（%d文字）。"
+#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+msgid "Copied %d character."
+msgid_plural "Copied %d characters."
+msgstr[0] "%d文字をコピーしました。"
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 msgid "Beginning of selection set."
@@ -2257,14 +2286,6 @@ msgstr "選択開始位置を設定しました。"
 #. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
 msgid "Cannot copy; set beginning of selection first."
 msgstr "コピーできません。先に選択開始位置を設定してください。"
-
-#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
-msgid "Nothing to copy."
-msgstr "コピーする内容がありません。"
-
-#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
-msgid "Could not copy to the clipboard."
-msgstr "クリップボードにコピーできませんでした。"
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 msgid "Cannot jump; set beginning of selection first."
@@ -2523,6 +2544,14 @@ msgid "Past Container End"
 msgstr "コンテナーの末尾"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Document Info..."
+msgstr "文書情報..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Table of Contents..."
+msgstr "目次..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Elements List..."
 msgstr "要素リスト..."
 
@@ -2681,6 +2710,34 @@ msgstr "なし"
 #. TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
 msgid "This view shows the part of the document you are reading."
 msgstr "このビューでは、文書のうち読んでいる部分を表示しています。"
+
+#. TRANSLATORS: Error when downloading a document from a link fails; {} is the HTTP status code, such as 404
+msgid "the server answered with status {}"
+msgstr "サーバーがステータス{}を返しました"
+
+#. TRANSLATORS: Error when the server of a link cannot be reached; {} is the technical reason
+msgid "the server could not be reached: {}"
+msgstr "サーバーに接続できません: {}"
+
+#. TRANSLATORS: Error when a document downloaded from a link cannot be saved; {} is the technical reason
+msgid "the download could not be saved: {}"
+msgstr "ダウンロードしたファイルを保存できません: {}"
+
+#. TRANSLATORS: Message when downloading a document from a link is cancelled
+msgid "the download was cancelled"
+msgstr "ダウンロードを中止しました"
+
+#. TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
+msgid ".{} files cannot be read, so the link was not downloaded"
+msgstr ".{}のファイルは読み込めないため、ダウンロードしていません"
+
+#. TRANSLATORS: Error when a secure https link is redirected to an insecure http address
+msgid "the secure link was redirected to an insecure address, so it was not downloaded"
+msgstr "httpsのリンクが安全でないアドレスへリダイレクトされたため、ダウンロードしていません"
+
+#. TRANSLATORS: Error when a document behind a link is too large to download; {} is the limit in megabytes
+msgid "the document is larger than {} MB, so it was not downloaded"
+msgstr "文書が{}MBを超えるため、ダウンロードしていません"
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
@@ -2875,6 +2932,9 @@ msgstr "パスワードが必要です"
 #. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
 msgid "Password incorrect"
 msgstr "パスワードが間違っています"
+
+msgid "This document is encrypted in a way Paperback cannot open: {}"
+msgstr "この文書はPaperbackが開けない方式で暗号化されています: {}"
 
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
@@ -3645,8 +3705,8 @@ msgstr "この文書には目次がありません。"
 msgid "Navigation unit"
 msgstr "移動単位"
 
-#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "previous" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 msgid "Previous {}"
 msgstr "前の{}"
 
@@ -3670,8 +3730,8 @@ msgstr "文書の末尾です"
 msgid "Beginning of document"
 msgstr "文書の先頭です"
 
-#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "next" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 msgid "Next {}"
 msgstr "次の{}"
 
@@ -4307,6 +4367,71 @@ msgstr "言語"
 #: kt swift
 msgid "Opens Paperback in the Settings app, where its language can be changed."
 msgstr "システムの設定アプリでPaperbackのページを開きます。言語はそこで変更できます。"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
+#: kt swift
+msgid "Previous Paragraph"
+msgstr "前の段落"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
+#: kt swift
+msgid "Previous Line"
+msgstr "前の行"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by paragraph
+#: kt swift
+msgid "Next Paragraph"
+msgstr "次の段落"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by line
+#: kt swift
+msgid "Next Line"
+msgstr "次の行"
+
+#. TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+#: kt
+msgid "Show all options in a menu"
+msgstr "すべてのオプションをメニューで表示"
+
+#. TRANSLATORS: TalkBack action on a document tab that closes it; {} is the document's title
+#: kt
+msgid "Close {}"
+msgstr "{}を閉じる"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
+#: kt
+msgid "Select navigation unit"
+msgstr "移動単位を選択"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+#: kt
+msgid "Select speech rate"
+msgstr "読み上げ速度を選択"
+
+#. TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
+#: kt
+msgid "Storage Devices"
+msgstr "ストレージデバイス"
+
+#. TRANSLATORS: TalkBack label for the file manager's row that goes up a folder; {} is the parent folder's name
+#: kt
+msgid "Go up to parent directory: {}"
+msgstr "親フォルダーへ移動: {}"
+
+#~ msgid "&Undo\tCtrl+Z"
+#~ msgstr "元に戻す(&U)\tCtrl+Z"
+
+#~ msgid "&Redo\tCtrl+Shift+Z"
+#~ msgstr "やり直し(&R)\tCtrl+Shift+Z"
+
+#~ msgid "Cu&t\tCtrl+X"
+#~ msgstr "切り取り(&T)\tCtrl+X"
+
+#~ msgid "&Copy\tCtrl+C"
+#~ msgstr "コピー(&C)\tCtrl+C"
+
+#~ msgid "&Go to Page"
+#~ msgstr "指定ページへ移動(&G)"
 
 #~ msgid "Previous &Note"
 #~ msgstr "前のメモ(&N)"
