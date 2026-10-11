@@ -72,7 +72,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#підтримувані-наразі-типи-файлів">Підтримувані наразі типи файлів</a></li>
 <li><a href="#комбінації-клавіш">Комбінації клавіш</a><ul>
 <li><a href="#меню-файл">Меню «Файл»</a></li>
+<li><a href="#меню-редагувати">Меню «Редагувати»</a></li>
+<li><a href="#меню-вигляд">Меню «Вигляд»</a></li>
 <li><a href="#меню-перейти">Меню «Перейти»</a></li>
+<li><a href="#меню-закладки">Меню «Закладки»</a></li>
+<li><a href="#меню-аудіо">Меню «Аудіо»</a></li>
 <li><a href="#меню-інструменти">Меню «Інструменти»</a></li>
 <li><a href="#меню-довідка">Меню «Довідка»</a></li>
 <li><a href="#додаткові-клавіші-перегляду-документа">Додаткові клавіші перегляду документа</a></li>
@@ -143,6 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Розпізнає відскановані сторінки PDF за допомогою вбудованого в Windows та macOS розпізнавання тексту (OCR).</li>
 <li>Закладки та нотатки, завдяки яким ви можете позначити потрібне місце й повернутися до нього.</li>
 <li>Можливість змінити будь-яку комбінацію клавіш.</li>
+<li>Відкриває документи безпосередньо за посиланнями http та https і завантажує їх знову під час повторного відкриття, зберігаючи позицію читання та закладки.</li>
 <li>Містить <code>pb</code> — утиліту командного рядка, яка конвертує будь-який підтримуваний документ у HTML, Markdown або звичайний текст.</li>
 </ul>
 <h2 id="сумісність-зі-зчитувачами-екрана">Сумісність зі зчитувачами екрана</h2>
@@ -184,17 +189,38 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="меню-файл">Меню «Файл»</h3>
 <ul>
 <li><code>Ctrl+O</code>: Відкрити документ.</li>
+<li><code>Ctrl+L</code> (macOS: <code>Cmd+Option+O</code>): Відкрити документ за посиланням.</li>
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Закрити поточний документ.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Закрити всі відкриті документи.</li>
 <li><code>Ctrl+Shift+T</code>: Заново відкрити останній закритий документ.</li>
 <li><code>Ctrl+R</code>: Відкрити діалог «Усі документи» (з підменю «Останні документи»).</li>
+<li><code>Ctrl+Shift+C</code>: Відкрити папку, в якій знаходиться файл.</li>
+<li><code>Ctrl+Shift+E</code>: Експортувати дані документа (<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Імпортувати дані документа (<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Експортувати поточний документ у звичайний текст.</li>
 <li><code>Ctrl+Q</code>: Вийти (тільки для Windows; у macOS це знаходиться в меню застосунку).</li>
 </ul>
-<h3 id="меню-перейти">Меню «Перейти»</h3>
+<h3 id="меню-редагувати">Меню «Редагувати»</h3>
 <ul>
 <li><code>Ctrl+F</code>: Показати діалог пошуку.</li>
 <li><code>F3</code> (macOS: <code>Cmd+G</code>): Знайти далі.</li>
-<li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Знайти попереднє.</li>
+<li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Знайти назад.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Встановити початкову позицію виділення, щоб увесь текст від неї до поточної позиції можна було скопіювати одразу.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Скопіювати все від позначеного початку виділення до поточної позиції.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Перейти назад до позначеного початку виділення, залишивши позначку на місці.</li>
+</ul>
+<h3 id="меню-вигляд">Меню «Вигляд»</h3>
+<ul>
+<li><code>F5</code>: Перечитати поточний документ із диска. Працює незалежно від того, чи ввімкнено в Налаштуваннях «Автоматично перезавантажувати змінені документи».</li>
+<li><code>Ctrl+Alt+W</code>: Увімкнути/вимкнути перенесення слів.</li>
+<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, тобто Control+Command+F): Перемикання повноекранного режиму.</li>
+<li><code>Ctrl+Shift+V</code>: Відкрити поточний вміст у вебперегляді.</li>
+<li><code>Ctrl+U</code>: Переглянути джерело документа в новій вкладці.</li>
+</ul>
+<h3 id="меню-перейти">Меню «Перейти»</h3>
+<ul>
+<li><code>Ctrl+T</code>: Показати зміст.</li>
+<li><code>F7</code>: Показати список елементів.</li>
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Перейти до рядка.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Перейти до відсотка.</li>
 <li><code>Ctrl+P</code>: Перейти до сторінки (якщо підтримується поточним документом).</li>
@@ -209,16 +235,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>1</code>–<code>6</code>: Наступний заголовок рівня 1–6.</li>
 <li><code>Shift+P</code>: Попередня сторінка.</li>
 <li><code>P</code>: Наступна сторінка.</li>
-<li><code>Shift+B</code>: Попередня закладка.</li>
-<li><code>B</code>: Наступна закладка.</li>
-<li><code>/</code>: Встановити тимчасову закладку.</li>
-<li><code>\</code>: Перейти до тимчасової закладки.</li>
-<li><code>Shift+N</code>: Попередня нотатка.</li>
-<li><code>N</code>: Наступна нотатка.</li>
-<li><code>Ctrl+B</code>: Перейти до всіх закладок і нотаток.</li>
-<li><code>Ctrl+Alt+B</code>: Перейти лише до закладок.</li>
-<li><code>Ctrl+Alt+M</code>: Перейти лише до нотаток.</li>
-<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, тобто фізична клавіша Control замість Cmd): Переглянути текст нотатки в поточній позиції.</li>
 <li><code>Shift+K</code>: Попереднє посилання.</li>
 <li><code>K</code>: Наступне посилання.</li>
 <li><code>Shift+G</code>: Попереднє зображення.</li>
@@ -238,21 +254,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>: Перейти до початку поточного контейнера (списку чи таблиці).</li>
 <li><code>,</code>: Перейти за межі кінця поточного контейнера (списку чи таблиці).</li>
 </ul>
-<h3 id="меню-інструменти">Меню «Інструменти»</h3>
+<h3 id="меню-закладки">Меню «Закладки»</h3>
 <ul>
-<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, тобто фізична клавіша Control замість Cmd): Показати кількість слів у поточному документі.</li>
-<li><code>Ctrl+I</code>: Показати відомості про документ.</li>
-<li><code>Ctrl+T</code>: Показати зміст.</li>
-<li><code>F7</code>: Показати список елементів.</li>
-<li><code>Ctrl+Shift+C</code>: Відкрити папку, в якій знаходиться файл.</li>
-<li><code>Ctrl+Shift+V</code>: Відкрити поточний вміст у вебпереглядачі.</li>
-<li><code>Ctrl+U</code>: Переглянути джерело документа в новій вкладці.</li>
-<li><code>Ctrl+Shift+E</code>: Експортувати дані документа (<code>.paperback</code>).</li>
-<li><code>Ctrl+Shift+I</code>: Імпортувати дані документа (<code>.paperback</code>).</li>
-<li><code>Ctrl+E</code>: Експортувати поточний документ у звичайний текст.</li>
 <li><code>Ctrl+Shift+B</code>: Додати або видалити закладку у місці поточного виділення/позиції курсора.</li>
 <li><code>Ctrl+Shift+N</code>: Додати або редагувати нотатку до закладки у місці поточного виділення/позиції курсора.</li>
-<li><code>Ctrl+Alt+W</code>: Увімкнути/вимкнути перенесення слів.</li>
+<li><code>Shift+B</code>: Попередня закладка.</li>
+<li><code>B</code>: Наступна закладка.</li>
+<li><code>Shift+N</code>: Попередня нотатка.</li>
+<li><code>N</code>: Наступна нотатка.</li>
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, тобто фізична клавіша Control замість Cmd): Переглянути текст нотатки в поточній позиції.</li>
+<li><code>Ctrl+B</code>: Перейти до всіх закладок і нотаток.</li>
+<li><code>Ctrl+Alt+B</code>: Перейти лише до закладок.</li>
+<li><code>Ctrl+Alt+M</code>: Перейти лише до нотаток.</li>
+<li><code>/</code>: Встановити тимчасову закладку.</li>
+<li><code>\</code>: Перейти до тимчасової закладки.</li>
+</ul>
+<h3 id="меню-аудіо">Меню «Аудіо»</h3>
+<ul>
 <li><code>Ctrl+Space</code> (macOS: <code>RawCtrl+Space</code>, тобто фізична клавіша Control замість Cmd, оскільки Cmd+Space відкриває Spotlight): Відтворити/призупинити аудіо.</li>
 <li><code>'</code>: Перемотати вперед.</li>
 <li><code>;</code>: Перемотати назад.</li>
@@ -260,13 +278,14 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: Зменшити крок перемотування аудіо.</li>
 <li><code>Ctrl+Shift+.</code>: Прискорити відтворення аудіо.</li>
 <li><code>Ctrl+Shift+,</code>: Уповільнити відтворення аудіо.</li>
-<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, тобто Control+Command+F): Перемикання повноекранного режиму.</li>
-<li><code>Ctrl+,</code>: Відкрити налаштування (macOS: у меню застосунку).</li>
-<li><code>Ctrl+Shift+S</code>: Увімкнути/вимкнути таймер сну.</li>
+</ul>
+<h3 id="меню-інструменти">Меню «Інструменти»</h3>
+<ul>
+<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, тобто фізична клавіша Control замість Cmd): Показати кількість слів у поточному документі.</li>
+<li><code>Ctrl+I</code>: Показати відомості про документ.</li>
 <li><code>Ctrl+Shift+O</code>: Розпізнати діапазон відсканованих сторінок PDF за допомогою OCR.</li>
-<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): Встановити початкову позицію виділення, щоб увесь текст від неї до поточної позиції можна було скопіювати одразу.</li>
-<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Скопіювати все від позначеного початку виділення до поточної позиції.</li>
-<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Перейти назад до позначеного початку виділення, залишивши позначку на місці.</li>
+<li><code>Ctrl+Shift+S</code>: Увімкнути/вимкнути таймер сну.</li>
+<li><code>Ctrl+,</code>: Відкрити налаштування (macOS: у меню застосунку).</li>
 </ul>
 <h3 id="меню-довідка">Меню «Довідка»</h3>
 <ul>
@@ -279,6 +298,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="додаткові-клавіші-перегляду-документа">Додаткові клавіші перегляду документа</h3>
 <ul>
 <li><code>Delete</code> / <code>Numpad Delete</code> на панелі вкладок: Закрити вибрану вкладку документа.</li>
+<li>Від <code>Ctrl+1</code> до <code>Ctrl+9</code> (macOS: від <code>Cmd+1</code> до <code>Cmd+9</code>) у тексті документа або на панелі вкладок: Перейти до перших дев’яти відкритих документів у порядку їх відкриття.</li>
+<li><code>Ctrl+Tab</code> та <code>Ctrl+Shift+Tab</code>: Перейти до наступного або попереднього відкритого документа з циклічним переходом між початком і кінцем.</li>
 <li><code>Enter</code> або <code>Space</code> у тексті документа: Перейти за посиланням або відкрити режим перегляду таблиці чи формули під курсором.</li>
 <li><code>Enter</code> на відсканованій сторінці PDF: Розпізнати сторінку за допомогою OCR.</li>
 <li><code>Shift+F10</code> або клавіша Application у тексті документа: Відкрити контекстне меню.</li>
