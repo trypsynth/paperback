@@ -93,6 +93,10 @@ final class AppViewModel {
 		highContrastText = configManager.getAppBool(key: "high_contrast_text", defaultValue: false)
 
 		reading.context = self
+		reading.stopAfterFindMatch = configManager.getAppBool(key: "tts_stop_after_find_match", defaultValue: true)
+		reading.onStopAfterFindMatchChanged = { [weak self] stop in
+			self?.configManager.setAppBool(key: "tts_stop_after_find_match", value: stop)
+		}
 
 		let narration = RecordedNarration(config: configManager)
 		narration.onClipChanged = { [weak self] position in
