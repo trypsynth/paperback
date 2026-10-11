@@ -13,6 +13,11 @@ pub(super) use wx_utils::{
 	DIALOG_PADDING, add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons,
 };
 
+#[cfg(target_os = "macos")]
+mod activation;
+#[cfg(target_os = "macos")]
+use activation::bind_enter_button;
+
 /// The most entries a table of contents or heading tree shows under one parent on Windows. More
 /// than that are split into groups under it. On every move in a tree, NVDA counts the focused
 /// item's siblings with one cross-process message each, so thousands of chapters under one parent
@@ -56,6 +61,8 @@ mod note_entry;
 pub use note_entry::show_note_entry_dialog;
 mod open_as;
 pub use open_as::show_open_as_dialog;
+mod open_url;
+pub use open_url::{confirm_download, show_open_url_dialog};
 mod options;
 pub(crate) use options::AUDIO_SEEK_AMOUNTS_SECONDS;
 pub use options::show_options_dialog;
@@ -73,3 +80,5 @@ pub use web_view::ACTIVE_WEB_VIEW;
 pub use web_view::show_web_view_dialog;
 mod word_count;
 pub use word_count::{AudioOnlySummary, show_word_count_dialog};
+mod zip_entries;
+pub use zip_entries::{ZipChoice, show_zip_entries_dialog};

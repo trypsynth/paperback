@@ -26,7 +26,7 @@ use crate::{
 	export::{ExportFormat, html as export_html, render},
 	parser,
 	reader_core::{encode_url_fragment, nearest_fragment_before},
-	util::{encoding::convert_to_utf8, zip as zip_utils},
+	util::{encoding::convert_to_utf8, html::MATHML_STYLES, zip as zip_utils},
 };
 
 /// How much of a document, in display units, a web view is handed at once. A web view lays out
@@ -83,9 +83,13 @@ impl DocumentSession {
 					let html_path = doc_temp_dir.join("document.html");
 					if let Ok(bytes) = fs::read(&self.file_path) {
 						let markdown_text = convert_to_utf8(&bytes);
-						let html_body = parser::markdown::markdown_to_html(&markdown_text);
-						let full_html =
-							format!("<html><head><meta charset=\"utf-8\"></head><body>{html_body}</body></html>");
+						let html_body = parser::markdown::markdown_to_html(
+							&markdown_text,
+							self.parse_settings.markdown_dollar_math,
+						);
+						let full_html = format!(
+							"<html><head><meta charset=\"utf-8\"><style>{MATHML_STYLES}</style></head><body>{html_body}</body></html>"
+						);
 						if fs::write(&html_path, full_html.as_bytes()).is_ok() {
 							return Some(WebviewTarget {
 								path: html_path.to_string_lossy().to_string(),
@@ -240,7 +244,9 @@ impl DocumentSession {
 	fn markdown_caret(&self, content: &str, pos: usize) -> usize {
 		nearest_fragment_before(&self.handle, pos)
 			.and_then(|id| id.strip_prefix("pb-block-").and_then(|n| n.parse::<usize>().ok()))
-			.and_then(|index| parser::markdown::block_source_offset(content, index))
+			.and_then(|index| {
+				parser::markdown::block_source_offset(content, index, self.parse_settings.markdown_dollar_math)
+			})
 			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
 			.unwrap_or(0)
 	}

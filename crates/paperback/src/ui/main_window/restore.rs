@@ -3,7 +3,7 @@
 
 use std::{cell::RefCell, path::Path, rc::Rc, sync::Mutex};
 
-use paperback_core::config::ConfigManager;
+use paperback_core::{config::ConfigManager, parser::is_remote_url};
 use wxdragon::prelude::*;
 
 use super::{DocumentManager, ensure_parser_ready_for_path, rebuild_menu_bar, update_title_from_manager};
@@ -45,6 +45,10 @@ pub(super) fn schedule_restore_documents(
 		let paths = config.lock().unwrap().get_opened_documents();
 		tracing::info!(count = paths.len(), "restoring previously open documents");
 		let failed = restore_each(paths, |path_str| {
+			// Not reopened at startup yet, but kept in the list rather than forgotten, so the reopening still to come finds it.
+			if is_remote_url(path_str) {
+				return true;
+			}
 			let path = Path::new(path_str);
 			if !path.exists() {
 				tracing::info!(path = %path.display(), "previously open document is missing; forgetting it");

@@ -56,11 +56,13 @@ toml = { workspace = true }
 tracing = "0.1.44"
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.2", features = ["cli"], optional = true }
+ureq = { version = "3.4.2", default-features = false, features = ["rustls"], optional = true }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
 mathcat = { version = "0.7.5", features = ["include-zip"] }
+math-core = "0.7.0"
 
 [build-dependencies]
-shipfitter = "0.2.1"
+shipfitter = "0.2.2"
 uniffi = { version = "0.32.2", features = ["build"], optional = true }
 
 [dev-dependencies]
@@ -71,6 +73,7 @@ rstest = { workspace = true }
 zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate", "aes-crypto"] }
 
 [features]
+fetch = ["dep:ureq"]
 uniffi = ["dep:uniffi"]
 
 [[bin]]

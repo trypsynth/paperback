@@ -110,6 +110,7 @@ pub(super) fn handle_options(
 		old_render_tables_inline,
 		old_join_pdf_paragraphs,
 		old_strip_running_text,
+		old_markdown_dollar_math,
 		old_compact_menu,
 		old_readability_font,
 		old_line_spacing,
@@ -124,6 +125,7 @@ pub(super) fn handle_options(
 			cfg.get_app_bool("render_tables_inline", true),
 			cfg.get_app_bool("join_pdf_paragraphs", true),
 			cfg.get_app_bool("strip_running_text", true),
+			cfg.get_app_bool("markdown_dollar_math", true),
 			cfg.get_app_bool("compact_go_menu", true),
 			cfg.get_readability_font(),
 			cfg.get_line_spacing(),
@@ -139,6 +141,7 @@ pub(super) fn handle_options(
 	cfg.set_app_bool("render_tables_inline", options.render_tables_inline);
 	cfg.set_app_bool("join_pdf_paragraphs", options.join_pdf_paragraphs);
 	cfg.set_app_bool("strip_running_text", options.strip_running_text);
+	cfg.set_app_bool("markdown_dollar_math", options.markdown_dollar_math);
 	cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
 	cfg.set_app_bool("start_maximized", options.start_maximized);
 	cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
@@ -179,7 +182,8 @@ pub(super) fn handle_options(
 	let options_render_tables_inline = options.render_tables_inline;
 	let parse_settings_changed = old_render_tables_inline != options_render_tables_inline
 		|| old_join_pdf_paragraphs != options.join_pdf_paragraphs
-		|| old_strip_running_text != options.strip_running_text;
+		|| old_strip_running_text != options.strip_running_text
+		|| old_markdown_dollar_math != options.markdown_dollar_math;
 	let font_changed = old_readability_font != options.readability_font;
 	let line_spacing_changed = old_line_spacing != options.line_spacing;
 	let bg_color_changed = old_bg_color != options.bg_color;
@@ -224,6 +228,7 @@ pub(super) fn handle_options(
 			render_tables_inline: options_render_tables_inline,
 			join_pdf_paragraphs: options.join_pdf_paragraphs,
 			strip_running_text: options.strip_running_text,
+			markdown_dollar_math: options.markdown_dollar_math,
 		};
 		let mut dm_ref = dm.lock().unwrap();
 		dm_ref.apply_parse_settings(settings);

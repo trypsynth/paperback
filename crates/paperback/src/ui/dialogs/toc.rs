@@ -48,6 +48,8 @@ fn show_toc_dialog_dv(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 		})
 	};
 	bind_toc_ok(dialog, ok_button, Rc::clone(&selected_offset), resolve_selected);
+	#[cfg(target_os = "macos")]
+	super::bind_enter_button(dialog, ok_button);
 	bind_toc_layout_dv(dialog, tree, ok_button, cancel_button);
 	tree.set_focus();
 	if dialog.show_modal() == wxdragon::id::ID_OK {
@@ -112,6 +114,7 @@ fn bind_toc_activation_dv(
 			&& let Some(id_ptr) = item.get_id::<c_void>()
 			&& let Some(&offset) = item_offsets.get(&(id_ptr as usize))
 		{
+			event.event.skip(false);
 			selected_offset.set(offset);
 			dialog_for_activate.end_modal(wxdragon::id::ID_OK);
 		}

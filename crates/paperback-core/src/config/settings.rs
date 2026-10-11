@@ -121,6 +121,8 @@ pub struct AppSettings {
 	pub join_pdf_paragraphs: bool,
 	#[serde(default = "default_true")]
 	pub strip_running_text: bool,
+	#[serde(default = "default_true")]
+	pub markdown_dollar_math: bool,
 	#[serde(default)]
 	pub navigation_wrap: bool,
 	#[serde(default)]
@@ -186,6 +188,7 @@ impl Default for AppSettings {
 			render_tables_inline: true,
 			join_pdf_paragraphs: true,
 			strip_running_text: true,
+			markdown_dollar_math: true,
 			navigation_wrap: false,
 			find_match_case: false,
 			find_whole_word: false,

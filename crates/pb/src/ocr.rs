@@ -335,7 +335,8 @@ mod tests {
 			edits.into_iter().map(|edit| Edit { start: edit.start, end: edit.end, text: edit.text }).collect();
 		doc.buffer.replace_ranges(edits);
 		assert_eq!(
-			doc.buffer.content, "balloon one\n[Image only. Press enter to OCR.]\n",
+			doc.buffer.content,
+			format!("balloon one\n{placeholder}\n"),
 			"the page it did not read keeps its line"
 		);
 		let heads: Vec<usize> = doc

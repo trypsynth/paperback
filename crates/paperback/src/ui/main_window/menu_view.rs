@@ -71,7 +71,7 @@ pub(super) fn handle_view_source(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>)
 		if tab.session.source_view_available() {
 			let current_pos = navigation::doc_caret(tab);
 			let orig_name = tab
-				.file_path
+				.local_path()
 				.file_name()
 				// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 				.map_or_else(|| t("document"), |name| name.to_string_lossy().to_string());

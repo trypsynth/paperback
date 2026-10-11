@@ -1,0 +1,88 @@
+/*
+Browser fixes from math-core 0.7.0.
+Source: https://raw.githubusercontent.com/tmke8/math-core/ed0de3dc30d8aac71b5cb29fc87e3417ad0f8955/css/mathmlfixes.css
+
+MIT License
+
+Copyright 2020 Hiromu Sugiura
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/* Style for unknown command; feel free to customize it */
+
+merror.math-core-unknown-cmd {
+    border: unset; /* `merror` default is `1px solid red` */
+    background-color: unset; /* `merror` default is `lightYellow` */
+    color: #c00; /* `merror` default is `unset` */
+}
+
+/* Styles for all browsers */
+
+mtd {
+    /* This is the default padding for mtd elements as defined in the MathML Core specification. */
+    padding: 0.5ex 0.4em;
+}
+
+mtr > mtd:first-child {
+    padding-left: 0;
+}
+
+mtr > mtd:last-child {
+    padding-right: 0;
+}
+
+/* Styles for Chromium only */
+@supports (not (-webkit-backdrop-filter: blur(1px))) and
+    (not (-moz-appearance: none)) {
+    menclose {
+        position: relative;
+        padding: 0.5ex 0;
+    }
+    mrow.menclose-updiagonalstrike,
+    mrow.menclose-downdiagonalstrike,
+    mrow.menclose-horizontalstrike {
+        display: inline-block;
+        position: absolute;
+        left: 0.5px;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background-color: currentcolor;
+    }
+    mrow.menclose-updiagonalstrike {
+        clip-path: polygon(
+            0.05em 100%,
+            0 calc(100% - 0.05em),
+            calc(100% - 0.05em) 0,
+            100% 0.05em
+        );
+    }
+    mrow.menclose-downdiagonalstrike {
+        clip-path: polygon(
+            0em 0.05em,
+            0.05em 0em,
+            100% calc(100% - 0.05em),
+            calc(100% - 0.05em) 100%
+        );
+    }
+    mrow.menclose-horizontalstrike {
+        clip-path: polygon(
+            0em calc(55% + 0.0333em),
+            0em calc(55% - 0.0333em),
+            100% calc(55% - 0.0333em),
+            100% calc(55% + 0.0333em)
+        );
+    }
+}
+
+/* Styles for Chromium and Safari */
+@supports (not (-moz-appearance: none)) {
+    mover[accent="true" i] > mo:nth-child(2) {
+        margin-bottom: 0.15ex;
+    }
+}

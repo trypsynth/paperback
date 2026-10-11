@@ -10,7 +10,10 @@ struct TtsControlBar: View {
 			// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by Find matches
 			return t("Find Previous")
 		}
-		// TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
+		if case .segment(let type) = viewModel.reading.currentNavUnit {
+			return previousUnitLabel(type)
+		}
+		// TRANSLATORS: Accessibility label for the "previous" button when navigating audio by time; {} is an amount like "30 seconds"
 		return t("Previous {}").replacingOccurrences(of: "{}", with: viewModel.reading.currentNavUnit.name)
 	}
 
@@ -19,7 +22,10 @@ struct TtsControlBar: View {
 			// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by Find matches
 			return t("Find Next")
 		}
-		// TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
+		if case .segment(let type) = viewModel.reading.currentNavUnit {
+			return nextUnitLabel(type)
+		}
+		// TRANSLATORS: Accessibility label for the "next" button when navigating audio by time; {} is an amount like "30 seconds"
 		return t("Next {}").replacingOccurrences(of: "{}", with: viewModel.reading.currentNavUnit.name)
 	}
 

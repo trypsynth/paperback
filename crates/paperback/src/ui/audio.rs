@@ -75,8 +75,8 @@ pub fn handle_seek_audio(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
-	from_keyboard: bool,
 	forward: bool,
+	from_keyboard: bool,
 ) {
 	let (sync_enabled, amount_seconds, spill_into_next_file) = {
 		let cfg = config.lock().unwrap();
@@ -128,8 +128,8 @@ pub fn handle_seek_audio(
 pub fn handle_change_audio_speed(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	live_region_label: StaticText,
-	from_keyboard: bool,
 	increase: bool,
+	from_keyboard: bool,
 ) {
 	let mut dm = doc_manager.lock().unwrap();
 	let result = dm.active_tab_mut().and_then(|tab| tab.audio_player.as_mut()).map(|player| {

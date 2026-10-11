@@ -1,6 +1,9 @@
-use scraper::{Html, Node};
+use scraper::{ElementRef, Html, Node};
 
-use crate::util::text::{collapse_whitespace, display_len, trim_string};
+use crate::{
+	parser::convert::formula::{formula_text, is_dom_formula},
+	util::text::{collapse_whitespace, display_len, trim_string},
+};
 
 /// `<table>…</table>` HTML -> tab-separated text: rows by '\n', cells (`<td>`/`<th>`) by '\t'.
 /// Cell text whitespace-collapsed + trimmed; internal '\t'/'\n' -> space; nested tables flattened.
@@ -210,9 +213,18 @@ fn cell_text(cell: ego_tree::NodeRef<'_, Node>) -> String {
 /// keeping content on either side of a line break from gluing together. Shared by
 /// `cell_text` above (`br_as_space: true`) and by `HtmlToText`'s title/heading/list-item/
 /// figcaption text extraction (`br_as_space: false`, its existing behavior).
+///
+/// A formula contributes the text the reading buffer shows for it, not its descendant text, which would
+/// concatenate every token and repeat any TeX annotation.
 pub(crate) fn collect_dom_text(node: ego_tree::NodeRef<'_, Node>, buffer: &mut String, br_as_space: bool) {
 	match node.value() {
 		Node::Text(text) => buffer.push_str(&text.text),
+		Node::Element(element) if is_dom_formula(element) => {
+			let formula = ElementRef::wrap(node).expect("an element node wraps as an element");
+			if let Some(text) = formula_text(&formula.html(), element.attr("alttext"), || formula.text().collect()) {
+				buffer.push_str(&text);
+			}
+		}
 		Node::Element(element) => {
 			if br_as_space && element.name() == "br" {
 				buffer.push(' ');

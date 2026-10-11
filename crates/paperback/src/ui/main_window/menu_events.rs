@@ -85,7 +85,7 @@ impl MainWindow {
 				}
 				menu_ids::ANNOUNCE_PERCENT => {
 					if let Ok(dm_ref) = dm.try_lock() {
-						dm_ref.announce_current_percent();
+						dm_ref.announce_current_percent(from_keyboard);
 					}
 				}
 				menu_ids::GO_TO_LINE => {
@@ -224,7 +224,7 @@ impl MainWindow {
 				}
 				#[cfg(not(target_os = "macos"))]
 				menu_ids::SELECT_ALL => {
-					menu_edit::handle_select_all(&dm);
+					menu_edit::handle_select_all(&dm, live_region_label, from_keyboard);
 				}
 				_ => {
 					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);
@@ -249,6 +249,7 @@ impl MainWindow {
 /// The mark is set only for keys that map to a known action, and is cleared by the dispatcher
 /// on every command plus by the key handler for actions it runs itself, so a key that produces
 /// no command cannot leave it set for a later menu click.
+/// On macOS, `mac_shortcuts` runs menu shortcuts before Cocoa selects their items and sets the mark itself; this hook still covers keys left to wxWidgets.
 pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, from_keyboard: Rc<Cell<bool>>) {
 	let config = Rc::clone(config);
 	frame.bind_internal(EventType::CHAR_HOOK, move |event| {

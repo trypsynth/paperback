@@ -12,4 +12,4 @@ rustflags = ["-C", "target-feature=+crt-static"]
 [env]
 # wxWidgets master rather than its last release, for accessibility fixes that have not shipped in one. The commit is part of the path because wxdragon-sys only rebuilds wxWidgets when WXWIDGETS_DIR changes, not what is in it. `cargo xtask wxwidgets` fetches it (`cargo release` does so itself), and Renovate moves it.
 # renovate: datasource=git-refs depName=https://github.com/wxWidgets/wxWidgets branch=master
-WXWIDGETS_DIR = { value = "target/wxWidgets-fb2e182b34e1a3bf33c420bd61d5b785f5250cc6", relative = true }
+WXWIDGETS_DIR = { value = "target/wxWidgets-6a42a4b999b127cf28a8b5fe686da6b8ca93a9b8", relative = true }

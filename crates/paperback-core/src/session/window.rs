@@ -144,7 +144,7 @@ pub(super) fn snap_end_to_paragraph_boundary(content: &str, byte_idx: usize) -> 
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::document::{Document, DocumentBuffer, DocumentHandle, Marker, MarkerType, ParserFlags};
+	use crate::document::{Document, DocumentBuffer, DocumentHandle, Marker, MarkerType, ParseSettings, ParserFlags};
 
 	fn session_with(content: &str, markers: &[Marker]) -> DocumentSession {
 		let mut buffer = DocumentBuffer::with_content(content.to_string());
@@ -159,6 +159,7 @@ mod tests {
 			history: Vec::new(),
 			history_index: 0,
 			parser_flags: ParserFlags::empty(),
+			parse_settings: ParseSettings::default(),
 		}
 	}
 

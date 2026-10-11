@@ -117,6 +117,42 @@ fn is_external_url_classifies_schemes(#[case] url: &str, #[case] expected: bool)
 }
 
 #[rstest]
+#[case("http://example.org/a.epub", true)]
+#[case("HTTPS://example.org/a.epub", true)]
+#[case("https://", false)]
+#[case("mailto:someone@example.org", false)]
+#[case("ftp://example.org/a.epub", false)]
+#[case("C:\\books\\a.epub", false)]
+#[case("https.epub", false)]
+fn is_remote_url_takes_only_http_and_https_links(#[case] text: &str, #[case] expected: bool) {
+	assert_eq!(is_remote_url(text), expected);
+}
+
+#[rstest]
+#[case("https://example.org/books/a.epub", Some("a.epub"))]
+#[case("https://example.org/a.epub?x=1#top", Some("a.epub"))]
+#[case("https://example.org/My%20Book.pdf", Some("My Book.pdf"))]
+#[case("https://example.org/dir%2Fb.pdf", Some("b.pdf"))]
+#[case("https://example.org/download?id=3", Some("download"))]
+#[case("https://example.org/books/", None)]
+#[case("https://example.org", None)]
+#[case("https://example.org?file=a.pdf", None)]
+fn url_file_name_is_the_last_path_segment(#[case] url: &str, #[case] expected: Option<&str>) {
+	assert_eq!(url_file_name(url).as_deref(), expected);
+}
+
+#[rstest]
+#[case("https://example.org/a.EPUB", Some("epub"))]
+#[case("https://example.org/setup.exe?download=1", Some("exe"))]
+#[case("https://example.org/download.php?id=3", Some("php"))]
+#[case("https://example.org/download?id=3", None)]
+#[case("https://example.org/.hidden", None)]
+#[case("https://example.org", None)]
+fn url_extension_reads_the_last_segment(#[case] url: &str, #[case] expected: Option<&str>) {
+	assert_eq!(url_extension(url).as_deref(), expected);
+}
+
+#[rstest]
 #[case("txt", true)]
 #[case(".TXT", true)]
 #[case("log", true)]

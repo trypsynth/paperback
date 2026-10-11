@@ -8,17 +8,23 @@
 
 use std::{path::Path, process};
 
-use paperback_core::parser::build_file_filter_string;
+use paperback_core::parser::{build_file_filter_string, is_remote_url};
 use patois::t;
-use wxdragon::prelude::*;
+use wx_utils::show_error;
+use wxdragon::{clipboard::Clipboard, prelude::*};
 
 use super::Ctx;
-use crate::ui::{
-	main_window::{
-		close_active_document_announced, ensure_parser_ready_for_path, rebuild_menu_bar, update_title_from_manager,
+use crate::{
+	links,
+	ui::{
+		dialogs,
+		main_window::{
+			close_active_document_announced, ensure_parser_ready_for_path, open_links, rebuild_menu_bar,
+			resolve_zip_path, update_title_from_manager,
+		},
+		menu,
+		navigation::announce_for_command,
 	},
-	menu,
-	navigation::announce_for_command,
 };
 
 pub fn open(ctx: &Ctx) {
@@ -38,9 +44,12 @@ pub fn open(ctx: &Ctx) {
 	paths.sort();
 	let mut opened_any = false;
 	for path in &paths {
-		let path = Path::new(path);
+		let Some(path) = resolve_zip_path(ctx.frame, Path::new(path), ctx.config, false) else {
+			continue;
+		};
 		// One book that cannot be opened, or whose unknown type the reader declines to pick a reader for, does not stop the rest.
-		if ensure_parser_ready_for_path(ctx.frame, path, ctx.config) && ctx.dm.lock().unwrap().open_file(ctx.dm, path) {
+		if ensure_parser_ready_for_path(ctx.frame, &path, ctx.config) && ctx.dm.lock().unwrap().open_file(ctx.dm, &path)
+		{
 			opened_any = true;
 		}
 	}
@@ -62,6 +71,20 @@ pub fn open(ctx: &Ctx) {
 	// enabled and doing nothing after opening a document from a fresh start.
 	let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
 	menu::update_reopen_state(ctx.frame, has_reopen);
+}
+
+pub fn open_from_url(ctx: &Ctx) {
+	let clipboard = Clipboard::get().get_text().unwrap_or_default();
+	let Some(text) = dialogs::show_open_url_dialog(ctx.frame, &links::prefill(&clipboard)) else {
+		return;
+	};
+	let link = text.trim();
+	if is_remote_url(link) {
+		open_links(ctx.frame, ctx.dm, ctx.config, vec![link.to_string()]);
+	} else if !link.is_empty() {
+		// TRANSLATORS: Title of the error shown when what was typed into Open from URL is not a web link
+		show_error(ctx.frame, links::not_a_link(link), &t("Open from URL"));
+	}
 }
 
 pub fn close(ctx: &Ctx) {
@@ -92,12 +115,13 @@ pub fn close_all(ctx: &Ctx) {
 pub fn reopen_last_closed(ctx: &Ctx) {
 	let path = ctx.dm.lock().unwrap().pop_recently_closed();
 	if let Some(path) = path {
-		if !ensure_parser_ready_for_path(ctx.frame, &path, ctx.config) {
+		if let Some(link) = path.to_str().filter(|path| is_remote_url(path)) {
+			open_links(ctx.frame, ctx.dm, ctx.config, vec![link.to_string()]);
+		} else if !ensure_parser_ready_for_path(ctx.frame, &path, ctx.config) {
 			// Put it back: the document was never reopened, so it is still the last closed one.
 			ctx.dm.lock().unwrap().push_recently_closed(path);
 			return;
-		}
-		if ctx.dm.lock().unwrap().open_file(ctx.dm, &path) {
+		} else if ctx.dm.lock().unwrap().open_file(ctx.dm, &path) {
 			let dm_ref = ctx.dm.lock().unwrap();
 			update_title_from_manager(ctx.frame, &dm_ref);
 			dm_ref.focus_document_text();
@@ -122,7 +146,7 @@ pub fn reload(ctx: &Ctx) {
 		return;
 	};
 	// A file that is gone has nothing to re-read, so a batch running on it keeps going rather than losing its pages for nothing.
-	if !dm.active_tab().is_some_and(|tab| tab.file_path.exists()) {
+	if !dm.active_tab().is_some_and(|tab| tab.local_path().exists()) {
 		return;
 	}
 	// Stopped before the re-read, or its pages would be put back into the new buffer, and quietly, since a count of pages recognized describes text the re-read throws away.
@@ -157,6 +181,10 @@ pub fn clear_recent_documents(ctx: &Ctx) {
 }
 
 pub fn exit(ctx: &Ctx) {
-	ctx.dm.lock().unwrap().save_all_positions();
+	{
+		let mut dm = ctx.dm.lock().unwrap();
+		dm.save_all_positions();
+		dm.remove_working_copies();
+	}
 	process::exit(0);
 }

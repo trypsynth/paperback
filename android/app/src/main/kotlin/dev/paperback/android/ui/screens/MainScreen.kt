@@ -24,6 +24,7 @@ import androidx.navigation3.runtime.NavKey
 import dev.paperback.android.AllDocumentsRoute
 import dev.paperback.android.SettingsRoute
 import dev.paperback.android.t
+import dev.paperback.android.tts.TtsManager
 import dev.paperback.android.ui.components.DocumentTextView
 import dev.paperback.android.ui.components.MainScreenTopBar
 import dev.paperback.android.ui.components.NoDocumentPane
@@ -71,6 +72,7 @@ fun MainScreen(
 	val swipeUpMovesForward by settings.swipeUpMovesForward.state.collectAsStateWithLifecycle()
 	val hidePrevNextButtons by settings.hidePrevNextButtons.state.collectAsStateWithLifecycle()
 	val speechRatePercent by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
+	val ttsEngine by viewModel.ttsManager.currentEngineName.collectAsStateWithLifecycle()
 	val activeSearchQuery by viewModel.search.query.collectAsStateWithLifecycle()
 	val activeSearchOptions by viewModel.search.options.collectAsStateWithLifecycle()
 	val isTextMode by settings.textMode.state.collectAsStateWithLifecycle()
@@ -381,7 +383,7 @@ fun MainScreen(
 						currentUnit = currentNavUnit,
 						navUnits = navUnits,
 						onNavUnitChange = { viewModel.setNavUnit(it) },
-						speechRatePercent = speechRatePercent,
+						speechRatePercent = speechRatePercent.takeUnless { ttsEngine == null || ttsEngine == TtsManager.SYSTEM_DEFAULT },
 						onSpeechRateChange = { viewModel.ttsManager.setSpeechRate(it) },
 						swipeUpMovesForward = swipeUpMovesForward,
 						hidePrevNextButtons = hidePrevNextButtons

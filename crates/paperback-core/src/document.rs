@@ -96,11 +96,17 @@ pub struct ParseSettings {
 	pub render_tables_inline: bool,
 	pub join_pdf_paragraphs: bool,
 	pub strip_running_text: bool,
+	pub markdown_dollar_math: bool,
 }
 
 impl Default for ParseSettings {
 	fn default() -> Self {
-		Self { render_tables_inline: true, join_pdf_paragraphs: true, strip_running_text: true }
+		Self {
+			render_tables_inline: true,
+			join_pdf_paragraphs: true,
+			strip_running_text: true,
+			markdown_dollar_math: true,
+		}
 	}
 }
 
@@ -125,6 +131,10 @@ pub struct ParserContext {
 	/// would rather keep every word than have a tidy page edge can turn it off, and should expect
 	/// a running head on every page in exchange.
 	pub strip_running_text: bool,
+	/// Whether Markdown text between dollar signs, as in `$x^2$` and `$$x^2$$`, is read as a TeX formula. Off is for
+	/// documents whose dollars are not math, such as `$HOME/bin:$PATH` in a README: Markdown can't express which reading
+	/// the writer meant.
+	pub markdown_dollar_math: bool,
 }
 
 impl ParserContext {
@@ -137,6 +147,7 @@ impl ParserContext {
 			render_tables_inline: true,
 			join_pdf_paragraphs: true,
 			strip_running_text: true,
+			markdown_dollar_math: true,
 		}
 	}
 
@@ -177,6 +188,7 @@ impl ParserContext {
 		self.render_tables_inline = settings.render_tables_inline;
 		self.join_pdf_paragraphs = settings.join_pdf_paragraphs;
 		self.strip_running_text = settings.strip_running_text;
+		self.markdown_dollar_math = settings.markdown_dollar_math;
 		self
 	}
 }
@@ -226,8 +238,9 @@ mod tests {
 		let settings = ParseSettings { strip_running_text: false, ..ParseSettings::default() };
 		let context = ParserContext::new("book.pdf".to_string()).with_parse_settings(settings);
 		assert!(!context.strip_running_text);
-		// The other two move with it, so a partial override cannot quietly drop them.
+		// The others move with it, so a partial override cannot quietly drop them.
 		assert!(context.render_tables_inline);
 		assert!(context.join_pdf_paragraphs);
+		assert!(context.markdown_dollar_math);
 	}
 }

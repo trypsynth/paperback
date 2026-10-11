@@ -226,6 +226,8 @@ pub struct DocumentSession {
 	history: Vec<i64>,
 	history_index: usize,
 	parser_flags: ParserFlags,
+	/// The settings the document was parsed with, which views that re-render its source must follow too.
+	parse_settings: ParseSettings,
 }
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
@@ -302,8 +304,7 @@ impl DocumentSession {
 		forced_extension: String,
 		render_tables_inline: bool,
 	) -> Result<Self, DocumentError> {
-		// The mobile front ends have no reader-facing switch for the PDF paragraph joining,
-		// so they take its default.
+		// The mobile front ends have a reader-facing switch only for table rendering, so they take the other defaults.
 		let settings = ParseSettings { render_tables_inline, ..ParseSettings::default() };
 		Self::new(&file_path, &password, &forced_extension, settings).map_err(DocumentError::ParseError)
 	}
@@ -353,6 +354,7 @@ impl DocumentSession {
 			history: Vec::new(),
 			history_index: 0,
 			parser_flags,
+			parse_settings: settings,
 		})
 	}
 

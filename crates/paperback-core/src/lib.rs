@@ -2,6 +2,7 @@ pub mod audio;
 pub mod config;
 pub mod document;
 pub mod export;
+pub mod fetch;
 pub mod ffi_config;
 pub mod ocr;
 pub mod parser;

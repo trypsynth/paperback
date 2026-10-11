@@ -238,6 +238,23 @@ pub fn announce_for_command(live_region_label: StaticText, from_keyboard: bool, 
 	}
 }
 
+/// Announces `message` for a command whose own effect makes the screen reader speak, so a shortcut
+/// waits too.
+///
+/// [`announce_for_command`] skips the wait for a shortcut because a shortcut takes no focus away from
+/// the book and so leaves nothing saying anything to read over. A command that changes the control's
+/// selection breaks that: the change is itself reported by the screen reader, so a message raised the
+/// instant the command runs is spoken *first* and leaves the reader's own "selected" hanging on the
+/// end of it. Waiting swaps those round, so the report is cut off at its start instead of trailing
+/// after the message.
+///
+/// The wait is shorter than a menu's because what it is cutting starts sooner: a selection change is
+/// reported immediately, where a closing menu's focus chain takes the extra time to begin.
+pub fn announce_for_selection_command(live_region_label: StaticText, from_keyboard: bool, message: impl AsRef<str>) {
+	let delay_ms = if from_keyboard { FOCUS_CHAIN_INTERRUPT_DELAY_MS } else { MENU_FOCUS_CHAIN_INTERRUPT_DELAY_MS };
+	announce_after(live_region_label, message, delay_ms);
+}
+
 /// The timer hangs off the live region itself rather than the frame, so a handler that never
 /// sees the window can still announce. The one-shot `wxTimer` is kept alive through its single
 /// tick by the `Rc`/`RefCell` it hands its own callback: the tick clears the cell, which drops

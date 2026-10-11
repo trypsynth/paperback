@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 5e3e3226ca7ab1c2; sections: 84030068,db723a70,df2f4c18,6a9811ab,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - Version 1.0
 
@@ -25,7 +25,7 @@ Paperback läuft auf Windows 10/11, allen modernen ARM-Versionen von macOS, Linu
 * Liest gescannte PDF-Seiten mit der in Windows und macOS integrierten Texterkennung.
 * Lesezeichen und Notizen, damit du deine Position markieren und später dorthin zurückkehren kannst.
 * Jede Tastenkombination kann geändert werden.
-* Kommt mit `pb`, einem Befehlszeilentool, das beliebige unterstützte Dokumente in HTML, Markdown oder einfachen Text konvertiert. Es verarbeitet beliebig viele Dokumente, expandiert `*.pdf` und ähnliches selbst, sodass dieselbe Befehlszeile auf Windows funktioniert, und kann eine Datei pro Dokument in einen Ordner schreiben.
+* Kommt mit `pb`, einem Befehlszeilentool, das beliebige unterstützte Dokumente in HTML, Markdown oder einfachen Text konvertiert. Es verarbeitet beliebig viele Dokumente, expandiert `*.pdf` und ähnliches selbst, sodass dieselbe Befehlszeile auf Windows funktioniert, und kann eine Datei pro Dokument in einen Ordner schreiben. Es kann auch eine Liste von Dokumenten aus einer Datei oder von stdin mit `--files-from` lesen und Dokumente direkt von http- und https-Links konvertieren.
 
 ## Bildschirmleser-Kompatibilität
 

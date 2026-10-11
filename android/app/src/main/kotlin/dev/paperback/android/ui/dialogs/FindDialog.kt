@@ -126,9 +126,7 @@ fun FindDialog(
 					verticalAlignment = Alignment.CenterVertically,
 					modifier = Modifier
 						.fillMaxWidth()
-						.semantics(mergeDescendants = true) {
-							stateDescription = if (matchCase) "ticked" else "not ticked"
-						}.toggleable(
+						.toggleable(
 							value = matchCase,
 							onValueChange = { matchCase = it },
 							role = Role.Checkbox
@@ -145,9 +143,7 @@ fun FindDialog(
 					verticalAlignment = Alignment.CenterVertically,
 					modifier = Modifier
 						.fillMaxWidth()
-						.semantics(mergeDescendants = true) {
-							stateDescription = if (wholeWord) "ticked" else "not ticked"
-						}.toggleable(
+						.toggleable(
 							value = wholeWord,
 							onValueChange = { wholeWord = it },
 							role = Role.Checkbox
@@ -164,9 +160,7 @@ fun FindDialog(
 					verticalAlignment = Alignment.CenterVertically,
 					modifier = Modifier
 						.fillMaxWidth()
-						.semantics(mergeDescendants = true) {
-							stateDescription = if (useRegex) "ticked" else "not ticked"
-						}.toggleable(
+						.toggleable(
 							value = useRegex,
 							onValueChange = { useRegex = it },
 							role = Role.Checkbox
