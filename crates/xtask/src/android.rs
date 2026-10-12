@@ -19,6 +19,8 @@ const PDFIUM_ANDROID_ARM64_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-android-arm64.tgz";
 const PDFIUM_ANDROID_ARM_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-android-arm.tgz";
+const PDFIUM_ANDROID_X64_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-android-x64.tgz";
 
 pub fn android() -> Result<(), Box<dyn Error>> {
 	let args = env::args().skip(2);
@@ -41,6 +43,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	let jni_libs = project_root().join("android/app/src/main/jniLibs");
 	download_pdfium_so(PDFIUM_ANDROID_ARM64_URL, &jni_libs.join("arm64-v8a/libpdfium.so"))?;
 	download_pdfium_so(PDFIUM_ANDROID_ARM_URL, &jni_libs.join("armeabi-v7a/libpdfium.so"))?;
+	download_pdfium_so(PDFIUM_ANDROID_X64_URL, &jni_libs.join("x86_64/libpdfium.so"))?;
 	println!("Generating Kotlin bindings via uniffi-bindgen...");
 	let ffi_library = build_host_ffi_library(&cargo)?.to_string_lossy().into_owned();
 	let status = Command::new(&cargo)
@@ -67,7 +70,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("uniffi-bindgen generation failed".into());
 	}
-	println!("Building native libraries for arm64-v8a and armeabi-v7a...");
+	println!("Building native libraries for arm64-v8a, armeabi-v7a, and x86_64...");
 	let status = Command::new(&cargo)
 		.current_dir(project_root())
 		.args([
@@ -76,6 +79,8 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			"arm64-v8a",
 			"-t",
 			"armeabi-v7a",
+			"-t",
+			"x86_64",
 			"-o",
 			"android/app/src/main/jniLibs",
 			"build",

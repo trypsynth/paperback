@@ -407,7 +407,7 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        targets: aarch64-linux-android,armv7-linux-androideabi
+        targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
     - name: Install cargo-ndk
       run: cargo install cargo-ndk
     - name: Cache Rust dependencies
@@ -441,6 +441,7 @@ jobs:
       run: |
         cp android/app/build/outputs/apk/release/app-arm64-v8a-release.apk paperback-android-arm64.apk
         cp android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk paperback-android-arm.apk
+        cp android/app/build/outputs/apk/release/app-x86_64-release.apk paperback-android-x86_64.apk
     - name: Upload APK artifacts
       uses: actions/upload-artifact@v7
       with:
@@ -448,6 +449,7 @@ jobs:
         path: |
           paperback-android-arm64.apk
           paperback-android-arm.apk
+          paperback-android-x86_64.apk
         retention-days: 30
     # The App Bundle is what goes to Google Play, so keep it only from runs that signed it.
     - name: Upload App Bundle
