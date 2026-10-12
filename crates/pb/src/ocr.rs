@@ -9,7 +9,7 @@
 use anyhow::{Context, Result};
 use native_ocr::{Error as OcrError, max_image_dimension, recognize_rgba};
 use paperback_core::{
-	document::{Document, Edit, MarkerType},
+	document::{Document, Edit, Marker, MarkerType},
 	ocr::{PageRenderer, image_only_placeholder},
 	parser::pdf::join_wrapped_lines,
 };
@@ -130,6 +130,32 @@ struct PageEdit {
 	text: String,
 }
 
+/// The page of the file a page of the document came from, which is the page to render.
+///
+/// Not the page's position in the document, because `--pages` cuts a document down to an extract
+/// that keeps the markers naming the pages it was cut from: in `pb book.pdf --pages 43000-44000`,
+/// the first page of the extract sits where position 1 is and is page 43,000 of the file. Rendering
+/// by position would read the wrong sheet and put its words on the right page of the extract, which
+/// reads as a plausible misreading of the scan rather than as a fault.
+///
+/// Every format this reads labels its pages this way. Only a PDF, a CBZ or a CBR is ever rendered
+/// (see [`is_ocr_able`]), and all three name each page `"Page {n}"` for its number in the file --
+/// [`PdfParser`](paperback_core::parser::pdf::PdfParser) and
+/// [`CbzParser`](paperback_core::parser::cbz::CbzParser), with the CBR parser reading through the
+/// latter -- and [`PageRenderer`] numbers them the same way. The name is also what the document
+/// itself treats as the page's label, which is why page navigation announces it as it stands.
+///
+/// A marker that names nothing falls back to the position, which is what the name means for every
+/// document that has not been cut down to a range.
+fn source_page(marker: &Marker, position: usize) -> usize {
+	marker
+		.text
+		.strip_prefix("Page ")
+		.and_then(|page| page.parse::<usize>().ok())
+		.filter(|page| *page > 0)
+		.unwrap_or(position)
+}
+
 /// The edits that put each page's words where that page's text was.
 ///
 /// A scanned page gives up only its instruction line, and the newline closing it is left where it
@@ -144,13 +170,9 @@ struct PageEdit {
 /// together read every page.
 fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 	let buffer = &doc.buffer;
-	let mut breaks: Vec<usize> = buffer
-		.markers
-		.iter()
-		.filter(|marker| marker.mtype == MarkerType::PageBreak)
-		.map(|marker| marker.position)
-		.collect();
-	breaks.sort_unstable();
+	let mut breaks: Vec<&Marker> =
+		buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::PageBreak).collect();
+	breaks.sort_unstable_by_key(|marker| marker.position);
 	let scanned: Vec<usize> = buffer
 		.markers
 		.iter()
@@ -159,11 +181,12 @@ fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 		.collect();
 	let total = buffer.total_display_len();
 	let mut edits = Vec::new();
-	// Every page rather than the scanned ones, since a page number is a page's position among the
-	// breaks, and the breaks are what the document numbers its pages by.
-	for (index, start) in breaks.iter().copied().enumerate() {
-		let page = index + 1;
-		let end = breaks.get(index + 1).copied().unwrap_or(total);
+	// Every page rather than the scanned ones, since which page of the file to render is a question
+	// about every page, and a page whose text is not wanted still has to be stepped over.
+	for (index, marker) in breaks.iter().enumerate() {
+		let start = marker.position;
+		let page = source_page(marker, index + 1);
+		let end = breaks.get(index + 1).map_or(total, |next| next.position);
 		if scanned.contains(&start) {
 			if !selection.image_pages {
 				continue;
@@ -215,6 +238,37 @@ mod tests {
 		doc
 	}
 
+	/// A document cut down to a page range, which is what `--pages` hands over: the markers keep
+	/// naming the pages they were taken from, so this is the extract of pages 43000-43002 and its
+	/// pages are numbered 43000 to 43002 rather than 1 to 3.
+	fn extract_of_pages(first: usize, count: usize) -> Document {
+		let mut buffer = DocumentBuffer::new();
+		for index in 0..count {
+			let position = buffer.current_position();
+			buffer
+				.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {}", first + index)));
+			buffer.append(&format!("text of page {}\n", first + index));
+		}
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		doc
+	}
+
+	/// The same extract with every page a picture and nothing on it, as a scanned book's pages are.
+	fn scanned_extract_of_pages(first: usize, count: usize) -> Document {
+		let mut buffer = DocumentBuffer::new();
+		for index in 0..count {
+			let position = buffer.current_position();
+			buffer
+				.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {}", first + index)));
+			buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, position));
+			buffer.append(&format!("{}\n", image_only_placeholder()));
+		}
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		doc
+	}
+
 	fn images_only() -> Selection {
 		Selection { image_pages: true, text_pages: false }
 	}
@@ -253,6 +307,42 @@ mod tests {
 		let edits = page_edits(&doc, images_only());
 		assert_eq!(edits.len(), 1);
 		assert_eq!(edits[0].page, 2);
+	}
+
+	/// The bug this pairs with: `--pages 43000-43002 --ocr-image-pages` is handed a three-page
+	/// extract, and each page of it has to be rendered from its own page of the file. Numbering the
+	/// pages by where they sit in the extract read page 1 three times over. It was silent, because
+	/// the words that came back were put on the right page of the extract either way, so the scan
+	/// simply read as if the engine had misread it.
+	#[test]
+	fn a_scanned_page_of_an_extract_is_rendered_from_its_own_page_of_the_file() {
+		let doc = scanned_extract_of_pages(43000, 3);
+		let pages: Vec<usize> = page_edits(&doc, images_only()).iter().map(|edit| edit.page).collect();
+		assert_eq!(pages, vec![43000, 43001, 43002]);
+	}
+
+	/// The same for a page that already has a text layer, which `--ocr-text-pages` re-reads.
+	#[test]
+	fn a_text_page_of_an_extract_is_rendered_from_its_own_page_of_the_file() {
+		let doc = extract_of_pages(43000, 3);
+		let pages: Vec<usize> = page_edits(&doc, text_only()).iter().map(|edit| edit.page).collect();
+		assert_eq!(pages, vec![43000, 43001, 43002]);
+	}
+
+	/// A marker that names no page is still numbered by its position, which is what every document
+	/// outside a PDF or a comic is numbered by and what every document was numbered by before
+	/// `--pages` could cut one down. Getting this wrong would number a whole document's pages from
+	/// nothing rather than from a range that is merely offset.
+	#[test]
+	fn a_marker_that_names_no_page_is_numbered_by_where_it_sits() {
+		let mut doc = document();
+		for marker in &mut doc.buffer.markers {
+			if marker.mtype == MarkerType::PageBreak {
+				marker.text.clear();
+			}
+		}
+		let pages: Vec<usize> = page_edits(&doc, text_only()).iter().map(|edit| edit.page).collect();
+		assert_eq!(pages, vec![1, 2, 3]);
 	}
 
 	/// The two flags ask for disjoint kinds of page, so neither is a widening of the other and

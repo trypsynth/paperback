@@ -226,6 +226,26 @@ mod tests {
 		assert_eq!(buffer.content.lines().count(), 2);
 	}
 
+	/// The OCR pass reads a page's number off its break's label to know which page of the file to
+	/// render: `--pages` renumbers the pages of an extract from one, so the position in the document
+	/// is no longer the page of the file, and the label is what still says which sheet it is. A
+	/// label that stopped naming its page would send `pb --pages ... --ocr-image-pages` back to
+	/// rendering page 1 for every page of the range, with nothing to show for it but a scan that
+	/// reads as if the engine had misread it.
+	///
+	/// The CBR parser goes through this one, so both comic formats are pinned here.
+	#[test]
+	fn a_page_break_names_the_page_of_the_file_it_heads() {
+		let buffer = build(&["001.jpg".to_string(), "002.jpg".to_string()]);
+		let labels: Vec<&str> = buffer
+			.markers
+			.iter()
+			.filter(|marker| marker.mtype == MarkerType::PageBreak)
+			.map(|marker| marker.text.as_str())
+			.collect();
+		assert_eq!(labels, ["Page 1", "Page 2"]);
+	}
+
 	// The OCR flow replaces the placeholder line at the marker's own position, so the two
 	// have to sit together or Enter finds nothing to swap.
 	#[test]
