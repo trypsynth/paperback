@@ -48,14 +48,15 @@ const BATCH_OCR_PROGRESS_EVERY: usize = 50;
 /// Every apply rebuilds the buffer's per-char index tables, which is linear in the whole
 /// document, so applying page by page would be quadratic over a long scan. Flushing in groups
 /// keeps that cost proportional to the document while still letting the reader reach the early
-/// pages long before a several-hundred-page job finishes.
+/// pages long before a several-hundred-page job finishes. Fifty pages is about a second and a
+/// half, which is as long as it is worth making a reader wait to read the page they are on, and
+/// it is also the fewest applies: a 500-page job rebuilds those tables ten times rather than
+/// twenty-five.
 ///
-/// Deliberately not the progress interval, which it used to be defined as. The two answer
-/// different questions: this one is how long the reader waits to be able to read the text, and
-/// that has not changed, while the announcement is how often they are interrupted, and that had
-/// to. Twenty pages of text landing every second is welcome; twenty pages announced every second
-/// is not.
-const BATCH_OCR_FLUSH_EVERY: usize = 20;
+/// The progress interval, so the text has landed by the time the announcement says it has. The
+/// two are queued to the UI thread one after the other in this order, so a reader who goes to look
+/// at page fifty when they hear "OCR 50 of 300" finds the words there rather than a placeholder.
+const BATCH_OCR_FLUSH_EVERY: usize = BATCH_OCR_PROGRESS_EVERY;
 
 /// A running OCR job, one per tab. Owned by the UI thread; the worker sees only `cancel`.
 pub(super) struct OcrJob {
