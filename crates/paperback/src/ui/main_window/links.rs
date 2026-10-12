@@ -32,6 +32,18 @@ pub fn open_links(
 	config: &Rc<Mutex<ConfigManager>>,
 	links: Vec<String>,
 ) {
+	open_links_then(frame, dm, config, links, || {});
+}
+
+/// [`open_links`], then `then` once the documents have opened, or straight away when there is
+/// nothing to download.
+pub fn open_links_then(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	links: Vec<String>,
+	then: impl FnOnce() + 'static,
+) {
 	let (notebook, open_tabs): (Notebook, Vec<Option<usize>>) = {
 		let dm_ref = dm.lock().unwrap();
 		(*dm_ref.notebook(), links.iter().map(|link| dm_ref.find_tab_by_path(Path::new(link))).collect())
@@ -42,6 +54,7 @@ pub fn open_links(
 	let to_download: Vec<String> =
 		links.into_iter().zip(open_tabs).filter_map(|(link, open_tab)| open_tab.is_none().then_some(link)).collect();
 	if to_download.is_empty() {
+		then();
 		return;
 	}
 	let (frame, dm, config) = (*frame, Rc::clone(dm), Rc::clone(config));
@@ -64,6 +77,47 @@ pub fn open_links(
 			// Cancelling opens nothing; dropping the outcomes deletes what was downloaded.
 			if ended == Ended::Completed {
 				open_downloads(&frame, &dm, &config, outcomes);
+			}
+			then();
+		},
+	);
+}
+
+/// Downloads the document the tab for `link` was opened from again and reads it in place,
+/// keeping the reading position, then calls `reloaded`. A refusal or a failed download is
+/// reported and leaves the tab as it was.
+pub fn download_again(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	link: String,
+	reloaded: impl FnOnce(&DocumentManager) + 'static,
+) {
+	let (frame, dm) = (*frame, Rc::clone(dm));
+	run_with_progress(
+		&frame,
+		// TRANSLATORS: Title of the window that shows a document opened from a link being downloaded again
+		&t("Reload"),
+		&t("Connecting..."),
+		move |progress| download(&link, 1, 1, progress),
+		move |outcome, ended| {
+			if ended != Ended::Completed {
+				return;
+			}
+			match outcome {
+				Outcome::Downloaded { link, copy, .. } => {
+					let mut dm_ref = dm.lock().unwrap();
+					// The tab may have closed meanwhile; then there is nothing to read again.
+					let Some(index) = dm_ref.find_tab_by_path(Path::new(&link)) else {
+						return;
+					};
+					if dm_ref.reload_link(index, copy) {
+						reloaded(&dm_ref);
+					}
+				}
+				Outcome::Failed { .. } => {
+					show_error(&frame, links::report(std::slice::from_ref(&outcome)).join("\n"), &t("Reload"));
+				}
+				Outcome::Skipped => {}
 			}
 		},
 	);

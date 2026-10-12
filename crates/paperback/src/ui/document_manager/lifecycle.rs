@@ -256,6 +256,10 @@ impl DocumentManager {
 			}
 			config.set_document_opened(&path_str, true);
 			config.add_opened_document(&path_str);
+			let tab = &self.tabs[tab_index];
+			if let (Some(_), Some(copy)) = (&tab.working_copy, tab.disk_fingerprint) {
+				config.set_document_download_size(&path_str, copy.len());
+			}
 		}
 		config.flush();
 		true

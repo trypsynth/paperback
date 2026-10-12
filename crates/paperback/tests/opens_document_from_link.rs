@@ -7,7 +7,7 @@ use common::fixture;
 #[test]
 #[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
 fn a_link_on_the_command_line_opens_the_document_it_names() {
-	let (app, _server) = common::launch_with_link("link-command-line");
+	let (app, _server) = common::launch_with_link("link-command-line", |_| {});
 	common::wait_for_reader_focus(app.pid);
 	common::wait_for_title(app.pid, &format!("{} - Paperback", fixture::TITLE));
 }
@@ -17,7 +17,7 @@ fn a_link_on_the_command_line_opens_the_document_it_names() {
 #[test]
 #[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
 fn a_link_reopened_after_closing_comes_back_where_reading_stopped() {
-	let (app, _server) = common::launch_with_link("link-reopen");
+	let (app, _server) = common::launch_with_link("link-reopen", |_| {});
 	common::wait_for_reader_focus(app.pid);
 	common::press('H');
 	common::press('H');
@@ -34,7 +34,7 @@ fn a_link_reopened_after_closing_comes_back_where_reading_stopped() {
 #[test]
 #[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
 fn open_from_url_opens_the_link_typed_into_it() {
-	let (app, server) = common::launch_with_link("link-open-from-url");
+	let (app, server) = common::launch_with_link("link-open-from-url", |_| {});
 	common::wait_for_reader_focus(app.pid);
 	common::ctrl_f4();
 	common::wait_for_title(app.pid, "Paperback");

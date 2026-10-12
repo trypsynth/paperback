@@ -23,7 +23,7 @@ Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iO
 * Reads scanned PDF pages with the OCR built into Windows and macOS.
 * Bookmarks and notes, so you can mark your place and come back to it.
 * Every keyboard shortcut can be changed.
-* Opens documents straight from http and https links, and downloads them again when you reopen them, keeping your reading position and bookmarks.
+* Opens documents straight from http and https links, and downloads them again when you reopen them or press `F5`, keeping your reading position and bookmarks. When restoring the documents you had open, it downloads again the ones from links that were 2 MB or smaller.
 * Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text. It takes as many documents as you give it, expands `*.pdf` and the like itself so the same command line works on Windows, and can write one file per document into a folder. It can also read a list of documents from a file or from stdin with `--files-from`, and convert documents straight from http and https links.
 
 ## Screen Reader Compatibility
@@ -99,7 +99,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 
 ### View menu
 
-* `F5`: Re-read the current document from disk. Works whether or not "Automatically reload changed documents" is switched on in Settings.
+* `F5`: Re-read the current document from disk, or download it again if it was opened from a link. Works whether or not "Automatically reload changed documents" is switched on in Settings.
 * `Ctrl+Alt+W`: Toggle word wrap.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, i.e. Control+Command+F): Toggle full screen.
 * `Ctrl+Shift+V`: Open current content in Web View.
