@@ -60,7 +60,7 @@ codegen-units = 1
 # Fixed upstream in zip-rs/zip2#962, merged but not yet published: 9.0.0-pre3 is still the newest
 # version on crates.io. Drop this once the fix reaches a release.
 [patch.crates-io]
-# Pinned to wxDragon main for the binary-size work (its #224 and #225) and the tree item data fix
-# (#241), none of it released yet. Swap back to a plain version requirement once a release carries them.
-wxdragon = { git = "https://github.com/AllenDang/wxDragon", rev = "82356530e28062b0909de96b6831a585cae7256c" }
+# Pinned to wxDragon main for the binary-size work (its #224 and #225), the tree item data fix
+# (#241), and wxWidgets 3.3.4 with its accessibility fixes, none of it released yet. Swap back to a plain version requirement once a release carries them.
+wxdragon = { git = "https://github.com/AllenDang/wxDragon", rev = "e32baf6060b9ad6fde8cda1a1bc5449d16039cbe" }
 zip = { git = "https://github.com/zip-rs/zip2.git", rev = "96407e1332cb9ec8f39af88e6dac866ce83995b8" }
