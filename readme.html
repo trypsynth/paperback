@@ -147,7 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Reads scanned PDF pages with the OCR built into Windows and macOS.</li>
 <li>Bookmarks and notes, so you can mark your place and come back to it.</li>
 <li>Every keyboard shortcut can be changed.</li>
-<li>Opens documents straight from http and https links, and downloads them again when you reopen them, keeping your reading position and bookmarks.</li>
+<li>Opens documents straight from http and https links, and downloads them again when you reopen them or press <code>F5</code>, keeping your reading position and bookmarks. When restoring the documents you had open, it downloads again the ones from links that were 2 MB or smaller.</li>
 <li>Comes with <code>pb</code>, a command line tool that converts any supported document to HTML, Markdown, or plain text. It takes as many documents as you give it, expands <code>*.pdf</code> and the like itself so the same command line works on Windows, and can write one file per document into a folder. It can also read a list of documents from a file or from stdin with <code>--files-from</code>, and convert documents straight from http and https links.</li>
 </ul>
 <h2 id="screen-reader-compatibility">Screen Reader Compatibility</h2>
@@ -211,7 +211,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="view-menu">View menu</h3>
 <ul>
-<li><code>F5</code>: Re-read the current document from disk. Works whether or not “Automatically reload changed documents” is switched on in Settings.</li>
+<li><code>F5</code>: Re-read the current document from disk, or download it again if it was opened from a link. Works whether or not “Automatically reload changed documents” is switched on in Settings.</li>
 <li><code>Ctrl+Alt+W</code>: Toggle word wrap.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, i.e. Control+Command+F): Toggle full screen.</li>
 <li><code>Ctrl+Shift+V</code>: Open current content in Web View.</li>
