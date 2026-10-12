@@ -3,10 +3,13 @@
 //!
 //! Everything that touches a `DocumentTab` runs on the UI thread. The worker thread holds only
 //! the file path and a list of page numbers: it renders and recognizes, then hands text back
-//! through `wxdragon::call_after`. Pages are addressed by number rather than by offset for a
-//! reason. Applying one page's text moves every offset after it, so an offset captured before
-//! the job started would be stale by the time the worker's next result lands. Page numbers stay
-//! true, and the UI thread re-resolves each one's placeholder as it applies it.
+//! through `wxdragon::call_after`. A batch reads its pages on a pool of threads, which
+//! `paperback_core::ocr::pool` runs and which hands the pages over in order, so what arrives here
+//! is what a one-page-at-a-time pass would have produced. Pages are addressed by number rather
+//! than by offset for a reason. Applying one page's text moves every offset after it, so an
+//! offset captured before the job started would be stale by the time the worker's next result
+//! lands. Page numbers stay true, and the UI thread re-resolves each one's placeholder as it
+//! applies it.
 
 use std::{
 	path::{Path, PathBuf},
@@ -17,7 +20,10 @@ use std::{
 	thread,
 };
 
-use paperback_core::{ocr::PageRenderer, parser::pdf::join_wrapped_lines};
+use paperback_core::{
+	ocr::{default_workers, recognize_pages},
+	parser::pdf::join_wrapped_lines,
+};
 use patois::{nt, t};
 use wxdragon::prelude::*;
 
@@ -361,8 +367,12 @@ fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[i64], window: TextWindow, 
 	}
 }
 
-/// The worker thread: opens the document once, then renders and recognizes each page in turn,
-/// posting results back to the UI thread in flushes.
+/// The worker thread: opens the document once per pool worker, then renders and recognizes pages
+/// on several threads at once, posting results back to the UI thread in flushes.
+///
+/// The pool hands pages over in page order however the workers finish, so everything below reads
+/// as the single-threaded pass it replaced: a flush always carries a run of pages in ascending
+/// order, the progress count only ever goes up, and a page can never land after a later one.
 ///
 /// `id` travels with every message so the UI thread can tell this run apart from any other job on the same document, which may by now be open again under a new tab.
 fn run_ocr(
@@ -374,41 +384,47 @@ fn run_ocr(
 	batch: bool,
 	id: u64,
 ) {
-	let mut renderer = match PageRenderer::open(path_str, password) {
-		Ok(renderer) => renderer,
-		Err(err) => {
-			tracing::warn!(error = %err, "failed to open the document for ocr");
-			post_finish(id, file_path, false);
-			return;
-		}
-	};
-	let total = pages.len();
+	// Asked for once rather than per page: it is the engine's cap, and it does not change.
 	let max_dimension = ocr::max_image_dimension();
+	let total = pages.len();
 	let mut pending: Vec<PageResult> = Vec::with_capacity(BATCH_OCR_FLUSH_EVERY);
-	let mut canceled = false;
-	for (done, page) in pages.iter().enumerate() {
-		if cancel.load(Ordering::Relaxed) {
-			canceled = true;
-			break;
+	let mut done = 0usize;
+	let run = recognize_pages(
+		path_str,
+		password,
+		pages,
+		default_workers(),
+		cancel,
+		|renderer, page| {
+			// `render` takes a 0-based page index; the job list is 1-based.
+			renderer
+				.render(page - 1, max_dimension)
+				.map_err(|error| OcrError::Failed(error.to_string()))
+				.and_then(|rendered| ocr::recognize_rgba(&rendered.rgba, rendered.width, rendered.height))
+		},
+		|page, result| {
+			done += 1;
+			pending.push((page, result));
+			if pending.len() >= BATCH_OCR_FLUSH_EVERY && done != total {
+				post_apply(id, file_path, std::mem::take(&mut pending));
+			}
+			if batch && done.is_multiple_of(BATCH_OCR_PROGRESS_EVERY) && done != total {
+				post_progress(id, done, total);
+			}
+		},
+	);
+	match run {
+		Ok(run) => {
+			if !pending.is_empty() {
+				post_apply(id, file_path, pending);
+			}
+			post_finish(id, file_path, run.stopped);
 		}
-		// `render` takes a 0-based page index; the job list is 1-based.
-		let result = renderer
-			.render(page - 1, max_dimension)
-			.map_err(|err| OcrError::Failed(err.to_string()))
-			.and_then(|rendered| ocr::recognize_rgba(&rendered.rgba, rendered.width, rendered.height));
-		pending.push((*page, result));
-		let done = done + 1;
-		if pending.len() >= BATCH_OCR_FLUSH_EVERY && done != total {
-			post_apply(id, file_path, std::mem::take(&mut pending));
-		}
-		if batch && done % BATCH_OCR_PROGRESS_EVERY == 0 && done != total {
-			post_progress(id, done, total);
+		Err(error) => {
+			tracing::warn!(error = %error, "failed to open the document for ocr");
+			post_finish(id, file_path, false);
 		}
 	}
-	if !pending.is_empty() {
-		post_apply(id, file_path, pending);
-	}
-	post_finish(id, file_path, canceled);
 }
 
 fn post_apply(id: u64, file_path: &Path, results: Vec<PageResult>) {

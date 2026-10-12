@@ -4,13 +4,17 @@
 //!
 //! What is read is a rendering of the page, not the text layer it replaces, which is what makes re-reading a page that already has text worth doing at all.
 //!
+//! A whole document is read on several threads, which `paperback_core::ocr::pool` runs and which the app's Batch OCR uses too. The pages come back in the document's own order, so everything below works on them as if they had been read one at a time.
+//!
 //! The recognized text is put in place of what it replaces rather than in front of it, for the reason given on [`Edit`]: an insertion at a page's start moves every marker sitting there past the words, the page break and the image marker naming the artwork among them, so in HTML the rule for a scanned page comes out after its text.
+
+use std::{collections::HashMap, sync::atomic::AtomicBool};
 
 use anyhow::{Context, Result};
 use native_ocr::{Error as OcrError, max_image_dimension, recognize_rgba};
 use paperback_core::{
 	document::{Document, Edit, Marker, MarkerType},
-	ocr::{PageRenderer, image_only_placeholder},
+	ocr::{PageRenderer, default_workers, image_only_placeholder, recognize_pages},
 	parser::pdf::join_wrapped_lines,
 };
 
@@ -64,14 +68,32 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 	if edits.is_empty() {
 		return Ok(());
 	}
-	let mut renderer = PageRenderer::open(file_path, password)
-		.with_context(|| format!("failed to open {file_path} to read its pages"))?;
 	let max_dimension = max_image_dimension();
+	// The pages the pool is asked for, in the order the edits are in. A page number that will not
+	// fit an `i32` is one the renderer could not be asked for anyway, and leaving it out reads it
+	// the way a page out of range is read: the edit keeps what it had.
+	let page_numbers: Vec<i32> = edits.iter().filter_map(|edit| i32::try_from(edit.page).ok()).collect();
+	let mut results: HashMap<i32, Result<String, OcrError>> = HashMap::with_capacity(page_numbers.len());
+	// The command line has no way to stop a run part-way, so the pool is handed a flag nothing
+	// raises rather than being given a second entry point without one.
+	let cancel = AtomicBool::new(false);
+	recognize_pages(
+		file_path,
+		password,
+		&page_numbers,
+		default_workers(),
+		&cancel,
+		|renderer, page| recognize_page(renderer, page, max_dimension),
+		|page, result| {
+			results.insert(page, result);
+		},
+	)
+	.with_context(|| format!("failed to open {file_path} to read its pages"))?;
 	let mut failures = Vec::new();
 	for edit in &mut edits {
-		let page = edit.page;
-		match recognize_page(&mut renderer, page, max_dimension) {
-			Ok(text) => {
+		let Ok(page) = i32::try_from(edit.page) else { continue };
+		match results.remove(&page) {
+			Some(Ok(text)) => {
 				let text = join_wrapped_lines(text.trim());
 				// A page the engine read nothing from keeps what it had. Blanking it would turn an
 				// instruction the reader cannot follow into a page that reads as blank, which is a
@@ -80,7 +102,8 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 					edit.text = if edit.whole_page { format!("{text}\n") } else { text };
 				}
 			}
-			Err(error) => failures.push((page, error.to_string())),
+			Some(Err(error)) => failures.push((edit.page, error.to_string())),
+			None => {}
 		}
 	}
 	let read = edits.iter().filter(|edit| !edit.text.is_empty()).count();
@@ -104,13 +127,11 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 }
 
 /// Renders one 1-based page and recognizes the text on it.
-fn recognize_page(renderer: &mut PageRenderer, page: usize, max_dimension: u32) -> Result<String, OcrError> {
+fn recognize_page(renderer: &mut PageRenderer, page: i32, max_dimension: u32) -> Result<String, OcrError> {
 	// `render` takes a 0-based page index; the document numbers its pages from one. A page that
 	// fell out of the subtraction is a page the document does not have, and pdfium's own bounds
 	// check is what refuses it.
-	let rendered = renderer
-		.render(i32::try_from(page - 1).unwrap_or(-1), max_dimension)
-		.map_err(|error| OcrError::Failed(error.to_string()))?;
+	let rendered = renderer.render(page - 1, max_dimension).map_err(|error| OcrError::Failed(error.to_string()))?;
 	recognize_rgba(&rendered.rgba, rendered.width, rendered.height)
 }
 

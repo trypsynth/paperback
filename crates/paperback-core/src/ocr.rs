@@ -19,6 +19,10 @@ use crate::{
 	t,
 };
 
+mod pool;
+
+pub use pool::{Run, default_workers, recognize_pages};
+
 /// The placeholder line the PDF parser inserts for a page that has an image but no extractable
 /// text. Purely what the reader sees: the OCR flow locates these pages by their
 /// `ImageOnlyPage` marker, so this string is free to be translated and to change.
@@ -63,9 +67,11 @@ pub struct RenderedPage {
 /// A document held open for repeated page rendering.
 ///
 /// Batch OCR renders many pages from one file, so the file is opened once here rather than per
-/// page. Not `Send`: pdfium's handles are tied to the thread that made them, so a renderer is
-/// created and used on the same thread. That thread need not be the UI thread, because every
-/// call into pdfium takes the library's own global lock.
+/// page. A renderer is created and used on one thread, which need not be the UI thread: every call
+/// into pdfium takes the library's own global lock, and that lock is what `PdfDocument`'s `Send`
+/// rests on. Nothing in the type enforces the one-thread rule, so it is worth knowing why it is
+/// kept -- that lock serializes rasterizing, so sharing one renderer between the pool's workers
+/// would only queue them behind each other, and each opening its own is what lets them overlap.
 pub struct PageRenderer {
 	source: Source,
 }
