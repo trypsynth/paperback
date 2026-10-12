@@ -33,7 +33,7 @@ impl DocumentSession {
 	#[must_use]
 	pub fn find_all_lines(&self, query: &str, options: SearchOptions) -> Vec<FindAllLine> {
 		let buffer = &self.handle.document().buffer;
-		let matches = crate::reader_core::reader_search_all(&buffer.content, query, options);
+		let matches = crate::reader_core::reader_search_all(buffer, query, options);
 		if matches.is_empty() {
 			return Vec::new();
 		}
