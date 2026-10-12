@@ -35,7 +35,7 @@ mod menu_view;
 mod parser_ready;
 mod restore;
 mod window_events;
-pub use links::open_links;
+pub use links::{download_again, open_links};
 pub(crate) use parser_ready::{ensure_parser_ready_for_path, resolve_zip_path};
 
 #[cfg(target_os = "windows")]

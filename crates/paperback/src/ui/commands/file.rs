@@ -18,9 +18,10 @@ use crate::{
 	links,
 	ui::{
 		dialogs,
+		document_manager::DocumentManager,
 		main_window::{
-			close_active_document_announced, ensure_parser_ready_for_path, open_links, rebuild_menu_bar,
-			resolve_zip_path, update_title_from_manager,
+			close_active_document_announced, download_again, ensure_parser_ready_for_path, open_links,
+			rebuild_menu_bar, resolve_zip_path, update_title_from_manager,
 		},
 		menu,
 		navigation::announce_for_command,
@@ -145,23 +146,32 @@ pub fn reload(ctx: &Ctx) {
 	let Some(index) = dm.active_tab_index() else {
 		return;
 	};
-	// A file that is gone has nothing to re-read, so a batch running on it keeps going rather than losing its pages for nothing.
-	if !dm.active_tab().is_some_and(|tab| tab.local_path().exists()) {
+	// A document opened from a link is downloaded again rather than re-read from its copy.
+	if let Some(link) =
+		dm.active_tab().filter(|tab| tab.working_copy.is_some()).map(|tab| tab.file_path.to_string_lossy().into_owned())
+	{
+		drop(dm);
+		let (frame, label, from_keyboard) = (*ctx.frame, ctx.live_region_label, ctx.from_keyboard);
+		download_again(ctx.frame, ctx.dm, link, move |dm| {
+			announce_reloaded(&frame, dm, label, from_keyboard);
+		});
 		return;
 	}
-	// Stopped before the re-read, or its pages would be put back into the new buffer, and quietly, since a count of pages recognized describes text the re-read throws away.
-	dm.cancel_ocr(true);
 	if !dm.reload_tab(index, true) {
 		return;
 	}
-	update_title_from_manager(ctx.frame, &dm);
+	announce_reloaded(ctx.frame, &dm, ctx.live_region_label, ctx.from_keyboard);
+}
+
+fn announce_reloaded(frame: &Frame, dm: &DocumentManager, live_region_label: StaticText, from_keyboard: bool) {
+	update_title_from_manager(frame, dm);
 	dm.update_status_bar();
 	// High, unlike the automatic reload's Medium: here the reader asked for it. `announce` is
 	// `announce_with_priority` at High, so going through `announce_for_command` keeps the
 	// priority and adds the menu delay that lets the message land after the chain a closed
 	// menu starts.
 	// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
-	announce_for_command(ctx.live_region_label, ctx.from_keyboard, t("Document reloaded."));
+	announce_for_command(live_region_label, from_keyboard, t("Document reloaded."));
 }
 
 pub fn clear_recent_documents(ctx: &Ctx) {

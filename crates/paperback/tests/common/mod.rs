@@ -9,7 +9,10 @@ use std::{
 	net::{TcpListener, TcpStream},
 	path::{Path, PathBuf},
 	process::{Child, Command},
-	sync::{Arc, Mutex},
+	sync::{
+		Arc, Mutex,
+		atomic::{AtomicUsize, Ordering},
+	},
 	time::{Duration, Instant},
 };
 
@@ -30,7 +33,7 @@ use windows::{
 			Input::KeyboardAndMouse::{
 				INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
 				KEYEVENTF_UNICODE, MAPVK_VK_TO_VSC, MapVirtualKeyW, SendInput, VIRTUAL_KEY, VK_CONTROL, VK_DOWN, VK_F4,
-				VK_MENU, VK_RETURN, VK_SHIFT,
+				VK_F5, VK_MENU, VK_RETURN, VK_SHIFT,
 			},
 		},
 	},
@@ -105,9 +108,9 @@ pub fn launch_with(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> 
 }
 
 /// Serves the fixture over http on 127.0.0.1 and launches the app with its link instead of its
-/// path, on the default seeded config.
-pub fn launch_with_link(test_name: &str) -> (App, FixtureServer) {
-	let (base, fixture) = prepare(test_name, |_| {});
+/// path; `configure` adjusts the seeded config before it is written.
+pub fn launch_with_link(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> (App, FixtureServer) {
+	let (base, fixture) = prepare(test_name, configure);
 	let server = FixtureServer::start(&fixture);
 	(start(base, OsStr::new(&server.link())), server)
 }
@@ -137,6 +140,7 @@ fn start(base: PathBuf, argument: &OsStr) -> App {
 /// A web server on 127.0.0.1 that answers every request with the fixture, until the test ends.
 pub struct FixtureServer {
 	port: u16,
+	requests: Arc<AtomicUsize>,
 }
 
 impl FixtureServer {
@@ -144,22 +148,30 @@ impl FixtureServer {
 		let listener = TcpListener::bind("127.0.0.1:0").expect("bind the fixture server");
 		let port = listener.local_addr().expect("fixture server address").port();
 		let body = std::fs::read(fixture).expect("read fixture");
+		let requests = Arc::new(AtomicUsize::new(0));
+		let counted = Arc::clone(&requests);
 		std::thread::spawn(move || {
 			for stream in listener.incoming().flatten() {
 				let body = body.clone();
-				std::thread::spawn(move || serve(stream, &body));
+				let counted = Arc::clone(&counted);
+				std::thread::spawn(move || serve(stream, &body, &counted));
 			}
 		});
-		Self { port }
+		Self { port, requests }
 	}
 
 	/// The fixture's link, ending in its file name.
 	pub fn link(&self) -> String {
 		format!("http://127.0.0.1:{}/{}", self.port, fixture::HTML_NAME)
 	}
+
+	/// How many requests the server has answered: one per download.
+	pub fn requests(&self) -> usize {
+		self.requests.load(Ordering::SeqCst)
+	}
 }
 
-fn serve(mut stream: TcpStream, body: &[u8]) {
+fn serve(mut stream: TcpStream, body: &[u8], requests: &AtomicUsize) {
 	let mut request = Vec::new();
 	let mut buffer = [0; 1024];
 	while !request.windows(4).any(|w| w == b"\r\n\r\n") {
@@ -168,6 +180,7 @@ fn serve(mut stream: TcpStream, body: &[u8]) {
 			Ok(n) => request.extend_from_slice(&buffer[..n]),
 		}
 	}
+	requests.fetch_add(1, Ordering::SeqCst);
 	let head = format!(
 		"HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
 		body.len()
@@ -368,6 +381,10 @@ pub fn ctrl_f4() {
 
 pub fn enter() {
 	send_key(VK_RETURN, KEYBD_EVENT_FLAGS(0));
+}
+
+pub fn f5() {
+	send_key(VK_F5, KEYBD_EVENT_FLAGS(0));
 }
 
 /// Types `text` as characters, whatever the keyboard layout.

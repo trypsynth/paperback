@@ -241,6 +241,10 @@ pub struct DocumentConfig {
 	pub password: String,
 	#[serde(default)]
 	pub opened: bool,
+	/// The size in bytes of the last download of a document opened from a link, which decides
+	/// whether it is downloaded again at startup. `None` for files.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub download_size: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -311,5 +315,20 @@ mod tests {
 		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
 		assert_eq!(bare.audio_time_ms, None);
 		assert!(!toml::to_string(&bare).unwrap().contains("audio_time_ms"));
+	}
+
+	#[test]
+	fn download_size_round_trips_and_defaults_to_none_when_missing() {
+		let doc = DocumentConfig {
+			path: "https://example.org/book.epub".into(),
+			download_size: Some(1_500_000),
+			..DocumentConfig::default()
+		};
+		let parsed: DocumentConfig = toml::from_str(&toml::to_string(&doc).unwrap()).unwrap();
+		assert_eq!(parsed.download_size, Some(1_500_000));
+		// Files and older config files carry no field at all.
+		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
+		assert_eq!(bare.download_size, None);
+		assert!(!toml::to_string(&bare).unwrap().contains("download_size"));
 	}
 }

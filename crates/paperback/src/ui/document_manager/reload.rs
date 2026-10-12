@@ -21,6 +21,7 @@ use crate::{
 		},
 		text_render::fill_text_ctrl_with_formatting,
 	},
+	working_copy::WorkingCopy,
 };
 
 /// Change-detection stamp for an open document's file, compared on every frame activation and
@@ -31,6 +32,13 @@ use crate::{
 pub(super) struct FileFingerprint {
 	modified: SystemTime,
 	len: u64,
+}
+
+impl FileFingerprint {
+	/// The file's size in bytes.
+	pub(super) const fn len(self) -> u64 {
+		self.len
+	}
 }
 
 pub(super) fn read_fingerprint(path: &Path) -> Option<FileFingerprint> {
@@ -62,6 +70,31 @@ impl DocumentManager {
 		}
 	}
 
+	/// Reads the tab at `index` again from `copy`, a new download of the link it was opened from,
+	/// keeping the reading position, and records the download's size. The previous copy is
+	/// deleted when that works; otherwise the tab keeps it and stays as it was.
+	pub fn reload_link(&mut self, index: usize, copy: WorkingCopy) -> bool {
+		let Some(tab) = self.tabs.get_mut(index) else {
+			return false;
+		};
+		let previous = (tab.working_copy.replace(copy), tab.disk_fingerprint);
+		if !self.reload_tab(index, true) {
+			let tab = &mut self.tabs[index];
+			(tab.working_copy, tab.disk_fingerprint) = previous;
+			return false;
+		}
+		let tab = &self.tabs[index];
+		if let Some(size) = tab.disk_fingerprint.map(FileFingerprint::len) {
+			let link = tab.file_path.to_string_lossy();
+			let config = self.config.lock().unwrap();
+			if config.get_document_download_size(&link) != Some(size) {
+				config.set_document_download_size(&link, size);
+				config.flush();
+			}
+		}
+		true
+	}
+
 	/// Reloads the tab at `index` if its file changed on disk since it was last parsed and automatic reloading is on.
 	pub fn reload_tab_if_changed(&mut self, index: usize) -> bool {
 		self.reload_tab(index, false)
@@ -87,6 +120,12 @@ impl DocumentManager {
 			return false;
 		}
 		let path_str = tab.file_path.to_string_lossy().to_string();
+		if forced {
+			// Stop OCR before re-reading, or its pages would land in the new text. Quietly, because its
+			// page count would describe the text being replaced. A missing file returned above, so OCR
+			// on it carries on.
+			self.stop_ocr_at(index, true);
+		}
 		let Ok(cfg) = self.config.try_lock() else {
 			return false;
 		};
