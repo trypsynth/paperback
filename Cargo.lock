@@ -2812,6 +2812,7 @@ dependencies = [
  "icu_properties",
  "image",
  "key-chord",
+ "libc",
  "libchm",
  "libhlp",
  "lofty",
