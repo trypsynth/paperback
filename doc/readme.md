@@ -166,6 +166,8 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Shift+;`: Decrease the audio seek amount.
 * `Ctrl+Shift+.`: Speed up audio narration.
 * `Ctrl+Shift+,`: Slow down audio narration.
+* `Ctrl+'`: Make audio narration louder.
+* `Ctrl+;`: Make audio narration quieter.
 
 ### Tools menu
 

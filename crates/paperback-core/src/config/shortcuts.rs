@@ -358,6 +358,8 @@ mod tests {
 				ActionId::DecreaseAudioSeekAmount,
 				ActionId::IncreaseAudioSpeed,
 				ActionId::DecreaseAudioSpeed,
+				ActionId::IncreaseAudioVolume,
+				ActionId::DecreaseAudioVolume,
 			]
 		);
 	}
