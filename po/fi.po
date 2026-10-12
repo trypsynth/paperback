@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-12 16:46+0000\n"
-"PO-Revision-Date: 2026-10-12 23:57+0300\n"
+"PO-Revision-Date: 2026-10-13 01:37+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1058,7 +1058,7 @@ msgstr "Markdown"
 #. TRANSLATORS: Label of the field in Open from URL, which takes the web link of a document
 #| msgid "Link"
 msgid "Link:"
-msgstr "Linkki:"
+msgstr "Osoite:"
 
 #. TRANSLATORS: Title of the security warning shown before downloading a document from a link
 #| msgid "Security Error"
