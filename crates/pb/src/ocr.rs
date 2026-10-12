@@ -302,7 +302,7 @@ mod tests {
 	fn a_scanned_page_is_reported_by_the_number_the_document_gives_it() {
 		let mut doc = document();
 		// Put the marker where page 2's text starts.
-		let start = doc.buffer.display_index_for_byte(doc.buffer.content.find("text of page 2").unwrap_or(0));
+		let start = doc.buffer.display_index_for_byte(doc.buffer.content.find("text of page 2").unwrap());
 		doc.buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, start));
 		let edits = page_edits(&doc, images_only());
 		assert_eq!(edits.len(), 1);
@@ -352,7 +352,7 @@ mod tests {
 	#[test]
 	fn the_two_kinds_of_page_are_asked_for_separately() {
 		let mut doc = document();
-		let start = doc.buffer.display_index_for_byte(doc.buffer.content.find("text of page 2").unwrap_or(0));
+		let start = doc.buffer.display_index_for_byte(doc.buffer.content.find("text of page 2").unwrap());
 		doc.buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, start));
 
 		let scanned: Vec<usize> =
