@@ -7,7 +7,7 @@ use super::{
 	DocumentSession, DocumentStatsFfi, LineMarker, SegmentDirectionFfi, SegmentTypeFfi, StatusInfo, TextSegmentFfi,
 };
 use crate::{
-	document::{MarkerType, ParserFlags},
+	document::{ContentBytePos, MarkerType, ParserFlags},
 	reader_core::reader_navigate,
 	types::{self as ffi, NavDirection, NavTarget},
 };
@@ -125,7 +125,7 @@ impl DocumentSession {
 					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(buffer.char_count());
 					let byte_idx = buffer.byte_index_for_char(start_pos_char);
 					let (start_byte, end_byte) = self.find_paragraph_boundaries(byte_idx, SegmentDirectionFfi::Current);
-					text = buffer.content[start_byte..end_byte].trim().to_string();
+					text = buffer.slice(start_byte..end_byte).trim().to_string();
 					end_pos = offset + i64::try_from(text.chars().count()).unwrap_or(0);
 				} else {
 					end_pos += i64::try_from(text.chars().count()).unwrap_or(0);
@@ -151,7 +151,7 @@ impl DocumentSession {
 		} else {
 			self.find_paragraph_boundaries(byte_idx, direction)
 		};
-		let text = buffer.content[start_byte..end_byte].trim().to_string();
+		let text = buffer.slice(start_byte..end_byte).trim().to_string();
 		let start_char = buffer.char_index_for_byte(start_byte);
 		let end_char = buffer.char_index_for_byte(end_byte);
 		TextSegmentFfi {
@@ -328,8 +328,13 @@ impl DocumentSession {
 		Some(marker.reference.clone())
 	}
 
-	fn find_paragraph_boundaries(&self, byte_idx: usize, direction: SegmentDirectionFfi) -> (usize, usize) {
+	fn find_paragraph_boundaries(
+		&self,
+		byte_idx: ContentBytePos,
+		direction: SegmentDirectionFfi,
+	) -> (ContentBytePos, ContentBytePos) {
 		let content = self.handle.document().buffer.content.as_str();
+		let byte_idx = byte_idx.get();
 		let mut start = byte_idx;
 		if matches!(direction, SegmentDirectionFfi::Previous) {
 			let mut search_end = byte_idx;
@@ -360,7 +365,7 @@ impl DocumentSession {
 			start = content[..start].rfind('\n').map_or(0, |i| i + 1);
 		}
 		let end = content[start..].find('\n').map_or(content.len(), |i| start + i);
-		(start, end)
+		(ContentBytePos::from_raw(start), ContentBytePos::from_raw(end))
 	}
 
 	#[must_use]

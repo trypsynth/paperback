@@ -357,7 +357,7 @@ fn table_formulas_preserve_text_and_spans(
 	for formula in converted.formulas {
 		let start = buffer.byte_index_for_display(formula.offset);
 		let end = buffer.byte_index_for_display(formula.offset + formula.length);
-		assert_eq!(&buffer.content[start..end], formula.text);
+		assert_eq!(buffer.slice(start..end), formula.text);
 	}
 }
 

@@ -3,10 +3,75 @@
 //! byte, char, and display-unit offsets, the three coordinate systems a caret position can be
 //! expressed in (see the fields' own docs for why all three are needed).
 
+use std::ops::{Add, RangeBounds};
+
 use rayon::prelude::*;
 
 use super::marker::{Marker, MarkerType};
 use crate::util::text::{ch_width, display_len};
+
+/// A byte offset into [`DocumentBuffer::content`]. Byte offsets into any other string, such as
+/// a parser's own output before it is appended, stay plain `usize`: this type says which string
+/// an offset belongs to, so that it can't be used to slice the wrong one.
+///
+/// Every value comes from the buffer's conversions or from a search of `content` itself, so it
+/// sits on a char boundary. The buffer refuses content longer than `u32::MAX` bytes (see
+/// `assert_addressable`), which is what lets the offset be stored in a `u32`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(transparent)]
+pub struct ContentBytePos(u32);
+
+impl ContentBytePos {
+	pub const ZERO: Self = Self(0);
+
+	/// Wraps a byte offset taken from a `str` operation on [`DocumentBuffer::content`] (a regex
+	/// match, a `find`), which is the only kind of `usize` that may become a `ContentBytePos`.
+	#[must_use]
+	#[allow(clippy::cast_possible_truncation)]
+	pub fn from_raw(raw: usize) -> Self {
+		debug_assert!(u32::try_from(raw).is_ok(), "ContentBytePos exceeds u32::MAX");
+		Self(raw as u32)
+	}
+
+	#[must_use]
+	pub const fn get(self) -> usize {
+		self.0 as usize
+	}
+}
+
+/// Moves forward by a byte count, such as the length of a match found from this position.
+impl Add<usize> for ContentBytePos {
+	type Output = Self;
+
+	fn add(self, bytes: usize) -> Self {
+		Self::from_raw(self.get() + bytes)
+	}
+}
+
+// Conversions from and comparisons with a bare `usize` let tests write positions as integer
+// literals (`5.into()`, `assert_eq!(pos, 5)`), which the compiler infers as `usize` here. They
+// are test-only because outside tests, a `usize` is just as likely to be a display position or
+// a char index, and mixing those with a byte offset is the mistake this type exists to rule out.
+#[cfg(test)]
+impl From<usize> for ContentBytePos {
+	fn from(raw: usize) -> Self {
+		Self::from_raw(raw)
+	}
+}
+
+#[cfg(test)]
+impl PartialEq<usize> for ContentBytePos {
+	fn eq(&self, other: &usize) -> bool {
+		self.get() == *other
+	}
+}
+
+#[cfg(test)]
+impl PartialEq<ContentBytePos> for usize {
+	fn eq(&self, other: &ContentBytePos) -> bool {
+		*self == other.get()
+	}
+}
 
 #[derive(Debug, Clone)]
 pub struct DocumentBuffer {
@@ -15,11 +80,10 @@ pub struct DocumentBuffer {
 	content_display_len: usize,
 	content_char_count: usize,
 	newline_char_positions: Vec<usize>,
-	/// Byte offset of the `i`-th char, stored as `u32` rather than `usize`. This halves the
-	/// table's footprint, which matters because it has one entry per char in the whole
-	/// document (a large book can have hundreds of millions of chars). A document whose byte
-	/// length exceeds `u32::MAX` (4 GiB of text) is refused; see `assert_addressable`.
-	char_to_byte_map: Vec<u32>,
+	/// Byte offset of the `i`-th char. [`ContentBytePos`] is a `u32`, half the size of a
+	/// `usize`, which matters because the table has one entry per char in the whole document (a
+	/// large book can have hundreds of millions of chars).
+	char_to_byte_map: Vec<ContentBytePos>,
 	/// `display_len_at_char[i]` is the display-unit offset (UTF-16 code units on
 	/// Windows/macOS, Unicode scalars on GTK, see `util::text::display_len`) of the `i`-th
 	/// char, with a trailing end-boundary entry equal to `content_display_len`, mirroring
@@ -160,7 +224,7 @@ impl DocumentBuffer {
 		let mut char_to_byte_map = Vec::with_capacity(self.content.len().min(1024));
 		let mut display_len_at_char = Vec::with_capacity(self.content.len().min(1024));
 		for (byte_idx, c) in self.content.char_indices() {
-			char_to_byte_map.push(to_u32(byte_idx));
+			char_to_byte_map.push(ContentBytePos::from_raw(byte_idx));
 			display_len_at_char.push(to_u32(display_count));
 			if c == '\n' {
 				newline_char_positions.push(char_count);
@@ -168,7 +232,7 @@ impl DocumentBuffer {
 			char_count += 1;
 			display_count += ch_width(c);
 		}
-		char_to_byte_map.push(to_u32(self.content.len())); // append end boundary
+		char_to_byte_map.push(ContentBytePos::from_raw(self.content.len())); // append end boundary
 		display_len_at_char.push(to_u32(display_count));
 		debug_assert_eq!(display_count, display_len(&self.content));
 		self.content_display_len = display_count;
@@ -214,7 +278,7 @@ impl DocumentBuffer {
 		for edit in edits.iter().rev() {
 			let start_byte = self.byte_index_for_display(edit.start);
 			let end_byte = self.byte_index_for_display(edit.end);
-			self.content.replace_range(start_byte..end_byte, &edit.text);
+			self.content.replace_range(start_byte.get()..end_byte.get(), &edit.text);
 		}
 		self.rebuild_indexes();
 		self.markers.retain_mut(|marker| shift_marker(marker, &edits, &deltas));
@@ -248,7 +312,7 @@ impl DocumentBuffer {
 		}
 		let start_byte = self.content.len();
 		for (byte_idx, c) in text.char_indices() {
-			self.char_to_byte_map.push(to_u32(start_byte + byte_idx));
+			self.char_to_byte_map.push(ContentBytePos::from_raw(start_byte + byte_idx));
 			self.display_len_at_char.push(to_u32(display_count));
 			if c == '\n' {
 				self.newline_char_positions.push(base + count);
@@ -257,7 +321,7 @@ impl DocumentBuffer {
 			display_count += ch_width(c);
 		}
 		self.content.push_str(text);
-		self.char_to_byte_map.push(to_u32(self.content.len())); // append end boundary back
+		self.char_to_byte_map.push(ContentBytePos::from_raw(self.content.len())); // append end boundary back
 		self.display_len_at_char.push(to_u32(display_count));
 		self.content_display_len = display_count;
 		self.content_char_count += count;
@@ -308,11 +372,11 @@ impl DocumentBuffer {
 		}
 		assert_addressable(byte_acc);
 		let mut content_bytes = vec![0u8; byte_acc];
-		let mut char_to_byte_map = vec![0u32; char_acc + 1];
+		let mut char_to_byte_map = vec![ContentBytePos::ZERO; char_acc + 1];
 		let mut display_len_at_char = vec![0u32; char_acc + 1];
 		let (char_to_byte_main, char_to_byte_boundary) = char_to_byte_map.split_at_mut(char_acc);
 		let (display_main, display_boundary) = display_len_at_char.split_at_mut(char_acc);
-		char_to_byte_boundary[0] = to_u32(byte_acc);
+		char_to_byte_boundary[0] = ContentBytePos::from_raw(byte_acc);
 		display_boundary[0] = to_u32(display_acc);
 		let byte_lens: Vec<usize> =
 			indexed.iter().map(|(_, idx)| idx.byte_len + usize::from(idx.trailing_newline)).collect();
@@ -336,7 +400,7 @@ impl DocumentBuffer {
 			start_byte: usize,
 			start_display: usize,
 			content: &'a mut [u8],
-			char_to_byte: &'a mut [u32],
+			char_to_byte: &'a mut [ContentBytePos],
 			display: &'a mut [u32],
 		}
 		let work: Vec<PartWork<'_>> = indexed
@@ -364,11 +428,11 @@ impl DocumentBuffer {
 				w.content[w.idx.byte_len] = b'\n';
 			}
 			for i in 0..w.idx.char_len {
-				w.char_to_byte[i] = to_u32(w.start_byte + w.idx.char_to_byte[i] as usize);
+				w.char_to_byte[i] = ContentBytePos::from_raw(w.start_byte + w.idx.char_to_byte[i] as usize);
 				w.display[i] = to_u32(w.start_display + w.idx.display_len_at_char[i] as usize);
 			}
 			if w.idx.trailing_newline {
-				w.char_to_byte[w.idx.char_len] = to_u32(w.start_byte + w.idx.byte_len);
+				w.char_to_byte[w.idx.char_len] = ContentBytePos::from_raw(w.start_byte + w.idx.byte_len);
 				w.display[w.idx.char_len] = to_u32(w.start_display + w.idx.display_len);
 			}
 		});
@@ -389,13 +453,13 @@ impl DocumentBuffer {
 	}
 
 	#[must_use]
-	pub fn byte_index_for_char(&self, char_index: usize) -> usize {
-		self.char_to_byte_map.get(char_index).map_or(self.content.len(), |&v| v as usize)
+	pub fn byte_index_for_char(&self, char_index: usize) -> ContentBytePos {
+		self.char_to_byte_map.get(char_index).copied().unwrap_or_else(|| self.content_end())
 	}
 
 	#[must_use]
-	pub fn char_index_for_byte(&self, byte_index: usize) -> usize {
-		self.char_to_byte_map.binary_search(&to_u32(byte_index)).unwrap_or_else(|idx| idx)
+	pub fn char_index_for_byte(&self, byte_index: ContentBytePos) -> usize {
+		self.char_to_byte_map.binary_search(&byte_index).unwrap_or_else(|idx| idx)
 	}
 
 	/// The display-unit offset of the `char_index`-th char (or the document's total display
@@ -418,15 +482,28 @@ impl DocumentBuffer {
 	/// The byte offset corresponding to `display_index`, composing [`Self::char_index_for_display`]
 	/// with [`Self::byte_index_for_char`].
 	#[must_use]
-	pub fn byte_index_for_display(&self, display_index: usize) -> usize {
+	pub fn byte_index_for_display(&self, display_index: usize) -> ContentBytePos {
 		self.byte_index_for_char(self.char_index_for_display(display_index))
 	}
 
 	/// The display-unit offset corresponding to `byte_index`, composing
 	/// [`Self::char_index_for_byte`] with [`Self::display_index_for_char`].
 	#[must_use]
-	pub fn display_index_for_byte(&self, byte_index: usize) -> usize {
+	pub fn display_index_for_byte(&self, byte_index: ContentBytePos) -> usize {
 		self.display_index_for_char(self.char_index_for_byte(byte_index))
+	}
+
+	/// The byte offset one past the last byte of `content`.
+	#[must_use]
+	pub fn content_end(&self) -> ContentBytePos {
+		ContentBytePos::from_raw(self.content.len())
+	}
+
+	/// The text of `content` within `range`. A method rather than `Index` on the content,
+	/// because `Index` can't be implemented on `str` for a range of a local type.
+	#[must_use]
+	pub fn slice(&self, range: impl RangeBounds<ContentBytePos>) -> &str {
+		&self.content[(range.start_bound().map(|pos| pos.get()), range.end_bound().map(|pos| pos.get()))]
 	}
 
 	#[must_use]
@@ -545,7 +622,7 @@ mod tests {
 			assert_eq!(buffer.display_index_for_char(i), i);
 			assert_eq!(buffer.char_index_for_display(i), i);
 			assert_eq!(buffer.byte_index_for_display(i), i);
-			assert_eq!(buffer.display_index_for_byte(i), i);
+			assert_eq!(buffer.display_index_for_byte(i.into()), i);
 		}
 		assert_eq!(buffer.total_display_len(), 3);
 	}
@@ -569,9 +646,9 @@ mod tests {
 		assert_eq!(buffer.byte_index_for_display(0), 0);
 		assert_eq!(buffer.byte_index_for_display(1), 1);
 		assert_eq!(buffer.byte_index_for_display(3), 5); // 1 byte 'a' + 4 byte emoji
-		assert_eq!(buffer.display_index_for_byte(0), 0);
-		assert_eq!(buffer.display_index_for_byte(1), 1);
-		assert_eq!(buffer.display_index_for_byte(5), 3);
+		assert_eq!(buffer.display_index_for_byte(0.into()), 0);
+		assert_eq!(buffer.display_index_for_byte(1.into()), 1);
+		assert_eq!(buffer.display_index_for_byte(5.into()), 3);
 	}
 
 	#[test]
@@ -620,8 +697,12 @@ mod tests {
 			assert_eq!(a.byte_index_for_char(i), b.byte_index_for_char(i), "byte_index_for_char({i})");
 			assert_eq!(a.display_index_for_char(i), b.display_index_for_char(i), "display_index_for_char({i})");
 		}
-		for byte in 0..=a.content.len() {
-			assert_eq!(a.char_index_for_byte(byte), b.char_index_for_byte(byte), "char_index_for_byte({byte})");
+		for byte in a.content.char_indices().map(|(byte, _)| byte).chain([a.content.len()]) {
+			assert_eq!(
+				a.char_index_for_byte(byte.into()),
+				b.char_index_for_byte(byte.into()),
+				"char_index_for_byte({byte})"
+			);
 		}
 		for display in 0..=a.total_display_len() {
 			assert_eq!(
