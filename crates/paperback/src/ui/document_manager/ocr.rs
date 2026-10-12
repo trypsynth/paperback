@@ -35,16 +35,27 @@ use crate::{
 };
 
 /// How many pages between spoken progress announcements during a batch OCR job.
-const BATCH_OCR_PROGRESS_EVERY: usize = 20;
+///
+/// A page takes about 30 ms once the pool is reading them, so this is an announcement roughly
+/// every second and a half. It was 20, which was near enough to the same cadence when a page took
+/// 190 ms; the pool did not make the announcements less useful, it made them four times as
+/// frequent, and an announcement that arrives before the reader has finished hearing the last one
+/// is worse than no announcement at all.
+const BATCH_OCR_PROGRESS_EVERY: usize = 50;
 
 /// How many recognized pages to hold before folding them into the document together.
 ///
 /// Every apply rebuilds the buffer's per-char index tables, which is linear in the whole
 /// document, so applying page by page would be quadratic over a long scan. Flushing in groups
 /// keeps that cost proportional to the document while still letting the reader reach the early
-/// pages long before a several-hundred-page job finishes. Matched to the progress interval so
-/// the text appears exactly when the progress announcement says it has.
-const BATCH_OCR_FLUSH_EVERY: usize = BATCH_OCR_PROGRESS_EVERY;
+/// pages long before a several-hundred-page job finishes.
+///
+/// Deliberately not the progress interval, which it used to be defined as. The two answer
+/// different questions: this one is how long the reader waits to be able to read the text, and
+/// that has not changed, while the announcement is how often they are interrupted, and that had
+/// to. Twenty pages of text landing every second is welcome; twenty pages announced every second
+/// is not.
+const BATCH_OCR_FLUSH_EVERY: usize = 20;
 
 /// A running OCR job, one per tab. Owned by the UI thread; the worker sees only `cancel`.
 pub(super) struct OcrJob {
