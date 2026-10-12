@@ -3,7 +3,7 @@
 //! `crates/paperback/src/ui/text_window.rs` for the caller-side half of this.
 
 use super::{DocumentSession, LineMarker};
-use crate::document::MarkerType;
+use crate::document::{DocumentBuffer, MarkerType};
 
 /// How much of a document, in display units, is shown at once when it is too long to show
 /// whole: the width of the reader's loaded window, and of the slice the web view is handed.
@@ -95,8 +95,8 @@ impl DocumentSession {
 		let doc_len = buf.total_display_len();
 		let raw_start = usize::try_from(raw_start.max(0)).unwrap_or(0).min(doc_len);
 		let raw_end = usize::try_from(raw_end.max(0)).unwrap_or(0).clamp(raw_start, doc_len);
-		let byte_start = snap_start_to_paragraph_boundary(&buf.content, buf.byte_index_for_display(raw_start));
-		let byte_end = snap_end_to_paragraph_boundary(&buf.content, buf.byte_index_for_display(raw_end));
+		let byte_start = snap_start_to_paragraph_boundary(buf, buf.byte_index_for_display(raw_start));
+		let byte_end = snap_end_to_paragraph_boundary(buf, buf.byte_index_for_display(raw_end));
 		let start = buf.display_index_for_byte(byte_start);
 		let end = buf.display_index_for_byte(byte_end);
 		let text = buf.content[byte_start..byte_end].to_string();
@@ -128,14 +128,14 @@ impl DocumentSession {
 
 /// Extends `byte_idx` backward to the start of the paragraph it's in - the byte right after
 /// the nearest preceding `\n`, or 0 if there isn't one - so a window never starts mid-paragraph.
-pub(super) fn snap_start_to_paragraph_boundary(content: &str, byte_idx: usize) -> usize {
-	content[..byte_idx].rfind('\n').map_or(0, |i| i + 1)
+pub(super) fn snap_start_to_paragraph_boundary(buffer: &DocumentBuffer, byte_idx: usize) -> usize {
+	buffer.content[..byte_idx].rfind('\n').map_or(0, |i| i + 1)
 }
 
 /// Extends `byte_idx` forward to the end of the paragraph it's in - one past the nearest
 /// following `\n`, or the end of the content if there isn't one.
-pub(super) fn snap_end_to_paragraph_boundary(content: &str, byte_idx: usize) -> usize {
-	content[byte_idx..].find('\n').map_or(content.len(), |i| byte_idx + i + 1)
+pub(super) fn snap_end_to_paragraph_boundary(buffer: &DocumentBuffer, byte_idx: usize) -> usize {
+	buffer.content[byte_idx..].find('\n').map_or(buffer.content.len(), |i| byte_idx + i + 1)
 }
 
 #[cfg(test)]

@@ -121,13 +121,11 @@ impl DocumentSession {
 				let mut text = res.marker_text.clone();
 				let mut end_pos = offset;
 				if text.trim().is_empty() {
-					let content = &self.handle.document().buffer.content;
-					let total_chars = self.handle.document().buffer.char_count();
-					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(total_chars);
-					let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
-					let (start_byte, end_byte) =
-						self.find_paragraph_boundaries(content, byte_idx, SegmentDirectionFfi::Current);
-					text = content[start_byte..end_byte].trim().to_string();
+					let buffer = &self.handle.document().buffer;
+					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(buffer.char_count());
+					let byte_idx = buffer.byte_index_for_char(start_pos_char);
+					let (start_byte, end_byte) = self.find_paragraph_boundaries(byte_idx, SegmentDirectionFfi::Current);
+					text = buffer.content[start_byte..end_byte].trim().to_string();
 					end_pos = offset + i64::try_from(text.chars().count()).unwrap_or(0);
 				} else {
 					end_pos += i64::try_from(text.chars().count()).unwrap_or(0);
@@ -136,12 +134,11 @@ impl DocumentSession {
 			}
 			return TextSegmentFfi { text: String::new(), start_pos: position, end_pos: position, found: false };
 		}
-		let content = &self.handle.document().buffer.content;
-		let total_chars = self.handle.document().buffer.char_count();
-		let start_pos_char = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
+		let buffer = &self.handle.document().buffer;
+		let start_pos_char = usize::try_from(position.max(0)).unwrap_or(0).min(buffer.char_count());
+		let byte_idx = buffer.byte_index_for_char(start_pos_char);
 		let (start_byte, end_byte) = if matches!(segment_type, SegmentTypeFfi::Line) {
-			let start_display = self.handle.document().buffer.display_index_for_char(start_pos_char);
+			let start_display = buffer.display_index_for_char(start_pos_char);
 			let line_num = self.line_from_position(i64::try_from(start_display).unwrap_or(0));
 			let target_line = match direction {
 				SegmentDirectionFfi::Previous => (line_num - 1).max(1),
@@ -150,15 +147,13 @@ impl DocumentSession {
 			};
 			let start_display = usize::try_from(self.position_from_line(target_line)).unwrap_or(0);
 			let end_display = usize::try_from(self.position_from_line(target_line + 1)).unwrap_or(0);
-			let sb = self.handle.document().buffer.byte_index_for_display(start_display);
-			let eb = self.handle.document().buffer.byte_index_for_display(end_display);
-			(sb, eb)
+			(buffer.byte_index_for_display(start_display), buffer.byte_index_for_display(end_display))
 		} else {
-			self.find_paragraph_boundaries(content, byte_idx, direction)
+			self.find_paragraph_boundaries(byte_idx, direction)
 		};
-		let text = content[start_byte..end_byte].trim().to_string();
-		let start_char = self.handle.document().buffer.char_index_for_byte(start_byte);
-		let end_char = self.handle.document().buffer.char_index_for_byte(end_byte);
+		let text = buffer.content[start_byte..end_byte].trim().to_string();
+		let start_char = buffer.char_index_for_byte(start_byte);
+		let end_char = buffer.char_index_for_byte(end_byte);
 		TextSegmentFfi {
 			text,
 			start_pos: i64::try_from(start_char).unwrap_or(0),
@@ -333,12 +328,8 @@ impl DocumentSession {
 		Some(marker.reference.clone())
 	}
 
-	fn find_paragraph_boundaries(
-		&self,
-		content: &str,
-		byte_idx: usize,
-		direction: SegmentDirectionFfi,
-	) -> (usize, usize) {
+	fn find_paragraph_boundaries(&self, byte_idx: usize, direction: SegmentDirectionFfi) -> (usize, usize) {
+		let content = self.handle.document().buffer.content.as_str();
 		let mut start = byte_idx;
 		if matches!(direction, SegmentDirectionFfi::Previous) {
 			let mut search_end = byte_idx;
