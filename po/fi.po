@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-12 16:46+0000\n"
-"PO-Revision-Date: 2026-10-12 22:35+0300\n"
+"PO-Revision-Date: 2026-10-12 23:57+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -21,7 +21,7 @@ msgstr ""
 
 #. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
 msgid "this is not a web link"
-msgstr "tämä ei ole URL-osoite"
+msgstr "tämä ei ole kelvollinen HTTP- tai HTTPS-osoite"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
